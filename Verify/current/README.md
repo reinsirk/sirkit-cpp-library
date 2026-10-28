@@ -53,7 +53,7 @@ Verify先はLibrary Checkerを第一候補とし、対応問題がなければAt
 | [DataStructure/Compressed_Binary_Trie.cpp](../../DataStructure/Compressed_Binary_Trie.cpp) | [Set Xor-Min](submissions/compressed_binary_trie.cpp) |
 | [DataStructure/Hash_map.cpp](../../DataStructure/Hash_map.cpp) | [Associative Array](submissions/hash_map.cpp) |
 | [DataStructure/Hash_set.cpp](../../DataStructure/Hash_set.cpp) | [ABC344 C](submissions/hash_set_membership.cpp)・[ABC073 C](submissions/hash_set_toggle.cpp)・[ABC164 C](submissions/hash_set_strings.cpp) |
-| [DataStructure/Node.cpp](../../DataStructure/Node.cpp) | [Node 独立ローカル検査](submissions/node_local.cpp) |
+| [DataStructure/Node.cpp](../../DataStructure/Node.cpp) | [Takahashi's Secret](submissions/node_reachable.cpp)・[独立ローカル検査](submissions/node_local.cpp) |
 | [DataStructure/dynamic-binary-indexed-tree-2d.cpp](../../DataStructure/dynamic-binary-indexed-tree-2d.cpp) | [Point Add Rectangle Sum](submissions/dynamic_fenwick_2d_rectangle.cpp) |
 | [DataStructure/dynamic-binary-indexed-tree.cpp](../../DataStructure/dynamic-binary-indexed-tree.cpp) | [Point Add Range Sum](submissions/dynamic_fenwick_range.cpp) |
 | [DataStructure/dynamic-li-chao-tree.cpp](../../DataStructure/dynamic-li-chao-tree.cpp) | [Segment Add Get Min](submissions/dynamic_lichao_segment.cpp) |
@@ -163,6 +163,7 @@ Verify先はLibrary Checkerを第一候補とし、対応問題がなければAt
 | [zeta_sparse_gcd_full](submissions/zeta_sparse_gcd_full.cpp) | [GCD Convolution](https://judge.yosupo.jp/problem/gcd_convolution) | 疎変換の公開APIによるGCD畳み込み（全キーを使用）。 |
 | [zeta_sparse_gcd_split](submissions/zeta_sparse_gcd_split.cpp) | [GCD Convolution](https://judge.yosupo.jp/problem/gcd_convolution) | 疎変換の公開APIによるGCD畳み込み（全キーを使用）。 |
 | [bellman_ford](submissions/bellman_ford.cpp) | [E - Coins Respawn](https://atcoder.jp/contests/abc137/tasks/abc137_e) | 負辺を含む単一始点最短路、終点へ伝播する-INFと終点に無関係な負閉路。 |
+| [node_reachable](submissions/node_reachable.cpp) | [B - Takahashi's Secret](https://atcoder.jp/contests/abc228/tasks/abc228_b) | ノード接続・循環切断・到達個数。共有・複製・長鎖破棄はローカル補足。 |
 | [binomial_lucas](submissions/binomial_lucas.cpp) | [C - Tricolor Pyramid](https://atcoder.jp/contests/arc117/tasks/arc117_c) | n>=modのLucas。 |
 | [binomial_lucas_split](submissions/binomial_lucas_split.cpp) | [C - Tricolor Pyramid](https://atcoder.jp/contests/arc117/tasks/arc117_c) | n>=modのLucas。 |
 | [floyd_warshall](submissions/floyd_warshall.cpp) | [D - バスと避けられない運命](https://atcoder.jp/contests/abc012/tasks/abc012_4) | FloydWarshallによる全点間距離、グラフの中心。 |

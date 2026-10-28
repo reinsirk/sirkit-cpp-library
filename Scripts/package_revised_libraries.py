@@ -44,6 +44,7 @@ LIBRARIES = {
     "nearest_two_points_example.cpp": "Geometry/Nearest_Two_points.cpp",
     "heap_example.cpp": "DataStructure/heap.cpp",
     "implicit_treap_example.cpp": "DataStructure/implicit_treap.cpp",
+    "implicit_treap_erase_between_example.cpp": "DataStructure/implicit_treap.cpp",
     "geometry_example.cpp": "Geometry/geometory.cpp",
     "rollback_weighted_union_find_example.cpp": "DataStructure/rollback-union-findw.cpp",
     "matrix_transform_example.cpp": "Algorithm/rotate.cpp",

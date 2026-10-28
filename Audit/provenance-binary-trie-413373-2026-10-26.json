@@ -1,0 +1,22 @@
+{
+  "date_jst": "2026-10-26",
+  "source": "DataStructure/Binary_Trie.cpp",
+  "source_sha256": "2618f7d56364263695b4d8a6ad06c0a0a31b22b6785d77e364422df992186a70",
+  "baseline_sha256": "fa5c0b0619ac185aa9c53d9f25fb2931fa21660ba752c77d5d7ba62a2e9d39aa",
+  "optimized_body_sha256": "4ef5781596007eda9647d6caa569eada88fb2e4825f6bdc94cd2c5c7055fcae8",
+  "main_sha256": "ffd1f56f2785089ed0884abfb3b45341007b899f6d115fb3c15c45238c503ff6",
+  "io_sha256": "291bf8dbc56a1d691f6256fe95b4714183c2cf5d9e55e4bef240e31d1eb178c1",
+  "completed_at_utc": "2026-10-25T23:47:52.900007+00:00",
+  "license": "CC0-1.0",
+  "method_origin": "既存CC0の4分岐通常版と過去の自作suffix一括取得方式を基に、連続chunk・free_list・未接続pathの取得処理を組み立てた。新たな外部C++実装の取得・移植はない。Clangのzero Nodeは欠損子の要素数0を条件参照へ置換する恒等変形。",
+  "previous_provenance": "Audit/provenance-binary-trie-multibit-2026-10-26.json",
+  "proof": {
+    "chunk": "count=min(残深さ,ブロック残長,capacity-index)>0の連続領域だけを取得。childは次の2bit digitでリンクし、各pathとlast_newをnoexcept区間で記録して次の確保へ進む。",
+    "transaction": "previousは新規suffix内だけ。既存親/virtual count/要素countはID成功後にだけcommit。例外時last_new..first_newだけを逆順releaseし、ID free slotはpush成功後にpopする。容量の増加は旧保証と同じ。",
+    "bounds": "digit深さは1..kLevels内、最大shift62で型幅以上のshiftはない。未接続chunk最後の葉のID ptrはappend前にnullへ初期化。",
+    "sentinel": "constexpr Nodeはcount0・読み取り専用で、欠損子の加算0と同じ。Nodeのclass layoutや所有を変更せず、動的確保/初期化を追加しない。",
+    "fallback": "GCC __BMI2__なし/他の逐次経路は元のif(!first_new)予算検査・1ノード取得・commitを保持。GCCの前処理後classとmain binaryがbaselineに一致。",
+    "selection": "ClangまたはGCC+__BMI2__のコンパイル条件に応じて標準C++の取得処理を選ぶ。追加した手書きISA命令はなく、対象CPUを増やす新しい実行時CPU判定もない。"
+  },
+  "source_bytes": 22974
+}

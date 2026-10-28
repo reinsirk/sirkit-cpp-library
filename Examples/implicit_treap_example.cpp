@@ -8,6 +8,9 @@
 using SumTreap = lazy_implicit_treap<
     RangeAddSum::S, RangeAddSum::op, RangeAddSum::e, RangeAddSum::F,
     RangeAddSum::mapping, RangeAddSum::composition, RangeAddSum::id>;
+using IdSumTreap = indexed_implicit_treap<
+    RangeAddSum::S, RangeAddSum::op, RangeAddSum::e, RangeAddSum::F,
+    RangeAddSum::mapping, RangeAddSum::composition, RangeAddSum::id>;
 
 int main() {
     SumTreap sequence(std::vector<RangeAddSum::S>{{1, 1}, {2, 1}, {3, 1}, {4, 1}});
@@ -42,4 +45,21 @@ int main() {
     ordered.erase_val(3);
     ordered.erase_max();
     std::cout << ordered.size() << ' ' << ordered.all_prod() << '\n'; // 2 1
+
+    // 区間を、移動前の位置を指定して移す。
+    lazy_implicit_treap<> editing(std::vector<std::int64_t>{10, 20, 30, 40, 50});
+    editing.move_range(1, 3, 5); // [10,40,50,20,30]。元の末尾へ[20,30]を移動。
+    std::cout << editing.front() << ' ' << editing.back() << '\n'; // 10 30
+
+    // IDは値を変更しても保持される。
+    IdSumTreap ids;
+    ids.insert_at_with_id(0, 10, {100, 1});
+    ids.insert_after(10, 30, {300, 1});
+    ids.insert_before(30, 20, {200, 1}); // 値は[100,200,300]、IDは[10,20,30]。
+    ids.set_by_id(20, {250, 1});
+    std::cout << ids.get_by_id(20).sum << '\n'; // 250
+    std::cout << ids.prod_between(30, 10).sum << '\n'; // 250。端点の前後はどちらでもよい。
+    std::cout << ids.erase_between(10, 30).sum << '\n'; // 250。端点は残す。
+    std::cout << ids.erase_id(20) << '\n'; // 0。すでに削除済み。
+    std::cout << ids.erase_id(30) << '\n'; // 1
 }

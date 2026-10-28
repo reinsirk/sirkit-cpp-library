@@ -100,6 +100,15 @@ struct ChainCycleCheck {
 inline std::size_t chain_size(const std::shared_ptr<Node>& head) {
     std::size_t size = 0;
     const Node* current = head.get();
+#ifdef SKIP_RUNTIME_CHECKS
+    constexpr auto max = std::numeric_limits<std::size_t>::max();
+    while (current != nullptr && size <= max - 2) {
+        current = current->n.get();
+        if (current == nullptr) return size + 1;
+        current = current->n.get();
+        size += 2;
+    }
+#endif
 #ifndef SKIP_RUNTIME_CHECKS
     reinsirk::detail::ChainCycleCheck cycle_check(current);
 #endif
@@ -149,7 +158,9 @@ inline std::shared_ptr<Node> chain_nth(const std::shared_ptr<Node>& head, std::s
 #ifndef SIRKIT_PUSH_FRONT_NODE_DEFINED
 #define SIRKIT_PUSH_FRONT_NODE_DEFINED
 inline void push_front_node(std::shared_ptr<Node>& head) {
-    head = make_node(head);
+    auto next = make_node();
+    next->n = std::move(head);
+    head = std::move(next);
 }
 #endif
 
@@ -220,18 +231,35 @@ inline Node* cycle_entry(const std::shared_ptr<Node>& head) noexcept {
 #ifndef SIRKIT_HAS_CYCLE_DEFINED
 #define SIRKIT_HAS_CYCLE_DEFINED
 inline bool has_cycle(const std::shared_ptr<Node>& head) noexcept {
-    return cycle_entry(head) != nullptr;
+    Node* slow = head.get();
+    Node* fast = head.get();
+    while (fast != nullptr && fast->n) {
+        slow = slow->n.get();
+        fast = fast->n->n.get();
+        if (slow == fast) return true;
+    }
+    return false;
 }
 #endif
 
 #ifndef SIRKIT_BREAK_CYCLE_DEFINED
 #define SIRKIT_BREAK_CYCLE_DEFINED
 inline bool break_cycle(const std::shared_ptr<Node>& head) noexcept {
+    Node* slow = head.get();
+    Node* fast = slow;
+    Node* last = nullptr;
+    do {
+        if (fast == nullptr || !fast->n) return false;
+        slow = slow->n.get();
+        last = fast->n.get();
+        fast = last->n.get();
+    } while (slow != fast);
+    slow = head.get();
+    while (slow != last->n.get()) {
+        slow = slow->n.get();
+        last = last->n.get();
+    }
     auto keep_alive = head;
-    Node* entry = cycle_entry(keep_alive);
-    if (entry == nullptr) return false;
-    Node* last = entry;
-    while (last->n.get() != entry) last = last->n.get();
     last->n.reset();
     return true;
 }

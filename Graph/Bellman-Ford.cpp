@@ -46,12 +46,233 @@ using WGraph = std::vector<std::vector<Edge>>;
 #ifndef SIRKIT_BELLMAN_FORD_DEFINED
 #define SIRKIT_BELLMAN_FORD_DEFINED
 namespace reinsirk::detail {
-// 3パス目以降は距離が更新された始点だけを次のパスへ送る。
-// 1パスで各頂点を高々1回処理するので、時間上限O(VE)を保つ。
+// 遅い反復だけを到達部分の強連結成分ごとに解く。追加領域O(V)。
 #if defined(__GNUC__) || defined(__clang__)
 [[gnu::noinline]]
 #endif
-inline bool BellmanFordContinue(const WGraph& graph, std::span<const int> sources,
+inline void BellmanFordComponents(const WGraph& graph, std::span<const int> sources,
+    std::vector<std::int64_t>& distance, std::int64_t unreachable, std::int64_t lower_bound,
+    std::vector<int>& negative
+#ifndef SKIP_RUNTIME_CHECKS
+    , std::vector<std::uint8_t>& checked
+#endif
+) {
+#ifndef SKIP_RUNTIME_CHECKS
+    const int n = static_cast<int>(graph.size());
+#endif
+    struct Frame { int vertex; std::size_t edge; };
+    std::vector<int> order(graph.size(), -1), low(graph.size()), component(graph.size(), -1);
+    std::vector<int> active, members;
+    std::vector<std::int64_t> tree_distance(graph.size());
+    // stateの下位bitは現在のDFS祖先、次のbitは負閉路の証拠。
+    std::vector<std::uint8_t> state(graph.size(), 0), negative_component;
+    std::vector<std::size_t> boundary{0};
+    std::vector<Frame> dfs;
+    int clock = 0;
+    const auto discover = [&](int vertex, std::int64_t tree_value) {
+        tree_distance[vertex] = tree_value;
+        state[vertex] = 1;
+        order[vertex] = low[vertex] = clock++;
+        active.push_back(vertex);
+        dfs.push_back({vertex, 0});
+    };
+    for (const int root : sources) {
+        if (distance[root] == unreachable || order[root] >= 0) continue;
+        discover(root, 0);
+        while (!dfs.empty()) {
+            auto& frame = dfs.back();
+            const int from = frame.vertex;
+            if (frame.edge != graph[from].size()) {
+                const auto& edge = graph[from][frame.edge++];
+#ifndef SKIP_RUNTIME_CHECKS
+                if (!checked[from]) {
+                    if (edge.to < 0 || edge.to >= n)
+                        throw std::out_of_range("BellmanFord: invalid destination vertex");
+                    if (edge.w < -1'000'000'000 || edge.w > 1'000'000'000)
+                        throw std::out_of_range("BellmanFord: cost must be in [-1e9, 1e9]");
+                }
+#endif
+                if (order[edge.to] < 0) discover(edge.to, tree_distance[from] + edge.w);
+                else if (component[edge.to] < 0) {
+                    low[from] = std::min(low[from], order[edge.to]);
+                    // DFS木上の祖先へ戻る辺で、閉路の重みが負と確定する。
+                    if ((state[edge.to] & 1) && tree_distance[from] + edge.w < tree_distance[edge.to])
+                        state[from] |= 2;
+                }
+            } else {
+                if (low[from] == order[from]) {
+                    const int id = static_cast<int>(boundary.size() - 1);
+                    bool found_negative = false;
+                    for (;;) {
+                        const int vertex = active.back(); active.pop_back();
+                        component[vertex] = id;
+                        found_negative |= (state[vertex] & 2) != 0;
+                        members.push_back(vertex);
+                        if (vertex == from) break;
+                    }
+                    boundary.push_back(members.size());
+                    negative_component.push_back(found_negative);
+                }
+#ifndef SKIP_RUNTIME_CHECKS
+                checked[from] = 1;
+#endif
+                state[from] &= 2;
+                dfs.pop_back();
+                if (!dfs.empty()) low[dfs.back().vertex] = std::min(low[dfs.back().vertex], low[from]);
+            }
+        }
+    }
+    const auto mark = [&](int vertex) {
+        if (distance[vertex] != lower_bound) {
+            negative.push_back(vertex);
+            distance[vertex] = lower_bound;
+        }
+    };
+    for (std::size_t block = boundary.size() - 1; block != 0; --block) {
+        const int id = static_cast<int>(block - 1);
+        const auto first = boundary[block - 1], last = boundary[block], size = last - first;
+        bool affected = negative_component[id] != 0, ring = true;
+        for (auto position = first; position != last; ++position) {
+            const int from = members[position];
+            affected |= distance[from] == lower_bound;
+            if (graph[from].size() != 1 || component[graph[from].front().to] != id) ring = false;
+        }
+        if (!affected && ring) {
+            int from = members[first];
+            for (std::size_t step = 0; step < 2 * size; ++step) {
+                const auto& edge = graph[from].front();
+                if (distance[from] != unreachable)
+                    distance[edge.to] = std::min(distance[edge.to], distance[from] + edge.w);
+                from = edge.to;
+            }
+        } else if (!affected && size > 1) {
+            std::vector<int> next;
+            active.clear();
+            for (auto position = first; position != last; ++position) {
+                const int from = members[position];
+                order[from] = distance[from] != unreachable;
+                if (order[from]) active.push_back(from);
+            }
+            bool converged = false;
+            for (std::size_t pass = 1; pass < std::min(size, std::size_t{8}); ++pass) {
+                for (const int from : active) {
+                    order[from] = 0;
+                    for (const auto& edge : graph[from]) {
+                        if (component[edge.to] != id) continue;
+                        const auto candidate = distance[from] + edge.w;
+                        if (candidate < distance[edge.to]) {
+                            if (candidate <= lower_bound) { affected = true; break; }
+                            distance[edge.to] = candidate;
+                            if (!order[edge.to]) {
+                                next.push_back(edge.to);
+                                order[edge.to] = 1;
+                            }
+                        }
+                    }
+                    if (affected) break;
+                }
+                if (affected) break;
+                if (next.empty()) { converged = true; break; }
+                active.swap(next);
+                next.clear();
+            }
+            if (!affected && !converged && size > 8) {
+                // 少数回で収束する成分の順序は保ち、残りだけ反転する。
+                std::reverse(active.begin(), active.end());
+                // Tarjanで使い終えた配列を前駆頂点へ転用する。
+                for (auto position = first; position != last; ++position) low[members[position]] = -1;
+                std::size_t cycle_budget = size;
+                for (std::size_t pass = 8; pass < size; ++pass) {
+                    for (const int from : active) {
+                        order[from] = 0;
+                        for (const auto& edge : graph[from]) {
+                            if (component[edge.to] != id) continue;
+                            const auto candidate = distance[from] + edge.w;
+                            if (candidate < distance[edge.to]) {
+                                if (candidate <= lower_bound) { affected = true; break; }
+                                distance[edge.to] = candidate;
+                                low[edge.to] = from;
+                                if (cycle_budget != 0) --cycle_budget;
+                                if (!order[edge.to]) {
+                                    next.push_back(edge.to);
+                                    order[edge.to] = 1;
+                                }
+                            }
+                        }
+                        if (affected) break;
+                    }
+                    if (affected) break;
+                    if (next.empty()) { converged = true; break; }
+                    // 厳密な緩和で得た前駆閉路は負。検出費用は緩和回数に応じて抑える。
+                    if (cycle_budget == 0) {
+                        for (auto position = first; position != last; ++position) state[members[position]] = 0;
+                        for (auto position = first; position != last; ++position) {
+                            const int root = members[position];
+                            int at = root;
+                            while (low[at] >= 0 && state[at] == 0) { state[at] = 1; at = low[at]; }
+                            if (low[at] >= 0 && state[at] == 1) { affected = true; break; }
+                            at = root;
+                            while (low[at] >= 0 && state[at] == 1) { state[at] = 2; at = low[at]; }
+                        }
+                        cycle_budget = size;
+                        if (affected) break;
+                    }
+                    active.swap(next);
+                    next.clear();
+                }
+            }
+            if (!affected && !converged) {
+                for (auto position = first; position != last; ++position) {
+                    const int from = members[position];
+                    if (distance[from] == unreachable) continue;
+                    for (const auto& edge : graph[from])
+                        if (component[edge.to] == id && distance[from] + edge.w < distance[edge.to]) affected = true;
+                }
+            }
+        }
+        if (affected)
+            for (auto position = first; position != last; ++position) mark(members[position]);
+        for (auto position = first; position != last; ++position) {
+            const int from = members[position];
+            if (distance[from] == unreachable) continue;
+            for (const auto& edge : graph[from]) {
+                if (component[edge.to] == id) continue;
+                if (affected) mark(edge.to);
+                else {
+                    const auto candidate = distance[from] + edge.w;
+                    if (candidate < distance[edge.to]) {
+                        if (candidate <= lower_bound) mark(edge.to);
+                        else distance[edge.to] = candidate;
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+// 反復1回の仕事量が大きい場合だけ成分分解を再試行する。
+#if defined(__GNUC__) || defined(__clang__)
+[[gnu::noinline, gnu::cold]]
+#endif
+inline bool BellmanFordNeedsComponents(const WGraph& graph, std::span<const int> frontier) {
+    if (frontier.size() >= std::max(std::size_t{64}, graph.size() / 16)) return true;
+    auto budget = graph.size();
+    for (const int from : frontier) {
+        const auto degree = graph[from].size();
+        if (degree >= budget) return true;
+        budget -= degree;
+    }
+    return false;
+}
+
+// 3パス目以降は距離が更新された始点だけを次のパスへ送る。
+// 1パスで各頂点を高々1回処理するので、時間上限O(VE)を保つ。
+// 戻り値は0: 未収束、1: 収束、2: 成分処理で負影響も伝播済み。
+#if defined(__GNUC__) || defined(__clang__)
+[[gnu::noinline]]
+#endif
+inline int BellmanFordContinue(const WGraph& graph, std::span<const int> sources,
     std::vector<std::int64_t>& distance, std::int64_t unreachable, std::int64_t lower_bound,
     std::vector<int>& negative
 #ifndef SKIP_RUNTIME_CHECKS
@@ -59,6 +280,8 @@ inline bool BellmanFordContinue(const WGraph& graph, std::span<const int> source
 #endif
 ) {
     const int n = static_cast<int>(graph.size());
+    // 単純路の非終端頂点は出辺あり頂点に限られ、辺数はその個数以下。
+    const int round_limit = sources.size() < graph.size() ? static_cast<int>(sources.size()) + 1 : n;
     std::vector<int> frontier, next;
     std::vector<std::uint8_t> scheduled(graph.size(), 0);
     for (const int from : sources) if (distance[from] != unreachable) {
@@ -92,7 +315,43 @@ inline bool BellmanFordContinue(const WGraph& graph, std::span<const int> source
             }
         }
     };
-    for (int pass = 3; pass < n; ++pass) {
+    // 少数回で収束する場合と更新頂点が少ない場合は、通常の反復を保つ。
+    constexpr int component_pass = 16;
+    std::size_t previous_frontier = 0;
+    for (int pass = 3; pass < std::min(round_limit, component_pass); ++pass) {
+        previous_frontier = frontier.size();
+        for (const int from : frontier) {
+            scheduled[from] = 0;
+#ifndef SKIP_RUNTIME_CHECKS
+            if (!checked[from]) {
+                process(from, std::true_type{});
+                checked[from] = 1;
+            } else
+#endif
+                process(from, std::false_type{});
+        }
+        if (next.empty()) return true;
+        frontier.swap(next);
+        next.clear();
+    }
+    if (round_limit > component_pass && frontier.size() >= previous_frontier &&
+        frontier.size() >= std::max(std::size_t{64}, graph.size() / 16)) {
+        BellmanFordComponents(graph, sources, distance, unreachable, lower_bound, negative
+#ifndef SKIP_RUNTIME_CHECKS
+            , checked
+#endif
+        );
+        return 2;
+    }
+    for (int pass = component_pass; pass < round_limit; ++pass) {
+        if (pass == 64 && BellmanFordNeedsComponents(graph, frontier)) [[unlikely]] {
+            BellmanFordComponents(graph, sources, distance, unreachable, lower_bound, negative
+#ifndef SKIP_RUNTIME_CHECKS
+                , checked
+#endif
+            );
+            return 2;
+        }
         for (const int from : frontier) {
             scheduled[from] = 0;
 #ifndef SKIP_RUNTIME_CHECKS
@@ -251,8 +510,10 @@ inline bool BellmanFordImpl(const WGraph &graph, std::vector<std::int64_t> &dist
         }
     };
     const bool use_active = UseActive && sources.size() >= 64;
-    const int pass_limit = use_active ? std::min(n, 3) : n;
-    bool converged = false;
+    // 初期パス数も、出辺あり頂点から得た上限で制限する。
+    const int pass_limit = use_active ? std::min(n, 3) :
+        (sources.size() < graph.size() ? static_cast<int>(sources.size()) + 1 : n);
+    int converged = 0;
     for (int pass = 1; pass < pass_limit; ++pass)
     {
         bool changed = false;
@@ -275,6 +536,12 @@ inline bool BellmanFordImpl(const WGraph &graph, std::vector<std::int64_t> &dist
             converged = true;
             break;
         }
+    }
+
+    // 出辺を持つ頂点が始点だけなら、閉路は自己辺に限られる。
+    if (sources.size() == 1 && n > 1) {
+        if (distance[start_index] < 0) mark_negative(start_index);
+        converged = true;
     }
 
     if constexpr (UseActive) {
@@ -313,10 +580,11 @@ inline bool BellmanFordImpl(const WGraph &graph, std::vector<std::int64_t> &dist
             }
         }
     }
-    // 到達可能な頂点の辺は検査済み。距離を加算せず、負閉路の影響を伝播する。
-    for (std::size_t head = 0; head < queue.size(); ++head)
-        for (const auto &edge : graph[queue[head]])
-            mark_negative(edge.to);
+    // 成分処理が完了した場合は負影響も伝播済み。それ以外だけ辺をたどる。
+    if (converged != 2)
+        for (std::size_t head = 0; head < queue.size(); ++head)
+            for (const auto &edge : graph[queue[head]])
+                mark_negative(edge.to);
 
     if constexpr (direct_inf) {
         // n*最大辺重み<INFなら有限距離はINF未満。未到達の変換と範囲走査は不要。

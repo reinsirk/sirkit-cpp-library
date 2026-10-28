@@ -1,6 +1,6 @@
 #define SKIP_RUNTIME_CHECKS
 // Verify: https://judge.yosupo.jp/problem/zalgorithm
-// Submission: https://judge.yosupo.jp/submission/412736
+// Submission: https://judge.yosupo.jp/submission/413371
 
 // Library: String/RollingHash.cpp
 // SPDX-License-Identifier: CC0-1.0
@@ -18,9 +18,16 @@
 // compare(l,r,other,ol,orr): 同じ底の2区間を符号なしバイト辞書順で比較し-1/0/1をO(log(短い方の長さ+1))で返す。
 // 比較にはハッシュ衝突による誤判定の可能性がある。検査有効時は不正な範囲にout_of_range、底・ハッシュにinvalid_argument。
 // assign(s): 現在の底で再構築し容量・利用可能な累乗表を再利用、O(旧長+|s|+1)上界、強い例外保証。clear(): 空へ戻して底・容量を保持、O(旧長+1)上界、noexcept。
+// AVX2対応x86_64では長さ4096以上の構築を並列化。SIRKIT_DISABLE_SIMDで専用処理とCPU判定を除外。
 // 元文字列は保持しない。コピーはO(n+1)で独立、代入は容量を再利用し強い例外保証。ムーブ元は空（自己ムーブ代入は保持）。swapはO(1)。
 
 #include <algorithm>
+#if !defined(SIRKIT_DISABLE_SIMD) && (defined(__GNUC__) || defined(__clang__)) && \
+    defined(__x86_64__) && defined(__SIZEOF_INT128__) && \
+    !defined(SIRKIT_FORCE_STANDARD_ARITHMETIC)
+#include <array>
+#include <immintrin.h>
+#endif
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
@@ -54,6 +61,14 @@ public:
         std::uint64_t power = 1;
         prefixes[0].value = hash;
         powers[0].value = power;
+#if !defined(SIRKIT_DISABLE_SIMD) && (defined(__GNUC__) || defined(__clang__)) && \
+    defined(__x86_64__) && defined(__SIZEOF_INT128__) && \
+    !defined(SIRKIT_FORCE_STANDARD_ARITHMETIC)
+        if (s.size() >= 4096 && can_build_avx2()) {
+            build_blocks_avx2<true>(s, factor, prefixes, powers);
+            return;
+        }
+#endif
 #if defined(__GNUC__) && !defined(__clang__) && defined(__x86_64__) && \
     (!defined(__SIZEOF_INT128__) || defined(SIRKIT_FORCE_STANDARD_ARITHMETIC))
         std::size_t i = 0;
@@ -119,6 +134,18 @@ public:
         std::uint64_t hash = 0;
         prefixes[0].value = hash;
         powers[0].value = 1;
+#if !defined(SIRKIT_DISABLE_SIMD) && (defined(__GNUC__) || defined(__clang__)) && \
+    defined(__x86_64__) && defined(__SIZEOF_INT128__) && \
+    !defined(SIRKIT_FORCE_STANDARD_ARITHMETIC)
+        if (reuse_powers && s.size() >= 4096 && can_build_avx2()) {
+            build_blocks_avx2<false>(s, factor, prefixes, powers);
+            return;
+        }
+        if (!reuse_powers && s.size() >= 4096 && can_build_avx2()) {
+            build_blocks_avx2<true>(s, factor, prefixes, powers);
+            return;
+        }
+#endif
         if (reuse_powers) {
 #if defined(__GNUC__) && !defined(__clang__) && defined(__x86_64__) && \
     (!defined(__SIZEOF_INT128__) || defined(SIRKIT_FORCE_STANDARD_ARITHMETIC))
@@ -311,8 +338,23 @@ public:
         other.check_range(ol, orr);
         check_base(other);
 #endif
-        return r - l == orr - ol &&
-               get_unchecked(l, r) == other.get_unchecked(ol, orr);
+        const std::size_t length = r - l;
+        if (length != orr - ol) return false;
+        if (length == 0) return true;
+        const std::uint64_t start = data_[l].value + modulus - other.data_[ol].value;
+        const std::uint64_t delta = start >= modulus ? start - modulus : start;
+        if (delta == 0) return data_[r].value == other.data_[orr].value;
+        // 開始prefix差の1積だけで2区間のハッシュ差を比較する。
+#if (defined(__GNUC__) || defined(__clang__)) && defined(__SIZEOF_INT128__) && !defined(SIRKIT_FORCE_STANDARD_ARITHMETIC)
+        const __uint128_t product = static_cast<__uint128_t>(delta) * powers_[length].value +
+            (other.data_[orr].value + modulus - data_[r].value);
+        return ((static_cast<std::uint64_t>(product) & modulus) +
+                static_cast<std::uint64_t>(product >> 61)) == modulus;
+#else
+        const std::uint64_t difference = data_[r].value + 5 * modulus -
+            multiply_raw(delta, powers_[length].value) - other.data_[orr].value;
+        return ((difference & modulus) + (difference >> 61)) == modulus;
+#endif
     }
 
     [[nodiscard]] std::size_t lcp(
@@ -342,10 +384,27 @@ public:
         if (common == std::min(length, other_length)) {
             return (length > other_length) - (length < other_length);
         }
-        const std::uint64_t byte = get_unchecked(l + common, l + common + 1);
-        const std::uint64_t other_byte =
-            other.get_unchecked(ol + common, ol + common + 1);
-        return (byte > other_byte) - (byte < other_byte);
+        const Entry* const left = data_.data() + l;
+        const Entry* const right = other.data_.data() + ol;
+        const std::uint64_t start = left[0].value + modulus - right[0].value;
+        const std::uint64_t delta = start >= modulus ? start - modulus : start;
+        // 一致したprefixの次1byteの差だけを1回の乗算で求める。
+        const std::size_t length_next = common + 1;
+#if (defined(__GNUC__) || defined(__clang__)) && defined(__SIZEOF_INT128__) && !defined(SIRKIT_FORCE_STANDARD_ARITHMETIC)
+        const __uint128_t product =
+            static_cast<__uint128_t>(delta) * powers_[length_next].value +
+            (right[length_next].value + modulus - left[length_next].value);
+        const std::uint64_t folded = (static_cast<std::uint64_t>(product) & modulus) +
+            static_cast<std::uint64_t>(product >> 61);
+        if (folded == modulus) return 0;
+        return static_cast<int>((folded >> 60) & 1U) * 2 - 1;
+#else
+        const std::uint64_t difference = left[length_next].value + 5 * modulus -
+            multiply_raw(delta, powers_[length_next].value) - right[length_next].value;
+        const std::uint64_t folded = (difference & modulus) + (difference >> 61);
+        if (folded == modulus) return 0;
+        return 1 - static_cast<int>((folded >> 60) & 1U) * 2;
+#endif
     }
 
 private:
@@ -354,6 +413,90 @@ private:
         // 構築ループで全要素を設定し、不要なゼロ初期化を避ける。
         Entry() noexcept {}
     };
+
+#if !defined(SIRKIT_DISABLE_SIMD) && (defined(__GNUC__) || defined(__clang__)) && \
+    defined(__x86_64__) && defined(__SIZEOF_INT128__) && \
+    !defined(SIRKIT_FORCE_STANDARD_ARITHMETIC)
+    template<bool ComputePower>
+    [[gnu::target("avx2"), gnu::noinline]]
+    static void build_blocks_avx2(std::string_view s, std::uint64_t base, Entry* prefixes, Entry* powers) noexcept {
+        static_assert(sizeof(Entry) == sizeof(std::uint64_t));
+        const auto b2 = multiply(base, base);
+        const auto b3 = multiply(b2, base);
+        const auto b4 = multiply(b2, b2);
+        std::array<std::uint64_t, 256> t1,t2,t3;
+        t1[0] = t2[0] = t3[0] = 0;
+        for (std::size_t c = 1; c < 256; ++c) {
+            t1[c] = add(t1[c - 1], base);
+            t2[c] = add(t2[c - 1], b2);
+            t3[c] = add(t3[c - 1], b3);
+        }
+        // laneは各4文字ブロック内の1〜4文字目に対応する。
+        const auto factors = _mm256_set_epi64x(b4, b3, b2, base);
+        const auto factors_hi = _mm256_srli_epi64(factors, 32);
+        const auto mask61 = _mm256_set1_epi64x(modulus);
+        const auto mask29 = _mm256_set1_epi64x((std::uint64_t{1} << 29) - 1);
+        const auto threshold = _mm256_set1_epi64x(modulus - 1);
+        auto hs = _mm256_setzero_si256();
+        [[maybe_unused]] auto ps = _mm256_set1_epi64x(1);
+        auto hr = hs;
+        [[maybe_unused]] auto pr = ps;
+        std::size_t i = 0;
+        for (; s.size() - i >= 4; i += 4) {
+            const auto c0 = static_cast<unsigned char>(s[i]);
+            const auto c1 = static_cast<unsigned char>(s[i+1]);
+            const auto c2 = static_cast<unsigned char>(s[i+2]);
+            const auto c3 = static_cast<unsigned char>(s[i+3]);
+            const auto u2 = t1[c0] + c1;
+            const auto u3 = (t2[c0] + t1[c1]) + c2;
+            const auto u4 = (t3[c0] + t2[c1]) + (t1[c2] + c3);
+            const auto ht = _mm256_set_epi64x(u4,u3,u2,c0);
+            const auto hhi = _mm256_srli_epi64(hs,32);
+            const auto hlow = _mm256_mul_epu32(hs,factors);
+            const auto hcross = _mm256_add_epi64(_mm256_mul_epu32(hs,factors_hi),_mm256_mul_epu32(hhi,factors));
+            const auto hhigh = _mm256_mul_epu32(hhi,factors_hi);
+            auto hsum = _mm256_add_epi64(_mm256_and_si256(hlow,mask61),_mm256_srli_epi64(hlow,61));
+            hsum = _mm256_add_epi64(hsum,_mm256_slli_epi64(_mm256_and_si256(hcross,mask29),32));
+            hsum = _mm256_add_epi64(hsum,_mm256_srli_epi64(hcross,29));
+            hsum = _mm256_add_epi64(hsum,_mm256_slli_epi64(hhigh,3));
+            hsum = _mm256_add_epi64(hsum,ht);
+            // 文字項を含む和は7p未満。次状態は[0,p+6]で閉じる。
+            const auto hfold = _mm256_add_epi64(_mm256_and_si256(hsum,mask61),_mm256_srli_epi64(hsum,61));
+            hs = _mm256_permute4x64_epi64(hfold,_MM_SHUFFLE(3,3,3,3));
+            hr = _mm256_sub_epi64(hfold,_mm256_and_si256(_mm256_cmpgt_epi64(hfold,threshold),mask61));
+            if constexpr (ComputePower) {
+                const auto phi = _mm256_srli_epi64(ps,32);
+                const auto plow = _mm256_mul_epu32(ps,factors);
+                const auto pcross = _mm256_add_epi64(_mm256_mul_epu32(ps,factors_hi),_mm256_mul_epu32(phi,factors));
+                const auto phigh = _mm256_mul_epu32(phi,factors_hi);
+                auto psum = _mm256_add_epi64(_mm256_and_si256(plow,mask61),_mm256_srli_epi64(plow,61));
+                psum = _mm256_add_epi64(psum,_mm256_slli_epi64(_mm256_and_si256(pcross,mask29),32));
+                psum = _mm256_add_epi64(psum,_mm256_srli_epi64(pcross,29));
+                psum = _mm256_add_epi64(psum,_mm256_slli_epi64(phigh,3));
+                const auto pfold = _mm256_add_epi64(_mm256_and_si256(psum,mask61),_mm256_srli_epi64(psum,61));
+                ps = _mm256_permute4x64_epi64(pfold,_MM_SHUFFLE(3,3,3,3));
+                pr = _mm256_sub_epi64(pfold,_mm256_and_si256(_mm256_cmpgt_epi64(pfold,threshold),mask61));
+            }
+            _mm256_storeu_si256(reinterpret_cast<__m256i*>(prefixes+i+1),hr);
+            if constexpr (ComputePower)
+                _mm256_storeu_si256(reinterpret_cast<__m256i*>(powers+i+1),pr);
+        }
+        auto hash = static_cast<std::uint64_t>(_mm256_extract_epi64(hr,3));
+        [[maybe_unused]] std::uint64_t power = 1;
+        if constexpr (ComputePower) power = static_cast<std::uint64_t>(_mm256_extract_epi64(pr,3));
+        for (; i<s.size();++i) {
+            hash=multiply_add_byte(hash,base,static_cast<unsigned char>(s[i]));
+            if constexpr (ComputePower) power=multiply(power,base);
+            prefixes[i+1].value=hash;
+            if constexpr (ComputePower) powers[i+1].value=power;
+        }
+    }
+
+    static bool can_build_avx2() noexcept {
+        static const bool supported = __builtin_cpu_supports("avx2");
+        return supported;
+    }
+#endif
 
     std::vector<Entry> data_, power_data_;
     std::uint64_t base_;

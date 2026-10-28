@@ -41,6 +41,6 @@ auto [cost, assignment] = model.solve_with_assignment();
 
 ## 検証と資料
 
-Verify は [AtCoder 典型90 040](https://atcoder.jp/contests/typical90/tasks/typical90_an)。main は入力を単一項・含意制約に変換して解くだけとする。公開サンプルに加え、全割当列挙と独立な行列形式の Edmonds–Karp 法を使った補足入力を生成する。この問題で扱わない集合項などは、`Verify/current/tests/project_selection_reference_test.cpp` の独立エネルギー表・境界試験で照合する。
+Verify は [AtCoder 典型90 040](https://atcoder.jp/contests/typical90/tasks/typical90_an)。main は入力を単一項・含意制約に変換して解くだけとする。公開サンプルに加え、全割当列挙と独立な行列形式の Edmonds–Karp 法を使った補足入力を生成する。この問題で扱わない集合項などは、`Verify/current/tests/project_selection_reference_test.cpp` の独立エネルギー表・境界試験で照合する。深い分岐・合流・逆辺による経路変更は `project_selection_deep_flow_test.cpp` で独立な最大流と照合する。
 
-アルゴリズムの参考は [drken の解説](https://drken1215.hatenablog.com/entry/2023/11/24/034300)。由来とライセンス、測定条件・不採用案、今回の検証結果は `Audit/*-project-selection-2026-10-22.json` に記録する。ローカル検証とオンライン提出の状態は区別する。
+アルゴリズムの参考は [drken の解説](https://drken1215.hatenablog.com/entry/2023/11/24/034300)。由来とライセンス、測定条件・不採用案、検証結果は `Audit/` の Project Selection 関連記録を参照。ローカル検証とオンライン提出の状態は区別する。

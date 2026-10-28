@@ -65,3 +65,5 @@ B+木からDenseへの変換はO(m)です。Hashや木の配列再確保にも�
 | `swap(other)` | 寸法・値・確保領域を交換 |
 
 コピーは独立した値を持ち、move・swapは所有領域を移します。`clear`後は保持した形式と領域を再利用します。`reset`では列幅や保持方法に応じて必要な領域を作り直します。
+
+コピー・move・swap・clear/reset後の再利用は、[公開APIの所有権試験](../Verify/current/tests/dynamic_fenwick_2d_ownership_behavior_test.cpp)で点辞書と更新セル集合に照合します。コピー代入中の確保失敗も確認し、保持形式や確保回数を固定しません。

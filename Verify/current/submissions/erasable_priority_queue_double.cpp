@@ -1,6 +1,6 @@
 #define SKIP_RUNTIME_CHECKS
 // Verify: https://judge.yosupo.jp/problem/double_ended_priority_queue
-// Submission: https://judge.yosupo.jp/submission/412316
+// Submission: https://judge.yosupo.jp/submission/413713
 
 // Library: DataStructure/erasable-priority-queue.cpp
 // SPDX-License-Identifier: CC0-1.0
@@ -9,7 +9,7 @@
 //
 // API一覧
 // [ErasablePriorityQueue<T,Minimize>]
-// ErasablePriorityQueue<T, Minimize>: trueなら最小値、falseなら最大値を先頭にする。
+// C++20以降。ErasablePriorityQueue<T, Minimize>: trueなら最小値、falseなら最大値を先頭にする。
 // ErasablePriorityQueue(values): vectorを受け取りO(n)で一括構築する。
 // push(value), push(T&&): 1要素を追加する。O(log H)。
 // emplace(args...): 引数から要素を構築して追加する。O(log H)。
@@ -23,8 +23,10 @@
 // clear(): 全要素と遅延削除を破棄する。O(H)。Hは未回収の削除済み要素も含む保存数。
 // Tの比較は厳密弱順序を満たし、==はその同値関係と一致すること。
 
+#include <algorithm>
 #include <cstddef>
 #include <functional>
+#include <limits>
 #include <optional>
 #include <queue>
 #include <stdexcept>
@@ -120,43 +122,195 @@ public:
     }
 
 private:
+#if defined(__GNUC__) && !defined(__clang__)
+    static constexpr bool four_way = std::is_integral_v<T> &&
+        (std::numeric_limits<T>::digits == 63 || std::numeric_limits<T>::digits == 64);
+#endif
+
+    // 整数用の連続配列を所有し、参照は配列内だけで使う。
     struct Heap : Queue {
-        using Queue::Queue;
         auto& storage() noexcept { return this->c; }
 #if defined(__GNUC__) && !defined(__clang__)
-        void pop() {
-            auto& values = this->c;
-            if (values.size() == 1) {
-                values.pop_back();
-                return;
+        Heap() = default;
+        Heap(typename Queue::value_compare, std::vector<T> values) {
+            this->c = std::move(values);
+            if constexpr (four_way) {
+                const auto count = this->c.size();
+                if (count < 2) return;
+                for (std::size_t i = (count - 2) / 4 + 1; i != 0;) {
+                    --i;
+                    const T value = this->c[i];
+                    restore(this->c.data(), count, i, value);
+                }
+            } else {
+                std::make_heap(this->c.begin(), this->c.end(), this->comp);
             }
-            const T value = values.back();
-            values.pop_back();
-            auto* const data = values.data();
-            const auto count = values.size();
-            std::size_t hole = 0;
+        }
+        // 子の存在を確認した親だけを渡し、4倍する前に容量内と保証する。
+        static std::size_t child(T* data, std::size_t count, std::size_t hole) {
             const auto cmp = typename Queue::value_compare{};
-            while (hole < count / 2) {
-                auto child = hole * 2 + 1;
-                if (child + 1 < count && cmp(data[child], data[child + 1])) ++child;
-                data[hole] = data[child];
-                hole = child;
+            auto best = hole * 4 + 1;
+            const auto remaining = count - best;
+            if (remaining > 1 && cmp(data[best], data[hole * 4 + 2])) best = hole * 4 + 2;
+            if (remaining > 2 && cmp(data[best], data[hole * 4 + 3])) best = hole * 4 + 3;
+            if (remaining > 3 && cmp(data[best], data[hole * 4 + 4])) best = hole * 4 + 4;
+            return best;
+        }
+        static void restore(T* data, std::size_t count, std::size_t hole, T value) {
+            const auto root = hole;
+            const auto cmp = typename Queue::value_compare{};
+            while (count > 1 && hole <= (count - 2) / 4) {
+                const auto best = child(data, count, hole);
+                data[hole] = data[best];
+                hole = best;
             }
-            while (hole != 0) {
-                const auto parent = (hole - 1) / 2;
+            while (hole != root) {
+                const auto parent = (hole - 1) / 4;
                 if (!cmp(data[parent], value)) break;
                 data[hole] = data[parent];
                 hole = parent;
             }
             data[hole] = value;
         }
+        void rise() {
+            auto& values = this->c;
+            const T value = values.back();
+            auto hole = values.size() - 1;
+            const auto cmp = typename Queue::value_compare{};
+            while (hole != 0) {
+                const auto parent = (hole - 1) / 4;
+                if (!cmp(values[parent], value)) break;
+                values[hole] = values[parent];
+                hole = parent;
+            }
+            values[hole] = value;
+        }
+        void push(const T& value) {
+            if constexpr (four_way) { this->c.push_back(value); rise(); }
+            else Queue::push(value);
+        }
+        void push(T&& value) {
+            if constexpr (four_way) { this->c.push_back(std::move(value)); rise(); }
+            else Queue::push(std::move(value));
+        }
+        template <class... Args>
+        void emplace(Args&&... args) {
+            if constexpr (four_way) {
+                this->c.emplace_back(std::forward<Args>(args)...);
+                rise();
+            } else Queue::emplace(std::forward<Args>(args)...);
+        }
+        void pop() {
+            if constexpr (four_way) {
+                auto& values = this->c;
+                const T value = values.back();
+                values.pop_back();
+                if (!values.empty()) restore(values.data(), values.size(), 0, value);
+
+            } else {
+                auto& values = this->c;
+                if (values.size() == 1) {
+                    values.pop_back();
+                    return;
+                }
+                const T value = values.back();
+                values.pop_back();
+                auto* const data = values.data();
+                const auto count = values.size();
+                std::size_t hole = 0;
+                const auto cmp = typename Queue::value_compare{};
+                while (hole < count / 2) {
+                    auto child = hole * 2 + 1;
+                    if (child + 1 < count && cmp(data[child], data[child + 1])) ++child;
+                    data[hole] = data[child];
+                    hole = child;
+                }
+                while (hole != 0) {
+                    const auto parent = (hole - 1) / 2;
+                    if (!cmp(data[parent], value)) break;
+                    data[hole] = data[parent];
+                    hole = parent;
+                }
+                data[hole] = value;
+
+            }
+        }
+#else
+        using Queue::Queue;
 #endif
     };
     using Storage = std::conditional_t<std::is_integral_v<T> && !std::is_same_v<T, bool>,
         Heap, Queue>;
     Storage values_, erased_;
 
-    void pop_pair() {
+#if defined(__GNUC__) && !defined(__clang__)
+    [[gnu::always_inline]]
+    void pop_pair() requires (four_way) {
+        if constexpr (std::is_integral_v<T> && !std::is_same_v<T, bool>) {
+            auto& a = values_.storage();
+            auto& b = erased_.storage();
+            const T last_a = a.back(), last_b = b.back();
+            a.pop_back();
+            b.pop_back();
+            T* const pa = a.data();
+            T* const pb = b.data();
+            const std::size_t na = a.size(), nb = b.size();
+            std::size_t ha = 0, hb = 0;
+            const auto cmp = typename Queue::value_compare{};
+#if defined(__GNUC__) && !defined(__clang__)
+            const auto descend = [](T* data, std::size_t count, std::size_t& hole) {
+                const auto best = Heap::child(data, count, hole);
+                data[hole] = data[best];
+                hole = best;
+            };
+            while (na > 1 && ha <= (na - 2) / 4 && nb > 1 && hb <= (nb - 2) / 4) {
+                descend(pa, na, ha);
+                descend(pb, nb, hb);
+            }
+            while (na > 1 && ha <= (na - 2) / 4) descend(pa, na, ha);
+            while (nb > 1 && hb <= (nb - 2) / 4) descend(pb, nb, hb);
+#else
+            const auto descend = [&cmp](T* data, std::size_t count, std::size_t& hole) {
+                std::size_t child = hole * 2 + 1;
+                if (child + 1 < count && cmp(data[child], data[child + 1])) ++child;
+                data[hole] = data[child];
+                hole = child;
+            };
+            while (ha < na / 2 && hb < nb / 2) {
+                descend(pa, na, ha);
+                descend(pb, nb, hb);
+            }
+            while (ha < na / 2) descend(pa, na, ha);
+            while (hb < nb / 2) descend(pb, nb, hb);
+#endif
+            const auto restore = [&cmp](T* data, std::size_t hole, const T value) {
+                while (hole != 0) {
+#if defined(__GNUC__) && !defined(__clang__)
+                    const std::size_t parent = (hole - 1) / 4;
+#else
+                    const std::size_t parent = (hole - 1) / 2;
+#endif
+                    if (!cmp(data[parent], value)) break;
+                    data[hole] = data[parent];
+                    hole = parent;
+                }
+                data[hole] = value;
+            };
+            if (na != 0) restore(pa, ha, last_a);
+            if (nb != 0) restore(pb, hb, last_b);
+        } else {
+            values_.pop();
+            erased_.pop();
+        }
+    }
+
+#endif
+
+    void pop_pair()
+#if defined(__GNUC__) && !defined(__clang__)
+        requires (!four_way)
+#endif
+    {
         if constexpr (std::is_integral_v<T> && !std::is_same_v<T, bool>) {
             auto& a = values_.storage();
             auto& b = erased_.storage();

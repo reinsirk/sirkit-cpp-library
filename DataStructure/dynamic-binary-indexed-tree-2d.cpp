@@ -61,11 +61,15 @@
 #include <chrono>
 #include <cstddef>
 #include <cstdint>
+#include <cstring>
 #include <limits>
 #include <stdexcept>
 #include <type_traits>
 #include <utility>
 #include <vector>
+#if !defined(SIRKIT_DISABLE_SIMD) && (defined(__i386__) || defined(__x86_64__)) && (defined(__GNUC__) || defined(__clang__))
+#include <immintrin.h>
+#endif
 
 #ifndef SIRKIT_INTERNAL_HASH_MAP_DEFINED
 #define SIRKIT_INTERNAL_HASH_MAP_DEFINED
@@ -108,6 +112,27 @@ class InternalHashMap {
         return std::bit_floor(std::min({keys_.max_size(), values_.max_size(), used_.max_size()}));
     }
 
+    static std::uint32_t occupied8(const std::uint8_t* flags) noexcept {
+        std::uint64_t word;
+        std::memcpy(&word, flags, sizeof(word));
+        if constexpr (std::endian::native == std::endian::big) word = std::byteswap(word);
+        else if constexpr (std::endian::native != std::endian::little) {
+            word = 0;
+            for (unsigned j = 0; j < 8; ++j) word |= std::uint64_t(flags[j]) << (8 * j);
+        }
+        return static_cast<std::uint32_t>((word * UINT64_C(0x0102040810204080)) >> 56);
+    }
+#if !defined(SIRKIT_DISABLE_SIMD) && (defined(__i386__) || defined(__x86_64__)) && (defined(__GNUC__) || defined(__clang__))
+    [[gnu::target("avx2")]] static std::uint32_t occupied32(const std::uint8_t* flags) noexcept {
+        const auto x = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(flags));
+        return ~static_cast<std::uint32_t>(_mm256_movemask_epi8(_mm256_cmpeq_epi8(x, _mm256_setzero_si256())));
+    }
+    static bool supports_avx2() noexcept {
+        static const bool yes = [] { __builtin_cpu_init(); return __builtin_cpu_supports("avx2"); }();
+        return yes;
+    }
+#endif
+
     void rehash(std::size_t capacity) {
         if (salt_ == 0) salt_ = initial_salt();
         if (capacity > max_capacity())
@@ -117,13 +142,57 @@ class InternalHashMap {
         std::vector<Value> values(capacity);
         std::vector<Flag> used(capacity, 0);
         if (size_ != 0) {
-            for (std::size_t i = 0; i < used_.size(); ++i) {
-                if (!used_[i]) continue;
-                std::size_t p = static_cast<std::size_t>((static_cast<std::uint64_t>(keys_[i]) * salt_) >> next_shift);
-                while (used[p]) p = (p + 1) & (capacity - 1);
-                keys[p] = keys_[i];
-                values[p].value = values_[i].value;
-                used[p] = 1;
+            if constexpr (!Packed) {
+                if (used_.size() >= 64) {
+#if !defined(SIRKIT_DISABLE_SIMD) && (defined(__i386__) || defined(__x86_64__)) && (defined(__GNUC__) || defined(__clang__))
+                    if (supports_avx2()) {
+                        for (std::size_t first = 0; first < used_.size(); first += 32) {
+                            auto mask = occupied32(used_.data() + first);
+                            while (mask != 0) {
+                                const std::size_t i = first + std::countr_zero(mask);
+                                mask &= mask - 1;
+                                std::size_t p = static_cast<std::size_t>((static_cast<std::uint64_t>(keys_[i]) * salt_) >> next_shift);
+                                while (used[p]) p = (p + 1) & (capacity - 1);
+                                keys[p] = keys_[i];
+                                values[p].value = values_[i].value;
+                                used[p] = 1;
+                            }
+                        }
+                    } else
+#endif
+                    {
+                        for (std::size_t first = 0; first < used_.size(); first += 8) {
+                            auto mask = occupied8(used_.data() + first);
+                            while (mask != 0) {
+                                const std::size_t i = first + std::countr_zero(mask);
+                                mask &= mask - 1;
+                                std::size_t p = static_cast<std::size_t>((static_cast<std::uint64_t>(keys_[i]) * salt_) >> next_shift);
+                                while (used[p]) p = (p + 1) & (capacity - 1);
+                                keys[p] = keys_[i];
+                                values[p].value = values_[i].value;
+                                used[p] = 1;
+                            }
+                        }
+                    }
+                } else {
+                    for (std::size_t i = 0; i < used_.size(); ++i) {
+                        if (!used_[i]) continue;
+                        std::size_t p = static_cast<std::size_t>((static_cast<std::uint64_t>(keys_[i]) * salt_) >> next_shift);
+                        while (used[p]) p = (p + 1) & (capacity - 1);
+                        keys[p] = keys_[i];
+                        values[p].value = values_[i].value;
+                        used[p] = 1;
+                    }
+                }
+            } else {
+                for (std::size_t i = 0; i < used_.size(); ++i) {
+                    if (!used_[i]) continue;
+                    std::size_t p = static_cast<std::size_t>((static_cast<std::uint64_t>(keys_[i]) * salt_) >> next_shift);
+                    while (used[p]) p = (p + 1) & (capacity - 1);
+                    keys[p] = keys_[i];
+                    values[p].value = values_[i].value;
+                    used[p] = 1;
+                }
             }
         }
         keys_.swap(keys);

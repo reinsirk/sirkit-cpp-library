@@ -1,0 +1,19 @@
+{
+  "date_jst": "2026-10-26",
+  "source": "String/RollingHash.cpp",
+  "source_sha256": "89383bf81bdaea3aa275570b7969b4d4ee93d44bfdc0ed16c6ac62242f5fa484",
+  "license": "CC0-1.0",
+  "method_origin": "既存の自作CC0 RollingHashとその標準32bit部分積式から、2文字ブロック式・4lane SIMD・冗長stateの依存分離を独自に組み立てた。新しい外部C++実装の取得・移植はしていない。",
+  "previous_provenance": "Audit/provenance-rolling-hash-2026-10-22.json",
+  "proof": {
+    "block": "H2=H*B²+c0*B+c1、P2=P*B²。中間のH1,P1も同じH,Pから計算し、全prefix/powerを従来と同じ位置へ書く。",
+    "table": "table[c]=(c*B)mod pをcanonical addで256要素作る。termもaddで[0,p)へ正規化。",
+    "partials": "a=a0+2^32*a1,b=b0+2^32*b1。low=a0*b0,cross=a0*b1+a1*b0,high=a1*b1。2^61=1と2^64=8によりlow,cross,highを64bitの和へ折り返す。",
+    "redundant_bound": "a<=p+4、b<pならa1<=2^29,b1<2^29。cross<2^62、high<<3<p、部分積の折返しとtermの総和<5p<2^64。fold=(sum&p)+(sum>>61)<=p+4で閉じ、同じ剰余を次stateへ渡せる。",
+    "output": "fold<=p+4<2p<2^63なのでAVX2のsigned比較(p-1)が安全。1回減算して[0,p)にしたresultだけを保存し、odd tailへもcanonical resultを渡す。",
+    "memory": "Entryはuint64_t1個でsizeofをstatic_assert。i+2<=nの2文字組だけ16byte storeし、n+1個の構築済みEntry領域へ収める。tableは全要素を使う前に初期化。heapの所有・確保・capacity/overflow保護は変えない。",
+    "exception": "helperとCPU判定は既存の必要なvector確保・resizeの成功後にだけ実行する。helperはnoexceptで新規確保をしない。"
+  },
+  "reference_checks": "cpp_int逐次多項式・加算mod・全バイト・p近傍・state pの長い相殺列・失敗注入を別実装で照合。検証詳細はverify-rolling-hash-round2-2026-10-26.json。",
+  "scope": "数学的同値性と実装の由来を記録する。過去の他実装のライセンスを変更したとするものではない。"
+}

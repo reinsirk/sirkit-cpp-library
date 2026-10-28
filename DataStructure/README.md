@@ -15,14 +15,14 @@ HashMapの削除とiteratorの計算量は[説明](../Document/hash_map.md)、�
 | [Compressed_Binary_Trie.cpp](Compressed_Binary_Trie.cpp) | [Set Xor-Min（圧縮版）](../Verify/current/submissions/compressed_binary_trie.cpp) |
 | [Hash_map.cpp](Hash_map.cpp) | [Associative Array](../Verify/current/submissions/hash_map.cpp) |
 | [Hash_set.cpp](Hash_set.cpp) | [整数追加・検索](../Verify/current/submissions/hash_set_membership.cpp)・[追加・削除](../Verify/current/submissions/hash_set_toggle.cpp)・[文字列](../Verify/current/submissions/hash_set_strings.cpp) |
-| [Node.cpp](Node.cpp) | [Node 独立ローカル検査](../Verify/current/submissions/node_local.cpp) |
+| [Node.cpp](Node.cpp) | [Takahashi's Secret](../Verify/current/submissions/node_reachable.cpp)・[独立ローカル検査](../Verify/current/submissions/node_local.cpp) |
 | [dynamic-binary-indexed-tree-2d.cpp](dynamic-binary-indexed-tree-2d.cpp) | [Point Add Rectangle Sum](../Verify/current/submissions/dynamic_fenwick_2d_rectangle.cpp) |
 | [dynamic-binary-indexed-tree.cpp](dynamic-binary-indexed-tree.cpp) | [Point Add Range Sum](../Verify/current/submissions/dynamic_fenwick_range.cpp) |
 | [dynamic-li-chao-tree.cpp](dynamic-li-chao-tree.cpp) | [Segment Add Get Min](../Verify/current/submissions/dynamic_lichao_segment.cpp) |
 | [dynamic-union-find.cpp](dynamic-union-find.cpp) | [Disjoint Set: Union Find Tree](../Verify/current/submissions/dynamic_union_find.cpp) |
 | [erasable-priority-queue.cpp](erasable-priority-queue.cpp) | [Double-Ended Priority Queue](../Verify/current/submissions/erasable_priority_queue_double.cpp) |
 | [heap.cpp](heap.cpp) | [Prefix K-th Max](../Verify/current/submissions/heap_priority_queue.cpp)・[説明](../Document/heap.md) |
-| [implicit_treap.cpp](implicit_treap.cpp) | [区間アフィン作用・和](../Verify/current/submissions/implicit_treap_affine.cpp)・[両端操作・関数合成](../Verify/current/submissions/implicit_treap_deque.cpp) |
+| [implicit_treap.cpp](implicit_treap.cpp) | [区間アフィン作用・和](../Verify/current/submissions/implicit_treap_affine.cpp)・[両端操作・関数合成](../Verify/current/submissions/implicit_treap_deque.cpp)・[ID指定の挿入・区間削除](../Verify/current/submissions/implicit_treap_erase_between.cpp) |
 | [line-container-2d.cpp](line-container-2d.cpp) | [Line Add Get Min](../Verify/current/submissions/line_container_2d_min.cpp) |
 | [line-container.cpp](line-container.cpp) | [Line Add Get Min](../Verify/current/submissions/line_container_min.cpp) |
 | [persistent-union-find.cpp](persistent-union-find.cpp) | [Persistent Unionfind](../Verify/current/submissions/persistent_union_find.cpp) |

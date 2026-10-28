@@ -10,7 +10,7 @@
 // C++20以降。重複を許す非負整数の二分トライ。T は bool / const / volatile を除く整数型。
 // キーと XOR マスクは 0 <= x < 2^(MAX_LOG + 1)。MAX_LOG は最高位ビット番号。
 // MAX_LOGの既定値はstd::numeric_limits<T>::digits - 1。第2テンプレート引数で手動指定も可。
-// NODES は根込みのノード上限。以下 B = MAX_LOG + 1。
+// NODES は根込みの仮想二分ノード数の上限。内部は最大2bitずつ分岐する。以下 B = MAX_LOG + 1。
 // SKIP_RUNTIME_CHECKS を定義すると入力検査を省く。容量保護は常に有効。
 // get_kth は重複込み・1始まり。ID は重複可、-1 は匿名（ID一覧には含めない）。
 // ID省略の削除は匿名を優先し、なければ任意のID付き要素を削除する。
@@ -74,8 +74,9 @@ public:
 private:
     using U = std::make_unsigned_t<T>;
     static constexpr size_type kBits = MAX_LOG + 1;
+    static constexpr size_type kLevels = (kBits + 1) / 2;
     static constexpr size_type kBlockSize = 8192;
-    static constexpr size_type kInitialNodes = std::min(size_type{4096}, NODES);
+    static constexpr size_type kInitialNodes = std::min(size_type{2048}, NODES);
 
     // 内部では子、葉ではID枠への非所有参照を保持する。
     struct Node
@@ -83,14 +84,14 @@ private:
         struct IdData { Container *ptr; size_type slot; }; // ptrはID枠内への非所有ポインタ。
         union Data
         {
-            Node *child[2]; // ノードブロック内への非所有ポインタ。
+            Node *child[4]; // ノードブロック内への非所有ポインタ。
             IdData ids;
-            Data() noexcept : child{nullptr, nullptr} {}
+            Data() noexcept : child{nullptr, nullptr, nullptr, nullptr} {}
         } data;
         size_type count = 0;
     };
-    // 初4096ノードは従来の配置を保ち、以降のノードを小型化する。
-    struct InitialNode : Node { size_type padding = 0; };
+    // 最初の最大2048ノードもブロックとして所有する。
+    using InitialNode = Node;
     struct InitialBlock { size_type padding = 0; std::array<InitialNode, kInitialNodes> nodes; };
 
     // ID配列本体もブロックで所有し、拡張時の参照を維持する。
@@ -135,6 +136,7 @@ private:
     Node *free_list_ = nullptr;
     Node *root_ = nullptr;
     U lazy_ = 0;
+    size_type virtual_nodes_ = 1;
     std::unique_ptr<InitialBlock> initial_;
     std::array<IdSlot, kInitialIdSlots> initial_ids_;
     std::vector<std::unique_ptr<IdSlot[]>> id_blocks_;
@@ -148,7 +150,7 @@ private:
         {
             Node *node = free_list_;
             free_list_ = node->data.child[0];
-            node->data.child[0] = node->data.child[1] = nullptr;
+            for (auto &child : node->data.child) child = nullptr;
             return node;
         }
         if (next_unused_ == capacity_)
@@ -166,71 +168,6 @@ private:
         const auto offset = index - kInitialNodes;
         return &blocks_[offset / kBlockSize + 1][offset % kBlockSize];
     }
-
-#if defined(__GNUC__) && !defined(__clang__) && defined(SKIP_RUNTIME_CHECKS)
-    template<class N>
-    static void link_chunk(N *nodes, size_type count, U key,
-                           std::array<Node *, kBits + 1> &path, size_type &depth,
-                           Node *&previous, size_type &last_new) noexcept
-    {
-        if (previous)
-            previous->data.child[bit(key, MAX_LOG - static_cast<int>(depth - 1))] = nodes;
-        if (count > 1)
-        {
-            U remaining = static_cast<U>(key << (std::numeric_limits<U>::digits - kBits + depth));
-            for (size_type j = 0; j + 1 < count; ++j)
-            {
-                path[depth] = nodes + j;
-                const auto b = static_cast<unsigned>(remaining >> (std::numeric_limits<U>::digits - 1));
-                nodes[j].data.child[b] = nodes + j + 1;
-                remaining = static_cast<U>(remaining << 1);
-                ++depth;
-            }
-        }
-        path[depth++] = nodes + count - 1;
-        previous = nodes + count - 1;
-        last_new = depth - 1;
-    }
-    void acquire_suffix(U key, std::array<Node *, kBits + 1> &path,
-                        size_type first, size_type &last_new)
-    {
-        size_type depth = first;
-        Node *previous = nullptr;
-        while (depth <= kBits && free_list_)
-        {
-            Node *node = free_list_;
-            free_list_ = node->data.child[0];
-            node->data.child[0] = node->data.child[1] = nullptr;
-            if (previous)
-                previous->data.child[bit(key, MAX_LOG - static_cast<int>(depth - 1))] = node;
-            path[depth] = node;
-            previous = node;
-            last_new = depth++;
-        }
-        while (depth <= kBits)
-        {
-            if (next_unused_ == capacity_)
-            {
-                if (capacity_ == NODES) throw std::length_error("BinaryTrie: node limit exceeded");
-                const auto n = std::min(kBlockSize, NODES - capacity_);
-                blocks_.push_back(std::make_unique<Node[]>(n));
-                capacity_ += n;
-            }
-            const auto count = std::min(kBits - depth + 1, capacity_ - next_unused_);
-            const auto index = next_unused_;
-            next_unused_ += count;
-            if (index < kInitialNodes)
-                link_chunk(&initial_->nodes[index], count, key, path, depth, previous, last_new);
-            else
-            {
-                const auto offset = index - kInitialNodes;
-                link_chunk(&blocks_[offset / kBlockSize + 1][offset % kBlockSize],
-                           count, key, path, depth, previous, last_new);
-            }
-        }
-    }
-
-#endif
 
     // ノードを初期化して再利用リストへ戻す。子の回収は呼び出し側で行う。
     void release_node(Node *node, bool leaf) noexcept
@@ -272,119 +209,150 @@ private:
 #endif
     }
 
-    // 下から i 番目のビットを取り出す（0 <= i <= MAX_LOG）。
-    static unsigned bit(U x, int i) noexcept
+    static constexpr unsigned width(size_type depth) noexcept
     {
-        return static_cast<unsigned>((x >> i) & U{1});
+        return depth == 1 && kBits % 2 != 0 ? 1u : 2u;
     }
-
-    // 読み取り専用のID一覧を返す。ノードやIDがなければ空配列。
+    static constexpr size_type shift(size_type depth) noexcept
+    {
+        return 2 * (kLevels - depth);
+    }
+    static unsigned digit(U key, size_type depth) noexcept
+    {
+        return static_cast<unsigned>((key >> shift(depth)) & (width(depth) == 1 ? U{1} : U{3}));
+    }
     static const Container &ids_of(const Node *node) noexcept
     {
         static constexpr Container empty;
         return node && node->data.ids.ptr ? *node->data.ids.ptr : empty;
     }
-
-    // 内部キー（公開キー ^ lazy_）の葉を探す。未登録なら nullptr。
-    const Node *find_leaf(U stored_key) const noexcept
+    const Node *find_leaf(U key) const noexcept
     {
         const Node *node = root_;
-        for (int i = MAX_LOG; i >= 0 && node; --i)
-        {
-            node = node->data.child[bit(stored_key, i)];
-        }
+        for (size_type depth = 1; depth <= kLevels && node; ++depth)
+            node = node->data.child[digit(key, depth)];
         return node;
     }
-
-    // XOR反映後の最小値・最大値を選ぶ共通処理（O(B)）。
-    ElementResult extreme(bool maximum) const
-    {
-#ifndef SKIP_RUNTIME_CHECKS
-        if (empty())
-        {
-            throw std::out_of_range("BinaryTrie: min/max of an empty trie");
-        }
-#endif
-        const Node *node = root_;
-        U value = 0;
-        for (int i = MAX_LOG; i >= 0; --i)
-        {
-            const unsigned logical_bit = static_cast<unsigned>(maximum);
-            const unsigned preferred = bit(lazy_, i) ^ logical_bit;
-#if defined(__clang__)
-            const Node *next = node->data.child[preferred];
-            const bool missing = next == nullptr;
-            value |= static_cast<U>(missing ^ maximum) << i;
-            node = next ? next : node->data.child[preferred ^ 1u];
-#else
-            const bool available = node->data.child[preferred] != nullptr;
-            const unsigned chosen = available ? preferred : (preferred ^ 1u);
-            if ((chosen ^ bit(lazy_, i)) != 0)
-                value |= U{1} << i;
-            node = node->data.child[chosen];
-#endif
-        }
-        return {static_cast<T>(value), ids_of(node)};
-    }
-
-    // lazy_と問い合わせ用XORをまとめて、XOR値の最小・最大を求める。
     ElementResult xor_extreme(U mask, bool maximum) const
     {
 #ifndef SKIP_RUNTIME_CHECKS
-        if (empty())
-            throw std::out_of_range("BinaryTrie: min/max XOR of an empty trie");
+        if (empty()) throw std::out_of_range("BinaryTrie: min/max XOR of an empty trie");
 #endif
         const Node *node = root_;
         U value = 0;
-        for (int i = MAX_LOG; i >= 0; --i)
+        // 1要素なら物理キーの経路が確定し、照会マスクで分岐を変えなくてよい。
+        if (node->count == 1) {
+            for (size_type depth = 1; depth <= kLevels; ++depth) {
+                unsigned d = 0;
+                if (!node->data.child[0]) {
+                    if (node->data.child[1]) d = 1;
+                    else if (node->data.child[2]) d = 2;
+                    else d = 3;
+                }
+                value |= static_cast<U>(d) << shift(depth);
+                node = node->data.child[d];
+            }
+            return {static_cast<T>(value ^ mask), ids_of(node)};
+        }
+        for (size_type depth = 1; depth <= kLevels; ++depth)
         {
-            const unsigned zero = bit(mask, i);
-            const unsigned preferred = zero ^ static_cast<unsigned>(maximum);
-            const unsigned chosen = node->data.child[preferred] ? preferred : (preferred ^ 1u);
-#if defined(__clang__)
-            value = (value << 1) | static_cast<U>(chosen ^ zero);
-#else
-            if ((chosen ^ zero) != 0)
-                value |= U{1} << i;
-#endif
-            node = node->data.child[chosen];
+            const unsigned last = width(depth) == 1 ? 1u : 3u;
+            const unsigned preferred = digit(mask, depth) ^ (maximum ? last : 0u);
+            unsigned offset = 0;
+            if (!node->data.child[preferred])
+            {
+                if (node->data.child[preferred ^ 1u]) offset = 1;
+                else if (node->data.child[preferred ^ 2u]) offset = 2;
+                else offset = 3;
+            }
+            value |= static_cast<U>(offset ^ (maximum ? last : 0u)) << shift(depth);
+            node = node->data.child[preferred ^ offset];
         }
         return {static_cast<T>(value), ids_of(node)};
     }
-
-    // XOR後の値が上限未満となる個数。型幅以上のシフトを使わず上限を扱う。
-    template <class Bound>
+    ElementResult extreme(bool maximum) const
+    {
+        return xor_extreme(lazy_, maximum);
+    }
+    template<class Bound>
     size_type xor_count_less(U mask, Bound upper) const noexcept
     {
         static_assert(std::is_integral_v<Bound>, "upper must be an integer");
-        if constexpr (std::is_signed_v<Bound>)
-        {
-            if (upper <= 0)
-                return 0;
-        }
+        if constexpr (std::is_signed_v<Bound>) if (upper <= 0) return 0;
         const auto limit = static_cast<std::uintmax_t>(upper);
-        if (limit == 0)
-            return 0;
-        if ((limit >> MAX_LOG) > std::uintmax_t{1})
-            return size();
+        if (!limit) return 0;
+        if ((limit >> MAX_LOG) > std::uintmax_t{1}) return size();
         const U bound = static_cast<U>(limit);
         const Node *node = root_;
         size_type result = 0;
-        for (int i = MAX_LOG; i >= 0 && node; --i)
+        for (size_type depth = 1; depth <= kLevels && node; ++depth)
         {
-            const unsigned zero = bit(mask, i);
-            if (bit(bound, i) != 0)
-            {
-                if (const Node *left = node->data.child[zero])
-                    result += left->count;
-                node = node->data.child[zero ^ 1u];
-            }
-            else
-            {
-                node = node->data.child[zero];
-            }
+            const unsigned zero = digit(mask, depth);
+            const unsigned n = digit(bound, depth);
+            for (unsigned d = 0; d < n; ++d)
+                if (const Node *child = node->data.child[zero ^ d]) result += child->count;
+            node = node->data.child[zero ^ n];
         }
         return result;
+    }
+
+    bool insert(T x, int id, bool unique)
+    {
+        const U key = checked_key(x) ^ lazy_;
+        if (size() == std::numeric_limits<size_type>::max())
+        {
+            if (unique && find_leaf(key)) return false;
+            throw std::overflow_error("BinaryTrie: element count overflow");
+        }
+        std::array<Node *, kLevels + 1> path;
+        path[0] = root_;
+        size_type first_new = 0, last_new = 0, added_virtual = 0;
+        try
+        {
+            for (size_type depth = 1; depth <= kLevels; ++depth)
+            {
+                const auto d = digit(key, depth);
+                Node *child = path[depth - 1]->data.child[d];
+                if (!child)
+                {
+                    if (!first_new)
+                    {
+                        // 未接続suffixの二分ノード数。ペアの上位bitを共有する場合だけ1減らす。
+                        added_virtual = shift(depth) + width(depth);
+                        if (width(depth) == 2 && path[depth - 1]->data.child[d ^ 1u]) --added_virtual;
+                        if (added_virtual > NODES - virtual_nodes_)
+                            throw std::length_error("BinaryTrie: node limit exceeded");
+                    }
+                    child = acquire_node();
+                    if (!first_new) first_new = depth;
+                    else path[depth - 1]->data.child[d] = child;
+                    last_new = depth;
+                }
+                path[depth] = child;
+            }
+            if (unique && !first_new) return false;
+            Node *leaf = path[kLevels];
+            if (first_new) leaf->data.ids.ptr = nullptr;
+            if (id != -1)
+            {
+                if (leaf->data.ids.ptr) leaf->data.ids.ptr->push_back(id);
+                else append_id(leaf, id);
+            }
+        }
+        catch (...)
+        {
+            if (first_new)
+                for (size_type depth = last_new; depth >= first_new; --depth)
+                    release_node(path[depth], depth == kLevels);
+            throw;
+        }
+        if (first_new)
+        {
+            path[first_new - 1]->data.child[digit(key, first_new)] = path[first_new];
+            virtual_nodes_ += added_virtual;
+        }
+        for (Node *node : path) ++node->count;
+        return true;
     }
 
 public:
@@ -404,204 +372,40 @@ public:
     [[nodiscard]] size_type size() const noexcept { return root_->count; }
     [[nodiscard]] bool empty() const noexcept { return size() == 0; }
 
-    void add(T x, int id = -1)
-    {
-        const U key = checked_key(x) ^ lazy_;
-        if (size() == std::numeric_limits<size_type>::max())
-        {
-            throw std::overflow_error("BinaryTrie: element count overflow");
-        }
-        std::array<Node *, kBits + 1> path;
-        path[0] = root_;
-        size_type first_new = 0;
-        size_type last_new = 0;
-        try
-        {
-            for (size_type depth = 1; depth <= kBits; ++depth)
-            {
-                const unsigned b = bit(key, MAX_LOG - static_cast<int>(depth - 1));
-                Node *child = path[depth - 1]->data.child[b];
-                if (!child)
-                {
-#if defined(__GNUC__) && !defined(__clang__) && defined(SKIP_RUNTIME_CHECKS)
-                    first_new = depth;
-                    acquire_suffix(key, path, depth, last_new);
-                    break;
-#else
-                    child = acquire_node();
-                    if (!first_new)
-                    {
-                        first_new = depth; // 成功するまで新しい部分木を接続しない。
-                    }
-                    else
-                    {
-                        path[depth - 1]->data.child[b] = child;
-                    }
-                    last_new = depth;
-#endif
-                }
-                path[depth] = child;
-            }
-            Node *leaf = path[kBits];
-            if (first_new) leaf->data.ids.ptr = nullptr;
-            if (id != -1)
-            {
-                if (leaf->data.ids.ptr) leaf->data.ids.ptr->push_back(id);
-                else append_id(leaf, id);
-            }
-        }
-        catch (...)
-        {
-            if (first_new)
-            {
-                for (size_type depth = last_new; depth >= first_new; --depth)
-                {
-                    release_node(path[depth], depth == kBits);
-                }
-            }
-            throw;
-        }
-        if (first_new)
-        {
-            const auto b = bit(key, MAX_LOG - static_cast<int>(first_new - 1));
-            path[first_new - 1]->data.child[b] = path[first_new];
-        }
-#if defined(__GNUC__) && !defined(__clang__) && defined(SKIP_RUNTIME_CHECKS)
-        size_type depth = 0;
-        for (; depth + 4 <= kBits + 1; depth += 4)
-        {
-            ++path[depth + 0]->count;
-            ++path[depth + 1]->count;
-            ++path[depth + 2]->count;
-            ++path[depth + 3]->count;
-        }
-        for (; depth <= kBits; ++depth)
-            ++path[depth]->count;
-#else
-        for (Node *node : path)
-            ++node->count;
-#endif
-    }
-
-    bool insert_unique(T x, int id = -1)
-    {
-        const U key = checked_key(x) ^ lazy_;
-        if (size() == std::numeric_limits<size_type>::max())
-        {
-            if (find_leaf(key)) return false;
-            throw std::overflow_error("BinaryTrie: element count overflow");
-        }
-        std::array<Node *, kBits + 1> path;
-        path[0] = root_;
-        size_type first_new = 0;
-        size_type last_new = 0;
-        try
-        {
-            for (size_type depth = 1; depth <= kBits; ++depth)
-            {
-                const unsigned b = bit(key, MAX_LOG - static_cast<int>(depth - 1));
-                Node *child = path[depth - 1]->data.child[b];
-                if (!child)
-                {
-#if defined(__GNUC__) && !defined(__clang__) && defined(SKIP_RUNTIME_CHECKS)
-                    first_new = depth;
-                    acquire_suffix(key, path, depth, last_new);
-                    break;
-#else
-                    child = acquire_node();
-                    if (!first_new)
-                    {
-                        first_new = depth; // 成功するまで新しい部分木を接続しない。
-                    }
-                    else
-                    {
-                        path[depth - 1]->data.child[b] = child;
-                    }
-                    last_new = depth;
-#endif
-                }
-                path[depth] = child;
-            }
-            if (!first_new) return false;
-            Node *leaf = path[kBits];
-            if (first_new) leaf->data.ids.ptr = nullptr;
-            if (id != -1)
-            {
-                if (leaf->data.ids.ptr) leaf->data.ids.ptr->push_back(id);
-                else append_id(leaf, id);
-            }
-        }
-        catch (...)
-        {
-            if (first_new)
-            {
-                for (size_type depth = last_new; depth >= first_new; --depth)
-                {
-                    release_node(path[depth], depth == kBits);
-                }
-            }
-            throw;
-        }
-        if (first_new)
-        {
-            const auto b = bit(key, MAX_LOG - static_cast<int>(first_new - 1));
-            path[first_new - 1]->data.child[b] = path[first_new];
-        }
-#if defined(__GNUC__) && !defined(__clang__) && defined(SKIP_RUNTIME_CHECKS)
-        size_type depth = 0;
-        for (; depth + 4 <= kBits + 1; depth += 4)
-        {
-            ++path[depth + 0]->count;
-            ++path[depth + 1]->count;
-            ++path[depth + 2]->count;
-            ++path[depth + 3]->count;
-        }
-        for (; depth <= kBits; ++depth)
-            ++path[depth]->count;
-#else
-        for (Node *node : path)
-            ++node->count;
-#endif
-        return true;
-    }
+    void add(T x, int id = -1) { static_cast<void>(insert(x, id, false)); }
+    bool insert_unique(T x, int id = -1) { return insert(x, id, true); }
 
     bool del(T x, int id = -1)
     {
         const U key = checked_key(x) ^ lazy_;
-        std::array<Node *, kBits + 1> path;
+        std::array<Node *, kLevels + 1> path;
         path[0] = root_;
-        for (size_type depth = 1; depth <= kBits; ++depth)
+        for (size_type depth = 1; depth <= kLevels; ++depth)
         {
-            const auto b = bit(key, MAX_LOG - static_cast<int>(depth - 1));
-            path[depth] = path[depth - 1]->data.child[b];
-            if (!path[depth])
-                return false;
+            path[depth] = path[depth - 1]->data.child[digit(key, depth)];
+            if (!path[depth]) return false;
         }
-        Node *leaf = path[kBits];
+        Node *leaf = path[kLevels];
         if (id != -1)
         {
-            if (!leaf->data.ids.ptr)
-                return false;
+            if (!leaf->data.ids.ptr) return false;
             auto &ids = *leaf->data.ids.ptr;
             const auto it = std::find(ids.begin(), ids.end(), id);
-            if (it == ids.end())
-                return false;
+            if (it == ids.end()) return false;
             *it = ids.back();
             ids.pop_back();
         }
         else if (leaf->data.ids.ptr && leaf->count == leaf->data.ids.ptr->size())
-        {
             leaf->data.ids.ptr->pop_back();
-        }
-        for (Node *node : path)
-            --node->count;
-        for (size_type depth = kBits; depth > 0; --depth)
+        for (Node *node : path) --node->count;
+        for (size_type depth = kLevels; depth > 0; --depth)
         {
-            if (path[depth]->count != 0)
-                break;
-            const auto b = bit(key, MAX_LOG - static_cast<int>(depth - 1));
-            path[depth - 1]->data.child[b] = nullptr;
-            release_node(path[depth], depth == kBits);
+            if (path[depth]->count) break;
+            const auto d = digit(key, depth);
+            auto *parent = path[depth - 1];
+            parent->data.child[d] = nullptr;
+            virtual_nodes_ -= width(depth) - static_cast<unsigned>(width(depth) == 2 && parent->data.child[d ^ 1u]);
+            release_node(path[depth], depth == kLevels);
         }
         return true;
     }
@@ -611,67 +415,34 @@ public:
         const Node *leaf = find_leaf(checked_key(x) ^ lazy_);
         return {leaf ? leaf->count : 0, ids_of(leaf)};
     }
-
     [[nodiscard]] ElementResult min_element() const { return extreme(false); }
-
     [[nodiscard]] ElementResult max_element() const { return extreme(true); }
-
     [[nodiscard]] ElementResult get_kth(std::int64_t k) const
     {
 #ifndef SKIP_RUNTIME_CHECKS
         if (k <= 0 || static_cast<std::uint64_t>(k) > size())
-        {
             throw std::out_of_range("BinaryTrie: k must satisfy 1 <= k <= size()");
-        }
 #endif
         auto rank = static_cast<size_type>(k);
         const Node *node = root_;
         U value = 0;
-        for (int i = MAX_LOG; i >= 0; --i)
+        for (size_type depth = 1; depth <= kLevels; ++depth)
         {
-            const auto zero = bit(lazy_, i);
-#if defined(__GNUC__) && !defined(__clang__) && defined(SKIP_RUNTIME_CHECKS)
-            if constexpr (MAX_LOG >= 48)
+            const unsigned zero = digit(lazy_, depth);
+            const unsigned last = width(depth) == 1 ? 1u : 3u;
+            unsigned d = 0;
+            for (; d < last; ++d)
             {
-                const Node *left = node->data.child[zero];
-                const size_type count = left ? left->count : 0;
-                if (rank < count) node = left;
-                else if (rank == count) {
-                    // 左部分木の末尾と確定したら、残りは最大値をたどる。
-                    node = left;
-                    for (--i; i >= 0; --i) {
-                        const auto z = bit(lazy_, i);
-                        if (const Node *right = node->data.child[z ^ 1u]) {
-                            value |= U{1} << i; node = right;
-                        } else node = node->data.child[z];
-                    }
-                    return {static_cast<T>(value), ids_of(node)};
-                } else {
-                    rank -= count;
-                    value |= U{1} << i;
-                    node = node->data.child[zero ^ 1u];
-                }
+                const Node *child = node->data.child[zero ^ d];
+                const auto n = child ? child->count : 0;
+                if (rank <= n) break;
+                rank -= n;
             }
-            else
-#endif
-            {
-                const Node *left = node->data.child[zero];
-                const size_type count = left ? left->count : 0;
-                if (rank <= count)
-                {
-                    node = left;
-                }
-                else
-                {
-                    rank -= count;
-                    value |= U{1} << i;
-                    node = node->data.child[zero ^ 1u];
-                }
-            }
+            value |= static_cast<U>(d) << shift(depth);
+            node = node->data.child[zero ^ d];
         }
         return {static_cast<T>(value), ids_of(node)};
     }
-
     void operate_xor(T x) { lazy_ ^= checked_key(x); }
 
     [[nodiscard]] size_type count(T x) const

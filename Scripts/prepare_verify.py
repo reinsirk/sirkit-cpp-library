@@ -130,7 +130,9 @@ def prepare(check: bool) -> list[dict]:
         status = "未提出"
         if record:
             if record.get("submission_sha256") is None:
-                status = record["status"] + "（提出ソース未照合）"
+                status = ("要再提出（ソース変更、旧提出は" + record["status"] + "・未照合）"
+                          if record.get("needs_resubmission")
+                          else record["status"] + "（提出ソース未照合）")
             else:
                 status = record["status"] if record["submission_sha256"] == digest(data) else "要再提出（ソース変更）"
             entry["judge_record"] = record

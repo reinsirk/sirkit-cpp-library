@@ -311,7 +311,7 @@
         "lcp（同じ文字列の接尾辞）",
         "lcp内部の区間ハッシュ比較"
       ],
-      "limitations": "オンライン結果は判定記録のsource SHAが一致する版に対応。ハッシュ衝突による誤判定の可能性あり。各接尾辞へlcpを直接適用し最悪O(N log N)。線形Z参照は正解照合専用で、専用アルゴリズムとの速度比較には使わない。concat/equal/compare・全バイト・底の補正・所有権・assign/clear・例外・標準代替演算はrh_reference_test/rh_exception_testとrolling_hash_localで補足。",
+      "limitations": "オンライン結果は判定記録のsource SHAが一致する版に対応。ハッシュ衝突による誤判定の可能性あり。各接尾辞へlcpを直接適用し最悪O(N log N)。線形Z参照は正解照合専用で、専用アルゴリズムとの速度比較には使わない。concat/equal/compare・全バイト・底の補正・所有権・assign/clear・例外・標準代替演算はrh_reference_test/rh_exception_testとrolling_hash_localで補足。 構築閾値・SIMD末尾・冗長剰余はtests/rolling_hash_build_test.cpp、初回CPU判定を含む確保数と例外保証はtests/rolling_hash_avx_allocation_test.cppで補足。 融合equal/compareの全byte対・長いprefix・衝突はtests/rolling_hash_comparison_test.cppで補足。 4096文字の切り替え境界と保護ページ隣接viewはtests/rolling_hash_threshold_test.cppで補足。",
       "samples": [
         {
           "input": "a\n",
@@ -372,7 +372,10 @@
       "submission_urls": [
         "https://judge.yosupo.jp/submission/412622",
         "https://judge.yosupo.jp/submission/412625",
-        "https://judge.yosupo.jp/submission/412736"
+        "https://judge.yosupo.jp/submission/412736",
+        "https://judge.yosupo.jp/submission/413367",
+        "https://judge.yosupo.jp/submission/413369",
+        "https://judge.yosupo.jp/submission/413371"
       ]
     },
     {
@@ -615,6 +618,49 @@
       ]
     },
     {
+      "id": "node_reachable",
+      "libraries": [
+        "DataStructure/Node.cpp"
+      ],
+      "driver": "Verify/current/drivers/node_reachable_main.cpp",
+      "title": "ABC228 B - Takahashi's Secret",
+      "problem_url": "https://atcoder.jp/contests/abc228/tasks/abc228_b",
+      "selection_reason": "値を持たない単方向ノードの接続・循環切断・到達個数を直接使用できる問題。",
+      "reference_url": null,
+      "evidence_url": "https://atcoder.jp/contests/abc228/tasks/abc228_b",
+      "coverage": [
+        "make_node",
+        "Node::nによる接続・共有",
+        "break_cycle内の循環検出と周期末尾特定",
+        "break_cycle",
+        "chain_size",
+        "到達しない循環を含む接続解除"
+      ],
+      "limitations": [
+        "複製・逆転・先頭追加削除・長鎖の非再帰破棄は独立ローカル検査で補う。",
+        "ノードごとに所有者を配列で保持するため、この提出だけでは長鎖の反復破棄の証拠にならない。",
+        "公式上限は10万ノード。入力構築・確保と走査の内訳はローカルで測る。",
+        "ローカル検証・測定条件はAudit/verify-node-ready-2026-10-26.jsonとAudit/performance-node-2026-10-26.json参照。",
+        "cycle_entry/has_cycleのAPI自体はオンラインmainでは呼ばず、独立ローカル照合で補う。",
+        "提出80395895は画像でAC・19msを確認。HTTP403で本文未照合。今回の比較後も本体・main・IOは変更していない。",
+        "最新確認はAudit/verify-node-80395895-2026-10-26.json、追加案の採否はAudit/performance-node-80395895-2026-10-26.json参照。"
+      ],
+      "samples": [
+        {
+          "input": "4 2\n3 1 1 2\n",
+          "output": "3\n"
+        },
+        {
+          "input": "20 12\n7 11 10 1 7 20 14 2 17 3 2 5 19 20 8 14 18 2 10 10\n",
+          "output": "7\n"
+        }
+      ],
+      "acl_required": false,
+      "submission_urls": [
+        "https://atcoder.jp/contests/abc228/submissions/80395895"
+      ]
+    },
+    {
       "id": "node_local",
       "libraries": [
         "DataStructure/Node.cpp"
@@ -622,7 +668,7 @@
       "driver": "Verify/current/drivers/node_local_main.cpp",
       "title": "Node 独立ローカル検査",
       "problem_url": null,
-      "selection_reason": "適切な提出問題がないため独立したローカル参照と比較。",
+      "selection_reason": "オンライン問題で扱わないAPI・共有所有権・長い連結の破棄を独立参照で検査。",
       "reference_url": null,
       "evidence_url": null,
       "coverage": [
@@ -633,7 +679,7 @@
         "共有状態",
         "30万ノード反復破棄"
       ],
-      "limitations": "オンラインジャッジへの提出用ではない。タイミングによる速度保証は行わない。",
+      "limitations": "オンライン提出用ではない。共有・複製・例外・100万ノードの小スタック破棄はtests/node_reference_test.cppでも補い、結果をAudit/verify-node-ready-2026-10-26.jsonに記録。",
       "samples": [
         {
           "input": "",

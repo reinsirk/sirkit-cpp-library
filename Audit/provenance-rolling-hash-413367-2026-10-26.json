@@ -1,0 +1,26 @@
+{
+  "date_jst": "2026-10-26",
+  "source": "String/RollingHash.cpp",
+  "source_sha256": "1dfa7d06474bc67869f5191a64bf0fd4c2b3865560eb88b61a6594319f2f5e85",
+  "baseline_sha256": "89383bf81bdaea3aa275570b7969b4d4ee93d44bfdc0ed16c6ac62242f5fa484",
+  "completed_at_utc": "2026-10-25T21:59:02.438244+00:00",
+  "license": "CC0-1.0",
+  "method_origin": "既存の自作CC0 RollingHashと32bit部分積の恒等式から、4文字ブロック式・累乗再利用分岐・区間ハッシュ差の融合を組み立てた。新たな外部C++実装の取得・移植はない。",
+  "previous_provenance": "Audit/provenance-rolling-hash-round2-2026-10-26.json",
+  "proof": {
+    "table_and_term": "t1/t2/t3はc*base^j mod pのcanonical表。u2<=p+254、u3<=2p+253、u4<=3p+252。u4<2^63なのでset_epi64xへの符号付き変換も正確。",
+    "partial_product_bound": "a<=p+6、b<pからa_hi<=2^29、b_hi<=2^29-1、cross<2^62。rawは(low&p)+(low>>61)+((cross&mask29)<<32)+(cross>>29)+(high<<3)。各上界を足すとraw<=3p+8。term込み<=6p+260<7p<2^64でunsigned lane加算はwrapしない。",
+    "redundant_state": "fold=(sum&p)+(sum>>61)<=p+6。次stateはこのfoldのlane3を複製して[0,p+6]に閉じ、元の積和とmod pで同値。signed比較はfold後の値(<2p<2^63)だけ、1回減算して出力をcanonicalにする。",
+    "lane_and_memory": "hash 4lane/power 4laneはbase^1..4に対応。32byte storeはsizeof Entry==8 assertの下で構築済み4要素[i+1,i+4]へ書き、i+4<=n。末尾0..3文字はcanonical hr/prのlane3からscalar計算。ComputePower=falseでは既存power全要素を維持する。",
+    "reuse_and_ownership": "member/class配置と確保順・個数は不変。reuse時のpower vectorはold size>=count、resize後も全累乗を保持しprefixだけ計算。追加表はstack6KiB。constructor初回new予算2、clearassign new予算0の検証PASS。",
+    "equal_native": "等長非空でdeltaをcanonicalにする。delta0なら終端prefixの直接比較が同値。delta非0の積和P=delta*power+(other_end+p-self_end)は0<P<=p²。foldは(0,2p)にあり、P mod p=0とfold==pが同値。p²となる向きも明示試験。",
+    "equal_fallback": "D=self_end+5p-multiply_raw(delta,power)-other_endは0<D<6p<2^64。foldの0剰余表現はpとなりnativeと同じhash一致を判定。",
+    "compare_byte_sign": "lcpが返したcommonは区間ハッシュ一致を満たす。次prefix差の剰余は次byte差d in [-255,255]で、文字列がそれ以前に衝突していてもこの恒等式は成立。native foldは-d、fallback foldはdを表す。正の小値とその+p表現はbit60=0、負の小値のp/2p近傍表現はbit60=1。0剰余はfold==pで別判定し符号を返す。したがって旧compareのcommon位置byte順と同値。",
+    "empty_and_checks": "equal長さ0はdataを読まずtrue。compareのmin長0/全体一致は長さ比較だけ。元のcheck_range/check_base順序を保持し、moved/clearedのnull powerも空クエリで参照しない。",
+    "exclusion": "SIMD無効native128および標準forcedではconstructor/assignがbaselineと前処理後に一致し、専用実装とCPU判定は不在。equal/compareは意図的に変えたので全class一致は要求しない。CPU非対応をfalseに強制した4構成も独立参照PASS。"
+  },
+  "construction_math": "H_j=H*B^j+sum(c_k*B^(j-1-k))。累乗も同じPからP*B^jで求める。t1/t2/t3はcanonical。laneの最終stateはfold後の[0,p+6]、出力は1回減算した[0,p)。u4<=3p+252、積のraw<=3p+8で総和<7p<2^64。",
+  "query_math": "prefix差deltaをcanonicalとすると区間のhash差はend差-delta*power。equalはこの剰余0を1積で判定。LCP結果kでは長さkのprefix hash差が0なので、次prefixの差は次byte差[-255,255]。bit60で正負を判定し旧compareと同じ結果を返す。意図的な衝突を含め旧意味を維持。",
+  "reference_checks": "cpp_int逐次多項式・独立加算mod・全256² byte対・p近傍・state p・p²積和・長い相殺列・失敗注入を照合。79構成にCPU非対応/SIMD除外/標準算術/検査有無/ASan/UBSanを含む。",
+  "scope": "実装の由来と数学的同値性の記録。外部実装のライセンスを変更するものではない。"
+}

@@ -3,7 +3,8 @@
 //
 // API一覧
 // [lazy_implicit_treap]
-// 可変長列。通常操作は期待 O(log N)、erase は O(削除数 + log N)、領域 O(最大要素数)。
+// 可変長列。通常操作は期待O(log N)、挿入は償却期待O(log N)、eraseは期待O(削除数 + log N)。
+// 領域O(最大要素数)。ノード配列の再確保は保持スロット数に比例する。
 // op は結合的、e は単位元。mapping は集約に分配し、composition(f,g) は g の後に f。
 // op・mapping等の計算時間をO(1)として記す。
 // 非可換 op では順方向・逆方向を保持する。添字と区間は 0 始まり・半開区間。
@@ -15,14 +16,18 @@
 // clear() は O(スロット数) で要素を破棄し、確保済み容量を保持する。
 // reserve(n) は容量を確保する。int の範囲を超える要求は例外。
 // get(pos) / set(pos,value) は要素の取得・置換。0 <= pos < size()。
+// front() / back() は先頭・末尾の値を返す。空でないこと。期待O(log N)。
 // insert_at(pos,value) は位置 pos の直前へ挿入。0 <= pos <= size()。
 // push_back(value) / push_front(value) は末尾・先頭へ追加する。
 // erase(l,r) は区間を削除。不正な区間は検査有効時に何もしない。
+// erase_prod(l,r) は区間の集約を返して削除する。空区間はe()。期待O(削除数 + log N)。
 // erase_at(pos) は1要素を削除。0 <= pos < size()。
 // pop_back() / pop_front() は末尾・先頭を削除。空列なら何もしない。
 // apply(l,r,f) は区間に作用 f を適用する。空区間は何もしない。
 // prod(l,r) は順序を保って集約し、空区間は e()。all_prod() は O(1)。
 // reverse(l,r) は区間を反転。rotate(l,m,r) は [l,m),[m,r) を交換。l <= m <= r。
+// move_range(l,r,pos): [l,r)を移動前の隙間posの直前へ移す。0<=pos<=size()。期待O(log N)。
+// l<=pos<=r または空区間なら不変。例: [a,b,c,d,e]でmove_range(1,3,5)は[a,d,e,b,c]。
 // to_vector() は現在の列を O(N) で返す。
 // 以下の比較 API は列全体が operator< による昇順であることが前提。
 // lower_bound(value) / upper_bound(value) は値以上・値より大きい最初の添字、なければ size()。
@@ -33,6 +38,25 @@
 // max_right(l,g) / max_right<g>(l) は g(prod(l,r)) が真となる最大 r。
 // min_left(r,g) / min_left<g>(r) は g(prod(l,r)) が真となる最小 l。
 // 境界探索は g(e()) が真で区間伸長に単調であること。検査省略時の不正入力は未定義。
+//
+// [indexed_implicit_treap / 第9引数 TrackIds=true]
+// 同じ先頭8テンプレート引数でID追跡を有効にする別名。既定falseではID状態・親の更新を持たない。
+// IDは値と独立した非負int。生存要素間で一意。既存の挿入・vector構築はIDなし(-1)。
+// insert_at_with_id(pos,id,value): posの直前へID付きで挿入。位置の範囲はinsert_atと同じ。
+// insert_after(id,new_id,value): 存在するidの直後へnew_id付きで挿入。
+// insert_before(id,new_id,value): 存在するidの直前へnew_id付きで挿入。
+// position_of(id): 現在の0始まり位置。IDがなければ-1。contains_id(id): 存在判定O(1)。
+// get_id(pos): 位置posのID、匿名要素は-1。0<=pos<size()。
+// get_by_id(id) / set_by_id(id,value): 存在するIDの値を取得・置換。期待O(log N)。IDは保持する。
+// erase_id(id): IDの要素を削除してtrue。不在はfalse。期待O(log N)。
+// prod_between(a,b) / erase_between(a,b): 2つのIDの間を集約／集約して削除。端点は含めない。
+// IDの前後は任意。同じID・隣接要素ならe()。双方のIDが存在すること。
+// prod_betweenは期待O(log N)、erase_betweenは期待O(削除数 + log N)。
+// reserve_ids(n): ID 0..n-1 の索引を準備する。O(追加枠数)、再確保時O(現在のID索引枠数)。
+// ID取得・位置特定は期待O(log N)、挿入は償却期待O(log N)。索引拡張・再確保の費用は別途かかる。
+// 領域はノード数＋最大IDに比例。set/applyはIDを変えず、reverse/rotateでも位置を追跡する。
+// 削除されたIDは再利用可。clearはIDも消す。コピーはID索引も独立、move/swapはIDを列と共に移す。
+// 検査時は負の挿入ID・重複IDと、存在が前提の操作への不存在IDを拒否。コピーはID索引枠数ぶんもかかる。
 //
 // [既定の作用: RangeAddMin]
 // 区間加算・最小値。値と加算後の値は INF 以下、各演算は int64_t に収まること。
@@ -92,7 +116,7 @@ template<class S = RangeAddMin::S,
          S (*mapping)(F, S) = RangeAddMin::mapping,
          F (*composition)(F, F) = RangeAddMin::composition,
          F (*id)() = RangeAddMin::id,
-         bool Commutative = false>
+         bool Commutative = false, bool TrackIds = false>
 class lazy_implicit_treap {
     static constexpr bool commutative_ = Commutative || [] {
         if constexpr (std::is_same_v<S, RangeAddMin::S>) return op == RangeAddMin::op;
@@ -104,6 +128,10 @@ class lazy_implicit_treap {
         explicit ReverseAggregate(S&& x) : value(std::move(x)) {}
     };
     struct EmptyAggregate { explicit EmptyAggregate(S&&) {} };
+    struct IdLink { int parent = -1, identifier = -1; };
+    struct NoIdLink {};
+    struct IdIndex { std::vector<int> slots; };
+    struct NoIdIndex {};
     struct Node {
         S value, forward;
         [[no_unique_address]] std::conditional_t<commutative_, EmptyAggregate, ReverseAggregate> backward;
@@ -111,12 +139,14 @@ class lazy_implicit_treap {
         std::uint64_t priority;
         int left = -1, right = -1, length = 1;
         bool pending = false, reversed = false;
+        [[no_unique_address]] std::conditional_t<TrackIds, IdLink, NoIdLink> link;
         Node(S x, std::uint64_t p)
             : value(x), forward(x), backward(std::move(x)), action(id()), priority(p) {}
     };
     std::vector<Node> nodes_;
     int root_ = -1, free_ = -1;
     std::uint64_t random_ = seed();
+    [[no_unique_address]] std::conditional_t<TrackIds, IdIndex, NoIdIndex> ids_;
 
     static std::uint64_t seed() {
         return static_cast<std::uint64_t>(std::chrono::steady_clock::now().time_since_epoch().count());
@@ -134,6 +164,10 @@ class lazy_implicit_treap {
     }
     void pull(int p) {
         Node& n = nodes_[p];
+        if constexpr (TrackIds) {
+            if (n.left >= 0) nodes_[n.left].link.parent = p;
+            if (n.right >= 0) nodes_[n.right].link.parent = p;
+        }
         n.length = 1 + length(n.left) + length(n.right);
         n.forward = op(op(forward(n.left), n.value), forward(n.right));
         if constexpr (!commutative_)
@@ -256,6 +290,9 @@ class lazy_implicit_treap {
         return static_cast<int>(nodes_.size()) - 1;
     }
     void recycle(int p) {
+        if constexpr (TrackIds) {
+            if (nodes_[p].link.identifier >= 0) ids_.slots[nodes_[p].link.identifier] = -1;
+        }
         nodes_[p] = Node(e(), 0);
         nodes_[p].left = free_;
         free_ = p;
@@ -374,6 +411,33 @@ class lazy_implicit_treap {
         }
         return result;
     }
+    void reset_root_parent() {
+        if constexpr (TrackIds) if (root_ >= 0) nodes_[root_].link.parent = -1;
+    }
+    int id_node(int element_id) const requires (TrackIds) {
+        return element_id >= 0 && static_cast<std::size_t>(element_id) < ids_.slots.size() ? ids_.slots[element_id] : -1;
+    }
+    int subtree_offset(int p) requires (TrackIds) {
+        const int parent = nodes_[p].link.parent;
+        int offset = parent < 0 ? 0 : subtree_offset(parent);
+        // 祖先の反転を先に伝えてから、現在の左右関係を読む。
+        if (parent >= 0 && nodes_[parent].right == p)
+            offset += length(nodes_[parent].left) + 1;
+        push(p);
+        return offset;
+    }
+    int require_id_position(int element_id) requires (TrackIds) {
+        const int pos = position_of(element_id);
+#ifndef SKIP_RUNTIME_CHECKS
+        if (pos < 0) throw std::out_of_range("lazy_implicit_treap missing ID");
+#endif
+        return pos;
+    }
+    std::pair<int, int> between_range(int first_id, int second_id) requires (TrackIds) {
+        int first = require_id_position(first_id), second = require_id_position(second_id);
+        if (first > second) std::swap(first, second);
+        return {first == second ? first : first + 1, second};
+    }
 public:
     lazy_implicit_treap() = default;
     explicit lazy_implicit_treap(const std::vector<S>& values) {
@@ -399,7 +463,11 @@ public:
         if (this == &other) return *this;
         if constexpr (std::is_nothrow_copy_constructible_v<Node> && std::is_nothrow_copy_assignable_v<Node>) {
             if (other.nodes_.size() <= nodes_.capacity()) {
-                nodes_ = other.nodes_;
+                if constexpr (TrackIds) {
+                    auto next_ids = other.ids_;
+                    nodes_ = other.nodes_;
+                    ids_ = std::move(next_ids);
+                } else nodes_ = other.nodes_;
                 root_ = other.root_;
                 free_ = other.free_;
                 random_ = other.random_;
@@ -412,7 +480,10 @@ public:
     }
     lazy_implicit_treap(lazy_implicit_treap&& other) noexcept
         : nodes_(std::move(other.nodes_)), root_(std::exchange(other.root_, -1)),
-          free_(std::exchange(other.free_, -1)), random_(other.random_) { other.nodes_.clear(); }
+          free_(std::exchange(other.free_, -1)), random_(other.random_), ids_(std::move(other.ids_)) {
+        other.nodes_.clear();
+        if constexpr (TrackIds) other.ids_.slots.clear();
+    }
     lazy_implicit_treap& operator=(lazy_implicit_treap&& other) noexcept {
         if (this != &other) { lazy_implicit_treap temporary(std::move(other)); swap(temporary); }
         return *this;
@@ -422,11 +493,15 @@ public:
         std::swap(root_, other.root_);
         std::swap(free_, other.free_);
         std::swap(random_, other.random_);
+        if constexpr (TrackIds) ids_.slots.swap(other.ids_.slots);
     }
     friend void swap(lazy_implicit_treap& a, lazy_implicit_treap& b) noexcept { a.swap(b); }
     int size() const { return length(root_); }
     bool empty() const { return root_ < 0; }
-    void clear() { nodes_.clear(); root_ = free_ = -1; }
+    void clear() {
+        nodes_.clear(); root_ = free_ = -1;
+        if constexpr (TrackIds) ids_.slots.clear();
+    }
     void reserve(std::size_t n) {
         if (n > static_cast<std::size_t>(std::numeric_limits<int>::max()))
             throw std::length_error("lazy_implicit_treap capacity");
@@ -443,6 +518,8 @@ public:
             else { pos -= k + 1; p = nodes_[p].right; }
         }
     }
+    S front() { return get(0); }
+    S back() { return get(size() - 1); }
     void set(int pos, S value) {
         check_position(pos);
         set_value(root_, pos, std::move(value));
@@ -463,6 +540,7 @@ public:
         if (pos == size()) root_ = merge(root_, p);
         else if (pos == 0) root_ = merge(p, root_);
         else root_ = insert_node(root_, p, pos);
+        reset_root_parent();
     }
     void push_back(S value) { insert_at(size(), std::move(value)); }
     void push_front(S value) { insert_at(0, std::move(value)); }
@@ -475,12 +553,22 @@ public:
         auto [b, c] = split(bc, r - l);
         root_ = merge(a, c);
         release(b);
+        reset_root_parent();
+    }
+    S erase_prod(int l, int r) {
+        check_range(l, r);
+        if (l == r) return e();
+        // 集約を取得してから区間を削除する。
+        S result = query(root_, l, r);
+        erase(l, r);
+        return result;
     }
     void erase_at(int pos) {
         check_position(pos);
         int removed = -1;
         root_ = erase_node(root_, pos, removed);
         recycle(removed);
+        reset_root_parent();
     }
     void pop_back() { if (!empty()) erase_at(size() - 1); }
     void pop_front() { if (!empty()) erase_at(0); }
@@ -497,6 +585,7 @@ public:
         auto [b, c] = split(bc, r - l);
         flip(b);
         root_ = merge(merge(a, b), c);
+        reset_root_parent();
     }
     void rotate(int l, int m, int r) {
         check_range(l, r);
@@ -508,6 +597,14 @@ public:
         auto [b, cd] = split(bcd, m - l);
         auto [c, d] = split(cd, r - m);
         root_ = merge(merge(merge(a, c), b), d);
+        reset_root_parent();
+    }
+    void move_range(int l, int r, int pos) {
+        check_range(l, r);
+        check_position(pos, true);
+        if (l == r || (l <= pos && pos <= r)) return;
+        if (pos < l) rotate(pos, l, r);
+        else rotate(l, r, pos);
     }
     std::vector<S> to_vector() { std::vector<S> out; out.reserve(size()); flatten(root_, out); return out; }
     int lower_bound(S value) { return bound(std::move(value), false); }
@@ -521,6 +618,75 @@ public:
     void insert_sorted(S value) {
         int p = allocate(std::move(value));
         root_ = insert_sorted_node(root_, p);
+        reset_root_parent();
+    }
+    void reserve_ids(std::size_t n) requires (TrackIds) {
+        if (n > static_cast<std::size_t>(std::numeric_limits<int>::max()) + 1)
+            throw std::length_error("lazy_implicit_treap ID capacity");
+        if (n > ids_.slots.size()) ids_.slots.resize(n, -1);
+    }
+    bool contains_id(int element_id) const requires (TrackIds) { return id_node(element_id) >= 0; }
+    int position_of(int element_id) requires (TrackIds) {
+        const int p = id_node(element_id);
+        if (p < 0) return -1;
+        const int offset = subtree_offset(p);
+        return offset + length(nodes_[p].left);
+    }
+    int get_id(int pos) requires (TrackIds) {
+        check_position(pos);
+        int p = root_;
+        for (;;) {
+            push(p);
+            const int k = length(nodes_[p].left);
+            if (pos == k) return nodes_[p].link.identifier;
+            if (pos < k) p = nodes_[p].left;
+            else { pos -= k + 1; p = nodes_[p].right; }
+        }
+    }
+    S get_by_id(int element_id) requires (TrackIds) {
+        return get(require_id_position(element_id));
+    }
+    void set_by_id(int element_id, S value) requires (TrackIds) {
+        set(require_id_position(element_id), std::move(value));
+    }
+    bool erase_id(int element_id) requires (TrackIds) {
+        const int pos = position_of(element_id);
+        if (pos < 0) return false;
+        erase_at(pos);
+        return true;
+    }
+    S prod_between(int first_id, int second_id) requires (TrackIds) {
+        const auto [l, r] = between_range(first_id, second_id);
+        return prod(l, r);
+    }
+    S erase_between(int first_id, int second_id) requires (TrackIds) {
+        const auto [l, r] = between_range(first_id, second_id);
+        return erase_prod(l, r);
+    }
+    void insert_at_with_id(int pos, int element_id, S value) requires (TrackIds) {
+        check_position(pos, true);
+#ifndef SKIP_RUNTIME_CHECKS
+        if (element_id < 0 || contains_id(element_id))
+            throw std::invalid_argument("lazy_implicit_treap duplicate or negative ID");
+#endif
+        reserve_ids(static_cast<std::size_t>(element_id) + 1);
+        const int p = allocate(std::move(value));
+        nodes_[p].link.identifier = element_id;
+        ids_.slots[element_id] = p;
+        if (pos == size()) root_ = merge(root_, p);
+        else if (pos == 0) root_ = merge(p, root_);
+        else root_ = insert_node(root_, p, pos);
+        reset_root_parent();
+    }
+    void insert_after(int element_id, int new_id, S value) requires (TrackIds) {
+        const int pos = position_of(element_id);
+#ifndef SKIP_RUNTIME_CHECKS
+        if (pos < 0) throw std::out_of_range("lazy_implicit_treap missing ID");
+#endif
+        insert_at_with_id(pos + 1, new_id, std::move(value));
+    }
+    void insert_before(int element_id, int new_id, S value) requires (TrackIds) {
+        insert_at_with_id(require_id_position(element_id), new_id, std::move(value));
     }
     void erase_val(S value) {
         int p = lower_bound(value);
@@ -550,4 +716,17 @@ public:
     }
     template<bool (*g)(S)> int min_left(int r) { return min_left(r, g); }
 };
+#endif
+
+#ifndef SIRKIT_INDEXED_IMPLICIT_TREAP_DEFINED
+#define SIRKIT_INDEXED_IMPLICIT_TREAP_DEFINED
+template<class S = RangeAddMin::S,
+         S (*op)(S, S) = RangeAddMin::op,
+         S (*e)() = RangeAddMin::e,
+         class F = RangeAddMin::F,
+         S (*mapping)(F, S) = RangeAddMin::mapping,
+         F (*composition)(F, F) = RangeAddMin::composition,
+         F (*id)() = RangeAddMin::id,
+         bool Commutative = false>
+using indexed_implicit_treap = lazy_implicit_treap<S, op, e, F, mapping, composition, id, Commutative, true>;
 #endif

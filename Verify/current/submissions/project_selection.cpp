@@ -1,5 +1,6 @@
 #define SKIP_RUNTIME_CHECKS
 // Verify: https://atcoder.jp/contests/typical90/tasks/typical90_an
+// Submission: https://atcoder.jp/contests/typical90/submissions/80354847
 
 // Library: Graph/Project_Selection.cpp
 // SPDX-License-Identifier: CC0-1.0

@@ -1,0 +1,1286 @@
+{
+  "date": "2026-10-26",
+  "scope": "暗黙Treapの便利な操作を追加。ID索引と既存の区間操作を再利用し、新しいノード状態は追加しない。",
+  "apis": [
+    "front",
+    "back",
+    "move_range",
+    "insert_before",
+    "get_by_id",
+    "set_by_id",
+    "erase_id",
+    "prod_between",
+    "erase_between"
+  ],
+  "semantics": [
+    "move_range(l,r,pos)のposは移動前の隙間番号。区間内・両端への移動は不変。",
+    "betweenの端点は含めず、前後を問わない。同一ID・隣接要素は単位元。非可換の集約は列の左から右。",
+    "erase_idの不存在は検査省略時もfalse。存在が必要なID操作は検査時にout_of_range。"
+  ],
+  "complexity": "front/back/move_range/get_by_id/set_by_id/erase_id/prod_betweenは期待O(log N)。insert_beforeは償却期待O(log N)にID索引拡張費用を加える。erase_betweenは期待O(削除数+log N)。",
+  "source_sha256": {
+    "DataStructure/implicit_treap.cpp": "631041bdfd2d4e63f130f1db4b19e712a481fede336eb94b9fab5328c7721f2d",
+    "Document/implicit_treap.md": "28fd86b6386105de636b27b97e42100756077c7d442a62b5b2b81386822ebadd",
+    "Examples/implicit_treap_example.cpp": "ebb663c20582f584331fcad97bf78db45c7bdcb17aa05cef1bf9f7b1f14446c5",
+    "Examples/implicit_treap_erase_between_example.cpp": "e929f1c5122c0791b8dfe01df6c76c9ea790d5e44923b74d3be9255917826ea1",
+    "Verify/current/drivers/implicit_treap_erase_between_main.cpp": "f43e43a2c90d4d14b33c355a567d1757bbf87142f54b6695a7016d09795205d8",
+    "Verify/current/tests/implicit_treap_convenience_test.cpp": "2e276cb1a3a7322a4e1ea60778bb23bafaae2bb6b501c1882aae7e4ddbbaafa9"
+  },
+  "validation": [
+    {
+      "compiler": "g++",
+      "skip_runtime_checks": false,
+      "source": "Verify/current/tests/implicit_treap_affine_test.cpp",
+      "source_sha256": "8906230636d29515af1ad649c475d0051bde1427d695045ff6e93706c6616b15",
+      "library_sha256": "631041bdfd2d4e63f130f1db4b19e712a481fede336eb94b9fab5328c7721f2d",
+      "command": [
+        "g++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/implicit_treap_affine_test.cpp",
+        "-o",
+        "/tmp/sirkit_treap_convenience_20261026/g++_False_implicit_treap_affine_test"
+      ],
+      "status": "PASS",
+      "stdout": "50000 affine-sum operations against an independent vector passed\n"
+    },
+    {
+      "compiler": "g++",
+      "skip_runtime_checks": false,
+      "source": "Verify/current/tests/implicit_treap_boundary_test.cpp",
+      "source_sha256": "c70404d6ed6a6281b7de0ae5c2cc6f698b9b7a60a50fb616c894c34dba26b7a0",
+      "library_sha256": "631041bdfd2d4e63f130f1db4b19e712a481fede336eb94b9fab5328c7721f2d",
+      "command": [
+        "g++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/implicit_treap_boundary_test.cpp",
+        "-o",
+        "/tmp/sirkit_treap_convenience_20261026/g++_False_implicit_treap_boundary_test"
+      ],
+      "status": "PASS",
+      "stdout": "PASS checked/empty/capacity, order-sensitive boundary overloads, affine text/rotation/reuse/ownership, sorted comparison contracts\n"
+    },
+    {
+      "compiler": "g++",
+      "skip_runtime_checks": false,
+      "source": "Verify/current/tests/implicit_treap_convenience_test.cpp",
+      "source_sha256": "2e276cb1a3a7322a4e1ea60778bb23bafaae2bb6b501c1882aae7e4ddbbaafa9",
+      "library_sha256": "631041bdfd2d4e63f130f1db4b19e712a481fede336eb94b9fab5328c7721f2d",
+      "command": [
+        "g++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/implicit_treap_convenience_test.cpp",
+        "-o",
+        "/tmp/sirkit_treap_convenience_20261026/g++_False_implicit_treap_convenience_test"
+      ],
+      "status": "PASS",
+      "stdout": "{\"checks\":936270,\"status\":\"PASS\"}\n"
+    },
+    {
+      "compiler": "g++",
+      "skip_runtime_checks": false,
+      "source": "Verify/current/tests/implicit_treap_copy_capacity_test.cpp",
+      "source_sha256": "f49ef04a77fcd1b657dd72914c38e7dce746ad37d9e115266519b77cb8d9a2f3",
+      "library_sha256": "631041bdfd2d4e63f130f1db4b19e712a481fede336eb94b9fab5328c7721f2d",
+      "command": [
+        "g++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/implicit_treap_copy_capacity_test.cpp",
+        "-o",
+        "/tmp/sirkit_treap_convenience_20261026/g++_False_implicit_treap_copy_capacity_test"
+      ],
+      "status": "PASS",
+      "stdout": "nothrow existing-capacity copy used no allocation; growing-copy allocation failure preserved the destination\n"
+    },
+    {
+      "compiler": "g++",
+      "skip_runtime_checks": false,
+      "source": "Verify/current/tests/implicit_treap_copy_exception_test.cpp",
+      "source_sha256": "a1208e8079af8a5995eb10b6fd65c43115c4040714ec1477ef1aa6c5a211ec55",
+      "library_sha256": "631041bdfd2d4e63f130f1db4b19e712a481fede336eb94b9fab5328c7721f2d",
+      "command": [
+        "g++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/implicit_treap_copy_exception_test.cpp",
+        "-o",
+        "/tmp/sirkit_treap_convenience_20261026/g++_False_implicit_treap_copy_exception_test"
+      ],
+      "status": "PASS",
+      "stdout": "450 injected failures preserved the destination; 20 successful copies and self-assignment passed\n"
+    },
+    {
+      "compiler": "g++",
+      "skip_runtime_checks": false,
+      "source": "Verify/current/tests/implicit_treap_ids_allocation_test.cpp",
+      "source_sha256": "30513438ac4174e48b48234ed7d1dae337c71b44f24b59f5a168c006776d42f8",
+      "library_sha256": "631041bdfd2d4e63f130f1db4b19e712a481fede336eb94b9fab5328c7721f2d",
+      "command": [
+        "g++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/implicit_treap_ids_allocation_test.cpp",
+        "-o",
+        "/tmp/sirkit_treap_convenience_20261026/g++_False_implicit_treap_ids_allocation_test"
+      ],
+      "status": "PASS",
+      "stdout": "3 copy failures, 2 insertion failures: contents and IDs preserved\n"
+    },
+    {
+      "compiler": "g++",
+      "skip_runtime_checks": false,
+      "source": "Verify/current/tests/implicit_treap_ids_test.cpp",
+      "source_sha256": "29abfeb285e018b65f78d93c0fbfa4412cb780c753465092aea9371376b43443",
+      "library_sha256": "631041bdfd2d4e63f130f1db4b19e712a481fede336eb94b9fab5328c7721f2d",
+      "command": [
+        "g++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/implicit_treap_ids_test.cpp",
+        "-o",
+        "/tmp/sirkit_treap_convenience_20261026/g++_False_implicit_treap_ids_test"
+      ],
+      "status": "PASS",
+      "stdout": "{\"checks\":868660,\"status\":\"PASS\"}\n"
+    },
+    {
+      "compiler": "g++",
+      "skip_runtime_checks": false,
+      "source": "Verify/current/tests/implicit_treap_noncommutative_test.cpp",
+      "source_sha256": "355902488df55620a4d8e887dc984cec2a7f96ce4c01c0de5c265b55cad94cb5",
+      "library_sha256": "631041bdfd2d4e63f130f1db4b19e712a481fede336eb94b9fab5328c7721f2d",
+      "command": [
+        "g++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/implicit_treap_noncommutative_test.cpp",
+        "-o",
+        "/tmp/sirkit_treap_convenience_20261026/g++_False_implicit_treap_noncommutative_test"
+      ],
+      "status": "PASS",
+      "stdout": "100000 independent noncommutative/lazy/reverse/insert/erase mixed operations passed\n"
+    },
+    {
+      "compiler": "g++",
+      "skip_runtime_checks": false,
+      "source": "Examples/implicit_treap_example.cpp",
+      "source_sha256": "ebb663c20582f584331fcad97bf78db45c7bdcb17aa05cef1bf9f7b1f14446c5",
+      "library_sha256": "631041bdfd2d4e63f130f1db4b19e712a481fede336eb94b9fab5328c7721f2d",
+      "command": [
+        "g++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "/home/reinsirk/Atcoder_Env/Examples/implicit_treap_example.cpp",
+        "-o",
+        "/tmp/sirkit_treap_convenience_20261026/g++_False_implicit_treap_example"
+      ],
+      "status": "PASS",
+      "stdout": "24 28\n2\n2\n5 7 12 4 \n1 4\n7 2\n2 2 1\n2 4\n2 1\n10 30\n250\n250\n250\n0\n1\n"
+    },
+    {
+      "compiler": "g++",
+      "skip_runtime_checks": false,
+      "source": "Examples/implicit_treap_erase_between_example.cpp",
+      "source_sha256": "e929f1c5122c0791b8dfe01df6c76c9ea790d5e44923b74d3be9255917826ea1",
+      "library_sha256": "631041bdfd2d4e63f130f1db4b19e712a481fede336eb94b9fab5328c7721f2d",
+      "command": [
+        "g++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "/home/reinsirk/Atcoder_Env/Examples/implicit_treap_erase_between_example.cpp",
+        "-o",
+        "/tmp/sirkit_treap_convenience_20261026/g++_False_implicit_treap_erase_between_example"
+      ],
+      "status": "PASS",
+      "stdout": "1\n5\n"
+    },
+    {
+      "compiler": "g++",
+      "skip_runtime_checks": true,
+      "source": "Verify/current/tests/implicit_treap_affine_test.cpp",
+      "source_sha256": "8906230636d29515af1ad649c475d0051bde1427d695045ff6e93706c6616b15",
+      "library_sha256": "631041bdfd2d4e63f130f1db4b19e712a481fede336eb94b9fab5328c7721f2d",
+      "command": [
+        "g++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-DSKIP_RUNTIME_CHECKS",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/implicit_treap_affine_test.cpp",
+        "-o",
+        "/tmp/sirkit_treap_convenience_20261026/g++_True_implicit_treap_affine_test"
+      ],
+      "status": "PASS",
+      "stdout": "50000 affine-sum operations against an independent vector passed\n"
+    },
+    {
+      "compiler": "g++",
+      "skip_runtime_checks": true,
+      "source": "Verify/current/tests/implicit_treap_boundary_test.cpp",
+      "source_sha256": "c70404d6ed6a6281b7de0ae5c2cc6f698b9b7a60a50fb616c894c34dba26b7a0",
+      "library_sha256": "631041bdfd2d4e63f130f1db4b19e712a481fede336eb94b9fab5328c7721f2d",
+      "command": [
+        "g++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-DSKIP_RUNTIME_CHECKS",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/implicit_treap_boundary_test.cpp",
+        "-o",
+        "/tmp/sirkit_treap_convenience_20261026/g++_True_implicit_treap_boundary_test"
+      ],
+      "status": "PASS",
+      "stdout": "PASS checked/empty/capacity, order-sensitive boundary overloads, affine text/rotation/reuse/ownership, sorted comparison contracts\n"
+    },
+    {
+      "compiler": "g++",
+      "skip_runtime_checks": true,
+      "source": "Verify/current/tests/implicit_treap_convenience_test.cpp",
+      "source_sha256": "2e276cb1a3a7322a4e1ea60778bb23bafaae2bb6b501c1882aae7e4ddbbaafa9",
+      "library_sha256": "631041bdfd2d4e63f130f1db4b19e712a481fede336eb94b9fab5328c7721f2d",
+      "command": [
+        "g++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-DSKIP_RUNTIME_CHECKS",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/implicit_treap_convenience_test.cpp",
+        "-o",
+        "/tmp/sirkit_treap_convenience_20261026/g++_True_implicit_treap_convenience_test"
+      ],
+      "status": "PASS",
+      "stdout": "{\"checks\":935913,\"status\":\"PASS\"}\n"
+    },
+    {
+      "compiler": "g++",
+      "skip_runtime_checks": true,
+      "source": "Verify/current/tests/implicit_treap_copy_capacity_test.cpp",
+      "source_sha256": "f49ef04a77fcd1b657dd72914c38e7dce746ad37d9e115266519b77cb8d9a2f3",
+      "library_sha256": "631041bdfd2d4e63f130f1db4b19e712a481fede336eb94b9fab5328c7721f2d",
+      "command": [
+        "g++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-DSKIP_RUNTIME_CHECKS",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/implicit_treap_copy_capacity_test.cpp",
+        "-o",
+        "/tmp/sirkit_treap_convenience_20261026/g++_True_implicit_treap_copy_capacity_test"
+      ],
+      "status": "PASS",
+      "stdout": "nothrow existing-capacity copy used no allocation; growing-copy allocation failure preserved the destination\n"
+    },
+    {
+      "compiler": "g++",
+      "skip_runtime_checks": true,
+      "source": "Verify/current/tests/implicit_treap_copy_exception_test.cpp",
+      "source_sha256": "a1208e8079af8a5995eb10b6fd65c43115c4040714ec1477ef1aa6c5a211ec55",
+      "library_sha256": "631041bdfd2d4e63f130f1db4b19e712a481fede336eb94b9fab5328c7721f2d",
+      "command": [
+        "g++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-DSKIP_RUNTIME_CHECKS",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/implicit_treap_copy_exception_test.cpp",
+        "-o",
+        "/tmp/sirkit_treap_convenience_20261026/g++_True_implicit_treap_copy_exception_test"
+      ],
+      "status": "PASS",
+      "stdout": "450 injected failures preserved the destination; 20 successful copies and self-assignment passed\n"
+    },
+    {
+      "compiler": "g++",
+      "skip_runtime_checks": true,
+      "source": "Verify/current/tests/implicit_treap_ids_allocation_test.cpp",
+      "source_sha256": "30513438ac4174e48b48234ed7d1dae337c71b44f24b59f5a168c006776d42f8",
+      "library_sha256": "631041bdfd2d4e63f130f1db4b19e712a481fede336eb94b9fab5328c7721f2d",
+      "command": [
+        "g++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-DSKIP_RUNTIME_CHECKS",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/implicit_treap_ids_allocation_test.cpp",
+        "-o",
+        "/tmp/sirkit_treap_convenience_20261026/g++_True_implicit_treap_ids_allocation_test"
+      ],
+      "status": "PASS",
+      "stdout": "3 copy failures, 2 insertion failures: contents and IDs preserved\n"
+    },
+    {
+      "compiler": "g++",
+      "skip_runtime_checks": true,
+      "source": "Verify/current/tests/implicit_treap_ids_test.cpp",
+      "source_sha256": "29abfeb285e018b65f78d93c0fbfa4412cb780c753465092aea9371376b43443",
+      "library_sha256": "631041bdfd2d4e63f130f1db4b19e712a481fede336eb94b9fab5328c7721f2d",
+      "command": [
+        "g++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-DSKIP_RUNTIME_CHECKS",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/implicit_treap_ids_test.cpp",
+        "-o",
+        "/tmp/sirkit_treap_convenience_20261026/g++_True_implicit_treap_ids_test"
+      ],
+      "status": "PASS",
+      "stdout": "{\"checks\":868375,\"status\":\"PASS\"}\n"
+    },
+    {
+      "compiler": "g++",
+      "skip_runtime_checks": true,
+      "source": "Verify/current/tests/implicit_treap_noncommutative_test.cpp",
+      "source_sha256": "355902488df55620a4d8e887dc984cec2a7f96ce4c01c0de5c265b55cad94cb5",
+      "library_sha256": "631041bdfd2d4e63f130f1db4b19e712a481fede336eb94b9fab5328c7721f2d",
+      "command": [
+        "g++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-DSKIP_RUNTIME_CHECKS",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/implicit_treap_noncommutative_test.cpp",
+        "-o",
+        "/tmp/sirkit_treap_convenience_20261026/g++_True_implicit_treap_noncommutative_test"
+      ],
+      "status": "PASS",
+      "stdout": "100000 independent noncommutative/lazy/reverse/insert/erase mixed operations passed\n"
+    },
+    {
+      "compiler": "g++",
+      "skip_runtime_checks": true,
+      "source": "Examples/implicit_treap_example.cpp",
+      "source_sha256": "ebb663c20582f584331fcad97bf78db45c7bdcb17aa05cef1bf9f7b1f14446c5",
+      "library_sha256": "631041bdfd2d4e63f130f1db4b19e712a481fede336eb94b9fab5328c7721f2d",
+      "command": [
+        "g++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-DSKIP_RUNTIME_CHECKS",
+        "/home/reinsirk/Atcoder_Env/Examples/implicit_treap_example.cpp",
+        "-o",
+        "/tmp/sirkit_treap_convenience_20261026/g++_True_implicit_treap_example"
+      ],
+      "status": "PASS",
+      "stdout": "24 28\n2\n2\n5 7 12 4 \n1 4\n7 2\n2 2 1\n2 4\n2 1\n10 30\n250\n250\n250\n0\n1\n"
+    },
+    {
+      "compiler": "g++",
+      "skip_runtime_checks": true,
+      "source": "Examples/implicit_treap_erase_between_example.cpp",
+      "source_sha256": "e929f1c5122c0791b8dfe01df6c76c9ea790d5e44923b74d3be9255917826ea1",
+      "library_sha256": "631041bdfd2d4e63f130f1db4b19e712a481fede336eb94b9fab5328c7721f2d",
+      "command": [
+        "g++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-DSKIP_RUNTIME_CHECKS",
+        "/home/reinsirk/Atcoder_Env/Examples/implicit_treap_erase_between_example.cpp",
+        "-o",
+        "/tmp/sirkit_treap_convenience_20261026/g++_True_implicit_treap_erase_between_example"
+      ],
+      "status": "PASS",
+      "stdout": "1\n5\n"
+    },
+    {
+      "compiler": "clang++",
+      "skip_runtime_checks": false,
+      "source": "Verify/current/tests/implicit_treap_affine_test.cpp",
+      "source_sha256": "8906230636d29515af1ad649c475d0051bde1427d695045ff6e93706c6616b15",
+      "library_sha256": "631041bdfd2d4e63f130f1db4b19e712a481fede336eb94b9fab5328c7721f2d",
+      "command": [
+        "clang++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/implicit_treap_affine_test.cpp",
+        "-o",
+        "/tmp/sirkit_treap_convenience_20261026/clang++_False_implicit_treap_affine_test"
+      ],
+      "status": "PASS",
+      "stdout": "50000 affine-sum operations against an independent vector passed\n"
+    },
+    {
+      "compiler": "clang++",
+      "skip_runtime_checks": false,
+      "source": "Verify/current/tests/implicit_treap_boundary_test.cpp",
+      "source_sha256": "c70404d6ed6a6281b7de0ae5c2cc6f698b9b7a60a50fb616c894c34dba26b7a0",
+      "library_sha256": "631041bdfd2d4e63f130f1db4b19e712a481fede336eb94b9fab5328c7721f2d",
+      "command": [
+        "clang++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/implicit_treap_boundary_test.cpp",
+        "-o",
+        "/tmp/sirkit_treap_convenience_20261026/clang++_False_implicit_treap_boundary_test"
+      ],
+      "status": "PASS",
+      "stdout": "PASS checked/empty/capacity, order-sensitive boundary overloads, affine text/rotation/reuse/ownership, sorted comparison contracts\n"
+    },
+    {
+      "compiler": "clang++",
+      "skip_runtime_checks": false,
+      "source": "Verify/current/tests/implicit_treap_convenience_test.cpp",
+      "source_sha256": "2e276cb1a3a7322a4e1ea60778bb23bafaae2bb6b501c1882aae7e4ddbbaafa9",
+      "library_sha256": "631041bdfd2d4e63f130f1db4b19e712a481fede336eb94b9fab5328c7721f2d",
+      "command": [
+        "clang++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/implicit_treap_convenience_test.cpp",
+        "-o",
+        "/tmp/sirkit_treap_convenience_20261026/clang++_False_implicit_treap_convenience_test"
+      ],
+      "status": "PASS",
+      "stdout": "{\"checks\":936270,\"status\":\"PASS\"}\n"
+    },
+    {
+      "compiler": "clang++",
+      "skip_runtime_checks": false,
+      "source": "Verify/current/tests/implicit_treap_copy_capacity_test.cpp",
+      "source_sha256": "f49ef04a77fcd1b657dd72914c38e7dce746ad37d9e115266519b77cb8d9a2f3",
+      "library_sha256": "631041bdfd2d4e63f130f1db4b19e712a481fede336eb94b9fab5328c7721f2d",
+      "command": [
+        "clang++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/implicit_treap_copy_capacity_test.cpp",
+        "-o",
+        "/tmp/sirkit_treap_convenience_20261026/clang++_False_implicit_treap_copy_capacity_test"
+      ],
+      "status": "PASS",
+      "stdout": "nothrow existing-capacity copy used no allocation; growing-copy allocation failure preserved the destination\n"
+    },
+    {
+      "compiler": "clang++",
+      "skip_runtime_checks": false,
+      "source": "Verify/current/tests/implicit_treap_copy_exception_test.cpp",
+      "source_sha256": "a1208e8079af8a5995eb10b6fd65c43115c4040714ec1477ef1aa6c5a211ec55",
+      "library_sha256": "631041bdfd2d4e63f130f1db4b19e712a481fede336eb94b9fab5328c7721f2d",
+      "command": [
+        "clang++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/implicit_treap_copy_exception_test.cpp",
+        "-o",
+        "/tmp/sirkit_treap_convenience_20261026/clang++_False_implicit_treap_copy_exception_test"
+      ],
+      "status": "PASS",
+      "stdout": "450 injected failures preserved the destination; 20 successful copies and self-assignment passed\n"
+    },
+    {
+      "compiler": "clang++",
+      "skip_runtime_checks": false,
+      "source": "Verify/current/tests/implicit_treap_ids_allocation_test.cpp",
+      "source_sha256": "30513438ac4174e48b48234ed7d1dae337c71b44f24b59f5a168c006776d42f8",
+      "library_sha256": "631041bdfd2d4e63f130f1db4b19e712a481fede336eb94b9fab5328c7721f2d",
+      "command": [
+        "clang++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/implicit_treap_ids_allocation_test.cpp",
+        "-o",
+        "/tmp/sirkit_treap_convenience_20261026/clang++_False_implicit_treap_ids_allocation_test"
+      ],
+      "status": "PASS",
+      "stdout": "3 copy failures, 2 insertion failures: contents and IDs preserved\n"
+    },
+    {
+      "compiler": "clang++",
+      "skip_runtime_checks": false,
+      "source": "Verify/current/tests/implicit_treap_ids_test.cpp",
+      "source_sha256": "29abfeb285e018b65f78d93c0fbfa4412cb780c753465092aea9371376b43443",
+      "library_sha256": "631041bdfd2d4e63f130f1db4b19e712a481fede336eb94b9fab5328c7721f2d",
+      "command": [
+        "clang++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/implicit_treap_ids_test.cpp",
+        "-o",
+        "/tmp/sirkit_treap_convenience_20261026/clang++_False_implicit_treap_ids_test"
+      ],
+      "status": "PASS",
+      "stdout": "{\"checks\":868660,\"status\":\"PASS\"}\n"
+    },
+    {
+      "compiler": "clang++",
+      "skip_runtime_checks": false,
+      "source": "Verify/current/tests/implicit_treap_noncommutative_test.cpp",
+      "source_sha256": "355902488df55620a4d8e887dc984cec2a7f96ce4c01c0de5c265b55cad94cb5",
+      "library_sha256": "631041bdfd2d4e63f130f1db4b19e712a481fede336eb94b9fab5328c7721f2d",
+      "command": [
+        "clang++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/implicit_treap_noncommutative_test.cpp",
+        "-o",
+        "/tmp/sirkit_treap_convenience_20261026/clang++_False_implicit_treap_noncommutative_test"
+      ],
+      "status": "PASS",
+      "stdout": "100000 independent noncommutative/lazy/reverse/insert/erase mixed operations passed\n"
+    },
+    {
+      "compiler": "clang++",
+      "skip_runtime_checks": false,
+      "source": "Examples/implicit_treap_example.cpp",
+      "source_sha256": "ebb663c20582f584331fcad97bf78db45c7bdcb17aa05cef1bf9f7b1f14446c5",
+      "library_sha256": "631041bdfd2d4e63f130f1db4b19e712a481fede336eb94b9fab5328c7721f2d",
+      "command": [
+        "clang++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "/home/reinsirk/Atcoder_Env/Examples/implicit_treap_example.cpp",
+        "-o",
+        "/tmp/sirkit_treap_convenience_20261026/clang++_False_implicit_treap_example"
+      ],
+      "status": "PASS",
+      "stdout": "24 28\n2\n2\n5 7 12 4 \n1 4\n7 2\n2 2 1\n2 4\n2 1\n10 30\n250\n250\n250\n0\n1\n"
+    },
+    {
+      "compiler": "clang++",
+      "skip_runtime_checks": false,
+      "source": "Examples/implicit_treap_erase_between_example.cpp",
+      "source_sha256": "e929f1c5122c0791b8dfe01df6c76c9ea790d5e44923b74d3be9255917826ea1",
+      "library_sha256": "631041bdfd2d4e63f130f1db4b19e712a481fede336eb94b9fab5328c7721f2d",
+      "command": [
+        "clang++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "/home/reinsirk/Atcoder_Env/Examples/implicit_treap_erase_between_example.cpp",
+        "-o",
+        "/tmp/sirkit_treap_convenience_20261026/clang++_False_implicit_treap_erase_between_example"
+      ],
+      "status": "PASS",
+      "stdout": "1\n5\n"
+    },
+    {
+      "compiler": "clang++",
+      "skip_runtime_checks": true,
+      "source": "Verify/current/tests/implicit_treap_affine_test.cpp",
+      "source_sha256": "8906230636d29515af1ad649c475d0051bde1427d695045ff6e93706c6616b15",
+      "library_sha256": "631041bdfd2d4e63f130f1db4b19e712a481fede336eb94b9fab5328c7721f2d",
+      "command": [
+        "clang++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-DSKIP_RUNTIME_CHECKS",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/implicit_treap_affine_test.cpp",
+        "-o",
+        "/tmp/sirkit_treap_convenience_20261026/clang++_True_implicit_treap_affine_test"
+      ],
+      "status": "PASS",
+      "stdout": "50000 affine-sum operations against an independent vector passed\n"
+    },
+    {
+      "compiler": "clang++",
+      "skip_runtime_checks": true,
+      "source": "Verify/current/tests/implicit_treap_boundary_test.cpp",
+      "source_sha256": "c70404d6ed6a6281b7de0ae5c2cc6f698b9b7a60a50fb616c894c34dba26b7a0",
+      "library_sha256": "631041bdfd2d4e63f130f1db4b19e712a481fede336eb94b9fab5328c7721f2d",
+      "command": [
+        "clang++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-DSKIP_RUNTIME_CHECKS",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/implicit_treap_boundary_test.cpp",
+        "-o",
+        "/tmp/sirkit_treap_convenience_20261026/clang++_True_implicit_treap_boundary_test"
+      ],
+      "status": "PASS",
+      "stdout": "PASS checked/empty/capacity, order-sensitive boundary overloads, affine text/rotation/reuse/ownership, sorted comparison contracts\n"
+    },
+    {
+      "compiler": "clang++",
+      "skip_runtime_checks": true,
+      "source": "Verify/current/tests/implicit_treap_convenience_test.cpp",
+      "source_sha256": "2e276cb1a3a7322a4e1ea60778bb23bafaae2bb6b501c1882aae7e4ddbbaafa9",
+      "library_sha256": "631041bdfd2d4e63f130f1db4b19e712a481fede336eb94b9fab5328c7721f2d",
+      "command": [
+        "clang++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-DSKIP_RUNTIME_CHECKS",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/implicit_treap_convenience_test.cpp",
+        "-o",
+        "/tmp/sirkit_treap_convenience_20261026/clang++_True_implicit_treap_convenience_test"
+      ],
+      "status": "PASS",
+      "stdout": "{\"checks\":935913,\"status\":\"PASS\"}\n"
+    },
+    {
+      "compiler": "clang++",
+      "skip_runtime_checks": true,
+      "source": "Verify/current/tests/implicit_treap_copy_capacity_test.cpp",
+      "source_sha256": "f49ef04a77fcd1b657dd72914c38e7dce746ad37d9e115266519b77cb8d9a2f3",
+      "library_sha256": "631041bdfd2d4e63f130f1db4b19e712a481fede336eb94b9fab5328c7721f2d",
+      "command": [
+        "clang++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-DSKIP_RUNTIME_CHECKS",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/implicit_treap_copy_capacity_test.cpp",
+        "-o",
+        "/tmp/sirkit_treap_convenience_20261026/clang++_True_implicit_treap_copy_capacity_test"
+      ],
+      "status": "PASS",
+      "stdout": "nothrow existing-capacity copy used no allocation; growing-copy allocation failure preserved the destination\n"
+    },
+    {
+      "compiler": "clang++",
+      "skip_runtime_checks": true,
+      "source": "Verify/current/tests/implicit_treap_copy_exception_test.cpp",
+      "source_sha256": "a1208e8079af8a5995eb10b6fd65c43115c4040714ec1477ef1aa6c5a211ec55",
+      "library_sha256": "631041bdfd2d4e63f130f1db4b19e712a481fede336eb94b9fab5328c7721f2d",
+      "command": [
+        "clang++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-DSKIP_RUNTIME_CHECKS",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/implicit_treap_copy_exception_test.cpp",
+        "-o",
+        "/tmp/sirkit_treap_convenience_20261026/clang++_True_implicit_treap_copy_exception_test"
+      ],
+      "status": "PASS",
+      "stdout": "450 injected failures preserved the destination; 20 successful copies and self-assignment passed\n"
+    },
+    {
+      "compiler": "clang++",
+      "skip_runtime_checks": true,
+      "source": "Verify/current/tests/implicit_treap_ids_allocation_test.cpp",
+      "source_sha256": "30513438ac4174e48b48234ed7d1dae337c71b44f24b59f5a168c006776d42f8",
+      "library_sha256": "631041bdfd2d4e63f130f1db4b19e712a481fede336eb94b9fab5328c7721f2d",
+      "command": [
+        "clang++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-DSKIP_RUNTIME_CHECKS",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/implicit_treap_ids_allocation_test.cpp",
+        "-o",
+        "/tmp/sirkit_treap_convenience_20261026/clang++_True_implicit_treap_ids_allocation_test"
+      ],
+      "status": "PASS",
+      "stdout": "3 copy failures, 2 insertion failures: contents and IDs preserved\n"
+    },
+    {
+      "compiler": "clang++",
+      "skip_runtime_checks": true,
+      "source": "Verify/current/tests/implicit_treap_ids_test.cpp",
+      "source_sha256": "29abfeb285e018b65f78d93c0fbfa4412cb780c753465092aea9371376b43443",
+      "library_sha256": "631041bdfd2d4e63f130f1db4b19e712a481fede336eb94b9fab5328c7721f2d",
+      "command": [
+        "clang++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-DSKIP_RUNTIME_CHECKS",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/implicit_treap_ids_test.cpp",
+        "-o",
+        "/tmp/sirkit_treap_convenience_20261026/clang++_True_implicit_treap_ids_test"
+      ],
+      "status": "PASS",
+      "stdout": "{\"checks\":868375,\"status\":\"PASS\"}\n"
+    },
+    {
+      "compiler": "clang++",
+      "skip_runtime_checks": true,
+      "source": "Verify/current/tests/implicit_treap_noncommutative_test.cpp",
+      "source_sha256": "355902488df55620a4d8e887dc984cec2a7f96ce4c01c0de5c265b55cad94cb5",
+      "library_sha256": "631041bdfd2d4e63f130f1db4b19e712a481fede336eb94b9fab5328c7721f2d",
+      "command": [
+        "clang++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-DSKIP_RUNTIME_CHECKS",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/implicit_treap_noncommutative_test.cpp",
+        "-o",
+        "/tmp/sirkit_treap_convenience_20261026/clang++_True_implicit_treap_noncommutative_test"
+      ],
+      "status": "PASS",
+      "stdout": "100000 independent noncommutative/lazy/reverse/insert/erase mixed operations passed\n"
+    },
+    {
+      "compiler": "clang++",
+      "skip_runtime_checks": true,
+      "source": "Examples/implicit_treap_example.cpp",
+      "source_sha256": "ebb663c20582f584331fcad97bf78db45c7bdcb17aa05cef1bf9f7b1f14446c5",
+      "library_sha256": "631041bdfd2d4e63f130f1db4b19e712a481fede336eb94b9fab5328c7721f2d",
+      "command": [
+        "clang++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-DSKIP_RUNTIME_CHECKS",
+        "/home/reinsirk/Atcoder_Env/Examples/implicit_treap_example.cpp",
+        "-o",
+        "/tmp/sirkit_treap_convenience_20261026/clang++_True_implicit_treap_example"
+      ],
+      "status": "PASS",
+      "stdout": "24 28\n2\n2\n5 7 12 4 \n1 4\n7 2\n2 2 1\n2 4\n2 1\n10 30\n250\n250\n250\n0\n1\n"
+    },
+    {
+      "compiler": "clang++",
+      "skip_runtime_checks": true,
+      "source": "Examples/implicit_treap_erase_between_example.cpp",
+      "source_sha256": "e929f1c5122c0791b8dfe01df6c76c9ea790d5e44923b74d3be9255917826ea1",
+      "library_sha256": "631041bdfd2d4e63f130f1db4b19e712a481fede336eb94b9fab5328c7721f2d",
+      "command": [
+        "clang++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-DSKIP_RUNTIME_CHECKS",
+        "/home/reinsirk/Atcoder_Env/Examples/implicit_treap_erase_between_example.cpp",
+        "-o",
+        "/tmp/sirkit_treap_convenience_20261026/clang++_True_implicit_treap_erase_between_example"
+      ],
+      "status": "PASS",
+      "stdout": "1\n5\n"
+    },
+    {
+      "source": "Verify/current/tests/implicit_treap_convenience_test.cpp",
+      "source_sha256": "2e276cb1a3a7322a4e1ea60778bb23bafaae2bb6b501c1882aae7e4ddbbaafa9",
+      "library_sha256": "631041bdfd2d4e63f130f1db4b19e712a481fede336eb94b9fab5328c7721f2d",
+      "command": [
+        "clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O1",
+        "-g",
+        "-fsanitize=address,undefined",
+        "-fno-omit-frame-pointer",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/implicit_treap_convenience_test.cpp",
+        "-o",
+        "/tmp/sirkit_treap_convenience_20261026/convenience_sanitized"
+      ],
+      "sanitizers": "ASan + UBSan; leak detection disabled",
+      "status": "PASS",
+      "stdout": "{\"checks\":936270,\"status\":\"PASS\"}\n"
+    }
+  ],
+  "verify": [
+    {
+      "id": "implicit_treap_affine",
+      "compiler": "g++",
+      "skip_runtime_checks": false,
+      "standard_fallback": false,
+      "submission_sha256": "d9e9a15d6212d3c78139e8b31d6abdeae7d806bdb3f55fe19d2b01483b4bd806",
+      "tested_source_sha256": "913168b8524da2fbdd28a9c5d9179cd67eb22293472e14e14d9ee346fb2457bb",
+      "command": [
+        "g++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "/tmp/atcoder_verify_lwn2ra47/implicit_treap_affine_checked.cpp"
+      ],
+      "compile_ok": true,
+      "diagnostics": "",
+      "samples": [
+        {
+          "passed": true,
+          "returncode": 0,
+          "stdout": "1110\n111000\n11011\n",
+          "stderr": ""
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "implicit_treap_affine",
+      "compiler": "g++",
+      "skip_runtime_checks": true,
+      "standard_fallback": false,
+      "submission_sha256": "d9e9a15d6212d3c78139e8b31d6abdeae7d806bdb3f55fe19d2b01483b4bd806",
+      "tested_source_sha256": "d9e9a15d6212d3c78139e8b31d6abdeae7d806bdb3f55fe19d2b01483b4bd806",
+      "command": [
+        "g++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "/home/reinsirk/Atcoder_Env/Verify/current/submissions/implicit_treap_affine.cpp"
+      ],
+      "compile_ok": true,
+      "diagnostics": "",
+      "samples": [
+        {
+          "passed": true,
+          "returncode": 0,
+          "stdout": "1110\n111000\n11011\n",
+          "stderr": ""
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "implicit_treap_deque",
+      "compiler": "g++",
+      "skip_runtime_checks": false,
+      "standard_fallback": false,
+      "submission_sha256": "512b6f637c6848d4315efebd55c0d9776792ffb837486f7351e15f900bd9b538",
+      "tested_source_sha256": "e969011bef2c456b12517581ab45a94864f781502142aac62d8da4d426758e48",
+      "command": [
+        "g++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "/tmp/atcoder_verify_lwn2ra47/implicit_treap_deque_checked.cpp"
+      ],
+      "compile_ok": true,
+      "diagnostics": "",
+      "samples": [
+        {
+          "passed": true,
+          "returncode": 0,
+          "stdout": "17\n25\n7\n",
+          "stderr": ""
+        },
+        {
+          "passed": true,
+          "returncode": 0,
+          "stdout": "1333\n",
+          "stderr": ""
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "implicit_treap_deque",
+      "compiler": "g++",
+      "skip_runtime_checks": true,
+      "standard_fallback": false,
+      "submission_sha256": "512b6f637c6848d4315efebd55c0d9776792ffb837486f7351e15f900bd9b538",
+      "tested_source_sha256": "512b6f637c6848d4315efebd55c0d9776792ffb837486f7351e15f900bd9b538",
+      "command": [
+        "g++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "/home/reinsirk/Atcoder_Env/Verify/current/submissions/implicit_treap_deque.cpp"
+      ],
+      "compile_ok": true,
+      "diagnostics": "/home/reinsirk/Atcoder_Env/Verify/current/submissions/implicit_treap_deque.cpp: In function 'int main()':\n/home/reinsirk/Atcoder_Env/Verify/current/submissions/implicit_treap_deque.cpp:1020:23: warning: 'type' may be used uninitialized [-Wmaybe-uninitialized]\n 1020 |         if (type == 0 || type == 1) {\n      |             ~~~~~~~~~~^~~~~~~~~~~~\n/home/reinsirk/Atcoder_Env/Verify/current/submissions/implicit_treap_deque.cpp:1019:13: note: 'type' was declared here\n 1019 |         int type; verify_in >> type;\n      |             ^~~~\n",
+      "samples": [
+        {
+          "passed": true,
+          "returncode": 0,
+          "stdout": "17\n25\n7\n",
+          "stderr": ""
+        },
+        {
+          "passed": true,
+          "returncode": 0,
+          "stdout": "1333\n",
+          "stderr": ""
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "implicit_treap_erase_between",
+      "compiler": "g++",
+      "skip_runtime_checks": false,
+      "standard_fallback": false,
+      "submission_sha256": "0c8d27537a84a29df8a91982cfbfc85d55b3fd3fe7bf4b974328360c4d23d364",
+      "tested_source_sha256": "3e1aec228e76012c5191aff4363cddb0bc47507f1ca96f163e9689949d6fd177",
+      "command": [
+        "g++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "/tmp/atcoder_verify_lwn2ra47/implicit_treap_erase_between_checked.cpp"
+      ],
+      "compile_ok": true,
+      "diagnostics": "",
+      "samples": [
+        {
+          "passed": true,
+          "returncode": 0,
+          "stdout": "1\n5\n",
+          "stderr": ""
+        },
+        {
+          "passed": true,
+          "returncode": 0,
+          "stdout": "0\n",
+          "stderr": ""
+        },
+        {
+          "passed": true,
+          "returncode": 0,
+          "stdout": "1\n0\n0\n0\n",
+          "stderr": ""
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "implicit_treap_erase_between",
+      "compiler": "g++",
+      "skip_runtime_checks": true,
+      "standard_fallback": false,
+      "submission_sha256": "0c8d27537a84a29df8a91982cfbfc85d55b3fd3fe7bf4b974328360c4d23d364",
+      "tested_source_sha256": "0c8d27537a84a29df8a91982cfbfc85d55b3fd3fe7bf4b974328360c4d23d364",
+      "command": [
+        "g++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "/home/reinsirk/Atcoder_Env/Verify/current/submissions/implicit_treap_erase_between.cpp"
+      ],
+      "compile_ok": true,
+      "diagnostics": "",
+      "samples": [
+        {
+          "passed": true,
+          "returncode": 0,
+          "stdout": "1\n5\n",
+          "stderr": ""
+        },
+        {
+          "passed": true,
+          "returncode": 0,
+          "stdout": "0\n",
+          "stderr": ""
+        },
+        {
+          "passed": true,
+          "returncode": 0,
+          "stdout": "1\n0\n0\n0\n",
+          "stderr": ""
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "implicit_treap_affine",
+      "compiler": "clang++",
+      "skip_runtime_checks": false,
+      "standard_fallback": true,
+      "submission_sha256": "d9e9a15d6212d3c78139e8b31d6abdeae7d806bdb3f55fe19d2b01483b4bd806",
+      "tested_source_sha256": "913168b8524da2fbdd28a9c5d9179cd67eb22293472e14e14d9ee346fb2457bb",
+      "command": [
+        "clang++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-U__SIZEOF_INT128__",
+        "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+        "-DSIRKIT_LINE_CONTAINER_FORCE_PORTABLE",
+        "-DSIRKIT_DISABLE_SIMD",
+        "/tmp/atcoder_verify_y6ye_h6r/implicit_treap_affine_checked.cpp"
+      ],
+      "compile_ok": true,
+      "diagnostics": "",
+      "samples": [
+        {
+          "passed": true,
+          "returncode": 0,
+          "stdout": "1110\n111000\n11011\n",
+          "stderr": ""
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "implicit_treap_affine",
+      "compiler": "clang++",
+      "skip_runtime_checks": true,
+      "standard_fallback": true,
+      "submission_sha256": "d9e9a15d6212d3c78139e8b31d6abdeae7d806bdb3f55fe19d2b01483b4bd806",
+      "tested_source_sha256": "d9e9a15d6212d3c78139e8b31d6abdeae7d806bdb3f55fe19d2b01483b4bd806",
+      "command": [
+        "clang++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-U__SIZEOF_INT128__",
+        "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+        "-DSIRKIT_LINE_CONTAINER_FORCE_PORTABLE",
+        "-DSIRKIT_DISABLE_SIMD",
+        "/home/reinsirk/Atcoder_Env/Verify/current/submissions/implicit_treap_affine.cpp"
+      ],
+      "compile_ok": true,
+      "diagnostics": "",
+      "samples": [
+        {
+          "passed": true,
+          "returncode": 0,
+          "stdout": "1110\n111000\n11011\n",
+          "stderr": ""
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "implicit_treap_deque",
+      "compiler": "clang++",
+      "skip_runtime_checks": false,
+      "standard_fallback": true,
+      "submission_sha256": "512b6f637c6848d4315efebd55c0d9776792ffb837486f7351e15f900bd9b538",
+      "tested_source_sha256": "e969011bef2c456b12517581ab45a94864f781502142aac62d8da4d426758e48",
+      "command": [
+        "clang++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-U__SIZEOF_INT128__",
+        "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+        "-DSIRKIT_LINE_CONTAINER_FORCE_PORTABLE",
+        "-DSIRKIT_DISABLE_SIMD",
+        "/tmp/atcoder_verify_y6ye_h6r/implicit_treap_deque_checked.cpp"
+      ],
+      "compile_ok": true,
+      "diagnostics": "",
+      "samples": [
+        {
+          "passed": true,
+          "returncode": 0,
+          "stdout": "17\n25\n7\n",
+          "stderr": ""
+        },
+        {
+          "passed": true,
+          "returncode": 0,
+          "stdout": "1333\n",
+          "stderr": ""
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "implicit_treap_deque",
+      "compiler": "clang++",
+      "skip_runtime_checks": true,
+      "standard_fallback": true,
+      "submission_sha256": "512b6f637c6848d4315efebd55c0d9776792ffb837486f7351e15f900bd9b538",
+      "tested_source_sha256": "512b6f637c6848d4315efebd55c0d9776792ffb837486f7351e15f900bd9b538",
+      "command": [
+        "clang++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-U__SIZEOF_INT128__",
+        "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+        "-DSIRKIT_LINE_CONTAINER_FORCE_PORTABLE",
+        "-DSIRKIT_DISABLE_SIMD",
+        "/home/reinsirk/Atcoder_Env/Verify/current/submissions/implicit_treap_deque.cpp"
+      ],
+      "compile_ok": true,
+      "diagnostics": "",
+      "samples": [
+        {
+          "passed": true,
+          "returncode": 0,
+          "stdout": "17\n25\n7\n",
+          "stderr": ""
+        },
+        {
+          "passed": true,
+          "returncode": 0,
+          "stdout": "1333\n",
+          "stderr": ""
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "implicit_treap_erase_between",
+      "compiler": "clang++",
+      "skip_runtime_checks": false,
+      "standard_fallback": true,
+      "submission_sha256": "0c8d27537a84a29df8a91982cfbfc85d55b3fd3fe7bf4b974328360c4d23d364",
+      "tested_source_sha256": "3e1aec228e76012c5191aff4363cddb0bc47507f1ca96f163e9689949d6fd177",
+      "command": [
+        "clang++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-U__SIZEOF_INT128__",
+        "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+        "-DSIRKIT_LINE_CONTAINER_FORCE_PORTABLE",
+        "-DSIRKIT_DISABLE_SIMD",
+        "/tmp/atcoder_verify_y6ye_h6r/implicit_treap_erase_between_checked.cpp"
+      ],
+      "compile_ok": true,
+      "diagnostics": "",
+      "samples": [
+        {
+          "passed": true,
+          "returncode": 0,
+          "stdout": "1\n5\n",
+          "stderr": ""
+        },
+        {
+          "passed": true,
+          "returncode": 0,
+          "stdout": "0\n",
+          "stderr": ""
+        },
+        {
+          "passed": true,
+          "returncode": 0,
+          "stdout": "1\n0\n0\n0\n",
+          "stderr": ""
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "implicit_treap_erase_between",
+      "compiler": "clang++",
+      "skip_runtime_checks": true,
+      "standard_fallback": true,
+      "submission_sha256": "0c8d27537a84a29df8a91982cfbfc85d55b3fd3fe7bf4b974328360c4d23d364",
+      "tested_source_sha256": "0c8d27537a84a29df8a91982cfbfc85d55b3fd3fe7bf4b974328360c4d23d364",
+      "command": [
+        "clang++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-U__SIZEOF_INT128__",
+        "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+        "-DSIRKIT_LINE_CONTAINER_FORCE_PORTABLE",
+        "-DSIRKIT_DISABLE_SIMD",
+        "/home/reinsirk/Atcoder_Env/Verify/current/submissions/implicit_treap_erase_between.cpp"
+      ],
+      "compile_ok": true,
+      "diagnostics": "",
+      "samples": [
+        {
+          "passed": true,
+          "returncode": 0,
+          "stdout": "1\n5\n",
+          "stderr": ""
+        },
+        {
+          "passed": true,
+          "returncode": 0,
+          "stdout": "0\n",
+          "stderr": ""
+        },
+        {
+          "passed": true,
+          "returncode": 0,
+          "stdout": "1\n0\n0\n0\n",
+          "stderr": ""
+        }
+      ],
+      "passed": true
+    }
+  ],
+  "notes": [
+    "GCC/Clang、C++23、検査あり/なし。",
+    "N<=8の全l/r/移動先組合せ、vector参照の4 seeds x 3200操作、遅延反転・作用、匿名要素、ID再利用、同一/隣接/逆順の端点、文字列連結による非可換集約を検証。",
+    "既存のコピー例外・容量再利用・アフィン作用・ID/確保失敗テストも実行。",
+    "ASan/UBSanはPASS。LeakSanitizerは無効にしており検証済みとはしない。",
+    "オンライン未提出。過去の提出記録は更新しない。速度改善を主張する変更ではない。"
+  ]
+}
