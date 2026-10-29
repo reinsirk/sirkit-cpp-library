@@ -1,6 +1,6 @@
 #define SKIP_RUNTIME_CHECKS
 // Verify: https://judge.yosupo.jp/problem/persistent_unionfind
-// Submission: https://judge.yosupo.jp/submission/412456
+// Submission: https://judge.yosupo.jp/submission/414055
 
 // Library: DataStructure/persistent-union-find.cpp
 // SPDX-License-Identifier: CC0-1.0
@@ -245,6 +245,12 @@ private:
         values[b & (width - 1)] = y;
         return result;
     }
+    T get_existing(Node* n, std::int64_t k) const {
+        const auto index = static_cast<std::uint64_t>(k);
+        for (int d = levels_; d > 0; --d)
+            n = n->children()[(index >> (d * shift)) & (width - 1)];
+        return n->values()[index & (width - 1)];
+    }
     T get_unchecked(Node* n, std::int64_t k) const {
         const auto index = static_cast<std::uint64_t>(k);
         for (int d = levels_; d > 0; --d) {
@@ -332,7 +338,11 @@ struct PersistentUnionFind {
     std::vector<std::vector<int>> groups(Node* r) const {
         check_version(r);
         std::vector<int> leaders(size()), count(size(), 0), slot(size());
-        for (int i = 0; i < size(); ++i) ++count[leaders[i] = find(i, r)];
+        if constexpr (PersistentArray<int>::compact_nodes) {
+            for (int i = 0; i < size(); ++i) ++count[leaders[i] = leader_existing_parents(i, r)];
+        } else {
+            for (int i = 0; i < size(); ++i) ++count[leaders[i] = find(i, r)];
+        }
         std::vector<std::vector<int>> result;
         for (int i = 0; i < size(); ++i) if (count[i]) {
             slot[i] = static_cast<int>(result.size()); result.emplace_back(); result.back().reserve(count[i]);
@@ -342,6 +352,12 @@ struct PersistentUnionFind {
     }
     std::vector<std::vector<int>> groups() const { return groups(root); }
 private:
+    // groupsで版・添字を確かめた後に使う。親の配列経路は同じ版で明示更新済み。
+    int leader_existing_parents(int i, Node* r) const {
+        int value = arr.get_unchecked(r, i);
+        while (value >= 0) { i = value; value = arr.get_existing(r, i); }
+        return i;
+    }
     void check_version(Node* r) const {
 #ifndef SKIP_RUNTIME_CHECKS
         if (!r && size() != 0) throw std::invalid_argument("PersistentUnionFind: null version");

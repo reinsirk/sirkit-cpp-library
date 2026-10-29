@@ -6225,10 +6225,26 @@ struct LineContainer : std::multiset<Line<T>, reinsirk::detail::LineComparator<T
   static bool boundary_less(const Line<T>& a, const Line<T>& b) {
     return a.p < b.p;
   }
+  static bool dominated_at_boundary(const Line<T>& left, const Line<T>& candidate, const Line<T>& right)
+      requires (std::is_integral_v<T> && std::numeric_limits<T>::digits <= 31 && objective == MINIMIZE) {
+    // 積はint64_tに収まる。第2比較を厳密にして同点時の保持も維持する。
+    using Wide = std::int64_t;
+    const Wide boundary = left.p;
+    const Wide first = (Wide(candidate.k) - Wide(left.k)) * boundary;
+    const Wide second = (Wide(candidate.k) - Wide(right.k)) * (boundary + 1);
+    return first >= Wide(left.m) - Wide(candidate.m) && second > Wide(right.m) - Wide(candidate.m);
+  }
+  template <bool known_order = false>
   static bool intersection(Line<T> const& a, Line<T> const& b) {
     if constexpr (std::is_integral_v<T>) {
       using U = std::make_unsigned_t<T>;
-      const bool negative_n = b.m < a.m, negative_d = a.k < b.k;
+      const bool negative_n = b.m < a.m;
+      const bool negative_d = [&] {
+#if defined(__GNUC__) && !defined(__clang__)
+        if constexpr (known_order && sizeof(T) == 8 && objective == MINIMIZE) return false;
+#endif
+        return a.k < b.k;
+      }();
       const U n = negative_n ? U(a.m) - U(b.m) : U(b.m) - U(a.m);
       const U d = negative_d ? U(b.k) - U(a.k) : U(a.k) - U(b.k);
       U q = n / d;
@@ -6362,47 +6378,94 @@ struct LineContainer : std::multiset<Line<T>, reinsirk::detail::LineComparator<T
     if constexpr (std::is_integral_v<T>) {
       // 小さい包絡では、確保前に不要な直線を除く。
       if (super::size() <= 256) {
-        Line<T> candidate{k, m, inf};
-        auto z = lower_bound(candidate);
-        if (z != end() && z->k == k) {
-          const bool better = objective == MAXIMIZE ? m > z->m : m < z->m;
-          if (!better) return;
-        } else if (z != end() && intersection(candidate, *z)) return;
-        auto x = z;
-        const bool has_previous = z != begin();
-        Line<T> previous{};
-        // 下端だけで選ばれる直線と、選択域が型の範囲外の直線を区別する。
-        bool previous_below = false;
-        if (has_previous) {
-          --x;
-          previous = *x;
-          previous_below = intersection(previous, candidate);
-          if (!previous_below && previous.p >= candidate.p &&
-              (z == end() || candidate.p < z->p)) return;
-        }
-        auto y = insert(z, candidate);
-        while (z != end() && !boundary_less(*y, *z)) {
-          z = erase(z);
-          insect(y, z);
-        }
-        if (has_previous) {
-          x->p = previous.p;
-          if (!previous_below && !boundary_less(*x, *y)) insect(x, y = erase(y));
-        } else x = y;
-        while ((y = x) != begin() && !boundary_less(*--x, *y)) insect(x, erase(y));
-        // floorが最小値の直線はその点で最適になり得る。真の域外だけ除く。
-        if constexpr (std::is_integral_v<T>) {
-          const auto first = begin();
-          if (first->p == std::numeric_limits<T>::min()) [[unlikely]] {
-            const auto next = std::next(first);
-            if (next != end()) {
-              bool first_below;
-              insect_impl(first, next, first_below);
-              if (first_below) erase(first);
+        // 型・目的ごとに分け、既存の64bit・最大化経路の生成コードを保つ。
+        if constexpr (std::numeric_limits<T>::digits <= 31 && objective == MINIMIZE) {
+          Line<T> candidate{k, m, inf};
+          auto z = lower_bound(candidate);
+          if (z != end() && z->k == k) {
+            const bool better = objective == MAXIMIZE ? m > z->m : m < z->m;
+            if (!better) return;
+          }
+          auto x = z;
+          const bool has_previous = z != begin();
+          if (has_previous) --x;
+          if (has_previous && z != end() && dominated_at_boundary(*x, candidate, *z)) return;
+          if (z != end() && z->k != k && intersection(candidate, *z)) return;
+          Line<T> previous{};
+          // 下端だけで選ばれる直線と、選択域が型の範囲外の直線を区別する。
+          bool previous_below = false;
+          if (has_previous) {
+            previous = *x;
+            previous_below = intersection(previous, candidate);
+            if (!previous_below && previous.p >= candidate.p &&
+                (z == end() || candidate.p < z->p)) return;
+          }
+          auto y = insert(z, candidate);
+          while (z != end() && !boundary_less(*y, *z)) {
+            z = erase(z);
+            insect(y, z);
+          }
+          if (has_previous) {
+            x->p = previous.p;
+            if (!previous_below && !boundary_less(*x, *y)) insect(x, y = erase(y));
+          } else x = y;
+          while ((y = x) != begin() && !boundary_less(*--x, *y)) insect(x, erase(y));
+          // floorが最小値の直線はその点で最適になり得る。真の域外だけ除く。
+          if constexpr (std::is_integral_v<T>) {
+            const auto first = begin();
+            if (first->p == std::numeric_limits<T>::min()) [[unlikely]] {
+              const auto next = std::next(first);
+              if (next != end()) {
+                bool first_below;
+                insect_impl(first, next, first_below);
+                if (first_below) erase(first);
+              }
             }
           }
+          return;
+        } else {
+          Line<T> candidate{k, m, inf};
+          auto z = lower_bound(candidate);
+          if (z != end() && z->k == k) {
+            const bool better = objective == MAXIMIZE ? m > z->m : m < z->m;
+            if (!better) return;
+          } else if (z != end() && intersection<true>(candidate, *z)) return;
+          auto x = z;
+          const bool has_previous = z != begin();
+          Line<T> previous{};
+          // 下端だけで選ばれる直線と、選択域が型の範囲外の直線を区別する。
+          bool previous_below = false;
+          if (has_previous) {
+            --x;
+            previous = *x;
+            previous_below = intersection<true>(previous, candidate);
+            if (!previous_below && previous.p >= candidate.p &&
+                (z == end() || candidate.p < z->p)) return;
+          }
+          auto y = insert(z, candidate);
+          while (z != end() && !boundary_less(*y, *z)) {
+            z = erase(z);
+            insect(y, z);
+          }
+          if (has_previous) {
+            x->p = previous.p;
+            if (!previous_below && !boundary_less(*x, *y)) insect(x, y = erase(y));
+          } else x = y;
+          while ((y = x) != begin() && !boundary_less(*--x, *y)) insect(x, erase(y));
+          // floorが最小値の直線はその点で最適になり得る。真の域外だけ除く。
+          if constexpr (std::is_integral_v<T>) {
+            const auto first = begin();
+            if (first->p == std::numeric_limits<T>::min()) [[unlikely]] {
+              const auto next = std::next(first);
+              if (next != end()) {
+                bool first_below;
+                insect_impl(first, next, first_below);
+                if (first_below) erase(first);
+              }
+            }
+          }
+          return;
         }
-        return;
       }
     }
     auto z = insert({k, m, 0}), y = z++, x = y;
@@ -6594,10 +6657,26 @@ struct LineContainer : std::multiset<Line<T>, reinsirk::detail::LineComparator<T
   static bool boundary_less(const Line<T>& a, const Line<T>& b) {
     return a.p < b.p;
   }
+  static bool dominated_at_boundary(const Line<T>& left, const Line<T>& candidate, const Line<T>& right)
+      requires (std::is_integral_v<T> && std::numeric_limits<T>::digits <= 31 && objective == MINIMIZE) {
+    // 積はint64_tに収まる。第2比較を厳密にして同点時の保持も維持する。
+    using Wide = std::int64_t;
+    const Wide boundary = left.p;
+    const Wide first = (Wide(candidate.k) - Wide(left.k)) * boundary;
+    const Wide second = (Wide(candidate.k) - Wide(right.k)) * (boundary + 1);
+    return first >= Wide(left.m) - Wide(candidate.m) && second > Wide(right.m) - Wide(candidate.m);
+  }
+  template <bool known_order = false>
   static bool intersection(Line<T> const& a, Line<T> const& b) {
     if constexpr (std::is_integral_v<T>) {
       using U = std::make_unsigned_t<T>;
-      const bool negative_n = b.m < a.m, negative_d = a.k < b.k;
+      const bool negative_n = b.m < a.m;
+      const bool negative_d = [&] {
+#if defined(__GNUC__) && !defined(__clang__)
+        if constexpr (known_order && sizeof(T) == 8 && objective == MINIMIZE) return false;
+#endif
+        return a.k < b.k;
+      }();
       const U n = negative_n ? U(a.m) - U(b.m) : U(b.m) - U(a.m);
       const U d = negative_d ? U(b.k) - U(a.k) : U(a.k) - U(b.k);
       U q = n / d;
@@ -6731,47 +6810,94 @@ struct LineContainer : std::multiset<Line<T>, reinsirk::detail::LineComparator<T
     if constexpr (std::is_integral_v<T>) {
       // 小さい包絡では、確保前に不要な直線を除く。
       if (super::size() <= 256) {
-        Line<T> candidate{k, m, inf};
-        auto z = lower_bound(candidate);
-        if (z != end() && z->k == k) {
-          const bool better = objective == MAXIMIZE ? m > z->m : m < z->m;
-          if (!better) return;
-        } else if (z != end() && intersection(candidate, *z)) return;
-        auto x = z;
-        const bool has_previous = z != begin();
-        Line<T> previous{};
-        // 下端だけで選ばれる直線と、選択域が型の範囲外の直線を区別する。
-        bool previous_below = false;
-        if (has_previous) {
-          --x;
-          previous = *x;
-          previous_below = intersection(previous, candidate);
-          if (!previous_below && previous.p >= candidate.p &&
-              (z == end() || candidate.p < z->p)) return;
-        }
-        auto y = insert(z, candidate);
-        while (z != end() && !boundary_less(*y, *z)) {
-          z = erase(z);
-          insect(y, z);
-        }
-        if (has_previous) {
-          x->p = previous.p;
-          if (!previous_below && !boundary_less(*x, *y)) insect(x, y = erase(y));
-        } else x = y;
-        while ((y = x) != begin() && !boundary_less(*--x, *y)) insect(x, erase(y));
-        // floorが最小値の直線はその点で最適になり得る。真の域外だけ除く。
-        if constexpr (std::is_integral_v<T>) {
-          const auto first = begin();
-          if (first->p == std::numeric_limits<T>::min()) [[unlikely]] {
-            const auto next = std::next(first);
-            if (next != end()) {
-              bool first_below;
-              insect_impl(first, next, first_below);
-              if (first_below) erase(first);
+        // 型・目的ごとに分け、既存の64bit・最大化経路の生成コードを保つ。
+        if constexpr (std::numeric_limits<T>::digits <= 31 && objective == MINIMIZE) {
+          Line<T> candidate{k, m, inf};
+          auto z = lower_bound(candidate);
+          if (z != end() && z->k == k) {
+            const bool better = objective == MAXIMIZE ? m > z->m : m < z->m;
+            if (!better) return;
+          }
+          auto x = z;
+          const bool has_previous = z != begin();
+          if (has_previous) --x;
+          if (has_previous && z != end() && dominated_at_boundary(*x, candidate, *z)) return;
+          if (z != end() && z->k != k && intersection(candidate, *z)) return;
+          Line<T> previous{};
+          // 下端だけで選ばれる直線と、選択域が型の範囲外の直線を区別する。
+          bool previous_below = false;
+          if (has_previous) {
+            previous = *x;
+            previous_below = intersection(previous, candidate);
+            if (!previous_below && previous.p >= candidate.p &&
+                (z == end() || candidate.p < z->p)) return;
+          }
+          auto y = insert(z, candidate);
+          while (z != end() && !boundary_less(*y, *z)) {
+            z = erase(z);
+            insect(y, z);
+          }
+          if (has_previous) {
+            x->p = previous.p;
+            if (!previous_below && !boundary_less(*x, *y)) insect(x, y = erase(y));
+          } else x = y;
+          while ((y = x) != begin() && !boundary_less(*--x, *y)) insect(x, erase(y));
+          // floorが最小値の直線はその点で最適になり得る。真の域外だけ除く。
+          if constexpr (std::is_integral_v<T>) {
+            const auto first = begin();
+            if (first->p == std::numeric_limits<T>::min()) [[unlikely]] {
+              const auto next = std::next(first);
+              if (next != end()) {
+                bool first_below;
+                insect_impl(first, next, first_below);
+                if (first_below) erase(first);
+              }
             }
           }
+          return;
+        } else {
+          Line<T> candidate{k, m, inf};
+          auto z = lower_bound(candidate);
+          if (z != end() && z->k == k) {
+            const bool better = objective == MAXIMIZE ? m > z->m : m < z->m;
+            if (!better) return;
+          } else if (z != end() && intersection<true>(candidate, *z)) return;
+          auto x = z;
+          const bool has_previous = z != begin();
+          Line<T> previous{};
+          // 下端だけで選ばれる直線と、選択域が型の範囲外の直線を区別する。
+          bool previous_below = false;
+          if (has_previous) {
+            --x;
+            previous = *x;
+            previous_below = intersection<true>(previous, candidate);
+            if (!previous_below && previous.p >= candidate.p &&
+                (z == end() || candidate.p < z->p)) return;
+          }
+          auto y = insert(z, candidate);
+          while (z != end() && !boundary_less(*y, *z)) {
+            z = erase(z);
+            insect(y, z);
+          }
+          if (has_previous) {
+            x->p = previous.p;
+            if (!previous_below && !boundary_less(*x, *y)) insect(x, y = erase(y));
+          } else x = y;
+          while ((y = x) != begin() && !boundary_less(*--x, *y)) insect(x, erase(y));
+          // floorが最小値の直線はその点で最適になり得る。真の域外だけ除く。
+          if constexpr (std::is_integral_v<T>) {
+            const auto first = begin();
+            if (first->p == std::numeric_limits<T>::min()) [[unlikely]] {
+              const auto next = std::next(first);
+              if (next != end()) {
+                bool first_below;
+                insect_impl(first, next, first_below);
+                if (first_below) erase(first);
+              }
+            }
+          }
+          return;
         }
-        return;
       }
     }
     auto z = insert({k, m, 0}), y = z++, x = y;
@@ -7720,7 +7846,28 @@ class lazy_implicit_treap {
         Node(S x, std::uint64_t p)
             : value(x), forward(x), backward(std::move(x)), action(id()), priority(p) {}
     };
-    std::vector<Node> nodes_;
+    struct CompactNodeLayout {
+        S value, forward;
+        [[no_unique_address]] std::conditional_t<commutative_, EmptyAggregate, ReverseAggregate> backward;
+        F action;
+        int left = -1, right = -1, length = 1;
+        std::uint32_t priority_flags;
+        [[no_unique_address]] std::conditional_t<TrackIds, IdLink, NoIdLink> link;
+        CompactNodeLayout(S x, std::uint64_t p)
+            : value(x), forward(x), backward(std::move(x)), action(id()),
+              priority_flags(static_cast<std::uint32_t>(p >> 32) & ~std::uint32_t{3}) {}
+    };
+    // 64バイトに収まる単純な型だけを整列し、完全な優先度は補助配列に保持する。
+    static constexpr bool compact_nodes_ = sizeof(CompactNodeLayout) == 64 &&
+        std::is_trivially_copyable_v<S> && std::is_trivially_copyable_v<F> && !TrackIds;
+    struct alignas(sizeof(CompactNodeLayout) == 64 ? 64 : alignof(CompactNodeLayout)) CompactNode : CompactNodeLayout {
+        using CompactNodeLayout::CompactNodeLayout;
+    };
+    using StoredNode = std::conditional_t<compact_nodes_, CompactNode, Node>;
+    struct PriorityIndex { std::vector<std::uint64_t> slots; };
+    struct NoPriorityIndex {};
+    std::vector<StoredNode> nodes_;
+    [[no_unique_address]] std::conditional_t<compact_nodes_, PriorityIndex, NoPriorityIndex> priorities_;
     int root_ = -1, free_ = -1;
     std::uint64_t random_ = seed();
     [[no_unique_address]] std::conditional_t<TrackIds, IdIndex, NoIdIndex> ids_;
@@ -7733,6 +7880,45 @@ class lazy_implicit_treap {
         random_ = random_ * UINT64_C(0x6a09e667f3bcc909) + UINT64_C(0xbb67ae8584caa73b);
         return random_;
     }
+    // 上位ビットが一致する場合も64ビット値で順序を確定する。
+    bool higher_priority(int a, int b) const {
+        if constexpr (compact_nodes_) {
+            const auto x = nodes_[a].priority_flags, y = nodes_[b].priority_flags;
+            // 異なる上位キーの差は4以上で、下位2ビットのフラグに左右されない。
+            if ((x ^ y) >= 4) return x > y;
+            return priorities_.slots[a] > priorities_.slots[b];
+        } else return nodes_[a].priority > nodes_[b].priority;
+    }
+    bool first_has_priority(int a, int b) const {
+        if constexpr (compact_nodes_) return !higher_priority(b, a);
+        else return nodes_[a].priority >= nodes_[b].priority;
+    }
+    bool build_priority_less(int a, int b) const {
+        if constexpr (compact_nodes_) return priorities_.slots[a] < priorities_.slots[b];
+        else return nodes_[a].priority < nodes_[b].priority;
+    }
+    bool has_action(int p) const {
+        if constexpr (compact_nodes_) return (nodes_[p].priority_flags & 1) != 0;
+        else return nodes_[p].pending;
+    }
+    void set_action_pending(int p, bool value) {
+        if constexpr (compact_nodes_)
+            nodes_[p].priority_flags = (nodes_[p].priority_flags & ~std::uint32_t{1}) | std::uint32_t(value);
+        else nodes_[p].pending = value;
+    }
+    bool has_reversal(int p) const {
+        if constexpr (compact_nodes_) return (nodes_[p].priority_flags & 2) != 0;
+        else return nodes_[p].reversed;
+    }
+    void toggle_reversal(int p) {
+        if constexpr (compact_nodes_) nodes_[p].priority_flags ^= 2;
+        else nodes_[p].reversed = !nodes_[p].reversed;
+    }
+    void clear_reversal(int p) {
+        if constexpr (compact_nodes_) nodes_[p].priority_flags &= ~std::uint32_t{2};
+        else nodes_[p].reversed = false;
+    }
+    static constexpr bool deferred_actions_ = compact_nodes_ && sizeof(S) >= 16 && sizeof(F) >= 16;
     int length(int p) const { return p < 0 ? 0 : nodes_[p].length; }
     S forward(int p) const { return p < 0 ? e() : nodes_[p].forward; }
     S backward(int p) const {
@@ -7740,7 +7926,7 @@ class lazy_implicit_treap {
         else return p < 0 ? e() : nodes_[p].backward.value;
     }
     void pull(int p) {
-        Node& n = nodes_[p];
+        StoredNode& n = nodes_[p];
         if constexpr (TrackIds) {
             if (n.left >= 0) nodes_[n.left].link.parent = p;
             if (n.right >= 0) nodes_[n.right].link.parent = p;
@@ -7752,35 +7938,61 @@ class lazy_implicit_treap {
     }
     void act(int p, F f) {
         if (p < 0) return;
-        Node& n = nodes_[p];
-        n.value = mapping(f, n.value);
+        StoredNode& n = nodes_[p];
+        // 対象型では要素自身への作用をpushまでまとめ、集約には直ちに反映する。
+        if constexpr (!deferred_actions_) n.value = mapping(f, n.value);
         n.forward = mapping(f, n.forward);
         if constexpr (!commutative_) n.backward.value = mapping(f, n.backward.value);
-        n.action = n.pending ? composition(f, n.action) : f;
-        n.pending = true;
+        if constexpr (compact_nodes_) {
+            n.action = has_action(p) ? composition(f, n.action) : f;
+            set_action_pending(p, true);
+        } else {
+            n.action = n.pending ? composition(f, n.action) : f;
+            n.pending = true;
+        }
     }
     void flip(int p) {
         if (p < 0) return;
-        Node& n = nodes_[p];
-        std::swap(n.left, n.right);
+        StoredNode& n = nodes_[p];
+        if constexpr (!compact_nodes_) std::swap(n.left, n.right);
         if constexpr (!commutative_) std::swap(n.forward, n.backward.value);
-        n.reversed = !n.reversed;
+        if constexpr (compact_nodes_) toggle_reversal(p);
+        else n.reversed = !n.reversed;
     }
     void push(int p) {
-        Node& n = nodes_[p];
-        if (n.pending) {
-            act(n.left, n.action);
-            act(n.right, n.action);
-            n.pending = false;
-        }
-        if (n.reversed) {
-            flip(n.left);
-            flip(n.right);
-            n.reversed = false;
+        StoredNode& n = nodes_[p];
+        if constexpr (compact_nodes_) {
+            if (has_action(p)) {
+                if constexpr (deferred_actions_) n.value = mapping(n.action, n.value);
+                act(n.left, n.action);
+                act(n.right, n.action);
+                set_action_pending(p, false);
+            }
+            if (has_reversal(p)) {
+                std::swap(n.left, n.right);
+                flip(n.left);
+                flip(n.right);
+                clear_reversal(p);
+            }
+        } else {
+            if (n.pending) {
+                act(n.left, n.action);
+                act(n.right, n.action);
+                n.pending = false;
+            }
+            if (n.reversed) {
+                flip(n.left);
+                flip(n.right);
+                n.reversed = false;
+            }
         }
     }
     std::pair<int, int> split(int p, int k) {
         if (p < 0) return {-1, -1};
+        if constexpr (compact_nodes_) {
+            if (k == 0) return {-1, p};
+            if (k == length(p)) return {p, -1};
+        }
         push(p);
         const int left_size = length(nodes_[p].left);
         if (k <= left_size) {
@@ -7797,7 +8009,7 @@ class lazy_implicit_treap {
     int merge(int a, int b) {
         if (a < 0) return b;
         if (b < 0) return a;
-        if (nodes_[a].priority >= nodes_[b].priority) {
+        if (first_has_priority(a, b)) {
             push(a);
             nodes_[a].right = merge(nodes_[a].right, b);
             pull(a);
@@ -7824,7 +8036,7 @@ class lazy_implicit_treap {
     }
     int insert_sorted_node(int p, int fresh) {
         if (p < 0) return fresh;
-        if (nodes_[fresh].priority > nodes_[p].priority) {
+        if (higher_priority(fresh, p)) {
             auto [a, b] = split_sorted(p, nodes_[fresh].value);
             nodes_[fresh].left = a;
             nodes_[fresh].right = b;
@@ -7840,7 +8052,7 @@ class lazy_implicit_treap {
     }
     int insert_node(int p, int fresh, int position) {
         if (p < 0) return fresh;
-        if (nodes_[fresh].priority > nodes_[p].priority) {
+        if (higher_priority(fresh, p)) {
             auto [left, right] = split(p, position);
             nodes_[fresh].left = left;
             nodes_[fresh].right = right;
@@ -7858,19 +8070,27 @@ class lazy_implicit_treap {
         if (free_ >= 0) {
             int p = free_;
             free_ = nodes_[p].left;
-            nodes_[p] = Node(std::move(value), priority());
+            if constexpr (compact_nodes_) {
+                const auto fresh_priority = priority();
+                priorities_.slots[p] = fresh_priority;
+                nodes_[p] = StoredNode(std::move(value), fresh_priority);
+            } else nodes_[p] = Node(std::move(value), priority());
             return p;
         }
         if (nodes_.size() >= static_cast<std::size_t>(std::numeric_limits<int>::max()))
             throw std::length_error("lazy_implicit_treap capacity");
-        nodes_.emplace_back(std::move(value), priority());
+        if constexpr (compact_nodes_) {
+            priorities_.slots.push_back(priority());
+            try { nodes_.emplace_back(std::move(value), priorities_.slots.back()); }
+            catch (...) { priorities_.slots.pop_back(); throw; }
+        } else nodes_.emplace_back(std::move(value), priority());
         return static_cast<int>(nodes_.size()) - 1;
     }
     void recycle(int p) {
         if constexpr (TrackIds) {
             if (nodes_[p].link.identifier >= 0) ids_.slots[nodes_[p].link.identifier] = -1;
         }
-        nodes_[p] = Node(e(), 0);
+        if constexpr (!compact_nodes_) nodes_[p] = StoredNode(e(), 0);
         nodes_[p].left = free_;
         free_ = p;
     }
@@ -7905,7 +8125,7 @@ class lazy_implicit_treap {
         if (p < 0) return;
         release(nodes_[p].left);
         release(nodes_[p].right);
-        // 値と遅延作用を単位元へ戻して、スロットを再利用する。
+        // 所有する値を解放し、スロットを再利用する。
         recycle(p);
     }
     void check_position(int p, bool end_allowed = false) const {
@@ -7933,8 +8153,14 @@ class lazy_implicit_treap {
         if (l < k) apply_range(nodes_[p].left, l, std::min(r, k), f);
         if (l <= k && k < r) nodes_[p].value = mapping(f, nodes_[p].value);
         if (r > k + 1) apply_range(nodes_[p].right, std::max(0, l - k - 1), r - k - 1, f);
-        pull(p);
+        if constexpr (compact_nodes_) {
+            StoredNode& n = nodes_[p];
+            n.forward = op(op(forward(n.left), n.value), forward(n.right));
+            if constexpr (!commutative_)
+                n.backward.value = op(op(backward(n.right), n.value), backward(n.left));
+        } else pull(p);
     }
+    // 対象の可換集約は、並べ替えても部分木全体の値と要素数が変わらない。
     void reverse_range(int p, int l, int r) {
         if (l == 0 && r == length(p)) { flip(p); return; }
         push(p);
@@ -7949,7 +8175,7 @@ class lazy_implicit_treap {
             nodes_[p].left = merge(a, c);
             nodes_[p].right = merge(b, d);
         }
-        pull(p);
+        if constexpr (!compact_nodes_ || !commutative_) pull(p);
     }
     void rotate_range(int p, int l, int m, int r) {
         push(p);
@@ -7969,11 +8195,17 @@ class lazy_implicit_treap {
             nodes_[p].left = merge(merge(a, d), b);
             nodes_[p].right = merge(c, tail);
         }
-        pull(p);
+        if constexpr (!compact_nodes_ || !commutative_) pull(p);
+    }
+    void push_query(int p) {
+        if constexpr (compact_nodes_) {
+            if ((nodes_[p].priority_flags & 3) != 0) push(p);
+        } else push(p);
     }
     S query_prefix(int p, int r) {
         if (r == length(p)) return nodes_[p].forward;
-        push(p);
+        if constexpr (compact_nodes_) push_query(p);
+        else push(p);
         const int k = length(nodes_[p].left);
         if (r <= k) return query_prefix(nodes_[p].left, r);
         S result = k ? op(nodes_[nodes_[p].left].forward, nodes_[p].value) : nodes_[p].value;
@@ -7982,7 +8214,8 @@ class lazy_implicit_treap {
     }
     S query_suffix(int p, int l) {
         if (l == 0) return nodes_[p].forward;
-        push(p);
+        if constexpr (compact_nodes_) push_query(p);
+        else push(p);
         const int k = length(nodes_[p].left);
         if (l > k) return query_suffix(nodes_[p].right, l - k - 1);
         S result = l < k ? op(query_suffix(nodes_[p].left, l), nodes_[p].value) : nodes_[p].value;
@@ -7992,7 +8225,8 @@ class lazy_implicit_treap {
     S query(int p, int l, int r) {
         if (l == 0) return query_prefix(p, r);
         if (r == length(p)) return query_suffix(p, l);
-        push(p);
+        if constexpr (compact_nodes_) push_query(p);
+        else push(p);
         const int k = length(nodes_[p].left);
         if (r <= k) return query(nodes_[p].left, l, r);
         if (l > k) return query(nodes_[p].right, l - k - 1, r - k - 1);
@@ -8091,7 +8325,7 @@ public:
         stack.reserve(values.size());
         for (const S& value : values) {
             int p = allocate(value), left = -1;
-            while (!stack.empty() && nodes_[stack.back()].priority < nodes_[p].priority) {
+            while (!stack.empty() && build_priority_less(stack.back(), p)) {
                 left = stack.back();
                 stack.pop_back();
                 pull(left);
@@ -8106,13 +8340,17 @@ public:
     lazy_implicit_treap(const lazy_implicit_treap&) = default;
     lazy_implicit_treap& operator=(const lazy_implicit_treap& other) {
         if (this == &other) return *this;
-        if constexpr (std::is_nothrow_copy_constructible_v<Node> && std::is_nothrow_copy_assignable_v<Node>) {
+        if constexpr (std::is_nothrow_copy_constructible_v<StoredNode> && std::is_nothrow_copy_assignable_v<StoredNode>) {
             if (other.nodes_.size() <= nodes_.capacity()) {
                 if constexpr (TrackIds) {
                     auto next_ids = other.ids_;
+                    if constexpr (compact_nodes_) priorities_.slots = other.priorities_.slots;
                     nodes_ = other.nodes_;
                     ids_ = std::move(next_ids);
-                } else nodes_ = other.nodes_;
+                } else {
+                    if constexpr (compact_nodes_) priorities_.slots = other.priorities_.slots;
+                    nodes_ = other.nodes_;
+                }
                 root_ = other.root_;
                 free_ = other.free_;
                 random_ = other.random_;
@@ -8126,7 +8364,9 @@ public:
     lazy_implicit_treap(lazy_implicit_treap&& other) noexcept
         : nodes_(std::move(other.nodes_)), root_(std::exchange(other.root_, -1)),
           free_(std::exchange(other.free_, -1)), random_(other.random_), ids_(std::move(other.ids_)) {
+        if constexpr (compact_nodes_) priorities_.slots = std::move(other.priorities_.slots);
         other.nodes_.clear();
+        if constexpr (compact_nodes_) other.priorities_.slots.clear();
         if constexpr (TrackIds) other.ids_.slots.clear();
     }
     lazy_implicit_treap& operator=(lazy_implicit_treap&& other) noexcept {
@@ -8135,6 +8375,7 @@ public:
     }
     void swap(lazy_implicit_treap& other) noexcept {
         nodes_.swap(other.nodes_);
+        if constexpr (compact_nodes_) priorities_.slots.swap(other.priorities_.slots);
         std::swap(root_, other.root_);
         std::swap(free_, other.free_);
         std::swap(random_, other.random_);
@@ -8145,12 +8386,14 @@ public:
     bool empty() const { return root_ < 0; }
     void clear() {
         nodes_.clear(); root_ = free_ = -1;
+        if constexpr (compact_nodes_) priorities_.slots.clear();
         if constexpr (TrackIds) ids_.slots.clear();
     }
     void reserve(std::size_t n) {
         if (n > static_cast<std::size_t>(std::numeric_limits<int>::max()))
             throw std::length_error("lazy_implicit_treap capacity");
         nodes_.reserve(n);
+        if constexpr (compact_nodes_) priorities_.slots.reserve(n);
     }
     S get(int pos) {
         check_position(pos);

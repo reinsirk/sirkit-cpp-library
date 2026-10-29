@@ -48,3 +48,5 @@ auto result = points.max_with_point(2, 1);
 公開の`minlc`・`maxlc`・`Xmin`・`Xmax`・`Ymin`・`Ymax`は読み取り用です。包絡の直線は元点の`k=y,m=x`を保持します。外から書き換えたり、包絡だけに追加・削除したりすると、件数・座標範囲・内部参照の不変条件が壊れます。
 
 提出先は[Library Checker Line Add Get Min](https://judge.yosupo.jp/problem/line_add_get_min)です。直線`a*x+b`を点`(a,b)`、照会を方向`(x,1)`へ変換します。全方向・浮動係数・追加API・所有権はローカル検査で補います。出典とライセンスの調査根拠は[監査記録](../Audit/provenance-line-container-2d-min-2026-10-22.json)に置きます。
+
+[独立API試験](../Verify/current/tests/line_container_2d_reuse_test.cpp)では全登録点の内積を参照とし、値・最適点・丸め・範囲制限・コピー・ムーブを照合します。[確保失敗試験](../Verify/current/tests/line_container_2d_allocation_test.cpp)では、追加失敗時の全消去とコピー代入失敗時の保持を確認します。

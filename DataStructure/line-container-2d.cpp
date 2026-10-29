@@ -110,10 +110,26 @@ struct LineContainer : std::multiset<Line<T>, reinsirk::detail::LineComparator<T
   static bool boundary_less(const Line<T>& a, const Line<T>& b) {
     return a.p < b.p;
   }
+  static bool dominated_at_boundary(const Line<T>& left, const Line<T>& candidate, const Line<T>& right)
+      requires (std::is_integral_v<T> && std::numeric_limits<T>::digits <= 31 && objective == MINIMIZE) {
+    // 積はint64_tに収まる。第2比較を厳密にして同点時の保持も維持する。
+    using Wide = std::int64_t;
+    const Wide boundary = left.p;
+    const Wide first = (Wide(candidate.k) - Wide(left.k)) * boundary;
+    const Wide second = (Wide(candidate.k) - Wide(right.k)) * (boundary + 1);
+    return first >= Wide(left.m) - Wide(candidate.m) && second > Wide(right.m) - Wide(candidate.m);
+  }
+  template <bool known_order = false>
   static bool intersection(Line<T> const& a, Line<T> const& b) {
     if constexpr (std::is_integral_v<T>) {
       using U = std::make_unsigned_t<T>;
-      const bool negative_n = b.m < a.m, negative_d = a.k < b.k;
+      const bool negative_n = b.m < a.m;
+      const bool negative_d = [&] {
+#if defined(__GNUC__) && !defined(__clang__)
+        if constexpr (known_order && sizeof(T) == 8 && objective == MINIMIZE) return false;
+#endif
+        return a.k < b.k;
+      }();
       const U n = negative_n ? U(a.m) - U(b.m) : U(b.m) - U(a.m);
       const U d = negative_d ? U(b.k) - U(a.k) : U(a.k) - U(b.k);
       U q = n / d;
@@ -247,47 +263,94 @@ struct LineContainer : std::multiset<Line<T>, reinsirk::detail::LineComparator<T
     if constexpr (std::is_integral_v<T>) {
       // 小さい包絡では、確保前に不要な直線を除く。
       if (super::size() <= 256) {
-        Line<T> candidate{k, m, inf};
-        auto z = lower_bound(candidate);
-        if (z != end() && z->k == k) {
-          const bool better = objective == MAXIMIZE ? m > z->m : m < z->m;
-          if (!better) return;
-        } else if (z != end() && intersection(candidate, *z)) return;
-        auto x = z;
-        const bool has_previous = z != begin();
-        Line<T> previous{};
-        // 下端だけで選ばれる直線と、選択域が型の範囲外の直線を区別する。
-        bool previous_below = false;
-        if (has_previous) {
-          --x;
-          previous = *x;
-          previous_below = intersection(previous, candidate);
-          if (!previous_below && previous.p >= candidate.p &&
-              (z == end() || candidate.p < z->p)) return;
-        }
-        auto y = insert(z, candidate);
-        while (z != end() && !boundary_less(*y, *z)) {
-          z = erase(z);
-          insect(y, z);
-        }
-        if (has_previous) {
-          x->p = previous.p;
-          if (!previous_below && !boundary_less(*x, *y)) insect(x, y = erase(y));
-        } else x = y;
-        while ((y = x) != begin() && !boundary_less(*--x, *y)) insect(x, erase(y));
-        // floorが最小値の直線はその点で最適になり得る。真の域外だけ除く。
-        if constexpr (std::is_integral_v<T>) {
-          const auto first = begin();
-          if (first->p == std::numeric_limits<T>::min()) [[unlikely]] {
-            const auto next = std::next(first);
-            if (next != end()) {
-              bool first_below;
-              insect_impl(first, next, first_below);
-              if (first_below) erase(first);
+        // 型・目的ごとに分け、既存の64bit・最大化経路の生成コードを保つ。
+        if constexpr (std::numeric_limits<T>::digits <= 31 && objective == MINIMIZE) {
+          Line<T> candidate{k, m, inf};
+          auto z = lower_bound(candidate);
+          if (z != end() && z->k == k) {
+            const bool better = objective == MAXIMIZE ? m > z->m : m < z->m;
+            if (!better) return;
+          }
+          auto x = z;
+          const bool has_previous = z != begin();
+          if (has_previous) --x;
+          if (has_previous && z != end() && dominated_at_boundary(*x, candidate, *z)) return;
+          if (z != end() && z->k != k && intersection(candidate, *z)) return;
+          Line<T> previous{};
+          // 下端だけで選ばれる直線と、選択域が型の範囲外の直線を区別する。
+          bool previous_below = false;
+          if (has_previous) {
+            previous = *x;
+            previous_below = intersection(previous, candidate);
+            if (!previous_below && previous.p >= candidate.p &&
+                (z == end() || candidate.p < z->p)) return;
+          }
+          auto y = insert(z, candidate);
+          while (z != end() && !boundary_less(*y, *z)) {
+            z = erase(z);
+            insect(y, z);
+          }
+          if (has_previous) {
+            x->p = previous.p;
+            if (!previous_below && !boundary_less(*x, *y)) insect(x, y = erase(y));
+          } else x = y;
+          while ((y = x) != begin() && !boundary_less(*--x, *y)) insect(x, erase(y));
+          // floorが最小値の直線はその点で最適になり得る。真の域外だけ除く。
+          if constexpr (std::is_integral_v<T>) {
+            const auto first = begin();
+            if (first->p == std::numeric_limits<T>::min()) [[unlikely]] {
+              const auto next = std::next(first);
+              if (next != end()) {
+                bool first_below;
+                insect_impl(first, next, first_below);
+                if (first_below) erase(first);
+              }
             }
           }
+          return;
+        } else {
+          Line<T> candidate{k, m, inf};
+          auto z = lower_bound(candidate);
+          if (z != end() && z->k == k) {
+            const bool better = objective == MAXIMIZE ? m > z->m : m < z->m;
+            if (!better) return;
+          } else if (z != end() && intersection<true>(candidate, *z)) return;
+          auto x = z;
+          const bool has_previous = z != begin();
+          Line<T> previous{};
+          // 下端だけで選ばれる直線と、選択域が型の範囲外の直線を区別する。
+          bool previous_below = false;
+          if (has_previous) {
+            --x;
+            previous = *x;
+            previous_below = intersection<true>(previous, candidate);
+            if (!previous_below && previous.p >= candidate.p &&
+                (z == end() || candidate.p < z->p)) return;
+          }
+          auto y = insert(z, candidate);
+          while (z != end() && !boundary_less(*y, *z)) {
+            z = erase(z);
+            insect(y, z);
+          }
+          if (has_previous) {
+            x->p = previous.p;
+            if (!previous_below && !boundary_less(*x, *y)) insect(x, y = erase(y));
+          } else x = y;
+          while ((y = x) != begin() && !boundary_less(*--x, *y)) insect(x, erase(y));
+          // floorが最小値の直線はその点で最適になり得る。真の域外だけ除く。
+          if constexpr (std::is_integral_v<T>) {
+            const auto first = begin();
+            if (first->p == std::numeric_limits<T>::min()) [[unlikely]] {
+              const auto next = std::next(first);
+              if (next != end()) {
+                bool first_below;
+                insect_impl(first, next, first_below);
+                if (first_below) erase(first);
+              }
+            }
+          }
+          return;
         }
-        return;
       }
     }
     auto z = insert({k, m, 0}), y = z++, x = y;
