@@ -1,6 +1,6 @@
 #define SKIP_RUNTIME_CHECKS
 // Verify: https://atcoder.jp/contests/abc234/tasks/abc234_d
-// Submission: https://atcoder.jp/contests/abc234/submissions/80247844
+// Submission: https://atcoder.jp/contests/abc234/submissions/80467513
 
 // Library: DataStructure/heap.cpp
 // SPDX-License-Identifier: CC0-1.0
@@ -34,8 +34,40 @@
 class Heap {
     std::vector<int> values_;
 
+#if defined(__GNUC__) && !defined(__clang__) && !defined(__AVX2__) && (defined(__x86_64__) || defined(__i386__))
+    static constexpr bool quaternary_ = true;
+#else
+    static constexpr bool quaternary_ = false;
+#endif
+
+    // 根以外は4子。position >= 1で、最後の親はcount/4。
+    void repair_quad(std::size_t position, int value) noexcept {
+        const auto count = values_.size();
+        while (position <= count / 4) {
+            const auto first = position * 4 - 1;
+            auto child = first;
+            auto minimum = values_[first];
+            const auto end = std::min(count, first + 4);
+            for (auto probe = first + 1; probe < end; ++probe) {
+                if (values_[probe] < minimum) { minimum = values_[probe]; child = probe; }
+            }
+            if (value <= minimum) break;
+            values_[position] = minimum;
+            position = child;
+        }
+        values_[position] = value;
+    }
+
     void make_heap() {
-        std::make_heap(values_.begin(), values_.end(), std::greater<int>{});
+        if constexpr (!quaternary_) {
+            std::make_heap(values_.begin(), values_.end(), std::greater<int>{});
+            return;
+        }
+        const auto count = values_.size();
+        if (count < 2) return;
+        for (auto position = count / 4; position != 0; --position)
+            repair_quad(position, values_[position]);
+        repair_root(values_[0]);
     }
 
     void repair_root(int value) noexcept {
@@ -60,6 +92,7 @@ class Heap {
             values_[0] = values_[1];
             position = 1;
         }
+        if constexpr (quaternary_) { repair_quad(position,value); return; }
         while (position < count / 2) {
             const std::size_t left = position * 2 + 1;
             const std::size_t right = left + 1;
@@ -103,6 +136,21 @@ public:
     void push(int value) {
         values_.push_back(value);
         std::size_t position = values_.size() - 1;
+        if constexpr (quaternary_) {
+            if (position == 0) return;
+            auto parent = (position + 1) / 4;
+            int above = values_[parent];
+            if (above <= value) return;
+            do {
+                values_[position] = above;
+                position = parent;
+                if (position == 0) break;
+                parent = (position + 1) / 4;
+                above = values_[parent];
+            } while (above > value);
+            values_[position] = value;
+            return;
+        }
         while (position != 0) {
             const std::size_t parent = (position - 1) / 2;
             if (values_[parent] <= value) break;

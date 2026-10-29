@@ -10,6 +10,7 @@
 | [Combination_AtCoderMod.cpp](Combination_AtCoderMod.cpp) | [Binomial Coefficient (Prime Mod)](../Verify/current/submissions/binomial_prime.cpp) |
 | [Combination_Mod.cpp](Combination_Mod.cpp) | [Binomial Coefficient](../Verify/current/submissions/binomial_integer.cpp) |
 | [Eratosthenes.cpp](Eratosthenes.cpp) | [Enumerate Primes](../Verify/current/submissions/eratosthenes.cpp) |
+| [Fraction.cpp](Fraction.cpp) | [分数の比較](../Verify/current/submissions/fraction_sort.cpp)・[四則演算](../Verify/current/submissions/fraction_arithmetic.cpp) |
 | [Zeta/Bitwise_Convolution.cpp](Zeta/Bitwise_Convolution.cpp) | [Bitwise And Convolution](../Verify/current/submissions/zeta_and_split.cpp) |
 | [Zeta/Divisor_Multiple_Transform.cpp](Zeta/Divisor_Multiple_Transform.cpp) | [GCD Convolution](../Verify/current/submissions/zeta_gcd_transform_split.cpp) |
 | [Zeta/Gcd_Lcm_Convolution.cpp](Zeta/Gcd_Lcm_Convolution.cpp) | [GCD Convolution](../Verify/current/submissions/zeta_gcd_conv_split.cpp) |
@@ -24,3 +25,5 @@
 問題URL、追加APIの補足検査、現在版の判定状況は[Verify一覧](../Verify/current/README.md)を参照してください。
 
 64ビット素数判定・指定底の検査・前後の素数探索は[説明](../Document/primality.md)と[使用例](../Examples/primality_example.cpp)を参照してください。
+
+64ビット整数による分数の四則演算・厳密比較・丸めは[説明](../Document/fraction.md)と[使用例](../Examples/fraction_example.cpp)を参照してください。

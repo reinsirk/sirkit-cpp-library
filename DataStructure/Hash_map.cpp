@@ -341,6 +341,45 @@ private:
         state_[p] = 1;
         ++size_;
     }
+#if !defined(SIRKIT_DISABLE_SIMD) && defined(__SSE2__) && (defined(__x86_64__) || defined(__i386__)) && defined(__GNUC__) && !defined(__clang__)
+    size_type next_live(size_type p) const noexcept {
+        const auto capacity = state_.size();
+        if (capacity - p >= 4) {
+            if (state_[p] == 1) return p;
+            if (state_[p+1] == 1) return p+1;
+            if (state_[p+2] == 1) return p+2;
+            if (state_[p+3] == 1) return p+3;
+            p += 4;
+        }
+        const auto live = _mm_set1_epi8(1);
+        while (capacity - p >= 16) {
+            const auto states = _mm_loadu_si128(reinterpret_cast<const __m128i*>(state_.data()+p));
+            const unsigned mask = static_cast<unsigned>(_mm_movemask_epi8(_mm_cmpeq_epi8(states,live)));
+            if (mask) return p + std::countr_zero(mask);
+            p += 16;
+        }
+        while (p < capacity && state_[p] != 1) ++p;
+        return p;
+    }
+    size_type previous_live(size_type p) const noexcept {
+        if (p >= 4) {
+            if (state_[p-1] == 1) return p-1;
+            if (state_[p-2] == 1) return p-2;
+            if (state_[p-3] == 1) return p-3;
+            if (state_[p-4] == 1) return p-4;
+            p -= 4;
+        }
+        const auto live = _mm_set1_epi8(1);
+        while (p >= 16) {
+            const auto states = _mm_loadu_si128(reinterpret_cast<const __m128i*>(state_.data()+p-16));
+            const unsigned mask = static_cast<unsigned>(_mm_movemask_epi8(_mm_cmpeq_epi8(states,live)));
+            if (mask) return p - 16 + std::bit_width(mask) - 1;
+            p -= 16;
+        }
+        while (p != 0) { --p; if (state_[p] == 1) return p; }
+        return state_.size();
+    }
+#endif
 public:
     template <bool Const>
     class BasicIterator {
@@ -388,12 +427,30 @@ public:
         pointer operator->() const { return std::addressof(operator*()); }
         BasicIterator& operator++() {
             check(true);
+#if !defined(SIRKIT_DISABLE_SIMD) && defined(__SSE2__) && (defined(__x86_64__) || defined(__i386__)) && defined(__GNUC__) && !defined(__clang__)
+            if constexpr (!std::is_same_v<Slot, CompactSlot>) {
+                index_ = owner_->next_live(index_ + 1);
+                return *this;
+            }
+#endif
             do { ++index_; } while (index_ < owner_->slots_.size() && owner_->state_[index_] != 1);
             return *this;
         }
         BasicIterator operator++(int) { auto copy = *this; ++*this; return copy; }
         BasicIterator& operator--() {
             check(false);
+#if !defined(SIRKIT_DISABLE_SIMD) && defined(__SSE2__) && (defined(__x86_64__) || defined(__i386__)) && defined(__GNUC__) && !defined(__clang__)
+            if constexpr (!std::is_same_v<Slot, CompactSlot>) {
+                const auto p = owner_->previous_live(index_);
+                if (p != owner_->slots_.size()) { index_ = p; return *this; }
+#ifndef SKIP_RUNTIME_CHECKS
+                throw std::out_of_range("HashMap: iterator before begin");
+#else
+                index_ = 0;
+                return *this;
+#endif
+            }
+#endif
             auto p = index_;
             while (p != 0) { --p; if (owner_->state_[p] == 1) { index_ = p; return *this; } }
 #ifndef SKIP_RUNTIME_CHECKS
@@ -433,11 +490,17 @@ public:
     }
     iterator begin() noexcept {
         if (size_ == 0) return end();
+#if !defined(SIRKIT_DISABLE_SIMD) && defined(__SSE2__) && (defined(__x86_64__) || defined(__i386__)) && defined(__GNUC__) && !defined(__clang__)
+        if constexpr (!std::is_same_v<Slot, CompactSlot>) return iterator(this,next_live(0));
+#endif
         size_type p = 0; while (p < slots_.size() && state_[p] != 1) ++p;
         return iterator(this, p);
     }
     const_iterator begin() const noexcept {
         if (size_ == 0) return end();
+#if !defined(SIRKIT_DISABLE_SIMD) && defined(__SSE2__) && (defined(__x86_64__) || defined(__i386__)) && defined(__GNUC__) && !defined(__clang__)
+        if constexpr (!std::is_same_v<Slot, CompactSlot>) return const_iterator(this,next_live(0));
+#endif
         size_type p = 0; while (p < slots_.size() && state_[p] != 1) ++p;
         return const_iterator(this, p);
     }
@@ -500,6 +563,9 @@ public:
         const auto p = it.index_;
         slots_[p].reset(); state_[p] = 2; --size_;
         if (!get_next) return end();
+#if !defined(SIRKIT_DISABLE_SIMD) && defined(__SSE2__) && (defined(__x86_64__) || defined(__i386__)) && defined(__GNUC__) && !defined(__clang__)
+        if constexpr (!std::is_same_v<Slot, CompactSlot>) return iterator(this,next_live(p+1));
+#endif
         auto next = p;
         do { ++next; } while (next < slots_.size() && state_[next] != 1);
         return iterator(this, next);

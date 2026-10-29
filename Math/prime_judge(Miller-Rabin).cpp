@@ -309,6 +309,9 @@ public:
         return test_triple(325, 9375, 28178) && test_triple(450775, 9780504, 1795265022);
     }
 private:
+#if !defined(SIRKIT_DISABLE_SIMD) && defined(__SIZEOF_INT128__) && !defined(SIRKIT_FORCE_STANDARD_ARITHMETIC) && !defined(__BMI2__) && defined(__GNUC__) && !defined(__clang__) && defined(__ELF__) && defined(__GLIBC__) && (__GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ >= 23)) && (defined(__x86_64__) || defined(__i386__))
+    [[gnu::target_clones("bmi2","default")]]
+#endif
     bool test_triple(u64 a, u64 b, u64 c) const noexcept {
         u64 ta[4], tb[4], tc[4];
         ta[0] = tb[0] = tc[0] = one_;

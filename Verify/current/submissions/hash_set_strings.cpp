@@ -147,6 +147,9 @@ public:
     using Data = value_type;
     using size_type = std::size_t;
 private:
+    friend GenericHash;
+    using hasher = Hasher;
+    using key_equal = KeyEqual;
     // 自明にコピーできる型はunionに格納し、空きスロットの構築とoptionalの状態領域を省く。
     // 構築に失敗しうる型はoptionalで未構築状態を管理する。
     union CompactSlot {
@@ -309,7 +312,12 @@ private:
             }
             size_type first_deleted = slots_.size();
             while (state_[p]) {
-                if (state_[p] == 1 && equal_(*slots_[p], key)) return p;
+                if constexpr (std::is_same_v<Slot, CompactSlot> && std::is_integral_v<Key> &&
+                              (std::is_same_v<KeyEqual, std::equal_to<Key>> ||
+                               std::is_same_v<KeyEqual, std::equal_to<void>>)) {
+                    // 外部参照のない整数と標準比較だけ、同値キーの墓石で止める。
+                    if (equal_(*slots_[p], key)) return p;
+                } else if (state_[p] == 1 && equal_(*slots_[p], key)) return p;
                 if (state_[p] == 2 && first_deleted == slots_.size()) first_deleted = p;
                 p = (p + 1) & (slots_.size() - 1);
             }
@@ -326,6 +334,45 @@ private:
         state_[p] = 1;
         ++size_;
     }
+#if !defined(SIRKIT_DISABLE_SIMD) && defined(__SSE2__) && (defined(__x86_64__) || defined(__i386__)) && defined(__GNUC__) && !defined(__clang__)
+    size_type next_live(size_type p) const noexcept {
+        const auto capacity = state_.size();
+        if (capacity - p >= 4) {
+            if (state_[p] == 1) return p;
+            if (state_[p+1] == 1) return p+1;
+            if (state_[p+2] == 1) return p+2;
+            if (state_[p+3] == 1) return p+3;
+            p += 4;
+        }
+        const auto live = _mm_set1_epi8(1);
+        while (capacity - p >= 16) {
+            const auto states = _mm_loadu_si128(reinterpret_cast<const __m128i*>(state_.data()+p));
+            const unsigned mask = static_cast<unsigned>(_mm_movemask_epi8(_mm_cmpeq_epi8(states,live)));
+            if (mask) return p + std::countr_zero(mask);
+            p += 16;
+        }
+        while (p < capacity && state_[p] != 1) ++p;
+        return p;
+    }
+    size_type previous_live(size_type p) const noexcept {
+        if (p >= 4) {
+            if (state_[p-1] == 1) return p-1;
+            if (state_[p-2] == 1) return p-2;
+            if (state_[p-3] == 1) return p-3;
+            if (state_[p-4] == 1) return p-4;
+            p -= 4;
+        }
+        const auto live = _mm_set1_epi8(1);
+        while (p >= 16) {
+            const auto states = _mm_loadu_si128(reinterpret_cast<const __m128i*>(state_.data()+p-16));
+            const unsigned mask = static_cast<unsigned>(_mm_movemask_epi8(_mm_cmpeq_epi8(states,live)));
+            if (mask) return p - 16 + std::bit_width(mask) - 1;
+            p -= 16;
+        }
+        while (p != 0) { --p; if (state_[p] == 1) return p; }
+        return state_.size();
+    }
+#endif
 public:
     class Iterator {
         friend class HashSet;
@@ -361,12 +408,30 @@ public:
         pointer operator->() const { return std::addressof(operator*()); }
         Iterator& operator++() {
             check(true);
+#if !defined(SIRKIT_DISABLE_SIMD) && defined(__SSE2__) && (defined(__x86_64__) || defined(__i386__)) && defined(__GNUC__) && !defined(__clang__)
+            if constexpr (!std::is_same_v<Slot, CompactSlot>) {
+                index_ = owner_->next_live(index_ + 1);
+                return *this;
+            }
+#endif
             do { ++index_; } while (index_ < owner_->slots_.size() && owner_->state_[index_] != 1);
             return *this;
         }
         Iterator operator++(int) { auto copy = *this; ++*this; return copy; }
         Iterator& operator--() {
             check(false);
+#if !defined(SIRKIT_DISABLE_SIMD) && defined(__SSE2__) && (defined(__x86_64__) || defined(__i386__)) && defined(__GNUC__) && !defined(__clang__)
+            if constexpr (!std::is_same_v<Slot, CompactSlot>) {
+                const auto p = owner_->previous_live(index_);
+                if (p != owner_->slots_.size()) { index_ = p; return *this; }
+#ifndef SKIP_RUNTIME_CHECKS
+                throw std::out_of_range("HashSet: iterator before begin");
+#else
+                index_ = 0;
+                return *this;
+#endif
+            }
+#endif
             auto p = index_;
             while (p != 0) { --p; if (owner_->state_[p] == 1) { index_ = p; return *this; } }
 #ifndef SKIP_RUNTIME_CHECKS
@@ -411,6 +476,9 @@ public:
     }
     iterator begin() const noexcept {
         if (size_ == 0) return end();
+#if !defined(SIRKIT_DISABLE_SIMD) && defined(__SSE2__) && (defined(__x86_64__) || defined(__i386__)) && defined(__GNUC__) && !defined(__clang__)
+        if constexpr (!std::is_same_v<Slot, CompactSlot>) return iterator(this,next_live(0));
+#endif
         size_type p = 0; while (p < slots_.size() && state_[p] != 1) ++p;
         return iterator(this, p);
     }
@@ -459,6 +527,9 @@ public:
         const auto p = it.index_;
         slots_[p].reset(); state_[p] = 2; --size_;
         if (!get_next) return end();
+#if !defined(SIRKIT_DISABLE_SIMD) && defined(__SSE2__) && (defined(__x86_64__) || defined(__i386__)) && defined(__GNUC__) && !defined(__clang__)
+        if constexpr (!std::is_same_v<Slot, CompactSlot>) return iterator(this,next_live(p+1));
+#endif
         auto next = iterator(this, p);
         do { ++next.index_; } while (next.index_ < slots_.size() && state_[next.index_] != 1);
         return next;

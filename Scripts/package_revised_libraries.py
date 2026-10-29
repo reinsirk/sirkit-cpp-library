@@ -26,6 +26,7 @@ LIBRARIES = {
     "internal_hash_map_example.cpp": "Internal/Nyaan_hash_map_min.cpp",
     "erasable_priority_queue_example.cpp": "DataStructure/erasable-priority-queue.cpp",
     "eratosthenes_example.cpp": "Math/Eratosthenes.cpp",
+    "fraction_example.cpp": "Math/Fraction.cpp",
     "floyd_warshall_example.cpp": "Graph/Floyd-Warshall.cpp",
     "rolling_hash_example.cpp": "String/RollingHash.cpp",
     "project_selection_example.cpp": "Graph/Project_Selection.cpp",

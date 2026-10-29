@@ -14,11 +14,12 @@
 // arccmp_less(a,b)/arccmp_g(a,b): 偏角の厳密なa<b/a>b。std::sortに渡せる。O(1)。
 // arccmp_less_eq(a,b)/arccmp_g_eq(a,b): 偏角の非厳密なa<=b/a>=b。std::sortの比較器には使わない。O(1)。
 // AngleLess/AngleGreater: 昇順/降順の比較器オブジェクト。O(1)。
-// angle_sort(p,descending=false): 配列をその場で昇順にソート。trueなら降順、同角の順序は任意。O(N log N)。
+// angle_sort(p,descending=false): 配列をその場で昇順にソート。trueなら降順、同角の順序は任意。O(N log N)上界、大きい整列済み列はO(N)。
 // angle_sort_indices(p,descending=false): 入力不変で昇順の添字列。trueなら降順。O(N log N)時間/O(N)追加領域。
 // いずれもint64_t全域で有効なため入力検査は不要。SKIP_RUNTIME_CHECKSで動作は変わらない。
 
 #include <algorithm>
+#include <array>
 #include <cstddef>
 #include <cstdint>
 #include <numeric>
@@ -221,6 +222,57 @@ struct AngleGreater {
 };
 #endif
 
+#ifndef SIRKIT_ANGLE_TRY_SORTED_DEFINED
+#define SIRKIT_ANGLE_TRY_SORTED_DEFINED
+namespace reinsirk::detail {
+template<class Compare>
+#if defined(__GNUC__) || defined(__clang__)
+[[gnu::noinline]]
+#endif
+// 2048点以上。確認・短い修復は定数領域で行い、失敗しても点の多重集合を保つ。
+bool AngleTrySorted(std::vector<std::pair<std::int64_t, std::int64_t>>& points, Compare less) {
+    if (less(points.back(), points.front())) return false;
+    unsigned inversions = 0;
+    for (std::size_t tail = points.size() - 1, count = 0; tail > 0 && count < 16; --tail, ++count)
+        if (less(points[tail], points[tail - 1]) && ++inversions == 2) return false;
+    for (std::size_t sample = 1; sample <= 16; ++sample) {
+        const auto at = points.size() - 1 - sample * (points.size() / 64);
+        if (at > 0 && less(points[at], points[at - 1]) && ++inversions == 2) return false;
+    }
+    for (std::size_t sample = 1; sample <= 16; ++sample) {
+        const auto at = sample * (points.size() / 17);
+        if (less(points[at], points[at - 1]) && ++inversions == 2) return false;
+    }
+    auto next = std::is_sorted_until(points.begin(), points.end(), less);
+    if (next == points.end()) return true;
+    const auto remaining = static_cast<std::size_t>(points.end() - next);
+    if (remaining <= 16 && std::is_sorted(next, points.end(), less)) {
+        std::array<std::pair<std::int64_t, std::int64_t>, 16> tail;
+        std::copy(next, points.end(), tail.begin());
+        auto left = next, output = points.end();
+        auto right = remaining;
+        while (right != 0) {
+            if (left != points.begin() && less(tail[right - 1], *(left - 1))) *--output = *--left;
+            else *--output = tail[--right];
+        }
+        return true;
+    }
+    unsigned moves = 0;
+    for (; next != points.end(); ++next) {
+        const auto value = *next;
+        auto hole = next;
+        while (hole != points.begin() && less(value, *(hole - 1))) {
+            *hole = *(hole - 1);
+            --hole;
+            if (++moves == 32) { *hole = value; return false; }
+        }
+        *hole = value;
+    }
+    return true;
+}
+} // namespace reinsirk::detail
+#endif
+
 #ifndef SIRKIT_ANGLE_SORT_LARGE_DEFINED
 #define SIRKIT_ANGLE_SORT_LARGE_DEFINED
 namespace reinsirk::detail {
@@ -229,6 +281,8 @@ namespace reinsirk::detail {
 #endif
 inline void AngleSortLarge(std::vector<std::pair<std::int64_t, std::int64_t>>& p,
                        bool descending) {
+    if (p.size() >= 2048 && (descending ? AngleTrySorted(p, AngleGreater{})
+                                      : AngleTrySorted(p, AngleLess{}))) return;
     // 半平面の振り分け中に、積をint64_tで比較できる範囲かも集計する。
     std::uint64_t bits = 0;
     constexpr std::uint64_t bias = std::uint64_t{1} << 31;
@@ -286,6 +340,62 @@ inline void angle_sort(std::vector<std::pair<std::int64_t, std::int64_t>>& p,
 }
 #endif
 
+#ifndef SIRKIT_ANGLE_SORT_INDICES_LARGE_DEFINED
+#define SIRKIT_ANGLE_SORT_INDICES_LARGE_DEFINED
+namespace reinsirk::detail {
+#if defined(__GNUC__) || defined(__clang__)
+[[gnu::noinline]]
+#endif
+inline void AngleSortIndicesLarge(std::vector<std::size_t>& indices,
+                                  const std::vector<std::pair<std::int64_t, std::int64_t>>& p,
+                                  bool descending) {
+    // 半平面の振り分け中に、積をint64_tで比較できる範囲かも集計する。
+    std::uint64_t bits = 0;
+    constexpr std::uint64_t bias = std::uint64_t{1} << 31;
+    const auto middle = std::partition(indices.begin(), indices.end(), [&](std::size_t index) {
+        const auto& point = p[index];
+        bits |= (static_cast<std::uint64_t>(point.first) + bias)
+              | (static_cast<std::uint64_t>(point.second) + bias);
+        return AngleArithmetic::lower_half(point) == descending;
+    });
+    // 零を外積だけの比較から分離し、等値関係の推移性を保つ。
+    const auto upper_begin = descending ? middle : indices.begin();
+    const auto upper_end = descending ? indices.end() : middle;
+    const auto zero_end = std::partition(upper_begin, upper_end, [&p, descending](std::size_t index) {
+        return AngleArithmetic::zero(p[index]) != descending;
+    });
+    const auto first = descending ? indices.begin() : zero_end;
+    const auto last = descending ? zero_end : indices.end();
+    const auto sort_parts = [&](auto less) {
+        if (descending) {
+            const auto greater = [&](const auto& a, const auto& b) { return less(b, a); };
+            std::sort(first, middle, greater);
+            std::sort(middle, last, greater);
+        } else {
+            std::sort(first, middle, less);
+            std::sort(middle, last, less);
+        }
+    };
+    if (bits <= std::uint64_t{0xffffffffu}) {
+        sort_parts([&p](std::size_t i, std::size_t j) {
+            const auto& a = p[i]; const auto& b = p[j];
+            return a.first * b.second > a.second * b.first;
+        });
+    } else {
+        sort_parts([&p](std::size_t i, std::size_t j) {
+            const auto& a = p[i]; const auto& b = p[j];
+#if (defined(__GNUC__) || defined(__clang__)) && defined(__SIZEOF_INT128__) && !defined(SIRKIT_FORCE_STANDARD_ARITHMETIC)
+            return static_cast<__int128>(a.first) * b.second
+                 > static_cast<__int128>(a.second) * b.first;
+#else
+            return angle_cross_sign(a, b) > 0;
+#endif
+        });
+    }
+}
+} // namespace reinsirk::detail
+#endif
+
 #ifndef SIRKIT_ANGLE_SORT_INDICES_DEFINED
 #define SIRKIT_ANGLE_SORT_INDICES_DEFINED
 inline std::vector<std::size_t> angle_sort_indices(
@@ -293,6 +403,10 @@ inline std::vector<std::size_t> angle_sort_indices(
     bool descending = false) {
     std::vector<std::size_t> indices(p.size());
     std::iota(indices.begin(), indices.end(), std::size_t{0});
+    if (p.size() >= 32) {
+        reinsirk::detail::AngleSortIndicesLarge(indices, p, descending);
+        return indices;
+    }
     if (descending) {
         std::sort(indices.begin(), indices.end(), [&p](std::size_t a, std::size_t b) {
             return arccmp_g(p[a], p[b]);

@@ -47,6 +47,13 @@ struct RollbackWeightedUnionFind {
 private:
     static constexpr bool checked_integer =
         std::is_integral_v<T> && std::is_signed_v<T>;
+    // 標準の2語累積では、従来の照会本体を保つ。
+    static constexpr bool direct_difference =
+#if defined(__SIZEOF_INT128__) && !defined(SIRKIT_FORCE_STANDARD_ARITHMETIC)
+        true;
+#else
+        !checked_integer;
+#endif
 
     // 根までの高々O(log n)個の整数を、途中の相殺を保って加算する。
     struct SignedSum {
@@ -489,6 +496,14 @@ public:
 #ifndef SKIP_RUNTIME_CHECKS
         check_vertex(x); check_vertex(y);
 #endif
+        // 同じ親を持つ子どうしは、共通の経路を打ち消せる。
+        if constexpr (direct_difference) {
+            const int px = parent_[x];
+            if (px >= 0 && px == parent_[y]) {
+                T difference(0);
+                if (try_subtract(weight_[y], weight_[x], difference)) return difference;
+            }
+        }
         const auto narrow_a = narrow_root_weight(x);
         const auto narrow_b = narrow_root_weight(y);
         if (narrow_a.root >= 0 && narrow_b.root >= 0) {
@@ -523,6 +538,15 @@ public:
     bool consistent(int x, int y, const T& w) const {
 #ifndef SKIP_RUNTIME_CHECKS
         check_vertex(x); check_vertex(y);
+#endif
+#if defined(__GNUC__) && !defined(__clang__)
+        if constexpr (direct_difference) {
+            const int px = parent_[x];
+            if (px >= 0 && px == parent_[y]) {
+                T difference(0);
+                return try_subtract(weight_[y], weight_[x], difference) && difference == w;
+            }
+        }
 #endif
         const auto narrow_a = narrow_root_weight(x);
         const auto narrow_b = narrow_root_weight(y);

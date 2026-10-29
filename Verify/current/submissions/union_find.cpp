@@ -125,6 +125,7 @@ public:
 #endif
             return result;
         }
+#if defined(__clang__)
         std::vector<int> leaders(param.size()), counts(param.size(), 0);
         for (int i = 0; i < size(); ++i) ++counts[leaders[i] = leader_unchecked(i)];
         for (int i = 0; i < size(); ++i) if (counts[i]) {
@@ -133,6 +134,14 @@ public:
             result.emplace_back(); result.back().reserve(count);
         }
         for (int i = 0; i < size(); ++i) result[counts[leaders[i]]].push_back(i);
+#else
+        std::vector<int> slot(param.size());
+        for (int i = 0; i < size(); ++i) if (param[i] < 0) {
+            slot[i] = static_cast<int>(result.size());
+            result.emplace_back(); result.back().reserve(static_cast<std::size_t>(-param[i]));
+        }
+        for (int i = 0; i < size(); ++i) result[slot[leader_unchecked(i)]].push_back(i);
+#endif
         return result;
     }
 };

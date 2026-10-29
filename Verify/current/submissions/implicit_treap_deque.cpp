@@ -302,6 +302,20 @@ class lazy_implicit_treap {
         nodes_[p].left = free_;
         free_ = p;
     }
+    S erase_value_node(int& p, int position, int& removed) {
+        push(p);
+        const int k = length(nodes_[p].left);
+        if (position == k) {
+            S result = nodes_[p].value;
+            removed = p;
+            p = merge(nodes_[p].left, nodes_[p].right);
+            return result;
+        }
+        S result = position < k ? erase_value_node(nodes_[p].left, position, removed)
+                                : erase_value_node(nodes_[p].right, position - k - 1, removed);
+        pull(p);
+        return result;
+    }
     int erase_node(int p, int position, int& removed) {
         push(p);
         const int left_size = length(nodes_[p].left);
@@ -349,15 +363,69 @@ class lazy_implicit_treap {
         if (r > k + 1) apply_range(nodes_[p].right, std::max(0, l - k - 1), r - k - 1, f);
         pull(p);
     }
+    void reverse_range(int p, int l, int r) {
+        if (l == 0 && r == length(p)) { flip(p); return; }
+        push(p);
+        const int k = length(nodes_[p].left);
+        if (r <= k) reverse_range(nodes_[p].left, l, r);
+        else if (l > k) reverse_range(nodes_[p].right, l - k - 1, r - k - 1);
+        else {
+            auto [a, b] = split(nodes_[p].left, l);
+            auto [c, d] = split(nodes_[p].right, r - k - 1);
+            flip(b);
+            flip(c);
+            nodes_[p].left = merge(a, c);
+            nodes_[p].right = merge(b, d);
+        }
+        pull(p);
+    }
+    void rotate_range(int p, int l, int m, int r) {
+        push(p);
+        const int k = length(nodes_[p].left);
+        if (r <= k) rotate_range(nodes_[p].left, l, m, r);
+        else if (l > k) rotate_range(nodes_[p].right, l - k - 1, m - k - 1, r - k - 1);
+        else if (m <= k) {
+            auto [a, bc] = split(nodes_[p].left, l);
+            auto [b, c] = split(bc, m - l);
+            auto [d, tail] = split(nodes_[p].right, r - k - 1);
+            nodes_[p].left = merge(a, c);
+            nodes_[p].right = merge(d, merge(b, tail));
+        } else {
+            auto [a, b] = split(nodes_[p].left, l);
+            auto [c, de] = split(nodes_[p].right, m - k - 1);
+            auto [d, tail] = split(de, r - m);
+            nodes_[p].left = merge(merge(a, d), b);
+            nodes_[p].right = merge(c, tail);
+        }
+        pull(p);
+    }
+    S query_prefix(int p, int r) {
+        if (r == length(p)) return nodes_[p].forward;
+        push(p);
+        const int k = length(nodes_[p].left);
+        if (r <= k) return query_prefix(nodes_[p].left, r);
+        S result = k ? op(nodes_[nodes_[p].left].forward, nodes_[p].value) : nodes_[p].value;
+        if (r > k + 1) result = op(std::move(result), query_prefix(nodes_[p].right, r - k - 1));
+        return result;
+    }
+    S query_suffix(int p, int l) {
+        if (l == 0) return nodes_[p].forward;
+        push(p);
+        const int k = length(nodes_[p].left);
+        if (l > k) return query_suffix(nodes_[p].right, l - k - 1);
+        S result = l < k ? op(query_suffix(nodes_[p].left, l), nodes_[p].value) : nodes_[p].value;
+        if (nodes_[p].right >= 0) result = op(std::move(result), nodes_[nodes_[p].right].forward);
+        return result;
+    }
     S query(int p, int l, int r) {
-        if (l == 0 && r == length(p)) return nodes_[p].forward;
+        if (l == 0) return query_prefix(p, r);
+        if (r == length(p)) return query_suffix(p, l);
         push(p);
         const int k = length(nodes_[p].left);
         if (r <= k) return query(nodes_[p].left, l, r);
         if (l > k) return query(nodes_[p].right, l - k - 1, r - k - 1);
-        S result = l < k ? query(nodes_[p].left, l, k) : e();
-        result = op(result, nodes_[p].value);
-        if (r > k + 1) result = op(result, query(nodes_[p].right, 0, r - k - 1));
+        S result = l < k ? op(query_suffix(nodes_[p].left, l), nodes_[p].value) : nodes_[p].value;
+        if (r > k + 1) result = op(std::move(result), query_prefix(nodes_[p].right, r - k - 1));
         return result;
     }
     template<class G>
@@ -563,10 +631,26 @@ public:
     S erase_prod(int l, int r) {
         check_range(l, r);
         if (l == r) return e();
-        // 集約を取得してから区間を削除する。
-        S result = query(root_, l, r);
-        erase(l, r);
-        return result;
+        if constexpr (!(std::is_nothrow_copy_constructible_v<S> && std::is_nothrow_move_constructible_v<S>)) {
+            S result = query(root_, l, r);
+            erase(l, r);
+            return result;
+        } else {
+            if (r - l == 1) {
+                int removed = -1;
+                S result = erase_value_node(root_, l, removed);
+                recycle(removed);
+                reset_root_parent();
+                return result;
+            }
+            auto [a, bc] = split(root_, l);
+            auto [b, c] = split(bc, r - l);
+            S result = nodes_[b].forward;
+            root_ = merge(a, c);
+            release(b);
+            reset_root_parent();
+            return result;
+        }
     }
     void erase_at(int pos) {
         check_position(pos);
@@ -586,10 +670,7 @@ public:
     void reverse(int l, int r) {
         check_range(l, r);
         if (r - l <= 1) return;
-        auto [a, bc] = split(root_, l);
-        auto [b, c] = split(bc, r - l);
-        flip(b);
-        root_ = merge(merge(a, b), c);
+        reverse_range(root_, l, r);
         reset_root_parent();
     }
     void rotate(int l, int m, int r) {
@@ -598,10 +679,7 @@ public:
         if (m < l || m > r) throw std::out_of_range("lazy_implicit_treap middle");
 #endif
         if (l == m || m == r) return;
-        auto [a, bcd] = split(root_, l);
-        auto [b, cd] = split(bcd, m - l);
-        auto [c, d] = split(cd, r - m);
-        root_ = merge(merge(merge(a, c), b), d);
+        rotate_range(root_, l, m, r);
         reset_root_parent();
     }
     void move_range(int l, int r, int pos) {

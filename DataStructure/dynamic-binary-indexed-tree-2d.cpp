@@ -1936,6 +1936,23 @@ class CompactFenwick {
         }
         return static_cast<T>(result);
       }
+#if defined(__GNUC__) && !defined(__clang__) && !defined(__AVX2__) && (defined(__x86_64__) || defined(__i386__))
+      // 同じ64幅の区間では上位セルが相殺する。局所添字0は零の全体0番へ戻す。
+      auto local_left=static_cast<std::uint32_t>(l),local_right=static_cast<std::uint32_t>(r);
+      if ((local_left ^ local_right) < 64) [[unlikely]] {
+        const auto block=local_left & ~std::uint32_t{63}; local_left&=63;local_right&=63;
+        Value left_sum{},right_sum{};
+        while(local_left|local_right) {
+          right_sum=static_cast<Value>(static_cast<Arithmetic>(right_sum)+static_cast<Arithmetic>(values[(block+local_right) & (std::uint32_t{0}-static_cast<std::uint32_t>(local_right!=0))]));
+          left_sum=static_cast<Value>(static_cast<Arithmetic>(left_sum)+static_cast<Arithmetic>(values[(block+local_left) & (std::uint32_t{0}-static_cast<std::uint32_t>(local_left!=0))]));
+          local_right&=local_right-1;local_left&=local_left-1;
+          right_sum=static_cast<Value>(static_cast<Arithmetic>(right_sum)+static_cast<Arithmetic>(values[(block+local_right) & (std::uint32_t{0}-static_cast<std::uint32_t>(local_right!=0))]));
+          left_sum=static_cast<Value>(static_cast<Arithmetic>(left_sum)+static_cast<Arithmetic>(values[(block+local_left) & (std::uint32_t{0}-static_cast<std::uint32_t>(local_left!=0))]));
+          local_right&=local_right-1;local_left&=local_left-1;
+        }
+        return static_cast<T>(static_cast<Value>(static_cast<Arithmetic>(right_sum)-static_cast<Arithmetic>(left_sum)));
+      }
+#endif
       Value left_sum{},right_sum{};
       auto left=static_cast<std::uint32_t>(l),right=static_cast<std::uint32_t>(r);
       while(left|right){

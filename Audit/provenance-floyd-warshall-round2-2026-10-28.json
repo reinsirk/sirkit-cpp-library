@@ -1,0 +1,12 @@
+{
+  "date_jst": "2026-10-28",
+  "source": "Graph/Floyd-Warshall.cpp",
+  "source_sha256": "edba738f97a7145f5bb736ae0cc317549b4ad3f1eafd0eb2517b6e2e557cdddf",
+  "license": "CC0-1.0",
+  "scope": "今回の追加は順序保存した整数ビット列によるSIMD最小値選択と部分変換の復元を新規実装したもの。第三者の新たなコードは参照・転用しない。既存の参考URLは維持。",
+  "encoding_proof": "bias=0x3ff0000000000000。格納値0..INFとcandidate<=2*INFの整数加算後のraw bitsはbias..0x5ff0000000000000にあり、正のnormal finite binary64としてビット順と大小順が一致する。整数vector load→castpd→minpd→castsi storeで、double型のmemory aliasやFP加算/丸め変換を用いない。NaN/±0/subnormalを含まないためMINPDの例外的なtie/NaN規則、FTZ/DAZ、丸め方向に影響されない。",
+  "rollback_proof": "encodeとINF検出を融合し、失敗した4lane batchは書かない。encoded_rowsは完全変換済み行、encoded_columnsは失敗行の変換済みprefix長を保持。失敗時はこのprefixだけunbiasして元kernelへ渡す。全finite時はcolumns=0へ戻して全n行をdecodeするのでrow[n]へ進まない。追加allocation/所有状態/配列検査専用走査なし。INF判定は入力検査ではなく実装選択でありSKIP時も保持。",
+  "current_api": "公開関数・引数・戻り値・所有・算術範囲と負閉路/-INFの仕様を維持。",
+  "source_reference_comment": "https://zenn.dev/reputeless/books/standard-cpp-for-competitive-programming/viewer/floyd-warshall",
+  "reference_scope": "既存からの数学的な参考。今回のSIMD実装のOriginal Sourceとしては扱わない。"
+}

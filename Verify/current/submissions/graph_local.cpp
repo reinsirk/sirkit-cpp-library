@@ -346,28 +346,40 @@ inline int BellmanFordContinue(const WGraph& graph, std::span<const int> sources
         );
         return 2;
     }
-    for (int pass = component_pass; pass < round_limit; ++pass) {
-        if (pass == 64 && BellmanFordNeedsComponents(graph, frontier)) [[unlikely]] {
-            BellmanFordComponents(graph, sources, distance, unreachable, lower_bound, negative
+    // 64パスごとに両端の更新頂点数から仕事量を見積もり、長い反復を分解する。
+    std::uint64_t component_budget = static_cast<std::uint64_t>(n) * 16;
+    int pass = component_pass;
+    while (pass < round_limit) {
+        const auto first_count = frontier.size();
+        const int first_pass = pass;
+        const int end_pass = pass + std::min(64 - (pass & 63), round_limit - pass);
+        for (; pass < end_pass; ++pass) {
+            for (const int from : frontier) {
+                scheduled[from] = 0;
 #ifndef SKIP_RUNTIME_CHECKS
-                , checked
+                if (!checked[from]) {
+                    process(from, std::true_type{});
+                    checked[from] = 1;
+                } else
+#endif
+                    process(from, std::false_type{});
+            }
+            if (next.empty()) return true;
+            frontier.swap(next);
+            next.clear();
+        }
+        if (pass == round_limit) break;
+        const auto work = static_cast<std::uint64_t>(std::min(first_count,frontier.size())) * (pass-first_pass);
+        if (work >= component_budget ||
+            (pass == 64 && BellmanFordNeedsComponents(graph, frontier))) [[unlikely]] {
+            BellmanFordComponents(graph,sources,distance,unreachable,lower_bound,negative
+#ifndef SKIP_RUNTIME_CHECKS
+                ,checked
 #endif
             );
             return 2;
         }
-        for (const int from : frontier) {
-            scheduled[from] = 0;
-#ifndef SKIP_RUNTIME_CHECKS
-            if (!checked[from]) {
-                process(from, std::true_type{});
-                checked[from] = 1;
-            } else
-#endif
-                process(from, std::false_type{});
-        }
-        if (next.empty()) return true;
-        frontier.swap(next);
-        next.clear();
+        component_budget -= work;
     }
     return false;
 }
@@ -2311,13 +2323,78 @@ inline FloydWarshallWide FloydWarshallLimit(std::size_t n)
 }
 
 #if !defined(SIRKIT_DISABLE_SIMD) && (defined(__GNUC__) || defined(__clang__)) && (defined(__i386__) || defined(__x86_64__))
-template <bool RestorePath, bool HasNegative, bool Dense>
+template <bool RestorePath, bool HasNegative,
+#if !defined(__clang__)
+          bool EncodeEligible,
+#endif
+          bool Dense>
 [[gnu::target("avx2")]]
 inline void FloydWarshallRelaxAvx2(std::vector<std::vector<std::int64_t>> &distance,
                                  std::int64_t unreachable, std::int64_t lower,
                                  std::vector<std::vector<int>> *next)
 {
     const std::size_t n = distance.size();
+#if !defined(__clang__)
+    if constexpr (EncodeEligible && !RestorePath && !HasNegative) {
+        if (n >= 64) {
+            constexpr std::int64_t bias = INT64_C(0x3ff0000000000000);
+            const __m256i v_bias = _mm256_set1_epi64x(bias);
+            // INFに当たれば変換済みの先頭だけ戻して通常経路へ渡す。
+            const auto v_missing = _mm256_set1_epi64x(unreachable);
+            std::size_t encoded_rows = 0, encoded_columns = 0;
+            bool all_finite = true;
+            for (; encoded_rows < n; ++encoded_rows) {
+                auto* row = distance[encoded_rows].data();
+                encoded_columns = 0;
+                for (; encoded_columns + 4 <= n; encoded_columns += 4) {
+                    const auto v = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(row + encoded_columns));
+                    const auto missing = _mm256_cmpeq_epi64(v,v_missing);
+                    if (!_mm256_testz_si256(missing,missing)) { all_finite = false; break; }
+                    _mm256_storeu_si256(reinterpret_cast<__m256i*>(row + encoded_columns), _mm256_add_epi64(v,v_bias));
+                }
+                if (!all_finite) break;
+                for (; encoded_columns < n; ++encoded_columns) {
+                    if (row[encoded_columns] == unreachable) { all_finite = false; break; }
+                    row[encoded_columns] += bias;
+                }
+                if (!all_finite) break;
+            }
+            if (all_finite) {
+                encoded_columns = 0;
+                for (std::size_t via = 0; via < n; ++via) {
+                    const auto* through = distance[via].data();
+                    for (std::size_t from = 0; from < n; ++from) {
+                        auto* row = distance[from].data();
+                        const auto prefix = row[via] - bias;
+                        if (prefix == unreachable) continue;
+                        const auto v_prefix = _mm256_set1_epi64x(prefix);
+                        std::size_t to = 0;
+                        for (; to + 4 <= n; to += 4) {
+                            const auto values = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(through + to));
+                            const auto previous = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(row + to));
+                            const auto candidate = _mm256_add_epi64(v_prefix, values);
+                            const auto best = _mm256_min_pd(_mm256_castsi256_pd(previous), _mm256_castsi256_pd(candidate));
+                            _mm256_storeu_si256(reinterpret_cast<__m256i*>(row + to), _mm256_castpd_si256(best));
+                        }
+                        for (; to < n; ++to) row[to] = std::min(row[to], prefix + through[to]);
+                    }
+                }
+            }
+            const auto converted = encoded_rows + static_cast<std::size_t>(encoded_columns != 0);
+            for (std::size_t from = 0; from < converted; ++from) {
+                auto* row = distance[from].data();
+                const auto count = from < encoded_rows ? n : encoded_columns;
+                std::size_t to = 0;
+                for (; to + 4 <= count; to += 4) {
+                    const auto v = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(row + to));
+                    _mm256_storeu_si256(reinterpret_cast<__m256i*>(row + to), _mm256_sub_epi64(v,v_bias));
+                }
+                for (; to < count; ++to) row[to] -= bias;
+            }
+            if (all_finite) return;
+        }
+    }
+#endif
     const __m256i v_unreachable = _mm256_set1_epi64x(unreachable);
     const __m256i v_lower = _mm256_set1_epi64x(lower);
     for (std::size_t via = 0; via < n; ++via)
@@ -2387,7 +2464,11 @@ inline bool FloydWarshallRun(std::vector<std::vector<Distance>> &distance,
     const std::size_t n = distance.size();
 #if !defined(SIRKIT_DISABLE_SIMD) && (defined(__GNUC__) || defined(__clang__)) && (defined(__i386__) || defined(__x86_64__))
     if constexpr (static_cast<bool>(UseSimd) && std::is_same_v<Distance, std::int64_t>)
-        FloydWarshallRelaxAvx2<RestorePath, HasNegative, Dense || (FiniteRange && std::is_same_v<decltype(UseSimd), FloydWarshallSimdMode>)>(distance, unreachable, lower, next);
+        FloydWarshallRelaxAvx2<RestorePath, HasNegative,
+#if !defined(__clang__)
+                               FiniteRange && std::is_same_v<decltype(UseSimd), FloydWarshallSimdMode>,
+#endif
+                               Dense || (FiniteRange && std::is_same_v<decltype(UseSimd), FloydWarshallSimdMode>)>(distance, unreachable, lower, next);
     else
 #endif
     {

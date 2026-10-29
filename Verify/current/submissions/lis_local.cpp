@@ -14,19 +14,23 @@
 // 時間O(N log(L+1))、追加領域はLISがO(N+L)、LISLengthがO(L)。整列済みの増加列はO(N)。
 //
 // [復元]
-// LISIndicesはconst Tの比較だけを使い、コピー不能・非default構築の型も扱う。
+// LISIndicesは汎用型をコピーせず比較し、コピー不能・非default構築の型も扱う。
+// 組込み数値型では、末尾値を内部へ複製する場合がある。
 // LISIndices<Strict=true>(v): LISを1つ復元し、元配列の添字を昇順で返す。同長の解の選択は任意。
 // LISSequence<Strict=true>(v): LISを1つ値の列としてコピーする。空なら空。いずれもO(N log(L+1))時間・O(N)追加領域。
 //
 // [各末尾の長さ]
-// LISEndingLengths<Strct=true>(v): 各要素を末尾とする最長長。狭義/広義、空なら空、O(N log(L+1))時間・O(N+L)領域。
+// LISEndingLengths<Strict=true>(v): 各要素を末尾とする最長長。狭義/広義、空なら空、O(N log(L+1))時間・O(N+L)領域。
 // https://miscalc.hatenablog.com/entry/2024/07/25/212618
 
 #include <algorithm>
+#include <array>
+#include <utility>
 #include <type_traits>
 #include <stdexcept>
 #include <cmath>
 #include <cstddef>
+#include <cstdint>
 #include <limits>
 #include <memory>
 #include <vector>
@@ -82,45 +86,185 @@ std::size_t LISLength(const std::vector<T>& v) {
 
 #ifndef SIRKIT_LIS_RESTORE_DEFINED
 #define SIRKIT_LIS_RESTORE_DEFINED
-template <bool Strict = true, class T>
-std::vector<std::size_t> LISIndices(const std::vector<T>& v) {
+namespace reinsirk::detail {
+template <bool Strict, class Index, class T>
+std::vector<std::size_t> LISIndicesImpl(const std::vector<T>& v) {
     if (v.empty()) return {};
-    std::vector<std::size_t> tails;
-    auto previous = std::make_unique_for_overwrite<std::size_t[]>(v.size());
+    std::vector<Index> tails;
+    auto previous = std::make_unique_for_overwrite<Index[]>(v.size());
     tails.reserve(std::min(v.size(), std::size_t{64}));
-    for (std::size_t i = 0; i < v.size(); ++i) {
+#ifndef SKIP_RUNTIME_CHECKS
+    reinsirk::detail::check_lis_value(v[0]);
+#endif
+    tails.push_back(0);
+    for (std::size_t i = 1; i < v.size(); ++i) {
 #ifndef SKIP_RUNTIME_CHECKS
         reinsirk::detail::check_lis_value(v[i]);
 #endif
-        std::size_t lo = 0, hi = tails.size();
-        if (tails.empty() || (Strict ? v[tails.back()] < v[i] : !(v[i] < v[tails.back()]))) lo = hi;
-        else if (!tails.empty() && (Strict ? !(v[tails.front()] < v[i]) : v[i] < v[tails.front()])) hi = 0;
-        else {
-            lo = 1;
-            // 末尾は延長判定済み。間の候補だけを比較し、必要なら末尾へ置く。
-            std::size_t count = hi - 2;
-            while (count != 0) {
-                const auto half = count / 2;
-                const auto mid = lo + half;
-                const bool before = Strict ? v[tails[mid]] < v[i] : !(v[i] < v[tails[mid]]);
-                lo = before ? mid + 1 : lo;
-                count = before ? count - half - 1 : half;
-            }
+        if (Strict ? v[tails.back()] < v[i] : !(v[i] < v[tails.back()])) {
+            previous[i] = tails.back();
+            tails.push_back(static_cast<Index>(i));
+            continue;
         }
-        if (lo != 0) previous[i] = tails[lo - 1];
-        if (lo == tails.size()) tails.push_back(i);
-        else tails[lo] = i;
+        if (Strict ? !(v[tails.front()] < v[i]) : v[i] < v[tails.front()]) {
+            tails.front() = static_cast<Index>(i);
+            continue;
+        }
+        std::size_t lo = 1, count = tails.size() - 2;
+        while (count != 0) {
+            const auto half = count / 2;
+            const auto mid = lo + half;
+            const bool before = Strict ? v[tails[mid]] < v[i] : !(v[i] < v[tails[mid]]);
+            lo = before ? mid + 1 : lo;
+            count = before ? count - half - 1 : half;
+        }
+        previous[i] = tails[lo - 1];
+        tails[lo] = static_cast<Index>(i);
     }
     std::vector<std::size_t> result(tails.size());
-    if (!tails.empty()) {
-        auto p = tails.back();
-        for (auto i = result.size(); i > 1; --i) {
-            result[i - 1] = p;
-            p = previous[p];
-        }
-        result[0] = p;
+    auto at = tails.back();
+    for (auto i = result.size(); i > 1; --i) {
+        result[i - 1] = at;
+        at = previous[at];
     }
+    result[0] = at;
     return result;
+}
+template <bool Strict, class Index, bool Repeated = false, class T>
+std::vector<std::size_t> LISIndicesWithValues(const std::vector<T>& v) {
+    if (v.empty()) return {};
+    std::vector<Index> tails;
+    std::vector<T> values;
+    auto previous = std::make_unique_for_overwrite<Index[]>(v.size());
+    tails.reserve(std::min(v.size(), std::size_t{64}));
+#ifndef SKIP_RUNTIME_CHECKS
+    reinsirk::detail::check_lis_value(v[0]);
+#endif
+    tails.push_back(0);
+    values.reserve(std::min(v.size(), std::size_t{64}));
+    values.push_back(v[0]);
+    std::size_t i = 1, extensions = 0;
+    for (; i < v.size(); ++i) {
+#ifndef SKIP_RUNTIME_CHECKS
+        reinsirk::detail::check_lis_value(v[i]);
+#endif
+        if (Strict ? values.back() < v[i] : !(v[i] < values.back())) {
+            previous[i] = tails.back();
+            if (values.size() == values.capacity()) {
+                const auto capacity = values.capacity();
+                values.reserve(capacity + std::min(capacity, v.size() - capacity));
+            }
+            if (values.size() == values.capacity()) std::unreachable();
+            values.push_back(v[i]);
+            tails.push_back(static_cast<Index>(i));
+            if constexpr (Repeated) {
+                if (++extensions >= 256 && tails.size() >= 4096) { ++i; break; }
+            } else {
+                if (tails.size() >= 4096 && tails.size() > (i + 1) / 4) { ++i; break; }
+            }
+            continue;
+        }
+        if constexpr (Repeated) extensions = 0;
+        if (Strict ? !(values.front() < v[i]) : v[i] < values.front()) {
+            tails.front() = static_cast<Index>(i);
+            values.front() = v[i];
+            continue;
+        }
+        std::size_t lo = 1, count = tails.size() - 2;
+        while (count != 0) {
+            const auto half = count / 2;
+            const auto mid = lo + half;
+            const bool before = Strict ? values[mid] < v[i] : !(v[i] < values[mid]);
+            lo = before ? mid + 1 : lo;
+            count = before ? count - half - 1 : half;
+        }
+        previous[i] = tails[lo - 1];
+        tails[lo] = static_cast<Index>(i);
+        values[lo] = v[i];
+    }
+    std::vector<T>().swap(values);
+    for (; i < v.size(); ++i) {
+#ifndef SKIP_RUNTIME_CHECKS
+        reinsirk::detail::check_lis_value(v[i]);
+#endif
+        if (Strict ? v[tails.back()] < v[i] : !(v[i] < v[tails.back()])) {
+            previous[i] = tails.back();
+            tails.push_back(static_cast<Index>(i));
+            continue;
+        }
+        if (Strict ? !(v[tails.front()] < v[i]) : v[i] < v[tails.front()]) {
+            tails.front() = static_cast<Index>(i);
+            continue;
+        }
+        std::size_t lo = 1, count = tails.size() - 2;
+        while (count != 0) {
+            const auto half = count / 2;
+            const auto mid = lo + half;
+            const bool before = Strict ? v[tails[mid]] < v[i] : !(v[i] < v[tails[mid]]);
+            lo = before ? mid + 1 : lo;
+            count = before ? count - half - 1 : half;
+        }
+        previous[i] = tails[lo - 1];
+        tails[lo] = static_cast<Index>(i);
+    }
+    std::vector<std::size_t> result(tails.size());
+    auto at = tails.back();
+    for (auto i = result.size(); i > 1; --i) {
+        result[i - 1] = at;
+        at = previous[at];
+    }
+    result[0] = at;
+    return result;
+}
+template<bool Strict, class T>
+unsigned LISValuesUseful(const std::vector<T>& v) {
+    std::array<T, 256> tails{};
+    std::size_t length = 0, searches = 0, equal_neighbors = 0;
+    for (std::size_t i = 0; i < tails.size(); ++i) {
+#ifndef SKIP_RUNTIME_CHECKS
+        reinsirk::detail::check_lis_value(v[i]);
+#endif
+#if defined(__GNUC__) && !defined(__clang__)
+        if constexpr (!Strict) if (i != 0 && !(v[i - 1] < v[i]) && !(v[i] < v[i - 1])) ++equal_neighbors;
+#endif
+        std::size_t lo = 0, count = length;
+        while (count != 0) {
+            const auto half = count / 2;
+            const auto mid = lo + half;
+            const bool before = Strict ? tails[mid] < v[i] : !(v[i] < tails[mid]);
+            lo = before ? mid + 1 : lo;
+            count = before ? count - half - 1 : half;
+        }
+        if (lo != 0 && lo != length) ++searches;
+        tails[lo] = v[i];
+        length += lo == length;
+    }
+    if (length >= 16 && length <= 64 && searches >= 128) return 1;
+#if defined(__GNUC__) && !defined(__clang__)
+    if constexpr (!Strict) if (length <= 192 && searches >= 64 && equal_neighbors >= 16) return 2;
+#endif
+    (void)equal_neighbors;
+    return 0;
+}
+template <bool Strict, class Index, class T>
+std::vector<std::size_t> LISIndicesSelected(const std::vector<T>& v) {
+    if constexpr (sizeof(Index) < sizeof(std::size_t) && std::is_arithmetic_v<T> && sizeof(T) <= 8 && !std::is_same_v<T,bool>) {
+        if (v.size() >= 65536) {
+            const auto choice = LISValuesUseful<Strict>(v);
+#if defined(__GNUC__) && !defined(__clang__)
+            if constexpr (!Strict) if (choice == 2) return LISIndicesWithValues<Strict,Index,true>(v);
+#endif
+            if (choice != 0) return LISIndicesWithValues<Strict,Index>(v);
+        }
+    }
+    return LISIndicesImpl<Strict,Index>(v);
+}
+} // namespace reinsirk::detail
+template <bool Strict = true, class T>
+std::vector<std::size_t> LISIndices(const std::vector<T>& v) {
+    if (v.size() <= std::numeric_limits<std::uint32_t>::max())
+        return reinsirk::detail::LISIndicesSelected<Strict, std::uint32_t>(v);
+    return reinsirk::detail::LISIndicesSelected<Strict, std::size_t>(v);
 }
 template <bool Strict = true, class T>
 std::vector<T> LISSequence(const std::vector<T>& v) {

@@ -1917,6 +1917,23 @@ class CompactFenwick {
         }
         return static_cast<T>(result);
       }
+#if defined(__GNUC__) && !defined(__clang__) && !defined(__AVX2__) && (defined(__x86_64__) || defined(__i386__))
+      // 同じ64幅の区間では上位セルが相殺する。局所添字0は零の全体0番へ戻す。
+      auto local_left=static_cast<std::uint32_t>(l),local_right=static_cast<std::uint32_t>(r);
+      if ((local_left ^ local_right) < 64) [[unlikely]] {
+        const auto block=local_left & ~std::uint32_t{63}; local_left&=63;local_right&=63;
+        Value left_sum{},right_sum{};
+        while(local_left|local_right) {
+          right_sum=static_cast<Value>(static_cast<Arithmetic>(right_sum)+static_cast<Arithmetic>(values[(block+local_right) & (std::uint32_t{0}-static_cast<std::uint32_t>(local_right!=0))]));
+          left_sum=static_cast<Value>(static_cast<Arithmetic>(left_sum)+static_cast<Arithmetic>(values[(block+local_left) & (std::uint32_t{0}-static_cast<std::uint32_t>(local_left!=0))]));
+          local_right&=local_right-1;local_left&=local_left-1;
+          right_sum=static_cast<Value>(static_cast<Arithmetic>(right_sum)+static_cast<Arithmetic>(values[(block+local_right) & (std::uint32_t{0}-static_cast<std::uint32_t>(local_right!=0))]));
+          left_sum=static_cast<Value>(static_cast<Arithmetic>(left_sum)+static_cast<Arithmetic>(values[(block+local_left) & (std::uint32_t{0}-static_cast<std::uint32_t>(local_left!=0))]));
+          local_right&=local_right-1;local_left&=local_left-1;
+        }
+        return static_cast<T>(static_cast<Value>(static_cast<Arithmetic>(right_sum)-static_cast<Arithmetic>(left_sum)));
+      }
+#endif
       Value left_sum{},right_sum{};
       auto left=static_cast<std::uint32_t>(l),right=static_cast<std::uint32_t>(r);
       while(left|right){
@@ -3933,6 +3950,23 @@ class CompactFenwick {
         }
         return static_cast<T>(result);
       }
+#if defined(__GNUC__) && !defined(__clang__) && !defined(__AVX2__) && (defined(__x86_64__) || defined(__i386__))
+      // 同じ64幅の区間では上位セルが相殺する。局所添字0は零の全体0番へ戻す。
+      auto local_left=static_cast<std::uint32_t>(l),local_right=static_cast<std::uint32_t>(r);
+      if ((local_left ^ local_right) < 64) [[unlikely]] {
+        const auto block=local_left & ~std::uint32_t{63}; local_left&=63;local_right&=63;
+        Value left_sum{},right_sum{};
+        while(local_left|local_right) {
+          right_sum=static_cast<Value>(static_cast<Arithmetic>(right_sum)+static_cast<Arithmetic>(values[(block+local_right) & (std::uint32_t{0}-static_cast<std::uint32_t>(local_right!=0))]));
+          left_sum=static_cast<Value>(static_cast<Arithmetic>(left_sum)+static_cast<Arithmetic>(values[(block+local_left) & (std::uint32_t{0}-static_cast<std::uint32_t>(local_left!=0))]));
+          local_right&=local_right-1;local_left&=local_left-1;
+          right_sum=static_cast<Value>(static_cast<Arithmetic>(right_sum)+static_cast<Arithmetic>(values[(block+local_right) & (std::uint32_t{0}-static_cast<std::uint32_t>(local_right!=0))]));
+          left_sum=static_cast<Value>(static_cast<Arithmetic>(left_sum)+static_cast<Arithmetic>(values[(block+local_left) & (std::uint32_t{0}-static_cast<std::uint32_t>(local_left!=0))]));
+          local_right&=local_right-1;local_left&=local_left-1;
+        }
+        return static_cast<T>(static_cast<Value>(static_cast<Arithmetic>(right_sum)-static_cast<Arithmetic>(left_sum)));
+      }
+#endif
       Value left_sum{},right_sum{};
       auto left=static_cast<std::uint32_t>(l),right=static_cast<std::uint32_t>(r);
       while(left|right){
@@ -5523,6 +5557,45 @@ private:
         state_[p] = 1;
         ++size_;
     }
+#if !defined(SIRKIT_DISABLE_SIMD) && defined(__SSE2__) && (defined(__x86_64__) || defined(__i386__)) && defined(__GNUC__) && !defined(__clang__)
+    size_type next_live(size_type p) const noexcept {
+        const auto capacity = state_.size();
+        if (capacity - p >= 4) {
+            if (state_[p] == 1) return p;
+            if (state_[p+1] == 1) return p+1;
+            if (state_[p+2] == 1) return p+2;
+            if (state_[p+3] == 1) return p+3;
+            p += 4;
+        }
+        const auto live = _mm_set1_epi8(1);
+        while (capacity - p >= 16) {
+            const auto states = _mm_loadu_si128(reinterpret_cast<const __m128i*>(state_.data()+p));
+            const unsigned mask = static_cast<unsigned>(_mm_movemask_epi8(_mm_cmpeq_epi8(states,live)));
+            if (mask) return p + std::countr_zero(mask);
+            p += 16;
+        }
+        while (p < capacity && state_[p] != 1) ++p;
+        return p;
+    }
+    size_type previous_live(size_type p) const noexcept {
+        if (p >= 4) {
+            if (state_[p-1] == 1) return p-1;
+            if (state_[p-2] == 1) return p-2;
+            if (state_[p-3] == 1) return p-3;
+            if (state_[p-4] == 1) return p-4;
+            p -= 4;
+        }
+        const auto live = _mm_set1_epi8(1);
+        while (p >= 16) {
+            const auto states = _mm_loadu_si128(reinterpret_cast<const __m128i*>(state_.data()+p-16));
+            const unsigned mask = static_cast<unsigned>(_mm_movemask_epi8(_mm_cmpeq_epi8(states,live)));
+            if (mask) return p - 16 + std::bit_width(mask) - 1;
+            p -= 16;
+        }
+        while (p != 0) { --p; if (state_[p] == 1) return p; }
+        return state_.size();
+    }
+#endif
 public:
     template <bool Const>
     class BasicIterator {
@@ -5570,12 +5643,30 @@ public:
         pointer operator->() const { return std::addressof(operator*()); }
         BasicIterator& operator++() {
             check(true);
+#if !defined(SIRKIT_DISABLE_SIMD) && defined(__SSE2__) && (defined(__x86_64__) || defined(__i386__)) && defined(__GNUC__) && !defined(__clang__)
+            if constexpr (!std::is_same_v<Slot, CompactSlot>) {
+                index_ = owner_->next_live(index_ + 1);
+                return *this;
+            }
+#endif
             do { ++index_; } while (index_ < owner_->slots_.size() && owner_->state_[index_] != 1);
             return *this;
         }
         BasicIterator operator++(int) { auto copy = *this; ++*this; return copy; }
         BasicIterator& operator--() {
             check(false);
+#if !defined(SIRKIT_DISABLE_SIMD) && defined(__SSE2__) && (defined(__x86_64__) || defined(__i386__)) && defined(__GNUC__) && !defined(__clang__)
+            if constexpr (!std::is_same_v<Slot, CompactSlot>) {
+                const auto p = owner_->previous_live(index_);
+                if (p != owner_->slots_.size()) { index_ = p; return *this; }
+#ifndef SKIP_RUNTIME_CHECKS
+                throw std::out_of_range("HashMap: iterator before begin");
+#else
+                index_ = 0;
+                return *this;
+#endif
+            }
+#endif
             auto p = index_;
             while (p != 0) { --p; if (owner_->state_[p] == 1) { index_ = p; return *this; } }
 #ifndef SKIP_RUNTIME_CHECKS
@@ -5615,11 +5706,17 @@ public:
     }
     iterator begin() noexcept {
         if (size_ == 0) return end();
+#if !defined(SIRKIT_DISABLE_SIMD) && defined(__SSE2__) && (defined(__x86_64__) || defined(__i386__)) && defined(__GNUC__) && !defined(__clang__)
+        if constexpr (!std::is_same_v<Slot, CompactSlot>) return iterator(this,next_live(0));
+#endif
         size_type p = 0; while (p < slots_.size() && state_[p] != 1) ++p;
         return iterator(this, p);
     }
     const_iterator begin() const noexcept {
         if (size_ == 0) return end();
+#if !defined(SIRKIT_DISABLE_SIMD) && defined(__SSE2__) && (defined(__x86_64__) || defined(__i386__)) && defined(__GNUC__) && !defined(__clang__)
+        if constexpr (!std::is_same_v<Slot, CompactSlot>) return const_iterator(this,next_live(0));
+#endif
         size_type p = 0; while (p < slots_.size() && state_[p] != 1) ++p;
         return const_iterator(this, p);
     }
@@ -5682,6 +5779,9 @@ public:
         const auto p = it.index_;
         slots_[p].reset(); state_[p] = 2; --size_;
         if (!get_next) return end();
+#if !defined(SIRKIT_DISABLE_SIMD) && defined(__SSE2__) && (defined(__x86_64__) || defined(__i386__)) && defined(__GNUC__) && !defined(__clang__)
+        if constexpr (!std::is_same_v<Slot, CompactSlot>) return iterator(this,next_live(p+1));
+#endif
         auto next = p;
         do { ++next; } while (next < slots_.size() && state_[next] != 1);
         return iterator(this, next);
@@ -7307,8 +7407,40 @@ struct LineContainer2D {
 class Heap {
     std::vector<int> values_;
 
+#if defined(__GNUC__) && !defined(__clang__) && !defined(__AVX2__) && (defined(__x86_64__) || defined(__i386__))
+    static constexpr bool quaternary_ = true;
+#else
+    static constexpr bool quaternary_ = false;
+#endif
+
+    // 根以外は4子。position >= 1で、最後の親はcount/4。
+    void repair_quad(std::size_t position, int value) noexcept {
+        const auto count = values_.size();
+        while (position <= count / 4) {
+            const auto first = position * 4 - 1;
+            auto child = first;
+            auto minimum = values_[first];
+            const auto end = std::min(count, first + 4);
+            for (auto probe = first + 1; probe < end; ++probe) {
+                if (values_[probe] < minimum) { minimum = values_[probe]; child = probe; }
+            }
+            if (value <= minimum) break;
+            values_[position] = minimum;
+            position = child;
+        }
+        values_[position] = value;
+    }
+
     void make_heap() {
-        std::make_heap(values_.begin(), values_.end(), std::greater<int>{});
+        if constexpr (!quaternary_) {
+            std::make_heap(values_.begin(), values_.end(), std::greater<int>{});
+            return;
+        }
+        const auto count = values_.size();
+        if (count < 2) return;
+        for (auto position = count / 4; position != 0; --position)
+            repair_quad(position, values_[position]);
+        repair_root(values_[0]);
     }
 
     void repair_root(int value) noexcept {
@@ -7333,6 +7465,7 @@ class Heap {
             values_[0] = values_[1];
             position = 1;
         }
+        if constexpr (quaternary_) { repair_quad(position,value); return; }
         while (position < count / 2) {
             const std::size_t left = position * 2 + 1;
             const std::size_t right = left + 1;
@@ -7376,6 +7509,21 @@ public:
     void push(int value) {
         values_.push_back(value);
         std::size_t position = values_.size() - 1;
+        if constexpr (quaternary_) {
+            if (position == 0) return;
+            auto parent = (position + 1) / 4;
+            int above = values_[parent];
+            if (above <= value) return;
+            do {
+                values_[position] = above;
+                position = parent;
+                if (position == 0) break;
+                parent = (position + 1) / 4;
+                above = values_[parent];
+            } while (above > value);
+            values_[position] = value;
+            return;
+        }
         while (position != 0) {
             const std::size_t parent = (position - 1) / 2;
             if (values_[parent] <= value) break;
@@ -7726,6 +7874,20 @@ class lazy_implicit_treap {
         nodes_[p].left = free_;
         free_ = p;
     }
+    S erase_value_node(int& p, int position, int& removed) {
+        push(p);
+        const int k = length(nodes_[p].left);
+        if (position == k) {
+            S result = nodes_[p].value;
+            removed = p;
+            p = merge(nodes_[p].left, nodes_[p].right);
+            return result;
+        }
+        S result = position < k ? erase_value_node(nodes_[p].left, position, removed)
+                                : erase_value_node(nodes_[p].right, position - k - 1, removed);
+        pull(p);
+        return result;
+    }
     int erase_node(int p, int position, int& removed) {
         push(p);
         const int left_size = length(nodes_[p].left);
@@ -7773,15 +7935,69 @@ class lazy_implicit_treap {
         if (r > k + 1) apply_range(nodes_[p].right, std::max(0, l - k - 1), r - k - 1, f);
         pull(p);
     }
+    void reverse_range(int p, int l, int r) {
+        if (l == 0 && r == length(p)) { flip(p); return; }
+        push(p);
+        const int k = length(nodes_[p].left);
+        if (r <= k) reverse_range(nodes_[p].left, l, r);
+        else if (l > k) reverse_range(nodes_[p].right, l - k - 1, r - k - 1);
+        else {
+            auto [a, b] = split(nodes_[p].left, l);
+            auto [c, d] = split(nodes_[p].right, r - k - 1);
+            flip(b);
+            flip(c);
+            nodes_[p].left = merge(a, c);
+            nodes_[p].right = merge(b, d);
+        }
+        pull(p);
+    }
+    void rotate_range(int p, int l, int m, int r) {
+        push(p);
+        const int k = length(nodes_[p].left);
+        if (r <= k) rotate_range(nodes_[p].left, l, m, r);
+        else if (l > k) rotate_range(nodes_[p].right, l - k - 1, m - k - 1, r - k - 1);
+        else if (m <= k) {
+            auto [a, bc] = split(nodes_[p].left, l);
+            auto [b, c] = split(bc, m - l);
+            auto [d, tail] = split(nodes_[p].right, r - k - 1);
+            nodes_[p].left = merge(a, c);
+            nodes_[p].right = merge(d, merge(b, tail));
+        } else {
+            auto [a, b] = split(nodes_[p].left, l);
+            auto [c, de] = split(nodes_[p].right, m - k - 1);
+            auto [d, tail] = split(de, r - m);
+            nodes_[p].left = merge(merge(a, d), b);
+            nodes_[p].right = merge(c, tail);
+        }
+        pull(p);
+    }
+    S query_prefix(int p, int r) {
+        if (r == length(p)) return nodes_[p].forward;
+        push(p);
+        const int k = length(nodes_[p].left);
+        if (r <= k) return query_prefix(nodes_[p].left, r);
+        S result = k ? op(nodes_[nodes_[p].left].forward, nodes_[p].value) : nodes_[p].value;
+        if (r > k + 1) result = op(std::move(result), query_prefix(nodes_[p].right, r - k - 1));
+        return result;
+    }
+    S query_suffix(int p, int l) {
+        if (l == 0) return nodes_[p].forward;
+        push(p);
+        const int k = length(nodes_[p].left);
+        if (l > k) return query_suffix(nodes_[p].right, l - k - 1);
+        S result = l < k ? op(query_suffix(nodes_[p].left, l), nodes_[p].value) : nodes_[p].value;
+        if (nodes_[p].right >= 0) result = op(std::move(result), nodes_[nodes_[p].right].forward);
+        return result;
+    }
     S query(int p, int l, int r) {
-        if (l == 0 && r == length(p)) return nodes_[p].forward;
+        if (l == 0) return query_prefix(p, r);
+        if (r == length(p)) return query_suffix(p, l);
         push(p);
         const int k = length(nodes_[p].left);
         if (r <= k) return query(nodes_[p].left, l, r);
         if (l > k) return query(nodes_[p].right, l - k - 1, r - k - 1);
-        S result = l < k ? query(nodes_[p].left, l, k) : e();
-        result = op(result, nodes_[p].value);
-        if (r > k + 1) result = op(result, query(nodes_[p].right, 0, r - k - 1));
+        S result = l < k ? op(query_suffix(nodes_[p].left, l), nodes_[p].value) : nodes_[p].value;
+        if (r > k + 1) result = op(std::move(result), query_prefix(nodes_[p].right, r - k - 1));
         return result;
     }
     template<class G>
@@ -7987,10 +8203,26 @@ public:
     S erase_prod(int l, int r) {
         check_range(l, r);
         if (l == r) return e();
-        // 集約を取得してから区間を削除する。
-        S result = query(root_, l, r);
-        erase(l, r);
-        return result;
+        if constexpr (!(std::is_nothrow_copy_constructible_v<S> && std::is_nothrow_move_constructible_v<S>)) {
+            S result = query(root_, l, r);
+            erase(l, r);
+            return result;
+        } else {
+            if (r - l == 1) {
+                int removed = -1;
+                S result = erase_value_node(root_, l, removed);
+                recycle(removed);
+                reset_root_parent();
+                return result;
+            }
+            auto [a, bc] = split(root_, l);
+            auto [b, c] = split(bc, r - l);
+            S result = nodes_[b].forward;
+            root_ = merge(a, c);
+            release(b);
+            reset_root_parent();
+            return result;
+        }
     }
     void erase_at(int pos) {
         check_position(pos);
@@ -8010,10 +8242,7 @@ public:
     void reverse(int l, int r) {
         check_range(l, r);
         if (r - l <= 1) return;
-        auto [a, bc] = split(root_, l);
-        auto [b, c] = split(bc, r - l);
-        flip(b);
-        root_ = merge(merge(a, b), c);
+        reverse_range(root_, l, r);
         reset_root_parent();
     }
     void rotate(int l, int m, int r) {
@@ -8022,10 +8251,7 @@ public:
         if (m < l || m > r) throw std::out_of_range("lazy_implicit_treap middle");
 #endif
         if (l == m || m == r) return;
-        auto [a, bcd] = split(root_, l);
-        auto [b, cd] = split(bcd, m - l);
-        auto [c, d] = split(cd, r - m);
-        root_ = merge(merge(merge(a, c), b), d);
+        rotate_range(root_, l, m, r);
         reset_root_parent();
     }
     void move_range(int l, int r, int pos) {

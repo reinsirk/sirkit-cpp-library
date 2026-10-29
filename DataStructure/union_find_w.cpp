@@ -13,7 +13,7 @@
 // weight(i): 根を零とした重み、diff(a,b): b-aの差。diffは接続が前提（既定の検査で未接続なら例外）。償却O(α(n+1))。
 // try_diff(a,b): 接続済みなら差、未接続ならnullopt。償却O(α(n+1))。符号なし整数は型の幅の剰余演算。
 // size()/empty()/component_count(): 全要素数/空か/成分数、O(1)。groups(): 頂点昇順の成分一覧、O(1+n α(n+1))償却。
-// reset(n)/reset(): n要素/現在の要素数へ初期化、O(旧n+n+1)上界。非送出コピー型は容量再利用、他は一時構築後に交換。
+// reset(n)/reset(): n要素/現在の要素数へ初期化、O(旧n+n+1)上界。コピー構築・破棄が非送出なら容量再利用、代入も非送出なら重みを零代入。
 // reset・コピー代入の失敗時は元の連結状態を保持（予約容量は変わり得る）。clear(): 空へ戻し容量保持、O(旧n+1)上界、noexcept。
 // swap(other)/swap(a,b): 内容交換、O(1)、noexcept。コピーはO(n+1)で独立、コピー代入は強い例外保証。移動元は空。
 
@@ -94,8 +94,12 @@ public:
             if (count == 0) { clear(); return; }
             const Type zero{};
             param.reserve(count); diff_w.reserve(count);
-            param.clear(); diff_w.clear();
-            param.resize(count, -1); diff_w.resize(count, zero);
+            param.clear(); param.resize(count, -1);
+            if constexpr (std::is_nothrow_copy_assignable_v<Type>) {
+                const auto retained = std::min(count, diff_w.size());
+                diff_w.resize(count, zero);
+                std::fill_n(diff_w.begin(), retained, zero);
+            } else { diff_w.clear(); diff_w.resize(count, zero); }
             components_ = static_cast<int>(count);
         } else { UnionFindW replacement(n); swap(replacement); }
     }

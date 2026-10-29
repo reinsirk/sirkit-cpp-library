@@ -17,6 +17,7 @@
 // transpose(a): 転置した新行列。外側が空または幅0なら{}。
 // flip_i_inplace(a): 行の交換で上下反転しvoidを返す。要素のswap不要。O(H)時間・追加O(1)、外側が空なら何もしない。
 // flip_j_inplace(a): 各行を左右反転しvoidを返す。Tはswap可能。O(H+HW)時間・追加O(1)、外側が空なら何もしない。
+// SIRKIT_DISABLE_SIMD: 追加AVX2実装・専用ヘッダー・CPU判定を除き、標準C++の処理を使う。
 
 #include <algorithm>
 #include <cstddef>
@@ -40,6 +41,59 @@ inline bool matrix_avx2_available() noexcept {
 }
 template <int Mode, class Row, bool Strip = false>
 [[gnu::target("avx2")]]
+std::vector<Row> matrix_turn64_avx2(const std::vector<Row>& a) {
+    using Value = typename Row::value_type;
+    const std::size_t h = a.size(), w = a.front().size();
+    std::vector<Row> b; b.reserve(w);
+    for (std::size_t j = 0; j < w; ++j) b.emplace_back(h, Value{});
+    for (std::size_t jb = 0; jb < w;) {
+        const auto je = jb + (Strip ? std::min(std::size_t{32}, w - jb) : w - jb);
+        std::size_t i = 0;
+        for (; h - i >= 4; i += 4) {
+            const Value* source[4];
+            for (std::size_t r = 0; r < 4; ++r) {
+                const auto& row = a[Mode == 1 ? h - 1 - i - r : i + r];
+#ifndef SKIP_RUNTIME_CHECKS
+                if (jb == 0 && row.size() != w) throw std::invalid_argument("matrix must be rectangular");
+#endif
+                source[r] = row.data();
+            }
+            const auto column = i;
+            std::size_t j = jb;
+            for (; je - j >= 4; j += 4) {
+                const auto r0 = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(source[0] + j));
+                const auto r1 = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(source[1] + j));
+                const auto r2 = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(source[2] + j));
+                const auto r3 = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(source[3] + j));
+                const auto t0 = _mm256_unpacklo_epi64(r0, r1), t1 = _mm256_unpackhi_epi64(r0, r1);
+                const auto t2 = _mm256_unpacklo_epi64(r2, r3), t3 = _mm256_unpackhi_epi64(r2, r3);
+                _mm256_storeu_si256(reinterpret_cast<__m256i*>(b[Mode == 3 ? w - 1 - j : j].data() + column), _mm256_permute2x128_si256(t0,t2,0x20));
+                _mm256_storeu_si256(reinterpret_cast<__m256i*>(b[Mode == 3 ? w - 2 - j : j+1].data() + column), _mm256_permute2x128_si256(t1,t3,0x20));
+                _mm256_storeu_si256(reinterpret_cast<__m256i*>(b[Mode == 3 ? w - 3 - j : j+2].data() + column), _mm256_permute2x128_si256(t0,t2,0x31));
+                _mm256_storeu_si256(reinterpret_cast<__m256i*>(b[Mode == 3 ? w - 4 - j : j+3].data() + column), _mm256_permute2x128_si256(t1,t3,0x31));
+            }
+            for (; j < je; ++j) {
+                const auto row = Mode == 3 ? w - 1 - j : j;
+                for (std::size_t r = 0; r < 4; ++r) b[row][column+r] = source[r][j];
+            }
+        }
+        for (; i < h; ++i) {
+            const auto& row = a[Mode == 1 ? h - 1 - i : i];
+#ifndef SKIP_RUNTIME_CHECKS
+            if (jb == 0 && row.size() != w) throw std::invalid_argument("matrix must be rectangular");
+#endif
+            for (std::size_t j = jb; j < je; ++j) {
+                if constexpr (Mode == 1) b[j][i] = row[j];
+                else if constexpr (Mode == 3) b[w-1-j][i] = row[j];
+                else b[j][i] = row[j];
+            }
+        }
+        jb = je;
+    }
+    return b;
+}
+template <int Mode, class Row, bool Strip = false, bool Forward = false>
+[[gnu::target("avx2")]]
 std::vector<Row> matrix_turn_avx2(const std::vector<Row>& a) {
     using Value = typename Row::value_type;
     const std::size_t h = a.size(), w = a.front().size();
@@ -53,13 +107,13 @@ std::vector<Row> matrix_turn_avx2(const std::vector<Row>& a) {
         for (; h - i >= 8; i += 8) {
             const Value* source[8];
             for (std::size_t r = 0; r < 8; ++r) {
-                const auto& row = a[i + (Mode == 1 ? 7 - r : r)];
+                const auto& row = a[Mode == 1 && Forward ? h - 1 - i - r : i + (Mode == 1 ? 7 - r : r)];
     #ifndef SKIP_RUNTIME_CHECKS
                 if (jb == 0 && row.size() != w) throw std::invalid_argument("matrix must be rectangular");
     #endif
                 source[r] = row.data();
             }
-            const auto column = Mode == 1 ? h - i - 8 : i;
+            const auto column = Mode == 1 && !Forward ? h - i - 8 : i;
             std::size_t j = jb;
             for (; je - j >= 8; j += 8) {
                 const auto r0 = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(source[0] + j));
@@ -109,12 +163,12 @@ std::vector<Row> matrix_turn_avx2(const std::vector<Row>& a) {
             }
         }
         for (; i < h; ++i) {
-            const auto& row = a[i];
+            const auto& row = a[Mode == 1 && Forward ? h - 1 - i : i];
     #ifndef SKIP_RUNTIME_CHECKS
             if (jb == 0 && row.size() != w) throw std::invalid_argument("matrix must be rectangular");
     #endif
             for (std::size_t j = jb; j < je; ++j) {
-                if constexpr (Mode == 1) b[j][h - 1 - i] = row[j];
+                if constexpr (Mode == 1) b[j][Forward ? i : h - 1 - i] = row[j];
                 else if constexpr (Mode == 3) b[w - 1 - j][i] = row[j];
                 else b[j][i] = row[j];
             }
@@ -174,8 +228,18 @@ std::vector<Row> matrix_turn(const std::vector<Row>& a) {
             if constexpr (sizeof(Value) == 4 &&
                           (std::is_arithmetic_v<Value> || std::is_enum_v<Value>)) {
                 if (h > 4095 / w && matrix_avx2_available()) {
+                    if constexpr (Mode == 1) if (w >= 128 && h > 1048575 / w) {
+                        if (h <= 64 && w >= 8192 && h > 524287 / w) return matrix_turn_avx2<Mode, Row, true, true>(a);
+                        return matrix_turn_avx2<Mode, Row, false, true>(a);
+                    }
                     if (h <= 64 && w >= 8192 && h > 524287 / w) return matrix_turn_avx2<Mode, Row, true>(a);
                     return matrix_turn_avx2<Mode>(a);
+                }
+            } else if constexpr (sizeof(Value) == 8 &&
+                          (std::is_arithmetic_v<Value> || std::is_enum_v<Value>)) {
+                if (h > 4095 / w && matrix_avx2_available()) {
+                    if (w >= 128) return matrix_turn64_avx2<Mode, Row, true>(a);
+                    return matrix_turn64_avx2<Mode>(a);
                 }
             }
 #endif

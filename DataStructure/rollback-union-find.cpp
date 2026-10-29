@@ -16,13 +16,55 @@
 // コピー代入とresetの失敗時は論理状態を保持（予約容量は変わり得る）。
 // reserve_history(k): k回分の履歴容量を確保。履歴・代表の直接書換えは不可。
 // clear_history(): 森林を保ち履歴と保存位置を消去。容量は保持し、旧stateは無効。O(h+1)上界、noexcept。
+// SIRKIT_DISABLE_SIMD: groupsの追加AVX2実装とCPU判定を除き、標準C++の処理を使う。
 
 #include <algorithm>
+#include <memory>
+#if !defined(SIRKIT_DISABLE_SIMD) && defined(__clang__) && (defined(__x86_64__) || defined(__i386__))
+#include <immintrin.h>
+#endif
 #include <cstddef>
 #include <limits>
 #include <stdexcept>
 #include <utility>
 #include <vector>
+
+#if !defined(SIRKIT_DISABLE_SIMD) && defined(__clang__) && (defined(__x86_64__) || defined(__i386__))
+#ifndef SIRKIT_UNION_GROUP_ROOTS_AVX2_DEFINED
+#define SIRKIT_UNION_GROUP_ROOTS_AVX2_DEFINED
+namespace reinsirk::detail {
+template<bool Compress>
+[[gnu::target("avx2")]]
+inline void GatherGroupRoots(const int* parents, int* leaders, std::size_t n, int* writable = nullptr) {
+    std::size_t i = 0;
+    auto indices = _mm256_setr_epi32(0,1,2,3,4,5,6,7);
+    const auto negative_one = _mm256_set1_epi32(-1);
+    for (; i + 8 <= n; i += 8) {
+        const auto original = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(parents+i));
+        const auto nonroot = _mm256_cmpgt_epi32(original, negative_one);
+        auto root = _mm256_blendv_epi8(indices, original, nonroot);
+        // 根のlaneは再読込せず、未解決の親だけを追う。
+        auto active = nonroot;
+        while (!_mm256_testz_si256(active, active)) {
+            const auto next = _mm256_mask_i32gather_epi32(negative_one, parents, root, active, 4);
+            active = _mm256_cmpgt_epi32(next, negative_one);
+            root = _mm256_blendv_epi8(root, next, active);
+        }
+        _mm256_storeu_si256(reinterpret_cast<__m256i*>(leaders+i), root);
+        if constexpr (Compress)
+            _mm256_storeu_si256(reinterpret_cast<__m256i*>(writable+i), _mm256_blendv_epi8(original,root,nonroot));
+        indices = _mm256_add_epi32(indices, _mm256_set1_epi32(8));
+    }
+    for (; i < n; ++i) {
+        int root = static_cast<int>(i);
+        while (parents[root] >= 0) root = parents[root];
+        leaders[i] = root;
+        if constexpr (Compress) if (parents[i] >= 0) writable[i] = root;
+    }
+}
+} // namespace reinsirk::detail
+#endif
+#endif
 
 #ifndef SIRKIT_ROLLBACK_UNION_FIND_DEFINED
 #define SIRKIT_ROLLBACK_UNION_FIND_DEFINED
@@ -60,6 +102,28 @@ class RollbackUnionFind {
         }
         return result;
     }
+#if !defined(SIRKIT_DISABLE_SIMD) && defined(__clang__) && (defined(__x86_64__) || defined(__i386__))
+    std::vector<std::vector<int>> groups_vectorized() const {
+#if defined(__AVX2__)
+        std::vector<int> leaders_storage(data.size());
+        int* const leaders = leaders_storage.data();
+#else
+        auto leaders_storage = std::make_unique_for_overwrite<int[]>(data.size());
+        int* const leaders = leaders_storage.get();
+#endif
+        reinsirk::detail::GatherGroupRoots<false>(data.data(),leaders,data.size());
+        std::vector<std::vector<int>> result;
+        result.reserve(static_cast<std::size_t>(components_));
+        std::vector<int> slot(data.size());
+        for (int i = 0; i < size(); ++i) if (data[i] < 0) {
+            slot[i] = static_cast<int>(result.size());
+            result.emplace_back(); result.back().reserve(static_cast<std::size_t>(-data[i]));
+        }
+        for (int i = 0; i < size(); ++i) result[slot[leaders[i]]].push_back(i);
+        return result;
+    }
+#endif
+
 public:
     explicit RollbackUnionFind(std::size_t n = 0)
         : data(checked_size(n), -1), components_(static_cast<int>(n)) { history.reserve(std::min(n, std::size_t{64})); }
@@ -132,10 +196,17 @@ public:
     }
     void snapshot() noexcept { inner_snap = get_state(); }
     int get_state() const noexcept { return static_cast<int>(history.size()); }
+#if defined(__clang__)
+    [[gnu::noinline]]
+#endif
     void rollback(int state = -1) {
         if (state == -1) state = inner_snap;
 #ifndef SKIP_RUNTIME_CHECKS
         if (state < 0 || state > get_state()) throw std::out_of_range("RollbackUnionFind: state");
+#endif
+#if defined(__clang__)
+        while (get_state() > state && history.back().x == history.back().y)
+            history.pop_back();
 #endif
         while (get_state() > state) undo_last();
         if (inner_snap > state) inner_snap = state;
@@ -148,6 +219,10 @@ public:
     }
     std::vector<std::vector<int>> groups() const {
         if (components_ == size() || components_ == 1) return trivial_groups();
+#if defined(__clang__)
+#if !defined(SIRKIT_DISABLE_SIMD) && (defined(__x86_64__) || defined(__i386__))
+        if (data.size() >= 256 && __builtin_cpu_supports("avx2")) return groups_vectorized();
+#endif
         std::vector<int> leaders(data.size()), counts(data.size(), 0), slot(data.size());
         for (int i = 0; i < size(); ++i) ++counts[leaders[i] = leader_unchecked(i)];
         std::vector<std::vector<int>> result; result.reserve(components_);
@@ -155,6 +230,15 @@ public:
             slot[i] = static_cast<int>(result.size()); result.emplace_back(); result.back().reserve(counts[i]);
         }
         for (int i = 0; i < size(); ++i) result[slot[leaders[i]]].push_back(i);
+#else
+        std::vector<std::vector<int>> result; result.reserve(components_);
+        std::vector<int> slot(data.size());
+        for (int i = 0; i < size(); ++i) if (data[i] < 0) {
+            slot[i] = static_cast<int>(result.size());
+            result.emplace_back(); result.back().reserve(static_cast<std::size_t>(-data[i]));
+        }
+        for (int i = 0; i < size(); ++i) result[slot[leader_unchecked(i)]].push_back(i);
+#endif
         return result;
     }
 };

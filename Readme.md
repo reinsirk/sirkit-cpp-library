@@ -10,7 +10,7 @@
 | --- | --- |
 | [Graph](Graph/README.md) | 最短路・LCA・トポロジカルソート・Project Selection |
 | [DataStructure](DataStructure/README.md) | BIT・Trie・ヒープ・Union-Find・直線集合・ハッシュ表 |
-| [Math](Math/README.md) | 二項係数・素数判定・篩・ゼータ／メビウス変換 |
+| [Math](Math/README.md) | 分数・二項係数・素数判定・篩・ゼータ／メビウス変換 |
 | [String](String/README.md) | RollingHash・文字列Trie |
 | [Geometry](Geometry/README.md) | 点・直線／線分・多角形・円・最近点対・偏角ソート |
 | [Algorithm](Algorithm/README.md) | LIS・Radix Sort・組合せ列挙・行列変換 |

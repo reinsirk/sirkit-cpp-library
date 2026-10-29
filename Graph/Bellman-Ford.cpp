@@ -343,28 +343,40 @@ inline int BellmanFordContinue(const WGraph& graph, std::span<const int> sources
         );
         return 2;
     }
-    for (int pass = component_pass; pass < round_limit; ++pass) {
-        if (pass == 64 && BellmanFordNeedsComponents(graph, frontier)) [[unlikely]] {
-            BellmanFordComponents(graph, sources, distance, unreachable, lower_bound, negative
+    // 64パスごとに両端の更新頂点数から仕事量を見積もり、長い反復を分解する。
+    std::uint64_t component_budget = static_cast<std::uint64_t>(n) * 16;
+    int pass = component_pass;
+    while (pass < round_limit) {
+        const auto first_count = frontier.size();
+        const int first_pass = pass;
+        const int end_pass = pass + std::min(64 - (pass & 63), round_limit - pass);
+        for (; pass < end_pass; ++pass) {
+            for (const int from : frontier) {
+                scheduled[from] = 0;
 #ifndef SKIP_RUNTIME_CHECKS
-                , checked
+                if (!checked[from]) {
+                    process(from, std::true_type{});
+                    checked[from] = 1;
+                } else
+#endif
+                    process(from, std::false_type{});
+            }
+            if (next.empty()) return true;
+            frontier.swap(next);
+            next.clear();
+        }
+        if (pass == round_limit) break;
+        const auto work = static_cast<std::uint64_t>(std::min(first_count,frontier.size())) * (pass-first_pass);
+        if (work >= component_budget ||
+            (pass == 64 && BellmanFordNeedsComponents(graph, frontier))) [[unlikely]] {
+            BellmanFordComponents(graph,sources,distance,unreachable,lower_bound,negative
+#ifndef SKIP_RUNTIME_CHECKS
+                ,checked
 #endif
             );
             return 2;
         }
-        for (const int from : frontier) {
-            scheduled[from] = 0;
-#ifndef SKIP_RUNTIME_CHECKS
-            if (!checked[from]) {
-                process(from, std::true_type{});
-                checked[from] = 1;
-            } else
-#endif
-                process(from, std::false_type{});
-        }
-        if (next.empty()) return true;
-        frontier.swap(next);
-        next.clear();
+        component_budget -= work;
     }
     return false;
 }

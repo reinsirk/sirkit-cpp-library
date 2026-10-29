@@ -1,6 +1,6 @@
 #define SKIP_RUNTIME_CHECKS
 // Verify: https://atcoder.jp/contests/dp/tasks/dp_g
-// Submission: https://atcoder.jp/contests/dp/submissions/80278855
+// Submission: https://atcoder.jp/contests/dp/submissions/80467560
 
 // Library: Graph/Topological.cpp
 // SPDX-License-Identifier: CC0-1.0
@@ -24,12 +24,15 @@
 // IsDAG(graph): DAGかを返す。空はtrue。O(V+E)時間・O(V)領域。
 // 全辺を使う入次数集計中に終点を検査し、2回目では繰り返さない。SKIPで検査を省く。
 // 頂点数INT_MAX、各入次数UINT32_MAXの容量制限は常時検査する。
+// SIRKIT_DISABLE_SIMD: 専用SIMD処理とCPU判定を除く。
 
+#include <algorithm>
 #include <array>
 #include <bit>
 #include <cstddef>
 #include <cstdint>
 #include <limits>
+#include <memory>
 #include <stdexcept>
 #include <utility>
 #include <vector>
@@ -74,6 +77,80 @@ inline std::uint64_t TopologicalReadyMaskAvx2(const std::uint32_t* degree) {
     }
     return mask;
 }
+#if !defined(__clang__)
+__attribute__((target("avx2")))
+inline std::pair<std::size_t, std::uint32_t> TopologicalInitialFifoAvx2(const std::uint32_t* degree, std::vector<int>& order, std::size_t n) {
+    static constexpr auto controls = [] {
+        std::array<std::array<std::uint8_t, 9>, 256> table{};
+        for (unsigned mask = 0; mask < 256; ++mask) {
+            unsigned count = 0;
+            for (unsigned i = 0; i < 8; ++i) if (mask & (1u << i)) table[mask][count++] = static_cast<std::uint8_t>(i);
+            table[mask][8] = static_cast<std::uint8_t>(count);
+        }
+        return table;
+    }();
+    auto masks = std::make_unique_for_overwrite<std::uint8_t[]>(n / 8);
+    const auto zero = _mm256_setzero_si256();
+    auto degree_or = zero;
+    std::size_t base = 0, ready_count = 0;
+    for (; n - base >= 8; base += 8) {
+        const auto values = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(degree + base));
+        degree_or = _mm256_or_si256(degree_or, values);
+        const auto equal = _mm256_cmpeq_epi32(values, zero);
+        const auto mask = static_cast<unsigned>(_mm256_movemask_ps(_mm256_castsi256_ps(equal)));
+        masks[base / 8] = static_cast<std::uint8_t>(mask);
+        ready_count += controls[mask][8];
+    }
+    const auto multiple = _mm256_and_si256(degree_or, _mm256_set1_epi32(-2));
+    std::uint32_t degree_bits = _mm256_testz_si256(multiple, multiple) ? 0 : 2;
+    for (auto i = base; i < n; ++i) {
+        degree_bits |= degree[i];
+        ready_count += degree[i] == 0;
+    }
+    order.resize(std::min(n, ready_count + 8));
+    auto* output = order.data();
+    auto indices = _mm256_setr_epi32(0,1,2,3,4,5,6,7);
+    const auto step = _mm256_set1_epi32(8);
+    std::size_t tail = 0;
+    for (std::size_t i = 0; i < base; i += 8) {
+        const auto mask = masks[i / 8];
+        if (mask != 0) {
+            const auto positions = _mm_loadl_epi64(reinterpret_cast<const __m128i*>(controls[mask].data()));
+            const auto permutation = _mm256_cvtepu8_epi32(positions);
+            const auto ready = _mm256_permutevar8x32_epi32(indices, permutation);
+            _mm256_storeu_si256(reinterpret_cast<__m256i*>(output + tail), ready);
+            tail += controls[mask][8];
+        }
+        indices = _mm256_add_epi32(indices, step);
+    }
+    for (; base < n; ++base) {
+        output[tail] = static_cast<int>(base);
+        tail += degree[base] == 0;
+    }
+    return {tail, degree_bits};
+}
+#endif
+#endif
+#if !defined(SIRKIT_DISABLE_SIMD) && (defined(__GNUC__) || defined(__clang__)) && (defined(__x86_64__) || defined(__i386__))
+#if !defined(__clang__)
+__attribute__((noinline))
+inline std::uint32_t TopologicalInitializeFifo(const std::uint32_t* indegree, std::size_t n, std::vector<int>& order) {
+    if (n >= 4096 && __builtin_cpu_supports("avx2")) {
+        const auto [tail, degree_bits] = TopologicalInitialFifoAvx2(indegree, order, n);
+        order.resize(tail);
+        return degree_bits;
+    }
+    std::uint32_t degree_bits = 0;
+    for (std::size_t i = 0; i < n; ++i) {
+        degree_bits |= indegree[i];
+        if (indegree[i] == 0) {
+            if (order.size() == order.capacity()) std::unreachable();
+            order.push_back(static_cast<int>(i));
+        }
+    }
+    return degree_bits;
+}
+#endif
 #endif
 } // namespace reinsirk::detail
 #endif
@@ -81,7 +158,7 @@ inline std::uint64_t TopologicalReadyMaskAvx2(const std::uint32_t* degree) {
 #ifndef SIRKIT_TOPOLOGICAL_CORE_DEFINED
 #define SIRKIT_TOPOLOGICAL_CORE_DEFINED
 namespace reinsirk::detail {
-template <bool Lexicographical, bool Details>
+template <bool Lexicographical, bool Details, bool Bulk = false>
 inline TopologicalResult TopologicalRun(const Graph& graph) {
     const auto n = graph.size();
     if (n > static_cast<std::size_t>(std::numeric_limits<int>::max()))
@@ -107,9 +184,15 @@ inline TopologicalResult TopologicalRun(const Graph& graph) {
             result.order.push_back(vertex);
         };
         std::uint32_t degree_bits = 0;
-        for (std::size_t i = 0; i < n; ++i) {
-            degree_bits |= indegree[i];
-            if (indegree[i] == 0) append(static_cast<int>(i));
+#if !defined(SIRKIT_DISABLE_SIMD) && defined(__GNUC__) && !defined(__clang__) && (defined(__x86_64__) || defined(__i386__))
+        if constexpr (!Details && Bulk) degree_bits = TopologicalInitializeFifo(indegree.data(), n, result.order);
+        else
+#endif
+        {
+            for (std::size_t i = 0; i < n; ++i) {
+                degree_bits |= indegree[i];
+                if (indegree[i] == 0) append(static_cast<int>(i));
+            }
         }
         if (n >= 4096 && degree_bits > 1 && result.order.size() > n / 64 && result.order.size() < n - n / 4) {
             // 到達できる頂点が十分増えてから、添字式キューに切り替える。
@@ -265,6 +348,9 @@ inline TopologicalResult TopologicalRun(const Graph& graph) {
 #ifndef SIRKIT_TOPOLOGICAL_SORT_DEFINED
 #define SIRKIT_TOPOLOGICAL_SORT_DEFINED
 inline std::vector<int> TopologicalSort(const Graph& graph) {
+#if !defined(SIRKIT_DISABLE_SIMD) && defined(__GNUC__) && !defined(__clang__) && (defined(__x86_64__) || defined(__i386__))
+    if (graph.size() >= 4096) return reinsirk::detail::TopologicalRun<false, false, true>(graph).order;
+#endif
     return reinsirk::detail::TopologicalRun<false, false>(graph).order;
 }
 #endif

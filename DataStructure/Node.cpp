@@ -147,6 +147,16 @@ inline std::shared_ptr<Node> chain_tail(const std::shared_ptr<Node>& head) {
 #define SIRKIT_CHAIN_NTH_DEFINED
 inline std::shared_ptr<Node> chain_nth(const std::shared_ptr<Node>& head, std::size_t index) {
     const std::shared_ptr<Node>* link = &head;
+#if defined(__GNUC__) && !defined(__clang__)
+    if (!head) return head;
+    while (*link && index >= 2) {
+        link = &(*link)->n;
+        --index;
+        if (!*link) return *link;
+        link = &(*link)->n;
+        --index;
+    }
+#endif
     while (*link && index != 0) {
         link = &(*link)->n;
         --index;

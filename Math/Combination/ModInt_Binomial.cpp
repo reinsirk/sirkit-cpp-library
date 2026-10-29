@@ -489,19 +489,32 @@ private:
         if (factor.prime == 2)
         {
             const u64 mask = factor.modulus - 1;
-            for (u64 i = old_size; i <= target; ++i)
-            {
-                const auto previous = factor.prefix[static_cast<std::size_t>(i - 1)];
-                factor.prefix[static_cast<std::size_t>(i)] = (i & 1)
-                    ? static_cast<value_type>((static_cast<u64>(previous) * i) & mask) : previous;
+            // 奇数と次の偶数は同じ値。2要素ずつ埋めて反復を減らす。
+            u64 i = old_size;
+            if ((i & 1) == 0) {
+                factor.prefix[static_cast<std::size_t>(i)] = factor.prefix[static_cast<std::size_t>(i - 1)];
+                ++i;
             }
+            for (; i + 1 <= target; i += 2) {
+                const auto value = static_cast<value_type>((static_cast<u64>(factor.prefix[static_cast<std::size_t>(i - 1)]) * i) & mask);
+                factor.prefix[static_cast<std::size_t>(i)] = value;
+                factor.prefix[static_cast<std::size_t>(i + 1)] = value;
+            }
+            if (i <= target)
+                factor.prefix[static_cast<std::size_t>(i)] = static_cast<value_type>((static_cast<u64>(factor.prefix[static_cast<std::size_t>(i - 1)]) * i) & mask);
             factor.ifac[target] = inverse_binary(factor.prefix[target]) & static_cast<value_type>(mask);
-            for (u64 i = target; i > current; --i)
-            {
-                const auto value = factor.ifac[static_cast<std::size_t>(i)];
-                factor.ifac[static_cast<std::size_t>(i - 1)] = (i & 1)
-                    ? static_cast<value_type>((static_cast<u64>(value) * i) & mask) : value;
+            i = target;
+            if (i & 1) {
+                factor.ifac[static_cast<std::size_t>(i - 1)] = static_cast<value_type>((static_cast<u64>(factor.ifac[static_cast<std::size_t>(i)]) * i) & mask);
+                --i;
             }
+            for (; i > static_cast<u64>(current) + 1; i -= 2) {
+                const auto value = factor.ifac[static_cast<std::size_t>(i)];
+                factor.ifac[static_cast<std::size_t>(i - 1)] = value;
+                factor.ifac[static_cast<std::size_t>(i - 2)] = static_cast<value_type>((static_cast<u64>(value) * (i - 1)) & mask);
+            }
+            if (i > current)
+                factor.ifac[static_cast<std::size_t>(i - 1)] = factor.ifac[static_cast<std::size_t>(i)];
             return;
         }
         value_type residue = static_cast<value_type>(old_size % factor.prime);

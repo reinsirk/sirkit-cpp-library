@@ -1,0 +1,1806 @@
+{
+  "decision": {
+    "status": "complete",
+    "completed_utc": "2026-10-29T13:07:06.076512+00:00",
+    "scope": [
+      "Graph/Dijkstra.cpp",
+      "Graph/Bellman-Ford.cpp",
+      "Graph/Bellman-Ford_SFPA.cpp",
+      "Document/dijkstra.md",
+      "Document/negative_shortest_paths.md"
+    ],
+    "baseline": {
+      "Graph/Dijkstra.cpp": "b5a626a824c696a9fc223f3a5e98ce5c2c500d3209c96f46c81b18b2bbe3ef2c",
+      "Graph/Bellman-Ford.cpp": "7302faeca78e87c0f04f3bc76e06f24d1158fa15f65ba50f9ac49193929aabfe",
+      "Graph/Bellman-Ford_SFPA.cpp": "665b807e0fca56a22bf2c9a97178b6a4b2b83b6b000dc01798783250f2286fec",
+      "Verify/current/drivers/dijkstra_main.cpp": "a3f65cbaa82ad3235b8cb01b74faa33d50ffa42f55ea12d9c9077023a47ae19f",
+      "Verify/current/drivers/bellman_ford_main.cpp": "f0889610f077798379f45c59d6b6708fce8b58fe22df7fe61e1a295393473578",
+      "Verify/current/drivers/spfa_main.cpp": "dad9b90cbe6f92f4d35657a49075a24b2461961b76d22c36f407ea929fb4991e",
+      "Verify/current/common/fast_io.hpp": "291bf8dbc56a1d691f6256fe95b4714183c2cf5d9e55e4bef240e31d1eb178c1",
+      "Document/dijkstra.md": "e9998aedcdad51475c85c176015f49b8121234f371fe03d2d991154b7886e66f",
+      "Document/negative_shortest_paths.md": "e0e1c9e48852780ed02ba66271ba1ee35691a9aec8d12165221b38950679e14b",
+      "Verify/current/drivers/bellman_ford_coins_respawn_main.cpp": "6c7bf71f06cb76a972c1f99f596d312b0eb933810615b7ce9a094ca9108c2afd",
+      "Verify/current/drivers/spfa_coins_respawn_main.cpp": "2b9fbf726dcf611ccd4aa6331f0a357d94848bfff8f57919d6f5830a2cf2f76d"
+    },
+    "final": {
+      "Graph/Dijkstra.cpp": "b5a626a824c696a9fc223f3a5e98ce5c2c500d3209c96f46c81b18b2bbe3ef2c",
+      "Graph/Bellman-Ford.cpp": "eb08c145b426b99798704b4307db5485f3f798f26a6350afa0c663e785006791",
+      "Graph/Bellman-Ford_SFPA.cpp": "665b807e0fca56a22bf2c9a97178b6a4b2b83b6b000dc01798783250f2286fec",
+      "Document/dijkstra.md": "e9998aedcdad51475c85c176015f49b8121234f371fe03d2d991154b7886e66f",
+      "Document/negative_shortest_paths.md": "ba257ed726c2aa95e9ee10d9c15fa52968f8744ce139384cf2cdea03e4c3a1c0"
+    },
+    "main_io_unchanged": {
+      "Verify/current/drivers/dijkstra_main.cpp": true,
+      "Verify/current/drivers/bellman_ford_main.cpp": true,
+      "Verify/current/drivers/spfa_main.cpp": true,
+      "Verify/current/common/fast_io.hpp": true,
+      "Verify/current/drivers/bellman_ford_coins_respawn_main.cpp": true,
+      "Verify/current/drivers/spfa_coins_respawn_main.cpp": true
+    },
+    "conditions": {
+      "cpu": 12,
+      "p_core": true,
+      "e_core": false,
+      "lock": "/tmp/sirkit_performance_cpu12.lock",
+      "compilers": [
+        "/usr/bin/g++ GCC15.2",
+        "GCC15.2 -march=native",
+        "Clang21 --gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15"
+      ],
+      "flags": [
+        "-O2",
+        "-std=c++23",
+        "-DSKIP_RUNTIME_CHECKS"
+      ],
+      "all_compile_and_timing_pinned": true
+    },
+    "outcomes": {
+      "Bellman-Ford": {
+        "adopted": true,
+        "description": "初期16/64パスのSCC条件を保ち、その後は64パスの区切りで両端の小さいfrontier数×パス数を仕事量の見積もりへ累積し、16VでSCCへ移る。各パスに予算更新を追加しない。",
+        "reason": "旧版は64回目に小さいfrontierだった後で負成分列が広がるとSCCを再判定せず、100k頂点×3回が30秒timeout。新区切り方式で小規模/通常経路を保ちながら重い反復を短縮。",
+        "source_sha256": "eb08c145b426b99798704b4307db5485f3f798f26a6350afa0c663e785006791",
+        "same_tu_large_worst_ratio": 1.0144798376137125,
+        "same_tu_negative_components": [
+          {
+            "compiler": "gcc",
+            "n": 4096,
+            "shape": "negative_components",
+            "ratios": {
+              "control": 1.0096790451422477,
+              "blocked": 0.08052382758840283
+            }
+          },
+          {
+            "compiler": "gcc-native",
+            "n": 4096,
+            "shape": "negative_components",
+            "ratios": {
+              "control": 0.9862976509238591,
+              "blocked": 0.0790855237670234
+            }
+          },
+          {
+            "compiler": "clang",
+            "n": 4096,
+            "shape": "negative_components",
+            "ratios": {
+              "control": 0.9922418637323148,
+              "blocked": 0.07198499803713479
+            }
+          }
+        ],
+        "fixed_main_negative_components": [
+          {
+            "compiler": "gcc",
+            "shape": 7,
+            "ratios": {
+              "baseline": 1.0,
+              "control": 0.9839323335281049,
+              "blocked": 0.23425211997378248
+            },
+            "cpu_ratios": {
+              "baseline": 1.0,
+              "control": 0.9895833333333369,
+              "blocked": 0.21726190476199322
+            },
+            "medians": {
+              "baseline": 0.004119809,
+              "control": 0.004075554,
+              "blocked": 0.000948823
+            }
+          },
+          {
+            "compiler": "gcc-native",
+            "shape": 7,
+            "ratios": {
+              "baseline": 1.0,
+              "control": 0.9891895236343824,
+              "blocked": 0.2355602901807124
+            },
+            "cpu_ratios": {
+              "baseline": 1.0,
+              "control": 0.9871891484553769,
+              "blocked": 0.21854465806771126
+            },
+            "medians": {
+              "baseline": 0.004101866,
+              "control": 0.00407686,
+              "blocked": 0.000970203
+            }
+          },
+          {
+            "compiler": "clang",
+            "shape": 7,
+            "ratios": {
+              "baseline": 1.0,
+              "control": 0.9883135840837569,
+              "blocked": 0.17695219141054075
+            },
+            "cpu_ratios": {
+              "baseline": 1.0,
+              "control": 0.9881589618816631,
+              "blocked": 0.1631147540982553
+            },
+            "medians": {
+              "baseline": 0.006090955,
+              "control": 0.006059674,
+              "blocked": 0.001089007
+            }
+          }
+        ],
+        "validation": {
+          "source_sha256": "eb08c145b426b99798704b4307db5485f3f798f26a6350afa0c663e785006791",
+          "passed": true,
+          "configurations": 72
+        },
+        "earlier_exact_budget_validation": {
+          "source_sha256": "475219538df8ab05130d980d8fe37516e551d5f06431747ca98e863b2e7a5b42",
+          "passed": true,
+          "configurations": 60
+        },
+        "rejected": [
+          "毎パスの厳密な予算減算はreverse/zero ring等が約3〜7%低速",
+          "単一frontier専用分岐は複数frontierの有限成分列で約5〜7%低速",
+          "64パスごとの判定＋毎パス減算もゼロ閉路で約2〜3%残るため不採用"
+        ]
+      },
+      "Dijkstra": {
+        "adopted": false,
+        "source_sha256": "b5a626a824c696a9fc223f3a5e98ce5c2c500d3209c96f46c81b18b2bbe3ef2c",
+        "reason": "広い重みの経路復元で4bit radixのAPIが約12〜25%短縮し固定mainも約5〜8%短縮したが、初期版は大重み格子で約8〜12%後退。初期キューの距離種類数による選択で格子を解消しても、固定mainの星型01にGCC/default/nativeで繰り返し約9%の比の後退が残り、他条件維持を満たさない。生成コードの配置分離も比較し、原因を確定できないまま退行を無視して採用しない。",
+        "implemented_prototypes": [
+          "occupied mask更新の集約",
+          "tracked minimaを省くスカラー/AVX2再走査",
+          "GCCの明示SIMD経路、inline/outline、singleton用最終key保持",
+          "2/4/8bitの階層radix、zero候補別管理、下位語の最小候補短絡",
+          "大規模経路版だけ距離gap/非終端数/値域/異なる距離数により選択",
+          "補助定義の後方配置、ELF関数section分離"
+        ],
+        "validated_prototype": {
+          "source": "dijkstra_final.hpp",
+          "sha256": "d04796f5e3f7bdca3fdb89ea90d3eea322999705b5e50bce28c0bbd8edbe1d84",
+          "matrix": {
+            "source_sha256": "d04796f5e3f7bdca3fdb89ea90d3eea322999705b5e50bce28c0bbd8edbe1d84",
+            "configurations": 56,
+            "passed": true
+          },
+          "notes": "この56構成は固定gap選択のGCC版。後続のdistinct/section試作をこの56構成の検証済みとは記さない。"
+        },
+        "final_distinct_main": [
+          {
+            "compiler": "gcc",
+            "n": 100000,
+            "shape": 0,
+            "ratios": {
+              "control": 1.0014122167384503,
+              "distinct": 1.000296665364797
+            },
+            "medians": {
+              "baseline": 0.007388883,
+              "control": 0.007413636,
+              "distinct": 0.007348897
+            }
+          },
+          {
+            "compiler": "gcc",
+            "n": 100000,
+            "shape": 4,
+            "ratios": {
+              "control": 0.921730333713003,
+              "distinct": 1.0990852220427216
+            },
+            "medians": {
+              "baseline": 0.003453132,
+              "control": 0.003349623,
+              "distinct": 0.003728056
+            }
+          },
+          {
+            "compiler": "gcc",
+            "n": 100000,
+            "shape": 5,
+            "ratios": {
+              "control": 0.9973917466338117,
+              "distinct": 1.0034538744423092
+            },
+            "medians": {
+              "baseline": 0.00341743,
+              "control": 0.003420002,
+              "distinct": 0.003428215
+            }
+          },
+          {
+            "compiler": "gcc",
+            "n": 100000,
+            "shape": 6,
+            "ratios": {
+              "control": 1.0062907772061578,
+              "distinct": 0.9935317443563737
+            },
+            "medians": {
+              "baseline": 0.014432166,
+              "control": 0.014429824,
+              "distinct": 0.014316144
+            }
+          },
+          {
+            "compiler": "gcc",
+            "n": 100000,
+            "shape": 7,
+            "ratios": {
+              "control": 0.994264862460625,
+              "distinct": 0.9383665727539169
+            },
+            "medians": {
+              "baseline": 0.018168392,
+              "control": 0.018210483,
+              "distinct": 0.016879324
+            }
+          },
+          {
+            "compiler": "gcc",
+            "n": 100000,
+            "shape": 8,
+            "ratios": {
+              "control": 0.9978193534390496,
+              "distinct": 0.9308675471883582
+            },
+            "medians": {
+              "baseline": 0.034141893,
+              "control": 0.034244518,
+              "distinct": 0.032039721
+            }
+          },
+          {
+            "compiler": "gcc",
+            "n": 2000,
+            "shape": 9,
+            "ratios": {
+              "control": 0.9826296969546537,
+              "distinct": 1.0222850503517893
+            },
+            "medians": {
+              "baseline": 0.00672713,
+              "control": 0.006715126,
+              "distinct": 0.006860882
+            }
+          },
+          {
+            "compiler": "gcc",
+            "n": 100000,
+            "shape": 10,
+            "ratios": {
+              "control": 1.0116194402195635,
+              "distinct": 1.0018103664677442
+            },
+            "medians": {
+              "baseline": 0.011419323,
+              "control": 0.011433925,
+              "distinct": 0.011515412
+            }
+          },
+          {
+            "compiler": "gcc",
+            "n": 100000,
+            "shape": 11,
+            "ratios": {
+              "control": 1.0260640706511877,
+              "distinct": 0.9321951665017413
+            },
+            "medians": {
+              "baseline": 0.009422317,
+              "control": 0.009685858,
+              "distinct": 0.008818847
+            }
+          },
+          {
+            "compiler": "gcc",
+            "n": 100000,
+            "shape": 12,
+            "ratios": {
+              "control": 0.9997443921179825,
+              "distinct": 0.9919036848845375
+            },
+            "medians": {
+              "baseline": 0.007863396,
+              "control": 0.007858214,
+              "distinct": 0.007793345
+            }
+          },
+          {
+            "compiler": "gcc",
+            "n": 100000,
+            "shape": 13,
+            "ratios": {
+              "control": 1.0724958178486943,
+              "distinct": 1.070733901868441
+            },
+            "medians": {
+              "baseline": 0.001167135,
+              "control": 0.001235887,
+              "distinct": 0.001225389
+            }
+          },
+          {
+            "compiler": "gcc",
+            "n": 100000,
+            "shape": 14,
+            "ratios": {
+              "control": 1.005134683859339,
+              "distinct": 1.0031837811139155
+            },
+            "medians": {
+              "baseline": 0.001107371,
+              "control": 0.001113864,
+              "distinct": 0.001110343
+            }
+          },
+          {
+            "compiler": "gcc-native",
+            "n": 100000,
+            "shape": 0,
+            "ratios": {
+              "control": 0.9854664116504426,
+              "distinct": 1.0102813488748164
+            },
+            "medians": {
+              "baseline": 0.007503168,
+              "control": 0.007457563,
+              "distinct": 0.007531475
+            }
+          },
+          {
+            "compiler": "gcc-native",
+            "n": 100000,
+            "shape": 4,
+            "ratios": {
+              "control": 0.9398933946904346,
+              "distinct": 1.0894344354672296
+            },
+            "medians": {
+              "baseline": 0.003451875,
+              "control": 0.003475532,
+              "distinct": 0.003654757
+            }
+          },
+          {
+            "compiler": "gcc-native",
+            "n": 100000,
+            "shape": 5,
+            "ratios": {
+              "control": 0.9918435913076563,
+              "distinct": 0.9967734108026207
+            },
+            "medians": {
+              "baseline": 0.003450689,
+              "control": 0.003416964,
+              "distinct": 0.00341421
+            }
+          },
+          {
+            "compiler": "gcc-native",
+            "n": 100000,
+            "shape": 6,
+            "ratios": {
+              "control": 1.0062894839465777,
+              "distinct": 0.9936341655429348
+            },
+            "medians": {
+              "baseline": 0.014472965,
+              "control": 0.014645242,
+              "distinct": 0.014557838
+            }
+          },
+          {
+            "compiler": "gcc-native",
+            "n": 100000,
+            "shape": 7,
+            "ratios": {
+              "control": 0.9922941165577446,
+              "distinct": 0.9504591216121958
+            },
+            "medians": {
+              "baseline": 0.018436478,
+              "control": 0.01822167,
+              "distinct": 0.017328817
+            }
+          },
+          {
+            "compiler": "gcc-native",
+            "n": 100000,
+            "shape": 8,
+            "ratios": {
+              "control": 1.0040052159582833,
+              "distinct": 0.9461846517312916
+            },
+            "medians": {
+              "baseline": 0.034649817,
+              "control": 0.034788597,
+              "distinct": 0.03280015
+            }
+          },
+          {
+            "compiler": "gcc-native",
+            "n": 2000,
+            "shape": 9,
+            "ratios": {
+              "control": 1.0251779098628093,
+              "distinct": 1.0165175897374896
+            },
+            "medians": {
+              "baseline": 0.00676851,
+              "control": 0.006927152,
+              "distinct": 0.006885716
+            }
+          },
+          {
+            "compiler": "gcc-native",
+            "n": 100000,
+            "shape": 10,
+            "ratios": {
+              "control": 0.9894952289760508,
+              "distinct": 0.9904657847288556
+            },
+            "medians": {
+              "baseline": 0.011584024,
+              "control": 0.011586999,
+              "distinct": 0.011541038
+            }
+          },
+          {
+            "compiler": "gcc-native",
+            "n": 100000,
+            "shape": 11,
+            "ratios": {
+              "control": 0.9986008793360244,
+              "distinct": 0.9434014807998499
+            },
+            "medians": {
+              "baseline": 0.009601029,
+              "control": 0.009548022,
+              "distinct": 0.009060537
+            }
+          },
+          {
+            "compiler": "gcc-native",
+            "n": 100000,
+            "shape": 12,
+            "ratios": {
+              "control": 0.9981765632127946,
+              "distinct": 1.0014677625193733
+            },
+            "medians": {
+              "baseline": 0.007963042,
+              "control": 0.007876709,
+              "distinct": 0.007919871
+            }
+          },
+          {
+            "compiler": "gcc-native",
+            "n": 100000,
+            "shape": 13,
+            "ratios": {
+              "control": 1.0268291019007336,
+              "distinct": 1.05453419061014
+            },
+            "medians": {
+              "baseline": 0.001217728,
+              "control": 0.001201567,
+              "distinct": 0.001217458
+            }
+          },
+          {
+            "compiler": "gcc-native",
+            "n": 100000,
+            "shape": 14,
+            "ratios": {
+              "control": 0.9970120765703233,
+              "distinct": 0.9992149686528862
+            },
+            "medians": {
+              "baseline": 0.001111892,
+              "control": 0.001108619,
+              "distinct": 0.001108406
+            }
+          }
+        ],
+        "final_distinct_extra": [
+          {
+            "compiler": "gcc",
+            "n": 4097,
+            "shape": 7,
+            "api": 0,
+            "ratios": {
+              "control": 1.0161113660418428,
+              "distinct": 0.9946118863970752
+            }
+          },
+          {
+            "compiler": "gcc",
+            "n": 4097,
+            "shape": 7,
+            "api": 1,
+            "ratios": {
+              "control": 0.9944771323605942,
+              "distinct": 0.981851612846194
+            }
+          },
+          {
+            "compiler": "gcc",
+            "n": 4097,
+            "shape": 8,
+            "api": 0,
+            "ratios": {
+              "control": 0.9982075086512138,
+              "distinct": 0.9966506656188103
+            }
+          },
+          {
+            "compiler": "gcc",
+            "n": 4097,
+            "shape": 8,
+            "api": 1,
+            "ratios": {
+              "control": 1.0017293331586534,
+              "distinct": 0.8913993565904813
+            }
+          },
+          {
+            "compiler": "gcc",
+            "n": 4097,
+            "shape": 11,
+            "api": 0,
+            "ratios": {
+              "control": 1.0130257643793201,
+              "distinct": 1.0044585746821746
+            }
+          },
+          {
+            "compiler": "gcc",
+            "n": 4097,
+            "shape": 11,
+            "api": 1,
+            "ratios": {
+              "control": 0.9893268077271042,
+              "distinct": 0.8479826431813091
+            }
+          },
+          {
+            "compiler": "gcc",
+            "n": 4097,
+            "shape": 12,
+            "api": 0,
+            "ratios": {
+              "control": 0.9827583448011009,
+              "distinct": 0.9898546311284921
+            }
+          },
+          {
+            "compiler": "gcc",
+            "n": 4097,
+            "shape": 12,
+            "api": 1,
+            "ratios": {
+              "control": 0.9871370450010055,
+              "distinct": 1.0086281975198268
+            }
+          },
+          {
+            "compiler": "gcc",
+            "n": 4097,
+            "shape": 15,
+            "api": 0,
+            "ratios": {
+              "control": 1.0126785598289842,
+              "distinct": 0.9723891306630575
+            }
+          },
+          {
+            "compiler": "gcc",
+            "n": 4097,
+            "shape": 15,
+            "api": 1,
+            "ratios": {
+              "control": 1.0036522769149776,
+              "distinct": 1.0189082547513535
+            }
+          },
+          {
+            "compiler": "gcc",
+            "n": 4097,
+            "shape": 16,
+            "api": 0,
+            "ratios": {
+              "control": 1.0119388359370594,
+              "distinct": 1.0056927133269415
+            }
+          },
+          {
+            "compiler": "gcc",
+            "n": 4097,
+            "shape": 16,
+            "api": 1,
+            "ratios": {
+              "control": 0.9988076219198283,
+              "distinct": 0.9070878258530823
+            }
+          },
+          {
+            "compiler": "gcc",
+            "n": 4097,
+            "shape": 17,
+            "api": 0,
+            "ratios": {
+              "control": 0.9857441799633796,
+              "distinct": 1.0110829639012033
+            }
+          },
+          {
+            "compiler": "gcc",
+            "n": 4097,
+            "shape": 17,
+            "api": 1,
+            "ratios": {
+              "control": 1.015447991761071,
+              "distinct": 1.0475682354262608
+            }
+          },
+          {
+            "compiler": "gcc",
+            "n": 4097,
+            "shape": 18,
+            "api": 0,
+            "ratios": {
+              "control": 1.0389371836220338,
+              "distinct": 0.9957955951983339
+            }
+          },
+          {
+            "compiler": "gcc",
+            "n": 4097,
+            "shape": 18,
+            "api": 1,
+            "ratios": {
+              "control": 0.9943346788471071,
+              "distinct": 1.022335006437408
+            }
+          },
+          {
+            "compiler": "gcc",
+            "n": 4097,
+            "shape": 19,
+            "api": 0,
+            "ratios": {
+              "control": 0.9928471515768057,
+              "distinct": 1.0083847278738556
+            }
+          },
+          {
+            "compiler": "gcc",
+            "n": 4097,
+            "shape": 19,
+            "api": 1,
+            "ratios": {
+              "control": 1.0041915139404913,
+              "distinct": 1.0131989759280653
+            }
+          },
+          {
+            "compiler": "gcc",
+            "n": 4097,
+            "shape": 20,
+            "api": 0,
+            "ratios": {
+              "control": 0.9928352742567741,
+              "distinct": 0.9851402346340519
+            }
+          },
+          {
+            "compiler": "gcc",
+            "n": 4097,
+            "shape": 20,
+            "api": 1,
+            "ratios": {
+              "control": 0.9918268671244326,
+              "distinct": 1.0242760874849375
+            }
+          },
+          {
+            "compiler": "gcc",
+            "n": 4097,
+            "shape": 21,
+            "api": 0,
+            "ratios": {
+              "control": 0.9980812817038218,
+              "distinct": 1.0024465401844225
+            }
+          },
+          {
+            "compiler": "gcc",
+            "n": 4097,
+            "shape": 21,
+            "api": 1,
+            "ratios": {
+              "control": 0.9813583086756714,
+              "distinct": 0.9912334156536986
+            }
+          },
+          {
+            "compiler": "gcc",
+            "n": 100000,
+            "shape": 7,
+            "api": 0,
+            "ratios": {
+              "control": 1.007450408476083,
+              "distinct": 1.020604800117325
+            }
+          },
+          {
+            "compiler": "gcc",
+            "n": 100000,
+            "shape": 7,
+            "api": 1,
+            "ratios": {
+              "control": 0.9977582801334495,
+              "distinct": 0.8365959391511507
+            }
+          },
+          {
+            "compiler": "gcc",
+            "n": 100000,
+            "shape": 8,
+            "api": 0,
+            "ratios": {
+              "control": 0.9866370690914044,
+              "distinct": 0.9873122504448806
+            }
+          },
+          {
+            "compiler": "gcc",
+            "n": 100000,
+            "shape": 8,
+            "api": 1,
+            "ratios": {
+              "control": 1.0085888580900984,
+              "distinct": 0.8096809171160184
+            }
+          },
+          {
+            "compiler": "gcc",
+            "n": 100000,
+            "shape": 11,
+            "api": 0,
+            "ratios": {
+              "control": 1.0006282152498516,
+              "distinct": 0.9943281188269805
+            }
+          },
+          {
+            "compiler": "gcc",
+            "n": 100000,
+            "shape": 11,
+            "api": 1,
+            "ratios": {
+              "control": 0.9951981737057936,
+              "distinct": 0.7503635525584466
+            }
+          },
+          {
+            "compiler": "gcc",
+            "n": 100000,
+            "shape": 12,
+            "api": 0,
+            "ratios": {
+              "control": 0.9902630916146218,
+              "distinct": 1.0048600253329902
+            }
+          },
+          {
+            "compiler": "gcc",
+            "n": 100000,
+            "shape": 12,
+            "api": 1,
+            "ratios": {
+              "control": 0.9995281025442724,
+              "distinct": 1.003361773953636
+            }
+          },
+          {
+            "compiler": "gcc",
+            "n": 100000,
+            "shape": 15,
+            "api": 0,
+            "ratios": {
+              "control": 1.0152501510083225,
+              "distinct": 0.991633623905341
+            }
+          },
+          {
+            "compiler": "gcc",
+            "n": 100000,
+            "shape": 15,
+            "api": 1,
+            "ratios": {
+              "control": 1.0130941163019973,
+              "distinct": 1.0033276951637824
+            }
+          },
+          {
+            "compiler": "gcc",
+            "n": 100000,
+            "shape": 16,
+            "api": 0,
+            "ratios": {
+              "control": 1.0031642805006278,
+              "distinct": 0.9788109897731762
+            }
+          },
+          {
+            "compiler": "gcc",
+            "n": 100000,
+            "shape": 16,
+            "api": 1,
+            "ratios": {
+              "control": 0.9947765196201963,
+              "distinct": 0.9231180621818783
+            }
+          },
+          {
+            "compiler": "gcc",
+            "n": 100000,
+            "shape": 17,
+            "api": 0,
+            "ratios": {
+              "control": 1.0060530568273633,
+              "distinct": 1.01945315696168
+            }
+          },
+          {
+            "compiler": "gcc",
+            "n": 100000,
+            "shape": 17,
+            "api": 1,
+            "ratios": {
+              "control": 0.9591024427036576,
+              "distinct": 1.0024214363641202
+            }
+          },
+          {
+            "compiler": "gcc",
+            "n": 100000,
+            "shape": 18,
+            "api": 0,
+            "ratios": {
+              "control": 1.0072222222222222,
+              "distinct": 0.9927910479879491
+            }
+          },
+          {
+            "compiler": "gcc",
+            "n": 100000,
+            "shape": 18,
+            "api": 1,
+            "ratios": {
+              "control": 0.999212467454878,
+              "distinct": 1.0087415695486233
+            }
+          },
+          {
+            "compiler": "gcc",
+            "n": 100000,
+            "shape": 19,
+            "api": 0,
+            "ratios": {
+              "control": 1.1186155300929983,
+              "distinct": 0.9535559094178316
+            }
+          },
+          {
+            "compiler": "gcc",
+            "n": 100000,
+            "shape": 19,
+            "api": 1,
+            "ratios": {
+              "control": 0.9805425200064728,
+              "distinct": 1.0132949261790962
+            }
+          },
+          {
+            "compiler": "gcc",
+            "n": 100000,
+            "shape": 20,
+            "api": 0,
+            "ratios": {
+              "control": 1.0138243688526165,
+              "distinct": 0.9999079657732887
+            }
+          },
+          {
+            "compiler": "gcc",
+            "n": 100000,
+            "shape": 20,
+            "api": 1,
+            "ratios": {
+              "control": 1.0013624429860837,
+              "distinct": 0.9946716256013829
+            }
+          },
+          {
+            "compiler": "gcc",
+            "n": 100000,
+            "shape": 21,
+            "api": 0,
+            "ratios": {
+              "control": 0.9985073424435368,
+              "distinct": 0.989677896279903
+            }
+          },
+          {
+            "compiler": "gcc",
+            "n": 100000,
+            "shape": 21,
+            "api": 1,
+            "ratios": {
+              "control": 1.0098339847811872,
+              "distinct": 1.005839180471483
+            }
+          },
+          {
+            "compiler": "gcc-native",
+            "n": 4097,
+            "shape": 7,
+            "api": 0,
+            "ratios": {
+              "control": 1.0155936393878293,
+              "distinct": 1.0118114406779661
+            }
+          },
+          {
+            "compiler": "gcc-native",
+            "n": 4097,
+            "shape": 7,
+            "api": 1,
+            "ratios": {
+              "control": 1.003434738815302,
+              "distinct": 0.9911943804859804
+            }
+          },
+          {
+            "compiler": "gcc-native",
+            "n": 4097,
+            "shape": 8,
+            "api": 0,
+            "ratios": {
+              "control": 1.009136729372453,
+              "distinct": 1.0223135933289935
+            }
+          },
+          {
+            "compiler": "gcc-native",
+            "n": 4097,
+            "shape": 8,
+            "api": 1,
+            "ratios": {
+              "control": 0.9975356921693543,
+              "distinct": 0.9444166390969578
+            }
+          },
+          {
+            "compiler": "gcc-native",
+            "n": 4097,
+            "shape": 11,
+            "api": 0,
+            "ratios": {
+              "control": 0.9991209571424344,
+              "distinct": 0.9836700884536875
+            }
+          },
+          {
+            "compiler": "gcc-native",
+            "n": 4097,
+            "shape": 11,
+            "api": 1,
+            "ratios": {
+              "control": 0.9855710858151591,
+              "distinct": 0.8181427835346654
+            }
+          },
+          {
+            "compiler": "gcc-native",
+            "n": 4097,
+            "shape": 12,
+            "api": 0,
+            "ratios": {
+              "control": 1.0081916950991334,
+              "distinct": 1.0100546312004854
+            }
+          },
+          {
+            "compiler": "gcc-native",
+            "n": 4097,
+            "shape": 12,
+            "api": 1,
+            "ratios": {
+              "control": 1.0046172769420003,
+              "distinct": 1.0207688617936497
+            }
+          },
+          {
+            "compiler": "gcc-native",
+            "n": 4097,
+            "shape": 15,
+            "api": 0,
+            "ratios": {
+              "control": 0.9961461013536191,
+              "distinct": 0.9694217034370778
+            }
+          },
+          {
+            "compiler": "gcc-native",
+            "n": 4097,
+            "shape": 15,
+            "api": 1,
+            "ratios": {
+              "control": 1.0100608037965297,
+              "distinct": 1.0241675938887094
+            }
+          },
+          {
+            "compiler": "gcc-native",
+            "n": 4097,
+            "shape": 16,
+            "api": 0,
+            "ratios": {
+              "control": 0.9914064470651653,
+              "distinct": 0.9906772201539185
+            }
+          },
+          {
+            "compiler": "gcc-native",
+            "n": 4097,
+            "shape": 16,
+            "api": 1,
+            "ratios": {
+              "control": 1.0115069635324294,
+              "distinct": 0.9351804083554638
+            }
+          },
+          {
+            "compiler": "gcc-native",
+            "n": 4097,
+            "shape": 17,
+            "api": 0,
+            "ratios": {
+              "control": 1.0192982456140351,
+              "distinct": 1.008313220702601
+            }
+          },
+          {
+            "compiler": "gcc-native",
+            "n": 4097,
+            "shape": 17,
+            "api": 1,
+            "ratios": {
+              "control": 0.9745743473325766,
+              "distinct": 1.0428502129035735
+            }
+          },
+          {
+            "compiler": "gcc-native",
+            "n": 4097,
+            "shape": 18,
+            "api": 0,
+            "ratios": {
+              "control": 0.9868030493924704,
+              "distinct": 0.9715883577580929
+            }
+          },
+          {
+            "compiler": "gcc-native",
+            "n": 4097,
+            "shape": 18,
+            "api": 1,
+            "ratios": {
+              "control": 1.0031601052009216,
+              "distinct": 1.0396221094190636
+            }
+          },
+          {
+            "compiler": "gcc-native",
+            "n": 4097,
+            "shape": 19,
+            "api": 0,
+            "ratios": {
+              "control": 1.0006876948468733,
+              "distinct": 1.0031987790684231
+            }
+          },
+          {
+            "compiler": "gcc-native",
+            "n": 4097,
+            "shape": 19,
+            "api": 1,
+            "ratios": {
+              "control": 1.0113221978429494,
+              "distinct": 1.0222164150138537
+            }
+          },
+          {
+            "compiler": "gcc-native",
+            "n": 4097,
+            "shape": 20,
+            "api": 0,
+            "ratios": {
+              "control": 0.987413639402719,
+              "distinct": 0.9459876371949527
+            }
+          },
+          {
+            "compiler": "gcc-native",
+            "n": 4097,
+            "shape": 20,
+            "api": 1,
+            "ratios": {
+              "control": 1.0065319763025975,
+              "distinct": 1.01362446215459
+            }
+          },
+          {
+            "compiler": "gcc-native",
+            "n": 4097,
+            "shape": 21,
+            "api": 0,
+            "ratios": {
+              "control": 0.9959508737127687,
+              "distinct": 0.9724263253535594
+            }
+          },
+          {
+            "compiler": "gcc-native",
+            "n": 4097,
+            "shape": 21,
+            "api": 1,
+            "ratios": {
+              "control": 0.9953154464946411,
+              "distinct": 1.0312031275412779
+            }
+          },
+          {
+            "compiler": "gcc-native",
+            "n": 100000,
+            "shape": 7,
+            "api": 0,
+            "ratios": {
+              "control": 0.946864293567787,
+              "distinct": 0.9748279980862771
+            }
+          },
+          {
+            "compiler": "gcc-native",
+            "n": 100000,
+            "shape": 7,
+            "api": 1,
+            "ratios": {
+              "control": 1.0110492677154113,
+              "distinct": 0.8604654614809376
+            }
+          },
+          {
+            "compiler": "gcc-native",
+            "n": 100000,
+            "shape": 8,
+            "api": 0,
+            "ratios": {
+              "control": 0.9858418483134616,
+              "distinct": 0.9906842538794216
+            }
+          },
+          {
+            "compiler": "gcc-native",
+            "n": 100000,
+            "shape": 8,
+            "api": 1,
+            "ratios": {
+              "control": 0.9745357437030032,
+              "distinct": 0.8074033253762605
+            }
+          },
+          {
+            "compiler": "gcc-native",
+            "n": 100000,
+            "shape": 11,
+            "api": 0,
+            "ratios": {
+              "control": 0.9961665381995674,
+              "distinct": 1.0176280556864135
+            }
+          },
+          {
+            "compiler": "gcc-native",
+            "n": 100000,
+            "shape": 11,
+            "api": 1,
+            "ratios": {
+              "control": 0.998478835200999,
+              "distinct": 0.766064878576459
+            }
+          },
+          {
+            "compiler": "gcc-native",
+            "n": 100000,
+            "shape": 12,
+            "api": 0,
+            "ratios": {
+              "control": 1.012670834136804,
+              "distinct": 1.0117743123730605
+            }
+          },
+          {
+            "compiler": "gcc-native",
+            "n": 100000,
+            "shape": 12,
+            "api": 1,
+            "ratios": {
+              "control": 1.0061380925368357,
+              "distinct": 1.005009699966524
+            }
+          },
+          {
+            "compiler": "gcc-native",
+            "n": 100000,
+            "shape": 15,
+            "api": 0,
+            "ratios": {
+              "control": 1.0068624867158562,
+              "distinct": 1.000156629602693
+            }
+          },
+          {
+            "compiler": "gcc-native",
+            "n": 100000,
+            "shape": 15,
+            "api": 1,
+            "ratios": {
+              "control": 0.9879500482304376,
+              "distinct": 0.9750794805397305
+            }
+          },
+          {
+            "compiler": "gcc-native",
+            "n": 100000,
+            "shape": 16,
+            "api": 0,
+            "ratios": {
+              "control": 1.0122364365916485,
+              "distinct": 0.9998545646255721
+            }
+          },
+          {
+            "compiler": "gcc-native",
+            "n": 100000,
+            "shape": 16,
+            "api": 1,
+            "ratios": {
+              "control": 1.0113085391894785,
+              "distinct": 0.9412931330461919
+            }
+          },
+          {
+            "compiler": "gcc-native",
+            "n": 100000,
+            "shape": 17,
+            "api": 0,
+            "ratios": {
+              "control": 1.2165984866714792,
+              "distinct": 0.9743799850654543
+            }
+          },
+          {
+            "compiler": "gcc-native",
+            "n": 100000,
+            "shape": 17,
+            "api": 1,
+            "ratios": {
+              "control": 1.0312907828568445,
+              "distinct": 1.0045582404925912
+            }
+          },
+          {
+            "compiler": "gcc-native",
+            "n": 100000,
+            "shape": 18,
+            "api": 0,
+            "ratios": {
+              "control": 0.9984029840745124,
+              "distinct": 0.9999513089770016
+            }
+          },
+          {
+            "compiler": "gcc-native",
+            "n": 100000,
+            "shape": 18,
+            "api": 1,
+            "ratios": {
+              "control": 0.9577001022521309,
+              "distinct": 0.9593078828078612
+            }
+          },
+          {
+            "compiler": "gcc-native",
+            "n": 100000,
+            "shape": 19,
+            "api": 0,
+            "ratios": {
+              "control": 0.9853028579118119,
+              "distinct": 1.008773728149725
+            }
+          },
+          {
+            "compiler": "gcc-native",
+            "n": 100000,
+            "shape": 19,
+            "api": 1,
+            "ratios": {
+              "control": 0.9970591561149182,
+              "distinct": 0.9967324331855443
+            }
+          },
+          {
+            "compiler": "gcc-native",
+            "n": 100000,
+            "shape": 20,
+            "api": 0,
+            "ratios": {
+              "control": 0.9979948783595315,
+              "distinct": 1.014724083226959
+            }
+          },
+          {
+            "compiler": "gcc-native",
+            "n": 100000,
+            "shape": 20,
+            "api": 1,
+            "ratios": {
+              "control": 1.0073719303009179,
+              "distinct": 0.9937024285814424
+            }
+          },
+          {
+            "compiler": "gcc-native",
+            "n": 100000,
+            "shape": 21,
+            "api": 0,
+            "ratios": {
+              "control": 0.992695280738722,
+              "distinct": 0.9904592104126291
+            }
+          },
+          {
+            "compiler": "gcc-native",
+            "n": 100000,
+            "shape": 21,
+            "api": 1,
+            "ratios": {
+              "control": 0.9934082439446126,
+              "distinct": 0.9846760982315242
+            }
+          }
+        ],
+        "rejected_simd_reason": "大規模の一部で速くてもGCC-native 01やClang random/denseに約3〜7%後退、standard scalarとの差が安定して優位にならない。"
+      },
+      "SPFA": {
+        "adopted": false,
+        "source_sha256": "665b807e0fca56a22bf2c9a97178b6a4b2b83b6b000dc01798783250f2286fec",
+        "reason": "path長とflagsを32bitへまとめる案は星型/疎到達で改善するが長鎖や負辺ランダムが約4〜8%後退。DFS scratchを未初期化所有配列にする案は大規模の安定した上積みを確認できず不採用。",
+        "measured": [
+          "spfa_packed.hpp",
+          "spfa_scratch.hpp"
+        ],
+        "not_repeated": "出力vector再利用・GCC Directは先行Audit performance-spfa-80393857-2026-10-26.jsonで同様の大規模退行が記録されていたため、準備後に新規測定を見送り。"
+      }
+    },
+    "validation_proofs": [
+      {
+        "compiler": "gcc",
+        "kind": "bellman",
+        "hashes": {
+          "blocked": "6d35d92ff5efb5bba0e00f44671321e2e224405a20357c4412cfa7194282858c",
+          "final": "6d35d92ff5efb5bba0e00f44671321e2e224405a20357c4412cfa7194282858c"
+        },
+        "required_identity_passed": true
+      },
+      {
+        "compiler": "gcc",
+        "kind": "dijkstra",
+        "hashes": {
+          "baseline": "4ca1f2ccb1f9fae2427215e32117b68e24ece38d0a0d2cb35b18fda218869b71",
+          "control": "4ca1f2ccb1f9fae2427215e32117b68e24ece38d0a0d2cb35b18fda218869b71",
+          "clone": "75d62148fc0126560ee81a8d38d7a16fa4a5cfced979d11a60202dd52934553e",
+          "final": "75d62148fc0126560ee81a8d38d7a16fa4a5cfced979d11a60202dd52934553e"
+        },
+        "required_identity_passed": true
+      },
+      {
+        "compiler": "gcc",
+        "kind": "distance_only",
+        "hashes": {
+          "baseline": "091eca0cdb503c58ea6456e36b73c1ba4692f06269f0ac44cd93d37ad9a669b3",
+          "control": "091eca0cdb503c58ea6456e36b73c1ba4692f06269f0ac44cd93d37ad9a669b3",
+          "final": "091eca0cdb503c58ea6456e36b73c1ba4692f06269f0ac44cd93d37ad9a669b3"
+        },
+        "required_identity_passed": true
+      },
+      {
+        "compiler": "gcc-native",
+        "kind": "bellman",
+        "hashes": {
+          "blocked": "5e37dd2e9625c43fe5fed039ac166783555aa32617cb088b5513323210a7c8e1",
+          "final": "5e37dd2e9625c43fe5fed039ac166783555aa32617cb088b5513323210a7c8e1"
+        },
+        "required_identity_passed": true
+      },
+      {
+        "compiler": "gcc-native",
+        "kind": "dijkstra",
+        "hashes": {
+          "baseline": "b18b9d9ee34850de783b25687401250bd7b3bedbabbb31b2221b736987050c96",
+          "control": "b18b9d9ee34850de783b25687401250bd7b3bedbabbb31b2221b736987050c96",
+          "clone": "2d0a658b4262b5b504dcddd26f53095cd339b1e65fd6596c560800458eed61b3",
+          "final": "2d0a658b4262b5b504dcddd26f53095cd339b1e65fd6596c560800458eed61b3"
+        },
+        "required_identity_passed": true
+      },
+      {
+        "compiler": "gcc-native",
+        "kind": "distance_only",
+        "hashes": {
+          "baseline": "a312dc5ebe3e0c7393e4a340a4bdb5ea40fe42ccb2381aec98ff6de62e88a09f",
+          "control": "a312dc5ebe3e0c7393e4a340a4bdb5ea40fe42ccb2381aec98ff6de62e88a09f",
+          "final": "a312dc5ebe3e0c7393e4a340a4bdb5ea40fe42ccb2381aec98ff6de62e88a09f"
+        },
+        "required_identity_passed": true
+      },
+      {
+        "compiler": "clang",
+        "kind": "bellman",
+        "hashes": {
+          "blocked": "7d3d6029d1ad585d65b6f789af67f9524ba20f5045114bfa7ab60c44424e5ad2",
+          "final": "7d3d6029d1ad585d65b6f789af67f9524ba20f5045114bfa7ab60c44424e5ad2"
+        },
+        "required_identity_passed": true
+      },
+      {
+        "compiler": "clang",
+        "kind": "dijkstra",
+        "hashes": {
+          "baseline": "d9b3a438023325b2fb1547a886cd605d540952f92a3b83541ce430f399c6e210",
+          "control": "d9b3a438023325b2fb1547a886cd605d540952f92a3b83541ce430f399c6e210",
+          "clone": "0baa217994d35988516cd2feb0828d56e9848088e2435fa9fcb25247cfef9691",
+          "final": "d9b3a438023325b2fb1547a886cd605d540952f92a3b83541ce430f399c6e210"
+        },
+        "required_identity_passed": true
+      },
+      {
+        "compiler": "clang",
+        "kind": "distance_only",
+        "hashes": {
+          "baseline": "06e027a7601f47ea146a6c83051493414313ab85349920674069e61507787837",
+          "control": "06e027a7601f47ea146a6c83051493414313ab85349920674069e61507787837",
+          "final": "06e027a7601f47ea146a6c83051493414313ab85349920674069e61507787837"
+        },
+        "required_identity_passed": true
+      },
+      {
+        "compiler": "gcc",
+        "skip": false,
+        "example": "bellman_ford_example.cpp",
+        "returncode": 0,
+        "stdout": "1\n0\nnegative cycle\nnegative cycle\nnegative cycle\nunreachable\n0 0\n"
+      },
+      {
+        "compiler": "gcc",
+        "skip": false,
+        "example": "dijkstra_example.cpp",
+        "returncode": 0,
+        "stdout": "0\n2\n5\n5\nINF\n0 1 2 3\n"
+      },
+      {
+        "compiler": "gcc",
+        "skip": false,
+        "example": "spfa_example.cpp",
+        "returncode": 0,
+        "stdout": "1\n0\nnegative cycle\nnegative cycle\nnegative cycle\nunreachable\n0 0\n"
+      },
+      {
+        "compiler": "gcc",
+        "skip": true,
+        "example": "bellman_ford_example.cpp",
+        "returncode": 0,
+        "stdout": "1\n0\nnegative cycle\nnegative cycle\nnegative cycle\nunreachable\n0 0\n"
+      },
+      {
+        "compiler": "gcc",
+        "skip": true,
+        "example": "dijkstra_example.cpp",
+        "returncode": 0,
+        "stdout": "0\n2\n5\n5\nINF\n0 1 2 3\n"
+      },
+      {
+        "compiler": "gcc",
+        "skip": true,
+        "example": "spfa_example.cpp",
+        "returncode": 0,
+        "stdout": "1\n0\nnegative cycle\nnegative cycle\nnegative cycle\nunreachable\n0 0\n"
+      },
+      {
+        "compiler": "clang",
+        "skip": false,
+        "example": "bellman_ford_example.cpp",
+        "returncode": 0,
+        "stdout": "1\n0\nnegative cycle\nnegative cycle\nnegative cycle\nunreachable\n0 0\n"
+      },
+      {
+        "compiler": "clang",
+        "skip": false,
+        "example": "dijkstra_example.cpp",
+        "returncode": 0,
+        "stdout": "0\n2\n5\n5\nINF\n0 1 2 3\n"
+      },
+      {
+        "compiler": "clang",
+        "skip": false,
+        "example": "spfa_example.cpp",
+        "returncode": 0,
+        "stdout": "1\n0\nnegative cycle\nnegative cycle\nnegative cycle\nunreachable\n0 0\n"
+      },
+      {
+        "compiler": "clang",
+        "skip": true,
+        "example": "bellman_ford_example.cpp",
+        "returncode": 0,
+        "stdout": "1\n0\nnegative cycle\nnegative cycle\nnegative cycle\nunreachable\n0 0\n"
+      },
+      {
+        "compiler": "clang",
+        "skip": true,
+        "example": "dijkstra_example.cpp",
+        "returncode": 0,
+        "stdout": "0\n2\n5\n5\nINF\n0 1 2 3\n"
+      },
+      {
+        "compiler": "clang",
+        "skip": true,
+        "example": "spfa_example.cpp",
+        "returncode": 0,
+        "stdout": "1\n0\nnegative cycle\nnegative cycle\nnegative cycle\nunreachable\n0 0\n"
+      }
+    ],
+    "notes": [
+      "Dijkstra/SPFAはproduction本体とDocumentを変更していない。",
+      "Bellmanの最終ソースは測定版からコメント/インデントのみを整理し、3コンパイラとも測定版とバイナリ同一。",
+      "同一TUの同一graphを3warmup/15交互roundで比較する補足を実施。graph生成をAPI計測から除く。",
+      "固定mainは実際のLibrary Checker/ABC137Eドライバと既存共通IOをそのまま使い、壁時間と子CPU時間を別記録。",
+      "Dijkstra mainの経路は順序一致を要求せず、距離一致と各辺・総コストを計測外で検査。",
+      "一部full-program control行の変動が大きい。中央値の比/比の中央値を混同しない。",
+      "最初のBellman100k負成分列timeoutはログに残し、matched通常測定は4096頂点で実施。",
+      "初回scan gateのsample数不足、distinct gateの変数名ミス、ELF section属性の型/alias競合は実行前/集計エラーとしてログ保存し、修正後の完了データだけを判定に使用。",
+      "本体・Document以外の生成/metadata/ZIPはroot担当。オンラインの提出はしていない。"
+    ],
+    "resubmission_recommended": [
+      "bellman_ford.cpp"
+    ],
+    "resubmission_not_needed": [
+      "dijkstra.cpp",
+      "spfa.cpp"
+    ]
+  },
+  "evidence_files": {
+    "save_decision.py": "4dfb50de87ef70d2549cc2a7e712fe2bfd466638c5d82dfecacfb8b186c0f4c6",
+    "dijkstra-section-builds.json": "900f77effeaebd9d4de680fb8d024d0859919a3c9060855dab841f3a0829e657",
+    "dijkstra-section-summary.json": "5292fa708512710416c62d07169f581126f3d3e3a5d7b01ef0b508e10081ae3f",
+    "dijkstra-section-raw.json": "bffbc2c2f9eba99f195bdf40cc9e1ddea9764e2920400b523ed54c8339ce3a01",
+    "dijkstra-main-section-builds.json": "31572286acc18f29d775a0d92ad7b52dba76528e918a702894603180f9784c91",
+    "dijkstra-main-section-summary.json": "7ca1a4a5fa6d2c97bd39d6759aa21515856bdaffb6bcc05967dac173ede7c98e",
+    "dijkstra-main-section-raw.json": "725c2166bb1cb588b85909690248664afb80b7f390fcf1ce16afb4d62a7a844c",
+    "dijkstra_section_gate.py": "9c9527af289b567d73cd4d901c40468d5683a99630df923c40c9f6c2ca96a879",
+    "dijkstra_main_section_gate.py": "9a9352fea57e12b75eb40847f38c79f5f46f49a3d5585913d94f861765329b6f",
+    "dijkstra_section.hpp": "a0df088c64678234bd90cd0cc70937ada10eedf7e05fed221c1392f2166d8df9",
+    "make_section.py": "8fdb93cbdd4d71b03db1d169287a6cd6d80c330c70fd3ae408c353d8aaa53ba2",
+    "dijkstra-distinct-builds.json": "734025540d52c976a54c59ead93860c35a479eed5de59953246288a388732f3a",
+    "dijkstra-distinct-summary.json": "bdbdc679e42cd537b18a81aed7878efc868de47e4b58c12b655d2eee81c458e4",
+    "dijkstra-distinct-raw.json": "01237000aa2757bce912f33738fdd0aef147c40db87bbe190d048aa638c90fbe",
+    "dijkstra-main-distinct-builds.json": "264d5bf94cc0cfbab1da6f410a0dabc8b145592d6b546b67c943220558960b46",
+    "dijkstra-main-distinct-summary.json": "543dfce83b61c285986e906d2fab5660c76958337850571d35802da9c54e7beb",
+    "dijkstra-main-distinct-raw.json": "4ab644e2ff3bb737963d5da981efa46e4fb44c00bbb7d5b6d3a70346528175eb",
+    "dijkstra_distinct_gate.py": "a459d623f36473d39014935919da93670acd2b25e7c84e75a0e2b0c488bd7630",
+    "dijkstra_main_distinct_gate.py": "be738b552c5b28f2851e474c7a4a18bf6a094f0f8dde8b6aa400dae30b831b5e",
+    "dijkstra_distinct.hpp": "9754fa41cf7d588e6c1b421205ee806aea6e242172ca4c04e1f9eb2e361e9d67",
+    "dijkstra-extra-builds.json": "f13667d60286cb6ee5c9c7e4e471d49092158e38ce682566d3aef744d4f868d6",
+    "dijkstra-extra-summary.json": "f8a7588ce7ecad5120b5373517585fe3beb879ac15fb67c02f2b593767ab460c",
+    "dijkstra-extra-raw.json": "4c2471183014c16af18eee450ace41f984cd338191cd03fdca4e4a4bcfadc24c",
+    "dijkstra_extra_gate.py": "fe7aed6d1380b3a99ad5536f7aca7225ad17eca456adc9f89328700f508f05cd",
+    "dijkstra_spread.hpp": "b4e1ce751ea05b136f17d228b7bb11b7ab6d9a99d51d191551833dd3ee75350e",
+    "dijkstra_extra_bench.cpp": "7f86e5d933fd93f059e434dda4f091f3cbc0efadc36967aed5ac2c3ae3494d29",
+    "extra_prepare.py": "d93c5fe0522883beaddd4d9d8e3594947a5b64eaf238cf0282b9d7155ed610cf",
+    "dijkstra-main-tail-builds.json": "ba09aa276071a7edcd7a25e56d30b1affc7ae9c484698391bd50a8f3610126ea",
+    "dijkstra-main-tail-summary.json": "281d688b3c762c9a8ae2323b61c03f2dd8db374825c6f6022af853279d179e8e",
+    "dijkstra-main-tail-raw.json": "3e2c5727a316e6ae5c5bdd6e5341e9c0d1574830b198d36877c1769dd2180d6b",
+    "dijkstra_main_tail_gate.py": "51209b7e346257e6c8cf446c89a5765a525c15ace5c31a70e0e0e9d427031b19",
+    "dijkstra_tail.hpp": "1fa34362b1206075c05f89f957c882830797cbe54ff886cc397762ad86e8b87a",
+    "make_dijkstra_tail.py": "d6c3d0ce06569adf488829b82edc3997f08680e211df7450332fd758e983a2eb",
+    "dijkstra-main-final-builds.json": "2b6dcecca219b2e396eff1adc0f6e33a1e70dcd094d4947de507c239159e1e69",
+    "dijkstra-main-final-summary.json": "c9e5362a4e5e5731d0442a3bf2a8acb9e2fed63e8b6a3e41146ef2968e6fc877",
+    "dijkstra-main-final-raw.json": "b5378872cdf8c90ddb27f9251052ccf8d93b385acde6948062ecb46a656d7e69",
+    "final-proofs.json": "13668107d19e2c1a175c5f85752b0a2b449a07074ae54303b224428463f91a5a",
+    "example.cpp": "f4c024cb737eb51f8c2206e89a2c095b76bece2cc74a6b6064e40837310b7fb8",
+    "distance_proof.cpp": "abaa5d0419062376034b5e8e3f69e8b26141e21ba0936507a225cdb991f0ca62",
+    "dijkstra_main_final_gate.py": "03c56fc23fff8325a39dd6ac58b2ceee1379fa7b3e8953bee319fc3f8501cfb8",
+    "final_proofs.py": "2a510d1945147df303e8ee7b3d77eaf36b382d37cc289904e79b38bff156f447",
+    "dijkstra-final-validation-summary.json": "061164ccdefb27efa4d14c586c1fc5d6c6786f7e388dc83aa74ec2016443c97a",
+    "dijkstra-final-validation-raw.json": "abbffe028634a9761d8d9bc6b2c0af852d32737b5a1194c60d97de05058b3169",
+    "dijkstra_final_validate.py": "2ca53f5c8f35c63f0f5b02c755ac2c649b481edc76f3c5e54dda0194ad7daa35",
+    "wide_heap_final_reference.cpp": "6d948d6af916d2ef77cd2842836f81be160a14f87f99fc87d72e40c53f9a80e0",
+    "dijkstra_allocations.cpp": "bbde956c58e4b1b11a240e80c8f958f66258ee4d8a6c24aca1d15c9b43678008",
+    "dijkstra_reference.cpp": "812cef44f24141676ad6a9c993cbda4998f05b5dc531a2e62ae8f2223df41794",
+    "wide_radix_final_class.hpp": "c780b1b8d199bdd9dce8e99fc7b154cc504d20dfc7a38697948b5c020c485bd9",
+    "dijkstra_final.hpp": "d04796f5e3f7bdca3fdb89ea90d3eea322999705b5e50bce28c0bbd8edbe1d84",
+    "bellman-final-validation-summary.json": "b1ff3ac01648b31f7101a5f3ba2ffb046e2c3764ce19d9c18b1a465d2020ecd3",
+    "bellman-final-validation-raw.json": "ab716a83531f40f32bbb55d7801ee7987ac7254d1cc88f8e4873ce4c388cfd1f",
+    "bellman_final_validate.py": "e1d91637029e5a28383456669453c2d6dfb99a7e1d5d63ac420c3c926f495958",
+    "bellman_final.hpp": "eb08c145b426b99798704b4307db5485f3f798f26a6350afa0c663e785006791",
+    "dijkstra-same-tu-builds.json": "efc869da2450f627bce7516601dc0d1756fa43ccbb17181f1c9bee52c2e9ae07",
+    "dijkstra-same-tu-summary.json": "93606780699571e8e8eef0eba5583887beb855c2ec7dab5df21c1eb8be245c57",
+    "dijkstra-same-tu-raw.json": "eac4b78c55e6c0ddbd2a24a861ad46d23940b2f4bf9bf1f3b6885c383c0f5b10",
+    "dijkstra_same_tu_gate.py": "eff0e73ce99d9121011efb24e760ef518f762424368ebf54e92de0bfd20ef1dd",
+    "dijkstra_same_tu.cpp": "268aa92f7a70d4efae83ba1d6bb79125d37acacda8fd67e7423681ad6819e907",
+    "make_dijkstra_same_tu.py": "86643d4546ab92453e77143011585b3f7eb01169373dcca5ac8771bab5df078d",
+    "dijkstra-main-clone-builds.json": "4451dd6120fd92a6bb666be2bdf68c6bb9c4dd6d2d5a2fed33e73ed1e48d1138",
+    "dijkstra-main-clone-summary.json": "451f815a091b8fe84b44221af01feafa0c68fff88ae6ed6f7041208b0c19e68c",
+    "dijkstra-main-clone-raw.json": "500dd5fd5aa9c30478b58f9f62dd0dca5f19d8ac7de2a0974ad693e2302bb914",
+    "dijkstra_main_build.cpp": "5e37aa1516d2e02d680998db4d8a30e4d0dfa34b7611a34d9559d44de1309241",
+    "dijkstra_input.cpp": "2f988804673ee3c81d658a9e000883f8537b0e9a7e9daf64ea900ce48d9bf2f2",
+    "dijkstra_main_gate.py": "a3bc5e98f06979fd816bd6a8e6f6e04bf2536f3d0c9dcc76200f839414b91fde",
+    "dijkstra-clone-builds.json": "98c6daf8caab1c9961a007aff56f98deff321d6519246e7191cd99891cae97bb",
+    "dijkstra-clone-summary.json": "0561b66260553d5c385e06353dfbe86793aba426a49c1846fbe4df14b6920c3d",
+    "dijkstra-clone-raw.json": "47fa313c77781ac4b81e57784624f0a3532d0a759892b471aa36bbc9764d1382",
+    "dijkstra_clone_gate.py": "4ca059918a4888e689ebd5bf17a5f1fa375f9881048292aba47e401083c96bb6",
+    "dijkstra_clone.hpp": "233dab0b105fb8f8455373df16f51818587bcf60b4021af3c0fb0c9510c9ea70",
+    "make_adaptive_clone.py": "702d4bb45d540af2c11757137f3d689196d4f9c271e1da884abd82a462d42bf8",
+    "dijkstra-adaptive-builds.json": "951446c19551f9d02b4c66366179a19cb92eeb968487d3c7e60541cf2be66110",
+    "dijkstra-adaptive-summary.json": "5e155e79858ec39d21399202f53760ab9165321b6a284b55541a221886a9b704",
+    "dijkstra-adaptive-raw.json": "531bdac0a334ab0786febbf5e4a524897872a4d4c5593e496d81f8668bfb08f2",
+    "blocked-validation-summary.json": "f2e29f4f019e636039fb968056218323b728894705e66f8c2ad021e8746e7391",
+    "dijkstra_adaptive_gate.py": "5f25e640b2e677c20ebc8a5e8d507ec50191a199665bf906783e5dd43279d379",
+    "dijkstra_adaptive.hpp": "73d09a16d8f3aa16d12d6ba96a3fba55db8eaff502dfea494b5874e8c9a10296",
+    "make_adaptive_wide.py": "3afaef2e80d383be263f248dc615efcfc368c18d060acf7ab6e5061a347206d3",
+    "blocked-validation-raw.json": "552e3d42da85c9a49afc27c5ecb4c33f5ca7b62a6c3cbb5027d99ad2d230daa5",
+    "dijkstra-widefast-builds.json": "80072c1dd6805723049b4825f3edc005281ea0c98109a71b59cea749734a3c6e",
+    "dijkstra-widefast-summary.json": "c762dab728805dc8c6f223eff1fade707a2da805f7d49cb630ff1dd43bb98fc7",
+    "dijkstra-widefast-raw.json": "edf4b037f1ce4a03687cb7a618fba81151373666751064c794b1d8b95174e112",
+    "bellman-same-tu-builds.json": "c32be4d589907ba552dd68e344272b14042ebc30c56f93bccb4e283cb015d4b9",
+    "bellman-same-tu-summary.json": "94564687daa4c7850f8b85922f90b807c7122341182d1cce03b525315d6bb6a0",
+    "blocked_validate.py": "4478d53b49d02d2487face8b356131d4b1b4e20c6efd4115553e1514a6b76055",
+    "late_burst_reference.cpp": "d9976875454160f12d0c28a27f22cb9deee59a189b1313e102fe669c17e24a0d",
+    "dijkstra_widefast_gate.py": "4cc3604a643fe2e0a75ca77b916773130091a114cfa67392cd29240e48d00692",
+    "dijkstra_widefast8.hpp": "26e4e12252857a48c4f308f28d3638a1aa331bf5e292815dbd845e2735abfce5",
+    "dijkstra_widefast4.hpp": "a41dd813c0a0c106ac9c9d74e1130305f6fdcf0f2066bfaa7b025137928682e3",
+    "dijkstra_widefast2.hpp": "7ece227a836ecfb2a202c1d9b380debdf85cc1ebd90c1fdcec83b2d3dd3eba12",
+    "wide_radix_fast.hpp": "066e29ac935ce5de049b53192ff1c35b1a995ed88f8cac9bdf1ad984d78992b4",
+    "bellman-same-tu-raw.json": "61ff1a25039d54050652ab59796a5df6529b92d9cb8934746a8cb57cb70a75da",
+    "bellman_same_tu_gate.py": "49e4b79810ca26d5977c99571f5404a77a92d9c6c7e1127aeb799acdaf6e3f5b",
+    "bellman_same_tu.cpp": "3f7aa0b572b182544d3d54b0adc98dd2ae984795890c64439092c26c80507531",
+    "make_bellman_same_tu.py": "9f0be014d586488aa87e5f4dd696f0dbe980e14e1a9c2a924348e99f452b344f",
+    "bellman-main-blocked-builds.json": "de48b79d712ae508bdca966eaad4165f7d9b5ac69567a3f62585b6a2bcc4bf8a",
+    "bellman-main-blocked-summary.json": "b858ce89d9c189f6619b3d2ee69d9b06c0494adc7a4db2ac562a9e7d49373a3d",
+    "bellman-main-blocked-raw.json": "af5ec7d23dde242468efa0c810ce6ce156b3ca3b5eaab6edadf7340d78d5da5a",
+    "main_build.cpp": "b2496ffee4b5e4cdd72908dc4544f3cbeb2956a3ddaae07c51835d01cab95c5c",
+    "bellman_main_gate.py": "3e539f675f215e290636e3f82190023bd5ad3084165622867fe15d6078d82244",
+    "bellman-main-inputs.json": "068906447d64999020a61896207625a5614e119b9ab5b1ba28c304ea67b28246",
+    "bellman_main_inputs.py": "ffb4cc58054397aa9bf5f787aaaa341b4f171845717ed9288ea16303a50bd32b",
+    "wide_heap_reference.cpp": "6f86e9b0bc2a5d79d40bee164a1f15d9695bf79300caf2f5bae25e3969313890",
+    "dijkstra-wide-builds.json": "9c0d639bd1eb0e6aff6a6b38756369a0410bac5137e8407f3f0c7f1f155e73d0",
+    "dijkstra-wide-summary.json": "1a43ee46d47194fab27236263390574f5f5bd7e93b425b9a03016a331cca81d2",
+    "dijkstra-wide-raw.json": "220ffd83bc052520dc089b2288ff2bce1bccb45d0dac37029835594bf23fbaec",
+    "dijkstra_wide_gate.py": "0aea56326fb288ea337db93bc2c160cee6090111083bdac3930120d45dfba19e",
+    "dijkstra_wide8.hpp": "c144d6c70af306072d95c0cd66647acbc67ff7986740cbb7a75db10d118187a4",
+    "dijkstra_wide4.hpp": "c32bb4a945693438966e22b38701dcca1118544c53162e1a18bb69e7456d231e",
+    "dijkstra_wide2.hpp": "5d8d4d1caa393f64a869d31c2e8e8d5b2838a15904908429cd18b924c4e1b663",
+    "make_wide.py": "6d70440e3211ae778fb86751699b044b81ef35088a1095acdabed9c7275800d4",
+    "wide_radix.hpp": "5041935b5d0217c25dcea3f2f5fbcc8aacb9a53b9b1ad523825d10ea25179575",
+    "dijkstra-lastkey-builds.json": "85822a70926e477596282df259410e5f5bd77457a3c8f3900ab65136257ac609",
+    "dijkstra-lastkey-summary.json": "fb5b0a5c44823ee627935c13d6bae440dc969a5453fdf6e505e640fff672a3b0",
+    "dijkstra-lastkey-raw.json": "d1be1da47f4591b1c80b33ba54db772e29608813eaabb5040516039f8ef86cab",
+    "bellman-blocked-builds.json": "b7de0b43cfe8f43dd949cc7c82ee9bcff0829a12548b31696a6eb1c074e77d48",
+    "bellman-blocked-summary.json": "126b770277f8a1a48a4727ed8309dde984a7803a47c7a64bef393869f3b09d21",
+    "dijkstra_lastkey_gate.py": "ccac3c94c15f2daf7abe2d7e3c3d61d9fbf438c233f34654874a55aa413b1bdd",
+    "dijkstra_lastkey.hpp": "181e88cfc6a04e89c743204ec132fb4a83977c90f953b8ffe37ba0f6aabd314a",
+    "bellman-blocked-raw.json": "68a49751a2ccf8c761861bf51d41f9ff743729d62029a3e9da16567db0e3863e",
+    "bellman_blocked_gate.py": "b1ec9dd3af4c33e021d726cf4acf874302486db7215231601b3ba18726f438f8",
+    "bellman_blocked.hpp": "76f059f1192fda06394df3f8ceafb7ffc7cfea30018ebc413546fd582b5df280",
+    "dijkstra-outlined-builds.json": "9ad80c4f44348213384ab28b7174dd5602eea25a30bb95f18ebd5ff55c4dbd67",
+    "dijkstra-outlined-summary.json": "446dd0a4d5a53c1749e0d43887e20fa58231ff1c3166952cec3410fe8b22cb20",
+    "dijkstra-outlined-raw.json": "20716b21997f838127fd09da0eef34e8486be45808f1f98d3a2bdd8311aa08da",
+    "bellman-single-builds.json": "5bdaaadc17b981ee68f2a673af7a3d678e05546ebb1ea2548c42518d2c362de2",
+    "bellman-single-summary.json": "f5cab582890deb7a5bbc910e51f536529604d376edcc243244a3d566b7add1d9",
+    "dijkstra_outlined_gate.py": "c9155eac84097a7a85614875fdaae9ecdda262083436503c6954f1285f452def",
+    "dijkstra_outlined.hpp": "53170831ed8180be29332570795e057e7dad5c10fd2c56f4a52e225d29932fb9",
+    "bellman-single-raw.json": "875ed6a7e7cbb4bfcdab7bf070ac698cfd458ade398873e22c78ec68503e9c31",
+    "bellman_single_gate.py": "c21a271cd1fd2dbedd46d199b8d67e5a166eb390944246d248dd3af536a12bc1",
+    "bellman_single.hpp": "7ef49cba8978f2f06bccdc43fab599ecb952c41bdd59c6bae51310a2f8b98a0c",
+    "dijkstra-dispatch-builds.json": "98d29166fc429fc54412cc6f4238bd03b42db3eed1bb383f6f58ab83ac65ba75",
+    "dijkstra-dispatch-summary.json": "1c76ebfd1e8f43134527cf6d7725a990fa152c697246cca8ce7adf8a741515a8",
+    "dijkstra-dispatch-raw.json": "ddfde69c16a296548b760cd628aa0cfb452596ae6551cbb2ce572a68c8189234",
+    "dijkstra_dispatch_gate.py": "069156a174c351084f602cde75ad9a0f5fabf41c483b8aefb317725a4b2c91e0",
+    "dijkstra_dispatch.hpp": "985e838f5e2b176fd0299e7e5188c97bf4fbe26bcd1c58a52d095fcf31501db0",
+    "make_dijkstra_dispatch.py": "b7e6bd82604fb9848f7fe145a8c30dbbc7f0d2043b3551c12a59abefb97084d6",
+    "dijkstra-scan-builds.json": "60920366f2b21362622a2ee75092f838ab2823b88d519c83307b9f64b16d14eb",
+    "dijkstra-scan-summary.json": "3d7da83ae5d6574f357d8a98b0d6e29208866d91bf39bf2344f2dc00c7b7e1d6",
+    "spfa_coins_respawn_main.cpp": "2b9fbf726dcf611ccd4aa6331f0a357d94848bfff8f57919d6f5830a2cf2f76d",
+    "bellman_ford_coins_respawn_main.cpp": "6c7bf71f06cb76a972c1f99f596d312b0eb933810615b7ce9a094ca9108c2afd",
+    "bellman-amortized-builds.json": "e768c3c2d4f2da38365107e4ed9613e685c31454ff6fb2cbdb43408ee8392c30",
+    "bellman-amortized-summary.json": "895e52b44e5ce7fc6ebcf277ca511004fc4e03083dad408805aa19b61fcf81c9",
+    "dijkstra_scan_gate_v2.py": "60d3df116aa24a516d0a45e4e3805738026da3259410bb84edb0dae591fda086",
+    "bellman-amortized-raw.json": "26965fc0b014ef06fa76d8e72ceeccf3cc0c8e6442c1c0a3ef658a24585e0be6",
+    "bellman_amortized_gate.py": "3182bb670a2dd116d7a4ba3799b2051ca5ec08d62f7a1fc8bfa3007d37a68a66",
+    "bellman_amortized.hpp": "c510670b7b98606ac2b372cbf64df6c2e23b6c99e834b04b1c7ee6ea99c8f6b7",
+    "bellman_sampled.hpp": "1885de72628ef14d094553bd740fa50f638cf25dbbeae3c0738600c45d32d8c6",
+    "bellman_periodic.hpp": "505697c8f38b8f0bd130818b83a6b85e08704e918501696e5f54799599c92751",
+    "dijkstra-scan-raw.json": "ce3ec833e3b99fc3e620232813cbac5bff53c06cb7bb2d6cfca897b8b58f5ea9",
+    "budget-validation-summary.json": "914d81f7329bf4da8470238ba55febd731b838714f72585f0d21087fe631aebf",
+    "dijkstra_scan_gate.py": "da6f1f16855845455cfe2039d102c6cbf5ba68ac110d07c6d3576d184e0b376a",
+    "dijkstra_simd_scan.hpp": "09e936eda36ed22a8060093fed12c568675a701bcbc2530042fac2f369b01b95",
+    "dijkstra_scan.hpp": "3ece5a27c284e723476475dcbeab0d6fe1bbfef186084fc9d31ab41a1a3bb7f8",
+    "make_dijkstra_scan.py": "ec62b53ce223005a81fa6758843109d43c769e984c7176003b61a0f9e5bb4c11",
+    "budget-validation-raw.json": "108f1f26fcc1b8d66a69d9ca5d8af8ed3576eac5edddad2e30551dad0f5f9dac",
+    "budget_validate.py": "747e9861fb9b5b0fbf32279157a0a4e24e8b2c7179a235a87cc3e09b0894aa8b",
+    "budget_reference.cpp": "76464f01fc4151de73c1c8bf99ad3be6f0b0ce0233426f4d50db919cb1a7d301",
+    "negative-probe-builds.json": "fb89d49d4581ccec7f4d645fba066ca0aa4839f1a4d379e428d2a7ee57c48510",
+    "negative-probe-summary.json": "5c2c2f69eedfe3c063c5757756c3ff01639518699377efd7b43ac870be45e586",
+    "negative-probe-raw.json": "d7aa2a9659bc225b94b87178fda5c637da1a9aea4823d20a648252dd9effc08a",
+    "dijkstra-probe-builds.json": "cd1dc0e88641deb6fcf28101871805aa85e26257b4f0f3fb0cd2c091e8ee34ce",
+    "dijkstra-probe-summary.json": "754a004d4e8add8e7c9b004f745377bbda7971042ca42ef476708327abf97148",
+    "negative_probe_v2.py": "812e45ee260e33234c886e41f0024c1d0f04cb2760a34e95a119374ea7cfffd5",
+    "bellman_budget.hpp": "475219538df8ab05130d980d8fe37516e551d5f06431747ca98e863b2e7a5b42",
+    "dijkstra-probe-raw.json": "578d7c60dc3829bc8c1aa2bb08b2473eb366dc6ce56170fa7c8dcabb272d0b95",
+    "selected_dijkstra.hpp": "a0df088c64678234bd90cd0cc70937ada10eedf7e05fed221c1392f2166d8df9",
+    "dijkstra_gate.py": "160120c83240701f85728d24f8754784a52677b55a0adce3a216306bfe8c4f92",
+    "dijkstra_bench.cpp": "319640dfc3d15ca93806df8a5048b42786bf6ef5ecc0f79a7c15c6654e82c8cc",
+    "spfa_gate.py": "19be84faaedcde54f5d07a880b496d7efdd084c648d1cf7215ea205949fda2e3",
+    "spfa_scratch.hpp": "6c665ab3a866bbf8416dd1e23c11a4926c3742e601d70af0151ea7324c0c0a65",
+    "bellman_scratch.hpp": "1948d9a7c301bb93b0983877e457960e6d9b0927bb374bd8c2f95895f96ac7c3",
+    "spfa_packed.hpp": "0735cdf7175499cc55c746db5d255d924ec53d70bded886e5c392a90153e4758",
+    "spfa_direct.hpp": "5dc536611114ede5e4baf0e7d03526178854a24d9139a8ee0f6c974a5089262b",
+    "spfa_reuse.hpp": "aabcd7b9cf84aeb313a46c6c5aa3047a9cec18e0844286a4f6dd4994e52aec0c",
+    "dijkstra_noinline.hpp": "e6f8e95f32502760324014ed011157156c63483493007b4d6ea18b3d191ba52b",
+    "dijkstra_occupied.hpp": "6380836aa2b6177b8dafe1e92d4eb06b1ab2cbd3c6292f6131047bf2b2a7e973",
+    "frozen.json": "0e768515ed0d6de99edca0c3172635e656a2978553d2be22e0cd01d46cdf80a4",
+    "spfa_control.hpp": "665b807e0fca56a22bf2c9a97178b6a4b2b83b6b000dc01798783250f2286fec",
+    "spfa_baseline.hpp": "665b807e0fca56a22bf2c9a97178b6a4b2b83b6b000dc01798783250f2286fec",
+    "bellman_control.hpp": "7302faeca78e87c0f04f3bc76e06f24d1158fa15f65ba50f9ac49193929aabfe",
+    "bellman_baseline.hpp": "7302faeca78e87c0f04f3bc76e06f24d1158fa15f65ba50f9ac49193929aabfe",
+    "dijkstra_control.hpp": "b5a626a824c696a9fc223f3a5e98ce5c2c500d3209c96f46c81b18b2bbe3ef2c",
+    "dijkstra_baseline.hpp": "b5a626a824c696a9fc223f3a5e98ce5c2c500d3209c96f46c81b18b2bbe3ef2c",
+    "prepare.py": "e9159f5d968569375ecf1401b75c89ab3278007e02d42f9dfe286f13c824c86c"
+  }
+}

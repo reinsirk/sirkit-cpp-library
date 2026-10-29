@@ -11,6 +11,7 @@
 - [削除可能な優先度付きキュー](erasable_priority_queue.md)
 - [Dijkstra](dijkstra.md)
 - [二項係数](binomial_coefficient.md)
+- [分数](fraction.md)
 - [ゼータ／メビウス変換と整数篩](zeta_mobius.md)
 - [SIMDによる内部処理](simd.md)
 - [Floyd–Warshall](floyd_warshall.md)

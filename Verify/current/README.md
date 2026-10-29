@@ -74,6 +74,7 @@ Verify先はLibrary Checkerを第一候補とし、対応問題がなければAt
 | [Math/Combination_AtCoderMod.cpp](../../Math/Combination_AtCoderMod.cpp) | [Binomial Coefficient (Prime Mod)](submissions/binomial_prime.cpp) |
 | [Math/Combination_Mod.cpp](../../Math/Combination_Mod.cpp) | [Binomial Coefficient](submissions/binomial_integer.cpp) |
 | [Math/Eratosthenes.cpp](../../Math/Eratosthenes.cpp) | [Enumerate Primes](submissions/eratosthenes.cpp) |
+| [Math/Fraction.cpp](../../Math/Fraction.cpp) | [比較・整列](submissions/fraction_sort.cpp)・[四則演算](submissions/fraction_arithmetic.cpp) |
 | [Math/Zeta/Bitwise_Convolution.cpp](../../Math/Zeta/Bitwise_Convolution.cpp) | [Bitwise And Convolution](submissions/zeta_and_split.cpp) |
 | [Math/Zeta/Divisor_Multiple_Transform.cpp](../../Math/Zeta/Divisor_Multiple_Transform.cpp) | [GCD Convolution](submissions/zeta_gcd_transform_split.cpp) |
 | [Math/Zeta/Gcd_Lcm_Convolution.cpp](../../Math/Zeta/Gcd_Lcm_Convolution.cpp) | [GCD Convolution](submissions/zeta_gcd_conv_split.cpp) |
@@ -101,6 +102,8 @@ Verify先はLibrary Checkerを第一候補とし、対応問題がなければAt
 
 | ID・コード | 提出先 | 主な対象 |
 | --- | --- | --- |
+| [fraction_sort](submissions/fraction_sort.cpp) | [C - Standings](https://atcoder.jp/contests/abc308/tasks/abc308_c) | 約分・厳密比較・等値判定 |
+| [fraction_arithmetic](submissions/fraction_arithmetic.cpp) | [D - 乱数生成](https://atcoder.jp/contests/abc028/tasks/abc028_d) | 加減乗除・浮動小数点変換 |
 | [angle_sort](submissions/angle_sort.cpp) | [Sort Points by Argument](https://judge.yosupo.jp/problem/sort_points_by_argument) | 昇順angle_sort・零ベクトル |
 | [angle_sort_std](submissions/angle_sort_std.cpp) | [Sort Points by Argument](https://judge.yosupo.jp/problem/sort_points_by_argument) | std::sortへarccmp_lessを直接渡す昇順・零ベクトル |
 | [binary_trie](submissions/binary_trie.cpp) | [Set Xor-Min](https://judge.yosupo.jp/problem/set_xor_min) | insert_unique・重複抑止・削除・最小XOR。共通高速入出力。 |

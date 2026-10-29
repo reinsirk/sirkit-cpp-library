@@ -1,0 +1,1823 @@
+{
+  "decision": {
+    "status": "complete",
+    "completed_utc": "2026-10-29T12:01:15.011468+00:00",
+    "owned_sources": {
+      "Algorithm/LIS.cpp": "98669452b13ad8c9bceec0526bf6e36590eb34d749bc8e5329f0ebc66ed405ed",
+      "Graph/Topological.cpp": "b245fb95636cc08064e3c0df4b8b04e890f50ae26791d845e924b6c50b51a009",
+      "Graph/Topological_sort.cpp": "b245fb95636cc08064e3c0df4b8b04e890f50ae26791d845e924b6c50b51a009",
+      "Document/lis.md": "f74a6673460385bbf2fafb0513e98e86fa3cfd3f381a4853b58944c2afb03e10",
+      "Document/topological.md": "dd3927470c21eb3196267a677bbe71b367144c024c0ecae214699c92123e06a3"
+    },
+    "baseline": {
+      "Algorithm/LIS.cpp": "f28a3fcd90d3c460eb062c5970657cf13279a792fec47a38858a3f8d68b055a0",
+      "Graph/Topological.cpp": "84d8ec41fcaa20c4a2ea2c7dc105928076afd9c449bce02f5ffc6bbfcd7f7da2",
+      "Graph/Topological_sort.cpp": "84d8ec41fcaa20c4a2ea2c7dc105928076afd9c449bce02f5ffc6bbfcd7f7da2",
+      "Document/lis.md": "758d6a46433722b9ae0bacbb3d02a7a034da199a0a0f9a53cfc2c8942680feaa",
+      "Document/topological.md": "1f9829b4a0fa06fce6ef0e3aa86045969a0d7f24e46305278a36882890ad20db",
+      "Verify/current/drivers/lis_main.cpp": "a29976f6877b9608c0f81b5d9397d55462ec6d9d1e237f2032abd8c16ec7f26a",
+      "Verify/current/drivers/topological_longest_path_main.cpp": "c55c2601e7863c90ee58a2bac8ff39fb79fc3a5921134d039cca17da5871387f",
+      "Verify/current/drivers/topological_lexicographical_main.cpp": "04e14b31a2767f6e9964f73a118e53e11118dbcf3ba3588baa9768f641c500bb",
+      "Verify/current/common/fast_io.hpp": "291bf8dbc56a1d691f6256fe95b4714183c2cf5d9e55e4bef240e31d1eb178c1"
+    },
+    "main_io_unchanged": {
+      "Verify/current/drivers/lis_main.cpp": true,
+      "Verify/current/drivers/topological_longest_path_main.cpp": true,
+      "Verify/current/drivers/topological_lexicographical_main.cpp": true,
+      "Verify/current/common/fast_io.hpp": true
+    },
+    "conditions": {
+      "cpu": 12,
+      "compilers": [
+        "GCC15.2 /usr/bin/g++",
+        "GCC15.2 -march=native",
+        "Clang21 --gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15"
+      ],
+      "flags": [
+        "-O2",
+        "-std=c++23",
+        "-DSKIP_RUNTIME_CHECKS"
+      ],
+      "affinity_all_compile_and_timing": true,
+      "lock": "/tmp/sirkit_performance_cpu12.lock",
+      "e_core": false
+    },
+    "adopted": {
+      "LIS": [
+        "内部添字uint32_t、size_t fallback、公開添字size_tを維持",
+        "延長・先頭置換の直接処理と範囲を絞った二分探索",
+        "組込み数値型だけ先頭256要素を見て連続末尾値へ切替。汎用型を複製しない",
+        "GCC広義の低種類数は別の値保持継続条件を使い、2/3/4種類で旧版より遅くなる条件を解消",
+        "値作業領域は復元前に解放し、確保・比較例外で入力を保つ"
+      ],
+      "Topological": [
+        "GCC x86のみ4096頂点以上の通常FIFOでAVX2初期登録",
+        "1byte/8頂点の一時maskを先に作り、初期候補数+8を上限に初期化して安定展開",
+        "小規模FIFO/Details/lex/Clang/disableを既存アルゴリズムの特殊化へ分離",
+        "FIFO exact order、重複辺/閉路/partial/unique/overflow/checkedを維持"
+      ]
+    },
+    "rejected": {
+      "LIS": [
+        "8/16bit添字も選ぶ案は大規模で悪化",
+        "ループ内でcache利用を判定する案は降順・同値列が大幅悪化",
+        "単純32bit化だけでは広義2/3/4値が7〜11%遅くなるため単独不採用",
+        "全cache共通のextension counterは他の値域を遅くするため限定"
+      ],
+      "Topological": [
+        "最小候補削除の遅延は長鎖で約3割悪化",
+        "全FIFO配列を先に初期化する案は重複鎖/閉路が悪化",
+        "小規模もoutline初期化する案は小規模空グラフで33%悪化",
+        "同一Core内のruntime切替はnative小規模星型で27%悪化。第三template引数で大規模の特殊化を分離して解消"
+      ]
+    },
+    "results": {
+      "lis_api_rows": 297,
+      "lis_big_api_worst_ratio": 1.008378543285081,
+      "lis_small_api_worst_ratio": 1.0955189304181272,
+      "lis_main": [
+        {
+          "compiler": "gcc",
+          "kind": "main",
+          "case": [
+            500000,
+            0
+          ],
+          "ratios": {
+            "lis_control": 0.9917412158196307,
+            "lis_hybrid": 0.8925841314977776
+          }
+        },
+        {
+          "compiler": "gcc",
+          "kind": "main",
+          "case": [
+            500000,
+            1
+          ],
+          "ratios": {
+            "lis_control": 0.9894810987394148,
+            "lis_hybrid": 0.8615919531706637
+          }
+        },
+        {
+          "compiler": "gcc",
+          "kind": "main",
+          "case": [
+            500000,
+            2
+          ],
+          "ratios": {
+            "lis_control": 0.8920810746281889,
+            "lis_hybrid": 0.8096244368044077
+          }
+        },
+        {
+          "compiler": "gcc",
+          "kind": "main",
+          "case": [
+            500000,
+            3
+          ],
+          "ratios": {
+            "lis_control": 1.0122046088054095,
+            "lis_hybrid": 0.9366757272361711
+          }
+        },
+        {
+          "compiler": "gcc",
+          "kind": "main",
+          "case": [
+            500000,
+            4
+          ],
+          "ratios": {
+            "lis_control": 1.0094426808501693,
+            "lis_hybrid": 0.949559673019458
+          }
+        },
+        {
+          "compiler": "gcc",
+          "kind": "main",
+          "case": [
+            500000,
+            5
+          ],
+          "ratios": {
+            "lis_control": 0.9767033313239963,
+            "lis_hybrid": 0.9127994193028636
+          }
+        },
+        {
+          "compiler": "gcc",
+          "kind": "main",
+          "case": [
+            500000,
+            6
+          ],
+          "ratios": {
+            "lis_control": 0.9987228276598401,
+            "lis_hybrid": 0.9087212552969829
+          }
+        },
+        {
+          "compiler": "gcc",
+          "kind": "main",
+          "case": [
+            500000,
+            7
+          ],
+          "ratios": {
+            "lis_control": 0.9983688585100827,
+            "lis_hybrid": 0.9067820759674659
+          }
+        },
+        {
+          "compiler": "gcc",
+          "kind": "main",
+          "case": [
+            500000,
+            8
+          ],
+          "ratios": {
+            "lis_control": 0.9974588692018753,
+            "lis_hybrid": 0.8958984321935566
+          }
+        },
+        {
+          "compiler": "gcc-native",
+          "kind": "main",
+          "case": [
+            500000,
+            0
+          ],
+          "ratios": {
+            "lis_control": 0.9962949314379879,
+            "lis_hybrid": 0.8945001138409869
+          }
+        },
+        {
+          "compiler": "gcc-native",
+          "kind": "main",
+          "case": [
+            500000,
+            1
+          ],
+          "ratios": {
+            "lis_control": 1.0202352422145804,
+            "lis_hybrid": 0.8493773056597337
+          }
+        },
+        {
+          "compiler": "gcc-native",
+          "kind": "main",
+          "case": [
+            500000,
+            2
+          ],
+          "ratios": {
+            "lis_control": 1.0776370369143446,
+            "lis_hybrid": 0.8759224219616061
+          }
+        },
+        {
+          "compiler": "gcc-native",
+          "kind": "main",
+          "case": [
+            500000,
+            3
+          ],
+          "ratios": {
+            "lis_control": 1.0115705124737913,
+            "lis_hybrid": 0.9235180915117307
+          }
+        },
+        {
+          "compiler": "gcc-native",
+          "kind": "main",
+          "case": [
+            500000,
+            4
+          ],
+          "ratios": {
+            "lis_control": 0.9793524017456704,
+            "lis_hybrid": 0.9817134521426001
+          }
+        },
+        {
+          "compiler": "gcc-native",
+          "kind": "main",
+          "case": [
+            500000,
+            5
+          ],
+          "ratios": {
+            "lis_control": 1.015696765823535,
+            "lis_hybrid": 0.8609029465512891
+          }
+        },
+        {
+          "compiler": "gcc-native",
+          "kind": "main",
+          "case": [
+            500000,
+            6
+          ],
+          "ratios": {
+            "lis_control": 1.0311751987386686,
+            "lis_hybrid": 0.9018189879254273
+          }
+        },
+        {
+          "compiler": "gcc-native",
+          "kind": "main",
+          "case": [
+            500000,
+            7
+          ],
+          "ratios": {
+            "lis_control": 0.9875407049341376,
+            "lis_hybrid": 0.888533747494347
+          }
+        },
+        {
+          "compiler": "gcc-native",
+          "kind": "main",
+          "case": [
+            500000,
+            8
+          ],
+          "ratios": {
+            "lis_control": 1.0106504579819906,
+            "lis_hybrid": 0.8926156850321488
+          }
+        },
+        {
+          "compiler": "clang",
+          "kind": "main",
+          "case": [
+            500000,
+            0
+          ],
+          "ratios": {
+            "lis_control": 0.991489716870164,
+            "lis_hybrid": 0.9026022075087
+          }
+        },
+        {
+          "compiler": "clang",
+          "kind": "main",
+          "case": [
+            500000,
+            1
+          ],
+          "ratios": {
+            "lis_control": 0.9826304914303288,
+            "lis_hybrid": 0.9094286240921824
+          }
+        },
+        {
+          "compiler": "clang",
+          "kind": "main",
+          "case": [
+            500000,
+            2
+          ],
+          "ratios": {
+            "lis_control": 0.9650100945171325,
+            "lis_hybrid": 0.9104471989954079
+          }
+        },
+        {
+          "compiler": "clang",
+          "kind": "main",
+          "case": [
+            500000,
+            3
+          ],
+          "ratios": {
+            "lis_control": 1.0042706764363936,
+            "lis_hybrid": 0.9098898637527152
+          }
+        },
+        {
+          "compiler": "clang",
+          "kind": "main",
+          "case": [
+            500000,
+            4
+          ],
+          "ratios": {
+            "lis_control": 1.0299270835003203,
+            "lis_hybrid": 0.9623456990447621
+          }
+        },
+        {
+          "compiler": "clang",
+          "kind": "main",
+          "case": [
+            500000,
+            5
+          ],
+          "ratios": {
+            "lis_control": 0.9832453555537739,
+            "lis_hybrid": 0.9053415426465017
+          }
+        },
+        {
+          "compiler": "clang",
+          "kind": "main",
+          "case": [
+            500000,
+            6
+          ],
+          "ratios": {
+            "lis_control": 0.9781404102207462,
+            "lis_hybrid": 0.8877921578387673
+          }
+        },
+        {
+          "compiler": "clang",
+          "kind": "main",
+          "case": [
+            500000,
+            7
+          ],
+          "ratios": {
+            "lis_control": 0.9895386879725048,
+            "lis_hybrid": 0.9135798251006162
+          }
+        },
+        {
+          "compiler": "clang",
+          "kind": "main",
+          "case": [
+            500000,
+            8
+          ],
+          "ratios": {
+            "lis_control": 1.0002175426199493,
+            "lis_hybrid": 0.9336710828433076
+          }
+        }
+      ],
+      "topo_api_rows": 141,
+      "topo_large_worst_ratio": 1.01709446722709,
+      "topo_small_worst_ratio": 1.0686953059478328,
+      "topo_fifo_gcc": [
+        {
+          "compiler": "gcc",
+          "n": 200000,
+          "shape": 0,
+          "api": 0,
+          "ratios": {
+            "topo_control": 1.0027492193338234,
+            "topo_separated": 0.9778378043061087
+          }
+        },
+        {
+          "compiler": "gcc",
+          "n": 200000,
+          "shape": 1,
+          "api": 0,
+          "ratios": {
+            "topo_control": 1.0014518131769286,
+            "topo_separated": 0.997316452067576
+          }
+        },
+        {
+          "compiler": "gcc",
+          "n": 200000,
+          "shape": 2,
+          "api": 0,
+          "ratios": {
+            "topo_control": 1.0118744332847784,
+            "topo_separated": 0.9688710665309423
+          }
+        },
+        {
+          "compiler": "gcc",
+          "n": 200000,
+          "shape": 3,
+          "api": 0,
+          "ratios": {
+            "topo_control": 0.9678088585097171,
+            "topo_separated": 0.9499551148352009
+          }
+        },
+        {
+          "compiler": "gcc",
+          "n": 200000,
+          "shape": 4,
+          "api": 0,
+          "ratios": {
+            "topo_control": 1.0016689334461513,
+            "topo_separated": 0.9873464960696939
+          }
+        },
+        {
+          "compiler": "gcc",
+          "n": 200000,
+          "shape": 5,
+          "api": 0,
+          "ratios": {
+            "topo_control": 1.0043670510357587,
+            "topo_separated": 0.8463959642730327
+          }
+        },
+        {
+          "compiler": "gcc",
+          "n": 200000,
+          "shape": 6,
+          "api": 0,
+          "ratios": {
+            "topo_control": 1.003761274342724,
+            "topo_separated": 0.9492547965773083
+          }
+        },
+        {
+          "compiler": "gcc",
+          "n": 200000,
+          "shape": 7,
+          "api": 0,
+          "ratios": {
+            "topo_control": 1.0017719274710768,
+            "topo_separated": 1.0026616913810014
+          }
+        },
+        {
+          "compiler": "gcc",
+          "n": 200000,
+          "shape": 8,
+          "api": 0,
+          "ratios": {
+            "topo_control": 0.9967421667710104,
+            "topo_separated": 0.7646329657915188
+          }
+        },
+        {
+          "compiler": "gcc",
+          "n": 200000,
+          "shape": 9,
+          "api": 0,
+          "ratios": {
+            "topo_control": 0.9860727686295856,
+            "topo_separated": 0.9750028210728733
+          }
+        },
+        {
+          "compiler": "gcc",
+          "n": 200000,
+          "shape": 10,
+          "api": 0,
+          "ratios": {
+            "topo_control": 1.0032227676136647,
+            "topo_separated": 0.9783472172765809
+          }
+        },
+        {
+          "compiler": "gcc",
+          "n": 200000,
+          "shape": 11,
+          "api": 0,
+          "ratios": {
+            "topo_control": 1.0038629527513763,
+            "topo_separated": 0.96327573424456
+          }
+        },
+        {
+          "compiler": "gcc",
+          "n": 200000,
+          "shape": 12,
+          "api": 0,
+          "ratios": {
+            "topo_control": 0.9993222977678196,
+            "topo_separated": 0.9850778293305364
+          }
+        },
+        {
+          "compiler": "gcc",
+          "n": 200000,
+          "shape": 13,
+          "api": 0,
+          "ratios": {
+            "topo_control": 1.0376654237198193,
+            "topo_separated": 0.8675326774901565
+          }
+        },
+        {
+          "compiler": "gcc",
+          "n": 200000,
+          "shape": 14,
+          "api": 0,
+          "ratios": {
+            "topo_control": 0.9695930723804662,
+            "topo_separated": 0.9189744648448428
+          }
+        },
+        {
+          "compiler": "gcc",
+          "n": 200000,
+          "shape": 15,
+          "api": 0,
+          "ratios": {
+            "topo_control": 1.0232752251214254,
+            "topo_separated": 0.9830316174723646
+          }
+        },
+        {
+          "compiler": "gcc-native",
+          "n": 200000,
+          "shape": 0,
+          "api": 0,
+          "ratios": {
+            "topo_control": 1.0060798580789176,
+            "topo_separated": 0.9623445282355845
+          }
+        },
+        {
+          "compiler": "gcc-native",
+          "n": 200000,
+          "shape": 1,
+          "api": 0,
+          "ratios": {
+            "topo_control": 0.9896811093981492,
+            "topo_separated": 0.9759644884659878
+          }
+        },
+        {
+          "compiler": "gcc-native",
+          "n": 200000,
+          "shape": 2,
+          "api": 0,
+          "ratios": {
+            "topo_control": 0.9995410018217814,
+            "topo_separated": 0.9617722877388182
+          }
+        },
+        {
+          "compiler": "gcc-native",
+          "n": 200000,
+          "shape": 3,
+          "api": 0,
+          "ratios": {
+            "topo_control": 0.9865967741742371,
+            "topo_separated": 0.9504260615780227
+          }
+        },
+        {
+          "compiler": "gcc-native",
+          "n": 200000,
+          "shape": 4,
+          "api": 0,
+          "ratios": {
+            "topo_control": 1.0104859830928083,
+            "topo_separated": 0.9854009369766458
+          }
+        },
+        {
+          "compiler": "gcc-native",
+          "n": 200000,
+          "shape": 5,
+          "api": 0,
+          "ratios": {
+            "topo_control": 1.0022855564901485,
+            "topo_separated": 0.8404370598856579
+          }
+        },
+        {
+          "compiler": "gcc-native",
+          "n": 200000,
+          "shape": 6,
+          "api": 0,
+          "ratios": {
+            "topo_control": 1.00123147472431,
+            "topo_separated": 0.9590068658101141
+          }
+        },
+        {
+          "compiler": "gcc-native",
+          "n": 200000,
+          "shape": 7,
+          "api": 0,
+          "ratios": {
+            "topo_control": 0.9952588934843324,
+            "topo_separated": 1.0025080191823057
+          }
+        },
+        {
+          "compiler": "gcc-native",
+          "n": 200000,
+          "shape": 8,
+          "api": 0,
+          "ratios": {
+            "topo_control": 1.0061506325860037,
+            "topo_separated": 0.7675529130042692
+          }
+        },
+        {
+          "compiler": "gcc-native",
+          "n": 200000,
+          "shape": 9,
+          "api": 0,
+          "ratios": {
+            "topo_control": 1.002985525042087,
+            "topo_separated": 0.9906773206202755
+          }
+        },
+        {
+          "compiler": "gcc-native",
+          "n": 200000,
+          "shape": 10,
+          "api": 0,
+          "ratios": {
+            "topo_control": 1.0046907699785486,
+            "topo_separated": 0.9790356140679327
+          }
+        },
+        {
+          "compiler": "gcc-native",
+          "n": 200000,
+          "shape": 11,
+          "api": 0,
+          "ratios": {
+            "topo_control": 1.0067660044990367,
+            "topo_separated": 0.9721194261060481
+          }
+        },
+        {
+          "compiler": "gcc-native",
+          "n": 200000,
+          "shape": 12,
+          "api": 0,
+          "ratios": {
+            "topo_control": 1.0007825662372787,
+            "topo_separated": 0.9941588847054136
+          }
+        },
+        {
+          "compiler": "gcc-native",
+          "n": 200000,
+          "shape": 13,
+          "api": 0,
+          "ratios": {
+            "topo_control": 0.9697626193570505,
+            "topo_separated": 0.8194730437449872
+          }
+        },
+        {
+          "compiler": "gcc-native",
+          "n": 200000,
+          "shape": 14,
+          "api": 0,
+          "ratios": {
+            "topo_control": 1.0099698548331877,
+            "topo_separated": 0.9522544233973904
+          }
+        },
+        {
+          "compiler": "gcc-native",
+          "n": 200000,
+          "shape": 15,
+          "api": 0,
+          "ratios": {
+            "topo_control": 0.9955543612357198,
+            "topo_separated": 0.9553640459817286
+          }
+        }
+      ],
+      "topo_main": [
+        {
+          "compiler": "gcc",
+          "n": 32,
+          "shape": 0,
+          "ratios": {
+            "topo_control": 0.9973501444506093,
+            "topo_separated": 0.9953546214628732
+          }
+        },
+        {
+          "compiler": "gcc",
+          "n": 32,
+          "shape": 1,
+          "ratios": {
+            "topo_control": 0.9906230975254401,
+            "topo_separated": 1.0058278155681084
+          }
+        },
+        {
+          "compiler": "gcc",
+          "n": 32,
+          "shape": 2,
+          "ratios": {
+            "topo_control": 1.0056909521702355,
+            "topo_separated": 1.005052400450347
+          }
+        },
+        {
+          "compiler": "gcc",
+          "n": 32,
+          "shape": 3,
+          "ratios": {
+            "topo_control": 0.9764397048655581,
+            "topo_separated": 0.9822927038775395
+          }
+        },
+        {
+          "compiler": "gcc",
+          "n": 32,
+          "shape": 4,
+          "ratios": {
+            "topo_control": 1.010729327717652,
+            "topo_separated": 1.0301850105258263
+          }
+        },
+        {
+          "compiler": "gcc",
+          "n": 32,
+          "shape": 5,
+          "ratios": {
+            "topo_control": 0.9945096180432119,
+            "topo_separated": 0.9902192579050026
+          }
+        },
+        {
+          "compiler": "gcc",
+          "n": 32,
+          "shape": 6,
+          "ratios": {
+            "topo_control": 0.9997605001523221,
+            "topo_separated": 1.0235663200299978
+          }
+        },
+        {
+          "compiler": "gcc",
+          "n": 32,
+          "shape": 7,
+          "ratios": {
+            "topo_control": 0.9952895887882439,
+            "topo_separated": 1.0010122399369488
+          }
+        },
+        {
+          "compiler": "gcc",
+          "n": 32,
+          "shape": 8,
+          "ratios": {
+            "topo_control": 1.0435782239980589,
+            "topo_separated": 0.9866488316521321
+          }
+        },
+        {
+          "compiler": "gcc",
+          "n": 32,
+          "shape": 9,
+          "ratios": {
+            "topo_control": 0.992470041895139,
+            "topo_separated": 1.0025111377879143
+          }
+        },
+        {
+          "compiler": "gcc",
+          "n": 32,
+          "shape": 10,
+          "ratios": {
+            "topo_control": 0.992374634811652,
+            "topo_separated": 1.0069624330663955
+          }
+        },
+        {
+          "compiler": "gcc",
+          "n": 32,
+          "shape": 11,
+          "ratios": {
+            "topo_control": 1.0136425063578054,
+            "topo_separated": 1.0323416126921432
+          }
+        },
+        {
+          "compiler": "gcc",
+          "n": 32,
+          "shape": 12,
+          "ratios": {
+            "topo_control": 0.9976992122405696,
+            "topo_separated": 1.0082046070984243
+          }
+        },
+        {
+          "compiler": "gcc",
+          "n": 32,
+          "shape": 15,
+          "ratios": {
+            "topo_control": 0.9897231805345176,
+            "topo_separated": 1.01866043807906
+          }
+        },
+        {
+          "compiler": "gcc",
+          "n": 100000,
+          "shape": 0,
+          "ratios": {
+            "topo_control": 1.0228230547616262,
+            "topo_separated": 1.011442023314775
+          }
+        },
+        {
+          "compiler": "gcc",
+          "n": 100000,
+          "shape": 1,
+          "ratios": {
+            "topo_control": 1.0232314598370158,
+            "topo_separated": 0.9900600043753859
+          }
+        },
+        {
+          "compiler": "gcc",
+          "n": 100000,
+          "shape": 2,
+          "ratios": {
+            "topo_control": 0.9851280760031432,
+            "topo_separated": 1.0188811911402496
+          }
+        },
+        {
+          "compiler": "gcc",
+          "n": 100000,
+          "shape": 3,
+          "ratios": {
+            "topo_control": 0.9829458502532173,
+            "topo_separated": 1.0172780211445542
+          }
+        },
+        {
+          "compiler": "gcc",
+          "n": 100000,
+          "shape": 4,
+          "ratios": {
+            "topo_control": 1.0059237458741404,
+            "topo_separated": 1.0106250561389378
+          }
+        },
+        {
+          "compiler": "gcc",
+          "n": 100000,
+          "shape": 5,
+          "ratios": {
+            "topo_control": 1.0011825937790368,
+            "topo_separated": 0.9644623411446492
+          }
+        },
+        {
+          "compiler": "gcc",
+          "n": 100000,
+          "shape": 6,
+          "ratios": {
+            "topo_control": 1.0056294458434698,
+            "topo_separated": 0.9495633437061975
+          }
+        },
+        {
+          "compiler": "gcc",
+          "n": 100000,
+          "shape": 7,
+          "ratios": {
+            "topo_control": 0.9910671721070474,
+            "topo_separated": 0.9279277875377638
+          }
+        },
+        {
+          "compiler": "gcc",
+          "n": 100000,
+          "shape": 8,
+          "ratios": {
+            "topo_control": 1.004867178470779,
+            "topo_separated": 0.9634960054658558
+          }
+        },
+        {
+          "compiler": "gcc",
+          "n": 100000,
+          "shape": 9,
+          "ratios": {
+            "topo_control": 0.9831800327192297,
+            "topo_separated": 1.0240104219300978
+          }
+        },
+        {
+          "compiler": "gcc",
+          "n": 100000,
+          "shape": 10,
+          "ratios": {
+            "topo_control": 1.011848622186526,
+            "topo_separated": 0.9687103450759574
+          }
+        },
+        {
+          "compiler": "gcc",
+          "n": 100000,
+          "shape": 11,
+          "ratios": {
+            "topo_control": 1.0003627741860255,
+            "topo_separated": 1.0086892571406643
+          }
+        },
+        {
+          "compiler": "gcc",
+          "n": 100000,
+          "shape": 12,
+          "ratios": {
+            "topo_control": 1.0061575582431777,
+            "topo_separated": 1.0217499718182843
+          }
+        },
+        {
+          "compiler": "gcc",
+          "n": 100000,
+          "shape": 15,
+          "ratios": {
+            "topo_control": 1.0160400606719242,
+            "topo_separated": 1.000624501959687
+          }
+        },
+        {
+          "compiler": "gcc-native",
+          "n": 32,
+          "shape": 0,
+          "ratios": {
+            "topo_control": 0.9902762095106558,
+            "topo_separated": 1.002633406365957
+          }
+        },
+        {
+          "compiler": "gcc-native",
+          "n": 32,
+          "shape": 1,
+          "ratios": {
+            "topo_control": 1.0004804237027107,
+            "topo_separated": 1.0070587160445768
+          }
+        },
+        {
+          "compiler": "gcc-native",
+          "n": 32,
+          "shape": 2,
+          "ratios": {
+            "topo_control": 1.004573416152789,
+            "topo_separated": 1.0103843493725917
+          }
+        },
+        {
+          "compiler": "gcc-native",
+          "n": 32,
+          "shape": 3,
+          "ratios": {
+            "topo_control": 0.9761934020320946,
+            "topo_separated": 0.9971896124412595
+          }
+        },
+        {
+          "compiler": "gcc-native",
+          "n": 32,
+          "shape": 4,
+          "ratios": {
+            "topo_control": 1.008234366257431,
+            "topo_separated": 1.00566176428252
+          }
+        },
+        {
+          "compiler": "gcc-native",
+          "n": 32,
+          "shape": 5,
+          "ratios": {
+            "topo_control": 1.0055959784053854,
+            "topo_separated": 1.021537683161766
+          }
+        },
+        {
+          "compiler": "gcc-native",
+          "n": 32,
+          "shape": 6,
+          "ratios": {
+            "topo_control": 1.0013191898667677,
+            "topo_separated": 1.0088581440612938
+          }
+        },
+        {
+          "compiler": "gcc-native",
+          "n": 32,
+          "shape": 7,
+          "ratios": {
+            "topo_control": 0.9751570149976241,
+            "topo_separated": 0.9746422590388468
+          }
+        },
+        {
+          "compiler": "gcc-native",
+          "n": 32,
+          "shape": 8,
+          "ratios": {
+            "topo_control": 1.0170803894989107,
+            "topo_separated": 1.0196283680119944
+          }
+        },
+        {
+          "compiler": "gcc-native",
+          "n": 32,
+          "shape": 9,
+          "ratios": {
+            "topo_control": 0.9913918609756661,
+            "topo_separated": 0.9931109098029598
+          }
+        },
+        {
+          "compiler": "gcc-native",
+          "n": 32,
+          "shape": 10,
+          "ratios": {
+            "topo_control": 1.0099973023791406,
+            "topo_separated": 0.9980451831011828
+          }
+        },
+        {
+          "compiler": "gcc-native",
+          "n": 32,
+          "shape": 11,
+          "ratios": {
+            "topo_control": 1.0100717980531506,
+            "topo_separated": 1.005084868299501
+          }
+        },
+        {
+          "compiler": "gcc-native",
+          "n": 32,
+          "shape": 12,
+          "ratios": {
+            "topo_control": 1.0021861902120315,
+            "topo_separated": 1.0056256138283244
+          }
+        },
+        {
+          "compiler": "gcc-native",
+          "n": 32,
+          "shape": 15,
+          "ratios": {
+            "topo_control": 0.9886678535178591,
+            "topo_separated": 1.0024973194794777
+          }
+        },
+        {
+          "compiler": "gcc-native",
+          "n": 100000,
+          "shape": 0,
+          "ratios": {
+            "topo_control": 0.9901198747395157,
+            "topo_separated": 1.0082912979882228
+          }
+        },
+        {
+          "compiler": "gcc-native",
+          "n": 100000,
+          "shape": 1,
+          "ratios": {
+            "topo_control": 1.0095492708032996,
+            "topo_separated": 1.0135551859567145
+          }
+        },
+        {
+          "compiler": "gcc-native",
+          "n": 100000,
+          "shape": 2,
+          "ratios": {
+            "topo_control": 0.9782134181717945,
+            "topo_separated": 0.9990784993729863
+          }
+        },
+        {
+          "compiler": "gcc-native",
+          "n": 100000,
+          "shape": 3,
+          "ratios": {
+            "topo_control": 0.9870151061597334,
+            "topo_separated": 0.9995332838203911
+          }
+        },
+        {
+          "compiler": "gcc-native",
+          "n": 100000,
+          "shape": 4,
+          "ratios": {
+            "topo_control": 0.9876416895366735,
+            "topo_separated": 0.9984795113802232
+          }
+        },
+        {
+          "compiler": "gcc-native",
+          "n": 100000,
+          "shape": 5,
+          "ratios": {
+            "topo_control": 1.0000103405503962,
+            "topo_separated": 0.9665841759243134
+          }
+        },
+        {
+          "compiler": "gcc-native",
+          "n": 100000,
+          "shape": 6,
+          "ratios": {
+            "topo_control": 0.9990406858309986,
+            "topo_separated": 0.9666104120674971
+          }
+        },
+        {
+          "compiler": "gcc-native",
+          "n": 100000,
+          "shape": 7,
+          "ratios": {
+            "topo_control": 1.007461357117832,
+            "topo_separated": 0.9633138357791463
+          }
+        },
+        {
+          "compiler": "gcc-native",
+          "n": 100000,
+          "shape": 8,
+          "ratios": {
+            "topo_control": 1.0023164951620704,
+            "topo_separated": 0.9519596964688618
+          }
+        },
+        {
+          "compiler": "gcc-native",
+          "n": 100000,
+          "shape": 9,
+          "ratios": {
+            "topo_control": 1.014494922992059,
+            "topo_separated": 1.008638297187497
+          }
+        },
+        {
+          "compiler": "gcc-native",
+          "n": 100000,
+          "shape": 10,
+          "ratios": {
+            "topo_control": 1.0019042518737515,
+            "topo_separated": 0.9609184099362458
+          }
+        },
+        {
+          "compiler": "gcc-native",
+          "n": 100000,
+          "shape": 11,
+          "ratios": {
+            "topo_control": 1.0020860540269774,
+            "topo_separated": 0.9916401301467783
+          }
+        },
+        {
+          "compiler": "gcc-native",
+          "n": 100000,
+          "shape": 12,
+          "ratios": {
+            "topo_control": 1.0143165923279795,
+            "topo_separated": 1.0129710118215827
+          }
+        },
+        {
+          "compiler": "gcc-native",
+          "n": 100000,
+          "shape": 15,
+          "ratios": {
+            "topo_control": 0.9902427665991915,
+            "topo_separated": 0.9947529299621576
+          }
+        },
+        {
+          "compiler": "clang",
+          "n": 32,
+          "shape": 0,
+          "ratios": {
+            "topo_control": 1.0033474732937626,
+            "topo_separated": 0.989164227543639
+          }
+        },
+        {
+          "compiler": "clang",
+          "n": 32,
+          "shape": 1,
+          "ratios": {
+            "topo_control": 1.0148877876199256,
+            "topo_separated": 1.0150109589705847
+          }
+        },
+        {
+          "compiler": "clang",
+          "n": 32,
+          "shape": 2,
+          "ratios": {
+            "topo_control": 0.9956614615557814,
+            "topo_separated": 0.9978748559541448
+          }
+        },
+        {
+          "compiler": "clang",
+          "n": 32,
+          "shape": 3,
+          "ratios": {
+            "topo_control": 1.0042218702408658,
+            "topo_separated": 1.026518978416627
+          }
+        },
+        {
+          "compiler": "clang",
+          "n": 32,
+          "shape": 4,
+          "ratios": {
+            "topo_control": 0.9820111371308773,
+            "topo_separated": 0.9823180122840549
+          }
+        },
+        {
+          "compiler": "clang",
+          "n": 32,
+          "shape": 5,
+          "ratios": {
+            "topo_control": 1.0024708789269325,
+            "topo_separated": 1.0010345440429531
+          }
+        },
+        {
+          "compiler": "clang",
+          "n": 32,
+          "shape": 6,
+          "ratios": {
+            "topo_control": 1.0129539058912742,
+            "topo_separated": 1.0188128832529617
+          }
+        },
+        {
+          "compiler": "clang",
+          "n": 32,
+          "shape": 7,
+          "ratios": {
+            "topo_control": 1.0060985880983737,
+            "topo_separated": 1.004619271021292
+          }
+        },
+        {
+          "compiler": "clang",
+          "n": 32,
+          "shape": 8,
+          "ratios": {
+            "topo_control": 1.0027091127018348,
+            "topo_separated": 0.9905152569361512
+          }
+        },
+        {
+          "compiler": "clang",
+          "n": 32,
+          "shape": 9,
+          "ratios": {
+            "topo_control": 0.9888841294873101,
+            "topo_separated": 1.0152091692966094
+          }
+        },
+        {
+          "compiler": "clang",
+          "n": 32,
+          "shape": 10,
+          "ratios": {
+            "topo_control": 0.9887751112715024,
+            "topo_separated": 0.9774994737158669
+          }
+        },
+        {
+          "compiler": "clang",
+          "n": 32,
+          "shape": 11,
+          "ratios": {
+            "topo_control": 1.0153173788475385,
+            "topo_separated": 0.9879191364022252
+          }
+        },
+        {
+          "compiler": "clang",
+          "n": 32,
+          "shape": 12,
+          "ratios": {
+            "topo_control": 0.9856936638219655,
+            "topo_separated": 0.9958292964422606
+          }
+        },
+        {
+          "compiler": "clang",
+          "n": 32,
+          "shape": 15,
+          "ratios": {
+            "topo_control": 0.983528056856238,
+            "topo_separated": 0.9790525576414504
+          }
+        },
+        {
+          "compiler": "clang",
+          "n": 100000,
+          "shape": 0,
+          "ratios": {
+            "topo_control": 1.008054669857759,
+            "topo_separated": 1.0061852346970386
+          }
+        },
+        {
+          "compiler": "clang",
+          "n": 100000,
+          "shape": 1,
+          "ratios": {
+            "topo_control": 0.974187331221126,
+            "topo_separated": 1.0275218966206734
+          }
+        },
+        {
+          "compiler": "clang",
+          "n": 100000,
+          "shape": 2,
+          "ratios": {
+            "topo_control": 0.9892874637212163,
+            "topo_separated": 0.9923419664475961
+          }
+        },
+        {
+          "compiler": "clang",
+          "n": 100000,
+          "shape": 3,
+          "ratios": {
+            "topo_control": 1.0290774504628855,
+            "topo_separated": 1.0008030121733706
+          }
+        },
+        {
+          "compiler": "clang",
+          "n": 100000,
+          "shape": 4,
+          "ratios": {
+            "topo_control": 0.998888076165308,
+            "topo_separated": 0.991106378962519
+          }
+        },
+        {
+          "compiler": "clang",
+          "n": 100000,
+          "shape": 5,
+          "ratios": {
+            "topo_control": 1.0041938090988596,
+            "topo_separated": 1.001632354907091
+          }
+        },
+        {
+          "compiler": "clang",
+          "n": 100000,
+          "shape": 6,
+          "ratios": {
+            "topo_control": 1.0008358123422207,
+            "topo_separated": 1.01064389610279
+          }
+        },
+        {
+          "compiler": "clang",
+          "n": 100000,
+          "shape": 7,
+          "ratios": {
+            "topo_control": 1.0174194788524067,
+            "topo_separated": 1.006005567887664
+          }
+        },
+        {
+          "compiler": "clang",
+          "n": 100000,
+          "shape": 8,
+          "ratios": {
+            "topo_control": 1.0015341960586828,
+            "topo_separated": 1.0034472003062915
+          }
+        },
+        {
+          "compiler": "clang",
+          "n": 100000,
+          "shape": 9,
+          "ratios": {
+            "topo_control": 1.0002698972608517,
+            "topo_separated": 1.0074095704080266
+          }
+        },
+        {
+          "compiler": "clang",
+          "n": 100000,
+          "shape": 10,
+          "ratios": {
+            "topo_control": 0.990451548473032,
+            "topo_separated": 1.0049941335496295
+          }
+        },
+        {
+          "compiler": "clang",
+          "n": 100000,
+          "shape": 11,
+          "ratios": {
+            "topo_control": 0.9826141606992368,
+            "topo_separated": 1.0054990049722257
+          }
+        },
+        {
+          "compiler": "clang",
+          "n": 100000,
+          "shape": 12,
+          "ratios": {
+            "topo_control": 1.0005038166640579,
+            "topo_separated": 1.0008359109445815
+          }
+        },
+        {
+          "compiler": "clang",
+          "n": 100000,
+          "shape": 15,
+          "ratios": {
+            "topo_control": 1.0160380486044591,
+            "topo_separated": 0.9875642140134785
+          }
+        }
+      ]
+    },
+    "validation": {
+      "lis": {
+        "source_sha256": "98669452b13ad8c9bceec0526bf6e36590eb34d749bc8e5329f0ebc66ed405ed",
+        "configurations": 40,
+        "passed": true,
+        "warnings": 0
+      },
+      "lis_supplement_count": 16,
+      "topo": {
+        "source_sha256": "b245fb95636cc08064e3c0df4b8b04e890f50ae26791d845e924b6c50b51a009",
+        "configurations": 88,
+        "passed": true,
+        "warnings": 4
+      },
+      "final_proofs": [
+        {
+          "compiler": "gcc",
+          "api": 1,
+          "hashes": {
+            "lis_baseline": "79d2cef8b1d1f01c1b73eeba5dce4ffaf37c33e3a6c7a80fe6ef89b48334f3a1",
+            "lis_control": "79d2cef8b1d1f01c1b73eeba5dce4ffaf37c33e3a6c7a80fe6ef89b48334f3a1",
+            "lis_hybrid": "79d2cef8b1d1f01c1b73eeba5dce4ffaf37c33e3a6c7a80fe6ef89b48334f3a1"
+          },
+          "identical": true
+        },
+        {
+          "compiler": "gcc",
+          "api": 2,
+          "hashes": {
+            "lis_baseline": "4ab0129e97c0d52939bb7b2fb6e043b7a1d6733b1bfa1f964905d4dcc611a24c",
+            "lis_control": "4ab0129e97c0d52939bb7b2fb6e043b7a1d6733b1bfa1f964905d4dcc611a24c",
+            "lis_hybrid": "4ab0129e97c0d52939bb7b2fb6e043b7a1d6733b1bfa1f964905d4dcc611a24c"
+          },
+          "identical": true
+        },
+        {
+          "compiler": "gcc",
+          "api": 3,
+          "hashes": {
+            "lis_baseline": "6afbcd8097056fc52096bd9ce61f82504036c21e2c584cd3eab64a97f53ca62c",
+            "lis_control": "6afbcd8097056fc52096bd9ce61f82504036c21e2c584cd3eab64a97f53ca62c",
+            "lis_hybrid": "6afbcd8097056fc52096bd9ce61f82504036c21e2c584cd3eab64a97f53ca62c"
+          },
+          "identical": true
+        },
+        {
+          "compiler": "gcc-native",
+          "api": 1,
+          "hashes": {
+            "lis_baseline": "6ac53f7d4141db7ae9f607f050f02b77334a5f7d2af24db117dade985d52058f",
+            "lis_control": "6ac53f7d4141db7ae9f607f050f02b77334a5f7d2af24db117dade985d52058f",
+            "lis_hybrid": "6ac53f7d4141db7ae9f607f050f02b77334a5f7d2af24db117dade985d52058f"
+          },
+          "identical": true
+        },
+        {
+          "compiler": "gcc-native",
+          "api": 2,
+          "hashes": {
+            "lis_baseline": "69b8c22b9a70a32958ebcc240fb973407665c463aca4449a08e144ea087a9479",
+            "lis_control": "69b8c22b9a70a32958ebcc240fb973407665c463aca4449a08e144ea087a9479",
+            "lis_hybrid": "69b8c22b9a70a32958ebcc240fb973407665c463aca4449a08e144ea087a9479"
+          },
+          "identical": true
+        },
+        {
+          "compiler": "gcc-native",
+          "api": 3,
+          "hashes": {
+            "lis_baseline": "1b3ddf9d75a42827ad812b7ef162da3960f7ecccc802965707bea7a3ad183bd8",
+            "lis_control": "1b3ddf9d75a42827ad812b7ef162da3960f7ecccc802965707bea7a3ad183bd8",
+            "lis_hybrid": "1b3ddf9d75a42827ad812b7ef162da3960f7ecccc802965707bea7a3ad183bd8"
+          },
+          "identical": true
+        },
+        {
+          "compiler": "clang",
+          "api": 1,
+          "hashes": {
+            "lis_baseline": "c4f9dec5cadf47653bddd803a9612e6c8334c6f18a9a4aca868e62daa1758d50",
+            "lis_control": "c4f9dec5cadf47653bddd803a9612e6c8334c6f18a9a4aca868e62daa1758d50",
+            "lis_hybrid": "c4f9dec5cadf47653bddd803a9612e6c8334c6f18a9a4aca868e62daa1758d50"
+          },
+          "identical": true
+        },
+        {
+          "compiler": "clang",
+          "api": 2,
+          "hashes": {
+            "lis_baseline": "b059483e5419ddf352849c3616ea18b8d489e961a27e4260b1deb2ecc77c1bca",
+            "lis_control": "b059483e5419ddf352849c3616ea18b8d489e961a27e4260b1deb2ecc77c1bca",
+            "lis_hybrid": "b059483e5419ddf352849c3616ea18b8d489e961a27e4260b1deb2ecc77c1bca"
+          },
+          "identical": true
+        },
+        {
+          "compiler": "clang",
+          "api": 3,
+          "hashes": {
+            "lis_baseline": "91c1a97e29ecf51005baeb9b7cabddb76e5c2589979933bd70503f1e3b14a937",
+            "lis_control": "91c1a97e29ecf51005baeb9b7cabddb76e5c2589979933bd70503f1e3b14a937",
+            "lis_hybrid": "91c1a97e29ecf51005baeb9b7cabddb76e5c2589979933bd70503f1e3b14a937"
+          },
+          "identical": true
+        },
+        {
+          "compiler": "gcc",
+          "skip": false,
+          "disable_simd": false,
+          "example": true,
+          "returncode": 0,
+          "stdout": "0 1 3 2 \n1 0\n0 1 3 2 \n0\n"
+        },
+        {
+          "compiler": "gcc",
+          "skip": false,
+          "disable_simd": true,
+          "example": true,
+          "returncode": 0,
+          "stdout": "0 1 3 2 \n1 0\n0 1 3 2 \n0\n"
+        },
+        {
+          "compiler": "gcc",
+          "skip": true,
+          "disable_simd": false,
+          "example": true,
+          "returncode": 0,
+          "stdout": "0 1 3 2 \n1 0\n0 1 3 2 \n0\n"
+        },
+        {
+          "compiler": "gcc",
+          "skip": true,
+          "disable_simd": true,
+          "example": true,
+          "returncode": 0,
+          "stdout": "0 1 3 2 \n1 0\n0 1 3 2 \n0\n"
+        },
+        {
+          "compiler": "clang",
+          "skip": false,
+          "disable_simd": false,
+          "example": true,
+          "returncode": 0,
+          "stdout": "0 1 3 2 \n1 0\n0 1 3 2 \n0\n"
+        },
+        {
+          "compiler": "clang",
+          "skip": false,
+          "disable_simd": true,
+          "example": true,
+          "returncode": 0,
+          "stdout": "0 1 3 2 \n1 0\n0 1 3 2 \n0\n"
+        },
+        {
+          "compiler": "clang",
+          "skip": true,
+          "disable_simd": false,
+          "example": true,
+          "returncode": 0,
+          "stdout": "0 1 3 2 \n1 0\n0 1 3 2 \n0\n"
+        },
+        {
+          "compiler": "clang",
+          "skip": true,
+          "disable_simd": true,
+          "example": true,
+          "returncode": 0,
+          "stdout": "0 1 3 2 \n1 0\n0 1 3 2 \n0\n"
+        }
+      ]
+    },
+    "limits": [
+      "API timings include checksum for topo, not graph generation; main includes process startup/input/output",
+      "Separate same-text controls fluctuate materially for a few main rows; no claim of every wall-clock case strictly faster",
+      "Topological lex/Details retain algorithm but template mangling/code order means whole binary identity is not claimed",
+      "LIS untouched lengths/prefix/ending-only TUs are byte-identical for all three compiler configurations",
+      "GCC topo warnings belong to replacement new/delete allocation-test fixture, not production sources",
+      "Initial Clang allocation fixture used an optimizer-sensitive replacement delete counter; corrected with existing noinline hook pattern, then baseline/candidate all passed",
+      "No judge submissions performed by this child; historical online AC remains historical"
+    ],
+    "resubmission_recommended": [
+      "lis.cpp",
+      "topological.cpp"
+    ],
+    "resubmission_optional": [
+      "topological_lexicographical.cpp (shared-body sync; lex algorithm unchanged)"
+    ]
+  },
+  "evidence_files": {
+    "final-proofs.json": "249760812c2c9237a3827e7d88a7ee036a7f359a5594ebb03ea44aac72447af2",
+    "proof.cpp": "e9b1c1388aff3eea1ab0cb859fb9015fe60d2bf811b3e100d8fb39f002e78227",
+    "final_proofs.py": "47d93f1722bdf62c372ace7e657618f8fc4ee16784b96d580a010db281fdc0b3",
+    "topo-separated-binary-proofs.json": "7091f043f839a289f8c148f7372ba7c25630ecbb2a13266ebda595c783669a70",
+    "topo-separated-main-builds.json": "8d4f73876ec538628ac17c09ee5581c9ca3deb92a26d874f77f3dc344f76633f",
+    "topo-separated-main-summary.json": "47aa6c63fd81c1dc73087224d13808eb3ec0c5a76339fabe9eff8b4dcc4373db",
+    "topo-separated-main-raw.json": "6d2b0cbd3104e4c780310c3726c2e2e5270f1631f2c610a174e42411b9f9c349",
+    "topo-separated-validation-summary.json": "5230d0f49f64bc80b9d19ea4df709eaca695565df57bba2c92f7f69c190f8069",
+    "topo-separated-validation-raw.json": "e47a290b6b79df9282b180974e3254b155579a8d384a06d2f4c0445b6bdcae99",
+    "topo_separated_main_gate.py": "035099e323f90ba9f7a28acf8ac8e712846d60f5bd86c783a8d445a8898d2aa5",
+    "topo_validate_separated.py": "5e15c2bee53043f2ed742485c0908423299e998a0218ea6d15fddc314bf9eb4e",
+    "topo-separated-builds.json": "a0203776c1da0ebd8c93173ab21911472866130075bace2413528008cc35cedf",
+    "topo-separated-summary.json": "3b98cd0b7dc289cf851b4dc381b5d981f47a9766925230a335a204b88ebf7a28",
+    "topo-separated-raw.json": "a9427f0e5e19eb42ade5f0cb60570facae81f76bd5151bf76f0aafd9e3c6ad8d",
+    "topo_separated_gate.py": "fca0d39388b5e1b5e0f8ababb988b72d4fc8905bb6d62e2399a05e50d36e5475",
+    "topo_separated.hpp": "b245fb95636cc08064e3c0df4b8b04e890f50ae26791d845e924b6c50b51a009",
+    "topo-small-builds.json": "4c4994be81c2672155dd3e49f240bcdf252536636f878ee575f1eb5cc3e007f5",
+    "topo-small-summary.json": "4270ed3bde55c5ce07d6accc7dac48d3612ced355600000b5b8f115bbfd35a3c",
+    "topo-small-raw.json": "dca4da1804d2b7f4908936dbd152f735fe0b1ecc6664ff3f3780690eec496c4a",
+    "topo-small-validation-summary.json": "8ee3abf2dbbc7db0ff6621dfe373c138b07049bec990b68c86888a1f529b26c9",
+    "topo-small-validation-raw.json": "d28bfff4924dc22010d125220a060d19343b8d6d933264e3d142c9a44c18af0b",
+    "topo_initially_measured.hpp": "75ee1aca76702c8c39a7595fa4a7ae28d5eb6a74559901147ca56c2afb8f97b1",
+    "topo_small_gate.py": "4b03a8911321a0767251f026fb1d1b33fb645a854828f08267419277fa3a306f",
+    "topo_validate_small.py": "008e3b83f1b84695aa1c9efb4af354ece98269065a53e1a667d717468eba2375",
+    "topo_small.hpp": "a5e5164e2edb394a69a3082cd1eba7acf2576ed1af40a96dd123c7e08bdedefb",
+    "topo-exact-builds.json": "20cde212efffef8b2755c598e919ec3bc1499bcc98a7020d24925b738aa6cf06",
+    "topo-exact-summary.json": "2596273ce6a4a6229f0d3028273c6e7b6a5b10e15f1a704282329a27b5a8b247",
+    "topo-exact-raw.json": "1e3e5b8d889210c571a8959d0a1e97dee48af9642c30301d18669e8cac727e1c",
+    "topo_exact_gate.py": "6b3ad5eff27fb67f90104b8c4233339b0f708956ab5f5a4217e3c53d103bfda9",
+    "supplement-validation.json": "39357fc5e2dd54e563d62c62ad947da83e6b816a545ec35a24c08c294511b902",
+    "example.cpp": "b6be1966259dea67c385d6d1cec5f674f56dd973308ee80c98eda6c8305dbc81",
+    "lis-hybrid-builds.json": "96175551f55b9411175911bc634d28b4b4b3eb78fbf1adf8bda6d81efb4f696f",
+    "lis-hybrid-summary.json": "e8982b99923600324517fd84faf37b0c9d630f5b509508512c8a89f87e13c54c",
+    "lis-hybrid-raw.json": "4231bae5da2c1be9045408e73892c07019997b11470492b94fa1e994dcd305ab",
+    "final_supplement.py": "6cdb1b3107fac7754db9bfb1025bbeac3fd91b789bbd61981e7ad70253cee1f1",
+    "lis_domain_reference.cpp": "3d543dd2835b63ddeebb1208ba233f8c5c55aa4134c10f79f2e4996a41b941b5",
+    "lis_hybrid_gate.py": "fb4d59da4297779715c646924b42599a3caf6b0dcd5e11bec2b5021ca476f848",
+    "topo-binary-proofs.json": "34d4c2cca65e529ccbb100eb33310f94a83b07361386815b50603a06d3fc9caa",
+    "topo-main-builds.json": "f943d8e4c3ed58c1dc23a62a446979a8a2ed22f5f270a2f39572d7a632745564",
+    "topo-main-summary.json": "506f2dc8ce6ad466b3e1d30db8ef9396f44cffed90d6e3245aa2776fc42c2afc",
+    "lis-limited-validation-raw.json": "c2fb8c265f09b0262376be328ecffa977dec40a5b153f55ab6708ca4877c3471",
+    "lis-limited-validation-summary.json": "977baea883011aba7110c7c2836e4888ede247b18950203dda6c4b54274a96dd",
+    "lis_hybrid.hpp": "98669452b13ad8c9bceec0526bf6e36590eb34d749bc8e5329f0ebc66ed405ed",
+    "make_lis_hybrid.py": "3cbd39e157f132a99c3923cb8b6af4b06a1634007a4e9fac30915c4178385353",
+    "topo-main-raw.json": "3a01b4bb3a55f104653424ba0ce17bea15dc7a43f07db7641661575f6bb461d0",
+    "topo_main_build.cpp": "bcc40f041c7d5e60134e519dbbff9c18b6fa0a9b025f4874d639353880b75029",
+    "topo_input.cpp": "5552bdb0a0c9001b466c961d5dead794831162e651d398833a8eb8631974a651",
+    "domains-builds.json": "9c2610b0e9d8653e2466ecd48911105bfe3970441b4095274ac29d400ce95270",
+    "domains-summary.json": "b2579a45db1089c74db99e2fec839969663392a656485563d2fcbe3e8a1d0c66",
+    "topo_main_gate.py": "cd302cd337512810a6eb7e983c96189d82b8c5ec5616669662f64738dce60f9e",
+    "domains-raw.json": "8070b6b4c2dedc19156e6823c6df1a4f92b1b4d059875ba0b791f71dd434ba20",
+    "domain_gate.py": "5825dedd61fa966fa90a932a087b64b5d397b8791295688d9275e7e44a90d0f0",
+    "lis_domains.cpp": "ed96b6a4a7bd72018b87ba7a67075cf396a1a15a8c057c093cd2f2019af0f249",
+    "lis_robust.hpp": "02c86d5749fba3ed0040dd19daa5f3274a192dbc3dc5daf2589c6cc0876c0ea5",
+    "topo-validation-summary.json": "602710c036aad06bb2a1bf332e1ac1bc4853edb8c8b53c439108054cc65d6ff9",
+    "topo-validation-raw.json": "d28bfff4924dc22010d125220a060d19343b8d6d933264e3d142c9a44c18af0b",
+    "topo_validate_final.py": "ccec265ad28cbc4c3c7270531c18aa14189bea5494c9d4a0dba55ecdc31c35a7",
+    "lis_final.hpp": "34a16f7dac5217fee32f53cbe42c2e9d53f9fdf84d3964190fb380ffc8e4c071",
+    "topo_final.hpp": "a5e5164e2edb394a69a3082cd1eba7acf2576ed1af40a96dd123c7e08bdedefb",
+    "lis-validation-summary.json": "3ac19310dc429f9a8302fb784d2b9a81fa96b9246c14f6e40fdbd1698350e2c1",
+    "lis_validate_selected.py": "512fe2f97fe8f0f47c5619d39393b4c5cbe87af826274877ad5098377abc3080",
+    "topo_validate.py": "b7e5a2c41709e32191c0839a0e5e0877f0757118f01e37350ff117b27e74ca74",
+    "topo_fifo_simd_test.cpp": "49e2ab251f36dc3aaf96e1ff3802cc4450311d67041efc7e111463d3a05d2889",
+    "limited-builds.json": "748ec14a2fd10f62fbeb8c7ef7b513affcc02a273756be5d180150a2d3c10208",
+    "limited-summary.json": "1b47bee679872e54625bba3ac34a574b8417cc9b906207175be047e3e4610d03",
+    "limited-raw.json": "04be27403e8a60c6a6008cb084e12a0be28c99900001169e5e0ac6a40bd1b065",
+    "lis_alloc_baseline.cpp": "a1e857f7dc536d7e13514cb4cad7ddfe5c938b33e4ef4151dfbbaf44037817b4",
+    "limited_gate.py": "ffc0d2f68b0131ec855ff32936b7b9ba0dc6bbbefeff2505c5702c6f285cabf4",
+    "topo_buffered.hpp": "345781104d2c4045ab7fd63e652ee4089173710b59bc6f5bbc1c43546a2b585d",
+    "lis_limited.hpp": "34a16f7dac5217fee32f53cbe42c2e9d53f9fdf84d3964190fb380ffc8e4c071",
+    "limited_candidates.py": "57ec9bf1032479621aedd31e6f6a3b4b30965f65c5bcde0a7fbe6e97918a4441",
+    "lis-validation-raw.json": "0aa29aa26ce0cef47f626dd8a7bca3071b17360d6aab238feaac794e048aa193",
+    "lis_validate.py": "067e08a402a7cd5ea757dc173956fbc3139bfd75ae489e409b638114f82073ed",
+    "lis_cache_allocations.cpp": "20adfe4588c5a9710a83405d8cfc5dc3d8ab3c90b367395f00789ec065577524",
+    "lis_large_reference.cpp": "17dffcd049c1a17cca5dae45e78c4fb49ac2296d609d2e9ffae162a866a150f0",
+    "lis-final-builds.json": "8106ff5600a83ec520d9b3ec0160e6e993a4561784777b91dee32402a88bb505",
+    "lis-final-summary.json": "e13063dbc3bbf18c018ae542953ff826709ce81a9f013f46837f05c12382eca5",
+    "lis-final-raw.json": "7a75bab369b14b7f9a15fa76a6dc313cb078a6a84e926f5ad6985b7ec53c2698",
+    "lis-main-inputs.json": "74d16fb8ecf31be5114a36532b9af95ea008e61e27fd899629e7a428eaf455e2",
+    "lis_main_build.cpp": "7470e352e3caad1cc659941a0b2bc333a42e38d161840b9c420422d1f352c78c",
+    "lis_final_gate.py": "27bf5bc1d32398bcd9a5c70219c2d39d956de9636a8ebc6b71796843ac1d8533",
+    "lis_frozen.hpp": "c933ec73af13f0d501f03932c0e5a3640bc53dd10392224af81f652fa045da64",
+    "topo-final-builds.json": "84394eba264a6032e110650f89146d3757df43491a8faa6f1d6d0e5e50d9206f",
+    "topo-final-summary.json": "e9fc151a910b6e8f4565d6acbab0e41a5442bf71e2ba1ebc947688a7125aa6a6",
+    "topo-final-raw.json": "a3db9e25e7e2bbfb0836987a659f60551db72d3bf5266108574a82ab774317fa",
+    "topo_final_probe.py": "0dd683fb0883ebfcda70551fd972d27517d0acc9cbc1b641c2b7a2cd9ecdb423",
+    "topo_initial_raw.hpp": "b433e0364f2cbe166d5ed39651a84331fdb5024380856876f91c0fe6c3408a3e",
+    "lis_candidate_final.hpp": "6a506feecf918e7ec3468c7cb29ef523b602c00d148b0f1e5ae9f2f56e0e7d2c",
+    "topo-isolate-builds.json": "f683050288639af479f2bcfb26fe2f63d6841cc94e476f629c705275276ee914",
+    "topo-isolate-summary.json": "dfd52ea3dc124e25dbc1a24a783ee4be309e1bd59d4590a66bac03f8f2b5ff48",
+    "topo-isolate-raw.json": "2f7410f4b5e0157605467c28c012bcbfd008fd9ce9ed93b78789606993464079",
+    "topo_isolate_probe.py": "187e0c62eea3fd238e4706401f7568b915bc7d1dc5212f4ee0b92eb587f8d195",
+    "topo_initial_function.hpp": "3e2fbedd4358f7872bfb76f614e032ee8de509e75e416802a6a5a92f0a8b9794",
+    "topo_initial_isolated.hpp": "80d2b9b8dd23401b33ce80769caf1f3a4c483576c3b6e3f06bda435b7dd77d17",
+    "topo_isolate.py": "576098744f95e83d9220553c430c2307f7963a79c4283dbf01699319054f1f89",
+    "lis-selected-builds.json": "a45c087b42a900f8ee02a2c909562c1cae5e0cb4d154e26258ee0ff820613db8",
+    "lis-selected-summary.json": "28f60cb3949495ee95ccfc99e8093a360b04eed5ec09639b290e875ec6f2a594",
+    "lis-selected-raw.json": "b3a39a0f6a9c54a64c200025dc1ed1b4e14458150187365b8cfce29ba11023af",
+    "topo-initial-builds.json": "032b2cd189f5116c228d38c50d0deec3b41dcb24f5b1fb50fd492012ff36d525",
+    "topo-initial-summary.json": "88a0b81f4a9ac88cb59219b115fb2ddf279b845160fbc475dfbb08fce056deb0",
+    "topo-initial-raw.json": "943536eb7c2e76f443ba07ed377b802fb48d4fe922b71c02fba6ce830ec513e8",
+    "lis_selected_probe.py": "0c077018411d1da4c7695eabfdb35b1d89ec47491eb15f4e518e169930a9b405",
+    "topo_initial_probe.py": "b0d746d92406716ecd5d70fd94ce9aa3f96958447078a6d63f20eaee5e7bcb52",
+    "topo_initial_sample.hpp": "354d0e9d8d676f44d7aebb77adb748e632d7ddcc17cf98cddf401dfd3ba74051",
+    "topo_initial.hpp": "b66341d80ba57cd175a6891280fcf3bc17492822542039fc4f86808f01544ee2",
+    "lis_selected_cache_compact.hpp": "e48d5840886b24ce1ae42cc9a8ecfd9688d8698f93c4f7ec6b8483765db80767",
+    "lis_selected_cache.hpp": "0a4bf1d42ebde0715c69916d5ea16fc86812461477106f7a6433699f5a299519",
+    "next_candidates.py": "aae6a8ce85b67139b6ca75ab81a40968a29632bd5660c256cc7bf0248e74ef41",
+    "lis_sample_cache_compact.hpp": "9695a23a7331dcf38e05936b56ee1ea60088dbfaa37405ac443789db29b1c1ed",
+    "lis_fast32_compact.hpp": "6593cd27995168f5ccaf8c8276b8ae7a260c19942d5e700ca475d52e478f0cef",
+    "lis-fast-builds.json": "97bde89c83e5760423b6161be41be825e48eb8c78d7370d27cb601f199c10d27",
+    "lis-fast-summary.json": "e69983cde2898887453b870d212360b58792eebbe8d25e7d6547a813717302a3",
+    "lis-fast-raw.json": "e022faa36978a9e553b364a7703a70e3fa83e682e44c1de427c1aaae4fe7b633",
+    "topo-probe-builds.json": "62632f93244177c673ffa23f7b48b163ada701f456285c2078c3ebee6f597f25",
+    "topo-probe-summary.json": "800d41769cc9cec6e4d86a0ccef375db9e34afdaa61e092cab06a26ad7765686",
+    "topo-probe-raw.json": "5da08f6d4d4da66bda6375f88ff5d67c8a3cac752966f71ec83b3dcae5697fb7",
+    "lis_fast_probe.py": "94e17a9bfb32390aa8c20f22f66f4c4ca2a58ec244dfdc90157d619a7461af4e",
+    "topo_probe.py": "8fa76f86b25f1b091d4955e70d7b928c9d92e5c70a1d79a44cf92b9493d24216",
+    "topo_bench.cpp": "35d04a6c17fe3924255e4b9c74dd0cd1cf4ea6e1125dc265f82193263d06ab1d",
+    "lis_sample_cache.hpp": "b6031a3d981251fd991376d7c59369383ed1b59b6455da8efa46fc337a632101",
+    "lis_fast32.hpp": "0c9c219457027b6cbb6f392779af50488c128efea0734785f5fba58d2b6dacbb",
+    "lis_fast_candidates.py": "5a2812f5ec29de0ea6a2cff606c7a79db1548bc7722c4f27889eb3df4db8a473",
+    "lis-probe-builds.json": "eb7d077387499ae869249e16198a682f83f99bbe86ca5e425c1b3df827325828",
+    "lis-probe-summary.json": "278f0b3b98e14752f91f7868334861c2b329de9e893067fe8d23d0cbf9be270e",
+    "lis-probe-raw.json": "af57262273239b5125efdee6682a0d7f324594cef1238ff18882b6b8790caa47",
+    "selected.hpp": "98669452b13ad8c9bceec0526bf6e36590eb34d749bc8e5329f0ebc66ed405ed",
+    "lis_probe.py": "6c372a8fa11e02ae73adbc0384ac46981151e88699d601a59d6a3d2657c39f46",
+    "lis_bench.cpp": "42934d1eaf3bdff7052918472e920f778b666ec272f90e01d625ed8e30934a1b",
+    "topo_both.hpp": "1407b5dcdab119971ef15756c03c9cedb3d038470be5c6d9c0100a05e2db6fbe",
+    "topo_simd.hpp": "58ac94a765f93e799b2231b77d1dae9cd39017d2de9c9ac799aec7daf0b50950",
+    "topo_eager.hpp": "b12020fb505cb6bd47e90c8712a80cb00278fe43cbb442d6f7d46fd7348d2a34",
+    "topo_deferred.hpp": "e7c7acc994f48406602a0828fbe0763b3041f51e431b11ec787dd2ad7aeb18dc",
+    "topo_control.hpp": "84d8ec41fcaa20c4a2ea2c7dc105928076afd9c449bce02f5ffc6bbfcd7f7da2",
+    "topo_candidates.py": "593807e61aa5cb1ed1b0cf4ba68b327f29dda397635df88a103491ba61615828",
+    "lis_cache_combined.hpp": "a5c283a64546bf2d468d00a0f650bf0fd5974a910d609a6b924115825dc57d1e",
+    "lis_cache.hpp": "c12cb3c766786040c6e6ea8fbdfee49f0ea07e31cf4188d5d526700af0dc874d",
+    "lis_combined.hpp": "1057c8cb40c23c4ec9723a42b2519f384e6c67f1524c7b0d0c9ce0c2274caeb8",
+    "lis_reserve.hpp": "b91c6a82afa0c93c01153bb57bfc8d782a3b7a9e2781c54b58937c33710938c6",
+    "lis_bound.hpp": "367c5c335c5792881f0d717a5a8bb1a62d980dde9471bc70990d188fcc4a77ed",
+    "lis_index32.hpp": "19709ccc6647176c619ba238d29c9454d701b19d45f5fdb21ed73079bf48526e",
+    "lis_control.hpp": "f28a3fcd90d3c460eb062c5970657cf13279a792fec47a38858a3f8d68b055a0",
+    "lis_candidates.py": "d5856358d36d551fdf9ef71841d6d853edb035ee2e1fd978e83e5d5065765389",
+    "frozen.json": "9697c5f3eb93618326b9a4264c589a218730e501d71e5f14d709ee3250bc549a",
+    "topo_baseline.hpp": "84d8ec41fcaa20c4a2ea2c7dc105928076afd9c449bce02f5ffc6bbfcd7f7da2",
+    "lis_baseline.hpp": "f28a3fcd90d3c460eb062c5970657cf13279a792fec47a38858a3f8d68b055a0"
+  }
+}

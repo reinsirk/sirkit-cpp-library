@@ -1,0 +1,840 @@
+{
+  "scope": "review_heap_project",
+  "evidence_files": {
+    "changed-files.json": {
+      "Verify/current/tests/project_selection_round2_failed_prepare_test.cpp": "4b2752124c22247ebd84f3f1a2ab9c99ec36e7a1dffa186940ba08411688d226"
+    },
+    "cross-checks.json": [
+      {
+        "compiler": "gcc",
+        "skip": false,
+        "name": "baseline",
+        "cmd": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-DHEADER=\"/tmp/sirkit_six_hours_20261029/project_selection/baseline.hpp\"",
+          "/tmp/sirkit_six_hours_20261029/review_heap_project/project_failed_small_cross.cpp",
+          "-o",
+          "/tmp/sirkit_six_hours_20261029/review_heap_project/cross-current"
+        ],
+        "exit": 0,
+        "stdout": "answer=1 expected=1 assignment_energy=1\n",
+        "stderr": "",
+        "source_sha": "ef39a8ca0809ed8e6f8289da582b6ce7b083c1969a648e4a9811a05891e2cdbb"
+      },
+      {
+        "compiler": "gcc",
+        "skip": false,
+        "name": "before_fix",
+        "cmd": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-DHEADER=\"/tmp/sirkit_six_hours_20261029/review_heap_project/project_before_fix.hpp\"",
+          "/tmp/sirkit_six_hours_20261029/review_heap_project/project_failed_small_cross.cpp",
+          "-o",
+          "/tmp/sirkit_six_hours_20261029/review_heap_project/cross-current"
+        ],
+        "exit": 0,
+        "stdout": "answer=1 expected=1 assignment_energy=1\n",
+        "stderr": "",
+        "source_sha": "2460d8320dc7b2e2c930c50b8f851e5fc64598388a4e7987e9b2bfccf19ea6b5"
+      }
+    ],
+    "cross-checks.log": {
+      "sha256": "f497962e6484842d2c24bb416f23f2b5e43b8817b7099320a3fcfd11f5b34d7e",
+      "text": "gcc False baseline answer=1 expected=1 assignment_energy=1\nTraceback (most recent call last):\n  File \"/tmp/sirkit_six_hours_20261029/review_heap_project/cross_check.py\", line 10, in <module>\n    q=subprocess.run(cmd,capture_output=True,text=True);assert q.returncode==0,q.stderr;q=subprocess.run(['taskset','-c','4',str(p/'cross-current')],capture_output=True,text=True);row=dict(compiler=cc,skip=skip,name=name,cmd=cmd,exit=q.returncode,stdout=q.stdout,stderr=q.stderr,source_sha=hashlib.sha256(path.read_bytes()).hexdigest());rows.append(row);(p/'cross-checks.json').write_text(json.dumps(rows,indent=2)+'\\n');assert q.returncode==want,row;print(cc,skip,name,q.stdout.strip(),flush=True)\n                                                                                                                                                                                                                                                                                                                                                                                                                                            ^^^^^^^^^^^^^^^^^^\nAssertionError: {'compiler': 'gcc', 'skip': False, 'name': 'before_fix', 'cmd': ['taskset', '-c', '4', '/usr/bin/g++', '-std=c++23', '-O2', '-DHEADER=\"/tmp/sirkit_six_hours_20261029/review_heap_project/project_before_fix.hpp\"', '/tmp/sirkit_six_hours_20261029/review_heap_project/project_failed_small_cross.cpp', '-o', '/tmp/sirkit_six_hours_20261029/review_heap_project/cross-current'], 'exit': 0, 'stdout': 'answer=1 expected=1 assignment_energy=1\\n', 'stderr': '', 'source_sha': '2460d8320dc7b2e2c930c50b8f851e5fc64598388a4e7987e9b2bfccf19ea6b5'}\n"
+    },
+    "cross_check.py": {
+      "sha256": "d14e30d7f80bbd45698ba5c94eda19c13c3c556a0b015a8a8d32e88e865836f7",
+      "text": "from pathlib import Path\nimport subprocess,json,os,fcntl,hashlib\np=Path(__file__).parent;lock=open('/tmp/sirkit_performance_cpu4.lock','w');fcntl.flock(lock,fcntl.LOCK_EX);rows=[]\nfor cc in['gcc','clang']:\n for skip in[False,True]:\n  for name,path,want in[('baseline',p.parent/'project_selection/baseline.hpp',0),('before_fix',p/'project_before_fix.hpp',1)]:\n   cmd=['taskset','-c','4','/usr/bin/g++'if cc=='gcc'else'clang++','-std=c++23','-O2',f'-DHEADER=\"{path}\"',str(p/'project_failed_small_cross.cpp'),'-o',str(p/'cross-current')]\n   if cc=='clang':cmd+=['--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15']\n   if skip:cmd+=['-DSKIP_RUNTIME_CHECKS']\n   q=subprocess.run(cmd,capture_output=True,text=True);assert q.returncode==0,q.stderr;q=subprocess.run(['taskset','-c','4',str(p/'cross-current')],capture_output=True,text=True);row=dict(compiler=cc,skip=skip,name=name,cmd=cmd,exit=q.returncode,stdout=q.stdout,stderr=q.stderr,source_sha=hashlib.sha256(path.read_bytes()).hexdigest());rows.append(row);(p/'cross-checks.json').write_text(json.dumps(rows,indent=2)+'\\n');assert q.returncode==want,row;print(cc,skip,name,q.stdout.strip(),flush=True)\n"
+    },
+    "finalize_review.py": {
+      "sha256": "611ad3a4d7eaf45a21dc06673b1b6c2bb62373f60628b40494a1cdc3e90cee5d",
+      "text": "from pathlib import Path\nimport hashlib,json,datetime\np=Path(__file__).parent;r=Path('/home/reinsirk/Atcoder_Env');h=lambda b:hashlib.sha256(b).hexdigest();heap=json.loads((p/'heap-checks.json').read_text());project=json.loads((p/'prepare-checks.json').read_text());assert len(heap)==len(project)==12;assert all(x['status']==0 for x in heap+project)\nfiles=['DataStructure/heap.cpp','Graph/Project_Selection.cpp'];sha={f:h((r/f).read_bytes())for f in files};assert all(x['source_sha']==sha[files[0]]for x in heap);assert all(x['source_sha']==sha[files[1]]for x in project)\nfixture='Verify/current/tests/project_selection_round2_failed_prepare_test.cpp';fs=h((r/fixture).read_bytes());assert all(x['fixture_sha']==fs for x in project);changed={fixture:fs};(p/'changed-files.json').write_text(json.dumps(changed,indent=2)+'\\n')\nold=p/'project_before_exception_fix.hpp';assert old.exists();old_sha=h(old.read_bytes())\nreview=dict(utc=datetime.datetime.now(datetime.timezone.utc).isoformat(),scope='Independent source review, no library body or Document edits; small correctness/fault fixtures, no heavy DRAM timing.',reviewed_sources=sha,existing_audits=['Audit/performance-heap-round2-2026-10-29.json','Audit/performance-project-selection-round2-2026-10-29.json','existing heap_test.cpp and project_selection_round2_sparse_exception_test.cpp'],findings=[dict(file='Graph/Project_Selection.cpp',status='found and fixed by parent',before_sha=old_sha,after_sha=sha[files[1]],trigger='Small-mode solve successfully allocates the level vector with zero-filled new elements, then cursor/queue/stack preparation throws. Auxiliary additions cross V=65536 before retry.',effect='Sparse BFS resets only prior queue plus sink, so nonqueued zero levels are mistaken for visited vertices and a feasible source-to-sink path is skipped. Reproducer returned -2 versus independently evaluated optimum1.',fix='Parent initializes newly grown level elements to -1 in the small-mode solve preparation as well. Both modes now preserve the queue/level invariant if a later preparation allocation fails.',minimal_reproducer='project_failed_small_cross.cpp',old_to_new_validation='../project_lifetime/reproduce.json',permanent_fixture=fixture,fixture_sha=fs,fixture_conditions='54 cases: int8/int64; first solve at V65534/65535; successful earlier solve then one auxiliary vertex before failure; allocation budgets0..4 cover all four preparation reservations; direct crossing plus copy/move/clear/small-mode retry recovery; an additional auxiliary term after entering large mode.',fixture_reference='Exhaustive16 assignments of four active variables; all other variables carry no energy. Checks solve/repeated solve/reconstruct/solve_with_assignment and allocation live delta.',verification='prepare-checks.json',configs=12,checks_per_config=1106,faults_per_config=48)],heap_review=dict(status='No new defect found',proofs=['For each nonroot parent p>=1, children are4p-1 through4p+2; child j>=1 has parent(j+1)/4. The root has children1 and2; the formulas agree at the boundary.','p<=count/4 is exactly the existence condition4p-1<count, so the first child is valid; subsequent probes stop at min(count,first+4). vector<int> storage bounds keep first+4 and push(position+1) representable.','Descending repair from count/4 to1 establishes every nonroot subtree before root repair. Empty/singleton construction returns early, and repair_root is called only for nonempty heaps.','push_back is the only throwing step in push; int relocation and subsequent comparison/repair cannot throw. Failed reserve/copy/range construction use vector ownership and leave live objects intact or destroy partial construction.','The final GCC default mixed tree and standard binary fallback keep the same logical min-heap results for pop, replace_top and push_pop, including ties and extreme integers.'],additional_small_fixture='heap_fault.cpp',verification='heap-checks.json',configs=12,checks_per_config=28886,allocation_cases=['push growth failure preserves heap','copy constructor/assignment failure preserves source and target','single-pass range construction with several partial-allocation failures leaks nothing','independent sorted-array checks for every minimum position at sizes1..24 and replacement below/equal/above minimum'],notes='A noinline copy factory prevents the optimizer from eliding the deliberate unused-copy allocation test. No implementation change resulted.'),project_invariants=['After either BFS, every nonnegative level belongs to an entry in queue_ or to sink_. Sparse reset of precisely those vertices is sound; initialization of new level elements to-1 is required when preparations can throw.','Every vertex read by bounded/iterative flow was queued by the current BFS, except sink, which returns before reading cursor. Selective cursor reset therefore covers every accessed cursor.','Normal and sparse paths share queue semantics, so switching paths at V65536 is safe once the new-level initialization invariant is maintained. clear/init reset both levels and queue; copy/move/swap transfer all associated state together.','Adding auxiliary vertices only appends stable vertex indices. New cursor elements start0 and new level elements start-1; reserve-only preparation failures do not alter graph edges or the optimum.','Capacity remains below the unsigned hard sentinel; remaining=finite-flow+1 is representable, and level/edge/reverse indices stay within the existing checked int bounds.'],changed_files=changed,configurations=['GCC/Clang × checked/skip × O2 default/O2 native/ASanUBSan for each added small fixture'],sanitizer_note='LeakSanitizer disabled under the host ptrace environment; independent live-allocation counters verify live_delta=0. ASan and UBSan remain enabled.',known_inconclusive_artifacts=['cross-checks.json used an initial snapshot that raced with the parent fix and accidentally captured finalSHA2460d832; it is not old-version evidence. The correctly frozen pre-fix snapshot is project_before_exception_fix.hpp, and the independent author reproduction8 matrix is referenced above.'])\n(p/'review.json').write_text(json.dumps(review,ensure_ascii=False,indent=2)+'\\n');print(json.dumps(dict(sources=sha,changed_files=changed,heap_configs=12,project_configs=12),indent=2))\n"
+    },
+    "frozen.json": {
+      "utc": "2026-10-29T13:32:34.457892+00:00",
+      "files": {
+        "DataStructure/heap.cpp": "e9c5c88edb8841fcbcd22f25992d4523ce77ecff6ffadafdb6fcfc50e739c201",
+        "Graph/Project_Selection.cpp": "2460d8320dc7b2e2c930c50b8f851e5fc64598388a4e7987e9b2bfccf19ea6b5"
+      }
+    },
+    "heap-checks.json": [
+      {
+        "compiler": "gcc",
+        "skip": false,
+        "config": "default",
+        "cmd": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-DHEADER=\"/tmp/sirkit_six_hours_20261029/review_heap_project/heap_reviewed.hpp\"",
+          "/tmp/sirkit_six_hours_20261029/review_heap_project/heap_fault.cpp",
+          "-o",
+          "/tmp/sirkit_six_hours_20261029/review_heap_project/heap-current"
+        ],
+        "status": 0,
+        "stdout": "PASS 28886 independent heap boundary/allocation checks live_delta=0\n",
+        "stderr": "",
+        "source_sha": "e9c5c88edb8841fcbcd22f25992d4523ce77ecff6ffadafdb6fcfc50e739c201"
+      },
+      {
+        "compiler": "gcc",
+        "skip": false,
+        "config": "native",
+        "cmd": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-DHEADER=\"/tmp/sirkit_six_hours_20261029/review_heap_project/heap_reviewed.hpp\"",
+          "/tmp/sirkit_six_hours_20261029/review_heap_project/heap_fault.cpp",
+          "-o",
+          "/tmp/sirkit_six_hours_20261029/review_heap_project/heap-current",
+          "-march=native"
+        ],
+        "status": 0,
+        "stdout": "PASS 28886 independent heap boundary/allocation checks live_delta=0\n",
+        "stderr": "",
+        "source_sha": "e9c5c88edb8841fcbcd22f25992d4523ce77ecff6ffadafdb6fcfc50e739c201"
+      },
+      {
+        "compiler": "gcc",
+        "skip": false,
+        "config": "sanitizer",
+        "cmd": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O1",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-DHEADER=\"/tmp/sirkit_six_hours_20261029/review_heap_project/heap_reviewed.hpp\"",
+          "/tmp/sirkit_six_hours_20261029/review_heap_project/heap_fault.cpp",
+          "-o",
+          "/tmp/sirkit_six_hours_20261029/review_heap_project/heap-current",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-fno-pie",
+          "-no-pie"
+        ],
+        "status": 0,
+        "stdout": "PASS 28886 independent heap boundary/allocation checks live_delta=0\n",
+        "stderr": "",
+        "source_sha": "e9c5c88edb8841fcbcd22f25992d4523ce77ecff6ffadafdb6fcfc50e739c201"
+      },
+      {
+        "compiler": "gcc",
+        "skip": true,
+        "config": "default",
+        "cmd": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-DHEADER=\"/tmp/sirkit_six_hours_20261029/review_heap_project/heap_reviewed.hpp\"",
+          "/tmp/sirkit_six_hours_20261029/review_heap_project/heap_fault.cpp",
+          "-o",
+          "/tmp/sirkit_six_hours_20261029/review_heap_project/heap-current",
+          "-DSKIP_RUNTIME_CHECKS"
+        ],
+        "status": 0,
+        "stdout": "PASS 28886 independent heap boundary/allocation checks live_delta=0\n",
+        "stderr": "",
+        "source_sha": "e9c5c88edb8841fcbcd22f25992d4523ce77ecff6ffadafdb6fcfc50e739c201"
+      },
+      {
+        "compiler": "gcc",
+        "skip": true,
+        "config": "native",
+        "cmd": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-DHEADER=\"/tmp/sirkit_six_hours_20261029/review_heap_project/heap_reviewed.hpp\"",
+          "/tmp/sirkit_six_hours_20261029/review_heap_project/heap_fault.cpp",
+          "-o",
+          "/tmp/sirkit_six_hours_20261029/review_heap_project/heap-current",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-march=native"
+        ],
+        "status": 0,
+        "stdout": "PASS 28886 independent heap boundary/allocation checks live_delta=0\n",
+        "stderr": "",
+        "source_sha": "e9c5c88edb8841fcbcd22f25992d4523ce77ecff6ffadafdb6fcfc50e739c201"
+      },
+      {
+        "compiler": "gcc",
+        "skip": true,
+        "config": "sanitizer",
+        "cmd": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O1",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-DHEADER=\"/tmp/sirkit_six_hours_20261029/review_heap_project/heap_reviewed.hpp\"",
+          "/tmp/sirkit_six_hours_20261029/review_heap_project/heap_fault.cpp",
+          "-o",
+          "/tmp/sirkit_six_hours_20261029/review_heap_project/heap-current",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-fno-pie",
+          "-no-pie"
+        ],
+        "status": 0,
+        "stdout": "PASS 28886 independent heap boundary/allocation checks live_delta=0\n",
+        "stderr": "",
+        "source_sha": "e9c5c88edb8841fcbcd22f25992d4523ce77ecff6ffadafdb6fcfc50e739c201"
+      },
+      {
+        "compiler": "clang",
+        "skip": false,
+        "config": "default",
+        "cmd": [
+          "taskset",
+          "-c",
+          "4",
+          "clang++",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-DHEADER=\"/tmp/sirkit_six_hours_20261029/review_heap_project/heap_reviewed.hpp\"",
+          "/tmp/sirkit_six_hours_20261029/review_heap_project/heap_fault.cpp",
+          "-o",
+          "/tmp/sirkit_six_hours_20261029/review_heap_project/heap-current",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15"
+        ],
+        "status": 0,
+        "stdout": "PASS 28886 independent heap boundary/allocation checks live_delta=0\n",
+        "stderr": "",
+        "source_sha": "e9c5c88edb8841fcbcd22f25992d4523ce77ecff6ffadafdb6fcfc50e739c201"
+      },
+      {
+        "compiler": "clang",
+        "skip": false,
+        "config": "native",
+        "cmd": [
+          "taskset",
+          "-c",
+          "4",
+          "clang++",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-DHEADER=\"/tmp/sirkit_six_hours_20261029/review_heap_project/heap_reviewed.hpp\"",
+          "/tmp/sirkit_six_hours_20261029/review_heap_project/heap_fault.cpp",
+          "-o",
+          "/tmp/sirkit_six_hours_20261029/review_heap_project/heap-current",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-march=native"
+        ],
+        "status": 0,
+        "stdout": "PASS 28886 independent heap boundary/allocation checks live_delta=0\n",
+        "stderr": "",
+        "source_sha": "e9c5c88edb8841fcbcd22f25992d4523ce77ecff6ffadafdb6fcfc50e739c201"
+      },
+      {
+        "compiler": "clang",
+        "skip": false,
+        "config": "sanitizer",
+        "cmd": [
+          "taskset",
+          "-c",
+          "4",
+          "clang++",
+          "-std=c++23",
+          "-O1",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-DHEADER=\"/tmp/sirkit_six_hours_20261029/review_heap_project/heap_reviewed.hpp\"",
+          "/tmp/sirkit_six_hours_20261029/review_heap_project/heap_fault.cpp",
+          "-o",
+          "/tmp/sirkit_six_hours_20261029/review_heap_project/heap-current",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-fno-pie",
+          "-no-pie"
+        ],
+        "status": 0,
+        "stdout": "PASS 28886 independent heap boundary/allocation checks live_delta=0\n",
+        "stderr": "",
+        "source_sha": "e9c5c88edb8841fcbcd22f25992d4523ce77ecff6ffadafdb6fcfc50e739c201"
+      },
+      {
+        "compiler": "clang",
+        "skip": true,
+        "config": "default",
+        "cmd": [
+          "taskset",
+          "-c",
+          "4",
+          "clang++",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-DHEADER=\"/tmp/sirkit_six_hours_20261029/review_heap_project/heap_reviewed.hpp\"",
+          "/tmp/sirkit_six_hours_20261029/review_heap_project/heap_fault.cpp",
+          "-o",
+          "/tmp/sirkit_six_hours_20261029/review_heap_project/heap-current",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-DSKIP_RUNTIME_CHECKS"
+        ],
+        "status": 0,
+        "stdout": "PASS 28886 independent heap boundary/allocation checks live_delta=0\n",
+        "stderr": "",
+        "source_sha": "e9c5c88edb8841fcbcd22f25992d4523ce77ecff6ffadafdb6fcfc50e739c201"
+      },
+      {
+        "compiler": "clang",
+        "skip": true,
+        "config": "native",
+        "cmd": [
+          "taskset",
+          "-c",
+          "4",
+          "clang++",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-DHEADER=\"/tmp/sirkit_six_hours_20261029/review_heap_project/heap_reviewed.hpp\"",
+          "/tmp/sirkit_six_hours_20261029/review_heap_project/heap_fault.cpp",
+          "-o",
+          "/tmp/sirkit_six_hours_20261029/review_heap_project/heap-current",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-march=native"
+        ],
+        "status": 0,
+        "stdout": "PASS 28886 independent heap boundary/allocation checks live_delta=0\n",
+        "stderr": "",
+        "source_sha": "e9c5c88edb8841fcbcd22f25992d4523ce77ecff6ffadafdb6fcfc50e739c201"
+      },
+      {
+        "compiler": "clang",
+        "skip": true,
+        "config": "sanitizer",
+        "cmd": [
+          "taskset",
+          "-c",
+          "4",
+          "clang++",
+          "-std=c++23",
+          "-O1",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-DHEADER=\"/tmp/sirkit_six_hours_20261029/review_heap_project/heap_reviewed.hpp\"",
+          "/tmp/sirkit_six_hours_20261029/review_heap_project/heap_fault.cpp",
+          "-o",
+          "/tmp/sirkit_six_hours_20261029/review_heap_project/heap-current",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-fno-pie",
+          "-no-pie"
+        ],
+        "status": 0,
+        "stdout": "PASS 28886 independent heap boundary/allocation checks live_delta=0\n",
+        "stderr": "",
+        "source_sha": "e9c5c88edb8841fcbcd22f25992d4523ce77ecff6ffadafdb6fcfc50e739c201"
+      }
+    ],
+    "heap-checks.log": {
+      "sha256": "a334f1dd948b1d45ef675c0e44c2f6eb9d4d4aaef8fd1853902b44a55e739d8f",
+      "text": "gcc False default PASS 28886 independent heap boundary/allocation checks live_delta=0\ngcc False native PASS 28886 independent heap boundary/allocation checks live_delta=0\ngcc False sanitizer PASS 28886 independent heap boundary/allocation checks live_delta=0\ngcc True default PASS 28886 independent heap boundary/allocation checks live_delta=0\ngcc True native PASS 28886 independent heap boundary/allocation checks live_delta=0\ngcc True sanitizer PASS 28886 independent heap boundary/allocation checks live_delta=0\nclang False default PASS 28886 independent heap boundary/allocation checks live_delta=0\nclang False native PASS 28886 independent heap boundary/allocation checks live_delta=0\nclang False sanitizer PASS 28886 independent heap boundary/allocation checks live_delta=0\nclang True default PASS 28886 independent heap boundary/allocation checks live_delta=0\nclang True native PASS 28886 independent heap boundary/allocation checks live_delta=0\nclang True sanitizer PASS 28886 independent heap boundary/allocation checks live_delta=0\n"
+    },
+    "heap_check.py": {
+      "sha256": "b3b19516a9900632515ab264dd8ef6f29bb33c530ddbe8877d18e6f27f1a7fd2",
+      "text": "from pathlib import Path\nimport subprocess,json,os,hashlib,fcntl\np=Path(__file__).parent;r=Path('/home/reinsirk/Atcoder_Env');rows=[];lock=open('/tmp/sirkit_performance_cpu4.lock','w');fcntl.flock(lock,fcntl.LOCK_EX);env={**os.environ,'ASAN_OPTIONS':'detect_leaks=0:halt_on_error=1','UBSAN_OPTIONS':'halt_on_error=1'}\nfor cc in['gcc','clang']:\n for skip in[False,True]:\n  for cfg in['default','native','sanitizer']:\n   cmd=['taskset','-c','4','/usr/bin/g++'if cc=='gcc'else'clang++','-std=c++23','-O1'if cfg=='sanitizer'else'-O2','-Wall','-Wextra','-Wpedantic',f'-DHEADER=\"{p/\"heap_reviewed.hpp\"}\"',str(p/'heap_fault.cpp'),'-o',str(p/'heap-current')]\n   if cc=='clang':cmd+=['--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15']\n   if skip:cmd+=['-DSKIP_RUNTIME_CHECKS']\n   if cfg=='native':cmd+=['-march=native']\n   if cfg=='sanitizer':cmd+=['-fsanitize=address,undefined','-fno-omit-frame-pointer','-fno-pie','-no-pie']\n   q=subprocess.run(cmd,capture_output=True,text=True);assert q.returncode==0,q.stderr;q=subprocess.run(['taskset','-c','4',str(p/'heap-current')],capture_output=True,text=True,env=env,timeout=60);row=dict(compiler=cc,skip=skip,config=cfg,cmd=cmd,status=q.returncode,stdout=q.stdout,stderr=q.stderr,source_sha=hashlib.sha256((p/'heap_reviewed.hpp').read_bytes()).hexdigest());rows.append(row);(p/'heap-checks.json').write_text(json.dumps(rows,indent=2)+'\\n');assert q.returncode==0,row;print(cc,skip,cfg,q.stdout.strip(),flush=True)\n"
+    },
+    "heap_fault.cpp": {
+      "sha256": "bb9d89e66a1271e9af19e72aef7526f9c858fe728fd3d2ac4021040b01b4c497",
+      "text": "#ifndef HEADER\n#define HEADER \"/home/reinsirk/Atcoder_Env/DataStructure/heap.cpp\"\n#endif\n#include HEADER\n#include <array>\n#include <cstdint>\n#include <source_location>\n#include <cstdio>\n#include <cstdlib>\n#include <new>\n#include <iostream>\n#include <algorithm>\nstd::int64_t budget=-1;std::size_t live=0,checks=0;\n[[gnu::noinline]]void*operator new(std::size_t bytes){if(budget==0)throw std::bad_alloc();if(budget>0)--budget;if(void*p=std::malloc(bytes?bytes:1)){++live;return p;}throw std::bad_alloc();}\nvoid operator delete(void*p)noexcept{if(p)--live;std::free(p);}void operator delete(void*p,std::size_t)noexcept{::operator delete(p);}void*operator new[](std::size_t n){return ::operator new(n);}void operator delete[](void*p)noexcept{::operator delete(p);}void operator delete[](void*p,std::size_t)noexcept{::operator delete(p);}\nvoid req(bool b,std::source_location where=std::source_location::current()){++checks;if(!b){budget=-1;std::fprintf(stderr,\"failure line %u\\n\",where.line());std::abort();}}\nstruct Input{using value_type=int;using difference_type=std::ptrdiff_t;using iterator_category=std::input_iterator_tag;const int*p=nullptr;const int&operator*()const{return*p;}Input&operator++(){++p;return*this;}Input operator++(int){auto old=*this;++*this;return old;}friend bool operator==(Input a,Input b){return a.p==b.p;}};\nvoid verify(const Heap& h,std::array<int,1024> values,std::size_t n){req(h.size()==n);std::sort(values.begin(),values.begin()+n);Heap copy=h;for(std::size_t i=0;i<n;++i)req(copy.pop_value()==values[i]);req(copy.empty());}\n[[gnu::noinline]] Heap copy_heap(const Heap& h){return h;}\nvoid test(){\n std::array<int,1024> values{};std::size_t n=0;Heap h;for(int i=0;i<32;++i){values[n++]=i%7;h.push(i%7);}bool failed=false;\n budget=0;for(int i=0;i<512;++i){try{h.push(-i);values[n++]=-i;}catch(const std::bad_alloc&){failed=true;break;}}budget=-1;req(failed);verify(h,values,n);\n failed=false;budget=0;try{Heap copy=copy_heap(h);req(copy.size()==h.size());}catch(const std::bad_alloc&){failed=true;}budget=-1;req(failed);verify(h,values,n);\n Heap target{9,7,8};failed=false;budget=0;try{target=h;}catch(const std::bad_alloc&){failed=true;}budget=-1;req(failed);std::array<int,1024> expected{};expected[0]=9;expected[1]=7;expected[2]=8;verify(target,expected,3);verify(h,values,n);\n std::array<int,20> input{};for(int i=0;i<20;++i)input[i]=19-i;\n for(int b=0;b<=8;++b){const auto before=live;budget=b;try{Heap copy(Input{input.data()},Input{input.data()+input.size()});budget=-1;std::array<int,1024>a{};std::copy(input.begin(),input.end(),a.begin());verify(copy,a,input.size());}catch(const std::bad_alloc&){budget=-1;}req(live==before);}\n for(std::size_t size=1;size<=24;++size)for(int low=0;low<static_cast<int>(size);++low){std::vector<int>a(size,17);a[low]=-8;Heap q(a);std::array<int,1024>b{};std::copy(a.begin(),a.end(),b.begin());verify(q,b,size);for(int value:{-9,-8,17,18}){auto k=q;auto c=b;c[low]=value;req(k.replace_top(value)==-8);verify(k,c,size);}}\n}\nint main(){auto before=live;test();req(live==before);std::cout<<\"PASS \"<<checks<<\" independent heap boundary/allocation checks live_delta=0\\n\";}\n"
+    },
+    "heap_reviewed.hpp": {
+      "sha256": "e9c5c88edb8841fcbcd22f25992d4523ce77ecff6ffadafdb6fcfc50e739c201",
+      "text": "// SPDX-License-Identifier: CC0-1.0\n// ドキュメント: https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/heap.md\n//\n// API一覧\n// [Heap]\n// int の最小ヒープ。値を所有し、コピー・ムーブ可能。\n// Heap(): 空を構築。Heap(vector<int>): 値を受け取り O(N) で構築。\n// Heap({値...}), Heap(first,last): 値をコピーし O(N) で構築。\n// empty(), size(): 空判定・要素数を O(1) で返す。\n// top(): 最小値、空なら -1 を O(1) で返す。top_or(fallback): 空なら fallback。\n// push(value): 値を追加、償却 O(log N)。pop(): 最小値を削除、空なら何もしない、O(log N)。\n// pop_value(): 最小値を削除して返す、O(log N)。空なら out_of_range、検査省略時は非空が前提。\n// replace_top(value): 最小値を置換して旧値を返す、O(log N)。空の扱いは pop_value() と同じ。\n// push_pop(value): 値を追加した後の最小値を返して削除、O(log N)、空なら value を返す。\n// clear(): 全要素を削除、容量を保持。reserve(n): n 要素分の容量を確保、再確保時 O(N)。\n\n#include <algorithm>\n#include <cstddef>\n#include <functional>\n#include <initializer_list>\n#include <iterator>\n#include <stdexcept>\n#include <utility>\n#include <vector>\n\n#ifndef SIRKIT_HEAP_DEFINED\n#define SIRKIT_HEAP_DEFINED\n\nclass Heap {\n    std::vector<int> values_;\n\n#if defined(__GNUC__) && !defined(__clang__) && !defined(__AVX2__) && (defined(__x86_64__) || defined(__i386__))\n    static constexpr bool quaternary_ = true;\n#else\n    static constexpr bool quaternary_ = false;\n#endif\n\n    // 根以外は4子。position >= 1で、最後の親はcount/4。\n    void repair_quad(std::size_t position, int value) noexcept {\n        const auto count = values_.size();\n        while (position <= count / 4) {\n            const auto first = position * 4 - 1;\n            auto child = first;\n            auto minimum = values_[first];\n            const auto end = std::min(count, first + 4);\n            for (auto probe = first + 1; probe < end; ++probe) {\n                if (values_[probe] < minimum) { minimum = values_[probe]; child = probe; }\n            }\n            if (value <= minimum) break;\n            values_[position] = minimum;\n            position = child;\n        }\n        values_[position] = value;\n    }\n\n    void make_heap() {\n        if constexpr (!quaternary_) {\n            std::make_heap(values_.begin(), values_.end(), std::greater<int>{});\n            return;\n        }\n        const auto count = values_.size();\n        if (count < 2) return;\n        for (auto position = count / 4; position != 0; --position)\n            repair_quad(position, values_[position]);\n        repair_root(values_[0]);\n    }\n\n    void repair_root(int value) noexcept {\n        const std::size_t count = values_.size();\n        if (count == 1) {\n            values_[0] = value;\n            return;\n        }\n        std::size_t position;\n        if (count > 2 && values_[2] < values_[1]) {\n            if (value <= values_[2]) {\n                values_[0] = value;\n                return;\n            }\n            values_[0] = values_[2];\n            position = 2;\n        } else {\n            if (value <= values_[1]) {\n                values_[0] = value;\n                return;\n            }\n            values_[0] = values_[1];\n            position = 1;\n        }\n        if constexpr (quaternary_) { repair_quad(position,value); return; }\n        while (position < count / 2) {\n            const std::size_t left = position * 2 + 1;\n            const std::size_t right = left + 1;\n            if (right < count && values_[right] < values_[left]) {\n                if (value <= values_[right]) break;\n                values_[position] = values_[right];\n                position = right;\n            } else {\n                if (value <= values_[left]) break;\n                values_[position] = values_[left];\n                position = left;\n            }\n        }\n        values_[position] = value;\n    }\n\npublic:\n    Heap() = default;\n\n    explicit Heap(std::vector<int> values) : values_(std::move(values)) {\n        make_heap();\n    }\n\n    Heap(std::initializer_list<int> values) : values_(values) {\n        make_heap();\n    }\n\n    template <std::input_iterator Iterator>\n    Heap(Iterator first, Iterator last) : values_(first, last) {\n        make_heap();\n    }\n\n    [[nodiscard]] bool empty() const noexcept { return values_.empty(); }\n    [[nodiscard]] std::size_t size() const noexcept { return values_.size(); }\n\n    [[nodiscard]] int top() const noexcept { return top_or(-1); }\n    [[nodiscard]] int top_or(int fallback) const noexcept {\n        return empty() ? fallback : values_.front();\n    }\n\n    void push(int value) {\n        values_.push_back(value);\n        std::size_t position = values_.size() - 1;\n        if constexpr (quaternary_) {\n            if (position == 0) return;\n            auto parent = (position + 1) / 4;\n            int above = values_[parent];\n            if (above <= value) return;\n            do {\n                values_[position] = above;\n                position = parent;\n                if (position == 0) break;\n                parent = (position + 1) / 4;\n                above = values_[parent];\n            } while (above > value);\n            values_[position] = value;\n            return;\n        }\n        while (position != 0) {\n            const std::size_t parent = (position - 1) / 2;\n            if (values_[parent] <= value) break;\n            values_[position] = values_[parent];\n            position = parent;\n        }\n        values_[position] = value;\n    }\n\n    void pop() noexcept {\n        if (empty()) return;\n        const int value = values_.back();\n        values_.pop_back();\n        if (!values_.empty()) repair_root(value);\n    }\n\n    int pop_value() {\n#ifndef SKIP_RUNTIME_CHECKS\n        if (empty()) throw std::out_of_range(\"Heap::pop_value: empty heap\");\n#endif\n        const int result = values_.front();\n        const int value = values_.back();\n        values_.pop_back();\n        if (!values_.empty()) repair_root(value);\n        return result;\n    }\n\n    int replace_top(int value) {\n#ifndef SKIP_RUNTIME_CHECKS\n        if (empty()) throw std::out_of_range(\"Heap::replace_top: empty heap\");\n#endif\n        const int result = values_.front();\n        repair_root(value);\n        return result;\n    }\n\n    int push_pop(int value) noexcept {\n        if (empty() || value <= values_.front()) return value;\n        const int result = values_.front();\n        repair_root(value);\n        return result;\n    }\n\n    void clear() noexcept { values_.clear(); }\n    void reserve(std::size_t count) { values_.reserve(count); }\n};\n\n#endif\n"
+    },
+    "prepare-checks.json": [
+      {
+        "compiler": "gcc",
+        "skip": false,
+        "config": "default",
+        "cmd": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-DSIRKIT_PROJECT_TEST_HEADER=\"/tmp/sirkit_six_hours_20261029/review_heap_project/project_final.hpp\"",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/project_selection_round2_failed_prepare_test.cpp",
+          "-o",
+          "/tmp/sirkit_six_hours_20261029/review_heap_project/prepare-current"
+        ],
+        "status": 0,
+        "stdout": "PASS 1106 failed-prepare checks, 48 allocation failures, live_delta=0\n",
+        "stderr": "",
+        "source_sha": "2460d8320dc7b2e2c930c50b8f851e5fc64598388a4e7987e9b2bfccf19ea6b5",
+        "fixture_sha": "4b2752124c22247ebd84f3f1a2ab9c99ec36e7a1dffa186940ba08411688d226"
+      },
+      {
+        "compiler": "gcc",
+        "skip": false,
+        "config": "native",
+        "cmd": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-DSIRKIT_PROJECT_TEST_HEADER=\"/tmp/sirkit_six_hours_20261029/review_heap_project/project_final.hpp\"",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/project_selection_round2_failed_prepare_test.cpp",
+          "-o",
+          "/tmp/sirkit_six_hours_20261029/review_heap_project/prepare-current",
+          "-march=native"
+        ],
+        "status": 0,
+        "stdout": "PASS 1106 failed-prepare checks, 48 allocation failures, live_delta=0\n",
+        "stderr": "",
+        "source_sha": "2460d8320dc7b2e2c930c50b8f851e5fc64598388a4e7987e9b2bfccf19ea6b5",
+        "fixture_sha": "4b2752124c22247ebd84f3f1a2ab9c99ec36e7a1dffa186940ba08411688d226"
+      },
+      {
+        "compiler": "gcc",
+        "skip": false,
+        "config": "sanitizer",
+        "cmd": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O1",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-DSIRKIT_PROJECT_TEST_HEADER=\"/tmp/sirkit_six_hours_20261029/review_heap_project/project_final.hpp\"",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/project_selection_round2_failed_prepare_test.cpp",
+          "-o",
+          "/tmp/sirkit_six_hours_20261029/review_heap_project/prepare-current",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-fno-pie",
+          "-no-pie"
+        ],
+        "status": 0,
+        "stdout": "PASS 1106 failed-prepare checks, 48 allocation failures, live_delta=0\n",
+        "stderr": "",
+        "source_sha": "2460d8320dc7b2e2c930c50b8f851e5fc64598388a4e7987e9b2bfccf19ea6b5",
+        "fixture_sha": "4b2752124c22247ebd84f3f1a2ab9c99ec36e7a1dffa186940ba08411688d226"
+      },
+      {
+        "compiler": "gcc",
+        "skip": true,
+        "config": "default",
+        "cmd": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-DSIRKIT_PROJECT_TEST_HEADER=\"/tmp/sirkit_six_hours_20261029/review_heap_project/project_final.hpp\"",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/project_selection_round2_failed_prepare_test.cpp",
+          "-o",
+          "/tmp/sirkit_six_hours_20261029/review_heap_project/prepare-current",
+          "-DSKIP_RUNTIME_CHECKS"
+        ],
+        "status": 0,
+        "stdout": "PASS 1106 failed-prepare checks, 48 allocation failures, live_delta=0\n",
+        "stderr": "",
+        "source_sha": "2460d8320dc7b2e2c930c50b8f851e5fc64598388a4e7987e9b2bfccf19ea6b5",
+        "fixture_sha": "4b2752124c22247ebd84f3f1a2ab9c99ec36e7a1dffa186940ba08411688d226"
+      },
+      {
+        "compiler": "gcc",
+        "skip": true,
+        "config": "native",
+        "cmd": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-DSIRKIT_PROJECT_TEST_HEADER=\"/tmp/sirkit_six_hours_20261029/review_heap_project/project_final.hpp\"",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/project_selection_round2_failed_prepare_test.cpp",
+          "-o",
+          "/tmp/sirkit_six_hours_20261029/review_heap_project/prepare-current",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-march=native"
+        ],
+        "status": 0,
+        "stdout": "PASS 1106 failed-prepare checks, 48 allocation failures, live_delta=0\n",
+        "stderr": "",
+        "source_sha": "2460d8320dc7b2e2c930c50b8f851e5fc64598388a4e7987e9b2bfccf19ea6b5",
+        "fixture_sha": "4b2752124c22247ebd84f3f1a2ab9c99ec36e7a1dffa186940ba08411688d226"
+      },
+      {
+        "compiler": "gcc",
+        "skip": true,
+        "config": "sanitizer",
+        "cmd": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O1",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-DSIRKIT_PROJECT_TEST_HEADER=\"/tmp/sirkit_six_hours_20261029/review_heap_project/project_final.hpp\"",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/project_selection_round2_failed_prepare_test.cpp",
+          "-o",
+          "/tmp/sirkit_six_hours_20261029/review_heap_project/prepare-current",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-fno-pie",
+          "-no-pie"
+        ],
+        "status": 0,
+        "stdout": "PASS 1106 failed-prepare checks, 48 allocation failures, live_delta=0\n",
+        "stderr": "",
+        "source_sha": "2460d8320dc7b2e2c930c50b8f851e5fc64598388a4e7987e9b2bfccf19ea6b5",
+        "fixture_sha": "4b2752124c22247ebd84f3f1a2ab9c99ec36e7a1dffa186940ba08411688d226"
+      },
+      {
+        "compiler": "clang",
+        "skip": false,
+        "config": "default",
+        "cmd": [
+          "taskset",
+          "-c",
+          "4",
+          "clang++",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-DSIRKIT_PROJECT_TEST_HEADER=\"/tmp/sirkit_six_hours_20261029/review_heap_project/project_final.hpp\"",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/project_selection_round2_failed_prepare_test.cpp",
+          "-o",
+          "/tmp/sirkit_six_hours_20261029/review_heap_project/prepare-current",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15"
+        ],
+        "status": 0,
+        "stdout": "PASS 1106 failed-prepare checks, 48 allocation failures, live_delta=0\n",
+        "stderr": "",
+        "source_sha": "2460d8320dc7b2e2c930c50b8f851e5fc64598388a4e7987e9b2bfccf19ea6b5",
+        "fixture_sha": "4b2752124c22247ebd84f3f1a2ab9c99ec36e7a1dffa186940ba08411688d226"
+      },
+      {
+        "compiler": "clang",
+        "skip": false,
+        "config": "native",
+        "cmd": [
+          "taskset",
+          "-c",
+          "4",
+          "clang++",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-DSIRKIT_PROJECT_TEST_HEADER=\"/tmp/sirkit_six_hours_20261029/review_heap_project/project_final.hpp\"",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/project_selection_round2_failed_prepare_test.cpp",
+          "-o",
+          "/tmp/sirkit_six_hours_20261029/review_heap_project/prepare-current",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-march=native"
+        ],
+        "status": 0,
+        "stdout": "PASS 1106 failed-prepare checks, 48 allocation failures, live_delta=0\n",
+        "stderr": "",
+        "source_sha": "2460d8320dc7b2e2c930c50b8f851e5fc64598388a4e7987e9b2bfccf19ea6b5",
+        "fixture_sha": "4b2752124c22247ebd84f3f1a2ab9c99ec36e7a1dffa186940ba08411688d226"
+      },
+      {
+        "compiler": "clang",
+        "skip": false,
+        "config": "sanitizer",
+        "cmd": [
+          "taskset",
+          "-c",
+          "4",
+          "clang++",
+          "-std=c++23",
+          "-O1",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-DSIRKIT_PROJECT_TEST_HEADER=\"/tmp/sirkit_six_hours_20261029/review_heap_project/project_final.hpp\"",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/project_selection_round2_failed_prepare_test.cpp",
+          "-o",
+          "/tmp/sirkit_six_hours_20261029/review_heap_project/prepare-current",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-fno-pie",
+          "-no-pie"
+        ],
+        "status": 0,
+        "stdout": "PASS 1106 failed-prepare checks, 48 allocation failures, live_delta=0\n",
+        "stderr": "",
+        "source_sha": "2460d8320dc7b2e2c930c50b8f851e5fc64598388a4e7987e9b2bfccf19ea6b5",
+        "fixture_sha": "4b2752124c22247ebd84f3f1a2ab9c99ec36e7a1dffa186940ba08411688d226"
+      },
+      {
+        "compiler": "clang",
+        "skip": true,
+        "config": "default",
+        "cmd": [
+          "taskset",
+          "-c",
+          "4",
+          "clang++",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-DSIRKIT_PROJECT_TEST_HEADER=\"/tmp/sirkit_six_hours_20261029/review_heap_project/project_final.hpp\"",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/project_selection_round2_failed_prepare_test.cpp",
+          "-o",
+          "/tmp/sirkit_six_hours_20261029/review_heap_project/prepare-current",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-DSKIP_RUNTIME_CHECKS"
+        ],
+        "status": 0,
+        "stdout": "PASS 1106 failed-prepare checks, 48 allocation failures, live_delta=0\n",
+        "stderr": "",
+        "source_sha": "2460d8320dc7b2e2c930c50b8f851e5fc64598388a4e7987e9b2bfccf19ea6b5",
+        "fixture_sha": "4b2752124c22247ebd84f3f1a2ab9c99ec36e7a1dffa186940ba08411688d226"
+      },
+      {
+        "compiler": "clang",
+        "skip": true,
+        "config": "native",
+        "cmd": [
+          "taskset",
+          "-c",
+          "4",
+          "clang++",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-DSIRKIT_PROJECT_TEST_HEADER=\"/tmp/sirkit_six_hours_20261029/review_heap_project/project_final.hpp\"",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/project_selection_round2_failed_prepare_test.cpp",
+          "-o",
+          "/tmp/sirkit_six_hours_20261029/review_heap_project/prepare-current",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-march=native"
+        ],
+        "status": 0,
+        "stdout": "PASS 1106 failed-prepare checks, 48 allocation failures, live_delta=0\n",
+        "stderr": "",
+        "source_sha": "2460d8320dc7b2e2c930c50b8f851e5fc64598388a4e7987e9b2bfccf19ea6b5",
+        "fixture_sha": "4b2752124c22247ebd84f3f1a2ab9c99ec36e7a1dffa186940ba08411688d226"
+      },
+      {
+        "compiler": "clang",
+        "skip": true,
+        "config": "sanitizer",
+        "cmd": [
+          "taskset",
+          "-c",
+          "4",
+          "clang++",
+          "-std=c++23",
+          "-O1",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-DSIRKIT_PROJECT_TEST_HEADER=\"/tmp/sirkit_six_hours_20261029/review_heap_project/project_final.hpp\"",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/project_selection_round2_failed_prepare_test.cpp",
+          "-o",
+          "/tmp/sirkit_six_hours_20261029/review_heap_project/prepare-current",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-fno-pie",
+          "-no-pie"
+        ],
+        "status": 0,
+        "stdout": "PASS 1106 failed-prepare checks, 48 allocation failures, live_delta=0\n",
+        "stderr": "",
+        "source_sha": "2460d8320dc7b2e2c930c50b8f851e5fc64598388a4e7987e9b2bfccf19ea6b5",
+        "fixture_sha": "4b2752124c22247ebd84f3f1a2ab9c99ec36e7a1dffa186940ba08411688d226"
+      }
+    ],
+    "prepare-checks.log": {
+      "sha256": "aa7a4987206de365fec0f56f47498d9aae144f2e5d780e77d68014911b07100d",
+      "text": "gcc False default PASS 1106 failed-prepare checks, 48 allocation failures, live_delta=0\ngcc False native PASS 1106 failed-prepare checks, 48 allocation failures, live_delta=0\ngcc False sanitizer PASS 1106 failed-prepare checks, 48 allocation failures, live_delta=0\ngcc True default PASS 1106 failed-prepare checks, 48 allocation failures, live_delta=0\ngcc True native PASS 1106 failed-prepare checks, 48 allocation failures, live_delta=0\ngcc True sanitizer PASS 1106 failed-prepare checks, 48 allocation failures, live_delta=0\nclang False default PASS 1106 failed-prepare checks, 48 allocation failures, live_delta=0\nclang False native PASS 1106 failed-prepare checks, 48 allocation failures, live_delta=0\nclang False sanitizer PASS 1106 failed-prepare checks, 48 allocation failures, live_delta=0\nclang True default PASS 1106 failed-prepare checks, 48 allocation failures, live_delta=0\nclang True native PASS 1106 failed-prepare checks, 48 allocation failures, live_delta=0\nclang True sanitizer PASS 1106 failed-prepare checks, 48 allocation failures, live_delta=0\n"
+    },
+    "prepare_check.py": {
+      "sha256": "a6421a6f4ba460c0c836796d28e2357d4511a0be12ba26cf485b40eec314b3c2",
+      "text": "from pathlib import Path\nimport subprocess,json,os,hashlib,fcntl\np=Path(__file__).parent;r=Path('/home/reinsirk/Atcoder_Env');header=r/'Graph/Project_Selection.cpp';(p/'project_final.hpp').write_bytes(header.read_bytes());src=r/'Verify/current/tests/project_selection_round2_failed_prepare_test.cpp';rows=[];lock=open('/tmp/sirkit_performance_cpu4.lock','w');fcntl.flock(lock,fcntl.LOCK_EX);env={**os.environ,'ASAN_OPTIONS':'detect_leaks=0:halt_on_error=1','UBSAN_OPTIONS':'halt_on_error=1'}\nfor cc in['gcc','clang']:\n for skip in[False,True]:\n  for cfg in['default','native','sanitizer']:\n   cmd=['taskset','-c','4','/usr/bin/g++'if cc=='gcc'else'clang++','-std=c++23','-O1'if cfg=='sanitizer'else'-O2','-Wall','-Wextra','-Wpedantic',f'-DSIRKIT_PROJECT_TEST_HEADER=\"{p/\"project_final.hpp\"}\"',str(src),'-o',str(p/'prepare-current')]\n   if cc=='clang':cmd+=['--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15']\n   if skip:cmd+=['-DSKIP_RUNTIME_CHECKS']\n   if cfg=='native':cmd+=['-march=native']\n   if cfg=='sanitizer':cmd+=['-fsanitize=address,undefined','-fno-omit-frame-pointer','-fno-pie','-no-pie']\n   q=subprocess.run(cmd,capture_output=True,text=True);assert q.returncode==0,q.stderr;q=subprocess.run(['taskset','-c','4',str(p/'prepare-current')],capture_output=True,text=True,env=env,timeout=60);row=dict(compiler=cc,skip=skip,config=cfg,cmd=cmd,status=q.returncode,stdout=q.stdout,stderr=q.stderr,source_sha=hashlib.sha256((p/'project_final.hpp').read_bytes()).hexdigest(),fixture_sha=hashlib.sha256(src.read_bytes()).hexdigest());rows.append(row);(p/'prepare-checks.json').write_text(json.dumps(rows,indent=2)+'\\n');assert q.returncode==0,row;print(cc,skip,cfg,q.stdout.strip(),flush=True)\n"
+    },
+    "project_before_exception_fix.hpp": {
+      "sha256": "83d9e2ef0f503a9bb009ca012d38c01b5f4e78effa2ec3ed5f5dcf021c03052f",
+      "text": "// SPDX-License-Identifier: CC0-1.0\n// 参考: https://drken1215.hatenablog.com/entry/2023/11/24/034300\n// ドキュメント: https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/project_selection.md\n//\n// API一覧\n// [TwoVariableSubmodularOpt]\n// COSTは64bit以下の符号付き整数。true側を始点側とする最小カット。\n// 分解途中の符号付きコスト・offsetもCOST範囲内が必要。\n// 有限辺容量の総和はmake_unsigned_t<COST>の最大値未満。算術・容量超過は例外。\n// V=補助頂点込み頂点数、E=辺数。追加は償却O(1)、集合項はO(|xs|)。\n// ctor(n=0)/ctor(n,inf): n変数で構築。旧inf引数の値は不要(厳密制約は内部で表現)。\n// init(n,inf=0)/clear(): 項を消去して再構築/変数数を維持して初期化、O(V+E)。clearは残る頂点の辺配列の領域を再利用、確保なし。\n// add_single_cost(i,F,T): xi=false/trueのコストF/Tを追加。\n// add_psp_constraint(i,j): xi=trueかつxj=falseを禁止。\n// add_psp_penalty(i,j,C): xi=trueかつxj=falseに非負コストC。\n// add_both_true_profit(i,j,P)/add_both_false_profit(i,j,P): 両方true/falseに非負利得P。\n// add_submodular_function(i,j,A,B,C,D): FF/FT/TF/TTのコスト、B+C>=A+D。同一変数はA/Dのみ。\n// add_all_true_profit(xs,P)/add_all_false_profit(xs,P): 全てtrue/falseに非負利得P。空集合も獲得、P=0は無操作。\n// add_any_true_cost(xs,C)/add_any_false_cost(xs,C): 1個以上true/falseなら非負費用C。空集合は0、C=0は無操作。O(|xs|)。\n// add_constant(C): 全割当に定数Cを加算、O(1)。\n// force(i,value): xiをvalueに固定。矛盾はsolveでdomain_error。\n// add_equality(i,j): xi=xjを強制。\n// solve(): 最小コスト、Dinic法O(V^2 E)。再呼出しO(1)、追加後は残余網から再開。\n// reconstruct(): 最適割当vector<bool>、未解決ならsolve後に復元、追加分O(n)。\n// solve_with_assignment(): {最小コスト,最適割当}を返す。\n// empty(): 変数数0ならtrue。O(1)。\n// variable_count()/node_count()/edge_count(): 変数数/補助頂点込み頂点数/順方向辺数、O(1)。\n// copy/move/swap(other)/swap(a,b): 独立コピー/移動(移動元は空の0変数)/定数時間交換。\n// 項追加・init・コピー代入が失敗した場合は、項・変数数・最適値を変更しない（予約済み容量は変わり得る）。\n// reserve_nodes(count): 補助頂点込みの頂点容量を予約、O(V)。辺容量の予約ではない。\n// operator<<: 現在の順方向辺をfrom->to(flow/capacity)形式で出力、O(E)。\n\n#include <algorithm>\n#include <cstddef>\n#include <cstdint>\n#include <limits>\n#include <ostream>\n#include <stdexcept>\n#include <type_traits>\n#include <utility>\n#include <vector>\n\n#ifndef SIRKIT_TWO_VARIABLE_SUBMODULAR_OPT_DEFINED\n#define SIRKIT_TWO_VARIABLE_SUBMODULAR_OPT_DEFINED\n\ntemplate<class COST = std::int64_t>\nclass TwoVariableSubmodularOpt {\n    static_assert(std::is_integral_v<COST> && std::is_signed_v<COST> && sizeof(COST) <= 8,\n                  \"COST must be a signed integer of at most 64 bits\");\n    using Capacity = std::make_unsigned_t<COST>;\n    static constexpr Capacity hard_capacity = std::numeric_limits<Capacity>::max();\n    struct Edge { int to; int reverse; Capacity capacity; };\n    struct Frame { int vertex; Capacity limit; Capacity sent; };\n    int n_ = 0;\n    int source_ = 0;\n    int sink_ = 1;\n    COST offset_ = 0;\n    Capacity finite_capacity_ = 0;\n    Capacity total_flow_ = 0;\n    std::size_t edge_count_ = 0;\n    bool solved_ = false;\n    bool infeasible_ = false;\n    std::vector<std::vector<Edge>> graph_{2};\n    std::vector<int> level_, cursor_, queue_;\n    std::vector<Frame> stack_;\n\n    static int checked_variable_count(int n) {\n        if (n < 0 || n > std::numeric_limits<int>::max() - 2)\n            throw std::length_error(\"Project Selection: invalid variable count\");\n        return n;\n    }\n    void reserve_incident(int vertex, std::size_t extra) {\n        if (extra == 0) return;\n        auto& edges = graph_[vertex];\n        const auto maximum = std::min(edges.max_size(), static_cast<std::size_t>(std::numeric_limits<int>::max()));\n        if (extra > maximum - edges.size())\n            throw std::length_error(\"Project Selection: too many incident edges\");\n        const auto required = edges.size() + extra;\n        if (required <= edges.capacity()) return;\n        const auto capacity = edges.capacity();\n        const auto growth = capacity > maximum - capacity ? maximum : capacity * 2;\n        edges.reserve(std::max(required, growth));\n    }\n    static COST checked_add(COST a, COST b) {\n        if ((b > 0 && a > std::numeric_limits<COST>::max() - b) ||\n            (b < 0 && a < std::numeric_limits<COST>::min() - b))\n            throw std::overflow_error(\"Project Selection: cost overflow\");\n        return static_cast<COST>(a + b);\n    }\n    static COST checked_sub(COST a, COST b) {\n        if ((b > 0 && a < std::numeric_limits<COST>::min() + b) ||\n            (b < 0 && a > std::numeric_limits<COST>::max() + b))\n            throw std::overflow_error(\"Project Selection: cost overflow\");\n        return static_cast<COST>(a - b);\n    }\n    static Capacity difference(COST high, COST low) {\n        return static_cast<Capacity>(static_cast<Capacity>(high) - static_cast<Capacity>(low));\n    }\n    void check_variable(int i) const {\n#ifndef SKIP_RUNTIME_CHECKS\n        if (i < 0 || i >= n_) throw std::out_of_range(\"Project Selection: variable index\");\n#else\n        (void)i;\n#endif\n    }\n    static void check_nonnegative(COST value) {\n#ifndef SKIP_RUNTIME_CHECKS\n        if (value < 0) throw std::invalid_argument(\"Project Selection: negative penalty/profit\");\n#else\n        (void)value;\n#endif\n    }\n    void check_budget(Capacity extra) const {\n        if (extra >= hard_capacity - finite_capacity_)\n            throw std::overflow_error(\"Project Selection: finite capacity budget exceeded\");\n    }\n    void add_edge(int from, int to, Capacity cap, bool hard = false) {\n        if (!cap || from == to) return;\n        if (graph_[from].size() >= static_cast<std::size_t>(std::numeric_limits<int>::max()) ||\n            graph_[to].size() >= static_cast<std::size_t>(std::numeric_limits<int>::max()))\n            throw std::length_error(\"Project Selection: too many incident edges\");\n        if (!hard) check_budget(cap);\n        const int a = static_cast<int>(graph_[from].size());\n        const int b = static_cast<int>(graph_[to].size());\n        graph_[from].push_back({to, b, cap});\n        try { graph_[to].push_back({from, ~a, 0}); }\n        catch (...) { graph_[from].pop_back(); throw; }\n        if (!hard) finite_capacity_ += cap;\n        ++edge_count_;\n        solved_ = false;\n    }\n    int add_node() {\n        if (graph_.size() >= static_cast<std::size_t>(std::numeric_limits<int>::max()))\n            throw std::length_error(\"Project Selection: too many vertices\");\n        const int result = static_cast<int>(graph_.size());\n        graph_.emplace_back();\n        solved_ = false;\n        return result;\n    }\n    void add_all_profit(const std::vector<int>& xs, COST profit, bool value, bool reward = true) {\n        check_nonnegative(profit);\n        const COST next = reward ? checked_sub(offset_, profit) : offset_;\n        if (xs.empty() || profit == 0) { offset_ = next; return; }\n        check_budget(static_cast<Capacity>(profit));\n        const bool was_solved = solved_;\n        const Capacity old_budget = finite_capacity_;\n        const std::size_t old_count = edge_count_;\n        const int y = add_node();\n        try {\n            if (value) add_edge(source_, y, static_cast<Capacity>(profit));\n            else add_edge(y, sink_, static_cast<Capacity>(profit));\n            for (int x : xs) {\n                check_variable(x);\n                if (value) add_edge(y, x, hard_capacity, true);\n                else add_edge(x, y, hard_capacity, true);\n            }\n        } catch (...) {\n            // 通常処理中に検査し、失敗時だけこの集合項の辺を巻き戻す。\n            for (auto it = graph_[y].rbegin(); it != graph_[y].rend(); ++it)\n                graph_[it->to].pop_back();\n            graph_.pop_back();\n            finite_capacity_ = old_budget; edge_count_ = old_count; solved_ = was_solved;\n            throw;\n        }\n        offset_ = next;\n    }\n    bool bfs() {\n        std::fill(level_.begin(), level_.end(), -1);\n        level_[source_] = 0;\n        queue_.clear();\n        queue_.push_back(source_);\n        for (std::size_t head = 0; head < queue_.size(); ++head) {\n            const int v = queue_[head];\n            for (const auto& e : graph_[v]) {\n                if (e.capacity == 0 || level_[e.to] >= 0) continue;\n                level_[e.to] = level_[v] + 1;\n                if (e.to == sink_) return true;\n                queue_.push_back(e.to);\n            }\n        }\n        return false;\n    }\n    Capacity iterative_flow(int start, Capacity limit) {\n        stack_.clear();\n        stack_.push_back({start, limit, 0});\n        while (!stack_.empty()) {\n            Frame& frame = stack_.back();\n            const int v = frame.vertex;\n            if (v == sink_) frame.sent = frame.limit;\n            if (frame.sent == frame.limit || cursor_[v] == static_cast<int>(graph_[v].size())) {\n                const Capacity sent = frame.sent;\n                stack_.pop_back();\n                if (stack_.empty()) return sent;\n                Frame& parent = stack_.back();\n                Edge& edge = graph_[parent.vertex][cursor_[parent.vertex]];\n                edge.capacity -= sent;\n                graph_[edge.to][edge.reverse < 0 ? ~edge.reverse : edge.reverse].capacity += sent;\n                parent.sent += sent;\n                if (parent.sent != parent.limit) ++cursor_[parent.vertex];\n                continue;\n            }\n            Edge& edge = graph_[v][cursor_[v]];\n            if (edge.capacity == 0 || level_[edge.to] != level_[v] + 1) {\n                ++cursor_[v];\n                continue;\n            }\n            stack_.push_back({edge.to, std::min(static_cast<Capacity>(frame.limit - frame.sent), edge.capacity), 0});\n        }\n        return 0;\n    }\n    Capacity bounded_flow(int v, Capacity limit, unsigned depth = 64) {\n        if (v == sink_) return limit;\n        if (depth == 0) [[unlikely]] return iterative_flow(v, limit);\n        Capacity sent = 0;\n        for (int& i = cursor_[v]; i < static_cast<int>(graph_[v].size()); ++i) {\n            Edge& edge = graph_[v][i];\n            if (edge.capacity == 0 || level_[edge.to] != level_[v] + 1) continue;\n            const Capacity flow = bounded_flow(edge.to, std::min(static_cast<Capacity>(limit - sent), edge.capacity), depth - 1);\n            edge.capacity -= flow;\n            graph_[edge.to][edge.reverse < 0 ? ~edge.reverse : edge.reverse].capacity += flow;\n            sent += flow;\n            if (sent == limit) break;\n        }\n        if (sent < limit) level_[v] = -1;\n        return sent;\n    }\n    bool bfs_sparse() {\n        // sink以外の訪問頂点は通常のBFSキューに残る。疎いときだけ個別に戻す。\n        if (queue_.size() > level_.size() / 4) std::fill(level_.begin(), level_.end(), -1);\n        else {\n            for (int v : queue_) level_[v] = -1;\n            level_[sink_] = -1;\n        }\n        level_[source_] = 0;\n        queue_.clear();\n        queue_.push_back(source_);\n        for (std::size_t head = 0; head < queue_.size(); ++head) {\n            const int v = queue_[head];\n            for (const auto& e : graph_[v]) {\n                if (e.capacity == 0 || level_[e.to] >= 0) continue;\n                level_[e.to] = level_[v] + 1;\n                if (e.to == sink_) return true;\n                queue_.push_back(e.to);\n            }\n        }\n        return false;\n    }\n    void solve_sparse_flow() {\n        level_.resize(graph_.size(), -1); cursor_.resize(graph_.size());\n        queue_.reserve(graph_.size()); stack_.reserve(graph_.size());\n        while (bfs_sparse()) {\n            if (queue_.size() > cursor_.size() / 4) std::fill(cursor_.begin(), cursor_.end(), 0);\n            else for (int v : queue_) cursor_[v] = 0;\n            const Capacity remaining = static_cast<Capacity>(finite_capacity_ - total_flow_ + Capacity{1});\n            const Capacity added = bounded_flow(source_, remaining);\n            total_flow_ += added;\n            if (total_flow_ > finite_capacity_) {\n                infeasible_ = true;\n                throw std::domain_error(\"Project Selection: contradictory constraints\");\n            }\n        }\n    }\n    COST answer() const {\n        if (offset_ >= 0) {\n            if (total_flow_ > static_cast<Capacity>(std::numeric_limits<COST>::max() - offset_))\n                throw std::overflow_error(\"Project Selection: optimum is out of COST range\");\n            return static_cast<COST>(offset_ + static_cast<COST>(total_flow_));\n        }\n        const Capacity magnitude = static_cast<Capacity>(Capacity{0} - static_cast<Capacity>(offset_));\n        if (total_flow_ >= magnitude) {\n            const Capacity positive = total_flow_ - magnitude;\n            if (positive > static_cast<Capacity>(std::numeric_limits<COST>::max()))\n                throw std::overflow_error(\"Project Selection: optimum is out of COST range\");\n            return static_cast<COST>(positive);\n        }\n        const Capacity negative = magnitude - total_flow_;\n        if (negative == static_cast<Capacity>(std::numeric_limits<COST>::max()) + Capacity{1})\n            return std::numeric_limits<COST>::min();\n        return static_cast<COST>(-static_cast<COST>(negative));\n    }\n\npublic:\n    TwoVariableSubmodularOpt() = default;\n    TwoVariableSubmodularOpt(const TwoVariableSubmodularOpt&) = default;\n    TwoVariableSubmodularOpt& operator=(const TwoVariableSubmodularOpt& other) {\n        if (this != &other) { TwoVariableSubmodularOpt copy(other); swap(copy); }\n        return *this;\n    }\n    TwoVariableSubmodularOpt(TwoVariableSubmodularOpt&& other) : TwoVariableSubmodularOpt() { swap(other); }\n    TwoVariableSubmodularOpt& operator=(TwoVariableSubmodularOpt&& other) {\n        if (this != &other) { TwoVariableSubmodularOpt moved(std::move(other)); swap(moved); }\n        return *this;\n    }\n    void swap(TwoVariableSubmodularOpt& other) noexcept {\n        using std::swap;\n        swap(n_, other.n_); swap(source_, other.source_); swap(sink_, other.sink_);\n        swap(offset_, other.offset_); swap(finite_capacity_, other.finite_capacity_);\n        swap(total_flow_, other.total_flow_); swap(edge_count_, other.edge_count_);\n        swap(solved_, other.solved_); swap(infeasible_, other.infeasible_);\n        graph_.swap(other.graph_); level_.swap(other.level_); cursor_.swap(other.cursor_);\n        queue_.swap(other.queue_); stack_.swap(other.stack_);\n    }\n    explicit TwoVariableSubmodularOpt(int n)\n        : n_(checked_variable_count(n)), source_(n_), sink_(n_ + 1), graph_(static_cast<std::size_t>(n_) + 2) {}\n    TwoVariableSubmodularOpt(int n, COST /*inf*/) : TwoVariableSubmodularOpt(n) {}\n    void init(int n, COST /*inf*/ = 0) {\n        if (n < 0 || n > std::numeric_limits<int>::max() - 2)\n            throw std::length_error(\"Project Selection: invalid variable count\");\n        std::vector<std::vector<Edge>> fresh(static_cast<std::size_t>(n) + 2);\n        graph_.swap(fresh);\n        n_ = n; source_ = n; sink_ = n + 1;\n        offset_ = 0; finite_capacity_ = 0; total_flow_ = 0; edge_count_ = 0;\n        solved_ = false; infeasible_ = false;\n        level_.clear(); cursor_.clear(); queue_.clear(); stack_.clear();\n    }\n    void clear() noexcept {\n        graph_.resize(static_cast<std::size_t>(n_) + 2);\n        for (auto& edges : graph_) edges.clear();\n        offset_ = 0; finite_capacity_ = 0; total_flow_ = 0; edge_count_ = 0;\n        solved_ = false; infeasible_ = false;\n        level_.clear(); cursor_.clear(); queue_.clear(); stack_.clear();\n    }\n    bool empty() const noexcept { return n_ == 0; }\n    friend void swap(TwoVariableSubmodularOpt& a, TwoVariableSubmodularOpt& b) noexcept { a.swap(b); }\n    void add_constant(COST cost) { offset_ = checked_add(offset_, cost); }\n    void add_single_cost(int xi, COST false_cost, COST true_cost) {\n        check_variable(xi);\n        const COST small = std::min(false_cost, true_cost);\n        const COST next_offset = checked_add(offset_, small);\n        const Capacity cap = false_cost >= true_cost ? difference(false_cost, true_cost) : difference(true_cost, false_cost);\n        if (false_cost >= true_cost) add_edge(source_, xi, cap);\n        else add_edge(xi, sink_, cap);\n        offset_ = next_offset;\n    }\n    void add_psp_constraint(int xi, int xj) {\n        check_variable(xi); check_variable(xj);\n        add_edge(xi, xj, hard_capacity, true);\n    }\n    void add_psp_penalty(int xi, int xj, COST cost) {\n        check_variable(xi); check_variable(xj); check_nonnegative(cost);\n        add_edge(xi, xj, static_cast<Capacity>(cost));\n    }\n    void add_both_true_profit(int xi, int xj, COST profit) {\n        check_variable(xi); check_variable(xj); check_nonnegative(profit);\n        const COST next_offset = checked_sub(offset_, profit);\n        const Capacity p = static_cast<Capacity>(profit);\n        if (xi == xj) check_budget(p);\n        else { check_budget(p); if (p >= hard_capacity - finite_capacity_ - p) throw std::overflow_error(\"Project Selection: finite capacity budget exceeded\"); }\n        if (p != 0) {\n            reserve_incident(source_, 1);\n            reserve_incident(xi, xi == xj ? 1 : 2);\n            if (xi != xj) reserve_incident(xj, 1);\n        }\n        add_edge(source_, xi, p);\n        add_edge(xi, xj, p);\n        offset_ = next_offset;\n    }\n    void add_both_false_profit(int xi, int xj, COST profit) {\n        check_variable(xi); check_variable(xj); check_nonnegative(profit);\n        const COST next_offset = checked_sub(offset_, profit);\n        const Capacity p = static_cast<Capacity>(profit);\n        if (xi == xj) check_budget(p);\n        else { check_budget(p); if (p >= hard_capacity - finite_capacity_ - p) throw std::overflow_error(\"Project Selection: finite capacity budget exceeded\"); }\n        if (p != 0) {\n            reserve_incident(sink_, 1);\n            reserve_incident(xj, xi == xj ? 1 : 2);\n            if (xi != xj) reserve_incident(xi, 1);\n        }\n        add_edge(xj, sink_, p);\n        add_edge(xi, xj, p);\n        offset_ = next_offset;\n    }\n    void add_submodular_function(int xi, int xj, COST A, COST B, COST C, COST D) {\n        check_variable(xi); check_variable(xj);\n        if (xi == xj) { add_single_cost(xi, A, D); return; }\n        // 2項ずつ差を取ることで、B+CやA+Dの符号付きoverflowを避ける。\n        const COST first = checked_sub(D, B);\n        const COST second = checked_sub(B, A);\n        // capacity = (C-A) - (D-B)。正負別にunsignedで正確に求める。\n        Capacity cap = 0;\n        if (C >= A) {\n            cap = difference(C, A);\n            if (first >= 0) {\n#ifndef SKIP_RUNTIME_CHECKS\n                if (cap < static_cast<Capacity>(first)) throw std::invalid_argument(\"Project Selection: not submodular\");\n#endif\n                cap -= static_cast<Capacity>(first);\n            } else {\n                const Capacity extra = static_cast<Capacity>(Capacity{0} - static_cast<Capacity>(first));\n                if (cap > hard_capacity - extra) throw std::overflow_error(\"Project Selection: submodular capacity overflow\");\n                cap += extra;\n            }\n        } else {\n#ifndef SKIP_RUNTIME_CHECKS\n            if (first >= 0) throw std::invalid_argument(\"Project Selection: not submodular\");\n#endif\n            const Capacity positive = static_cast<Capacity>(Capacity{0} - static_cast<Capacity>(first));\n            const Capacity negative = difference(A, C);\n#ifndef SKIP_RUNTIME_CHECKS\n            if (positive < negative) throw std::invalid_argument(\"Project Selection: not submodular\");\n#endif\n            cap = positive - negative;\n        }\n        COST next = checked_add(offset_, A);\n        next = checked_add(next, std::min(COST{0}, first));\n        next = checked_add(next, std::min(COST{0}, second));\n        const Capacity one = first < 0 ? static_cast<Capacity>(Capacity{0} - static_cast<Capacity>(first)) : static_cast<Capacity>(first);\n        const Capacity two = second < 0 ? static_cast<Capacity>(Capacity{0} - static_cast<Capacity>(second)) : static_cast<Capacity>(second);\n        check_budget(cap);\n        if (one >= hard_capacity - finite_capacity_ - cap || two >= hard_capacity - finite_capacity_ - cap - one)\n            throw std::overflow_error(\"Project Selection: finite capacity budget exceeded\");\n        // 複数辺の追加前に必要な容量を確保し、確保失敗時は項全体を未追加に保つ。\n        reserve_incident(xi, std::size_t(one != 0) + std::size_t(cap != 0));\n        reserve_incident(xj, std::size_t(two != 0) + std::size_t(cap != 0));\n        reserve_incident(source_, std::size_t(one != 0 && first <= 0) + std::size_t(two != 0 && second <= 0));\n        reserve_incident(sink_, std::size_t(one != 0 && first > 0) + std::size_t(two != 0 && second > 0));\n        add_edge(first <= 0 ? source_ : xi, first <= 0 ? xi : sink_, one);\n        add_edge(second <= 0 ? source_ : xj, second <= 0 ? xj : sink_, two);\n        add_edge(xi, xj, cap);\n        offset_ = next;\n    }\n    void add_all_true_profit(const std::vector<int>& xs, COST profit) { add_all_profit(xs, profit, true); }\n    void add_all_false_profit(const std::vector<int>& xs, COST profit) { add_all_profit(xs, profit, false); }\n    void add_any_true_cost(const std::vector<int>& xs, COST cost) { add_all_profit(xs, cost, false, false); }\n    void add_any_false_cost(const std::vector<int>& xs, COST cost) { add_all_profit(xs, cost, true, false); }\n    void force(int xi, bool value) {\n        check_variable(xi);\n        add_edge(value ? source_ : xi, value ? xi : sink_, hard_capacity, true);\n    }\n    void add_equality(int xi, int xj) {\n        check_variable(xi); check_variable(xj);\n        if (xi == xj) return;\n        reserve_incident(xi, 2); reserve_incident(xj, 2);\n        add_edge(xi, xj, hard_capacity, true);\n        add_edge(xj, xi, hard_capacity, true);\n    }\n    COST solve() {\n        if (infeasible_) throw std::domain_error(\"Project Selection: contradictory constraints\");\n        if (!solved_) {\n            if (graph_.size() >= 65536) solve_sparse_flow();\n            else {\n                level_.resize(graph_.size()); cursor_.resize(graph_.size());\n                queue_.reserve(graph_.size()); stack_.reserve(graph_.size());\n                while (bfs()) {\n                    std::fill(cursor_.begin(), cursor_.end(), 0);\n                    const Capacity remaining = static_cast<Capacity>(finite_capacity_ - total_flow_ + Capacity{1});\n                    const Capacity added = bounded_flow(source_, remaining);\n                    total_flow_ += added;\n                    if (total_flow_ > finite_capacity_) {\n                        infeasible_ = true;\n                        throw std::domain_error(\"Project Selection: contradictory constraints\");\n                    }\n                }\n            }\n            solved_ = true;\n        }\n        return answer();\n    }\n    std::vector<bool> reconstruct() {\n        (void)solve();\n        std::vector<bool> result(static_cast<std::size_t>(n_));\n        for (int i = 0; i < n_; ++i) result[i] = level_[i] >= 0;\n        return result;\n    }\n    std::pair<COST, std::vector<bool>> solve_with_assignment() {\n        COST value = solve();\n        return {value, reconstruct()};\n    }\n    int variable_count() const noexcept { return n_; }\n    int node_count() const noexcept { return static_cast<int>(graph_.size()); }\n    std::size_t edge_count() const noexcept { return edge_count_; }\n    void reserve_nodes(std::size_t count) {\n        if (count > static_cast<std::size_t>(std::numeric_limits<int>::max()))\n            throw std::length_error(\"Project Selection: too many vertices\");\n        graph_.reserve(count);\n    }\n    friend std::ostream& operator<<(std::ostream& out, const TwoVariableSubmodularOpt& optimizer) {\n        // reverseの符号で順方向辺を識別し、補助的な辺一覧の保存を省く。\n        for (int from = 0; from < static_cast<int>(optimizer.graph_.size()); ++from) {\n            for (const Edge& edge : optimizer.graph_[from]) {\n                if (edge.reverse < 0) continue;\n                const Edge& reverse = optimizer.graph_[edge.to][edge.reverse < 0 ? ~edge.reverse : edge.reverse];\n                out << from << \"->\" << edge.to << '(' << static_cast<std::uint64_t>(reverse.capacity) << '/';\n                // 逆辺も含めた対の合計は、追加時の容量に等しい。\n                out << static_cast<std::uint64_t>(static_cast<Capacity>(edge.capacity + reverse.capacity)) << \")\\n\";\n            }\n        }\n        return out;\n    }\n};\n#endif\n"
+    },
+    "project_before_fix.hpp": {
+      "sha256": "2460d8320dc7b2e2c930c50b8f851e5fc64598388a4e7987e9b2bfccf19ea6b5",
+      "text": "// SPDX-License-Identifier: CC0-1.0\n// 参考: https://drken1215.hatenablog.com/entry/2023/11/24/034300\n// ドキュメント: https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/project_selection.md\n//\n// API一覧\n// [TwoVariableSubmodularOpt]\n// COSTは64bit以下の符号付き整数。true側を始点側とする最小カット。\n// 分解途中の符号付きコスト・offsetもCOST範囲内が必要。\n// 有限辺容量の総和はmake_unsigned_t<COST>の最大値未満。算術・容量超過は例外。\n// V=補助頂点込み頂点数、E=辺数。追加は償却O(1)、集合項はO(|xs|)。\n// ctor(n=0)/ctor(n,inf): n変数で構築。旧inf引数の値は不要(厳密制約は内部で表現)。\n// init(n,inf=0)/clear(): 項を消去して再構築/変数数を維持して初期化、O(V+E)。clearは残る頂点の辺配列の領域を再利用、確保なし。\n// add_single_cost(i,F,T): xi=false/trueのコストF/Tを追加。\n// add_psp_constraint(i,j): xi=trueかつxj=falseを禁止。\n// add_psp_penalty(i,j,C): xi=trueかつxj=falseに非負コストC。\n// add_both_true_profit(i,j,P)/add_both_false_profit(i,j,P): 両方true/falseに非負利得P。\n// add_submodular_function(i,j,A,B,C,D): FF/FT/TF/TTのコスト、B+C>=A+D。同一変数はA/Dのみ。\n// add_all_true_profit(xs,P)/add_all_false_profit(xs,P): 全てtrue/falseに非負利得P。空集合も獲得、P=0は無操作。\n// add_any_true_cost(xs,C)/add_any_false_cost(xs,C): 1個以上true/falseなら非負費用C。空集合は0、C=0は無操作。O(|xs|)。\n// add_constant(C): 全割当に定数Cを加算、O(1)。\n// force(i,value): xiをvalueに固定。矛盾はsolveでdomain_error。\n// add_equality(i,j): xi=xjを強制。\n// solve(): 最小コスト、Dinic法O(V^2 E)。再呼出しO(1)、追加後は残余網から再開。\n// reconstruct(): 最適割当vector<bool>、未解決ならsolve後に復元、追加分O(n)。\n// solve_with_assignment(): {最小コスト,最適割当}を返す。\n// empty(): 変数数0ならtrue。O(1)。\n// variable_count()/node_count()/edge_count(): 変数数/補助頂点込み頂点数/順方向辺数、O(1)。\n// copy/move/swap(other)/swap(a,b): 独立コピー/移動(移動元は空の0変数)/定数時間交換。\n// 項追加・init・コピー代入が失敗した場合は、項・変数数・最適値を変更しない（予約済み容量は変わり得る）。\n// reserve_nodes(count): 補助頂点込みの頂点容量を予約、O(V)。辺容量の予約ではない。\n// operator<<: 現在の順方向辺をfrom->to(flow/capacity)形式で出力、O(E)。\n\n#include <algorithm>\n#include <cstddef>\n#include <cstdint>\n#include <limits>\n#include <ostream>\n#include <stdexcept>\n#include <type_traits>\n#include <utility>\n#include <vector>\n\n#ifndef SIRKIT_TWO_VARIABLE_SUBMODULAR_OPT_DEFINED\n#define SIRKIT_TWO_VARIABLE_SUBMODULAR_OPT_DEFINED\n\ntemplate<class COST = std::int64_t>\nclass TwoVariableSubmodularOpt {\n    static_assert(std::is_integral_v<COST> && std::is_signed_v<COST> && sizeof(COST) <= 8,\n                  \"COST must be a signed integer of at most 64 bits\");\n    using Capacity = std::make_unsigned_t<COST>;\n    static constexpr Capacity hard_capacity = std::numeric_limits<Capacity>::max();\n    struct Edge { int to; int reverse; Capacity capacity; };\n    struct Frame { int vertex; Capacity limit; Capacity sent; };\n    int n_ = 0;\n    int source_ = 0;\n    int sink_ = 1;\n    COST offset_ = 0;\n    Capacity finite_capacity_ = 0;\n    Capacity total_flow_ = 0;\n    std::size_t edge_count_ = 0;\n    bool solved_ = false;\n    bool infeasible_ = false;\n    std::vector<std::vector<Edge>> graph_{2};\n    std::vector<int> level_, cursor_, queue_;\n    std::vector<Frame> stack_;\n\n    static int checked_variable_count(int n) {\n        if (n < 0 || n > std::numeric_limits<int>::max() - 2)\n            throw std::length_error(\"Project Selection: invalid variable count\");\n        return n;\n    }\n    void reserve_incident(int vertex, std::size_t extra) {\n        if (extra == 0) return;\n        auto& edges = graph_[vertex];\n        const auto maximum = std::min(edges.max_size(), static_cast<std::size_t>(std::numeric_limits<int>::max()));\n        if (extra > maximum - edges.size())\n            throw std::length_error(\"Project Selection: too many incident edges\");\n        const auto required = edges.size() + extra;\n        if (required <= edges.capacity()) return;\n        const auto capacity = edges.capacity();\n        const auto growth = capacity > maximum - capacity ? maximum : capacity * 2;\n        edges.reserve(std::max(required, growth));\n    }\n    static COST checked_add(COST a, COST b) {\n        if ((b > 0 && a > std::numeric_limits<COST>::max() - b) ||\n            (b < 0 && a < std::numeric_limits<COST>::min() - b))\n            throw std::overflow_error(\"Project Selection: cost overflow\");\n        return static_cast<COST>(a + b);\n    }\n    static COST checked_sub(COST a, COST b) {\n        if ((b > 0 && a < std::numeric_limits<COST>::min() + b) ||\n            (b < 0 && a > std::numeric_limits<COST>::max() + b))\n            throw std::overflow_error(\"Project Selection: cost overflow\");\n        return static_cast<COST>(a - b);\n    }\n    static Capacity difference(COST high, COST low) {\n        return static_cast<Capacity>(static_cast<Capacity>(high) - static_cast<Capacity>(low));\n    }\n    void check_variable(int i) const {\n#ifndef SKIP_RUNTIME_CHECKS\n        if (i < 0 || i >= n_) throw std::out_of_range(\"Project Selection: variable index\");\n#else\n        (void)i;\n#endif\n    }\n    static void check_nonnegative(COST value) {\n#ifndef SKIP_RUNTIME_CHECKS\n        if (value < 0) throw std::invalid_argument(\"Project Selection: negative penalty/profit\");\n#else\n        (void)value;\n#endif\n    }\n    void check_budget(Capacity extra) const {\n        if (extra >= hard_capacity - finite_capacity_)\n            throw std::overflow_error(\"Project Selection: finite capacity budget exceeded\");\n    }\n    void add_edge(int from, int to, Capacity cap, bool hard = false) {\n        if (!cap || from == to) return;\n        if (graph_[from].size() >= static_cast<std::size_t>(std::numeric_limits<int>::max()) ||\n            graph_[to].size() >= static_cast<std::size_t>(std::numeric_limits<int>::max()))\n            throw std::length_error(\"Project Selection: too many incident edges\");\n        if (!hard) check_budget(cap);\n        const int a = static_cast<int>(graph_[from].size());\n        const int b = static_cast<int>(graph_[to].size());\n        graph_[from].push_back({to, b, cap});\n        try { graph_[to].push_back({from, ~a, 0}); }\n        catch (...) { graph_[from].pop_back(); throw; }\n        if (!hard) finite_capacity_ += cap;\n        ++edge_count_;\n        solved_ = false;\n    }\n    int add_node() {\n        if (graph_.size() >= static_cast<std::size_t>(std::numeric_limits<int>::max()))\n            throw std::length_error(\"Project Selection: too many vertices\");\n        const int result = static_cast<int>(graph_.size());\n        graph_.emplace_back();\n        solved_ = false;\n        return result;\n    }\n    void add_all_profit(const std::vector<int>& xs, COST profit, bool value, bool reward = true) {\n        check_nonnegative(profit);\n        const COST next = reward ? checked_sub(offset_, profit) : offset_;\n        if (xs.empty() || profit == 0) { offset_ = next; return; }\n        check_budget(static_cast<Capacity>(profit));\n        const bool was_solved = solved_;\n        const Capacity old_budget = finite_capacity_;\n        const std::size_t old_count = edge_count_;\n        const int y = add_node();\n        try {\n            if (value) add_edge(source_, y, static_cast<Capacity>(profit));\n            else add_edge(y, sink_, static_cast<Capacity>(profit));\n            for (int x : xs) {\n                check_variable(x);\n                if (value) add_edge(y, x, hard_capacity, true);\n                else add_edge(x, y, hard_capacity, true);\n            }\n        } catch (...) {\n            // 通常処理中に検査し、失敗時だけこの集合項の辺を巻き戻す。\n            for (auto it = graph_[y].rbegin(); it != graph_[y].rend(); ++it)\n                graph_[it->to].pop_back();\n            graph_.pop_back();\n            finite_capacity_ = old_budget; edge_count_ = old_count; solved_ = was_solved;\n            throw;\n        }\n        offset_ = next;\n    }\n    bool bfs() {\n        std::fill(level_.begin(), level_.end(), -1);\n        level_[source_] = 0;\n        queue_.clear();\n        queue_.push_back(source_);\n        for (std::size_t head = 0; head < queue_.size(); ++head) {\n            const int v = queue_[head];\n            for (const auto& e : graph_[v]) {\n                if (e.capacity == 0 || level_[e.to] >= 0) continue;\n                level_[e.to] = level_[v] + 1;\n                if (e.to == sink_) return true;\n                queue_.push_back(e.to);\n            }\n        }\n        return false;\n    }\n    Capacity iterative_flow(int start, Capacity limit) {\n        stack_.clear();\n        stack_.push_back({start, limit, 0});\n        while (!stack_.empty()) {\n            Frame& frame = stack_.back();\n            const int v = frame.vertex;\n            if (v == sink_) frame.sent = frame.limit;\n            if (frame.sent == frame.limit || cursor_[v] == static_cast<int>(graph_[v].size())) {\n                const Capacity sent = frame.sent;\n                stack_.pop_back();\n                if (stack_.empty()) return sent;\n                Frame& parent = stack_.back();\n                Edge& edge = graph_[parent.vertex][cursor_[parent.vertex]];\n                edge.capacity -= sent;\n                graph_[edge.to][edge.reverse < 0 ? ~edge.reverse : edge.reverse].capacity += sent;\n                parent.sent += sent;\n                if (parent.sent != parent.limit) ++cursor_[parent.vertex];\n                continue;\n            }\n            Edge& edge = graph_[v][cursor_[v]];\n            if (edge.capacity == 0 || level_[edge.to] != level_[v] + 1) {\n                ++cursor_[v];\n                continue;\n            }\n            stack_.push_back({edge.to, std::min(static_cast<Capacity>(frame.limit - frame.sent), edge.capacity), 0});\n        }\n        return 0;\n    }\n    Capacity bounded_flow(int v, Capacity limit, unsigned depth = 64) {\n        if (v == sink_) return limit;\n        if (depth == 0) [[unlikely]] return iterative_flow(v, limit);\n        Capacity sent = 0;\n        for (int& i = cursor_[v]; i < static_cast<int>(graph_[v].size()); ++i) {\n            Edge& edge = graph_[v][i];\n            if (edge.capacity == 0 || level_[edge.to] != level_[v] + 1) continue;\n            const Capacity flow = bounded_flow(edge.to, std::min(static_cast<Capacity>(limit - sent), edge.capacity), depth - 1);\n            edge.capacity -= flow;\n            graph_[edge.to][edge.reverse < 0 ? ~edge.reverse : edge.reverse].capacity += flow;\n            sent += flow;\n            if (sent == limit) break;\n        }\n        if (sent < limit) level_[v] = -1;\n        return sent;\n    }\n    bool bfs_sparse() {\n        // sink以外の訪問頂点は通常のBFSキューに残る。疎いときだけ個別に戻す。\n        if (queue_.size() > level_.size() / 4) std::fill(level_.begin(), level_.end(), -1);\n        else {\n            for (int v : queue_) level_[v] = -1;\n            level_[sink_] = -1;\n        }\n        level_[source_] = 0;\n        queue_.clear();\n        queue_.push_back(source_);\n        for (std::size_t head = 0; head < queue_.size(); ++head) {\n            const int v = queue_[head];\n            for (const auto& e : graph_[v]) {\n                if (e.capacity == 0 || level_[e.to] >= 0) continue;\n                level_[e.to] = level_[v] + 1;\n                if (e.to == sink_) return true;\n                queue_.push_back(e.to);\n            }\n        }\n        return false;\n    }\n    void solve_sparse_flow() {\n        level_.resize(graph_.size(), -1); cursor_.resize(graph_.size());\n        queue_.reserve(graph_.size()); stack_.reserve(graph_.size());\n        while (bfs_sparse()) {\n            if (queue_.size() > cursor_.size() / 4) std::fill(cursor_.begin(), cursor_.end(), 0);\n            else for (int v : queue_) cursor_[v] = 0;\n            const Capacity remaining = static_cast<Capacity>(finite_capacity_ - total_flow_ + Capacity{1});\n            const Capacity added = bounded_flow(source_, remaining);\n            total_flow_ += added;\n            if (total_flow_ > finite_capacity_) {\n                infeasible_ = true;\n                throw std::domain_error(\"Project Selection: contradictory constraints\");\n            }\n        }\n    }\n    COST answer() const {\n        if (offset_ >= 0) {\n            if (total_flow_ > static_cast<Capacity>(std::numeric_limits<COST>::max() - offset_))\n                throw std::overflow_error(\"Project Selection: optimum is out of COST range\");\n            return static_cast<COST>(offset_ + static_cast<COST>(total_flow_));\n        }\n        const Capacity magnitude = static_cast<Capacity>(Capacity{0} - static_cast<Capacity>(offset_));\n        if (total_flow_ >= magnitude) {\n            const Capacity positive = total_flow_ - magnitude;\n            if (positive > static_cast<Capacity>(std::numeric_limits<COST>::max()))\n                throw std::overflow_error(\"Project Selection: optimum is out of COST range\");\n            return static_cast<COST>(positive);\n        }\n        const Capacity negative = magnitude - total_flow_;\n        if (negative == static_cast<Capacity>(std::numeric_limits<COST>::max()) + Capacity{1})\n            return std::numeric_limits<COST>::min();\n        return static_cast<COST>(-static_cast<COST>(negative));\n    }\n\npublic:\n    TwoVariableSubmodularOpt() = default;\n    TwoVariableSubmodularOpt(const TwoVariableSubmodularOpt&) = default;\n    TwoVariableSubmodularOpt& operator=(const TwoVariableSubmodularOpt& other) {\n        if (this != &other) { TwoVariableSubmodularOpt copy(other); swap(copy); }\n        return *this;\n    }\n    TwoVariableSubmodularOpt(TwoVariableSubmodularOpt&& other) : TwoVariableSubmodularOpt() { swap(other); }\n    TwoVariableSubmodularOpt& operator=(TwoVariableSubmodularOpt&& other) {\n        if (this != &other) { TwoVariableSubmodularOpt moved(std::move(other)); swap(moved); }\n        return *this;\n    }\n    void swap(TwoVariableSubmodularOpt& other) noexcept {\n        using std::swap;\n        swap(n_, other.n_); swap(source_, other.source_); swap(sink_, other.sink_);\n        swap(offset_, other.offset_); swap(finite_capacity_, other.finite_capacity_);\n        swap(total_flow_, other.total_flow_); swap(edge_count_, other.edge_count_);\n        swap(solved_, other.solved_); swap(infeasible_, other.infeasible_);\n        graph_.swap(other.graph_); level_.swap(other.level_); cursor_.swap(other.cursor_);\n        queue_.swap(other.queue_); stack_.swap(other.stack_);\n    }\n    explicit TwoVariableSubmodularOpt(int n)\n        : n_(checked_variable_count(n)), source_(n_), sink_(n_ + 1), graph_(static_cast<std::size_t>(n_) + 2) {}\n    TwoVariableSubmodularOpt(int n, COST /*inf*/) : TwoVariableSubmodularOpt(n) {}\n    void init(int n, COST /*inf*/ = 0) {\n        if (n < 0 || n > std::numeric_limits<int>::max() - 2)\n            throw std::length_error(\"Project Selection: invalid variable count\");\n        std::vector<std::vector<Edge>> fresh(static_cast<std::size_t>(n) + 2);\n        graph_.swap(fresh);\n        n_ = n; source_ = n; sink_ = n + 1;\n        offset_ = 0; finite_capacity_ = 0; total_flow_ = 0; edge_count_ = 0;\n        solved_ = false; infeasible_ = false;\n        level_.clear(); cursor_.clear(); queue_.clear(); stack_.clear();\n    }\n    void clear() noexcept {\n        graph_.resize(static_cast<std::size_t>(n_) + 2);\n        for (auto& edges : graph_) edges.clear();\n        offset_ = 0; finite_capacity_ = 0; total_flow_ = 0; edge_count_ = 0;\n        solved_ = false; infeasible_ = false;\n        level_.clear(); cursor_.clear(); queue_.clear(); stack_.clear();\n    }\n    bool empty() const noexcept { return n_ == 0; }\n    friend void swap(TwoVariableSubmodularOpt& a, TwoVariableSubmodularOpt& b) noexcept { a.swap(b); }\n    void add_constant(COST cost) { offset_ = checked_add(offset_, cost); }\n    void add_single_cost(int xi, COST false_cost, COST true_cost) {\n        check_variable(xi);\n        const COST small = std::min(false_cost, true_cost);\n        const COST next_offset = checked_add(offset_, small);\n        const Capacity cap = false_cost >= true_cost ? difference(false_cost, true_cost) : difference(true_cost, false_cost);\n        if (false_cost >= true_cost) add_edge(source_, xi, cap);\n        else add_edge(xi, sink_, cap);\n        offset_ = next_offset;\n    }\n    void add_psp_constraint(int xi, int xj) {\n        check_variable(xi); check_variable(xj);\n        add_edge(xi, xj, hard_capacity, true);\n    }\n    void add_psp_penalty(int xi, int xj, COST cost) {\n        check_variable(xi); check_variable(xj); check_nonnegative(cost);\n        add_edge(xi, xj, static_cast<Capacity>(cost));\n    }\n    void add_both_true_profit(int xi, int xj, COST profit) {\n        check_variable(xi); check_variable(xj); check_nonnegative(profit);\n        const COST next_offset = checked_sub(offset_, profit);\n        const Capacity p = static_cast<Capacity>(profit);\n        if (xi == xj) check_budget(p);\n        else { check_budget(p); if (p >= hard_capacity - finite_capacity_ - p) throw std::overflow_error(\"Project Selection: finite capacity budget exceeded\"); }\n        if (p != 0) {\n            reserve_incident(source_, 1);\n            reserve_incident(xi, xi == xj ? 1 : 2);\n            if (xi != xj) reserve_incident(xj, 1);\n        }\n        add_edge(source_, xi, p);\n        add_edge(xi, xj, p);\n        offset_ = next_offset;\n    }\n    void add_both_false_profit(int xi, int xj, COST profit) {\n        check_variable(xi); check_variable(xj); check_nonnegative(profit);\n        const COST next_offset = checked_sub(offset_, profit);\n        const Capacity p = static_cast<Capacity>(profit);\n        if (xi == xj) check_budget(p);\n        else { check_budget(p); if (p >= hard_capacity - finite_capacity_ - p) throw std::overflow_error(\"Project Selection: finite capacity budget exceeded\"); }\n        if (p != 0) {\n            reserve_incident(sink_, 1);\n            reserve_incident(xj, xi == xj ? 1 : 2);\n            if (xi != xj) reserve_incident(xi, 1);\n        }\n        add_edge(xj, sink_, p);\n        add_edge(xi, xj, p);\n        offset_ = next_offset;\n    }\n    void add_submodular_function(int xi, int xj, COST A, COST B, COST C, COST D) {\n        check_variable(xi); check_variable(xj);\n        if (xi == xj) { add_single_cost(xi, A, D); return; }\n        // 2項ずつ差を取ることで、B+CやA+Dの符号付きoverflowを避ける。\n        const COST first = checked_sub(D, B);\n        const COST second = checked_sub(B, A);\n        // capacity = (C-A) - (D-B)。正負別にunsignedで正確に求める。\n        Capacity cap = 0;\n        if (C >= A) {\n            cap = difference(C, A);\n            if (first >= 0) {\n#ifndef SKIP_RUNTIME_CHECKS\n                if (cap < static_cast<Capacity>(first)) throw std::invalid_argument(\"Project Selection: not submodular\");\n#endif\n                cap -= static_cast<Capacity>(first);\n            } else {\n                const Capacity extra = static_cast<Capacity>(Capacity{0} - static_cast<Capacity>(first));\n                if (cap > hard_capacity - extra) throw std::overflow_error(\"Project Selection: submodular capacity overflow\");\n                cap += extra;\n            }\n        } else {\n#ifndef SKIP_RUNTIME_CHECKS\n            if (first >= 0) throw std::invalid_argument(\"Project Selection: not submodular\");\n#endif\n            const Capacity positive = static_cast<Capacity>(Capacity{0} - static_cast<Capacity>(first));\n            const Capacity negative = difference(A, C);\n#ifndef SKIP_RUNTIME_CHECKS\n            if (positive < negative) throw std::invalid_argument(\"Project Selection: not submodular\");\n#endif\n            cap = positive - negative;\n        }\n        COST next = checked_add(offset_, A);\n        next = checked_add(next, std::min(COST{0}, first));\n        next = checked_add(next, std::min(COST{0}, second));\n        const Capacity one = first < 0 ? static_cast<Capacity>(Capacity{0} - static_cast<Capacity>(first)) : static_cast<Capacity>(first);\n        const Capacity two = second < 0 ? static_cast<Capacity>(Capacity{0} - static_cast<Capacity>(second)) : static_cast<Capacity>(second);\n        check_budget(cap);\n        if (one >= hard_capacity - finite_capacity_ - cap || two >= hard_capacity - finite_capacity_ - cap - one)\n            throw std::overflow_error(\"Project Selection: finite capacity budget exceeded\");\n        // 複数辺の追加前に必要な容量を確保し、確保失敗時は項全体を未追加に保つ。\n        reserve_incident(xi, std::size_t(one != 0) + std::size_t(cap != 0));\n        reserve_incident(xj, std::size_t(two != 0) + std::size_t(cap != 0));\n        reserve_incident(source_, std::size_t(one != 0 && first <= 0) + std::size_t(two != 0 && second <= 0));\n        reserve_incident(sink_, std::size_t(one != 0 && first > 0) + std::size_t(two != 0 && second > 0));\n        add_edge(first <= 0 ? source_ : xi, first <= 0 ? xi : sink_, one);\n        add_edge(second <= 0 ? source_ : xj, second <= 0 ? xj : sink_, two);\n        add_edge(xi, xj, cap);\n        offset_ = next;\n    }\n    void add_all_true_profit(const std::vector<int>& xs, COST profit) { add_all_profit(xs, profit, true); }\n    void add_all_false_profit(const std::vector<int>& xs, COST profit) { add_all_profit(xs, profit, false); }\n    void add_any_true_cost(const std::vector<int>& xs, COST cost) { add_all_profit(xs, cost, false, false); }\n    void add_any_false_cost(const std::vector<int>& xs, COST cost) { add_all_profit(xs, cost, true, false); }\n    void force(int xi, bool value) {\n        check_variable(xi);\n        add_edge(value ? source_ : xi, value ? xi : sink_, hard_capacity, true);\n    }\n    void add_equality(int xi, int xj) {\n        check_variable(xi); check_variable(xj);\n        if (xi == xj) return;\n        reserve_incident(xi, 2); reserve_incident(xj, 2);\n        add_edge(xi, xj, hard_capacity, true);\n        add_edge(xj, xi, hard_capacity, true);\n    }\n    COST solve() {\n        if (infeasible_) throw std::domain_error(\"Project Selection: contradictory constraints\");\n        if (!solved_) {\n            if (graph_.size() >= 65536) solve_sparse_flow();\n            else {\n                level_.resize(graph_.size(), -1); cursor_.resize(graph_.size());\n                queue_.reserve(graph_.size()); stack_.reserve(graph_.size());\n                while (bfs()) {\n                    std::fill(cursor_.begin(), cursor_.end(), 0);\n                    const Capacity remaining = static_cast<Capacity>(finite_capacity_ - total_flow_ + Capacity{1});\n                    const Capacity added = bounded_flow(source_, remaining);\n                    total_flow_ += added;\n                    if (total_flow_ > finite_capacity_) {\n                        infeasible_ = true;\n                        throw std::domain_error(\"Project Selection: contradictory constraints\");\n                    }\n                }\n            }\n            solved_ = true;\n        }\n        return answer();\n    }\n    std::vector<bool> reconstruct() {\n        (void)solve();\n        std::vector<bool> result(static_cast<std::size_t>(n_));\n        for (int i = 0; i < n_; ++i) result[i] = level_[i] >= 0;\n        return result;\n    }\n    std::pair<COST, std::vector<bool>> solve_with_assignment() {\n        COST value = solve();\n        return {value, reconstruct()};\n    }\n    int variable_count() const noexcept { return n_; }\n    int node_count() const noexcept { return static_cast<int>(graph_.size()); }\n    std::size_t edge_count() const noexcept { return edge_count_; }\n    void reserve_nodes(std::size_t count) {\n        if (count > static_cast<std::size_t>(std::numeric_limits<int>::max()))\n            throw std::length_error(\"Project Selection: too many vertices\");\n        graph_.reserve(count);\n    }\n    friend std::ostream& operator<<(std::ostream& out, const TwoVariableSubmodularOpt& optimizer) {\n        // reverseの符号で順方向辺を識別し、補助的な辺一覧の保存を省く。\n        for (int from = 0; from < static_cast<int>(optimizer.graph_.size()); ++from) {\n            for (const Edge& edge : optimizer.graph_[from]) {\n                if (edge.reverse < 0) continue;\n                const Edge& reverse = optimizer.graph_[edge.to][edge.reverse < 0 ? ~edge.reverse : edge.reverse];\n                out << from << \"->\" << edge.to << '(' << static_cast<std::uint64_t>(reverse.capacity) << '/';\n                // 逆辺も含めた対の合計は、追加時の容量に等しい。\n                out << static_cast<std::uint64_t>(static_cast<Capacity>(edge.capacity + reverse.capacity)) << \")\\n\";\n            }\n        }\n        return out;\n    }\n};\n#endif\n"
+    },
+    "project_failed_small_cross.cpp": {
+      "sha256": "acf84e99ee2f732854c4400a563210a8160024779fd695925b465b4982224945",
+      "text": "#ifndef HEADER\n#define HEADER \"/home/reinsirk/Atcoder_Env/Graph/Project_Selection.cpp\"\n#endif\n#include HEADER\n#include <cstdlib>\n#include <new>\n#include <iostream>\nint allocation_budget=-1;\nvoid* operator new(std::size_t n){if(allocation_budget==0)throw std::bad_alloc();if(allocation_budget>0)--allocation_budget;if(auto*p=std::malloc(n?n:1))return p;throw std::bad_alloc();}\nvoid operator delete(void*p)noexcept{std::free(p);}void operator delete(void*p,std::size_t)noexcept{std::free(p);}\nint main(){\n TwoVariableSubmodularOpt<> opt(65532);\n opt.add_single_cost(0,5,0);opt.add_single_cost(0,0,3);\n bool caught=false;allocation_budget=1;\n try{(void)opt.solve();}catch(const std::bad_alloc&){caught=true;}\n allocation_budget=-1;if(!caught)return 2;\n opt.add_all_true_profit({1},1);opt.add_all_true_profit({2},1);\n auto answer=opt.solve();auto assignment=opt.reconstruct();\n std::int64_t evaluated=(assignment[0]?3:5)-(assignment[1]?1:0)-(assignment[2]?1:0);\n std::cout<<\"answer=\"<<answer<<\" expected=1 assignment_energy=\"<<evaluated<<'\\n';\n return answer==1&&evaluated==1?0:1;\n}\n"
+    },
+    "project_final.hpp": {
+      "sha256": "2460d8320dc7b2e2c930c50b8f851e5fc64598388a4e7987e9b2bfccf19ea6b5",
+      "text": "// SPDX-License-Identifier: CC0-1.0\n// 参考: https://drken1215.hatenablog.com/entry/2023/11/24/034300\n// ドキュメント: https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/project_selection.md\n//\n// API一覧\n// [TwoVariableSubmodularOpt]\n// COSTは64bit以下の符号付き整数。true側を始点側とする最小カット。\n// 分解途中の符号付きコスト・offsetもCOST範囲内が必要。\n// 有限辺容量の総和はmake_unsigned_t<COST>の最大値未満。算術・容量超過は例外。\n// V=補助頂点込み頂点数、E=辺数。追加は償却O(1)、集合項はO(|xs|)。\n// ctor(n=0)/ctor(n,inf): n変数で構築。旧inf引数の値は不要(厳密制約は内部で表現)。\n// init(n,inf=0)/clear(): 項を消去して再構築/変数数を維持して初期化、O(V+E)。clearは残る頂点の辺配列の領域を再利用、確保なし。\n// add_single_cost(i,F,T): xi=false/trueのコストF/Tを追加。\n// add_psp_constraint(i,j): xi=trueかつxj=falseを禁止。\n// add_psp_penalty(i,j,C): xi=trueかつxj=falseに非負コストC。\n// add_both_true_profit(i,j,P)/add_both_false_profit(i,j,P): 両方true/falseに非負利得P。\n// add_submodular_function(i,j,A,B,C,D): FF/FT/TF/TTのコスト、B+C>=A+D。同一変数はA/Dのみ。\n// add_all_true_profit(xs,P)/add_all_false_profit(xs,P): 全てtrue/falseに非負利得P。空集合も獲得、P=0は無操作。\n// add_any_true_cost(xs,C)/add_any_false_cost(xs,C): 1個以上true/falseなら非負費用C。空集合は0、C=0は無操作。O(|xs|)。\n// add_constant(C): 全割当に定数Cを加算、O(1)。\n// force(i,value): xiをvalueに固定。矛盾はsolveでdomain_error。\n// add_equality(i,j): xi=xjを強制。\n// solve(): 最小コスト、Dinic法O(V^2 E)。再呼出しO(1)、追加後は残余網から再開。\n// reconstruct(): 最適割当vector<bool>、未解決ならsolve後に復元、追加分O(n)。\n// solve_with_assignment(): {最小コスト,最適割当}を返す。\n// empty(): 変数数0ならtrue。O(1)。\n// variable_count()/node_count()/edge_count(): 変数数/補助頂点込み頂点数/順方向辺数、O(1)。\n// copy/move/swap(other)/swap(a,b): 独立コピー/移動(移動元は空の0変数)/定数時間交換。\n// 項追加・init・コピー代入が失敗した場合は、項・変数数・最適値を変更しない（予約済み容量は変わり得る）。\n// reserve_nodes(count): 補助頂点込みの頂点容量を予約、O(V)。辺容量の予約ではない。\n// operator<<: 現在の順方向辺をfrom->to(flow/capacity)形式で出力、O(E)。\n\n#include <algorithm>\n#include <cstddef>\n#include <cstdint>\n#include <limits>\n#include <ostream>\n#include <stdexcept>\n#include <type_traits>\n#include <utility>\n#include <vector>\n\n#ifndef SIRKIT_TWO_VARIABLE_SUBMODULAR_OPT_DEFINED\n#define SIRKIT_TWO_VARIABLE_SUBMODULAR_OPT_DEFINED\n\ntemplate<class COST = std::int64_t>\nclass TwoVariableSubmodularOpt {\n    static_assert(std::is_integral_v<COST> && std::is_signed_v<COST> && sizeof(COST) <= 8,\n                  \"COST must be a signed integer of at most 64 bits\");\n    using Capacity = std::make_unsigned_t<COST>;\n    static constexpr Capacity hard_capacity = std::numeric_limits<Capacity>::max();\n    struct Edge { int to; int reverse; Capacity capacity; };\n    struct Frame { int vertex; Capacity limit; Capacity sent; };\n    int n_ = 0;\n    int source_ = 0;\n    int sink_ = 1;\n    COST offset_ = 0;\n    Capacity finite_capacity_ = 0;\n    Capacity total_flow_ = 0;\n    std::size_t edge_count_ = 0;\n    bool solved_ = false;\n    bool infeasible_ = false;\n    std::vector<std::vector<Edge>> graph_{2};\n    std::vector<int> level_, cursor_, queue_;\n    std::vector<Frame> stack_;\n\n    static int checked_variable_count(int n) {\n        if (n < 0 || n > std::numeric_limits<int>::max() - 2)\n            throw std::length_error(\"Project Selection: invalid variable count\");\n        return n;\n    }\n    void reserve_incident(int vertex, std::size_t extra) {\n        if (extra == 0) return;\n        auto& edges = graph_[vertex];\n        const auto maximum = std::min(edges.max_size(), static_cast<std::size_t>(std::numeric_limits<int>::max()));\n        if (extra > maximum - edges.size())\n            throw std::length_error(\"Project Selection: too many incident edges\");\n        const auto required = edges.size() + extra;\n        if (required <= edges.capacity()) return;\n        const auto capacity = edges.capacity();\n        const auto growth = capacity > maximum - capacity ? maximum : capacity * 2;\n        edges.reserve(std::max(required, growth));\n    }\n    static COST checked_add(COST a, COST b) {\n        if ((b > 0 && a > std::numeric_limits<COST>::max() - b) ||\n            (b < 0 && a < std::numeric_limits<COST>::min() - b))\n            throw std::overflow_error(\"Project Selection: cost overflow\");\n        return static_cast<COST>(a + b);\n    }\n    static COST checked_sub(COST a, COST b) {\n        if ((b > 0 && a < std::numeric_limits<COST>::min() + b) ||\n            (b < 0 && a > std::numeric_limits<COST>::max() + b))\n            throw std::overflow_error(\"Project Selection: cost overflow\");\n        return static_cast<COST>(a - b);\n    }\n    static Capacity difference(COST high, COST low) {\n        return static_cast<Capacity>(static_cast<Capacity>(high) - static_cast<Capacity>(low));\n    }\n    void check_variable(int i) const {\n#ifndef SKIP_RUNTIME_CHECKS\n        if (i < 0 || i >= n_) throw std::out_of_range(\"Project Selection: variable index\");\n#else\n        (void)i;\n#endif\n    }\n    static void check_nonnegative(COST value) {\n#ifndef SKIP_RUNTIME_CHECKS\n        if (value < 0) throw std::invalid_argument(\"Project Selection: negative penalty/profit\");\n#else\n        (void)value;\n#endif\n    }\n    void check_budget(Capacity extra) const {\n        if (extra >= hard_capacity - finite_capacity_)\n            throw std::overflow_error(\"Project Selection: finite capacity budget exceeded\");\n    }\n    void add_edge(int from, int to, Capacity cap, bool hard = false) {\n        if (!cap || from == to) return;\n        if (graph_[from].size() >= static_cast<std::size_t>(std::numeric_limits<int>::max()) ||\n            graph_[to].size() >= static_cast<std::size_t>(std::numeric_limits<int>::max()))\n            throw std::length_error(\"Project Selection: too many incident edges\");\n        if (!hard) check_budget(cap);\n        const int a = static_cast<int>(graph_[from].size());\n        const int b = static_cast<int>(graph_[to].size());\n        graph_[from].push_back({to, b, cap});\n        try { graph_[to].push_back({from, ~a, 0}); }\n        catch (...) { graph_[from].pop_back(); throw; }\n        if (!hard) finite_capacity_ += cap;\n        ++edge_count_;\n        solved_ = false;\n    }\n    int add_node() {\n        if (graph_.size() >= static_cast<std::size_t>(std::numeric_limits<int>::max()))\n            throw std::length_error(\"Project Selection: too many vertices\");\n        const int result = static_cast<int>(graph_.size());\n        graph_.emplace_back();\n        solved_ = false;\n        return result;\n    }\n    void add_all_profit(const std::vector<int>& xs, COST profit, bool value, bool reward = true) {\n        check_nonnegative(profit);\n        const COST next = reward ? checked_sub(offset_, profit) : offset_;\n        if (xs.empty() || profit == 0) { offset_ = next; return; }\n        check_budget(static_cast<Capacity>(profit));\n        const bool was_solved = solved_;\n        const Capacity old_budget = finite_capacity_;\n        const std::size_t old_count = edge_count_;\n        const int y = add_node();\n        try {\n            if (value) add_edge(source_, y, static_cast<Capacity>(profit));\n            else add_edge(y, sink_, static_cast<Capacity>(profit));\n            for (int x : xs) {\n                check_variable(x);\n                if (value) add_edge(y, x, hard_capacity, true);\n                else add_edge(x, y, hard_capacity, true);\n            }\n        } catch (...) {\n            // 通常処理中に検査し、失敗時だけこの集合項の辺を巻き戻す。\n            for (auto it = graph_[y].rbegin(); it != graph_[y].rend(); ++it)\n                graph_[it->to].pop_back();\n            graph_.pop_back();\n            finite_capacity_ = old_budget; edge_count_ = old_count; solved_ = was_solved;\n            throw;\n        }\n        offset_ = next;\n    }\n    bool bfs() {\n        std::fill(level_.begin(), level_.end(), -1);\n        level_[source_] = 0;\n        queue_.clear();\n        queue_.push_back(source_);\n        for (std::size_t head = 0; head < queue_.size(); ++head) {\n            const int v = queue_[head];\n            for (const auto& e : graph_[v]) {\n                if (e.capacity == 0 || level_[e.to] >= 0) continue;\n                level_[e.to] = level_[v] + 1;\n                if (e.to == sink_) return true;\n                queue_.push_back(e.to);\n            }\n        }\n        return false;\n    }\n    Capacity iterative_flow(int start, Capacity limit) {\n        stack_.clear();\n        stack_.push_back({start, limit, 0});\n        while (!stack_.empty()) {\n            Frame& frame = stack_.back();\n            const int v = frame.vertex;\n            if (v == sink_) frame.sent = frame.limit;\n            if (frame.sent == frame.limit || cursor_[v] == static_cast<int>(graph_[v].size())) {\n                const Capacity sent = frame.sent;\n                stack_.pop_back();\n                if (stack_.empty()) return sent;\n                Frame& parent = stack_.back();\n                Edge& edge = graph_[parent.vertex][cursor_[parent.vertex]];\n                edge.capacity -= sent;\n                graph_[edge.to][edge.reverse < 0 ? ~edge.reverse : edge.reverse].capacity += sent;\n                parent.sent += sent;\n                if (parent.sent != parent.limit) ++cursor_[parent.vertex];\n                continue;\n            }\n            Edge& edge = graph_[v][cursor_[v]];\n            if (edge.capacity == 0 || level_[edge.to] != level_[v] + 1) {\n                ++cursor_[v];\n                continue;\n            }\n            stack_.push_back({edge.to, std::min(static_cast<Capacity>(frame.limit - frame.sent), edge.capacity), 0});\n        }\n        return 0;\n    }\n    Capacity bounded_flow(int v, Capacity limit, unsigned depth = 64) {\n        if (v == sink_) return limit;\n        if (depth == 0) [[unlikely]] return iterative_flow(v, limit);\n        Capacity sent = 0;\n        for (int& i = cursor_[v]; i < static_cast<int>(graph_[v].size()); ++i) {\n            Edge& edge = graph_[v][i];\n            if (edge.capacity == 0 || level_[edge.to] != level_[v] + 1) continue;\n            const Capacity flow = bounded_flow(edge.to, std::min(static_cast<Capacity>(limit - sent), edge.capacity), depth - 1);\n            edge.capacity -= flow;\n            graph_[edge.to][edge.reverse < 0 ? ~edge.reverse : edge.reverse].capacity += flow;\n            sent += flow;\n            if (sent == limit) break;\n        }\n        if (sent < limit) level_[v] = -1;\n        return sent;\n    }\n    bool bfs_sparse() {\n        // sink以外の訪問頂点は通常のBFSキューに残る。疎いときだけ個別に戻す。\n        if (queue_.size() > level_.size() / 4) std::fill(level_.begin(), level_.end(), -1);\n        else {\n            for (int v : queue_) level_[v] = -1;\n            level_[sink_] = -1;\n        }\n        level_[source_] = 0;\n        queue_.clear();\n        queue_.push_back(source_);\n        for (std::size_t head = 0; head < queue_.size(); ++head) {\n            const int v = queue_[head];\n            for (const auto& e : graph_[v]) {\n                if (e.capacity == 0 || level_[e.to] >= 0) continue;\n                level_[e.to] = level_[v] + 1;\n                if (e.to == sink_) return true;\n                queue_.push_back(e.to);\n            }\n        }\n        return false;\n    }\n    void solve_sparse_flow() {\n        level_.resize(graph_.size(), -1); cursor_.resize(graph_.size());\n        queue_.reserve(graph_.size()); stack_.reserve(graph_.size());\n        while (bfs_sparse()) {\n            if (queue_.size() > cursor_.size() / 4) std::fill(cursor_.begin(), cursor_.end(), 0);\n            else for (int v : queue_) cursor_[v] = 0;\n            const Capacity remaining = static_cast<Capacity>(finite_capacity_ - total_flow_ + Capacity{1});\n            const Capacity added = bounded_flow(source_, remaining);\n            total_flow_ += added;\n            if (total_flow_ > finite_capacity_) {\n                infeasible_ = true;\n                throw std::domain_error(\"Project Selection: contradictory constraints\");\n            }\n        }\n    }\n    COST answer() const {\n        if (offset_ >= 0) {\n            if (total_flow_ > static_cast<Capacity>(std::numeric_limits<COST>::max() - offset_))\n                throw std::overflow_error(\"Project Selection: optimum is out of COST range\");\n            return static_cast<COST>(offset_ + static_cast<COST>(total_flow_));\n        }\n        const Capacity magnitude = static_cast<Capacity>(Capacity{0} - static_cast<Capacity>(offset_));\n        if (total_flow_ >= magnitude) {\n            const Capacity positive = total_flow_ - magnitude;\n            if (positive > static_cast<Capacity>(std::numeric_limits<COST>::max()))\n                throw std::overflow_error(\"Project Selection: optimum is out of COST range\");\n            return static_cast<COST>(positive);\n        }\n        const Capacity negative = magnitude - total_flow_;\n        if (negative == static_cast<Capacity>(std::numeric_limits<COST>::max()) + Capacity{1})\n            return std::numeric_limits<COST>::min();\n        return static_cast<COST>(-static_cast<COST>(negative));\n    }\n\npublic:\n    TwoVariableSubmodularOpt() = default;\n    TwoVariableSubmodularOpt(const TwoVariableSubmodularOpt&) = default;\n    TwoVariableSubmodularOpt& operator=(const TwoVariableSubmodularOpt& other) {\n        if (this != &other) { TwoVariableSubmodularOpt copy(other); swap(copy); }\n        return *this;\n    }\n    TwoVariableSubmodularOpt(TwoVariableSubmodularOpt&& other) : TwoVariableSubmodularOpt() { swap(other); }\n    TwoVariableSubmodularOpt& operator=(TwoVariableSubmodularOpt&& other) {\n        if (this != &other) { TwoVariableSubmodularOpt moved(std::move(other)); swap(moved); }\n        return *this;\n    }\n    void swap(TwoVariableSubmodularOpt& other) noexcept {\n        using std::swap;\n        swap(n_, other.n_); swap(source_, other.source_); swap(sink_, other.sink_);\n        swap(offset_, other.offset_); swap(finite_capacity_, other.finite_capacity_);\n        swap(total_flow_, other.total_flow_); swap(edge_count_, other.edge_count_);\n        swap(solved_, other.solved_); swap(infeasible_, other.infeasible_);\n        graph_.swap(other.graph_); level_.swap(other.level_); cursor_.swap(other.cursor_);\n        queue_.swap(other.queue_); stack_.swap(other.stack_);\n    }\n    explicit TwoVariableSubmodularOpt(int n)\n        : n_(checked_variable_count(n)), source_(n_), sink_(n_ + 1), graph_(static_cast<std::size_t>(n_) + 2) {}\n    TwoVariableSubmodularOpt(int n, COST /*inf*/) : TwoVariableSubmodularOpt(n) {}\n    void init(int n, COST /*inf*/ = 0) {\n        if (n < 0 || n > std::numeric_limits<int>::max() - 2)\n            throw std::length_error(\"Project Selection: invalid variable count\");\n        std::vector<std::vector<Edge>> fresh(static_cast<std::size_t>(n) + 2);\n        graph_.swap(fresh);\n        n_ = n; source_ = n; sink_ = n + 1;\n        offset_ = 0; finite_capacity_ = 0; total_flow_ = 0; edge_count_ = 0;\n        solved_ = false; infeasible_ = false;\n        level_.clear(); cursor_.clear(); queue_.clear(); stack_.clear();\n    }\n    void clear() noexcept {\n        graph_.resize(static_cast<std::size_t>(n_) + 2);\n        for (auto& edges : graph_) edges.clear();\n        offset_ = 0; finite_capacity_ = 0; total_flow_ = 0; edge_count_ = 0;\n        solved_ = false; infeasible_ = false;\n        level_.clear(); cursor_.clear(); queue_.clear(); stack_.clear();\n    }\n    bool empty() const noexcept { return n_ == 0; }\n    friend void swap(TwoVariableSubmodularOpt& a, TwoVariableSubmodularOpt& b) noexcept { a.swap(b); }\n    void add_constant(COST cost) { offset_ = checked_add(offset_, cost); }\n    void add_single_cost(int xi, COST false_cost, COST true_cost) {\n        check_variable(xi);\n        const COST small = std::min(false_cost, true_cost);\n        const COST next_offset = checked_add(offset_, small);\n        const Capacity cap = false_cost >= true_cost ? difference(false_cost, true_cost) : difference(true_cost, false_cost);\n        if (false_cost >= true_cost) add_edge(source_, xi, cap);\n        else add_edge(xi, sink_, cap);\n        offset_ = next_offset;\n    }\n    void add_psp_constraint(int xi, int xj) {\n        check_variable(xi); check_variable(xj);\n        add_edge(xi, xj, hard_capacity, true);\n    }\n    void add_psp_penalty(int xi, int xj, COST cost) {\n        check_variable(xi); check_variable(xj); check_nonnegative(cost);\n        add_edge(xi, xj, static_cast<Capacity>(cost));\n    }\n    void add_both_true_profit(int xi, int xj, COST profit) {\n        check_variable(xi); check_variable(xj); check_nonnegative(profit);\n        const COST next_offset = checked_sub(offset_, profit);\n        const Capacity p = static_cast<Capacity>(profit);\n        if (xi == xj) check_budget(p);\n        else { check_budget(p); if (p >= hard_capacity - finite_capacity_ - p) throw std::overflow_error(\"Project Selection: finite capacity budget exceeded\"); }\n        if (p != 0) {\n            reserve_incident(source_, 1);\n            reserve_incident(xi, xi == xj ? 1 : 2);\n            if (xi != xj) reserve_incident(xj, 1);\n        }\n        add_edge(source_, xi, p);\n        add_edge(xi, xj, p);\n        offset_ = next_offset;\n    }\n    void add_both_false_profit(int xi, int xj, COST profit) {\n        check_variable(xi); check_variable(xj); check_nonnegative(profit);\n        const COST next_offset = checked_sub(offset_, profit);\n        const Capacity p = static_cast<Capacity>(profit);\n        if (xi == xj) check_budget(p);\n        else { check_budget(p); if (p >= hard_capacity - finite_capacity_ - p) throw std::overflow_error(\"Project Selection: finite capacity budget exceeded\"); }\n        if (p != 0) {\n            reserve_incident(sink_, 1);\n            reserve_incident(xj, xi == xj ? 1 : 2);\n            if (xi != xj) reserve_incident(xi, 1);\n        }\n        add_edge(xj, sink_, p);\n        add_edge(xi, xj, p);\n        offset_ = next_offset;\n    }\n    void add_submodular_function(int xi, int xj, COST A, COST B, COST C, COST D) {\n        check_variable(xi); check_variable(xj);\n        if (xi == xj) { add_single_cost(xi, A, D); return; }\n        // 2項ずつ差を取ることで、B+CやA+Dの符号付きoverflowを避ける。\n        const COST first = checked_sub(D, B);\n        const COST second = checked_sub(B, A);\n        // capacity = (C-A) - (D-B)。正負別にunsignedで正確に求める。\n        Capacity cap = 0;\n        if (C >= A) {\n            cap = difference(C, A);\n            if (first >= 0) {\n#ifndef SKIP_RUNTIME_CHECKS\n                if (cap < static_cast<Capacity>(first)) throw std::invalid_argument(\"Project Selection: not submodular\");\n#endif\n                cap -= static_cast<Capacity>(first);\n            } else {\n                const Capacity extra = static_cast<Capacity>(Capacity{0} - static_cast<Capacity>(first));\n                if (cap > hard_capacity - extra) throw std::overflow_error(\"Project Selection: submodular capacity overflow\");\n                cap += extra;\n            }\n        } else {\n#ifndef SKIP_RUNTIME_CHECKS\n            if (first >= 0) throw std::invalid_argument(\"Project Selection: not submodular\");\n#endif\n            const Capacity positive = static_cast<Capacity>(Capacity{0} - static_cast<Capacity>(first));\n            const Capacity negative = difference(A, C);\n#ifndef SKIP_RUNTIME_CHECKS\n            if (positive < negative) throw std::invalid_argument(\"Project Selection: not submodular\");\n#endif\n            cap = positive - negative;\n        }\n        COST next = checked_add(offset_, A);\n        next = checked_add(next, std::min(COST{0}, first));\n        next = checked_add(next, std::min(COST{0}, second));\n        const Capacity one = first < 0 ? static_cast<Capacity>(Capacity{0} - static_cast<Capacity>(first)) : static_cast<Capacity>(first);\n        const Capacity two = second < 0 ? static_cast<Capacity>(Capacity{0} - static_cast<Capacity>(second)) : static_cast<Capacity>(second);\n        check_budget(cap);\n        if (one >= hard_capacity - finite_capacity_ - cap || two >= hard_capacity - finite_capacity_ - cap - one)\n            throw std::overflow_error(\"Project Selection: finite capacity budget exceeded\");\n        // 複数辺の追加前に必要な容量を確保し、確保失敗時は項全体を未追加に保つ。\n        reserve_incident(xi, std::size_t(one != 0) + std::size_t(cap != 0));\n        reserve_incident(xj, std::size_t(two != 0) + std::size_t(cap != 0));\n        reserve_incident(source_, std::size_t(one != 0 && first <= 0) + std::size_t(two != 0 && second <= 0));\n        reserve_incident(sink_, std::size_t(one != 0 && first > 0) + std::size_t(two != 0 && second > 0));\n        add_edge(first <= 0 ? source_ : xi, first <= 0 ? xi : sink_, one);\n        add_edge(second <= 0 ? source_ : xj, second <= 0 ? xj : sink_, two);\n        add_edge(xi, xj, cap);\n        offset_ = next;\n    }\n    void add_all_true_profit(const std::vector<int>& xs, COST profit) { add_all_profit(xs, profit, true); }\n    void add_all_false_profit(const std::vector<int>& xs, COST profit) { add_all_profit(xs, profit, false); }\n    void add_any_true_cost(const std::vector<int>& xs, COST cost) { add_all_profit(xs, cost, false, false); }\n    void add_any_false_cost(const std::vector<int>& xs, COST cost) { add_all_profit(xs, cost, true, false); }\n    void force(int xi, bool value) {\n        check_variable(xi);\n        add_edge(value ? source_ : xi, value ? xi : sink_, hard_capacity, true);\n    }\n    void add_equality(int xi, int xj) {\n        check_variable(xi); check_variable(xj);\n        if (xi == xj) return;\n        reserve_incident(xi, 2); reserve_incident(xj, 2);\n        add_edge(xi, xj, hard_capacity, true);\n        add_edge(xj, xi, hard_capacity, true);\n    }\n    COST solve() {\n        if (infeasible_) throw std::domain_error(\"Project Selection: contradictory constraints\");\n        if (!solved_) {\n            if (graph_.size() >= 65536) solve_sparse_flow();\n            else {\n                level_.resize(graph_.size(), -1); cursor_.resize(graph_.size());\n                queue_.reserve(graph_.size()); stack_.reserve(graph_.size());\n                while (bfs()) {\n                    std::fill(cursor_.begin(), cursor_.end(), 0);\n                    const Capacity remaining = static_cast<Capacity>(finite_capacity_ - total_flow_ + Capacity{1});\n                    const Capacity added = bounded_flow(source_, remaining);\n                    total_flow_ += added;\n                    if (total_flow_ > finite_capacity_) {\n                        infeasible_ = true;\n                        throw std::domain_error(\"Project Selection: contradictory constraints\");\n                    }\n                }\n            }\n            solved_ = true;\n        }\n        return answer();\n    }\n    std::vector<bool> reconstruct() {\n        (void)solve();\n        std::vector<bool> result(static_cast<std::size_t>(n_));\n        for (int i = 0; i < n_; ++i) result[i] = level_[i] >= 0;\n        return result;\n    }\n    std::pair<COST, std::vector<bool>> solve_with_assignment() {\n        COST value = solve();\n        return {value, reconstruct()};\n    }\n    int variable_count() const noexcept { return n_; }\n    int node_count() const noexcept { return static_cast<int>(graph_.size()); }\n    std::size_t edge_count() const noexcept { return edge_count_; }\n    void reserve_nodes(std::size_t count) {\n        if (count > static_cast<std::size_t>(std::numeric_limits<int>::max()))\n            throw std::length_error(\"Project Selection: too many vertices\");\n        graph_.reserve(count);\n    }\n    friend std::ostream& operator<<(std::ostream& out, const TwoVariableSubmodularOpt& optimizer) {\n        // reverseの符号で順方向辺を識別し、補助的な辺一覧の保存を省く。\n        for (int from = 0; from < static_cast<int>(optimizer.graph_.size()); ++from) {\n            for (const Edge& edge : optimizer.graph_[from]) {\n                if (edge.reverse < 0) continue;\n                const Edge& reverse = optimizer.graph_[edge.to][edge.reverse < 0 ? ~edge.reverse : edge.reverse];\n                out << from << \"->\" << edge.to << '(' << static_cast<std::uint64_t>(reverse.capacity) << '/';\n                // 逆辺も含めた対の合計は、追加時の容量に等しい。\n                out << static_cast<std::uint64_t>(static_cast<Capacity>(edge.capacity + reverse.capacity)) << \")\\n\";\n            }\n        }\n        return out;\n    }\n};\n#endif\n"
+    },
+    "review.json": {
+      "utc": "2026-10-29T13:43:11.529453+00:00",
+      "scope": "Independent source review, no library body or Document edits; small correctness/fault fixtures, no heavy DRAM timing.",
+      "reviewed_sources": {
+        "DataStructure/heap.cpp": "e9c5c88edb8841fcbcd22f25992d4523ce77ecff6ffadafdb6fcfc50e739c201",
+        "Graph/Project_Selection.cpp": "2460d8320dc7b2e2c930c50b8f851e5fc64598388a4e7987e9b2bfccf19ea6b5"
+      },
+      "existing_audits": [
+        "Audit/performance-heap-round2-2026-10-29.json",
+        "Audit/performance-project-selection-round2-2026-10-29.json",
+        "existing heap_test.cpp and project_selection_round2_sparse_exception_test.cpp"
+      ],
+      "findings": [
+        {
+          "file": "Graph/Project_Selection.cpp",
+          "status": "found and fixed by parent",
+          "before_sha": "83d9e2ef0f503a9bb009ca012d38c01b5f4e78effa2ec3ed5f5dcf021c03052f",
+          "after_sha": "2460d8320dc7b2e2c930c50b8f851e5fc64598388a4e7987e9b2bfccf19ea6b5",
+          "trigger": "Small-mode solve successfully allocates the level vector with zero-filled new elements, then cursor/queue/stack preparation throws. Auxiliary additions cross V=65536 before retry.",
+          "effect": "Sparse BFS resets only prior queue plus sink, so nonqueued zero levels are mistaken for visited vertices and a feasible source-to-sink path is skipped. Reproducer returned -2 versus independently evaluated optimum1.",
+          "fix": "Parent initializes newly grown level elements to -1 in the small-mode solve preparation as well. Both modes now preserve the queue/level invariant if a later preparation allocation fails.",
+          "minimal_reproducer": "project_failed_small_cross.cpp",
+          "old_to_new_validation": "../project_lifetime/reproduce.json",
+          "permanent_fixture": "Verify/current/tests/project_selection_round2_failed_prepare_test.cpp",
+          "fixture_sha": "4b2752124c22247ebd84f3f1a2ab9c99ec36e7a1dffa186940ba08411688d226",
+          "fixture_conditions": "54 cases: int8/int64; first solve at V65534/65535; successful earlier solve then one auxiliary vertex before failure; allocation budgets0..4 cover all four preparation reservations; direct crossing plus copy/move/clear/small-mode retry recovery; an additional auxiliary term after entering large mode.",
+          "fixture_reference": "Exhaustive16 assignments of four active variables; all other variables carry no energy. Checks solve/repeated solve/reconstruct/solve_with_assignment and allocation live delta.",
+          "verification": "prepare-checks.json",
+          "configs": 12,
+          "checks_per_config": 1106,
+          "faults_per_config": 48
+        }
+      ],
+      "heap_review": {
+        "status": "No new defect found",
+        "proofs": [
+          "For each nonroot parent p>=1, children are4p-1 through4p+2; child j>=1 has parent(j+1)/4. The root has children1 and2; the formulas agree at the boundary.",
+          "p<=count/4 is exactly the existence condition4p-1<count, so the first child is valid; subsequent probes stop at min(count,first+4). vector<int> storage bounds keep first+4 and push(position+1) representable.",
+          "Descending repair from count/4 to1 establishes every nonroot subtree before root repair. Empty/singleton construction returns early, and repair_root is called only for nonempty heaps.",
+          "push_back is the only throwing step in push; int relocation and subsequent comparison/repair cannot throw. Failed reserve/copy/range construction use vector ownership and leave live objects intact or destroy partial construction.",
+          "The final GCC default mixed tree and standard binary fallback keep the same logical min-heap results for pop, replace_top and push_pop, including ties and extreme integers."
+        ],
+        "additional_small_fixture": "heap_fault.cpp",
+        "verification": "heap-checks.json",
+        "configs": 12,
+        "checks_per_config": 28886,
+        "allocation_cases": [
+          "push growth failure preserves heap",
+          "copy constructor/assignment failure preserves source and target",
+          "single-pass range construction with several partial-allocation failures leaks nothing",
+          "independent sorted-array checks for every minimum position at sizes1..24 and replacement below/equal/above minimum"
+        ],
+        "notes": "A noinline copy factory prevents the optimizer from eliding the deliberate unused-copy allocation test. No implementation change resulted."
+      },
+      "project_invariants": [
+        "After either BFS, every nonnegative level belongs to an entry in queue_ or to sink_. Sparse reset of precisely those vertices is sound; initialization of new level elements to-1 is required when preparations can throw.",
+        "Every vertex read by bounded/iterative flow was queued by the current BFS, except sink, which returns before reading cursor. Selective cursor reset therefore covers every accessed cursor.",
+        "Normal and sparse paths share queue semantics, so switching paths at V65536 is safe once the new-level initialization invariant is maintained. clear/init reset both levels and queue; copy/move/swap transfer all associated state together.",
+        "Adding auxiliary vertices only appends stable vertex indices. New cursor elements start0 and new level elements start-1; reserve-only preparation failures do not alter graph edges or the optimum.",
+        "Capacity remains below the unsigned hard sentinel; remaining=finite-flow+1 is representable, and level/edge/reverse indices stay within the existing checked int bounds."
+      ],
+      "changed_files": {
+        "Verify/current/tests/project_selection_round2_failed_prepare_test.cpp": "4b2752124c22247ebd84f3f1a2ab9c99ec36e7a1dffa186940ba08411688d226"
+      },
+      "configurations": [
+        "GCC/Clang × checked/skip × O2 default/O2 native/ASanUBSan for each added small fixture"
+      ],
+      "sanitizer_note": "LeakSanitizer disabled under the host ptrace environment; independent live-allocation counters verify live_delta=0. ASan and UBSan remain enabled.",
+      "known_inconclusive_artifacts": [
+        "cross-checks.json used an initial snapshot that raced with the parent fix and accidentally captured finalSHA2460d832; it is not old-version evidence. The correctly frozen pre-fix snapshot is project_before_exception_fix.hpp, and the independent author reproduction8 matrix is referenced above."
+      ]
+    }
+  },
+  "note": "各source SHAは記録時点を示す。修正前の失敗再現と現版の成功を区別する。"
+}

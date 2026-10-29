@@ -178,7 +178,85 @@ template <bool Subset, bool Subtract, class T>
         v = set_transform_stage<Subset,Subtract,1,U>(v, std::make_index_sequence<width>{});
         std::memcpy(f + base, &v, sizeof(v));
     }
-    for (std::size_t half = width; half < n; half *= 2) {
+    // 3段ずつレジスタ内で伝播し、未変更の端のベクトルは書き戻さない。
+    std::size_t half = width;
+    for (; half < n / 4; half *= 8) {
+        for (std::size_t base = 0; base < n; base += half * 8) {
+            for (std::size_t j = 0; j < half; j += width) {
+                V v0; std::memcpy(&v0, f + base + half * 0 + j, sizeof(V));
+                V v1; std::memcpy(&v1, f + base + half * 1 + j, sizeof(V));
+                V v2; std::memcpy(&v2, f + base + half * 2 + j, sizeof(V));
+                V v3; std::memcpy(&v3, f + base + half * 3 + j, sizeof(V));
+                V v4; std::memcpy(&v4, f + base + half * 4 + j, sizeof(V));
+                V v5; std::memcpy(&v5, f + base + half * 5 + j, sizeof(V));
+                V v6; std::memcpy(&v6, f + base + half * 6 + j, sizeof(V));
+                V v7; std::memcpy(&v7, f + base + half * 7 + j, sizeof(V));
+                if constexpr (Subset) {
+                    if constexpr (Subtract) v1 -= v0; else v1 += v0;
+                    if constexpr (Subtract) v3 -= v2; else v3 += v2;
+                    if constexpr (Subtract) v5 -= v4; else v5 += v4;
+                    if constexpr (Subtract) v7 -= v6; else v7 += v6;
+                    if constexpr (Subtract) v2 -= v0; else v2 += v0;
+                    if constexpr (Subtract) v3 -= v1; else v3 += v1;
+                    if constexpr (Subtract) v6 -= v4; else v6 += v4;
+                    if constexpr (Subtract) v7 -= v5; else v7 += v5;
+                    if constexpr (Subtract) v4 -= v0; else v4 += v0;
+                    if constexpr (Subtract) v5 -= v1; else v5 += v1;
+                    if constexpr (Subtract) v6 -= v2; else v6 += v2;
+                    if constexpr (Subtract) v7 -= v3; else v7 += v3;
+                }
+                if constexpr (!Subset) {
+                    if constexpr (Subtract) v0 -= v1; else v0 += v1;
+                    if constexpr (Subtract) v2 -= v3; else v2 += v3;
+                    if constexpr (Subtract) v4 -= v5; else v4 += v5;
+                    if constexpr (Subtract) v6 -= v7; else v6 += v7;
+                    if constexpr (Subtract) v0 -= v2; else v0 += v2;
+                    if constexpr (Subtract) v1 -= v3; else v1 += v3;
+                    if constexpr (Subtract) v4 -= v6; else v4 += v6;
+                    if constexpr (Subtract) v5 -= v7; else v5 += v7;
+                    if constexpr (Subtract) v0 -= v4; else v0 += v4;
+                    if constexpr (Subtract) v1 -= v5; else v1 += v5;
+                    if constexpr (Subtract) v2 -= v6; else v2 += v6;
+                    if constexpr (Subtract) v3 -= v7; else v3 += v7;
+                }
+                if constexpr (!Subset) std::memcpy(f + base + half * 0 + j, &v0, sizeof(V));
+                std::memcpy(f + base + half * 1 + j, &v1, sizeof(V));
+                std::memcpy(f + base + half * 2 + j, &v2, sizeof(V));
+                std::memcpy(f + base + half * 3 + j, &v3, sizeof(V));
+                std::memcpy(f + base + half * 4 + j, &v4, sizeof(V));
+                std::memcpy(f + base + half * 5 + j, &v5, sizeof(V));
+                std::memcpy(f + base + half * 6 + j, &v6, sizeof(V));
+                if constexpr (Subset) std::memcpy(f + base + half * 7 + j, &v7, sizeof(V));
+            }
+        }
+    }
+    for (; half < n / 2; half *= 4) {
+        for (std::size_t base = 0; base < n; base += half * 4) {
+            for (std::size_t j = 0; j < half; j += width) {
+                V v0; std::memcpy(&v0, f + base + half * 0 + j, sizeof(V));
+                V v1; std::memcpy(&v1, f + base + half * 1 + j, sizeof(V));
+                V v2; std::memcpy(&v2, f + base + half * 2 + j, sizeof(V));
+                V v3; std::memcpy(&v3, f + base + half * 3 + j, sizeof(V));
+                if constexpr (Subset) {
+                    if constexpr (Subtract) v1 -= v0; else v1 += v0;
+                    if constexpr (Subtract) v3 -= v2; else v3 += v2;
+                    if constexpr (Subtract) v2 -= v0; else v2 += v0;
+                    if constexpr (Subtract) v3 -= v1; else v3 += v1;
+                }
+                if constexpr (!Subset) {
+                    if constexpr (Subtract) v0 -= v1; else v0 += v1;
+                    if constexpr (Subtract) v2 -= v3; else v2 += v3;
+                    if constexpr (Subtract) v0 -= v2; else v0 += v2;
+                    if constexpr (Subtract) v1 -= v3; else v1 += v3;
+                }
+                if constexpr (!Subset) std::memcpy(f + base + half * 0 + j, &v0, sizeof(V));
+                std::memcpy(f + base + half * 1 + j, &v1, sizeof(V));
+                std::memcpy(f + base + half * 2 + j, &v2, sizeof(V));
+                if constexpr (Subset) std::memcpy(f + base + half * 3 + j, &v3, sizeof(V));
+            }
+        }
+    }
+    for (; half < n; half *= 2) {
         for (std::size_t base = 0; base < n; base += half * 2) {
             T* out = f + base + (Subset ? half : 0);
             const T* in = f + base + (Subset ? 0 : half);

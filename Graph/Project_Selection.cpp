@@ -224,6 +224,42 @@ class TwoVariableSubmodularOpt {
         if (sent < limit) level_[v] = -1;
         return sent;
     }
+    bool bfs_sparse() {
+        // sink以外の訪問頂点は通常のBFSキューに残る。疎いときだけ個別に戻す。
+        if (queue_.size() > level_.size() / 4) std::fill(level_.begin(), level_.end(), -1);
+        else {
+            for (int v : queue_) level_[v] = -1;
+            level_[sink_] = -1;
+        }
+        level_[source_] = 0;
+        queue_.clear();
+        queue_.push_back(source_);
+        for (std::size_t head = 0; head < queue_.size(); ++head) {
+            const int v = queue_[head];
+            for (const auto& e : graph_[v]) {
+                if (e.capacity == 0 || level_[e.to] >= 0) continue;
+                level_[e.to] = level_[v] + 1;
+                if (e.to == sink_) return true;
+                queue_.push_back(e.to);
+            }
+        }
+        return false;
+    }
+    void solve_sparse_flow() {
+        level_.resize(graph_.size(), -1); cursor_.resize(graph_.size());
+        queue_.reserve(graph_.size()); stack_.reserve(graph_.size());
+        while (bfs_sparse()) {
+            if (queue_.size() > cursor_.size() / 4) std::fill(cursor_.begin(), cursor_.end(), 0);
+            else for (int v : queue_) cursor_[v] = 0;
+            const Capacity remaining = static_cast<Capacity>(finite_capacity_ - total_flow_ + Capacity{1});
+            const Capacity added = bounded_flow(source_, remaining);
+            total_flow_ += added;
+            if (total_flow_ > finite_capacity_) {
+                infeasible_ = true;
+                throw std::domain_error("Project Selection: contradictory constraints");
+            }
+        }
+    }
     COST answer() const {
         if (offset_ >= 0) {
             if (total_flow_ > static_cast<Capacity>(std::numeric_limits<COST>::max() - offset_))
@@ -401,16 +437,19 @@ public:
     COST solve() {
         if (infeasible_) throw std::domain_error("Project Selection: contradictory constraints");
         if (!solved_) {
-            level_.resize(graph_.size()); cursor_.resize(graph_.size());
-            queue_.reserve(graph_.size()); stack_.reserve(graph_.size());
-            while (bfs()) {
-                std::fill(cursor_.begin(), cursor_.end(), 0);
-                const Capacity remaining = static_cast<Capacity>(finite_capacity_ - total_flow_ + Capacity{1});
-                const Capacity added = bounded_flow(source_, remaining);
-                total_flow_ += added;
-                if (total_flow_ > finite_capacity_) {
-                    infeasible_ = true;
-                    throw std::domain_error("Project Selection: contradictory constraints");
+            if (graph_.size() >= 65536) solve_sparse_flow();
+            else {
+                level_.resize(graph_.size(), -1); cursor_.resize(graph_.size());
+                queue_.reserve(graph_.size()); stack_.reserve(graph_.size());
+                while (bfs()) {
+                    std::fill(cursor_.begin(), cursor_.end(), 0);
+                    const Capacity remaining = static_cast<Capacity>(finite_capacity_ - total_flow_ + Capacity{1});
+                    const Capacity added = bounded_flow(source_, remaining);
+                    total_flow_ += added;
+                    if (total_flow_ > finite_capacity_) {
+                        infeasible_ = true;
+                        throw std::domain_error("Project Selection: contradictory constraints");
+                    }
                 }
             }
             solved_ = true;
