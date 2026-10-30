@@ -87,10 +87,32 @@ public:
     int leader(int i) { return root(i); }
     bool merge(int a, int b) {
         check(a); check(b);
+#if defined(__GNUC__) && !defined(__clang__)
+        // 経路圧縮は根の負サイズを変えないので、第二探索後も再利用できる。
+        int sa = param[a];
+        while (sa >= 0) {
+            const int next = param[sa];
+            if (next < 0) { a = sa; sa = next; break; }
+            a = param[a] = next; sa = param[a];
+        }
+        // 根自身・根直下なら第二探索の書戻しは発生しない。
+        if (a == b) return false;
+        int sb = param[b];
+        while (sb >= 0) {
+            if (sb == a) return false;
+            const int next = param[sb];
+            if (next < 0) { b = sb; sb = next; break; }
+            b = param[b] = next; sb = param[b];
+        }
+        if (a == b) return false;
+        if (sa > sb) std::swap(a, b);
+        param[a] = sa + sb; param[b] = a; --components_;
+#else
         a = leader_unchecked(a); b = leader_unchecked(b);
         if (a == b) return false;
         if (param[a] > param[b]) std::swap(a, b);
         param[a] += param[b]; param[b] = a; --components_;
+#endif
         return true;
     }
     void unite(int a, int b) { (void)merge(a, b); }

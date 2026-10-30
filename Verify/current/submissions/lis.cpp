@@ -1,6 +1,6 @@
 #define SKIP_RUNTIME_CHECKS
 // Verify: https://judge.yosupo.jp/problem/longest_increasing_subsequence
-// Submission: https://judge.yosupo.jp/submission/414016
+// Submission: https://judge.yosupo.jp/submission/414109
 
 // Library: Algorithm/LIS.cpp
 // SPDX-License-Identifier: CC0-1.0
@@ -173,6 +173,21 @@ std::vector<std::size_t> LISIndicesWithValues(const std::vector<T>& v) {
             continue;
         }
         std::size_t lo = 1, count = tails.size() - 2;
+#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ == 15 && __GNUC_MINOR__ == 2 && defined(__x86_64__)
+        if constexpr (Strict && std::is_same_v<T, std::int64_t>) {
+            // 3点を独立に比較し、候補が小さい間だけ4分割する。
+            if (count <= 4096) {
+                while (count >= 32) {
+                    const auto quarter = count / 4;
+                    const auto p0 = lo + quarter, p1 = p0 + quarter, p2 = p1 + quarter;
+                    const unsigned segment = static_cast<unsigned>(values[p0] < v[i]) +
+                        static_cast<unsigned>(values[p1] < v[i]) + static_cast<unsigned>(values[p2] < v[i]);
+                    lo += segment * quarter + (segment != 0);
+                    count = segment == 3 ? count - 3 * quarter - 1 : quarter - (segment != 0);
+                }
+            }
+        }
+#endif
         while (count != 0) {
             const auto half = count / 2;
             const auto mid = lo + half;

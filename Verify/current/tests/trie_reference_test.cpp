@@ -8,6 +8,8 @@
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
+#include <exception>
+#include <initializer_list>
 #include <iostream>
 #include <limits>
 #include <map>

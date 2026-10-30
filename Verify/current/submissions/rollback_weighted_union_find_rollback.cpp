@@ -1,6 +1,6 @@
 #define SKIP_RUNTIME_CHECKS
 // Verify: https://judge.yosupo.jp/problem/persistent_unionfind
-// Submission: https://judge.yosupo.jp/submission/412603
+// Submission: https://judge.yosupo.jp/submission/414058
 
 // Library: DataStructure/rollback-union-findw.cpp
 // SPDX-License-Identifier: CC0-1.0
@@ -24,19 +24,61 @@
 // reserve_history(k): k追加分の容量を確保、O(h+1)上界。swap(other): 履歴・保存位置ごと交換、O(1)。
 // clear(): 空へ戻して容量保持、O(n+h+1)上界。reset(n)/reset(): 指定/現在の頂点数で再構築、O(旧n+旧h+n+1)上界。
 // resetはコピー構築・破棄が非送出で頂点/重み容量が足りる場合に領域再利用。代入も非送出なら既存重みを0へ戻す。
-// その他は一時構築後に交換。reset失敗時は論理状態を保持（予約容量は変わり得る）。
+// 増加分はresizeで初期化し、保持部分だけ再代入する。その他は一時構築後に交換。reset失敗時は論理状態を保持。
 // swap(a,b): 履歴・保存位置ごと定数時間で交換、noexcept。
+// SIRKIT_DISABLE_SIMD: groupsの追加AVX2実装とCPU判定を除外。標準C++の経路を使用。
 
 #include <algorithm>
 #include <bit>
 #include <cstddef>
 #include <cstdint>
 #include <limits>
+#include <memory>
+#if !defined(SIRKIT_DISABLE_SIMD) && defined(__clang__) && !defined(__AVX2__) && (defined(__x86_64__) || defined(__i386__))
+#include <immintrin.h>
+#endif
 #include <optional>
 #include <stdexcept>
 #include <type_traits>
 #include <utility>
 #include <vector>
+
+#if !defined(SIRKIT_DISABLE_SIMD) && defined(__clang__) && !defined(__AVX2__) && (defined(__x86_64__) || defined(__i386__))
+#ifndef SIRKIT_UNION_GROUP_ROOTS_AVX2_DEFINED
+#define SIRKIT_UNION_GROUP_ROOTS_AVX2_DEFINED
+namespace reinsirk::detail {
+template<bool Compress>
+[[gnu::target("avx2")]]
+inline void GatherGroupRoots(const int* parents, int* leaders, std::size_t n, int* writable = nullptr) {
+    std::size_t i = 0;
+    auto indices = _mm256_setr_epi32(0,1,2,3,4,5,6,7);
+    const auto negative_one = _mm256_set1_epi32(-1);
+    for (; i + 8 <= n; i += 8) {
+        const auto original = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(parents+i));
+        const auto nonroot = _mm256_cmpgt_epi32(original, negative_one);
+        auto root = _mm256_blendv_epi8(indices, original, nonroot);
+        // 根のlaneは再読込せず、未解決の親だけを追う。
+        auto active = nonroot;
+        while (!_mm256_testz_si256(active, active)) {
+            const auto next = _mm256_mask_i32gather_epi32(negative_one, parents, root, active, 4);
+            active = _mm256_cmpgt_epi32(next, negative_one);
+            root = _mm256_blendv_epi8(root, next, active);
+        }
+        _mm256_storeu_si256(reinterpret_cast<__m256i*>(leaders+i), root);
+        if constexpr (Compress)
+            _mm256_storeu_si256(reinterpret_cast<__m256i*>(writable+i), _mm256_blendv_epi8(original,root,nonroot));
+        indices = _mm256_add_epi32(indices, _mm256_set1_epi32(8));
+    }
+    for (; i < n; ++i) {
+        int root = static_cast<int>(i);
+        while (parents[root] >= 0) root = parents[root];
+        leaders[i] = root;
+        if constexpr (Compress) if (parents[i] >= 0) writable[i] = root;
+    }
+}
+} // namespace reinsirk::detail
+#endif
+#endif
 
 #ifndef SIRKIT_ROLLBACK_WEIGHTED_UNION_FIND_DEFINED
 #define SIRKIT_ROLLBACK_WEIGHTED_UNION_FIND_DEFINED
@@ -440,11 +482,13 @@ public:
             parent_.reserve(count); weight_.reserve(count);
             history_.reserve(std::min(count, std::size_t{64}));
             history_.clear();
+            const auto retained_parents = std::min(count, parent_.size());
             parent_.resize(count, -1);
-            std::fill(parent_.begin(), parent_.end(), -1);
+            std::fill_n(parent_.begin(), retained_parents, -1);
             if constexpr (std::is_nothrow_copy_assignable_v<T>) {
+                const auto retained_weights = std::min(count, weight_.size());
                 weight_.resize(count, initial);
-                std::fill(weight_.begin(), weight_.end(), initial);
+                std::fill_n(weight_.begin(), retained_weights, initial);
             } else { weight_.clear(); weight_.resize(count, initial); }
             components_ = n; snapshot_ = 0; bounded_weights_ = true;
         } else { RollbackWeightedUnionFind replacement(n); swap(replacement); }
@@ -603,6 +647,28 @@ public:
             for (int v = 0; v < size(); ++v) result[0][v] = v;
             return result;
         }
+#if !defined(SIRKIT_DISABLE_SIMD) && defined(__clang__) && !defined(__AVX2__) && (defined(__x86_64__) || defined(__i386__))
+        if (parent_.size() >= 256 && __builtin_cpu_supports("avx2")) {
+            auto roots_storage = std::make_unique_for_overwrite<int[]>(parent_.size());
+            int* const roots = roots_storage.get();
+            reinsirk::detail::GatherGroupRoots<false>(parent_.data(), roots, parent_.size());
+            std::vector<int> slot(parent_.size());
+            for (int v = 0; v < size(); ++v) if (parent_[v] < 0) {
+                slot[v] = static_cast<int>(result.size());
+                result.emplace_back(); result.back().reserve(static_cast<std::size_t>(-parent_[v]));
+            }
+            for (int v = 0; v < size(); ++v) result[slot[roots[v]]].push_back(v);
+            return result;
+        }
+#endif
+#if !defined(__clang__)
+        std::vector<int> slot(parent_.size());
+        for (int v = 0; v < size(); ++v) if (parent_[v] < 0) {
+            slot[v] = static_cast<int>(result.size());
+            result.emplace_back(); result.back().reserve(static_cast<std::size_t>(-parent_[v]));
+        }
+        for (int v = 0; v < size(); ++v) result[slot[find_unchecked(v)]].push_back(v);
+#else
         std::vector<int> roots(parent_.size()), counts(parent_.size(), 0);
         for (int v = 0; v < size(); ++v) ++counts[roots[v] = find_unchecked(v)];
         for (int v = 0; v < size(); ++v) if (counts[v]) {
@@ -611,6 +677,7 @@ public:
             result.emplace_back(); result.back().reserve(count);
         }
         for (int v = 0; v < size(); ++v) result[counts[roots[v]]].push_back(v);
+#endif
         return result;
     }
 

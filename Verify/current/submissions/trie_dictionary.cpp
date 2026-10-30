@@ -32,7 +32,7 @@
 // count/contains/prefix系/longest_prefixは長さLに対しO(16L)、size系はO(1)。
 // insertは償却O(16L+256)、再確保時は保持ノード/索引枠数ぶんのコピーも発生。
 // erase/erase_allはO(16L+256)。count_less/kthは語長L/戻す長さKに対しO(256L)/O(256K)。
-// lower_boundはO(256(L+K))。itemsは接頭辞探索＋訪問ノード数＋返す文字列総長。
+// lower_boundはO(256L+K)。itemsは接頭辞探索＋訪問ノード数＋返す文字列総長。
 // 保持ノード数N・保持索引数TとしてコピーはO(N+256T)、破棄・clearはO(N+T)。
 // reserve_nodesは最悪O(N)。使用メモリはノード枠数＋256×索引枠数に比例。
 // 個数・ノード枠の上限超過は検査省略時もlength_error。確保失敗はbad_alloc。
@@ -180,6 +180,40 @@ class Trie {
         }
         nodes_[parent].terminal -= copies;
         if (nodes_[parent].terminal == 0) --distinct_;
+    }
+    std::optional<std::string> lower_bound_nonempty(std::string_view word) const {
+        if (empty()) return std::nullopt;
+        // 一致経路の最も深い位置で、次に大きい兄弟を候補として保持する。
+        std::size_t p = 0, alternative = none, prefix_length = 0, i = 0;
+        for (; i < word.size(); ++i) {
+            const auto byte = static_cast<unsigned char>(word[i]);
+            std::size_t next = nodes_[p].first_child;
+            while (next != none && nodes_[next].byte < byte)
+                next = nodes_[next].next_sibling;
+            if (next == none) break;
+            if (nodes_[next].byte != byte) {
+                alternative = next; prefix_length = i;
+                break;
+            }
+            if (nodes_[next].next_sibling != none) {
+                alternative = nodes_[next].next_sibling; prefix_length = i;
+            }
+            p = next;
+        }
+        std::string answer;
+        if (i == word.size()) {
+            answer.assign(word);
+        } else {
+            if (alternative == none) return std::nullopt;
+            answer.assign(word.substr(0, prefix_length));
+            p = alternative;
+            answer.push_back(static_cast<char>(nodes_[p].byte));
+        }
+        while (nodes_[p].terminal == 0) {
+            p = nodes_[p].first_child;
+            answer.push_back(static_cast<char>(nodes_[p].byte));
+        }
+        return answer;
     }
 public:
     Trie() = default;
@@ -376,7 +410,7 @@ public:
         }
     }
     std::optional<std::string> lower_bound(std::string_view word) const {
-        return kth(count_less(word));
+        return word.empty() ? kth(0) : lower_bound_nonempty(word);
     }
     std::vector<std::pair<std::string, std::size_t>> items(
         std::string_view prefix = {}, std::size_t limit = none) const {

@@ -7,10 +7,15 @@
 #endif
 #include RADIX_HEADER
 #include TRIE_HEADER
+#include <algorithm>
 #include <cassert>
+#include <cstddef>
+#include <cstdint>
 #include <cstdlib>
-#include <new>
 #include <iostream>
+#include <new>
+#include <string>
+#include <vector>
 
 namespace { int remaining=-1; }
 void* operator new(std::size_t bytes){

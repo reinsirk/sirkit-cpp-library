@@ -1,6 +1,6 @@
 #define SKIP_RUNTIME_CHECKS
 // Verify: https://judge.yosupo.jp/problem/persistent_unionfind
-// Submission: https://judge.yosupo.jp/submission/412482
+// Submission: https://judge.yosupo.jp/submission/414056
 
 // Library: DataStructure/rollback-union-find.cpp
 // SPDX-License-Identifier: CC0-1.0

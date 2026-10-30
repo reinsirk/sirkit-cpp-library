@@ -16,6 +16,7 @@
 // reset(n)/reset(): n要素/現在の要素数へ初期化、O(旧n+n+1)上界。コピー構築・破棄が非送出なら容量再利用、代入も非送出なら重みを零代入。
 // reset・コピー代入の失敗時は元の連結状態を保持（予約容量は変わり得る）。clear(): 空へ戻し容量保持、O(旧n+1)上界、noexcept。
 // swap(other)/swap(a,b): 内容交換、O(1)、noexcept。コピーはO(n+1)で独立、コピー代入は強い例外保証。移動元は空。
+// groupsの根走査は対応CPUでAVX2を使用。SIRKIT_DISABLE_SIMDで標準経路に固定。
 
 #include <algorithm>
 #include <cstddef>
@@ -25,6 +26,34 @@
 #include <type_traits>
 #include <utility>
 #include <vector>
+
+#if !defined(SIRKIT_DISABLE_SIMD) && (defined(__GNUC__) || defined(__clang__)) && (defined(__x86_64__) || defined(__i386__))
+#include <bit>
+#include <immintrin.h>
+#ifndef SIRKIT_UNION_GROUP_ROOT_SLOTS_AVX2_DEFINED
+#define SIRKIT_UNION_GROUP_ROOT_SLOTS_AVX2_DEFINED
+namespace reinsirk::detail {
+__attribute__((target("avx2"))) inline void ReserveGroupRootSlots(
+    const int* parents, int* slots, std::size_t n, std::vector<std::vector<int>>& result) {
+    std::size_t i = 0;
+    for (; i + 8 <= n; i += 8) {
+        const auto values = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(parents + i));
+        unsigned roots = static_cast<unsigned>(_mm256_movemask_ps(_mm256_castsi256_ps(values)));
+        while (roots) {
+            const auto v = i + std::countr_zero(roots);
+            roots &= roots - 1;
+            slots[v] = static_cast<int>(result.size());
+            result.emplace_back(); result.back().reserve(static_cast<std::size_t>(-parents[v]));
+        }
+    }
+    for (; i < n; ++i) if (parents[i] < 0) {
+        slots[i] = static_cast<int>(result.size());
+        result.emplace_back(); result.back().reserve(static_cast<std::size_t>(-parents[i]));
+    }
+}
+}
+#endif
+#endif
 
 #ifndef SIRKIT_UNION_FIND_W_DEFINED
 #define SIRKIT_UNION_FIND_W_DEFINED
@@ -46,13 +75,50 @@ class UnionFindW {
 #endif
     }
     int leader_unchecked(int i) {
+#if defined(__GNUC__) && !defined(__clang__)
+        int p = param[i];
+        if (p < 0) return i;
+        if (param[p] < 0) return p;
+        // サイズ併合の深さ上限内で記録し、再帰の戻り順に加算する。
+        int path[std::numeric_limits<int>::digits];
+        int count = 0;
+        do {
+            path[count++] = i;
+            i = p; p = param[i];
+        } while (param[p] >= 0);
+        const int root = p;
+        while (count != 0) {
+            const int v = path[--count];
+            diff_w[v] += diff_w[param[v]];
+            param[v] = root;
+        }
+        return root;
+#else
         const int p = param[i];
         if (p < 0) return i;
         if (param[p] < 0) return p;
         const int r = leader_unchecked(p);
         diff_w[i] += diff_w[p];
         return param[i] = r;
+#endif
     }
+#if defined(__GNUC__) && !defined(__clang__)
+    int group_leader_unchecked(int i) {
+        const int p = param[i];
+        if (p < 0) return i;
+        if (param[p] < 0) return p;
+        const int r = group_leader_unchecked(p);
+        diff_w[i] += diff_w[p];
+        return param[i] = r;
+    }
+#endif
+#if defined(__GNUC__) && !defined(__clang__)
+    __attribute__((noinline)) void fill_single_component(std::vector<int>& vertices) {
+        for (int v = 0; v < size(); ++v) {
+            (void)group_leader_unchecked(v); vertices[v] = v;
+        }
+    }
+#endif
     bool link(int a, int b, Type w) {
         if (param[a] > param[b]) { std::swap(a, b); w = -w; }
         diff_w[b] = w;
@@ -150,18 +216,33 @@ public:
         }
         if (components_ == 1) {
             result.emplace_back(param.size());
+#if defined(__GNUC__) && !defined(__clang__)
+            fill_single_component(result[0]);
+#else
             for (int v = 0; v < size(); ++v) {
                 (void)leader_unchecked(v); result[0][v] = v;
             }
+#endif
             return result;
         }
-        std::vector<int> leaders(param.size()), counts(param.size(), 0);
-        for (int i = 0; i < size(); ++i) ++counts[leaders[i] = leader_unchecked(i)];
-        for (int i = 0; i < size(); ++i) if (counts[i]) {
-            const int count = counts[i]; counts[i] = static_cast<int>(result.size());
-            result.emplace_back(); result.back().reserve(count);
+        std::vector<int> slot(param.size());
+#if !defined(SIRKIT_DISABLE_SIMD) && (defined(__GNUC__) || defined(__clang__)) && (defined(__x86_64__) || defined(__i386__))
+        if (param.size() >= 256 && __builtin_cpu_supports("avx2"))
+            reinsirk::detail::ReserveGroupRootSlots(param.data(), slot.data(), param.size(), result);
+        else
+#endif
+        for (int i = 0; i < size(); ++i) if (param[i] < 0) {
+            slot[i] = static_cast<int>(result.size());
+            result.emplace_back(); result.back().reserve(static_cast<std::size_t>(-param[i]));
         }
-        for (int i = 0; i < size(); ++i) result[counts[leaders[i]]].push_back(i);
+        for (int i = 0; i < size(); ++i) {
+#if defined(__GNUC__) && !defined(__clang__)
+            const int root = group_leader_unchecked(i);
+#else
+            const int root = leader_unchecked(i);
+#endif
+            result[slot[root]].push_back(i);
+        }
         return result;
     }
 
