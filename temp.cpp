@@ -11,7 +11,7 @@
 // pow64i(x, n): x^n mod 2^64 を O(log(n + 1)) で返す。0^0 は1。
 // is_mul_overflow(a, b): a*b が符号付き64ビット整数の範囲外なら true。O(1)。
 
-//GCC バグ対策
+//GCC バグ対策 https://gcc.gnu.org/bugzilla/show_bug.cgi?id=128217
 #pragma GCC push_options
 #pragma GCC optimize("no-tree-loop-vectorize")
 
