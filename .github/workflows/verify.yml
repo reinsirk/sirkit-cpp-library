@@ -1,0 +1,96 @@
+name: Verify
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [dev]
+  workflow_dispatch:
+    inputs:
+      all:
+        description: 全てのローカルVerifyを実行する
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+env:
+  PYTHONDONTWRITEBYTECODE: "1"
+
+concurrency:
+  group: verify-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  maintenance:
+    name: Generated files and status
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Python unit tests
+        run: python3 -m unittest discover -s Scripts/tests -p 'test_*.py'
+      - name: Generated source and Verify synchronization
+        run: python3 -c 'from pathlib import Path; from Scripts.package_revised_libraries import check_generated; check_generated(Path.cwd())'
+      - name: README and online status synchronization
+        run: python3 Scripts/update_verify_status.py --check
+
+  examples:
+    name: C++23 (${{ matrix.compiler }})
+    needs: maintenance
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        compiler: [g++, clang++]
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Install compilers
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y g++ clang
+      - name: Select and run local Verify
+        env:
+          VERIFY_EVENT: ${{ github.event_name }}
+          VERIFY_BEFORE: ${{ github.event.before }}
+          VERIFY_PR_BASE: ${{ github.event.pull_request.base.sha }}
+          VERIFY_ALL: ${{ inputs.all }}
+          VERIFY_COMPILER: ${{ matrix.compiler }}
+          VERIFY_RESULTS: ${{ runner.temp }}/verify-results
+        shell: bash
+        run: |
+          set -euo pipefail
+          args=(--compiler "$VERIFY_COMPILER" --skip-sync --results "$VERIFY_RESULTS/result.json")
+          if [[ "$VERIFY_COMPILER" == clang++ ]]; then
+            args+=(--fallback)
+          fi
+          if [[ "$VERIFY_ALL" == true ]]; then
+            args+=(--all)
+          elif [[ "$VERIFY_EVENT" == pull_request ]]; then
+            args+=(--base "$VERIFY_PR_BASE")
+          elif [[ "$VERIFY_EVENT" == push && -n "$VERIFY_BEFORE" && ! "$VERIFY_BEFORE" =~ ^0+$ ]]; then
+            if git cat-file -e "${VERIFY_BEFORE}^{commit}"; then
+              args+=(--base "$VERIFY_BEFORE")
+            else
+              args+=(--all)
+            fi
+          else
+            args+=(--base origin/main)
+          fi
+          python3 Scripts/ci_verify.py "${args[@]}"
+      - name: Upload local Verify report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: local-verify-${{ matrix.compiler }}
+          path: ${{ runner.temp }}/verify-results/
+          if-no-files-found: ignore
+          retention-days: 14
