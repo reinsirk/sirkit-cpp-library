@@ -1,0 +1,887 @@
+{
+  "date": "2026-11-03",
+  "decision": "追加の本体変更なし。先行初期化を除く所有配列版・vector独自allocator版は不採用。",
+  "online_confirmation": "Audit/online-disjoint-sparse-table-414945-2026-11-03.json",
+  "online_result": {
+    "submission": 414945,
+    "status": "AC",
+    "time_ms": 85,
+    "previous_ms": 79,
+    "needs_resubmission": false,
+    "scope": "今回の実験前と本体が同じ。派生版へオンラインACは転記しない。"
+  },
+  "preserved": {
+    "source_sha256": "b5a4f97059c29df323d63308ce453ad1760c00824e1abba1997bd1d92a25f1b8",
+    "driver_sha256": "f5f83c4a42abf5ad3ddeb3f1c14a960087a8492f5d51a43fa42646b0c9d4e4de",
+    "io_sha256": "291bf8dbc56a1d691f6256fe95b4714183c2cf5d9e55e4bef240e31d1eb178c1",
+    "public_api_unchanged": true
+  },
+  "environment": {
+    "cpu": "Intel Core i9-14900K P-Core CPU12（補足CPU14）",
+    "gcc": "15.2.0",
+    "clang": "21",
+    "flags": [
+      "-std=c++23",
+      "-O2",
+      "SKIP_RUNTIME_CHECKS"
+    ],
+    "march_native": false,
+    "performance_governor_changed": false,
+    "notes": "周波数固定なし。同一バイナリのcontrolにも変動があり、細かな差は改善と断定しない。main/共通IOは固定。測定順を入れ替えて11回反復。"
+  },
+  "candidates": [
+    {
+      "name": "owned",
+      "storage": "4byte以上の整数行をmake_unique_for_overwrite配列で所有し、各セルへ値を設定してから使う。その他の型は従来のvector。深いコピーとconst参照・非copyable Opの型特性を維持。",
+      "decision": "構築が短縮する条件がある一方、照会と提出全体の退行があり不採用。"
+    },
+    {
+      "name": "allocator",
+      "storage": "整数行はvectorを維持し、独自allocatorのdefault insertionで先行初期化を省く。各セルはfoldで必ず設定。",
+      "decision": "構築短縮があっても照会・提出全体での安定した改善がなく不採用。正式な検証済み実装とは扱わない。"
+    }
+  ],
+  "measurement": {
+    "owned_screen_rows": 726,
+    "owned_micro_rows": 3564,
+    "four_way_rows": 1320,
+    "output_agreement": "測定プログラムの出力またはchecksumを照合。",
+    "four_way_medians": [
+      {
+        "kind": "main",
+        "compiler": "gcc",
+        "case": "\"official_max_random_0\"",
+        "type": null,
+        "n": null,
+        "mode": null,
+        "repeated_operations": null,
+        "median_cpu_ns": {
+          "control": 34276000,
+          "allocator": 40565000,
+          "base": 38491000,
+          "owned": 40733000
+        },
+        "ratio_to_base": {
+          "control": 0.890493881686628,
+          "allocator": 1.0538827258320127,
+          "base": 1.0,
+          "owned": 1.0582473825050012
+        }
+      },
+      {
+        "kind": "main",
+        "compiler": "gcc",
+        "case": "\"official_small_width_query_3\"",
+        "type": null,
+        "n": null,
+        "mode": null,
+        "repeated_operations": null,
+        "median_cpu_ns": {
+          "owned": 45785000,
+          "base": 45446000,
+          "allocator": 46196000,
+          "control": 45413000
+        },
+        "ratio_to_base": {
+          "owned": 1.007459402367645,
+          "base": 1.0,
+          "allocator": 1.0165031025832856,
+          "control": 0.9992738634863354
+        }
+      },
+      {
+        "kind": "main",
+        "compiler": "gcc",
+        "case": "\"official_small_width_query_4\"",
+        "type": null,
+        "n": null,
+        "mode": null,
+        "repeated_operations": null,
+        "median_cpu_ns": {
+          "owned": 45890000,
+          "base": 46099000,
+          "allocator": 45490000,
+          "control": 45418000
+        },
+        "ratio_to_base": {
+          "owned": 0.9954662790949912,
+          "base": 1.0,
+          "allocator": 0.986789301286362,
+          "control": 0.9852274452808087
+        }
+      },
+      {
+        "kind": "main",
+        "compiler": "gcc",
+        "case": "\"official_small_values_0\"",
+        "type": null,
+        "n": null,
+        "mode": null,
+        "repeated_operations": null,
+        "median_cpu_ns": {
+          "control": 28037000,
+          "base": 28511000,
+          "allocator": 34403000,
+          "owned": 33284000
+        },
+        "ratio_to_base": {
+          "control": 0.9833748377819087,
+          "base": 1.0,
+          "allocator": 1.2066570797236154,
+          "owned": 1.1674090701834379
+        }
+      },
+      {
+        "kind": "main",
+        "compiler": "gcc",
+        "case": "\"4096_random\"",
+        "type": null,
+        "n": null,
+        "mode": null,
+        "repeated_operations": null,
+        "median_cpu_ns": {
+          "allocator": 8216000,
+          "control": 8144000,
+          "owned": 8149000,
+          "base": 8293000
+        },
+        "ratio_to_base": {
+          "allocator": 0.9907150608947305,
+          "control": 0.9820330399131798,
+          "owned": 0.9826359580368986,
+          "base": 1.0
+        }
+      },
+      {
+        "kind": "main",
+        "compiler": "gcc",
+        "case": "\"500000_build\"",
+        "type": null,
+        "n": null,
+        "mode": null,
+        "repeated_operations": null,
+        "median_cpu_ns": {
+          "control": 18170000,
+          "base": 18211000,
+          "allocator": 16896000,
+          "owned": 17212000
+        },
+        "ratio_to_base": {
+          "control": 0.997748613475372,
+          "base": 1.0,
+          "allocator": 0.9277908956125419,
+          "owned": 0.9451430454121136
+        }
+      },
+      {
+        "kind": "main",
+        "compiler": "clang",
+        "case": "\"official_max_random_0\"",
+        "type": null,
+        "n": null,
+        "mode": null,
+        "repeated_operations": null,
+        "median_cpu_ns": {
+          "allocator": 40238000,
+          "control": 34741000,
+          "owned": 41663000,
+          "base": 35143000
+        },
+        "ratio_to_base": {
+          "allocator": 1.1449790854508721,
+          "control": 0.9885610221096662,
+          "owned": 1.185527701106906,
+          "base": 1.0
+        }
+      },
+      {
+        "kind": "main",
+        "compiler": "clang",
+        "case": "\"official_small_width_query_3\"",
+        "type": null,
+        "n": null,
+        "mode": null,
+        "repeated_operations": null,
+        "median_cpu_ns": {
+          "base": 42353000,
+          "allocator": 43690000,
+          "control": 42973000,
+          "owned": 43763000
+        },
+        "ratio_to_base": {
+          "base": 1.0,
+          "allocator": 1.0315680117110948,
+          "control": 1.014638868557127,
+          "owned": 1.033291620428305
+        }
+      },
+      {
+        "kind": "main",
+        "compiler": "clang",
+        "case": "\"official_small_width_query_4\"",
+        "type": null,
+        "n": null,
+        "mode": null,
+        "repeated_operations": null,
+        "median_cpu_ns": {
+          "owned": 45425000,
+          "allocator": 44837000,
+          "control": 45403000,
+          "base": 44836000
+        },
+        "ratio_to_base": {
+          "owned": 1.0131367650994736,
+          "allocator": 1.000022303506111,
+          "control": 1.012646087965028,
+          "base": 1.0
+        }
+      },
+      {
+        "kind": "main",
+        "compiler": "clang",
+        "case": "\"official_small_values_0\"",
+        "type": null,
+        "n": null,
+        "mode": null,
+        "repeated_operations": null,
+        "median_cpu_ns": {
+          "control": 33028000,
+          "base": 31370000,
+          "allocator": 34690000,
+          "owned": 35750000
+        },
+        "ratio_to_base": {
+          "control": 1.0528530443098503,
+          "base": 1.0,
+          "allocator": 1.105833598979917,
+          "owned": 1.1396238444373605
+        }
+      },
+      {
+        "kind": "main",
+        "compiler": "clang",
+        "case": "\"4096_random\"",
+        "type": null,
+        "n": null,
+        "mode": null,
+        "repeated_operations": null,
+        "median_cpu_ns": {
+          "owned": 7945000,
+          "base": 8230000,
+          "allocator": 7755000,
+          "control": 7860000
+        },
+        "ratio_to_base": {
+          "owned": 0.965370595382746,
+          "base": 1.0,
+          "allocator": 0.9422843256379101,
+          "control": 0.9550425273390036
+        }
+      },
+      {
+        "kind": "main",
+        "compiler": "clang",
+        "case": "\"500000_build\"",
+        "type": null,
+        "n": null,
+        "mode": null,
+        "repeated_operations": null,
+        "median_cpu_ns": {
+          "owned": 17387000,
+          "base": 17476000,
+          "allocator": 16635000,
+          "control": 17400000
+        },
+        "ratio_to_base": {
+          "owned": 0.9949073014419776,
+          "base": 1.0,
+          "allocator": 0.9518768596932936,
+          "control": 0.9956511787594415
+        }
+      },
+      {
+        "kind": "micro",
+        "compiler": "gcc",
+        "case": "[\"min\", 32, \"build\", 20000]",
+        "type": null,
+        "n": null,
+        "mode": null,
+        "repeated_operations": null,
+        "median_cpu_ns": {
+          "owned": 1588000,
+          "control": 1821000,
+          "allocator": 1698000,
+          "base": 1821000
+        },
+        "ratio_to_base": {
+          "owned": 0.8720483250961011,
+          "control": 1.0,
+          "allocator": 0.9324546952224053,
+          "base": 1.0
+        }
+      },
+      {
+        "kind": "micro",
+        "compiler": "gcc",
+        "case": "[\"min\", 4096, \"build\", 150]",
+        "type": null,
+        "n": null,
+        "mode": null,
+        "repeated_operations": null,
+        "median_cpu_ns": {
+          "owned": 3785000,
+          "base": 4526000,
+          "control": 4545000,
+          "allocator": 3824000
+        },
+        "ratio_to_base": {
+          "owned": 0.8362792752982766,
+          "base": 1.0,
+          "control": 1.0041979673000443,
+          "allocator": 0.8448961555457357
+        }
+      },
+      {
+        "kind": "micro",
+        "compiler": "gcc",
+        "case": "[\"min\", 500000, \"build\", 3]",
+        "type": null,
+        "n": null,
+        "mode": null,
+        "repeated_operations": null,
+        "median_cpu_ns": {
+          "base": 35950000,
+          "owned": 33692000,
+          "allocator": 33145000,
+          "control": 36575000
+        },
+        "ratio_to_base": {
+          "base": 1.0,
+          "owned": 0.9371905424200279,
+          "allocator": 0.9219749652294854,
+          "control": 1.017385257301808
+        }
+      },
+      {
+        "kind": "micro",
+        "compiler": "gcc",
+        "case": "[\"sum32\", 500000, \"build\", 3]",
+        "type": null,
+        "n": null,
+        "mode": null,
+        "repeated_operations": null,
+        "median_cpu_ns": {
+          "control": 33644000,
+          "allocator": 30558000,
+          "owned": 30124000,
+          "base": 33530000
+        },
+        "ratio_to_base": {
+          "control": 1.0033999403519236,
+          "allocator": 0.9113629585445869,
+          "owned": 0.8984193259767372,
+          "base": 1.0
+        }
+      },
+      {
+        "kind": "micro",
+        "compiler": "gcc",
+        "case": "[\"gcd32\", 500000, \"build\", 3]",
+        "type": null,
+        "n": null,
+        "mode": null,
+        "repeated_operations": null,
+        "median_cpu_ns": {
+          "allocator": 212467000,
+          "base": 213349000,
+          "control": 214586000,
+          "owned": 211494000
+        },
+        "ratio_to_base": {
+          "allocator": 0.9958659285958688,
+          "base": 1.0,
+          "control": 1.0057980117085152,
+          "owned": 0.9913053260151208
+        }
+      },
+      {
+        "kind": "micro",
+        "compiler": "gcc",
+        "case": "[\"min\", 500000, \"query\", 1]",
+        "type": null,
+        "n": null,
+        "mode": null,
+        "repeated_operations": null,
+        "median_cpu_ns": {
+          "base": 4609000,
+          "control": 4899000,
+          "owned": 7047000,
+          "allocator": 7288000
+        },
+        "ratio_to_base": {
+          "base": 1.0,
+          "control": 1.062920373182903,
+          "owned": 1.5289650683445433,
+          "allocator": 1.5812540681275764
+        }
+      },
+      {
+        "kind": "micro",
+        "compiler": "gcc",
+        "case": "[\"gcd32\", 4096, \"query\", 1]",
+        "type": null,
+        "n": null,
+        "mode": null,
+        "repeated_operations": null,
+        "median_cpu_ns": {
+          "control": 1889000,
+          "allocator": 1847000,
+          "owned": 1754000,
+          "base": 1892000
+        },
+        "ratio_to_base": {
+          "control": 0.9984143763213531,
+          "allocator": 0.976215644820296,
+          "owned": 0.927061310782241,
+          "base": 1.0
+        }
+      },
+      {
+        "kind": "micro",
+        "compiler": "gcc",
+        "case": "[\"min\", 500000, \"copy\", 3]",
+        "type": null,
+        "n": null,
+        "mode": null,
+        "repeated_operations": null,
+        "median_cpu_ns": {
+          "control": 34196000,
+          "owned": 34565000,
+          "allocator": 35216000,
+          "base": 34586000
+        },
+        "ratio_to_base": {
+          "control": 0.9887237610593882,
+          "owned": 0.9993928179031978,
+          "allocator": 1.0182154629040652,
+          "base": 1.0
+        }
+      },
+      {
+        "kind": "micro",
+        "compiler": "gcc",
+        "case": "[\"min\", 500000, \"values\", 50]",
+        "type": null,
+        "n": null,
+        "mode": null,
+        "repeated_operations": null,
+        "median_cpu_ns": {
+          "control": 3638000,
+          "allocator": 3488000,
+          "base": 3590000,
+          "owned": 3567000
+        },
+        "ratio_to_base": {
+          "control": 1.0133704735376046,
+          "allocator": 0.9715877437325905,
+          "base": 1.0,
+          "owned": 0.9935933147632312
+        }
+      },
+      {
+        "kind": "micro",
+        "compiler": "clang",
+        "case": "[\"min\", 32, \"build\", 20000]",
+        "type": null,
+        "n": null,
+        "mode": null,
+        "repeated_operations": null,
+        "median_cpu_ns": {
+          "control": 1691000,
+          "owned": 1623000,
+          "allocator": 1482000,
+          "base": 1699000
+        },
+        "ratio_to_base": {
+          "control": 0.9952913478516775,
+          "owned": 0.9552678045909359,
+          "allocator": 0.872277810476751,
+          "base": 1.0
+        }
+      },
+      {
+        "kind": "micro",
+        "compiler": "clang",
+        "case": "[\"min\", 4096, \"build\", 150]",
+        "type": null,
+        "n": null,
+        "mode": null,
+        "repeated_operations": null,
+        "median_cpu_ns": {
+          "owned": 3749000,
+          "base": 3869000,
+          "control": 3861000,
+          "allocator": 3489000
+        },
+        "ratio_to_base": {
+          "owned": 0.9689842336521065,
+          "base": 1.0,
+          "control": 0.9979322822434737,
+          "allocator": 0.9017834065650039
+        }
+      },
+      {
+        "kind": "micro",
+        "compiler": "clang",
+        "case": "[\"min\", 500000, \"build\", 3]",
+        "type": null,
+        "n": null,
+        "mode": null,
+        "repeated_operations": null,
+        "median_cpu_ns": {
+          "control": 34161000,
+          "base": 33615000,
+          "allocator": 33034000,
+          "owned": 33955000
+        },
+        "ratio_to_base": {
+          "control": 1.0162427487728694,
+          "base": 1.0,
+          "allocator": 0.9827160493827161,
+          "owned": 1.0101145322028857
+        }
+      },
+      {
+        "kind": "micro",
+        "compiler": "clang",
+        "case": "[\"sum32\", 500000, \"build\", 3]",
+        "type": null,
+        "n": null,
+        "mode": null,
+        "repeated_operations": null,
+        "median_cpu_ns": {
+          "base": 30473000,
+          "control": 31190000,
+          "allocator": 29386000,
+          "owned": 29838000
+        },
+        "ratio_to_base": {
+          "base": 1.0,
+          "control": 1.0235290256948775,
+          "allocator": 0.9643290782003741,
+          "owned": 0.9791618810094181
+        }
+      },
+      {
+        "kind": "micro",
+        "compiler": "clang",
+        "case": "[\"gcd32\", 500000, \"build\", 3]",
+        "type": null,
+        "n": null,
+        "mode": null,
+        "repeated_operations": null,
+        "median_cpu_ns": {
+          "control": 222941000,
+          "allocator": 220773000,
+          "owned": 220951000,
+          "base": 222016000
+        },
+        "ratio_to_base": {
+          "control": 1.004166366388008,
+          "allocator": 0.9944013044104929,
+          "owned": 0.995203048428942,
+          "base": 1.0
+        }
+      },
+      {
+        "kind": "micro",
+        "compiler": "clang",
+        "case": "[\"min\", 500000, \"query\", 1]",
+        "type": null,
+        "n": null,
+        "mode": null,
+        "repeated_operations": null,
+        "median_cpu_ns": {
+          "control": 4138000,
+          "owned": 6276000,
+          "allocator": 6493000,
+          "base": 4218000
+        },
+        "ratio_to_base": {
+          "control": 0.9810336652441916,
+          "owned": 1.4879089615931722,
+          "allocator": 1.5393551446183025,
+          "base": 1.0
+        }
+      },
+      {
+        "kind": "micro",
+        "compiler": "clang",
+        "case": "[\"gcd32\", 4096, \"query\", 1]",
+        "type": null,
+        "n": null,
+        "mode": null,
+        "repeated_operations": null,
+        "median_cpu_ns": {
+          "allocator": 1799000,
+          "owned": 1745000,
+          "control": 1791000,
+          "base": 1789000
+        },
+        "ratio_to_base": {
+          "allocator": 1.0055897149245387,
+          "owned": 0.9754052543320291,
+          "control": 1.0011179429849077,
+          "base": 1.0
+        }
+      },
+      {
+        "kind": "micro",
+        "compiler": "clang",
+        "case": "[\"min\", 500000, \"copy\", 3]",
+        "type": null,
+        "n": null,
+        "mode": null,
+        "repeated_operations": null,
+        "median_cpu_ns": {
+          "base": 33288000,
+          "allocator": 27634000,
+          "control": 33222000,
+          "owned": 31637000
+        },
+        "ratio_to_base": {
+          "base": 1.0,
+          "allocator": 0.8301490026435953,
+          "control": 0.9980173035328046,
+          "owned": 0.9504025474645518
+        }
+      },
+      {
+        "kind": "micro",
+        "compiler": "clang",
+        "case": "[\"min\", 500000, \"values\", 50]",
+        "type": null,
+        "n": null,
+        "mode": null,
+        "repeated_operations": null,
+        "median_cpu_ns": {
+          "base": 4082000,
+          "control": 4050000,
+          "owned": 4042000,
+          "allocator": 4027000
+        },
+        "ratio_to_base": {
+          "base": 1.0,
+          "control": 0.9921607055365017,
+          "owned": 0.9902008819206272,
+          "allocator": 0.9865262126408624
+        }
+      }
+    ],
+    "interpretation": "GCCのN=500000 min構築で最終比較の所有配列0.937倍、allocator0.922倍。照会では両案とも約1.5倍になる測定があり、controlの揺らぎも踏まえて改善を採用できない。small_valuesを含む同一mainでも退行が残る。",
+    "page_diagnostic": "全21実行でAnonHugePages=0。巨大ページが原因とする仮説は裏付けられない。原因を断定しない。"
+  },
+  "correctness": {
+    "current_source_added_tests": [
+      {
+        "compiler": "gcc",
+        "skip_runtime_checks": false,
+        "test": "disjoint_sparse_table_owned_rows_test",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/disjoint_sparse_table_owned_rows_test.cpp",
+          "-o",
+          "/tmp/sirkit_disjoint_final_followup_20261103/final_gcc_0_disjoint_sparse_table_owned_rows_test"
+        ],
+        "returncode": 0,
+        "stdout": "Disjoint owned rows/const/copy checks=3008896\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "gcc",
+        "skip_runtime_checks": false,
+        "test": "range_structures_allocation_test",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/range_structures_allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_disjoint_final_followup_20261103/final_gcc_0_range_structures_allocation_test"
+        ],
+        "returncode": 0,
+        "stdout": "Range allocation checks=6470 failures=3761 live_delta=0\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "gcc",
+        "skip_runtime_checks": true,
+        "test": "disjoint_sparse_table_owned_rows_test",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/disjoint_sparse_table_owned_rows_test.cpp",
+          "-o",
+          "/tmp/sirkit_disjoint_final_followup_20261103/final_gcc_1_disjoint_sparse_table_owned_rows_test"
+        ],
+        "returncode": 0,
+        "stdout": "Disjoint owned rows/const/copy checks=3008896\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "gcc",
+        "skip_runtime_checks": true,
+        "test": "range_structures_allocation_test",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/range_structures_allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_disjoint_final_followup_20261103/final_gcc_1_range_structures_allocation_test"
+        ],
+        "returncode": 0,
+        "stdout": "Range allocation checks=6470 failures=3761 live_delta=0\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "clang",
+        "skip_runtime_checks": false,
+        "test": "disjoint_sparse_table_owned_rows_test",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/disjoint_sparse_table_owned_rows_test.cpp",
+          "-o",
+          "/tmp/sirkit_disjoint_final_followup_20261103/final_clang_0_disjoint_sparse_table_owned_rows_test"
+        ],
+        "returncode": 0,
+        "stdout": "Disjoint owned rows/const/copy checks=3008896\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "clang",
+        "skip_runtime_checks": false,
+        "test": "range_structures_allocation_test",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/range_structures_allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_disjoint_final_followup_20261103/final_clang_0_range_structures_allocation_test"
+        ],
+        "returncode": 0,
+        "stdout": "Range allocation checks=6470 failures=3761 live_delta=0\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "clang",
+        "skip_runtime_checks": true,
+        "test": "disjoint_sparse_table_owned_rows_test",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/disjoint_sparse_table_owned_rows_test.cpp",
+          "-o",
+          "/tmp/sirkit_disjoint_final_followup_20261103/final_clang_1_disjoint_sparse_table_owned_rows_test"
+        ],
+        "returncode": 0,
+        "stdout": "Disjoint owned rows/const/copy checks=3008896\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "clang",
+        "skip_runtime_checks": true,
+        "test": "range_structures_allocation_test",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/range_structures_allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_disjoint_final_followup_20261103/final_clang_1_range_structures_allocation_test"
+        ],
+        "returncode": 0,
+        "stdout": "Range allocation checks=6470 failures=3761 live_delta=0\n",
+        "stderr": ""
+      }
+    ],
+    "prototype_probe": "所有配列版と現行版をGCC/Clangで境界・型・コピー・例外テスト。16実行PASS。所有配列版の整数初期化5192100件はMemorySanitizerもPASS。",
+    "prototype_probe_file": "probe.json（evidence ZIP内）",
+    "ownership": "現行版の例外注入テストは各実行6470 checks / 3761 failures / live_delta=0。",
+    "leak_sanitizer": "ASanのdetect_leaks=0。所有権と部分構築の解放はallocation testのliveカウンタで補足。",
+    "allocator_scope": "allocator案は性能用プログラムの出力照合まで。型・例外・sanitizerの正式検証は未実施のまま不採用。"
+  },
+  "evidence": {
+    "path": "Audit/data/disjoint-sparse-table-owned-candidates-2026-11-03.zip",
+    "sha256": "bc73f367a427724b3cd6fd5cb5659d55a9b0a1cfe5e7ddc2ca0a2ceca0c01304",
+    "scope": "自作の比較コード・試作・現行スナップショット・ログ・fixtureメタデータ。公式generatorソース、実行バイナリ、大きい入力は含めない。"
+  },
+  "synchronization": "通常版・派生版の提出注記は最新URLのみ。使用例・本体に変更なし。生成照合と配布ZIP検証は別記録。"
+}

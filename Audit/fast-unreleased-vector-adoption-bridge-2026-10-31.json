@@ -1,0 +1,1750 @@
+{
+  "date_utc": "2026-10-31",
+  "conclusion": "Current formal Fast Aho, after compiler guards surround unused helper definitions, matches all4 requested runtime sections of the ACTUAL original timed binaries in8/8 cases. Additional checked Verify builds match frozen checked binaries4/4. No new performance measurements were performed.",
+  "comparison_scope": [
+    ".text",
+    ".rodata",
+    ".data",
+    ".eh_frame"
+  ],
+  "limits": [
+    "The four section payloads are compared directly, not only section lengths. This is not a claim that entire ELF files (debug/file-name/build-ID metadata) are identical.",
+    "Checked references were not timed in the original performance run; they are separately labeled supplemental frozen checked builds.",
+    "The benchmark conclusions and RSS floor limitations remain those of the original performance Audit; this receipt does not establish new timings or broader memory guarantees.",
+    "Actual binary paths refer to retained session artifacts. Full binary hashes, section hashes, exact compiler commands, timer hash and source hashes are included so the receipt remains identifiable after moving the JSON."
+  ],
+  "current_source_sha256": {
+    "Fast/Source/String/Aho_Corasick.cpp": "4a8a90ea5cde79d7142feffadeaefc0f2e86aba8ab7d4d9aad0e9f234b60b925",
+    "Fast/Source/Internal/Unreleased_Vector.cpp": "af44bd82307a31c3a8f39cb0febff10a6b1198e1a3b2985f8c29a016c7e310d7",
+    "Fast/Source/DataStructure/implicit_treap.cpp": "6e40ef3e9dd0e1d2da5eb557650963404e760a6c2f72da7c70e57be7c35565f9"
+  },
+  "original_selected_aho_sha256": "b728787f03003a3f8a1718ee3f2de421172e48ef6b340e2bd4fe19f1374b85a3",
+  "helper_change": {
+    "old_sha256": "81ca4ca7d3c79a8d004fbd2f5fa02ce13d04be7a0edefe3d21ef3d103956e550",
+    "current_sha256": "af44bd82307a31c3a8f39cb0febff10a6b1198e1a3b2985f8c29a016c7e310d7",
+    "implementation_from_first_include_identical": true,
+    "exact_diff": "--- frozen_helper\n+++ current_helper\n@@ -2,7 +2,7 @@\n // ドキュメント: https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/fast_variants.md\n //\n // API一覧\n-// [reinsirk::detail::UnreleasedVector<T>（Fast内部専用候補）]\n+// [reinsirk::detail::UnreleasedVector<T>（Fast内部専用）]\n // std::vector<T>を匿名union内へ構築し、外側の破棄時だけvectorの要素破棄・領域解放を省く。\n // 成長・代入・erase・clear等は通常のvectorとして破棄・旧領域回収を行う。最終領域はプロセス終了まで累積する。\n // 構築/iterator/access/capacity/modifierはstd::vector相当。型/サイズ/添字/確保成功を利用側が保証し、例外時の状態保証はFast APIに従う。\n"
+  },
+  "original_measurement": {
+    "audit_path": "Audit/fast-unreleased-vector-2026-10-31.json",
+    "audit_sha256": "9d32e2c48089560eab41b2431bc9665014b8a38597e0f4a73f91f2935b264ff2",
+    "raw_path": "Audit/fast-unreleased-vector-raw-2026-10-31.json",
+    "raw_sha256": "5031b8eaa73ade2366ac9cb67436d5d571f2c804f92a4e37ca6bbf7f6e69f7d7",
+    "session_raw_sha256": "5031b8eaa73ade2366ac9cb67436d5d571f2c804f92a4e37ca6bbf7f6e69f7d7",
+    "raw_rows": 1440,
+    "selected_aho_raw_row_indexes_0_based": [
+      87,
+      96,
+      134,
+      193,
+      198,
+      209,
+      223,
+      254,
+      269,
+      313,
+      335,
+      368,
+      373,
+      378,
+      406,
+      412,
+      515,
+      544,
+      564,
+      593,
+      653,
+      671,
+      695,
+      707,
+      718,
+      751,
+      768,
+      795,
+      857,
+      858,
+      884,
+      902,
+      996,
+      1008,
+      1099,
+      1138,
+      1142,
+      1159,
+      1187,
+      1194,
+      1250,
+      1254,
+      1260,
+      1321,
+      1348,
+      1360,
+      1392,
+      1403
+    ],
+    "selection_rule": "GCC_unreleased or Clang_buffer, kind aho/aho_corasick_counts, both default/native.",
+    "original_binaries_registry_sha256": "5b30f12006d218e2bd5049d01fb65910a02d65253d840dbc80d20223e7197ae9",
+    "original_actual_bridge_sha256": "6023b1f012f219d825207a77812afabb75dea87cef04c56ef8d70726249c433f"
+  },
+  "render_inputs": {
+    "driver_path": "Verify/current/drivers/aho_corasick_counts_main.cpp",
+    "driver_sha256": "5769452db27a5a2413fa939eba6317c47a512f24131f0277c2291e07457de311",
+    "timer_source": "#include <ctime>\n#include <cstdio>\n#include <cstdint>\n#include <cinttypes>\nstruct BenchmarkTimer {timespec start{};BenchmarkTimer(){clock_gettime(CLOCK_THREAD_CPUTIME_ID,&start);}~BenchmarkTimer(){timespec end{};clock_gettime(CLOCK_THREAD_CPUTIME_ID,&end);const auto ns=(static_cast<std::int64_t>(end.tv_sec)-start.tv_sec)*1000000000+end.tv_nsec-start.tv_nsec;std::fprintf(stderr,\"THREAD_NS=%\" PRId64 \"\\n\",ns);}};\nBenchmarkTimer benchmark_timer;\n",
+    "timer_sha256": "c2c1c4bed908b9f41073969a306f20a1d46f5a8d8337b8e0c09b0f9676887633",
+    "api_benchmark_sha256": "d875a7aea55e69734b0557518d1658fd56889d56a67bf8bc481d2b05e8f6a38a",
+    "api_benchmark_source": "#include <cinttypes>\n#include <cstdint>\n#include <cstdio>\n#include <cstdlib>\n#include <ctime>\n#include <string>\n#include <vector>\n#include LIBRARY_SOURCE\nstd::uint64_t cpu(){timespec t{};clock_gettime(CLOCK_THREAD_CPUTIME_ID,&t);return static_cast<std::uint64_t>(t.tv_sec)*1000000000+static_cast<std::uint64_t>(t.tv_nsec);}\nstd::uint64_t next(std::uint64_t&r){r^=r<<13;r^=r>>7;r^=r<<17;return r;}\n#if SIRKIT_BENCH_KIND==3\nstruct Algebra{struct S{std::uint64_t sum;std::size_t count;};using F=std::uint64_t;static S op(S a,S b){return {a.sum+b.sum,a.count+b.count};}static S e(){return {0,0};}static S mapping(F f,S x){return {x.sum+f*x.count,x.count};}static F composition(F f,F g){return f+g;}static F id(){return 0;}};\n#endif\nint main(int argc,char**argv){if(argc!=4)return 1;const auto n=static_cast<std::size_t>(std::strtoull(argv[1],nullptr,10));const int cycles=std::atoi(argv[2]),reserve=std::atoi(argv[3]);std::uint64_t hash=0,build_ns=0,query_ns=0,teardown_ns=0;\n for(int cycle=0;cycle<cycles;++cycle){std::uint64_t random=731592+static_cast<std::uint64_t>(cycle);auto t0=cpu();std::uint64_t t1{},t2{};{\n#if SIRKIT_BENCH_KIND==0\n  SuffixAutomaton<> tree;if(reserve)tree.reserve(n);for(std::size_t i=0;i<n;++i)tree.append(static_cast<std::uint8_t>('a'+next(random)%4));t1=cpu();hash+=tree.distinct_substring_count();for(int i=0;i<1000;++i)hash+=tree.occurrences(i&1?\"aba\":\"cac\");t2=cpu();tree.clear();\n#elif SIRKIT_BENCH_KIND==1\n  PalindromicTree<> tree;if(reserve)tree.reserve(n);for(std::size_t i=0;i<n;++i)tree.append(static_cast<std::uint8_t>('a'));t1=cpu();hash+=tree.distinct_palindrome_count();for(int i=0;i<1000;++i)hash+=tree.occurrences(i&1?\"aba\":\"cac\");t2=cpu();tree.clear();\n#elif SIRKIT_BENCH_KIND==2\n  AhoCorasick<> tree;if(reserve)tree.reserve_nodes(n*8);for(std::size_t i=0;i<n;++i){std::string pattern(12,'a');for(auto&c:pattern)c=static_cast<char>('a'+next(random)%26);tree.add(pattern);}tree.build();t1=cpu();std::string text(n*12,'a');for(auto&c:text)c=static_cast<char>('a'+next(random)%26);auto counts=tree.match_counts(text);for(auto count:counts)hash+=count;hash+=tree.state_count();t2=cpu();tree.clear();\n#elif SIRKIT_BENCH_KIND==3\n  using A=Algebra;lazy_implicit_treap<A::S,A::op,A::e,A::F,A::mapping,A::composition,A::id,true>tree;if(reserve)tree.reserve(n);for(std::size_t i=0;i<n;++i){const auto position=static_cast<int>(next(random)%(i+1));const auto value=next(random);tree.insert_at(position,{value,1});}t1=cpu();for(int i=0;i<10000;++i){const auto l=next(random)%n,r=l+1+next(random)%(n-l);tree.apply(l,r,1);hash^=tree.prod(l,r).sum;}t2=cpu();tree.clear();\n#endif\n  }auto t3=cpu();build_ns+=t1-t0;query_ns+=t2-t1;teardown_ns+=t3-t2;\n }\n std::printf(\"{\\\"hash\\\":%\" PRIu64 \",\\\"build_ns\\\":%\" PRIu64 \",\\\"query_ns\\\":%\" PRIu64 \",\\\"teardown_ns\\\":%\" PRIu64 \"}\\n\",hash,build_ns,query_ns,teardown_ns);\n}\n",
+    "renderer_path": "Scripts/prepare_verify.py",
+    "renderer_sha256": "cd86f62a2d08ca93cfdd24215cccf97f0f1bba644d30b4f98b3755dfff241aa4"
+  },
+  "actual_timed_comparisons": [
+    {
+      "config": "gcc_default",
+      "checked": false,
+      "benchmark": "verify",
+      "reference_kind": "ACTUAL timed Verify binary from original binaries.json",
+      "actual_reference_binary": "/tmp/sirkit_12h_20261031_095733/unreleased_vector/gcc_default_unreleased_aho_corasick_counts",
+      "actual_reference_binary_sha256": "dcce3f953eb98d35fa73d6905f9c1df453376bf0d11126c3d5de9703bf174e25",
+      "current_formal_binary": "/tmp/sirkit_12h_20261031_095733/unreleased_vector/root_actual_bridge/gcc_default_skip_verify",
+      "current_formal_binary_sha256": "a34e694575d8cddc3a72a0c2c92e34e072a908ed165f808e83bd64e8e53fe9fd",
+      "current_formal_source_sha256": "4a8a90ea5cde79d7142feffadeaefc0f2e86aba8ab7d4d9aad0e9f234b60b925",
+      "compiler_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "/tmp/sirkit_12h_20261031_095733/unreleased_vector/root_actual_bridge/gcc_default_skip_verify.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/unreleased_vector/root_actual_bridge/gcc_default_skip_verify"
+      ],
+      "rendered_source_sha256": "c07451a66002ad2892ff613455c70e094fcbf98b8c0582d66d921807373e66cc",
+      "render_hashes": {
+        "String/Aho_Corasick.cpp": "4a8a90ea5cde79d7142feffadeaefc0f2e86aba8ab7d4d9aad0e9f234b60b925"
+      },
+      "sections": {
+        ".text": {
+          "identical": true,
+          "sha256": [
+            "eef5e27cc78343b7c7fd3cef2997fac92de67711d4cdfe4ebb686ea04f163600",
+            "eef5e27cc78343b7c7fd3cef2997fac92de67711d4cdfe4ebb686ea04f163600"
+          ],
+          "bytes": [
+            7409,
+            7409
+          ]
+        },
+        ".rodata": {
+          "identical": true,
+          "sha256": [
+            "7246820b485e87c847f5218e1bf4ecb9010d8e806af16bf5cb7be836db1c1747",
+            "7246820b485e87c847f5218e1bf4ecb9010d8e806af16bf5cb7be836db1c1747"
+          ],
+          "bytes": [
+            384,
+            384
+          ]
+        },
+        ".data": {
+          "identical": true,
+          "sha256": [
+            "5f9838a528d5d67bdce9301f859efc1a1acb76b6699f2e7f798eb9d304a59a94",
+            "5f9838a528d5d67bdce9301f859efc1a1acb76b6699f2e7f798eb9d304a59a94"
+          ],
+          "bytes": [
+            24,
+            24
+          ]
+        },
+        ".eh_frame": {
+          "identical": true,
+          "sha256": [
+            "afdf1eb3495560eb6ee4b94ab1257fe28cfbdec40e2fc15f191035e51855cf0d",
+            "afdf1eb3495560eb6ee4b94ab1257fe28cfbdec40e2fc15f191035e51855cf0d"
+          ],
+          "bytes": [
+            824,
+            824
+          ]
+        }
+      },
+      "all_runtime_sections_identical": true,
+      "actual_reference_binary_name": "gcc_default_unreleased_aho_corasick_counts",
+      "current_formal_binary_name": "gcc_default_skip_verify",
+      "build_working_directory": "/tmp/sirkit_12h_20261031_095733/unreleased_vector/root_actual_bridge"
+    },
+    {
+      "config": "gcc_default",
+      "checked": false,
+      "benchmark": "api",
+      "reference_kind": "ACTUAL timed API-growth binary from original binaries.json",
+      "actual_reference_binary": "/tmp/sirkit_12h_20261031_095733/unreleased_vector/gcc_default_unreleased_api_aho",
+      "actual_reference_binary_sha256": "8ab29397636129036a7f7ba86b8a285ca5f4ef42ae01a50f97fb874cfa40c417",
+      "current_formal_binary": "/tmp/sirkit_12h_20261031_095733/unreleased_vector/root_actual_bridge/gcc_default_skip_api",
+      "current_formal_binary_sha256": "8ab29397636129036a7f7ba86b8a285ca5f4ef42ae01a50f97fb874cfa40c417",
+      "current_formal_source_sha256": "4a8a90ea5cde79d7142feffadeaefc0f2e86aba8ab7d4d9aad0e9f234b60b925",
+      "compiler_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-DSKIP_RUNTIME_CHECKS",
+        "-DSIRKIT_BENCH_KIND=2",
+        "-DLIBRARY_SOURCE=\"/tmp/sirkit_12h_20261031_095733/unreleased_vector/root_actual_bridge/current_Aho_Corasick.cpp\"",
+        "/tmp/sirkit_12h_20261031_095733/unreleased_vector/growth_benchmark.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/unreleased_vector/root_actual_bridge/gcc_default_skip_api"
+      ],
+      "rendered_source_sha256": "d875a7aea55e69734b0557518d1658fd56889d56a67bf8bc481d2b05e8f6a38a",
+      "render_hashes": null,
+      "sections": {
+        ".text": {
+          "identical": true,
+          "sha256": [
+            "a63790faf2fa1fe9900453503c40cb04c0ae0687c2315e5506ab5d32981af6ed",
+            "a63790faf2fa1fe9900453503c40cb04c0ae0687c2315e5506ab5d32981af6ed"
+          ],
+          "bytes": [
+            6187,
+            6187
+          ]
+        },
+        ".rodata": {
+          "identical": true,
+          "sha256": [
+            "e762c70015af1bf499f2a2b3dd40f6f733ccb216648f59e38ba3f37f3a216c8c",
+            "e762c70015af1bf499f2a2b3dd40f6f733ccb216648f59e38ba3f37f3a216c8c"
+          ],
+          "bytes": [
+            256,
+            256
+          ]
+        },
+        ".data": {
+          "identical": true,
+          "sha256": [
+            "5f9838a528d5d67bdce9301f859efc1a1acb76b6699f2e7f798eb9d304a59a94",
+            "5f9838a528d5d67bdce9301f859efc1a1acb76b6699f2e7f798eb9d304a59a94"
+          ],
+          "bytes": [
+            24,
+            24
+          ]
+        },
+        ".eh_frame": {
+          "identical": true,
+          "sha256": [
+            "1b9a4ddac095c0e2c9896efb5d4181b85e8b1dadb7054b0325ec1f7b93bb29a3",
+            "1b9a4ddac095c0e2c9896efb5d4181b85e8b1dadb7054b0325ec1f7b93bb29a3"
+          ],
+          "bytes": [
+            520,
+            520
+          ]
+        }
+      },
+      "all_runtime_sections_identical": true,
+      "actual_reference_binary_name": "gcc_default_unreleased_api_aho",
+      "current_formal_binary_name": "gcc_default_skip_api",
+      "build_working_directory": "/tmp/sirkit_12h_20261031_095733/unreleased_vector/root_actual_bridge"
+    },
+    {
+      "config": "gcc_native",
+      "checked": false,
+      "benchmark": "verify",
+      "reference_kind": "ACTUAL timed Verify binary from original binaries.json",
+      "actual_reference_binary": "/tmp/sirkit_12h_20261031_095733/unreleased_vector/gcc_native_unreleased_aho_corasick_counts",
+      "actual_reference_binary_sha256": "4821c81d9f5669a7937a34cf9b93d7f6935e724b1511428216a744113161802f",
+      "current_formal_binary": "/tmp/sirkit_12h_20261031_095733/unreleased_vector/root_actual_bridge/gcc_native_skip_verify",
+      "current_formal_binary_sha256": "25efded267844cd740d63bf6a9d47a4b2748b430c078756371549d4dfdca1729",
+      "current_formal_source_sha256": "4a8a90ea5cde79d7142feffadeaefc0f2e86aba8ab7d4d9aad0e9f234b60b925",
+      "compiler_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-march=native",
+        "/tmp/sirkit_12h_20261031_095733/unreleased_vector/root_actual_bridge/gcc_native_skip_verify.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/unreleased_vector/root_actual_bridge/gcc_native_skip_verify"
+      ],
+      "rendered_source_sha256": "c07451a66002ad2892ff613455c70e094fcbf98b8c0582d66d921807373e66cc",
+      "render_hashes": {
+        "String/Aho_Corasick.cpp": "4a8a90ea5cde79d7142feffadeaefc0f2e86aba8ab7d4d9aad0e9f234b60b925"
+      },
+      "sections": {
+        ".text": {
+          "identical": true,
+          "sha256": [
+            "86a985cb626838b887e73d621a398fdd630f314584d019bd46d6f06030d3944e",
+            "86a985cb626838b887e73d621a398fdd630f314584d019bd46d6f06030d3944e"
+          ],
+          "bytes": [
+            7479,
+            7479
+          ]
+        },
+        ".rodata": {
+          "identical": true,
+          "sha256": [
+            "65a54f858403cfed48bb9510bbb5d07b6282e711603b3f39d80794f415a54ddf",
+            "65a54f858403cfed48bb9510bbb5d07b6282e711603b3f39d80794f415a54ddf"
+          ],
+          "bytes": [
+            384,
+            384
+          ]
+        },
+        ".data": {
+          "identical": true,
+          "sha256": [
+            "5f9838a528d5d67bdce9301f859efc1a1acb76b6699f2e7f798eb9d304a59a94",
+            "5f9838a528d5d67bdce9301f859efc1a1acb76b6699f2e7f798eb9d304a59a94"
+          ],
+          "bytes": [
+            24,
+            24
+          ]
+        },
+        ".eh_frame": {
+          "identical": true,
+          "sha256": [
+            "ea398d48256e7866f61cef7d9307b88b28a594234ffb78b973b8046220b87610",
+            "ea398d48256e7866f61cef7d9307b88b28a594234ffb78b973b8046220b87610"
+          ],
+          "bytes": [
+            764,
+            764
+          ]
+        }
+      },
+      "all_runtime_sections_identical": true,
+      "actual_reference_binary_name": "gcc_native_unreleased_aho_corasick_counts",
+      "current_formal_binary_name": "gcc_native_skip_verify",
+      "build_working_directory": "/tmp/sirkit_12h_20261031_095733/unreleased_vector/root_actual_bridge"
+    },
+    {
+      "config": "gcc_native",
+      "checked": false,
+      "benchmark": "api",
+      "reference_kind": "ACTUAL timed API-growth binary from original binaries.json",
+      "actual_reference_binary": "/tmp/sirkit_12h_20261031_095733/unreleased_vector/gcc_native_unreleased_api_aho",
+      "actual_reference_binary_sha256": "186e466134ea1a65bce0380abdc552292dea0f095f17a46fa21a40f8967c5a23",
+      "current_formal_binary": "/tmp/sirkit_12h_20261031_095733/unreleased_vector/root_actual_bridge/gcc_native_skip_api",
+      "current_formal_binary_sha256": "186e466134ea1a65bce0380abdc552292dea0f095f17a46fa21a40f8967c5a23",
+      "current_formal_source_sha256": "4a8a90ea5cde79d7142feffadeaefc0f2e86aba8ab7d4d9aad0e9f234b60b925",
+      "compiler_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-march=native",
+        "-DSKIP_RUNTIME_CHECKS",
+        "-DSIRKIT_BENCH_KIND=2",
+        "-DLIBRARY_SOURCE=\"/tmp/sirkit_12h_20261031_095733/unreleased_vector/root_actual_bridge/current_Aho_Corasick.cpp\"",
+        "/tmp/sirkit_12h_20261031_095733/unreleased_vector/growth_benchmark.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/unreleased_vector/root_actual_bridge/gcc_native_skip_api"
+      ],
+      "rendered_source_sha256": "d875a7aea55e69734b0557518d1658fd56889d56a67bf8bc481d2b05e8f6a38a",
+      "render_hashes": null,
+      "sections": {
+        ".text": {
+          "identical": true,
+          "sha256": [
+            "76270d68a7cd070baba9bc25e20724cf840ed56a6622a17d6a8ab016bf011b6e",
+            "76270d68a7cd070baba9bc25e20724cf840ed56a6622a17d6a8ab016bf011b6e"
+          ],
+          "bytes": [
+            6321,
+            6321
+          ]
+        },
+        ".rodata": {
+          "identical": true,
+          "sha256": [
+            "e762c70015af1bf499f2a2b3dd40f6f733ccb216648f59e38ba3f37f3a216c8c",
+            "e762c70015af1bf499f2a2b3dd40f6f733ccb216648f59e38ba3f37f3a216c8c"
+          ],
+          "bytes": [
+            256,
+            256
+          ]
+        },
+        ".data": {
+          "identical": true,
+          "sha256": [
+            "5f9838a528d5d67bdce9301f859efc1a1acb76b6699f2e7f798eb9d304a59a94",
+            "5f9838a528d5d67bdce9301f859efc1a1acb76b6699f2e7f798eb9d304a59a94"
+          ],
+          "bytes": [
+            24,
+            24
+          ]
+        },
+        ".eh_frame": {
+          "identical": true,
+          "sha256": [
+            "805fc35b90a7062566c42b34865680b5b72545a62c4bd44fc9977c24c74c62b5",
+            "805fc35b90a7062566c42b34865680b5b72545a62c4bd44fc9977c24c74c62b5"
+          ],
+          "bytes": [
+            460,
+            460
+          ]
+        }
+      },
+      "all_runtime_sections_identical": true,
+      "actual_reference_binary_name": "gcc_native_unreleased_api_aho",
+      "current_formal_binary_name": "gcc_native_skip_api",
+      "build_working_directory": "/tmp/sirkit_12h_20261031_095733/unreleased_vector/root_actual_bridge"
+    },
+    {
+      "config": "clang_default",
+      "checked": false,
+      "benchmark": "verify",
+      "reference_kind": "ACTUAL timed Verify binary from original binaries.json",
+      "actual_reference_binary": "/tmp/sirkit_12h_20261031_095733/unreleased_vector/clang_default_buffer_aho_corasick_counts",
+      "actual_reference_binary_sha256": "0ed6a762179f92ee468116abd327eccbf38913166ebab23507762b73093017e8",
+      "current_formal_binary": "/tmp/sirkit_12h_20261031_095733/unreleased_vector/root_actual_bridge/clang_default_skip_verify",
+      "current_formal_binary_sha256": "56fd61367ed9284ceeb3a4e556be30ebb0c11b211a3b56acd033dc1a151fb556",
+      "current_formal_source_sha256": "4a8a90ea5cde79d7142feffadeaefc0f2e86aba8ab7d4d9aad0e9f234b60b925",
+      "compiler_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "/tmp/sirkit_12h_20261031_095733/unreleased_vector/root_actual_bridge/clang_default_skip_verify.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/unreleased_vector/root_actual_bridge/clang_default_skip_verify"
+      ],
+      "rendered_source_sha256": "c07451a66002ad2892ff613455c70e094fcbf98b8c0582d66d921807373e66cc",
+      "render_hashes": {
+        "String/Aho_Corasick.cpp": "4a8a90ea5cde79d7142feffadeaefc0f2e86aba8ab7d4d9aad0e9f234b60b925"
+      },
+      "sections": {
+        ".text": {
+          "identical": true,
+          "sha256": [
+            "c1817394c05da78a41fd298d2b30b5079d9a21fb94d264a10afbab6315baf8da",
+            "c1817394c05da78a41fd298d2b30b5079d9a21fb94d264a10afbab6315baf8da"
+          ],
+          "bytes": [
+            6769,
+            6769
+          ]
+        },
+        ".rodata": {
+          "identical": true,
+          "sha256": [
+            "a4fec8f0af8bde60f198f50437b899228353c5ae555291960fc42e66d40da62b",
+            "a4fec8f0af8bde60f198f50437b899228353c5ae555291960fc42e66d40da62b"
+          ],
+          "bytes": [
+            393,
+            393
+          ]
+        },
+        ".data": {
+          "identical": true,
+          "sha256": [
+            "d356a9ad426a2c2c766453e6535435a5085fff4cf8076b88a93b386bc39fc566",
+            "d356a9ad426a2c2c766453e6535435a5085fff4cf8076b88a93b386bc39fc566"
+          ],
+          "bytes": [
+            24,
+            24
+          ]
+        },
+        ".eh_frame": {
+          "identical": true,
+          "sha256": [
+            "3502c28442eedf72f0d8840be1d3260cf96cb13dec4fde89d0457c12a7d4e8aa",
+            "3502c28442eedf72f0d8840be1d3260cf96cb13dec4fde89d0457c12a7d4e8aa"
+          ],
+          "bytes": [
+            1060,
+            1060
+          ]
+        }
+      },
+      "all_runtime_sections_identical": true,
+      "actual_reference_binary_name": "clang_default_buffer_aho_corasick_counts",
+      "current_formal_binary_name": "clang_default_skip_verify",
+      "build_working_directory": "/tmp/sirkit_12h_20261031_095733/unreleased_vector/root_actual_bridge"
+    },
+    {
+      "config": "clang_default",
+      "checked": false,
+      "benchmark": "api",
+      "reference_kind": "ACTUAL timed API-growth binary from original binaries.json",
+      "actual_reference_binary": "/tmp/sirkit_12h_20261031_095733/unreleased_vector/clang_default_buffer_api_aho",
+      "actual_reference_binary_sha256": "b12f36d47d54932ca762a0b44af3c0f1a2269bb99fa8994c28ac38d0644d6759",
+      "current_formal_binary": "/tmp/sirkit_12h_20261031_095733/unreleased_vector/root_actual_bridge/clang_default_skip_api",
+      "current_formal_binary_sha256": "b12f36d47d54932ca762a0b44af3c0f1a2269bb99fa8994c28ac38d0644d6759",
+      "current_formal_source_sha256": "4a8a90ea5cde79d7142feffadeaefc0f2e86aba8ab7d4d9aad0e9f234b60b925",
+      "compiler_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-DSKIP_RUNTIME_CHECKS",
+        "-DSIRKIT_BENCH_KIND=2",
+        "-DLIBRARY_SOURCE=\"/tmp/sirkit_12h_20261031_095733/unreleased_vector/root_actual_bridge/current_Aho_Corasick.cpp\"",
+        "/tmp/sirkit_12h_20261031_095733/unreleased_vector/growth_benchmark.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/unreleased_vector/root_actual_bridge/clang_default_skip_api"
+      ],
+      "rendered_source_sha256": "d875a7aea55e69734b0557518d1658fd56889d56a67bf8bc481d2b05e8f6a38a",
+      "render_hashes": null,
+      "sections": {
+        ".text": {
+          "identical": true,
+          "sha256": [
+            "ff855df3477195be3817228cf82c7bcac3797d636acfbfb18822e88429bf46a1",
+            "ff855df3477195be3817228cf82c7bcac3797d636acfbfb18822e88429bf46a1"
+          ],
+          "bytes": [
+            5969,
+            5969
+          ]
+        },
+        ".rodata": {
+          "identical": true,
+          "sha256": [
+            "9a4df940187b2ce06b31a4e4eafbae85fa986e76e1857c09cf8b26c280a8d6dd",
+            "9a4df940187b2ce06b31a4e4eafbae85fa986e76e1857c09cf8b26c280a8d6dd"
+          ],
+          "bytes": [
+            254,
+            254
+          ]
+        },
+        ".data": {
+          "identical": true,
+          "sha256": [
+            "2b7ee897c0f6354372c45c95b2e13c6133ec2f20d3d36370158636e16c8f8f5e",
+            "2b7ee897c0f6354372c45c95b2e13c6133ec2f20d3d36370158636e16c8f8f5e"
+          ],
+          "bytes": [
+            24,
+            24
+          ]
+        },
+        ".eh_frame": {
+          "identical": true,
+          "sha256": [
+            "8d18765427e0be08a10ed69f56d6cf111f2be1a371bdd76184f339597bb18266",
+            "8d18765427e0be08a10ed69f56d6cf111f2be1a371bdd76184f339597bb18266"
+          ],
+          "bytes": [
+            720,
+            720
+          ]
+        }
+      },
+      "all_runtime_sections_identical": true,
+      "actual_reference_binary_name": "clang_default_buffer_api_aho",
+      "current_formal_binary_name": "clang_default_skip_api",
+      "build_working_directory": "/tmp/sirkit_12h_20261031_095733/unreleased_vector/root_actual_bridge"
+    },
+    {
+      "config": "clang_native",
+      "checked": false,
+      "benchmark": "verify",
+      "reference_kind": "ACTUAL timed Verify binary from original binaries.json",
+      "actual_reference_binary": "/tmp/sirkit_12h_20261031_095733/unreleased_vector/clang_native_buffer_aho_corasick_counts",
+      "actual_reference_binary_sha256": "e5f713e94e1b4c9665e59cffb2d6ba689ad40e0be6dce03a68a45d44612dda33",
+      "current_formal_binary": "/tmp/sirkit_12h_20261031_095733/unreleased_vector/root_actual_bridge/clang_native_skip_verify",
+      "current_formal_binary_sha256": "975de2c5e757851b58e4654915a7ad0550211c73999b797cb93d987beadf7d16",
+      "current_formal_source_sha256": "4a8a90ea5cde79d7142feffadeaefc0f2e86aba8ab7d4d9aad0e9f234b60b925",
+      "compiler_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-march=native",
+        "/tmp/sirkit_12h_20261031_095733/unreleased_vector/root_actual_bridge/clang_native_skip_verify.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/unreleased_vector/root_actual_bridge/clang_native_skip_verify"
+      ],
+      "rendered_source_sha256": "c07451a66002ad2892ff613455c70e094fcbf98b8c0582d66d921807373e66cc",
+      "render_hashes": {
+        "String/Aho_Corasick.cpp": "4a8a90ea5cde79d7142feffadeaefc0f2e86aba8ab7d4d9aad0e9f234b60b925"
+      },
+      "sections": {
+        ".text": {
+          "identical": true,
+          "sha256": [
+            "14cc7afb4979d3996a9b032b09b1f12bc9b87d315ce61c333bdb77ff5a2ae11b",
+            "14cc7afb4979d3996a9b032b09b1f12bc9b87d315ce61c333bdb77ff5a2ae11b"
+          ],
+          "bytes": [
+            8492,
+            8492
+          ]
+        },
+        ".rodata": {
+          "identical": true,
+          "sha256": [
+            "00f43a676e292001565ee1df94293b4f31e0455e28c5223aefc3ebc9dd870754",
+            "00f43a676e292001565ee1df94293b4f31e0455e28c5223aefc3ebc9dd870754"
+          ],
+          "bytes": [
+            409,
+            409
+          ]
+        },
+        ".data": {
+          "identical": true,
+          "sha256": [
+            "7c2d5cd2be534f22057badddd913e0aaf3366561ee80cc962507841537035cac",
+            "7c2d5cd2be534f22057badddd913e0aaf3366561ee80cc962507841537035cac"
+          ],
+          "bytes": [
+            24,
+            24
+          ]
+        },
+        ".eh_frame": {
+          "identical": true,
+          "sha256": [
+            "46add22945ceb7f0ed14ea0b3ebb335861f4e6c7ed1a76e1faa15be556fcb578",
+            "46add22945ceb7f0ed14ea0b3ebb335861f4e6c7ed1a76e1faa15be556fcb578"
+          ],
+          "bytes": [
+            1032,
+            1032
+          ]
+        }
+      },
+      "all_runtime_sections_identical": true,
+      "actual_reference_binary_name": "clang_native_buffer_aho_corasick_counts",
+      "current_formal_binary_name": "clang_native_skip_verify",
+      "build_working_directory": "/tmp/sirkit_12h_20261031_095733/unreleased_vector/root_actual_bridge"
+    },
+    {
+      "config": "clang_native",
+      "checked": false,
+      "benchmark": "api",
+      "reference_kind": "ACTUAL timed API-growth binary from original binaries.json",
+      "actual_reference_binary": "/tmp/sirkit_12h_20261031_095733/unreleased_vector/clang_native_buffer_api_aho",
+      "actual_reference_binary_sha256": "60dc3c51502b2a0825def2da8b33e94d04e6deba03a66ad5457cbb4494bad419",
+      "current_formal_binary": "/tmp/sirkit_12h_20261031_095733/unreleased_vector/root_actual_bridge/clang_native_skip_api",
+      "current_formal_binary_sha256": "60dc3c51502b2a0825def2da8b33e94d04e6deba03a66ad5457cbb4494bad419",
+      "current_formal_source_sha256": "4a8a90ea5cde79d7142feffadeaefc0f2e86aba8ab7d4d9aad0e9f234b60b925",
+      "compiler_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-march=native",
+        "-DSKIP_RUNTIME_CHECKS",
+        "-DSIRKIT_BENCH_KIND=2",
+        "-DLIBRARY_SOURCE=\"/tmp/sirkit_12h_20261031_095733/unreleased_vector/root_actual_bridge/current_Aho_Corasick.cpp\"",
+        "/tmp/sirkit_12h_20261031_095733/unreleased_vector/growth_benchmark.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/unreleased_vector/root_actual_bridge/clang_native_skip_api"
+      ],
+      "rendered_source_sha256": "d875a7aea55e69734b0557518d1658fd56889d56a67bf8bc481d2b05e8f6a38a",
+      "render_hashes": null,
+      "sections": {
+        ".text": {
+          "identical": true,
+          "sha256": [
+            "97d4a8e14fec5238c9f9ab36f1744c206e5b6f984b8e05c0598610765262ac3c",
+            "97d4a8e14fec5238c9f9ab36f1744c206e5b6f984b8e05c0598610765262ac3c"
+          ],
+          "bytes": [
+            8876,
+            8876
+          ]
+        },
+        ".rodata": {
+          "identical": true,
+          "sha256": [
+            "bf3311709c0abdf7bcb641809abbc0c52419f8d09eb3cb24935cd883e7f61a9d",
+            "bf3311709c0abdf7bcb641809abbc0c52419f8d09eb3cb24935cd883e7f61a9d"
+          ],
+          "bytes": [
+            282,
+            282
+          ]
+        },
+        ".data": {
+          "identical": true,
+          "sha256": [
+            "77ed275c649bf9e0fcba0f6bc0dcbb86b21e107919886ab80ceeb3a488181243",
+            "77ed275c649bf9e0fcba0f6bc0dcbb86b21e107919886ab80ceeb3a488181243"
+          ],
+          "bytes": [
+            24,
+            24
+          ]
+        },
+        ".eh_frame": {
+          "identical": true,
+          "sha256": [
+            "34f45e97127cbb9fab50070258658250b77b03de52eeeafd872bc99083747a61",
+            "34f45e97127cbb9fab50070258658250b77b03de52eeeafd872bc99083747a61"
+          ],
+          "bytes": [
+            660,
+            660
+          ]
+        }
+      },
+      "all_runtime_sections_identical": true,
+      "actual_reference_binary_name": "clang_native_buffer_api_aho",
+      "current_formal_binary_name": "clang_native_skip_api",
+      "build_working_directory": "/tmp/sirkit_12h_20261031_095733/unreleased_vector/root_actual_bridge"
+    }
+  ],
+  "supplemental_checked_comparisons": [
+    {
+      "config": "gcc_default",
+      "checked": true,
+      "benchmark": "verify",
+      "reference_kind": "previous frozen handoff checked build; not performance-measured",
+      "actual_reference_binary": "/tmp/sirkit_12h_20261031_095733/unreleased_vector/handoff/gcc_default_checked_aho_corasick_counts_selected",
+      "actual_reference_binary_sha256": "8ca69d74c12fc583d5edbc175f85cc800644043e1056a848ecd9ff54c9775a09",
+      "current_formal_binary": "/tmp/sirkit_12h_20261031_095733/unreleased_vector/root_actual_bridge/gcc_default_checked_verify",
+      "current_formal_binary_sha256": "79861c3c3597cb053a7a171d08142e51a1994296dcd68f03c49931aa5cd5fd27",
+      "current_formal_source_sha256": "4a8a90ea5cde79d7142feffadeaefc0f2e86aba8ab7d4d9aad0e9f234b60b925",
+      "compiler_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "/tmp/sirkit_12h_20261031_095733/unreleased_vector/root_actual_bridge/gcc_default_checked_verify.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/unreleased_vector/root_actual_bridge/gcc_default_checked_verify"
+      ],
+      "rendered_source_sha256": "2ca2775d726ed4046413ba288ee68447ae95dcaa7e85ce46afc26d09a27eaf82",
+      "render_hashes": {
+        "String/Aho_Corasick.cpp": "4a8a90ea5cde79d7142feffadeaefc0f2e86aba8ab7d4d9aad0e9f234b60b925"
+      },
+      "sections": {
+        ".text": {
+          "identical": true,
+          "sha256": [
+            "3c38f4997639d115daa59f807a10ee961d3a7cda757c6ee270a692d57d3354cb",
+            "3c38f4997639d115daa59f807a10ee961d3a7cda757c6ee270a692d57d3354cb"
+          ],
+          "bytes": [
+            8039,
+            8039
+          ]
+        },
+        ".rodata": {
+          "identical": true,
+          "sha256": [
+            "037dfbd3f6170c349bb7f7a614fa08c3119c9712c8a9ea08933f611f89d940e8",
+            "037dfbd3f6170c349bb7f7a614fa08c3119c9712c8a9ea08933f611f89d940e8"
+          ],
+          "bytes": [
+            464,
+            464
+          ]
+        },
+        ".data": {
+          "identical": true,
+          "sha256": [
+            "3bd6095e375744ea394c007fede356a7fb772480891a7ef4b3ed06c96dff94f1",
+            "3bd6095e375744ea394c007fede356a7fb772480891a7ef4b3ed06c96dff94f1"
+          ],
+          "bytes": [
+            24,
+            24
+          ]
+        },
+        ".eh_frame": {
+          "identical": true,
+          "sha256": [
+            "2d57127010b18f8db4f0c7d97d3500375749f6d63fb586a581b5a5d8de136e9d",
+            "2d57127010b18f8db4f0c7d97d3500375749f6d63fb586a581b5a5d8de136e9d"
+          ],
+          "bytes": [
+            824,
+            824
+          ]
+        }
+      },
+      "all_runtime_sections_identical": true,
+      "actual_reference_binary_name": "gcc_default_checked_aho_corasick_counts_selected",
+      "current_formal_binary_name": "gcc_default_checked_verify",
+      "build_working_directory": "/tmp/sirkit_12h_20261031_095733/unreleased_vector/root_actual_bridge"
+    },
+    {
+      "config": "gcc_native",
+      "checked": true,
+      "benchmark": "verify",
+      "reference_kind": "previous frozen handoff checked build; not performance-measured",
+      "actual_reference_binary": "/tmp/sirkit_12h_20261031_095733/unreleased_vector/handoff/gcc_native_checked_aho_corasick_counts_selected",
+      "actual_reference_binary_sha256": "b1534414e008666050c9786cddb0785c0a50a4f633283933c6b117b4bcf7a969",
+      "current_formal_binary": "/tmp/sirkit_12h_20261031_095733/unreleased_vector/root_actual_bridge/gcc_native_checked_verify",
+      "current_formal_binary_sha256": "41a9b4a6e1627d614f54f284681f61ca6a7c52f80809a44b38d32c10d4be1bb2",
+      "current_formal_source_sha256": "4a8a90ea5cde79d7142feffadeaefc0f2e86aba8ab7d4d9aad0e9f234b60b925",
+      "compiler_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-march=native",
+        "/tmp/sirkit_12h_20261031_095733/unreleased_vector/root_actual_bridge/gcc_native_checked_verify.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/unreleased_vector/root_actual_bridge/gcc_native_checked_verify"
+      ],
+      "rendered_source_sha256": "2ca2775d726ed4046413ba288ee68447ae95dcaa7e85ce46afc26d09a27eaf82",
+      "render_hashes": {
+        "String/Aho_Corasick.cpp": "4a8a90ea5cde79d7142feffadeaefc0f2e86aba8ab7d4d9aad0e9f234b60b925"
+      },
+      "sections": {
+        ".text": {
+          "identical": true,
+          "sha256": [
+            "171547f3ac9a488a5ced53b937fb359506ee08d071c3222c4ce749c5032bdc35",
+            "171547f3ac9a488a5ced53b937fb359506ee08d071c3222c4ce749c5032bdc35"
+          ],
+          "bytes": [
+            8040,
+            8040
+          ]
+        },
+        ".rodata": {
+          "identical": true,
+          "sha256": [
+            "43f7bf47e0b03ccdadc3c389cba12eb03dd556fc4974a9528a854528f1773d44",
+            "43f7bf47e0b03ccdadc3c389cba12eb03dd556fc4974a9528a854528f1773d44"
+          ],
+          "bytes": [
+            480,
+            480
+          ]
+        },
+        ".data": {
+          "identical": true,
+          "sha256": [
+            "3bd6095e375744ea394c007fede356a7fb772480891a7ef4b3ed06c96dff94f1",
+            "3bd6095e375744ea394c007fede356a7fb772480891a7ef4b3ed06c96dff94f1"
+          ],
+          "bytes": [
+            24,
+            24
+          ]
+        },
+        ".eh_frame": {
+          "identical": true,
+          "sha256": [
+            "bd713cfd41bc5361d677b6db79bb0fde0faf6e4661cd94ee73cdb73829109a3d",
+            "bd713cfd41bc5361d677b6db79bb0fde0faf6e4661cd94ee73cdb73829109a3d"
+          ],
+          "bytes": [
+            764,
+            764
+          ]
+        }
+      },
+      "all_runtime_sections_identical": true,
+      "actual_reference_binary_name": "gcc_native_checked_aho_corasick_counts_selected",
+      "current_formal_binary_name": "gcc_native_checked_verify",
+      "build_working_directory": "/tmp/sirkit_12h_20261031_095733/unreleased_vector/root_actual_bridge"
+    },
+    {
+      "config": "clang_default",
+      "checked": true,
+      "benchmark": "verify",
+      "reference_kind": "previous frozen handoff checked build; not performance-measured",
+      "actual_reference_binary": "/tmp/sirkit_12h_20261031_095733/unreleased_vector/handoff/clang_default_checked_aho_corasick_counts_selected",
+      "actual_reference_binary_sha256": "54e09e1d0dd3da1e6cf313b3bc0dd21d07047a68c3eb38795662f8972fafab13",
+      "current_formal_binary": "/tmp/sirkit_12h_20261031_095733/unreleased_vector/root_actual_bridge/clang_default_checked_verify",
+      "current_formal_binary_sha256": "a14bd627cf655e22e5a8f0802027543613133a15e635698fe101d14c538895ea",
+      "current_formal_source_sha256": "4a8a90ea5cde79d7142feffadeaefc0f2e86aba8ab7d4d9aad0e9f234b60b925",
+      "compiler_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "/tmp/sirkit_12h_20261031_095733/unreleased_vector/root_actual_bridge/clang_default_checked_verify.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/unreleased_vector/root_actual_bridge/clang_default_checked_verify"
+      ],
+      "rendered_source_sha256": "2ca2775d726ed4046413ba288ee68447ae95dcaa7e85ce46afc26d09a27eaf82",
+      "render_hashes": {
+        "String/Aho_Corasick.cpp": "4a8a90ea5cde79d7142feffadeaefc0f2e86aba8ab7d4d9aad0e9f234b60b925"
+      },
+      "sections": {
+        ".text": {
+          "identical": true,
+          "sha256": [
+            "43ee737563e9839ec9dc1940e94bd6811ef0e557d1b7ebb5718240147e4bd862",
+            "43ee737563e9839ec9dc1940e94bd6811ef0e557d1b7ebb5718240147e4bd862"
+          ],
+          "bytes": [
+            7201,
+            7201
+          ]
+        },
+        ".rodata": {
+          "identical": true,
+          "sha256": [
+            "35df2b52c760535d49a970635dcf8b3c21ed986b8c7e228fc48d97aa7979c0c7",
+            "35df2b52c760535d49a970635dcf8b3c21ed986b8c7e228fc48d97aa7979c0c7"
+          ],
+          "bytes": [
+            489,
+            489
+          ]
+        },
+        ".data": {
+          "identical": true,
+          "sha256": [
+            "e4bada83959598ac658d6ebb920e2a5d77cc687f4aba21ce35e38e0134439b3a",
+            "e4bada83959598ac658d6ebb920e2a5d77cc687f4aba21ce35e38e0134439b3a"
+          ],
+          "bytes": [
+            24,
+            24
+          ]
+        },
+        ".eh_frame": {
+          "identical": true,
+          "sha256": [
+            "446ba0f3269283e47deb15f010877b858728102d748ce6add7190154b81ca1e4",
+            "446ba0f3269283e47deb15f010877b858728102d748ce6add7190154b81ca1e4"
+          ],
+          "bytes": [
+            1060,
+            1060
+          ]
+        }
+      },
+      "all_runtime_sections_identical": true,
+      "actual_reference_binary_name": "clang_default_checked_aho_corasick_counts_selected",
+      "current_formal_binary_name": "clang_default_checked_verify",
+      "build_working_directory": "/tmp/sirkit_12h_20261031_095733/unreleased_vector/root_actual_bridge"
+    },
+    {
+      "config": "clang_native",
+      "checked": true,
+      "benchmark": "verify",
+      "reference_kind": "previous frozen handoff checked build; not performance-measured",
+      "actual_reference_binary": "/tmp/sirkit_12h_20261031_095733/unreleased_vector/handoff/clang_native_checked_aho_corasick_counts_selected",
+      "actual_reference_binary_sha256": "0c79189a5c87576318f9a961a0faec35aa76242d6fd1df8bb45448acc84b7354",
+      "current_formal_binary": "/tmp/sirkit_12h_20261031_095733/unreleased_vector/root_actual_bridge/clang_native_checked_verify",
+      "current_formal_binary_sha256": "1dc7eb5d70e4cb4b703064bf9da08a07d76650f95b6c3fda63bffed6ef081d23",
+      "current_formal_source_sha256": "4a8a90ea5cde79d7142feffadeaefc0f2e86aba8ab7d4d9aad0e9f234b60b925",
+      "compiler_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-march=native",
+        "/tmp/sirkit_12h_20261031_095733/unreleased_vector/root_actual_bridge/clang_native_checked_verify.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/unreleased_vector/root_actual_bridge/clang_native_checked_verify"
+      ],
+      "rendered_source_sha256": "2ca2775d726ed4046413ba288ee68447ae95dcaa7e85ce46afc26d09a27eaf82",
+      "render_hashes": {
+        "String/Aho_Corasick.cpp": "4a8a90ea5cde79d7142feffadeaefc0f2e86aba8ab7d4d9aad0e9f234b60b925"
+      },
+      "sections": {
+        ".text": {
+          "identical": true,
+          "sha256": [
+            "e42396fbacdb060965dcaec097a347ff7ab8c72d00bdbf36c206330c43db6091",
+            "e42396fbacdb060965dcaec097a347ff7ab8c72d00bdbf36c206330c43db6091"
+          ],
+          "bytes": [
+            8828,
+            8828
+          ]
+        },
+        ".rodata": {
+          "identical": true,
+          "sha256": [
+            "5356db66af5d2a44f5a8f199227de4a6119e0bc904957909446f83a2f60059ad",
+            "5356db66af5d2a44f5a8f199227de4a6119e0bc904957909446f83a2f60059ad"
+          ],
+          "bytes": [
+            521,
+            521
+          ]
+        },
+        ".data": {
+          "identical": true,
+          "sha256": [
+            "e77d6652deebb690b94bcb53d0dc303edfd2800aa683be842735707e58904a01",
+            "e77d6652deebb690b94bcb53d0dc303edfd2800aa683be842735707e58904a01"
+          ],
+          "bytes": [
+            24,
+            24
+          ]
+        },
+        ".eh_frame": {
+          "identical": true,
+          "sha256": [
+            "04a60c12890876c916629c27839bb15ea632f303454ae94eabf634934b985d0a",
+            "04a60c12890876c916629c27839bb15ea632f303454ae94eabf634934b985d0a"
+          ],
+          "bytes": [
+            1032,
+            1032
+          ]
+        }
+      },
+      "all_runtime_sections_identical": true,
+      "actual_reference_binary_name": "clang_native_checked_aho_corasick_counts_selected",
+      "current_formal_binary_name": "clang_native_checked_verify",
+      "build_working_directory": "/tmp/sirkit_12h_20261031_095733/unreleased_vector/root_actual_bridge"
+    }
+  ],
+  "cpu8_output_checks": {
+    "note": "CPU8 correctness only; timing fields intentionally ignored. API64patterns×2cycles, reserve0/1; Verify originalsmall fixture.",
+    "input_sha256": "ebfb5604e3cda68c144d81f45771d05a31df903978276d24e0accc3e3769f5b4",
+    "cases": [
+      {
+        "config": "gcc_default",
+        "checked": false,
+        "benchmark": "verify",
+        "reserve": null,
+        "value_equal": true,
+        "value": "3483258d9211812dc7e2430da02a4f04da80b709668e336e5934e9dd223d13ff"
+      },
+      {
+        "config": "gcc_default",
+        "checked": false,
+        "benchmark": "api",
+        "reserve": 0,
+        "value_equal": true,
+        "value": 1447
+      },
+      {
+        "config": "gcc_default",
+        "checked": false,
+        "benchmark": "api",
+        "reserve": 1,
+        "value_equal": true,
+        "value": 1447
+      },
+      {
+        "config": "gcc_default",
+        "checked": true,
+        "benchmark": "verify",
+        "reserve": null,
+        "value_equal": true,
+        "value": "3483258d9211812dc7e2430da02a4f04da80b709668e336e5934e9dd223d13ff"
+      },
+      {
+        "config": "gcc_native",
+        "checked": false,
+        "benchmark": "verify",
+        "reserve": null,
+        "value_equal": true,
+        "value": "3483258d9211812dc7e2430da02a4f04da80b709668e336e5934e9dd223d13ff"
+      },
+      {
+        "config": "gcc_native",
+        "checked": false,
+        "benchmark": "api",
+        "reserve": 0,
+        "value_equal": true,
+        "value": 1447
+      },
+      {
+        "config": "gcc_native",
+        "checked": false,
+        "benchmark": "api",
+        "reserve": 1,
+        "value_equal": true,
+        "value": 1447
+      },
+      {
+        "config": "gcc_native",
+        "checked": true,
+        "benchmark": "verify",
+        "reserve": null,
+        "value_equal": true,
+        "value": "3483258d9211812dc7e2430da02a4f04da80b709668e336e5934e9dd223d13ff"
+      },
+      {
+        "config": "clang_default",
+        "checked": false,
+        "benchmark": "verify",
+        "reserve": null,
+        "value_equal": true,
+        "value": "3483258d9211812dc7e2430da02a4f04da80b709668e336e5934e9dd223d13ff"
+      },
+      {
+        "config": "clang_default",
+        "checked": false,
+        "benchmark": "api",
+        "reserve": 0,
+        "value_equal": true,
+        "value": 1447
+      },
+      {
+        "config": "clang_default",
+        "checked": false,
+        "benchmark": "api",
+        "reserve": 1,
+        "value_equal": true,
+        "value": 1447
+      },
+      {
+        "config": "clang_default",
+        "checked": true,
+        "benchmark": "verify",
+        "reserve": null,
+        "value_equal": true,
+        "value": "3483258d9211812dc7e2430da02a4f04da80b709668e336e5934e9dd223d13ff"
+      },
+      {
+        "config": "clang_native",
+        "checked": false,
+        "benchmark": "verify",
+        "reserve": null,
+        "value_equal": true,
+        "value": "3483258d9211812dc7e2430da02a4f04da80b709668e336e5934e9dd223d13ff"
+      },
+      {
+        "config": "clang_native",
+        "checked": false,
+        "benchmark": "api",
+        "reserve": 0,
+        "value_equal": true,
+        "value": 1447
+      },
+      {
+        "config": "clang_native",
+        "checked": false,
+        "benchmark": "api",
+        "reserve": 1,
+        "value_equal": true,
+        "value": 1447
+      },
+      {
+        "config": "clang_native",
+        "checked": true,
+        "benchmark": "verify",
+        "reserve": null,
+        "value_equal": true,
+        "value": "3483258d9211812dc7e2430da02a4f04da80b709668e336e5934e9dd223d13ff"
+      }
+    ]
+  },
+  "independent_overlap_checks": [
+    {
+      "config": "gcc_default",
+      "checked": false,
+      "expected_stdout": "3\n2\n2\n",
+      "actual_and_current_match_independent_counts": true
+    },
+    {
+      "config": "gcc_default",
+      "checked": true,
+      "expected_stdout": "3\n2\n2\n",
+      "actual_and_current_match_independent_counts": true
+    },
+    {
+      "config": "gcc_native",
+      "checked": false,
+      "expected_stdout": "3\n2\n2\n",
+      "actual_and_current_match_independent_counts": true
+    },
+    {
+      "config": "gcc_native",
+      "checked": true,
+      "expected_stdout": "3\n2\n2\n",
+      "actual_and_current_match_independent_counts": true
+    },
+    {
+      "config": "clang_default",
+      "checked": false,
+      "expected_stdout": "3\n2\n2\n",
+      "actual_and_current_match_independent_counts": true
+    },
+    {
+      "config": "clang_default",
+      "checked": true,
+      "expected_stdout": "3\n2\n2\n",
+      "actual_and_current_match_independent_counts": true
+    },
+    {
+      "config": "clang_native",
+      "checked": false,
+      "expected_stdout": "3\n2\n2\n",
+      "actual_and_current_match_independent_counts": true
+    },
+    {
+      "config": "clang_native",
+      "checked": true,
+      "expected_stdout": "3\n2\n2\n",
+      "actual_and_current_match_independent_counts": true
+    }
+  ],
+  "treap_existing_bridge": {
+    "new_compile_not_needed": "Current formal Treap source bytes are exactly the previously frozen selected source, which was bridged against8 actual timed binaries.",
+    "current_frozen_sha256": "6e40ef3e9dd0e1d2da5eb557650963404e760a6c2f72da7c70e57be7c35565f9",
+    "previous_actual_comparisons": [
+      {
+        "config": "gcc_default",
+        "library": "DataStructure/implicit_treap.cpp",
+        "benchmark": "verify",
+        "actual_timed_binary": "/tmp/sirkit_12h_20261031_095733/unreleased_vector/gcc_default_unreleased_implicit_treap_affine",
+        "selected_binary": "/tmp/sirkit_12h_20261031_095733/unreleased_vector/handoff/gcc_default_skip_implicit_treap_affine_selected",
+        "sections": {
+          ".text": {
+            "identical": true,
+            "sha256": [
+              "6a9af5a9450da316bec99a1a649f4521b95bbdf729b603eb686235d103e38229",
+              "6a9af5a9450da316bec99a1a649f4521b95bbdf729b603eb686235d103e38229"
+            ],
+            "bytes": [
+              23069,
+              23069
+            ]
+          },
+          ".rodata": {
+            "identical": true,
+            "sha256": [
+              "523b5a7ec7e991b1317a0e9ab57def22dc36d0279e95b0b84b8a26668ce14afd",
+              "523b5a7ec7e991b1317a0e9ab57def22dc36d0279e95b0b84b8a26668ce14afd"
+            ],
+            "bytes": [
+              368,
+              368
+            ]
+          },
+          ".data": {
+            "identical": true,
+            "sha256": [
+              "8b104e9261c066ea66c6203c38b516ebace414764804682809ecd9cdd563a213",
+              "8b104e9261c066ea66c6203c38b516ebace414764804682809ecd9cdd563a213"
+            ],
+            "bytes": [
+              24,
+              24
+            ]
+          },
+          ".eh_frame": {
+            "identical": true,
+            "sha256": [
+              "3ee9b8c92421bd9e413162ea0c1bdada1028ac2a0bce8fe46b4d5a93ef2c1d22",
+              "3ee9b8c92421bd9e413162ea0c1bdada1028ac2a0bce8fe46b4d5a93ef2c1d22"
+            ],
+            "bytes": [
+              1748,
+              1748
+            ]
+          }
+        },
+        "all_runtime_sections_identical": true
+      },
+      {
+        "config": "gcc_default",
+        "library": "DataStructure/implicit_treap.cpp",
+        "benchmark": "api",
+        "actual_timed_binary": "/tmp/sirkit_12h_20261031_095733/unreleased_vector/gcc_default_unreleased_api_treap",
+        "selected_binary": "/tmp/sirkit_12h_20261031_095733/unreleased_vector/handoff/gcc_default_selected_api_treap",
+        "sections": {
+          ".text": {
+            "identical": true,
+            "sha256": [
+              "91e4c052c6b45ae4614291154878859e855ee35dca258796ff85aa8f974fdf0c",
+              "91e4c052c6b45ae4614291154878859e855ee35dca258796ff85aa8f974fdf0c"
+            ],
+            "bytes": [
+              21034,
+              21034
+            ]
+          },
+          ".rodata": {
+            "identical": true,
+            "sha256": [
+              "9ed0d6bb37a6f56e9c5261e17360f5e0903019ee9fc2374a532bd0ac97889123",
+              "9ed0d6bb37a6f56e9c5261e17360f5e0903019ee9fc2374a532bd0ac97889123"
+            ],
+            "bytes": [
+              120,
+              120
+            ]
+          },
+          ".data": {
+            "identical": true,
+            "sha256": [
+              "8b104e9261c066ea66c6203c38b516ebace414764804682809ecd9cdd563a213",
+              "8b104e9261c066ea66c6203c38b516ebace414764804682809ecd9cdd563a213"
+            ],
+            "bytes": [
+              24,
+              24
+            ]
+          },
+          ".eh_frame": {
+            "identical": true,
+            "sha256": [
+              "df76d5e07ce043104d9a31dbb6c8322aa5712511b222f66b329c3d46ea41f088",
+              "df76d5e07ce043104d9a31dbb6c8322aa5712511b222f66b329c3d46ea41f088"
+            ],
+            "bytes": [
+              832,
+              832
+            ]
+          }
+        },
+        "all_runtime_sections_identical": true
+      },
+      {
+        "config": "gcc_native",
+        "library": "DataStructure/implicit_treap.cpp",
+        "benchmark": "verify",
+        "actual_timed_binary": "/tmp/sirkit_12h_20261031_095733/unreleased_vector/gcc_native_unreleased_implicit_treap_affine",
+        "selected_binary": "/tmp/sirkit_12h_20261031_095733/unreleased_vector/handoff/gcc_native_skip_implicit_treap_affine_selected",
+        "sections": {
+          ".text": {
+            "identical": true,
+            "sha256": [
+              "7108899d5e4d3baeb38b21bf1f6f1f15379936bc7d503eba0e7ce5f08dd1e91d",
+              "7108899d5e4d3baeb38b21bf1f6f1f15379936bc7d503eba0e7ce5f08dd1e91d"
+            ],
+            "bytes": [
+              23421,
+              23421
+            ]
+          },
+          ".rodata": {
+            "identical": true,
+            "sha256": [
+              "cb4400f154fc7be51005050280b85a2933b72a6a28964b64d9dae3b51d4ca61d",
+              "cb4400f154fc7be51005050280b85a2933b72a6a28964b64d9dae3b51d4ca61d"
+            ],
+            "bytes": [
+              384,
+              384
+            ]
+          },
+          ".data": {
+            "identical": true,
+            "sha256": [
+              "8b104e9261c066ea66c6203c38b516ebace414764804682809ecd9cdd563a213",
+              "8b104e9261c066ea66c6203c38b516ebace414764804682809ecd9cdd563a213"
+            ],
+            "bytes": [
+              24,
+              24
+            ]
+          },
+          ".eh_frame": {
+            "identical": true,
+            "sha256": [
+              "7bd505b54bc56b73d06b51966030cafabdb1a4c01497f6060fd8d302b125fe24",
+              "7bd505b54bc56b73d06b51966030cafabdb1a4c01497f6060fd8d302b125fe24"
+            ],
+            "bytes": [
+              1608,
+              1608
+            ]
+          }
+        },
+        "all_runtime_sections_identical": true
+      },
+      {
+        "config": "gcc_native",
+        "library": "DataStructure/implicit_treap.cpp",
+        "benchmark": "api",
+        "actual_timed_binary": "/tmp/sirkit_12h_20261031_095733/unreleased_vector/gcc_native_unreleased_api_treap",
+        "selected_binary": "/tmp/sirkit_12h_20261031_095733/unreleased_vector/handoff/gcc_native_selected_api_treap",
+        "sections": {
+          ".text": {
+            "identical": true,
+            "sha256": [
+              "99887441231d687f60e66a37b459830ec751342084da62c03d834884e3253a39",
+              "99887441231d687f60e66a37b459830ec751342084da62c03d834884e3253a39"
+            ],
+            "bytes": [
+              23098,
+              23098
+            ]
+          },
+          ".rodata": {
+            "identical": true,
+            "sha256": [
+              "1678478e52a0457effc37fad1e8fc8b313a43c6fcc17c9d646223cd89cd5f67b",
+              "1678478e52a0457effc37fad1e8fc8b313a43c6fcc17c9d646223cd89cd5f67b"
+            ],
+            "bytes": [
+              112,
+              112
+            ]
+          },
+          ".data": {
+            "identical": true,
+            "sha256": [
+              "8b104e9261c066ea66c6203c38b516ebace414764804682809ecd9cdd563a213",
+              "8b104e9261c066ea66c6203c38b516ebace414764804682809ecd9cdd563a213"
+            ],
+            "bytes": [
+              24,
+              24
+            ]
+          },
+          ".eh_frame": {
+            "identical": true,
+            "sha256": [
+              "d315dde497d97f1c7795f38fe4666eab61c0192047f3e41c64ef8f7be855b2d7",
+              "d315dde497d97f1c7795f38fe4666eab61c0192047f3e41c64ef8f7be855b2d7"
+            ],
+            "bytes": [
+              716,
+              716
+            ]
+          }
+        },
+        "all_runtime_sections_identical": true
+      },
+      {
+        "config": "clang_default",
+        "library": "DataStructure/implicit_treap.cpp",
+        "benchmark": "verify",
+        "actual_timed_binary": "/tmp/sirkit_12h_20261031_095733/unreleased_vector/clang_default_unreleased_implicit_treap_affine",
+        "selected_binary": "/tmp/sirkit_12h_20261031_095733/unreleased_vector/handoff/clang_default_skip_implicit_treap_affine_selected",
+        "sections": {
+          ".text": {
+            "identical": true,
+            "sha256": [
+              "0b23ada56439068572a74dadde90863d7b9c5a5c1a212ab8d23c5cee60029d78",
+              "0b23ada56439068572a74dadde90863d7b9c5a5c1a212ab8d23c5cee60029d78"
+            ],
+            "bytes": [
+              10340,
+              10340
+            ]
+          },
+          ".rodata": {
+            "identical": true,
+            "sha256": [
+              "637b32c6c59a9eeb05c1c303d287c7185e6e4b5b640f426db374fcc32267853f",
+              "637b32c6c59a9eeb05c1c303d287c7185e6e4b5b640f426db374fcc32267853f"
+            ],
+            "bytes": [
+              329,
+              329
+            ]
+          },
+          ".data": {
+            "identical": true,
+            "sha256": [
+              "71fe4d0d4e67e6c80e8311d00f63520b77ed1617790dc2c8f46d728b3986caee",
+              "71fe4d0d4e67e6c80e8311d00f63520b77ed1617790dc2c8f46d728b3986caee"
+            ],
+            "bytes": [
+              24,
+              24
+            ]
+          },
+          ".eh_frame": {
+            "identical": true,
+            "sha256": [
+              "29c0474d5cf0e4ed104a4f2f3df85b3c0698a37e56dd41a6f953ae369aa54845",
+              "29c0474d5cf0e4ed104a4f2f3df85b3c0698a37e56dd41a6f953ae369aa54845"
+            ],
+            "bytes": [
+              1692,
+              1692
+            ]
+          }
+        },
+        "all_runtime_sections_identical": true
+      },
+      {
+        "config": "clang_default",
+        "library": "DataStructure/implicit_treap.cpp",
+        "benchmark": "api",
+        "actual_timed_binary": "/tmp/sirkit_12h_20261031_095733/unreleased_vector/clang_default_unreleased_api_treap",
+        "selected_binary": "/tmp/sirkit_12h_20261031_095733/unreleased_vector/handoff/clang_default_selected_api_treap",
+        "sections": {
+          ".text": {
+            "identical": true,
+            "sha256": [
+              "9cbf765884b513be400f8d1ebf916ad5b086e979fd53f20bde4dd749299f302b",
+              "9cbf765884b513be400f8d1ebf916ad5b086e979fd53f20bde4dd749299f302b"
+            ],
+            "bytes": [
+              4970,
+              4970
+            ]
+          },
+          ".rodata": {
+            "identical": true,
+            "sha256": [
+              "eb59e36da66f7e59d412b3cc3d1b3e6839bc2d1a91a59d9751e60683afb1ea93",
+              "eb59e36da66f7e59d412b3cc3d1b3e6839bc2d1a91a59d9751e60683afb1ea93"
+            ],
+            "bytes": [
+              121,
+              121
+            ]
+          },
+          ".data": {
+            "identical": true,
+            "sha256": [
+              "5ac4c588f38e2fc53701f03af311044df39277227f36c83c532468aca9dd5bde",
+              "5ac4c588f38e2fc53701f03af311044df39277227f36c83c532468aca9dd5bde"
+            ],
+            "bytes": [
+              24,
+              24
+            ]
+          },
+          ".eh_frame": {
+            "identical": true,
+            "sha256": [
+              "cde3012a0c4d21629a9adc2dcc0018ee8deefb2e3921ffd129b0e833f60298fa",
+              "cde3012a0c4d21629a9adc2dcc0018ee8deefb2e3921ffd129b0e833f60298fa"
+            ],
+            "bytes": [
+              1012,
+              1012
+            ]
+          }
+        },
+        "all_runtime_sections_identical": true
+      },
+      {
+        "config": "clang_native",
+        "library": "DataStructure/implicit_treap.cpp",
+        "benchmark": "verify",
+        "actual_timed_binary": "/tmp/sirkit_12h_20261031_095733/unreleased_vector/clang_native_unreleased_implicit_treap_affine",
+        "selected_binary": "/tmp/sirkit_12h_20261031_095733/unreleased_vector/handoff/clang_native_skip_implicit_treap_affine_selected",
+        "sections": {
+          ".text": {
+            "identical": true,
+            "sha256": [
+              "9ac085d8ba4d03c464c188f2552865586ddd8d69627f7ee5c770a803f3f30763",
+              "9ac085d8ba4d03c464c188f2552865586ddd8d69627f7ee5c770a803f3f30763"
+            ],
+            "bytes": [
+              10372,
+              10372
+            ]
+          },
+          ".rodata": {
+            "identical": true,
+            "sha256": [
+              "637b32c6c59a9eeb05c1c303d287c7185e6e4b5b640f426db374fcc32267853f",
+              "637b32c6c59a9eeb05c1c303d287c7185e6e4b5b640f426db374fcc32267853f"
+            ],
+            "bytes": [
+              329,
+              329
+            ]
+          },
+          ".data": {
+            "identical": true,
+            "sha256": [
+              "71fe4d0d4e67e6c80e8311d00f63520b77ed1617790dc2c8f46d728b3986caee",
+              "71fe4d0d4e67e6c80e8311d00f63520b77ed1617790dc2c8f46d728b3986caee"
+            ],
+            "bytes": [
+              24,
+              24
+            ]
+          },
+          ".eh_frame": {
+            "identical": true,
+            "sha256": [
+              "67680cf84494ba491eea14fc3e3406e827dfd1cc1fe2db089b61b84ad84ce7ca",
+              "67680cf84494ba491eea14fc3e3406e827dfd1cc1fe2db089b61b84ad84ce7ca"
+            ],
+            "bytes": [
+              1692,
+              1692
+            ]
+          }
+        },
+        "all_runtime_sections_identical": true
+      },
+      {
+        "config": "clang_native",
+        "library": "DataStructure/implicit_treap.cpp",
+        "benchmark": "api",
+        "actual_timed_binary": "/tmp/sirkit_12h_20261031_095733/unreleased_vector/clang_native_unreleased_api_treap",
+        "selected_binary": "/tmp/sirkit_12h_20261031_095733/unreleased_vector/handoff/clang_native_selected_api_treap",
+        "sections": {
+          ".text": {
+            "identical": true,
+            "sha256": [
+              "bad05f7e06cb59fd3f7c230e84a684f804078ed2a69c95cfc3f2a4b848fc1b60",
+              "bad05f7e06cb59fd3f7c230e84a684f804078ed2a69c95cfc3f2a4b848fc1b60"
+            ],
+            "bytes": [
+              5066,
+              5066
+            ]
+          },
+          ".rodata": {
+            "identical": true,
+            "sha256": [
+              "eb59e36da66f7e59d412b3cc3d1b3e6839bc2d1a91a59d9751e60683afb1ea93",
+              "eb59e36da66f7e59d412b3cc3d1b3e6839bc2d1a91a59d9751e60683afb1ea93"
+            ],
+            "bytes": [
+              121,
+              121
+            ]
+          },
+          ".data": {
+            "identical": true,
+            "sha256": [
+              "5ac4c588f38e2fc53701f03af311044df39277227f36c83c532468aca9dd5bde",
+              "5ac4c588f38e2fc53701f03af311044df39277227f36c83c532468aca9dd5bde"
+            ],
+            "bytes": [
+              24,
+              24
+            ]
+          },
+          ".eh_frame": {
+            "identical": true,
+            "sha256": [
+              "12f883645e17b99f3cab27ca0f3e7f9b2b8f811269ed0a90981a3a1e77f7d870",
+              "12f883645e17b99f3cab27ca0f3e7f9b2b8f811269ed0a90981a3a1e77f7d870"
+            ],
+            "bytes": [
+              1012,
+              1012
+            ]
+          }
+        },
+        "all_runtime_sections_identical": true
+      }
+    ]
+  },
+  "matrix_and_profile_review": {
+    "matrix": {
+      "formal_path": "Math/Matrix.cpp",
+      "frozen_path": "/tmp/sirkit_12h_20261031_095733/matrix_optimization/robust/handoff/Math/Matrix.cpp",
+      "byte_identical_to_frozen": true,
+      "sha256": "cac01f95cd19fac7f52b2d9eba304ce8b12bcfbb63af8610de5dd68c859291af"
+    },
+    "gaussian": {
+      "path": "Math/Gaussian_Elimination.cpp",
+      "sha256": "5761d7380e4b09be744c0d785aa4368d643df7a062bc63ec0af335ade3fe9123",
+      "exact_generator_output": true,
+      "contains_frozen_matrix_code_once": true,
+      "matrix_code_sha256": "7e48b287f7e5c3458e7c5537807adcae19f491e00c5838ec0e3faf9158209fae"
+    },
+    "profiles": [
+      {
+        "path": "Variants/GCC/Math/Matrix.cpp",
+        "sha256": "6d2b85aaa82325f78f0d7e8cd35d5c3c8d600a72a89e0e3db2900d7a893bafb4",
+        "source": "Math/Matrix.cpp",
+        "source_sha256": "cac01f95cd19fac7f52b2d9eba304ce8b12bcfbb63af8610de5dd68c859291af",
+        "current_generator_output_identical": true
+      },
+      {
+        "path": "Fast/GCC/Math/Matrix.cpp",
+        "sha256": "3d9c3b8411aaa0018f999c1f17c1425def2fb5357f7a2134f5d94771f16f7d5f",
+        "source": "Math/Matrix.cpp",
+        "source_sha256": "cac01f95cd19fac7f52b2d9eba304ce8b12bcfbb63af8610de5dd68c859291af",
+        "current_generator_output_identical": true
+      },
+      {
+        "path": "Variants/Clang/Math/Matrix.cpp",
+        "sha256": "b66ecbf5a5c04c66e13a53fa1d96c74bc34a2cc752ad590806210b54ebaaa569",
+        "source": "Math/Matrix.cpp",
+        "source_sha256": "cac01f95cd19fac7f52b2d9eba304ce8b12bcfbb63af8610de5dd68c859291af",
+        "current_generator_output_identical": true
+      },
+      {
+        "path": "Fast/Clang/Math/Matrix.cpp",
+        "sha256": "0b20076546b1b63e6233eeb18142ceee7bf6e081600492eea5ed223a2145313f",
+        "source": "Math/Matrix.cpp",
+        "source_sha256": "cac01f95cd19fac7f52b2d9eba304ce8b12bcfbb63af8610de5dd68c859291af",
+        "current_generator_output_identical": true
+      },
+      {
+        "path": "Variants/GCC/Math/Gaussian_Elimination.cpp",
+        "sha256": "589865bf8dfe1a57bd880d64a4a80c16661b1f0f22ef0d38cd1b9c5e487d534b",
+        "source": "Math/Gaussian_Elimination.cpp",
+        "source_sha256": "5761d7380e4b09be744c0d785aa4368d643df7a062bc63ec0af335ade3fe9123",
+        "current_generator_output_identical": true
+      },
+      {
+        "path": "Fast/GCC/Math/Gaussian_Elimination.cpp",
+        "sha256": "ebee0799e29c8e7cb2258b04bcd08ef3935394c1c63fffedc7331da0ea2aea84",
+        "source": "Math/Gaussian_Elimination.cpp",
+        "source_sha256": "5761d7380e4b09be744c0d785aa4368d643df7a062bc63ec0af335ade3fe9123",
+        "current_generator_output_identical": true
+      },
+      {
+        "path": "Variants/Clang/Math/Gaussian_Elimination.cpp",
+        "sha256": "c64c845cc377ab46aa00a9fb24d73ceefc61acade9340f2a3b159d49be433b16",
+        "source": "Math/Gaussian_Elimination.cpp",
+        "source_sha256": "5761d7380e4b09be744c0d785aa4368d643df7a062bc63ec0af335ade3fe9123",
+        "current_generator_output_identical": true
+      },
+      {
+        "path": "Fast/Clang/Math/Gaussian_Elimination.cpp",
+        "sha256": "165574a38647af4d93c1e466978c293b5e6028c8c2157f7f8770bb80a0ad58e2",
+        "source": "Math/Gaussian_Elimination.cpp",
+        "source_sha256": "5761d7380e4b09be744c0d785aa4368d643df7a062bc63ec0af335ade3fe9123",
+        "current_generator_output_identical": true
+      },
+      {
+        "path": "Fast/GCC/String/Aho_Corasick.cpp",
+        "sha256": "3df55af3bb3964a015f115193ce22b9d1db1feae050fe50969778c5061a1ab29",
+        "source": "Fast/Source/String/Aho_Corasick.cpp",
+        "source_sha256": "4a8a90ea5cde79d7142feffadeaefc0f2e86aba8ab7d4d9aad0e9f234b60b925",
+        "current_generator_output_identical": true
+      },
+      {
+        "path": "Fast/Clang/String/Aho_Corasick.cpp",
+        "sha256": "2a07a3054e910aa6aa8b828c38ae8fad7fac82a1e9109dc2544b46521f4884ba",
+        "source": "Fast/Source/String/Aho_Corasick.cpp",
+        "source_sha256": "4a8a90ea5cde79d7142feffadeaefc0f2e86aba8ab7d4d9aad0e9f234b60b925",
+        "current_generator_output_identical": true
+      }
+    ],
+    "generator_sha256": {
+      "Scripts/generate_gaussian_elimination.py": "cb61a882cee7e5a8c0ff6dcd700f6609a5bf1e619470478cb03f40563d0982f7",
+      "Scripts/generate_variants.py": "ce9add9236e398de19d214047de6109a675ec244f80ce2c93a1b73be40c3d23d"
+    },
+    "note": "Read-only render checks; no formal/shared files were written."
+  },
+  "reproducer_scripts": {
+    "build_bridge.py": "from pathlib import Path\nimport ast,hashlib,importlib.util,json,subprocess,sys\nsys.dont_write_bytecode=True\nout=Path(__file__).resolve().parent;p=out.parent;root=Path('/home/reinsirk/Atcoder_Env');formal=root/'Fast/Source/String/Aho_Corasick.cpp';snap=out/'current_Aho_Corasick.cpp';snap.write_bytes(formal.read_bytes())\ndef sha(file):return hashlib.sha256(Path(file).read_bytes()).hexdigest()\nsource_sha=sha(formal);helper=root/'Fast/Source/Internal/Unreleased_Vector.cpp';baseline_records=json.loads((p/'binaries.json').read_text());old_actual=json.loads((p/'handoff/actual_binary_bridge.json').read_text());old_checked=json.loads((p/'handoff/byte_bridge.json').read_text());adoption=json.loads((p/'handoff/root_adoption_bridge.json').read_text());assert source_sha==adoption['source_hashes']['Fast/Source/String/Aho_Corasick.cpp'];assert sha(helper)==adoption['source_hashes']['Fast/Source/Internal/Unreleased_Vector.cpp']\nspec=importlib.util.spec_from_file_location('prepare_verify',root/'Scripts/prepare_verify.py');prepare=importlib.util.module_from_spec(spec);spec.loader.exec_module(prepare)\nentries={}\nfor file in(root/'Verify/current/groups').glob('*.json'):\n for entry in json.loads(file.read_text())['entries']:entries[entry['id']]=entry\nentry=entries['aho_corasick_counts'];key='String/Aho_Corasick.cpp';assert entry['libraries']==[key]\nfor node in ast.parse((p/'prepare_benchmark.py').read_text()).body:\n if isinstance(node,ast.Assign)and any(isinstance(t,ast.Name)and t.id=='timer'for t in node.targets):timer=ast.literal_eval(node.value)\ndriver_file=root/entry['driver'];driver=driver_file.read_text().replace('int main(',timer+'int main(',1);assert driver.count('BenchmarkTimer benchmark_timer;')==1\nrecords=[]\nfor cc,compiler,extra in [('gcc','/usr/bin/g++',[]),('clang','/usr/bin/clang++',['--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15'])]:\n for native in [False,True]:\n  config=cc+('_native'if native else'_default');variant='unreleased'if cc=='gcc'else'buffer';old=next(r for r in baseline_records if r['config']==config and r['variant']==variant)\n  for checked,benchmark in [(False,'verify'),(False,'api'),(True,'verify')]:\n   label=config+('_checked'if checked else'_skip')+'_'+benchmark;target=out/label;flags=['-std=c++23','-O2']+(['-march=native']if native else[])\n   if benchmark=='verify':\n    generated,render_hashes=prepare.render(entry,skip_runtime_checks=not checked,source_overrides={key:snap.read_bytes()},driver_override=driver);cpp=out/(label+'.cpp');cpp.write_bytes(generated);command=['taskset','-c','8',compiler,*extra,*flags,str(cpp),'-o',str(target)]\n    if checked:reference=p/'handoff'/f'{config}_checked_aho_corasick_counts_selected';reference_kind='previous frozen handoff checked build; not performance-measured'\n    else:reference=Path(old['verify']['aho_corasick_counts']);reference_kind='ACTUAL timed Verify binary from original binaries.json'\n   else:\n    cpp=p/'growth_benchmark.cpp';command=['taskset','-c','8',compiler,*extra,*flags,'-DSKIP_RUNTIME_CHECKS','-DSIRKIT_BENCH_KIND=2',f'-DLIBRARY_SOURCE=\"{snap}\"',str(cpp),'-o',str(target)];render_hashes=None;reference=Path(old['api']['aho']);reference_kind='ACTUAL timed API-growth binary from original binaries.json'\n   assert reference.exists(),reference\n   result=subprocess.run(command,capture_output=True,text=True);assert result.returncode==0,(command,result.stderr);sections={}\n   for section in ['.text','.rodata','.data','.eh_frame']:\n    values=[]\n    for name,binary in [('actual_reference',reference),('current_formal',target)]:\n     dumped=out/f'{label}_{name}_{section[1:]}.bin';r=subprocess.run(['objcopy','--dump-section',section+'='+str(dumped),str(binary)],capture_output=True,text=True);assert r.returncode==0,r.stderr;values.append(dumped.read_bytes())\n    sections[section]={'identical':values[0]==values[1],'sha256':[hashlib.sha256(value).hexdigest()for value in values],'bytes':[len(value)for value in values]}\n   record={'config':config,'checked':checked,'benchmark':benchmark,'reference_kind':reference_kind,'actual_reference_binary':str(reference),'actual_reference_binary_sha256':sha(reference),'current_formal_binary':str(target),'current_formal_binary_sha256':sha(target),'current_formal_source_sha256':source_sha,'compiler_command':command,'rendered_source_sha256':sha(cpp),'render_hashes':render_hashes,'sections':sections,'all_runtime_sections_identical':all(v['identical']for v in sections.values())};records.append(record);(out/'results.json').write_text(json.dumps(records,indent=2)+'\\n');print(config,checked,benchmark,'all sections equal',record['all_runtime_sections_identical'],flush=True)\nassert sha(formal)==source_sha,'Formal source changed while bridge was built'\n(out/'context.json').write_text(json.dumps({'current_source_path':str(formal),'current_source_sha256':source_sha,'current_helper_path':str(helper),'current_helper_sha256':sha(helper),'driver_path':str(driver_file),'driver_sha256':sha(driver_file),'timer_sha256':hashlib.sha256(timer.encode()).hexdigest(),'timer_source':timer,'api_benchmark_path':str(p/'growth_benchmark.cpp'),'api_benchmark_sha256':sha(p/'growth_benchmark.cpp'),'original_binaries_registry':str(p/'binaries.json'),'original_binaries_registry_sha256':sha(p/'binaries.json'),'root_adoption_snapshot':adoption,'original_raw_path':str(p/'raw.json'),'original_raw_sha256':sha(p/'raw.json'),'original_aggregate_path':str(p/'aggregate.json'),'original_aggregate_sha256':sha(p/'aggregate.json'),'original_handoff_actual_bridge_path':str(p/'handoff/actual_binary_bridge.json'),'original_handoff_actual_bridge_sha256':sha(p/'handoff/actual_binary_bridge.json')},indent=2)+'\\n')\nprint('BUILD/BRIDGE complete',len(records),flush=True)\n",
+    "review_generators.py": "from pathlib import Path\nimport importlib.util,json,hashlib,sys\nsys.dont_write_bytecode=True\nout=Path(__file__).resolve().parent;root=Path('/home/reinsirk/Atcoder_Env');frozen=Path('/tmp/sirkit_12h_20261031_095733/matrix_optimization/robust/handoff/Math/Matrix.cpp')\ndef sha(data):return hashlib.sha256(data).hexdigest()\ndef load(name,file):\n spec=importlib.util.spec_from_file_location(name,file);module=importlib.util.module_from_spec(spec);sys.modules[name]=module;spec.loader.exec_module(module);return module\nmatrix=(root/'Math/Matrix.cpp').read_bytes();assert matrix==frozen.read_bytes();gaussian=(root/'Math/Gaussian_Elimination.cpp').read_bytes();gg=load('review_gaussian_generator',root/'Scripts/generate_gaussian_elimination.py');assert gg.render(root)==gaussian;matrix_body=matrix[matrix.index(b'#include '):].rstrip();assert gaussian.count(matrix_body)==1\nvariant=load('review_profile_generator',root/'Scripts/generate_variants.py');overrides=json.loads((root/'Scripts/fast_overrides.json').read_text());profiles=[]\nfor relative in ['Math/Matrix.cpp','Math/Gaussian_Elimination.cpp','String/Aho_Corasick.cpp']:\n for compiler in ['GCC','Clang']:\n  for fast in [False,True]:\n   if relative=='String/Aho_Corasick.cpp'and not fast:continue\n   source=root/(overrides[relative]if fast and relative in overrides else relative);data=variant.specialize(source.read_text(),compiler,fast);note='// 生成版: '+compiler+('・速度優先（入力検査を除外）。'if fast else'用。')\n   if fast:note+=' 所有・解放の省略は各APIの前提を参照。'\n   lines=data.splitlines(keepends=True);index=1 if lines and lines[0].startswith('// SPDX-License-Identifier:') else 0;lines.insert(index,note+'\\n// 生成元: '+source.relative_to(root).as_posix()+'\\n');expected=''.join(lines).encode();target=root/('Fast'if fast else'Variants')/compiler/relative;actual=target.read_bytes();assert expected==actual,target;profiles.append({'path':str(target.relative_to(root)),'sha256':sha(actual),'source':str(source.relative_to(root)),'source_sha256':sha(source.read_bytes()),'current_generator_output_identical':True})\nresult={'matrix':{'formal_path':'Math/Matrix.cpp','frozen_path':str(frozen),'byte_identical_to_frozen':True,'sha256':sha(matrix)},'gaussian':{'path':'Math/Gaussian_Elimination.cpp','sha256':sha(gaussian),'exact_generator_output':True,'contains_frozen_matrix_code_once':True,'matrix_code_sha256':sha(matrix_body)},'profiles':profiles,'generator_sha256':{name:sha((root/name).read_bytes())for name in ['Scripts/generate_gaussian_elimination.py','Scripts/generate_variants.py']},'note':'Read-only render checks; no formal/shared files were written.'};(out/'generator_review.json').write_text(json.dumps(result,indent=2)+'\\n');print('Matrix byte identity; Gaussian exact render;10 profile renders PASS')\n"
+  },
+  "workspace_scope": "Only new root_actual_bridge temp files were written; frozen child handoff/results and all formal/shared files were read only."
+}

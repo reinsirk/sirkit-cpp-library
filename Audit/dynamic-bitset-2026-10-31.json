@@ -1,0 +1,6015 @@
+{
+  "date_utc": "2026-10-31",
+  "source_hashes": {
+    "DataStructure/Dynamic_Bitset.cpp": "e1a2391a0390744ee0f4b3994fb08b7bb6185540bff7209b168fb2118cb2a907"
+  },
+  "implementation": "vector<uint64_t>による独立CC0実装。所有・copy強保証・move元空、proxyは非所有、読み取り専用word span。追加SIMDは機能判定と標準経路を持つ。",
+  "references": [
+    {
+      "url": "https://nyaannyaan.github.io/library/data-structure/dynamic-bitset.hpp.html",
+      "role": "公開APIの選定参考。独立実装、元のpragma/実装は転記しない。"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/NyaanNyaan/library/master/LICENSE",
+      "role": "2026-10-31現行CC0-1.0を確認。履歴の未確認断定なし。"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/ei1333/library/master/LICENSE",
+      "role": "現行Unlicenseを確認。MITとは扱わず、コード引継ぎなし。"
+    },
+    {
+      "url": "https://gcc.gnu.org/onlinedocs/gcc/x86-Built-in-Functions.html",
+      "role": "CPU機能判定の一次資料。"
+    },
+    {
+      "url": "https://www.intel.com/content/dam/develop/external/us/en/documents/cpp_compiler_classic.pdf",
+      "role": "AVX2 shuffle/SADなど命令の一次資料。実装コード転記なし。"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/yosupo06/library-checker-problems/master/linear_algebra/matrix_product_mod_2/task.md",
+      "role": "LC形式・制約を確認。公式sampleは取得できず、独立に小例と三重ループ出力を作成。"
+    },
+    {
+      "url": "https://atcoder.jp/contests/abc258/tasks/abc258_g",
+      "role": "AND popcountの補足Verify、公式samples。"
+    },
+    {
+      "url": "https://atcoder.jp/contests/tdpc/tasks/tdpc_contest",
+      "role": "shift_orの補足Verify、公式samples。"
+    }
+  ],
+  "compiler_matrix": {
+    "source_sha256": "e1a2391a0390744ee0f4b3994fb08b7bb6185540bff7209b168fb2118cb2a907",
+    "results": [
+      {
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "profile": "default",
+        "skip": false,
+        "route": "normal",
+        "test": "reference",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/final_gcc_default_False_normal_reference"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "dynamic bitset independent checks=20508527\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "profile": "default",
+        "skip": false,
+        "route": "normal",
+        "test": "allocation",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "-Wno-mismatched-new-delete",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/final_gcc_default_False_normal_allocation"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "dynamic bitset injected failures=10\nlive allocation delta=0\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "profile": "default",
+        "skip": false,
+        "route": "disable",
+        "test": "reference",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/final_gcc_default_False_disable_reference"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "dynamic bitset independent checks=20508527\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "profile": "default",
+        "skip": false,
+        "route": "disable",
+        "test": "allocation",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-Wno-mismatched-new-delete",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/final_gcc_default_False_disable_allocation"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "dynamic bitset injected failures=10\nlive allocation delta=0\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "profile": "default",
+        "skip": false,
+        "route": "false_cpu",
+        "test": "reference",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "-DSIRKIT_BITSET_SOURCE=\"/tmp/sirkit_12h_20261031_095733/dynamic_bitset/Dynamic_Bitset_false_cpu.cpp\"",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/final_gcc_default_False_false_cpu_reference"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "dynamic bitset independent checks=20508527\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "profile": "default",
+        "skip": false,
+        "route": "false_cpu",
+        "test": "allocation",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "-DSIRKIT_BITSET_SOURCE=\"/tmp/sirkit_12h_20261031_095733/dynamic_bitset/Dynamic_Bitset_false_cpu.cpp\"",
+          "-Wno-mismatched-new-delete",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/final_gcc_default_False_false_cpu_allocation"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "dynamic bitset injected failures=10\nlive allocation delta=0\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "profile": "native",
+        "skip": false,
+        "route": "normal",
+        "test": "reference",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "-march=native",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/final_gcc_native_False_normal_reference"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "dynamic bitset independent checks=20508527\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "profile": "native",
+        "skip": false,
+        "route": "normal",
+        "test": "allocation",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "-march=native",
+          "-Wno-mismatched-new-delete",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/final_gcc_native_False_normal_allocation"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "dynamic bitset injected failures=10\nlive allocation delta=0\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "profile": "native",
+        "skip": false,
+        "route": "disable",
+        "test": "reference",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "-march=native",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/final_gcc_native_False_disable_reference"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "dynamic bitset independent checks=20508527\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "profile": "native",
+        "skip": false,
+        "route": "disable",
+        "test": "allocation",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "-march=native",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-Wno-mismatched-new-delete",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/final_gcc_native_False_disable_allocation"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "dynamic bitset injected failures=10\nlive allocation delta=0\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "profile": "native",
+        "skip": false,
+        "route": "false_cpu",
+        "test": "reference",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "-march=native",
+          "-DSIRKIT_BITSET_SOURCE=\"/tmp/sirkit_12h_20261031_095733/dynamic_bitset/Dynamic_Bitset_false_cpu.cpp\"",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/final_gcc_native_False_false_cpu_reference"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "dynamic bitset independent checks=20508527\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "profile": "native",
+        "skip": false,
+        "route": "false_cpu",
+        "test": "allocation",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "-march=native",
+          "-DSIRKIT_BITSET_SOURCE=\"/tmp/sirkit_12h_20261031_095733/dynamic_bitset/Dynamic_Bitset_false_cpu.cpp\"",
+          "-Wno-mismatched-new-delete",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/final_gcc_native_False_false_cpu_allocation"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "dynamic bitset injected failures=10\nlive allocation delta=0\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "profile": "sanitizer",
+        "skip": false,
+        "route": "normal",
+        "test": "reference",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O1",
+          "-g",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-D_GLIBCXX_SANITIZE_VECTOR",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/final_gcc_sanitizer_False_normal_reference"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "dynamic bitset independent checks=20508527\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "profile": "sanitizer",
+        "skip": false,
+        "route": "normal",
+        "test": "allocation",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O1",
+          "-g",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-D_GLIBCXX_SANITIZE_VECTOR",
+          "-Wno-mismatched-new-delete",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/final_gcc_sanitizer_False_normal_allocation"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "dynamic bitset injected failures=10\nlive allocation delta=0\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "profile": "sanitizer",
+        "skip": false,
+        "route": "disable",
+        "test": "reference",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O1",
+          "-g",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-D_GLIBCXX_SANITIZE_VECTOR",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/final_gcc_sanitizer_False_disable_reference"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "dynamic bitset independent checks=20508527\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "profile": "sanitizer",
+        "skip": false,
+        "route": "disable",
+        "test": "allocation",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O1",
+          "-g",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-D_GLIBCXX_SANITIZE_VECTOR",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-Wno-mismatched-new-delete",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/final_gcc_sanitizer_False_disable_allocation"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "dynamic bitset injected failures=10\nlive allocation delta=0\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "profile": "sanitizer",
+        "skip": false,
+        "route": "false_cpu",
+        "test": "reference",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O1",
+          "-g",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-D_GLIBCXX_SANITIZE_VECTOR",
+          "-DSIRKIT_BITSET_SOURCE=\"/tmp/sirkit_12h_20261031_095733/dynamic_bitset/Dynamic_Bitset_false_cpu.cpp\"",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/final_gcc_sanitizer_False_false_cpu_reference"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "dynamic bitset independent checks=20508527\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "profile": "sanitizer",
+        "skip": false,
+        "route": "false_cpu",
+        "test": "allocation",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O1",
+          "-g",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-D_GLIBCXX_SANITIZE_VECTOR",
+          "-DSIRKIT_BITSET_SOURCE=\"/tmp/sirkit_12h_20261031_095733/dynamic_bitset/Dynamic_Bitset_false_cpu.cpp\"",
+          "-Wno-mismatched-new-delete",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/final_gcc_sanitizer_False_false_cpu_allocation"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "dynamic bitset injected failures=10\nlive allocation delta=0\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "profile": "default",
+        "skip": true,
+        "route": "normal",
+        "test": "reference",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/final_gcc_default_True_normal_reference"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "dynamic bitset independent checks=20508507\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "profile": "default",
+        "skip": true,
+        "route": "normal",
+        "test": "allocation",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-Wno-mismatched-new-delete",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/final_gcc_default_True_normal_allocation"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "dynamic bitset injected failures=10\nlive allocation delta=0\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "profile": "default",
+        "skip": true,
+        "route": "disable",
+        "test": "reference",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/final_gcc_default_True_disable_reference"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "dynamic bitset independent checks=20508507\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "profile": "default",
+        "skip": true,
+        "route": "disable",
+        "test": "allocation",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-Wno-mismatched-new-delete",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/final_gcc_default_True_disable_allocation"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "dynamic bitset injected failures=10\nlive allocation delta=0\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "profile": "default",
+        "skip": true,
+        "route": "false_cpu",
+        "test": "reference",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-DSIRKIT_BITSET_SOURCE=\"/tmp/sirkit_12h_20261031_095733/dynamic_bitset/Dynamic_Bitset_false_cpu.cpp\"",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/final_gcc_default_True_false_cpu_reference"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "dynamic bitset independent checks=20508507\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "profile": "default",
+        "skip": true,
+        "route": "false_cpu",
+        "test": "allocation",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-DSIRKIT_BITSET_SOURCE=\"/tmp/sirkit_12h_20261031_095733/dynamic_bitset/Dynamic_Bitset_false_cpu.cpp\"",
+          "-Wno-mismatched-new-delete",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/final_gcc_default_True_false_cpu_allocation"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "dynamic bitset injected failures=10\nlive allocation delta=0\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "profile": "native",
+        "skip": true,
+        "route": "normal",
+        "test": "reference",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "-march=native",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/final_gcc_native_True_normal_reference"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "dynamic bitset independent checks=20508507\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "profile": "native",
+        "skip": true,
+        "route": "normal",
+        "test": "allocation",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "-march=native",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-Wno-mismatched-new-delete",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/final_gcc_native_True_normal_allocation"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "dynamic bitset injected failures=10\nlive allocation delta=0\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "profile": "native",
+        "skip": true,
+        "route": "disable",
+        "test": "reference",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "-march=native",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/final_gcc_native_True_disable_reference"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "dynamic bitset independent checks=20508507\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "profile": "native",
+        "skip": true,
+        "route": "disable",
+        "test": "allocation",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "-march=native",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-Wno-mismatched-new-delete",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/final_gcc_native_True_disable_allocation"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "dynamic bitset injected failures=10\nlive allocation delta=0\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "profile": "native",
+        "skip": true,
+        "route": "false_cpu",
+        "test": "reference",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "-march=native",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-DSIRKIT_BITSET_SOURCE=\"/tmp/sirkit_12h_20261031_095733/dynamic_bitset/Dynamic_Bitset_false_cpu.cpp\"",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/final_gcc_native_True_false_cpu_reference"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "dynamic bitset independent checks=20508507\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "profile": "native",
+        "skip": true,
+        "route": "false_cpu",
+        "test": "allocation",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "-march=native",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-DSIRKIT_BITSET_SOURCE=\"/tmp/sirkit_12h_20261031_095733/dynamic_bitset/Dynamic_Bitset_false_cpu.cpp\"",
+          "-Wno-mismatched-new-delete",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/final_gcc_native_True_false_cpu_allocation"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "dynamic bitset injected failures=10\nlive allocation delta=0\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "profile": "sanitizer",
+        "skip": true,
+        "route": "normal",
+        "test": "reference",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O1",
+          "-g",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-D_GLIBCXX_SANITIZE_VECTOR",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/final_gcc_sanitizer_True_normal_reference"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "dynamic bitset independent checks=20508507\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "profile": "sanitizer",
+        "skip": true,
+        "route": "normal",
+        "test": "allocation",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O1",
+          "-g",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-D_GLIBCXX_SANITIZE_VECTOR",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-Wno-mismatched-new-delete",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/final_gcc_sanitizer_True_normal_allocation"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "dynamic bitset injected failures=10\nlive allocation delta=0\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "profile": "sanitizer",
+        "skip": true,
+        "route": "disable",
+        "test": "reference",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O1",
+          "-g",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-D_GLIBCXX_SANITIZE_VECTOR",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/final_gcc_sanitizer_True_disable_reference"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "dynamic bitset independent checks=20508507\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "profile": "sanitizer",
+        "skip": true,
+        "route": "disable",
+        "test": "allocation",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O1",
+          "-g",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-D_GLIBCXX_SANITIZE_VECTOR",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-Wno-mismatched-new-delete",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/final_gcc_sanitizer_True_disable_allocation"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "dynamic bitset injected failures=10\nlive allocation delta=0\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "profile": "sanitizer",
+        "skip": true,
+        "route": "false_cpu",
+        "test": "reference",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O1",
+          "-g",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-D_GLIBCXX_SANITIZE_VECTOR",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-DSIRKIT_BITSET_SOURCE=\"/tmp/sirkit_12h_20261031_095733/dynamic_bitset/Dynamic_Bitset_false_cpu.cpp\"",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/final_gcc_sanitizer_True_false_cpu_reference"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "dynamic bitset independent checks=20508507\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "profile": "sanitizer",
+        "skip": true,
+        "route": "false_cpu",
+        "test": "allocation",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O1",
+          "-g",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-D_GLIBCXX_SANITIZE_VECTOR",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-DSIRKIT_BITSET_SOURCE=\"/tmp/sirkit_12h_20261031_095733/dynamic_bitset/Dynamic_Bitset_false_cpu.cpp\"",
+          "-Wno-mismatched-new-delete",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/final_gcc_sanitizer_True_false_cpu_allocation"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "dynamic bitset injected failures=10\nlive allocation delta=0\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "profile": "default",
+        "skip": false,
+        "route": "normal",
+        "test": "reference",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/final_clang_default_False_normal_reference"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "dynamic bitset independent checks=20508527\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "profile": "default",
+        "skip": false,
+        "route": "normal",
+        "test": "allocation",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/final_clang_default_False_normal_allocation"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "dynamic bitset injected failures=10\nlive allocation delta=0\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "profile": "default",
+        "skip": false,
+        "route": "disable",
+        "test": "reference",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/final_clang_default_False_disable_reference"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "dynamic bitset independent checks=20508527\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "profile": "default",
+        "skip": false,
+        "route": "disable",
+        "test": "allocation",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/final_clang_default_False_disable_allocation"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "dynamic bitset injected failures=10\nlive allocation delta=0\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "profile": "default",
+        "skip": false,
+        "route": "false_cpu",
+        "test": "reference",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "-DSIRKIT_BITSET_SOURCE=\"/tmp/sirkit_12h_20261031_095733/dynamic_bitset/Dynamic_Bitset_false_cpu.cpp\"",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/final_clang_default_False_false_cpu_reference"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "dynamic bitset independent checks=20508527\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "profile": "default",
+        "skip": false,
+        "route": "false_cpu",
+        "test": "allocation",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "-DSIRKIT_BITSET_SOURCE=\"/tmp/sirkit_12h_20261031_095733/dynamic_bitset/Dynamic_Bitset_false_cpu.cpp\"",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/final_clang_default_False_false_cpu_allocation"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "dynamic bitset injected failures=10\nlive allocation delta=0\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "profile": "native",
+        "skip": false,
+        "route": "normal",
+        "test": "reference",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "-march=native",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/final_clang_native_False_normal_reference"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "dynamic bitset independent checks=20508527\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "profile": "native",
+        "skip": false,
+        "route": "normal",
+        "test": "allocation",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "-march=native",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/final_clang_native_False_normal_allocation"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "dynamic bitset injected failures=10\nlive allocation delta=0\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "profile": "native",
+        "skip": false,
+        "route": "disable",
+        "test": "reference",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "-march=native",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/final_clang_native_False_disable_reference"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "dynamic bitset independent checks=20508527\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "profile": "native",
+        "skip": false,
+        "route": "disable",
+        "test": "allocation",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "-march=native",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/final_clang_native_False_disable_allocation"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "dynamic bitset injected failures=10\nlive allocation delta=0\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "profile": "native",
+        "skip": false,
+        "route": "false_cpu",
+        "test": "reference",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "-march=native",
+          "-DSIRKIT_BITSET_SOURCE=\"/tmp/sirkit_12h_20261031_095733/dynamic_bitset/Dynamic_Bitset_false_cpu.cpp\"",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/final_clang_native_False_false_cpu_reference"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "dynamic bitset independent checks=20508527\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "profile": "native",
+        "skip": false,
+        "route": "false_cpu",
+        "test": "allocation",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "-march=native",
+          "-DSIRKIT_BITSET_SOURCE=\"/tmp/sirkit_12h_20261031_095733/dynamic_bitset/Dynamic_Bitset_false_cpu.cpp\"",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/final_clang_native_False_false_cpu_allocation"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "dynamic bitset injected failures=10\nlive allocation delta=0\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "profile": "sanitizer",
+        "skip": false,
+        "route": "normal",
+        "test": "reference",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O1",
+          "-g",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-D_GLIBCXX_SANITIZE_VECTOR",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/final_clang_sanitizer_False_normal_reference"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "dynamic bitset independent checks=20508527\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "profile": "sanitizer",
+        "skip": false,
+        "route": "normal",
+        "test": "allocation",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O1",
+          "-g",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-D_GLIBCXX_SANITIZE_VECTOR",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/final_clang_sanitizer_False_normal_allocation"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "dynamic bitset injected failures=10\nlive allocation delta=0\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "profile": "sanitizer",
+        "skip": false,
+        "route": "disable",
+        "test": "reference",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O1",
+          "-g",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-D_GLIBCXX_SANITIZE_VECTOR",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/final_clang_sanitizer_False_disable_reference"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "dynamic bitset independent checks=20508527\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "profile": "sanitizer",
+        "skip": false,
+        "route": "disable",
+        "test": "allocation",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O1",
+          "-g",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-D_GLIBCXX_SANITIZE_VECTOR",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/final_clang_sanitizer_False_disable_allocation"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "dynamic bitset injected failures=10\nlive allocation delta=0\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "profile": "sanitizer",
+        "skip": false,
+        "route": "false_cpu",
+        "test": "reference",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O1",
+          "-g",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-D_GLIBCXX_SANITIZE_VECTOR",
+          "-DSIRKIT_BITSET_SOURCE=\"/tmp/sirkit_12h_20261031_095733/dynamic_bitset/Dynamic_Bitset_false_cpu.cpp\"",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/final_clang_sanitizer_False_false_cpu_reference"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "dynamic bitset independent checks=20508527\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "profile": "sanitizer",
+        "skip": false,
+        "route": "false_cpu",
+        "test": "allocation",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O1",
+          "-g",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-D_GLIBCXX_SANITIZE_VECTOR",
+          "-DSIRKIT_BITSET_SOURCE=\"/tmp/sirkit_12h_20261031_095733/dynamic_bitset/Dynamic_Bitset_false_cpu.cpp\"",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/final_clang_sanitizer_False_false_cpu_allocation"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "dynamic bitset injected failures=10\nlive allocation delta=0\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "profile": "default",
+        "skip": true,
+        "route": "normal",
+        "test": "reference",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/final_clang_default_True_normal_reference"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "dynamic bitset independent checks=20508507\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "profile": "default",
+        "skip": true,
+        "route": "normal",
+        "test": "allocation",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/final_clang_default_True_normal_allocation"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "dynamic bitset injected failures=10\nlive allocation delta=0\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "profile": "default",
+        "skip": true,
+        "route": "disable",
+        "test": "reference",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/final_clang_default_True_disable_reference"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "dynamic bitset independent checks=20508507\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "profile": "default",
+        "skip": true,
+        "route": "disable",
+        "test": "allocation",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/final_clang_default_True_disable_allocation"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "dynamic bitset injected failures=10\nlive allocation delta=0\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "profile": "default",
+        "skip": true,
+        "route": "false_cpu",
+        "test": "reference",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-DSIRKIT_BITSET_SOURCE=\"/tmp/sirkit_12h_20261031_095733/dynamic_bitset/Dynamic_Bitset_false_cpu.cpp\"",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/final_clang_default_True_false_cpu_reference"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "dynamic bitset independent checks=20508507\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "profile": "default",
+        "skip": true,
+        "route": "false_cpu",
+        "test": "allocation",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-DSIRKIT_BITSET_SOURCE=\"/tmp/sirkit_12h_20261031_095733/dynamic_bitset/Dynamic_Bitset_false_cpu.cpp\"",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/final_clang_default_True_false_cpu_allocation"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "dynamic bitset injected failures=10\nlive allocation delta=0\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "profile": "native",
+        "skip": true,
+        "route": "normal",
+        "test": "reference",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "-march=native",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/final_clang_native_True_normal_reference"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "dynamic bitset independent checks=20508507\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "profile": "native",
+        "skip": true,
+        "route": "normal",
+        "test": "allocation",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "-march=native",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/final_clang_native_True_normal_allocation"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "dynamic bitset injected failures=10\nlive allocation delta=0\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "profile": "native",
+        "skip": true,
+        "route": "disable",
+        "test": "reference",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "-march=native",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/final_clang_native_True_disable_reference"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "dynamic bitset independent checks=20508507\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "profile": "native",
+        "skip": true,
+        "route": "disable",
+        "test": "allocation",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "-march=native",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/final_clang_native_True_disable_allocation"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "dynamic bitset injected failures=10\nlive allocation delta=0\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "profile": "native",
+        "skip": true,
+        "route": "false_cpu",
+        "test": "reference",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "-march=native",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-DSIRKIT_BITSET_SOURCE=\"/tmp/sirkit_12h_20261031_095733/dynamic_bitset/Dynamic_Bitset_false_cpu.cpp\"",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/final_clang_native_True_false_cpu_reference"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "dynamic bitset independent checks=20508507\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "profile": "native",
+        "skip": true,
+        "route": "false_cpu",
+        "test": "allocation",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "-march=native",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-DSIRKIT_BITSET_SOURCE=\"/tmp/sirkit_12h_20261031_095733/dynamic_bitset/Dynamic_Bitset_false_cpu.cpp\"",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/final_clang_native_True_false_cpu_allocation"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "dynamic bitset injected failures=10\nlive allocation delta=0\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "profile": "sanitizer",
+        "skip": true,
+        "route": "normal",
+        "test": "reference",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O1",
+          "-g",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-D_GLIBCXX_SANITIZE_VECTOR",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/final_clang_sanitizer_True_normal_reference"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "dynamic bitset independent checks=20508507\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "profile": "sanitizer",
+        "skip": true,
+        "route": "normal",
+        "test": "allocation",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O1",
+          "-g",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-D_GLIBCXX_SANITIZE_VECTOR",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/final_clang_sanitizer_True_normal_allocation"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "dynamic bitset injected failures=10\nlive allocation delta=0\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "profile": "sanitizer",
+        "skip": true,
+        "route": "disable",
+        "test": "reference",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O1",
+          "-g",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-D_GLIBCXX_SANITIZE_VECTOR",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/final_clang_sanitizer_True_disable_reference"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "dynamic bitset independent checks=20508507\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "profile": "sanitizer",
+        "skip": true,
+        "route": "disable",
+        "test": "allocation",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O1",
+          "-g",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-D_GLIBCXX_SANITIZE_VECTOR",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/final_clang_sanitizer_True_disable_allocation"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "dynamic bitset injected failures=10\nlive allocation delta=0\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "profile": "sanitizer",
+        "skip": true,
+        "route": "false_cpu",
+        "test": "reference",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O1",
+          "-g",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-D_GLIBCXX_SANITIZE_VECTOR",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-DSIRKIT_BITSET_SOURCE=\"/tmp/sirkit_12h_20261031_095733/dynamic_bitset/Dynamic_Bitset_false_cpu.cpp\"",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/final_clang_sanitizer_True_false_cpu_reference"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "dynamic bitset independent checks=20508507\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "profile": "sanitizer",
+        "skip": true,
+        "route": "false_cpu",
+        "test": "allocation",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O1",
+          "-g",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-D_GLIBCXX_SANITIZE_VECTOR",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-DSIRKIT_BITSET_SOURCE=\"/tmp/sirkit_12h_20261031_095733/dynamic_bitset/Dynamic_Bitset_false_cpu.cpp\"",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/final_clang_sanitizer_True_false_cpu_allocation"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "dynamic bitset injected failures=10\nlive allocation delta=0\n",
+        "stderr": ""
+      }
+    ],
+    "fixture_hashes": {
+      "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/reference_test.cpp": "e2a165a543bb99aa64dd39ae40faa8a8bb46d3f61adfbf7ad2e212437831b9bf",
+      "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/allocation_test.cpp": "5d2a8d2218186254501328e48af94b56e7a84a5f2f74779d66129b1c7120cf32",
+      "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/Dynamic_Bitset_false_cpu.cpp": "02feb756fd99c31a0466c8a4f58ca90fed9b57360dcc6860109827058d6469de"
+    }
+  },
+  "popcnt_only_route": [
+    {
+      "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+      "skip": false,
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-DSIRKIT_BITSET_SOURCE=\"/tmp/sirkit_12h_20261031_095733/dynamic_bitset/Dynamic_Bitset_popcnt_only.cpp\"",
+        "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/popcnt_only_gcc_False"
+      ],
+      "test_only_source_sha256": "697ccc375fcbcf36bd1ecb1c1e8f0945699193f4bd7474481342f9486f4a1e9a",
+      "stdout": "dynamic bitset independent checks=20508527\n",
+      "status": "PASS"
+    },
+    {
+      "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+      "skip": true,
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-DSIRKIT_BITSET_SOURCE=\"/tmp/sirkit_12h_20261031_095733/dynamic_bitset/Dynamic_Bitset_popcnt_only.cpp\"",
+        "-DSKIP_RUNTIME_CHECKS",
+        "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/popcnt_only_gcc_True"
+      ],
+      "test_only_source_sha256": "697ccc375fcbcf36bd1ecb1c1e8f0945699193f4bd7474481342f9486f4a1e9a",
+      "stdout": "dynamic bitset independent checks=20508507\n",
+      "status": "PASS"
+    },
+    {
+      "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+      "skip": false,
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-DSIRKIT_BITSET_SOURCE=\"/tmp/sirkit_12h_20261031_095733/dynamic_bitset/Dynamic_Bitset_popcnt_only.cpp\"",
+        "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/popcnt_only_clang_False"
+      ],
+      "test_only_source_sha256": "697ccc375fcbcf36bd1ecb1c1e8f0945699193f4bd7474481342f9486f4a1e9a",
+      "stdout": "dynamic bitset independent checks=20508527\n",
+      "status": "PASS"
+    },
+    {
+      "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+      "skip": true,
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-DSIRKIT_BITSET_SOURCE=\"/tmp/sirkit_12h_20261031_095733/dynamic_bitset/Dynamic_Bitset_popcnt_only.cpp\"",
+        "-DSKIP_RUNTIME_CHECKS",
+        "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/popcnt_only_clang_True"
+      ],
+      "test_only_source_sha256": "697ccc375fcbcf36bd1ecb1c1e8f0945699193f4bd7474481342f9486f4a1e9a",
+      "stdout": "dynamic bitset independent checks=20508507\n",
+      "status": "PASS"
+    }
+  ],
+  "feature_route_bridge": {
+    "source_sha256": "e1a2391a0390744ee0f4b3994fb08b7bb6185540bff7209b168fb2118cb2a907",
+    "false_cpu_sha256": "02feb756fd99c31a0466c8a4f58ca90fed9b57360dcc6860109827058d6469de",
+    "popcnt_only_sha256": "697ccc375fcbcf36bd1ecb1c1e8f0945699193f4bd7474481342f9486f4a1e9a",
+    "replacement_from": "static const unsigned features = (__builtin_cpu_supports(\"popcnt\") ? 1U : 0U) | (__builtin_cpu_supports(\"avx2\") ? 2U : 0U);",
+    "replacement_rule": "test専用コピーのfeatures初期化だけvolatile 0/1に置換。実行時volatile loadを保ち実際のfallback分岐を通す。標準経路/POPCNTのみのdispatchを確認。製品にテスト設定マクロは追加しない。",
+    "limitation": "実CPUはAVX2/POPCNT対応。非対応CPU自体をエミュレートした記録とは説明しない。nativeビルドのコンパイラ自動命令は対象CPU前提を維持する。"
+  },
+  "preprocessing_validation": [
+    {
+      "compiler": "gcc",
+      "skip": false,
+      "disable_simd": false,
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-E",
+        "-P",
+        "-x",
+        "c++",
+        "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/Dynamic_Bitset.cpp"
+      ],
+      "preprocessed_sha256": "40e8ee26185ef6884a480d2aa1d6c318087743c5d2f5aa2b7227fa4bdf0d44ac",
+      "status": "PASS"
+    },
+    {
+      "compiler": "gcc",
+      "skip": false,
+      "disable_simd": true,
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-E",
+        "-P",
+        "-x",
+        "c++",
+        "-DSIRKIT_DISABLE_SIMD",
+        "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/Dynamic_Bitset.cpp"
+      ],
+      "preprocessed_sha256": "65dece3f2db180bbce4ba44efbc904475ad1639749b5522d1986ccf0de7180ef",
+      "status": "PASS"
+    },
+    {
+      "compiler": "gcc",
+      "skip": true,
+      "disable_simd": false,
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-E",
+        "-P",
+        "-x",
+        "c++",
+        "-DSKIP_RUNTIME_CHECKS",
+        "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/Dynamic_Bitset.cpp"
+      ],
+      "preprocessed_sha256": "09c7a7124cf11cf0feb2dade2fc28b757480d843e05dfd5d49afb080efa09f06",
+      "status": "PASS"
+    },
+    {
+      "compiler": "gcc",
+      "skip": true,
+      "disable_simd": true,
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-E",
+        "-P",
+        "-x",
+        "c++",
+        "-DSKIP_RUNTIME_CHECKS",
+        "-DSIRKIT_DISABLE_SIMD",
+        "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/Dynamic_Bitset.cpp"
+      ],
+      "preprocessed_sha256": "29a1899410975da30f7a9bad1255b55a91b8c052c1d5986c99bef62f07816a60",
+      "status": "PASS"
+    },
+    {
+      "compiler": "clang",
+      "skip": false,
+      "disable_simd": false,
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-E",
+        "-P",
+        "-x",
+        "c++",
+        "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/Dynamic_Bitset.cpp"
+      ],
+      "preprocessed_sha256": "e43507a1c0d022959f1ccd15678f7416045515d62a932c1578e4ac82b62e25f0",
+      "status": "PASS"
+    },
+    {
+      "compiler": "clang",
+      "skip": false,
+      "disable_simd": true,
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-E",
+        "-P",
+        "-x",
+        "c++",
+        "-DSIRKIT_DISABLE_SIMD",
+        "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/Dynamic_Bitset.cpp"
+      ],
+      "preprocessed_sha256": "23ee7da63573116746d73a4cda13c5a25efbf67958fbde0c879a4a2e8e61f203",
+      "status": "PASS"
+    },
+    {
+      "compiler": "clang",
+      "skip": true,
+      "disable_simd": false,
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-E",
+        "-P",
+        "-x",
+        "c++",
+        "-DSKIP_RUNTIME_CHECKS",
+        "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/Dynamic_Bitset.cpp"
+      ],
+      "preprocessed_sha256": "05c1aac791d7351ae2dfcdcf83cf0a1765f3e545bbb0a2c79ab0260b0647d591",
+      "status": "PASS"
+    },
+    {
+      "compiler": "clang",
+      "skip": true,
+      "disable_simd": true,
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-E",
+        "-P",
+        "-x",
+        "c++",
+        "-DSKIP_RUNTIME_CHECKS",
+        "-DSIRKIT_DISABLE_SIMD",
+        "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/Dynamic_Bitset.cpp"
+      ],
+      "preprocessed_sha256": "91b5b16f1c719880e7e08e7bbcc6a863bb6216eb12cb56cc9108bc4731140bbc",
+      "status": "PASS"
+    }
+  ],
+  "driver_validation": [
+    {
+      "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+      "native": false,
+      "disable_simd": false,
+      "driver": "dynamic_bitset",
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-I",
+        "/home/reinsirk/Atcoder_Env",
+        "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/dynamic_bitset_final_submission.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/dynamic_bitset_gcc_False_False"
+      ],
+      "submission_sha256": "015d1a7e72395a3f0b41e35a08961b65b1e819a4808b4061140601671820fb36",
+      "samples": [
+        {
+          "input": "2 3 2\n101\n011\n10\n11\n01\n",
+          "output": "11\n10\n",
+          "origin": "LC公開問題の形式で独立作成。三重ループのmod2積を参照。"
+        },
+        {
+          "input": "1 1 1\n1\n0\n",
+          "output": "0\n",
+          "origin": "独立作成の最小境界。"
+        }
+      ],
+      "random_cases": 240,
+      "status": "PASS"
+    },
+    {
+      "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+      "native": false,
+      "disable_simd": false,
+      "driver": "dynamic_bitset_triangle",
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-I",
+        "/home/reinsirk/Atcoder_Env",
+        "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/dynamic_bitset_triangle_final_submission.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/dynamic_bitset_triangle_gcc_False_False"
+      ],
+      "submission_sha256": "cdb27d1fb8ab9663545968d5b08d944a801526a2f370132333583222175900df",
+      "samples": [
+        {
+          "input": "4\n0011\n0011\n1101\n1110\n",
+          "output": "2\n",
+          "origin": "AtCoder ABC258 G公式例1"
+        },
+        {
+          "input": "10\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n",
+          "output": "0\n",
+          "origin": "AtCoder ABC258 G公式例2"
+        }
+      ],
+      "random_cases": 240,
+      "status": "PASS"
+    },
+    {
+      "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+      "native": false,
+      "disable_simd": false,
+      "driver": "dynamic_bitset_shift_or",
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-I",
+        "/home/reinsirk/Atcoder_Env",
+        "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/dynamic_bitset_shift_or_final_submission.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/dynamic_bitset_shift_or_gcc_False_False"
+      ],
+      "submission_sha256": "2fbf192bb15ab2623319ef5b81ebc63f0e0e669a5a2c1c4f97d9e7c449a5bd21",
+      "samples": [
+        {
+          "input": "3\n2 3 5\n",
+          "output": "7\n",
+          "origin": "TDPC A公式例1"
+        },
+        {
+          "input": "10\n1 1 1 1 1 1 1 1 1 1\n",
+          "output": "11\n",
+          "origin": "TDPC A公式例2"
+        }
+      ],
+      "random_cases": 240,
+      "status": "PASS"
+    },
+    {
+      "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+      "native": false,
+      "disable_simd": true,
+      "driver": "dynamic_bitset",
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-I",
+        "/home/reinsirk/Atcoder_Env",
+        "-DSIRKIT_DISABLE_SIMD",
+        "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/dynamic_bitset_final_submission.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/dynamic_bitset_gcc_False_True"
+      ],
+      "submission_sha256": "015d1a7e72395a3f0b41e35a08961b65b1e819a4808b4061140601671820fb36",
+      "samples": [
+        {
+          "input": "2 3 2\n101\n011\n10\n11\n01\n",
+          "output": "11\n10\n",
+          "origin": "LC公開問題の形式で独立作成。三重ループのmod2積を参照。"
+        },
+        {
+          "input": "1 1 1\n1\n0\n",
+          "output": "0\n",
+          "origin": "独立作成の最小境界。"
+        }
+      ],
+      "random_cases": 240,
+      "status": "PASS"
+    },
+    {
+      "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+      "native": false,
+      "disable_simd": true,
+      "driver": "dynamic_bitset_triangle",
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-I",
+        "/home/reinsirk/Atcoder_Env",
+        "-DSIRKIT_DISABLE_SIMD",
+        "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/dynamic_bitset_triangle_final_submission.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/dynamic_bitset_triangle_gcc_False_True"
+      ],
+      "submission_sha256": "cdb27d1fb8ab9663545968d5b08d944a801526a2f370132333583222175900df",
+      "samples": [
+        {
+          "input": "4\n0011\n0011\n1101\n1110\n",
+          "output": "2\n",
+          "origin": "AtCoder ABC258 G公式例1"
+        },
+        {
+          "input": "10\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n",
+          "output": "0\n",
+          "origin": "AtCoder ABC258 G公式例2"
+        }
+      ],
+      "random_cases": 240,
+      "status": "PASS"
+    },
+    {
+      "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+      "native": false,
+      "disable_simd": true,
+      "driver": "dynamic_bitset_shift_or",
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-I",
+        "/home/reinsirk/Atcoder_Env",
+        "-DSIRKIT_DISABLE_SIMD",
+        "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/dynamic_bitset_shift_or_final_submission.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/dynamic_bitset_shift_or_gcc_False_True"
+      ],
+      "submission_sha256": "2fbf192bb15ab2623319ef5b81ebc63f0e0e669a5a2c1c4f97d9e7c449a5bd21",
+      "samples": [
+        {
+          "input": "3\n2 3 5\n",
+          "output": "7\n",
+          "origin": "TDPC A公式例1"
+        },
+        {
+          "input": "10\n1 1 1 1 1 1 1 1 1 1\n",
+          "output": "11\n",
+          "origin": "TDPC A公式例2"
+        }
+      ],
+      "random_cases": 240,
+      "status": "PASS"
+    },
+    {
+      "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+      "native": true,
+      "disable_simd": false,
+      "driver": "dynamic_bitset",
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-I",
+        "/home/reinsirk/Atcoder_Env",
+        "-march=native",
+        "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/dynamic_bitset_final_submission.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/dynamic_bitset_gcc_True_False"
+      ],
+      "submission_sha256": "015d1a7e72395a3f0b41e35a08961b65b1e819a4808b4061140601671820fb36",
+      "samples": [
+        {
+          "input": "2 3 2\n101\n011\n10\n11\n01\n",
+          "output": "11\n10\n",
+          "origin": "LC公開問題の形式で独立作成。三重ループのmod2積を参照。"
+        },
+        {
+          "input": "1 1 1\n1\n0\n",
+          "output": "0\n",
+          "origin": "独立作成の最小境界。"
+        }
+      ],
+      "random_cases": 240,
+      "status": "PASS"
+    },
+    {
+      "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+      "native": true,
+      "disable_simd": false,
+      "driver": "dynamic_bitset_triangle",
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-I",
+        "/home/reinsirk/Atcoder_Env",
+        "-march=native",
+        "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/dynamic_bitset_triangle_final_submission.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/dynamic_bitset_triangle_gcc_True_False"
+      ],
+      "submission_sha256": "cdb27d1fb8ab9663545968d5b08d944a801526a2f370132333583222175900df",
+      "samples": [
+        {
+          "input": "4\n0011\n0011\n1101\n1110\n",
+          "output": "2\n",
+          "origin": "AtCoder ABC258 G公式例1"
+        },
+        {
+          "input": "10\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n",
+          "output": "0\n",
+          "origin": "AtCoder ABC258 G公式例2"
+        }
+      ],
+      "random_cases": 240,
+      "status": "PASS"
+    },
+    {
+      "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+      "native": true,
+      "disable_simd": false,
+      "driver": "dynamic_bitset_shift_or",
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-I",
+        "/home/reinsirk/Atcoder_Env",
+        "-march=native",
+        "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/dynamic_bitset_shift_or_final_submission.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/dynamic_bitset_shift_or_gcc_True_False"
+      ],
+      "submission_sha256": "2fbf192bb15ab2623319ef5b81ebc63f0e0e669a5a2c1c4f97d9e7c449a5bd21",
+      "samples": [
+        {
+          "input": "3\n2 3 5\n",
+          "output": "7\n",
+          "origin": "TDPC A公式例1"
+        },
+        {
+          "input": "10\n1 1 1 1 1 1 1 1 1 1\n",
+          "output": "11\n",
+          "origin": "TDPC A公式例2"
+        }
+      ],
+      "random_cases": 240,
+      "status": "PASS"
+    },
+    {
+      "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+      "native": true,
+      "disable_simd": true,
+      "driver": "dynamic_bitset",
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-I",
+        "/home/reinsirk/Atcoder_Env",
+        "-march=native",
+        "-DSIRKIT_DISABLE_SIMD",
+        "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/dynamic_bitset_final_submission.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/dynamic_bitset_gcc_True_True"
+      ],
+      "submission_sha256": "015d1a7e72395a3f0b41e35a08961b65b1e819a4808b4061140601671820fb36",
+      "samples": [
+        {
+          "input": "2 3 2\n101\n011\n10\n11\n01\n",
+          "output": "11\n10\n",
+          "origin": "LC公開問題の形式で独立作成。三重ループのmod2積を参照。"
+        },
+        {
+          "input": "1 1 1\n1\n0\n",
+          "output": "0\n",
+          "origin": "独立作成の最小境界。"
+        }
+      ],
+      "random_cases": 240,
+      "status": "PASS"
+    },
+    {
+      "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+      "native": true,
+      "disable_simd": true,
+      "driver": "dynamic_bitset_triangle",
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-I",
+        "/home/reinsirk/Atcoder_Env",
+        "-march=native",
+        "-DSIRKIT_DISABLE_SIMD",
+        "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/dynamic_bitset_triangle_final_submission.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/dynamic_bitset_triangle_gcc_True_True"
+      ],
+      "submission_sha256": "cdb27d1fb8ab9663545968d5b08d944a801526a2f370132333583222175900df",
+      "samples": [
+        {
+          "input": "4\n0011\n0011\n1101\n1110\n",
+          "output": "2\n",
+          "origin": "AtCoder ABC258 G公式例1"
+        },
+        {
+          "input": "10\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n",
+          "output": "0\n",
+          "origin": "AtCoder ABC258 G公式例2"
+        }
+      ],
+      "random_cases": 240,
+      "status": "PASS"
+    },
+    {
+      "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+      "native": true,
+      "disable_simd": true,
+      "driver": "dynamic_bitset_shift_or",
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-I",
+        "/home/reinsirk/Atcoder_Env",
+        "-march=native",
+        "-DSIRKIT_DISABLE_SIMD",
+        "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/dynamic_bitset_shift_or_final_submission.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/dynamic_bitset_shift_or_gcc_True_True"
+      ],
+      "submission_sha256": "2fbf192bb15ab2623319ef5b81ebc63f0e0e669a5a2c1c4f97d9e7c449a5bd21",
+      "samples": [
+        {
+          "input": "3\n2 3 5\n",
+          "output": "7\n",
+          "origin": "TDPC A公式例1"
+        },
+        {
+          "input": "10\n1 1 1 1 1 1 1 1 1 1\n",
+          "output": "11\n",
+          "origin": "TDPC A公式例2"
+        }
+      ],
+      "random_cases": 240,
+      "status": "PASS"
+    },
+    {
+      "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+      "native": false,
+      "disable_simd": false,
+      "driver": "dynamic_bitset",
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-I",
+        "/home/reinsirk/Atcoder_Env",
+        "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/dynamic_bitset_final_submission.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/dynamic_bitset_clang_False_False"
+      ],
+      "submission_sha256": "015d1a7e72395a3f0b41e35a08961b65b1e819a4808b4061140601671820fb36",
+      "samples": [
+        {
+          "input": "2 3 2\n101\n011\n10\n11\n01\n",
+          "output": "11\n10\n",
+          "origin": "LC公開問題の形式で独立作成。三重ループのmod2積を参照。"
+        },
+        {
+          "input": "1 1 1\n1\n0\n",
+          "output": "0\n",
+          "origin": "独立作成の最小境界。"
+        }
+      ],
+      "random_cases": 240,
+      "status": "PASS"
+    },
+    {
+      "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+      "native": false,
+      "disable_simd": false,
+      "driver": "dynamic_bitset_triangle",
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-I",
+        "/home/reinsirk/Atcoder_Env",
+        "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/dynamic_bitset_triangle_final_submission.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/dynamic_bitset_triangle_clang_False_False"
+      ],
+      "submission_sha256": "cdb27d1fb8ab9663545968d5b08d944a801526a2f370132333583222175900df",
+      "samples": [
+        {
+          "input": "4\n0011\n0011\n1101\n1110\n",
+          "output": "2\n",
+          "origin": "AtCoder ABC258 G公式例1"
+        },
+        {
+          "input": "10\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n",
+          "output": "0\n",
+          "origin": "AtCoder ABC258 G公式例2"
+        }
+      ],
+      "random_cases": 240,
+      "status": "PASS"
+    },
+    {
+      "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+      "native": false,
+      "disable_simd": false,
+      "driver": "dynamic_bitset_shift_or",
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-I",
+        "/home/reinsirk/Atcoder_Env",
+        "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/dynamic_bitset_shift_or_final_submission.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/dynamic_bitset_shift_or_clang_False_False"
+      ],
+      "submission_sha256": "2fbf192bb15ab2623319ef5b81ebc63f0e0e669a5a2c1c4f97d9e7c449a5bd21",
+      "samples": [
+        {
+          "input": "3\n2 3 5\n",
+          "output": "7\n",
+          "origin": "TDPC A公式例1"
+        },
+        {
+          "input": "10\n1 1 1 1 1 1 1 1 1 1\n",
+          "output": "11\n",
+          "origin": "TDPC A公式例2"
+        }
+      ],
+      "random_cases": 240,
+      "status": "PASS"
+    },
+    {
+      "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+      "native": false,
+      "disable_simd": true,
+      "driver": "dynamic_bitset",
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-I",
+        "/home/reinsirk/Atcoder_Env",
+        "-DSIRKIT_DISABLE_SIMD",
+        "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/dynamic_bitset_final_submission.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/dynamic_bitset_clang_False_True"
+      ],
+      "submission_sha256": "015d1a7e72395a3f0b41e35a08961b65b1e819a4808b4061140601671820fb36",
+      "samples": [
+        {
+          "input": "2 3 2\n101\n011\n10\n11\n01\n",
+          "output": "11\n10\n",
+          "origin": "LC公開問題の形式で独立作成。三重ループのmod2積を参照。"
+        },
+        {
+          "input": "1 1 1\n1\n0\n",
+          "output": "0\n",
+          "origin": "独立作成の最小境界。"
+        }
+      ],
+      "random_cases": 240,
+      "status": "PASS"
+    },
+    {
+      "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+      "native": false,
+      "disable_simd": true,
+      "driver": "dynamic_bitset_triangle",
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-I",
+        "/home/reinsirk/Atcoder_Env",
+        "-DSIRKIT_DISABLE_SIMD",
+        "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/dynamic_bitset_triangle_final_submission.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/dynamic_bitset_triangle_clang_False_True"
+      ],
+      "submission_sha256": "cdb27d1fb8ab9663545968d5b08d944a801526a2f370132333583222175900df",
+      "samples": [
+        {
+          "input": "4\n0011\n0011\n1101\n1110\n",
+          "output": "2\n",
+          "origin": "AtCoder ABC258 G公式例1"
+        },
+        {
+          "input": "10\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n",
+          "output": "0\n",
+          "origin": "AtCoder ABC258 G公式例2"
+        }
+      ],
+      "random_cases": 240,
+      "status": "PASS"
+    },
+    {
+      "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+      "native": false,
+      "disable_simd": true,
+      "driver": "dynamic_bitset_shift_or",
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-I",
+        "/home/reinsirk/Atcoder_Env",
+        "-DSIRKIT_DISABLE_SIMD",
+        "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/dynamic_bitset_shift_or_final_submission.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/dynamic_bitset_shift_or_clang_False_True"
+      ],
+      "submission_sha256": "2fbf192bb15ab2623319ef5b81ebc63f0e0e669a5a2c1c4f97d9e7c449a5bd21",
+      "samples": [
+        {
+          "input": "3\n2 3 5\n",
+          "output": "7\n",
+          "origin": "TDPC A公式例1"
+        },
+        {
+          "input": "10\n1 1 1 1 1 1 1 1 1 1\n",
+          "output": "11\n",
+          "origin": "TDPC A公式例2"
+        }
+      ],
+      "random_cases": 240,
+      "status": "PASS"
+    },
+    {
+      "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+      "native": true,
+      "disable_simd": false,
+      "driver": "dynamic_bitset",
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-I",
+        "/home/reinsirk/Atcoder_Env",
+        "-march=native",
+        "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/dynamic_bitset_final_submission.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/dynamic_bitset_clang_True_False"
+      ],
+      "submission_sha256": "015d1a7e72395a3f0b41e35a08961b65b1e819a4808b4061140601671820fb36",
+      "samples": [
+        {
+          "input": "2 3 2\n101\n011\n10\n11\n01\n",
+          "output": "11\n10\n",
+          "origin": "LC公開問題の形式で独立作成。三重ループのmod2積を参照。"
+        },
+        {
+          "input": "1 1 1\n1\n0\n",
+          "output": "0\n",
+          "origin": "独立作成の最小境界。"
+        }
+      ],
+      "random_cases": 240,
+      "status": "PASS"
+    },
+    {
+      "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+      "native": true,
+      "disable_simd": false,
+      "driver": "dynamic_bitset_triangle",
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-I",
+        "/home/reinsirk/Atcoder_Env",
+        "-march=native",
+        "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/dynamic_bitset_triangle_final_submission.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/dynamic_bitset_triangle_clang_True_False"
+      ],
+      "submission_sha256": "cdb27d1fb8ab9663545968d5b08d944a801526a2f370132333583222175900df",
+      "samples": [
+        {
+          "input": "4\n0011\n0011\n1101\n1110\n",
+          "output": "2\n",
+          "origin": "AtCoder ABC258 G公式例1"
+        },
+        {
+          "input": "10\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n",
+          "output": "0\n",
+          "origin": "AtCoder ABC258 G公式例2"
+        }
+      ],
+      "random_cases": 240,
+      "status": "PASS"
+    },
+    {
+      "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+      "native": true,
+      "disable_simd": false,
+      "driver": "dynamic_bitset_shift_or",
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-I",
+        "/home/reinsirk/Atcoder_Env",
+        "-march=native",
+        "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/dynamic_bitset_shift_or_final_submission.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/dynamic_bitset_shift_or_clang_True_False"
+      ],
+      "submission_sha256": "2fbf192bb15ab2623319ef5b81ebc63f0e0e669a5a2c1c4f97d9e7c449a5bd21",
+      "samples": [
+        {
+          "input": "3\n2 3 5\n",
+          "output": "7\n",
+          "origin": "TDPC A公式例1"
+        },
+        {
+          "input": "10\n1 1 1 1 1 1 1 1 1 1\n",
+          "output": "11\n",
+          "origin": "TDPC A公式例2"
+        }
+      ],
+      "random_cases": 240,
+      "status": "PASS"
+    },
+    {
+      "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+      "native": true,
+      "disable_simd": true,
+      "driver": "dynamic_bitset",
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-I",
+        "/home/reinsirk/Atcoder_Env",
+        "-march=native",
+        "-DSIRKIT_DISABLE_SIMD",
+        "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/dynamic_bitset_final_submission.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/dynamic_bitset_clang_True_True"
+      ],
+      "submission_sha256": "015d1a7e72395a3f0b41e35a08961b65b1e819a4808b4061140601671820fb36",
+      "samples": [
+        {
+          "input": "2 3 2\n101\n011\n10\n11\n01\n",
+          "output": "11\n10\n",
+          "origin": "LC公開問題の形式で独立作成。三重ループのmod2積を参照。"
+        },
+        {
+          "input": "1 1 1\n1\n0\n",
+          "output": "0\n",
+          "origin": "独立作成の最小境界。"
+        }
+      ],
+      "random_cases": 240,
+      "status": "PASS"
+    },
+    {
+      "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+      "native": true,
+      "disable_simd": true,
+      "driver": "dynamic_bitset_triangle",
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-I",
+        "/home/reinsirk/Atcoder_Env",
+        "-march=native",
+        "-DSIRKIT_DISABLE_SIMD",
+        "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/dynamic_bitset_triangle_final_submission.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/dynamic_bitset_triangle_clang_True_True"
+      ],
+      "submission_sha256": "cdb27d1fb8ab9663545968d5b08d944a801526a2f370132333583222175900df",
+      "samples": [
+        {
+          "input": "4\n0011\n0011\n1101\n1110\n",
+          "output": "2\n",
+          "origin": "AtCoder ABC258 G公式例1"
+        },
+        {
+          "input": "10\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n",
+          "output": "0\n",
+          "origin": "AtCoder ABC258 G公式例2"
+        }
+      ],
+      "random_cases": 240,
+      "status": "PASS"
+    },
+    {
+      "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+      "native": true,
+      "disable_simd": true,
+      "driver": "dynamic_bitset_shift_or",
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-I",
+        "/home/reinsirk/Atcoder_Env",
+        "-march=native",
+        "-DSIRKIT_DISABLE_SIMD",
+        "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/dynamic_bitset_shift_or_final_submission.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/dynamic_bitset_shift_or_clang_True_True"
+      ],
+      "submission_sha256": "2fbf192bb15ab2623319ef5b81ebc63f0e0e669a5a2c1c4f97d9e7c449a5bd21",
+      "samples": [
+        {
+          "input": "3\n2 3 5\n",
+          "output": "7\n",
+          "origin": "TDPC A公式例1"
+        },
+        {
+          "input": "10\n1 1 1 1 1 1 1 1 1 1\n",
+          "output": "11\n",
+          "origin": "TDPC A公式例2"
+        }
+      ],
+      "random_cases": 240,
+      "status": "PASS"
+    }
+  ],
+  "judge_boundaries": [
+    {
+      "compiler": "gcc",
+      "driver": "dynamic_bitset_triangle",
+      "input_sha256": "e3bb120deafc23d4d56661443e8ae85c78dfc47aa420016bd604550a00f7c4ce",
+      "expected_output_sha256": "76592a4801a25b754bef777cf2640d5e657cd49c228827d5cded02177fec3960",
+      "output_sha256": "76592a4801a25b754bef777cf2640d5e657cd49c228827d5cded02177fec3960",
+      "origin": "制約上限の完全グラフ。C(3000,3)=4495501000でint32を越える。",
+      "status": "PASS"
+    },
+    {
+      "compiler": "gcc",
+      "driver": "dynamic_bitset",
+      "input_sha256": "5007cf4391589de415f23fdb9ff22c94231931f07603e42a34a943a1b657eeb1",
+      "expected_output_sha256": "9825d5dabdbd070dc852362abc8e6f166fa64ab5b0c6c477266e06351f4e981f",
+      "output_sha256": "9825d5dabdbd070dc852362abc8e6f166fa64ab5b0c6c477266e06351f4e981f",
+      "origin": "N=M=K=4096、全成分1。各成分は4096 mod2=0。",
+      "status": "PASS"
+    },
+    {
+      "compiler": "gcc",
+      "driver": "dynamic_bitset_shift_or",
+      "input_sha256": "0e75ac8f3c96464de4a84ae0f160173c5bdc8268995401a1491482a081d8e4d4",
+      "expected_output_sha256": "39b8dc3fc8b44765c8e6f1adee04c5b465e555ab791cc42d0d9e810d5b64297c",
+      "output_sha256": "39b8dc3fc8b44765c8e6f1adee04c5b465e555ab791cc42d0d9e810d5b64297c",
+      "origin": "100問全て100点。0..10000の100の倍数が101個。",
+      "status": "PASS"
+    },
+    {
+      "compiler": "clang",
+      "driver": "dynamic_bitset_triangle",
+      "input_sha256": "e3bb120deafc23d4d56661443e8ae85c78dfc47aa420016bd604550a00f7c4ce",
+      "expected_output_sha256": "76592a4801a25b754bef777cf2640d5e657cd49c228827d5cded02177fec3960",
+      "output_sha256": "76592a4801a25b754bef777cf2640d5e657cd49c228827d5cded02177fec3960",
+      "origin": "制約上限の完全グラフ。C(3000,3)=4495501000でint32を越える。",
+      "status": "PASS"
+    },
+    {
+      "compiler": "clang",
+      "driver": "dynamic_bitset",
+      "input_sha256": "5007cf4391589de415f23fdb9ff22c94231931f07603e42a34a943a1b657eeb1",
+      "expected_output_sha256": "9825d5dabdbd070dc852362abc8e6f166fa64ab5b0c6c477266e06351f4e981f",
+      "output_sha256": "9825d5dabdbd070dc852362abc8e6f166fa64ab5b0c6c477266e06351f4e981f",
+      "origin": "N=M=K=4096、全成分1。各成分は4096 mod2=0。",
+      "status": "PASS"
+    },
+    {
+      "compiler": "clang",
+      "driver": "dynamic_bitset_shift_or",
+      "input_sha256": "0e75ac8f3c96464de4a84ae0f160173c5bdc8268995401a1491482a081d8e4d4",
+      "expected_output_sha256": "39b8dc3fc8b44765c8e6f1adee04c5b465e555ab791cc42d0d9e810d5b64297c",
+      "output_sha256": "39b8dc3fc8b44765c8e6f1adee04c5b465e555ab791cc42d0d9e810d5b64297c",
+      "origin": "100問全て100点。0..10000の100の倍数が101個。",
+      "status": "PASS"
+    }
+  ],
+  "examples": {
+    "origin": "bit位置と小集合を手で追跡した独立期待値。全出力を整数/文字列の完全一致で確認。",
+    "expected": "0011101 4 3\n0 2 3 4 \n4 3\n0 0 1\n1110100 0000111\n7\n65 2 1\n00001101\n0 1\n1 8\n0 1 0\n101\n",
+    "results": [
+      {
+        "compiler": "gcc",
+        "skip": false,
+        "native": false,
+        "disable_simd": false,
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/example_final.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/example_gcc_False_False_False"
+        ],
+        "stdout": "0011101 4 3\n0 2 3 4 \n4 3\n0 0 1\n1110100 0000111\n7\n65 2 1\n00001101\n0 1\n1 8\n0 1 0\n101\n",
+        "status": "PASS"
+      },
+      {
+        "compiler": "gcc",
+        "skip": false,
+        "native": false,
+        "disable_simd": true,
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/example_final.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/example_gcc_False_False_True"
+        ],
+        "stdout": "0011101 4 3\n0 2 3 4 \n4 3\n0 0 1\n1110100 0000111\n7\n65 2 1\n00001101\n0 1\n1 8\n0 1 0\n101\n",
+        "status": "PASS"
+      },
+      {
+        "compiler": "gcc",
+        "skip": false,
+        "native": true,
+        "disable_simd": false,
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-march=native",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/example_final.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/example_gcc_False_True_False"
+        ],
+        "stdout": "0011101 4 3\n0 2 3 4 \n4 3\n0 0 1\n1110100 0000111\n7\n65 2 1\n00001101\n0 1\n1 8\n0 1 0\n101\n",
+        "status": "PASS"
+      },
+      {
+        "compiler": "gcc",
+        "skip": false,
+        "native": true,
+        "disable_simd": true,
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-march=native",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/example_final.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/example_gcc_False_True_True"
+        ],
+        "stdout": "0011101 4 3\n0 2 3 4 \n4 3\n0 0 1\n1110100 0000111\n7\n65 2 1\n00001101\n0 1\n1 8\n0 1 0\n101\n",
+        "status": "PASS"
+      },
+      {
+        "compiler": "gcc",
+        "skip": true,
+        "native": false,
+        "disable_simd": false,
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/example_final.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/example_gcc_True_False_False"
+        ],
+        "stdout": "0011101 4 3\n0 2 3 4 \n4 3\n0 0 1\n1110100 0000111\n7\n65 2 1\n00001101\n0 1\n1 8\n0 1 0\n101\n",
+        "status": "PASS"
+      },
+      {
+        "compiler": "gcc",
+        "skip": true,
+        "native": false,
+        "disable_simd": true,
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/example_final.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/example_gcc_True_False_True"
+        ],
+        "stdout": "0011101 4 3\n0 2 3 4 \n4 3\n0 0 1\n1110100 0000111\n7\n65 2 1\n00001101\n0 1\n1 8\n0 1 0\n101\n",
+        "status": "PASS"
+      },
+      {
+        "compiler": "gcc",
+        "skip": true,
+        "native": true,
+        "disable_simd": false,
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-march=native",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/example_final.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/example_gcc_True_True_False"
+        ],
+        "stdout": "0011101 4 3\n0 2 3 4 \n4 3\n0 0 1\n1110100 0000111\n7\n65 2 1\n00001101\n0 1\n1 8\n0 1 0\n101\n",
+        "status": "PASS"
+      },
+      {
+        "compiler": "gcc",
+        "skip": true,
+        "native": true,
+        "disable_simd": true,
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-march=native",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/example_final.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/example_gcc_True_True_True"
+        ],
+        "stdout": "0011101 4 3\n0 2 3 4 \n4 3\n0 0 1\n1110100 0000111\n7\n65 2 1\n00001101\n0 1\n1 8\n0 1 0\n101\n",
+        "status": "PASS"
+      },
+      {
+        "compiler": "clang",
+        "skip": false,
+        "native": false,
+        "disable_simd": false,
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/example_final.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/example_clang_False_False_False"
+        ],
+        "stdout": "0011101 4 3\n0 2 3 4 \n4 3\n0 0 1\n1110100 0000111\n7\n65 2 1\n00001101\n0 1\n1 8\n0 1 0\n101\n",
+        "status": "PASS"
+      },
+      {
+        "compiler": "clang",
+        "skip": false,
+        "native": false,
+        "disable_simd": true,
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/example_final.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/example_clang_False_False_True"
+        ],
+        "stdout": "0011101 4 3\n0 2 3 4 \n4 3\n0 0 1\n1110100 0000111\n7\n65 2 1\n00001101\n0 1\n1 8\n0 1 0\n101\n",
+        "status": "PASS"
+      },
+      {
+        "compiler": "clang",
+        "skip": false,
+        "native": true,
+        "disable_simd": false,
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-march=native",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/example_final.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/example_clang_False_True_False"
+        ],
+        "stdout": "0011101 4 3\n0 2 3 4 \n4 3\n0 0 1\n1110100 0000111\n7\n65 2 1\n00001101\n0 1\n1 8\n0 1 0\n101\n",
+        "status": "PASS"
+      },
+      {
+        "compiler": "clang",
+        "skip": false,
+        "native": true,
+        "disable_simd": true,
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-march=native",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/example_final.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/example_clang_False_True_True"
+        ],
+        "stdout": "0011101 4 3\n0 2 3 4 \n4 3\n0 0 1\n1110100 0000111\n7\n65 2 1\n00001101\n0 1\n1 8\n0 1 0\n101\n",
+        "status": "PASS"
+      },
+      {
+        "compiler": "clang",
+        "skip": true,
+        "native": false,
+        "disable_simd": false,
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/example_final.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/example_clang_True_False_False"
+        ],
+        "stdout": "0011101 4 3\n0 2 3 4 \n4 3\n0 0 1\n1110100 0000111\n7\n65 2 1\n00001101\n0 1\n1 8\n0 1 0\n101\n",
+        "status": "PASS"
+      },
+      {
+        "compiler": "clang",
+        "skip": true,
+        "native": false,
+        "disable_simd": true,
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/example_final.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/example_clang_True_False_True"
+        ],
+        "stdout": "0011101 4 3\n0 2 3 4 \n4 3\n0 0 1\n1110100 0000111\n7\n65 2 1\n00001101\n0 1\n1 8\n0 1 0\n101\n",
+        "status": "PASS"
+      },
+      {
+        "compiler": "clang",
+        "skip": true,
+        "native": true,
+        "disable_simd": false,
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-march=native",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/example_final.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/example_clang_True_True_False"
+        ],
+        "stdout": "0011101 4 3\n0 2 3 4 \n4 3\n0 0 1\n1110100 0000111\n7\n65 2 1\n00001101\n0 1\n1 8\n0 1 0\n101\n",
+        "status": "PASS"
+      },
+      {
+        "compiler": "clang",
+        "skip": true,
+        "native": true,
+        "disable_simd": true,
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-march=native",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/example_final.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/example_clang_True_True_True"
+        ],
+        "stdout": "0011101 4 3\n0 2 3 4 \n4 3\n0 0 1\n1110100 0000111\n7\n65 2 1\n00001101\n0 1\n1 8\n0 1 0\n101\n",
+        "status": "PASS"
+      }
+    ],
+    "compiled_source_sha256": "e1a2391a0390744ee0f4b3994fb08b7bb6185540bff7209b168fb2118cb2a907",
+    "example_sha256": "73942bb8d9413b5c6e249671300ea852a94a86a9b18f68b890ab6ad005d17f0b"
+  },
+  "measurement_bridge": {
+    "measured_candidate_sha256": "a2a99556229c42615bcf6f0e0ac3d0c314e71d6fb82d83cc0f4aa8dd08ec9b49",
+    "final_source_sha256": "e1a2391a0390744ee0f4b3994fb08b7bb6185540bff7209b168fb2118cb2a907",
+    "exact_changes": [
+      "冒頭のAPI型表記とSIMD経路説明（コメント）",
+      "未使用のtarget POPCNT parity関数を削除（参照なし）",
+      "find_next: ++i<word_count を i<word_count-1 の後に++iへ同値変形。pos<sizeで既にwordを1つ参照しておりword_count>=1。",
+      "AVX2 parity専用関数だけnoinline属性を追加。"
+    ],
+    "body_equality_after_only_listed_changes": true,
+    "measurement_applicability": "count/AND count/shift_orとdefaultのtarget mismatch呼出境界、Clang native標準経路は既存v2記録。GCC native parity API/LCは最終SHAで別途再測定。"
+  },
+  "performance": {
+    "cpu": "Intel Core i9-14900K P-Core CPU12、root調整の排他枠。GCC15.2/Clang21、-O2、default/native。",
+    "initial_discarded": "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/initial_discarded_benchmark/reason.json",
+    "initial_discarded_note": "64bit store直後のwide loadに人工的なstore-forwarding不成立が生じたため不採用。旧binary/rawをSHA一致で保存。fixtureの初回SHAは記録しておらず既知編集からの再構成と明記。",
+    "v2_manifest": "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/measurement_v2/run_manifest.json",
+    "v2_summary": {
+      "kernel_gcc_default_count_0": [
+        0.8790825,
+        1.516115,
+        1.5851825
+      ],
+      "kernel_gcc_default_count_1": [
+        1.40653,
+        1.2308325,
+        1.23351
+      ],
+      "kernel_gcc_default_count_2": [
+        1.9359075,
+        1.4095775,
+        1.406495
+      ],
+      "kernel_gcc_default_count_3": [
+        2.5808325,
+        2.109815,
+        2.111995
+      ],
+      "kernel_gcc_default_count_4": [
+        3.23482,
+        1.7599675,
+        1.7608525
+      ],
+      "kernel_gcc_default_count_8": [
+        5.922208,
+        1.966564,
+        2.114488
+      ],
+      "kernel_gcc_default_count_16": [
+        34.887744,
+        2.813936,
+        2.961952
+      ],
+      "kernel_gcc_default_count_32": [
+        68.926752,
+        5.626784,
+        4.770976
+      ],
+      "kernel_gcc_default_count_47": [
+        100.79783334116652,
+        8.284767589415802,
+        6.349461860224656
+      ],
+      "kernel_gcc_default_count_64": [
+        45.366016,
+        11.283424,
+        8.923424
+      ],
+      "kernel_gcc_default_count_128": [
+        277.3967106105209,
+        22.57186740048637,
+        16.33572251375912
+      ],
+      "kernel_gcc_default_count_1024": [
+        646.602,
+        181.6445,
+        125.5765
+      ],
+      "kernel_gcc_default_intersection_0": [
+        0.87935,
+        8.7973225,
+        1.58277
+      ],
+      "kernel_gcc_default_intersection_1": [
+        1.51488,
+        1.4086325,
+        1.2308475
+      ],
+      "kernel_gcc_default_intersection_2": [
+        2.1061225,
+        1.58497,
+        1.4082375
+      ],
+      "kernel_gcc_default_intersection_3": [
+        10.17917,
+        1.9340075,
+        2.109735
+      ],
+      "kernel_gcc_default_intersection_4": [
+        3.374025,
+        1.8190275,
+        1.82964
+      ],
+      "kernel_gcc_default_intersection_8": [
+        18.266204,
+        2.378404,
+        2.286156
+      ],
+      "kernel_gcc_default_intersection_16": [
+        11.608648,
+        3.559232,
+        3.060632
+      ],
+      "kernel_gcc_default_intersection_32": [
+        70.278992,
+        5.78816,
+        5.398368
+      ],
+      "kernel_gcc_default_intersection_47": [
+        32.24361987122245,
+        8.273863796587865,
+        7.786718052357005
+      ],
+      "kernel_gcc_default_intersection_64": [
+        139.58336,
+        12.532672,
+        9.643776
+      ],
+      "kernel_gcc_default_intersection_128": [
+        278.28593370024316,
+        22.55682836298477,
+        18.504735696915397
+      ],
+      "kernel_gcc_default_intersection_1024": [
+        688.305,
+        185.5805,
+        145.999
+      ],
+      "kernel_gcc_default_parity_0": [
+        1.0549025,
+        1.0596625,
+        1.2333525,
+        1.7606725
+      ],
+      "kernel_gcc_default_parity_1": [
+        1.4651725,
+        1.292635,
+        1.2307425,
+        1.585085
+      ],
+      "kernel_gcc_default_parity_2": [
+        2.23814,
+        1.4387575,
+        1.25946,
+        1.586805
+      ],
+      "kernel_gcc_default_parity_3": [
+        2.8198925,
+        1.7680475,
+        2.1050175,
+        2.464805
+      ],
+      "kernel_gcc_default_parity_4": [
+        10.9232725,
+        2.024295,
+        2.375975,
+        1.4105075
+      ],
+      "kernel_gcc_default_parity_8": [
+        18.30326,
+        2.732404,
+        2.904992,
+        1.591128
+      ],
+      "kernel_gcc_default_parity_16": [
+        11.677096,
+        29.600296,
+        5.634008,
+        2.198088
+      ],
+      "kernel_gcc_default_parity_32": [
+        22.4128,
+        7.053232,
+        7.06552,
+        3.037696
+      ],
+      "kernel_gcc_default_parity_47": [
+        33.54269868872491,
+        9.551205527094986,
+        9.694576303050242,
+        4.791558960379753
+      ],
+      "kernel_gcc_default_parity_64": [
+        139.690528,
+        16.971232,
+        16.38336,
+        5.838048
+      ],
+      "kernel_gcc_default_parity_128": [
+        278.2747344169973,
+        28.19761935236145,
+        26.939651862280815,
+        10.388199155254064
+      ],
+      "kernel_gcc_default_parity_1024": [
+        689.506,
+        180.919,
+        180.101,
+        77.0875
+      ],
+      "public_gcc_default_0_0": [
+        0.2786,
+        0.4371366666666667,
+        0.4181
+      ],
+      "public_gcc_default_0_1": [
+        1.0447,
+        1.1305066666666668,
+        1.1188333333333333
+      ],
+      "public_gcc_default_0_2": [
+        1.7573666666666667,
+        1.87157,
+        1.85598
+      ],
+      "public_gcc_default_0_3": [
+        2.4290433333333334,
+        2.5105166666666667,
+        2.563903333333333
+      ],
+      "public_gcc_default_0_4": [
+        3.210016,
+        2.016792,
+        2.005216
+      ],
+      "public_gcc_default_0_8": [
+        6.0898,
+        2.378688,
+        2.339152
+      ],
+      "public_gcc_default_0_16": [
+        10.679584,
+        3.23,
+        3.192832
+      ],
+      "public_gcc_default_0_32": [
+        21.747776,
+        5.379232,
+        5.372
+      ],
+      "public_gcc_default_0_47": [
+        29.142037977063357,
+        7.934715172024816,
+        7.851851851851852
+      ],
+      "public_gcc_default_0_64": [
+        41.405696,
+        9.50912,
+        10.692352
+      ],
+      "public_gcc_default_0_128": [
+        79.18740399385561,
+        16.158858166922684,
+        15.562724014336917
+      ],
+      "public_gcc_default_0_1024": [
+        615.481,
+        119.307,
+        119.249
+      ],
+      "public_gcc_default_1_0": [
+        0.36244,
+        0.51479,
+        0.51883
+      ],
+      "public_gcc_default_1_1": [
+        1.2025433333333333,
+        1.2965666666666666,
+        1.29109
+      ],
+      "public_gcc_default_1_2": [
+        1.97139,
+        2.09886,
+        2.0804466666666666
+      ],
+      "public_gcc_default_1_3": [
+        2.75565,
+        2.9044733333333332,
+        2.8999
+      ],
+      "public_gcc_default_1_4": [
+        3.507076,
+        2.34566,
+        2.345636
+      ],
+      "public_gcc_default_1_8": [
+        6.51732,
+        2.907408,
+        2.850088
+      ],
+      "public_gcc_default_1_16": [
+        11.54472,
+        4.160592,
+        4.091216
+      ],
+      "public_gcc_default_1_32": [
+        21.69376,
+        7.053888,
+        6.927392
+      ],
+      "public_gcc_default_1_47": [
+        31.154352321865012,
+        8.653177288964091,
+        8.548223350253807
+      ],
+      "public_gcc_default_1_64": [
+        41.952256,
+        9.625408,
+        14.34176
+      ],
+      "public_gcc_default_1_128": [
+        82.74705581157194,
+        17.66884280593958,
+        19.616743471582183
+      ],
+      "public_gcc_default_1_1024": [
+        658.098,
+        173.493,
+        174.025
+      ],
+      "public_gcc_default_2_0": [
+        0.34854666666666667,
+        0.51222,
+        0.50682
+      ],
+      "public_gcc_default_2_1": [
+        1.2357533333333333,
+        1.3155066666666666,
+        1.2986766666666667
+      ],
+      "public_gcc_default_2_2": [
+        1.37206,
+        1.4649833333333333,
+        1.4620766666666667
+      ],
+      "public_gcc_default_2_3": [
+        1.55057,
+        1.6402866666666667,
+        1.63525
+      ],
+      "public_gcc_default_2_4": [
+        1.697068,
+        1.860488,
+        1.798244
+      ],
+      "public_gcc_default_2_8": [
+        2.352024,
+        2.559616,
+        2.472016
+      ],
+      "public_gcc_default_2_16": [
+        3.8844,
+        3.824448,
+        3.784064
+      ],
+      "public_gcc_default_2_32": [
+        6.022624,
+        6.350624,
+        6.213344
+      ],
+      "public_gcc_default_2_47": [
+        9.190825343109607,
+        9.152378266591464,
+        8.74210377890581
+      ],
+      "public_gcc_default_2_64": [
+        16.724992,
+        5.527488,
+        15.653696
+      ],
+      "public_gcc_default_2_128": [
+        26.51689708141321,
+        9.81490015360983,
+        9.85189452124936
+      ],
+      "public_gcc_default_2_1024": [
+        195.45,
+        103.058,
+        103.064
+      ],
+      "verify_gcc_default_dynamic_bitset": [
+        46.308064,
+        37.923335,
+        46.866282
+      ],
+      "verify_gcc_default_dynamic_bitset_triangle": [
+        114.899099,
+        66.509826,
+        66.241389
+      ],
+      "verify_gcc_default_dynamic_bitset_shift_or": [
+        0.942182,
+        0.937957,
+        1.04103
+      ],
+      "kernel_gcc_native_count_0": [
+        0.882235,
+        1.23073,
+        1.504685
+      ],
+      "kernel_gcc_native_count_1": [
+        0.7061475,
+        1.2307375,
+        1.2306975
+      ],
+      "kernel_gcc_native_count_2": [
+        0.8792875,
+        1.4064925,
+        1.4065425
+      ],
+      "kernel_gcc_native_count_3": [
+        1.5823275,
+        2.02983,
+        9.3748675
+      ],
+      "kernel_gcc_native_count_4": [
+        1.8490375,
+        1.3803975,
+        1.76101
+      ],
+      "kernel_gcc_native_count_8": [
+        2.373536,
+        1.722916,
+        2.110548
+      ],
+      "kernel_gcc_native_count_16": [
+        5.110104,
+        2.813352,
+        2.905072
+      ],
+      "kernel_gcc_native_count_32": [
+        6.52392,
+        5.626896,
+        4.685488
+      ],
+      "kernel_gcc_native_count_47": [
+        9.238496968557598,
+        8.264346477416929,
+        6.518165154862058
+      ],
+      "kernel_gcc_native_count_64": [
+        17.652608,
+        11.253216,
+        8.776128
+      ],
+      "kernel_gcc_native_count_128": [
+        32.80046077051069,
+        22.504927684628182,
+        16.353065403814156
+      ],
+      "kernel_gcc_native_count_1024": [
+        253.3195,
+        181.3205,
+        125.5525
+      ],
+      "kernel_gcc_native_intersection_0": [
+        1.05487,
+        1.40654,
+        1.40654
+      ],
+      "kernel_gcc_native_intersection_1": [
+        0.8234775,
+        1.2311775,
+        1.05503
+      ],
+      "kernel_gcc_native_intersection_2": [
+        0.99644,
+        1.40908,
+        1.23342
+      ],
+      "kernel_gcc_native_intersection_3": [
+        1.56745,
+        1.76059,
+        1.9339475
+      ],
+      "kernel_gcc_native_intersection_4": [
+        1.85154,
+        1.7905075,
+        1.7608875
+      ],
+      "kernel_gcc_native_intersection_8": [
+        2.812952,
+        2.348908,
+        2.290468
+      ],
+      "kernel_gcc_native_intersection_16": [
+        3.847584,
+        3.562288,
+        3.217472
+      ],
+      "kernel_gcc_native_intersection_32": [
+        7.334304,
+        5.816,
+        5.175872
+      ],
+      "kernel_gcc_native_intersection_47": [
+        10.660948441979603,
+        8.264792968933591,
+        7.453682380034779
+      ],
+      "kernel_gcc_native_intersection_64": [
+        17.678016,
+        11.255616,
+        9.711008
+      ],
+      "kernel_gcc_native_intersection_128": [
+        36.307308332266736,
+        22.515615000639958,
+        18.424420837066428
+      ],
+      "kernel_gcc_native_intersection_1024": [
+        269.347,
+        185.225,
+        146.863
+      ],
+      "kernel_gcc_native_parity_0": [
+        0.87909,
+        1.0576275,
+        0.8791475,
+        1.58609
+      ],
+      "kernel_gcc_native_parity_1": [
+        0.879155,
+        0.8817075,
+        0.8818775,
+        1.2332325
+      ],
+      "kernel_gcc_native_parity_2": [
+        1.05751,
+        1.0549075,
+        1.0549275,
+        1.409205
+      ],
+      "kernel_gcc_native_parity_3": [
+        1.67361,
+        1.7615425,
+        1.673145,
+        2.1133
+      ],
+      "kernel_gcc_native_parity_4": [
+        2.024845,
+        2.0247925,
+        2.024795,
+        1.4174775
+      ],
+      "kernel_gcc_native_parity_8": [
+        2.549528,
+        2.554312,
+        2.553692,
+        1.58264
+      ],
+      "kernel_gcc_native_parity_16": [
+        3.885528,
+        5.282016,
+        5.282984,
+        2.198104
+      ],
+      "kernel_gcc_native_parity_32": [
+        7.202208,
+        6.706592,
+        6.71512,
+        3.153408
+      ],
+      "kernel_gcc_native_parity_47": [
+        10.562038821262396,
+        9.355430746815811,
+        9.344479954880857,
+        4.485665272359825
+      ],
+      "kernel_gcc_native_parity_64": [
+        20.372576,
+        18.177632,
+        16.161856,
+        5.833664
+      ],
+      "kernel_gcc_native_parity_128": [
+        36.79399718418021,
+        28.743440419813133,
+        26.687507999488034,
+        11.621336234480994
+      ],
+      "kernel_gcc_native_parity_1024": [
+        272.6295,
+        181.4305,
+        179.9595,
+        77.9335
+      ],
+      "public_gcc_native_0_0": [
+        0.3007666666666667,
+        0.42839,
+        0.42262333333333335
+      ],
+      "public_gcc_native_0_1": [
+        0.6728433333333333,
+        0.7430433333333333,
+        0.7302733333333333
+      ],
+      "public_gcc_native_0_2": [
+        0.83896,
+        0.8394633333333333,
+        0.84942
+      ],
+      "public_gcc_native_0_3": [
+        1.0023966666666666,
+        1.0172666666666668,
+        1.0171666666666668
+      ],
+      "public_gcc_native_0_4": [
+        1.173172,
+        1.526184,
+        1.52652
+      ],
+      "public_gcc_native_0_8": [
+        1.874648,
+        1.8656,
+        1.87584
+      ],
+      "public_gcc_native_0_16": [
+        3.4364,
+        2.702384,
+        2.72816
+      ],
+      "public_gcc_native_0_32": [
+        6.177216,
+        5.380704,
+        5.346816
+      ],
+      "public_gcc_native_0_47": [
+        8.753901109231059,
+        7.8508178228990415,
+        7.852885880804663
+      ],
+      "public_gcc_native_0_64": [
+        11.563776,
+        7.720384,
+        10.691456
+      ],
+      "public_gcc_native_0_128": [
+        32.59498207885304,
+        15.015745007680492,
+        15.06989247311828
+      ],
+      "public_gcc_native_0_1024": [
+        247.288,
+        121.927,
+        121.929
+      ],
+      "public_gcc_native_1_0": [
+        0.3798166666666667,
+        0.5217566666666666,
+        0.5220566666666666
+      ],
+      "public_gcc_native_1_1": [
+        0.7418533333333334,
+        0.84608,
+        0.8542
+      ],
+      "public_gcc_native_1_2": [
+        0.9187733333333333,
+        1.0165566666666668,
+        1.0081333333333333
+      ],
+      "public_gcc_native_1_3": [
+        1.1015666666666666,
+        1.1861833333333334,
+        1.1867733333333332
+      ],
+      "public_gcc_native_1_4": [
+        1.274816,
+        1.860112,
+        1.86286
+      ],
+      "public_gcc_native_1_8": [
+        2.113696,
+        2.4436,
+        2.442344
+      ],
+      "public_gcc_native_1_16": [
+        3.959008,
+        3.85976,
+        3.886288
+      ],
+      "public_gcc_native_1_32": [
+        6.799456,
+        5.853248,
+        5.845568
+      ],
+      "public_gcc_native_1_47": [
+        10.234724572288025,
+        7.922118819326941,
+        7.953280691859372
+      ],
+      "public_gcc_native_1_64": [
+        14.74304,
+        8.966976,
+        10.74848
+      ],
+      "public_gcc_native_1_128": [
+        31.271249359959036,
+        17.480798771121353,
+        17.556195596518176
+      ],
+      "public_gcc_native_1_1024": [
+        217.638,
+        157.704,
+        158.473
+      ],
+      "public_gcc_native_2_0": [
+        0.39331,
+        0.5069166666666667,
+        0.50683
+      ],
+      "public_gcc_native_2_1": [
+        0.7936433333333334,
+        0.83935,
+        0.8393566666666666
+      ],
+      "public_gcc_native_2_2": [
+        0.9227533333333333,
+        0.9416533333333333,
+        0.94098
+      ],
+      "public_gcc_native_2_3": [
+        1.1001133333333333,
+        1.0921366666666668,
+        1.1060833333333333
+      ],
+      "public_gcc_native_2_4": [
+        1.19216,
+        1.261396,
+        1.274696
+      ],
+      "public_gcc_native_2_8": [
+        1.867968,
+        1.899808,
+        1.901456
+      ],
+      "public_gcc_native_2_16": [
+        3.591488,
+        3.211472,
+        3.198112
+      ],
+      "public_gcc_native_2_32": [
+        6.346912,
+        6.032384,
+        6.032128
+      ],
+      "public_gcc_native_2_47": [
+        8.89231998495958,
+        8.544933258131227,
+        8.54357021996616
+      ],
+      "public_gcc_native_2_64": [
+        16.430976,
+        5.0704,
+        15.983744
+      ],
+      "public_gcc_native_2_128": [
+        26.55389144905274,
+        9.271761392729134,
+        9.255504352278546
+      ],
+      "public_gcc_native_2_1024": [
+        202.973,
+        89.586,
+        89.824
+      ],
+      "verify_gcc_native_dynamic_bitset": [
+        46.535182,
+        36.84455,
+        46.13625
+      ],
+      "verify_gcc_native_dynamic_bitset_triangle": [
+        67.649377,
+        66.113472,
+        66.105304
+      ],
+      "verify_gcc_native_dynamic_bitset_shift_or": [
+        1.05582,
+        0.910516,
+        1.047476
+      ],
+      "kernel_clang_default_count_0": [
+        0.8795875,
+        1.2359625,
+        1.410995
+      ],
+      "kernel_clang_default_count_1": [
+        1.409435,
+        1.4090275,
+        1.5823275
+      ],
+      "kernel_clang_default_count_2": [
+        2.0586875,
+        2.2008525,
+        1.936635
+      ],
+      "kernel_clang_default_count_3": [
+        10.0493825,
+        2.6399,
+        2.4638175
+      ],
+      "kernel_clang_default_count_4": [
+        2.07613,
+        1.7623725,
+        1.585485
+      ],
+      "kernel_clang_default_count_8": [
+        3.535392,
+        2.378884,
+        1.968684
+      ],
+      "kernel_clang_default_count_16": [
+        6.679088,
+        3.174008,
+        2.619632
+      ],
+      "kernel_clang_default_count_32": [
+        13.244,
+        5.626992,
+        4.770288
+      ],
+      "kernel_clang_default_count_47": [
+        19.294214409926212,
+        8.292404944306059,
+        6.105912487662734
+      ],
+      "kernel_clang_default_count_64": [
+        27.330656,
+        11.252896,
+        8.378976
+      ],
+      "kernel_clang_default_count_128": [
+        52.42499680020479,
+        25.462178420581083,
+        15.962050428772558
+      ],
+      "kernel_clang_default_count_1024": [
+        406.0065,
+        183.006,
+        128.076
+      ],
+      "kernel_clang_default_intersection_0": [
+        0.8819575,
+        1.231235,
+        1.410715
+      ],
+      "kernel_clang_default_intersection_1": [
+        1.447465,
+        1.4072525,
+        1.410095
+      ],
+      "kernel_clang_default_intersection_2": [
+        2.025245,
+        1.582645,
+        1.7580825
+      ],
+      "kernel_clang_default_intersection_3": [
+        2.7558175,
+        2.288635,
+        2.4648275
+      ],
+      "kernel_clang_default_intersection_4": [
+        2.19165,
+        1.758185,
+        1.5859225
+      ],
+      "kernel_clang_default_intersection_8": [
+        3.892408,
+        2.37836,
+        2.12656
+      ],
+      "kernel_clang_default_intersection_16": [
+        7.372752,
+        3.388328,
+        2.877288
+      ],
+      "kernel_clang_default_intersection_32": [
+        14.34864,
+        5.634448,
+        4.89464
+      ],
+      "kernel_clang_default_intersection_47": [
+        21.338346571415144,
+        8.265521455092353,
+        7.704751609719415
+      ],
+      "kernel_clang_default_intersection_64": [
+        29.787328,
+        11.253216,
+        9.54864
+      ],
+      "kernel_clang_default_intersection_128": [
+        58.13087162421605,
+        22.509407397926534,
+        19.02739024702419
+      ],
+      "kernel_clang_default_intersection_1024": [
+        451.379,
+        194.2665,
+        149.0155
+      ],
+      "kernel_clang_default_parity_0": [
+        1.0581,
+        1.406885,
+        1.5823025,
+        1.7607425
+      ],
+      "kernel_clang_default_parity_1": [
+        1.453535,
+        1.4065275,
+        1.409125,
+        9.1326725
+      ],
+      "kernel_clang_default_parity_2": [
+        2.2231125,
+        1.5825475,
+        2.201195,
+        1.921515
+      ],
+      "kernel_clang_default_parity_3": [
+        2.89469,
+        1.9370125,
+        2.640325,
+        2.6404775
+      ],
+      "kernel_clang_default_parity_4": [
+        2.24719,
+        1.5850925,
+        1.5853,
+        1.585365
+      ],
+      "kernel_clang_default_parity_8": [
+        3.920336,
+        2.114468,
+        2.113324,
+        1.758352
+      ],
+      "kernel_clang_default_parity_16": [
+        7.410656,
+        3.16468,
+        3.029448,
+        2.205
+      ],
+      "kernel_clang_default_parity_32": [
+        62.396416,
+        4.364272,
+        4.39552,
+        2.825648
+      ],
+      "kernel_clang_default_parity_47": [
+        21.434835738120977,
+        6.682098040137237,
+        6.770291864454576,
+        4.68221553790478
+      ],
+      "kernel_clang_default_parity_64": [
+        124.4304,
+        7.913536,
+        7.271392,
+        5.116352
+      ],
+      "kernel_clang_default_parity_128": [
+        58.24753615768591,
+        13.015295021118648,
+        14.545181108409063,
+        9.399398438499937
+      ],
+      "kernel_clang_default_parity_1024": [
+        451.5725,
+        97.892,
+        89.405,
+        71.3355
+      ],
+      "public_clang_default_0_0": [
+        0.3007533333333333,
+        0.7518,
+        0.75169
+      ],
+      "public_clang_default_0_1": [
+        1.0747166666666668,
+        1.5068766666666666,
+        1.5071066666666666
+      ],
+      "public_clang_default_0_2": [
+        1.7626566666666668,
+        2.11989,
+        2.1204233333333335
+      ],
+      "public_clang_default_0_3": [
+        2.4810866666666667,
+        2.85088,
+        2.84021
+      ],
+      "public_clang_default_0_4": [
+        2.10214,
+        2.00846,
+        2.004388
+      ],
+      "public_clang_default_0_8": [
+        3.415416,
+        2.554712,
+        2.554816
+      ],
+      "public_clang_default_0_16": [
+        6.375008,
+        3.508848,
+        3.508912
+      ],
+      "public_clang_default_0_32": [
+        12.374976,
+        5.515552,
+        5.51536
+      ],
+      "public_clang_default_0_47": [
+        18.415679639029893,
+        7.899135175784922,
+        7.857445008460237
+      ],
+      "public_clang_default_0_64": [
+        25.834624,
+        8.866048,
+        10.6912
+      ],
+      "public_clang_default_0_128": [
+        49.756016385048646,
+        15.148873527905787,
+        15.246159754224271
+      ],
+      "public_clang_default_0_1024": [
+        383.375,
+        116.815,
+        119.914
+      ],
+      "public_clang_default_1_0": [
+        0.36784,
+        0.8352333333333334,
+        0.8355733333333333
+      ],
+      "public_clang_default_1_1": [
+        1.2803833333333334,
+        1.6741333333333333,
+        1.6703433333333333
+      ],
+      "public_clang_default_1_2": [
+        2.1077866666666667,
+        2.2888333333333333,
+        2.2887833333333334
+      ],
+      "public_clang_default_1_3": [
+        2.9006366666666668,
+        3.1145666666666667,
+        3.1152266666666666
+      ],
+      "public_clang_default_1_4": [
+        2.431856,
+        2.196652,
+        2.17544
+      ],
+      "public_clang_default_1_8": [
+        3.734352,
+        2.715688,
+        2.697136
+      ],
+      "public_clang_default_1_16": [
+        7.01624,
+        3.984016,
+        3.988912
+      ],
+      "public_clang_default_1_32": [
+        13.612832,
+        6.405984,
+        6.45552
+      ],
+      "public_clang_default_1_47": [
+        20.504559127655575,
+        8.391332957322804,
+        8.464702011656327
+      ],
+      "public_clang_default_1_64": [
+        26.764032,
+        8.974336,
+        10.703232
+      ],
+      "public_clang_default_1_128": [
+        53.26177675371224,
+        17.37058371735791,
+        20.461341525857655
+      ],
+      "public_clang_default_1_1024": [
+        451.425,
+        170.011,
+        171.045
+      ],
+      "public_clang_default_2_0": [
+        0.91914,
+        1.25834,
+        1.2643733333333333
+      ],
+      "public_clang_default_2_1": [
+        1.1734233333333333,
+        1.4407466666666666,
+        1.4244333333333334
+      ],
+      "public_clang_default_2_2": [
+        1.3371133333333334,
+        1.6738633333333333,
+        1.6742166666666667
+      ],
+      "public_clang_default_2_3": [
+        1.50716,
+        1.83837,
+        1.6815933333333333
+      ],
+      "public_clang_default_2_4": [
+        1.68142,
+        1.88652,
+        1.890108
+      ],
+      "public_clang_default_2_8": [
+        2.02204,
+        2.21912,
+        2.225768
+      ],
+      "public_clang_default_2_16": [
+        2.523264,
+        2.761952,
+        2.762224
+      ],
+      "public_clang_default_2_32": [
+        3.720544,
+        3.97584,
+        3.97616
+      ],
+      "public_clang_default_2_47": [
+        5.512455348749765,
+        6.060443692423388,
+        6.098937770257567
+      ],
+      "public_clang_default_2_64": [
+        6.34944,
+        5.370496,
+        7.018432
+      ],
+      "public_clang_default_2_128": [
+        11.863415258576548,
+        9.369175627240143,
+        9.374295954941116
+      ],
+      "public_clang_default_2_1024": [
+        130.152,
+        101.536,
+        101.634
+      ],
+      "verify_clang_default_dynamic_bitset": [
+        37.571767,
+        36.850827,
+        38.164033
+      ],
+      "verify_clang_default_dynamic_bitset_triangle": [
+        87.202328,
+        66.169004,
+        66.213696
+      ],
+      "verify_clang_default_dynamic_bitset_shift_or": [
+        0.923517,
+        1.022273,
+        0.942204
+      ],
+      "kernel_clang_native_count_0": [
+        1.23072,
+        1.5848525,
+        1.7616525
+      ],
+      "kernel_clang_native_count_1": [
+        1.05497,
+        1.761115,
+        1.9373775
+      ],
+      "kernel_clang_native_count_2": [
+        1.23069,
+        1.937225,
+        2.72845
+      ],
+      "kernel_clang_native_count_3": [
+        1.937015,
+        9.4753075,
+        3.0711675
+      ],
+      "kernel_clang_native_count_4": [
+        1.934065,
+        1.96218,
+        1.6122475
+      ],
+      "kernel_clang_native_count_8": [
+        2.109836,
+        2.637292,
+        2.0168
+      ],
+      "kernel_clang_native_count_16": [
+        2.430664,
+        4.27424,
+        2.460256
+      ],
+      "kernel_clang_native_count_32": [
+        3.949984,
+        6.71016,
+        4.20456
+      ],
+      "kernel_clang_native_count_47": [
+        5.995558584386897,
+        8.430793814917516,
+        6.059148376180852
+      ],
+      "kernel_clang_native_count_64": [
+        7.25904,
+        11.471456,
+        7.985504
+      ],
+      "kernel_clang_native_count_128": [
+        13.900486368872393,
+        20.36880839626264,
+        15.617176500703955
+      ],
+      "kernel_clang_native_count_1024": [
+        107.0005,
+        148.0415,
+        124.587
+      ],
+      "kernel_clang_native_intersection_0": [
+        1.2307725,
+        1.7620225,
+        1.58273
+      ],
+      "kernel_clang_native_intersection_1": [
+        1.23379,
+        1.7613425,
+        1.75857
+      ],
+      "kernel_clang_native_intersection_2": [
+        2.0244225,
+        1.93392,
+        1.9697525
+      ],
+      "kernel_clang_native_intersection_3": [
+        2.464675,
+        2.2881,
+        9.8148925
+      ],
+      "kernel_clang_native_intersection_4": [
+        1.761525,
+        1.76575,
+        1.7114875
+      ],
+      "kernel_clang_native_intersection_8": [
+        2.290028,
+        2.297604,
+        2.2111
+      ],
+      "kernel_clang_native_intersection_16": [
+        2.776736,
+        4.94724,
+        2.773656
+      ],
+      "kernel_clang_native_intersection_32": [
+        4.684352,
+        7.695536,
+        4.86208
+      ],
+      "kernel_clang_native_intersection_47": [
+        7.39263054001974,
+        9.702542651689617,
+        7.305588193824318
+      ],
+      "kernel_clang_native_intersection_64": [
+        8.8248,
+        12.76384,
+        9.2136
+      ],
+      "kernel_clang_native_intersection_128": [
+        16.894598745680277,
+        23.09356201203123,
+        17.91456546781006
+      ],
+      "kernel_clang_native_intersection_1024": [
+        127.559,
+        166.756,
+        141.716
+      ],
+      "kernel_clang_native_parity_0": [
+        1.0579575,
+        1.4094375,
+        1.582315,
+        9.0863225
+      ],
+      "kernel_clang_native_parity_1": [
+        1.23367,
+        1.2334275,
+        1.2307475,
+        1.9367075
+      ],
+      "kernel_clang_native_parity_2": [
+        2.0249175,
+        1.53726,
+        1.4065375,
+        2.7278425
+      ],
+      "kernel_clang_native_parity_3": [
+        9.7967675,
+        9.1393025,
+        1.8661575,
+        3.00616
+      ],
+      "kernel_clang_native_parity_4": [
+        1.7608375,
+        1.7922525,
+        1.761205,
+        1.409505
+      ],
+      "kernel_clang_native_parity_8": [
+        2.285628,
+        2.289804,
+        2.290056,
+        1.587716
+      ],
+      "kernel_clang_native_parity_16": [
+        2.841256,
+        2.110104,
+        2.11332,
+        2.198016
+      ],
+      "kernel_clang_native_parity_32": [
+        4.739232,
+        2.825888,
+        2.825808,
+        2.7436
+      ],
+      "kernel_clang_native_parity_47": [
+        7.499412511162288,
+        4.48451379423791,
+        4.484560793344927,
+        4.12612210368003
+      ],
+      "kernel_clang_native_parity_64": [
+        8.830944,
+        5.120128,
+        5.124672,
+        4.997376
+      ],
+      "kernel_clang_native_parity_128": [
+        16.69557148342506,
+        6.7659029822091385,
+        7.1843722001791885,
+        6.775630359656982
+      ],
+      "kernel_clang_native_parity_1024": [
+        128.34,
+        62.5985,
+        66.832,
+        51.8405
+      ],
+      "public_clang_native_0_0": [
+        0.33419666666666664,
+        0.3342233333333333,
+        0.3341866666666667
+      ],
+      "public_clang_native_0_1": [
+        0.6723166666666667,
+        0.6683066666666667,
+        0.6682133333333333
+      ],
+      "public_clang_native_0_2": [
+        0.83569,
+        0.8355333333333334,
+        0.8356233333333334
+      ],
+      "public_clang_native_0_3": [
+        1.00339,
+        1.0034,
+        1.0041933333333333
+      ],
+      "public_clang_native_0_4": [
+        1.284684,
+        1.289644,
+        1.289456
+      ],
+      "public_clang_native_0_8": [
+        1.696592,
+        1.710992,
+        1.701592
+      ],
+      "public_clang_native_0_16": [
+        2.485328,
+        2.504208,
+        2.48544
+      ],
+      "public_clang_native_0_32": [
+        3.818848,
+        3.817344,
+        3.827168
+      ],
+      "public_clang_native_0_47": [
+        5.9167136679827035,
+        5.957369806354578,
+        5.915162624553488
+      ],
+      "public_clang_native_0_64": [
+        6.905728,
+        6.905216,
+        6.916736
+      ],
+      "public_clang_native_0_128": [
+        13.260880696364568,
+        13.269457245263697,
+        13.258064516129032
+      ],
+      "public_clang_native_0_1024": [
+        103.771,
+        103.788,
+        103.766
+      ],
+      "public_clang_native_1_0": [
+        0.47252333333333335,
+        0.46784,
+        0.4678466666666667
+      ],
+      "public_clang_native_1_1": [
+        0.83595,
+        0.8437733333333334,
+        0.8397633333333333
+      ],
+      "public_clang_native_1_2": [
+        1.04384,
+        1.0438533333333333,
+        1.0439366666666667
+      ],
+      "public_clang_native_1_3": [
+        1.26972,
+        1.2680733333333334,
+        1.2675433333333332
+      ],
+      "public_clang_native_1_4": [
+        1.54356,
+        1.547548,
+        1.531336
+      ],
+      "public_clang_native_1_8": [
+        2.022984,
+        2.10592,
+        1.995032
+      ],
+      "public_clang_native_1_16": [
+        2.948,
+        2.936176,
+        3.011984
+      ],
+      "public_clang_native_1_32": [
+        4.557472,
+        4.574176,
+        4.558464
+      ],
+      "public_clang_native_1_47": [
+        7.382496709907877,
+        7.380240646738109,
+        7.381885692799399
+      ],
+      "public_clang_native_1_64": [
+        8.169664,
+        8.168704,
+        8.16608
+      ],
+      "public_clang_native_1_128": [
+        15.901177675371224,
+        15.913082437275985,
+        15.910778289810548
+      ],
+      "public_clang_native_1_1024": [
+        156.635,
+        156.712,
+        156.946
+      ],
+      "public_clang_native_2_0": [
+        1.00697,
+        1.0163233333333332,
+        1.0069966666666668
+      ],
+      "public_clang_native_2_1": [
+        1.2528366666666666,
+        1.2582066666666667,
+        1.2571166666666667
+      ],
+      "public_clang_native_2_2": [
+        1.47378,
+        1.50653,
+        1.4197766666666667
+      ],
+      "public_clang_native_2_3": [
+        1.6702366666666666,
+        1.6746166666666666,
+        1.67021
+      ],
+      "public_clang_native_2_4": [
+        1.837628,
+        1.83738,
+        1.837236
+      ],
+      "public_clang_native_2_8": [
+        2.004592,
+        2.004504,
+        2.004576
+      ],
+      "public_clang_native_2_16": [
+        2.173536,
+        2.17408,
+        2.174704
+      ],
+      "public_clang_native_2_32": [
+        2.712096,
+        2.713696,
+        2.710528
+      ],
+      "public_clang_native_2_47": [
+        4.714937018236511,
+        4.712492949802594,
+        4.713244970859184
+      ],
+      "public_clang_native_2_64": [
+        4.48256,
+        4.485376,
+        4.474112
+      ],
+      "public_clang_native_2_128": [
+        9.178443420378905,
+        9.18010752688172,
+        9.247439836149514
+      ],
+      "public_clang_native_2_1024": [
+        103.5,
+        103.325,
+        103.684
+      ],
+      "verify_clang_native_dynamic_bitset": [
+        37.350587,
+        37.010867,
+        37.000947
+      ],
+      "verify_clang_native_dynamic_bitset_triangle": [
+        62.284375,
+        61.057546,
+        60.81584
+      ],
+      "verify_clang_native_dynamic_bitset_shift_or": [
+        1.025631,
+        0.990346,
+        1.125943
+      ]
+    },
+    "disassembly_validation": [
+      {
+        "binary": "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/count_benchmark_v2_clang_default",
+        "binary_sha256": "a4200d10bdd268dfc84d45e10974c90aa3cca17c70090de95d9b71cdcdf98b03",
+        "measure_disassembly": "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/count_benchmark_v2_clang_default_measure.asm",
+        "disassembly_sha256": "5552364bb7c2129d741e3d3beed97feb2db2acf2b0d1a11e44eb81179374ae79",
+        "indirect_call_inside_loop": true,
+        "fixture_invariant": "入力配列へのstore文なし。const offset0..3を計算して間接call、結果をchecksumへ加算。空asm memory clobberはbenchmarkのみ。"
+      },
+      {
+        "binary": "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/count_benchmark_v2_clang_native",
+        "binary_sha256": "fc08ef457c097f63e65a73c0b5e622032c0f8c73cae56c764cf4353e1d17bb9a",
+        "measure_disassembly": "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/count_benchmark_v2_clang_native_measure.asm",
+        "disassembly_sha256": "e4ea7d791377af168eace914b9785e2984b1befef73c067b449a88bc84f21677",
+        "indirect_call_inside_loop": true,
+        "fixture_invariant": "入力配列へのstore文なし。const offset0..3を計算して間接call、結果をchecksumへ加算。空asm memory clobberはbenchmarkのみ。"
+      },
+      {
+        "binary": "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/count_benchmark_v2_gcc_default",
+        "binary_sha256": "de58b7e34dd9881a3cd8c5b0cfa38afc61acca5720caef004235c3c6a71b1652",
+        "measure_disassembly": "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/count_benchmark_v2_gcc_default_measure.asm",
+        "disassembly_sha256": "93ca13d1fdf5ddde0246fa190f957c66f2e004cd9b906d6986a5da1623ddc2fa",
+        "indirect_call_inside_loop": true,
+        "fixture_invariant": "入力配列へのstore文なし。const offset0..3を計算して間接call、結果をchecksumへ加算。空asm memory clobberはbenchmarkのみ。"
+      },
+      {
+        "binary": "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/count_benchmark_v2_gcc_native",
+        "binary_sha256": "4ec547b56ebedb44cf1869e13e1c2850bb22ebfa3425643a156b0b7f1d723c80",
+        "measure_disassembly": "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/count_benchmark_v2_gcc_native_measure.asm",
+        "disassembly_sha256": "a23a7cc4483e87801dd8f14ff660a16131df0851fcd509b6e4c740cb6215a7f0",
+        "indirect_call_inside_loop": true,
+        "fixture_invariant": "入力配列へのstore文なし。const offset0..3を計算して間接call、結果をchecksumへ加算。空asm memory clobberはbenchmarkのみ。"
+      },
+      {
+        "binary": "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/parity_benchmark_v2_clang_default",
+        "binary_sha256": "92ae7f89de8161979a736aa2ef16bcf4061b02c528c55743d311919090f85b14",
+        "measure_disassembly": "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/parity_benchmark_v2_clang_default_measure.asm",
+        "disassembly_sha256": "555930197008fb91b8f3e771c6967675d4526815525e7c896d5265af52b2018a",
+        "indirect_call_inside_loop": true,
+        "fixture_invariant": "入力配列へのstore文なし。const offset0..3を計算して間接call、結果をchecksumへ加算。空asm memory clobberはbenchmarkのみ。"
+      },
+      {
+        "binary": "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/parity_benchmark_v2_clang_native",
+        "binary_sha256": "1fc2f83afa6fea4fec6956307f9a7c048d7e313a159fd6a629a91a2462d2253f",
+        "measure_disassembly": "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/parity_benchmark_v2_clang_native_measure.asm",
+        "disassembly_sha256": "f88c181df47d3e79cc8debb7c3d06086e6007c40fb5566b5d3feb322ef52aae4",
+        "indirect_call_inside_loop": true,
+        "fixture_invariant": "入力配列へのstore文なし。const offset0..3を計算して間接call、結果をchecksumへ加算。空asm memory clobberはbenchmarkのみ。"
+      },
+      {
+        "binary": "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/parity_benchmark_v2_gcc_default",
+        "binary_sha256": "a2b076a366aba76b6524ef0469ece15d69bdafeba4f561261ff35a28113fa22f",
+        "measure_disassembly": "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/parity_benchmark_v2_gcc_default_measure.asm",
+        "disassembly_sha256": "9654f11a9e117d2d5a72e62a08d0c4c45d524305735df686d9f493a6fb576e26",
+        "indirect_call_inside_loop": true,
+        "fixture_invariant": "入力配列へのstore文なし。const offset0..3を計算して間接call、結果をchecksumへ加算。空asm memory clobberはbenchmarkのみ。"
+      },
+      {
+        "binary": "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/parity_benchmark_v2_gcc_native",
+        "binary_sha256": "d1b7c29741b7cd1a6ee4f414ec64d22081bbb6d6adb0cfc86c38e244217c06d6",
+        "measure_disassembly": "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/parity_benchmark_v2_gcc_native_measure.asm",
+        "disassembly_sha256": "9b8e3482909f206a1f2e74a75ace8cedab7071b260fb7d125061f45bd712f67b",
+        "indirect_call_inside_loop": true,
+        "fixture_invariant": "入力配列へのstore文なし。const offset0..3を計算して間接call、結果をchecksumへ加算。空asm memory clobberはbenchmarkのみ。"
+      }
+    ],
+    "final_native_manifest": "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/final_native_measurement/run_manifest.json",
+    "final_native_summary": {
+      "public": {
+        "0_0": {
+          "scalar": 0.29317333333333334,
+          "inline64": 0.4180333333333333,
+          "final": 0.41807
+        },
+        "0_1": {
+          "scalar": 0.70337,
+          "inline64": 0.7380066666666667,
+          "final": 0.7381766666666667
+        },
+        "0_2": {
+          "scalar": 0.83989,
+          "inline64": 0.8431433333333334,
+          "final": 0.83541
+        },
+        "0_3": {
+          "scalar": 1.0549866666666667,
+          "inline64": 1.0174,
+          "final": 1.01718
+        },
+        "0_4": {
+          "scalar": 1.1733,
+          "inline64": 1.513516,
+          "final": 1.52606
+        },
+        "0_8": {
+          "scalar": 1.961536,
+          "inline64": 1.86608,
+          "final": 1.865672
+        },
+        "0_16": {
+          "scalar": 3.451568,
+          "inline64": 2.699664,
+          "final": 2.698496
+        },
+        "0_32": {
+          "scalar": 6.232128,
+          "inline64": 5.345376,
+          "final": 5.376384
+        },
+        "0_47": {
+          "scalar": 8.78835307388607,
+          "inline64": 7.8519928557999625,
+          "final": 7.852368866328257
+        },
+        "0_64": {
+          "scalar": 11.81952,
+          "inline64": 7.740992,
+          "final": 7.726144
+        },
+        "0_128": {
+          "scalar": 32.72247823860727,
+          "inline64": 15.090501792114695,
+          "final": 14.972606246799796
+        },
+        "0_1024": {
+          "scalar": 249.74,
+          "inline64": 122.345,
+          "final": 122.034
+        },
+        "0_4096": {
+          "scalar": 1089.663,
+          "inline64": 519.363,
+          "final": 522.848
+        },
+        "0_16384": {
+          "scalar": 4435.374,
+          "inline64": 1935.079,
+          "final": 2078.012
+        },
+        "1_0": {
+          "scalar": 0.36346333333333336,
+          "inline64": 0.5220166666666667,
+          "final": 0.5219
+        },
+        "1_1": {
+          "scalar": 0.7765366666666667,
+          "inline64": 0.85792,
+          "final": 0.83923
+        },
+        "1_2": {
+          "scalar": 0.9372633333333333,
+          "inline64": 1.0025566666666668,
+          "final": 1.01655
+        },
+        "1_3": {
+          "scalar": 1.1065333333333334,
+          "inline64": 1.1866066666666666,
+          "final": 1.1764333333333334
+        },
+        "1_4": {
+          "scalar": 1.292716,
+          "inline64": 1.856676,
+          "final": 1.858136
+        },
+        "1_8": {
+          "scalar": 2.155456,
+          "inline64": 2.417592,
+          "final": 2.416912
+        },
+        "1_16": {
+          "scalar": 3.9608,
+          "inline64": 3.872064,
+          "final": 3.856176
+        },
+        "1_32": {
+          "scalar": 6.838208,
+          "inline64": 5.875552,
+          "final": 5.836896
+        },
+        "1_47": {
+          "scalar": 10.266450460612898,
+          "inline64": 7.911120511374318,
+          "final": 7.9272889640909945
+        },
+        "1_64": {
+          "scalar": 18.1728,
+          "inline64": 8.964928,
+          "final": 8.96512
+        },
+        "1_128": {
+          "scalar": 33.13120839733743,
+          "inline64": 17.477982590885816,
+          "final": 17.48489503328213
+        },
+        "1_1024": {
+          "scalar": 217.203,
+          "inline64": 158.154,
+          "final": 160.149
+        },
+        "1_4096": {
+          "scalar": 943.353,
+          "inline64": 682.221,
+          "final": 685.238
+        },
+        "1_16384": {
+          "scalar": 3842.952,
+          "inline64": 2237.195,
+          "final": 2728.045
+        },
+        "2_0": {
+          "scalar": 0.4002266666666667,
+          "inline64": 0.5068333333333334,
+          "final": 0.5068033333333334
+        },
+        "2_1": {
+          "scalar": 0.8206866666666667,
+          "inline64": 0.8445633333333333,
+          "final": 0.8868133333333333
+        },
+        "2_2": {
+          "scalar": 0.9227433333333334,
+          "inline64": 0.9470133333333334,
+          "final": 0.9288866666666666
+        },
+        "2_3": {
+          "scalar": 1.1040233333333334,
+          "inline64": 1.0956733333333333,
+          "final": 1.0961633333333334
+        },
+        "2_4": {
+          "scalar": 1.235104,
+          "inline64": 1.261592,
+          "final": 1.274444
+        },
+        "2_8": {
+          "scalar": 1.870376,
+          "inline64": 1.875088,
+          "final": 2.405408
+        },
+        "2_16": {
+          "scalar": 3.710736,
+          "inline64": 3.197168,
+          "final": 3.559328
+        },
+        "2_32": {
+          "scalar": 6.348992,
+          "inline64": 6.032256,
+          "final": 6.049888
+        },
+        "2_47": {
+          "scalar": 9.074544087234443,
+          "inline64": 8.579526226734348,
+          "final": 8.546672306824592
+        },
+        "2_64": {
+          "scalar": 16.431424,
+          "inline64": 5.067584,
+          "final": 5.305472
+        },
+        "2_128": {
+          "scalar": 26.542882744495646,
+          "inline64": 9.248335893497185,
+          "final": 9.589221710189452
+        },
+        "2_1024": {
+          "scalar": 203.038,
+          "inline64": 89.72,
+          "final": 91.021
+        },
+        "2_4096": {
+          "scalar": 941.241,
+          "inline64": 409.482,
+          "final": 413.257
+        },
+        "2_16384": {
+          "scalar": 3882.841,
+          "inline64": 1658.794,
+          "final": 1692.287
+        }
+      },
+      "lc_ms": {
+        "scalar": 46.381049,
+        "inline64": 36.544111,
+        "final": 37.493589
+      },
+      "lc_ratio_final_to_scalar": 0.8083816517388385
+    },
+    "selection": "測定済みdispatch64を採用。count/AND countは4wordからPOPCNT、64wordからAVX2、parityは64wordからAVX2。Clang nativeは測定で速い自動vector化を維持。native GCCのPOPCNT閾値4→16変更は未測定なので不採用。",
+    "small_input_tradeoff": "0..3wordで約0.1〜0.45ns、GCC nativeの4word ANDで約0.6nsの固定増分を観測。相対比だけで改善とは説明しない。",
+    "scope": "public APIと同一Verify main/IO/input/compiler/check設定の比較を重視。kernelの散発遅延はrawに保持。~1msのTDPC全体は起動/IO雑音が支配し改善を主張しない。",
+    "noinline_fix": "GCC15.2 native+SKIPのconstant 1word入力で到達不能AVX分岐をinlineしたarray-bounds偽陽性を再現。専用parity targetだけnoinlineにし、影響するGCC native API/LCは最終SHAで再測定。",
+    "warning_reproduction": "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/example_find_next_warning_before.json"
+  },
+  "independent_checks": [
+    "n<=9全bit列、全shift0..n+1、巨大shift、0/1/63/64/65/127/128/129等のword境界。",
+    "vector<bool> oracleでset/reset/flip、all/any/none、各種count、AND/OR/XOR/complement、find全境界、自己演算、proxy、string往復、copy/move/resize新bit初期化を比較。",
+    "1000003bitと20001bitの大規模count、交差count/parity、末尾mask、縮小後拡大で旧bitが復活しないことを確認。",
+    "確保失敗をresize/reserve/copy代入・構築/文字列化/値戻り演算に注入。旧内容・span pointerとatomic live block差0。",
+    "無効CPU機能をvolatile 0にしたテスト専用コピーで実fallback分岐、volatile 1でPOPCNTのみの分岐を実行。製品のテスト用マクロなし。",
+    "ASAN/UBSANとvector poisoning、checked/skip、追加SIMD除外も確認。"
+  ],
+  "counts": {
+    "reference_checks_checked": 20508527,
+    "reference_checks_skip": 20508507,
+    "injected_failures_per_condition": 10,
+    "core_conditions": 72,
+    "popcnt_route_conditions": 4,
+    "driver_conditions": 24,
+    "judge_maximum_boundary_conditions": 6,
+    "unique_random_driver_cases": 720,
+    "random_driver_executions": 5760,
+    "example_conditions": 16,
+    "formal_include_conditions": 8
+  },
+  "environment": "正誤/compileはCPU0。ASAN_OPTIONS detect_leaks=0（LSan ptrace制約）、独立atomic allocation追跡でlive0。",
+  "online_status": "ローカル照合のみ、新規・未提出。過去オンラインACは転記しない。",
+  "integration_status": "主要検証後に本体/Document/Example/drivers/testsを一括配置。共有registry/generator/ZIP/Variants/Fastは未編集。",
+  "formal_include_validation": [
+    {
+      "compiler": "gcc",
+      "skip": false,
+      "test": "reference",
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/dynamic_bitset_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/formal_gcc_False_reference"
+      ],
+      "stdout": "dynamic bitset independent checks=20508527\n",
+      "status": "PASS"
+    },
+    {
+      "compiler": "gcc",
+      "skip": false,
+      "test": "allocation",
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-Wno-mismatched-new-delete",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/dynamic_bitset_allocation_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/formal_gcc_False_allocation"
+      ],
+      "stdout": "dynamic bitset injected failures=10\nlive allocation delta=0\n",
+      "status": "PASS"
+    },
+    {
+      "compiler": "gcc",
+      "skip": true,
+      "test": "reference",
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-DSKIP_RUNTIME_CHECKS",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/dynamic_bitset_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/formal_gcc_True_reference"
+      ],
+      "stdout": "dynamic bitset independent checks=20508507\n",
+      "status": "PASS"
+    },
+    {
+      "compiler": "gcc",
+      "skip": true,
+      "test": "allocation",
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-DSKIP_RUNTIME_CHECKS",
+        "-Wno-mismatched-new-delete",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/dynamic_bitset_allocation_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/formal_gcc_True_allocation"
+      ],
+      "stdout": "dynamic bitset injected failures=10\nlive allocation delta=0\n",
+      "status": "PASS"
+    },
+    {
+      "compiler": "clang",
+      "skip": false,
+      "test": "reference",
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/dynamic_bitset_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/formal_clang_False_reference"
+      ],
+      "stdout": "dynamic bitset independent checks=20508527\n",
+      "status": "PASS"
+    },
+    {
+      "compiler": "clang",
+      "skip": false,
+      "test": "allocation",
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/dynamic_bitset_allocation_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/formal_clang_False_allocation"
+      ],
+      "stdout": "dynamic bitset injected failures=10\nlive allocation delta=0\n",
+      "status": "PASS"
+    },
+    {
+      "compiler": "clang",
+      "skip": true,
+      "test": "reference",
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-DSKIP_RUNTIME_CHECKS",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/dynamic_bitset_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/formal_clang_True_reference"
+      ],
+      "stdout": "dynamic bitset independent checks=20508507\n",
+      "status": "PASS"
+    },
+    {
+      "compiler": "clang",
+      "skip": true,
+      "test": "allocation",
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-DSKIP_RUNTIME_CHECKS",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/dynamic_bitset_allocation_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/dynamic_bitset/formal_clang_True_allocation"
+      ],
+      "stdout": "dynamic bitset injected failures=10\nlive allocation delta=0\n",
+      "status": "PASS"
+    }
+  ],
+  "formal_test_hashes": {
+    "Verify/current/tests/dynamic_bitset_reference_test.cpp": "4879b0c6fe14643dc2c4352cf1b0d1f447c697d3686ad3e291c5c735d55364d5",
+    "Verify/current/tests/dynamic_bitset_allocation_test.cpp": "c1b7804581f6fcbb0789b9341f9d82eeaff15bcb0cf490647c1b1ca35fa0b541"
+  }
+}

@@ -1,0 +1,503 @@
+{
+  "date": "2026-11-06",
+  "checked_at_utc": "2026-11-06T03:25:34.351377+00:00",
+  "scope": "HLD経路積の再提出415443を確認。追加の小改善を同じmain/IOで比較し、採用せず現行実装を維持。",
+  "online_confirmation": "Audit/online-hld-composite-415443-2026-11-06.json",
+  "online": {
+    "url": "https://judge.yosupo.jp/submission/415443",
+    "status": "AC",
+    "time_ms": 251,
+    "previous_url": "https://judge.yosupo.jp/submission/415441",
+    "previous_ms": 248,
+    "source_matches": true,
+    "observed": "max_random_00/01/02は118/126/117→113/114/113ms。worst_00は239→251ms、worst_01は248→245ms。最大値は1.2%増で、オンライン計測には環境差/揺らぎを含む。"
+  },
+  "decision": "ライブラリ本体・main・共通IOは変更しない。追加の再提出は不要。",
+  "candidates": [
+    {
+      "name": "singleton direct read",
+      "change": "所有する自作Segment Treeの長さ1区間を葉から直接コピーし、通常prodのブロック分割計算を省く。",
+      "result": "GCC探索でworst約8%/line約11%の後退（旧コード対照は約-1%/+4%）。Clangはrandom系で改善する一方、他条件に一貫した改善を確認できず、候補を不採用。"
+    },
+    {
+      "name": "parent load hoist",
+      "change": "GCC Orderedのu/v側で、次の親を区間積より前に読み出す。",
+      "result": "実行コードは変わったが、小規模以外は一貫した短縮がなく、max_randomでは旧コード対照にも約20%差があり追加の高速化と断定できない。不採用。"
+    }
+  ],
+  "measurement": {
+    "cpu": "Intel Core i9-14900K CPU12 P-Core",
+    "compilers": [
+      "GCC 15.2",
+      "Clang 21.1.8"
+    ],
+    "flags": [
+      "-std=c++23",
+      "-O2",
+      "-Wall",
+      "-Wextra",
+      "-Werror"
+    ],
+    "skip_runtime_checks": true,
+    "fixture_reference": "Audit/data/performance-hld-owned-2026-11-05.zip のfixturesと再現器。公式生成器commit73876f1cbcf082d2b22722924b924d3d65a2f00e。",
+    "scope": "同じVerify main/共通IOでbase/control/candidateの順を混ぜ、同じ実行パスへコピー。setarch -Rでprocess単位のASLRを揃え、taskset CPU12。rusage(user+system)には構築・IO・破棄を含む。",
+    "timed_runs": 414,
+    "summary": [
+      {
+        "scope": "singleton exploratory GCC/Clang",
+        "compiler": "clang",
+        "case": "custom_vertex_set_path_composite_250000_random",
+        "median_cpu_ns": {
+          "base": 390430000,
+          "control": 323166000,
+          "short": 348370000
+        },
+        "baseline_pooled_ns": 353955500.0,
+        "after_ratio": 0.984219767739165,
+        "control_ratio": 0.8277181569039265,
+        "samples_per_label": 3
+      },
+      {
+        "scope": "singleton exploratory GCC/Clang",
+        "compiler": "clang",
+        "case": "custom_vertex_set_path_composite_32_random_queryheavy",
+        "median_cpu_ns": {
+          "base": 23103000,
+          "control": 23621000,
+          "short": 23236000
+        },
+        "baseline_pooled_ns": 23508000.0,
+        "after_ratio": 0.9884294708184448,
+        "control_ratio": 1.0224213305631302,
+        "samples_per_label": 3
+      },
+      {
+        "scope": "singleton exploratory GCC/Clang",
+        "compiler": "clang",
+        "case": "custom_vertex_set_path_composite_4096_random_queryheavy",
+        "median_cpu_ns": {
+          "base": 39964000,
+          "control": 39804000,
+          "short": 39859000
+        },
+        "baseline_pooled_ns": 39847000.0,
+        "after_ratio": 1.0003011519060405,
+        "control_ratio": 0.9959963967570814,
+        "samples_per_label": 3
+      },
+      {
+        "scope": "singleton exploratory GCC/Clang",
+        "compiler": "clang",
+        "case": "official_vertex_set_path_composite_line_0",
+        "median_cpu_ns": {
+          "base": 207380000,
+          "control": 201674000,
+          "short": 197876000
+        },
+        "baseline_pooled_ns": 204780000.0,
+        "after_ratio": 0.9662857700947358,
+        "control_ratio": 0.9724852926993924,
+        "samples_per_label": 3
+      },
+      {
+        "scope": "singleton exploratory GCC/Clang",
+        "compiler": "clang",
+        "case": "official_vertex_set_path_composite_max_random_0",
+        "median_cpu_ns": {
+          "base": 273006000,
+          "control": 291035000,
+          "short": 257031000
+        },
+        "baseline_pooled_ns": 284945000.0,
+        "after_ratio": 0.9020372352559266,
+        "control_ratio": 1.0660388416371802,
+        "samples_per_label": 3
+      },
+      {
+        "scope": "singleton exploratory GCC/Clang",
+        "compiler": "clang",
+        "case": "official_vertex_set_path_composite_worst_for_path_decomposition_0",
+        "median_cpu_ns": {
+          "base": 594655000,
+          "control": 575609000,
+          "short": 524100000
+        },
+        "baseline_pooled_ns": 585132000.0,
+        "after_ratio": 0.8956953302844486,
+        "control_ratio": 0.9679713447292968,
+        "samples_per_label": 3
+      },
+      {
+        "scope": "singleton exploratory GCC/Clang",
+        "compiler": "gcc",
+        "case": "custom_vertex_set_path_composite_250000_random",
+        "median_cpu_ns": {
+          "base": 397492000,
+          "control": 409159000,
+          "short": 389084000
+        },
+        "baseline_pooled_ns": 403325500.0,
+        "after_ratio": 0.964689810091353,
+        "control_ratio": 1.0293515341189257,
+        "samples_per_label": 3
+      },
+      {
+        "scope": "singleton exploratory GCC/Clang",
+        "compiler": "gcc",
+        "case": "custom_vertex_set_path_composite_32_random_queryheavy",
+        "median_cpu_ns": {
+          "base": 23055000,
+          "control": 23113000,
+          "short": 21990000
+        },
+        "baseline_pooled_ns": 23083500.0,
+        "after_ratio": 0.9526285008772499,
+        "control_ratio": 1.0025157232704403,
+        "samples_per_label": 3
+      },
+      {
+        "scope": "singleton exploratory GCC/Clang",
+        "compiler": "gcc",
+        "case": "custom_vertex_set_path_composite_4096_random_queryheavy",
+        "median_cpu_ns": {
+          "base": 33748000,
+          "control": 37204000,
+          "short": 36682000
+        },
+        "baseline_pooled_ns": 35476000.0,
+        "after_ratio": 1.0339948133949712,
+        "control_ratio": 1.1024060685077635,
+        "samples_per_label": 3
+      },
+      {
+        "scope": "singleton exploratory GCC/Clang",
+        "compiler": "gcc",
+        "case": "official_vertex_set_path_composite_line_0",
+        "median_cpu_ns": {
+          "base": 220110000,
+          "control": 228371000,
+          "short": 244121000
+        },
+        "baseline_pooled_ns": 221729500.0,
+        "after_ratio": 1.1009856604556454,
+        "control_ratio": 1.0375312343828087,
+        "samples_per_label": 3
+      },
+      {
+        "scope": "singleton exploratory GCC/Clang",
+        "compiler": "gcc",
+        "case": "official_vertex_set_path_composite_max_random_0",
+        "median_cpu_ns": {
+          "base": 260900000,
+          "control": 257016000,
+          "short": 258398000
+        },
+        "baseline_pooled_ns": 258958000.0,
+        "after_ratio": 0.99783748716008,
+        "control_ratio": 0.9851130701418168,
+        "samples_per_label": 3
+      },
+      {
+        "scope": "singleton exploratory GCC/Clang",
+        "compiler": "gcc",
+        "case": "official_vertex_set_path_composite_worst_for_path_decomposition_0",
+        "median_cpu_ns": {
+          "base": 437271000,
+          "control": 431436000,
+          "short": 471960000
+        },
+        "baseline_pooled_ns": 436325500.0,
+        "after_ratio": 1.0816695334102637,
+        "control_ratio": 0.9866558724452342,
+        "samples_per_label": 3
+      },
+      {
+        "scope": "singleton Clang repeat",
+        "compiler": "clang",
+        "case": "custom_vertex_set_path_composite_250000_balanced",
+        "median_cpu_ns": {
+          "base": 314904000,
+          "control": 312310000,
+          "short": 315399000
+        },
+        "baseline_pooled_ns": 313607000.0,
+        "after_ratio": 1.0057141581661124,
+        "control_ratio": 0.99176256890989,
+        "samples_per_label": 7
+      },
+      {
+        "scope": "singleton Clang repeat",
+        "compiler": "clang",
+        "case": "custom_vertex_set_path_composite_250000_random",
+        "median_cpu_ns": {
+          "base": 246490000,
+          "control": 245054000,
+          "short": 213905000
+        },
+        "baseline_pooled_ns": 245772000.0,
+        "after_ratio": 0.8703391761469981,
+        "control_ratio": 0.9941742058501359,
+        "samples_per_label": 7
+      },
+      {
+        "scope": "singleton Clang repeat",
+        "compiler": "clang",
+        "case": "custom_vertex_set_path_composite_250000_star",
+        "median_cpu_ns": {
+          "base": 174514000,
+          "control": 173488000,
+          "short": 176072000
+        },
+        "baseline_pooled_ns": 173977500.0,
+        "after_ratio": 1.0120389130778404,
+        "control_ratio": 0.9941208155219639,
+        "samples_per_label": 7
+      },
+      {
+        "scope": "singleton Clang repeat",
+        "compiler": "clang",
+        "case": "custom_vertex_set_path_composite_32_chain_queryheavy",
+        "median_cpu_ns": {
+          "base": 15257000,
+          "control": 15476000,
+          "short": 15315000
+        },
+        "baseline_pooled_ns": 15391500.0,
+        "after_ratio": 0.9950297241984212,
+        "control_ratio": 1.014354066985646,
+        "samples_per_label": 7
+      },
+      {
+        "scope": "singleton Clang repeat",
+        "compiler": "clang",
+        "case": "custom_vertex_set_path_composite_32_random_queryheavy",
+        "median_cpu_ns": {
+          "base": 16715000,
+          "control": 16640000,
+          "short": 16497000
+        },
+        "baseline_pooled_ns": 16647500.0,
+        "after_ratio": 0.9909596035440756,
+        "control_ratio": 0.9955130122644331,
+        "samples_per_label": 7
+      },
+      {
+        "scope": "singleton Clang repeat",
+        "compiler": "clang",
+        "case": "custom_vertex_set_path_composite_4096_random_queryheavy",
+        "median_cpu_ns": {
+          "base": 27773000,
+          "control": 27694000,
+          "short": 27586000
+        },
+        "baseline_pooled_ns": 27733500.0,
+        "after_ratio": 0.9946815223466206,
+        "control_ratio": 0.9971555107478486,
+        "samples_per_label": 7
+      },
+      {
+        "scope": "singleton Clang repeat",
+        "compiler": "clang",
+        "case": "official_vertex_set_path_composite_almost_line_0",
+        "median_cpu_ns": {
+          "base": 182731000,
+          "control": 206681000,
+          "short": 196901000
+        },
+        "baseline_pooled_ns": 203414500.0,
+        "after_ratio": 0.9679791755258352,
+        "control_ratio": 1.1310669782357674,
+        "samples_per_label": 7
+      },
+      {
+        "scope": "singleton Clang repeat",
+        "compiler": "clang",
+        "case": "official_vertex_set_path_composite_line_0",
+        "median_cpu_ns": {
+          "base": 149208000,
+          "control": 154944000,
+          "short": 153506000
+        },
+        "baseline_pooled_ns": 152195500.0,
+        "after_ratio": 1.0086106356626838,
+        "control_ratio": 1.0384429789287437,
+        "samples_per_label": 7
+      },
+      {
+        "scope": "singleton Clang repeat",
+        "compiler": "clang",
+        "case": "official_vertex_set_path_composite_long-path-decomposition_killer_0",
+        "median_cpu_ns": {
+          "base": 43869000,
+          "control": 43660000,
+          "short": 43547000
+        },
+        "baseline_pooled_ns": 43764500.0,
+        "after_ratio": 0.9950302185561357,
+        "control_ratio": 0.9952358157240876,
+        "samples_per_label": 7
+      },
+      {
+        "scope": "singleton Clang repeat",
+        "compiler": "clang",
+        "case": "official_vertex_set_path_composite_max_random_0",
+        "median_cpu_ns": {
+          "base": 183273000,
+          "control": 187218000,
+          "short": 197160000
+        },
+        "baseline_pooled_ns": 185245500.0,
+        "after_ratio": 1.0643173518385063,
+        "control_ratio": 1.0215252655874023,
+        "samples_per_label": 7
+      },
+      {
+        "scope": "singleton Clang repeat",
+        "compiler": "clang",
+        "case": "official_vertex_set_path_composite_max_random_1",
+        "median_cpu_ns": {
+          "base": 169236000,
+          "control": 181914000,
+          "short": 157951000
+        },
+        "baseline_pooled_ns": 177380500.0,
+        "after_ratio": 0.8904642844055576,
+        "control_ratio": 1.0749131390484294,
+        "samples_per_label": 7
+      },
+      {
+        "scope": "singleton Clang repeat",
+        "compiler": "clang",
+        "case": "official_vertex_set_path_composite_worst_for_path_decomposition_0",
+        "median_cpu_ns": {
+          "base": 317856000,
+          "control": 373588000,
+          "short": 303118000
+        },
+        "baseline_pooled_ns": 355455000.0,
+        "after_ratio": 0.8527605463420124,
+        "control_ratio": 1.1753372596395852,
+        "samples_per_label": 7
+      },
+      {
+        "scope": "GCC parent-load exploratory",
+        "compiler": "gcc",
+        "case": "custom_vertex_set_path_composite_250000_random",
+        "median_cpu_ns": {
+          "base": 231531000,
+          "control": 225312000,
+          "hoist": 234535000
+        },
+        "baseline_pooled_ns": 226189000.0,
+        "after_ratio": 1.0368983460734165,
+        "control_ratio": 0.9731396659626572,
+        "samples_per_label": 3
+      },
+      {
+        "scope": "GCC parent-load exploratory",
+        "compiler": "gcc",
+        "case": "custom_vertex_set_path_composite_32_random_queryheavy",
+        "median_cpu_ns": {
+          "base": 16036000,
+          "control": 16026000,
+          "hoist": 16046000
+        },
+        "baseline_pooled_ns": 16031000.0,
+        "after_ratio": 1.0009356871062316,
+        "control_ratio": 0.9993764030930407,
+        "samples_per_label": 3
+      },
+      {
+        "scope": "GCC parent-load exploratory",
+        "compiler": "gcc",
+        "case": "custom_vertex_set_path_composite_4096_random_queryheavy",
+        "median_cpu_ns": {
+          "base": 25093000,
+          "control": 25190000,
+          "hoist": 24709000
+        },
+        "baseline_pooled_ns": 25138500.0,
+        "after_ratio": 0.9829146528233585,
+        "control_ratio": 1.0038656198939944,
+        "samples_per_label": 3
+      },
+      {
+        "scope": "GCC parent-load exploratory",
+        "compiler": "gcc",
+        "case": "official_vertex_set_path_composite_line_0",
+        "median_cpu_ns": {
+          "base": 121488000,
+          "control": 128627000,
+          "hoist": 129928000
+        },
+        "baseline_pooled_ns": 124640500.0,
+        "after_ratio": 1.0424220056883597,
+        "control_ratio": 1.0587630053997104,
+        "samples_per_label": 3
+      },
+      {
+        "scope": "GCC parent-load exploratory",
+        "compiler": "gcc",
+        "case": "official_vertex_set_path_composite_max_random_0",
+        "median_cpu_ns": {
+          "base": 170020000,
+          "control": 135738000,
+          "hoist": 182579000
+        },
+        "baseline_pooled_ns": 167304500.0,
+        "after_ratio": 1.091297604069227,
+        "control_ratio": 0.798364898247265,
+        "samples_per_label": 3
+      },
+      {
+        "scope": "GCC parent-load exploratory",
+        "compiler": "gcc",
+        "case": "official_vertex_set_path_composite_worst_for_path_decomposition_0",
+        "median_cpu_ns": {
+          "base": 269049000,
+          "control": 298827000,
+          "hoist": 264758000
+        },
+        "baseline_pooled_ns": 283938000.0,
+        "after_ratio": 0.9324500419105579,
+        "control_ratio": 1.1106787239499125,
+        "samples_per_label": 3
+      }
+    ],
+    "limits": "ホスト負荷が高く旧コード対照にも数%〜20%程度の差がある。3回の探索値を採用根拠にせず、Clangの追加比較は各7回実施したが、全条件での改善を示さない。現行judgeの入力そのものやオンライン短縮率とは区別する。"
+  },
+  "source_preservation": [
+    {
+      "path": "Graph/Heavy_Light_Decomposition.cpp",
+      "sha256": "21c6d1562e484c9217134f11a70d6757a66b295d1f334f44861251f0905576bb",
+      "unchanged": true
+    },
+    {
+      "path": "DataStructure/Segment_Tree.cpp",
+      "sha256": "abec391e07ad544cc239a780a7e078f2fa0cf3be6a552991764bfa4214f4f1da",
+      "unchanged": true
+    },
+    {
+      "path": "DataStructure/Fenwick_Tree.cpp",
+      "sha256": "1db7ef69f0119b197800b53f5dd33e0e98c937202fc0e7be49cc6109d380f58e",
+      "unchanged": true
+    },
+    {
+      "path": "Verify/current/drivers/hld_path_composite_main.cpp",
+      "sha256": "be8d7d8bf7003e851aa95f4c4e7df1670b34e32abb51ad86291a1d142b617f50",
+      "unchanged": true
+    },
+    {
+      "path": "Verify/current/common/fast_io.hpp",
+      "sha256": "291bf8dbc56a1d691f6256fe95b4714183c2cf5d9e55e4bef240e31d1eb178c1",
+      "unchanged": true
+    }
+  ],
+  "validation": "本体・main・IOが前回独立参照/ASan+UBSan/確保失敗試験/標準代替を通過した版とbyte一致。候補414実行は前後出力SHA一致。新たな本体変更を採用しないため同じ回帰試験を繰り返さない。",
+  "evidence": {
+    "path": "Audit/data/hld-composite-followup-415443-2026-11-06.zip",
+    "sha256": "98a3b752a98ee06863afa8b4b840c4ffdb9acf3064589e5bdf4ee2fa93b18598",
+    "entries": 35
+  },
+  "required_resubmission": []
+}

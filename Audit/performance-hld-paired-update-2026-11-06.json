@@ -1,0 +1,1075 @@
+{
+  "date": "2026-11-06",
+  "prepared_utc": "2026-11-06T03:14:46.083481+00:00",
+  "scope": "所有HLDの再提出を確認し、main・共通IO固定でOrdered Segment Treeの点代入を改善。",
+  "online_confirmation": "Audit/online-hld-owned-2026-11-06.json",
+  "online": {
+    "hld_path_prod": {
+      "url": "https://judge.yosupo.jp/submission/415442",
+      "status": "AC",
+      "time_ms": 297,
+      "previous_ms": 326
+    },
+    "hld_path_composite": {
+      "url": "https://judge.yosupo.jp/submission/415441",
+      "status": "AC",
+      "time_ms": 248,
+      "previous_ms": 257
+    },
+    "scope": "現行改修前のソースと照合済み。追加のペア更新はこのACに含めない。オンライン時間は環境と測定揺らぎを含む。"
+  },
+  "adopted": [
+    "自作segtreeをOrdered=trueで所有するHLDの点代入で、正順・逆順の祖先を一段ずつ交互に再計算。独立な演算鎖を並行して処理しやすくする。",
+    "対象は16byte以下のtrivially-copyableなclass型で、copy構築・代入がnothrowなもの。算術型・大きい値・非trivial型・外部/旧ヘッダーは従来経路を維持。",
+    "segtreeの全データフィールドと既存公開メソッドは不変。独立ガードのprivate forward/tag/friendのみ追加し、内部接続はHLD内へ置く。公開API・必要メモリ・演算回数・計算量は不変。"
+  ],
+  "proof": "同じ葉値を2本へ配置し、各々の子の左右順を維持して独立の親を計算する。各木は従来と同じ子から同じ親値を得るため、純粋なモノイド演算の結果は一致する。各木の高さhに対しopは各h回で合計2h回。内部添字は非公開の同じサイズ・baseという所有状態の不変条件から得られる。",
+  "ownership_and_safety": "vector/make_uniqueを維持し、new/解放省略/追加確保/永続借用なし。setは値を引数でsnapshotし、既定の頂点検査後だけ内部配列へアクセス。演算の例外は部分更新となり、従来どおりOrderedはclear/buildが必要。コピー/buildの失敗時の旧状態保持とmove元emptyを維持。",
+  "source_preservation": [
+    {
+      "scope": "Graph/Heavy_Light_Decomposition.cpp",
+      "canonical_sha256": "21c6d1562e484c9217134f11a70d6757a66b295d1f334f44861251f0905576bb",
+      "candidate_sha256": "21c6d1562e484c9217134f11a70d6757a66b295d1f334f44861251f0905576bb",
+      "result": "canonical exactly matches timed candidate"
+    },
+    {
+      "scope": "DataStructure/Segment_Tree.cpp",
+      "canonical_sha256": "abec391e07ad544cc239a780a7e078f2fa0cf3be6a552991764bfa4214f4f1da",
+      "candidate_sha256": "abec391e07ad544cc239a780a7e078f2fa0cf3be6a552991764bfa4214f4f1da",
+      "result": "canonical exactly matches timed candidate"
+    },
+    {
+      "scope": "ordinary segtree",
+      "result": "All original fields and function bodies byte-identical; private alias/friend only"
+    },
+    {
+      "scope": "HeavyLightDecomposition",
+      "result": "Core fields and bodies byte-identical"
+    },
+    {
+      "scope": "DataStructure/Fenwick_Tree.cpp",
+      "sha256": "1db7ef69f0119b197800b53f5dd33e0e98c937202fc0e7be49cc6109d380f58e",
+      "result": "byte-identical"
+    },
+    {
+      "scope": "Verify/current/drivers/hld_path_prod_main.cpp",
+      "sha256": "150248b3e34c17e391fc96f4ca16214d71d8143ab508a898dbf6bf3eec98d7a8",
+      "result": "byte-identical"
+    },
+    {
+      "scope": "Verify/current/drivers/hld_path_composite_main.cpp",
+      "sha256": "be8d7d8bf7003e851aa95f4c4e7df1670b34e32abb51ad86291a1d142b617f50",
+      "result": "byte-identical"
+    },
+    {
+      "scope": "Verify/current/common/fast_io.hpp",
+      "sha256": "291bf8dbc56a1d691f6256fe95b4714183c2cf5d9e55e4bef240e31d1eb178c1",
+      "result": "byte-identical"
+    }
+  ],
+  "measurement": {
+    "environment": {
+      "time": "2026-11-06T02:56:39.449264+00:00",
+      "loadavg": "31.57 28.14 19.97 31/2851 4\n",
+      "cpu_topology": "CPU CORE    MAXMHZ\n  0    0 5700.0000\n  1    0 5700.0000\n  2    1 5700.0000\n  3    1 5700.0000\n  4    2 5700.0000\n  5    2 5700.0000\n  6    3 5700.0000\n  7    3 5700.0000\n  8    4 5700.0000\n  9    4 5700.0000\n 10    5 5700.0000\n 11    5 5700.0000\n 12    6 6000.0000\n 13    6 6000.0000\n 14    7 6000.0000\n 15    7 6000.0000\n 16    8 4400.0000\n 17    9 4400.0000\n 18   10 4400.0000\n 19   11 4400.0000\n 20   12 4400.0000\n 21   13 4400.0000\n 22   14 4400.0000\n 23   15 4400.0000\n 24   16 4400.0000\n 25   17 4400.0000\n 26   18 4400.0000\n 27   19 4400.0000\n 28   20 4400.0000\n 29   21 4400.0000\n 30   22 4400.0000\n 31   23 4400.0000\n",
+      "cpuinfo": "Architecture:                            x86_64\nCPU op-mode(s):                          32-bit, 64-bit\nAddress sizes:                           46 bits physical, 48 bits virtual\nByte Order:                              Little Endian\nCPU(s):                                  32\nOn-line CPU(s) list:                     0-31\nVendor ID:                               GenuineIntel\nModel name:                              Intel(R) Core(TM) i9-14900K\nCPU family:                              6\nModel:                                   183\nThread(s) per core:                      2\nCore(s) per socket:                      24\nSocket(s):                               1\nStepping:                                1\nCPU(s) scaling MHz:                      81%\nCPU max MHz:                             6000.0000\nCPU min MHz:                             800.0000\nBogoMIPS:                                6374.40\nFlags:                                   fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx pdpe1gb rdtscp lm constant_tsc art arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc cpuid aperfmperf tsc_known_freq pni pclmulqdq dtes64 monitor ds_cpl vmx smx est tm2 ssse3 sdbg fma cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand lahf_lm abm 3dnowprefetch cpuid_fault epb ssbd ibrs ibpb stibp ibrs_enhanced tpr_shadow flexpriority ept vpid ept_ad fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid rdseed adx smap clflushopt clwb intel_pt sha_ni xsaveopt xsavec xgetbv1 xsaves split_lock_detect user_shstk avx_vnni dtherm ida arat pln pts hwp hwp_notify hwp_act_window hwp_epp hwp_pkg_req hfi vnmi umip pku ospke waitpkg gfni vaes vpclmulqdq rdpid movdiri movdir64b fsrm md_clear serialize pconfig arch_lbr ibt flush_l1d arch_capabilities\nVirtualization:                          VT-x\nL1d cache:                               896 KiB (24 instances)\nL1i cache:                               1.3 MiB (24 instances)\nL2 cache:                                32 MiB (12 instances)\nL3 cache:                                36 MiB (1 instance)\nNUMA node(s):                            1\nNUMA node0 CPU(s):                       0-31\nVulnerability Gather data sampling:      Not affected\nVulnerability Ghostwrite:                Not affected\nVulnerability Indirect target selection: Not affected\nVulnerability Itlb multihit:             Not affected\nVulnerability L1tf:                      Not affected\nVulnerability Mds:                       Not affected\nVulnerability Meltdown:                  Not affected\nVulnerability Mmio stale data:           Not affected\nVulnerability Old microcode:             Not affected\nVulnerability Reg file data sampling:    Mitigation; Clear Register File\nVulnerability Retbleed:                  Not affected\nVulnerability Spec rstack overflow:      Not affected\nVulnerability Spec store bypass:         Mitigation; Speculative Store Bypass disabled via prctl\nVulnerability Spectre v1:                Mitigation; usercopy/swapgs barriers and __user pointer sanitization\nVulnerability Spectre v2:                Mitigation; Enhanced / Automatic IBRS; IBPB conditional; PBRSB-eIBRS SW sequence; BHI BHI_DIS_S\nVulnerability Srbds:                     Not affected\nVulnerability Tsa:                       Not affected\nVulnerability Tsx async abort:           Not affected\nVulnerability Vmscape:                   Mitigation; IBPB before exit to userspace\n",
+      "compilers": {
+        "g++": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0\nCopyright (C) 2025 Free Software Foundation, Inc.\nThis is free software; see the source for copying conditions.  There is NO\nwarranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n",
+        "clang++": "Ubuntu clang version 21.1.8 (6ubuntu1)\nTarget: x86_64-pc-linux-gnu\nThread model: posix\nInstalledDir: /usr/lib/llvm-21/bin\n"
+      },
+      "cpu": 12,
+      "flags": [
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror"
+      ],
+      "skip_runtime_checks": true
+    },
+    "whole_program_scope": "同一の提出main・入出力・O2/C++23・SKIP有効。CPU12(P-Core)固定、同じ実行パスへコピーしbase/control/afterをランダム順で各9回。process単位でsetarch -Rを指定してASLRを揃え、global設定・CPU周波数・governorは変更しない。rusageのuser+system CPU時間は構築・IO・破棄も含む。",
+    "whole_program_timed_runs": 648,
+    "whole_program_summary": [
+      {
+        "compiler": "clang",
+        "case": "custom_vertex_set_path_composite_250000_balanced",
+        "median_cpu_ns": {
+          "base": 248053000,
+          "control": 242853000,
+          "paired": 233683000
+        },
+        "before_pooled_ns": 246411500.0,
+        "after_ratio": 0.9483445374911479,
+        "control_ratio": 0.9790367381164509,
+        "samples_per_label": 9
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_vertex_set_path_composite_250000_random",
+        "median_cpu_ns": {
+          "base": 235959000,
+          "control": 240938000,
+          "paired": 222704000
+        },
+        "before_pooled_ns": 236874000.0,
+        "after_ratio": 0.9401791669832907,
+        "control_ratio": 1.0211011235002692,
+        "samples_per_label": 9
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_vertex_set_path_composite_250000_star",
+        "median_cpu_ns": {
+          "base": 157447000,
+          "control": 157636000,
+          "paired": 142618000
+        },
+        "before_pooled_ns": 157541500.0,
+        "after_ratio": 0.9052725789712552,
+        "control_ratio": 1.0012004039454547,
+        "samples_per_label": 9
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_vertex_set_path_composite_32_chain_queryheavy",
+        "median_cpu_ns": {
+          "base": 21417000,
+          "control": 21393000,
+          "paired": 20776000
+        },
+        "before_pooled_ns": 21405000.0,
+        "after_ratio": 0.9706143424433543,
+        "control_ratio": 0.9988793948732315,
+        "samples_per_label": 9
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_vertex_set_path_composite_32_random_queryheavy",
+        "median_cpu_ns": {
+          "base": 22370000,
+          "control": 22414000,
+          "paired": 21656000
+        },
+        "before_pooled_ns": 22392000.0,
+        "after_ratio": 0.9671311182565202,
+        "control_ratio": 1.0019669199821188,
+        "samples_per_label": 9
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_vertex_set_path_composite_4096_random_queryheavy",
+        "median_cpu_ns": {
+          "base": 40078000,
+          "control": 39901000,
+          "paired": 37327000
+        },
+        "before_pooled_ns": 39910000.0,
+        "after_ratio": 0.9352793786018542,
+        "control_ratio": 0.9955836119566844,
+        "samples_per_label": 9
+      },
+      {
+        "compiler": "clang",
+        "case": "official_vertex_set_path_composite_almost_line_0",
+        "median_cpu_ns": {
+          "base": 154918000,
+          "control": 153862000,
+          "paired": 140910000
+        },
+        "before_pooled_ns": 154577000.0,
+        "after_ratio": 0.9115845177484361,
+        "control_ratio": 0.9931834906208445,
+        "samples_per_label": 9
+      },
+      {
+        "compiler": "clang",
+        "case": "official_vertex_set_path_composite_line_0",
+        "median_cpu_ns": {
+          "base": 130959000,
+          "control": 140000000,
+          "paired": 124004000
+        },
+        "before_pooled_ns": 132812000.0,
+        "after_ratio": 0.9336806915037797,
+        "control_ratio": 1.06903687413618,
+        "samples_per_label": 9
+      },
+      {
+        "compiler": "clang",
+        "case": "official_vertex_set_path_composite_long-path-decomposition_killer_0",
+        "median_cpu_ns": {
+          "base": 54448000,
+          "control": 54704000,
+          "paired": 54419000
+        },
+        "before_pooled_ns": 54526500.0,
+        "after_ratio": 0.9980284815640101,
+        "control_ratio": 1.0047017337643256,
+        "samples_per_label": 9
+      },
+      {
+        "compiler": "clang",
+        "case": "official_vertex_set_path_composite_max_random_0",
+        "median_cpu_ns": {
+          "base": 188883000,
+          "control": 184696000,
+          "paired": 174615000
+        },
+        "before_pooled_ns": 186136000.0,
+        "after_ratio": 0.9381043967851463,
+        "control_ratio": 0.9778328383179005,
+        "samples_per_label": 9
+      },
+      {
+        "compiler": "clang",
+        "case": "official_vertex_set_path_composite_max_random_1",
+        "median_cpu_ns": {
+          "base": 161015000,
+          "control": 165216000,
+          "paired": 149559000
+        },
+        "before_pooled_ns": 162087000.0,
+        "after_ratio": 0.9227081752392233,
+        "control_ratio": 1.0260907368878676,
+        "samples_per_label": 9
+      },
+      {
+        "compiler": "clang",
+        "case": "official_vertex_set_path_composite_worst_for_path_decomposition_0",
+        "median_cpu_ns": {
+          "base": 314029000,
+          "control": 315380000,
+          "paired": 314684000
+        },
+        "before_pooled_ns": 314354000.0,
+        "after_ratio": 1.0010497719131934,
+        "control_ratio": 1.0043021504383354,
+        "samples_per_label": 9
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_vertex_set_path_composite_250000_balanced",
+        "median_cpu_ns": {
+          "base": 282455000,
+          "control": 253161000,
+          "paired": 249975000
+        },
+        "before_pooled_ns": 280638000.0,
+        "after_ratio": 0.8907382464242191,
+        "control_ratio": 0.8962879042679365,
+        "samples_per_label": 9
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_vertex_set_path_composite_250000_random",
+        "median_cpu_ns": {
+          "base": 250739000,
+          "control": 243804000,
+          "paired": 231186000
+        },
+        "before_pooled_ns": 247917500.0,
+        "after_ratio": 0.932511823489669,
+        "control_ratio": 0.9723417577640495,
+        "samples_per_label": 9
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_vertex_set_path_composite_250000_star",
+        "median_cpu_ns": {
+          "base": 167769000,
+          "control": 169983000,
+          "paired": 153461000
+        },
+        "before_pooled_ns": 168743500.0,
+        "after_ratio": 0.9094335485514997,
+        "control_ratio": 1.0131967169143286,
+        "samples_per_label": 9
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_vertex_set_path_composite_32_chain_queryheavy",
+        "median_cpu_ns": {
+          "base": 22887000,
+          "control": 22775000,
+          "paired": 22697000
+        },
+        "before_pooled_ns": 22820000.0,
+        "after_ratio": 0.9946099912357581,
+        "control_ratio": 0.9951063922750907,
+        "samples_per_label": 9
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_vertex_set_path_composite_32_random_queryheavy",
+        "median_cpu_ns": {
+          "base": 22706000,
+          "control": 22726000,
+          "paired": 22617000
+        },
+        "before_pooled_ns": 22723500.0,
+        "after_ratio": 0.9953132219948512,
+        "control_ratio": 1.0008808244516867,
+        "samples_per_label": 9
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_vertex_set_path_composite_4096_random_queryheavy",
+        "median_cpu_ns": {
+          "base": 38266000,
+          "control": 38290000,
+          "paired": 37316000
+        },
+        "before_pooled_ns": 38268500.0,
+        "after_ratio": 0.9751100774788665,
+        "control_ratio": 1.0006271886269795,
+        "samples_per_label": 9
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_vertex_set_path_composite_almost_line_0",
+        "median_cpu_ns": {
+          "base": 167427000,
+          "control": 165641000,
+          "paired": 154916000
+        },
+        "before_pooled_ns": 166872500.0,
+        "after_ratio": 0.9283494883818484,
+        "control_ratio": 0.9893326643850753,
+        "samples_per_label": 9
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_vertex_set_path_composite_line_0",
+        "median_cpu_ns": {
+          "base": 147011000,
+          "control": 147728000,
+          "paired": 134743000
+        },
+        "before_pooled_ns": 147426000.0,
+        "after_ratio": 0.9139703987085046,
+        "control_ratio": 1.004877186060907,
+        "samples_per_label": 9
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_vertex_set_path_composite_long-path-decomposition_killer_0",
+        "median_cpu_ns": {
+          "base": 59662000,
+          "control": 59543000,
+          "paired": 59373000
+        },
+        "before_pooled_ns": 59593500.0,
+        "after_ratio": 0.9962999320395681,
+        "control_ratio": 0.9980054305923368,
+        "samples_per_label": 9
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_vertex_set_path_composite_max_random_0",
+        "median_cpu_ns": {
+          "base": 175860000,
+          "control": 170863000,
+          "paired": 163178000
+        },
+        "before_pooled_ns": 173361500.0,
+        "after_ratio": 0.941258583941648,
+        "control_ratio": 0.9715853519845331,
+        "samples_per_label": 9
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_vertex_set_path_composite_max_random_1",
+        "median_cpu_ns": {
+          "base": 178599000,
+          "control": 177409000,
+          "paired": 165868000
+        },
+        "before_pooled_ns": 178470500.0,
+        "after_ratio": 0.9293860890175127,
+        "control_ratio": 0.993337028762759,
+        "samples_per_label": 9
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_vertex_set_path_composite_worst_for_path_decomposition_0",
+        "median_cpu_ns": {
+          "base": 293203000,
+          "control": 295747000,
+          "paired": 274473000
+        },
+        "before_pooled_ns": 294475000.0,
+        "after_ratio": 0.9320757279904915,
+        "control_ratio": 1.0086765824360597,
+        "samples_per_label": 9
+      }
+    ],
+    "comparison_baseline": "同一旧コードのbase/control各9回を合わせた18回の中央値も併記し、after9回と比較。対照比は測定揺らぎの診断に使用。",
+    "measurement_limits": "ホスト負荷が高く、一部の旧コード対照にも数%〜約10%差がある。特にGCC balancedは大きい対照変動のため単独の改善率を強調しない。固定commitの公式生成器・自作入力によるローカル結果で、現行judgeのケースそのものやオンライン短縮率を保証しない。",
+    "code_mapping": [
+      {
+        "compiler": "gcc",
+        "id": "hld_path_prod",
+        "unchanged": true,
+        "final_text_sha256": "07ff254df6e4ef734fefc46f3962bccc4b19b55b481a6446ecfe3c71a2874f23",
+        "samples_pass": true
+      },
+      {
+        "compiler": "clang",
+        "id": "hld_path_prod",
+        "unchanged": true,
+        "final_text_sha256": "6ad09a7bd0b100d377b6a3f4244be2cb1975463cf1588cf68778b5907b11a30e",
+        "samples_pass": true
+      },
+      {
+        "compiler": "gcc",
+        "id": "hld_path_composite",
+        "unchanged": false,
+        "final_text_sha256": "f5cf30480b3982de589b3cc8aba1c76dcdc76f65662c618c04cdf8d770990945",
+        "samples_pass": true
+      },
+      {
+        "compiler": "clang",
+        "id": "hld_path_composite",
+        "unchanged": false,
+        "final_text_sha256": "c164a3b272f2ff7c0d7062d2888c9df78445ca845840226424edcd312efb69fa",
+        "samples_pass": true
+      },
+      {
+        "compiler": "gcc",
+        "id": "hld_jump",
+        "unchanged": true,
+        "final_text_sha256": "e894f14f181da0cddfebbbbffaade1c89a53bfa54e1255c9cd32160e7a62ec79",
+        "samples_pass": true
+      },
+      {
+        "compiler": "clang",
+        "id": "hld_jump",
+        "unchanged": true,
+        "final_text_sha256": "0b01ff0f4512f6215cfd23f61b1861090d11541023b7e11eb0078954ee3d20da",
+        "samples_pass": true
+      },
+      {
+        "compiler": "gcc",
+        "id": "hld_vertex_add_path_sum",
+        "unchanged": true,
+        "final_text_sha256": "349622b19c94c87afd744a860ec6b3a200cc0f754c4a9dcb5f3135db148a8264",
+        "samples_pass": true
+      },
+      {
+        "compiler": "clang",
+        "id": "hld_vertex_add_path_sum",
+        "unchanged": true,
+        "final_text_sha256": "f43add07de3f1e294345c08b8dfe00a7dbec2982cdb6b25ec9bf752c32c60f1c",
+        "samples_pass": true
+      },
+      {
+        "compiler": "gcc",
+        "id": "segment_tree",
+        "unchanged": true,
+        "final_text_sha256": "b2efadc255ad3056602d589e460a539f3997b461373d7ef98ee29b5b1df645a8",
+        "samples_pass": true
+      },
+      {
+        "compiler": "clang",
+        "id": "segment_tree",
+        "unchanged": true,
+        "final_text_sha256": "3ca218ba3e3095b84414dce18670fa2fe0cbd66d05ac41008f860dc2d031f096",
+        "samples_pass": true
+      },
+      {
+        "compiler": "gcc",
+        "id": "segment_tree_composite",
+        "unchanged": true,
+        "final_text_sha256": "533f089bdee918d132a6a83e394ba5392c304aae1d3386d40a100182cec4b1c9",
+        "samples_pass": true
+      },
+      {
+        "compiler": "clang",
+        "id": "segment_tree_composite",
+        "unchanged": true,
+        "final_text_sha256": "5d76cbe18a7df6e3754961a9b76d16baa10c0b86e03f288d37805bf441ba4143",
+        "samples_pass": true
+      }
+    ],
+    "typed_supplement_scope": "補足ベンチは16byte affineの200000頂点。事前生成したQ=1000000操作のCPU時間だけを測る。set主体7/8更新/get主体1/8更新、約1/1024はpath_prod。生成・構築・破棄は除外し、Verify全体の成果とは区別する。",
+    "typed_supplement_timed_runs": 108,
+    "typed_supplement_summary": [
+      {
+        "compiler": "clang",
+        "n": 200000,
+        "value_type": "16-byte affine",
+        "mode": "get",
+        "median_cpu_ms": {
+          "base": 52.186,
+          "control": 52.681,
+          "paired": 41.035
+        },
+        "before_pooled_ms": 52.3825,
+        "after_ratio": 0.7833723094544933,
+        "control_ratio": 1.0094853025715709,
+        "samples_per_label": 9
+      },
+      {
+        "compiler": "clang",
+        "n": 200000,
+        "value_type": "16-byte affine",
+        "mode": "set",
+        "median_cpu_ms": {
+          "base": 305.628,
+          "control": 308.577,
+          "paired": 228.265
+        },
+        "before_pooled_ms": 305.7345,
+        "after_ratio": 0.7466118478614614,
+        "control_ratio": 1.0096489850406376,
+        "samples_per_label": 9
+      },
+      {
+        "compiler": "gcc",
+        "n": 200000,
+        "value_type": "16-byte affine",
+        "mode": "get",
+        "median_cpu_ms": {
+          "base": 47.856,
+          "control": 48.064,
+          "paired": 39.355
+        },
+        "before_pooled_ms": 48.034,
+        "after_ratio": 0.8193154848648874,
+        "control_ratio": 1.0043463724506854,
+        "samples_per_label": 9
+      },
+      {
+        "compiler": "gcc",
+        "n": 200000,
+        "value_type": "16-byte affine",
+        "mode": "set",
+        "median_cpu_ms": {
+          "base": 287.774,
+          "control": 276.049,
+          "paired": 215.766
+        },
+        "before_pooled_ms": 284.63599999999997,
+        "after_ratio": 0.75804184994168,
+        "control_ratio": 0.9592562218963492,
+        "samples_per_label": 9
+      }
+    ]
+  },
+  "rejected_and_diagnostics": [
+    "当初は算術型もペア更新対象としたが、型別補足でGCC大規模sum/min更新とClang min更新の後退を認め、不採用。最終版は算術型を除外し、sum/minの専用ベンチ全体の.textが旧版と一致することを両コンパイラで確認。",
+    "screen108回と範囲の広い候補の型別540回は探索記録。型別540回を最終版の測定値と混同しない。",
+    "旧/新ヘッダー混在は従来経路へ戻し、両コンパイラでサンプルと全.text一致を確認。",
+    "補足classベンチの初回108回はbaseラベルへも候補を割り当てるscript誤りがあり除外。実行元の指定を修正し、同じ旧コードのbase/controlを各9回と候補9回で再測定。mislabeled_*は採用根拠にしない。",
+    "SIMD・ISA専用命令・新たなCPU判定は追加しない。既存のコンパイラ別HLD経路は維持。"
+  ],
+  "validation": {
+    "owned_and_paired_asan_ubsan_settings": 8,
+    "allocation_settings": 2,
+    "results": [
+      {
+        "compiler": "gcc",
+        "test": "owned",
+        "skip_runtime_checks": false,
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-I/home/reinsirk/Atcoder_Env/Verify/current/vendor",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/hld_owned_test.cpp",
+          "-o",
+          "/tmp/sirkit_hld_followup_20261106/test_gcc_owned_0"
+        ],
+        "stdout": "Owned HLD forests=30 checks=291961\n",
+        "returncode": 0,
+        "stderr": ""
+      },
+      {
+        "compiler": "gcc",
+        "test": "owned",
+        "skip_runtime_checks": true,
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-I/home/reinsirk/Atcoder_Env/Verify/current/vendor",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/hld_owned_test.cpp",
+          "-o",
+          "/tmp/sirkit_hld_followup_20261106/test_gcc_owned_1"
+        ],
+        "stdout": "Owned HLD forests=30 checks=291472\n",
+        "returncode": 0,
+        "stderr": ""
+      },
+      {
+        "compiler": "gcc",
+        "test": "paired",
+        "skip_runtime_checks": false,
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-I/home/reinsirk/Atcoder_Env/Verify/current/vendor",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/hld_paired_update_test.cpp",
+          "-o",
+          "/tmp/sirkit_hld_followup_20261106/test_gcc_paired_0"
+        ],
+        "stdout": "paired reference checks=66142 forests=130\n",
+        "returncode": 0,
+        "stderr": ""
+      },
+      {
+        "compiler": "gcc",
+        "test": "paired",
+        "skip_runtime_checks": true,
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-I/home/reinsirk/Atcoder_Env/Verify/current/vendor",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/hld_paired_update_test.cpp",
+          "-o",
+          "/tmp/sirkit_hld_followup_20261106/test_gcc_paired_1"
+        ],
+        "stdout": "paired reference checks=66138 forests=130\n",
+        "returncode": 0,
+        "stderr": ""
+      },
+      {
+        "compiler": "gcc",
+        "test": "allocation",
+        "skip_runtime_checks": false,
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "-I/home/reinsirk/Atcoder_Env/Verify/current/vendor",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/hld_owned_allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_hld_followup_20261106/test_gcc_allocation_0"
+        ],
+        "stdout": "HLD owned allocation failures=248 successes=776 live_delta=0\n",
+        "returncode": 0,
+        "stderr": ""
+      },
+      {
+        "compiler": "clang",
+        "test": "owned",
+        "skip_runtime_checks": false,
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-I/home/reinsirk/Atcoder_Env/Verify/current/vendor",
+          "-DSIRKIT_HLD_OWNED_RANGES_FIRST",
+          "-DPAIRED_SEG_FIRST",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/hld_owned_test.cpp",
+          "-o",
+          "/tmp/sirkit_hld_followup_20261106/test_clang_owned_0"
+        ],
+        "stdout": "Owned HLD forests=30 checks=291961\n",
+        "returncode": 0,
+        "stderr": ""
+      },
+      {
+        "compiler": "clang",
+        "test": "owned",
+        "skip_runtime_checks": true,
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-I/home/reinsirk/Atcoder_Env/Verify/current/vendor",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-DSIRKIT_HLD_OWNED_RANGES_FIRST",
+          "-DPAIRED_SEG_FIRST",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/hld_owned_test.cpp",
+          "-o",
+          "/tmp/sirkit_hld_followup_20261106/test_clang_owned_1"
+        ],
+        "stdout": "Owned HLD forests=30 checks=291472\n",
+        "returncode": 0,
+        "stderr": ""
+      },
+      {
+        "compiler": "clang",
+        "test": "paired",
+        "skip_runtime_checks": false,
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-I/home/reinsirk/Atcoder_Env/Verify/current/vendor",
+          "-DSIRKIT_HLD_OWNED_RANGES_FIRST",
+          "-DPAIRED_SEG_FIRST",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/hld_paired_update_test.cpp",
+          "-o",
+          "/tmp/sirkit_hld_followup_20261106/test_clang_paired_0"
+        ],
+        "stdout": "paired reference checks=66142 forests=130\n",
+        "returncode": 0,
+        "stderr": ""
+      },
+      {
+        "compiler": "clang",
+        "test": "paired",
+        "skip_runtime_checks": true,
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-I/home/reinsirk/Atcoder_Env/Verify/current/vendor",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-DSIRKIT_HLD_OWNED_RANGES_FIRST",
+          "-DPAIRED_SEG_FIRST",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/hld_paired_update_test.cpp",
+          "-o",
+          "/tmp/sirkit_hld_followup_20261106/test_clang_paired_1"
+        ],
+        "stdout": "paired reference checks=66138 forests=130\n",
+        "returncode": 0,
+        "stderr": ""
+      },
+      {
+        "compiler": "clang",
+        "test": "allocation",
+        "skip_runtime_checks": false,
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "-I/home/reinsirk/Atcoder_Env/Verify/current/vendor",
+          "-DSIRKIT_HLD_OWNED_RANGES_FIRST",
+          "-DPAIRED_SEG_FIRST",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/hld_owned_allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_hld_followup_20261106/test_clang_allocation_0"
+        ],
+        "stdout": "HLD owned allocation failures=248 successes=776 live_delta=0\n",
+        "returncode": 0,
+        "stderr": ""
+      }
+    ],
+    "extra_checks": [
+      {
+        "compiler": "gcc",
+        "scope": "owned Ordered sum scalar",
+        "text_identical": true,
+        "text_sha256": "3b1a8924a77b661f0ad69ad9edede1b35c5c0ccc5d113db232971df3538255d6"
+      },
+      {
+        "compiler": "gcc",
+        "scope": "owned Ordered min scalar",
+        "text_identical": true,
+        "text_sha256": "c871dd7cf62f0be7aabf617b785fa337f3ef312139d36a786e69c8851264dbf5"
+      },
+      {
+        "compiler": "gcc",
+        "scope": "old_hld",
+        "text_identical": true,
+        "sample_pass": true
+      },
+      {
+        "compiler": "gcc",
+        "scope": "old_segment",
+        "text_identical": true,
+        "sample_pass": true
+      },
+      {
+        "compiler": "gcc",
+        "scope": "standard fallback",
+        "command": [
+          "taskset",
+          "-c",
+          "6",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "-U__SIZEOF_INT128__",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/hld_paired_update_test.cpp",
+          "-o",
+          "/tmp/sirkit_hld_followup_20261106/fallback_gcc"
+        ],
+        "stdout": "paired reference checks=66142 forests=130\n",
+        "returncode": 0
+      },
+      {
+        "compiler": "clang",
+        "scope": "owned Ordered sum scalar",
+        "text_identical": true,
+        "text_sha256": "0d98c73ab25e2649310b1e5e68e3fc60d9e41bf7497e1c783c407c81c0c35b1b"
+      },
+      {
+        "compiler": "clang",
+        "scope": "owned Ordered min scalar",
+        "text_identical": true,
+        "text_sha256": "6015f0a85f8159fe3f98442ad02442e10f061dec86a3d3168c0d9da61963afb2"
+      },
+      {
+        "compiler": "clang",
+        "scope": "old_hld",
+        "text_identical": true,
+        "sample_pass": true
+      },
+      {
+        "compiler": "clang",
+        "scope": "old_segment",
+        "text_identical": true,
+        "sample_pass": true
+      },
+      {
+        "compiler": "clang",
+        "scope": "standard fallback",
+        "command": [
+          "taskset",
+          "-c",
+          "6",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "-U__SIZEOF_INT128__",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/hld_paired_update_test.cpp",
+          "-o",
+          "/tmp/sirkit_hld_followup_20261106/fallback_clang"
+        ],
+        "stdout": "paired reference checks=66142 forests=130\n",
+        "returncode": 0
+      }
+    ],
+    "frozen_program_checks": [
+      {
+        "compiler": "gcc",
+        "id": "hld_path_prod",
+        "unchanged": true,
+        "final_text_sha256": "07ff254df6e4ef734fefc46f3962bccc4b19b55b481a6446ecfe3c71a2874f23",
+        "samples_pass": true
+      },
+      {
+        "compiler": "clang",
+        "id": "hld_path_prod",
+        "unchanged": true,
+        "final_text_sha256": "6ad09a7bd0b100d377b6a3f4244be2cb1975463cf1588cf68778b5907b11a30e",
+        "samples_pass": true
+      },
+      {
+        "compiler": "gcc",
+        "id": "hld_path_composite",
+        "unchanged": false,
+        "final_text_sha256": "f5cf30480b3982de589b3cc8aba1c76dcdc76f65662c618c04cdf8d770990945",
+        "samples_pass": true
+      },
+      {
+        "compiler": "clang",
+        "id": "hld_path_composite",
+        "unchanged": false,
+        "final_text_sha256": "c164a3b272f2ff7c0d7062d2888c9df78445ca845840226424edcd312efb69fa",
+        "samples_pass": true
+      },
+      {
+        "compiler": "gcc",
+        "id": "hld_jump",
+        "unchanged": true,
+        "final_text_sha256": "e894f14f181da0cddfebbbbffaade1c89a53bfa54e1255c9cd32160e7a62ec79",
+        "samples_pass": true
+      },
+      {
+        "compiler": "clang",
+        "id": "hld_jump",
+        "unchanged": true,
+        "final_text_sha256": "0b01ff0f4512f6215cfd23f61b1861090d11541023b7e11eb0078954ee3d20da",
+        "samples_pass": true
+      },
+      {
+        "compiler": "gcc",
+        "id": "hld_vertex_add_path_sum",
+        "unchanged": true,
+        "final_text_sha256": "349622b19c94c87afd744a860ec6b3a200cc0f754c4a9dcb5f3135db148a8264",
+        "samples_pass": true
+      },
+      {
+        "compiler": "clang",
+        "id": "hld_vertex_add_path_sum",
+        "unchanged": true,
+        "final_text_sha256": "f43add07de3f1e294345c08b8dfe00a7dbec2982cdb6b25ec9bf752c32c60f1c",
+        "samples_pass": true
+      },
+      {
+        "compiler": "gcc",
+        "id": "segment_tree",
+        "unchanged": true,
+        "final_text_sha256": "b2efadc255ad3056602d589e460a539f3997b461373d7ef98ee29b5b1df645a8",
+        "samples_pass": true
+      },
+      {
+        "compiler": "clang",
+        "id": "segment_tree",
+        "unchanged": true,
+        "final_text_sha256": "3ca218ba3e3095b84414dce18670fa2fe0cbd66d05ac41008f860dc2d031f096",
+        "samples_pass": true
+      },
+      {
+        "compiler": "gcc",
+        "id": "segment_tree_composite",
+        "unchanged": true,
+        "final_text_sha256": "533f089bdee918d132a6a83e394ba5392c304aae1d3386d40a100182cec4b1c9",
+        "samples_pass": true
+      },
+      {
+        "compiler": "clang",
+        "id": "segment_tree_composite",
+        "unchanged": true,
+        "final_text_sha256": "5d76cbe18a7df6e3754961a9b76d16baa10c0b86e03f288d37805bf441ba4143",
+        "samples_pass": true
+      }
+    ],
+    "composite_input_comparisons": 52,
+    "independent_expected_inputs": 13,
+    "variant_and_example_samples": 22,
+    "sanitizer_note": "ASan+UBSan。環境上LSanは無効（detect_leaks=0）。独立の確保失敗/生存割当数試験で両コンパイラとも248失敗/776成功/live_delta=0。"
+  },
+  "provenance": "既存CC0の自作実装を改修。外部実装の転記なし。公式生成器本文は/tmpに限り、配布監査へ含めない。",
+  "sources": {
+    "Graph/Heavy_Light_Decomposition.cpp": {
+      "sha256": "21c6d1562e484c9217134f11a70d6757a66b295d1f334f44861251f0905576bb",
+      "bytes": 46265
+    },
+    "DataStructure/Segment_Tree.cpp": {
+      "sha256": "abec391e07ad544cc239a780a7e078f2fa0cf3be6a552991764bfa4214f4f1da",
+      "bytes": 12895
+    },
+    "DataStructure/Fenwick_Tree.cpp": {
+      "sha256": "1db7ef69f0119b197800b53f5dd33e0e98c937202fc0e7be49cc6109d380f58e",
+      "bytes": 9050
+    },
+    "Verify/current/tests/hld_paired_update_test.cpp": {
+      "sha256": "8a74ce4edc873761ca40a7b3465dd87e4d87dcba610a0fef9f989b7cb3c360bb",
+      "bytes": 10534
+    },
+    "Verify/current/tests/hld_owned_test.cpp": {
+      "sha256": "006d1ff0c67502b17937d6b7ff67773ece397c9cf7d6ef299c314c6f5e79e59c",
+      "bytes": 17968
+    },
+    "Verify/current/tests/hld_owned_allocation_test.cpp": {
+      "sha256": "906efe16c4e3d6655860719cdd5de367d0b326dec39f4cbf0ac7d450eecec966",
+      "bytes": 3559
+    },
+    "Verify/current/drivers/hld_path_prod_main.cpp": {
+      "sha256": "150248b3e34c17e391fc96f4ca16214d71d8143ab508a898dbf6bf3eec98d7a8",
+      "bytes": 619
+    },
+    "Verify/current/drivers/hld_path_composite_main.cpp": {
+      "sha256": "be8d7d8bf7003e851aa95f4c4e7df1670b34e32abb51ad86291a1d142b617f50",
+      "bytes": 1065
+    },
+    "Verify/current/common/fast_io.hpp": {
+      "sha256": "291bf8dbc56a1d691f6256fe95b4714183c2cf5d9e55e4bef240e31d1eb178c1",
+      "bytes": 9227
+    }
+  },
+  "evidence": {
+    "path": "Audit/data/performance-hld-paired-update-2026-11-06.zip",
+    "sha256": "19c1c29fd8697f7da687c6eb812f2c7fab8fc75e0030ee4c81dec9be53d3bfc1",
+    "entries": 129
+  },
+  "required_resubmission_for_performance": [
+    "hld_path_composite"
+  ],
+  "unchanged_execution_paths": [
+    "hld_path_prod",
+    "hld_jump",
+    "hld_vertex_add_path_sum",
+    "segment_tree",
+    "segment_tree_composite"
+  ],
+  "textual_dependency_change": "上記の変更なし経路も依存ファイルの追加宣言でソースhashは変わる。過去ACを新ソースのオンライン判定へ書き換えず、実行コードの同一性を補足証拠として扱う。"
+}

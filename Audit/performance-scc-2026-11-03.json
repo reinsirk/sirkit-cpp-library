@@ -1,0 +1,5206 @@
+{
+  "date": "2026-11-03",
+  "decision": "共有作業領域・32bit CSR・現在頂点の保持・成分一覧と縮約Graphの構築改善を採用。mainと共通I/Oは変更なし。",
+  "baseline_online": "Audit/online-scc-414951-2026-11-03.json",
+  "online_status": {
+    "before_submission": 414951,
+    "before_status": "AC",
+    "before_ms": 93,
+    "current_status": "未提出",
+    "needs_resubmission": [
+      "Verify/current/submissions/scc.cpp"
+    ],
+    "scope": "TwoSATも共通SCC内部関数を同期。通常版TwoSATはまだ初回オンラインVerify前。通常版のACを派生版へ転記しない。"
+  },
+  "changes": [
+    "enteredのnを成分確定の印に使い、active配列を除去。low-linkと最終成分番号をidsの同じ領域へ格納し、親への伝播は成分番号の上書き前に行う。",
+    "現在頂点をローカルへ保持し、DFSスタックには親だけを保存。反復処理・辺順・従来の成分ID列を維持。",
+    "辺数がUINT32_MAX以下の場合に限りCSRのprefix/cursorをuint32_tにし、超過時はsize_t経路へ戻す。逆順の辺を後方から詰め、辺順を変えずcursorの再初期化を省く。",
+    "無辺・1成分・全頂点が別成分の数学的に確定するケースでは不要な探索・サイズ集計を省く。singletonも成分順にreserveして配置を維持。通常経路の成分サイズ計数もintにして領域を減らす。",
+    "縮約Graphは各行の同じ領域で重複を詰め、頂点群の二重作成を除去。多重辺を除いて容量が過大になった行は小さいvectorへ置き換えて解放。unique=falseの多重辺とunique=trueの最初の出現順を維持。"
+  ],
+  "API": "scc_graph/add_edge/sccと既存のbuild/ids/condensation等を維持。Graph/Two_SAT.cppと共有ガード内の実装は同一。",
+  "bounds": "CSRのprefix/cursorは0..m。m==UINT32_MAXも表現可で、後方充填のアクセス時はdecrement後の値がm未満。m超過はsize_t。両テンプレート経路を同じ小規模/大規模入力で直接試験したが、4b辺の実確保・実測はしていない。n/clock/countはintの最大値まで表現可能。",
+  "environment": {
+    "cpu": "Intel Core i9-14900K P-Core CPU12（sibling13）",
+    "compiler_versions": {
+      "Clang": "Ubuntu clang version 21.1.8 (6ubuntu1)\nTarget: x86_64-pc-linux-gnu\nThread model: posix\nInstalledDir: /usr/lib/llvm-21/bin\n",
+      "GCC": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0\nCopyright (C) 2025 Free Software Foundation, Inc.\nThis is free software; see the source for copying conditions.  There is NO\nwarranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
+    },
+    "flags": [
+      "-std=c++23",
+      "-O2",
+      "SKIP_RUNTIME_CHECKS"
+    ],
+    "march_native": false,
+    "custom_optimization_pragmas": false,
+    "explicit_SIMD_added": false,
+    "governor": "powersave、周波数固定なし",
+    "timing": "同じmain/共通I/O/コンパイラ/検査条件。順序を乱数化し、同じファイル名へバイナリを切替。controlはbeforeと同じバイナリ。mainはwait4 user+system、API単体はstd::clock。",
+    "contention": "自分の性能測定・コンパイル/テストをflockで直列化。E-Coreは対象外。"
+  },
+  "performance": {
+    "screen": [
+      {
+        "compiler": "gcc",
+        "case": "official_random_0",
+        "median_cpu_ns": {
+          "merged": 42404000,
+          "mark": 43521000,
+          "index32": 38616000,
+          "local": 41085000,
+          "control": 43637000,
+          "base": 42381000
+        },
+        "ratio_to_before": {
+          "merged": 1.0005426960194426,
+          "mark": 1.0268988461810717,
+          "index32": 0.9111630211651448,
+          "local": 0.9694202590783606,
+          "control": 1.0296359217573914,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_random_1",
+        "median_cpu_ns": {
+          "local": 45396000,
+          "control": 47634000,
+          "index32": 42478000,
+          "base": 47705000,
+          "mark": 46061000,
+          "merged": 46147000
+        },
+        "ratio_to_before": {
+          "local": 0.9515983649512629,
+          "control": 0.9985116864060372,
+          "index32": 0.8904307724557174,
+          "base": 1.0,
+          "mark": 0.9655382035426056,
+          "merged": 0.9673409495859973
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_random_2",
+        "median_cpu_ns": {
+          "mark": 12721000,
+          "merged": 12402000,
+          "local": 12210000,
+          "control": 12544000,
+          "index32": 12135000,
+          "base": 12697000
+        },
+        "ratio_to_before": {
+          "mark": 1.0018902102858942,
+          "merged": 0.9767661652358824,
+          "local": 0.9616444829487281,
+          "control": 0.9879499094274238,
+          "index32": 0.9557375758053084,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_random_3",
+        "median_cpu_ns": {
+          "local": 25786000,
+          "control": 26330000,
+          "index32": 24282000,
+          "mark": 26139000,
+          "base": 26398000,
+          "merged": 25826000
+        },
+        "ratio_to_before": {
+          "local": 0.9768164254867793,
+          "control": 0.9974240472763088,
+          "index32": 0.9198424123039625,
+          "mark": 0.9901886506553527,
+          "base": 1.0,
+          "merged": 0.9783316917948329
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_random_4",
+        "median_cpu_ns": {
+          "index32": 19695000,
+          "base": 20912000,
+          "mark": 20728000,
+          "local": 20135000,
+          "merged": 20613000,
+          "control": 20933000
+        },
+        "ratio_to_before": {
+          "index32": 0.9418037490436113,
+          "base": 1.0,
+          "mark": 0.9912012241775058,
+          "local": 0.9628442999234889,
+          "merged": 0.9857019892884469,
+          "control": 1.001004208110176
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_max_random_0",
+        "median_cpu_ns": {
+          "index32": 48794000,
+          "base": 55959000,
+          "mark": 55346000,
+          "control": 56614000,
+          "merged": 54491000,
+          "local": 51299000
+        },
+        "ratio_to_before": {
+          "index32": 0.8719598277310173,
+          "base": 1.0,
+          "mark": 0.9890455512071338,
+          "control": 1.0117049983023285,
+          "merged": 0.9737665076216515,
+          "local": 0.9167247449025179
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_max_random_1",
+        "median_cpu_ns": {
+          "control": 53904000,
+          "base": 56328000,
+          "index32": 48922000,
+          "local": 52533000,
+          "merged": 52769000,
+          "mark": 55784000
+        },
+        "ratio_to_before": {
+          "control": 0.9569663400085215,
+          "base": 1.0,
+          "index32": 0.8685200965771908,
+          "local": 0.9326267575628462,
+          "merged": 0.9368165033375941,
+          "mark": 0.9903422809260048
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_max_random_2",
+        "median_cpu_ns": {
+          "base": 55579000,
+          "control": 57125000,
+          "mark": 55727000,
+          "local": 51937000,
+          "index32": 48663000,
+          "merged": 53812000
+        },
+        "ratio_to_before": {
+          "base": 1.0,
+          "control": 1.0278162615376312,
+          "mark": 1.0026628762662158,
+          "local": 0.9344716529624498,
+          "index32": 0.8755645117760306,
+          "merged": 0.9682074164702495
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_max_random_3",
+        "median_cpu_ns": {
+          "local": 52048000,
+          "base": 54229000,
+          "mark": 56101000,
+          "control": 54468000,
+          "index32": 47944000,
+          "merged": 53126000
+        },
+        "ratio_to_before": {
+          "local": 0.9597816666359328,
+          "base": 1.0,
+          "mark": 1.0345202751295433,
+          "control": 1.0044072359807483,
+          "index32": 0.8841026019288573,
+          "merged": 0.9796603293440779
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_max_random_4",
+        "median_cpu_ns": {
+          "base": 51092000,
+          "merged": 50101000,
+          "mark": 50489000,
+          "index32": 46504000,
+          "control": 51575000,
+          "local": 48217000
+        },
+        "ratio_to_before": {
+          "base": 1.0,
+          "merged": 0.9806036170046191,
+          "mark": 0.9881977609019025,
+          "index32": 0.9102012056682064,
+          "control": 1.0094535347999687,
+          "local": 0.9437289595239959
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_large_cycle_0",
+        "median_cpu_ns": {
+          "mark": 30424000,
+          "control": 31322000,
+          "local": 29486000,
+          "index32": 26958000,
+          "base": 30166000,
+          "merged": 29950000
+        },
+        "ratio_to_before": {
+          "mark": 1.008552675197242,
+          "control": 1.0383212888682622,
+          "local": 0.9774580653716104,
+          "index32": 0.8936551084001857,
+          "base": 1.0,
+          "merged": 0.9928396207650998
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_500000_line",
+        "median_cpu_ns": {
+          "control": 36886000,
+          "mark": 36066000,
+          "local": 36177000,
+          "index32": 33889000,
+          "merged": 36109000,
+          "base": 36921000
+        },
+        "ratio_to_before": {
+          "control": 0.9990520300100214,
+          "mark": 0.9768424473876656,
+          "local": 0.9798488664987406,
+          "index32": 0.9178787140109964,
+          "merged": 0.9780070962324964,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_500000_cycle",
+        "median_cpu_ns": {
+          "local": 21124000,
+          "merged": 21746000,
+          "mark": 22241000,
+          "index32": 20190000,
+          "control": 22522000,
+          "base": 22587000
+        },
+        "ratio_to_before": {
+          "local": 0.9352282286270863,
+          "merged": 0.9627661929428433,
+          "mark": 0.9846814539336787,
+          "index32": 0.8938770088989242,
+          "control": 0.9971222384557489,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_500000_empty",
+        "median_cpu_ns": {
+          "merged": 27194000,
+          "base": 27654000,
+          "local": 26995000,
+          "mark": 27471000,
+          "control": 27799000,
+          "index32": 25835000
+        },
+        "ratio_to_before": {
+          "merged": 0.9833658783539452,
+          "base": 1.0,
+          "local": 0.9761698126853258,
+          "mark": 0.9933825124755913,
+          "control": 1.0052433644319085,
+          "index32": 0.9342228972300571
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_500000_dag",
+        "median_cpu_ns": {
+          "control": 64235000,
+          "merged": 63035000,
+          "index32": 60132000,
+          "local": 62951000,
+          "mark": 64499000,
+          "base": 65789000
+        },
+        "ratio_to_before": {
+          "control": 0.9763790299290155,
+          "merged": 0.95813889860007,
+          "index32": 0.9140129808934624,
+          "local": 0.9568620894070438,
+          "mark": 0.9803918588213835,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_32_dag",
+        "median_cpu_ns": {
+          "merged": 950000,
+          "control": 941000,
+          "index32": 924000,
+          "mark": 930000,
+          "base": 917000,
+          "local": 920000
+        },
+        "ratio_to_before": {
+          "merged": 1.0359869138495092,
+          "control": 1.0261723009814614,
+          "index32": 1.0076335877862594,
+          "mark": 1.014176663031625,
+          "base": 1.0,
+          "local": 1.0032715376226826
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_4096_dag",
+        "median_cpu_ns": {
+          "control": 1341000,
+          "index32": 1324000,
+          "merged": 1345000,
+          "base": 1325000,
+          "mark": 1356000,
+          "local": 1352000
+        },
+        "ratio_to_before": {
+          "control": 1.0120754716981133,
+          "index32": 0.999245283018868,
+          "merged": 1.0150943396226415,
+          "base": 1.0,
+          "mark": 1.0233962264150944,
+          "local": 1.020377358490566
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_random_0",
+        "median_cpu_ns": {
+          "index32": 37167000,
+          "merged": 39826000,
+          "mark": 40047000,
+          "control": 40215000,
+          "local": 39137000,
+          "base": 40471000
+        },
+        "ratio_to_before": {
+          "index32": 0.9183612957426305,
+          "merged": 0.9840626621531467,
+          "mark": 0.9895233624076499,
+          "control": 0.9936744829631093,
+          "local": 0.9670381260655778,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_random_1",
+        "median_cpu_ns": {
+          "merged": 43491000,
+          "control": 44207000,
+          "local": 42891000,
+          "mark": 44322000,
+          "base": 44496000,
+          "index32": 40686000
+        },
+        "ratio_to_before": {
+          "merged": 0.9774137001078749,
+          "control": 0.993505034160374,
+          "local": 0.9639293419633226,
+          "mark": 0.9960895361380798,
+          "base": 1.0,
+          "index32": 0.9143743257820928
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_random_2",
+        "median_cpu_ns": {
+          "mark": 12504000,
+          "index32": 11811000,
+          "local": 12271000,
+          "base": 12594000,
+          "merged": 12537000,
+          "control": 12684000
+        },
+        "ratio_to_before": {
+          "mark": 0.9928537398761315,
+          "index32": 0.937827536922344,
+          "local": 0.9743528664443386,
+          "base": 1.0,
+          "merged": 0.9954740352548833,
+          "control": 1.0071462601238685
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_random_3",
+        "median_cpu_ns": {
+          "local": 24436000,
+          "base": 24682000,
+          "index32": 23567000,
+          "control": 24952000,
+          "mark": 25005000,
+          "merged": 24105000
+        },
+        "ratio_to_before": {
+          "local": 0.9900332225913622,
+          "base": 1.0,
+          "index32": 0.9548253788185722,
+          "control": 1.01093914593631,
+          "mark": 1.013086459768252,
+          "merged": 0.9766226399805527
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_random_4",
+        "median_cpu_ns": {
+          "control": 19648000,
+          "index32": 18527000,
+          "mark": 19812000,
+          "local": 19084000,
+          "merged": 19364000,
+          "base": 19888000
+        },
+        "ratio_to_before": {
+          "control": 0.9879324215607401,
+          "index32": 0.9315667739340305,
+          "mark": 0.9961786001609011,
+          "local": 0.9595736122284795,
+          "merged": 0.9736524537409493,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_max_random_0",
+        "median_cpu_ns": {
+          "base": 50581000,
+          "control": 50737000,
+          "mark": 50321000,
+          "local": 49027000,
+          "merged": 49962000,
+          "index32": 46482000
+        },
+        "ratio_to_before": {
+          "base": 1.0,
+          "control": 1.0030841620371285,
+          "mark": 0.9948597299381191,
+          "local": 0.969277001245527,
+          "merged": 0.9877622031988296,
+          "index32": 0.9189616654475
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_max_random_1",
+        "median_cpu_ns": {
+          "mark": 50600000,
+          "base": 51003000,
+          "control": 50428000,
+          "merged": 50173000,
+          "local": 49263000,
+          "index32": 46354000
+        },
+        "ratio_to_before": {
+          "mark": 0.9920985040095681,
+          "base": 1.0,
+          "control": 0.9887261533635276,
+          "merged": 0.9837264474638747,
+          "local": 0.9658843597435445,
+          "index32": 0.9088484991078957
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_max_random_2",
+        "median_cpu_ns": {
+          "index32": 46443000,
+          "mark": 50731000,
+          "merged": 50248000,
+          "local": 49297000,
+          "control": 51325000,
+          "base": 51405000
+        },
+        "ratio_to_before": {
+          "index32": 0.9034724248613948,
+          "mark": 0.9868884349771423,
+          "merged": 0.9774924618227799,
+          "local": 0.9589923159225756,
+          "control": 0.998443731154557,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_max_random_3",
+        "median_cpu_ns": {
+          "local": 48871000,
+          "base": 50443000,
+          "index32": 46310000,
+          "mark": 50952000,
+          "control": 53356000,
+          "merged": 49843000
+        },
+        "ratio_to_before": {
+          "local": 0.9688361120472613,
+          "base": 1.0,
+          "index32": 0.9180659358087346,
+          "mark": 1.0100905973078524,
+          "control": 1.057748349622346,
+          "merged": 0.9881053862775806
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_max_random_4",
+        "median_cpu_ns": {
+          "control": 50898000,
+          "merged": 50002000,
+          "base": 51391000,
+          "local": 49132000,
+          "index32": 46296000,
+          "mark": 50897000
+        },
+        "ratio_to_before": {
+          "control": 0.9904068805822032,
+          "merged": 0.9729719211535094,
+          "base": 1.0,
+          "local": 0.9560428868868089,
+          "index32": 0.900858126909381,
+          "mark": 0.9903874219221265
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_large_cycle_0",
+        "median_cpu_ns": {
+          "control": 30987000,
+          "base": 30798000,
+          "index32": 27490000,
+          "merged": 29624000,
+          "local": 29699000,
+          "mark": 30861000
+        },
+        "ratio_to_before": {
+          "control": 1.0061367621274109,
+          "base": 1.0,
+          "index32": 0.8925904279498669,
+          "merged": 0.9618806416001039,
+          "local": 0.9643158646665367,
+          "mark": 1.0020455873758036
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_500000_line",
+        "median_cpu_ns": {
+          "index32": 34097000,
+          "mark": 36732000,
+          "base": 37592000,
+          "control": 37449000,
+          "local": 36350000,
+          "merged": 36167000
+        },
+        "ratio_to_before": {
+          "index32": 0.9070280910832091,
+          "mark": 0.977122792083422,
+          "base": 1.0,
+          "control": 0.996195999148755,
+          "local": 0.9669610555437327,
+          "merged": 0.9620929985103214
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_500000_cycle",
+        "median_cpu_ns": {
+          "index32": 21135000,
+          "mark": 23837000,
+          "control": 23909000,
+          "merged": 22636000,
+          "local": 22262000,
+          "base": 23954000
+        },
+        "ratio_to_before": {
+          "index32": 0.8823161058695834,
+          "mark": 0.9951156383067546,
+          "control": 0.9981213993487518,
+          "merged": 0.9449778742589964,
+          "local": 0.9293646155130667,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_500000_empty",
+        "median_cpu_ns": {
+          "control": 27260000,
+          "merged": 26410000,
+          "local": 26242000,
+          "mark": 27050000,
+          "base": 27262000,
+          "index32": 25653000
+        },
+        "ratio_to_before": {
+          "control": 0.9999266378108723,
+          "merged": 0.9687477074315898,
+          "local": 0.962585283544861,
+          "mark": 0.9922236079524613,
+          "base": 1.0,
+          "index32": 0.9409801188467464
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_500000_dag",
+        "median_cpu_ns": {
+          "control": 65684000,
+          "local": 63885000,
+          "mark": 65052000,
+          "index32": 62739000,
+          "base": 66148000,
+          "merged": 64364000
+        },
+        "ratio_to_before": {
+          "control": 0.9929854266190966,
+          "local": 0.9657888371530507,
+          "mark": 0.9834310939106247,
+          "index32": 0.9484640503114229,
+          "base": 1.0,
+          "merged": 0.9730301747596299
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_32_dag",
+        "median_cpu_ns": {
+          "base": 966000,
+          "mark": 964000,
+          "index32": 911000,
+          "merged": 913000,
+          "control": 1024000,
+          "local": 975000
+        },
+        "ratio_to_before": {
+          "base": 1.0,
+          "mark": 0.9979296066252588,
+          "index32": 0.943064182194617,
+          "merged": 0.9451345755693582,
+          "control": 1.060041407867495,
+          "local": 1.0093167701863355
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_4096_dag",
+        "median_cpu_ns": {
+          "index32": 1324000,
+          "local": 1297000,
+          "base": 1311000,
+          "control": 1304000,
+          "merged": 1286000,
+          "mark": 1308000
+        },
+        "ratio_to_before": {
+          "index32": 1.0099160945842869,
+          "local": 0.9893211289092296,
+          "base": 1.0,
+          "control": 0.9946605644546148,
+          "merged": 0.9809305873379099,
+          "mark": 0.9977116704805492
+        }
+      }
+    ],
+    "followup_main": [
+      {
+        "compiler": "gcc",
+        "case": "official_random_0",
+        "median_cpu_ns": {
+          "base": 39714000,
+          "reverse": 36432000,
+          "group": 36174000,
+          "index32": 36304000,
+          "control": 39964000,
+          "resize": 36868000
+        },
+        "ratio_to_before": {
+          "base": 1.0,
+          "reverse": 0.9173591176914941,
+          "group": 0.9108626680767488,
+          "index32": 0.9141360729213879,
+          "control": 1.0062950093166139,
+          "resize": 0.9283376139396686
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_random_1",
+        "median_cpu_ns": {
+          "control": 44437000,
+          "base": 44474000,
+          "resize": 40551000,
+          "reverse": 40274000,
+          "index32": 40552000,
+          "group": 39699000
+        },
+        "ratio_to_before": {
+          "control": 0.9991680532445923,
+          "base": 1.0,
+          "resize": 0.9117911588793453,
+          "reverse": 0.9055628007375096,
+          "index32": 0.9118136439267887,
+          "group": 0.8926338984575257
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_random_2",
+        "median_cpu_ns": {
+          "group": 11317000,
+          "resize": 11245000,
+          "base": 11853000,
+          "reverse": 11305000,
+          "control": 11862000,
+          "index32": 11206000
+        },
+        "ratio_to_before": {
+          "group": 0.9547793807474901,
+          "resize": 0.9487049692061081,
+          "base": 1.0,
+          "reverse": 0.9537669788239265,
+          "control": 1.0007593014426728,
+          "index32": 0.9454146629545263
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_random_3",
+        "median_cpu_ns": {
+          "control": 25325000,
+          "group": 22600000,
+          "base": 25231000,
+          "resize": 22394000,
+          "index32": 23599000,
+          "reverse": 23684000
+        },
+        "ratio_to_before": {
+          "control": 1.0037255756807102,
+          "group": 0.8957235147239507,
+          "base": 1.0,
+          "resize": 0.8875589552534581,
+          "index32": 0.9353176647774563,
+          "reverse": 0.9386865364036304
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_random_4",
+        "median_cpu_ns": {
+          "resize": 19160000,
+          "base": 19889000,
+          "reverse": 18627000,
+          "control": 19924000,
+          "index32": 18918000,
+          "group": 18906000
+        },
+        "ratio_to_before": {
+          "resize": 0.9633465734828297,
+          "base": 1.0,
+          "reverse": 0.9365478405148575,
+          "control": 1.0017597667052138,
+          "index32": 0.9511790436924933,
+          "group": 0.9505756951078486
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_max_random_0",
+        "median_cpu_ns": {
+          "index32": 46152000,
+          "group": 45556000,
+          "resize": 46658000,
+          "reverse": 46050000,
+          "control": 51046000,
+          "base": 51399000
+        },
+        "ratio_to_before": {
+          "index32": 0.8979163018735773,
+          "group": 0.8863207455397965,
+          "resize": 0.9077608513784314,
+          "reverse": 0.8959318274674605,
+          "control": 0.9931321621043211,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_max_random_1",
+        "median_cpu_ns": {
+          "base": 51340000,
+          "resize": 46369000,
+          "group": 45461000,
+          "control": 51288000,
+          "reverse": 46035000,
+          "index32": 45933000
+        },
+        "ratio_to_before": {
+          "base": 1.0,
+          "resize": 0.9031749123490456,
+          "group": 0.8854888975457733,
+          "control": 0.9989871445266848,
+          "reverse": 0.8966692637319829,
+          "index32": 0.8946825087650955
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_max_random_2",
+        "median_cpu_ns": {
+          "index32": 46693000,
+          "reverse": 46432000,
+          "group": 45609000,
+          "resize": 46963000,
+          "control": 50901000,
+          "base": 51861000
+        },
+        "ratio_to_before": {
+          "index32": 0.9003490098532616,
+          "reverse": 0.8953163263338539,
+          "group": 0.8794469832822353,
+          "resize": 0.9055552341836833,
+          "control": 0.9814889801585006,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_max_random_3",
+        "median_cpu_ns": {
+          "group": 45361000,
+          "reverse": 46177000,
+          "resize": 46687000,
+          "control": 50660000,
+          "base": 50300000,
+          "index32": 46261000
+        },
+        "ratio_to_before": {
+          "group": 0.9018091451292246,
+          "reverse": 0.9180318091451293,
+          "resize": 0.9281709741550696,
+          "control": 1.0071570576540756,
+          "base": 1.0,
+          "index32": 0.9197017892644135
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_max_random_4",
+        "median_cpu_ns": {
+          "index32": 46072000,
+          "base": 51194000,
+          "control": 51211000,
+          "group": 45821000,
+          "resize": 46904000,
+          "reverse": 46191000
+        },
+        "ratio_to_before": {
+          "index32": 0.8999492127983748,
+          "base": 1.0,
+          "control": 1.0003320701644725,
+          "group": 0.8950462944876353,
+          "resize": 0.9162011173184358,
+          "reverse": 0.9022737039496816
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_large_cycle_0",
+        "median_cpu_ns": {
+          "reverse": 27015000,
+          "group": 26460000,
+          "control": 30357000,
+          "resize": 26388000,
+          "base": 30226000,
+          "index32": 27034000
+        },
+        "ratio_to_before": {
+          "reverse": 0.8937669556011381,
+          "group": 0.8754052802223251,
+          "control": 1.0043340170713955,
+          "resize": 0.8730232250380467,
+          "base": 1.0,
+          "index32": 0.8943955534969893
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_500000_line",
+        "median_cpu_ns": {
+          "reverse": 33921000,
+          "index32": 33933000,
+          "resize": 31859000,
+          "base": 36980000,
+          "group": 32027000,
+          "control": 37492000
+        },
+        "ratio_to_before": {
+          "reverse": 0.9172796106003245,
+          "index32": 0.9176041103299081,
+          "resize": 0.8615197404002163,
+          "base": 1.0,
+          "group": 0.8660627366143862,
+          "control": 1.0138453217955652
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_500000_cycle",
+        "median_cpu_ns": {
+          "resize": 19036000,
+          "group": 19090000,
+          "control": 22352000,
+          "index32": 19889000,
+          "base": 22036000,
+          "reverse": 20026000
+        },
+        "ratio_to_before": {
+          "resize": 0.8638591395897622,
+          "group": 0.8663096750771465,
+          "control": 1.0143401706298785,
+          "index32": 0.9025685242330731,
+          "base": 1.0,
+          "reverse": 0.9087856235251407
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_500000_empty",
+        "median_cpu_ns": {
+          "resize": 22281000,
+          "control": 28043000,
+          "base": 27988000,
+          "reverse": 26158000,
+          "index32": 26227000,
+          "group": 22581000
+        },
+        "ratio_to_before": {
+          "resize": 0.7960911819351151,
+          "control": 1.0019651279119623,
+          "base": 1.0,
+          "reverse": 0.9346148349292553,
+          "index32": 0.9370801772188081,
+          "group": 0.8068100614549093
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_500000_dag",
+        "median_cpu_ns": {
+          "group": 65530000,
+          "base": 66085000,
+          "resize": 65901000,
+          "index32": 60868000,
+          "control": 66035000,
+          "reverse": 61504000
+        },
+        "ratio_to_before": {
+          "group": 0.9916017250510706,
+          "base": 1.0,
+          "resize": 0.9972157070439586,
+          "index32": 0.9210562154800636,
+          "control": 0.9992433986532496,
+          "reverse": 0.9306801846107287
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_500000_paired",
+        "median_cpu_ns": {
+          "reverse": 24129000,
+          "group": 23740000,
+          "control": 26386000,
+          "base": 26354000,
+          "index32": 24017000,
+          "resize": 24384000
+        },
+        "ratio_to_before": {
+          "reverse": 0.9155725886013508,
+          "group": 0.900812020945587,
+          "control": 1.0012142369279806,
+          "base": 1.0,
+          "index32": 0.9113227593534189,
+          "resize": 0.925248539121196
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_500000_star",
+        "median_cpu_ns": {
+          "index32": 32497000,
+          "control": 34325000,
+          "reverse": 32899000,
+          "resize": 30621000,
+          "group": 30576000,
+          "base": 34790000
+        },
+        "ratio_to_before": {
+          "index32": 0.9340902558206381,
+          "control": 0.9866340902558206,
+          "reverse": 0.9456453003736706,
+          "resize": 0.8801667145731532,
+          "group": 0.8788732394366198,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_4096_line",
+        "median_cpu_ns": {
+          "control": 1217000,
+          "base": 1216000,
+          "index32": 1267000,
+          "resize": 1313000,
+          "reverse": 1283000,
+          "group": 1201000
+        },
+        "ratio_to_before": {
+          "control": 1.0008223684210527,
+          "base": 1.0,
+          "index32": 1.0419407894736843,
+          "resize": 1.0797697368421053,
+          "reverse": 1.0550986842105263,
+          "group": 0.9876644736842105
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_4096_dag",
+        "median_cpu_ns": {
+          "base": 1313000,
+          "resize": 1326000,
+          "reverse": 1289000,
+          "index32": 1299000,
+          "control": 1296000,
+          "group": 1303000
+        },
+        "ratio_to_before": {
+          "base": 1.0,
+          "resize": 1.00990099009901,
+          "reverse": 0.9817212490479817,
+          "index32": 0.9893373952779894,
+          "control": 0.9870525514089871,
+          "group": 0.9923838537699924
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_4096_cycle",
+        "median_cpu_ns": {
+          "resize": 1084000,
+          "control": 1079000,
+          "group": 1188000,
+          "base": 1189000,
+          "index32": 1159000,
+          "reverse": 1088000
+        },
+        "ratio_to_before": {
+          "resize": 0.911690496215307,
+          "control": 0.9074852817493693,
+          "group": 0.9991589571068125,
+          "base": 1.0,
+          "index32": 0.9747687132043734,
+          "reverse": 0.9150546677880572
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_32_dag",
+        "median_cpu_ns": {
+          "control": 920000,
+          "base": 914000,
+          "reverse": 915000,
+          "group": 941000,
+          "resize": 956000,
+          "index32": 932000
+        },
+        "ratio_to_before": {
+          "control": 1.0065645514223194,
+          "base": 1.0,
+          "reverse": 1.00109409190372,
+          "group": 1.0295404814004376,
+          "resize": 1.0459518599562363,
+          "index32": 1.0196936542669583
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_random_0",
+        "median_cpu_ns": {
+          "control": 40320000,
+          "index32": 37814000,
+          "resize": 37186000,
+          "group": 36655000,
+          "reverse": 36888000,
+          "base": 40450000
+        },
+        "ratio_to_before": {
+          "control": 0.9967861557478368,
+          "index32": 0.9348331273176761,
+          "resize": 0.9193077873918418,
+          "group": 0.9061804697156984,
+          "reverse": 0.9119406674907293,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_random_1",
+        "median_cpu_ns": {
+          "index32": 40606000,
+          "control": 44741000,
+          "reverse": 40617000,
+          "group": 40037000,
+          "base": 44014000,
+          "resize": 40787000
+        },
+        "ratio_to_before": {
+          "index32": 0.9225700913345753,
+          "control": 1.0165174717135457,
+          "reverse": 0.9228200118144226,
+          "group": 0.9096423865133821,
+          "base": 1.0,
+          "resize": 0.926682419230245
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_random_2",
+        "median_cpu_ns": {
+          "base": 12679000,
+          "control": 12657000,
+          "group": 11995000,
+          "reverse": 12037000,
+          "resize": 11895000,
+          "index32": 11969000
+        },
+        "ratio_to_before": {
+          "base": 1.0,
+          "control": 0.9982648473854405,
+          "group": 0.9460525278018771,
+          "reverse": 0.949365091884218,
+          "resize": 0.9381654704629703,
+          "index32": 0.9440018928937614
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_random_3",
+        "median_cpu_ns": {
+          "index32": 23036000,
+          "resize": 21877000,
+          "base": 24816000,
+          "reverse": 23138000,
+          "control": 24733000,
+          "group": 22314000
+        },
+        "ratio_to_before": {
+          "index32": 0.9282720825274017,
+          "resize": 0.8815683430045133,
+          "base": 1.0,
+          "reverse": 0.9323823339780787,
+          "control": 0.9966553836234687,
+          "group": 0.8991779497098646
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_random_4",
+        "median_cpu_ns": {
+          "resize": 18736000,
+          "base": 19636000,
+          "index32": 18642000,
+          "reverse": 18559000,
+          "group": 18733000,
+          "control": 19801000
+        },
+        "ratio_to_before": {
+          "resize": 0.9541658178855164,
+          "base": 1.0,
+          "index32": 0.9493786921980036,
+          "reverse": 0.945151762069668,
+          "group": 0.9540130372784681,
+          "control": 1.0084029333876554
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_max_random_0",
+        "median_cpu_ns": {
+          "resize": 47024000,
+          "base": 50799000,
+          "group": 45557000,
+          "control": 51393000,
+          "reverse": 45941000,
+          "index32": 46179000
+        },
+        "ratio_to_before": {
+          "resize": 0.925687513533731,
+          "base": 1.0,
+          "group": 0.896808992302998,
+          "control": 1.0116931435658183,
+          "reverse": 0.9043681962243352,
+          "index32": 0.9090533278214138
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_max_random_1",
+        "median_cpu_ns": {
+          "index32": 46299000,
+          "resize": 46737000,
+          "group": 45626000,
+          "control": 50851000,
+          "base": 51331000,
+          "reverse": 46571000
+        },
+        "ratio_to_before": {
+          "index32": 0.9019695700453917,
+          "resize": 0.9105024254349223,
+          "group": 0.8888585844811128,
+          "control": 0.9906489256005143,
+          "base": 1.0,
+          "reverse": 0.9072685122051002
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_max_random_2",
+        "median_cpu_ns": {
+          "resize": 46787000,
+          "group": 45646000,
+          "index32": 46393000,
+          "control": 50729000,
+          "base": 51536000,
+          "reverse": 46392000
+        },
+        "ratio_to_before": {
+          "resize": 0.9078508227258615,
+          "group": 0.8857109593294008,
+          "index32": 0.9002056814653834,
+          "control": 0.9843410431542999,
+          "base": 1.0,
+          "reverse": 0.9001862775535548
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_max_random_3",
+        "median_cpu_ns": {
+          "control": 51750000,
+          "base": 51512000,
+          "group": 45691000,
+          "resize": 47064000,
+          "index32": 46356000,
+          "reverse": 46586000
+        },
+        "ratio_to_before": {
+          "control": 1.0046202826525858,
+          "base": 1.0,
+          "group": 0.8869972045348656,
+          "resize": 0.9136511880726821,
+          "index32": 0.8999068178288554,
+          "reverse": 0.904371796862867
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_max_random_4",
+        "median_cpu_ns": {
+          "group": 46306000,
+          "resize": 47237000,
+          "control": 51969000,
+          "base": 52340000,
+          "index32": 46519000,
+          "reverse": 47110000
+        },
+        "ratio_to_before": {
+          "group": 0.884715322888804,
+          "resize": 0.9025028658769584,
+          "control": 0.9929117309896829,
+          "base": 1.0,
+          "index32": 0.88878486816966,
+          "reverse": 0.9000764233855559
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_large_cycle_0",
+        "median_cpu_ns": {
+          "base": 31744000,
+          "control": 31580000,
+          "resize": 26514000,
+          "reverse": 27550000,
+          "group": 26604000,
+          "index32": 27611000
+        },
+        "ratio_to_before": {
+          "base": 1.0,
+          "control": 0.9948336693548387,
+          "resize": 0.8352444556451613,
+          "reverse": 0.8678805443548387,
+          "group": 0.8380796370967742,
+          "index32": 0.8698021673387096
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_500000_line",
+        "median_cpu_ns": {
+          "group": 31800000,
+          "reverse": 33921000,
+          "resize": 31888000,
+          "base": 37970000,
+          "control": 37696000,
+          "index32": 34064000
+        },
+        "ratio_to_before": {
+          "group": 0.8375032920726889,
+          "reverse": 0.8933631814590466,
+          "resize": 0.8398209112457203,
+          "base": 1.0,
+          "control": 0.9927837766657888,
+          "index32": 0.8971293126152226
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_500000_cycle",
+        "median_cpu_ns": {
+          "group": 19814000,
+          "reverse": 21143000,
+          "resize": 19770000,
+          "index32": 21065000,
+          "base": 24064000,
+          "control": 23414000
+        },
+        "ratio_to_before": {
+          "group": 0.8233876329787234,
+          "reverse": 0.8786153590425532,
+          "resize": 0.8215591755319149,
+          "index32": 0.8753740026595744,
+          "base": 1.0,
+          "control": 0.9729886968085106
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_500000_empty",
+        "median_cpu_ns": {
+          "resize": 21089000,
+          "reverse": 25037000,
+          "control": 27217000,
+          "index32": 25705000,
+          "group": 21507000,
+          "base": 26881000
+        },
+        "ratio_to_before": {
+          "resize": 0.7845318254529221,
+          "reverse": 0.9314013615564897,
+          "control": 1.0124995349875376,
+          "index32": 0.9562516275436181,
+          "group": 0.8000818421933708,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_500000_dag",
+        "median_cpu_ns": {
+          "resize": 68069000,
+          "group": 67768000,
+          "base": 66943000,
+          "reverse": 62391000,
+          "index32": 61854000,
+          "control": 66272000
+        },
+        "ratio_to_before": {
+          "resize": 1.0168202799396502,
+          "group": 1.0123239173625322,
+          "base": 1.0,
+          "reverse": 0.9320018523221248,
+          "index32": 0.9239801024752401,
+          "control": 0.9899765472118071
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_500000_paired",
+        "median_cpu_ns": {
+          "base": 26710000,
+          "resize": 24720000,
+          "control": 27150000,
+          "group": 24196000,
+          "reverse": 24509000,
+          "index32": 24737000
+        },
+        "ratio_to_before": {
+          "base": 1.0,
+          "resize": 0.9254960688880569,
+          "control": 1.0164732309996256,
+          "group": 0.9058779483339573,
+          "reverse": 0.9175964058405092,
+          "index32": 0.9261325346312242
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_500000_star",
+        "median_cpu_ns": {
+          "index32": 33218000,
+          "resize": 30922000,
+          "reverse": 32549000,
+          "control": 34947000,
+          "group": 30841000,
+          "base": 35164000
+        },
+        "ratio_to_before": {
+          "index32": 0.9446593106586282,
+          "resize": 0.8793652599249232,
+          "reverse": 0.9256341713115687,
+          "control": 0.9938289159367535,
+          "group": 0.8770617677169833,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_4096_line",
+        "median_cpu_ns": {
+          "base": 1144000,
+          "resize": 1130000,
+          "group": 1121000,
+          "reverse": 1175000,
+          "control": 1151000,
+          "index32": 1165000
+        },
+        "ratio_to_before": {
+          "base": 1.0,
+          "resize": 0.9877622377622378,
+          "group": 0.9798951048951049,
+          "reverse": 1.027097902097902,
+          "control": 1.006118881118881,
+          "index32": 1.0183566433566433
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_4096_dag",
+        "median_cpu_ns": {
+          "group": 1318000,
+          "base": 1308000,
+          "reverse": 1333000,
+          "control": 1297000,
+          "index32": 1319000,
+          "resize": 1316000
+        },
+        "ratio_to_before": {
+          "group": 1.007645259938838,
+          "base": 1.0,
+          "reverse": 1.019113149847095,
+          "control": 0.9915902140672783,
+          "index32": 1.0084097859327217,
+          "resize": 1.0061162079510704
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_4096_cycle",
+        "median_cpu_ns": {
+          "resize": 1027000,
+          "base": 1057000,
+          "control": 1057000,
+          "reverse": 1046000,
+          "index32": 1043000,
+          "group": 1034000
+        },
+        "ratio_to_before": {
+          "resize": 0.9716177861873226,
+          "base": 1.0,
+          "control": 1.0,
+          "reverse": 0.9895931882686849,
+          "index32": 0.9867549668874173,
+          "group": 0.978240302743614
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_32_dag",
+        "median_cpu_ns": {
+          "control": 896000,
+          "group": 894000,
+          "resize": 892000,
+          "reverse": 882000,
+          "index32": 880000,
+          "base": 888000
+        },
+        "ratio_to_before": {
+          "control": 1.009009009009009,
+          "group": 1.0067567567567568,
+          "resize": 1.0045045045045045,
+          "reverse": 0.9932432432432432,
+          "index32": 0.990990990990991,
+          "base": 1.0
+        }
+      }
+    ],
+    "API_before_allocation_ordering": [
+      {
+        "compiler": "gcc",
+        "n": 32,
+        "kind": "empty",
+        "mode": "build",
+        "median_cpu_ns": {
+          "group": 294000,
+          "control": 2730000,
+          "base": 2611000
+        },
+        "ratio_to_before": {
+          "group": 0.1126005361930295,
+          "control": 1.0455764075067024,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 32,
+        "kind": "empty",
+        "mode": "scc",
+        "median_cpu_ns": {
+          "base": 10165000,
+          "group": 8082000,
+          "control": 10270000
+        },
+        "ratio_to_before": {
+          "base": 1.0,
+          "group": 0.7950811608460403,
+          "control": 1.0103295622233153
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 32,
+        "kind": "line",
+        "mode": "build",
+        "median_cpu_ns": {
+          "control": 4965000,
+          "group": 3817000,
+          "base": 5014000
+        },
+        "ratio_to_before": {
+          "control": 0.9902273633825289,
+          "group": 0.761268448344635,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 32,
+        "kind": "line",
+        "mode": "scc",
+        "median_cpu_ns": {
+          "control": 12225000,
+          "base": 12210000,
+          "group": 11181000
+        },
+        "ratio_to_before": {
+          "control": 1.0012285012285012,
+          "base": 1.0,
+          "group": 0.9157248157248157
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 32,
+        "kind": "cycle",
+        "mode": "build",
+        "median_cpu_ns": {
+          "group": 3831000,
+          "base": 5047000,
+          "control": 5035000
+        },
+        "ratio_to_before": {
+          "group": 0.7590647909649296,
+          "base": 1.0,
+          "control": 0.9976223499108381
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 32,
+        "kind": "cycle",
+        "mode": "scc",
+        "median_cpu_ns": {
+          "base": 6179000,
+          "group": 4104000,
+          "control": 6193000
+        },
+        "ratio_to_before": {
+          "base": 1.0,
+          "group": 0.6641851432270593,
+          "control": 1.002265738792685
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 32,
+        "kind": "dag",
+        "mode": "build",
+        "median_cpu_ns": {
+          "control": 5153000,
+          "group": 4183000,
+          "base": 5103000
+        },
+        "ratio_to_before": {
+          "control": 1.009798157946306,
+          "group": 0.8197138937879679,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 32,
+        "kind": "dag",
+        "mode": "scc",
+        "median_cpu_ns": {
+          "control": 13009000,
+          "group": 10968000,
+          "base": 12940000
+        },
+        "ratio_to_before": {
+          "control": 1.0053323029366306,
+          "group": 0.8476043276661515,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 32,
+        "kind": "random",
+        "mode": "build",
+        "median_cpu_ns": {
+          "control": 5697000,
+          "group": 4454000,
+          "base": 5716000
+        },
+        "ratio_to_before": {
+          "control": 0.9966759972008398,
+          "group": 0.7792162351294611,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 32,
+        "kind": "random",
+        "mode": "scc",
+        "median_cpu_ns": {
+          "group": 7725000,
+          "control": 9241000,
+          "base": 9202000
+        },
+        "ratio_to_before": {
+          "group": 0.8394914149098022,
+          "control": 1.0042382090849815,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 32,
+        "kind": "paired",
+        "mode": "build",
+        "median_cpu_ns": {
+          "control": 3645000,
+          "base": 3624000,
+          "group": 2765000
+        },
+        "ratio_to_before": {
+          "control": 1.005794701986755,
+          "base": 1.0,
+          "group": 0.7629690949227373
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 32,
+        "kind": "paired",
+        "mode": "scc",
+        "median_cpu_ns": {
+          "control": 6459000,
+          "group": 5856000,
+          "base": 6551000
+        },
+        "ratio_to_before": {
+          "control": 0.9859563425431231,
+          "group": 0.8939093268203328,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 4096,
+        "kind": "empty",
+        "mode": "build",
+        "median_cpu_ns": {
+          "group": 112000,
+          "base": 1894000,
+          "control": 1888000
+        },
+        "ratio_to_before": {
+          "group": 0.059134107708553325,
+          "base": 1.0,
+          "control": 0.996832101372756
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 4096,
+        "kind": "empty",
+        "mode": "scc",
+        "median_cpu_ns": {
+          "group": 8974000,
+          "base": 11629000,
+          "control": 11615000
+        },
+        "ratio_to_before": {
+          "group": 0.7716914610026657,
+          "base": 1.0,
+          "control": 0.9987961131653624
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 4096,
+        "kind": "line",
+        "mode": "build",
+        "median_cpu_ns": {
+          "base": 4332000,
+          "group": 3422000,
+          "control": 4275000
+        },
+        "ratio_to_before": {
+          "base": 1.0,
+          "group": 0.7899353647276085,
+          "control": 0.9868421052631579
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 4096,
+        "kind": "line",
+        "mode": "scc",
+        "median_cpu_ns": {
+          "control": 15150000,
+          "base": 15132000,
+          "group": 11965000
+        },
+        "ratio_to_before": {
+          "control": 1.0011895321173672,
+          "base": 1.0,
+          "group": 0.7907084324610097
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 4096,
+        "kind": "cycle",
+        "mode": "build",
+        "median_cpu_ns": {
+          "control": 4607000,
+          "base": 4610000,
+          "group": 3888000
+        },
+        "ratio_to_before": {
+          "control": 0.999349240780911,
+          "base": 1.0,
+          "group": 0.8433839479392625
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 4096,
+        "kind": "cycle",
+        "mode": "scc",
+        "median_cpu_ns": {
+          "base": 5907000,
+          "group": 3985000,
+          "control": 5795000
+        },
+        "ratio_to_before": {
+          "base": 1.0,
+          "group": 0.6746233282546131,
+          "control": 0.9810394447265955
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 4096,
+        "kind": "dag",
+        "mode": "build",
+        "median_cpu_ns": {
+          "control": 11776000,
+          "base": 11712000,
+          "group": 7604000
+        },
+        "ratio_to_before": {
+          "control": 1.005464480874317,
+          "base": 1.0,
+          "group": 0.6492486338797814
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 4096,
+        "kind": "dag",
+        "mode": "scc",
+        "median_cpu_ns": {
+          "base": 22357000,
+          "group": 21394000,
+          "control": 22219000
+        },
+        "ratio_to_before": {
+          "base": 1.0,
+          "group": 0.9569262423402066,
+          "control": 0.993827436597039
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 4096,
+        "kind": "random",
+        "mode": "build",
+        "median_cpu_ns": {
+          "base": 13686000,
+          "control": 13715000,
+          "group": 7505000
+        },
+        "ratio_to_before": {
+          "base": 1.0,
+          "control": 1.0021189536752886,
+          "group": 0.5483705976910712
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 4096,
+        "kind": "random",
+        "mode": "scc",
+        "median_cpu_ns": {
+          "group": 11698000,
+          "base": 17989000,
+          "control": 17940000
+        },
+        "ratio_to_before": {
+          "group": 0.6502862860637056,
+          "base": 1.0,
+          "control": 0.9972761131802769
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 4096,
+        "kind": "paired",
+        "mode": "build",
+        "median_cpu_ns": {
+          "group": 1983000,
+          "control": 3018000,
+          "base": 2921000
+        },
+        "ratio_to_before": {
+          "group": 0.6788770968846286,
+          "control": 1.0332078055460459,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 4096,
+        "kind": "paired",
+        "mode": "scc",
+        "median_cpu_ns": {
+          "base": 8116000,
+          "control": 7946000,
+          "group": 6899000
+        },
+        "ratio_to_before": {
+          "base": 1.0,
+          "control": 0.9790537210448497,
+          "group": 0.8500492853622474
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 500000,
+        "kind": "empty",
+        "mode": "build",
+        "median_cpu_ns": {
+          "control": 10924000,
+          "base": 10924000,
+          "group": 1321000
+        },
+        "ratio_to_before": {
+          "control": 1.0,
+          "base": 1.0,
+          "group": 0.12092640058586598
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 500000,
+        "kind": "empty",
+        "mode": "scc",
+        "median_cpu_ns": {
+          "control": 47688000,
+          "base": 47178000,
+          "group": 31716000
+        },
+        "ratio_to_before": {
+          "control": 1.0108101233625844,
+          "base": 1.0,
+          "group": 0.6722624952308279
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 500000,
+        "kind": "line",
+        "mode": "build",
+        "median_cpu_ns": {
+          "group": 12568000,
+          "control": 19466000,
+          "base": 19491000
+        },
+        "ratio_to_before": {
+          "group": 0.6448104253245087,
+          "control": 0.9987173567287466,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 500000,
+        "kind": "line",
+        "mode": "scc",
+        "median_cpu_ns": {
+          "control": 54807000,
+          "group": 42913000,
+          "base": 55025000
+        },
+        "ratio_to_before": {
+          "control": 0.9960381644706952,
+          "group": 0.7798818718764198,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 500000,
+        "kind": "cycle",
+        "mode": "build",
+        "median_cpu_ns": {
+          "control": 20207000,
+          "group": 13818000,
+          "base": 20397000
+        },
+        "ratio_to_before": {
+          "control": 0.9906849046428396,
+          "group": 0.677452566553905,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 500000,
+        "kind": "cycle",
+        "mode": "scc",
+        "median_cpu_ns": {
+          "control": 22961000,
+          "group": 13641000,
+          "base": 22857000
+        },
+        "ratio_to_before": {
+          "control": 1.0045500284376778,
+          "group": 0.5967974799842499,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 500000,
+        "kind": "dag",
+        "mode": "build",
+        "median_cpu_ns": {
+          "base": 75170000,
+          "group": 61650000,
+          "control": 75395000
+        },
+        "ratio_to_before": {
+          "base": 1.0,
+          "group": 0.8201410137022749,
+          "control": 1.0029932153784755
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 500000,
+        "kind": "dag",
+        "mode": "scc",
+        "median_cpu_ns": {
+          "control": 114749000,
+          "base": 114746000,
+          "group": 111442000
+        },
+        "ratio_to_before": {
+          "control": 1.0000261447022118,
+          "base": 1.0,
+          "group": 0.9712059679640249
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 500000,
+        "kind": "random",
+        "mode": "build",
+        "median_cpu_ns": {
+          "control": 95788000,
+          "base": 95424000,
+          "group": 79852000
+        },
+        "ratio_to_before": {
+          "control": 1.0038145539906103,
+          "base": 1.0,
+          "group": 0.8368125419181757
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 500000,
+        "kind": "random",
+        "mode": "scc",
+        "median_cpu_ns": {
+          "base": 106582000,
+          "group": 91889000,
+          "control": 106839000
+        },
+        "ratio_to_before": {
+          "base": 1.0,
+          "group": 0.8621437015631157,
+          "control": 1.0024112889606125
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 500000,
+        "kind": "paired",
+        "mode": "build",
+        "median_cpu_ns": {
+          "base": 12570000,
+          "control": 12612000,
+          "group": 7268000
+        },
+        "ratio_to_before": {
+          "base": 1.0,
+          "control": 1.0033412887828161,
+          "group": 0.5782020684168655
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 500000,
+        "kind": "paired",
+        "mode": "scc",
+        "median_cpu_ns": {
+          "control": 27036000,
+          "group": 23276000,
+          "base": 26853000
+        },
+        "ratio_to_before": {
+          "control": 1.0068148810188806,
+          "group": 0.8667932819424273,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 4096,
+        "kind": "line",
+        "mode": "constructor",
+        "median_cpu_ns": {
+          "base": 4744000,
+          "group": 3314000,
+          "control": 4575000
+        },
+        "ratio_to_before": {
+          "base": 1.0,
+          "group": 0.698566610455312,
+          "control": 0.9643760539629005
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 4096,
+        "kind": "random",
+        "mode": "constructor",
+        "median_cpu_ns": {
+          "base": 13126000,
+          "group": 9789000,
+          "control": 13040000
+        },
+        "ratio_to_before": {
+          "base": 1.0,
+          "group": 0.7457717507237543,
+          "control": 0.9934481182386103
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 4096,
+        "kind": "line",
+        "mode": "condensation",
+        "median_cpu_ns": {
+          "control": 15120000,
+          "base": 15077000,
+          "group": 16082000
+        },
+        "ratio_to_before": {
+          "control": 1.0028520262651721,
+          "base": 1.0,
+          "group": 1.0666578231743715
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 4096,
+        "kind": "random",
+        "mode": "condensation",
+        "median_cpu_ns": {
+          "group": 9066000,
+          "control": 9176000,
+          "base": 9172000
+        },
+        "ratio_to_before": {
+          "group": 0.9884430876580899,
+          "control": 1.0004361098996948,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 4096,
+        "kind": "paired",
+        "mode": "condensation",
+        "median_cpu_ns": {
+          "group": 513000,
+          "control": 507000,
+          "base": 505000
+        },
+        "ratio_to_before": {
+          "group": 1.0158415841584159,
+          "control": 1.003960396039604,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 500000,
+        "kind": "line",
+        "mode": "constructor",
+        "median_cpu_ns": {
+          "base": 21456000,
+          "control": 21439000,
+          "group": 16114000
+        },
+        "ratio_to_before": {
+          "base": 1.0,
+          "control": 0.9992076808351976,
+          "group": 0.7510253542132737
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 500000,
+        "kind": "random",
+        "mode": "constructor",
+        "median_cpu_ns": {
+          "control": 76993000,
+          "group": 64522000,
+          "base": 77045000
+        },
+        "ratio_to_before": {
+          "control": 0.9993250697644234,
+          "group": 0.8374586280745019,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 500000,
+        "kind": "line",
+        "mode": "condensation",
+        "median_cpu_ns": {
+          "group": 50578000,
+          "control": 51290000,
+          "base": 51401000
+        },
+        "ratio_to_before": {
+          "group": 0.9839886383533394,
+          "control": 0.9978405089395148,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 500000,
+        "kind": "random",
+        "mode": "condensation",
+        "median_cpu_ns": {
+          "group": 31570000,
+          "base": 30412000,
+          "control": 30399000
+        },
+        "ratio_to_before": {
+          "group": 1.0380770748388795,
+          "base": 1.0,
+          "control": 0.9995725371563856
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 500000,
+        "kind": "paired",
+        "mode": "condensation",
+        "median_cpu_ns": {
+          "base": 3526000,
+          "group": 3744000,
+          "control": 3501000
+        },
+        "ratio_to_before": {
+          "base": 1.0,
+          "group": 1.0618264322178106,
+          "control": 0.9929098128190584
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 32,
+        "kind": "empty",
+        "mode": "sat",
+        "median_cpu_ns": {
+          "control": 4815000,
+          "base": 4960000,
+          "group": 1016000
+        },
+        "ratio_to_before": {
+          "control": 0.9707661290322581,
+          "base": 1.0,
+          "group": 0.20483870967741935
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 32,
+        "kind": "line",
+        "mode": "sat",
+        "median_cpu_ns": {
+          "group": 6208000,
+          "base": 8380000,
+          "control": 8328000
+        },
+        "ratio_to_before": {
+          "group": 0.7408114558472554,
+          "base": 1.0,
+          "control": 0.9937947494033413
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 32,
+        "kind": "random",
+        "mode": "sat",
+        "median_cpu_ns": {
+          "base": 10877000,
+          "control": 10854000,
+          "group": 8514000
+        },
+        "ratio_to_before": {
+          "base": 1.0,
+          "control": 0.9978854463546933,
+          "group": 0.7827525972234991
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 4096,
+        "kind": "empty",
+        "mode": "sat",
+        "median_cpu_ns": {
+          "group": 476000,
+          "base": 7375000,
+          "control": 7364000
+        },
+        "ratio_to_before": {
+          "group": 0.06454237288135593,
+          "base": 1.0,
+          "control": 0.9985084745762712
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 4096,
+        "kind": "line",
+        "mode": "sat",
+        "median_cpu_ns": {
+          "base": 10733000,
+          "group": 6595000,
+          "control": 10603000
+        },
+        "ratio_to_before": {
+          "base": 1.0,
+          "group": 0.6144600763998882,
+          "control": 0.9878878226031864
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 4096,
+        "kind": "random",
+        "mode": "sat",
+        "median_cpu_ns": {
+          "control": 35019000,
+          "group": 26966000,
+          "base": 34888000
+        },
+        "ratio_to_before": {
+          "control": 1.0037548727356111,
+          "group": 0.7729305205228159,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 250000,
+        "kind": "empty",
+        "mode": "sat",
+        "median_cpu_ns": {
+          "group": 1413000,
+          "control": 13211000,
+          "base": 13286000
+        },
+        "ratio_to_before": {
+          "group": 0.10635255155803101,
+          "control": 0.9943549601083848,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 250000,
+        "kind": "line",
+        "mode": "sat",
+        "median_cpu_ns": {
+          "group": 13308000,
+          "control": 19126000,
+          "base": 19147000
+        },
+        "ratio_to_before": {
+          "group": 0.6950436099650076,
+          "control": 0.9989032224369353,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 250000,
+        "kind": "random",
+        "mode": "sat",
+        "median_cpu_ns": {
+          "base": 114023000,
+          "group": 84624000,
+          "control": 104875000
+        },
+        "ratio_to_before": {
+          "base": 1.0,
+          "group": 0.7421660542171317,
+          "control": 0.9197705726037729
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 32,
+        "kind": "empty",
+        "mode": "build",
+        "median_cpu_ns": {
+          "group": 214000,
+          "base": 2563000,
+          "control": 2545000
+        },
+        "ratio_to_before": {
+          "group": 0.08349590323839251,
+          "base": 1.0,
+          "control": 0.9929769801014436
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 32,
+        "kind": "empty",
+        "mode": "scc",
+        "median_cpu_ns": {
+          "control": 10382000,
+          "group": 8225000,
+          "base": 10310000
+        },
+        "ratio_to_before": {
+          "control": 1.0069835111542191,
+          "group": 0.7977691561590688,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 32,
+        "kind": "line",
+        "mode": "build",
+        "median_cpu_ns": {
+          "control": 5035000,
+          "group": 3775000,
+          "base": 5037000
+        },
+        "ratio_to_before": {
+          "control": 0.9996029382568989,
+          "group": 0.749454040103236,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 32,
+        "kind": "line",
+        "mode": "scc",
+        "median_cpu_ns": {
+          "base": 12209000,
+          "group": 10643000,
+          "control": 12282000
+        },
+        "ratio_to_before": {
+          "base": 1.0,
+          "group": 0.8717339667458432,
+          "control": 1.0059791956753215
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 32,
+        "kind": "cycle",
+        "mode": "build",
+        "median_cpu_ns": {
+          "base": 5505000,
+          "control": 5509000,
+          "group": 3675000
+        },
+        "ratio_to_before": {
+          "base": 1.0,
+          "control": 1.0007266121707539,
+          "group": 0.667574931880109
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 32,
+        "kind": "cycle",
+        "mode": "scc",
+        "median_cpu_ns": {
+          "control": 7192000,
+          "base": 7194000,
+          "group": 4149000
+        },
+        "ratio_to_before": {
+          "control": 0.9997219905476786,
+          "base": 1.0,
+          "group": 0.5767306088407006
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 32,
+        "kind": "dag",
+        "mode": "build",
+        "median_cpu_ns": {
+          "base": 4818000,
+          "control": 4797000,
+          "group": 4070000
+        },
+        "ratio_to_before": {
+          "base": 1.0,
+          "control": 0.9956413449564134,
+          "group": 0.8447488584474886
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 32,
+        "kind": "dag",
+        "mode": "scc",
+        "median_cpu_ns": {
+          "control": 12410000,
+          "base": 12384000,
+          "group": 11097000
+        },
+        "ratio_to_before": {
+          "control": 1.0020994832041343,
+          "base": 1.0,
+          "group": 0.8960755813953488
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 32,
+        "kind": "random",
+        "mode": "build",
+        "median_cpu_ns": {
+          "control": 4994000,
+          "base": 5067000,
+          "group": 4057000
+        },
+        "ratio_to_before": {
+          "control": 0.9855930530886126,
+          "base": 1.0,
+          "group": 0.8006710084862838
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 32,
+        "kind": "random",
+        "mode": "scc",
+        "median_cpu_ns": {
+          "control": 8604000,
+          "base": 8593000,
+          "group": 7349000
+        },
+        "ratio_to_before": {
+          "control": 1.001280111718841,
+          "base": 1.0,
+          "group": 0.8552310019783544
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 32,
+        "kind": "paired",
+        "mode": "build",
+        "median_cpu_ns": {
+          "control": 3752000,
+          "base": 3770000,
+          "group": 3046000
+        },
+        "ratio_to_before": {
+          "control": 0.9952254641909815,
+          "base": 1.0,
+          "group": 0.8079575596816976
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 32,
+        "kind": "paired",
+        "mode": "scc",
+        "median_cpu_ns": {
+          "control": 6928000,
+          "base": 6973000,
+          "group": 5959000
+        },
+        "ratio_to_before": {
+          "control": 0.9935465366413309,
+          "base": 1.0,
+          "group": 0.854581958984655
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 4096,
+        "kind": "empty",
+        "mode": "build",
+        "median_cpu_ns": {
+          "base": 1678000,
+          "group": 47000,
+          "control": 1671000
+        },
+        "ratio_to_before": {
+          "base": 1.0,
+          "group": 0.02800953516090584,
+          "control": 0.9958283671036948
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 4096,
+        "kind": "empty",
+        "mode": "scc",
+        "median_cpu_ns": {
+          "base": 10381000,
+          "group": 8663000,
+          "control": 10472000
+        },
+        "ratio_to_before": {
+          "base": 1.0,
+          "group": 0.8345053463057509,
+          "control": 1.0087660148347943
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 4096,
+        "kind": "line",
+        "mode": "build",
+        "median_cpu_ns": {
+          "group": 2928000,
+          "control": 4435000,
+          "base": 4454000
+        },
+        "ratio_to_before": {
+          "group": 0.6573866187696452,
+          "control": 0.9957341715312079,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 4096,
+        "kind": "line",
+        "mode": "scc",
+        "median_cpu_ns": {
+          "group": 11199000,
+          "control": 14003000,
+          "base": 14177000
+        },
+        "ratio_to_before": {
+          "group": 0.7899414544685053,
+          "control": 0.9877265994215984,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 4096,
+        "kind": "cycle",
+        "mode": "build",
+        "median_cpu_ns": {
+          "control": 4635000,
+          "base": 4717000,
+          "group": 3224000
+        },
+        "ratio_to_before": {
+          "control": 0.9826160695357219,
+          "base": 1.0,
+          "group": 0.6834852660589358
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 4096,
+        "kind": "cycle",
+        "mode": "scc",
+        "median_cpu_ns": {
+          "group": 3336000,
+          "control": 6346000,
+          "base": 6181000
+        },
+        "ratio_to_before": {
+          "group": 0.5397184921533732,
+          "control": 1.0266947095939167,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 4096,
+        "kind": "dag",
+        "mode": "build",
+        "median_cpu_ns": {
+          "base": 11249000,
+          "control": 11170000,
+          "group": 10056000
+        },
+        "ratio_to_before": {
+          "base": 1.0,
+          "control": 0.9929771535247578,
+          "group": 0.8939461285447595
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 4096,
+        "kind": "dag",
+        "mode": "scc",
+        "median_cpu_ns": {
+          "control": 20547000,
+          "group": 22767000,
+          "base": 20605000
+        },
+        "ratio_to_before": {
+          "control": 0.9971851492356224,
+          "group": 1.1049259888376608,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 4096,
+        "kind": "random",
+        "mode": "build",
+        "median_cpu_ns": {
+          "base": 12895000,
+          "control": 12774000,
+          "group": 10727000
+        },
+        "ratio_to_before": {
+          "base": 1.0,
+          "control": 0.9906165180302443,
+          "group": 0.8318728189220628
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 4096,
+        "kind": "random",
+        "mode": "scc",
+        "median_cpu_ns": {
+          "group": 14665000,
+          "base": 16814000,
+          "control": 16817000
+        },
+        "ratio_to_before": {
+          "group": 0.8721898417985012,
+          "base": 1.0,
+          "control": 1.0001784227429522
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 4096,
+        "kind": "paired",
+        "mode": "build",
+        "median_cpu_ns": {
+          "group": 2009000,
+          "base": 3006000,
+          "control": 3058000
+        },
+        "ratio_to_before": {
+          "group": 0.66833000665336,
+          "base": 1.0,
+          "control": 1.0172987358616101
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 4096,
+        "kind": "paired",
+        "mode": "scc",
+        "median_cpu_ns": {
+          "group": 6798000,
+          "base": 7855000,
+          "control": 7943000
+        },
+        "ratio_to_before": {
+          "group": 0.8654360280076384,
+          "base": 1.0,
+          "control": 1.0112030553787397
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 500000,
+        "kind": "empty",
+        "mode": "build",
+        "median_cpu_ns": {
+          "group": 1185000,
+          "control": 9960000,
+          "base": 9946000
+        },
+        "ratio_to_before": {
+          "group": 0.11914337422079228,
+          "control": 1.0014076010456465,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 500000,
+        "kind": "empty",
+        "mode": "scc",
+        "median_cpu_ns": {
+          "control": 46266000,
+          "base": 46494000,
+          "group": 30991000
+        },
+        "ratio_to_before": {
+          "control": 0.9950961414376048,
+          "base": 1.0,
+          "group": 0.6665591259087194
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 500000,
+        "kind": "line",
+        "mode": "build",
+        "median_cpu_ns": {
+          "group": 11323000,
+          "base": 18311000,
+          "control": 18361000
+        },
+        "ratio_to_before": {
+          "group": 0.6183714707006718,
+          "base": 1.0,
+          "control": 1.0027305990934412
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 500000,
+        "kind": "line",
+        "mode": "scc",
+        "median_cpu_ns": {
+          "group": 40205000,
+          "control": 51637000,
+          "base": 51612000
+        },
+        "ratio_to_before": {
+          "group": 0.7789855072463768,
+          "control": 1.0004843834767108,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 500000,
+        "kind": "cycle",
+        "mode": "build",
+        "median_cpu_ns": {
+          "control": 19859000,
+          "base": 19831000,
+          "group": 12055000
+        },
+        "ratio_to_before": {
+          "control": 1.0014119308153901,
+          "base": 1.0,
+          "group": 0.6078866421259644
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 500000,
+        "kind": "cycle",
+        "mode": "scc",
+        "median_cpu_ns": {
+          "base": 23635000,
+          "control": 23991000,
+          "group": 12338000
+        },
+        "ratio_to_before": {
+          "base": 1.0,
+          "control": 1.0150624074465835,
+          "group": 0.5220224243706367
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 500000,
+        "kind": "dag",
+        "mode": "build",
+        "median_cpu_ns": {
+          "base": 75261000,
+          "group": 63246000,
+          "control": 76331000
+        },
+        "ratio_to_before": {
+          "base": 1.0,
+          "group": 0.8403555626420058,
+          "control": 1.0142171908425346
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 500000,
+        "kind": "dag",
+        "mode": "scc",
+        "median_cpu_ns": {
+          "group": 113910000,
+          "control": 115923000,
+          "base": 116667000
+        },
+        "ratio_to_before": {
+          "group": 0.9763686389467459,
+          "control": 0.9936228753632133,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 500000,
+        "kind": "random",
+        "mode": "build",
+        "median_cpu_ns": {
+          "base": 100060000,
+          "group": 81596000,
+          "control": 100809000
+        },
+        "ratio_to_before": {
+          "base": 1.0,
+          "group": 0.8154707175694583,
+          "control": 1.0074855086947831
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 500000,
+        "kind": "random",
+        "mode": "scc",
+        "median_cpu_ns": {
+          "group": 93245000,
+          "control": 113284000,
+          "base": 112041000
+        },
+        "ratio_to_before": {
+          "group": 0.8322399835774404,
+          "control": 1.0110941530332647,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 500000,
+        "kind": "paired",
+        "mode": "build",
+        "median_cpu_ns": {
+          "group": 8104000,
+          "base": 13435000,
+          "control": 13453000
+        },
+        "ratio_to_before": {
+          "group": 0.6032005954596203,
+          "base": 1.0,
+          "control": 1.0013397841458875
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 500000,
+        "kind": "paired",
+        "mode": "scc",
+        "median_cpu_ns": {
+          "control": 28624000,
+          "group": 25135000,
+          "base": 28268000
+        },
+        "ratio_to_before": {
+          "control": 1.0125937455780387,
+          "group": 0.8891679637752936,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 4096,
+        "kind": "line",
+        "mode": "constructor",
+        "median_cpu_ns": {
+          "control": 4860000,
+          "base": 4960000,
+          "group": 3176000
+        },
+        "ratio_to_before": {
+          "control": 0.9798387096774194,
+          "base": 1.0,
+          "group": 0.6403225806451613
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 4096,
+        "kind": "random",
+        "mode": "constructor",
+        "median_cpu_ns": {
+          "base": 12538000,
+          "control": 12552000,
+          "group": 10724000
+        },
+        "ratio_to_before": {
+          "base": 1.0,
+          "control": 1.0011166055192215,
+          "group": 0.8553198277237198
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 4096,
+        "kind": "line",
+        "mode": "condensation",
+        "median_cpu_ns": {
+          "base": 14727000,
+          "control": 14757000,
+          "group": 15888000
+        },
+        "ratio_to_before": {
+          "base": 1.0,
+          "control": 1.0020370747606437,
+          "group": 1.0788347932369118
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 4096,
+        "kind": "random",
+        "mode": "condensation",
+        "median_cpu_ns": {
+          "group": 8701000,
+          "control": 8844000,
+          "base": 8836000
+        },
+        "ratio_to_before": {
+          "group": 0.9847215934812132,
+          "control": 1.0009053870529652,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 4096,
+        "kind": "paired",
+        "mode": "condensation",
+        "median_cpu_ns": {
+          "base": 335000,
+          "group": 338000,
+          "control": 333000
+        },
+        "ratio_to_before": {
+          "base": 1.0,
+          "group": 1.008955223880597,
+          "control": 0.9940298507462687
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 500000,
+        "kind": "line",
+        "mode": "constructor",
+        "median_cpu_ns": {
+          "group": 16489000,
+          "base": 22590000,
+          "control": 22583000
+        },
+        "ratio_to_before": {
+          "group": 0.7299247454625941,
+          "base": 1.0,
+          "control": 0.9996901283753873
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 500000,
+        "kind": "random",
+        "mode": "constructor",
+        "median_cpu_ns": {
+          "base": 83580000,
+          "group": 68209000,
+          "control": 81221000
+        },
+        "ratio_to_before": {
+          "base": 1.0,
+          "group": 0.8160923665948792,
+          "control": 0.9717755443886097
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 500000,
+        "kind": "line",
+        "mode": "condensation",
+        "median_cpu_ns": {
+          "control": 52681000,
+          "base": 53108000,
+          "group": 52013000
+        },
+        "ratio_to_before": {
+          "control": 0.9919597800707991,
+          "base": 1.0,
+          "group": 0.9793816374180915
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 500000,
+        "kind": "random",
+        "mode": "condensation",
+        "median_cpu_ns": {
+          "group": 31595000,
+          "base": 30562000,
+          "control": 30618000
+        },
+        "ratio_to_before": {
+          "group": 1.0338001439696356,
+          "base": 1.0,
+          "control": 1.0018323408153917
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 500000,
+        "kind": "paired",
+        "mode": "condensation",
+        "median_cpu_ns": {
+          "base": 3921000,
+          "group": 4455000,
+          "control": 3972000
+        },
+        "ratio_to_before": {
+          "base": 1.0,
+          "group": 1.1361897475133895,
+          "control": 1.0130068859984698
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 32,
+        "kind": "empty",
+        "mode": "sat",
+        "median_cpu_ns": {
+          "group": 609000,
+          "base": 4359000,
+          "control": 4358000
+        },
+        "ratio_to_before": {
+          "group": 0.1397109428768066,
+          "base": 1.0,
+          "control": 0.9997705895847672
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 32,
+        "kind": "line",
+        "mode": "sat",
+        "median_cpu_ns": {
+          "group": 5685000,
+          "base": 7925000,
+          "control": 7963000
+        },
+        "ratio_to_before": {
+          "group": 0.7173501577287066,
+          "base": 1.0,
+          "control": 1.004794952681388
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 32,
+        "kind": "random",
+        "mode": "sat",
+        "median_cpu_ns": {
+          "group": 7750000,
+          "base": 9781000,
+          "control": 9696000
+        },
+        "ratio_to_before": {
+          "group": 0.7923525201922094,
+          "base": 1.0,
+          "control": 0.9913096820366015
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 4096,
+        "kind": "empty",
+        "mode": "sat",
+        "median_cpu_ns": {
+          "control": 6709000,
+          "group": 273000,
+          "base": 6681000
+        },
+        "ratio_to_before": {
+          "control": 1.0041909893728485,
+          "group": 0.040862146385271664,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 4096,
+        "kind": "line",
+        "mode": "sat",
+        "median_cpu_ns": {
+          "base": 10664000,
+          "control": 10662000,
+          "group": 6489000
+        },
+        "ratio_to_before": {
+          "base": 1.0,
+          "control": 0.9998124531132783,
+          "group": 0.6084958739684921
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 4096,
+        "kind": "random",
+        "mode": "sat",
+        "median_cpu_ns": {
+          "base": 34288000,
+          "group": 27930000,
+          "control": 34234000
+        },
+        "ratio_to_before": {
+          "base": 1.0,
+          "group": 0.8145706952869809,
+          "control": 0.9984251049930004
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 250000,
+        "kind": "empty",
+        "mode": "sat",
+        "median_cpu_ns": {
+          "control": 12717000,
+          "group": 1191000,
+          "base": 12888000
+        },
+        "ratio_to_before": {
+          "control": 0.986731843575419,
+          "group": 0.09241154562383613,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 250000,
+        "kind": "line",
+        "mode": "sat",
+        "median_cpu_ns": {
+          "control": 19667000,
+          "group": 13542000,
+          "base": 19680000
+        },
+        "ratio_to_before": {
+          "control": 0.999339430894309,
+          "group": 0.688109756097561,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 250000,
+        "kind": "random",
+        "mode": "sat",
+        "median_cpu_ns": {
+          "control": 110375000,
+          "group": 86589000,
+          "base": 108930000
+        },
+        "ratio_to_before": {
+          "control": 1.0132653997980354,
+          "group": 0.7949049848526577,
+          "base": 1.0
+        }
+      }
+    ],
+    "final_main_allocation_ordering": [
+      {
+        "compiler": "gcc",
+        "case": "official_max_random_0",
+        "median_cpu_ns": {
+          "order_resize": 45789000,
+          "control": 51841000,
+          "order_reserve": 45538000,
+          "group": 45897000,
+          "base": 52388000
+        },
+        "ratio_to_before": {
+          "order_resize": 0.8740360387875086,
+          "control": 0.9895586775597465,
+          "order_reserve": 0.8692448652363136,
+          "group": 0.8760975795983813,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_max_random_2",
+        "median_cpu_ns": {
+          "order_resize": 45766000,
+          "base": 50428000,
+          "order_reserve": 45725000,
+          "control": 50397000,
+          "group": 45736000
+        },
+        "ratio_to_before": {
+          "order_resize": 0.9075513603553581,
+          "base": 1.0,
+          "order_reserve": 0.906738319980963,
+          "control": 0.9993852621559451,
+          "group": 0.9069564527643372
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_random_2",
+        "median_cpu_ns": {
+          "group": 10688000,
+          "order_resize": 10633000,
+          "order_reserve": 10601000,
+          "base": 11169000,
+          "control": 11111000
+        },
+        "ratio_to_before": {
+          "group": 0.9569343719222849,
+          "order_resize": 0.9520100277553945,
+          "order_reserve": 0.9491449547855672,
+          "base": 1.0,
+          "control": 0.9948070552421882
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_large_cycle_0",
+        "median_cpu_ns": {
+          "order_resize": 24947000,
+          "base": 28558000,
+          "control": 28603000,
+          "order_reserve": 24894000,
+          "group": 24956000
+        },
+        "ratio_to_before": {
+          "order_resize": 0.8735555711184256,
+          "base": 1.0,
+          "control": 1.0015757405980812,
+          "order_reserve": 0.8716996988584634,
+          "group": 0.8738707192380418
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_500000_dag",
+        "median_cpu_ns": {
+          "order_resize": 67327000,
+          "group": 83160000,
+          "control": 76597000,
+          "base": 76335000,
+          "order_reserve": 69897000
+        },
+        "ratio_to_before": {
+          "order_resize": 0.8819938429291937,
+          "group": 1.0894085281980743,
+          "control": 1.003432239470754,
+          "base": 1.0,
+          "order_reserve": 0.9156612301041462
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_500000_line",
+        "median_cpu_ns": {
+          "control": 38031000,
+          "order_resize": 34167000,
+          "base": 37863000,
+          "group": 32980000,
+          "order_reserve": 33806000
+        },
+        "ratio_to_before": {
+          "control": 1.0044370493621742,
+          "order_resize": 0.9023849140321686,
+          "base": 1.0,
+          "group": 0.8710350474077595,
+          "order_reserve": 0.8928505401051158
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_500000_empty",
+        "median_cpu_ns": {
+          "control": 27196000,
+          "order_reserve": 22720000,
+          "group": 22139000,
+          "base": 27272000,
+          "order_resize": 22674000
+        },
+        "ratio_to_before": {
+          "control": 0.9972132590202405,
+          "order_reserve": 0.8330888823701965,
+          "group": 0.8117849809328249,
+          "base": 1.0,
+          "order_resize": 0.8314021707245527
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_500000_star",
+        "median_cpu_ns": {
+          "control": 34672000,
+          "order_resize": 31451000,
+          "order_reserve": 31305000,
+          "group": 30445000,
+          "base": 34131000
+        },
+        "ratio_to_before": {
+          "control": 1.0158506929184612,
+          "order_resize": 0.9214790073540183,
+          "order_reserve": 0.9172013711874836,
+          "group": 0.8920043362339223,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_4096_dag",
+        "median_cpu_ns": {
+          "order_reserve": 1278000,
+          "order_resize": 1270000,
+          "control": 1332000,
+          "group": 1241000,
+          "base": 1242000
+        },
+        "ratio_to_before": {
+          "order_reserve": 1.0289855072463767,
+          "order_resize": 1.0225442834138487,
+          "control": 1.0724637681159421,
+          "group": 0.999194847020934,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_32_dag",
+        "median_cpu_ns": {
+          "control": 882000,
+          "order_reserve": 881000,
+          "order_resize": 873000,
+          "base": 874000,
+          "group": 883000
+        },
+        "ratio_to_before": {
+          "control": 1.0091533180778032,
+          "order_reserve": 1.0080091533180777,
+          "order_resize": 0.9988558352402745,
+          "base": 1.0,
+          "group": 1.0102974828375286
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_max_random_0",
+        "median_cpu_ns": {
+          "order_reserve": 51149000,
+          "order_resize": 51806000,
+          "group": 51665000,
+          "control": 56471000,
+          "base": 57082000
+        },
+        "ratio_to_before": {
+          "order_reserve": 0.8960618058232017,
+          "order_resize": 0.9075715637153569,
+          "group": 0.9051014330261729,
+          "control": 0.9892961003468694,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_max_random_2",
+        "median_cpu_ns": {
+          "order_reserve": 51345000,
+          "base": 55955000,
+          "order_resize": 51695000,
+          "control": 56838000,
+          "group": 50011000
+        },
+        "ratio_to_before": {
+          "order_reserve": 0.9176123670806898,
+          "base": 1.0,
+          "order_resize": 0.9238673934411581,
+          "control": 1.015780537932267,
+          "group": 0.8937717808953624
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_random_2",
+        "median_cpu_ns": {
+          "control": 13020000,
+          "order_reserve": 12265000,
+          "group": 12164000,
+          "base": 13039000,
+          "order_resize": 12128000
+        },
+        "ratio_to_before": {
+          "control": 0.9985428330393435,
+          "order_reserve": 0.9406396196027302,
+          "group": 0.932893626811872,
+          "base": 1.0,
+          "order_resize": 0.9301326788864177
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_large_cycle_0",
+        "median_cpu_ns": {
+          "control": 31652000,
+          "order_resize": 27034000,
+          "base": 32206000,
+          "group": 26871000,
+          "order_reserve": 26981000
+        },
+        "ratio_to_before": {
+          "control": 0.9827982363534745,
+          "order_resize": 0.8394088058125815,
+          "base": 1.0,
+          "group": 0.8343476370862573,
+          "order_reserve": 0.837763149723654
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_500000_dag",
+        "median_cpu_ns": {
+          "control": 77745000,
+          "order_resize": 68839000,
+          "base": 76884000,
+          "order_reserve": 70125000,
+          "group": 83084000
+        },
+        "ratio_to_before": {
+          "control": 1.0111986889339784,
+          "order_resize": 0.8953618438166588,
+          "base": 1.0,
+          "order_reserve": 0.9120883408771656,
+          "group": 1.0806409656105302
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_500000_line",
+        "median_cpu_ns": {
+          "group": 33015000,
+          "base": 38916000,
+          "order_resize": 34245000,
+          "control": 38890000,
+          "order_reserve": 33679000
+        },
+        "ratio_to_before": {
+          "group": 0.8483657107616405,
+          "base": 1.0,
+          "order_resize": 0.8799722479185939,
+          "control": 0.9993318943365197,
+          "order_reserve": 0.8654281015520608
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_500000_empty",
+        "median_cpu_ns": {
+          "group": 21535000,
+          "order_resize": 22417000,
+          "control": 27354000,
+          "order_reserve": 21868000,
+          "base": 27380000
+        },
+        "ratio_to_before": {
+          "group": 0.7865230094959824,
+          "order_resize": 0.818736303871439,
+          "control": 0.9990504017531044,
+          "order_reserve": 0.7986851716581447,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_500000_star",
+        "median_cpu_ns": {
+          "order_resize": 32584000,
+          "base": 35804000,
+          "group": 31636000,
+          "control": 35818000,
+          "order_reserve": 32229000
+        },
+        "ratio_to_before": {
+          "order_resize": 0.9100659144229695,
+          "base": 1.0,
+          "group": 0.883588425874204,
+          "control": 1.0003910177633784,
+          "order_reserve": 0.900150821137303
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_4096_dag",
+        "median_cpu_ns": {
+          "group": 1392000,
+          "order_reserve": 1352000,
+          "control": 1380000,
+          "order_resize": 1368000,
+          "base": 1345000
+        },
+        "ratio_to_before": {
+          "group": 1.0349442379182157,
+          "order_reserve": 1.0052044609665427,
+          "control": 1.0260223048327137,
+          "order_resize": 1.0171003717472118,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_32_dag",
+        "median_cpu_ns": {
+          "control": 912000,
+          "order_reserve": 910000,
+          "order_resize": 942000,
+          "base": 911000,
+          "group": 913000
+        },
+        "ratio_to_before": {
+          "control": 1.0010976948408343,
+          "order_reserve": 0.9989023051591658,
+          "order_resize": 1.0340285400658618,
+          "base": 1.0,
+          "group": 1.0021953896816684
+        }
+      }
+    ],
+    "final_DAG_API": [
+      {
+        "compiler": "gcc",
+        "n": 32,
+        "kind": "dag",
+        "mode": "scc",
+        "median_cpu_ns": {
+          "base": 13101000,
+          "control": 13069000,
+          "group": 11400000,
+          "order_reserve": 11704000
+        },
+        "ratio_to_before": {
+          "base": 1.0,
+          "control": 0.9975574383634837,
+          "group": 0.8701625830089306,
+          "order_reserve": 0.8933669185558354
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 4096,
+        "kind": "dag",
+        "mode": "scc",
+        "median_cpu_ns": {
+          "group": 22029000,
+          "control": 21526000,
+          "base": 21502000,
+          "order_reserve": 18943000
+        },
+        "ratio_to_before": {
+          "group": 1.0245093479676308,
+          "control": 1.0011161752395126,
+          "base": 1.0,
+          "order_reserve": 0.8809878150869687
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 500000,
+        "kind": "dag",
+        "mode": "scc",
+        "median_cpu_ns": {
+          "group": 130635000,
+          "control": 142415000,
+          "order_reserve": 106974000,
+          "base": 140665000
+        },
+        "ratio_to_before": {
+          "group": 0.9286958376284079,
+          "control": 1.0124409056979349,
+          "order_reserve": 0.760487683503359,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 32,
+        "kind": "dag",
+        "mode": "scc",
+        "median_cpu_ns": {
+          "control": 12636000,
+          "group": 11215000,
+          "order_reserve": 11374000,
+          "base": 12622000
+        },
+        "ratio_to_before": {
+          "control": 1.0011091744572969,
+          "group": 0.8885279670416733,
+          "order_reserve": 0.9011250198066867,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 4096,
+        "kind": "dag",
+        "mode": "scc",
+        "median_cpu_ns": {
+          "group": 23062000,
+          "control": 20710000,
+          "order_reserve": 20613000,
+          "base": 20629000
+        },
+        "ratio_to_before": {
+          "group": 1.1179407630035387,
+          "control": 1.003926511222066,
+          "order_reserve": 0.999224392845024,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 500000,
+        "kind": "dag",
+        "mode": "scc",
+        "median_cpu_ns": {
+          "group": 132275000,
+          "base": 136740000,
+          "control": 135344000,
+          "order_reserve": 109430000
+        },
+        "ratio_to_before": {
+          "group": 0.9673467895275706,
+          "base": 1.0,
+          "control": 0.9897908439373995,
+          "order_reserve": 0.8002778996635952
+        }
+      }
+    ],
+    "condensation_followup": [
+      {
+        "compiler": "gcc",
+        "n": 32,
+        "kind": "line",
+        "mode": "condensation",
+        "median_cpu_ns": {
+          "base": 17647000,
+          "control": 17545000,
+          "group": 17279000,
+          "compact": 8837000
+        },
+        "ratio_to_before": {
+          "base": 1.0,
+          "control": 0.9942199807332691,
+          "group": 0.9791465971553238,
+          "compact": 0.5007650025500086
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 32,
+        "kind": "random",
+        "mode": "condensation",
+        "median_cpu_ns": {
+          "base": 11439000,
+          "compact": 6082000,
+          "control": 11501000,
+          "group": 11377000
+        },
+        "ratio_to_before": {
+          "base": 1.0,
+          "compact": 0.5316898330273625,
+          "control": 1.005420054200542,
+          "group": 0.994579945799458
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 32,
+        "kind": "paired",
+        "mode": "condensation",
+        "median_cpu_ns": {
+          "compact": 1304000,
+          "group": 1149000,
+          "base": 1295000,
+          "control": 1289000
+        },
+        "ratio_to_before": {
+          "compact": 1.0069498069498068,
+          "group": 0.8872586872586873,
+          "base": 1.0,
+          "control": 0.9953667953667954
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 4096,
+        "kind": "line",
+        "mode": "condensation",
+        "median_cpu_ns": {
+          "base": 22707000,
+          "group": 24336000,
+          "control": 22681000,
+          "compact": 11022000
+        },
+        "ratio_to_before": {
+          "base": 1.0,
+          "group": 1.0717399920729291,
+          "control": 0.9988549786409477,
+          "compact": 0.4854009776720835
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 4096,
+        "kind": "random",
+        "mode": "condensation",
+        "median_cpu_ns": {
+          "control": 13701000,
+          "base": 13737000,
+          "compact": 10266000,
+          "group": 13578000
+        },
+        "ratio_to_before": {
+          "control": 0.997379340467351,
+          "base": 1.0,
+          "compact": 0.7473247433937541,
+          "group": 0.9884254203974667
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 4096,
+        "kind": "paired",
+        "mode": "condensation",
+        "median_cpu_ns": {
+          "group": 771000,
+          "compact": 715000,
+          "base": 771000,
+          "control": 777000
+        },
+        "ratio_to_before": {
+          "group": 1.0,
+          "compact": 0.9273670557717251,
+          "base": 1.0,
+          "control": 1.0077821011673151
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 500000,
+        "kind": "line",
+        "mode": "condensation",
+        "median_cpu_ns": {
+          "control": 76261000,
+          "base": 76182000,
+          "group": 74943000,
+          "compact": 33649000
+        },
+        "ratio_to_before": {
+          "control": 1.0010369903651781,
+          "base": 1.0,
+          "group": 0.9837363156651178,
+          "compact": 0.4416922632642882
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 500000,
+        "kind": "random",
+        "mode": "condensation",
+        "median_cpu_ns": {
+          "base": 46714000,
+          "compact": 38589000,
+          "group": 47671000,
+          "control": 46691000
+        },
+        "ratio_to_before": {
+          "base": 1.0,
+          "compact": 0.8260692725949395,
+          "group": 1.0204863638309714,
+          "control": 0.9995076422485765
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 500000,
+        "kind": "paired",
+        "mode": "condensation",
+        "median_cpu_ns": {
+          "compact": 2246000,
+          "control": 4847000,
+          "base": 4831000,
+          "group": 5232000
+        },
+        "ratio_to_before": {
+          "compact": 0.4649140964603602,
+          "control": 1.003311943696957,
+          "base": 1.0,
+          "group": 1.0830055889049885
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 32,
+        "kind": "line",
+        "mode": "condensation",
+        "median_cpu_ns": {
+          "group": 17112000,
+          "compact": 8248000,
+          "control": 17439000,
+          "base": 17401000
+        },
+        "ratio_to_before": {
+          "group": 0.9833917590943049,
+          "compact": 0.47399574737084077,
+          "control": 1.0021837825412332,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 32,
+        "kind": "random",
+        "mode": "condensation",
+        "median_cpu_ns": {
+          "base": 10999000,
+          "compact": 5914000,
+          "group": 10955000,
+          "control": 10999000
+        },
+        "ratio_to_before": {
+          "base": 1.0,
+          "compact": 0.5376852441131011,
+          "group": 0.9959996363305755,
+          "control": 1.0
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 32,
+        "kind": "paired",
+        "mode": "condensation",
+        "median_cpu_ns": {
+          "control": 999000,
+          "group": 971000,
+          "base": 1000000,
+          "compact": 1129000
+        },
+        "ratio_to_before": {
+          "control": 0.999,
+          "group": 0.971,
+          "base": 1.0,
+          "compact": 1.129
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 4096,
+        "kind": "line",
+        "mode": "condensation",
+        "median_cpu_ns": {
+          "control": 22191000,
+          "group": 23740000,
+          "base": 22210000,
+          "compact": 10560000
+        },
+        "ratio_to_before": {
+          "control": 0.9991445294912201,
+          "group": 1.0688878883385862,
+          "base": 1.0,
+          "compact": 0.4754615038271049
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 4096,
+        "kind": "random",
+        "mode": "condensation",
+        "median_cpu_ns": {
+          "compact": 9877000,
+          "group": 13007000,
+          "control": 13248000,
+          "base": 13267000
+        },
+        "ratio_to_before": {
+          "compact": 0.7444787819401523,
+          "group": 0.9804025024496872,
+          "control": 0.9985678751790156,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 4096,
+        "kind": "paired",
+        "mode": "condensation",
+        "median_cpu_ns": {
+          "base": 499000,
+          "group": 505000,
+          "compact": 494000,
+          "control": 495000
+        },
+        "ratio_to_before": {
+          "base": 1.0,
+          "group": 1.0120240480961924,
+          "compact": 0.9899799599198397,
+          "control": 0.9919839679358717
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 500000,
+        "kind": "line",
+        "mode": "condensation",
+        "median_cpu_ns": {
+          "compact": 34457000,
+          "base": 77332000,
+          "control": 77532000,
+          "group": 75790000
+        },
+        "ratio_to_before": {
+          "compact": 0.445572337454094,
+          "base": 1.0,
+          "control": 1.0025862514870947,
+          "group": 0.9800600010345006
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 500000,
+        "kind": "random",
+        "mode": "condensation",
+        "median_cpu_ns": {
+          "control": 45981000,
+          "base": 45992000,
+          "group": 47348000,
+          "compact": 37305000
+        },
+        "ratio_to_before": {
+          "control": 0.9997608279700817,
+          "base": 1.0,
+          "group": 1.0294833884153767,
+          "compact": 0.8111193251000174
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 500000,
+        "kind": "paired",
+        "mode": "condensation",
+        "median_cpu_ns": {
+          "control": 5050000,
+          "base": 4981000,
+          "compact": 1812000,
+          "group": 5411000
+        },
+        "ratio_to_before": {
+          "control": 1.0138526400321222,
+          "base": 1.0,
+          "compact": 0.36378237301746635,
+          "group": 1.0863280465769927
+        }
+      }
+    ],
+    "scope": "公式generator取得版の固定seedから作った入力相当であり、稼働中ジャッジのgenerator commit/隠し入力と同一だとは断定しない。全main出力SHAまたはAPI checksumを照合。初期group案の公式相当11入力はGCC4.5〜12.5%、Clang4.6〜16.2%短縮。最終order_reserve案はfinal_main_allocation_orderingの4公式相当+6独自入力を再測定し、公式相当4入力でGCC5.1〜13.1%/Clang5.9〜16.2%短縮。初期案の全入力結果を最終版の全入力測定と混同しない。オンライン時間は再提出で確認する。",
+    "limitations": [
+      "初期group案はClang4096頂点DAGのscc単体約10.5%増、大規模DAG mainも退行したため、singletonを成分順に確保するorder_reserve案へ修正。最終再測定の大規模DAG mainはGCC約8.4%/Clang約8.8%短縮、scc単体は約24%/20%短縮。Clang4096頂点DAGのscc単体もbefore同等となった。",
+      "縮約GraphのClang32頂点pairedは約13%増。大規模では明確に改善し、小規模退行許容の方針で採用。全条件の非退行を断定しない。",
+      "最初のAPI用測定補助コードにprintfの型不一致を発見して中断・修正。-Wall -Wextra -Werrorで全設定を再コンパイルし、全API比較を再実行した有効なmicro_raw.jsonのみ採用。修正前データは証拠ZIPへ含めない。"
+    ]
+  },
+  "tests": {
+    "before_condensation_change": [
+      {
+        "compiler": "gcc",
+        "skip": false,
+        "test": "scc_acl_api_test",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/scc_acl_api_test.cpp",
+          "-o",
+          "/tmp/sirkit_scc_speed_20261103/test_gcc_0_scc_acl_api_test"
+        ],
+        "returncode": 0,
+        "stdout": "SCC ACL API checks=1751857\n",
+        "stderr": "",
+        "test_sha256": "3560599ed2a754155a13e16aed76a31f0bc029c5ca1dd0efb7937ae99f6ab361"
+      },
+      {
+        "compiler": "gcc",
+        "skip": false,
+        "test": "new_scc_two_sat_reference_test",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/new_scc_two_sat_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_scc_speed_20261103/test_gcc_0_new_scc_two_sat_reference_test"
+        ],
+        "returncode": 0,
+        "stdout": "SCC/TwoSAT checks=2002082\n",
+        "stderr": "",
+        "test_sha256": "a0bc1cdd01b667c9a45719c094e7e7b471347c8be260c635bec6d5e29469e481"
+      },
+      {
+        "compiler": "gcc",
+        "skip": false,
+        "test": "scc_index_paths_test",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/scc_index_paths_test.cpp",
+          "-o",
+          "/tmp/sirkit_scc_speed_20261103/test_gcc_0_scc_index_paths_test"
+        ],
+        "returncode": 0,
+        "stdout": "SCC index paths graphs=69680 checks=18600039\n",
+        "stderr": "",
+        "test_sha256": "3047399617f0f7983e273ae219d311feb65f747fa90a0195fbfebefaf502413d"
+      },
+      {
+        "compiler": "gcc",
+        "skip": false,
+        "test": "new_graph_allocation_test",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/new_graph_allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_scc_speed_20261103/test_gcc_0_new_graph_allocation_test"
+        ],
+        "returncode": 0,
+        "stdout": "graph allocation failures=77 successes=963 live_delta=0\n",
+        "stderr": "",
+        "test_sha256": "d3e4c0822afb4ea979a0cc130fe6932e2362086b09a0aeeb5544622879af44a7"
+      },
+      {
+        "compiler": "gcc",
+        "skip": true,
+        "test": "scc_acl_api_test",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/scc_acl_api_test.cpp",
+          "-o",
+          "/tmp/sirkit_scc_speed_20261103/test_gcc_1_scc_acl_api_test"
+        ],
+        "returncode": 0,
+        "stdout": "SCC ACL API checks=1751857\n",
+        "stderr": "",
+        "test_sha256": "3560599ed2a754155a13e16aed76a31f0bc029c5ca1dd0efb7937ae99f6ab361"
+      },
+      {
+        "compiler": "gcc",
+        "skip": true,
+        "test": "new_scc_two_sat_reference_test",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/new_scc_two_sat_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_scc_speed_20261103/test_gcc_1_new_scc_two_sat_reference_test"
+        ],
+        "returncode": 0,
+        "stdout": "SCC/TwoSAT checks=2002082\n",
+        "stderr": "",
+        "test_sha256": "a0bc1cdd01b667c9a45719c094e7e7b471347c8be260c635bec6d5e29469e481"
+      },
+      {
+        "compiler": "gcc",
+        "skip": true,
+        "test": "scc_index_paths_test",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/scc_index_paths_test.cpp",
+          "-o",
+          "/tmp/sirkit_scc_speed_20261103/test_gcc_1_scc_index_paths_test"
+        ],
+        "returncode": 0,
+        "stdout": "SCC index paths graphs=69680 checks=18600039\n",
+        "stderr": "",
+        "test_sha256": "3047399617f0f7983e273ae219d311feb65f747fa90a0195fbfebefaf502413d"
+      },
+      {
+        "compiler": "gcc",
+        "skip": true,
+        "test": "new_graph_allocation_test",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/new_graph_allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_scc_speed_20261103/test_gcc_1_new_graph_allocation_test"
+        ],
+        "returncode": 0,
+        "stdout": "graph allocation failures=77 successes=963 live_delta=0\n",
+        "stderr": "",
+        "test_sha256": "d3e4c0822afb4ea979a0cc130fe6932e2362086b09a0aeeb5544622879af44a7"
+      },
+      {
+        "compiler": "clang",
+        "skip": false,
+        "test": "scc_acl_api_test",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/scc_acl_api_test.cpp",
+          "-o",
+          "/tmp/sirkit_scc_speed_20261103/test_clang_0_scc_acl_api_test"
+        ],
+        "returncode": 0,
+        "stdout": "SCC ACL API checks=1751857\n",
+        "stderr": "",
+        "test_sha256": "3560599ed2a754155a13e16aed76a31f0bc029c5ca1dd0efb7937ae99f6ab361"
+      },
+      {
+        "compiler": "clang",
+        "skip": false,
+        "test": "new_scc_two_sat_reference_test",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/new_scc_two_sat_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_scc_speed_20261103/test_clang_0_new_scc_two_sat_reference_test"
+        ],
+        "returncode": 0,
+        "stdout": "SCC/TwoSAT checks=2002082\n",
+        "stderr": "",
+        "test_sha256": "a0bc1cdd01b667c9a45719c094e7e7b471347c8be260c635bec6d5e29469e481"
+      },
+      {
+        "compiler": "clang",
+        "skip": false,
+        "test": "scc_index_paths_test",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/scc_index_paths_test.cpp",
+          "-o",
+          "/tmp/sirkit_scc_speed_20261103/test_clang_0_scc_index_paths_test"
+        ],
+        "returncode": 0,
+        "stdout": "SCC index paths graphs=69680 checks=18600039\n",
+        "stderr": "",
+        "test_sha256": "3047399617f0f7983e273ae219d311feb65f747fa90a0195fbfebefaf502413d"
+      },
+      {
+        "compiler": "clang",
+        "skip": false,
+        "test": "new_graph_allocation_test",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/new_graph_allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_scc_speed_20261103/test_clang_0_new_graph_allocation_test"
+        ],
+        "returncode": 0,
+        "stdout": "graph allocation failures=77 successes=963 live_delta=0\n",
+        "stderr": "",
+        "test_sha256": "d3e4c0822afb4ea979a0cc130fe6932e2362086b09a0aeeb5544622879af44a7"
+      },
+      {
+        "compiler": "clang",
+        "skip": true,
+        "test": "scc_acl_api_test",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/scc_acl_api_test.cpp",
+          "-o",
+          "/tmp/sirkit_scc_speed_20261103/test_clang_1_scc_acl_api_test"
+        ],
+        "returncode": 0,
+        "stdout": "SCC ACL API checks=1751857\n",
+        "stderr": "",
+        "test_sha256": "3560599ed2a754155a13e16aed76a31f0bc029c5ca1dd0efb7937ae99f6ab361"
+      },
+      {
+        "compiler": "clang",
+        "skip": true,
+        "test": "new_scc_two_sat_reference_test",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/new_scc_two_sat_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_scc_speed_20261103/test_clang_1_new_scc_two_sat_reference_test"
+        ],
+        "returncode": 0,
+        "stdout": "SCC/TwoSAT checks=2002082\n",
+        "stderr": "",
+        "test_sha256": "a0bc1cdd01b667c9a45719c094e7e7b471347c8be260c635bec6d5e29469e481"
+      },
+      {
+        "compiler": "clang",
+        "skip": true,
+        "test": "scc_index_paths_test",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/scc_index_paths_test.cpp",
+          "-o",
+          "/tmp/sirkit_scc_speed_20261103/test_clang_1_scc_index_paths_test"
+        ],
+        "returncode": 0,
+        "stdout": "SCC index paths graphs=69680 checks=18600039\n",
+        "stderr": "",
+        "test_sha256": "3047399617f0f7983e273ae219d311feb65f747fa90a0195fbfebefaf502413d"
+      },
+      {
+        "compiler": "clang",
+        "skip": true,
+        "test": "new_graph_allocation_test",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/new_graph_allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_scc_speed_20261103/test_clang_1_new_graph_allocation_test"
+        ],
+        "returncode": 0,
+        "stdout": "graph allocation failures=77 successes=963 live_delta=0\n",
+        "stderr": "",
+        "test_sha256": "d3e4c0822afb4ea979a0cc130fe6932e2362086b09a0aeeb5544622879af44a7"
+      }
+    ],
+    "final_condensation_change": [
+      {
+        "compiler": "gcc",
+        "skip": false,
+        "test": "new_scc_two_sat_reference_test",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/new_scc_two_sat_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_scc_speed_20261103/test_gcc_0_new_scc_two_sat_reference_test"
+        ],
+        "returncode": 0,
+        "stdout": "SCC/TwoSAT checks=2002082\n",
+        "stderr": "",
+        "test_sha256": "a0bc1cdd01b667c9a45719c094e7e7b471347c8be260c635bec6d5e29469e481"
+      },
+      {
+        "compiler": "gcc",
+        "skip": false,
+        "test": "scc_condensation_test",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/scc_condensation_test.cpp",
+          "-o",
+          "/tmp/sirkit_scc_speed_20261103/test_gcc_0_scc_condensation_test"
+        ],
+        "returncode": 0,
+        "stdout": "SCC condensation checks=11249\n",
+        "stderr": "",
+        "test_sha256": "ecf468f0bf189e4d695c9569a5fc3a21d30311e035be86fb86707ed83e09d9b5"
+      },
+      {
+        "compiler": "gcc",
+        "skip": false,
+        "test": "new_graph_allocation_test",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/new_graph_allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_scc_speed_20261103/test_gcc_0_new_graph_allocation_test"
+        ],
+        "returncode": 0,
+        "stdout": "graph allocation failures=99 successes=1021 live_delta=0\n",
+        "stderr": "",
+        "test_sha256": "49f9a7c9b73ae93ea02cd716bc5c437c47c54a7c2fc5778dd13a77b7c518e58b"
+      },
+      {
+        "compiler": "gcc",
+        "skip": true,
+        "test": "new_scc_two_sat_reference_test",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/new_scc_two_sat_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_scc_speed_20261103/test_gcc_1_new_scc_two_sat_reference_test"
+        ],
+        "returncode": 0,
+        "stdout": "SCC/TwoSAT checks=2002082\n",
+        "stderr": "",
+        "test_sha256": "a0bc1cdd01b667c9a45719c094e7e7b471347c8be260c635bec6d5e29469e481"
+      },
+      {
+        "compiler": "gcc",
+        "skip": true,
+        "test": "scc_condensation_test",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/scc_condensation_test.cpp",
+          "-o",
+          "/tmp/sirkit_scc_speed_20261103/test_gcc_1_scc_condensation_test"
+        ],
+        "returncode": 0,
+        "stdout": "SCC condensation checks=11249\n",
+        "stderr": "",
+        "test_sha256": "ecf468f0bf189e4d695c9569a5fc3a21d30311e035be86fb86707ed83e09d9b5"
+      },
+      {
+        "compiler": "gcc",
+        "skip": true,
+        "test": "new_graph_allocation_test",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/new_graph_allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_scc_speed_20261103/test_gcc_1_new_graph_allocation_test"
+        ],
+        "returncode": 0,
+        "stdout": "graph allocation failures=99 successes=1021 live_delta=0\n",
+        "stderr": "",
+        "test_sha256": "49f9a7c9b73ae93ea02cd716bc5c437c47c54a7c2fc5778dd13a77b7c518e58b"
+      },
+      {
+        "compiler": "clang",
+        "skip": false,
+        "test": "new_scc_two_sat_reference_test",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/new_scc_two_sat_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_scc_speed_20261103/test_clang_0_new_scc_two_sat_reference_test"
+        ],
+        "returncode": 0,
+        "stdout": "SCC/TwoSAT checks=2002082\n",
+        "stderr": "",
+        "test_sha256": "a0bc1cdd01b667c9a45719c094e7e7b471347c8be260c635bec6d5e29469e481"
+      },
+      {
+        "compiler": "clang",
+        "skip": false,
+        "test": "scc_condensation_test",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/scc_condensation_test.cpp",
+          "-o",
+          "/tmp/sirkit_scc_speed_20261103/test_clang_0_scc_condensation_test"
+        ],
+        "returncode": 0,
+        "stdout": "SCC condensation checks=11249\n",
+        "stderr": "",
+        "test_sha256": "ecf468f0bf189e4d695c9569a5fc3a21d30311e035be86fb86707ed83e09d9b5"
+      },
+      {
+        "compiler": "clang",
+        "skip": false,
+        "test": "new_graph_allocation_test",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/new_graph_allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_scc_speed_20261103/test_clang_0_new_graph_allocation_test"
+        ],
+        "returncode": 0,
+        "stdout": "graph allocation failures=99 successes=1021 live_delta=0\n",
+        "stderr": "",
+        "test_sha256": "49f9a7c9b73ae93ea02cd716bc5c437c47c54a7c2fc5778dd13a77b7c518e58b"
+      },
+      {
+        "compiler": "clang",
+        "skip": true,
+        "test": "new_scc_two_sat_reference_test",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/new_scc_two_sat_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_scc_speed_20261103/test_clang_1_new_scc_two_sat_reference_test"
+        ],
+        "returncode": 0,
+        "stdout": "SCC/TwoSAT checks=2002082\n",
+        "stderr": "",
+        "test_sha256": "a0bc1cdd01b667c9a45719c094e7e7b471347c8be260c635bec6d5e29469e481"
+      },
+      {
+        "compiler": "clang",
+        "skip": true,
+        "test": "scc_condensation_test",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/scc_condensation_test.cpp",
+          "-o",
+          "/tmp/sirkit_scc_speed_20261103/test_clang_1_scc_condensation_test"
+        ],
+        "returncode": 0,
+        "stdout": "SCC condensation checks=11249\n",
+        "stderr": "",
+        "test_sha256": "ecf468f0bf189e4d695c9569a5fc3a21d30311e035be86fb86707ed83e09d9b5"
+      },
+      {
+        "compiler": "clang",
+        "skip": true,
+        "test": "new_graph_allocation_test",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/new_graph_allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_scc_speed_20261103/test_clang_1_new_graph_allocation_test"
+        ],
+        "returncode": 0,
+        "stdout": "graph allocation failures=99 successes=1021 live_delta=0\n",
+        "stderr": "",
+        "test_sha256": "49f9a7c9b73ae93ea02cd716bc5c437c47c54a7c2fc5778dd13a77b7c518e58b"
+      }
+    ],
+    "final_allocation_ordering": [
+      {
+        "compiler": "gcc",
+        "skip": false,
+        "test": "scc_acl_api_test",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/scc_acl_api_test.cpp",
+          "-o",
+          "/tmp/sirkit_scc_speed_20261103/test_gcc_0_scc_acl_api_test"
+        ],
+        "returncode": 0,
+        "stdout": "SCC ACL API checks=1751857\n",
+        "stderr": "",
+        "test_sha256": "3560599ed2a754155a13e16aed76a31f0bc029c5ca1dd0efb7937ae99f6ab361"
+      },
+      {
+        "compiler": "gcc",
+        "skip": false,
+        "test": "new_scc_two_sat_reference_test",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/new_scc_two_sat_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_scc_speed_20261103/test_gcc_0_new_scc_two_sat_reference_test"
+        ],
+        "returncode": 0,
+        "stdout": "SCC/TwoSAT checks=2002082\n",
+        "stderr": "",
+        "test_sha256": "a0bc1cdd01b667c9a45719c094e7e7b471347c8be260c635bec6d5e29469e481"
+      },
+      {
+        "compiler": "gcc",
+        "skip": false,
+        "test": "new_graph_allocation_test",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/new_graph_allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_scc_speed_20261103/test_gcc_0_new_graph_allocation_test"
+        ],
+        "returncode": 0,
+        "stdout": "graph allocation failures=109 successes=1091 live_delta=0\n",
+        "stderr": "",
+        "test_sha256": "2f55c019b29044dec4f5e236dd68c0f670a8c414003a69757ad28df71d4b46c1"
+      },
+      {
+        "compiler": "gcc",
+        "skip": true,
+        "test": "scc_acl_api_test",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/scc_acl_api_test.cpp",
+          "-o",
+          "/tmp/sirkit_scc_speed_20261103/test_gcc_1_scc_acl_api_test"
+        ],
+        "returncode": 0,
+        "stdout": "SCC ACL API checks=1751857\n",
+        "stderr": "",
+        "test_sha256": "3560599ed2a754155a13e16aed76a31f0bc029c5ca1dd0efb7937ae99f6ab361"
+      },
+      {
+        "compiler": "gcc",
+        "skip": true,
+        "test": "new_scc_two_sat_reference_test",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/new_scc_two_sat_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_scc_speed_20261103/test_gcc_1_new_scc_two_sat_reference_test"
+        ],
+        "returncode": 0,
+        "stdout": "SCC/TwoSAT checks=2002082\n",
+        "stderr": "",
+        "test_sha256": "a0bc1cdd01b667c9a45719c094e7e7b471347c8be260c635bec6d5e29469e481"
+      },
+      {
+        "compiler": "gcc",
+        "skip": true,
+        "test": "new_graph_allocation_test",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/new_graph_allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_scc_speed_20261103/test_gcc_1_new_graph_allocation_test"
+        ],
+        "returncode": 0,
+        "stdout": "graph allocation failures=109 successes=1091 live_delta=0\n",
+        "stderr": "",
+        "test_sha256": "2f55c019b29044dec4f5e236dd68c0f670a8c414003a69757ad28df71d4b46c1"
+      },
+      {
+        "compiler": "clang",
+        "skip": false,
+        "test": "scc_acl_api_test",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/scc_acl_api_test.cpp",
+          "-o",
+          "/tmp/sirkit_scc_speed_20261103/test_clang_0_scc_acl_api_test"
+        ],
+        "returncode": 0,
+        "stdout": "SCC ACL API checks=1751857\n",
+        "stderr": "",
+        "test_sha256": "3560599ed2a754155a13e16aed76a31f0bc029c5ca1dd0efb7937ae99f6ab361"
+      },
+      {
+        "compiler": "clang",
+        "skip": false,
+        "test": "new_scc_two_sat_reference_test",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/new_scc_two_sat_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_scc_speed_20261103/test_clang_0_new_scc_two_sat_reference_test"
+        ],
+        "returncode": 0,
+        "stdout": "SCC/TwoSAT checks=2002082\n",
+        "stderr": "",
+        "test_sha256": "a0bc1cdd01b667c9a45719c094e7e7b471347c8be260c635bec6d5e29469e481"
+      },
+      {
+        "compiler": "clang",
+        "skip": false,
+        "test": "new_graph_allocation_test",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/new_graph_allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_scc_speed_20261103/test_clang_0_new_graph_allocation_test"
+        ],
+        "returncode": 0,
+        "stdout": "graph allocation failures=109 successes=1091 live_delta=0\n",
+        "stderr": "",
+        "test_sha256": "2f55c019b29044dec4f5e236dd68c0f670a8c414003a69757ad28df71d4b46c1"
+      },
+      {
+        "compiler": "clang",
+        "skip": true,
+        "test": "scc_acl_api_test",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/scc_acl_api_test.cpp",
+          "-o",
+          "/tmp/sirkit_scc_speed_20261103/test_clang_1_scc_acl_api_test"
+        ],
+        "returncode": 0,
+        "stdout": "SCC ACL API checks=1751857\n",
+        "stderr": "",
+        "test_sha256": "3560599ed2a754155a13e16aed76a31f0bc029c5ca1dd0efb7937ae99f6ab361"
+      },
+      {
+        "compiler": "clang",
+        "skip": true,
+        "test": "new_scc_two_sat_reference_test",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/new_scc_two_sat_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_scc_speed_20261103/test_clang_1_new_scc_two_sat_reference_test"
+        ],
+        "returncode": 0,
+        "stdout": "SCC/TwoSAT checks=2002082\n",
+        "stderr": "",
+        "test_sha256": "a0bc1cdd01b667c9a45719c094e7e7b471347c8be260c635bec6d5e29469e481"
+      },
+      {
+        "compiler": "clang",
+        "skip": true,
+        "test": "new_graph_allocation_test",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/new_graph_allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_scc_speed_20261103/test_clang_1_new_graph_allocation_test"
+        ],
+        "returncode": 0,
+        "stdout": "graph allocation failures=109 successes=1091 live_delta=0\n",
+        "stderr": "",
+        "test_sha256": "2f55c019b29044dec4f5e236dd68c0f670a8c414003a69757ad28df71d4b46c1"
+      }
+    ],
+    "profiles": {
+      "LOCAL_SAMPLE_PASS": 14
+    },
+    "normal_submissions": [
+      {
+        "compiler": "GCC",
+        "id": "scc",
+        "status": "LOCAL_SAMPLE_PASS",
+        "compile_command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "/home/reinsirk/Atcoder_Env/Verify/current/submissions/scc.cpp",
+          "-o",
+          "/tmp/sirkit_scc_speed_20261103/normal_GCC_scc"
+        ],
+        "submission_sha256": "c29fd220ea389db1def083e26c87255dd8346fcfca44510587c9952ad8733baa"
+      },
+      {
+        "compiler": "GCC",
+        "id": "two_sat",
+        "status": "LOCAL_SAMPLE_PASS",
+        "compile_command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "/home/reinsirk/Atcoder_Env/Verify/current/submissions/two_sat.cpp",
+          "-o",
+          "/tmp/sirkit_scc_speed_20261103/normal_GCC_two_sat"
+        ],
+        "submission_sha256": "730769d9e140ed5b20b854248ac7d0b80e6755f8c8d5389a7c8886ccc05550c8"
+      },
+      {
+        "compiler": "Clang",
+        "id": "scc",
+        "status": "LOCAL_SAMPLE_PASS",
+        "compile_command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "/home/reinsirk/Atcoder_Env/Verify/current/submissions/scc.cpp",
+          "-o",
+          "/tmp/sirkit_scc_speed_20261103/normal_Clang_scc"
+        ],
+        "submission_sha256": "c29fd220ea389db1def083e26c87255dd8346fcfca44510587c9952ad8733baa"
+      },
+      {
+        "compiler": "Clang",
+        "id": "two_sat",
+        "status": "LOCAL_SAMPLE_PASS",
+        "compile_command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "/home/reinsirk/Atcoder_Env/Verify/current/submissions/two_sat.cpp",
+          "-o",
+          "/tmp/sirkit_scc_speed_20261103/normal_Clang_two_sat"
+        ],
+        "submission_sha256": "730769d9e140ed5b20b854248ac7d0b80e6755f8c8d5389a7c8886ccc05550c8"
+      }
+    ],
+    "coverage": "独立Kosarajuと到達可能性全探索、n<=4の全有向グラフ、乱数・69,680グラフ、30万鎖/閉路、自己辺・多重辺・200,000重複辺、再分解・API型・コピー/ムーブ・TwoSAT全探索・確保失敗を検証。",
+    "settings": "GCC/Clang×検査有無。API/参照/両添字経路/縮約はASan+UBSan、最終例外試験はorder_checks.json（singleton確保失敗も追加）、各設定live_delta=0。SIRKIT_DISABLE_SIMDも定義。",
+    "memory_leak_scope": "ASAN_OPTIONS=detect_leaks=0。部分構築・縮約中の確保失敗による解放はliveカウンタの割当試験で補足。"
+  },
+  "hashes": {
+    "before_scc": "e4c0efc189c3b0f0e4f181bf050ed99f5b471f71fc5ae6bd6dcdff219c712d9f",
+    "current_scc": "d160b6e210e7c75628be41055694befd86c1a509635159807f593c1ae6394b25",
+    "before_two_sat": "e470f934429ff107940bcd98a966348f55d22a2bc359b3b2b66578b6294cf161",
+    "current_two_sat": "0333e15efe03b0e3105b21c59abd00ccfb915765999f1c879a923c25a3496ed9",
+    "driver_before_and_after": "2b9fb67c3387d387af0d58411840f7d45a434599e092f97c5f8fcb8365216efc",
+    "io_before_and_after": "291bf8dbc56a1d691f6256fe95b4714183c2cf5d9e55e4bef240e31d1eb178c1"
+  },
+  "evidence": {
+    "path": "Audit/data/scc-speed-2026-11-03.zip",
+    "sha256": "67946ce070f54d2ce2671152576322c8a5779898b223a3b610a385299c70ea8d",
+    "contents": "自作コード/比較候補/測定ログ/生データ/fixtureの出典とSHA/テスト結果。公式generator原本・実行バイナリ・大きい入力・無効な測定データは含めない。"
+  },
+  "synchronization": "本体・GCC/Clang・速度優先・通常/派生Verifyを同期。公開API/Documentの記述・使用例の呼出は変更不要。配布ZIP検証はDistribution/validation.json。"
+}

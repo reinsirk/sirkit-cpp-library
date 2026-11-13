@@ -1,0 +1,1847 @@
+{
+  "date": "2026-10-31",
+  "source_sha256": {
+    "String/Suffix_Automaton.cpp": "8ca7d73707e41896a96f99e65f8bc69a2db9e6888b8225e1c12ee278ffcca8b0",
+    "String/Palindromic_Tree.cpp": "4026134c0c3652fa493423c12b3f1daaedda7bec2b8061ee142778f154900d51"
+  },
+  "online_status": "unsubmitted",
+  "configurations": 12,
+  "configuration": "GCC15.2 and Clang21.1.8 C++23 O2 checked/skip default/native, plus O1 ASan+UBSan default checked/skip. CPU8, ASAN detect_leaks=0.",
+  "final_fixture_executions": 36,
+  "raw_fixture_executions": 72,
+  "raw_note": "Reference and exception fixtures were extended and rerun in all12 configurations; latest result per(config,test) retained below. Source did not change between runs.",
+  "fixture_sha256": {
+    "string_automata_reference_test.cpp": "50ce238fb35d3c7777edad377d9d18dc355e5fbce68175a186a7d3563d144ba0",
+    "string_automata_long_chain_test.cpp": "11d95ee8f5b7aa4775ce1d997a2179a8f2d70789a329bdbdbdff21344578cfff",
+    "string_automata_exception_test.cpp": "690599969575d325916f270c35fb5d68473a8163942287b7251b2228770d5ca9"
+  },
+  "coverage": {
+    "reference": "180 random strings,3036 prefixes, independently enumerated all substrings/palindromes and overlapping frequencies; naive LCS scans; all palindrome fields, creation IDs, roots, longest/suffix, copies/moves/swaps/resets, foreign bytes; all256 individual byte values, NUL-only/254–255 subalphabets and byte boundaries.",
+    "long_chain": "One million repeated bytes per library plus200000 periodic bytes; iterative build, suffix links, clone cases, large occurrence caches, reset/clear.",
+    "exception": "28–29 allocator failure positions by compiler/mode, all normal_live0=0. Constructor/append/batch/alias append/copy/reset/reserve/cache failure; pre-reserved append allocates no memory. Capacity SIZE_MAX rejected even under SKIP.",
+    "input_checks": "Invalid batch byte preserves processed prefix; invalid node checked in default; query foreign byte is mathematical mismatch in all modes."
+  },
+  "drivers": {
+    "problem_count": 3,
+    "configuration_count": 8,
+    "successful_cases": 4408,
+    "official_samples": 11,
+    "random_cases_per_problem_config": 180,
+    "origin": "Pinned official Library Checker inputs; expected output from Python all-substring sets, all-candidate LCS and prefix/suffix palindrome enumeration, independent of both automata.",
+    "example_runs": 8,
+    "strict_standalone_builds": 4
+  },
+  "raw_artifacts": {
+    "validation_results.json": {
+      "path": "/tmp/sirkit_12h_20261031_095733/string_automata/validation_results.json",
+      "sha256": "159466c346e7d84cb6710fc89eaa949f67b658bc64cb7e25b3a3234618452e6a"
+    },
+    "driver_validation.json": {
+      "path": "/tmp/sirkit_12h_20261031_095733/string_automata/driver_validation.json",
+      "sha256": "445b88c0d7e89ef1958fa6cfde006b163ed4e5876ccb861d4c9bf25efcccfa16"
+    },
+    "run_validation.py": {
+      "path": "/tmp/sirkit_12h_20261031_095733/string_automata/run_validation.py",
+      "sha256": "a0774240ff03ddf69789fcf81f6ecd5fbffee8222091f44a3ee3741a5940c1fe"
+    },
+    "validate_drivers_examples.py": {
+      "path": "/tmp/sirkit_12h_20261031_095733/string_automata/validate_drivers_examples.py",
+      "sha256": "db1ced3f93189d00b3c60e1e41bacb7fb6e9e0aaf1718225dcfc5be4722b5675"
+    }
+  },
+  "final_results": [
+    {
+      "config": "gcc_checked_default",
+      "test": "reference",
+      "source_sha256": {
+        "Suffix_Automaton.cpp": "8ca7d73707e41896a96f99e65f8bc69a2db9e6888b8225e1c12ee278ffcca8b0",
+        "Palindromic_Tree.cpp": "4026134c0c3652fa493423c12b3f1daaedda7bec2b8061ee142778f154900d51"
+      },
+      "fixture_sha256": "50ce238fb35d3c7777edad377d9d18dc355e5fbce68175a186a7d3563d144ba0",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-Wno-volatile",
+        "-DSUFFIX_AUTOMATON_SOURCE=\"/tmp/sirkit_12h_20261031_095733/string_automata/Suffix_Automaton.cpp\"",
+        "-DPALINDROMIC_TREE_SOURCE=\"/tmp/sirkit_12h_20261031_095733/string_automata/Palindromic_Tree.cpp\"",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/string_automata_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/gcc_checked_default_reference"
+      ],
+      "exit_code": 0,
+      "stdout": "string automata prefixes=3036 exhaustive substring/frequency/LCS/ownership/byte boundaries OK\n",
+      "stderr": ""
+    },
+    {
+      "config": "gcc_checked_default",
+      "test": "long_chain",
+      "source_sha256": {
+        "Suffix_Automaton.cpp": "8ca7d73707e41896a96f99e65f8bc69a2db9e6888b8225e1c12ee278ffcca8b0",
+        "Palindromic_Tree.cpp": "4026134c0c3652fa493423c12b3f1daaedda7bec2b8061ee142778f154900d51"
+      },
+      "fixture_sha256": "11d95ee8f5b7aa4775ce1d997a2179a8f2d70789a329bdbdbdff21344578cfff",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-Wno-volatile",
+        "-DSUFFIX_AUTOMATON_SOURCE=\"/tmp/sirkit_12h_20261031_095733/string_automata/Suffix_Automaton.cpp\"",
+        "-DPALINDROMIC_TREE_SOURCE=\"/tmp/sirkit_12h_20261031_095733/string_automata/Palindromic_Tree.cpp\"",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/string_automata_long_chain_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/gcc_checked_default_long_chain"
+      ],
+      "exit_code": 0,
+      "stdout": "million chain and periodic200000 iterative construction/counts OK\n",
+      "stderr": ""
+    },
+    {
+      "config": "gcc_checked_default",
+      "test": "exception",
+      "source_sha256": {
+        "Suffix_Automaton.cpp": "8ca7d73707e41896a96f99e65f8bc69a2db9e6888b8225e1c12ee278ffcca8b0",
+        "Palindromic_Tree.cpp": "4026134c0c3652fa493423c12b3f1daaedda7bec2b8061ee142778f154900d51"
+      },
+      "fixture_sha256": "690599969575d325916f270c35fb5d68473a8163942287b7251b2228770d5ca9",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-Wno-volatile",
+        "-DSUFFIX_AUTOMATON_SOURCE=\"/tmp/sirkit_12h_20261031_095733/string_automata/Suffix_Automaton.cpp\"",
+        "-DPALINDROMIC_TREE_SOURCE=\"/tmp/sirkit_12h_20261031_095733/string_automata/Palindromic_Tree.cpp\"",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/string_automata_exception_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/gcc_checked_default_exception"
+      ],
+      "exit_code": 0,
+      "stdout": "string allocation injected failures=29\nnormal_live0=0\n",
+      "stderr": ""
+    },
+    {
+      "config": "gcc_checked_native",
+      "test": "reference",
+      "source_sha256": {
+        "Suffix_Automaton.cpp": "8ca7d73707e41896a96f99e65f8bc69a2db9e6888b8225e1c12ee278ffcca8b0",
+        "Palindromic_Tree.cpp": "4026134c0c3652fa493423c12b3f1daaedda7bec2b8061ee142778f154900d51"
+      },
+      "fixture_sha256": "50ce238fb35d3c7777edad377d9d18dc355e5fbce68175a186a7d3563d144ba0",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-Wno-volatile",
+        "-march=native",
+        "-DSUFFIX_AUTOMATON_SOURCE=\"/tmp/sirkit_12h_20261031_095733/string_automata/Suffix_Automaton.cpp\"",
+        "-DPALINDROMIC_TREE_SOURCE=\"/tmp/sirkit_12h_20261031_095733/string_automata/Palindromic_Tree.cpp\"",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/string_automata_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/gcc_checked_native_reference"
+      ],
+      "exit_code": 0,
+      "stdout": "string automata prefixes=3036 exhaustive substring/frequency/LCS/ownership/byte boundaries OK\n",
+      "stderr": ""
+    },
+    {
+      "config": "gcc_checked_native",
+      "test": "long_chain",
+      "source_sha256": {
+        "Suffix_Automaton.cpp": "8ca7d73707e41896a96f99e65f8bc69a2db9e6888b8225e1c12ee278ffcca8b0",
+        "Palindromic_Tree.cpp": "4026134c0c3652fa493423c12b3f1daaedda7bec2b8061ee142778f154900d51"
+      },
+      "fixture_sha256": "11d95ee8f5b7aa4775ce1d997a2179a8f2d70789a329bdbdbdff21344578cfff",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-Wno-volatile",
+        "-march=native",
+        "-DSUFFIX_AUTOMATON_SOURCE=\"/tmp/sirkit_12h_20261031_095733/string_automata/Suffix_Automaton.cpp\"",
+        "-DPALINDROMIC_TREE_SOURCE=\"/tmp/sirkit_12h_20261031_095733/string_automata/Palindromic_Tree.cpp\"",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/string_automata_long_chain_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/gcc_checked_native_long_chain"
+      ],
+      "exit_code": 0,
+      "stdout": "million chain and periodic200000 iterative construction/counts OK\n",
+      "stderr": ""
+    },
+    {
+      "config": "gcc_checked_native",
+      "test": "exception",
+      "source_sha256": {
+        "Suffix_Automaton.cpp": "8ca7d73707e41896a96f99e65f8bc69a2db9e6888b8225e1c12ee278ffcca8b0",
+        "Palindromic_Tree.cpp": "4026134c0c3652fa493423c12b3f1daaedda7bec2b8061ee142778f154900d51"
+      },
+      "fixture_sha256": "690599969575d325916f270c35fb5d68473a8163942287b7251b2228770d5ca9",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-Wno-volatile",
+        "-march=native",
+        "-DSUFFIX_AUTOMATON_SOURCE=\"/tmp/sirkit_12h_20261031_095733/string_automata/Suffix_Automaton.cpp\"",
+        "-DPALINDROMIC_TREE_SOURCE=\"/tmp/sirkit_12h_20261031_095733/string_automata/Palindromic_Tree.cpp\"",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/string_automata_exception_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/gcc_checked_native_exception"
+      ],
+      "exit_code": 0,
+      "stdout": "string allocation injected failures=29\nnormal_live0=0\n",
+      "stderr": ""
+    },
+    {
+      "config": "gcc_checked_default_san",
+      "test": "reference",
+      "source_sha256": {
+        "Suffix_Automaton.cpp": "8ca7d73707e41896a96f99e65f8bc69a2db9e6888b8225e1c12ee278ffcca8b0",
+        "Palindromic_Tree.cpp": "4026134c0c3652fa493423c12b3f1daaedda7bec2b8061ee142778f154900d51"
+      },
+      "fixture_sha256": "50ce238fb35d3c7777edad377d9d18dc355e5fbce68175a186a7d3563d144ba0",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O1",
+        "-Wno-volatile",
+        "-g",
+        "-fsanitize=address,undefined",
+        "-fno-omit-frame-pointer",
+        "-DSUFFIX_AUTOMATON_SOURCE=\"/tmp/sirkit_12h_20261031_095733/string_automata/Suffix_Automaton.cpp\"",
+        "-DPALINDROMIC_TREE_SOURCE=\"/tmp/sirkit_12h_20261031_095733/string_automata/Palindromic_Tree.cpp\"",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/string_automata_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/gcc_checked_default_san_reference"
+      ],
+      "exit_code": 0,
+      "stdout": "string automata prefixes=3036 exhaustive substring/frequency/LCS/ownership/byte boundaries OK\n",
+      "stderr": ""
+    },
+    {
+      "config": "gcc_checked_default_san",
+      "test": "long_chain",
+      "source_sha256": {
+        "Suffix_Automaton.cpp": "8ca7d73707e41896a96f99e65f8bc69a2db9e6888b8225e1c12ee278ffcca8b0",
+        "Palindromic_Tree.cpp": "4026134c0c3652fa493423c12b3f1daaedda7bec2b8061ee142778f154900d51"
+      },
+      "fixture_sha256": "11d95ee8f5b7aa4775ce1d997a2179a8f2d70789a329bdbdbdff21344578cfff",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O1",
+        "-Wno-volatile",
+        "-g",
+        "-fsanitize=address,undefined",
+        "-fno-omit-frame-pointer",
+        "-DSUFFIX_AUTOMATON_SOURCE=\"/tmp/sirkit_12h_20261031_095733/string_automata/Suffix_Automaton.cpp\"",
+        "-DPALINDROMIC_TREE_SOURCE=\"/tmp/sirkit_12h_20261031_095733/string_automata/Palindromic_Tree.cpp\"",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/string_automata_long_chain_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/gcc_checked_default_san_long_chain"
+      ],
+      "exit_code": 0,
+      "stdout": "million chain and periodic200000 iterative construction/counts OK\n",
+      "stderr": ""
+    },
+    {
+      "config": "gcc_checked_default_san",
+      "test": "exception",
+      "source_sha256": {
+        "Suffix_Automaton.cpp": "8ca7d73707e41896a96f99e65f8bc69a2db9e6888b8225e1c12ee278ffcca8b0",
+        "Palindromic_Tree.cpp": "4026134c0c3652fa493423c12b3f1daaedda7bec2b8061ee142778f154900d51"
+      },
+      "fixture_sha256": "690599969575d325916f270c35fb5d68473a8163942287b7251b2228770d5ca9",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O1",
+        "-Wno-volatile",
+        "-g",
+        "-fsanitize=address,undefined",
+        "-fno-omit-frame-pointer",
+        "-DSUFFIX_AUTOMATON_SOURCE=\"/tmp/sirkit_12h_20261031_095733/string_automata/Suffix_Automaton.cpp\"",
+        "-DPALINDROMIC_TREE_SOURCE=\"/tmp/sirkit_12h_20261031_095733/string_automata/Palindromic_Tree.cpp\"",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/string_automata_exception_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/gcc_checked_default_san_exception"
+      ],
+      "exit_code": 0,
+      "stdout": "string allocation injected failures=29\nnormal_live0=0\n",
+      "stderr": ""
+    },
+    {
+      "config": "gcc_skip_default",
+      "test": "reference",
+      "source_sha256": {
+        "Suffix_Automaton.cpp": "8ca7d73707e41896a96f99e65f8bc69a2db9e6888b8225e1c12ee278ffcca8b0",
+        "Palindromic_Tree.cpp": "4026134c0c3652fa493423c12b3f1daaedda7bec2b8061ee142778f154900d51"
+      },
+      "fixture_sha256": "50ce238fb35d3c7777edad377d9d18dc355e5fbce68175a186a7d3563d144ba0",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-Wno-volatile",
+        "-DSKIP_RUNTIME_CHECKS",
+        "-DSUFFIX_AUTOMATON_SOURCE=\"/tmp/sirkit_12h_20261031_095733/string_automata/Suffix_Automaton.cpp\"",
+        "-DPALINDROMIC_TREE_SOURCE=\"/tmp/sirkit_12h_20261031_095733/string_automata/Palindromic_Tree.cpp\"",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/string_automata_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/gcc_skip_default_reference"
+      ],
+      "exit_code": 0,
+      "stdout": "string automata prefixes=3036 exhaustive substring/frequency/LCS/ownership/byte boundaries OK\n",
+      "stderr": ""
+    },
+    {
+      "config": "gcc_skip_default",
+      "test": "long_chain",
+      "source_sha256": {
+        "Suffix_Automaton.cpp": "8ca7d73707e41896a96f99e65f8bc69a2db9e6888b8225e1c12ee278ffcca8b0",
+        "Palindromic_Tree.cpp": "4026134c0c3652fa493423c12b3f1daaedda7bec2b8061ee142778f154900d51"
+      },
+      "fixture_sha256": "11d95ee8f5b7aa4775ce1d997a2179a8f2d70789a329bdbdbdff21344578cfff",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-Wno-volatile",
+        "-DSKIP_RUNTIME_CHECKS",
+        "-DSUFFIX_AUTOMATON_SOURCE=\"/tmp/sirkit_12h_20261031_095733/string_automata/Suffix_Automaton.cpp\"",
+        "-DPALINDROMIC_TREE_SOURCE=\"/tmp/sirkit_12h_20261031_095733/string_automata/Palindromic_Tree.cpp\"",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/string_automata_long_chain_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/gcc_skip_default_long_chain"
+      ],
+      "exit_code": 0,
+      "stdout": "million chain and periodic200000 iterative construction/counts OK\n",
+      "stderr": ""
+    },
+    {
+      "config": "gcc_skip_default",
+      "test": "exception",
+      "source_sha256": {
+        "Suffix_Automaton.cpp": "8ca7d73707e41896a96f99e65f8bc69a2db9e6888b8225e1c12ee278ffcca8b0",
+        "Palindromic_Tree.cpp": "4026134c0c3652fa493423c12b3f1daaedda7bec2b8061ee142778f154900d51"
+      },
+      "fixture_sha256": "690599969575d325916f270c35fb5d68473a8163942287b7251b2228770d5ca9",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-Wno-volatile",
+        "-DSKIP_RUNTIME_CHECKS",
+        "-DSUFFIX_AUTOMATON_SOURCE=\"/tmp/sirkit_12h_20261031_095733/string_automata/Suffix_Automaton.cpp\"",
+        "-DPALINDROMIC_TREE_SOURCE=\"/tmp/sirkit_12h_20261031_095733/string_automata/Palindromic_Tree.cpp\"",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/string_automata_exception_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/gcc_skip_default_exception"
+      ],
+      "exit_code": 0,
+      "stdout": "string allocation injected failures=29\nnormal_live0=0\n",
+      "stderr": ""
+    },
+    {
+      "config": "gcc_skip_native",
+      "test": "reference",
+      "source_sha256": {
+        "Suffix_Automaton.cpp": "8ca7d73707e41896a96f99e65f8bc69a2db9e6888b8225e1c12ee278ffcca8b0",
+        "Palindromic_Tree.cpp": "4026134c0c3652fa493423c12b3f1daaedda7bec2b8061ee142778f154900d51"
+      },
+      "fixture_sha256": "50ce238fb35d3c7777edad377d9d18dc355e5fbce68175a186a7d3563d144ba0",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-Wno-volatile",
+        "-DSKIP_RUNTIME_CHECKS",
+        "-march=native",
+        "-DSUFFIX_AUTOMATON_SOURCE=\"/tmp/sirkit_12h_20261031_095733/string_automata/Suffix_Automaton.cpp\"",
+        "-DPALINDROMIC_TREE_SOURCE=\"/tmp/sirkit_12h_20261031_095733/string_automata/Palindromic_Tree.cpp\"",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/string_automata_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/gcc_skip_native_reference"
+      ],
+      "exit_code": 0,
+      "stdout": "string automata prefixes=3036 exhaustive substring/frequency/LCS/ownership/byte boundaries OK\n",
+      "stderr": ""
+    },
+    {
+      "config": "gcc_skip_native",
+      "test": "long_chain",
+      "source_sha256": {
+        "Suffix_Automaton.cpp": "8ca7d73707e41896a96f99e65f8bc69a2db9e6888b8225e1c12ee278ffcca8b0",
+        "Palindromic_Tree.cpp": "4026134c0c3652fa493423c12b3f1daaedda7bec2b8061ee142778f154900d51"
+      },
+      "fixture_sha256": "11d95ee8f5b7aa4775ce1d997a2179a8f2d70789a329bdbdbdff21344578cfff",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-Wno-volatile",
+        "-DSKIP_RUNTIME_CHECKS",
+        "-march=native",
+        "-DSUFFIX_AUTOMATON_SOURCE=\"/tmp/sirkit_12h_20261031_095733/string_automata/Suffix_Automaton.cpp\"",
+        "-DPALINDROMIC_TREE_SOURCE=\"/tmp/sirkit_12h_20261031_095733/string_automata/Palindromic_Tree.cpp\"",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/string_automata_long_chain_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/gcc_skip_native_long_chain"
+      ],
+      "exit_code": 0,
+      "stdout": "million chain and periodic200000 iterative construction/counts OK\n",
+      "stderr": ""
+    },
+    {
+      "config": "gcc_skip_native",
+      "test": "exception",
+      "source_sha256": {
+        "Suffix_Automaton.cpp": "8ca7d73707e41896a96f99e65f8bc69a2db9e6888b8225e1c12ee278ffcca8b0",
+        "Palindromic_Tree.cpp": "4026134c0c3652fa493423c12b3f1daaedda7bec2b8061ee142778f154900d51"
+      },
+      "fixture_sha256": "690599969575d325916f270c35fb5d68473a8163942287b7251b2228770d5ca9",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-Wno-volatile",
+        "-DSKIP_RUNTIME_CHECKS",
+        "-march=native",
+        "-DSUFFIX_AUTOMATON_SOURCE=\"/tmp/sirkit_12h_20261031_095733/string_automata/Suffix_Automaton.cpp\"",
+        "-DPALINDROMIC_TREE_SOURCE=\"/tmp/sirkit_12h_20261031_095733/string_automata/Palindromic_Tree.cpp\"",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/string_automata_exception_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/gcc_skip_native_exception"
+      ],
+      "exit_code": 0,
+      "stdout": "string allocation injected failures=29\nnormal_live0=0\n",
+      "stderr": ""
+    },
+    {
+      "config": "gcc_skip_default_san",
+      "test": "reference",
+      "source_sha256": {
+        "Suffix_Automaton.cpp": "8ca7d73707e41896a96f99e65f8bc69a2db9e6888b8225e1c12ee278ffcca8b0",
+        "Palindromic_Tree.cpp": "4026134c0c3652fa493423c12b3f1daaedda7bec2b8061ee142778f154900d51"
+      },
+      "fixture_sha256": "50ce238fb35d3c7777edad377d9d18dc355e5fbce68175a186a7d3563d144ba0",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O1",
+        "-Wno-volatile",
+        "-DSKIP_RUNTIME_CHECKS",
+        "-g",
+        "-fsanitize=address,undefined",
+        "-fno-omit-frame-pointer",
+        "-DSUFFIX_AUTOMATON_SOURCE=\"/tmp/sirkit_12h_20261031_095733/string_automata/Suffix_Automaton.cpp\"",
+        "-DPALINDROMIC_TREE_SOURCE=\"/tmp/sirkit_12h_20261031_095733/string_automata/Palindromic_Tree.cpp\"",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/string_automata_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/gcc_skip_default_san_reference"
+      ],
+      "exit_code": 0,
+      "stdout": "string automata prefixes=3036 exhaustive substring/frequency/LCS/ownership/byte boundaries OK\n",
+      "stderr": ""
+    },
+    {
+      "config": "gcc_skip_default_san",
+      "test": "long_chain",
+      "source_sha256": {
+        "Suffix_Automaton.cpp": "8ca7d73707e41896a96f99e65f8bc69a2db9e6888b8225e1c12ee278ffcca8b0",
+        "Palindromic_Tree.cpp": "4026134c0c3652fa493423c12b3f1daaedda7bec2b8061ee142778f154900d51"
+      },
+      "fixture_sha256": "11d95ee8f5b7aa4775ce1d997a2179a8f2d70789a329bdbdbdff21344578cfff",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O1",
+        "-Wno-volatile",
+        "-DSKIP_RUNTIME_CHECKS",
+        "-g",
+        "-fsanitize=address,undefined",
+        "-fno-omit-frame-pointer",
+        "-DSUFFIX_AUTOMATON_SOURCE=\"/tmp/sirkit_12h_20261031_095733/string_automata/Suffix_Automaton.cpp\"",
+        "-DPALINDROMIC_TREE_SOURCE=\"/tmp/sirkit_12h_20261031_095733/string_automata/Palindromic_Tree.cpp\"",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/string_automata_long_chain_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/gcc_skip_default_san_long_chain"
+      ],
+      "exit_code": 0,
+      "stdout": "million chain and periodic200000 iterative construction/counts OK\n",
+      "stderr": ""
+    },
+    {
+      "config": "gcc_skip_default_san",
+      "test": "exception",
+      "source_sha256": {
+        "Suffix_Automaton.cpp": "8ca7d73707e41896a96f99e65f8bc69a2db9e6888b8225e1c12ee278ffcca8b0",
+        "Palindromic_Tree.cpp": "4026134c0c3652fa493423c12b3f1daaedda7bec2b8061ee142778f154900d51"
+      },
+      "fixture_sha256": "690599969575d325916f270c35fb5d68473a8163942287b7251b2228770d5ca9",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O1",
+        "-Wno-volatile",
+        "-DSKIP_RUNTIME_CHECKS",
+        "-g",
+        "-fsanitize=address,undefined",
+        "-fno-omit-frame-pointer",
+        "-DSUFFIX_AUTOMATON_SOURCE=\"/tmp/sirkit_12h_20261031_095733/string_automata/Suffix_Automaton.cpp\"",
+        "-DPALINDROMIC_TREE_SOURCE=\"/tmp/sirkit_12h_20261031_095733/string_automata/Palindromic_Tree.cpp\"",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/string_automata_exception_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/gcc_skip_default_san_exception"
+      ],
+      "exit_code": 0,
+      "stdout": "string allocation injected failures=29\nnormal_live0=0\n",
+      "stderr": ""
+    },
+    {
+      "config": "clang_checked_default",
+      "test": "reference",
+      "source_sha256": {
+        "Suffix_Automaton.cpp": "8ca7d73707e41896a96f99e65f8bc69a2db9e6888b8225e1c12ee278ffcca8b0",
+        "Palindromic_Tree.cpp": "4026134c0c3652fa493423c12b3f1daaedda7bec2b8061ee142778f154900d51"
+      },
+      "fixture_sha256": "50ce238fb35d3c7777edad377d9d18dc355e5fbce68175a186a7d3563d144ba0",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "-std=c++23",
+        "-O2",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-Wno-deprecated-volatile",
+        "-DSUFFIX_AUTOMATON_SOURCE=\"/tmp/sirkit_12h_20261031_095733/string_automata/Suffix_Automaton.cpp\"",
+        "-DPALINDROMIC_TREE_SOURCE=\"/tmp/sirkit_12h_20261031_095733/string_automata/Palindromic_Tree.cpp\"",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/string_automata_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/clang_checked_default_reference"
+      ],
+      "exit_code": 0,
+      "stdout": "string automata prefixes=3036 exhaustive substring/frequency/LCS/ownership/byte boundaries OK\n",
+      "stderr": ""
+    },
+    {
+      "config": "clang_checked_default",
+      "test": "long_chain",
+      "source_sha256": {
+        "Suffix_Automaton.cpp": "8ca7d73707e41896a96f99e65f8bc69a2db9e6888b8225e1c12ee278ffcca8b0",
+        "Palindromic_Tree.cpp": "4026134c0c3652fa493423c12b3f1daaedda7bec2b8061ee142778f154900d51"
+      },
+      "fixture_sha256": "11d95ee8f5b7aa4775ce1d997a2179a8f2d70789a329bdbdbdff21344578cfff",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "-std=c++23",
+        "-O2",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-Wno-deprecated-volatile",
+        "-DSUFFIX_AUTOMATON_SOURCE=\"/tmp/sirkit_12h_20261031_095733/string_automata/Suffix_Automaton.cpp\"",
+        "-DPALINDROMIC_TREE_SOURCE=\"/tmp/sirkit_12h_20261031_095733/string_automata/Palindromic_Tree.cpp\"",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/string_automata_long_chain_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/clang_checked_default_long_chain"
+      ],
+      "exit_code": 0,
+      "stdout": "million chain and periodic200000 iterative construction/counts OK\n",
+      "stderr": ""
+    },
+    {
+      "config": "clang_checked_default",
+      "test": "exception",
+      "source_sha256": {
+        "Suffix_Automaton.cpp": "8ca7d73707e41896a96f99e65f8bc69a2db9e6888b8225e1c12ee278ffcca8b0",
+        "Palindromic_Tree.cpp": "4026134c0c3652fa493423c12b3f1daaedda7bec2b8061ee142778f154900d51"
+      },
+      "fixture_sha256": "690599969575d325916f270c35fb5d68473a8163942287b7251b2228770d5ca9",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "-std=c++23",
+        "-O2",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-Wno-deprecated-volatile",
+        "-DSUFFIX_AUTOMATON_SOURCE=\"/tmp/sirkit_12h_20261031_095733/string_automata/Suffix_Automaton.cpp\"",
+        "-DPALINDROMIC_TREE_SOURCE=\"/tmp/sirkit_12h_20261031_095733/string_automata/Palindromic_Tree.cpp\"",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/string_automata_exception_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/clang_checked_default_exception"
+      ],
+      "exit_code": 0,
+      "stdout": "string allocation injected failures=28\nnormal_live0=0\n",
+      "stderr": ""
+    },
+    {
+      "config": "clang_checked_native",
+      "test": "reference",
+      "source_sha256": {
+        "Suffix_Automaton.cpp": "8ca7d73707e41896a96f99e65f8bc69a2db9e6888b8225e1c12ee278ffcca8b0",
+        "Palindromic_Tree.cpp": "4026134c0c3652fa493423c12b3f1daaedda7bec2b8061ee142778f154900d51"
+      },
+      "fixture_sha256": "50ce238fb35d3c7777edad377d9d18dc355e5fbce68175a186a7d3563d144ba0",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "-std=c++23",
+        "-O2",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-Wno-deprecated-volatile",
+        "-march=native",
+        "-DSUFFIX_AUTOMATON_SOURCE=\"/tmp/sirkit_12h_20261031_095733/string_automata/Suffix_Automaton.cpp\"",
+        "-DPALINDROMIC_TREE_SOURCE=\"/tmp/sirkit_12h_20261031_095733/string_automata/Palindromic_Tree.cpp\"",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/string_automata_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/clang_checked_native_reference"
+      ],
+      "exit_code": 0,
+      "stdout": "string automata prefixes=3036 exhaustive substring/frequency/LCS/ownership/byte boundaries OK\n",
+      "stderr": ""
+    },
+    {
+      "config": "clang_checked_native",
+      "test": "long_chain",
+      "source_sha256": {
+        "Suffix_Automaton.cpp": "8ca7d73707e41896a96f99e65f8bc69a2db9e6888b8225e1c12ee278ffcca8b0",
+        "Palindromic_Tree.cpp": "4026134c0c3652fa493423c12b3f1daaedda7bec2b8061ee142778f154900d51"
+      },
+      "fixture_sha256": "11d95ee8f5b7aa4775ce1d997a2179a8f2d70789a329bdbdbdff21344578cfff",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "-std=c++23",
+        "-O2",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-Wno-deprecated-volatile",
+        "-march=native",
+        "-DSUFFIX_AUTOMATON_SOURCE=\"/tmp/sirkit_12h_20261031_095733/string_automata/Suffix_Automaton.cpp\"",
+        "-DPALINDROMIC_TREE_SOURCE=\"/tmp/sirkit_12h_20261031_095733/string_automata/Palindromic_Tree.cpp\"",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/string_automata_long_chain_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/clang_checked_native_long_chain"
+      ],
+      "exit_code": 0,
+      "stdout": "million chain and periodic200000 iterative construction/counts OK\n",
+      "stderr": ""
+    },
+    {
+      "config": "clang_checked_native",
+      "test": "exception",
+      "source_sha256": {
+        "Suffix_Automaton.cpp": "8ca7d73707e41896a96f99e65f8bc69a2db9e6888b8225e1c12ee278ffcca8b0",
+        "Palindromic_Tree.cpp": "4026134c0c3652fa493423c12b3f1daaedda7bec2b8061ee142778f154900d51"
+      },
+      "fixture_sha256": "690599969575d325916f270c35fb5d68473a8163942287b7251b2228770d5ca9",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "-std=c++23",
+        "-O2",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-Wno-deprecated-volatile",
+        "-march=native",
+        "-DSUFFIX_AUTOMATON_SOURCE=\"/tmp/sirkit_12h_20261031_095733/string_automata/Suffix_Automaton.cpp\"",
+        "-DPALINDROMIC_TREE_SOURCE=\"/tmp/sirkit_12h_20261031_095733/string_automata/Palindromic_Tree.cpp\"",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/string_automata_exception_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/clang_checked_native_exception"
+      ],
+      "exit_code": 0,
+      "stdout": "string allocation injected failures=28\nnormal_live0=0\n",
+      "stderr": ""
+    },
+    {
+      "config": "clang_checked_default_san",
+      "test": "reference",
+      "source_sha256": {
+        "Suffix_Automaton.cpp": "8ca7d73707e41896a96f99e65f8bc69a2db9e6888b8225e1c12ee278ffcca8b0",
+        "Palindromic_Tree.cpp": "4026134c0c3652fa493423c12b3f1daaedda7bec2b8061ee142778f154900d51"
+      },
+      "fixture_sha256": "50ce238fb35d3c7777edad377d9d18dc355e5fbce68175a186a7d3563d144ba0",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "-std=c++23",
+        "-O1",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-Wno-deprecated-volatile",
+        "-g",
+        "-fsanitize=address,undefined",
+        "-fno-omit-frame-pointer",
+        "-DSUFFIX_AUTOMATON_SOURCE=\"/tmp/sirkit_12h_20261031_095733/string_automata/Suffix_Automaton.cpp\"",
+        "-DPALINDROMIC_TREE_SOURCE=\"/tmp/sirkit_12h_20261031_095733/string_automata/Palindromic_Tree.cpp\"",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/string_automata_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/clang_checked_default_san_reference"
+      ],
+      "exit_code": 0,
+      "stdout": "string automata prefixes=3036 exhaustive substring/frequency/LCS/ownership/byte boundaries OK\n",
+      "stderr": ""
+    },
+    {
+      "config": "clang_checked_default_san",
+      "test": "long_chain",
+      "source_sha256": {
+        "Suffix_Automaton.cpp": "8ca7d73707e41896a96f99e65f8bc69a2db9e6888b8225e1c12ee278ffcca8b0",
+        "Palindromic_Tree.cpp": "4026134c0c3652fa493423c12b3f1daaedda7bec2b8061ee142778f154900d51"
+      },
+      "fixture_sha256": "11d95ee8f5b7aa4775ce1d997a2179a8f2d70789a329bdbdbdff21344578cfff",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "-std=c++23",
+        "-O1",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-Wno-deprecated-volatile",
+        "-g",
+        "-fsanitize=address,undefined",
+        "-fno-omit-frame-pointer",
+        "-DSUFFIX_AUTOMATON_SOURCE=\"/tmp/sirkit_12h_20261031_095733/string_automata/Suffix_Automaton.cpp\"",
+        "-DPALINDROMIC_TREE_SOURCE=\"/tmp/sirkit_12h_20261031_095733/string_automata/Palindromic_Tree.cpp\"",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/string_automata_long_chain_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/clang_checked_default_san_long_chain"
+      ],
+      "exit_code": 0,
+      "stdout": "million chain and periodic200000 iterative construction/counts OK\n",
+      "stderr": ""
+    },
+    {
+      "config": "clang_checked_default_san",
+      "test": "exception",
+      "source_sha256": {
+        "Suffix_Automaton.cpp": "8ca7d73707e41896a96f99e65f8bc69a2db9e6888b8225e1c12ee278ffcca8b0",
+        "Palindromic_Tree.cpp": "4026134c0c3652fa493423c12b3f1daaedda7bec2b8061ee142778f154900d51"
+      },
+      "fixture_sha256": "690599969575d325916f270c35fb5d68473a8163942287b7251b2228770d5ca9",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "-std=c++23",
+        "-O1",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-Wno-deprecated-volatile",
+        "-g",
+        "-fsanitize=address,undefined",
+        "-fno-omit-frame-pointer",
+        "-DSUFFIX_AUTOMATON_SOURCE=\"/tmp/sirkit_12h_20261031_095733/string_automata/Suffix_Automaton.cpp\"",
+        "-DPALINDROMIC_TREE_SOURCE=\"/tmp/sirkit_12h_20261031_095733/string_automata/Palindromic_Tree.cpp\"",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/string_automata_exception_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/clang_checked_default_san_exception"
+      ],
+      "exit_code": 0,
+      "stdout": "string allocation injected failures=29\nnormal_live0=0\n",
+      "stderr": ""
+    },
+    {
+      "config": "clang_skip_default",
+      "test": "reference",
+      "source_sha256": {
+        "Suffix_Automaton.cpp": "8ca7d73707e41896a96f99e65f8bc69a2db9e6888b8225e1c12ee278ffcca8b0",
+        "Palindromic_Tree.cpp": "4026134c0c3652fa493423c12b3f1daaedda7bec2b8061ee142778f154900d51"
+      },
+      "fixture_sha256": "50ce238fb35d3c7777edad377d9d18dc355e5fbce68175a186a7d3563d144ba0",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "-std=c++23",
+        "-O2",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-Wno-deprecated-volatile",
+        "-DSKIP_RUNTIME_CHECKS",
+        "-DSUFFIX_AUTOMATON_SOURCE=\"/tmp/sirkit_12h_20261031_095733/string_automata/Suffix_Automaton.cpp\"",
+        "-DPALINDROMIC_TREE_SOURCE=\"/tmp/sirkit_12h_20261031_095733/string_automata/Palindromic_Tree.cpp\"",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/string_automata_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/clang_skip_default_reference"
+      ],
+      "exit_code": 0,
+      "stdout": "string automata prefixes=3036 exhaustive substring/frequency/LCS/ownership/byte boundaries OK\n",
+      "stderr": ""
+    },
+    {
+      "config": "clang_skip_default",
+      "test": "long_chain",
+      "source_sha256": {
+        "Suffix_Automaton.cpp": "8ca7d73707e41896a96f99e65f8bc69a2db9e6888b8225e1c12ee278ffcca8b0",
+        "Palindromic_Tree.cpp": "4026134c0c3652fa493423c12b3f1daaedda7bec2b8061ee142778f154900d51"
+      },
+      "fixture_sha256": "11d95ee8f5b7aa4775ce1d997a2179a8f2d70789a329bdbdbdff21344578cfff",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "-std=c++23",
+        "-O2",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-Wno-deprecated-volatile",
+        "-DSKIP_RUNTIME_CHECKS",
+        "-DSUFFIX_AUTOMATON_SOURCE=\"/tmp/sirkit_12h_20261031_095733/string_automata/Suffix_Automaton.cpp\"",
+        "-DPALINDROMIC_TREE_SOURCE=\"/tmp/sirkit_12h_20261031_095733/string_automata/Palindromic_Tree.cpp\"",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/string_automata_long_chain_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/clang_skip_default_long_chain"
+      ],
+      "exit_code": 0,
+      "stdout": "million chain and periodic200000 iterative construction/counts OK\n",
+      "stderr": ""
+    },
+    {
+      "config": "clang_skip_default",
+      "test": "exception",
+      "source_sha256": {
+        "Suffix_Automaton.cpp": "8ca7d73707e41896a96f99e65f8bc69a2db9e6888b8225e1c12ee278ffcca8b0",
+        "Palindromic_Tree.cpp": "4026134c0c3652fa493423c12b3f1daaedda7bec2b8061ee142778f154900d51"
+      },
+      "fixture_sha256": "690599969575d325916f270c35fb5d68473a8163942287b7251b2228770d5ca9",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "-std=c++23",
+        "-O2",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-Wno-deprecated-volatile",
+        "-DSKIP_RUNTIME_CHECKS",
+        "-DSUFFIX_AUTOMATON_SOURCE=\"/tmp/sirkit_12h_20261031_095733/string_automata/Suffix_Automaton.cpp\"",
+        "-DPALINDROMIC_TREE_SOURCE=\"/tmp/sirkit_12h_20261031_095733/string_automata/Palindromic_Tree.cpp\"",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/string_automata_exception_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/clang_skip_default_exception"
+      ],
+      "exit_code": 0,
+      "stdout": "string allocation injected failures=28\nnormal_live0=0\n",
+      "stderr": ""
+    },
+    {
+      "config": "clang_skip_native",
+      "test": "reference",
+      "source_sha256": {
+        "Suffix_Automaton.cpp": "8ca7d73707e41896a96f99e65f8bc69a2db9e6888b8225e1c12ee278ffcca8b0",
+        "Palindromic_Tree.cpp": "4026134c0c3652fa493423c12b3f1daaedda7bec2b8061ee142778f154900d51"
+      },
+      "fixture_sha256": "50ce238fb35d3c7777edad377d9d18dc355e5fbce68175a186a7d3563d144ba0",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "-std=c++23",
+        "-O2",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-Wno-deprecated-volatile",
+        "-DSKIP_RUNTIME_CHECKS",
+        "-march=native",
+        "-DSUFFIX_AUTOMATON_SOURCE=\"/tmp/sirkit_12h_20261031_095733/string_automata/Suffix_Automaton.cpp\"",
+        "-DPALINDROMIC_TREE_SOURCE=\"/tmp/sirkit_12h_20261031_095733/string_automata/Palindromic_Tree.cpp\"",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/string_automata_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/clang_skip_native_reference"
+      ],
+      "exit_code": 0,
+      "stdout": "string automata prefixes=3036 exhaustive substring/frequency/LCS/ownership/byte boundaries OK\n",
+      "stderr": ""
+    },
+    {
+      "config": "clang_skip_native",
+      "test": "long_chain",
+      "source_sha256": {
+        "Suffix_Automaton.cpp": "8ca7d73707e41896a96f99e65f8bc69a2db9e6888b8225e1c12ee278ffcca8b0",
+        "Palindromic_Tree.cpp": "4026134c0c3652fa493423c12b3f1daaedda7bec2b8061ee142778f154900d51"
+      },
+      "fixture_sha256": "11d95ee8f5b7aa4775ce1d997a2179a8f2d70789a329bdbdbdff21344578cfff",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "-std=c++23",
+        "-O2",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-Wno-deprecated-volatile",
+        "-DSKIP_RUNTIME_CHECKS",
+        "-march=native",
+        "-DSUFFIX_AUTOMATON_SOURCE=\"/tmp/sirkit_12h_20261031_095733/string_automata/Suffix_Automaton.cpp\"",
+        "-DPALINDROMIC_TREE_SOURCE=\"/tmp/sirkit_12h_20261031_095733/string_automata/Palindromic_Tree.cpp\"",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/string_automata_long_chain_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/clang_skip_native_long_chain"
+      ],
+      "exit_code": 0,
+      "stdout": "million chain and periodic200000 iterative construction/counts OK\n",
+      "stderr": ""
+    },
+    {
+      "config": "clang_skip_native",
+      "test": "exception",
+      "source_sha256": {
+        "Suffix_Automaton.cpp": "8ca7d73707e41896a96f99e65f8bc69a2db9e6888b8225e1c12ee278ffcca8b0",
+        "Palindromic_Tree.cpp": "4026134c0c3652fa493423c12b3f1daaedda7bec2b8061ee142778f154900d51"
+      },
+      "fixture_sha256": "690599969575d325916f270c35fb5d68473a8163942287b7251b2228770d5ca9",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "-std=c++23",
+        "-O2",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-Wno-deprecated-volatile",
+        "-DSKIP_RUNTIME_CHECKS",
+        "-march=native",
+        "-DSUFFIX_AUTOMATON_SOURCE=\"/tmp/sirkit_12h_20261031_095733/string_automata/Suffix_Automaton.cpp\"",
+        "-DPALINDROMIC_TREE_SOURCE=\"/tmp/sirkit_12h_20261031_095733/string_automata/Palindromic_Tree.cpp\"",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/string_automata_exception_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/clang_skip_native_exception"
+      ],
+      "exit_code": 0,
+      "stdout": "string allocation injected failures=28\nnormal_live0=0\n",
+      "stderr": ""
+    },
+    {
+      "config": "clang_skip_default_san",
+      "test": "reference",
+      "source_sha256": {
+        "Suffix_Automaton.cpp": "8ca7d73707e41896a96f99e65f8bc69a2db9e6888b8225e1c12ee278ffcca8b0",
+        "Palindromic_Tree.cpp": "4026134c0c3652fa493423c12b3f1daaedda7bec2b8061ee142778f154900d51"
+      },
+      "fixture_sha256": "50ce238fb35d3c7777edad377d9d18dc355e5fbce68175a186a7d3563d144ba0",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "-std=c++23",
+        "-O1",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-Wno-deprecated-volatile",
+        "-DSKIP_RUNTIME_CHECKS",
+        "-g",
+        "-fsanitize=address,undefined",
+        "-fno-omit-frame-pointer",
+        "-DSUFFIX_AUTOMATON_SOURCE=\"/tmp/sirkit_12h_20261031_095733/string_automata/Suffix_Automaton.cpp\"",
+        "-DPALINDROMIC_TREE_SOURCE=\"/tmp/sirkit_12h_20261031_095733/string_automata/Palindromic_Tree.cpp\"",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/string_automata_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/clang_skip_default_san_reference"
+      ],
+      "exit_code": 0,
+      "stdout": "string automata prefixes=3036 exhaustive substring/frequency/LCS/ownership/byte boundaries OK\n",
+      "stderr": ""
+    },
+    {
+      "config": "clang_skip_default_san",
+      "test": "long_chain",
+      "source_sha256": {
+        "Suffix_Automaton.cpp": "8ca7d73707e41896a96f99e65f8bc69a2db9e6888b8225e1c12ee278ffcca8b0",
+        "Palindromic_Tree.cpp": "4026134c0c3652fa493423c12b3f1daaedda7bec2b8061ee142778f154900d51"
+      },
+      "fixture_sha256": "11d95ee8f5b7aa4775ce1d997a2179a8f2d70789a329bdbdbdff21344578cfff",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "-std=c++23",
+        "-O1",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-Wno-deprecated-volatile",
+        "-DSKIP_RUNTIME_CHECKS",
+        "-g",
+        "-fsanitize=address,undefined",
+        "-fno-omit-frame-pointer",
+        "-DSUFFIX_AUTOMATON_SOURCE=\"/tmp/sirkit_12h_20261031_095733/string_automata/Suffix_Automaton.cpp\"",
+        "-DPALINDROMIC_TREE_SOURCE=\"/tmp/sirkit_12h_20261031_095733/string_automata/Palindromic_Tree.cpp\"",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/string_automata_long_chain_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/clang_skip_default_san_long_chain"
+      ],
+      "exit_code": 0,
+      "stdout": "million chain and periodic200000 iterative construction/counts OK\n",
+      "stderr": ""
+    },
+    {
+      "config": "clang_skip_default_san",
+      "test": "exception",
+      "source_sha256": {
+        "Suffix_Automaton.cpp": "8ca7d73707e41896a96f99e65f8bc69a2db9e6888b8225e1c12ee278ffcca8b0",
+        "Palindromic_Tree.cpp": "4026134c0c3652fa493423c12b3f1daaedda7bec2b8061ee142778f154900d51"
+      },
+      "fixture_sha256": "690599969575d325916f270c35fb5d68473a8163942287b7251b2228770d5ca9",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "-std=c++23",
+        "-O1",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-Wno-deprecated-volatile",
+        "-DSKIP_RUNTIME_CHECKS",
+        "-g",
+        "-fsanitize=address,undefined",
+        "-fno-omit-frame-pointer",
+        "-DSUFFIX_AUTOMATON_SOURCE=\"/tmp/sirkit_12h_20261031_095733/string_automata/Suffix_Automaton.cpp\"",
+        "-DPALINDROMIC_TREE_SOURCE=\"/tmp/sirkit_12h_20261031_095733/string_automata/Palindromic_Tree.cpp\"",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/string_automata_exception_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/clang_skip_default_san_exception"
+      ],
+      "exit_code": 0,
+      "stdout": "string allocation injected failures=29\nnormal_live0=0\n",
+      "stderr": ""
+    }
+  ],
+  "driver_results": [
+    {
+      "config": "gcc_checked_default",
+      "kind": "suffix_automaton",
+      "type": "driver",
+      "source_sha256": {
+        "String/Suffix_Automaton.cpp": "8ca7d73707e41896a96f99e65f8bc69a2db9e6888b8225e1c12ee278ffcca8b0"
+      },
+      "submission_sha256": "f5c1a251de5fe62099872674653b79e4305b3bf60372e6015e37d2b232cedb36",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/submit_suffix_automaton_gcc_checked_default.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/submit_suffix_automaton_gcc_checked_default"
+      ],
+      "cases": 184,
+      "exit_code": 0
+    },
+    {
+      "config": "gcc_checked_default",
+      "kind": "suffix_automaton_lcs",
+      "type": "driver",
+      "source_sha256": {
+        "String/Suffix_Automaton.cpp": "8ca7d73707e41896a96f99e65f8bc69a2db9e6888b8225e1c12ee278ffcca8b0"
+      },
+      "submission_sha256": "3482a11835e092c8031204a492e76f82f23ac9302b4e1bd05ad0d375c344e962",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/submit_suffix_automaton_lcs_gcc_checked_default.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/submit_suffix_automaton_lcs_gcc_checked_default"
+      ],
+      "cases": 184,
+      "exit_code": 0
+    },
+    {
+      "config": "gcc_checked_default",
+      "kind": "palindromic_tree",
+      "type": "driver",
+      "source_sha256": {
+        "String/Palindromic_Tree.cpp": "4026134c0c3652fa493423c12b3f1daaedda7bec2b8061ee142778f154900d51"
+      },
+      "submission_sha256": "fdb4b216f1505c0373f508ab866a850797a8953eb0e0da8d98fed523fe673df9",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/submit_palindromic_tree_gcc_checked_default.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/submit_palindromic_tree_gcc_checked_default"
+      ],
+      "cases": 183,
+      "exit_code": 0
+    },
+    {
+      "config": "gcc_checked_native",
+      "kind": "suffix_automaton",
+      "type": "driver",
+      "source_sha256": {
+        "String/Suffix_Automaton.cpp": "8ca7d73707e41896a96f99e65f8bc69a2db9e6888b8225e1c12ee278ffcca8b0"
+      },
+      "submission_sha256": "f5c1a251de5fe62099872674653b79e4305b3bf60372e6015e37d2b232cedb36",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-march=native",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/submit_suffix_automaton_gcc_checked_native.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/submit_suffix_automaton_gcc_checked_native"
+      ],
+      "cases": 184,
+      "exit_code": 0
+    },
+    {
+      "config": "gcc_checked_native",
+      "kind": "suffix_automaton_lcs",
+      "type": "driver",
+      "source_sha256": {
+        "String/Suffix_Automaton.cpp": "8ca7d73707e41896a96f99e65f8bc69a2db9e6888b8225e1c12ee278ffcca8b0"
+      },
+      "submission_sha256": "3482a11835e092c8031204a492e76f82f23ac9302b4e1bd05ad0d375c344e962",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-march=native",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/submit_suffix_automaton_lcs_gcc_checked_native.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/submit_suffix_automaton_lcs_gcc_checked_native"
+      ],
+      "cases": 184,
+      "exit_code": 0
+    },
+    {
+      "config": "gcc_checked_native",
+      "kind": "palindromic_tree",
+      "type": "driver",
+      "source_sha256": {
+        "String/Palindromic_Tree.cpp": "4026134c0c3652fa493423c12b3f1daaedda7bec2b8061ee142778f154900d51"
+      },
+      "submission_sha256": "fdb4b216f1505c0373f508ab866a850797a8953eb0e0da8d98fed523fe673df9",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-march=native",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/submit_palindromic_tree_gcc_checked_native.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/submit_palindromic_tree_gcc_checked_native"
+      ],
+      "cases": 183,
+      "exit_code": 0
+    },
+    {
+      "config": "gcc_skip_default",
+      "kind": "suffix_automaton",
+      "type": "driver",
+      "source_sha256": {
+        "String/Suffix_Automaton.cpp": "8ca7d73707e41896a96f99e65f8bc69a2db9e6888b8225e1c12ee278ffcca8b0"
+      },
+      "submission_sha256": "bca209910e844a1f1055d05eb1aa122e7d478e07b119b5c89c282b2dc8c95dad",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/submit_suffix_automaton_gcc_skip_default.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/submit_suffix_automaton_gcc_skip_default"
+      ],
+      "cases": 184,
+      "exit_code": 0
+    },
+    {
+      "config": "gcc_skip_default",
+      "kind": "suffix_automaton_lcs",
+      "type": "driver",
+      "source_sha256": {
+        "String/Suffix_Automaton.cpp": "8ca7d73707e41896a96f99e65f8bc69a2db9e6888b8225e1c12ee278ffcca8b0"
+      },
+      "submission_sha256": "d6115ea87819fb5f7b572fc6f1bcdf227ea0941b85ed0e8da1ce592233a3f02d",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/submit_suffix_automaton_lcs_gcc_skip_default.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/submit_suffix_automaton_lcs_gcc_skip_default"
+      ],
+      "cases": 184,
+      "exit_code": 0
+    },
+    {
+      "config": "gcc_skip_default",
+      "kind": "palindromic_tree",
+      "type": "driver",
+      "source_sha256": {
+        "String/Palindromic_Tree.cpp": "4026134c0c3652fa493423c12b3f1daaedda7bec2b8061ee142778f154900d51"
+      },
+      "submission_sha256": "fa4e943369ca7a716cd9b05557bb9b065743a0d82966bfffe8fb750847760149",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/submit_palindromic_tree_gcc_skip_default.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/submit_palindromic_tree_gcc_skip_default"
+      ],
+      "cases": 183,
+      "exit_code": 0
+    },
+    {
+      "config": "gcc_skip_native",
+      "kind": "suffix_automaton",
+      "type": "driver",
+      "source_sha256": {
+        "String/Suffix_Automaton.cpp": "8ca7d73707e41896a96f99e65f8bc69a2db9e6888b8225e1c12ee278ffcca8b0"
+      },
+      "submission_sha256": "bca209910e844a1f1055d05eb1aa122e7d478e07b119b5c89c282b2dc8c95dad",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-march=native",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/submit_suffix_automaton_gcc_skip_native.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/submit_suffix_automaton_gcc_skip_native"
+      ],
+      "cases": 184,
+      "exit_code": 0
+    },
+    {
+      "config": "gcc_skip_native",
+      "kind": "suffix_automaton_lcs",
+      "type": "driver",
+      "source_sha256": {
+        "String/Suffix_Automaton.cpp": "8ca7d73707e41896a96f99e65f8bc69a2db9e6888b8225e1c12ee278ffcca8b0"
+      },
+      "submission_sha256": "d6115ea87819fb5f7b572fc6f1bcdf227ea0941b85ed0e8da1ce592233a3f02d",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-march=native",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/submit_suffix_automaton_lcs_gcc_skip_native.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/submit_suffix_automaton_lcs_gcc_skip_native"
+      ],
+      "cases": 184,
+      "exit_code": 0
+    },
+    {
+      "config": "gcc_skip_native",
+      "kind": "palindromic_tree",
+      "type": "driver",
+      "source_sha256": {
+        "String/Palindromic_Tree.cpp": "4026134c0c3652fa493423c12b3f1daaedda7bec2b8061ee142778f154900d51"
+      },
+      "submission_sha256": "fa4e943369ca7a716cd9b05557bb9b065743a0d82966bfffe8fb750847760149",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-march=native",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/submit_palindromic_tree_gcc_skip_native.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/submit_palindromic_tree_gcc_skip_native"
+      ],
+      "cases": 183,
+      "exit_code": 0
+    },
+    {
+      "config": "gcc_checked",
+      "kind": "suffix_automaton",
+      "type": "example",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/example_suffix_automaton_gcc_checked.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/example_suffix_automaton_gcc_checked"
+      ],
+      "stdout": "9 2\n1 6\n1 2 4\n6 7\n3 3\n1 1\n",
+      "exit_code": 0
+    },
+    {
+      "config": "gcc_checked",
+      "kind": "palindromic_tree",
+      "type": "example",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/example_palindromic_tree_gcc_checked.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/example_palindromic_tree_gcc_checked"
+      ],
+      "stdout": "5 5 2\n0 5\na:3 b:2 aba:2 bab:1 ababa:1 \n6 3 4\nababab abababab\n1 5\n1 0\n",
+      "exit_code": 0
+    },
+    {
+      "config": "gcc_skip",
+      "kind": "suffix_automaton",
+      "type": "example",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-DSKIP_RUNTIME_CHECKS",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/example_suffix_automaton_gcc_skip.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/example_suffix_automaton_gcc_skip"
+      ],
+      "stdout": "9 2\n1 6\n1 2 4\n6 7\n3 3\n1 1\n",
+      "exit_code": 0
+    },
+    {
+      "config": "gcc_skip",
+      "kind": "palindromic_tree",
+      "type": "example",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-DSKIP_RUNTIME_CHECKS",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/example_palindromic_tree_gcc_skip.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/example_palindromic_tree_gcc_skip"
+      ],
+      "stdout": "5 5 2\n0 5\na:3 b:2 aba:2 bab:1 ababa:1 \n6 3 4\nababab abababab\n1 5\n1 0\n",
+      "exit_code": 0
+    },
+    {
+      "config": "gcc",
+      "kind": "Suffix_Automaton.cpp",
+      "type": "standalone",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-pedantic-errors",
+        "-fsyntax-only",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/Suffix_Automaton.cpp"
+      ],
+      "exit_code": 0
+    },
+    {
+      "config": "gcc",
+      "kind": "Palindromic_Tree.cpp",
+      "type": "standalone",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-pedantic-errors",
+        "-fsyntax-only",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/Palindromic_Tree.cpp"
+      ],
+      "exit_code": 0
+    },
+    {
+      "config": "clang_checked_default",
+      "kind": "suffix_automaton",
+      "type": "driver",
+      "source_sha256": {
+        "String/Suffix_Automaton.cpp": "8ca7d73707e41896a96f99e65f8bc69a2db9e6888b8225e1c12ee278ffcca8b0"
+      },
+      "submission_sha256": "f5c1a251de5fe62099872674653b79e4305b3bf60372e6015e37d2b232cedb36",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "-std=c++23",
+        "-O2",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/submit_suffix_automaton_clang_checked_default.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/submit_suffix_automaton_clang_checked_default"
+      ],
+      "cases": 184,
+      "exit_code": 0
+    },
+    {
+      "config": "clang_checked_default",
+      "kind": "suffix_automaton_lcs",
+      "type": "driver",
+      "source_sha256": {
+        "String/Suffix_Automaton.cpp": "8ca7d73707e41896a96f99e65f8bc69a2db9e6888b8225e1c12ee278ffcca8b0"
+      },
+      "submission_sha256": "3482a11835e092c8031204a492e76f82f23ac9302b4e1bd05ad0d375c344e962",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "-std=c++23",
+        "-O2",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/submit_suffix_automaton_lcs_clang_checked_default.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/submit_suffix_automaton_lcs_clang_checked_default"
+      ],
+      "cases": 184,
+      "exit_code": 0
+    },
+    {
+      "config": "clang_checked_default",
+      "kind": "palindromic_tree",
+      "type": "driver",
+      "source_sha256": {
+        "String/Palindromic_Tree.cpp": "4026134c0c3652fa493423c12b3f1daaedda7bec2b8061ee142778f154900d51"
+      },
+      "submission_sha256": "fdb4b216f1505c0373f508ab866a850797a8953eb0e0da8d98fed523fe673df9",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "-std=c++23",
+        "-O2",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/submit_palindromic_tree_clang_checked_default.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/submit_palindromic_tree_clang_checked_default"
+      ],
+      "cases": 183,
+      "exit_code": 0
+    },
+    {
+      "config": "clang_checked_native",
+      "kind": "suffix_automaton",
+      "type": "driver",
+      "source_sha256": {
+        "String/Suffix_Automaton.cpp": "8ca7d73707e41896a96f99e65f8bc69a2db9e6888b8225e1c12ee278ffcca8b0"
+      },
+      "submission_sha256": "f5c1a251de5fe62099872674653b79e4305b3bf60372e6015e37d2b232cedb36",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "-std=c++23",
+        "-O2",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-march=native",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/submit_suffix_automaton_clang_checked_native.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/submit_suffix_automaton_clang_checked_native"
+      ],
+      "cases": 184,
+      "exit_code": 0
+    },
+    {
+      "config": "clang_checked_native",
+      "kind": "suffix_automaton_lcs",
+      "type": "driver",
+      "source_sha256": {
+        "String/Suffix_Automaton.cpp": "8ca7d73707e41896a96f99e65f8bc69a2db9e6888b8225e1c12ee278ffcca8b0"
+      },
+      "submission_sha256": "3482a11835e092c8031204a492e76f82f23ac9302b4e1bd05ad0d375c344e962",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "-std=c++23",
+        "-O2",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-march=native",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/submit_suffix_automaton_lcs_clang_checked_native.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/submit_suffix_automaton_lcs_clang_checked_native"
+      ],
+      "cases": 184,
+      "exit_code": 0
+    },
+    {
+      "config": "clang_checked_native",
+      "kind": "palindromic_tree",
+      "type": "driver",
+      "source_sha256": {
+        "String/Palindromic_Tree.cpp": "4026134c0c3652fa493423c12b3f1daaedda7bec2b8061ee142778f154900d51"
+      },
+      "submission_sha256": "fdb4b216f1505c0373f508ab866a850797a8953eb0e0da8d98fed523fe673df9",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "-std=c++23",
+        "-O2",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-march=native",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/submit_palindromic_tree_clang_checked_native.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/submit_palindromic_tree_clang_checked_native"
+      ],
+      "cases": 183,
+      "exit_code": 0
+    },
+    {
+      "config": "clang_skip_default",
+      "kind": "suffix_automaton",
+      "type": "driver",
+      "source_sha256": {
+        "String/Suffix_Automaton.cpp": "8ca7d73707e41896a96f99e65f8bc69a2db9e6888b8225e1c12ee278ffcca8b0"
+      },
+      "submission_sha256": "bca209910e844a1f1055d05eb1aa122e7d478e07b119b5c89c282b2dc8c95dad",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "-std=c++23",
+        "-O2",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/submit_suffix_automaton_clang_skip_default.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/submit_suffix_automaton_clang_skip_default"
+      ],
+      "cases": 184,
+      "exit_code": 0
+    },
+    {
+      "config": "clang_skip_default",
+      "kind": "suffix_automaton_lcs",
+      "type": "driver",
+      "source_sha256": {
+        "String/Suffix_Automaton.cpp": "8ca7d73707e41896a96f99e65f8bc69a2db9e6888b8225e1c12ee278ffcca8b0"
+      },
+      "submission_sha256": "d6115ea87819fb5f7b572fc6f1bcdf227ea0941b85ed0e8da1ce592233a3f02d",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "-std=c++23",
+        "-O2",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/submit_suffix_automaton_lcs_clang_skip_default.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/submit_suffix_automaton_lcs_clang_skip_default"
+      ],
+      "cases": 184,
+      "exit_code": 0
+    },
+    {
+      "config": "clang_skip_default",
+      "kind": "palindromic_tree",
+      "type": "driver",
+      "source_sha256": {
+        "String/Palindromic_Tree.cpp": "4026134c0c3652fa493423c12b3f1daaedda7bec2b8061ee142778f154900d51"
+      },
+      "submission_sha256": "fa4e943369ca7a716cd9b05557bb9b065743a0d82966bfffe8fb750847760149",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "-std=c++23",
+        "-O2",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/submit_palindromic_tree_clang_skip_default.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/submit_palindromic_tree_clang_skip_default"
+      ],
+      "cases": 183,
+      "exit_code": 0
+    },
+    {
+      "config": "clang_skip_native",
+      "kind": "suffix_automaton",
+      "type": "driver",
+      "source_sha256": {
+        "String/Suffix_Automaton.cpp": "8ca7d73707e41896a96f99e65f8bc69a2db9e6888b8225e1c12ee278ffcca8b0"
+      },
+      "submission_sha256": "bca209910e844a1f1055d05eb1aa122e7d478e07b119b5c89c282b2dc8c95dad",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "-std=c++23",
+        "-O2",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-march=native",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/submit_suffix_automaton_clang_skip_native.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/submit_suffix_automaton_clang_skip_native"
+      ],
+      "cases": 184,
+      "exit_code": 0
+    },
+    {
+      "config": "clang_skip_native",
+      "kind": "suffix_automaton_lcs",
+      "type": "driver",
+      "source_sha256": {
+        "String/Suffix_Automaton.cpp": "8ca7d73707e41896a96f99e65f8bc69a2db9e6888b8225e1c12ee278ffcca8b0"
+      },
+      "submission_sha256": "d6115ea87819fb5f7b572fc6f1bcdf227ea0941b85ed0e8da1ce592233a3f02d",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "-std=c++23",
+        "-O2",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-march=native",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/submit_suffix_automaton_lcs_clang_skip_native.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/submit_suffix_automaton_lcs_clang_skip_native"
+      ],
+      "cases": 184,
+      "exit_code": 0
+    },
+    {
+      "config": "clang_skip_native",
+      "kind": "palindromic_tree",
+      "type": "driver",
+      "source_sha256": {
+        "String/Palindromic_Tree.cpp": "4026134c0c3652fa493423c12b3f1daaedda7bec2b8061ee142778f154900d51"
+      },
+      "submission_sha256": "fa4e943369ca7a716cd9b05557bb9b065743a0d82966bfffe8fb750847760149",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "-std=c++23",
+        "-O2",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-march=native",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/submit_palindromic_tree_clang_skip_native.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/submit_palindromic_tree_clang_skip_native"
+      ],
+      "cases": 183,
+      "exit_code": 0
+    },
+    {
+      "config": "clang_checked",
+      "kind": "suffix_automaton",
+      "type": "example",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "-std=c++23",
+        "-O2",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/example_suffix_automaton_clang_checked.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/example_suffix_automaton_clang_checked"
+      ],
+      "stdout": "9 2\n1 6\n1 2 4\n6 7\n3 3\n1 1\n",
+      "exit_code": 0
+    },
+    {
+      "config": "clang_checked",
+      "kind": "palindromic_tree",
+      "type": "example",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "-std=c++23",
+        "-O2",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/example_palindromic_tree_clang_checked.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/example_palindromic_tree_clang_checked"
+      ],
+      "stdout": "5 5 2\n0 5\na:3 b:2 aba:2 bab:1 ababa:1 \n6 3 4\nababab abababab\n1 5\n1 0\n",
+      "exit_code": 0
+    },
+    {
+      "config": "clang_skip",
+      "kind": "suffix_automaton",
+      "type": "example",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "-std=c++23",
+        "-O2",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-DSKIP_RUNTIME_CHECKS",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/example_suffix_automaton_clang_skip.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/example_suffix_automaton_clang_skip"
+      ],
+      "stdout": "9 2\n1 6\n1 2 4\n6 7\n3 3\n1 1\n",
+      "exit_code": 0
+    },
+    {
+      "config": "clang_skip",
+      "kind": "palindromic_tree",
+      "type": "example",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "-std=c++23",
+        "-O2",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-DSKIP_RUNTIME_CHECKS",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/example_palindromic_tree_clang_skip.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/example_palindromic_tree_clang_skip"
+      ],
+      "stdout": "5 5 2\n0 5\na:3 b:2 aba:2 bab:1 ababa:1 \n6 3 4\nababab abababab\n1 5\n1 0\n",
+      "exit_code": 0
+    },
+    {
+      "config": "clang",
+      "kind": "Suffix_Automaton.cpp",
+      "type": "standalone",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-pedantic-errors",
+        "-fsyntax-only",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/Suffix_Automaton.cpp"
+      ],
+      "exit_code": 0
+    },
+    {
+      "config": "clang",
+      "kind": "Palindromic_Tree.cpp",
+      "type": "standalone",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-pedantic-errors",
+        "-fsyntax-only",
+        "/tmp/sirkit_12h_20261031_095733/string_automata/Palindromic_Tree.cpp"
+      ],
+      "exit_code": 0
+    }
+  ],
+  "performance": "No measured speed claim. Normal safe ownership retained; no leak-based Fast experiment made."
+}

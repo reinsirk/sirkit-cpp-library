@@ -1,0 +1,1904 @@
+{
+  "at_utc": "2026-10-31T20:45:28.826669+00:00",
+  "new_measurements": false,
+  "formal_files_changed": false,
+  "cpu": "IntelCorei9-14900K P-CoreCPU12; collaborators builds/tests paused for original performance windows",
+  "shared_flags": "GCC15.2/Clang21.1.8 C++23 -O2 SKIP_RUNTIME_CHECKS; nativeadds-march=native",
+  "ratio_convention": "after/before elapsedCPU;1 is equal,smaller faster. D/N aredefault/native. Different baselines/metrics are explicitly separate; no multiplication or interpolation.",
+  "selection": "Fixed representative large inputs or fullrecorded4-setting workload range/median; no best-speed-only selection.",
+  "scope_caveats": [
+    "No onlineAC/onlinefastest claim.",
+    "Fast lifecycle/ownership andNodeAPI differ from ordinarysafeownership; read Fast contract before choice.",
+    "body andphase-total excludeprocessstartup/OSexit; whole-child includesuser+system. Walltime maydiffer.",
+    "FPS hasno separate numericperformance measurement; inheritedNTT only. MatrixClang isnotdedicatedtarget.",
+    "Normaloptimizations are already in bothnormal andFast sources; priorbaseline ratios are not a direct normal-vsFast comparison except explicitlyFast rows."
+  ],
+  "rows": [
+    {
+      "name": "NTT / FPS",
+      "representative_workload": "法998244353、cache準備済み524288×524288のnormalized_move畳み込み",
+      "metric_and_unit": "body threadCPU、1畳み込みのμs",
+      "comparison_baseline": "NTT baseline26d3…→採用候補6fa9…（最終注記bridge）",
+      "records": [
+        {
+          "compiler": "gcc",
+          "native": false,
+          "after_over_before": 0.40116007882250304,
+          "before": 32301.943,
+          "after": 12958.25,
+          "audit_selector": {
+            "operation": "normalized_move",
+            "n": 524288,
+            "m": 524288,
+            "mode": "gcc-default"
+          }
+        },
+        {
+          "compiler": "gcc",
+          "native": true,
+          "after_over_before": 0.3814551245904704,
+          "before": 32311.46,
+          "after": 12325.372,
+          "audit_selector": {
+            "operation": "normalized_move",
+            "n": 524288,
+            "m": 524288,
+            "mode": "gcc-native"
+          }
+        },
+        {
+          "compiler": "clang",
+          "native": false,
+          "after_over_before": 0.37552750552706843,
+          "before": 30196.84,
+          "after": 11339.744,
+          "audit_selector": {
+            "operation": "normalized_move",
+            "n": 524288,
+            "m": 524288,
+            "mode": "clang-default"
+          }
+        },
+        {
+          "compiler": "clang",
+          "native": true,
+          "after_over_before": 0.38895314938947084,
+          "before": 29220.473,
+          "after": 11365.395,
+          "audit_selector": {
+            "operation": "normalized_move",
+            "n": 524288,
+            "m": 524288,
+            "mode": "clang-native"
+          }
+        }
+      ],
+      "table_gcc_default_native": "0.401 / 0.381",
+      "table_clang_default_native": "0.376 / 0.389",
+      "major_regression_or_limit": "長さ16逆変換でClang+17.4ns。FPS単体の数値は未測定。",
+      "audits": [
+        "Audit/performance-ntt-simd-2026-10-31.json",
+        "Audit/ntt-simd-adoption-2026-10-31.json"
+      ],
+      "scope": "FPSは同じNTT本文を継承しFPS部品は不変。4設定それぞれ同じ代表条件、5標本中央値。"
+    },
+    {
+      "name": "PST（通常 / Fast）",
+      "representative_workload": "n65536、prod120000回、operation1（更新なし）",
+      "metric_and_unit": "prod phase threadCPU比",
+      "comparison_baseline": "同じ旧通常版PST→反復prodの通常/速度優先版",
+      "records": [
+        {
+          "compiler": "gcc",
+          "native": false,
+          "after_over_before": 0.47421101080729783,
+          "before": null,
+          "after": null,
+          "audit_selector": {
+            "n": 65536,
+            "q": 120000,
+            "operation": 1,
+            "label": "vector_raw_iterative"
+          },
+          "variant": "Fast"
+        },
+        {
+          "compiler": "gcc",
+          "native": false,
+          "after_over_before": 0.4990397820758819,
+          "before": null,
+          "after": null,
+          "audit_selector": {
+            "n": 65536,
+            "q": 120000,
+            "operation": 1,
+            "label": "normal_iterative"
+          },
+          "variant": "normal"
+        },
+        {
+          "compiler": "gcc",
+          "native": true,
+          "after_over_before": 0.48848450609862554,
+          "before": null,
+          "after": null,
+          "audit_selector": {
+            "n": 65536,
+            "q": 120000,
+            "operation": 1,
+            "label": "vector_raw_iterative"
+          },
+          "variant": "Fast"
+        },
+        {
+          "compiler": "gcc",
+          "native": true,
+          "after_over_before": 0.4778430691228185,
+          "before": null,
+          "after": null,
+          "audit_selector": {
+            "n": 65536,
+            "q": 120000,
+            "operation": 1,
+            "label": "normal_iterative"
+          },
+          "variant": "normal"
+        },
+        {
+          "compiler": "clang",
+          "native": false,
+          "after_over_before": 0.5228960404482467,
+          "before": null,
+          "after": null,
+          "audit_selector": {
+            "n": 65536,
+            "q": 120000,
+            "operation": 1,
+            "label": "normal_iterative"
+          },
+          "variant": "normal"
+        },
+        {
+          "compiler": "clang",
+          "native": false,
+          "after_over_before": 0.544411792236142,
+          "before": null,
+          "after": null,
+          "audit_selector": {
+            "n": 65536,
+            "q": 120000,
+            "operation": 1,
+            "label": "vector_raw_iterative"
+          },
+          "variant": "Fast"
+        },
+        {
+          "compiler": "clang",
+          "native": true,
+          "after_over_before": 0.5275667761783269,
+          "before": null,
+          "after": null,
+          "audit_selector": {
+            "n": 65536,
+            "q": 120000,
+            "operation": 1,
+            "label": "vector_raw_iterative"
+          },
+          "variant": "Fast"
+        },
+        {
+          "compiler": "clang",
+          "native": true,
+          "after_over_before": 0.5308204958069463,
+          "before": null,
+          "after": null,
+          "audit_selector": {
+            "n": 65536,
+            "q": 120000,
+            "operation": 1,
+            "label": "normal_iterative"
+          },
+          "variant": "normal"
+        }
+      ],
+      "table_gcc_default_native": "通常0.499/0.478、Fast0.474/0.488",
+      "table_clang_default_native": "通常0.523/0.531、Fast0.544/0.528",
+      "major_regression_or_limit": "構築・破棄の小区間は後退もある。Fastが常に通常版より速いわけではない。",
+      "audits": [
+        "Audit/performance-persistent-segment-tree-iterative-2026-10-31.json"
+      ],
+      "scope": "Fastは状態を解放しないがノードvectorは通常成長。比は両方とも同じ旧通常版に対する値。"
+    },
+    {
+      "name": "Wavelet Matrix",
+      "representative_workload": "既定:31bit n1000000構築。native:B64 n100000/500000、3照会API各200000回",
+      "metric_and_unit": "既定は子CPU全体、nativeは照会body",
+      "comparison_baseline": "旧通常版→packed構築の最終volatile判定候補",
+      "records": [
+        {
+          "compiler": "clang",
+          "native": false,
+          "after_over_before": 0.2657349809850577,
+          "before": 107547000,
+          "after": 28579000.0,
+          "audit_selector": {
+            "parent_performance_summary.condition": [
+              "clang",
+              "api",
+              1000000,
+              0,
+              31,
+              "build",
+              false
+            ],
+            "candidate": "volatile",
+            "metric": "whole childCPU ns"
+          }
+        },
+        {
+          "compiler": "gcc",
+          "native": false,
+          "after_over_before": 0.1821844331842077,
+          "before": 168538000,
+          "after": 30705000.0,
+          "audit_selector": {
+            "parent_performance_summary.condition": [
+              "gcc",
+              "api",
+              1000000,
+              0,
+              31,
+              "build",
+              false
+            ],
+            "candidate": "volatile",
+            "metric": "whole childCPU ns"
+          }
+        },
+        {
+          "compiler": "gcc",
+          "native": true,
+          "after_over_before_range": [
+            0.9991309124655017,
+            1.013861852536736
+          ],
+          "raw_selected_conditions": [
+            {
+              "compiler": "gcc",
+              "n": 100000,
+              "kind": "access",
+              "baseline_control_thread_cpu_samples": [
+                0.093626557,
+                0.092598133,
+                0.092908677,
+                0.092660618,
+                0.092795131,
+                0.093935703,
+                0.093995485,
+                0.092824795,
+                0.093958502,
+                0.092595657
+              ],
+              "candidate_thread_cpu_samples": [
+                0.093943233,
+                0.094154041,
+                0.104396189,
+                0.094371793,
+                0.093509581
+              ],
+              "baseline_control_thread_cpu_median": 0.092866736,
+              "candidate_thread_cpu_median": 0.094154041,
+              "ratio": 1.013861852536736,
+              "control_cv": 0.0065353951451791225,
+              "control_min": 0.092595657,
+              "control_max": 0.093995485,
+              "candidate_cv": 0.04853074964492281,
+              "candidate_min": 0.093509581,
+              "candidate_max": 0.104396189,
+              "baseline_control_wall_samples": [
+                0.094026003,
+                0.093653582,
+                0.094001731,
+                0.0926291,
+                0.092908196,
+                0.09294991,
+                0.092660149,
+                0.093968711,
+                0.092794598,
+                0.09259948
+              ],
+              "candidate_wall_samples": [
+                0.094039039,
+                0.094159115,
+                0.104406592,
+                0.094487513,
+                0.09351981
+              ],
+              "baseline_control_wall_median": 0.092929053,
+              "candidate_wall_median": 0.094159115,
+              "wall_ratio": 1.0132365709139424
+            },
+            {
+              "compiler": "gcc",
+              "n": 100000,
+              "kind": "count",
+              "baseline_control_thread_cpu_samples": [
+                0.068026099,
+                0.067474336,
+                0.068951648,
+                0.067714167,
+                0.067366515,
+                0.067426364,
+                0.067357664,
+                0.067803091,
+                0.068600779,
+                0.070525899
+              ],
+              "candidate_thread_cpu_samples": [
+                0.068166839,
+                0.067524184,
+                0.072601342,
+                0.072360542,
+                0.067628245
+              ],
+              "baseline_control_thread_cpu_median": 0.067758629,
+              "candidate_thread_cpu_median": 0.068166839,
+              "ratio": 1.0060244725435634,
+              "control_cv": 0.01470486515513061,
+              "control_min": 0.067357664,
+              "control_max": 0.070525899,
+              "candidate_cv": 0.03720422647618652,
+              "candidate_min": 0.067524184,
+              "candidate_max": 0.072601342,
+              "baseline_control_wall_samples": [
+                0.067428121,
+                0.068025783,
+                0.067371817,
+                0.067473996,
+                0.068963064,
+                0.067802768,
+                0.067716214,
+                0.068606182,
+                0.067366167,
+                0.070551545
+              ],
+              "candidate_wall_samples": [
+                0.068166475,
+                0.067523803,
+                0.072701758,
+                0.072365362,
+                0.067655643
+              ],
+              "baseline_control_wall_median": 0.067759491,
+              "candidate_wall_median": 0.068166475,
+              "wall_ratio": 1.006006302497166
+            },
+            {
+              "compiler": "gcc",
+              "n": 100000,
+              "kind": "kth",
+              "baseline_control_thread_cpu_samples": [
+                0.106002585,
+                0.10363037,
+                0.104278797,
+                0.104595445,
+                0.104038565,
+                0.104810069,
+                0.106951121,
+                0.108813078,
+                0.103520387,
+                0.103412323
+              ],
+              "candidate_thread_cpu_samples": [
+                0.106931797,
+                0.103832225,
+                0.104346356,
+                0.106527742,
+                0.104061978
+              ],
+              "baseline_control_thread_cpu_median": 0.104437121,
+              "candidate_thread_cpu_median": 0.104346356,
+              "ratio": 0.9991309124655017,
+              "control_cv": 0.01667154993074006,
+              "control_min": 0.103412323,
+              "control_max": 0.108813078,
+              "candidate_cv": 0.013977345152040016,
+              "candidate_min": 0.103832225,
+              "candidate_max": 0.106931797,
+              "baseline_control_wall_samples": [
+                0.104816785,
+                0.106010161,
+                0.10705836,
+                0.103640723,
+                0.104284202,
+                0.108926679,
+                0.104594993,
+                0.103519862,
+                0.104038011,
+                0.103576424
+              ],
+              "candidate_wall_samples": [
+                0.106939015,
+                0.103831743,
+                0.104351575,
+                0.106539363,
+                0.104063953
+              ],
+              "baseline_control_wall_median": 0.10443959750000001,
+              "candidate_wall_median": 0.104351575,
+              "wall_ratio": 0.9991571922708721
+            },
+            {
+              "compiler": "gcc",
+              "n": 500000,
+              "kind": "access",
+              "baseline_control_thread_cpu_samples": [
+                0.171408312,
+                0.171100224,
+                0.172167662,
+                0.17130827,
+                0.177049858,
+                0.171263651,
+                0.171526432,
+                0.171553095,
+                0.171036751,
+                0.171235844
+              ],
+              "candidate_thread_cpu_samples": [
+                0.171211335,
+                0.171270128,
+                0.171877668,
+                0.172432221,
+                0.171590518
+              ],
+              "baseline_control_thread_cpu_median": 0.171358291,
+              "candidate_thread_cpu_median": 0.171590518,
+              "ratio": 1.0013552130955834,
+              "control_cv": 0.010551815551074688,
+              "control_min": 0.171036751,
+              "control_max": 0.177049858,
+              "candidate_cv": 0.0029131734778535096,
+              "candidate_min": 0.171211335,
+              "candidate_max": 0.172432221,
+              "baseline_control_wall_samples": [
+                0.171269561,
+                0.171516446,
+                0.171548643,
+                0.171116125,
+                0.172273579,
+                0.171559666,
+                0.171324534,
+                0.171050861,
+                0.177066097,
+                0.171255289
+              ],
+              "candidate_wall_samples": [
+                0.171239464,
+                0.171367313,
+                0.171889436,
+                0.17244312,
+                0.171600025
+              ],
+              "baseline_control_wall_median": 0.17142048999999998,
+              "candidate_wall_median": 0.171600025,
+              "wall_ratio": 1.0010473368732058
+            },
+            {
+              "compiler": "gcc",
+              "n": 500000,
+              "kind": "count",
+              "baseline_control_thread_cpu_samples": [
+                0.145136484,
+                0.144764298,
+                0.145199233,
+                0.144911811,
+                0.145374426,
+                0.151101313,
+                0.145107208,
+                0.144882484,
+                0.144953495,
+                0.144818321
+              ],
+              "candidate_thread_cpu_samples": [
+                0.151028284,
+                0.144940793,
+                0.145194487,
+                0.144951466,
+                0.145013764
+              ],
+              "baseline_control_thread_cpu_median": 0.1450303515,
+              "candidate_thread_cpu_median": 0.145013764,
+              "ratio": 0.9998856273888297,
+              "control_cv": 0.01327675882036071,
+              "control_min": 0.144764298,
+              "control_max": 0.151101313,
+              "candidate_cv": 0.01837308149969294,
+              "candidate_min": 0.144940793,
+              "candidate_max": 0.151028284,
+              "baseline_control_wall_samples": [
+                0.151123771,
+                0.145152466,
+                0.145133758,
+                0.144772558,
+                0.145201056,
+                0.144881718,
+                0.144924606,
+                0.144958048,
+                0.145382134,
+                0.144829356
+              ],
+              "candidate_wall_samples": [
+                0.185076117,
+                0.144947706,
+                0.14520105,
+                0.144956834,
+                0.145029364
+              ],
+              "baseline_control_wall_median": 0.145045903,
+              "candidate_wall_median": 0.145029364,
+              "wall_ratio": 0.9998859740285114
+            },
+            {
+              "compiler": "gcc",
+              "n": 500000,
+              "kind": "kth",
+              "baseline_control_thread_cpu_samples": [
+                0.189309745,
+                0.189231532,
+                0.18949575,
+                0.195978774,
+                0.191556998,
+                0.194127888,
+                0.18868639,
+                0.189387337,
+                0.188656914,
+                0.194490525
+              ],
+              "candidate_thread_cpu_samples": [
+                0.191781025,
+                0.189362093,
+                0.188984891,
+                0.189458599,
+                0.188882277
+              ],
+              "baseline_control_thread_cpu_median": 0.18944154349999998,
+              "candidate_thread_cpu_median": 0.189362093,
+              "ratio": 0.9995806067743532,
+              "control_cv": 0.01445521391396749,
+              "control_min": 0.188656914,
+              "control_max": 0.195978774,
+              "candidate_cv": 0.006283548016277113,
+              "candidate_min": 0.188882277,
+              "candidate_max": 0.191781025,
+              "baseline_control_wall_samples": [
+                0.194134278,
+                0.18931397,
+                0.188776749,
+                0.189241959,
+                0.189525009,
+                0.189494453,
+                0.195978391,
+                0.188718629,
+                0.19156937,
+                0.194492514
+              ],
+              "candidate_wall_samples": [
+                0.191792756,
+                0.189385181,
+                0.189010943,
+                0.189466028,
+                0.189053501
+              ],
+              "baseline_control_wall_median": 0.18950973100000001,
+              "candidate_wall_median": 0.189385181,
+              "wall_ratio": 0.9993427778122908
+            }
+          ],
+          "metric": "query body threadCPU",
+          "workload": "B64,n100000/500000,access/count/kth各200000照会",
+          "scope": "native final-wrapper object同一性bridge; default構築値とは異なるAPI条件"
+        },
+        {
+          "compiler": "clang",
+          "native": true,
+          "after_over_before_range": [
+            0.9737733870165357,
+            1.0096947599574067
+          ],
+          "raw_selected_conditions": [
+            {
+              "compiler": "clang",
+              "n": 100000,
+              "kind": "access",
+              "baseline_control_thread_cpu_samples": [
+                0.096158887,
+                0.091208306,
+                0.093864167,
+                0.09132987,
+                0.09173475,
+                0.095622078,
+                0.092831267,
+                0.092152275,
+                0.094885892,
+                0.094754528
+              ],
+              "candidate_thread_cpu_samples": [
+                0.091883865,
+                0.092666649,
+                0.093714803,
+                0.091582386,
+                0.09210351
+              ],
+              "baseline_control_thread_cpu_median": 0.093347717,
+              "candidate_thread_cpu_median": 0.09210351,
+              "ratio": 0.9866712648151856,
+              "control_cv": 0.019704830790466255,
+              "control_min": 0.091208306,
+              "control_max": 0.096158887,
+              "candidate_cv": 0.00909142929775502,
+              "candidate_min": 0.091582386,
+              "candidate_max": 0.093714803,
+              "baseline_control_wall_samples": [
+                0.096180946,
+                0.095621878,
+                0.092855141,
+                0.091207852,
+                0.092151816,
+                0.093871454,
+                0.091329408,
+                0.094898039,
+                0.091825992,
+                0.094760476
+              ],
+              "candidate_wall_samples": [
+                0.091883334,
+                0.092670373,
+                0.093714319,
+                0.091581937,
+                0.092122357
+              ],
+              "baseline_control_wall_median": 0.0933632975,
+              "candidate_wall_median": 0.092122357,
+              "wall_ratio": 0.9867084761011147
+            },
+            {
+              "compiler": "clang",
+              "n": 100000,
+              "kind": "count",
+              "baseline_control_thread_cpu_samples": [
+                0.065343182,
+                0.064921252,
+                0.063732774,
+                0.063043991,
+                0.064921775,
+                0.064370068,
+                0.064521349,
+                0.06282939,
+                0.066787434,
+                0.067110431
+              ],
+              "candidate_thread_cpu_samples": [
+                0.063002778,
+                0.062929487,
+                0.06398971,
+                0.064486542,
+                0.06302388
+              ],
+              "baseline_control_thread_cpu_median": 0.0647213005,
+              "candidate_thread_cpu_median": 0.06302388,
+              "ratio": 0.9737733870165357,
+              "control_cv": 0.021816163776103677,
+              "control_min": 0.06282939,
+              "control_max": 0.067110431,
+              "candidate_cv": 0.011170086945256001,
+              "candidate_min": 0.062929487,
+              "candidate_max": 0.064486542,
+              "baseline_control_wall_samples": [
+                0.065449348,
+                0.064369323,
+                0.064527283,
+                0.064926944,
+                0.062957039,
+                0.063739197,
+                0.063049087,
+                0.066787276,
+                0.064927204,
+                0.067121426
+              ],
+              "candidate_wall_samples": [
+                0.063014106,
+                0.062940513,
+                0.063989412,
+                0.064501473,
+                0.063117496
+              ],
+              "baseline_control_wall_median": 0.0647271135,
+              "candidate_wall_median": 0.063117496,
+              "wall_ratio": 0.9751322527305345
+            },
+            {
+              "compiler": "clang",
+              "n": 100000,
+              "kind": "kth",
+              "baseline_control_thread_cpu_samples": [
+                0.099204236,
+                0.105984059,
+                0.099679452,
+                0.099566375,
+                0.100257035,
+                0.098963542,
+                0.100315132,
+                0.103361401,
+                0.10106903,
+                0.103247293
+              ],
+              "candidate_thread_cpu_samples": [
+                0.108209977,
+                0.101200678,
+                0.104990838,
+                0.099247214,
+                0.099155399
+              ],
+              "baseline_control_thread_cpu_median": 0.1002860835,
+              "candidate_thread_cpu_median": 0.101200678,
+              "ratio": 1.0091198546007634,
+              "control_cv": 0.022683272653365415,
+              "control_min": 0.098963542,
+              "control_max": 0.105984059,
+              "candidate_cv": 0.03846273312195505,
+              "candidate_min": 0.099155399,
+              "candidate_max": 0.108209977,
+              "baseline_control_wall_samples": [
+                0.099209658,
+                0.098963013,
+                0.100322483,
+                0.106006015,
+                0.10345759,
+                0.099678948,
+                0.099573469,
+                0.101175959,
+                0.100263639,
+                0.103246671
+              ],
+              "candidate_wall_samples": [
+                0.108228212,
+                0.101244514,
+                0.105003054,
+                0.099246691,
+                0.099158207
+              ],
+              "baseline_control_wall_median": 0.100293061,
+              "candidate_wall_median": 0.101244514,
+              "wall_ratio": 1.0094867280997635
+            },
+            {
+              "compiler": "clang",
+              "n": 500000,
+              "kind": "access",
+              "baseline_control_thread_cpu_samples": [
+                0.171605731,
+                0.178309183,
+                0.170480924,
+                0.175549154,
+                0.173505454,
+                0.170957057,
+                0.170877586,
+                0.171774313,
+                0.170284024,
+                0.170449611
+              ],
+              "candidate_thread_cpu_samples": [
+                0.170933386,
+                0.175745713,
+                0.172941926,
+                0.170630398,
+                0.178693323
+              ],
+              "baseline_control_thread_cpu_median": 0.171281394,
+              "candidate_thread_cpu_median": 0.172941926,
+              "ratio": 1.0096947599574067,
+              "control_cv": 0.015401903241700543,
+              "control_min": 0.170284024,
+              "control_max": 0.178309183,
+              "candidate_cv": 0.01966733288193792,
+              "candidate_min": 0.170630398,
+              "candidate_max": 0.178693323,
+              "baseline_control_wall_samples": [
+                0.171617256,
+                0.171055716,
+                0.170888507,
+                0.178527218,
+                0.171773549,
+                0.170505782,
+                0.175553979,
+                0.170289083,
+                0.173646954,
+                0.170476709
+              ],
+              "candidate_wall_samples": [
+                0.171172196,
+                0.175880273,
+                0.172948637,
+                0.170653355,
+                0.178704332
+              ],
+              "baseline_control_wall_median": 0.171336486,
+              "candidate_wall_median": 0.172948637,
+              "wall_ratio": 1.0094092684963785
+            },
+            {
+              "compiler": "clang",
+              "n": 500000,
+              "kind": "count",
+              "baseline_control_thread_cpu_samples": [
+                0.143259123,
+                0.143935448,
+                0.143269041,
+                0.143470867,
+                0.143557735,
+                0.143208091,
+                0.143261049,
+                0.145986402,
+                0.143008502,
+                0.143119005
+              ],
+              "candidate_thread_cpu_samples": [
+                0.143255905,
+                0.152444337,
+                0.143676441,
+                0.147600891,
+                0.143569341
+              ],
+              "baseline_control_thread_cpu_median": 0.143265045,
+              "candidate_thread_cpu_median": 0.143676441,
+              "ratio": 1.0028715727552382,
+              "control_cv": 0.006097480240524298,
+              "control_min": 0.143008502,
+              "control_max": 0.145986402,
+              "candidate_cv": 0.027133900576242324,
+              "candidate_min": 0.143255905,
+              "candidate_max": 0.152444337,
+              "baseline_control_wall_samples": [
+                0.143263771,
+                0.143213627,
+                0.143277838,
+                0.143952556,
+                0.146005087,
+                0.143268183,
+                0.143494893,
+                0.143023637,
+                0.143585531,
+                0.143126354
+              ],
+              "candidate_wall_samples": [
+                0.143267029,
+                0.152450581,
+                0.143703076,
+                0.147750361,
+                0.143574955
+              ],
+              "baseline_control_wall_median": 0.1432730105,
+              "candidate_wall_median": 0.143703076,
+              "wall_ratio": 1.0030017202716628
+            },
+            {
+              "compiler": "clang",
+              "n": 500000,
+              "kind": "kth",
+              "baseline_control_thread_cpu_samples": [
+                0.184031683,
+                0.184092196,
+                0.192224929,
+                0.184437857,
+                0.186826262,
+                0.184174772,
+                0.205362992,
+                0.185083155,
+                0.187487531,
+                0.183733453
+              ],
+              "candidate_thread_cpu_samples": [
+                0.18753652,
+                0.184856836,
+                0.184788274,
+                0.193285454,
+                0.183738261
+              ],
+              "baseline_control_thread_cpu_median": 0.184760506,
+              "candidate_thread_cpu_median": 0.184856836,
+              "ratio": 1.0005213776584916,
+              "control_cv": 0.03574649873978525,
+              "control_min": 0.183733453,
+              "control_max": 0.205362992,
+              "candidate_cv": 0.020692851783193206,
+              "candidate_min": 0.183738261,
+              "candidate_max": 0.193285454,
+              "baseline_control_wall_samples": [
+                0.184055961,
+                0.184179354,
+                0.205528596,
+                0.184098439,
+                0.185084712,
+                0.192243653,
+                0.184439435,
+                0.187498325,
+                0.186919134,
+                0.18382945
+              ],
+              "candidate_wall_samples": [
+                0.187560572,
+                0.184858119,
+                0.184892539,
+                0.193290694,
+                0.183764436
+              ],
+              "baseline_control_wall_median": 0.1847620735,
+              "candidate_wall_median": 0.184892539,
+              "wall_ratio": 1.0007061270612985
+            }
+          ],
+          "metric": "query body threadCPU",
+          "workload": "B64,n100000/500000,access/count/kth各200000照会",
+          "scope": "native final-wrapper object同一性bridge; default構築値とは異なるAPI条件"
+        }
+      ],
+      "table_gcc_default_native": "構築0.182 / 照会0.999–1.014",
+      "table_clang_default_native": "構築0.266 / 照会0.974–1.010",
+      "major_regression_or_limit": "既定/nativeで代表指標が違う。短いB64では一時+21%とcontrol変動があり長い測定へ。",
+      "audits": [
+        "Audit/performance-wavelet-matrix-packed-2026-10-31.json"
+      ],
+      "scope": "native構築の最終候補再測定値はこの表に補間しない。native照会はほぼ中立。"
+    },
+    {
+      "name": "LinearRecurrenceWeights",
+      "representative_workload": "uint32係数mod998244353、次数256、k=UINT64_MAX",
+      "metric_and_unit": "body threadCPU ns / 照会",
+      "comparison_baseline": "元のcanonical Weights→初期範囲shortcut+Clang Mont",
+      "records": [
+        {
+          "compiler": "clang",
+          "native": false,
+          "after_over_before": 0.7571991765311374,
+          "before": 11658000,
+          "after": 8827428.0,
+          "audit_selector": {
+            "condition": [
+              "clang",
+              false,
+              256,
+              18446744073709551615,
+              1
+            ],
+            "candidate": "clang_weights_v2"
+          }
+        },
+        {
+          "compiler": "clang",
+          "native": true,
+          "after_over_before": 0.7606605449285674,
+          "before": 10524462,
+          "after": 8005543.0,
+          "audit_selector": {
+            "condition": [
+              "clang",
+              true,
+              256,
+              18446744073709551615,
+              1
+            ],
+            "candidate": "clang_weights_v2"
+          }
+        },
+        {
+          "compiler": "gcc",
+          "native": false,
+          "after_over_before": 1.0007132358658832,
+          "before": 11496898,
+          "after": 11505098.000000002,
+          "audit_selector": {
+            "condition": [
+              "gcc",
+              false,
+              256,
+              18446744073709551615,
+              1
+            ],
+            "candidate": "clang_weights_v2"
+          }
+        },
+        {
+          "compiler": "gcc",
+          "native": true,
+          "after_over_before": 1.0001655515187493,
+          "before": 11434507,
+          "after": 11436400.0,
+          "audit_selector": {
+            "condition": [
+              "gcc",
+              true,
+              256,
+              18446744073709551615,
+              1
+            ],
+            "candidate": "clang_weights_v2"
+          }
+        }
+      ],
+      "table_gcc_default_native": "1.001 / 1.000（専用対象外）",
+      "table_clang_default_native": "0.757 / 0.761",
+      "major_regression_or_limit": "空入力に微小な負荷増。BM/Term/Prefix全体を高速化した数値ではない。",
+      "audits": [
+        "Audit/performance-linear-recurrence-weights-2026-10-31.json"
+      ],
+      "scope": "大きなkの通常照会を代表にし、k<次数で単位vectorになる最大改善は選んでいない。"
+    },
+    {
+      "name": "Matrix<uint32_t>",
+      "representative_workload": "16×1024 と1024×1024 の積、unsigned mod2^32",
+      "metric_and_unit": "body threadCPU μs / 積（同じ積5回の平均）",
+      "comparison_baseline": "元i-k-j通常版→GCC tiled4row kernel",
+      "records": [
+        {
+          "compiler": "gcc",
+          "native": true,
+          "after_over_before": 0.19014017293727195,
+          "before": 4245.47,
+          "after": 807.2344,
+          "audit_selector": {
+            "family": "stress",
+            "case": [
+              16,
+              1024,
+              1024
+            ],
+            "candidate": "tile32_rows4",
+            "metric": "thread_us"
+          },
+          "dedicated_kernel_applies": true
+        },
+        {
+          "compiler": "clang",
+          "native": true,
+          "after_over_before": 0.9828859275040439,
+          "before": 994.3396,
+          "after": 977.3224,
+          "audit_selector": {
+            "family": "stress",
+            "case": [
+              16,
+              1024,
+              1024
+            ],
+            "candidate": "tile32_rows4",
+            "metric": "thread_us"
+          },
+          "dedicated_kernel_applies": false
+        },
+        {
+          "compiler": "gcc",
+          "native": false,
+          "after_over_before": 0.19701889738098008,
+          "before": 4299.7916,
+          "after": 847.1402,
+          "audit_selector": {
+            "family": "stress",
+            "case": [
+              16,
+              1024,
+              1024
+            ],
+            "candidate": "tile32_rows4",
+            "metric": "thread_us"
+          },
+          "dedicated_kernel_applies": true
+        },
+        {
+          "compiler": "clang",
+          "native": false,
+          "after_over_before": 0.9497710737540753,
+          "before": 1999.2902,
+          "after": 1898.868,
+          "audit_selector": {
+            "family": "stress",
+            "case": [
+              16,
+              1024,
+              1024
+            ],
+            "candidate": "tile32_rows4",
+            "metric": "thread_us"
+          },
+          "dedicated_kernel_applies": false
+        }
+      ],
+      "table_gcc_default_native": "0.197 / 0.190",
+      "table_clang_default_native": "該当外（同一code）",
+      "major_regression_or_limit": "旧full-stride候補の4096幅退行は不採用。小差・子wallの妨害をCPU値と区別。",
+      "audits": [
+        "Audit/data/matrix-u32-tiled-final-2026-10-31-summary.json",
+        "Audit/performance-matrix-u32-tiled-2026-10-31.json"
+      ],
+      "scope": "Clangの観測比0.950/0.983は同じ機械語の変動で、改善として表示しない。5標本中央値。"
+    },
+    {
+      "name": "ModPow / ModSqrt",
+      "representative_workload": "Pow:最大64bit素数・乱数指数16384件。Sqrt:Goldilocks法の平方剰余8192件",
+      "metric_and_unit": "body threadCPU μs / 記載件数",
+      "comparison_baseline": "PowはC版e5a9…、SqrtはMont版9bd3…が各before（別基準）",
+      "records": [
+        {
+          "compiler": "gcc",
+          "native": false,
+          "after_over_before": 0.608257906665236,
+          "before": 4520.395,
+          "after": 2749.566,
+          "audit_selector": {
+            "audit": "Audit/data/modular-montgomery-2026-10-31/final_gcc_bench_summary.json",
+            "condition": [
+              "gcc",
+              false,
+              0,
+              2,
+              12
+            ],
+            "candidate": "ready_final"
+          },
+          "api": "ModPow",
+          "calls": 16384
+        },
+        {
+          "compiler": "gcc",
+          "native": true,
+          "after_over_before": 0.6180531531079523,
+          "before": 4564.211,
+          "after": 2820.925,
+          "audit_selector": {
+            "audit": "Audit/data/modular-montgomery-2026-10-31/final_gcc_bench_summary.json",
+            "condition": [
+              "gcc",
+              true,
+              0,
+              2,
+              12
+            ],
+            "candidate": "ready_final"
+          },
+          "api": "ModPow",
+          "calls": 16384
+        },
+        {
+          "compiler": "clang",
+          "native": false,
+          "after_over_before": 0.608520005123585,
+          "before": 4645.185,
+          "after": 2826.688,
+          "audit_selector": {
+            "audit": "Audit/data/modular-montgomery-2026-10-31/outlined_bench_summary.json",
+            "condition": [
+              "clang",
+              false,
+              0,
+              2,
+              12
+            ],
+            "candidate": "mont_subtract16_hybrid"
+          },
+          "api": "ModPow",
+          "calls": 16384
+        },
+        {
+          "compiler": "clang",
+          "native": true,
+          "after_over_before": 0.6355141158442263,
+          "before": 4425.063,
+          "after": 2812.19,
+          "audit_selector": {
+            "audit": "Audit/data/modular-montgomery-2026-10-31/outlined_bench_summary.json",
+            "condition": [
+              "clang",
+              true,
+              0,
+              2,
+              12
+            ],
+            "candidate": "mont_subtract16_hybrid"
+          },
+          "api": "ModPow",
+          "calls": 16384
+        },
+        {
+          "compiler": "clang",
+          "native": false,
+          "after_over_before": 0.7417412129506084,
+          "before": 21171.299,
+          "after": 15703.625,
+          "audit_selector": {
+            "shape": 5,
+            "pattern": 0,
+            "prime": 18446744069414584321
+          },
+          "api": "ModSqrt",
+          "calls": 8192
+        },
+        {
+          "compiler": "clang",
+          "native": true,
+          "after_over_before": 0.7236225948732764,
+          "before": 21170.714,
+          "after": 15319.607,
+          "audit_selector": {
+            "shape": 5,
+            "pattern": 0,
+            "prime": 18446744069414584321
+          },
+          "api": "ModSqrt",
+          "calls": 8192
+        },
+        {
+          "compiler": "gcc",
+          "native": false,
+          "after_over_before": 0.7361280318586874,
+          "before": 21557.197,
+          "after": 15868.857,
+          "audit_selector": {
+            "shape": 5,
+            "pattern": 0,
+            "prime": 18446744069414584321
+          },
+          "api": "ModSqrt",
+          "calls": 8192
+        },
+        {
+          "compiler": "gcc",
+          "native": true,
+          "after_over_before": 0.7305758415980331,
+          "before": 21465.087,
+          "after": 15681.874,
+          "audit_selector": {
+            "shape": 5,
+            "pattern": 0,
+            "prime": 18446744069414584321
+          },
+          "api": "ModSqrt",
+          "calls": 8192
+        }
+      ],
+      "table_gcc_default_native": "Pow0.608/0.618、sqrt0.736/0.731",
+      "table_clang_default_native": "Pow0.609/0.636、sqrt0.742/0.724",
+      "major_regression_or_limit": "Pow指数1で+.94ns、Clang p17 sqrtで+.5–1.3ns。先行Powの全条件を最終Sqrt後に再測定していない。",
+      "audits": [
+        "Audit/benchmark-modular-montgomery-2026-10-31.json",
+        "Audit/benchmark-modular-sqrt-2026-10-31.json"
+      ],
+      "scope": "最終Sqrtの4Pow controlsとsource/機械語bridgeを別記録。2段階の比を掛けて推定しない。"
+    },
+    {
+      "name": "Fast Node",
+      "representative_workload": "1000000ノード構築+chain_size2回+破棄、mode0",
+      "metric_and_unit": "phase合計threadCPU ns（OS終了回収を除く）",
+      "comparison_baseline": "通常shared_ptr Node→Fast連続領域/pool Node",
+      "records": [
+        {
+          "compiler": "gcc",
+          "native": false,
+          "after_over_before": 0.12387489354170263,
+          "before": 32045412,
+          "after": 3969622,
+          "audit_selector": {
+            "n": 1000000,
+            "mode": 0,
+            "objects": 1,
+            "operations": 2,
+            "candidate": "pool"
+          }
+        },
+        {
+          "compiler": "gcc",
+          "native": true,
+          "after_over_before": 0.12633788331993762,
+          "before": 32169472,
+          "after": 4064223,
+          "audit_selector": {
+            "n": 1000000,
+            "mode": 0,
+            "objects": 1,
+            "operations": 2,
+            "candidate": "pool"
+          }
+        },
+        {
+          "compiler": "clang",
+          "native": false,
+          "after_over_before": 0.12261913711954467,
+          "before": 32295644,
+          "after": 3960064,
+          "audit_selector": {
+            "n": 1000000,
+            "mode": 0,
+            "objects": 1,
+            "operations": 2,
+            "candidate": "pool"
+          }
+        },
+        {
+          "compiler": "clang",
+          "native": true,
+          "after_over_before": 0.12152597050077033,
+          "before": 32520917,
+          "after": 3952136,
+          "audit_selector": {
+            "n": 1000000,
+            "mode": 0,
+            "objects": 1,
+            "operations": 2,
+            "candidate": "pool"
+          }
+        }
+      ],
+      "table_gcc_default_native": "0.124 / 0.126",
+      "table_clang_default_native": "0.123 / 0.122",
+      "major_regression_or_limit": "生ポインタAPI・共有所有なし。旧new-per-nodeのpush/pop退行をpoolで回避。",
+      "audits": [
+        "Audit/performance-fast-node-2026-10-31.json"
+      ],
+      "scope": "最大改善modeを選ばず単純な大きい列の走査を代表にした。"
+    },
+    {
+      "name": "Fast BinaryTrie（既定）",
+      "representative_workload": "uint32/MAX_LOG29、131072件の混合操作、n条件200000",
+      "metric_and_unit": "phase合計threadCPU ns（OS終了回収を除く）",
+      "comparison_baseline": "通常BinaryTrie→Fast既定のlazy-ID",
+      "records": [
+        {
+          "compiler": "gcc",
+          "native": false,
+          "after_over_before": 0.9116283915121939,
+          "before": 16299477,
+          "after": 14859066,
+          "audit_selector": {
+            "n": 200000,
+            "mode": 8,
+            "operations": 131072,
+            "candidate": "fast"
+          }
+        },
+        {
+          "compiler": "gcc",
+          "native": true,
+          "after_over_before": 0.8991686725774708,
+          "before": 16584320,
+          "after": 14912101,
+          "audit_selector": {
+            "n": 200000,
+            "mode": 8,
+            "operations": 131072,
+            "candidate": "fast"
+          }
+        },
+        {
+          "compiler": "clang",
+          "native": false,
+          "after_over_before": 1.028854560353997,
+          "before": 11385410,
+          "after": 11713931,
+          "audit_selector": {
+            "n": 200000,
+            "mode": 8,
+            "operations": 131072,
+            "candidate": "fast"
+          }
+        },
+        {
+          "compiler": "clang",
+          "native": true,
+          "after_over_before": 0.9072216154248306,
+          "before": 11685211,
+          "after": 10601076,
+          "audit_selector": {
+            "n": 200000,
+            "mode": 8,
+            "operations": 131072,
+            "candidate": "fast"
+          }
+        }
+      ],
+      "table_gcc_default_native": "0.912 / 0.899",
+      "table_clang_default_native": "1.029 / 0.907",
+      "major_regression_or_limit": "Clang既定はこの代表条件+2.9%。初回ID操作単体の退行も残る。inline-IDは別オプション。",
+      "audits": [
+        "Audit/performance-fast-binary-trie-2026-10-31.json",
+        "Audit/fast-storage-adoption-2026-10-31.json"
+      ],
+      "scope": "通常版の圧縮方式変更ではなく所有/ID保持方式の比較。"
+    },
+    {
+      "name": "Fast HashMap / HashSet",
+      "representative_workload": "10個のlifecycle条件、n32768/262144、reserve/成長→追加→照会→破棄",
+      "metric_and_unit": "子CPU全体（user+system）比の10条件中央値",
+      "comparison_baseline": "通常汎用Hash→BR raw union slots、古い再配置領域は解放",
+      "records": [
+        {
+          "compiler": "clang",
+          "native": false,
+          "after_over_before": 0.8019660084363152,
+          "before": null,
+          "after": null,
+          "audit_selector": {
+            "mode": "Clang-default",
+            "candidate": "BR",
+            "filter": "index>=100 andn>64",
+            "aggregate": "median10large lifecycle ratios"
+          },
+          "count": 10
+        },
+        {
+          "compiler": "clang",
+          "native": true,
+          "after_over_before": 0.7982914798600067,
+          "before": null,
+          "after": null,
+          "audit_selector": {
+            "mode": "Clang-native",
+            "candidate": "BR",
+            "filter": "index>=100 andn>64",
+            "aggregate": "median10large lifecycle ratios"
+          },
+          "count": 10
+        },
+        {
+          "compiler": "gcc",
+          "native": false,
+          "after_over_before": 0.8037937046258243,
+          "before": null,
+          "after": null,
+          "audit_selector": {
+            "mode": "GCC-default",
+            "candidate": "BR",
+            "filter": "index>=100 andn>64",
+            "aggregate": "median10large lifecycle ratios"
+          },
+          "count": 10
+        },
+        {
+          "compiler": "gcc",
+          "native": true,
+          "after_over_before": 0.8005577778092524,
+          "before": null,
+          "after": null,
+          "audit_selector": {
+            "mode": "GCC-native",
+            "candidate": "BR",
+            "filter": "index>=100 andn>64",
+            "aggregate": "median10large lifecycle ratios"
+          },
+          "count": 10
+        }
+      ],
+      "table_gcc_default_native": "0.804 / 0.801",
+      "table_clang_default_native": "0.802 / 0.798",
+      "major_regression_or_limit": "列挙/空予約だけ等の後退はある。空予約だけの25–35倍を全体の効果としない。",
+      "audits": [
+        "Audit/performance-fast-hash-release-2026-10-31.json"
+      ],
+      "scope": "Map/Setとキー型をまたぐ記録済み10条件の中央値。SIMD無効の追加4設定は元Auditに別記録。"
+    },
+    {
+      "name": "他Fast6種（F/S/L/W/T/A）",
+      "representative_workload": "Fenwick/Segment/Lazy/Wavelet/Treap:n100000,Q200000。Aho:text500000,patterns50000",
+      "metric_and_unit": "子CPU全体ns、各自の通常版をbeforeとした6種の範囲",
+      "comparison_baseline": "同一Verify main/IOの通常版→各採用Fast版",
+      "records": [
+        {
+          "compiler": "gcc",
+          "native": true,
+          "after_over_before": 0.9855374433141316,
+          "before": 16318000,
+          "after": 16082000,
+          "audit_selector": {
+            "benchmark": "verify",
+            "kind": "segment_tree",
+            "size": "large",
+            "metric": "process_cpu_ns",
+            "config": "gcc_native",
+            "selected": "buffer"
+          },
+          "library": "segment_tree"
+        },
+        {
+          "compiler": "gcc",
+          "native": false,
+          "after_over_before": 0.9991088048642005,
+          "before": 139139000,
+          "after": 139015000,
+          "audit_selector": {
+            "benchmark": "verify",
+            "kind": "implicit_treap_affine",
+            "size": "large",
+            "metric": "process_cpu_ns",
+            "config": "gcc_default",
+            "selected": "unreleased"
+          },
+          "library": "implicit_treap_affine"
+        },
+        {
+          "compiler": "clang",
+          "native": false,
+          "after_over_before": 0.8308864882106554,
+          "before": 119133000,
+          "after": 98986000,
+          "audit_selector": {
+            "benchmark": "verify",
+            "kind": "aho_corasick_counts",
+            "size": "large",
+            "metric": "process_cpu_ns",
+            "config": "clang_default",
+            "selected": "buffer"
+          },
+          "library": "aho_corasick_counts"
+        },
+        {
+          "compiler": "gcc",
+          "native": false,
+          "after_over_before": 1.0032512192072027,
+          "before": 15994000,
+          "after": 16046000,
+          "audit_selector": {
+            "benchmark": "verify",
+            "kind": "segment_tree",
+            "size": "large",
+            "metric": "process_cpu_ns",
+            "config": "gcc_default",
+            "selected": "buffer"
+          },
+          "library": "segment_tree"
+        },
+        {
+          "compiler": "gcc",
+          "native": false,
+          "after_over_before": 0.9992224637297001,
+          "before": 56589000,
+          "after": 56545000,
+          "audit_selector": {
+            "benchmark": "verify",
+            "kind": "wavelet_kth",
+            "size": "large",
+            "metric": "process_cpu_ns",
+            "config": "gcc_default",
+            "selected": "buffer"
+          },
+          "library": "wavelet_kth"
+        },
+        {
+          "compiler": "clang",
+          "native": true,
+          "after_over_before": 0.8458037942438713,
+          "before": 115807000,
+          "after": 97950000,
+          "audit_selector": {
+            "benchmark": "verify",
+            "kind": "aho_corasick_counts",
+            "size": "large",
+            "metric": "process_cpu_ns",
+            "config": "clang_native",
+            "selected": "buffer"
+          },
+          "library": "aho_corasick_counts"
+        },
+        {
+          "compiler": "gcc",
+          "native": false,
+          "after_over_before": 1.005402313461294,
+          "before": 62936000,
+          "after": 63276000,
+          "audit_selector": {
+            "benchmark": "verify",
+            "kind": "lazy_segment_tree",
+            "size": "large",
+            "metric": "process_cpu_ns",
+            "config": "gcc_default",
+            "selected": "buffer"
+          },
+          "library": "lazy_segment_tree"
+        },
+        {
+          "compiler": "clang",
+          "native": true,
+          "after_over_before": 0.9420490928495198,
+          "before": 9370000,
+          "after": 8827000,
+          "audit_selector": {
+            "benchmark": "verify",
+            "kind": "fenwick_tree",
+            "size": "large",
+            "metric": "process_cpu_ns",
+            "config": "clang_native",
+            "selected": "buffer"
+          },
+          "library": "fenwick_tree"
+        },
+        {
+          "compiler": "gcc",
+          "native": true,
+          "after_over_before": 0.9609596016747765,
+          "before": 8837000,
+          "after": 8492000,
+          "audit_selector": {
+            "benchmark": "verify",
+            "kind": "fenwick_tree",
+            "size": "large",
+            "metric": "process_cpu_ns",
+            "config": "gcc_native",
+            "selected": "buffer"
+          },
+          "library": "fenwick_tree"
+        },
+        {
+          "compiler": "gcc",
+          "native": true,
+          "after_over_before": 1.0100509534968718,
+          "before": 93026000,
+          "after": 93961000,
+          "audit_selector": {
+            "benchmark": "verify",
+            "kind": "aho_corasick_counts",
+            "size": "large",
+            "metric": "process_cpu_ns",
+            "config": "gcc_native",
+            "selected": "unreleased"
+          },
+          "library": "aho_corasick_counts"
+        },
+        {
+          "compiler": "clang",
+          "native": true,
+          "after_over_before": 1.0211327134404058,
+          "before": 14196000,
+          "after": 14496000,
+          "audit_selector": {
+            "benchmark": "verify",
+            "kind": "segment_tree",
+            "size": "large",
+            "metric": "process_cpu_ns",
+            "config": "clang_native",
+            "selected": "buffer"
+          },
+          "library": "segment_tree"
+        },
+        {
+          "compiler": "clang",
+          "native": false,
+          "after_over_before": 0.9891328838587795,
+          "before": 57697000,
+          "after": 57070000,
+          "audit_selector": {
+            "benchmark": "verify",
+            "kind": "wavelet_kth",
+            "size": "large",
+            "metric": "process_cpu_ns",
+            "config": "clang_default",
+            "selected": "buffer"
+          },
+          "library": "wavelet_kth"
+        },
+        {
+          "compiler": "gcc",
+          "native": false,
+          "after_over_before": 1.0190522295734494,
+          "before": 92955000,
+          "after": 94726000,
+          "audit_selector": {
+            "benchmark": "verify",
+            "kind": "aho_corasick_counts",
+            "size": "large",
+            "metric": "process_cpu_ns",
+            "config": "gcc_default",
+            "selected": "unreleased"
+          },
+          "library": "aho_corasick_counts"
+        },
+        {
+          "compiler": "clang",
+          "native": false,
+          "after_over_before": 0.9834472447671935,
+          "before": 9364000,
+          "after": 9209000,
+          "audit_selector": {
+            "benchmark": "verify",
+            "kind": "fenwick_tree",
+            "size": "large",
+            "metric": "process_cpu_ns",
+            "config": "clang_default",
+            "selected": "buffer"
+          },
+          "library": "fenwick_tree"
+        },
+        {
+          "compiler": "gcc",
+          "native": true,
+          "after_over_before": 1.0002015498488377,
+          "before": 143885000,
+          "after": 143914000,
+          "audit_selector": {
+            "benchmark": "verify",
+            "kind": "implicit_treap_affine",
+            "size": "large",
+            "metric": "process_cpu_ns",
+            "config": "gcc_native",
+            "selected": "unreleased"
+          },
+          "library": "implicit_treap_affine"
+        },
+        {
+          "compiler": "gcc",
+          "native": true,
+          "after_over_before": 0.9903874387624214,
+          "before": 64707000,
+          "after": 64085000,
+          "audit_selector": {
+            "benchmark": "verify",
+            "kind": "lazy_segment_tree",
+            "size": "large",
+            "metric": "process_cpu_ns",
+            "config": "gcc_native",
+            "selected": "buffer"
+          },
+          "library": "lazy_segment_tree"
+        },
+        {
+          "compiler": "gcc",
+          "native": false,
+          "after_over_before": 0.9650286742381649,
+          "before": 8893000,
+          "after": 8582000,
+          "audit_selector": {
+            "benchmark": "verify",
+            "kind": "fenwick_tree",
+            "size": "large",
+            "metric": "process_cpu_ns",
+            "config": "gcc_default",
+            "selected": "buffer"
+          },
+          "library": "fenwick_tree"
+        },
+        {
+          "compiler": "gcc",
+          "native": true,
+          "after_over_before": 0.9894223542136428,
+          "before": 54549000,
+          "after": 53972000,
+          "audit_selector": {
+            "benchmark": "verify",
+            "kind": "wavelet_kth",
+            "size": "large",
+            "metric": "process_cpu_ns",
+            "config": "gcc_native",
+            "selected": "buffer"
+          },
+          "library": "wavelet_kth"
+        },
+        {
+          "compiler": "clang",
+          "native": false,
+          "after_over_before": 1.0030074675213967,
+          "before": 146635000,
+          "after": 147076000,
+          "audit_selector": {
+            "benchmark": "verify",
+            "kind": "implicit_treap_affine",
+            "size": "large",
+            "metric": "process_cpu_ns",
+            "config": "clang_default",
+            "selected": "unreleased"
+          },
+          "library": "implicit_treap_affine"
+        },
+        {
+          "compiler": "clang",
+          "native": false,
+          "after_over_before": 1.0291899441340782,
+          "before": 14320000,
+          "after": 14738000,
+          "audit_selector": {
+            "benchmark": "verify",
+            "kind": "segment_tree",
+            "size": "large",
+            "metric": "process_cpu_ns",
+            "config": "clang_default",
+            "selected": "buffer"
+          },
+          "library": "segment_tree"
+        },
+        {
+          "compiler": "clang",
+          "native": false,
+          "after_over_before": 0.9867344967480198,
+          "before": 62116000,
+          "after": 61292000,
+          "audit_selector": {
+            "benchmark": "verify",
+            "kind": "lazy_segment_tree",
+            "size": "large",
+            "metric": "process_cpu_ns",
+            "config": "clang_default",
+            "selected": "buffer"
+          },
+          "library": "lazy_segment_tree"
+        },
+        {
+          "compiler": "clang",
+          "native": true,
+          "after_over_before": 0.9883418837148119,
+          "before": 60816000,
+          "after": 60107000,
+          "audit_selector": {
+            "benchmark": "verify",
+            "kind": "lazy_segment_tree",
+            "size": "large",
+            "metric": "process_cpu_ns",
+            "config": "clang_native",
+            "selected": "buffer"
+          },
+          "library": "lazy_segment_tree"
+        },
+        {
+          "compiler": "clang",
+          "native": true,
+          "after_over_before": 1.0149327658637706,
+          "before": 54511000,
+          "after": 55325000,
+          "audit_selector": {
+            "benchmark": "verify",
+            "kind": "wavelet_kth",
+            "size": "large",
+            "metric": "process_cpu_ns",
+            "config": "clang_native",
+            "selected": "buffer"
+          },
+          "library": "wavelet_kth"
+        },
+        {
+          "compiler": "clang",
+          "native": true,
+          "after_over_before": 0.9950196841056775,
+          "before": 147581000,
+          "after": 146846000,
+          "audit_selector": {
+            "benchmark": "verify",
+            "kind": "implicit_treap_affine",
+            "size": "large",
+            "metric": "process_cpu_ns",
+            "config": "clang_native",
+            "selected": "unreleased"
+          },
+          "library": "implicit_treap_affine"
+        }
+      ],
+      "table_gcc_default_native": "0.965–1.019 / 0.961–1.010",
+      "table_clang_default_native": "0.831–1.029 / 0.846–1.021",
+      "major_regression_or_limit": "大半は中立。Treapの追加利益は約1%、AhoはGCCだけUnreleased採用しClangの+17–20%切替は不採用。",
+      "audits": [
+        "Audit/fast-unreleased-vector-2026-10-31.json",
+        "Audit/fast-unreleased-vector-adoption-bridge-2026-10-31.json"
+      ],
+      "scope": "F/S/L/WはFastBuffer、Tは両コンパイラUnreleased、AはGCC Unreleased/Clang FastBuffer。6種×4設定の全24記録をJSONに保存。"
+    }
+  ],
+  "audit_sha256": {
+    "Audit/benchmark-modular-montgomery-2026-10-31.json": "1e158c7e39c5571fc54742112395459d110a81db3f9208bd087d0bab06ea6f43",
+    "Audit/benchmark-modular-sqrt-2026-10-31.json": "3d2f05fccc50ee27ff79b5a97d51d79b3e4cec36b2171bf52e741eb08ea2ae0f",
+    "Audit/data/matrix-u32-tiled-final-2026-10-31-summary.json": "2d14f68e6a283b6766244aac9c28c147159c31b3419edb67001c3dd0fc686d29",
+    "Audit/fast-storage-adoption-2026-10-31.json": "ab4a357ecdfc485aaa6f61c3e7f31ceda449547fefb8d7820eee6b9e14bc00d0",
+    "Audit/fast-unreleased-vector-2026-10-31.json": "9d32e2c48089560eab41b2431bc9665014b8a38597e0f4a73f91f2935b264ff2",
+    "Audit/fast-unreleased-vector-adoption-bridge-2026-10-31.json": "d7fda4ea8348131c0029a941d60314d35ee2a89c05c1a15b17a687fd483ac901",
+    "Audit/ntt-simd-adoption-2026-10-31.json": "6d461d02deb182a15ea1b789ac8cedac2a1ebb21486a5b50364dcec97e3acb96",
+    "Audit/performance-fast-binary-trie-2026-10-31.json": "a952d026c6570d05d294d071bd4f6939a6c3ad3a54a5504aed47e53037d5a64f",
+    "Audit/performance-fast-hash-release-2026-10-31.json": "990dc68b8b5c0d8d6490de568cd3312f165455ed27a787cb31dc850dd992d31f",
+    "Audit/performance-fast-node-2026-10-31.json": "ef101a0887f3a983d9299ebc644a3baddc15a76e96e86919dec8676033779fca",
+    "Audit/performance-linear-recurrence-weights-2026-10-31.json": "921f7ad38dfde7d3798d058eb39bc69abcc8979957fedc378a3910b24548dec5",
+    "Audit/performance-matrix-u32-tiled-2026-10-31.json": "b2f07c00ab48ccb7b59b1b4dedada40952343242939fd27723b1b1366d6afbe7",
+    "Audit/performance-ntt-simd-2026-10-31.json": "c1f54df9fe750889ca07c9716e524c6093381b77d375bd5bda486afbb33d6cee",
+    "Audit/performance-persistent-segment-tree-iterative-2026-10-31.json": "3e9f2e84c09947f99742c64cc292dffffec96874efe6461f875652d3b3fde6d5",
+    "Audit/performance-wavelet-matrix-packed-2026-10-31.json": "a0d7ca420de0fcb6c6d5cd07da5a9db2e8fe064cd5d8300d090ff2c3726a4fa6"
+  }
+}

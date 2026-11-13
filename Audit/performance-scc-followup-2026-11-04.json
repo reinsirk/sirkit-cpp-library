@@ -1,0 +1,3831 @@
+{
+  "date": "2026-11-04",
+  "decision": "ローカルcursor/low保持、出次数0の即時確定、CSR宛先配列の先行初期化省略を採用。API/main/共通I/O/成分順・非再帰・所有権を維持。",
+  "online_confirmation": "Audit/online-scc-415132-2026-11-04.json",
+  "online_status": {
+    "before_submission": 415132,
+    "before_status": "AC",
+    "before_ms": 82,
+    "previous_ms": 93,
+    "current_status": "未提出",
+    "needs_resubmission": [
+      "Verify/current/submissions/scc.cpp"
+    ],
+    "scope": "TwoSATの共有内部関数も同期。TwoSATの初回オンラインVerifyは今後。既存のオンラインACを新しい本体・派生版へ転記しない。"
+  },
+  "changes": [
+    "現在頂点のCSR走査位置とlow-linkをローカル保持し、親を中断する直前だけnext/idsへ退避。戻るときは退避lowと子のlowを合成。",
+    "出次数0の未訪問頂点はその場で単独成分にする。親lowへの伝播は値を変えないため省き、DFS番号を出辺のある頂点間で順序を保って圧縮。成分確定順は維持。",
+    "CSRの宛先はmake_unique_for_overwrite<int[]>で所有。全スロットへ書いてから参照し、先行ゼロ初期化を省略。クラスのコピー/ムーブと返り値の型は変更なし。",
+    "手動添字のスタック配列案はGCCの改善が弱いため不採用。入力検査と内部容量保護・uint32/size_t経路は維持。"
+  ],
+  "correctness_reasoning": [
+    "葉の判定はentered[u]==-1の後だけ行う。訪問済み頂点はCSR走査終了によりcursor==endとなるため、未訪問判定を省けない。自己辺は出次数0ではなく通常経路。",
+    "親low<=親のDFS番号<未訪問の子のDFS番号。出辺0の子は即座に自身をrootとして確定し、親lowは不変。時計圧縮はlowの大小関係とroot判定を保つ。",
+    "子へ降りる直前に親lowを保存するため、復帰先のidsは必ず未確定の退避low。子SCCをpopしても親はそのSCCへ含まれない。",
+    "CSRの各頂点の[start,end)は互いに重ならず、degree回の後方書込みで各セルを一度ずつ設定。uint32のm==UINT32_MAXもcursorはm以下、アクセスはm未満。超過時size_tへ切り替える。巨大辺数を実確保した検証とは扱わない。"
+  ],
+  "environment": {
+    "cpu": "Intel Core i9-14900K P-Core CPU12（core6、sibling13）",
+    "compiler_versions": {
+      "Clang": "Ubuntu clang version 21.1.8 (6ubuntu1)\nTarget: x86_64-pc-linux-gnu\nThread model: posix\nInstalledDir: /usr/lib/llvm-21/bin\n",
+      "GCC": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0\nCopyright (C) 2025 Free Software Foundation, Inc.\nThis is free software; see the source for copying conditions.  There is NO\nwarranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
+    },
+    "flags": [
+      "-std=c++23",
+      "-O2",
+      "SKIP_RUNTIME_CHECKS"
+    ],
+    "march_native": false,
+    "custom_optimization_pragmas": false,
+    "explicit_SIMD_added": false,
+    "governor": "powersave、設定変更・周波数固定なし",
+    "measurement": "同一main/共通I/O/コンパイラ/検査設定。mainはwait4 user+system、API単体はstd::clock。順序を乱数化し同じ実行名へ切替、beforeと同じcontrolも計測。flockで自分の性能測定・コンパイル・検証を直列化。E-Coreは対象外。"
+  },
+  "measurements": {
+    "screen": [
+      {
+        "compiler": "gcc",
+        "case": "official_random_0",
+        "median_cpu_ns": {
+          "base": 37417000,
+          "local": 36089000,
+          "dest": 36916000,
+          "cursor": 36421000,
+          "control": 38440000,
+          "stack": 37759000
+        },
+        "ratio_to_before": {
+          "base": 1.0,
+          "local": 0.9645081112863138,
+          "dest": 0.986610364272924,
+          "cursor": 0.9733810834647353,
+          "control": 1.027340513670257,
+          "stack": 1.0091402303765669
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_random_1",
+        "median_cpu_ns": {
+          "dest": 39688000,
+          "base": 40015000,
+          "stack": 39992000,
+          "local": 39605000,
+          "control": 40150000,
+          "cursor": 39748000
+        },
+        "ratio_to_before": {
+          "dest": 0.9918280644758216,
+          "base": 1.0,
+          "stack": 0.999425215544171,
+          "local": 0.9897538423091341,
+          "control": 1.0033737348494314,
+          "cursor": 0.99332750218668
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_random_2",
+        "median_cpu_ns": {
+          "dest": 10587000,
+          "base": 10868000,
+          "stack": 10694000,
+          "control": 11132000,
+          "local": 10690000,
+          "cursor": 10839000
+        },
+        "ratio_to_before": {
+          "dest": 0.9741442767758557,
+          "base": 1.0,
+          "stack": 0.9839896945160103,
+          "control": 1.0242914979757085,
+          "local": 0.9836216415163783,
+          "cursor": 0.9973316157526684
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_random_3",
+        "median_cpu_ns": {
+          "stack": 22386000,
+          "base": 22202000,
+          "local": 22342000,
+          "cursor": 22302000,
+          "control": 22286000,
+          "dest": 22271000
+        },
+        "ratio_to_before": {
+          "stack": 1.0082875416629133,
+          "base": 1.0,
+          "local": 1.006305738221782,
+          "cursor": 1.0045040987298441,
+          "control": 1.0037834429330692,
+          "dest": 1.0031078281235926
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_random_4",
+        "median_cpu_ns": {
+          "dest": 17714000,
+          "control": 17767000,
+          "base": 17811000,
+          "cursor": 17747000,
+          "stack": 17870000,
+          "local": 17514000
+        },
+        "ratio_to_before": {
+          "dest": 0.994553927348268,
+          "control": 0.9975296165291112,
+          "base": 1.0,
+          "cursor": 0.9964067149514345,
+          "stack": 1.0033125596541463,
+          "local": 0.9833249115715007
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_max_random_0",
+        "median_cpu_ns": {
+          "dest": 45161000,
+          "base": 46039000,
+          "stack": 45519000,
+          "local": 45283000,
+          "cursor": 45057000,
+          "control": 45981000
+        },
+        "ratio_to_before": {
+          "dest": 0.9809292121896653,
+          "base": 1.0,
+          "stack": 0.9887052281761115,
+          "local": 0.9835791394252699,
+          "cursor": 0.9786702578248876,
+          "control": 0.9987401985273355
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_max_random_1",
+        "median_cpu_ns": {
+          "local": 45366000,
+          "base": 45952000,
+          "stack": 45783000,
+          "dest": 45046000,
+          "cursor": 45386000,
+          "control": 45994000
+        },
+        "ratio_to_before": {
+          "local": 0.9872475626740947,
+          "base": 1.0,
+          "stack": 0.9963222493036211,
+          "dest": 0.9802837743732591,
+          "cursor": 0.9876827994428969,
+          "control": 1.0009139972144847
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_max_random_2",
+        "median_cpu_ns": {
+          "local": 45709000,
+          "stack": 46181000,
+          "base": 46102000,
+          "dest": 45281000,
+          "control": 46212000,
+          "cursor": 45513000
+        },
+        "ratio_to_before": {
+          "local": 0.9914754240596937,
+          "stack": 1.001713591601232,
+          "base": 1.0,
+          "dest": 0.9821916619669429,
+          "control": 1.0023860136219687,
+          "cursor": 0.9872239816060041
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_max_random_3",
+        "median_cpu_ns": {
+          "cursor": 45644000,
+          "control": 46319000,
+          "local": 45555000,
+          "dest": 45420000,
+          "base": 46299000,
+          "stack": 46253000
+        },
+        "ratio_to_before": {
+          "cursor": 0.9858528261949502,
+          "control": 1.0004319747726733,
+          "local": 0.9839305384565541,
+          "dest": 0.9810147087410095,
+          "base": 1.0,
+          "stack": 0.9990064580228515
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_max_random_4",
+        "median_cpu_ns": {
+          "cursor": 46455000,
+          "local": 45857000,
+          "dest": 46511000,
+          "stack": 47824000,
+          "control": 47634000,
+          "base": 46638000
+        },
+        "ratio_to_before": {
+          "cursor": 0.9960761610703718,
+          "local": 0.9832539988850294,
+          "dest": 0.9972768986663236,
+          "stack": 1.0254299069428363,
+          "control": 1.021355975813714,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_large_cycle_0",
+        "median_cpu_ns": {
+          "dest": 27502000,
+          "local": 27571000,
+          "base": 27580000,
+          "control": 27816000,
+          "cursor": 27850000,
+          "stack": 27550000
+        },
+        "ratio_to_before": {
+          "dest": 0.9971718636693256,
+          "local": 0.9996736765772298,
+          "base": 1.0,
+          "control": 1.0085569253081943,
+          "cursor": 1.0097897026831038,
+          "stack": 0.9989122552574329
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_500000_line",
+        "median_cpu_ns": {
+          "cursor": 32325000,
+          "local": 32090000,
+          "control": 32622000,
+          "dest": 31762000,
+          "stack": 32146000,
+          "base": 32441000
+        },
+        "ratio_to_before": {
+          "cursor": 0.9964242779199162,
+          "local": 0.9891803581887119,
+          "control": 1.0055793594525446,
+          "dest": 0.9790696957553713,
+          "stack": 0.9909065688480626,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_500000_cycle",
+        "median_cpu_ns": {
+          "stack": 18465000,
+          "local": 18259000,
+          "control": 19017000,
+          "dest": 18133000,
+          "cursor": 18642000,
+          "base": 18994000
+        },
+        "ratio_to_before": {
+          "stack": 0.9721490997156997,
+          "local": 0.9613035695482784,
+          "control": 1.001210908708013,
+          "dest": 0.9546698957565547,
+          "cursor": 0.9814678319469307,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_500000_dag",
+        "median_cpu_ns": {
+          "stack": 60421000,
+          "control": 61714000,
+          "local": 60313000,
+          "base": 60933000,
+          "dest": 59232000,
+          "cursor": 60133000
+        },
+        "ratio_to_before": {
+          "stack": 0.9915973282129552,
+          "control": 1.01281735676891,
+          "local": 0.9898248896328754,
+          "base": 1.0,
+          "dest": 0.9720840923637438,
+          "cursor": 0.9868708253327425
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_500000_star",
+        "median_cpu_ns": {
+          "dest": 31220000,
+          "local": 31518000,
+          "base": 31274000,
+          "stack": 31487000,
+          "control": 31559000,
+          "cursor": 31450000
+        },
+        "ratio_to_before": {
+          "dest": 0.9982733260855663,
+          "local": 1.0078020080578116,
+          "base": 1.0,
+          "stack": 1.0068107693291553,
+          "control": 1.0091130012150669,
+          "cursor": 1.0056276779433395
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_4096_dag",
+        "median_cpu_ns": {
+          "dest": 1377000,
+          "local": 1349000,
+          "cursor": 1302000,
+          "base": 1323000,
+          "control": 1349000,
+          "stack": 1305000
+        },
+        "ratio_to_before": {
+          "dest": 1.0408163265306123,
+          "local": 1.0196523053665911,
+          "cursor": 0.9841269841269841,
+          "base": 1.0,
+          "control": 1.0196523053665911,
+          "stack": 0.9863945578231292
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_32_dag",
+        "median_cpu_ns": {
+          "control": 957000,
+          "stack": 939000,
+          "cursor": 940000,
+          "base": 941000,
+          "local": 932000,
+          "dest": 947000
+        },
+        "ratio_to_before": {
+          "control": 1.0170031880977684,
+          "stack": 0.997874601487779,
+          "cursor": 0.9989373007438895,
+          "base": 1.0,
+          "local": 0.9904357066950054,
+          "dest": 1.006376195536663
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_random_0",
+        "median_cpu_ns": {
+          "control": 37463000,
+          "local": 37025000,
+          "base": 37602000,
+          "stack": 36687000,
+          "cursor": 37097000,
+          "dest": 36092000
+        },
+        "ratio_to_before": {
+          "control": 0.9963033881176533,
+          "local": 0.984655071538748,
+          "base": 1.0,
+          "stack": 0.9756661879687251,
+          "cursor": 0.9865698633051433,
+          "dest": 0.9598425615658741
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_random_1",
+        "median_cpu_ns": {
+          "dest": 39587000,
+          "base": 40927000,
+          "stack": 39614000,
+          "cursor": 40695000,
+          "control": 40995000,
+          "local": 40427000
+        },
+        "ratio_to_before": {
+          "dest": 0.9672587778239304,
+          "base": 1.0,
+          "stack": 0.9679184890170304,
+          "cursor": 0.9943313704889193,
+          "control": 1.001661494856696,
+          "local": 0.9877831260537053
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_random_2",
+        "median_cpu_ns": {
+          "dest": 10904000,
+          "control": 12062000,
+          "cursor": 11595000,
+          "local": 11772000,
+          "base": 12095000,
+          "stack": 10877000
+        },
+        "ratio_to_before": {
+          "dest": 0.901529557668458,
+          "control": 0.9972715998346424,
+          "cursor": 0.9586606035551881,
+          "local": 0.9732947498966515,
+          "base": 1.0,
+          "stack": 0.8992972302604382
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_random_3",
+        "median_cpu_ns": {
+          "cursor": 22016000,
+          "local": 22117000,
+          "dest": 22019000,
+          "stack": 21814000,
+          "control": 22064000,
+          "base": 22063000
+        },
+        "ratio_to_before": {
+          "cursor": 0.9978697366631918,
+          "local": 1.0024475365997372,
+          "dest": 0.9980057109187327,
+          "stack": 0.9887141367901011,
+          "control": 1.000045324751847,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_random_4",
+        "median_cpu_ns": {
+          "stack": 17809000,
+          "base": 18157000,
+          "cursor": 18003000,
+          "local": 18026000,
+          "control": 18057000,
+          "dest": 17623000
+        },
+        "ratio_to_before": {
+          "stack": 0.9808338381891282,
+          "base": 1.0,
+          "cursor": 0.991518422646913,
+          "local": 0.9927851517321143,
+          "control": 0.9944924822382553,
+          "dest": 0.9705898551522829
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_max_random_0",
+        "median_cpu_ns": {
+          "local": 46653000,
+          "cursor": 46826000,
+          "base": 47686000,
+          "control": 47455000,
+          "dest": 45640000,
+          "stack": 46012000
+        },
+        "ratio_to_before": {
+          "local": 0.9783374575347062,
+          "cursor": 0.9819653567084679,
+          "base": 1.0,
+          "control": 0.9951558109298326,
+          "dest": 0.9570943253785178,
+          "stack": 0.9648953571278782
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_max_random_1",
+        "median_cpu_ns": {
+          "local": 47164000,
+          "stack": 46286000,
+          "control": 47512000,
+          "dest": 45877000,
+          "base": 47413000,
+          "cursor": 46967000
+        },
+        "ratio_to_before": {
+          "local": 0.9947482757893404,
+          "stack": 0.9762301478497458,
+          "control": 1.0020880349271297,
+          "dest": 0.9676038217366545,
+          "base": 1.0,
+          "cursor": 0.9905932971969713
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_max_random_2",
+        "median_cpu_ns": {
+          "control": 47521000,
+          "base": 47670000,
+          "cursor": 47065000,
+          "dest": 45550000,
+          "local": 46917000,
+          "stack": 46108000
+        },
+        "ratio_to_before": {
+          "control": 0.996874344451437,
+          "base": 1.0,
+          "cursor": 0.9873085798195931,
+          "dest": 0.9555275854835327,
+          "local": 0.9842039018250472,
+          "stack": 0.9672330606251311
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_max_random_3",
+        "median_cpu_ns": {
+          "stack": 46054000,
+          "cursor": 46962000,
+          "dest": 45923000,
+          "base": 47469000,
+          "control": 47873000,
+          "local": 46469000
+        },
+        "ratio_to_before": {
+          "stack": 0.9701910720680865,
+          "cursor": 0.9893193452569045,
+          "dest": 0.9674313762666161,
+          "base": 1.0,
+          "control": 1.008510817586214,
+          "local": 0.9789336198361036
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_max_random_4",
+        "median_cpu_ns": {
+          "stack": 46287000,
+          "cursor": 46965000,
+          "control": 47728000,
+          "local": 47078000,
+          "base": 47363000,
+          "dest": 45810000
+        },
+        "ratio_to_before": {
+          "stack": 0.9772818444777569,
+          "cursor": 0.9915968160800624,
+          "control": 1.0077064375145155,
+          "local": 0.9939826446804467,
+          "base": 1.0,
+          "dest": 0.9672106918902941
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_large_cycle_0",
+        "median_cpu_ns": {
+          "control": 28151000,
+          "cursor": 27852000,
+          "stack": 27110000,
+          "dest": 27041000,
+          "local": 27921000,
+          "base": 28026000
+        },
+        "ratio_to_before": {
+          "control": 1.004460144151859,
+          "cursor": 0.9937914793406123,
+          "stack": 0.9673160636551773,
+          "dest": 0.9648540640833512,
+          "local": 0.9962534789124384,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_500000_line",
+        "median_cpu_ns": {
+          "stack": 30985000,
+          "dest": 30767000,
+          "local": 32929000,
+          "control": 33340000,
+          "cursor": 32812000,
+          "base": 33198000
+        },
+        "ratio_to_before": {
+          "stack": 0.9333393577926381,
+          "dest": 0.9267726971504308,
+          "local": 0.9918971022350744,
+          "control": 1.004277366106392,
+          "cursor": 0.9883727935417796,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_500000_cycle",
+        "median_cpu_ns": {
+          "control": 20002000,
+          "cursor": 19598000,
+          "dest": 17732000,
+          "local": 19682000,
+          "base": 20010000,
+          "stack": 17785000
+        },
+        "ratio_to_before": {
+          "control": 0.99960019990005,
+          "cursor": 0.9794102948525737,
+          "dest": 0.8861569215392304,
+          "local": 0.983608195902049,
+          "base": 1.0,
+          "stack": 0.8888055972013993
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_500000_dag",
+        "median_cpu_ns": {
+          "base": 62893000,
+          "local": 62465000,
+          "dest": 59592000,
+          "control": 63343000,
+          "stack": 61007000,
+          "cursor": 62383000
+        },
+        "ratio_to_before": {
+          "base": 1.0,
+          "local": 0.9931947911532285,
+          "dest": 0.9475140317682413,
+          "control": 1.007155009301512,
+          "stack": 0.9700125610163293,
+          "cursor": 0.9918909894582862
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_500000_star",
+        "median_cpu_ns": {
+          "cursor": 32025000,
+          "control": 31967000,
+          "base": 31861000,
+          "stack": 30508000,
+          "dest": 30437000,
+          "local": 31928000
+        },
+        "ratio_to_before": {
+          "cursor": 1.005147358839961,
+          "control": 1.0033269514453407,
+          "base": 1.0,
+          "stack": 0.957534289570321,
+          "dest": 0.9553058598286306,
+          "local": 1.0021028844041304
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_4096_dag",
+        "median_cpu_ns": {
+          "cursor": 1359000,
+          "control": 1348000,
+          "local": 1312000,
+          "stack": 1311000,
+          "dest": 1301000,
+          "base": 1369000
+        },
+        "ratio_to_before": {
+          "cursor": 0.9926953981008035,
+          "control": 0.9846603360116873,
+          "local": 0.95836376917458,
+          "stack": 0.9576333089846604,
+          "dest": 0.9503287070854638,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_32_dag",
+        "median_cpu_ns": {
+          "base": 946000,
+          "stack": 940000,
+          "cursor": 944000,
+          "control": 943000,
+          "local": 961000,
+          "dest": 964000
+        },
+        "ratio_to_before": {
+          "base": 1.0,
+          "stack": 0.9936575052854123,
+          "cursor": 0.9978858350951374,
+          "control": 0.9968287526427061,
+          "local": 1.0158562367864694,
+          "dest": 1.0190274841437632
+        }
+      }
+    ],
+    "final_main": [
+      {
+        "compiler": "gcc",
+        "case": "official_random_0",
+        "median_cpu_ns": {
+          "base": 36534000,
+          "leaf": 36543000,
+          "leafdest": 35876000,
+          "local": 35805000,
+          "control": 36094000
+        },
+        "ratio_to_before": {
+          "base": 1.0,
+          "leaf": 1.000246345869601,
+          "leafdest": 0.9819893797558439,
+          "local": 0.9800459845623255,
+          "control": 0.9879564241528439
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_random_1",
+        "median_cpu_ns": {
+          "leafdest": 40774000,
+          "local": 40665000,
+          "base": 41054000,
+          "control": 41013000,
+          "leaf": 41056000
+        },
+        "ratio_to_before": {
+          "leafdest": 0.9931797145223364,
+          "local": 0.9905246748185317,
+          "base": 1.0,
+          "control": 0.9990013153407707,
+          "leaf": 1.0000487163248404
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_random_2",
+        "median_cpu_ns": {
+          "leafdest": 11519000,
+          "leaf": 11498000,
+          "control": 11721000,
+          "local": 11434000,
+          "base": 11761000
+        },
+        "ratio_to_before": {
+          "leafdest": 0.9794235184082987,
+          "leaf": 0.9776379559561261,
+          "control": 0.9965989286625287,
+          "local": 0.9721962418161721,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_random_3",
+        "median_cpu_ns": {
+          "leaf": 22998000,
+          "leafdest": 22863000,
+          "local": 23085000,
+          "base": 23089000,
+          "control": 23081000
+        },
+        "ratio_to_before": {
+          "leaf": 0.9960587292650179,
+          "leafdest": 0.990211789163671,
+          "local": 0.9998267573303304,
+          "base": 1.0,
+          "control": 0.9996535146606609
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_random_4",
+        "median_cpu_ns": {
+          "base": 18791000,
+          "leafdest": 18462000,
+          "leaf": 18551000,
+          "local": 18376000,
+          "control": 18702000
+        },
+        "ratio_to_before": {
+          "base": 1.0,
+          "leafdest": 0.982491618327923,
+          "leaf": 0.9872279282635305,
+          "local": 0.9779149592890214,
+          "control": 0.9952636900643925
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_max_random_0",
+        "median_cpu_ns": {
+          "leafdest": 46967000,
+          "local": 46974000,
+          "leaf": 46649000,
+          "base": 47066000,
+          "control": 47292000
+        },
+        "ratio_to_before": {
+          "leafdest": 0.9978965707729571,
+          "local": 0.998045298092041,
+          "leaf": 0.991140101134577,
+          "base": 1.0,
+          "control": 1.004801767730421
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_max_random_1",
+        "median_cpu_ns": {
+          "leaf": 47270000,
+          "base": 46983000,
+          "control": 47427000,
+          "local": 47180000,
+          "leafdest": 46529000
+        },
+        "ratio_to_before": {
+          "leaf": 1.0061085924696167,
+          "base": 1.0,
+          "control": 1.0094502266777345,
+          "local": 1.0041930059808868,
+          "leafdest": 0.9903369303790733
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_max_random_2",
+        "median_cpu_ns": {
+          "control": 46043000,
+          "leaf": 45548000,
+          "leafdest": 45493000,
+          "base": 46453000,
+          "local": 45461000
+        },
+        "ratio_to_before": {
+          "control": 0.9911738746690203,
+          "leaf": 0.9805179428669838,
+          "leafdest": 0.9793339504445353,
+          "base": 1.0,
+          "local": 0.9786450821260199
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_max_random_3",
+        "median_cpu_ns": {
+          "leaf": 45961000,
+          "control": 46343000,
+          "local": 45771000,
+          "base": 46467000,
+          "leafdest": 45642000
+        },
+        "ratio_to_before": {
+          "leaf": 0.9891105515742354,
+          "control": 0.9973314395162158,
+          "local": 0.9850216282523081,
+          "base": 1.0,
+          "leafdest": 0.98224546452321
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_max_random_4",
+        "median_cpu_ns": {
+          "control": 46357000,
+          "base": 46557000,
+          "leaf": 45940000,
+          "leafdest": 45886000,
+          "local": 45775000
+        },
+        "ratio_to_before": {
+          "control": 0.9957041905621067,
+          "base": 1.0,
+          "leaf": 0.9867474278840991,
+          "leafdest": 0.9855875593358678,
+          "local": 0.9832033850978371
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_large_cycle_0",
+        "median_cpu_ns": {
+          "control": 27195000,
+          "local": 27052000,
+          "leafdest": 27153000,
+          "leaf": 27121000,
+          "base": 27285000
+        },
+        "ratio_to_before": {
+          "control": 0.9967014843320505,
+          "local": 0.9914605094374198,
+          "leafdest": 0.9951621770203408,
+          "leaf": 0.9939893714495144,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_32_empty",
+        "median_cpu_ns": {
+          "local": 933000,
+          "leafdest": 944000,
+          "base": 945000,
+          "leaf": 932000,
+          "control": 976000
+        },
+        "ratio_to_before": {
+          "local": 0.9873015873015873,
+          "leafdest": 0.9989417989417989,
+          "base": 1.0,
+          "leaf": 0.9862433862433863,
+          "control": 1.0328042328042328
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_32_line",
+        "median_cpu_ns": {
+          "leaf": 925000,
+          "control": 923000,
+          "leafdest": 928000,
+          "local": 922000,
+          "base": 929000
+        },
+        "ratio_to_before": {
+          "leaf": 0.9956942949407965,
+          "control": 0.9935414424111948,
+          "leafdest": 0.9989235737351991,
+          "local": 0.9924650161463939,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_32_cycle",
+        "median_cpu_ns": {
+          "leaf": 917000,
+          "local": 919000,
+          "control": 906000,
+          "base": 906000,
+          "leafdest": 919000
+        },
+        "ratio_to_before": {
+          "leaf": 1.0121412803532008,
+          "local": 1.0143487858719646,
+          "control": 1.0,
+          "base": 1.0,
+          "leafdest": 1.0143487858719646
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_32_star",
+        "median_cpu_ns": {
+          "leafdest": 911000,
+          "control": 904000,
+          "local": 917000,
+          "base": 915000,
+          "leaf": 916000
+        },
+        "ratio_to_before": {
+          "leafdest": 0.9956284153005465,
+          "control": 0.9879781420765027,
+          "local": 1.0021857923497268,
+          "base": 1.0,
+          "leaf": 1.0010928961748633
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_32_dag",
+        "median_cpu_ns": {
+          "leaf": 957000,
+          "base": 985000,
+          "local": 961000,
+          "control": 950000,
+          "leafdest": 986000
+        },
+        "ratio_to_before": {
+          "leaf": 0.9715736040609138,
+          "base": 1.0,
+          "local": 0.9756345177664975,
+          "control": 0.9644670050761421,
+          "leafdest": 1.001015228426396
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_32_paired",
+        "median_cpu_ns": {
+          "leafdest": 992000,
+          "leaf": 969000,
+          "base": 969000,
+          "local": 967000,
+          "control": 961000
+        },
+        "ratio_to_before": {
+          "leafdest": 1.023735810113519,
+          "leaf": 1.0,
+          "base": 1.0,
+          "local": 0.9979360165118679,
+          "control": 0.9917440660474717
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_4096_empty",
+        "median_cpu_ns": {
+          "base": 1067000,
+          "leaf": 1077000,
+          "local": 1072000,
+          "control": 1074000,
+          "leafdest": 1079000
+        },
+        "ratio_to_before": {
+          "base": 1.0,
+          "leaf": 1.0093720712277414,
+          "local": 1.0046860356138707,
+          "control": 1.006560449859419,
+          "leafdest": 1.0112464854732897
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_4096_line",
+        "median_cpu_ns": {
+          "leafdest": 1190000,
+          "local": 1166000,
+          "leaf": 1324000,
+          "base": 1222000,
+          "control": 1158000
+        },
+        "ratio_to_before": {
+          "leafdest": 0.9738134206219312,
+          "local": 0.9541734860883797,
+          "leaf": 1.0834697217675942,
+          "base": 1.0,
+          "control": 0.9476268412438625
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_4096_cycle",
+        "median_cpu_ns": {
+          "local": 1101000,
+          "control": 1092000,
+          "leaf": 1096000,
+          "base": 1083000,
+          "leafdest": 1109000
+        },
+        "ratio_to_before": {
+          "local": 1.0166204986149585,
+          "control": 1.0083102493074791,
+          "leaf": 1.0120036934441368,
+          "base": 1.0,
+          "leafdest": 1.0240073868882733
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_4096_star",
+        "median_cpu_ns": {
+          "leaf": 1172000,
+          "local": 1161000,
+          "base": 1207000,
+          "leafdest": 1189000,
+          "control": 1169000
+        },
+        "ratio_to_before": {
+          "leaf": 0.9710024855012428,
+          "local": 0.9618889809444905,
+          "base": 1.0,
+          "leafdest": 0.9850869925434963,
+          "control": 0.9685169842584921
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_4096_dag",
+        "median_cpu_ns": {
+          "control": 1311000,
+          "base": 1295000,
+          "leafdest": 1292000,
+          "local": 1284000,
+          "leaf": 1297000
+        },
+        "ratio_to_before": {
+          "control": 1.0123552123552124,
+          "base": 1.0,
+          "leafdest": 0.9976833976833976,
+          "local": 0.9915057915057915,
+          "leaf": 1.0015444015444015
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_4096_paired",
+        "median_cpu_ns": {
+          "base": 1101000,
+          "local": 1078000,
+          "leaf": 1094000,
+          "leafdest": 1096000,
+          "control": 1116000
+        },
+        "ratio_to_before": {
+          "base": 1.0,
+          "local": 0.9791099000908265,
+          "leaf": 0.9936421435059037,
+          "leafdest": 0.9954586739327884,
+          "control": 1.013623978201635
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_500000_empty",
+        "median_cpu_ns": {
+          "base": 22898000,
+          "leaf": 22904000,
+          "leafdest": 22807000,
+          "local": 22947000,
+          "control": 22966000
+        },
+        "ratio_to_before": {
+          "base": 1.0,
+          "leaf": 1.000262031618482,
+          "leafdest": 0.9960258537863569,
+          "local": 1.0021399248842693,
+          "control": 1.0029696916761288
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_500000_line",
+        "median_cpu_ns": {
+          "leafdest": 32168000,
+          "control": 32742000,
+          "local": 32640000,
+          "leaf": 32417000,
+          "base": 32727000
+        },
+        "ratio_to_before": {
+          "leafdest": 0.9829193021052953,
+          "control": 1.0004583371528095,
+          "local": 0.9973416445137043,
+          "leaf": 0.9905276988419348,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_500000_cycle",
+        "median_cpu_ns": {
+          "leafdest": 18496000,
+          "control": 19129000,
+          "local": 18502000,
+          "base": 19129000,
+          "leaf": 18447000
+        },
+        "ratio_to_before": {
+          "leafdest": 0.9669088818024988,
+          "control": 1.0,
+          "local": 0.9672225416906268,
+          "base": 1.0,
+          "leaf": 0.9643473260494537
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_500000_star",
+        "median_cpu_ns": {
+          "leafdest": 30613000,
+          "control": 31703000,
+          "leaf": 30963000,
+          "base": 31717000,
+          "local": 31564000
+        },
+        "ratio_to_before": {
+          "leafdest": 0.9651921682378535,
+          "control": 0.9995585963363496,
+          "leaf": 0.9762272598291137,
+          "base": 1.0,
+          "local": 0.9951760885329634
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_500000_dag",
+        "median_cpu_ns": {
+          "control": 61341000,
+          "local": 59658000,
+          "leafdest": 59893000,
+          "leaf": 59713000,
+          "base": 61353000
+        },
+        "ratio_to_before": {
+          "control": 0.9998044105422718,
+          "local": 0.9723729890958878,
+          "leafdest": 0.9762032826430656,
+          "leaf": 0.9732694407771421,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_500000_paired",
+        "median_cpu_ns": {
+          "leafdest": 23702000,
+          "leaf": 23879000,
+          "base": 23714000,
+          "control": 23959000,
+          "local": 23764000
+        },
+        "ratio_to_before": {
+          "leafdest": 0.9994939698068651,
+          "leaf": 1.0069579151556043,
+          "base": 1.0,
+          "control": 1.0103314497765032,
+          "local": 1.002108459138062
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_250000_dense",
+        "median_cpu_ns": {
+          "leaf": 70977000,
+          "base": 72253000,
+          "control": 72947000,
+          "local": 70071000,
+          "leafdest": 70137000
+        },
+        "ratio_to_before": {
+          "leaf": 0.9823398336401257,
+          "base": 1.0,
+          "control": 1.0096051375029411,
+          "local": 0.9698005619143841,
+          "leafdest": 0.9707140187950674
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_random_0",
+        "median_cpu_ns": {
+          "leaf": 37154000,
+          "base": 37725000,
+          "leafdest": 36148000,
+          "local": 37108000,
+          "control": 37762000
+        },
+        "ratio_to_before": {
+          "leaf": 0.9848641484426772,
+          "base": 1.0,
+          "leafdest": 0.9581974817760106,
+          "local": 0.9836447978793903,
+          "control": 1.0009807819748178
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_random_1",
+        "median_cpu_ns": {
+          "leaf": 40571000,
+          "leafdest": 39505000,
+          "control": 41228000,
+          "base": 41379000,
+          "local": 40540000
+        },
+        "ratio_to_before": {
+          "leaf": 0.980473186882235,
+          "leafdest": 0.9547113270016192,
+          "control": 0.9963508059643781,
+          "base": 1.0,
+          "local": 0.9797240145967762
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_random_2",
+        "median_cpu_ns": {
+          "control": 12304000,
+          "local": 11887000,
+          "leafdest": 11015000,
+          "base": 12261000,
+          "leaf": 11913000
+        },
+        "ratio_to_before": {
+          "control": 1.0035070548894869,
+          "local": 0.9694967784030666,
+          "leafdest": 0.8983769676209118,
+          "base": 1.0,
+          "leaf": 0.9716173232199657
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_random_3",
+        "median_cpu_ns": {
+          "control": 22482000,
+          "leaf": 22108000,
+          "base": 22522000,
+          "leafdest": 21826000,
+          "local": 22438000
+        },
+        "ratio_to_before": {
+          "control": 0.998223958795844,
+          "leaf": 0.9816179735369861,
+          "base": 1.0,
+          "leafdest": 0.9690968830476867,
+          "local": 0.9962703134712725
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_random_4",
+        "median_cpu_ns": {
+          "leaf": 17989000,
+          "local": 18093000,
+          "control": 18338000,
+          "base": 18392000,
+          "leafdest": 17666000
+        },
+        "ratio_to_before": {
+          "leaf": 0.9780882992605481,
+          "local": 0.9837429317094389,
+          "control": 0.9970639408438452,
+          "base": 1.0,
+          "leafdest": 0.9605263157894737
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_max_random_0",
+        "median_cpu_ns": {
+          "local": 46818000,
+          "base": 47315000,
+          "leafdest": 45125000,
+          "control": 47499000,
+          "leaf": 46807000
+        },
+        "ratio_to_before": {
+          "local": 0.9894959315227729,
+          "base": 1.0,
+          "leafdest": 0.9537144668709712,
+          "control": 1.0038888301807039,
+          "leaf": 0.9892634471097961
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_max_random_1",
+        "median_cpu_ns": {
+          "leaf": 46826000,
+          "leafdest": 45391000,
+          "local": 46886000,
+          "base": 47459000,
+          "control": 47511000
+        },
+        "ratio_to_before": {
+          "leaf": 0.9866621715586085,
+          "leafdest": 0.9564255462609832,
+          "local": 0.9879264206999726,
+          "base": 1.0,
+          "control": 1.0010956825891821
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_max_random_2",
+        "median_cpu_ns": {
+          "leafdest": 45197000,
+          "leaf": 46727000,
+          "control": 47431000,
+          "local": 46717000,
+          "base": 47259000
+        },
+        "ratio_to_before": {
+          "leafdest": 0.9563680991980363,
+          "leaf": 0.9887428849531307,
+          "control": 1.003639518398612,
+          "local": 0.9885312850462346,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_max_random_3",
+        "median_cpu_ns": {
+          "base": 47395000,
+          "leafdest": 45379000,
+          "leaf": 46886000,
+          "control": 47347000,
+          "local": 46769000
+        },
+        "ratio_to_before": {
+          "base": 1.0,
+          "leafdest": 0.9574638674965714,
+          "leaf": 0.9892604705137673,
+          "control": 0.9989872349403945,
+          "local": 0.986791855680979
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_max_random_4",
+        "median_cpu_ns": {
+          "control": 47316000,
+          "local": 46642000,
+          "leafdest": 45258000,
+          "base": 47346000,
+          "leaf": 46567000
+        },
+        "ratio_to_before": {
+          "control": 0.9993663667469269,
+          "local": 0.9851307396612174,
+          "leafdest": 0.9558991255861108,
+          "base": 1.0,
+          "leaf": 0.9835466565285346
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_large_cycle_0",
+        "median_cpu_ns": {
+          "control": 27479000,
+          "leaf": 27985000,
+          "base": 27575000,
+          "leafdest": 26772000,
+          "local": 27672000
+        },
+        "ratio_to_before": {
+          "control": 0.9965185856754306,
+          "leaf": 1.014868540344515,
+          "base": 1.0,
+          "leafdest": 0.9708794197642793,
+          "local": 1.003517679057117
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_32_empty",
+        "median_cpu_ns": {
+          "leaf": 1011000,
+          "leafdest": 936000,
+          "local": 968000,
+          "control": 921000,
+          "base": 931000
+        },
+        "ratio_to_before": {
+          "leaf": 1.0859291084854994,
+          "leafdest": 1.0053705692803436,
+          "local": 1.0397422126745435,
+          "control": 0.9892588614393125,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_32_line",
+        "median_cpu_ns": {
+          "leafdest": 928000,
+          "local": 930000,
+          "leaf": 933000,
+          "base": 923000,
+          "control": 939000
+        },
+        "ratio_to_before": {
+          "leafdest": 1.0054171180931744,
+          "local": 1.0075839653304441,
+          "leaf": 1.010834236186349,
+          "base": 1.0,
+          "control": 1.017334777898158
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_32_cycle",
+        "median_cpu_ns": {
+          "base": 971000,
+          "leafdest": 949000,
+          "leaf": 964000,
+          "control": 1001000,
+          "local": 950000
+        },
+        "ratio_to_before": {
+          "base": 1.0,
+          "leafdest": 0.9773429454170958,
+          "leaf": 0.9927909371781668,
+          "control": 1.030895983522142,
+          "local": 0.9783728115345005
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_32_star",
+        "median_cpu_ns": {
+          "leaf": 931000,
+          "local": 919000,
+          "leafdest": 920000,
+          "base": 924000,
+          "control": 926000
+        },
+        "ratio_to_before": {
+          "leaf": 1.0075757575757576,
+          "local": 0.9945887445887446,
+          "leafdest": 0.9956709956709957,
+          "base": 1.0,
+          "control": 1.0021645021645023
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_32_dag",
+        "median_cpu_ns": {
+          "base": 928000,
+          "local": 934000,
+          "control": 921000,
+          "leaf": 928000,
+          "leafdest": 920000
+        },
+        "ratio_to_before": {
+          "base": 1.0,
+          "local": 1.0064655172413792,
+          "control": 0.9924568965517241,
+          "leaf": 1.0,
+          "leafdest": 0.9913793103448276
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_32_paired",
+        "median_cpu_ns": {
+          "leafdest": 927000,
+          "leaf": 967000,
+          "control": 937000,
+          "base": 948000,
+          "local": 929000
+        },
+        "ratio_to_before": {
+          "leafdest": 0.9778481012658228,
+          "leaf": 1.020042194092827,
+          "control": 0.9883966244725738,
+          "base": 1.0,
+          "local": 0.979957805907173
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_4096_empty",
+        "median_cpu_ns": {
+          "local": 1331000,
+          "leafdest": 1338000,
+          "base": 1153000,
+          "leaf": 1254000,
+          "control": 1128000
+        },
+        "ratio_to_before": {
+          "local": 1.1543798785776236,
+          "leafdest": 1.1604509973980919,
+          "base": 1.0,
+          "leaf": 1.0875975715524717,
+          "control": 0.9783174327840416
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_4096_line",
+        "median_cpu_ns": {
+          "control": 1298000,
+          "local": 1223000,
+          "base": 1199000,
+          "leaf": 1218000,
+          "leafdest": 1217000
+        },
+        "ratio_to_before": {
+          "control": 1.0825688073394495,
+          "local": 1.0200166805671393,
+          "base": 1.0,
+          "leaf": 1.0158465387823186,
+          "leafdest": 1.0150125104253545
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_4096_cycle",
+        "median_cpu_ns": {
+          "base": 1138000,
+          "control": 1080000,
+          "local": 1048000,
+          "leafdest": 1064000,
+          "leaf": 1067000
+        },
+        "ratio_to_before": {
+          "base": 1.0,
+          "control": 0.9490333919156415,
+          "local": 0.9209138840070299,
+          "leafdest": 0.9349736379613357,
+          "leaf": 0.937609841827768
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_4096_star",
+        "median_cpu_ns": {
+          "local": 1168000,
+          "base": 1151000,
+          "control": 1168000,
+          "leaf": 1165000,
+          "leafdest": 1165000
+        },
+        "ratio_to_before": {
+          "local": 1.0147697654213728,
+          "base": 1.0,
+          "control": 1.0147697654213728,
+          "leaf": 1.0121633362293658,
+          "leafdest": 1.0121633362293658
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_4096_dag",
+        "median_cpu_ns": {
+          "base": 1308000,
+          "leaf": 1288000,
+          "local": 1286000,
+          "leafdest": 1272000,
+          "control": 1319000
+        },
+        "ratio_to_before": {
+          "base": 1.0,
+          "leaf": 0.9847094801223242,
+          "local": 0.9831804281345565,
+          "leafdest": 0.9724770642201835,
+          "control": 1.0084097859327217
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_4096_paired",
+        "median_cpu_ns": {
+          "local": 1082000,
+          "control": 1085000,
+          "leafdest": 1066000,
+          "base": 1081000,
+          "leaf": 1084000
+        },
+        "ratio_to_before": {
+          "local": 1.0009250693802034,
+          "control": 1.0037002775208141,
+          "leafdest": 0.9861239592969473,
+          "base": 1.0,
+          "leaf": 1.0027752081406105
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_500000_empty",
+        "median_cpu_ns": {
+          "base": 21826000,
+          "leafdest": 21873000,
+          "local": 21921000,
+          "leaf": 22051000,
+          "control": 21864000
+        },
+        "ratio_to_before": {
+          "base": 1.0,
+          "leafdest": 1.0021533950334462,
+          "local": 1.004352606982498,
+          "leaf": 1.0103088060111793,
+          "control": 1.0017410427929991
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_500000_line",
+        "median_cpu_ns": {
+          "base": 32782000,
+          "local": 32510000,
+          "control": 32786000,
+          "leafdest": 30381000,
+          "leaf": 32691000
+        },
+        "ratio_to_before": {
+          "base": 1.0,
+          "local": 0.9917027637117931,
+          "control": 1.000122018180709,
+          "leafdest": 0.9267585870294673,
+          "leaf": 0.9972240863888719
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_500000_cycle",
+        "median_cpu_ns": {
+          "local": 18253000,
+          "leafdest": 16340000,
+          "control": 18848000,
+          "leaf": 18271000,
+          "base": 18859000
+        },
+        "ratio_to_before": {
+          "local": 0.9678668009968715,
+          "leafdest": 0.8664298213054775,
+          "control": 0.9994167241105043,
+          "leaf": 0.96882125245241,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_500000_star",
+        "median_cpu_ns": {
+          "leafdest": 29636000,
+          "control": 31680000,
+          "local": 31715000,
+          "base": 31667000,
+          "leaf": 31266000
+        },
+        "ratio_to_before": {
+          "leafdest": 0.935863833012284,
+          "control": 1.0004105219945054,
+          "local": 1.0015157735181734,
+          "base": 1.0,
+          "leaf": 0.987336975400259
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_500000_dag",
+        "median_cpu_ns": {
+          "control": 62246000,
+          "base": 62316000,
+          "local": 60845000,
+          "leafdest": 57969000,
+          "leaf": 60280000
+        },
+        "ratio_to_before": {
+          "control": 0.9988766929841453,
+          "base": 1.0,
+          "local": 0.9763945054239682,
+          "leafdest": 0.9302426343154246,
+          "leaf": 0.9673278130817126
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_500000_paired",
+        "median_cpu_ns": {
+          "control": 24501000,
+          "leaf": 24369000,
+          "local": 24298000,
+          "leafdest": 22284000,
+          "base": 24548000
+        },
+        "ratio_to_before": {
+          "control": 0.9980853837379827,
+          "leaf": 0.9927081635978491,
+          "local": 0.9898158709467166,
+          "leafdest": 0.9077725272934659,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_250000_dense",
+        "median_cpu_ns": {
+          "local": 72344000,
+          "control": 75336000,
+          "leafdest": 69838000,
+          "leaf": 73469000,
+          "base": 74944000
+        },
+        "ratio_to_before": {
+          "local": 0.9653074295473953,
+          "control": 1.0052305721605466,
+          "leafdest": 0.9318691289496157,
+          "leaf": 0.9803186379163108,
+          "base": 1.0
+        }
+      }
+    ],
+    "API": [
+      {
+        "compiler": "gcc",
+        "n": 32,
+        "kind": "dag",
+        "mode": "build",
+        "median_cpu_ns": {
+          "leafdest": 3796000,
+          "local": 3555000,
+          "leaf": 3822000,
+          "base": 4170000,
+          "control": 4186000
+        },
+        "ratio_to_before": {
+          "leafdest": 0.9103117505995204,
+          "local": 0.8525179856115108,
+          "leaf": 0.9165467625899281,
+          "base": 1.0,
+          "control": 1.0038369304556356
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 32,
+        "kind": "dag",
+        "mode": "scc",
+        "median_cpu_ns": {
+          "leaf": 11542000,
+          "control": 11658000,
+          "leafdest": 11282000,
+          "base": 11654000,
+          "local": 11107000
+        },
+        "ratio_to_before": {
+          "leaf": 0.9903895658143127,
+          "control": 1.000343229792346,
+          "leafdest": 0.9680796293118242,
+          "base": 1.0,
+          "local": 0.9530633258966879
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 32,
+        "kind": "random",
+        "mode": "build",
+        "median_cpu_ns": {
+          "control": 4416000,
+          "base": 4398000,
+          "local": 3642000,
+          "leaf": 4034000,
+          "leafdest": 3930000
+        },
+        "ratio_to_before": {
+          "control": 1.004092769440655,
+          "base": 1.0,
+          "local": 0.8281036834924966,
+          "leaf": 0.9172351068667576,
+          "leafdest": 0.8935879945429741
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 32,
+        "kind": "random",
+        "mode": "scc",
+        "median_cpu_ns": {
+          "leaf": 7793000,
+          "base": 8157000,
+          "leafdest": 7771000,
+          "control": 8203000,
+          "local": 7407000
+        },
+        "ratio_to_before": {
+          "leaf": 0.9553757508888071,
+          "base": 1.0,
+          "leafdest": 0.9526786808875812,
+          "control": 1.0056393281843816,
+          "local": 0.9080544317763883
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 4096,
+        "kind": "line",
+        "mode": "build",
+        "median_cpu_ns": {
+          "control": 2179000,
+          "leafdest": 1782000,
+          "local": 1713000,
+          "leaf": 1840000,
+          "base": 2164000
+        },
+        "ratio_to_before": {
+          "control": 1.0069316081330868,
+          "leafdest": 0.8234750462107209,
+          "local": 0.7915896487985212,
+          "leaf": 0.8502772643253235,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 4096,
+        "kind": "line",
+        "mode": "scc",
+        "median_cpu_ns": {
+          "control": 8187000,
+          "local": 7616000,
+          "leafdest": 7696000,
+          "base": 8090000,
+          "leaf": 7828000
+        },
+        "ratio_to_before": {
+          "control": 1.0119901112484548,
+          "local": 0.9414091470951792,
+          "leafdest": 0.9512978986402967,
+          "base": 1.0,
+          "leaf": 0.9676143386897404
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 4096,
+        "kind": "cycle",
+        "mode": "build",
+        "median_cpu_ns": {
+          "leafdest": 1809000,
+          "base": 2311000,
+          "leaf": 1941000,
+          "local": 1734000,
+          "control": 2302000
+        },
+        "ratio_to_before": {
+          "leafdest": 0.7827780181739507,
+          "base": 1.0,
+          "leaf": 0.8398961488533102,
+          "local": 0.7503245348334054,
+          "control": 0.9961055819991346
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 4096,
+        "kind": "cycle",
+        "mode": "scc",
+        "median_cpu_ns": {
+          "leafdest": 1847000,
+          "base": 2335000,
+          "local": 1806000,
+          "control": 2352000,
+          "leaf": 2071000
+        },
+        "ratio_to_before": {
+          "leafdest": 0.7910064239828694,
+          "base": 1.0,
+          "local": 0.7734475374732334,
+          "control": 1.0072805139186296,
+          "leaf": 0.8869379014989294
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 4096,
+        "kind": "dag",
+        "mode": "build",
+        "median_cpu_ns": {
+          "local": 5110000,
+          "leaf": 4814000,
+          "leafdest": 4718000,
+          "control": 5213000,
+          "base": 5313000
+        },
+        "ratio_to_before": {
+          "local": 0.9617918313570487,
+          "leaf": 0.9060794278185582,
+          "leafdest": 0.8880105401844532,
+          "control": 0.9811782420478072,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 4096,
+        "kind": "dag",
+        "mode": "scc",
+        "median_cpu_ns": {
+          "leaf": 12092000,
+          "control": 12565000,
+          "local": 12157000,
+          "leafdest": 11870000,
+          "base": 12517000
+        },
+        "ratio_to_before": {
+          "leaf": 0.9660461771990093,
+          "control": 1.0038347846928177,
+          "local": 0.9712391148038667,
+          "leafdest": 0.9483102979947272,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 4096,
+        "kind": "random",
+        "mode": "build",
+        "median_cpu_ns": {
+          "local": 5134000,
+          "leafdest": 5126000,
+          "base": 5346000,
+          "control": 5348000,
+          "leaf": 5033000
+        },
+        "ratio_to_before": {
+          "local": 0.9603441825664047,
+          "leafdest": 0.9588477366255144,
+          "base": 1.0,
+          "control": 1.0003741114852227,
+          "leaf": 0.9414515525626637
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 4096,
+        "kind": "random",
+        "mode": "scc",
+        "median_cpu_ns": {
+          "local": 7966000,
+          "leafdest": 7867000,
+          "control": 8100000,
+          "leaf": 7914000,
+          "base": 8113000
+        },
+        "ratio_to_before": {
+          "local": 0.9818809318377912,
+          "leafdest": 0.9696782940958955,
+          "control": 0.9983976334278318,
+          "leaf": 0.9754714655491187,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 4096,
+        "kind": "paired",
+        "mode": "build",
+        "median_cpu_ns": {
+          "base": 1266000,
+          "leafdest": 1292000,
+          "local": 1180000,
+          "control": 1267000,
+          "leaf": 1284000
+        },
+        "ratio_to_before": {
+          "base": 1.0,
+          "leafdest": 1.0205371248025277,
+          "local": 0.9320695102685624,
+          "control": 1.0007898894154819,
+          "leaf": 1.014218009478673
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 4096,
+        "kind": "paired",
+        "mode": "scc",
+        "median_cpu_ns": {
+          "leafdest": 4442000,
+          "local": 4280000,
+          "leaf": 4422000,
+          "control": 4424000,
+          "base": 4402000
+        },
+        "ratio_to_before": {
+          "leafdest": 1.0090867787369378,
+          "local": 0.9722853248523399,
+          "leaf": 1.004543389368469,
+          "control": 1.0049977283053158,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 500000,
+        "kind": "line",
+        "mode": "build",
+        "median_cpu_ns": {
+          "leaf": 10616000,
+          "local": 10179000,
+          "base": 11791000,
+          "control": 11947000,
+          "leafdest": 10347000
+        },
+        "ratio_to_before": {
+          "leaf": 0.9003477228394539,
+          "local": 0.8632855567805954,
+          "base": 1.0,
+          "control": 1.0132304299889747,
+          "leafdest": 0.8775337121533373
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 500000,
+        "kind": "line",
+        "mode": "scc",
+        "median_cpu_ns": {
+          "base": 43810000,
+          "leafdest": 41696000,
+          "control": 43539000,
+          "leaf": 42729000,
+          "local": 42419000
+        },
+        "ratio_to_before": {
+          "base": 1.0,
+          "leafdest": 0.9517461766719927,
+          "control": 0.9938141976717645,
+          "leaf": 0.9753252682036064,
+          "local": 0.9682492581602374
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 500000,
+        "kind": "cycle",
+        "mode": "build",
+        "median_cpu_ns": {
+          "local": 10339000,
+          "control": 12290000,
+          "base": 12282000,
+          "leaf": 10432000,
+          "leafdest": 10206000
+        },
+        "ratio_to_before": {
+          "local": 0.8418010096075558,
+          "control": 1.0006513597134017,
+          "base": 1.0,
+          "leaf": 0.8493730662758509,
+          "leafdest": 0.830972154372252
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 500000,
+        "kind": "cycle",
+        "mode": "scc",
+        "median_cpu_ns": {
+          "control": 12645000,
+          "base": 12702000,
+          "leaf": 10989000,
+          "local": 10819000,
+          "leafdest": 10757000
+        },
+        "ratio_to_before": {
+          "control": 0.9955125177137458,
+          "base": 1.0,
+          "leaf": 0.865139348134152,
+          "local": 0.8517556290347976,
+          "leafdest": 0.8468745079515037
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 500000,
+        "kind": "dag",
+        "mode": "build",
+        "median_cpu_ns": {
+          "leafdest": 60140000,
+          "local": 59628000,
+          "leaf": 60308000,
+          "control": 64522000,
+          "base": 64636000
+        },
+        "ratio_to_before": {
+          "leafdest": 0.9304412401757535,
+          "local": 0.922519957918188,
+          "leaf": 0.9330404109165171,
+          "control": 0.998236276997339,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 500000,
+        "kind": "dag",
+        "mode": "scc",
+        "median_cpu_ns": {
+          "local": 97728000,
+          "leafdest": 96465000,
+          "leaf": 98028000,
+          "base": 101449000,
+          "control": 101513000
+        },
+        "ratio_to_before": {
+          "local": 0.9633214718725666,
+          "leafdest": 0.9508718666522095,
+          "leaf": 0.9662786227562618,
+          "base": 1.0,
+          "control": 1.0006308588551884
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 500000,
+        "kind": "random",
+        "mode": "build",
+        "median_cpu_ns": {
+          "local": 81622000,
+          "leafdest": 83451000,
+          "base": 87374000,
+          "leaf": 86346000,
+          "control": 89114000
+        },
+        "ratio_to_before": {
+          "local": 0.9341680591480304,
+          "leafdest": 0.9551010598118433,
+          "base": 1.0,
+          "leaf": 0.988234486231602,
+          "control": 1.019914391008767
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 500000,
+        "kind": "random",
+        "mode": "scc",
+        "median_cpu_ns": {
+          "local": 94702000,
+          "leaf": 96397000,
+          "control": 99974000,
+          "base": 98949000,
+          "leafdest": 95211000
+        },
+        "ratio_to_before": {
+          "local": 0.9570788992309169,
+          "leaf": 0.9742089359164823,
+          "control": 1.0103588717420084,
+          "base": 1.0,
+          "leafdest": 0.9622229633447533
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 500000,
+        "kind": "paired",
+        "mode": "build",
+        "median_cpu_ns": {
+          "base": 8152000,
+          "control": 8160000,
+          "leafdest": 8003000,
+          "leaf": 8158000,
+          "local": 7813000
+        },
+        "ratio_to_before": {
+          "base": 1.0,
+          "control": 1.000981354268891,
+          "leafdest": 0.9817222767419038,
+          "leaf": 1.0007360157016683,
+          "local": 0.9584151128557409
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 500000,
+        "kind": "paired",
+        "mode": "scc",
+        "median_cpu_ns": {
+          "base": 25488000,
+          "leafdest": 25473000,
+          "local": 25398000,
+          "leaf": 25553000,
+          "control": 25483000
+        },
+        "ratio_to_before": {
+          "base": 1.0,
+          "leafdest": 0.9994114877589454,
+          "local": 0.9964689265536724,
+          "leaf": 1.0025502197112366,
+          "control": 0.9998038292529818
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 4096,
+        "kind": "line",
+        "mode": "sat",
+        "median_cpu_ns": {
+          "control": 4503000,
+          "leafdest": 4052000,
+          "base": 4503000,
+          "local": 3972000,
+          "leaf": 4102000
+        },
+        "ratio_to_before": {
+          "control": 1.0,
+          "leafdest": 0.8998445480790584,
+          "base": 1.0,
+          "local": 0.8820786142571619,
+          "leaf": 0.9109482567177437
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 4096,
+        "kind": "random",
+        "mode": "sat",
+        "median_cpu_ns": {
+          "leafdest": 16943000,
+          "base": 18139000,
+          "leaf": 17138000,
+          "local": 16727000,
+          "control": 18144000
+        },
+        "ratio_to_before": {
+          "leafdest": 0.9340647224213021,
+          "base": 1.0,
+          "leaf": 0.944815039417829,
+          "local": 0.9221566789789956,
+          "control": 1.000275649153757
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 250000,
+        "kind": "line",
+        "mode": "sat",
+        "median_cpu_ns": {
+          "leaf": 13897000,
+          "leafdest": 13320000,
+          "local": 13770000,
+          "base": 14321000,
+          "control": 14439000
+        },
+        "ratio_to_before": {
+          "leaf": 0.9703931289714406,
+          "leafdest": 0.9301026464632358,
+          "local": 0.9615250331680748,
+          "base": 1.0,
+          "control": 1.0082396480692688
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 250000,
+        "kind": "random",
+        "mode": "sat",
+        "median_cpu_ns": {
+          "leaf": 91528000,
+          "leafdest": 93928000,
+          "base": 95008000,
+          "control": 94981000,
+          "local": 92846000
+        },
+        "ratio_to_before": {
+          "leaf": 0.9633715055574268,
+          "leafdest": 0.9886325362074773,
+          "base": 1.0,
+          "control": 0.9997158134051869,
+          "local": 0.9772440215560795
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 4096,
+        "kind": "paired",
+        "mode": "condensation",
+        "median_cpu_ns": {
+          "local": 482000,
+          "leafdest": 481000,
+          "base": 484000,
+          "leaf": 483000,
+          "control": 486000
+        },
+        "ratio_to_before": {
+          "local": 0.9958677685950413,
+          "leafdest": 0.993801652892562,
+          "base": 1.0,
+          "leaf": 0.9979338842975206,
+          "control": 1.0041322314049588
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 4096,
+        "kind": "random",
+        "mode": "condensation",
+        "median_cpu_ns": {
+          "leafdest": 6898000,
+          "control": 6904000,
+          "local": 6895000,
+          "leaf": 6920000,
+          "base": 6893000
+        },
+        "ratio_to_before": {
+          "leafdest": 1.000725373567387,
+          "control": 1.001595821848252,
+          "local": 1.000290149426955,
+          "leaf": 1.003917017263891,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 500000,
+        "kind": "paired",
+        "mode": "condensation",
+        "median_cpu_ns": {
+          "leaf": 2141000,
+          "leafdest": 2143000,
+          "base": 2133000,
+          "local": 2154000,
+          "control": 2140000
+        },
+        "ratio_to_before": {
+          "leaf": 1.003750586029067,
+          "leafdest": 1.0046882325363338,
+          "base": 1.0,
+          "local": 1.009845288326301,
+          "control": 1.0032817627754336
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 500000,
+        "kind": "random",
+        "mode": "condensation",
+        "median_cpu_ns": {
+          "base": 39815000,
+          "control": 38891000,
+          "leaf": 39619000,
+          "local": 39336000,
+          "leafdest": 38885000
+        },
+        "ratio_to_before": {
+          "base": 1.0,
+          "control": 0.9767926660806229,
+          "leaf": 0.99507723219892,
+          "local": 0.9879693582820545,
+          "leafdest": 0.9766419691071204
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 4096,
+        "kind": "random",
+        "mode": "constructor",
+        "median_cpu_ns": {
+          "control": 9850000,
+          "leaf": 9507000,
+          "base": 9988000,
+          "local": 9183000,
+          "leafdest": 9533000
+        },
+        "ratio_to_before": {
+          "control": 0.986183420104125,
+          "leaf": 0.9518422106527833,
+          "base": 1.0,
+          "local": 0.9194032839407289,
+          "leafdest": 0.9544453344012815
+        }
+      },
+      {
+        "compiler": "gcc",
+        "n": 500000,
+        "kind": "random",
+        "mode": "constructor",
+        "median_cpu_ns": {
+          "leaf": 112261000,
+          "leafdest": 114278000,
+          "local": 108722000,
+          "control": 109647000,
+          "base": 111639000
+        },
+        "ratio_to_before": {
+          "leaf": 1.0055715296625731,
+          "leafdest": 1.0236386925715923,
+          "local": 0.9738711382223059,
+          "control": 0.9821567731706662,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 32,
+        "kind": "dag",
+        "mode": "build",
+        "median_cpu_ns": {
+          "leaf": 3607000,
+          "leafdest": 3694000,
+          "local": 3412000,
+          "control": 4190000,
+          "base": 4175000
+        },
+        "ratio_to_before": {
+          "leaf": 0.8639520958083833,
+          "leafdest": 0.8847904191616767,
+          "local": 0.817245508982036,
+          "control": 1.0035928143712576,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 32,
+        "kind": "dag",
+        "mode": "scc",
+        "median_cpu_ns": {
+          "local": 10584000,
+          "control": 11386000,
+          "base": 11383000,
+          "leafdest": 11411000,
+          "leaf": 10827000
+        },
+        "ratio_to_before": {
+          "local": 0.929807607836247,
+          "control": 1.0002635509092506,
+          "base": 1.0,
+          "leafdest": 1.0024598084863392,
+          "leaf": 0.9511552314855486
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 32,
+        "kind": "random",
+        "mode": "build",
+        "median_cpu_ns": {
+          "leafdest": 3887000,
+          "control": 4364000,
+          "leaf": 3798000,
+          "base": 4338000,
+          "local": 3536000
+        },
+        "ratio_to_before": {
+          "leafdest": 0.8960350391885662,
+          "control": 1.0059935454126325,
+          "leaf": 0.8755186721991701,
+          "base": 1.0,
+          "local": 0.8151221761180267
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 32,
+        "kind": "random",
+        "mode": "scc",
+        "median_cpu_ns": {
+          "control": 7779000,
+          "base": 7814000,
+          "leafdest": 7563000,
+          "leaf": 7148000,
+          "local": 6854000
+        },
+        "ratio_to_before": {
+          "control": 0.9955208599948809,
+          "base": 1.0,
+          "leafdest": 0.9678781673918607,
+          "leaf": 0.914768364474021,
+          "local": 0.8771435884310212
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 4096,
+        "kind": "line",
+        "mode": "build",
+        "median_cpu_ns": {
+          "leafdest": 1693000,
+          "control": 1985000,
+          "base": 1973000,
+          "leaf": 1691000,
+          "local": 1681000
+        },
+        "ratio_to_before": {
+          "leafdest": 0.8580841358337558,
+          "control": 1.0060821084642677,
+          "base": 1.0,
+          "leaf": 0.8570704510897111,
+          "local": 0.852002027369488
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 4096,
+        "kind": "line",
+        "mode": "scc",
+        "median_cpu_ns": {
+          "leafdest": 7511000,
+          "base": 7816000,
+          "local": 7458000,
+          "leaf": 7446000,
+          "control": 7750000
+        },
+        "ratio_to_before": {
+          "leafdest": 0.9609774820880246,
+          "base": 1.0,
+          "local": 0.9541965199590583,
+          "leaf": 0.952661207778915,
+          "control": 0.9915557830092119
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 4096,
+        "kind": "cycle",
+        "mode": "build",
+        "median_cpu_ns": {
+          "control": 2184000,
+          "leaf": 1840000,
+          "base": 2174000,
+          "leafdest": 1861000,
+          "local": 1803000
+        },
+        "ratio_to_before": {
+          "control": 1.0045998160073597,
+          "leaf": 0.8463661453541859,
+          "base": 1.0,
+          "leafdest": 0.8560257589696412,
+          "local": 0.8293468261269549
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 4096,
+        "kind": "cycle",
+        "mode": "scc",
+        "median_cpu_ns": {
+          "leaf": 1900000,
+          "leafdest": 1913000,
+          "local": 1874000,
+          "base": 2218000,
+          "control": 2218000
+        },
+        "ratio_to_before": {
+          "leaf": 0.8566275924256087,
+          "leafdest": 0.8624887285843101,
+          "local": 0.8449053201082056,
+          "base": 1.0,
+          "control": 1.0
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 4096,
+        "kind": "dag",
+        "mode": "build",
+        "median_cpu_ns": {
+          "control": 6881000,
+          "leaf": 4611000,
+          "local": 4581000,
+          "base": 6921000,
+          "leafdest": 5134000
+        },
+        "ratio_to_before": {
+          "control": 0.9942204883687329,
+          "leaf": 0.6662332032943217,
+          "local": 0.6618985695708712,
+          "base": 1.0,
+          "leafdest": 0.7418003178731397
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 4096,
+        "kind": "dag",
+        "mode": "scc",
+        "median_cpu_ns": {
+          "local": 11657000,
+          "base": 13676000,
+          "leafdest": 12022000,
+          "leaf": 11538000,
+          "control": 13669000
+        },
+        "ratio_to_before": {
+          "local": 0.8523691137759579,
+          "base": 1.0,
+          "leafdest": 0.8790582041532612,
+          "leaf": 0.8436677391050015,
+          "control": 0.9994881544311202
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 4096,
+        "kind": "random",
+        "mode": "build",
+        "median_cpu_ns": {
+          "leafdest": 5925000,
+          "base": 7026000,
+          "local": 5055000,
+          "leaf": 5331000,
+          "control": 6977000
+        },
+        "ratio_to_before": {
+          "leafdest": 0.8432963279248505,
+          "base": 1.0,
+          "local": 0.7194705380017079,
+          "leaf": 0.7587532023911187,
+          "control": 0.9930259037859379
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 4096,
+        "kind": "random",
+        "mode": "scc",
+        "median_cpu_ns": {
+          "leaf": 7998000,
+          "local": 7853000,
+          "control": 9636000,
+          "leafdest": 8617000,
+          "base": 9610000
+        },
+        "ratio_to_before": {
+          "leaf": 0.832258064516129,
+          "local": 0.8171696149843912,
+          "control": 1.0027055150884496,
+          "leafdest": 0.8966701352757545,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 4096,
+        "kind": "paired",
+        "mode": "build",
+        "median_cpu_ns": {
+          "local": 1205000,
+          "base": 1370000,
+          "leaf": 1240000,
+          "leafdest": 1236000,
+          "control": 1359000
+        },
+        "ratio_to_before": {
+          "local": 0.8795620437956204,
+          "base": 1.0,
+          "leaf": 0.9051094890510949,
+          "leafdest": 0.9021897810218978,
+          "control": 0.9919708029197081
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 4096,
+        "kind": "paired",
+        "mode": "scc",
+        "median_cpu_ns": {
+          "leaf": 4539000,
+          "leafdest": 4546000,
+          "base": 4672000,
+          "control": 4739000,
+          "local": 4517000
+        },
+        "ratio_to_before": {
+          "leaf": 0.9715325342465754,
+          "leafdest": 0.9730308219178082,
+          "base": 1.0,
+          "control": 1.0143407534246576,
+          "local": 0.9668236301369864
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 500000,
+        "kind": "line",
+        "mode": "build",
+        "median_cpu_ns": {
+          "leafdest": 10247000,
+          "leaf": 10458000,
+          "local": 10172000,
+          "base": 11367000,
+          "control": 11164000
+        },
+        "ratio_to_before": {
+          "leafdest": 0.9014691651271224,
+          "leaf": 0.9200316706254948,
+          "local": 0.8948711181490279,
+          "base": 1.0,
+          "control": 0.982141286179291
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 500000,
+        "kind": "line",
+        "mode": "scc",
+        "median_cpu_ns": {
+          "base": 40713000,
+          "control": 41127000,
+          "local": 39133000,
+          "leaf": 39439000,
+          "leafdest": 40414000
+        },
+        "ratio_to_before": {
+          "base": 1.0,
+          "control": 1.0101687421708054,
+          "local": 0.9611917569326751,
+          "leaf": 0.9687077837545747,
+          "leafdest": 0.9926559084321961
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 500000,
+        "kind": "cycle",
+        "mode": "build",
+        "median_cpu_ns": {
+          "control": 11302000,
+          "leafdest": 9903000,
+          "leaf": 10035000,
+          "base": 11102000,
+          "local": 9965000
+        },
+        "ratio_to_before": {
+          "control": 1.0180147721131327,
+          "leafdest": 0.892001441181769,
+          "leaf": 0.9038911907764366,
+          "base": 1.0,
+          "local": 0.8975860205368402
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 500000,
+        "kind": "cycle",
+        "mode": "scc",
+        "median_cpu_ns": {
+          "leafdest": 10015000,
+          "local": 10158000,
+          "leaf": 10161000,
+          "base": 11370000,
+          "control": 11391000
+        },
+        "ratio_to_before": {
+          "leafdest": 0.8808267370272648,
+          "local": 0.8934036939313984,
+          "leaf": 0.8936675461741425,
+          "base": 1.0,
+          "control": 1.0018469656992084
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 500000,
+        "kind": "dag",
+        "mode": "build",
+        "median_cpu_ns": {
+          "base": 62131000,
+          "local": 58923000,
+          "control": 62731000,
+          "leaf": 57311000,
+          "leafdest": 56734000
+        },
+        "ratio_to_before": {
+          "base": 1.0,
+          "local": 0.9483671597109333,
+          "control": 1.0096570150166584,
+          "leaf": 0.9224219793661779,
+          "leafdest": 0.9131351499251581
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 500000,
+        "kind": "dag",
+        "mode": "scc",
+        "median_cpu_ns": {
+          "base": 106454000,
+          "leaf": 98528000,
+          "local": 101353000,
+          "control": 104378000,
+          "leafdest": 100700000
+        },
+        "ratio_to_before": {
+          "base": 1.0,
+          "leaf": 0.9255453059537453,
+          "local": 0.9520825896631409,
+          "control": 0.9804986191218742,
+          "leafdest": 0.9459484847915531
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 500000,
+        "kind": "random",
+        "mode": "build",
+        "median_cpu_ns": {
+          "control": 82858000,
+          "base": 98280000,
+          "local": 79583000,
+          "leaf": 86949000,
+          "leafdest": 84883000
+        },
+        "ratio_to_before": {
+          "control": 0.843080993080993,
+          "base": 1.0,
+          "local": 0.8097578347578348,
+          "leaf": 0.8847069597069597,
+          "leafdest": 0.8636853886853887
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 500000,
+        "kind": "random",
+        "mode": "scc",
+        "median_cpu_ns": {
+          "leafdest": 92911000,
+          "control": 98965000,
+          "leaf": 92742000,
+          "base": 99635000,
+          "local": 92658000
+        },
+        "ratio_to_before": {
+          "leafdest": 0.9325136749134341,
+          "control": 0.9932754554122547,
+          "leaf": 0.9308174838159281,
+          "base": 1.0,
+          "local": 0.9299744065840317
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 500000,
+        "kind": "paired",
+        "mode": "build",
+        "median_cpu_ns": {
+          "leafdest": 7646000,
+          "leaf": 7942000,
+          "base": 8415000,
+          "local": 7801000,
+          "control": 8273000
+        },
+        "ratio_to_before": {
+          "leafdest": 0.9086155674390969,
+          "leaf": 0.9437908496732026,
+          "base": 1.0,
+          "local": 0.9270350564468212,
+          "control": 0.9831253713606655
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 500000,
+        "kind": "paired",
+        "mode": "scc",
+        "median_cpu_ns": {
+          "local": 25254000,
+          "base": 25450000,
+          "control": 25682000,
+          "leafdest": 24921000,
+          "leaf": 24998000
+        },
+        "ratio_to_before": {
+          "local": 0.9922986247544204,
+          "base": 1.0,
+          "control": 1.0091159135559922,
+          "leafdest": 0.9792141453831041,
+          "leaf": 0.9822396856581532
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 4096,
+        "kind": "line",
+        "mode": "sat",
+        "median_cpu_ns": {
+          "leafdest": 3831000,
+          "leaf": 3910000,
+          "local": 3977000,
+          "base": 4597000,
+          "control": 4634000
+        },
+        "ratio_to_before": {
+          "leafdest": 0.8333695888623015,
+          "leaf": 0.850554709593213,
+          "local": 0.8651294322384163,
+          "base": 1.0,
+          "control": 1.0080487274309333
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 4096,
+        "kind": "random",
+        "mode": "sat",
+        "median_cpu_ns": {
+          "control": 18559000,
+          "local": 16663000,
+          "base": 18561000,
+          "leafdest": 16519000,
+          "leaf": 16676000
+        },
+        "ratio_to_before": {
+          "control": 0.9998922471849577,
+          "local": 0.8977425785248639,
+          "base": 1.0,
+          "leafdest": 0.8899843758418189,
+          "leaf": 0.8984429718226389
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 250000,
+        "kind": "line",
+        "mode": "sat",
+        "median_cpu_ns": {
+          "local": 13179000,
+          "leaf": 12955000,
+          "base": 13835000,
+          "leafdest": 12795000,
+          "control": 13925000
+        },
+        "ratio_to_before": {
+          "local": 0.9525840260209614,
+          "leaf": 0.936393205637875,
+          "base": 1.0,
+          "leafdest": 0.9248283339356704,
+          "control": 1.0065052403324901
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 250000,
+        "kind": "random",
+        "mode": "sat",
+        "median_cpu_ns": {
+          "leaf": 88007000,
+          "control": 91144000,
+          "local": 87871000,
+          "leafdest": 87590000,
+          "base": 90353000
+        },
+        "ratio_to_before": {
+          "leaf": 0.9740351731541842,
+          "control": 1.0087545515920888,
+          "local": 0.9725299658008035,
+          "leafdest": 0.969419941783892,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 4096,
+        "kind": "paired",
+        "mode": "condensation",
+        "median_cpu_ns": {
+          "local": 339000,
+          "leaf": 337000,
+          "control": 338000,
+          "base": 343000,
+          "leafdest": 334000
+        },
+        "ratio_to_before": {
+          "local": 0.9883381924198251,
+          "leaf": 0.9825072886297376,
+          "control": 0.9854227405247813,
+          "base": 1.0,
+          "leafdest": 0.9737609329446064
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 4096,
+        "kind": "random",
+        "mode": "condensation",
+        "median_cpu_ns": {
+          "leafdest": 6697000,
+          "leaf": 6668000,
+          "base": 6674000,
+          "local": 6640000,
+          "control": 6679000
+        },
+        "ratio_to_before": {
+          "leafdest": 1.003446209169913,
+          "leaf": 0.9991009889121966,
+          "base": 1.0,
+          "local": 0.9949056038357806,
+          "control": 1.0007491759065028
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 500000,
+        "kind": "paired",
+        "mode": "condensation",
+        "median_cpu_ns": {
+          "control": 1820000,
+          "base": 1990000,
+          "leaf": 1791000,
+          "leafdest": 1812000,
+          "local": 1792000
+        },
+        "ratio_to_before": {
+          "control": 0.914572864321608,
+          "base": 1.0,
+          "leaf": 0.9,
+          "leafdest": 0.9105527638190954,
+          "local": 0.9005025125628141
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 500000,
+        "kind": "random",
+        "mode": "condensation",
+        "median_cpu_ns": {
+          "leaf": 38136000,
+          "local": 37661000,
+          "base": 37893000,
+          "leafdest": 37884000,
+          "control": 37925000
+        },
+        "ratio_to_before": {
+          "leaf": 1.0064127939197214,
+          "local": 0.9938774971630644,
+          "base": 1.0,
+          "leafdest": 0.9997624891140844,
+          "control": 1.0008444831499221
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 4096,
+        "kind": "random",
+        "mode": "constructor",
+        "median_cpu_ns": {
+          "local": 9842000,
+          "control": 11120000,
+          "base": 11150000,
+          "leafdest": 9889000,
+          "leaf": 9591000
+        },
+        "ratio_to_before": {
+          "local": 0.8826905829596412,
+          "control": 0.9973094170403587,
+          "base": 1.0,
+          "leafdest": 0.8869058295964125,
+          "leaf": 0.8601793721973094
+        }
+      },
+      {
+        "compiler": "clang",
+        "n": 500000,
+        "kind": "random",
+        "mode": "constructor",
+        "median_cpu_ns": {
+          "leaf": 99929000,
+          "base": 109185000,
+          "local": 101236000,
+          "leafdest": 106516000,
+          "control": 102460000
+        },
+        "ratio_to_before": {
+          "leaf": 0.91522645051976,
+          "base": 1.0,
+          "local": 0.9271969592892797,
+          "leafdest": 0.9755552502633146,
+          "control": 0.9384072903787151
+        }
+      }
+    ],
+    "scope": "公式generator取得版の固定seed入力11本と独自19本（32/4096/500000頂点、密グラフ250000頂点2000000辺）。公式/独自の前回29入力SHAは全て一致。稼働中ジャッジのgenerator commit/隠し入力と同一とは断定しない。",
+    "observed": "前回82ms版を基準に、main全体の公式相当11入力はGCC約0.2〜2.1%、Clang約2.9〜10.2%短縮。GCCの小さい差はcontrol変動と区別が難しく、同じ割合のオンライン短縮は保証しない。",
+    "limitations": [
+      "Clang4096頂点の無辺mainは約16%増（controlは約2%減）。小規模の増加は許容する既存方針で採用。大規模の無辺は約0.2%増でcontrolと同程度。",
+      "API単体の大きなcontrol変動がある結果は最適化効果と断定しない。例: Clang500000 paired condensationのcontrolは約0.915倍。",
+      "全main出力SHA、API checksumを照合。main全体を読む型やI/Oは変更していない。"
+    ]
+  },
+  "validation": {
+    "preliminary_probes": [
+      {
+        "label": "leaf",
+        "command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-DSIRKIT_SCC_TEST_SOURCE=\"/tmp/sirkit_scc_followup_20261104/leaf.hpp\"",
+          "Verify/current/tests/scc_index_paths_test.cpp",
+          "-o",
+          "/tmp/sirkit_scc_followup_20261104/probe_leaf"
+        ],
+        "returncode": 0,
+        "stdout": "SCC index paths graphs=69680 checks=18600039\n",
+        "stderr": ""
+      },
+      {
+        "label": "leafdest",
+        "command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-DSIRKIT_SCC_TEST_SOURCE=\"/tmp/sirkit_scc_followup_20261104/leafdest.hpp\"",
+          "Verify/current/tests/scc_index_paths_test.cpp",
+          "-o",
+          "/tmp/sirkit_scc_followup_20261104/probe_leafdest"
+        ],
+        "returncode": 0,
+        "stdout": "SCC index paths graphs=69680 checks=18600039\n",
+        "stderr": ""
+      }
+    ],
+    "final_checks": [
+      {
+        "compiler": "gcc",
+        "skip": false,
+        "test": "scc_acl_api_test",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/scc_acl_api_test.cpp",
+          "-o",
+          "/tmp/sirkit_scc_followup_20261104/test_gcc_0_scc_acl_api_test"
+        ],
+        "returncode": 0,
+        "stdout": "SCC ACL API checks=1751857\n",
+        "stderr": "",
+        "test_sha256": "3560599ed2a754155a13e16aed76a31f0bc029c5ca1dd0efb7937ae99f6ab361"
+      },
+      {
+        "compiler": "gcc",
+        "skip": false,
+        "test": "new_scc_two_sat_reference_test",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/new_scc_two_sat_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_scc_followup_20261104/test_gcc_0_new_scc_two_sat_reference_test"
+        ],
+        "returncode": 0,
+        "stdout": "SCC/TwoSAT checks=2002082\n",
+        "stderr": "",
+        "test_sha256": "a0bc1cdd01b667c9a45719c094e7e7b471347c8be260c635bec6d5e29469e481"
+      },
+      {
+        "compiler": "gcc",
+        "skip": false,
+        "test": "scc_index_paths_test",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/scc_index_paths_test.cpp",
+          "-o",
+          "/tmp/sirkit_scc_followup_20261104/test_gcc_0_scc_index_paths_test"
+        ],
+        "returncode": 0,
+        "stdout": "SCC index paths graphs=69680 checks=18600039\n",
+        "stderr": "",
+        "test_sha256": "3047399617f0f7983e273ae219d311feb65f747fa90a0195fbfebefaf502413d"
+      },
+      {
+        "compiler": "gcc",
+        "skip": false,
+        "test": "scc_condensation_test",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/scc_condensation_test.cpp",
+          "-o",
+          "/tmp/sirkit_scc_followup_20261104/test_gcc_0_scc_condensation_test"
+        ],
+        "returncode": 0,
+        "stdout": "SCC condensation checks=11249\n",
+        "stderr": "",
+        "test_sha256": "ecf468f0bf189e4d695c9569a5fc3a21d30311e035be86fb86707ed83e09d9b5"
+      },
+      {
+        "compiler": "gcc",
+        "skip": false,
+        "test": "new_graph_allocation_test",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/new_graph_allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_scc_followup_20261104/test_gcc_0_new_graph_allocation_test"
+        ],
+        "returncode": 0,
+        "stdout": "graph allocation failures=109 successes=1091 live_delta=0\n",
+        "stderr": "",
+        "test_sha256": "2f55c019b29044dec4f5e236dd68c0f670a8c414003a69757ad28df71d4b46c1"
+      },
+      {
+        "compiler": "gcc",
+        "skip": true,
+        "test": "scc_acl_api_test",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/scc_acl_api_test.cpp",
+          "-o",
+          "/tmp/sirkit_scc_followup_20261104/test_gcc_1_scc_acl_api_test"
+        ],
+        "returncode": 0,
+        "stdout": "SCC ACL API checks=1751857\n",
+        "stderr": "",
+        "test_sha256": "3560599ed2a754155a13e16aed76a31f0bc029c5ca1dd0efb7937ae99f6ab361"
+      },
+      {
+        "compiler": "gcc",
+        "skip": true,
+        "test": "new_scc_two_sat_reference_test",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/new_scc_two_sat_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_scc_followup_20261104/test_gcc_1_new_scc_two_sat_reference_test"
+        ],
+        "returncode": 0,
+        "stdout": "SCC/TwoSAT checks=2002082\n",
+        "stderr": "",
+        "test_sha256": "a0bc1cdd01b667c9a45719c094e7e7b471347c8be260c635bec6d5e29469e481"
+      },
+      {
+        "compiler": "gcc",
+        "skip": true,
+        "test": "scc_index_paths_test",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/scc_index_paths_test.cpp",
+          "-o",
+          "/tmp/sirkit_scc_followup_20261104/test_gcc_1_scc_index_paths_test"
+        ],
+        "returncode": 0,
+        "stdout": "SCC index paths graphs=69680 checks=18600039\n",
+        "stderr": "",
+        "test_sha256": "3047399617f0f7983e273ae219d311feb65f747fa90a0195fbfebefaf502413d"
+      },
+      {
+        "compiler": "gcc",
+        "skip": true,
+        "test": "scc_condensation_test",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/scc_condensation_test.cpp",
+          "-o",
+          "/tmp/sirkit_scc_followup_20261104/test_gcc_1_scc_condensation_test"
+        ],
+        "returncode": 0,
+        "stdout": "SCC condensation checks=11249\n",
+        "stderr": "",
+        "test_sha256": "ecf468f0bf189e4d695c9569a5fc3a21d30311e035be86fb86707ed83e09d9b5"
+      },
+      {
+        "compiler": "gcc",
+        "skip": true,
+        "test": "new_graph_allocation_test",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/new_graph_allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_scc_followup_20261104/test_gcc_1_new_graph_allocation_test"
+        ],
+        "returncode": 0,
+        "stdout": "graph allocation failures=109 successes=1091 live_delta=0\n",
+        "stderr": "",
+        "test_sha256": "2f55c019b29044dec4f5e236dd68c0f670a8c414003a69757ad28df71d4b46c1"
+      },
+      {
+        "compiler": "clang",
+        "skip": false,
+        "test": "scc_acl_api_test",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/scc_acl_api_test.cpp",
+          "-o",
+          "/tmp/sirkit_scc_followup_20261104/test_clang_0_scc_acl_api_test"
+        ],
+        "returncode": 0,
+        "stdout": "SCC ACL API checks=1751857\n",
+        "stderr": "",
+        "test_sha256": "3560599ed2a754155a13e16aed76a31f0bc029c5ca1dd0efb7937ae99f6ab361"
+      },
+      {
+        "compiler": "clang",
+        "skip": false,
+        "test": "new_scc_two_sat_reference_test",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/new_scc_two_sat_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_scc_followup_20261104/test_clang_0_new_scc_two_sat_reference_test"
+        ],
+        "returncode": 0,
+        "stdout": "SCC/TwoSAT checks=2002082\n",
+        "stderr": "",
+        "test_sha256": "a0bc1cdd01b667c9a45719c094e7e7b471347c8be260c635bec6d5e29469e481"
+      },
+      {
+        "compiler": "clang",
+        "skip": false,
+        "test": "scc_index_paths_test",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/scc_index_paths_test.cpp",
+          "-o",
+          "/tmp/sirkit_scc_followup_20261104/test_clang_0_scc_index_paths_test"
+        ],
+        "returncode": 0,
+        "stdout": "SCC index paths graphs=69680 checks=18600039\n",
+        "stderr": "",
+        "test_sha256": "3047399617f0f7983e273ae219d311feb65f747fa90a0195fbfebefaf502413d"
+      },
+      {
+        "compiler": "clang",
+        "skip": false,
+        "test": "scc_condensation_test",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/scc_condensation_test.cpp",
+          "-o",
+          "/tmp/sirkit_scc_followup_20261104/test_clang_0_scc_condensation_test"
+        ],
+        "returncode": 0,
+        "stdout": "SCC condensation checks=11249\n",
+        "stderr": "",
+        "test_sha256": "ecf468f0bf189e4d695c9569a5fc3a21d30311e035be86fb86707ed83e09d9b5"
+      },
+      {
+        "compiler": "clang",
+        "skip": false,
+        "test": "new_graph_allocation_test",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/new_graph_allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_scc_followup_20261104/test_clang_0_new_graph_allocation_test"
+        ],
+        "returncode": 0,
+        "stdout": "graph allocation failures=109 successes=1091 live_delta=0\n",
+        "stderr": "",
+        "test_sha256": "2f55c019b29044dec4f5e236dd68c0f670a8c414003a69757ad28df71d4b46c1"
+      },
+      {
+        "compiler": "clang",
+        "skip": true,
+        "test": "scc_acl_api_test",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/scc_acl_api_test.cpp",
+          "-o",
+          "/tmp/sirkit_scc_followup_20261104/test_clang_1_scc_acl_api_test"
+        ],
+        "returncode": 0,
+        "stdout": "SCC ACL API checks=1751857\n",
+        "stderr": "",
+        "test_sha256": "3560599ed2a754155a13e16aed76a31f0bc029c5ca1dd0efb7937ae99f6ab361"
+      },
+      {
+        "compiler": "clang",
+        "skip": true,
+        "test": "new_scc_two_sat_reference_test",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/new_scc_two_sat_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_scc_followup_20261104/test_clang_1_new_scc_two_sat_reference_test"
+        ],
+        "returncode": 0,
+        "stdout": "SCC/TwoSAT checks=2002082\n",
+        "stderr": "",
+        "test_sha256": "a0bc1cdd01b667c9a45719c094e7e7b471347c8be260c635bec6d5e29469e481"
+      },
+      {
+        "compiler": "clang",
+        "skip": true,
+        "test": "scc_index_paths_test",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/scc_index_paths_test.cpp",
+          "-o",
+          "/tmp/sirkit_scc_followup_20261104/test_clang_1_scc_index_paths_test"
+        ],
+        "returncode": 0,
+        "stdout": "SCC index paths graphs=69680 checks=18600039\n",
+        "stderr": "",
+        "test_sha256": "3047399617f0f7983e273ae219d311feb65f747fa90a0195fbfebefaf502413d"
+      },
+      {
+        "compiler": "clang",
+        "skip": true,
+        "test": "scc_condensation_test",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/scc_condensation_test.cpp",
+          "-o",
+          "/tmp/sirkit_scc_followup_20261104/test_clang_1_scc_condensation_test"
+        ],
+        "returncode": 0,
+        "stdout": "SCC condensation checks=11249\n",
+        "stderr": "",
+        "test_sha256": "ecf468f0bf189e4d695c9569a5fc3a21d30311e035be86fb86707ed83e09d9b5"
+      },
+      {
+        "compiler": "clang",
+        "skip": true,
+        "test": "new_graph_allocation_test",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/new_graph_allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_scc_followup_20261104/test_clang_1_new_graph_allocation_test"
+        ],
+        "returncode": 0,
+        "stdout": "graph allocation failures=109 successes=1091 live_delta=0\n",
+        "stderr": "",
+        "test_sha256": "2f55c019b29044dec4f5e236dd68c0f670a8c414003a69757ad28df71d4b46c1"
+      }
+    ],
+    "memory_sanitizer": {
+      "command": [
+        "taskset",
+        "-c",
+        "4",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O1",
+        "-g",
+        "-fsanitize=memory",
+        "-fsanitize-memory-track-origins=2",
+        "-fno-omit-frame-pointer",
+        "-fPIE",
+        "-pie",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/scc_index_paths_test.cpp",
+        "-o",
+        "/tmp/sirkit_scc_followup_20261104/msan_index"
+      ],
+      "returncode": 0,
+      "stdout": "SCC index paths graphs=69680 checks=18600039\n",
+      "stderr": ""
+    },
+    "profile_samples": {
+      "LOCAL_SAMPLE_PASS": 14
+    },
+    "normal_samples": [
+      {
+        "compiler": "GCC",
+        "id": "scc",
+        "status": "LOCAL_SAMPLE_PASS",
+        "compile_command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "/home/reinsirk/Atcoder_Env/Verify/current/submissions/scc.cpp",
+          "-o",
+          "/tmp/sirkit_scc_followup_20261104/normal_GCC_scc"
+        ],
+        "submission_sha256": "5bcef44a137c6e47fee5f826435c32e2bd9a0d754d3c7f50a5ddcfc9fe5ce95f"
+      },
+      {
+        "compiler": "GCC",
+        "id": "two_sat",
+        "status": "LOCAL_SAMPLE_PASS",
+        "compile_command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "/home/reinsirk/Atcoder_Env/Verify/current/submissions/two_sat.cpp",
+          "-o",
+          "/tmp/sirkit_scc_followup_20261104/normal_GCC_two_sat"
+        ],
+        "submission_sha256": "d8101afe5233b027cf731dee5cbf2a05de31415de8ae60c0fa7f66d3566c68da"
+      },
+      {
+        "compiler": "Clang",
+        "id": "scc",
+        "status": "LOCAL_SAMPLE_PASS",
+        "compile_command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "/home/reinsirk/Atcoder_Env/Verify/current/submissions/scc.cpp",
+          "-o",
+          "/tmp/sirkit_scc_followup_20261104/normal_Clang_scc"
+        ],
+        "submission_sha256": "5bcef44a137c6e47fee5f826435c32e2bd9a0d754d3c7f50a5ddcfc9fe5ce95f"
+      },
+      {
+        "compiler": "Clang",
+        "id": "two_sat",
+        "status": "LOCAL_SAMPLE_PASS",
+        "compile_command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "/home/reinsirk/Atcoder_Env/Verify/current/submissions/two_sat.cpp",
+          "-o",
+          "/tmp/sirkit_scc_followup_20261104/normal_Clang_two_sat"
+        ],
+        "submission_sha256": "d8101afe5233b027cf731dee5cbf2a05de31415de8ae60c0fa7f66d3566c68da"
+      }
+    ],
+    "coverage": "69,680グラフ・18,600,039 checksの両Index/独立Kosaraju/到達可能性、全n<=4グラフ、30万鎖/閉路、自己辺/多重辺、コピー/ムーブ/再分解、ACL API型、TwoSAT全探索、縮約Graph、確保失敗を検証。",
+    "settings": "GCC/Clang×検査有無。ASan+UBSan、SIRKIT_DISABLE_SIMD。allocation testは各設定109 failures/1091 successes/live_delta=0。MemorySanitizerも同じ18,600,039 checksを通過。",
+    "leak_scope": "ASAN_OPTIONS=detect_leaks=0。解放はallocation testのliveカウンタで補足。"
+  },
+  "hashes": {
+    "before_scc": "d160b6e210e7c75628be41055694befd86c1a509635159807f593c1ae6394b25",
+    "current_scc": "e2b5ab5e41907acf94a7fb298a53376ca1e2c6c929c170dbe93a6dbe8baafe5e",
+    "before_two_sat": "0333e15efe03b0e3105b21c59abd00ccfb915765999f1c879a923c25a3496ed9",
+    "current_two_sat": "3535fe86de3a96997bca1adeec343a40471ab1b01fda54307003f9d4b2a73c82",
+    "driver_before_and_after": "2b9fb67c3387d387af0d58411840f7d45a434599e092f97c5f8fcb8365216efc",
+    "io_before_and_after": "291bf8dbc56a1d691f6256fe95b4714183c2cf5d9e55e4bef240e31d1eb178c1"
+  },
+  "evidence": {
+    "path": "Audit/data/scc-followup-2026-11-04.zip",
+    "sha256": "971e4c76126ae83756e38187195af9af6ea29404a46235e9b170727c128c0b4e",
+    "scope": "自作候補・生データ・ログ・入力SHA/出典・テスト・最終ソース。公式generator原本、実行バイナリ、大きい入力は含めない。"
+  },
+  "synchronization": "本体、GCC/Clang、速度優先、提出コードを生成照合。Documentと使用例のAPI/前提/呼出は変更なし。配布ZIP検証はDistribution/validation.json。"
+}

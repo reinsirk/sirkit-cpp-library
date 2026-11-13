@@ -1,0 +1,1180 @@
+{
+  "at_utc": "2026-10-31T20:30:11.458912+00:00",
+  "read_only_source_review": true,
+  "new_performance_runs": false,
+  "scope": {
+    "normal_source_records": 7,
+    "Fast_overrides": 11,
+    "total_source_records": 18,
+    "single_source_ModPow_and_Sqrt": "Two successive measurements share final Modular_Arithmetic.cpp; component/current bridge explicitly limited."
+  },
+  "summary_claims": "Current summary explicitly denies all-condition superiority and onlineFastest. No overstatement requiring C++ rollback found. Avoid attributing inheritedNTT gains to individually measured FPS operations.",
+  "source_records": [
+    {
+      "name": "NTT",
+      "sources": [
+        {
+          "current_path": "Math/NTT.cpp",
+          "current_sha256": "5b5c85da53f0108b521b725b5ab014eaf8ee21446729b2e45c30100d796426fa",
+          "recorded_final_sha256": "5b5c85da53f0108b521b725b5ab014eaf8ee21446729b2e45c30100d796426fa",
+          "recorded_final_exact_match": true,
+          "measured_or_bridge_source": "/tmp/sirkit_12h_20261031_095733/ntt_optimization/vector_radix4_threshold16.hpp",
+          "measured_or_bridge_sha256": "6fa9fc51fb69ab331d6e170cf5269b5f05cafae1aececea6d722a2e56d0a4d24",
+          "exact_bytes_equal": false,
+          "comments_only_difference": true,
+          "body_after_first_include_identical": false,
+          "diff": [
+            "--- \n",
+            "+++ \n",
+            "@@ -19,0 +20,2 @@\n",
+            "+// Mod<2^30では標準C++のMontgomery演算を使用。GCC/Clangの対応x86 CPUではAVX2で8係数ずつ処理する。",
+            "+// SIRKIT_DISABLE_SIMDで追加の専用命令とCPU判定を除外できる。代替経路も同じAPI・結果を保つ。",
+            "@@ -96,0 +99 @@\n",
+            "+            // 内部値は2Mod未満。t+qMod<2^63で、還元後も2Mod未満。"
+          ]
+        }
+      ],
+      "audits": [
+        "Audit/performance-ntt-simd-2026-10-31.json",
+        "Audit/ntt-simd-adoption-2026-10-31.json"
+      ],
+      "measurement_conditions": {
+        "cpu": 12,
+        "target": "P-Core; GCC15.2/Clang21 O2 default/native SKIP_RUNTIME_CHECKS",
+        "timer": "same loop CLOCK_THREAD_CPUTIME_ID and steady_clock",
+        "raw": "/tmp/sirkit_12h_20261031_095733/ntt_optimization/thread_bench/thread_raw.json",
+        "manifest": "/tmp/sirkit_12h_20261031_095733/ntt_optimization/thread_bench/thread_manifest.json",
+        "summary": "/tmp/sirkit_12h_20261031_095733/ntt_optimization/thread_bench/thread_summary.json",
+        "selected": "/tmp/sirkit_12h_20261031_095733/ntt_optimization/selected_performance.json",
+        "rows": 9280,
+        "cases_per_setting": 58,
+        "samples_per_case": 5,
+        "same_binary_control": true,
+        "old_wall_only_data_retained": true,
+        "representative_gcc_default_cpu_ms": {
+          "normalized_move_524288x524288": [
+            32.301943,
+            12.95825
+          ],
+          "square_524288": [
+            21.887776,
+            7.72467
+          ],
+          "cold_524288x524288": [
+            37.393424,
+            16.532728
+          ]
+        },
+        "largest_small_regression": {
+          "setting": "clang-default",
+          "operation": "inverse transform16",
+          "baseline_microseconds": 0.1319,
+          "candidate_microseconds": 0.1493,
+          "delta_nanoseconds": 17.4
+        }
+      },
+      "saved_raw_and_fixture": {
+        "raw_location": "embedded raw array in performance-ntt-simd Audit",
+        "rows": 9280,
+        "new_bundle": "NTT/thread_bench/thread_raw.json; all header candidates/bench_thread.cpp/build+run scripts/manifests"
+      },
+      "bridge_scope": "Removing the two API comments and one invariant comment exactly reproduces candidate bytes.",
+      "regressions_and_limits": [
+        "Clang-default inverse transform16:131.9→149.3ns,+17.4ns. Empty/single input also near timer cost.",
+        "SIMD applies only supportedCPU/Mod<2^30; alternate moduli use scalar arithmetic. New standard Montgomery fallback was independently verified."
+      ],
+      "claim_assessment": "Large convolution/square wins are measured. Summary does not say every transform/input is faster."
+    },
+    {
+      "name": "FPS inherits measured NTT",
+      "sources": [
+        {
+          "current_path": "Math/Formal_Power_Series.cpp",
+          "current_sha256": "5165e885185b4b01a9c7f1882859bfde4e8cba6b98af11d04bc7e4db54433b31",
+          "recorded_final_sha256": "5165e885185b4b01a9c7f1882859bfde4e8cba6b98af11d04bc7e4db54433b31",
+          "recorded_final_exact_match": true,
+          "same_FPS_component_body_in_baseline_and_current": true,
+          "current_NTT_payload_embedded_exact": true
+        }
+      ],
+      "audits": [
+        "Audit/ntt-simd-adoption-2026-10-31.json"
+      ],
+      "measurement_conditions": {
+        "scope": "NTT kernel measurements, not a separately quantified FPS operation speedup. FPSbody unchanged; sharedNTT synced by generator."
+      },
+      "saved_raw_and_fixture": {
+        "source": "bundle NTT/baseline_fps.hpp; formal FPS source and component body retained",
+        "correctness": "FPS independent references and include-order tests recorded in adoption Audit"
+      },
+      "bridge_scope": {
+        "source": "Math/Formal_Power_Series.cpp",
+        "sha256": "5165e885185b4b01a9c7f1882859bfde4e8cba6b98af11d04bc7e4db54433b31",
+        "validated_render_sha256": "b027d9f64959f19de304905644c265ceea765009569412df0fbf5b85e952bc53",
+        "same_executable_code": true
+      },
+      "regressions_and_limits": [
+        "No separate numerical speed guarantee for each FPSoperation. Smaller calls can inherit NTT small-case overhead."
+      ],
+      "claim_assessment": "Summary wording NTT and FPS using it is supported; do not convert into per-FPS measured ratios."
+    },
+    {
+      "name": "PersistentSegmentTree",
+      "sources": [
+        {
+          "current_path": "DataStructure/Persistent_Segment_Tree.cpp",
+          "current_sha256": "80ad150eb44ed8784a6600446c3b6bb6c2d232fa79e57b063592ab138015a512",
+          "recorded_final_sha256": "80ad150eb44ed8784a6600446c3b6bb6c2d232fa79e57b063592ab138015a512",
+          "recorded_final_exact_match": true,
+          "measured_or_bridge_source": "/tmp/sirkit_12h_20261031_095733/pst_storage_candidates/normal_iterative.hpp",
+          "measured_or_bridge_sha256": "bdb81c20242416b9b3fa164146b40340c0df9f6eca1102dbb221fb4762cdeabd",
+          "exact_bytes_equal": false,
+          "comments_only_difference": true,
+          "body_after_first_include_identical": true,
+          "diff": [
+            "--- \n",
+            "+++ \n",
+            "@@ -16,0 +17 @@\n",
+            "+// prodは共通の経路から区間両端へ分かれ、反復処理で順序を保って集約する。追加領域O(1)。"
+          ]
+        }
+      ],
+      "audits": [
+        "Audit/performance-persistent-segment-tree-iterative-2026-10-31.json"
+      ],
+      "measurement_conditions": {
+        "cpu": 12,
+        "flags": "GCC15.2/Clang21.1.8, O2, default/native, SKIP_RUNTIME_CHECKS",
+        "main": "same benchmark main and API sequences;fixed runtime Treap seed only in unrelated common benchmark branch;thread CPU and wall per phase plus full child CPU/wall including exit"
+      },
+      "saved_raw_and_fixture": {
+        "raw_embedded_rows": 792,
+        "selected_conditions": 24,
+        "candidate_and_fixture": "new bundle PersistentSegmentTree/*.hpp and FastStorage/fast_storage.cpp"
+      },
+      "bridge_scope": "Normal differs by one API comment only;Fast differs by that comment and the detailed ownership comments only.",
+      "regressions_and_limits": [
+        "Selected prod operation ratios across24conditions approximately.478–.871. Individual construction/destruction phases have higher ratios in tiny cases; total and operation are separated.",
+        "Three sizes and two operation mixes do not establish arbitraryValue/call distribution performance."
+      ],
+      "claim_assessment": "Summary specifically claims reduced prod re-traversal, not all-operation improvement."
+    },
+    {
+      "name": "WaveletMatrix",
+      "sources": [
+        {
+          "current_path": "DataStructure/Wavelet_Matrix.cpp",
+          "current_sha256": "33b4b5b8a25894cbc698e2badbb1adeabf98478fd5295ccb3ed108689e81f7f5",
+          "recorded_final_sha256": "33b4b5b8a25894cbc698e2badbb1adeabf98478fd5295ccb3ed108689e81f7f5",
+          "recorded_final_exact_match": true,
+          "measured_or_bridge_source": "/tmp/sirkit_12h_20261031_095733/wavelet_optimization/avx_inline_volatile.cpp",
+          "measured_or_bridge_sha256": "7ece1293aad232cb3a87fcb147288f1a3892a58bf919924bf84ace2fb3f513b0",
+          "exact_bytes_equal": false,
+          "comments_only_difference": true,
+          "body_after_first_include_identical": true,
+          "diff": [
+            "--- \n",
+            "+++ \n",
+            "@@ -2 +2 @@\n",
+            "-// 数学的参考: https://info.atcoder.jp/entry/algorithm_lectures/index",
+            "+// 数学的参考: https://info.atcoder.jp/entry/algorithm_lectures/wavelet_matrix_basic",
+            "@@ -19,0 +20,4 @@\n",
+            "+// rankは標準SWAR経路と、GCC/Clang x86のCPU対応を確認したPOPCNT経路を持つ。",
+            "+// 32/64bit型の構築はn>=128で対応CPUのAVX2を使う。小さい列・他の整数型は標準経路。",
+            "+// コンパイル対象が既にPOPCNT/AVX2を要求する場合、追加のCPU判定を省く。",
+            "+// SIRKIT_DISABLE_SIMDで追加のCPU判定・POPCNT専用経路・AVX2実装を除く。"
+          ]
+        }
+      ],
+      "audits": [
+        "Audit/performance-wavelet-matrix-packed-2026-10-31.json"
+      ],
+      "measurement_conditions": {
+        "cpu": "Intel(R) Core(TM) i9-14900K",
+        "affinity": 12,
+        "smt_siblings": "12-13",
+        "gcc": "Ubuntu 15.2.0-16ubuntu1, 15.2.0",
+        "clang": "Ubuntu clang 21.1.8 (6ubuntu1)",
+        "clang_gcc_install_dir": "/usr/lib/gcc/x86_64-linux-gnu/15",
+        "flags": [
+          "-std=c++23",
+          "-O2",
+          "-DSKIP_RUNTIME_CHECKS"
+        ],
+        "native_extra": "-march=native",
+        "performance_protocol": "rootと他agentのビルド・長い実行を停止しCPU12で計測。検証/ビルドはCPU8。",
+        "timer": "APIはCLOCK_THREAD_CPUTIME_IDとsteady_clock。Verifyは単一スレッドの子プロセスCPU（user+sys）とperf_counter実時間。"
+      },
+      "saved_raw_and_fixture": {
+        "raw_embedded": true,
+        "parent_raw_rows": 168,
+        "fixture_and_candidate": "new bundle Wavelet/ root+volatile_bench; initial/native-long raw also embedded or preserved there"
+      },
+      "bridge_scope": "Final executable source from first include is byte-identical to parent-tested volatile candidate. Native wrapper whole objects are identical to nonvolatile candidate on both compilers; default objects differ, so separate parent measurements are used.",
+      "regressions_and_limits": [
+        "n=200000の短いB64照会では、同一baseline/controlにもCV約6〜12%の揺れがあった。一部の候補中央値+21%を通過扱いせず、上記の長い5反復で判断した。短い数値もrawと集計に残す。",
+        "B64、n=100000/500000、access/count/kth各200000照会、候補5標本と同一baseline/control10標本で確認。候補/標準中央値比はGCC0.999〜1.014、Clang0.974〜1.010。control CVは0.6〜3.6%。大規模native照会の明確な退行は確認されない。",
+        "Opaque getenv-based false CPU dispatch with hardware path replaced by a trapping instruction; this validates the false control path on the present CPU, not execution on actual unsupported hardware."
+      ],
+      "claim_assessment": "Final default-mode volatilecandidate was measured separately. Native objects coincide with earlier candidate; short noisy+21% was not silently accepted. Summary construction claim is scoped."
+    },
+    {
+      "name": "LinearRecurrenceWeights",
+      "sources": [
+        {
+          "current_path": "Math/Linear_Recurrence.cpp",
+          "current_sha256": "ce01c0f83e4d7d8041ee8e4e6c6670bda7a3c707e6791ca97f2a48019941b2f6",
+          "recorded_final_sha256": "ce01c0f83e4d7d8041ee8e4e6c6670bda7a3c707e6791ca97f2a48019941b2f6",
+          "recorded_final_exact_match": true,
+          "measured_or_bridge_source": "/tmp/sirkit_12h_20261031_095733/recurrence_weights_candidates/clang_weights_v2.hpp",
+          "measured_or_bridge_sha256": "7903f71c8ab635ccaaebc7c44be5ce6f6d914575fdaed36048a391259151db97",
+          "exact_bytes_equal": false,
+          "comments_only_difference": true,
+          "body_after_first_include_identical": true,
+          "diff": [
+            "--- \n",
+            "+++ \n",
+            "@@ -10 +10 @@\n",
+            "-// LinearRecurrenceWeights<T>(c,k): k項目を初期d項の内積として表す係数。上記と同計算量、d=0なら{}。",
+            "+// LinearRecurrenceWeights<T>(c,k): k項目の初期d項への係数。k<dはO(d)、それ以外は上記と同計算量。d=0なら{}。",
+            "@@ -15 +15,2 @@\n",
+            "-// uint32_t版Weights/Prefixは汎用版と同計算量。TermのNTT長は2^23以下、短い畳み込みは直接計算する。",
+            "+// uint32_t版Weights/Prefixは汎用版と同計算量。ClangのWeights(d>=16)は標準整数のMontgomery演算を使う。",
+            "+// TermのNTT長は2^23以下、短い畳み込みは直接計算する。"
+          ]
+        }
+      ],
+      "audits": [
+        "Audit/performance-linear-recurrence-weights-2026-10-31.json"
+      ],
+      "measurement_conditions": {
+        "cpu": "Intel Core i9-14900K P-Core CPU12, other collaborators compile/test paused",
+        "flags": [
+          "GCC15.2 -O2 -std=c++23",
+          "Clang21.1.8 -O2 -std=c++23",
+          "each default/native"
+        ],
+        "main": "same opaque-input benchmark main and workload; library function only; no submission main changes",
+        "scope": "LinearRecurrenceWeights; Term/BerlekampMassey/Prefix arithmetic unchanged"
+      },
+      "saved_raw_and_fixture": {
+        "raw": "Audit/Measurements/linear-recurrence-weights-raw-2026-10-31.json",
+        "rows": 1568,
+        "fixture": "Audit/Measurements/linear-recurrence-weights-benchmark-2026-10-31.cpp",
+        "candidate": "new bundle LinearRecurrence/"
+      },
+      "bridge_scope": {
+        "formal": "Math/Linear_Recurrence.cpp",
+        "formal_sha256": "ce01c0f83e4d7d8041ee8e4e6c6670bda7a3c707e6791ca97f2a48019941b2f6",
+        "candidate_sha256": "7903f71c8ab635ccaaebc7c44be5ce6f6d914575fdaed36048a391259151db97",
+        "after_first_include_byte_identical": true,
+        "normal_and_fast": "Clang Montgomery path is exact safe owned arithmetic; adopt in ordinary and derive all editions."
+      },
+      "regressions_and_limits": [
+        "Local timings are not online judge AC or speed guarantees.",
+        "Canonical-only shortcut candidate was not selected: Clang native d256 large-k +6% in repeated measurements. Selected Montgomery branch avoids that regression.",
+        "Tiny empty-input overhead increased under some compiler layouts; accepted under user large-input policy.",
+        "Montgomery uses standard uint64_t only; p<2^30 guarantees reduction sum fits."
+      ],
+      "claim_assessment": "Only Weights initial-range shortcut and Clang u32 d>=16 Montgomery branch optimized. BM/Term/Prefix were not all converted; summary avoids claiming they were."
+    },
+    {
+      "name": "Matrix uint32",
+      "sources": [
+        {
+          "current_path": "Math/Matrix.cpp",
+          "current_sha256": "cac01f95cd19fac7f52b2d9eba304ce8b12bcfbb63af8610de5dd68c859291af",
+          "recorded_final_sha256": "cac01f95cd19fac7f52b2d9eba304ce8b12bcfbb63af8610de5dd68c859291af",
+          "recorded_final_exact_match": true,
+          "measured_or_bridge_source": "/tmp/sirkit_12h_20261031_095733/matrix_optimization/robust/tile32_rows4.cpp",
+          "measured_or_bridge_sha256": "cac01f95cd19fac7f52b2d9eba304ce8b12bcfbb63af8610de5dd68c859291af",
+          "exact_bytes_equal": true,
+          "comments_only_difference": true,
+          "body_after_first_include_identical": true,
+          "diff": []
+        }
+      ],
+      "audits": [
+        "Audit/performance-matrix-u32-tiled-2026-10-31.json"
+      ],
+      "measurement_conditions": {
+        "cpu": "Intel Core i9-14900K, CPU12/Core6 P-core; project compile/test workloads paused; no intentional project load on siblingCPU13; sibling/OS activity not separately instrumented",
+        "harness_cpu": 8,
+        "compiler": [
+          "GCC15.2 /usr/bin/g++",
+          "Clang21.1.8 /usr/bin/clang++ --gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15"
+        ],
+        "flags": [
+          "-std=c++23",
+          "-O2",
+          "-DSKIP_RUNTIME_CHECKS"
+        ],
+        "native_additional_flag": "-march=native",
+        "repeats": 5,
+        "randomized_task_seed": 751883,
+        "rows": 4590,
+        "duration_seconds": 154.4031552139786,
+        "main_io": "Identical fixture/main across candidates; no I/O speed change. Original six uint32 shapes use8x original loop count, other12 generic shapes unchanged. Stress repeats min(32,max(1,ceil(80M/(M*K*N))))."
+      },
+      "saved_raw_and_fixture": {
+        "raw": "Audit/data/matrix-u32-tiled-final-2026-10-31-raw.json",
+        "rows": 4590,
+        "fixture": "benchmark_sources full text embedded; exact small source files now new bundle Matrix/"
+      },
+      "bridge_scope": {
+        "handoff": "8 measured→staged loaded-section comparisons (GCC/Clang × default/native ×original/stress) pass byte equality for .text/.rodata/.data/.eh_frame and initialization sections, plus .bss size.",
+        "small_B": "Full-inner helper is773bytes, exact same bytes between ready/row4/row8 within each GCC setting. Default and native may differ; comparisons are within setting.",
+        "generic": "GCC Field2/VerifyMatrixField product and applicable native operator* instruction streams match after RIP/symbolic branch relocation normalization; Clang whole.text matches baseline."
+      },
+      "regressions_and_limits": [
+        "One hardware platform. Cutoffs are measured choices, not universal CPU/cache optima.",
+        "First two repeats show unexplained wall scheduling/interference: child-wall roughly2x childCPU, later repeats nearly equal. No cause is asserted. All5 randomized repeats retained; whole-wall medians can exceed1 despite large body/childCPU wins.",
+        "Fine differences of1–2% are not actionable: stress control median ratios span roughly0.915–1.092 default and0.920–1.084 native; median control IQR around6%, larger outliers occur.",
+        "Clang complete .text bytes match baseline in default/native; timing differences there reflect measurement variation. GCC generic products/callees have equal instruction streams after relocation normalization.",
+        "Warm repetition is explicit. Earlier one-product screen2 also confirms improvement on the original4096-stride stress; its raw2322 rows remain in temp as preliminary evidence."
+      ],
+      "claim_assessment": "Summary limits this to GCC uint32. Original full-stride prototype regressed largeB and was rejected; adopted tiled4rowkernel is the separately measured candidate. Whole-wall variations are retained."
+    },
+    {
+      "name": "ModPow and ModSqrt",
+      "sources": [
+        {
+          "current_path": "Math/Modular_Arithmetic.cpp",
+          "current_sha256": "a9120110a0cc42b44cd0e1e896b8df045e6f2109a27808480b8603261c29afd7",
+          "recorded_final_sha256": "a9120110a0cc42b44cd0e1e896b8df045e6f2109a27808480b8603261c29afd7",
+          "recorded_final_exact_match": true,
+          "measured_or_bridge_source": "/tmp/sirkit_12h_20261031_095733/modular_sqrt_optimization/ready_Modular_Arithmetic.cpp",
+          "measured_or_bridge_sha256": "7075ed1ed172043eb16607494e2715b03a99cc2813c831c6376a8d8fc85d5a9f",
+          "exact_bytes_equal": false,
+          "comments_only_difference": true,
+          "body_after_first_include_identical": true,
+          "diff": [
+            "--- \n",
+            "+++ \n",
+            "@@ -27 +27 @@\n",
+            "-// ModSqrtはp%4==3・p%8==5を直接計算し、その他はTonelli–Shanks法。根の二乗確認を省かない。",
+            "+// ModSqrtはp%4==3・p%8==5を直接式と二乗で判定し、その他はTonelli–Shanks法を使う。"
+          ]
+        }
+      ],
+      "audits": [
+        "Audit/benchmark-modular-montgomery-2026-10-31.json",
+        "Audit/benchmark-modular-sqrt-2026-10-31.json",
+        "Audit/modular-sqrt-source-comment-bridge-2026-10-31.json"
+      ],
+      "measurement_conditions": {
+        "Pow": {
+          "cpu": 12,
+          "target": "P-Core",
+          "compilers": [
+            "GCC15.2",
+            "Clang21"
+          ],
+          "flags": "C++23 O2 default/native SKIP_RUNTIME_CHECKS; same per-phase benchmark main/API/inputs/IO",
+          "raw_rows": {
+            "initial": 2856,
+            "outlined": 2448,
+            "final_GCC": 1020
+          },
+          "wide_random_Pow_thread_ratio_to_C": "approximately0.59–0.64",
+          "mixed_even_odd_Pow_ratio_to_C": "approximately0.82",
+          "wide_Sqrt_ratio_to_C": "approximately0.51–0.72",
+          "narrow_Sqrt": "GCC final around0.98; Clang around1.00. Original fully-inlined Mont prototype regressed GCC3%, fixed by outlining helper.",
+          "bridge": "All4settings exact Mont helper and ModSqrt function bytes; Clang whole.text/.rodata/.eh_frame identical to measured hybrid. GCC caller/dataset layout differs, remeasured1020rows preserving large gains.",
+          "caveats": [
+            "Short scalar operations show larger relative noise; same-binary controls vary and process whole times are dominated by startup/dataset for those cases.",
+            "GCCnative mixed-modulus exponent1 was75.113us/16384queries vsC59.643us (+25.9%, about0.94ns/query) in final run; same final control74.485us. Earlier same-candidate runs varied strongly. Record rather than claim universal no-regression.",
+            "Main/IO for submitted Verify code unchanged; reported speed ratios refer to library API fixtures, not online accepted timing.",
+            "Additive REDC variants mathematically correct but rejected for GCC performance."
+          ]
+        },
+        "Sqrt": {
+          "cpu": 12,
+          "gcc": "15.2.0",
+          "clang": "21.1.8",
+          "settings": [
+            "-std=c++23 -O2 -DSKIP_RUNTIME_CHECKS",
+            "same plus -march=native"
+          ],
+          "main_io": "exact same bench.cpp, fixed1024-input records loaded before loop; eight repetitions; no query reorder/batching/API strategy changes across variants",
+          "counts": {
+            "gate_raw": 4104,
+            "previous_p8_raw": 3108,
+            "cases_gate": 57,
+            "repetitions": 3,
+            "calls_per_row": 8192
+          },
+          "timing": [
+            "body CLOCK_THREAD_CPUTIME_ID",
+            "body steady_clock wall",
+            "whole-child user+system CPU from parent",
+            "whole-child wall from parent"
+          ],
+          "checksum": "all variants/copy controls agree for every dataset",
+          "control": "independent launches of identical baseline/selected binaries; randomized order, 3 medians",
+          "dataset": "raw binary input records only, never embedded executable code; little-endian three uint64 fields per record",
+          "toolchain_versions": {
+            "gcc": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+            "clang": "Ubuntu clang version 21.1.8 (6ubuntu1)"
+          },
+          "processor_record": "model name\t: Intel(R) Core(TM) i9-14900K"
+        }
+      },
+      "saved_raw_and_fixture": {
+        "Pow_manifest": "Audit/data/modular-montgomery-2026-10-31/manifest.json",
+        "Sqrt_manifest": "Audit/data/modular-sqrt-2026-10-31/manifest.json",
+        "Pow_raw_counts": {
+          "initial": 2856,
+          "outlined": 2448,
+          "final_GCC": 1020
+        },
+        "Sqrt_raw_counts": {
+          "gate_raw": 4104,
+          "previous_p8_raw": 3108,
+          "cases_gate": 57,
+          "repetitions": 3,
+          "calls_per_row": 8192
+        }
+      },
+      "bridge_scope": {
+        "Sqrt": {
+          "source": "Math/Modular_Arithmetic.cpp",
+          "selected_source_sha256": "7075ed1ed172043eb16607494e2715b03a99cc2813c831c6376a8d8fc85d5a9f",
+          "actual_source_sha256": "a9120110a0cc42b44cd0e1e896b8df045e6f2109a27808480b8603261c29afd7",
+          "body_after_first_include_identical": true,
+          "body_sha256": "4a3929826ffe5213d9ef5b8641aebf963dab83ba9a80cb55bfc8f0b171caf9a6",
+          "scope": "One API comment clarified to limit square-check statement to closed-form branches. Tonelli-Shanks retains its algebraic invariant; no algorithm or public API changed.",
+          "selected_validation": "Audit/benchmark-modular-sqrt-2026-10-31.json",
+          "includes_native_extension_guard": true
+        },
+        "final_vs_Sqrt_measured": "All4 GCC/Clang default/native .text/.rodata/.eh_frame identical before API-comment-onlyclarification.",
+        "ModPow_public_function_text_unchanged_from_measured9bd": true,
+        "ModPow_limit": "Sqrt modifies helperclass by adding encodedpower and private Sqrt helper; not whole-source-identical to initial Pow candidate. FinalSqrt screen includes4Pow controls; not a fresh rerun of every earlierPowcondition."
+      },
+      "regressions_and_limits": [
+        "Short scalar operations show larger relative noise; same-binary controls vary and process whole times are dominated by startup/dataset for those cases.",
+        "GCCnative mixed-modulus exponent1 was75.113us/16384queries vsC59.643us (+25.9%, about0.94ns/query) in final run; same final control74.485us. Earlier same-candidate runs varied strongly. Record rather than claim universal no-regression.",
+        "Main/IO for submitted Verify code unchanged; reported speed ratios refer to library API fixtures, not online accepted timing.",
+        "Additive REDC variants mathematically correct but rejected for GCC performance.",
+        "Clang p17 NQR body+7.3% default/+18.4% native:7.10→7.61ns and7.17→8.49ns/query; tiny p12289 NQR+1–3%. Accepted under user small-regression/clear-large-win policy. GCC p17 NQR same. This is not a universal no-regression claim.",
+        "whole-child timings include startup/IO/OS scheduling and are noisy in short cases; body and whole ratios are separately preserved. No online judge result is claimed."
+      ],
+      "claim_assessment": "Summary contains no universal no-regression claim; scalar+25.9%≈.94ns and tinySqrt+.5–1.3ns are recorded. Sqrt final bridge is comment-only."
+    },
+    {
+      "name": "Fast Fenwick_Tree",
+      "sources": [
+        {
+          "current_path": "Fast/Source/DataStructure/Fenwick_Tree.cpp",
+          "current_sha256": "490ecda375ca3752ea92696b1c739f5911854ff6404b07c7e131ab1745e4c9c4",
+          "recorded_final_sha256": null,
+          "recorded_final_exact_match": null,
+          "measured_or_bridge_source": "/tmp/sirkit_12h_20261031_095733/fast_storage_bench/gcc_0_0_1.hpp",
+          "measured_or_bridge_sha256": "490ecda375ca3752ea92696b1c739f5911854ff6404b07c7e131ab1745e4c9c4",
+          "exact_bytes_equal": true,
+          "comments_only_difference": true,
+          "body_after_first_include_identical": true,
+          "diff": []
+        }
+      ],
+      "audits": [
+        "Audit/fast-unreleased-vector-2026-10-31.json",
+        "Audit/Benchmarks/fast_storage.py"
+      ],
+      "measurement_conditions": {
+        "cpu": 12,
+        "flags": "GCC/Clang O2 C++23 checkedoff default/native; construction/operation/destroy separately",
+        "scope": "six-library same APIsequence baseline/control/Fast comparison; later UnreleasedVector comparison retained FastBuffer"
+      },
+      "saved_raw_and_fixture": {
+        "raw": "new bundle FastStorage/raw.json",
+        "rows_all6": 3024,
+        "source_and_fixture": "all48 frozen headers+build.json+fast_storage.cpp/py"
+      },
+      "bridge_scope": "Current source exactly matches timed snapshot. No change to UnreleasedVector selected.",
+      "regressions_and_limits": [
+        {
+          "fast_operation_ratio_range": [
+            0.9757309444358937,
+            1.0324970862161822
+          ],
+          "fast_total_ratio_range": [
+            0.9539140353110195,
+            1.026039376618301
+          ]
+        },
+        {
+          "decision": "Keep existing FastBuffer",
+          "reason": "Verify childCPU geomean1.00845 vsbuffer; no consistent benefit."
+        }
+      ],
+      "claim_assessment": "Often near-neutral outside destruction; some+1–3% medians remain. No universal or large gain is claimed."
+    },
+    {
+      "name": "Fast Segment_Tree",
+      "sources": [
+        {
+          "current_path": "Fast/Source/DataStructure/Segment_Tree.cpp",
+          "current_sha256": "abeb0b22f6e09e46cb165d4fac226cb74be36cdcc543a55f7ed1e4dcdab09fd1",
+          "recorded_final_sha256": null,
+          "recorded_final_exact_match": null,
+          "measured_or_bridge_source": "/tmp/sirkit_12h_20261031_095733/fast_storage_bench/gcc_0_1_1.hpp",
+          "measured_or_bridge_sha256": "abeb0b22f6e09e46cb165d4fac226cb74be36cdcc543a55f7ed1e4dcdab09fd1",
+          "exact_bytes_equal": true,
+          "comments_only_difference": true,
+          "body_after_first_include_identical": true,
+          "diff": []
+        }
+      ],
+      "audits": [
+        "Audit/fast-unreleased-vector-2026-10-31.json",
+        "Audit/Benchmarks/fast_storage.py"
+      ],
+      "measurement_conditions": {
+        "cpu": 12,
+        "flags": "GCC/Clang O2 C++23 checkedoff default/native; construction/operation/destroy separately",
+        "scope": "six-library same APIsequence baseline/control/Fast comparison; later UnreleasedVector comparison retained FastBuffer"
+      },
+      "saved_raw_and_fixture": {
+        "raw": "new bundle FastStorage/raw.json",
+        "rows_all6": 3024,
+        "source_and_fixture": "all48 frozen headers+build.json+fast_storage.cpp/py"
+      },
+      "bridge_scope": "Current source exactly matches timed snapshot. No change to UnreleasedVector selected.",
+      "regressions_and_limits": [
+        {
+          "fast_operation_ratio_range": [
+            0.9669634792832323,
+            1.0156366620031065
+          ],
+          "fast_total_ratio_range": [
+            0.9603418664246247,
+            1.0130109740135518
+          ]
+        },
+        {
+          "decision": "Keep existing FastBuffer",
+          "reason": "Verify childCPU geomean1.00593; no consistent benefit."
+        }
+      ],
+      "claim_assessment": "Often near-neutral outside destruction; some+1–3% medians remain. No universal or large gain is claimed."
+    },
+    {
+      "name": "Fast Lazy_Segment_Tree",
+      "sources": [
+        {
+          "current_path": "Fast/Source/DataStructure/Lazy_Segment_Tree.cpp",
+          "current_sha256": "33b3eae20bcf7112ebbc581b9fba37ef2e8d7f303d033046a37153df7c1304a6",
+          "recorded_final_sha256": null,
+          "recorded_final_exact_match": null,
+          "measured_or_bridge_source": "/tmp/sirkit_12h_20261031_095733/fast_storage_bench/gcc_0_2_1.hpp",
+          "measured_or_bridge_sha256": "33b3eae20bcf7112ebbc581b9fba37ef2e8d7f303d033046a37153df7c1304a6",
+          "exact_bytes_equal": true,
+          "comments_only_difference": true,
+          "body_after_first_include_identical": true,
+          "diff": []
+        }
+      ],
+      "audits": [
+        "Audit/fast-unreleased-vector-2026-10-31.json",
+        "Audit/Benchmarks/fast_storage.py"
+      ],
+      "measurement_conditions": {
+        "cpu": 12,
+        "flags": "GCC/Clang O2 C++23 checkedoff default/native; construction/operation/destroy separately",
+        "scope": "six-library same APIsequence baseline/control/Fast comparison; later UnreleasedVector comparison retained FastBuffer"
+      },
+      "saved_raw_and_fixture": {
+        "raw": "new bundle FastStorage/raw.json",
+        "rows_all6": 3024,
+        "source_and_fixture": "all48 frozen headers+build.json+fast_storage.cpp/py"
+      },
+      "bridge_scope": "Current source exactly matches timed snapshot. No change to UnreleasedVector selected.",
+      "regressions_and_limits": [
+        {
+          "fast_operation_ratio_range": [
+            0.9507757507334137,
+            1.0143807897853938
+          ],
+          "fast_total_ratio_range": [
+            0.950029031593994,
+            1.0131503279228338
+          ]
+        },
+        {
+          "decision": "Keep existing FastBuffer",
+          "reason": "Verify childCPU geomean1.00258; no consistent benefit."
+        }
+      ],
+      "claim_assessment": "Often near-neutral outside destruction; some+1–3% medians remain. No universal or large gain is claimed."
+    },
+    {
+      "name": "Fast PersistentSegmentTree",
+      "sources": [
+        {
+          "current_path": "Fast/Source/DataStructure/Persistent_Segment_Tree.cpp",
+          "current_sha256": "98ccc60ab0587087fda1def37e6dcc5f02c3ea672457b707ae3fa6b48dc7b569",
+          "recorded_final_sha256": "98ccc60ab0587087fda1def37e6dcc5f02c3ea672457b707ae3fa6b48dc7b569",
+          "recorded_final_exact_match": true,
+          "measured_or_bridge_source": "/tmp/sirkit_12h_20261031_095733/pst_storage_candidates/vector_raw_iterative.hpp",
+          "measured_or_bridge_sha256": "ce90973c7b41d44627c4babc54b601fd695344f92e66d9b278aa1d500a0ea24d",
+          "exact_bytes_equal": false,
+          "comments_only_difference": true,
+          "body_after_first_include_identical": true,
+          "diff": [
+            "--- \n",
+            "+++ \n",
+            "@@ -8 +8,2 @@\n",
+            "-// 速度優先版: 内部の主要領域は破棄・解放しない。格納型のデストラクタの副作用を必要としないこと。",
+            "+// 速度優先版: 状態本体をnewで確保し、破棄・reset・clear時も解放しない。",
+            "+// ノード列はvectorの通常の成長・再確保を使う。格納型の破棄の副作用を必要としないこと。",
+            "@@ -19,0 +21 @@\n",
+            "+// prodは共通の経路から区間両端へ分かれ、反復処理で順序を保って集約する。追加領域O(1)。"
+          ]
+        }
+      ],
+      "audits": [
+        "Audit/performance-persistent-segment-tree-iterative-2026-10-31.json"
+      ],
+      "measurement_conditions": "GCC15.2/Clang21.1.8, O2, default/native, SKIP_RUNTIME_CHECKS",
+      "saved_raw_and_fixture": {
+        "raw_embedded_rows": 792,
+        "source": "new bundle PersistentSegmentTree/"
+      },
+      "bridge_scope": "Normal differs by one API comment only;Fast differs by that comment and the detailed ownership comments only.",
+      "regressions_and_limits": [
+        "Raw State ownership omits lifetime recovery; inner node vector still grows/reclaims normally. Construction can regress; operation/whole phases separately recorded."
+      ],
+      "claim_assessment": "Same iterative algorithm with measured ownership selection; no all-input ownership speed guarantee."
+    },
+    {
+      "name": "Fast WaveletMatrix",
+      "sources": [
+        {
+          "current_path": "Fast/Source/DataStructure/Wavelet_Matrix.cpp",
+          "current_sha256": "041d4088c9b5aaf12490bf48fa5394f7f0c89f7f32819adb4d74cc98836ebd1f",
+          "recorded_final_sha256": null,
+          "recorded_final_exact_match": null,
+          "measured_or_bridge_source": "/tmp/sirkit_12h_20261031_095733/unreleased_vector/buffer/DataStructure/Wavelet_Matrix.cpp",
+          "measured_or_bridge_sha256": "041d4088c9b5aaf12490bf48fa5394f7f0c89f7f32819adb4d74cc98836ebd1f",
+          "exact_bytes_equal": true,
+          "comments_only_difference": true,
+          "body_after_first_include_identical": true,
+          "diff": []
+        }
+      ],
+      "audits": [
+        "Audit/fast-unreleased-vector-2026-10-31.json",
+        "Audit/performance-wavelet-matrix-packed-2026-10-31.json"
+      ],
+      "measurement_conditions": {
+        "cases": 1440,
+        "repeats": 3,
+        "compiler_configs": [
+          "GCC15.2 default/native",
+          "Clang21.1.8 default/native --gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15"
+        ],
+        "flags": "C++23 O2 SKIP_RUNTIME_CHECKS for all normal/buffer/unreleased comparisons.",
+        "child_cpu_affinity": 12,
+        "harness_cpu_affinity": 8,
+        "isolation": "Parent coordinated all peers/compilation stop for raw window.",
+        "controls": "normal_control and buffer_control execute exact same binaries as respective baselines.",
+        "main": "8 existing Verify drivers, same common fast_io, same operation order and input files; identical global timer added to all. No batching/adaptation.",
+        "api": "Four public growth workloads with deterministic ordered RNG calls, small repeated construction and large single construction. Build/query/complete clear+destruction phases; full child CPU/wall includes complete process exit.",
+        "CPU_wall_RSS": "os.wait4 gives each child user+system and ru_maxrss; perf_counter wall from Popen through wait4. Thread clocks inside main/phases.",
+        "rss_units": "KiB on this Linux host; e.g144312KiB=140.9296875MiB.",
+        "rss_limitation": "Pre-exec fork image inherits Python parent memory. Floor rose roughly21–33MiB as log grew. RSS below36MiB is excluded from memory conclusions. Large Aho/SAM/PAL peaks are well above floor; no RSS retake used.",
+        "output_agreement": "All1440 corresponding Verify digests and API hashes match."
+      },
+      "saved_raw_and_fixture": {
+        "raw": "Audit/fast-unreleased-vector-raw-2026-10-31.json",
+        "rows": 1440,
+        "source": "new bundle UnreleasedVector/buffer/DataStructure/Wavelet_Matrix.cpp"
+      },
+      "bridge_scope": "Exact retained FastBuffer candidate after normal packedWavelet integration.",
+      "regressions_and_limits": [
+        {
+          "decision": "Keep existing FastBuffer",
+          "reason": "Verify childCPU geomean1.00536; no consistent benefit."
+        },
+        "Normal construction optimizations are distinct from destruction/ownership effects."
+      ],
+      "claim_assessment": "No unsupported claim that no-destruction itself speeds every query."
+    },
+    {
+      "name": "Fast Node",
+      "sources": [
+        {
+          "current_path": "Fast/Source/DataStructure/Node.cpp",
+          "current_sha256": "a0a5fcaac66f51a660a35f4b736222ba7bd7bf20a916b09fc614df9b3a410261",
+          "recorded_final_sha256": "70f834356123d7c0e834547cbf775be088bf3151456435d2fac3f2588373d32e",
+          "recorded_final_exact_match": false,
+          "measured_or_bridge_source": "/tmp/final_performance_evidence_review/node_measured.cpp",
+          "measured_or_bridge_sha256": "70f834356123d7c0e834547cbf775be088bf3151456435d2fac3f2588373d32e",
+          "exact_bytes_equal": false,
+          "comments_only_difference": true,
+          "body_after_first_include_identical": true,
+          "diff": [
+            "--- \n",
+            "+++ \n",
+            "@@ -13 +13 @@\n",
+            "-// push_front_node(head): newで先頭追加、O(1)。pop_front_node(head): 次へ進み、空ならfalse、O(1)。",
+            "+// push_front_node(head): make_nodeで先頭追加、O(1)。pop_front_node(head): 次へ進み、空ならfalse、O(1)。"
+          ]
+        }
+      ],
+      "audits": [
+        "Audit/performance-fast-node-2026-10-31.json",
+        "Audit/fast-storage-adoption-2026-10-31.json"
+      ],
+      "measurement_conditions": {
+        "cpu": {
+          "model": "Intel Core i9-14900K",
+          "logical_cpu": 12,
+          "P_Core": true,
+          "compilation_logical_cpu": 0
+        },
+        "settings": {
+          "CXX": "C++23",
+          "optimization": "O2",
+          "configurations": [
+            "GCC15.2 default",
+            "GCC15.2 march=native",
+            "Clang21.1.8 default",
+            "Clang21.1.8 march=native"
+          ],
+          "runtime_checks": "SKIP_RUNTIME_CHECKS for every timed variant"
+        },
+        "method": [
+          "same C++ benchmark body,API sequence,generated input and compile flags; Node handle type conversion only",
+          "7 outer repeats in shuffled variant order, same active executable path;baseline/control full binaries identical",
+          "construction,operation,destruction separately measured by steady_clock and CLOCK_THREAD_CPUTIME_ID",
+          "input generation and correctness checks excluded; checksum matches every variant in every condition",
+          "total is sum of measured phases,not full application-exit time;OS release of leaked memory is outside final timestamp",
+          "process_elapsed includes startup,input generation,checks,OS exit;diagnostic only",
+          "memory instrumentation is separate from timing;requested dynamic bytes exclude observer-header overhead and stack storage;RSS is a high-water diagnostic",
+          "corrected Node source has same opaque pointer+memory escape on constructed inputs and returned pointers for all variants",
+          "push/pop exposes the newly allocated head before pop so allocation cannot disappear",
+          "clone output holder array is prepared outside API timing;its deallocation is included in destruction",
+          "Node type semantics and allocation layout differ:ordinary shared ownership/per-node allocations versus raw contiguous allocations and a single-thread pool"
+        ]
+      },
+      "saved_raw_and_fixture": {
+        "raw_embedded_rows": 7056,
+        "source_fixture": "measured pool source, benchmark full text/build flags embedded in Audit"
+      },
+      "bridge_scope": "One APIcomment corrected new→make_node; no executable source difference.",
+      "regressions_and_limits": [
+        "unsafe lifetime/capacity/input contracts are explicit,not ordinary ownership guarantees",
+        "near-timer-cost durations should not be interpreted as precise single-call nanoseconds",
+        "results describe frozen implementations/inputs/host;not a universal guarantee for every main or allocator state",
+        "Initial raw per-node new push/pop regressed27–48%; pool selected instead. Initial bool-only DCE-prone benchmark excluded. Near-zero destructor ratios are not precise per-call performance."
+      ],
+      "claim_assessment": "Pool improvements measured; API/lifetime differs from shared ownership and full OS exit is not bodytotal."
+    },
+    {
+      "name": "Fast BinaryTrie",
+      "sources": [
+        {
+          "current_path": "Fast/Source/DataStructure/Binary_Trie.cpp",
+          "current_sha256": "c283343f3cf5cde7ce25a6a7428671a5522a87e19cd39a707ffb130851bfadab",
+          "recorded_final_sha256": "c283343f3cf5cde7ce25a6a7428671a5522a87e19cd39a707ffb130851bfadab",
+          "recorded_final_exact_match": true
+        }
+      ],
+      "audits": [
+        "Audit/performance-fast-binary-trie-2026-10-31.json",
+        "Audit/performance-fast-binary-trie-inline-id-candidates-2026-10-31.json",
+        "Audit/fast-storage-adoption-2026-10-31.json"
+      ],
+      "measurement_conditions": {
+        "cpu": {
+          "model": "Intel Core i9-14900K",
+          "logical_cpu": 12,
+          "P_Core": true,
+          "compilation_logical_cpu": 0
+        },
+        "settings": {
+          "CXX": "C++23",
+          "optimization": "O2",
+          "configurations": [
+            "GCC15.2 default",
+            "GCC15.2 march=native",
+            "Clang21.1.8 default",
+            "Clang21.1.8 march=native"
+          ],
+          "runtime_checks": "SKIP_RUNTIME_CHECKS for every timed variant"
+        },
+        "specialization": "uint32,MAX_LOG29,NODES67108864; optional inlineID changes object size128→1152bytes"
+      },
+      "saved_raw_and_fixture": {
+        "base_raw_embedded_rows": 3696,
+        "inline_raw_embedded_rows": 3024,
+        "source_fixture": "snapshots, candidate texts and fixtures embedded in respective Audit"
+      },
+      "bridge_scope": [
+        {
+          "compiler": "gcc",
+          "inline_ids": false,
+          "reference": "/tmp/sirkit_12h_20261031_095733/fast_bench/snapshot/source_trie.hpp",
+          "reference_sha256": "3f3cfb2768419cf16ef94c328e84ef24dd0d7536b830a5f84ba6b8ab297f9630",
+          "current_sha256": "c283343f3cf5cde7ce25a6a7428671a5522a87e19cd39a707ffb130851bfadab",
+          "preprocessed_equal": true,
+          "preprocessed_sha256": [
+            "3f93e08adc9a8ddc1108e9d58d38d6fe99aa396d9ea26307da04a2222fefda69",
+            "3f93e08adc9a8ddc1108e9d58d38d6fe99aa396d9ea26307da04a2222fefda69"
+          ]
+        },
+        {
+          "compiler": "gcc",
+          "inline_ids": true,
+          "reference": "/tmp/sirkit_12h_20261031_095733/fast_bench/inline_hot_trie.hpp",
+          "reference_sha256": "9a7ba3ff0c82e8d91f8987742271101516125f9524a6075ba91bf98536da894f",
+          "current_sha256": "c283343f3cf5cde7ce25a6a7428671a5522a87e19cd39a707ffb130851bfadab",
+          "preprocessed_equal": true,
+          "preprocessed_sha256": [
+            "088989d4a8113ad1541fb2b8dc1fc067424d6e9a5435ebb00aee11a74f101b0a",
+            "088989d4a8113ad1541fb2b8dc1fc067424d6e9a5435ebb00aee11a74f101b0a"
+          ]
+        },
+        {
+          "compiler": "clang",
+          "inline_ids": false,
+          "reference": "/tmp/sirkit_12h_20261031_095733/fast_bench/snapshot/source_trie.hpp",
+          "reference_sha256": "3f3cfb2768419cf16ef94c328e84ef24dd0d7536b830a5f84ba6b8ab297f9630",
+          "current_sha256": "c283343f3cf5cde7ce25a6a7428671a5522a87e19cd39a707ffb130851bfadab",
+          "preprocessed_equal": true,
+          "preprocessed_sha256": [
+            "77cb5df5fd0004039e1d82a86c78fa4050f50ab958a3d2a0e88d5c2e102aac1d",
+            "77cb5df5fd0004039e1d82a86c78fa4050f50ab958a3d2a0e88d5c2e102aac1d"
+          ]
+        },
+        {
+          "compiler": "clang",
+          "inline_ids": true,
+          "reference": "/tmp/sirkit_12h_20261031_095733/fast_bench/inline_hot_trie.hpp",
+          "reference_sha256": "9a7ba3ff0c82e8d91f8987742271101516125f9524a6075ba91bf98536da894f",
+          "current_sha256": "c283343f3cf5cde7ce25a6a7428671a5522a87e19cd39a707ffb130851bfadab",
+          "preprocessed_equal": true,
+          "preprocessed_sha256": [
+            "e8b4be4f0ab3d9f8bbe5daf1daa676be57639f4e25b85970d2fd023eb7059554",
+            "e8b4be4f0ab3d9f8bbe5daf1daa676be57639f4e25b85970d2fd023eb7059554"
+          ]
+        }
+      ],
+      "regressions_and_limits": [
+        "unsafe lifetime/capacity/input contracts are explicit,not ordinary ownership guarantees",
+        "near-timer-cost durations should not be interpreted as precise single-call nanoseconds",
+        "results describe frozen implementations/inputs/host;not a universal guarantee for every main or allocator state",
+        "Default first single-ID operation can be3.81× though total1.009×. Inline-hot option is not default; memory/object size tradeoff and workload-dependent regressions retained."
+      ],
+      "claim_assessment": "Summary acknowledges selected Fast implementations rather than universal speedup; default and optional are distinct."
+    },
+    {
+      "name": "Fast Hashmap",
+      "sources": [
+        {
+          "current_path": "Fast/Source/DataStructure/Hash_map.cpp",
+          "current_sha256": "ba812641af6001bde3c59346492fe61058c78bee77f66e21d52cc4b515f7c6f3",
+          "recorded_final_sha256": null,
+          "recorded_final_exact_match": null,
+          "measured_or_bridge_source": "/tmp/sirkit_12h_20261031_095733/fast_hash/ready_Hash_map.cpp",
+          "measured_or_bridge_sha256": "7b9fb674a63d73dd1e50a728b535b07872b2d029af4d25c405e87630282c1b82",
+          "exact_bytes_equal": false,
+          "comments_only_difference": true,
+          "body_after_first_include_identical": true,
+          "diff": [
+            "--- \n",
+            "+++ \n",
+            "@@ -1,0 +2,2 @@\n",
+            "+// Original Source（GenericHash::mixのみ。Sebastiano Vigna、PD提供声明・無条件許諾）:",
+            "+// https://prng.di.unimi.it/splitmix64.c"
+          ]
+        }
+      ],
+      "audits": [
+        "Audit/performance-fast-hash-release-2026-10-31.json",
+        "Audit/splitmix-attribution-labels-2026-10-31.json"
+      ],
+      "measurement_conditions": {
+        "cpu": 12,
+        "CPU_class": "P-Core",
+        "settings": "GCC15.2/Clang21; O2 C++23; default/native; SIMD on/off; SKIP_RUNTIME_CHECKS",
+        "raw": {
+          "path": "/tmp/sirkit_12h_20261031_095733/fast_hash/lifecycle_bench/release_full_raw.json",
+          "sha256": "6f5c33a7c9260d6475643a8f1dc60e016c454a594a40e7c45e5bdc27153396a3",
+          "bytes": 6901414
+        },
+        "manifest": {
+          "path": "/tmp/sirkit_12h_20261031_095733/fast_hash/lifecycle_bench/release_full_manifest.json",
+          "sha256": "fb1b07a78d620170b289888e88467818dd03625699601eba7fa974de99285565",
+          "bytes": 2682
+        },
+        "summary": {
+          "path": "/tmp/sirkit_12h_20261031_095733/fast_hash/lifecycle_bench/release_full_summary.json",
+          "sha256": "3da5642cc298ca34126d133d12b69a9735c24e23e9c6eb2f83d4fe68af41e38f",
+          "bytes": 2998178
+        },
+        "selected": {
+          "path": "/tmp/sirkit_12h_20261031_095733/fast_hash/selected_performance.json",
+          "sha256": "644a1b855c71c0a7f57af8ef27bf2c1497f1cbafcac34f793f76334400bb8f2e",
+          "bytes": 9073
+        },
+        "rows": 14400,
+        "process_metrics": "parent RUSAGE_CHILDREN user+system; parent wall around complete subprocess; body CLOCK_THREAD_CPUTIME_ID and steady_clock",
+        "control": "same baseline executable under second label",
+        "checksum": "all match"
+      },
+      "saved_raw_and_fixture": {
+        "raw": "Audit/Measurements/fast-hash-release-raw-2026-10-31.json",
+        "rows": 14400,
+        "source_and_fixture": "new bundle FastHash/ headers, compiler-specific candidates, bench_lifecycle.cpp, build/run scripts"
+      },
+      "bridge_scope": "Only2leading SplitMix attribution comments added after measuredready; first-include body exactly matches.",
+      "regressions_and_limits": [
+        "clear/container destruction abandon live values and their resources; old arrays released only on successful rebuild",
+        "exception/allocation failure state guarantee excluded; valid-input undefined behavior forbidden",
+        "empty constructor speed is only reserved-slot initialization; total lifecycle is separately measured",
+        "minor faults and C++ allocation/delete requests support allocator reuse interpretation, not direct observation of libc internals",
+        "isolated iteration/empty-constructor cases may regress; whole lifecycle gains are not a claim of all-operation speedup",
+        "intentional leaks excluded from LSan; ASan and UBSan enabled",
+        "BPE may be slightly faster in individual settings but BR reduces peak resident memory by releasing retired buffers"
+      ],
+      "claim_assessment": "Large lifecycle median whole-childCPU≈.80baseline. Empty reserve initialization25–35× observation is not reported as full insertion lifecycle speedup; iteration/single-op regressions are retained."
+    },
+    {
+      "name": "Fast Hashset",
+      "sources": [
+        {
+          "current_path": "Fast/Source/DataStructure/Hash_set.cpp",
+          "current_sha256": "4aadfc3792999d8a3ad0379b92b84c9ac9c2c1db4e83c3bf38c44444961d0576",
+          "recorded_final_sha256": null,
+          "recorded_final_exact_match": null,
+          "measured_or_bridge_source": "/tmp/sirkit_12h_20261031_095733/fast_hash/ready_Hash_set.cpp",
+          "measured_or_bridge_sha256": "d6d4ca68388822e4801d6c6f33466d59e9954e2a9875b5d174f80e715344df18",
+          "exact_bytes_equal": false,
+          "comments_only_difference": true,
+          "body_after_first_include_identical": true,
+          "diff": [
+            "--- \n",
+            "+++ \n",
+            "@@ -1,0 +2,2 @@\n",
+            "+// Original Source（GenericHash::mixのみ。Sebastiano Vigna、PD提供声明・無条件許諾）:",
+            "+// https://prng.di.unimi.it/splitmix64.c"
+          ]
+        }
+      ],
+      "audits": [
+        "Audit/performance-fast-hash-release-2026-10-31.json",
+        "Audit/splitmix-attribution-labels-2026-10-31.json"
+      ],
+      "measurement_conditions": {
+        "cpu": 12,
+        "CPU_class": "P-Core",
+        "settings": "GCC15.2/Clang21; O2 C++23; default/native; SIMD on/off; SKIP_RUNTIME_CHECKS",
+        "raw": {
+          "path": "/tmp/sirkit_12h_20261031_095733/fast_hash/lifecycle_bench/release_full_raw.json",
+          "sha256": "6f5c33a7c9260d6475643a8f1dc60e016c454a594a40e7c45e5bdc27153396a3",
+          "bytes": 6901414
+        },
+        "manifest": {
+          "path": "/tmp/sirkit_12h_20261031_095733/fast_hash/lifecycle_bench/release_full_manifest.json",
+          "sha256": "fb1b07a78d620170b289888e88467818dd03625699601eba7fa974de99285565",
+          "bytes": 2682
+        },
+        "summary": {
+          "path": "/tmp/sirkit_12h_20261031_095733/fast_hash/lifecycle_bench/release_full_summary.json",
+          "sha256": "3da5642cc298ca34126d133d12b69a9735c24e23e9c6eb2f83d4fe68af41e38f",
+          "bytes": 2998178
+        },
+        "selected": {
+          "path": "/tmp/sirkit_12h_20261031_095733/fast_hash/selected_performance.json",
+          "sha256": "644a1b855c71c0a7f57af8ef27bf2c1497f1cbafcac34f793f76334400bb8f2e",
+          "bytes": 9073
+        },
+        "rows": 14400,
+        "process_metrics": "parent RUSAGE_CHILDREN user+system; parent wall around complete subprocess; body CLOCK_THREAD_CPUTIME_ID and steady_clock",
+        "control": "same baseline executable under second label",
+        "checksum": "all match"
+      },
+      "saved_raw_and_fixture": {
+        "raw": "Audit/Measurements/fast-hash-release-raw-2026-10-31.json",
+        "rows": 14400,
+        "source_and_fixture": "new bundle FastHash/ headers, compiler-specific candidates, bench_lifecycle.cpp, build/run scripts"
+      },
+      "bridge_scope": "Only2leading SplitMix attribution comments added after measuredready; first-include body exactly matches.",
+      "regressions_and_limits": [
+        "clear/container destruction abandon live values and their resources; old arrays released only on successful rebuild",
+        "exception/allocation failure state guarantee excluded; valid-input undefined behavior forbidden",
+        "empty constructor speed is only reserved-slot initialization; total lifecycle is separately measured",
+        "minor faults and C++ allocation/delete requests support allocator reuse interpretation, not direct observation of libc internals",
+        "isolated iteration/empty-constructor cases may regress; whole lifecycle gains are not a claim of all-operation speedup",
+        "intentional leaks excluded from LSan; ASan and UBSan enabled",
+        "BPE may be slightly faster in individual settings but BR reduces peak resident memory by releasing retired buffers"
+      ],
+      "claim_assessment": "Large lifecycle median whole-childCPU≈.80baseline. Empty reserve initialization25–35× observation is not reported as full insertion lifecycle speedup; iteration/single-op regressions are retained."
+    },
+    {
+      "name": "Fast implicitTreap",
+      "sources": [
+        {
+          "current_path": "Fast/Source/DataStructure/implicit_treap.cpp",
+          "current_sha256": "6e40ef3e9dd0e1d2da5eb557650963404e760a6c2f72da7c70e57be7c35565f9",
+          "recorded_final_sha256": "6e40ef3e9dd0e1d2da5eb557650963404e760a6c2f72da7c70e57be7c35565f9",
+          "recorded_final_exact_match": true
+        }
+      ],
+      "audits": [
+        "Audit/fast-unreleased-vector-2026-10-31.json",
+        "Audit/fast-unreleased-vector-adoption-bridge-2026-10-31.json"
+      ],
+      "measurement_conditions": {
+        "cases": 1440,
+        "repeats": 3,
+        "compiler_configs": [
+          "GCC15.2 default/native",
+          "Clang21.1.8 default/native --gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15"
+        ],
+        "flags": "C++23 O2 SKIP_RUNTIME_CHECKS for all normal/buffer/unreleased comparisons.",
+        "child_cpu_affinity": 12,
+        "harness_cpu_affinity": 8,
+        "isolation": "Parent coordinated all peers/compilation stop for raw window.",
+        "controls": "normal_control and buffer_control execute exact same binaries as respective baselines.",
+        "main": "8 existing Verify drivers, same common fast_io, same operation order and input files; identical global timer added to all. No batching/adaptation.",
+        "api": "Four public growth workloads with deterministic ordered RNG calls, small repeated construction and large single construction. Build/query/complete clear+destruction phases; full child CPU/wall includes complete process exit.",
+        "CPU_wall_RSS": "os.wait4 gives each child user+system and ru_maxrss; perf_counter wall from Popen through wait4. Thread clocks inside main/phases.",
+        "rss_units": "KiB on this Linux host; e.g144312KiB=140.9296875MiB.",
+        "rss_limitation": "Pre-exec fork image inherits Python parent memory. Floor rose roughly21–33MiB as log grew. RSS below36MiB is excluded from memory conclusions. Large Aho/SAM/PAL peaks are well above floor; no RSS retake used.",
+        "output_agreement": "All1440 corresponding Verify digests and API hashes match."
+      },
+      "saved_raw_and_fixture": {
+        "raw": "Audit/fast-unreleased-vector-raw-2026-10-31.json",
+        "rows": 1440,
+        "source_and_fixture": "new bundle UnreleasedVector/ candidate sources/inputs/driver+growth fixture"
+      },
+      "bridge_scope": "Current formal Fast Aho, after compiler guards surround unused helper definitions, matches all4 requested runtime sections of the ACTUAL original timed binaries in8/8 cases. Additional checked Verify builds match frozen checked binaries4/4. No new performance measurements were performed.",
+      "regressions_and_limits": [
+        {
+          "decision": "UnreleasedVector for GCC and Clang Fast only",
+          "evidence": "All8 Verify case/config child CPU ratios0.97744–1.00044 vs old FastBuffer, geomean0.99053. Growth API all8 ratios0.96954–0.99938, geomean0.98591. Small gains; do not describe as a large speed improvement.",
+          "memory": "Vector growth reclaims superseded regions by contract and lifetime fixture. Treap RSS comparisons below36MiB are confounded, so no empirical Treap RSS reduction claimed."
+        }
+      ],
+      "claim_assessment": "Treap gains are modest≈1%; GCC Aho modestspeed/largeRSS benefit. Clang Aho replacement+17–20% rejected; compiler branch retains FastBuffer."
+    },
+    {
+      "name": "Fast AhoCorasick",
+      "sources": [
+        {
+          "current_path": "Fast/Source/String/Aho_Corasick.cpp",
+          "current_sha256": "4a8a90ea5cde79d7142feffadeaefc0f2e86aba8ab7d4d9aad0e9f234b60b925",
+          "recorded_final_sha256": "4a8a90ea5cde79d7142feffadeaefc0f2e86aba8ab7d4d9aad0e9f234b60b925",
+          "recorded_final_exact_match": true
+        }
+      ],
+      "audits": [
+        "Audit/fast-unreleased-vector-2026-10-31.json",
+        "Audit/fast-unreleased-vector-adoption-bridge-2026-10-31.json"
+      ],
+      "measurement_conditions": {
+        "cases": 1440,
+        "repeats": 3,
+        "compiler_configs": [
+          "GCC15.2 default/native",
+          "Clang21.1.8 default/native --gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15"
+        ],
+        "flags": "C++23 O2 SKIP_RUNTIME_CHECKS for all normal/buffer/unreleased comparisons.",
+        "child_cpu_affinity": 12,
+        "harness_cpu_affinity": 8,
+        "isolation": "Parent coordinated all peers/compilation stop for raw window.",
+        "controls": "normal_control and buffer_control execute exact same binaries as respective baselines.",
+        "main": "8 existing Verify drivers, same common fast_io, same operation order and input files; identical global timer added to all. No batching/adaptation.",
+        "api": "Four public growth workloads with deterministic ordered RNG calls, small repeated construction and large single construction. Build/query/complete clear+destruction phases; full child CPU/wall includes complete process exit.",
+        "CPU_wall_RSS": "os.wait4 gives each child user+system and ru_maxrss; perf_counter wall from Popen through wait4. Thread clocks inside main/phases.",
+        "rss_units": "KiB on this Linux host; e.g144312KiB=140.9296875MiB.",
+        "rss_limitation": "Pre-exec fork image inherits Python parent memory. Floor rose roughly21–33MiB as log grew. RSS below36MiB is excluded from memory conclusions. Large Aho/SAM/PAL peaks are well above floor; no RSS retake used.",
+        "output_agreement": "All1440 corresponding Verify digests and API hashes match."
+      },
+      "saved_raw_and_fixture": {
+        "raw": "Audit/fast-unreleased-vector-raw-2026-10-31.json",
+        "rows": 1440,
+        "source_and_fixture": "new bundle UnreleasedVector/ candidate sources/inputs/driver+growth fixture"
+      },
+      "bridge_scope": "Current formal Fast Aho, after compiler guards surround unused helper definitions, matches all4 requested runtime sections of the ACTUAL original timed binaries in8/8 cases. Additional checked Verify builds match frozen checked binaries4/4. No new performance measurements were performed.",
+      "regressions_and_limits": [
+        {
+          "decision": "GCC-only UnreleasedVector; Clang retains FastBuffer",
+          "evidence": "GCC large Verify childCPU ratios0.99762/.96947, near-neutral to modest improvement. Large peakRSS144312→75272KiB (140.9→73.5MiB). Clang large Verify1.19496/1.18992 and growth1.16699/1.17944 regress, so no Clang switch.",
+          "tiny_cases": "Both tiny/large vs normal and buffer are included in aho_case_details. Tiny Verify startup variance high; repeated small API remains slower than normal vector. No universal speed claim."
+        }
+      ],
+      "claim_assessment": "Treap gains are modest≈1%; GCC Aho modestspeed/largeRSS benefit. Clang Aho replacement+17–20% rejected; compiler branch retains FastBuffer."
+    }
+  ],
+  "recorded_exact_sha_mismatches_with_comment_bridge": [
+    "Fast/Source/DataStructure/Node.cpp"
+  ],
+  "uncertainties": [
+    "No remeasurement, no re-disassembly and no actual unsupportedCPU hardware execution in this review. Existing machine-code/CPUfalse proofs are cited at their original scope.",
+    "One hardware platform/P-Core only. CPU/cache thresholds are choices, not universal optima.",
+    "Archive retains historical unselected candidates; their presence does not mean they were adopted. Source/flag selectors are recorded.",
+    "Node/PST/HashMap/HashSet final topcomments can differ from older adopted SHA; direct comment-only diffs recorded rather than rewriting historical Audits."
+  ],
+  "evidence_bundle": {
+    "staged_path": "/tmp/final_performance_evidence_review/staged/Audit/data/accepted-performance-sources-2026-10-31.zip",
+    "sha256": "86577d0106dbea3ebedc3eadf7882cf659e1db3edb4c24014980ddfaf72bfa13",
+    "bytes": 14460837,
+    "manifest": "/tmp/final_performance_evidence_review/bundle_manifest.json",
+    "fresh_build_smoke": [
+      {
+        "group": "ntt",
+        "command": [
+          "python3",
+          "/tmp/final_performance_evidence_review/replay_extracted/replay_build.py",
+          "ntt",
+          "/tmp/final_performance_evidence_review/fresh_ntt",
+          "--match",
+          "gcc-default-vector_radix4_threshold16"
+        ],
+        "returncode": 0,
+        "stdout": "Built 1 same-fixture executables. No timing run performed; request an isolated P-Core window before benchmarking.\n",
+        "stderr": ""
+      },
+      {
+        "group": "fast-storage",
+        "command": [
+          "python3",
+          "/tmp/final_performance_evidence_review/replay_extracted/replay_build.py",
+          "fast-storage",
+          "/tmp/final_performance_evidence_review/fresh_fast-storage",
+          "--match",
+          "gcc_0_0_1"
+        ],
+        "returncode": 0,
+        "stdout": "Built 1 same-fixture executables. No timing run performed; request an isolated P-Core window before benchmarking.\n",
+        "stderr": ""
+      }
+    ],
+    "scope": "575source/data/metadata entries,no compiledbinaries; preserved frozenNTT/FastStorage plus supplementalaccepted candidate histories; output onlytmp until rootadopts."
+  },
+  "frozen_audit_sha256": {
+    "Audit/Benchmarks/fast_storage.py": "882a6033fff17b7ad87de3aaa07e150974e154aa19d229da99a4d9b96dbaf055",
+    "Audit/benchmark-modular-montgomery-2026-10-31.json": "1e158c7e39c5571fc54742112395459d110a81db3f9208bd087d0bab06ea6f43",
+    "Audit/benchmark-modular-sqrt-2026-10-31.json": "3d2f05fccc50ee27ff79b5a97d51d79b3e4cec36b2171bf52e741eb08ea2ae0f",
+    "Audit/fast-storage-adoption-2026-10-31.json": "ab4a357ecdfc485aaa6f61c3e7f31ceda449547fefb8d7820eee6b9e14bc00d0",
+    "Audit/fast-unreleased-vector-2026-10-31.json": "9d32e2c48089560eab41b2431bc9665014b8a38597e0f4a73f91f2935b264ff2",
+    "Audit/fast-unreleased-vector-adoption-bridge-2026-10-31.json": "d7fda4ea8348131c0029a941d60314d35ee2a89c05c1a15b17a687fd483ac901",
+    "Audit/modular-sqrt-source-comment-bridge-2026-10-31.json": "bcd6a2f64476ca6d341a2837e2d6f7d4bd2b91938a6843e5353f4f96a5457f23",
+    "Audit/ntt-simd-adoption-2026-10-31.json": "6d461d02deb182a15ea1b789ac8cedac2a1ebb21486a5b50364dcec97e3acb96",
+    "Audit/performance-fast-binary-trie-2026-10-31.json": "a952d026c6570d05d294d071bd4f6939a6c3ad3a54a5504aed47e53037d5a64f",
+    "Audit/performance-fast-binary-trie-inline-id-candidates-2026-10-31.json": "03737700f3e6a90239bbfa848ae9febca0b7879d83667f1bb666d699926508e2",
+    "Audit/performance-fast-hash-release-2026-10-31.json": "990dc68b8b5c0d8d6490de568cd3312f165455ed27a787cb31dc850dd992d31f",
+    "Audit/performance-fast-node-2026-10-31.json": "ef101a0887f3a983d9299ebc644a3baddc15a76e96e86919dec8676033779fca",
+    "Audit/performance-linear-recurrence-weights-2026-10-31.json": "921f7ad38dfde7d3798d058eb39bc69abcc8979957fedc378a3910b24548dec5",
+    "Audit/performance-matrix-u32-tiled-2026-10-31.json": "b2f07c00ab48ccb7b59b1b4dedada40952343242939fd27723b1b1366d6afbe7",
+    "Audit/performance-ntt-simd-2026-10-31.json": "c1f54df9fe750889ca07c9716e524c6093381b77d375bd5bda486afbb33d6cee",
+    "Audit/performance-persistent-segment-tree-iterative-2026-10-31.json": "3e9f2e84c09947f99742c64cc292dffffec96874efe6461f875652d3b3fde6d5",
+    "Audit/performance-wavelet-matrix-packed-2026-10-31.json": "a0d7ca420de0fcb6c6d5cd07da5a9db2e8fe064cd5d8300d090ff2c3726a4fa6",
+    "Audit/splitmix-attribution-labels-2026-10-31.json": "7ace4b8c890b10ed24171ba864872afc1732baeffcc7f9855f31d5265729b733"
+  }
+}

@@ -1,0 +1,1533 @@
+{
+  "date": "2026-11-13",
+  "library": "Graph/Low_Link.cpp",
+  "decision": "retain_current_after_three_bounded_candidates",
+  "source_sha256": {
+    "before": "b6136a009ad424b9e15f1d7efd59987be2f8d3f95de9adb51fdb7a137221ed3f",
+    "after": "b6136a009ad424b9e15f1d7efd59987be2f8d3f95de9adb51fdb7a137221ed3f"
+  },
+  "selection": {
+    "decision": "retain_current_after_three_bounded_candidates",
+    "label": "base",
+    "measured_candidate_sha256": "b6136a009ad424b9e15f1d7efd59987be2f8d3f95de9adb51fdb7a137221ed3f",
+    "changes": [],
+    "outcome": {
+      "online": {
+        "low_link_two_edge": {
+          "submission": 416719,
+          "status": "AC",
+          "time_ms": 40
+        },
+        "low_link_biconnected": {
+          "submission": 416718,
+          "status": "AC",
+          "time_ms": 211
+        }
+      },
+      "candidate_reference_builds": 6,
+      "candidate_reference_checks_each": 178177,
+      "exploratory_cells": 24,
+      "confirmatory_cells": 12,
+      "confirmatory_target_triplets_per_label": 9,
+      "confirmatory_identical_control_triplets": 3,
+      "current_library_modified": false,
+      "required_resubmission": []
+    },
+    "rejected_candidates": {
+      "pending_narrow": "確認9組でGCCのdisjoint_cliques100k点二重連結wholeは+3.19%、同一対照-0.38%。大規模randomで約1.6%改善するが他条件を維持できず不採用。",
+      "root_cut": "確認では多くの差が約±1%に収まり、初期に見えた改善も安定しない。速度改善の根拠を満たさず不採用。",
+      "pending_root_cut": "確認でGCCの同じclique wholeが+3.17%。合成でも退行が残るので不採用。"
+    },
+    "tradeoff_notes": [
+      "source/main/IO/example/Documentを開始時とbyte一致で維持。オンライン2本は現行b613本体の判定であり再提出不要。",
+      "候補自体の遅さを理由に試行を捨てず、両端の基準間の差10%だけで校正有効性を決める。探索3候補×3組・対照3組の24セルと、同3候補×9組・対照3組の確認12セルを分けて全保持。",
+      "確認のClang大規模木の点二重連結では同一対照中央値が+4.37%であり、1%前後の差を積極的な改善と解釈しない。"
+    ],
+    "limitations": [
+      "ローカル比較はGCC15.3.0/Clang21.1.8、i9-14900K P-Core CPU12、C++23 -O2 -march=native。公式オンラインGCC15.2とは別の条件であり比率を移し替えない。",
+      "小規模性能やdefaultビルドの候補比較は今回の採用根拠とせず、全候補不採用で既存本体を維持する。",
+      "現行b613の32構成は前回同一SHAの実検証を参照し、今回新たに32構成を実行したとは扱わない。",
+      "公式tree208→211ms、line_clique97→103ms、twoedge example_00=0→10msを記録し、ノイズと断定しない。"
+    ],
+    "risks": [
+      "追加の本体変更なし。P-Coreの比較だけからオンライン各ケースの時間変動の原因や真の最速限界を断定しない。"
+    ]
+  },
+  "required_resubmission": [],
+  "online_evidence": "Audit/online-low-link-416719-2026-11-13.json",
+  "online_scope": "416719のtwo_edge AC40ms・416718のbiconnected AC211msは提出時b6136a本体/main/共通IOと本文照合済み。同じ本体を維持し、現在の通常版とも本文一致。再提出不要。派生版へオンラインACを転記しない。",
+  "public_online_comparison": [
+    {
+      "id": "low_link_two_edge",
+      "previous_submission": 416612,
+      "current_submission": 416719,
+      "previous_max_ms": 42,
+      "current_max_ms": 40,
+      "rows": [
+        {
+          "case": "example_00",
+          "previous_ms": 0,
+          "current_ms": 10,
+          "delta_ms": 10,
+          "previous_memory_bytes": 528384,
+          "current_memory_bytes": 561152,
+          "status": "AC",
+          "ratio": null
+        },
+        {
+          "case": "example_01",
+          "previous_ms": 1,
+          "current_ms": 1,
+          "delta_ms": 0,
+          "previous_memory_bytes": 794624,
+          "current_memory_bytes": 823296,
+          "status": "AC",
+          "ratio": 1.0
+        },
+        {
+          "case": "example_02",
+          "previous_ms": 10,
+          "current_ms": 1,
+          "delta_ms": -9,
+          "previous_memory_bytes": 798720,
+          "current_memory_bytes": 573440,
+          "status": "AC",
+          "ratio": 0.1
+        },
+        {
+          "case": "small_random_1_00",
+          "previous_ms": 0,
+          "current_ms": 0,
+          "delta_ms": 0,
+          "previous_memory_bytes": 536576,
+          "current_memory_bytes": 544768,
+          "status": "AC",
+          "ratio": null
+        },
+        {
+          "case": "small_random_1_01",
+          "previous_ms": 1,
+          "current_ms": 1,
+          "delta_ms": 0,
+          "previous_memory_bytes": 790528,
+          "current_memory_bytes": 667648,
+          "status": "AC",
+          "ratio": 1.0
+        },
+        {
+          "case": "small_random_1_02",
+          "previous_ms": 0,
+          "current_ms": 0,
+          "delta_ms": 0,
+          "previous_memory_bytes": 798720,
+          "current_memory_bytes": 557056,
+          "status": "AC",
+          "ratio": null
+        },
+        {
+          "case": "small_random_2_00",
+          "previous_ms": 1,
+          "current_ms": 0,
+          "delta_ms": -1,
+          "previous_memory_bytes": 798720,
+          "current_memory_bytes": 577536,
+          "status": "AC",
+          "ratio": 0.0
+        },
+        {
+          "case": "small_random_2_01",
+          "previous_ms": 0,
+          "current_ms": 0,
+          "delta_ms": 0,
+          "previous_memory_bytes": 561152,
+          "current_memory_bytes": 561152,
+          "status": "AC",
+          "ratio": null
+        },
+        {
+          "case": "small_random_2_02",
+          "previous_ms": 0,
+          "current_ms": 1,
+          "delta_ms": 1,
+          "previous_memory_bytes": 573440,
+          "current_memory_bytes": 573440,
+          "status": "AC",
+          "ratio": null
+        },
+        {
+          "case": "random_1_00",
+          "previous_ms": 26,
+          "current_ms": 25,
+          "delta_ms": -1,
+          "previous_memory_bytes": 11137024,
+          "current_memory_bytes": 10125312,
+          "status": "AC",
+          "ratio": 0.9615384615384617
+        },
+        {
+          "case": "random_1_01",
+          "previous_ms": 31,
+          "current_ms": 29,
+          "delta_ms": -2,
+          "previous_memory_bytes": 12439552,
+          "current_memory_bytes": 11177984,
+          "status": "AC",
+          "ratio": 0.935483870967742
+        },
+        {
+          "case": "random_1_02",
+          "previous_ms": 13,
+          "current_ms": 12,
+          "delta_ms": -1,
+          "previous_memory_bytes": 6418432,
+          "current_memory_bytes": 5906432,
+          "status": "AC",
+          "ratio": 0.9230769230769231
+        },
+        {
+          "case": "random_2_00",
+          "previous_ms": 6,
+          "current_ms": 6,
+          "delta_ms": 0,
+          "previous_memory_bytes": 3571712,
+          "current_memory_bytes": 3313664,
+          "status": "AC",
+          "ratio": 1.0
+        },
+        {
+          "case": "random_2_01",
+          "previous_ms": 2,
+          "current_ms": 1,
+          "delta_ms": -1,
+          "previous_memory_bytes": 1454080,
+          "current_memory_bytes": 1404928,
+          "status": "AC",
+          "ratio": 0.5
+        },
+        {
+          "case": "random_2_02",
+          "previous_ms": 10,
+          "current_ms": 9,
+          "delta_ms": -1,
+          "previous_memory_bytes": 4874240,
+          "current_memory_bytes": 4599808,
+          "status": "AC",
+          "ratio": 0.8999999999999999
+        },
+        {
+          "case": "random_2_03",
+          "previous_ms": 13,
+          "current_ms": 12,
+          "delta_ms": -1,
+          "previous_memory_bytes": 6197248,
+          "current_memory_bytes": 5939200,
+          "status": "AC",
+          "ratio": 0.9230769230769231
+        },
+        {
+          "case": "random_2_04",
+          "previous_ms": 5,
+          "current_ms": 5,
+          "delta_ms": 0,
+          "previous_memory_bytes": 3108864,
+          "current_memory_bytes": 2760704,
+          "status": "AC",
+          "ratio": 1.0
+        },
+        {
+          "case": "max_random_00",
+          "previous_ms": 41,
+          "current_ms": 40,
+          "delta_ms": -1,
+          "previous_memory_bytes": 16859136,
+          "current_memory_bytes": 14946304,
+          "status": "AC",
+          "ratio": 0.975609756097561
+        },
+        {
+          "case": "max_random_01",
+          "previous_ms": 41,
+          "current_ms": 40,
+          "delta_ms": -1,
+          "previous_memory_bytes": 16113664,
+          "current_memory_bytes": 14848000,
+          "status": "AC",
+          "ratio": 0.975609756097561
+        },
+        {
+          "case": "max_random_02",
+          "previous_ms": 42,
+          "current_ms": 40,
+          "delta_ms": -2,
+          "previous_memory_bytes": 16879616,
+          "current_memory_bytes": 14172160,
+          "status": "AC",
+          "ratio": 0.9523809523809523
+        },
+        {
+          "case": "large_cycle_00",
+          "previous_ms": 18,
+          "current_ms": 17,
+          "delta_ms": -1,
+          "previous_memory_bytes": 9601024,
+          "current_memory_bytes": 8105984,
+          "status": "AC",
+          "ratio": 0.9444444444444445
+        }
+      ],
+      "scope": "公式APIの個別提出時間。P-Coreの固定条件比較や同一server負荷を保証しない。小規模を含め全ケースを保持し、遅い試行をノイズと断定しない。"
+    },
+    {
+      "id": "low_link_biconnected",
+      "previous_submission": 416613,
+      "current_submission": 416718,
+      "previous_max_ms": 208,
+      "current_max_ms": 211,
+      "rows": [
+        {
+          "case": "example_00",
+          "previous_ms": 1,
+          "current_ms": 0,
+          "delta_ms": -1,
+          "previous_memory_bytes": 802816,
+          "current_memory_bytes": 573440,
+          "status": "AC",
+          "ratio": 0.0
+        },
+        {
+          "case": "example_01",
+          "previous_ms": 0,
+          "current_ms": 1,
+          "delta_ms": 1,
+          "previous_memory_bytes": 536576,
+          "current_memory_bytes": 557056,
+          "status": "AC",
+          "ratio": null
+        },
+        {
+          "case": "example_02",
+          "previous_ms": 1,
+          "current_ms": 1,
+          "delta_ms": 0,
+          "previous_memory_bytes": 802816,
+          "current_memory_bytes": 798720,
+          "status": "AC",
+          "ratio": 1.0
+        },
+        {
+          "case": "min_00",
+          "previous_ms": 1,
+          "current_ms": 1,
+          "delta_ms": 0,
+          "previous_memory_bytes": 573440,
+          "current_memory_bytes": 565248,
+          "status": "AC",
+          "ratio": 1.0
+        },
+        {
+          "case": "min_01",
+          "previous_ms": 0,
+          "current_ms": 1,
+          "delta_ms": 1,
+          "previous_memory_bytes": 577536,
+          "current_memory_bytes": 794624,
+          "status": "AC",
+          "ratio": null
+        },
+        {
+          "case": "min_02",
+          "previous_ms": 1,
+          "current_ms": 1,
+          "delta_ms": 0,
+          "previous_memory_bytes": 573440,
+          "current_memory_bytes": 806912,
+          "status": "AC",
+          "ratio": 1.0
+        },
+        {
+          "case": "small_random_1_00",
+          "previous_ms": 1,
+          "current_ms": 1,
+          "delta_ms": 0,
+          "previous_memory_bytes": 802816,
+          "current_memory_bytes": 798720,
+          "status": "AC",
+          "ratio": 1.0
+        },
+        {
+          "case": "small_random_2_00",
+          "previous_ms": 1,
+          "current_ms": 0,
+          "delta_ms": -1,
+          "previous_memory_bytes": 659456,
+          "current_memory_bytes": 610304,
+          "status": "AC",
+          "ratio": 0.0
+        },
+        {
+          "case": "small_random_2_01",
+          "previous_ms": 10,
+          "current_ms": 1,
+          "delta_ms": -9,
+          "previous_memory_bytes": 565248,
+          "current_memory_bytes": 544768,
+          "status": "AC",
+          "ratio": 0.1
+        },
+        {
+          "case": "small_random_2_02",
+          "previous_ms": 1,
+          "current_ms": 1,
+          "delta_ms": 0,
+          "previous_memory_bytes": 794624,
+          "current_memory_bytes": 667648,
+          "status": "AC",
+          "ratio": 1.0
+        },
+        {
+          "case": "random_1_00",
+          "previous_ms": 125,
+          "current_ms": 117,
+          "delta_ms": -8,
+          "previous_memory_bytes": 44158976,
+          "current_memory_bytes": 40755200,
+          "status": "AC",
+          "ratio": 0.936
+        },
+        {
+          "case": "random_2_00",
+          "previous_ms": 125,
+          "current_ms": 118,
+          "delta_ms": -7,
+          "previous_memory_bytes": 41287680,
+          "current_memory_bytes": 37875712,
+          "status": "AC",
+          "ratio": 0.944
+        },
+        {
+          "case": "random_2_01",
+          "previous_ms": 100,
+          "current_ms": 95,
+          "delta_ms": -5,
+          "previous_memory_bytes": 40337408,
+          "current_memory_bytes": 39628800,
+          "status": "AC",
+          "ratio": 0.95
+        },
+        {
+          "case": "random_2_02",
+          "previous_ms": 47,
+          "current_ms": 44,
+          "delta_ms": -3,
+          "previous_memory_bytes": 20856832,
+          "current_memory_bytes": 20041728,
+          "status": "AC",
+          "ratio": 0.9361702127659574
+        },
+        {
+          "case": "max_random_00",
+          "previous_ms": 176,
+          "current_ms": 162,
+          "delta_ms": -14,
+          "previous_memory_bytes": 55427072,
+          "current_memory_bytes": 50737152,
+          "status": "AC",
+          "ratio": 0.9204545454545455
+        },
+        {
+          "case": "max_random_2_00",
+          "previous_ms": 164,
+          "current_ms": 157,
+          "delta_ms": -7,
+          "previous_memory_bytes": 52539392,
+          "current_memory_bytes": 48603136,
+          "status": "AC",
+          "ratio": 0.9573170731707317
+        },
+        {
+          "case": "max_random_2_01",
+          "previous_ms": 165,
+          "current_ms": 158,
+          "delta_ms": -7,
+          "previous_memory_bytes": 52658176,
+          "current_memory_bytes": 48611328,
+          "status": "AC",
+          "ratio": 0.9575757575757575
+        },
+        {
+          "case": "max_random_2_02",
+          "previous_ms": 172,
+          "current_ms": 158,
+          "delta_ms": -14,
+          "previous_memory_bytes": 52568064,
+          "current_memory_bytes": 48549888,
+          "status": "AC",
+          "ratio": 0.9186046511627908
+        },
+        {
+          "case": "max_tree_00",
+          "previous_ms": 208,
+          "current_ms": 211,
+          "delta_ms": 3,
+          "previous_memory_bytes": 79056896,
+          "current_memory_bytes": 78901248,
+          "status": "AC",
+          "ratio": 1.0144230769230769
+        },
+        {
+          "case": "max_star_00",
+          "previous_ms": 184,
+          "current_ms": 169,
+          "delta_ms": -15,
+          "previous_memory_bytes": 78090240,
+          "current_memory_bytes": 78090240,
+          "status": "AC",
+          "ratio": 0.9184782608695653
+        },
+        {
+          "case": "max_line_clique_00",
+          "previous_ms": 97,
+          "current_ms": 103,
+          "delta_ms": 6,
+          "previous_memory_bytes": 47857664,
+          "current_memory_bytes": 45228032,
+          "status": "AC",
+          "ratio": 1.0618556701030928
+        },
+        {
+          "case": "large_cycle_00",
+          "previous_ms": 139,
+          "current_ms": 129,
+          "delta_ms": -10,
+          "previous_memory_bytes": 47562752,
+          "current_memory_bytes": 41562112,
+          "status": "AC",
+          "ratio": 0.9280575539568344
+        }
+      ],
+      "scope": "公式APIの個別提出時間。P-Coreの固定条件比較や同一server負荷を保証しない。小規模を含め全ケースを保持し、遅い試行をノイズと断定しない。"
+    }
+  ],
+  "online_compiler_context": {
+    "submission_lang": "cpp",
+    "live_api": {
+      "id": "cpp",
+      "name": "C++23",
+      "version": "GCC 15.2 + AC Library(1.6)"
+    },
+    "official_repository_current_lang_definition": {
+      "id": "cpp",
+      "name": "C++23",
+      "version": "GCC 15.2 + AC Library(1.6)",
+      "source": "main.cpp",
+      "image_name": "library-checker-images-gcc",
+      "compile": [
+        "g++",
+        "-O2",
+        "-std=c++23",
+        "-DEVAL",
+        "-DONLINE_JUDGE",
+        "-march=native",
+        "-o",
+        "main",
+        "main.cpp",
+        "-I",
+        "/opt/ac-library"
+      ],
+      "exec": [
+        "./main"
+      ]
+    },
+    "scope": "言語名/versionはlive公式APIで確認。引数は取得時の公式リポジトリから。個別提出の厳密image digest/compile logはAPIに含まれない。",
+    "observed_flags_include_march_native": true,
+    "submission_image_revision_known": false
+  },
+  "frozen_public_files": {
+    "Verify/current/drivers/low_link_two_edge_main.cpp": "103549bcf94d087b4bda2b17809316ba1a026a6e76ce0d5a335e266a5c80c686",
+    "Verify/current/drivers/low_link_biconnected_main.cpp": "44f36b179e0ee59572eba15b545f9060835835e734d6723d8c587bc255313085",
+    "Verify/current/common/fast_io.hpp": "291bf8dbc56a1d691f6256fe95b4714183c2cf5d9e55e4bef240e31d1eb178c1",
+    "Examples/low_link_example.cpp": "bf13194cb876c9846ed1fd119aa13d1cf331d73ddc4192acd05b9d76593c0990",
+    "Document/low_link.md": "b0eec0e29d439a53a4570c7b76e91bcdf2406b693557ae6b6203781bad7de559"
+  },
+  "before_snapshot": {
+    "file": "frozen.json",
+    "sha256": "a42f30b1be1ae63db8c32a7f2201c5a0c13644eb3c8c174dc69454dc43a09dd9",
+    "files": {
+      "Graph/Low_Link.cpp": "b6136a009ad424b9e15f1d7efd59987be2f8d3f95de9adb51fdb7a137221ed3f",
+      "Verify/current/common/fast_io.hpp": "291bf8dbc56a1d691f6256fe95b4714183c2cf5d9e55e4bef240e31d1eb178c1",
+      "Document/low_link.md": "b0eec0e29d439a53a4570c7b76e91bcdf2406b693557ae6b6203781bad7de559",
+      "Examples/low_link_example.cpp": "bf13194cb876c9846ed1fd119aa13d1cf331d73ddc4192acd05b9d76593c0990",
+      "Verify/current/groups/expansion_20261031.json": "3719cf8c4c953b7c8f911299c8de90665e68c8fc1ff5446a2374f267a26c9447",
+      "Verify/current/judgements.json": "3845c37d0415a82414779730d53f1cdbec0a7e3a55b6e67b2f4367b2bcc05fd1",
+      "Verify/current/manifest.json": "aad9c3411fb0d469c66ea2f6bf4fd4c4efef71d0ac5eabbf57dbcef7937171c1",
+      "Distribution/manifest.json": "e7885ebc012a3bf953886ea70d4725f51e8bb5225dbb756df0ff0cc34fbfae83",
+      "Variants/manifest.json": "e424ea7d89ec51a1e770629938cc56bd01252fa2e81bc3ef21cf3320399accea",
+      "Variants/verify_manifest.json": "512976ab581cbc7c41d548e691da9a963f33f0080f5d4a456de74549059501a5",
+      "Scripts/library_layout.json": "8f809a5a3d1235a508e7144d0600060ac68859a5d663bdb9b7d47d6663b8486b",
+      "Verify/current/drivers/low_link_two_edge_main.cpp": "103549bcf94d087b4bda2b17809316ba1a026a6e76ce0d5a335e266a5c80c686",
+      "Verify/current/submissions/low_link_two_edge.cpp": "a1774ec86e58e48f207d4b445c600cfc4b38afdfc59cf0e523024ef9ed834c19",
+      "Verify/current/drivers/low_link_biconnected_main.cpp": "44f36b179e0ee59572eba15b545f9060835835e734d6723d8c587bc255313085",
+      "Verify/current/submissions/low_link_biconnected.cpp": "e19db2103be42f0a699f12a98fe6fc197fcfdc96d3ab35d13f6f555b3dabed93"
+    }
+  },
+  "API_scope": "公開API・全範囲・多重辺/自己辺・所有権・例外保証・件数上限を維持。main/共通IO/Document/使用例は不変。成分構成と森の対応を正規化して参照照合する。",
+  "proof_files": [
+    "review/candidate_review.md"
+  ],
+  "source_diff": "final.diff",
+  "measurement": {
+    "cpu": "Intel Core i9-14900K CPU12（P-Core、sibling13）。E-Coreを性能評価しない。",
+    "compilers": {
+      "GCC": "15.3.0",
+      "Clang": "21.1.8 --gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15"
+    },
+    "flags_scope": "C++23 -O2。native/defaultは各rowで区別。引数と実行体SHAは各builds JSONに保存。",
+    "CPU_scope": "Library CheckerのAMD実機の速度比とは断定しない。オンライン別提出時間と条件固定のローカル比較を区別。",
+    "lock": "/tmp/sirkit_performance_cpu12.lock",
+    "compilation_during_timing": false,
+    "ASLR": "子だけsetarch x86_64 -R、同じactiveパス。",
+    "protocol": "旧版→候補→旧版。候補を両端中央値で割り、両端差10%以内だけ有効。初回は候補7組/同一対照3組、有効5/2未達時のみ15/9組まで補う。追加phaseを実施した場合は、初期matrixのcontrol中央値が1±3%外・final>1.03・有効数不足の全セルを一度だけ選び、候補7組/対照3組を追加。初期/追加の全rawを保持して統合中央値を使う。候補自身の時間で個別trialを除外しない。探索と9/3追加確認は別記録。",
+    "fixtures": {
+      "cases": 26,
+      "physical_graphs": 13,
+      "regenerated_against_previous_evidence": "Audit/data/performance-low-link-416612-2026-11-12.zip",
+      "prior_evidence_sha256": "fafc81360b46a15db5626f56f6e32449e1f81c6acd3faccd88770c40db8c8261",
+      "metadata_sha256": {
+        "commands.json": "54643f988cdfa803cdc91da5be7429864e71592309c2bd779120c48adc97ad54",
+        "fixtures.json": "67d1c2a575ae908d9e8667b2e21e5f2831c68731009579d3c980d63055fdc69a",
+        "source_audit.json": "22fd1b27ee3b4d8f14b924bb13d64b3d6650bd578829257c245c87b52244c026",
+        "summary.json": "e86b8ee03dd403ef646d2ece445ba162de31052f2d2cf6c8b68c2ad5ba3c6744",
+        "validation.json": "9b6738e7e62d33ba66ae6ef3b770e07c771c9a3502a39281351c95961ddf7d29"
+      },
+      "scope": "一時領域の消去後に公式pin/SHAと自作生成器から再生成。全入力SHA・独立参照canonical SHAは前証跡と一致。新しいpath/command/timestampの5JSONはbyte一致とは扱わず、旧/tmpパス実体を辿らない。",
+      "regeneration_validation": {
+        "all_passed": true,
+        "fixture_rows": 26,
+        "unique_inputs": 13,
+        "canonical_outputs": 26,
+        "checked_at_utc": "2026-11-13T05:17:33.618847+00:00",
+        "input_bytes_unique": 35034570,
+        "prior_archive": "Audit/data/performance-low-link-416612-2026-11-12.zip",
+        "prior_archive_sha256": "fafc81360b46a15db5626f56f6e32449e1f81c6acd3faccd88770c40db8c8261",
+        "matched_prior_inputs": 26,
+        "matched_prior_outputs": 26,
+        "closed_form_cross_checks": 16,
+        "brute_force_cross_checks": 6,
+        "oracle_source_sha256": "74e483384bd6592c0babf774ac640ab757f0dbf4dd8ce30bd613840c1d806cd9",
+        "canonical_source_sha256": "80ae285070d451c089bc3247aad0916a84e7b4f6d5517f2b43babb3501eb36fc",
+        "rows": [
+          {
+            "id": "two_edge_connected_components__official_two_edge_connected_components_max_random_00",
+            "input_sha256": "5a5421e9b556388b631e0b1b1e4336c1e4e08adb7d4eed7122fb850b4de26520",
+            "canonical_output_sha256": "cca89f1c77a2c7f568400f55a3f3003930a56b5b1a2082342aa451afc963948c",
+            "input_matches_prior": true,
+            "output_matches_prior": true,
+            "passed": true
+          },
+          {
+            "id": "biconnected_components__official_two_edge_connected_components_max_random_00",
+            "input_sha256": "5a5421e9b556388b631e0b1b1e4336c1e4e08adb7d4eed7122fb850b4de26520",
+            "canonical_output_sha256": "dac923cb92c0625ee4f724af7d11b8f4905bc0df4a4d2b365d979af56c5e7533",
+            "input_matches_prior": true,
+            "output_matches_prior": true,
+            "passed": true
+          },
+          {
+            "id": "two_edge_connected_components__official_biconnected_components_max_random_00",
+            "input_sha256": "41ed5e962853330a6f58483f17bc618a56204edef47b70ee94fe28b30cf4edc2",
+            "canonical_output_sha256": "d620304c4758b88edcc8c7b638b6c8a75da2ee5c3a2f481c8954f720474cb8c2",
+            "input_matches_prior": true,
+            "output_matches_prior": true,
+            "passed": true
+          },
+          {
+            "id": "biconnected_components__official_biconnected_components_max_random_00",
+            "input_sha256": "41ed5e962853330a6f58483f17bc618a56204edef47b70ee94fe28b30cf4edc2",
+            "canonical_output_sha256": "3ab9633c152bbca8b1a32bd68b830975c6b10df7f2ae5916c33d081947b202b9",
+            "input_matches_prior": true,
+            "output_matches_prior": true,
+            "passed": true
+          },
+          {
+            "id": "two_edge_connected_components__official_biconnected_components_max_tree_00",
+            "input_sha256": "28bd96848c7877cb2f74a26dd71fcbd71167fcbf536e4243cffaab7f405c677c",
+            "canonical_output_sha256": "334cab2c7e2b588b269e2a4689c33ea1bea35595c7b966a5f3dcbd0e982a8d84",
+            "input_matches_prior": true,
+            "output_matches_prior": true,
+            "passed": true
+          },
+          {
+            "id": "biconnected_components__official_biconnected_components_max_tree_00",
+            "input_sha256": "28bd96848c7877cb2f74a26dd71fcbd71167fcbf536e4243cffaab7f405c677c",
+            "canonical_output_sha256": "89a7c51a3ca055250c84e87a559fe95280ff949f39d7ba18e3abf2df1544c992",
+            "input_matches_prior": true,
+            "output_matches_prior": true,
+            "passed": true
+          },
+          {
+            "id": "two_edge_connected_components__custom_empty",
+            "input_sha256": "0ccdb5a77ba5bf7687f2565a8ed97dfb9c1af45503c496fb646312239fab5101",
+            "canonical_output_sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+            "input_matches_prior": true,
+            "output_matches_prior": true,
+            "passed": true
+          },
+          {
+            "id": "biconnected_components__custom_empty",
+            "input_sha256": "0ccdb5a77ba5bf7687f2565a8ed97dfb9c1af45503c496fb646312239fab5101",
+            "canonical_output_sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+            "input_matches_prior": true,
+            "output_matches_prior": true,
+            "passed": true
+          },
+          {
+            "id": "two_edge_connected_components__custom_singleton",
+            "input_sha256": "f4a8ae8e74ddfb896a256de4e3099911dcaa6a9302591713898069b0bcd6e3d7",
+            "canonical_output_sha256": "d17b405c22d3ea8fea3ac06a001c501c1d7e5a328083f5d4a5bcce4fd97e30da",
+            "input_matches_prior": true,
+            "output_matches_prior": true,
+            "passed": true
+          },
+          {
+            "id": "biconnected_components__custom_singleton",
+            "input_sha256": "f4a8ae8e74ddfb896a256de4e3099911dcaa6a9302591713898069b0bcd6e3d7",
+            "canonical_output_sha256": "d17b405c22d3ea8fea3ac06a001c501c1d7e5a328083f5d4a5bcce4fd97e30da",
+            "input_matches_prior": true,
+            "output_matches_prior": true,
+            "passed": true
+          },
+          {
+            "id": "two_edge_connected_components__custom_path300k",
+            "input_sha256": "220365078beccb7c0edda71676d7c1ead0089f70c091569f8f0bc5db2d6687e5",
+            "canonical_output_sha256": "acabfb836b911ffdb6f5ebed1e2b0b3c6d03e1fe4dd73a598507de2c2eef65df",
+            "input_matches_prior": true,
+            "output_matches_prior": true,
+            "passed": true
+          },
+          {
+            "id": "biconnected_components__custom_path300k",
+            "input_sha256": "220365078beccb7c0edda71676d7c1ead0089f70c091569f8f0bc5db2d6687e5",
+            "canonical_output_sha256": "a151321207173fa33704514823c8ef585e19db013c9f6a2136ab280e893a17fd",
+            "input_matches_prior": true,
+            "output_matches_prior": true,
+            "passed": true
+          },
+          {
+            "id": "two_edge_connected_components__custom_star100k",
+            "input_sha256": "00a8567e25d33b8588884d0067fa17453540ba34f8c417ef87388d6822586e7c",
+            "canonical_output_sha256": "a55af6fdc8bf2e2b4e73f4a239eb255a33ad7a5676796eda11fe409960509a2f",
+            "input_matches_prior": true,
+            "output_matches_prior": true,
+            "passed": true
+          },
+          {
+            "id": "biconnected_components__custom_star100k",
+            "input_sha256": "00a8567e25d33b8588884d0067fa17453540ba34f8c417ef87388d6822586e7c",
+            "canonical_output_sha256": "358d1157358cf0d9d82694405d1bb1e4cf444ce5d42580d267ea539f43d9756a",
+            "input_matches_prior": true,
+            "output_matches_prior": true,
+            "passed": true
+          },
+          {
+            "id": "two_edge_connected_components__custom_cycle100k",
+            "input_sha256": "f3f1fdcf1f1b5618b5d015103f76cd4d2db0904cefb4423a02592df013849f84",
+            "canonical_output_sha256": "34463e0a3c7d689edbe8c18765c30aaa82c98bb9d4c55e27b012dfa5a8fa1c91",
+            "input_matches_prior": true,
+            "output_matches_prior": true,
+            "passed": true
+          },
+          {
+            "id": "biconnected_components__custom_cycle100k",
+            "input_sha256": "f3f1fdcf1f1b5618b5d015103f76cd4d2db0904cefb4423a02592df013849f84",
+            "canonical_output_sha256": "34463e0a3c7d689edbe8c18765c30aaa82c98bb9d4c55e27b012dfa5a8fa1c91",
+            "input_matches_prior": true,
+            "output_matches_prior": true,
+            "passed": true
+          },
+          {
+            "id": "two_edge_connected_components__custom_disjoint_cliques100k",
+            "input_sha256": "e4484d9cd6797422f8380ea05cbaf5283107f3d35f904eaba6957a39c9ed9288",
+            "canonical_output_sha256": "1d211c9ef2549461f84c74ac59b658e8871152cf78864148613c337cf6e30461",
+            "input_matches_prior": true,
+            "output_matches_prior": true,
+            "passed": true
+          },
+          {
+            "id": "biconnected_components__custom_disjoint_cliques100k",
+            "input_sha256": "e4484d9cd6797422f8380ea05cbaf5283107f3d35f904eaba6957a39c9ed9288",
+            "canonical_output_sha256": "1d211c9ef2549461f84c74ac59b658e8871152cf78864148613c337cf6e30461",
+            "input_matches_prior": true,
+            "output_matches_prior": true,
+            "passed": true
+          },
+          {
+            "id": "two_edge_connected_components__custom_parallel100k",
+            "input_sha256": "e983d3438b7270fe4902f7e09388df5e9e083d9123f451ce74c8d69bd84c54d9",
+            "canonical_output_sha256": "e3843795f7d3b161b7b5bbdc581bc8d136265734d0e57fabc8081b722d9fbf42",
+            "input_matches_prior": true,
+            "output_matches_prior": true,
+            "passed": true
+          },
+          {
+            "id": "biconnected_components__custom_parallel100k",
+            "input_sha256": "e983d3438b7270fe4902f7e09388df5e9e083d9123f451ce74c8d69bd84c54d9",
+            "canonical_output_sha256": "e3843795f7d3b161b7b5bbdc581bc8d136265734d0e57fabc8081b722d9fbf42",
+            "input_matches_prior": true,
+            "output_matches_prior": true,
+            "passed": true
+          },
+          {
+            "id": "two_edge_connected_components__custom_selfloops8",
+            "input_sha256": "b37b650af0e14fbbce10a4d889f834af0cfc7286cba11c432f4de7284b6b6c84",
+            "canonical_output_sha256": "b0dcefd01846e8ce7113cbd38d182b2bfc8183873e4116ff0b4f0c12f28b0955",
+            "input_matches_prior": true,
+            "output_matches_prior": true,
+            "passed": true
+          },
+          {
+            "id": "biconnected_components__custom_selfloops8",
+            "input_sha256": "b37b650af0e14fbbce10a4d889f834af0cfc7286cba11c432f4de7284b6b6c84",
+            "canonical_output_sha256": "0520ec876c1c0e9e1e686ad6e25817be5a7e28987a44ee267f9ee0268c4bdcb2",
+            "input_matches_prior": true,
+            "output_matches_prior": true,
+            "passed": true
+          },
+          {
+            "id": "two_edge_connected_components__custom_random64",
+            "input_sha256": "cc9338bf4a1f30d7a87197fd8c0b4b34d057f58a2748d816f59102fecd57c65a",
+            "canonical_output_sha256": "733286a596702fa5840313dec2fe47bf48e9885843bbade720cb4d717598ca1b",
+            "input_matches_prior": true,
+            "output_matches_prior": true,
+            "passed": true
+          },
+          {
+            "id": "biconnected_components__custom_random64",
+            "input_sha256": "cc9338bf4a1f30d7a87197fd8c0b4b34d057f58a2748d816f59102fecd57c65a",
+            "canonical_output_sha256": "733286a596702fa5840313dec2fe47bf48e9885843bbade720cb4d717598ca1b",
+            "input_matches_prior": true,
+            "output_matches_prior": true,
+            "passed": true
+          },
+          {
+            "id": "two_edge_connected_components__custom_random100k_500k",
+            "input_sha256": "85727eb77c97fb413207231ce3bb1ace52773140650a78fddd4dae7e65c245ab",
+            "canonical_output_sha256": "6e975c7ce70c5f4153c334f206fdaab9d492a2d08cb6519f546799aff84160db",
+            "input_matches_prior": true,
+            "output_matches_prior": true,
+            "passed": true
+          },
+          {
+            "id": "biconnected_components__custom_random100k_500k",
+            "input_sha256": "85727eb77c97fb413207231ce3bb1ace52773140650a78fddd4dae7e65c245ab",
+            "canonical_output_sha256": "02e08b99adc933061a8265cfea22242177a6bae4d8a4e050ec414fa23e8f9cc3",
+            "input_matches_prior": true,
+            "output_matches_prior": true,
+            "passed": true
+          }
+        ],
+        "no_candidate_used_as_reference": true,
+        "no_performance_measurement": true
+      },
+      "independent_oracle_scope": "Every full canonical output comes from an original reference implementation. Two-edge reference uses cycle-cover/LCA, not low-link. Bicon reference is separately written recursive Tarjan with same mathematical low-link criterion; structural and tiny brute-force checks provide additional independent algorithms. No baseline implementation is treated as truth.",
+      "result_scope": "群内・群集合をソートしたcanonical SHAで照合。要素の欠落・重複を隠さず、未規定の成分番号と出力順の差を許容。"
+    },
+    "exploratory": [
+      {
+        "stage": "screen",
+        "labels": {
+          "pending_narrow": {
+            "file": "pending_narrow.hpp",
+            "sha256": "1e880b058dff7d5e0865385104cf8cbac299a7253ba9dbc75fafa18e97e33348"
+          },
+          "pending_root_cut": {
+            "file": "pending_root_cut.hpp",
+            "sha256": "1d57e545cdee2eabc71fafd65f90bc1db89813d05c74e5fb3059906ac1aed70e"
+          },
+          "root_cut": {
+            "file": "root_cut.hpp",
+            "sha256": "dd466f455a4589f874aeb7b442b8b75b1ecceebe88f1792ed83d439f7c1a2e2b"
+          }
+        },
+        "reference_sources": {
+          "base": {
+            "file": "base.hpp",
+            "sha256": "b6136a009ad424b9e15f1d7efd59987be2f8d3f95de9adb51fdb7a137221ed3f",
+            "label_scope": "各rowの明示reference_label。未記録の旧探索だけscriptのbase呼び出しに対応。"
+          }
+        },
+        "reference_executables": [
+          {
+            "file": "gcc_native_base_low_link_two_edge",
+            "sha256": "d151db266a4e90a5821e337b6f4dbfba49758dbdbbac43471cef6c6ea828c281",
+            "compiler": "gcc",
+            "flag": "native",
+            "setting": "skip",
+            "reference_label": "base"
+          },
+          {
+            "file": "gcc_native_base_low_link_biconnected",
+            "sha256": "fd1439016a0022e84412ad7395a033aef912a95396ec0df6de75138e54c3de13",
+            "compiler": "gcc",
+            "flag": "native",
+            "setting": "skip",
+            "reference_label": "base"
+          },
+          {
+            "file": "clang_native_base_low_link_two_edge",
+            "sha256": "06d1e9565e6555bfb3524d91e4ac1fcd680aae548bc68b977472d642f5dd95f5",
+            "compiler": "clang",
+            "flag": "native",
+            "setting": "skip",
+            "reference_label": "base"
+          },
+          {
+            "file": "clang_native_base_low_link_biconnected",
+            "sha256": "2a9db8d30c6c7d60ae47f88dc878d5f62114a2bd949e83d8ac420305795aabca",
+            "compiler": "clang",
+            "flag": "native",
+            "setting": "skip",
+            "reference_label": "base"
+          }
+        ],
+        "cells": 24,
+        "triplets": 288,
+        "case_by_profile": [
+          {
+            "flag": null,
+            "setting": null,
+            "kind": null,
+            "reference_label": "base",
+            "case": "two_edge_connected_components__official_two_edge_connected_components_max_random_00",
+            "labels": [
+              "control",
+              "pending_narrow",
+              "pending_root_cut",
+              "root_cut"
+            ]
+          },
+          {
+            "flag": null,
+            "setting": null,
+            "kind": null,
+            "reference_label": "base",
+            "case": "biconnected_components__official_two_edge_connected_components_max_random_00",
+            "labels": [
+              "control",
+              "pending_narrow",
+              "pending_root_cut",
+              "root_cut"
+            ]
+          },
+          {
+            "flag": null,
+            "setting": null,
+            "kind": null,
+            "reference_label": "base",
+            "case": "two_edge_connected_components__official_biconnected_components_max_random_00",
+            "labels": [
+              "control",
+              "pending_narrow",
+              "pending_root_cut",
+              "root_cut"
+            ]
+          },
+          {
+            "flag": null,
+            "setting": null,
+            "kind": null,
+            "reference_label": "base",
+            "case": "biconnected_components__official_biconnected_components_max_random_00",
+            "labels": [
+              "control",
+              "pending_narrow",
+              "pending_root_cut",
+              "root_cut"
+            ]
+          },
+          {
+            "flag": null,
+            "setting": null,
+            "kind": null,
+            "reference_label": "base",
+            "case": "two_edge_connected_components__official_biconnected_components_max_tree_00",
+            "labels": [
+              "control",
+              "pending_narrow",
+              "pending_root_cut",
+              "root_cut"
+            ]
+          },
+          {
+            "flag": null,
+            "setting": null,
+            "kind": null,
+            "reference_label": "base",
+            "case": "biconnected_components__official_biconnected_components_max_tree_00",
+            "labels": [
+              "control",
+              "pending_narrow",
+              "pending_root_cut",
+              "root_cut"
+            ]
+          },
+          {
+            "flag": null,
+            "setting": null,
+            "kind": null,
+            "reference_label": "base",
+            "case": "two_edge_connected_components__custom_star100k",
+            "labels": [
+              "control",
+              "pending_narrow",
+              "pending_root_cut",
+              "root_cut"
+            ]
+          },
+          {
+            "flag": null,
+            "setting": null,
+            "kind": null,
+            "reference_label": "base",
+            "case": "biconnected_components__custom_star100k",
+            "labels": [
+              "control",
+              "pending_narrow",
+              "pending_root_cut",
+              "root_cut"
+            ]
+          },
+          {
+            "flag": null,
+            "setting": null,
+            "kind": null,
+            "reference_label": "base",
+            "case": "two_edge_connected_components__custom_cycle100k",
+            "labels": [
+              "control",
+              "pending_narrow",
+              "pending_root_cut",
+              "root_cut"
+            ]
+          },
+          {
+            "flag": null,
+            "setting": null,
+            "kind": null,
+            "reference_label": "base",
+            "case": "biconnected_components__custom_cycle100k",
+            "labels": [
+              "control",
+              "pending_narrow",
+              "pending_root_cut",
+              "root_cut"
+            ]
+          },
+          {
+            "flag": null,
+            "setting": null,
+            "kind": null,
+            "reference_label": "base",
+            "case": "two_edge_connected_components__custom_disjoint_cliques100k",
+            "labels": [
+              "control",
+              "pending_narrow",
+              "pending_root_cut",
+              "root_cut"
+            ]
+          },
+          {
+            "flag": null,
+            "setting": null,
+            "kind": null,
+            "reference_label": "base",
+            "case": "biconnected_components__custom_disjoint_cliques100k",
+            "labels": [
+              "control",
+              "pending_narrow",
+              "pending_root_cut",
+              "root_cut"
+            ]
+          }
+        ],
+        "summary": "screen_summary.json",
+        "summary_sha256": "62c579628a31fcab56e742209f026669cb7ae9324859d78e17e2f2674d855620",
+        "raw": "screen_raw.json",
+        "raw_sha256": "0acbf560f4e70dfd4a69b671f5fd4ed9a2b6727074e63567ab1ec8048bc72d0b",
+        "scope": "今回存在する候補探索のみ記録。両コンパイラの同条件矩形と各raw/中央値を検算し、最終測定と区別する。"
+      },
+      {
+        "stage": "confirm",
+        "category": "additional_confirmation",
+        "labels": {
+          "pending_narrow": {
+            "file": "pending_narrow.hpp",
+            "sha256": "1e880b058dff7d5e0865385104cf8cbac299a7253ba9dbc75fafa18e97e33348"
+          },
+          "root_cut": {
+            "file": "root_cut.hpp",
+            "sha256": "dd466f455a4589f874aeb7b442b8b75b1ecceebe88f1792ed83d439f7c1a2e2b"
+          },
+          "pending_root_cut": {
+            "file": "pending_root_cut.hpp",
+            "sha256": "1d57e545cdee2eabc71fafd65f90bc1db89813d05c74e5fb3059906ac1aed70e"
+          }
+        },
+        "script": "confirm.py",
+        "script_sha256": "8b4e87d55740a8788c6898cf29df6cbc0b3be9e3a3c3af6377a857d8a8c8d5bd",
+        "cases": 6,
+        "cells": 12,
+        "profiles": [
+          {
+            "flag": null,
+            "setting": null,
+            "kind": null
+          }
+        ],
+        "triplets": 360,
+        "declared_attempts_per_cell": {
+          "pending_narrow": 9,
+          "root_cut": 9,
+          "pending_root_cut": 9,
+          "control": 3
+        },
+        "qualified_cells": 12,
+        "insufficient_cells": [],
+        "cell_results": [
+          {
+            "compiler": "gcc",
+            "case": "two_edge_connected_components__official_biconnected_components_max_random_00",
+            "ratios": {
+              "pending_narrow": 1.0056365814133728,
+              "root_cut": 1.001259667419652,
+              "pending_root_cut": 1.0083835933848913,
+              "control": 1.0008939796060903
+            },
+            "valid_counts": {
+              "pending_narrow": 7,
+              "root_cut": 9,
+              "pending_root_cut": 8,
+              "control": 3
+            },
+            "attempts": {
+              "pending_narrow": 9,
+              "root_cut": 9,
+              "pending_root_cut": 9,
+              "control": 3
+            },
+            "sufficient": true,
+            "qualification": "候補ごとに有効5組以上、同一対照2組以上。未達も除かず表示。"
+          },
+          {
+            "compiler": "gcc",
+            "case": "biconnected_components__official_biconnected_components_max_random_00",
+            "ratios": {
+              "pending_narrow": 0.9839234478702983,
+              "root_cut": 1.0045671699838652,
+              "pending_root_cut": 0.9877756052585562,
+              "control": 0.9956195669808506
+            },
+            "valid_counts": {
+              "pending_narrow": 8,
+              "root_cut": 9,
+              "pending_root_cut": 9,
+              "control": 3
+            },
+            "attempts": {
+              "pending_narrow": 9,
+              "root_cut": 9,
+              "pending_root_cut": 9,
+              "control": 3
+            },
+            "sufficient": true,
+            "qualification": "候補ごとに有効5組以上、同一対照2組以上。未達も除かず表示。"
+          },
+          {
+            "compiler": "gcc",
+            "case": "two_edge_connected_components__official_biconnected_components_max_tree_00",
+            "ratios": {
+              "pending_narrow": 0.9999068086425378,
+              "root_cut": 1.0088059544009025,
+              "pending_root_cut": 0.9841288640511725,
+              "control": 1.001750370270634
+            },
+            "valid_counts": {
+              "pending_narrow": 8,
+              "root_cut": 6,
+              "pending_root_cut": 8,
+              "control": 3
+            },
+            "attempts": {
+              "pending_narrow": 9,
+              "root_cut": 9,
+              "pending_root_cut": 9,
+              "control": 3
+            },
+            "sufficient": true,
+            "qualification": "候補ごとに有効5組以上、同一対照2組以上。未達も除かず表示。"
+          },
+          {
+            "compiler": "gcc",
+            "case": "biconnected_components__official_biconnected_components_max_tree_00",
+            "ratios": {
+              "pending_narrow": 0.9937519511351292,
+              "root_cut": 0.999455336893786,
+              "pending_root_cut": 0.982591617204235,
+              "control": 0.9799293351333349
+            },
+            "valid_counts": {
+              "pending_narrow": 8,
+              "root_cut": 8,
+              "pending_root_cut": 8,
+              "control": 2
+            },
+            "attempts": {
+              "pending_narrow": 9,
+              "root_cut": 9,
+              "pending_root_cut": 9,
+              "control": 3
+            },
+            "sufficient": true,
+            "qualification": "候補ごとに有効5組以上、同一対照2組以上。未達も除かず表示。"
+          },
+          {
+            "compiler": "gcc",
+            "case": "two_edge_connected_components__custom_disjoint_cliques100k",
+            "ratios": {
+              "pending_narrow": 0.9841966637401229,
+              "root_cut": 0.9974941149669678,
+              "pending_root_cut": 0.9836973488626293,
+              "control": 1.0082202875075927
+            },
+            "valid_counts": {
+              "pending_narrow": 9,
+              "root_cut": 9,
+              "pending_root_cut": 8,
+              "control": 3
+            },
+            "attempts": {
+              "pending_narrow": 9,
+              "root_cut": 9,
+              "pending_root_cut": 9,
+              "control": 3
+            },
+            "sufficient": true,
+            "qualification": "候補ごとに有効5組以上、同一対照2組以上。未達も除かず表示。"
+          },
+          {
+            "compiler": "gcc",
+            "case": "biconnected_components__custom_disjoint_cliques100k",
+            "ratios": {
+              "pending_narrow": 1.0319044959508517,
+              "root_cut": 0.9998931890198313,
+              "pending_root_cut": 1.0316550884480413,
+              "control": 0.9962210338680927
+            },
+            "valid_counts": {
+              "pending_narrow": 9,
+              "root_cut": 9,
+              "pending_root_cut": 9,
+              "control": 3
+            },
+            "attempts": {
+              "pending_narrow": 9,
+              "root_cut": 9,
+              "pending_root_cut": 9,
+              "control": 3
+            },
+            "sufficient": true,
+            "qualification": "候補ごとに有効5組以上、同一対照2組以上。未達も除かず表示。"
+          },
+          {
+            "compiler": "clang",
+            "case": "two_edge_connected_components__official_biconnected_components_max_random_00",
+            "ratios": {
+              "pending_narrow": 0.9963180220918675,
+              "root_cut": 1.005564460247356,
+              "pending_root_cut": 1.0001399129741302,
+              "control": 0.9946535391529845
+            },
+            "valid_counts": {
+              "pending_narrow": 9,
+              "root_cut": 9,
+              "pending_root_cut": 9,
+              "control": 2
+            },
+            "attempts": {
+              "pending_narrow": 9,
+              "root_cut": 9,
+              "pending_root_cut": 9,
+              "control": 3
+            },
+            "sufficient": true,
+            "qualification": "候補ごとに有効5組以上、同一対照2組以上。未達も除かず表示。"
+          },
+          {
+            "compiler": "clang",
+            "case": "biconnected_components__official_biconnected_components_max_random_00",
+            "ratios": {
+              "pending_narrow": 0.984665206662669,
+              "root_cut": 1.0073130821534786,
+              "pending_root_cut": 0.9855942988395665,
+              "control": 0.9936727478886874
+            },
+            "valid_counts": {
+              "pending_narrow": 8,
+              "root_cut": 8,
+              "pending_root_cut": 8,
+              "control": 3
+            },
+            "attempts": {
+              "pending_narrow": 9,
+              "root_cut": 9,
+              "pending_root_cut": 9,
+              "control": 3
+            },
+            "sufficient": true,
+            "qualification": "候補ごとに有効5組以上、同一対照2組以上。未達も除かず表示。"
+          },
+          {
+            "compiler": "clang",
+            "case": "two_edge_connected_components__official_biconnected_components_max_tree_00",
+            "ratios": {
+              "pending_narrow": 1.0031509808363777,
+              "root_cut": 0.9985053277723043,
+              "pending_root_cut": 1.0018105374796409,
+              "control": 0.995611094178604
+            },
+            "valid_counts": {
+              "pending_narrow": 8,
+              "root_cut": 8,
+              "pending_root_cut": 7,
+              "control": 3
+            },
+            "attempts": {
+              "pending_narrow": 9,
+              "root_cut": 9,
+              "pending_root_cut": 9,
+              "control": 3
+            },
+            "sufficient": true,
+            "qualification": "候補ごとに有効5組以上、同一対照2組以上。未達も除かず表示。"
+          },
+          {
+            "compiler": "clang",
+            "case": "biconnected_components__official_biconnected_components_max_tree_00",
+            "ratios": {
+              "pending_narrow": 0.9921444402082102,
+              "root_cut": 1.0101486029738176,
+              "pending_root_cut": 1.0013211784912142,
+              "control": 1.0436865239026205
+            },
+            "valid_counts": {
+              "pending_narrow": 8,
+              "root_cut": 7,
+              "pending_root_cut": 9,
+              "control": 3
+            },
+            "attempts": {
+              "pending_narrow": 9,
+              "root_cut": 9,
+              "pending_root_cut": 9,
+              "control": 3
+            },
+            "sufficient": true,
+            "qualification": "候補ごとに有効5組以上、同一対照2組以上。未達も除かず表示。"
+          },
+          {
+            "compiler": "clang",
+            "case": "two_edge_connected_components__custom_disjoint_cliques100k",
+            "ratios": {
+              "pending_narrow": 1.001764344891071,
+              "root_cut": 1.0039603183939145,
+              "pending_root_cut": 1.0054278881145176,
+              "control": 0.9927226704635342
+            },
+            "valid_counts": {
+              "pending_narrow": 9,
+              "root_cut": 9,
+              "pending_root_cut": 8,
+              "control": 3
+            },
+            "attempts": {
+              "pending_narrow": 9,
+              "root_cut": 9,
+              "pending_root_cut": 9,
+              "control": 3
+            },
+            "sufficient": true,
+            "qualification": "候補ごとに有効5組以上、同一対照2組以上。未達も除かず表示。"
+          },
+          {
+            "compiler": "clang",
+            "case": "biconnected_components__custom_disjoint_cliques100k",
+            "ratios": {
+              "pending_narrow": 1.011567753987642,
+              "root_cut": 1.0036727879799665,
+              "pending_root_cut": 1.0144981690456618,
+              "control": 0.9990428586621292
+            },
+            "valid_counts": {
+              "pending_narrow": 9,
+              "root_cut": 9,
+              "pending_root_cut": 9,
+              "control": 3
+            },
+            "attempts": {
+              "pending_narrow": 9,
+              "root_cut": 9,
+              "pending_root_cut": 9,
+              "control": 3
+            },
+            "sufficient": true,
+            "qualification": "候補ごとに有効5組以上、同一対照2組以上。未達も除かず表示。"
+          }
+        ],
+        "summary": "confirm_summary.json",
+        "summary_sha256": "61912e65b1c19aa22e54673a31d9f9cbefa766fa9f7789dd00b0126b3f8c7072",
+        "raw": "confirm_raw.json",
+        "raw_sha256": "87e8b8a3add6ac5096a70bb70886c276b532d40349af21fa8c31e35bf14f9282",
+        "flag_scope": "flag/setting/kindはrawとsummaryの明示値で区別。flag未記録の場合はconfirm.pyとbench.pyの既定呼び出し条件を参照し、defaultの結果へ転記しない。",
+        "scope": "9候補/3同一対照の追加確認。rawの計算・出力の正しさ・全宣言セル完了を検算し、有効組不足セルを明示する。十分な組数は採用を意味せず、結果の採否はfinal_selectionで別に決める。"
+      }
+    ],
+    "candidate_validation_records": [
+      {
+        "file": "candidate_validation.json",
+        "sha256": "78bbc0ff44248e3158d3446e588719ea4ae18bf76f290be1e7c95145cfdae0f9",
+        "explicit_result_rows": 6,
+        "passed_rows": 6,
+        "failed_rows": 0,
+        "rows": [
+          {
+            "compiler": "gcc",
+            "setting": "checked",
+            "label": "pending_narrow",
+            "passed": true,
+            "checks": 178177,
+            "header": "/tmp/sirkit_lowlink_416719/pending_narrow.hpp",
+            "recorded_header_sha256": "1e880b058dff7d5e0865385104cf8cbac299a7253ba9dbc75fafa18e97e33348",
+            "saved_header_sha256": "1e880b058dff7d5e0865385104cf8cbac299a7253ba9dbc75fafa18e97e33348",
+            "source_identity_verified": true
+          },
+          {
+            "compiler": "gcc",
+            "setting": "checked",
+            "label": "root_cut",
+            "passed": true,
+            "checks": 178177,
+            "header": "/tmp/sirkit_lowlink_416719/root_cut.hpp",
+            "recorded_header_sha256": "dd466f455a4589f874aeb7b442b8b75b1ecceebe88f1792ed83d439f7c1a2e2b",
+            "saved_header_sha256": "dd466f455a4589f874aeb7b442b8b75b1ecceebe88f1792ed83d439f7c1a2e2b",
+            "source_identity_verified": true
+          },
+          {
+            "compiler": "gcc",
+            "setting": "checked",
+            "label": "pending_root_cut",
+            "passed": true,
+            "checks": 178177,
+            "header": "/tmp/sirkit_lowlink_416719/pending_root_cut.hpp",
+            "recorded_header_sha256": "1d57e545cdee2eabc71fafd65f90bc1db89813d05c74e5fb3059906ac1aed70e",
+            "saved_header_sha256": "1d57e545cdee2eabc71fafd65f90bc1db89813d05c74e5fb3059906ac1aed70e",
+            "source_identity_verified": true
+          },
+          {
+            "compiler": "clang",
+            "setting": "checked",
+            "label": "pending_narrow",
+            "passed": true,
+            "checks": 178177,
+            "header": "/tmp/sirkit_lowlink_416719/pending_narrow.hpp",
+            "recorded_header_sha256": "1e880b058dff7d5e0865385104cf8cbac299a7253ba9dbc75fafa18e97e33348",
+            "saved_header_sha256": "1e880b058dff7d5e0865385104cf8cbac299a7253ba9dbc75fafa18e97e33348",
+            "source_identity_verified": true
+          },
+          {
+            "compiler": "clang",
+            "setting": "checked",
+            "label": "root_cut",
+            "passed": true,
+            "checks": 178177,
+            "header": "/tmp/sirkit_lowlink_416719/root_cut.hpp",
+            "recorded_header_sha256": "dd466f455a4589f874aeb7b442b8b75b1ecceebe88f1792ed83d439f7c1a2e2b",
+            "saved_header_sha256": "dd466f455a4589f874aeb7b442b8b75b1ecceebe88f1792ed83d439f7c1a2e2b",
+            "source_identity_verified": true
+          },
+          {
+            "compiler": "clang",
+            "setting": "checked",
+            "label": "pending_root_cut",
+            "passed": true,
+            "checks": 178177,
+            "header": "/tmp/sirkit_lowlink_416719/pending_root_cut.hpp",
+            "recorded_header_sha256": "1d57e545cdee2eabc71fafd65f90bc1db89813d05c74e5fb3059906ac1aed70e",
+            "saved_header_sha256": "1d57e545cdee2eabc71fafd65f90bc1db89813d05c74e5fb3059906ac1aed70e",
+            "source_identity_verified": true
+          }
+        ],
+        "scope": "今回の候補の補足検証記録。採用本体の最終32検証や現行維持時の過去同一SHA検証とは区別。元記録に本体SHAがない行は一致を保証した検証として扱わない。"
+      }
+    ],
+    "additional_records": {
+      "confirm_summary.json": "61912e65b1c19aa22e54673a31d9f9cbefa766fa9f7789dd00b0126b3f8c7072",
+      "confirm_raw.json": "87e8b8a3add6ac5096a70bb70886c276b532d40349af21fa8c31e35bf14f9282",
+      "candidate_validation.json": "78bbc0ff44248e3158d3446e588719ea4ae18bf76f290be1e7c95145cfdae0f9"
+    },
+    "repair": null,
+    "scope": "今回の候補は採用せず現行本体を維持。今回の候補探索・補足参照検証・追加確認と、過去の同一SHA検証を区別する。新本体の最終検証を行ったとは扱わない。"
+  },
+  "validation": {
+    "mode": "previous_same_source",
+    "jobs": 32,
+    "all_passed": true,
+    "source_sha256": "b6136a009ad424b9e15f1d7efd59987be2f8d3f95de9adb51fdb7a137221ed3f",
+    "prior_audit": "Audit/performance-low-link-416612-2026-11-12.json",
+    "prior_audit_sha256": "af0c907eecd713ac07f8f20a4bf9f76739471a6fad2dcd51a1866ef4550190e8",
+    "prior_evidence": "Audit/data/performance-low-link-416612-2026-11-12.zip",
+    "prior_evidence_sha256": "fafc81360b46a15db5626f56f6e32449e1f81c6acd3faccd88770c40db8c8261",
+    "details_inside_previous_archive": "final_validation.json",
+    "validation_sha256": "716fa99b5c70b7b93dbe8b6a632af18045bb1ac501844b127266d07fa25b487c",
+    "completed_at_utc": "2026-11-12T11:03:38.411316+00:00",
+    "scope": "同一b6136a本体の以前の32検証を引用。今回の再実行や却下候補の検証結果とは扱わない。"
+  },
+  "license": "既存CC0実装への独自変更。参考ライブラリの実装コードを新規に取り込まない。",
+  "evidence_archive": "Audit/data/performance-low-link-416719-2026-11-13.zip",
+  "evidence_scope": "今回の独自候補・試験・レビュー・測定raw・自分の提出API原本・入力provenanceを保存。外部実装・コンパイラ原典・入力/出力本体・実行体・symlink参照先を除外。",
+  "outcome": {
+    "online": {
+      "low_link_two_edge": {
+        "submission": 416719,
+        "status": "AC",
+        "time_ms": 40
+      },
+      "low_link_biconnected": {
+        "submission": 416718,
+        "status": "AC",
+        "time_ms": 211
+      }
+    },
+    "candidate_reference_builds": 6,
+    "candidate_reference_checks_each": 178177,
+    "exploratory_cells": 24,
+    "confirmatory_cells": 12,
+    "confirmatory_target_triplets_per_label": 9,
+    "confirmatory_identical_control_triplets": 3,
+    "current_library_modified": false,
+    "required_resubmission": []
+  },
+  "tradeoff_notes": [
+    "source/main/IO/example/Documentを開始時とbyte一致で維持。オンライン2本は現行b613本体の判定であり再提出不要。",
+    "候補自体の遅さを理由に試行を捨てず、両端の基準間の差10%だけで校正有効性を決める。探索3候補×3組・対照3組の24セルと、同3候補×9組・対照3組の確認12セルを分けて全保持。",
+    "確認のClang大規模木の点二重連結では同一対照中央値が+4.37%であり、1%前後の差を積極的な改善と解釈しない。"
+  ],
+  "limitations": [
+    "ローカル比較はGCC15.3.0/Clang21.1.8、i9-14900K P-Core CPU12、C++23 -O2 -march=native。公式オンラインGCC15.2とは別の条件であり比率を移し替えない。",
+    "小規模性能やdefaultビルドの候補比較は今回の採用根拠とせず、全候補不採用で既存本体を維持する。",
+    "現行b613の32構成は前回同一SHAの実検証を参照し、今回新たに32構成を実行したとは扱わない。",
+    "公式tree208→211ms、line_clique97→103ms、twoedge example_00=0→10msを記録し、ノイズと断定しない。"
+  ],
+  "risks": [
+    "追加の本体変更なし。P-Coreの比較だけからオンライン各ケースの時間変動の原因や真の最速限界を断定しない。"
+  ],
+  "evidence_archive_sha256": "998e6ad93d4dc7a9a51d6cca3d3cea63421931df243915277bd5e1df18f0ae39"
+}

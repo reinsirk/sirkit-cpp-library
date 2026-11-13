@@ -1,0 +1,1824 @@
+{
+  "title": "新規79 online Verify driver / 47 normal sourceの独立driver-domain読解レビュー",
+  "completed_utc": "2026-10-31T20:41:38.866821+00:00",
+  "scope_inventory": "Audit/expansion-12hours-2026-10-31-inventory.json:normal_submission_priorities.new_online_codes",
+  "method": [
+    "79 main全体と対応47本の公開API前提を読み取り、型/符号/入力ラベル/半開区間/合成方向/更新後root/出力形式を照合した。",
+    "公式LC task.md/params、AtCoder問題本文を参照。取得不能な本文2件と一部上限パラメータを未確認として分ける。",
+    "現在のprepare_verify.matchesと15種のcustom checkerを読解した。サンプル値・既存独立試験の正しさを再実行/全面証明したという意味ではない。",
+    "コンパイル、実行時間測定、オンライン提出、正式ファイル変更は実施していない。"
+  ],
+  "result": {
+    "drivers": 79,
+    "normal_sources": 47,
+    "confirmed_driver_domain_defects": 0,
+    "official_statement_unreadable_in_this_pass": [
+      "matrix_product",
+      "binary_matrix_det"
+    ],
+    "current_source_drift": [],
+    "online_ac_claim": false,
+    "all_official_max_cases_or_time_limits_proven": false
+  },
+  "nonblocking_validation_limits": [
+    {
+      "ids": [
+        "centroid_decomposition",
+        "fps_sqrt"
+      ],
+      "kind": "fixed-output local regression checker",
+      "description": "公式問題は非一意解を許すが現行manifestはsample_checker未指定、tokens比較。現在のmainの誤答/false acceptanceを示すものではなく、別の正解を出す実装変更でローカル回帰が失敗し得る。オンライン問題選定は適切。",
+      "logical_examples": [
+        "centroid N=2, edge1-2ではparent列 -1 1 と 2 -1 の両方が正解だが、一つのexpected tokensでは両方を受理できない。",
+        "FPS N=1,f=[1]では[1]と[998244352]の両方が平方根だが、一つのexpected tokensでは両方を受理できない。"
+      ],
+      "existing_independent_evidence": [
+        {
+          "path": "Audit/expansion-centroid-decomposition-2026-10-31.json",
+          "coverage": "n<=6全ラベル木+ランダム350木、重心条件/部分木サイズ/元木パス上LCAを独立照合した既存記録。"
+        },
+        {
+          "path": "Verify/current/tests/formal_power_series_reference_test.cpp",
+          "lines": [
+            36,
+            39,
+            40
+          ],
+          "coverage": "素朴な切詰め積でsqrt返却列の平方を元系列へ照合、先頭0/平方非剰余等も扱う既存fixture。"
+        },
+        {
+          "path": "Audit/verify-string-math-second-expansion-2026-10-31.json",
+          "coverage": "FPSの独立reference fixture検証の既存記録。古いsource SHAの記録はそれ自体として保持し、現在版の新規ACへ読み替えない。"
+        }
+      ],
+      "action": "今回の凍結では変更不要。固定sampleの回帰照合と任意別解を許すsemantic checkerを区別して記載。"
+    },
+    {
+      "ids": [
+        "mo",
+        "mo_updates"
+      ],
+      "kind": "no all-case time guarantee",
+      "description": "オフラインAPIに必要な要求記録/値圧縮/ID順出力は本来の適用で、mainへの分布依存高速化ではない。型/時刻/空範囲の変換は適合。全最大ケースの時間制限内実行や専用解法以上の速度をこの読解レビューからは主張しない。"
+    },
+    {
+      "kind": "primary-source access gaps",
+      "ids": [
+        "matrix_product",
+        "binary_matrix_det"
+      ],
+      "description": "公式URLと登録先は対応するが、今回web取得で公式task.md/paramsがCache miss。main/APIと共通係数型は確認、現行公式数値上限を独立取得できたとはしない。"
+    },
+    {
+      "kind": "numeric parameter gaps",
+      "ids": [
+        "manacher",
+        "eulerian_trail_directed",
+        "eulerian_trail_undirected",
+        "rerooting_dp",
+        "palindromic_tree",
+        "matrix_inverse",
+        "dynamic_bitset",
+        "binary_matrix_product",
+        "binary_matrix_inverse"
+      ],
+      "description": "公式task本文の入力/出力・パラメータ名は読めたが、info.tomlの数値MAX_*の一部を今回取得できず、その現行数値は未確認。API入力表現/計算の前提との不一致は見つからない。"
+    }
+  ],
+  "cross_cutting_observations": [
+    "点加算和は各操作が総和へ1回だけ加わるので、(n+q)*1e9以下。n*q*1e9を要する入力ではない。",
+    "Beats公式は各処理後も|a_i|<=1e12を保証し、長さ200000の和は2e17以内。addをq回無制限に積む入力は公式外。",
+    "MinCostFlow driverは負費用辺を持つが初期DAG。費用最大2.5e12、capacity2500以内。初期負閉路を持つ問題への誤用ではない。",
+    "Affine合成はsequence/path方向と作用時間方向を別に確認。列のOp(first,second)=second∘first、作用composition(new,old)=new∘old。",
+    "Persistent driverは返却rootを明示更新し同じrootに照会。オンライン問題は最新状態だけを使うので旧版分岐APIの検証とは区別。",
+    "LibraryCheckerのtreeは一般の0始まり頂点番号として読み、親<子/親>子等の仮定をmainへ導入していない。AtCoderの1始まりだけ明示変換。",
+    "ACL/Mintの外部依存は79本ともなし。行列用VerifyMatrixFieldは998244353の正確な体を共通ヘッダー内で提供。",
+    "共通fast_ioを使い、非一意出力の15checkerはsemantic検査。BM<=64、LCS積<=1e6、行列solve<=64、GF2solve<=128、general matching<=20等のローカルfixture上限があり、公式全入力用checkerではない。",
+    "通常のdriverは入力→初期化/API→出力。Ahoの全pattern構築、offline connectivityの記録/solve、Moの要求記録は選んだAPIに必要な処理で、照会の分布に応じたアルゴリズム切替は見つからない。"
+  ],
+  "source_hashes": {
+    "DataStructure/Fenwick_Tree.cpp": "cb202094a983b5ad00d2fb501e87868862c50454e4f863575ac04ae04b5d1c19",
+    "DataStructure/Segment_Tree.cpp": "fa6cade4f56328cbcd3c335154d84bdec331d53082713732a1584b0e244a460b",
+    "DataStructure/Sparse_Table.cpp": "10095d492bbc0894881d821ca96534c91f7ad6d626336cd35c904fe5372eb86d",
+    "DataStructure/Disjoint_Sparse_Table.cpp": "bb3f1eab5bae8c08d61b5670c820b89dae943ffc3b3fb73398d1b4aa3799ad93",
+    "DataStructure/Lazy_Segment_Tree.cpp": "bba84f6551567504ebbcd78c70a27c5fcdce07e76d12476a3919aae0b4386c33",
+    "Graph/SCC.cpp": "71325936e8707b684cadcd49aaf6e272bc2067bb4c71afdc66271e5ac96c39a4",
+    "Graph/Two_SAT.cpp": "e470f934429ff107940bcd98a966348f55d22a2bc359b3b2b66578b6294cf161",
+    "Graph/Heavy_Light_Decomposition.cpp": "ff125ec2f81d93b87eff79ce43de8191d237cff766f082da7368ceace4249141",
+    "Graph/Max_Flow.cpp": "1c6b52fd1ebc10f673b418942c6edd3b1050cca7615071334f146bdd63731d01",
+    "String/Z_Algorithm.cpp": "76fc29605878a1932f6ee72e7649d3340b701ebe7996f9e6801de14acdb76460",
+    "String/Manacher.cpp": "59557684b26d6304e61f045e88cbed0af5d4a09d38e34612797e2e101ef50585",
+    "String/Suffix_Array.cpp": "d8b83de4c6ed7eb0ff19d4647a044ab356e2fac089c73d4a6b55863ae636cf76",
+    "Math/NTT.cpp": "5b5c85da53f0108b521b725b5ab014eaf8ee21446729b2e45c30100d796426fa",
+    "DataStructure/Wavelet_Matrix.cpp": "33b4b5b8a25894cbc698e2badbb1adeabf98478fd5295ccb3ed108689e81f7f5",
+    "Graph/Low_Link.cpp": "447197bca51ca51690281375230e99abb6c8462e804b1aa6922921d35560d4c4",
+    "Graph/Eulerian_Trail.cpp": "cfb9e144559e2e2ad7706595669e07d47062daeda2ceeb9c2f0dc71af2349b7d",
+    "Graph/Min_Cost_Flow.cpp": "cdb8088ad95e2cd2b08e07bc76e8181e569b6f6d4e5227ef724a3a0b16922700",
+    "Math/Pollard_Rho.cpp": "adc3c33889549ec315b7c208a01154fafac5de2eaff3f088d66cdefb9579ba4c",
+    "String/Aho_Corasick.cpp": "752f1d1651ba2eab7fa2710c6044e081f53cfab174dd7697db296f55fac38895",
+    "Math/Formal_Power_Series.cpp": "5165e885185b4b01a9c7f1882859bfde4e8cba6b98af11d04bc7e4db54433b31",
+    "DataStructure/Persistent_Segment_Tree.cpp": "80ad150eb44ed8784a6600446c3b6bb6c2d232fa79e57b063592ab138015a512",
+    "Graph/Pruefer_Code.cpp": "4f7e596917971175cc226cd485d22426f338a8fcadc471acc812f2ae72758d43",
+    "Graph/Centroid_Decomposition.cpp": "aaffd515576a58171be037c3bfaf4ca07b9a1b8b12f212062c9994d28a3ad608",
+    "DataStructure/Segment_Tree_Beats.cpp": "5b332c567f2b0f12f32348bfabc3e6e4da20fccf8d4cd35bb7c960f75f494c64",
+    "DataStructure/Sliding_Window_Aggregation.cpp": "a56213905d46763e4b79fbfa7cdb3046735c7a1bb43847efbe5660d69d66a90e",
+    "Math/Xor_Basis.cpp": "85473d40f0c38dd526d69287d2e7c85e93466d25714c5c169f81936e0d0bc421",
+    "Graph/Bipartite_Matching.cpp": "02389bf3ed083d7a065d6660f1b6e7c81e544e9881716d230e575ba1d85b5aee",
+    "Graph/Rerooting_DP.cpp": "73aeb95c3da73f43800db83b15b12fc61a1f5c6bb30182d0846dd7eb54b6ef58",
+    "Graph/Offline_Dynamic_Connectivity.cpp": "1402ecdb3867cc75940372c92527bbbdcf8f413323329ce6cb617a9029a09471",
+    "Graph/Functional_Graph.cpp": "a763f98a4839898bc4e899faa58533389c1505312e29a4bfa10d516caaccdafb",
+    "Math/Berlekamp_Massey.cpp": "77ca327c74c8295aaac689753288c81e175e7e0a10bd5f5c8bb4866c5639d81c",
+    "Math/Linear_Recurrence.cpp": "ce01c0f83e4d7d8041ee8e4e6c6670bda7a3c707e6791ca97f2a48019941b2f6",
+    "DataStructure/Link_Cut_Tree.cpp": "2e1b6ad774bd49c4a5c1b4f54698709b7259a936b23bc2a8bc303302f8183b53",
+    "DataStructure/Dual_Segment_Tree.cpp": "795b17e19e6682fa1523aae9716b4ca2af1e89fd81bbf01df71251782101a61e",
+    "DataStructure/Slope_Trick.cpp": "29f282b3e162d47a2f87036dc92951adc4856c0bca1fcf8db7eac5e89e192ae1",
+    "DataStructure/Dynamic_Bitset.cpp": "e1a2391a0390744ee0f4b3994fb08b7bb6185540bff7209b168fb2118cb2a907",
+    "String/Suffix_Automaton.cpp": "8ca7d73707e41896a96f99e65f8bc69a2db9e6888b8225e1c12ee278ffcca8b0",
+    "String/Palindromic_Tree.cpp": "4026134c0c3652fa493423c12b3f1daaedda7bec2b8061ee142778f154900d51",
+    "Math/Matrix.cpp": "cac01f95cd19fac7f52b2d9eba304ce8b12bcfbb63af8610de5dd68c859291af",
+    "Math/Gaussian_Elimination.cpp": "5761d7380e4b09be744c0d785aa4368d643df7a062bc63ec0af335ade3fe9123",
+    "Math/Binary_Matrix.cpp": "1ec784efc04c33c866e3081766442a91bdf9352b264428a290a3a69609fbddad",
+    "Algorithm/Mo.cpp": "ef4414d620ec67a384144160b3d60a9e1a7f052be339db790ec01b2365f33c8f",
+    "Math/Convolution.cpp": "610a1eee375142f10f5770c293f85722c3cfbb0cbaf211a6148048e953817cb3",
+    "Math/Polynomial.cpp": "46b4b1c00c1ab51296e3c38aa1bd0093da8bc19a19870937490cd374c98a5d91",
+    "Graph/Cartesian_Tree.cpp": "08795bc2e2f702c504712169162ca9cda893d60d0a58ea113eaa7ef42bfd50cb",
+    "Graph/General_Matching.cpp": "03803c1d3b4589a1b193649b33553f4f9637aa3c2f3104132f47263b816662d2",
+    "Math/Modular_Arithmetic.cpp": "a9120110a0cc42b44cd0e1e896b8df045e6f2109a27808480b8603261c29afd7"
+  },
+  "support_hashes": {
+    "Verify/current/common/fast_io.hpp": "291bf8dbc56a1d691f6256fe95b4714183c2cf5d9e55e4bef240e31d1eb178c1",
+    "Verify/current/common/matrix_field.hpp": "6a9a6aded8665043481f1fff8d6a7d4eae69343e7111828832d1467eeb854f26",
+    "Scripts/prepare_verify.py": "cd86f62a2d08ca93cfdd24215cccf97f0f1bba644d30b4f98b3755dfff241aa4",
+    "Scripts/verify_graph_samples.py": "944e0854e8079c81523133d15433293a723d96366befabca185d8d8541b3f5ea",
+    "Verify/current/manifest.json": "72a2c6263d31e5f90f1ab6916db6e5e6243944540520c1fd5106626c07a88fe0",
+    "Audit/expansion-12hours-2026-10-31-inventory.json": "cb3bc16ad837b0aa26b16d00dcec72a136ffc5349c0bf1209f44331aa1c38692",
+    "Audit/expansion-centroid-decomposition-2026-10-31.json": "5dbd4685d7fb0ad8513187ce8d532fc7b38629964a188fac28ce21cb05b4aa78",
+    "Audit/verify-string-math-second-expansion-2026-10-31.json": "5b609a21996ea01c0b4d197f4a50a2a312d7828c9f9097e69068bac6bbe00d7d",
+    "Verify/current/tests/centroid_decomposition_reference_test.cpp": "44306227e9c2d412b16ad0af1f09548ed87959a844eab683945e15d61c6a5a12",
+    "Verify/current/tests/formal_power_series_reference_test.cpp": "0b01545fd0f83bdf0e75927f5f0deff5ba0a7a243de0da82bad0475f2662da30"
+  },
+  "drivers": [
+    {
+      "id": "fenwick_tree",
+      "problem_url": "https://judge.yosupo.jp/problem/point_add_range_sum",
+      "driver": "Verify/current/drivers/fenwick_tree_main.cpp",
+      "driver_sha256": "0427c6c93536fbab3f5cf4a5c41cfd201a0119c89a460b0e4cf2686729ae141c",
+      "libraries": [
+        "DataStructure/Fenwick_Tree.cpp"
+      ],
+      "source_sha256": {
+        "DataStructure/Fenwick_Tree.cpp": "cb202094a983b5ad00d2fb501e87868862c50454e4f863575ac04ae04b5d1c19"
+      },
+      "submission": "Verify/current/submissions/fenwick_tree.cpp",
+      "submission_sha256": "baf9d258d480b8eb719e4d4765168074d8c8b386460fc6e57f972d0ef17bced3",
+      "sample_checker": "tokens",
+      "review": "no_confirmed_driver_domain_defect",
+      "note": "N,Q<=500000、値/加算<=1e9。点加算と半開区間和を直結。総和上限は(n+q)*1e9<=1e15でint64_t内。",
+      "primary_statement": "https://raw.githubusercontent.com/yosupo06/library-checker-problems/master/data_structure/point_add_range_sum/task.md",
+      "primary_statement_readable": true,
+      "checker_scope": "unique output / fixed expected tokens",
+      "acl_external_dependency": false
+    },
+    {
+      "id": "segment_tree",
+      "problem_url": "https://judge.yosupo.jp/problem/point_add_range_sum",
+      "driver": "Verify/current/drivers/segment_tree_main.cpp",
+      "driver_sha256": "773d6dd7f8e57802de31eb30a6a4db7e3aabecb463e24088995595170f52dafe",
+      "libraries": [
+        "DataStructure/Segment_Tree.cpp"
+      ],
+      "source_sha256": {
+        "DataStructure/Segment_Tree.cpp": "fa6cade4f56328cbcd3c335154d84bdec331d53082713732a1584b0e244a460b"
+      },
+      "submission": "Verify/current/submissions/segment_tree.cpp",
+      "submission_sha256": "5c76c51172ff7d8ac2dd83d840b52d376a6c30e2780af0fca9da35ba4789530d",
+      "sample_checker": "tokens",
+      "review": "no_confirmed_driver_domain_defect",
+      "note": "同じ点加算問題。transformは旧値+delta、prodは半開区間。照会右端をint64_tで読みsize_tへ変換してもN以下。",
+      "primary_statement": "https://raw.githubusercontent.com/yosupo06/library-checker-problems/master/data_structure/point_add_range_sum/task.md",
+      "primary_statement_readable": true,
+      "checker_scope": "unique output / fixed expected tokens",
+      "acl_external_dependency": false
+    },
+    {
+      "id": "segment_tree_composite",
+      "problem_url": "https://judge.yosupo.jp/problem/point_set_range_composite",
+      "driver": "Verify/current/drivers/segment_tree_composite_main.cpp",
+      "driver_sha256": "e897a295986cd7f4a08127840b300c4c676c92dddf074c8e25cc761e25584afa",
+      "libraries": [
+        "DataStructure/Segment_Tree.cpp"
+      ],
+      "source_sha256": {
+        "DataStructure/Segment_Tree.cpp": "fa6cade4f56328cbcd3c335154d84bdec331d53082713732a1584b0e244a460b"
+      },
+      "submission": "Verify/current/submissions/segment_tree_composite.cpp",
+      "submission_sha256": "3559069b56ce5b5bef674b8a45780172c0435e6735168b4d834f63032dc4317b",
+      "sample_checker": "tokens",
+      "review": "no_confirmed_driver_domain_defect",
+      "note": "N,Q<=500000、法998244353。Op(first,second)=second∘first、prod後にxへ適用し公式の左から右の順序に一致。積はuint64_t内。",
+      "primary_statement": "https://raw.githubusercontent.com/yosupo06/library-checker-problems/master/data_structure/point_set_range_composite/task.md",
+      "primary_statement_readable": true,
+      "checker_scope": "unique output / fixed expected tokens",
+      "acl_external_dependency": false
+    },
+    {
+      "id": "sparse_table",
+      "problem_url": "https://judge.yosupo.jp/problem/staticrmq",
+      "driver": "Verify/current/drivers/sparse_table_main.cpp",
+      "driver_sha256": "6601da375131716c6d0f278d95c6ed17b3d4191bf4edc3aca9aeedfdb8be87e5",
+      "libraries": [
+        "DataStructure/Sparse_Table.cpp"
+      ],
+      "source_sha256": {
+        "DataStructure/Sparse_Table.cpp": "10095d492bbc0894881d821ca96534c91f7ad6d626336cd35c904fe5372eb86d"
+      },
+      "submission": "Verify/current/submissions/sparse_table.cpp",
+      "submission_sha256": "664338de4fba6edff5227380592ef8a86ad4575500d03f3fe5d04cb13685e626",
+      "sample_checker": "tokens",
+      "review": "no_confirmed_driver_domain_defect",
+      "note": "非空半開区間のmin、値<=1e9。冪等Opにstd::minを使用、INT_MAXは単位元として安全。N,Q<=500000。",
+      "primary_statement": "https://raw.githubusercontent.com/yosupo06/library-checker-problems/master/data_structure/staticrmq/task.md",
+      "primary_statement_readable": true,
+      "checker_scope": "unique output / fixed expected tokens",
+      "acl_external_dependency": false
+    },
+    {
+      "id": "disjoint_sparse_table",
+      "problem_url": "https://judge.yosupo.jp/problem/staticrmq",
+      "driver": "Verify/current/drivers/disjoint_sparse_table_main.cpp",
+      "driver_sha256": "f5f83c4a42abf5ad3ddeb3f1c14a960087a8492f5d51a43fa42646b0c9d4e4de",
+      "libraries": [
+        "DataStructure/Disjoint_Sparse_Table.cpp"
+      ],
+      "source_sha256": {
+        "DataStructure/Disjoint_Sparse_Table.cpp": "bb3f1eab5bae8c08d61b5670c820b89dae943ffc3b3fb73398d1b4aa3799ad93"
+      },
+      "submission": "Verify/current/submissions/disjoint_sparse_table.cpp",
+      "submission_sha256": "9b49690022f537f9c2c76d75b3c15e257e70149f28a267aa374a64ae68f89827",
+      "sample_checker": "tokens",
+      "review": "no_confirmed_driver_domain_defect",
+      "note": "同じRMQの半開区間とmin。空の問い合わせは公式外。汎用モノイドAPIに適したOp/単位元。",
+      "primary_statement": "https://raw.githubusercontent.com/yosupo06/library-checker-problems/master/data_structure/staticrmq/task.md",
+      "primary_statement_readable": true,
+      "checker_scope": "unique output / fixed expected tokens",
+      "acl_external_dependency": false
+    },
+    {
+      "id": "lazy_segment_tree",
+      "problem_url": "https://judge.yosupo.jp/problem/range_affine_range_sum",
+      "driver": "Verify/current/drivers/lazy_segment_tree_main.cpp",
+      "driver_sha256": "85471407fb0f676d27bd7f6efc88ace682ba4675db0aba701e32acb8e208751d",
+      "libraries": [
+        "DataStructure/Lazy_Segment_Tree.cpp"
+      ],
+      "source_sha256": {
+        "DataStructure/Lazy_Segment_Tree.cpp": "bba84f6551567504ebbcd78c70a27c5fcdce07e76d12476a3919aae0b4386c33"
+      },
+      "submission": "Verify/current/submissions/lazy_segment_tree.cpp",
+      "submission_sha256": "444cb3e6e96a7a1746fbd6f5b89afde46b28956f4f2d864195516d3484626927",
+      "sample_checker": "tokens",
+      "review": "no_confirmed_driver_domain_defect",
+      "note": "法998244353、N,Q<=500000。mapping=a*sum+b*len、composition(new,old)=new∘old。未剰余積+項もuint64_t内。公式l<r。",
+      "primary_statement": "https://raw.githubusercontent.com/yosupo06/library-checker-problems/master/data_structure/range_affine_range_sum/task.md",
+      "primary_statement_readable": true,
+      "checker_scope": "unique output / fixed expected tokens",
+      "acl_external_dependency": false
+    },
+    {
+      "id": "scc",
+      "problem_url": "https://judge.yosupo.jp/problem/scc",
+      "driver": "Verify/current/drivers/scc_main.cpp",
+      "driver_sha256": "35bfdb6d4de24bfaf6af222de74ee10f32edfb658075ded4b85fa7f3dea64d94",
+      "libraries": [
+        "Graph/SCC.cpp"
+      ],
+      "source_sha256": {
+        "Graph/SCC.cpp": "71325936e8707b684cadcd49aaf6e272bc2067bb4c71afdc66271e5ac96c39a4"
+      },
+      "submission": "Verify/current/submissions/scc.cpp",
+      "submission_sha256": "6f2044caab2265e9f3cf2b7e0e30702969527aad0d14b7f6869d9b28d3885961",
+      "sample_checker": "scc",
+      "review": "no_confirmed_driver_domain_defect",
+      "note": "有向辺をそのまま追加しbuild後components。公式要求の縮約DAGトポロジカル順は本体の成分番号順と一致。N,M<=500000。",
+      "primary_statement": "https://raw.githubusercontent.com/yosupo06/library-checker-problems/master/graph/scc/task.md",
+      "primary_statement_readable": true,
+      "checker_scope": "custom semantic checker for bounded local fixtures",
+      "acl_external_dependency": false
+    },
+    {
+      "id": "two_sat",
+      "problem_url": "https://judge.yosupo.jp/problem/two_sat",
+      "driver": "Verify/current/drivers/two_sat_main.cpp",
+      "driver_sha256": "3f2945ff816594fcecd77201604632ff5d62c8b8d794d6d9a1251dbf16f74fe3",
+      "libraries": [
+        "Graph/Two_SAT.cpp"
+      ],
+      "source_sha256": {
+        "Graph/Two_SAT.cpp": "e470f934429ff107940bcd98a966348f55d22a2bc359b3b2b66578b6294cf161"
+      },
+      "submission": "Verify/current/submissions/two_sat.cpp",
+      "submission_sha256": "12265378b6b0ca8d5b65ac078cdd92bbf739454e10f29894bcf023e297fb76e7",
+      "sample_checker": "two_sat",
+      "review": "no_confirmed_driver_domain_defect",
+      "note": "DIMACS p cnfを読み、符号とabs(literal)-1を(x_i==bool)節へ変換。N,M<=500000で符号反転安全。出力符号/終端0も一致。",
+      "primary_statement": "https://raw.githubusercontent.com/yosupo06/library-checker-problems/master/other/two_sat/task.md",
+      "primary_statement_readable": true,
+      "checker_scope": "custom semantic checker for bounded local fixtures",
+      "acl_external_dependency": false
+    },
+    {
+      "id": "hld_jump",
+      "problem_url": "https://judge.yosupo.jp/problem/jump_on_tree",
+      "driver": "Verify/current/drivers/hld_jump_main.cpp",
+      "driver_sha256": "54a5ce2cabc31379a9f6ce22d83c7697ae5cdedb90784ce25bcc7332142b32ea",
+      "libraries": [
+        "Graph/Heavy_Light_Decomposition.cpp"
+      ],
+      "source_sha256": {
+        "Graph/Heavy_Light_Decomposition.cpp": "ff125ec2f81d93b87eff79ce43de8191d237cff766f082da7368ceace4249141"
+      },
+      "submission": "Verify/current/submissions/hld_jump.cpp",
+      "submission_sha256": "1da8748a13e8f811bc2c52338c3e96e63d028d1c728cbd01afe8099e4dc66091",
+      "sample_checker": "tokens",
+      "review": "no_confirmed_driver_domain_defect",
+      "note": "無向木の両隣接を構築。0始まりk番目、越境-1というAPIと一致。kはint64_t、N<=500000。",
+      "primary_statement": "https://raw.githubusercontent.com/yosupo06/library-checker-problems/master/tree/jump_on_tree/task.md",
+      "primary_statement_readable": true,
+      "checker_scope": "unique output / fixed expected tokens",
+      "acl_external_dependency": false
+    },
+    {
+      "id": "hld_vertex_add_path_sum",
+      "problem_url": "https://judge.yosupo.jp/problem/vertex_add_path_sum",
+      "driver": "Verify/current/drivers/hld_vertex_add_path_sum_main.cpp",
+      "driver_sha256": "b3af1c71fce9d7dd23c73a95bbef42187b8d1844b0e66531cf4dcc6269eb7853",
+      "libraries": [
+        "Graph/Heavy_Light_Decomposition.cpp",
+        "DataStructure/Fenwick_Tree.cpp"
+      ],
+      "source_sha256": {
+        "Graph/Heavy_Light_Decomposition.cpp": "ff125ec2f81d93b87eff79ce43de8191d237cff766f082da7368ceace4249141",
+        "DataStructure/Fenwick_Tree.cpp": "cb202094a983b5ad00d2fb501e87868862c50454e4f863575ac04ae04b5d1c19"
+      },
+      "submission": "Verify/current/submissions/hld_vertex_add_path_sum.cpp",
+      "submission_sha256": "19fcaba7afd84534944fb1196bba99e9d164bbfcf41425e7732d33934ffaa0b0",
+      "sample_checker": "tokens",
+      "review": "no_confirmed_driver_domain_defect",
+      "note": "HLD indexへ初期値を並べ替え、Fenwickに点加算。端点込みpath区間の半開区間和、可換和なのでreversedは無視可。最大総和<=1e15。",
+      "primary_statement": "https://raw.githubusercontent.com/yosupo06/library-checker-problems/master/tree/vertex_add_path_sum/task.md",
+      "primary_statement_readable": true,
+      "checker_scope": "unique output / fixed expected tokens",
+      "acl_external_dependency": false
+    },
+    {
+      "id": "max_flow_grid",
+      "problem_url": "https://atcoder.jp/contests/practice2/tasks/practice2_d",
+      "driver": "Verify/current/drivers/max_flow_grid_main.cpp",
+      "driver_sha256": "e5bcc85198fd10521c8f6465313e73f0a6ae0108a4b20c0210c29a7e142b6144",
+      "libraries": [
+        "Graph/Max_Flow.cpp"
+      ],
+      "source_sha256": {
+        "Graph/Max_Flow.cpp": "1c6b52fd1ebc10f673b418942c6edd3b1050cca7615071334f146bdd63731d01"
+      },
+      "submission": "Verify/current/submissions/max_flow_grid.cpp",
+      "submission_sha256": "4e14208a121966c1911c134d9c08980e08a4d8c6d986ffb756a01bdfcdb2b43a",
+      "sample_checker": "max_flow_grid",
+      "review": "no_confirmed_driver_domain_defect",
+      "note": "H,W<=100。二部色分け、空セル容量1、隣接辺だけを結ぶ。source/sinkの辺を除いてflow1の辺を矢印へ変換、行順ソートは上下左右の位置決定だけ。",
+      "primary_statement": "https://atcoder.jp/contests/practice2/tasks/practice2_d",
+      "primary_statement_readable": true,
+      "checker_scope": "custom semantic checker for bounded local fixtures",
+      "acl_external_dependency": false
+    },
+    {
+      "id": "z_algorithm",
+      "problem_url": "https://judge.yosupo.jp/problem/zalgorithm",
+      "driver": "Verify/current/drivers/z_algorithm_main.cpp",
+      "driver_sha256": "794755ae874c1a58bb2fb2de78aea12f7a0890f975521aab0636858a0c3515ce",
+      "libraries": [
+        "String/Z_Algorithm.cpp"
+      ],
+      "source_sha256": {
+        "String/Z_Algorithm.cpp": "76fc29605878a1932f6ee72e7649d3340b701ebe7996f9e6801de14acdb76460"
+      },
+      "submission": "Verify/current/submissions/z_algorithm.cpp",
+      "submission_sha256": "06ac4940f4f3ae079d24f34dfd4dd913ffa9339bac74a48bba087221f2aad394",
+      "sample_checker": "tokens",
+      "review": "no_confirmed_driver_domain_defect",
+      "note": "非空小文字列、N<=500000。z[0]=Nを含む全要素を出力。空白区切り入力は問題の文字集合に適合。",
+      "primary_statement": "https://raw.githubusercontent.com/yosupo06/library-checker-problems/master/string/zalgorithm/task.md",
+      "primary_statement_readable": true,
+      "checker_scope": "unique output / fixed expected tokens",
+      "acl_external_dependency": false
+    },
+    {
+      "id": "manacher",
+      "problem_url": "https://judge.yosupo.jp/problem/enumerate_palindromes",
+      "driver": "Verify/current/drivers/manacher_main.cpp",
+      "driver_sha256": "9467661ec811e7b0d15af9e6b154793b4290c80bb2b64e58ed2e1d3bc01861bd",
+      "libraries": [
+        "String/Manacher.cpp"
+      ],
+      "source_sha256": {
+        "String/Manacher.cpp": "59557684b26d6304e61f045e88cbed0af5d4a09d38e34612797e2e101ef50585"
+      },
+      "submission": "Verify/current/submissions/manacher.cpp",
+      "submission_sha256": "7153d509fa3174a98020e05f00049eb276752a14ad0b62f83efb340f50f7a384",
+      "sample_checker": "tokens",
+      "review": "no_confirmed_driver_domain_defect",
+      "note": "非空小文字列。PalindromicLengthsは文字中心/文字間中心を交互に並べる2N-1個の長さという問題の出力形式に一致。数値N_MAXの再取得は未完。",
+      "primary_statement": "https://raw.githubusercontent.com/yosupo06/library-checker-problems/master/string/enumerate_palindromes/task.md",
+      "primary_statement_readable": true,
+      "checker_scope": "unique output / fixed expected tokens",
+      "acl_external_dependency": false
+    },
+    {
+      "id": "suffix_array",
+      "problem_url": "https://judge.yosupo.jp/problem/suffixarray",
+      "driver": "Verify/current/drivers/suffix_array_main.cpp",
+      "driver_sha256": "317b2f8021cb06a869525633c74d57bdd6a95d0f48c16483a1346760bc181358",
+      "libraries": [
+        "String/Suffix_Array.cpp"
+      ],
+      "source_sha256": {
+        "String/Suffix_Array.cpp": "d8b83de4c6ed7eb0ff19d4647a044ab356e2fac089c73d4a6b55863ae636cf76"
+      },
+      "submission": "Verify/current/submissions/suffix_array.cpp",
+      "submission_sha256": "d7981ba095eed8283572ce32d147f76a03958f206a9a28509b747c5a1a72897a",
+      "sample_checker": "tokens",
+      "review": "no_confirmed_driver_domain_defect",
+      "note": "非空小文字列N<=500000。空suffixを含めない0始まりSAをそのまま出力。",
+      "primary_statement": "https://raw.githubusercontent.com/yosupo06/library-checker-problems/master/string/suffixarray/task.md",
+      "primary_statement_readable": true,
+      "checker_scope": "unique output / fixed expected tokens",
+      "acl_external_dependency": false
+    },
+    {
+      "id": "suffix_array_substrings",
+      "problem_url": "https://judge.yosupo.jp/problem/number_of_substrings",
+      "driver": "Verify/current/drivers/suffix_array_substrings_main.cpp",
+      "driver_sha256": "3f93f612f8944da846cda32807e6f4a334c154eb3bd7269f71cdbdfef2956c59",
+      "libraries": [
+        "String/Suffix_Array.cpp"
+      ],
+      "source_sha256": {
+        "String/Suffix_Array.cpp": "d8b83de4c6ed7eb0ff19d4647a044ab356e2fac089c73d4a6b55863ae636cf76"
+      },
+      "submission": "Verify/current/submissions/suffix_array_substrings.cpp",
+      "submission_sha256": "8c77483f411118843e2a2d4f7796b3dd8f2317671c4d15aa0f3e294ebdc5a0e6",
+      "sample_checker": "tokens",
+      "review": "no_confirmed_driver_domain_defect",
+      "note": "N<=500000。全非空部分文字列n(n+1)/2から隣接LCPを引く。uint64_tで約1.25e11まで安全。",
+      "primary_statement": "https://raw.githubusercontent.com/yosupo06/library-checker-problems/master/string/number_of_substrings/task.md",
+      "primary_statement_readable": true,
+      "checker_scope": "unique output / fixed expected tokens",
+      "acl_external_dependency": false
+    },
+    {
+      "id": "ntt_convolution",
+      "problem_url": "https://judge.yosupo.jp/problem/convolution_mod",
+      "driver": "Verify/current/drivers/ntt_convolution_main.cpp",
+      "driver_sha256": "79a1ed61095e2bd8f66e361d6e05328570c439ad9b041912614a2889ab0a93ff",
+      "libraries": [
+        "Math/NTT.cpp"
+      ],
+      "source_sha256": {
+        "Math/NTT.cpp": "5b5c85da53f0108b521b725b5ab014eaf8ee21446729b2e45c30100d796426fa"
+      },
+      "submission": "Verify/current/submissions/ntt_convolution.cpp",
+      "submission_sha256": "e1fcad0edf61572670e2c928214f995d3c28f1f626896221c3106a361f0492bd",
+      "sample_checker": "tokens",
+      "review": "no_confirmed_driver_domain_defect",
+      "note": "N,M<=524288、正規化済みuint32_t係数<998244353をmoveで渡す。結果変換長<=2^20でNTT上限2^23以内。",
+      "primary_statement": "https://raw.githubusercontent.com/yosupo06/library-checker-problems/master/convolution/convolution_mod/task.md",
+      "primary_statement_readable": true,
+      "checker_scope": "unique output / fixed expected tokens",
+      "acl_external_dependency": false
+    },
+    {
+      "id": "wavelet_kth",
+      "problem_url": "https://judge.yosupo.jp/problem/range_kth_smallest",
+      "driver": "Verify/current/drivers/wavelet_kth_main.cpp",
+      "driver_sha256": "b38514d47a9a6713240ee7d2fe8e54b08302d807ec0368c948f28d95ba9c311b",
+      "libraries": [
+        "DataStructure/Wavelet_Matrix.cpp"
+      ],
+      "source_sha256": {
+        "DataStructure/Wavelet_Matrix.cpp": "33b4b5b8a25894cbc698e2badbb1adeabf98478fd5295ccb3ed108689e81f7f5"
+      },
+      "submission": "Verify/current/submissions/wavelet_kth.cpp",
+      "submission_sha256": "7926ef3a09179b1985f0819c99658011b6d75b73a49f0114cc3048ed91892f8f",
+      "sample_checker": "tokens",
+      "review": "no_confirmed_driver_domain_defect",
+      "note": "N,Q<=200000、0<=a<=1e9。公式0<=k<r-lをそのままkth_smallestへ。符号付き64bit型の使用は非負入力を包含。",
+      "primary_statement": "https://raw.githubusercontent.com/yosupo06/library-checker-problems/master/data_structure/range_kth_smallest/task.md",
+      "primary_statement_readable": true,
+      "checker_scope": "unique output / fixed expected tokens",
+      "acl_external_dependency": false
+    },
+    {
+      "id": "wavelet_frequency",
+      "problem_url": "https://judge.yosupo.jp/problem/static_range_frequency",
+      "driver": "Verify/current/drivers/wavelet_frequency_main.cpp",
+      "driver_sha256": "a55648e6e868215c2b390140db97b65fc3c4ba6f19d6aeae4adfc9efd346fb69",
+      "libraries": [
+        "DataStructure/Wavelet_Matrix.cpp"
+      ],
+      "source_sha256": {
+        "DataStructure/Wavelet_Matrix.cpp": "33b4b5b8a25894cbc698e2badbb1adeabf98478fd5295ccb3ed108689e81f7f5"
+      },
+      "submission": "Verify/current/submissions/wavelet_frequency.cpp",
+      "submission_sha256": "304c7dbb4a1e3b62e10461b4a13e740e7c6c95058a0bfe77e7507faecd291eac",
+      "sample_checker": "tokens",
+      "review": "no_confirmed_driver_domain_defect",
+      "note": "N,Qは0も可、各値<=1e9、l<=r。空matrixと空範囲を許すrank(value,l,r)へ一致。N,Q<=500000。",
+      "primary_statement": "https://raw.githubusercontent.com/yosupo06/library-checker-problems/master/data_structure/static_range_frequency/task.md",
+      "primary_statement_readable": true,
+      "checker_scope": "unique output / fixed expected tokens",
+      "acl_external_dependency": false
+    },
+    {
+      "id": "low_link_two_edge",
+      "problem_url": "https://judge.yosupo.jp/problem/two_edge_connected_components",
+      "driver": "Verify/current/drivers/low_link_two_edge_main.cpp",
+      "driver_sha256": "103549bcf94d087b4bda2b17809316ba1a026a6e76ce0d5a335e266a5c80c686",
+      "libraries": [
+        "Graph/Low_Link.cpp"
+      ],
+      "source_sha256": {
+        "Graph/Low_Link.cpp": "447197bca51ca51690281375230e99abb6c8462e804b1aa6922921d35560d4c4"
+      },
+      "submission": "Verify/current/submissions/low_link_two_edge.cpp",
+      "submission_sha256": "2d31a850d24c21cd3b5af7a06efef681849e679e4b939a0e4858bb64faacccf8",
+      "sample_checker": "component_sets",
+      "review": "no_confirmed_driver_domain_defect",
+      "note": "自己辺/多重辺を許すAPIに無向辺を追加、build後橋除去成分を出力。N,M<=200000。成分の出力順はcheckerで正規化。",
+      "primary_statement": "https://raw.githubusercontent.com/yosupo06/library-checker-problems/master/graph/two_edge_connected_components/task.md",
+      "primary_statement_readable": true,
+      "checker_scope": "custom semantic checker for bounded local fixtures",
+      "acl_external_dependency": false
+    },
+    {
+      "id": "low_link_biconnected",
+      "problem_url": "https://judge.yosupo.jp/problem/biconnected_components",
+      "driver": "Verify/current/drivers/low_link_biconnected_main.cpp",
+      "driver_sha256": "44f36b179e0ee59572eba15b545f9060835835e734d6723d8c587bc255313085",
+      "libraries": [
+        "Graph/Low_Link.cpp"
+      ],
+      "source_sha256": {
+        "Graph/Low_Link.cpp": "447197bca51ca51690281375230e99abb6c8462e804b1aa6922921d35560d4c4"
+      },
+      "submission": "Verify/current/submissions/low_link_biconnected.cpp",
+      "submission_sha256": "aa2c154e1d2b843a28a9ad79650192e9ab1958f4f5185a49fc314716b4a09e6d",
+      "sample_checker": "component_sets",
+      "review": "no_confirmed_driver_domain_defect",
+      "note": "公式は自己辺なし・平行辺可。build(true)で辺スタック収集を有効化し、頂点ブロックと孤立頂点を含む既定APIを使用。N,M<=500000。",
+      "primary_statement": "https://raw.githubusercontent.com/yosupo06/library-checker-problems/master/graph/biconnected_components/task.md",
+      "primary_statement_readable": true,
+      "checker_scope": "custom semantic checker for bounded local fixtures",
+      "acl_external_dependency": false
+    },
+    {
+      "id": "eulerian_trail_directed",
+      "problem_url": "https://judge.yosupo.jp/problem/eulerian_trail_directed",
+      "driver": "Verify/current/drivers/eulerian_trail_directed_main.cpp",
+      "driver_sha256": "ac339e54b7ae70c60a8a1db6c0086076d65c1d01afb9bc0b9f6804b83b0e1df8",
+      "libraries": [
+        "Graph/Eulerian_Trail.cpp"
+      ],
+      "source_sha256": {
+        "Graph/Eulerian_Trail.cpp": "cfb9e144559e2e2ad7706595669e07d47062daeda2ceeb9c2f0dc71af2349b7d"
+      },
+      "submission": "Verify/current/submissions/eulerian_trail_directed.cpp",
+      "submission_sha256": "99cc6e3b09818789e5635ab7052ddde0f50d17d04c67aadbaa76344e33ed6be4",
+      "sample_checker": "eulerian_trail_directed",
+      "review": "no_confirmed_driver_domain_defect",
+      "note": "複数ケースごとに新規グラフ、挿入順の辺IDと通過頂点列を出力。No/Yesと0辺時の1頂点列がAPIに整合。個別上限パラメータは未再取得。",
+      "primary_statement": "https://raw.githubusercontent.com/yosupo06/library-checker-problems/master/graph/eulerian_trail_directed/task.md",
+      "primary_statement_readable": true,
+      "checker_scope": "custom semantic checker for bounded local fixtures",
+      "acl_external_dependency": false
+    },
+    {
+      "id": "eulerian_trail_undirected",
+      "problem_url": "https://judge.yosupo.jp/problem/eulerian_trail_undirected",
+      "driver": "Verify/current/drivers/eulerian_trail_undirected_main.cpp",
+      "driver_sha256": "a366e88855cf39cb30d68f983833981cfec545eb2e142b6d07d88b2d2dadd545",
+      "libraries": [
+        "Graph/Eulerian_Trail.cpp"
+      ],
+      "source_sha256": {
+        "Graph/Eulerian_Trail.cpp": "cfb9e144559e2e2ad7706595669e07d47062daeda2ceeb9c2f0dc71af2349b7d"
+      },
+      "submission": "Verify/current/submissions/eulerian_trail_undirected.cpp",
+      "submission_sha256": "89ee676a27de6871e3db0f4359aa205edf02ad708923ae65bc95f890035ca2a2",
+      "sample_checker": "eulerian_trail_undirected",
+      "review": "no_confirmed_driver_domain_defect",
+      "note": "各辺を1回add、無向の逆向き通行はvertices列で表現。辺IDは入力順。0辺/孤立点もAPIに整合。個別上限パラメータは未再取得。",
+      "primary_statement": "https://raw.githubusercontent.com/yosupo06/library-checker-problems/master/graph/eulerian_trail_undirected/task.md",
+      "primary_statement_readable": true,
+      "checker_scope": "custom semantic checker for bounded local fixtures",
+      "acl_external_dependency": false
+    },
+    {
+      "id": "min_cost_flow_grid",
+      "problem_url": "https://atcoder.jp/contests/practice2/tasks/practice2_e",
+      "driver": "Verify/current/drivers/min_cost_flow_grid_main.cpp",
+      "driver_sha256": "1194439663d4169d9d4baf1ff52d8b3e8eedf0adc4bc98c0447aa2ffb10713ea",
+      "libraries": [
+        "Graph/Min_Cost_Flow.cpp"
+      ],
+      "source_sha256": {
+        "Graph/Min_Cost_Flow.cpp": "cdb8088ad95e2cd2b08e07bc76e8181e569b6f6d4e5227ef724a3a0b16922700"
+      },
+      "submission": "Verify/current/submissions/min_cost_flow_grid.cpp",
+      "submission_sha256": "3ed002d741c956e181758395ee893c6875b068b838d87faecd9ddddb4b1b8849",
+      "sample_checker": "min_cost_flow_grid",
+      "review": "no_confirmed_driver_domain_defect",
+      "note": "N<=50,K<=N、値<=1e9。row/column容量K、cell容量1と負費用-value、source→sinkの0費用で未選択を表す。初期ネットワークはDAGで負閉路なし。n*k<=2500、費用合計<=2.5e12。",
+      "primary_statement": "https://atcoder.jp/contests/practice2/tasks/practice2_e",
+      "primary_statement_readable": true,
+      "checker_scope": "custom semantic checker for bounded local fixtures",
+      "acl_external_dependency": false
+    },
+    {
+      "id": "pollard_rho_factorize",
+      "problem_url": "https://judge.yosupo.jp/problem/factorize",
+      "driver": "Verify/current/drivers/pollard_rho_factorize_main.cpp",
+      "driver_sha256": "e9243ccd61732cbfa278b19a278baea79a920c09b14be1edae870c7b0142b718",
+      "libraries": [
+        "Math/Pollard_Rho.cpp"
+      ],
+      "source_sha256": {
+        "Math/Pollard_Rho.cpp": "adc3c33889549ec315b7c208a01154fafac5de2eaff3f088d66cdefb9579ba4c"
+      },
+      "submission": "Verify/current/submissions/pollard_rho_factorize.cpp",
+      "submission_sha256": "e6911d06ecf013383441abf1764eabde2cb975dfac31334161d4928e55380c50",
+      "sample_checker": "tokens",
+      "review": "no_confirmed_driver_domain_defect",
+      "note": "Q<=100、1<=n<=1e18をuint64_tで読む。prime_factorsは重複込み昇順。n=1は個数0の空リスト。",
+      "primary_statement": "https://raw.githubusercontent.com/yosupo06/library-checker-problems/master/number_theory/factorize/task.md",
+      "primary_statement_readable": true,
+      "checker_scope": "unique output / fixed expected tokens",
+      "acl_external_dependency": false
+    },
+    {
+      "id": "aho_corasick",
+      "problem_url": "https://judge.yosupo.jp/problem/aho_corasick",
+      "driver": "Verify/current/drivers/aho_corasick_main.cpp",
+      "driver_sha256": "a4868adce1b31137efb9b2dd37e05522fea025be7c094e9c4311479de9cd0330",
+      "libraries": [
+        "String/Aho_Corasick.cpp"
+      ],
+      "source_sha256": {
+        "String/Aho_Corasick.cpp": "752f1d1651ba2eab7fa2710c6044e081f53cfab174dd7697db296f55fac38895"
+      },
+      "submission": "Verify/current/submissions/aho_corasick.cpp",
+      "submission_sha256": "5e5ecb940c4f1189595f4d5ee98ff1a5c0dd9588ee981a3dad9628355a48e14c",
+      "sample_checker": "tokens",
+      "review": "no_confirmed_driver_domain_defect",
+      "note": "非空小文字列を入力順にadd。新しい接頭辞状態を生成順に採番するAPIが公式の最小(i,j)順と一致。親/failureと各pattern終端を出力。総文字数<=1e6。",
+      "primary_statement": "https://raw.githubusercontent.com/yosupo06/library-checker-problems/master/string/aho_corasick/task.md",
+      "primary_statement_readable": true,
+      "checker_scope": "unique output / fixed expected tokens",
+      "acl_external_dependency": false
+    },
+    {
+      "id": "aho_corasick_counts",
+      "problem_url": "https://atcoder.jp/contests/abc362/tasks/abc362_g",
+      "driver": "Verify/current/drivers/aho_corasick_counts_main.cpp",
+      "driver_sha256": "5769452db27a5a2413fa939eba6317c47a512f24131f0277c2291e07457de311",
+      "libraries": [
+        "String/Aho_Corasick.cpp"
+      ],
+      "source_sha256": {
+        "String/Aho_Corasick.cpp": "752f1d1651ba2eab7fa2710c6044e081f53cfab174dd7697db296f55fac38895"
+      },
+      "submission": "Verify/current/submissions/aho_corasick_counts.cpp",
+      "submission_sha256": "2d062e395bfc39de5a2a6674e1990662c6d3b2e90d7f461f2f227590b8aa8119",
+      "sample_checker": "tokens",
+      "review": "no_confirmed_driver_domain_defect",
+      "note": "S長/総pattern長<=500000。重複patternは別ID、match_countsは重なり込みで入力ID順の回数。API本来の一括構築・走査を素直に呼ぶ。",
+      "primary_statement": "https://atcoder.jp/contests/abc362/tasks/abc362_g",
+      "primary_statement_readable": true,
+      "checker_scope": "unique output / fixed expected tokens",
+      "acl_external_dependency": false
+    },
+    {
+      "id": "fps_inverse",
+      "problem_url": "https://judge.yosupo.jp/problem/inv_of_formal_power_series",
+      "driver": "Verify/current/drivers/fps_inverse_main.cpp",
+      "driver_sha256": "0582151ff2778b3dadce8c160c71c21faf499500cbf8af2b6c2dcd077fc2fab8",
+      "libraries": [
+        "Math/Formal_Power_Series.cpp"
+      ],
+      "source_sha256": {
+        "Math/Formal_Power_Series.cpp": "5165e885185b4b01a9c7f1882859bfde4e8cba6b98af11d04bc7e4db54433b31"
+      },
+      "submission": "Verify/current/submissions/fps_inverse.cpp",
+      "submission_sha256": "32cfa9e2f4c752063f59aeb580496b59a8fa117a9dbffc371c953f1db031d87c",
+      "sample_checker": "tokens",
+      "review": "no_confirmed_driver_domain_defect",
+      "note": "法998244353、N<=500000、a0!=0という公式保証がinverseの前提を満たす。精度省略は現在size=N。",
+      "primary_statement": "https://raw.githubusercontent.com/yosupo06/library-checker-problems/master/polynomial/inv_of_formal_power_series/task.md",
+      "primary_statement_readable": true,
+      "checker_scope": "unique output / fixed expected tokens",
+      "acl_external_dependency": false
+    },
+    {
+      "id": "fps_log",
+      "problem_url": "https://judge.yosupo.jp/problem/log_of_formal_power_series",
+      "driver": "Verify/current/drivers/fps_log_main.cpp",
+      "driver_sha256": "d049625e3dac6280cad5bb0e8131ed029524a1d9e1939e1a7b75fc13b73312ef",
+      "libraries": [
+        "Math/Formal_Power_Series.cpp"
+      ],
+      "source_sha256": {
+        "Math/Formal_Power_Series.cpp": "5165e885185b4b01a9c7f1882859bfde4e8cba6b98af11d04bc7e4db54433b31"
+      },
+      "submission": "Verify/current/submissions/fps_log.cpp",
+      "submission_sha256": "eb2df5ee1817063975947518e29cd2042416e1d90214802313e5f8b11a6b8393",
+      "sample_checker": "tokens",
+      "review": "no_confirmed_driver_domain_defect",
+      "note": "a0=1、N<=500000。logの前提と省略精度Nが一致。係数uint32_tは法の全剰余を表現。",
+      "primary_statement": "https://raw.githubusercontent.com/yosupo06/library-checker-problems/master/polynomial/log_of_formal_power_series/task.md",
+      "primary_statement_readable": true,
+      "checker_scope": "unique output / fixed expected tokens",
+      "acl_external_dependency": false
+    },
+    {
+      "id": "fps_exp",
+      "problem_url": "https://judge.yosupo.jp/problem/exp_of_formal_power_series",
+      "driver": "Verify/current/drivers/fps_exp_main.cpp",
+      "driver_sha256": "0b9cbf65c139b51450f0008ed19fabea175e0eeb04660088fa71345586519449",
+      "libraries": [
+        "Math/Formal_Power_Series.cpp"
+      ],
+      "source_sha256": {
+        "Math/Formal_Power_Series.cpp": "5165e885185b4b01a9c7f1882859bfde4e8cba6b98af11d04bc7e4db54433b31"
+      },
+      "submission": "Verify/current/submissions/fps_exp.cpp",
+      "submission_sha256": "60269266e84ef1fdee1ca75254fff5c584c3c181ec80d64396845ab68384183c",
+      "sample_checker": "tokens",
+      "review": "no_confirmed_driver_domain_defect",
+      "note": "a0=0、N<=500000。expの前提と精度Nが一致。",
+      "primary_statement": "https://raw.githubusercontent.com/yosupo06/library-checker-problems/master/polynomial/exp_of_formal_power_series/task.md",
+      "primary_statement_readable": true,
+      "checker_scope": "unique output / fixed expected tokens",
+      "acl_external_dependency": false
+    },
+    {
+      "id": "fps_pow",
+      "problem_url": "https://judge.yosupo.jp/problem/pow_of_formal_power_series",
+      "driver": "Verify/current/drivers/fps_pow_main.cpp",
+      "driver_sha256": "813ea8914ad0a7017ee21da524aff363c130f1c7818d8f1238680e025b8d16da",
+      "libraries": [
+        "Math/Formal_Power_Series.cpp"
+      ],
+      "source_sha256": {
+        "Math/Formal_Power_Series.cpp": "5165e885185b4b01a9c7f1882859bfde4e8cba6b98af11d04bc7e4db54433b31"
+      },
+      "submission": "Verify/current/submissions/fps_pow.cpp",
+      "submission_sha256": "71b688a372280562699cb0ac6e8587ec8ee4d68da1139b1ae786dcd369d745b5",
+      "sample_checker": "tokens",
+      "review": "no_confirmed_driver_domain_defect",
+      "note": "非負指数<=1e18をuint64_t、N<=500000。pow(k)は現在精度N、0乗/先頭0を本体に任せる。",
+      "primary_statement": "https://raw.githubusercontent.com/yosupo06/library-checker-problems/master/polynomial/pow_of_formal_power_series/task.md",
+      "primary_statement_readable": true,
+      "checker_scope": "unique output / fixed expected tokens",
+      "acl_external_dependency": false
+    },
+    {
+      "id": "fps_sqrt",
+      "problem_url": "https://judge.yosupo.jp/problem/sqrt_of_formal_power_series",
+      "driver": "Verify/current/drivers/fps_sqrt_main.cpp",
+      "driver_sha256": "b111162ba7d8d7a5a684ae9d34b3d472167400e6048c4defa7d193ad5ce94dac",
+      "libraries": [
+        "Math/Formal_Power_Series.cpp"
+      ],
+      "source_sha256": {
+        "Math/Formal_Power_Series.cpp": "5165e885185b4b01a9c7f1882859bfde4e8cba6b98af11d04bc7e4db54433b31"
+      },
+      "submission": "Verify/current/submissions/fps_sqrt.cpp",
+      "submission_sha256": "6a50aebb1e22791540f96a9409389ba4d4f08cc896e155706bea8dbcf6369e47",
+      "sample_checker": "tokens",
+      "review": "no_confirmed_driver_domain_defect",
+      "note": "N<=500000。optionalなしは-1、存在時はN係数を出力。公式は任意の平方根を許すため、小さい先頭根を選ぶAPIも適合。sampleは固定根とのtokens比較。",
+      "primary_statement": "https://raw.githubusercontent.com/yosupo06/library-checker-problems/master/polynomial/sqrt_of_formal_power_series/task.md",
+      "primary_statement_readable": true,
+      "checker_scope": "fixed expected token regression only",
+      "acl_external_dependency": false
+    },
+    {
+      "id": "fps_divmod",
+      "problem_url": "https://judge.yosupo.jp/problem/division_of_polynomials",
+      "driver": "Verify/current/drivers/fps_divmod_main.cpp",
+      "driver_sha256": "cb8236ecef86ffcb989314a546a22001f31864d641ff8c3704caa82be691cebc",
+      "libraries": [
+        "Math/Formal_Power_Series.cpp"
+      ],
+      "source_sha256": {
+        "Math/Formal_Power_Series.cpp": "5165e885185b4b01a9c7f1882859bfde4e8cba6b98af11d04bc7e4db54433b31"
+      },
+      "submission": "Verify/current/submissions/fps_divmod.cpp",
+      "submission_sha256": "176cd66b3a8aac971410db51e57d1347b8f143aa139e89ff16acaeec43cbf062",
+      "sample_checker": "tokens",
+      "review": "no_confirmed_driver_domain_defect",
+      "note": "N,M>=1、末尾係数は非0。divmodがtrimした商/剰余を返し、零多項式長0を含む長さと係数を出力する公式形式と一致。N,M<=500000。",
+      "primary_statement": "https://raw.githubusercontent.com/yosupo06/library-checker-problems/master/polynomial/division_of_polynomials/task.md",
+      "primary_statement_readable": true,
+      "checker_scope": "unique output / fixed expected tokens",
+      "acl_external_dependency": false
+    },
+    {
+      "id": "persistent_segment_tree",
+      "problem_url": "https://judge.yosupo.jp/problem/point_add_range_sum",
+      "driver": "Verify/current/drivers/persistent_segment_tree_main.cpp",
+      "driver_sha256": "4bf7d46472a15c44418be00fdfadf0708d92348c2efbafdcfa9f0ee5b5a688c3",
+      "libraries": [
+        "DataStructure/Persistent_Segment_Tree.cpp"
+      ],
+      "source_sha256": {
+        "DataStructure/Persistent_Segment_Tree.cpp": "80ad150eb44ed8784a6600446c3b6bb6c2d232fa79e57b063592ab138015a512"
+      },
+      "submission": "Verify/current/submissions/persistent_segment_tree.cpp",
+      "submission_sha256": "b4f2ea9cb4ea26a90715ff51c74201c65160aad4b23fddf50a9be09f35344b9a",
+      "sample_checker": "tokens",
+      "review": "no_confirmed_driver_domain_defect",
+      "note": "点加算問題を最新rootだけで解く。build後latest_rootを保存しtransformの返却rootで毎回置換、全prodにそのrootを渡す。旧root分岐はこの問題では未検証。",
+      "primary_statement": "https://raw.githubusercontent.com/yosupo06/library-checker-problems/master/data_structure/point_add_range_sum/task.md",
+      "primary_statement_readable": true,
+      "checker_scope": "unique output / fixed expected tokens",
+      "acl_external_dependency": false
+    },
+    {
+      "id": "pruefer_code",
+      "problem_url": "https://atcoder.jp/contests/abc239/tasks/abc239_f",
+      "driver": "Verify/current/drivers/pruefer_code_main.cpp",
+      "driver_sha256": "127eb2dac7ba575aed42bcd181745d3c460a4b296ffcd66fbccf34a174a809eb",
+      "libraries": [
+        "Graph/Pruefer_Code.cpp"
+      ],
+      "source_sha256": {
+        "Graph/Pruefer_Code.cpp": "4f7e596917971175cc226cd485d22426f338a8fcadc471acc812f2ae72758d43"
+      },
+      "submission": "Verify/current/submissions/pruefer_code.cpp",
+      "submission_sha256": "05d98cc02e6f1d2d1bcc0ba2391fd58bda862d67e0443bc3027c89b1ba0734d3",
+      "sample_checker": "pruefer_completion",
+      "review": "no_confirmed_driver_domain_defect",
+      "note": "N<=200000、入力頂点を1→0始まり、返却辺を0→1始まりへ。既存グラフに閉路があってもcomplete_tree_with_degreesのa==b判定はSKIP外でnullopt、公式の不可能入力を処理できる。",
+      "primary_statement": "https://atcoder.jp/contests/abc239/tasks/abc239_f",
+      "primary_statement_readable": true,
+      "checker_scope": "custom semantic checker for bounded local fixtures",
+      "acl_external_dependency": false
+    },
+    {
+      "id": "centroid_decomposition",
+      "problem_url": "https://atcoder.jp/contests/abc291/tasks/abc291_h",
+      "driver": "Verify/current/drivers/centroid_decomposition_main.cpp",
+      "driver_sha256": "bf20cf14dc0124aadc5339b6af1558c8793828ec40bef82bd2599936a7f980b9",
+      "libraries": [
+        "Graph/Centroid_Decomposition.cpp"
+      ],
+      "source_sha256": {
+        "Graph/Centroid_Decomposition.cpp": "aaffd515576a58171be037c3bfaf4ca07b9a1b8b12f212062c9994d28a3ad608"
+      },
+      "submission": "Verify/current/submissions/centroid_decomposition.cpp",
+      "submission_sha256": "1d17b7a75b02c8e13864cd88fc0e4a22b525f115123ca4dfa97096ba4bc074a9",
+      "sample_checker": "tokens",
+      "review": "no_confirmed_driver_domain_defect",
+      "note": "N<=100000、単純無向木を両方向に追加。距離保存なしの重心木parentを1始まりへ、rootは-1のまま。ラベル大小仮定なし。公式の非一意な木を出せるがsampleはtokens比較。",
+      "primary_statement": "https://atcoder.jp/contests/abc291/tasks/abc291_h",
+      "primary_statement_readable": true,
+      "checker_scope": "fixed expected token regression only",
+      "acl_external_dependency": false
+    },
+    {
+      "id": "segment_tree_beats",
+      "problem_url": "https://judge.yosupo.jp/problem/range_chmin_chmax_add_range_sum",
+      "driver": "Verify/current/drivers/segment_tree_beats_main.cpp",
+      "driver_sha256": "88a7f9daee829ca24f1a69d27a61b9c08d91ea5c5ee802b1b8f230b4e59c7a1e",
+      "libraries": [
+        "DataStructure/Segment_Tree_Beats.cpp"
+      ],
+      "source_sha256": {
+        "DataStructure/Segment_Tree_Beats.cpp": "5b332c567f2b0f12f32348bfabc3e6e4da20fccf8d4cd35bb7c960f75f494c64"
+      },
+      "submission": "Verify/current/submissions/segment_tree_beats.cpp",
+      "submission_sha256": "1f003a30d82dfe1d0ab3dba4f33febea147f9bd8b9f9d5fdd48920bc6661357c",
+      "sample_checker": "tokens",
+      "review": "no_confirmed_driver_domain_defect",
+      "note": "N,Q<=200000。公式は処理中常に|a_i|<=1e12でsum絶対値<=2e17、int64_t出力に収まる。入力bは最大2e12、chmin/chmax/addのtype対応と半開区間が一致。",
+      "primary_statement": "https://raw.githubusercontent.com/yosupo06/library-checker-problems/master/data_structure/range_chmin_chmax_add_range_sum/task.md",
+      "primary_statement_readable": true,
+      "checker_scope": "unique output / fixed expected tokens",
+      "acl_external_dependency": false
+    },
+    {
+      "id": "sliding_window_aggregation",
+      "problem_url": "https://judge.yosupo.jp/problem/queue_operate_all_composite",
+      "driver": "Verify/current/drivers/sliding_window_aggregation_main.cpp",
+      "driver_sha256": "4ecc4a1a5e574443d8da2b332aa7ee0f21d1f5947b8067c19938becabe46933f",
+      "libraries": [
+        "DataStructure/Sliding_Window_Aggregation.cpp"
+      ],
+      "source_sha256": {
+        "DataStructure/Sliding_Window_Aggregation.cpp": "a56213905d46763e4b79fbfa7cdb3046735c7a1bb43847efbe5660d69d66a90e"
+      },
+      "submission": "Verify/current/submissions/sliding_window_aggregation.cpp",
+      "submission_sha256": "bfe62ea8346f647066dfa1fff225ffb23438e681a71fa2f6190fb4614ab35213",
+      "sample_checker": "tokens",
+      "review": "no_confirmed_driver_domain_defect",
+      "note": "Q<=500000。Op(first,second)=second∘first。空all_prodは{1,0}でxを返し、popは非空保証。uint64_tの積+加算は範囲内。",
+      "primary_statement": "https://raw.githubusercontent.com/yosupo06/library-checker-problems/master/data_structure/queue_operate_all_composite/task.md",
+      "primary_statement_readable": true,
+      "checker_scope": "unique output / fixed expected tokens",
+      "acl_external_dependency": false
+    },
+    {
+      "id": "xor_basis",
+      "problem_url": "https://atcoder.jp/contests/abc141/tasks/abc141_f",
+      "driver": "Verify/current/drivers/xor_basis_main.cpp",
+      "driver_sha256": "1f0a7c62f8ed903ef1911f2321cffde9a010e24b102370e81595187e8c5ec055",
+      "libraries": [
+        "Math/Xor_Basis.cpp"
+      ],
+      "source_sha256": {
+        "Math/Xor_Basis.cpp": "85473d40f0c38dd526d69287d2e7c85e93466d25714c5c169f81936e0d0bc421"
+      },
+      "submission": "Verify/current/submissions/xor_basis.cpp",
+      "submission_sha256": "01112cdfa3f3a6972f3bf5436604ed5ca6b76c99b08c5b1ac40ce8fadcc6b183",
+      "sample_checker": "tokens",
+      "review": "no_confirmed_driver_domain_defect",
+      "note": "N<=1e5、Ai<2^60。total XORの1ビットを除外して基底に入れ、total+2*max_xorを出力するXOR分割の標準変換。答え<2^62でuint64_t内。",
+      "primary_statement": "https://atcoder.jp/contests/abc141/tasks/abc141_f",
+      "primary_statement_readable": true,
+      "checker_scope": "unique output / fixed expected tokens",
+      "acl_external_dependency": false
+    },
+    {
+      "id": "bipartite_matching",
+      "problem_url": "https://judge.yosupo.jp/problem/bipartitematching",
+      "driver": "Verify/current/drivers/bipartite_matching_main.cpp",
+      "driver_sha256": "6ac7f3eb3223e2ad063e98806a9968fc21573a179017f257951da6d316f4fa9b",
+      "libraries": [
+        "Graph/Bipartite_Matching.cpp"
+      ],
+      "source_sha256": {
+        "Graph/Bipartite_Matching.cpp": "02389bf3ed083d7a065d6660f1b6e7c81e544e9881716d230e575ba1d85b5aee"
+      },
+      "submission": "Verify/current/submissions/bipartite_matching.cpp",
+      "submission_sha256": "8181425fe6cf5e0e24d5ddae50969afba7df688eec5c98da3699092579bbc5e8",
+      "sample_checker": "bipartite_matching",
+      "review": "no_confirmed_driver_domain_defect",
+      "note": "左/右の番号は別の0始まり集合としてadd。solveの辺数とpairsを出力。L,R<=100000,M<=200000でint内。任意の最大マッチングを専用checkerが検査。",
+      "primary_statement": "https://raw.githubusercontent.com/yosupo06/library-checker-problems/master/graph/bipartitematching/task.md",
+      "primary_statement_readable": true,
+      "checker_scope": "custom semantic checker for bounded local fixtures",
+      "acl_external_dependency": false
+    },
+    {
+      "id": "rerooting_dp",
+      "problem_url": "https://judge.yosupo.jp/problem/tree_path_composite_sum",
+      "driver": "Verify/current/drivers/rerooting_dp_main.cpp",
+      "driver_sha256": "787a66eca5418dcb59aab9cf50b8519667091d9a452b15ac4aebc4fb5a63f561",
+      "libraries": [
+        "Graph/Rerooting_DP.cpp"
+      ],
+      "source_sha256": {
+        "Graph/Rerooting_DP.cpp": "73aeb95c3da73f43800db83b15b12fc61a1f5c6bb30182d0846dd7eb54b6ef58"
+      },
+      "submission": "Verify/current/submissions/rerooting_dp.cpp",
+      "submission_sha256": "dd24a80c2d49282aab74cd73ab1b18353c46fe3439dd558cab3096d13ed1132c",
+      "sample_checker": "tokens",
+      "review": "no_confirmed_driver_domain_defect",
+      "note": "各状態にsum/countを持ち辺写像はsum*b+count*c、次に自頂点のaを追加。これは根xから各yへ定義された外側からの辺合成に一致。辺IDは追加順で係数配列と対応。nをintで表せる限り各未剰余積和はint64_t内。",
+      "primary_statement": "https://raw.githubusercontent.com/yosupo06/library-checker-problems/master/tree/tree_path_composite_sum/task.md",
+      "primary_statement_readable": true,
+      "checker_scope": "unique output / fixed expected tokens",
+      "acl_external_dependency": false
+    },
+    {
+      "id": "offline_dynamic_connectivity",
+      "problem_url": "https://judge.yosupo.jp/problem/dynamic_graph_vertex_add_component_sum",
+      "driver": "Verify/current/drivers/offline_dynamic_connectivity_main.cpp",
+      "driver_sha256": "15788b49922d7655e8bcb3e36ac2e255a5fe58d29c9de7183d3ed1e17d849a99",
+      "libraries": [
+        "Graph/Offline_Dynamic_Connectivity.cpp"
+      ],
+      "source_sha256": {
+        "Graph/Offline_Dynamic_Connectivity.cpp": "1402ecdb3867cc75940372c92527bbbdcf8f413323329ce6cb617a9029a09471"
+      },
+      "submission": "Verify/current/submissions/offline_dynamic_connectivity.cpp",
+      "submission_sha256": "12c2c01fa6044cb92e98fc48f3f222fbb2201637a3622aff7f411cdb1a27d953",
+      "sample_checker": "tokens",
+      "review": "no_confirmed_driver_domain_defect",
+      "note": "N,Q<=300000。端点minmaxは無向辺ID管理だけ。追加前不存在/削除前存在の公式保証でmap.atが安全。点加算と照会を元の時刻順に記録しsolve結果を要求順に出す。総和<=6e14。",
+      "primary_statement": "https://raw.githubusercontent.com/yosupo06/library-checker-problems/master/graph/dynamic_graph_vertex_add_component_sum/task.md",
+      "primary_statement_readable": true,
+      "checker_scope": "unique output / fixed expected tokens",
+      "acl_external_dependency": false
+    },
+    {
+      "id": "functional_graph",
+      "problem_url": "https://atcoder.jp/contests/abc367/tasks/abc367_e",
+      "driver": "Verify/current/drivers/functional_graph_main.cpp",
+      "driver_sha256": "8a04ce991b2d4674859f137b5f811d9f5c2afc662a2abd9e498d722c83dfee9d",
+      "libraries": [
+        "Graph/Functional_Graph.cpp"
+      ],
+      "source_sha256": {
+        "Graph/Functional_Graph.cpp": "a763f98a4839898bc4e899faa58533389c1505312e29a4bfa10d516caaccdafb"
+      },
+      "submission": "Verify/current/submissions/functional_graph.cpp",
+      "submission_sha256": "a2fd51efd833d016d3b86c325defa5d98b40ceae37883ae432b5914b751e35b0",
+      "sample_checker": "tokens",
+      "review": "no_confirmed_driver_domain_defect",
+      "note": "N<=200000、K<=1e18。1始まり後続を--、kth_successorのK回後の添字で元Aを参照するので操作の向きに一致。K=0も元列、ラベル大小仮定なし。",
+      "primary_statement": "https://atcoder.jp/contests/abc367/tasks/abc367_e",
+      "primary_statement_readable": true,
+      "checker_scope": "unique output / fixed expected tokens",
+      "acl_external_dependency": false
+    },
+    {
+      "id": "berlekamp_massey",
+      "problem_url": "https://judge.yosupo.jp/problem/find_linear_recurrence",
+      "driver": "Verify/current/drivers/berlekamp_massey_main.cpp",
+      "driver_sha256": "0e69c4c6e86bdabde2f5fe7a541e3015dd7f37c2de4b0f257ec8025d32396a02",
+      "libraries": [
+        "Math/Berlekamp_Massey.cpp"
+      ],
+      "source_sha256": {
+        "Math/Berlekamp_Massey.cpp": "77ca327c74c8295aaac689753288c81e175e7e0a10bd5f5c8bb4866c5639d81c"
+      },
+      "submission": "Verify/current/submissions/berlekamp_massey.cpp",
+      "submission_sha256": "c988d38e9c74746b12d0e82bc5621bb0e6b0bd3246831c862b2f56ececd778ce",
+      "sample_checker": "linear_recurrence",
+      "review": "no_confirmed_driver_domain_defect",
+      "note": "N=0..10000、uint32_t列で法998244353 overloadを選ぶ。空/全0は次数0、出力係数の並びはa[i]=Σc[j]*a[i-j-1]で公式に一致。",
+      "primary_statement": "https://raw.githubusercontent.com/yosupo06/library-checker-problems/master/other/find_linear_recurrence/task.md",
+      "primary_statement_readable": true,
+      "checker_scope": "custom semantic checker for bounded local fixtures",
+      "acl_external_dependency": false
+    },
+    {
+      "id": "linear_recurrence",
+      "problem_url": "https://judge.yosupo.jp/problem/kth_term_of_linearly_recurrent_sequence",
+      "driver": "Verify/current/drivers/linear_recurrence_main.cpp",
+      "driver_sha256": "741811aa6be610e498656f19152e9d949c85fd0ae326e19508281d87232ff81b",
+      "libraries": [
+        "Math/Linear_Recurrence.cpp"
+      ],
+      "source_sha256": {
+        "Math/Linear_Recurrence.cpp": "ce01c0f83e4d7d8041ee8e4e6c6670bda7a3c707e6791ca97f2a48019941b2f6"
+      },
+      "submission": "Verify/current/submissions/linear_recurrence.cpp",
+      "submission_sha256": "2221c027649e3835fb56a209c8970e0c5f0519a4b5fbc42007a409b5d62e940a",
+      "sample_checker": "tokens",
+      "review": "no_confirmed_driver_domain_defect",
+      "note": "d<=100000、k<=1e18。a0..a(d-1),c1..cdの順で読み同長vectorをTermへ。uint32_t overloadなのでNTT版を選ぶ。必要変換長<=2^18で上限内。",
+      "primary_statement": "https://raw.githubusercontent.com/yosupo06/library-checker-problems/master/other/kth_term_of_linearly_recurrent_sequence/task.md",
+      "primary_statement_readable": true,
+      "checker_scope": "unique output / fixed expected tokens",
+      "acl_external_dependency": false
+    },
+    {
+      "id": "link_cut_tree",
+      "problem_url": "https://judge.yosupo.jp/problem/dynamic_tree_vertex_add_path_sum",
+      "driver": "Verify/current/drivers/link_cut_tree_main.cpp",
+      "driver_sha256": "444b0abb2388a5dfe601bb56250ce38a6ccff308330b4f0d14e51d3ce0f46e51",
+      "libraries": [
+        "DataStructure/Link_Cut_Tree.cpp"
+      ],
+      "source_sha256": {
+        "DataStructure/Link_Cut_Tree.cpp": "2e1b6ad774bd49c4a5c1b4f54698709b7259a936b23bc2a8bc303302f8183b53"
+      },
+      "submission": "Verify/current/submissions/link_cut_tree.cpp",
+      "submission_sha256": "4081c66202eb2aeb50b879c981bf66e8b414bf547ebf242ce5d11b5ed148cf78",
+      "sample_checker": "tokens",
+      "review": "no_confirmed_driver_domain_defect",
+      "note": "N,Q<=200000、既存辺cut後に新辺link。公式は各操作後も木を保証するためpath_prod optionalの参照は安全。点加算/端点込み経路和、総和<=4e14。",
+      "primary_statement": "https://raw.githubusercontent.com/yosupo06/library-checker-problems/master/tree/dynamic_tree_vertex_add_path_sum/task.md",
+      "primary_statement_readable": true,
+      "checker_scope": "unique output / fixed expected tokens",
+      "acl_external_dependency": false
+    },
+    {
+      "id": "link_cut_tree_composite",
+      "problem_url": "https://judge.yosupo.jp/problem/dynamic_tree_vertex_set_path_composite",
+      "driver": "Verify/current/drivers/link_cut_tree_composite_main.cpp",
+      "driver_sha256": "6fc251ea63a3ec15f04ce29adc0912734e61292108e8e3f2725c40d518b0ab7c",
+      "libraries": [
+        "DataStructure/Link_Cut_Tree.cpp"
+      ],
+      "source_sha256": {
+        "DataStructure/Link_Cut_Tree.cpp": "2e1b6ad774bd49c4a5c1b4f54698709b7259a936b23bc2a8bc303302f8183b53"
+      },
+      "submission": "Verify/current/submissions/link_cut_tree_composite.cpp",
+      "submission_sha256": "9d946525f1e2e25720342a5acbd94db8451db2507f67167d7df3e5132da6f830",
+      "sample_checker": "tokens",
+      "review": "no_confirmed_driver_domain_defect",
+      "note": "公式経路u→vに対しfirst後secondの合成。点setと辺置換を素直に呼び、常に木の保証でoptionalが存在。uint32係数の積をuint64へ拡張してから計算。",
+      "primary_statement": "https://raw.githubusercontent.com/yosupo06/library-checker-problems/master/tree/dynamic_tree_vertex_set_path_composite/task.md",
+      "primary_statement_readable": true,
+      "checker_scope": "unique output / fixed expected tokens",
+      "acl_external_dependency": false
+    },
+    {
+      "id": "link_cut_tree_affine",
+      "problem_url": "https://judge.yosupo.jp/problem/range_affine_range_sum",
+      "driver": "Verify/current/drivers/link_cut_tree_affine_main.cpp",
+      "driver_sha256": "034538a8e73ad6b7ea46bcaac5df7ec889e96f0ccb195e6d74b550fe9b6c9aea",
+      "libraries": [
+        "DataStructure/Link_Cut_Tree.cpp"
+      ],
+      "source_sha256": {
+        "DataStructure/Link_Cut_Tree.cpp": "2e1b6ad774bd49c4a5c1b4f54698709b7259a936b23bc2a8bc303302f8183b53"
+      },
+      "submission": "Verify/current/submissions/link_cut_tree_affine.cpp",
+      "submission_sha256": "9c8ceacbea40470b88a6efc1f1ee0faeebd5d7553236a86313d8b071fa93f01e",
+      "sample_checker": "tokens",
+      "review": "no_confirmed_driver_domain_defect",
+      "note": "配列を鎖として構成し公式l<rの[l,r)を閉パスl→r-1へ変換。mappingとnew∘oldの作用順は正しい。n=1でも安全。入力分布別切替なし。",
+      "primary_statement": "https://raw.githubusercontent.com/yosupo06/library-checker-problems/master/data_structure/range_affine_range_sum/task.md",
+      "primary_statement_readable": true,
+      "checker_scope": "unique output / fixed expected tokens",
+      "acl_external_dependency": false
+    },
+    {
+      "id": "dual_segment_tree",
+      "problem_url": "https://judge.yosupo.jp/problem/range_affine_point_get",
+      "driver": "Verify/current/drivers/dual_segment_tree_main.cpp",
+      "driver_sha256": "65f3ae9bd5eb7d7d67dee63533ff269030635269d46f1bad95d7d5baf9069655",
+      "libraries": [
+        "DataStructure/Dual_Segment_Tree.cpp"
+      ],
+      "source_sha256": {
+        "DataStructure/Dual_Segment_Tree.cpp": "795b17e19e6682fa1523aae9716b4ca2af1e89fd81bbf01df71251782101a61e"
+      },
+      "submission": "Verify/current/submissions/dual_segment_tree.cpp",
+      "submission_sha256": "036f00c01a1a2d884f116e8b04182ecf469825f807fa33f470c9f3bb7b31f255",
+      "sample_checker": "tokens",
+      "review": "no_confirmed_driver_domain_defect",
+      "note": "法998244353、N,Q<=500000。区間作用のnew∘old合成と点getをAPIへ直結。点値と作用係数はuint32、乗算前にuint64へ拡張。",
+      "primary_statement": "https://raw.githubusercontent.com/yosupo06/library-checker-problems/master/data_structure/range_affine_point_get/task.md",
+      "primary_statement_readable": true,
+      "checker_scope": "unique output / fixed expected tokens",
+      "acl_external_dependency": false
+    },
+    {
+      "id": "slope_trick",
+      "problem_url": "https://atcoder.jp/contests/abc127/tasks/abc127_f",
+      "driver": "Verify/current/drivers/slope_trick_main.cpp",
+      "driver_sha256": "fc4de4195fe80e0cfd16357cbb4c78d3631260ad592076a603c4cde83a63e86f",
+      "libraries": [
+        "DataStructure/Slope_Trick.cpp"
+      ],
+      "source_sha256": {
+        "DataStructure/Slope_Trick.cpp": "29f282b3e162d47a2f87036dc92951adc4856c0bca1fcf8db7eac5e89e192ae1"
+      },
+      "submission": "Verify/current/submissions/slope_trick.cpp",
+      "submission_sha256": "d6651adaea888efe5a07109ac12ceced2d60af5a77dbcd5cc73a90f328c941c7",
+      "sample_checker": "tokens",
+      "review": "no_confirmed_driver_domain_defect",
+      "note": "Q<=200000、a,bは±1e9。add_abs(a)+add_constant(b)、最小のargminであるlowerを出力。最初は更新という公式保証でlowerが存在し、最小値もint64_t内。",
+      "primary_statement": "https://atcoder.jp/contests/abc127/tasks/abc127_f",
+      "primary_statement_readable": true,
+      "checker_scope": "unique output / fixed expected tokens",
+      "acl_external_dependency": false
+    },
+    {
+      "id": "dynamic_bitset",
+      "problem_url": "https://judge.yosupo.jp/problem/matrix_product_mod_2",
+      "driver": "Verify/current/drivers/dynamic_bitset_main.cpp",
+      "driver_sha256": "2391a4e602779bc19cfe9467d31ba591092d751277c75670697d87d912d0e87e",
+      "libraries": [
+        "DataStructure/Dynamic_Bitset.cpp"
+      ],
+      "source_sha256": {
+        "DataStructure/Dynamic_Bitset.cpp": "e1a2391a0390744ee0f4b3994fb08b7bb6185540bff7209b168fb2118cb2a907"
+      },
+      "submission": "Verify/current/submissions/dynamic_bitset.cpp",
+      "submission_sha256": "1107576a72fa59306e91561ee89b3509dc6c9fc18c1492100d001bd34c34287c",
+      "sample_checker": "tokens",
+      "review": "no_confirmed_driver_domain_defect",
+      "note": "GF2行列積。文字列constructorは高位先頭なのでAの列iはbit(m-1-i)、B列も同じ位置へ格納。intersection_parityで向きが一致。N,M,K>=1。",
+      "primary_statement": "https://raw.githubusercontent.com/yosupo06/library-checker-problems/master/linear_algebra/matrix_product_mod_2/task.md",
+      "primary_statement_readable": true,
+      "checker_scope": "unique output / fixed expected tokens",
+      "acl_external_dependency": false
+    },
+    {
+      "id": "dynamic_bitset_triangle",
+      "problem_url": "https://atcoder.jp/contests/abc258/tasks/abc258_g",
+      "driver": "Verify/current/drivers/dynamic_bitset_triangle_main.cpp",
+      "driver_sha256": "492ff2b33124b5c281308cafd5cb76bd9bed408d571c43c20725867fe45e98c0",
+      "libraries": [
+        "DataStructure/Dynamic_Bitset.cpp"
+      ],
+      "source_sha256": {
+        "DataStructure/Dynamic_Bitset.cpp": "e1a2391a0390744ee0f4b3994fb08b7bb6185540bff7209b168fb2118cb2a907"
+      },
+      "submission": "Verify/current/submissions/dynamic_bitset_triangle.cpp",
+      "submission_sha256": "94cf6fe6c2047601eb02b83606561438288690141d2b98a4c53a8d32e81f94c6",
+      "sample_checker": "tokens",
+      "review": "no_confirmed_driver_domain_defect",
+      "note": "N<=3000、単純無向隣接行列。文字列の反転bit番号n-1-vで辺を調べ、各無向辺の共通隣接数合計/3。三角形が3辺で数えられint64_t内。",
+      "primary_statement": "https://atcoder.jp/contests/abc258/tasks/abc258_g",
+      "primary_statement_readable": true,
+      "checker_scope": "unique output / fixed expected tokens",
+      "acl_external_dependency": false
+    },
+    {
+      "id": "dynamic_bitset_shift_or",
+      "problem_url": "https://atcoder.jp/contests/tdpc/tasks/tdpc_contest",
+      "driver": "Verify/current/drivers/dynamic_bitset_shift_or_main.cpp",
+      "driver_sha256": "cabaa3caa9cffee12ab99a035b7ee809b86ab1bb6c8f5dd0d22fa6767e3a953d",
+      "libraries": [
+        "DataStructure/Dynamic_Bitset.cpp"
+      ],
+      "source_sha256": {
+        "DataStructure/Dynamic_Bitset.cpp": "e1a2391a0390744ee0f4b3994fb08b7bb6185540bff7209b168fb2118cb2a907"
+      },
+      "submission": "Verify/current/submissions/dynamic_bitset_shift_or.cpp",
+      "submission_sha256": "b2738f463e1e0b28e80fdabc0b2f4b2246e6383594252c57fbff5484dc77723c",
+      "sample_checker": "tokens",
+      "review": "no_confirmed_driver_domain_defect",
+      "note": "N<=100、各点<=100なので全和<=10000。10001bitは0..10000を過不足なく保持、初期0点を含みshift_orを各問題1回だけ呼ぶ。",
+      "primary_statement": "https://atcoder.jp/contests/tdpc/tasks/tdpc_contest",
+      "primary_statement_readable": true,
+      "checker_scope": "unique output / fixed expected tokens",
+      "acl_external_dependency": false
+    },
+    {
+      "id": "suffix_automaton",
+      "problem_url": "https://judge.yosupo.jp/problem/number_of_substrings",
+      "driver": "Verify/current/drivers/suffix_automaton_main.cpp",
+      "driver_sha256": "1fb8c33f04cff7ba086e4bb06718478845fee54e2183c796d9c2db0d7d09a15c",
+      "libraries": [
+        "String/Suffix_Automaton.cpp"
+      ],
+      "source_sha256": {
+        "String/Suffix_Automaton.cpp": "8ca7d73707e41896a96f99e65f8bc69a2db9e6888b8225e1c12ee278ffcca8b0"
+      },
+      "submission": "Verify/current/submissions/suffix_automaton.cpp",
+      "submission_sha256": "bca209910e844a1f1055d05eb1aa122e7d478e07b119b5c89c282b2dc8c95dad",
+      "sample_checker": "tokens",
+      "review": "no_confirmed_driver_domain_defect",
+      "note": "非空小文字列N<=500000はdefault alphabet26に適合。distinct_substring_countは空を除く異なる部分文字列数を返し、最大約1.25e11もuint64_t内。",
+      "primary_statement": "https://raw.githubusercontent.com/yosupo06/library-checker-problems/master/string/number_of_substrings/task.md",
+      "primary_statement_readable": true,
+      "checker_scope": "unique output / fixed expected tokens",
+      "acl_external_dependency": false
+    },
+    {
+      "id": "suffix_automaton_lcs",
+      "problem_url": "https://judge.yosupo.jp/problem/longest_common_substring",
+      "driver": "Verify/current/drivers/suffix_automaton_lcs_main.cpp",
+      "driver_sha256": "0cb57654fb09beb16c4ef17eb3ae826efe0c252ce01a33523d9dc855924326b3",
+      "libraries": [
+        "String/Suffix_Automaton.cpp"
+      ],
+      "source_sha256": {
+        "String/Suffix_Automaton.cpp": "8ca7d73707e41896a96f99e65f8bc69a2db9e6888b8225e1c12ee278ffcca8b0"
+      },
+      "submission": "Verify/current/submissions/suffix_automaton_lcs.cpp",
+      "submission_sha256": "d6115ea87819fb5f7b572fc6f1bcdf227ea0941b85ed0e8da1ce592233a3f02d",
+      "sample_checker": "longest_common_substring",
+      "review": "no_confirmed_driver_domain_defect",
+      "note": "S,T各<=500000小文字。Matchの元文字列/照会文字列開始位置と長さをそれぞれ半開区間に変換。長さ0も出力可能、同長別解は専用checkerで受理。",
+      "primary_statement": "https://raw.githubusercontent.com/yosupo06/library-checker-problems/master/string/longest_common_substring/task.md",
+      "primary_statement_readable": true,
+      "checker_scope": "custom semantic checker for bounded local fixtures",
+      "acl_external_dependency": false
+    },
+    {
+      "id": "palindromic_tree",
+      "problem_url": "https://judge.yosupo.jp/problem/eertree",
+      "driver": "Verify/current/drivers/palindromic_tree_main.cpp",
+      "driver_sha256": "4586408b9a407f3a66d4ee4bb3c410fa00adabdf0e510d288e809d21e2849405",
+      "libraries": [
+        "String/Palindromic_Tree.cpp"
+      ],
+      "source_sha256": {
+        "String/Palindromic_Tree.cpp": "4026134c0c3652fa493423c12b3f1daaedda7bec2b8061ee142778f154900d51"
+      },
+      "submission": "Verify/current/submissions/palindromic_tree.cpp",
+      "submission_sha256": "fa4e943369ca7a716cd9b05557bb9b065743a0d82966bfffe8fb750847760149",
+      "sample_checker": "tokens",
+      "review": "no_confirmed_driver_domain_defect",
+      "note": "公式ODD=-1,EVEN=0に本体IDが一致。1文字appendごとの生成順が最小右端順となり、各prefix末尾最長回文IDも返却値から出力。数値MAX_Nの再取得は未完。",
+      "primary_statement": "https://raw.githubusercontent.com/yosupo06/library-checker-problems/master/string/eertree/task.md",
+      "primary_statement_readable": true,
+      "checker_scope": "unique output / fixed expected tokens",
+      "acl_external_dependency": false
+    },
+    {
+      "id": "matrix_product",
+      "problem_url": "https://judge.yosupo.jp/problem/matrix_product",
+      "driver": "Verify/current/drivers/matrix_product_main.cpp",
+      "driver_sha256": "188c7a5f01a920a258c6042f74e1f643b69dbd86682c0f040137c2803d1bf53a",
+      "libraries": [
+        "Math/Matrix.cpp"
+      ],
+      "source_sha256": {
+        "Math/Matrix.cpp": "cac01f95cd19fac7f52b2d9eba304ce8b12bcfbb63af8610de5dd68c859291af"
+      },
+      "submission": "Verify/current/submissions/matrix_product.cpp",
+      "submission_sha256": "89a557a162eaee83deca004a28b23ce6cb95875d9beff279f88da20334995f96",
+      "sample_checker": "tokens",
+      "review": "no_confirmed_driver_domain_defect",
+      "note": "size_tのN,M,Kとuint32の998244353剰余を共通VerifyMatrixFieldへ変換、shapeと通常積の呼出は整合。公式task/paramsは今回取得不能、正確な現行最大サイズ/法の外部再確認は未完。",
+      "primary_statement": "https://raw.githubusercontent.com/yosupo06/library-checker-problems/master/linear_algebra/matrix_product/task.md",
+      "primary_statement_readable": false,
+      "checker_scope": "unique output / fixed expected tokens",
+      "acl_external_dependency": false
+    },
+    {
+      "id": "matrix_determinant",
+      "problem_url": "https://judge.yosupo.jp/problem/matrix_det",
+      "driver": "Verify/current/drivers/matrix_determinant_main.cpp",
+      "driver_sha256": "c1cb5d253dce44f6d2e6de01ab14f16f48446e1313e7eec6afcdd2d2b5892e60",
+      "libraries": [
+        "Math/Gaussian_Elimination.cpp"
+      ],
+      "source_sha256": {
+        "Math/Gaussian_Elimination.cpp": "5761d7380e4b09be744c0d785aa4368d643df7a062bc63ec0af335ade3fe9123"
+      },
+      "submission": "Verify/current/submissions/matrix_determinant.cpp",
+      "submission_sha256": "b4667678fc75fb9dbfe9e2986bdd8d649dbc2610d775194921623b533cf2e345",
+      "sample_checker": "tokens",
+      "review": "no_confirmed_driver_domain_defect",
+      "note": "N<=500、法998244353の正確な体型で正方行列式を計算。整数型の除算を用いない。特異時も値0を正しく出力する契約。",
+      "primary_statement": "https://raw.githubusercontent.com/yosupo06/library-checker-problems/master/linear_algebra/matrix_det/task.md",
+      "primary_statement_readable": true,
+      "checker_scope": "unique output / fixed expected tokens",
+      "acl_external_dependency": false
+    },
+    {
+      "id": "matrix_inverse",
+      "problem_url": "https://judge.yosupo.jp/problem/inverse_matrix",
+      "driver": "Verify/current/drivers/matrix_inverse_main.cpp",
+      "driver_sha256": "d57a12331f71b3d6b865470c318027925cecddf11a2913efe693d6def34937df",
+      "libraries": [
+        "Math/Gaussian_Elimination.cpp"
+      ],
+      "source_sha256": {
+        "Math/Gaussian_Elimination.cpp": "5761d7380e4b09be744c0d785aa4368d643df7a062bc63ec0af335ade3fe9123"
+      },
+      "submission": "Verify/current/submissions/matrix_inverse.cpp",
+      "submission_sha256": "d7d1a079138fbfa6a4867f700e8888f68362dcb966e3eb7648f36bccd6072106",
+      "sample_checker": "tokens",
+      "review": "no_confirmed_driver_domain_defect",
+      "note": "法998244353の体。optionalなしは-1、存在時N行N列の逆行列を出力。非零pivotだけを割る体前提を共通型で満たす。",
+      "primary_statement": "https://raw.githubusercontent.com/yosupo06/library-checker-problems/master/linear_algebra/inverse_matrix/task.md",
+      "primary_statement_readable": true,
+      "checker_scope": "unique output / fixed expected tokens",
+      "acl_external_dependency": false
+    },
+    {
+      "id": "matrix_rank",
+      "problem_url": "https://judge.yosupo.jp/problem/matrix_rank",
+      "driver": "Verify/current/drivers/matrix_rank_main.cpp",
+      "driver_sha256": "90162d2cfbe1036fdfa803d3b6e8a23db6c56c5eb813bee91f5888851c4f2cfa",
+      "libraries": [
+        "Math/Gaussian_Elimination.cpp"
+      ],
+      "source_sha256": {
+        "Math/Gaussian_Elimination.cpp": "5761d7380e4b09be744c0d785aa4368d643df7a062bc63ec0af335ade3fe9123"
+      },
+      "submission": "Verify/current/submissions/matrix_rank.cpp",
+      "submission_sha256": "2958b169b76d69b43c7516dc4abe1e01ad728a88ffdade1d6739935ef0cafe79",
+      "sample_checker": "tokens",
+      "review": "no_confirmed_driver_domain_defect",
+      "note": "N,M=0も可、N*M<=250000。flat valuesを読むので0行/0列に空文字の抽出を行わない。体は998244353。size_tで形を表現。",
+      "primary_statement": "https://raw.githubusercontent.com/yosupo06/library-checker-problems/master/linear_algebra/matrix_rank/task.md",
+      "primary_statement_readable": true,
+      "checker_scope": "unique output / fixed expected tokens",
+      "acl_external_dependency": false
+    },
+    {
+      "id": "matrix_power",
+      "problem_url": "https://judge.yosupo.jp/problem/pow_of_matrix",
+      "driver": "Verify/current/drivers/matrix_power_main.cpp",
+      "driver_sha256": "a5b03b503af42448000a0bd924fb0bf119859222ba393b3748180bfbf043b8de",
+      "libraries": [
+        "Math/Matrix.cpp"
+      ],
+      "source_sha256": {
+        "Math/Matrix.cpp": "cac01f95cd19fac7f52b2d9eba304ce8b12bcfbb63af8610de5dd68c859291af"
+      },
+      "submission": "Verify/current/submissions/matrix_power.cpp",
+      "submission_sha256": "460811bc8d0a438cc600aff75a81bc043269a39f20b0a65c5884573858d3ab21",
+      "sample_checker": "tokens",
+      "review": "no_confirmed_driver_domain_defect",
+      "note": "N<=200、非負指数K<=1e18をuint64_tで読みMatrixPowerへ。K=0は単位行列、法998244353。共通の体型は外部ACL不要。",
+      "primary_statement": "https://raw.githubusercontent.com/yosupo06/library-checker-problems/master/linear_algebra/pow_of_matrix/task.md",
+      "primary_statement_readable": true,
+      "checker_scope": "unique output / fixed expected tokens",
+      "acl_external_dependency": false
+    },
+    {
+      "id": "matrix_linear_system",
+      "problem_url": "https://judge.yosupo.jp/problem/system_of_linear_equations",
+      "driver": "Verify/current/drivers/matrix_linear_system_main.cpp",
+      "driver_sha256": "94615a4e34d906c6dea0b9bc8fd07f1b9701fdeb26de5c1c05dad3890067725d",
+      "libraries": [
+        "Math/Gaussian_Elimination.cpp"
+      ],
+      "source_sha256": {
+        "Math/Gaussian_Elimination.cpp": "5761d7380e4b09be744c0d785aa4368d643df7a062bc63ec0af335ade3fe9123"
+      },
+      "submission": "Verify/current/submissions/matrix_linear_system.cpp",
+      "submission_sha256": "52a2b0f381ba0c240cc6e2d6a8f76bb214fc9fac83ebfb5a69e0eca70d1c77d0",
+      "sample_checker": "matrix_linear_system",
+      "review": "no_confirmed_driver_domain_defect",
+      "note": "N,M<=500、法998244353。rhsは長さN、返却kernelは各行が基底なのでrowsを解空間次元として出力し、特解→基底の公式順に一致。不能時-1。",
+      "primary_statement": "https://raw.githubusercontent.com/yosupo06/library-checker-problems/master/linear_algebra/system_of_linear_equations/task.md",
+      "primary_statement_readable": true,
+      "checker_scope": "custom semantic checker for bounded local fixtures",
+      "acl_external_dependency": false
+    },
+    {
+      "id": "binary_matrix_product",
+      "problem_url": "https://judge.yosupo.jp/problem/matrix_product_mod_2",
+      "driver": "Verify/current/drivers/binary_matrix_product_main.cpp",
+      "driver_sha256": "b6ce2413e6642292160549c813e0463001e8872cb05b51f25508ef168dc79789",
+      "libraries": [
+        "Math/Binary_Matrix.cpp"
+      ],
+      "source_sha256": {
+        "Math/Binary_Matrix.cpp": "1ec784efc04c33c866e3081766442a91bdf9352b264428a290a3a69609fbddad"
+      },
+      "submission": "Verify/current/submissions/binary_matrix_product.cpp",
+      "submission_sha256": "e1a4c8733056f06d1039ca37d220eaf29ea024764218ae9bef74dfc823534548",
+      "sample_checker": "tokens",
+      "review": "no_confirmed_driver_domain_defect",
+      "note": "GF2の行/列を文字列の添字順のままset。A(n,m)*B(m,k)と同じrow/col順で出力、DynamicBitset版と異なる内部bit向きもAPIで吸収される。",
+      "primary_statement": "https://raw.githubusercontent.com/yosupo06/library-checker-problems/master/linear_algebra/matrix_product_mod_2/task.md",
+      "primary_statement_readable": true,
+      "checker_scope": "unique output / fixed expected tokens",
+      "acl_external_dependency": false
+    },
+    {
+      "id": "binary_matrix_rank",
+      "problem_url": "https://judge.yosupo.jp/problem/matrix_rank_mod_2",
+      "driver": "Verify/current/drivers/binary_matrix_rank_main.cpp",
+      "driver_sha256": "8157f54a07628466f79826c0939901463cf35c4a553b99c8ac4e815f2386562f",
+      "libraries": [
+        "Math/Binary_Matrix.cpp"
+      ],
+      "source_sha256": {
+        "Math/Binary_Matrix.cpp": "1ec784efc04c33c866e3081766442a91bdf9352b264428a290a3a69609fbddad"
+      },
+      "submission": "Verify/current/submissions/binary_matrix_rank.cpp",
+      "submission_sha256": "d94263e1228e803dfed0aedf5d3558ce963d750f0506b11ab9fca2e28f3a5f69",
+      "sample_checker": "tokens",
+      "review": "no_confirmed_driver_domain_defect",
+      "note": "N,M=0..2^24、N*M<=2^24。m=0は文字列抽出を行わず、空行を末尾空白として扱える。BinaryMatrixは0列でもrowsを保持しrank0を返す。",
+      "primary_statement": "https://raw.githubusercontent.com/yosupo06/library-checker-problems/master/linear_algebra/matrix_rank_mod_2/task.md",
+      "primary_statement_readable": true,
+      "checker_scope": "unique output / fixed expected tokens",
+      "acl_external_dependency": false
+    },
+    {
+      "id": "binary_matrix_det",
+      "problem_url": "https://judge.yosupo.jp/problem/matrix_det_mod_2",
+      "driver": "Verify/current/drivers/binary_matrix_det_main.cpp",
+      "driver_sha256": "2bf86f147f3f3f546bbd92ac5ae4331fbd396d080c2b6e41b6f65821b8c50787",
+      "libraries": [
+        "Math/Binary_Matrix.cpp"
+      ],
+      "source_sha256": {
+        "Math/Binary_Matrix.cpp": "1ec784efc04c33c866e3081766442a91bdf9352b264428a290a3a69609fbddad"
+      },
+      "submission": "Verify/current/submissions/binary_matrix_det.cpp",
+      "submission_sha256": "eae3dbbaa59ef45fdafb9f0b2d2dc92ecb2051bcd40932aee3fa1547eccbd4c9",
+      "sample_checker": "tokens",
+      "review": "no_confirmed_driver_domain_defect",
+      "note": "正方BinaryMatrixのdeterminantを0/1として出力。文字列の左から列順にset。公式task/paramsは今回取得不能で現行最大サイズの再確認は未完。",
+      "primary_statement": "https://raw.githubusercontent.com/yosupo06/library-checker-problems/master/linear_algebra/matrix_det_mod_2/task.md",
+      "primary_statement_readable": false,
+      "checker_scope": "unique output / fixed expected tokens",
+      "acl_external_dependency": false
+    },
+    {
+      "id": "binary_matrix_inverse",
+      "problem_url": "https://judge.yosupo.jp/problem/inverse_matrix_mod_2",
+      "driver": "Verify/current/drivers/binary_matrix_inverse_main.cpp",
+      "driver_sha256": "cca0b3ad95afb1d51ba22189706158302566c7c2fcffa0191293dfc483cc7e3b",
+      "libraries": [
+        "Math/Binary_Matrix.cpp"
+      ],
+      "source_sha256": {
+        "Math/Binary_Matrix.cpp": "1ec784efc04c33c866e3081766442a91bdf9352b264428a290a3a69609fbddad"
+      },
+      "submission": "Verify/current/submissions/binary_matrix_inverse.cpp",
+      "submission_sha256": "aa5ec1c4c344b00e58d0d275bd4fad0f0026f79c5bd98e14cc687f0ae4f23d28",
+      "sample_checker": "tokens",
+      "review": "no_confirmed_driver_domain_defect",
+      "note": "GF2正方行列、逆なしは-1。返却値の各bitを列順に出力。0/1の整数出力と文字列形式を区別している。",
+      "primary_statement": "https://raw.githubusercontent.com/yosupo06/library-checker-problems/master/linear_algebra/inverse_matrix_mod_2/task.md",
+      "primary_statement_readable": true,
+      "checker_scope": "unique output / fixed expected tokens",
+      "acl_external_dependency": false
+    },
+    {
+      "id": "binary_matrix_solve",
+      "problem_url": "https://judge.yosupo.jp/problem/system_of_linear_equations_mod_2",
+      "driver": "Verify/current/drivers/binary_matrix_solve_main.cpp",
+      "driver_sha256": "f7df9a30802eab609035c40a247b652c0a2eccffb272d28c2ce1fc278005fb71",
+      "libraries": [
+        "Math/Binary_Matrix.cpp"
+      ],
+      "source_sha256": {
+        "Math/Binary_Matrix.cpp": "1ec784efc04c33c866e3081766442a91bdf9352b264428a290a3a69609fbddad"
+      },
+      "submission": "Verify/current/submissions/binary_matrix_solve.cpp",
+      "submission_sha256": "8dfd7ddf25380e367e17836c2cac4b93b74abcfa6d3fd739064abedc845278f0",
+      "sample_checker": "binary_linear_system",
+      "review": "no_confirmed_driver_domain_defect",
+      "note": "公式N,M>=1、各<=4096。文字列行と長さNのrhsをGF2へ。特解の長さM、核の行数次元と基底行を連結bit文字列で出力。不能時-1。",
+      "primary_statement": "https://raw.githubusercontent.com/yosupo06/library-checker-problems/master/linear_algebra/system_of_linear_equations_mod_2/task.md",
+      "primary_statement_readable": true,
+      "checker_scope": "custom semantic checker for bounded local fixtures",
+      "acl_external_dependency": false
+    },
+    {
+      "id": "mo",
+      "problem_url": "https://judge.yosupo.jp/problem/static_range_count_distinct",
+      "driver": "Verify/current/drivers/mo_main.cpp",
+      "driver_sha256": "b452c7ab17c4dbfac5b3693024e7b49eeca415b58c2d6aa5231090e2dccbd224",
+      "libraries": [
+        "Algorithm/Mo.cpp"
+      ],
+      "source_sha256": {
+        "Algorithm/Mo.cpp": "ef4414d620ec67a384144160b3d60a9e1a7f052be339db790ec01b2365f33c8f"
+      },
+      "submission": "Verify/current/submissions/mo.cpp",
+      "submission_sha256": "ee2fc648b7a145922978de97a0cb91825f19fe967dff3f0bc9ca1e7f1be84322",
+      "sample_checker": "tokens",
+      "review": "no_confirmed_driver_domain_defect",
+      "note": "N,Q=0も可、<=500000、値<=1e9。値だけを圧縮し空windowからadd/erase、add_queryのIDで回答を元順へ。照会順の最適化はMo本体のAPI内部。全最大ケースの時間適合はこのレビューで保証しない。",
+      "primary_statement": "https://raw.githubusercontent.com/yosupo06/library-checker-problems/master/data_structure/static_range_count_distinct/task.md",
+      "primary_statement_readable": true,
+      "checker_scope": "unique output / fixed expected tokens",
+      "acl_external_dependency": false
+    },
+    {
+      "id": "mo_updates",
+      "problem_url": "https://judge.yosupo.jp/problem/point_set_range_frequency",
+      "driver": "Verify/current/drivers/mo_updates_main.cpp",
+      "driver_sha256": "fc03a4be14fc51cae6bcbd562f594f99adca30d8caeea3c234d09297b6249909",
+      "libraries": [
+        "Algorithm/Mo.cpp"
+      ],
+      "source_sha256": {
+        "Algorithm/Mo.cpp": "ef4414d620ec67a384144160b3d60a9e1a7f052be339db790ec01b2365f33c8f"
+      },
+      "submission": "Verify/current/submissions/mo_updates.cpp",
+      "submission_sha256": "82a9df46ea5f4f581cc0dca4460b9c4853d56cfa9645b6f462208ee72918772d",
+      "sample_checker": "tokens",
+      "review": "no_confirmed_driver_domain_defect",
+      "note": "N,Q=0..200000、値<=1e9。各変更のbeforeは入力時系列のlatest、undoはbeforeへ復元。activeならerase→assign→add、要求IDとtargets/answersが一致。圧縮は照会値も含み空範囲0。時間適合の追加測定なし。",
+      "primary_statement": "https://raw.githubusercontent.com/yosupo06/library-checker-problems/master/data_structure/point_set_range_frequency/task.md",
+      "primary_statement_readable": true,
+      "checker_scope": "unique output / fixed expected tokens",
+      "acl_external_dependency": false
+    },
+    {
+      "id": "convolution_any_mod",
+      "problem_url": "https://judge.yosupo.jp/problem/convolution_mod_1000000007",
+      "driver": "Verify/current/drivers/convolution_any_mod_main.cpp",
+      "driver_sha256": "afd2674db77c5440cf05fe1df7aee08ef5e7ad6f69690ccdba145871afeacf99",
+      "libraries": [
+        "Math/Convolution.cpp"
+      ],
+      "source_sha256": {
+        "Math/Convolution.cpp": "610a1eee375142f10f5770c293f85722c3cfbb0cbaf211a6148048e953817cb3"
+      },
+      "submission": "Verify/current/submissions/convolution_any_mod.cpp",
+      "submission_sha256": "bd1743a51c486f46d97c27d7f8aeb4d4e4716b1154c13f34e032f4ed1dd80b03",
+      "sample_checker": "tokens",
+      "review": "no_confirmed_driver_domain_defect",
+      "note": "N,M<=524288、入力剰余<1e9+7をuint32へ。modを1000000007で固定しCRT APIを素直に呼ぶ。結果長<2^20は上限2^23内。",
+      "primary_statement": "https://raw.githubusercontent.com/yosupo06/library-checker-problems/master/convolution/convolution_mod_1000000007/task.md",
+      "primary_statement_readable": true,
+      "checker_scope": "unique output / fixed expected tokens",
+      "acl_external_dependency": false
+    },
+    {
+      "id": "convolution_integer_triplets",
+      "problem_url": "https://atcoder.jp/contests/abc392/tasks/abc392_g",
+      "driver": "Verify/current/drivers/convolution_integer_triplets_main.cpp",
+      "driver_sha256": "6bb4ee7b2718a005b40b45b6b4af3782fb4e07f34f262fa63eb0a00da24d94bb",
+      "libraries": [
+        "Math/Convolution.cpp"
+      ],
+      "source_sha256": {
+        "Math/Convolution.cpp": "610a1eee375142f10f5770c293f85722c3cfbb0cbaf211a6148048e953817cb3"
+      },
+      "submission": "Verify/current/submissions/convolution_integer_triplets.cpp",
+      "submission_sha256": "c881ff931e793dd2659b9aea9f3965b2affe89388b6177fa40e07a1f7603bb13",
+      "sample_checker": "tokens",
+      "review": "no_confirmed_driver_domain_defect",
+      "note": "1<=N<=1e6、値1..1e6は全て相異なる。indicatorの二乗でcounts[2b]から自己組1を引いて/2。A<B<Cの等差三組の数に一致、係数<=1e6、合計<=C(N,2)でint64_t内。結果長<=2000001。",
+      "primary_statement": "https://atcoder.jp/contests/abc392/tasks/abc392_g",
+      "primary_statement_readable": true,
+      "checker_scope": "unique output / fixed expected tokens",
+      "acl_external_dependency": false
+    },
+    {
+      "id": "multipoint_evaluation",
+      "problem_url": "https://judge.yosupo.jp/problem/multipoint_evaluation",
+      "driver": "Verify/current/drivers/multipoint_evaluation_main.cpp",
+      "driver_sha256": "49b6e031c9fb2dd9b1b5cb43867094410e83ae507a1e26e94fd459a809d47fac",
+      "libraries": [
+        "Math/Polynomial.cpp"
+      ],
+      "source_sha256": {
+        "Math/Polynomial.cpp": "46b4b1c00c1ab51296e3c38aa1bd0093da8bc19a19870937490cd374c98a5d91"
+      },
+      "submission": "Verify/current/submissions/multipoint_evaluation.cpp",
+      "submission_sha256": "46b55e6853be7804afee7a6e417d825b11a8d677c6b7066f3761f2810ce94408",
+      "sample_checker": "tokens",
+      "review": "no_confirmed_driver_domain_defect",
+      "note": "N,M<=131072、法998244353。係数と評価点を入力順に読みEvaluateへ。評価は重複点も許すAPI、出力順は元points順。",
+      "primary_statement": "https://raw.githubusercontent.com/yosupo06/library-checker-problems/master/polynomial/multipoint_evaluation/task.md",
+      "primary_statement_readable": true,
+      "checker_scope": "unique output / fixed expected tokens",
+      "acl_external_dependency": false
+    },
+    {
+      "id": "polynomial_interpolation",
+      "problem_url": "https://judge.yosupo.jp/problem/polynomial_interpolation",
+      "driver": "Verify/current/drivers/polynomial_interpolation_main.cpp",
+      "driver_sha256": "7bfeb7d5add46ef7a38aa784843826476efb1a8c1e75024d30214013e0b293bc",
+      "libraries": [
+        "Math/Polynomial.cpp"
+      ],
+      "source_sha256": {
+        "Math/Polynomial.cpp": "46b4b1c00c1ab51296e3c38aa1bd0093da8bc19a19870937490cd374c98a5d91"
+      },
+      "submission": "Verify/current/submissions/polynomial_interpolation.cpp",
+      "submission_sha256": "42727d00d498473c8c59103e94a3f998500de08e8ed9e30171cbb9f1db1f80ce",
+      "sample_checker": "tokens",
+      "review": "no_confirmed_driver_domain_defect",
+      "note": "N<=131072、公式は法で相異なるx。interpolateの分母非0前提を満たす。結果のN係数をgetで末尾0も含めて出力。",
+      "primary_statement": "https://raw.githubusercontent.com/yosupo06/library-checker-problems/master/polynomial/polynomial_interpolation/task.md",
+      "primary_statement_readable": true,
+      "checker_scope": "unique output / fixed expected tokens",
+      "acl_external_dependency": false
+    },
+    {
+      "id": "polynomial_taylor_shift",
+      "problem_url": "https://judge.yosupo.jp/problem/polynomial_taylor_shift",
+      "driver": "Verify/current/drivers/polynomial_taylor_shift_main.cpp",
+      "driver_sha256": "7d513df8226c7fb2ed2a384843f998b5374d8c658889f36f11d2c12bd012d56f",
+      "libraries": [
+        "Math/Polynomial.cpp"
+      ],
+      "source_sha256": {
+        "Math/Polynomial.cpp": "46b4b1c00c1ab51296e3c38aa1bd0093da8bc19a19870937490cd374c98a5d91"
+      },
+      "submission": "Verify/current/submissions/polynomial_taylor_shift.cpp",
+      "submission_sha256": "3671b85f6543747ead9f340e064de612100f8e5e8883045a70eeb375f83795b8",
+      "sample_checker": "tokens",
+      "review": "no_confirmed_driver_domain_defect",
+      "note": "N<=524288、法998244353、shiftは標準剰余uint32。TaylorShiftはf(x+c)の順で係数N個を保持するので出力が一致。",
+      "primary_statement": "https://raw.githubusercontent.com/yosupo06/library-checker-problems/master/polynomial/polynomial_taylor_shift/task.md",
+      "primary_statement_readable": true,
+      "checker_scope": "unique output / fixed expected tokens",
+      "acl_external_dependency": false
+    },
+    {
+      "id": "cartesian_tree",
+      "problem_url": "https://judge.yosupo.jp/problem/cartesian_tree",
+      "driver": "Verify/current/drivers/cartesian_tree_main.cpp",
+      "driver_sha256": "92ae91e11d9da39bd493a29d5dd743d478f3c47e61b68f1b43e78c4a939d9e3d",
+      "libraries": [
+        "Graph/Cartesian_Tree.cpp"
+      ],
+      "source_sha256": {
+        "Graph/Cartesian_Tree.cpp": "08795bc2e2f702c504712169162ca9cda893d60d0a58ea113eaa7ef42bfd50cb"
+      },
+      "submission": "Verify/current/submissions/cartesian_tree.cpp",
+      "submission_sha256": "c12f5c8890ce48f498edd8076f9e6e2dcbcc0c0fd6e9b8ecc40ec3ae4556b889",
+      "sample_checker": "tokens",
+      "review": "no_confirmed_driver_domain_defect",
+      "note": "N<=1e6、値0..1e9はdistinct。min Cartesian treeのAPI、rootのparent=-1を公式のself-parentへ変換。一般APIの同値規則はこの問題で使用しない。",
+      "primary_statement": "https://raw.githubusercontent.com/yosupo06/library-checker-problems/master/tree/cartesian_tree/task.md",
+      "primary_statement_readable": true,
+      "checker_scope": "unique output / fixed expected tokens",
+      "acl_external_dependency": false
+    },
+    {
+      "id": "general_matching",
+      "problem_url": "https://judge.yosupo.jp/problem/general_matching",
+      "driver": "Verify/current/drivers/general_matching_main.cpp",
+      "driver_sha256": "5fae185e543ab9ab75daaf11aba7c5b96d5fa68001d526feb7333e3f58259d15",
+      "libraries": [
+        "Graph/General_Matching.cpp"
+      ],
+      "source_sha256": {
+        "Graph/General_Matching.cpp": "03803c1d3b4589a1b193649b33553f4f9637aa3c2f3104132f47263b816662d2"
+      },
+      "submission": "Verify/current/submissions/general_matching.cpp",
+      "submission_sha256": "e14b7b68312c7e06d6767455eff6c2be3d055a20524c2b36825ed5485f1a564b",
+      "sample_checker": "general_matching",
+      "review": "no_confirmed_driver_domain_defect",
+      "note": "N<=500、M<=N(N-1)/2。0始まり無向辺をadd、solveサイズとpairsを出す。空辺集合も可、順序不定は専用checkerで検査。",
+      "primary_statement": "https://raw.githubusercontent.com/yosupo06/library-checker-problems/master/graph/general_matching/task.md",
+      "primary_statement_readable": true,
+      "checker_scope": "custom semantic checker for bounded local fixtures",
+      "acl_external_dependency": false
+    },
+    {
+      "id": "modular_sqrt",
+      "problem_url": "https://judge.yosupo.jp/problem/sqrt_mod",
+      "driver": "Verify/current/drivers/modular_sqrt_main.cpp",
+      "driver_sha256": "05bb6d56d02fac0e96463a165f56bc0583bcd14a42bd55cabe88f63b211e5151",
+      "libraries": [
+        "Math/Modular_Arithmetic.cpp"
+      ],
+      "source_sha256": {
+        "Math/Modular_Arithmetic.cpp": "a9120110a0cc42b44cd0e1e896b8df045e6f2109a27808480b8603261c29afd7"
+      },
+      "submission": "Verify/current/submissions/modular_sqrt.cpp",
+      "submission_sha256": "55b55eafdef5466cdd3c35b3f09e154d67aa700d9dd12a917d1f663a0ee44eef",
+      "sample_checker": "modular_square_root",
+      "review": "no_confirmed_driver_domain_defect",
+      "note": "T<=100000、Pは素数2..1e9、Y<P。ModSqrtの素数前提を満たし、optional0もif(root)で正しく存在扱い。任意の根は専用checkerで検査。",
+      "primary_statement": "https://raw.githubusercontent.com/yosupo06/library-checker-problems/master/number_theory/sqrt_mod/task.md",
+      "primary_statement_readable": true,
+      "checker_scope": "custom semantic checker for bounded local fixtures",
+      "acl_external_dependency": false
+    },
+    {
+      "id": "modular_power",
+      "problem_url": "https://atcoder.jp/contests/math-and-algorithm/tasks/math_and_algorithm_aq",
+      "driver": "Verify/current/drivers/modular_power_main.cpp",
+      "driver_sha256": "733247023e576918d569d62bb6497c64232a07757dc31d9aefc6a9e606c7d1ad",
+      "libraries": [
+        "Math/Modular_Arithmetic.cpp"
+      ],
+      "source_sha256": {
+        "Math/Modular_Arithmetic.cpp": "a9120110a0cc42b44cd0e1e896b8df045e6f2109a27808480b8603261c29afd7"
+      },
+      "submission": "Verify/current/submissions/modular_power.cpp",
+      "submission_sha256": "5c906606f85b4214bdd90a4b1b228a6046b31a8db26b77a7e524108c11d453eb",
+      "sample_checker": "tokens",
+      "review": "no_confirmed_driver_domain_defect",
+      "note": "1<=a<=100、1<=b<=1e9。uint64_tで読み法1000000007のModPowへ。a^b自体を構築しない。",
+      "primary_statement": "https://atcoder.jp/contests/math-and-algorithm/tasks/math_and_algorithm_aq",
+      "primary_statement_readable": true,
+      "checker_scope": "unique output / fixed expected tokens",
+      "acl_external_dependency": false
+    },
+    {
+      "id": "linear_congruence",
+      "problem_url": "https://atcoder.jp/contests/abc186/tasks/abc186_e",
+      "driver": "Verify/current/drivers/linear_congruence_main.cpp",
+      "driver_sha256": "3f78de891005528bb91cc7f637716c7ea48231260e54e26591d96c4b5580877a",
+      "libraries": [
+        "Math/Modular_Arithmetic.cpp"
+      ],
+      "source_sha256": {
+        "Math/Modular_Arithmetic.cpp": "a9120110a0cc42b44cd0e1e896b8df045e6f2109a27808480b8603261c29afd7"
+      },
+      "submission": "Verify/current/submissions/linear_congruence.cpp",
+      "submission_sha256": "7eb8149260ddf76a60b9b243b1bca7a19d491a1cad824a8bc6c0285cea91ad4e",
+      "sample_checker": "tokens",
+      "review": "no_confirmed_driver_domain_defect",
+      "note": "N2..1e9、1<=S<N,K<=1e9。K*t≡N-S modNへ変換するのでunsignedのN-Sが非負。最小非負剰余を出す、不能は-1。",
+      "primary_statement": "https://atcoder.jp/contests/abc186/tasks/abc186_e",
+      "primary_statement_readable": true,
+      "checker_scope": "unique output / fixed expected tokens",
+      "acl_external_dependency": false
+    },
+    {
+      "id": "chinese_remainder",
+      "problem_url": "https://atcoder.jp/contests/abc193/tasks/abc193_e",
+      "driver": "Verify/current/drivers/chinese_remainder_main.cpp",
+      "driver_sha256": "1f96069d5e7ddf0ad7f930baaa2a13a11cf7c2debcd13bd63e392f67194529c1",
+      "libraries": [
+        "Math/Modular_Arithmetic.cpp"
+      ],
+      "source_sha256": {
+        "Math/Modular_Arithmetic.cpp": "a9120110a0cc42b44cd0e1e896b8df045e6f2109a27808480b8603261c29afd7"
+      },
+      "submission": "Verify/current/submissions/chinese_remainder.cpp",
+      "submission_sha256": "aff01ecab89b0b57d6c4af3b08ccdaaf89156eb38de8b38e73a075e77564ebf7",
+      "sample_checker": "tokens",
+      "review": "no_confirmed_driver_domain_defect",
+      "note": "X,P<=1e9、Y,Q<=500。列車周期2(X+Y)と覚醒周期P+Qの各有効剰余対をCRT結合、最小非負剰余を取る。周期積<~2.001e18でuint64_t内、不能はinfinity。",
+      "primary_statement": "https://atcoder.jp/contests/abc193/tasks/abc193_e",
+      "primary_statement_readable": true,
+      "checker_scope": "unique output / fixed expected tokens",
+      "acl_external_dependency": false
+    }
+  ],
+  "evidence_notes": "official/のweb取得ログは内部scratchであり、長い公式問題文を配布Auditへ転記することは意図しない。配布用はreport.json/summary.md/review.tsv/scope.jsonとハッシュだけで足りる。"
+}

@@ -1,0 +1,156 @@
+{
+  "date": "2026-10-31",
+  "decision": "not adopted; normal ownership implementation unchanged",
+  "reason": "Nontrivial key/value cases improved but large inline integer enumeration regressed about19–30%. Integer isolated scan and actual Verify whole .text match in four compiler/settings; context/layout effects remain an inference, not proof of absence of regression. Existing speed is prioritized.",
+  "handoff": {
+    "status": "rejected for production normal adoption; root decision 2026-10-31; existing normal ownership unchanged",
+    "reason": "Clang large integer-map iteration in combined inline benchmark retains +19–30%; prioritize existing operation speed despite nontrivial lifecycle gains and isolated/Verify codegen identity",
+    "sources": [
+      {
+        "path": "/tmp/sirkit_12h_20261031_095733/normal_hash_union/baseline_Hash_map.cpp",
+        "sha256": "c6b72041900af8fe1c3bd1d507636df619f842c85fbe7987bade7ab97620c108",
+        "bytes": 31448
+      },
+      {
+        "path": "/tmp/sirkit_12h_20261031_095733/normal_hash_union/baseline_Hash_set.cpp",
+        "sha256": "0e2feb46095f4df19076f3cf727fd6a83cdc7dd45e59c9d2b0ad5cc2e8d72192",
+        "bytes": 29747
+      },
+      {
+        "path": "/tmp/sirkit_12h_20261031_095733/normal_hash_union/conditional_Hash_map.cpp",
+        "sha256": "e7135ea9c08c2325b20bf90bbff2198a7e6b0db7ffad4d8c950d3e40550da0b7",
+        "bytes": 34411
+      },
+      {
+        "path": "/tmp/sirkit_12h_20261031_095733/normal_hash_union/conditional_Hash_set.cpp",
+        "sha256": "f29b7e7e170355bf2b59a70fb98b425ba12968cda7eaf1ef0b6ae72ab081e75e",
+        "bytes": 32707
+      },
+      {
+        "path": "/tmp/sirkit_12h_20261031_095733/normal_hash_union/Hash_map.diff",
+        "sha256": "34afa135e4061f4839584225357f4930b4894f01a8d38e492fbe71658d107fd0",
+        "bytes": 7403
+      },
+      {
+        "path": "/tmp/sirkit_12h_20261031_095733/normal_hash_union/Hash_set.diff",
+        "sha256": "1547e93dacdb92bdf7be06f8d5c12a02c146e7f53a360178b2929dd9ca4c82cb",
+        "bytes": 7653
+      }
+    ],
+    "correctness": {
+      "initial_owned_18": {
+        "file": {
+          "path": "/tmp/sirkit_12h_20261031_095733/normal_hash_union/checks/results.json",
+          "sha256": "d15b7e836b024364f4ebde31a06f6ce8050be8ededefdd9c235872e758f4b4af",
+          "bytes": 19333
+        },
+        "count": 18,
+        "passed": true
+      },
+      "initial_owned_sanitizer36": {
+        "file": {
+          "path": "/tmp/sirkit_12h_20261031_095733/normal_hash_union/sanitizer/results.json",
+          "sha256": "b4e2db643b9703999cc033393bd09b3b3f5406b4de50eac5f1a8547eaf53554f",
+          "bytes": 43542
+        },
+        "count": 36,
+        "passed": true
+      },
+      "prefault_copy_owned_sanitizer36": {
+        "file": {
+          "path": "/tmp/sirkit_12h_20261031_095733/normal_hash_union/prefault_copy_sanitizer/results.json",
+          "sha256": "cf7e00b07d66fb32d55c90f0c81b7a73b315f162d719ee606413f96bda682b2e",
+          "bytes": 45198
+        },
+        "count": 36,
+        "passed": true
+      },
+      "conditional_owned18": {
+        "file": {
+          "path": "/tmp/sirkit_12h_20261031_095733/normal_hash_union/conditional_checks/results.json",
+          "sha256": "c650de2e14645b8091ba5f05414277eabba4b7e195557c1457ce89022b22b7e1",
+          "bytes": 19981
+        },
+        "count": 18,
+        "passed": true
+      },
+      "conditional_lifetime4": {
+        "file": {
+          "path": "/tmp/sirkit_12h_20261031_095733/normal_hash_union/conditional_lifetime_results.json",
+          "sha256": "108a2e353cfcdf49044d5a8843395b93a57582879f7e178e80b0cfac28fe117f",
+          "bytes": 3824
+        },
+        "count": 4,
+        "passed": true
+      }
+    },
+    "allocation_failure": {
+      "source": {
+        "path": "/tmp/sirkit_12h_20261031_095733/normal_hash_union/allocation_failure_test.cpp",
+        "sha256": "876d0de7ceb4b8f539b6a42fc37dba0aa462fa29303482a7025179c7593f919b",
+        "bytes": 2690
+      },
+      "result": "720 failure budgets PASS, content preserved after failure and zero net outstanding allocations"
+    },
+    "performance": {
+      "first_screen": {
+        "path": "/tmp/sirkit_12h_20261031_095733/normal_hash_union/bench/first_screen_raw.json",
+        "sha256": "e49bacdd77765dd83e83446f6dc4183d8e760086dbcf55b4c2775441ccd0ce05",
+        "bytes": 974961
+      },
+      "copy_full": {
+        "path": "/tmp/sirkit_12h_20261031_095733/normal_hash_union/copy_bench/full_raw.json",
+        "sha256": "ffc5a2afdc713895056eea22ee0c6cdd09e1c12b2faee41fbf574eceeb7ba52e",
+        "bytes": 5564757
+      },
+      "conditional_full": {
+        "path": "/tmp/sirkit_12h_20261031_095733/normal_hash_union/conditional_bench/full_raw.json",
+        "sha256": "db887fe539fdefa2a90c92f1917992707ab61e26828148255bc44485abdad51d",
+        "bytes": 4158149
+      },
+      "conditional_manifest": {
+        "path": "/tmp/sirkit_12h_20261031_095733/normal_hash_union/conditional_bench/full_manifest.json",
+        "sha256": "3f0b6affc538339dc9d5bb91c5f3a9427317bdd3f903a23b134ab9d28265690b",
+        "bytes": 2467
+      },
+      "conditional_summary": {
+        "path": "/tmp/sirkit_12h_20261031_095733/normal_hash_union/conditional_bench/full_summary.json",
+        "sha256": "c10efb32613033322b26666c80b433bbfc6a5d72577982724eab477af9755bf2",
+        "bytes": 1780739
+      },
+      "selected": {
+        "path": "/tmp/sirkit_12h_20261031_095733/normal_hash_union/selected_performance.json",
+        "sha256": "f3d282ab471a9a2bf6c81e6c45f8e491affe7ad62a1959db7c48bbd0f9056aed",
+        "bytes": 10621
+      },
+      "cpu": "P-Core12",
+      "compiler": "GCC15.2/Clang21; C++23 O2; default/native; SIMD on/off; SKIP_RUNTIME_CHECKS",
+      "timing": "same main/IO; body wall/thread CPU; full child wall and user+system CPU; exact baseline executable as control"
+    },
+    "codegen": {
+      "isolated_scan": {
+        "path": "/tmp/sirkit_12h_20261031_095733/normal_hash_union/codegen.json",
+        "sha256": "d7fc999e4fa6ec593d64533a08cec5f332bacf6383e9800ee27d682538baa38e",
+        "bytes": 8226
+      },
+      "actual_Verify": {
+        "path": "/tmp/sirkit_12h_20261031_095733/normal_hash_union/verify_codegen.json",
+        "sha256": "1b8e27d52ab93dac1b520b8572ea9e26d05411d99ea469c389a3cd44ac23973c",
+        "bytes": 5836
+      },
+      "result": "scan machine code and complete actual HashMap Verify .text byte-identical across baseline/candidate for GCC/Clang default/native",
+      "inference": "combined 5-type/10-operation inline benchmark context/ELF layout may explain iteration slowdown; cause not proven"
+    },
+    "algorithm": "nontrivial optional slots replaced by vector-owned empty union; state is lifetime authority; constructed-only cleanup guards; planned destinations marked2 until construction success; throwing hash preplanning preserved; Compact copy and destructor defaulted unchanged",
+    "limitations": [
+      "not adopted into normal files",
+      "nontrivial lifecycle body median 0.900–0.934 and whole-process CPU0.926–0.967 in final8 modes, not all operations faster",
+      "isolated codegen identity does not cancel observed inline benchmark regression",
+      "no further performance measurement planned"
+    ],
+    "documents": [
+      "Document_proposal.md",
+      "HANDOFF.md"
+    ]
+  }
+}

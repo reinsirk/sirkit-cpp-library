@@ -1,0 +1,360 @@
+{
+  "format": 1,
+  "date": "2026-11-13",
+  "stage": "claude",
+  "status": "complete",
+  "model": "claude-fable-5-2",
+  "scope": "whole_program for LC; library and straightforward main for AtCoder",
+  "snapshots": {
+    "dijkstra": {
+      "input_source_sha256": "b72b22d5d3d65bb15a2126d5e54181454ec80e327f0af105809e99d27c060c65",
+      "source_sha256": "b72b22d5d3d65bb15a2126d5e54181454ec80e327f0af105809e99d27c060c65",
+      "changed": false,
+      "codex_receipt": "Verify/optimization/stages/dijkstra.codex.92e4ee73eecc6006a38cc81e8ba2d5dbe5db8d2d52b1dcf6108ff790e868dab0.json",
+      "codex_receipt_sha256": "92e4ee73eecc6006a38cc81e8ba2d5dbe5db8d2d52b1dcf6108ff790e868dab0"
+    },
+    "lca": {
+      "input_source_sha256": "11a1866acf0cb223dce94d3545601c2ada8b65af6890a05ee49ea4e0c1af60df",
+      "source_sha256": "0e0f8ab777f851735eaf55064a2c9c5e602e5d7b8bde133b067c46791e8bdbbf",
+      "changed": true,
+      "codex_receipt": "Verify/optimization/stages/lca.codex.23864247444c417c8db712c17163e24135ab9b3d6b4a059cf47374335924e386.json",
+      "codex_receipt_sha256": "23864247444c417c8db712c17163e24135ab9b3d6b4a059cf47374335924e386"
+    },
+    "scc": {
+      "input_source_sha256": "09e6865de3218588129b13349880d75b4d9df18d70fa60085c251d34dc102fbe",
+      "source_sha256": "3841b5a4f6244973c04ca7d98a5afcae4686345b4b76a340632dff3af0ac1fc5",
+      "changed": true,
+      "codex_receipt": "Verify/optimization/stages/scc.codex.ec4c08c980cf6162ab066305eb2b0104e967adadb2535bedd85285a5aa81223f.json",
+      "codex_receipt_sha256": "ec4c08c980cf6162ab066305eb2b0104e967adadb2535bedd85285a5aa81223f"
+    }
+  },
+  "review": {
+    "summary": "3件とも正しさ・所有・容量・検査有無の問題は見つからず（読解のみ、実行なし）。速度候補は4件ですべて未測定。SCC関数的経路の配列統合とLCAのrows_削除が主で、SCC mainのreserve_edgesとDijkstraの32bit beginは小粒。",
+    "reviewed_ids": [
+      "dijkstra",
+      "lca",
+      "scc"
+    ],
+    "libraries": [
+      {
+        "path": "Graph/Dijkstra.cpp",
+        "decision": "keep",
+        "reason": "GraphLikeは全呼出で推論され、uint32重みはint64加算のみで安全。検査時はCSR構築で全辺を検証済み。rows_をoffsets化する案は調整済みengineのgraph.data()/const auto&に触れるため提案しない。候補は構築器内に閉じた32bit beginのみ（低優先）。"
+      },
+      {
+        "path": "Graph/LCA.cpp",
+        "decision": "candidate",
+        "reason": "CSR一時物・endpoints_validated・build(n,edges)の強保証は妥当。operator[]が値返しなのでrows_（16N byte）を消せる。"
+      },
+      {
+        "path": "Graph/SCC.cpp",
+        "decision": "candidate",
+        "reason": "関数的経路のトポロジカル順・自己辺・既確定成分への合流・n=0は正しい。successorとidsを1配列に統合でき、mainにreserve_edgesがない。"
+      }
+    ],
+    "optimization_candidates": [
+      {
+        "ids": [
+          "scc"
+        ],
+        "reason": "functional_component_idsはsuccessor[v]とids[v]の2配列を乱択参照する。未訪問頂点のidsに~successorを持たせれば1配列（4N byte）になり、successorの確保も消える。逐次依存ロードは1本のままなので、利得はフットプリント半減分に限られキャッシュ配置依存。効くのはm==nかつ全出次数1の入力だけで、最大ケースが汎用側へ切り替われば全体maxは変わらない。",
+        "patch": "-auto successor=std::make_unique_for_overwrite<int[]>(edges.size());\n-for(auto [u,v]:edges)successor[u]=v;\n-std::vector<int> ids(n,-1),path;path.reserve(n);int count=0;\n+constexpr int on_path=std::numeric_limits<int>::min();\n+std::vector<int> ids(n);for(auto [u,v]:edges)ids[u]=~v; // [-n,-1]=未訪問+後続\n+auto path=std::make_unique_for_overwrite<int[]>(n);int top=0,count=0;\n for(int root=0;root<n;++root){\n  if(ids[root]>=0)continue;\n- int v=root;\n- while(ids[v]==-1){ids[v]=-2;path.push_back(v);v=successor[v];}\n- if(ids[v]==-2){int member;do{member=path.back();path.pop_back();ids[member]=count;}while(member!=v);++count;}\n- while(!path.empty()){ids[path.back()]=count++;path.pop_back();}\n+ int v=root,s;\n+ while((s=ids[v])<0&&s!=on_path){ids[v]=on_path;path[top++]=v;v=~s;}\n+ if(s==on_path){int member;do{member=path[--top];ids[member]=count;}while(member!=v);++count;}\n+ while(top!=0)ids[path[--top]]=count++;\n }",
+        "required_validation": "現行関数的経路および独立Tarjan/Kosarajuと照合: 成分分割一致、全辺でid(u)<=id(v)、count一致。入力は自己辺、単一閉路、多数の小閉路、長い尾、ρ型、n=0/1、ランダム関数グラフ。同一IO/フラグでGCC/Clangの公式cycleをA/Bし、汎用ケース（random/DAG/dense）が機械語同等か誤差内であること。cycleが誤差超で改善しなければ不採用。"
+      },
+      {
+        "ids": [
+          "scc"
+        ],
+        "reason": "mainはadd_edgeをm回呼ぶがreserve_edges(m)を呼ばず、edges_が倍々再確保される（計約2倍のコピーとページフォルト）。既存公開APIで回避でき、こちらは全ケースに効く全体時間側の案。前段で測定して回帰していた場合は復活させない。",
+        "patch": " int n{},m{};verify_in>>n>>m;scc_graph graph(n);\n+graph.reserve_edges(m);",
+        "required_validation": "出力ハッシュが全公式ケースで一致。GCC/Clangの対A/Bで全ケースが誤差内以上、最大ケースが改善または同等、RSSが増えないこと。"
+      },
+      {
+        "ids": [
+          "lca"
+        ],
+        "reason": "LcaCsrGraphはbegin（8N byte）に加えrows_（16N byte）を確保して逐次書きする。次数をbegin[u+2]に数えbegin[u+1]をcursorにすれば、散布後のbeginがそのまま行オフセットになりrows_が不要。利得は構築側（N=5e5で約8MiBの確保・書込み・ページフォルト）で、照会は不変。DFSの行取得は2ロードになり1/8でキャッシュ線を跨ぐため、回帰の可能性もある。",
+        "patch": "-std::vector<std::span<const int>> rows_;\n+std::vector<std::size_t> begin_; // 散布後: 行v=[begin_[v],begin_[v+1])\n-if (count > rows_.max_size() || count >= std::vector<std::size_t>{}.max_size() || ...\n+if (count > std::vector<std::size_t>{}.max_size() - 2 || ...\n-std::vector<std::size_t> begin(count + 1);\n+begin_.assign(count + 2, 0);\n-++begin[size_t(u)+1]; ++begin[size_t(v)+1];\n+++begin_[size_t(u)+2]; ++begin_[size_t(v)+2];\n-for (i = 1; i <= count; ++i) begin[i] += begin[i-1];\n+for (i = 2; i <= count + 1; ++i) begin_[i] += begin_[i-1];\n-rows_.resize(count); for (...) rows_[v] = ...;\n-arcs_[begin[u]++] = v; arcs_[begin[v]++] = u;\n+arcs_[begin_[size_t(u)+1]++] = v; arcs_[begin_[size_t(v)+1]++] = u;\n-size() { return rows_.size(); }  operator[] { return rows_[v]; }\n+size() { return begin_.size() - 2; }\n+operator[](int v) { return {arcs_.get() + begin_[v], begin_[v+1] - begin_[v]}; }",
+        "required_validation": "現行CSR版および旧vector<vector<int>>版と全照会API（get/reroot/kth/subtree/component）を照合: 森、孤立点、n=0/1、star、path、root≠0。検査有効時の端点・閉路・多重辺・自己辺の例外種別が不変、確保失敗注入も通ること。公式4入力のハッシュ一致。GCC/Clangの対比で全入力が誤差内以上かつ構築時間またはRSSが改善した場合のみ採用。star/pathで悪化すれば不採用。"
+      },
+      {
+        "ids": [
+          "dijkstra"
+        ],
+        "reason": "低優先。CSR構築のbeginはsize_t（8(N+1) byte）で、計数と散布で辺ごとに乱択参照される。辺数がUINT32_MAX以下ならuint32にすれば半分になる。変更は構築器内だけで、rows_とengineは不変。構築は全体の一部なので効果は小さく、NとL2サイズに依存。",
+        "patch": "-DijkstraCsrGraph(int n, span input) { 検査; std::vector<std::size_t> begin(n+1); ...本体... }\n+template<class Index> void build(int n, span input) { std::vector<Index> begin(size_t(n)+1); ...本体は同一... }\n+DijkstraCsrGraph(int n, span input) { n<0・容量検査は現行通り;\n+  if (input.size() <= std::numeric_limits<std::uint32_t>::max()) build<std::uint32_t>(n, input);\n+  else build<std::size_t>(n, input); }",
+        "required_validation": "既存の独立照合（Bellman-Ford/参照ヒープ/故障注入）を再通過し、距離・経路が一致。engine部の機械語が現行と同一。公式10ケースをGCC/Clangの同一IO/フラグでA/Bし、全ケース誤差内以上かつ最大ケース改善なら採用、それ以外は不採用。"
+      }
+    ],
+    "correctness_findings": []
+  },
+  "candidate_decisions": {
+    "candidate_decisions": [
+      {
+        "index": 0,
+        "decision": "adopt",
+        "reason": "successorと未訪問idsを融合し、所有stackを維持。符号化端部/全形状/故障注入の24構成と派生局所CIが通過。公式cycleがGCC約5.4%、Clang約8.9%短縮し一般ケースは誤差内。全体最大時間の短縮率とは区別する。"
+      },
+      {
+        "index": 1,
+        "decision": "reject",
+        "reason": "reserve_edgesはCodeX段階の既測定案。入力・compilerで結果が混在し、前判断を覆す一貫した根拠がないため重複復活しない。以前のmain作用を今回helper本体の成果へ加算しない。"
+      },
+      {
+        "index": 2,
+        "decision": "adopt",
+        "reason": "行span配列を除き散布後offsetを再利用。全API/forest/例外/故障/標準代替/sanitizerと派生CIが通過。公式4件とstar/path全6大入力で両compiler短縮し、peak RSS約3.8MiB減。"
+      },
+      {
+        "index": 3,
+        "decision": "reject",
+        "reason": "begin32とsize_t fallbackの16構成・端部モデルは正常だが、開始順反転の再測定でGCC公式lineの改善が再現せず、Clang line/randomが約1〜2%回帰。engine byte同等でも全体の採用条件を満たさない。"
+      }
+    ],
+    "correctness_resolution": [],
+    "validation_artifacts": [
+      "/tmp/sirkit_fastest_review_20261113/other_lc/scc_fused/final_report.json",
+      "/tmp/sirkit_fastest_review_20261113/other_lc/scc_fused/candidate.patch",
+      "/tmp/sirkit_fastest_review_20261113/other_lc/scc_fused/shapes_results.json",
+      "/tmp/sirkit_fastest_review_20261113/other_lc/scc_fused/functional_shapes_test.cpp",
+      "/tmp/sirkit_fastest_review_20261113/other_lc/scc_fused/fused_bench_clang_fused.cpp",
+      "/tmp/sirkit_fastest_review_20261113/other_lc/scc_fused/fused_bench_clang_own.cpp",
+      "/tmp/sirkit_fastest_review_20261113/other_lc/scc_fused/fused_bench_gcc_fused.cpp",
+      "/tmp/sirkit_fastest_review_20261113/other_lc/scc_fused/benchmark_results.json",
+      "/tmp/sirkit_fastest_review_20261113/other_lc/scc_fused/fused_bench_gcc_own.cpp",
+      "/tmp/sirkit_fastest_review_20261113/other_lc/scc_fused/benchmark.py",
+      "/tmp/sirkit_fastest_review_20261113/other_lc/scc_fused/test_results.json",
+      "/tmp/sirkit_fastest_review_20261113/other_lc/scc_fused/provenance.json",
+      "/tmp/sirkit_fastest_review_20261113/other_lc/scc_fused/candidate_header.hpp",
+      "/tmp/sirkit_fastest_review_20261113/other_lc/scc_fused/baseline_header.hpp",
+      "/tmp/sirkit_fastest_review_20261113/other_lc/scc_fused/frozen_tests/functional_shapes_test.cpp",
+      "/tmp/sirkit_fastest_review_20261113/other_lc/scc_fused/frozen_tests/scc_functional_allocation_test.cpp",
+      "/tmp/sirkit_fastest_review_20261113/other_lc/scc_fused/frozen_tests/scc_condensation_test.cpp",
+      "/tmp/sirkit_fastest_review_20261113/other_lc/scc_fused/frozen_tests/new_scc_two_sat_reference_test.cpp",
+      "/tmp/sirkit_fastest_review_20261113/other_lc/scc_fused/frozen_tests/scc_index_paths_test.cpp",
+      "/tmp/sirkit_fastest_review_20261113/other_lc/scc_fused/frozen_tests/scc_acl_api_test.cpp",
+      "/tmp/sirkit_fastest_review_20261113/lca_offsets_candidate/REPRODUCE.md",
+      "/tmp/sirkit_fastest_review_20261113/lca_offsets_candidate/review.json",
+      "/tmp/sirkit_fastest_review_20261113/lca_offsets_candidate/finalize.py",
+      "/tmp/sirkit_fastest_review_20261113/lca_offsets_candidate/results.json",
+      "/tmp/sirkit_fastest_review_20261113/lca_offsets_candidate/benchmark.py",
+      "/tmp/sirkit_fastest_review_20261113/lca_offsets_candidate/extra_results.json",
+      "/tmp/sirkit_fastest_review_20261113/lca_offsets_candidate/csr_allocation_test.cpp",
+      "/tmp/sirkit_fastest_review_20261113/lca_offsets_candidate/test_extra.py",
+      "/tmp/sirkit_fastest_review_20261113/lca_offsets_candidate/differential_test.cpp",
+      "/tmp/sirkit_fastest_review_20261113/lca_offsets_candidate/test_results.json",
+      "/tmp/sirkit_fastest_review_20261113/lca_offsets_candidate/csr_deep_branch_test.cpp",
+      "/tmp/sirkit_fastest_review_20261113/lca_offsets_candidate/csr_reference_test.cpp",
+      "/tmp/sirkit_fastest_review_20261113/lca_offsets_candidate/old_api_reference_test.cpp",
+      "/tmp/sirkit_fastest_review_20261113/lca_offsets_candidate/prepare_allocation_test.py",
+      "/tmp/sirkit_fastest_review_20261113/lca_offsets_candidate/test.py",
+      "/tmp/sirkit_fastest_review_20261113/lca_offsets_candidate/sources.json",
+      "/tmp/sirkit_fastest_review_20261113/lca_offsets_candidate/candidate_program.cpp",
+      "/tmp/sirkit_fastest_review_20261113/lca_offsets_candidate/baseline_program.cpp",
+      "/tmp/sirkit_fastest_review_20261113/lca_offsets_candidate/main.cpp",
+      "/tmp/sirkit_fastest_review_20261113/lca_offsets_candidate/candidate_library.cpp",
+      "/tmp/sirkit_fastest_review_20261113/lca_offsets_candidate/baseline_library.cpp",
+      "/tmp/sirkit_fastest_review_20261113/lca_offsets_candidate/prepare.py",
+      "/tmp/sirkit_fastest_review_20261113/dijkstra_index32_candidate/summary.md",
+      "/tmp/sirkit_fastest_review_20261113/dijkstra_index32_candidate/final_report.json",
+      "/tmp/sirkit_fastest_review_20261113/dijkstra_index32_candidate/finalize.py",
+      "/tmp/sirkit_fastest_review_20261113/dijkstra_index32_candidate/benchmark_round2_results.json",
+      "/tmp/sirkit_fastest_review_20261113/dijkstra_index32_candidate/benchmark_round2.py",
+      "/tmp/sirkit_fastest_review_20261113/dijkstra_index32_candidate/engine_results.json",
+      "/tmp/sirkit_fastest_review_20261113/dijkstra_index32_candidate/check_engine.py",
+      "/tmp/sirkit_fastest_review_20261113/dijkstra_index32_candidate/cursor_results.json",
+      "/tmp/sirkit_fastest_review_20261113/dijkstra_index32_candidate/check_cursor.py",
+      "/tmp/sirkit_fastest_review_20261113/dijkstra_index32_candidate/benchmark_results.json",
+      "/tmp/sirkit_fastest_review_20261113/dijkstra_index32_candidate/boundary.md",
+      "/tmp/sirkit_fastest_review_20261113/dijkstra_index32_candidate/benchmark.py",
+      "/tmp/sirkit_fastest_review_20261113/dijkstra_index32_candidate/test_results.json",
+      "/tmp/sirkit_fastest_review_20261113/dijkstra_index32_candidate/test.py",
+      "/tmp/sirkit_fastest_review_20261113/dijkstra_index32_candidate/provenance.json",
+      "/tmp/sirkit_fastest_review_20261113/dijkstra_index32_candidate/candidate.patch",
+      "/tmp/sirkit_fastest_review_20261113/dijkstra_index32_candidate/prepare.py",
+      "/tmp/sirkit_fastest_review_20261113/dijkstra_index32_candidate/candidate/clang.sections.json",
+      "/tmp/sirkit_fastest_review_20261113/dijkstra_index32_candidate/candidate/gcc.sections.json",
+      "/tmp/sirkit_fastest_review_20261113/dijkstra_index32_candidate/candidate/submission.cpp",
+      "/tmp/sirkit_fastest_review_20261113/dijkstra_index32_candidate/baseline/clang.sections.json",
+      "/tmp/sirkit_fastest_review_20261113/dijkstra_index32_candidate/baseline/gcc.sections.json",
+      "/tmp/sirkit_fastest_review_20261113/dijkstra_index32_candidate/baseline/submission.cpp",
+      "/tmp/sirkit_fastest_review_20261113/dijkstra_index32_candidate/baseline/tests/allocation.cpp",
+      "/tmp/sirkit_fastest_review_20261113/dijkstra_index32_candidate/baseline/tests/reference.cpp",
+      "/tmp/sirkit_fastest_review_20261113/dijkstra_index32_candidate/baseline/Graph/Dijkstra.cpp",
+      "/tmp/sirkit_fastest_review_20261113/dijkstra_index32_candidate/candidate/tests/allocation.cpp",
+      "/tmp/sirkit_fastest_review_20261113/dijkstra_index32_candidate/candidate/tests/reference.cpp",
+      "/tmp/sirkit_fastest_review_20261113/dijkstra_index32_candidate/candidate/Graph/Dijkstra.cpp",
+      "/tmp/sirkit_fastest_review_20261113/dijkstra_index32_candidate/forced_size_t/tests/allocation.cpp",
+      "/tmp/sirkit_fastest_review_20261113/dijkstra_index32_candidate/forced_size_t/tests/reference.cpp",
+      "/tmp/sirkit_fastest_review_20261113/dijkstra_index32_candidate/forced_size_t/Graph/Dijkstra.cpp",
+      "/tmp/sirkit_fastest_review_20261113/fable_graph_generation/validation/REPRODUCE.md",
+      "/tmp/sirkit_fastest_review_20261113/fable_graph_generation/validation/results.json",
+      "/tmp/sirkit_fastest_review_20261113/fable_graph_generation/validation/validate_all.py",
+      "/tmp/sirkit_fastest_review_20261113/fable_graph_generation/validation/scc/results.json",
+      "/tmp/sirkit_fastest_review_20261113/fable_graph_generation/validation/scc/runner.log",
+      "/tmp/sirkit_fastest_review_20261113/fable_graph_generation/validation/scc/freeze_normal.py",
+      "/tmp/sirkit_fastest_review_20261113/fable_graph_generation/validation/scc/validate.py",
+      "/tmp/sirkit_fastest_review_20261113/fable_graph_generation/validation/lca/results.json",
+      "/tmp/sirkit_fastest_review_20261113/fable_graph_generation/validation/lca/runner.log",
+      "/tmp/sirkit_fastest_review_20261113/fable_graph_generation/validation/lca/validate.py",
+      "/tmp/sirkit_fastest_review_20261113/fable_graph_generation/validation/lca/raw/Fast_Clang_skip_fallback.json",
+      "/tmp/sirkit_fastest_review_20261113/fable_graph_generation/validation/lca/raw/Fast_Clang_skip_default.json",
+      "/tmp/sirkit_fastest_review_20261113/fable_graph_generation/validation/lca/raw/Variants_Clang_skip_fallback.json",
+      "/tmp/sirkit_fastest_review_20261113/fable_graph_generation/validation/lca/raw/Variants_Clang_skip_default.json",
+      "/tmp/sirkit_fastest_review_20261113/fable_graph_generation/validation/lca/raw/Variants_Clang_checked_fallback.json",
+      "/tmp/sirkit_fastest_review_20261113/fable_graph_generation/validation/lca/raw/Variants_Clang_checked_default.json",
+      "/tmp/sirkit_fastest_review_20261113/fable_graph_generation/validation/lca/raw/Fast_GCC_skip_fallback.json",
+      "/tmp/sirkit_fastest_review_20261113/fable_graph_generation/validation/lca/raw/Fast_GCC_skip_default.json",
+      "/tmp/sirkit_fastest_review_20261113/fable_graph_generation/validation/lca/raw/Variants_GCC_skip_fallback.json",
+      "/tmp/sirkit_fastest_review_20261113/fable_graph_generation/validation/lca/raw/Variants_GCC_skip_default.json",
+      "/tmp/sirkit_fastest_review_20261113/fable_graph_generation/validation/lca/raw/Variants_GCC_checked_fallback.json",
+      "/tmp/sirkit_fastest_review_20261113/fable_graph_generation/validation/lca/raw/Variants_GCC_checked_default.json",
+      "/tmp/sirkit_fastest_review_20261113/fable_graph_generation/validation/lca/raw/normal_Clang_True.json",
+      "/tmp/sirkit_fastest_review_20261113/fable_graph_generation/validation/lca/raw/normal_Clang_False.json",
+      "/tmp/sirkit_fastest_review_20261113/fable_graph_generation/validation/lca/raw/normal_GCC_True.json",
+      "/tmp/sirkit_fastest_review_20261113/fable_graph_generation/validation/lca/raw/normal_GCC_False.json",
+      "/tmp/sirkit_fastest_review_20261113/fable_graph_generation/validation/lca/sources/lca_local_skip.cpp",
+      "/tmp/sirkit_fastest_review_20261113/fable_graph_generation/validation/lca/sources/lca_local_checked.cpp",
+      "/tmp/sirkit_fastest_review_20261113/fable_graph_generation/validation/lca/sources/lca_skip.cpp",
+      "/tmp/sirkit_fastest_review_20261113/fable_graph_generation/validation/lca/sources/lca_checked.cpp",
+      "/tmp/sirkit_fastest_review_20261113/fable_graph_generation/validation/lca/sources/Fast_Clang_skip_fallback.cpp",
+      "/tmp/sirkit_fastest_review_20261113/fable_graph_generation/validation/lca/sources/Fast_Clang_skip_default.cpp",
+      "/tmp/sirkit_fastest_review_20261113/fable_graph_generation/validation/lca/sources/Variants_Clang_skip_fallback.cpp",
+      "/tmp/sirkit_fastest_review_20261113/fable_graph_generation/validation/lca/sources/Variants_Clang_skip_default.cpp",
+      "/tmp/sirkit_fastest_review_20261113/fable_graph_generation/validation/lca/sources/Variants_Clang_checked_fallback.cpp",
+      "/tmp/sirkit_fastest_review_20261113/fable_graph_generation/validation/lca/sources/Variants_Clang_checked_default.cpp",
+      "/tmp/sirkit_fastest_review_20261113/fable_graph_generation/validation/lca/sources/Fast_GCC_skip_fallback.cpp",
+      "/tmp/sirkit_fastest_review_20261113/fable_graph_generation/validation/lca/sources/Fast_GCC_skip_default.cpp",
+      "/tmp/sirkit_fastest_review_20261113/fable_graph_generation/validation/lca/sources/Variants_GCC_skip_fallback.cpp",
+      "/tmp/sirkit_fastest_review_20261113/fable_graph_generation/validation/lca/sources/Variants_GCC_skip_default.cpp",
+      "/tmp/sirkit_fastest_review_20261113/fable_graph_generation/validation/lca/sources/Variants_GCC_checked_fallback.cpp",
+      "/tmp/sirkit_fastest_review_20261113/fable_graph_generation/validation/lca/sources/Variants_GCC_checked_default.cpp",
+      "/tmp/sirkit_fastest_review_20261113/fable_graph_generation/validation/scc/raw/local_Clang_True_True.json",
+      "/tmp/sirkit_fastest_review_20261113/fable_graph_generation/validation/scc/raw/local_Clang_True_False.json",
+      "/tmp/sirkit_fastest_review_20261113/fable_graph_generation/validation/scc/raw/local_Clang_False_True.json",
+      "/tmp/sirkit_fastest_review_20261113/fable_graph_generation/validation/scc/raw/local_Clang_False_False.json",
+      "/tmp/sirkit_fastest_review_20261113/fable_graph_generation/validation/scc/raw/local_GCC_True_True.json",
+      "/tmp/sirkit_fastest_review_20261113/fable_graph_generation/validation/scc/raw/local_GCC_True_False.json",
+      "/tmp/sirkit_fastest_review_20261113/fable_graph_generation/validation/scc/raw/local_GCC_False_True.json",
+      "/tmp/sirkit_fastest_review_20261113/fable_graph_generation/validation/scc/raw/local_GCC_False_False.json",
+      "/tmp/sirkit_fastest_review_20261113/fable_graph_generation/validation/scc/raw/Fast_Clang_skip_fallback.json",
+      "/tmp/sirkit_fastest_review_20261113/fable_graph_generation/validation/scc/raw/Fast_Clang_skip_default.json",
+      "/tmp/sirkit_fastest_review_20261113/fable_graph_generation/validation/scc/raw/Variants_Clang_skip_fallback.json",
+      "/tmp/sirkit_fastest_review_20261113/fable_graph_generation/validation/scc/raw/Variants_Clang_skip_default.json",
+      "/tmp/sirkit_fastest_review_20261113/fable_graph_generation/validation/scc/raw/Variants_Clang_checked_fallback.json",
+      "/tmp/sirkit_fastest_review_20261113/fable_graph_generation/validation/scc/raw/Variants_Clang_checked_default.json",
+      "/tmp/sirkit_fastest_review_20261113/fable_graph_generation/validation/scc/raw/Fast_GCC_skip_fallback.json",
+      "/tmp/sirkit_fastest_review_20261113/fable_graph_generation/validation/scc/raw/Fast_GCC_skip_default.json",
+      "/tmp/sirkit_fastest_review_20261113/fable_graph_generation/validation/scc/raw/Variants_GCC_skip_fallback.json",
+      "/tmp/sirkit_fastest_review_20261113/fable_graph_generation/validation/scc/raw/Variants_GCC_skip_default.json",
+      "/tmp/sirkit_fastest_review_20261113/fable_graph_generation/validation/scc/raw/Variants_GCC_checked_fallback.json",
+      "/tmp/sirkit_fastest_review_20261113/fable_graph_generation/validation/scc/raw/Variants_GCC_checked_default.json",
+      "/tmp/sirkit_fastest_review_20261113/fable_graph_generation/validation/scc/raw/normal_Clang_True.json",
+      "/tmp/sirkit_fastest_review_20261113/fable_graph_generation/validation/scc/raw/normal_Clang_False.json",
+      "/tmp/sirkit_fastest_review_20261113/fable_graph_generation/validation/scc/raw/normal_GCC_True.json",
+      "/tmp/sirkit_fastest_review_20261113/fable_graph_generation/validation/scc/raw/normal_GCC_False.json",
+      "/tmp/sirkit_fastest_review_20261113/fable_graph_generation/validation/scc/sources/scc_skip.cpp",
+      "/tmp/sirkit_fastest_review_20261113/fable_graph_generation/validation/scc/sources/scc_checked.cpp",
+      "/tmp/sirkit_fastest_review_20261113/fable_graph_generation/validation/scc/sources/scc_library.cpp",
+      "/tmp/sirkit_fastest_review_20261113/fable_graph_generation/validation/scc/sources/scc_acl_api_local.cpp",
+      "/tmp/sirkit_fastest_review_20261113/fable_graph_generation/validation/scc/sources/Fast_Clang_skip_fallback.cpp",
+      "/tmp/sirkit_fastest_review_20261113/fable_graph_generation/validation/scc/sources/Fast_Clang_skip_default.cpp",
+      "/tmp/sirkit_fastest_review_20261113/fable_graph_generation/validation/scc/sources/Variants_Clang_skip_fallback.cpp",
+      "/tmp/sirkit_fastest_review_20261113/fable_graph_generation/validation/scc/sources/Variants_Clang_skip_default.cpp",
+      "/tmp/sirkit_fastest_review_20261113/fable_graph_generation/validation/scc/sources/Variants_Clang_checked_fallback.cpp",
+      "/tmp/sirkit_fastest_review_20261113/fable_graph_generation/validation/scc/sources/Variants_Clang_checked_default.cpp",
+      "/tmp/sirkit_fastest_review_20261113/fable_graph_generation/validation/scc/sources/Fast_GCC_skip_fallback.cpp",
+      "/tmp/sirkit_fastest_review_20261113/fable_graph_generation/validation/scc/sources/Fast_GCC_skip_default.cpp",
+      "/tmp/sirkit_fastest_review_20261113/fable_graph_generation/validation/scc/sources/Variants_GCC_skip_fallback.cpp",
+      "/tmp/sirkit_fastest_review_20261113/fable_graph_generation/validation/scc/sources/Variants_GCC_skip_default.cpp",
+      "/tmp/sirkit_fastest_review_20261113/fable_graph_generation/validation/scc/sources/Variants_GCC_checked_fallback.cpp",
+      "/tmp/sirkit_fastest_review_20261113/fable_graph_generation/validation/scc/sources/Variants_GCC_checked_default.cpp",
+      "/tmp/sirkit_fastest_review_20261113/other_lc/scc/results.json",
+      "/tmp/sirkit_fastest_review_20261113/other_lc/scc/functional_results.json",
+      "/tmp/sirkit_fastest_review_20261113/graph3_metadata_validation/summary.json"
+    ],
+    "changed_source_validation": {
+      "lca": {
+        "correctness": "passed",
+        "performance": "measured"
+      },
+      "scc": {
+        "correctness": "passed",
+        "performance": "measured"
+      }
+    },
+    "dijkstra": "Unchanged from exact Codex predecessor; original CSR API retained after measured index32 rejection."
+  },
+  "execution": {
+    "model": "claude-fable-5-2",
+    "actual_assistant_models": [
+      "claude-fable-5-2"
+    ],
+    "tools": [
+      "Read"
+    ],
+    "apiKeySource": "none",
+    "is_error": false,
+    "terminal_reason": "completed",
+    "num_turns": 7,
+    "rate_limits_first": {
+      "status": "allowed",
+      "resetsAt": 1794584400,
+      "rateLimitType": "five_hour",
+      "overageStatus": "rejected",
+      "overageDisabledReason": "org_level_disabled",
+      "isUsingOverage": false,
+      "unifiedWindows": {
+        "five_hour": {
+          "utilization": 0,
+          "resetsAt": 1794584400,
+          "status": "allowed"
+        },
+        "seven_day": {
+          "utilization": 0.49,
+          "resetsAt": 1794646800,
+          "status": "allowed"
+        },
+        "seven_day_overage_included": {
+          "utilization": 0.16,
+          "resetsAt": 1794646800,
+          "status": "allowed"
+        }
+      }
+    },
+    "rate_limits_last": {
+      "status": "allowed",
+      "resetsAt": 1794584400,
+      "rateLimitType": "five_hour",
+      "overageStatus": "rejected",
+      "overageDisabledReason": "org_level_disabled",
+      "isUsingOverage": false,
+      "unifiedWindows": {
+        "five_hour": {
+          "utilization": 0.08,
+          "resetsAt": 1794584400,
+          "status": "allowed"
+        },
+        "seven_day": {
+          "utilization": 0.49,
+          "resetsAt": 1794646800,
+          "status": "allowed"
+        },
+        "seven_day_overage_included": {
+          "utilization": 0.17,
+          "resetsAt": 1794646800,
+          "status": "allowed"
+        }
+      }
+    },
+    "extra_usage_used": false,
+    "list_price_usage_is_not_a_charge": true,
+    "events_private_path": "/tmp/sirkit_remaining_20261113/fable_compact/batch_graph_followup/events.jsonl",
+    "events_sha256": "bfd2f8d70b46c189a0416188318ed6ba3acf209cded84f012f97a81b186a8c6c"
+  },
+  "snapshot_archive": {
+    "path": "Audit/data/optimization-fable-batch-graph-followup-2026-11-13.zip",
+    "sha256": "d7ffb69001d9ffd9ef6001efd0e642efa1df96ee796e1685cf775afa27308cf7"
+  },
+  "performance_basis": "Unchanged sources retain exact predecessor measurements; candidate changes require the linked independent correctness/performance results. Old online AC is never assigned to modified source."
+}

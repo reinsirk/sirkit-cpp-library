@@ -1,0 +1,41 @@
+{
+  "status": "independently_implemented",
+  "license": "CC0-1.0",
+  "created_utc": "2026-10-31T11:11:10.920829+00:00",
+  "libraries": {
+    "Math/Pollard_Rho.cpp": "adc3c33889549ec315b7c208a01154fafac5de2eaff3f088d66cdefb9579ba4c",
+    "String/Aho_Corasick.cpp": "752f1d1651ba2eab7fa2710c6044e081f53cfab174dd7697db296f55fac38895",
+    "Math/Formal_Power_Series.cpp": "a91fdd71ae23d4ff2758b5db9cc0de092401ddf7edce6d1dcd1120e984f59f91"
+  },
+  "references": [
+    {
+      "url": "https://doi.org/10.1007/BF01933190",
+      "role": "Brentの周期検出とまとめたGCDの数学的原典。実装コードは転記せず、演算/乱数/分割管理は独自構成。"
+    },
+    {
+      "url": "https://miller-rabin.appspot.com/",
+      "role": "uint64全域の7底の検査範囲の数学的参考。既存MillerRabinのguard/部品は流用しない。"
+    },
+    {
+      "url": "https://nyaannyaan.github.io/library/string/aho-corasick.hpp",
+      "role": "多パターン検索APIの用途調査。Trie継承実装は転記せず、個別カウンタ・リンク・所有を独自構成。"
+    },
+    {
+      "url": "https://nyaannyaan.github.io/library/fps/ntt-friendly-fps.hpp.html",
+      "role": "FPSの用途・Verify問題・Newton法の数学参考。掲載された最適化NTT反復コードは転記しない。"
+    }
+  ],
+  "shared_component": {
+    "library": "Math/NTT.cpp",
+    "sha256": "26d3dd4c9f9fbbf74d349a94a6ca292e4179fcb84d0889527f41579c93d9626e",
+    "license": "CC0-1.0",
+    "role": "第1波の自作NTTを完全一致で同梱し、共通guardを維持。新規の外部コードではない。",
+    "provenance": "Audit/provenance-string-math-expansion-2026-10-31.json"
+  },
+  "license_reference": "NyaanはCC0、Luzhiled現行masterはUnlicense。原典の調査・snapshotはAudit/provenance-string-math-expansion-2026-10-31.json。今回の実装に原典コードの転記はない。",
+  "notes": [
+    "Original Sourceと記す外部実装の継承はない。数学的手法とAPI調査を参考として区別した。",
+    "FPS生成部品はMath/FPS/README.mdと生成ヘッダーでCC0を明記し、単独配布ソースへSPDX/API一覧をまとめる。",
+    "参考論文・Library Checker・AtCoderの文章をCC0へ再宣言しない。"
+  ]
+}

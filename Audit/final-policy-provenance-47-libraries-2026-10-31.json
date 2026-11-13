@@ -1,0 +1,2279 @@
+{
+  "date_utc": "2026-10-31T18:38:26.511138+00:00",
+  "scope": {
+    "normal": [
+      "Algorithm/Mo.cpp",
+      "DataStructure/Disjoint_Sparse_Table.cpp",
+      "DataStructure/Dual_Segment_Tree.cpp",
+      "DataStructure/Dynamic_Bitset.cpp",
+      "DataStructure/Fenwick_Tree.cpp",
+      "DataStructure/Lazy_Segment_Tree.cpp",
+      "DataStructure/Link_Cut_Tree.cpp",
+      "DataStructure/Persistent_Segment_Tree.cpp",
+      "DataStructure/Segment_Tree.cpp",
+      "DataStructure/Segment_Tree_Beats.cpp",
+      "DataStructure/Sliding_Window_Aggregation.cpp",
+      "DataStructure/Slope_Trick.cpp",
+      "DataStructure/Sparse_Table.cpp",
+      "DataStructure/Wavelet_Matrix.cpp",
+      "Graph/Bipartite_Matching.cpp",
+      "Graph/Cartesian_Tree.cpp",
+      "Graph/Centroid_Decomposition.cpp",
+      "Graph/Eulerian_Trail.cpp",
+      "Graph/Functional_Graph.cpp",
+      "Graph/General_Matching.cpp",
+      "Graph/Heavy_Light_Decomposition.cpp",
+      "Graph/Low_Link.cpp",
+      "Graph/Max_Flow.cpp",
+      "Graph/Min_Cost_Flow.cpp",
+      "Graph/Offline_Dynamic_Connectivity.cpp",
+      "Graph/Pruefer_Code.cpp",
+      "Graph/Rerooting_DP.cpp",
+      "Graph/SCC.cpp",
+      "Graph/Two_SAT.cpp",
+      "Math/Berlekamp_Massey.cpp",
+      "Math/Binary_Matrix.cpp",
+      "Math/Convolution.cpp",
+      "Math/Formal_Power_Series.cpp",
+      "Math/Gaussian_Elimination.cpp",
+      "Math/Linear_Recurrence.cpp",
+      "Math/Matrix.cpp",
+      "Math/Modular_Arithmetic.cpp",
+      "Math/NTT.cpp",
+      "Math/Pollard_Rho.cpp",
+      "Math/Polynomial.cpp",
+      "Math/Xor_Basis.cpp",
+      "String/Aho_Corasick.cpp",
+      "String/Manacher.cpp",
+      "String/Palindromic_Tree.cpp",
+      "String/Suffix_Array.cpp",
+      "String/Suffix_Automaton.cpp",
+      "String/Z_Algorithm.cpp"
+    ],
+    "fast": [
+      "Fast/Source/DataStructure/Binary_Trie.cpp",
+      "Fast/Source/DataStructure/Fenwick_Tree.cpp",
+      "Fast/Source/DataStructure/Hash_map.cpp",
+      "Fast/Source/DataStructure/Hash_set.cpp",
+      "Fast/Source/DataStructure/Lazy_Segment_Tree.cpp",
+      "Fast/Source/DataStructure/Node.cpp",
+      "Fast/Source/DataStructure/Persistent_Segment_Tree.cpp",
+      "Fast/Source/DataStructure/Segment_Tree.cpp",
+      "Fast/Source/DataStructure/Wavelet_Matrix.cpp",
+      "Fast/Source/DataStructure/implicit_treap.cpp",
+      "Fast/Source/String/Aho_Corasick.cpp"
+    ],
+    "normal_count": 47,
+    "fast_count": 11,
+    "baseline_snapshot_sha256": "cce8a53da08a5612bb8e8e1c3e9ee3841e4d4db385038e8e85b20ff77930a03a",
+    "new_in_goal_despite_baseline": [
+      "DataStructure/Fenwick_Tree.cpp",
+      "Graph/SCC.cpp"
+    ]
+  },
+  "conclusion": "No unresolved actionable policy/provenance findings after three root corrections. Read-only review; no source/shared edits or C++ tests/benchmarks by reviewer.",
+  "review_type": "Bounded source-policy/provenance and contract review: static scan of every scoped file, explicit-header symbol checks, API/Document/example registration checks, targeted manual helper/dispatch/ownership review. Not a new full algorithm-correctness or all-upstream-history audit.",
+  "resolved_findings": [
+    {
+      "id": "document-index-missing-three",
+      "priority": "P3",
+      "status": "resolved_by_root",
+      "path": "Document/README.md",
+      "evidence_before": "Document files and source links/package examples existed, but index omitted segment_tree_beats.md, sliding_window_aggregation.md, xor_basis.md.",
+      "evidence_after": "All three links are now present; every47 source Document link resolves and is indexed.",
+      "affected": [
+        "Document/segment_tree_beats.md",
+        "Document/sliding_window_aggregation.md",
+        "Document/xor_basis.md"
+      ]
+    },
+    {
+      "id": "fast-node-push-front-wording",
+      "priority": "P3",
+      "status": "resolved_by_root",
+      "path": "Fast/Source/DataStructure/Node.cpp",
+      "line": 13,
+      "before": "push_front_node(head): newで先頭追加",
+      "after": "push_front_node(head): make_nodeで先頭追加",
+      "reason": "Implementation calls make_node/shared bump pool rather than a fresh allocation per call.",
+      "before_sha256": "70f834356123d7c0e834547cbf775be088bf3151456435d2fac3f2588373d32e",
+      "after_sha256": "a0a5fcaac66f51a660a35f4b736222ba7bd7bf20a916b09fc614df9b3a410261",
+      "exact_one_comment_substitution_confirmed": true
+    },
+    {
+      "id": "fast-hash-retained-finalizer-attribution",
+      "priority": "P2-policy-attribution",
+      "status": "resolved_by_root",
+      "evidence_before": "Fast HashMap/HashSet retain the known SplitMix64 finalizer but top headers only cited Nyaan. Existing license Audit distinguishes Vigna public-domain dedication/unconditional permission from CC0-name confirmation.",
+      "evidence_after": "Root added top Original Source lines limited to GenericHash::mix and official URL, propagated into Fast overrides. Source/source-license distinction is explicit.",
+      "affected": [
+        {
+          "path": "Fast/Source/DataStructure/Hash_map.cpp",
+          "before_sha256": "7b9fb674a63d73dd1e50a728b535b07872b2d029af4d25c405e87630282c1b82",
+          "after_sha256": "ba812641af6001bde3c59346492fe61058c78bee77f66e21d52cc4b515f7c6f3",
+          "attribution_scope": "GenericHash::mix only; Vigna public-domain dedication/unconditional permission, not CC0-name confirmation"
+        },
+        {
+          "path": "Fast/Source/DataStructure/Hash_set.cpp",
+          "before_sha256": "d6d4ca68388822e4801d6c6f33466d59e9954e2a9875b5d174f80e715344df18",
+          "after_sha256": "4aadfc3792999d8a3ad0379b92b84c9ac9c2c1db4e83c3bf38c44444961d0576",
+          "attribution_scope": "GenericHash::mix only; Vigna public-domain dedication/unconditional permission, not CC0-name confirmation"
+        }
+      ],
+      "existing_evidence": "Audit/license-audit-2026-10-17.json, Hash_map/Hash_set component records",
+      "primary_url": "https://prng.di.unimi.it/splitmix64.c",
+      "redirect_observed": "https://prng.di.unimi.it/splitmix.c",
+      "scope_note": "Old normal HashMap/HashSet behavior/style was not expanded into this review; root applied origin-header fixes there as generator inputs."
+    }
+  ],
+  "unresolved_findings": [],
+  "checks": {
+    "normal_sources": 47,
+    "fast_overrides": 11,
+    "normal_direct_new_expressions": 0,
+    "own_quoted_library_includes": 0,
+    "long_long_type_occurrences": 0,
+    "normal_API_headings_before_first_include": 47,
+    "all_scoped_API_headings_single": 58,
+    "all_normal_document_and_registered_example_present": 47,
+    "unexpected_namespace_definitions": 0,
+    "non_SIRKIT_defined_macros": 0,
+    "SKIP_RUNTIME_CHECKS_definitions_leaking_to_users": 0,
+    "fixed_width_review": "Stored numeric values, masks, arithmetic domains and public64-bit math APIs use fixed-width types. int remains for bounded graph/state/string indices, degrees/ranks/sign values; size_t remains for container sizes. These were not flagged merely for being int.",
+    "standard_headers": "Scoped sources contain no custom quoted header dependency. A symbol→standard-header scan found no missing explicit dependency among used containers/ownership/functional/bit/arithmetic/utility facilities checked; source remains standalone.",
+    "private_helpers": "Free helper types/functions are in reinsirk::detail; nested private members remain within their owning public class. Public library APIs remain global. Component guards/settings use SIRKIT_ and SKIP_RUNTIME_CHECKS retains its name.",
+    "draft_language": "No shipped draft/candidate promises found. Candidate identifiers and mathematical candidate terminology are legitimate, and new Original Source lines are attribution rather than draft statements.",
+    "readme_document_claims": "No new unmeasured numerical speed claims found in scoped docs/category READMEs. DynamicBitset comparator-specific dispatch wording corresponds to existing measured selection. Audit remains the location of measurement histories.",
+    "extension_types": "128-bit extension use remains compiler/feature guarded with standard arithmetic fallback; documentation distinguishes extensions from standard C++ types. Latest Modular_Arithmetic9bd382… re-read after adoption.",
+    "CPU_dispatch": "Reviewed DynamicBitset/BinaryMatrix shared word helpers, Wavelet, NTT and Matrix/Gaussian. Added dedicated CPU paths are guarded by supported compiler/architecture and SIRKIT_DISABLE_SIMD. Runtime checks precede optional instructions; explicit target features may use their native standard/compiler path. Fast Hash SSE2 paths require the compile target feature and disable guard; no unsupported runtime promise inferred."
+  },
+  "fast_contract_review": [
+    {
+      "paths": [
+        "Fast/Source/DataStructure/Fenwick_Tree.cpp",
+        "Fast/Source/DataStructure/Segment_Tree.cpp",
+        "Fast/Source/DataStructure/Lazy_Segment_Tree.cpp",
+        "Fast/Source/DataStructure/Wavelet_Matrix.cpp"
+      ],
+      "storage": "FastBuffer",
+      "finding": "Matches docs: old growth regions/elements retained, final storage not destroyed, clear/shrink logically reduce count. Public returned vectors and selected scratch arrays retain normal ownership."
+    },
+    {
+      "paths": [
+        "Fast/Source/DataStructure/implicit_treap.cpp"
+      ],
+      "storage": "UnreleasedVector",
+      "finding": "Matches docs: vector growth/assignment/clear performs normal destruction and old-allocation release; final vector destruction omitted. Copy isolation and moved-from-empty contracts follow explicit helper operations."
+    },
+    {
+      "paths": [
+        "Fast/Source/String/Aho_Corasick.cpp"
+      ],
+      "storage": "GCC UnreleasedVector; Clang FastBuffer",
+      "finding": "Compiler wrappers select the documented helper. GCC reclaims old vector growth regions; Clang retains old FastBuffer regions. Both omit final primary storage destruction. Current source was separately bridged to8 actual timed binaries."
+    },
+    {
+      "paths": [
+        "Fast/Source/DataStructure/Persistent_Segment_Tree.cpp"
+      ],
+      "storage": "raw State* with ordinary vector nodes",
+      "finding": "Matches docs: State allocation/final destruction/reset/clear leaves old State; internal vector growth releases its old allocation and destroys old nodes. Update rollback remains implemented; specific update guarantees do not imply a blanket Fast exception guarantee."
+    },
+    {
+      "paths": [
+        "Fast/Source/DataStructure/Hash_map.cpp",
+        "Fast/Source/DataStructure/Hash_set.cpp"
+      ],
+      "storage": "raw union slots and status array",
+      "finding": "Matches docs: erase destroys nontrivial registered values; clear/final destruction skips values/final arrays. Rehash releases old raw arrays; specified nontrivial old-value resource reclamation is omitted. No blanket speed or ownership-equivalence claim."
+    },
+    {
+      "paths": [
+        "Fast/Source/DataStructure/Binary_Trie.cpp"
+      ],
+      "storage": "unreleased node/ID blocks, optional inline ID slots",
+      "finding": "Source/docs explicitly require valid values/ranks/capacity/count/allocation and retain process-lifetime blocks. Removed capacity/input checking is not mislabeled as normal safe ownership."
+    },
+    {
+      "paths": [
+        "Fast/Source/DataStructure/Node.cpp"
+      ],
+      "storage": "shared bump pool and large raw arrays",
+      "finding": "Source/docs explicitly describe no individual delete, shared4096-node pool, process-lifetime retention, raw pointers and single-thread use. Corrected push_front wording now agrees with implementation."
+    }
+  ],
+  "source_inventory": [
+    {
+      "path": "Algorithm/Mo.cpp",
+      "category": "normal",
+      "sha256": "ef4414d620ec67a384144160b3d60a9e1a7f052be339db790ec01b2365f33c8f",
+      "bytes": 15724,
+      "lines": 261,
+      "SPDX": [
+        "CC0-1.0"
+      ],
+      "api_heading_count": 1,
+      "api_before_include": true,
+      "doc_links": [
+        "Document/mo.md"
+      ],
+      "source_urls": [
+        "https://nyaannyaan.github.io/library/misc/mo.hpp.html",
+        "https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/mo.md"
+      ],
+      "previous_scan_sha256": "ef4414d620ec67a384144160b3d60a9e1a7f052be339db790ec01b2365f33c8f"
+    },
+    {
+      "path": "DataStructure/Disjoint_Sparse_Table.cpp",
+      "category": "normal",
+      "sha256": "bb3f1eab5bae8c08d61b5670c820b89dae943ffc3b3fb73398d1b4aa3799ad93",
+      "bytes": 6015,
+      "lines": 128,
+      "SPDX": [
+        "CC0-1.0"
+      ],
+      "api_heading_count": 1,
+      "api_before_include": true,
+      "doc_links": [
+        "Document/disjoint_sparse_table.md"
+      ],
+      "source_urls": [
+        "https://info.atcoder.jp/entry/algorithm_lectures/disjoint_sparse_table",
+        "https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/disjoint_sparse_table.md"
+      ],
+      "previous_scan_sha256": "bb3f1eab5bae8c08d61b5670c820b89dae943ffc3b3fb73398d1b4aa3799ad93"
+    },
+    {
+      "path": "DataStructure/Dual_Segment_Tree.cpp",
+      "category": "normal",
+      "sha256": "795b17e19e6682fa1523aae9716b4ca2af1e89fd81bbf01df71251782101a61e",
+      "bytes": 8768,
+      "lines": 164,
+      "SPDX": [
+        "CC0-1.0"
+      ],
+      "api_heading_count": 1,
+      "api_before_include": true,
+      "doc_links": [
+        "Document/dual_segment_tree.md"
+      ],
+      "source_urls": [
+        "https://ei1333.github.io/library/structure/segment-tree/dual-segment-tree.hpp.html",
+        "https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/dual_segment_tree.md"
+      ],
+      "previous_scan_sha256": "795b17e19e6682fa1523aae9716b4ca2af1e89fd81bbf01df71251782101a61e"
+    },
+    {
+      "path": "DataStructure/Dynamic_Bitset.cpp",
+      "category": "normal",
+      "sha256": "e1a2391a0390744ee0f4b3994fb08b7bb6185540bff7209b168fb2118cb2a907",
+      "bytes": 20835,
+      "lines": 312,
+      "SPDX": [
+        "CC0-1.0"
+      ],
+      "api_heading_count": 1,
+      "api_before_include": true,
+      "doc_links": [
+        "Document/dynamic_bitset.md"
+      ],
+      "source_urls": [
+        "https://nyaannyaan.github.io/library/data-structure/dynamic-bitset.hpp.html",
+        "https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/dynamic_bitset.md"
+      ],
+      "previous_scan_sha256": "e1a2391a0390744ee0f4b3994fb08b7bb6185540bff7209b168fb2118cb2a907"
+    },
+    {
+      "path": "DataStructure/Fenwick_Tree.cpp",
+      "category": "normal",
+      "sha256": "cb202094a983b5ad00d2fb501e87868862c50454e4f863575ac04ae04b5d1c19",
+      "bytes": 6045,
+      "lines": 145,
+      "SPDX": [
+        "CC0-1.0"
+      ],
+      "api_heading_count": 1,
+      "api_before_include": true,
+      "doc_links": [
+        "Document/fenwick_tree.md"
+      ],
+      "source_urls": [
+        "https://nyaannyaan.github.io/library/data-structure/binary-indexed-tree.hpp",
+        "https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/fenwick_tree.md"
+      ],
+      "previous_scan_sha256": "cb202094a983b5ad00d2fb501e87868862c50454e4f863575ac04ae04b5d1c19"
+    },
+    {
+      "path": "DataStructure/Lazy_Segment_Tree.cpp",
+      "category": "normal",
+      "sha256": "bba84f6551567504ebbcd78c70a27c5fcdce07e76d12476a3919aae0b4386c33",
+      "bytes": 11981,
+      "lines": 254,
+      "SPDX": [
+        "CC0-1.0"
+      ],
+      "api_heading_count": 1,
+      "api_before_include": true,
+      "doc_links": [
+        "Document/lazy_segment_tree.md"
+      ],
+      "source_urls": [
+        "https://info.atcoder.jp/entry/algorithm_lectures/range_query_monoid_design",
+        "https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/lazy_segment_tree.md"
+      ],
+      "previous_scan_sha256": "bba84f6551567504ebbcd78c70a27c5fcdce07e76d12476a3919aae0b4386c33"
+    },
+    {
+      "path": "DataStructure/Link_Cut_Tree.cpp",
+      "category": "normal",
+      "sha256": "2e1b6ad774bd49c4a5c1b4f54698709b7259a936b23bc2a8bc303302f8183b53",
+      "bytes": 18447,
+      "lines": 334,
+      "SPDX": [
+        "CC0-1.0"
+      ],
+      "api_heading_count": 1,
+      "api_before_include": true,
+      "doc_links": [
+        "Document/link_cut_tree.md"
+      ],
+      "source_urls": [
+        "https://nyaannyaan.github.io/library/lct/link-cut-base.hpp",
+        "https://ei1333.github.io/library/structure/dynamic-tree/lazy-link-cut-tree.hpp",
+        "https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/link_cut_tree.md"
+      ],
+      "previous_scan_sha256": "2e1b6ad774bd49c4a5c1b4f54698709b7259a936b23bc2a8bc303302f8183b53"
+    },
+    {
+      "path": "DataStructure/Persistent_Segment_Tree.cpp",
+      "category": "normal",
+      "sha256": "80ad150eb44ed8784a6600446c3b6bb6c2d232fa79e57b063592ab138015a512",
+      "bytes": 16378,
+      "lines": 335,
+      "SPDX": [
+        "CC0-1.0"
+      ],
+      "api_heading_count": 1,
+      "api_before_include": true,
+      "doc_links": [
+        "Document/persistent_segment_tree.md"
+      ],
+      "source_urls": [
+        "https://info.atcoder.jp/entry/algorithm_lectures/persistent_segment_tree",
+        "https://nyaannyaan.github.io/library/segment-tree/persistent-segment-tree.hpp.html",
+        "https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/persistent_segment_tree.md"
+      ],
+      "previous_scan_sha256": "80ad150eb44ed8784a6600446c3b6bb6c2d232fa79e57b063592ab138015a512"
+    },
+    {
+      "path": "DataStructure/Segment_Tree.cpp",
+      "category": "normal",
+      "sha256": "fa6cade4f56328cbcd3c335154d84bdec331d53082713732a1584b0e244a460b",
+      "bytes": 7936,
+      "lines": 182,
+      "SPDX": [
+        "CC0-1.0"
+      ],
+      "api_heading_count": 1,
+      "api_before_include": true,
+      "doc_links": [
+        "Document/segment_tree.md"
+      ],
+      "source_urls": [
+        "https://info.atcoder.jp/entry/algorithm_lectures/range_query_monoid_design",
+        "https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/segment_tree.md"
+      ],
+      "previous_scan_sha256": "fa6cade4f56328cbcd3c335154d84bdec331d53082713732a1584b0e244a460b"
+    },
+    {
+      "path": "DataStructure/Segment_Tree_Beats.cpp",
+      "category": "normal",
+      "sha256": "5b332c567f2b0f12f32348bfabc3e6e4da20fccf8d4cd35bb7c960f75f494c64",
+      "bytes": 17746,
+      "lines": 332,
+      "SPDX": [
+        "CC0-1.0"
+      ],
+      "api_heading_count": 1,
+      "api_before_include": true,
+      "doc_links": [
+        "Document/segment_tree_beats.md"
+      ],
+      "source_urls": [
+        "https://nyaannyaan.github.io/library/segment-tree/segment-tree-beats.hpp",
+        "https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/segment_tree_beats.md"
+      ],
+      "previous_scan_sha256": "5b332c567f2b0f12f32348bfabc3e6e4da20fccf8d4cd35bb7c960f75f494c64"
+    },
+    {
+      "path": "DataStructure/Sliding_Window_Aggregation.cpp",
+      "category": "normal",
+      "sha256": "a56213905d46763e4b79fbfa7cdb3046735c7a1bb43847efbe5660d69d66a90e",
+      "bytes": 5031,
+      "lines": 99,
+      "SPDX": [
+        "CC0-1.0"
+      ],
+      "api_heading_count": 1,
+      "api_before_include": true,
+      "doc_links": [
+        "Document/sliding_window_aggregation.md"
+      ],
+      "source_urls": [
+        "https://nyaannyaan.github.io/library/data-structure/slide-window-aggregation.hpp",
+        "https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/sliding_window_aggregation.md"
+      ],
+      "previous_scan_sha256": "a56213905d46763e4b79fbfa7cdb3046735c7a1bb43847efbe5660d69d66a90e"
+    },
+    {
+      "path": "DataStructure/Slope_Trick.cpp",
+      "category": "normal",
+      "sha256": "29f282b3e162d47a2f87036dc92951adc4856c0bca1fcf8db7eac5e89e192ae1",
+      "bytes": 9575,
+      "lines": 159,
+      "SPDX": [
+        "CC0-1.0"
+      ],
+      "api_heading_count": 1,
+      "api_before_include": true,
+      "doc_links": [
+        "Document/slope_trick.md"
+      ],
+      "source_urls": [
+        "https://nyaannyaan.github.io/library/data-structure/slope-trick.hpp.html",
+        "https://ei1333.github.io/library/structure/others/slope-trick.hpp.html",
+        "https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/slope_trick.md"
+      ],
+      "previous_scan_sha256": "29f282b3e162d47a2f87036dc92951adc4856c0bca1fcf8db7eac5e89e192ae1"
+    },
+    {
+      "path": "DataStructure/Sparse_Table.cpp",
+      "category": "normal",
+      "sha256": "10095d492bbc0894881d821ca96534c91f7ad6d626336cd35c904fe5372eb86d",
+      "bytes": 5565,
+      "lines": 122,
+      "SPDX": [
+        "CC0-1.0"
+      ],
+      "api_heading_count": 1,
+      "api_before_include": true,
+      "doc_links": [
+        "Document/sparse_table.md"
+      ],
+      "source_urls": [
+        "https://info.atcoder.jp/entry/algorithm_lectures/sparse_table",
+        "https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/sparse_table.md"
+      ],
+      "previous_scan_sha256": "10095d492bbc0894881d821ca96534c91f7ad6d626336cd35c904fe5372eb86d"
+    },
+    {
+      "path": "DataStructure/Wavelet_Matrix.cpp",
+      "category": "normal",
+      "sha256": "33b4b5b8a25894cbc698e2badbb1adeabf98478fd5295ccb3ed108689e81f7f5",
+      "bytes": 18262,
+      "lines": 354,
+      "SPDX": [
+        "CC0-1.0"
+      ],
+      "api_heading_count": 1,
+      "api_before_include": true,
+      "doc_links": [
+        "Document/wavelet_matrix.md"
+      ],
+      "source_urls": [
+        "https://info.atcoder.jp/entry/algorithm_lectures/wavelet_matrix_basic",
+        "https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/wavelet_matrix.md"
+      ],
+      "previous_scan_sha256": "33b4b5b8a25894cbc698e2badbb1adeabf98478fd5295ccb3ed108689e81f7f5"
+    },
+    {
+      "path": "Graph/Bipartite_Matching.cpp",
+      "category": "normal",
+      "sha256": "02389bf3ed083d7a065d6660f1b6e7c81e544e9881716d230e575ba1d85b5aee",
+      "bytes": 10608,
+      "lines": 192,
+      "SPDX": [
+        "CC0-1.0"
+      ],
+      "api_heading_count": 1,
+      "api_before_include": true,
+      "doc_links": [
+        "Document/bipartite_matching.md"
+      ],
+      "source_urls": [
+        "https://doi.org/10.1137/0202019",
+        "https://ei1333.github.io/library/graph/flow/bipartite-matching.hpp.html",
+        "https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/bipartite_matching.md"
+      ],
+      "previous_scan_sha256": "02389bf3ed083d7a065d6660f1b6e7c81e544e9881716d230e575ba1d85b5aee"
+    },
+    {
+      "path": "Graph/Cartesian_Tree.cpp",
+      "category": "normal",
+      "sha256": "08795bc2e2f702c504712169162ca9cda893d60d0a58ea113eaa7ef42bfd50cb",
+      "bytes": 6273,
+      "lines": 114,
+      "SPDX": [
+        "CC0-1.0"
+      ],
+      "api_heading_count": 1,
+      "api_before_include": true,
+      "doc_links": [
+        "Document/cartesian_tree.md"
+      ],
+      "source_urls": [
+        "https://nyaannyaan.github.io/library/tree/cartesian-tree.hpp.html",
+        "https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/cartesian_tree.md"
+      ],
+      "previous_scan_sha256": "08795bc2e2f702c504712169162ca9cda893d60d0a58ea113eaa7ef42bfd50cb"
+    },
+    {
+      "path": "Graph/Centroid_Decomposition.cpp",
+      "category": "normal",
+      "sha256": "aaffd515576a58171be037c3bfaf4ca07b9a1b8b12f212062c9994d28a3ad608",
+      "bytes": 11074,
+      "lines": 212,
+      "SPDX": [
+        "CC0-1.0"
+      ],
+      "api_heading_count": 1,
+      "api_before_include": true,
+      "doc_links": [
+        "Document/centroid_decomposition.md"
+      ],
+      "source_urls": [
+        "https://nyaannyaan.github.io/library/tree/centroid-decomposition.hpp.html",
+        "https://ei1333.github.io/library/graph/tree/centroid-decomposition.hpp.html",
+        "https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/centroid_decomposition.md"
+      ],
+      "previous_scan_sha256": "aaffd515576a58171be037c3bfaf4ca07b9a1b8b12f212062c9994d28a3ad608"
+    },
+    {
+      "path": "Graph/Eulerian_Trail.cpp",
+      "category": "normal",
+      "sha256": "cfb9e144559e2e2ad7706595669e07d47062daeda2ceeb9c2f0dc71af2349b7d",
+      "bytes": 7355,
+      "lines": 142,
+      "SPDX": [
+        "CC0-1.0"
+      ],
+      "api_heading_count": 1,
+      "api_before_include": true,
+      "doc_links": [
+        "Document/eulerian_trail.md"
+      ],
+      "source_urls": [
+        "https://ei1333.github.io/library/graph/others/eulerian-trail.hpp",
+        "https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/eulerian_trail.md"
+      ],
+      "previous_scan_sha256": "cfb9e144559e2e2ad7706595669e07d47062daeda2ceeb9c2f0dc71af2349b7d"
+    },
+    {
+      "path": "Graph/Functional_Graph.cpp",
+      "category": "normal",
+      "sha256": "a763f98a4839898bc4e899faa58533389c1505312e29a4bfa10d516caaccdafb",
+      "bytes": 8900,
+      "lines": 151,
+      "SPDX": [
+        "CC0-1.0"
+      ],
+      "api_heading_count": 1,
+      "api_before_include": true,
+      "doc_links": [
+        "Document/functional_graph.md"
+      ],
+      "source_urls": [
+        "https://nyaannyaan.github.io/library/graph/functional-graph.hpp",
+        "https://atcoder.jp/contests/abc367/tasks/abc367_e",
+        "https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/functional_graph.md"
+      ],
+      "previous_scan_sha256": "a763f98a4839898bc4e899faa58533389c1505312e29a4bfa10d516caaccdafb"
+    },
+    {
+      "path": "Graph/General_Matching.cpp",
+      "category": "normal",
+      "sha256": "03803c1d3b4589a1b193649b33553f4f9637aa3c2f3104132f47263b816662d2",
+      "bytes": 11778,
+      "lines": 205,
+      "SPDX": [
+        "CC0-1.0"
+      ],
+      "api_heading_count": 1,
+      "api_before_include": true,
+      "doc_links": [
+        "Document/general_matching.md"
+      ],
+      "source_urls": [
+        "https://doi.org/10.4153/CJM-1965-045-4",
+        "https://ei1333.github.io/library/graph/flow/gabow-edmonds.hpp.html",
+        "https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/general_matching.md"
+      ],
+      "previous_scan_sha256": "03803c1d3b4589a1b193649b33553f4f9637aa3c2f3104132f47263b816662d2"
+    },
+    {
+      "path": "Graph/Heavy_Light_Decomposition.cpp",
+      "category": "normal",
+      "sha256": "ff125ec2f81d93b87eff79ce43de8191d237cff766f082da7368ceace4249141",
+      "bytes": 11033,
+      "lines": 252,
+      "SPDX": [
+        "CC0-1.0"
+      ],
+      "api_heading_count": 1,
+      "api_before_include": true,
+      "doc_links": [
+        "Document/heavy_light_decomposition.md"
+      ],
+      "source_urls": [
+        "https://info.atcoder.jp/entry/algorithm_lectures/heavy_light_decomposition",
+        "https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/heavy_light_decomposition.md"
+      ],
+      "previous_scan_sha256": "ff125ec2f81d93b87eff79ce43de8191d237cff766f082da7368ceace4249141"
+    },
+    {
+      "path": "Graph/Low_Link.cpp",
+      "category": "normal",
+      "sha256": "447197bca51ca51690281375230e99abb6c8462e804b1aa6922921d35560d4c4",
+      "bytes": 11787,
+      "lines": 238,
+      "SPDX": [
+        "CC0-1.0"
+      ],
+      "api_heading_count": 1,
+      "api_before_include": true,
+      "doc_links": [
+        "Document/low_link.md"
+      ],
+      "source_urls": [
+        "https://nyaannyaan.github.io/library/graph/lowlink.hpp",
+        "https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/low_link.md"
+      ],
+      "previous_scan_sha256": "447197bca51ca51690281375230e99abb6c8462e804b1aa6922921d35560d4c4"
+    },
+    {
+      "path": "Graph/Max_Flow.cpp",
+      "category": "normal",
+      "sha256": "1c6b52fd1ebc10f673b418942c6edd3b1050cca7615071334f146bdd63731d01",
+      "bytes": 8912,
+      "lines": 174,
+      "SPDX": [
+        "CC0-1.0"
+      ],
+      "api_heading_count": 1,
+      "api_before_include": true,
+      "doc_links": [
+        "Document/max_flow.md"
+      ],
+      "source_urls": [
+        "https://atcoder.github.io/ac-library/production/document_ja/maxflow.html",
+        "https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/max_flow.md"
+      ],
+      "previous_scan_sha256": "1c6b52fd1ebc10f673b418942c6edd3b1050cca7615071334f146bdd63731d01"
+    },
+    {
+      "path": "Graph/Min_Cost_Flow.cpp",
+      "category": "normal",
+      "sha256": "cdb8088ad95e2cd2b08e07bc76e8181e569b6f6d4e5227ef724a3a0b16922700",
+      "bytes": 16182,
+      "lines": 274,
+      "SPDX": [
+        "CC0-1.0"
+      ],
+      "api_heading_count": 1,
+      "api_before_include": true,
+      "doc_links": [
+        "Document/min_cost_flow.md"
+      ],
+      "source_urls": [
+        "https://ei1333.github.io/library/graph/flow/primal-dual.hpp",
+        "https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/min_cost_flow.md"
+      ],
+      "previous_scan_sha256": "cdb8088ad95e2cd2b08e07bc76e8181e569b6f6d4e5227ef724a3a0b16922700"
+    },
+    {
+      "path": "Graph/Offline_Dynamic_Connectivity.cpp",
+      "category": "normal",
+      "sha256": "1402ecdb3867cc75940372c92527bbbdcf8f413323329ce6cb617a9029a09471",
+      "bytes": 11917,
+      "lines": 213,
+      "SPDX": [
+        "CC0-1.0"
+      ],
+      "api_heading_count": 1,
+      "api_before_include": true,
+      "doc_links": [
+        "Document/offline_dynamic_connectivity.md"
+      ],
+      "source_urls": [
+        "https://nyaannyaan.github.io/library/graph/offline-dynamic-connectivity.hpp",
+        "https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/offline_dynamic_connectivity.md"
+      ],
+      "previous_scan_sha256": "1402ecdb3867cc75940372c92527bbbdcf8f413323329ce6cb617a9029a09471"
+    },
+    {
+      "path": "Graph/Pruefer_Code.cpp",
+      "category": "normal",
+      "sha256": "4f7e596917971175cc226cd485d22426f338a8fcadc471acc812f2ae72758d43",
+      "bytes": 10740,
+      "lines": 232,
+      "SPDX": [
+        "CC0-1.0"
+      ],
+      "api_heading_count": 1,
+      "api_before_include": true,
+      "doc_links": [
+        "Document/pruefer_code.md"
+      ],
+      "source_urls": [
+        "https://info.atcoder.jp/entry/algorithm_lectures/prufer_code",
+        "https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/pruefer_code.md"
+      ],
+      "previous_scan_sha256": "4f7e596917971175cc226cd485d22426f338a8fcadc471acc812f2ae72758d43"
+    },
+    {
+      "path": "Graph/Rerooting_DP.cpp",
+      "category": "normal",
+      "sha256": "73aeb95c3da73f43800db83b15b12fc61a1f5c6bb30182d0846dd7eb54b6ef58",
+      "bytes": 10533,
+      "lines": 179,
+      "SPDX": [
+        "CC0-1.0"
+      ],
+      "api_heading_count": 1,
+      "api_before_include": true,
+      "doc_links": [
+        "Document/rerooting_dp.md"
+      ],
+      "source_urls": [
+        "https://nyaannyaan.github.io/library/tree/rerooting.hpp.html",
+        "https://ei1333.github.io/library/graph/tree/rerooting.hpp.html",
+        "https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/rerooting_dp.md"
+      ],
+      "previous_scan_sha256": "73aeb95c3da73f43800db83b15b12fc61a1f5c6bb30182d0846dd7eb54b6ef58"
+    },
+    {
+      "path": "Graph/SCC.cpp",
+      "category": "normal",
+      "sha256": "71325936e8707b684cadcd49aaf6e272bc2067bb4c71afdc66271e5ac96c39a4",
+      "bytes": 7691,
+      "lines": 185,
+      "SPDX": [
+        "CC0-1.0"
+      ],
+      "api_heading_count": 1,
+      "api_before_include": true,
+      "doc_links": [
+        "Document/scc.md"
+      ],
+      "source_urls": [
+        "https://nyaannyaan.github.io/library/graph/strongly-connected-components.hpp",
+        "https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/scc.md"
+      ],
+      "previous_scan_sha256": "71325936e8707b684cadcd49aaf6e272bc2067bb4c71afdc66271e5ac96c39a4"
+    },
+    {
+      "path": "Graph/Two_SAT.cpp",
+      "category": "normal",
+      "sha256": "e470f934429ff107940bcd98a966348f55d22a2bc359b3b2b66578b6294cf161",
+      "bytes": 7175,
+      "lines": 172,
+      "SPDX": [
+        "CC0-1.0"
+      ],
+      "api_heading_count": 1,
+      "api_before_include": true,
+      "doc_links": [
+        "Document/two_sat.md"
+      ],
+      "source_urls": [
+        "https://nyaannyaan.github.io/library/math/two-sat.hpp",
+        "https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/two_sat.md"
+      ],
+      "previous_scan_sha256": "e470f934429ff107940bcd98a966348f55d22a2bc359b3b2b66578b6294cf161"
+    },
+    {
+      "path": "Math/Berlekamp_Massey.cpp",
+      "category": "normal",
+      "sha256": "77ca327c74c8295aaac689753288c81e175e7e0a10bd5f5c8bb4866c5639d81c",
+      "bytes": 4802,
+      "lines": 95,
+      "SPDX": [
+        "CC0-1.0"
+      ],
+      "api_heading_count": 1,
+      "api_before_include": true,
+      "doc_links": [
+        "Document/linear_recurrence.md"
+      ],
+      "source_urls": [
+        "https://www.isiweb.ee.ethz.ch/archive/massey_pub/pdf/BI411.pdf",
+        "https://info.atcoder.jp/entry/algorithm_lectures/linearly_recurrent_sequence_reconstruction",
+        "https://nyaannyaan.github.io/library/fps/berlekamp-massey.hpp",
+        "https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/linear_recurrence.md"
+      ],
+      "previous_scan_sha256": "77ca327c74c8295aaac689753288c81e175e7e0a10bd5f5c8bb4866c5639d81c"
+    },
+    {
+      "path": "Math/Binary_Matrix.cpp",
+      "category": "normal",
+      "sha256": "1ec784efc04c33c866e3081766442a91bdf9352b264428a290a3a69609fbddad",
+      "bytes": 21885,
+      "lines": 350,
+      "SPDX": [
+        "CC0-1.0"
+      ],
+      "api_heading_count": 1,
+      "api_before_include": true,
+      "doc_links": [
+        "Document/binary_matrix.md"
+      ],
+      "source_urls": [
+        "https://nyaannyaan.github.io/library/matrix/f2-matrix.hpp",
+        "https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/binary_matrix.md"
+      ],
+      "previous_scan_sha256": "1ec784efc04c33c866e3081766442a91bdf9352b264428a290a3a69609fbddad"
+    },
+    {
+      "path": "Math/Convolution.cpp",
+      "category": "normal",
+      "sha256": "610a1eee375142f10f5770c293f85722c3cfbb0cbaf211a6148048e953817cb3",
+      "bytes": 42617,
+      "lines": 728,
+      "SPDX": [
+        "CC0-1.0"
+      ],
+      "api_heading_count": 1,
+      "api_before_include": true,
+      "doc_links": [
+        "Document/convolution.md"
+      ],
+      "source_urls": [
+        "https://info.atcoder.jp/entry/algorithm_lectures/chinese_remainder_theorem",
+        "https://judge.yosupo.jp/problem/convolution_mod_1000000007",
+        "https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/convolution.md"
+      ],
+      "previous_scan_sha256": "610a1eee375142f10f5770c293f85722c3cfbb0cbaf211a6148048e953817cb3"
+    },
+    {
+      "path": "Math/Formal_Power_Series.cpp",
+      "category": "normal",
+      "sha256": "5165e885185b4b01a9c7f1882859bfde4e8cba6b98af11d04bc7e4db54433b31",
+      "bytes": 52350,
+      "lines": 888,
+      "SPDX": [
+        "CC0-1.0"
+      ],
+      "api_heading_count": 1,
+      "api_before_include": true,
+      "doc_links": [
+        "Document/formal_power_series.md",
+        "Document/ntt.md"
+      ],
+      "source_urls": [
+        "https://nyaannyaan.github.io/library/fps/ntt-friendly-fps.hpp.html",
+        "https://nyaannyaan.github.io/library/ntt/ntt.hpp.html",
+        "https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/formal_power_series.md",
+        "https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/ntt.md"
+      ],
+      "previous_scan_sha256": "5165e885185b4b01a9c7f1882859bfde4e8cba6b98af11d04bc7e4db54433b31"
+    },
+    {
+      "path": "Math/Gaussian_Elimination.cpp",
+      "category": "normal",
+      "sha256": "5761d7380e4b09be744c0d785aa4368d643df7a062bc63ec0af335ade3fe9123",
+      "bytes": 23124,
+      "lines": 431,
+      "SPDX": [
+        "CC0-1.0"
+      ],
+      "api_heading_count": 1,
+      "api_before_include": true,
+      "doc_links": [
+        "Document/matrix.md"
+      ],
+      "source_urls": [
+        "https://nyaannyaan.github.io/library/matrix/matrix.hpp",
+        "https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/matrix.md"
+      ],
+      "previous_scan_sha256": "5761d7380e4b09be744c0d785aa4368d643df7a062bc63ec0af335ade3fe9123"
+    },
+    {
+      "path": "Math/Linear_Recurrence.cpp",
+      "category": "normal",
+      "sha256": "ce01c0f83e4d7d8041ee8e4e6c6670bda7a3c707e6791ca97f2a48019941b2f6",
+      "bytes": 47742,
+      "lines": 857,
+      "SPDX": [
+        "CC0-1.0"
+      ],
+      "api_heading_count": 1,
+      "api_before_include": true,
+      "doc_links": [
+        "Document/linear_recurrence.md"
+      ],
+      "source_urls": [
+        "https://specfun.inria.fr/bostan/BoMo20.pdf",
+        "https://info.atcoder.jp/entry/algorithm_lectures/linearly_recurrent_sequence_kth_term",
+        "https://nyaannyaan.github.io/library/fps/nth-term.hpp",
+        "https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/linear_recurrence.md"
+      ],
+      "previous_scan_sha256": "ce01c0f83e4d7d8041ee8e4e6c6670bda7a3c707e6791ca97f2a48019941b2f6"
+    },
+    {
+      "path": "Math/Matrix.cpp",
+      "category": "normal",
+      "sha256": "cac01f95cd19fac7f52b2d9eba304ce8b12bcfbb63af8610de5dd68c859291af",
+      "bytes": 15749,
+      "lines": 297,
+      "SPDX": [
+        "CC0-1.0"
+      ],
+      "api_heading_count": 1,
+      "api_before_include": true,
+      "doc_links": [
+        "Document/matrix.md"
+      ],
+      "source_urls": [
+        "https://nyaannyaan.github.io/library/matrix/matrix.hpp",
+        "https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/matrix.md"
+      ],
+      "previous_scan_sha256": "cac01f95cd19fac7f52b2d9eba304ce8b12bcfbb63af8610de5dd68c859291af"
+    },
+    {
+      "path": "Math/Modular_Arithmetic.cpp",
+      "category": "normal",
+      "sha256": "9bd382b997e82bdd9a3ec5934051377b52b81a990cd9cd675a90d614833d805e",
+      "bytes": 14880,
+      "lines": 269,
+      "SPDX": [
+        "CC0-1.0"
+      ],
+      "api_heading_count": 1,
+      "api_before_include": true,
+      "doc_links": [
+        "Document/modular_arithmetic.md"
+      ],
+      "source_urls": [
+        "https://judge.yosupo.jp/problem/sqrt_mod",
+        "https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/modular_arithmetic.md"
+      ],
+      "previous_scan_sha256": "e5a915df7be51024a2c6661e9cb0aa9781d8c73cf3484caa776dec9fcb4e0776"
+    },
+    {
+      "path": "Math/NTT.cpp",
+      "category": "normal",
+      "sha256": "5b5c85da53f0108b521b725b5ab014eaf8ee21446729b2e45c30100d796426fa",
+      "bytes": 32262,
+      "lines": 563,
+      "SPDX": [
+        "CC0-1.0"
+      ],
+      "api_heading_count": 1,
+      "api_before_include": true,
+      "doc_links": [
+        "Document/ntt.md"
+      ],
+      "source_urls": [
+        "https://nyaannyaan.github.io/library/ntt/ntt.hpp.html",
+        "https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/ntt.md"
+      ],
+      "previous_scan_sha256": "5b5c85da53f0108b521b725b5ab014eaf8ee21446729b2e45c30100d796426fa"
+    },
+    {
+      "path": "Math/Pollard_Rho.cpp",
+      "category": "normal",
+      "sha256": "adc3c33889549ec315b7c208a01154fafac5de2eaff3f088d66cdefb9579ba4c",
+      "bytes": 14155,
+      "lines": 283,
+      "SPDX": [
+        "CC0-1.0"
+      ],
+      "api_heading_count": 1,
+      "api_before_include": true,
+      "doc_links": [
+        "Document/pollard_rho.md"
+      ],
+      "source_urls": [
+        "https://doi.org/10.1007/BF01933190",
+        "https://miller-rabin.appspot.com/",
+        "https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/pollard_rho.md"
+      ],
+      "previous_scan_sha256": "adc3c33889549ec315b7c208a01154fafac5de2eaff3f088d66cdefb9579ba4c"
+    },
+    {
+      "path": "Math/Polynomial.cpp",
+      "category": "normal",
+      "sha256": "46b4b1c00c1ab51296e3c38aa1bd0093da8bc19a19870937490cd374c98a5d91",
+      "bytes": 63025,
+      "lines": 1045,
+      "SPDX": [
+        "CC0-1.0"
+      ],
+      "api_heading_count": 1,
+      "api_before_include": true,
+      "doc_links": [
+        "Document/polynomial.md"
+      ],
+      "source_urls": [
+        "https://nyaannyaan.github.io/library/fps/multipoint-evaluation.hpp.html",
+        "https://judge.yosupo.jp/problem/polynomial_interpolation",
+        "https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/polynomial.md"
+      ],
+      "previous_scan_sha256": "46b4b1c00c1ab51296e3c38aa1bd0093da8bc19a19870937490cd374c98a5d91"
+    },
+    {
+      "path": "Math/Xor_Basis.cpp",
+      "category": "normal",
+      "sha256": "85473d40f0c38dd526d69287d2e7c85e93466d25714c5c169f81936e0d0bc421",
+      "bytes": 3982,
+      "lines": 83,
+      "SPDX": [
+        "CC0-1.0"
+      ],
+      "api_heading_count": 1,
+      "api_before_include": true,
+      "doc_links": [
+        "Document/xor_basis.md"
+      ],
+      "source_urls": [
+        "https://ei1333.github.io/library/math/matrix/binary-basis.hpp",
+        "https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/xor_basis.md"
+      ],
+      "previous_scan_sha256": "85473d40f0c38dd526d69287d2e7c85e93466d25714c5c169f81936e0d0bc421"
+    },
+    {
+      "path": "String/Aho_Corasick.cpp",
+      "category": "normal",
+      "sha256": "752f1d1651ba2eab7fa2710c6044e081f53cfab174dd7697db296f55fac38895",
+      "bytes": 11895,
+      "lines": 247,
+      "SPDX": [
+        "CC0-1.0"
+      ],
+      "api_heading_count": 1,
+      "api_before_include": true,
+      "doc_links": [
+        "Document/aho_corasick.md"
+      ],
+      "source_urls": [
+        "https://judge.yosupo.jp/problem/aho_corasick",
+        "https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/aho_corasick.md"
+      ],
+      "previous_scan_sha256": "752f1d1651ba2eab7fa2710c6044e081f53cfab174dd7697db296f55fac38895"
+    },
+    {
+      "path": "String/Manacher.cpp",
+      "category": "normal",
+      "sha256": "59557684b26d6304e61f045e88cbed0af5d4a09d38e34612797e2e101ef50585",
+      "bytes": 4628,
+      "lines": 102,
+      "SPDX": [
+        "CC0-1.0"
+      ],
+      "api_heading_count": 1,
+      "api_before_include": true,
+      "doc_links": [
+        "Document/manacher.md"
+      ],
+      "source_urls": [
+        "https://judge.yosupo.jp/problem/enumerate_palindromes",
+        "https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/manacher.md"
+      ],
+      "previous_scan_sha256": "59557684b26d6304e61f045e88cbed0af5d4a09d38e34612797e2e101ef50585"
+    },
+    {
+      "path": "String/Palindromic_Tree.cpp",
+      "category": "normal",
+      "sha256": "4026134c0c3652fa493423c12b3f1daaedda7bec2b8061ee142778f154900d51",
+      "bytes": 11979,
+      "lines": 153,
+      "SPDX": [
+        "CC0-1.0"
+      ],
+      "api_heading_count": 1,
+      "api_before_include": true,
+      "doc_links": [
+        "Document/palindromic_tree.md"
+      ],
+      "source_urls": [
+        "https://ei1333.github.io/library/string/palindromic-tree.hpp",
+        "https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/palindromic_tree.md"
+      ],
+      "previous_scan_sha256": "4026134c0c3652fa493423c12b3f1daaedda7bec2b8061ee142778f154900d51"
+    },
+    {
+      "path": "String/Suffix_Array.cpp",
+      "category": "normal",
+      "sha256": "d8b83de4c6ed7eb0ff19d4647a044ab356e2fac089c73d4a6b55863ae636cf76",
+      "bytes": 10274,
+      "lines": 235,
+      "SPDX": [
+        "CC0-1.0"
+      ],
+      "api_heading_count": 1,
+      "api_before_include": true,
+      "doc_links": [
+        "Document/suffix_array.md"
+      ],
+      "source_urls": [
+        "https://doi.org/10.1109/DCC.2009.42",
+        "https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/suffix_array.md"
+      ],
+      "previous_scan_sha256": "d8b83de4c6ed7eb0ff19d4647a044ab356e2fac089c73d4a6b55863ae636cf76"
+    },
+    {
+      "path": "String/Suffix_Automaton.cpp",
+      "category": "normal",
+      "sha256": "8ca7d73707e41896a96f99e65f8bc69a2db9e6888b8225e1c12ee278ffcca8b0",
+      "bytes": 9650,
+      "lines": 143,
+      "SPDX": [
+        "CC0-1.0"
+      ],
+      "api_heading_count": 1,
+      "api_before_include": true,
+      "doc_links": [
+        "Document/suffix_automaton.md"
+      ],
+      "source_urls": [
+        "https://nyaannyaan.github.io/library/string/suffix-automaton.hpp.html",
+        "https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/suffix_automaton.md"
+      ],
+      "previous_scan_sha256": "8ca7d73707e41896a96f99e65f8bc69a2db9e6888b8225e1c12ee278ffcca8b0"
+    },
+    {
+      "path": "String/Z_Algorithm.cpp",
+      "category": "normal",
+      "sha256": "76fc29605878a1932f6ee72e7649d3340b701ebe7996f9e6801de14acdb76460",
+      "bytes": 2949,
+      "lines": 69,
+      "SPDX": [
+        "CC0-1.0"
+      ],
+      "api_heading_count": 1,
+      "api_before_include": true,
+      "doc_links": [
+        "Document/z_algorithm.md"
+      ],
+      "source_urls": [
+        "https://judge.yosupo.jp/problem/zalgorithm",
+        "https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/z_algorithm.md"
+      ],
+      "previous_scan_sha256": "76fc29605878a1932f6ee72e7649d3340b701ebe7996f9e6801de14acdb76460"
+    },
+    {
+      "path": "Fast/Source/DataStructure/Binary_Trie.cpp",
+      "category": "fast",
+      "sha256": "c283343f3cf5cde7ce25a6a7428671a5522a87e19cd39a707ffb130851bfadab",
+      "bytes": 18765,
+      "lines": 463,
+      "SPDX": [
+        "CC0-1.0"
+      ],
+      "api_heading_count": 1,
+      "api_before_include": true,
+      "doc_links": [
+        "Document/binary_trie.md",
+        "Document/fast_variants.md"
+      ],
+      "source_urls": [
+        "https://nyaannyaan.github.io/library/data-structure/binary-trie.hpp",
+        "https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/binary_trie.md",
+        "https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/fast_variants.md"
+      ],
+      "previous_scan_sha256": "c283343f3cf5cde7ce25a6a7428671a5522a87e19cd39a707ffb130851bfadab"
+    },
+    {
+      "path": "Fast/Source/DataStructure/Fenwick_Tree.cpp",
+      "category": "fast",
+      "sha256": "490ecda375ca3752ea92696b1c739f5911854ff6404b07c7e131ab1745e4c9c4",
+      "bytes": 12021,
+      "lines": 275,
+      "SPDX": [
+        "CC0-1.0"
+      ],
+      "api_heading_count": 1,
+      "api_before_include": true,
+      "doc_links": [
+        "Document/fenwick_tree.md",
+        "Document/fast_variants.md"
+      ],
+      "source_urls": [
+        "https://nyaannyaan.github.io/library/data-structure/binary-indexed-tree.hpp",
+        "https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/fenwick_tree.md",
+        "https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/fast_variants.md"
+      ],
+      "previous_scan_sha256": "490ecda375ca3752ea92696b1c739f5911854ff6404b07c7e131ab1745e4c9c4"
+    },
+    {
+      "path": "Fast/Source/DataStructure/Hash_map.cpp",
+      "category": "fast",
+      "sha256": "ba812641af6001bde3c59346492fe61058c78bee77f66e21d52cc4b515f7c6f3",
+      "bytes": 33692,
+      "lines": 632,
+      "SPDX": [
+        "CC0-1.0"
+      ],
+      "api_heading_count": 1,
+      "api_before_include": true,
+      "doc_links": [
+        "Document/hash_map.md"
+      ],
+      "source_urls": [
+        "https://prng.di.unimi.it/splitmix64.c",
+        "https://nyaannyaan.github.io/library/hashmap/hashmap.hpp",
+        "https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/hash_map.md"
+      ],
+      "previous_scan_sha256": "7b9fb674a63d73dd1e50a728b535b07872b2d029af4d25c405e87630282c1b82"
+    },
+    {
+      "path": "Fast/Source/DataStructure/Hash_set.cpp",
+      "category": "fast",
+      "sha256": "4aadfc3792999d8a3ad0379b92b84c9ac9c2c1db4e83c3bf38c44444961d0576",
+      "bytes": 32642,
+      "lines": 618,
+      "SPDX": [
+        "CC0-1.0"
+      ],
+      "api_heading_count": 1,
+      "api_before_include": true,
+      "doc_links": [
+        "Document/hash_set.md"
+      ],
+      "source_urls": [
+        "https://prng.di.unimi.it/splitmix64.c",
+        "https://nyaannyaan.github.io/library/hashmap/hashset.hpp",
+        "https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/hash_set.md"
+      ],
+      "previous_scan_sha256": "d6d4ca68388822e4801d6c6f33466d59e9954e2a9875b5d174f80e715344df18"
+    },
+    {
+      "path": "Fast/Source/DataStructure/Lazy_Segment_Tree.cpp",
+      "category": "fast",
+      "sha256": "33b3eae20bcf7112ebbc581b9fba37ef2e8d7f303d033046a37153df7c1304a6",
+      "bytes": 17974,
+      "lines": 384,
+      "SPDX": [
+        "CC0-1.0"
+      ],
+      "api_heading_count": 1,
+      "api_before_include": true,
+      "doc_links": [
+        "Document/lazy_segment_tree.md",
+        "Document/fast_variants.md"
+      ],
+      "source_urls": [
+        "https://info.atcoder.jp/entry/algorithm_lectures/range_query_monoid_design",
+        "https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/lazy_segment_tree.md",
+        "https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/fast_variants.md"
+      ],
+      "previous_scan_sha256": "33b3eae20bcf7112ebbc581b9fba37ef2e8d7f303d033046a37153df7c1304a6"
+    },
+    {
+      "path": "Fast/Source/DataStructure/Node.cpp",
+      "category": "fast",
+      "sha256": "a0a5fcaac66f51a660a35f4b736222ba7bd7bf20a916b09fc614df9b3a410261",
+      "bytes": 5583,
+      "lines": 167,
+      "SPDX": [
+        "CC0-1.0"
+      ],
+      "api_heading_count": 1,
+      "api_before_include": true,
+      "doc_links": [
+        "Document/fast_variants.md"
+      ],
+      "source_urls": [
+        "https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/fast_variants.md"
+      ],
+      "previous_scan_sha256": "70f834356123d7c0e834547cbf775be088bf3151456435d2fac3f2588373d32e"
+    },
+    {
+      "path": "Fast/Source/DataStructure/Persistent_Segment_Tree.cpp",
+      "category": "fast",
+      "sha256": "98ccc60ab0587087fda1def37e6dcc5f02c3ea672457b707ae3fa6b48dc7b569",
+      "bytes": 16921,
+      "lines": 342,
+      "SPDX": [
+        "CC0-1.0"
+      ],
+      "api_heading_count": 1,
+      "api_before_include": true,
+      "doc_links": [
+        "Document/persistent_segment_tree.md",
+        "Document/fast_variants.md"
+      ],
+      "source_urls": [
+        "https://info.atcoder.jp/entry/algorithm_lectures/persistent_segment_tree",
+        "https://nyaannyaan.github.io/library/segment-tree/persistent-segment-tree.hpp.html",
+        "https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/persistent_segment_tree.md",
+        "https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/fast_variants.md"
+      ],
+      "previous_scan_sha256": "98ccc60ab0587087fda1def37e6dcc5f02c3ea672457b707ae3fa6b48dc7b569"
+    },
+    {
+      "path": "Fast/Source/DataStructure/Segment_Tree.cpp",
+      "category": "fast",
+      "sha256": "abeb0b22f6e09e46cb165d4fac226cb74be36cdcc543a55f7ed1e4dcdab09fd1",
+      "bytes": 13895,
+      "lines": 312,
+      "SPDX": [
+        "CC0-1.0"
+      ],
+      "api_heading_count": 1,
+      "api_before_include": true,
+      "doc_links": [
+        "Document/segment_tree.md",
+        "Document/fast_variants.md"
+      ],
+      "source_urls": [
+        "https://info.atcoder.jp/entry/algorithm_lectures/range_query_monoid_design",
+        "https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/segment_tree.md",
+        "https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/fast_variants.md"
+      ],
+      "previous_scan_sha256": "abeb0b22f6e09e46cb165d4fac226cb74be36cdcc543a55f7ed1e4dcdab09fd1"
+    },
+    {
+      "path": "Fast/Source/DataStructure/Wavelet_Matrix.cpp",
+      "category": "fast",
+      "sha256": "041d4088c9b5aaf12490bf48fa5394f7f0c89f7f32819adb4d74cc98836ebd1f",
+      "bytes": 24272,
+      "lines": 484,
+      "SPDX": [
+        "CC0-1.0"
+      ],
+      "api_heading_count": 1,
+      "api_before_include": true,
+      "doc_links": [
+        "Document/wavelet_matrix.md",
+        "Document/fast_variants.md"
+      ],
+      "source_urls": [
+        "https://info.atcoder.jp/entry/algorithm_lectures/wavelet_matrix_basic",
+        "https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/wavelet_matrix.md",
+        "https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/fast_variants.md"
+      ],
+      "previous_scan_sha256": "041d4088c9b5aaf12490bf48fa5394f7f0c89f7f32819adb4d74cc98836ebd1f"
+    },
+    {
+      "path": "Fast/Source/DataStructure/implicit_treap.cpp",
+      "category": "fast",
+      "sha256": "6e40ef3e9dd0e1d2da5eb557650963404e760a6c2f72da7c70e57be7c35565f9",
+      "bytes": 47370,
+      "lines": 1022,
+      "SPDX": [
+        "CC0-1.0"
+      ],
+      "api_heading_count": 1,
+      "api_before_include": true,
+      "doc_links": [
+        "Document/implicit_treap.md",
+        "Document/fast_variants.md"
+      ],
+      "source_urls": [
+        "https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/implicit_treap.md",
+        "https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/fast_variants.md"
+      ],
+      "previous_scan_sha256": "6e40ef3e9dd0e1d2da5eb557650963404e760a6c2f72da7c70e57be7c35565f9"
+    },
+    {
+      "path": "Fast/Source/String/Aho_Corasick.cpp",
+      "category": "fast",
+      "sha256": "4a8a90ea5cde79d7142feffadeaefc0f2e86aba8ab7d4d9aad0e9f234b60b925",
+      "bytes": 24299,
+      "lines": 483,
+      "SPDX": [
+        "CC0-1.0"
+      ],
+      "api_heading_count": 1,
+      "api_before_include": true,
+      "doc_links": [
+        "Document/aho_corasick.md",
+        "Document/fast_variants.md"
+      ],
+      "source_urls": [
+        "https://judge.yosupo.jp/problem/aho_corasick",
+        "https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/aho_corasick.md",
+        "https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/fast_variants.md"
+      ],
+      "previous_scan_sha256": "4a8a90ea5cde79d7142feffadeaefc0f2e86aba8ab7d4d9aad0e9f234b60b925"
+    }
+  ],
+  "normal_registration_inventory": {
+    "Algorithm/Mo.cpp": {
+      "documents": [
+        {
+          "path": "Document/mo.md",
+          "sha256": "e283b8169b72e15febfbfdf6e739c2fa31f3a4c62d5a45e71a01294f0f8809f0",
+          "indexed": true
+        }
+      ],
+      "examples": [
+        {
+          "path": "Examples/mo_example.cpp",
+          "sha256": "4e7881352edeb26cfc31fd4e835bbfb980a56b763df2f85e5d977028f8362cb8",
+          "registered_in_packager": true
+        }
+      ]
+    },
+    "DataStructure/Disjoint_Sparse_Table.cpp": {
+      "documents": [
+        {
+          "path": "Document/disjoint_sparse_table.md",
+          "sha256": "4f06ea5b586ea814037e897591caac44db435c16358190cfd4a36589a13f8abb",
+          "indexed": true
+        }
+      ],
+      "examples": [
+        {
+          "path": "Examples/disjoint_sparse_table_example.cpp",
+          "sha256": "2cac316ca4177f7aef98f532b2ae1a026bbf0faf31501bb2f6d0ef78993f3d83",
+          "registered_in_packager": true
+        }
+      ]
+    },
+    "DataStructure/Dual_Segment_Tree.cpp": {
+      "documents": [
+        {
+          "path": "Document/dual_segment_tree.md",
+          "sha256": "5a36e6ba6dc504d2d91c30d7c4bfec33a13c60ca58cc4cc646c2f95149a538bf",
+          "indexed": true
+        }
+      ],
+      "examples": [
+        {
+          "path": "Examples/dual_segment_tree_example.cpp",
+          "sha256": "874f4884e095dedca77cee5201c508e8cebaa73b42384ae8c1d1fdea02a262d5",
+          "registered_in_packager": true
+        }
+      ]
+    },
+    "DataStructure/Dynamic_Bitset.cpp": {
+      "documents": [
+        {
+          "path": "Document/dynamic_bitset.md",
+          "sha256": "cbe2f3199ef2671b55dbb110e3ed2bab08f926dfc9fb7f5c14421c398aebcfb5",
+          "indexed": true
+        }
+      ],
+      "examples": [
+        {
+          "path": "Examples/dynamic_bitset_example.cpp",
+          "sha256": "73942bb8d9413b5c6e249671300ea852a94a86a9b18f68b890ab6ad005d17f0b",
+          "registered_in_packager": true
+        }
+      ]
+    },
+    "DataStructure/Fenwick_Tree.cpp": {
+      "documents": [
+        {
+          "path": "Document/fenwick_tree.md",
+          "sha256": "411eb1cbc5714619a3f9ba7ba2848a20d2bd0e892ef7aea5b1f13db26d6ca833",
+          "indexed": true
+        }
+      ],
+      "examples": [
+        {
+          "path": "Examples/fenwick_tree_example.cpp",
+          "sha256": "865ea9c95c2e4221c0076d8b5c98820e5d47e530b3b64e084e456763f95eb8fa",
+          "registered_in_packager": true
+        }
+      ]
+    },
+    "DataStructure/Lazy_Segment_Tree.cpp": {
+      "documents": [
+        {
+          "path": "Document/lazy_segment_tree.md",
+          "sha256": "1d1d06329711c39bc17c1da793c23fc7145780026fb744d4f5c321b03d3d9184",
+          "indexed": true
+        }
+      ],
+      "examples": [
+        {
+          "path": "Examples/lazy_segment_tree_example.cpp",
+          "sha256": "54b05c83c70ba22820171763d2fccfb07fc76b6adc0564f4b8dbc4ce8a8ff06b",
+          "registered_in_packager": true
+        }
+      ]
+    },
+    "DataStructure/Link_Cut_Tree.cpp": {
+      "documents": [
+        {
+          "path": "Document/link_cut_tree.md",
+          "sha256": "15181dacd64d4271f163e2548fb0bad792270097b43dbf458b0bfc2409f1c628",
+          "indexed": true
+        }
+      ],
+      "examples": [
+        {
+          "path": "Examples/link_cut_tree_example.cpp",
+          "sha256": "0c011ad54f30d92797b591f96c3d71235e863b0d17261a7607d6bac2d638b05e",
+          "registered_in_packager": true
+        },
+        {
+          "path": "Examples/link_cut_tree_composite_example.cpp",
+          "sha256": "13c0f322ef89ea8cdbcd6a3f4ddf8ea63429a3b50152b3a37a261b6f620912dd",
+          "registered_in_packager": true
+        },
+        {
+          "path": "Examples/link_cut_tree_lazy_example.cpp",
+          "sha256": "22fa54f8e3797323768e1fcb54b6536e8a22213e549355e3f2f888646753ed29",
+          "registered_in_packager": true
+        }
+      ]
+    },
+    "DataStructure/Persistent_Segment_Tree.cpp": {
+      "documents": [
+        {
+          "path": "Document/persistent_segment_tree.md",
+          "sha256": "50689319fda412c25b4ae7f394b92290ebd40405429c989b02ee51486aac35d1",
+          "indexed": true
+        }
+      ],
+      "examples": [
+        {
+          "path": "Examples/persistent_segment_tree_example.cpp",
+          "sha256": "2bd3a2bba4728029b8ba71eba3e83f6a2d7e19ad0b066e7f95b04592cc5d3c29",
+          "registered_in_packager": true
+        }
+      ]
+    },
+    "DataStructure/Segment_Tree.cpp": {
+      "documents": [
+        {
+          "path": "Document/segment_tree.md",
+          "sha256": "c6532f73dac5099c3a2cb4d5b076d9b14a542ff9168ddd453e5e497f19899414",
+          "indexed": true
+        }
+      ],
+      "examples": [
+        {
+          "path": "Examples/segment_tree_example.cpp",
+          "sha256": "70375b7de87d656e24d32c3e0cf22ce28f8e6a21ad2c02b022075d14fac20808",
+          "registered_in_packager": true
+        }
+      ]
+    },
+    "DataStructure/Segment_Tree_Beats.cpp": {
+      "documents": [
+        {
+          "path": "Document/segment_tree_beats.md",
+          "sha256": "9f06df848b0eda67c1bc3fdcac41086089e5a0895e98298b678e8e9d776835ef",
+          "indexed": true
+        }
+      ],
+      "examples": [
+        {
+          "path": "Examples/segment_tree_beats_example.cpp",
+          "sha256": "c02a4bd360d5c5b3bf044c90176077b3da184b8c13096b8f311154d2f6349972",
+          "registered_in_packager": true
+        }
+      ]
+    },
+    "DataStructure/Sliding_Window_Aggregation.cpp": {
+      "documents": [
+        {
+          "path": "Document/sliding_window_aggregation.md",
+          "sha256": "93350c993e31dbb584d0342fcd2cf8de498a21692dd56fc9729932540200c3a1",
+          "indexed": true
+        }
+      ],
+      "examples": [
+        {
+          "path": "Examples/sliding_window_aggregation_example.cpp",
+          "sha256": "d78e80b180039dcd2362317b0f9828fd441c566833209ed47162838a4427a01b",
+          "registered_in_packager": true
+        }
+      ]
+    },
+    "DataStructure/Slope_Trick.cpp": {
+      "documents": [
+        {
+          "path": "Document/slope_trick.md",
+          "sha256": "80caae1ebbdf5e3a688770b2f27e955cef60dc9f894e3c501861b81398c98e4b",
+          "indexed": true
+        }
+      ],
+      "examples": [
+        {
+          "path": "Examples/slope_trick_example.cpp",
+          "sha256": "9dbf7a7eb4bed6845249d6bf282413d0a7129ffde7b87adefabee765e4b12cff",
+          "registered_in_packager": true
+        }
+      ]
+    },
+    "DataStructure/Sparse_Table.cpp": {
+      "documents": [
+        {
+          "path": "Document/sparse_table.md",
+          "sha256": "164e3087c99f320a489df0adcacf055d1e23d46b79adb7261010b2b5a6a443a4",
+          "indexed": true
+        }
+      ],
+      "examples": [
+        {
+          "path": "Examples/sparse_table_example.cpp",
+          "sha256": "b9db3247edb96c34a8223744d60d0540551e6e868003bd28997e068d8ccfe5a5",
+          "registered_in_packager": true
+        }
+      ]
+    },
+    "DataStructure/Wavelet_Matrix.cpp": {
+      "documents": [
+        {
+          "path": "Document/wavelet_matrix.md",
+          "sha256": "ca54aebcee3352232a35f3873ae8cded6876181ee8c61956fc501680a85bfd75",
+          "indexed": true
+        }
+      ],
+      "examples": [
+        {
+          "path": "Examples/wavelet_matrix_example.cpp",
+          "sha256": "530d427f7589ab613de86b148c18e8c80f2b4454bb31fdf2ff0fbcbb4f2dd3c1",
+          "registered_in_packager": true
+        }
+      ]
+    },
+    "Graph/Bipartite_Matching.cpp": {
+      "documents": [
+        {
+          "path": "Document/bipartite_matching.md",
+          "sha256": "1a53b913039176dda806d30573beea0ea6aac15f34acfe46ea15d1ffee1b790e",
+          "indexed": true
+        }
+      ],
+      "examples": [
+        {
+          "path": "Examples/bipartite_matching_example.cpp",
+          "sha256": "d8d51dabb9b5411e54b02c032201d14f1b04bf17bafdddec573fc8679132de6b",
+          "registered_in_packager": true
+        }
+      ]
+    },
+    "Graph/Cartesian_Tree.cpp": {
+      "documents": [
+        {
+          "path": "Document/cartesian_tree.md",
+          "sha256": "7b02a41f968d69a99b6a269e366b452acec83de76bfceeff7dbea37fdeea4865",
+          "indexed": true
+        }
+      ],
+      "examples": [
+        {
+          "path": "Examples/cartesian_tree_example.cpp",
+          "sha256": "07ce67209b8dd9b324906e66d2a157fbe2fcf0a1284fba27b68f552e5a7367dc",
+          "registered_in_packager": true
+        }
+      ]
+    },
+    "Graph/Centroid_Decomposition.cpp": {
+      "documents": [
+        {
+          "path": "Document/centroid_decomposition.md",
+          "sha256": "708b980bb537fee5c9ef172a32a8c788c027b79c1b5dbbe0ca57dd8d4e1a9169",
+          "indexed": true
+        }
+      ],
+      "examples": [
+        {
+          "path": "Examples/centroid_decomposition_example.cpp",
+          "sha256": "a71df32b748787a4762b951f9691d0a7a1ae6d85785fc46d0e6ff06e6204ba29",
+          "registered_in_packager": true
+        }
+      ]
+    },
+    "Graph/Eulerian_Trail.cpp": {
+      "documents": [
+        {
+          "path": "Document/eulerian_trail.md",
+          "sha256": "d328681077a2bb916d113fe3223cbd10bf39ea3c566bc9f41a6ded3a2325ba75",
+          "indexed": true
+        }
+      ],
+      "examples": [
+        {
+          "path": "Examples/eulerian_trail_example.cpp",
+          "sha256": "4baa9c5ec0193dacdb6d3e7ddde56a632e87e7fa40b68b40ac1a38832b22c1e0",
+          "registered_in_packager": true
+        }
+      ]
+    },
+    "Graph/Functional_Graph.cpp": {
+      "documents": [
+        {
+          "path": "Document/functional_graph.md",
+          "sha256": "913595f09347394f37f8108bd7b95e4419f0380ec07e942d7c6838687763ffc0",
+          "indexed": true
+        }
+      ],
+      "examples": [
+        {
+          "path": "Examples/functional_graph_example.cpp",
+          "sha256": "af161198a71d8625e248e786b47ab7986737844e9fb6d2c00395d2d29b9cfddd",
+          "registered_in_packager": true
+        }
+      ]
+    },
+    "Graph/General_Matching.cpp": {
+      "documents": [
+        {
+          "path": "Document/general_matching.md",
+          "sha256": "aaae89e8f0b62f85d1eb5f43d405bb5ad8f5b4ed16219820bc29eab34eb1a3f4",
+          "indexed": true
+        }
+      ],
+      "examples": [
+        {
+          "path": "Examples/general_matching_example.cpp",
+          "sha256": "706eddf01f3154cc56fef24140187158c62ecdf917560da56023f04057859baa",
+          "registered_in_packager": true
+        }
+      ]
+    },
+    "Graph/Heavy_Light_Decomposition.cpp": {
+      "documents": [
+        {
+          "path": "Document/heavy_light_decomposition.md",
+          "sha256": "ec250a143b1be5cb23e831fd17de995b049a2b9136bf03b3cef8611a1488d8dc",
+          "indexed": true
+        }
+      ],
+      "examples": [
+        {
+          "path": "Examples/heavy_light_decomposition_example.cpp",
+          "sha256": "408dc7aa464fc19a77c89a3e65f3646ae22ea88a3d7d7b273b5c1faee12a12ed",
+          "registered_in_packager": true
+        }
+      ]
+    },
+    "Graph/Low_Link.cpp": {
+      "documents": [
+        {
+          "path": "Document/low_link.md",
+          "sha256": "31e4b547a3a994db90caec62516109e08cba1298a3258afd4c8c1bb3ad82327b",
+          "indexed": true
+        }
+      ],
+      "examples": [
+        {
+          "path": "Examples/low_link_example.cpp",
+          "sha256": "bf13194cb876c9846ed1fd119aa13d1cf331d73ddc4192acd05b9d76593c0990",
+          "registered_in_packager": true
+        }
+      ]
+    },
+    "Graph/Max_Flow.cpp": {
+      "documents": [
+        {
+          "path": "Document/max_flow.md",
+          "sha256": "0267fdf65f0d9d9dc4866d98c367f3d968b030bcf953dce5f7a2dfb27bd1e976",
+          "indexed": true
+        }
+      ],
+      "examples": [
+        {
+          "path": "Examples/max_flow_example.cpp",
+          "sha256": "eecdfbdf8659ba0d2bc3b38c7c2f6d3c25651aef19771e390130cb151902ea77",
+          "registered_in_packager": true
+        }
+      ]
+    },
+    "Graph/Min_Cost_Flow.cpp": {
+      "documents": [
+        {
+          "path": "Document/min_cost_flow.md",
+          "sha256": "0fef7564f42c18edd2899f28345369bc236d65e1ec0bb9fa9904a9e13ccc17d2",
+          "indexed": true
+        }
+      ],
+      "examples": [
+        {
+          "path": "Examples/min_cost_flow_example.cpp",
+          "sha256": "b433264381511f5d2be08b8f548671c00c3dc4f367be780f35362bf9570f59b6",
+          "registered_in_packager": true
+        }
+      ]
+    },
+    "Graph/Offline_Dynamic_Connectivity.cpp": {
+      "documents": [
+        {
+          "path": "Document/offline_dynamic_connectivity.md",
+          "sha256": "5146fffeb53bf4964a6175b931f709df46064eea4d49e8e55f40afdcdfef76c7",
+          "indexed": true
+        }
+      ],
+      "examples": [
+        {
+          "path": "Examples/offline_dynamic_connectivity_example.cpp",
+          "sha256": "9ed40bafc839e2757800e0a19d2bb6cb97bb9289c7ad30ae2224743dd6ae3102",
+          "registered_in_packager": true
+        }
+      ]
+    },
+    "Graph/Pruefer_Code.cpp": {
+      "documents": [
+        {
+          "path": "Document/pruefer_code.md",
+          "sha256": "b1a320aae17fb6dc92bb3318c4bc9dfdf9030d291c7b9eb0ea4e1d9203745fd7",
+          "indexed": true
+        }
+      ],
+      "examples": [
+        {
+          "path": "Examples/pruefer_code_example.cpp",
+          "sha256": "ba49e9391a935c5ce465392e94115f8f3b1b0546bf9e2f19d29683f91810b28e",
+          "registered_in_packager": true
+        }
+      ]
+    },
+    "Graph/Rerooting_DP.cpp": {
+      "documents": [
+        {
+          "path": "Document/rerooting_dp.md",
+          "sha256": "94ec51eed1cf06cdc7a88880391334d1af7f04fa1d13d07db2d988da68543d81",
+          "indexed": true
+        }
+      ],
+      "examples": [
+        {
+          "path": "Examples/rerooting_dp_example.cpp",
+          "sha256": "52d3b4b62b3b175c4e799a4bb55172da516ca0e6240f452bed1e18d5be88e1d4",
+          "registered_in_packager": true
+        }
+      ]
+    },
+    "Graph/SCC.cpp": {
+      "documents": [
+        {
+          "path": "Document/scc.md",
+          "sha256": "63029219e13c57fd2a2c6523df80d3829cef0e75fc48fa480fc448ba043c613e",
+          "indexed": true
+        }
+      ],
+      "examples": [
+        {
+          "path": "Examples/scc_example.cpp",
+          "sha256": "037dc050a642b05e8fd3fe12d3783bc2774e13fd3d215370411d5057cd6d5701",
+          "registered_in_packager": true
+        }
+      ]
+    },
+    "Graph/Two_SAT.cpp": {
+      "documents": [
+        {
+          "path": "Document/two_sat.md",
+          "sha256": "9d3c5809a56ca6208bfdf9beb3fe4fa2be88865ea752e54a60749f0999f45c31",
+          "indexed": true
+        }
+      ],
+      "examples": [
+        {
+          "path": "Examples/two_sat_example.cpp",
+          "sha256": "2815d7f4e77e84f7b13328db040729114280c36725c48c6ef71879866353ff8c",
+          "registered_in_packager": true
+        }
+      ]
+    },
+    "Math/Berlekamp_Massey.cpp": {
+      "documents": [
+        {
+          "path": "Document/linear_recurrence.md",
+          "sha256": "b47d203e4bef6781d27e88bea336be09f3fca3e2beb698ca6fcb08c4fc82ebe0",
+          "indexed": true
+        }
+      ],
+      "examples": [
+        {
+          "path": "Examples/berlekamp_massey_example.cpp",
+          "sha256": "46eb1969104d5a051a47fad7a060547167227e8458f8e0f2ac944b2af3d19d20",
+          "registered_in_packager": true
+        }
+      ]
+    },
+    "Math/Binary_Matrix.cpp": {
+      "documents": [
+        {
+          "path": "Document/binary_matrix.md",
+          "sha256": "9bd2e42a8bdf6a6f52ecf532c3f383722cbf5dae32c4985d2465400f2201ceed",
+          "indexed": true
+        }
+      ],
+      "examples": [
+        {
+          "path": "Examples/binary_matrix_example.cpp",
+          "sha256": "5f3cc747ebb5591296e2dd3b90a70b8e9b0e3fce8964680462e744fdb36a190d",
+          "registered_in_packager": true
+        }
+      ]
+    },
+    "Math/Convolution.cpp": {
+      "documents": [
+        {
+          "path": "Document/convolution.md",
+          "sha256": "2eb42d2c291b38291003611d682cfe47bf5397ea6a940c99f4b9fc7a6bb3806d",
+          "indexed": true
+        }
+      ],
+      "examples": [
+        {
+          "path": "Examples/convolution_example.cpp",
+          "sha256": "24208839e7658e441e861df98b9e7d147cf3c602c65950d8d0c299b847a51c4b",
+          "registered_in_packager": true
+        }
+      ]
+    },
+    "Math/Formal_Power_Series.cpp": {
+      "documents": [
+        {
+          "path": "Document/formal_power_series.md",
+          "sha256": "84bf6794bbedc4c92cafa292f14ae799874027966df090fdbc5d8ffa379f065a",
+          "indexed": true
+        },
+        {
+          "path": "Document/ntt.md",
+          "sha256": "7e5d8d59775926c438ddbcfc92a3df137f8138cfab469baa9430ee25fd2ae9e7",
+          "indexed": true
+        }
+      ],
+      "examples": [
+        {
+          "path": "Examples/formal_power_series_example.cpp",
+          "sha256": "3c5c3a1caec4530e2acc00dc3d4b6b91ec5e418ee6d3b0c87665d98fdbab1f20",
+          "registered_in_packager": true
+        }
+      ]
+    },
+    "Math/Gaussian_Elimination.cpp": {
+      "documents": [
+        {
+          "path": "Document/matrix.md",
+          "sha256": "a092502152838c1316459dede1df85f6ef5b464ae5dda36e33c63a14a943c841",
+          "indexed": true
+        }
+      ],
+      "examples": [
+        {
+          "path": "Examples/gaussian_elimination_example.cpp",
+          "sha256": "6c9173eac2239997df15d37e34a9b69e1ef312c69b013ec689bf1eaf9865123a",
+          "registered_in_packager": true
+        }
+      ]
+    },
+    "Math/Linear_Recurrence.cpp": {
+      "documents": [
+        {
+          "path": "Document/linear_recurrence.md",
+          "sha256": "b47d203e4bef6781d27e88bea336be09f3fca3e2beb698ca6fcb08c4fc82ebe0",
+          "indexed": true
+        }
+      ],
+      "examples": [
+        {
+          "path": "Examples/linear_recurrence_example.cpp",
+          "sha256": "ee08955f51ffee4820551519bfde3a995c912cc1471e5b20f22c2938e9f6365e",
+          "registered_in_packager": true
+        }
+      ]
+    },
+    "Math/Matrix.cpp": {
+      "documents": [
+        {
+          "path": "Document/matrix.md",
+          "sha256": "a092502152838c1316459dede1df85f6ef5b464ae5dda36e33c63a14a943c841",
+          "indexed": true
+        }
+      ],
+      "examples": [
+        {
+          "path": "Examples/matrix_example.cpp",
+          "sha256": "43940a806e7f733fb32636888dbb91e9d49d49b2c2ce99bd85dc478734600ec6",
+          "registered_in_packager": true
+        }
+      ]
+    },
+    "Math/Modular_Arithmetic.cpp": {
+      "documents": [
+        {
+          "path": "Document/modular_arithmetic.md",
+          "sha256": "85af66813ad5bb3117e24d1ecefe5c7fb3ac226dccd5daedc64ee8d43c2e0117",
+          "indexed": true
+        }
+      ],
+      "examples": [
+        {
+          "path": "Examples/modular_arithmetic_example.cpp",
+          "sha256": "e1f16e27258a7911c3cd1d7132a2431073c40a894dfd1901e7b6ae3507551d75",
+          "registered_in_packager": true
+        }
+      ]
+    },
+    "Math/NTT.cpp": {
+      "documents": [
+        {
+          "path": "Document/ntt.md",
+          "sha256": "7e5d8d59775926c438ddbcfc92a3df137f8138cfab469baa9430ee25fd2ae9e7",
+          "indexed": true
+        }
+      ],
+      "examples": [
+        {
+          "path": "Examples/ntt_example.cpp",
+          "sha256": "0bd23ba7dd72f3f9ef7f5b8d125321d3c62568ddb72f35f755fbbff49addc75e",
+          "registered_in_packager": true
+        }
+      ]
+    },
+    "Math/Pollard_Rho.cpp": {
+      "documents": [
+        {
+          "path": "Document/pollard_rho.md",
+          "sha256": "9004696581da8dfef48fccb0aaa3b33c1062f688210043b1c56ef9a5d907d5d2",
+          "indexed": true
+        }
+      ],
+      "examples": [
+        {
+          "path": "Examples/pollard_rho_example.cpp",
+          "sha256": "9664d2f6a3898cfe509defbb5c4125be511aa03af65d7a68ba192f1d23976709",
+          "registered_in_packager": true
+        }
+      ]
+    },
+    "Math/Polynomial.cpp": {
+      "documents": [
+        {
+          "path": "Document/polynomial.md",
+          "sha256": "efc7aef904cf711ae30ab914209c6c77261a80ca3205f9dcade43b6cee6af8e3",
+          "indexed": true
+        }
+      ],
+      "examples": [
+        {
+          "path": "Examples/polynomial_example.cpp",
+          "sha256": "76c136ffb9ae4d4d3abb9a83e27623129edd830108eac6422ca0c839f54afd83",
+          "registered_in_packager": true
+        }
+      ]
+    },
+    "Math/Xor_Basis.cpp": {
+      "documents": [
+        {
+          "path": "Document/xor_basis.md",
+          "sha256": "d985d645ac60c4e3a9f41287bb6d551ab653d0376ee41142e7576900b01840b0",
+          "indexed": true
+        }
+      ],
+      "examples": [
+        {
+          "path": "Examples/xor_basis_example.cpp",
+          "sha256": "fd201726fe604ca6023752a37a9e4a590497cf0487994412bcc97fb0a5d38f83",
+          "registered_in_packager": true
+        }
+      ]
+    },
+    "String/Aho_Corasick.cpp": {
+      "documents": [
+        {
+          "path": "Document/aho_corasick.md",
+          "sha256": "03a06ce310c772781c2b409ac357800d2cf357a323de46b586963885e0046688",
+          "indexed": true
+        }
+      ],
+      "examples": [
+        {
+          "path": "Examples/aho_corasick_example.cpp",
+          "sha256": "803b42c9885527aff1f1b7b825606fe1447371f706c8dcc355c9daacc4e84e0e",
+          "registered_in_packager": true
+        }
+      ]
+    },
+    "String/Manacher.cpp": {
+      "documents": [
+        {
+          "path": "Document/manacher.md",
+          "sha256": "37710c3a74fa3e6abed7cdea73ed5238eca70b673a4e9ff3ed1feae212f2acdd",
+          "indexed": true
+        }
+      ],
+      "examples": [
+        {
+          "path": "Examples/manacher_example.cpp",
+          "sha256": "08abc2fd8af3f1f589274cbb179e752fb49dd9ce5298d6b6daa66f873c274280",
+          "registered_in_packager": true
+        }
+      ]
+    },
+    "String/Palindromic_Tree.cpp": {
+      "documents": [
+        {
+          "path": "Document/palindromic_tree.md",
+          "sha256": "3dfbadefa80fda02734d68a31d739e6ea75cd79c5f58014545b2c8b193f890bd",
+          "indexed": true
+        }
+      ],
+      "examples": [
+        {
+          "path": "Examples/palindromic_tree_example.cpp",
+          "sha256": "0790eeec7fb492b0e404d369fd1a63a688d7dc2aeb813d259d516b6e1d485475",
+          "registered_in_packager": true
+        }
+      ]
+    },
+    "String/Suffix_Array.cpp": {
+      "documents": [
+        {
+          "path": "Document/suffix_array.md",
+          "sha256": "dcdd5a5ec7352a3f2897b3d72335201f2bb89aae8fe6b894d6971c06a26b81f4",
+          "indexed": true
+        }
+      ],
+      "examples": [
+        {
+          "path": "Examples/suffix_array_example.cpp",
+          "sha256": "a8911a51868ff2461062a5ac69bbcb98692b89665487be6e98b83d9568bdf679",
+          "registered_in_packager": true
+        }
+      ]
+    },
+    "String/Suffix_Automaton.cpp": {
+      "documents": [
+        {
+          "path": "Document/suffix_automaton.md",
+          "sha256": "9610f2e36845d322f1ce5def78f180b3b40032ea0ad1ec9027782461e0eee93d",
+          "indexed": true
+        }
+      ],
+      "examples": [
+        {
+          "path": "Examples/suffix_automaton_example.cpp",
+          "sha256": "acbd66f63a33c0d94bbaec44d15653693289cabd22a88df356a5c9c67660a2fe",
+          "registered_in_packager": true
+        }
+      ]
+    },
+    "String/Z_Algorithm.cpp": {
+      "documents": [
+        {
+          "path": "Document/z_algorithm.md",
+          "sha256": "11697860bdcab7195e9c788ccab94ebdd1dfb128ea2b7623f19b705335f1de5c",
+          "indexed": true
+        }
+      ],
+      "examples": [
+        {
+          "path": "Examples/z_algorithm_example.cpp",
+          "sha256": "bd0a139a78914424de81fff824649ad14c4a9c281c65e2faeeb6c85cd6d2d130",
+          "registered_in_packager": true
+        }
+      ]
+    }
+  },
+  "supporting_file_sha256": {
+    "Document/aho_corasick.md": "03a06ce310c772781c2b409ac357800d2cf357a323de46b586963885e0046688",
+    "Document/binary_matrix.md": "9bd2e42a8bdf6a6f52ecf532c3f383722cbf5dae32c4985d2465400f2201ceed",
+    "Document/binary_trie.md": "fefdbcc9fe2b3b82f55af2c49b1e81b74bc0589bb4059fe834955643bddbb461",
+    "Document/bipartite_matching.md": "1a53b913039176dda806d30573beea0ea6aac15f34acfe46ea15d1ffee1b790e",
+    "Document/cartesian_tree.md": "7b02a41f968d69a99b6a269e366b452acec83de76bfceeff7dbea37fdeea4865",
+    "Document/centroid_decomposition.md": "708b980bb537fee5c9ef172a32a8c788c027b79c1b5dbbe0ca57dd8d4e1a9169",
+    "Document/convolution.md": "2eb42d2c291b38291003611d682cfe47bf5397ea6a940c99f4b9fc7a6bb3806d",
+    "Document/disjoint_sparse_table.md": "4f06ea5b586ea814037e897591caac44db435c16358190cfd4a36589a13f8abb",
+    "Document/dual_segment_tree.md": "5a36e6ba6dc504d2d91c30d7c4bfec33a13c60ca58cc4cc646c2f95149a538bf",
+    "Document/dynamic_bitset.md": "cbe2f3199ef2671b55dbb110e3ed2bab08f926dfc9fb7f5c14421c398aebcfb5",
+    "Document/eulerian_trail.md": "d328681077a2bb916d113fe3223cbd10bf39ea3c566bc9f41a6ded3a2325ba75",
+    "Document/fast_variants.md": "3ec27fb48f79f8ef02cb37e025b8d58cc43a1ba84dd805603255069440629ac2",
+    "Document/fenwick_tree.md": "411eb1cbc5714619a3f9ba7ba2848a20d2bd0e892ef7aea5b1f13db26d6ca833",
+    "Document/formal_power_series.md": "84bf6794bbedc4c92cafa292f14ae799874027966df090fdbc5d8ffa379f065a",
+    "Document/functional_graph.md": "913595f09347394f37f8108bd7b95e4419f0380ec07e942d7c6838687763ffc0",
+    "Document/general_matching.md": "aaae89e8f0b62f85d1eb5f43d405bb5ad8f5b4ed16219820bc29eab34eb1a3f4",
+    "Document/hash_map.md": "e234a3dab3aab47d4e6a9973ebd64fdab6467a46c84155b55d5f99fda7502c1a",
+    "Document/hash_set.md": "e77e7c74f45f408024cba1c9c911eb97781ad59c14eaaa1db3da70e769d2c8d5",
+    "Document/heavy_light_decomposition.md": "ec250a143b1be5cb23e831fd17de995b049a2b9136bf03b3cef8611a1488d8dc",
+    "Document/implicit_treap.md": "5f1302604ce6e92e577b46638652dbf0da163cee26ed5fbd9ada042e4ea92269",
+    "Document/lazy_segment_tree.md": "1d1d06329711c39bc17c1da793c23fc7145780026fb744d4f5c321b03d3d9184",
+    "Document/linear_recurrence.md": "b47d203e4bef6781d27e88bea336be09f3fca3e2beb698ca6fcb08c4fc82ebe0",
+    "Document/link_cut_tree.md": "15181dacd64d4271f163e2548fb0bad792270097b43dbf458b0bfc2409f1c628",
+    "Document/low_link.md": "31e4b547a3a994db90caec62516109e08cba1298a3258afd4c8c1bb3ad82327b",
+    "Document/manacher.md": "37710c3a74fa3e6abed7cdea73ed5238eca70b673a4e9ff3ed1feae212f2acdd",
+    "Document/matrix.md": "a092502152838c1316459dede1df85f6ef5b464ae5dda36e33c63a14a943c841",
+    "Document/max_flow.md": "0267fdf65f0d9d9dc4866d98c367f3d968b030bcf953dce5f7a2dfb27bd1e976",
+    "Document/min_cost_flow.md": "0fef7564f42c18edd2899f28345369bc236d65e1ec0bb9fa9904a9e13ccc17d2",
+    "Document/mo.md": "e283b8169b72e15febfbfdf6e739c2fa31f3a4c62d5a45e71a01294f0f8809f0",
+    "Document/modular_arithmetic.md": "85af66813ad5bb3117e24d1ecefe5c7fb3ac226dccd5daedc64ee8d43c2e0117",
+    "Document/ntt.md": "7e5d8d59775926c438ddbcfc92a3df137f8138cfab469baa9430ee25fd2ae9e7",
+    "Document/offline_dynamic_connectivity.md": "5146fffeb53bf4964a6175b931f709df46064eea4d49e8e55f40afdcdfef76c7",
+    "Document/palindromic_tree.md": "3dfbadefa80fda02734d68a31d739e6ea75cd79c5f58014545b2c8b193f890bd",
+    "Document/persistent_segment_tree.md": "50689319fda412c25b4ae7f394b92290ebd40405429c989b02ee51486aac35d1",
+    "Document/pollard_rho.md": "9004696581da8dfef48fccb0aaa3b33c1062f688210043b1c56ef9a5d907d5d2",
+    "Document/polynomial.md": "efc7aef904cf711ae30ab914209c6c77261a80ca3205f9dcade43b6cee6af8e3",
+    "Document/pruefer_code.md": "b1a320aae17fb6dc92bb3318c4bc9dfdf9030d291c7b9eb0ea4e1d9203745fd7",
+    "Document/rerooting_dp.md": "94ec51eed1cf06cdc7a88880391334d1af7f04fa1d13d07db2d988da68543d81",
+    "Document/scc.md": "63029219e13c57fd2a2c6523df80d3829cef0e75fc48fa480fc448ba043c613e",
+    "Document/segment_tree.md": "c6532f73dac5099c3a2cb4d5b076d9b14a542ff9168ddd453e5e497f19899414",
+    "Document/segment_tree_beats.md": "9f06df848b0eda67c1bc3fdcac41086089e5a0895e98298b678e8e9d776835ef",
+    "Document/sliding_window_aggregation.md": "93350c993e31dbb584d0342fcd2cf8de498a21692dd56fc9729932540200c3a1",
+    "Document/slope_trick.md": "80caae1ebbdf5e3a688770b2f27e955cef60dc9f894e3c501861b81398c98e4b",
+    "Document/sparse_table.md": "164e3087c99f320a489df0adcacf055d1e23d46b79adb7261010b2b5a6a443a4",
+    "Document/suffix_array.md": "dcdd5a5ec7352a3f2897b3d72335201f2bb89aae8fe6b894d6971c06a26b81f4",
+    "Document/suffix_automaton.md": "9610f2e36845d322f1ce5def78f180b3b40032ea0ad1ec9027782461e0eee93d",
+    "Document/two_sat.md": "9d3c5809a56ca6208bfdf9beb3fe4fa2be88865ea752e54a60749f0999f45c31",
+    "Document/wavelet_matrix.md": "ca54aebcee3352232a35f3873ae8cded6876181ee8c61956fc501680a85bfd75",
+    "Document/xor_basis.md": "d985d645ac60c4e3a9f41287bb6d551ab653d0376ee41142e7576900b01840b0",
+    "Document/z_algorithm.md": "11697860bdcab7195e9c788ccab94ebdd1dfb128ea2b7623f19b705335f1de5c",
+    "Readme.md": "cca2ad2c1ecd3f3254b865c4325993465c26d72d98f8f4f32e96377ec7ff24a6",
+    "Fast/README.md": "95477d0f210702f93f5fa48db414eea6bdc7c8e471d591d7a3a4eb7bff1e8c5c",
+    "Variants/README.md": "1d921b5e45c989530ed90f8b7d9021ac8e9a3154ebee50a98e1c2d5aa944bf7d",
+    "DataStructure/README.md": "c418a2360ac3e9be7726a80eb99fd7aa4a99d1057bccfd35aec26374799732ee",
+    "Graph/README.md": "dad8b50946cbb8c8f365e924ef73f2a7b1959a785ece8f5a002c883ef51e5570",
+    "Math/README.md": "9fe63371c17927bcacc4cf84fd9343eb1a73ac6490fadeeb0961b0c631e37157",
+    "String/README.md": "232c612fa37c69a2669f12cbd73bd57637b5796b352713a70b3802a0ae4ea257",
+    "Algorithm/README.md": "3ba6737e3cad384c916d1b0b8295b402292a5de258da9953a247cc3e908d4d75",
+    "Document/README.md": "f41c94934b0302a14b882dbd95b55a3080ba56d361ab4f544bccd228223200a1",
+    "Scripts/library_layout.json": "8f809a5a3d1235a508e7144d0600060ac68859a5d663bdb9b7d47d6663b8486b",
+    "Scripts/fast_overrides.json": "20ffc2762ed9bc404164f9ac94986e80c9f2c946c27cab2416d3f8fa57d057e8",
+    "Scripts/package_revised_libraries.py": "0101a21bf5648a3bf0497e1eeecf4bd53fe277d8e7eaf1e358b64b3c05b9c20b"
+  },
+  "primary_reference_rechecks": [
+    {
+      "url": "https://raw.githubusercontent.com/NyaanNyaan/library/master/LICENSE",
+      "observed_identifier": "CC0-1.0",
+      "role": "Reference repository license; does not imply copied code or prove independent implementation history."
+    },
+    {
+      "url": "https://raw.githubusercontent.com/ei1333/library/master/LICENSE",
+      "observed_identifier": "Unlicense",
+      "role": "Reference repository current license; mathematical/functionality reference role remains distinct from implementation transfer."
+    },
+    {
+      "url": "https://info.atcoder.jp/entry/algorithm_lectures/disjoint_sparse_table",
+      "observed_title": "Disjoint Sparse Table",
+      "role": "Official mathematical reference exists."
+    },
+    {
+      "url": "https://info.atcoder.jp/entry/algorithm_lectures/range_query_monoid_design",
+      "observed_title": "区間クエリのためのモノイド設計",
+      "role": "Official mathematical reference exists."
+    },
+    {
+      "url": "https://info.atcoder.jp/entry/algorithm_lectures/wavelet_matrix_basic",
+      "observed_title": "Wavelet Matrix（基礎）",
+      "role": "Official mathematical reference exists."
+    },
+    {
+      "url": "https://info.atcoder.jp/entry/algorithm_lectures/persistent_segment_tree",
+      "observed_title": "永続セグメント木",
+      "role": "Official mathematical reference exists."
+    },
+    {
+      "url": "https://prng.di.unimi.it/splitmix64.c",
+      "redirect": "https://prng.di.unimi.it/splitmix.c",
+      "observed_identifier": "Public-domain dedication plus unconditional use/copy/modify/distribute permission; CC0 name not asserted",
+      "role": "Retained GenericHash finalizer component attribution."
+    }
+  ],
+  "limits": [
+    "Existing normal libraries outside47 were not reviewed for style or behavior. Fast11 lifecycle/provenance necessarily reads their own embedded helper code and associated docs.",
+    "No new compile, correctness or performance campaign; root owns final regeneration and global validation. Temporarily pending generated manifests were not treated as body failures.",
+    "Hashes identify exact reviewed content. Any later source change requires a delta review; this receipt is not a claim about future bytes.",
+    "Reference and independent-implementation labels were checked against source metadata/existing provenance audits; no all-source plagiarism comparison or exhaustive upstream history re-audit was attempted."
+  ]
+}

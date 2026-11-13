@@ -1,0 +1,848 @@
+{
+  "date_jst": "2026-11-03",
+  "decision": "提出414928の本体を維持。追加候補は採用しない。再提出不要。",
+  "online_evidence": "online-sparse-table-414928-2026-11-03.json",
+  "online": {
+    "previous_url": "https://judge.yosupo.jp/submission/414927",
+    "previous_ms": 75,
+    "url": "https://judge.yosupo.jp/submission/414928",
+    "status": "AC",
+    "time_ms": 63,
+    "reduction_percent": 16,
+    "source_match": "改行・空行・行末空白・Submission注記以外、本体・main・共通IOが現行版と一致。",
+    "scope": "各1回のオンライン測定。CPU/測定揺らぎを含み、16%全てを命令単独の効果とはしない。"
+  },
+  "unchanged": {
+    "library_sha256": "5fe4f399b54ad43af1c74f3db9682ea1be1b90495441665fe11bf8ad8e62929a",
+    "driver_sha256": "6601da375131716c6d0f278d95c6ed17b3d4191bf4edc3aca9aeedfdb8be87e5",
+    "io_sha256": "291bf8dbc56a1d691f6256fe95b4714183c2cf5d9e55e4bef240e31d1eb178c1"
+  },
+  "benchmark": {
+    "host": "Intel Core i9-14900K",
+    "performance_cpu": 12,
+    "core_kind": "P-Core",
+    "lscpu_core_index": 6,
+    "kernel_core_id": "24",
+    "sibling_logical_cpu": 13,
+    "flags": [
+      "-std=c++23",
+      "-O2"
+    ],
+    "march_native": false,
+    "clang_extra": "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+    "checks": "SKIP_RUNTIME_CHECKS",
+    "governor": "powersave",
+    "frequency_fixed": false,
+    "metric": "プロセス全体のuser+system CPU時間。wallも保存。main・IO固定、実行ファイル名を統一して同一P-Coreへ固定。",
+    "control": "baseと同じバイナリを別ラベルで実行。",
+    "order": "反復ごとにラベル順を混ぜる。screen seed828310、confirm seed88210。",
+    "screen_runs": 630,
+    "screen_repetitions": 7,
+    "confirm_runs": 1320,
+    "confirm_repetitions": 11,
+    "scope": "公式生成器の既存入力と自作入力を再利用。出力SHAは全ラベル・反復で一致。小規模プロセスは起動/I/O比が高いため構築単体時間とは扱わない。",
+    "interference": "CPU12を使用する他の性能測定は行わず、ベンチマーク中のコンパイルなし。confirm中に小さいJSON/Verifyメタデータ生成処理が約1秒重なった。同一版controlと反復間の揺らぎを併記し、細かい差を採用根拠にしない。"
+  },
+  "candidate_notes": {
+    "unroll2/unroll4/unroll8": "AVX2の行結合ループにGCC unroll pragma。一部GCCケースは速いがClang構築で約3〜8%退行。採用しない。",
+    "unroll_attr": "GCC専用関数にO3とunroll-loops。caseごとに符号が異なり、再測定のGCC random_02で約2.5%遅い。採用しない。",
+    "hoist": "CPU判定をループ前に1回へ移す。反復を増やしても安定した上積みがなく、Clang random_02約2.3%遅い。採用しない。候補のuse_simdはSIMD除外時にも残るため、仮に採用するなら宣言も同じ#ifで囲む必要がある。",
+    "hoist_unroll4": "上記2案の組合せ。Clangの大規模構築で退行し採用しない。",
+    "countl": "bit_widthの式をcountl_zeroに置換。Clangで退行。候補sizeof(size_t)*8は8bit byteを仮定するため標準経路に不適切。仮に採用するならnumeric_limits<size_t>::digitsを使う必要がある。"
+  },
+  "results": {
+    "screen": [
+      {
+        "compiler": "gcc",
+        "case": "4096_random",
+        "median_process_cpu_ms": {
+          "base": 7.772,
+          "control": 7.73,
+          "countl": 7.72,
+          "hoist": 7.752,
+          "hoist_unroll4": 7.77,
+          "unroll2": 7.741,
+          "unroll4": 7.715,
+          "unroll8": 7.74,
+          "unroll_attr": 7.702
+        },
+        "over_base": {
+          "base": 1.0,
+          "control": 0.9945959855892949,
+          "countl": 0.993309315491508,
+          "hoist": 0.9974266598044261,
+          "hoist_unroll4": 0.9997426659804426,
+          "unroll2": 0.9960113226968605,
+          "unroll4": 0.9926659804426146,
+          "unroll8": 0.9958826556870818,
+          "unroll_attr": 0.9909933093154915
+        },
+        "output_sha256": "cf2872e3fccd622ac709e046f66ea87882da85f6eff21d9f07e6ae397c9f1b7f"
+      },
+      {
+        "compiler": "gcc",
+        "case": "500000_build",
+        "median_process_cpu_ms": {
+          "base": 13.736,
+          "control": 13.693,
+          "countl": 13.798,
+          "hoist": 13.68,
+          "hoist_unroll4": 13.685,
+          "unroll2": 13.736,
+          "unroll4": 13.77,
+          "unroll8": 13.698,
+          "unroll_attr": 13.724
+        },
+        "over_base": {
+          "base": 1.0,
+          "control": 0.996869539895166,
+          "countl": 1.004513686662784,
+          "hoist": 0.9959231217239372,
+          "hoist_unroll4": 0.9962871287128713,
+          "unroll2": 1.0,
+          "unroll4": 1.0024752475247525,
+          "unroll8": 0.9972335468841002,
+          "unroll_attr": 0.999126383226558
+        },
+        "output_sha256": "87baee03b7cb5c0123998d60afe6169e2887c6039fa13de276412340b43e6748"
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_max_random_0",
+        "median_process_cpu_ms": {
+          "base": 29.807,
+          "control": 29.241,
+          "countl": 29.342,
+          "hoist": 29.922,
+          "hoist_unroll4": 29.542,
+          "unroll2": 29.643,
+          "unroll4": 29.687,
+          "unroll8": 29.126,
+          "unroll_attr": 28.756
+        },
+        "over_base": {
+          "base": 1.0,
+          "control": 0.981011171872379,
+          "countl": 0.984399637669004,
+          "hoist": 1.00385815412487,
+          "hoist_unroll4": 0.9911094709296474,
+          "unroll2": 0.9944979367262724,
+          "unroll4": 0.9959741000436139,
+          "unroll8": 0.977153017747509,
+          "unroll_attr": 0.9647398262153185
+        },
+        "output_sha256": "4dc7847a415682c5729fe01b307fe02afbcfd97fe22969483d08414b52a7a068"
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_small_width_query_0",
+        "median_process_cpu_ms": {
+          "base": 36.869,
+          "control": 36.496,
+          "countl": 36.62,
+          "hoist": 35.983,
+          "hoist_unroll4": 36.139,
+          "unroll2": 37.034,
+          "unroll4": 36.903,
+          "unroll8": 36.684,
+          "unroll_attr": 36.348
+        },
+        "over_base": {
+          "base": 1.0,
+          "control": 0.9898830996229895,
+          "countl": 0.993246358729556,
+          "hoist": 0.9759689712224362,
+          "hoist_unroll4": 0.9802001681629553,
+          "unroll2": 1.0044753044563184,
+          "unroll4": 1.0009221839485747,
+          "unroll8": 0.9949822343974613,
+          "unroll_attr": 0.9858688871409585
+        },
+        "output_sha256": "1c84aec7894596ac25144ff469196151ea899e38cd7beb614659fb242876e3c1"
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_small_width_query_3",
+        "median_process_cpu_ms": {
+          "base": 37.133,
+          "control": 37.478,
+          "countl": 37.153,
+          "hoist": 37.3,
+          "hoist_unroll4": 37.31,
+          "unroll2": 37.359,
+          "unroll4": 37.274,
+          "unroll8": 37.232,
+          "unroll_attr": 37.262
+        },
+        "over_base": {
+          "base": 1.0,
+          "control": 1.0092909272076052,
+          "countl": 1.0005386044758031,
+          "hoist": 1.0044973473729566,
+          "hoist_unroll4": 1.0047666496108583,
+          "unroll2": 1.006086230576576,
+          "unroll4": 1.0037971615544126,
+          "unroll8": 1.0026660921552257,
+          "unroll_attr": 1.0034739988689305
+        },
+        "output_sha256": "e9c342369ff634a0ad22ca898dea6842945c6db949cad84f883dd1b7dfca7405"
+      },
+      {
+        "compiler": "clang",
+        "case": "4096_random",
+        "median_process_cpu_ms": {
+          "base": 7.312,
+          "control": 7.352,
+          "countl": 7.728,
+          "hoist": 7.272,
+          "hoist_unroll4": 7.246,
+          "unroll2": 7.272,
+          "unroll4": 7.298,
+          "unroll8": 7.269,
+          "unroll_attr": 7.254
+        },
+        "over_base": {
+          "base": 1.0,
+          "control": 1.0054704595185995,
+          "countl": 1.0568927789934355,
+          "hoist": 0.9945295404814004,
+          "hoist_unroll4": 0.9909737417943107,
+          "unroll2": 0.9945295404814004,
+          "unroll4": 0.9980853391684902,
+          "unroll8": 0.9941192560175055,
+          "unroll_attr": 0.9920678336980306
+        },
+        "output_sha256": "cf2872e3fccd622ac709e046f66ea87882da85f6eff21d9f07e6ae397c9f1b7f"
+      },
+      {
+        "compiler": "clang",
+        "case": "500000_build",
+        "median_process_cpu_ms": {
+          "base": 13.346,
+          "control": 13.35,
+          "countl": 13.673,
+          "hoist": 13.417,
+          "hoist_unroll4": 13.734,
+          "unroll2": 14.446,
+          "unroll4": 13.734,
+          "unroll8": 13.732,
+          "unroll_attr": 13.403
+        },
+        "over_base": {
+          "base": 1.0,
+          "control": 1.000299715270493,
+          "countl": 1.0245017233628053,
+          "hoist": 1.0053199460512514,
+          "hoist_unroll4": 1.029072381237824,
+          "unroll2": 1.0824216993855837,
+          "unroll4": 1.029072381237824,
+          "unroll8": 1.0289225236025776,
+          "unroll_attr": 1.0042709426045258
+        },
+        "output_sha256": "87baee03b7cb5c0123998d60afe6169e2887c6039fa13de276412340b43e6748"
+      },
+      {
+        "compiler": "clang",
+        "case": "official_max_random_0",
+        "median_process_cpu_ms": {
+          "base": 29.126,
+          "control": 29.136,
+          "countl": 30.348,
+          "hoist": 28.976,
+          "hoist_unroll4": 29.765,
+          "unroll2": 30.229,
+          "unroll4": 29.542,
+          "unroll8": 29.302,
+          "unroll_attr": 29.113
+        },
+        "over_base": {
+          "base": 1.0,
+          "control": 1.0003433358511296,
+          "countl": 1.041955641008034,
+          "hoist": 0.9948499622330563,
+          "hoist_unroll4": 1.0219391608871797,
+          "unroll2": 1.037869944379592,
+          "unroll4": 1.0142827714069904,
+          "unroll8": 1.0060427109798806,
+          "unroll_attr": 0.9995536633935316
+        },
+        "output_sha256": "4dc7847a415682c5729fe01b307fe02afbcfd97fe22969483d08414b52a7a068"
+      },
+      {
+        "compiler": "clang",
+        "case": "official_small_width_query_0",
+        "median_process_cpu_ms": {
+          "base": 35.773,
+          "control": 35.84,
+          "countl": 36.504,
+          "hoist": 35.935,
+          "hoist_unroll4": 36.276,
+          "unroll2": 36.776,
+          "unroll4": 36.198,
+          "unroll8": 36.184,
+          "unroll_attr": 35.856
+        },
+        "over_base": {
+          "base": 1.0,
+          "control": 1.0018729209180108,
+          "countl": 1.0204344058368042,
+          "hoist": 1.0045285550554888,
+          "hoist_unroll4": 1.0140608839068572,
+          "unroll2": 1.028037905683057,
+          "unroll4": 1.01188046850977,
+          "unroll8": 1.0114891119000364,
+          "unroll_attr": 1.0023201856148491
+        },
+        "output_sha256": "1c84aec7894596ac25144ff469196151ea899e38cd7beb614659fb242876e3c1"
+      },
+      {
+        "compiler": "clang",
+        "case": "official_small_width_query_3",
+        "median_process_cpu_ms": {
+          "base": 36.244,
+          "control": 36.061,
+          "countl": 36.46,
+          "hoist": 35.753,
+          "hoist_unroll4": 36.063,
+          "unroll2": 37.086,
+          "unroll4": 35.943,
+          "unroll8": 36.326,
+          "unroll_attr": 36.104
+        },
+        "over_base": {
+          "base": 1.0,
+          "control": 0.9949508884229114,
+          "countl": 1.0059596071073833,
+          "hoist": 0.9864529301401611,
+          "hoist_unroll4": 0.9950060699702019,
+          "unroll2": 1.0232314314093367,
+          "unroll4": 0.9916951771327668,
+          "unroll8": 1.002262443438914,
+          "unroll_attr": 0.996137291689659
+        },
+        "output_sha256": "e9c342369ff634a0ad22ca898dea6842945c6db949cad84f883dd1b7dfca7405"
+      }
+    ],
+    "confirm": [
+      {
+        "compiler": "gcc",
+        "case": "32_build",
+        "median_process_cpu_ms": {
+          "base": 1.148,
+          "control": 1.183,
+          "hoist": 1.206,
+          "unroll_attr": 1.166
+        },
+        "over_base": {
+          "base": 1.0,
+          "control": 1.0304878048780488,
+          "hoist": 1.0505226480836236,
+          "unroll_attr": 1.0156794425087108
+        },
+        "output_sha256": "ea9ba70be6cab371f69cdd8df37674a711aa0862b155e155c01869a352b66721"
+      },
+      {
+        "compiler": "gcc",
+        "case": "4096_build",
+        "median_process_cpu_ms": {
+          "base": 1.33,
+          "control": 1.221,
+          "hoist": 1.216,
+          "unroll_attr": 1.246
+        },
+        "over_base": {
+          "base": 1.0,
+          "control": 0.9180451127819549,
+          "hoist": 0.9142857142857143,
+          "unroll_attr": 0.9368421052631579
+        },
+        "output_sha256": "4a7b38e1e22a94c537021c7f54f3bc8cd849355fcc4e637972084719fba2cee4"
+      },
+      {
+        "compiler": "gcc",
+        "case": "500000_build",
+        "median_process_cpu_ms": {
+          "base": 16.67,
+          "control": 16.754,
+          "hoist": 16.864,
+          "unroll_attr": 16.736
+        },
+        "over_base": {
+          "base": 1.0,
+          "control": 1.0050389922015597,
+          "hoist": 1.011637672465507,
+          "unroll_attr": 1.0039592081583684
+        },
+        "output_sha256": "87baee03b7cb5c0123998d60afe6169e2887c6039fa13de276412340b43e6748"
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_max_random_0",
+        "median_process_cpu_ms": {
+          "base": 52.639,
+          "control": 53.273,
+          "hoist": 53.369,
+          "unroll_attr": 52.876
+        },
+        "over_base": {
+          "base": 1.0,
+          "control": 1.0120443017534528,
+          "hoist": 1.0138680446057107,
+          "unroll_attr": 1.0045023651665115
+        },
+        "output_sha256": "4dc7847a415682c5729fe01b307fe02afbcfd97fe22969483d08414b52a7a068"
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_max_random_1",
+        "median_process_cpu_ms": {
+          "base": 54.357,
+          "control": 54.278,
+          "hoist": 54.371,
+          "unroll_attr": 54.365
+        },
+        "over_base": {
+          "base": 1.0,
+          "control": 0.9985466453262689,
+          "hoist": 1.0002575565244587,
+          "unroll_attr": 1.0001471751568336
+        },
+        "output_sha256": "965ad8e8fc83304453e5a50670ef9bd5331708640ec1312d6e588b662d5bec73"
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_max_random_2",
+        "median_process_cpu_ms": {
+          "base": 55.824,
+          "control": 56.035,
+          "hoist": 55.465,
+          "unroll_attr": 55.041
+        },
+        "over_base": {
+          "base": 1.0,
+          "control": 1.00377973631413,
+          "hoist": 0.9935690742333046,
+          "unroll_attr": 0.9859737747205503
+        },
+        "output_sha256": "495ac4ab982f56ddeb70f9eb094afca405ebe926359dd6ec02f0db9f9e8515d1"
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_max_random_3",
+        "median_process_cpu_ms": {
+          "base": 54.277,
+          "control": 54.494,
+          "hoist": 54.93,
+          "unroll_attr": 54.546
+        },
+        "over_base": {
+          "base": 1.0,
+          "control": 1.0039980102069017,
+          "hoist": 1.012030878641045,
+          "unroll_attr": 1.0049560587357445
+        },
+        "output_sha256": "3ebc8b1c665d2f2f8793fc695f074f3c718fbd6aee894676608d4f95a9375139"
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_max_random_4",
+        "median_process_cpu_ms": {
+          "base": 53.75,
+          "control": 53.501,
+          "hoist": 52.74,
+          "unroll_attr": 52.732
+        },
+        "over_base": {
+          "base": 1.0,
+          "control": 0.9953674418604651,
+          "hoist": 0.9812093023255813,
+          "unroll_attr": 0.9810604651162791
+        },
+        "output_sha256": "7feda076d8c6f28aa647871c250f9b25eef759fcc1cf327519597fb6b71cc498"
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_random_2",
+        "median_process_cpu_ms": {
+          "base": 16.444,
+          "control": 16.389,
+          "hoist": 16.216,
+          "unroll_attr": 16.85
+        },
+        "over_base": {
+          "base": 1.0,
+          "control": 0.9966553150085138,
+          "hoist": 0.9861347603989297,
+          "unroll_attr": 1.0246898564826077
+        },
+        "output_sha256": "7c9baadf3daeb7d3aa96af8657aabad633fab6eadbd7a6d54a0e80f1e8f91bd1"
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_small_values_0",
+        "median_process_cpu_ms": {
+          "base": 45.799,
+          "control": 47.406,
+          "hoist": 45.133,
+          "unroll_attr": 46.067
+        },
+        "over_base": {
+          "base": 1.0,
+          "control": 1.0350881023603136,
+          "hoist": 0.9854581977772441,
+          "unroll_attr": 1.0058516561496975
+        },
+        "output_sha256": "03860febffae10b28f5dc1394a401ef9da2e96e152870c4586a2f27637e8f74c"
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_small_width_query_0",
+        "median_process_cpu_ms": {
+          "base": 56.63,
+          "control": 56.825,
+          "hoist": 56.484,
+          "unroll_attr": 56.38
+        },
+        "over_base": {
+          "base": 1.0,
+          "control": 1.003443404555889,
+          "hoist": 0.9974218612043086,
+          "unroll_attr": 0.9955853787745012
+        },
+        "output_sha256": "1c84aec7894596ac25144ff469196151ea899e38cd7beb614659fb242876e3c1"
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_small_width_query_1",
+        "median_process_cpu_ms": {
+          "base": 58.67,
+          "control": 58.481,
+          "hoist": 57.567,
+          "unroll_attr": 57.562
+        },
+        "over_base": {
+          "base": 1.0,
+          "control": 0.9967785921254474,
+          "hoist": 0.9811999318220556,
+          "unroll_attr": 0.9811147093915118
+        },
+        "output_sha256": "b49f24ae95c824a1d07638bf9251d40140748ed300d408516ac6298f70da129e"
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_small_width_query_2",
+        "median_process_cpu_ms": {
+          "base": 58.519,
+          "control": 58.769,
+          "hoist": 57.648,
+          "unroll_attr": 58.511
+        },
+        "over_base": {
+          "base": 1.0,
+          "control": 1.0042721167484066,
+          "hoist": 0.9851159452485517,
+          "unroll_attr": 0.999863292264051
+        },
+        "output_sha256": "1b1161379b324c1fa178b7b7f739c5c23a6f4529b42b5e21449101651b0aa1d3"
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_small_width_query_3",
+        "median_process_cpu_ms": {
+          "base": 55.253,
+          "control": 56.11,
+          "hoist": 55.191,
+          "unroll_attr": 54.432
+        },
+        "over_base": {
+          "base": 1.0,
+          "control": 1.0155104700197275,
+          "hoist": 0.9988778889834036,
+          "unroll_attr": 0.9851410783124899
+        },
+        "output_sha256": "e9c342369ff634a0ad22ca898dea6842945c6db949cad84f883dd1b7dfca7405"
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_small_width_query_4",
+        "median_process_cpu_ms": {
+          "base": 54.996,
+          "control": 54.304,
+          "hoist": 55.12,
+          "unroll_attr": 54.757
+        },
+        "over_base": {
+          "base": 1.0,
+          "control": 0.9874172667103062,
+          "hoist": 1.0022547094334133,
+          "unroll_attr": 0.9956542293985017
+        },
+        "output_sha256": "7241449e69f6621905e46da05ea6f54de24ef81c1891f550d575f897319cd452"
+      },
+      {
+        "compiler": "clang",
+        "case": "32_build",
+        "median_process_cpu_ms": {
+          "base": 1.208,
+          "control": 1.193,
+          "hoist": 1.152,
+          "unroll_attr": 1.202
+        },
+        "over_base": {
+          "base": 1.0,
+          "control": 0.9875827814569537,
+          "hoist": 0.9536423841059603,
+          "unroll_attr": 0.9950331125827815
+        },
+        "output_sha256": "ea9ba70be6cab371f69cdd8df37674a711aa0862b155e155c01869a352b66721"
+      },
+      {
+        "compiler": "clang",
+        "case": "4096_build",
+        "median_process_cpu_ms": {
+          "base": 1.167,
+          "control": 1.247,
+          "hoist": 1.199,
+          "unroll_attr": 1.19
+        },
+        "over_base": {
+          "base": 1.0,
+          "control": 1.0685518423307627,
+          "hoist": 1.027420736932305,
+          "unroll_attr": 1.0197086546700942
+        },
+        "output_sha256": "4a7b38e1e22a94c537021c7f54f3bc8cd849355fcc4e637972084719fba2cee4"
+      },
+      {
+        "compiler": "clang",
+        "case": "500000_build",
+        "median_process_cpu_ms": {
+          "base": 16.456,
+          "control": 16.212,
+          "hoist": 16.462,
+          "unroll_attr": 16.35
+        },
+        "over_base": {
+          "base": 1.0,
+          "control": 0.9851725814292659,
+          "hoist": 1.0003646086533786,
+          "unroll_attr": 0.9935585804569762
+        },
+        "output_sha256": "87baee03b7cb5c0123998d60afe6169e2887c6039fa13de276412340b43e6748"
+      },
+      {
+        "compiler": "clang",
+        "case": "official_max_random_0",
+        "median_process_cpu_ms": {
+          "base": 52.617,
+          "control": 52.599,
+          "hoist": 52.064,
+          "unroll_attr": 52.142
+        },
+        "over_base": {
+          "base": 1.0,
+          "control": 0.9996579052397514,
+          "hoist": 0.989490088754585,
+          "unroll_attr": 0.9909724993823289
+        },
+        "output_sha256": "4dc7847a415682c5729fe01b307fe02afbcfd97fe22969483d08414b52a7a068"
+      },
+      {
+        "compiler": "clang",
+        "case": "official_max_random_1",
+        "median_process_cpu_ms": {
+          "base": 51.273,
+          "control": 52.633,
+          "hoist": 53.208,
+          "unroll_attr": 52.57
+        },
+        "over_base": {
+          "base": 1.0,
+          "control": 1.0265246816063036,
+          "hoist": 1.0377391609619098,
+          "unroll_attr": 1.0252959647377762
+        },
+        "output_sha256": "965ad8e8fc83304453e5a50670ef9bd5331708640ec1312d6e588b662d5bec73"
+      },
+      {
+        "compiler": "clang",
+        "case": "official_max_random_2",
+        "median_process_cpu_ms": {
+          "base": 53.443,
+          "control": 53.826,
+          "hoist": 52.993,
+          "unroll_attr": 54.264
+        },
+        "over_base": {
+          "base": 1.0,
+          "control": 1.0071665138558838,
+          "hoist": 0.9915798140074472,
+          "unroll_attr": 1.015362161555302
+        },
+        "output_sha256": "495ac4ab982f56ddeb70f9eb094afca405ebe926359dd6ec02f0db9f9e8515d1"
+      },
+      {
+        "compiler": "clang",
+        "case": "official_max_random_3",
+        "median_process_cpu_ms": {
+          "base": 51.765,
+          "control": 51.071,
+          "hoist": 51.832,
+          "unroll_attr": 52.02
+        },
+        "over_base": {
+          "base": 1.0,
+          "control": 0.9865932579928524,
+          "hoist": 1.0012943108277794,
+          "unroll_attr": 1.0049261083743843
+        },
+        "output_sha256": "3ebc8b1c665d2f2f8793fc695f074f3c718fbd6aee894676608d4f95a9375139"
+      },
+      {
+        "compiler": "clang",
+        "case": "official_max_random_4",
+        "median_process_cpu_ms": {
+          "base": 51.582,
+          "control": 51.324,
+          "hoist": 51.338,
+          "unroll_attr": 51.51
+        },
+        "over_base": {
+          "base": 1.0,
+          "control": 0.9949982552053042,
+          "hoist": 0.9952696677135435,
+          "unroll_attr": 0.9986041642433408
+        },
+        "output_sha256": "7feda076d8c6f28aa647871c250f9b25eef759fcc1cf327519597fb6b71cc498"
+      },
+      {
+        "compiler": "clang",
+        "case": "official_random_2",
+        "median_process_cpu_ms": {
+          "base": 14.985,
+          "control": 14.943,
+          "hoist": 15.328,
+          "unroll_attr": 15.255
+        },
+        "over_base": {
+          "base": 1.0,
+          "control": 0.9971971971971972,
+          "hoist": 1.0228895562228895,
+          "unroll_attr": 1.018018018018018
+        },
+        "output_sha256": "7c9baadf3daeb7d3aa96af8657aabad633fab6eadbd7a6d54a0e80f1e8f91bd1"
+      },
+      {
+        "compiler": "clang",
+        "case": "official_small_values_0",
+        "median_process_cpu_ms": {
+          "base": 41.19,
+          "control": 41.285,
+          "hoist": 41.19,
+          "unroll_attr": 41.145
+        },
+        "over_base": {
+          "base": 1.0,
+          "control": 1.0023063850449139,
+          "hoist": 1.0,
+          "unroll_attr": 0.9989075018208303
+        },
+        "output_sha256": "03860febffae10b28f5dc1394a401ef9da2e96e152870c4586a2f27637e8f74c"
+      },
+      {
+        "compiler": "clang",
+        "case": "official_small_width_query_0",
+        "median_process_cpu_ms": {
+          "base": 53.843,
+          "control": 53.759,
+          "hoist": 53.736,
+          "unroll_attr": 53.503
+        },
+        "over_base": {
+          "base": 1.0,
+          "control": 0.9984399086232194,
+          "hoist": 0.9980127407462437,
+          "unroll_attr": 0.9936853444273165
+        },
+        "output_sha256": "1c84aec7894596ac25144ff469196151ea899e38cd7beb614659fb242876e3c1"
+      },
+      {
+        "compiler": "clang",
+        "case": "official_small_width_query_1",
+        "median_process_cpu_ms": {
+          "base": 53.666,
+          "control": 53.774,
+          "hoist": 53.757,
+          "unroll_attr": 53.785
+        },
+        "over_base": {
+          "base": 1.0,
+          "control": 1.0020124473595946,
+          "hoist": 1.0016956732381768,
+          "unroll_attr": 1.0022174188499235
+        },
+        "output_sha256": "b49f24ae95c824a1d07638bf9251d40140748ed300d408516ac6298f70da129e"
+      },
+      {
+        "compiler": "clang",
+        "case": "official_small_width_query_2",
+        "median_process_cpu_ms": {
+          "base": 54.142,
+          "control": 54.347,
+          "hoist": 53.872,
+          "unroll_attr": 53.934
+        },
+        "over_base": {
+          "base": 1.0,
+          "control": 1.0037863396254294,
+          "hoist": 0.9950131136640685,
+          "unroll_attr": 0.9961582505263935
+        },
+        "output_sha256": "1b1161379b324c1fa178b7b7f739c5c23a6f4529b42b5e21449101651b0aa1d3"
+      },
+      {
+        "compiler": "clang",
+        "case": "official_small_width_query_3",
+        "median_process_cpu_ms": {
+          "base": 52.604,
+          "control": 52.092,
+          "hoist": 52.567,
+          "unroll_attr": 52.035
+        },
+        "over_base": {
+          "base": 1.0,
+          "control": 0.9902668998555243,
+          "hoist": 0.9992966314348719,
+          "unroll_attr": 0.9891833320660026
+        },
+        "output_sha256": "e9c342369ff634a0ad22ca898dea6842945c6db949cad84f883dd1b7dfca7405"
+      },
+      {
+        "compiler": "clang",
+        "case": "official_small_width_query_4",
+        "median_process_cpu_ms": {
+          "base": 52.342,
+          "control": 52.713,
+          "hoist": 51.918,
+          "unroll_attr": 52.913
+        },
+        "over_base": {
+          "base": 1.0,
+          "control": 1.0070879981659089,
+          "hoist": 0.9918994306675327,
+          "unroll_attr": 1.0109090214359406
+        },
+        "output_sha256": "7241449e69f6621905e46da05ea6f54de24ef81c1891f550d575f897319cd452"
+      }
+    ]
+  },
+  "review": "別エージェントによる読み取りレビュー。hoistのn>=257はcount>=256と同値。Op順序・回数、型要件、容量計算、所有権は維持。未使用状態の除外とcountlのbit幅表現について上記注意。性能測定・ソース編集は委任しない。",
+  "validation": "本体・main・共通IOに変更なし。現行ハッシュのオンラインAC確認を記録。実験候補は測定用だけであり本体へ反映しない。既存の単体・型・所有権・SIMD有無の検証はperformance-sparse-table-avx2-build-2026-11-03.json。",
+  "evidence": {
+    "file": "data/sparse-table-followup-414928-2026-11-03.zip",
+    "sha256": "6cc6af1890ac7388535245068551b5cf022f676acfd53e6d506e2f163264c718",
+    "bytes": 118590,
+    "scope": "自作の比較ソース・スクリプト・測定・公開提出情報を保存。バイナリ・大きい入力・公式生成器ソースは含めない。"
+  },
+  "resubmit": []
+}

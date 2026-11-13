@@ -1,0 +1,186 @@
+{
+  "date": "2026-11-14",
+  "scope": "現行HLDの独立した再実装。旧版の由来を遡って断定する記録ではない。",
+  "source": "Graph/Heavy_Light_Decomposition.cpp",
+  "source_sha256": "569f63695d9f1ef873948e07a2c67350cb9e00f4ffeeb7582ef85e0144f5e002",
+  "baseline_git_commit": "a75a165416cf8556f2c2924239441454c3957e7d",
+  "baseline_source_sha256": "21c6d1562e484c9217134f11a70d6757a66b295d1f334f44861251f0905576bb",
+  "api_compatibility": "既存の分解型・所有型・外部集計器・頂点/辺・方向付き経路操作を維持。",
+  "reference": {
+    "commit": "2e713880f0d5041d794e0f09c7f31c1826ba0ccf",
+    "files": [
+      {
+        "path": "tree/heavy-light-decomposition.hpp",
+        "url": "https://raw.githubusercontent.com/NyaanNyaan/library/2e713880f0d5041d794e0f09c7f31c1826ba0ccf/tree/heavy-light-decomposition.hpp",
+        "sha256": "4009de9a0d5879889700fc66ca254ae3f73fe51e50cffe0a9f0603013fa1c6f9",
+        "bytes": 2921
+      },
+      {
+        "path": "LICENSE",
+        "url": "https://raw.githubusercontent.com/NyaanNyaan/library/2e713880f0d5041d794e0f09c7f31c1826ba0ccf/LICENSE",
+        "sha256": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499",
+        "bytes": 7048
+      }
+    ]
+  },
+  "independent_implementation": {
+    "task": "HeavyLightDecompositionおよびHeavyLightValuesの独立した新規実装",
+    "implementation_agent": "/root/hld_rewrite",
+    "contribution_license": "CC0-1.0",
+    "contribution_statement": "この担当が独立に記述した本文・補助部品への寄与を、適用可能な権利の範囲でCC0-1.0として提供する。",
+    "frozen_candidate": {
+      "path": "/tmp/hld-license-review/rewrite/final_candidate.cpp",
+      "sha256": "569f63695d9f1ef873948e07a2c67350cb9e00f4ffeeb7582ef85e0144f5e002",
+      "note": "本文はfold_single.cppと同じ。最終先頭コメントは主担当が公開API仕様と固定版参照へ整理した。"
+    },
+    "sources_read": [
+      {
+        "source": "https://nyaannyaan.github.io/library/tree/heavy-light-decomposition.hpp.html",
+        "scope": "API説明および掲載されたCC0原典本文を閲覧。今回の本文の複製・翻案は行わず、API概念と一般的な重軽分解の参考とした。"
+      },
+      {
+        "source": "https://raw.githubusercontent.com/NyaanNyaan/library/master/LICENSE",
+        "scope": "CC0-1.0の表示と提供条件を確認。主担当から固定版commit 2e713880f0d5041d794e0f09c7f31c1826ba0ccfで同条件を確認したとの連絡を受領。"
+      },
+      {
+        "source": "Document/heavy_light_decomposition.md",
+        "scope": "公開API・意味・所有権・計算量・前提の契約として閲覧。"
+      },
+      {
+        "source": "/tmp/hld-api-specification.txt",
+        "scope": "主担当が許可した宣言・API契約のみの仕様を閲覧。旧実装本文は含まない。"
+      },
+      {
+        "source": "Verify/current/tests/*hld*.cpp",
+        "scope": "6試験の公開API利用、独立参照、境界、例外保証、内部trait互換要求を閲覧。"
+      },
+      {
+        "source": "DataStructure/Fenwick_Tree.cpp",
+        "scope": "主担当の明示許可後、CC0 backendの型宣言・整数表現・公開get/sum等と一部内部処理を閲覧。"
+      },
+      {
+        "source": "DataStructure/Segment_Tree.cpp",
+        "scope": "主担当の明示許可後、CC0 backendの型宣言・friend tag・一部内部配置と更新処理を閲覧。今回のHLD本文はprivate storage更新を使わない。"
+      },
+      {
+        "source": "DataStructure/Lazy_Segment_Tree.cpp",
+        "scope": "型宣言等をrg検索し、ACL形のテンプレート引数を確認。"
+      },
+      {
+        "source": "/tmp/hld-license-review/validation/bench.cpp と各summary.json",
+        "scope": "公開APIだけの測定mainと数値結果を閲覧。旧版本文は閲覧していない。"
+      }
+    ],
+    "sources_not_read": [
+      "Graph/Heavy_Light_Decomposition.cppの既存本文",
+      "Git履歴・Audit・過去配布物・baselineにある旧HLD本文",
+      "hitonanodeのMIT実装本文",
+      "ei1333のUnlicense実装本文",
+      "その他のMIT/Unlicense HLD原典本文"
+    ],
+    "attribution": "NyaanのCC0原典は参考と表示する。今回の本文はその実装を継承していないためOriginal Sourceとは表示しない。",
+    "independent_internal_design": [
+      "入力Graphはconst参照で一度受け取り、反復探索の発見順を逆走して部分木サイズとheavy childを計算し、別の反復heavy-chain走査でDFS添字を付ける。Graphの参照は保持しない。",
+      "分解はvector群の独立所有。コピーとbuildは一時オブジェクトとのswapで強い例外保証、moveは空状態とのswapで移動元を空にする。",
+      "所有型はmake_uniqueによるState一個を所有し、分解とforward/backward backendをまとめる。Ordered=falseの未使用backwardはno_unique_address付き空型へ置き換える。",
+      "入力値はlayout移動前にreorderし、valuesがlayout.order()を参照していても安全にする。",
+      "for_each_pathはintの桁数で有界な固定arrayへ後半区間だけ保存し、通行順にcallbackを呼ぶ。経路callbackでヒープ確保をしない。",
+      "可換積は両端から直接結合。非可換積はoptionalの左右二つの集計値へappend/prependして最後に結合し、区間保存配列と単位元との不要な結合を避ける。",
+      "jumpは頂点検査後に同一heavy鎖をDFS添字差で処理し、異なる鎖では深さ合計による不可能kの早期棄却後にLCAを使う。",
+      "backendはテンプレート引数形の部分特殊化でop/eを取得し、独自型と実ACL型の前方宣言・include順への依存を避ける。更新・照会は公開backend APIだけを使う。",
+      "所有BITの一点区間だけgetがあれば利用し、長い区間とsum-only backendはsumへ戻す。",
+      "整数和・差は対応する符号なし型で周回し、128ビット拡張型は利用可能時だけ条件付き対応する。int容量保護は検査省略時も残し、入力検査専用状態はプリプロセッサで除く。",
+      "HldOwnedRangeTraitsとHldSegmentAccessのenabledは公開仕様と許可されたbackend tagから独立に記述した。旧最適化のprivate access本文は読まず、今回そのprivate高速操作は実装していない。"
+    ],
+    "validation_note": "この担当の個別検査は初版から全公開機能の既存参照試験を通し、fold_singleで所有型291961件・Fenwick大規模29505件を確認。最終候補の56構成・同条件性能比較・Verify全体比較は主担当とhistory担当が実行する。"
+  },
+  "local_validation": {
+    "matrix": "56/56",
+    "samples": "4 IDs × GCC/Clang × checked/skip、16/16",
+    "variants": {
+      "status": "local_samples_passed_for_snapshot",
+      "counts": {
+        "LOCAL_SAMPLE_PASS": 22
+      },
+      "passed_programs_and_examples": 22
+    },
+    "benchmark_scope": "本体だけの効果とmain/I/Oを含む提出全体を同条件で区別。数値・SHA・再現コードは証拠ZIPへ保存。"
+  },
+  "claude_review": {
+    "status": "not_completed",
+    "requested_model": "claude-fable-5-2",
+    "actual_model_confirmed": false,
+    "authorized_account_matched": true,
+    "attempts": 1,
+    "termination": "ローカル呼出しの600秒上限で応答未取得。完了したモデル応答・modelUsageはない。",
+    "five_hour_utilization_before": 0,
+    "five_hour_utilization_after": 55,
+    "weekly_utilization_before": 57,
+    "weekly_utilization_after": 61,
+    "extra_usage_enabled": false,
+    "retried": false
+  },
+  "online_verify": {
+    "status": "pending",
+    "ids": [
+      "hld_jump",
+      "hld_vertex_add_path_sum",
+      "hld_path_prod",
+      "hld_path_composite"
+    ],
+    "reason": "接続先に認証済みブラウザがなく、browser access host unavailable。旧ACは新SHAへ引き継がない。"
+  },
+  "performance": {
+    "body_summary": "validation/final-summary.json",
+    "whole_program_summary": "verify-whole-program/runs/final_569f6369/summary.json",
+    "whole_program_source_sha_match": true,
+    "stdout_checks": 48,
+    "compiler_scope_note": "本文測定はGCC15.2.0、全体測定はGCC15.3.0。各比較の旧新は同条件だが、本文と全体の差を直接差し引いて原因とはしない。",
+    "residual_slowdown": "大規模の全体測定の一部で旧版比約6〜18%遅い。全条件での高速化は主張しない。"
+  },
+  "evidence_archive": {
+    "path": "Audit/data/rewrite-hld-cc0-2026-11-14.zip",
+    "sha256": "6e9121ab2de2591b32ff28c060910344ae4f095effedff3194bad078b75e3df9",
+    "entries": 47,
+    "old_implementation_included": false
+  },
+  "submission_sources": [
+    {
+      "id": "hld_jump",
+      "path": "Verify/current/submissions/hld_jump.cpp",
+      "sha256": "8d3b8c875b2d70712d93eb962f8c433df8b9e837f27aa535c2e567caa2fb198f",
+      "driver_sha256": "bbbec8a725b9e39b2c1326e4edfab0fbd185dedc47491c93278544179fdb6f73",
+      "io_source_hashes": {
+        "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+      }
+    },
+    {
+      "id": "hld_vertex_add_path_sum",
+      "path": "Verify/current/submissions/hld_vertex_add_path_sum.cpp",
+      "sha256": "cefe5b421f35b6906bbe2649b5280c9d07a63bb56d67172f1375373247ce5c43",
+      "driver_sha256": "4c0ee77895a4e57fe994798328092cc765f7002e3dabf3b87e57488010529592",
+      "io_source_hashes": {
+        "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+      }
+    },
+    {
+      "id": "hld_path_prod",
+      "path": "Verify/current/submissions/hld_path_prod.cpp",
+      "sha256": "d262346cc5483898eda31233722259a36649cfff56346cfb408465b604748a68",
+      "driver_sha256": "84e9e8f64573b2af1ce67d339b9ff311e2344bb86d77d6acccbd78548f29d231",
+      "io_source_hashes": {
+        "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+      }
+    },
+    {
+      "id": "hld_path_composite",
+      "path": "Verify/current/submissions/hld_path_composite.cpp",
+      "sha256": "fef40bd456809f533f12745f08b224d470aa7d0ac162b1a91b162ba58c310fe1",
+      "driver_sha256": "787b5956aff811fd24d2d42dd662231f6ec1dfb82b51392aa28b0fc694b9a4fa",
+      "io_source_hashes": {
+        "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+      }
+    }
+  ],
+  "recorded_at_utc": "2026-11-13T15:58:18.826988+00:00"
+}

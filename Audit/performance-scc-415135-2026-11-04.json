@@ -1,0 +1,1353 @@
+{
+  "date": "2026-11-04",
+  "decision": "追加の本体変更なし。80msの415135版を維持。配列ポインタ保持・Tarjan親リンク・Gabow親リンクの3案は安定した改善がなく不採用。",
+  "online_confirmation": "Audit/online-scc-415135-2026-11-04.json",
+  "online": {
+    "submission": 415135,
+    "status": "AC",
+    "time_ms": 80,
+    "previous_ms": 82,
+    "improvement_percent": 2.4390243902439046,
+    "needs_resubmission": false,
+    "scope": "現行本体は提出されたものと一致。通常版ACを派生版や試作へ転記しない。"
+  },
+  "proposals": [
+    {
+      "name": "pointers",
+      "method": "再確保しないentered/ids/begin/next/destinationの非所有dataポインタを保持。",
+      "decision": "main全体の公式相当11入力の幾何平均比はGCC1.0005/Clang0.9993。controlの変動内で明確な上積みなし。"
+    },
+    {
+      "name": "parents",
+      "method": "DFS親をids[child]に保持し、一時saved_low配列へ親lowを退避してdfsスタックを除去。",
+      "decision": "大きい公式相当閉路でGCC約15.7%/Clang約17.4%増。現在の高速化を維持できず不採用。"
+    },
+    {
+      "name": "gabow",
+      "method": "反復Gabowのpending/candidate-rootスタックとidsのDFS親リンクを比較。",
+      "decision": "大きい公式相当閉路でGCC約9.7%/Clang約10.6%増。今回の条件では採用しない。別方式全体の限界とは断定しない。"
+    }
+  ],
+  "correctness_probes": {
+    "results": [
+      {
+        "label": "parents",
+        "command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-DSIRKIT_SCC_TEST_SOURCE=\"/tmp/sirkit_scc_refine_20261104/parents.hpp\"",
+          "Verify/current/tests/scc_index_paths_test.cpp",
+          "-o",
+          "/tmp/sirkit_scc_refine_20261104/probe_parents"
+        ],
+        "returncode": 0,
+        "stdout": "SCC index paths graphs=69680 checks=18600039\n",
+        "stderr": ""
+      },
+      {
+        "label": "gabow",
+        "command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-DSIRKIT_SCC_TEST_SOURCE=\"/tmp/sirkit_scc_refine_20261104/gabow.hpp\"",
+          "Verify/current/tests/scc_index_paths_test.cpp",
+          "-o",
+          "/tmp/sirkit_scc_refine_20261104/probe_gabow"
+        ],
+        "returncode": 0,
+        "stdout": "SCC index paths graphs=69680 checks=18600039\n",
+        "stderr": ""
+      }
+    ],
+    "scope": "親リンク2案はGCC C++23-O2、ASan/UBSan、検査有効で各69,680グラフ/18,600,039 checksを独立Kosaraju・到達可能性と照合。uint32/size_t両経路・自己辺/多重辺・30万鎖/閉路を含む。正式採用向けの全コンパイラ/例外/未初期化の検証まで進めず、不採用。",
+    "leak_sanitizer": "ASAN_OPTIONS=detect_leaks=0。今回本体変更なしのため、現行版の前回の所有権・MemorySanitizer結果は性能followup Auditに保持。"
+  },
+  "environment": {
+    "cpu": "Intel Core i9-14900K P-Core CPU12（core6、sibling13）",
+    "compilers": "GCC15.2.0/Clang21.1.8",
+    "flags": [
+      "-std=c++23",
+      "-O2",
+      "SKIP_RUNTIME_CHECKS"
+    ],
+    "march_native": false,
+    "new_pragmas": false,
+    "frequency": "powersave、変更・固定なし",
+    "scope": "自分のコンパイル・測定を直列化し、各ラベルの実行順を乱数化。同じ実行名へ差し替え、controlは現行と同一バイナリ。mainはwait4 user+system CPU時間。"
+  },
+  "measurement": {
+    "candidates": [
+      {
+        "compiler": "gcc",
+        "case": "official_random_0",
+        "median_cpu_ns": {
+          "base": 35463000,
+          "parents": 36118000,
+          "gabow": 35570000,
+          "pointers": 35569000,
+          "control": 35558000
+        },
+        "ratio_to_current": {
+          "base": 1.0,
+          "parents": 1.0184699546005695,
+          "gabow": 1.0030172292248258,
+          "pointers": 1.0029890308208556,
+          "control": 1.0026788483771818
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_random_1",
+        "median_cpu_ns": {
+          "gabow": 39386000,
+          "pointers": 39164000,
+          "base": 38947000,
+          "control": 39125000,
+          "parents": 39483000
+        },
+        "ratio_to_current": {
+          "gabow": 1.011271728246078,
+          "pointers": 1.005571674326649,
+          "base": 1.0,
+          "control": 1.0045703135029656,
+          "parents": 1.0137622923460088
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_random_2",
+        "median_cpu_ns": {
+          "gabow": 10151000,
+          "parents": 10255000,
+          "control": 10101000,
+          "pointers": 10066000,
+          "base": 10091000
+        },
+        "ratio_to_current": {
+          "gabow": 1.0059458923793478,
+          "parents": 1.0162521058368843,
+          "control": 1.0009909820632246,
+          "pointers": 0.9975225448419384,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_random_3",
+        "median_cpu_ns": {
+          "parents": 20984000,
+          "gabow": 21204000,
+          "pointers": 20812000,
+          "base": 21027000,
+          "control": 20643000
+        },
+        "ratio_to_current": {
+          "parents": 0.9979550102249489,
+          "gabow": 1.0084177486089314,
+          "pointers": 0.9897750511247444,
+          "base": 1.0,
+          "control": 0.981737765729776
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_random_4",
+        "median_cpu_ns": {
+          "base": 16205000,
+          "gabow": 16365000,
+          "parents": 16348000,
+          "pointers": 16341000,
+          "control": 16278000
+        },
+        "ratio_to_current": {
+          "base": 1.0,
+          "gabow": 1.009873495834619,
+          "parents": 1.0088244369021906,
+          "pointers": 1.0083924714594261,
+          "control": 1.004504782474545
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_max_random_0",
+        "median_cpu_ns": {
+          "gabow": 44710000,
+          "pointers": 44642000,
+          "parents": 45275000,
+          "base": 44750000,
+          "control": 44693000
+        },
+        "ratio_to_current": {
+          "gabow": 0.9991061452513966,
+          "pointers": 0.997586592178771,
+          "parents": 1.011731843575419,
+          "base": 1.0,
+          "control": 0.9987262569832402
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_max_random_1",
+        "median_cpu_ns": {
+          "parents": 45282000,
+          "base": 44672000,
+          "control": 44632000,
+          "pointers": 44796000,
+          "gabow": 44828000
+        },
+        "ratio_to_current": {
+          "parents": 1.0136550859598854,
+          "base": 1.0,
+          "control": 0.9991045845272206,
+          "pointers": 1.002775787965616,
+          "gabow": 1.0034921203438396
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_max_random_2",
+        "median_cpu_ns": {
+          "control": 44622000,
+          "parents": 44944000,
+          "gabow": 44707000,
+          "base": 44566000,
+          "pointers": 44413000
+        },
+        "ratio_to_current": {
+          "control": 1.0012565632993762,
+          "parents": 1.0084818022707893,
+          "gabow": 1.0031638468787865,
+          "base": 1.0,
+          "pointers": 0.9965668895570614
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_max_random_3",
+        "median_cpu_ns": {
+          "parents": 45074000,
+          "control": 44599000,
+          "pointers": 44604000,
+          "base": 44497000,
+          "gabow": 44669000
+        },
+        "ratio_to_current": {
+          "parents": 1.0129671663258197,
+          "control": 1.0022922893678226,
+          "pointers": 1.0024046564936961,
+          "base": 1.0,
+          "gabow": 1.0038654291300537
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_max_random_4",
+        "median_cpu_ns": {
+          "control": 44438000,
+          "base": 44525000,
+          "parents": 45146000,
+          "gabow": 44625000,
+          "pointers": 44577000
+        },
+        "ratio_to_current": {
+          "control": 0.9980460415496912,
+          "base": 1.0,
+          "parents": 1.013947220662549,
+          "gabow": 1.0022459292532284,
+          "pointers": 1.0011678832116788
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_large_cycle_0",
+        "median_cpu_ns": {
+          "control": 24576000,
+          "pointers": 24649000,
+          "gabow": 27031000,
+          "parents": 28515000,
+          "base": 24640000
+        },
+        "ratio_to_current": {
+          "control": 0.9974025974025974,
+          "pointers": 1.0003652597402597,
+          "gabow": 1.0970373376623377,
+          "parents": 1.1572646103896105,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_32_empty",
+        "median_cpu_ns": {
+          "pointers": 927000,
+          "gabow": 919000,
+          "base": 912000,
+          "parents": 919000,
+          "control": 923000
+        },
+        "ratio_to_current": {
+          "pointers": 1.0164473684210527,
+          "gabow": 1.0076754385964912,
+          "base": 1.0,
+          "parents": 1.0076754385964912,
+          "control": 1.0120614035087718
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_32_line",
+        "median_cpu_ns": {
+          "parents": 916000,
+          "control": 906000,
+          "gabow": 906000,
+          "pointers": 893000,
+          "base": 897000
+        },
+        "ratio_to_current": {
+          "parents": 1.0211817168338908,
+          "control": 1.0100334448160535,
+          "gabow": 1.0100334448160535,
+          "pointers": 0.9955406911928651,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_32_cycle",
+        "median_cpu_ns": {
+          "parents": 885000,
+          "pointers": 890000,
+          "control": 885000,
+          "base": 893000,
+          "gabow": 885000
+        },
+        "ratio_to_current": {
+          "parents": 0.9910414333706606,
+          "pointers": 0.9966405375139977,
+          "control": 0.9910414333706606,
+          "base": 1.0,
+          "gabow": 0.9910414333706606
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_32_star",
+        "median_cpu_ns": {
+          "gabow": 884000,
+          "control": 888000,
+          "pointers": 891000,
+          "base": 884000,
+          "parents": 885000
+        },
+        "ratio_to_current": {
+          "gabow": 1.0,
+          "control": 1.004524886877828,
+          "pointers": 1.007918552036199,
+          "base": 1.0,
+          "parents": 1.001131221719457
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_32_dag",
+        "median_cpu_ns": {
+          "parents": 893000,
+          "base": 893000,
+          "pointers": 882000,
+          "control": 883000,
+          "gabow": 887000
+        },
+        "ratio_to_current": {
+          "parents": 1.0,
+          "base": 1.0,
+          "pointers": 0.9876819708846585,
+          "control": 0.9888017917133258,
+          "gabow": 0.9932810750279956
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_32_paired",
+        "median_cpu_ns": {
+          "gabow": 960000,
+          "parents": 938000,
+          "base": 976000,
+          "pointers": 925000,
+          "control": 1052000
+        },
+        "ratio_to_current": {
+          "gabow": 0.9836065573770492,
+          "parents": 0.9610655737704918,
+          "base": 1.0,
+          "pointers": 0.9477459016393442,
+          "control": 1.0778688524590163
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_4096_empty",
+        "median_cpu_ns": {
+          "base": 1072000,
+          "parents": 1078000,
+          "pointers": 1079000,
+          "control": 1076000,
+          "gabow": 1106000
+        },
+        "ratio_to_current": {
+          "base": 1.0,
+          "parents": 1.0055970149253732,
+          "pointers": 1.0065298507462686,
+          "control": 1.0037313432835822,
+          "gabow": 1.0317164179104477
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_4096_line",
+        "median_cpu_ns": {
+          "gabow": 1127000,
+          "pointers": 1116000,
+          "parents": 1121000,
+          "base": 1123000,
+          "control": 1141000
+        },
+        "ratio_to_current": {
+          "gabow": 1.0035618878005343,
+          "pointers": 0.993766696349065,
+          "parents": 0.9982190560997328,
+          "base": 1.0,
+          "control": 1.0160284951024043
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_4096_cycle",
+        "median_cpu_ns": {
+          "pointers": 1020000,
+          "control": 1022000,
+          "parents": 1020000,
+          "base": 1019000,
+          "gabow": 1021000
+        },
+        "ratio_to_current": {
+          "pointers": 1.000981354268891,
+          "control": 1.0029440628066733,
+          "parents": 1.000981354268891,
+          "base": 1.0,
+          "gabow": 1.0019627085377822
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_4096_star",
+        "median_cpu_ns": {
+          "parents": 1089000,
+          "pointers": 1095000,
+          "base": 1091000,
+          "gabow": 1095000,
+          "control": 1102000
+        },
+        "ratio_to_current": {
+          "parents": 0.998166819431714,
+          "pointers": 1.003666361136572,
+          "base": 1.0,
+          "gabow": 1.003666361136572,
+          "control": 1.010082493125573
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_4096_dag",
+        "median_cpu_ns": {
+          "control": 1270000,
+          "base": 1271000,
+          "gabow": 1269000,
+          "pointers": 1275000,
+          "parents": 1274000
+        },
+        "ratio_to_current": {
+          "control": 0.999213217938631,
+          "base": 1.0,
+          "gabow": 0.998426435877262,
+          "pointers": 1.003147128245476,
+          "parents": 1.002360346184107
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_4096_paired",
+        "median_cpu_ns": {
+          "base": 1073000,
+          "pointers": 1058000,
+          "parents": 1059000,
+          "gabow": 1069000,
+          "control": 1062000
+        },
+        "ratio_to_current": {
+          "base": 1.0,
+          "pointers": 0.9860205032618826,
+          "parents": 0.9869524697110904,
+          "gabow": 0.9962721342031687,
+          "control": 0.9897483690587139
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_500000_empty",
+        "median_cpu_ns": {
+          "base": 21417000,
+          "parents": 21446000,
+          "gabow": 21700000,
+          "pointers": 21540000,
+          "control": 21413000
+        },
+        "ratio_to_current": {
+          "base": 1.0,
+          "parents": 1.0013540645281787,
+          "gabow": 1.0132138021198114,
+          "pointers": 1.0057431012746882,
+          "control": 0.9998132324788719
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_500000_line",
+        "median_cpu_ns": {
+          "gabow": 31187000,
+          "control": 31087000,
+          "pointers": 30916000,
+          "parents": 31403000,
+          "base": 31009000
+        },
+        "ratio_to_current": {
+          "gabow": 1.0057402689541746,
+          "control": 1.0025153987552,
+          "pointers": 0.9970008707149537,
+          "parents": 1.0127059885839595,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_500000_cycle",
+        "median_cpu_ns": {
+          "gabow": 17303000,
+          "control": 16773000,
+          "pointers": 16770000,
+          "base": 16758000,
+          "parents": 17082000
+        },
+        "ratio_to_current": {
+          "gabow": 1.0325217806420814,
+          "control": 1.0008950948800572,
+          "pointers": 1.0007160759040459,
+          "base": 1.0,
+          "parents": 1.0193340494092373
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_500000_star",
+        "median_cpu_ns": {
+          "gabow": 29633000,
+          "control": 29708000,
+          "parents": 29473000,
+          "base": 29763000,
+          "pointers": 29643000
+        },
+        "ratio_to_current": {
+          "gabow": 0.9956321607364849,
+          "control": 0.9981520680038974,
+          "parents": 0.9902563585660048,
+          "base": 1.0,
+          "pointers": 0.9959681483721399
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_500000_dag",
+        "median_cpu_ns": {
+          "control": 57075000,
+          "pointers": 57615000,
+          "gabow": 58072000,
+          "parents": 58137000,
+          "base": 57170000
+        },
+        "ratio_to_current": {
+          "control": 0.9983382893125765,
+          "pointers": 1.0077838026937205,
+          "gabow": 1.0157775056847997,
+          "parents": 1.0169144656288263,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_500000_paired",
+        "median_cpu_ns": {
+          "gabow": 21816000,
+          "parents": 21815000,
+          "base": 21837000,
+          "control": 21717000,
+          "pointers": 21691000
+        },
+        "ratio_to_current": {
+          "gabow": 0.9990383294408572,
+          "parents": 0.9989925356047076,
+          "base": 1.0,
+          "control": 0.9945047396620414,
+          "pointers": 0.9933140999221505
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_250000_dense",
+        "median_cpu_ns": {
+          "parents": 68063000,
+          "base": 66247000,
+          "control": 66372000,
+          "pointers": 66251000,
+          "gabow": 66787000
+        },
+        "ratio_to_current": {
+          "parents": 1.0274125620782828,
+          "base": 1.0,
+          "control": 1.0018868778963577,
+          "pointers": 1.0000603800926835,
+          "gabow": 1.0081513125122648
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_random_0",
+        "median_cpu_ns": {
+          "parents": 35148000,
+          "base": 34607000,
+          "gabow": 34850000,
+          "pointers": 34421000,
+          "control": 34492000
+        },
+        "ratio_to_current": {
+          "parents": 1.0156326754702807,
+          "base": 1.0,
+          "gabow": 1.0070217008119744,
+          "pointers": 0.9946253648105875,
+          "control": 0.996676972866761
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_random_1",
+        "median_cpu_ns": {
+          "parents": 38564000,
+          "gabow": 38530000,
+          "control": 37922000,
+          "base": 37994000,
+          "pointers": 38047000
+        },
+        "ratio_to_current": {
+          "parents": 1.0150023687950729,
+          "gabow": 1.0141074906564194,
+          "control": 0.998104963941675,
+          "base": 1.0,
+          "pointers": 1.0013949570984892
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_random_2",
+        "median_cpu_ns": {
+          "control": 9562000,
+          "pointers": 9628000,
+          "gabow": 9550000,
+          "base": 9651000,
+          "parents": 9702000
+        },
+        "ratio_to_current": {
+          "control": 0.9907781577038649,
+          "pointers": 0.9976168272717854,
+          "gabow": 0.9895347632369703,
+          "base": 1.0,
+          "parents": 1.0052844264843022
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_random_3",
+        "median_cpu_ns": {
+          "control": 19670000,
+          "parents": 19958000,
+          "base": 19594000,
+          "gabow": 19718000,
+          "pointers": 19780000
+        },
+        "ratio_to_current": {
+          "control": 1.0038787383893029,
+          "parents": 1.018577115443503,
+          "base": 1.0,
+          "gabow": 1.0063284678983362,
+          "pointers": 1.0094927018475044
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_random_4",
+        "median_cpu_ns": {
+          "parents": 15899000,
+          "pointers": 15610000,
+          "control": 15635000,
+          "base": 15669000,
+          "gabow": 15685000
+        },
+        "ratio_to_current": {
+          "parents": 1.0146786648796988,
+          "pointers": 0.9962346033569468,
+          "control": 0.997830110409088,
+          "base": 1.0,
+          "gabow": 1.0010211245133704
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_max_random_0",
+        "median_cpu_ns": {
+          "pointers": 43667000,
+          "base": 43880000,
+          "gabow": 44423000,
+          "control": 43791000,
+          "parents": 44589000
+        },
+        "ratio_to_current": {
+          "pointers": 0.9951458523245215,
+          "base": 1.0,
+          "gabow": 1.0123746581586144,
+          "control": 0.997971741112124,
+          "parents": 1.0161577028258888
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_max_random_1",
+        "median_cpu_ns": {
+          "parents": 44485000,
+          "gabow": 44316000,
+          "pointers": 43853000,
+          "base": 43840000,
+          "control": 43763000
+        },
+        "ratio_to_current": {
+          "parents": 1.0147125912408759,
+          "gabow": 1.0108576642335767,
+          "pointers": 1.0002965328467153,
+          "base": 1.0,
+          "control": 0.9982436131386861
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_max_random_2",
+        "median_cpu_ns": {
+          "gabow": 44191000,
+          "parents": 44204000,
+          "control": 43576000,
+          "pointers": 43639000,
+          "base": 43646000
+        },
+        "ratio_to_current": {
+          "gabow": 1.0124868258259634,
+          "parents": 1.012784676717225,
+          "control": 0.9983961875085918,
+          "pointers": 0.9998396187508591,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_max_random_3",
+        "median_cpu_ns": {
+          "base": 43753000,
+          "gabow": 44060000,
+          "parents": 44152000,
+          "control": 43854000,
+          "pointers": 43668000
+        },
+        "ratio_to_current": {
+          "base": 1.0,
+          "gabow": 1.0070166617146252,
+          "parents": 1.009119374671451,
+          "control": 1.002308413137385,
+          "pointers": 0.9980572760724978
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_max_random_4",
+        "median_cpu_ns": {
+          "control": 43481000,
+          "pointers": 43632000,
+          "gabow": 44188000,
+          "base": 43623000,
+          "parents": 44317000
+        },
+        "ratio_to_current": {
+          "control": 0.996744836439493,
+          "pointers": 1.0002063131834125,
+          "gabow": 1.0129518831808908,
+          "base": 1.0,
+          "parents": 1.0159090388098022
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_large_cycle_0",
+        "median_cpu_ns": {
+          "control": 24059000,
+          "parents": 28023000,
+          "base": 23865000,
+          "gabow": 26399000,
+          "pointers": 23862000
+        },
+        "ratio_to_current": {
+          "control": 1.00812905929185,
+          "parents": 1.1742300439974858,
+          "base": 1.0,
+          "gabow": 1.106180599203855,
+          "pointers": 0.9998742928975487
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_32_empty",
+        "median_cpu_ns": {
+          "parents": 892000,
+          "gabow": 898000,
+          "pointers": 892000,
+          "control": 897000,
+          "base": 902000
+        },
+        "ratio_to_current": {
+          "parents": 0.9889135254988913,
+          "gabow": 0.9955654101995566,
+          "pointers": 0.9889135254988913,
+          "control": 0.9944567627494457,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_32_line",
+        "median_cpu_ns": {
+          "gabow": 1066000,
+          "pointers": 1062000,
+          "parents": 897000,
+          "base": 915000,
+          "control": 916000
+        },
+        "ratio_to_current": {
+          "gabow": 1.1650273224043717,
+          "pointers": 1.160655737704918,
+          "parents": 0.980327868852459,
+          "base": 1.0,
+          "control": 1.0010928961748633
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_32_cycle",
+        "median_cpu_ns": {
+          "base": 882000,
+          "gabow": 890000,
+          "parents": 878000,
+          "control": 885000,
+          "pointers": 887000
+        },
+        "ratio_to_current": {
+          "base": 1.0,
+          "gabow": 1.0090702947845804,
+          "parents": 0.9954648526077098,
+          "control": 1.0034013605442176,
+          "pointers": 1.0056689342403629
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_32_star",
+        "median_cpu_ns": {
+          "parents": 878000,
+          "pointers": 881000,
+          "gabow": 880000,
+          "base": 887000,
+          "control": 881000
+        },
+        "ratio_to_current": {
+          "parents": 0.9898534385569335,
+          "pointers": 0.9932356257046223,
+          "gabow": 0.992108229988726,
+          "base": 1.0,
+          "control": 0.9932356257046223
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_32_dag",
+        "median_cpu_ns": {
+          "base": 894000,
+          "pointers": 886000,
+          "control": 986000,
+          "parents": 1022000,
+          "gabow": 971000
+        },
+        "ratio_to_current": {
+          "base": 1.0,
+          "pointers": 0.9910514541387024,
+          "control": 1.1029082774049217,
+          "parents": 1.1431767337807606,
+          "gabow": 1.0861297539149888
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_32_paired",
+        "median_cpu_ns": {
+          "gabow": 985000,
+          "parents": 948000,
+          "control": 972000,
+          "base": 938000,
+          "pointers": 1016000
+        },
+        "ratio_to_current": {
+          "gabow": 1.0501066098081024,
+          "parents": 1.0106609808102345,
+          "control": 1.0362473347547974,
+          "base": 1.0,
+          "pointers": 1.0831556503198294
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_4096_empty",
+        "median_cpu_ns": {
+          "pointers": 1053000,
+          "gabow": 1049000,
+          "base": 1072000,
+          "parents": 1050000,
+          "control": 1043000
+        },
+        "ratio_to_current": {
+          "pointers": 0.9822761194029851,
+          "gabow": 0.9785447761194029,
+          "base": 1.0,
+          "parents": 0.9794776119402985,
+          "control": 0.9729477611940298
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_4096_line",
+        "median_cpu_ns": {
+          "control": 1105000,
+          "pointers": 1103000,
+          "base": 1101000,
+          "parents": 1099000,
+          "gabow": 1097000
+        },
+        "ratio_to_current": {
+          "control": 1.0036330608537694,
+          "pointers": 1.0018165304268847,
+          "base": 1.0,
+          "parents": 0.9981834695731153,
+          "gabow": 0.9963669391462306
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_4096_cycle",
+        "median_cpu_ns": {
+          "base": 1003000,
+          "control": 1000000,
+          "pointers": 1000000,
+          "gabow": 1008000,
+          "parents": 1002000
+        },
+        "ratio_to_current": {
+          "base": 1.0,
+          "control": 0.9970089730807578,
+          "pointers": 0.9970089730807578,
+          "gabow": 1.0049850448654039,
+          "parents": 0.9990029910269193
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_4096_star",
+        "median_cpu_ns": {
+          "pointers": 1088000,
+          "base": 1079000,
+          "control": 1077000,
+          "parents": 1090000,
+          "gabow": 1109000
+        },
+        "ratio_to_current": {
+          "pointers": 1.0083410565338276,
+          "base": 1.0,
+          "control": 0.9981464318813716,
+          "parents": 1.010194624652456,
+          "gabow": 1.0278035217794255
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_4096_dag",
+        "median_cpu_ns": {
+          "base": 1240000,
+          "parents": 1248000,
+          "pointers": 1223000,
+          "gabow": 1228000,
+          "control": 1236000
+        },
+        "ratio_to_current": {
+          "base": 1.0,
+          "parents": 1.0064516129032257,
+          "pointers": 0.9862903225806452,
+          "gabow": 0.9903225806451613,
+          "control": 0.9967741935483871
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_4096_paired",
+        "median_cpu_ns": {
+          "pointers": 1037000,
+          "control": 1041000,
+          "gabow": 1040000,
+          "base": 1041000,
+          "parents": 1040000
+        },
+        "ratio_to_current": {
+          "pointers": 0.9961575408261287,
+          "control": 1.0,
+          "gabow": 0.9990393852065321,
+          "base": 1.0,
+          "parents": 0.9990393852065321
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_500000_empty",
+        "median_cpu_ns": {
+          "base": 20525000,
+          "gabow": 20449000,
+          "pointers": 20716000,
+          "parents": 20446000,
+          "control": 20621000
+        },
+        "ratio_to_current": {
+          "base": 1.0,
+          "gabow": 0.9962971985383678,
+          "pointers": 1.009305724725944,
+          "parents": 0.9961510353227772,
+          "control": 1.0046772228989038
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_500000_line",
+        "median_cpu_ns": {
+          "base": 29156000,
+          "pointers": 29292000,
+          "control": 29198000,
+          "gabow": 29171000,
+          "parents": 29485000
+        },
+        "ratio_to_current": {
+          "base": 1.0,
+          "pointers": 1.0046645630401976,
+          "control": 1.0014405268212374,
+          "gabow": 1.0005144738647276,
+          "parents": 1.0112841267663604
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_500000_cycle",
+        "median_cpu_ns": {
+          "pointers": 15558000,
+          "gabow": 15866000,
+          "control": 15595000,
+          "parents": 15807000,
+          "base": 15555000
+        },
+        "ratio_to_current": {
+          "pointers": 1.0001928640308582,
+          "gabow": 1.0199935711989714,
+          "control": 1.0025715204114434,
+          "parents": 1.0162005785920927,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_500000_star",
+        "median_cpu_ns": {
+          "gabow": 28305000,
+          "control": 28778000,
+          "pointers": 28324000,
+          "base": 28547000,
+          "parents": 28275000
+        },
+        "ratio_to_current": {
+          "gabow": 0.9915227519529197,
+          "control": 1.0080919185903947,
+          "pointers": 0.9921883210144674,
+          "base": 1.0,
+          "parents": 0.9904718534346867
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_500000_dag",
+        "median_cpu_ns": {
+          "control": 55890000,
+          "base": 55892000,
+          "pointers": 55965000,
+          "gabow": 56658000,
+          "parents": 56757000
+        },
+        "ratio_to_current": {
+          "control": 0.9999642167036428,
+          "base": 1.0,
+          "pointers": 1.00130609031704,
+          "gabow": 1.0137050025048306,
+          "parents": 1.015476275674515
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_500000_paired",
+        "median_cpu_ns": {
+          "control": 20398000,
+          "parents": 20389000,
+          "pointers": 20480000,
+          "gabow": 20606000,
+          "base": 20564000
+        },
+        "ratio_to_current": {
+          "control": 0.9919276405368606,
+          "parents": 0.9914899824936783,
+          "pointers": 0.9959151915969656,
+          "gabow": 1.0020424042015172,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_250000_dense",
+        "median_cpu_ns": {
+          "pointers": 65344000,
+          "control": 65559000,
+          "gabow": 65853000,
+          "parents": 66941000,
+          "base": 65356000
+        },
+        "ratio_to_current": {
+          "pointers": 0.9998163902319603,
+          "control": 1.0031060652426709,
+          "gabow": 1.0076045045596427,
+          "parents": 1.0242517901952384,
+          "base": 1.0
+        }
+      }
+    ],
+    "previous_82ms_vs_current_80ms": [
+      {
+        "compiler": "gcc",
+        "case": "official_random_0",
+        "median_cpu_ns": {
+          "previous": 36212000,
+          "base": 35735000,
+          "control": 35278000
+        },
+        "ratio_to_current": {
+          "previous": 1.0133482580103539,
+          "base": 1.0,
+          "control": 0.9872114173779208
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_random_1",
+        "median_cpu_ns": {
+          "base": 39423000,
+          "control": 39503000,
+          "previous": 39947000
+        },
+        "ratio_to_current": {
+          "base": 1.0,
+          "control": 1.0020292722522386,
+          "previous": 1.0132917332521625
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_max_random_0",
+        "median_cpu_ns": {
+          "previous": 45313000,
+          "base": 44748000,
+          "control": 44788000
+        },
+        "ratio_to_current": {
+          "previous": 1.0126262626262625,
+          "base": 1.0,
+          "control": 1.0008938946992045
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_large_cycle_0",
+        "median_cpu_ns": {
+          "base": 24552000,
+          "control": 24338000,
+          "previous": 24469000
+        },
+        "ratio_to_current": {
+          "base": 1.0,
+          "control": 0.9912838057999348,
+          "previous": 0.9966194200065168
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_500000_cycle",
+        "median_cpu_ns": {
+          "previous": 17212000,
+          "base": 16728000,
+          "control": 16613000
+        },
+        "ratio_to_current": {
+          "previous": 1.028933524629364,
+          "base": 1.0,
+          "control": 0.9931252989000479
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_250000_dense",
+        "median_cpu_ns": {
+          "control": 66155000,
+          "base": 66165000,
+          "previous": 68004000
+        },
+        "ratio_to_current": {
+          "control": 0.9998488626917554,
+          "base": 1.0,
+          "previous": 1.027794150986171
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_random_0",
+        "median_cpu_ns": {
+          "previous": 35931000,
+          "base": 34315000,
+          "control": 34348000
+        },
+        "ratio_to_current": {
+          "previous": 1.0470931079702754,
+          "base": 1.0,
+          "control": 1.0009616785662248
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_random_1",
+        "median_cpu_ns": {
+          "base": 37959000,
+          "previous": 39733000,
+          "control": 38025000
+        },
+        "ratio_to_current": {
+          "base": 1.0,
+          "previous": 1.04673463473748,
+          "control": 1.0017387180905715
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_max_random_0",
+        "median_cpu_ns": {
+          "base": 43745000,
+          "previous": 45963000,
+          "control": 43712000
+        },
+        "ratio_to_current": {
+          "base": 1.0,
+          "previous": 1.050702937478569,
+          "control": 0.9992456280717796
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_large_cycle_0",
+        "median_cpu_ns": {
+          "previous": 24733000,
+          "base": 23838000,
+          "control": 23822000
+        },
+        "ratio_to_current": {
+          "previous": 1.037545096065106,
+          "base": 1.0,
+          "control": 0.9993288027519087
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_500000_cycle",
+        "median_cpu_ns": {
+          "previous": 17818000,
+          "control": 15534000,
+          "base": 15483000
+        },
+        "ratio_to_current": {
+          "previous": 1.1508105664276949,
+          "control": 1.0032939352838597,
+          "base": 1.0
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_250000_dense",
+        "median_cpu_ns": {
+          "control": 65409000,
+          "base": 65177000,
+          "previous": 70546000
+        },
+        "ratio_to_current": {
+          "control": 1.0035595378737898,
+          "base": 1.0,
+          "previous": 1.0823756846740415
+        }
+      }
+    ],
+    "scope": "前回と同じ公式相当11入力+独自19入力の同一main/共通I/O/コンパイラ/検査設定。公式相当は公開generatorの固定seedから生成した取得版で、稼働中ジャッジの入力と同一だとは断定しない。全出力SHAを現行と照合。",
+    "random_00": "オンラインは64→70ms。ローカル同条件11回再比較ではGCC現行/82ms版=0.9868、同一バイナリcontrol/現行=0.9872で、約9%の退行は再現せず。両環境が異なるためオンライン差の原因は断定しない。",
+    "statistics": "公式相当の幾何平均比（現行=1）: pointers GCC1.0005/Clang0.9993、parents GCC1.0240/Clang1.0274、gabow GCC1.0131/Clang1.0160。control平均GCC0.9992/Clang0.9990。微小差を速度向上と断定しない。"
+  },
+  "source_hashes": {
+    "Graph/SCC.cpp": "e2b5ab5e41907acf94a7fb298a53376ca1e2c6c929c170dbe93a6dbe8baafe5e",
+    "Graph/Two_SAT.cpp": "3535fe86de3a96997bca1adeec343a40471ab1b01fda54307003f9d4b2a73c82",
+    "driver_before_and_after": "2b9fb67c3387d387af0d58411840f7d45a434599e092f97c5f8fcb8365216efc",
+    "io_before_and_after": "291bf8dbc56a1d691f6256fe95b4714183c2cf5d9e55e4bef240e31d1eb178c1"
+  },
+  "evidence": {
+    "path": "Audit/data/scc-415135-candidates-2026-11-04.zip",
+    "sha256": "37cd84c6c16a8a1a7220102e8b796fd05603d14d01314dd7a57048b3335f0a05",
+    "scope": "自作候補・スナップショット・比較スクリプト・入力SHA/出典・測定生データ・検証結果。公式generator原本、実行バイナリ、大きい入力は含めない。"
+  },
+  "synchronization": "本文・使用例・Documentは変更なし。最新Submission注記、判定記録、通常/派生Verify、配布ZIPを同期。ZIPのCRC/manifest/相対リンク検査はDistribution/validation.json。"
+}

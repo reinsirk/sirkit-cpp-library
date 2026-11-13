@@ -1,0 +1,139 @@
+--- baseline_current.hpp
++++ split_early_boundary_constexpr.hpp
+@@ -21,6 +21,7 @@
+ // ModMultiplyは拡張128bit整数が使えればO(1)、標準代替はO(log m)。ModAdd/Subtract/NormalizeはO(1)。
+ // その他の計算量は上記の剰余乗算1回の費用を含める。全APIは入力不変。正常終了は動的確保なし。
+ // SIRKIT_FORCE_STANDARD_ARITHMETICで128bit拡張を除外。SKIP_RUNTIME_CHECKSで素数候補の形の入力検査を除く。
++// 全APIと内部演算はconstexpr。正常な入力はコンパイラの定数式評価予算内で定数式にも使える。
+ // 法0は演算を定義できないため、検査省略時もinvalid_argument。
+ // 素数性や後続の未参照合同式は検査しない。不能の判定・容量保護は検査省略時も維持する。
+ 
+@@ -36,17 +37,16 @@
+ #ifndef SIRKIT_MODULAR_ARITHMETIC_DETAIL_DEFINED
+ #define SIRKIT_MODULAR_ARITHMETIC_DETAIL_DEFINED
+ namespace reinsirk::detail {
+-inline void check_modulus64(std::uint64_t modulus) {
++inline constexpr void check_modulus64(std::uint64_t modulus) {
+     if (!modulus) throw std::invalid_argument("modular arithmetic: zero modulus");
+ }
+-inline std::uint64_t modular_add_residues64(std::uint64_t a, std::uint64_t b, std::uint64_t modulus) noexcept {
++inline constexpr std::uint64_t modular_add_residues64(std::uint64_t a, std::uint64_t b, std::uint64_t modulus) noexcept {
+     return a >= modulus - b ? a - (modulus - b) : a + b;
+ }
+-inline std::uint64_t modular_subtract_residues64(std::uint64_t a, std::uint64_t b, std::uint64_t modulus) noexcept {
++inline constexpr std::uint64_t modular_subtract_residues64(std::uint64_t a, std::uint64_t b, std::uint64_t modulus) noexcept {
+     return a >= b ? a - b : modulus - (b - a);
+ }
+-inline std::uint64_t modular_multiply64(std::uint64_t a, std::uint64_t b, std::uint64_t modulus) noexcept {
+-    if ((a | b) <= std::numeric_limits<std::uint32_t>::max()) return a * b % modulus;
++inline constexpr std::uint64_t modular_multiply_full64(std::uint64_t a, std::uint64_t b, std::uint64_t modulus) noexcept {
+ #if defined(__SIZEOF_INT128__) && (defined(__GNUC__) || defined(__clang__)) && !defined(SIRKIT_FORCE_STANDARD_ARITHMETIC)
+     return static_cast<std::uint64_t>(static_cast<unsigned __int128>(a) * b % modulus);
+ #else
+@@ -61,18 +61,22 @@
+     return result;
+ #endif
+ }
++inline constexpr std::uint64_t modular_multiply64(std::uint64_t a, std::uint64_t b, std::uint64_t modulus) noexcept {
++    if ((a | b) <= std::numeric_limits<std::uint32_t>::max()) return a * b % modulus;
++    return modular_multiply_full64(a,b,modulus);
++}
+ template<bool Narrow>
+-inline std::uint64_t modular_power_residue64(std::uint64_t base, std::uint64_t exponent, std::uint64_t modulus) noexcept {
++inline constexpr std::uint64_t modular_power_residue64(std::uint64_t base, std::uint64_t exponent, std::uint64_t modulus) noexcept {
+     std::uint64_t result = 1 % modulus;
+     while (exponent) {
+         if (exponent & 1) {
+             if constexpr (Narrow) result = result * base % modulus;
+-            else result = modular_multiply64(result, base, modulus);
++            else result = modular_multiply_full64(result, base, modulus);
+         }
+         exponent >>= 1;
+         if (exponent) {
+             if constexpr (Narrow) base = base * base % modulus;
+-            else base = modular_multiply64(base, base, modulus);
++            else base = modular_multiply_full64(base, base, modulus);
+         }
+     }
+     return result;
+@@ -82,32 +86,34 @@
+ 
+ #ifndef SIRKIT_MODULAR_ARITHMETIC_DEFINED
+ #define SIRKIT_MODULAR_ARITHMETIC_DEFINED
+-inline std::uint64_t NormalizeMod(std::int64_t value, std::uint64_t modulus) {
++inline constexpr std::uint64_t NormalizeMod(std::int64_t value, std::uint64_t modulus) {
+     reinsirk::detail::check_modulus64(modulus);
+     if (value >= 0) return static_cast<std::uint64_t>(value) % modulus;
+     const auto residue = (std::uint64_t{0} - static_cast<std::uint64_t>(value)) % modulus;
+     return residue ? modulus - residue : 0;
+ }
+-inline std::uint64_t ModAdd(std::uint64_t a, std::uint64_t b, std::uint64_t modulus) {
++inline constexpr std::uint64_t ModAdd(std::uint64_t a, std::uint64_t b, std::uint64_t modulus) {
+     reinsirk::detail::check_modulus64(modulus);
+     return reinsirk::detail::modular_add_residues64(a % modulus, b % modulus, modulus);
+ }
+-inline std::uint64_t ModSubtract(std::uint64_t a, std::uint64_t b, std::uint64_t modulus) {
++inline constexpr std::uint64_t ModSubtract(std::uint64_t a, std::uint64_t b, std::uint64_t modulus) {
+     reinsirk::detail::check_modulus64(modulus);
+     return reinsirk::detail::modular_subtract_residues64(a % modulus, b % modulus, modulus);
+ }
+-inline std::uint64_t ModMultiply(std::uint64_t a, std::uint64_t b, std::uint64_t modulus) {
++inline constexpr std::uint64_t ModMultiply(std::uint64_t a, std::uint64_t b, std::uint64_t modulus) {
+     reinsirk::detail::check_modulus64(modulus);
+     return reinsirk::detail::modular_multiply64(a, b, modulus);
+ }
+-inline std::uint64_t ModPow(std::uint64_t a, std::uint64_t exponent, std::uint64_t modulus) {
++inline constexpr std::uint64_t ModPow(std::uint64_t a, std::uint64_t exponent, std::uint64_t modulus) {
+     reinsirk::detail::check_modulus64(modulus);
+     a %= modulus;
+-    if (modulus <= std::numeric_limits<std::uint32_t>::max())
++    if (!exponent) return 1 % modulus;
++    if (a <= 1) return a;
++    if (modulus <= (std::uint64_t{1} << 32))
+         return reinsirk::detail::modular_power_residue64<true>(a, exponent, modulus);
+     return reinsirk::detail::modular_power_residue64<false>(a, exponent, modulus);
+ }
+-inline std::optional<std::uint64_t> ModInverse(std::uint64_t a, std::uint64_t modulus) {
++inline constexpr std::optional<std::uint64_t> ModInverse(std::uint64_t a, std::uint64_t modulus) {
+     reinsirk::detail::check_modulus64(modulus);
+     a %= modulus;
+     auto r0 = modulus, r1 = a;
+@@ -136,9 +142,9 @@
+ }
+ struct Congruence {
+     std::uint64_t remainder = 0, modulus = 1;
+-    friend bool operator==(const Congruence&, const Congruence&) = default;
++    friend constexpr bool operator==(const Congruence&, const Congruence&) = default;
+ };
+-inline std::optional<Congruence> SolveLinearCongruence(std::uint64_t a, std::uint64_t b, std::uint64_t modulus) {
++inline constexpr std::optional<Congruence> SolveLinearCongruence(std::uint64_t a, std::uint64_t b, std::uint64_t modulus) {
+     reinsirk::detail::check_modulus64(modulus);
+     a %= modulus; b %= modulus;
+     const auto divisor = std::gcd(a, modulus);
+@@ -147,7 +153,7 @@
+     const auto inverse = ModInverse(a / divisor, period);
+     return Congruence{reinsirk::detail::modular_multiply64(b / divisor, *inverse, period), period};
+ }
+-inline std::optional<Congruence> ChineseRemainder(Congruence first, Congruence second) {
++inline constexpr std::optional<Congruence> ChineseRemainder(Congruence first, Congruence second) {
+     reinsirk::detail::check_modulus64(first.modulus);
+     reinsirk::detail::check_modulus64(second.modulus);
+     first.remainder %= first.modulus; second.remainder %= second.modulus;
+@@ -168,7 +174,7 @@
+     const auto multiplier = reinsirk::detail::modular_multiply64(delta, *inverse, reduced_second);
+     return Congruence{first.remainder + first.modulus * multiplier, combined_modulus};
+ }
+-inline std::optional<Congruence> ChineseRemainder(std::span<const Congruence> equations) {
++inline constexpr std::optional<Congruence> ChineseRemainder(std::span<const Congruence> equations) {
+     Congruence result;
+     for (auto equation : equations) {
+         const auto next = ChineseRemainder(result, equation);
+@@ -177,7 +183,7 @@
+     }
+     return result;
+ }
+-inline std::optional<std::uint64_t> ModSqrt(std::uint64_t a, std::uint64_t prime) {
++inline constexpr std::optional<std::uint64_t> ModSqrt(std::uint64_t a, std::uint64_t prime) {
+     reinsirk::detail::check_modulus64(prime);
+ #ifndef SKIP_RUNTIME_CHECKS
+     if (prime < 2 || (prime != 2 && !(prime & 1))) throw std::invalid_argument("ModSqrt: prime required");

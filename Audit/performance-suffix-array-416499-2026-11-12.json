@@ -1,0 +1,1099 @@
+{
+  "date": "2026-11-12",
+  "library": "String/Suffix_Array.cpp",
+  "decision": "adopt_fused_histogram_and_distinct_first_symbol_shortcuts",
+  "required_resubmission": [
+    "Verify/current/submissions/suffix_array.cpp",
+    "Verify/current/submissions/suffix_array_substrings.cpp"
+  ],
+  "online_evidence": "Audit/online-suffix-array-416499-416500-2026-11-12.json",
+  "online_scope": "416499と416500はいずれも変更前通常版のAC46ms。今回の本体改修と派生版は未提出。",
+  "source_sha256": {
+    "before": "9053ea7b494de61dd2b2321b6b064968ea9627c69fd90486134385a6e9bdf961",
+    "after": "1a2e92cdeb08614a7dd2995cee9fd1971e7733c6d0a7ad19ce4004137dc93644"
+  },
+  "frozen_main_IO_document_examples": {
+    "Verify/current/drivers/suffix_array_main.cpp": "b723184a8bba919ec45585d1172400e845e3a9352b1f403421dd7b5c5fcf882b",
+    "Verify/current/drivers/suffix_array_substrings_main.cpp": "5b934920067b755639670296e5d0f9c272b6b65cc92070fea667d8eaf0e1d494",
+    "Verify/current/common/fast_io.hpp": "291bf8dbc56a1d691f6256fe95b4714183c2cf5d9e55e4bef240e31d1eb178c1",
+    "Document/suffix_array.md": "17b3330435a59bcf82de2b681ea179157b3ebc42800c2fcfd5c0f31c7f898a81",
+    "Examples/suffix_array_example.cpp": "5fe685b14f7640300519314401f38add3292bde0340f40881c532ac34db7063a"
+  },
+  "changes": [
+    "S/L型判定の逆走査へ度数集計を組み込む。終端を一度数え、残りの位置を逆走査内で一度ずつ数える。分類後に全入力を再走査する処理を省く。",
+    "vector<T>の既存の圧縮結果がn個の同値類を持つとき、接尾辞順は先頭要素だけで決まる。整数型はlower_boundの順位へ入力位置を置いて返す。非整数型は既に整列した位置列を返す。",
+    "追加の入力検査や全走査はない。重複がある場合の圧縮・符号化経路を維持し、O(1)の同値類数判定を追加。公開API・検査ブロック・LCP・検索は維持。"
+  ],
+  "ownership": "vector/unique_ptrを使う通常版。直接new式・解放省略なし。確保失敗試験の全4設定でlive_delta=0。",
+  "independent_reviews": [
+    {
+      "source": "/tmp/sirkit_suffix_416499/base.hpp",
+      "candidate": "/tmp/sirkit_suffix_416499/hist_fused.hpp",
+      "source_sha256": "9053ea7b494de61dd2b2321b6b064968ea9627c69fd90486134385a6e9bdf961",
+      "candidate_sha256": "9b373bc559e4b769e16ef0bb0b101f0a7115c913c6f9d1e32aa04e50b501abf2",
+      "reviewed": true,
+      "compiled_or_run": false,
+      "canonical_edited_by_reviewer": false,
+      "findings": [],
+      "exact_change_verified": true,
+      "public_API_checks_vector_encodings_LCP_and_search_unchanged": true,
+      "counts": "terminal n-1 counted once; reverse i=n-2..0 counts remaining positions once each; counter initial zeros and cumulative conversion preserved",
+      "bounds": "n>=2 after unchanged n==1 return; symbols in0..alphabet; histogram and cumulative partial sums <=n<=INT_MAX-1",
+      "classification": "only own ends modified; symbols/small/selected order and reverse unchanged",
+      "ownership": "starts and ends move earlier but relative allocation order unchanged; all vectors own their buffers; all exceptional exits unwind same RAII owners",
+      "performance_note": "histogram storage is live during classification; large alphabet can change working set and cache behavior, so parent must benchmark"
+    },
+    {
+      "source": "/tmp/sirkit_suffix_416499/hist_fused.hpp",
+      "candidate": "/tmp/sirkit_suffix_416499/hist_fused_unique.hpp",
+      "source_sha256": "9b373bc559e4b769e16ef0bb0b101f0a7115c913c6f9d1e32aa04e50b501abf2",
+      "candidate_sha256": "1a2e92cdeb08614a7dd2995cee9fd1971e7733c6d0a7ad19ce4004137dc93644",
+      "reviewed": true,
+      "compiled_or_run": false,
+      "canonical_edited_by_reviewer": false,
+      "findings": [],
+      "exact_change_plus_invariant_comment_verified": true,
+      "input_checks_unchanged": true,
+      "proof": "If all n first-symbol equivalence classes under < are distinct, every pair of distinct suffixes differs at its first symbol, so their order is the sorted order of first symbols. No empty suffix is returned.",
+      "integral": "Sort/unique is consistent for built-in integral types, including bool and signed/unsigned extrema. Every input occurs exactly once in alphabet, so lower_bound is a rank in [0,n), and inverse-rank writes form a fully initialized output permutation.",
+      "nonintegral": "Strict weak order makes incomparability equivalence; after sorting, the existing rank loop counts exactly these classes. alphabet==n means no equivalent first symbols, so existing sorted positions is the answer. T is never copied and == is not newly required.",
+      "empty": "Integral returns empty result directly; nonintegral returns empty positions after its existing empty rank loop. n==1 returns [0].",
+      "bounds": "Existing suffix_length_check remains before either branch and is not skipped. n<INT_MAX-1 makes all int indices, rank increments, and int(n) safe. lower_bound cannot return end because alphabet retains every distinct input.",
+      "ownership": "Returned result/positions are owning vectors; input is const and unchanged. Existing alphabet/encoded buffers are destroyed by RAII on every exception and successful return. Eliminating possible bad_alloc sites is not a contract regression.",
+      "complexity": "No new validation scan. Integral inverse-rank lower_bound loop replaces the old encoding lower_bound loop; nonintegral reuses its already sorted positions and rank count. O(n log n) time/O(n) memory bounds maintained.",
+      "performance_note": "Duplicate paths gain only one O(1) comparison; generated code/inlining can still move, so parent should measure large/small duplicates and unique vectors. String-only Verify should not instantiate these changed templates; text correspondence is a codegen check for parent."
+    }
+  ],
+  "measurement": {
+    "cpu": "Intel Core i9-14900K CPU12/core6 P-Core; sibling13",
+    "E_core_measured": false,
+    "compilers": {
+      "GCC": "15.2.0",
+      "Clang": "21.1.8 --gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15"
+    },
+    "flags": [
+      "-std=c++23",
+      "-O2"
+    ],
+    "march_native": false,
+    "extra_pragmas": false,
+    "new_SIMD_or_CPU_dispatch": false,
+    "standard_CXX23_path": true,
+    "ASLR": "setarch x86_64 -R for child only",
+    "lock": "/tmp/sirkit_performance_cpu12.lock",
+    "compilation_during_timing": false,
+    "whole": "固定main/共通IOのuser+system CPU時間。同じactiveパスでbase/control/候補を決定的shuffle。controlはbaseと同じ実行ファイル。",
+    "whole_statistics": [
+      {
+        "compiler": "gcc",
+        "id": "suffix_array",
+        "cases": 48,
+        "geometric_mean_ratio": 0.9844386322661158,
+        "worst_ratio": 1.0050817589443055
+      },
+      {
+        "compiler": "gcc",
+        "id": "suffix_array_substrings",
+        "cases": 48,
+        "geometric_mean_ratio": 0.9800657092012386,
+        "worst_ratio": 1.0199528672427336
+      },
+      {
+        "compiler": "clang",
+        "id": "suffix_array",
+        "cases": 48,
+        "geometric_mean_ratio": 0.9763217521377905,
+        "worst_ratio": 0.9979259520762543
+      },
+      {
+        "compiler": "clang",
+        "id": "suffix_array_substrings",
+        "cases": 48,
+        "geometric_mean_ratio": 0.9742210322168617,
+        "worst_ratio": 1.017658368751265
+      }
+    ],
+    "whole_repetitions": 7,
+    "whole_runs": 10500,
+    "large_selection": "入力長20万以上の48ケース。小さい入力の起動費を平均改善率へ混ぜない。",
+    "fixture_rows": 75,
+    "byte_unique_inputs": 73,
+    "fixture_origin": "Audit/data/performance-suffix-array-416380-2026-11-11.zipと同じ固定公開生成器/補助入力をSHAで照合して再利用。",
+    "official_revision": "73876f1cbcf082d2b22722924b924d3d65a2f00e",
+    "fixture_scope": "固定公開生成方法/seedと独立作成ケース。制約外100万要素を含み、オンライン入力との同一性は主張しない。",
+    "all_variant_outputs_equal": true,
+    "core": "steady_clock時間。入力作成/事前SA構築は外、結果を全要素checksumへ消費する部分は含む。事前SA構築後の確保状態も含む。",
+    "core_operations": [
+      "bounded narrow-alphabet SA",
+      "compressed int64 narrow-alphabet SA",
+      "vector<bool> SA",
+      "LCP reuse",
+      "equal range search",
+      "bounded permutation/large alphabet SA",
+      "compressed int64 permutation SA"
+    ],
+    "core_settings": [
+      "checked",
+      "SKIP_RUNTIME_CHECKS"
+    ],
+    "core_sizes": [
+      32,
+      4096,
+      500000
+    ],
+    "core_repetitions": 7,
+    "unique_statistics": [
+      {
+        "compiler": "gcc",
+        "type": "vector<int64_t>",
+        "n": 500000,
+        "settings": [
+          "checked",
+          "skip"
+        ],
+        "shapes": [
+          "ascending",
+          "descending",
+          "shuffled"
+        ],
+        "best_ratio": 0.8090071045906495,
+        "worst_ratio": 0.8803979844891354,
+        "geometric_mean_ratio": 0.8525511814119494
+      },
+      {
+        "compiler": "clang",
+        "type": "vector<int64_t>",
+        "n": 500000,
+        "settings": [
+          "checked",
+          "skip"
+        ],
+        "shapes": [
+          "ascending",
+          "descending",
+          "shuffled"
+        ],
+        "best_ratio": 0.709639557226245,
+        "worst_ratio": 0.7633255226514282,
+        "geometric_mean_ratio": 0.735407826604099
+      }
+    ],
+    "extra_followup": "int64の小alphabet/全相異なる列を50万/100万要素・15反復で比較。上限つき全相異なる整数列も50万/100万要素・15反復で再測定。初回約2.5〜2.7%増加した条件で同程度の増加は再現しなかった。",
+    "core_output_hashes_equal": true
+  },
+  "rejected_candidates": [
+    {
+      "name": "hist4",
+      "reason": "4表へ分けた集計は正当性試験を通るが、追加配列3084Bを使い、GCCで走査統合との差は僅少。Clangでは平均の改善幅が小さいため採用しない。"
+    },
+    {
+      "name": "hist8",
+      "reason": "8表版は追加配列7196B。GCCで僅かに速い条件もあるが、Clangでは平均の改善幅が小さく、一部Fibに増加がある。追加配列のない共通の走査統合案を選択。"
+    }
+  ],
+  "validation": {
+    "jobs": 32,
+    "all_passed": true,
+    "compiler_and_checks": "GCC/Clang × checked/SKIP_RUNTIME_CHECKS",
+    "tests": [
+      "ACL形式API/空列/bool/符号付き・符号なし極値/コピー不可型の独立naive参照",
+      "短列SA・LCP・検索参照と全二進列",
+      "20万要素の独立doubling参照等",
+      "固有値/周期列の数式による大alphabet・256/257種類・境界長の独立参照",
+      "確保失敗・所有権・入力不変性"
+    ],
+    "sanitizers": "API/短列参照/新しい度数集計参照をASAN+UBSANでも全4設定実行。hostのptrace制約によりdetect_leaks=0、解放は独立の確保カウンタで検証。",
+    "API_extension": "固有要素のbool/整数極値/文字列/double/コピー不可型を追加し、変更したAPI試験の8設定のみ追加再実行。他の24設定はソース/本体SHAが不変。",
+    "allocation_counters": [
+      {
+        "checks": 3794,
+        "failures": 58,
+        "live_delta": 0
+      },
+      {
+        "checks": 3794,
+        "failures": 58,
+        "live_delta": 0
+      },
+      {
+        "checks": 3794,
+        "failures": 58,
+        "live_delta": 0
+      },
+      {
+        "checks": 3794,
+        "failures": 58,
+        "live_delta": 0
+      }
+    ],
+    "variant_and_example_profiles": {
+      "active": null,
+      "compiler_versions": {
+        "Clang": "Ubuntu clang version 21.1.8 (6ubuntu1)\nTarget: x86_64-pc-linux-gnu\nThread model: posix\nInstalledDir: /usr/lib/llvm-21/bin\n",
+        "GCC": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0\nCopyright (C) 2025 Free Software Foundation, Inc.\nThis is free software; see the source for copying conditions.  There is NO\nwarranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
+      },
+      "completed_at_utc": "2026-11-11T22:40:16.020954+00:00",
+      "counts": {
+        "LOCAL_SAMPLE_PASS": 14
+      },
+      "cpu": 6,
+      "custom_example_checker_sha256": "c7c3760507c017c89450002ce29f02ca7d31a339e946201e8e79c3cc8e457023",
+      "example_expander_sha256": "2556492b62c01d32e201e07e1167490a670afb2d3b5e4691b34f62eee69dc2eb",
+      "format": 1,
+      "manifest_hashes": {
+        "Scripts/example_dependencies.py": "2556492b62c01d32e201e07e1167490a670afb2d3b5e4691b34f62eee69dc2eb",
+        "Scripts/package_revised_libraries.py": "e6d90f6d02a770f3f96d623849963f2c72c2b7882ac5e14cf7b92952da110c51",
+        "Scripts/prepare_verify.py": "cd86f62a2d08ca93cfdd24215cccf97f0f1bba644d30b4f98b3755dfff241aa4",
+        "Scripts/verify_graph_samples.py": "944e0854e8079c81523133d15433293a723d96366befabca185d8d8541b3f5ea",
+        "Variants/manifest.json": "50a5c215fcd0bb60ee2de9c17d6f3b61554c91444da26fee3667aef7ccdce208",
+        "Variants/verify_manifest.json": "4a29c5473687077d1c6d439fe866344185265daaac302b6aca8db8144c8d4f2f",
+        "Verify/current/manifest.json": "248f48ecdbc1b16e0936d036d15310718b0d9cde5bb278fcc27edce4ed1ab926"
+      },
+      "normal_entry_count": 229,
+      "omitted_local": [
+        {
+          "id": "line_container_triangle",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "line_container_2d_triangle",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "hash_set_unit",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "erasable_priority_queue_unit",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "dynamic_hash_local",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "graph_local",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "binary_trie_local",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "binomial_local",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "primality_sieve_local",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "compressed_binary_trie_local",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_orientation_full",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_orientation_split",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_projection_full",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_projection_split",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_reflection_full",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_reflection_split",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_segment_intersection_full",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_segment_intersection_split",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_segment_distance_full",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_segment_distance_split",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_area_full",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_area_split",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_contains_full",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_contains_split",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_convex_cut_full",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_convex_cut_split",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_circle_line_full",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_circle_line_split",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_circle_circle_full",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_circle_circle_split",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "zeta_set_reference_full",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "zeta_set_reference_split",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "zeta_sparse_reference_full",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "zeta_sparse_reference_split",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "zeta_sieve_reference_full",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "zeta_sieve_reference_split",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_reference_full",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_reference_point",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_reference_line",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_reference_polygon",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_reference_circle",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "radix_sort_reference",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "project_selection_reference",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "nearest_two_points_reference",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "angle_sort_reference",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "trie_local",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "combination_masks_local",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "rollback_weighted_local",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "lca_local",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "topological_local",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "rolling_hash_local",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "matrix_transform_local",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "lis_local",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "line_container_triangle",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "line_container_2d_triangle",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "hash_set_unit",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "erasable_priority_queue_unit",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "dynamic_hash_local",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "graph_local",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "binary_trie_local",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "binomial_local",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "primality_sieve_local",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "compressed_binary_trie_local",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_orientation_full",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_orientation_split",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_projection_full",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_projection_split",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_reflection_full",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_reflection_split",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_segment_intersection_full",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_segment_intersection_split",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_segment_distance_full",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_segment_distance_split",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_area_full",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_area_split",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_contains_full",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_contains_split",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_convex_cut_full",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_convex_cut_split",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_circle_line_full",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_circle_line_split",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_circle_circle_full",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_circle_circle_split",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "zeta_set_reference_full",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "zeta_set_reference_split",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "zeta_sparse_reference_full",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "zeta_sparse_reference_split",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "zeta_sieve_reference_full",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "zeta_sieve_reference_split",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_reference_full",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_reference_point",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_reference_line",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_reference_polygon",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_reference_circle",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "radix_sort_reference",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "project_selection_reference",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "nearest_two_points_reference",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "angle_sort_reference",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "trie_local",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "combination_masks_local",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "rollback_weighted_local",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "lca_local",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "topological_local",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "rolling_hash_local",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "matrix_transform_local",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "lis_local",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        }
+      ],
+      "online_status": "not_evaluated",
+      "performance_measurement": false,
+      "planned_example_conditions": 4,
+      "planned_program_conditions": 8,
+      "results": [
+        {
+          "cache_key": "4c08665e14dce09c325c5faf15405706ac20441857cc5da850e524fac4152aec",
+          "cached": false,
+          "id": "suffix_array",
+          "kind": "program",
+          "profile": "Variants/GCC",
+          "setting": "default",
+          "status": "LOCAL_SAMPLE_PASS"
+        },
+        {
+          "cache_key": "ef741effe86c536d3b1d29ac3ab1c8b01b90119134af8a91b73a5c618f5dc9e9",
+          "cached": false,
+          "id": "suffix_array_substrings",
+          "kind": "program",
+          "profile": "Variants/GCC",
+          "setting": "default",
+          "status": "LOCAL_SAMPLE_PASS"
+        },
+        {
+          "cache_key": "be7eea411a6df9ff3240e719dbaecca631e6ea44b951ce4efda2b326a60fa477",
+          "cached": false,
+          "id": "suffix_array",
+          "kind": "program",
+          "profile": "Fast/GCC",
+          "setting": "default",
+          "status": "LOCAL_SAMPLE_PASS"
+        },
+        {
+          "cache_key": "ec037ff607e2514aacb1fdc0d2eff93302a239ba47dfe4761f63e1428c187d54",
+          "cached": false,
+          "id": "suffix_array_substrings",
+          "kind": "program",
+          "profile": "Fast/GCC",
+          "setting": "default",
+          "status": "LOCAL_SAMPLE_PASS"
+        },
+        {
+          "cache_key": "ee43313f79bc7397e8a9cbe6abd24a52184c71c83d266d2f002fb0c181696f97",
+          "cached": false,
+          "id": "suffix_array",
+          "kind": "program",
+          "profile": "Variants/Clang",
+          "setting": "default",
+          "status": "LOCAL_SAMPLE_PASS"
+        },
+        {
+          "cache_key": "f9fb3e01cd65aa06e8075f88f2119f3790854563aa5b791d35f2bb3ce028169c",
+          "cached": false,
+          "id": "suffix_array_substrings",
+          "kind": "program",
+          "profile": "Variants/Clang",
+          "setting": "default",
+          "status": "LOCAL_SAMPLE_PASS"
+        },
+        {
+          "cache_key": "c94539446f8e784d5ae78153a29b02f6096a4d906931e9a90285dc3221feedb0",
+          "cached": false,
+          "id": "suffix_array",
+          "kind": "program",
+          "profile": "Fast/Clang",
+          "setting": "default",
+          "status": "LOCAL_SAMPLE_PASS"
+        },
+        {
+          "cache_key": "18952112ae929613cbbcd171eba79fa5f0c69a6bef5365d6d5b8117dfb00d223",
+          "cached": false,
+          "id": "suffix_array_substrings",
+          "kind": "program",
+          "profile": "Fast/Clang",
+          "setting": "default",
+          "status": "LOCAL_SAMPLE_PASS"
+        },
+        {
+          "cache_key": "64991257fcfa128213042b606244136d5c557ce6634525d8b88940c5a09c8fc6",
+          "cached": false,
+          "id": "example:suffix_array_example",
+          "kind": "example_baseline",
+          "profile": "Normal/GCC",
+          "setting": "default",
+          "status": "LOCAL_SAMPLE_PASS"
+        },
+        {
+          "cache_key": "db36ad10e886b18a577af23bf235165c0b9fb57dcc2556a8e53d1a6088926ad1",
+          "cached": false,
+          "id": "example:suffix_array_example",
+          "kind": "example",
+          "profile": "Variants/GCC",
+          "setting": "default",
+          "status": "LOCAL_SAMPLE_PASS"
+        },
+        {
+          "cache_key": "3037f21517081eccc6618c23151b7939b71579edb916d1685aae417655fb88c6",
+          "cached": false,
+          "id": "example:suffix_array_example",
+          "kind": "example_baseline",
+          "profile": "Normal/Clang",
+          "setting": "default",
+          "status": "LOCAL_SAMPLE_PASS"
+        },
+        {
+          "cache_key": "a367c0880c1a4053df2d392f8d570db3006e1ec7b050c585832d21922187ae0f",
+          "cached": false,
+          "id": "example:suffix_array_example",
+          "kind": "example",
+          "profile": "Variants/Clang",
+          "setting": "default",
+          "status": "LOCAL_SAMPLE_PASS"
+        },
+        {
+          "cache_key": "6f7bce3ca5baf7773ba9fdbdb1885e69d5a645ed1a5258580a6b8b883c918256",
+          "cached": false,
+          "id": "example:suffix_array_example",
+          "kind": "example",
+          "profile": "Fast/GCC",
+          "setting": "default",
+          "status": "LOCAL_SAMPLE_PASS"
+        },
+        {
+          "cache_key": "cae2a4ae7ea8a6b96fe70867520fc92b91f88b66e57447f0834139430aaa02d5",
+          "cached": false,
+          "id": "example:suffix_array_example",
+          "kind": "example",
+          "profile": "Fast/Clang",
+          "setting": "default",
+          "status": "LOCAL_SAMPLE_PASS"
+        }
+      ],
+      "run_id": "20261111T224001100130Z",
+      "snapshot": "/tmp/sirkit_suffix_416499/profiles/snapshots/af309ae55cdef27309373d8eba99713ab602ad749e93b3523da31c4eb6d42bc9",
+      "snapshot_example_dependencies": {
+        "Fast/Clang/String/Suffix_Array.cpp": "601b795b2392684c47bee4b31a4e3ed6683882fd4a4f959e00996c3c51c9c1f7",
+        "Fast/GCC/String/Suffix_Array.cpp": "d0f73302eb594a77a221257ad6c6d84834b24506228d853a194ed56d6f44d859",
+        "Normal/String/Suffix_Array.cpp": "1a2e92cdeb08614a7dd2995cee9fd1971e7733c6d0a7ad19ce4004137dc93644",
+        "Variants/Clang/String/Suffix_Array.cpp": "02a800c55a46cca19685c74e8128018a9a216fbed1a3f1e6e760a3bd4030181b",
+        "Variants/GCC/String/Suffix_Array.cpp": "ea9e6f2358974c77d6410e7af90f3bf8bb1d231987babd1d3cf6811e04058064"
+      },
+      "snapshot_example_mapping": {
+        "aho_corasick_example.cpp": "String/Aho_Corasick.cpp",
+        "angle_sort_example.cpp": "Geometry/偏角ソート.cpp",
+        "bellman_ford_example.cpp": "Graph/Bellman-Ford.cpp",
+        "berlekamp_massey_example.cpp": "Math/Berlekamp_Massey.cpp",
+        "binary_matrix_example.cpp": "Math/Binary_Matrix.cpp",
+        "binary_trie_example.cpp": "DataStructure/Binary_Trie.cpp",
+        "binomial_atcoder_example.cpp": "Math/Combination_Mod.cpp",
+        "binomial_example.cpp": "Math/Combination_Mod.cpp",
+        "binomial_prime_example.cpp": "Math/Combination_AtCoderMod.cpp",
+        "bipartite_matching_example.cpp": "Graph/Bipartite_Matching.cpp",
+        "cartesian_tree_example.cpp": "Graph/Cartesian_Tree.cpp",
+        "centroid_decomposition_example.cpp": "Graph/Centroid_Decomposition.cpp",
+        "combination_integer_example.cpp": "Math/Combination/Binomial_Mod.cpp",
+        "combination_modint_example.cpp": "Math/Combination/ModInt_Binomial.cpp",
+        "combination_prime_example.cpp": "Math/Combination/Prime_Binomial.cpp",
+        "compressed_binary_trie_example.cpp": "DataStructure/Compressed_Binary_Trie.cpp",
+        "convolution_example.cpp": "Math/Convolution.cpp",
+        "dijkstra_example.cpp": "Graph/Dijkstra.cpp",
+        "disjoint_sparse_table_example.cpp": "DataStructure/Disjoint_Sparse_Table.cpp",
+        "dual_segment_tree_example.cpp": "DataStructure/Dual_Segment_Tree.cpp",
+        "dynamic_bitset_example.cpp": "DataStructure/Dynamic_Bitset.cpp",
+        "dynamic_fenwick_2d_example.cpp": "DataStructure/dynamic-binary-indexed-tree-2d.cpp",
+        "dynamic_fenwick_example.cpp": "DataStructure/dynamic-binary-indexed-tree.cpp",
+        "dynamic_li_chao_example.cpp": "DataStructure/dynamic-li-chao-tree.cpp",
+        "dynamic_union_find_example.cpp": "DataStructure/dynamic-union-find.cpp",
+        "erasable_priority_queue_example.cpp": "DataStructure/erasable-priority-queue.cpp",
+        "eratosthenes_example.cpp": "Math/Eratosthenes.cpp",
+        "eulerian_trail_example.cpp": "Graph/Eulerian_Trail.cpp",
+        "fenwick_tree_example.cpp": "DataStructure/Fenwick_Tree.cpp",
+        "floyd_warshall_example.cpp": "Graph/Floyd-Warshall.cpp",
+        "formal_power_series_example.cpp": "Math/Formal_Power_Series.cpp",
+        "fraction_example.cpp": "Math/Fraction.cpp",
+        "functional_graph_example.cpp": "Graph/Functional_Graph.cpp",
+        "gaussian_elimination_example.cpp": "Math/Gaussian_Elimination.cpp",
+        "general_matching_example.cpp": "Graph/General_Matching.cpp",
+        "geometry_example.cpp": "Geometry/geometory.cpp",
+        "hash_map_example.cpp": "DataStructure/Hash_map.cpp",
+        "hash_set_example.cpp": "DataStructure/Hash_set.cpp",
+        "heap_example.cpp": "DataStructure/heap.cpp",
+        "heavy_light_decomposition_example.cpp": "Graph/Heavy_Light_Decomposition.cpp",
+        "implicit_treap_erase_between_example.cpp": "DataStructure/implicit_treap.cpp",
+        "implicit_treap_example.cpp": "DataStructure/implicit_treap.cpp",
+        "internal_hash_map_example.cpp": "Internal/Nyaan_hash_map_min.cpp",
+        "lazy_segment_tree_add_sum_example.cpp": "DataStructure/Lazy_Segment_Tree.cpp",
+        "lazy_segment_tree_example.cpp": "DataStructure/Lazy_Segment_Tree.cpp",
+        "lca_example.cpp": "Graph/LCA.cpp",
+        "line_container_2d_example.cpp": "DataStructure/line-container-2d.cpp",
+        "line_container_example.cpp": "DataStructure/line-container.cpp",
+        "linear_recurrence_example.cpp": "Math/Linear_Recurrence.cpp",
+        "link_cut_tree_composite_example.cpp": "DataStructure/Link_Cut_Tree.cpp",
+        "link_cut_tree_example.cpp": "DataStructure/Link_Cut_Tree.cpp",
+        "link_cut_tree_lazy_example.cpp": "DataStructure/Link_Cut_Tree.cpp",
+        "lis_example.cpp": "Algorithm/LIS.cpp",
+        "low_link_example.cpp": "Graph/Low_Link.cpp",
+        "manacher_example.cpp": "String/Manacher.cpp",
+        "matrix_example.cpp": "Math/Matrix.cpp",
+        "matrix_transform_example.cpp": "Algorithm/rotate.cpp",
+        "max_flow_example.cpp": "Graph/Max_Flow.cpp",
+        "min_cost_flow_example.cpp": "Graph/Min_Cost_Flow.cpp",
+        "mo_example.cpp": "Algorithm/Mo.cpp",
+        "modular_arithmetic_example.cpp": "Math/Modular_Arithmetic.cpp",
+        "nearest_two_points_example.cpp": "Geometry/Nearest_Two_points.cpp",
+        "next_combination_example.cpp": "Algorithm/next_combination.cpp",
+        "node_example.cpp": "DataStructure/Node.cpp",
+        "ntt_example.cpp": "Math/NTT.cpp",
+        "offline_dynamic_connectivity_example.cpp": "Graph/Offline_Dynamic_Connectivity.cpp",
+        "palindromic_tree_example.cpp": "String/Palindromic_Tree.cpp",
+        "persistent_segment_tree_example.cpp": "DataStructure/Persistent_Segment_Tree.cpp",
+        "persistent_union_find_example.cpp": "DataStructure/persistent-union-find.cpp",
+        "pollard_rho_example.cpp": "Math/Pollard_Rho.cpp",
+        "polynomial_example.cpp": "Math/Polynomial.cpp",
+        "primality_example.cpp": "Math/prime_judge(Miller-Rabin).cpp",
+        "project_selection_example.cpp": "Graph/Project_Selection.cpp",
+        "pruefer_code_example.cpp": "Graph/Pruefer_Code.cpp",
+        "radix_sort_example.cpp": "Algorithm/Radix_sort.cpp",
+        "rerooting_dp_example.cpp": "Graph/Rerooting_DP.cpp",
+        "rollback_union_find_example.cpp": "DataStructure/rollback-union-find.cpp",
+        "rollback_weighted_union_find_example.cpp": "DataStructure/rollback-union-findw.cpp",
+        "rolling_hash_example.cpp": "String/RollingHash.cpp",
+        "scc_example.cpp": "Graph/SCC.cpp",
+        "segment_tree_beats_example.cpp": "DataStructure/Segment_Tree_Beats.cpp",
+        "segment_tree_example.cpp": "DataStructure/Segment_Tree.cpp",
+        "sliding_window_aggregation_example.cpp": "DataStructure/Sliding_Window_Aggregation.cpp",
+        "slope_trick_example.cpp": "DataStructure/Slope_Trick.cpp",
+        "sparse_table_example.cpp": "DataStructure/Sparse_Table.cpp",
+        "spfa_example.cpp": "Graph/Bellman-Ford_SFPA.cpp",
+        "suffix_array_example.cpp": "String/Suffix_Array.cpp",
+        "suffix_automaton_example.cpp": "String/Suffix_Automaton.cpp",
+        "topological_example.cpp": "Graph/Topological.cpp",
+        "topological_lexicographical_example.cpp": "Graph/Topological_sort.cpp",
+        "trie_example.cpp": "String/Trie.cpp",
+        "two_sat_example.cpp": "Graph/Two_SAT.cpp",
+        "union_find_example.cpp": "DataStructure/union_find.cpp",
+        "union_find_w_example.cpp": "DataStructure/union_find_w.cpp",
+        "wavelet_matrix_example.cpp": "DataStructure/Wavelet_Matrix.cpp",
+        "xor_basis_example.cpp": "Math/Xor_Basis.cpp",
+        "z_algorithm_example.cpp": "String/Z_Algorithm.cpp",
+        "zeta_bitwise_example.cpp": "Math/Zeta/Bitwise_Convolution.cpp",
+        "zeta_convolution_example.cpp": "Math/Zeta/Gcd_Lcm_Convolution.cpp",
+        "zeta_integer_example.cpp": "Math/Zeta/Divisor_Multiple_Transform.cpp",
+        "zeta_mobius_example.cpp": "Math/Zeta_Mebius.cpp",
+        "zeta_set_example.cpp": "Math/Zeta/Set_Transform.cpp",
+        "zeta_sieve_example.cpp": "Math/Zeta/Sieve.cpp",
+        "zeta_sparse_example.cpp": "Math/Zeta/Sparse_Transform.cpp"
+      },
+      "snapshot_id": "af309ae55cdef27309373d8eba99713ab602ad749e93b3523da31c4eb6d42bc9",
+      "snapshot_program_count": 810,
+      "started_at_utc": "2026-11-11T22:40:01.100164+00:00",
+      "status": "local_samples_passed_for_snapshot",
+      "updated_at_utc": "2026-11-11T22:40:16.020962+00:00",
+      "workspace_snapshot_drift": {}
+    },
+    "current_correspondence": [
+      {
+        "compiler": "gcc",
+        "id": "suffix_array",
+        "current_text_matches_measured_final": true,
+        "text_sha256": "e2ffb1b361419a091697403329df1ebae0a431e91ed2238fa281fc1e1a5bca24",
+        "submission_sha256": "e3c5c0a8eddf3e9b801fc7c1ee1d3c0eaadb92596c7322a798dbdfc4142d13d1"
+      },
+      {
+        "compiler": "clang",
+        "id": "suffix_array",
+        "current_text_matches_measured_final": true,
+        "text_sha256": "d9b59ad6f62eabbe05c0df4e39f43f98c20d5b1b939bbb20c852e778d1688f97",
+        "submission_sha256": "e3c5c0a8eddf3e9b801fc7c1ee1d3c0eaadb92596c7322a798dbdfc4142d13d1"
+      },
+      {
+        "compiler": "gcc",
+        "id": "suffix_array_substrings",
+        "current_text_matches_measured_final": true,
+        "text_sha256": "93d849c22bb902ee4c8e55fa351fe25164f48ecf5f91ff5587b54dd3c429e184",
+        "submission_sha256": "16ecd0bab48f37388841dbf7f7353df3c146dceafe6bc6c0271c0c5ddb8c8c6b"
+      },
+      {
+        "compiler": "clang",
+        "id": "suffix_array_substrings",
+        "current_text_matches_measured_final": true,
+        "text_sha256": "5c0ce4a07b4914c4991111ca76f72850731f48ecfda6d7e9fcd382868149c682",
+        "submission_sha256": "16ecd0bab48f37388841dbf7f7353df3c146dceafe6bc6c0271c0c5ddb8c8c6b"
+      }
+    ],
+    "measured_code_correspondence": [
+      {
+        "compiler": "gcc",
+        "id": "suffix_array",
+        "final_text_identical_to_measured_hist_fused": true,
+        "text_sha256": "e2ffb1b361419a091697403329df1ebae0a431e91ed2238fa281fc1e1a5bca24"
+      },
+      {
+        "compiler": "gcc",
+        "id": "suffix_array_substrings",
+        "final_text_identical_to_measured_hist_fused": true,
+        "text_sha256": "93d849c22bb902ee4c8e55fa351fe25164f48ecf5f91ff5587b54dd3c429e184"
+      },
+      {
+        "compiler": "clang",
+        "id": "suffix_array",
+        "final_text_identical_to_measured_hist_fused": true,
+        "text_sha256": "d9b59ad6f62eabbe05c0df4e39f43f98c20d5b1b939bbb20c852e778d1688f97"
+      },
+      {
+        "compiler": "clang",
+        "id": "suffix_array_substrings",
+        "final_text_identical_to_measured_hist_fused": true,
+        "text_sha256": "5c0ce4a07b4914c4991111ca76f72850731f48ecfda6d7e9fcd382868149c682"
+      }
+    ]
+  },
+  "limits": "ローカルの測定条件の結果であり、全てのCPU・呼出し文脈・入力で厳密な非後退やオンラインの所要時間を保証しない。",
+  "license": "CC0-1.0独自実装。新しい外部実装のコードは転記していない。数学的なSA-IS原論文とACLの公開APIの参照を維持。公開問題生成器の本文は一時領域だけで使い、配布コード/証拠ZIPへ入れない。",
+  "evidence": "Audit/data/performance-suffix-array-416499-2026-11-12.zip"
+}

@@ -1,0 +1,923 @@
+{
+  "date": "2026-10-31",
+  "source_hashes": {
+    "DataStructure/Persistent_Segment_Tree.cpp": "26532f3f972ef4364a898b071197bff5e1a78fb6994b0e1e3fbb033a2059e7cb",
+    "Graph/Pruefer_Code.cpp": "4f7e596917971175cc226cd485d22426f338a8fcadc471acc812f2ae72758d43"
+  },
+  "implementation": "数学的定義から独立実装。参考実装のコード・記事本文は複製していない。",
+  "references": [
+    {
+      "url": "https://info.atcoder.jp/entry/algorithm_lectures/persistent_segment_tree",
+      "role": "経路複製による永続化の数学的参考"
+    },
+    {
+      "url": "https://info.atcoder.jp/entry/algorithm_lectures/prufer_code",
+      "role": "最小葉による符号・復元・次数の数学的参考"
+    },
+    {
+      "url": "https://nyaannyaan.github.io/library/segment-tree/persistent-segment-tree.hpp.html",
+      "role": "永続セグメント木の機能上の参考"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/NyaanNyaan/library/master/LICENSE",
+      "license": "CC0-1.0",
+      "checked": "現在の公式LICENSEを確認。履歴全体のライセンスを断定しない。"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/ei1333/library/master/LICENSE",
+      "license": "Unlicense",
+      "checked": "現在の公式LICENSEを確認。MITとは扱わない。コードは利用していない。"
+    }
+  ],
+  "correctness": [
+    "PST n=0..64、分岐根と独立配列のランダム照合",
+    "非可換文字列連結・abを含まない単調述語の両境界探索",
+    "size_t最大長の疎木、両端、コピー/remap/move/swap/reset/clear",
+    "値のコピー・演算・変換の例外注入によるノード数/latest_root巻戻し",
+    "確保失敗全経路、コピー代入元/先維持、独立atomic live block差0",
+    "Prüfer n<=7の全符号、heap符号化/復元と照合、辺順/向きの不変性",
+    "Prüferランダム1200例、n<=5の全木を参照した指定次数の森完成の可否照合",
+    "250000頂点の鎖・星で再帰を使わないことを確認"
+  ],
+  "compiler_matrix": {
+    "recorded_at_utc": "2026-10-31T11:10:58.221240+00:00",
+    "source_hashes": {
+      "DataStructure/Persistent_Segment_Tree.cpp": "26532f3f972ef4364a898b071197bff5e1a78fb6994b0e1e3fbb033a2059e7cb",
+      "Graph/Pruefer_Code.cpp": "43faffe647a901900a227331ab424052fb0420024fad4c49a4657622f7f8aa9c"
+    },
+    "results": [
+      {
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "profile": "default",
+        "skip_runtime_checks": false,
+        "test": "reference",
+        "compile_command": [
+          "taskset",
+          "-c",
+          "8",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "Verify/current/tests/persistent_tree_pruefer_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/persistent_tree/gcc_default_checked_reference"
+        ],
+        "stdout": "all persistent/pruefer checks passed",
+        "stderr": "",
+        "wall_seconds": 2.549,
+        "status": "PASS"
+      },
+      {
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "profile": "native",
+        "skip_runtime_checks": false,
+        "test": "reference",
+        "compile_command": [
+          "taskset",
+          "-c",
+          "8",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "-march=native",
+          "Verify/current/tests/persistent_tree_pruefer_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/persistent_tree/gcc_native_checked_reference"
+        ],
+        "stdout": "all persistent/pruefer checks passed",
+        "stderr": "",
+        "wall_seconds": 2.602,
+        "status": "PASS"
+      },
+      {
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "profile": "sanitizer",
+        "skip_runtime_checks": false,
+        "test": "reference",
+        "compile_command": [
+          "taskset",
+          "-c",
+          "8",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O1",
+          "-g",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "Verify/current/tests/persistent_tree_pruefer_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/persistent_tree/gcc_sanitizer_checked_reference"
+        ],
+        "stdout": "all persistent/pruefer checks passed",
+        "stderr": "",
+        "wall_seconds": 7.224,
+        "status": "PASS"
+      },
+      {
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "profile": "default",
+        "skip_runtime_checks": true,
+        "test": "reference",
+        "compile_command": [
+          "taskset",
+          "-c",
+          "8",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "-DSKIP_RUNTIME_CHECKS",
+          "Verify/current/tests/persistent_tree_pruefer_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/persistent_tree/gcc_default_skip_reference"
+        ],
+        "stdout": "all persistent/pruefer checks passed",
+        "stderr": "",
+        "wall_seconds": 2.504,
+        "status": "PASS"
+      },
+      {
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "profile": "default",
+        "skip_runtime_checks": false,
+        "test": "allocation",
+        "compile_command": [
+          "taskset",
+          "-c",
+          "8",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "-Wno-mismatched-new-delete",
+          "Verify/current/tests/persistent_tree_pruefer_allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/persistent_tree/gcc_default_checked_allocation"
+        ],
+        "stdout": "all allocation rollback checks passed\nlive allocation delta: 0",
+        "stderr": "",
+        "wall_seconds": 1.225,
+        "status": "PASS"
+      },
+      {
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "profile": "native",
+        "skip_runtime_checks": false,
+        "test": "allocation",
+        "compile_command": [
+          "taskset",
+          "-c",
+          "8",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "-march=native",
+          "-Wno-mismatched-new-delete",
+          "Verify/current/tests/persistent_tree_pruefer_allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/persistent_tree/gcc_native_checked_allocation"
+        ],
+        "stdout": "all allocation rollback checks passed\nlive allocation delta: 0",
+        "stderr": "",
+        "wall_seconds": 2.38,
+        "status": "PASS"
+      },
+      {
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "profile": "sanitizer",
+        "skip_runtime_checks": false,
+        "test": "allocation",
+        "compile_command": [
+          "taskset",
+          "-c",
+          "8",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O1",
+          "-g",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-Wno-mismatched-new-delete",
+          "Verify/current/tests/persistent_tree_pruefer_allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/persistent_tree/gcc_sanitizer_checked_allocation"
+        ],
+        "stdout": "all allocation rollback checks passed\nlive allocation delta: 0",
+        "stderr": "",
+        "wall_seconds": 4.868,
+        "status": "PASS"
+      },
+      {
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "profile": "default",
+        "skip_runtime_checks": true,
+        "test": "allocation",
+        "compile_command": [
+          "taskset",
+          "-c",
+          "8",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-Wno-mismatched-new-delete",
+          "Verify/current/tests/persistent_tree_pruefer_allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/persistent_tree/gcc_default_skip_allocation"
+        ],
+        "stdout": "all allocation rollback checks passed\nlive allocation delta: 0",
+        "stderr": "",
+        "wall_seconds": 1.173,
+        "status": "PASS"
+      },
+      {
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "profile": "native",
+        "skip_runtime_checks": true,
+        "test": "reference",
+        "compile_command": [
+          "taskset",
+          "-c",
+          "8",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "-march=native",
+          "-DSKIP_RUNTIME_CHECKS",
+          "Verify/current/tests/persistent_tree_pruefer_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/persistent_tree/gcc_native_skip_reference"
+        ],
+        "stdout": "all persistent/pruefer checks passed",
+        "stderr": "",
+        "wall_seconds": 2.659,
+        "status": "PASS"
+      },
+      {
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "profile": "native",
+        "skip_runtime_checks": true,
+        "test": "allocation",
+        "compile_command": [
+          "taskset",
+          "-c",
+          "8",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "-march=native",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-Wno-mismatched-new-delete",
+          "Verify/current/tests/persistent_tree_pruefer_allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/persistent_tree/gcc_native_skip_allocation"
+        ],
+        "stdout": "all allocation rollback checks passed\nlive allocation delta: 0",
+        "stderr": "",
+        "wall_seconds": 1.183,
+        "status": "PASS"
+      },
+      {
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "profile": "sanitizer",
+        "skip_runtime_checks": true,
+        "test": "reference",
+        "compile_command": [
+          "taskset",
+          "-c",
+          "8",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O1",
+          "-g",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-DSKIP_RUNTIME_CHECKS",
+          "Verify/current/tests/persistent_tree_pruefer_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/persistent_tree/gcc_sanitizer_skip_reference"
+        ],
+        "stdout": "all persistent/pruefer checks passed",
+        "stderr": "",
+        "wall_seconds": 7.129,
+        "status": "PASS"
+      },
+      {
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "profile": "sanitizer",
+        "skip_runtime_checks": true,
+        "test": "allocation",
+        "compile_command": [
+          "taskset",
+          "-c",
+          "8",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O1",
+          "-g",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-Wno-mismatched-new-delete",
+          "Verify/current/tests/persistent_tree_pruefer_allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/persistent_tree/gcc_sanitizer_skip_allocation"
+        ],
+        "stdout": "all allocation rollback checks passed\nlive allocation delta: 0",
+        "stderr": "",
+        "wall_seconds": 2.856,
+        "status": "PASS"
+      },
+      {
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "profile": "default",
+        "skip_runtime_checks": false,
+        "test": "reference",
+        "compile_command": [
+          "taskset",
+          "-c",
+          "8",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "Verify/current/tests/persistent_tree_pruefer_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/persistent_tree/clang_default_checked_reference"
+        ],
+        "stdout": "all persistent/pruefer checks passed",
+        "stderr": "",
+        "wall_seconds": 2.305,
+        "status": "PASS"
+      },
+      {
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "profile": "default",
+        "skip_runtime_checks": false,
+        "test": "allocation",
+        "compile_command": [
+          "taskset",
+          "-c",
+          "8",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "Verify/current/tests/persistent_tree_pruefer_allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/persistent_tree/clang_default_checked_allocation"
+        ],
+        "stdout": "all allocation rollback checks passed\nlive allocation delta: 0",
+        "stderr": "",
+        "wall_seconds": 1.097,
+        "status": "PASS"
+      },
+      {
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "profile": "native",
+        "skip_runtime_checks": false,
+        "test": "reference",
+        "compile_command": [
+          "taskset",
+          "-c",
+          "8",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "-march=native",
+          "Verify/current/tests/persistent_tree_pruefer_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/persistent_tree/clang_native_checked_reference"
+        ],
+        "stdout": "all persistent/pruefer checks passed",
+        "stderr": "",
+        "wall_seconds": 2.394,
+        "status": "PASS"
+      },
+      {
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "profile": "native",
+        "skip_runtime_checks": false,
+        "test": "allocation",
+        "compile_command": [
+          "taskset",
+          "-c",
+          "8",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "-march=native",
+          "Verify/current/tests/persistent_tree_pruefer_allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/persistent_tree/clang_native_checked_allocation"
+        ],
+        "stdout": "all allocation rollback checks passed\nlive allocation delta: 0",
+        "stderr": "",
+        "wall_seconds": 1.117,
+        "status": "PASS"
+      },
+      {
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "profile": "sanitizer",
+        "skip_runtime_checks": false,
+        "test": "reference",
+        "compile_command": [
+          "taskset",
+          "-c",
+          "8",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O1",
+          "-g",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "Verify/current/tests/persistent_tree_pruefer_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/persistent_tree/clang_sanitizer_checked_reference"
+        ],
+        "stdout": "all persistent/pruefer checks passed",
+        "stderr": "",
+        "wall_seconds": 4.743,
+        "status": "PASS"
+      },
+      {
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "profile": "sanitizer",
+        "skip_runtime_checks": false,
+        "test": "allocation",
+        "compile_command": [
+          "taskset",
+          "-c",
+          "8",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O1",
+          "-g",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "Verify/current/tests/persistent_tree_pruefer_allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/persistent_tree/clang_sanitizer_checked_allocation"
+        ],
+        "stdout": "all allocation rollback checks passed\nlive allocation delta: 0",
+        "stderr": "",
+        "wall_seconds": 1.793,
+        "status": "PASS"
+      },
+      {
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "profile": "default",
+        "skip_runtime_checks": true,
+        "test": "reference",
+        "compile_command": [
+          "taskset",
+          "-c",
+          "8",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "-DSKIP_RUNTIME_CHECKS",
+          "Verify/current/tests/persistent_tree_pruefer_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/persistent_tree/clang_default_skip_reference"
+        ],
+        "stdout": "all persistent/pruefer checks passed",
+        "stderr": "",
+        "wall_seconds": 2.134,
+        "status": "PASS"
+      },
+      {
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "profile": "default",
+        "skip_runtime_checks": true,
+        "test": "allocation",
+        "compile_command": [
+          "taskset",
+          "-c",
+          "8",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "-DSKIP_RUNTIME_CHECKS",
+          "Verify/current/tests/persistent_tree_pruefer_allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/persistent_tree/clang_default_skip_allocation"
+        ],
+        "stdout": "all allocation rollback checks passed\nlive allocation delta: 0",
+        "stderr": "",
+        "wall_seconds": 1.036,
+        "status": "PASS"
+      },
+      {
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "profile": "native",
+        "skip_runtime_checks": true,
+        "test": "reference",
+        "compile_command": [
+          "taskset",
+          "-c",
+          "8",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "-march=native",
+          "-DSKIP_RUNTIME_CHECKS",
+          "Verify/current/tests/persistent_tree_pruefer_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/persistent_tree/clang_native_skip_reference"
+        ],
+        "stdout": "all persistent/pruefer checks passed",
+        "stderr": "",
+        "wall_seconds": 2.172,
+        "status": "PASS"
+      },
+      {
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "profile": "native",
+        "skip_runtime_checks": true,
+        "test": "allocation",
+        "compile_command": [
+          "taskset",
+          "-c",
+          "8",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "-march=native",
+          "-DSKIP_RUNTIME_CHECKS",
+          "Verify/current/tests/persistent_tree_pruefer_allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/persistent_tree/clang_native_skip_allocation"
+        ],
+        "stdout": "all allocation rollback checks passed\nlive allocation delta: 0",
+        "stderr": "",
+        "wall_seconds": 1.013,
+        "status": "PASS"
+      },
+      {
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "profile": "sanitizer",
+        "skip_runtime_checks": true,
+        "test": "reference",
+        "compile_command": [
+          "taskset",
+          "-c",
+          "8",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O1",
+          "-g",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-DSKIP_RUNTIME_CHECKS",
+          "Verify/current/tests/persistent_tree_pruefer_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/persistent_tree/clang_sanitizer_skip_reference"
+        ],
+        "stdout": "all persistent/pruefer checks passed",
+        "stderr": "",
+        "wall_seconds": 4.04,
+        "status": "PASS"
+      },
+      {
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "profile": "sanitizer",
+        "skip_runtime_checks": true,
+        "test": "allocation",
+        "compile_command": [
+          "taskset",
+          "-c",
+          "8",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O1",
+          "-g",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-DSKIP_RUNTIME_CHECKS",
+          "Verify/current/tests/persistent_tree_pruefer_allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/persistent_tree/clang_sanitizer_skip_allocation"
+        ],
+        "stdout": "all allocation rollback checks passed\nlive allocation delta: 0",
+        "stderr": "",
+        "wall_seconds": 1.605,
+        "status": "PASS"
+      }
+    ]
+  },
+  "judge_drivers": [
+    {
+      "compiler": "/usr/bin/g++",
+      "library": "DataStructure/Persistent_Segment_Tree.cpp",
+      "build": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "/tmp/sirkit_12h_20261031_095733/persistent_tree/persistent_segment_tree_submission.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/persistent_tree/persistent_segment_tree_g++_submission"
+      ],
+      "submission_sha256": "96f42f01ba6c63037b5e166538016c8bac10d66b3f85d784751a1ea30b5ef86b",
+      "samples": [
+        {
+          "input": "5 5\n1 2 3 4 5\n1 0 5\n1 2 4\n0 3 10\n1 0 5\n1 0 3\n",
+          "output": "15\n7\n25\n6\n"
+        }
+      ],
+      "independent_random_driver_cases": 120,
+      "status": "PASS"
+    },
+    {
+      "compiler": "/usr/bin/g++",
+      "library": "Graph/Pruefer_Code.cpp",
+      "build": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "/tmp/sirkit_12h_20261031_095733/persistent_tree/pruefer_code_submission.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/persistent_tree/pruefer_code_g++_submission"
+      ],
+      "submission_sha256": "d86dad1c0cc77c997f47924a27448d11f1f1fe422fb2fab47aa488a32ed52638",
+      "samples": [
+        {
+          "input": "6 2\n1 2 1 2 2 2\n2 3\n1 4\n",
+          "output": "4 5\n2 6\n5 6\n"
+        },
+        {
+          "input": "5 1\n1 1 1 1 4\n2 3\n",
+          "output": "-1\n"
+        },
+        {
+          "input": "4 0\n3 3 3 3\n",
+          "output": "-1\n"
+        }
+      ],
+      "independent_random_driver_cases": 0,
+      "status": "PASS"
+    },
+    {
+      "compiler": "/usr/bin/clang++",
+      "library": "DataStructure/Persistent_Segment_Tree.cpp",
+      "build": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "/tmp/sirkit_12h_20261031_095733/persistent_tree/persistent_segment_tree_submission.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/persistent_tree/persistent_segment_tree_clang++_submission"
+      ],
+      "submission_sha256": "96f42f01ba6c63037b5e166538016c8bac10d66b3f85d784751a1ea30b5ef86b",
+      "samples": [
+        {
+          "input": "5 5\n1 2 3 4 5\n1 0 5\n1 2 4\n0 3 10\n1 0 5\n1 0 3\n",
+          "output": "15\n7\n25\n6\n"
+        }
+      ],
+      "independent_random_driver_cases": 120,
+      "status": "PASS"
+    },
+    {
+      "compiler": "/usr/bin/clang++",
+      "library": "Graph/Pruefer_Code.cpp",
+      "build": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "/tmp/sirkit_12h_20261031_095733/persistent_tree/pruefer_code_submission.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/persistent_tree/pruefer_code_clang++_submission"
+      ],
+      "submission_sha256": "d86dad1c0cc77c997f47924a27448d11f1f1fe422fb2fab47aa488a32ed52638",
+      "samples": [
+        {
+          "input": "6 2\n1 2 1 2 2 2\n2 3\n1 4\n",
+          "output": "4 5\n2 6\n5 6\n"
+        },
+        {
+          "input": "5 1\n1 1 1 1 4\n2 3\n",
+          "output": "-1\n"
+        },
+        {
+          "input": "4 0\n3 3 3 3\n",
+          "output": "-1\n"
+        }
+      ],
+      "independent_random_driver_cases": 0,
+      "status": "PASS"
+    }
+  ],
+  "examples": [
+    {
+      "example": "Examples/persistent_segment_tree_example.cpp",
+      "compiler": "/usr/bin/g++",
+      "skip": false,
+      "status": "PASS"
+    },
+    {
+      "example": "Examples/pruefer_code_example.cpp",
+      "compiler": "/usr/bin/g++",
+      "skip": false,
+      "status": "PASS"
+    },
+    {
+      "example": "Examples/persistent_segment_tree_example.cpp",
+      "compiler": "/usr/bin/g++",
+      "skip": true,
+      "status": "PASS"
+    },
+    {
+      "example": "Examples/pruefer_code_example.cpp",
+      "compiler": "/usr/bin/g++",
+      "skip": true,
+      "status": "PASS"
+    },
+    {
+      "example": "Examples/persistent_segment_tree_example.cpp",
+      "compiler": "/usr/bin/clang++",
+      "skip": false,
+      "status": "PASS"
+    },
+    {
+      "example": "Examples/pruefer_code_example.cpp",
+      "compiler": "/usr/bin/clang++",
+      "skip": false,
+      "status": "PASS"
+    },
+    {
+      "example": "Examples/persistent_segment_tree_example.cpp",
+      "compiler": "/usr/bin/clang++",
+      "skip": true,
+      "status": "PASS"
+    },
+    {
+      "example": "Examples/pruefer_code_example.cpp",
+      "compiler": "/usr/bin/clang++",
+      "skip": true,
+      "status": "PASS"
+    }
+  ],
+  "environment_limitations": [
+    {
+      "feature": "LeakSanitizer",
+      "message": "LeakSanitizer has encountered a fatal error; LeakSanitizer does not work under ptrace",
+      "resolution": "ASAN_OPTIONS=detect_leaks=0でASAN/UBSANを継続。確保失敗試験でatomic live block差0を独立確認。"
+    }
+  ],
+  "performance": "CPU8で正しさとビルドのみ確認。計測時間を性能の主張に使わない。",
+  "online_status": "未提出。過去の提出記録を新規版の検証済みとは扱わない。",
+  "comment_only_source_bridge": {
+    "reason": "先頭API一覧見出しを専用行に統一。コメントのみ。",
+    "source": "Graph/Pruefer_Code.cpp",
+    "before_sha256": "43faffe647a901900a227331ab424052fb0420024fad4c49a4657622f7f8aa9c",
+    "after_sha256": "4f7e596917971175cc226cd485d22426f338a8fcadc471acc812f2ae72758d43",
+    "body_from_first_include_sha256": "cd204fb08c8aad30f6c455df28bf1c46ecc9413e30000dca47ff88615a425855",
+    "preprocessed": [
+      {
+        "skip_runtime_checks": false,
+        "sha256": "4093ae1d810acbb82c623c08a08e0dbe6cd66670567e13b2eba3248682991cdf",
+        "equal": true
+      },
+      {
+        "skip_runtime_checks": true,
+        "sha256": "4736a561fda4cb578abe2e6b87003cc6e1c5e200d334d17465e20aa5a37fa386",
+        "equal": true
+      }
+    ]
+  }
+}

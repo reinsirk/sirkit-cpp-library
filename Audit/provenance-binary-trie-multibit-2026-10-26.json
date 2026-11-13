@@ -1,0 +1,25 @@
+{
+  "date_jst": "2026-10-26",
+  "source": "DataStructure/Binary_Trie.cpp",
+  "source_sha256": "fa5c0b0619ac185aa9c53d9f25fb2931fa21660ba752c77d5d7ba62a2e9d39aa",
+  "baseline_sha256": "4677afa7d61f5d7b87201e77f68367489c28aa65eaaac84dc4d6bfe1d7ac6229",
+  "main_sha256": "ffd1f56f2785089ed0884abfb3b45341007b899f6d115fb3c15c45238c503ff6",
+  "io_sha256": "291bf8dbc56a1d691f6256fe95b4714183c2cf5d9e55e4bef240e31d1eb178c1",
+  "completed_at_utc": "2026-10-25T23:08:14.205327+00:00",
+  "license": "CC0-1.0",
+  "method_origin": "既存CC0の通常BinaryTrieの所有・ID枠・公開APIを基に、2bit4分岐/仮想容量の対応式/単一要素の経路を独自に組み立てた。外部の新しいC++実装の移植はない。",
+  "reference": "従来どおりNyaanの参考URLを維持。新しい4分岐処理をNyaanから移植したとはしない。",
+  "previous_provenance": "Audit/provenance-binary-tries-second-pass-2026-10-22.json",
+  "proof": {
+    "digits": "Bが奇数なら最上1bit、以後2bit。shift=2*(levels-depth)で、64bit幅でも最大62。logicaldigit dはphysicaldigit lazy^dへ一対一に対応し、昇順/順位/lessもその順で集計する。",
+    "capacity": "最初に欠けたedge以降の残bit数を新たな仮想ノード数とする。2bit桁の同じ上位1bit兄弟(d^1)があれば1減らす。削除も各edgeでwidth-(共有兄弟があれば1)を引く。仮想counter<=NODESを保持し物理数への上限緩和はない。",
+    "ownership": "4childはblock内非所有ポインタ、blockとIDvectorはmake_unique/vectorで所有。初期2048物理ノード、以降8192。再利用時4childをclearしIDunion lifetimeを切り替える。",
+    "exception": "新しいsuffixはID追加成功まで既存木に未接続。失敗時新suffixだけreleaseし、virtual count/要素count/既存IDsを変更しない。確保済みcapacityが増えることは旧保証と同じ。",
+    "sole": "root count=1なら全段の子は1本だけなので、物理キーを復元してmask XORすればmin/maxが一致する。最後の葉のID参照を返す。",
+    "complexity": "最大4分岐の定数個集計で全操作の従来O(B)上界を維持。ID指定削除のO(ID数)と全体XOR O(1)も維持。"
+  },
+  "code_size": {
+    "previous_bytes": 26389,
+    "current_bytes": 19321
+  }
+}

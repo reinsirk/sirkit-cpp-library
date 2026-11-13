@@ -1,0 +1,3302 @@
+{
+  "date": "2026-11-04",
+  "scope": "通常版HeavyLightDecompositionの初回オンラインVerify確認、使い方の補足、P-Core向け本体高速化。main/共通I/O/Fenwick Treeは固定。",
+  "online": {
+    "confirmation": "Audit/online-hld-2026-11-04.json",
+    "records": [
+      {
+        "id": "hld_jump",
+        "url": "https://judge.yosupo.jp/submission/415167",
+        "status": "AC",
+        "time_ms": 272
+      },
+      {
+        "id": "hld_vertex_add_path_sum",
+        "url": "https://judge.yosupo.jp/submission/415168",
+        "status": "AC",
+        "time_ms": 337
+      }
+    ],
+    "before_source_sha256": "ff125ec2f81d93b87eff79ce43de8191d237cff766f082da7368ceace4249141",
+    "current_status": "改修前との一致を確認したAC。現行本体はローカル検証済みで2本とも再提出待ち。通常版ACを派生版へ転記しない。"
+  },
+  "adopted": [
+    "構築のDFS探索順をorder_へ一時保存し、部分木サイズ/heavy childの逆順集計が終わってから重鎖優先順で上書き。visitedの一時配列4Nバイトとpush_backを除く。heavyの同値選択順・最終の公開orderは維持。",
+    "重鎖優先順を作る段階では、対称な無向森の性質から、親とheavy child以外の隣接先をlight childと判定。隣接先ごとのparent_[u]参照を省く。入力の検査は第1DFSに維持し、別の全辺検査は加えない。",
+    "jumpをLCA取得＋祖先探索の2段階から、u側で残りkを減らす経路探索へ統合。同一重鎖はindex差だけで答え、kがdepth[u]+depth[v]を超す場合は先に-1。別成分や負のkも除外。入力検査は従来どおりu,vの順で必ず先に行う。",
+    "for_each_path/jumpは単一成分なら成分配列の照合を省く。森では従来の照合を保つ。is_ancestorは部分木区間だけで判定でき、別成分の添字も区間外になる。",
+    "jumpの重鎖比較には内部で計算したDFS添字を使う。for_each_pathはGCCで添字比較、Clang/その他では従来のhead深さ比較。どちらも通行順・reversed・辺モードを維持。コンパイラ別の選択は測定に基づき、CPU専用命令は追加しない。",
+    "独立したlcaとsame_componentのAPIは元の関数本体をそのまま維持。便利な既存APIを残し、同じ機能の別名を追加しない。"
+  ],
+  "mathematical_and_ownership_review": "対称な無向森では親以外の隣接点は子であり、重鎖は連続したDFS添字になる。別headのうち後ろの添字を持つ鎖は他端点の祖先ではないため、そこを上げても経路を外れない。u側のkを減らすのはk>区間長のときだけ。kのint化前に鎖内の長さで上限を確認し、depth和は先にint64へ昇格。roots_.size()==1は全頂点が同じ木であることを表す。コピー/ムーブ/swapは全配列とroots_を同時に扱う。全所有はvectorのまま、直接new・解放省略なし。",
+  "comparison_and_rejections": {
+    "single_fused_jump": "統合だけでは小さい木の大量照会や一部の星型・鎖で上積みが弱いため、同一鎖と数学的な距離上限の早期処理を追加。",
+    "preorder_for_every_compiler": "GCC/Clangともjumpは有効。経路和はClangのlong-path-decomposition_killerで約2.4〜2.7%遅れたため、Clangの区間分解比較は元に戻す。専用13回再比較では遅れを解消し、最終の公式相当全ケースも確認。",
+    "packed_head_metadata": "head頂点とhead深さのpairを配置すると追加4Nバイトが必要で、GCC大規模ランダム/星型などが悪化。成分省略との組合せでも一貫して優位でなく不採用。",
+    "unmeasured_extra_API_change": "LCAとsame_componentの比較変更はVerify mainで使わないため採用版では元へ戻す。最終4実行物の.textが測定したcandidateと一致することを確認し、測定対象をすり替えない。"
+  },
+  "measurement": {
+    "CPU": "Intel Core i9-14900KのP-Core CPU12（core6、sibling13）。E-Coreは対象外。CPU12用lockで直列化し、入力生成/重いテスト/他のコンパイルと性能測定を重ねない。CPU設定は変更しない。",
+    "compilers": {
+      "GCC": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+      "Clang": "Ubuntu clang version 21.1.8 (6ubuntu1)"
+    },
+    "flags": "-std=c++23 -O2、SKIP_RUNTIME_CHECKS、ClangはGCC15 libstdc++。march/nativeや最適化pragmaなし。PATHにはGCC15.3もあるため/usr/binのGCC15.2へ固定。",
+    "method": "同じmain・共通I/O・Fenwick・検査設定。ラベルの順番を乱数化し、同じ実行パスにコピーして起動。wait4のuser+system CPU時間中央値とmax RSSを保存。controlはbaseと同じ実行物。試作5回、再比較9/13回、最終64入力は各7回。",
+    "fixtures": "固定commit73876f1cbcf082d2b22722924b924d3d65a2f00eの公式生成器40入力と、32/4096/250000頂点の鎖・星・二分木・ランダム木24入力。頂点番号は無作為に入れ替え。原典/seed/入力SHAを保存。公式入力生成器の再帰だけstack上限を緩めたが、ライブラリ/計測の設定は変更しない。",
+    "run_counts": {
+      "screen_raw.json": 1530,
+      "fast_raw.json": 1530,
+      "third_raw.json": 972,
+      "full_raw.json": 2688,
+      "depth_raw.json": 468,
+      "clang_sum_raw.json": 651
+    },
+    "total_measured_runs": 7839,
+    "selected_runs": 2688,
+    "selected_groups": 128,
+    "selected_summary": [
+      {
+        "compiler": "gcc",
+        "case": "official_jump_on_tree_example_0",
+        "medians_cpu_ns": {
+          "base": 921000,
+          "control": 916000,
+          "selected": 926000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 0.99457111834962,
+          "selected": 1.00542888165038
+        },
+        "medians_max_rss_bytes": {
+          "base": 20365312,
+          "control": 20365312,
+          "selected": 20365312
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_jump_on_tree_small_random_0",
+        "medians_cpu_ns": {
+          "base": 15100000,
+          "control": 15026000,
+          "selected": 11697000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 0.9950993377483444,
+          "selected": 0.774635761589404
+        },
+        "medians_max_rss_bytes": {
+          "base": 21729280,
+          "control": 21729280,
+          "selected": 21729280
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_jump_on_tree_small_random_1",
+        "medians_cpu_ns": {
+          "base": 15036000,
+          "control": 15015000,
+          "selected": 11409000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 0.9986033519553073,
+          "selected": 0.75877893056664
+        },
+        "medians_max_rss_bytes": {
+          "base": 21729280,
+          "control": 21729280,
+          "selected": 21729280
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_jump_on_tree_small_random_2",
+        "medians_cpu_ns": {
+          "base": 15701000,
+          "control": 15697000,
+          "selected": 11820000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 0.9997452391567416,
+          "selected": 0.752818291828546
+        },
+        "medians_max_rss_bytes": {
+          "base": 21729280,
+          "control": 21729280,
+          "selected": 21729280
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_jump_on_tree_small_random_3",
+        "medians_cpu_ns": {
+          "base": 15665000,
+          "control": 15576000,
+          "selected": 12328000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 0.9943185445260134,
+          "selected": 0.7869773380146824
+        },
+        "medians_max_rss_bytes": {
+          "base": 21729280,
+          "control": 21729280,
+          "selected": 21729280
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_jump_on_tree_small_random_4",
+        "medians_cpu_ns": {
+          "base": 17417000,
+          "control": 17420000,
+          "selected": 16173000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 1.000172245507263,
+          "selected": 0.9285755296549348
+        },
+        "medians_max_rss_bytes": {
+          "base": 21729280,
+          "control": 21729280,
+          "selected": 21729280
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_jump_on_tree_random_0",
+        "medians_cpu_ns": {
+          "base": 127150000,
+          "control": 126792000,
+          "selected": 107420000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 0.9971844278411325,
+          "selected": 0.8448289421942587
+        },
+        "medians_max_rss_bytes": {
+          "base": 40103936,
+          "control": 40087552,
+          "selected": 38780928
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_jump_on_tree_random_1",
+        "medians_cpu_ns": {
+          "base": 147438000,
+          "control": 146769000,
+          "selected": 126231000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 0.9954624994913116,
+          "selected": 0.8561632686281692
+        },
+        "medians_max_rss_bytes": {
+          "base": 47161344,
+          "control": 47177728,
+          "selected": 45346816
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_jump_on_tree_random_2",
+        "medians_cpu_ns": {
+          "base": 47733000,
+          "control": 47631000,
+          "selected": 36407000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 0.9978631135692289,
+          "selected": 0.7627218067165273
+        },
+        "medians_max_rss_bytes": {
+          "base": 23826432,
+          "control": 23826432,
+          "selected": 23826432
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_jump_on_tree_random_3",
+        "medians_cpu_ns": {
+          "base": 139299000,
+          "control": 138794000,
+          "selected": 116570000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 0.9963747047717499,
+          "selected": 0.8368329995190202
+        },
+        "medians_max_rss_bytes": {
+          "base": 44036096,
+          "control": 44036096,
+          "selected": 42201088
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_jump_on_tree_random_4",
+        "medians_cpu_ns": {
+          "base": 101209000,
+          "control": 101637000,
+          "selected": 83129000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 1.0042288729263207,
+          "selected": 0.8213597604956081
+        },
+        "medians_max_rss_bytes": {
+          "base": 29614080,
+          "control": 29585408,
+          "selected": 28811264
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_jump_on_tree_max_random_0",
+        "medians_cpu_ns": {
+          "base": 157862000,
+          "control": 158533000,
+          "selected": 137148000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 1.004250547946941,
+          "selected": 0.8687841279091865
+        },
+        "medians_max_rss_bytes": {
+          "base": 50565120,
+          "control": 50589696,
+          "selected": 48480256
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_jump_on_tree_max_random_1",
+        "medians_cpu_ns": {
+          "base": 157360000,
+          "control": 158099000,
+          "selected": 144388000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 1.0046962379257753,
+          "selected": 0.9175648195221149
+        },
+        "medians_max_rss_bytes": {
+          "base": 50548736,
+          "control": 50589696,
+          "selected": 48476160
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_jump_on_tree_uni_0",
+        "medians_cpu_ns": {
+          "base": 74594000,
+          "control": 74943000,
+          "selected": 73725000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 1.0046786604820763,
+          "selected": 0.9883502694586696
+        },
+        "medians_max_rss_bytes": {
+          "base": 53997568,
+          "control": 54026240,
+          "selected": 51949568
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_jump_on_tree_almost_uni_0",
+        "medians_cpu_ns": {
+          "base": 80832000,
+          "control": 80935000,
+          "selected": 80243000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 1.0012742478226444,
+          "selected": 0.9927132818685669
+        },
+        "medians_max_rss_bytes": {
+          "base": 53526528,
+          "control": 53510144,
+          "selected": 51425280
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_jump_on_tree_almost_uni_1",
+        "medians_cpu_ns": {
+          "base": 80361000,
+          "control": 80665000,
+          "selected": 79739000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 1.0037829295304936,
+          "selected": 0.9922599270790557
+        },
+        "medians_max_rss_bytes": {
+          "base": 53514240,
+          "control": 53522432,
+          "selected": 51429376
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_jump_on_tree_almost_line_0",
+        "medians_cpu_ns": {
+          "base": 138494000,
+          "control": 137481000,
+          "selected": 137088000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 0.9926856037084639,
+          "selected": 0.9898479356506419
+        },
+        "medians_max_rss_bytes": {
+          "base": 50585600,
+          "control": 50556928,
+          "selected": 48750592
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_jump_on_tree_almost_line_1",
+        "medians_cpu_ns": {
+          "base": 152146000,
+          "control": 164387000,
+          "selected": 156076000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 1.0804556150013802,
+          "selected": 1.0258304523286843
+        },
+        "medians_max_rss_bytes": {
+          "base": 50589696,
+          "control": 50577408,
+          "selected": 48467968
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_jump_on_tree_almost_line_2",
+        "medians_cpu_ns": {
+          "base": 165147000,
+          "control": 163717000,
+          "selected": 161005000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 0.9913410476726795,
+          "selected": 0.974919314307859
+        },
+        "medians_max_rss_bytes": {
+          "base": 50327552,
+          "control": 50311168,
+          "selected": 48488448
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_jump_on_tree_almost_line_3",
+        "medians_cpu_ns": {
+          "base": 165949000,
+          "control": 162684000,
+          "selected": 155682000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 0.9803252806585155,
+          "selected": 0.938131594646548
+        },
+        "medians_max_rss_bytes": {
+          "base": 50327552,
+          "control": 50315264,
+          "selected": 48480256
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_jump_on_tree_line_0",
+        "medians_cpu_ns": {
+          "base": 98854000,
+          "control": 99855000,
+          "selected": 95382000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 1.0101260444696218,
+          "selected": 0.9648774961053675
+        },
+        "medians_max_rss_bytes": {
+          "base": 49803264,
+          "control": 49803264,
+          "selected": 47964160
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_vertex_add_path_sum_example_0",
+        "medians_cpu_ns": {
+          "base": 940000,
+          "control": 923000,
+          "selected": 923000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 0.9819148936170212,
+          "selected": 0.9819148936170212
+        },
+        "medians_max_rss_bytes": {
+          "base": 25780224,
+          "control": 25780224,
+          "selected": 25780224
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_vertex_add_path_sum_small_0",
+        "medians_cpu_ns": {
+          "base": 1007000,
+          "control": 988000,
+          "selected": 989000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 0.9811320754716981,
+          "selected": 0.9821251241310824
+        },
+        "medians_max_rss_bytes": {
+          "base": 25780224,
+          "control": 25780224,
+          "selected": 25780224
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_vertex_add_path_sum_small_1",
+        "medians_cpu_ns": {
+          "base": 951000,
+          "control": 984000,
+          "selected": 947000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 1.0347003154574133,
+          "selected": 0.9957939011566772
+        },
+        "medians_max_rss_bytes": {
+          "base": 25780224,
+          "control": 25780224,
+          "selected": 25780224
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_vertex_add_path_sum_small_2",
+        "medians_cpu_ns": {
+          "base": 939000,
+          "control": 930000,
+          "selected": 931000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 0.9904153354632588,
+          "selected": 0.9914802981895634
+        },
+        "medians_max_rss_bytes": {
+          "base": 25780224,
+          "control": 25780224,
+          "selected": 25780224
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_vertex_add_path_sum_small_3",
+        "medians_cpu_ns": {
+          "base": 942000,
+          "control": 1030000,
+          "selected": 944000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 1.0934182590233545,
+          "selected": 1.0021231422505308
+        },
+        "medians_max_rss_bytes": {
+          "base": 25780224,
+          "control": 25780224,
+          "selected": 25780224
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_vertex_add_path_sum_small_4",
+        "medians_cpu_ns": {
+          "base": 1150000,
+          "control": 1099000,
+          "selected": 1032000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 0.9556521739130435,
+          "selected": 0.8973913043478261
+        },
+        "medians_max_rss_bytes": {
+          "base": 25780224,
+          "control": 25780224,
+          "selected": 25780224
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_vertex_add_path_sum_random_0",
+        "medians_cpu_ns": {
+          "base": 135696000,
+          "control": 135962000,
+          "selected": 128320000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 1.001960264119797,
+          "selected": 0.945643202452541
+        },
+        "medians_max_rss_bytes": {
+          "base": 48115712,
+          "control": 48136192,
+          "selected": 48226304
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_vertex_add_path_sum_random_1",
+        "medians_cpu_ns": {
+          "base": 161496000,
+          "control": 159082000,
+          "selected": 153753000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 0.9850522613563184,
+          "selected": 0.9520545400505276
+        },
+        "medians_max_rss_bytes": {
+          "base": 56377344,
+          "control": 56369152,
+          "selected": 56344576
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_vertex_add_path_sum_random_2",
+        "medians_cpu_ns": {
+          "base": 47146000,
+          "control": 47109000,
+          "selected": 44005000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 0.9992152038348958,
+          "selected": 0.9333771687948076
+        },
+        "medians_max_rss_bytes": {
+          "base": 25780224,
+          "control": 25780224,
+          "selected": 25780224
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_vertex_add_path_sum_random_3",
+        "medians_cpu_ns": {
+          "base": 84856000,
+          "control": 85904000,
+          "selected": 83903000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 1.0123503346846423,
+          "selected": 0.988769209012916
+        },
+        "medians_max_rss_bytes": {
+          "base": 52572160,
+          "control": 52572160,
+          "selected": 52674560
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_vertex_add_path_sum_random_4",
+        "medians_cpu_ns": {
+          "base": 58567000,
+          "control": 59033000,
+          "selected": 57224000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 1.0079566991650588,
+          "selected": 0.9770689978998413
+        },
+        "medians_max_rss_bytes": {
+          "base": 35287040,
+          "control": 35401728,
+          "selected": 35373056
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_vertex_add_path_sum_max_random_0",
+        "medians_cpu_ns": {
+          "base": 187617000,
+          "control": 186322000,
+          "selected": 181602000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 0.9930976404057201,
+          "selected": 0.9679400054366075
+        },
+        "medians_max_rss_bytes": {
+          "base": 60686336,
+          "control": 60743680,
+          "selected": 60530688
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_vertex_add_path_sum_max_random_1",
+        "medians_cpu_ns": {
+          "base": 202210000,
+          "control": 190017000,
+          "selected": 185244000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 0.9397013006280599,
+          "selected": 0.9160971267494189
+        },
+        "medians_max_rss_bytes": {
+          "base": 60739584,
+          "control": 60743680,
+          "selected": 60551168
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_vertex_add_path_sum_max_random_2",
+        "medians_cpu_ns": {
+          "base": 187314000,
+          "control": 190029000,
+          "selected": 183019000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 1.014494378423396,
+          "selected": 0.9770705873559905
+        },
+        "medians_max_rss_bytes": {
+          "base": 60715008,
+          "control": 60747776,
+          "selected": 60547072
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_vertex_add_path_sum_line_0",
+        "medians_cpu_ns": {
+          "base": 115992000,
+          "control": 114146000,
+          "selected": 110215000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 0.984085109317884,
+          "selected": 0.9501948410235188
+        },
+        "medians_max_rss_bytes": {
+          "base": 60166144,
+          "control": 60125184,
+          "selected": 60026880
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_vertex_add_path_sum_line_1",
+        "medians_cpu_ns": {
+          "base": 114701000,
+          "control": 113781000,
+          "selected": 112455000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 0.9919791457790255,
+          "selected": 0.9804186537170556
+        },
+        "medians_max_rss_bytes": {
+          "base": 60166144,
+          "control": 60166144,
+          "selected": 60026880
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_vertex_add_path_sum_almost_line_0",
+        "medians_cpu_ns": {
+          "base": 126181000,
+          "control": 126614000,
+          "selected": 120992000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 1.0034315784468344,
+          "selected": 0.9588765345020249
+        },
+        "medians_max_rss_bytes": {
+          "base": 60186624,
+          "control": 60133376,
+          "selected": 60026880
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_vertex_add_path_sum_almost_line_1",
+        "medians_cpu_ns": {
+          "base": 125114000,
+          "control": 127887000,
+          "selected": 120886000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 1.0221637866265965,
+          "selected": 0.9662068193807247
+        },
+        "medians_max_rss_bytes": {
+          "base": 60178432,
+          "control": 60162048,
+          "selected": 60014592
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_vertex_add_path_sum_long-path-decomposition_killer_0",
+        "medians_cpu_ns": {
+          "base": 56767000,
+          "control": 56487000,
+          "selected": 56404000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 0.9950675568552152,
+          "selected": 0.9936054397801539
+        },
+        "medians_max_rss_bytes": {
+          "base": 60174336,
+          "control": 60166144,
+          "selected": 60026880
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_jump_on_tree_32_chain",
+        "medians_cpu_ns": {
+          "base": 918000,
+          "control": 925000,
+          "selected": 926000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 1.0076252723311547,
+          "selected": 1.008714596949891
+        },
+        "medians_max_rss_bytes": {
+          "base": 30744576,
+          "control": 30744576,
+          "selected": 30744576
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_vertex_add_path_sum_32_chain",
+        "medians_cpu_ns": {
+          "base": 910000,
+          "control": 915000,
+          "selected": 912000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 1.0054945054945055,
+          "selected": 1.0021978021978022
+        },
+        "medians_max_rss_bytes": {
+          "base": 30744576,
+          "control": 30744576,
+          "selected": 30744576
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_jump_on_tree_32_star",
+        "medians_cpu_ns": {
+          "base": 1106000,
+          "control": 1038000,
+          "selected": 1114000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 0.9385171790235082,
+          "selected": 1.0072332730560578
+        },
+        "medians_max_rss_bytes": {
+          "base": 30744576,
+          "control": 30744576,
+          "selected": 30744576
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_vertex_add_path_sum_32_star",
+        "medians_cpu_ns": {
+          "base": 1105000,
+          "control": 1047000,
+          "selected": 1028000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 0.9475113122171945,
+          "selected": 0.930316742081448
+        },
+        "medians_max_rss_bytes": {
+          "base": 30744576,
+          "control": 30744576,
+          "selected": 30744576
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_jump_on_tree_32_balanced",
+        "medians_cpu_ns": {
+          "base": 940000,
+          "control": 928000,
+          "selected": 1050000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 0.9872340425531915,
+          "selected": 1.1170212765957446
+        },
+        "medians_max_rss_bytes": {
+          "base": 30744576,
+          "control": 30744576,
+          "selected": 30744576
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_vertex_add_path_sum_32_balanced",
+        "medians_cpu_ns": {
+          "base": 929000,
+          "control": 929000,
+          "selected": 932000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 1.0,
+          "selected": 1.0032292787944026
+        },
+        "medians_max_rss_bytes": {
+          "base": 30744576,
+          "control": 30744576,
+          "selected": 30744576
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_jump_on_tree_32_random",
+        "medians_cpu_ns": {
+          "base": 911000,
+          "control": 912000,
+          "selected": 904000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 1.0010976948408343,
+          "selected": 0.9923161361141603
+        },
+        "medians_max_rss_bytes": {
+          "base": 30744576,
+          "control": 30744576,
+          "selected": 30744576
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_vertex_add_path_sum_32_random",
+        "medians_cpu_ns": {
+          "base": 904000,
+          "control": 904000,
+          "selected": 900000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 1.0,
+          "selected": 0.995575221238938
+        },
+        "medians_max_rss_bytes": {
+          "base": 30744576,
+          "control": 30744576,
+          "selected": 30744576
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_jump_on_tree_4096_chain",
+        "medians_cpu_ns": {
+          "base": 1383000,
+          "control": 1375000,
+          "selected": 1386000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 0.9942154736080984,
+          "selected": 1.002169197396963
+        },
+        "medians_max_rss_bytes": {
+          "base": 30744576,
+          "control": 30744576,
+          "selected": 30744576
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_vertex_add_path_sum_4096_chain",
+        "medians_cpu_ns": {
+          "base": 1437000,
+          "control": 1460000,
+          "selected": 1454000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 1.0160055671537926,
+          "selected": 1.011830201809325
+        },
+        "medians_max_rss_bytes": {
+          "base": 30744576,
+          "control": 30744576,
+          "selected": 30744576
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_jump_on_tree_4096_star",
+        "medians_cpu_ns": {
+          "base": 1339000,
+          "control": 1290000,
+          "selected": 1295000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 0.9634055265123226,
+          "selected": 0.9671396564600448
+        },
+        "medians_max_rss_bytes": {
+          "base": 30744576,
+          "control": 30744576,
+          "selected": 30744576
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_vertex_add_path_sum_4096_star",
+        "medians_cpu_ns": {
+          "base": 1367000,
+          "control": 1354000,
+          "selected": 1401000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 0.9904901243599122,
+          "selected": 1.0248719824433066
+        },
+        "medians_max_rss_bytes": {
+          "base": 30744576,
+          "control": 30744576,
+          "selected": 30744576
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_jump_on_tree_4096_balanced",
+        "medians_cpu_ns": {
+          "base": 1512000,
+          "control": 1509000,
+          "selected": 1423000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 0.998015873015873,
+          "selected": 0.9411375661375662
+        },
+        "medians_max_rss_bytes": {
+          "base": 30744576,
+          "control": 30744576,
+          "selected": 30744576
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_vertex_add_path_sum_4096_balanced",
+        "medians_cpu_ns": {
+          "base": 1627000,
+          "control": 1613000,
+          "selected": 1596000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 0.9913952059004303,
+          "selected": 0.9809465273509527
+        },
+        "medians_max_rss_bytes": {
+          "base": 30744576,
+          "control": 30744576,
+          "selected": 30744576
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_jump_on_tree_4096_random",
+        "medians_cpu_ns": {
+          "base": 1503000,
+          "control": 1510000,
+          "selected": 1451000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 1.004657351962741,
+          "selected": 0.9654025282767797
+        },
+        "medians_max_rss_bytes": {
+          "base": 30744576,
+          "control": 30744576,
+          "selected": 30744576
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_vertex_add_path_sum_4096_random",
+        "medians_cpu_ns": {
+          "base": 1610000,
+          "control": 1608000,
+          "selected": 1592000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 0.9987577639751553,
+          "selected": 0.9888198757763975
+        },
+        "medians_max_rss_bytes": {
+          "base": 30744576,
+          "control": 30744576,
+          "selected": 30744576
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_jump_on_tree_250000_chain",
+        "medians_cpu_ns": {
+          "base": 51419000,
+          "control": 51314000,
+          "selected": 50984000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 0.9979579532857504,
+          "selected": 0.9915400921838231
+        },
+        "medians_max_rss_bytes": {
+          "base": 30744576,
+          "control": 30744576,
+          "selected": 30744576
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_vertex_add_path_sum_250000_chain",
+        "medians_cpu_ns": {
+          "base": 57278000,
+          "control": 57816000,
+          "selected": 56648000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 1.0093927860609657,
+          "selected": 0.9890010126051887
+        },
+        "medians_max_rss_bytes": {
+          "base": 31993856,
+          "control": 31981568,
+          "selected": 31973376
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_jump_on_tree_250000_star",
+        "medians_cpu_ns": {
+          "base": 33673000,
+          "control": 33506000,
+          "selected": 33735000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 0.9950405369286965,
+          "selected": 1.001841237786951
+        },
+        "medians_max_rss_bytes": {
+          "base": 30744576,
+          "control": 30744576,
+          "selected": 30744576
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_vertex_add_path_sum_250000_star",
+        "medians_cpu_ns": {
+          "base": 41957000,
+          "control": 42363000,
+          "selected": 41635000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 1.009676573634912,
+          "selected": 0.9923254760826561
+        },
+        "medians_max_rss_bytes": {
+          "base": 32964608,
+          "control": 32993280,
+          "selected": 32993280
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_jump_on_tree_250000_balanced",
+        "medians_cpu_ns": {
+          "base": 73745000,
+          "control": 74845000,
+          "selected": 56595000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 1.014916265509526,
+          "selected": 0.7674418604651163
+        },
+        "medians_max_rss_bytes": {
+          "base": 30744576,
+          "control": 30744576,
+          "selected": 30744576
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_vertex_add_path_sum_250000_balanced",
+        "medians_cpu_ns": {
+          "base": 77651000,
+          "control": 77789000,
+          "selected": 75431000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 1.0017771825217963,
+          "selected": 0.9714105420406691
+        },
+        "medians_max_rss_bytes": {
+          "base": 31981568,
+          "control": 31981568,
+          "selected": 31973376
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_jump_on_tree_250000_random",
+        "medians_cpu_ns": {
+          "base": 66854000,
+          "control": 66760000,
+          "selected": 54337000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 0.9985939509976964,
+          "selected": 0.8127711131719867
+        },
+        "medians_max_rss_bytes": {
+          "base": 30744576,
+          "control": 30744576,
+          "selected": 30744576
+        }
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_vertex_add_path_sum_250000_random",
+        "medians_cpu_ns": {
+          "base": 72753000,
+          "control": 72391000,
+          "selected": 69903000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 0.9950242601679656,
+          "selected": 0.9608263576759721
+        },
+        "medians_max_rss_bytes": {
+          "base": 32272384,
+          "control": 32260096,
+          "selected": 32235520
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_jump_on_tree_example_0",
+        "medians_cpu_ns": {
+          "base": 927000,
+          "control": 946000,
+          "selected": 943000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 1.0204962243797195,
+          "selected": 1.017259978425027
+        },
+        "medians_max_rss_bytes": {
+          "base": 30744576,
+          "control": 30744576,
+          "selected": 30744576
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_jump_on_tree_small_random_0",
+        "medians_cpu_ns": {
+          "base": 15550000,
+          "control": 15570000,
+          "selected": 11319000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 1.0012861736334404,
+          "selected": 0.7279099678456592
+        },
+        "medians_max_rss_bytes": {
+          "base": 30744576,
+          "control": 30744576,
+          "selected": 30744576
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_jump_on_tree_small_random_1",
+        "medians_cpu_ns": {
+          "base": 15414000,
+          "control": 15465000,
+          "selected": 10708000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 1.003308680420397,
+          "selected": 0.6946931361100298
+        },
+        "medians_max_rss_bytes": {
+          "base": 30744576,
+          "control": 30744576,
+          "selected": 30744576
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_jump_on_tree_small_random_2",
+        "medians_cpu_ns": {
+          "base": 15313000,
+          "control": 15407000,
+          "selected": 10277000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 1.0061385750669365,
+          "selected": 0.6711291059883759
+        },
+        "medians_max_rss_bytes": {
+          "base": 30744576,
+          "control": 30744576,
+          "selected": 30744576
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_jump_on_tree_small_random_3",
+        "medians_cpu_ns": {
+          "base": 15449000,
+          "control": 15407000,
+          "selected": 11132000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 0.9972813774354327,
+          "selected": 0.7205644378276911
+        },
+        "medians_max_rss_bytes": {
+          "base": 30744576,
+          "control": 30744576,
+          "selected": 30744576
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_jump_on_tree_small_random_4",
+        "medians_cpu_ns": {
+          "base": 17475000,
+          "control": 17411000,
+          "selected": 15020000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 0.9963376251788268,
+          "selected": 0.859513590844063
+        },
+        "medians_max_rss_bytes": {
+          "base": 30744576,
+          "control": 30744576,
+          "selected": 30744576
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_jump_on_tree_random_0",
+        "medians_cpu_ns": {
+          "base": 142476000,
+          "control": 144091000,
+          "selected": 125005000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 1.0113352424267947,
+          "selected": 0.8773758387377524
+        },
+        "medians_max_rss_bytes": {
+          "base": 40103936,
+          "control": 40103936,
+          "selected": 38793216
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_jump_on_tree_random_1",
+        "medians_cpu_ns": {
+          "base": 173396000,
+          "control": 172084000,
+          "selected": 151250000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 0.9924335048097995,
+          "selected": 0.8722807907910217
+        },
+        "medians_max_rss_bytes": {
+          "base": 47181824,
+          "control": 47181824,
+          "selected": 45346816
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_jump_on_tree_random_2",
+        "medians_cpu_ns": {
+          "base": 49389000,
+          "control": 49337000,
+          "selected": 38064000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 0.9989471339772014,
+          "selected": 0.7706979286885743
+        },
+        "medians_max_rss_bytes": {
+          "base": 30744576,
+          "control": 30744576,
+          "selected": 30744576
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_jump_on_tree_random_3",
+        "medians_cpu_ns": {
+          "base": 164322000,
+          "control": 162340000,
+          "selected": 139906000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 0.9879383162327625,
+          "selected": 0.8514136877593992
+        },
+        "medians_max_rss_bytes": {
+          "base": 44032000,
+          "control": 44032000,
+          "selected": 42196992
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_jump_on_tree_random_4",
+        "medians_cpu_ns": {
+          "base": 111799000,
+          "control": 110564000,
+          "selected": 91939000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 0.9889533895652018,
+          "selected": 0.8223597706598449
+        },
+        "medians_max_rss_bytes": {
+          "base": 30744576,
+          "control": 30744576,
+          "selected": 30744576
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_jump_on_tree_max_random_0",
+        "medians_cpu_ns": {
+          "base": 194947000,
+          "control": 193110000,
+          "selected": 172195000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 0.9905769260363073,
+          "selected": 0.8832913561121741
+        },
+        "medians_max_rss_bytes": {
+          "base": 50556928,
+          "control": 50589696,
+          "selected": 48492544
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_jump_on_tree_max_random_1",
+        "medians_cpu_ns": {
+          "base": 195059000,
+          "control": 190388000,
+          "selected": 170282000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 0.9760533992279259,
+          "selected": 0.8729768941704817
+        },
+        "medians_max_rss_bytes": {
+          "base": 50585600,
+          "control": 50589696,
+          "selected": 48492544
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_jump_on_tree_uni_0",
+        "medians_cpu_ns": {
+          "base": 87346000,
+          "control": 86751000,
+          "selected": 84457000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 0.9931880108991825,
+          "selected": 0.9669246445172074
+        },
+        "medians_max_rss_bytes": {
+          "base": 54034432,
+          "control": 54013952,
+          "selected": 51953664
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_jump_on_tree_almost_uni_0",
+        "medians_cpu_ns": {
+          "base": 98185000,
+          "control": 96215000,
+          "selected": 93347000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 0.9799358354127412,
+          "selected": 0.9507256709273311
+        },
+        "medians_max_rss_bytes": {
+          "base": 53526528,
+          "control": 53575680,
+          "selected": 51425280
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_jump_on_tree_almost_uni_1",
+        "medians_cpu_ns": {
+          "base": 97455000,
+          "control": 97983000,
+          "selected": 93444000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 1.0054178851777744,
+          "selected": 0.958842542712021
+        },
+        "medians_max_rss_bytes": {
+          "base": 53514240,
+          "control": 53518336,
+          "selected": 51412992
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_jump_on_tree_almost_line_0",
+        "medians_cpu_ns": {
+          "base": 182975000,
+          "control": 184806000,
+          "selected": 173524000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 1.0100068315343627,
+          "selected": 0.948348134991119
+        },
+        "medians_max_rss_bytes": {
+          "base": 50589696,
+          "control": 50556928,
+          "selected": 48754688
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_jump_on_tree_almost_line_1",
+        "medians_cpu_ns": {
+          "base": 184108000,
+          "control": 175586000,
+          "selected": 173119000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 0.9537119516805354,
+          "selected": 0.9403122080517957
+        },
+        "medians_max_rss_bytes": {
+          "base": 50585600,
+          "control": 50585600,
+          "selected": 48492544
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_jump_on_tree_almost_line_2",
+        "medians_cpu_ns": {
+          "base": 181082000,
+          "control": 184787000,
+          "selected": 170677000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 1.020460343932583,
+          "selected": 0.9425398438276582
+        },
+        "medians_max_rss_bytes": {
+          "base": 50323456,
+          "control": 50323456,
+          "selected": 48492544
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_jump_on_tree_almost_line_3",
+        "medians_cpu_ns": {
+          "base": 176059000,
+          "control": 178463000,
+          "selected": 163086000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 1.0136545135437551,
+          "selected": 0.9263144741251512
+        },
+        "medians_max_rss_bytes": {
+          "base": 50327552,
+          "control": 50327552,
+          "selected": 48492544
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_jump_on_tree_line_0",
+        "medians_cpu_ns": {
+          "base": 107040000,
+          "control": 106097000,
+          "selected": 101309000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 0.9911902092675635,
+          "selected": 0.9464592675635276
+        },
+        "medians_max_rss_bytes": {
+          "base": 49803264,
+          "control": 49803264,
+          "selected": 47955968
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_jump_on_tree_32_chain",
+        "medians_cpu_ns": {
+          "base": 1215000,
+          "control": 1127000,
+          "selected": 1150000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 0.9275720164609054,
+          "selected": 0.9465020576131687
+        },
+        "medians_max_rss_bytes": {
+          "base": 30744576,
+          "control": 30744576,
+          "selected": 30744576
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_jump_on_tree_32_star",
+        "medians_cpu_ns": {
+          "base": 895000,
+          "control": 906000,
+          "selected": 914000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 1.012290502793296,
+          "selected": 1.0212290502793295
+        },
+        "medians_max_rss_bytes": {
+          "base": 30744576,
+          "control": 30744576,
+          "selected": 30744576
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_jump_on_tree_32_balanced",
+        "medians_cpu_ns": {
+          "base": 1066000,
+          "control": 1047000,
+          "selected": 1075000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 0.9821763602251408,
+          "selected": 1.0084427767354596
+        },
+        "medians_max_rss_bytes": {
+          "base": 30744576,
+          "control": 30744576,
+          "selected": 30744576
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_jump_on_tree_32_random",
+        "medians_cpu_ns": {
+          "base": 903000,
+          "control": 904000,
+          "selected": 910000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 1.0011074197120708,
+          "selected": 1.0077519379844961
+        },
+        "medians_max_rss_bytes": {
+          "base": 30744576,
+          "control": 30744576,
+          "selected": 30744576
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_jump_on_tree_4096_chain",
+        "medians_cpu_ns": {
+          "base": 1369000,
+          "control": 1356000,
+          "selected": 1353000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 0.9905040175310446,
+          "selected": 0.9883126369612856
+        },
+        "medians_max_rss_bytes": {
+          "base": 30744576,
+          "control": 30744576,
+          "selected": 30744576
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_jump_on_tree_4096_star",
+        "medians_cpu_ns": {
+          "base": 1263000,
+          "control": 1293000,
+          "selected": 1285000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 1.0237529691211402,
+          "selected": 1.0174188440221694
+        },
+        "medians_max_rss_bytes": {
+          "base": 30744576,
+          "control": 30744576,
+          "selected": 30744576
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_jump_on_tree_4096_balanced",
+        "medians_cpu_ns": {
+          "base": 1489000,
+          "control": 1530000,
+          "selected": 1463000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 1.027535258562794,
+          "selected": 0.9825386165211552
+        },
+        "medians_max_rss_bytes": {
+          "base": 30744576,
+          "control": 30744576,
+          "selected": 30744576
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_jump_on_tree_4096_random",
+        "medians_cpu_ns": {
+          "base": 1526000,
+          "control": 1530000,
+          "selected": 1443000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 1.0026212319790302,
+          "selected": 0.9456094364351245
+        },
+        "medians_max_rss_bytes": {
+          "base": 30744576,
+          "control": 30744576,
+          "selected": 30744576
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_jump_on_tree_250000_chain",
+        "medians_cpu_ns": {
+          "base": 45454000,
+          "control": 46024000,
+          "selected": 43982000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 1.0125401504818057,
+          "selected": 0.9676156113873366
+        },
+        "medians_max_rss_bytes": {
+          "base": 30744576,
+          "control": 30744576,
+          "selected": 30744576
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_jump_on_tree_250000_star",
+        "medians_cpu_ns": {
+          "base": 30840000,
+          "control": 31287000,
+          "selected": 30771000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 1.0144941634241245,
+          "selected": 0.9977626459143969
+        },
+        "medians_max_rss_bytes": {
+          "base": 30744576,
+          "control": 30744576,
+          "selected": 30744576
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_jump_on_tree_250000_balanced",
+        "medians_cpu_ns": {
+          "base": 68007000,
+          "control": 68273000,
+          "selected": 51573000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 1.0039113620656697,
+          "selected": 0.7583484053112179
+        },
+        "medians_max_rss_bytes": {
+          "base": 30744576,
+          "control": 30744576,
+          "selected": 30744576
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_jump_on_tree_250000_random",
+        "medians_cpu_ns": {
+          "base": 63109000,
+          "control": 63485000,
+          "selected": 51635000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 1.0059579457763552,
+          "selected": 0.8181875802183524
+        },
+        "medians_max_rss_bytes": {
+          "base": 30744576,
+          "control": 30744576,
+          "selected": 30744576
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_vertex_add_path_sum_example_0",
+        "medians_cpu_ns": {
+          "base": 1111000,
+          "control": 1093000,
+          "selected": 989000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 0.9837983798379838,
+          "selected": 0.8901890189018902
+        },
+        "medians_max_rss_bytes": {
+          "base": 20234240,
+          "control": 20234240,
+          "selected": 20234240
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_vertex_add_path_sum_small_0",
+        "medians_cpu_ns": {
+          "base": 1001000,
+          "control": 1009000,
+          "selected": 993000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 1.007992007992008,
+          "selected": 0.9920079920079921
+        },
+        "medians_max_rss_bytes": {
+          "base": 20234240,
+          "control": 20234240,
+          "selected": 20234240
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_vertex_add_path_sum_small_1",
+        "medians_cpu_ns": {
+          "base": 956000,
+          "control": 959000,
+          "selected": 958000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 1.0031380753138075,
+          "selected": 1.002092050209205
+        },
+        "medians_max_rss_bytes": {
+          "base": 20234240,
+          "control": 20234240,
+          "selected": 20234240
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_vertex_add_path_sum_small_2",
+        "medians_cpu_ns": {
+          "base": 932000,
+          "control": 949000,
+          "selected": 947000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 1.0182403433476395,
+          "selected": 1.0160944206008584
+        },
+        "medians_max_rss_bytes": {
+          "base": 20496384,
+          "control": 20496384,
+          "selected": 20496384
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_vertex_add_path_sum_small_3",
+        "medians_cpu_ns": {
+          "base": 957000,
+          "control": 1039000,
+          "selected": 967000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 1.0856844305120168,
+          "selected": 1.0104493207941483
+        },
+        "medians_max_rss_bytes": {
+          "base": 20496384,
+          "control": 20496384,
+          "selected": 20496384
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_vertex_add_path_sum_small_4",
+        "medians_cpu_ns": {
+          "base": 1024000,
+          "control": 1041000,
+          "selected": 1043000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 1.0166015625,
+          "selected": 1.0185546875
+        },
+        "medians_max_rss_bytes": {
+          "base": 20496384,
+          "control": 20496384,
+          "selected": 20496384
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_vertex_add_path_sum_random_0",
+        "medians_cpu_ns": {
+          "base": 133243000,
+          "control": 133926000,
+          "selected": 131980000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 1.0051259728466035,
+          "selected": 0.9905210780303656
+        },
+        "medians_max_rss_bytes": {
+          "base": 48132096,
+          "control": 48168960,
+          "selected": 48230400
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_vertex_add_path_sum_random_1",
+        "medians_cpu_ns": {
+          "base": 157170000,
+          "control": 156778000,
+          "selected": 155175000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 0.9975058853470764,
+          "selected": 0.9873067379270853
+        },
+        "medians_max_rss_bytes": {
+          "base": 56373248,
+          "control": 56377344,
+          "selected": 56356864
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_vertex_add_path_sum_random_2",
+        "medians_cpu_ns": {
+          "base": 47232000,
+          "control": 47306000,
+          "selected": 46474000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 1.0015667344173442,
+          "selected": 0.9839515582655827
+        },
+        "medians_max_rss_bytes": {
+          "base": 22908928,
+          "control": 22908928,
+          "selected": 22908928
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_vertex_add_path_sum_random_3",
+        "medians_cpu_ns": {
+          "base": 81074000,
+          "control": 81481000,
+          "selected": 80333000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 1.0050201050891778,
+          "selected": 0.9908602017909565
+        },
+        "medians_max_rss_bytes": {
+          "base": 52572160,
+          "control": 52572160,
+          "selected": 52686848
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_vertex_add_path_sum_random_4",
+        "medians_cpu_ns": {
+          "base": 57691000,
+          "control": 57594000,
+          "selected": 56879000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 0.9983186285555806,
+          "selected": 0.9859250143003241
+        },
+        "medians_max_rss_bytes": {
+          "base": 35278848,
+          "control": 35401728,
+          "selected": 35360768
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_vertex_add_path_sum_max_random_0",
+        "medians_cpu_ns": {
+          "base": 204993000,
+          "control": 190386000,
+          "selected": 200981000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 0.9287439083285771,
+          "selected": 0.9804286000009756
+        },
+        "medians_max_rss_bytes": {
+          "base": 60743680,
+          "control": 60743680,
+          "selected": 60547072
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_vertex_add_path_sum_max_random_1",
+        "medians_cpu_ns": {
+          "base": 203124000,
+          "control": 201961000,
+          "selected": 187414000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 0.9942744333510565,
+          "selected": 0.9226580807782438
+        },
+        "medians_max_rss_bytes": {
+          "base": 60706816,
+          "control": 60735488,
+          "selected": 60551168
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_vertex_add_path_sum_max_random_2",
+        "medians_cpu_ns": {
+          "base": 185216000,
+          "control": 183713000,
+          "selected": 181845000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 0.9918851503109882,
+          "selected": 0.9817996285418107
+        },
+        "medians_max_rss_bytes": {
+          "base": 60743680,
+          "control": 60739584,
+          "selected": 60551168
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_vertex_add_path_sum_line_0",
+        "medians_cpu_ns": {
+          "base": 101580000,
+          "control": 101951000,
+          "selected": 99871000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 1.0036522937586139,
+          "selected": 0.9831758220122071
+        },
+        "medians_max_rss_bytes": {
+          "base": 60186624,
+          "control": 60174336,
+          "selected": 60026880
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_vertex_add_path_sum_line_1",
+        "medians_cpu_ns": {
+          "base": 102290000,
+          "control": 102212000,
+          "selected": 100391000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 0.9992374621175091,
+          "selected": 0.9814351353993548
+        },
+        "medians_max_rss_bytes": {
+          "base": 60153856,
+          "control": 60182528,
+          "selected": 59985920
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_vertex_add_path_sum_almost_line_0",
+        "medians_cpu_ns": {
+          "base": 113958000,
+          "control": 113850000,
+          "selected": 112630000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 0.9990522824198389,
+          "selected": 0.98834658382913
+        },
+        "medians_max_rss_bytes": {
+          "base": 60190720,
+          "control": 60186624,
+          "selected": 60026880
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_vertex_add_path_sum_almost_line_1",
+        "medians_cpu_ns": {
+          "base": 152260000,
+          "control": 142748000,
+          "selected": 139481000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 0.9375279127807697,
+          "selected": 0.9160711940102456
+        },
+        "medians_max_rss_bytes": {
+          "base": 60182528,
+          "control": 60190720,
+          "selected": 60026880
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "official_vertex_add_path_sum_long-path-decomposition_killer_0",
+        "medians_cpu_ns": {
+          "base": 54574000,
+          "control": 54639000,
+          "selected": 54038000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 1.0011910433539781,
+          "selected": 0.9901784732656577
+        },
+        "medians_max_rss_bytes": {
+          "base": 60174336,
+          "control": 60174336,
+          "selected": 60026880
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_vertex_add_path_sum_32_chain",
+        "medians_cpu_ns": {
+          "base": 954000,
+          "control": 949000,
+          "selected": 965000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 0.9947589098532494,
+          "selected": 1.0115303983228512
+        },
+        "medians_max_rss_bytes": {
+          "base": 30720000,
+          "control": 30720000,
+          "selected": 30720000
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_vertex_add_path_sum_32_star",
+        "medians_cpu_ns": {
+          "base": 924000,
+          "control": 923000,
+          "selected": 918000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 0.9989177489177489,
+          "selected": 0.9935064935064936
+        },
+        "medians_max_rss_bytes": {
+          "base": 30720000,
+          "control": 30720000,
+          "selected": 30720000
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_vertex_add_path_sum_32_balanced",
+        "medians_cpu_ns": {
+          "base": 914000,
+          "control": 919000,
+          "selected": 908000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 1.0054704595185995,
+          "selected": 0.9934354485776805
+        },
+        "medians_max_rss_bytes": {
+          "base": 30720000,
+          "control": 30720000,
+          "selected": 30720000
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_vertex_add_path_sum_32_random",
+        "medians_cpu_ns": {
+          "base": 913000,
+          "control": 914000,
+          "selected": 908000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 1.0010952902519168,
+          "selected": 0.9945235487404163
+        },
+        "medians_max_rss_bytes": {
+          "base": 30720000,
+          "control": 30720000,
+          "selected": 30720000
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_vertex_add_path_sum_4096_chain",
+        "medians_cpu_ns": {
+          "base": 1436000,
+          "control": 1420000,
+          "selected": 1437000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 0.9888579387186629,
+          "selected": 1.0006963788300836
+        },
+        "medians_max_rss_bytes": {
+          "base": 30720000,
+          "control": 30720000,
+          "selected": 30720000
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_vertex_add_path_sum_4096_star",
+        "medians_cpu_ns": {
+          "base": 1477000,
+          "control": 1410000,
+          "selected": 1425000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 0.9546377792823291,
+          "selected": 0.9647935003385241
+        },
+        "medians_max_rss_bytes": {
+          "base": 30720000,
+          "control": 30720000,
+          "selected": 30720000
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_vertex_add_path_sum_4096_balanced",
+        "medians_cpu_ns": {
+          "base": 1648000,
+          "control": 1630000,
+          "selected": 1617000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 0.9890776699029126,
+          "selected": 0.9811893203883495
+        },
+        "medians_max_rss_bytes": {
+          "base": 30720000,
+          "control": 30720000,
+          "selected": 30720000
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_vertex_add_path_sum_4096_random",
+        "medians_cpu_ns": {
+          "base": 1633000,
+          "control": 1656000,
+          "selected": 1638000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 1.0140845070422535,
+          "selected": 1.0030618493570116
+        },
+        "medians_max_rss_bytes": {
+          "base": 30720000,
+          "control": 30720000,
+          "selected": 30720000
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_vertex_add_path_sum_250000_chain",
+        "medians_cpu_ns": {
+          "base": 60100000,
+          "control": 60699000,
+          "selected": 55521000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 1.0099667221297837,
+          "selected": 0.923810316139767
+        },
+        "medians_max_rss_bytes": {
+          "base": 31989760,
+          "control": 31993856,
+          "selected": 31977472
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_vertex_add_path_sum_250000_star",
+        "medians_cpu_ns": {
+          "base": 41494000,
+          "control": 41390000,
+          "selected": 40828000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 0.997493613534487,
+          "selected": 0.9839494866727719
+        },
+        "medians_max_rss_bytes": {
+          "base": 32993280,
+          "control": 32968704,
+          "selected": 32993280
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_vertex_add_path_sum_250000_balanced",
+        "medians_cpu_ns": {
+          "base": 80459000,
+          "control": 79979000,
+          "selected": 77995000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 0.994034228613331,
+          "selected": 0.9693757068817659
+        },
+        "medians_max_rss_bytes": {
+          "base": 31989760,
+          "control": 31993856,
+          "selected": 31977472
+        }
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_vertex_add_path_sum_250000_random",
+        "medians_cpu_ns": {
+          "base": 73775000,
+          "control": 73276000,
+          "selected": 71214000
+        },
+        "ratios_to_base": {
+          "base": 1.0,
+          "control": 0.9932361911216536,
+          "selected": 0.9652863436123348
+        },
+        "medians_max_rss_bytes": {
+          "base": 32276480,
+          "control": 32276480,
+          "selected": 32235520
+        }
+      }
+    ],
+    "selected_summary_composition": "GCCの全64ケースとClangのjump33ケースはfull_raw.jsonのconnected（最終.text一致）。Clangのpath sum31ケースはclang_sum_raw.jsonのselected。final selected_raw.jsonへ統合。",
+    "representative": "Jump max_random_00: GCC157.862→137.148ms（約13%）、Clang194.947→172.195ms（約12%）。small_random_00はGCC15.100→11.697ms、Clang15.550→11.319ms。Path Sumは概ね同等〜数%短縮で、Jumpほど大きい効果はない。",
+    "limits": "オンラインとCPU/負荷が違うため再提出結果は未確認。全caseで厳密に退行0とは主張しない。GCC almost_line_01は+2.6%だがcontrolも+8.1%、Clang Path Sum max_random_00もbase/controlに約7%の揺れがある。数%の差はcontrolと併記して解釈する。小さい入力のmainは起動/IOが支配する。",
+    "machine_code_equivalence": [
+      {
+        "compiler": "gcc",
+        "problem": "jump",
+        "command": [
+          "taskset",
+          "-c",
+          "6",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "/tmp/sirkit_hld_20261104/jump_selected.cpp",
+          "-o",
+          "/tmp/sirkit_hld_20261104/gcc_jump_selected"
+        ],
+        "source_sha256": "ca72a8fe476bec2a61766e45e210bb8a0795faeba6a04844053215eb7634441f",
+        "text_sha256": "e894f14f181da0cddfebbbbffaade1c89a53bfa54e1255c9cd32160e7a62ec79",
+        "matches_candidate": "connected"
+      },
+      {
+        "compiler": "clang",
+        "problem": "jump",
+        "command": [
+          "taskset",
+          "-c",
+          "6",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "/tmp/sirkit_hld_20261104/jump_selected.cpp",
+          "-o",
+          "/tmp/sirkit_hld_20261104/clang_jump_selected"
+        ],
+        "source_sha256": "ca72a8fe476bec2a61766e45e210bb8a0795faeba6a04844053215eb7634441f",
+        "text_sha256": "0b01ff0f4512f6215cfd23f61b1861090d11541023b7e11eb0078954ee3d20da",
+        "matches_candidate": "connected"
+      },
+      {
+        "compiler": "gcc",
+        "problem": "sum",
+        "command": [
+          "taskset",
+          "-c",
+          "6",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "/tmp/sirkit_hld_20261104/sum_selected.cpp",
+          "-o",
+          "/tmp/sirkit_hld_20261104/gcc_sum_selected"
+        ],
+        "source_sha256": "ca72a8fe476bec2a61766e45e210bb8a0795faeba6a04844053215eb7634441f",
+        "text_sha256": "349622b19c94c87afd744a860ec6b3a200cc0f754c4a9dcb5f3135db148a8264",
+        "matches_candidate": "connected"
+      },
+      {
+        "compiler": "clang",
+        "problem": "sum",
+        "command": [
+          "taskset",
+          "-c",
+          "6",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "/tmp/sirkit_hld_20261104/sum_selected.cpp",
+          "-o",
+          "/tmp/sirkit_hld_20261104/clang_sum_selected"
+        ],
+        "source_sha256": "ca72a8fe476bec2a61766e45e210bb8a0795faeba6a04844053215eb7634441f",
+        "text_sha256": "f43add07de3f1e294345c08b8dfe00a7dbec2982cdb6b25ec9bf752c32c60f1c",
+        "matches_candidate": "depth_path"
+      }
+    ],
+    "extra_SIMD": "重鎖/祖先の依存した走査が中心で、専用SIMDを追加する測定上の根拠はない。標準C++23の実装と既存の自動ベクトル化を利用し、SIRKIT_DISABLE_SIMDのビルドも検証。"
+  },
+  "tests": {
+    "candidate_ASan_probes": [
+      {
+        "label": "base",
+        "command": [
+          "taskset",
+          "-c",
+          "6",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-DHLD_SOURCE=\"/tmp/sirkit_hld_20261104/base.hpp\"",
+          "/tmp/sirkit_hld_20261104/probe_test.cpp",
+          "-o",
+          "/tmp/sirkit_hld_20261104/probe_base"
+        ],
+        "returncode": 0,
+        "stdout": "HLD checks=34126\n",
+        "stderr": "",
+        "source_sha256": "ff125ec2f81d93b87eff79ce43de8191d237cff766f082da7368ceace4249141"
+      },
+      {
+        "label": "reuse",
+        "command": [
+          "taskset",
+          "-c",
+          "6",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-DHLD_SOURCE=\"/tmp/sirkit_hld_20261104/reuse.hpp\"",
+          "/tmp/sirkit_hld_20261104/probe_test.cpp",
+          "-o",
+          "/tmp/sirkit_hld_20261104/probe_reuse"
+        ],
+        "returncode": 0,
+        "stdout": "HLD checks=34126\n",
+        "stderr": "",
+        "source_sha256": "e98d1b112823cde58afd2663a4026977a176591d21a6d90a9ca0dfdaae3513df"
+      },
+      {
+        "label": "light",
+        "command": [
+          "taskset",
+          "-c",
+          "6",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-DHLD_SOURCE=\"/tmp/sirkit_hld_20261104/light.hpp\"",
+          "/tmp/sirkit_hld_20261104/probe_test.cpp",
+          "-o",
+          "/tmp/sirkit_hld_20261104/probe_light"
+        ],
+        "returncode": 0,
+        "stdout": "HLD checks=34126\n",
+        "stderr": "",
+        "source_sha256": "65c583d933fca5a30a65a98e4763103601f32e6f946b2c267c8fe40d13771a86"
+      },
+      {
+        "label": "build",
+        "command": [
+          "taskset",
+          "-c",
+          "6",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-DHLD_SOURCE=\"/tmp/sirkit_hld_20261104/build.hpp\"",
+          "/tmp/sirkit_hld_20261104/probe_test.cpp",
+          "-o",
+          "/tmp/sirkit_hld_20261104/probe_build"
+        ],
+        "returncode": 0,
+        "stdout": "HLD checks=34126\n",
+        "stderr": "",
+        "source_sha256": "55ff3aaef3d1a6f802c1cd0c12069188ed1c3cc7790515d9aa2becf630da2c5a"
+      },
+      {
+        "label": "jump",
+        "command": [
+          "taskset",
+          "-c",
+          "6",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-DHLD_SOURCE=\"/tmp/sirkit_hld_20261104/jump.hpp\"",
+          "/tmp/sirkit_hld_20261104/probe_test.cpp",
+          "-o",
+          "/tmp/sirkit_hld_20261104/probe_jump"
+        ],
+        "returncode": 0,
+        "stdout": "HLD checks=34126\n",
+        "stderr": "",
+        "source_sha256": "9262764ac2499745a7a5f64f86a1063175002b32c103748363afaa33863ad75e"
+      },
+      {
+        "label": "order",
+        "command": [
+          "taskset",
+          "-c",
+          "6",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-DHLD_SOURCE=\"/tmp/sirkit_hld_20261104/order.hpp\"",
+          "/tmp/sirkit_hld_20261104/probe_test.cpp",
+          "-o",
+          "/tmp/sirkit_hld_20261104/probe_order"
+        ],
+        "returncode": 0,
+        "stdout": "HLD checks=34126\n",
+        "stderr": "",
+        "source_sha256": "fbd09fa928c32bd0ac0d20ee68e2399cbd79391c61c5a078114bc804992884eb"
+      },
+      {
+        "label": "jump_order",
+        "command": [
+          "taskset",
+          "-c",
+          "6",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-DHLD_SOURCE=\"/tmp/sirkit_hld_20261104/jump_order.hpp\"",
+          "/tmp/sirkit_hld_20261104/probe_test.cpp",
+          "-o",
+          "/tmp/sirkit_hld_20261104/probe_jump_order"
+        ],
+        "returncode": 0,
+        "stdout": "HLD checks=34126\n",
+        "stderr": "",
+        "source_sha256": "974a0ac47084c30dca69ceb838ce63d40d8cb44166c4fc3dece68299c0f3d0b9"
+      },
+      {
+        "label": "all",
+        "command": [
+          "taskset",
+          "-c",
+          "6",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-DHLD_SOURCE=\"/tmp/sirkit_hld_20261104/all.hpp\"",
+          "/tmp/sirkit_hld_20261104/probe_test.cpp",
+          "-o",
+          "/tmp/sirkit_hld_20261104/probe_all"
+        ],
+        "returncode": 0,
+        "stdout": "HLD checks=34126\n",
+        "stderr": "",
+        "source_sha256": "070e9ef8b2c8be39d6ec6113d7827adb935c1cb2d1223c6778f8ef89d83c50b5"
+      },
+      {
+        "label": "fast",
+        "command": [
+          "taskset",
+          "-c",
+          "6",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-DHLD_SOURCE=\"/tmp/sirkit_hld_20261104/fast.hpp\"",
+          "/tmp/sirkit_hld_20261104/probe_test.cpp",
+          "-o",
+          "/tmp/sirkit_hld_20261104/probe_fast"
+        ],
+        "returncode": 0,
+        "stdout": "HLD checks=34126\n",
+        "stderr": "",
+        "source_sha256": "a81ee83f7b0ff25e3c71888adcff19c61cb3844635ce15f02a81240fce8072e7"
+      },
+      {
+        "label": "fast_all",
+        "command": [
+          "taskset",
+          "-c",
+          "6",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-DHLD_SOURCE=\"/tmp/sirkit_hld_20261104/fast_all.hpp\"",
+          "/tmp/sirkit_hld_20261104/probe_test.cpp",
+          "-o",
+          "/tmp/sirkit_hld_20261104/probe_fast_all"
+        ],
+        "returncode": 0,
+        "stdout": "HLD checks=34126\n",
+        "stderr": "",
+        "source_sha256": "902768f6fc64bf6268aeebe836155700224f3040b5c254d2e33aaff05ec7cbba"
+      },
+      {
+        "label": "connected",
+        "command": [
+          "taskset",
+          "-c",
+          "6",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-DHLD_SOURCE=\"/tmp/sirkit_hld_20261104/connected.hpp\"",
+          "/tmp/sirkit_hld_20261104/probe_test.cpp",
+          "-o",
+          "/tmp/sirkit_hld_20261104/probe_connected"
+        ],
+        "returncode": 0,
+        "stdout": "HLD checks=34126\n",
+        "stderr": "",
+        "source_sha256": "691714df9ddde601290c308d643f3cde0542ffb3bd103e90945c50cc615e3421"
+      },
+      {
+        "label": "packed",
+        "command": [
+          "taskset",
+          "-c",
+          "6",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-DHLD_SOURCE=\"/tmp/sirkit_hld_20261104/packed.hpp\"",
+          "/tmp/sirkit_hld_20261104/probe_test.cpp",
+          "-o",
+          "/tmp/sirkit_hld_20261104/probe_packed"
+        ],
+        "returncode": 0,
+        "stdout": "HLD checks=34126\n",
+        "stderr": "",
+        "source_sha256": "42d4bc2d5966e32268d060e29a0d319028586e98b250926315a2012215c50440"
+      },
+      {
+        "label": "packed_connected",
+        "command": [
+          "taskset",
+          "-c",
+          "6",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-DHLD_SOURCE=\"/tmp/sirkit_hld_20261104/packed_connected.hpp\"",
+          "/tmp/sirkit_hld_20261104/probe_test.cpp",
+          "-o",
+          "/tmp/sirkit_hld_20261104/probe_packed_connected"
+        ],
+        "returncode": 0,
+        "stdout": "HLD checks=34126\n",
+        "stderr": "",
+        "source_sha256": "d504aae5e5b07bfe151ec6686fd1f8a5433baa2581d3808c16b24221a3381fb8"
+      }
+    ],
+    "selected_GCC_Clang_checked_skip": [
+      {
+        "compiler": "GCC",
+        "skip_runtime_checks": false,
+        "test": "new_hld_reference_test",
+        "compile_command": [
+          "taskset",
+          "-c",
+          "6",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/new_hld_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_hld_20261104/GCC_0_new_hld_reference_test"
+        ],
+        "compile_stderr": "",
+        "run_command": [
+          "taskset",
+          "-c",
+          "6",
+          "/tmp/sirkit_hld_20261104/GCC_0_new_hld_reference_test"
+        ],
+        "returncode": 0,
+        "stdout": "HLD checks=1888601\n",
+        "stderr": "",
+        "source_sha256": "ca72a8fe476bec2a61766e45e210bb8a0795faeba6a04844053215eb7634441f",
+        "test_sha256": "fee8b335d4c057119a21f77637b14a8e400ffc42eac51e28149c9f2b17acbe50"
+      },
+      {
+        "compiler": "GCC",
+        "skip_runtime_checks": false,
+        "test": "new_graph_allocation_test",
+        "compile_command": [
+          "taskset",
+          "-c",
+          "6",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/new_graph_allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_hld_20261104/GCC_0_new_graph_allocation_test"
+        ],
+        "compile_stderr": "",
+        "run_command": [
+          "taskset",
+          "-c",
+          "6",
+          "/tmp/sirkit_hld_20261104/GCC_0_new_graph_allocation_test"
+        ],
+        "returncode": 0,
+        "stdout": "graph allocation failures=108 successes=1092 live_delta=0\n",
+        "stderr": "",
+        "source_sha256": "ca72a8fe476bec2a61766e45e210bb8a0795faeba6a04844053215eb7634441f",
+        "test_sha256": "1a6b05c4468a8e4496303e8fe175a4ea9217d98e92d21599206fbaa35f8a9d27"
+      },
+      {
+        "compiler": "GCC",
+        "skip_runtime_checks": true,
+        "test": "new_hld_reference_test",
+        "compile_command": [
+          "taskset",
+          "-c",
+          "6",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/new_hld_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_hld_20261104/GCC_1_new_hld_reference_test"
+        ],
+        "compile_stderr": "",
+        "run_command": [
+          "taskset",
+          "-c",
+          "6",
+          "/tmp/sirkit_hld_20261104/GCC_1_new_hld_reference_test"
+        ],
+        "returncode": 0,
+        "stdout": "HLD checks=1888601\n",
+        "stderr": "",
+        "source_sha256": "ca72a8fe476bec2a61766e45e210bb8a0795faeba6a04844053215eb7634441f",
+        "test_sha256": "fee8b335d4c057119a21f77637b14a8e400ffc42eac51e28149c9f2b17acbe50"
+      },
+      {
+        "compiler": "GCC",
+        "skip_runtime_checks": true,
+        "test": "new_graph_allocation_test",
+        "compile_command": [
+          "taskset",
+          "-c",
+          "6",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/new_graph_allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_hld_20261104/GCC_1_new_graph_allocation_test"
+        ],
+        "compile_stderr": "",
+        "run_command": [
+          "taskset",
+          "-c",
+          "6",
+          "/tmp/sirkit_hld_20261104/GCC_1_new_graph_allocation_test"
+        ],
+        "returncode": 0,
+        "stdout": "graph allocation failures=108 successes=1092 live_delta=0\n",
+        "stderr": "",
+        "source_sha256": "ca72a8fe476bec2a61766e45e210bb8a0795faeba6a04844053215eb7634441f",
+        "test_sha256": "1a6b05c4468a8e4496303e8fe175a4ea9217d98e92d21599206fbaa35f8a9d27"
+      },
+      {
+        "compiler": "Clang",
+        "skip_runtime_checks": false,
+        "test": "new_hld_reference_test",
+        "compile_command": [
+          "taskset",
+          "-c",
+          "6",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/new_hld_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_hld_20261104/Clang_0_new_hld_reference_test"
+        ],
+        "compile_stderr": "",
+        "run_command": [
+          "taskset",
+          "-c",
+          "6",
+          "/tmp/sirkit_hld_20261104/Clang_0_new_hld_reference_test"
+        ],
+        "returncode": 0,
+        "stdout": "HLD checks=1888601\n",
+        "stderr": "",
+        "source_sha256": "ca72a8fe476bec2a61766e45e210bb8a0795faeba6a04844053215eb7634441f",
+        "test_sha256": "fee8b335d4c057119a21f77637b14a8e400ffc42eac51e28149c9f2b17acbe50"
+      },
+      {
+        "compiler": "Clang",
+        "skip_runtime_checks": false,
+        "test": "new_graph_allocation_test",
+        "compile_command": [
+          "taskset",
+          "-c",
+          "6",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/new_graph_allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_hld_20261104/Clang_0_new_graph_allocation_test"
+        ],
+        "compile_stderr": "",
+        "run_command": [
+          "taskset",
+          "-c",
+          "6",
+          "/tmp/sirkit_hld_20261104/Clang_0_new_graph_allocation_test"
+        ],
+        "returncode": 0,
+        "stdout": "graph allocation failures=108 successes=1092 live_delta=0\n",
+        "stderr": "",
+        "source_sha256": "ca72a8fe476bec2a61766e45e210bb8a0795faeba6a04844053215eb7634441f",
+        "test_sha256": "1a6b05c4468a8e4496303e8fe175a4ea9217d98e92d21599206fbaa35f8a9d27"
+      },
+      {
+        "compiler": "Clang",
+        "skip_runtime_checks": true,
+        "test": "new_hld_reference_test",
+        "compile_command": [
+          "taskset",
+          "-c",
+          "6",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/new_hld_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_hld_20261104/Clang_1_new_hld_reference_test"
+        ],
+        "compile_stderr": "",
+        "run_command": [
+          "taskset",
+          "-c",
+          "6",
+          "/tmp/sirkit_hld_20261104/Clang_1_new_hld_reference_test"
+        ],
+        "returncode": 0,
+        "stdout": "HLD checks=1888601\n",
+        "stderr": "",
+        "source_sha256": "ca72a8fe476bec2a61766e45e210bb8a0795faeba6a04844053215eb7634441f",
+        "test_sha256": "fee8b335d4c057119a21f77637b14a8e400ffc42eac51e28149c9f2b17acbe50"
+      },
+      {
+        "compiler": "Clang",
+        "skip_runtime_checks": true,
+        "test": "new_graph_allocation_test",
+        "compile_command": [
+          "taskset",
+          "-c",
+          "6",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/new_graph_allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_hld_20261104/Clang_1_new_graph_allocation_test"
+        ],
+        "compile_stderr": "",
+        "run_command": [
+          "taskset",
+          "-c",
+          "6",
+          "/tmp/sirkit_hld_20261104/Clang_1_new_graph_allocation_test"
+        ],
+        "returncode": 0,
+        "stdout": "graph allocation failures=108 successes=1092 live_delta=0\n",
+        "stderr": "",
+        "source_sha256": "ca72a8fe476bec2a61766e45e210bb8a0795faeba6a04844053215eb7634441f",
+        "test_sha256": "1a6b05c4468a8e4496303e8fe175a4ea9217d98e92d21599206fbaa35f8a9d27"
+      }
+    ],
+    "MemorySanitizer": [
+      {
+        "skip_runtime_checks": false,
+        "compile_command": [
+          "taskset",
+          "-c",
+          "6",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O1",
+          "-fsanitize=memory",
+          "-fsanitize-memory-track-origins=2",
+          "-fno-omit-frame-pointer",
+          "-fPIE",
+          "-pie",
+          "/tmp/sirkit_hld_20261104/msan_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_hld_20261104/msan_0"
+        ],
+        "run_command": [
+          "taskset",
+          "-c",
+          "6",
+          "/tmp/sirkit_hld_20261104/msan_0"
+        ],
+        "attempts": [
+          {
+            "returncode": 0,
+            "stdout": "HLD checks=1888601\n",
+            "stderr": ""
+          }
+        ],
+        "source_sha256": "ca72a8fe476bec2a61766e45e210bb8a0795faeba6a04844053215eb7634441f",
+        "test_sha256": "270536e24480477872081d285b7d77ec6175dbe7faf38ca1df649bf7622d34d6"
+      },
+      {
+        "skip_runtime_checks": true,
+        "compile_command": [
+          "taskset",
+          "-c",
+          "6",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O1",
+          "-fsanitize=memory",
+          "-fsanitize-memory-track-origins=2",
+          "-fno-omit-frame-pointer",
+          "-fPIE",
+          "-pie",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/tmp/sirkit_hld_20261104/msan_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_hld_20261104/msan_1"
+        ],
+        "run_command": [
+          "taskset",
+          "-c",
+          "6",
+          "/tmp/sirkit_hld_20261104/msan_1"
+        ],
+        "attempts": [
+          {
+            "returncode": 0,
+            "stdout": "HLD checks=1888601\n",
+            "stderr": ""
+          }
+        ],
+        "source_sha256": "ca72a8fe476bec2a61766e45e210bb8a0795faeba6a04844053215eb7634441f",
+        "test_sha256": "270536e24480477872081d285b7d77ec6175dbe7faf38ca1df649bf7622d34d6"
+      }
+    ],
+    "coverage": "BFS参照1888601カウンタ。任意のラベル/根/森、全頂点対、lca/distance/kth/jumpの境界とint64極値、経路の向きと辺モード、部分木、copy/move/reset相当clear/build、30万頂点の鎖の両方向。新jumpは不正な頂点と負/最大kの組合せでも先にout_of_rangeを出す。",
+    "allocation": "各設定108 failures/1092 successes/live_delta=0。ASanリーク検出は無効、所有解放は割当カウンタで補足。確保失敗時に旧状態を保持。",
+    "MSan_output_adaptation": "最初は未計装libstdc++のostream数値整形出力で報告（msan_iostream.stderrに保存）。全assertを維持し、出力だけprintfに替えた同じ試験をchecked/SKIPで実行して報告なし。ライブラリの報告を抑制する設定は使わない。"
+  },
+  "usage_and_documentation": {
+    "Document": "Document/heavy_light_decomposition.md",
+    "lines": 52,
+    "characters": 2588,
+    "example": "Examples/heavy_light_decomposition_example.cpp",
+    "changes": "頂点値をindex順に並べる、点加算、経路和、部分木和、0始まりjumpを短い例で説明。完全例にはFenwickとの組合せと向き付き文字列を残す。通常cin/coutの例、Verify mainは変更しない。READMEやDocumentへ履歴・測定の羅列を加えない。"
+  },
+  "verify": {
+    "normal_samples": [
+      {
+        "id": "hld_jump",
+        "compiler": "GCC",
+        "status": "LOCAL_SAMPLE_PASS",
+        "compile_command": [
+          "taskset",
+          "-c",
+          "6",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "/home/reinsirk/Atcoder_Env/Verify/current/submissions/hld_jump.cpp",
+          "-o",
+          "/tmp/sirkit_hld_20261104/normal_hld_jump_GCC"
+        ],
+        "submission_sha256": "09e2476c560b59c092b59e76f42538b44f2ab9a4952512fb6460da22e0e62cb0",
+        "samples": 1
+      },
+      {
+        "id": "hld_jump",
+        "compiler": "Clang",
+        "status": "LOCAL_SAMPLE_PASS",
+        "compile_command": [
+          "taskset",
+          "-c",
+          "6",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "/home/reinsirk/Atcoder_Env/Verify/current/submissions/hld_jump.cpp",
+          "-o",
+          "/tmp/sirkit_hld_20261104/normal_hld_jump_Clang"
+        ],
+        "submission_sha256": "09e2476c560b59c092b59e76f42538b44f2ab9a4952512fb6460da22e0e62cb0",
+        "samples": 1
+      },
+      {
+        "id": "hld_vertex_add_path_sum",
+        "compiler": "GCC",
+        "status": "LOCAL_SAMPLE_PASS",
+        "compile_command": [
+          "taskset",
+          "-c",
+          "6",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "/home/reinsirk/Atcoder_Env/Verify/current/submissions/hld_vertex_add_path_sum.cpp",
+          "-o",
+          "/tmp/sirkit_hld_20261104/normal_hld_vertex_add_path_sum_GCC"
+        ],
+        "submission_sha256": "07f7ce760317a45c9d302ed2da2d90ade033c342cec4779955933837b527e3c7",
+        "samples": 1
+      },
+      {
+        "id": "hld_vertex_add_path_sum",
+        "compiler": "Clang",
+        "status": "LOCAL_SAMPLE_PASS",
+        "compile_command": [
+          "taskset",
+          "-c",
+          "6",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "/home/reinsirk/Atcoder_Env/Verify/current/submissions/hld_vertex_add_path_sum.cpp",
+          "-o",
+          "/tmp/sirkit_hld_20261104/normal_hld_vertex_add_path_sum_Clang"
+        ],
+        "submission_sha256": "07f7ce760317a45c9d302ed2da2d90ade033c342cec4779955933837b527e3c7",
+        "samples": 1
+      }
+    ],
+    "profiles": {
+      "LOCAL_SAMPLE_PASS": 14
+    },
+    "submissions": [
+      "Verify/current/submissions/hld_jump.cpp",
+      "Verify/current/submissions/hld_vertex_add_path_sum.cpp"
+    ],
+    "main_unchanged": true,
+    "common_IO_unchanged": true,
+    "Fenwick_unchanged": true,
+    "needs_resubmission": true
+  },
+  "license": "既存の自作HLDを改稿。外部ライブラリの実装本文を取り込まず、CC0/SPDXとAALの理論参考URLを維持。公式generatorはApache-2.0の検証資料であり、ライブラリ実装の出典とは扱わず、原本を証拠ZIPへ入れない。",
+  "hashes": {
+    "Graph/Heavy_Light_Decomposition.cpp": "ca72a8fe476bec2a61766e45e210bb8a0795faeba6a04844053215eb7634441f",
+    "DataStructure/Fenwick_Tree.cpp": "55488b89ded2025c6006bc2343a743e2661fe20a9e728a4c9e1feca24339919e",
+    "Document/heavy_light_decomposition.md": "0e2e05caa9041df3d1a669973de2a55e0b0eca6fe7c6e0ea28162621f103957c",
+    "Examples/heavy_light_decomposition_example.cpp": "1449591ccb832710e7245865aa720d15e37748ffe8d75326ef0933e80b1bf08c",
+    "Verify/current/tests/new_hld_reference_test.cpp": "fee8b335d4c057119a21f77637b14a8e400ffc42eac51e28149c9f2b17acbe50",
+    "Verify/current/tests/new_graph_allocation_test.cpp": "1a6b05c4468a8e4496303e8fe175a4ea9217d98e92d21599206fbaa35f8a9d27",
+    "Verify/current/drivers/hld_jump_main.cpp": "54a5ce2cabc31379a9f6ce22d83c7697ae5cdedb90784ce25bcc7332142b32ea",
+    "Verify/current/drivers/hld_vertex_add_path_sum_main.cpp": "5982c45aba568debc8799faaf24d1b68642337a1b217150cc99df800909cf354",
+    "Verify/current/common/fast_io.hpp": "291bf8dbc56a1d691f6256fe95b4714183c2cf5d9e55e4bef240e31d1eb178c1"
+  },
+  "evidence": {
+    "path": "Audit/data/performance-hld-2026-11-04.zip",
+    "sha256": "922dcb3cf862f4683412bbd2131c2d2b8d73d95fa1725dd593221421b5c26fd6",
+    "scope": "自作の変更前/試作/採用版、全コマンド・raw測定・テスト・入力生成再現器と原典/seed/SHA。外部generator原本・497MiBの入力・バイナリは含めない。"
+  },
+  "synchronization": "通常版/コンパイラ別/速度優先版、Document/Examples/Verify、5配布ZIPを同期。初回ACは改修前ハッシュへ保持し、現行をACと偽記しない。"
+}

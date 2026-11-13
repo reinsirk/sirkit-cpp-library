@@ -1,0 +1,1978 @@
+{
+  "date_utc": "2026-10-31T20:20:03.261998+00:00",
+  "status": "NO_REMAINING_CONFIRMED_BLOCKER_IN_BOUNDED_REVIEW",
+  "current_source_sha256": "8841d63eb1488bae3c72779bf0584d2060edb9aa0d0d09b2b2776f9da6d01899",
+  "current_test_sha256": "51760dcc9e1ebd30b6c0e512719e2a4a348e289b3fde160d1bd80c12780bd70e",
+  "lexer_sha256": "ef34343d98516198906f96c19b3eba950e894e84fe8cca3f45889c10b1bb2bf5",
+  "reviewed_scope": "Manifest-selected readable library bundling; guard-dominance and conservative disabling, lexical/directive handling, standard line/file origin, frontmatter, include/path restrictions, main-template rejection, output protection,512KiB rejection and Fast macro side effects.",
+  "method": "Read-only independent source review and temporary executable/CLI tests. No formal/shared edits or performance tests.",
+  "resolved_findings": [
+    {
+      "id": "CPP23-elifdef-elifndef",
+      "before_sha256": "da8f972de6699db1b5f5672f9a594b57a9ff62b786f2576338869419dd51ab8b",
+      "failure": "Alternate branch was not marked, so second guard body could execute originally but was removed.",
+      "resolution": "Treat elifdef/elifndef as alternate branches; preserve such guarded blocks.",
+      "independent_GCC_Clang_before_after": true
+    },
+    {
+      "id": "CPP23-phase2-whitespace-splices",
+      "before_sha256": "da8f972de6699db1b5f5672f9a594b57a9ff62b786f2576338869419dd51ab8b",
+      "failure": "Spliced undef was missed and spliced leading comment could release hidden directive when frontmatter moved; both executable counterexamples fail old version.",
+      "resolution": "Consistent C++23 whitespace splice processing with logical→physical offsets for directives/frontmatter/pragma detection; raw-splice cases rejected conservatively.",
+      "independent_GCC_Clang_before_after": true
+    },
+    {
+      "id": "token-pasted-pragma-guard-restoration",
+      "before_sha256": "f7959c102dd747cb9341bf8f23246e95fe90db2c8125b975a465936723e8a45c",
+      "failure": "CAT(_Pra,gma) synthesized push_macro/pop_macro without literal _Pragma; restored undefined guard required second body. ## and %:%: cases both fail before fix.",
+      "resolution": "Any token-pasting in macro replacement disables all dedup conservatively.",
+      "independent_GCC_Clang_before_after": true
+    },
+    {
+      "id": "manifest-template-main-input",
+      "failure": "Actual manifest temp.cpp containing main was selectable.",
+      "resolution": "Reject temp.cpp/temp2.cpp as library selections.",
+      "independent_actual_manifest_rejection": true
+    },
+    {
+      "id": "manifest-fast-origin-overwrite",
+      "failure": "Actual Fast/Source builder origins were absent from protected destinations; read-only real-manifest assertion showed BinaryTrie origin unprotected.",
+      "resolution": "Validate canonical/root-contained manifest origins and include them in protected output/report destinations.",
+      "independent_temp_CLI_output_and_report_rejection": true
+    }
+  ],
+  "final_compiler_counterexample_results": [
+    {
+      "name": "elifdef",
+      "compiler": "GCC",
+      "prototype_sha256": "8841d63eb1488bae3c72779bf0584d2060edb9aa0d0d09b2b2776f9da6d01899",
+      "removals": [],
+      "runs": [
+        {
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O0",
+            "-DENABLE",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/final_8841/elifdef_before.cpp",
+            "-o",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/final_8841/elifdef_GCC_before"
+          ],
+          "returncode": 0,
+          "stdout": "",
+          "stderr": "",
+          "run": {
+            "command": [
+              "taskset",
+              "-c",
+              "8",
+              "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/final_8841/elifdef_GCC_before"
+            ],
+            "returncode": 0,
+            "stdout": "",
+            "stderr": ""
+          }
+        },
+        {
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O0",
+            "-DENABLE",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/final_8841/elifdef_after.cpp",
+            "-o",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/final_8841/elifdef_GCC_after"
+          ],
+          "returncode": 0,
+          "stdout": "",
+          "stderr": "",
+          "run": {
+            "command": [
+              "taskset",
+              "-c",
+              "8",
+              "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/final_8841/elifdef_GCC_after"
+            ],
+            "returncode": 0,
+            "stdout": "",
+            "stderr": ""
+          }
+        }
+      ],
+      "equivalent": true
+    },
+    {
+      "name": "elifdef",
+      "compiler": "Clang",
+      "prototype_sha256": "8841d63eb1488bae3c72779bf0584d2060edb9aa0d0d09b2b2776f9da6d01899",
+      "removals": [],
+      "runs": [
+        {
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/clang++",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-std=c++23",
+            "-O0",
+            "-DENABLE",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/final_8841/elifdef_before.cpp",
+            "-o",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/final_8841/elifdef_Clang_before"
+          ],
+          "returncode": 0,
+          "stdout": "",
+          "stderr": "",
+          "run": {
+            "command": [
+              "taskset",
+              "-c",
+              "8",
+              "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/final_8841/elifdef_Clang_before"
+            ],
+            "returncode": 0,
+            "stdout": "",
+            "stderr": ""
+          }
+        },
+        {
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/clang++",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-std=c++23",
+            "-O0",
+            "-DENABLE",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/final_8841/elifdef_after.cpp",
+            "-o",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/final_8841/elifdef_Clang_after"
+          ],
+          "returncode": 0,
+          "stdout": "",
+          "stderr": "",
+          "run": {
+            "command": [
+              "taskset",
+              "-c",
+              "8",
+              "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/final_8841/elifdef_Clang_after"
+            ],
+            "returncode": 0,
+            "stdout": "",
+            "stderr": ""
+          }
+        }
+      ],
+      "equivalent": true
+    },
+    {
+      "name": "space_spliced_undef",
+      "compiler": "GCC",
+      "prototype_sha256": "8841d63eb1488bae3c72779bf0584d2060edb9aa0d0d09b2b2776f9da6d01899",
+      "removals": [],
+      "runs": [
+        {
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O0",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/final_8841/space_spliced_undef_before.cpp",
+            "-o",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/final_8841/space_spliced_undef_GCC_before"
+          ],
+          "returncode": 0,
+          "stdout": "",
+          "stderr": "Math/a.cpp:6:4: warning: backslash and newline separated by space\n",
+          "run": {
+            "command": [
+              "taskset",
+              "-c",
+              "8",
+              "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/final_8841/space_spliced_undef_GCC_before"
+            ],
+            "returncode": 0,
+            "stdout": "",
+            "stderr": ""
+          }
+        },
+        {
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O0",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/final_8841/space_spliced_undef_after.cpp",
+            "-o",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/final_8841/space_spliced_undef_GCC_after"
+          ],
+          "returncode": 0,
+          "stdout": "",
+          "stderr": "Math/a.cpp:6:4: warning: backslash and newline separated by space\n",
+          "run": {
+            "command": [
+              "taskset",
+              "-c",
+              "8",
+              "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/final_8841/space_spliced_undef_GCC_after"
+            ],
+            "returncode": 0,
+            "stdout": "",
+            "stderr": ""
+          }
+        }
+      ],
+      "equivalent": true
+    },
+    {
+      "name": "space_spliced_undef",
+      "compiler": "Clang",
+      "prototype_sha256": "8841d63eb1488bae3c72779bf0584d2060edb9aa0d0d09b2b2776f9da6d01899",
+      "removals": [],
+      "runs": [
+        {
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/clang++",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-std=c++23",
+            "-O0",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/final_8841/space_spliced_undef_before.cpp",
+            "-o",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/final_8841/space_spliced_undef_Clang_before"
+          ],
+          "returncode": 0,
+          "stdout": "",
+          "stderr": "Math/a.cpp:6:5: warning: backslash and newline separated by space [-Wbackslash-newline-escape]\n    6 | #un\\ \n      |     ^\n1 warning generated.\n",
+          "run": {
+            "command": [
+              "taskset",
+              "-c",
+              "8",
+              "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/final_8841/space_spliced_undef_Clang_before"
+            ],
+            "returncode": 0,
+            "stdout": "",
+            "stderr": ""
+          }
+        },
+        {
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/clang++",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-std=c++23",
+            "-O0",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/final_8841/space_spliced_undef_after.cpp",
+            "-o",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/final_8841/space_spliced_undef_Clang_after"
+          ],
+          "returncode": 0,
+          "stdout": "",
+          "stderr": "Math/a.cpp:6:5: warning: backslash and newline separated by space [-Wbackslash-newline-escape]\n    6 | #un\\ \n      |     ^\n1 warning generated.\n",
+          "run": {
+            "command": [
+              "taskset",
+              "-c",
+              "8",
+              "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/final_8841/space_spliced_undef_Clang_after"
+            ],
+            "returncode": 0,
+            "stdout": "",
+            "stderr": ""
+          }
+        }
+      ],
+      "equivalent": true
+    },
+    {
+      "name": "space_spliced_frontmatter",
+      "compiler": "GCC",
+      "prototype_sha256": "8841d63eb1488bae3c72779bf0584d2060edb9aa0d0d09b2b2776f9da6d01899",
+      "removals": [],
+      "runs": [
+        {
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O0",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/final_8841/space_spliced_frontmatter_before.cpp",
+            "-o",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/final_8841/space_spliced_frontmatter_GCC_before"
+          ],
+          "returncode": 0,
+          "stdout": "",
+          "stderr": "",
+          "run": {
+            "command": [
+              "taskset",
+              "-c",
+              "8",
+              "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/final_8841/space_spliced_frontmatter_GCC_before"
+            ],
+            "returncode": 0,
+            "stdout": "",
+            "stderr": ""
+          }
+        },
+        {
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O0",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/final_8841/space_spliced_frontmatter_after.cpp",
+            "-o",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/final_8841/space_spliced_frontmatter_GCC_after"
+          ],
+          "returncode": 0,
+          "stdout": "",
+          "stderr": "",
+          "run": {
+            "command": [
+              "taskset",
+              "-c",
+              "8",
+              "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/final_8841/space_spliced_frontmatter_GCC_after"
+            ],
+            "returncode": 0,
+            "stdout": "",
+            "stderr": ""
+          }
+        }
+      ],
+      "equivalent": true
+    },
+    {
+      "name": "space_spliced_frontmatter",
+      "compiler": "Clang",
+      "prototype_sha256": "8841d63eb1488bae3c72779bf0584d2060edb9aa0d0d09b2b2776f9da6d01899",
+      "removals": [],
+      "runs": [
+        {
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/clang++",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-std=c++23",
+            "-O0",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/final_8841/space_spliced_frontmatter_before.cpp",
+            "-o",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/final_8841/space_spliced_frontmatter_Clang_before"
+          ],
+          "returncode": 0,
+          "stdout": "",
+          "stderr": "Math/a.cpp:1:15: warning: backslash and newline separated by space [-Wbackslash-newline-escape]\n    1 | // API prefix \\ \n      |               ^\n1 warning generated.\n",
+          "run": {
+            "command": [
+              "taskset",
+              "-c",
+              "8",
+              "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/final_8841/space_spliced_frontmatter_Clang_before"
+            ],
+            "returncode": 0,
+            "stdout": "",
+            "stderr": ""
+          }
+        },
+        {
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/clang++",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-std=c++23",
+            "-O0",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/final_8841/space_spliced_frontmatter_after.cpp",
+            "-o",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/final_8841/space_spliced_frontmatter_Clang_after"
+          ],
+          "returncode": 0,
+          "stdout": "",
+          "stderr": "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/final_8841/space_spliced_frontmatter_after.cpp:3:15: warning: backslash and newline separated by space [-Wbackslash-newline-escape]\n    3 | // API prefix \\ \n      |               ^\n1 warning generated.\n",
+          "run": {
+            "command": [
+              "taskset",
+              "-c",
+              "8",
+              "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/final_8841/space_spliced_frontmatter_Clang_after"
+            ],
+            "returncode": 0,
+            "stdout": "",
+            "stderr": ""
+          }
+        }
+      ],
+      "equivalent": true
+    },
+    {
+      "name": "pasted_pragma",
+      "compiler": "GCC",
+      "prototype_sha256": "8841d63eb1488bae3c72779bf0584d2060edb9aa0d0d09b2b2776f9da6d01899",
+      "removals": [],
+      "runs": [
+        {
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O0",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/final_8841/pasted_pragma_before.cpp",
+            "-o",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/final_8841/pasted_pragma_GCC_before"
+          ],
+          "returncode": 0,
+          "stdout": "",
+          "stderr": "",
+          "run": {
+            "command": [
+              "taskset",
+              "-c",
+              "8",
+              "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/final_8841/pasted_pragma_GCC_before"
+            ],
+            "returncode": 0,
+            "stdout": "",
+            "stderr": ""
+          }
+        },
+        {
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O0",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/final_8841/pasted_pragma_after.cpp",
+            "-o",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/final_8841/pasted_pragma_GCC_after"
+          ],
+          "returncode": 0,
+          "stdout": "",
+          "stderr": "",
+          "run": {
+            "command": [
+              "taskset",
+              "-c",
+              "8",
+              "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/final_8841/pasted_pragma_GCC_after"
+            ],
+            "returncode": 0,
+            "stdout": "",
+            "stderr": ""
+          }
+        }
+      ],
+      "equivalent": true
+    },
+    {
+      "name": "pasted_pragma",
+      "compiler": "Clang",
+      "prototype_sha256": "8841d63eb1488bae3c72779bf0584d2060edb9aa0d0d09b2b2776f9da6d01899",
+      "removals": [],
+      "runs": [
+        {
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/clang++",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-std=c++23",
+            "-O0",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/final_8841/pasted_pragma_before.cpp",
+            "-o",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/final_8841/pasted_pragma_Clang_before"
+          ],
+          "returncode": 0,
+          "stdout": "",
+          "stderr": "",
+          "run": {
+            "command": [
+              "taskset",
+              "-c",
+              "8",
+              "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/final_8841/pasted_pragma_Clang_before"
+            ],
+            "returncode": 0,
+            "stdout": "",
+            "stderr": ""
+          }
+        },
+        {
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/clang++",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-std=c++23",
+            "-O0",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/final_8841/pasted_pragma_after.cpp",
+            "-o",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/final_8841/pasted_pragma_Clang_after"
+          ],
+          "returncode": 0,
+          "stdout": "",
+          "stderr": "",
+          "run": {
+            "command": [
+              "taskset",
+              "-c",
+              "8",
+              "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/final_8841/pasted_pragma_Clang_after"
+            ],
+            "returncode": 0,
+            "stdout": "",
+            "stderr": ""
+          }
+        }
+      ],
+      "equivalent": true
+    },
+    {
+      "name": "digraph_pasted_pragma",
+      "compiler": "GCC",
+      "prototype_sha256": "8841d63eb1488bae3c72779bf0584d2060edb9aa0d0d09b2b2776f9da6d01899",
+      "removals": [],
+      "runs": [
+        {
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O0",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/final_8841/digraph_pasted_pragma_before.cpp",
+            "-o",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/final_8841/digraph_pasted_pragma_GCC_before"
+          ],
+          "returncode": 0,
+          "stdout": "",
+          "stderr": "",
+          "run": {
+            "command": [
+              "taskset",
+              "-c",
+              "8",
+              "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/final_8841/digraph_pasted_pragma_GCC_before"
+            ],
+            "returncode": 0,
+            "stdout": "",
+            "stderr": ""
+          }
+        },
+        {
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O0",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/final_8841/digraph_pasted_pragma_after.cpp",
+            "-o",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/final_8841/digraph_pasted_pragma_GCC_after"
+          ],
+          "returncode": 0,
+          "stdout": "",
+          "stderr": "",
+          "run": {
+            "command": [
+              "taskset",
+              "-c",
+              "8",
+              "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/final_8841/digraph_pasted_pragma_GCC_after"
+            ],
+            "returncode": 0,
+            "stdout": "",
+            "stderr": ""
+          }
+        }
+      ],
+      "equivalent": true
+    },
+    {
+      "name": "digraph_pasted_pragma",
+      "compiler": "Clang",
+      "prototype_sha256": "8841d63eb1488bae3c72779bf0584d2060edb9aa0d0d09b2b2776f9da6d01899",
+      "removals": [],
+      "runs": [
+        {
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/clang++",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-std=c++23",
+            "-O0",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/final_8841/digraph_pasted_pragma_before.cpp",
+            "-o",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/final_8841/digraph_pasted_pragma_Clang_before"
+          ],
+          "returncode": 0,
+          "stdout": "",
+          "stderr": "",
+          "run": {
+            "command": [
+              "taskset",
+              "-c",
+              "8",
+              "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/final_8841/digraph_pasted_pragma_Clang_before"
+            ],
+            "returncode": 0,
+            "stdout": "",
+            "stderr": ""
+          }
+        },
+        {
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/clang++",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-std=c++23",
+            "-O0",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/final_8841/digraph_pasted_pragma_after.cpp",
+            "-o",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/final_8841/digraph_pasted_pragma_Clang_after"
+          ],
+          "returncode": 0,
+          "stdout": "",
+          "stderr": "",
+          "run": {
+            "command": [
+              "taskset",
+              "-c",
+              "8",
+              "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/final_8841/digraph_pasted_pragma_Clang_after"
+            ],
+            "returncode": 0,
+            "stdout": "",
+            "stderr": ""
+          }
+        }
+      ],
+      "equivalent": true
+    },
+    {
+      "name": "actual_template_main_selection",
+      "accepted": false,
+      "message": "only canonical library modules are supported: temp.cpp"
+    }
+  ],
+  "independent_final_checks": [
+    {
+      "case": "protect_fast_origin_--output",
+      "passed": true,
+      "result": {
+        "command": [
+          "/usr/bin/python3",
+          "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/final_8841/bundle_libraries.py",
+          "--root",
+          "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/tmp51mkxb5s",
+          "--profile",
+          "fast-gcc",
+          "--library",
+          "Math/A.cpp",
+          "--output",
+          "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/tmp51mkxb5s/Fast/Source/Math/A.cpp"
+        ],
+        "returncode": 1,
+        "stdout": "",
+        "stderr": "{\"error\": \"refusing to overwrite a library/template source\"}\n"
+      }
+    },
+    {
+      "case": "protect_fast_origin_--report",
+      "passed": true,
+      "result": {
+        "command": [
+          "/usr/bin/python3",
+          "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/final_8841/bundle_libraries.py",
+          "--root",
+          "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/tmp51mkxb5s",
+          "--profile",
+          "fast-gcc",
+          "--library",
+          "Math/A.cpp",
+          "--output",
+          "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/tmp51mkxb5s/out.cpp",
+          "--report",
+          "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/tmp51mkxb5s/Fast/Source/Math/A.cpp"
+        ],
+        "returncode": 1,
+        "stdout": "",
+        "stderr": "{\"error\": \"refusing to overwrite a library/template source\"}\n"
+      }
+    },
+    {
+      "case": "reject_manifest_source_../outside.cpp",
+      "passed": true,
+      "result": {
+        "command": [
+          "/usr/bin/python3",
+          "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/final_8841/bundle_libraries.py",
+          "--root",
+          "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/tmp51mkxb5s",
+          "--profile",
+          "fast-gcc",
+          "--library",
+          "Math/A.cpp",
+          "--output",
+          "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/tmp51mkxb5s/out.cpp"
+        ],
+        "returncode": 1,
+        "stdout": "",
+        "stderr": "{\"error\": \"noncanonical manifest path: '../outside.cpp'\"}\n"
+      }
+    },
+    {
+      "case": "reject_manifest_path_../outside.cpp",
+      "passed": true,
+      "result": {
+        "command": [
+          "/usr/bin/python3",
+          "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/final_8841/bundle_libraries.py",
+          "--root",
+          "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/tmp51mkxb5s",
+          "--profile",
+          "fast-gcc",
+          "--library",
+          "Math/A.cpp",
+          "--output",
+          "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/tmp51mkxb5s/out.cpp"
+        ],
+        "returncode": 1,
+        "stdout": "",
+        "stderr": "{\"error\": \"noncanonical manifest path: '../outside.cpp'\"}\n"
+      }
+    },
+    {
+      "case": "reject_manifest_origin_../outside.cpp",
+      "passed": true,
+      "result": {
+        "command": [
+          "/usr/bin/python3",
+          "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/final_8841/bundle_libraries.py",
+          "--root",
+          "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/tmp51mkxb5s",
+          "--profile",
+          "fast-gcc",
+          "--library",
+          "Math/A.cpp",
+          "--output",
+          "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/tmp51mkxb5s/out.cpp"
+        ],
+        "returncode": 1,
+        "stdout": "",
+        "stderr": "{\"error\": \"noncanonical manifest path: '../outside.cpp'\"}\n"
+      }
+    },
+    {
+      "case": "reject_manifest_path_Fast/Clang/Math/A.cpp",
+      "passed": true,
+      "result": {
+        "command": [
+          "/usr/bin/python3",
+          "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/final_8841/bundle_libraries.py",
+          "--root",
+          "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/tmp51mkxb5s",
+          "--profile",
+          "fast-gcc",
+          "--library",
+          "Math/A.cpp",
+          "--output",
+          "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/tmp51mkxb5s/out.cpp"
+        ],
+        "returncode": 1,
+        "stdout": "",
+        "stderr": "{\"error\": \"manifest edition/path mismatch: Fast/Clang/Math/A.cpp\"}\n"
+      }
+    },
+    {
+      "case": "512KiB_reject_preserves_existing_output",
+      "passed": true,
+      "result": {
+        "command": [
+          "/usr/bin/python3",
+          "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/final_8841/bundle_libraries.py",
+          "--root",
+          "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/tmp51mkxb5s",
+          "--library",
+          "Math/A.cpp",
+          "--output",
+          "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/tmp51mkxb5s/limit.cpp"
+        ],
+        "returncode": 2,
+        "stdout": "{\"profile\": \"normal\", \"manifest_sha256\": \"472b0fdeeeff3900e04ff4757b221fd9cdbbeb3202a387d6c1445b7ae44b020f\", \"selected_source_bytes\": 524370, \"code_bytes_before\": 524522, \"code_bytes_after\": 524522, \"bytes_saved\": 0, \"sha256_before\": \"fa73ede748e566912ec0200eda91137abef3e0905da4f843f8fdb267a36c490a\", \"sha256_after\": \"fa73ede748e566912ec0200eda91137abef3e0905da4f843f8fdb267a36c490a\", \"limit\": 524288, \"oversize_allowed\": false, \"accepted\": false, \"removals\": [], \"disabled_guards\": [], \"macro_stack_disables_all\": false, \"conflicting_guards\": [], \"libraries\": [{\"library\": \"Math/A.cpp\", \"source\": \"Math/A.cpp\", \"sha256\": \"28a825b658705d2af49eb92db7a8428f7f6c4c41936c4dedd8b4aee750f02d6f\"}]}\n",
+        "stderr": ""
+      }
+    },
+    {
+      "case": "reject_include_\"a.hpp\"",
+      "passed": true
+    },
+    {
+      "case": "reject_include_HEADER",
+      "passed": true
+    },
+    {
+      "case": "reject_include_<atcoder/modint>",
+      "passed": true
+    },
+    {
+      "case": "reject_include_<unknown.hpp>",
+      "passed": true
+    },
+    {
+      "case": "standard_line_file_frontmatter_GCC",
+      "passed": true,
+      "stdout": "Math/a.cpp 6 Math/b.cpp 7\n"
+    },
+    {
+      "case": "standard_line_file_frontmatter_Clang",
+      "passed": true,
+      "stdout": "Math/a.cpp 6 Math/b.cpp 7\n"
+    },
+    {
+      "case": "no_global_SKIP_normal",
+      "passed": true,
+      "source_sha256": "8290346c76eac6057a8e3eb57d0947964e359d836288f3c23c2892768590da31",
+      "preprocessed_sha256": "af1618e6b1af9a14457f9dde24d3deed00ee2f6332c47678bcb499879da0e9f7",
+      "bytes": 85732,
+      "removed_blocks": 11
+    },
+    {
+      "case": "no_global_SKIP_gcc",
+      "passed": true,
+      "source_sha256": "915c9184125a0e2f4023549572eb2d5eb9dd0b8e47864e7666decb19cdc2a161",
+      "preprocessed_sha256": "af1618e6b1af9a14457f9dde24d3deed00ee2f6332c47678bcb499879da0e9f7",
+      "bytes": 85577,
+      "removed_blocks": 11
+    },
+    {
+      "case": "no_global_SKIP_clang",
+      "passed": true,
+      "source_sha256": "7a39c2690534a4c05a66cc53e6a1b40f45e9b166fc6af5039532cba8561749b8",
+      "preprocessed_sha256": "16add35164155b77646fe9ac980d30835b72fcd8815f963743540afa9b89a865",
+      "bytes": 85615,
+      "removed_blocks": 11
+    },
+    {
+      "case": "no_global_SKIP_fast-gcc",
+      "passed": true,
+      "source_sha256": "04566f26b06cc03edf8a4cdd734c0455a406fa2f45c78b4ddd132f15ec965dcb",
+      "preprocessed_sha256": "17c9b86e3c586f647272f2c84156429344d14704384e2c76d243a2767742e257",
+      "bytes": 82833,
+      "removed_blocks": 11
+    },
+    {
+      "case": "no_global_SKIP_fast-clang",
+      "passed": true,
+      "source_sha256": "de6094f332eb05b48217a85501e2894252553b9d5a72d3304d4d7a08c0c8182b",
+      "preprocessed_sha256": "b737b4173c4a33055e0d67bc51bf081a29a0792cef482afb7f7baeacce709f59",
+      "bytes": 82871,
+      "removed_blocks": 11
+    }
+  ],
+  "old_compiler_evidence": [
+    {
+      "name": "elifdef",
+      "compiler": "GCC",
+      "prototype_sha256": "da8f972de6699db1b5f5672f9a594b57a9ff62b786f2576338869419dd51ab8b",
+      "removals": [
+        {
+          "guard": "SIRKIT_A_DEFINED",
+          "library": "Math/b.cpp",
+          "source": "Math/b.cpp",
+          "first_source": "Math/a.cpp",
+          "bytes": 105,
+          "sha256": "7b4eef57c03dea41a8a02c91c2b12e8932ac60143e5189baeeb53678cb7d6202",
+          "first_line": 1,
+          "after_line": 7
+        }
+      ],
+      "runs": [
+        {
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O0",
+            "-DENABLE",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/old_da8/elifdef_before.cpp",
+            "-o",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/old_da8/elifdef_GCC_before"
+          ],
+          "returncode": 0,
+          "stdout": "",
+          "stderr": "",
+          "run": {
+            "command": [
+              "taskset",
+              "-c",
+              "8",
+              "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/old_da8/elifdef_GCC_before"
+            ],
+            "returncode": 0,
+            "stdout": "",
+            "stderr": ""
+          }
+        },
+        {
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O0",
+            "-DENABLE",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/old_da8/elifdef_after.cpp",
+            "-o",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/old_da8/elifdef_GCC_after"
+          ],
+          "returncode": 1,
+          "stdout": "",
+          "stderr": "Math/b.cpp: In function ‘int main()’:\nMath/b.cpp:8:21: error: ‘b’ was not declared in this scope\n",
+          "run": null
+        }
+      ],
+      "equivalent": false
+    },
+    {
+      "name": "elifdef",
+      "compiler": "Clang",
+      "prototype_sha256": "da8f972de6699db1b5f5672f9a594b57a9ff62b786f2576338869419dd51ab8b",
+      "removals": [
+        {
+          "guard": "SIRKIT_A_DEFINED",
+          "library": "Math/b.cpp",
+          "source": "Math/b.cpp",
+          "first_source": "Math/a.cpp",
+          "bytes": 105,
+          "sha256": "7b4eef57c03dea41a8a02c91c2b12e8932ac60143e5189baeeb53678cb7d6202",
+          "first_line": 1,
+          "after_line": 7
+        }
+      ],
+      "runs": [
+        {
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/clang++",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-std=c++23",
+            "-O0",
+            "-DENABLE",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/old_da8/elifdef_before.cpp",
+            "-o",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/old_da8/elifdef_Clang_before"
+          ],
+          "returncode": 0,
+          "stdout": "",
+          "stderr": "",
+          "run": {
+            "command": [
+              "taskset",
+              "-c",
+              "8",
+              "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/old_da8/elifdef_Clang_before"
+            ],
+            "returncode": 0,
+            "stdout": "",
+            "stderr": ""
+          }
+        },
+        {
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/clang++",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-std=c++23",
+            "-O0",
+            "-DENABLE",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/old_da8/elifdef_after.cpp",
+            "-o",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/old_da8/elifdef_Clang_after"
+          ],
+          "returncode": 1,
+          "stdout": "",
+          "stderr": "Math/b.cpp:8:21: error: use of undeclared identifier 'b'\n    8 | int main(){return a+b==3?0:1;}\n      |                     ^\n1 error generated.\n",
+          "run": null
+        }
+      ],
+      "equivalent": false
+    },
+    {
+      "name": "space_spliced_undef",
+      "compiler": "GCC",
+      "prototype_sha256": "da8f972de6699db1b5f5672f9a594b57a9ff62b786f2576338869419dd51ab8b",
+      "removals": [
+        {
+          "guard": "SIRKIT_A_DEFINED",
+          "library": "Math/b.cpp",
+          "source": "Math/b.cpp",
+          "first_source": "Math/a.cpp",
+          "bytes": 73,
+          "sha256": "3c9ccf710a71d0b91c9516157b41592defcc1c75acad06a4ccd3860a8f5fbbdf",
+          "first_line": 1,
+          "after_line": 5
+        }
+      ],
+      "runs": [
+        {
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O0",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/old_da8/space_spliced_undef_before.cpp",
+            "-o",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/old_da8/space_spliced_undef_GCC_before"
+          ],
+          "returncode": 0,
+          "stdout": "",
+          "stderr": "Math/a.cpp:6:4: warning: backslash and newline separated by space\n",
+          "run": {
+            "command": [
+              "taskset",
+              "-c",
+              "8",
+              "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/old_da8/space_spliced_undef_GCC_before"
+            ],
+            "returncode": 0,
+            "stdout": "",
+            "stderr": ""
+          }
+        },
+        {
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O0",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/old_da8/space_spliced_undef_after.cpp",
+            "-o",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/old_da8/space_spliced_undef_GCC_after"
+          ],
+          "returncode": 1,
+          "stdout": "",
+          "stderr": "Math/a.cpp:6:4: warning: backslash and newline separated by space\nMath/b.cpp: In function ‘int main()’:\nMath/b.cpp:6:19: error: ‘TOKEN’ was not declared in this scope\n",
+          "run": null
+        }
+      ],
+      "equivalent": false
+    },
+    {
+      "name": "space_spliced_undef",
+      "compiler": "Clang",
+      "prototype_sha256": "da8f972de6699db1b5f5672f9a594b57a9ff62b786f2576338869419dd51ab8b",
+      "removals": [
+        {
+          "guard": "SIRKIT_A_DEFINED",
+          "library": "Math/b.cpp",
+          "source": "Math/b.cpp",
+          "first_source": "Math/a.cpp",
+          "bytes": 73,
+          "sha256": "3c9ccf710a71d0b91c9516157b41592defcc1c75acad06a4ccd3860a8f5fbbdf",
+          "first_line": 1,
+          "after_line": 5
+        }
+      ],
+      "runs": [
+        {
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/clang++",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-std=c++23",
+            "-O0",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/old_da8/space_spliced_undef_before.cpp",
+            "-o",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/old_da8/space_spliced_undef_Clang_before"
+          ],
+          "returncode": 0,
+          "stdout": "",
+          "stderr": "Math/a.cpp:6:5: warning: backslash and newline separated by space [-Wbackslash-newline-escape]\n    6 | #un\\ \n      |     ^\n1 warning generated.\n",
+          "run": {
+            "command": [
+              "taskset",
+              "-c",
+              "8",
+              "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/old_da8/space_spliced_undef_Clang_before"
+            ],
+            "returncode": 0,
+            "stdout": "",
+            "stderr": ""
+          }
+        },
+        {
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/clang++",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-std=c++23",
+            "-O0",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/old_da8/space_spliced_undef_after.cpp",
+            "-o",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/old_da8/space_spliced_undef_Clang_after"
+          ],
+          "returncode": 1,
+          "stdout": "",
+          "stderr": "Math/a.cpp:6:5: warning: backslash and newline separated by space [-Wbackslash-newline-escape]\n    6 | #un\\ \n      |     ^\nMath/b.cpp:6:19: error: use of undeclared identifier 'TOKEN'\n    6 | int main(){return TOKEN==1?0:1;}\n      |                   ^~~~~\n1 warning and 1 error generated.\n",
+          "run": null
+        }
+      ],
+      "equivalent": false
+    },
+    {
+      "name": "space_spliced_frontmatter",
+      "compiler": "GCC",
+      "prototype_sha256": "da8f972de6699db1b5f5672f9a594b57a9ff62b786f2576338869419dd51ab8b",
+      "removals": [],
+      "runs": [
+        {
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O0",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/old_da8/space_spliced_frontmatter_before.cpp",
+            "-o",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/old_da8/space_spliced_frontmatter_GCC_before"
+          ],
+          "returncode": 0,
+          "stdout": "",
+          "stderr": "",
+          "run": {
+            "command": [
+              "taskset",
+              "-c",
+              "8",
+              "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/old_da8/space_spliced_frontmatter_GCC_before"
+            ],
+            "returncode": 0,
+            "stdout": "",
+            "stderr": ""
+          }
+        },
+        {
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O0",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/old_da8/space_spliced_frontmatter_after.cpp",
+            "-o",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/old_da8/space_spliced_frontmatter_GCC_after"
+          ],
+          "returncode": 0,
+          "stdout": "",
+          "stderr": "",
+          "run": {
+            "command": [
+              "taskset",
+              "-c",
+              "8",
+              "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/old_da8/space_spliced_frontmatter_GCC_after"
+            ],
+            "returncode": 1,
+            "stdout": "",
+            "stderr": ""
+          }
+        }
+      ],
+      "equivalent": false
+    },
+    {
+      "name": "space_spliced_frontmatter",
+      "compiler": "Clang",
+      "prototype_sha256": "da8f972de6699db1b5f5672f9a594b57a9ff62b786f2576338869419dd51ab8b",
+      "removals": [],
+      "runs": [
+        {
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/clang++",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-std=c++23",
+            "-O0",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/old_da8/space_spliced_frontmatter_before.cpp",
+            "-o",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/old_da8/space_spliced_frontmatter_Clang_before"
+          ],
+          "returncode": 0,
+          "stdout": "",
+          "stderr": "Math/a.cpp:1:15: warning: backslash and newline separated by space [-Wbackslash-newline-escape]\n    1 | // API prefix \\ \n      |               ^\n1 warning generated.\n",
+          "run": {
+            "command": [
+              "taskset",
+              "-c",
+              "8",
+              "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/old_da8/space_spliced_frontmatter_Clang_before"
+            ],
+            "returncode": 0,
+            "stdout": "",
+            "stderr": ""
+          }
+        },
+        {
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/clang++",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-std=c++23",
+            "-O0",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/old_da8/space_spliced_frontmatter_after.cpp",
+            "-o",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/old_da8/space_spliced_frontmatter_Clang_after"
+          ],
+          "returncode": 0,
+          "stdout": "",
+          "stderr": "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/old_da8/space_spliced_frontmatter_after.cpp:3:15: warning: backslash and newline separated by space [-Wbackslash-newline-escape]\n    3 | // API prefix \\ \n      |               ^\n1 warning generated.\n",
+          "run": {
+            "command": [
+              "taskset",
+              "-c",
+              "8",
+              "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/old_da8/space_spliced_frontmatter_Clang_after"
+            ],
+            "returncode": 1,
+            "stdout": "",
+            "stderr": ""
+          }
+        }
+      ],
+      "equivalent": false
+    },
+    {
+      "name": "actual_template_main_selection",
+      "accepted": true,
+      "message": "accepted actual manifest temp.cpp containing main"
+    }
+  ],
+  "intermediate_compiler_evidence": [
+    {
+      "name": "elifdef",
+      "compiler": "GCC",
+      "prototype_sha256": "f7959c102dd747cb9341bf8f23246e95fe90db2c8125b975a465936723e8a45c",
+      "removals": [],
+      "runs": [
+        {
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O0",
+            "-DENABLE",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/new_f795/elifdef_before.cpp",
+            "-o",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/new_f795/elifdef_GCC_before"
+          ],
+          "returncode": 0,
+          "stdout": "",
+          "stderr": "",
+          "run": {
+            "command": [
+              "taskset",
+              "-c",
+              "8",
+              "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/new_f795/elifdef_GCC_before"
+            ],
+            "returncode": 0,
+            "stdout": "",
+            "stderr": ""
+          }
+        },
+        {
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O0",
+            "-DENABLE",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/new_f795/elifdef_after.cpp",
+            "-o",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/new_f795/elifdef_GCC_after"
+          ],
+          "returncode": 0,
+          "stdout": "",
+          "stderr": "",
+          "run": {
+            "command": [
+              "taskset",
+              "-c",
+              "8",
+              "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/new_f795/elifdef_GCC_after"
+            ],
+            "returncode": 0,
+            "stdout": "",
+            "stderr": ""
+          }
+        }
+      ],
+      "equivalent": true
+    },
+    {
+      "name": "elifdef",
+      "compiler": "Clang",
+      "prototype_sha256": "f7959c102dd747cb9341bf8f23246e95fe90db2c8125b975a465936723e8a45c",
+      "removals": [],
+      "runs": [
+        {
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/clang++",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-std=c++23",
+            "-O0",
+            "-DENABLE",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/new_f795/elifdef_before.cpp",
+            "-o",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/new_f795/elifdef_Clang_before"
+          ],
+          "returncode": 0,
+          "stdout": "",
+          "stderr": "",
+          "run": {
+            "command": [
+              "taskset",
+              "-c",
+              "8",
+              "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/new_f795/elifdef_Clang_before"
+            ],
+            "returncode": 0,
+            "stdout": "",
+            "stderr": ""
+          }
+        },
+        {
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/clang++",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-std=c++23",
+            "-O0",
+            "-DENABLE",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/new_f795/elifdef_after.cpp",
+            "-o",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/new_f795/elifdef_Clang_after"
+          ],
+          "returncode": 0,
+          "stdout": "",
+          "stderr": "",
+          "run": {
+            "command": [
+              "taskset",
+              "-c",
+              "8",
+              "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/new_f795/elifdef_Clang_after"
+            ],
+            "returncode": 0,
+            "stdout": "",
+            "stderr": ""
+          }
+        }
+      ],
+      "equivalent": true
+    },
+    {
+      "name": "space_spliced_undef",
+      "compiler": "GCC",
+      "prototype_sha256": "f7959c102dd747cb9341bf8f23246e95fe90db2c8125b975a465936723e8a45c",
+      "removals": [],
+      "runs": [
+        {
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O0",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/new_f795/space_spliced_undef_before.cpp",
+            "-o",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/new_f795/space_spliced_undef_GCC_before"
+          ],
+          "returncode": 0,
+          "stdout": "",
+          "stderr": "Math/a.cpp:6:4: warning: backslash and newline separated by space\n",
+          "run": {
+            "command": [
+              "taskset",
+              "-c",
+              "8",
+              "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/new_f795/space_spliced_undef_GCC_before"
+            ],
+            "returncode": 0,
+            "stdout": "",
+            "stderr": ""
+          }
+        },
+        {
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O0",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/new_f795/space_spliced_undef_after.cpp",
+            "-o",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/new_f795/space_spliced_undef_GCC_after"
+          ],
+          "returncode": 0,
+          "stdout": "",
+          "stderr": "Math/a.cpp:6:4: warning: backslash and newline separated by space\n",
+          "run": {
+            "command": [
+              "taskset",
+              "-c",
+              "8",
+              "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/new_f795/space_spliced_undef_GCC_after"
+            ],
+            "returncode": 0,
+            "stdout": "",
+            "stderr": ""
+          }
+        }
+      ],
+      "equivalent": true
+    },
+    {
+      "name": "space_spliced_undef",
+      "compiler": "Clang",
+      "prototype_sha256": "f7959c102dd747cb9341bf8f23246e95fe90db2c8125b975a465936723e8a45c",
+      "removals": [],
+      "runs": [
+        {
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/clang++",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-std=c++23",
+            "-O0",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/new_f795/space_spliced_undef_before.cpp",
+            "-o",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/new_f795/space_spliced_undef_Clang_before"
+          ],
+          "returncode": 0,
+          "stdout": "",
+          "stderr": "Math/a.cpp:6:5: warning: backslash and newline separated by space [-Wbackslash-newline-escape]\n    6 | #un\\ \n      |     ^\n1 warning generated.\n",
+          "run": {
+            "command": [
+              "taskset",
+              "-c",
+              "8",
+              "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/new_f795/space_spliced_undef_Clang_before"
+            ],
+            "returncode": 0,
+            "stdout": "",
+            "stderr": ""
+          }
+        },
+        {
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/clang++",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-std=c++23",
+            "-O0",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/new_f795/space_spliced_undef_after.cpp",
+            "-o",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/new_f795/space_spliced_undef_Clang_after"
+          ],
+          "returncode": 0,
+          "stdout": "",
+          "stderr": "Math/a.cpp:6:5: warning: backslash and newline separated by space [-Wbackslash-newline-escape]\n    6 | #un\\ \n      |     ^\n1 warning generated.\n",
+          "run": {
+            "command": [
+              "taskset",
+              "-c",
+              "8",
+              "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/new_f795/space_spliced_undef_Clang_after"
+            ],
+            "returncode": 0,
+            "stdout": "",
+            "stderr": ""
+          }
+        }
+      ],
+      "equivalent": true
+    },
+    {
+      "name": "space_spliced_frontmatter",
+      "compiler": "GCC",
+      "prototype_sha256": "f7959c102dd747cb9341bf8f23246e95fe90db2c8125b975a465936723e8a45c",
+      "removals": [],
+      "runs": [
+        {
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O0",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/new_f795/space_spliced_frontmatter_before.cpp",
+            "-o",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/new_f795/space_spliced_frontmatter_GCC_before"
+          ],
+          "returncode": 0,
+          "stdout": "",
+          "stderr": "",
+          "run": {
+            "command": [
+              "taskset",
+              "-c",
+              "8",
+              "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/new_f795/space_spliced_frontmatter_GCC_before"
+            ],
+            "returncode": 0,
+            "stdout": "",
+            "stderr": ""
+          }
+        },
+        {
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O0",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/new_f795/space_spliced_frontmatter_after.cpp",
+            "-o",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/new_f795/space_spliced_frontmatter_GCC_after"
+          ],
+          "returncode": 0,
+          "stdout": "",
+          "stderr": "",
+          "run": {
+            "command": [
+              "taskset",
+              "-c",
+              "8",
+              "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/new_f795/space_spliced_frontmatter_GCC_after"
+            ],
+            "returncode": 0,
+            "stdout": "",
+            "stderr": ""
+          }
+        }
+      ],
+      "equivalent": true
+    },
+    {
+      "name": "space_spliced_frontmatter",
+      "compiler": "Clang",
+      "prototype_sha256": "f7959c102dd747cb9341bf8f23246e95fe90db2c8125b975a465936723e8a45c",
+      "removals": [],
+      "runs": [
+        {
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/clang++",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-std=c++23",
+            "-O0",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/new_f795/space_spliced_frontmatter_before.cpp",
+            "-o",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/new_f795/space_spliced_frontmatter_Clang_before"
+          ],
+          "returncode": 0,
+          "stdout": "",
+          "stderr": "Math/a.cpp:1:15: warning: backslash and newline separated by space [-Wbackslash-newline-escape]\n    1 | // API prefix \\ \n      |               ^\n1 warning generated.\n",
+          "run": {
+            "command": [
+              "taskset",
+              "-c",
+              "8",
+              "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/new_f795/space_spliced_frontmatter_Clang_before"
+            ],
+            "returncode": 0,
+            "stdout": "",
+            "stderr": ""
+          }
+        },
+        {
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/clang++",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-std=c++23",
+            "-O0",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/new_f795/space_spliced_frontmatter_after.cpp",
+            "-o",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/new_f795/space_spliced_frontmatter_Clang_after"
+          ],
+          "returncode": 0,
+          "stdout": "",
+          "stderr": "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/new_f795/space_spliced_frontmatter_after.cpp:3:15: warning: backslash and newline separated by space [-Wbackslash-newline-escape]\n    3 | // API prefix \\ \n      |               ^\n1 warning generated.\n",
+          "run": {
+            "command": [
+              "taskset",
+              "-c",
+              "8",
+              "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/new_f795/space_spliced_frontmatter_Clang_after"
+            ],
+            "returncode": 0,
+            "stdout": "",
+            "stderr": ""
+          }
+        }
+      ],
+      "equivalent": true
+    },
+    {
+      "name": "pasted_pragma",
+      "compiler": "GCC",
+      "prototype_sha256": "f7959c102dd747cb9341bf8f23246e95fe90db2c8125b975a465936723e8a45c",
+      "removals": [
+        {
+          "guard": "SIRKIT_A_DEFINED",
+          "library": "Math/b.cpp",
+          "source": "Math/b.cpp",
+          "first_source": "Math/a.cpp",
+          "bytes": 73,
+          "sha256": "3c9ccf710a71d0b91c9516157b41592defcc1c75acad06a4ccd3860a8f5fbbdf",
+          "first_line": 1,
+          "after_line": 5
+        }
+      ],
+      "runs": [
+        {
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O0",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/new_f795/pasted_pragma_before.cpp",
+            "-o",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/new_f795/pasted_pragma_GCC_before"
+          ],
+          "returncode": 0,
+          "stdout": "",
+          "stderr": "",
+          "run": {
+            "command": [
+              "taskset",
+              "-c",
+              "8",
+              "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/new_f795/pasted_pragma_GCC_before"
+            ],
+            "returncode": 0,
+            "stdout": "",
+            "stderr": ""
+          }
+        },
+        {
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O0",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/new_f795/pasted_pragma_after.cpp",
+            "-o",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/new_f795/pasted_pragma_GCC_after"
+          ],
+          "returncode": 1,
+          "stdout": "",
+          "stderr": "Math/b.cpp: In function ‘int main()’:\nMath/b.cpp:6:19: error: ‘TOKEN’ was not declared in this scope\n",
+          "run": null
+        }
+      ],
+      "equivalent": false
+    },
+    {
+      "name": "pasted_pragma",
+      "compiler": "Clang",
+      "prototype_sha256": "f7959c102dd747cb9341bf8f23246e95fe90db2c8125b975a465936723e8a45c",
+      "removals": [
+        {
+          "guard": "SIRKIT_A_DEFINED",
+          "library": "Math/b.cpp",
+          "source": "Math/b.cpp",
+          "first_source": "Math/a.cpp",
+          "bytes": 73,
+          "sha256": "3c9ccf710a71d0b91c9516157b41592defcc1c75acad06a4ccd3860a8f5fbbdf",
+          "first_line": 1,
+          "after_line": 5
+        }
+      ],
+      "runs": [
+        {
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/clang++",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-std=c++23",
+            "-O0",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/new_f795/pasted_pragma_before.cpp",
+            "-o",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/new_f795/pasted_pragma_Clang_before"
+          ],
+          "returncode": 0,
+          "stdout": "",
+          "stderr": "",
+          "run": {
+            "command": [
+              "taskset",
+              "-c",
+              "8",
+              "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/new_f795/pasted_pragma_Clang_before"
+            ],
+            "returncode": 0,
+            "stdout": "",
+            "stderr": ""
+          }
+        },
+        {
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/clang++",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-std=c++23",
+            "-O0",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/new_f795/pasted_pragma_after.cpp",
+            "-o",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/new_f795/pasted_pragma_Clang_after"
+          ],
+          "returncode": 1,
+          "stdout": "",
+          "stderr": "Math/b.cpp:6:19: error: use of undeclared identifier 'TOKEN'\n    6 | int main(){return TOKEN==1?0:1;}\n      |                   ^~~~~\n1 error generated.\n",
+          "run": null
+        }
+      ],
+      "equivalent": false
+    },
+    {
+      "name": "digraph_pasted_pragma",
+      "compiler": "GCC",
+      "prototype_sha256": "f7959c102dd747cb9341bf8f23246e95fe90db2c8125b975a465936723e8a45c",
+      "removals": [
+        {
+          "guard": "SIRKIT_A_DEFINED",
+          "library": "Math/b.cpp",
+          "source": "Math/b.cpp",
+          "first_source": "Math/a.cpp",
+          "bytes": 73,
+          "sha256": "3c9ccf710a71d0b91c9516157b41592defcc1c75acad06a4ccd3860a8f5fbbdf",
+          "first_line": 1,
+          "after_line": 5
+        }
+      ],
+      "runs": [
+        {
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O0",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/new_f795/digraph_pasted_pragma_before.cpp",
+            "-o",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/new_f795/digraph_pasted_pragma_GCC_before"
+          ],
+          "returncode": 0,
+          "stdout": "",
+          "stderr": "",
+          "run": {
+            "command": [
+              "taskset",
+              "-c",
+              "8",
+              "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/new_f795/digraph_pasted_pragma_GCC_before"
+            ],
+            "returncode": 0,
+            "stdout": "",
+            "stderr": ""
+          }
+        },
+        {
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O0",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/new_f795/digraph_pasted_pragma_after.cpp",
+            "-o",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/new_f795/digraph_pasted_pragma_GCC_after"
+          ],
+          "returncode": 1,
+          "stdout": "",
+          "stderr": "Math/b.cpp: In function ‘int main()’:\nMath/b.cpp:6:19: error: ‘TOKEN’ was not declared in this scope\n",
+          "run": null
+        }
+      ],
+      "equivalent": false
+    },
+    {
+      "name": "digraph_pasted_pragma",
+      "compiler": "Clang",
+      "prototype_sha256": "f7959c102dd747cb9341bf8f23246e95fe90db2c8125b975a465936723e8a45c",
+      "removals": [
+        {
+          "guard": "SIRKIT_A_DEFINED",
+          "library": "Math/b.cpp",
+          "source": "Math/b.cpp",
+          "first_source": "Math/a.cpp",
+          "bytes": 73,
+          "sha256": "3c9ccf710a71d0b91c9516157b41592defcc1c75acad06a4ccd3860a8f5fbbdf",
+          "first_line": 1,
+          "after_line": 5
+        }
+      ],
+      "runs": [
+        {
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/clang++",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-std=c++23",
+            "-O0",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/new_f795/digraph_pasted_pragma_before.cpp",
+            "-o",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/new_f795/digraph_pasted_pragma_Clang_before"
+          ],
+          "returncode": 0,
+          "stdout": "",
+          "stderr": "",
+          "run": {
+            "command": [
+              "taskset",
+              "-c",
+              "8",
+              "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/new_f795/digraph_pasted_pragma_Clang_before"
+            ],
+            "returncode": 0,
+            "stdout": "",
+            "stderr": ""
+          }
+        },
+        {
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/clang++",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-std=c++23",
+            "-O0",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/new_f795/digraph_pasted_pragma_after.cpp",
+            "-o",
+            "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/new_f795/digraph_pasted_pragma_Clang_after"
+          ],
+          "returncode": 1,
+          "stdout": "",
+          "stderr": "Math/b.cpp:6:19: error: use of undeclared identifier 'TOKEN'\n    6 | int main(){return TOKEN==1?0:1;}\n      |                   ^~~~~\n1 error generated.\n",
+          "run": null
+        }
+      ],
+      "equivalent": false
+    },
+    {
+      "name": "actual_template_main_selection",
+      "accepted": false,
+      "message": "only canonical library modules are supported: temp.cpp"
+    }
+  ],
+  "guard_reasoning": "A retained top-level #ifndef G with immediate unconditional empty #define G guarantees G defined on exit whether initially set or unset, provided observed mutations cannot invalidate it. Any visible matching undef, macro-stack operation/dynamic pragma, token-paste uncertainty or conflicting body conservatively disables removal; nested unknown conditions and alternate outer branches are preserved. Removed bodies must match exact source bytes; no minification or substitution of unequal blocks.",
+  "scope_limits": [
+    "This is a bounded correctness review, not a full C++ preprocessor implementation or proof for adversarial external macro/header side effects. Trusted manifest-selected library inputs and declared supported headers remain the tool boundary.",
+    "Unknown dependencies and unsupported raw/physical-splice constructs are rejected rather than inferred. GNU/nonstandard location macros beyond requested standard __FILE__/__LINE__ were not claimed preserved.",
+    "Executable regressions target the identified bugs and requested line behavior; author separately owns41units/72PP/36runtime and output-byte bridges. Those totals are not relabeled as independent reviewer runs.",
+    "No C++ source library files, previous frozen audit artifacts or shared scripts were modified by reviewer."
+  ],
+  "artifacts": {
+    "Audit/data/text-bundler-independent-review-2026-10-31-fixtures.zip": {
+      "sha256": "13780c088f8782990e566eb2e19190ab7b202033daf5c4caf9d208fc9b0ed1d4",
+      "bytes": 95238
+    }
+  },
+  "final_checks_script_sha256": "a49b6513dcec6eb1739937010d3f8bbafd61f7742f7ec06ed7908ca53534ca7e"
+}

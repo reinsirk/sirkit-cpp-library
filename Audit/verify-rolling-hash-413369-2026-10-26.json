@@ -1,0 +1,2352 @@
+{
+  "date_jst": "2026-10-26",
+  "source": "String/RollingHash.cpp",
+  "source_sha256": "10f4918f68f0dd422c2cdb5f7fb43d53fcab8c1ea5dd73853256c0a4d375e02e",
+  "baseline_sha256": "1dfa7d06474bc67869f5191a64bf0fd4c2b3865560eb88b61a6594319f2f5e85",
+  "main_sha256": "7a607fffa2d5726c705ca3b487e95c6063f298e48922dc968935616ac9a5c528",
+  "io_sha256": "291bf8dbc56a1d691f6256fe95b4714183c2cf5d9e55e4bef240e31d1eb178c1",
+  "completed_at_utc": "2026-10-25T22:19:46.979847+00:00",
+  "status": "PASS_local_online_pending",
+  "prototype": "Audit/prototype-rolling-hash-413369-2026-10-26.json",
+  "index": {
+    "purpose": "閾値4096版の変更範囲に絞った独立検証。以前79構成は未変更部分の根拠として再利用し、再実行していない。",
+    "source_sha256": "10f4918f68f0dd422c2cdb5f7fb43d53fcab8c1ea5dd73853256c0a4d375e02e",
+    "baseline_sha256": "1dfa7d06474bc67869f5191a64bf0fd4c2b3865560eb88b61a6594319f2f5e85",
+    "change_proof": {
+      "exact_replacements": 4,
+      "replacement": "16384 -> 4096",
+      "locations": "先頭APIコメント1行、constructor分岐1か所、assign reuse/non-reuse分岐2か所のみ。",
+      "all_other_bytes_identical": true,
+      "patch": "--- \n\n+++ \n\n@@ -13,7 +13,7 @@\n\n // compare(l,r,other,ol,orr): 同じ底の2区間を符号なしバイト辞書順で比較し-1/0/1をO(log(短い方の長さ+1))で返す。\n // 比較にはハッシュ衝突による誤判定の可能性がある。検査有効時は不正な範囲にout_of_range、底・ハッシュにinvalid_argument。\n // assign(s): 現在の底で再構築し容量・利用可能な累乗表を再利用、O(旧長+|s|+1)上界、強い例外保証。clear(): 空へ戻して底・容量を保持、O(旧長+1)上界、noexcept。\n-// AVX2対応x86_64では長さ16384以上の構築を並列化。SIRKIT_DISABLE_SIMDで専用処理とCPU判定を除外。\n+// AVX2対応x86_64では長さ4096以上の構築を並列化。SIRKIT_DISABLE_SIMDで専用処理とCPU判定を除外。\n // 元文字列は保持しない。コピーはO(n+1)で独立、代入は容量を再利用し強い例外保証。ムーブ元は空（自己ムーブ代入は保持）。swapはO(1)。\n \n #include <algorithm>\n@@ -59,7 +59,7 @@\n\n #if !defined(SIRKIT_DISABLE_SIMD) && (defined(__GNUC__) || defined(__clang__)) && \\\n     defined(__x86_64__) && defined(__SIZEOF_INT128__) && \\\n     !defined(SIRKIT_FORCE_STANDARD_ARITHMETIC)\n-        if (s.size() >= 16384 && can_build_avx2()) {\n+        if (s.size() >= 4096 && can_build_avx2()) {\n             build_blocks_avx2<true>(s, factor, prefixes, powers);\n             return;\n         }\n@@ -132,11 +132,11 @@\n\n #if !defined(SIRKIT_DISABLE_SIMD) && (defined(__GNUC__) || defined(__clang__)) && \\\n     defined(__x86_64__) && defined(__SIZEOF_INT128__) && \\\n     !defined(SIRKIT_FORCE_STANDARD_ARITHMETIC)\n-        if (reuse_powers && s.size() >= 16384 && can_build_avx2()) {\n+        if (reuse_powers && s.size() >= 4096 && can_build_avx2()) {\n             build_blocks_avx2<false>(s, factor, prefixes, powers);\n             return;\n         }\n-        if (!reuse_powers && s.size() >= 16384 && can_build_avx2()) {\n+        if (!reuse_powers && s.size() >= 4096 && can_build_avx2()) {\n             build_blocks_avx2<true>(s, factor, prefixes, powers);\n             return;\n         }"
+    },
+    "static_review": {
+      "scope": "新しくAVX2へ入るのは有効な長さ4096..16383の構築とassign。AVX2 kernel、public query、所有、確保順、例外手順はbyte一致。",
+      "bounds": "4文字blockはi+4<=nで32byte/4 Entryをstore、残り0..3文字はscalar。これらのkernel本体は前回79で検証済みだが、新しい閾値付近の全余りとページ端を今回補う。",
+      "guardpage": "POSIXでは入力viewをread-only bodyの先頭/末尾へ密着し、直前/直後をPROT_NONE。std::stringの余分capacityを読んでも通る試験ではなく、view外のread/writeを検出する。入力mappingを破棄した後のget/copyも確認。",
+      "allocation": "新閾値を越える4097byteで初回constructorをnew予算2、clearassign/reuse/4096へshrink/4097へgrowと照会を予算0で確認。CPU guardと新しく選ぶtemplate reuse経路も追加heap確保なし。",
+      "exclusion": "SIMD無効native128および標準forcedは、preprocess後の全RollingHashクラスがbaselineと一致しCPU判定/専用関数も不在。CPU falseはruntime試験で補足。",
+      "lcp": "exclusive案は不採用で、LCP/equal/compareと全read APIはbaselineとbyte一致。静的証明だけを保存して新しいquery全matrixは実行しない。"
+    },
+    "results": {
+      "threshold-results.json": {
+        "sha256": "6086c939e9ea08b3247f4270dd442d9ca40f11acdc71b23fe6a5a9ce4e5f4370",
+        "configurations": 19,
+        "passed": true,
+        "diagnostics_empty": true,
+        "stderr_empty": true
+      },
+      "threshold-allocation-results.json": {
+        "sha256": "1c868c6c1534bf3df47ae0c4ac44aed8522f57cd8544d94aae658ce87e634cec",
+        "configurations": 4,
+        "passed": true,
+        "diagnostics_empty": true,
+        "stderr_empty": true
+      }
+    },
+    "guard_checks_per_configuration": 18233280,
+    "guard_cases_per_configuration": 600,
+    "allocation_checks_per_configuration": 24612,
+    "allocation_failure_points_per_configuration": 4,
+    "input_scope": {
+      "lengths": [
+        0,
+        1,
+        4094,
+        4095,
+        4096,
+        4097,
+        4098,
+        4099,
+        4100,
+        4101,
+        8191,
+        8192,
+        8193,
+        8194,
+        8195
+      ],
+      "bases": [
+        "0 -> 10",
+        "2",
+        "256",
+        "p/2",
+        "p-2"
+      ],
+      "patterns": [
+        "mixed unsigned byte",
+        "all NUL",
+        "all 0xff",
+        "61 byte1 then NUL"
+      ],
+      "construction": [
+        "fresh constructor",
+        "same-size reuse assign",
+        "clear then assign",
+        "small to large assign",
+        "queries/copy after source mapping unmapped"
+      ]
+    },
+    "preprocessing_equivalence": [
+      {
+        "compiler": "gcc",
+        "mode": "disabled_native128",
+        "class_sha256": {
+          "baseline": "86db734df0661106fb962ae688e4882edd12a2dc378a2ba4a8fb80ad8cf3312c",
+          "candidate": "86db734df0661106fb962ae688e4882edd12a2dc378a2ba4a8fb80ad8cf3312c"
+        },
+        "normalization": "Trim line edges and discard blank lines, preserving interior whitespace and literals."
+      },
+      {
+        "compiler": "gcc",
+        "mode": "standard_forced",
+        "class_sha256": {
+          "baseline": "66079a693fe284bc9919e9f9b6ea3f4144d35a0544b0273975b7c04bc034164c",
+          "candidate": "66079a693fe284bc9919e9f9b6ea3f4144d35a0544b0273975b7c04bc034164c"
+        },
+        "normalization": "Trim line edges and discard blank lines, preserving interior whitespace and literals."
+      },
+      {
+        "compiler": "clang",
+        "mode": "disabled_native128",
+        "class_sha256": {
+          "baseline": "86db734df0661106fb962ae688e4882edd12a2dc378a2ba4a8fb80ad8cf3312c",
+          "candidate": "86db734df0661106fb962ae688e4882edd12a2dc378a2ba4a8fb80ad8cf3312c"
+        },
+        "normalization": "Trim line edges and discard blank lines, preserving interior whitespace and literals."
+      },
+      {
+        "compiler": "clang",
+        "mode": "standard_forced",
+        "class_sha256": {
+          "baseline": "675c65ef6bdf0a2f0c092d7aaaccfd8c30398491eb6b0ba5091d32cdd2ec32d6",
+          "candidate": "675c65ef6bdf0a2f0c092d7aaaccfd8c30398491eb6b0ba5091d32cdd2ec32d6"
+        },
+        "normalization": "Trim line edges and discard blank lines, preserving interior whitespace and literals."
+      }
+    ],
+    "reused_previous_evidence": {
+      "audit": "/home/reinsirk/Atcoder_Env/Audit/verify-rolling-hash-413367-2026-10-26.json",
+      "audit_sha256": "33ff9ba8fc81431bda00f687a27e150293c8008e0438380dc1fa1a1b93258b6d",
+      "index": "/tmp/sirkit_rh_413367_20261026/validation/final-index.json",
+      "index_sha256": "3a38e82fded241226066f47bf70dc4350adb6a9003498fc4187e713dd8332ce3",
+      "results": {
+        "final-results.json": {
+          "path": "/tmp/sirkit_rh_413367_20261026/validation/final-results.json",
+          "sha256": "4fd57d318f8fcd18eb5c14f012b50a6f1cafde2ec7152ea7788c86c431e1c1a4",
+          "configurations": 46,
+          "passed": true,
+          "diagnostics_empty": true,
+          "stderr_empty": true
+        },
+        "final-extra-results.json": {
+          "path": "/tmp/sirkit_rh_413367_20261026/validation/final-extra-results.json",
+          "sha256": "7d7f66e2e5ad5805e970ae34b584329eaba9735649c9ee7e96754f41b291f295",
+          "configurations": 10,
+          "passed": true,
+          "diagnostics_empty": true,
+          "stderr_empty": true
+        },
+        "final-modes-results.json": {
+          "path": "/tmp/sirkit_rh_413367_20261026/validation/final-modes-results.json",
+          "sha256": "f3814e9d232bc44c1e82ae05387e2d7b90b70ca435e03569eebe4be44b603f0b",
+          "configurations": 9,
+          "passed": true,
+          "diagnostics_empty": true,
+          "stderr_empty": true
+        },
+        "final-allocation-results.json": {
+          "path": "/tmp/sirkit_rh_413367_20261026/validation/final-allocation-results.json",
+          "sha256": "e09ad84d5a928be71e2f4d88b32a5fac2b474710fa5875e78507c3d191b3c53d",
+          "configurations": 4,
+          "passed": true,
+          "diagnostics_empty": true,
+          "stderr_empty": true
+        },
+        "final-query-pairs-results.json": {
+          "path": "/tmp/sirkit_rh_413367_20261026/validation/final-query-pairs-results.json",
+          "sha256": "5b547cba4667ded39db90fa40b9d351df34734855d689172f877a88ff2f6b1a0",
+          "configurations": 10,
+          "passed": true,
+          "diagnostics_empty": true,
+          "stderr_empty": true
+        }
+      },
+      "configurations": 79,
+      "repository_tests": 12,
+      "repository_test_hashes_match": true,
+      "rerun": false
+    },
+    "reused_scope": "前回79の演算kernel・既存大規模・公開API・所有/例外保証を、未変更bodyの根拠として再利用。新しいsourceで79構成を再実行したという意味ではない。",
+    "sanitizers": "GCC/Clang nativeとGCC fallbackのguard-page全600casesでASan/UBSan。LSanはptrace環境のため無効、独立失敗注入のlive_delta0で補完。",
+    "agent_did_not_edit_production": true,
+    "performance_measurements": false,
+    "executed_configurations": 23,
+    "files": {
+      "threshold-frozen.hpp": {
+        "sha256": "10f4918f68f0dd422c2cdb5f7fb43d53fcab8c1ea5dd73853256c0a4d375e02e",
+        "bytes": 29432
+      },
+      "rolling_hash_threshold_test.cpp": {
+        "sha256": "9a340aa2274bab003a5e50e070729fbf051fc652840f503b6ccf98deec75a464",
+        "bytes": 3585
+      },
+      "rolling_hash_threshold_allocation_test.cpp": {
+        "sha256": "cb8a31aade83a83a711b1f0a1a67e0283efed31afac5c5d15a4642a7ed5e7069",
+        "bytes": 2637
+      },
+      "run_threshold.py": {
+        "sha256": "841b896d42343d3fc923ce288aa876c49eaa64ab865fd48f83a59a0b7be1c2dd",
+        "bytes": 2129
+      },
+      "run_threshold_allocation.py": {
+        "sha256": "d4697010d9cac498d9dde55ed6b1fd151aeaf4a9290914245f8b3c6e1526b7e1",
+        "bytes": 1186
+      }
+    },
+    "current_production_hashes": {
+      "String/RollingHash.cpp": "10f4918f68f0dd422c2cdb5f7fb43d53fcab8c1ea5dd73853256c0a4d375e02e",
+      "Verify/current/drivers/rolling_hash_zalgorithm_main.cpp": "7a607fffa2d5726c705ca3b487e95c6063f298e48922dc968935616ac9a5c528",
+      "Verify/current/common/fast_io.hpp": "291bf8dbc56a1d691f6256fe95b4714183c2cf5d9e55e4bef240e31d1eb178c1",
+      "Verify/current/submissions/rolling_hash.cpp": "6326f7f8667a88bcb2b9e8b841fa27cecfcfca455da7d3899a9f8b2f7786ec8e"
+    },
+    "installed_source_matches_tested_header": true,
+    "main_io_match_frozen": true,
+    "completed_at_utc": "2026-10-25T22:19:20.140505+00:00"
+  },
+  "threshold_runs": {
+    "source_sha256": "10f4918f68f0dd422c2cdb5f7fb43d53fcab8c1ea5dd73853256c0a4d375e02e",
+    "runs": [
+      {
+        "configuration": "threshold-gcc-int128-checked",
+        "command": [
+          "taskset",
+          "-c",
+          "8",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "-pedantic-errors",
+          "-DSIRKIT_RH_SOURCE=\"/tmp/sirkit_rh_413369_20261026/validation/threshold-frozen.hpp\"",
+          "/tmp/sirkit_rh_413369_20261026/validation/rolling_hash_threshold_test.cpp",
+          "-o",
+          "/tmp/sirkit_rh_413369_20261026/validation/threshold-gcc-int128-checked"
+        ],
+        "compile_exit": 0,
+        "diagnostics": "",
+        "run_exit": 0,
+        "stdout": "PASS threshold checks=18233280 cases=600 guard_pages=1\n",
+        "stderr": "",
+        "run_seconds": 0.08275663095992059
+      },
+      {
+        "configuration": "threshold-gcc-int128-skip",
+        "command": [
+          "taskset",
+          "-c",
+          "8",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "-pedantic-errors",
+          "-DSIRKIT_RH_SOURCE=\"/tmp/sirkit_rh_413369_20261026/validation/threshold-frozen.hpp\"",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/tmp/sirkit_rh_413369_20261026/validation/rolling_hash_threshold_test.cpp",
+          "-o",
+          "/tmp/sirkit_rh_413369_20261026/validation/threshold-gcc-int128-skip"
+        ],
+        "compile_exit": 0,
+        "diagnostics": "",
+        "run_exit": 0,
+        "stdout": "PASS threshold checks=18233280 cases=600 guard_pages=1\n",
+        "stderr": "",
+        "run_seconds": 0.0829124329611659
+      },
+      {
+        "configuration": "threshold-gcc-fallback-checked",
+        "command": [
+          "taskset",
+          "-c",
+          "8",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "-pedantic-errors",
+          "-DSIRKIT_RH_SOURCE=\"/tmp/sirkit_rh_413369_20261026/validation/threshold-frozen.hpp\"",
+          "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+          "-U__SIZEOF_INT128__",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/tmp/sirkit_rh_413369_20261026/validation/rolling_hash_threshold_test.cpp",
+          "-o",
+          "/tmp/sirkit_rh_413369_20261026/validation/threshold-gcc-fallback-checked"
+        ],
+        "compile_exit": 0,
+        "diagnostics": "",
+        "run_exit": 0,
+        "stdout": "PASS threshold checks=18233280 cases=600 guard_pages=1\n",
+        "stderr": "",
+        "run_seconds": 0.21474908106029034
+      },
+      {
+        "configuration": "threshold-gcc-fallback-skip",
+        "command": [
+          "taskset",
+          "-c",
+          "8",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "-pedantic-errors",
+          "-DSIRKIT_RH_SOURCE=\"/tmp/sirkit_rh_413369_20261026/validation/threshold-frozen.hpp\"",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+          "-U__SIZEOF_INT128__",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/tmp/sirkit_rh_413369_20261026/validation/rolling_hash_threshold_test.cpp",
+          "-o",
+          "/tmp/sirkit_rh_413369_20261026/validation/threshold-gcc-fallback-skip"
+        ],
+        "compile_exit": 0,
+        "diagnostics": "",
+        "run_exit": 0,
+        "stdout": "PASS threshold checks=18233280 cases=600 guard_pages=1\n",
+        "stderr": "",
+        "run_seconds": 0.2122056030202657
+      },
+      {
+        "configuration": "threshold-gcc-disabled-checked",
+        "command": [
+          "taskset",
+          "-c",
+          "8",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "-pedantic-errors",
+          "-DSIRKIT_RH_SOURCE=\"/tmp/sirkit_rh_413369_20261026/validation/threshold-frozen.hpp\"",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/tmp/sirkit_rh_413369_20261026/validation/rolling_hash_threshold_test.cpp",
+          "-o",
+          "/tmp/sirkit_rh_413369_20261026/validation/threshold-gcc-disabled-checked"
+        ],
+        "compile_exit": 0,
+        "diagnostics": "",
+        "run_exit": 0,
+        "stdout": "PASS threshold checks=18233280 cases=600 guard_pages=1\n",
+        "stderr": "",
+        "run_seconds": 0.09352994000073522
+      },
+      {
+        "configuration": "threshold-gcc-disabled-skip",
+        "command": [
+          "taskset",
+          "-c",
+          "8",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "-pedantic-errors",
+          "-DSIRKIT_RH_SOURCE=\"/tmp/sirkit_rh_413369_20261026/validation/threshold-frozen.hpp\"",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/tmp/sirkit_rh_413369_20261026/validation/rolling_hash_threshold_test.cpp",
+          "-o",
+          "/tmp/sirkit_rh_413369_20261026/validation/threshold-gcc-disabled-skip"
+        ],
+        "compile_exit": 0,
+        "diagnostics": "",
+        "run_exit": 0,
+        "stdout": "PASS threshold checks=18233280 cases=600 guard_pages=1\n",
+        "stderr": "",
+        "run_seconds": 0.09040634497068822
+      },
+      {
+        "configuration": "threshold-gcc-cpu_false-checked",
+        "command": [
+          "taskset",
+          "-c",
+          "8",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "-pedantic-errors",
+          "-DSIRKIT_RH_SOURCE=\"/tmp/sirkit_rh_413369_20261026/validation/threshold-frozen.hpp\"",
+          "-D__builtin_cpu_supports(x)=0",
+          "/tmp/sirkit_rh_413369_20261026/validation/rolling_hash_threshold_test.cpp",
+          "-o",
+          "/tmp/sirkit_rh_413369_20261026/validation/threshold-gcc-cpu_false-checked"
+        ],
+        "compile_exit": 0,
+        "diagnostics": "",
+        "run_exit": 0,
+        "stdout": "PASS threshold checks=18233280 cases=600 guard_pages=1\n",
+        "stderr": "",
+        "run_seconds": 0.09379366901703179
+      },
+      {
+        "configuration": "threshold-gcc-cpu_false-skip",
+        "command": [
+          "taskset",
+          "-c",
+          "8",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "-pedantic-errors",
+          "-DSIRKIT_RH_SOURCE=\"/tmp/sirkit_rh_413369_20261026/validation/threshold-frozen.hpp\"",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-D__builtin_cpu_supports(x)=0",
+          "/tmp/sirkit_rh_413369_20261026/validation/rolling_hash_threshold_test.cpp",
+          "-o",
+          "/tmp/sirkit_rh_413369_20261026/validation/threshold-gcc-cpu_false-skip"
+        ],
+        "compile_exit": 0,
+        "diagnostics": "",
+        "run_exit": 0,
+        "stdout": "PASS threshold checks=18233280 cases=600 guard_pages=1\n",
+        "stderr": "",
+        "run_seconds": 0.09064508904702961
+      },
+      {
+        "configuration": "threshold-clang-int128-checked",
+        "command": [
+          "taskset",
+          "-c",
+          "8",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "-pedantic-errors",
+          "-DSIRKIT_RH_SOURCE=\"/tmp/sirkit_rh_413369_20261026/validation/threshold-frozen.hpp\"",
+          "/tmp/sirkit_rh_413369_20261026/validation/rolling_hash_threshold_test.cpp",
+          "-o",
+          "/tmp/sirkit_rh_413369_20261026/validation/threshold-clang-int128-checked"
+        ],
+        "compile_exit": 0,
+        "diagnostics": "",
+        "run_exit": 0,
+        "stdout": "PASS threshold checks=18233280 cases=600 guard_pages=1\n",
+        "stderr": "",
+        "run_seconds": 0.12776056909933686
+      },
+      {
+        "configuration": "threshold-clang-int128-skip",
+        "command": [
+          "taskset",
+          "-c",
+          "8",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "-pedantic-errors",
+          "-DSIRKIT_RH_SOURCE=\"/tmp/sirkit_rh_413369_20261026/validation/threshold-frozen.hpp\"",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/tmp/sirkit_rh_413369_20261026/validation/rolling_hash_threshold_test.cpp",
+          "-o",
+          "/tmp/sirkit_rh_413369_20261026/validation/threshold-clang-int128-skip"
+        ],
+        "compile_exit": 0,
+        "diagnostics": "",
+        "run_exit": 0,
+        "stdout": "PASS threshold checks=18233280 cases=600 guard_pages=1\n",
+        "stderr": "",
+        "run_seconds": 0.116400400060229
+      },
+      {
+        "configuration": "threshold-clang-fallback-checked",
+        "command": [
+          "taskset",
+          "-c",
+          "8",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "-pedantic-errors",
+          "-DSIRKIT_RH_SOURCE=\"/tmp/sirkit_rh_413369_20261026/validation/threshold-frozen.hpp\"",
+          "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+          "-U__SIZEOF_INT128__",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/tmp/sirkit_rh_413369_20261026/validation/rolling_hash_threshold_test.cpp",
+          "-o",
+          "/tmp/sirkit_rh_413369_20261026/validation/threshold-clang-fallback-checked"
+        ],
+        "compile_exit": 0,
+        "diagnostics": "",
+        "run_exit": 0,
+        "stdout": "PASS threshold checks=18233280 cases=600 guard_pages=1\n",
+        "stderr": "",
+        "run_seconds": 0.26285832398571074
+      },
+      {
+        "configuration": "threshold-clang-fallback-skip",
+        "command": [
+          "taskset",
+          "-c",
+          "8",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "-pedantic-errors",
+          "-DSIRKIT_RH_SOURCE=\"/tmp/sirkit_rh_413369_20261026/validation/threshold-frozen.hpp\"",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+          "-U__SIZEOF_INT128__",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/tmp/sirkit_rh_413369_20261026/validation/rolling_hash_threshold_test.cpp",
+          "-o",
+          "/tmp/sirkit_rh_413369_20261026/validation/threshold-clang-fallback-skip"
+        ],
+        "compile_exit": 0,
+        "diagnostics": "",
+        "run_exit": 0,
+        "stdout": "PASS threshold checks=18233280 cases=600 guard_pages=1\n",
+        "stderr": "",
+        "run_seconds": 0.2501016639871523
+      },
+      {
+        "configuration": "threshold-clang-disabled-checked",
+        "command": [
+          "taskset",
+          "-c",
+          "8",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "-pedantic-errors",
+          "-DSIRKIT_RH_SOURCE=\"/tmp/sirkit_rh_413369_20261026/validation/threshold-frozen.hpp\"",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/tmp/sirkit_rh_413369_20261026/validation/rolling_hash_threshold_test.cpp",
+          "-o",
+          "/tmp/sirkit_rh_413369_20261026/validation/threshold-clang-disabled-checked"
+        ],
+        "compile_exit": 0,
+        "diagnostics": "",
+        "run_exit": 0,
+        "stdout": "PASS threshold checks=18233280 cases=600 guard_pages=1\n",
+        "stderr": "",
+        "run_seconds": 0.1382721409900114
+      },
+      {
+        "configuration": "threshold-clang-disabled-skip",
+        "command": [
+          "taskset",
+          "-c",
+          "8",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "-pedantic-errors",
+          "-DSIRKIT_RH_SOURCE=\"/tmp/sirkit_rh_413369_20261026/validation/threshold-frozen.hpp\"",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/tmp/sirkit_rh_413369_20261026/validation/rolling_hash_threshold_test.cpp",
+          "-o",
+          "/tmp/sirkit_rh_413369_20261026/validation/threshold-clang-disabled-skip"
+        ],
+        "compile_exit": 0,
+        "diagnostics": "",
+        "run_exit": 0,
+        "stdout": "PASS threshold checks=18233280 cases=600 guard_pages=1\n",
+        "stderr": "",
+        "run_seconds": 0.12594714097213
+      },
+      {
+        "configuration": "threshold-clang-cpu_false-checked",
+        "command": [
+          "taskset",
+          "-c",
+          "8",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "-pedantic-errors",
+          "-DSIRKIT_RH_SOURCE=\"/tmp/sirkit_rh_413369_20261026/validation/threshold-frozen.hpp\"",
+          "-D__builtin_cpu_supports(x)=0",
+          "/tmp/sirkit_rh_413369_20261026/validation/rolling_hash_threshold_test.cpp",
+          "-o",
+          "/tmp/sirkit_rh_413369_20261026/validation/threshold-clang-cpu_false-checked"
+        ],
+        "compile_exit": 0,
+        "diagnostics": "",
+        "run_exit": 0,
+        "stdout": "PASS threshold checks=18233280 cases=600 guard_pages=1\n",
+        "stderr": "",
+        "run_seconds": 0.13828912796452641
+      },
+      {
+        "configuration": "threshold-clang-cpu_false-skip",
+        "command": [
+          "taskset",
+          "-c",
+          "8",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "-pedantic-errors",
+          "-DSIRKIT_RH_SOURCE=\"/tmp/sirkit_rh_413369_20261026/validation/threshold-frozen.hpp\"",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-D__builtin_cpu_supports(x)=0",
+          "/tmp/sirkit_rh_413369_20261026/validation/rolling_hash_threshold_test.cpp",
+          "-o",
+          "/tmp/sirkit_rh_413369_20261026/validation/threshold-clang-cpu_false-skip"
+        ],
+        "compile_exit": 0,
+        "diagnostics": "",
+        "run_exit": 0,
+        "stdout": "PASS threshold checks=18233280 cases=600 guard_pages=1\n",
+        "stderr": "",
+        "run_seconds": 0.12663052591960877
+      },
+      {
+        "configuration": "threshold-gcc-int128-checked-san",
+        "command": [
+          "taskset",
+          "-c",
+          "8",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O1",
+          "-g",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-no-pie",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "-pedantic-errors",
+          "-DSIRKIT_RH_SOURCE=\"/tmp/sirkit_rh_413369_20261026/validation/threshold-frozen.hpp\"",
+          "/tmp/sirkit_rh_413369_20261026/validation/rolling_hash_threshold_test.cpp",
+          "-o",
+          "/tmp/sirkit_rh_413369_20261026/validation/threshold-gcc-int128-checked-san"
+        ],
+        "compile_exit": 0,
+        "diagnostics": "",
+        "run_exit": 0,
+        "stdout": "PASS threshold checks=18233280 cases=600 guard_pages=1\n",
+        "stderr": "",
+        "run_seconds": 0.8222008689772338
+      },
+      {
+        "configuration": "threshold-clang-int128-checked-san",
+        "command": [
+          "taskset",
+          "-c",
+          "8",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O1",
+          "-g",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-no-pie",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "-pedantic-errors",
+          "-DSIRKIT_RH_SOURCE=\"/tmp/sirkit_rh_413369_20261026/validation/threshold-frozen.hpp\"",
+          "/tmp/sirkit_rh_413369_20261026/validation/rolling_hash_threshold_test.cpp",
+          "-o",
+          "/tmp/sirkit_rh_413369_20261026/validation/threshold-clang-int128-checked-san"
+        ],
+        "compile_exit": 0,
+        "diagnostics": "",
+        "run_exit": 0,
+        "stdout": "PASS threshold checks=18233280 cases=600 guard_pages=1\n",
+        "stderr": "",
+        "run_seconds": 0.42886860796716064
+      },
+      {
+        "configuration": "threshold-gcc-fallback-checked-san",
+        "command": [
+          "taskset",
+          "-c",
+          "8",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O1",
+          "-g",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-no-pie",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "-pedantic-errors",
+          "-DSIRKIT_RH_SOURCE=\"/tmp/sirkit_rh_413369_20261026/validation/threshold-frozen.hpp\"",
+          "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+          "-U__SIZEOF_INT128__",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/tmp/sirkit_rh_413369_20261026/validation/rolling_hash_threshold_test.cpp",
+          "-o",
+          "/tmp/sirkit_rh_413369_20261026/validation/threshold-gcc-fallback-checked-san"
+        ],
+        "compile_exit": 0,
+        "diagnostics": "",
+        "run_exit": 0,
+        "stdout": "PASS threshold checks=18233280 cases=600 guard_pages=1\n",
+        "stderr": "",
+        "run_seconds": 1.898420118028298
+      }
+    ],
+    "passed": true,
+    "source_unchanged": true
+  },
+  "allocation_runs": {
+    "source_sha256": "10f4918f68f0dd422c2cdb5f7fb43d53fcab8c1ea5dd73853256c0a4d375e02e",
+    "runs": [
+      {
+        "configuration": "threshold-allocation-gcc-checked",
+        "command": [
+          "taskset",
+          "-c",
+          "8",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "-pedantic-errors",
+          "-DSIRKIT_RH_SOURCE=\"/tmp/sirkit_rh_413369_20261026/validation/threshold-frozen.hpp\"",
+          "/tmp/sirkit_rh_413369_20261026/validation/rolling_hash_threshold_allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_rh_413369_20261026/validation/threshold-allocation-gcc-checked"
+        ],
+        "compile_exit": 0,
+        "diagnostics": "",
+        "run_exit": 0,
+        "stdout": "PASS first AVX allocation checks=24612 failure_points=4 live_delta=0 avx2=1\n",
+        "stderr": ""
+      },
+      {
+        "configuration": "threshold-allocation-gcc-skip",
+        "command": [
+          "taskset",
+          "-c",
+          "8",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "-pedantic-errors",
+          "-DSIRKIT_RH_SOURCE=\"/tmp/sirkit_rh_413369_20261026/validation/threshold-frozen.hpp\"",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/tmp/sirkit_rh_413369_20261026/validation/rolling_hash_threshold_allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_rh_413369_20261026/validation/threshold-allocation-gcc-skip"
+        ],
+        "compile_exit": 0,
+        "diagnostics": "",
+        "run_exit": 0,
+        "stdout": "PASS first AVX allocation checks=24612 failure_points=4 live_delta=0 avx2=1\n",
+        "stderr": ""
+      },
+      {
+        "configuration": "threshold-allocation-clang-checked",
+        "command": [
+          "taskset",
+          "-c",
+          "8",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "-pedantic-errors",
+          "-DSIRKIT_RH_SOURCE=\"/tmp/sirkit_rh_413369_20261026/validation/threshold-frozen.hpp\"",
+          "/tmp/sirkit_rh_413369_20261026/validation/rolling_hash_threshold_allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_rh_413369_20261026/validation/threshold-allocation-clang-checked"
+        ],
+        "compile_exit": 0,
+        "diagnostics": "",
+        "run_exit": 0,
+        "stdout": "PASS first AVX allocation checks=24612 failure_points=4 live_delta=0 avx2=1\n",
+        "stderr": ""
+      },
+      {
+        "configuration": "threshold-allocation-clang-skip",
+        "command": [
+          "taskset",
+          "-c",
+          "8",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "-pedantic-errors",
+          "-DSIRKIT_RH_SOURCE=\"/tmp/sirkit_rh_413369_20261026/validation/threshold-frozen.hpp\"",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/tmp/sirkit_rh_413369_20261026/validation/rolling_hash_threshold_allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_rh_413369_20261026/validation/threshold-allocation-clang-skip"
+        ],
+        "compile_exit": 0,
+        "diagnostics": "",
+        "run_exit": 0,
+        "stdout": "PASS first AVX allocation checks=24612 failure_points=4 live_delta=0 avx2=1\n",
+        "stderr": ""
+      }
+    ],
+    "passed": true
+  },
+  "production_allocation": [
+    {
+      "config": "gcc",
+      "skip": false,
+      "command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/rolling_hash_avx_allocation_test.cpp",
+        "-o",
+        "/tmp/sirkit_rh_413369_20261026/production-alloc-gcc-False"
+      ],
+      "diagnostics": "",
+      "stdout": "PASS first AVX allocation checks=24612 failure_points=4 live_delta=0 avx2=1\n"
+    },
+    {
+      "config": "gcc",
+      "skip": true,
+      "command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-DSKIP_RUNTIME_CHECKS",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/rolling_hash_avx_allocation_test.cpp",
+        "-o",
+        "/tmp/sirkit_rh_413369_20261026/production-alloc-gcc-True"
+      ],
+      "diagnostics": "",
+      "stdout": "PASS first AVX allocation checks=24612 failure_points=4 live_delta=0 avx2=1\n"
+    },
+    {
+      "config": "clang",
+      "skip": false,
+      "command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/rolling_hash_avx_allocation_test.cpp",
+        "-o",
+        "/tmp/sirkit_rh_413369_20261026/production-alloc-clang-False"
+      ],
+      "diagnostics": "",
+      "stdout": "PASS first AVX allocation checks=24612 failure_points=4 live_delta=0 avx2=1\n"
+    },
+    {
+      "config": "clang",
+      "skip": true,
+      "command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-DSKIP_RUNTIME_CHECKS",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/rolling_hash_avx_allocation_test.cpp",
+        "-o",
+        "/tmp/sirkit_rh_413369_20261026/production-alloc-clang-True"
+      ],
+      "diagnostics": "",
+      "stdout": "PASS first AVX allocation checks=24612 failure_points=4 live_delta=0 avx2=1\n"
+    }
+  ],
+  "reused": {
+    "purpose": "RollingHash413369後の新候補検証準備。前回79構成をhash一致で再利用。",
+    "source_sha256": "1dfa7d06474bc67869f5191a64bf0fd4c2b3865560eb88b61a6594319f2f5e85",
+    "baseline_byte_identical_to_previous_tested_final": true,
+    "files": {
+      "baseline.hpp": {
+        "sha256": "1dfa7d06474bc67869f5191a64bf0fd4c2b3865560eb88b61a6594319f2f5e85",
+        "bytes": 29436
+      },
+      "main.cpp": {
+        "sha256": "7a607fffa2d5726c705ca3b487e95c6063f298e48922dc968935616ac9a5c528",
+        "bytes": 409
+      },
+      "io.hpp": {
+        "sha256": "291bf8dbc56a1d691f6256fe95b4714183c2cf5d9e55e4bef240e31d1eb178c1",
+        "bytes": 9227
+      },
+      "submission.cpp": {
+        "sha256": "49bdf1d9a8ef9b101545e4458c2b461dc0d3adcab8519c54f60b83bcc8c15049",
+        "bytes": 39254
+      },
+      "submission-413369.json": {
+        "sha256": "d54e302df57fca47462f349b7b26cb9bc06c4ef0a834753798baa09439426bbd",
+        "bytes": 48282
+      }
+    },
+    "frozen_production_hashes": {
+      "String/RollingHash.cpp": "1dfa7d06474bc67869f5191a64bf0fd4c2b3865560eb88b61a6594319f2f5e85",
+      "Verify/current/drivers/rolling_hash_zalgorithm_main.cpp": "7a607fffa2d5726c705ca3b487e95c6063f298e48922dc968935616ac9a5c528",
+      "Verify/current/common/fast_io.hpp": "291bf8dbc56a1d691f6256fe95b4714183c2cf5d9e55e4bef240e31d1eb178c1",
+      "Verify/current/submissions/rolling_hash.cpp": "49bdf1d9a8ef9b101545e4458c2b461dc0d3adcab8519c54f60b83bcc8c15049"
+    },
+    "previous_evidence": {
+      "audit": "/home/reinsirk/Atcoder_Env/Audit/verify-rolling-hash-413367-2026-10-26.json",
+      "audit_sha256": "33ff9ba8fc81431bda00f687a27e150293c8008e0438380dc1fa1a1b93258b6d",
+      "index": "/tmp/sirkit_rh_413367_20261026/validation/final-index.json",
+      "index_sha256": "3a38e82fded241226066f47bf70dc4350adb6a9003498fc4187e713dd8332ce3",
+      "results": {
+        "final-results.json": {
+          "path": "/tmp/sirkit_rh_413367_20261026/validation/final-results.json",
+          "sha256": "4fd57d318f8fcd18eb5c14f012b50a6f1cafde2ec7152ea7788c86c431e1c1a4",
+          "configurations": 46,
+          "passed": true,
+          "diagnostics_empty": true,
+          "stderr_empty": true
+        },
+        "final-extra-results.json": {
+          "path": "/tmp/sirkit_rh_413367_20261026/validation/final-extra-results.json",
+          "sha256": "7d7f66e2e5ad5805e970ae34b584329eaba9735649c9ee7e96754f41b291f295",
+          "configurations": 10,
+          "passed": true,
+          "diagnostics_empty": true,
+          "stderr_empty": true
+        },
+        "final-modes-results.json": {
+          "path": "/tmp/sirkit_rh_413367_20261026/validation/final-modes-results.json",
+          "sha256": "f3814e9d232bc44c1e82ae05387e2d7b90b70ca435e03569eebe4be44b603f0b",
+          "configurations": 9,
+          "passed": true,
+          "diagnostics_empty": true,
+          "stderr_empty": true
+        },
+        "final-allocation-results.json": {
+          "path": "/tmp/sirkit_rh_413367_20261026/validation/final-allocation-results.json",
+          "sha256": "e09ad84d5a928be71e2f4d88b32a5fac2b474710fa5875e78507c3d191b3c53d",
+          "configurations": 4,
+          "passed": true,
+          "diagnostics_empty": true,
+          "stderr_empty": true
+        },
+        "final-query-pairs-results.json": {
+          "path": "/tmp/sirkit_rh_413367_20261026/validation/final-query-pairs-results.json",
+          "sha256": "5b547cba4667ded39db90fa40b9d351df34734855d689172f877a88ff2f6b1a0",
+          "configurations": 10,
+          "passed": true,
+          "diagnostics_empty": true,
+          "stderr_empty": true
+        }
+      },
+      "configurations": 79,
+      "repository_tests": 12,
+      "repository_test_hashes_match": true,
+      "rerun": false
+    },
+    "repository_test_sources": {
+      "Verify/current/tests/rh_arithmetic_boundary_test.cpp": {
+        "sha256": "a8ce149674b6aa5b9aa66f27d4c6efa571ece91bac0311d9a2a3102b10209d0c",
+        "bytes": 3503
+      },
+      "Verify/current/tests/rh_exception_test.cpp": {
+        "sha256": "75790928f843f44f95d6d4e58f22317593380c139bd0f4b740d116566e8b37c6",
+        "bytes": 5701
+      },
+      "Verify/current/tests/rh_lcp_boundary_test.cpp": {
+        "sha256": "7513f1bdc7cf2d3c4ec01bb213f41c9e58b49c25173418aa1e24f27801540ec6",
+        "bytes": 7683
+      },
+      "Verify/current/tests/rh_reference_test.cpp": {
+        "sha256": "8551b5eb008027f0d14206693b7b7839c9643f835ad99f07f75f636da42efa39",
+        "bytes": 10806
+      },
+      "Verify/current/tests/rh_reuse_test.cpp": {
+        "sha256": "ff32e18861b98fba8e517667b2be8870ea2a0baf4280e07483e777dc0cf9a226",
+        "bytes": 5423
+      },
+      "Verify/current/tests/rolling_hash_avx_allocation_test.cpp": {
+        "sha256": "220b1c74a534e374a56d0da396d42fdac40d3089290ef11b606dae9a9ccaa682",
+        "bytes": 2467
+      },
+      "Verify/current/tests/rolling_hash_build_test.cpp": {
+        "sha256": "b3ba6e4b78cfe3c1bf1ea978e4ae404425ea17e1f71382c67337ab370533a5c3",
+        "bytes": 3703
+      },
+      "Verify/current/tests/rolling_hash_comparison_test.cpp": {
+        "sha256": "ba87cd40a7a8b0255e0ad3c4513910d981b43044071edbf85192b15733e68cb0",
+        "bytes": 4716
+      }
+    },
+    "prepared_scripts": {
+      "run.py": {
+        "sha256": "e7b4f6b7f317cd175cdb7377a78a7f2a75cc01675694f37910c8221228047304",
+        "path": "/tmp/sirkit_rh_413369_20261026/validation/run.py",
+        "note": "準備だけで未実行。source引数またはfinal-frozen.hppを新候補へ設定して使う。"
+      },
+      "run_final_extra.py": {
+        "sha256": "8ae19e49e9a623ab5e109dbe4b8bca9c84c903a26151542a337fbb8795ab723e",
+        "path": "/tmp/sirkit_rh_413369_20261026/validation/run_final_extra.py",
+        "note": "準備だけで未実行。source引数またはfinal-frozen.hppを新候補へ設定して使う。"
+      },
+      "final_block_boundary_test.cpp": {
+        "sha256": "a9905e54f6f24b9d7e5e99b5da82b3cfd2534c86573c0c07d8a5f8ce4d81771c",
+        "path": "/tmp/sirkit_rh_413369_20261026/validation/final_block_boundary_test.cpp",
+        "note": "準備だけで未実行。source引数またはfinal-frozen.hppを新候補へ設定して使う。"
+      },
+      "run_final_modes.py": {
+        "sha256": "b14a7c969da7b9f5fe3b49239a873102a510e111e94ed79a17bf259355b68e6e",
+        "path": "/tmp/sirkit_rh_413369_20261026/validation/run_final_modes.py",
+        "note": "準備だけで未実行。source引数またはfinal-frozen.hppを新候補へ設定して使う。"
+      },
+      "avx_allocation_test.cpp": {
+        "sha256": "dee887b1a89b9549a2385f20bcc832d8a5484105cb98fb60d2a0068d7ac49992",
+        "path": "/tmp/sirkit_rh_413369_20261026/validation/avx_allocation_test.cpp",
+        "note": "準備だけで未実行。source引数またはfinal-frozen.hppを新候補へ設定して使う。"
+      },
+      "run_redundant_allocation.py": {
+        "sha256": "ef03336e51ecd24b646b45c2e1a16f1e46ea9b280b7255c185d201ffe1d39f66",
+        "path": "/tmp/sirkit_rh_413369_20261026/validation/run_redundant_allocation.py",
+        "note": "準備だけで未実行。source引数またはfinal-frozen.hppを新候補へ設定して使う。"
+      },
+      "query_pair_test.cpp": {
+        "sha256": "98b35cdd0a8f2206d232c5ef2781de2dde08cf4a0aad4bad9bb09f7ded0f5d7b",
+        "path": "/tmp/sirkit_rh_413369_20261026/validation/query_pair_test.cpp",
+        "note": "準備だけで未実行。source引数またはfinal-frozen.hppを新候補へ設定して使う。"
+      },
+      "run_query_pair.py": {
+        "sha256": "3d73536ce72f5fda1c8298343db1062fd51203fccef67828b2d7f01f8d78fcd9",
+        "path": "/tmp/sirkit_rh_413369_20261026/validation/run_query_pair.py",
+        "note": "準備だけで未実行。source引数またはfinal-frozen.hppを新候補へ設定して使う。"
+      }
+    },
+    "potential_case_gaps": {
+      "wider_input_loads": "新候補がbyte scalar読出しを8/16/32byte vector loadへ変える場合、std::stringの余分capacityに依存するoverreadを避けるため、view末尾をguard page直前に置くケースを追加する。現baselineは4byte分を個別に読むため必要なし。",
+      "wider_blocks": "8way以上なら16388/16389に加えそのblock幅の全余りをthreshold以上で確認する。現4wayは全末尾とn mod8=4/5まで検証済み。",
+      "query_search": "LCP探索手順を変える場合、2^k±1の長い同字列/接頭辞/0と非0開始/limit0,1を拡充。現比較試験はk=4,7,8,13,14,15,17、全byte対、p²、意図的衝突を含む。",
+      "state_range": "冗長state上限やraw term上限を変える場合、p..新上限の部分積モデルとbase2/61byte1後NULの長い構築を確認する。",
+      "ownership": "vector/member・確保順・power再利用条件を変える場合、partial reserve失敗直後のget/lcp/compareとnew予算2/clearassign予算0を再試験する。演算だけなら既存exception suiteで補完。"
+    },
+    "agent_did_not_edit_production": true,
+    "performance_measurements": false,
+    "test_processes_started": false,
+    "created_at_utc": "2026-10-25T22:04:58.712345+00:00"
+  },
+  "reuse_note": "baseline1dfaは前回79構成のtested finalとbyte一致。今回の差分はdispatch定数とAPI説明だけのため、演算・query・所有の前回結果を再利用。新閾値で有効になるSIMD経路を専用試験と失敗注入で追加照合。",
+  "sample_tests": {
+    "production-gcc-samples.json": {
+      "results": [
+        {
+          "id": "rolling_hash",
+          "compiler": "/usr/bin/g++",
+          "skip_runtime_checks": false,
+          "standard_fallback": false,
+          "submission_sha256": "6326f7f8667a88bcb2b9e8b841fa27cecfcfca455da7d3899a9f8b2f7786ec8e",
+          "tested_source_sha256": "931d9c8f6641957304240237283382f410ae4338eb9173246c23b540166e17d3",
+          "command": [
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "/tmp/atcoder_verify_rw6q7t03/rolling_hash_checked.cpp"
+          ],
+          "compile_ok": true,
+          "diagnostics": "",
+          "samples": [
+            {
+              "passed": true,
+              "returncode": 0,
+              "stdout": "1\n",
+              "stderr": ""
+            },
+            {
+              "passed": true,
+              "returncode": 0,
+              "stdout": "5 4 3 2 1\n",
+              "stderr": ""
+            },
+            {
+              "passed": true,
+              "returncode": 0,
+              "stdout": "7 0 1 0 3 0 1\n",
+              "stderr": ""
+            },
+            {
+              "passed": true,
+              "returncode": 0,
+              "stdout": "9 0 0 2 0 0 3 0 0\n",
+              "stderr": ""
+            }
+          ],
+          "passed": true
+        },
+        {
+          "id": "rolling_hash",
+          "compiler": "/usr/bin/g++",
+          "skip_runtime_checks": true,
+          "standard_fallback": false,
+          "submission_sha256": "6326f7f8667a88bcb2b9e8b841fa27cecfcfca455da7d3899a9f8b2f7786ec8e",
+          "tested_source_sha256": "6326f7f8667a88bcb2b9e8b841fa27cecfcfca455da7d3899a9f8b2f7786ec8e",
+          "command": [
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "/home/reinsirk/Atcoder_Env/Verify/current/submissions/rolling_hash.cpp"
+          ],
+          "compile_ok": true,
+          "diagnostics": "",
+          "samples": [
+            {
+              "passed": true,
+              "returncode": 0,
+              "stdout": "1\n",
+              "stderr": ""
+            },
+            {
+              "passed": true,
+              "returncode": 0,
+              "stdout": "5 4 3 2 1\n",
+              "stderr": ""
+            },
+            {
+              "passed": true,
+              "returncode": 0,
+              "stdout": "7 0 1 0 3 0 1\n",
+              "stderr": ""
+            },
+            {
+              "passed": true,
+              "returncode": 0,
+              "stdout": "9 0 0 2 0 0 3 0 0\n",
+              "stderr": ""
+            }
+          ],
+          "passed": true
+        },
+        {
+          "id": "rolling_hash_local",
+          "compiler": "/usr/bin/g++",
+          "skip_runtime_checks": false,
+          "standard_fallback": false,
+          "submission_sha256": "606b859fad70520c250571f97358178b5ffca3c0cefa51a1f74d4c6d90bfce42",
+          "tested_source_sha256": "606b859fad70520c250571f97358178b5ffca3c0cefa51a1f74d4c6d90bfce42",
+          "command": [
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "/home/reinsirk/Atcoder_Env/Verify/current/submissions/rolling_hash_local.cpp"
+          ],
+          "compile_ok": true,
+          "diagnostics": "",
+          "samples": [
+            {
+              "passed": true,
+              "returncode": 0,
+              "stdout": "OK\n",
+              "stderr": ""
+            }
+          ],
+          "passed": true
+        },
+        {
+          "id": "rolling_hash_local",
+          "compiler": "/usr/bin/g++",
+          "skip_runtime_checks": true,
+          "standard_fallback": false,
+          "submission_sha256": "606b859fad70520c250571f97358178b5ffca3c0cefa51a1f74d4c6d90bfce42",
+          "tested_source_sha256": "2fde852c5f94dcf40f8386c0028bd6fd3b85d839daad0e468ee80a012544a061",
+          "command": [
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "/tmp/atcoder_verify_rw6q7t03/rolling_hash_local_skip.cpp"
+          ],
+          "compile_ok": true,
+          "diagnostics": "",
+          "samples": [
+            {
+              "passed": true,
+              "returncode": 0,
+              "stdout": "OK\n",
+              "stderr": ""
+            }
+          ],
+          "passed": true
+        }
+      ]
+    },
+    "production-clang-samples.json": {
+      "results": [
+        {
+          "id": "rolling_hash",
+          "compiler": "/usr/bin/clang++",
+          "skip_runtime_checks": false,
+          "standard_fallback": false,
+          "submission_sha256": "6326f7f8667a88bcb2b9e8b841fa27cecfcfca455da7d3899a9f8b2f7786ec8e",
+          "tested_source_sha256": "931d9c8f6641957304240237283382f410ae4338eb9173246c23b540166e17d3",
+          "command": [
+            "/usr/bin/clang++",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "/tmp/atcoder_verify_k04w3p2t/rolling_hash_checked.cpp"
+          ],
+          "compile_ok": true,
+          "diagnostics": "",
+          "samples": [
+            {
+              "passed": true,
+              "returncode": 0,
+              "stdout": "1\n",
+              "stderr": ""
+            },
+            {
+              "passed": true,
+              "returncode": 0,
+              "stdout": "5 4 3 2 1\n",
+              "stderr": ""
+            },
+            {
+              "passed": true,
+              "returncode": 0,
+              "stdout": "7 0 1 0 3 0 1\n",
+              "stderr": ""
+            },
+            {
+              "passed": true,
+              "returncode": 0,
+              "stdout": "9 0 0 2 0 0 3 0 0\n",
+              "stderr": ""
+            }
+          ],
+          "passed": true
+        },
+        {
+          "id": "rolling_hash",
+          "compiler": "/usr/bin/clang++",
+          "skip_runtime_checks": true,
+          "standard_fallback": false,
+          "submission_sha256": "6326f7f8667a88bcb2b9e8b841fa27cecfcfca455da7d3899a9f8b2f7786ec8e",
+          "tested_source_sha256": "6326f7f8667a88bcb2b9e8b841fa27cecfcfca455da7d3899a9f8b2f7786ec8e",
+          "command": [
+            "/usr/bin/clang++",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "/home/reinsirk/Atcoder_Env/Verify/current/submissions/rolling_hash.cpp"
+          ],
+          "compile_ok": true,
+          "diagnostics": "",
+          "samples": [
+            {
+              "passed": true,
+              "returncode": 0,
+              "stdout": "1\n",
+              "stderr": ""
+            },
+            {
+              "passed": true,
+              "returncode": 0,
+              "stdout": "5 4 3 2 1\n",
+              "stderr": ""
+            },
+            {
+              "passed": true,
+              "returncode": 0,
+              "stdout": "7 0 1 0 3 0 1\n",
+              "stderr": ""
+            },
+            {
+              "passed": true,
+              "returncode": 0,
+              "stdout": "9 0 0 2 0 0 3 0 0\n",
+              "stderr": ""
+            }
+          ],
+          "passed": true
+        },
+        {
+          "id": "rolling_hash_local",
+          "compiler": "/usr/bin/clang++",
+          "skip_runtime_checks": false,
+          "standard_fallback": false,
+          "submission_sha256": "606b859fad70520c250571f97358178b5ffca3c0cefa51a1f74d4c6d90bfce42",
+          "tested_source_sha256": "606b859fad70520c250571f97358178b5ffca3c0cefa51a1f74d4c6d90bfce42",
+          "command": [
+            "/usr/bin/clang++",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "/home/reinsirk/Atcoder_Env/Verify/current/submissions/rolling_hash_local.cpp"
+          ],
+          "compile_ok": true,
+          "diagnostics": "",
+          "samples": [
+            {
+              "passed": true,
+              "returncode": 0,
+              "stdout": "OK\n",
+              "stderr": ""
+            }
+          ],
+          "passed": true
+        },
+        {
+          "id": "rolling_hash_local",
+          "compiler": "/usr/bin/clang++",
+          "skip_runtime_checks": true,
+          "standard_fallback": false,
+          "submission_sha256": "606b859fad70520c250571f97358178b5ffca3c0cefa51a1f74d4c6d90bfce42",
+          "tested_source_sha256": "2fde852c5f94dcf40f8386c0028bd6fd3b85d839daad0e468ee80a012544a061",
+          "command": [
+            "/usr/bin/clang++",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "/tmp/atcoder_verify_k04w3p2t/rolling_hash_local_skip.cpp"
+          ],
+          "compile_ok": true,
+          "diagnostics": "",
+          "samples": [
+            {
+              "passed": true,
+              "returncode": 0,
+              "stdout": "OK\n",
+              "stderr": ""
+            }
+          ],
+          "passed": true
+        }
+      ]
+    },
+    "production-gcc-fallback-samples.json": {
+      "results": [
+        {
+          "id": "rolling_hash",
+          "compiler": "/usr/bin/g++",
+          "skip_runtime_checks": false,
+          "standard_fallback": true,
+          "submission_sha256": "6326f7f8667a88bcb2b9e8b841fa27cecfcfca455da7d3899a9f8b2f7786ec8e",
+          "tested_source_sha256": "931d9c8f6641957304240237283382f410ae4338eb9173246c23b540166e17d3",
+          "command": [
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "-U__SIZEOF_INT128__",
+            "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+            "-DSIRKIT_LINE_CONTAINER_FORCE_PORTABLE",
+            "-DSIRKIT_DISABLE_SIMD",
+            "/tmp/atcoder_verify_uu5v03qu/rolling_hash_checked.cpp"
+          ],
+          "compile_ok": true,
+          "diagnostics": "",
+          "samples": [
+            {
+              "passed": true,
+              "returncode": 0,
+              "stdout": "1\n",
+              "stderr": ""
+            },
+            {
+              "passed": true,
+              "returncode": 0,
+              "stdout": "5 4 3 2 1\n",
+              "stderr": ""
+            },
+            {
+              "passed": true,
+              "returncode": 0,
+              "stdout": "7 0 1 0 3 0 1\n",
+              "stderr": ""
+            },
+            {
+              "passed": true,
+              "returncode": 0,
+              "stdout": "9 0 0 2 0 0 3 0 0\n",
+              "stderr": ""
+            }
+          ],
+          "passed": true
+        },
+        {
+          "id": "rolling_hash",
+          "compiler": "/usr/bin/g++",
+          "skip_runtime_checks": true,
+          "standard_fallback": true,
+          "submission_sha256": "6326f7f8667a88bcb2b9e8b841fa27cecfcfca455da7d3899a9f8b2f7786ec8e",
+          "tested_source_sha256": "6326f7f8667a88bcb2b9e8b841fa27cecfcfca455da7d3899a9f8b2f7786ec8e",
+          "command": [
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "-U__SIZEOF_INT128__",
+            "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+            "-DSIRKIT_LINE_CONTAINER_FORCE_PORTABLE",
+            "-DSIRKIT_DISABLE_SIMD",
+            "/home/reinsirk/Atcoder_Env/Verify/current/submissions/rolling_hash.cpp"
+          ],
+          "compile_ok": true,
+          "diagnostics": "",
+          "samples": [
+            {
+              "passed": true,
+              "returncode": 0,
+              "stdout": "1\n",
+              "stderr": ""
+            },
+            {
+              "passed": true,
+              "returncode": 0,
+              "stdout": "5 4 3 2 1\n",
+              "stderr": ""
+            },
+            {
+              "passed": true,
+              "returncode": 0,
+              "stdout": "7 0 1 0 3 0 1\n",
+              "stderr": ""
+            },
+            {
+              "passed": true,
+              "returncode": 0,
+              "stdout": "9 0 0 2 0 0 3 0 0\n",
+              "stderr": ""
+            }
+          ],
+          "passed": true
+        },
+        {
+          "id": "rolling_hash_local",
+          "compiler": "/usr/bin/g++",
+          "skip_runtime_checks": false,
+          "standard_fallback": true,
+          "submission_sha256": "606b859fad70520c250571f97358178b5ffca3c0cefa51a1f74d4c6d90bfce42",
+          "tested_source_sha256": "606b859fad70520c250571f97358178b5ffca3c0cefa51a1f74d4c6d90bfce42",
+          "command": [
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "-U__SIZEOF_INT128__",
+            "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+            "-DSIRKIT_LINE_CONTAINER_FORCE_PORTABLE",
+            "-DSIRKIT_DISABLE_SIMD",
+            "/home/reinsirk/Atcoder_Env/Verify/current/submissions/rolling_hash_local.cpp"
+          ],
+          "compile_ok": true,
+          "diagnostics": "",
+          "samples": [
+            {
+              "passed": true,
+              "returncode": 0,
+              "stdout": "OK\n",
+              "stderr": ""
+            }
+          ],
+          "passed": true
+        },
+        {
+          "id": "rolling_hash_local",
+          "compiler": "/usr/bin/g++",
+          "skip_runtime_checks": true,
+          "standard_fallback": true,
+          "submission_sha256": "606b859fad70520c250571f97358178b5ffca3c0cefa51a1f74d4c6d90bfce42",
+          "tested_source_sha256": "2fde852c5f94dcf40f8386c0028bd6fd3b85d839daad0e468ee80a012544a061",
+          "command": [
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "-U__SIZEOF_INT128__",
+            "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+            "-DSIRKIT_LINE_CONTAINER_FORCE_PORTABLE",
+            "-DSIRKIT_DISABLE_SIMD",
+            "/tmp/atcoder_verify_uu5v03qu/rolling_hash_local_skip.cpp"
+          ],
+          "compile_ok": true,
+          "diagnostics": "",
+          "samples": [
+            {
+              "passed": true,
+              "returncode": 0,
+              "stdout": "OK\n",
+              "stderr": ""
+            }
+          ],
+          "passed": true
+        }
+      ]
+    },
+    "production-clang-fallback-samples.json": {
+      "results": [
+        {
+          "id": "rolling_hash",
+          "compiler": "/usr/bin/clang++",
+          "skip_runtime_checks": false,
+          "standard_fallback": true,
+          "submission_sha256": "6326f7f8667a88bcb2b9e8b841fa27cecfcfca455da7d3899a9f8b2f7786ec8e",
+          "tested_source_sha256": "931d9c8f6641957304240237283382f410ae4338eb9173246c23b540166e17d3",
+          "command": [
+            "/usr/bin/clang++",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-U__SIZEOF_INT128__",
+            "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+            "-DSIRKIT_LINE_CONTAINER_FORCE_PORTABLE",
+            "-DSIRKIT_DISABLE_SIMD",
+            "/tmp/atcoder_verify_sn86qoqc/rolling_hash_checked.cpp"
+          ],
+          "compile_ok": true,
+          "diagnostics": "",
+          "samples": [
+            {
+              "passed": true,
+              "returncode": 0,
+              "stdout": "1\n",
+              "stderr": ""
+            },
+            {
+              "passed": true,
+              "returncode": 0,
+              "stdout": "5 4 3 2 1\n",
+              "stderr": ""
+            },
+            {
+              "passed": true,
+              "returncode": 0,
+              "stdout": "7 0 1 0 3 0 1\n",
+              "stderr": ""
+            },
+            {
+              "passed": true,
+              "returncode": 0,
+              "stdout": "9 0 0 2 0 0 3 0 0\n",
+              "stderr": ""
+            }
+          ],
+          "passed": true
+        },
+        {
+          "id": "rolling_hash",
+          "compiler": "/usr/bin/clang++",
+          "skip_runtime_checks": true,
+          "standard_fallback": true,
+          "submission_sha256": "6326f7f8667a88bcb2b9e8b841fa27cecfcfca455da7d3899a9f8b2f7786ec8e",
+          "tested_source_sha256": "6326f7f8667a88bcb2b9e8b841fa27cecfcfca455da7d3899a9f8b2f7786ec8e",
+          "command": [
+            "/usr/bin/clang++",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-U__SIZEOF_INT128__",
+            "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+            "-DSIRKIT_LINE_CONTAINER_FORCE_PORTABLE",
+            "-DSIRKIT_DISABLE_SIMD",
+            "/home/reinsirk/Atcoder_Env/Verify/current/submissions/rolling_hash.cpp"
+          ],
+          "compile_ok": true,
+          "diagnostics": "",
+          "samples": [
+            {
+              "passed": true,
+              "returncode": 0,
+              "stdout": "1\n",
+              "stderr": ""
+            },
+            {
+              "passed": true,
+              "returncode": 0,
+              "stdout": "5 4 3 2 1\n",
+              "stderr": ""
+            },
+            {
+              "passed": true,
+              "returncode": 0,
+              "stdout": "7 0 1 0 3 0 1\n",
+              "stderr": ""
+            },
+            {
+              "passed": true,
+              "returncode": 0,
+              "stdout": "9 0 0 2 0 0 3 0 0\n",
+              "stderr": ""
+            }
+          ],
+          "passed": true
+        },
+        {
+          "id": "rolling_hash_local",
+          "compiler": "/usr/bin/clang++",
+          "skip_runtime_checks": false,
+          "standard_fallback": true,
+          "submission_sha256": "606b859fad70520c250571f97358178b5ffca3c0cefa51a1f74d4c6d90bfce42",
+          "tested_source_sha256": "606b859fad70520c250571f97358178b5ffca3c0cefa51a1f74d4c6d90bfce42",
+          "command": [
+            "/usr/bin/clang++",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-U__SIZEOF_INT128__",
+            "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+            "-DSIRKIT_LINE_CONTAINER_FORCE_PORTABLE",
+            "-DSIRKIT_DISABLE_SIMD",
+            "/home/reinsirk/Atcoder_Env/Verify/current/submissions/rolling_hash_local.cpp"
+          ],
+          "compile_ok": true,
+          "diagnostics": "",
+          "samples": [
+            {
+              "passed": true,
+              "returncode": 0,
+              "stdout": "OK\n",
+              "stderr": ""
+            }
+          ],
+          "passed": true
+        },
+        {
+          "id": "rolling_hash_local",
+          "compiler": "/usr/bin/clang++",
+          "skip_runtime_checks": true,
+          "standard_fallback": true,
+          "submission_sha256": "606b859fad70520c250571f97358178b5ffca3c0cefa51a1f74d4c6d90bfce42",
+          "tested_source_sha256": "2fde852c5f94dcf40f8386c0028bd6fd3b85d839daad0e468ee80a012544a061",
+          "command": [
+            "/usr/bin/clang++",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-U__SIZEOF_INT128__",
+            "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+            "-DSIRKIT_LINE_CONTAINER_FORCE_PORTABLE",
+            "-DSIRKIT_DISABLE_SIMD",
+            "/tmp/atcoder_verify_sn86qoqc/rolling_hash_local_skip.cpp"
+          ],
+          "compile_ok": true,
+          "diagnostics": "",
+          "samples": [
+            {
+              "passed": true,
+              "returncode": 0,
+              "stdout": "OK\n",
+              "stderr": ""
+            }
+          ],
+          "passed": true
+        }
+      ]
+    }
+  },
+  "examples": [
+    {
+      "compiler": "gcc",
+      "portable": false,
+      "skip": false,
+      "cmd": [
+        "taskset",
+        "-c",
+        "6",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-pedantic-errors",
+        "/home/reinsirk/Atcoder_Env/Examples/rolling_hash_example.cpp",
+        "-o",
+        "/tmp/sirkit_rh_413369_20261026/example-gcc-False-False"
+      ],
+      "diagnostics": "",
+      "stdout": "11 0\n1\n4\n0\n1\n1 1\n1 0\n1 1\n1 0\n"
+    },
+    {
+      "compiler": "gcc",
+      "portable": false,
+      "skip": true,
+      "cmd": [
+        "taskset",
+        "-c",
+        "6",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-pedantic-errors",
+        "-DSKIP_RUNTIME_CHECKS",
+        "/home/reinsirk/Atcoder_Env/Examples/rolling_hash_example.cpp",
+        "-o",
+        "/tmp/sirkit_rh_413369_20261026/example-gcc-False-True"
+      ],
+      "diagnostics": "",
+      "stdout": "11 0\n1\n4\n0\n1\n1 1\n1 0\n1 1\n1 0\n"
+    },
+    {
+      "compiler": "gcc",
+      "portable": true,
+      "skip": false,
+      "cmd": [
+        "taskset",
+        "-c",
+        "6",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-pedantic-errors",
+        "-DSIRKIT_DISABLE_SIMD",
+        "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+        "-U__SIZEOF_INT128__",
+        "/home/reinsirk/Atcoder_Env/Examples/rolling_hash_example.cpp",
+        "-o",
+        "/tmp/sirkit_rh_413369_20261026/example-gcc-True-False"
+      ],
+      "diagnostics": "",
+      "stdout": "11 0\n1\n4\n0\n1\n1 1\n1 0\n1 1\n1 0\n"
+    },
+    {
+      "compiler": "gcc",
+      "portable": true,
+      "skip": true,
+      "cmd": [
+        "taskset",
+        "-c",
+        "6",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-pedantic-errors",
+        "-DSIRKIT_DISABLE_SIMD",
+        "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+        "-U__SIZEOF_INT128__",
+        "-DSKIP_RUNTIME_CHECKS",
+        "/home/reinsirk/Atcoder_Env/Examples/rolling_hash_example.cpp",
+        "-o",
+        "/tmp/sirkit_rh_413369_20261026/example-gcc-True-True"
+      ],
+      "diagnostics": "",
+      "stdout": "11 0\n1\n4\n0\n1\n1 1\n1 0\n1 1\n1 0\n"
+    },
+    {
+      "compiler": "clang",
+      "portable": false,
+      "skip": false,
+      "cmd": [
+        "taskset",
+        "-c",
+        "6",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-pedantic-errors",
+        "/home/reinsirk/Atcoder_Env/Examples/rolling_hash_example.cpp",
+        "-o",
+        "/tmp/sirkit_rh_413369_20261026/example-clang-False-False"
+      ],
+      "diagnostics": "",
+      "stdout": "11 0\n1\n4\n0\n1\n1 1\n1 0\n1 1\n1 0\n"
+    },
+    {
+      "compiler": "clang",
+      "portable": false,
+      "skip": true,
+      "cmd": [
+        "taskset",
+        "-c",
+        "6",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-pedantic-errors",
+        "-DSKIP_RUNTIME_CHECKS",
+        "/home/reinsirk/Atcoder_Env/Examples/rolling_hash_example.cpp",
+        "-o",
+        "/tmp/sirkit_rh_413369_20261026/example-clang-False-True"
+      ],
+      "diagnostics": "",
+      "stdout": "11 0\n1\n4\n0\n1\n1 1\n1 0\n1 1\n1 0\n"
+    },
+    {
+      "compiler": "clang",
+      "portable": true,
+      "skip": false,
+      "cmd": [
+        "taskset",
+        "-c",
+        "6",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-pedantic-errors",
+        "-DSIRKIT_DISABLE_SIMD",
+        "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+        "-U__SIZEOF_INT128__",
+        "/home/reinsirk/Atcoder_Env/Examples/rolling_hash_example.cpp",
+        "-o",
+        "/tmp/sirkit_rh_413369_20261026/example-clang-True-False"
+      ],
+      "diagnostics": "",
+      "stdout": "11 0\n1\n4\n0\n1\n1 1\n1 0\n1 1\n1 0\n"
+    },
+    {
+      "compiler": "clang",
+      "portable": true,
+      "skip": true,
+      "cmd": [
+        "taskset",
+        "-c",
+        "6",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-pedantic-errors",
+        "-DSIRKIT_DISABLE_SIMD",
+        "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+        "-U__SIZEOF_INT128__",
+        "-DSKIP_RUNTIME_CHECKS",
+        "/home/reinsirk/Atcoder_Env/Examples/rolling_hash_example.cpp",
+        "-o",
+        "/tmp/sirkit_rh_413369_20261026/example-clang-True-True"
+      ],
+      "diagnostics": "",
+      "stdout": "11 0\n1\n4\n0\n1\n1 1\n1 0\n1 1\n1 0\n"
+    }
+  ],
+  "production_threshold_test": {
+    "path": "Verify/current/tests/rolling_hash_threshold_test.cpp",
+    "sha256": "9a340aa2274bab003a5e50e070729fbf051fc652840f503b6ccf98deec75a464",
+    "stdout": "PASS threshold checks=18233280 cases=600 guard_pages=1\n"
+  },
+  "main_golden": {
+    "raw": {
+      "threshold": {
+        "all_same_00.in": [
+          {
+            "wall_ms": 9.309386,
+            "cpu_ms": 9.108999999999986
+          }
+        ],
+        "all_same_01.in": [
+          {
+            "wall_ms": 9.065296,
+            "cpu_ms": 8.864999999999984
+          }
+        ],
+        "all_same_02.in": [
+          {
+            "wall_ms": 8.288327,
+            "cpu_ms": 8.057999999999982
+          }
+        ],
+        "all_same_03.in": [
+          {
+            "wall_ms": 8.178395,
+            "cpu_ms": 7.987999999999995
+          }
+        ],
+        "all_same_04.in": [
+          {
+            "wall_ms": 9.701131,
+            "cpu_ms": 9.543999999999997
+          }
+        ],
+        "binary_carry_00.in": [
+          {
+            "wall_ms": 9.827298,
+            "cpu_ms": 9.601999999999972
+          }
+        ],
+        "binary_carry_01.in": [
+          {
+            "wall_ms": 7.757469,
+            "cpu_ms": 7.670999999999983
+          }
+        ],
+        "example_00.in": [
+          {
+            "wall_ms": 1.074098,
+            "cpu_ms": 0.9909999999999225
+          }
+        ],
+        "example_01.in": [
+          {
+            "wall_ms": 1.103941,
+            "cpu_ms": 0.9800000000000503
+          }
+        ],
+        "example_02.in": [
+          {
+            "wall_ms": 1.033551,
+            "cpu_ms": 0.9650000000000353
+          }
+        ],
+        "example_03.in": [
+          {
+            "wall_ms": 1.018052,
+            "cpu_ms": 0.906000000000004
+          }
+        ],
+        "fib_str_00.in": [
+          {
+            "wall_ms": 8.164762,
+            "cpu_ms": 8.086999999999941
+          }
+        ],
+        "fib_str_01.in": [
+          {
+            "wall_ms": 5.782819,
+            "cpu_ms": 5.709999999999951
+          }
+        ],
+        "fib_str_02.in": [
+          {
+            "wall_ms": 5.589363,
+            "cpu_ms": 5.421999999999983
+          }
+        ],
+        "fib_str_03.in": [
+          {
+            "wall_ms": 5.320623,
+            "cpu_ms": 5.1700000000000355
+          }
+        ],
+        "fib_str_04.in": [
+          {
+            "wall_ms": 7.518776,
+            "cpu_ms": 7.447999999999983
+          }
+        ],
+        "hack606_00.in": [
+          {
+            "wall_ms": 1.044852,
+            "cpu_ms": 0.9770000000000473
+          }
+        ],
+        "max_random_00.in": [
+          {
+            "wall_ms": 5.982251,
+            "cpu_ms": 5.9150000000000595
+          }
+        ],
+        "max_random_01.in": [
+          {
+            "wall_ms": 6.011263,
+            "cpu_ms": 5.939000000000028
+          }
+        ],
+        "random_00.in": [
+          {
+            "wall_ms": 4.883754,
+            "cpu_ms": 4.8139999999999015
+          }
+        ],
+        "random_01.in": [
+          {
+            "wall_ms": 5.502798,
+            "cpu_ms": 5.431000000000033
+          }
+        ],
+        "random_02.in": [
+          {
+            "wall_ms": 1.636633,
+            "cpu_ms": 1.5700000000000296
+          }
+        ],
+        "random_03.in": [
+          {
+            "wall_ms": 5.137855,
+            "cpu_ms": 5.019000000000023
+          }
+        ],
+        "random_04.in": [
+          {
+            "wall_ms": 3.964019,
+            "cpu_ms": 3.7600000000000273
+          }
+        ],
+        "random_05.in": [
+          {
+            "wall_ms": 4.231102,
+            "cpu_ms": 4.030999999999951
+          }
+        ],
+        "random_06.in": [
+          {
+            "wall_ms": 5.565771,
+            "cpu_ms": 5.490000000000064
+          }
+        ],
+        "random_07.in": [
+          {
+            "wall_ms": 2.132506,
+            "cpu_ms": 2.0700000000000163
+          }
+        ],
+        "random_08.in": [
+          {
+            "wall_ms": 3.687748,
+            "cpu_ms": 3.6399999999999766
+          }
+        ],
+        "random_09.in": [
+          {
+            "wall_ms": 2.142241,
+            "cpu_ms": 2.070000000000058
+          }
+        ]
+      }
+    },
+    "median_ms": {
+      "threshold": {
+        "all_same_00.in": 9.108999999999986,
+        "all_same_01.in": 8.864999999999984,
+        "all_same_02.in": 8.057999999999982,
+        "all_same_03.in": 7.987999999999995,
+        "all_same_04.in": 9.543999999999997,
+        "binary_carry_00.in": 9.601999999999972,
+        "binary_carry_01.in": 7.670999999999983,
+        "example_00.in": 0.9909999999999225,
+        "example_01.in": 0.9800000000000503,
+        "example_02.in": 0.9650000000000353,
+        "example_03.in": 0.906000000000004,
+        "fib_str_00.in": 8.086999999999941,
+        "fib_str_01.in": 5.709999999999951,
+        "fib_str_02.in": 5.421999999999983,
+        "fib_str_03.in": 5.1700000000000355,
+        "fib_str_04.in": 7.447999999999983,
+        "hack606_00.in": 0.9770000000000473,
+        "max_random_00.in": 5.9150000000000595,
+        "max_random_01.in": 5.939000000000028,
+        "random_00.in": 4.8139999999999015,
+        "random_01.in": 5.431000000000033,
+        "random_02.in": 1.5700000000000296,
+        "random_03.in": 5.019000000000023,
+        "random_04.in": 3.7600000000000273,
+        "random_05.in": 4.030999999999951,
+        "random_06.in": 5.490000000000064,
+        "random_07.in": 2.0700000000000163,
+        "random_08.in": 3.6399999999999766,
+        "random_09.in": 2.070000000000058
+      }
+    },
+    "ratio": {
+      "threshold": {
+        "all_same_00.in": 1.0,
+        "all_same_01.in": 1.0,
+        "all_same_02.in": 1.0,
+        "all_same_03.in": 1.0,
+        "all_same_04.in": 1.0,
+        "binary_carry_00.in": 1.0,
+        "binary_carry_01.in": 1.0,
+        "example_00.in": 1.0,
+        "example_01.in": 1.0,
+        "example_02.in": 1.0,
+        "example_03.in": 1.0,
+        "fib_str_00.in": 1.0,
+        "fib_str_01.in": 1.0,
+        "fib_str_02.in": 1.0,
+        "fib_str_03.in": 1.0,
+        "fib_str_04.in": 1.0,
+        "hack606_00.in": 1.0,
+        "max_random_00.in": 1.0,
+        "max_random_01.in": 1.0,
+        "random_00.in": 1.0,
+        "random_01.in": 1.0,
+        "random_02.in": 1.0,
+        "random_03.in": 1.0,
+        "random_04.in": 1.0,
+        "random_05.in": 1.0,
+        "random_06.in": 1.0,
+        "random_07.in": 1.0,
+        "random_08.in": 1.0,
+        "random_09.in": 1.0
+      }
+    },
+    "builds": [
+      {
+        "variant": "threshold",
+        "cmd": [
+          "taskset",
+          "-c",
+          "6",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-march=native",
+          "-DEVAL",
+          "-DONLINE_JUDGE",
+          "/tmp/sirkit_rh_413369_20261026/threshold-main-check-threshold.cpp",
+          "-o",
+          "/tmp/sirkit_rh_413369_20261026/threshold-main-check-threshold"
+        ],
+        "source_sha256": "10f4918f68f0dd422c2cdb5f7fb43d53fcab8c1ea5dd73853256c0a4d375e02e",
+        "diagnostics": ""
+      }
+    ],
+    "driver_sha256": "7a607fffa2d5726c705ca3b487e95c6063f298e48922dc968935616ac9a5c528",
+    "io_sha256": "291bf8dbc56a1d691f6256fe95b4714183c2cf5d9e55e4bef240e31d1eb178c1",
+    "fixtures": {
+      "all_same_00.in": {
+        "input": "/tmp/sirkit_rh_20261022/official/all_same_00.in",
+        "input_sha256": "f57ba6ed50456c33203784e8f97d0d06e748cc0f8000d79e7d21a5eb5df2f785",
+        "output_sha256": "3942db1c8baf5ae02a9cc6f665b0ce37ea582dfcb5ff62552eefab9f6e80afcb"
+      },
+      "all_same_01.in": {
+        "input": "/tmp/sirkit_rh_20261022/official/all_same_01.in",
+        "input_sha256": "a6fcc18a314c18d6dd61b1ecc2b64a865d26a012d9a57a54e1e6a20d2f7eab71",
+        "output_sha256": "e7bfc4757123e2882990dd0af071ce6d5d584398217bc398672cdfeb6279aa45"
+      },
+      "all_same_02.in": {
+        "input": "/tmp/sirkit_rh_20261022/official/all_same_02.in",
+        "input_sha256": "024f6aef7fb5d840c5bf67da9615adcda2032314a7fadd1a6072eafbd0c4f473",
+        "output_sha256": "8a66269dffd5a15a1356c63b9dcc7d3aa0c6b3cd57e6fbc83710fce2e97ab6ea"
+      },
+      "all_same_03.in": {
+        "input": "/tmp/sirkit_rh_20261022/official/all_same_03.in",
+        "input_sha256": "908e45fca7ba496321691c20f56cd15c338b70170b4b764d8d02a5defe3fd596",
+        "output_sha256": "fde95fabc607c01bcfe577a6b7c45decfc12a532af912c78589a84550769858d"
+      },
+      "all_same_04.in": {
+        "input": "/tmp/sirkit_rh_20261022/official/all_same_04.in",
+        "input_sha256": "426d60084b919dcf54c8e7232451d2c4ec01612503286cd67c7fa90bd3e674a6",
+        "output_sha256": "6c07b2e5b0e0db44cf6ad30fcdddfb3a840cb56f56a3a2138d309fdcadeef056"
+      },
+      "binary_carry_00.in": {
+        "input": "/tmp/sirkit_rh_20261022/official/binary_carry_00.in",
+        "input_sha256": "9c214260f81bf297bde681442c5ff3b851da46704a7606859f7baad8a8a351fc",
+        "output_sha256": "893a284ec6ca98aa85cec52b4d46afda37123b545a887000368278948fc777ea"
+      },
+      "binary_carry_01.in": {
+        "input": "/tmp/sirkit_rh_20261022/official/binary_carry_01.in",
+        "input_sha256": "8339f90cd04245a5d89829cffc056a4c87d7678c067a64b4c0841ae84c5c06b4",
+        "output_sha256": "6f64d25665debe307e68dd8eba0d69d72964600c1bc741e23f3b2afc84eaf6ae"
+      },
+      "example_00.in": {
+        "input": "/tmp/sirkit_rh_20261022/official/example_00.in",
+        "input_sha256": "46fed7db92849a67384897738afd6dfbb843c4cb046b17b8c38cf91e7c2060bf",
+        "output_sha256": "52a25b7515c0d159f84001d0318a50508f6b6dcbe7db7f2f2958d98185e75a3f"
+      },
+      "example_01.in": {
+        "input": "/tmp/sirkit_rh_20261022/official/example_01.in",
+        "input_sha256": "ff694c579cf8d315eb5129226f662bbd21f6961630a0628dd7c3a7e976b92e7e",
+        "output_sha256": "d00ddf8f27fefc1e61268b372b0d204fcc74938b263340adece12b6f07269751"
+      },
+      "example_02.in": {
+        "input": "/tmp/sirkit_rh_20261022/official/example_02.in",
+        "input_sha256": "250e9b7e099b39b4fd03c5108551505b3e44bc44a48f1659d1257743b3ebc0ce",
+        "output_sha256": "987e4694a509b1f020a0340796c0cc658d8cdfa5ba9d6ecc78fa796eaa1e1572"
+      },
+      "example_03.in": {
+        "input": "/tmp/sirkit_rh_20261022/official/example_03.in",
+        "input_sha256": "bdc26931acfb734b142a8d675f205becf27560dc461f501822de13274fe6fc8a",
+        "output_sha256": "392652d568c79a68456fd597ded71a8aec5191262aca434f546a8312b1ac714b"
+      },
+      "fib_str_00.in": {
+        "input": "/tmp/sirkit_rh_20261022/official/fib_str_00.in",
+        "input_sha256": "29c0fabbe9219f5a37cfe4733adcee173930f044d8422ea08ec5e65421cc2cdf",
+        "output_sha256": "c3fc878c671f06dc157cf441812992b87b54a2325396eb8e01ad4086afcdfc66"
+      },
+      "fib_str_01.in": {
+        "input": "/tmp/sirkit_rh_20261022/official/fib_str_01.in",
+        "input_sha256": "5ecda9f50a54d1663614be47e09b482184cdb8b9c537f0f6d797175b3d8f1c24",
+        "output_sha256": "aa0dc0ab2d60825d08d7508c0d4a804a7141480864c19ac6d7aa3aedd6d3212c"
+      },
+      "fib_str_02.in": {
+        "input": "/tmp/sirkit_rh_20261022/official/fib_str_02.in",
+        "input_sha256": "58c90511af08417370a2eb3fbcb58e692a3493b31d79d702a7d19ec9c10bc814",
+        "output_sha256": "f63dee332fa1efd1b17a19496e52c8dde1c50fc34e8e761d822057ef84d1c20b"
+      },
+      "fib_str_03.in": {
+        "input": "/tmp/sirkit_rh_20261022/official/fib_str_03.in",
+        "input_sha256": "88109e197767bfffe7edcb251fd0bc200229b4ebeab5db2dcd8e53bbef1e180a",
+        "output_sha256": "7586e8d9e9a850b6ce010b80742bacf515e6187c560370bdcc3bf3bcf658c43c"
+      },
+      "fib_str_04.in": {
+        "input": "/tmp/sirkit_rh_20261022/official/fib_str_04.in",
+        "input_sha256": "66a346a73946471c016330f6e08c6b5001ab2848019a90e96cd09e871acf5fc7",
+        "output_sha256": "4970fe9cbe4d42d5f5a07461145e4babf1ba73f82803e19d39d5626322799a7d"
+      },
+      "hack606_00.in": {
+        "input": "/tmp/sirkit_rh_20261022/official/hack606_00.in",
+        "input_sha256": "9c6df6745aeefa584915728aeb6e188b3182434933fc6ba4ff5590e217d76026",
+        "output_sha256": "7ed2381d0860c2a55da7b74225c0b344bd3da83e6be6eda677162ae107113da0"
+      },
+      "max_random_00.in": {
+        "input": "/tmp/sirkit_rh_20261022/official/max_random_00.in",
+        "input_sha256": "11cc687d71773c2b1d4212eb9903966cb245a2e0e7ef69eb6537c821ca46b05f",
+        "output_sha256": "1fa71ebc150bbf2987bd546c08b4c000d036d15ee291b28b28ef3a81f92bbcca"
+      },
+      "max_random_01.in": {
+        "input": "/tmp/sirkit_rh_20261022/official/max_random_01.in",
+        "input_sha256": "27dbd8faba1cb42452b0a75eacdc34f954aa72506e475be1697954d9f5fc7a83",
+        "output_sha256": "7ed778a1d4e9d02264bf7933dcdcaf4e5159cc457f64f962559602cef119251d"
+      },
+      "random_00.in": {
+        "input": "/tmp/sirkit_rh_20261022/official/random_00.in",
+        "input_sha256": "740e7cc4327325ae00c3feb7e05c97c0a69d880df76c90ed3ca8d009d481823c",
+        "output_sha256": "4cdf9afeaea36f5092e06dbc133c3158d3fc486888e2a77517531d61a100b9ea"
+      },
+      "random_01.in": {
+        "input": "/tmp/sirkit_rh_20261022/official/random_01.in",
+        "input_sha256": "a8656221d3ecd85ab293e305228b39ece5ff4d5b3dc599cfd85c932d5d87706f",
+        "output_sha256": "3a4966343d180628e0030143b1173eb71be78d35b61bbc98524006e47fdf257f"
+      },
+      "random_02.in": {
+        "input": "/tmp/sirkit_rh_20261022/official/random_02.in",
+        "input_sha256": "f20d568c1798e2e07ea4b25d12afc73855f5590e4cc4fc77c16b1cbf92c31b90",
+        "output_sha256": "b553bb9d167c54bd3f2a39e386e3f3334bea08acfa37dcf82d8c6d12eed6e296"
+      },
+      "random_03.in": {
+        "input": "/tmp/sirkit_rh_20261022/official/random_03.in",
+        "input_sha256": "022e131a057bbebbf948d28f0611516e5674ade4d739b98d154b09a48e2efcf3",
+        "output_sha256": "c2eafed90c25b8dbe10b6083d3b002085d086e7a5688daf45375fd64dad3d4f3"
+      },
+      "random_04.in": {
+        "input": "/tmp/sirkit_rh_20261022/official/random_04.in",
+        "input_sha256": "e5cffa60e5572966df05329f266b8d7ff38385038be13386558ffc6ebe74c6a1",
+        "output_sha256": "f025a7631ce4dc1d873b83006470370b9657a3cce9073a5d9000a37c72a3e5d2"
+      },
+      "random_05.in": {
+        "input": "/tmp/sirkit_rh_20261022/official/random_05.in",
+        "input_sha256": "d3dc2fa86cb71794abc54208b9e6ae01370bf93516b7baf61d34724f3481d60f",
+        "output_sha256": "6bd2960516657d6d77273f78acafb78e5f8d643640e63f42fd20d5eb7501f142"
+      },
+      "random_06.in": {
+        "input": "/tmp/sirkit_rh_20261022/official/random_06.in",
+        "input_sha256": "8cc01087801a9bec724958001f74e9591a43222e3f4816ae5418b9e873911141",
+        "output_sha256": "6e1d6395cd032b8f94aafabebd5566e0d31adaa292c9e01a622a6ee719f34cf8"
+      },
+      "random_07.in": {
+        "input": "/tmp/sirkit_rh_20261022/official/random_07.in",
+        "input_sha256": "09fe0a5c86f44ed709ee93abbac207572b93619a235088ff7e52d06f662055ba",
+        "output_sha256": "460e5762e955206f3b1b7d6eb9140797662c541c00f9f30fe6c01e45ad57af2c"
+      },
+      "random_08.in": {
+        "input": "/tmp/sirkit_rh_20261022/official/random_08.in",
+        "input_sha256": "ece0214c0420b59ddda09fd8b29327873a59e2021b072ec0a0dff9261c82fc4d",
+        "output_sha256": "bd1517a246126aaea5778cee57de59b4e3dbfc6322f0336bd11ea63ad13e72b2"
+      },
+      "random_09.in": {
+        "input": "/tmp/sirkit_rh_20261022/official/random_09.in",
+        "input_sha256": "41d78547576d3b6afade760c1a1e85d65362d8cd7453027d6367c834e095f60a",
+        "output_sha256": "006626880f1c440bd8a4e1deded8c4e0f0e6e0f02348d40c6d149fd1c6e25b76"
+      }
+    }
+  },
+  "submission_sha256": "6326f7f8667a88bcb2b9e8b841fa27cecfcfca455da7d3899a9f8b2f7786ec8e",
+  "submission_bytes": 39250,
+  "submission_skip_runtime_checks": true,
+  "historical_note": "413369のAC22msはbaseline1dfaだけの結果。新閾値10f4918fのオンライン結果は未提出。"
+}

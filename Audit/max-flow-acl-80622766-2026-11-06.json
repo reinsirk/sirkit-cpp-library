@@ -1,0 +1,2051 @@
+{
+  "date": "2026-11-06",
+  "prepared_utc": "2026-11-06T04:03:21.607801+00:00",
+  "scope": "最大流をACL互換のglobal mf_graphへ統一し、独立実装のBFSをsink発見時に終了する。mainは型名1箇所だけ置換。",
+  "online_confirmation": "Audit/online-max-flow-80622766-2026-11-06.json",
+  "online": {
+    "url": "https://atcoder.jp/contests/practice2/submissions/80622766",
+    "status": "AC",
+    "time_ms": 7,
+    "source_of_verdict": "利用者の提出情報画像",
+    "online_source_match": false,
+    "limitation": "提出本文はweb取得失敗/HTTP403/ブラウザ接続不可。画像のコード長は19920B、ローカル旧提出は19460Bであり、一致を断定せず現行のオンライン判定とも扱わない。"
+  },
+  "api": {
+    "reference": "https://atcoder.github.io/ac-library/production/document_ja/maxflow.html",
+    "public_type": "mf_graph<Cap=std::int64_t>",
+    "changes": [
+      "MaxFlowをmf_graphへ一本化。旧名の別名は残さない。",
+      "nested edge{int from,to;Cap cap,flow;}とint辺番号、int get/change引数へ合わせる。",
+      "mf_graph()/mf_graph(n)、flow(s,t)/flow(s,t,limit)の呼び出し・署名を分け、ACLの非const照会の署名を用意。",
+      "同名const照会、size/edge_count/reserve_edges/reset/swap、unsigned/narrow容量とs==tで0の追加仕様を維持。",
+      "新たなint辺番号に合わせ、辺数/予約のINT_MAX上限をSKIP有効時も守る。"
+    ],
+    "compatibility_checks": "新規API試験のメンバー関数ポインタ型・戻り値・edgeのaggregate/field型をstatic_assert。呼出と残余・容量の動作を独立参照で確認。",
+    "policy": "今後ACLに存在するAPIを合わせる方針をAGENTS.mdへ追記。"
+  },
+  "optimization": {
+    "adopted": "BFSでsinkの距離が決まった時点で終了する。",
+    "proof": "sinkの距離をdとすると、FIFO BFSが距離d-1の頂点を処理する時点で距離d-2以下の頂点は全て処理済み。よって最短s-t経路の内部頂点（距離d-1以下）は全て距離が決まり、前向きのblocking flowは最短路を列挙できる。距離dのsink以外の頂点やdを越す層は最短路に不要。min_cutは残余グラフを独立に探索し、未完成のlevelを使用しない。",
+    "complexity": "一般容量の最悪O(N²M)、領域O(N+M)を維持。追加状態・確保・SIMD/ISA命令・CPU判定なし。",
+    "safety": "vectorによる所有と反復処理を維持。辺追加の失敗時ロールバック、コピー/代入/resetの状態保持、flow作業領域の事前確保を維持。"
+  },
+  "measurement": {
+    "cpu": "Intel Core i9-14900K CPU12 (P-Core)",
+    "compilers": {
+      "g++": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+      "clang++": "Ubuntu clang version 21.1.8 (6ubuntu1)"
+    },
+    "flags": [
+      "-std=c++23",
+      "-O2"
+    ],
+    "skip_runtime_checks": true,
+    "scope": "旧API+旧main、APIのみ移行+型名置換main、BFS改善+同じ型名置換mainを区別。共通IOはbyte一致。mainは型名以外の計算手順・順序・入出力に変更なし。",
+    "process_timing": "同じ実行パスへコピーしold/control/API/earlyを混ぜ、setarch -Rでprocess単位のASLRを揃えてtaskset CPU12。rusage(user+system)は構築・入力・流量計算・出力・破棄を含む。old/control各々の試行を合わせた中央値と比較。",
+    "generic_graph_scope": "汎用入力の補足ベンチは一般容量の流量・容量境界・保存則・最小カットを検査し、全体CPU時間とflow単体CPU時間を区別。Verify mainの成果と混ぜない。",
+    "runs": 1840,
+    "grid_repetitions_per_label": 11,
+    "generic_repetitions_per_label": 7,
+    "fixtures": [
+      {
+        "name": "grid_official_3x3",
+        "kind": "grid",
+        "problem": "practice2_d",
+        "format": "height width, then height grid rows",
+        "path": "/tmp/sirkit_maxflow_80622766/fixtures/inputs/grid_official_3x3.in",
+        "filename": "grid_official_3x3.in",
+        "height": 3,
+        "width": 3,
+        "n": 11,
+        "m": 14,
+        "source": 9,
+        "sink": 10,
+        "bytes": 16,
+        "sha256": "89c55bb6f7c9c3a7573d1c04bd9fd776923e2bcb605ba7c624a623c8afecdf27",
+        "seed": null,
+        "expected_flow": 3,
+        "reference": "Independent Edmonds-Karp on a residual capacity matrix, from the grid network",
+        "oracle": "independent"
+      },
+      {
+        "name": "grid_open_1x1",
+        "kind": "grid",
+        "problem": "practice2_d",
+        "format": "height width, then height grid rows",
+        "path": "/tmp/sirkit_maxflow_80622766/fixtures/inputs/grid_open_1x1.in",
+        "filename": "grid_open_1x1.in",
+        "height": 1,
+        "width": 1,
+        "n": 3,
+        "m": 1,
+        "source": 1,
+        "sink": 2,
+        "bytes": 6,
+        "sha256": "391af992d51912c858f913c5218e94ddfefcc578b49800aef356afd711aa46c7",
+        "seed": null,
+        "expected_flow": 0,
+        "reference": "Independent Edmonds-Karp on a residual capacity matrix, from the grid network",
+        "oracle": "independent"
+      },
+      {
+        "name": "grid_blocked_1x1",
+        "kind": "grid",
+        "problem": "practice2_d",
+        "format": "height width, then height grid rows",
+        "path": "/tmp/sirkit_maxflow_80622766/fixtures/inputs/grid_blocked_1x1.in",
+        "filename": "grid_blocked_1x1.in",
+        "height": 1,
+        "width": 1,
+        "n": 3,
+        "m": 0,
+        "source": 1,
+        "sink": 2,
+        "bytes": 6,
+        "sha256": "63060710da9776834a05f2bb3329c45e8ecfb36ba967bf40f3684c86ced67e6a",
+        "seed": null,
+        "expected_flow": 0,
+        "reference": "Independent Edmonds-Karp on a residual capacity matrix, from the grid network",
+        "oracle": "independent"
+      },
+      {
+        "name": "grid_open_1x100",
+        "kind": "grid",
+        "problem": "practice2_d",
+        "format": "height width, then height grid rows",
+        "path": "/tmp/sirkit_maxflow_80622766/fixtures/inputs/grid_open_1x100.in",
+        "filename": "grid_open_1x100.in",
+        "height": 1,
+        "width": 100,
+        "n": 102,
+        "m": 199,
+        "source": 100,
+        "sink": 101,
+        "bytes": 107,
+        "sha256": "8952e880955208adea3ffe722259cb3cba04a98cc94c443c3accb9adc0b0f3df",
+        "seed": null,
+        "expected_flow": 50,
+        "reference": "A full row has floor(width/2) disjoint adjacent pairs and that is the vertex-count upper bound",
+        "oracle": "known_construction"
+      },
+      {
+        "name": "grid_random_8x8",
+        "kind": "grid",
+        "problem": "practice2_d",
+        "format": "height width, then height grid rows",
+        "path": "/tmp/sirkit_maxflow_80622766/fixtures/inputs/grid_random_8x8.in",
+        "filename": "grid_random_8x8.in",
+        "height": 8,
+        "width": 8,
+        "n": 66,
+        "m": 91,
+        "source": 64,
+        "sink": 65,
+        "bytes": 76,
+        "sha256": "17394d3aacd2e90e1b7a93693ab18866ac3a8c79686b9b5b9a62b88762e220fa",
+        "seed": 20261106080622774,
+        "expected_flow": 20,
+        "reference": "Independent Edmonds-Karp on a residual capacity matrix, from the grid network",
+        "oracle": "independent"
+      },
+      {
+        "name": "grid_open_100x100",
+        "kind": "grid",
+        "problem": "practice2_d",
+        "format": "height width, then height grid rows",
+        "path": "/tmp/sirkit_maxflow_80622766/fixtures/inputs/grid_open_100x100.in",
+        "filename": "grid_open_100x100.in",
+        "height": 100,
+        "width": 100,
+        "n": 10002,
+        "m": 29800,
+        "source": 10000,
+        "sink": 10001,
+        "bytes": 10108,
+        "sha256": "509cde68181656bb374ff3794ccb9ab905ad19bd643e99fe400c8307105fd24a",
+        "seed": null,
+        "expected_flow": 5000,
+        "reference": "Pair horizontal neighboring cells; reaches half the number of cells",
+        "oracle": "known_construction"
+      },
+      {
+        "name": "grid_checker_blocked_100x100",
+        "kind": "grid",
+        "problem": "practice2_d",
+        "format": "height width, then height grid rows",
+        "path": "/tmp/sirkit_maxflow_80622766/fixtures/inputs/grid_checker_blocked_100x100.in",
+        "filename": "grid_checker_blocked_100x100.in",
+        "height": 100,
+        "width": 100,
+        "n": 10002,
+        "m": 5000,
+        "source": 10000,
+        "sink": 10001,
+        "bytes": 10108,
+        "sha256": "2ba13c75b4b59562e65cf36d63b7385764a3410d5f99f289fa2c20544b67aa98",
+        "seed": null,
+        "expected_flow": 0,
+        "reference": "All usable cells have the same grid parity, so no usable adjacent pair exists",
+        "oracle": "known_construction"
+      },
+      {
+        "name": "grid_random10_100x100",
+        "kind": "grid",
+        "problem": "practice2_d",
+        "format": "height width, then height grid rows",
+        "path": "/tmp/sirkit_maxflow_80622766/fixtures/inputs/grid_random10_100x100.in",
+        "filename": "grid_random10_100x100.in",
+        "height": 100,
+        "width": 100,
+        "n": 10002,
+        "m": 24973,
+        "source": 10000,
+        "sink": 10001,
+        "bytes": 10108,
+        "sha256": "0cd61c0ea0e2a749ec4d4051e7bb53e17ca9e0e54031e8c20437e4dca0c74efb",
+        "seed": 20261106080622776,
+        "expected_flow": null,
+        "reference": "No independent expected value; compare before/after and validate matching reconstruction",
+        "oracle": "before_after_only"
+      },
+      {
+        "name": "grid_random35_100x100",
+        "kind": "grid",
+        "problem": "practice2_d",
+        "format": "height width, then height grid rows",
+        "path": "/tmp/sirkit_maxflow_80622766/fixtures/inputs/grid_random35_100x100.in",
+        "filename": "grid_random35_100x100.in",
+        "height": 100,
+        "width": 100,
+        "n": 10002,
+        "m": 15004,
+        "source": 10000,
+        "sink": 10001,
+        "bytes": 10108,
+        "sha256": "7b49965512a9de97761256778898ef38cb82873d885bae23f8b417cd8beb5aea",
+        "seed": 20261106080622801,
+        "expected_flow": null,
+        "reference": "No independent expected value; compare before/after and validate matching reconstruction",
+        "oracle": "before_after_only"
+      },
+      {
+        "name": "grid_random65_100x100",
+        "kind": "grid",
+        "problem": "practice2_d",
+        "format": "height width, then height grid rows",
+        "path": "/tmp/sirkit_maxflow_80622766/fixtures/inputs/grid_random65_100x100.in",
+        "filename": "grid_random65_100x100.in",
+        "height": 100,
+        "width": 100,
+        "n": 10002,
+        "m": 5970,
+        "source": 10000,
+        "sink": 10001,
+        "bytes": 10108,
+        "sha256": "477173554174f890ab5192b6c291a9beca1d4a2ae69114b90f31cf685ff06f5c",
+        "seed": 20261106080622831,
+        "expected_flow": null,
+        "reference": "No independent expected value; compare before/after and validate matching reconstruction",
+        "oracle": "before_after_only"
+      },
+      {
+        "name": "grid_open_300x300",
+        "kind": "grid",
+        "problem": "practice2_d",
+        "format": "height width, then height grid rows",
+        "path": "/tmp/sirkit_maxflow_80622766/fixtures/inputs/grid_open_300x300.in",
+        "filename": "grid_open_300x300.in",
+        "height": 300,
+        "width": 300,
+        "n": 90002,
+        "m": 269400,
+        "source": 90000,
+        "sink": 90001,
+        "bytes": 90308,
+        "sha256": "cc7536323ca671b0f3beb3f87b3bf348cffbba927fbb1484a0fa747e039f61e2",
+        "seed": null,
+        "expected_flow": 45000,
+        "reference": "Pair horizontal neighboring cells; reaches half the number of cells",
+        "oracle": "known_construction"
+      },
+      {
+        "name": "grid_random35_300x300",
+        "kind": "grid",
+        "problem": "practice2_d",
+        "format": "height width, then height grid rows",
+        "path": "/tmp/sirkit_maxflow_80622766/fixtures/inputs/grid_random35_300x300.in",
+        "filename": "grid_random35_300x300.in",
+        "height": 300,
+        "width": 300,
+        "n": 90002,
+        "m": 134152,
+        "source": 90000,
+        "sink": 90001,
+        "bytes": 90308,
+        "sha256": "ab404be7f88e21247314df668da4ecd86558e54869fa8f27f367feac6799a509",
+        "seed": 20261106080652801,
+        "expected_flow": null,
+        "reference": "No independent expected value; compare before/after and validate matching reconstruction",
+        "oracle": "before_after_only"
+      },
+      {
+        "name": "graph_zero_capacity_2",
+        "kind": "graph",
+        "problem": null,
+        "format": "n m source sink, then m lines: from to int64_capacity",
+        "path": "/tmp/sirkit_maxflow_80622766/fixtures/inputs/graph_zero_capacity_2.in",
+        "filename": "graph_zero_capacity_2.in",
+        "n": 2,
+        "m": 3,
+        "source": 0,
+        "sink": 1,
+        "bytes": 28,
+        "sha256": "40285b9d67f49f62f571769fc4da420e3176f715c05c55d49ab44147ccad9659",
+        "seed": null,
+        "source_capacity_bound": 0,
+        "expected_flow": 0,
+        "reference": "Independent Edmonds-Karp residual matrix and exhaustive cut enumeration",
+        "oracle": "independent"
+      },
+      {
+        "name": "graph_parallel_reverse_loops_4",
+        "kind": "graph",
+        "problem": null,
+        "format": "n m source sink, then m lines: from to int64_capacity",
+        "path": "/tmp/sirkit_maxflow_80622766/fixtures/inputs/graph_parallel_reverse_loops_4.in",
+        "filename": "graph_parallel_reverse_loops_4.in",
+        "n": 4,
+        "m": 11,
+        "source": 0,
+        "sink": 3,
+        "bytes": 79,
+        "sha256": "e8c37994b19c15bbb8f00ae8de2972bf8d6a9c46110543bea3561443c82e1065",
+        "seed": null,
+        "source_capacity_bound": 22,
+        "expected_flow": 14,
+        "reference": "Independent Edmonds-Karp residual matrix and exhaustive cut enumeration",
+        "oracle": "independent"
+      },
+      {
+        "name": "graph_large_capacities_4",
+        "kind": "graph",
+        "problem": null,
+        "format": "n m source sink, then m lines: from to int64_capacity",
+        "path": "/tmp/sirkit_maxflow_80622766/fixtures/inputs/graph_large_capacities_4.in",
+        "filename": "graph_large_capacities_4.in",
+        "n": 4,
+        "m": 6,
+        "source": 0,
+        "sink": 3,
+        "bytes": 129,
+        "sha256": "2aa29320ba072e5de1b934525ea4a6f81890f5ca6951d82657054abed337c1dc",
+        "seed": null,
+        "source_capacity_bound": 1152921504606846974,
+        "expected_flow": 1152921504606846974,
+        "reference": "Independent Edmonds-Karp residual matrix and exhaustive cut enumeration",
+        "oracle": "independent"
+      },
+      {
+        "name": "graph_random_small_2",
+        "kind": "graph",
+        "problem": null,
+        "format": "n m source sink, then m lines: from to int64_capacity",
+        "path": "/tmp/sirkit_maxflow_80622766/fixtures/inputs/graph_random_small_2.in",
+        "filename": "graph_random_small_2.in",
+        "n": 2,
+        "m": 14,
+        "source": 0,
+        "sink": 1,
+        "bytes": 106,
+        "sha256": "e280e270cb681cd9430cd66240045fbc2db631a3c68e2437234fe2a9c1a71a98",
+        "seed": 20261106080623768,
+        "source_capacity_bound": 1000000000003,
+        "expected_flow": 1000000000003,
+        "reference": "Independent Edmonds-Karp residual matrix and exhaustive cut enumeration",
+        "oracle": "independent"
+      },
+      {
+        "name": "graph_random_small_8",
+        "kind": "graph",
+        "problem": null,
+        "format": "n m source sink, then m lines: from to int64_capacity",
+        "path": "/tmp/sirkit_maxflow_80622766/fixtures/inputs/graph_random_small_8.in",
+        "filename": "graph_random_small_8.in",
+        "n": 8,
+        "m": 56,
+        "source": 0,
+        "sink": 7,
+        "bytes": 474,
+        "sha256": "705be6f2614e09480994297b34f6f53fe686a5a0832363996d48d6cb42a26420",
+        "seed": 20261106080623774,
+        "source_capacity_bound": 3,
+        "expected_flow": 3,
+        "reference": "Independent Edmonds-Karp residual matrix and exhaustive cut enumeration",
+        "oracle": "independent"
+      },
+      {
+        "name": "graph_random_small_24",
+        "kind": "graph",
+        "problem": null,
+        "format": "n m source sink, then m lines: from to int64_capacity",
+        "path": "/tmp/sirkit_maxflow_80622766/fixtures/inputs/graph_random_small_24.in",
+        "filename": "graph_random_small_24.in",
+        "n": 24,
+        "m": 168,
+        "source": 0,
+        "sink": 23,
+        "bytes": 1721,
+        "sha256": "99aae9b6767424f7fb16244f235f8e9d629ee4397bf10411682f1d469d86ef3a",
+        "seed": 20261106080623790,
+        "source_capacity_bound": 4000000000023,
+        "expected_flow": 1000000000024,
+        "reference": "Independent Edmonds-Karp residual matrix",
+        "oracle": "independent"
+      },
+      {
+        "name": "graph_chain_350000",
+        "kind": "graph",
+        "problem": null,
+        "format": "n m source sink, then m lines: from to int64_capacity",
+        "path": "/tmp/sirkit_maxflow_80622766/fixtures/inputs/graph_chain_350000.in",
+        "filename": "graph_chain_350000.in",
+        "n": 350000,
+        "m": 350069,
+        "source": 0,
+        "sink": 349999,
+        "bytes": 5379276,
+        "sha256": "8fb510f55f40f4e1159cf6a8185f4182bfca076fe7046e2a43a3431e5f458e09",
+        "seed": null,
+        "source_capacity_bound": 3,
+        "expected_flow": 3,
+        "reference": "The chain supplies a path of capacity 3; its first cut has total capacity 3. Self-loops and zero-capacity parallel arcs do not change it",
+        "oracle": "known_construction"
+      },
+      {
+        "name": "graph_star_unreachable_100000",
+        "kind": "graph",
+        "problem": null,
+        "format": "n m source sink, then m lines: from to int64_capacity",
+        "path": "/tmp/sirkit_maxflow_80622766/fixtures/inputs/graph_star_unreachable_100000.in",
+        "filename": "graph_star_unreachable_100000.in",
+        "n": 100000,
+        "m": 100001,
+        "source": 0,
+        "sink": 99999,
+        "bytes": 1388920,
+        "sha256": "004a0a9e396917eba0e129eae507cc26ff1d2d52a60b962bfa73e9d997f57304",
+        "seed": null,
+        "source_capacity_bound": 33333000000266663,
+        "expected_flow": 0,
+        "reference": "Sum of independent two-edge source-to-sink branches; disconnected variant has no incoming sink arc",
+        "oracle": "known_construction"
+      },
+      {
+        "name": "graph_star_connected_100000",
+        "kind": "graph",
+        "problem": null,
+        "format": "n m source sink, then m lines: from to int64_capacity",
+        "path": "/tmp/sirkit_maxflow_80622766/fixtures/inputs/graph_star_connected_100000.in",
+        "filename": "graph_star_connected_100000.in",
+        "n": 100000,
+        "m": 199999,
+        "source": 0,
+        "sink": 99999,
+        "bytes": 3177782,
+        "sha256": "d8278daf2e77e11910d6ea7ef61aa96de87bf944e2b12f217d2160297e89d71e",
+        "seed": null,
+        "source_capacity_bound": 33333000000266663,
+        "expected_flow": 33333000000266663,
+        "reference": "Sum of independent two-edge source-to-sink branches; disconnected variant has no incoming sink arc",
+        "oracle": "known_construction"
+      },
+      {
+        "name": "graph_random_dag_10000",
+        "kind": "graph",
+        "problem": null,
+        "format": "n m source sink, then m lines: from to int64_capacity",
+        "path": "/tmp/sirkit_maxflow_80622766/fixtures/inputs/graph_random_dag_10000.in",
+        "filename": "graph_random_dag_10000.in",
+        "n": 10000,
+        "m": 79999,
+        "source": 0,
+        "sink": 9999,
+        "bytes": 1211476,
+        "sha256": "24eb9417042937cd4c72be42926323c389d2b48e33ba58e8ac0e98f0f92cfb85",
+        "seed": 20261106080624966,
+        "source_capacity_bound": 18,
+        "expected_flow": null,
+        "reference": "No independent expected value; before/after comparison only",
+        "oracle": "before_after_only"
+      },
+      {
+        "name": "graph_dense_directed_300",
+        "kind": "graph",
+        "problem": null,
+        "format": "n m source sink, then m lines: from to int64_capacity",
+        "path": "/tmp/sirkit_maxflow_80622766/fixtures/inputs/graph_dense_directed_300.in",
+        "filename": "graph_dense_directed_300.in",
+        "n": 300,
+        "m": 30129,
+        "source": 0,
+        "sink": 299,
+        "bytes": 357855,
+        "sha256": "81b5ff33686e9287c2eba87e5dfadd3435d885dffd69d9beaab0dd7cde9d8634",
+        "seed": 20261106080625066,
+        "source_capacity_bound": 20000000001857,
+        "expected_flow": null,
+        "reference": "No independent expected value; before/after comparison only",
+        "oracle": "before_after_only"
+      },
+      {
+        "name": "graph_layered_10002",
+        "kind": "graph",
+        "problem": null,
+        "format": "n m source sink, then m lines: from to int64_capacity",
+        "path": "/tmp/sirkit_maxflow_80622766/fixtures/inputs/graph_layered_10002.in",
+        "filename": "graph_layered_10002.in",
+        "n": 10002,
+        "m": 39800,
+        "source": 0,
+        "sink": 10001,
+        "bytes": 558834,
+        "sha256": "be2a5dee01d27402e98eb700516b47fa75e49d2d77ef6c48c5df68635ec5bdd3",
+        "seed": 20261106080625166,
+        "source_capacity_bound": 100,
+        "expected_flow": 100,
+        "reference": "100 disjoint straight columns each carry 1, and the source cut has capacity 100",
+        "oracle": "known_construction"
+      },
+      {
+        "name": "graph_unreachable_sink_10000",
+        "kind": "graph",
+        "problem": null,
+        "format": "n m source sink, then m lines: from to int64_capacity",
+        "path": "/tmp/sirkit_maxflow_80622766/fixtures/inputs/graph_unreachable_sink_10000.in",
+        "filename": "graph_unreachable_sink_10000.in",
+        "n": 10000,
+        "m": 39998,
+        "source": 0,
+        "sink": 9999,
+        "bytes": 597994,
+        "sha256": "f9df3c10dc121caecf8bdd9cd86716c4cdb8f68607bb62c2142156c56aa575a2",
+        "seed": 20261106080625266,
+        "source_capacity_bound": 3000000000003,
+        "expected_flow": 0,
+        "reference": "The sink is isolated; every other vertex is connected to the source by the positive chain",
+        "oracle": "known_construction"
+      },
+      {
+        "name": "graph_close_sink_large_branches_100000",
+        "kind": "graph",
+        "problem": null,
+        "format": "n m source sink, then m lines: from to int64_capacity",
+        "path": "/tmp/sirkit_maxflow_80622766/fixtures/inputs/graph_close_sink_large_branches_100000.in",
+        "filename": "graph_close_sink_large_branches_100000.in",
+        "n": 100000,
+        "m": 199998,
+        "source": 0,
+        "sink": 1,
+        "bytes": 3566668,
+        "sha256": "07acc586497cf49bfb585b62dd389ee3c91bb3901c91dae421683f8c72a38a77",
+        "seed": null,
+        "source_capacity_bound": 99998000000000007,
+        "expected_flow": 7,
+        "reference": "The only positive incoming sink arc is the direct edge of capacity 7; it realizes that upper bound",
+        "oracle": "known_construction"
+      }
+    ],
+    "summary": [
+      {
+        "compiler": "gcc",
+        "case": "grid_official_3x3",
+        "kind": "grid",
+        "median_cpu_ns": {
+          "api": 1969000,
+          "control": 2067000,
+          "old": 1994000,
+          "early": 2030000
+        },
+        "pooled_old_cpu_ns": 2018500.0,
+        "api_ratio": 0.9754768392370572,
+        "early_ratio": 1.0056972999752292,
+        "control_ratio": 1.0366098294884654,
+        "samples_per_label": 11
+      },
+      {
+        "compiler": "gcc",
+        "case": "grid_open_1x1",
+        "kind": "grid",
+        "median_cpu_ns": {
+          "old": 1902000,
+          "api": 1906000,
+          "early": 1877000,
+          "control": 1887000
+        },
+        "pooled_old_cpu_ns": 1896500.0,
+        "api_ratio": 1.005009227524387,
+        "early_ratio": 0.9897179013973109,
+        "control_ratio": 0.9921135646687698,
+        "samples_per_label": 11
+      },
+      {
+        "compiler": "gcc",
+        "case": "grid_blocked_1x1",
+        "kind": "grid",
+        "median_cpu_ns": {
+          "control": 1971000,
+          "api": 1789000,
+          "old": 1867000,
+          "early": 1838000
+        },
+        "pooled_old_cpu_ns": 1892500.0,
+        "api_ratio": 0.9453104359313078,
+        "early_ratio": 0.9712021136063408,
+        "control_ratio": 1.0557043385109801,
+        "samples_per_label": 11
+      },
+      {
+        "compiler": "gcc",
+        "case": "grid_open_1x100",
+        "kind": "grid",
+        "median_cpu_ns": {
+          "old": 1861000,
+          "early": 1907000,
+          "api": 1864000,
+          "control": 1886000
+        },
+        "pooled_old_cpu_ns": 1875500.0,
+        "api_ratio": 0.9938683017861903,
+        "early_ratio": 1.0167955211943482,
+        "control_ratio": 1.0134336378291242,
+        "samples_per_label": 11
+      },
+      {
+        "compiler": "gcc",
+        "case": "grid_random_8x8",
+        "kind": "grid",
+        "median_cpu_ns": {
+          "api": 1955000,
+          "old": 1973000,
+          "control": 1959000,
+          "early": 1948000
+        },
+        "pooled_old_cpu_ns": 1964000.0,
+        "api_ratio": 0.995417515274949,
+        "early_ratio": 0.9918533604887984,
+        "control_ratio": 0.9929042067916878,
+        "samples_per_label": 11
+      },
+      {
+        "compiler": "gcc",
+        "case": "grid_open_100x100",
+        "kind": "grid",
+        "median_cpu_ns": {
+          "control": 4108000,
+          "old": 4133000,
+          "api": 4136000,
+          "early": 4053000
+        },
+        "pooled_old_cpu_ns": 4123000.0,
+        "api_ratio": 1.0031530439000729,
+        "early_ratio": 0.9830220713073005,
+        "control_ratio": 0.9939511250907331,
+        "samples_per_label": 11
+      },
+      {
+        "compiler": "gcc",
+        "case": "grid_checker_blocked_100x100",
+        "kind": "grid",
+        "median_cpu_ns": {
+          "api": 2493000,
+          "early": 2571000,
+          "old": 2650000,
+          "control": 2481000
+        },
+        "pooled_old_cpu_ns": 2546500.0,
+        "api_ratio": 0.9789907716473591,
+        "early_ratio": 1.0096210484979384,
+        "control_ratio": 0.9362264150943396,
+        "samples_per_label": 11
+      },
+      {
+        "compiler": "gcc",
+        "case": "grid_random10_100x100",
+        "kind": "grid",
+        "median_cpu_ns": {
+          "old": 12598000,
+          "control": 12574000,
+          "api": 12572000,
+          "early": 10455000
+        },
+        "pooled_old_cpu_ns": 12586000.0,
+        "api_ratio": 0.9988876529477196,
+        "early_ratio": 0.8306848879707611,
+        "control_ratio": 0.99809493570408,
+        "samples_per_label": 11
+      },
+      {
+        "compiler": "gcc",
+        "case": "grid_random35_100x100",
+        "kind": "grid",
+        "median_cpu_ns": {
+          "old": 5373000,
+          "early": 4427000,
+          "control": 5402000,
+          "api": 5364000
+        },
+        "pooled_old_cpu_ns": 5375000.0,
+        "api_ratio": 0.9979534883720931,
+        "early_ratio": 0.8236279069767442,
+        "control_ratio": 1.0053973571561512,
+        "samples_per_label": 11
+      },
+      {
+        "compiler": "gcc",
+        "case": "grid_random65_100x100",
+        "kind": "grid",
+        "median_cpu_ns": {
+          "old": 3115000,
+          "control": 3268000,
+          "early": 3051000,
+          "api": 3196000
+        },
+        "pooled_old_cpu_ns": 3213500.0,
+        "api_ratio": 0.9945542243659561,
+        "early_ratio": 0.949432083398164,
+        "control_ratio": 1.0491171749598716,
+        "samples_per_label": 11
+      },
+      {
+        "compiler": "gcc",
+        "case": "grid_open_300x300",
+        "kind": "grid",
+        "median_cpu_ns": {
+          "control": 24343000,
+          "api": 24163000,
+          "early": 23496000,
+          "old": 24301000
+        },
+        "pooled_old_cpu_ns": 24322000.0,
+        "api_ratio": 0.9934627086588274,
+        "early_ratio": 0.9660389770578077,
+        "control_ratio": 1.0017283239372865,
+        "samples_per_label": 11
+      },
+      {
+        "compiler": "gcc",
+        "case": "grid_random35_300x300",
+        "kind": "grid",
+        "median_cpu_ns": {
+          "control": 47438000,
+          "old": 46779000,
+          "api": 46304000,
+          "early": 33960000
+        },
+        "pooled_old_cpu_ns": 46979500.0,
+        "api_ratio": 0.9856213880522355,
+        "early_ratio": 0.722868485190349,
+        "control_ratio": 1.0140875179033326,
+        "samples_per_label": 11
+      },
+      {
+        "compiler": "gcc",
+        "case": "graph_zero_capacity_2",
+        "kind": "graph",
+        "median_cpu_ns": {
+          "early": 2042000,
+          "old": 1893000,
+          "control": 1896000,
+          "api": 1846000
+        },
+        "pooled_old_cpu_ns": 1894500.0,
+        "api_ratio": 0.9743995777249934,
+        "early_ratio": 1.0778569543415149,
+        "control_ratio": 1.0015847860538827,
+        "samples_per_label": 7,
+        "median_flow_cpu_ms": {
+          "early": 0.0,
+          "old": 0.001,
+          "control": 0.001,
+          "api": 0.001
+        },
+        "flow_early_ratio": 0.0
+      },
+      {
+        "compiler": "gcc",
+        "case": "graph_parallel_reverse_loops_4",
+        "kind": "graph",
+        "median_cpu_ns": {
+          "control": 1774000,
+          "old": 1792000,
+          "api": 1839000,
+          "early": 1788000
+        },
+        "pooled_old_cpu_ns": 1785000.0,
+        "api_ratio": 1.030252100840336,
+        "early_ratio": 1.0016806722689076,
+        "control_ratio": 0.9899553571428571,
+        "samples_per_label": 7,
+        "median_flow_cpu_ms": {
+          "control": 0.002,
+          "old": 0.002,
+          "api": 0.002,
+          "early": 0.001
+        },
+        "flow_early_ratio": 0.5
+      },
+      {
+        "compiler": "gcc",
+        "case": "graph_large_capacities_4",
+        "kind": "graph",
+        "median_cpu_ns": {
+          "early": 1823000,
+          "api": 1855000,
+          "control": 1820000,
+          "old": 1878000
+        },
+        "pooled_old_cpu_ns": 1870500.0,
+        "api_ratio": 0.99171344560278,
+        "early_ratio": 0.9746057203956161,
+        "control_ratio": 0.9691160809371672,
+        "samples_per_label": 7,
+        "median_flow_cpu_ms": {
+          "early": 0.001,
+          "api": 0.001,
+          "control": 0.001,
+          "old": 0.001
+        },
+        "flow_early_ratio": 1.0
+      },
+      {
+        "compiler": "gcc",
+        "case": "graph_random_small_2",
+        "kind": "graph",
+        "median_cpu_ns": {
+          "control": 1893000,
+          "old": 1888000,
+          "early": 1826000,
+          "api": 1935000
+        },
+        "pooled_old_cpu_ns": 1890500.0,
+        "api_ratio": 1.023538746363396,
+        "early_ratio": 0.9658820417878868,
+        "control_ratio": 1.0026483050847457,
+        "samples_per_label": 7,
+        "median_flow_cpu_ms": {
+          "control": 0.001,
+          "old": 0.001,
+          "early": 0.001,
+          "api": 0.001
+        },
+        "flow_early_ratio": 1.0
+      },
+      {
+        "compiler": "gcc",
+        "case": "graph_random_small_8",
+        "kind": "graph",
+        "median_cpu_ns": {
+          "api": 1918000,
+          "control": 1835000,
+          "old": 1862000,
+          "early": 1973000
+        },
+        "pooled_old_cpu_ns": 1855000.0,
+        "api_ratio": 1.0339622641509434,
+        "early_ratio": 1.0636118598382749,
+        "control_ratio": 0.985499462943072,
+        "samples_per_label": 7,
+        "median_flow_cpu_ms": {
+          "api": 0.003,
+          "control": 0.003,
+          "old": 0.003,
+          "early": 0.002
+        },
+        "flow_early_ratio": 0.6666666666666666
+      },
+      {
+        "compiler": "gcc",
+        "case": "graph_random_small_24",
+        "kind": "graph",
+        "median_cpu_ns": {
+          "control": 1931000,
+          "early": 1916000,
+          "old": 1951000,
+          "api": 2017000
+        },
+        "pooled_old_cpu_ns": 1936500.0,
+        "api_ratio": 1.0415698424993545,
+        "early_ratio": 0.989413891040537,
+        "control_ratio": 0.9897488467452589,
+        "samples_per_label": 7,
+        "median_flow_cpu_ms": {
+          "control": 0.021,
+          "early": 0.016,
+          "old": 0.02,
+          "api": 0.021
+        },
+        "flow_early_ratio": 0.7804878048780488
+      },
+      {
+        "compiler": "gcc",
+        "case": "graph_chain_350000",
+        "kind": "graph",
+        "median_cpu_ns": {
+          "early": 44502000,
+          "control": 44225000,
+          "old": 44582000,
+          "api": 44580000
+        },
+        "pooled_old_cpu_ns": 44405500.0,
+        "api_ratio": 1.0039296933938364,
+        "early_ratio": 1.002173154226391,
+        "control_ratio": 0.9919922838813872,
+        "samples_per_label": 7,
+        "median_flow_cpu_ms": {
+          "early": 10.963,
+          "control": 11.027,
+          "old": 11.033,
+          "api": 11.007
+        },
+        "flow_early_ratio": 0.9939256572982774
+      },
+      {
+        "compiler": "gcc",
+        "case": "graph_star_unreachable_100000",
+        "kind": "graph",
+        "median_cpu_ns": {
+          "old": 11492000,
+          "control": 11471000,
+          "api": 11503000,
+          "early": 11473000
+        },
+        "pooled_old_cpu_ns": 11481500.0,
+        "api_ratio": 1.0018725776248747,
+        "early_ratio": 0.9992596786134216,
+        "control_ratio": 0.9981726418378002,
+        "samples_per_label": 7,
+        "median_flow_cpu_ms": {
+          "old": 0.476,
+          "control": 0.472,
+          "api": 0.469,
+          "early": 0.479
+        },
+        "flow_early_ratio": 1.010548523206751
+      },
+      {
+        "compiler": "gcc",
+        "case": "graph_star_connected_100000",
+        "kind": "graph",
+        "median_cpu_ns": {
+          "control": 19876000,
+          "api": 19932000,
+          "old": 19735000,
+          "early": 19477000
+        },
+        "pooled_old_cpu_ns": 19870500.0,
+        "api_ratio": 1.0030950403865027,
+        "early_ratio": 0.9801967741123776,
+        "control_ratio": 1.0071446668355712,
+        "samples_per_label": 7,
+        "median_flow_cpu_ms": {
+          "control": 3.404,
+          "api": 3.326,
+          "old": 3.36,
+          "early": 2.813
+        },
+        "flow_early_ratio": 0.8297935103244839
+      },
+      {
+        "compiler": "gcc",
+        "case": "graph_random_dag_10000",
+        "kind": "graph",
+        "median_cpu_ns": {
+          "old": 12022000,
+          "api": 12000000,
+          "early": 9423000,
+          "control": 12126000
+        },
+        "pooled_old_cpu_ns": 12074000.0,
+        "api_ratio": 0.9938711280437303,
+        "early_ratio": 0.7804373032963392,
+        "control_ratio": 1.008650806854101,
+        "samples_per_label": 7,
+        "median_flow_cpu_ms": {
+          "old": 2.762,
+          "api": 2.795,
+          "early": 0.069,
+          "control": 2.758
+        },
+        "flow_early_ratio": 0.025000000000000005
+      },
+      {
+        "compiler": "gcc",
+        "case": "graph_dense_directed_300",
+        "kind": "graph",
+        "median_cpu_ns": {
+          "old": 4731000,
+          "api": 4822000,
+          "early": 4444000,
+          "control": 4776000
+        },
+        "pooled_old_cpu_ns": 4767500.0,
+        "api_ratio": 1.0114315679077084,
+        "early_ratio": 0.9321447299423178,
+        "control_ratio": 1.0095117311350665,
+        "samples_per_label": 7,
+        "median_flow_cpu_ms": {
+          "old": 0.729,
+          "api": 0.736,
+          "early": 0.509,
+          "control": 0.725
+        },
+        "flow_early_ratio": 0.7015851137146795
+      },
+      {
+        "compiler": "gcc",
+        "case": "graph_layered_10002",
+        "kind": "graph",
+        "median_cpu_ns": {
+          "control": 6290000,
+          "api": 6226000,
+          "old": 6260000,
+          "early": 6250000
+        },
+        "pooled_old_cpu_ns": 6289000.0,
+        "api_ratio": 0.989982509142948,
+        "early_ratio": 0.9937986961361107,
+        "control_ratio": 1.0047923322683705,
+        "samples_per_label": 7,
+        "median_flow_cpu_ms": {
+          "control": 0.65,
+          "api": 0.625,
+          "old": 0.686,
+          "early": 0.62
+        },
+        "flow_early_ratio": 0.9516500383729855
+      },
+      {
+        "compiler": "gcc",
+        "case": "graph_unreachable_sink_10000",
+        "kind": "graph",
+        "median_cpu_ns": {
+          "api": 7324000,
+          "early": 7123000,
+          "control": 7162000,
+          "old": 7192000
+        },
+        "pooled_old_cpu_ns": 7177000.0,
+        "api_ratio": 1.0204820955831126,
+        "early_ratio": 0.9924759648878362,
+        "control_ratio": 0.9958286985539488,
+        "samples_per_label": 7,
+        "median_flow_cpu_ms": {
+          "api": 0.397,
+          "early": 0.387,
+          "control": 0.418,
+          "old": 0.402
+        },
+        "flow_early_ratio": 0.9543773119605427
+      },
+      {
+        "compiler": "gcc",
+        "case": "graph_close_sink_large_branches_100000",
+        "kind": "graph",
+        "median_cpu_ns": {
+          "control": 22783000,
+          "old": 22719000,
+          "early": 20391000,
+          "api": 22594000
+        },
+        "pooled_old_cpu_ns": 22763500.0,
+        "api_ratio": 0.9925538691326027,
+        "early_ratio": 0.8957761328442463,
+        "control_ratio": 1.0028170253972446,
+        "samples_per_label": 7,
+        "median_flow_cpu_ms": {
+          "control": 3.146,
+          "old": 3.197,
+          "early": 0.854,
+          "api": 3.087
+        },
+        "flow_early_ratio": 0.26978360448586325
+      },
+      {
+        "compiler": "clang",
+        "case": "grid_official_3x3",
+        "kind": "grid",
+        "median_cpu_ns": {
+          "early": 1902000,
+          "api": 1831000,
+          "control": 1942000,
+          "old": 1922000
+        },
+        "pooled_old_cpu_ns": 1932000.0,
+        "api_ratio": 0.9477225672877847,
+        "early_ratio": 0.984472049689441,
+        "control_ratio": 1.0104058272632674,
+        "samples_per_label": 11
+      },
+      {
+        "compiler": "clang",
+        "case": "grid_open_1x1",
+        "kind": "grid",
+        "median_cpu_ns": {
+          "control": 1868000,
+          "early": 1894000,
+          "old": 1858000,
+          "api": 2017000
+        },
+        "pooled_old_cpu_ns": 1867500.0,
+        "api_ratio": 1.080053547523427,
+        "early_ratio": 1.014190093708166,
+        "control_ratio": 1.0053821313240043,
+        "samples_per_label": 11
+      },
+      {
+        "compiler": "clang",
+        "case": "grid_blocked_1x1",
+        "kind": "grid",
+        "median_cpu_ns": {
+          "api": 1844000,
+          "old": 1812000,
+          "early": 1809000,
+          "control": 2011000
+        },
+        "pooled_old_cpu_ns": 1925000.0,
+        "api_ratio": 0.957922077922078,
+        "early_ratio": 0.9397402597402598,
+        "control_ratio": 1.109823399558499,
+        "samples_per_label": 11
+      },
+      {
+        "compiler": "clang",
+        "case": "grid_open_1x100",
+        "kind": "grid",
+        "median_cpu_ns": {
+          "old": 1892000,
+          "api": 1808000,
+          "control": 1785000,
+          "early": 1860000
+        },
+        "pooled_old_cpu_ns": 1869000.0,
+        "api_ratio": 0.9673622257891921,
+        "early_ratio": 0.9951845906902087,
+        "control_ratio": 0.943446088794926,
+        "samples_per_label": 11
+      },
+      {
+        "compiler": "clang",
+        "case": "grid_random_8x8",
+        "kind": "grid",
+        "median_cpu_ns": {
+          "old": 1768000,
+          "api": 1880000,
+          "early": 1949000,
+          "control": 1828000
+        },
+        "pooled_old_cpu_ns": 1795000.0,
+        "api_ratio": 1.0473537604456824,
+        "early_ratio": 1.0857938718662952,
+        "control_ratio": 1.0339366515837105,
+        "samples_per_label": 11
+      },
+      {
+        "compiler": "clang",
+        "case": "grid_open_100x100",
+        "kind": "grid",
+        "median_cpu_ns": {
+          "control": 3892000,
+          "api": 3948000,
+          "early": 3823000,
+          "old": 3936000
+        },
+        "pooled_old_cpu_ns": 3930500.0,
+        "api_ratio": 1.0044523597506678,
+        "early_ratio": 0.9726497901030403,
+        "control_ratio": 0.9888211382113821,
+        "samples_per_label": 11
+      },
+      {
+        "compiler": "clang",
+        "case": "grid_checker_blocked_100x100",
+        "kind": "grid",
+        "median_cpu_ns": {
+          "control": 2420000,
+          "old": 2478000,
+          "api": 2542000,
+          "early": 2440000
+        },
+        "pooled_old_cpu_ns": 2429500.0,
+        "api_ratio": 1.0463058242436716,
+        "early_ratio": 1.0043218769294093,
+        "control_ratio": 0.976594027441485,
+        "samples_per_label": 11
+      },
+      {
+        "compiler": "clang",
+        "case": "grid_random10_100x100",
+        "kind": "grid",
+        "median_cpu_ns": {
+          "old": 12019000,
+          "control": 12092000,
+          "early": 9916000,
+          "api": 11955000
+        },
+        "pooled_old_cpu_ns": 12047500.0,
+        "api_ratio": 0.9923220585183649,
+        "early_ratio": 0.8230753268312928,
+        "control_ratio": 1.006073716615359,
+        "samples_per_label": 11
+      },
+      {
+        "compiler": "clang",
+        "case": "grid_random35_100x100",
+        "kind": "grid",
+        "median_cpu_ns": {
+          "api": 5178000,
+          "old": 5256000,
+          "control": 5227000,
+          "early": 4431000
+        },
+        "pooled_old_cpu_ns": 5248500.0,
+        "api_ratio": 0.9865675907402115,
+        "early_ratio": 0.8442412117747928,
+        "control_ratio": 0.994482496194825,
+        "samples_per_label": 11
+      },
+      {
+        "compiler": "clang",
+        "case": "grid_random65_100x100",
+        "kind": "grid",
+        "median_cpu_ns": {
+          "api": 3132000,
+          "control": 3138000,
+          "early": 2949000,
+          "old": 3158000
+        },
+        "pooled_old_cpu_ns": 3148000.0,
+        "api_ratio": 0.9949174078780177,
+        "early_ratio": 0.9367852604828463,
+        "control_ratio": 0.993666877770741,
+        "samples_per_label": 11
+      },
+      {
+        "compiler": "clang",
+        "case": "grid_open_300x300",
+        "kind": "grid",
+        "median_cpu_ns": {
+          "control": 23033000,
+          "early": 22927000,
+          "api": 23557000,
+          "old": 23023000
+        },
+        "pooled_old_cpu_ns": 23028000.0,
+        "api_ratio": 1.0229720340455097,
+        "early_ratio": 0.9956140350877193,
+        "control_ratio": 1.0004343482604352,
+        "samples_per_label": 11
+      },
+      {
+        "compiler": "clang",
+        "case": "grid_random35_300x300",
+        "kind": "grid",
+        "median_cpu_ns": {
+          "control": 45604000,
+          "early": 31610000,
+          "old": 45901000,
+          "api": 43516000
+        },
+        "pooled_old_cpu_ns": 45840500.0,
+        "api_ratio": 0.9492915653188774,
+        "early_ratio": 0.6895649043967671,
+        "control_ratio": 0.9935295527330559,
+        "samples_per_label": 11
+      },
+      {
+        "compiler": "clang",
+        "case": "graph_zero_capacity_2",
+        "kind": "graph",
+        "median_cpu_ns": {
+          "control": 1636000,
+          "early": 1637000,
+          "old": 1618000,
+          "api": 1593000
+        },
+        "pooled_old_cpu_ns": 1627000.0,
+        "api_ratio": 0.9791026429010449,
+        "early_ratio": 1.0061462814996927,
+        "control_ratio": 1.011124845488257,
+        "samples_per_label": 7,
+        "median_flow_cpu_ms": {
+          "control": 0.001,
+          "early": 0.001,
+          "old": 0.001,
+          "api": 0.001
+        },
+        "flow_early_ratio": 1.0
+      },
+      {
+        "compiler": "clang",
+        "case": "graph_parallel_reverse_loops_4",
+        "kind": "graph",
+        "median_cpu_ns": {
+          "old": 1600000,
+          "api": 1612000,
+          "control": 1620000,
+          "early": 1637000
+        },
+        "pooled_old_cpu_ns": 1609000.0,
+        "api_ratio": 1.0018645121193288,
+        "early_ratio": 1.0174021131137352,
+        "control_ratio": 1.0125,
+        "samples_per_label": 7,
+        "median_flow_cpu_ms": {
+          "old": 0.002,
+          "api": 0.001,
+          "control": 0.001,
+          "early": 0.001
+        },
+        "flow_early_ratio": 1.0
+      },
+      {
+        "compiler": "clang",
+        "case": "graph_large_capacities_4",
+        "kind": "graph",
+        "median_cpu_ns": {
+          "old": 1577000,
+          "early": 1588000,
+          "control": 1573000,
+          "api": 1586000
+        },
+        "pooled_old_cpu_ns": 1575000.0,
+        "api_ratio": 1.006984126984127,
+        "early_ratio": 1.0082539682539682,
+        "control_ratio": 0.9974635383639823,
+        "samples_per_label": 7,
+        "median_flow_cpu_ms": {
+          "old": 0.001,
+          "early": 0.001,
+          "control": 0.001,
+          "api": 0.001
+        },
+        "flow_early_ratio": 1.0
+      },
+      {
+        "compiler": "clang",
+        "case": "graph_random_small_2",
+        "kind": "graph",
+        "median_cpu_ns": {
+          "old": 1618000,
+          "api": 1596000,
+          "early": 1618000,
+          "control": 1604000
+        },
+        "pooled_old_cpu_ns": 1609000.0,
+        "api_ratio": 0.9919204474829086,
+        "early_ratio": 1.0055935363579864,
+        "control_ratio": 0.9913473423980222,
+        "samples_per_label": 7,
+        "median_flow_cpu_ms": {
+          "old": 0.001,
+          "api": 0.001,
+          "early": 0.001,
+          "control": 0.001
+        },
+        "flow_early_ratio": 1.0
+      },
+      {
+        "compiler": "clang",
+        "case": "graph_random_small_8",
+        "kind": "graph",
+        "median_cpu_ns": {
+          "old": 1666000,
+          "early": 1622000,
+          "api": 1634000,
+          "control": 1773000
+        },
+        "pooled_old_cpu_ns": 1690000.0,
+        "api_ratio": 0.9668639053254438,
+        "early_ratio": 0.9597633136094674,
+        "control_ratio": 1.0642256902761105,
+        "samples_per_label": 7,
+        "median_flow_cpu_ms": {
+          "old": 0.002,
+          "early": 0.002,
+          "api": 0.002,
+          "control": 0.002
+        },
+        "flow_early_ratio": 1.0
+      },
+      {
+        "compiler": "clang",
+        "case": "graph_random_small_24",
+        "kind": "graph",
+        "median_cpu_ns": {
+          "old": 1867000,
+          "api": 1862000,
+          "control": 1903000,
+          "early": 1901000
+        },
+        "pooled_old_cpu_ns": 1893000.0,
+        "api_ratio": 0.9836238774432118,
+        "early_ratio": 1.0042260961436873,
+        "control_ratio": 1.0192822710230316,
+        "samples_per_label": 7,
+        "median_flow_cpu_ms": {
+          "old": 0.019,
+          "api": 0.017,
+          "control": 0.018,
+          "early": 0.015
+        },
+        "flow_early_ratio": 0.8108108108108109
+      },
+      {
+        "compiler": "clang",
+        "case": "graph_chain_350000",
+        "kind": "graph",
+        "median_cpu_ns": {
+          "api": 43716000,
+          "early": 43666000,
+          "old": 43870000,
+          "control": 43940000
+        },
+        "pooled_old_cpu_ns": 43905000.0,
+        "api_ratio": 0.9956952511103518,
+        "early_ratio": 0.994556428652773,
+        "control_ratio": 1.0015956234328698,
+        "samples_per_label": 7,
+        "median_flow_cpu_ms": {
+          "api": 8.802,
+          "early": 8.758,
+          "old": 8.723,
+          "control": 8.749
+        },
+        "flow_early_ratio": 1.0018875479036777
+      },
+      {
+        "compiler": "clang",
+        "case": "graph_star_unreachable_100000",
+        "kind": "graph",
+        "median_cpu_ns": {
+          "api": 12016000,
+          "control": 11955000,
+          "early": 11809000,
+          "old": 11909000
+        },
+        "pooled_old_cpu_ns": 11916000.0,
+        "api_ratio": 1.0083920778784827,
+        "early_ratio": 0.9910204766700235,
+        "control_ratio": 1.0038626249055336,
+        "samples_per_label": 7,
+        "median_flow_cpu_ms": {
+          "api": 0.482,
+          "control": 0.471,
+          "early": 0.493,
+          "old": 0.485
+        },
+        "flow_early_ratio": 1.040084388185654
+      },
+      {
+        "compiler": "clang",
+        "case": "graph_star_connected_100000",
+        "kind": "graph",
+        "median_cpu_ns": {
+          "api": 19116000,
+          "control": 19303000,
+          "early": 18660000,
+          "old": 19536000
+        },
+        "pooled_old_cpu_ns": 19332500.0,
+        "api_ratio": 0.9888012414328203,
+        "early_ratio": 0.9652140178455968,
+        "control_ratio": 0.9880733005733006,
+        "samples_per_label": 7,
+        "median_flow_cpu_ms": {
+          "api": 1.865,
+          "control": 1.886,
+          "early": 1.337,
+          "old": 1.954
+        },
+        "flow_early_ratio": 0.7020215279600944
+      },
+      {
+        "compiler": "clang",
+        "case": "graph_random_dag_10000",
+        "kind": "graph",
+        "median_cpu_ns": {
+          "control": 12309000,
+          "old": 12093000,
+          "early": 9846000,
+          "api": 12093000
+        },
+        "pooled_old_cpu_ns": 12155500.0,
+        "api_ratio": 0.9948582945991526,
+        "early_ratio": 0.8100037020278886,
+        "control_ratio": 1.017861572810717,
+        "samples_per_label": 7,
+        "median_flow_cpu_ms": {
+          "control": 2.551,
+          "old": 2.554,
+          "early": 0.088,
+          "api": 2.562
+        },
+        "flow_early_ratio": 0.03447600391772771
+      },
+      {
+        "compiler": "clang",
+        "case": "graph_dense_directed_300",
+        "kind": "graph",
+        "median_cpu_ns": {
+          "api": 4712000,
+          "early": 4560000,
+          "control": 4723000,
+          "old": 4770000
+        },
+        "pooled_old_cpu_ns": 4758000.0,
+        "api_ratio": 0.9903320722992854,
+        "early_ratio": 0.9583858764186634,
+        "control_ratio": 0.990146750524109,
+        "samples_per_label": 7,
+        "median_flow_cpu_ms": {
+          "api": 0.638,
+          "early": 0.516,
+          "control": 0.671,
+          "old": 0.662
+        },
+        "flow_early_ratio": 0.7718773373223634
+      },
+      {
+        "compiler": "clang",
+        "case": "graph_layered_10002",
+        "kind": "graph",
+        "median_cpu_ns": {
+          "control": 6103000,
+          "early": 6134000,
+          "old": 6054000,
+          "api": 6011000
+        },
+        "pooled_old_cpu_ns": 6076500.0,
+        "api_ratio": 0.9892207685345182,
+        "early_ratio": 1.009462684110919,
+        "control_ratio": 1.0080938222662703,
+        "samples_per_label": 7,
+        "median_flow_cpu_ms": {
+          "control": 0.494,
+          "early": 0.508,
+          "old": 0.47,
+          "api": 0.48
+        },
+        "flow_early_ratio": 1.0605427974947808
+      },
+      {
+        "compiler": "clang",
+        "case": "graph_unreachable_sink_10000",
+        "kind": "graph",
+        "median_cpu_ns": {
+          "early": 7204000,
+          "api": 7182000,
+          "old": 7168000,
+          "control": 7120000
+        },
+        "pooled_old_cpu_ns": 7137500.0,
+        "api_ratio": 1.0062346760070053,
+        "early_ratio": 1.0093169877408057,
+        "control_ratio": 0.9933035714285714,
+        "samples_per_label": 7,
+        "median_flow_cpu_ms": {
+          "early": 0.39,
+          "api": 0.38,
+          "old": 0.386,
+          "control": 0.37
+        },
+        "flow_early_ratio": 1.029023746701847
+      },
+      {
+        "compiler": "clang",
+        "case": "graph_close_sink_large_branches_100000",
+        "kind": "graph",
+        "median_cpu_ns": {
+          "control": 22165000,
+          "old": 22277000,
+          "early": 21200000,
+          "api": 22663000
+        },
+        "pooled_old_cpu_ns": 22238500.0,
+        "api_ratio": 1.0190885176608135,
+        "early_ratio": 0.9533017064999888,
+        "control_ratio": 0.994972393051129,
+        "samples_per_label": 7,
+        "median_flow_cpu_ms": {
+          "control": 2.193,
+          "old": 2.223,
+          "early": 0.879,
+          "api": 2.241
+        },
+        "flow_early_ratio": 0.3980978260869565
+      }
+    ],
+    "limits": "自作グリッド・グラフによるローカル比較。実際のAtCoderケースと提出本文は取得できず、オンライン7msからの短縮率ではない。300x300は問題上限外の汎用性・大規模補足。小さい入力はprocess起動/計時の揺らぎが大きい。Clangの層状グラフは全体約1%/flow単体約6%増が観測され、全条件での短縮を主張しない。"
+  },
+  "validation": {
+    "asan_ubsan_settings": 8,
+    "allocation_settings": 2,
+    "results": [
+      {
+        "compiler": "gcc",
+        "test": "max_flow_acl_api_test",
+        "skip_runtime_checks": false,
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/max_flow_acl_api_test.cpp",
+          "-o",
+          "/tmp/sirkit_maxflow_80622766/gcc_max_flow_acl_api_test_0"
+        ],
+        "stdout": "mf_graph ACL API checks=182\n",
+        "returncode": 0,
+        "stderr": "",
+        "test_sha256": "f635909e10bb3eaffd22fdf9827d698de89d17ce693e809220ffe9b931053274",
+        "library_sha256": "a74590fd3a50e1d02fd092ec15ac9d6d402e3302a0a388f61aaba5a63a5d32c0"
+      },
+      {
+        "compiler": "gcc",
+        "test": "max_flow_acl_api_test",
+        "skip_runtime_checks": true,
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/max_flow_acl_api_test.cpp",
+          "-o",
+          "/tmp/sirkit_maxflow_80622766/gcc_max_flow_acl_api_test_1"
+        ],
+        "stdout": "mf_graph ACL API checks=175\n",
+        "returncode": 0,
+        "stderr": "",
+        "test_sha256": "f635909e10bb3eaffd22fdf9827d698de89d17ce693e809220ffe9b931053274",
+        "library_sha256": "a74590fd3a50e1d02fd092ec15ac9d6d402e3302a0a388f61aaba5a63a5d32c0"
+      },
+      {
+        "compiler": "gcc",
+        "test": "new_graph_allocation_test",
+        "skip_runtime_checks": false,
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "-Wno-mismatched-new-delete",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/new_graph_allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_maxflow_80622766/gcc_new_graph_allocation_test_0"
+        ],
+        "stdout": "graph allocation failures=126 successes=1234 live_delta=0\n",
+        "returncode": 0,
+        "stderr": "",
+        "test_sha256": "a8088cdcdae7a1d13be334a3b30c7ecdd51579d6249d146c5c69acc22d6dbe73",
+        "library_sha256": "a74590fd3a50e1d02fd092ec15ac9d6d402e3302a0a388f61aaba5a63a5d32c0"
+      },
+      {
+        "compiler": "clang",
+        "test": "max_flow_acl_api_test",
+        "skip_runtime_checks": false,
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/max_flow_acl_api_test.cpp",
+          "-o",
+          "/tmp/sirkit_maxflow_80622766/clang_max_flow_acl_api_test_0"
+        ],
+        "stdout": "mf_graph ACL API checks=182\n",
+        "returncode": 0,
+        "stderr": "",
+        "test_sha256": "f635909e10bb3eaffd22fdf9827d698de89d17ce693e809220ffe9b931053274",
+        "library_sha256": "a74590fd3a50e1d02fd092ec15ac9d6d402e3302a0a388f61aaba5a63a5d32c0"
+      },
+      {
+        "compiler": "clang",
+        "test": "max_flow_acl_api_test",
+        "skip_runtime_checks": true,
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/max_flow_acl_api_test.cpp",
+          "-o",
+          "/tmp/sirkit_maxflow_80622766/clang_max_flow_acl_api_test_1"
+        ],
+        "stdout": "mf_graph ACL API checks=175\n",
+        "returncode": 0,
+        "stderr": "",
+        "test_sha256": "f635909e10bb3eaffd22fdf9827d698de89d17ce693e809220ffe9b931053274",
+        "library_sha256": "a74590fd3a50e1d02fd092ec15ac9d6d402e3302a0a388f61aaba5a63a5d32c0"
+      },
+      {
+        "compiler": "gcc",
+        "test": "new_max_flow_reference_test",
+        "skip_runtime_checks": false,
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/new_max_flow_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_maxflow_80622766/gcc_new_max_flow_reference_test_0"
+        ],
+        "stdout": "mf_graph checks=533412\n",
+        "returncode": 0,
+        "stderr": "",
+        "test_sha256": "123003069ce4e99d97a94343478d0fbfbd50e1e8e70cb2d2d90e9c7c35b8c1a3",
+        "library_sha256": "a74590fd3a50e1d02fd092ec15ac9d6d402e3302a0a388f61aaba5a63a5d32c0"
+      },
+      {
+        "compiler": "gcc",
+        "test": "new_max_flow_reference_test",
+        "skip_runtime_checks": true,
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/new_max_flow_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_maxflow_80622766/gcc_new_max_flow_reference_test_1"
+        ],
+        "stdout": "mf_graph checks=533412\n",
+        "returncode": 0,
+        "stderr": "",
+        "test_sha256": "123003069ce4e99d97a94343478d0fbfbd50e1e8e70cb2d2d90e9c7c35b8c1a3",
+        "library_sha256": "a74590fd3a50e1d02fd092ec15ac9d6d402e3302a0a388f61aaba5a63a5d32c0"
+      },
+      {
+        "compiler": "clang",
+        "test": "new_max_flow_reference_test",
+        "skip_runtime_checks": false,
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/new_max_flow_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_maxflow_80622766/clang_new_max_flow_reference_test_0"
+        ],
+        "stdout": "mf_graph checks=533412\n",
+        "returncode": 0,
+        "stderr": "",
+        "test_sha256": "123003069ce4e99d97a94343478d0fbfbd50e1e8e70cb2d2d90e9c7c35b8c1a3",
+        "library_sha256": "a74590fd3a50e1d02fd092ec15ac9d6d402e3302a0a388f61aaba5a63a5d32c0"
+      },
+      {
+        "compiler": "clang",
+        "test": "new_max_flow_reference_test",
+        "skip_runtime_checks": true,
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/new_max_flow_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_maxflow_80622766/clang_new_max_flow_reference_test_1"
+        ],
+        "stdout": "mf_graph checks=533412\n",
+        "returncode": 0,
+        "stderr": "",
+        "test_sha256": "123003069ce4e99d97a94343478d0fbfbd50e1e8e70cb2d2d90e9c7c35b8c1a3",
+        "library_sha256": "a74590fd3a50e1d02fd092ec15ac9d6d402e3302a0a388f61aaba5a63a5d32c0"
+      },
+      {
+        "compiler": "clang",
+        "test": "new_graph_allocation_test",
+        "skip_runtime_checks": false,
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/new_graph_allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_maxflow_80622766/clang_new_graph_allocation_test_0"
+        ],
+        "stdout": "graph allocation failures=126 successes=1234 live_delta=0\n",
+        "returncode": 0,
+        "stderr": "",
+        "test_sha256": "a8088cdcdae7a1d13be334a3b30c7ecdd51579d6249d146c5c69acc22d6dbe73",
+        "library_sha256": "a74590fd3a50e1d02fd092ec15ac9d6d402e3302a0a388f61aaba5a63a5d32c0"
+      }
+    ],
+    "source_proofs": {
+      "canonical_sha256": "df5f0b327285ec1efd9adf0b36cb4f3b6638f0f031edd11c6ec3b62f9452f402",
+      "measured_candidate_sha256": "f9698eb211a3b187b9e7319de71774363c777b1f2fef8fe1d6d0b2fae5f7bd47",
+      "tested_sha256": "a74590fd3a50e1d02fd092ec15ac9d6d402e3302a0a388f61aaba5a63a5d32c0",
+      "source_delta": "API説明コメントのみ。最終の実行コードは計測済み候補とbyte一致。",
+      "driver_change": "型名MaxFlow<int>をmf_graph<int>へ1箇所だけ置換。その他byte一致。",
+      "io_sha256": "291bf8dbc56a1d691f6256fe95b4714183c2cf5d9e55e4bef240e31d1eb178c1",
+      "io_unchanged": true
+    },
+    "final_frozen_program_text_mappings": 2,
+    "example_builds": 2,
+    "strict_standard_CXX23_builds": 2,
+    "final_checks": [
+      {
+        "compiler": "gcc",
+        "scope": "actual frozen grid main except class-name replacement",
+        "command": [
+          "taskset",
+          "-c",
+          "6",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "/tmp/sirkit_maxflow_80622766/final_grid.cpp",
+          "-o",
+          "/tmp/sirkit_maxflow_80622766/gcc_final_grid"
+        ],
+        "text_matches_measured": true,
+        "text_sha256": "bb91176b5215fae6586212cd023991f8aec2eebb35627a8c54d0173982a72361",
+        "samples_pass": true
+      },
+      {
+        "compiler": "gcc",
+        "scope": "example",
+        "command": [
+          "taskset",
+          "-c",
+          "6",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "/home/reinsirk/Atcoder_Env/Examples/max_flow_example.cpp",
+          "-o",
+          "/tmp/sirkit_maxflow_80622766/gcc_example"
+        ],
+        "stdout": "5\n"
+      },
+      {
+        "compiler": "gcc",
+        "scope": "strict standard C++23",
+        "command": [
+          "taskset",
+          "-c",
+          "6",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "-pedantic-errors",
+          "-U__SIZEOF_INT128__",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/max_flow_acl_api_test.cpp",
+          "-o",
+          "/tmp/sirkit_maxflow_80622766/gcc_standard_api"
+        ],
+        "stdout": "mf_graph ACL API checks=182\n"
+      },
+      {
+        "compiler": "clang",
+        "scope": "actual frozen grid main except class-name replacement",
+        "command": [
+          "taskset",
+          "-c",
+          "6",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "/tmp/sirkit_maxflow_80622766/final_grid.cpp",
+          "-o",
+          "/tmp/sirkit_maxflow_80622766/clang_final_grid"
+        ],
+        "text_matches_measured": true,
+        "text_sha256": "be7388cbaa9f617e5e1577a57a425ea73631ca8f855666202d18b03102c9dc45",
+        "samples_pass": true
+      },
+      {
+        "compiler": "clang",
+        "scope": "example",
+        "command": [
+          "taskset",
+          "-c",
+          "6",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "/home/reinsirk/Atcoder_Env/Examples/max_flow_example.cpp",
+          "-o",
+          "/tmp/sirkit_maxflow_80622766/clang_example"
+        ],
+        "stdout": "5\n"
+      },
+      {
+        "compiler": "clang",
+        "scope": "strict standard C++23",
+        "command": [
+          "taskset",
+          "-c",
+          "6",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "-pedantic-errors",
+          "-U__SIZEOF_INT128__",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/max_flow_acl_api_test.cpp",
+          "-o",
+          "/tmp/sirkit_maxflow_80622766/clang_standard_api"
+        ],
+        "stdout": "mf_graph ACL API checks=182\n"
+      }
+    ],
+    "variant_and_example_samples": 10,
+    "independent_reference": "Edmonds-KarpでN=2..18各500グラフ、N=2..8各200の全cut、自己辺/多重/逆辺・再flow/limit・min_cut・change_edge・copy/move・35万鎖。容量上限int/int64/uint8/uint64を別途検証。",
+    "sanitizer_note": "ASan+UBSanはdetect_leaks=0。独立の確保失敗/生存割当数試験はGCC/Clangとも126失敗/1234成功/live_delta=0。",
+    "diagnostics": "既存の確保試験が意図してoperator newをmalloc/freeで置換するため、GCCの同試験だけ-Wno-mismatched-new-deleteを指定。Clangの既存自己代入警告は同じオブジェクトへのconst参照を介して試験し、自己代入の検証を維持。初期警告ログは診断資料。"
+  },
+  "documentation": {
+    "path": "Document/max_flow.md",
+    "lines": 50,
+    "comparison": "Document/line_container.mdの61行を目安に、API表・短い例・重要な制約と所有を50行に整理。変更履歴や詳しい測定はDocument/READMEへ追加しない。"
+  },
+  "provenance": "既存CC0の自作反復Dinicを改修。ACLは公開API・最大流の理論の参考とし、再帰の逆向きDFSなど実装本文の転記はしない。",
+  "sources": {
+    "Graph/Max_Flow.cpp": {
+      "sha256": "df5f0b327285ec1efd9adf0b36cb4f3b6638f0f031edd11c6ec3b62f9452f402",
+      "bytes": 10207
+    },
+    "Document/max_flow.md": {
+      "sha256": "e664f5d22ac9c01d0ae154d76512656f7b2ece5a109b12a8330f7f04d15eb84f",
+      "bytes": 4248
+    },
+    "Examples/max_flow_example.cpp": {
+      "sha256": "7dab978b4a8ab0268970d42cde6a798a0826c256d1dfbd0bd929ee14afa68d5f",
+      "bytes": 677
+    },
+    "Verify/current/drivers/max_flow_grid_main.cpp": {
+      "sha256": "5d98401f72722a00e26856ad80c1f9825c0ee8f24cc3b93f62b0db680b1df4bb",
+      "bytes": 1188
+    },
+    "Verify/current/common/fast_io.hpp": {
+      "sha256": "291bf8dbc56a1d691f6256fe95b4714183c2cf5d9e55e4bef240e31d1eb178c1",
+      "bytes": 9227
+    },
+    "Verify/current/tests/max_flow_acl_api_test.cpp": {
+      "sha256": "f635909e10bb3eaffd22fdf9827d698de89d17ce693e809220ffe9b931053274",
+      "bytes": 7399
+    },
+    "Verify/current/tests/new_max_flow_reference_test.cpp": {
+      "sha256": "123003069ce4e99d97a94343478d0fbfbd50e1e8e70cb2d2d90e9c7c35b8c1a3",
+      "bytes": 4437
+    },
+    "Verify/current/tests/new_graph_allocation_test.cpp": {
+      "sha256": "a8088cdcdae7a1d13be334a3b30c7ecdd51579d6249d146c5c69acc22d6dbe73",
+      "bytes": 6618
+    },
+    "AGENTS.md": {
+      "sha256": "6b92862e2c8eb09c7672aab8859aad39e7bc8372cb090c50e1a60a3d5534a7f4",
+      "bytes": 8379
+    }
+  },
+  "evidence": {
+    "path": "Audit/data/max-flow-acl-80622766-2026-11-06.zip",
+    "sha256": "d4ba78706777197ebb56deec0def226eed0d044c74314f2bfa30d251001c09dc",
+    "entries": 70
+  },
+  "required_resubmission": [
+    "max_flow_grid"
+  ]
+}

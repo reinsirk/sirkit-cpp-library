@@ -1,0 +1,256 @@
+{
+  "status": "adopted C; compiler editions generated; full current integration checks in progress",
+  "source": "Math/Modular_Arithmetic.cpp",
+  "source_sha256": "e5a915df7be51024a2c6661e9cb0aa9781d8c73cf3484caa776dec9fcb4e0776",
+  "measurement_metadata": {
+    "status": "candidate C ready for root adoption decision",
+    "baseline": {
+      "path": "/tmp/sirkit_12h_20261031_095733/modular_arithmetic_optimization/baseline_current.hpp",
+      "sha256": "bb5efeab3ddc3640642b076647314644e9db3c8ff14b4f1ea5aa33c29ab4b4e4",
+      "matches_root_frozen_current": "bb5efeab3ddc3640642b076647314644e9db3c8ff14b4f1ea5aa33c29ab4b4e4"
+    },
+    "ready_source": "/tmp/sirkit_12h_20261031_095733/modular_arithmetic_optimization/split_early_boundary_constexpr.hpp",
+    "source_sha256": "e5a915df7be51024a2c6661e9cb0aa9781d8c73cf3484caa776dec9fcb4e0776",
+    "patch": "/tmp/sirkit_12h_20261031_095733/modular_arithmetic_optimization/selected_C.diff",
+    "review": "/tmp/sirkit_12h_20261031_095733/modular_arithmetic_optimization/review.md",
+    "document_proposal": "/tmp/sirkit_12h_20261031_095733/modular_arithmetic_optimization/document_proposal.md",
+    "changes": [
+      "split full-width modular multiply from small-operand dispatch; wide ModPow bypasses repeated width checks",
+      "Pow returns early for exponent0 or normalized base0/1",
+      "narrow ModPow valid through modulus2^32 inclusive; raw product fits uint64",
+      "all pure public/private functions constexpr; public values/guards unchanged"
+    ],
+    "validation": {
+      "original_A_B_full_configs": 48,
+      "extra_power_fullhelper_noalloc_configs": 32,
+      "constexpr_A_B_configs": 16,
+      "boundary_A_C_full_oracle_ASan_standard_configs": 32,
+      "constexpr_boundary_A_C_configs": 16,
+      "final_C_native_full_reference_configs": 4,
+      "source_C_default_standard_sanitizer_config_count": 16,
+      "source_C_constexpr_boundary_config_count": 8,
+      "actual_C_constexpr_section_proof": "/tmp/sirkit_12h_20261031_095733/modular_arithmetic_optimization/constexpr_C_sections.json",
+      "all_C_sections_identical_to_runtime_qualifier_removed": true
+    },
+    "performance": {
+      "initial_raw": 2688,
+      "long_body_and_boundary_raw": 792,
+      "cpu": 12,
+      "conditions": "GCC15.2/Clang21 C++23 O2 default/native SKIP; same API inputs/main/IO; core repeats128 vs old4 to improve timers, three shuffled process repeats and duplicate binary controls; thread/wall + process CPU/wall",
+      "wide_Pow_C_vs_current_thread_ratios": {
+        "clang_default": 0.9410545317184382,
+        "clang_native": 0.9716827547767966,
+        "gcc_default": 0.9625549557195616,
+        "gcc_native": 0.9792577192355381
+      },
+      "caveats": [
+        "C improves random wide Pow by2.1–5.9% in longer-body run; root should treat as modest measured gains, not universal speed guarantee.",
+        "Narrow Pow stays nearcontrol. Base0/1 in initial edge fixture improves>98%.",
+        "m2^32 boundary mixed exponent fixture improvesabout1.5–3.1%; exact m2^32+1 staysnearcontrol except GCCnative+3.9% also Ccontrol+4.0%.",
+        "Some unrelated conditions still show control jitter up to5.4%; do not call2–4% individual shifts proven regressions.",
+        "GCC default wide Solve measured C/current+2.15%, Cduplicate+2.09%; this repeated small shift may reflect combined switch/layout behavior and should be recorded rather than claiming no regression.",
+        "All normal independent correctness guarantees preserved. No actual Verify main/IO changed."
+      ]
+    },
+    "frozen_artifacts": {
+      "C_native_results.json": {
+        "path": "/tmp/sirkit_12h_20261031_095733/modular_arithmetic_optimization/C_native_results.json",
+        "sha256": "6bfd094f780ce3c293b448ddf558862f44000547ecf5f6b91517f21390e0bc45"
+      },
+      "constexpr_C_sections.json": {
+        "path": "/tmp/sirkit_12h_20261031_095733/modular_arithmetic_optimization/constexpr_C_sections.json",
+        "sha256": "76bb610fb69382f927f136e74d125046e075d52d0bc3532197f2876bf69b3550"
+      },
+      "boundary_bench_summary.json": {
+        "path": "/tmp/sirkit_12h_20261031_095733/modular_arithmetic_optimization/boundary_bench_summary.json",
+        "sha256": "a158975297d26bbb7ad03f3a457a169f12ee1817a062dc4aba78215e1b35d0a5"
+      },
+      "long_c_summary.json": {
+        "path": "/tmp/sirkit_12h_20261031_095733/modular_arithmetic_optimization/long_c_summary.json",
+        "sha256": "6a2380410e0ac552928869747ff2f94c86e94cceb25ce871ba1f69b2456d91c1"
+      },
+      "boundary_bench_manifest.json": {
+        "path": "/tmp/sirkit_12h_20261031_095733/modular_arithmetic_optimization/boundary_bench_manifest.json",
+        "sha256": "057e1c6ed5f909547ca1d3d4d784a9b947ffef87ccc6bdd0ff2e166c81da5a1b"
+      },
+      "boundary_bench_raw.json": {
+        "path": "/tmp/sirkit_12h_20261031_095733/modular_arithmetic_optimization/boundary_bench_raw.json",
+        "sha256": "6e6e3fadcd63248c6ccefd9de119cfa6723992ff84628ab060a1407b8ee43e5c"
+      },
+      "long_c_manifest.json": {
+        "path": "/tmp/sirkit_12h_20261031_095733/modular_arithmetic_optimization/long_c_manifest.json",
+        "sha256": "42cfd4ae7db35814ef8dc33f99c4b763c693030b17a074c1e4b3f68a238977a3"
+      },
+      "long_c_raw.json": {
+        "path": "/tmp/sirkit_12h_20261031_095733/modular_arithmetic_optimization/long_c_raw.json",
+        "sha256": "65da3527517cfadf44d10c0d55f1f80197478f99b044fcb8e4d7b0f1ea2d7846"
+      },
+      "boundary_bench_build.json": {
+        "path": "/tmp/sirkit_12h_20261031_095733/modular_arithmetic_optimization/boundary_bench_build.json",
+        "sha256": "f3c1181f5bdb9be675d3ed71aedb5256e95f0855d14de8e1a0a15d8065497d35"
+      },
+      "long_c_build.json": {
+        "path": "/tmp/sirkit_12h_20261031_095733/modular_arithmetic_optimization/long_c_build.json",
+        "sha256": "4d25802e52164439063d9da5c1eb0d339836a18b22111675d51a0995b1da44ad"
+      },
+      "constexpr_boundary_results.json": {
+        "path": "/tmp/sirkit_12h_20261031_095733/modular_arithmetic_optimization/constexpr_boundary_results.json",
+        "sha256": "7800e4558a7f73464cc6015774f55b6b3a1a7532b3fbd619cb959d46baaeebb8"
+      },
+      "constexpr_sections.json": {
+        "path": "/tmp/sirkit_12h_20261031_095733/modular_arithmetic_optimization/constexpr_sections.json",
+        "sha256": "9880226f3c4230b9d8b97b1bb6ac245e855864275b7b7fab80db616a80c18709"
+      },
+      "long_bench_build.json": {
+        "path": "/tmp/sirkit_12h_20261031_095733/modular_arithmetic_optimization/long_bench_build.json",
+        "sha256": "4f775112cce6cb37532d8e63fa03121868a5470a57a97f076caadc14b655fe4e"
+      },
+      "constexpr_results.json": {
+        "path": "/tmp/sirkit_12h_20261031_095733/modular_arithmetic_optimization/constexpr_results.json",
+        "sha256": "55884d2c9e893ad57f0a14b33d5b818537d752d44bfecdc81cb82bcb94742cf2"
+      },
+      "edge_bench_summary.json": {
+        "path": "/tmp/sirkit_12h_20261031_095733/modular_arithmetic_optimization/edge_bench_summary.json",
+        "sha256": "357352328fdbf0a0d34fdff76a4bcf8d90a24536f75c84cb2c9c7a7c55f9d39c"
+      },
+      "bench_summary.json": {
+        "path": "/tmp/sirkit_12h_20261031_095733/modular_arithmetic_optimization/bench_summary.json",
+        "sha256": "5dce1212b2a1f2bb205e2410c4b341224b65054f95fd22ce20ed82fc65b92f92"
+      },
+      "edge_bench_manifest.json": {
+        "path": "/tmp/sirkit_12h_20261031_095733/modular_arithmetic_optimization/edge_bench_manifest.json",
+        "sha256": "a427d0bb8fa638ab2c929b1c30ae52481d8c09622ca5db9ced5782f21618fc2d"
+      },
+      "edge_bench_raw.json": {
+        "path": "/tmp/sirkit_12h_20261031_095733/modular_arithmetic_optimization/edge_bench_raw.json",
+        "sha256": "02d2480fbd0580e88331a31e493d6de82c9089557f31917d65526f538c25c3e3"
+      },
+      "bench_manifest.json": {
+        "path": "/tmp/sirkit_12h_20261031_095733/modular_arithmetic_optimization/bench_manifest.json",
+        "sha256": "79d9d69cd7b4d88e745aa1d3e3c96d3287cc6de40551dbe0e324b8de59bb6cad"
+      },
+      "bench_raw.json": {
+        "path": "/tmp/sirkit_12h_20261031_095733/modular_arithmetic_optimization/bench_raw.json",
+        "sha256": "e481572530f99c4ae0f076aee5f10eea35c21e80cf26d5c87b8952d17b5e7589"
+      },
+      "edge_bench_build.json": {
+        "path": "/tmp/sirkit_12h_20261031_095733/modular_arithmetic_optimization/edge_bench_build.json",
+        "sha256": "6b5e7c6fe4155834c3ea444016762e7582883c1ad1cf2f3f982aef4c320a7045"
+      },
+      "extra_results.json": {
+        "path": "/tmp/sirkit_12h_20261031_095733/modular_arithmetic_optimization/extra_results.json",
+        "sha256": "a9041f66c8222ae9dcf86898c160e64325a1edd4fc7d169576503132e8dc4060"
+      },
+      "bench_build.json": {
+        "path": "/tmp/sirkit_12h_20261031_095733/modular_arithmetic_optimization/bench_build.json",
+        "sha256": "b86eea49908b80dbb7e2e57580f9178a101bc9cf5350abfde397770296218e50"
+      },
+      "source_manifest.json": {
+        "path": "/tmp/sirkit_12h_20261031_095733/modular_arithmetic_optimization/source_manifest.json",
+        "sha256": "0eed8a2390e5705c9bcb9bd9c74319c73cafee9013749a592d85e288bd7db59f"
+      }
+    },
+    "formal_or_root_shared_edited": false,
+    "note": "Future Montgomery experiment starts from this frozen C and will be a separate tmp candidate; root decides adoption."
+  },
+  "copied_evidence": {
+    "C_native_results.json": {
+      "path": "Audit/data/modular-arithmetic-C-2026-10-31-C_native_results.json",
+      "sha256": "6bfd094f780ce3c293b448ddf558862f44000547ecf5f6b91517f21390e0bc45"
+    },
+    "constexpr_C_sections.json": {
+      "path": "Audit/data/modular-arithmetic-C-2026-10-31-constexpr_C_sections.json",
+      "sha256": "76bb610fb69382f927f136e74d125046e075d52d0bc3532197f2876bf69b3550"
+    },
+    "boundary_bench_summary.json": {
+      "path": "Audit/data/modular-arithmetic-C-2026-10-31-boundary_bench_summary.json",
+      "sha256": "a158975297d26bbb7ad03f3a457a169f12ee1817a062dc4aba78215e1b35d0a5"
+    },
+    "long_c_summary.json": {
+      "path": "Audit/data/modular-arithmetic-C-2026-10-31-long_c_summary.json",
+      "sha256": "6a2380410e0ac552928869747ff2f94c86e94cceb25ce871ba1f69b2456d91c1"
+    },
+    "boundary_bench_manifest.json": {
+      "path": "Audit/data/modular-arithmetic-C-2026-10-31-boundary_bench_manifest.json",
+      "sha256": "057e1c6ed5f909547ca1d3d4d784a9b947ffef87ccc6bdd0ff2e166c81da5a1b"
+    },
+    "boundary_bench_raw.json": {
+      "path": "Audit/data/modular-arithmetic-C-2026-10-31-boundary_bench_raw.json",
+      "sha256": "6e6e3fadcd63248c6ccefd9de119cfa6723992ff84628ab060a1407b8ee43e5c"
+    },
+    "long_c_manifest.json": {
+      "path": "Audit/data/modular-arithmetic-C-2026-10-31-long_c_manifest.json",
+      "sha256": "42cfd4ae7db35814ef8dc33f99c4b763c693030b17a074c1e4b3f68a238977a3"
+    },
+    "long_c_raw.json": {
+      "path": "Audit/data/modular-arithmetic-C-2026-10-31-long_c_raw.json",
+      "sha256": "65da3527517cfadf44d10c0d55f1f80197478f99b044fcb8e4d7b0f1ea2d7846"
+    },
+    "boundary_bench_build.json": {
+      "path": "Audit/data/modular-arithmetic-C-2026-10-31-boundary_bench_build.json",
+      "sha256": "f3c1181f5bdb9be675d3ed71aedb5256e95f0855d14de8e1a0a15d8065497d35"
+    },
+    "long_c_build.json": {
+      "path": "Audit/data/modular-arithmetic-C-2026-10-31-long_c_build.json",
+      "sha256": "4d25802e52164439063d9da5c1eb0d339836a18b22111675d51a0995b1da44ad"
+    },
+    "constexpr_boundary_results.json": {
+      "path": "Audit/data/modular-arithmetic-C-2026-10-31-constexpr_boundary_results.json",
+      "sha256": "7800e4558a7f73464cc6015774f55b6b3a1a7532b3fbd619cb959d46baaeebb8"
+    },
+    "constexpr_sections.json": {
+      "path": "Audit/data/modular-arithmetic-C-2026-10-31-constexpr_sections.json",
+      "sha256": "9880226f3c4230b9d8b97b1bb6ac245e855864275b7b7fab80db616a80c18709"
+    },
+    "long_bench_build.json": {
+      "path": "Audit/data/modular-arithmetic-C-2026-10-31-long_bench_build.json",
+      "sha256": "4f775112cce6cb37532d8e63fa03121868a5470a57a97f076caadc14b655fe4e"
+    },
+    "constexpr_results.json": {
+      "path": "Audit/data/modular-arithmetic-C-2026-10-31-constexpr_results.json",
+      "sha256": "55884d2c9e893ad57f0a14b33d5b818537d752d44bfecdc81cb82bcb94742cf2"
+    },
+    "edge_bench_summary.json": {
+      "path": "Audit/data/modular-arithmetic-C-2026-10-31-edge_bench_summary.json",
+      "sha256": "357352328fdbf0a0d34fdff76a4bcf8d90a24536f75c84cb2c9c7a7c55f9d39c"
+    },
+    "bench_summary.json": {
+      "path": "Audit/data/modular-arithmetic-C-2026-10-31-bench_summary.json",
+      "sha256": "5dce1212b2a1f2bb205e2410c4b341224b65054f95fd22ce20ed82fc65b92f92"
+    },
+    "edge_bench_manifest.json": {
+      "path": "Audit/data/modular-arithmetic-C-2026-10-31-edge_bench_manifest.json",
+      "sha256": "a427d0bb8fa638ab2c929b1c30ae52481d8c09622ca5db9ced5782f21618fc2d"
+    },
+    "edge_bench_raw.json": {
+      "path": "Audit/data/modular-arithmetic-C-2026-10-31-edge_bench_raw.json",
+      "sha256": "02d2480fbd0580e88331a31e493d6de82c9089557f31917d65526f538c25c3e3"
+    },
+    "bench_manifest.json": {
+      "path": "Audit/data/modular-arithmetic-C-2026-10-31-bench_manifest.json",
+      "sha256": "79d9d69cd7b4d88e745aa1d3e3c96d3287cc6de40551dbe0e324b8de59bb6cad"
+    },
+    "bench_raw.json": {
+      "path": "Audit/data/modular-arithmetic-C-2026-10-31-bench_raw.json",
+      "sha256": "e481572530f99c4ae0f076aee5f10eea35c21e80cf26d5c87b8952d17b5e7589"
+    },
+    "edge_bench_build.json": {
+      "path": "Audit/data/modular-arithmetic-C-2026-10-31-edge_bench_build.json",
+      "sha256": "6b5e7c6fe4155834c3ea444016762e7582883c1ad1cf2f3f982aef4c320a7045"
+    },
+    "extra_results.json": {
+      "path": "Audit/data/modular-arithmetic-C-2026-10-31-extra_results.json",
+      "sha256": "a9041f66c8222ae9dcf86898c160e64325a1edd4fc7d169576503132e8dc4060"
+    },
+    "bench_build.json": {
+      "path": "Audit/data/modular-arithmetic-C-2026-10-31-bench_build.json",
+      "sha256": "b86eea49908b80dbb7e2e57580f9178a101bc9cf5350abfde397770296218e50"
+    },
+    "source_manifest.json": {
+      "path": "Audit/data/modular-arithmetic-C-2026-10-31-source_manifest.json",
+      "sha256": "0eed8a2390e5705c9bcb9bd9c74319c73cafee9013749a592d85e288bd7db59f"
+    }
+  },
+  "scope": "candidate comparisons and fixed-source local proof; not online AC",
+  "future_candidate": "Montgomery follow-up is separate and not yet adopted"
+}

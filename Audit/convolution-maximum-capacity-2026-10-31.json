@@ -1,0 +1,124 @@
+{
+  "status": "passed",
+  "performance_measurement": false,
+  "purpose": "Exact maximum length 2^23, max32-bit modulus coefficient bound and signed INT64_MAX cancellation; closed-form independent coefficient oracle.",
+  "source_sha256": "610a1eee375142f10f5770c293f85722c3cfbb0cbaf211a6148048e953817cb3",
+  "test_sha256": "19e23961f1fadf4ccedb0ccf9644fcbb76d86ac3b0b2f3b2a56087521fc08566",
+  "results": [
+    {
+      "setting": "gcc_dispatch",
+      "command": [
+        "taskset",
+        "-c",
+        "6",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-DSKIP_RUNTIME_CHECKS",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/crt_convolution_capacity_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/convolution_capacity/gcc_dispatch"
+      ],
+      "compile_returncode": 0,
+      "diagnostics": "",
+      "runs": [
+        {
+          "kind": "modular",
+          "returncode": 0,
+          "stdout": "PASS max-length modular: 8388608 coefficients\n",
+          "stderr": "max_rss_kib=331124\n",
+          "wall_seconds": 0.57756981899729
+        },
+        {
+          "kind": "integer",
+          "returncode": 0,
+          "stdout": "PASS max-length signed cancellation: 8388608 coefficients\n",
+          "stderr": "max_rss_kib=364000\n",
+          "wall_seconds": 0.5084746360080317
+        }
+      ]
+    },
+    {
+      "setting": "gcc_standard",
+      "command": [
+        "taskset",
+        "-c",
+        "6",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-DSKIP_RUNTIME_CHECKS",
+        "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+        "-DSIRKIT_DISABLE_SIMD",
+        "-pedantic-errors",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/crt_convolution_capacity_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/convolution_capacity/gcc_standard"
+      ],
+      "compile_returncode": 0,
+      "diagnostics": "",
+      "runs": [
+        {
+          "kind": "modular",
+          "returncode": 0,
+          "stdout": "PASS max-length modular: 8388608 coefficients\n",
+          "stderr": "max_rss_kib=331132\n",
+          "wall_seconds": 1.2523845830000937
+        },
+        {
+          "kind": "integer",
+          "returncode": 0,
+          "stdout": "PASS max-length signed cancellation: 8388608 coefficients\n",
+          "stderr": "max_rss_kib=363968\n",
+          "wall_seconds": 1.242385114019271
+        }
+      ]
+    },
+    {
+      "setting": "clang_dispatch",
+      "command": [
+        "taskset",
+        "-c",
+        "6",
+        "/usr/bin/clang++",
+        "-std=c++23",
+        "-O2",
+        "-DSKIP_RUNTIME_CHECKS",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/crt_convolution_capacity_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/convolution_capacity/clang_dispatch"
+      ],
+      "compile_returncode": 0,
+      "diagnostics": "",
+      "runs": [
+        {
+          "kind": "modular",
+          "returncode": 0,
+          "stdout": "PASS max-length modular: 8388608 coefficients\n",
+          "stderr": "max_rss_kib=331124\n",
+          "wall_seconds": 0.520056701003341
+        },
+        {
+          "kind": "integer",
+          "returncode": 0,
+          "stdout": "PASS max-length signed cancellation: 8388608 coefficients\n",
+          "stderr": "max_rss_kib=363976\n",
+          "wall_seconds": 0.5179939759836998
+        }
+      ]
+    }
+  ],
+  "completed_utc": "2026-10-31T18:49:24.851985+00:00",
+  "compiler_versions": {
+    "/usr/bin/g++": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+    "/usr/bin/clang++": "Ubuntu clang version 21.1.8 (6ubuntu1)"
+  },
+  "total_exact_coefficient_checks": 50331648,
+  "maximum_transform_length": 8388608,
+  "scope_notes": [
+    "Max unsigned32 modulus with two near-equal input lengths maximizes coefficient count at permitted transform length. Independent triangular counts need no CRT reconstruction in the oracle.",
+    "Signed alternating INT64_MAX values and 33 ones give only0/+INT64_MAX/-INT64_MAX. Shorter length33 bypasses the library naive cutoff32; full2^23 transform and negative CRT restoration are exercised.",
+    "GCC standard configuration disables explicit SIMD and128-bit extension paths and builds with-pedantic-errors. Correctness/resource validation, not a performance benchmark."
+  ]
+}

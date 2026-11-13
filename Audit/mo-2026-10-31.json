@@ -1,0 +1,78 @@
+{
+  "date": "2026-10-31",
+  "source": "Algorithm/Mo.cpp",
+  "source_sha256": "ef4414d620ec67a384144160b3d60a9e1a7f052be339db790ec01b2365f33c8f",
+  "implementation": "区間block順序と時刻を往復する構成から独立CC0実装。外部コードの転記なし。",
+  "references": [
+    {
+      "url": "https://nyaannyaan.github.io/library/misc/mo.hpp.html",
+      "role": "数学的な区間移動・block幅の考え方、API選定の参考",
+      "license_url": "https://raw.githubusercontent.com/NyaanNyaan/library/master/LICENSE",
+      "observed_license": "CC0-1.0"
+    },
+    {
+      "url": "https://ei1333.github.io/library/other/mo.hpp.html",
+      "role": "左右別callbackの機能参考。実装転記なし。",
+      "observed_license": "Unlicense（既存調査と原典LICENSEを確認、MITとは扱わない）",
+      "license_url": "https://raw.githubusercontent.com/ei1333/library/master/LICENSE"
+    },
+    {
+      "url": "https://info.atcoder.jp/entry/algorithm_lectures/index",
+      "role": "公式講義一覧を確認。対応する実装の提供元とは扱わない。"
+    }
+  ],
+  "validation": {
+    "cpu": 0,
+    "core_configurations": 24,
+    "ordering_configurations": 8,
+    "example_configurations": 8,
+    "preprocessor_configurations": 4,
+    "double_include_compilers": 2,
+    "driver_configurations": 8,
+    "driver_random_executions": 2080,
+    "unique_driver_random_cases": 520,
+    "checked_reference_checks": 6858688,
+    "allocation_failure_positions": 18,
+    "callback_failure_positions": 37,
+    "live_allocation_delta": 0,
+    "sanitizers": "ASan+UBSan+libstdc++vector poison。LSanは既知ptrace制約によりdetect_leaks=0、独立live追跡0。",
+    "oracle": "静的全区間/独立deque順序/全時刻配列の再計算。更新適用と取消のold/new、区間内外、対称/非可換callbackを照合。別fixtureでtuple-key処理順。",
+    "boundaries": "n=0/空要求/空区間/重複要求/任意の記録済み時刻/更新だけ/負数/INT32_MAX長の空区間/巨大block/整数sqrt SIZE_MAX/コピー独立/move元空/再実行初期化。",
+    "guarantees": "queueの確保/copy/order/run準備失敗は旧記録/view維持。準備失敗時callbackなし。callback例外は本体の記録/view維持、外部状態は戻さない。",
+    "pointers": [
+      "/tmp/sirkit_12h_20261031_095733/mo/final_validation.json",
+      "/tmp/sirkit_12h_20261031_095733/mo/ordering_validation.json",
+      "/tmp/sirkit_12h_20261031_095733/mo/driver_validation.json",
+      "/tmp/sirkit_12h_20261031_095733/mo/example_validation.json",
+      "/tmp/sirkit_12h_20261031_095733/mo/preprocessing_validation.json",
+      "/tmp/sirkit_12h_20261031_095733/mo/judge_stress_validation.json"
+    ]
+  },
+  "judge_viability": {
+    "scope": "オンラインACではない。同一公開API/main/fastIOの合法最大制約1例ずつ、最悪入力や全環境の制限内実行を保証しない。専用の対数時間解法がある問題に対してgeneric Moが最速とは主張しない。",
+    "cpu": 12,
+    "parent_reserved_exclusive_window": true,
+    "results": [
+      {
+        "driver": "mo",
+        "n": 500000,
+        "q": 500000,
+        "seconds": 0.923983773,
+        "status": "PASS"
+      },
+      {
+        "driver": "mo_updates",
+        "n": 200000,
+        "q": 200000,
+        "seconds": 1.4008754,
+        "status": "PASS"
+      }
+    ],
+    "full_record": "/tmp/sirkit_12h_20261031_095733/mo/judge_stress_validation.json"
+  },
+  "formal_include_validation": {
+    "configurations": 8,
+    "status": "PASS",
+    "record": "/tmp/sirkit_12h_20261031_095733/mo/formal_include_validation.json"
+  }
+}

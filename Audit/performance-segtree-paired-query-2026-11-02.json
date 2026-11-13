@@ -1,0 +1,3222 @@
+{
+  "date_jst": "2026-11-02",
+  "scope": "通常版segtreeの区間積。本体を改修し、main・共通I/O・公開API・所有権は維持。",
+  "baseline": {
+    "source_sha256": "e1db48cbfa592f008216859cf76d8700d686a9e0026a7078eb8a49c796592113",
+    "online_evidence": "Audit/online-segtree-414717-414716-2026-11-02.json",
+    "segment_tree_ms": 71,
+    "segment_tree_composite_ms": 117,
+    "note": "このACは改修前の本体のみ。現行の2本は要再提出。"
+  },
+  "current": {
+    "source": "DataStructure/Segment_Tree.cpp",
+    "source_sha256": "3cb64e55bd13d72f5ac482d54fef59cfd5fed5be316e48b5e79590b3cf4d5fd0",
+    "submissions": [
+      {
+        "id": "segment_tree",
+        "driver_sha256": "6b9628a6072ea3685d685641a633160f06c6137914ff9c23438eccda27873ba4",
+        "submission": "Verify/current/submissions/segment_tree.cpp",
+        "submission_sha256": "cdd3d0f37d7ad17bbfff0cc6abf4809f2068cd719dbf790249bac693d4f1be5b",
+        "bytes": 21656
+      },
+      {
+        "id": "segment_tree_composite",
+        "driver_sha256": "6703412282d4cfb9ca81648b9b92725d02bf65a40d7a6bd1d81254875e031e2a",
+        "submission": "Verify/current/submissions/segment_tree_composite.cpp",
+        "submission_sha256": "4cf8e38e39e4c052f7983bb65203c3e85b0566740751817ef2ca0bcbee88e100",
+        "bytes": 22111
+      }
+    ],
+    "io_sha256": "291bf8dbc56a1d691f6256fe95b4714183c2cf5d9e55e4bef240e31d1eb178c1"
+  },
+  "implementation": {
+    "adopted": "hybrid32",
+    "changes": [
+      "正の葉番号から整列節点を求めるprivate helper。0を渡さない不変条件を標準C++23のstd::unreachableで表す。",
+      "最初の左ブロックの後、残り幅が32以下なら従来の走査を維持。",
+      "広い残区間の分割点をbit_floorで計算し、独立な左右の累積演算を交互に進める。",
+      "元と同じ整列ブロックを使い、非可換演算の左右の順序と演算回数を維持。"
+    ],
+    "complexity": "prod O(log(n+1))、追加領域O(1)。木の領域、構築、点更新、境界探索は同じ。",
+    "standard": "標準C++23のみ。新しいSIMD/コンパイラ拡張なし。",
+    "measured_candidate_equivalence": "hybrid32.hppと現行本体は、コメント・空白・不要な括弧以外が一致。"
+  },
+  "measurement": {
+    "CPU": "Intel Core i9-14900K, logical CPU12 / physical P-Core6、SMT sibling13で同時測定なし",
+    "governor": "powersave、周波数は固定せず",
+    "compilers": {
+      "gcc": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+      "clang": "Ubuntu clang version 21.1.8 (6ubuntu1)"
+    },
+    "flags": [
+      "-std=c++23",
+      "-O2",
+      "SKIP_RUNTIME_CHECKSは提出コード先頭で定義"
+    ],
+    "clang_extra": "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+    "no_march_native": true,
+    "metric": "同じmain・共通I/OでプロセスCPU時間(user+system)を測り、中央値を比較。構築・入出力も含む。",
+    "protocol": "各実行前に同じ実行ファイル名へコピー。候補とold/controlの順を固定seedでランダム化。controlはoldと同じバイナリ。出力SHA256が候補間で同一。測定中CPU12上で別の性能試験を並行実行せず。",
+    "adopted_repetitions": 9,
+    "official_inputs": {
+      "generator_license": "Apache-2.0",
+      "license_url": "https://github.com/yosupo06/library-checker-problems/blob/master/LICENSE",
+      "source_files_not_redistributed": true,
+      "files": [
+        {
+          "name": "random.h",
+          "url": "https://raw.githubusercontent.com/yosupo06/library-checker-problems/master/common/random.h",
+          "sha256": "d0ae9470c3a04425e1ab8c39f376a0e707507659b8f5aa3ca06c5b47f193613c"
+        },
+        {
+          "name": "random.cpp",
+          "url": "https://raw.githubusercontent.com/yosupo06/library-checker-problems/master/data_structure/point_set_range_composite/gen/random.cpp",
+          "sha256": "849b9c31b375b96a1548753c4bf274c090943f32a243d08d01efaa89fbc8fbaa"
+        },
+        {
+          "name": "max_random.cpp",
+          "url": "https://raw.githubusercontent.com/yosupo06/library-checker-problems/master/data_structure/point_set_range_composite/gen/max_random.cpp",
+          "sha256": "03c3c968eb0a2553de3208095792d890ae4d535029dd8ff657ecafa4d7bfe688"
+        }
+      ],
+      "inputs": [
+        {
+          "name": "official_affine_max_random_0.in",
+          "header": "500000 500000",
+          "sha256": "efc4749fdcb25ad4055ca94dad50e5acf24f46d7f640ba2f05481bf60c9eee46"
+        },
+        {
+          "name": "official_affine_max_random_1.in",
+          "header": "500000 500000",
+          "sha256": "cbd6dd43c3b7c647a5369f6b7b3e442f97d1449879c016d3b554bd0f627c7e32"
+        },
+        {
+          "name": "official_affine_max_random_2.in",
+          "header": "500000 500000",
+          "sha256": "ec103215820a83cbbf8853d406b67bd08b9d920126e32feb025bdec2aba7bae2"
+        },
+        {
+          "name": "official_affine_max_random_3.in",
+          "header": "500000 500000",
+          "sha256": "096489e738692bc6c25ee8d9b47ab74f333601f7b67d0dbcedef265586c0af76"
+        },
+        {
+          "name": "official_affine_max_random_4.in",
+          "header": "500000 500000",
+          "sha256": "8262522de9487dd5dff61aa800336c7965f0f0f5081e7ab2b3d58e5d0339ba5a"
+        },
+        {
+          "name": "official_affine_random_0.in",
+          "header": "389813 410923",
+          "sha256": "1ca2b43f9e2aa4e54324fef4ffa4dc4451ad5ed745bb7d32ef1042a201db98e1"
+        },
+        {
+          "name": "official_affine_random_1.in",
+          "header": "463046 412907",
+          "sha256": "f655e531c535e85a44071368f20eb9d0918e861c5a8f91ec64a14c053ef850ed"
+        },
+        {
+          "name": "official_affine_random_2.in",
+          "header": "53336 382347",
+          "sha256": "c3a98a818bb5b49c8d5482e43f955211f2e482670f2cb3d1d92255c95bb84bfb"
+        },
+        {
+          "name": "official_affine_random_3.in",
+          "header": "429249 25839",
+          "sha256": "f17b494f39cbbe1959b76e961a47ccf8688464b7369915f861eea1ae186e7c75"
+        },
+        {
+          "name": "official_affine_random_4.in",
+          "header": "277012 99117",
+          "sha256": "b0522d8c511abbf4cf7f297a6984e1c23d59a73c5d3530d6e4a35bb3b714ac97"
+        }
+      ],
+      "scope": "現在の公式生成器と同seed。ジャッジ保持入力そのものとのバイト一致は未確認。"
+    },
+    "custom_inputs": [
+      {
+        "file": "affine_32_mixed.in",
+        "sha256": "4f839392b3346be43a16ae6aa576b3e47d874fc57ff31c031e2d33901ffde823",
+        "header": "32 200000"
+      },
+      {
+        "file": "affine_32_query.in",
+        "sha256": "b347d40aacc09cce0cd4d531f1221413e0c369bf96a00e84de55768b66cad961",
+        "header": "32 200000"
+      },
+      {
+        "file": "affine_32_short.in",
+        "sha256": "8560808d14848ce076cb0a92e16ed25e21e6922888859e7c5c448c0be0acfa95",
+        "header": "32 200000"
+      },
+      {
+        "file": "affine_32_update.in",
+        "sha256": "c24f40a29ba36c4602c234d68b929471327a27c767db4103eca91b4a45771ec8",
+        "header": "32 200000"
+      },
+      {
+        "file": "affine_4096_mixed.in",
+        "sha256": "45e7d900e82fff2dae0f23f96a3a806a6b9efff2a74ca7ffcb68f0c1b24c6307",
+        "header": "4096 300000"
+      },
+      {
+        "file": "affine_4096_query.in",
+        "sha256": "45f2df6675679fdcef986f9e47a6672adb11f0bafbee4d9ec8857a337f31934c",
+        "header": "4096 300000"
+      },
+      {
+        "file": "affine_4096_short.in",
+        "sha256": "30f606f80096d8475ecfe699f167de91a39eadbd1d7d861c19f46e55c4593926",
+        "header": "4096 300000"
+      },
+      {
+        "file": "affine_4096_update.in",
+        "sha256": "bfeb81861ff1cffa39fc40b7c16caa786f587eea2fecb6ccc08e65b51cb82131",
+        "header": "4096 300000"
+      },
+      {
+        "file": "affine_500000_mixed.in",
+        "sha256": "ddbb884f93f913fa3a4bf586f7c25d4c309dd2c1a139d0120f0e879c5586e22d",
+        "header": "500000 500000"
+      },
+      {
+        "file": "affine_500000_query.in",
+        "sha256": "a31f3e708079ebd394c3307246edcac0556177856224395f2a473aa12005cbc5",
+        "header": "500000 500000"
+      },
+      {
+        "file": "affine_500000_short.in",
+        "sha256": "0e79c1f4730c390288520a9c1c49d44162d00d3221b0f4cce8772d1fcbfe6ebe",
+        "header": "500000 500000"
+      },
+      {
+        "file": "affine_500000_update.in",
+        "sha256": "a63d70790f531477c7fcf5a09ef0e5a786906c1d72fba71a356ed47963c6f401",
+        "header": "500000 500000"
+      },
+      {
+        "file": "sum_32_mixed.in",
+        "sha256": "9677c505122e45738f3becb33c68273850dcf6ccf21794c0c075926e491ecf23",
+        "header": "32 200000"
+      },
+      {
+        "file": "sum_32_query.in",
+        "sha256": "62c39406e386cba356768a193a8fe04139f5f37277d837dba8b68ed6f9940d9a",
+        "header": "32 200000"
+      },
+      {
+        "file": "sum_32_short.in",
+        "sha256": "ca211353c3f71928a46d976d31679d4fda813bb72374007bebe0a772b56acd91",
+        "header": "32 200000"
+      },
+      {
+        "file": "sum_32_update.in",
+        "sha256": "0c337769d7df1c7c5fb1b20e5001372c42d02cbd2503d57ec5d4d50049e66479",
+        "header": "32 200000"
+      },
+      {
+        "file": "sum_4096_mixed.in",
+        "sha256": "e1a5fc600ed4522a5c793f25c8117a3d40f95dfb84f4aef623352b285f683df9",
+        "header": "4096 300000"
+      },
+      {
+        "file": "sum_4096_query.in",
+        "sha256": "4ed307b8d510152aace24a8e40cf4f53a3471f941337f85a2548a89319ebc24c",
+        "header": "4096 300000"
+      },
+      {
+        "file": "sum_4096_short.in",
+        "sha256": "e0c3dc87907abc6225fc4db9c86fb8eb9eef0f2c680fc763caf1811303b94844",
+        "header": "4096 300000"
+      },
+      {
+        "file": "sum_4096_update.in",
+        "sha256": "c1e630e0a3eb1764b18cdd9bc9177f09375cf86d3851639901e11ec825f0a261",
+        "header": "4096 300000"
+      },
+      {
+        "file": "sum_500000_mixed.in",
+        "sha256": "08f3ce528bb1f437aee89ac42c682d69178f8026b568af2fbd4811f961f70e5e",
+        "header": "500000 500000"
+      },
+      {
+        "file": "sum_500000_query.in",
+        "sha256": "4cadb9869d537d4924bbbbdb5928076bfdeb29142e22abdf5860a5c952c08b53",
+        "header": "500000 500000"
+      },
+      {
+        "file": "sum_500000_short.in",
+        "sha256": "1bd1e1e2be4f6db71e3bde4ff0bac6577f5f5b5591b806cd39d171e1538d9339",
+        "header": "500000 500000"
+      },
+      {
+        "file": "sum_500000_update.in",
+        "sha256": "b39f1ba9363e5c3da52578b6484fbb87d34a41f45f01017e8ce83f48749844e5",
+        "header": "500000 500000"
+      }
+    ],
+    "limitations": [
+      "公式の現行生成器とseedから作った数値入力。オンライン判定時の保存入力・実行機と同一とは断定しない。",
+      "入出力・構築を含む値であり、照会関数だけの短縮率ではない。",
+      "短区間のGCC和で約0.8%、Clang和で約1.0%の遅れが残る。小規模にも1〜2%前後の差があり、一部はcontrolの揺れと重なる。すべての入力・演算型での無退行は主張しない。"
+    ],
+    "summary": [
+      {
+        "compiler": "gcc",
+        "case": "custom_affine_32_mixed",
+        "median_cpu_ms": {
+          "old": 8.103,
+          "control": 8.045,
+          "hybrid16": 8.074,
+          "hybrid32": 8.064,
+          "hybrid64": 8.019
+        },
+        "adopted_ratio_vs_old": 0.9951869677897075,
+        "control_ratio": 0.9928421572257189,
+        "old_min_max_ms": [
+          7.984,
+          8.34
+        ],
+        "adopted_min_max_ms": [
+          7.923,
+          8.255
+        ],
+        "repetitions": 9
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_affine_32_query",
+        "median_cpu_ms": {
+          "old": 8.589,
+          "control": 8.567,
+          "hybrid16": 8.676,
+          "hybrid32": 8.557,
+          "hybrid64": 8.515
+        },
+        "adopted_ratio_vs_old": 0.996274304342764,
+        "control_ratio": 0.9974385842356502,
+        "old_min_max_ms": [
+          8.494,
+          8.895
+        ],
+        "adopted_min_max_ms": [
+          8.493,
+          8.867
+        ],
+        "repetitions": 9
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_affine_32_short",
+        "median_cpu_ms": {
+          "old": 8.311,
+          "control": 8.315,
+          "hybrid16": 8.235,
+          "hybrid32": 8.323,
+          "hybrid64": 8.294
+        },
+        "adopted_ratio_vs_old": 1.0014438695704488,
+        "control_ratio": 1.0004812898568163,
+        "old_min_max_ms": [
+          8.233,
+          8.593
+        ],
+        "adopted_min_max_ms": [
+          8.196,
+          8.537
+        ],
+        "repetitions": 9
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_affine_32_update",
+        "median_cpu_ms": {
+          "old": 6.548,
+          "control": 6.589,
+          "hybrid16": 6.603,
+          "hybrid32": 6.517,
+          "hybrid64": 6.597
+        },
+        "adopted_ratio_vs_old": 0.9952657299938913,
+        "control_ratio": 1.006261453879047,
+        "old_min_max_ms": [
+          6.487,
+          6.632
+        ],
+        "adopted_min_max_ms": [
+          6.469,
+          6.598
+        ],
+        "repetitions": 9
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_affine_4096_mixed",
+        "median_cpu_ms": {
+          "old": 15.948,
+          "control": 15.94,
+          "hybrid16": 15.708,
+          "hybrid32": 15.693,
+          "hybrid64": 15.787
+        },
+        "adopted_ratio_vs_old": 0.9840105342362678,
+        "control_ratio": 0.9994983697015299,
+        "old_min_max_ms": [
+          15.837,
+          16.749
+        ],
+        "adopted_min_max_ms": [
+          15.531,
+          16.44
+        ],
+        "repetitions": 9
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_affine_4096_query",
+        "median_cpu_ms": {
+          "old": 15.996,
+          "control": 16.102,
+          "hybrid16": 15.456,
+          "hybrid32": 15.68,
+          "hybrid64": 15.609
+        },
+        "adopted_ratio_vs_old": 0.9802450612653163,
+        "control_ratio": 1.006626656664166,
+        "old_min_max_ms": [
+          15.898,
+          16.258
+        ],
+        "adopted_min_max_ms": [
+          15.571,
+          15.802
+        ],
+        "repetitions": 9
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_affine_4096_short",
+        "median_cpu_ms": {
+          "old": 12.58,
+          "control": 12.553,
+          "hybrid16": 12.467,
+          "hybrid32": 12.468,
+          "hybrid64": 12.49
+        },
+        "adopted_ratio_vs_old": 0.9910969793322735,
+        "control_ratio": 0.9978537360890303,
+        "old_min_max_ms": [
+          12.511,
+          13.049
+        ],
+        "adopted_min_max_ms": [
+          12.354,
+          12.751
+        ],
+        "repetitions": 9
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_affine_4096_update",
+        "median_cpu_ms": {
+          "old": 16.306,
+          "control": 15.848,
+          "hybrid16": 15.951,
+          "hybrid32": 15.95,
+          "hybrid64": 15.876
+        },
+        "adopted_ratio_vs_old": 0.9781675456887035,
+        "control_ratio": 0.971912179565804,
+        "old_min_max_ms": [
+          15.625,
+          16.704
+        ],
+        "adopted_min_max_ms": [
+          15.622,
+          16.775
+        ],
+        "repetitions": 9
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_affine_500000_mixed",
+        "median_cpu_ms": {
+          "old": 54.059,
+          "control": 53.895,
+          "hybrid16": 52.205,
+          "hybrid32": 52.231,
+          "hybrid64": 52.275
+        },
+        "adopted_ratio_vs_old": 0.9661850940638932,
+        "control_ratio": 0.996966277585601,
+        "old_min_max_ms": [
+          53.806,
+          55.231
+        ],
+        "adopted_min_max_ms": [
+          52.0,
+          52.412
+        ],
+        "repetitions": 9
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_affine_500000_query",
+        "median_cpu_ms": {
+          "old": 52.962,
+          "control": 53.062,
+          "hybrid16": 49.161,
+          "hybrid32": 49.359,
+          "hybrid64": 49.428
+        },
+        "adopted_ratio_vs_old": 0.9319700917639062,
+        "control_ratio": 1.0018881462180431,
+        "old_min_max_ms": [
+          52.255,
+          53.718
+        ],
+        "adopted_min_max_ms": [
+          48.921,
+          49.982
+        ],
+        "repetitions": 9
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_affine_500000_short",
+        "median_cpu_ms": {
+          "old": 36.406,
+          "control": 36.647,
+          "hybrid16": 36.716,
+          "hybrid32": 36.407,
+          "hybrid64": 36.633
+        },
+        "adopted_ratio_vs_old": 1.0000274679997803,
+        "control_ratio": 1.0066197879470418,
+        "old_min_max_ms": [
+          35.323,
+          36.894
+        ],
+        "adopted_min_max_ms": [
+          35.234,
+          39.641
+        ],
+        "repetitions": 9
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_affine_500000_update",
+        "median_cpu_ms": {
+          "old": 53.96,
+          "control": 53.683,
+          "hybrid16": 53.53,
+          "hybrid32": 53.784,
+          "hybrid64": 53.808
+        },
+        "adopted_ratio_vs_old": 0.9967383246849518,
+        "control_ratio": 0.9948665678280207,
+        "old_min_max_ms": [
+          53.584,
+          56.25
+        ],
+        "adopted_min_max_ms": [
+          52.96,
+          55.162
+        ],
+        "repetitions": 9
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_sum_32_mixed",
+        "median_cpu_ms": {
+          "old": 5.947,
+          "control": 5.962,
+          "hybrid16": 6.026,
+          "hybrid32": 5.967,
+          "hybrid64": 5.958
+        },
+        "adopted_ratio_vs_old": 1.0033630401883302,
+        "control_ratio": 1.0025222801412477,
+        "old_min_max_ms": [
+          5.921,
+          6.312
+        ],
+        "adopted_min_max_ms": [
+          5.914,
+          6.004
+        ],
+        "repetitions": 9
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_sum_32_query",
+        "median_cpu_ms": {
+          "old": 6.537,
+          "control": 6.573,
+          "hybrid16": 6.61,
+          "hybrid32": 6.508,
+          "hybrid64": 6.555
+        },
+        "adopted_ratio_vs_old": 0.9955637142420071,
+        "control_ratio": 1.00550711335475,
+        "old_min_max_ms": [
+          6.523,
+          6.602
+        ],
+        "adopted_min_max_ms": [
+          6.493,
+          6.565
+        ],
+        "repetitions": 9
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_sum_32_short",
+        "median_cpu_ms": {
+          "old": 6.192,
+          "control": 6.238,
+          "hybrid16": 6.223,
+          "hybrid32": 6.238,
+          "hybrid64": 6.263
+        },
+        "adopted_ratio_vs_old": 1.0074289405684755,
+        "control_ratio": 1.0074289405684755,
+        "old_min_max_ms": [
+          6.123,
+          6.249
+        ],
+        "adopted_min_max_ms": [
+          6.151,
+          6.318
+        ],
+        "repetitions": 9
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_sum_32_update",
+        "median_cpu_ms": {
+          "old": 4.889,
+          "control": 4.892,
+          "hybrid16": 4.895,
+          "hybrid32": 4.901,
+          "hybrid64": 4.882
+        },
+        "adopted_ratio_vs_old": 1.0024544896706893,
+        "control_ratio": 1.0006136224176723,
+        "old_min_max_ms": [
+          4.868,
+          4.951
+        ],
+        "adopted_min_max_ms": [
+          4.877,
+          4.922
+        ],
+        "repetitions": 9
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_sum_4096_mixed",
+        "median_cpu_ms": {
+          "old": 12.854,
+          "control": 12.826,
+          "hybrid16": 12.781,
+          "hybrid32": 12.862,
+          "hybrid64": 12.73
+        },
+        "adopted_ratio_vs_old": 1.0006223743581766,
+        "control_ratio": 0.9978216897463825,
+        "old_min_max_ms": [
+          12.54,
+          13.055
+        ],
+        "adopted_min_max_ms": [
+          12.662,
+          13.128
+        ],
+        "repetitions": 9
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_sum_4096_query",
+        "median_cpu_ms": {
+          "old": 12.113,
+          "control": 12.121,
+          "hybrid16": 12.017,
+          "hybrid32": 12.042,
+          "hybrid64": 11.98
+        },
+        "adopted_ratio_vs_old": 0.9941385288532981,
+        "control_ratio": 1.0006604474531495,
+        "old_min_max_ms": [
+          11.978,
+          12.199
+        ],
+        "adopted_min_max_ms": [
+          11.973,
+          12.223
+        ],
+        "repetitions": 9
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_sum_4096_short",
+        "median_cpu_ms": {
+          "old": 9.164,
+          "control": 9.205,
+          "hybrid16": 9.156,
+          "hybrid32": 9.207,
+          "hybrid64": 9.143
+        },
+        "adopted_ratio_vs_old": 1.0046922741161066,
+        "control_ratio": 1.0044740288083807,
+        "old_min_max_ms": [
+          9.09,
+          9.351
+        ],
+        "adopted_min_max_ms": [
+          9.1,
+          9.456
+        ],
+        "repetitions": 9
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_sum_4096_update",
+        "median_cpu_ms": {
+          "old": 14.793,
+          "control": 14.81,
+          "hybrid16": 14.801,
+          "hybrid32": 14.835,
+          "hybrid64": 14.844
+        },
+        "adopted_ratio_vs_old": 1.0028391806935715,
+        "control_ratio": 1.0011491921854931,
+        "old_min_max_ms": [
+          14.615,
+          14.86
+        ],
+        "adopted_min_max_ms": [
+          14.603,
+          15.092
+        ],
+        "repetitions": 9
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_sum_500000_mixed",
+        "median_cpu_ms": {
+          "old": 36.623,
+          "control": 36.679,
+          "hybrid16": 36.353,
+          "hybrid32": 36.211,
+          "hybrid64": 36.241
+        },
+        "adopted_ratio_vs_old": 0.9887502389208968,
+        "control_ratio": 1.0015290937389074,
+        "old_min_max_ms": [
+          35.152,
+          36.797
+        ],
+        "adopted_min_max_ms": [
+          34.7,
+          36.44
+        ],
+        "repetitions": 9
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_sum_500000_query",
+        "median_cpu_ms": {
+          "old": 29.541,
+          "control": 29.433,
+          "hybrid16": 28.404,
+          "hybrid32": 28.328,
+          "hybrid64": 28.322
+        },
+        "adopted_ratio_vs_old": 0.9589384245624725,
+        "control_ratio": 0.9963440641819843,
+        "old_min_max_ms": [
+          29.416,
+          29.67
+        ],
+        "adopted_min_max_ms": [
+          28.168,
+          28.942
+        ],
+        "repetitions": 9
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_sum_500000_short",
+        "median_cpu_ms": {
+          "old": 20.414,
+          "control": 20.566,
+          "hybrid16": 20.687,
+          "hybrid32": 20.58,
+          "hybrid64": 20.494
+        },
+        "adopted_ratio_vs_old": 1.0081316743411384,
+        "control_ratio": 1.0074458704810423,
+        "old_min_max_ms": [
+          20.075,
+          20.602
+        ],
+        "adopted_min_max_ms": [
+          20.254,
+          21.19
+        ],
+        "repetitions": 9
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_sum_500000_update",
+        "median_cpu_ms": {
+          "old": 40.313,
+          "control": 40.358,
+          "hybrid16": 40.439,
+          "hybrid32": 40.442,
+          "hybrid64": 40.282
+        },
+        "adopted_ratio_vs_old": 1.0031999603105697,
+        "control_ratio": 1.0011162652246173,
+        "old_min_max_ms": [
+          39.672,
+          41.293
+        ],
+        "adopted_min_max_ms": [
+          40.137,
+          51.711
+        ],
+        "repetitions": 9
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_affine_max_random_0",
+        "median_cpu_ms": {
+          "old": 54.644,
+          "control": 54.385,
+          "hybrid16": 52.647,
+          "hybrid32": 52.603,
+          "hybrid64": 52.573
+        },
+        "adopted_ratio_vs_old": 0.9626491472073787,
+        "control_ratio": 0.9952602298514018,
+        "old_min_max_ms": [
+          54.13,
+          56.222
+        ],
+        "adopted_min_max_ms": [
+          52.361,
+          52.854
+        ],
+        "repetitions": 9
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_affine_max_random_1",
+        "median_cpu_ms": {
+          "old": 54.294,
+          "control": 54.276,
+          "hybrid16": 52.396,
+          "hybrid32": 52.46,
+          "hybrid64": 52.443
+        },
+        "adopted_ratio_vs_old": 0.96622094522415,
+        "control_ratio": 0.9996684716543266,
+        "old_min_max_ms": [
+          53.535,
+          56.911
+        ],
+        "adopted_min_max_ms": [
+          52.226,
+          55.758
+        ],
+        "repetitions": 9
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_affine_max_random_2",
+        "median_cpu_ms": {
+          "old": 54.192,
+          "control": 54.066,
+          "hybrid16": 52.679,
+          "hybrid32": 52.451,
+          "hybrid64": 52.424
+        },
+        "adopted_ratio_vs_old": 0.9678734868615294,
+        "control_ratio": 0.9976749335695306,
+        "old_min_max_ms": [
+          54.077,
+          56.406
+        ],
+        "adopted_min_max_ms": [
+          52.042,
+          56.296
+        ],
+        "repetitions": 9
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_affine_random_0",
+        "median_cpu_ms": {
+          "old": 44.225,
+          "control": 44.415,
+          "hybrid16": 42.915,
+          "hybrid32": 43.208,
+          "hybrid64": 42.819
+        },
+        "adopted_ratio_vs_old": 0.9770039570378745,
+        "control_ratio": 1.004296212549463,
+        "old_min_max_ms": [
+          44.066,
+          48.919
+        ],
+        "adopted_min_max_ms": [
+          42.489,
+          45.516
+        ],
+        "repetitions": 9
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_affine_random_3",
+        "median_cpu_ms": {
+          "old": 13.783,
+          "control": 13.759,
+          "hybrid16": 13.746,
+          "hybrid32": 13.692,
+          "hybrid64": 13.748
+        },
+        "adopted_ratio_vs_old": 0.9933976637887253,
+        "control_ratio": 0.9982587245157079,
+        "old_min_max_ms": [
+          13.079,
+          14.417
+        ],
+        "adopted_min_max_ms": [
+          13.153,
+          15.175
+        ],
+        "repetitions": 9
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_affine_random_4",
+        "median_cpu_ms": {
+          "old": 17.255,
+          "control": 17.253,
+          "hybrid16": 16.868,
+          "hybrid32": 16.795,
+          "hybrid64": 16.943
+        },
+        "adopted_ratio_vs_old": 0.9733410605621561,
+        "control_ratio": 0.9998840915676616,
+        "old_min_max_ms": [
+          17.071,
+          17.451
+        ],
+        "adopted_min_max_ms": [
+          16.633,
+          16.977
+        ],
+        "repetitions": 9
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_affine_32_mixed",
+        "median_cpu_ms": {
+          "old": 7.709,
+          "control": 7.744,
+          "hybrid16": 7.769,
+          "hybrid32": 7.705,
+          "hybrid64": 7.708
+        },
+        "adopted_ratio_vs_old": 0.999481125956674,
+        "control_ratio": 1.0045401478791023,
+        "old_min_max_ms": [
+          7.632,
+          7.957
+        ],
+        "adopted_min_max_ms": [
+          7.554,
+          8.262
+        ],
+        "repetitions": 9
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_affine_32_query",
+        "median_cpu_ms": {
+          "old": 8.137,
+          "control": 8.182,
+          "hybrid16": 8.34,
+          "hybrid32": 8.246,
+          "hybrid64": 8.186
+        },
+        "adopted_ratio_vs_old": 1.0133956003441071,
+        "control_ratio": 1.0055302937200443,
+        "old_min_max_ms": [
+          8.085,
+          8.369
+        ],
+        "adopted_min_max_ms": [
+          8.121,
+          8.407
+        ],
+        "repetitions": 9
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_affine_32_short",
+        "median_cpu_ms": {
+          "old": 7.889,
+          "control": 7.814,
+          "hybrid16": 7.87,
+          "hybrid32": 7.907,
+          "hybrid64": 7.887
+        },
+        "adopted_ratio_vs_old": 1.0022816580048168,
+        "control_ratio": 0.9904930916465965,
+        "old_min_max_ms": [
+          7.802,
+          7.974
+        ],
+        "adopted_min_max_ms": [
+          7.829,
+          8.221
+        ],
+        "repetitions": 9
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_affine_32_update",
+        "median_cpu_ms": {
+          "old": 6.73,
+          "control": 6.745,
+          "hybrid16": 6.764,
+          "hybrid32": 6.721,
+          "hybrid64": 6.744
+        },
+        "adopted_ratio_vs_old": 0.9986627043090639,
+        "control_ratio": 1.0022288261515602,
+        "old_min_max_ms": [
+          6.654,
+          6.963
+        ],
+        "adopted_min_max_ms": [
+          6.637,
+          6.897
+        ],
+        "repetitions": 9
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_affine_4096_mixed",
+        "median_cpu_ms": {
+          "old": 16.18,
+          "control": 16.29,
+          "hybrid16": 16.009,
+          "hybrid32": 15.944,
+          "hybrid64": 16.073
+        },
+        "adopted_ratio_vs_old": 0.9854140914709518,
+        "control_ratio": 1.0067985166872682,
+        "old_min_max_ms": [
+          16.07,
+          16.354
+        ],
+        "adopted_min_max_ms": [
+          15.754,
+          16.189
+        ],
+        "repetitions": 9
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_affine_4096_query",
+        "median_cpu_ms": {
+          "old": 15.496,
+          "control": 15.402,
+          "hybrid16": 14.947,
+          "hybrid32": 14.855,
+          "hybrid64": 14.953
+        },
+        "adopted_ratio_vs_old": 0.9586344863190501,
+        "control_ratio": 0.9939339184305627,
+        "old_min_max_ms": [
+          15.323,
+          15.654
+        ],
+        "adopted_min_max_ms": [
+          14.751,
+          15.338
+        ],
+        "repetitions": 9
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_affine_4096_short",
+        "median_cpu_ms": {
+          "old": 11.846,
+          "control": 11.894,
+          "hybrid16": 11.961,
+          "hybrid32": 11.851,
+          "hybrid64": 11.912
+        },
+        "adopted_ratio_vs_old": 1.0004220834036806,
+        "control_ratio": 1.0040520006753335,
+        "old_min_max_ms": [
+          11.707,
+          11.975
+        ],
+        "adopted_min_max_ms": [
+          11.701,
+          12.061
+        ],
+        "repetitions": 9
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_affine_4096_update",
+        "median_cpu_ms": {
+          "old": 16.232,
+          "control": 16.256,
+          "hybrid16": 16.212,
+          "hybrid32": 16.308,
+          "hybrid64": 16.197
+        },
+        "adopted_ratio_vs_old": 1.0046821094135043,
+        "control_ratio": 1.0014785608674224,
+        "old_min_max_ms": [
+          15.543,
+          16.748
+        ],
+        "adopted_min_max_ms": [
+          15.758,
+          16.69
+        ],
+        "repetitions": 9
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_affine_500000_mixed",
+        "median_cpu_ms": {
+          "old": 54.005,
+          "control": 54.111,
+          "hybrid16": 51.915,
+          "hybrid32": 51.766,
+          "hybrid64": 52.135
+        },
+        "adopted_ratio_vs_old": 0.958540875844829,
+        "control_ratio": 1.0019627812239607,
+        "old_min_max_ms": [
+          53.743,
+          55.927
+        ],
+        "adopted_min_max_ms": [
+          51.441,
+          52.323
+        ],
+        "repetitions": 9
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_affine_500000_query",
+        "median_cpu_ms": {
+          "old": 53.3,
+          "control": 52.951,
+          "hybrid16": 48.324,
+          "hybrid32": 47.941,
+          "hybrid64": 48.007
+        },
+        "adopted_ratio_vs_old": 0.8994559099437149,
+        "control_ratio": 0.9934521575984991,
+        "old_min_max_ms": [
+          52.816,
+          54.381
+        ],
+        "adopted_min_max_ms": [
+          47.797,
+          62.546
+        ],
+        "repetitions": 9
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_affine_500000_short",
+        "median_cpu_ms": {
+          "old": 36.3,
+          "control": 36.417,
+          "hybrid16": 36.186,
+          "hybrid32": 36.291,
+          "hybrid64": 36.094
+        },
+        "adopted_ratio_vs_old": 0.9997520661157024,
+        "control_ratio": 1.0032231404958678,
+        "old_min_max_ms": [
+          35.69,
+          37.319
+        ],
+        "adopted_min_max_ms": [
+          35.832,
+          37.83
+        ],
+        "repetitions": 9
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_affine_500000_update",
+        "median_cpu_ms": {
+          "old": 54.805,
+          "control": 54.597,
+          "hybrid16": 54.734,
+          "hybrid32": 54.978,
+          "hybrid64": 54.963
+        },
+        "adopted_ratio_vs_old": 1.0031566462913968,
+        "control_ratio": 0.9962047258461819,
+        "old_min_max_ms": [
+          53.903,
+          59.784
+        ],
+        "adopted_min_max_ms": [
+          53.661,
+          60.507
+        ],
+        "repetitions": 9
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_sum_32_mixed",
+        "median_cpu_ms": {
+          "old": 5.88,
+          "control": 5.918,
+          "hybrid16": 5.822,
+          "hybrid32": 5.917,
+          "hybrid64": 5.842
+        },
+        "adopted_ratio_vs_old": 1.0062925170068027,
+        "control_ratio": 1.0064625850340136,
+        "old_min_max_ms": [
+          5.644,
+          6.244
+        ],
+        "adopted_min_max_ms": [
+          5.66,
+          6.079
+        ],
+        "repetitions": 9
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_sum_32_query",
+        "median_cpu_ms": {
+          "old": 6.455,
+          "control": 6.386,
+          "hybrid16": 6.556,
+          "hybrid32": 6.42,
+          "hybrid64": 6.505
+        },
+        "adopted_ratio_vs_old": 0.994577846630519,
+        "control_ratio": 0.9893106119287374,
+        "old_min_max_ms": [
+          6.312,
+          6.578
+        ],
+        "adopted_min_max_ms": [
+          6.356,
+          6.593
+        ],
+        "repetitions": 9
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_sum_32_short",
+        "median_cpu_ms": {
+          "old": 5.992,
+          "control": 6.079,
+          "hybrid16": 6.126,
+          "hybrid32": 6.103,
+          "hybrid64": 6.155
+        },
+        "adopted_ratio_vs_old": 1.018524699599466,
+        "control_ratio": 1.0145193591455273,
+        "old_min_max_ms": [
+          5.934,
+          6.117
+        ],
+        "adopted_min_max_ms": [
+          5.997,
+          6.242
+        ],
+        "repetitions": 9
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_sum_32_update",
+        "median_cpu_ms": {
+          "old": 3.937,
+          "control": 4.032,
+          "hybrid16": 4.015,
+          "hybrid32": 3.982,
+          "hybrid64": 3.992
+        },
+        "adopted_ratio_vs_old": 1.011430022860046,
+        "control_ratio": 1.0241300482600966,
+        "old_min_max_ms": [
+          3.83,
+          4.133
+        ],
+        "adopted_min_max_ms": [
+          3.899,
+          4.266
+        ],
+        "repetitions": 9
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_sum_4096_mixed",
+        "median_cpu_ms": {
+          "old": 9.958,
+          "control": 9.975,
+          "hybrid16": 9.946,
+          "hybrid32": 9.971,
+          "hybrid64": 9.924
+        },
+        "adopted_ratio_vs_old": 1.0013054830287207,
+        "control_ratio": 1.0017071701144808,
+        "old_min_max_ms": [
+          9.907,
+          10.106
+        ],
+        "adopted_min_max_ms": [
+          9.923,
+          10.092
+        ],
+        "repetitions": 9
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_sum_4096_query",
+        "median_cpu_ms": {
+          "old": 12.154,
+          "control": 12.148,
+          "hybrid16": 12.042,
+          "hybrid32": 11.986,
+          "hybrid64": 12.031
+        },
+        "adopted_ratio_vs_old": 0.9861773901596183,
+        "control_ratio": 0.9995063353628435,
+        "old_min_max_ms": [
+          11.944,
+          12.256
+        ],
+        "adopted_min_max_ms": [
+          11.922,
+          12.23
+        ],
+        "repetitions": 9
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_sum_4096_short",
+        "median_cpu_ms": {
+          "old": 9.03,
+          "control": 8.998,
+          "hybrid16": 9.12,
+          "hybrid32": 9.077,
+          "hybrid64": 9.075
+        },
+        "adopted_ratio_vs_old": 1.005204872646733,
+        "control_ratio": 0.9964562569213732,
+        "old_min_max_ms": [
+          8.832,
+          9.762
+        ],
+        "adopted_min_max_ms": [
+          8.907,
+          9.384
+        ],
+        "repetitions": 9
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_sum_4096_update",
+        "median_cpu_ms": {
+          "old": 6.086,
+          "control": 6.092,
+          "hybrid16": 6.069,
+          "hybrid32": 6.102,
+          "hybrid64": 6.086
+        },
+        "adopted_ratio_vs_old": 1.0026289845547158,
+        "control_ratio": 1.0009858692080182,
+        "old_min_max_ms": [
+          5.956,
+          6.231
+        ],
+        "adopted_min_max_ms": [
+          5.949,
+          6.387
+        ],
+        "repetitions": 9
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_sum_500000_mixed",
+        "median_cpu_ms": {
+          "old": 26.11,
+          "control": 26.045,
+          "hybrid16": 25.46,
+          "hybrid32": 25.539,
+          "hybrid64": 25.479
+        },
+        "adopted_ratio_vs_old": 0.9781309842972042,
+        "control_ratio": 0.9975105323630794,
+        "old_min_max_ms": [
+          25.954,
+          26.292
+        ],
+        "adopted_min_max_ms": [
+          25.253,
+          26.222
+        ],
+        "repetitions": 9
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_sum_500000_query",
+        "median_cpu_ms": {
+          "old": 29.78,
+          "control": 29.728,
+          "hybrid16": 28.432,
+          "hybrid32": 28.395,
+          "hybrid64": 28.348
+        },
+        "adopted_ratio_vs_old": 0.953492276695769,
+        "control_ratio": 0.9982538616521155,
+        "old_min_max_ms": [
+          29.619,
+          29.87
+        ],
+        "adopted_min_max_ms": [
+          28.213,
+          29.379
+        ],
+        "repetitions": 9
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_sum_500000_short",
+        "median_cpu_ms": {
+          "old": 21.001,
+          "control": 21.047,
+          "hybrid16": 21.184,
+          "hybrid32": 21.202,
+          "hybrid64": 21.203
+        },
+        "adopted_ratio_vs_old": 1.0095709728108186,
+        "control_ratio": 1.002190371887053,
+        "old_min_max_ms": [
+          20.951,
+          21.216
+        ],
+        "adopted_min_max_ms": [
+          20.907,
+          21.416
+        ],
+        "repetitions": 9
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_sum_500000_update",
+        "median_cpu_ms": {
+          "old": 19.723,
+          "control": 19.83,
+          "hybrid16": 19.821,
+          "hybrid32": 19.673,
+          "hybrid64": 19.733
+        },
+        "adopted_ratio_vs_old": 0.9974648887086143,
+        "control_ratio": 1.0054251381635653,
+        "old_min_max_ms": [
+          19.611,
+          21.002
+        ],
+        "adopted_min_max_ms": [
+          19.18,
+          20.351
+        ],
+        "repetitions": 9
+      },
+      {
+        "compiler": "clang",
+        "case": "official_affine_max_random_0",
+        "median_cpu_ms": {
+          "old": 54.449,
+          "control": 54.511,
+          "hybrid16": 52.418,
+          "hybrid32": 52.368,
+          "hybrid64": 52.608
+        },
+        "adopted_ratio_vs_old": 0.9617807489577404,
+        "control_ratio": 1.0011386802328786,
+        "old_min_max_ms": [
+          53.919,
+          55.677
+        ],
+        "adopted_min_max_ms": [
+          51.983,
+          54.223
+        ],
+        "repetitions": 9
+      },
+      {
+        "compiler": "clang",
+        "case": "official_affine_max_random_1",
+        "median_cpu_ms": {
+          "old": 54.407,
+          "control": 54.278,
+          "hybrid16": 52.432,
+          "hybrid32": 52.33,
+          "hybrid64": 51.933
+        },
+        "adopted_ratio_vs_old": 0.961824765195655,
+        "control_ratio": 0.9976289815648722,
+        "old_min_max_ms": [
+          54.051,
+          56.662
+        ],
+        "adopted_min_max_ms": [
+          51.198,
+          54.423
+        ],
+        "repetitions": 9
+      },
+      {
+        "compiler": "clang",
+        "case": "official_affine_max_random_2",
+        "median_cpu_ms": {
+          "old": 54.208,
+          "control": 54.196,
+          "hybrid16": 52.145,
+          "hybrid32": 52.091,
+          "hybrid64": 52.094
+        },
+        "adopted_ratio_vs_old": 0.9609467237308147,
+        "control_ratio": 0.9997786304604487,
+        "old_min_max_ms": [
+          53.998,
+          56.205
+        ],
+        "adopted_min_max_ms": [
+          51.909,
+          54.513
+        ],
+        "repetitions": 9
+      },
+      {
+        "compiler": "clang",
+        "case": "official_affine_random_0",
+        "median_cpu_ms": {
+          "old": 44.292,
+          "control": 44.344,
+          "hybrid16": 42.662,
+          "hybrid32": 42.793,
+          "hybrid64": 42.966
+        },
+        "adopted_ratio_vs_old": 0.9661564165086245,
+        "control_ratio": 1.0011740269123093,
+        "old_min_max_ms": [
+          43.929,
+          47.402
+        ],
+        "adopted_min_max_ms": [
+          42.372,
+          45.584
+        ],
+        "repetitions": 9
+      },
+      {
+        "compiler": "clang",
+        "case": "official_affine_random_3",
+        "median_cpu_ms": {
+          "old": 13.727,
+          "control": 13.826,
+          "hybrid16": 13.678,
+          "hybrid32": 13.7,
+          "hybrid64": 13.765
+        },
+        "adopted_ratio_vs_old": 0.9980330735047716,
+        "control_ratio": 1.0072120638158375,
+        "old_min_max_ms": [
+          13.604,
+          14.789
+        ],
+        "adopted_min_max_ms": [
+          13.573,
+          13.945
+        ],
+        "repetitions": 9
+      },
+      {
+        "compiler": "clang",
+        "case": "official_affine_random_4",
+        "median_cpu_ms": {
+          "old": 17.331,
+          "control": 17.228,
+          "hybrid16": 16.742,
+          "hybrid32": 16.922,
+          "hybrid64": 16.834
+        },
+        "adopted_ratio_vs_old": 0.9764006693208702,
+        "control_ratio": 0.9940568922739601,
+        "old_min_max_ms": [
+          17.027,
+          17.762
+        ],
+        "adopted_min_max_ms": [
+          16.671,
+          17.946
+        ],
+        "repetitions": 9
+      }
+    ]
+  },
+  "validation": {
+    "normal_api_reference_and_allocation": [
+      {
+        "compiler": "gcc",
+        "skip_runtime_checks": false,
+        "test": "acl_range_api_test",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-I",
+          "/home/reinsirk/Atcoder_Env/Verify/current/vendor",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/acl_range_api_test.cpp",
+          "-o",
+          "/tmp/sirkit_segtree_followup_20261102/gcc_acl_range_api_test_False"
+        ],
+        "returncode": 0,
+        "stdout": "ACL range API checks=26439\n",
+        "stderr": "",
+        "source_sha256": "a35151df61b6a5da82310610c6f5d9daa9d14ea86671a91be7cb23ad1cf04697"
+      },
+      {
+        "compiler": "gcc",
+        "skip_runtime_checks": false,
+        "test": "acl_range_reference_test",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-I",
+          "/home/reinsirk/Atcoder_Env/Verify/current/vendor",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/acl_range_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_segtree_followup_20261102/gcc_acl_range_reference_test_False"
+        ],
+        "returncode": 0,
+        "stdout": "ACL core API cross-checks=692975\n",
+        "stderr": "",
+        "source_sha256": "5d59a71d14de094f359bb9ef5de45ae801b5465f7cd4e6fbe9dfb23b1116f4cc"
+      },
+      {
+        "compiler": "gcc",
+        "skip_runtime_checks": false,
+        "test": "range_structures_allocation_test",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-I",
+          "/home/reinsirk/Atcoder_Env/Verify/current/vendor",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/range_structures_allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_segtree_followup_20261102/gcc_range_structures_allocation_test_False"
+        ],
+        "returncode": 0,
+        "stdout": "Range allocation checks=4187 failures=2660 live_delta=0\n",
+        "stderr": "",
+        "source_sha256": "132570da1e400e4003a2803837084976525d3ab253570640f015727a7f05847d"
+      },
+      {
+        "compiler": "gcc",
+        "skip_runtime_checks": true,
+        "test": "acl_range_api_test",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-I",
+          "/home/reinsirk/Atcoder_Env/Verify/current/vendor",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/acl_range_api_test.cpp",
+          "-o",
+          "/tmp/sirkit_segtree_followup_20261102/gcc_acl_range_api_test_True"
+        ],
+        "returncode": 0,
+        "stdout": "ACL range API checks=26439\n",
+        "stderr": "",
+        "source_sha256": "a35151df61b6a5da82310610c6f5d9daa9d14ea86671a91be7cb23ad1cf04697"
+      },
+      {
+        "compiler": "gcc",
+        "skip_runtime_checks": true,
+        "test": "acl_range_reference_test",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-I",
+          "/home/reinsirk/Atcoder_Env/Verify/current/vendor",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/acl_range_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_segtree_followup_20261102/gcc_acl_range_reference_test_True"
+        ],
+        "returncode": 0,
+        "stdout": "ACL core API cross-checks=692975\n",
+        "stderr": "",
+        "source_sha256": "5d59a71d14de094f359bb9ef5de45ae801b5465f7cd4e6fbe9dfb23b1116f4cc"
+      },
+      {
+        "compiler": "gcc",
+        "skip_runtime_checks": true,
+        "test": "range_structures_allocation_test",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-I",
+          "/home/reinsirk/Atcoder_Env/Verify/current/vendor",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/range_structures_allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_segtree_followup_20261102/gcc_range_structures_allocation_test_True"
+        ],
+        "returncode": 0,
+        "stdout": "Range allocation checks=4187 failures=2660 live_delta=0\n",
+        "stderr": "",
+        "source_sha256": "132570da1e400e4003a2803837084976525d3ab253570640f015727a7f05847d"
+      },
+      {
+        "compiler": "clang",
+        "skip_runtime_checks": false,
+        "test": "acl_range_api_test",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-I",
+          "/home/reinsirk/Atcoder_Env/Verify/current/vendor",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/acl_range_api_test.cpp",
+          "-o",
+          "/tmp/sirkit_segtree_followup_20261102/clang_acl_range_api_test_False"
+        ],
+        "returncode": 0,
+        "stdout": "ACL range API checks=26439\n",
+        "stderr": "",
+        "source_sha256": "a35151df61b6a5da82310610c6f5d9daa9d14ea86671a91be7cb23ad1cf04697"
+      },
+      {
+        "compiler": "clang",
+        "skip_runtime_checks": false,
+        "test": "acl_range_reference_test",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-I",
+          "/home/reinsirk/Atcoder_Env/Verify/current/vendor",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/acl_range_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_segtree_followup_20261102/clang_acl_range_reference_test_False"
+        ],
+        "returncode": 0,
+        "stdout": "ACL core API cross-checks=692975\n",
+        "stderr": "",
+        "source_sha256": "5d59a71d14de094f359bb9ef5de45ae801b5465f7cd4e6fbe9dfb23b1116f4cc"
+      },
+      {
+        "compiler": "clang",
+        "skip_runtime_checks": false,
+        "test": "range_structures_allocation_test",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-I",
+          "/home/reinsirk/Atcoder_Env/Verify/current/vendor",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/range_structures_allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_segtree_followup_20261102/clang_range_structures_allocation_test_False"
+        ],
+        "returncode": 0,
+        "stdout": "Range allocation checks=4187 failures=2660 live_delta=0\n",
+        "stderr": "",
+        "source_sha256": "132570da1e400e4003a2803837084976525d3ab253570640f015727a7f05847d"
+      },
+      {
+        "compiler": "clang",
+        "skip_runtime_checks": true,
+        "test": "acl_range_api_test",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-I",
+          "/home/reinsirk/Atcoder_Env/Verify/current/vendor",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/acl_range_api_test.cpp",
+          "-o",
+          "/tmp/sirkit_segtree_followup_20261102/clang_acl_range_api_test_True"
+        ],
+        "returncode": 0,
+        "stdout": "ACL range API checks=26439\n",
+        "stderr": "",
+        "source_sha256": "a35151df61b6a5da82310610c6f5d9daa9d14ea86671a91be7cb23ad1cf04697"
+      },
+      {
+        "compiler": "clang",
+        "skip_runtime_checks": true,
+        "test": "acl_range_reference_test",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-I",
+          "/home/reinsirk/Atcoder_Env/Verify/current/vendor",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/acl_range_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_segtree_followup_20261102/clang_acl_range_reference_test_True"
+        ],
+        "returncode": 0,
+        "stdout": "ACL core API cross-checks=692975\n",
+        "stderr": "",
+        "source_sha256": "5d59a71d14de094f359bb9ef5de45ae801b5465f7cd4e6fbe9dfb23b1116f4cc"
+      },
+      {
+        "compiler": "clang",
+        "skip_runtime_checks": true,
+        "test": "range_structures_allocation_test",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-I",
+          "/home/reinsirk/Atcoder_Env/Verify/current/vendor",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/range_structures_allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_segtree_followup_20261102/clang_range_structures_allocation_test_True"
+        ],
+        "returncode": 0,
+        "stdout": "Range allocation checks=4187 failures=2660 live_delta=0\n",
+        "stderr": "",
+        "source_sha256": "132570da1e400e4003a2803837084976525d3ab253570640f015727a7f05847d"
+      }
+    ],
+    "derived_api": [
+      {
+        "profile": "Variants/GCC",
+        "command": [
+          "taskset",
+          "-c",
+          "6",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-DSIRKIT_FENWICK_TEST_SOURCE=\"/home/reinsirk/Atcoder_Env/Variants/GCC/DataStructure/Fenwick_Tree.cpp\"",
+          "-DSIRKIT_SEGMENT_TEST_SOURCE=\"/home/reinsirk/Atcoder_Env/Variants/GCC/DataStructure/Segment_Tree.cpp\"",
+          "-DSIRKIT_LAZY_SEGMENT_TEST_SOURCE=\"/home/reinsirk/Atcoder_Env/Variants/GCC/DataStructure/Lazy_Segment_Tree.cpp\"",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/acl_range_api_test.cpp",
+          "-o",
+          "/tmp/sirkit_segtree_followup_20261102/Variants_GCC_api_test"
+        ],
+        "returncode": 0,
+        "stdout": "ACL range API checks=26439\n",
+        "stderr": ""
+      },
+      {
+        "profile": "Variants/Clang",
+        "command": [
+          "taskset",
+          "-c",
+          "6",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-DSIRKIT_FENWICK_TEST_SOURCE=\"/home/reinsirk/Atcoder_Env/Variants/Clang/DataStructure/Fenwick_Tree.cpp\"",
+          "-DSIRKIT_SEGMENT_TEST_SOURCE=\"/home/reinsirk/Atcoder_Env/Variants/Clang/DataStructure/Segment_Tree.cpp\"",
+          "-DSIRKIT_LAZY_SEGMENT_TEST_SOURCE=\"/home/reinsirk/Atcoder_Env/Variants/Clang/DataStructure/Lazy_Segment_Tree.cpp\"",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/acl_range_api_test.cpp",
+          "-o",
+          "/tmp/sirkit_segtree_followup_20261102/Variants_Clang_api_test"
+        ],
+        "returncode": 0,
+        "stdout": "ACL range API checks=26439\n",
+        "stderr": ""
+      },
+      {
+        "profile": "Fast/GCC",
+        "command": [
+          "taskset",
+          "-c",
+          "6",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-DSIRKIT_FENWICK_TEST_SOURCE=\"/home/reinsirk/Atcoder_Env/Fast/GCC/DataStructure/Fenwick_Tree.cpp\"",
+          "-DSIRKIT_SEGMENT_TEST_SOURCE=\"/home/reinsirk/Atcoder_Env/Fast/GCC/DataStructure/Segment_Tree.cpp\"",
+          "-DSIRKIT_LAZY_SEGMENT_TEST_SOURCE=\"/home/reinsirk/Atcoder_Env/Fast/GCC/DataStructure/Lazy_Segment_Tree.cpp\"",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/acl_range_api_test.cpp",
+          "-o",
+          "/tmp/sirkit_segtree_followup_20261102/Fast_GCC_api_test"
+        ],
+        "returncode": 0,
+        "stdout": "ACL range API checks=26439\n",
+        "stderr": ""
+      },
+      {
+        "profile": "Fast/Clang",
+        "command": [
+          "taskset",
+          "-c",
+          "6",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-DSIRKIT_FENWICK_TEST_SOURCE=\"/home/reinsirk/Atcoder_Env/Fast/Clang/DataStructure/Fenwick_Tree.cpp\"",
+          "-DSIRKIT_SEGMENT_TEST_SOURCE=\"/home/reinsirk/Atcoder_Env/Fast/Clang/DataStructure/Segment_Tree.cpp\"",
+          "-DSIRKIT_LAZY_SEGMENT_TEST_SOURCE=\"/home/reinsirk/Atcoder_Env/Fast/Clang/DataStructure/Lazy_Segment_Tree.cpp\"",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/acl_range_api_test.cpp",
+          "-o",
+          "/tmp/sirkit_segtree_followup_20261102/Fast_Clang_api_test"
+        ],
+        "returncode": 0,
+        "stdout": "ACL range API checks=26439\n",
+        "stderr": ""
+      }
+    ],
+    "profile_samples": {
+      "active": null,
+      "compiler_versions": {
+        "Clang": "Ubuntu clang version 21.1.8 (6ubuntu1)\nTarget: x86_64-pc-linux-gnu\nThread model: posix\nInstalledDir: /usr/lib/llvm-21/bin\n",
+        "GCC": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0\nCopyright (C) 2025 Free Software Foundation, Inc.\nThis is free software; see the source for copying conditions.  There is NO\nwarranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
+      },
+      "completed_at_utc": "2026-11-02T10:09:05.638321+00:00",
+      "counts": {
+        "LOCAL_SAMPLE_PASS": 14
+      },
+      "cpu": 6,
+      "custom_example_checker_sha256": "c7c3760507c017c89450002ce29f02ca7d31a339e946201e8e79c3cc8e457023",
+      "example_expander_sha256": "2556492b62c01d32e201e07e1167490a670afb2d3b5e4691b34f62eee69dc2eb",
+      "format": 1,
+      "manifest_hashes": {
+        "Scripts/example_dependencies.py": "2556492b62c01d32e201e07e1167490a670afb2d3b5e4691b34f62eee69dc2eb",
+        "Scripts/package_revised_libraries.py": "5f39c374170ea1b965eccae984e207137c24e2f84820a86f5a9785ac9d5d06f0",
+        "Scripts/prepare_verify.py": "cd86f62a2d08ca93cfdd24215cccf97f0f1bba644d30b4f98b3755dfff241aa4",
+        "Scripts/verify_graph_samples.py": "944e0854e8079c81523133d15433293a723d96366befabca185d8d8541b3f5ea",
+        "Variants/manifest.json": "693768b4c0ed5b862864b096a2fb843f7baadfe5a036b0327b6d9fc11a55dbc4",
+        "Variants/verify_manifest.json": "e513227dcd6e437b4d6e1a30232b21737a6674faa9f2c223f40ac4842a06c3c8",
+        "Verify/current/manifest.json": "f818b9d11182d40359f9948fdad6caaea87d1b563c1c8070664d7eb528241343"
+      },
+      "normal_entry_count": 227,
+      "omitted_local": [
+        {
+          "id": "line_container_triangle",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "line_container_2d_triangle",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "hash_set_unit",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "erasable_priority_queue_unit",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "dynamic_hash_local",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "graph_local",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "binary_trie_local",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "binomial_local",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "primality_sieve_local",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "compressed_binary_trie_local",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_orientation_full",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_orientation_split",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_projection_full",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_projection_split",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_reflection_full",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_reflection_split",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_segment_intersection_full",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_segment_intersection_split",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_segment_distance_full",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_segment_distance_split",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_area_full",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_area_split",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_contains_full",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_contains_split",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_convex_cut_full",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_convex_cut_split",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_circle_line_full",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_circle_line_split",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_circle_circle_full",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_circle_circle_split",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "zeta_set_reference_full",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "zeta_set_reference_split",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "zeta_sparse_reference_full",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "zeta_sparse_reference_split",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "zeta_sieve_reference_full",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "zeta_sieve_reference_split",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_reference_full",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_reference_point",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_reference_line",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_reference_polygon",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_reference_circle",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "radix_sort_reference",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "project_selection_reference",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "nearest_two_points_reference",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "angle_sort_reference",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "trie_local",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "combination_masks_local",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "rollback_weighted_local",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "lca_local",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "topological_local",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "rolling_hash_local",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "matrix_transform_local",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "lis_local",
+          "profile": "Fast/GCC",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "line_container_triangle",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "line_container_2d_triangle",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "hash_set_unit",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "erasable_priority_queue_unit",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "dynamic_hash_local",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "graph_local",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "binary_trie_local",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "binomial_local",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "primality_sieve_local",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "compressed_binary_trie_local",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_orientation_full",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_orientation_split",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_projection_full",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_projection_split",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_reflection_full",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_reflection_split",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_segment_intersection_full",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_segment_intersection_split",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_segment_distance_full",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_segment_distance_split",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_area_full",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_area_split",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_contains_full",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_contains_split",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_convex_cut_full",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_convex_cut_split",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_circle_line_full",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_circle_line_split",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_circle_circle_full",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_circle_circle_split",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "zeta_set_reference_full",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "zeta_set_reference_split",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "zeta_sparse_reference_full",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "zeta_sparse_reference_split",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "zeta_sieve_reference_full",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "zeta_sieve_reference_split",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_reference_full",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_reference_point",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_reference_line",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_reference_polygon",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "geometry_reference_circle",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "radix_sort_reference",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "project_selection_reference",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "nearest_two_points_reference",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "angle_sort_reference",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "trie_local",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "combination_masks_local",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "rollback_weighted_local",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "lca_local",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "topological_local",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "rolling_hash_local",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "matrix_transform_local",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        },
+        {
+          "id": "lis_local",
+          "profile": "Fast/Clang",
+          "reason": "速度優先版は有効入力の専用fixtureで補足する"
+        }
+      ],
+      "online_status": "not_evaluated",
+      "performance_measurement": false,
+      "planned_example_conditions": 4,
+      "planned_program_conditions": 8,
+      "results": [
+        {
+          "cache_key": "59b07db1b92d7d8c786b986e070903b8f486845117544c7bdcb4b874f720a2fb",
+          "cached": false,
+          "id": "segment_tree",
+          "kind": "program",
+          "profile": "Variants/GCC",
+          "setting": "default",
+          "status": "LOCAL_SAMPLE_PASS"
+        },
+        {
+          "cache_key": "43bcc7840831ee2af78b0d79e9e45e245b1e6eea028da2cdd775189962b701db",
+          "cached": false,
+          "id": "segment_tree_composite",
+          "kind": "program",
+          "profile": "Variants/GCC",
+          "setting": "default",
+          "status": "LOCAL_SAMPLE_PASS"
+        },
+        {
+          "cache_key": "a71861a246c44cbe1829aab9a4aa89ad7335ee50c58a4f9224b6a712f1ce581a",
+          "cached": false,
+          "id": "segment_tree",
+          "kind": "program",
+          "profile": "Fast/GCC",
+          "setting": "default",
+          "status": "LOCAL_SAMPLE_PASS"
+        },
+        {
+          "cache_key": "7c0cf2c2846d456e81ddac2770c7b2b33cd13c15f676de717e03bb8ee7a7749d",
+          "cached": false,
+          "id": "segment_tree_composite",
+          "kind": "program",
+          "profile": "Fast/GCC",
+          "setting": "default",
+          "status": "LOCAL_SAMPLE_PASS"
+        },
+        {
+          "cache_key": "c12250832b66b80f05c9e00fc9376efac3b2c86edbea39df45ab321cdfe346ee",
+          "cached": false,
+          "id": "segment_tree",
+          "kind": "program",
+          "profile": "Variants/Clang",
+          "setting": "default",
+          "status": "LOCAL_SAMPLE_PASS"
+        },
+        {
+          "cache_key": "b78244f3e74f1f62bff4fc488f1bb4e18c21be23c792aff5aad3caa991573629",
+          "cached": false,
+          "id": "segment_tree_composite",
+          "kind": "program",
+          "profile": "Variants/Clang",
+          "setting": "default",
+          "status": "LOCAL_SAMPLE_PASS"
+        },
+        {
+          "cache_key": "ed0e086aa4fb0ba9f9046e9c3f04968398475e75e3f0eba490df973aa104241a",
+          "cached": false,
+          "id": "segment_tree",
+          "kind": "program",
+          "profile": "Fast/Clang",
+          "setting": "default",
+          "status": "LOCAL_SAMPLE_PASS"
+        },
+        {
+          "cache_key": "ef4ad1bba22978c30d2656fd5cec801afd3d81bbb8a858d688df47b08dd2807b",
+          "cached": false,
+          "id": "segment_tree_composite",
+          "kind": "program",
+          "profile": "Fast/Clang",
+          "setting": "default",
+          "status": "LOCAL_SAMPLE_PASS"
+        },
+        {
+          "cache_key": "256a220b4b58b3645304514544726d95bd2e4f301c24c27794a8e683010bfbbe",
+          "cached": false,
+          "id": "example:segment_tree_example",
+          "kind": "example_baseline",
+          "profile": "Normal/GCC",
+          "setting": "default",
+          "status": "LOCAL_SAMPLE_PASS"
+        },
+        {
+          "cache_key": "03372fabb1d772a4b5e2d809e306281ba69b143776b34ffd8234619e017bf899",
+          "cached": false,
+          "id": "example:segment_tree_example",
+          "kind": "example",
+          "profile": "Variants/GCC",
+          "setting": "default",
+          "status": "LOCAL_SAMPLE_PASS"
+        },
+        {
+          "cache_key": "8d7bef823953b389e29da873185b2b59231e89457377cbee9b2552b9892a5c67",
+          "cached": false,
+          "id": "example:segment_tree_example",
+          "kind": "example_baseline",
+          "profile": "Normal/Clang",
+          "setting": "default",
+          "status": "LOCAL_SAMPLE_PASS"
+        },
+        {
+          "cache_key": "57e31d545f7321bd275b0a3caaf6e79eb5615bc7b32ab0be4a1f068a59b35312",
+          "cached": false,
+          "id": "example:segment_tree_example",
+          "kind": "example",
+          "profile": "Variants/Clang",
+          "setting": "default",
+          "status": "LOCAL_SAMPLE_PASS"
+        },
+        {
+          "cache_key": "f6d24ce558b54cdd37d145b846c6ea15105f3562ce3236fda0d12d731b8cfa69",
+          "cached": false,
+          "id": "example:segment_tree_example",
+          "kind": "example",
+          "profile": "Fast/GCC",
+          "setting": "default",
+          "status": "LOCAL_SAMPLE_PASS"
+        },
+        {
+          "cache_key": "8aac0c3b49c9d56bd34ea81300e36c0d62566ce31b2ec3e7f25708a1b1649c7e",
+          "cached": false,
+          "id": "example:segment_tree_example",
+          "kind": "example",
+          "profile": "Fast/Clang",
+          "setting": "default",
+          "status": "LOCAL_SAMPLE_PASS"
+        }
+      ],
+      "run_id": "20261102T100859281232Z",
+      "snapshot": "/tmp/sirkit_segtree_followup_20261102/profiles/snapshots/898ad10d2ddb1d32ba52db89a9af6eacfe63ae15ce2fb01384e57b5aece70d29",
+      "snapshot_example_dependencies": {
+        "Fast/Clang/DataStructure/Segment_Tree.cpp": "610bdd53d3516c39a6519b8b3219122746ec85920d00b6a411647cf2fd067102",
+        "Fast/GCC/DataStructure/Segment_Tree.cpp": "fe7bf65c7e74e2ad68b50c39e838a777b0c88fdac15d26ca15a13a05ea1ac6db",
+        "Normal/DataStructure/Segment_Tree.cpp": "3cb64e55bd13d72f5ac482d54fef59cfd5fed5be316e48b5e79590b3cf4d5fd0",
+        "Variants/Clang/DataStructure/Segment_Tree.cpp": "b3a538263854692c3d6a82d490290c8dda5d1aec09abc978b37ace82dc0f9392",
+        "Variants/GCC/DataStructure/Segment_Tree.cpp": "8cfb490bb6c50372a88b924f30044d6c15db5b8dfb965f35e44c4e6df8f1064b"
+      },
+      "snapshot_example_mapping": {
+        "aho_corasick_example.cpp": "String/Aho_Corasick.cpp",
+        "angle_sort_example.cpp": "Geometry/偏角ソート.cpp",
+        "bellman_ford_example.cpp": "Graph/Bellman-Ford.cpp",
+        "berlekamp_massey_example.cpp": "Math/Berlekamp_Massey.cpp",
+        "binary_matrix_example.cpp": "Math/Binary_Matrix.cpp",
+        "binary_trie_example.cpp": "DataStructure/Binary_Trie.cpp",
+        "binomial_atcoder_example.cpp": "Math/Combination_Mod.cpp",
+        "binomial_example.cpp": "Math/Combination_Mod.cpp",
+        "binomial_prime_example.cpp": "Math/Combination_AtCoderMod.cpp",
+        "bipartite_matching_example.cpp": "Graph/Bipartite_Matching.cpp",
+        "cartesian_tree_example.cpp": "Graph/Cartesian_Tree.cpp",
+        "centroid_decomposition_example.cpp": "Graph/Centroid_Decomposition.cpp",
+        "combination_integer_example.cpp": "Math/Combination/Binomial_Mod.cpp",
+        "combination_modint_example.cpp": "Math/Combination/ModInt_Binomial.cpp",
+        "combination_prime_example.cpp": "Math/Combination/Prime_Binomial.cpp",
+        "compressed_binary_trie_example.cpp": "DataStructure/Compressed_Binary_Trie.cpp",
+        "convolution_example.cpp": "Math/Convolution.cpp",
+        "dijkstra_example.cpp": "Graph/Dijkstra.cpp",
+        "disjoint_sparse_table_example.cpp": "DataStructure/Disjoint_Sparse_Table.cpp",
+        "dual_segment_tree_example.cpp": "DataStructure/Dual_Segment_Tree.cpp",
+        "dynamic_bitset_example.cpp": "DataStructure/Dynamic_Bitset.cpp",
+        "dynamic_fenwick_2d_example.cpp": "DataStructure/dynamic-binary-indexed-tree-2d.cpp",
+        "dynamic_fenwick_example.cpp": "DataStructure/dynamic-binary-indexed-tree.cpp",
+        "dynamic_li_chao_example.cpp": "DataStructure/dynamic-li-chao-tree.cpp",
+        "dynamic_union_find_example.cpp": "DataStructure/dynamic-union-find.cpp",
+        "erasable_priority_queue_example.cpp": "DataStructure/erasable-priority-queue.cpp",
+        "eratosthenes_example.cpp": "Math/Eratosthenes.cpp",
+        "eulerian_trail_example.cpp": "Graph/Eulerian_Trail.cpp",
+        "fenwick_tree_example.cpp": "DataStructure/Fenwick_Tree.cpp",
+        "floyd_warshall_example.cpp": "Graph/Floyd-Warshall.cpp",
+        "formal_power_series_example.cpp": "Math/Formal_Power_Series.cpp",
+        "fraction_example.cpp": "Math/Fraction.cpp",
+        "functional_graph_example.cpp": "Graph/Functional_Graph.cpp",
+        "gaussian_elimination_example.cpp": "Math/Gaussian_Elimination.cpp",
+        "general_matching_example.cpp": "Graph/General_Matching.cpp",
+        "geometry_example.cpp": "Geometry/geometory.cpp",
+        "hash_map_example.cpp": "DataStructure/Hash_map.cpp",
+        "hash_set_example.cpp": "DataStructure/Hash_set.cpp",
+        "heap_example.cpp": "DataStructure/heap.cpp",
+        "heavy_light_decomposition_example.cpp": "Graph/Heavy_Light_Decomposition.cpp",
+        "implicit_treap_erase_between_example.cpp": "DataStructure/implicit_treap.cpp",
+        "implicit_treap_example.cpp": "DataStructure/implicit_treap.cpp",
+        "internal_hash_map_example.cpp": "Internal/Nyaan_hash_map_min.cpp",
+        "lazy_segment_tree_example.cpp": "DataStructure/Lazy_Segment_Tree.cpp",
+        "lca_example.cpp": "Graph/LCA.cpp",
+        "line_container_2d_example.cpp": "DataStructure/line-container-2d.cpp",
+        "line_container_example.cpp": "DataStructure/line-container.cpp",
+        "linear_recurrence_example.cpp": "Math/Linear_Recurrence.cpp",
+        "link_cut_tree_composite_example.cpp": "DataStructure/Link_Cut_Tree.cpp",
+        "link_cut_tree_example.cpp": "DataStructure/Link_Cut_Tree.cpp",
+        "link_cut_tree_lazy_example.cpp": "DataStructure/Link_Cut_Tree.cpp",
+        "lis_example.cpp": "Algorithm/LIS.cpp",
+        "low_link_example.cpp": "Graph/Low_Link.cpp",
+        "manacher_example.cpp": "String/Manacher.cpp",
+        "matrix_example.cpp": "Math/Matrix.cpp",
+        "matrix_transform_example.cpp": "Algorithm/rotate.cpp",
+        "max_flow_example.cpp": "Graph/Max_Flow.cpp",
+        "min_cost_flow_example.cpp": "Graph/Min_Cost_Flow.cpp",
+        "mo_example.cpp": "Algorithm/Mo.cpp",
+        "modular_arithmetic_example.cpp": "Math/Modular_Arithmetic.cpp",
+        "nearest_two_points_example.cpp": "Geometry/Nearest_Two_points.cpp",
+        "next_combination_example.cpp": "Algorithm/next_combination.cpp",
+        "node_example.cpp": "DataStructure/Node.cpp",
+        "ntt_example.cpp": "Math/NTT.cpp",
+        "offline_dynamic_connectivity_example.cpp": "Graph/Offline_Dynamic_Connectivity.cpp",
+        "palindromic_tree_example.cpp": "String/Palindromic_Tree.cpp",
+        "persistent_segment_tree_example.cpp": "DataStructure/Persistent_Segment_Tree.cpp",
+        "persistent_union_find_example.cpp": "DataStructure/persistent-union-find.cpp",
+        "pollard_rho_example.cpp": "Math/Pollard_Rho.cpp",
+        "polynomial_example.cpp": "Math/Polynomial.cpp",
+        "primality_example.cpp": "Math/prime_judge(Miller-Rabin).cpp",
+        "project_selection_example.cpp": "Graph/Project_Selection.cpp",
+        "pruefer_code_example.cpp": "Graph/Pruefer_Code.cpp",
+        "radix_sort_example.cpp": "Algorithm/Radix_sort.cpp",
+        "rerooting_dp_example.cpp": "Graph/Rerooting_DP.cpp",
+        "rollback_union_find_example.cpp": "DataStructure/rollback-union-find.cpp",
+        "rollback_weighted_union_find_example.cpp": "DataStructure/rollback-union-findw.cpp",
+        "rolling_hash_example.cpp": "String/RollingHash.cpp",
+        "scc_example.cpp": "Graph/SCC.cpp",
+        "segment_tree_beats_example.cpp": "DataStructure/Segment_Tree_Beats.cpp",
+        "segment_tree_example.cpp": "DataStructure/Segment_Tree.cpp",
+        "sliding_window_aggregation_example.cpp": "DataStructure/Sliding_Window_Aggregation.cpp",
+        "slope_trick_example.cpp": "DataStructure/Slope_Trick.cpp",
+        "sparse_table_example.cpp": "DataStructure/Sparse_Table.cpp",
+        "spfa_example.cpp": "Graph/Bellman-Ford_SFPA.cpp",
+        "suffix_array_example.cpp": "String/Suffix_Array.cpp",
+        "suffix_automaton_example.cpp": "String/Suffix_Automaton.cpp",
+        "topological_example.cpp": "Graph/Topological.cpp",
+        "topological_lexicographical_example.cpp": "Graph/Topological_sort.cpp",
+        "trie_example.cpp": "String/Trie.cpp",
+        "two_sat_example.cpp": "Graph/Two_SAT.cpp",
+        "union_find_example.cpp": "DataStructure/union_find.cpp",
+        "union_find_w_example.cpp": "DataStructure/union_find_w.cpp",
+        "wavelet_matrix_example.cpp": "DataStructure/Wavelet_Matrix.cpp",
+        "xor_basis_example.cpp": "Math/Xor_Basis.cpp",
+        "z_algorithm_example.cpp": "String/Z_Algorithm.cpp",
+        "zeta_bitwise_example.cpp": "Math/Zeta/Bitwise_Convolution.cpp",
+        "zeta_convolution_example.cpp": "Math/Zeta/Gcd_Lcm_Convolution.cpp",
+        "zeta_integer_example.cpp": "Math/Zeta/Divisor_Multiple_Transform.cpp",
+        "zeta_mobius_example.cpp": "Math/Zeta_Mebius.cpp",
+        "zeta_set_example.cpp": "Math/Zeta/Set_Transform.cpp",
+        "zeta_sieve_example.cpp": "Math/Zeta/Sieve.cpp",
+        "zeta_sparse_example.cpp": "Math/Zeta/Sparse_Transform.cpp"
+      },
+      "snapshot_id": "898ad10d2ddb1d32ba52db89a9af6eacfe63ae15ce2fb01384e57b5aece70d29",
+      "snapshot_program_count": 802,
+      "started_at_utc": "2026-11-02T10:08:59.281248+00:00",
+      "status": "local_samples_passed_for_snapshot",
+      "updated_at_utc": "2026-11-02T10:09:05.638325+00:00",
+      "workspace_snapshot_drift": {}
+    },
+    "candidate_sanitizers": {
+      "source": "/tmp/sirkit_segtree_followup_20261102/hybrid32.hpp",
+      "source_sha256": "48525aebb8b70178539322c5f8f13ed06993b6f6abcced0ae36c5a3021a8a9b9",
+      "started_utc": "2026-11-02T10:08:00.569382+00:00",
+      "affinity": 2,
+      "language": "C++23",
+      "ASAN_OPTIONS": "detect_leaks=0",
+      "status": "PASS",
+      "coverage_note": "partition test actual-tree loops exhaust every interval for n=0..80 and2^k±1 through513; this directly executes remaining-width<=32 branch as well as wide paired branch. Its separate UINT_MAX geometry model remains the original greedy walk and does not itself execute hybrid dispatch or fixed cutoff.",
+      "results": [
+        {
+          "compiler": "gcc",
+          "skip_runtime_checks": false,
+          "test": "Verify/current/tests/segment_tree_reference_test.cpp",
+          "test_sha256": "c9c24d9486d5e6e5d07ae6b5e5fe01e07a57fa93dfdb60a8d31b8bbee7eaaeee",
+          "source_sha256": "48525aebb8b70178539322c5f8f13ed06993b6f6abcced0ae36c5a3021a8a9b9",
+          "compile_command": [
+            "taskset",
+            "-c",
+            "2",
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O2",
+            "-fsanitize=address,undefined",
+            "-fno-omit-frame-pointer",
+            "-DSIRKIT_SEGMENT_TEST_SOURCE=\"/tmp/sirkit_segtree_followup_20261102/hybrid32.hpp\"",
+            "Verify/current/tests/segment_tree_reference_test.cpp",
+            "-o",
+            "/tmp/sirkit_segtree_followup_20261102/review_hybrid32_test"
+          ],
+          "run_command": [
+            "taskset",
+            "-c",
+            "2",
+            "/tmp/sirkit_segtree_followup_20261102/review_hybrid32_test"
+          ],
+          "compile_exit": 0,
+          "compile_stdout": "",
+          "compile_stderr": "",
+          "run_exit": 0,
+          "stdout": "segtree checks=248744\n",
+          "stderr": "",
+          "status": "PASS"
+        },
+        {
+          "compiler": "gcc",
+          "skip_runtime_checks": false,
+          "test": "Verify/current/tests/segment_tree_partition_test.cpp",
+          "test_sha256": "988b4315bc3acb957ce2bdc185b601743bd42e68f6466a109cf6444a249946ae",
+          "source_sha256": "48525aebb8b70178539322c5f8f13ed06993b6f6abcced0ae36c5a3021a8a9b9",
+          "compile_command": [
+            "taskset",
+            "-c",
+            "2",
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O2",
+            "-fsanitize=address,undefined",
+            "-fno-omit-frame-pointer",
+            "-DSIRKIT_SEGMENT_TEST_SOURCE=\"/tmp/sirkit_segtree_followup_20261102/hybrid32.hpp\"",
+            "Verify/current/tests/segment_tree_partition_test.cpp",
+            "-o",
+            "/tmp/sirkit_segtree_followup_20261102/review_hybrid32_test"
+          ],
+          "run_command": [
+            "taskset",
+            "-c",
+            "2",
+            "/tmp/sirkit_segtree_followup_20261102/review_hybrid32_test"
+          ],
+          "compile_exit": 0,
+          "compile_stdout": "",
+          "compile_stderr": "",
+          "run_exit": 0,
+          "stdout": "greedy independent checks=13939832\n",
+          "stderr": "",
+          "status": "PASS"
+        },
+        {
+          "compiler": "gcc",
+          "skip_runtime_checks": true,
+          "test": "Verify/current/tests/segment_tree_reference_test.cpp",
+          "test_sha256": "c9c24d9486d5e6e5d07ae6b5e5fe01e07a57fa93dfdb60a8d31b8bbee7eaaeee",
+          "source_sha256": "48525aebb8b70178539322c5f8f13ed06993b6f6abcced0ae36c5a3021a8a9b9",
+          "compile_command": [
+            "taskset",
+            "-c",
+            "2",
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O2",
+            "-fsanitize=address,undefined",
+            "-fno-omit-frame-pointer",
+            "-DSKIP_RUNTIME_CHECKS",
+            "-DSIRKIT_SEGMENT_TEST_SOURCE=\"/tmp/sirkit_segtree_followup_20261102/hybrid32.hpp\"",
+            "Verify/current/tests/segment_tree_reference_test.cpp",
+            "-o",
+            "/tmp/sirkit_segtree_followup_20261102/review_hybrid32_test"
+          ],
+          "run_command": [
+            "taskset",
+            "-c",
+            "2",
+            "/tmp/sirkit_segtree_followup_20261102/review_hybrid32_test"
+          ],
+          "compile_exit": 0,
+          "compile_stdout": "",
+          "compile_stderr": "",
+          "run_exit": 0,
+          "stdout": "segtree checks=248600\n",
+          "stderr": "",
+          "status": "PASS"
+        },
+        {
+          "compiler": "gcc",
+          "skip_runtime_checks": true,
+          "test": "Verify/current/tests/segment_tree_partition_test.cpp",
+          "test_sha256": "988b4315bc3acb957ce2bdc185b601743bd42e68f6466a109cf6444a249946ae",
+          "source_sha256": "48525aebb8b70178539322c5f8f13ed06993b6f6abcced0ae36c5a3021a8a9b9",
+          "compile_command": [
+            "taskset",
+            "-c",
+            "2",
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O2",
+            "-fsanitize=address,undefined",
+            "-fno-omit-frame-pointer",
+            "-DSKIP_RUNTIME_CHECKS",
+            "-DSIRKIT_SEGMENT_TEST_SOURCE=\"/tmp/sirkit_segtree_followup_20261102/hybrid32.hpp\"",
+            "Verify/current/tests/segment_tree_partition_test.cpp",
+            "-o",
+            "/tmp/sirkit_segtree_followup_20261102/review_hybrid32_test"
+          ],
+          "run_command": [
+            "taskset",
+            "-c",
+            "2",
+            "/tmp/sirkit_segtree_followup_20261102/review_hybrid32_test"
+          ],
+          "compile_exit": 0,
+          "compile_stdout": "",
+          "compile_stderr": "",
+          "run_exit": 0,
+          "stdout": "greedy independent checks=13939832\n",
+          "stderr": "",
+          "status": "PASS"
+        },
+        {
+          "compiler": "clang",
+          "skip_runtime_checks": false,
+          "test": "Verify/current/tests/segment_tree_reference_test.cpp",
+          "test_sha256": "c9c24d9486d5e6e5d07ae6b5e5fe01e07a57fa93dfdb60a8d31b8bbee7eaaeee",
+          "source_sha256": "48525aebb8b70178539322c5f8f13ed06993b6f6abcced0ae36c5a3021a8a9b9",
+          "compile_command": [
+            "taskset",
+            "-c",
+            "2",
+            "/usr/bin/clang++",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-std=c++23",
+            "-O2",
+            "-fsanitize=address,undefined",
+            "-fno-omit-frame-pointer",
+            "-DSIRKIT_SEGMENT_TEST_SOURCE=\"/tmp/sirkit_segtree_followup_20261102/hybrid32.hpp\"",
+            "Verify/current/tests/segment_tree_reference_test.cpp",
+            "-o",
+            "/tmp/sirkit_segtree_followup_20261102/review_hybrid32_test"
+          ],
+          "run_command": [
+            "taskset",
+            "-c",
+            "2",
+            "/tmp/sirkit_segtree_followup_20261102/review_hybrid32_test"
+          ],
+          "compile_exit": 0,
+          "compile_stdout": "",
+          "compile_stderr": "",
+          "run_exit": 0,
+          "stdout": "segtree checks=248744\n",
+          "stderr": "",
+          "status": "PASS"
+        },
+        {
+          "compiler": "clang",
+          "skip_runtime_checks": false,
+          "test": "Verify/current/tests/segment_tree_partition_test.cpp",
+          "test_sha256": "988b4315bc3acb957ce2bdc185b601743bd42e68f6466a109cf6444a249946ae",
+          "source_sha256": "48525aebb8b70178539322c5f8f13ed06993b6f6abcced0ae36c5a3021a8a9b9",
+          "compile_command": [
+            "taskset",
+            "-c",
+            "2",
+            "/usr/bin/clang++",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-std=c++23",
+            "-O2",
+            "-fsanitize=address,undefined",
+            "-fno-omit-frame-pointer",
+            "-DSIRKIT_SEGMENT_TEST_SOURCE=\"/tmp/sirkit_segtree_followup_20261102/hybrid32.hpp\"",
+            "Verify/current/tests/segment_tree_partition_test.cpp",
+            "-o",
+            "/tmp/sirkit_segtree_followup_20261102/review_hybrid32_test"
+          ],
+          "run_command": [
+            "taskset",
+            "-c",
+            "2",
+            "/tmp/sirkit_segtree_followup_20261102/review_hybrid32_test"
+          ],
+          "compile_exit": 0,
+          "compile_stdout": "",
+          "compile_stderr": "",
+          "run_exit": 0,
+          "stdout": "greedy independent checks=13939832\n",
+          "stderr": "",
+          "status": "PASS"
+        },
+        {
+          "compiler": "clang",
+          "skip_runtime_checks": true,
+          "test": "Verify/current/tests/segment_tree_reference_test.cpp",
+          "test_sha256": "c9c24d9486d5e6e5d07ae6b5e5fe01e07a57fa93dfdb60a8d31b8bbee7eaaeee",
+          "source_sha256": "48525aebb8b70178539322c5f8f13ed06993b6f6abcced0ae36c5a3021a8a9b9",
+          "compile_command": [
+            "taskset",
+            "-c",
+            "2",
+            "/usr/bin/clang++",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-std=c++23",
+            "-O2",
+            "-fsanitize=address,undefined",
+            "-fno-omit-frame-pointer",
+            "-DSKIP_RUNTIME_CHECKS",
+            "-DSIRKIT_SEGMENT_TEST_SOURCE=\"/tmp/sirkit_segtree_followup_20261102/hybrid32.hpp\"",
+            "Verify/current/tests/segment_tree_reference_test.cpp",
+            "-o",
+            "/tmp/sirkit_segtree_followup_20261102/review_hybrid32_test"
+          ],
+          "run_command": [
+            "taskset",
+            "-c",
+            "2",
+            "/tmp/sirkit_segtree_followup_20261102/review_hybrid32_test"
+          ],
+          "compile_exit": 0,
+          "compile_stdout": "",
+          "compile_stderr": "",
+          "run_exit": 0,
+          "stdout": "segtree checks=248600\n",
+          "stderr": "",
+          "status": "PASS"
+        },
+        {
+          "compiler": "clang",
+          "skip_runtime_checks": true,
+          "test": "Verify/current/tests/segment_tree_partition_test.cpp",
+          "test_sha256": "988b4315bc3acb957ce2bdc185b601743bd42e68f6466a109cf6444a249946ae",
+          "source_sha256": "48525aebb8b70178539322c5f8f13ed06993b6f6abcced0ae36c5a3021a8a9b9",
+          "compile_command": [
+            "taskset",
+            "-c",
+            "2",
+            "/usr/bin/clang++",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-std=c++23",
+            "-O2",
+            "-fsanitize=address,undefined",
+            "-fno-omit-frame-pointer",
+            "-DSKIP_RUNTIME_CHECKS",
+            "-DSIRKIT_SEGMENT_TEST_SOURCE=\"/tmp/sirkit_segtree_followup_20261102/hybrid32.hpp\"",
+            "Verify/current/tests/segment_tree_partition_test.cpp",
+            "-o",
+            "/tmp/sirkit_segtree_followup_20261102/review_hybrid32_test"
+          ],
+          "run_command": [
+            "taskset",
+            "-c",
+            "2",
+            "/tmp/sirkit_segtree_followup_20261102/review_hybrid32_test"
+          ],
+          "compile_exit": 0,
+          "compile_stdout": "",
+          "compile_stderr": "",
+          "run_exit": 0,
+          "stdout": "greedy independent checks=13939832\n",
+          "stderr": "",
+          "status": "PASS"
+        }
+      ],
+      "completed_utc": "2026-11-02T10:08:19.570932+00:00",
+      "source_unchanged": true,
+      "production_followup": {
+        "source": "/home/reinsirk/Atcoder_Env/DataStructure/Segment_Tree.cpp",
+        "source_sha256": "3cb64e55bd13d72f5ac482d54fef59cfd5fed5be316e48b5e79590b3cf4d5fd0",
+        "test": "Verify/current/tests/segment_tree_partition_test.cpp",
+        "test_sha256": "b4491f9022ff91a694a65c9b301353908f47fdd8eee12df0dbcaf21e7a0f6ec4",
+        "coverage": "Actual-tree exhaustive non-default word/bool interval checks cover short and wide paths. Independent parent-halving node enumeration vs hybrid model checks order, contiguous leaf spans, exact cutoff and termination through UINT_MAX. Explicit remaining-width31/32/33 cases at ordinary and INT_MAX-near endpoints, dispatch coverage mask127.",
+        "results": [
+          {
+            "compiler": "gcc",
+            "skip_runtime_checks": false,
+            "compile_command": [
+              "taskset",
+              "-c",
+              "2",
+              "/usr/bin/g++",
+              "-std=c++23",
+              "-O2",
+              "-fsanitize=address,undefined",
+              "-fno-omit-frame-pointer",
+              "-DSIRKIT_SEGMENT_TEST_SOURCE=\"/home/reinsirk/Atcoder_Env/DataStructure/Segment_Tree.cpp\"",
+              "Verify/current/tests/segment_tree_partition_test.cpp",
+              "-o",
+              "/tmp/sirkit_segtree_followup_20261102/review_hybrid32_production_test"
+            ],
+            "run_command": [
+              "taskset",
+              "-c",
+              "2",
+              "/tmp/sirkit_segtree_followup_20261102/review_hybrid32_production_test"
+            ],
+            "compile_exit": 0,
+            "compile_stdout": "",
+            "compile_stderr": "",
+            "run_exit": 0,
+            "stdout": "greedy independent checks=32850726\n",
+            "stderr": "",
+            "status": "PASS"
+          },
+          {
+            "compiler": "gcc",
+            "skip_runtime_checks": true,
+            "compile_command": [
+              "taskset",
+              "-c",
+              "2",
+              "/usr/bin/g++",
+              "-std=c++23",
+              "-O2",
+              "-fsanitize=address,undefined",
+              "-fno-omit-frame-pointer",
+              "-DSKIP_RUNTIME_CHECKS",
+              "-DSIRKIT_SEGMENT_TEST_SOURCE=\"/home/reinsirk/Atcoder_Env/DataStructure/Segment_Tree.cpp\"",
+              "Verify/current/tests/segment_tree_partition_test.cpp",
+              "-o",
+              "/tmp/sirkit_segtree_followup_20261102/review_hybrid32_production_test"
+            ],
+            "run_command": [
+              "taskset",
+              "-c",
+              "2",
+              "/tmp/sirkit_segtree_followup_20261102/review_hybrid32_production_test"
+            ],
+            "compile_exit": 0,
+            "compile_stdout": "",
+            "compile_stderr": "",
+            "run_exit": 0,
+            "stdout": "greedy independent checks=32850726\n",
+            "stderr": "",
+            "status": "PASS"
+          },
+          {
+            "compiler": "clang",
+            "skip_runtime_checks": false,
+            "compile_command": [
+              "taskset",
+              "-c",
+              "2",
+              "/usr/bin/clang++",
+              "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+              "-std=c++23",
+              "-O2",
+              "-fsanitize=address,undefined",
+              "-fno-omit-frame-pointer",
+              "-DSIRKIT_SEGMENT_TEST_SOURCE=\"/home/reinsirk/Atcoder_Env/DataStructure/Segment_Tree.cpp\"",
+              "Verify/current/tests/segment_tree_partition_test.cpp",
+              "-o",
+              "/tmp/sirkit_segtree_followup_20261102/review_hybrid32_production_test"
+            ],
+            "run_command": [
+              "taskset",
+              "-c",
+              "2",
+              "/tmp/sirkit_segtree_followup_20261102/review_hybrid32_production_test"
+            ],
+            "compile_exit": 0,
+            "compile_stdout": "",
+            "compile_stderr": "",
+            "run_exit": 0,
+            "stdout": "greedy independent checks=32850726\n",
+            "stderr": "",
+            "status": "PASS"
+          },
+          {
+            "compiler": "clang",
+            "skip_runtime_checks": true,
+            "compile_command": [
+              "taskset",
+              "-c",
+              "2",
+              "/usr/bin/clang++",
+              "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+              "-std=c++23",
+              "-O2",
+              "-fsanitize=address,undefined",
+              "-fno-omit-frame-pointer",
+              "-DSKIP_RUNTIME_CHECKS",
+              "-DSIRKIT_SEGMENT_TEST_SOURCE=\"/home/reinsirk/Atcoder_Env/DataStructure/Segment_Tree.cpp\"",
+              "Verify/current/tests/segment_tree_partition_test.cpp",
+              "-o",
+              "/tmp/sirkit_segtree_followup_20261102/review_hybrid32_production_test"
+            ],
+            "run_command": [
+              "taskset",
+              "-c",
+              "2",
+              "/tmp/sirkit_segtree_followup_20261102/review_hybrid32_production_test"
+            ],
+            "compile_exit": 0,
+            "compile_stdout": "",
+            "compile_stderr": "",
+            "run_exit": 0,
+            "stdout": "greedy independent checks=32850726\n",
+            "stderr": "",
+            "status": "PASS"
+          }
+        ],
+        "status": "PASS",
+        "source_unchanged": true,
+        "completed_utc": "2026-11-02T10:14:33.383302+00:00"
+      }
+    },
+    "source_placement": "106ソースのAPI配置・130件のDocumentリンク確認済み。",
+    "generators": "通常227件・派生802件の提出コード照合済み。",
+    "extra_geometry_test": "candidate_sanitizersの追試記録を参照。独立な親半減式と節点列・被覆・左右順・分割点を照合し、INT_MAX近傍および残り幅31/32/33を含める。"
+  },
+  "evidence_zip": "Audit/data/segtree-paired-query-2026-11-02.zip",
+  "license": "実装と独立テストは自作CC0。公式生成器のApache-2.0ソースは/tmp内で入力生成にのみ使用し、配布・証拠ZIPへ収録しない。数値入力のハッシュ・先頭行・原典URLを記録する。",
+  "resubmission_required": [
+    "Verify/current/submissions/segment_tree.cpp",
+    "Verify/current/submissions/segment_tree_composite.cpp"
+  ]
+}

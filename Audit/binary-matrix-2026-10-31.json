@@ -1,0 +1,4094 @@
+{
+  "date_utc": "2026-10-31",
+  "source_hashes": {
+    "Math/Binary_Matrix.cpp": "1ec784efc04c33c866e3081766442a91bdf9352b264428a290a3a69609fbddad"
+  },
+  "implementation": "独立CC0のpacked GF2行列。内部word kernelのみ既存の自作DynamicBitsetと生成同期し、独立guard共有。新規SIMDを追加していない。",
+  "references": [
+    {
+      "url": "https://nyaannyaan.github.io/library/matrix/f2-matrix.hpp",
+      "role": "GF2行列の機能選定/数学的参考。固定array/bitset版のコードを継承せず、flat所有/転置parity積/companion消去/核基底を独立実装。"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/NyaanNyaan/library/master/LICENSE",
+      "role": "現行CC0-1.0を2026-10-31確認。過去履歴の未確認断定なし。"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/ei1333/library/master/LICENSE",
+      "role": "現行Unlicense確認、MITとは説明しない。コード引継ぎなし。"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/yosupo06/library-checker-problems/master/linear_algebra/matrix_product_mod_2/task.md",
+      "role": "主Verifyの公式形式。"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/yosupo06/library-checker-problems/master/linear_algebra/matrix_rank_mod_2/task.md",
+      "role": "0行/0列を含む公式形式。"
+    },
+    {
+      "url": "https://nyaannyaan.github.io/library/verify/verify-yosupo-math/yosupo-determinant-of-matrix-mod-2.test.cpp",
+      "role": "公式参考元のdet Verify先/形式を確認。task raw取得不可を存在しない根拠にはしない。"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/yosupo06/library-checker-problems/master/linear_algebra/inverse_matrix_mod_2/task.md",
+      "role": "逆行列の公式形式。"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/yosupo06/library-checker-problems/master/linear_algebra/system_of_linear_equations_mod_2/task.md",
+      "role": "特解・核基底の公式形式。"
+    }
+  ],
+  "generation": {
+    "script": "Scripts/generate_binary_matrix.py",
+    "components": [
+      "Math/BinaryMatrix/components/binary_matrix_header.inc",
+      "Math/BinaryMatrix/components/binary_matrix_body.inc"
+    ],
+    "canonical_kernel": "DataStructure/Dynamic_Bitset.cpp",
+    "canonical_source_sha256": "e1a2391a0390744ee0f4b3994fb08b7bb6185540bff7209b168fb2118cb2a907",
+    "kernel_guard": "SIRKIT_DYNAMIC_BITSET_WORD_OPERATIONS_DEFINED",
+    "kernel_payload_sha256": "8b144dcc0b2cdb87a47cffd79742a3a5b7a09ef71fe841c5a4f7b0aedec17a66",
+    "render_matches_formal_source": true,
+    "check_command": "python3 Scripts/generate_binary_matrix.py --check",
+    "component_hashes": {
+      "Math/BinaryMatrix/components/binary_matrix_header.inc": "47598d39fa0ec8de54974da2ff7e821fe52f6978d66b80f236980d759ddfa7bf",
+      "Math/BinaryMatrix/components/binary_matrix_body.inc": "8b4c60249bf81a9ea2c5685eea188e4c813cf728a9110183778f9349f5872aa9",
+      "Scripts/generate_binary_matrix.py": "ae496d058956e67d25b85e9ce29223cbce26ec3dba65640842cbb5907861c01b"
+    }
+  },
+  "compiler_matrix": {
+    "source_sha256": "903396a3c0ad6308fafd142bddb76e5c41637b680b3fb7abc9906e82008262ff",
+    "results": [
+      {
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "profile": "default",
+        "skip": false,
+        "route": "normal",
+        "test": "reference",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/final_gcc_default_False_normal_reference"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "binary matrix independent checks=5975706\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "profile": "default",
+        "skip": false,
+        "route": "normal",
+        "test": "allocation",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "-Wno-mismatched-new-delete",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/final_gcc_default_False_normal_allocation"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "binary matrix injected failures=37\nlive allocation delta=0\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "profile": "default",
+        "skip": false,
+        "route": "disable",
+        "test": "reference",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/final_gcc_default_False_disable_reference"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "binary matrix independent checks=5975706\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "profile": "default",
+        "skip": false,
+        "route": "disable",
+        "test": "allocation",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-Wno-mismatched-new-delete",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/final_gcc_default_False_disable_allocation"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "binary matrix injected failures=37\nlive allocation delta=0\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "profile": "native",
+        "skip": false,
+        "route": "normal",
+        "test": "reference",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "-march=native",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/final_gcc_native_False_normal_reference"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "binary matrix independent checks=5975706\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "profile": "native",
+        "skip": false,
+        "route": "normal",
+        "test": "allocation",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "-march=native",
+          "-Wno-mismatched-new-delete",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/final_gcc_native_False_normal_allocation"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "binary matrix injected failures=37\nlive allocation delta=0\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "profile": "native",
+        "skip": false,
+        "route": "disable",
+        "test": "reference",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "-march=native",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/final_gcc_native_False_disable_reference"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "binary matrix independent checks=5975706\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "profile": "native",
+        "skip": false,
+        "route": "disable",
+        "test": "allocation",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "-march=native",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-Wno-mismatched-new-delete",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/final_gcc_native_False_disable_allocation"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "binary matrix injected failures=37\nlive allocation delta=0\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "profile": "sanitizer",
+        "skip": false,
+        "route": "normal",
+        "test": "reference",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O1",
+          "-g",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-D_GLIBCXX_SANITIZE_VECTOR",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/final_gcc_sanitizer_False_normal_reference"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "binary matrix independent checks=5975706\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "profile": "sanitizer",
+        "skip": false,
+        "route": "normal",
+        "test": "allocation",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O1",
+          "-g",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-D_GLIBCXX_SANITIZE_VECTOR",
+          "-Wno-mismatched-new-delete",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/final_gcc_sanitizer_False_normal_allocation"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "binary matrix injected failures=37\nlive allocation delta=0\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "profile": "sanitizer",
+        "skip": false,
+        "route": "disable",
+        "test": "reference",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O1",
+          "-g",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-D_GLIBCXX_SANITIZE_VECTOR",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/final_gcc_sanitizer_False_disable_reference"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "binary matrix independent checks=5975706\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "profile": "sanitizer",
+        "skip": false,
+        "route": "disable",
+        "test": "allocation",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O1",
+          "-g",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-D_GLIBCXX_SANITIZE_VECTOR",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-Wno-mismatched-new-delete",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/final_gcc_sanitizer_False_disable_allocation"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "binary matrix injected failures=37\nlive allocation delta=0\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "profile": "default",
+        "skip": true,
+        "route": "normal",
+        "test": "reference",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/final_gcc_default_True_normal_reference"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "binary matrix independent checks=5975687\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "profile": "default",
+        "skip": true,
+        "route": "normal",
+        "test": "allocation",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-Wno-mismatched-new-delete",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/final_gcc_default_True_normal_allocation"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "binary matrix injected failures=37\nlive allocation delta=0\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "profile": "default",
+        "skip": true,
+        "route": "disable",
+        "test": "reference",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/final_gcc_default_True_disable_reference"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "binary matrix independent checks=5975687\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "profile": "default",
+        "skip": true,
+        "route": "disable",
+        "test": "allocation",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-Wno-mismatched-new-delete",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/final_gcc_default_True_disable_allocation"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "binary matrix injected failures=37\nlive allocation delta=0\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "profile": "native",
+        "skip": true,
+        "route": "normal",
+        "test": "reference",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "-march=native",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/final_gcc_native_True_normal_reference"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "binary matrix independent checks=5975687\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "profile": "native",
+        "skip": true,
+        "route": "normal",
+        "test": "allocation",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "-march=native",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-Wno-mismatched-new-delete",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/final_gcc_native_True_normal_allocation"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "binary matrix injected failures=37\nlive allocation delta=0\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "profile": "native",
+        "skip": true,
+        "route": "disable",
+        "test": "reference",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "-march=native",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/final_gcc_native_True_disable_reference"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "binary matrix independent checks=5975687\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "profile": "native",
+        "skip": true,
+        "route": "disable",
+        "test": "allocation",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "-march=native",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-Wno-mismatched-new-delete",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/final_gcc_native_True_disable_allocation"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "binary matrix injected failures=37\nlive allocation delta=0\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "profile": "sanitizer",
+        "skip": true,
+        "route": "normal",
+        "test": "reference",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O1",
+          "-g",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-D_GLIBCXX_SANITIZE_VECTOR",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/final_gcc_sanitizer_True_normal_reference"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "binary matrix independent checks=5975687\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "profile": "sanitizer",
+        "skip": true,
+        "route": "normal",
+        "test": "allocation",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O1",
+          "-g",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-D_GLIBCXX_SANITIZE_VECTOR",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-Wno-mismatched-new-delete",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/final_gcc_sanitizer_True_normal_allocation"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "binary matrix injected failures=37\nlive allocation delta=0\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "profile": "sanitizer",
+        "skip": true,
+        "route": "disable",
+        "test": "reference",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O1",
+          "-g",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-D_GLIBCXX_SANITIZE_VECTOR",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/final_gcc_sanitizer_True_disable_reference"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "binary matrix independent checks=5975687\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "profile": "sanitizer",
+        "skip": true,
+        "route": "disable",
+        "test": "allocation",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O1",
+          "-g",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-D_GLIBCXX_SANITIZE_VECTOR",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-Wno-mismatched-new-delete",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/final_gcc_sanitizer_True_disable_allocation"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "binary matrix injected failures=37\nlive allocation delta=0\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "profile": "default",
+        "skip": false,
+        "route": "normal",
+        "test": "reference",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/final_clang_default_False_normal_reference"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "binary matrix independent checks=5975706\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "profile": "default",
+        "skip": false,
+        "route": "normal",
+        "test": "allocation",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/final_clang_default_False_normal_allocation"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "binary matrix injected failures=37\nlive allocation delta=0\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "profile": "default",
+        "skip": false,
+        "route": "disable",
+        "test": "reference",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/final_clang_default_False_disable_reference"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "binary matrix independent checks=5975706\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "profile": "default",
+        "skip": false,
+        "route": "disable",
+        "test": "allocation",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/final_clang_default_False_disable_allocation"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "binary matrix injected failures=37\nlive allocation delta=0\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "profile": "native",
+        "skip": false,
+        "route": "normal",
+        "test": "reference",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "-march=native",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/final_clang_native_False_normal_reference"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "binary matrix independent checks=5975706\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "profile": "native",
+        "skip": false,
+        "route": "normal",
+        "test": "allocation",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "-march=native",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/final_clang_native_False_normal_allocation"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "binary matrix injected failures=37\nlive allocation delta=0\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "profile": "native",
+        "skip": false,
+        "route": "disable",
+        "test": "reference",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "-march=native",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/final_clang_native_False_disable_reference"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "binary matrix independent checks=5975706\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "profile": "native",
+        "skip": false,
+        "route": "disable",
+        "test": "allocation",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "-march=native",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/final_clang_native_False_disable_allocation"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "binary matrix injected failures=37\nlive allocation delta=0\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "profile": "sanitizer",
+        "skip": false,
+        "route": "normal",
+        "test": "reference",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O1",
+          "-g",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-D_GLIBCXX_SANITIZE_VECTOR",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/final_clang_sanitizer_False_normal_reference"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "binary matrix independent checks=5975706\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "profile": "sanitizer",
+        "skip": false,
+        "route": "normal",
+        "test": "allocation",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O1",
+          "-g",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-D_GLIBCXX_SANITIZE_VECTOR",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/final_clang_sanitizer_False_normal_allocation"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "binary matrix injected failures=37\nlive allocation delta=0\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "profile": "sanitizer",
+        "skip": false,
+        "route": "disable",
+        "test": "reference",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O1",
+          "-g",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-D_GLIBCXX_SANITIZE_VECTOR",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/final_clang_sanitizer_False_disable_reference"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "binary matrix independent checks=5975706\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "profile": "sanitizer",
+        "skip": false,
+        "route": "disable",
+        "test": "allocation",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O1",
+          "-g",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-D_GLIBCXX_SANITIZE_VECTOR",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/final_clang_sanitizer_False_disable_allocation"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "binary matrix injected failures=37\nlive allocation delta=0\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "profile": "default",
+        "skip": true,
+        "route": "normal",
+        "test": "reference",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/final_clang_default_True_normal_reference"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "binary matrix independent checks=5975687\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "profile": "default",
+        "skip": true,
+        "route": "normal",
+        "test": "allocation",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/final_clang_default_True_normal_allocation"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "binary matrix injected failures=37\nlive allocation delta=0\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "profile": "default",
+        "skip": true,
+        "route": "disable",
+        "test": "reference",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/final_clang_default_True_disable_reference"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "binary matrix independent checks=5975687\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "profile": "default",
+        "skip": true,
+        "route": "disable",
+        "test": "allocation",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/final_clang_default_True_disable_allocation"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "binary matrix injected failures=37\nlive allocation delta=0\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "profile": "native",
+        "skip": true,
+        "route": "normal",
+        "test": "reference",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "-march=native",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/final_clang_native_True_normal_reference"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "binary matrix independent checks=5975687\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "profile": "native",
+        "skip": true,
+        "route": "normal",
+        "test": "allocation",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "-march=native",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/final_clang_native_True_normal_allocation"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "binary matrix injected failures=37\nlive allocation delta=0\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "profile": "native",
+        "skip": true,
+        "route": "disable",
+        "test": "reference",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "-march=native",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/final_clang_native_True_disable_reference"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "binary matrix independent checks=5975687\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "profile": "native",
+        "skip": true,
+        "route": "disable",
+        "test": "allocation",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O2",
+          "-march=native",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/final_clang_native_True_disable_allocation"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "binary matrix injected failures=37\nlive allocation delta=0\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "profile": "sanitizer",
+        "skip": true,
+        "route": "normal",
+        "test": "reference",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O1",
+          "-g",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-D_GLIBCXX_SANITIZE_VECTOR",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/final_clang_sanitizer_True_normal_reference"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "binary matrix independent checks=5975687\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "profile": "sanitizer",
+        "skip": true,
+        "route": "normal",
+        "test": "allocation",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O1",
+          "-g",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-D_GLIBCXX_SANITIZE_VECTOR",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/final_clang_sanitizer_True_normal_allocation"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "binary matrix injected failures=37\nlive allocation delta=0\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "profile": "sanitizer",
+        "skip": true,
+        "route": "disable",
+        "test": "reference",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O1",
+          "-g",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-D_GLIBCXX_SANITIZE_VECTOR",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/final_clang_sanitizer_True_disable_reference"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "binary matrix independent checks=5975687\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "profile": "sanitizer",
+        "skip": true,
+        "route": "disable",
+        "test": "allocation",
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-O1",
+          "-g",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-D_GLIBCXX_SANITIZE_VECTOR",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/final_clang_sanitizer_True_disable_allocation"
+        ],
+        "build_stderr": "",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "binary matrix injected failures=37\nlive allocation delta=0\n",
+        "stderr": ""
+      }
+    ]
+  },
+  "comment_only_bridge": {
+    "validated_source_sha256": "903396a3c0ad6308fafd142bddb76e5c41637b680b3fb7abc9906e82008262ff",
+    "final_source_sha256": "1ec784efc04c33c866e3081766442a91bdf9352b264428a290a3a69609fbddad",
+    "body_from_first_include_byte_identical": true,
+    "change": "0内側次元でも必要な結果行列の全0初期化コストを積の計算量コメントへ追記。C++本文は変更なし。"
+  },
+  "driver_validation": [
+    {
+      "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+      "native": false,
+      "disable_simd": false,
+      "driver": "binary_matrix_product",
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-I",
+        "/home/reinsirk/Atcoder_Env",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/binary_matrix_product_submission.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/binary_matrix_product_gcc_False_False"
+      ],
+      "submission_sha256": "86a5a26adc5a720feb669179c0d9ab64a17758e441732752874999c3ca4b2884",
+      "samples": [
+        {
+          "input": "2 3 2\n101\n011\n10\n11\n01\n",
+          "output": "11\n10\n",
+          "origin": "LC公開形式で独立作成。bit単位の素朴演算/全解列挙で確認。"
+        }
+      ],
+      "random_cases": 180,
+      "status": "PASS"
+    },
+    {
+      "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+      "native": false,
+      "disable_simd": false,
+      "driver": "binary_matrix_rank",
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-I",
+        "/home/reinsirk/Atcoder_Env",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/binary_matrix_rank_submission.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/binary_matrix_rank_gcc_False_False"
+      ],
+      "submission_sha256": "9c126e51ca8fdb8553f96537b6bc9558ba0555e269794ade30ac63961d640a4f",
+      "samples": [
+        {
+          "input": "2 3\n101\n011\n",
+          "output": "2\n",
+          "origin": "LC公開形式で独立作成。bit単位の素朴演算/全解列挙で確認。"
+        },
+        {
+          "input": "3 0\n\n\n\n",
+          "output": "0\n",
+          "origin": "LC公開形式で独立作成。bit単位の素朴演算/全解列挙で確認。"
+        },
+        {
+          "input": "0 5\n",
+          "output": "0\n",
+          "origin": "LC公開形式で独立作成。bit単位の素朴演算/全解列挙で確認。"
+        }
+      ],
+      "random_cases": 180,
+      "status": "PASS"
+    },
+    {
+      "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+      "native": false,
+      "disable_simd": false,
+      "driver": "binary_matrix_det",
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-I",
+        "/home/reinsirk/Atcoder_Env",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/binary_matrix_det_submission.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/binary_matrix_det_gcc_False_False"
+      ],
+      "submission_sha256": "b5961de89c9c8ad3a4469265befe3641c8aaa70422a56ea2fde72dd8426f2e33",
+      "samples": [
+        {
+          "input": "3\n010\n001\n100\n",
+          "output": "1\n",
+          "origin": "LC公開形式で独立作成。bit単位の素朴演算/全解列挙で確認。"
+        },
+        {
+          "input": "2\n11\n11\n",
+          "output": "0\n",
+          "origin": "LC公開形式で独立作成。bit単位の素朴演算/全解列挙で確認。"
+        }
+      ],
+      "random_cases": 180,
+      "status": "PASS"
+    },
+    {
+      "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+      "native": false,
+      "disable_simd": false,
+      "driver": "binary_matrix_inverse",
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-I",
+        "/home/reinsirk/Atcoder_Env",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/binary_matrix_inverse_submission.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/binary_matrix_inverse_gcc_False_False"
+      ],
+      "submission_sha256": "df166660a720160c9d8e982d326e4a8964103c2ea79df5c0ea0f4457e880d2b5",
+      "samples": [
+        {
+          "input": "2\n11\n10\n",
+          "output": "01\n11\n",
+          "origin": "LC公開形式で独立作成。bit単位の素朴演算/全解列挙で確認。"
+        },
+        {
+          "input": "2\n11\n11\n",
+          "output": "-1\n",
+          "origin": "LC公開形式で独立作成。bit単位の素朴演算/全解列挙で確認。"
+        }
+      ],
+      "random_cases": 180,
+      "status": "PASS"
+    },
+    {
+      "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+      "native": false,
+      "disable_simd": false,
+      "driver": "binary_matrix_solve",
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-I",
+        "/home/reinsirk/Atcoder_Env",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/binary_matrix_solve_submission.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/binary_matrix_solve_gcc_False_False"
+      ],
+      "submission_sha256": "efc6e6f7d231ac40234b7b0f418aa989b92c42a2e45309f9da099391dd820ca8",
+      "samples": [
+        {
+          "input": "2 3\n101\n011\n10\n",
+          "output": "1\n100\n111\n",
+          "origin": "LC公開形式で独立作成。bit単位の素朴演算/全解列挙で確認。"
+        },
+        {
+          "input": "2 2\n10\n10\n01\n",
+          "output": "-1\n",
+          "origin": "LC公開形式で独立作成。bit単位の素朴演算/全解列挙で確認。"
+        }
+      ],
+      "random_cases": 180,
+      "status": "PASS"
+    },
+    {
+      "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+      "native": false,
+      "disable_simd": true,
+      "driver": "binary_matrix_product",
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-I",
+        "/home/reinsirk/Atcoder_Env",
+        "-DSIRKIT_DISABLE_SIMD",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/binary_matrix_product_submission.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/binary_matrix_product_gcc_False_True"
+      ],
+      "submission_sha256": "86a5a26adc5a720feb669179c0d9ab64a17758e441732752874999c3ca4b2884",
+      "samples": [
+        {
+          "input": "2 3 2\n101\n011\n10\n11\n01\n",
+          "output": "11\n10\n",
+          "origin": "LC公開形式で独立作成。bit単位の素朴演算/全解列挙で確認。"
+        }
+      ],
+      "random_cases": 180,
+      "status": "PASS"
+    },
+    {
+      "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+      "native": false,
+      "disable_simd": true,
+      "driver": "binary_matrix_rank",
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-I",
+        "/home/reinsirk/Atcoder_Env",
+        "-DSIRKIT_DISABLE_SIMD",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/binary_matrix_rank_submission.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/binary_matrix_rank_gcc_False_True"
+      ],
+      "submission_sha256": "9c126e51ca8fdb8553f96537b6bc9558ba0555e269794ade30ac63961d640a4f",
+      "samples": [
+        {
+          "input": "2 3\n101\n011\n",
+          "output": "2\n",
+          "origin": "LC公開形式で独立作成。bit単位の素朴演算/全解列挙で確認。"
+        },
+        {
+          "input": "3 0\n\n\n\n",
+          "output": "0\n",
+          "origin": "LC公開形式で独立作成。bit単位の素朴演算/全解列挙で確認。"
+        },
+        {
+          "input": "0 5\n",
+          "output": "0\n",
+          "origin": "LC公開形式で独立作成。bit単位の素朴演算/全解列挙で確認。"
+        }
+      ],
+      "random_cases": 180,
+      "status": "PASS"
+    },
+    {
+      "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+      "native": false,
+      "disable_simd": true,
+      "driver": "binary_matrix_det",
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-I",
+        "/home/reinsirk/Atcoder_Env",
+        "-DSIRKIT_DISABLE_SIMD",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/binary_matrix_det_submission.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/binary_matrix_det_gcc_False_True"
+      ],
+      "submission_sha256": "b5961de89c9c8ad3a4469265befe3641c8aaa70422a56ea2fde72dd8426f2e33",
+      "samples": [
+        {
+          "input": "3\n010\n001\n100\n",
+          "output": "1\n",
+          "origin": "LC公開形式で独立作成。bit単位の素朴演算/全解列挙で確認。"
+        },
+        {
+          "input": "2\n11\n11\n",
+          "output": "0\n",
+          "origin": "LC公開形式で独立作成。bit単位の素朴演算/全解列挙で確認。"
+        }
+      ],
+      "random_cases": 180,
+      "status": "PASS"
+    },
+    {
+      "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+      "native": false,
+      "disable_simd": true,
+      "driver": "binary_matrix_inverse",
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-I",
+        "/home/reinsirk/Atcoder_Env",
+        "-DSIRKIT_DISABLE_SIMD",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/binary_matrix_inverse_submission.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/binary_matrix_inverse_gcc_False_True"
+      ],
+      "submission_sha256": "df166660a720160c9d8e982d326e4a8964103c2ea79df5c0ea0f4457e880d2b5",
+      "samples": [
+        {
+          "input": "2\n11\n10\n",
+          "output": "01\n11\n",
+          "origin": "LC公開形式で独立作成。bit単位の素朴演算/全解列挙で確認。"
+        },
+        {
+          "input": "2\n11\n11\n",
+          "output": "-1\n",
+          "origin": "LC公開形式で独立作成。bit単位の素朴演算/全解列挙で確認。"
+        }
+      ],
+      "random_cases": 180,
+      "status": "PASS"
+    },
+    {
+      "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+      "native": false,
+      "disable_simd": true,
+      "driver": "binary_matrix_solve",
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-I",
+        "/home/reinsirk/Atcoder_Env",
+        "-DSIRKIT_DISABLE_SIMD",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/binary_matrix_solve_submission.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/binary_matrix_solve_gcc_False_True"
+      ],
+      "submission_sha256": "efc6e6f7d231ac40234b7b0f418aa989b92c42a2e45309f9da099391dd820ca8",
+      "samples": [
+        {
+          "input": "2 3\n101\n011\n10\n",
+          "output": "1\n100\n111\n",
+          "origin": "LC公開形式で独立作成。bit単位の素朴演算/全解列挙で確認。"
+        },
+        {
+          "input": "2 2\n10\n10\n01\n",
+          "output": "-1\n",
+          "origin": "LC公開形式で独立作成。bit単位の素朴演算/全解列挙で確認。"
+        }
+      ],
+      "random_cases": 180,
+      "status": "PASS"
+    },
+    {
+      "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+      "native": true,
+      "disable_simd": false,
+      "driver": "binary_matrix_product",
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-I",
+        "/home/reinsirk/Atcoder_Env",
+        "-march=native",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/binary_matrix_product_submission.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/binary_matrix_product_gcc_True_False"
+      ],
+      "submission_sha256": "86a5a26adc5a720feb669179c0d9ab64a17758e441732752874999c3ca4b2884",
+      "samples": [
+        {
+          "input": "2 3 2\n101\n011\n10\n11\n01\n",
+          "output": "11\n10\n",
+          "origin": "LC公開形式で独立作成。bit単位の素朴演算/全解列挙で確認。"
+        }
+      ],
+      "random_cases": 180,
+      "status": "PASS"
+    },
+    {
+      "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+      "native": true,
+      "disable_simd": false,
+      "driver": "binary_matrix_rank",
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-I",
+        "/home/reinsirk/Atcoder_Env",
+        "-march=native",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/binary_matrix_rank_submission.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/binary_matrix_rank_gcc_True_False"
+      ],
+      "submission_sha256": "9c126e51ca8fdb8553f96537b6bc9558ba0555e269794ade30ac63961d640a4f",
+      "samples": [
+        {
+          "input": "2 3\n101\n011\n",
+          "output": "2\n",
+          "origin": "LC公開形式で独立作成。bit単位の素朴演算/全解列挙で確認。"
+        },
+        {
+          "input": "3 0\n\n\n\n",
+          "output": "0\n",
+          "origin": "LC公開形式で独立作成。bit単位の素朴演算/全解列挙で確認。"
+        },
+        {
+          "input": "0 5\n",
+          "output": "0\n",
+          "origin": "LC公開形式で独立作成。bit単位の素朴演算/全解列挙で確認。"
+        }
+      ],
+      "random_cases": 180,
+      "status": "PASS"
+    },
+    {
+      "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+      "native": true,
+      "disable_simd": false,
+      "driver": "binary_matrix_det",
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-I",
+        "/home/reinsirk/Atcoder_Env",
+        "-march=native",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/binary_matrix_det_submission.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/binary_matrix_det_gcc_True_False"
+      ],
+      "submission_sha256": "b5961de89c9c8ad3a4469265befe3641c8aaa70422a56ea2fde72dd8426f2e33",
+      "samples": [
+        {
+          "input": "3\n010\n001\n100\n",
+          "output": "1\n",
+          "origin": "LC公開形式で独立作成。bit単位の素朴演算/全解列挙で確認。"
+        },
+        {
+          "input": "2\n11\n11\n",
+          "output": "0\n",
+          "origin": "LC公開形式で独立作成。bit単位の素朴演算/全解列挙で確認。"
+        }
+      ],
+      "random_cases": 180,
+      "status": "PASS"
+    },
+    {
+      "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+      "native": true,
+      "disable_simd": false,
+      "driver": "binary_matrix_inverse",
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-I",
+        "/home/reinsirk/Atcoder_Env",
+        "-march=native",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/binary_matrix_inverse_submission.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/binary_matrix_inverse_gcc_True_False"
+      ],
+      "submission_sha256": "df166660a720160c9d8e982d326e4a8964103c2ea79df5c0ea0f4457e880d2b5",
+      "samples": [
+        {
+          "input": "2\n11\n10\n",
+          "output": "01\n11\n",
+          "origin": "LC公開形式で独立作成。bit単位の素朴演算/全解列挙で確認。"
+        },
+        {
+          "input": "2\n11\n11\n",
+          "output": "-1\n",
+          "origin": "LC公開形式で独立作成。bit単位の素朴演算/全解列挙で確認。"
+        }
+      ],
+      "random_cases": 180,
+      "status": "PASS"
+    },
+    {
+      "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+      "native": true,
+      "disable_simd": false,
+      "driver": "binary_matrix_solve",
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-I",
+        "/home/reinsirk/Atcoder_Env",
+        "-march=native",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/binary_matrix_solve_submission.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/binary_matrix_solve_gcc_True_False"
+      ],
+      "submission_sha256": "efc6e6f7d231ac40234b7b0f418aa989b92c42a2e45309f9da099391dd820ca8",
+      "samples": [
+        {
+          "input": "2 3\n101\n011\n10\n",
+          "output": "1\n100\n111\n",
+          "origin": "LC公開形式で独立作成。bit単位の素朴演算/全解列挙で確認。"
+        },
+        {
+          "input": "2 2\n10\n10\n01\n",
+          "output": "-1\n",
+          "origin": "LC公開形式で独立作成。bit単位の素朴演算/全解列挙で確認。"
+        }
+      ],
+      "random_cases": 180,
+      "status": "PASS"
+    },
+    {
+      "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+      "native": true,
+      "disable_simd": true,
+      "driver": "binary_matrix_product",
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-I",
+        "/home/reinsirk/Atcoder_Env",
+        "-march=native",
+        "-DSIRKIT_DISABLE_SIMD",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/binary_matrix_product_submission.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/binary_matrix_product_gcc_True_True"
+      ],
+      "submission_sha256": "86a5a26adc5a720feb669179c0d9ab64a17758e441732752874999c3ca4b2884",
+      "samples": [
+        {
+          "input": "2 3 2\n101\n011\n10\n11\n01\n",
+          "output": "11\n10\n",
+          "origin": "LC公開形式で独立作成。bit単位の素朴演算/全解列挙で確認。"
+        }
+      ],
+      "random_cases": 180,
+      "status": "PASS"
+    },
+    {
+      "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+      "native": true,
+      "disable_simd": true,
+      "driver": "binary_matrix_rank",
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-I",
+        "/home/reinsirk/Atcoder_Env",
+        "-march=native",
+        "-DSIRKIT_DISABLE_SIMD",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/binary_matrix_rank_submission.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/binary_matrix_rank_gcc_True_True"
+      ],
+      "submission_sha256": "9c126e51ca8fdb8553f96537b6bc9558ba0555e269794ade30ac63961d640a4f",
+      "samples": [
+        {
+          "input": "2 3\n101\n011\n",
+          "output": "2\n",
+          "origin": "LC公開形式で独立作成。bit単位の素朴演算/全解列挙で確認。"
+        },
+        {
+          "input": "3 0\n\n\n\n",
+          "output": "0\n",
+          "origin": "LC公開形式で独立作成。bit単位の素朴演算/全解列挙で確認。"
+        },
+        {
+          "input": "0 5\n",
+          "output": "0\n",
+          "origin": "LC公開形式で独立作成。bit単位の素朴演算/全解列挙で確認。"
+        }
+      ],
+      "random_cases": 180,
+      "status": "PASS"
+    },
+    {
+      "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+      "native": true,
+      "disable_simd": true,
+      "driver": "binary_matrix_det",
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-I",
+        "/home/reinsirk/Atcoder_Env",
+        "-march=native",
+        "-DSIRKIT_DISABLE_SIMD",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/binary_matrix_det_submission.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/binary_matrix_det_gcc_True_True"
+      ],
+      "submission_sha256": "b5961de89c9c8ad3a4469265befe3641c8aaa70422a56ea2fde72dd8426f2e33",
+      "samples": [
+        {
+          "input": "3\n010\n001\n100\n",
+          "output": "1\n",
+          "origin": "LC公開形式で独立作成。bit単位の素朴演算/全解列挙で確認。"
+        },
+        {
+          "input": "2\n11\n11\n",
+          "output": "0\n",
+          "origin": "LC公開形式で独立作成。bit単位の素朴演算/全解列挙で確認。"
+        }
+      ],
+      "random_cases": 180,
+      "status": "PASS"
+    },
+    {
+      "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+      "native": true,
+      "disable_simd": true,
+      "driver": "binary_matrix_inverse",
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-I",
+        "/home/reinsirk/Atcoder_Env",
+        "-march=native",
+        "-DSIRKIT_DISABLE_SIMD",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/binary_matrix_inverse_submission.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/binary_matrix_inverse_gcc_True_True"
+      ],
+      "submission_sha256": "df166660a720160c9d8e982d326e4a8964103c2ea79df5c0ea0f4457e880d2b5",
+      "samples": [
+        {
+          "input": "2\n11\n10\n",
+          "output": "01\n11\n",
+          "origin": "LC公開形式で独立作成。bit単位の素朴演算/全解列挙で確認。"
+        },
+        {
+          "input": "2\n11\n11\n",
+          "output": "-1\n",
+          "origin": "LC公開形式で独立作成。bit単位の素朴演算/全解列挙で確認。"
+        }
+      ],
+      "random_cases": 180,
+      "status": "PASS"
+    },
+    {
+      "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+      "native": true,
+      "disable_simd": true,
+      "driver": "binary_matrix_solve",
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-I",
+        "/home/reinsirk/Atcoder_Env",
+        "-march=native",
+        "-DSIRKIT_DISABLE_SIMD",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/binary_matrix_solve_submission.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/binary_matrix_solve_gcc_True_True"
+      ],
+      "submission_sha256": "efc6e6f7d231ac40234b7b0f418aa989b92c42a2e45309f9da099391dd820ca8",
+      "samples": [
+        {
+          "input": "2 3\n101\n011\n10\n",
+          "output": "1\n100\n111\n",
+          "origin": "LC公開形式で独立作成。bit単位の素朴演算/全解列挙で確認。"
+        },
+        {
+          "input": "2 2\n10\n10\n01\n",
+          "output": "-1\n",
+          "origin": "LC公開形式で独立作成。bit単位の素朴演算/全解列挙で確認。"
+        }
+      ],
+      "random_cases": 180,
+      "status": "PASS"
+    },
+    {
+      "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+      "native": false,
+      "disable_simd": false,
+      "driver": "binary_matrix_product",
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-I",
+        "/home/reinsirk/Atcoder_Env",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/binary_matrix_product_submission.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/binary_matrix_product_clang_False_False"
+      ],
+      "submission_sha256": "86a5a26adc5a720feb669179c0d9ab64a17758e441732752874999c3ca4b2884",
+      "samples": [
+        {
+          "input": "2 3 2\n101\n011\n10\n11\n01\n",
+          "output": "11\n10\n",
+          "origin": "LC公開形式で独立作成。bit単位の素朴演算/全解列挙で確認。"
+        }
+      ],
+      "random_cases": 180,
+      "status": "PASS"
+    },
+    {
+      "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+      "native": false,
+      "disable_simd": false,
+      "driver": "binary_matrix_rank",
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-I",
+        "/home/reinsirk/Atcoder_Env",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/binary_matrix_rank_submission.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/binary_matrix_rank_clang_False_False"
+      ],
+      "submission_sha256": "9c126e51ca8fdb8553f96537b6bc9558ba0555e269794ade30ac63961d640a4f",
+      "samples": [
+        {
+          "input": "2 3\n101\n011\n",
+          "output": "2\n",
+          "origin": "LC公開形式で独立作成。bit単位の素朴演算/全解列挙で確認。"
+        },
+        {
+          "input": "3 0\n\n\n\n",
+          "output": "0\n",
+          "origin": "LC公開形式で独立作成。bit単位の素朴演算/全解列挙で確認。"
+        },
+        {
+          "input": "0 5\n",
+          "output": "0\n",
+          "origin": "LC公開形式で独立作成。bit単位の素朴演算/全解列挙で確認。"
+        }
+      ],
+      "random_cases": 180,
+      "status": "PASS"
+    },
+    {
+      "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+      "native": false,
+      "disable_simd": false,
+      "driver": "binary_matrix_det",
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-I",
+        "/home/reinsirk/Atcoder_Env",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/binary_matrix_det_submission.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/binary_matrix_det_clang_False_False"
+      ],
+      "submission_sha256": "b5961de89c9c8ad3a4469265befe3641c8aaa70422a56ea2fde72dd8426f2e33",
+      "samples": [
+        {
+          "input": "3\n010\n001\n100\n",
+          "output": "1\n",
+          "origin": "LC公開形式で独立作成。bit単位の素朴演算/全解列挙で確認。"
+        },
+        {
+          "input": "2\n11\n11\n",
+          "output": "0\n",
+          "origin": "LC公開形式で独立作成。bit単位の素朴演算/全解列挙で確認。"
+        }
+      ],
+      "random_cases": 180,
+      "status": "PASS"
+    },
+    {
+      "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+      "native": false,
+      "disable_simd": false,
+      "driver": "binary_matrix_inverse",
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-I",
+        "/home/reinsirk/Atcoder_Env",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/binary_matrix_inverse_submission.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/binary_matrix_inverse_clang_False_False"
+      ],
+      "submission_sha256": "df166660a720160c9d8e982d326e4a8964103c2ea79df5c0ea0f4457e880d2b5",
+      "samples": [
+        {
+          "input": "2\n11\n10\n",
+          "output": "01\n11\n",
+          "origin": "LC公開形式で独立作成。bit単位の素朴演算/全解列挙で確認。"
+        },
+        {
+          "input": "2\n11\n11\n",
+          "output": "-1\n",
+          "origin": "LC公開形式で独立作成。bit単位の素朴演算/全解列挙で確認。"
+        }
+      ],
+      "random_cases": 180,
+      "status": "PASS"
+    },
+    {
+      "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+      "native": false,
+      "disable_simd": false,
+      "driver": "binary_matrix_solve",
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-I",
+        "/home/reinsirk/Atcoder_Env",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/binary_matrix_solve_submission.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/binary_matrix_solve_clang_False_False"
+      ],
+      "submission_sha256": "efc6e6f7d231ac40234b7b0f418aa989b92c42a2e45309f9da099391dd820ca8",
+      "samples": [
+        {
+          "input": "2 3\n101\n011\n10\n",
+          "output": "1\n100\n111\n",
+          "origin": "LC公開形式で独立作成。bit単位の素朴演算/全解列挙で確認。"
+        },
+        {
+          "input": "2 2\n10\n10\n01\n",
+          "output": "-1\n",
+          "origin": "LC公開形式で独立作成。bit単位の素朴演算/全解列挙で確認。"
+        }
+      ],
+      "random_cases": 180,
+      "status": "PASS"
+    },
+    {
+      "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+      "native": false,
+      "disable_simd": true,
+      "driver": "binary_matrix_product",
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-I",
+        "/home/reinsirk/Atcoder_Env",
+        "-DSIRKIT_DISABLE_SIMD",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/binary_matrix_product_submission.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/binary_matrix_product_clang_False_True"
+      ],
+      "submission_sha256": "86a5a26adc5a720feb669179c0d9ab64a17758e441732752874999c3ca4b2884",
+      "samples": [
+        {
+          "input": "2 3 2\n101\n011\n10\n11\n01\n",
+          "output": "11\n10\n",
+          "origin": "LC公開形式で独立作成。bit単位の素朴演算/全解列挙で確認。"
+        }
+      ],
+      "random_cases": 180,
+      "status": "PASS"
+    },
+    {
+      "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+      "native": false,
+      "disable_simd": true,
+      "driver": "binary_matrix_rank",
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-I",
+        "/home/reinsirk/Atcoder_Env",
+        "-DSIRKIT_DISABLE_SIMD",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/binary_matrix_rank_submission.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/binary_matrix_rank_clang_False_True"
+      ],
+      "submission_sha256": "9c126e51ca8fdb8553f96537b6bc9558ba0555e269794ade30ac63961d640a4f",
+      "samples": [
+        {
+          "input": "2 3\n101\n011\n",
+          "output": "2\n",
+          "origin": "LC公開形式で独立作成。bit単位の素朴演算/全解列挙で確認。"
+        },
+        {
+          "input": "3 0\n\n\n\n",
+          "output": "0\n",
+          "origin": "LC公開形式で独立作成。bit単位の素朴演算/全解列挙で確認。"
+        },
+        {
+          "input": "0 5\n",
+          "output": "0\n",
+          "origin": "LC公開形式で独立作成。bit単位の素朴演算/全解列挙で確認。"
+        }
+      ],
+      "random_cases": 180,
+      "status": "PASS"
+    },
+    {
+      "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+      "native": false,
+      "disable_simd": true,
+      "driver": "binary_matrix_det",
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-I",
+        "/home/reinsirk/Atcoder_Env",
+        "-DSIRKIT_DISABLE_SIMD",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/binary_matrix_det_submission.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/binary_matrix_det_clang_False_True"
+      ],
+      "submission_sha256": "b5961de89c9c8ad3a4469265befe3641c8aaa70422a56ea2fde72dd8426f2e33",
+      "samples": [
+        {
+          "input": "3\n010\n001\n100\n",
+          "output": "1\n",
+          "origin": "LC公開形式で独立作成。bit単位の素朴演算/全解列挙で確認。"
+        },
+        {
+          "input": "2\n11\n11\n",
+          "output": "0\n",
+          "origin": "LC公開形式で独立作成。bit単位の素朴演算/全解列挙で確認。"
+        }
+      ],
+      "random_cases": 180,
+      "status": "PASS"
+    },
+    {
+      "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+      "native": false,
+      "disable_simd": true,
+      "driver": "binary_matrix_inverse",
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-I",
+        "/home/reinsirk/Atcoder_Env",
+        "-DSIRKIT_DISABLE_SIMD",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/binary_matrix_inverse_submission.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/binary_matrix_inverse_clang_False_True"
+      ],
+      "submission_sha256": "df166660a720160c9d8e982d326e4a8964103c2ea79df5c0ea0f4457e880d2b5",
+      "samples": [
+        {
+          "input": "2\n11\n10\n",
+          "output": "01\n11\n",
+          "origin": "LC公開形式で独立作成。bit単位の素朴演算/全解列挙で確認。"
+        },
+        {
+          "input": "2\n11\n11\n",
+          "output": "-1\n",
+          "origin": "LC公開形式で独立作成。bit単位の素朴演算/全解列挙で確認。"
+        }
+      ],
+      "random_cases": 180,
+      "status": "PASS"
+    },
+    {
+      "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+      "native": false,
+      "disable_simd": true,
+      "driver": "binary_matrix_solve",
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-I",
+        "/home/reinsirk/Atcoder_Env",
+        "-DSIRKIT_DISABLE_SIMD",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/binary_matrix_solve_submission.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/binary_matrix_solve_clang_False_True"
+      ],
+      "submission_sha256": "efc6e6f7d231ac40234b7b0f418aa989b92c42a2e45309f9da099391dd820ca8",
+      "samples": [
+        {
+          "input": "2 3\n101\n011\n10\n",
+          "output": "1\n100\n111\n",
+          "origin": "LC公開形式で独立作成。bit単位の素朴演算/全解列挙で確認。"
+        },
+        {
+          "input": "2 2\n10\n10\n01\n",
+          "output": "-1\n",
+          "origin": "LC公開形式で独立作成。bit単位の素朴演算/全解列挙で確認。"
+        }
+      ],
+      "random_cases": 180,
+      "status": "PASS"
+    },
+    {
+      "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+      "native": true,
+      "disable_simd": false,
+      "driver": "binary_matrix_product",
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-I",
+        "/home/reinsirk/Atcoder_Env",
+        "-march=native",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/binary_matrix_product_submission.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/binary_matrix_product_clang_True_False"
+      ],
+      "submission_sha256": "86a5a26adc5a720feb669179c0d9ab64a17758e441732752874999c3ca4b2884",
+      "samples": [
+        {
+          "input": "2 3 2\n101\n011\n10\n11\n01\n",
+          "output": "11\n10\n",
+          "origin": "LC公開形式で独立作成。bit単位の素朴演算/全解列挙で確認。"
+        }
+      ],
+      "random_cases": 180,
+      "status": "PASS"
+    },
+    {
+      "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+      "native": true,
+      "disable_simd": false,
+      "driver": "binary_matrix_rank",
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-I",
+        "/home/reinsirk/Atcoder_Env",
+        "-march=native",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/binary_matrix_rank_submission.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/binary_matrix_rank_clang_True_False"
+      ],
+      "submission_sha256": "9c126e51ca8fdb8553f96537b6bc9558ba0555e269794ade30ac63961d640a4f",
+      "samples": [
+        {
+          "input": "2 3\n101\n011\n",
+          "output": "2\n",
+          "origin": "LC公開形式で独立作成。bit単位の素朴演算/全解列挙で確認。"
+        },
+        {
+          "input": "3 0\n\n\n\n",
+          "output": "0\n",
+          "origin": "LC公開形式で独立作成。bit単位の素朴演算/全解列挙で確認。"
+        },
+        {
+          "input": "0 5\n",
+          "output": "0\n",
+          "origin": "LC公開形式で独立作成。bit単位の素朴演算/全解列挙で確認。"
+        }
+      ],
+      "random_cases": 180,
+      "status": "PASS"
+    },
+    {
+      "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+      "native": true,
+      "disable_simd": false,
+      "driver": "binary_matrix_det",
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-I",
+        "/home/reinsirk/Atcoder_Env",
+        "-march=native",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/binary_matrix_det_submission.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/binary_matrix_det_clang_True_False"
+      ],
+      "submission_sha256": "b5961de89c9c8ad3a4469265befe3641c8aaa70422a56ea2fde72dd8426f2e33",
+      "samples": [
+        {
+          "input": "3\n010\n001\n100\n",
+          "output": "1\n",
+          "origin": "LC公開形式で独立作成。bit単位の素朴演算/全解列挙で確認。"
+        },
+        {
+          "input": "2\n11\n11\n",
+          "output": "0\n",
+          "origin": "LC公開形式で独立作成。bit単位の素朴演算/全解列挙で確認。"
+        }
+      ],
+      "random_cases": 180,
+      "status": "PASS"
+    },
+    {
+      "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+      "native": true,
+      "disable_simd": false,
+      "driver": "binary_matrix_inverse",
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-I",
+        "/home/reinsirk/Atcoder_Env",
+        "-march=native",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/binary_matrix_inverse_submission.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/binary_matrix_inverse_clang_True_False"
+      ],
+      "submission_sha256": "df166660a720160c9d8e982d326e4a8964103c2ea79df5c0ea0f4457e880d2b5",
+      "samples": [
+        {
+          "input": "2\n11\n10\n",
+          "output": "01\n11\n",
+          "origin": "LC公開形式で独立作成。bit単位の素朴演算/全解列挙で確認。"
+        },
+        {
+          "input": "2\n11\n11\n",
+          "output": "-1\n",
+          "origin": "LC公開形式で独立作成。bit単位の素朴演算/全解列挙で確認。"
+        }
+      ],
+      "random_cases": 180,
+      "status": "PASS"
+    },
+    {
+      "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+      "native": true,
+      "disable_simd": false,
+      "driver": "binary_matrix_solve",
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-I",
+        "/home/reinsirk/Atcoder_Env",
+        "-march=native",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/binary_matrix_solve_submission.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/binary_matrix_solve_clang_True_False"
+      ],
+      "submission_sha256": "efc6e6f7d231ac40234b7b0f418aa989b92c42a2e45309f9da099391dd820ca8",
+      "samples": [
+        {
+          "input": "2 3\n101\n011\n10\n",
+          "output": "1\n100\n111\n",
+          "origin": "LC公開形式で独立作成。bit単位の素朴演算/全解列挙で確認。"
+        },
+        {
+          "input": "2 2\n10\n10\n01\n",
+          "output": "-1\n",
+          "origin": "LC公開形式で独立作成。bit単位の素朴演算/全解列挙で確認。"
+        }
+      ],
+      "random_cases": 180,
+      "status": "PASS"
+    },
+    {
+      "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+      "native": true,
+      "disable_simd": true,
+      "driver": "binary_matrix_product",
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-I",
+        "/home/reinsirk/Atcoder_Env",
+        "-march=native",
+        "-DSIRKIT_DISABLE_SIMD",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/binary_matrix_product_submission.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/binary_matrix_product_clang_True_True"
+      ],
+      "submission_sha256": "86a5a26adc5a720feb669179c0d9ab64a17758e441732752874999c3ca4b2884",
+      "samples": [
+        {
+          "input": "2 3 2\n101\n011\n10\n11\n01\n",
+          "output": "11\n10\n",
+          "origin": "LC公開形式で独立作成。bit単位の素朴演算/全解列挙で確認。"
+        }
+      ],
+      "random_cases": 180,
+      "status": "PASS"
+    },
+    {
+      "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+      "native": true,
+      "disable_simd": true,
+      "driver": "binary_matrix_rank",
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-I",
+        "/home/reinsirk/Atcoder_Env",
+        "-march=native",
+        "-DSIRKIT_DISABLE_SIMD",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/binary_matrix_rank_submission.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/binary_matrix_rank_clang_True_True"
+      ],
+      "submission_sha256": "9c126e51ca8fdb8553f96537b6bc9558ba0555e269794ade30ac63961d640a4f",
+      "samples": [
+        {
+          "input": "2 3\n101\n011\n",
+          "output": "2\n",
+          "origin": "LC公開形式で独立作成。bit単位の素朴演算/全解列挙で確認。"
+        },
+        {
+          "input": "3 0\n\n\n\n",
+          "output": "0\n",
+          "origin": "LC公開形式で独立作成。bit単位の素朴演算/全解列挙で確認。"
+        },
+        {
+          "input": "0 5\n",
+          "output": "0\n",
+          "origin": "LC公開形式で独立作成。bit単位の素朴演算/全解列挙で確認。"
+        }
+      ],
+      "random_cases": 180,
+      "status": "PASS"
+    },
+    {
+      "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+      "native": true,
+      "disable_simd": true,
+      "driver": "binary_matrix_det",
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-I",
+        "/home/reinsirk/Atcoder_Env",
+        "-march=native",
+        "-DSIRKIT_DISABLE_SIMD",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/binary_matrix_det_submission.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/binary_matrix_det_clang_True_True"
+      ],
+      "submission_sha256": "b5961de89c9c8ad3a4469265befe3641c8aaa70422a56ea2fde72dd8426f2e33",
+      "samples": [
+        {
+          "input": "3\n010\n001\n100\n",
+          "output": "1\n",
+          "origin": "LC公開形式で独立作成。bit単位の素朴演算/全解列挙で確認。"
+        },
+        {
+          "input": "2\n11\n11\n",
+          "output": "0\n",
+          "origin": "LC公開形式で独立作成。bit単位の素朴演算/全解列挙で確認。"
+        }
+      ],
+      "random_cases": 180,
+      "status": "PASS"
+    },
+    {
+      "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+      "native": true,
+      "disable_simd": true,
+      "driver": "binary_matrix_inverse",
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-I",
+        "/home/reinsirk/Atcoder_Env",
+        "-march=native",
+        "-DSIRKIT_DISABLE_SIMD",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/binary_matrix_inverse_submission.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/binary_matrix_inverse_clang_True_True"
+      ],
+      "submission_sha256": "df166660a720160c9d8e982d326e4a8964103c2ea79df5c0ea0f4457e880d2b5",
+      "samples": [
+        {
+          "input": "2\n11\n10\n",
+          "output": "01\n11\n",
+          "origin": "LC公開形式で独立作成。bit単位の素朴演算/全解列挙で確認。"
+        },
+        {
+          "input": "2\n11\n11\n",
+          "output": "-1\n",
+          "origin": "LC公開形式で独立作成。bit単位の素朴演算/全解列挙で確認。"
+        }
+      ],
+      "random_cases": 180,
+      "status": "PASS"
+    },
+    {
+      "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+      "native": true,
+      "disable_simd": true,
+      "driver": "binary_matrix_solve",
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-I",
+        "/home/reinsirk/Atcoder_Env",
+        "-march=native",
+        "-DSIRKIT_DISABLE_SIMD",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/binary_matrix_solve_submission.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/binary_matrix_solve_clang_True_True"
+      ],
+      "submission_sha256": "efc6e6f7d231ac40234b7b0f418aa989b92c42a2e45309f9da099391dd820ca8",
+      "samples": [
+        {
+          "input": "2 3\n101\n011\n10\n",
+          "output": "1\n100\n111\n",
+          "origin": "LC公開形式で独立作成。bit単位の素朴演算/全解列挙で確認。"
+        },
+        {
+          "input": "2 2\n10\n10\n01\n",
+          "output": "-1\n",
+          "origin": "LC公開形式で独立作成。bit単位の素朴演算/全解列挙で確認。"
+        }
+      ],
+      "random_cases": 180,
+      "status": "PASS"
+    }
+  ],
+  "driver_random_scope": "各driver180生成case、8設定で計7200実行。productの1 caseはinner4097でLC上限4096を越えるローカル補足。登録samplesは公開制約内。",
+  "sample_origin": "公式形式に沿って全例を独立作成、素朴byte演算/全解集合と照合。公式例との偽装なし。",
+  "binary_system_checker": {
+    "mode": "binary_linear_system",
+    "helper": "/tmp/sirkit_12h_20261031_095733/binary_matrix/binary_linear_system_checker.py",
+    "helper_sha256": "ea75490a88c12222a2a5eb83c74514e0080bda90077f8608b8c3ab697459fd78",
+    "callback": "check_binary_linear_system(entry,sample,output)->bool",
+    "unit_validation": [
+      {
+        "input": "2 3\n101\n011\n10\n",
+        "output": "1\n100\n111\n",
+        "expected_accept": true,
+        "actual_accept": true,
+        "reason": "",
+        "status": "PASS"
+      },
+      {
+        "input": "2 3\n101\n011\n10\n",
+        "output": "1\n011\n111\n",
+        "expected_accept": true,
+        "actual_accept": true,
+        "reason": "",
+        "status": "PASS"
+      },
+      {
+        "input": "1 3\n100\n1\n",
+        "output": "2\n100\n011\n001\n",
+        "expected_accept": true,
+        "actual_accept": true,
+        "reason": "",
+        "status": "PASS"
+      },
+      {
+        "input": "1 3\n100\n1\n",
+        "output": "2\n100\n010\n010\n",
+        "expected_accept": false,
+        "actual_accept": false,
+        "reason": "dependent basis",
+        "status": "PASS"
+      },
+      {
+        "input": "1 3\n100\n1\n",
+        "output": "2\n100\n100\n001\n",
+        "expected_accept": false,
+        "actual_accept": false,
+        "reason": "kernel",
+        "status": "PASS"
+      },
+      {
+        "input": "2 3\n101\n011\n10\n",
+        "output": "-1\n",
+        "expected_accept": false,
+        "actual_accept": false,
+        "reason": "no-solution claim",
+        "status": "PASS"
+      },
+      {
+        "input": "2 2\n10\n10\n01\n",
+        "output": "-1\n",
+        "expected_accept": true,
+        "actual_accept": true,
+        "reason": "",
+        "status": "PASS"
+      },
+      {
+        "input": "2 2\n10\n10\n01\n",
+        "output": "0\n10\n",
+        "expected_accept": false,
+        "actual_accept": false,
+        "reason": "inconsistent system",
+        "status": "PASS"
+      },
+      {
+        "input": "1 1\n1\n1\n",
+        "output": "0\n1\n",
+        "expected_accept": true,
+        "actual_accept": true,
+        "reason": "",
+        "status": "PASS"
+      },
+      {
+        "input": "1 1\n1\n1\n",
+        "output": "0\n0\n",
+        "expected_accept": false,
+        "actual_accept": false,
+        "reason": "particular",
+        "status": "PASS"
+      },
+      {
+        "input": "1 1\n1\n1\n",
+        "output": "0\n1\n0\n",
+        "expected_accept": false,
+        "actual_accept": false,
+        "reason": "dimension/output length",
+        "status": "PASS"
+      }
+    ],
+    "bound": "local小標本N,M<=128、positive dims。particular/核/独立性/不能をPython整数XOR掃き出しで確認。",
+    "pre_format_sha256": "c08d31d035e1f937b6978d97f4c1996c454168a091f3b7bd589fbc40c024c075",
+    "format_validation": "空白・改行・コメントの整形。11 unitcasesで両entrypointの採否と診断を再確認。"
+  },
+  "examples": {
+    "origin": "小行列を手で計算した独立期待値、全整数/bit文字列を完全一致比較。",
+    "expected": "10\n01\n11\n01\n10\n2 1\n01\n10\n10\n01\n1\n100\n111\n0 1 \n110\n110\n5 2 3 0\n1 1\n1\n1 2\n0 4 0\n",
+    "source_sha256": "1ec784efc04c33c866e3081766442a91bdf9352b264428a290a3a69609fbddad",
+    "results": [
+      {
+        "compiler": "gcc",
+        "skip": false,
+        "native": false,
+        "disable_simd": false,
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/example_final.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/example_gcc_False_False_False"
+        ],
+        "stdout": "10\n01\n11\n01\n10\n2 1\n01\n10\n10\n01\n1\n100\n111\n0 1 \n110\n110\n5 2 3 0\n1 1\n1\n1 2\n0 4 0\n",
+        "status": "PASS"
+      },
+      {
+        "compiler": "gcc",
+        "skip": false,
+        "native": false,
+        "disable_simd": true,
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/example_final.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/example_gcc_False_False_True"
+        ],
+        "stdout": "10\n01\n11\n01\n10\n2 1\n01\n10\n10\n01\n1\n100\n111\n0 1 \n110\n110\n5 2 3 0\n1 1\n1\n1 2\n0 4 0\n",
+        "status": "PASS"
+      },
+      {
+        "compiler": "gcc",
+        "skip": false,
+        "native": true,
+        "disable_simd": false,
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-march=native",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/example_final.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/example_gcc_False_True_False"
+        ],
+        "stdout": "10\n01\n11\n01\n10\n2 1\n01\n10\n10\n01\n1\n100\n111\n0 1 \n110\n110\n5 2 3 0\n1 1\n1\n1 2\n0 4 0\n",
+        "status": "PASS"
+      },
+      {
+        "compiler": "gcc",
+        "skip": false,
+        "native": true,
+        "disable_simd": true,
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-march=native",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/example_final.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/example_gcc_False_True_True"
+        ],
+        "stdout": "10\n01\n11\n01\n10\n2 1\n01\n10\n10\n01\n1\n100\n111\n0 1 \n110\n110\n5 2 3 0\n1 1\n1\n1 2\n0 4 0\n",
+        "status": "PASS"
+      },
+      {
+        "compiler": "gcc",
+        "skip": true,
+        "native": false,
+        "disable_simd": false,
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/example_final.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/example_gcc_True_False_False"
+        ],
+        "stdout": "10\n01\n11\n01\n10\n2 1\n01\n10\n10\n01\n1\n100\n111\n0 1 \n110\n110\n5 2 3 0\n1 1\n1\n1 2\n0 4 0\n",
+        "status": "PASS"
+      },
+      {
+        "compiler": "gcc",
+        "skip": true,
+        "native": false,
+        "disable_simd": true,
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/example_final.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/example_gcc_True_False_True"
+        ],
+        "stdout": "10\n01\n11\n01\n10\n2 1\n01\n10\n10\n01\n1\n100\n111\n0 1 \n110\n110\n5 2 3 0\n1 1\n1\n1 2\n0 4 0\n",
+        "status": "PASS"
+      },
+      {
+        "compiler": "gcc",
+        "skip": true,
+        "native": true,
+        "disable_simd": false,
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-march=native",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/example_final.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/example_gcc_True_True_False"
+        ],
+        "stdout": "10\n01\n11\n01\n10\n2 1\n01\n10\n10\n01\n1\n100\n111\n0 1 \n110\n110\n5 2 3 0\n1 1\n1\n1 2\n0 4 0\n",
+        "status": "PASS"
+      },
+      {
+        "compiler": "gcc",
+        "skip": true,
+        "native": true,
+        "disable_simd": true,
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-march=native",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/example_final.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/example_gcc_True_True_True"
+        ],
+        "stdout": "10\n01\n11\n01\n10\n2 1\n01\n10\n10\n01\n1\n100\n111\n0 1 \n110\n110\n5 2 3 0\n1 1\n1\n1 2\n0 4 0\n",
+        "status": "PASS"
+      },
+      {
+        "compiler": "clang",
+        "skip": false,
+        "native": false,
+        "disable_simd": false,
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/example_final.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/example_clang_False_False_False"
+        ],
+        "stdout": "10\n01\n11\n01\n10\n2 1\n01\n10\n10\n01\n1\n100\n111\n0 1 \n110\n110\n5 2 3 0\n1 1\n1\n1 2\n0 4 0\n",
+        "status": "PASS"
+      },
+      {
+        "compiler": "clang",
+        "skip": false,
+        "native": false,
+        "disable_simd": true,
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/example_final.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/example_clang_False_False_True"
+        ],
+        "stdout": "10\n01\n11\n01\n10\n2 1\n01\n10\n10\n01\n1\n100\n111\n0 1 \n110\n110\n5 2 3 0\n1 1\n1\n1 2\n0 4 0\n",
+        "status": "PASS"
+      },
+      {
+        "compiler": "clang",
+        "skip": false,
+        "native": true,
+        "disable_simd": false,
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-march=native",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/example_final.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/example_clang_False_True_False"
+        ],
+        "stdout": "10\n01\n11\n01\n10\n2 1\n01\n10\n10\n01\n1\n100\n111\n0 1 \n110\n110\n5 2 3 0\n1 1\n1\n1 2\n0 4 0\n",
+        "status": "PASS"
+      },
+      {
+        "compiler": "clang",
+        "skip": false,
+        "native": true,
+        "disable_simd": true,
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-march=native",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/example_final.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/example_clang_False_True_True"
+        ],
+        "stdout": "10\n01\n11\n01\n10\n2 1\n01\n10\n10\n01\n1\n100\n111\n0 1 \n110\n110\n5 2 3 0\n1 1\n1\n1 2\n0 4 0\n",
+        "status": "PASS"
+      },
+      {
+        "compiler": "clang",
+        "skip": true,
+        "native": false,
+        "disable_simd": false,
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/example_final.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/example_clang_True_False_False"
+        ],
+        "stdout": "10\n01\n11\n01\n10\n2 1\n01\n10\n10\n01\n1\n100\n111\n0 1 \n110\n110\n5 2 3 0\n1 1\n1\n1 2\n0 4 0\n",
+        "status": "PASS"
+      },
+      {
+        "compiler": "clang",
+        "skip": true,
+        "native": false,
+        "disable_simd": true,
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/example_final.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/example_clang_True_False_True"
+        ],
+        "stdout": "10\n01\n11\n01\n10\n2 1\n01\n10\n10\n01\n1\n100\n111\n0 1 \n110\n110\n5 2 3 0\n1 1\n1\n1 2\n0 4 0\n",
+        "status": "PASS"
+      },
+      {
+        "compiler": "clang",
+        "skip": true,
+        "native": true,
+        "disable_simd": false,
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-march=native",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/example_final.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/example_clang_True_True_False"
+        ],
+        "stdout": "10\n01\n11\n01\n10\n2 1\n01\n10\n10\n01\n1\n100\n111\n0 1 \n110\n110\n5 2 3 0\n1 1\n1\n1 2\n0 4 0\n",
+        "status": "PASS"
+      },
+      {
+        "compiler": "clang",
+        "skip": true,
+        "native": true,
+        "disable_simd": true,
+        "command": [
+          "taskset",
+          "-c",
+          "0",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-Werror",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-march=native",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/example_final.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/binary_matrix/example_clang_True_True_True"
+        ],
+        "stdout": "10\n01\n11\n01\n10\n2 1\n01\n10\n10\n01\n1\n100\n111\n0 1 \n110\n110\n5 2 3 0\n1 1\n1\n1 2\n0 4 0\n",
+        "status": "PASS"
+      }
+    ]
+  },
+  "compatibility": [
+    {
+      "compiler": "gcc",
+      "disable_simd": false,
+      "include_order": [
+        "DataStructure/Dynamic_Bitset.cpp",
+        "Math/Binary_Matrix.cpp"
+      ],
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/compat.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/compat_gcc_False_0"
+      ],
+      "status": "PASS"
+    },
+    {
+      "compiler": "gcc",
+      "disable_simd": false,
+      "include_order": [
+        "Math/Binary_Matrix.cpp",
+        "DataStructure/Dynamic_Bitset.cpp"
+      ],
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/compat.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/compat_gcc_False_1"
+      ],
+      "status": "PASS"
+    },
+    {
+      "compiler": "gcc",
+      "disable_simd": true,
+      "include_order": [
+        "DataStructure/Dynamic_Bitset.cpp",
+        "Math/Binary_Matrix.cpp"
+      ],
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-DSIRKIT_DISABLE_SIMD",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/compat.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/compat_gcc_True_0"
+      ],
+      "status": "PASS"
+    },
+    {
+      "compiler": "gcc",
+      "disable_simd": true,
+      "include_order": [
+        "Math/Binary_Matrix.cpp",
+        "DataStructure/Dynamic_Bitset.cpp"
+      ],
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-DSIRKIT_DISABLE_SIMD",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/compat.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/compat_gcc_True_1"
+      ],
+      "status": "PASS"
+    },
+    {
+      "compiler": "clang",
+      "disable_simd": false,
+      "include_order": [
+        "DataStructure/Dynamic_Bitset.cpp",
+        "Math/Binary_Matrix.cpp"
+      ],
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/compat.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/compat_clang_False_0"
+      ],
+      "status": "PASS"
+    },
+    {
+      "compiler": "clang",
+      "disable_simd": false,
+      "include_order": [
+        "Math/Binary_Matrix.cpp",
+        "DataStructure/Dynamic_Bitset.cpp"
+      ],
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/compat.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/compat_clang_False_1"
+      ],
+      "status": "PASS"
+    },
+    {
+      "compiler": "clang",
+      "disable_simd": true,
+      "include_order": [
+        "DataStructure/Dynamic_Bitset.cpp",
+        "Math/Binary_Matrix.cpp"
+      ],
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-DSIRKIT_DISABLE_SIMD",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/compat.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/compat_clang_True_0"
+      ],
+      "status": "PASS"
+    },
+    {
+      "compiler": "clang",
+      "disable_simd": true,
+      "include_order": [
+        "Math/Binary_Matrix.cpp",
+        "DataStructure/Dynamic_Bitset.cpp"
+      ],
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-DSIRKIT_DISABLE_SIMD",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/compat.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/compat_clang_True_1"
+      ],
+      "status": "PASS"
+    }
+  ],
+  "preprocessing": [
+    {
+      "compiler": "gcc",
+      "skip": false,
+      "disable_simd": false,
+      "preprocessed_sha256": "ef3b48e6cbcb9decb2dd3418210d1bbfd374b735eb3e8452d2fce2c9a024e67d",
+      "status": "PASS"
+    },
+    {
+      "compiler": "gcc",
+      "skip": true,
+      "disable_simd": false,
+      "preprocessed_sha256": "cd6984f1263ce5f817ee8ddc5d41228894d40f54d7a2cab15051035e750e2ef9",
+      "status": "PASS"
+    },
+    {
+      "compiler": "gcc",
+      "skip": false,
+      "disable_simd": true,
+      "preprocessed_sha256": "dfe96290b34d4bff71070076e6c9a3eaa78f246eb7202afce3795efa30b6fc54",
+      "status": "PASS"
+    },
+    {
+      "compiler": "gcc",
+      "skip": true,
+      "disable_simd": true,
+      "preprocessed_sha256": "53fcdd197b601d656053c9bd0131a67eb5fc66990838b42c4bd449d3ebd97fcb",
+      "status": "PASS"
+    },
+    {
+      "compiler": "clang",
+      "skip": false,
+      "disable_simd": false,
+      "preprocessed_sha256": "430ed8aefd87bbef2dc93891332f2f2ecb70619bc7dfe8730fa0749a8110482d",
+      "status": "PASS"
+    },
+    {
+      "compiler": "clang",
+      "skip": true,
+      "disable_simd": false,
+      "preprocessed_sha256": "34896d19b16b8fc5380fef5b4acf1b595d8acde2c8d4570d529caf32e8d183de",
+      "status": "PASS"
+    },
+    {
+      "compiler": "clang",
+      "skip": false,
+      "disable_simd": true,
+      "preprocessed_sha256": "26f6b817de0ac59a0095fdca4ec0177906b33d23f4b68e7ce54cd9f6018ecf11",
+      "status": "PASS"
+    },
+    {
+      "compiler": "clang",
+      "skip": true,
+      "disable_simd": true,
+      "preprocessed_sha256": "3a963a68ac14f410d8bce958c63437dd57f8bf2f7cc6428ddbf1f9b5841cdcee",
+      "status": "PASS"
+    }
+  ],
+  "independent_checks": [
+    "0..3行/列の全行列と全rhsで、全解列挙と核基底の全線形結合の集合が一致。rankは行ベクトル全線形結合から独立計算。",
+    "非word単位のbyte Gaussian参照でrandom rank/特解/核独立性、pivot列は小prefix rank変化と比較。",
+    "積はbitごとの三重ループと比較、0/1/63/64/65/127/128/129/4095/4096/4097境界を照合。",
+    "129周期などの置換行列でuint64最大値の累乗・逆行列を独立計算。",
+    "0x0 determinant=1/inverse単位、0行/0列の解、SIZE_MAXを持つempty shapeのrank/転置/積、容量積の拒否を確認。",
+    "copy独立/move元空/clear/reset/self copy・move・積・XOR、LinearSolutionのcopy強保証とmove元全フィールド空を確認。",
+    "確保失敗37位置：copy/代入/reset/transpose/product/積代入/rank/inverse/solve（free variablesありも含む）/pow/LinearSolution代入、旧内容/row spanとatomic live block差0。"
+  ],
+  "counts": {
+    "reference_checks_checked": 5975706,
+    "reference_checks_skip": 5975687,
+    "injected_failures_per_condition": 37,
+    "core_conditions": 48,
+    "driver_conditions": 40,
+    "unique_random_driver_cases": 900,
+    "random_driver_executions": 7200,
+    "example_conditions": 16,
+    "include_order_conditions": 8,
+    "preprocessing_conditions": 8,
+    "formal_include_conditions": 8
+  },
+  "environment": "CPU0 correctness/build、GCC15.2/Clang21、checked/skip default/native ASANUBSAN vector poisoning。LSanはptrace制約detect_leaks=0、正常所有は独立live allocation delta0。",
+  "performance": "行列全体の速度計測は未実施。既存Bitset kernelを同期再利用し、Matrix固有の未測定SIMDは追加しない。時間の数値主張なし。",
+  "online_status": "新規・未提出。全記録はローカルのみ、オンラインACは転記しない。",
+  "integration_status": "主要検証後に正式配置、正式include8とgenerator --checkもPASS。registry/checker/generator全体への登録はroot担当。",
+  "formal_include_validation": [
+    {
+      "compiler": "gcc",
+      "skip": false,
+      "test": "reference",
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/binary_matrix_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/formal_gcc_False_reference"
+      ],
+      "stdout": "binary matrix independent checks=5975706\n",
+      "status": "PASS"
+    },
+    {
+      "compiler": "gcc",
+      "skip": false,
+      "test": "allocation",
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-Wno-mismatched-new-delete",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/binary_matrix_allocation_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/formal_gcc_False_allocation"
+      ],
+      "stdout": "binary matrix injected failures=37\nlive allocation delta=0\n",
+      "status": "PASS"
+    },
+    {
+      "compiler": "gcc",
+      "skip": true,
+      "test": "reference",
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-DSKIP_RUNTIME_CHECKS",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/binary_matrix_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/formal_gcc_True_reference"
+      ],
+      "stdout": "binary matrix independent checks=5975687\n",
+      "status": "PASS"
+    },
+    {
+      "compiler": "gcc",
+      "skip": true,
+      "test": "allocation",
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-DSKIP_RUNTIME_CHECKS",
+        "-Wno-mismatched-new-delete",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/binary_matrix_allocation_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/formal_gcc_True_allocation"
+      ],
+      "stdout": "binary matrix injected failures=37\nlive allocation delta=0\n",
+      "status": "PASS"
+    },
+    {
+      "compiler": "clang",
+      "skip": false,
+      "test": "reference",
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/binary_matrix_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/formal_clang_False_reference"
+      ],
+      "stdout": "binary matrix independent checks=5975706\n",
+      "status": "PASS"
+    },
+    {
+      "compiler": "clang",
+      "skip": false,
+      "test": "allocation",
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/binary_matrix_allocation_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/formal_clang_False_allocation"
+      ],
+      "stdout": "binary matrix injected failures=37\nlive allocation delta=0\n",
+      "status": "PASS"
+    },
+    {
+      "compiler": "clang",
+      "skip": true,
+      "test": "reference",
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-DSKIP_RUNTIME_CHECKS",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/binary_matrix_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/formal_clang_True_reference"
+      ],
+      "stdout": "binary matrix independent checks=5975687\n",
+      "status": "PASS"
+    },
+    {
+      "compiler": "clang",
+      "skip": true,
+      "test": "allocation",
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-DSKIP_RUNTIME_CHECKS",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/binary_matrix_allocation_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/binary_matrix/formal_clang_True_allocation"
+      ],
+      "stdout": "binary matrix injected failures=37\nlive allocation delta=0\n",
+      "status": "PASS"
+    }
+  ]
+}

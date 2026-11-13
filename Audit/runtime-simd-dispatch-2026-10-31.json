@@ -1,0 +1,1607 @@
+{
+  "status": "INSTRUMENTED_DISPATCH_LOGIC_AND_VALID_CASE_CORRECTNESS_PASS",
+  "online_status": "not_evaluated",
+  "performance_measurement": false,
+  "not_hardware_emulation": true,
+  "summary": {
+    "conditions": 20,
+    "builds": 8,
+    "passed": 20,
+    "source_hashes": {
+      "Math/NTT.cpp": "5b5c85da53f0108b521b725b5ab014eaf8ee21446729b2e45c30100d796426fa",
+      "Math/Matrix.cpp": "cac01f95cd19fac7f52b2d9eba304ce8b12bcfbb63af8610de5dd68c859291af",
+      "DataStructure/Wavelet_Matrix.cpp": "33b4b5b8a25894cbc698e2badbb1adeabf98478fd5295ccb3ed108689e81f7f5",
+      "Graph/Floyd-Warshall.cpp": "edba738f97a7145f5bb736ae0cc317549b4ad3f1eafd0eb2517b6e2e557cdddf",
+      "Math/Eratosthenes.cpp": "dcd12c2562226efee621747edff3cbbfcf0b85e031d06da53a0f114e6b15500c"
+    },
+    "fixture_sha256": "e348bac84e3e46613b74fcc8abbf435ee8ef19682f4f63e642f4cf8ef31be6c5",
+    "shim_sha256": "47d4f82e983ba59c823770332a2efff299a9819081b70310045dd2b2357d847e",
+    "disabled_preprocessing_calls_absent": true,
+    "snapshot_source_drift": {}
+  },
+  "compiler_versions": {
+    "GCC": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0\nCopyright (C) 2025 Free Software Foundation, Inc.\nThis is free software; see the source for copying conditions.  There is NO\nwarranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n",
+    "Clang": "Ubuntu clang version 21.1.8 (6ubuntu1)\nTarget: x86_64-pc-linux-gnu\nThread model: posix\nInstalledDir: /usr/lib/llvm-21/bin\n"
+  },
+  "scope": [
+    "Math/NTT.cpp",
+    "Math/Matrix.cpp",
+    "DataStructure/Wavelet_Matrix.cpp",
+    "Graph/Floyd-Warshall.cpp",
+    "Math/Eratosthenes.cpp"
+  ],
+  "source_sha256": {
+    "Math/NTT.cpp": "5b5c85da53f0108b521b725b5ab014eaf8ee21446729b2e45c30100d796426fa",
+    "Math/Matrix.cpp": "cac01f95cd19fac7f52b2d9eba304ce8b12bcfbb63af8610de5dd68c859291af",
+    "DataStructure/Wavelet_Matrix.cpp": "33b4b5b8a25894cbc698e2badbb1adeabf98478fd5295ccb3ed108689e81f7f5",
+    "Graph/Floyd-Warshall.cpp": "edba738f97a7145f5bb736ae0cc317549b4ad3f1eafd0eb2517b6e2e557cdddf",
+    "Math/Eratosthenes.cpp": "dcd12c2562226efee621747edff3cbbfcf0b85e031d06da53a0f114e6b15500c"
+  },
+  "feature_masks": {
+    "0": "none",
+    "1": "AVX2 only",
+    "2": "POPCNT only",
+    "3": "both"
+  },
+  "builds": [
+    {
+      "compiler": "GCC",
+      "skip": false,
+      "disabled": false,
+      "result": {
+        "command": [
+          "taskset",
+          "-c",
+          "8",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "/tmp/sirkit_12h_20261031_095733/runtime_dispatch_qa/fixture.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/runtime_dispatch_qa/GCC_False_False"
+        ],
+        "returncode": 0,
+        "stdout": "",
+        "stderr": ""
+      },
+      "binary_sha256": "c7041bbe786d002e5291ff66629beb3beb467201d3bc45cc086d860822fe26ba"
+    },
+    {
+      "compiler": "GCC",
+      "skip": false,
+      "disabled": true,
+      "result": {
+        "command": [
+          "taskset",
+          "-c",
+          "8",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/tmp/sirkit_12h_20261031_095733/runtime_dispatch_qa/fixture.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/runtime_dispatch_qa/GCC_False_True"
+        ],
+        "returncode": 0,
+        "stdout": "",
+        "stderr": "/tmp/sirkit_12h_20261031_095733/runtime_dispatch_qa/fixture.cpp: In function ‘int main()’:\n/tmp/sirkit_12h_20261031_095733/runtime_dispatch_qa/fixture.cpp:55:2: warning: this ‘for’ clause does not guard... [-Wmisleading-indentation]\n   55 |  for(auto x:dispatch_qa::probes)assert(x==0);for(auto x:dispatch_qa::inits)assert(x==0);for(auto x:dispatch_qa::calls)assert(x==0);\n      |  ^~~\n/tmp/sirkit_12h_20261031_095733/runtime_dispatch_qa/fixture.cpp:55:46: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘for’\n   55 |  for(auto x:dispatch_qa::probes)assert(x==0);for(auto x:dispatch_qa::inits)assert(x==0);for(auto x:dispatch_qa::calls)assert(x==0);\n      |                                              ^~~\n"
+      },
+      "binary_sha256": "e69236cf25d1ea2d920c7155a9428eb9817415881e4f84d06da2b0920e139c4a"
+    },
+    {
+      "compiler": "GCC",
+      "skip": true,
+      "disabled": false,
+      "result": {
+        "command": [
+          "taskset",
+          "-c",
+          "8",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/tmp/sirkit_12h_20261031_095733/runtime_dispatch_qa/fixture.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/runtime_dispatch_qa/GCC_True_False"
+        ],
+        "returncode": 0,
+        "stdout": "",
+        "stderr": ""
+      },
+      "binary_sha256": "ede8ead124c227b6e486da477b6daa9e41fb13affc951084b5710eaddfce98dd"
+    },
+    {
+      "compiler": "GCC",
+      "skip": true,
+      "disabled": true,
+      "result": {
+        "command": [
+          "taskset",
+          "-c",
+          "8",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/tmp/sirkit_12h_20261031_095733/runtime_dispatch_qa/fixture.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/runtime_dispatch_qa/GCC_True_True"
+        ],
+        "returncode": 0,
+        "stdout": "",
+        "stderr": "/tmp/sirkit_12h_20261031_095733/runtime_dispatch_qa/fixture.cpp: In function ‘int main()’:\n/tmp/sirkit_12h_20261031_095733/runtime_dispatch_qa/fixture.cpp:55:2: warning: this ‘for’ clause does not guard... [-Wmisleading-indentation]\n   55 |  for(auto x:dispatch_qa::probes)assert(x==0);for(auto x:dispatch_qa::inits)assert(x==0);for(auto x:dispatch_qa::calls)assert(x==0);\n      |  ^~~\n/tmp/sirkit_12h_20261031_095733/runtime_dispatch_qa/fixture.cpp:55:46: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘for’\n   55 |  for(auto x:dispatch_qa::probes)assert(x==0);for(auto x:dispatch_qa::inits)assert(x==0);for(auto x:dispatch_qa::calls)assert(x==0);\n      |                                              ^~~\n"
+      },
+      "binary_sha256": "04a3739f853386dd49da2a51a15bc7631300fe606840866f0e8c3f6daea2e09c"
+    },
+    {
+      "compiler": "Clang",
+      "skip": false,
+      "disabled": false,
+      "result": {
+        "command": [
+          "taskset",
+          "-c",
+          "8",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "/tmp/sirkit_12h_20261031_095733/runtime_dispatch_qa/fixture.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/runtime_dispatch_qa/Clang_False_False"
+        ],
+        "returncode": 0,
+        "stdout": "",
+        "stderr": ""
+      },
+      "binary_sha256": "739fb07158ef28cdff09bc3dea068427a16a79e3abde00f9b9f773b1ede00f6d"
+    },
+    {
+      "compiler": "Clang",
+      "skip": false,
+      "disabled": true,
+      "result": {
+        "command": [
+          "taskset",
+          "-c",
+          "8",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/tmp/sirkit_12h_20261031_095733/runtime_dispatch_qa/fixture.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/runtime_dispatch_qa/Clang_False_True"
+        ],
+        "returncode": 0,
+        "stdout": "",
+        "stderr": ""
+      },
+      "binary_sha256": "97d54a4455cdba45b325014dc26c8bf19cc340a5dfc27ddbc5f2ed1f941ec260"
+    },
+    {
+      "compiler": "Clang",
+      "skip": true,
+      "disabled": false,
+      "result": {
+        "command": [
+          "taskset",
+          "-c",
+          "8",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/tmp/sirkit_12h_20261031_095733/runtime_dispatch_qa/fixture.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/runtime_dispatch_qa/Clang_True_False"
+        ],
+        "returncode": 0,
+        "stdout": "",
+        "stderr": ""
+      },
+      "binary_sha256": "e484976d1c61ef42f9ae7d0369c29f1a348addf8514708279205c7b20e4e46bf"
+    },
+    {
+      "compiler": "Clang",
+      "skip": true,
+      "disabled": true,
+      "result": {
+        "command": [
+          "taskset",
+          "-c",
+          "8",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/tmp/sirkit_12h_20261031_095733/runtime_dispatch_qa/fixture.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/runtime_dispatch_qa/Clang_True_True"
+        ],
+        "returncode": 0,
+        "stdout": "",
+        "stderr": ""
+      },
+      "binary_sha256": "00c2c79d36c137d0affee1446c352c466997104dc27f074429a2de74fbe38cd9"
+    }
+  ],
+  "results": [
+    {
+      "compiler": "GCC",
+      "skip": false,
+      "disabled": false,
+      "features": 0,
+      "result": {
+        "command": [
+          "taskset",
+          "-c",
+          "8",
+          "/tmp/sirkit_12h_20261031_095733/runtime_dispatch_qa/GCC_False_False"
+        ],
+        "returncode": 0,
+        "stdout": "{\"cases\":173,\"requested\":0,\"real\":3,\"probes\":[1,8,2,48,14],\"init_calls\":[0,0,2,0,0],\"entries\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]}\n",
+        "stderr": ""
+      },
+      "observed": {
+        "cases": 173,
+        "requested": 0,
+        "real": 3,
+        "probes": [
+          1,
+          8,
+          2,
+          48,
+          14
+        ],
+        "init_calls": [
+          0,
+          0,
+          2,
+          0,
+          0
+        ],
+        "entries": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "compiler": "GCC",
+      "skip": false,
+      "disabled": false,
+      "features": 1,
+      "result": {
+        "command": [
+          "taskset",
+          "-c",
+          "8",
+          "/tmp/sirkit_12h_20261031_095733/runtime_dispatch_qa/GCC_False_False"
+        ],
+        "returncode": 0,
+        "stdout": "{\"cases\":173,\"requested\":1,\"real\":3,\"probes\":[1,8,2,48,14],\"init_calls\":[0,0,2,0,0],\"entries\":[368,1398,1398,1568,163,2,2,9,7,2,6,0,0,640,48,360,76,412,6,14]}\n",
+        "stderr": ""
+      },
+      "observed": {
+        "cases": 173,
+        "requested": 1,
+        "real": 3,
+        "probes": [
+          1,
+          8,
+          2,
+          48,
+          14
+        ],
+        "init_calls": [
+          0,
+          0,
+          2,
+          0,
+          0
+        ],
+        "entries": [
+          368,
+          1398,
+          1398,
+          1568,
+          163,
+          2,
+          2,
+          9,
+          7,
+          2,
+          6,
+          0,
+          0,
+          640,
+          48,
+          360,
+          76,
+          412,
+          6,
+          14
+        ]
+      }
+    },
+    {
+      "compiler": "GCC",
+      "skip": false,
+      "disabled": false,
+      "features": 2,
+      "result": {
+        "command": [
+          "taskset",
+          "-c",
+          "8",
+          "/tmp/sirkit_12h_20261031_095733/runtime_dispatch_qa/GCC_False_False"
+        ],
+        "returncode": 0,
+        "stdout": "{\"cases\":173,\"requested\":2,\"real\":3,\"probes\":[1,8,2,48,14],\"init_calls\":[0,0,2,0,0],\"entries\":[0,0,0,0,0,0,0,0,0,0,0,3098925,0,0,0,0,0,0,0,0]}\n",
+        "stderr": ""
+      },
+      "observed": {
+        "cases": 173,
+        "requested": 2,
+        "real": 3,
+        "probes": [
+          1,
+          8,
+          2,
+          48,
+          14
+        ],
+        "init_calls": [
+          0,
+          0,
+          2,
+          0,
+          0
+        ],
+        "entries": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          3098925,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "compiler": "GCC",
+      "skip": false,
+      "disabled": false,
+      "features": 3,
+      "result": {
+        "command": [
+          "taskset",
+          "-c",
+          "8",
+          "/tmp/sirkit_12h_20261031_095733/runtime_dispatch_qa/GCC_False_False"
+        ],
+        "returncode": 0,
+        "stdout": "{\"cases\":173,\"requested\":3,\"real\":3,\"probes\":[1,8,2,48,14],\"init_calls\":[0,0,2,0,0],\"entries\":[368,1398,1398,1568,163,2,2,9,7,2,6,3098925,0,640,48,360,76,412,6,14]}\n",
+        "stderr": ""
+      },
+      "observed": {
+        "cases": 173,
+        "requested": 3,
+        "real": 3,
+        "probes": [
+          1,
+          8,
+          2,
+          48,
+          14
+        ],
+        "init_calls": [
+          0,
+          0,
+          2,
+          0,
+          0
+        ],
+        "entries": [
+          368,
+          1398,
+          1398,
+          1568,
+          163,
+          2,
+          2,
+          9,
+          7,
+          2,
+          6,
+          3098925,
+          0,
+          640,
+          48,
+          360,
+          76,
+          412,
+          6,
+          14
+        ]
+      }
+    },
+    {
+      "compiler": "GCC",
+      "skip": false,
+      "disabled": true,
+      "features": 3,
+      "result": {
+        "command": [
+          "taskset",
+          "-c",
+          "8",
+          "/tmp/sirkit_12h_20261031_095733/runtime_dispatch_qa/GCC_False_True"
+        ],
+        "returncode": 0,
+        "stdout": "{\"cases\":173,\"requested\":3,\"real\":3,\"probes\":[0,0,0,0,0],\"init_calls\":[0,0,0,0,0],\"entries\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]}\n",
+        "stderr": ""
+      },
+      "observed": {
+        "cases": 173,
+        "requested": 3,
+        "real": 3,
+        "probes": [
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "init_calls": [
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "entries": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "compiler": "GCC",
+      "skip": true,
+      "disabled": false,
+      "features": 0,
+      "result": {
+        "command": [
+          "taskset",
+          "-c",
+          "8",
+          "/tmp/sirkit_12h_20261031_095733/runtime_dispatch_qa/GCC_True_False"
+        ],
+        "returncode": 0,
+        "stdout": "{\"cases\":173,\"requested\":0,\"real\":3,\"probes\":[1,8,2,48,14],\"init_calls\":[0,0,2,0,0],\"entries\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]}\n",
+        "stderr": ""
+      },
+      "observed": {
+        "cases": 173,
+        "requested": 0,
+        "real": 3,
+        "probes": [
+          1,
+          8,
+          2,
+          48,
+          14
+        ],
+        "init_calls": [
+          0,
+          0,
+          2,
+          0,
+          0
+        ],
+        "entries": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "compiler": "GCC",
+      "skip": true,
+      "disabled": false,
+      "features": 1,
+      "result": {
+        "command": [
+          "taskset",
+          "-c",
+          "8",
+          "/tmp/sirkit_12h_20261031_095733/runtime_dispatch_qa/GCC_True_False"
+        ],
+        "returncode": 0,
+        "stdout": "{\"cases\":173,\"requested\":1,\"real\":3,\"probes\":[1,8,2,48,14],\"init_calls\":[0,0,2,0,0],\"entries\":[368,1398,1398,1568,0,2,2,9,7,2,6,0,0,640,48,360,76,412,6,14]}\n",
+        "stderr": ""
+      },
+      "observed": {
+        "cases": 173,
+        "requested": 1,
+        "real": 3,
+        "probes": [
+          1,
+          8,
+          2,
+          48,
+          14
+        ],
+        "init_calls": [
+          0,
+          0,
+          2,
+          0,
+          0
+        ],
+        "entries": [
+          368,
+          1398,
+          1398,
+          1568,
+          0,
+          2,
+          2,
+          9,
+          7,
+          2,
+          6,
+          0,
+          0,
+          640,
+          48,
+          360,
+          76,
+          412,
+          6,
+          14
+        ]
+      }
+    },
+    {
+      "compiler": "GCC",
+      "skip": true,
+      "disabled": false,
+      "features": 2,
+      "result": {
+        "command": [
+          "taskset",
+          "-c",
+          "8",
+          "/tmp/sirkit_12h_20261031_095733/runtime_dispatch_qa/GCC_True_False"
+        ],
+        "returncode": 0,
+        "stdout": "{\"cases\":173,\"requested\":2,\"real\":3,\"probes\":[1,8,2,48,14],\"init_calls\":[0,0,2,0,0],\"entries\":[0,0,0,0,0,0,0,0,0,0,0,3098925,0,0,0,0,0,0,0,0]}\n",
+        "stderr": ""
+      },
+      "observed": {
+        "cases": 173,
+        "requested": 2,
+        "real": 3,
+        "probes": [
+          1,
+          8,
+          2,
+          48,
+          14
+        ],
+        "init_calls": [
+          0,
+          0,
+          2,
+          0,
+          0
+        ],
+        "entries": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          3098925,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "compiler": "GCC",
+      "skip": true,
+      "disabled": false,
+      "features": 3,
+      "result": {
+        "command": [
+          "taskset",
+          "-c",
+          "8",
+          "/tmp/sirkit_12h_20261031_095733/runtime_dispatch_qa/GCC_True_False"
+        ],
+        "returncode": 0,
+        "stdout": "{\"cases\":173,\"requested\":3,\"real\":3,\"probes\":[1,8,2,48,14],\"init_calls\":[0,0,2,0,0],\"entries\":[368,1398,1398,1568,0,2,2,9,7,2,6,3098925,0,640,48,360,76,412,6,14]}\n",
+        "stderr": ""
+      },
+      "observed": {
+        "cases": 173,
+        "requested": 3,
+        "real": 3,
+        "probes": [
+          1,
+          8,
+          2,
+          48,
+          14
+        ],
+        "init_calls": [
+          0,
+          0,
+          2,
+          0,
+          0
+        ],
+        "entries": [
+          368,
+          1398,
+          1398,
+          1568,
+          0,
+          2,
+          2,
+          9,
+          7,
+          2,
+          6,
+          3098925,
+          0,
+          640,
+          48,
+          360,
+          76,
+          412,
+          6,
+          14
+        ]
+      }
+    },
+    {
+      "compiler": "GCC",
+      "skip": true,
+      "disabled": true,
+      "features": 3,
+      "result": {
+        "command": [
+          "taskset",
+          "-c",
+          "8",
+          "/tmp/sirkit_12h_20261031_095733/runtime_dispatch_qa/GCC_True_True"
+        ],
+        "returncode": 0,
+        "stdout": "{\"cases\":173,\"requested\":3,\"real\":3,\"probes\":[0,0,0,0,0],\"init_calls\":[0,0,0,0,0],\"entries\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]}\n",
+        "stderr": ""
+      },
+      "observed": {
+        "cases": 173,
+        "requested": 3,
+        "real": 3,
+        "probes": [
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "init_calls": [
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "entries": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "compiler": "Clang",
+      "skip": false,
+      "disabled": false,
+      "features": 0,
+      "result": {
+        "command": [
+          "taskset",
+          "-c",
+          "8",
+          "/tmp/sirkit_12h_20261031_095733/runtime_dispatch_qa/Clang_False_False"
+        ],
+        "returncode": 0,
+        "stdout": "{\"cases\":173,\"requested\":0,\"real\":3,\"probes\":[1,0,2,30,14],\"init_calls\":[0,0,2,0,0],\"entries\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]}\n",
+        "stderr": ""
+      },
+      "observed": {
+        "cases": 173,
+        "requested": 0,
+        "real": 3,
+        "probes": [
+          1,
+          0,
+          2,
+          30,
+          14
+        ],
+        "init_calls": [
+          0,
+          0,
+          2,
+          0,
+          0
+        ],
+        "entries": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "compiler": "Clang",
+      "skip": false,
+      "disabled": false,
+      "features": 1,
+      "result": {
+        "command": [
+          "taskset",
+          "-c",
+          "8",
+          "/tmp/sirkit_12h_20261031_095733/runtime_dispatch_qa/Clang_False_False"
+        ],
+        "returncode": 0,
+        "stdout": "{\"cases\":173,\"requested\":1,\"real\":3,\"probes\":[1,0,2,30,14],\"init_calls\":[0,0,2,0,0],\"entries\":[368,1398,1398,1568,163,2,2,9,7,0,0,0,0,640,30,360,76,412,6,14]}\n",
+        "stderr": ""
+      },
+      "observed": {
+        "cases": 173,
+        "requested": 1,
+        "real": 3,
+        "probes": [
+          1,
+          0,
+          2,
+          30,
+          14
+        ],
+        "init_calls": [
+          0,
+          0,
+          2,
+          0,
+          0
+        ],
+        "entries": [
+          368,
+          1398,
+          1398,
+          1568,
+          163,
+          2,
+          2,
+          9,
+          7,
+          0,
+          0,
+          0,
+          0,
+          640,
+          30,
+          360,
+          76,
+          412,
+          6,
+          14
+        ]
+      }
+    },
+    {
+      "compiler": "Clang",
+      "skip": false,
+      "disabled": false,
+      "features": 2,
+      "result": {
+        "command": [
+          "taskset",
+          "-c",
+          "8",
+          "/tmp/sirkit_12h_20261031_095733/runtime_dispatch_qa/Clang_False_False"
+        ],
+        "returncode": 0,
+        "stdout": "{\"cases\":173,\"requested\":2,\"real\":3,\"probes\":[1,0,2,30,14],\"init_calls\":[0,0,2,0,0],\"entries\":[0,0,0,0,0,0,0,0,0,0,0,3098925,0,0,0,0,0,0,0,0]}\n",
+        "stderr": ""
+      },
+      "observed": {
+        "cases": 173,
+        "requested": 2,
+        "real": 3,
+        "probes": [
+          1,
+          0,
+          2,
+          30,
+          14
+        ],
+        "init_calls": [
+          0,
+          0,
+          2,
+          0,
+          0
+        ],
+        "entries": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          3098925,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "compiler": "Clang",
+      "skip": false,
+      "disabled": false,
+      "features": 3,
+      "result": {
+        "command": [
+          "taskset",
+          "-c",
+          "8",
+          "/tmp/sirkit_12h_20261031_095733/runtime_dispatch_qa/Clang_False_False"
+        ],
+        "returncode": 0,
+        "stdout": "{\"cases\":173,\"requested\":3,\"real\":3,\"probes\":[1,0,2,30,14],\"init_calls\":[0,0,2,0,0],\"entries\":[368,1398,1398,1568,163,2,2,9,7,0,0,3098925,0,640,30,360,76,412,6,14]}\n",
+        "stderr": ""
+      },
+      "observed": {
+        "cases": 173,
+        "requested": 3,
+        "real": 3,
+        "probes": [
+          1,
+          0,
+          2,
+          30,
+          14
+        ],
+        "init_calls": [
+          0,
+          0,
+          2,
+          0,
+          0
+        ],
+        "entries": [
+          368,
+          1398,
+          1398,
+          1568,
+          163,
+          2,
+          2,
+          9,
+          7,
+          0,
+          0,
+          3098925,
+          0,
+          640,
+          30,
+          360,
+          76,
+          412,
+          6,
+          14
+        ]
+      }
+    },
+    {
+      "compiler": "Clang",
+      "skip": false,
+      "disabled": true,
+      "features": 3,
+      "result": {
+        "command": [
+          "taskset",
+          "-c",
+          "8",
+          "/tmp/sirkit_12h_20261031_095733/runtime_dispatch_qa/Clang_False_True"
+        ],
+        "returncode": 0,
+        "stdout": "{\"cases\":173,\"requested\":3,\"real\":3,\"probes\":[0,0,0,0,0],\"init_calls\":[0,0,0,0,0],\"entries\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]}\n",
+        "stderr": ""
+      },
+      "observed": {
+        "cases": 173,
+        "requested": 3,
+        "real": 3,
+        "probes": [
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "init_calls": [
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "entries": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "compiler": "Clang",
+      "skip": true,
+      "disabled": false,
+      "features": 0,
+      "result": {
+        "command": [
+          "taskset",
+          "-c",
+          "8",
+          "/tmp/sirkit_12h_20261031_095733/runtime_dispatch_qa/Clang_True_False"
+        ],
+        "returncode": 0,
+        "stdout": "{\"cases\":173,\"requested\":0,\"real\":3,\"probes\":[1,0,2,30,14],\"init_calls\":[0,0,2,0,0],\"entries\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]}\n",
+        "stderr": ""
+      },
+      "observed": {
+        "cases": 173,
+        "requested": 0,
+        "real": 3,
+        "probes": [
+          1,
+          0,
+          2,
+          30,
+          14
+        ],
+        "init_calls": [
+          0,
+          0,
+          2,
+          0,
+          0
+        ],
+        "entries": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "compiler": "Clang",
+      "skip": true,
+      "disabled": false,
+      "features": 1,
+      "result": {
+        "command": [
+          "taskset",
+          "-c",
+          "8",
+          "/tmp/sirkit_12h_20261031_095733/runtime_dispatch_qa/Clang_True_False"
+        ],
+        "returncode": 0,
+        "stdout": "{\"cases\":173,\"requested\":1,\"real\":3,\"probes\":[1,0,2,30,14],\"init_calls\":[0,0,2,0,0],\"entries\":[368,1398,1398,1568,0,2,2,9,7,0,0,0,0,640,30,360,76,412,6,14]}\n",
+        "stderr": ""
+      },
+      "observed": {
+        "cases": 173,
+        "requested": 1,
+        "real": 3,
+        "probes": [
+          1,
+          0,
+          2,
+          30,
+          14
+        ],
+        "init_calls": [
+          0,
+          0,
+          2,
+          0,
+          0
+        ],
+        "entries": [
+          368,
+          1398,
+          1398,
+          1568,
+          0,
+          2,
+          2,
+          9,
+          7,
+          0,
+          0,
+          0,
+          0,
+          640,
+          30,
+          360,
+          76,
+          412,
+          6,
+          14
+        ]
+      }
+    },
+    {
+      "compiler": "Clang",
+      "skip": true,
+      "disabled": false,
+      "features": 2,
+      "result": {
+        "command": [
+          "taskset",
+          "-c",
+          "8",
+          "/tmp/sirkit_12h_20261031_095733/runtime_dispatch_qa/Clang_True_False"
+        ],
+        "returncode": 0,
+        "stdout": "{\"cases\":173,\"requested\":2,\"real\":3,\"probes\":[1,0,2,30,14],\"init_calls\":[0,0,2,0,0],\"entries\":[0,0,0,0,0,0,0,0,0,0,0,3098925,0,0,0,0,0,0,0,0]}\n",
+        "stderr": ""
+      },
+      "observed": {
+        "cases": 173,
+        "requested": 2,
+        "real": 3,
+        "probes": [
+          1,
+          0,
+          2,
+          30,
+          14
+        ],
+        "init_calls": [
+          0,
+          0,
+          2,
+          0,
+          0
+        ],
+        "entries": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          3098925,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "compiler": "Clang",
+      "skip": true,
+      "disabled": false,
+      "features": 3,
+      "result": {
+        "command": [
+          "taskset",
+          "-c",
+          "8",
+          "/tmp/sirkit_12h_20261031_095733/runtime_dispatch_qa/Clang_True_False"
+        ],
+        "returncode": 0,
+        "stdout": "{\"cases\":173,\"requested\":3,\"real\":3,\"probes\":[1,0,2,30,14],\"init_calls\":[0,0,2,0,0],\"entries\":[368,1398,1398,1568,0,2,2,9,7,0,0,3098925,0,640,30,360,76,412,6,14]}\n",
+        "stderr": ""
+      },
+      "observed": {
+        "cases": 173,
+        "requested": 3,
+        "real": 3,
+        "probes": [
+          1,
+          0,
+          2,
+          30,
+          14
+        ],
+        "init_calls": [
+          0,
+          0,
+          2,
+          0,
+          0
+        ],
+        "entries": [
+          368,
+          1398,
+          1398,
+          1568,
+          0,
+          2,
+          2,
+          9,
+          7,
+          0,
+          0,
+          3098925,
+          0,
+          640,
+          30,
+          360,
+          76,
+          412,
+          6,
+          14
+        ]
+      }
+    },
+    {
+      "compiler": "Clang",
+      "skip": true,
+      "disabled": true,
+      "features": 3,
+      "result": {
+        "command": [
+          "taskset",
+          "-c",
+          "8",
+          "/tmp/sirkit_12h_20261031_095733/runtime_dispatch_qa/Clang_True_True"
+        ],
+        "returncode": 0,
+        "stdout": "{\"cases\":173,\"requested\":3,\"real\":3,\"probes\":[0,0,0,0,0],\"init_calls\":[0,0,0,0,0],\"entries\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]}\n",
+        "stderr": ""
+      },
+      "observed": {
+        "cases": 173,
+        "requested": 3,
+        "real": 3,
+        "probes": [
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "init_calls": [
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "entries": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    }
+  ],
+  "counter_map": [
+    {
+      "id": 0,
+      "library": "ntt",
+      "function": "vector_reduce",
+      "occurrence": 0
+    },
+    {
+      "id": 1,
+      "library": "ntt",
+      "function": "vector_add",
+      "occurrence": 0
+    },
+    {
+      "id": 2,
+      "library": "ntt",
+      "function": "vector_subtract",
+      "occurrence": 0
+    },
+    {
+      "id": 3,
+      "library": "ntt",
+      "function": "vector_multiply",
+      "occurrence": 0
+    },
+    {
+      "id": 4,
+      "library": "ntt",
+      "function": "vector_check",
+      "occurrence": 0
+    },
+    {
+      "id": 5,
+      "library": "ntt",
+      "function": "pointwise_avx2",
+      "occurrence": 0
+    },
+    {
+      "id": 6,
+      "library": "ntt",
+      "function": "naive_avx2",
+      "occurrence": 0
+    },
+    {
+      "id": 7,
+      "library": "ntt",
+      "function": "forward_avx2",
+      "occurrence": 0
+    },
+    {
+      "id": 8,
+      "library": "ntt",
+      "function": "backward_avx2",
+      "occurrence": 0
+    },
+    {
+      "id": 9,
+      "library": "matrix",
+      "function": "matrix_u32_tiled_avx2",
+      "occurrence": 0
+    },
+    {
+      "id": 10,
+      "library": "matrix",
+      "function": "matrix_u32_accumulate_avx2",
+      "occurrence": 0
+    },
+    {
+      "id": 11,
+      "library": "wavelet",
+      "function": "wavelet_hardware_popcount",
+      "occurrence": 0
+    },
+    {
+      "id": 12,
+      "library": "wavelet",
+      "function": "wavelet_hardware_popcount",
+      "occurrence": 1
+    },
+    {
+      "id": 13,
+      "library": "wavelet",
+      "function": "build_avx2",
+      "occurrence": 0
+    },
+    {
+      "id": 14,
+      "library": "floyd",
+      "function": "FloydWarshallRelaxAvx2",
+      "occurrence": 0
+    },
+    {
+      "id": 15,
+      "library": "sieve",
+      "function": "carry_save_avx2",
+      "occurrence": 0
+    },
+    {
+      "id": 16,
+      "library": "sieve",
+      "function": "popcount_lanes_avx2",
+      "occurrence": 0
+    },
+    {
+      "id": 17,
+      "library": "sieve",
+      "function": "load_words_avx2",
+      "occurrence": 0
+    },
+    {
+      "id": 18,
+      "library": "sieve",
+      "function": "popcount_words_carry_avx2",
+      "occurrence": 0
+    },
+    {
+      "id": 19,
+      "library": "sieve",
+      "function": "popcount_words_avx2",
+      "occurrence": 0
+    }
+  ],
+  "patch_summary": [
+    {
+      "path": "Math/NTT.cpp",
+      "raw_sha256": "5b5c85da53f0108b521b725b5ab014eaf8ee21446729b2e45c30100d796426fa",
+      "instrumented_sha256": "0395b4f849010b0a21fbd2e1935a3ec4eca8b0c89331797ded937667bbab26b8",
+      "reverse_patch_exact": true,
+      "patch_counts": 10
+    },
+    {
+      "path": "Math/Matrix.cpp",
+      "raw_sha256": "cac01f95cd19fac7f52b2d9eba304ce8b12bcfbb63af8610de5dd68c859291af",
+      "instrumented_sha256": "f2f13127ac09a562266d88f6d0b36fb53c6db239a4a470abe6862347c477636e",
+      "reverse_patch_exact": true,
+      "patch_counts": 3
+    },
+    {
+      "path": "DataStructure/Wavelet_Matrix.cpp",
+      "raw_sha256": "33b4b5b8a25894cbc698e2badbb1adeabf98478fd5295ccb3ed108689e81f7f5",
+      "instrumented_sha256": "bf89ec63da6aa1418b80fa6e272574237c6437e3b5e77bbd161bb06e4765d9c2",
+      "reverse_patch_exact": true,
+      "patch_counts": 6
+    },
+    {
+      "path": "Graph/Floyd-Warshall.cpp",
+      "raw_sha256": "edba738f97a7145f5bb736ae0cc317549b4ad3f1eafd0eb2517b6e2e557cdddf",
+      "instrumented_sha256": "5bccd0ef53bd187201c2f1cdac75eaceb6512607cc71ed5efa48bb7c9bb1fce4",
+      "reverse_patch_exact": true,
+      "patch_counts": 2
+    },
+    {
+      "path": "Math/Eratosthenes.cpp",
+      "raw_sha256": "dcd12c2562226efee621747edff3cbbfcf0b85e031d06da53a0f114e6b15500c",
+      "instrumented_sha256": "9221bde417522c72016c6cf28cfc343e8356a7a27747ec9a3aa52878eb6d30c4",
+      "reverse_patch_exact": true,
+      "patch_counts": 6
+    }
+  ],
+  "method": [
+    "Five current source snapshots; test-only exact builtin feature/probe-init replacements and20 optional-ISA helper-entry counters. Stored full reversible patches/diffs recover every original source byte.",
+    "Runtime noinline environment stub reads SIRKIT_QA_FEATURES, including before global Wavelet feature initializers. No -march=native; fixture rejects pre-defined AVX2/POPCNT compile targets.",
+    "Actual host AVX2/POPCNT support is checked before positive helper execution. All tested host reports were mask3.",
+    "8builds: GCC15.2/Clang21 ×checked/SKIP ×SIMD enabled/disabled.16enabled feature-mask runs plus4disabled runs requesting both features.",
+    "Every run asserts below/above threshold counter deltas, values against independent oracles, final none-feature zero optional helper entries, and selected-feature positive counts. Disabled runs assert zero helper/probe/init calls;10 library/compiler preprocessing checks assert instrumented helper/probe call absence.",
+    "Subprocess pause/ack checked before each compiler/execution/version/preprocessor child. All correctness runs pinned CPU8. No formal/shared/frozen previous artifacts changed."
+  ],
+  "oracles": {
+    "NTT": "Direct modular DFT for small lengths, inverse roundtrip and naive modular convolution; transform8/16/32, output15/16, direct/NTT boundary32/33. Includes non-Montgomery modulus with no SIMD expected.",
+    "Matrix": "Independent uint64 product→uint32 accumulation reference; column15/16, left63/64, K64/65, B262144/exceed, output-row tails and32-column tails; validates full accumulator vs tiled helper selection. Clang correctly has no Matrix dedicated helper.",
+    "Wavelet": "Sorted subranges and direct counts/access for uint16/32/64,int64, extrema, empty/uniform, word63/64/65 and construction127/128/129, all public queried extrema/rank/kth/pred/succ operations. Separately asserts POPCNT/build helper selections.",
+    "Floyd": "Independent per-source Dijkstra for nonnegative graphs and ordered-DAG DP for negative edges; dense/sparse/disconnected, n7/8/15/16/31/32/63/64/65, with/without path restoration and path-cost checks.",
+    "Eratosthenes": "Independent trial division up to40000; scalar/SIMD3968/3969 and carry-reduction word boundaries, prime_count/is_prime/enumeration."
+  },
+  "fixture_cases_per_run": 173,
+  "total_fixture_case_runs": 3460,
+  "limits": [
+    "This validates instrumented dispatch decisions and selected valid-case results. It is NOT genuine unsupported-CPU execution, qemu emulation, or proof of all physical instructions used by compiler-generated code.",
+    "Instrumentation changes code generation and timing; no performance conclusion or uninstrumented binary identity claim is made.",
+    "Counters cover20 named optional-ISA entries and guarded CPU probes; compiler baseline instructions/auto-vectorization and uninstrumented standard-library internals are not counted.",
+    "Positive tests execute only on actual supported host ISA. No native-target build, runtime unsupported hardware, sanitizer campaign or exhaustive input-domain proof is claimed.",
+    "Disabled preprocessor checks remove branch code, while none-feature runtime tests retain optional helper definitions and exercise false guards."
+  ],
+  "artifacts": {
+    "Audit/data/runtime-simd-dispatch-2026-10-31-fixtures.zip": {
+      "sha256": "200407e205e2f243d0817a22d09b6532353458e1cdaa473f048292066336c608",
+      "bytes": 71500
+    }
+  },
+  "fixture_sha256": "e348bac84e3e46613b74fcc8abbf435ee8ef19682f4f63e642f4cf8ef31be6c5",
+  "shim_sha256": "47d4f82e983ba59c823770332a2efff299a9819081b70310045dd2b2357d847e",
+  "instrumentation_sha256": "eb0899921b3d2356395b10c855fb24f0fcddb87bff9eceda5c567dfd470042c0",
+  "source_drift": {}
+}

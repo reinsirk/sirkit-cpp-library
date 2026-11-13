@@ -1,0 +1,282 @@
+{
+  "date": "2026-10-31",
+  "task": "配布ZIPの独立整合・同期検証",
+  "scope": "105primary/420profiles/227normalVerify/802profileVerifyのCbaseline。後続のMath採用や再生成後のZIPへ検証済みを転記しない。最終archiveは同validatorを再実行する。",
+  "created_utc": "2026-10-31T18:28:03.381420+00:00",
+  "checks": [
+    "全entryのCRC・正規/一意/安全path・casefold衝突・symlink・file/directory衝突・容量budget",
+    "chosen editionのライブラリ/提出コードと呼出時のcurrent manifest/workspace SHAを照合",
+    "full manifest byte一致、flat manifest選択IDとchosen profile SHA/flat source_paths・upstream来歴を照合",
+    "全Verify cppを512KiB以下、Examplesのquoted依存をZIP内で解決",
+    "StandaloneExamplesのown/ACLを独立再展開し同期照合、未展開quoted/atcoder/macro includeを拒否",
+    "Node Fast exampleの型adapterと所有コメント、Fast Node driver mainのshared_ptr API残存を検査",
+    "Document/READMEの相対inline/reference links、コードfence/inline code除外、括弧/日本語名/percent encodingを扱う"
+  ],
+  "standalone_comparison": "ACL展開の整形差としてliteral外の空行だけを除いて比較。文字列/raw文字列中の空白と空行、非空行、主処理は保つ。共有packager/helperをimportせず独立実装。",
+  "unit_validation": {
+    "base_distinct_cases": 30,
+    "repair_additional_cases": 7,
+    "base_execution_log": "/tmp/sirkit_12h_20261031_095733/distribution_integrity/unit_fixture_stdout.log",
+    "repair_suite_cases_including_inherited_base": 37,
+    "repair_execution_log": "/tmp/sirkit_12h_20261031_095733/distribution_integrity/repair_fixture_stdout.log",
+    "status": "PASS",
+    "coverage": "5edition正例、CRC破損/unsafe/duplicate/casefold/symlink/file-dir、source/manifest/adapter/ACL/依存の改変、512KiB境界、comment/raw/splice/digit separator/leading #、Markdown/修復後再検証。"
+  },
+  "current_manifest_hashes": {
+    "Variants/manifest.json": "441774f72d5d7cd85ff4427126b07fe1ae60f937c1554e63eed466af520d0040",
+    "Variants/verify_manifest.json": "47f56dde2ea644a07f41115263c9d7179a084d2a88bfe7669a6975f7d02c5a35",
+    "Verify/current/manifest.json": "a18ec79d5251f09f85c0ce9403f5b984f4c05c3aa5f1a8c9341581872b34028c",
+    "Scripts/library_layout.json": "8f809a5a3d1235a508e7144d0600060ac68859a5d663bdb9b7d47d6663b8486b"
+  },
+  "before_repair": [
+    {
+      "edition": "gcc",
+      "archive": "/tmp/sirkit_12h_20261031_095733/distribution_qa_1820/sirkit-cpp-library_gcc.zip",
+      "archive_sha256": "fd894b2ea5b59adbcdc5ee47fd0c3d6606174f6f67f76c50f7781087dc6e0e3a",
+      "validator_sha256": "273f414fe22efaa38afa76c464fa7888a6903c33cf216399c611770d913ce780",
+      "checked_at_utc": "2026-10-31T18:22:28.064751+00:00",
+      "ok": false,
+      "error_count": 90,
+      "warning_count": 243,
+      "stats": {
+        "entries": 647,
+        "files": 647,
+        "total_uncompressed_bytes": 14219534,
+        "crc_entries_checked": 647,
+        "library_entries": 105,
+        "verify_entries": 227,
+        "examples": 103,
+        "relative_markdown_links": 625,
+        "broken_markdown_links": 90
+      }
+    },
+    {
+      "edition": "clang",
+      "archive": "/tmp/sirkit_12h_20261031_095733/distribution_qa_1820/sirkit-cpp-library_clang.zip",
+      "archive_sha256": "68a9639f366a15883cfca553e47b96bb39e4667e9a24de8013c4ea7c3f9b5d9b",
+      "validator_sha256": "273f414fe22efaa38afa76c464fa7888a6903c33cf216399c611770d913ce780",
+      "checked_at_utc": "2026-10-31T18:22:30.547703+00:00",
+      "ok": false,
+      "error_count": 90,
+      "warning_count": 243,
+      "stats": {
+        "entries": 647,
+        "files": 647,
+        "total_uncompressed_bytes": 13713439,
+        "crc_entries_checked": 647,
+        "library_entries": 105,
+        "verify_entries": 227,
+        "examples": 103,
+        "relative_markdown_links": 625,
+        "broken_markdown_links": 90
+      }
+    },
+    {
+      "edition": "fast_gcc",
+      "archive": "/tmp/sirkit_12h_20261031_095733/distribution_qa_1820/sirkit-cpp-library_fast_gcc.zip",
+      "archive_sha256": "5c8b5dac34b1937dbec2ac38dad5caaff225039629b7b6fdb0a64eca88298b10",
+      "validator_sha256": "273f414fe22efaa38afa76c464fa7888a6903c33cf216399c611770d913ce780",
+      "checked_at_utc": "2026-10-31T18:22:32.925801+00:00",
+      "ok": false,
+      "error_count": 90,
+      "warning_count": 175,
+      "stats": {
+        "entries": 594,
+        "files": 594,
+        "total_uncompressed_bytes": 11757947,
+        "crc_entries_checked": 594,
+        "library_entries": 105,
+        "verify_entries": 174,
+        "examples": 103,
+        "relative_markdown_links": 625,
+        "broken_markdown_links": 90
+      }
+    },
+    {
+      "edition": "fast_clang",
+      "archive": "/tmp/sirkit_12h_20261031_095733/distribution_qa_1820/sirkit-cpp-library_fast_clang.zip",
+      "archive_sha256": "f5a7b490d38923a41655d0a20c055e6aaa65619371a4bdf4d8778318b6497e40",
+      "validator_sha256": "273f414fe22efaa38afa76c464fa7888a6903c33cf216399c611770d913ce780",
+      "checked_at_utc": "2026-10-31T18:22:35.242585+00:00",
+      "ok": false,
+      "error_count": 90,
+      "warning_count": 175,
+      "stats": {
+        "entries": 594,
+        "files": 594,
+        "total_uncompressed_bytes": 11338750,
+        "crc_entries_checked": 594,
+        "library_entries": 105,
+        "verify_entries": 174,
+        "examples": 103,
+        "relative_markdown_links": 625,
+        "broken_markdown_links": 90
+      }
+    },
+    {
+      "edition": "full",
+      "archive": "/tmp/sirkit_12h_20261031_095733/distribution_qa_1820/sirkit-cpp-library_full.zip",
+      "archive_sha256": "2d3bcfc0fca269998cc187affc64a23072b0c8d0d59d3261f8df4697d1307ecd",
+      "validator_sha256": "273f414fe22efaa38afa76c464fa7888a6903c33cf216399c611770d913ce780",
+      "checked_at_utc": "2026-10-31T18:22:37.527829+00:00",
+      "ok": true,
+      "error_count": 0,
+      "warning_count": 0,
+      "stats": {
+        "entries": 3389,
+        "files": 3389,
+        "total_uncompressed_bytes": 673638535,
+        "crc_entries_checked": 3389,
+        "library_entries": 420,
+        "verify_entries": 1029,
+        "examples": 103,
+        "relative_markdown_links": 1001,
+        "broken_markdown_links": 0
+      }
+    }
+  ],
+  "after_repair": [
+    {
+      "edition": "gcc",
+      "archive": "/tmp/sirkit_12h_20261031_095733/distribution_qa_repaired/sirkit-cpp-library_gcc.zip",
+      "archive_sha256": "a179d908d5b3f3333011665b3b04140cac6f41d530334fb0e84e0ebfb42fd171",
+      "validator_sha256": "ef34343d98516198906f96c19b3eba950e894e84fe8cca3f45889c10b1bb2bf5",
+      "checked_at_utc": "2026-10-31T18:25:32.297398+00:00",
+      "ok": true,
+      "error_count": 0,
+      "warning_count": 0,
+      "stats": {
+        "entries": 648,
+        "files": 648,
+        "total_uncompressed_bytes": 14267593,
+        "crc_entries_checked": 648,
+        "library_entries": 105,
+        "verify_entries": 227,
+        "examples": 103,
+        "relative_markdown_links": 770,
+        "broken_markdown_links": 0
+      }
+    },
+    {
+      "edition": "clang",
+      "archive": "/tmp/sirkit_12h_20261031_095733/distribution_qa_repaired/sirkit-cpp-library_clang.zip",
+      "archive_sha256": "72d0ac983370d8fc4c818aa0c5b643287cf6653df16b7e1733e483643711554f",
+      "validator_sha256": "ef34343d98516198906f96c19b3eba950e894e84fe8cca3f45889c10b1bb2bf5",
+      "checked_at_utc": "2026-10-31T18:25:33.505755+00:00",
+      "ok": true,
+      "error_count": 0,
+      "warning_count": 0,
+      "stats": {
+        "entries": 648,
+        "files": 648,
+        "total_uncompressed_bytes": 13761500,
+        "crc_entries_checked": 648,
+        "library_entries": 105,
+        "verify_entries": 227,
+        "examples": 103,
+        "relative_markdown_links": 770,
+        "broken_markdown_links": 0
+      }
+    },
+    {
+      "edition": "fast_gcc",
+      "archive": "/tmp/sirkit_12h_20261031_095733/distribution_qa_repaired/sirkit-cpp-library_fast_gcc.zip",
+      "archive_sha256": "2aee6d50fc1a7d2dff68e8f0c2cd177815c095f2c2636ebda104c4661b054713",
+      "validator_sha256": "ef34343d98516198906f96c19b3eba950e894e84fe8cca3f45889c10b1bb2bf5",
+      "checked_at_utc": "2026-10-31T18:25:34.662532+00:00",
+      "ok": true,
+      "error_count": 0,
+      "warning_count": 0,
+      "stats": {
+        "entries": 595,
+        "files": 595,
+        "total_uncompressed_bytes": 11795633,
+        "crc_entries_checked": 595,
+        "library_entries": 105,
+        "verify_entries": 174,
+        "examples": 103,
+        "relative_markdown_links": 717,
+        "broken_markdown_links": 0
+      }
+    },
+    {
+      "edition": "fast_clang",
+      "archive": "/tmp/sirkit_12h_20261031_095733/distribution_qa_repaired/sirkit-cpp-library_fast_clang.zip",
+      "archive_sha256": "3b80d800232aae2fa54760d6dd4574dcc9f33ae1d32c1785d20f146d9521e126",
+      "validator_sha256": "ef34343d98516198906f96c19b3eba950e894e84fe8cca3f45889c10b1bb2bf5",
+      "checked_at_utc": "2026-10-31T18:25:35.816222+00:00",
+      "ok": true,
+      "error_count": 0,
+      "warning_count": 0,
+      "stats": {
+        "entries": 595,
+        "files": 595,
+        "total_uncompressed_bytes": 11376438,
+        "crc_entries_checked": 595,
+        "library_entries": 105,
+        "verify_entries": 174,
+        "examples": 103,
+        "relative_markdown_links": 717,
+        "broken_markdown_links": 0
+      }
+    }
+  ],
+  "repair": "selectedだけのVerify index、flat source_pathsとupstream_source_paths保持、欠けたAudit/test/generatorリンクの明記付き元repo参照、生成コマンドはfullrepo対象の短い注記。root Readmeは短いまま、Document履歴追加なし。",
+  "supplement_sizes": {
+    "audit_references": 17,
+    "audit_bytes": 4876408,
+    "normal_test_references": 59,
+    "normal_test_bytes": 369813,
+    "generator_references": 1,
+    "verify_readme_owners": 8
+  },
+  "later_document_delta": "Rootはafter snapshot後にDocument indexへBeats/Swag/Xorの3リンクを追加。この追加Docは当該archiveへ検証済みとは扱わず、最終再構築後に再確認する。",
+  "preliminary_archives": {
+    "status": "STALE TEST FIXTURES ONLY、現行検証結果ではない",
+    "report": "/tmp/sirkit_12h_20261031_095733/distribution_integrity/stale_preliminary_fixture_report.json",
+    "report_sha256": "59806390a8e6670dd24b5e9e45247a3883be898f657a58264538b2405d2cd04f"
+  },
+  "evidence": {
+    "zip_integrity.py": {
+      "path": "/tmp/sirkit_12h_20261031_095733/distribution_integrity/zip_integrity.py",
+      "sha256": "ef34343d98516198906f96c19b3eba950e894e84fe8cca3f45889c10b1bb2bf5"
+    },
+    "unit_fixtures.py": {
+      "path": "/tmp/sirkit_12h_20261031_095733/distribution_integrity/unit_fixtures.py",
+      "sha256": "dc50a088a240b87770a8c851eb1ef066d1095d29fd29f44f455340aa02f5b838"
+    },
+    "flattened_markdown_repair.py": {
+      "path": "/tmp/sirkit_12h_20261031_095733/distribution_integrity/flattened_markdown_repair.py",
+      "sha256": "c91c36ca66aa7b8a1d3119ec48c8be0affa2018b5eefcf96b76100ed34f21b17"
+    },
+    "repair_unit_fixtures.py": {
+      "path": "/tmp/sirkit_12h_20261031_095733/distribution_integrity/repair_unit_fixtures.py",
+      "sha256": "961921f5c2d62e2d8448fd1a54c0b029f1aac8459d315839977a5f0a8e9cf262"
+    },
+    "proposal.md": {
+      "path": "/tmp/sirkit_12h_20261031_095733/distribution_integrity/proposal.md",
+      "sha256": "a47a18e969e18e257a6fa298197958da5467f52e914544a2ec2c152bca93d85a"
+    },
+    "planned_flat_link_review.json": {
+      "path": "/tmp/sirkit_12h_20261031_095733/distribution_integrity/planned_flat_link_review.json",
+      "sha256": "ab48bc1fec652e6e290b53feda30e2f4d5fc60007c60ab88e6388a5991f2b925"
+    },
+    "fresh_1820_before_repair_report.json": {
+      "path": "/tmp/sirkit_12h_20261031_095733/distribution_integrity/fresh_1820_before_repair_report.json",
+      "sha256": "e05c12843742fd6e5558c1e046e2e4f4e7337a335e7ce308480dfbb24dba1733"
+    },
+    "fresh_repaired_report.json": {
+      "path": "/tmp/sirkit_12h_20261031_095733/distribution_integrity/fresh_repaired_report.json",
+      "sha256": "561319cd07cf2c026b76a90ae8b045cf8a2c45f20b0fd6c23009a3223eec8675"
+    }
+  },
+  "validator_correction": {
+    "before_sha256": "273f414fe22efaa38afa76c464fa7888a6903c33cf216399c611770d913ce780",
+    "final_sha256": "ef34343d98516198906f96c19b3eba950e894e84fe8cca3f45889c10b1bb2bf5",
+    "change": "leading commentに#がある場合のdirective開始位置をsource.indexからmask.indexへ修正。新unitで再現し解決。実データの1820結果には当該形がないため旧結果も保持。"
+  },
+  "limits": "C++実行/オンラインAC/性能はこのZIP検査の範囲外。外部HTTPリンクの応答とMarkdown fragment先は検査しない。archiveとworkspaceを安定させて実行する。",
+  "repository_mutations": "agentはtmpのみ。Rootがhelper/packager/validator/testsを正式統合。",
+  "adopted_validator_byte_identical": true,
+  "adopted_repair_functions_ast_identical": true
+}

@@ -1,0 +1,2771 @@
+{
+  "date": "2026-11-12",
+  "library": "Graph/Low_Link.cpp",
+  "decision": "adopt_parent_walk_reused_work_arrays_and_single_component_fill",
+  "source_sha256": {
+    "before": "6e24f831bd5ccec97efbe97de9ebd4b58ddbe942a7a55446975094f7ea018569",
+    "after": "b6136a009ad424b9e15f1d7efd59987be2f8d3f95de9adb51fdb7a137221ed3f"
+  },
+  "selection": {
+    "decision": "adopt_parent_walk_reused_work_arrays_and_single_component_fill",
+    "label": "compact_dfs_single_fill",
+    "measured_candidate_sha256": "b6136a009ad424b9e15f1d7efd59987be2f8d3f95de9adb51fdb7a137221ed3f",
+    "changes": [
+      "DFSの明示スタックを親への参照で置き換える。",
+      "根の子数だけを変数で保持し、全頂点分の子数配列を除く。",
+      "DFS後の親配列を2辺連結成分の参照鎖と最終成分番号に再利用する。",
+      "2辺連結成分が1つなら返り値を必要数確保し、昇順の頂点番号を直接代入する。"
+    ],
+    "rejected_candidates": {
+      "compact_work": "親への歩行と合成した方の安定した短縮を選択。",
+      "parent_walk": "配列再利用と合成した方を選択。",
+      "block_vertex_lazy_stamp": "星型では改善するが、初期の閉路・dense照会に約5〜12%の後退を観測。最終版に含めない。",
+      "two_edge_single_reserve": "連番直接fillの方が初期照会比較で速く、最終版はfillを選択。",
+      "narrow_parent_pending": "初期stage4で木や閉路が改善する一方、GCC大規模疎ランダムのwhole二辺連結で+3.81%の兆候があり不採用。少数反復の候補比較であり最終本体の退行とは扱わない。"
+    },
+    "outcome": {
+      "online_before_this_change": {
+        "low_link_two_edge": {
+          "submission": 416612,
+          "status": "AC",
+          "time_ms": 42
+        },
+        "low_link_biconnected": {
+          "submission": 416613,
+          "status": "AC",
+          "time_ms": 208
+        }
+      },
+      "local_whole_cells": 72,
+      "local_core_cells": 122,
+      "all_cells_sufficient": true,
+      "whole_max_ratio": 1.0020461113337693,
+      "core_max_ratio": 1.0226806903307009,
+      "whole_best_speedup_percent": 10.458978772231786,
+      "single_component_cycle100k_getter_speedup_percent": [
+        {
+          "compiler": "gcc",
+          "flag": "native",
+          "setting": "checked",
+          "percent": 42.933810375670845
+        },
+        {
+          "compiler": "gcc",
+          "flag": "native",
+          "setting": "skip",
+          "percent": 42.753259779338016
+        },
+        {
+          "compiler": "gcc",
+          "flag": "default",
+          "setting": "skip",
+          "percent": 43.02065190345857
+        },
+        {
+          "compiler": "clang",
+          "flag": "native",
+          "setting": "checked",
+          "percent": 49.9370012599748
+        },
+        {
+          "compiler": "clang",
+          "flag": "native",
+          "setting": "skip",
+          "percent": 49.402519108623096
+        },
+        {
+          "compiler": "clang",
+          "flag": "default",
+          "setting": "skip",
+          "percent": 49.11638607131653
+        }
+      ],
+      "fresh_correctness_jobs": 32,
+      "independent_fixture_comparisons": 208
+    },
+    "tradeoff_notes": [
+      "追加測定は初期control中央値±3%外、候補3%超、valid不足の全17セルを機械的に選び、候補7・対照3組を一度追加。初期rawを全保存し、候補が遅い試行を除外せず統合した。",
+      "最終の全194セルで候補中央値は旧版比+3%以内。1〜3%差まで一律に同速と断定しない。",
+      "stage3の一回照会では単一成分の約6割短縮が見えたが、最終は返り値16件を保持する反復で約43〜50%短縮。前者を最終の性能値に転記しない。"
+    ],
+    "limitations": [
+      "i9-14900K P-Core CPU12のC++23 -O2、native/defaultでの比較。Library CheckerのAMDサーバーで同率の改善を保証しない。",
+      "追加後も同一対照中央値±3%外が4セル残る。小規模照会3セルとGCC native checkedのdense再build1セルであり、小さい差を成果の根拠に使わない。",
+      "公式ケースの一部は前回より遅い。星型175→184ms、max_random172→176ms、小規模10msを含む結果を削除せず、ノイズと断定しない。",
+      "辺番号size_t経路は通常サイズの入力で強制した。UINT32_MAXを超える辺数の物理試験ではない。"
+    ],
+    "risks": [
+      "今回の42ms/208msは変更前6e24f8の提出判定。採用するb613本体の通常版2本は未提出。"
+    ]
+  },
+  "required_resubmission": [
+    "Verify/current/submissions/low_link_two_edge.cpp",
+    "Verify/current/submissions/low_link_biconnected.cpp"
+  ],
+  "online_evidence": "Audit/online-low-link-416612-2026-11-12.json",
+  "online_scope": "416612のtwo_edge AC42ms・416613のbiconnected AC208msは提出時6e24f8本体/main/共通IOと本文照合済み。今回採用の新本体は未提出で、このACを現行版へ転記しない。派生版へオンラインACを転記しない。",
+  "public_online_comparison": {
+    "scope": "公式APIの別提出の時間差。オンラインの同一CPU/実行条件を保証せず、ローカル条件固定比較と区別する。",
+    "programs": {
+      "low_link_two_edge": {
+        "old_submission": 416596,
+        "new_submission": 416612,
+        "old_overview": {
+          "id": 416596,
+          "is_latest": true,
+          "lang": "cpp",
+          "memory": 16674816,
+          "problem_name": "two_edge_connected_components",
+          "problem_title": "Two-Edge-Connected Components",
+          "status": "AC",
+          "submission_time": "2026-11-12T10:04:31.272582Z",
+          "time": 0.042,
+          "user_name": "reinsirk"
+        },
+        "new_overview": {
+          "id": 416612,
+          "is_latest": true,
+          "lang": "cpp",
+          "memory": 16879616,
+          "problem_name": "two_edge_connected_components",
+          "problem_title": "Two-Edge-Connected Components",
+          "status": "AC",
+          "submission_time": "2026-11-12T10:52:48.177181Z",
+          "time": 0.042,
+          "user_name": "reinsirk"
+        },
+        "cases": [
+          {
+            "case": "example_00",
+            "old_ms": 0,
+            "new_ms": 0,
+            "delta_ms": 0,
+            "percent": null,
+            "old_memory_bytes": 573440,
+            "new_memory_bytes": 528384,
+            "status": "AC"
+          },
+          {
+            "case": "example_01",
+            "old_ms": 0,
+            "new_ms": 1,
+            "delta_ms": 1,
+            "percent": null,
+            "old_memory_bytes": 577536,
+            "new_memory_bytes": 794624,
+            "status": "AC"
+          },
+          {
+            "case": "example_02",
+            "old_ms": 1,
+            "new_ms": 10,
+            "delta_ms": 9,
+            "percent": 900.0,
+            "old_memory_bytes": 798720,
+            "new_memory_bytes": 798720,
+            "status": "AC"
+          },
+          {
+            "case": "small_random_1_00",
+            "old_ms": 0,
+            "new_ms": 0,
+            "delta_ms": 0,
+            "percent": null,
+            "old_memory_bytes": 528384,
+            "new_memory_bytes": 536576,
+            "status": "AC"
+          },
+          {
+            "case": "small_random_1_01",
+            "old_ms": 1,
+            "new_ms": 1,
+            "delta_ms": 0,
+            "percent": 0.0,
+            "old_memory_bytes": 561152,
+            "new_memory_bytes": 790528,
+            "status": "AC"
+          },
+          {
+            "case": "small_random_1_02",
+            "old_ms": 0,
+            "new_ms": 0,
+            "delta_ms": 0,
+            "percent": null,
+            "old_memory_bytes": 790528,
+            "new_memory_bytes": 798720,
+            "status": "AC"
+          },
+          {
+            "case": "small_random_2_00",
+            "old_ms": 0,
+            "new_ms": 1,
+            "delta_ms": 1,
+            "percent": null,
+            "old_memory_bytes": 802816,
+            "new_memory_bytes": 798720,
+            "status": "AC"
+          },
+          {
+            "case": "small_random_2_01",
+            "old_ms": 1,
+            "new_ms": 0,
+            "delta_ms": -1,
+            "percent": -100.0,
+            "old_memory_bytes": 823296,
+            "new_memory_bytes": 561152,
+            "status": "AC"
+          },
+          {
+            "case": "small_random_2_02",
+            "old_ms": 0,
+            "new_ms": 0,
+            "delta_ms": 0,
+            "percent": null,
+            "old_memory_bytes": 581632,
+            "new_memory_bytes": 573440,
+            "status": "AC"
+          },
+          {
+            "case": "random_1_00",
+            "old_ms": 26,
+            "new_ms": 26,
+            "delta_ms": 0,
+            "percent": 0.0,
+            "old_memory_bytes": 11087872,
+            "new_memory_bytes": 11137024,
+            "status": "AC"
+          },
+          {
+            "case": "random_1_01",
+            "old_ms": 31,
+            "new_ms": 31,
+            "delta_ms": 0,
+            "percent": 0.0,
+            "old_memory_bytes": 12488704,
+            "new_memory_bytes": 12439552,
+            "status": "AC"
+          },
+          {
+            "case": "random_1_02",
+            "old_ms": 13,
+            "new_ms": 13,
+            "delta_ms": 0,
+            "percent": 0.0,
+            "old_memory_bytes": 6414336,
+            "new_memory_bytes": 6418432,
+            "status": "AC"
+          },
+          {
+            "case": "random_2_00",
+            "old_ms": 6,
+            "new_ms": 6,
+            "delta_ms": 0,
+            "percent": 0.0,
+            "old_memory_bytes": 3534848,
+            "new_memory_bytes": 3571712,
+            "status": "AC"
+          },
+          {
+            "case": "random_2_01",
+            "old_ms": 1,
+            "new_ms": 2,
+            "delta_ms": 1,
+            "percent": 100.0,
+            "old_memory_bytes": 1323008,
+            "new_memory_bytes": 1454080,
+            "status": "AC"
+          },
+          {
+            "case": "random_2_02",
+            "old_ms": 10,
+            "new_ms": 10,
+            "delta_ms": 0,
+            "percent": 0.0,
+            "old_memory_bytes": 4849664,
+            "new_memory_bytes": 4874240,
+            "status": "AC"
+          },
+          {
+            "case": "random_2_03",
+            "old_ms": 14,
+            "new_ms": 13,
+            "delta_ms": -1,
+            "percent": -7.143,
+            "old_memory_bytes": 6197248,
+            "new_memory_bytes": 6197248,
+            "status": "AC"
+          },
+          {
+            "case": "random_2_04",
+            "old_ms": 5,
+            "new_ms": 5,
+            "delta_ms": 0,
+            "percent": 0.0,
+            "old_memory_bytes": 3047424,
+            "new_memory_bytes": 3108864,
+            "status": "AC"
+          },
+          {
+            "case": "max_random_00",
+            "old_ms": 42,
+            "new_ms": 41,
+            "delta_ms": -1,
+            "percent": -2.381,
+            "old_memory_bytes": 16674816,
+            "new_memory_bytes": 16859136,
+            "status": "AC"
+          },
+          {
+            "case": "max_random_01",
+            "old_ms": 42,
+            "new_ms": 41,
+            "delta_ms": -1,
+            "percent": -2.381,
+            "old_memory_bytes": 16662528,
+            "new_memory_bytes": 16113664,
+            "status": "AC"
+          },
+          {
+            "case": "max_random_02",
+            "old_ms": 42,
+            "new_ms": 42,
+            "delta_ms": 0,
+            "percent": 0.0,
+            "old_memory_bytes": 16117760,
+            "new_memory_bytes": 16879616,
+            "status": "AC"
+          },
+          {
+            "case": "large_cycle_00",
+            "old_ms": 17,
+            "new_ms": 18,
+            "delta_ms": 1,
+            "percent": 5.882,
+            "old_memory_bytes": 9482240,
+            "new_memory_bytes": 9601024,
+            "status": "AC"
+          }
+        ]
+      },
+      "low_link_biconnected": {
+        "old_submission": 416595,
+        "new_submission": 416613,
+        "old_overview": {
+          "id": 416595,
+          "is_latest": true,
+          "lang": "cpp",
+          "memory": 78868480,
+          "problem_name": "biconnected_components",
+          "problem_title": "Biconnected Components",
+          "status": "AC",
+          "submission_time": "2026-11-12T10:04:22.762536Z",
+          "time": 0.21,
+          "user_name": "reinsirk"
+        },
+        "new_overview": {
+          "id": 416613,
+          "is_latest": true,
+          "lang": "cpp",
+          "memory": 79056896,
+          "problem_name": "biconnected_components",
+          "problem_title": "Biconnected Components",
+          "status": "AC",
+          "submission_time": "2026-11-12T10:52:57.404523Z",
+          "time": 0.208,
+          "user_name": "reinsirk"
+        },
+        "cases": [
+          {
+            "case": "example_00",
+            "old_ms": 1,
+            "new_ms": 1,
+            "delta_ms": 0,
+            "percent": 0.0,
+            "old_memory_bytes": 839680,
+            "new_memory_bytes": 802816,
+            "status": "AC"
+          },
+          {
+            "case": "example_01",
+            "old_ms": 1,
+            "new_ms": 0,
+            "delta_ms": -1,
+            "percent": -100.0,
+            "old_memory_bytes": 806912,
+            "new_memory_bytes": 536576,
+            "status": "AC"
+          },
+          {
+            "case": "example_02",
+            "old_ms": 0,
+            "new_ms": 1,
+            "delta_ms": 1,
+            "percent": null,
+            "old_memory_bytes": 577536,
+            "new_memory_bytes": 802816,
+            "status": "AC"
+          },
+          {
+            "case": "min_00",
+            "old_ms": 0,
+            "new_ms": 1,
+            "delta_ms": 1,
+            "percent": null,
+            "old_memory_bytes": 561152,
+            "new_memory_bytes": 573440,
+            "status": "AC"
+          },
+          {
+            "case": "min_01",
+            "old_ms": 1,
+            "new_ms": 0,
+            "delta_ms": -1,
+            "percent": -100.0,
+            "old_memory_bytes": 794624,
+            "new_memory_bytes": 577536,
+            "status": "AC"
+          },
+          {
+            "case": "min_02",
+            "old_ms": 0,
+            "new_ms": 1,
+            "delta_ms": 1,
+            "percent": null,
+            "old_memory_bytes": 794624,
+            "new_memory_bytes": 573440,
+            "status": "AC"
+          },
+          {
+            "case": "small_random_1_00",
+            "old_ms": 1,
+            "new_ms": 1,
+            "delta_ms": 0,
+            "percent": 0.0,
+            "old_memory_bytes": 831488,
+            "new_memory_bytes": 802816,
+            "status": "AC"
+          },
+          {
+            "case": "small_random_2_00",
+            "old_ms": 0,
+            "new_ms": 1,
+            "delta_ms": 1,
+            "percent": null,
+            "old_memory_bytes": 565248,
+            "new_memory_bytes": 659456,
+            "status": "AC"
+          },
+          {
+            "case": "small_random_2_01",
+            "old_ms": 0,
+            "new_ms": 10,
+            "delta_ms": 10,
+            "percent": null,
+            "old_memory_bytes": 561152,
+            "new_memory_bytes": 565248,
+            "status": "AC"
+          },
+          {
+            "case": "small_random_2_02",
+            "old_ms": 9,
+            "new_ms": 1,
+            "delta_ms": -8,
+            "percent": -88.889,
+            "old_memory_bytes": 827392,
+            "new_memory_bytes": 794624,
+            "status": "AC"
+          },
+          {
+            "case": "random_1_00",
+            "old_ms": 126,
+            "new_ms": 125,
+            "delta_ms": -1,
+            "percent": -0.794,
+            "old_memory_bytes": 44539904,
+            "new_memory_bytes": 44158976,
+            "status": "AC"
+          },
+          {
+            "case": "random_2_00",
+            "old_ms": 125,
+            "new_ms": 125,
+            "delta_ms": 0,
+            "percent": 0.0,
+            "old_memory_bytes": 41279488,
+            "new_memory_bytes": 41287680,
+            "status": "AC"
+          },
+          {
+            "case": "random_2_01",
+            "old_ms": 101,
+            "new_ms": 100,
+            "delta_ms": -1,
+            "percent": -0.99,
+            "old_memory_bytes": 40386560,
+            "new_memory_bytes": 40337408,
+            "status": "AC"
+          },
+          {
+            "case": "random_2_02",
+            "old_ms": 48,
+            "new_ms": 47,
+            "delta_ms": -1,
+            "percent": -2.083,
+            "old_memory_bytes": 21901312,
+            "new_memory_bytes": 20856832,
+            "status": "AC"
+          },
+          {
+            "case": "max_random_00",
+            "old_ms": 172,
+            "new_ms": 176,
+            "delta_ms": 4,
+            "percent": 2.326,
+            "old_memory_bytes": 55427072,
+            "new_memory_bytes": 55427072,
+            "status": "AC"
+          },
+          {
+            "case": "max_random_2_00",
+            "old_ms": 167,
+            "new_ms": 164,
+            "delta_ms": -3,
+            "percent": -1.796,
+            "old_memory_bytes": 53075968,
+            "new_memory_bytes": 52539392,
+            "status": "AC"
+          },
+          {
+            "case": "max_random_2_01",
+            "old_ms": 170,
+            "new_ms": 165,
+            "delta_ms": -5,
+            "percent": -2.941,
+            "old_memory_bytes": 53317632,
+            "new_memory_bytes": 52658176,
+            "status": "AC"
+          },
+          {
+            "case": "max_random_2_02",
+            "old_ms": 165,
+            "new_ms": 172,
+            "delta_ms": 7,
+            "percent": 4.242,
+            "old_memory_bytes": 52805632,
+            "new_memory_bytes": 52568064,
+            "status": "AC"
+          },
+          {
+            "case": "max_tree_00",
+            "old_ms": 210,
+            "new_ms": 208,
+            "delta_ms": -2,
+            "percent": -0.952,
+            "old_memory_bytes": 78868480,
+            "new_memory_bytes": 79056896,
+            "status": "AC"
+          },
+          {
+            "case": "max_star_00",
+            "old_ms": 175,
+            "new_ms": 184,
+            "delta_ms": 9,
+            "percent": 5.143,
+            "old_memory_bytes": 77914112,
+            "new_memory_bytes": 78090240,
+            "status": "AC"
+          },
+          {
+            "case": "max_line_clique_00",
+            "old_ms": 99,
+            "new_ms": 97,
+            "delta_ms": -2,
+            "percent": -2.02,
+            "old_memory_bytes": 47190016,
+            "new_memory_bytes": 47857664,
+            "status": "AC"
+          },
+          {
+            "case": "large_cycle_00",
+            "old_ms": 147,
+            "new_ms": 139,
+            "delta_ms": -8,
+            "percent": -5.442,
+            "old_memory_bytes": 49672192,
+            "new_memory_bytes": 47562752,
+            "status": "AC"
+          }
+        ]
+      }
+    }
+  },
+  "online_compiler_context": {
+    "submission_lang": "cpp",
+    "live_api": {
+      "id": "cpp",
+      "name": "C++23",
+      "version": "GCC 15.2 + AC Library(1.6)"
+    },
+    "official_repository_current_lang_definition": {
+      "id": "cpp",
+      "name": "C++23",
+      "version": "GCC 15.2 + AC Library(1.6)",
+      "source": "main.cpp",
+      "image_name": "library-checker-images-gcc",
+      "compile": [
+        "g++",
+        "-O2",
+        "-std=c++23",
+        "-DEVAL",
+        "-DONLINE_JUDGE",
+        "-march=native",
+        "-o",
+        "main",
+        "main.cpp",
+        "-I",
+        "/opt/ac-library"
+      ],
+      "exec": [
+        "./main"
+      ]
+    },
+    "scope": "言語名/versionはlive公式APIで確認。引数は取得時の公式リポジトリから。個別提出の厳密image digest/compile logはAPIに含まれない。",
+    "observed_flags_include_march_native": true,
+    "submission_image_revision_known": false
+  },
+  "frozen_public_files": {
+    "Verify/current/drivers/low_link_two_edge_main.cpp": "103549bcf94d087b4bda2b17809316ba1a026a6e76ce0d5a335e266a5c80c686",
+    "Verify/current/drivers/low_link_biconnected_main.cpp": "44f36b179e0ee59572eba15b545f9060835835e734d6723d8c587bc255313085",
+    "Verify/current/common/fast_io.hpp": "291bf8dbc56a1d691f6256fe95b4714183c2cf5d9e55e4bef240e31d1eb178c1",
+    "Examples/low_link_example.cpp": "bf13194cb876c9846ed1fd119aa13d1cf331d73ddc4192acd05b9d76593c0990",
+    "Document/low_link.md": "b0eec0e29d439a53a4570c7b76e91bcdf2406b693557ae6b6203781bad7de559"
+  },
+  "before_snapshot": {
+    "file": "frozen.json",
+    "sha256": "aaa1f7f33ac49896fc66102ba39965c5f714d814f3adc1fd076fdbdbe27c3217",
+    "files": {
+      "Graph/Low_Link.cpp": "6e24f831bd5ccec97efbe97de9ebd4b58ddbe942a7a55446975094f7ea018569",
+      "Verify/current/common/fast_io.hpp": "291bf8dbc56a1d691f6256fe95b4714183c2cf5d9e55e4bef240e31d1eb178c1",
+      "Document/low_link.md": "b0eec0e29d439a53a4570c7b76e91bcdf2406b693557ae6b6203781bad7de559",
+      "Examples/low_link_example.cpp": "bf13194cb876c9846ed1fd119aa13d1cf331d73ddc4192acd05b9d76593c0990",
+      "Verify/current/groups/expansion_20261031.json": "67735ec42abd13e1d6ada9b0a49f272e15def9af3a754b31d13679ac76122c9f",
+      "Verify/current/judgements.json": "e157246081d4df8a6da7be33edc04ba718a19206c10d757b433362616f8e00ab",
+      "Verify/current/manifest.json": "41944a8ff2c9284a9415fca209c8cfcb9f8378115dc302ab6e64a4486ef93d6e",
+      "Distribution/manifest.json": "8ed9886530de3e75f34f65d057f5a6d7d7605e00a0a435e3b83a690f7d7096da",
+      "Variants/manifest.json": "4451b7458d10388b5452846611343b90214e846bddaf650efdbd72bd5cce9aed",
+      "Variants/verify_manifest.json": "ca7cd4d26c3718e800288ecdb0c9334497e1f0a73105ba92b46a81778aaeaee9",
+      "Scripts/library_layout.json": "8f809a5a3d1235a508e7144d0600060ac68859a5d663bdb9b7d47d6663b8486b",
+      "Verify/current/drivers/low_link_two_edge_main.cpp": "103549bcf94d087b4bda2b17809316ba1a026a6e76ce0d5a335e266a5c80c686",
+      "Verify/current/submissions/low_link_two_edge.cpp": "a6728c17c247eb7b05cd798b078cf4a34a107efb4cf4e56fdb99df12e8457c3e",
+      "Verify/current/drivers/low_link_biconnected_main.cpp": "44f36b179e0ee59572eba15b545f9060835835e734d6723d8c587bc255313085",
+      "Verify/current/submissions/low_link_biconnected.cpp": "7b98b2cb0871017894e5dae17b7072fd3961a87297fc88fe21f8dd87d04c3dcb"
+    }
+  },
+  "API_scope": "公開API・全範囲・多重辺/自己辺・所有権・例外保証・件数上限を維持。main/共通IO/Document/使用例は不変。成分構成と森の対応を正規化して参照照合する。",
+  "proof_files": [
+    "review/dfs_work_review.md",
+    "review/narrow_parent_pending_review.md",
+    "review/output_review.md",
+    "review/single_component_fill_review.md"
+  ],
+  "source_diff": "final.diff",
+  "measurement": {
+    "cpu": "Intel Core i9-14900K CPU12（P-Core、sibling13）。E-Coreを性能評価しない。",
+    "compilers": {
+      "GCC": "15.2.0",
+      "Clang": "21.1.8 --gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15"
+    },
+    "flags_scope": "C++23 -O2。native/defaultは各rowで区別。引数と実行体SHAは各builds JSONに保存。",
+    "CPU_scope": "Library CheckerのAMD実機の速度比とは断定しない。オンライン別提出時間と条件固定のローカル比較を区別。",
+    "lock": "/tmp/sirkit_performance_cpu12.lock",
+    "compilation_during_timing": false,
+    "ASLR": "子だけsetarch x86_64 -R、同じactiveパス。",
+    "protocol": "旧版→候補→旧版。候補を両端中央値で割り、両端差10%以内だけ有効。初回は候補7組/同一対照3組、有効5/2未達時のみ15/9組まで補う。追加phaseを実施した場合は、初期matrixのcontrol中央値が1±3%外・final>1.03・有効数不足の全セルを一度だけ選び、候補7組/対照3組を追加。初期/追加の全rawを保持して統合中央値を使う。候補自身の時間で個別trialを除外しない。探索と9/3追加確認は別記録。",
+    "fixtures": {
+      "cases": 26,
+      "physical_graphs": 13,
+      "reused_previous_evidence": "Audit/data/performance-low-link-416596-2026-11-12.zip",
+      "prior_evidence_sha256": "5fd7e1209c59bd0c72679581faa6ce638cd29c2a46c523586b87c6f29a56c7d1",
+      "metadata_sha256": {
+        "commands.json": "42fd1dcc010a38c3e14e7f595065db0b239c18b2903b9759c6e98e11fcb92354",
+        "fixtures.json": "3f9ade0fcd3a25eb1e45f93fbbac1419c85e40da9325d0293bdcf0643d07a629",
+        "source_audit.json": "2b4e562052f66e72d2dd82f7e294ad82a3bd9d44b5e2be9c5e27bed6d79d4f88",
+        "summary.json": "e5f1685f2115e82cc7d054958bd7e88cfff3f6b5e0966c089fc40a4ed966b65c",
+        "validation.json": "dca371d2151d8e48c74b596412433e7767d29f44d1f2064777210e7a9c28fd5f"
+      },
+      "scope": "旧証跡ZIP内の固定26ケース・5JSONとbyte一致。JSONの旧/tmpパスは計測入力の参照であり収録対象として辿らない。",
+      "independent_oracle_scope": "Every full canonical output comes from an original reference implementation. Two-edge reference uses cycle-cover/LCA, not low-link. Bicon reference is separately written recursive Tarjan with same mathematical low-link criterion; structural and tiny brute-force checks provide additional independent algorithms. No baseline implementation is treated as truth.",
+      "result_scope": "群内・群集合をソートしたcanonical SHAで照合。要素の欠落・重複を隠さず、未規定の成分番号と出力順の差を許容。"
+    },
+    "exploratory": [
+      {
+        "stage": "screen",
+        "labels": {
+          "compact_work": {
+            "file": "compact_work.hpp",
+            "sha256": "7d42bedaab0537a8f108acf9188679dd4fe1073bec92db0e9298d46a80736ed9"
+          },
+          "parent_walk": {
+            "file": "parent_walk.hpp",
+            "sha256": "eddb2672bd377650afb99ff2a8d2a15a7bac300fa0647e4827187f5937e1c67b"
+          },
+          "parent_walk_compact": {
+            "file": "parent_walk_compact.hpp",
+            "sha256": "abd3c1d892e832b807d3f8dfb7b7d8d998d28c6b8d938ef3d26cb1e1735732f8"
+          }
+        },
+        "reference_sources": {
+          "base": {
+            "file": "base.hpp",
+            "sha256": "6e24f831bd5ccec97efbe97de9ebd4b58ddbe942a7a55446975094f7ea018569",
+            "label_scope": "各rowの明示reference_label。未記録の旧探索だけscriptのbase呼び出しに対応。"
+          }
+        },
+        "reference_executables": [
+          {
+            "file": "gcc_native_base_low_link_two_edge",
+            "sha256": "319b4d7bda1c6b7d53222e07d7a707f50c777520f9b78627308ba829a860e2e1",
+            "compiler": "gcc",
+            "flag": "native",
+            "setting": "skip",
+            "reference_label": "base"
+          },
+          {
+            "file": "gcc_native_base_low_link_biconnected",
+            "sha256": "5c62047dcd004dc951efd8de476a0e6e90ac1833bb623c7be35a8b55c318d379",
+            "compiler": "gcc",
+            "flag": "native",
+            "setting": "skip",
+            "reference_label": "base"
+          },
+          {
+            "file": "clang_native_base_low_link_two_edge",
+            "sha256": "e6bd01c553844f6e25056d092c98974398b75e5dd5311e9fd06fa95df887b2c6",
+            "compiler": "clang",
+            "flag": "native",
+            "setting": "skip",
+            "reference_label": "base"
+          },
+          {
+            "file": "clang_native_base_low_link_biconnected",
+            "sha256": "3c04f23416a488767a3ef0eca30c318933134cbb68c202ef17da96b53ebf8015",
+            "compiler": "clang",
+            "flag": "native",
+            "setting": "skip",
+            "reference_label": "base"
+          }
+        ],
+        "cells": 24,
+        "triplets": 288,
+        "case_by_profile": [
+          {
+            "flag": null,
+            "setting": null,
+            "kind": null,
+            "reference_label": "base",
+            "case": "two_edge_connected_components__official_two_edge_connected_components_max_random_00",
+            "labels": [
+              "compact_work",
+              "control",
+              "parent_walk",
+              "parent_walk_compact"
+            ]
+          },
+          {
+            "flag": null,
+            "setting": null,
+            "kind": null,
+            "reference_label": "base",
+            "case": "biconnected_components__official_two_edge_connected_components_max_random_00",
+            "labels": [
+              "compact_work",
+              "control",
+              "parent_walk",
+              "parent_walk_compact"
+            ]
+          },
+          {
+            "flag": null,
+            "setting": null,
+            "kind": null,
+            "reference_label": "base",
+            "case": "two_edge_connected_components__official_biconnected_components_max_random_00",
+            "labels": [
+              "compact_work",
+              "control",
+              "parent_walk",
+              "parent_walk_compact"
+            ]
+          },
+          {
+            "flag": null,
+            "setting": null,
+            "kind": null,
+            "reference_label": "base",
+            "case": "biconnected_components__official_biconnected_components_max_random_00",
+            "labels": [
+              "compact_work",
+              "control",
+              "parent_walk",
+              "parent_walk_compact"
+            ]
+          },
+          {
+            "flag": null,
+            "setting": null,
+            "kind": null,
+            "reference_label": "base",
+            "case": "two_edge_connected_components__official_biconnected_components_max_tree_00",
+            "labels": [
+              "compact_work",
+              "control",
+              "parent_walk",
+              "parent_walk_compact"
+            ]
+          },
+          {
+            "flag": null,
+            "setting": null,
+            "kind": null,
+            "reference_label": "base",
+            "case": "biconnected_components__official_biconnected_components_max_tree_00",
+            "labels": [
+              "compact_work",
+              "control",
+              "parent_walk",
+              "parent_walk_compact"
+            ]
+          },
+          {
+            "flag": null,
+            "setting": null,
+            "kind": null,
+            "reference_label": "base",
+            "case": "two_edge_connected_components__custom_star100k",
+            "labels": [
+              "compact_work",
+              "control",
+              "parent_walk",
+              "parent_walk_compact"
+            ]
+          },
+          {
+            "flag": null,
+            "setting": null,
+            "kind": null,
+            "reference_label": "base",
+            "case": "biconnected_components__custom_star100k",
+            "labels": [
+              "compact_work",
+              "control",
+              "parent_walk",
+              "parent_walk_compact"
+            ]
+          },
+          {
+            "flag": null,
+            "setting": null,
+            "kind": null,
+            "reference_label": "base",
+            "case": "two_edge_connected_components__custom_cycle100k",
+            "labels": [
+              "compact_work",
+              "control",
+              "parent_walk",
+              "parent_walk_compact"
+            ]
+          },
+          {
+            "flag": null,
+            "setting": null,
+            "kind": null,
+            "reference_label": "base",
+            "case": "biconnected_components__custom_cycle100k",
+            "labels": [
+              "compact_work",
+              "control",
+              "parent_walk",
+              "parent_walk_compact"
+            ]
+          },
+          {
+            "flag": null,
+            "setting": null,
+            "kind": null,
+            "reference_label": "base",
+            "case": "two_edge_connected_components__custom_disjoint_cliques100k",
+            "labels": [
+              "compact_work",
+              "control",
+              "parent_walk",
+              "parent_walk_compact"
+            ]
+          },
+          {
+            "flag": null,
+            "setting": null,
+            "kind": null,
+            "reference_label": "base",
+            "case": "biconnected_components__custom_disjoint_cliques100k",
+            "labels": [
+              "compact_work",
+              "control",
+              "parent_walk",
+              "parent_walk_compact"
+            ]
+          }
+        ],
+        "summary": "screen_summary.json",
+        "summary_sha256": "503f82f686348dec9dba5617d62a4eadeb56f97627d31d1f88100ef17a729e42",
+        "raw": "screen_raw.json",
+        "raw_sha256": "21a00c558dfde91d13ef6eb0e3f1a81a9d604d8698c35462636d4647730eea02",
+        "scope": "今回存在する候補探索のみ記録。両コンパイラの同条件矩形と各raw/中央値を検算し、最終測定と区別する。"
+      },
+      {
+        "stage": "stage2",
+        "labels": {
+          "block_vertex_lazy_stamp": {
+            "file": "block_vertex_lazy_stamp.hpp",
+            "sha256": "97590e238691851ecd3bd05b4e3720e306c1729da6b1ece0b211afc26fd298c7"
+          },
+          "two_edge_single_reserve": {
+            "file": "two_edge_single_reserve.hpp",
+            "sha256": "4d6f4be89e73f328fbf8937c2933622feefd49eb4b455c965a8481bf2621ea26"
+          }
+        },
+        "reference_sources": {
+          "base": {
+            "file": "base.hpp",
+            "sha256": "6e24f831bd5ccec97efbe97de9ebd4b58ddbe942a7a55446975094f7ea018569",
+            "label_scope": "各rowの明示reference_label。未記録の旧探索だけscriptのbase呼び出しに対応。"
+          }
+        },
+        "reference_executables": [
+          {
+            "file": "gcc_native_skip_base_core",
+            "sha256": "a672f9d140ef6e42d20b01f74e48460e7e3cd0da4bc1acca2c9c3165be9de310",
+            "compiler": "gcc",
+            "flag": "native",
+            "setting": "skip",
+            "reference_label": "base"
+          },
+          {
+            "file": "clang_native_skip_base_core",
+            "sha256": "0bd9cb80d16b3eed660a9af93e7f61217e3c1ee10067b8eb5b0f844169ed45b9",
+            "compiler": "clang",
+            "flag": "native",
+            "setting": "skip",
+            "reference_label": "base"
+          }
+        ],
+        "cells": 24,
+        "triplets": 216,
+        "case_by_profile": [
+          {
+            "flag": "native",
+            "setting": "skip",
+            "kind": "core",
+            "reference_label": "base",
+            "case": {
+              "m": 99999,
+              "n": 100000,
+              "name": "custom_star100k",
+              "operation": 4,
+              "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_star100k.in",
+              "repetitions": 1
+            },
+            "labels": [
+              "block_vertex_lazy_stamp",
+              "control",
+              "two_edge_single_reserve"
+            ]
+          },
+          {
+            "flag": "native",
+            "setting": "skip",
+            "kind": "core",
+            "reference_label": "base",
+            "case": {
+              "m": 99999,
+              "n": 100000,
+              "name": "custom_star100k",
+              "operation": 5,
+              "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_star100k.in",
+              "repetitions": 1
+            },
+            "labels": [
+              "block_vertex_lazy_stamp",
+              "control",
+              "two_edge_single_reserve"
+            ]
+          },
+          {
+            "flag": "native",
+            "setting": "skip",
+            "kind": "core",
+            "reference_label": "base",
+            "case": {
+              "m": 99999,
+              "n": 100000,
+              "name": "custom_star100k",
+              "operation": 6,
+              "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_star100k.in",
+              "repetitions": 1
+            },
+            "labels": [
+              "block_vertex_lazy_stamp",
+              "control",
+              "two_edge_single_reserve"
+            ]
+          },
+          {
+            "flag": "native",
+            "setting": "skip",
+            "kind": "core",
+            "reference_label": "base",
+            "case": {
+              "m": 100000,
+              "n": 100000,
+              "name": "custom_cycle100k",
+              "operation": 4,
+              "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_cycle100k.in",
+              "repetitions": 1
+            },
+            "labels": [
+              "block_vertex_lazy_stamp",
+              "control",
+              "two_edge_single_reserve"
+            ]
+          },
+          {
+            "flag": "native",
+            "setting": "skip",
+            "kind": "core",
+            "reference_label": "base",
+            "case": {
+              "m": 100000,
+              "n": 100000,
+              "name": "custom_cycle100k",
+              "operation": 5,
+              "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_cycle100k.in",
+              "repetitions": 1
+            },
+            "labels": [
+              "block_vertex_lazy_stamp",
+              "control",
+              "two_edge_single_reserve"
+            ]
+          },
+          {
+            "flag": "native",
+            "setting": "skip",
+            "kind": "core",
+            "reference_label": "base",
+            "case": {
+              "m": 100000,
+              "n": 100000,
+              "name": "custom_cycle100k",
+              "operation": 6,
+              "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_cycle100k.in",
+              "repetitions": 1
+            },
+            "labels": [
+              "block_vertex_lazy_stamp",
+              "control",
+              "two_edge_single_reserve"
+            ]
+          },
+          {
+            "flag": "native",
+            "setting": "skip",
+            "kind": "core",
+            "reference_label": "base",
+            "case": {
+              "m": 200,
+              "n": 64,
+              "name": "custom_random64",
+              "operation": 4,
+              "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random64.in",
+              "repetitions": 1024
+            },
+            "labels": [
+              "block_vertex_lazy_stamp",
+              "control",
+              "two_edge_single_reserve"
+            ]
+          },
+          {
+            "flag": "native",
+            "setting": "skip",
+            "kind": "core",
+            "reference_label": "base",
+            "case": {
+              "m": 200,
+              "n": 64,
+              "name": "custom_random64",
+              "operation": 5,
+              "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random64.in",
+              "repetitions": 1024
+            },
+            "labels": [
+              "block_vertex_lazy_stamp",
+              "control",
+              "two_edge_single_reserve"
+            ]
+          },
+          {
+            "flag": "native",
+            "setting": "skip",
+            "kind": "core",
+            "reference_label": "base",
+            "case": {
+              "m": 200,
+              "n": 64,
+              "name": "custom_random64",
+              "operation": 6,
+              "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random64.in",
+              "repetitions": 1024
+            },
+            "labels": [
+              "block_vertex_lazy_stamp",
+              "control",
+              "two_edge_single_reserve"
+            ]
+          },
+          {
+            "flag": "native",
+            "setting": "skip",
+            "kind": "core",
+            "reference_label": "base",
+            "case": {
+              "m": 500000,
+              "n": 100000,
+              "name": "custom_random100k_500k",
+              "operation": 4,
+              "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random100k_500k.in",
+              "repetitions": 1
+            },
+            "labels": [
+              "block_vertex_lazy_stamp",
+              "control",
+              "two_edge_single_reserve"
+            ]
+          },
+          {
+            "flag": "native",
+            "setting": "skip",
+            "kind": "core",
+            "reference_label": "base",
+            "case": {
+              "m": 500000,
+              "n": 100000,
+              "name": "custom_random100k_500k",
+              "operation": 5,
+              "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random100k_500k.in",
+              "repetitions": 1
+            },
+            "labels": [
+              "block_vertex_lazy_stamp",
+              "control",
+              "two_edge_single_reserve"
+            ]
+          },
+          {
+            "flag": "native",
+            "setting": "skip",
+            "kind": "core",
+            "reference_label": "base",
+            "case": {
+              "m": 500000,
+              "n": 100000,
+              "name": "custom_random100k_500k",
+              "operation": 6,
+              "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random100k_500k.in",
+              "repetitions": 1
+            },
+            "labels": [
+              "block_vertex_lazy_stamp",
+              "control",
+              "two_edge_single_reserve"
+            ]
+          }
+        ],
+        "summary": "stage2_summary.json",
+        "summary_sha256": "3e76a2873d991cc18df5bdc92166cd07d00d775faff66d62f84cccf9c4b1a15a",
+        "raw": "stage2_raw.json",
+        "raw_sha256": "be199bf234a2aa7477c7331da787c0f216be880f8dac683d40e41b984a2b44fa",
+        "scope": "今回存在する候補探索のみ記録。両コンパイラの同条件矩形と各raw/中央値を検算し、最終測定と区別する。"
+      },
+      {
+        "stage": "stage3",
+        "labels": {
+          "two_edge_single_fill": {
+            "file": "two_edge_single_fill.hpp",
+            "sha256": "48ec47d9151bf20d1671a6b63983e522265210ad75a125afa26845fa9d2f289f"
+          },
+          "two_edge_single_reserve": {
+            "file": "two_edge_single_reserve.hpp",
+            "sha256": "4d6f4be89e73f328fbf8937c2933622feefd49eb4b455c965a8481bf2621ea26"
+          }
+        },
+        "reference_sources": {
+          "base": {
+            "file": "base.hpp",
+            "sha256": "6e24f831bd5ccec97efbe97de9ebd4b58ddbe942a7a55446975094f7ea018569",
+            "label_scope": "各rowの明示reference_label。未記録の旧探索だけscriptのbase呼び出しに対応。"
+          }
+        },
+        "reference_executables": [
+          {
+            "file": "gcc_native_skip_base_core",
+            "sha256": "a672f9d140ef6e42d20b01f74e48460e7e3cd0da4bc1acca2c9c3165be9de310",
+            "compiler": "gcc",
+            "flag": "native",
+            "setting": "skip",
+            "reference_label": "base"
+          },
+          {
+            "file": "clang_native_skip_base_core",
+            "sha256": "0bd9cb80d16b3eed660a9af93e7f61217e3c1ee10067b8eb5b0f844169ed45b9",
+            "compiler": "clang",
+            "flag": "native",
+            "setting": "skip",
+            "reference_label": "base"
+          }
+        ],
+        "cells": 4,
+        "triplets": 36,
+        "case_by_profile": [
+          {
+            "flag": "native",
+            "setting": "skip",
+            "kind": "core",
+            "reference_label": "base",
+            "case": {
+              "m": 100000,
+              "n": 100000,
+              "name": "custom_cycle100k",
+              "operation": 4,
+              "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_cycle100k.in",
+              "repetitions": 1
+            },
+            "labels": [
+              "control",
+              "two_edge_single_fill",
+              "two_edge_single_reserve"
+            ]
+          },
+          {
+            "flag": "native",
+            "setting": "skip",
+            "kind": "core",
+            "reference_label": "base",
+            "case": {
+              "m": 200,
+              "n": 64,
+              "name": "custom_random64",
+              "operation": 4,
+              "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random64.in",
+              "repetitions": 1024
+            },
+            "labels": [
+              "control",
+              "two_edge_single_fill",
+              "two_edge_single_reserve"
+            ]
+          }
+        ],
+        "summary": "stage3_summary.json",
+        "summary_sha256": "b59eb8ea3be7754bb5c3b413f69adb6b74e288910ea2e470f5f990d647ee8bd9",
+        "raw": "stage3_raw.json",
+        "raw_sha256": "33a6f06cd9a581c0e6868bf9699248aea0058227274e35b6ca7f6ba94b9aa933",
+        "scope": "今回存在する候補探索のみ記録。両コンパイラの同条件矩形と各raw/中央値を検算し、最終測定と区別する。"
+      },
+      {
+        "stage": "stage4",
+        "labels": {
+          "narrow_parent_pending": {
+            "file": "narrow_parent_pending.hpp",
+            "sha256": "8eaec13842a310029052389426a32483c75d3ae3fad17382af47840e3b7eb648"
+          }
+        },
+        "reference_sources": {
+          "compact_dfs_single_fill": {
+            "file": "compact_dfs_single_fill.hpp",
+            "sha256": "b6136a009ad424b9e15f1d7efd59987be2f8d3f95de9adb51fdb7a137221ed3f",
+            "label_scope": "各rowの明示reference_label。未記録の旧探索だけscriptのbase呼び出しに対応。"
+          }
+        },
+        "reference_executables": [
+          {
+            "file": "gcc_native_compact_dfs_single_fill_low_link_two_edge",
+            "sha256": "5f22cb5d482b9972e88414a47681b8b30306003fa36517e99c3de615869c2d69",
+            "compiler": "gcc",
+            "flag": "native",
+            "setting": "skip",
+            "reference_label": "compact_dfs_single_fill"
+          },
+          {
+            "file": "gcc_native_compact_dfs_single_fill_low_link_biconnected",
+            "sha256": "737af66d1c2707a78546a5a2211f773a11080dc9b74cc1206781227946719ca2",
+            "compiler": "gcc",
+            "flag": "native",
+            "setting": "skip",
+            "reference_label": "compact_dfs_single_fill"
+          },
+          {
+            "file": "clang_native_compact_dfs_single_fill_low_link_two_edge",
+            "sha256": "426278efd530cdb3c29c87045ae9d2a01a428838fd60924f3a614f35d9f562de",
+            "compiler": "clang",
+            "flag": "native",
+            "setting": "skip",
+            "reference_label": "compact_dfs_single_fill"
+          },
+          {
+            "file": "clang_native_compact_dfs_single_fill_low_link_biconnected",
+            "sha256": "0030371f850c16033b70c4d9e16f91c78aee72b24a94413930a18ef742601ad3",
+            "compiler": "clang",
+            "flag": "native",
+            "setting": "skip",
+            "reference_label": "compact_dfs_single_fill"
+          }
+        ],
+        "cells": 20,
+        "triplets": 120,
+        "case_by_profile": [
+          {
+            "flag": "native",
+            "setting": "skip",
+            "kind": "whole",
+            "reference_label": "compact_dfs_single_fill",
+            "case": "two_edge_connected_components__official_biconnected_components_max_random_00",
+            "labels": [
+              "control",
+              "narrow_parent_pending"
+            ]
+          },
+          {
+            "flag": "native",
+            "setting": "skip",
+            "kind": "whole",
+            "reference_label": "compact_dfs_single_fill",
+            "case": "biconnected_components__official_biconnected_components_max_random_00",
+            "labels": [
+              "control",
+              "narrow_parent_pending"
+            ]
+          },
+          {
+            "flag": "native",
+            "setting": "skip",
+            "kind": "whole",
+            "reference_label": "compact_dfs_single_fill",
+            "case": "two_edge_connected_components__official_biconnected_components_max_tree_00",
+            "labels": [
+              "control",
+              "narrow_parent_pending"
+            ]
+          },
+          {
+            "flag": "native",
+            "setting": "skip",
+            "kind": "whole",
+            "reference_label": "compact_dfs_single_fill",
+            "case": "biconnected_components__official_biconnected_components_max_tree_00",
+            "labels": [
+              "control",
+              "narrow_parent_pending"
+            ]
+          },
+          {
+            "flag": "native",
+            "setting": "skip",
+            "kind": "whole",
+            "reference_label": "compact_dfs_single_fill",
+            "case": "two_edge_connected_components__custom_star100k",
+            "labels": [
+              "control",
+              "narrow_parent_pending"
+            ]
+          },
+          {
+            "flag": "native",
+            "setting": "skip",
+            "kind": "whole",
+            "reference_label": "compact_dfs_single_fill",
+            "case": "biconnected_components__custom_star100k",
+            "labels": [
+              "control",
+              "narrow_parent_pending"
+            ]
+          },
+          {
+            "flag": "native",
+            "setting": "skip",
+            "kind": "whole",
+            "reference_label": "compact_dfs_single_fill",
+            "case": "two_edge_connected_components__custom_cycle100k",
+            "labels": [
+              "control",
+              "narrow_parent_pending"
+            ]
+          },
+          {
+            "flag": "native",
+            "setting": "skip",
+            "kind": "whole",
+            "reference_label": "compact_dfs_single_fill",
+            "case": "biconnected_components__custom_cycle100k",
+            "labels": [
+              "control",
+              "narrow_parent_pending"
+            ]
+          },
+          {
+            "flag": "native",
+            "setting": "skip",
+            "kind": "whole",
+            "reference_label": "compact_dfs_single_fill",
+            "case": "two_edge_connected_components__custom_disjoint_cliques100k",
+            "labels": [
+              "control",
+              "narrow_parent_pending"
+            ]
+          },
+          {
+            "flag": "native",
+            "setting": "skip",
+            "kind": "whole",
+            "reference_label": "compact_dfs_single_fill",
+            "case": "biconnected_components__custom_disjoint_cliques100k",
+            "labels": [
+              "control",
+              "narrow_parent_pending"
+            ]
+          }
+        ],
+        "summary": "stage4_summary.json",
+        "summary_sha256": "92aaaff162b77ce50bff41f0353095f260029666497267055b714a4508ace460",
+        "raw": "stage4_raw.json",
+        "raw_sha256": "c12ef0fb4c29d40e9a64ee2bb1105fec78502571436937a748a1b160612c9ecb",
+        "scope": "今回存在する候補探索のみ記録。両コンパイラの同条件矩形と各raw/中央値を検算し、最終測定と区別する。"
+      }
+    ],
+    "candidate_validation_records": [
+      {
+        "file": "candidate_validation.json",
+        "sha256": "5b4760565a33a18a76ea6cd6f5d58c398cb6c323220868c1dc204e6e9b86c808",
+        "explicit_result_rows": 10,
+        "passed_rows": 10,
+        "failed_rows": 0,
+        "rows": [
+          {
+            "compiler": "gcc",
+            "setting": "checked",
+            "label": "compact_work",
+            "passed": true,
+            "checks": 178177,
+            "header": "/tmp/sirkit_lowlink_416612/compact_work.hpp",
+            "recorded_header_sha256": "7d42bedaab0537a8f108acf9188679dd4fe1073bec92db0e9298d46a80736ed9",
+            "saved_header_sha256": "7d42bedaab0537a8f108acf9188679dd4fe1073bec92db0e9298d46a80736ed9",
+            "source_identity_verified": true
+          },
+          {
+            "compiler": "gcc",
+            "setting": "checked",
+            "label": "parent_walk",
+            "passed": true,
+            "checks": 178177,
+            "header": "/tmp/sirkit_lowlink_416612/parent_walk.hpp",
+            "recorded_header_sha256": "eddb2672bd377650afb99ff2a8d2a15a7bac300fa0647e4827187f5937e1c67b",
+            "saved_header_sha256": "eddb2672bd377650afb99ff2a8d2a15a7bac300fa0647e4827187f5937e1c67b",
+            "source_identity_verified": true
+          },
+          {
+            "compiler": "gcc",
+            "setting": "checked",
+            "label": "parent_walk_compact",
+            "passed": true,
+            "checks": 178177,
+            "header": "/tmp/sirkit_lowlink_416612/parent_walk_compact.hpp",
+            "recorded_header_sha256": "abd3c1d892e832b807d3f8dfb7b7d8d998d28c6b8d938ef3d26cb1e1735732f8",
+            "saved_header_sha256": "abd3c1d892e832b807d3f8dfb7b7d8d998d28c6b8d938ef3d26cb1e1735732f8",
+            "source_identity_verified": true
+          },
+          {
+            "compiler": "gcc",
+            "setting": "checked",
+            "label": "block_vertex_lazy_stamp",
+            "passed": true,
+            "checks": 178177,
+            "header": "/tmp/sirkit_lowlink_416612/block_vertex_lazy_stamp.hpp",
+            "recorded_header_sha256": "97590e238691851ecd3bd05b4e3720e306c1729da6b1ece0b211afc26fd298c7",
+            "saved_header_sha256": "97590e238691851ecd3bd05b4e3720e306c1729da6b1ece0b211afc26fd298c7",
+            "source_identity_verified": true
+          },
+          {
+            "compiler": "gcc",
+            "setting": "checked",
+            "label": "two_edge_single_reserve",
+            "passed": true,
+            "checks": 178177,
+            "header": "/tmp/sirkit_lowlink_416612/two_edge_single_reserve.hpp",
+            "recorded_header_sha256": "4d6f4be89e73f328fbf8937c2933622feefd49eb4b455c965a8481bf2621ea26",
+            "saved_header_sha256": "4d6f4be89e73f328fbf8937c2933622feefd49eb4b455c965a8481bf2621ea26",
+            "source_identity_verified": true
+          },
+          {
+            "compiler": "clang",
+            "setting": "checked",
+            "label": "compact_work",
+            "passed": true,
+            "checks": 178177,
+            "header": "/tmp/sirkit_lowlink_416612/compact_work.hpp",
+            "recorded_header_sha256": "7d42bedaab0537a8f108acf9188679dd4fe1073bec92db0e9298d46a80736ed9",
+            "saved_header_sha256": "7d42bedaab0537a8f108acf9188679dd4fe1073bec92db0e9298d46a80736ed9",
+            "source_identity_verified": true
+          },
+          {
+            "compiler": "clang",
+            "setting": "checked",
+            "label": "parent_walk",
+            "passed": true,
+            "checks": 178177,
+            "header": "/tmp/sirkit_lowlink_416612/parent_walk.hpp",
+            "recorded_header_sha256": "eddb2672bd377650afb99ff2a8d2a15a7bac300fa0647e4827187f5937e1c67b",
+            "saved_header_sha256": "eddb2672bd377650afb99ff2a8d2a15a7bac300fa0647e4827187f5937e1c67b",
+            "source_identity_verified": true
+          },
+          {
+            "compiler": "clang",
+            "setting": "checked",
+            "label": "parent_walk_compact",
+            "passed": true,
+            "checks": 178177,
+            "header": "/tmp/sirkit_lowlink_416612/parent_walk_compact.hpp",
+            "recorded_header_sha256": "abd3c1d892e832b807d3f8dfb7b7d8d998d28c6b8d938ef3d26cb1e1735732f8",
+            "saved_header_sha256": "abd3c1d892e832b807d3f8dfb7b7d8d998d28c6b8d938ef3d26cb1e1735732f8",
+            "source_identity_verified": true
+          },
+          {
+            "compiler": "clang",
+            "setting": "checked",
+            "label": "block_vertex_lazy_stamp",
+            "passed": true,
+            "checks": 178177,
+            "header": "/tmp/sirkit_lowlink_416612/block_vertex_lazy_stamp.hpp",
+            "recorded_header_sha256": "97590e238691851ecd3bd05b4e3720e306c1729da6b1ece0b211afc26fd298c7",
+            "saved_header_sha256": "97590e238691851ecd3bd05b4e3720e306c1729da6b1ece0b211afc26fd298c7",
+            "source_identity_verified": true
+          },
+          {
+            "compiler": "clang",
+            "setting": "checked",
+            "label": "two_edge_single_reserve",
+            "passed": true,
+            "checks": 178177,
+            "header": "/tmp/sirkit_lowlink_416612/two_edge_single_reserve.hpp",
+            "recorded_header_sha256": "4d6f4be89e73f328fbf8937c2933622feefd49eb4b455c965a8481bf2621ea26",
+            "saved_header_sha256": "4d6f4be89e73f328fbf8937c2933622feefd49eb4b455c965a8481bf2621ea26",
+            "source_identity_verified": true
+          }
+        ],
+        "scope": "今回の候補の補足検証記録。採用本体の最終32検証や現行維持時の過去同一SHA検証とは区別。元記録に本体SHAがない行は一致を保証した検証として扱わない。"
+      },
+      {
+        "file": "fill_validation.json",
+        "sha256": "c0b6f88d1ca2781dae3260e668c37bee83282fa8819f9f97be2f2236f7789193",
+        "explicit_result_rows": 2,
+        "passed_rows": 2,
+        "failed_rows": 0,
+        "rows": [
+          {
+            "compiler": "gcc",
+            "setting": "checked",
+            "label": "two_edge_single_fill",
+            "passed": true,
+            "checks": 178177,
+            "header": "/tmp/sirkit_lowlink_416612/two_edge_single_fill.hpp",
+            "recorded_header_sha256": "48ec47d9151bf20d1671a6b63983e522265210ad75a125afa26845fa9d2f289f",
+            "saved_header_sha256": "48ec47d9151bf20d1671a6b63983e522265210ad75a125afa26845fa9d2f289f",
+            "source_identity_verified": true
+          },
+          {
+            "compiler": "clang",
+            "setting": "checked",
+            "label": "two_edge_single_fill",
+            "passed": true,
+            "checks": 178177,
+            "header": "/tmp/sirkit_lowlink_416612/two_edge_single_fill.hpp",
+            "recorded_header_sha256": "48ec47d9151bf20d1671a6b63983e522265210ad75a125afa26845fa9d2f289f",
+            "saved_header_sha256": "48ec47d9151bf20d1671a6b63983e522265210ad75a125afa26845fa9d2f289f",
+            "source_identity_verified": true
+          }
+        ],
+        "scope": "今回の候補の補足検証記録。採用本体の最終32検証や現行維持時の過去同一SHA検証とは区別。元記録に本体SHAがない行は一致を保証した検証として扱わない。"
+      },
+      {
+        "file": "narrow_validation.json",
+        "sha256": "342ab5c4fa594449f397b8483ef604ff4532a581e635a634f1239639d82f704f",
+        "explicit_result_rows": 2,
+        "passed_rows": 2,
+        "failed_rows": 0,
+        "rows": [
+          {
+            "compiler": "gcc",
+            "setting": "checked",
+            "label": "narrow_parent_pending",
+            "passed": true,
+            "checks": 178177,
+            "header": "/tmp/sirkit_lowlink_416612/narrow_parent_pending.hpp",
+            "recorded_header_sha256": "8eaec13842a310029052389426a32483c75d3ae3fad17382af47840e3b7eb648",
+            "saved_header_sha256": "8eaec13842a310029052389426a32483c75d3ae3fad17382af47840e3b7eb648",
+            "source_identity_verified": true
+          },
+          {
+            "compiler": "clang",
+            "setting": "checked",
+            "label": "narrow_parent_pending",
+            "passed": true,
+            "checks": 178177,
+            "header": "/tmp/sirkit_lowlink_416612/narrow_parent_pending.hpp",
+            "recorded_header_sha256": "8eaec13842a310029052389426a32483c75d3ae3fad17382af47840e3b7eb648",
+            "saved_header_sha256": "8eaec13842a310029052389426a32483c75d3ae3fad17382af47840e3b7eb648",
+            "source_identity_verified": true
+          }
+        ],
+        "scope": "今回の候補の補足検証記録。採用本体の最終32検証や現行維持時の過去同一SHA検証とは区別。元記録に本体SHAがない行は一致を保証した検証として扱わない。"
+      }
+    ],
+    "additional_records": {
+      "final_fixture_validation.json": "d183d93b2595bb456b645b50a11d616fc558ef3992a89ea0e1d5503452ee1d77",
+      "narrow_validation.json": "342ab5c4fa594449f397b8483ef604ff4532a581e635a634f1239639d82f704f",
+      "fill_validation.json": "c0b6f88d1ca2781dae3260e668c37bee83282fa8819f9f97be2f2236f7789193",
+      "candidate_validation.json": "5b4760565a33a18a76ea6cd6f5d58c398cb6c323220868c1dc204e6e9b86c808"
+    },
+    "repair": {
+      "script": "repair_measurements.py",
+      "script_sha256": "8ab561dbb3f279a2291e183527005eae552d47e5d11bc83f38b5a3c4f40d264c",
+      "selection": "repair_selection.json",
+      "selection_sha256": "52a1f926441ecb72faf38123aecc43e095bbb44c1f76c947ad626e5654490ac4",
+      "selected_cells": 17,
+      "by_kind": {
+        "whole": {
+          "selected_cells": 1,
+          "initial_triplets": 720,
+          "added_triplets": 10,
+          "combined_triplets": 730,
+          "initial_raw": "initial_final_whole_raw.json",
+          "initial_raw_sha256": "9b4cf6d1acca34d26c6990874dfb7c966a288c9a1cc6e7cb12e30555d2c38678",
+          "initial_summary": "initial_final_whole_summary.json",
+          "initial_summary_sha256": "68d6d1b6278df14b8cca684faebdc2fbdf23cfd0bfec4e12abd3f86500b6dea1"
+        },
+        "core": {
+          "selected_cells": 16,
+          "initial_triplets": 1229,
+          "added_triplets": 160,
+          "combined_triplets": 1389,
+          "initial_raw": "initial_final_core_raw.json",
+          "initial_raw_sha256": "33bf6c7a3347df6f6e0dbe8a8196b7f98176d17c5b9a83d351c9134da613a0c3",
+          "initial_summary": "initial_final_core_summary.json",
+          "initial_summary_sha256": "8e91208f531030912dbf651054934f1e871d7e8c6dc42ed60cd7606733f0de6c"
+        }
+      },
+      "snapshot_record_correction": null,
+      "remaining_control_outside_three_percent": [
+        {
+          "kind": "core",
+          "compiler": "gcc",
+          "flag": "native",
+          "setting": "checked",
+          "case": {
+            "name": "custom_random64",
+            "operation": 4,
+            "repetitions": 256,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random64.in",
+            "n": 64,
+            "m": 200
+          },
+          "ratios": {
+            "final": 0.48717948717948717,
+            "control": 1.0379746835443038
+          },
+          "valid_counts": {
+            "final": 11,
+            "control": 5
+          },
+          "sufficient": true
+        },
+        {
+          "kind": "core",
+          "compiler": "gcc",
+          "flag": "native",
+          "setting": "checked",
+          "case": {
+            "name": "custom_random64",
+            "operation": 5,
+            "repetitions": 256,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random64.in",
+            "n": 64,
+            "m": 200
+          },
+          "ratios": {
+            "final": 1.0209314386474433,
+            "control": 1.0371460786770235
+          },
+          "valid_counts": {
+            "final": 14,
+            "control": 6
+          },
+          "sufficient": true
+        },
+        {
+          "kind": "core",
+          "compiler": "gcc",
+          "flag": "native",
+          "setting": "checked",
+          "case": {
+            "name": "custom_random64",
+            "operation": 6,
+            "repetitions": 256,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random64.in",
+            "n": 64,
+            "m": 200
+          },
+          "ratios": {
+            "final": 1.0135135135135136,
+            "control": 1.0646033873522602
+          },
+          "valid_counts": {
+            "final": 13,
+            "control": 4
+          },
+          "sufficient": true
+        },
+        {
+          "kind": "core",
+          "compiler": "gcc",
+          "flag": "native",
+          "setting": "checked",
+          "case": {
+            "name": "custom_random100k_500k",
+            "operation": 2,
+            "repetitions": 1,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random100k_500k.in",
+            "n": 100000,
+            "m": 500000
+          },
+          "ratios": {
+            "final": 0.9148708715467282,
+            "control": 1.0432027221932874
+          },
+          "valid_counts": {
+            "final": 13,
+            "control": 4
+          },
+          "sufficient": true
+        }
+      ],
+      "remaining_candidate_above_three_percent": [],
+      "remaining_insufficient_cells": [],
+      "selection_rule": "初期control中央値が1±3%の外、または初期final中央値>1.03、または有効候補5組/対照2組未達の全セル。初期値だけで一度決める。",
+      "supplemental_protocol": "各選択セルへ候補7組+同一対照3組を一度だけ追加。全初期行と全追加行を保持し、両端差10%以内という同じ基準で統合中央値を計算。候補の時間を理由に個別trialを除外せず、選び直し・追加phaseの反復をしない。",
+      "scope": "機械的な再確認対象と全raw保持の検証。再確認の実施や有効数充足は採用を意味しない。採否は統合結果とfinal_selectionで別に判断する。"
+    },
+    "coverage": {
+      "whole": {
+        "default/skip": [
+          "biconnected_components__custom_cycle100k",
+          "biconnected_components__custom_disjoint_cliques100k",
+          "biconnected_components__custom_parallel100k",
+          "biconnected_components__custom_path300k",
+          "biconnected_components__custom_random100k_500k",
+          "biconnected_components__custom_star100k",
+          "biconnected_components__official_biconnected_components_max_random_00",
+          "biconnected_components__official_biconnected_components_max_tree_00",
+          "biconnected_components__official_two_edge_connected_components_max_random_00",
+          "two_edge_connected_components__custom_cycle100k",
+          "two_edge_connected_components__custom_disjoint_cliques100k",
+          "two_edge_connected_components__custom_parallel100k",
+          "two_edge_connected_components__custom_path300k",
+          "two_edge_connected_components__custom_random100k_500k",
+          "two_edge_connected_components__custom_star100k",
+          "two_edge_connected_components__official_biconnected_components_max_random_00",
+          "two_edge_connected_components__official_biconnected_components_max_tree_00",
+          "two_edge_connected_components__official_two_edge_connected_components_max_random_00"
+        ],
+        "native/skip": [
+          "biconnected_components__custom_cycle100k",
+          "biconnected_components__custom_disjoint_cliques100k",
+          "biconnected_components__custom_parallel100k",
+          "biconnected_components__custom_path300k",
+          "biconnected_components__custom_random100k_500k",
+          "biconnected_components__custom_star100k",
+          "biconnected_components__official_biconnected_components_max_random_00",
+          "biconnected_components__official_biconnected_components_max_tree_00",
+          "biconnected_components__official_two_edge_connected_components_max_random_00",
+          "two_edge_connected_components__custom_cycle100k",
+          "two_edge_connected_components__custom_disjoint_cliques100k",
+          "two_edge_connected_components__custom_parallel100k",
+          "two_edge_connected_components__custom_path300k",
+          "two_edge_connected_components__custom_random100k_500k",
+          "two_edge_connected_components__custom_star100k",
+          "two_edge_connected_components__official_biconnected_components_max_random_00",
+          "two_edge_connected_components__official_biconnected_components_max_tree_00",
+          "two_edge_connected_components__official_two_edge_connected_components_max_random_00"
+        ]
+      },
+      "core": {
+        "default/skip": [
+          {
+            "m": 100000,
+            "n": 100000,
+            "name": "custom_cycle100k",
+            "operation": 4,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_cycle100k.in",
+            "repetitions": 16
+          },
+          {
+            "m": 500000,
+            "n": 100000,
+            "name": "custom_random100k_500k",
+            "operation": 0,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random100k_500k.in",
+            "repetitions": 1
+          },
+          {
+            "m": 500000,
+            "n": 100000,
+            "name": "custom_random100k_500k",
+            "operation": 1,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random100k_500k.in",
+            "repetitions": 1
+          },
+          {
+            "m": 500000,
+            "n": 100000,
+            "name": "custom_random100k_500k",
+            "operation": 2,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random100k_500k.in",
+            "repetitions": 1
+          },
+          {
+            "m": 500000,
+            "n": 100000,
+            "name": "custom_random100k_500k",
+            "operation": 3,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random100k_500k.in",
+            "repetitions": 1
+          },
+          {
+            "m": 500000,
+            "n": 100000,
+            "name": "custom_random100k_500k",
+            "operation": 4,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random100k_500k.in",
+            "repetitions": 1
+          },
+          {
+            "m": 500000,
+            "n": 100000,
+            "name": "custom_random100k_500k",
+            "operation": 5,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random100k_500k.in",
+            "repetitions": 1
+          },
+          {
+            "m": 500000,
+            "n": 100000,
+            "name": "custom_random100k_500k",
+            "operation": 6,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random100k_500k.in",
+            "repetitions": 1
+          },
+          {
+            "m": 500000,
+            "n": 100000,
+            "name": "custom_random100k_500k",
+            "operation": 7,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random100k_500k.in",
+            "repetitions": 256
+          }
+        ],
+        "native/checked": [
+          {
+            "m": 100000,
+            "n": 100000,
+            "name": "custom_cycle100k",
+            "operation": 4,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_cycle100k.in",
+            "repetitions": 16
+          },
+          {
+            "m": 200,
+            "n": 64,
+            "name": "custom_random64",
+            "operation": 0,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random64.in",
+            "repetitions": 256
+          },
+          {
+            "m": 200,
+            "n": 64,
+            "name": "custom_random64",
+            "operation": 1,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random64.in",
+            "repetitions": 256
+          },
+          {
+            "m": 200,
+            "n": 64,
+            "name": "custom_random64",
+            "operation": 2,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random64.in",
+            "repetitions": 256
+          },
+          {
+            "m": 200,
+            "n": 64,
+            "name": "custom_random64",
+            "operation": 3,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random64.in",
+            "repetitions": 256
+          },
+          {
+            "m": 200,
+            "n": 64,
+            "name": "custom_random64",
+            "operation": 4,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random64.in",
+            "repetitions": 256
+          },
+          {
+            "m": 200,
+            "n": 64,
+            "name": "custom_random64",
+            "operation": 5,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random64.in",
+            "repetitions": 256
+          },
+          {
+            "m": 200,
+            "n": 64,
+            "name": "custom_random64",
+            "operation": 6,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random64.in",
+            "repetitions": 256
+          },
+          {
+            "m": 200,
+            "n": 64,
+            "name": "custom_random64",
+            "operation": 7,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random64.in",
+            "repetitions": 32768
+          },
+          {
+            "m": 500000,
+            "n": 100000,
+            "name": "custom_random100k_500k",
+            "operation": 0,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random100k_500k.in",
+            "repetitions": 1
+          },
+          {
+            "m": 500000,
+            "n": 100000,
+            "name": "custom_random100k_500k",
+            "operation": 1,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random100k_500k.in",
+            "repetitions": 1
+          },
+          {
+            "m": 500000,
+            "n": 100000,
+            "name": "custom_random100k_500k",
+            "operation": 2,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random100k_500k.in",
+            "repetitions": 1
+          },
+          {
+            "m": 500000,
+            "n": 100000,
+            "name": "custom_random100k_500k",
+            "operation": 3,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random100k_500k.in",
+            "repetitions": 1
+          },
+          {
+            "m": 500000,
+            "n": 100000,
+            "name": "custom_random100k_500k",
+            "operation": 4,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random100k_500k.in",
+            "repetitions": 1
+          },
+          {
+            "m": 500000,
+            "n": 100000,
+            "name": "custom_random100k_500k",
+            "operation": 5,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random100k_500k.in",
+            "repetitions": 1
+          },
+          {
+            "m": 500000,
+            "n": 100000,
+            "name": "custom_random100k_500k",
+            "operation": 6,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random100k_500k.in",
+            "repetitions": 1
+          },
+          {
+            "m": 500000,
+            "n": 100000,
+            "name": "custom_random100k_500k",
+            "operation": 7,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random100k_500k.in",
+            "repetitions": 256
+          },
+          {
+            "m": 99999,
+            "n": 100000,
+            "name": "custom_star100k",
+            "operation": 0,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_star100k.in",
+            "repetitions": 1
+          },
+          {
+            "m": 99999,
+            "n": 100000,
+            "name": "custom_star100k",
+            "operation": 1,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_star100k.in",
+            "repetitions": 1
+          },
+          {
+            "m": 99999,
+            "n": 100000,
+            "name": "custom_star100k",
+            "operation": 2,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_star100k.in",
+            "repetitions": 1
+          },
+          {
+            "m": 99999,
+            "n": 100000,
+            "name": "custom_star100k",
+            "operation": 3,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_star100k.in",
+            "repetitions": 1
+          },
+          {
+            "m": 99999,
+            "n": 100000,
+            "name": "custom_star100k",
+            "operation": 4,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_star100k.in",
+            "repetitions": 1
+          },
+          {
+            "m": 99999,
+            "n": 100000,
+            "name": "custom_star100k",
+            "operation": 5,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_star100k.in",
+            "repetitions": 1
+          },
+          {
+            "m": 99999,
+            "n": 100000,
+            "name": "custom_star100k",
+            "operation": 6,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_star100k.in",
+            "repetitions": 1
+          },
+          {
+            "m": 99999,
+            "n": 100000,
+            "name": "custom_star100k",
+            "operation": 7,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_star100k.in",
+            "repetitions": 1
+          }
+        ],
+        "native/skip": [
+          {
+            "m": 100000,
+            "n": 100000,
+            "name": "custom_cycle100k",
+            "operation": 4,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_cycle100k.in",
+            "repetitions": 16
+          },
+          {
+            "m": 200,
+            "n": 64,
+            "name": "custom_random64",
+            "operation": 0,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random64.in",
+            "repetitions": 256
+          },
+          {
+            "m": 200,
+            "n": 64,
+            "name": "custom_random64",
+            "operation": 1,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random64.in",
+            "repetitions": 256
+          },
+          {
+            "m": 200,
+            "n": 64,
+            "name": "custom_random64",
+            "operation": 2,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random64.in",
+            "repetitions": 256
+          },
+          {
+            "m": 200,
+            "n": 64,
+            "name": "custom_random64",
+            "operation": 3,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random64.in",
+            "repetitions": 256
+          },
+          {
+            "m": 200,
+            "n": 64,
+            "name": "custom_random64",
+            "operation": 4,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random64.in",
+            "repetitions": 256
+          },
+          {
+            "m": 200,
+            "n": 64,
+            "name": "custom_random64",
+            "operation": 5,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random64.in",
+            "repetitions": 256
+          },
+          {
+            "m": 200,
+            "n": 64,
+            "name": "custom_random64",
+            "operation": 6,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random64.in",
+            "repetitions": 256
+          },
+          {
+            "m": 200,
+            "n": 64,
+            "name": "custom_random64",
+            "operation": 7,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random64.in",
+            "repetitions": 32768
+          },
+          {
+            "m": 200000,
+            "n": 200000,
+            "name": "official_two_edge_connected_components_max_random_00",
+            "operation": 4,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/official_two_edge_connected_components_max_random_00.in",
+            "repetitions": 1
+          },
+          {
+            "m": 200000,
+            "n": 200000,
+            "name": "official_two_edge_connected_components_max_random_00",
+            "operation": 7,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/official_two_edge_connected_components_max_random_00.in",
+            "repetitions": 1
+          },
+          {
+            "m": 500000,
+            "n": 100000,
+            "name": "custom_random100k_500k",
+            "operation": 0,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random100k_500k.in",
+            "repetitions": 1
+          },
+          {
+            "m": 500000,
+            "n": 100000,
+            "name": "custom_random100k_500k",
+            "operation": 1,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random100k_500k.in",
+            "repetitions": 1
+          },
+          {
+            "m": 500000,
+            "n": 100000,
+            "name": "custom_random100k_500k",
+            "operation": 2,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random100k_500k.in",
+            "repetitions": 1
+          },
+          {
+            "m": 500000,
+            "n": 100000,
+            "name": "custom_random100k_500k",
+            "operation": 3,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random100k_500k.in",
+            "repetitions": 1
+          },
+          {
+            "m": 500000,
+            "n": 100000,
+            "name": "custom_random100k_500k",
+            "operation": 4,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random100k_500k.in",
+            "repetitions": 1
+          },
+          {
+            "m": 500000,
+            "n": 100000,
+            "name": "custom_random100k_500k",
+            "operation": 5,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random100k_500k.in",
+            "repetitions": 1
+          },
+          {
+            "m": 500000,
+            "n": 100000,
+            "name": "custom_random100k_500k",
+            "operation": 6,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random100k_500k.in",
+            "repetitions": 1
+          },
+          {
+            "m": 500000,
+            "n": 100000,
+            "name": "custom_random100k_500k",
+            "operation": 7,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random100k_500k.in",
+            "repetitions": 256
+          },
+          {
+            "m": 99999,
+            "n": 100000,
+            "name": "custom_star100k",
+            "operation": 0,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_star100k.in",
+            "repetitions": 1
+          },
+          {
+            "m": 99999,
+            "n": 100000,
+            "name": "custom_star100k",
+            "operation": 1,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_star100k.in",
+            "repetitions": 1
+          },
+          {
+            "m": 99999,
+            "n": 100000,
+            "name": "custom_star100k",
+            "operation": 2,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_star100k.in",
+            "repetitions": 1
+          },
+          {
+            "m": 99999,
+            "n": 100000,
+            "name": "custom_star100k",
+            "operation": 3,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_star100k.in",
+            "repetitions": 1
+          },
+          {
+            "m": 99999,
+            "n": 100000,
+            "name": "custom_star100k",
+            "operation": 4,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_star100k.in",
+            "repetitions": 1
+          },
+          {
+            "m": 99999,
+            "n": 100000,
+            "name": "custom_star100k",
+            "operation": 5,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_star100k.in",
+            "repetitions": 1
+          },
+          {
+            "m": 99999,
+            "n": 100000,
+            "name": "custom_star100k",
+            "operation": 6,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_star100k.in",
+            "repetitions": 1
+          },
+          {
+            "m": 99999,
+            "n": 100000,
+            "name": "custom_star100k",
+            "operation": 7,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_star100k.in",
+            "repetitions": 1
+          }
+        ]
+      }
+    },
+    "coverage_scope": "実際の各profileで宣言したjob集合を記録し、両コンパイラで同じ条件集合か照合。対象を特定の入力名や過去の件数に固定しない。",
+    "whole": {
+      "cells": 72,
+      "cases": 18,
+      "qualified_cells": 72,
+      "triplets": 730,
+      "statistics": [
+        {
+          "compiler": "clang",
+          "flag": "default",
+          "problem": "biconnected_components",
+          "cells": 9,
+          "qualified_cells": 9,
+          "candidate_ratio": 0.965682494895372,
+          "identical_control_ratio": 0.9993929221058635,
+          "minimum_ratio": 0.9317676022003267,
+          "maximum_ratio": 0.9973805662966196
+        },
+        {
+          "compiler": "clang",
+          "flag": "default",
+          "problem": "two_edge_connected_components",
+          "cells": 9,
+          "qualified_cells": 9,
+          "candidate_ratio": 0.9482177808750448,
+          "identical_control_ratio": 0.9976206296765036,
+          "minimum_ratio": 0.8971815357301376,
+          "maximum_ratio": 1.0019652209014522
+        },
+        {
+          "compiler": "clang",
+          "flag": "native",
+          "problem": "biconnected_components",
+          "cells": 9,
+          "qualified_cells": 9,
+          "candidate_ratio": 0.9729465072666899,
+          "identical_control_ratio": 0.9965853963798368,
+          "minimum_ratio": 0.9486507076093644,
+          "maximum_ratio": 1.0001678697330871
+        },
+        {
+          "compiler": "clang",
+          "flag": "native",
+          "problem": "two_edge_connected_components",
+          "cells": 9,
+          "qualified_cells": 9,
+          "candidate_ratio": 0.9449608256236164,
+          "identical_control_ratio": 1.0025430673135465,
+          "minimum_ratio": 0.8954102122776821,
+          "maximum_ratio": 0.9945027486256871
+        },
+        {
+          "compiler": "gcc",
+          "flag": "default",
+          "problem": "biconnected_components",
+          "cells": 9,
+          "qualified_cells": 9,
+          "candidate_ratio": 0.964103471001896,
+          "identical_control_ratio": 0.9949188318700024,
+          "minimum_ratio": 0.932898755101469,
+          "maximum_ratio": 1.0020461113337693
+        },
+        {
+          "compiler": "gcc",
+          "flag": "default",
+          "problem": "two_edge_connected_components",
+          "cells": 9,
+          "qualified_cells": 9,
+          "candidate_ratio": 0.9544111681528479,
+          "identical_control_ratio": 1.0023098739171834,
+          "minimum_ratio": 0.926328841980809,
+          "maximum_ratio": 0.998235415110476
+        },
+        {
+          "compiler": "gcc",
+          "flag": "native",
+          "problem": "biconnected_components",
+          "cells": 9,
+          "qualified_cells": 9,
+          "candidate_ratio": 0.9697399647626962,
+          "identical_control_ratio": 0.9998882071334464,
+          "minimum_ratio": 0.9400429203346035,
+          "maximum_ratio": 0.9958656823053108
+        },
+        {
+          "compiler": "gcc",
+          "flag": "native",
+          "problem": "two_edge_connected_components",
+          "cells": 9,
+          "qualified_cells": 9,
+          "candidate_ratio": 0.9553745304680034,
+          "identical_control_ratio": 1.0014737178022748,
+          "minimum_ratio": 0.9233197799569481,
+          "maximum_ratio": 0.9904912836767037
+        }
+      ],
+      "insufficient_cells": [],
+      "jobs": "final_whole_jobs.json",
+      "summary": "final_whole_summary.json",
+      "raw": "final_whole_raw.json",
+      "time": "固定main全体の子user+system CPU時間。SKIP設定。正規化と独立参照SHA照合は計測後。"
+    },
+    "core": {
+      "cells": 122,
+      "scenarios": 27,
+      "qualified_cells": 122,
+      "triplets": 1389,
+      "statistics": [
+        {
+          "compiler": "clang",
+          "flag": "default",
+          "setting": "skip",
+          "cells": 9,
+          "qualified_cells": 9,
+          "candidate_ratio": 0.8914695976073359,
+          "identical_control_ratio": 0.9950686395928617,
+          "minimum_ratio": 0.5088361392868347,
+          "maximum_ratio": 0.987848928317715
+        },
+        {
+          "compiler": "clang",
+          "flag": "native",
+          "setting": "checked",
+          "cells": 25,
+          "qualified_cells": 25,
+          "candidate_ratio": 0.9171408723422766,
+          "identical_control_ratio": 0.997258432047526,
+          "minimum_ratio": 0.500629987400252,
+          "maximum_ratio": 1.0226806903307009
+        },
+        {
+          "compiler": "clang",
+          "flag": "native",
+          "setting": "skip",
+          "cells": 27,
+          "qualified_cells": 27,
+          "candidate_ratio": 0.9167738793302654,
+          "identical_control_ratio": 0.9986514205813478,
+          "minimum_ratio": 0.505974808913769,
+          "maximum_ratio": 1.0160880609652836
+        },
+        {
+          "compiler": "gcc",
+          "flag": "default",
+          "setting": "skip",
+          "cells": 9,
+          "qualified_cells": 9,
+          "candidate_ratio": 0.895713235519424,
+          "identical_control_ratio": 0.990993310648512,
+          "minimum_ratio": 0.5697934809654143,
+          "maximum_ratio": 0.990040494691912
+        },
+        {
+          "compiler": "gcc",
+          "flag": "native",
+          "setting": "checked",
+          "cells": 25,
+          "qualified_cells": 25,
+          "candidate_ratio": 0.9079389257934163,
+          "identical_control_ratio": 1.0017395335701447,
+          "minimum_ratio": 0.48717948717948717,
+          "maximum_ratio": 1.0209314386474433
+        },
+        {
+          "compiler": "gcc",
+          "flag": "native",
+          "setting": "skip",
+          "cells": 27,
+          "qualified_cells": 27,
+          "candidate_ratio": 0.9092520713426312,
+          "identical_control_ratio": 0.9987631775736923,
+          "minimum_ratio": 0.5000195320129692,
+          "maximum_ratio": 1.019108280254777
+        }
+      ],
+      "operations": {
+        "0": "build(false)",
+        "1": "build(true)",
+        "2": "rebuild(false)",
+        "3": "rebuild(true)",
+        "4": "two_edge_components",
+        "5": "biconnected_vertex_components(true)",
+        "6": "biconnected_vertex_components(false)",
+        "7": "bridge_forest"
+      },
+      "insufficient_cells": [],
+      "jobs": "final_core_jobs.json",
+      "summary": "final_core_summary.json",
+      "raw": "final_core_raw.json",
+      "time": "std::clock。入力読込と準備は計測外、指定操作と返り値生成は内、checksumの正規化と照合は後。"
+    },
+    "observed_tradeoffs": {
+      "whole_above_three_percent": [],
+      "large_core_above_three_percent": [],
+      "scope": "基準達成セルから導出。未達セルも隠さず記録。"
+    }
+  },
+  "validation": {
+    "mode": "fresh_final_candidate",
+    "jobs": 32,
+    "all_passed": true,
+    "source_sha256": "b6136a009ad424b9e15f1d7efd59987be2f8d3f95de9adb51fdb7a137221ed3f",
+    "completed_at_utc": "2026-11-12T11:03:38.411316+00:00",
+    "details": "final_validation.json",
+    "sha256": "716fa99b5c70b7b93dbe8b6a632af18045bb1ac501844b127266d07fa25b487c",
+    "matrix": "GCC/Clang×checked/SKIP×default/forced-wide×参照/構築確保失敗/照会確保失敗の24件、同8設定のASAN+UBSAN参照。",
+    "allocation_counters": [
+      {
+        "test": "new_graph2_allocation_test",
+        "compiler": "gcc",
+        "setting": "checked",
+        "mode": "default",
+        "failures": 60,
+        "successes": 820,
+        "live_delta": 0
+      },
+      {
+        "test": "low_link_components_allocation_test",
+        "compiler": "gcc",
+        "setting": "checked",
+        "mode": "default",
+        "failures": 83,
+        "successes": 617,
+        "live_delta": 0
+      },
+      {
+        "test": "new_graph2_allocation_test",
+        "compiler": "gcc",
+        "setting": "checked",
+        "mode": "forced_wide",
+        "failures": 60,
+        "successes": 820,
+        "live_delta": 0
+      },
+      {
+        "test": "low_link_components_allocation_test",
+        "compiler": "gcc",
+        "setting": "checked",
+        "mode": "forced_wide",
+        "failures": 83,
+        "successes": 617,
+        "live_delta": 0
+      },
+      {
+        "test": "new_graph2_allocation_test",
+        "compiler": "gcc",
+        "setting": "skip",
+        "mode": "default",
+        "failures": 60,
+        "successes": 820,
+        "live_delta": 0
+      },
+      {
+        "test": "low_link_components_allocation_test",
+        "compiler": "gcc",
+        "setting": "skip",
+        "mode": "default",
+        "failures": 83,
+        "successes": 617,
+        "live_delta": 0
+      },
+      {
+        "test": "new_graph2_allocation_test",
+        "compiler": "gcc",
+        "setting": "skip",
+        "mode": "forced_wide",
+        "failures": 60,
+        "successes": 820,
+        "live_delta": 0
+      },
+      {
+        "test": "low_link_components_allocation_test",
+        "compiler": "gcc",
+        "setting": "skip",
+        "mode": "forced_wide",
+        "failures": 83,
+        "successes": 617,
+        "live_delta": 0
+      },
+      {
+        "test": "new_graph2_allocation_test",
+        "compiler": "clang",
+        "setting": "checked",
+        "mode": "default",
+        "failures": 60,
+        "successes": 820,
+        "live_delta": 0
+      },
+      {
+        "test": "low_link_components_allocation_test",
+        "compiler": "clang",
+        "setting": "checked",
+        "mode": "default",
+        "failures": 83,
+        "successes": 617,
+        "live_delta": 0
+      },
+      {
+        "test": "new_graph2_allocation_test",
+        "compiler": "clang",
+        "setting": "checked",
+        "mode": "forced_wide",
+        "failures": 60,
+        "successes": 820,
+        "live_delta": 0
+      },
+      {
+        "test": "low_link_components_allocation_test",
+        "compiler": "clang",
+        "setting": "checked",
+        "mode": "forced_wide",
+        "failures": 83,
+        "successes": 617,
+        "live_delta": 0
+      },
+      {
+        "test": "new_graph2_allocation_test",
+        "compiler": "clang",
+        "setting": "skip",
+        "mode": "default",
+        "failures": 60,
+        "successes": 820,
+        "live_delta": 0
+      },
+      {
+        "test": "low_link_components_allocation_test",
+        "compiler": "clang",
+        "setting": "skip",
+        "mode": "default",
+        "failures": 83,
+        "successes": 617,
+        "live_delta": 0
+      },
+      {
+        "test": "new_graph2_allocation_test",
+        "compiler": "clang",
+        "setting": "skip",
+        "mode": "forced_wide",
+        "failures": 60,
+        "successes": 820,
+        "live_delta": 0
+      },
+      {
+        "test": "low_link_components_allocation_test",
+        "compiler": "clang",
+        "setting": "skip",
+        "mode": "forced_wide",
+        "failures": 83,
+        "successes": 617,
+        "live_delta": 0
+      }
+    ],
+    "forced_wide_conditions": {
+      "edge_ids": {
+        "expression": "edges_.size() <= std::numeric_limits<std::uint32_t>::max()",
+        "count": 1,
+        "replacement": "false"
+      },
+      "block_stamps": {
+        "expression": "blocks_.size() <= std::numeric_limits<std::uint32_t>::max()",
+        "count": 1,
+        "replacement": "false"
+      }
+    },
+    "wide_scope": "通常サイズで辺IDとstampのsize_t経路を強制。巨大Mそのものの物理試験とは扱わない。",
+    "leak_scope": "LeakSanitizerはhost ptraceのため無効。独立live allocation counterは全確保試験delta=0。",
+    "builds": 32,
+    "fixture_comparisons": 208,
+    "fixture_details": "final_fixture_validation.json",
+    "fixture_sha256": "d183d93b2595bb456b645b50a11d616fc558ef3992a89ea0e1d5503452ee1d77",
+    "profiles": {
+      "jobs": 14,
+      "file": "profiles/checkpoint.json",
+      "sha256": "74cdbef00bba7935d96833ea8da3b17628b1e4ae59c17bd8fd3d704d472e2542",
+      "run_id": "20261112T111506985680Z",
+      "scope": "派生版8件と使用例6件のローカルサンプル。オンライン判定ではない。"
+    }
+  },
+  "license": "既存CC0実装への独自変更。参考ライブラリの実装コードを新規に取り込まない。",
+  "evidence_archive": "Audit/data/performance-low-link-416612-2026-11-12.zip",
+  "evidence_scope": "今回の独自候補・試験・レビュー・測定raw・自分の提出API原本・入力provenanceを保存。外部実装・コンパイラ原典・入力/出力本体・実行体・symlink参照先を除外。",
+  "outcome": {
+    "online_before_this_change": {
+      "low_link_two_edge": {
+        "submission": 416612,
+        "status": "AC",
+        "time_ms": 42
+      },
+      "low_link_biconnected": {
+        "submission": 416613,
+        "status": "AC",
+        "time_ms": 208
+      }
+    },
+    "local_whole_cells": 72,
+    "local_core_cells": 122,
+    "all_cells_sufficient": true,
+    "whole_max_ratio": 1.0020461113337693,
+    "core_max_ratio": 1.0226806903307009,
+    "whole_best_speedup_percent": 10.458978772231786,
+    "single_component_cycle100k_getter_speedup_percent": [
+      {
+        "compiler": "gcc",
+        "flag": "native",
+        "setting": "checked",
+        "percent": 42.933810375670845
+      },
+      {
+        "compiler": "gcc",
+        "flag": "native",
+        "setting": "skip",
+        "percent": 42.753259779338016
+      },
+      {
+        "compiler": "gcc",
+        "flag": "default",
+        "setting": "skip",
+        "percent": 43.02065190345857
+      },
+      {
+        "compiler": "clang",
+        "flag": "native",
+        "setting": "checked",
+        "percent": 49.9370012599748
+      },
+      {
+        "compiler": "clang",
+        "flag": "native",
+        "setting": "skip",
+        "percent": 49.402519108623096
+      },
+      {
+        "compiler": "clang",
+        "flag": "default",
+        "setting": "skip",
+        "percent": 49.11638607131653
+      }
+    ],
+    "fresh_correctness_jobs": 32,
+    "independent_fixture_comparisons": 208
+  },
+  "tradeoff_notes": [
+    "追加測定は初期control中央値±3%外、候補3%超、valid不足の全17セルを機械的に選び、候補7・対照3組を一度追加。初期rawを全保存し、候補が遅い試行を除外せず統合した。",
+    "最終の全194セルで候補中央値は旧版比+3%以内。1〜3%差まで一律に同速と断定しない。",
+    "stage3の一回照会では単一成分の約6割短縮が見えたが、最終は返り値16件を保持する反復で約43〜50%短縮。前者を最終の性能値に転記しない。"
+  ],
+  "limitations": [
+    "i9-14900K P-Core CPU12のC++23 -O2、native/defaultでの比較。Library CheckerのAMDサーバーで同率の改善を保証しない。",
+    "追加後も同一対照中央値±3%外が4セル残る。小規模照会3セルとGCC native checkedのdense再build1セルであり、小さい差を成果の根拠に使わない。",
+    "公式ケースの一部は前回より遅い。星型175→184ms、max_random172→176ms、小規模10msを含む結果を削除せず、ノイズと断定しない。",
+    "辺番号size_t経路は通常サイズの入力で強制した。UINT32_MAXを超える辺数の物理試験ではない。"
+  ],
+  "risks": [
+    "今回の42ms/208msは変更前6e24f8の提出判定。採用するb613本体の通常版2本は未提出。"
+  ],
+  "evidence_archive_sha256": "fafc81360b46a15db5626f56f6e32449e1f81c6acd3faccd88770c40db8c8261"
+}

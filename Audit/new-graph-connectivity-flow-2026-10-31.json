@@ -1,0 +1,3630 @@
+{
+  "status": "passed",
+  "created_utc": "2026-10-31T10:57:20.515095+00:00",
+  "scope": "3 new connectivity/flow libraries; safe normal implementations; no edits to first-wave frozen graph libraries",
+  "source_files": {
+    "Graph/Low_Link.cpp": {
+      "sha256": "447197bca51ca51690281375230e99abb6c8462e804b1aa6922921d35560d4c4",
+      "bytes": 11787
+    },
+    "Graph/Eulerian_Trail.cpp": {
+      "sha256": "cfb9e144559e2e2ad7706595669e07d47062daeda2ceeb9c2f0dc71af2349b7d",
+      "bytes": 7355
+    },
+    "Graph/Min_Cost_Flow.cpp": {
+      "sha256": "cdb8088ad95e2cd2b08e07bc76e8181e569b6f6d4e5227ef724a3a0b16922700",
+      "bytes": 16182
+    },
+    "Document/low_link.md": {
+      "sha256": "31e4b547a3a994db90caec62516109e08cba1298a3258afd4c8c1bb3ad82327b",
+      "bytes": 2203
+    },
+    "Document/eulerian_trail.md": {
+      "sha256": "d328681077a2bb916d113fe3223cbd10bf39ea3c566bc9f41a6ded3a2325ba75",
+      "bytes": 1970
+    },
+    "Document/min_cost_flow.md": {
+      "sha256": "0fef7564f42c18edd2899f28345369bc236d65e1ec0bb9fa9904a9e13ccc17d2",
+      "bytes": 3985
+    },
+    "Examples/low_link_example.cpp": {
+      "sha256": "bf13194cb876c9846ed1fd119aa13d1cf331d73ddc4192acd05b9d76593c0990",
+      "bytes": 769
+    },
+    "Examples/eulerian_trail_example.cpp": {
+      "sha256": "4baa9c5ec0193dacdb6d3e7ddde56a632e87e7fa40b68b40ac1a38832b22c1e0",
+      "bytes": 554
+    },
+    "Examples/min_cost_flow_example.cpp": {
+      "sha256": "b433264381511f5d2be08b8f548671c00c3dc4f367be780f35362bf9570f59b6",
+      "bytes": 613
+    },
+    "Verify/current/drivers/low_link_two_edge_main.cpp": {
+      "sha256": "103549bcf94d087b4bda2b17809316ba1a026a6e76ce0d5a335e266a5c80c686",
+      "bytes": 425
+    },
+    "Verify/current/drivers/low_link_biconnected_main.cpp": {
+      "sha256": "44f36b179e0ee59572eba15b545f9060835835e734d6723d8c587bc255313085",
+      "bytes": 439
+    },
+    "Verify/current/drivers/eulerian_trail_directed_main.cpp": {
+      "sha256": "ac339e54b7ae70c60a8a1db6c0086076d65c1d01afb9bc0b9f6804b83b0e1df8",
+      "bytes": 565
+    },
+    "Verify/current/drivers/eulerian_trail_undirected_main.cpp": {
+      "sha256": "a366e88855cf39cb30d68f983833981cfec545eb2e142b6d07d88b2d2dadd545",
+      "bytes": 567
+    },
+    "Verify/current/drivers/min_cost_flow_grid_main.cpp": {
+      "sha256": "1194439663d4169d9d4baf1ff52d8b3e8eedf0adc4bc98c0447aa2ffb10713ea",
+      "bytes": 797
+    },
+    "Verify/current/tests/new_low_link_reference_test.cpp": {
+      "sha256": "37efe31e0cf3bcd6fcd46bf28315c8381c306f4749f37c87d06d50c42ba36b3e",
+      "bytes": 5580
+    },
+    "Verify/current/tests/new_eulerian_reference_test.cpp": {
+      "sha256": "19822a8ac7df70fceacfeaacd2df141c5b6e3b9cc9f9d9a8a677db2c24dc9b9e",
+      "bytes": 2831
+    },
+    "Verify/current/tests/new_min_cost_flow_reference_test.cpp": {
+      "sha256": "d50e6314a82b56ed424054ae7711155fb7b0374c3c25497f00445bf4099cde6c",
+      "bytes": 7261
+    },
+    "Verify/current/tests/new_graph2_allocation_test.cpp": {
+      "sha256": "a5738751371c59e672f16be98f79340c91e178eb6b1953768df2f0c9f9621134",
+      "bytes": 3520
+    }
+  },
+  "provenance": {
+    "new_implementation": true,
+    "license": "CC0-1.0",
+    "reference_usage": "AAL/Nyaan/Luzhiledの分類・数学的説明・問題選定を参考。LowLink/CSR Hierholzer/全グラフBellman-Ford付き最小費用流はいずれも独立実装。",
+    "sources": [
+      {
+        "url": "https://raw.githubusercontent.com/ei1333/library/master/LICENSE",
+        "license": "Unlicense",
+        "role": "公式原典でpublic-domain dedicationを確認。実装の転記はしない。"
+      },
+      {
+        "url": "https://ei1333.github.io/library/graph/others/eulerian-trail.hpp",
+        "role": "次数条件の数学的参考。破壊的なvector隣接実装と異なりCSRで非破壊に構築。"
+      },
+      {
+        "url": "https://nyaannyaan.github.io/library/graph/lowlink.hpp",
+        "role": "分類・問題選定の参考。独自の反復DFSと任意ブロック収集。"
+      },
+      {
+        "url": "https://ei1333.github.io/library/graph/flow/primal-dual.hpp",
+        "role": "最小費用流の分類の参考。全域初期ポテンシャルと型範囲検査を自作。"
+      }
+    ]
+  },
+  "reference_verification": {
+    "Luzhiled": "Official master/LICENSE is Unlicense/public-domain dedication as viewed, not asserted MIT. Documentation used for algorithm classification/existence conditions. No implementation copied; sources are own CC0 contributions.",
+    "Nyaan": "Official graph catalogue and LowLink name/reference only; own iterative implementation with optional edge-block work.",
+    "LibraryChecker": "Official repository task.md and example_00.in fetched for the four matching problems. Expected Euler output constructed by memoized exhaustive edge walks; component examples have a single 4-vertex component.",
+    "AtCoder": "Official practice2 E statement and both official samples; negative costs are handled directly rather than shifted to an assumed nonnegative distribution."
+  },
+  "validation": {
+    "status": "passed",
+    "libraries": {
+      "Graph/Low_Link.cpp": {
+        "sha256": "447197bca51ca51690281375230e99abb6c8462e804b1aa6922921d35560d4c4",
+        "snapshot": "/tmp/sirkit_12h_20261031_095733/graph2/validation/Low_Link.cpp"
+      },
+      "Graph/Eulerian_Trail.cpp": {
+        "sha256": "cfb9e144559e2e2ad7706595669e07d47062daeda2ceeb9c2f0dc71af2349b7d",
+        "snapshot": "/tmp/sirkit_12h_20261031_095733/graph2/validation/Eulerian_Trail.cpp"
+      },
+      "Graph/Min_Cost_Flow.cpp": {
+        "sha256": "cdb8088ad95e2cd2b08e07bc76e8181e569b6f6d4e5227ef724a3a0b16922700",
+        "snapshot": "/tmp/sirkit_12h_20261031_095733/graph2/validation/Min_Cost_Flow.cpp"
+      }
+    },
+    "fixtures": {
+      "new_low_link_reference_test.cpp": "37efe31e0cf3bcd6fcd46bf28315c8381c306f4749f37c87d06d50c42ba36b3e",
+      "new_eulerian_reference_test.cpp": "19822a8ac7df70fceacfeaacd2df141c5b6e3b9cc9f9d9a8a677db2c24dc9b9e",
+      "new_min_cost_flow_reference_test.cpp": "d50e6314a82b56ed424054ae7711155fb7b0374c3c25497f00445bf4099cde6c",
+      "new_graph2_allocation_test.cpp": "a5738751371c59e672f16be98f79340c91e178eb6b1953768df2f0c9f9621134"
+    },
+    "toolchains": {
+      "gcc": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+      "gcc_native": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+      "clang": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+      "clang_native": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+      "gcc_asan_ubsan": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0"
+    },
+    "cpu": 8,
+    "configurations": 60,
+    "results": [
+      {
+        "compiler": "gcc",
+        "skip_checks": false,
+        "standard_arithmetic": false,
+        "fixture": "new_low_link_reference_test.cpp",
+        "compile_command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-DLOW_LINK_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Low_Link.cpp\"",
+          "-DEULERIAN_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Eulerian_Trail.cpp\"",
+          "-DMIN_COST_FLOW_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Min_Cost_Flow.cpp\"",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/new_low_link_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/gcc-False-False-new_low_link_reference_test"
+        ],
+        "compile_exit": 0,
+        "compile_stdout": "",
+        "compile_stderr": "",
+        "run_command": [
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/gcc-False-False-new_low_link_reference_test"
+        ],
+        "run_exit": 0,
+        "stdout": "LowLink checks=178177\n",
+        "stderr": "",
+        "passed": true
+      },
+      {
+        "compiler": "gcc",
+        "skip_checks": false,
+        "standard_arithmetic": false,
+        "fixture": "new_eulerian_reference_test.cpp",
+        "compile_command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-DLOW_LINK_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Low_Link.cpp\"",
+          "-DEULERIAN_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Eulerian_Trail.cpp\"",
+          "-DMIN_COST_FLOW_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Min_Cost_Flow.cpp\"",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/new_eulerian_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/gcc-False-False-new_eulerian_reference_test"
+        ],
+        "compile_exit": 0,
+        "compile_stdout": "",
+        "compile_stderr": "",
+        "run_command": [
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/gcc-False-False-new_eulerian_reference_test"
+        ],
+        "run_exit": 0,
+        "stdout": "Eulerian checks=50402\n",
+        "stderr": "",
+        "passed": true
+      },
+      {
+        "compiler": "gcc",
+        "skip_checks": false,
+        "standard_arithmetic": false,
+        "fixture": "new_min_cost_flow_reference_test.cpp",
+        "compile_command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-DLOW_LINK_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Low_Link.cpp\"",
+          "-DEULERIAN_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Eulerian_Trail.cpp\"",
+          "-DMIN_COST_FLOW_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Min_Cost_Flow.cpp\"",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/new_min_cost_flow_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/gcc-False-False-new_min_cost_flow_reference_test"
+        ],
+        "compile_exit": 0,
+        "compile_stdout": "",
+        "compile_stderr": "",
+        "run_command": [
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/gcc-False-False-new_min_cost_flow_reference_test"
+        ],
+        "run_exit": 0,
+        "stdout": "MinCostFlow checks=28658\n",
+        "stderr": "",
+        "passed": true
+      },
+      {
+        "compiler": "gcc",
+        "skip_checks": false,
+        "standard_arithmetic": false,
+        "fixture": "new_graph2_allocation_test.cpp",
+        "compile_command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-DLOW_LINK_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Low_Link.cpp\"",
+          "-DEULERIAN_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Eulerian_Trail.cpp\"",
+          "-DMIN_COST_FLOW_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Min_Cost_Flow.cpp\"",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/new_graph2_allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/gcc-False-False-new_graph2_allocation_test"
+        ],
+        "compile_exit": 0,
+        "compile_stdout": "",
+        "compile_stderr": "",
+        "run_command": [
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/gcc-False-False-new_graph2_allocation_test"
+        ],
+        "run_exit": 0,
+        "stdout": "graph2 allocation failures=68 successes=812 live_delta=0\n",
+        "stderr": "",
+        "passed": true
+      },
+      {
+        "compiler": "gcc",
+        "skip_checks": false,
+        "standard_arithmetic": true,
+        "fixture": "new_min_cost_flow_reference_test.cpp",
+        "compile_command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-DLOW_LINK_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Low_Link.cpp\"",
+          "-DEULERIAN_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Eulerian_Trail.cpp\"",
+          "-DMIN_COST_FLOW_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Min_Cost_Flow.cpp\"",
+          "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/new_min_cost_flow_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/gcc-False-True-new_min_cost_flow_reference_test"
+        ],
+        "compile_exit": 0,
+        "compile_stdout": "",
+        "compile_stderr": "",
+        "run_command": [
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/gcc-False-True-new_min_cost_flow_reference_test"
+        ],
+        "run_exit": 0,
+        "stdout": "MinCostFlow checks=28658\n",
+        "stderr": "",
+        "passed": true
+      },
+      {
+        "compiler": "gcc",
+        "skip_checks": false,
+        "standard_arithmetic": true,
+        "fixture": "new_graph2_allocation_test.cpp",
+        "compile_command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-DLOW_LINK_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Low_Link.cpp\"",
+          "-DEULERIAN_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Eulerian_Trail.cpp\"",
+          "-DMIN_COST_FLOW_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Min_Cost_Flow.cpp\"",
+          "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/new_graph2_allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/gcc-False-True-new_graph2_allocation_test"
+        ],
+        "compile_exit": 0,
+        "compile_stdout": "",
+        "compile_stderr": "",
+        "run_command": [
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/gcc-False-True-new_graph2_allocation_test"
+        ],
+        "run_exit": 0,
+        "stdout": "graph2 allocation failures=68 successes=812 live_delta=0\n",
+        "stderr": "",
+        "passed": true
+      },
+      {
+        "compiler": "gcc",
+        "skip_checks": true,
+        "standard_arithmetic": false,
+        "fixture": "new_low_link_reference_test.cpp",
+        "compile_command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-DLOW_LINK_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Low_Link.cpp\"",
+          "-DEULERIAN_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Eulerian_Trail.cpp\"",
+          "-DMIN_COST_FLOW_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Min_Cost_Flow.cpp\"",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/new_low_link_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/gcc-True-False-new_low_link_reference_test"
+        ],
+        "compile_exit": 0,
+        "compile_stdout": "",
+        "compile_stderr": "",
+        "run_command": [
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/gcc-True-False-new_low_link_reference_test"
+        ],
+        "run_exit": 0,
+        "stdout": "LowLink checks=178177\n",
+        "stderr": "",
+        "passed": true
+      },
+      {
+        "compiler": "gcc",
+        "skip_checks": true,
+        "standard_arithmetic": false,
+        "fixture": "new_eulerian_reference_test.cpp",
+        "compile_command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-DLOW_LINK_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Low_Link.cpp\"",
+          "-DEULERIAN_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Eulerian_Trail.cpp\"",
+          "-DMIN_COST_FLOW_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Min_Cost_Flow.cpp\"",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/new_eulerian_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/gcc-True-False-new_eulerian_reference_test"
+        ],
+        "compile_exit": 0,
+        "compile_stdout": "",
+        "compile_stderr": "",
+        "run_command": [
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/gcc-True-False-new_eulerian_reference_test"
+        ],
+        "run_exit": 0,
+        "stdout": "Eulerian checks=50402\n",
+        "stderr": "",
+        "passed": true
+      },
+      {
+        "compiler": "gcc",
+        "skip_checks": true,
+        "standard_arithmetic": false,
+        "fixture": "new_min_cost_flow_reference_test.cpp",
+        "compile_command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-DLOW_LINK_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Low_Link.cpp\"",
+          "-DEULERIAN_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Eulerian_Trail.cpp\"",
+          "-DMIN_COST_FLOW_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Min_Cost_Flow.cpp\"",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/new_min_cost_flow_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/gcc-True-False-new_min_cost_flow_reference_test"
+        ],
+        "compile_exit": 0,
+        "compile_stdout": "",
+        "compile_stderr": "",
+        "run_command": [
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/gcc-True-False-new_min_cost_flow_reference_test"
+        ],
+        "run_exit": 0,
+        "stdout": "MinCostFlow checks=28658\n",
+        "stderr": "",
+        "passed": true
+      },
+      {
+        "compiler": "gcc",
+        "skip_checks": true,
+        "standard_arithmetic": false,
+        "fixture": "new_graph2_allocation_test.cpp",
+        "compile_command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-DLOW_LINK_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Low_Link.cpp\"",
+          "-DEULERIAN_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Eulerian_Trail.cpp\"",
+          "-DMIN_COST_FLOW_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Min_Cost_Flow.cpp\"",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/new_graph2_allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/gcc-True-False-new_graph2_allocation_test"
+        ],
+        "compile_exit": 0,
+        "compile_stdout": "",
+        "compile_stderr": "",
+        "run_command": [
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/gcc-True-False-new_graph2_allocation_test"
+        ],
+        "run_exit": 0,
+        "stdout": "graph2 allocation failures=68 successes=812 live_delta=0\n",
+        "stderr": "",
+        "passed": true
+      },
+      {
+        "compiler": "gcc",
+        "skip_checks": true,
+        "standard_arithmetic": true,
+        "fixture": "new_min_cost_flow_reference_test.cpp",
+        "compile_command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-DLOW_LINK_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Low_Link.cpp\"",
+          "-DEULERIAN_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Eulerian_Trail.cpp\"",
+          "-DMIN_COST_FLOW_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Min_Cost_Flow.cpp\"",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/new_min_cost_flow_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/gcc-True-True-new_min_cost_flow_reference_test"
+        ],
+        "compile_exit": 0,
+        "compile_stdout": "",
+        "compile_stderr": "",
+        "run_command": [
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/gcc-True-True-new_min_cost_flow_reference_test"
+        ],
+        "run_exit": 0,
+        "stdout": "MinCostFlow checks=28658\n",
+        "stderr": "",
+        "passed": true
+      },
+      {
+        "compiler": "gcc",
+        "skip_checks": true,
+        "standard_arithmetic": true,
+        "fixture": "new_graph2_allocation_test.cpp",
+        "compile_command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-DLOW_LINK_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Low_Link.cpp\"",
+          "-DEULERIAN_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Eulerian_Trail.cpp\"",
+          "-DMIN_COST_FLOW_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Min_Cost_Flow.cpp\"",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/new_graph2_allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/gcc-True-True-new_graph2_allocation_test"
+        ],
+        "compile_exit": 0,
+        "compile_stdout": "",
+        "compile_stderr": "",
+        "run_command": [
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/gcc-True-True-new_graph2_allocation_test"
+        ],
+        "run_exit": 0,
+        "stdout": "graph2 allocation failures=68 successes=812 live_delta=0\n",
+        "stderr": "",
+        "passed": true
+      },
+      {
+        "compiler": "gcc_native",
+        "skip_checks": false,
+        "standard_arithmetic": false,
+        "fixture": "new_low_link_reference_test.cpp",
+        "compile_command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-march=native",
+          "-DLOW_LINK_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Low_Link.cpp\"",
+          "-DEULERIAN_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Eulerian_Trail.cpp\"",
+          "-DMIN_COST_FLOW_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Min_Cost_Flow.cpp\"",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/new_low_link_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/gcc_native-False-False-new_low_link_reference_test"
+        ],
+        "compile_exit": 0,
+        "compile_stdout": "",
+        "compile_stderr": "",
+        "run_command": [
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/gcc_native-False-False-new_low_link_reference_test"
+        ],
+        "run_exit": 0,
+        "stdout": "LowLink checks=178177\n",
+        "stderr": "",
+        "passed": true
+      },
+      {
+        "compiler": "gcc_native",
+        "skip_checks": false,
+        "standard_arithmetic": false,
+        "fixture": "new_eulerian_reference_test.cpp",
+        "compile_command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-march=native",
+          "-DLOW_LINK_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Low_Link.cpp\"",
+          "-DEULERIAN_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Eulerian_Trail.cpp\"",
+          "-DMIN_COST_FLOW_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Min_Cost_Flow.cpp\"",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/new_eulerian_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/gcc_native-False-False-new_eulerian_reference_test"
+        ],
+        "compile_exit": 0,
+        "compile_stdout": "",
+        "compile_stderr": "",
+        "run_command": [
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/gcc_native-False-False-new_eulerian_reference_test"
+        ],
+        "run_exit": 0,
+        "stdout": "Eulerian checks=50402\n",
+        "stderr": "",
+        "passed": true
+      },
+      {
+        "compiler": "gcc_native",
+        "skip_checks": false,
+        "standard_arithmetic": false,
+        "fixture": "new_min_cost_flow_reference_test.cpp",
+        "compile_command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-march=native",
+          "-DLOW_LINK_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Low_Link.cpp\"",
+          "-DEULERIAN_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Eulerian_Trail.cpp\"",
+          "-DMIN_COST_FLOW_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Min_Cost_Flow.cpp\"",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/new_min_cost_flow_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/gcc_native-False-False-new_min_cost_flow_reference_test"
+        ],
+        "compile_exit": 0,
+        "compile_stdout": "",
+        "compile_stderr": "",
+        "run_command": [
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/gcc_native-False-False-new_min_cost_flow_reference_test"
+        ],
+        "run_exit": 0,
+        "stdout": "MinCostFlow checks=28658\n",
+        "stderr": "",
+        "passed": true
+      },
+      {
+        "compiler": "gcc_native",
+        "skip_checks": false,
+        "standard_arithmetic": false,
+        "fixture": "new_graph2_allocation_test.cpp",
+        "compile_command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-march=native",
+          "-DLOW_LINK_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Low_Link.cpp\"",
+          "-DEULERIAN_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Eulerian_Trail.cpp\"",
+          "-DMIN_COST_FLOW_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Min_Cost_Flow.cpp\"",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/new_graph2_allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/gcc_native-False-False-new_graph2_allocation_test"
+        ],
+        "compile_exit": 0,
+        "compile_stdout": "",
+        "compile_stderr": "",
+        "run_command": [
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/gcc_native-False-False-new_graph2_allocation_test"
+        ],
+        "run_exit": 0,
+        "stdout": "graph2 allocation failures=68 successes=812 live_delta=0\n",
+        "stderr": "",
+        "passed": true
+      },
+      {
+        "compiler": "gcc_native",
+        "skip_checks": false,
+        "standard_arithmetic": true,
+        "fixture": "new_min_cost_flow_reference_test.cpp",
+        "compile_command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-march=native",
+          "-DLOW_LINK_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Low_Link.cpp\"",
+          "-DEULERIAN_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Eulerian_Trail.cpp\"",
+          "-DMIN_COST_FLOW_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Min_Cost_Flow.cpp\"",
+          "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/new_min_cost_flow_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/gcc_native-False-True-new_min_cost_flow_reference_test"
+        ],
+        "compile_exit": 0,
+        "compile_stdout": "",
+        "compile_stderr": "",
+        "run_command": [
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/gcc_native-False-True-new_min_cost_flow_reference_test"
+        ],
+        "run_exit": 0,
+        "stdout": "MinCostFlow checks=28658\n",
+        "stderr": "",
+        "passed": true
+      },
+      {
+        "compiler": "gcc_native",
+        "skip_checks": false,
+        "standard_arithmetic": true,
+        "fixture": "new_graph2_allocation_test.cpp",
+        "compile_command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-march=native",
+          "-DLOW_LINK_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Low_Link.cpp\"",
+          "-DEULERIAN_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Eulerian_Trail.cpp\"",
+          "-DMIN_COST_FLOW_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Min_Cost_Flow.cpp\"",
+          "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/new_graph2_allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/gcc_native-False-True-new_graph2_allocation_test"
+        ],
+        "compile_exit": 0,
+        "compile_stdout": "",
+        "compile_stderr": "",
+        "run_command": [
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/gcc_native-False-True-new_graph2_allocation_test"
+        ],
+        "run_exit": 0,
+        "stdout": "graph2 allocation failures=68 successes=812 live_delta=0\n",
+        "stderr": "",
+        "passed": true
+      },
+      {
+        "compiler": "gcc_native",
+        "skip_checks": true,
+        "standard_arithmetic": false,
+        "fixture": "new_low_link_reference_test.cpp",
+        "compile_command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-march=native",
+          "-DLOW_LINK_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Low_Link.cpp\"",
+          "-DEULERIAN_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Eulerian_Trail.cpp\"",
+          "-DMIN_COST_FLOW_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Min_Cost_Flow.cpp\"",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/new_low_link_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/gcc_native-True-False-new_low_link_reference_test"
+        ],
+        "compile_exit": 0,
+        "compile_stdout": "",
+        "compile_stderr": "",
+        "run_command": [
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/gcc_native-True-False-new_low_link_reference_test"
+        ],
+        "run_exit": 0,
+        "stdout": "LowLink checks=178177\n",
+        "stderr": "",
+        "passed": true
+      },
+      {
+        "compiler": "gcc_native",
+        "skip_checks": true,
+        "standard_arithmetic": false,
+        "fixture": "new_eulerian_reference_test.cpp",
+        "compile_command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-march=native",
+          "-DLOW_LINK_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Low_Link.cpp\"",
+          "-DEULERIAN_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Eulerian_Trail.cpp\"",
+          "-DMIN_COST_FLOW_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Min_Cost_Flow.cpp\"",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/new_eulerian_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/gcc_native-True-False-new_eulerian_reference_test"
+        ],
+        "compile_exit": 0,
+        "compile_stdout": "",
+        "compile_stderr": "",
+        "run_command": [
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/gcc_native-True-False-new_eulerian_reference_test"
+        ],
+        "run_exit": 0,
+        "stdout": "Eulerian checks=50402\n",
+        "stderr": "",
+        "passed": true
+      },
+      {
+        "compiler": "gcc_native",
+        "skip_checks": true,
+        "standard_arithmetic": false,
+        "fixture": "new_min_cost_flow_reference_test.cpp",
+        "compile_command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-march=native",
+          "-DLOW_LINK_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Low_Link.cpp\"",
+          "-DEULERIAN_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Eulerian_Trail.cpp\"",
+          "-DMIN_COST_FLOW_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Min_Cost_Flow.cpp\"",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/new_min_cost_flow_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/gcc_native-True-False-new_min_cost_flow_reference_test"
+        ],
+        "compile_exit": 0,
+        "compile_stdout": "",
+        "compile_stderr": "",
+        "run_command": [
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/gcc_native-True-False-new_min_cost_flow_reference_test"
+        ],
+        "run_exit": 0,
+        "stdout": "MinCostFlow checks=28658\n",
+        "stderr": "",
+        "passed": true
+      },
+      {
+        "compiler": "gcc_native",
+        "skip_checks": true,
+        "standard_arithmetic": false,
+        "fixture": "new_graph2_allocation_test.cpp",
+        "compile_command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-march=native",
+          "-DLOW_LINK_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Low_Link.cpp\"",
+          "-DEULERIAN_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Eulerian_Trail.cpp\"",
+          "-DMIN_COST_FLOW_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Min_Cost_Flow.cpp\"",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/new_graph2_allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/gcc_native-True-False-new_graph2_allocation_test"
+        ],
+        "compile_exit": 0,
+        "compile_stdout": "",
+        "compile_stderr": "",
+        "run_command": [
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/gcc_native-True-False-new_graph2_allocation_test"
+        ],
+        "run_exit": 0,
+        "stdout": "graph2 allocation failures=68 successes=812 live_delta=0\n",
+        "stderr": "",
+        "passed": true
+      },
+      {
+        "compiler": "gcc_native",
+        "skip_checks": true,
+        "standard_arithmetic": true,
+        "fixture": "new_min_cost_flow_reference_test.cpp",
+        "compile_command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-march=native",
+          "-DLOW_LINK_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Low_Link.cpp\"",
+          "-DEULERIAN_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Eulerian_Trail.cpp\"",
+          "-DMIN_COST_FLOW_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Min_Cost_Flow.cpp\"",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/new_min_cost_flow_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/gcc_native-True-True-new_min_cost_flow_reference_test"
+        ],
+        "compile_exit": 0,
+        "compile_stdout": "",
+        "compile_stderr": "",
+        "run_command": [
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/gcc_native-True-True-new_min_cost_flow_reference_test"
+        ],
+        "run_exit": 0,
+        "stdout": "MinCostFlow checks=28658\n",
+        "stderr": "",
+        "passed": true
+      },
+      {
+        "compiler": "gcc_native",
+        "skip_checks": true,
+        "standard_arithmetic": true,
+        "fixture": "new_graph2_allocation_test.cpp",
+        "compile_command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-march=native",
+          "-DLOW_LINK_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Low_Link.cpp\"",
+          "-DEULERIAN_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Eulerian_Trail.cpp\"",
+          "-DMIN_COST_FLOW_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Min_Cost_Flow.cpp\"",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/new_graph2_allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/gcc_native-True-True-new_graph2_allocation_test"
+        ],
+        "compile_exit": 0,
+        "compile_stdout": "",
+        "compile_stderr": "",
+        "run_command": [
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/gcc_native-True-True-new_graph2_allocation_test"
+        ],
+        "run_exit": 0,
+        "stdout": "graph2 allocation failures=68 successes=812 live_delta=0\n",
+        "stderr": "",
+        "passed": true
+      },
+      {
+        "compiler": "clang",
+        "skip_checks": false,
+        "standard_arithmetic": false,
+        "fixture": "new_low_link_reference_test.cpp",
+        "compile_command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-DLOW_LINK_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Low_Link.cpp\"",
+          "-DEULERIAN_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Eulerian_Trail.cpp\"",
+          "-DMIN_COST_FLOW_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Min_Cost_Flow.cpp\"",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/new_low_link_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/clang-False-False-new_low_link_reference_test"
+        ],
+        "compile_exit": 0,
+        "compile_stdout": "",
+        "compile_stderr": "",
+        "run_command": [
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/clang-False-False-new_low_link_reference_test"
+        ],
+        "run_exit": 0,
+        "stdout": "LowLink checks=178177\n",
+        "stderr": "",
+        "passed": true
+      },
+      {
+        "compiler": "clang",
+        "skip_checks": false,
+        "standard_arithmetic": false,
+        "fixture": "new_eulerian_reference_test.cpp",
+        "compile_command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-DLOW_LINK_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Low_Link.cpp\"",
+          "-DEULERIAN_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Eulerian_Trail.cpp\"",
+          "-DMIN_COST_FLOW_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Min_Cost_Flow.cpp\"",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/new_eulerian_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/clang-False-False-new_eulerian_reference_test"
+        ],
+        "compile_exit": 0,
+        "compile_stdout": "",
+        "compile_stderr": "",
+        "run_command": [
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/clang-False-False-new_eulerian_reference_test"
+        ],
+        "run_exit": 0,
+        "stdout": "Eulerian checks=50402\n",
+        "stderr": "",
+        "passed": true
+      },
+      {
+        "compiler": "clang",
+        "skip_checks": false,
+        "standard_arithmetic": false,
+        "fixture": "new_min_cost_flow_reference_test.cpp",
+        "compile_command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-DLOW_LINK_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Low_Link.cpp\"",
+          "-DEULERIAN_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Eulerian_Trail.cpp\"",
+          "-DMIN_COST_FLOW_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Min_Cost_Flow.cpp\"",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/new_min_cost_flow_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/clang-False-False-new_min_cost_flow_reference_test"
+        ],
+        "compile_exit": 0,
+        "compile_stdout": "",
+        "compile_stderr": "",
+        "run_command": [
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/clang-False-False-new_min_cost_flow_reference_test"
+        ],
+        "run_exit": 0,
+        "stdout": "MinCostFlow checks=28658\n",
+        "stderr": "",
+        "passed": true
+      },
+      {
+        "compiler": "clang",
+        "skip_checks": false,
+        "standard_arithmetic": false,
+        "fixture": "new_graph2_allocation_test.cpp",
+        "compile_command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-DLOW_LINK_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Low_Link.cpp\"",
+          "-DEULERIAN_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Eulerian_Trail.cpp\"",
+          "-DMIN_COST_FLOW_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Min_Cost_Flow.cpp\"",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/new_graph2_allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/clang-False-False-new_graph2_allocation_test"
+        ],
+        "compile_exit": 0,
+        "compile_stdout": "",
+        "compile_stderr": "",
+        "run_command": [
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/clang-False-False-new_graph2_allocation_test"
+        ],
+        "run_exit": 0,
+        "stdout": "graph2 allocation failures=68 successes=812 live_delta=0\n",
+        "stderr": "",
+        "passed": true
+      },
+      {
+        "compiler": "clang",
+        "skip_checks": false,
+        "standard_arithmetic": true,
+        "fixture": "new_min_cost_flow_reference_test.cpp",
+        "compile_command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-DLOW_LINK_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Low_Link.cpp\"",
+          "-DEULERIAN_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Eulerian_Trail.cpp\"",
+          "-DMIN_COST_FLOW_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Min_Cost_Flow.cpp\"",
+          "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/new_min_cost_flow_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/clang-False-True-new_min_cost_flow_reference_test"
+        ],
+        "compile_exit": 0,
+        "compile_stdout": "",
+        "compile_stderr": "",
+        "run_command": [
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/clang-False-True-new_min_cost_flow_reference_test"
+        ],
+        "run_exit": 0,
+        "stdout": "MinCostFlow checks=28658\n",
+        "stderr": "",
+        "passed": true
+      },
+      {
+        "compiler": "clang",
+        "skip_checks": false,
+        "standard_arithmetic": true,
+        "fixture": "new_graph2_allocation_test.cpp",
+        "compile_command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-DLOW_LINK_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Low_Link.cpp\"",
+          "-DEULERIAN_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Eulerian_Trail.cpp\"",
+          "-DMIN_COST_FLOW_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Min_Cost_Flow.cpp\"",
+          "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/new_graph2_allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/clang-False-True-new_graph2_allocation_test"
+        ],
+        "compile_exit": 0,
+        "compile_stdout": "",
+        "compile_stderr": "",
+        "run_command": [
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/clang-False-True-new_graph2_allocation_test"
+        ],
+        "run_exit": 0,
+        "stdout": "graph2 allocation failures=68 successes=812 live_delta=0\n",
+        "stderr": "",
+        "passed": true
+      },
+      {
+        "compiler": "clang",
+        "skip_checks": true,
+        "standard_arithmetic": false,
+        "fixture": "new_low_link_reference_test.cpp",
+        "compile_command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-DLOW_LINK_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Low_Link.cpp\"",
+          "-DEULERIAN_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Eulerian_Trail.cpp\"",
+          "-DMIN_COST_FLOW_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Min_Cost_Flow.cpp\"",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/new_low_link_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/clang-True-False-new_low_link_reference_test"
+        ],
+        "compile_exit": 0,
+        "compile_stdout": "",
+        "compile_stderr": "",
+        "run_command": [
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/clang-True-False-new_low_link_reference_test"
+        ],
+        "run_exit": 0,
+        "stdout": "LowLink checks=178177\n",
+        "stderr": "",
+        "passed": true
+      },
+      {
+        "compiler": "clang",
+        "skip_checks": true,
+        "standard_arithmetic": false,
+        "fixture": "new_eulerian_reference_test.cpp",
+        "compile_command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-DLOW_LINK_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Low_Link.cpp\"",
+          "-DEULERIAN_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Eulerian_Trail.cpp\"",
+          "-DMIN_COST_FLOW_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Min_Cost_Flow.cpp\"",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/new_eulerian_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/clang-True-False-new_eulerian_reference_test"
+        ],
+        "compile_exit": 0,
+        "compile_stdout": "",
+        "compile_stderr": "",
+        "run_command": [
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/clang-True-False-new_eulerian_reference_test"
+        ],
+        "run_exit": 0,
+        "stdout": "Eulerian checks=50402\n",
+        "stderr": "",
+        "passed": true
+      },
+      {
+        "compiler": "clang",
+        "skip_checks": true,
+        "standard_arithmetic": false,
+        "fixture": "new_min_cost_flow_reference_test.cpp",
+        "compile_command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-DLOW_LINK_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Low_Link.cpp\"",
+          "-DEULERIAN_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Eulerian_Trail.cpp\"",
+          "-DMIN_COST_FLOW_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Min_Cost_Flow.cpp\"",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/new_min_cost_flow_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/clang-True-False-new_min_cost_flow_reference_test"
+        ],
+        "compile_exit": 0,
+        "compile_stdout": "",
+        "compile_stderr": "",
+        "run_command": [
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/clang-True-False-new_min_cost_flow_reference_test"
+        ],
+        "run_exit": 0,
+        "stdout": "MinCostFlow checks=28658\n",
+        "stderr": "",
+        "passed": true
+      },
+      {
+        "compiler": "clang",
+        "skip_checks": true,
+        "standard_arithmetic": false,
+        "fixture": "new_graph2_allocation_test.cpp",
+        "compile_command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-DLOW_LINK_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Low_Link.cpp\"",
+          "-DEULERIAN_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Eulerian_Trail.cpp\"",
+          "-DMIN_COST_FLOW_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Min_Cost_Flow.cpp\"",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/new_graph2_allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/clang-True-False-new_graph2_allocation_test"
+        ],
+        "compile_exit": 0,
+        "compile_stdout": "",
+        "compile_stderr": "",
+        "run_command": [
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/clang-True-False-new_graph2_allocation_test"
+        ],
+        "run_exit": 0,
+        "stdout": "graph2 allocation failures=68 successes=812 live_delta=0\n",
+        "stderr": "",
+        "passed": true
+      },
+      {
+        "compiler": "clang",
+        "skip_checks": true,
+        "standard_arithmetic": true,
+        "fixture": "new_min_cost_flow_reference_test.cpp",
+        "compile_command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-DLOW_LINK_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Low_Link.cpp\"",
+          "-DEULERIAN_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Eulerian_Trail.cpp\"",
+          "-DMIN_COST_FLOW_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Min_Cost_Flow.cpp\"",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/new_min_cost_flow_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/clang-True-True-new_min_cost_flow_reference_test"
+        ],
+        "compile_exit": 0,
+        "compile_stdout": "",
+        "compile_stderr": "",
+        "run_command": [
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/clang-True-True-new_min_cost_flow_reference_test"
+        ],
+        "run_exit": 0,
+        "stdout": "MinCostFlow checks=28658\n",
+        "stderr": "",
+        "passed": true
+      },
+      {
+        "compiler": "clang",
+        "skip_checks": true,
+        "standard_arithmetic": true,
+        "fixture": "new_graph2_allocation_test.cpp",
+        "compile_command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-DLOW_LINK_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Low_Link.cpp\"",
+          "-DEULERIAN_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Eulerian_Trail.cpp\"",
+          "-DMIN_COST_FLOW_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Min_Cost_Flow.cpp\"",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/new_graph2_allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/clang-True-True-new_graph2_allocation_test"
+        ],
+        "compile_exit": 0,
+        "compile_stdout": "",
+        "compile_stderr": "",
+        "run_command": [
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/clang-True-True-new_graph2_allocation_test"
+        ],
+        "run_exit": 0,
+        "stdout": "graph2 allocation failures=68 successes=812 live_delta=0\n",
+        "stderr": "",
+        "passed": true
+      },
+      {
+        "compiler": "clang_native",
+        "skip_checks": false,
+        "standard_arithmetic": false,
+        "fixture": "new_low_link_reference_test.cpp",
+        "compile_command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-march=native",
+          "-DLOW_LINK_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Low_Link.cpp\"",
+          "-DEULERIAN_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Eulerian_Trail.cpp\"",
+          "-DMIN_COST_FLOW_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Min_Cost_Flow.cpp\"",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/new_low_link_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/clang_native-False-False-new_low_link_reference_test"
+        ],
+        "compile_exit": 0,
+        "compile_stdout": "",
+        "compile_stderr": "",
+        "run_command": [
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/clang_native-False-False-new_low_link_reference_test"
+        ],
+        "run_exit": 0,
+        "stdout": "LowLink checks=178177\n",
+        "stderr": "",
+        "passed": true
+      },
+      {
+        "compiler": "clang_native",
+        "skip_checks": false,
+        "standard_arithmetic": false,
+        "fixture": "new_eulerian_reference_test.cpp",
+        "compile_command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-march=native",
+          "-DLOW_LINK_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Low_Link.cpp\"",
+          "-DEULERIAN_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Eulerian_Trail.cpp\"",
+          "-DMIN_COST_FLOW_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Min_Cost_Flow.cpp\"",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/new_eulerian_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/clang_native-False-False-new_eulerian_reference_test"
+        ],
+        "compile_exit": 0,
+        "compile_stdout": "",
+        "compile_stderr": "",
+        "run_command": [
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/clang_native-False-False-new_eulerian_reference_test"
+        ],
+        "run_exit": 0,
+        "stdout": "Eulerian checks=50402\n",
+        "stderr": "",
+        "passed": true
+      },
+      {
+        "compiler": "clang_native",
+        "skip_checks": false,
+        "standard_arithmetic": false,
+        "fixture": "new_min_cost_flow_reference_test.cpp",
+        "compile_command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-march=native",
+          "-DLOW_LINK_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Low_Link.cpp\"",
+          "-DEULERIAN_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Eulerian_Trail.cpp\"",
+          "-DMIN_COST_FLOW_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Min_Cost_Flow.cpp\"",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/new_min_cost_flow_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/clang_native-False-False-new_min_cost_flow_reference_test"
+        ],
+        "compile_exit": 0,
+        "compile_stdout": "",
+        "compile_stderr": "",
+        "run_command": [
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/clang_native-False-False-new_min_cost_flow_reference_test"
+        ],
+        "run_exit": 0,
+        "stdout": "MinCostFlow checks=28658\n",
+        "stderr": "",
+        "passed": true
+      },
+      {
+        "compiler": "clang_native",
+        "skip_checks": false,
+        "standard_arithmetic": false,
+        "fixture": "new_graph2_allocation_test.cpp",
+        "compile_command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-march=native",
+          "-DLOW_LINK_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Low_Link.cpp\"",
+          "-DEULERIAN_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Eulerian_Trail.cpp\"",
+          "-DMIN_COST_FLOW_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Min_Cost_Flow.cpp\"",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/new_graph2_allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/clang_native-False-False-new_graph2_allocation_test"
+        ],
+        "compile_exit": 0,
+        "compile_stdout": "",
+        "compile_stderr": "",
+        "run_command": [
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/clang_native-False-False-new_graph2_allocation_test"
+        ],
+        "run_exit": 0,
+        "stdout": "graph2 allocation failures=68 successes=812 live_delta=0\n",
+        "stderr": "",
+        "passed": true
+      },
+      {
+        "compiler": "clang_native",
+        "skip_checks": false,
+        "standard_arithmetic": true,
+        "fixture": "new_min_cost_flow_reference_test.cpp",
+        "compile_command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-march=native",
+          "-DLOW_LINK_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Low_Link.cpp\"",
+          "-DEULERIAN_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Eulerian_Trail.cpp\"",
+          "-DMIN_COST_FLOW_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Min_Cost_Flow.cpp\"",
+          "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/new_min_cost_flow_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/clang_native-False-True-new_min_cost_flow_reference_test"
+        ],
+        "compile_exit": 0,
+        "compile_stdout": "",
+        "compile_stderr": "",
+        "run_command": [
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/clang_native-False-True-new_min_cost_flow_reference_test"
+        ],
+        "run_exit": 0,
+        "stdout": "MinCostFlow checks=28658\n",
+        "stderr": "",
+        "passed": true
+      },
+      {
+        "compiler": "clang_native",
+        "skip_checks": false,
+        "standard_arithmetic": true,
+        "fixture": "new_graph2_allocation_test.cpp",
+        "compile_command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-march=native",
+          "-DLOW_LINK_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Low_Link.cpp\"",
+          "-DEULERIAN_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Eulerian_Trail.cpp\"",
+          "-DMIN_COST_FLOW_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Min_Cost_Flow.cpp\"",
+          "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/new_graph2_allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/clang_native-False-True-new_graph2_allocation_test"
+        ],
+        "compile_exit": 0,
+        "compile_stdout": "",
+        "compile_stderr": "",
+        "run_command": [
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/clang_native-False-True-new_graph2_allocation_test"
+        ],
+        "run_exit": 0,
+        "stdout": "graph2 allocation failures=68 successes=812 live_delta=0\n",
+        "stderr": "",
+        "passed": true
+      },
+      {
+        "compiler": "clang_native",
+        "skip_checks": true,
+        "standard_arithmetic": false,
+        "fixture": "new_low_link_reference_test.cpp",
+        "compile_command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-march=native",
+          "-DLOW_LINK_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Low_Link.cpp\"",
+          "-DEULERIAN_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Eulerian_Trail.cpp\"",
+          "-DMIN_COST_FLOW_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Min_Cost_Flow.cpp\"",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/new_low_link_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/clang_native-True-False-new_low_link_reference_test"
+        ],
+        "compile_exit": 0,
+        "compile_stdout": "",
+        "compile_stderr": "",
+        "run_command": [
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/clang_native-True-False-new_low_link_reference_test"
+        ],
+        "run_exit": 0,
+        "stdout": "LowLink checks=178177\n",
+        "stderr": "",
+        "passed": true
+      },
+      {
+        "compiler": "clang_native",
+        "skip_checks": true,
+        "standard_arithmetic": false,
+        "fixture": "new_eulerian_reference_test.cpp",
+        "compile_command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-march=native",
+          "-DLOW_LINK_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Low_Link.cpp\"",
+          "-DEULERIAN_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Eulerian_Trail.cpp\"",
+          "-DMIN_COST_FLOW_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Min_Cost_Flow.cpp\"",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/new_eulerian_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/clang_native-True-False-new_eulerian_reference_test"
+        ],
+        "compile_exit": 0,
+        "compile_stdout": "",
+        "compile_stderr": "",
+        "run_command": [
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/clang_native-True-False-new_eulerian_reference_test"
+        ],
+        "run_exit": 0,
+        "stdout": "Eulerian checks=50402\n",
+        "stderr": "",
+        "passed": true
+      },
+      {
+        "compiler": "clang_native",
+        "skip_checks": true,
+        "standard_arithmetic": false,
+        "fixture": "new_min_cost_flow_reference_test.cpp",
+        "compile_command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-march=native",
+          "-DLOW_LINK_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Low_Link.cpp\"",
+          "-DEULERIAN_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Eulerian_Trail.cpp\"",
+          "-DMIN_COST_FLOW_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Min_Cost_Flow.cpp\"",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/new_min_cost_flow_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/clang_native-True-False-new_min_cost_flow_reference_test"
+        ],
+        "compile_exit": 0,
+        "compile_stdout": "",
+        "compile_stderr": "",
+        "run_command": [
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/clang_native-True-False-new_min_cost_flow_reference_test"
+        ],
+        "run_exit": 0,
+        "stdout": "MinCostFlow checks=28658\n",
+        "stderr": "",
+        "passed": true
+      },
+      {
+        "compiler": "clang_native",
+        "skip_checks": true,
+        "standard_arithmetic": false,
+        "fixture": "new_graph2_allocation_test.cpp",
+        "compile_command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-march=native",
+          "-DLOW_LINK_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Low_Link.cpp\"",
+          "-DEULERIAN_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Eulerian_Trail.cpp\"",
+          "-DMIN_COST_FLOW_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Min_Cost_Flow.cpp\"",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/new_graph2_allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/clang_native-True-False-new_graph2_allocation_test"
+        ],
+        "compile_exit": 0,
+        "compile_stdout": "",
+        "compile_stderr": "",
+        "run_command": [
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/clang_native-True-False-new_graph2_allocation_test"
+        ],
+        "run_exit": 0,
+        "stdout": "graph2 allocation failures=68 successes=812 live_delta=0\n",
+        "stderr": "",
+        "passed": true
+      },
+      {
+        "compiler": "clang_native",
+        "skip_checks": true,
+        "standard_arithmetic": true,
+        "fixture": "new_min_cost_flow_reference_test.cpp",
+        "compile_command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-march=native",
+          "-DLOW_LINK_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Low_Link.cpp\"",
+          "-DEULERIAN_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Eulerian_Trail.cpp\"",
+          "-DMIN_COST_FLOW_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Min_Cost_Flow.cpp\"",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/new_min_cost_flow_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/clang_native-True-True-new_min_cost_flow_reference_test"
+        ],
+        "compile_exit": 0,
+        "compile_stdout": "",
+        "compile_stderr": "",
+        "run_command": [
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/clang_native-True-True-new_min_cost_flow_reference_test"
+        ],
+        "run_exit": 0,
+        "stdout": "MinCostFlow checks=28658\n",
+        "stderr": "",
+        "passed": true
+      },
+      {
+        "compiler": "clang_native",
+        "skip_checks": true,
+        "standard_arithmetic": true,
+        "fixture": "new_graph2_allocation_test.cpp",
+        "compile_command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-march=native",
+          "-DLOW_LINK_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Low_Link.cpp\"",
+          "-DEULERIAN_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Eulerian_Trail.cpp\"",
+          "-DMIN_COST_FLOW_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Min_Cost_Flow.cpp\"",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/new_graph2_allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/clang_native-True-True-new_graph2_allocation_test"
+        ],
+        "compile_exit": 0,
+        "compile_stdout": "",
+        "compile_stderr": "",
+        "run_command": [
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/clang_native-True-True-new_graph2_allocation_test"
+        ],
+        "run_exit": 0,
+        "stdout": "graph2 allocation failures=68 successes=812 live_delta=0\n",
+        "stderr": "",
+        "passed": true
+      },
+      {
+        "compiler": "gcc_asan_ubsan",
+        "skip_checks": false,
+        "standard_arithmetic": false,
+        "fixture": "new_low_link_reference_test.cpp",
+        "compile_command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O1",
+          "-g",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-D_GLIBCXX_SANITIZE_VECTOR",
+          "-DLOW_LINK_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Low_Link.cpp\"",
+          "-DEULERIAN_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Eulerian_Trail.cpp\"",
+          "-DMIN_COST_FLOW_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Min_Cost_Flow.cpp\"",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/new_low_link_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/gcc_asan_ubsan-False-False-new_low_link_reference_test"
+        ],
+        "compile_exit": 0,
+        "compile_stdout": "",
+        "compile_stderr": "",
+        "run_command": [
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/gcc_asan_ubsan-False-False-new_low_link_reference_test"
+        ],
+        "run_exit": 0,
+        "stdout": "LowLink checks=178177\n",
+        "stderr": "",
+        "passed": true
+      },
+      {
+        "compiler": "gcc_asan_ubsan",
+        "skip_checks": false,
+        "standard_arithmetic": false,
+        "fixture": "new_eulerian_reference_test.cpp",
+        "compile_command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O1",
+          "-g",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-D_GLIBCXX_SANITIZE_VECTOR",
+          "-DLOW_LINK_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Low_Link.cpp\"",
+          "-DEULERIAN_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Eulerian_Trail.cpp\"",
+          "-DMIN_COST_FLOW_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Min_Cost_Flow.cpp\"",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/new_eulerian_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/gcc_asan_ubsan-False-False-new_eulerian_reference_test"
+        ],
+        "compile_exit": 0,
+        "compile_stdout": "",
+        "compile_stderr": "",
+        "run_command": [
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/gcc_asan_ubsan-False-False-new_eulerian_reference_test"
+        ],
+        "run_exit": 0,
+        "stdout": "Eulerian checks=50402\n",
+        "stderr": "",
+        "passed": true
+      },
+      {
+        "compiler": "gcc_asan_ubsan",
+        "skip_checks": false,
+        "standard_arithmetic": false,
+        "fixture": "new_min_cost_flow_reference_test.cpp",
+        "compile_command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O1",
+          "-g",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-D_GLIBCXX_SANITIZE_VECTOR",
+          "-DLOW_LINK_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Low_Link.cpp\"",
+          "-DEULERIAN_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Eulerian_Trail.cpp\"",
+          "-DMIN_COST_FLOW_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Min_Cost_Flow.cpp\"",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/new_min_cost_flow_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/gcc_asan_ubsan-False-False-new_min_cost_flow_reference_test"
+        ],
+        "compile_exit": 0,
+        "compile_stdout": "",
+        "compile_stderr": "",
+        "run_command": [
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/gcc_asan_ubsan-False-False-new_min_cost_flow_reference_test"
+        ],
+        "run_exit": 0,
+        "stdout": "MinCostFlow checks=28658\n",
+        "stderr": "",
+        "passed": true
+      },
+      {
+        "compiler": "gcc_asan_ubsan",
+        "skip_checks": false,
+        "standard_arithmetic": false,
+        "fixture": "new_graph2_allocation_test.cpp",
+        "compile_command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O1",
+          "-g",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-D_GLIBCXX_SANITIZE_VECTOR",
+          "-DLOW_LINK_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Low_Link.cpp\"",
+          "-DEULERIAN_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Eulerian_Trail.cpp\"",
+          "-DMIN_COST_FLOW_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Min_Cost_Flow.cpp\"",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/new_graph2_allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/gcc_asan_ubsan-False-False-new_graph2_allocation_test"
+        ],
+        "compile_exit": 0,
+        "compile_stdout": "",
+        "compile_stderr": "",
+        "run_command": [
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/gcc_asan_ubsan-False-False-new_graph2_allocation_test"
+        ],
+        "run_exit": 0,
+        "stdout": "graph2 allocation failures=68 successes=812 live_delta=0\n",
+        "stderr": "",
+        "passed": true
+      },
+      {
+        "compiler": "gcc_asan_ubsan",
+        "skip_checks": false,
+        "standard_arithmetic": true,
+        "fixture": "new_min_cost_flow_reference_test.cpp",
+        "compile_command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O1",
+          "-g",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-D_GLIBCXX_SANITIZE_VECTOR",
+          "-DLOW_LINK_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Low_Link.cpp\"",
+          "-DEULERIAN_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Eulerian_Trail.cpp\"",
+          "-DMIN_COST_FLOW_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Min_Cost_Flow.cpp\"",
+          "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/new_min_cost_flow_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/gcc_asan_ubsan-False-True-new_min_cost_flow_reference_test"
+        ],
+        "compile_exit": 0,
+        "compile_stdout": "",
+        "compile_stderr": "",
+        "run_command": [
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/gcc_asan_ubsan-False-True-new_min_cost_flow_reference_test"
+        ],
+        "run_exit": 0,
+        "stdout": "MinCostFlow checks=28658\n",
+        "stderr": "",
+        "passed": true
+      },
+      {
+        "compiler": "gcc_asan_ubsan",
+        "skip_checks": false,
+        "standard_arithmetic": true,
+        "fixture": "new_graph2_allocation_test.cpp",
+        "compile_command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O1",
+          "-g",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-D_GLIBCXX_SANITIZE_VECTOR",
+          "-DLOW_LINK_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Low_Link.cpp\"",
+          "-DEULERIAN_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Eulerian_Trail.cpp\"",
+          "-DMIN_COST_FLOW_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Min_Cost_Flow.cpp\"",
+          "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/new_graph2_allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/gcc_asan_ubsan-False-True-new_graph2_allocation_test"
+        ],
+        "compile_exit": 0,
+        "compile_stdout": "",
+        "compile_stderr": "",
+        "run_command": [
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/gcc_asan_ubsan-False-True-new_graph2_allocation_test"
+        ],
+        "run_exit": 0,
+        "stdout": "graph2 allocation failures=68 successes=812 live_delta=0\n",
+        "stderr": "",
+        "passed": true
+      },
+      {
+        "compiler": "gcc_asan_ubsan",
+        "skip_checks": true,
+        "standard_arithmetic": false,
+        "fixture": "new_low_link_reference_test.cpp",
+        "compile_command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O1",
+          "-g",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-D_GLIBCXX_SANITIZE_VECTOR",
+          "-DLOW_LINK_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Low_Link.cpp\"",
+          "-DEULERIAN_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Eulerian_Trail.cpp\"",
+          "-DMIN_COST_FLOW_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Min_Cost_Flow.cpp\"",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/new_low_link_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/gcc_asan_ubsan-True-False-new_low_link_reference_test"
+        ],
+        "compile_exit": 0,
+        "compile_stdout": "",
+        "compile_stderr": "",
+        "run_command": [
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/gcc_asan_ubsan-True-False-new_low_link_reference_test"
+        ],
+        "run_exit": 0,
+        "stdout": "LowLink checks=178177\n",
+        "stderr": "",
+        "passed": true
+      },
+      {
+        "compiler": "gcc_asan_ubsan",
+        "skip_checks": true,
+        "standard_arithmetic": false,
+        "fixture": "new_eulerian_reference_test.cpp",
+        "compile_command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O1",
+          "-g",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-D_GLIBCXX_SANITIZE_VECTOR",
+          "-DLOW_LINK_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Low_Link.cpp\"",
+          "-DEULERIAN_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Eulerian_Trail.cpp\"",
+          "-DMIN_COST_FLOW_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Min_Cost_Flow.cpp\"",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/new_eulerian_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/gcc_asan_ubsan-True-False-new_eulerian_reference_test"
+        ],
+        "compile_exit": 0,
+        "compile_stdout": "",
+        "compile_stderr": "",
+        "run_command": [
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/gcc_asan_ubsan-True-False-new_eulerian_reference_test"
+        ],
+        "run_exit": 0,
+        "stdout": "Eulerian checks=50402\n",
+        "stderr": "",
+        "passed": true
+      },
+      {
+        "compiler": "gcc_asan_ubsan",
+        "skip_checks": true,
+        "standard_arithmetic": false,
+        "fixture": "new_min_cost_flow_reference_test.cpp",
+        "compile_command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O1",
+          "-g",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-D_GLIBCXX_SANITIZE_VECTOR",
+          "-DLOW_LINK_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Low_Link.cpp\"",
+          "-DEULERIAN_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Eulerian_Trail.cpp\"",
+          "-DMIN_COST_FLOW_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Min_Cost_Flow.cpp\"",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/new_min_cost_flow_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/gcc_asan_ubsan-True-False-new_min_cost_flow_reference_test"
+        ],
+        "compile_exit": 0,
+        "compile_stdout": "",
+        "compile_stderr": "",
+        "run_command": [
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/gcc_asan_ubsan-True-False-new_min_cost_flow_reference_test"
+        ],
+        "run_exit": 0,
+        "stdout": "MinCostFlow checks=28658\n",
+        "stderr": "",
+        "passed": true
+      },
+      {
+        "compiler": "gcc_asan_ubsan",
+        "skip_checks": true,
+        "standard_arithmetic": false,
+        "fixture": "new_graph2_allocation_test.cpp",
+        "compile_command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O1",
+          "-g",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-D_GLIBCXX_SANITIZE_VECTOR",
+          "-DLOW_LINK_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Low_Link.cpp\"",
+          "-DEULERIAN_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Eulerian_Trail.cpp\"",
+          "-DMIN_COST_FLOW_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Min_Cost_Flow.cpp\"",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/new_graph2_allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/gcc_asan_ubsan-True-False-new_graph2_allocation_test"
+        ],
+        "compile_exit": 0,
+        "compile_stdout": "",
+        "compile_stderr": "",
+        "run_command": [
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/gcc_asan_ubsan-True-False-new_graph2_allocation_test"
+        ],
+        "run_exit": 0,
+        "stdout": "graph2 allocation failures=68 successes=812 live_delta=0\n",
+        "stderr": "",
+        "passed": true
+      },
+      {
+        "compiler": "gcc_asan_ubsan",
+        "skip_checks": true,
+        "standard_arithmetic": true,
+        "fixture": "new_min_cost_flow_reference_test.cpp",
+        "compile_command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O1",
+          "-g",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-D_GLIBCXX_SANITIZE_VECTOR",
+          "-DLOW_LINK_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Low_Link.cpp\"",
+          "-DEULERIAN_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Eulerian_Trail.cpp\"",
+          "-DMIN_COST_FLOW_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Min_Cost_Flow.cpp\"",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/new_min_cost_flow_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/gcc_asan_ubsan-True-True-new_min_cost_flow_reference_test"
+        ],
+        "compile_exit": 0,
+        "compile_stdout": "",
+        "compile_stderr": "",
+        "run_command": [
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/gcc_asan_ubsan-True-True-new_min_cost_flow_reference_test"
+        ],
+        "run_exit": 0,
+        "stdout": "MinCostFlow checks=28658\n",
+        "stderr": "",
+        "passed": true
+      },
+      {
+        "compiler": "gcc_asan_ubsan",
+        "skip_checks": true,
+        "standard_arithmetic": true,
+        "fixture": "new_graph2_allocation_test.cpp",
+        "compile_command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O1",
+          "-g",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-D_GLIBCXX_SANITIZE_VECTOR",
+          "-DLOW_LINK_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Low_Link.cpp\"",
+          "-DEULERIAN_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Eulerian_Trail.cpp\"",
+          "-DMIN_COST_FLOW_SOURCE=\"/tmp/sirkit_12h_20261031_095733/graph2/validation/Min_Cost_Flow.cpp\"",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/new_graph2_allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/gcc_asan_ubsan-True-True-new_graph2_allocation_test"
+        ],
+        "compile_exit": 0,
+        "compile_stdout": "",
+        "compile_stderr": "",
+        "run_command": [
+          "/tmp/sirkit_12h_20261031_095733/graph2/validation/gcc_asan_ubsan-True-True-new_graph2_allocation_test"
+        ],
+        "run_exit": 0,
+        "stdout": "graph2 allocation failures=68 successes=812 live_delta=0\n",
+        "stderr": "",
+        "passed": true
+      }
+    ],
+    "started_utc": "2026-10-31T10:51:34.660632+00:00",
+    "source_and_fixture_freeze_preserved": true,
+    "completed_utc": "2026-10-31T10:53:19.178766+00:00"
+  },
+  "driver_example_validation": {
+    "status": "passed",
+    "driver_configurations": 24,
+    "example_configurations": 16,
+    "results": [
+      {
+        "id": "low_link_two_edge",
+        "compiler": "gcc",
+        "skip_checks": false,
+        "standard_arithmetic": false,
+        "source_hashes": {
+          "Graph/Low_Link.cpp": "447197bca51ca51690281375230e99abb6c8462e804b1aa6922921d35560d4c4"
+        },
+        "driver_sha256": "103549bcf94d087b4bda2b17809316ba1a026a6e76ce0d5a335e266a5c80c686",
+        "io_sha256": "291bf8dbc56a1d691f6256fe95b4714183c2cf5d9e55e4bef240e31d1eb178c1",
+        "source_sha256": "6ea000f0dffc0780f10808ce7e2ec7af1a37aa7f0df88a034b1ae710097eeab9",
+        "bytes": 21397,
+        "compile_command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "/tmp/sirkit_12h_20261031_095733/graph2/drivers/active.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/drivers/low_link_two_edge-gcc-False-False"
+        ],
+        "compile_stderr": "",
+        "samples": [
+          {
+            "stdout": "1\n4 0 1 2 3\n",
+            "stderr": "",
+            "passed": true
+          }
+        ],
+        "passed": true
+      },
+      {
+        "id": "low_link_two_edge",
+        "compiler": "gcc",
+        "skip_checks": true,
+        "standard_arithmetic": false,
+        "source_hashes": {
+          "Graph/Low_Link.cpp": "447197bca51ca51690281375230e99abb6c8462e804b1aa6922921d35560d4c4"
+        },
+        "driver_sha256": "103549bcf94d087b4bda2b17809316ba1a026a6e76ce0d5a335e266a5c80c686",
+        "io_sha256": "291bf8dbc56a1d691f6256fe95b4714183c2cf5d9e55e4bef240e31d1eb178c1",
+        "source_sha256": "0a7876beeca21a06b642a7b7b9626adfb4176b2eaddeef757144f0c35c87a92a",
+        "bytes": 21425,
+        "compile_command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "/tmp/sirkit_12h_20261031_095733/graph2/drivers/active.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/drivers/low_link_two_edge-gcc-True-False"
+        ],
+        "compile_stderr": "",
+        "samples": [
+          {
+            "stdout": "1\n4 0 1 2 3\n",
+            "stderr": "",
+            "passed": true
+          }
+        ],
+        "passed": true
+      },
+      {
+        "id": "low_link_two_edge",
+        "compiler": "clang",
+        "skip_checks": false,
+        "standard_arithmetic": false,
+        "source_hashes": {
+          "Graph/Low_Link.cpp": "447197bca51ca51690281375230e99abb6c8462e804b1aa6922921d35560d4c4"
+        },
+        "driver_sha256": "103549bcf94d087b4bda2b17809316ba1a026a6e76ce0d5a335e266a5c80c686",
+        "io_sha256": "291bf8dbc56a1d691f6256fe95b4714183c2cf5d9e55e4bef240e31d1eb178c1",
+        "source_sha256": "6ea000f0dffc0780f10808ce7e2ec7af1a37aa7f0df88a034b1ae710097eeab9",
+        "bytes": 21397,
+        "compile_command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "/tmp/sirkit_12h_20261031_095733/graph2/drivers/active.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/drivers/low_link_two_edge-clang-False-False"
+        ],
+        "compile_stderr": "",
+        "samples": [
+          {
+            "stdout": "1\n4 0 1 2 3\n",
+            "stderr": "",
+            "passed": true
+          }
+        ],
+        "passed": true
+      },
+      {
+        "id": "low_link_two_edge",
+        "compiler": "clang",
+        "skip_checks": true,
+        "standard_arithmetic": false,
+        "source_hashes": {
+          "Graph/Low_Link.cpp": "447197bca51ca51690281375230e99abb6c8462e804b1aa6922921d35560d4c4"
+        },
+        "driver_sha256": "103549bcf94d087b4bda2b17809316ba1a026a6e76ce0d5a335e266a5c80c686",
+        "io_sha256": "291bf8dbc56a1d691f6256fe95b4714183c2cf5d9e55e4bef240e31d1eb178c1",
+        "source_sha256": "0a7876beeca21a06b642a7b7b9626adfb4176b2eaddeef757144f0c35c87a92a",
+        "bytes": 21425,
+        "compile_command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "/tmp/sirkit_12h_20261031_095733/graph2/drivers/active.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/drivers/low_link_two_edge-clang-True-False"
+        ],
+        "compile_stderr": "",
+        "samples": [
+          {
+            "stdout": "1\n4 0 1 2 3\n",
+            "stderr": "",
+            "passed": true
+          }
+        ],
+        "passed": true
+      },
+      {
+        "id": "low_link_biconnected",
+        "compiler": "gcc",
+        "skip_checks": false,
+        "standard_arithmetic": false,
+        "source_hashes": {
+          "Graph/Low_Link.cpp": "447197bca51ca51690281375230e99abb6c8462e804b1aa6922921d35560d4c4"
+        },
+        "driver_sha256": "44f36b179e0ee59572eba15b545f9060835835e734d6723d8c587bc255313085",
+        "io_sha256": "291bf8dbc56a1d691f6256fe95b4714183c2cf5d9e55e4bef240e31d1eb178c1",
+        "source_sha256": "30599c666dea68bf6e30d90a67fbf1809e93b1637796b3517c4c0b69f2e3a6d8",
+        "bytes": 21411,
+        "compile_command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "/tmp/sirkit_12h_20261031_095733/graph2/drivers/active.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/drivers/low_link_biconnected-gcc-False-False"
+        ],
+        "compile_stderr": "",
+        "samples": [
+          {
+            "stdout": "1\n4 0 1 2 3\n",
+            "stderr": "",
+            "passed": true
+          }
+        ],
+        "passed": true
+      },
+      {
+        "id": "low_link_biconnected",
+        "compiler": "gcc",
+        "skip_checks": true,
+        "standard_arithmetic": false,
+        "source_hashes": {
+          "Graph/Low_Link.cpp": "447197bca51ca51690281375230e99abb6c8462e804b1aa6922921d35560d4c4"
+        },
+        "driver_sha256": "44f36b179e0ee59572eba15b545f9060835835e734d6723d8c587bc255313085",
+        "io_sha256": "291bf8dbc56a1d691f6256fe95b4714183c2cf5d9e55e4bef240e31d1eb178c1",
+        "source_sha256": "287358275e76ffa0887a9e78218e11d50d8b7ee212cd2e26844ef5b2bdeb4ef9",
+        "bytes": 21439,
+        "compile_command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "/tmp/sirkit_12h_20261031_095733/graph2/drivers/active.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/drivers/low_link_biconnected-gcc-True-False"
+        ],
+        "compile_stderr": "",
+        "samples": [
+          {
+            "stdout": "1\n4 0 1 2 3\n",
+            "stderr": "",
+            "passed": true
+          }
+        ],
+        "passed": true
+      },
+      {
+        "id": "low_link_biconnected",
+        "compiler": "clang",
+        "skip_checks": false,
+        "standard_arithmetic": false,
+        "source_hashes": {
+          "Graph/Low_Link.cpp": "447197bca51ca51690281375230e99abb6c8462e804b1aa6922921d35560d4c4"
+        },
+        "driver_sha256": "44f36b179e0ee59572eba15b545f9060835835e734d6723d8c587bc255313085",
+        "io_sha256": "291bf8dbc56a1d691f6256fe95b4714183c2cf5d9e55e4bef240e31d1eb178c1",
+        "source_sha256": "30599c666dea68bf6e30d90a67fbf1809e93b1637796b3517c4c0b69f2e3a6d8",
+        "bytes": 21411,
+        "compile_command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "/tmp/sirkit_12h_20261031_095733/graph2/drivers/active.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/drivers/low_link_biconnected-clang-False-False"
+        ],
+        "compile_stderr": "",
+        "samples": [
+          {
+            "stdout": "1\n4 0 1 2 3\n",
+            "stderr": "",
+            "passed": true
+          }
+        ],
+        "passed": true
+      },
+      {
+        "id": "low_link_biconnected",
+        "compiler": "clang",
+        "skip_checks": true,
+        "standard_arithmetic": false,
+        "source_hashes": {
+          "Graph/Low_Link.cpp": "447197bca51ca51690281375230e99abb6c8462e804b1aa6922921d35560d4c4"
+        },
+        "driver_sha256": "44f36b179e0ee59572eba15b545f9060835835e734d6723d8c587bc255313085",
+        "io_sha256": "291bf8dbc56a1d691f6256fe95b4714183c2cf5d9e55e4bef240e31d1eb178c1",
+        "source_sha256": "287358275e76ffa0887a9e78218e11d50d8b7ee212cd2e26844ef5b2bdeb4ef9",
+        "bytes": 21439,
+        "compile_command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "/tmp/sirkit_12h_20261031_095733/graph2/drivers/active.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/drivers/low_link_biconnected-clang-True-False"
+        ],
+        "compile_stderr": "",
+        "samples": [
+          {
+            "stdout": "1\n4 0 1 2 3\n",
+            "stderr": "",
+            "passed": true
+          }
+        ],
+        "passed": true
+      },
+      {
+        "id": "eulerian_trail_directed",
+        "compiler": "gcc",
+        "skip_checks": false,
+        "standard_arithmetic": false,
+        "source_hashes": {
+          "Graph/Eulerian_Trail.cpp": "cfb9e144559e2e2ad7706595669e07d47062daeda2ceeb9c2f0dc71af2349b7d"
+        },
+        "driver_sha256": "ac339e54b7ae70c60a8a1db6c0086076d65c1d01afb9bc0b9f6804b83b0e1df8",
+        "io_sha256": "291bf8dbc56a1d691f6256fe95b4714183c2cf5d9e55e4bef240e31d1eb178c1",
+        "source_sha256": "b02f5a5f65a2c784c0f270768a9c4a0dda51ae6cce373d2889a4b56041c18a4e",
+        "bytes": 17105,
+        "compile_command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "/tmp/sirkit_12h_20261031_095733/graph2/drivers/active.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/drivers/eulerian_trail_directed-gcc-False-False"
+        ],
+        "compile_stderr": "",
+        "samples": [
+          {
+            "stdout": "Yes\n2 0 1 3 0 2 3 3\n1 0 4 3 2 5 6\nNo\nYes\n1 2 3 1 5 1 4 4 0 3 2\n1 5 6 9 3 8 4 2 0 7\n",
+            "stderr": "",
+            "passed": true
+          }
+        ],
+        "passed": true
+      },
+      {
+        "id": "eulerian_trail_directed",
+        "compiler": "gcc",
+        "skip_checks": true,
+        "standard_arithmetic": false,
+        "source_hashes": {
+          "Graph/Eulerian_Trail.cpp": "cfb9e144559e2e2ad7706595669e07d47062daeda2ceeb9c2f0dc71af2349b7d"
+        },
+        "driver_sha256": "ac339e54b7ae70c60a8a1db6c0086076d65c1d01afb9bc0b9f6804b83b0e1df8",
+        "io_sha256": "291bf8dbc56a1d691f6256fe95b4714183c2cf5d9e55e4bef240e31d1eb178c1",
+        "source_sha256": "481f3fc548a3c1a09a764cd5d9822b1d6121c98a3daacb6156c99519ef520e0b",
+        "bytes": 17133,
+        "compile_command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "/tmp/sirkit_12h_20261031_095733/graph2/drivers/active.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/drivers/eulerian_trail_directed-gcc-True-False"
+        ],
+        "compile_stderr": "",
+        "samples": [
+          {
+            "stdout": "Yes\n2 0 1 3 0 2 3 3\n1 0 4 3 2 5 6\nNo\nYes\n1 2 3 1 5 1 4 4 0 3 2\n1 5 6 9 3 8 4 2 0 7\n",
+            "stderr": "",
+            "passed": true
+          }
+        ],
+        "passed": true
+      },
+      {
+        "id": "eulerian_trail_directed",
+        "compiler": "clang",
+        "skip_checks": false,
+        "standard_arithmetic": false,
+        "source_hashes": {
+          "Graph/Eulerian_Trail.cpp": "cfb9e144559e2e2ad7706595669e07d47062daeda2ceeb9c2f0dc71af2349b7d"
+        },
+        "driver_sha256": "ac339e54b7ae70c60a8a1db6c0086076d65c1d01afb9bc0b9f6804b83b0e1df8",
+        "io_sha256": "291bf8dbc56a1d691f6256fe95b4714183c2cf5d9e55e4bef240e31d1eb178c1",
+        "source_sha256": "b02f5a5f65a2c784c0f270768a9c4a0dda51ae6cce373d2889a4b56041c18a4e",
+        "bytes": 17105,
+        "compile_command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "/tmp/sirkit_12h_20261031_095733/graph2/drivers/active.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/drivers/eulerian_trail_directed-clang-False-False"
+        ],
+        "compile_stderr": "",
+        "samples": [
+          {
+            "stdout": "Yes\n2 0 1 3 0 2 3 3\n1 0 4 3 2 5 6\nNo\nYes\n1 2 3 1 5 1 4 4 0 3 2\n1 5 6 9 3 8 4 2 0 7\n",
+            "stderr": "",
+            "passed": true
+          }
+        ],
+        "passed": true
+      },
+      {
+        "id": "eulerian_trail_directed",
+        "compiler": "clang",
+        "skip_checks": true,
+        "standard_arithmetic": false,
+        "source_hashes": {
+          "Graph/Eulerian_Trail.cpp": "cfb9e144559e2e2ad7706595669e07d47062daeda2ceeb9c2f0dc71af2349b7d"
+        },
+        "driver_sha256": "ac339e54b7ae70c60a8a1db6c0086076d65c1d01afb9bc0b9f6804b83b0e1df8",
+        "io_sha256": "291bf8dbc56a1d691f6256fe95b4714183c2cf5d9e55e4bef240e31d1eb178c1",
+        "source_sha256": "481f3fc548a3c1a09a764cd5d9822b1d6121c98a3daacb6156c99519ef520e0b",
+        "bytes": 17133,
+        "compile_command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "/tmp/sirkit_12h_20261031_095733/graph2/drivers/active.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/drivers/eulerian_trail_directed-clang-True-False"
+        ],
+        "compile_stderr": "",
+        "samples": [
+          {
+            "stdout": "Yes\n2 0 1 3 0 2 3 3\n1 0 4 3 2 5 6\nNo\nYes\n1 2 3 1 5 1 4 4 0 3 2\n1 5 6 9 3 8 4 2 0 7\n",
+            "stderr": "",
+            "passed": true
+          }
+        ],
+        "passed": true
+      },
+      {
+        "id": "eulerian_trail_undirected",
+        "compiler": "gcc",
+        "skip_checks": false,
+        "standard_arithmetic": false,
+        "source_hashes": {
+          "Graph/Eulerian_Trail.cpp": "cfb9e144559e2e2ad7706595669e07d47062daeda2ceeb9c2f0dc71af2349b7d"
+        },
+        "driver_sha256": "a366e88855cf39cb30d68f983833981cfec545eb2e142b6d07d88b2d2dadd545",
+        "io_sha256": "291bf8dbc56a1d691f6256fe95b4714183c2cf5d9e55e4bef240e31d1eb178c1",
+        "source_sha256": "2b1ae32ed3bda61ee75d72270bcd0d595f635be8ef57e11f9895288576b13cd4",
+        "bytes": 17107,
+        "compile_command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "/tmp/sirkit_12h_20261031_095733/graph2/drivers/active.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/drivers/eulerian_trail_undirected-gcc-False-False"
+        ],
+        "compile_stderr": "",
+        "samples": [
+          {
+            "stdout": "Yes\n2 0 1 3 0 2 3 3\n1 0 4 3 2 5 6\nNo\nYes\n1 2 3 0 4 4 1 5 1 3 2\n1 5 0 2 4 8 3 9 6 7\n",
+            "stderr": "",
+            "passed": true
+          }
+        ],
+        "passed": true
+      },
+      {
+        "id": "eulerian_trail_undirected",
+        "compiler": "gcc",
+        "skip_checks": true,
+        "standard_arithmetic": false,
+        "source_hashes": {
+          "Graph/Eulerian_Trail.cpp": "cfb9e144559e2e2ad7706595669e07d47062daeda2ceeb9c2f0dc71af2349b7d"
+        },
+        "driver_sha256": "a366e88855cf39cb30d68f983833981cfec545eb2e142b6d07d88b2d2dadd545",
+        "io_sha256": "291bf8dbc56a1d691f6256fe95b4714183c2cf5d9e55e4bef240e31d1eb178c1",
+        "source_sha256": "29fb82b736ee4e8a1d3869f52dfb9754ab454db32c7c25157469ba0ca4840bb3",
+        "bytes": 17135,
+        "compile_command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "/tmp/sirkit_12h_20261031_095733/graph2/drivers/active.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/drivers/eulerian_trail_undirected-gcc-True-False"
+        ],
+        "compile_stderr": "",
+        "samples": [
+          {
+            "stdout": "Yes\n2 0 1 3 0 2 3 3\n1 0 4 3 2 5 6\nNo\nYes\n1 2 3 0 4 4 1 5 1 3 2\n1 5 0 2 4 8 3 9 6 7\n",
+            "stderr": "",
+            "passed": true
+          }
+        ],
+        "passed": true
+      },
+      {
+        "id": "eulerian_trail_undirected",
+        "compiler": "clang",
+        "skip_checks": false,
+        "standard_arithmetic": false,
+        "source_hashes": {
+          "Graph/Eulerian_Trail.cpp": "cfb9e144559e2e2ad7706595669e07d47062daeda2ceeb9c2f0dc71af2349b7d"
+        },
+        "driver_sha256": "a366e88855cf39cb30d68f983833981cfec545eb2e142b6d07d88b2d2dadd545",
+        "io_sha256": "291bf8dbc56a1d691f6256fe95b4714183c2cf5d9e55e4bef240e31d1eb178c1",
+        "source_sha256": "2b1ae32ed3bda61ee75d72270bcd0d595f635be8ef57e11f9895288576b13cd4",
+        "bytes": 17107,
+        "compile_command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "/tmp/sirkit_12h_20261031_095733/graph2/drivers/active.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/drivers/eulerian_trail_undirected-clang-False-False"
+        ],
+        "compile_stderr": "",
+        "samples": [
+          {
+            "stdout": "Yes\n2 0 1 3 0 2 3 3\n1 0 4 3 2 5 6\nNo\nYes\n1 2 3 0 4 4 1 5 1 3 2\n1 5 0 2 4 8 3 9 6 7\n",
+            "stderr": "",
+            "passed": true
+          }
+        ],
+        "passed": true
+      },
+      {
+        "id": "eulerian_trail_undirected",
+        "compiler": "clang",
+        "skip_checks": true,
+        "standard_arithmetic": false,
+        "source_hashes": {
+          "Graph/Eulerian_Trail.cpp": "cfb9e144559e2e2ad7706595669e07d47062daeda2ceeb9c2f0dc71af2349b7d"
+        },
+        "driver_sha256": "a366e88855cf39cb30d68f983833981cfec545eb2e142b6d07d88b2d2dadd545",
+        "io_sha256": "291bf8dbc56a1d691f6256fe95b4714183c2cf5d9e55e4bef240e31d1eb178c1",
+        "source_sha256": "29fb82b736ee4e8a1d3869f52dfb9754ab454db32c7c25157469ba0ca4840bb3",
+        "bytes": 17135,
+        "compile_command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "/tmp/sirkit_12h_20261031_095733/graph2/drivers/active.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/drivers/eulerian_trail_undirected-clang-True-False"
+        ],
+        "compile_stderr": "",
+        "samples": [
+          {
+            "stdout": "Yes\n2 0 1 3 0 2 3 3\n1 0 4 3 2 5 6\nNo\nYes\n1 2 3 0 4 4 1 5 1 3 2\n1 5 0 2 4 8 3 9 6 7\n",
+            "stderr": "",
+            "passed": true
+          }
+        ],
+        "passed": true
+      },
+      {
+        "id": "min_cost_flow_grid",
+        "compiler": "gcc",
+        "skip_checks": false,
+        "standard_arithmetic": false,
+        "source_hashes": {
+          "Graph/Min_Cost_Flow.cpp": "cdb8088ad95e2cd2b08e07bc76e8181e569b6f6d4e5227ef724a3a0b16922700"
+        },
+        "driver_sha256": "1194439663d4169d9d4baf1ff52d8b3e8eedf0adc4bc98c0447aa2ffb10713ea",
+        "io_sha256": "291bf8dbc56a1d691f6256fe95b4714183c2cf5d9e55e4bef240e31d1eb178c1",
+        "source_sha256": "9f66a8feffa9d49a4a557bcce5353e54b35ab2c13f67bd78364517da813b9d0a",
+        "bytes": 26164,
+        "compile_command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "/tmp/sirkit_12h_20261031_095733/graph2/drivers/active.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/drivers/min_cost_flow_grid-gcc-False-False"
+        ],
+        "compile_stderr": "",
+        "samples": [
+          {
+            "stdout": "19\nX..\n..X\n.X.\n",
+            "stderr": "",
+            "passed": true
+          },
+          {
+            "stdout": "50\nXX.\nXX.\n..X\n",
+            "stderr": "",
+            "passed": true
+          }
+        ],
+        "passed": true
+      },
+      {
+        "id": "min_cost_flow_grid",
+        "compiler": "gcc",
+        "skip_checks": false,
+        "standard_arithmetic": true,
+        "source_hashes": {
+          "Graph/Min_Cost_Flow.cpp": "cdb8088ad95e2cd2b08e07bc76e8181e569b6f6d4e5227ef724a3a0b16922700"
+        },
+        "driver_sha256": "1194439663d4169d9d4baf1ff52d8b3e8eedf0adc4bc98c0447aa2ffb10713ea",
+        "io_sha256": "291bf8dbc56a1d691f6256fe95b4714183c2cf5d9e55e4bef240e31d1eb178c1",
+        "source_sha256": "9f66a8feffa9d49a4a557bcce5353e54b35ab2c13f67bd78364517da813b9d0a",
+        "bytes": 26164,
+        "compile_command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+          "/tmp/sirkit_12h_20261031_095733/graph2/drivers/active.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/drivers/min_cost_flow_grid-gcc-False-True"
+        ],
+        "compile_stderr": "",
+        "samples": [
+          {
+            "stdout": "19\nX..\n..X\n.X.\n",
+            "stderr": "",
+            "passed": true
+          },
+          {
+            "stdout": "50\nXX.\nXX.\n..X\n",
+            "stderr": "",
+            "passed": true
+          }
+        ],
+        "passed": true
+      },
+      {
+        "id": "min_cost_flow_grid",
+        "compiler": "gcc",
+        "skip_checks": true,
+        "standard_arithmetic": false,
+        "source_hashes": {
+          "Graph/Min_Cost_Flow.cpp": "cdb8088ad95e2cd2b08e07bc76e8181e569b6f6d4e5227ef724a3a0b16922700"
+        },
+        "driver_sha256": "1194439663d4169d9d4baf1ff52d8b3e8eedf0adc4bc98c0447aa2ffb10713ea",
+        "io_sha256": "291bf8dbc56a1d691f6256fe95b4714183c2cf5d9e55e4bef240e31d1eb178c1",
+        "source_sha256": "254cde8ff6bee943c94c843f2ce6db4afe853590bd93ec084c069efb606ec15d",
+        "bytes": 26192,
+        "compile_command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "/tmp/sirkit_12h_20261031_095733/graph2/drivers/active.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/drivers/min_cost_flow_grid-gcc-True-False"
+        ],
+        "compile_stderr": "",
+        "samples": [
+          {
+            "stdout": "19\nX..\n..X\n.X.\n",
+            "stderr": "",
+            "passed": true
+          },
+          {
+            "stdout": "50\nXX.\nXX.\n..X\n",
+            "stderr": "",
+            "passed": true
+          }
+        ],
+        "passed": true
+      },
+      {
+        "id": "min_cost_flow_grid",
+        "compiler": "gcc",
+        "skip_checks": true,
+        "standard_arithmetic": true,
+        "source_hashes": {
+          "Graph/Min_Cost_Flow.cpp": "cdb8088ad95e2cd2b08e07bc76e8181e569b6f6d4e5227ef724a3a0b16922700"
+        },
+        "driver_sha256": "1194439663d4169d9d4baf1ff52d8b3e8eedf0adc4bc98c0447aa2ffb10713ea",
+        "io_sha256": "291bf8dbc56a1d691f6256fe95b4714183c2cf5d9e55e4bef240e31d1eb178c1",
+        "source_sha256": "254cde8ff6bee943c94c843f2ce6db4afe853590bd93ec084c069efb606ec15d",
+        "bytes": 26192,
+        "compile_command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+          "/tmp/sirkit_12h_20261031_095733/graph2/drivers/active.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/drivers/min_cost_flow_grid-gcc-True-True"
+        ],
+        "compile_stderr": "",
+        "samples": [
+          {
+            "stdout": "19\nX..\n..X\n.X.\n",
+            "stderr": "",
+            "passed": true
+          },
+          {
+            "stdout": "50\nXX.\nXX.\n..X\n",
+            "stderr": "",
+            "passed": true
+          }
+        ],
+        "passed": true
+      },
+      {
+        "id": "min_cost_flow_grid",
+        "compiler": "clang",
+        "skip_checks": false,
+        "standard_arithmetic": false,
+        "source_hashes": {
+          "Graph/Min_Cost_Flow.cpp": "cdb8088ad95e2cd2b08e07bc76e8181e569b6f6d4e5227ef724a3a0b16922700"
+        },
+        "driver_sha256": "1194439663d4169d9d4baf1ff52d8b3e8eedf0adc4bc98c0447aa2ffb10713ea",
+        "io_sha256": "291bf8dbc56a1d691f6256fe95b4714183c2cf5d9e55e4bef240e31d1eb178c1",
+        "source_sha256": "9f66a8feffa9d49a4a557bcce5353e54b35ab2c13f67bd78364517da813b9d0a",
+        "bytes": 26164,
+        "compile_command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "/tmp/sirkit_12h_20261031_095733/graph2/drivers/active.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/drivers/min_cost_flow_grid-clang-False-False"
+        ],
+        "compile_stderr": "",
+        "samples": [
+          {
+            "stdout": "19\nX..\n..X\n.X.\n",
+            "stderr": "",
+            "passed": true
+          },
+          {
+            "stdout": "50\nXX.\nXX.\n..X\n",
+            "stderr": "",
+            "passed": true
+          }
+        ],
+        "passed": true
+      },
+      {
+        "id": "min_cost_flow_grid",
+        "compiler": "clang",
+        "skip_checks": false,
+        "standard_arithmetic": true,
+        "source_hashes": {
+          "Graph/Min_Cost_Flow.cpp": "cdb8088ad95e2cd2b08e07bc76e8181e569b6f6d4e5227ef724a3a0b16922700"
+        },
+        "driver_sha256": "1194439663d4169d9d4baf1ff52d8b3e8eedf0adc4bc98c0447aa2ffb10713ea",
+        "io_sha256": "291bf8dbc56a1d691f6256fe95b4714183c2cf5d9e55e4bef240e31d1eb178c1",
+        "source_sha256": "9f66a8feffa9d49a4a557bcce5353e54b35ab2c13f67bd78364517da813b9d0a",
+        "bytes": 26164,
+        "compile_command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+          "/tmp/sirkit_12h_20261031_095733/graph2/drivers/active.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/drivers/min_cost_flow_grid-clang-False-True"
+        ],
+        "compile_stderr": "",
+        "samples": [
+          {
+            "stdout": "19\nX..\n..X\n.X.\n",
+            "stderr": "",
+            "passed": true
+          },
+          {
+            "stdout": "50\nXX.\nXX.\n..X\n",
+            "stderr": "",
+            "passed": true
+          }
+        ],
+        "passed": true
+      },
+      {
+        "id": "min_cost_flow_grid",
+        "compiler": "clang",
+        "skip_checks": true,
+        "standard_arithmetic": false,
+        "source_hashes": {
+          "Graph/Min_Cost_Flow.cpp": "cdb8088ad95e2cd2b08e07bc76e8181e569b6f6d4e5227ef724a3a0b16922700"
+        },
+        "driver_sha256": "1194439663d4169d9d4baf1ff52d8b3e8eedf0adc4bc98c0447aa2ffb10713ea",
+        "io_sha256": "291bf8dbc56a1d691f6256fe95b4714183c2cf5d9e55e4bef240e31d1eb178c1",
+        "source_sha256": "254cde8ff6bee943c94c843f2ce6db4afe853590bd93ec084c069efb606ec15d",
+        "bytes": 26192,
+        "compile_command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "/tmp/sirkit_12h_20261031_095733/graph2/drivers/active.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/drivers/min_cost_flow_grid-clang-True-False"
+        ],
+        "compile_stderr": "",
+        "samples": [
+          {
+            "stdout": "19\nX..\n..X\n.X.\n",
+            "stderr": "",
+            "passed": true
+          },
+          {
+            "stdout": "50\nXX.\nXX.\n..X\n",
+            "stderr": "",
+            "passed": true
+          }
+        ],
+        "passed": true
+      },
+      {
+        "id": "min_cost_flow_grid",
+        "compiler": "clang",
+        "skip_checks": true,
+        "standard_arithmetic": true,
+        "source_hashes": {
+          "Graph/Min_Cost_Flow.cpp": "cdb8088ad95e2cd2b08e07bc76e8181e569b6f6d4e5227ef724a3a0b16922700"
+        },
+        "driver_sha256": "1194439663d4169d9d4baf1ff52d8b3e8eedf0adc4bc98c0447aa2ffb10713ea",
+        "io_sha256": "291bf8dbc56a1d691f6256fe95b4714183c2cf5d9e55e4bef240e31d1eb178c1",
+        "source_sha256": "254cde8ff6bee943c94c843f2ce6db4afe853590bd93ec084c069efb606ec15d",
+        "bytes": 26192,
+        "compile_command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+          "/tmp/sirkit_12h_20261031_095733/graph2/drivers/active.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/drivers/min_cost_flow_grid-clang-True-True"
+        ],
+        "compile_stderr": "",
+        "samples": [
+          {
+            "stdout": "19\nX..\n..X\n.X.\n",
+            "stderr": "",
+            "passed": true
+          },
+          {
+            "stdout": "50\nXX.\nXX.\n..X\n",
+            "stderr": "",
+            "passed": true
+          }
+        ],
+        "passed": true
+      },
+      {
+        "example": "low_link_example.cpp",
+        "compiler": "gcc",
+        "skip_checks": false,
+        "standard_arithmetic": false,
+        "compile_command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "/home/reinsirk/Atcoder_Env/Examples/low_link_example.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/drivers/example"
+        ],
+        "compile_stderr": "",
+        "stdout": "3\n",
+        "stderr": "",
+        "passed": true
+      },
+      {
+        "example": "low_link_example.cpp",
+        "compiler": "gcc",
+        "skip_checks": true,
+        "standard_arithmetic": false,
+        "compile_command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/home/reinsirk/Atcoder_Env/Examples/low_link_example.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/drivers/example"
+        ],
+        "compile_stderr": "",
+        "stdout": "3\n",
+        "stderr": "",
+        "passed": true
+      },
+      {
+        "example": "low_link_example.cpp",
+        "compiler": "clang",
+        "skip_checks": false,
+        "standard_arithmetic": false,
+        "compile_command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "/home/reinsirk/Atcoder_Env/Examples/low_link_example.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/drivers/example"
+        ],
+        "compile_stderr": "",
+        "stdout": "3\n",
+        "stderr": "",
+        "passed": true
+      },
+      {
+        "example": "low_link_example.cpp",
+        "compiler": "clang",
+        "skip_checks": true,
+        "standard_arithmetic": false,
+        "compile_command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/home/reinsirk/Atcoder_Env/Examples/low_link_example.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/drivers/example"
+        ],
+        "compile_stderr": "",
+        "stdout": "3\n",
+        "stderr": "",
+        "passed": true
+      },
+      {
+        "example": "eulerian_trail_example.cpp",
+        "compiler": "gcc",
+        "skip_checks": false,
+        "standard_arithmetic": false,
+        "compile_command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "/home/reinsirk/Atcoder_Env/Examples/eulerian_trail_example.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/drivers/example"
+        ],
+        "compile_stderr": "",
+        "stdout": "2 0 1 0 \n",
+        "stderr": "",
+        "passed": true
+      },
+      {
+        "example": "eulerian_trail_example.cpp",
+        "compiler": "gcc",
+        "skip_checks": true,
+        "standard_arithmetic": false,
+        "compile_command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/home/reinsirk/Atcoder_Env/Examples/eulerian_trail_example.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/drivers/example"
+        ],
+        "compile_stderr": "",
+        "stdout": "2 0 1 0 \n",
+        "stderr": "",
+        "passed": true
+      },
+      {
+        "example": "eulerian_trail_example.cpp",
+        "compiler": "clang",
+        "skip_checks": false,
+        "standard_arithmetic": false,
+        "compile_command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "/home/reinsirk/Atcoder_Env/Examples/eulerian_trail_example.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/drivers/example"
+        ],
+        "compile_stderr": "",
+        "stdout": "2 0 1 0 \n",
+        "stderr": "",
+        "passed": true
+      },
+      {
+        "example": "eulerian_trail_example.cpp",
+        "compiler": "clang",
+        "skip_checks": true,
+        "standard_arithmetic": false,
+        "compile_command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/home/reinsirk/Atcoder_Env/Examples/eulerian_trail_example.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/drivers/example"
+        ],
+        "compile_stderr": "",
+        "stdout": "2 0 1 0 \n",
+        "stderr": "",
+        "passed": true
+      },
+      {
+        "example": "min_cost_flow_example.cpp",
+        "compiler": "gcc",
+        "skip_checks": false,
+        "standard_arithmetic": false,
+        "compile_command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "/home/reinsirk/Atcoder_Env/Examples/min_cost_flow_example.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/drivers/example"
+        ],
+        "compile_stderr": "",
+        "stdout": "0 0\n1 -3\n5 17\n",
+        "stderr": "",
+        "passed": true
+      },
+      {
+        "example": "min_cost_flow_example.cpp",
+        "compiler": "gcc",
+        "skip_checks": false,
+        "standard_arithmetic": true,
+        "compile_command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+          "/home/reinsirk/Atcoder_Env/Examples/min_cost_flow_example.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/drivers/example"
+        ],
+        "compile_stderr": "",
+        "stdout": "0 0\n1 -3\n5 17\n",
+        "stderr": "",
+        "passed": true
+      },
+      {
+        "example": "min_cost_flow_example.cpp",
+        "compiler": "gcc",
+        "skip_checks": true,
+        "standard_arithmetic": false,
+        "compile_command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/home/reinsirk/Atcoder_Env/Examples/min_cost_flow_example.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/drivers/example"
+        ],
+        "compile_stderr": "",
+        "stdout": "0 0\n1 -3\n5 17\n",
+        "stderr": "",
+        "passed": true
+      },
+      {
+        "example": "min_cost_flow_example.cpp",
+        "compiler": "gcc",
+        "skip_checks": true,
+        "standard_arithmetic": true,
+        "compile_command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+          "/home/reinsirk/Atcoder_Env/Examples/min_cost_flow_example.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/drivers/example"
+        ],
+        "compile_stderr": "",
+        "stdout": "0 0\n1 -3\n5 17\n",
+        "stderr": "",
+        "passed": true
+      },
+      {
+        "example": "min_cost_flow_example.cpp",
+        "compiler": "clang",
+        "skip_checks": false,
+        "standard_arithmetic": false,
+        "compile_command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "/home/reinsirk/Atcoder_Env/Examples/min_cost_flow_example.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/drivers/example"
+        ],
+        "compile_stderr": "",
+        "stdout": "0 0\n1 -3\n5 17\n",
+        "stderr": "",
+        "passed": true
+      },
+      {
+        "example": "min_cost_flow_example.cpp",
+        "compiler": "clang",
+        "skip_checks": false,
+        "standard_arithmetic": true,
+        "compile_command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+          "/home/reinsirk/Atcoder_Env/Examples/min_cost_flow_example.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/drivers/example"
+        ],
+        "compile_stderr": "",
+        "stdout": "0 0\n1 -3\n5 17\n",
+        "stderr": "",
+        "passed": true
+      },
+      {
+        "example": "min_cost_flow_example.cpp",
+        "compiler": "clang",
+        "skip_checks": true,
+        "standard_arithmetic": false,
+        "compile_command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/home/reinsirk/Atcoder_Env/Examples/min_cost_flow_example.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/drivers/example"
+        ],
+        "compile_stderr": "",
+        "stdout": "0 0\n1 -3\n5 17\n",
+        "stderr": "",
+        "passed": true
+      },
+      {
+        "example": "min_cost_flow_example.cpp",
+        "compiler": "clang",
+        "skip_checks": true,
+        "standard_arithmetic": true,
+        "compile_command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+          "/home/reinsirk/Atcoder_Env/Examples/min_cost_flow_example.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/graph2/drivers/example"
+        ],
+        "compile_stderr": "",
+        "stdout": "0 0\n1 -3\n5 17\n",
+        "stderr": "",
+        "passed": true
+      }
+    ]
+  },
+  "preprocessor_validation": {
+    "status": "passed",
+    "results": [
+      {
+        "compiler": "gcc",
+        "library": "Low_Link.cpp",
+        "skip_checks": false,
+        "standard_arithmetic": false,
+        "command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-E",
+          "-P",
+          "-x",
+          "c++",
+          "/home/reinsirk/Atcoder_Env/Graph/Low_Link.cpp"
+        ],
+        "exit": 0,
+        "stderr": "",
+        "class_sha256": "e6edced62a497f0cb7eb565540ea6ee63425e1b9a3dbe456e9d40fd667d4643e",
+        "proof": {},
+        "passed": true
+      },
+      {
+        "compiler": "gcc",
+        "library": "Low_Link.cpp",
+        "skip_checks": true,
+        "standard_arithmetic": false,
+        "command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-E",
+          "-P",
+          "-x",
+          "c++",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/home/reinsirk/Atcoder_Env/Graph/Low_Link.cpp"
+        ],
+        "exit": 0,
+        "stderr": "",
+        "class_sha256": "8521f77b2dbcfa38f59fba1aee9a6968ec0fa1e546a97701cfb67ebeb7c7e8cb",
+        "proof": {
+          "check_only_built_absent": true,
+          "math_bridge_flags_present": true
+        },
+        "passed": true
+      },
+      {
+        "compiler": "gcc",
+        "library": "Eulerian_Trail.cpp",
+        "skip_checks": false,
+        "standard_arithmetic": false,
+        "command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-E",
+          "-P",
+          "-x",
+          "c++",
+          "/home/reinsirk/Atcoder_Env/Graph/Eulerian_Trail.cpp"
+        ],
+        "exit": 0,
+        "stderr": "",
+        "class_sha256": "fd7e7ab92c82422c12b1847a57127c6528c20f4b0db294a0adeea8c8bac083e2",
+        "proof": {},
+        "passed": true
+      },
+      {
+        "compiler": "gcc",
+        "library": "Eulerian_Trail.cpp",
+        "skip_checks": true,
+        "standard_arithmetic": false,
+        "command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-E",
+          "-P",
+          "-x",
+          "c++",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/home/reinsirk/Atcoder_Env/Graph/Eulerian_Trail.cpp"
+        ],
+        "exit": 0,
+        "stderr": "",
+        "class_sha256": "2df7c00f2afb60355bd19e152f845888c01e80af02866c75afc84994cef14c84",
+        "proof": {
+          "vertex_check_absent": true,
+          "degree_decision_present": true
+        },
+        "passed": true
+      },
+      {
+        "compiler": "gcc",
+        "library": "Min_Cost_Flow.cpp",
+        "skip_checks": false,
+        "standard_arithmetic": false,
+        "command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-E",
+          "-P",
+          "-x",
+          "c++",
+          "/home/reinsirk/Atcoder_Env/Graph/Min_Cost_Flow.cpp"
+        ],
+        "exit": 0,
+        "stderr": "",
+        "class_sha256": "602c9da74a87b7396ae93648d81d487e38c7a98d149fe45b2e31718b39d88240",
+        "proof": {},
+        "passed": true
+      },
+      {
+        "compiler": "gcc",
+        "library": "Min_Cost_Flow.cpp",
+        "skip_checks": false,
+        "standard_arithmetic": true,
+        "command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-E",
+          "-P",
+          "-x",
+          "c++",
+          "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+          "/home/reinsirk/Atcoder_Env/Graph/Min_Cost_Flow.cpp"
+        ],
+        "exit": 0,
+        "stderr": "",
+        "class_sha256": "7ab7070ce0c9b3c06276faf41d04a72e1b7cc1250f88735f987e997aec53b9e1",
+        "proof": {
+          "no_extended_int128": true,
+          "no_overflow_builtins": true
+        },
+        "passed": true
+      },
+      {
+        "compiler": "gcc",
+        "library": "Min_Cost_Flow.cpp",
+        "skip_checks": true,
+        "standard_arithmetic": false,
+        "command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-E",
+          "-P",
+          "-x",
+          "c++",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/home/reinsirk/Atcoder_Env/Graph/Min_Cost_Flow.cpp"
+        ],
+        "exit": 0,
+        "stderr": "",
+        "class_sha256": "5bad826500b12a8e730684b2885b3a9ecbb45cf9634dc88280dd6f1260777bf8",
+        "proof": {
+          "nonnegative_check_absent": true,
+          "math_cycle_detection_present": true,
+          "math_overflow_present": true,
+          "potential_cache_present": true
+        },
+        "passed": true
+      },
+      {
+        "compiler": "gcc",
+        "library": "Min_Cost_Flow.cpp",
+        "skip_checks": true,
+        "standard_arithmetic": true,
+        "command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-E",
+          "-P",
+          "-x",
+          "c++",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+          "/home/reinsirk/Atcoder_Env/Graph/Min_Cost_Flow.cpp"
+        ],
+        "exit": 0,
+        "stderr": "",
+        "class_sha256": "d95b8574264c1fce1b84c9a0116ed485e6c14fbba2c8eb3c08a003b95feed83e",
+        "proof": {
+          "nonnegative_check_absent": true,
+          "math_cycle_detection_present": true,
+          "math_overflow_present": true,
+          "potential_cache_present": true,
+          "no_extended_int128": true,
+          "no_overflow_builtins": true
+        },
+        "passed": true
+      },
+      {
+        "compiler": "clang",
+        "library": "Low_Link.cpp",
+        "skip_checks": false,
+        "standard_arithmetic": false,
+        "command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-E",
+          "-P",
+          "-x",
+          "c++",
+          "/home/reinsirk/Atcoder_Env/Graph/Low_Link.cpp"
+        ],
+        "exit": 0,
+        "stderr": "",
+        "class_sha256": "e6edced62a497f0cb7eb565540ea6ee63425e1b9a3dbe456e9d40fd667d4643e",
+        "proof": {},
+        "passed": true
+      },
+      {
+        "compiler": "clang",
+        "library": "Low_Link.cpp",
+        "skip_checks": true,
+        "standard_arithmetic": false,
+        "command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-E",
+          "-P",
+          "-x",
+          "c++",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/home/reinsirk/Atcoder_Env/Graph/Low_Link.cpp"
+        ],
+        "exit": 0,
+        "stderr": "",
+        "class_sha256": "8521f77b2dbcfa38f59fba1aee9a6968ec0fa1e546a97701cfb67ebeb7c7e8cb",
+        "proof": {
+          "check_only_built_absent": true,
+          "math_bridge_flags_present": true
+        },
+        "passed": true
+      },
+      {
+        "compiler": "clang",
+        "library": "Eulerian_Trail.cpp",
+        "skip_checks": false,
+        "standard_arithmetic": false,
+        "command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-E",
+          "-P",
+          "-x",
+          "c++",
+          "/home/reinsirk/Atcoder_Env/Graph/Eulerian_Trail.cpp"
+        ],
+        "exit": 0,
+        "stderr": "",
+        "class_sha256": "fd7e7ab92c82422c12b1847a57127c6528c20f4b0db294a0adeea8c8bac083e2",
+        "proof": {},
+        "passed": true
+      },
+      {
+        "compiler": "clang",
+        "library": "Eulerian_Trail.cpp",
+        "skip_checks": true,
+        "standard_arithmetic": false,
+        "command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-E",
+          "-P",
+          "-x",
+          "c++",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/home/reinsirk/Atcoder_Env/Graph/Eulerian_Trail.cpp"
+        ],
+        "exit": 0,
+        "stderr": "",
+        "class_sha256": "2df7c00f2afb60355bd19e152f845888c01e80af02866c75afc84994cef14c84",
+        "proof": {
+          "vertex_check_absent": true,
+          "degree_decision_present": true
+        },
+        "passed": true
+      },
+      {
+        "compiler": "clang",
+        "library": "Min_Cost_Flow.cpp",
+        "skip_checks": false,
+        "standard_arithmetic": false,
+        "command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-E",
+          "-P",
+          "-x",
+          "c++",
+          "/home/reinsirk/Atcoder_Env/Graph/Min_Cost_Flow.cpp"
+        ],
+        "exit": 0,
+        "stderr": "",
+        "class_sha256": "602c9da74a87b7396ae93648d81d487e38c7a98d149fe45b2e31718b39d88240",
+        "proof": {},
+        "passed": true
+      },
+      {
+        "compiler": "clang",
+        "library": "Min_Cost_Flow.cpp",
+        "skip_checks": false,
+        "standard_arithmetic": true,
+        "command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-E",
+          "-P",
+          "-x",
+          "c++",
+          "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+          "/home/reinsirk/Atcoder_Env/Graph/Min_Cost_Flow.cpp"
+        ],
+        "exit": 0,
+        "stderr": "",
+        "class_sha256": "7ab7070ce0c9b3c06276faf41d04a72e1b7cc1250f88735f987e997aec53b9e1",
+        "proof": {
+          "no_extended_int128": true,
+          "no_overflow_builtins": true
+        },
+        "passed": true
+      },
+      {
+        "compiler": "clang",
+        "library": "Min_Cost_Flow.cpp",
+        "skip_checks": true,
+        "standard_arithmetic": false,
+        "command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-E",
+          "-P",
+          "-x",
+          "c++",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/home/reinsirk/Atcoder_Env/Graph/Min_Cost_Flow.cpp"
+        ],
+        "exit": 0,
+        "stderr": "",
+        "class_sha256": "5bad826500b12a8e730684b2885b3a9ecbb45cf9634dc88280dd6f1260777bf8",
+        "proof": {
+          "nonnegative_check_absent": true,
+          "math_cycle_detection_present": true,
+          "math_overflow_present": true,
+          "potential_cache_present": true
+        },
+        "passed": true
+      },
+      {
+        "compiler": "clang",
+        "library": "Min_Cost_Flow.cpp",
+        "skip_checks": true,
+        "standard_arithmetic": true,
+        "command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-E",
+          "-P",
+          "-x",
+          "c++",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+          "/home/reinsirk/Atcoder_Env/Graph/Min_Cost_Flow.cpp"
+        ],
+        "exit": 0,
+        "stderr": "",
+        "class_sha256": "d95b8574264c1fce1b84c9a0116ed485e6c14fbba2c8eb3c08a003b95feed83e",
+        "proof": {
+          "nonnegative_check_absent": true,
+          "math_cycle_detection_present": true,
+          "math_overflow_present": true,
+          "potential_cache_present": true,
+          "no_extended_int128": true,
+          "no_overflow_builtins": true
+        },
+        "passed": true
+      }
+    ]
+  },
+  "coverage": {
+    "LowLink": "independent delete-one-edge/delete-one-vertex connectivity reference; bridges/articulation/two-edge groups; independent cycle-subset union reference for biconnected edge blocks; self/multiple edges;optional block collection;copy/move/rebuild;300000 path",
+    "EulerianTrail": "independent exhaustive edge-walk existence for directed/undirected every valid start and circuit flag; IDs/vertices/orientation;loop/multiple/empty/disconnected;non-destructive repeat/copy/move;300000 path/cycle",
+    "MinCostFlow": "independent enumeration of all feasible integer edge flows on DAG negative edges and globally nonnegative-cycle reweighted graphs; per-flow optimum;repeat/slope/max-cut/residual conservation;negative cycles disconnected and reachable;global feasible potential across source changes after canceling prior flow;change/reset;200000 path",
+    "cost_arithmetic": "default extension and SIRKIT_FORCE_STANDARD_ARITHMETIC; full signed-cost max and min path sum; uint64 capacity max at zero cost; accumulated cost cancellation with intermediate product outside signedCost range;reverse CostMin rejection;overflow before current augmentation while retaining completed flow;uint8/int8 anduint32/int32",
+    "allocation": "68 injected bad_alloc and812 successful operations per configuration; LowLink build preserves previous result, Euler find is const, MinCostFlow preserves optimal completed augmentations and conservation, continuation reaches independently known optimum;zero live delta after destruction"
+  },
+  "min_cost_flow_contract": {
+    "capacity": "non-bool integral at most64bits, nonnegative",
+    "cost": "signed integral at most64bits; original edges excludeCostMin to represent reverse",
+    "working_values": "reduced costs, tentative distances, potentials, marginal unit cost and each cumulative additional cost must fit Cost; overflow is an error even if some later final expression might cancel",
+    "cycles": "negative residual cycles anywhere are unsupported; initialize rejects via Bellman-Ford, unless overflow arises first",
+    "initialization": "virtual source to all vertices; no validation-only graph scan",
+    "potential_update": "h[v]+=min(dist[v],dist[t])-dist[t]; update settled vertices only after early target termination, others unchanged; preserves globally feasible potentials",
+    "exception_guarantee": "basic for flow/slope: completed augmentations may remain; all ownership valid, current augmentation not half-applied, invalid dual cache reset on arithmetic failure"
+  },
+  "online_status": "All new drivers unsubmitted; local results are not online AC.",
+  "performance_status": "No measurements made; CPU8 correctness only. Compilation/tests paused during parent P-Core measurement window.",
+  "official_sample_hashes": {
+    "two_edge_connected_components_example_00.in": "4b03ce9d298450aae19ab24a9dde975cb4459789981ebcddb9a227988c6d8f94",
+    "eulerian_trail_directed_example_00.in": "b71685c8e9b0525950da81ef4d85025762bf80908d3d8d20041cd265a1290ad2",
+    "biconnected_components_example_00.in": "987596d2d9e541eda546cbef31f6374efb4d9e7eda26e98e95b312e4720a3961",
+    "eulerian_trail_undirected_example_00.in": "513f095204ccf09b5a71864940d0f9c96573c07d747a60e6e37a469c96ef569a"
+  },
+  "reproduction": {
+    "run_checks.py": "from pathlib import Path\nimport os,json,hashlib,subprocess,datetime\np=Path(__file__).parent;root=Path('/home/reinsirk/Atcoder_Env');out=p/'validation';out.mkdir(exist_ok=True);os.sched_setaffinity(0,{8});sha=lambda b:hashlib.sha256(b).hexdigest();libraries=['Graph/Low_Link.cpp','Graph/Eulerian_Trail.cpp','Graph/Min_Cost_Flow.cpp'];fixtures=['new_low_link_reference_test.cpp','new_eulerian_reference_test.cpp','new_min_cost_flow_reference_test.cpp','new_graph2_allocation_test.cpp'];snap={}\nfor name in libraries:\n data=(root/name).read_bytes();f=out/Path(name).name;f.write_bytes(data);snap[name]={'sha256':sha(data),'snapshot':str(f)}\nfor name in fixtures:(out/name).write_bytes((root/'Verify/current/tests'/name).read_bytes())\nmacros={'LOW_LINK_SOURCE':'Low_Link.cpp','EULERIAN_SOURCE':'Eulerian_Trail.cpp','MIN_COST_FLOW_SOURCE':'Min_Cost_Flow.cpp'};configs={'gcc':['/usr/bin/g++','-std=c++23','-O2'],'gcc_native':['/usr/bin/g++','-std=c++23','-O2','-march=native'],'clang':['/usr/bin/clang++','--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15','-std=c++23','-O2'],'clang_native':['/usr/bin/clang++','--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15','-std=c++23','-O2','-march=native'],'gcc_asan_ubsan':['/usr/bin/g++','-std=c++23','-O1','-g','-fsanitize=address,undefined','-fno-omit-frame-pointer','-D_GLIBCXX_SANITIZE_VECTOR']};tasks=[]\nfor cc,flags in configs.items():\n for skip in [False,True]:\n  for fixture in fixtures:tasks.append((cc,flags,skip,fixture,False))\n  for fixture in fixtures[2:]:tasks.append((cc,flags,skip,fixture,True))\nrows=[];report={'status':'running','libraries':snap,'fixtures':{f:sha((out/f).read_bytes())for f in fixtures},'toolchains':{cc:subprocess.check_output([args[0],'--version'],text=True).splitlines()[0]for cc,args in configs.items()},'cpu':8,'configurations':len(tasks),'results':rows,'started_utc':datetime.datetime.now(datetime.timezone.utc).isoformat()}\nfor cc,flags,skip,fixture,standard in tasks:\n exe=out/f'{cc}-{skip}-{standard}-{fixture.removesuffix(\".cpp\")}';cmd=[*flags,*[f'-D{k}=\"{out/v}\"'for k,v in macros.items()],*(['-DSKIP_RUNTIME_CHECKS']if skip else[]),*(['-DSIRKIT_FORCE_STANDARD_ARITHMETIC']if standard else[]),str(out/fixture),'-o',str(exe)];a=subprocess.run(cmd,capture_output=True,text=True);row={'compiler':cc,'skip_checks':skip,'standard_arithmetic':standard,'fixture':fixture,'compile_command':cmd,'compile_exit':a.returncode,'compile_stdout':a.stdout,'compile_stderr':a.stderr};assert a.returncode==0,row;env=os.environ.copy();env.update(ASAN_OPTIONS='detect_leaks=0',UBSAN_OPTIONS='halt_on_error=1');b=subprocess.run([str(exe)],capture_output=True,text=True,env=env);row.update(run_command=[str(exe)],run_exit=b.returncode,stdout=b.stdout,stderr=b.stderr,passed=b.returncode==0);rows.append(row);(out/'checks.json').write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\\n');assert b.returncode==0,row;print(cc,skip,standard,fixture,'PASS',flush=True)\nfor name in libraries:assert sha((root/name).read_bytes())==snap[name]['sha256']\nfor name in fixtures:assert sha((root/'Verify/current/tests'/name).read_bytes())==report['fixtures'][name]\nreport.update(status='passed',source_and_fixture_freeze_preserved=True,completed_utc=datetime.datetime.now(datetime.timezone.utc).isoformat());(out/'checks.json').write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\\n');print('ALL60PASS',flush=True)\n",
+    "run_drivers.py": "from pathlib import Path\nimport os,json,hashlib,subprocess,importlib.util\np=Path(__file__).parent;root=Path('/home/reinsirk/Atcoder_Env');o=p/'drivers';o.mkdir(exist_ok=True);os.sched_setaffinity(0,{8});sha=lambda b:hashlib.sha256(b).hexdigest();integration=json.loads((p/'integration.json').read_text());spec=importlib.util.spec_from_file_location('sc',p/'sample_checkers.py');sc=importlib.util.module_from_spec(spec);spec.loader.exec_module(sc);configs={'gcc':['/usr/bin/g++','-std=c++23','-O2'],'clang':['/usr/bin/clang++','--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15','-std=c++23','-O2']};rows=[]\nfor e in integration['verify_entries']:\n for cc,flags in configs.items():\n  for skip in[False,True]:\n   for standard in([False,True]if e['id']=='min_cost_flow_grid'else[False]):\n    pieces=['#define SKIP_RUNTIME_CHECKS\\n'if skip else''];libs={}\n    for name in e['libraries']:\n     data=(root/name).read_bytes();libs[name]=sha(data);pieces.append(data.decode())\n    driver=(root/e['driver']).read_text();io=(root/'Verify/current/common/fast_io.hpp').read_text();pieces.append(driver.replace('#include \"Verify/current/common/fast_io.hpp\"',io));text='\\n'.join(pieces);src=o/'active.cpp';src.write_text(text);exe=o/f'{e[\"id\"]}-{cc}-{skip}-{standard}';cmd=[*flags,*(['-DSIRKIT_FORCE_STANDARD_ARITHMETIC']if standard else[]),str(src),'-o',str(exe)];a=subprocess.run(cmd,capture_output=True,text=True);assert a.returncode==0,a.stderr;results=[]\n    for sample in e['samples']:\n     b=subprocess.run([str(exe)],input=sample['input'],text=True,capture_output=True);assert b.returncode==0,(e['id'],b.stderr);mode=e.get('sample_checker','tokens');ok=getattr(sc,'check_'+mode)(e,sample,b.stdout)if mode!='tokens'else b.stdout.split()==sample['output'].split();assert ok,(e['id'],b.stdout,sample);results.append({'stdout':b.stdout,'stderr':b.stderr,'passed':ok})\n    rows.append(dict(id=e['id'],compiler=cc,skip_checks=skip,standard_arithmetic=standard,source_hashes=libs,driver_sha256=sha(driver.encode()),io_sha256=sha(io.encode()),source_sha256=sha(text.encode()),bytes=len(text.encode()),compile_command=cmd,compile_stderr=a.stderr,samples=results,passed=True));print(e['id'],cc,skip,standard,'PASS',flush=True);(o/'checks.json').write_text(json.dumps({'status':'running','results':rows},ensure_ascii=False,indent=2))\nfor example,library in integration['examples'].items():\n for cc,flags in configs.items():\n  for skip in[False,True]:\n   for standard in([False,True]if example=='min_cost_flow_example.cpp'else[False]):\n    cmd=[*flags,*(['-DSKIP_RUNTIME_CHECKS']if skip else[]),*(['-DSIRKIT_FORCE_STANDARD_ARITHMETIC']if standard else[]),str(root/'Examples'/example),'-o',str(o/'example')];a=subprocess.run(cmd,capture_output=True,text=True);assert a.returncode==0,a.stderr;b=subprocess.run([str(o/'example')],text=True,capture_output=True);assert b.returncode==0,(example,b.stderr);rows.append(dict(example=example,compiler=cc,skip_checks=skip,standard_arithmetic=standard,compile_command=cmd,compile_stderr=a.stderr,stdout=b.stdout,stderr=b.stderr,passed=True))\n(o/'checks.json').write_text(json.dumps({'status':'passed','driver_configurations':24,'example_configurations':16,'results':rows},ensure_ascii=False,indent=2));print('ALL40DRIVERSEXAMPLESPASS',flush=True)\n",
+    "preprocess.py": "from pathlib import Path\nimport os,json,subprocess,hashlib\np=Path(__file__).parent;root=Path('/home/reinsirk/Atcoder_Env');os.sched_setaffinity(0,{8});rows=[]\nfor compiler,args in{'gcc':['/usr/bin/g++'],'clang':['/usr/bin/clang++','--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15']}.items():\n for lib,marker in [('Low_Link.cpp','class UndirectedLowLink {'),('Eulerian_Trail.cpp','class EulerianTrail {'),('Min_Cost_Flow.cpp','class MinCostFlow {')]:\n  for skip in [False,True]:\n   for standard in([False,True]if lib=='Min_Cost_Flow.cpp'else[False]):\n    cmd=[*args,'-std=c++23','-E','-P','-x','c++',*(['-DSKIP_RUNTIME_CHECKS']if skip else[]),*(['-DSIRKIT_FORCE_STANDARD_ARITHMETIC']if standard else[]),str(root/'Graph'/lib)];a=subprocess.run(cmd,capture_output=True,text=True);assert a.returncode==0,a.stderr;body=a.stdout.split(marker,1)[1];proof={}\n    if skip:\n     if lib=='Low_Link.cpp':proof.update(check_only_built_absent='built_'not in body,math_bridge_flags_present='bridge_flag_'in body)\n     elif lib=='Eulerian_Trail.cpp':proof.update(vertex_check_absent='EulerianTrail: vertex out of range'not in body,degree_decision_present='degree[v] - incoming[v]'in body)\n     else:proof.update(nonnegative_check_absent='negative capacity'not in body,math_cycle_detection_present='negative residual cycle'in body,math_overflow_present='cost_overflow'in body,potential_cache_present='potential_valid_'in body)\n    if lib=='Min_Cost_Flow.cpp'and standard:proof.update(no_extended_int128='__int128_t'not in body,no_overflow_builtins='__builtin_add_overflow'not in body and'__builtin_sub_overflow'not in body)\n    assert all(proof.values()),(lib,proof);rows.append(dict(compiler=compiler,library=lib,skip_checks=skip,standard_arithmetic=standard,command=cmd,exit=a.returncode,stderr=a.stderr,class_sha256=hashlib.sha256(body.encode()).hexdigest(),proof=proof,passed=True))\n(p/'preprocess.json').write_text(json.dumps(dict(status='passed',results=rows),ensure_ascii=False,indent=2)+'\\n');print('preprocess checks',len(rows),'PASS')\n",
+    "sample_checkers.py": "def check_component_sets(entry,sample,output):\n    def parse(text,n):\n        a=list(map(int,text.split()));k=a[0];pos=1;groups=[]\n        if k<0:return None\n        for _ in range(k):\n            length=a[pos];pos+=1\n            if length<=0 or pos+length>len(a):return None\n            group=a[pos:pos+length];pos+=length\n            if len(set(group))!=length or any(v<0 or v>=n for v in group):return None\n            groups.append(tuple(sorted(group)))\n        return sorted(groups)if pos==len(a)else None\n    try:\n        n=int(sample['input'].split()[0]);actual=parse(output,n);expected=parse(sample['output'],n);return actual is not None and actual==expected\n    except(ValueError,IndexError,TypeError):return False\n\ndef check_eulerian(entry,sample,output,directed):\n    try:\n        inp=list(map(int,sample['input'].split()));pos=1;a=output.split();expected=sample['output'].split();at=0;et=0\n        for _ in range(inp[0]):\n            n,m=inp[pos:pos+2];pos+=2;edges=[tuple(inp[pos+2*i:pos+2*i+2])for i in range(m)];pos+=2*m\n            expected_yes=expected[et]=='Yes';et+=1\n            if expected_yes:et+=(m+1 if n else 0)+m\n            state=a[at];at+=1\n            if state=='No':\n                if expected_yes:return False\n                continue\n            if state!='Yes' or not expected_yes:return False\n            length=m+1 if n else 0;vertices=list(map(int,a[at:at+length]));at+=length;ids=list(map(int,a[at:at+m]));at+=m\n            if len(vertices)!=length or len(ids)!=m or sorted(ids)!=list(range(m))or any(v<0 or v>=n for v in vertices):return False\n            for i,e in enumerate(ids):\n                u,v=edges[e]\n                if not((u,v)==(vertices[i],vertices[i+1])or(not directed and(v,u)==(vertices[i],vertices[i+1]))):return False\n        return at==len(a)\n    except(ValueError,IndexError,TypeError):return False\n\ndef check_eulerian_trail_directed(entry,sample,output):return check_eulerian(entry,sample,output,True)\ndef check_eulerian_trail_undirected(entry,sample,output):return check_eulerian(entry,sample,output,False)\ndef check_min_cost_flow_grid(entry,sample,output):\n    try:\n        inp=list(map(int,sample['input'].split()));n,k=inp[:2];values=inp[2:];a=output.split();score=int(a[0]);grid=a[1:]\n        if score!=int(sample['output'].split()[0])or len(grid)!=n or any(len(row)!=n for row in grid):return False\n        columns=[0]*n;total=0\n        for i,row in enumerate(grid):\n            count=0\n            for j,c in enumerate(row):\n                if c=='X':count+=1;columns[j]+=1;total+=values[i*n+j]\n                elif c!='.':return False\n            if count>k:return False\n        return all(c<=k for c in columns)and total==score\n    except(ValueError,IndexError,TypeError):return False\n",
+    "create_integration.py": "from pathlib import Path\nimport json,functools\np=Path(__file__).parent;base='https://raw.githubusercontent.com/yosupo06/library-checker-problems/master/graph/'\ndef sample(inp,out,url,origin='公式入力例。出力は独立参照で構成。'):return dict(input=inp,output=out,source=url,origin=origin)\ndef euler_expected(text,directed):\n values=list(map(int,text.split()));pos=1;out=[]\n for _ in range(values[0]):\n  n,m=values[pos:pos+2];pos+=2;edges=[tuple(values[pos+2*i:pos+2*i+2])for i in range(m)];pos+=2*m\n  @functools.lru_cache(None)\n  def search(v,used):\n   if used==(1<<m)-1:return (v,),()\n   for e,(a,b) in enumerate(edges):\n    if used>>e&1:continue\n    to=b if a==v else a if not directed and b==v else-1\n    if to<0:continue\n    tail=search(to,used|(1<<e))\n    if tail:return (v,)+tail[0],(e,)+tail[1]\n   return None\n  answer=None\n  for start in range(n):\n   answer=search(start,0)\n   if answer:break\n  if answer:out.extend(['Yes',' '.join(map(str,answer[0])),' '.join(map(str,answer[1]))])\n  else:out.append('No')\n return '\\n'.join(out)+'\\n'\ndef entry(id,lib,driver,title,url,coverage,samples,checker,ref):return dict(id=id,libraries=[lib],driver='Verify/current/drivers/'+driver,title=title,problem_url=url,selection_reason='対応するLibrary Checker問題を優先。最小費用s-t流はAtCoder practice2 Eを使用。',reference_url=ref,evidence_url=url,coverage=coverage,limitations='新規・オンライン未提出。補助API、自己辺/多重辺、範囲・確保失敗、深い鎖は独立全探索・検査有無・標準演算・ASan/UBSanで補足。',samples=samples,sample_checker=checker,acl_required=False)\nlow=(p/'two_edge_connected_components_example_00.in').read_text();bicon=(p/'biconnected_components_example_00.in').read_text();direct=(p/'eulerian_trail_directed_example_00.in').read_text();undirect=(p/'eulerian_trail_undirected_example_00.in').read_text();mcf_url='https://atcoder.jp/contests/practice2/tasks/practice2_e'\nentries=[entry('low_link_two_edge',['Graph/Low_Link.cpp'][0],'low_link_two_edge_main.cpp','Two-Edge-Connected Components','https://judge.yosupo.jp/problem/two_edge_connected_components',['build','two_edge_components','bridge decomposition'],[sample(low,'1\\n4 0 1 2 3\\n',base+'two_edge_connected_components/gen/example_00.in')],'component_sets','https://nyaannyaan.github.io/library/graph/lowlink.hpp'),entry('low_link_biconnected','Graph/Low_Link.cpp','low_link_biconnected_main.cpp','Biconnected Components','https://judge.yosupo.jp/problem/biconnected_components',['build(true)','biconnected_vertex_components','parallel edges'],[sample(bicon,'1\\n4 0 1 2 3\\n',base+'biconnected_components/gen/example_00.in')],'component_sets','https://nyaannyaan.github.io/library/graph/lowlink.hpp'),entry('eulerian_trail_directed','Graph/Eulerian_Trail.cpp','eulerian_trail_directed_main.cpp','Eulerian Trail (Directed)','https://judge.yosupo.jp/problem/eulerian_trail_directed',['find','directed','edge IDs','Yes/No','self/multiple edges'],[sample(direct,euler_expected(direct,True),base+'eulerian_trail_directed/gen/example_00.in')],'eulerian_trail_directed','https://ei1333.github.io/library/graph/others/eulerian-trail.hpp'),entry('eulerian_trail_undirected','Graph/Eulerian_Trail.cpp','eulerian_trail_undirected_main.cpp','Eulerian Trail (Undirected)','https://judge.yosupo.jp/problem/eulerian_trail_undirected',['find','undirected','edge IDs','Yes/No','self/multiple edges'],[sample(undirect,euler_expected(undirect,False),base+'eulerian_trail_undirected/gen/example_00.in')],'eulerian_trail_undirected','https://ei1333.github.io/library/graph/others/eulerian-trail.hpp'),entry('min_cost_flow_grid','Graph/Min_Cost_Flow.cpp','min_cost_flow_grid_main.cpp','E - MinCostFlow',mcf_url,['add_edge','negative edge initialization','flow','get_edge','matching restoration'],[sample('3 1\\n5 3 2\\n1 4 8\\n7 6 9\\n','19\\nX..\\n..X\\n.X.\\n',mcf_url,'公式入力例1・出力例1。'),sample('3 2\\n10 10 1\\n10 10 1\\n1 1 10\\n','50\\nXX.\\nXX.\\n..X\\n',mcf_url,'公式入力例2・出力例2。')],'min_cost_flow_grid','https://ei1333.github.io/library/graph/flow/primal-dual.hpp')]\nfor e in entries:\n if e['id']=='min_cost_flow_grid':e['selection_reason']='Library CheckerのMinimum Cost B-FlowとAPIが異なるため、s-t最小費用流のAtCoder practice2 Eを使用。一般容量・負辺・負閉路・slopeは独立補足。'\n else:e['selection_reason']='対応するLibrary Checker問題を使用。'\nd=dict(library_layout={'Graph':['Low_Link.cpp','Eulerian_Trail.cpp','Min_Cost_Flow.cpp']},examples={'low_link_example.cpp':'Graph/Low_Link.cpp','eulerian_trail_example.cpp':'Graph/Eulerian_Trail.cpp','min_cost_flow_example.cpp':'Graph/Min_Cost_Flow.cpp'},documents=['Document/low_link.md','Document/eulerian_trail.md','Document/min_cost_flow.md'],verify_entries=entries,sample_checkers={'path':str(p/'sample_checkers.py'),'modes':['component_sets','eulerian_trail_directed','eulerian_trail_undirected','min_cost_flow_grid']},validation={'status':'pending'},provenance={'new_implementation':True,'license':'CC0-1.0','reference_usage':'AAL/Nyaan/Luzhiledの分類・数学的説明・問題選定を参考。LowLink/CSR Hierholzer/全グラフBellman-Ford付き最小費用流はいずれも独立実装。','sources':[{'url':'https://raw.githubusercontent.com/ei1333/library/master/LICENSE','license':'Unlicense','role':'公式原典でpublic-domain dedicationを確認。実装の転記はしない。'},{'url':'https://ei1333.github.io/library/graph/others/eulerian-trail.hpp','role':'次数条件の数学的参考。破壊的なvector隣接実装と異なりCSRで非破壊に構築。'},{'url':'https://nyaannyaan.github.io/library/graph/lowlink.hpp','role':'分類・問題選定の参考。独自の反復DFSと任意ブロック収集。'},{'url':'https://ei1333.github.io/library/graph/flow/primal-dual.hpp','role':'最小費用流の分類の参考。全域初期ポテンシャルと型範囲検査を自作。'}]})\n(p/'integration.json').write_text(json.dumps(d,ensure_ascii=False,indent=2)+'\\n');print('graph2 integration prepared')\n"
+  },
+  "integration": {
+    "library_layout": {
+      "Graph": [
+        "Low_Link.cpp",
+        "Eulerian_Trail.cpp",
+        "Min_Cost_Flow.cpp"
+      ]
+    },
+    "examples": {
+      "low_link_example.cpp": "Graph/Low_Link.cpp",
+      "eulerian_trail_example.cpp": "Graph/Eulerian_Trail.cpp",
+      "min_cost_flow_example.cpp": "Graph/Min_Cost_Flow.cpp"
+    },
+    "documents": [
+      "Document/low_link.md",
+      "Document/eulerian_trail.md",
+      "Document/min_cost_flow.md"
+    ],
+    "verify_entries": [
+      {
+        "id": "low_link_two_edge",
+        "libraries": [
+          "Graph/Low_Link.cpp"
+        ],
+        "driver": "Verify/current/drivers/low_link_two_edge_main.cpp",
+        "title": "Two-Edge-Connected Components",
+        "problem_url": "https://judge.yosupo.jp/problem/two_edge_connected_components",
+        "selection_reason": "対応するLibrary Checker問題を使用。",
+        "reference_url": "https://nyaannyaan.github.io/library/graph/lowlink.hpp",
+        "evidence_url": "https://judge.yosupo.jp/problem/two_edge_connected_components",
+        "coverage": [
+          "build",
+          "two_edge_components",
+          "bridge decomposition"
+        ],
+        "limitations": "新規・オンライン未提出。補助API、自己辺/多重辺、範囲・確保失敗、深い鎖は独立全探索・検査有無・標準演算・ASan/UBSanで補足。",
+        "samples": [
+          {
+            "input": "4 5\n0 2\n0 1\n3 0\n2 1\n2 3\n",
+            "output": "1\n4 0 1 2 3\n",
+            "source": "https://raw.githubusercontent.com/yosupo06/library-checker-problems/master/graph/two_edge_connected_components/gen/example_00.in",
+            "origin": "公式入力例。出力は独立参照で構成。"
+          }
+        ],
+        "sample_checker": "component_sets",
+        "acl_required": false
+      },
+      {
+        "id": "low_link_biconnected",
+        "libraries": [
+          "Graph/Low_Link.cpp"
+        ],
+        "driver": "Verify/current/drivers/low_link_biconnected_main.cpp",
+        "title": "Biconnected Components",
+        "problem_url": "https://judge.yosupo.jp/problem/biconnected_components",
+        "selection_reason": "対応するLibrary Checker問題を使用。",
+        "reference_url": "https://nyaannyaan.github.io/library/graph/lowlink.hpp",
+        "evidence_url": "https://judge.yosupo.jp/problem/biconnected_components",
+        "coverage": [
+          "build(true)",
+          "biconnected_vertex_components",
+          "parallel edges"
+        ],
+        "limitations": "新規・オンライン未提出。補助API、自己辺/多重辺、範囲・確保失敗、深い鎖は独立全探索・検査有無・標準演算・ASan/UBSanで補足。",
+        "samples": [
+          {
+            "input": "4 5\n0 3\n0 1\n3 0\n2 1\n2 3\n",
+            "output": "1\n4 0 1 2 3\n",
+            "source": "https://raw.githubusercontent.com/yosupo06/library-checker-problems/master/graph/biconnected_components/gen/example_00.in",
+            "origin": "公式入力例。出力は独立参照で構成。"
+          }
+        ],
+        "sample_checker": "component_sets",
+        "acl_required": false
+      },
+      {
+        "id": "eulerian_trail_directed",
+        "libraries": [
+          "Graph/Eulerian_Trail.cpp"
+        ],
+        "driver": "Verify/current/drivers/eulerian_trail_directed_main.cpp",
+        "title": "Eulerian Trail (Directed)",
+        "problem_url": "https://judge.yosupo.jp/problem/eulerian_trail_directed",
+        "selection_reason": "対応するLibrary Checker問題を使用。",
+        "reference_url": "https://ei1333.github.io/library/graph/others/eulerian-trail.hpp",
+        "evidence_url": "https://judge.yosupo.jp/problem/eulerian_trail_directed",
+        "coverage": [
+          "find",
+          "directed",
+          "edge IDs",
+          "Yes/No",
+          "self/multiple edges"
+        ],
+        "limitations": "新規・オンライン未提出。補助API、自己辺/多重辺、範囲・確保失敗、深い鎖は独立全探索・検査有無・標準演算・ASan/UBSanで補足。",
+        "samples": [
+          {
+            "input": "3\n4 7\n0 1\n2 0\n0 2\n3 0\n1 3\n2 3\n3 3\n4 6\n0 1\n2 0\n0 3\n1 2\n3 1\n2 3\n6 10\n0 3\n1 2\n4 0\n5 1\n4 4\n2 3\n3 1\n3 2\n1 4\n1 5\n",
+            "output": "Yes\n2 0 1 3 0 2 3 3\n1 0 4 3 2 5 6\nNo\nYes\n1 2 3 1 5 1 4 4 0 3 2\n1 5 6 9 3 8 4 2 0 7\n",
+            "source": "https://raw.githubusercontent.com/yosupo06/library-checker-problems/master/graph/eulerian_trail_directed/gen/example_00.in",
+            "origin": "公式入力例。出力は独立参照で構成。"
+          }
+        ],
+        "sample_checker": "eulerian_trail_directed",
+        "acl_required": false
+      },
+      {
+        "id": "eulerian_trail_undirected",
+        "libraries": [
+          "Graph/Eulerian_Trail.cpp"
+        ],
+        "driver": "Verify/current/drivers/eulerian_trail_undirected_main.cpp",
+        "title": "Eulerian Trail (Undirected)",
+        "problem_url": "https://judge.yosupo.jp/problem/eulerian_trail_undirected",
+        "selection_reason": "対応するLibrary Checker問題を使用。",
+        "reference_url": "https://ei1333.github.io/library/graph/others/eulerian-trail.hpp",
+        "evidence_url": "https://judge.yosupo.jp/problem/eulerian_trail_undirected",
+        "coverage": [
+          "find",
+          "undirected",
+          "edge IDs",
+          "Yes/No",
+          "self/multiple edges"
+        ],
+        "limitations": "新規・オンライン未提出。補助API、自己辺/多重辺、範囲・確保失敗、深い鎖は独立全探索・検査有無・標準演算・ASan/UBSanで補足。",
+        "samples": [
+          {
+            "input": "3\n4 7\n0 1\n0 2\n0 2\n0 3\n1 3\n2 3\n3 3\n4 6\n0 1\n0 2\n0 3\n1 2\n1 3\n2 3\n6 10\n0 3\n1 2\n4 0\n5 1\n4 4\n2 3\n1 3\n3 2\n1 4\n5 1\n",
+            "output": "Yes\n2 0 1 3 0 2 3 3\n1 0 4 3 2 5 6\nNo\nYes\n1 2 3 0 4 4 1 5 1 3 2\n1 5 0 2 4 8 3 9 6 7\n",
+            "source": "https://raw.githubusercontent.com/yosupo06/library-checker-problems/master/graph/eulerian_trail_undirected/gen/example_00.in",
+            "origin": "公式入力例。出力は独立参照で構成。"
+          }
+        ],
+        "sample_checker": "eulerian_trail_undirected",
+        "acl_required": false
+      },
+      {
+        "id": "min_cost_flow_grid",
+        "libraries": [
+          "Graph/Min_Cost_Flow.cpp"
+        ],
+        "driver": "Verify/current/drivers/min_cost_flow_grid_main.cpp",
+        "title": "E - MinCostFlow",
+        "problem_url": "https://atcoder.jp/contests/practice2/tasks/practice2_e",
+        "selection_reason": "Library CheckerのMinimum Cost B-FlowとAPIが異なるため、s-t最小費用流のAtCoder practice2 Eを使用。一般容量・負辺・負閉路・slopeは独立補足。",
+        "reference_url": "https://ei1333.github.io/library/graph/flow/primal-dual.hpp",
+        "evidence_url": "https://atcoder.jp/contests/practice2/tasks/practice2_e",
+        "coverage": [
+          "add_edge",
+          "negative edge initialization",
+          "flow",
+          "get_edge",
+          "matching restoration"
+        ],
+        "limitations": "新規・オンライン未提出。補助API、自己辺/多重辺、範囲・確保失敗、深い鎖は独立全探索・検査有無・標準演算・ASan/UBSanで補足。",
+        "samples": [
+          {
+            "input": "3 1\n5 3 2\n1 4 8\n7 6 9\n",
+            "output": "19\nX..\n..X\n.X.\n",
+            "source": "https://atcoder.jp/contests/practice2/tasks/practice2_e",
+            "origin": "公式入力例1・出力例1。"
+          },
+          {
+            "input": "3 2\n10 10 1\n10 10 1\n1 1 10\n",
+            "output": "50\nXX.\nXX.\n..X\n",
+            "source": "https://atcoder.jp/contests/practice2/tasks/practice2_e",
+            "origin": "公式入力例2・出力例2。"
+          }
+        ],
+        "sample_checker": "min_cost_flow_grid",
+        "acl_required": false
+      }
+    ],
+    "sample_checkers": {
+      "path": "/tmp/sirkit_12h_20261031_095733/graph2/sample_checkers.py",
+      "modes": [
+        "component_sets",
+        "eulerian_trail_directed",
+        "eulerian_trail_undirected",
+        "min_cost_flow_grid"
+      ]
+    },
+    "validation": {
+      "status": "pending"
+    },
+    "provenance": {
+      "new_implementation": true,
+      "license": "CC0-1.0",
+      "reference_usage": "AAL/Nyaan/Luzhiledの分類・数学的説明・問題選定を参考。LowLink/CSR Hierholzer/全グラフBellman-Ford付き最小費用流はいずれも独立実装。",
+      "sources": [
+        {
+          "url": "https://raw.githubusercontent.com/ei1333/library/master/LICENSE",
+          "license": "Unlicense",
+          "role": "公式原典でpublic-domain dedicationを確認。実装の転記はしない。"
+        },
+        {
+          "url": "https://ei1333.github.io/library/graph/others/eulerian-trail.hpp",
+          "role": "次数条件の数学的参考。破壊的なvector隣接実装と異なりCSRで非破壊に構築。"
+        },
+        {
+          "url": "https://nyaannyaan.github.io/library/graph/lowlink.hpp",
+          "role": "分類・問題選定の参考。独自の反復DFSと任意ブロック収集。"
+        },
+        {
+          "url": "https://ei1333.github.io/library/graph/flow/primal-dual.hpp",
+          "role": "最小費用流の分類の参考。全域初期ポテンシャルと型範囲検査を自作。"
+        }
+      ]
+    }
+  }
+}

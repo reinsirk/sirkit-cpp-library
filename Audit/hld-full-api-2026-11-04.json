@@ -1,0 +1,104 @@
+{
+  "date": "2026-11-04",
+  "scope": "全公開APIをDocumentへ列挙するユーザー指定に合わせ、HLDの構築・所有・分解結果・値操作・全外部集計オーバーロードを完全な表へ整理。実装とVerify mainは変更しない。",
+  "API_coverage": {
+    "all_public_method_names": [
+      "value_type",
+      "Interval",
+      "Graph",
+      "size",
+      "empty",
+      "root",
+      "component_count",
+      "parent",
+      "depth",
+      "component",
+      "root_of",
+      "index",
+      "vertex_at",
+      "order",
+      "reorder",
+      "restore",
+      "same_component",
+      "is_ancestor",
+      "subtree_range",
+      "subtree_size",
+      "lca",
+      "distance",
+      "kth_ancestor",
+      "jump",
+      "for_each_path",
+      "path",
+      "build",
+      "clear",
+      "swap",
+      "with_values",
+      "get",
+      "set",
+      "add",
+      "apply",
+      "path_prod",
+      "subtree_prod",
+      "path_apply",
+      "subtree_apply",
+      "values",
+      "operator="
+    ],
+    "external_path_product_overloads": [
+      "path_prod(u,v,bit,edges=false)",
+      "path_prod(u,v,seg,edges=false)",
+      "path_prod(u,v,lazy,edges=false)",
+      "path_prod(u,v,seg,reverse,edges=false)",
+      "path_prod(u,v,lazy,reverse,edges=false)",
+      "path_prod(u,v,identity,query,op,edges=false)",
+      "path_prod(u,v,identity,query,op,reverse,edges=false)"
+    ],
+    "missing": [],
+    "review": "独立した公開宣言の照合でHの43関数宣言、Vの42関数宣言、共通の23操作、および型を確認。型に存在しない転送APIは載せない。"
+  },
+  "changes": [
+    "H/Vの全コンストラクタ、コピー/移動/代入、clear/build/swap、with_valuesのconst&/&&を列挙。",
+    "共通23操作を引数・戻り値・費用付きで明記。Graph、Interval各フィールド、value_typeも掲載。",
+    "外部path_prodの7オーバーロード、subtree_prod、path_apply/subtree_apply、query/reverseの条件を明記。所有型にないオーバーロードやInterval別名と区別。",
+    "orderの借用参照とpathの独立配列、DFS添字と頂点番号の区別、区間から頂点を復元する例を追加。",
+    "公開API一覧でコピー/移動・代入・callback戻り値無視も補足。move代入/buildには旧状態破棄費用、fnはcallback実行費用も加える。"
+  ],
+  "implementation_equivalence": {
+    "before_sha256": "e306eb9610e6f0f3495b2726975182c0230db6116a5cd27a1ef49bdfd281a88b",
+    "after_sha256": "b373968fbcefc3071dadc01757db4b23dbdc8e72a18d546ec0d4ee5ef2c819c9",
+    "noncomment_sha256": "6de95a9438921b3d73dd1244aada53e6cb001f3278904558e8e89ca4edec7017",
+    "result": "All implementation lines unchanged; only full-line API comments differ"
+  },
+  "validation": {
+    "document_snippet_blocks": 3,
+    "document_build_settings": 4,
+    "example_profiles": 6,
+    "scope": "GCC15.2/Clang21.1.8 C++23O2WallWextraWerror。Document3ブロックを連結しSKIP有無で結果照合。完全例6構成も成功。既存APIの実装は全非コメント行の同一性で確認し、以前のACを現行ソースへ転記しない。"
+  },
+  "document_size": {
+    "lines": 135,
+    "characters": 8198,
+    "bytes": 14100,
+    "reason": "全APIを省略せず記載する最新ユーザー指定を優先し、約60行の通常目安より長くなった。用途ごとの表に分け、同じ操作を共通表へ集約。入門講座・測定・履歴を追加せず、短い3例を維持。"
+  },
+  "files": {
+    "Graph/Heavy_Light_Decomposition.cpp": {
+      "sha256": "b373968fbcefc3071dadc01757db4b23dbdc8e72a18d546ec0d4ee5ef2c819c9",
+      "bytes": 37454
+    },
+    "Document/heavy_light_decomposition.md": {
+      "sha256": "dcd945bf34ff0cc640648244ca9e0608613a081a541374c7c657191d78c10da5",
+      "bytes": 14100
+    },
+    "Examples/heavy_light_decomposition_example.cpp": {
+      "sha256": "e739bb47790ea5f82dda0847d7aa1752c330b22e12f2a546a766a6769caffadc",
+      "bytes": 3643
+    }
+  },
+  "evidence": {
+    "path": "Audit/data/hld-full-api-2026-11-04.zip",
+    "sha256": "177ce85d0ae76d32e35daf839725b4b6cf1257ae3a27636a1f5d8565d0987eb9",
+    "entries": 20
+  },
+  "prior_api_and_performance": "Audit/hld-owned-2026-11-04.json"
+}

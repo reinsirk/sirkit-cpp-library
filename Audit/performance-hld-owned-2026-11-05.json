@@ -1,0 +1,1023 @@
+{
+  "date": "2026-11-05",
+  "scope": "HLD所有API再提出ACを確認し、main/共通IO固定でP-Core向け経路和・非可換積を高速化。",
+  "online_confirmation": "Audit/online-hld-owned-2026-11-05.json",
+  "online": {
+    "hld_path_prod": {
+      "url": "https://judge.yosupo.jp/submission/415261",
+      "status": "AC",
+      "time_ms": 326
+    },
+    "hld_path_composite": {
+      "url": "https://judge.yosupo.jp/submission/415258",
+      "status": "AC",
+      "time_ms": 257
+    },
+    "scope": "このACは改修前の提出コード。現行版はローカル検証済みで再提出待ち。"
+  },
+  "adopted": [
+    "自身のFenwickを所有する大規模HLDの経路和で、短区間の共通prefixを相殺する。N>4096で一度だけ選択し、同一重鎖は従来のprefix計算を直接使う。",
+    "Fenwickには非公開タグ・friend接続だけを追加し、通常の全メソッド・フィールドはそのまま。HLD生成の区間とサイズ不変条件を利用して境界再検査を省く。",
+    "GCCは大規模BIT処理を非公開noinline関数へ分離し、小規模経路の呼出し側が膨らむことを防ぐ。Clangは実測で有効だったinline経路を使用。",
+    "GCCのOrdered=trueで32byte以下の自明コピー可能な値（builtinfloat除外）は、前半へ追記・後半へ前置して区間バッファと再走査を除く。同一重鎖は区間結果を直接返す。",
+    "文字列など非自明/大きい値、ClangのOrdered、実ACLや旧Fenwickのタグなし型、BITのbuiltinfloat/boolは従来経路へ戻す。公開API・所有権・数学的0判定・容量対策を維持。"
+  ],
+  "mathematical_proof": "Fenwick prefixの親は最下位1bitを消した添字。l,rで最上位の相違bitより上が共通祖先となり、その先の同一prefixは可換加法群の差で相殺できる。長い区間は元計算。非可換積はu側を追記、v側を前置し、最後に前半+後半を結合する。同一重鎖を直接返せるのは単位元則による。入力頂点番号の大小は使わず、内部で生成したDFS添字だけを利用。",
+  "ownership_and_safety": "vector/make_uniqueを継続。新しいrawnew・解放省略・永続借用・保持状態・CPU専用命令なし。FW/HLD双方の前方宣言と部品ガードで単独貼付/順序/旧版混在を保つ。defaultvertex検査後にprivateheadを参照する。コピー/buildの旧状態保持・move元emptyを維持。",
+  "environment": {
+    "cpuinfo": "Architecture:                            x86_64\nCPU op-mode(s):                          32-bit, 64-bit\nAddress sizes:                           46 bits physical, 48 bits virtual\nByte Order:                              Little Endian\nCPU(s):                                  32\nOn-line CPU(s) list:                     0-31\nVendor ID:                               GenuineIntel\nModel name:                              Intel(R) Core(TM) i9-14900K\nCPU family:                              6\nModel:                                   183\nThread(s) per core:                      2\nCore(s) per socket:                      24\nSocket(s):                               1\nStepping:                                1\nCPU(s) scaling MHz:                      68%\nCPU max MHz:                             6000.0000\nCPU min MHz:                             800.0000\nBogoMIPS:                                6374.40\nFlags:                                   fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx pdpe1gb rdtscp lm constant_tsc art arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc cpuid aperfmperf tsc_known_freq pni pclmulqdq dtes64 monitor ds_cpl vmx smx est tm2 ssse3 sdbg fma cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand lahf_lm abm 3dnowprefetch cpuid_fault epb ssbd ibrs ibpb stibp ibrs_enhanced tpr_shadow flexpriority ept vpid ept_ad fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid rdseed adx smap clflushopt clwb intel_pt sha_ni xsaveopt xsavec xgetbv1 xsaves split_lock_detect user_shstk avx_vnni dtherm ida arat pln pts hwp hwp_notify hwp_act_window hwp_epp hwp_pkg_req hfi vnmi umip pku ospke waitpkg gfni vaes vpclmulqdq rdpid movdiri movdir64b fsrm md_clear serialize pconfig arch_lbr ibt flush_l1d arch_capabilities\nVirtualization:                          VT-x\nL1d cache:                               896 KiB (24 instances)\nL1i cache:                               1.3 MiB (24 instances)\nL2 cache:                                32 MiB (12 instances)\nL3 cache:                                36 MiB (1 instance)\nNUMA node(s):                            1\nNUMA node0 CPU(s):                       0-31\nVulnerability Gather data sampling:      Not affected\nVulnerability Ghostwrite:                Not affected\nVulnerability Indirect target selection: Not affected\nVulnerability Itlb multihit:             Not affected\nVulnerability L1tf:                      Not affected\nVulnerability Mds:                       Not affected\nVulnerability Meltdown:                  Not affected\nVulnerability Mmio stale data:           Not affected\nVulnerability Old microcode:             Not affected\nVulnerability Reg file data sampling:    Mitigation; Clear Register File\nVulnerability Retbleed:                  Not affected\nVulnerability Spec rstack overflow:      Not affected\nVulnerability Spec store bypass:         Mitigation; Speculative Store Bypass disabled via prctl\nVulnerability Spectre v1:                Mitigation; usercopy/swapgs barriers and __user pointer sanitization\nVulnerability Spectre v2:                Mitigation; Enhanced / Automatic IBRS; IBPB conditional; PBRSB-eIBRS SW sequence; BHI BHI_DIS_S\nVulnerability Srbds:                     Not affected\nVulnerability Tsa:                       Not affected\nVulnerability Tsx async abort:           Not affected\nVulnerability Vmscape:                   Mitigation; IBPB before exit to userspace\n",
+    "cpu_topology": "CPU CORE    MAXMHZ\n  0    0 5700.0000\n  1    0 5700.0000\n  2    1 5700.0000\n  3    1 5700.0000\n  4    2 5700.0000\n  5    2 5700.0000\n  6    3 5700.0000\n  7    3 5700.0000\n  8    4 5700.0000\n  9    4 5700.0000\n 10    5 5700.0000\n 11    5 5700.0000\n 12    6 6000.0000\n 13    6 6000.0000\n 14    7 6000.0000\n 15    7 6000.0000\n 16    8 4400.0000\n 17    9 4400.0000\n 18   10 4400.0000\n 19   11 4400.0000\n 20   12 4400.0000\n 21   13 4400.0000\n 22   14 4400.0000\n 23   15 4400.0000\n 24   16 4400.0000\n 25   17 4400.0000\n 26   18 4400.0000\n 27   19 4400.0000\n 28   20 4400.0000\n 29   21 4400.0000\n 30   22 4400.0000\n 31   23 4400.0000\n",
+    "compilers": {
+      "GCC": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0\nCopyright (C) 2025 Free Software Foundation, Inc.\nThis is free software; see the source for copying conditions.  There is NO\nwarranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n",
+      "Clang": "Ubuntu clang version 21.1.8 (6ubuntu1)\nTarget: x86_64-pc-linux-gnu\nThread model: posix\nInstalledDir: /usr/lib/llvm-21/bin\n"
+    },
+    "flags": [
+      "-std=c++23",
+      "-O2",
+      "-Wall",
+      "-Wextra",
+      "-Werror"
+    ],
+    "skip_runtime_checks": true,
+    "cpu": 12,
+    "platform": "Linux-7.0.0-42-generic-x86_64-with-glibc2.43",
+    "scope": "P-Core CPU12; settings read only, no governor/frequency/march/pragmas changed; no other heavyagentcompilationduringtiming",
+    "scaling_governor": "powersave",
+    "scaling_driver": "intel_pstate",
+    "cpuinfo_max_freq": "6000000",
+    "per_process_ASLR_disabled_for_final_process_comparison": true
+  },
+  "measurement": {
+    "scope": "同一の提出mainと共通IOでC++23O2。CPU12(P-Core)固定、各候補を同じ実行パスへコピーし順序を混ぜる。per-process setarch -Rでアドレス配置だけ揃え、globalASLR/周波数/governorを変更しない。CPUtimeはrusage(user+system)、構築・入力・出力・破棄を含む。",
+    "per_process_ASLR_disabled": true,
+    "selected_runs": 666,
+    "summary": [
+      {
+        "compiler": "clang",
+        "id": "hld_path_prod",
+        "case": "custom_vertex_add_path_sum_250000_balanced",
+        "samples_per_label": 7,
+        "median_cpu_ns": {
+          "base": 75927000,
+          "control": 74189000,
+          "after": 72196000
+        },
+        "after_ratio": 0.9508606951413858,
+        "control_ratio": 0.9771095921082092
+      },
+      {
+        "compiler": "clang",
+        "id": "hld_path_prod",
+        "case": "custom_vertex_add_path_sum_250000_random",
+        "samples_per_label": 7,
+        "median_cpu_ns": {
+          "base": 72057000,
+          "control": 71928000,
+          "after": 69271000
+        },
+        "after_ratio": 0.9613361644253855,
+        "control_ratio": 0.9982097506140972
+      },
+      {
+        "compiler": "clang",
+        "id": "hld_path_prod",
+        "case": "custom_vertex_add_path_sum_250000_star",
+        "samples_per_label": 7,
+        "median_cpu_ns": {
+          "base": 46052000,
+          "control": 46016000,
+          "after": 43695000
+        },
+        "after_ratio": 0.9488187266568228,
+        "control_ratio": 0.9992182749934856
+      },
+      {
+        "compiler": "clang",
+        "id": "hld_path_prod",
+        "case": "custom_vertex_add_path_sum_32_random_queryheavy",
+        "samples_per_label": 7,
+        "median_cpu_ns": {
+          "base": 9520000,
+          "control": 9584000,
+          "after": 9148000
+        },
+        "after_ratio": 0.9609243697478992,
+        "control_ratio": 1.0067226890756302
+      },
+      {
+        "compiler": "clang",
+        "id": "hld_path_prod",
+        "case": "custom_vertex_add_path_sum_4096_random_queryheavy",
+        "samples_per_label": 7,
+        "median_cpu_ns": {
+          "base": 15982000,
+          "control": 15892000,
+          "after": 15480000
+        },
+        "after_ratio": 0.9685896633712927,
+        "control_ratio": 0.9943686647478414
+      },
+      {
+        "compiler": "clang",
+        "id": "hld_path_prod",
+        "case": "official_vertex_add_path_sum_almost_line_0",
+        "samples_per_label": 7,
+        "median_cpu_ns": {
+          "base": 121662000,
+          "control": 120184000,
+          "after": 120174000
+        },
+        "after_ratio": 0.9877693938945603,
+        "control_ratio": 0.9878515888280647
+      },
+      {
+        "compiler": "clang",
+        "id": "hld_path_prod",
+        "case": "official_vertex_add_path_sum_line_0",
+        "samples_per_label": 7,
+        "median_cpu_ns": {
+          "base": 107048000,
+          "control": 106513000,
+          "after": 107001000
+        },
+        "after_ratio": 0.9995609446229728,
+        "control_ratio": 0.995002241984904
+      },
+      {
+        "compiler": "clang",
+        "id": "hld_path_prod",
+        "case": "official_vertex_add_path_sum_long-path-decomposition_killer_0",
+        "samples_per_label": 7,
+        "median_cpu_ns": {
+          "base": 61983000,
+          "control": 61721000,
+          "after": 57844000
+        },
+        "after_ratio": 0.9332236258328896,
+        "control_ratio": 0.9957730345417292
+      },
+      {
+        "compiler": "clang",
+        "id": "hld_path_prod",
+        "case": "official_vertex_add_path_sum_max_random_0",
+        "samples_per_label": 7,
+        "median_cpu_ns": {
+          "base": 177868000,
+          "control": 176509000,
+          "after": 170818000
+        },
+        "after_ratio": 0.9603638653383408,
+        "control_ratio": 0.9923595025524546
+      },
+      {
+        "compiler": "clang",
+        "id": "hld_path_prod",
+        "case": "official_vertex_add_path_sum_max_random_1",
+        "samples_per_label": 7,
+        "median_cpu_ns": {
+          "base": 176772000,
+          "control": 175449000,
+          "after": 170029000
+        },
+        "after_ratio": 0.9618548186364356,
+        "control_ratio": 0.9925157830425633
+      },
+      {
+        "compiler": "clang",
+        "id": "hld_path_prod",
+        "case": "official_vertex_add_path_sum_random_0",
+        "samples_per_label": 7,
+        "median_cpu_ns": {
+          "base": 129717000,
+          "control": 129448000,
+          "after": 123982000
+        },
+        "after_ratio": 0.9557883700671461,
+        "control_ratio": 0.9979262548470902
+      },
+      {
+        "compiler": "gcc",
+        "id": "hld_path_composite",
+        "case": "custom_vertex_set_path_composite_250000_balanced",
+        "samples_per_label": 7,
+        "median_cpu_ns": {
+          "base": 97018000,
+          "control": 96700000,
+          "after": 95096000
+        },
+        "after_ratio": 0.9801892432332144,
+        "control_ratio": 0.9967222577253706
+      },
+      {
+        "compiler": "gcc",
+        "id": "hld_path_composite",
+        "case": "custom_vertex_set_path_composite_250000_random",
+        "samples_per_label": 7,
+        "median_cpu_ns": {
+          "base": 88936000,
+          "control": 89033000,
+          "after": 88216000
+        },
+        "after_ratio": 0.9919042907259152,
+        "control_ratio": 1.0010906719438697
+      },
+      {
+        "compiler": "gcc",
+        "id": "hld_path_composite",
+        "case": "custom_vertex_set_path_composite_250000_star",
+        "samples_per_label": 7,
+        "median_cpu_ns": {
+          "base": 61032000,
+          "control": 60613000,
+          "after": 60842000
+        },
+        "after_ratio": 0.9968868790142876,
+        "control_ratio": 0.9931347489841394
+      },
+      {
+        "compiler": "gcc",
+        "id": "hld_path_composite",
+        "case": "custom_vertex_set_path_composite_32_chain_queryheavy",
+        "samples_per_label": 7,
+        "median_cpu_ns": {
+          "base": 11745000,
+          "control": 11685000,
+          "after": 11555000
+        },
+        "after_ratio": 0.9838229033631333,
+        "control_ratio": 0.9948914431673053
+      },
+      {
+        "compiler": "gcc",
+        "id": "hld_path_composite",
+        "case": "custom_vertex_set_path_composite_32_random_queryheavy",
+        "samples_per_label": 7,
+        "median_cpu_ns": {
+          "base": 12789000,
+          "control": 12771000,
+          "after": 12581000
+        },
+        "after_ratio": 0.9837360231448902,
+        "control_ratio": 0.9985925404644617
+      },
+      {
+        "compiler": "gcc",
+        "id": "hld_path_composite",
+        "case": "custom_vertex_set_path_composite_4096_random_queryheavy",
+        "samples_per_label": 7,
+        "median_cpu_ns": {
+          "base": 22149000,
+          "control": 21996000,
+          "after": 21200000
+        },
+        "after_ratio": 0.9571538218429726,
+        "control_ratio": 0.9930922389272654
+      },
+      {
+        "compiler": "gcc",
+        "id": "hld_path_composite",
+        "case": "official_vertex_set_path_composite_almost_line_0",
+        "samples_per_label": 7,
+        "median_cpu_ns": {
+          "base": 61613000,
+          "control": 61409000,
+          "after": 61064000
+        },
+        "after_ratio": 0.991089542791294,
+        "control_ratio": 0.9966890104361092
+      },
+      {
+        "compiler": "gcc",
+        "id": "hld_path_composite",
+        "case": "official_vertex_set_path_composite_line_0",
+        "samples_per_label": 7,
+        "median_cpu_ns": {
+          "base": 54334000,
+          "control": 55000000,
+          "after": 53960000
+        },
+        "after_ratio": 0.9931166488754739,
+        "control_ratio": 1.0122575183126588
+      },
+      {
+        "compiler": "gcc",
+        "id": "hld_path_composite",
+        "case": "official_vertex_set_path_composite_long-path-decomposition_killer_0",
+        "samples_per_label": 7,
+        "median_cpu_ns": {
+          "base": 30441000,
+          "control": 30732000,
+          "after": 30589000
+        },
+        "after_ratio": 1.0048618639335107,
+        "control_ratio": 1.0095594757071056
+      },
+      {
+        "compiler": "gcc",
+        "id": "hld_path_composite",
+        "case": "official_vertex_set_path_composite_max_random_0",
+        "samples_per_label": 20,
+        "median_cpu_ns": {
+          "base": 70982500.0,
+          "control": 71050000.0,
+          "after": 70185500.0
+        },
+        "after_ratio": 0.9887718803930546,
+        "control_ratio": 1.0009509386116295
+      },
+      {
+        "compiler": "gcc",
+        "id": "hld_path_composite",
+        "case": "official_vertex_set_path_composite_worst_for_path_decomposition_0",
+        "samples_per_label": 20,
+        "median_cpu_ns": {
+          "base": 130543500.0,
+          "control": 130524000.0,
+          "after": 127056500.0
+        },
+        "after_ratio": 0.9732885972874942,
+        "control_ratio": 0.9998506245044755
+      },
+      {
+        "compiler": "gcc",
+        "id": "hld_path_prod",
+        "case": "custom_vertex_add_path_sum_250000_balanced",
+        "samples_per_label": 7,
+        "median_cpu_ns": {
+          "base": 75350000,
+          "control": 75746000,
+          "after": 72407000
+        },
+        "after_ratio": 0.9609422694094227,
+        "control_ratio": 1.0052554744525548
+      },
+      {
+        "compiler": "gcc",
+        "id": "hld_path_prod",
+        "case": "custom_vertex_add_path_sum_32_random_queryheavy",
+        "samples_per_label": 7,
+        "median_cpu_ns": {
+          "base": 9538000,
+          "control": 9589000,
+          "after": 9529000
+        },
+        "after_ratio": 0.9990564059551269,
+        "control_ratio": 1.0053470329209477
+      },
+      {
+        "compiler": "gcc",
+        "id": "hld_path_prod",
+        "case": "custom_vertex_add_path_sum_4096_random_queryheavy",
+        "samples_per_label": 7,
+        "median_cpu_ns": {
+          "base": 15993000,
+          "control": 16008000,
+          "after": 16057000
+        },
+        "after_ratio": 1.0040017507659602,
+        "control_ratio": 1.0009379103357718
+      },
+      {
+        "compiler": "gcc",
+        "id": "hld_path_prod",
+        "case": "official_vertex_add_path_sum_line_0",
+        "samples_per_label": 7,
+        "median_cpu_ns": {
+          "base": 100314000,
+          "control": 99830000,
+          "after": 100486000
+        },
+        "after_ratio": 1.001714616105429,
+        "control_ratio": 0.9951751500289092
+      },
+      {
+        "compiler": "gcc",
+        "id": "hld_path_prod",
+        "case": "official_vertex_add_path_sum_long-path-decomposition_killer_0",
+        "samples_per_label": 7,
+        "median_cpu_ns": {
+          "base": 57747000,
+          "control": 57215000,
+          "after": 57407000
+        },
+        "after_ratio": 0.9941122482553206,
+        "control_ratio": 0.9907874002112664
+      },
+      {
+        "compiler": "gcc",
+        "id": "hld_path_prod",
+        "case": "official_vertex_add_path_sum_max_random_0",
+        "samples_per_label": 7,
+        "median_cpu_ns": {
+          "base": 169112000,
+          "control": 168589000,
+          "after": 159518000
+        },
+        "after_ratio": 0.9432683665263257,
+        "control_ratio": 0.9969073749940868
+      }
+    ],
+    "mapping": [
+      {
+        "compiler": "gcc",
+        "id": "hld_path_prod",
+        "reference": "gcc_hld_path_prod_outline",
+        "final_executable": "/tmp/sirkit_hld_opt_20261105/final_gcc_hld_path_prod",
+        "text_sha256": "07ff254df6e4ef734fefc46f3962bccc4b19b55b481a6446ecfe3c71a2874f23",
+        "identical": true
+      },
+      {
+        "compiler": "clang",
+        "id": "hld_path_prod",
+        "reference": "clang_hld_path_prod_owned_access",
+        "final_executable": "/tmp/sirkit_hld_opt_20261105/final_clang_hld_path_prod",
+        "text_sha256": "6ad09a7bd0b100d377b6a3f4244be2cb1975463cf1588cf68778b5907b11a30e",
+        "identical": true
+      },
+      {
+        "compiler": "gcc",
+        "id": "hld_path_composite",
+        "reference": "gcc_hld_path_composite_owned_access",
+        "final_executable": "/tmp/sirkit_hld_opt_20261105/final_gcc_hld_path_composite",
+        "text_sha256": "63061265b02af04dc362f90f23baab856df9dcce00ccb2548ca5c93f28fcc166",
+        "identical": true
+      },
+      {
+        "compiler": "clang",
+        "id": "hld_path_composite",
+        "reference": "clang_hld_path_composite_base",
+        "final_executable": "/tmp/sirkit_hld_opt_20261105/final_clang_hld_path_composite",
+        "text_sha256": "dc3c19b8ed927c75230d8a56f601614722c553d145c18f482b9aca0462c5cc81",
+        "identical": true
+      },
+      {
+        "compiler": "gcc",
+        "id": "fenwick_tree",
+        "reference": "gcc_fenwick_tree_base",
+        "final_executable": "/tmp/sirkit_hld_opt_20261105/final_gcc_fenwick_tree",
+        "text_sha256": "544a89ce0b6ed3106a61bf619ab5c7e7beaa654fff3eef50d505431df37c3885",
+        "identical": true
+      },
+      {
+        "compiler": "clang",
+        "id": "fenwick_tree",
+        "reference": "clang_fenwick_tree_base",
+        "final_executable": "/tmp/sirkit_hld_opt_20261105/final_clang_fenwick_tree",
+        "text_sha256": "d6fd3bb3e231fb66c9778739307e368f28627a25ce4eb0629424aca7e5ba1f45",
+        "identical": true
+      },
+      {
+        "compiler": "gcc",
+        "id": "hld_jump",
+        "scope": "legacy main and IO unchanged, whole text identical",
+        "text_sha256": "e894f14f181da0cddfebbbbffaade1c89a53bfa54e1255c9cd32160e7a62ec79",
+        "identical": true
+      },
+      {
+        "compiler": "clang",
+        "id": "hld_jump",
+        "scope": "legacy main and IO unchanged, whole text identical",
+        "text_sha256": "0b01ff0f4512f6215cfd23f61b1861090d11541023b7e11eb0078954ee3d20da",
+        "identical": true
+      },
+      {
+        "compiler": "gcc",
+        "id": "hld_vertex_add_path_sum",
+        "scope": "legacy main and IO unchanged, whole text identical",
+        "text_sha256": "349622b19c94c87afd744a860ec6b3a200cc0f754c4a9dcb5f3135db148a8264",
+        "identical": true
+      },
+      {
+        "compiler": "clang",
+        "id": "hld_vertex_add_path_sum",
+        "scope": "legacy main and IO unchanged, whole text identical",
+        "text_sha256": "f43add07de3f1e294345c08b8dfe00a7dbec2982cdb6b25ec9bf752c32c60f1c",
+        "identical": true
+      }
+    ],
+    "scope_limits": "固定commitの公式生成器と独自入力によるローカル比較。現在のオンライン入力そのものやオンライン時間の短縮率とは区別する。compiler/CPU/コード配置差と対照の揺れを含む。"
+  },
+  "rejected_and_diagnostics": [
+    "共通prefix相殺を通常Fenwick.sum全体へ入れる案は小規模・長区間への費用が増えたため不採用。FW公開メソッドは変更しない。",
+    "全コンパイラへの可換直接fold、単なるstate参照変更、optionalprefixで単位元との演算を除く案は別条件の後退があり不採用。Clangの非可換fusionも不採用。",
+    "初期process比較は同一binarycontrolにも10〜35%差が出たため採用根拠にしない。microv1は片方のみのinline化、v2は旧code2回/候補1回のtrace-replay頻度差があり定量判断から除外。",
+    "microv3は旧/候補各2回の対称比較とnoinlineを用い、変わらないFWで約1%の差まで較正した。最終採用はASLRを揃えた実際の提出main全体の7回比較（追加確認13回）とmachinecode一致による。"
+  ],
+  "validation": {
+    "final_asan_ubsan_owned": 4,
+    "final_asan_ubsan_large_native": 4,
+    "final_standard_fallback_large": 2,
+    "allocation_checks": 2,
+    "owned_results": [
+      {
+        "kind": "owned",
+        "compiler": "GCC",
+        "skip_runtime_checks": false,
+        "compile_command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-I/home/reinsirk/Atcoder_Env/Verify/current/vendor",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/hld_owned_test.cpp",
+          "-o",
+          "/tmp/sirkit_hld_opt_20261105/final_owned_GCC_0"
+        ],
+        "returncode": 0,
+        "stdout": "Owned HLD forests=30 checks=291961\n",
+        "stderr": "",
+        "hld_sha256": "70047d938f6050f09c6048809db580d061f2c40d1e7c5950cfb695b4ab9906ba",
+        "fw_sha256": "1db7ef69f0119b197800b53f5dd33e0e98c937202fc0e7be49cc6109d380f58e",
+        "test_sha256": "006d1ff0c67502b17937d6b7ff67773ece397c9cf7d6ef299c314c6f5e79e59c"
+      },
+      {
+        "kind": "owned",
+        "compiler": "GCC",
+        "skip_runtime_checks": true,
+        "compile_command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-I/home/reinsirk/Atcoder_Env/Verify/current/vendor",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/hld_owned_test.cpp",
+          "-o",
+          "/tmp/sirkit_hld_opt_20261105/final_owned_GCC_1"
+        ],
+        "returncode": 0,
+        "stdout": "Owned HLD forests=30 checks=291472\n",
+        "stderr": "",
+        "hld_sha256": "70047d938f6050f09c6048809db580d061f2c40d1e7c5950cfb695b4ab9906ba",
+        "fw_sha256": "1db7ef69f0119b197800b53f5dd33e0e98c937202fc0e7be49cc6109d380f58e",
+        "test_sha256": "006d1ff0c67502b17937d6b7ff67773ece397c9cf7d6ef299c314c6f5e79e59c"
+      },
+      {
+        "kind": "allocation",
+        "compiler": "GCC",
+        "compile_command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/hld_owned_allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_hld_opt_20261105/final_allocation_GCC"
+        ],
+        "returncode": 0,
+        "stdout": "HLD owned allocation failures=248 successes=776 live_delta=0\n",
+        "stderr": "",
+        "test_sha256": "906efe16c4e3d6655860719cdd5de367d0b326dec39f4cbf0ac7d450eecec966"
+      },
+      {
+        "kind": "owned",
+        "compiler": "Clang",
+        "skip_runtime_checks": false,
+        "compile_command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-I/home/reinsirk/Atcoder_Env/Verify/current/vendor",
+          "-DSIRKIT_HLD_OWNED_RANGES_FIRST",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/hld_owned_test.cpp",
+          "-o",
+          "/tmp/sirkit_hld_opt_20261105/final_owned_Clang_0"
+        ],
+        "returncode": 0,
+        "stdout": "Owned HLD forests=30 checks=291961\n",
+        "stderr": "",
+        "hld_sha256": "70047d938f6050f09c6048809db580d061f2c40d1e7c5950cfb695b4ab9906ba",
+        "fw_sha256": "1db7ef69f0119b197800b53f5dd33e0e98c937202fc0e7be49cc6109d380f58e",
+        "test_sha256": "006d1ff0c67502b17937d6b7ff67773ece397c9cf7d6ef299c314c6f5e79e59c"
+      },
+      {
+        "kind": "owned",
+        "compiler": "Clang",
+        "skip_runtime_checks": true,
+        "compile_command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-I/home/reinsirk/Atcoder_Env/Verify/current/vendor",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-DSIRKIT_HLD_OWNED_RANGES_FIRST",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/hld_owned_test.cpp",
+          "-o",
+          "/tmp/sirkit_hld_opt_20261105/final_owned_Clang_1"
+        ],
+        "returncode": 0,
+        "stdout": "Owned HLD forests=30 checks=291472\n",
+        "stderr": "",
+        "hld_sha256": "70047d938f6050f09c6048809db580d061f2c40d1e7c5950cfb695b4ab9906ba",
+        "fw_sha256": "1db7ef69f0119b197800b53f5dd33e0e98c937202fc0e7be49cc6109d380f58e",
+        "test_sha256": "006d1ff0c67502b17937d6b7ff67773ece397c9cf7d6ef299c314c6f5e79e59c"
+      },
+      {
+        "kind": "allocation",
+        "compiler": "Clang",
+        "compile_command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/hld_owned_allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_hld_opt_20261105/final_allocation_Clang"
+        ],
+        "returncode": 0,
+        "stdout": "HLD owned allocation failures=248 successes=776 live_delta=0\n",
+        "stderr": "",
+        "test_sha256": "906efe16c4e3d6655860719cdd5de367d0b326dec39f4cbf0ac7d450eecec966"
+      }
+    ],
+    "large_results": [
+      {
+        "compiler": "GCC",
+        "skip_runtime_checks": false,
+        "standard_fallback": false,
+        "compile_command": [
+          "taskset",
+          "-c",
+          "6",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O1",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-I/home/reinsirk/Atcoder_Env/Verify/current/vendor",
+          "-DHLD_SOURCE=\"/home/reinsirk/Atcoder_Env/Graph/Heavy_Light_Decomposition.cpp\"",
+          "-DFW_SOURCE=\"/home/reinsirk/Atcoder_Env/DataStructure/Fenwick_Tree.cpp\"",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/hld_fenwick_path_test.cpp",
+          "-o",
+          "/tmp/sirkit_hld_opt_20261105/fenwick/final_large_hld_GCC_0_0"
+        ],
+        "run_command": [
+          "taskset",
+          "-c",
+          "6",
+          "/tmp/sirkit_hld_opt_20261105/fenwick/final_large_hld_GCC_0_0"
+        ],
+        "returncode": 0,
+        "stdout": "HLD Fenwick large forests=78 checks=29505\n",
+        "stderr": "",
+        "source_sha256": {
+          "Graph/Heavy_Light_Decomposition.cpp": "70047d938f6050f09c6048809db580d061f2c40d1e7c5950cfb695b4ab9906ba",
+          "DataStructure/Fenwick_Tree.cpp": "1db7ef69f0119b197800b53f5dd33e0e98c937202fc0e7be49cc6109d380f58e",
+          "Verify/current/tests/hld_fenwick_path_test.cpp": "3173cf37b569424e2743bab4970d61ee43c4c55ecf667ea28480cc433ffc45aa"
+        }
+      },
+      {
+        "compiler": "GCC",
+        "skip_runtime_checks": true,
+        "standard_fallback": false,
+        "compile_command": [
+          "taskset",
+          "-c",
+          "6",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O1",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-I/home/reinsirk/Atcoder_Env/Verify/current/vendor",
+          "-DHLD_SOURCE=\"/home/reinsirk/Atcoder_Env/Graph/Heavy_Light_Decomposition.cpp\"",
+          "-DFW_SOURCE=\"/home/reinsirk/Atcoder_Env/DataStructure/Fenwick_Tree.cpp\"",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/hld_fenwick_path_test.cpp",
+          "-o",
+          "/tmp/sirkit_hld_opt_20261105/fenwick/final_large_hld_GCC_1_0"
+        ],
+        "run_command": [
+          "taskset",
+          "-c",
+          "6",
+          "/tmp/sirkit_hld_opt_20261105/fenwick/final_large_hld_GCC_1_0"
+        ],
+        "returncode": 0,
+        "stdout": "HLD Fenwick large forests=78 checks=29052\n",
+        "stderr": "",
+        "source_sha256": {
+          "Graph/Heavy_Light_Decomposition.cpp": "70047d938f6050f09c6048809db580d061f2c40d1e7c5950cfb695b4ab9906ba",
+          "DataStructure/Fenwick_Tree.cpp": "1db7ef69f0119b197800b53f5dd33e0e98c937202fc0e7be49cc6109d380f58e",
+          "Verify/current/tests/hld_fenwick_path_test.cpp": "3173cf37b569424e2743bab4970d61ee43c4c55ecf667ea28480cc433ffc45aa"
+        }
+      },
+      {
+        "compiler": "Clang",
+        "skip_runtime_checks": false,
+        "standard_fallback": false,
+        "compile_command": [
+          "taskset",
+          "-c",
+          "6",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O1",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-I/home/reinsirk/Atcoder_Env/Verify/current/vendor",
+          "-DHLD_SOURCE=\"/home/reinsirk/Atcoder_Env/Graph/Heavy_Light_Decomposition.cpp\"",
+          "-DFW_SOURCE=\"/home/reinsirk/Atcoder_Env/DataStructure/Fenwick_Tree.cpp\"",
+          "-DSIRKIT_HLD_FENWICK_FIRST",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/hld_fenwick_path_test.cpp",
+          "-o",
+          "/tmp/sirkit_hld_opt_20261105/fenwick/final_large_hld_Clang_0_0"
+        ],
+        "run_command": [
+          "taskset",
+          "-c",
+          "6",
+          "/tmp/sirkit_hld_opt_20261105/fenwick/final_large_hld_Clang_0_0"
+        ],
+        "returncode": 0,
+        "stdout": "HLD Fenwick large forests=78 checks=29505\n",
+        "stderr": "",
+        "source_sha256": {
+          "Graph/Heavy_Light_Decomposition.cpp": "70047d938f6050f09c6048809db580d061f2c40d1e7c5950cfb695b4ab9906ba",
+          "DataStructure/Fenwick_Tree.cpp": "1db7ef69f0119b197800b53f5dd33e0e98c937202fc0e7be49cc6109d380f58e",
+          "Verify/current/tests/hld_fenwick_path_test.cpp": "3173cf37b569424e2743bab4970d61ee43c4c55ecf667ea28480cc433ffc45aa"
+        }
+      },
+      {
+        "compiler": "Clang",
+        "skip_runtime_checks": true,
+        "standard_fallback": false,
+        "compile_command": [
+          "taskset",
+          "-c",
+          "6",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O1",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-I/home/reinsirk/Atcoder_Env/Verify/current/vendor",
+          "-DHLD_SOURCE=\"/home/reinsirk/Atcoder_Env/Graph/Heavy_Light_Decomposition.cpp\"",
+          "-DFW_SOURCE=\"/home/reinsirk/Atcoder_Env/DataStructure/Fenwick_Tree.cpp\"",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-DSIRKIT_HLD_FENWICK_FIRST",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/hld_fenwick_path_test.cpp",
+          "-o",
+          "/tmp/sirkit_hld_opt_20261105/fenwick/final_large_hld_Clang_1_0"
+        ],
+        "run_command": [
+          "taskset",
+          "-c",
+          "6",
+          "/tmp/sirkit_hld_opt_20261105/fenwick/final_large_hld_Clang_1_0"
+        ],
+        "returncode": 0,
+        "stdout": "HLD Fenwick large forests=78 checks=29052\n",
+        "stderr": "",
+        "source_sha256": {
+          "Graph/Heavy_Light_Decomposition.cpp": "70047d938f6050f09c6048809db580d061f2c40d1e7c5950cfb695b4ab9906ba",
+          "DataStructure/Fenwick_Tree.cpp": "1db7ef69f0119b197800b53f5dd33e0e98c937202fc0e7be49cc6109d380f58e",
+          "Verify/current/tests/hld_fenwick_path_test.cpp": "3173cf37b569424e2743bab4970d61ee43c4c55ecf667ea28480cc433ffc45aa"
+        }
+      },
+      {
+        "compiler": "GCC",
+        "skip_runtime_checks": false,
+        "standard_fallback": true,
+        "compile_command": [
+          "taskset",
+          "-c",
+          "6",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O1",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-I/home/reinsirk/Atcoder_Env/Verify/current/vendor",
+          "-DHLD_SOURCE=\"/home/reinsirk/Atcoder_Env/Graph/Heavy_Light_Decomposition.cpp\"",
+          "-DFW_SOURCE=\"/home/reinsirk/Atcoder_Env/DataStructure/Fenwick_Tree.cpp\"",
+          "-U__SIZEOF_INT128__",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/hld_fenwick_path_test.cpp",
+          "-o",
+          "/tmp/sirkit_hld_opt_20261105/fenwick/final_large_hld_GCC_0_1"
+        ],
+        "run_command": [
+          "taskset",
+          "-c",
+          "6",
+          "/tmp/sirkit_hld_opt_20261105/fenwick/final_large_hld_GCC_0_1"
+        ],
+        "returncode": 0,
+        "stdout": "HLD Fenwick large forests=70 checks=26661\n",
+        "stderr": "",
+        "source_sha256": {
+          "Graph/Heavy_Light_Decomposition.cpp": "70047d938f6050f09c6048809db580d061f2c40d1e7c5950cfb695b4ab9906ba",
+          "DataStructure/Fenwick_Tree.cpp": "1db7ef69f0119b197800b53f5dd33e0e98c937202fc0e7be49cc6109d380f58e",
+          "Verify/current/tests/hld_fenwick_path_test.cpp": "3173cf37b569424e2743bab4970d61ee43c4c55ecf667ea28480cc433ffc45aa"
+        }
+      },
+      {
+        "compiler": "Clang",
+        "skip_runtime_checks": false,
+        "standard_fallback": true,
+        "compile_command": [
+          "taskset",
+          "-c",
+          "6",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O1",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-I/home/reinsirk/Atcoder_Env/Verify/current/vendor",
+          "-DHLD_SOURCE=\"/home/reinsirk/Atcoder_Env/Graph/Heavy_Light_Decomposition.cpp\"",
+          "-DFW_SOURCE=\"/home/reinsirk/Atcoder_Env/DataStructure/Fenwick_Tree.cpp\"",
+          "-U__SIZEOF_INT128__",
+          "-DSIRKIT_HLD_FENWICK_FIRST",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/hld_fenwick_path_test.cpp",
+          "-o",
+          "/tmp/sirkit_hld_opt_20261105/fenwick/final_large_hld_Clang_0_1"
+        ],
+        "run_command": [
+          "taskset",
+          "-c",
+          "6",
+          "/tmp/sirkit_hld_opt_20261105/fenwick/final_large_hld_Clang_0_1"
+        ],
+        "returncode": 0,
+        "stdout": "HLD Fenwick large forests=70 checks=26661\n",
+        "stderr": "",
+        "source_sha256": {
+          "Graph/Heavy_Light_Decomposition.cpp": "70047d938f6050f09c6048809db580d061f2c40d1e7c5950cfb695b4ab9906ba",
+          "DataStructure/Fenwick_Tree.cpp": "1db7ef69f0119b197800b53f5dd33e0e98c937202fc0e7be49cc6109d380f58e",
+          "Verify/current/tests/hld_fenwick_path_test.cpp": "3173cf37b569424e2743bab4970d61ee43c4c55ecf667ea28480cc433ffc45aa"
+        }
+      }
+    ],
+    "actual_program_input_checks": 112,
+    "normal_sample_builds": 10,
+    "variant_and_example_samples": 22,
+    "unaffected_code": "通常FWのGCC/Clang、旧Jump/外部経路和のGCC/Clang、Clang非可換Verifyの.textは改修前とbyte一致。",
+    "source_proofs": [
+      {
+        "scope": "Graph/Heavy_Light_Decomposition.cpp",
+        "result": "Final source and validated/timed candidate differ only in full-line comments",
+        "canonical_sha256": "70047d938f6050f09c6048809db580d061f2c40d1e7c5950cfb695b4ab9906ba",
+        "candidate_sha256": "92288583d8605aeaa91bcb9293bb941501cbf9756407f6a41d5efa743ca3cdb8"
+      },
+      {
+        "scope": "DataStructure/Fenwick_Tree.cpp",
+        "result": "Final source and validated/timed candidate differ only in full-line comments",
+        "canonical_sha256": "1db7ef69f0119b197800b53f5dd33e0e98c937202fc0e7be49cc6109d380f58e",
+        "candidate_sha256": "52632acdf0e5b3752b37d005f0ef0d947e51915a8f77dc2877bd0a038c892a9c"
+      },
+      {
+        "scope": "Fenwick class",
+        "result": "All original fields and methods byte-identical; only private type alias and friend declaration added"
+      },
+      {
+        "scope": "HeavyLightDecomposition class",
+        "result": "All original fields and methods byte-identical; private owner friendship only"
+      },
+      {
+        "scope": "Verify/current/drivers/hld_path_prod_main.cpp",
+        "sha256": "150248b3e34c17e391fc96f4ca16214d71d8143ab508a898dbf6bf3eec98d7a8",
+        "result": "Frozen byte-identical"
+      },
+      {
+        "scope": "Verify/current/drivers/hld_path_composite_main.cpp",
+        "sha256": "be8d7d8bf7003e851aa95f4c4e7df1670b34e32abb51ad86291a1d142b617f50",
+        "result": "Frozen byte-identical"
+      },
+      {
+        "scope": "Verify/current/drivers/hld_vertex_add_path_sum_main.cpp",
+        "sha256": "5982c45aba568debc8799faaf24d1b68642337a1b217150cc99df800909cf354",
+        "result": "Frozen byte-identical"
+      },
+      {
+        "scope": "Verify/current/drivers/hld_jump_main.cpp",
+        "sha256": "54a5ce2cabc31379a9f6ce22d83c7697ae5cdedb90784ce25bcc7332142b32ea",
+        "result": "Frozen byte-identical"
+      },
+      {
+        "scope": "Verify/current/common/fast_io.hpp",
+        "sha256": "291bf8dbc56a1d691f6256fe95b4714183c2cf5d9e55e4bef240e31d1eb178c1",
+        "result": "Frozen byte-identical"
+      }
+    ]
+  },
+  "provenance": "既存CC0の自作実装へ、共通prefix相殺・private接続・両端foldを独立に実装。公式generatorの外部本文は/tmpに限り、配布証拠へ含めない。",
+  "sources": {
+    "Graph/Heavy_Light_Decomposition.cpp": {
+      "sha256": "70047d938f6050f09c6048809db580d061f2c40d1e7c5950cfb695b4ab9906ba",
+      "bytes": 44143
+    },
+    "DataStructure/Fenwick_Tree.cpp": {
+      "sha256": "1db7ef69f0119b197800b53f5dd33e0e98c937202fc0e7be49cc6109d380f58e",
+      "bytes": 9050
+    },
+    "Document/heavy_light_decomposition.md": {
+      "sha256": "dcd945bf34ff0cc640648244ca9e0608613a081a541374c7c657191d78c10da5",
+      "bytes": 14100
+    },
+    "Examples/heavy_light_decomposition_example.cpp": {
+      "sha256": "e739bb47790ea5f82dda0847d7aa1752c330b22e12f2a546a766a6769caffadc",
+      "bytes": 3643
+    },
+    "Verify/current/tests/hld_fenwick_path_test.cpp": {
+      "sha256": "3173cf37b569424e2743bab4970d61ee43c4c55ecf667ea28480cc433ffc45aa",
+      "bytes": 8007
+    },
+    "Verify/current/tests/hld_owned_test.cpp": {
+      "sha256": "006d1ff0c67502b17937d6b7ff67773ece397c9cf7d6ef299c314c6f5e79e59c",
+      "bytes": 17968
+    },
+    "Verify/current/tests/hld_owned_allocation_test.cpp": {
+      "sha256": "906efe16c4e3d6655860719cdd5de367d0b326dec39f4cbf0ac7d450eecec966",
+      "bytes": 3559
+    },
+    "Verify/current/drivers/hld_path_prod_main.cpp": {
+      "sha256": "150248b3e34c17e391fc96f4ca16214d71d8143ab508a898dbf6bf3eec98d7a8",
+      "bytes": 619
+    },
+    "Verify/current/drivers/hld_path_composite_main.cpp": {
+      "sha256": "be8d7d8bf7003e851aa95f4c4e7df1670b34e32abb51ad86291a1d142b617f50",
+      "bytes": 1065
+    }
+  },
+  "evidence": {
+    "path": "Audit/data/performance-hld-owned-2026-11-05.zip",
+    "sha256": "11961545326f9ff8a6b150080680afa8a651cad3ed88e3460b1ba77d8856985b",
+    "entries": 278
+  },
+  "affected_judgement_records": [
+    "fenwick_tree",
+    "hld_jump",
+    "hld_vertex_add_path_sum",
+    "hld_path_prod",
+    "hld_path_composite"
+  ],
+  "required_resubmission": [
+    "hld_path_prod",
+    "hld_path_composite"
+  ]
+}

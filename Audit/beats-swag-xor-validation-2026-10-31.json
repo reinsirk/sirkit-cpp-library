@@ -1,0 +1,4220 @@
+{
+  "date": "2026-10-31",
+  "status": "all_local_checks_passed",
+  "online_status": "新規・未提出。オンラインACを意味しない。",
+  "sources": {
+    "DataStructure/Segment_Tree_Beats.cpp": "5b332c567f2b0f12f32348bfabc3e6e4da20fccf8d4cd35bb7c960f75f494c64",
+    "DataStructure/Sliding_Window_Aggregation.cpp": "a56213905d46763e4b79fbfa7cdb3046735c7a1bb43847efbe5660d69d66a90e",
+    "Math/Xor_Basis.cpp": "85473d40f0c38dd526d69287d2e7c85e93466d25714c5c169f81936e0d0bc421"
+  },
+  "checked_input_sha256": {
+    "Audit/beats-swag-xor-provenance-2026-10-31.json": "7cdb0b0d5dcd7f5755b0a0da7776eadcc97b741223470789e6073c7d80c5b959",
+    "DataStructure/Segment_Tree_Beats.cpp": "5b332c567f2b0f12f32348bfabc3e6e4da20fccf8d4cd35bb7c960f75f494c64",
+    "DataStructure/Sliding_Window_Aggregation.cpp": "a56213905d46763e4b79fbfa7cdb3046735c7a1bb43847efbe5660d69d66a90e",
+    "Document/segment_tree_beats.md": "9f06df848b0eda67c1bc3fdcac41086089e5a0895e98298b678e8e9d776835ef",
+    "Document/sliding_window_aggregation.md": "93350c993e31dbb584d0342fcd2cf8de498a21692dd56fc9729932540200c3a1",
+    "Document/xor_basis.md": "d985d645ac60c4e3a9f41287bb6d551ab653d0376ee41142e7576900b01840b0",
+    "Examples/segment_tree_beats_example.cpp": "c02a4bd360d5c5b3bf044c90176077b3da184b8c13096b8f311154d2f6349972",
+    "Examples/sliding_window_aggregation_example.cpp": "d78e80b180039dcd2362317b0f9828fd441c566833209ed47162838a4427a01b",
+    "Examples/xor_basis_example.cpp": "fd201726fe604ca6023752a37a9e4a590497cf0487994412bcc97fb0a5d38f83",
+    "Math/Xor_Basis.cpp": "85473d40f0c38dd526d69287d2e7c85e93466d25714c5c169f81936e0d0bc421",
+    "Verify/current/common/fast_io.hpp": "291bf8dbc56a1d691f6256fe95b4714183c2cf5d9e55e4bef240e31d1eb178c1",
+    "Verify/current/drivers/segment_tree_beats_main.cpp": "88a7f9daee829ca24f1a69d27a61b9c08d91ea5c5ee802b1b8f230b4e59c7a1e",
+    "Verify/current/drivers/sliding_window_aggregation_main.cpp": "4ecc4a1a5e574443d8da2b332aa7ee0f21d1f5947b8067c19938becabe46933f",
+    "Verify/current/drivers/xor_basis_main.cpp": "1f0a7c62f8ed903ef1911f2321cffde9a010e24b102370e81595187e8c5ec055",
+    "Verify/current/tests/beats_swag_driver_reference_test.py": "d4ce98534d1d41274b813b094d76a697935a5b584f7e73a584a8fdba73ef2c59",
+    "Verify/current/tests/beats_swag_exception_test.cpp": "387569ec2889100d10f9f3240f09283e906a02beef47d880aad2632194ce435f",
+    "Verify/current/tests/beats_swag_reference_test.cpp": "2982f5467020841bd6439c5550b9e903ffa4a00eb0b9376e0487f9742b20bdb0",
+    "Verify/current/tests/beats_wide_reference_test.cpp": "84a3184e324ab0029fb66fc48a54c188a4824e172b9f3a2e8e1a279ba30dcd95",
+    "Verify/current/tests/xor_basis_reference_test.cpp": "dd70df127af440978736d838c37df64c11c48a0f95641974ffe441748a9f2afd"
+  },
+  "scope": "通常版3本のみ。共有layout/README/manifest/generator/ZIP/Variants/Fastは親が統合。",
+  "environment": {
+    "language": "C++23",
+    "compiler_paths": [
+      "/usr/bin/g++",
+      "/usr/bin/clang++"
+    ],
+    "compiler_versions": "GCC 15.2 / Clang 21（親指定環境）",
+    "clang_gcc_install_dir": "/usr/lib/gcc/x86_64-linux-gnu/15",
+    "cpu_affinity": 8,
+    "asan_options": "detect_leaks=0",
+    "ubsan_options": "halt_on_error=1:print_stacktrace=1",
+    "sanitizer_note": "LSanのptrace依存検査を使わず、通常所有の確保残数・要素残数を別fixtureで検査。"
+  },
+  "matrix": {
+    "configuration_count": 24,
+    "fixture_count": 4,
+    "total_successful_fixture_executions": 96,
+    "configuration_description": "GCC/Clang × 検査有/無 × 128bit拡張/標準2ワード × 既定CPU/-march=native の16構成、および既定CPUのGCC/Clang × 検査有/無 × 拡張/標準2ワードでASan+UBSanを用いた8構成。",
+    "normal_live0_successful_configurations": 24
+  },
+  "independent_fixtures": {
+    "beats_swag_reference_test.cpp": {
+      "beats_random": "固定seed 350列×1100操作。3列に1列はint64全域の乱数。独立vector逐次参照と各区間の128bit和・min/maxを比較。",
+      "beats_exhaustive": "長さ2、初期値5通りずつ、45種類の更新2回の全組合せ50625例。各段階の全区間を比較。",
+      "beats_boundaries": "空、単要素、INT64_MIN/MAX、桁あふれを起こす和/加算、64bitを超えて累積する遅延、set/reset/clear/copy/move/self-assignment。",
+      "swag": "固定seed 30000操作を非可換な文字列連結と独立deque参照で比較。bool、alias push、状態付き演算、空操作検査、コピー/ムーブ/再利用も確認。"
+    },
+    "beats_swag_exception_test.cpp": {
+      "normal_ownership": "確保失敗・値コピー失敗・演算失敗の予算を変えて確認。通常所有のnormal_live0=0とTracked要素残数0を各構成でassert。",
+      "beats": "reset/copy assignment/valuesの確保失敗時に元の列を保持。更新と範囲取得は確保を禁止して成功。",
+      "swag": "push/pop/transfer/copy/all_prodの例外時に元のキューの値・順序・積を維持。",
+      "xor": "全APIを動的確保禁止で確認。"
+    },
+    "beats_wide_reference_test.cpp": {
+      "cases": 250000,
+      "reference": "標準2ワードの加減算・符号・比較・乗算・int64狭め変換を、独立__int128参照と3桁の基数2^42再構成に照合。テスト参照のみ拡張を使用し、ライブラリの標準経路を強制。"
+    },
+    "xor_basis_reference_test.cpp": {
+      "cases": 1300,
+      "reference": "長さ0..10の入力の全部分集合を列挙。相異なるXORの集合と非空XORの集合を別々に作り、insert/merge/contains/contains_nonempty/min/max/kth/rank/非空0を照合。",
+      "rank64": "64個の単位基底、50000個のuint64全域順位、kth範囲外/0の入力/自己結合/clear/swap/copy/moveを確認。"
+    }
+  },
+  "driver_summary": {
+    "configurations": 16,
+    "total_official_and_independent_cases": 4864,
+    "per_configuration": "Beats101例（公式1+独立100）、SWAG101例（公式1+独立100）、XOR102例（公式2+独立100）。",
+    "source_policy": "既存prepare_verify.renderで本体と共通高速入出力を埋め込み、依存が残らない提出ソースを生成。既定で先頭SKIP_RUNTIME_CHECKS、検査有効も別ビルド。mainは順番にAPIを呼ぶだけ。",
+    "reference_policy": "BeatsはPython listの逐次更新、SWAGは各アフィン写像を順に適用、XORは両側非空の全部分集合を列挙。"
+  },
+  "example_runs": 24,
+  "standalone_builds": 6,
+  "performance_claim": "速度比較は実施していない。fixtureのwall_secondsは検証実行記録で、他実装との速度の主張に使わない。",
+  "cpp_fixture_results": [
+    {
+      "name": "gcc_checked_extension_beats_swag_reference",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/beats_swag_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/gcc_checked_extension_beats_swag_reference"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "beats_swag independent reference OK\n",
+      "stderr": "",
+      "wall_seconds": 0.30648425698745996
+    },
+    {
+      "name": "gcc_checked_extension_beats_swag_exception",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/beats_swag_exception_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/gcc_checked_extension_beats_swag_exception"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "normal_live0=0 tracked_live0=0; allocation/copy/op failure OK\n",
+      "stderr": "",
+      "wall_seconds": 0.0029255890112835914
+    },
+    {
+      "name": "gcc_checked_extension_xor_basis_reference",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/xor_basis_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/gcc_checked_extension_xor_basis_reference"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "xor_basis independent subset reference OK\n",
+      "stderr": "",
+      "wall_seconds": 0.5687625819991808
+    },
+    {
+      "name": "gcc_checked_extension_beats_wide_reference",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/beats_wide_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/gcc_checked_extension_beats_wide_reference"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "beats wide arithmetic 250000 independent __int128 comparisons OK\n",
+      "stderr": "",
+      "wall_seconds": 0.10522714999387972
+    },
+    {
+      "name": "gcc_checked_portable_beats_swag_reference",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/beats_swag_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/gcc_checked_portable_beats_swag_reference"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "beats_swag independent reference OK\n",
+      "stderr": "",
+      "wall_seconds": 0.41143918500165455
+    },
+    {
+      "name": "gcc_checked_portable_beats_swag_exception",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/beats_swag_exception_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/gcc_checked_portable_beats_swag_exception"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "normal_live0=0 tracked_live0=0; allocation/copy/op failure OK\n",
+      "stderr": "",
+      "wall_seconds": 0.002579841995611787
+    },
+    {
+      "name": "gcc_checked_portable_xor_basis_reference",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/xor_basis_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/gcc_checked_portable_xor_basis_reference"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "xor_basis independent subset reference OK\n",
+      "stderr": "",
+      "wall_seconds": 0.5680315360077657
+    },
+    {
+      "name": "gcc_checked_portable_beats_wide_reference",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/beats_wide_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/gcc_checked_portable_beats_wide_reference"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "beats wide arithmetic 250000 independent __int128 comparisons OK\n",
+      "stderr": "",
+      "wall_seconds": 0.11577144000330009
+    },
+    {
+      "name": "gcc_skip_extension_beats_swag_reference",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-DSKIP_RUNTIME_CHECKS",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/beats_swag_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/gcc_skip_extension_beats_swag_reference"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "beats_swag independent reference OK\n",
+      "stderr": "",
+      "wall_seconds": 0.29935445002047345
+    },
+    {
+      "name": "gcc_skip_extension_beats_swag_exception",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-DSKIP_RUNTIME_CHECKS",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/beats_swag_exception_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/gcc_skip_extension_beats_swag_exception"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "normal_live0=0 tracked_live0=0; allocation/copy/op failure OK\n",
+      "stderr": "",
+      "wall_seconds": 0.002711468987399712
+    },
+    {
+      "name": "gcc_skip_extension_xor_basis_reference",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-DSKIP_RUNTIME_CHECKS",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/xor_basis_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/gcc_skip_extension_xor_basis_reference"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "xor_basis independent subset reference OK\n",
+      "stderr": "",
+      "wall_seconds": 0.5677699849766213
+    },
+    {
+      "name": "gcc_skip_extension_beats_wide_reference",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-DSKIP_RUNTIME_CHECKS",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/beats_wide_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/gcc_skip_extension_beats_wide_reference"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "beats wide arithmetic 250000 independent __int128 comparisons OK\n",
+      "stderr": "",
+      "wall_seconds": 0.10618608898948878
+    },
+    {
+      "name": "gcc_skip_portable_beats_swag_reference",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-DSKIP_RUNTIME_CHECKS",
+        "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/beats_swag_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/gcc_skip_portable_beats_swag_reference"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "beats_swag independent reference OK\n",
+      "stderr": "",
+      "wall_seconds": 0.41089339699829
+    },
+    {
+      "name": "gcc_skip_portable_beats_swag_exception",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-DSKIP_RUNTIME_CHECKS",
+        "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/beats_swag_exception_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/gcc_skip_portable_beats_swag_exception"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "normal_live0=0 tracked_live0=0; allocation/copy/op failure OK\n",
+      "stderr": "",
+      "wall_seconds": 0.002104487008182332
+    },
+    {
+      "name": "gcc_skip_portable_xor_basis_reference",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-DSKIP_RUNTIME_CHECKS",
+        "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/xor_basis_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/gcc_skip_portable_xor_basis_reference"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "xor_basis independent subset reference OK\n",
+      "stderr": "",
+      "wall_seconds": 0.5676992390071973
+    },
+    {
+      "name": "gcc_skip_portable_beats_wide_reference",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-DSKIP_RUNTIME_CHECKS",
+        "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/beats_wide_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/gcc_skip_portable_beats_wide_reference"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "beats wide arithmetic 250000 independent __int128 comparisons OK\n",
+      "stderr": "",
+      "wall_seconds": 0.11654829999315552
+    },
+    {
+      "name": "gcc_extension_san_beats_swag_reference",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O1",
+        "-g",
+        "-fsanitize=address,undefined",
+        "-fno-omit-frame-pointer",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/beats_swag_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/gcc_extension_san_beats_swag_reference"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "beats_swag independent reference OK\n",
+      "stderr": "",
+      "wall_seconds": 2.984219395002583
+    },
+    {
+      "name": "gcc_extension_san_beats_swag_exception",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O1",
+        "-g",
+        "-fsanitize=address,undefined",
+        "-fno-omit-frame-pointer",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/beats_swag_exception_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/gcc_extension_san_beats_swag_exception"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "normal_live0=0 tracked_live0=0; allocation/copy/op failure OK\n",
+      "stderr": "",
+      "wall_seconds": 0.005989077006233856
+    },
+    {
+      "name": "gcc_extension_san_xor_basis_reference",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O1",
+        "-g",
+        "-fsanitize=address,undefined",
+        "-fno-omit-frame-pointer",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/xor_basis_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/gcc_extension_san_xor_basis_reference"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "xor_basis independent subset reference OK\n",
+      "stderr": "",
+      "wall_seconds": 1.7072718870185781
+    },
+    {
+      "name": "gcc_extension_san_beats_wide_reference",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O1",
+        "-g",
+        "-fsanitize=address,undefined",
+        "-fno-omit-frame-pointer",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/beats_wide_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/gcc_extension_san_beats_wide_reference"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "beats wide arithmetic 250000 independent __int128 comparisons OK\n",
+      "stderr": "",
+      "wall_seconds": 0.31175905899726786
+    },
+    {
+      "name": "gcc_portable_san_beats_swag_reference",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O1",
+        "-g",
+        "-fsanitize=address,undefined",
+        "-fno-omit-frame-pointer",
+        "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/beats_swag_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/gcc_portable_san_beats_swag_reference"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "beats_swag independent reference OK\n",
+      "stderr": "",
+      "wall_seconds": 5.211312191997422
+    },
+    {
+      "name": "gcc_portable_san_beats_swag_exception",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O1",
+        "-g",
+        "-fsanitize=address,undefined",
+        "-fno-omit-frame-pointer",
+        "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/beats_swag_exception_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/gcc_portable_san_beats_swag_exception"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "normal_live0=0 tracked_live0=0; allocation/copy/op failure OK\n",
+      "stderr": "",
+      "wall_seconds": 0.007042112003546208
+    },
+    {
+      "name": "gcc_portable_san_xor_basis_reference",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O1",
+        "-g",
+        "-fsanitize=address,undefined",
+        "-fno-omit-frame-pointer",
+        "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/xor_basis_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/gcc_portable_san_xor_basis_reference"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "xor_basis independent subset reference OK\n",
+      "stderr": "",
+      "wall_seconds": 1.707973406999372
+    },
+    {
+      "name": "gcc_portable_san_beats_wide_reference",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O1",
+        "-g",
+        "-fsanitize=address,undefined",
+        "-fno-omit-frame-pointer",
+        "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/beats_wide_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/gcc_portable_san_beats_wide_reference"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "beats wide arithmetic 250000 independent __int128 comparisons OK\n",
+      "stderr": "",
+      "wall_seconds": 1.894311579002533
+    },
+    {
+      "name": "clang_checked_extension_beats_swag_reference",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/beats_swag_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/clang_checked_extension_beats_swag_reference"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "beats_swag independent reference OK\n",
+      "stderr": "",
+      "wall_seconds": 0.33868147199973464
+    },
+    {
+      "name": "clang_checked_extension_beats_swag_exception",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/beats_swag_exception_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/clang_checked_extension_beats_swag_exception"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "normal_live0=0 tracked_live0=0; allocation/copy/op failure OK\n",
+      "stderr": "",
+      "wall_seconds": 0.0026228789938613772
+    },
+    {
+      "name": "clang_checked_extension_xor_basis_reference",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/xor_basis_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/clang_checked_extension_xor_basis_reference"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "xor_basis independent subset reference OK\n",
+      "stderr": "",
+      "wall_seconds": 0.5778154539875686
+    },
+    {
+      "name": "clang_checked_extension_beats_wide_reference",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/beats_wide_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/clang_checked_extension_beats_wide_reference"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "beats wide arithmetic 250000 independent __int128 comparisons OK\n",
+      "stderr": "",
+      "wall_seconds": 0.10546586400596425
+    },
+    {
+      "name": "clang_checked_portable_beats_swag_reference",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/beats_swag_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/clang_checked_portable_beats_swag_reference"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "beats_swag independent reference OK\n",
+      "stderr": "",
+      "wall_seconds": 0.3866806430160068
+    },
+    {
+      "name": "clang_checked_portable_beats_swag_exception",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/beats_swag_exception_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/clang_checked_portable_beats_swag_exception"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "normal_live0=0 tracked_live0=0; allocation/copy/op failure OK\n",
+      "stderr": "",
+      "wall_seconds": 0.0025288350007031113
+    },
+    {
+      "name": "clang_checked_portable_xor_basis_reference",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/xor_basis_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/clang_checked_portable_xor_basis_reference"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "xor_basis independent subset reference OK\n",
+      "stderr": "",
+      "wall_seconds": 0.5770400850160513
+    },
+    {
+      "name": "clang_checked_portable_beats_wide_reference",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/beats_wide_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/clang_checked_portable_beats_wide_reference"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "beats wide arithmetic 250000 independent __int128 comparisons OK\n",
+      "stderr": "",
+      "wall_seconds": 0.11042559999623336
+    },
+    {
+      "name": "clang_skip_extension_beats_swag_reference",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-DSKIP_RUNTIME_CHECKS",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/beats_swag_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/clang_skip_extension_beats_swag_reference"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "beats_swag independent reference OK\n",
+      "stderr": "",
+      "wall_seconds": 0.32789125500130467
+    },
+    {
+      "name": "clang_skip_extension_beats_swag_exception",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-DSKIP_RUNTIME_CHECKS",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/beats_swag_exception_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/clang_skip_extension_beats_swag_exception"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "normal_live0=0 tracked_live0=0; allocation/copy/op failure OK\n",
+      "stderr": "",
+      "wall_seconds": 0.002052705007372424
+    },
+    {
+      "name": "clang_skip_extension_xor_basis_reference",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-DSKIP_RUNTIME_CHECKS",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/xor_basis_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/clang_skip_extension_xor_basis_reference"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "xor_basis independent subset reference OK\n",
+      "stderr": "",
+      "wall_seconds": 0.5797439379966818
+    },
+    {
+      "name": "clang_skip_extension_beats_wide_reference",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-DSKIP_RUNTIME_CHECKS",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/beats_wide_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/clang_skip_extension_beats_wide_reference"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "beats wide arithmetic 250000 independent __int128 comparisons OK\n",
+      "stderr": "",
+      "wall_seconds": 0.1054215110198129
+    },
+    {
+      "name": "clang_skip_portable_beats_swag_reference",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-DSKIP_RUNTIME_CHECKS",
+        "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/beats_swag_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/clang_skip_portable_beats_swag_reference"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "beats_swag independent reference OK\n",
+      "stderr": "",
+      "wall_seconds": 0.3851615150051657
+    },
+    {
+      "name": "clang_skip_portable_beats_swag_exception",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-DSKIP_RUNTIME_CHECKS",
+        "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/beats_swag_exception_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/clang_skip_portable_beats_swag_exception"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "normal_live0=0 tracked_live0=0; allocation/copy/op failure OK\n",
+      "stderr": "",
+      "wall_seconds": 0.002440412004943937
+    },
+    {
+      "name": "clang_skip_portable_xor_basis_reference",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-DSKIP_RUNTIME_CHECKS",
+        "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/xor_basis_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/clang_skip_portable_xor_basis_reference"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "xor_basis independent subset reference OK\n",
+      "stderr": "",
+      "wall_seconds": 0.5778829499904532
+    },
+    {
+      "name": "clang_skip_portable_beats_wide_reference",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-DSKIP_RUNTIME_CHECKS",
+        "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/beats_wide_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/clang_skip_portable_beats_wide_reference"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "beats wide arithmetic 250000 independent __int128 comparisons OK\n",
+      "stderr": "",
+      "wall_seconds": 0.11074603899032809
+    },
+    {
+      "name": "clang_extension_san_beats_swag_reference",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O1",
+        "-g",
+        "-fsanitize=address,undefined",
+        "-fno-omit-frame-pointer",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/beats_swag_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/clang_extension_san_beats_swag_reference"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "beats_swag independent reference OK\n",
+      "stderr": "",
+      "wall_seconds": 3.9475214810227044
+    },
+    {
+      "name": "clang_extension_san_beats_swag_exception",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O1",
+        "-g",
+        "-fsanitize=address,undefined",
+        "-fno-omit-frame-pointer",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/beats_swag_exception_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/clang_extension_san_beats_swag_exception"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "normal_live0=0 tracked_live0=0; allocation/copy/op failure OK\n",
+      "stderr": "",
+      "wall_seconds": 0.005670903017744422
+    },
+    {
+      "name": "clang_extension_san_xor_basis_reference",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O1",
+        "-g",
+        "-fsanitize=address,undefined",
+        "-fno-omit-frame-pointer",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/xor_basis_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/clang_extension_san_xor_basis_reference"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "xor_basis independent subset reference OK\n",
+      "stderr": "",
+      "wall_seconds": 0.8516978469851892
+    },
+    {
+      "name": "clang_extension_san_beats_wide_reference",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O1",
+        "-g",
+        "-fsanitize=address,undefined",
+        "-fno-omit-frame-pointer",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/beats_wide_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/clang_extension_san_beats_wide_reference"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "beats wide arithmetic 250000 independent __int128 comparisons OK\n",
+      "stderr": "",
+      "wall_seconds": 0.30223612301051617
+    },
+    {
+      "name": "clang_portable_san_beats_swag_reference",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O1",
+        "-g",
+        "-fsanitize=address,undefined",
+        "-fno-omit-frame-pointer",
+        "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/beats_swag_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/clang_portable_san_beats_swag_reference"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "beats_swag independent reference OK\n",
+      "stderr": "",
+      "wall_seconds": 76.18532008098555
+    },
+    {
+      "name": "clang_portable_san_beats_swag_exception",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O1",
+        "-g",
+        "-fsanitize=address,undefined",
+        "-fno-omit-frame-pointer",
+        "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/beats_swag_exception_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/clang_portable_san_beats_swag_exception"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "normal_live0=0 tracked_live0=0; allocation/copy/op failure OK\n",
+      "stderr": "",
+      "wall_seconds": 0.005661454983055592
+    },
+    {
+      "name": "clang_portable_san_xor_basis_reference",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O1",
+        "-g",
+        "-fsanitize=address,undefined",
+        "-fno-omit-frame-pointer",
+        "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/xor_basis_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/clang_portable_san_xor_basis_reference"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "xor_basis independent subset reference OK\n",
+      "stderr": "",
+      "wall_seconds": 0.854410679981811
+    },
+    {
+      "name": "clang_portable_san_beats_wide_reference",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O1",
+        "-g",
+        "-fsanitize=address,undefined",
+        "-fno-omit-frame-pointer",
+        "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/beats_wide_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/clang_portable_san_beats_wide_reference"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "beats wide arithmetic 250000 independent __int128 comparisons OK\n",
+      "stderr": "",
+      "wall_seconds": 14.281019461981487
+    },
+    {
+      "name": "gcc_checked_extension_native_cpu_beats_swag_reference",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-march=native",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/beats_swag_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/gcc_checked_extension_native_cpu_beats_swag_reference"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "beats_swag independent reference OK\n",
+      "stderr": "",
+      "wall_seconds": 0.3099217620037962
+    },
+    {
+      "name": "gcc_checked_extension_native_cpu_beats_swag_exception",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-march=native",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/beats_swag_exception_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/gcc_checked_extension_native_cpu_beats_swag_exception"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "normal_live0=0 tracked_live0=0; allocation/copy/op failure OK\n",
+      "stderr": "",
+      "wall_seconds": 0.0023230900114867836
+    },
+    {
+      "name": "gcc_checked_extension_native_cpu_xor_basis_reference",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-march=native",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/xor_basis_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/gcc_checked_extension_native_cpu_xor_basis_reference"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "xor_basis independent subset reference OK\n",
+      "stderr": "",
+      "wall_seconds": 0.5655479450069834
+    },
+    {
+      "name": "gcc_checked_extension_native_cpu_beats_wide_reference",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-march=native",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/beats_wide_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/gcc_checked_extension_native_cpu_beats_wide_reference"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "beats wide arithmetic 250000 independent __int128 comparisons OK\n",
+      "stderr": "",
+      "wall_seconds": 0.10355386999435723
+    },
+    {
+      "name": "gcc_checked_portable_native_cpu_beats_swag_reference",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-march=native",
+        "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/beats_swag_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/gcc_checked_portable_native_cpu_beats_swag_reference"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "beats_swag independent reference OK\n",
+      "stderr": "",
+      "wall_seconds": 0.4086938189866487
+    },
+    {
+      "name": "gcc_checked_portable_native_cpu_beats_swag_exception",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-march=native",
+        "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/beats_swag_exception_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/gcc_checked_portable_native_cpu_beats_swag_exception"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "normal_live0=0 tracked_live0=0; allocation/copy/op failure OK\n",
+      "stderr": "",
+      "wall_seconds": 0.002626643021358177
+    },
+    {
+      "name": "gcc_checked_portable_native_cpu_xor_basis_reference",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-march=native",
+        "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/xor_basis_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/gcc_checked_portable_native_cpu_xor_basis_reference"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "xor_basis independent subset reference OK\n",
+      "stderr": "",
+      "wall_seconds": 0.5658259420015384
+    },
+    {
+      "name": "gcc_checked_portable_native_cpu_beats_wide_reference",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-march=native",
+        "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/beats_wide_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/gcc_checked_portable_native_cpu_beats_wide_reference"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "beats wide arithmetic 250000 independent __int128 comparisons OK\n",
+      "stderr": "",
+      "wall_seconds": 0.1146545439842157
+    },
+    {
+      "name": "gcc_skip_extension_native_cpu_beats_swag_reference",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-march=native",
+        "-DSKIP_RUNTIME_CHECKS",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/beats_swag_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/gcc_skip_extension_native_cpu_beats_swag_reference"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "beats_swag independent reference OK\n",
+      "stderr": "",
+      "wall_seconds": 0.3027178420161363
+    },
+    {
+      "name": "gcc_skip_extension_native_cpu_beats_swag_exception",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-march=native",
+        "-DSKIP_RUNTIME_CHECKS",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/beats_swag_exception_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/gcc_skip_extension_native_cpu_beats_swag_exception"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "normal_live0=0 tracked_live0=0; allocation/copy/op failure OK\n",
+      "stderr": "",
+      "wall_seconds": 0.002224561001639813
+    },
+    {
+      "name": "gcc_skip_extension_native_cpu_xor_basis_reference",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-march=native",
+        "-DSKIP_RUNTIME_CHECKS",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/xor_basis_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/gcc_skip_extension_native_cpu_xor_basis_reference"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "xor_basis independent subset reference OK\n",
+      "stderr": "",
+      "wall_seconds": 0.5653726149757858
+    },
+    {
+      "name": "gcc_skip_extension_native_cpu_beats_wide_reference",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-march=native",
+        "-DSKIP_RUNTIME_CHECKS",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/beats_wide_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/gcc_skip_extension_native_cpu_beats_wide_reference"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "beats wide arithmetic 250000 independent __int128 comparisons OK\n",
+      "stderr": "",
+      "wall_seconds": 0.10349435199168511
+    },
+    {
+      "name": "gcc_skip_portable_native_cpu_beats_swag_reference",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-march=native",
+        "-DSKIP_RUNTIME_CHECKS",
+        "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/beats_swag_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/gcc_skip_portable_native_cpu_beats_swag_reference"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "beats_swag independent reference OK\n",
+      "stderr": "",
+      "wall_seconds": 0.37071642800583504
+    },
+    {
+      "name": "gcc_skip_portable_native_cpu_beats_swag_exception",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-march=native",
+        "-DSKIP_RUNTIME_CHECKS",
+        "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/beats_swag_exception_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/gcc_skip_portable_native_cpu_beats_swag_exception"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "normal_live0=0 tracked_live0=0; allocation/copy/op failure OK\n",
+      "stderr": "",
+      "wall_seconds": 0.002715467009693384
+    },
+    {
+      "name": "gcc_skip_portable_native_cpu_xor_basis_reference",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-march=native",
+        "-DSKIP_RUNTIME_CHECKS",
+        "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/xor_basis_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/gcc_skip_portable_native_cpu_xor_basis_reference"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "xor_basis independent subset reference OK\n",
+      "stderr": "",
+      "wall_seconds": 0.5653169160068501
+    },
+    {
+      "name": "gcc_skip_portable_native_cpu_beats_wide_reference",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-march=native",
+        "-DSKIP_RUNTIME_CHECKS",
+        "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/beats_wide_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/gcc_skip_portable_native_cpu_beats_wide_reference"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "beats wide arithmetic 250000 independent __int128 comparisons OK\n",
+      "stderr": "",
+      "wall_seconds": 0.11498054701951332
+    },
+    {
+      "name": "gcc_extension_san_skip_beats_swag_reference",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O1",
+        "-g",
+        "-fsanitize=address,undefined",
+        "-fno-omit-frame-pointer",
+        "-DSKIP_RUNTIME_CHECKS",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/beats_swag_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/gcc_extension_san_skip_beats_swag_reference"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "beats_swag independent reference OK\n",
+      "stderr": "",
+      "wall_seconds": 2.966166226018686
+    },
+    {
+      "name": "gcc_extension_san_skip_beats_swag_exception",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O1",
+        "-g",
+        "-fsanitize=address,undefined",
+        "-fno-omit-frame-pointer",
+        "-DSKIP_RUNTIME_CHECKS",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/beats_swag_exception_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/gcc_extension_san_skip_beats_swag_exception"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "normal_live0=0 tracked_live0=0; allocation/copy/op failure OK\n",
+      "stderr": "",
+      "wall_seconds": 0.006103230989538133
+    },
+    {
+      "name": "gcc_extension_san_skip_xor_basis_reference",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O1",
+        "-g",
+        "-fsanitize=address,undefined",
+        "-fno-omit-frame-pointer",
+        "-DSKIP_RUNTIME_CHECKS",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/xor_basis_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/gcc_extension_san_skip_xor_basis_reference"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "xor_basis independent subset reference OK\n",
+      "stderr": "",
+      "wall_seconds": 1.6924786180024967
+    },
+    {
+      "name": "gcc_extension_san_skip_beats_wide_reference",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O1",
+        "-g",
+        "-fsanitize=address,undefined",
+        "-fno-omit-frame-pointer",
+        "-DSKIP_RUNTIME_CHECKS",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/beats_wide_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/gcc_extension_san_skip_beats_wide_reference"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "beats wide arithmetic 250000 independent __int128 comparisons OK\n",
+      "stderr": "",
+      "wall_seconds": 0.3196762680017855
+    },
+    {
+      "name": "gcc_portable_san_skip_beats_swag_reference",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O1",
+        "-g",
+        "-fsanitize=address,undefined",
+        "-fno-omit-frame-pointer",
+        "-DSKIP_RUNTIME_CHECKS",
+        "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/beats_swag_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/gcc_portable_san_skip_beats_swag_reference"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "beats_swag independent reference OK\n",
+      "stderr": "",
+      "wall_seconds": 5.11665364500368
+    },
+    {
+      "name": "gcc_portable_san_skip_beats_swag_exception",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O1",
+        "-g",
+        "-fsanitize=address,undefined",
+        "-fno-omit-frame-pointer",
+        "-DSKIP_RUNTIME_CHECKS",
+        "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/beats_swag_exception_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/gcc_portable_san_skip_beats_swag_exception"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "normal_live0=0 tracked_live0=0; allocation/copy/op failure OK\n",
+      "stderr": "",
+      "wall_seconds": 0.006030096992617473
+    },
+    {
+      "name": "gcc_portable_san_skip_xor_basis_reference",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O1",
+        "-g",
+        "-fsanitize=address,undefined",
+        "-fno-omit-frame-pointer",
+        "-DSKIP_RUNTIME_CHECKS",
+        "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/xor_basis_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/gcc_portable_san_skip_xor_basis_reference"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "xor_basis independent subset reference OK\n",
+      "stderr": "",
+      "wall_seconds": 1.6997173280105926
+    },
+    {
+      "name": "gcc_portable_san_skip_beats_wide_reference",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O1",
+        "-g",
+        "-fsanitize=address,undefined",
+        "-fno-omit-frame-pointer",
+        "-DSKIP_RUNTIME_CHECKS",
+        "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/beats_wide_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/gcc_portable_san_skip_beats_wide_reference"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "beats wide arithmetic 250000 independent __int128 comparisons OK\n",
+      "stderr": "",
+      "wall_seconds": 1.894992713991087
+    },
+    {
+      "name": "clang_checked_extension_native_cpu_beats_swag_reference",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-march=native",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/beats_swag_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/clang_checked_extension_native_cpu_beats_swag_reference"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "beats_swag independent reference OK\n",
+      "stderr": "",
+      "wall_seconds": 0.3470427280117292
+    },
+    {
+      "name": "clang_checked_extension_native_cpu_beats_swag_exception",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-march=native",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/beats_swag_exception_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/clang_checked_extension_native_cpu_beats_swag_exception"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "normal_live0=0 tracked_live0=0; allocation/copy/op failure OK\n",
+      "stderr": "",
+      "wall_seconds": 0.0025479600008111447
+    },
+    {
+      "name": "clang_checked_extension_native_cpu_xor_basis_reference",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-march=native",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/xor_basis_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/clang_checked_extension_native_cpu_xor_basis_reference"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "xor_basis independent subset reference OK\n",
+      "stderr": "",
+      "wall_seconds": 0.5111507559777237
+    },
+    {
+      "name": "clang_checked_extension_native_cpu_beats_wide_reference",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-march=native",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/beats_wide_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/clang_checked_extension_native_cpu_beats_wide_reference"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "beats wide arithmetic 250000 independent __int128 comparisons OK\n",
+      "stderr": "",
+      "wall_seconds": 0.1060615640017204
+    },
+    {
+      "name": "clang_checked_portable_native_cpu_beats_swag_reference",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-march=native",
+        "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/beats_swag_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/clang_checked_portable_native_cpu_beats_swag_reference"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "beats_swag independent reference OK\n",
+      "stderr": "",
+      "wall_seconds": 0.39423834599438123
+    },
+    {
+      "name": "clang_checked_portable_native_cpu_beats_swag_exception",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-march=native",
+        "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/beats_swag_exception_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/clang_checked_portable_native_cpu_beats_swag_exception"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "normal_live0=0 tracked_live0=0; allocation/copy/op failure OK\n",
+      "stderr": "",
+      "wall_seconds": 0.002606421010568738
+    },
+    {
+      "name": "clang_checked_portable_native_cpu_xor_basis_reference",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-march=native",
+        "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/xor_basis_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/clang_checked_portable_native_cpu_xor_basis_reference"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "xor_basis independent subset reference OK\n",
+      "stderr": "",
+      "wall_seconds": 0.5123732280044351
+    },
+    {
+      "name": "clang_checked_portable_native_cpu_beats_wide_reference",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-march=native",
+        "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/beats_wide_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/clang_checked_portable_native_cpu_beats_wide_reference"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "beats wide arithmetic 250000 independent __int128 comparisons OK\n",
+      "stderr": "",
+      "wall_seconds": 0.11204664999968372
+    },
+    {
+      "name": "clang_skip_extension_native_cpu_beats_swag_reference",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-march=native",
+        "-DSKIP_RUNTIME_CHECKS",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/beats_swag_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/clang_skip_extension_native_cpu_beats_swag_reference"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "beats_swag independent reference OK\n",
+      "stderr": "",
+      "wall_seconds": 0.33283324202056974
+    },
+    {
+      "name": "clang_skip_extension_native_cpu_beats_swag_exception",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-march=native",
+        "-DSKIP_RUNTIME_CHECKS",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/beats_swag_exception_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/clang_skip_extension_native_cpu_beats_swag_exception"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "normal_live0=0 tracked_live0=0; allocation/copy/op failure OK\n",
+      "stderr": "",
+      "wall_seconds": 0.0026535220094956458
+    },
+    {
+      "name": "clang_skip_extension_native_cpu_xor_basis_reference",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-march=native",
+        "-DSKIP_RUNTIME_CHECKS",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/xor_basis_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/clang_skip_extension_native_cpu_xor_basis_reference"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "xor_basis independent subset reference OK\n",
+      "stderr": "",
+      "wall_seconds": 0.512072271987563
+    },
+    {
+      "name": "clang_skip_extension_native_cpu_beats_wide_reference",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-march=native",
+        "-DSKIP_RUNTIME_CHECKS",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/beats_wide_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/clang_skip_extension_native_cpu_beats_wide_reference"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "beats wide arithmetic 250000 independent __int128 comparisons OK\n",
+      "stderr": "",
+      "wall_seconds": 0.10570458401343785
+    },
+    {
+      "name": "clang_skip_portable_native_cpu_beats_swag_reference",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-march=native",
+        "-DSKIP_RUNTIME_CHECKS",
+        "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/beats_swag_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/clang_skip_portable_native_cpu_beats_swag_reference"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "beats_swag independent reference OK\n",
+      "stderr": "",
+      "wall_seconds": 0.37818887099274434
+    },
+    {
+      "name": "clang_skip_portable_native_cpu_beats_swag_exception",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-march=native",
+        "-DSKIP_RUNTIME_CHECKS",
+        "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/beats_swag_exception_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/clang_skip_portable_native_cpu_beats_swag_exception"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "normal_live0=0 tracked_live0=0; allocation/copy/op failure OK\n",
+      "stderr": "",
+      "wall_seconds": 0.002625252993311733
+    },
+    {
+      "name": "clang_skip_portable_native_cpu_xor_basis_reference",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-march=native",
+        "-DSKIP_RUNTIME_CHECKS",
+        "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/xor_basis_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/clang_skip_portable_native_cpu_xor_basis_reference"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "xor_basis independent subset reference OK\n",
+      "stderr": "",
+      "wall_seconds": 0.5141935349965934
+    },
+    {
+      "name": "clang_skip_portable_native_cpu_beats_wide_reference",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-march=native",
+        "-DSKIP_RUNTIME_CHECKS",
+        "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/beats_wide_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/clang_skip_portable_native_cpu_beats_wide_reference"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "beats wide arithmetic 250000 independent __int128 comparisons OK\n",
+      "stderr": "",
+      "wall_seconds": 0.11178696199203841
+    },
+    {
+      "name": "clang_extension_san_skip_beats_swag_reference",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O1",
+        "-g",
+        "-fsanitize=address,undefined",
+        "-fno-omit-frame-pointer",
+        "-DSKIP_RUNTIME_CHECKS",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/beats_swag_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/clang_extension_san_skip_beats_swag_reference"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "beats_swag independent reference OK\n",
+      "stderr": "",
+      "wall_seconds": 3.9573629980150145
+    },
+    {
+      "name": "clang_extension_san_skip_beats_swag_exception",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O1",
+        "-g",
+        "-fsanitize=address,undefined",
+        "-fno-omit-frame-pointer",
+        "-DSKIP_RUNTIME_CHECKS",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/beats_swag_exception_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/clang_extension_san_skip_beats_swag_exception"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "normal_live0=0 tracked_live0=0; allocation/copy/op failure OK\n",
+      "stderr": "",
+      "wall_seconds": 0.005858282995177433
+    },
+    {
+      "name": "clang_extension_san_skip_xor_basis_reference",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O1",
+        "-g",
+        "-fsanitize=address,undefined",
+        "-fno-omit-frame-pointer",
+        "-DSKIP_RUNTIME_CHECKS",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/xor_basis_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/clang_extension_san_skip_xor_basis_reference"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "xor_basis independent subset reference OK\n",
+      "stderr": "",
+      "wall_seconds": 0.854896570002893
+    },
+    {
+      "name": "clang_extension_san_skip_beats_wide_reference",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O1",
+        "-g",
+        "-fsanitize=address,undefined",
+        "-fno-omit-frame-pointer",
+        "-DSKIP_RUNTIME_CHECKS",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/beats_wide_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/clang_extension_san_skip_beats_wide_reference"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "beats wide arithmetic 250000 independent __int128 comparisons OK\n",
+      "stderr": "",
+      "wall_seconds": 0.3006718739925418
+    },
+    {
+      "name": "clang_portable_san_skip_beats_swag_reference",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O1",
+        "-g",
+        "-fsanitize=address,undefined",
+        "-fno-omit-frame-pointer",
+        "-DSKIP_RUNTIME_CHECKS",
+        "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/beats_swag_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/clang_portable_san_skip_beats_swag_reference"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "beats_swag independent reference OK\n",
+      "stderr": "",
+      "wall_seconds": 50.62928258199827
+    },
+    {
+      "name": "clang_portable_san_skip_beats_swag_exception",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O1",
+        "-g",
+        "-fsanitize=address,undefined",
+        "-fno-omit-frame-pointer",
+        "-DSKIP_RUNTIME_CHECKS",
+        "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/beats_swag_exception_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/clang_portable_san_skip_beats_swag_exception"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "normal_live0=0 tracked_live0=0; allocation/copy/op failure OK\n",
+      "stderr": "",
+      "wall_seconds": 0.00597698098863475
+    },
+    {
+      "name": "clang_portable_san_skip_xor_basis_reference",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O1",
+        "-g",
+        "-fsanitize=address,undefined",
+        "-fno-omit-frame-pointer",
+        "-DSKIP_RUNTIME_CHECKS",
+        "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/xor_basis_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/clang_portable_san_skip_xor_basis_reference"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "xor_basis independent subset reference OK\n",
+      "stderr": "",
+      "wall_seconds": 0.8526410740159918
+    },
+    {
+      "name": "clang_portable_san_skip_beats_wide_reference",
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O1",
+        "-g",
+        "-fsanitize=address,undefined",
+        "-fno-omit-frame-pointer",
+        "-DSKIP_RUNTIME_CHECKS",
+        "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/beats_wide_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/clang_portable_san_skip_beats_wide_reference"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "",
+      "run_exit": 0,
+      "stdout": "beats wide arithmetic 250000 independent __int128 comparisons OK\n",
+      "stderr": "",
+      "wall_seconds": 14.34368476900272
+    }
+  ],
+  "driver_example_standalone_results": [
+    {
+      "name": "gcc_checked_extension_default",
+      "command": [
+        "taskset",
+        "-c",
+        "8",
+        "python3",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/beats_swag_driver_reference_test.py",
+        "--compiler",
+        "/usr/bin/g++",
+        "--report",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/drivers_gcc_checked_extension_default.json",
+        "--checked"
+      ],
+      "exit_code": 0,
+      "stdout": "segment_tree_beats 101 official/independent driver cases OK\nsliding_window_aggregation 101 official/independent driver cases OK\nxor_basis 102 official/independent driver cases OK\n",
+      "stderr": ""
+    },
+    {
+      "name": "gcc_checked_extension_native",
+      "command": [
+        "taskset",
+        "-c",
+        "8",
+        "python3",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/beats_swag_driver_reference_test.py",
+        "--compiler",
+        "/usr/bin/g++",
+        "--report",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/drivers_gcc_checked_extension_native.json",
+        "--checked",
+        "--native"
+      ],
+      "exit_code": 0,
+      "stdout": "segment_tree_beats 101 official/independent driver cases OK\nsliding_window_aggregation 101 official/independent driver cases OK\nxor_basis 102 official/independent driver cases OK\n",
+      "stderr": ""
+    },
+    {
+      "name": "gcc_checked_portable_default",
+      "command": [
+        "taskset",
+        "-c",
+        "8",
+        "python3",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/beats_swag_driver_reference_test.py",
+        "--compiler",
+        "/usr/bin/g++",
+        "--report",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/drivers_gcc_checked_portable_default.json",
+        "--checked",
+        "--portable"
+      ],
+      "exit_code": 0,
+      "stdout": "segment_tree_beats 101 official/independent driver cases OK\nsliding_window_aggregation 101 official/independent driver cases OK\nxor_basis 102 official/independent driver cases OK\n",
+      "stderr": ""
+    },
+    {
+      "name": "gcc_checked_portable_native",
+      "command": [
+        "taskset",
+        "-c",
+        "8",
+        "python3",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/beats_swag_driver_reference_test.py",
+        "--compiler",
+        "/usr/bin/g++",
+        "--report",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/drivers_gcc_checked_portable_native.json",
+        "--checked",
+        "--portable",
+        "--native"
+      ],
+      "exit_code": 0,
+      "stdout": "segment_tree_beats 101 official/independent driver cases OK\nsliding_window_aggregation 101 official/independent driver cases OK\nxor_basis 102 official/independent driver cases OK\n",
+      "stderr": ""
+    },
+    {
+      "name": "gcc_skip_extension_default",
+      "command": [
+        "taskset",
+        "-c",
+        "8",
+        "python3",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/beats_swag_driver_reference_test.py",
+        "--compiler",
+        "/usr/bin/g++",
+        "--report",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/drivers_gcc_skip_extension_default.json"
+      ],
+      "exit_code": 0,
+      "stdout": "segment_tree_beats 101 official/independent driver cases OK\nsliding_window_aggregation 101 official/independent driver cases OK\nxor_basis 102 official/independent driver cases OK\n",
+      "stderr": ""
+    },
+    {
+      "name": "gcc_skip_extension_native",
+      "command": [
+        "taskset",
+        "-c",
+        "8",
+        "python3",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/beats_swag_driver_reference_test.py",
+        "--compiler",
+        "/usr/bin/g++",
+        "--report",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/drivers_gcc_skip_extension_native.json",
+        "--native"
+      ],
+      "exit_code": 0,
+      "stdout": "segment_tree_beats 101 official/independent driver cases OK\nsliding_window_aggregation 101 official/independent driver cases OK\nxor_basis 102 official/independent driver cases OK\n",
+      "stderr": ""
+    },
+    {
+      "name": "gcc_skip_portable_default",
+      "command": [
+        "taskset",
+        "-c",
+        "8",
+        "python3",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/beats_swag_driver_reference_test.py",
+        "--compiler",
+        "/usr/bin/g++",
+        "--report",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/drivers_gcc_skip_portable_default.json",
+        "--portable"
+      ],
+      "exit_code": 0,
+      "stdout": "segment_tree_beats 101 official/independent driver cases OK\nsliding_window_aggregation 101 official/independent driver cases OK\nxor_basis 102 official/independent driver cases OK\n",
+      "stderr": ""
+    },
+    {
+      "name": "gcc_skip_portable_native",
+      "command": [
+        "taskset",
+        "-c",
+        "8",
+        "python3",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/beats_swag_driver_reference_test.py",
+        "--compiler",
+        "/usr/bin/g++",
+        "--report",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/drivers_gcc_skip_portable_native.json",
+        "--portable",
+        "--native"
+      ],
+      "exit_code": 0,
+      "stdout": "segment_tree_beats 101 official/independent driver cases OK\nsliding_window_aggregation 101 official/independent driver cases OK\nxor_basis 102 official/independent driver cases OK\n",
+      "stderr": ""
+    },
+    {
+      "example": "Examples/segment_tree_beats_example.cpp",
+      "compiler": "/usr/bin/g++",
+      "checked": true,
+      "portable": false,
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "/home/reinsirk/Atcoder_Env/Examples/segment_tree_beats_example.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/example_gcc_True_False_segment_tree_beats"
+      ],
+      "exit_code": 0,
+      "stdout": "4 7 -1 4 \n"
+    },
+    {
+      "example": "Examples/sliding_window_aggregation_example.cpp",
+      "compiler": "/usr/bin/g++",
+      "checked": true,
+      "portable": false,
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "/home/reinsirk/Atcoder_Env/Examples/sliding_window_aggregation_example.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/example_gcc_True_False_sliding_window_aggregation"
+      ],
+      "exit_code": 0,
+      "stdout": "abcdef\ncdef\n"
+    },
+    {
+      "example": "Examples/xor_basis_example.cpp",
+      "compiler": "/usr/bin/g++",
+      "checked": true,
+      "portable": false,
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "/home/reinsirk/Atcoder_Env/Examples/xor_basis_example.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/example_gcc_True_False_xor_basis"
+      ],
+      "exit_code": 0,
+      "stdout": "6\n5\n"
+    },
+    {
+      "example": "Examples/segment_tree_beats_example.cpp",
+      "compiler": "/usr/bin/g++",
+      "checked": true,
+      "portable": true,
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+        "/home/reinsirk/Atcoder_Env/Examples/segment_tree_beats_example.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/example_gcc_True_True_segment_tree_beats"
+      ],
+      "exit_code": 0,
+      "stdout": "4 7 -1 4 \n"
+    },
+    {
+      "example": "Examples/sliding_window_aggregation_example.cpp",
+      "compiler": "/usr/bin/g++",
+      "checked": true,
+      "portable": true,
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+        "/home/reinsirk/Atcoder_Env/Examples/sliding_window_aggregation_example.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/example_gcc_True_True_sliding_window_aggregation"
+      ],
+      "exit_code": 0,
+      "stdout": "abcdef\ncdef\n"
+    },
+    {
+      "example": "Examples/xor_basis_example.cpp",
+      "compiler": "/usr/bin/g++",
+      "checked": true,
+      "portable": true,
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+        "/home/reinsirk/Atcoder_Env/Examples/xor_basis_example.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/example_gcc_True_True_xor_basis"
+      ],
+      "exit_code": 0,
+      "stdout": "6\n5\n"
+    },
+    {
+      "example": "Examples/segment_tree_beats_example.cpp",
+      "compiler": "/usr/bin/g++",
+      "checked": false,
+      "portable": false,
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-DSKIP_RUNTIME_CHECKS",
+        "/home/reinsirk/Atcoder_Env/Examples/segment_tree_beats_example.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/example_gcc_False_False_segment_tree_beats"
+      ],
+      "exit_code": 0,
+      "stdout": "4 7 -1 4 \n"
+    },
+    {
+      "example": "Examples/sliding_window_aggregation_example.cpp",
+      "compiler": "/usr/bin/g++",
+      "checked": false,
+      "portable": false,
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-DSKIP_RUNTIME_CHECKS",
+        "/home/reinsirk/Atcoder_Env/Examples/sliding_window_aggregation_example.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/example_gcc_False_False_sliding_window_aggregation"
+      ],
+      "exit_code": 0,
+      "stdout": "abcdef\ncdef\n"
+    },
+    {
+      "example": "Examples/xor_basis_example.cpp",
+      "compiler": "/usr/bin/g++",
+      "checked": false,
+      "portable": false,
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-DSKIP_RUNTIME_CHECKS",
+        "/home/reinsirk/Atcoder_Env/Examples/xor_basis_example.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/example_gcc_False_False_xor_basis"
+      ],
+      "exit_code": 0,
+      "stdout": "6\n5\n"
+    },
+    {
+      "example": "Examples/segment_tree_beats_example.cpp",
+      "compiler": "/usr/bin/g++",
+      "checked": false,
+      "portable": true,
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-DSKIP_RUNTIME_CHECKS",
+        "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+        "/home/reinsirk/Atcoder_Env/Examples/segment_tree_beats_example.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/example_gcc_False_True_segment_tree_beats"
+      ],
+      "exit_code": 0,
+      "stdout": "4 7 -1 4 \n"
+    },
+    {
+      "example": "Examples/sliding_window_aggregation_example.cpp",
+      "compiler": "/usr/bin/g++",
+      "checked": false,
+      "portable": true,
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-DSKIP_RUNTIME_CHECKS",
+        "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+        "/home/reinsirk/Atcoder_Env/Examples/sliding_window_aggregation_example.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/example_gcc_False_True_sliding_window_aggregation"
+      ],
+      "exit_code": 0,
+      "stdout": "abcdef\ncdef\n"
+    },
+    {
+      "example": "Examples/xor_basis_example.cpp",
+      "compiler": "/usr/bin/g++",
+      "checked": false,
+      "portable": true,
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-DSKIP_RUNTIME_CHECKS",
+        "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+        "/home/reinsirk/Atcoder_Env/Examples/xor_basis_example.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/example_gcc_False_True_xor_basis"
+      ],
+      "exit_code": 0,
+      "stdout": "6\n5\n"
+    },
+    {
+      "standalone": "DataStructure/Segment_Tree_Beats.cpp",
+      "compiler": "/usr/bin/g++",
+      "command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-U__SIZEOF_INT128__",
+        "-fsyntax-only",
+        "/home/reinsirk/Atcoder_Env/DataStructure/Segment_Tree_Beats.cpp"
+      ],
+      "exit_code": 0
+    },
+    {
+      "standalone": "DataStructure/Sliding_Window_Aggregation.cpp",
+      "compiler": "/usr/bin/g++",
+      "command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-U__SIZEOF_INT128__",
+        "-fsyntax-only",
+        "/home/reinsirk/Atcoder_Env/DataStructure/Sliding_Window_Aggregation.cpp"
+      ],
+      "exit_code": 0
+    },
+    {
+      "standalone": "Math/Xor_Basis.cpp",
+      "compiler": "/usr/bin/g++",
+      "command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-U__SIZEOF_INT128__",
+        "-fsyntax-only",
+        "/home/reinsirk/Atcoder_Env/Math/Xor_Basis.cpp"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "clang_checked_extension_default",
+      "command": [
+        "taskset",
+        "-c",
+        "8",
+        "python3",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/beats_swag_driver_reference_test.py",
+        "--compiler",
+        "/usr/bin/clang++",
+        "--report",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/drivers_clang_checked_extension_default.json",
+        "--compiler-arg=--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "--checked"
+      ],
+      "exit_code": 0,
+      "stdout": "segment_tree_beats 101 official/independent driver cases OK\nsliding_window_aggregation 101 official/independent driver cases OK\nxor_basis 102 official/independent driver cases OK\n",
+      "stderr": ""
+    },
+    {
+      "name": "clang_checked_extension_native",
+      "command": [
+        "taskset",
+        "-c",
+        "8",
+        "python3",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/beats_swag_driver_reference_test.py",
+        "--compiler",
+        "/usr/bin/clang++",
+        "--report",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/drivers_clang_checked_extension_native.json",
+        "--compiler-arg=--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "--checked",
+        "--native"
+      ],
+      "exit_code": 0,
+      "stdout": "segment_tree_beats 101 official/independent driver cases OK\nsliding_window_aggregation 101 official/independent driver cases OK\nxor_basis 102 official/independent driver cases OK\n",
+      "stderr": ""
+    },
+    {
+      "name": "clang_checked_portable_default",
+      "command": [
+        "taskset",
+        "-c",
+        "8",
+        "python3",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/beats_swag_driver_reference_test.py",
+        "--compiler",
+        "/usr/bin/clang++",
+        "--report",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/drivers_clang_checked_portable_default.json",
+        "--compiler-arg=--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "--checked",
+        "--portable"
+      ],
+      "exit_code": 0,
+      "stdout": "segment_tree_beats 101 official/independent driver cases OK\nsliding_window_aggregation 101 official/independent driver cases OK\nxor_basis 102 official/independent driver cases OK\n",
+      "stderr": ""
+    },
+    {
+      "name": "clang_checked_portable_native",
+      "command": [
+        "taskset",
+        "-c",
+        "8",
+        "python3",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/beats_swag_driver_reference_test.py",
+        "--compiler",
+        "/usr/bin/clang++",
+        "--report",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/drivers_clang_checked_portable_native.json",
+        "--compiler-arg=--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "--checked",
+        "--portable",
+        "--native"
+      ],
+      "exit_code": 0,
+      "stdout": "segment_tree_beats 101 official/independent driver cases OK\nsliding_window_aggregation 101 official/independent driver cases OK\nxor_basis 102 official/independent driver cases OK\n",
+      "stderr": ""
+    },
+    {
+      "name": "clang_skip_extension_default",
+      "command": [
+        "taskset",
+        "-c",
+        "8",
+        "python3",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/beats_swag_driver_reference_test.py",
+        "--compiler",
+        "/usr/bin/clang++",
+        "--report",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/drivers_clang_skip_extension_default.json",
+        "--compiler-arg=--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15"
+      ],
+      "exit_code": 0,
+      "stdout": "segment_tree_beats 101 official/independent driver cases OK\nsliding_window_aggregation 101 official/independent driver cases OK\nxor_basis 102 official/independent driver cases OK\n",
+      "stderr": ""
+    },
+    {
+      "name": "clang_skip_extension_native",
+      "command": [
+        "taskset",
+        "-c",
+        "8",
+        "python3",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/beats_swag_driver_reference_test.py",
+        "--compiler",
+        "/usr/bin/clang++",
+        "--report",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/drivers_clang_skip_extension_native.json",
+        "--compiler-arg=--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "--native"
+      ],
+      "exit_code": 0,
+      "stdout": "segment_tree_beats 101 official/independent driver cases OK\nsliding_window_aggregation 101 official/independent driver cases OK\nxor_basis 102 official/independent driver cases OK\n",
+      "stderr": ""
+    },
+    {
+      "name": "clang_skip_portable_default",
+      "command": [
+        "taskset",
+        "-c",
+        "8",
+        "python3",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/beats_swag_driver_reference_test.py",
+        "--compiler",
+        "/usr/bin/clang++",
+        "--report",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/drivers_clang_skip_portable_default.json",
+        "--compiler-arg=--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "--portable"
+      ],
+      "exit_code": 0,
+      "stdout": "segment_tree_beats 101 official/independent driver cases OK\nsliding_window_aggregation 101 official/independent driver cases OK\nxor_basis 102 official/independent driver cases OK\n",
+      "stderr": ""
+    },
+    {
+      "name": "clang_skip_portable_native",
+      "command": [
+        "taskset",
+        "-c",
+        "8",
+        "python3",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/beats_swag_driver_reference_test.py",
+        "--compiler",
+        "/usr/bin/clang++",
+        "--report",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/drivers_clang_skip_portable_native.json",
+        "--compiler-arg=--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "--portable",
+        "--native"
+      ],
+      "exit_code": 0,
+      "stdout": "segment_tree_beats 101 official/independent driver cases OK\nsliding_window_aggregation 101 official/independent driver cases OK\nxor_basis 102 official/independent driver cases OK\n",
+      "stderr": ""
+    },
+    {
+      "example": "Examples/segment_tree_beats_example.cpp",
+      "compiler": "/usr/bin/clang++",
+      "checked": true,
+      "portable": false,
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "-std=c++23",
+        "-O2",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "/home/reinsirk/Atcoder_Env/Examples/segment_tree_beats_example.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/example_clang_True_False_segment_tree_beats"
+      ],
+      "exit_code": 0,
+      "stdout": "4 7 -1 4 \n"
+    },
+    {
+      "example": "Examples/sliding_window_aggregation_example.cpp",
+      "compiler": "/usr/bin/clang++",
+      "checked": true,
+      "portable": false,
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "-std=c++23",
+        "-O2",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "/home/reinsirk/Atcoder_Env/Examples/sliding_window_aggregation_example.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/example_clang_True_False_sliding_window_aggregation"
+      ],
+      "exit_code": 0,
+      "stdout": "abcdef\ncdef\n"
+    },
+    {
+      "example": "Examples/xor_basis_example.cpp",
+      "compiler": "/usr/bin/clang++",
+      "checked": true,
+      "portable": false,
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "-std=c++23",
+        "-O2",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "/home/reinsirk/Atcoder_Env/Examples/xor_basis_example.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/example_clang_True_False_xor_basis"
+      ],
+      "exit_code": 0,
+      "stdout": "6\n5\n"
+    },
+    {
+      "example": "Examples/segment_tree_beats_example.cpp",
+      "compiler": "/usr/bin/clang++",
+      "checked": true,
+      "portable": true,
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "-std=c++23",
+        "-O2",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+        "/home/reinsirk/Atcoder_Env/Examples/segment_tree_beats_example.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/example_clang_True_True_segment_tree_beats"
+      ],
+      "exit_code": 0,
+      "stdout": "4 7 -1 4 \n"
+    },
+    {
+      "example": "Examples/sliding_window_aggregation_example.cpp",
+      "compiler": "/usr/bin/clang++",
+      "checked": true,
+      "portable": true,
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "-std=c++23",
+        "-O2",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+        "/home/reinsirk/Atcoder_Env/Examples/sliding_window_aggregation_example.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/example_clang_True_True_sliding_window_aggregation"
+      ],
+      "exit_code": 0,
+      "stdout": "abcdef\ncdef\n"
+    },
+    {
+      "example": "Examples/xor_basis_example.cpp",
+      "compiler": "/usr/bin/clang++",
+      "checked": true,
+      "portable": true,
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "-std=c++23",
+        "-O2",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+        "/home/reinsirk/Atcoder_Env/Examples/xor_basis_example.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/example_clang_True_True_xor_basis"
+      ],
+      "exit_code": 0,
+      "stdout": "6\n5\n"
+    },
+    {
+      "example": "Examples/segment_tree_beats_example.cpp",
+      "compiler": "/usr/bin/clang++",
+      "checked": false,
+      "portable": false,
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "-std=c++23",
+        "-O2",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-DSKIP_RUNTIME_CHECKS",
+        "/home/reinsirk/Atcoder_Env/Examples/segment_tree_beats_example.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/example_clang_False_False_segment_tree_beats"
+      ],
+      "exit_code": 0,
+      "stdout": "4 7 -1 4 \n"
+    },
+    {
+      "example": "Examples/sliding_window_aggregation_example.cpp",
+      "compiler": "/usr/bin/clang++",
+      "checked": false,
+      "portable": false,
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "-std=c++23",
+        "-O2",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-DSKIP_RUNTIME_CHECKS",
+        "/home/reinsirk/Atcoder_Env/Examples/sliding_window_aggregation_example.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/example_clang_False_False_sliding_window_aggregation"
+      ],
+      "exit_code": 0,
+      "stdout": "abcdef\ncdef\n"
+    },
+    {
+      "example": "Examples/xor_basis_example.cpp",
+      "compiler": "/usr/bin/clang++",
+      "checked": false,
+      "portable": false,
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "-std=c++23",
+        "-O2",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-DSKIP_RUNTIME_CHECKS",
+        "/home/reinsirk/Atcoder_Env/Examples/xor_basis_example.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/example_clang_False_False_xor_basis"
+      ],
+      "exit_code": 0,
+      "stdout": "6\n5\n"
+    },
+    {
+      "example": "Examples/segment_tree_beats_example.cpp",
+      "compiler": "/usr/bin/clang++",
+      "checked": false,
+      "portable": true,
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "-std=c++23",
+        "-O2",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-DSKIP_RUNTIME_CHECKS",
+        "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+        "/home/reinsirk/Atcoder_Env/Examples/segment_tree_beats_example.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/example_clang_False_True_segment_tree_beats"
+      ],
+      "exit_code": 0,
+      "stdout": "4 7 -1 4 \n"
+    },
+    {
+      "example": "Examples/sliding_window_aggregation_example.cpp",
+      "compiler": "/usr/bin/clang++",
+      "checked": false,
+      "portable": true,
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "-std=c++23",
+        "-O2",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-DSKIP_RUNTIME_CHECKS",
+        "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+        "/home/reinsirk/Atcoder_Env/Examples/sliding_window_aggregation_example.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/example_clang_False_True_sliding_window_aggregation"
+      ],
+      "exit_code": 0,
+      "stdout": "abcdef\ncdef\n"
+    },
+    {
+      "example": "Examples/xor_basis_example.cpp",
+      "compiler": "/usr/bin/clang++",
+      "checked": false,
+      "portable": true,
+      "compile_command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "-std=c++23",
+        "-O2",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-DSKIP_RUNTIME_CHECKS",
+        "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+        "/home/reinsirk/Atcoder_Env/Examples/xor_basis_example.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/beats_swag/example_clang_False_True_xor_basis"
+      ],
+      "exit_code": 0,
+      "stdout": "6\n5\n"
+    },
+    {
+      "standalone": "DataStructure/Segment_Tree_Beats.cpp",
+      "compiler": "/usr/bin/clang++",
+      "command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-U__SIZEOF_INT128__",
+        "-fsyntax-only",
+        "/home/reinsirk/Atcoder_Env/DataStructure/Segment_Tree_Beats.cpp"
+      ],
+      "exit_code": 0
+    },
+    {
+      "standalone": "DataStructure/Sliding_Window_Aggregation.cpp",
+      "compiler": "/usr/bin/clang++",
+      "command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-U__SIZEOF_INT128__",
+        "-fsyntax-only",
+        "/home/reinsirk/Atcoder_Env/DataStructure/Sliding_Window_Aggregation.cpp"
+      ],
+      "exit_code": 0
+    },
+    {
+      "standalone": "Math/Xor_Basis.cpp",
+      "compiler": "/usr/bin/clang++",
+      "command": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-U__SIZEOF_INT128__",
+        "-fsyntax-only",
+        "/home/reinsirk/Atcoder_Env/Math/Xor_Basis.cpp"
+      ],
+      "exit_code": 0
+    }
+  ],
+  "driver_reports": {
+    "drivers_clang_checked_extension_default": {
+      "compiler": "/usr/bin/clang++",
+      "flags": [
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15"
+      ],
+      "portable": false,
+      "checked": true,
+      "native": false,
+      "entries": [
+        {
+          "id": "segment_tree_beats",
+          "source_hashes": {
+            "DataStructure/Segment_Tree_Beats.cpp": "5b332c567f2b0f12f32348bfabc3e6e4da20fccf8d4cd35bb7c960f75f494c64"
+          },
+          "submission_sha256": "3130465c0fc4c43b9b986c427b3202b54ec3b92f848d86d1304dda2490ff8b46",
+          "cases": 101,
+          "random_seed": 20261031,
+          "compile_command": [
+            "/usr/bin/clang++",
+            "-std=c++23",
+            "-O2",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "/tmp/sirkit-beats-swag-q2tpryqx/segment_tree_beats.cpp",
+            "-o",
+            "/tmp/sirkit-beats-swag-q2tpryqx/segment_tree_beats"
+          ]
+        },
+        {
+          "id": "sliding_window_aggregation",
+          "source_hashes": {
+            "DataStructure/Sliding_Window_Aggregation.cpp": "a56213905d46763e4b79fbfa7cdb3046735c7a1bb43847efbe5660d69d66a90e"
+          },
+          "submission_sha256": "a14d1d69d4305e21832c2a314ffd2f65cebf269bc30a2fc9dee59ba211811710",
+          "cases": 101,
+          "random_seed": 20261031,
+          "compile_command": [
+            "/usr/bin/clang++",
+            "-std=c++23",
+            "-O2",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "/tmp/sirkit-beats-swag-q2tpryqx/sliding_window_aggregation.cpp",
+            "-o",
+            "/tmp/sirkit-beats-swag-q2tpryqx/sliding_window_aggregation"
+          ]
+        },
+        {
+          "id": "xor_basis",
+          "source_hashes": {
+            "Math/Xor_Basis.cpp": "85473d40f0c38dd526d69287d2e7c85e93466d25714c5c169f81936e0d0bc421"
+          },
+          "submission_sha256": "6e2fb5c857c0ad8c4856ab87a655065ac8f64129d11b8ab0412d9664d20d8e6a",
+          "cases": 102,
+          "random_seed": 20261031,
+          "compile_command": [
+            "/usr/bin/clang++",
+            "-std=c++23",
+            "-O2",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "/tmp/sirkit-beats-swag-q2tpryqx/xor_basis.cpp",
+            "-o",
+            "/tmp/sirkit-beats-swag-q2tpryqx/xor_basis"
+          ]
+        }
+      ]
+    },
+    "drivers_clang_checked_extension_native": {
+      "compiler": "/usr/bin/clang++",
+      "flags": [
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15"
+      ],
+      "portable": false,
+      "checked": true,
+      "native": true,
+      "entries": [
+        {
+          "id": "segment_tree_beats",
+          "source_hashes": {
+            "DataStructure/Segment_Tree_Beats.cpp": "5b332c567f2b0f12f32348bfabc3e6e4da20fccf8d4cd35bb7c960f75f494c64"
+          },
+          "submission_sha256": "3130465c0fc4c43b9b986c427b3202b54ec3b92f848d86d1304dda2490ff8b46",
+          "cases": 101,
+          "random_seed": 20261031,
+          "compile_command": [
+            "/usr/bin/clang++",
+            "-std=c++23",
+            "-O2",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-march=native",
+            "/tmp/sirkit-beats-swag-5d6val4v/segment_tree_beats.cpp",
+            "-o",
+            "/tmp/sirkit-beats-swag-5d6val4v/segment_tree_beats"
+          ]
+        },
+        {
+          "id": "sliding_window_aggregation",
+          "source_hashes": {
+            "DataStructure/Sliding_Window_Aggregation.cpp": "a56213905d46763e4b79fbfa7cdb3046735c7a1bb43847efbe5660d69d66a90e"
+          },
+          "submission_sha256": "a14d1d69d4305e21832c2a314ffd2f65cebf269bc30a2fc9dee59ba211811710",
+          "cases": 101,
+          "random_seed": 20261031,
+          "compile_command": [
+            "/usr/bin/clang++",
+            "-std=c++23",
+            "-O2",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-march=native",
+            "/tmp/sirkit-beats-swag-5d6val4v/sliding_window_aggregation.cpp",
+            "-o",
+            "/tmp/sirkit-beats-swag-5d6val4v/sliding_window_aggregation"
+          ]
+        },
+        {
+          "id": "xor_basis",
+          "source_hashes": {
+            "Math/Xor_Basis.cpp": "85473d40f0c38dd526d69287d2e7c85e93466d25714c5c169f81936e0d0bc421"
+          },
+          "submission_sha256": "6e2fb5c857c0ad8c4856ab87a655065ac8f64129d11b8ab0412d9664d20d8e6a",
+          "cases": 102,
+          "random_seed": 20261031,
+          "compile_command": [
+            "/usr/bin/clang++",
+            "-std=c++23",
+            "-O2",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-march=native",
+            "/tmp/sirkit-beats-swag-5d6val4v/xor_basis.cpp",
+            "-o",
+            "/tmp/sirkit-beats-swag-5d6val4v/xor_basis"
+          ]
+        }
+      ]
+    },
+    "drivers_clang_checked_portable_default": {
+      "compiler": "/usr/bin/clang++",
+      "flags": [
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15"
+      ],
+      "portable": true,
+      "checked": true,
+      "native": false,
+      "entries": [
+        {
+          "id": "segment_tree_beats",
+          "source_hashes": {
+            "DataStructure/Segment_Tree_Beats.cpp": "5b332c567f2b0f12f32348bfabc3e6e4da20fccf8d4cd35bb7c960f75f494c64"
+          },
+          "submission_sha256": "3130465c0fc4c43b9b986c427b3202b54ec3b92f848d86d1304dda2490ff8b46",
+          "cases": 101,
+          "random_seed": 20261031,
+          "compile_command": [
+            "/usr/bin/clang++",
+            "-std=c++23",
+            "-O2",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+            "/tmp/sirkit-beats-swag-ico57bwg/segment_tree_beats.cpp",
+            "-o",
+            "/tmp/sirkit-beats-swag-ico57bwg/segment_tree_beats"
+          ]
+        },
+        {
+          "id": "sliding_window_aggregation",
+          "source_hashes": {
+            "DataStructure/Sliding_Window_Aggregation.cpp": "a56213905d46763e4b79fbfa7cdb3046735c7a1bb43847efbe5660d69d66a90e"
+          },
+          "submission_sha256": "a14d1d69d4305e21832c2a314ffd2f65cebf269bc30a2fc9dee59ba211811710",
+          "cases": 101,
+          "random_seed": 20261031,
+          "compile_command": [
+            "/usr/bin/clang++",
+            "-std=c++23",
+            "-O2",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+            "/tmp/sirkit-beats-swag-ico57bwg/sliding_window_aggregation.cpp",
+            "-o",
+            "/tmp/sirkit-beats-swag-ico57bwg/sliding_window_aggregation"
+          ]
+        },
+        {
+          "id": "xor_basis",
+          "source_hashes": {
+            "Math/Xor_Basis.cpp": "85473d40f0c38dd526d69287d2e7c85e93466d25714c5c169f81936e0d0bc421"
+          },
+          "submission_sha256": "6e2fb5c857c0ad8c4856ab87a655065ac8f64129d11b8ab0412d9664d20d8e6a",
+          "cases": 102,
+          "random_seed": 20261031,
+          "compile_command": [
+            "/usr/bin/clang++",
+            "-std=c++23",
+            "-O2",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+            "/tmp/sirkit-beats-swag-ico57bwg/xor_basis.cpp",
+            "-o",
+            "/tmp/sirkit-beats-swag-ico57bwg/xor_basis"
+          ]
+        }
+      ]
+    },
+    "drivers_clang_checked_portable_native": {
+      "compiler": "/usr/bin/clang++",
+      "flags": [
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15"
+      ],
+      "portable": true,
+      "checked": true,
+      "native": true,
+      "entries": [
+        {
+          "id": "segment_tree_beats",
+          "source_hashes": {
+            "DataStructure/Segment_Tree_Beats.cpp": "5b332c567f2b0f12f32348bfabc3e6e4da20fccf8d4cd35bb7c960f75f494c64"
+          },
+          "submission_sha256": "3130465c0fc4c43b9b986c427b3202b54ec3b92f848d86d1304dda2490ff8b46",
+          "cases": 101,
+          "random_seed": 20261031,
+          "compile_command": [
+            "/usr/bin/clang++",
+            "-std=c++23",
+            "-O2",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+            "-march=native",
+            "/tmp/sirkit-beats-swag-tiwfudp9/segment_tree_beats.cpp",
+            "-o",
+            "/tmp/sirkit-beats-swag-tiwfudp9/segment_tree_beats"
+          ]
+        },
+        {
+          "id": "sliding_window_aggregation",
+          "source_hashes": {
+            "DataStructure/Sliding_Window_Aggregation.cpp": "a56213905d46763e4b79fbfa7cdb3046735c7a1bb43847efbe5660d69d66a90e"
+          },
+          "submission_sha256": "a14d1d69d4305e21832c2a314ffd2f65cebf269bc30a2fc9dee59ba211811710",
+          "cases": 101,
+          "random_seed": 20261031,
+          "compile_command": [
+            "/usr/bin/clang++",
+            "-std=c++23",
+            "-O2",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+            "-march=native",
+            "/tmp/sirkit-beats-swag-tiwfudp9/sliding_window_aggregation.cpp",
+            "-o",
+            "/tmp/sirkit-beats-swag-tiwfudp9/sliding_window_aggregation"
+          ]
+        },
+        {
+          "id": "xor_basis",
+          "source_hashes": {
+            "Math/Xor_Basis.cpp": "85473d40f0c38dd526d69287d2e7c85e93466d25714c5c169f81936e0d0bc421"
+          },
+          "submission_sha256": "6e2fb5c857c0ad8c4856ab87a655065ac8f64129d11b8ab0412d9664d20d8e6a",
+          "cases": 102,
+          "random_seed": 20261031,
+          "compile_command": [
+            "/usr/bin/clang++",
+            "-std=c++23",
+            "-O2",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+            "-march=native",
+            "/tmp/sirkit-beats-swag-tiwfudp9/xor_basis.cpp",
+            "-o",
+            "/tmp/sirkit-beats-swag-tiwfudp9/xor_basis"
+          ]
+        }
+      ]
+    },
+    "drivers_clang_skip_extension_default": {
+      "compiler": "/usr/bin/clang++",
+      "flags": [
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15"
+      ],
+      "portable": false,
+      "checked": false,
+      "native": false,
+      "entries": [
+        {
+          "id": "segment_tree_beats",
+          "source_hashes": {
+            "DataStructure/Segment_Tree_Beats.cpp": "5b332c567f2b0f12f32348bfabc3e6e4da20fccf8d4cd35bb7c960f75f494c64"
+          },
+          "submission_sha256": "1f003a30d82dfe1d0ab3dba4f33febea147f9bd8b9f9d5fdd48920bc6661357c",
+          "cases": 101,
+          "random_seed": 20261031,
+          "compile_command": [
+            "/usr/bin/clang++",
+            "-std=c++23",
+            "-O2",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "/tmp/sirkit-beats-swag-50hvgyjl/segment_tree_beats.cpp",
+            "-o",
+            "/tmp/sirkit-beats-swag-50hvgyjl/segment_tree_beats"
+          ]
+        },
+        {
+          "id": "sliding_window_aggregation",
+          "source_hashes": {
+            "DataStructure/Sliding_Window_Aggregation.cpp": "a56213905d46763e4b79fbfa7cdb3046735c7a1bb43847efbe5660d69d66a90e"
+          },
+          "submission_sha256": "bfe62ea8346f647066dfa1fff225ffb23438e681a71fa2f6190fb4614ab35213",
+          "cases": 101,
+          "random_seed": 20261031,
+          "compile_command": [
+            "/usr/bin/clang++",
+            "-std=c++23",
+            "-O2",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "/tmp/sirkit-beats-swag-50hvgyjl/sliding_window_aggregation.cpp",
+            "-o",
+            "/tmp/sirkit-beats-swag-50hvgyjl/sliding_window_aggregation"
+          ]
+        },
+        {
+          "id": "xor_basis",
+          "source_hashes": {
+            "Math/Xor_Basis.cpp": "85473d40f0c38dd526d69287d2e7c85e93466d25714c5c169f81936e0d0bc421"
+          },
+          "submission_sha256": "01112cdfa3f3a6972f3bf5436604ed5ca6b76c99b08c5b1ac40ce8fadcc6b183",
+          "cases": 102,
+          "random_seed": 20261031,
+          "compile_command": [
+            "/usr/bin/clang++",
+            "-std=c++23",
+            "-O2",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "/tmp/sirkit-beats-swag-50hvgyjl/xor_basis.cpp",
+            "-o",
+            "/tmp/sirkit-beats-swag-50hvgyjl/xor_basis"
+          ]
+        }
+      ]
+    },
+    "drivers_clang_skip_extension_native": {
+      "compiler": "/usr/bin/clang++",
+      "flags": [
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15"
+      ],
+      "portable": false,
+      "checked": false,
+      "native": true,
+      "entries": [
+        {
+          "id": "segment_tree_beats",
+          "source_hashes": {
+            "DataStructure/Segment_Tree_Beats.cpp": "5b332c567f2b0f12f32348bfabc3e6e4da20fccf8d4cd35bb7c960f75f494c64"
+          },
+          "submission_sha256": "1f003a30d82dfe1d0ab3dba4f33febea147f9bd8b9f9d5fdd48920bc6661357c",
+          "cases": 101,
+          "random_seed": 20261031,
+          "compile_command": [
+            "/usr/bin/clang++",
+            "-std=c++23",
+            "-O2",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-march=native",
+            "/tmp/sirkit-beats-swag-5cbdvckb/segment_tree_beats.cpp",
+            "-o",
+            "/tmp/sirkit-beats-swag-5cbdvckb/segment_tree_beats"
+          ]
+        },
+        {
+          "id": "sliding_window_aggregation",
+          "source_hashes": {
+            "DataStructure/Sliding_Window_Aggregation.cpp": "a56213905d46763e4b79fbfa7cdb3046735c7a1bb43847efbe5660d69d66a90e"
+          },
+          "submission_sha256": "bfe62ea8346f647066dfa1fff225ffb23438e681a71fa2f6190fb4614ab35213",
+          "cases": 101,
+          "random_seed": 20261031,
+          "compile_command": [
+            "/usr/bin/clang++",
+            "-std=c++23",
+            "-O2",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-march=native",
+            "/tmp/sirkit-beats-swag-5cbdvckb/sliding_window_aggregation.cpp",
+            "-o",
+            "/tmp/sirkit-beats-swag-5cbdvckb/sliding_window_aggregation"
+          ]
+        },
+        {
+          "id": "xor_basis",
+          "source_hashes": {
+            "Math/Xor_Basis.cpp": "85473d40f0c38dd526d69287d2e7c85e93466d25714c5c169f81936e0d0bc421"
+          },
+          "submission_sha256": "01112cdfa3f3a6972f3bf5436604ed5ca6b76c99b08c5b1ac40ce8fadcc6b183",
+          "cases": 102,
+          "random_seed": 20261031,
+          "compile_command": [
+            "/usr/bin/clang++",
+            "-std=c++23",
+            "-O2",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-march=native",
+            "/tmp/sirkit-beats-swag-5cbdvckb/xor_basis.cpp",
+            "-o",
+            "/tmp/sirkit-beats-swag-5cbdvckb/xor_basis"
+          ]
+        }
+      ]
+    },
+    "drivers_clang_skip_portable_default": {
+      "compiler": "/usr/bin/clang++",
+      "flags": [
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15"
+      ],
+      "portable": true,
+      "checked": false,
+      "native": false,
+      "entries": [
+        {
+          "id": "segment_tree_beats",
+          "source_hashes": {
+            "DataStructure/Segment_Tree_Beats.cpp": "5b332c567f2b0f12f32348bfabc3e6e4da20fccf8d4cd35bb7c960f75f494c64"
+          },
+          "submission_sha256": "1f003a30d82dfe1d0ab3dba4f33febea147f9bd8b9f9d5fdd48920bc6661357c",
+          "cases": 101,
+          "random_seed": 20261031,
+          "compile_command": [
+            "/usr/bin/clang++",
+            "-std=c++23",
+            "-O2",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+            "/tmp/sirkit-beats-swag-z8xniyzz/segment_tree_beats.cpp",
+            "-o",
+            "/tmp/sirkit-beats-swag-z8xniyzz/segment_tree_beats"
+          ]
+        },
+        {
+          "id": "sliding_window_aggregation",
+          "source_hashes": {
+            "DataStructure/Sliding_Window_Aggregation.cpp": "a56213905d46763e4b79fbfa7cdb3046735c7a1bb43847efbe5660d69d66a90e"
+          },
+          "submission_sha256": "bfe62ea8346f647066dfa1fff225ffb23438e681a71fa2f6190fb4614ab35213",
+          "cases": 101,
+          "random_seed": 20261031,
+          "compile_command": [
+            "/usr/bin/clang++",
+            "-std=c++23",
+            "-O2",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+            "/tmp/sirkit-beats-swag-z8xniyzz/sliding_window_aggregation.cpp",
+            "-o",
+            "/tmp/sirkit-beats-swag-z8xniyzz/sliding_window_aggregation"
+          ]
+        },
+        {
+          "id": "xor_basis",
+          "source_hashes": {
+            "Math/Xor_Basis.cpp": "85473d40f0c38dd526d69287d2e7c85e93466d25714c5c169f81936e0d0bc421"
+          },
+          "submission_sha256": "01112cdfa3f3a6972f3bf5436604ed5ca6b76c99b08c5b1ac40ce8fadcc6b183",
+          "cases": 102,
+          "random_seed": 20261031,
+          "compile_command": [
+            "/usr/bin/clang++",
+            "-std=c++23",
+            "-O2",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+            "/tmp/sirkit-beats-swag-z8xniyzz/xor_basis.cpp",
+            "-o",
+            "/tmp/sirkit-beats-swag-z8xniyzz/xor_basis"
+          ]
+        }
+      ]
+    },
+    "drivers_clang_skip_portable_native": {
+      "compiler": "/usr/bin/clang++",
+      "flags": [
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15"
+      ],
+      "portable": true,
+      "checked": false,
+      "native": true,
+      "entries": [
+        {
+          "id": "segment_tree_beats",
+          "source_hashes": {
+            "DataStructure/Segment_Tree_Beats.cpp": "5b332c567f2b0f12f32348bfabc3e6e4da20fccf8d4cd35bb7c960f75f494c64"
+          },
+          "submission_sha256": "1f003a30d82dfe1d0ab3dba4f33febea147f9bd8b9f9d5fdd48920bc6661357c",
+          "cases": 101,
+          "random_seed": 20261031,
+          "compile_command": [
+            "/usr/bin/clang++",
+            "-std=c++23",
+            "-O2",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+            "-march=native",
+            "/tmp/sirkit-beats-swag-2h754_1s/segment_tree_beats.cpp",
+            "-o",
+            "/tmp/sirkit-beats-swag-2h754_1s/segment_tree_beats"
+          ]
+        },
+        {
+          "id": "sliding_window_aggregation",
+          "source_hashes": {
+            "DataStructure/Sliding_Window_Aggregation.cpp": "a56213905d46763e4b79fbfa7cdb3046735c7a1bb43847efbe5660d69d66a90e"
+          },
+          "submission_sha256": "bfe62ea8346f647066dfa1fff225ffb23438e681a71fa2f6190fb4614ab35213",
+          "cases": 101,
+          "random_seed": 20261031,
+          "compile_command": [
+            "/usr/bin/clang++",
+            "-std=c++23",
+            "-O2",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+            "-march=native",
+            "/tmp/sirkit-beats-swag-2h754_1s/sliding_window_aggregation.cpp",
+            "-o",
+            "/tmp/sirkit-beats-swag-2h754_1s/sliding_window_aggregation"
+          ]
+        },
+        {
+          "id": "xor_basis",
+          "source_hashes": {
+            "Math/Xor_Basis.cpp": "85473d40f0c38dd526d69287d2e7c85e93466d25714c5c169f81936e0d0bc421"
+          },
+          "submission_sha256": "01112cdfa3f3a6972f3bf5436604ed5ca6b76c99b08c5b1ac40ce8fadcc6b183",
+          "cases": 102,
+          "random_seed": 20261031,
+          "compile_command": [
+            "/usr/bin/clang++",
+            "-std=c++23",
+            "-O2",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+            "-march=native",
+            "/tmp/sirkit-beats-swag-2h754_1s/xor_basis.cpp",
+            "-o",
+            "/tmp/sirkit-beats-swag-2h754_1s/xor_basis"
+          ]
+        }
+      ]
+    },
+    "drivers_gcc_checked_extension_default": {
+      "compiler": "/usr/bin/g++",
+      "flags": [],
+      "portable": false,
+      "checked": true,
+      "native": false,
+      "entries": [
+        {
+          "id": "segment_tree_beats",
+          "source_hashes": {
+            "DataStructure/Segment_Tree_Beats.cpp": "5b332c567f2b0f12f32348bfabc3e6e4da20fccf8d4cd35bb7c960f75f494c64"
+          },
+          "submission_sha256": "3130465c0fc4c43b9b986c427b3202b54ec3b92f848d86d1304dda2490ff8b46",
+          "cases": 101,
+          "random_seed": 20261031,
+          "compile_command": [
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O2",
+            "/tmp/sirkit-beats-swag-n30wzifb/segment_tree_beats.cpp",
+            "-o",
+            "/tmp/sirkit-beats-swag-n30wzifb/segment_tree_beats"
+          ]
+        },
+        {
+          "id": "sliding_window_aggregation",
+          "source_hashes": {
+            "DataStructure/Sliding_Window_Aggregation.cpp": "a56213905d46763e4b79fbfa7cdb3046735c7a1bb43847efbe5660d69d66a90e"
+          },
+          "submission_sha256": "a14d1d69d4305e21832c2a314ffd2f65cebf269bc30a2fc9dee59ba211811710",
+          "cases": 101,
+          "random_seed": 20261031,
+          "compile_command": [
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O2",
+            "/tmp/sirkit-beats-swag-n30wzifb/sliding_window_aggregation.cpp",
+            "-o",
+            "/tmp/sirkit-beats-swag-n30wzifb/sliding_window_aggregation"
+          ]
+        },
+        {
+          "id": "xor_basis",
+          "source_hashes": {
+            "Math/Xor_Basis.cpp": "85473d40f0c38dd526d69287d2e7c85e93466d25714c5c169f81936e0d0bc421"
+          },
+          "submission_sha256": "6e2fb5c857c0ad8c4856ab87a655065ac8f64129d11b8ab0412d9664d20d8e6a",
+          "cases": 102,
+          "random_seed": 20261031,
+          "compile_command": [
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O2",
+            "/tmp/sirkit-beats-swag-n30wzifb/xor_basis.cpp",
+            "-o",
+            "/tmp/sirkit-beats-swag-n30wzifb/xor_basis"
+          ]
+        }
+      ]
+    },
+    "drivers_gcc_checked_extension_native": {
+      "compiler": "/usr/bin/g++",
+      "flags": [],
+      "portable": false,
+      "checked": true,
+      "native": true,
+      "entries": [
+        {
+          "id": "segment_tree_beats",
+          "source_hashes": {
+            "DataStructure/Segment_Tree_Beats.cpp": "5b332c567f2b0f12f32348bfabc3e6e4da20fccf8d4cd35bb7c960f75f494c64"
+          },
+          "submission_sha256": "3130465c0fc4c43b9b986c427b3202b54ec3b92f848d86d1304dda2490ff8b46",
+          "cases": 101,
+          "random_seed": 20261031,
+          "compile_command": [
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O2",
+            "-march=native",
+            "/tmp/sirkit-beats-swag-r9mbamj9/segment_tree_beats.cpp",
+            "-o",
+            "/tmp/sirkit-beats-swag-r9mbamj9/segment_tree_beats"
+          ]
+        },
+        {
+          "id": "sliding_window_aggregation",
+          "source_hashes": {
+            "DataStructure/Sliding_Window_Aggregation.cpp": "a56213905d46763e4b79fbfa7cdb3046735c7a1bb43847efbe5660d69d66a90e"
+          },
+          "submission_sha256": "a14d1d69d4305e21832c2a314ffd2f65cebf269bc30a2fc9dee59ba211811710",
+          "cases": 101,
+          "random_seed": 20261031,
+          "compile_command": [
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O2",
+            "-march=native",
+            "/tmp/sirkit-beats-swag-r9mbamj9/sliding_window_aggregation.cpp",
+            "-o",
+            "/tmp/sirkit-beats-swag-r9mbamj9/sliding_window_aggregation"
+          ]
+        },
+        {
+          "id": "xor_basis",
+          "source_hashes": {
+            "Math/Xor_Basis.cpp": "85473d40f0c38dd526d69287d2e7c85e93466d25714c5c169f81936e0d0bc421"
+          },
+          "submission_sha256": "6e2fb5c857c0ad8c4856ab87a655065ac8f64129d11b8ab0412d9664d20d8e6a",
+          "cases": 102,
+          "random_seed": 20261031,
+          "compile_command": [
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O2",
+            "-march=native",
+            "/tmp/sirkit-beats-swag-r9mbamj9/xor_basis.cpp",
+            "-o",
+            "/tmp/sirkit-beats-swag-r9mbamj9/xor_basis"
+          ]
+        }
+      ]
+    },
+    "drivers_gcc_checked_portable_default": {
+      "compiler": "/usr/bin/g++",
+      "flags": [],
+      "portable": true,
+      "checked": true,
+      "native": false,
+      "entries": [
+        {
+          "id": "segment_tree_beats",
+          "source_hashes": {
+            "DataStructure/Segment_Tree_Beats.cpp": "5b332c567f2b0f12f32348bfabc3e6e4da20fccf8d4cd35bb7c960f75f494c64"
+          },
+          "submission_sha256": "3130465c0fc4c43b9b986c427b3202b54ec3b92f848d86d1304dda2490ff8b46",
+          "cases": 101,
+          "random_seed": 20261031,
+          "compile_command": [
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O2",
+            "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+            "/tmp/sirkit-beats-swag-d5pp5zdv/segment_tree_beats.cpp",
+            "-o",
+            "/tmp/sirkit-beats-swag-d5pp5zdv/segment_tree_beats"
+          ]
+        },
+        {
+          "id": "sliding_window_aggregation",
+          "source_hashes": {
+            "DataStructure/Sliding_Window_Aggregation.cpp": "a56213905d46763e4b79fbfa7cdb3046735c7a1bb43847efbe5660d69d66a90e"
+          },
+          "submission_sha256": "a14d1d69d4305e21832c2a314ffd2f65cebf269bc30a2fc9dee59ba211811710",
+          "cases": 101,
+          "random_seed": 20261031,
+          "compile_command": [
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O2",
+            "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+            "/tmp/sirkit-beats-swag-d5pp5zdv/sliding_window_aggregation.cpp",
+            "-o",
+            "/tmp/sirkit-beats-swag-d5pp5zdv/sliding_window_aggregation"
+          ]
+        },
+        {
+          "id": "xor_basis",
+          "source_hashes": {
+            "Math/Xor_Basis.cpp": "85473d40f0c38dd526d69287d2e7c85e93466d25714c5c169f81936e0d0bc421"
+          },
+          "submission_sha256": "6e2fb5c857c0ad8c4856ab87a655065ac8f64129d11b8ab0412d9664d20d8e6a",
+          "cases": 102,
+          "random_seed": 20261031,
+          "compile_command": [
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O2",
+            "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+            "/tmp/sirkit-beats-swag-d5pp5zdv/xor_basis.cpp",
+            "-o",
+            "/tmp/sirkit-beats-swag-d5pp5zdv/xor_basis"
+          ]
+        }
+      ]
+    },
+    "drivers_gcc_checked_portable_native": {
+      "compiler": "/usr/bin/g++",
+      "flags": [],
+      "portable": true,
+      "checked": true,
+      "native": true,
+      "entries": [
+        {
+          "id": "segment_tree_beats",
+          "source_hashes": {
+            "DataStructure/Segment_Tree_Beats.cpp": "5b332c567f2b0f12f32348bfabc3e6e4da20fccf8d4cd35bb7c960f75f494c64"
+          },
+          "submission_sha256": "3130465c0fc4c43b9b986c427b3202b54ec3b92f848d86d1304dda2490ff8b46",
+          "cases": 101,
+          "random_seed": 20261031,
+          "compile_command": [
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O2",
+            "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+            "-march=native",
+            "/tmp/sirkit-beats-swag-k75nprnc/segment_tree_beats.cpp",
+            "-o",
+            "/tmp/sirkit-beats-swag-k75nprnc/segment_tree_beats"
+          ]
+        },
+        {
+          "id": "sliding_window_aggregation",
+          "source_hashes": {
+            "DataStructure/Sliding_Window_Aggregation.cpp": "a56213905d46763e4b79fbfa7cdb3046735c7a1bb43847efbe5660d69d66a90e"
+          },
+          "submission_sha256": "a14d1d69d4305e21832c2a314ffd2f65cebf269bc30a2fc9dee59ba211811710",
+          "cases": 101,
+          "random_seed": 20261031,
+          "compile_command": [
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O2",
+            "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+            "-march=native",
+            "/tmp/sirkit-beats-swag-k75nprnc/sliding_window_aggregation.cpp",
+            "-o",
+            "/tmp/sirkit-beats-swag-k75nprnc/sliding_window_aggregation"
+          ]
+        },
+        {
+          "id": "xor_basis",
+          "source_hashes": {
+            "Math/Xor_Basis.cpp": "85473d40f0c38dd526d69287d2e7c85e93466d25714c5c169f81936e0d0bc421"
+          },
+          "submission_sha256": "6e2fb5c857c0ad8c4856ab87a655065ac8f64129d11b8ab0412d9664d20d8e6a",
+          "cases": 102,
+          "random_seed": 20261031,
+          "compile_command": [
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O2",
+            "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+            "-march=native",
+            "/tmp/sirkit-beats-swag-k75nprnc/xor_basis.cpp",
+            "-o",
+            "/tmp/sirkit-beats-swag-k75nprnc/xor_basis"
+          ]
+        }
+      ]
+    },
+    "drivers_gcc_skip_extension_default": {
+      "compiler": "/usr/bin/g++",
+      "flags": [],
+      "portable": false,
+      "checked": false,
+      "native": false,
+      "entries": [
+        {
+          "id": "segment_tree_beats",
+          "source_hashes": {
+            "DataStructure/Segment_Tree_Beats.cpp": "5b332c567f2b0f12f32348bfabc3e6e4da20fccf8d4cd35bb7c960f75f494c64"
+          },
+          "submission_sha256": "1f003a30d82dfe1d0ab3dba4f33febea147f9bd8b9f9d5fdd48920bc6661357c",
+          "cases": 101,
+          "random_seed": 20261031,
+          "compile_command": [
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O2",
+            "/tmp/sirkit-beats-swag-d25kbp_7/segment_tree_beats.cpp",
+            "-o",
+            "/tmp/sirkit-beats-swag-d25kbp_7/segment_tree_beats"
+          ]
+        },
+        {
+          "id": "sliding_window_aggregation",
+          "source_hashes": {
+            "DataStructure/Sliding_Window_Aggregation.cpp": "a56213905d46763e4b79fbfa7cdb3046735c7a1bb43847efbe5660d69d66a90e"
+          },
+          "submission_sha256": "bfe62ea8346f647066dfa1fff225ffb23438e681a71fa2f6190fb4614ab35213",
+          "cases": 101,
+          "random_seed": 20261031,
+          "compile_command": [
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O2",
+            "/tmp/sirkit-beats-swag-d25kbp_7/sliding_window_aggregation.cpp",
+            "-o",
+            "/tmp/sirkit-beats-swag-d25kbp_7/sliding_window_aggregation"
+          ]
+        },
+        {
+          "id": "xor_basis",
+          "source_hashes": {
+            "Math/Xor_Basis.cpp": "85473d40f0c38dd526d69287d2e7c85e93466d25714c5c169f81936e0d0bc421"
+          },
+          "submission_sha256": "01112cdfa3f3a6972f3bf5436604ed5ca6b76c99b08c5b1ac40ce8fadcc6b183",
+          "cases": 102,
+          "random_seed": 20261031,
+          "compile_command": [
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O2",
+            "/tmp/sirkit-beats-swag-d25kbp_7/xor_basis.cpp",
+            "-o",
+            "/tmp/sirkit-beats-swag-d25kbp_7/xor_basis"
+          ]
+        }
+      ]
+    },
+    "drivers_gcc_skip_extension_native": {
+      "compiler": "/usr/bin/g++",
+      "flags": [],
+      "portable": false,
+      "checked": false,
+      "native": true,
+      "entries": [
+        {
+          "id": "segment_tree_beats",
+          "source_hashes": {
+            "DataStructure/Segment_Tree_Beats.cpp": "5b332c567f2b0f12f32348bfabc3e6e4da20fccf8d4cd35bb7c960f75f494c64"
+          },
+          "submission_sha256": "1f003a30d82dfe1d0ab3dba4f33febea147f9bd8b9f9d5fdd48920bc6661357c",
+          "cases": 101,
+          "random_seed": 20261031,
+          "compile_command": [
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O2",
+            "-march=native",
+            "/tmp/sirkit-beats-swag-l0anwj1y/segment_tree_beats.cpp",
+            "-o",
+            "/tmp/sirkit-beats-swag-l0anwj1y/segment_tree_beats"
+          ]
+        },
+        {
+          "id": "sliding_window_aggregation",
+          "source_hashes": {
+            "DataStructure/Sliding_Window_Aggregation.cpp": "a56213905d46763e4b79fbfa7cdb3046735c7a1bb43847efbe5660d69d66a90e"
+          },
+          "submission_sha256": "bfe62ea8346f647066dfa1fff225ffb23438e681a71fa2f6190fb4614ab35213",
+          "cases": 101,
+          "random_seed": 20261031,
+          "compile_command": [
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O2",
+            "-march=native",
+            "/tmp/sirkit-beats-swag-l0anwj1y/sliding_window_aggregation.cpp",
+            "-o",
+            "/tmp/sirkit-beats-swag-l0anwj1y/sliding_window_aggregation"
+          ]
+        },
+        {
+          "id": "xor_basis",
+          "source_hashes": {
+            "Math/Xor_Basis.cpp": "85473d40f0c38dd526d69287d2e7c85e93466d25714c5c169f81936e0d0bc421"
+          },
+          "submission_sha256": "01112cdfa3f3a6972f3bf5436604ed5ca6b76c99b08c5b1ac40ce8fadcc6b183",
+          "cases": 102,
+          "random_seed": 20261031,
+          "compile_command": [
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O2",
+            "-march=native",
+            "/tmp/sirkit-beats-swag-l0anwj1y/xor_basis.cpp",
+            "-o",
+            "/tmp/sirkit-beats-swag-l0anwj1y/xor_basis"
+          ]
+        }
+      ]
+    },
+    "drivers_gcc_skip_portable_default": {
+      "compiler": "/usr/bin/g++",
+      "flags": [],
+      "portable": true,
+      "checked": false,
+      "native": false,
+      "entries": [
+        {
+          "id": "segment_tree_beats",
+          "source_hashes": {
+            "DataStructure/Segment_Tree_Beats.cpp": "5b332c567f2b0f12f32348bfabc3e6e4da20fccf8d4cd35bb7c960f75f494c64"
+          },
+          "submission_sha256": "1f003a30d82dfe1d0ab3dba4f33febea147f9bd8b9f9d5fdd48920bc6661357c",
+          "cases": 101,
+          "random_seed": 20261031,
+          "compile_command": [
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O2",
+            "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+            "/tmp/sirkit-beats-swag-tgx6r9xk/segment_tree_beats.cpp",
+            "-o",
+            "/tmp/sirkit-beats-swag-tgx6r9xk/segment_tree_beats"
+          ]
+        },
+        {
+          "id": "sliding_window_aggregation",
+          "source_hashes": {
+            "DataStructure/Sliding_Window_Aggregation.cpp": "a56213905d46763e4b79fbfa7cdb3046735c7a1bb43847efbe5660d69d66a90e"
+          },
+          "submission_sha256": "bfe62ea8346f647066dfa1fff225ffb23438e681a71fa2f6190fb4614ab35213",
+          "cases": 101,
+          "random_seed": 20261031,
+          "compile_command": [
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O2",
+            "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+            "/tmp/sirkit-beats-swag-tgx6r9xk/sliding_window_aggregation.cpp",
+            "-o",
+            "/tmp/sirkit-beats-swag-tgx6r9xk/sliding_window_aggregation"
+          ]
+        },
+        {
+          "id": "xor_basis",
+          "source_hashes": {
+            "Math/Xor_Basis.cpp": "85473d40f0c38dd526d69287d2e7c85e93466d25714c5c169f81936e0d0bc421"
+          },
+          "submission_sha256": "01112cdfa3f3a6972f3bf5436604ed5ca6b76c99b08c5b1ac40ce8fadcc6b183",
+          "cases": 102,
+          "random_seed": 20261031,
+          "compile_command": [
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O2",
+            "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+            "/tmp/sirkit-beats-swag-tgx6r9xk/xor_basis.cpp",
+            "-o",
+            "/tmp/sirkit-beats-swag-tgx6r9xk/xor_basis"
+          ]
+        }
+      ]
+    },
+    "drivers_gcc_skip_portable_native": {
+      "compiler": "/usr/bin/g++",
+      "flags": [],
+      "portable": true,
+      "checked": false,
+      "native": true,
+      "entries": [
+        {
+          "id": "segment_tree_beats",
+          "source_hashes": {
+            "DataStructure/Segment_Tree_Beats.cpp": "5b332c567f2b0f12f32348bfabc3e6e4da20fccf8d4cd35bb7c960f75f494c64"
+          },
+          "submission_sha256": "1f003a30d82dfe1d0ab3dba4f33febea147f9bd8b9f9d5fdd48920bc6661357c",
+          "cases": 101,
+          "random_seed": 20261031,
+          "compile_command": [
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O2",
+            "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+            "-march=native",
+            "/tmp/sirkit-beats-swag-a1iwllf8/segment_tree_beats.cpp",
+            "-o",
+            "/tmp/sirkit-beats-swag-a1iwllf8/segment_tree_beats"
+          ]
+        },
+        {
+          "id": "sliding_window_aggregation",
+          "source_hashes": {
+            "DataStructure/Sliding_Window_Aggregation.cpp": "a56213905d46763e4b79fbfa7cdb3046735c7a1bb43847efbe5660d69d66a90e"
+          },
+          "submission_sha256": "bfe62ea8346f647066dfa1fff225ffb23438e681a71fa2f6190fb4614ab35213",
+          "cases": 101,
+          "random_seed": 20261031,
+          "compile_command": [
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O2",
+            "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+            "-march=native",
+            "/tmp/sirkit-beats-swag-a1iwllf8/sliding_window_aggregation.cpp",
+            "-o",
+            "/tmp/sirkit-beats-swag-a1iwllf8/sliding_window_aggregation"
+          ]
+        },
+        {
+          "id": "xor_basis",
+          "source_hashes": {
+            "Math/Xor_Basis.cpp": "85473d40f0c38dd526d69287d2e7c85e93466d25714c5c169f81936e0d0bc421"
+          },
+          "submission_sha256": "01112cdfa3f3a6972f3bf5436604ed5ca6b76c99b08c5b1ac40ce8fadcc6b183",
+          "cases": 102,
+          "random_seed": 20261031,
+          "compile_command": [
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O2",
+            "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+            "-march=native",
+            "/tmp/sirkit-beats-swag-a1iwllf8/xor_basis.cpp",
+            "-o",
+            "/tmp/sirkit-beats-swag-a1iwllf8/xor_basis"
+          ]
+        }
+      ]
+    }
+  }
+}

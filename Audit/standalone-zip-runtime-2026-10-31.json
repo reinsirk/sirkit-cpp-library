@@ -1,0 +1,120 @@
+{
+  "date": "2026-10-31",
+  "task": "実配布ZIPのStandaloneExamples直接compile/run",
+  "scope": "Cbaseline full1820＋リンク修復後4profilesの固定archive bytes。最終Math/Hash/Node等の更新後ZIPの検証とは区別する。",
+  "created_utc": "2026-10-31T18:42:51.833234+00:00",
+  "archives": [
+    {
+      "edition": "full",
+      "path": "/tmp/sirkit_12h_20261031_095733/distribution_qa_1820/sirkit-cpp-library_full.zip",
+      "sha256": "2d3bcfc0fca269998cc187affc64a23072b0c8d0d59d3261f8df4697d1307ecd",
+      "standalone_examples": 103
+    },
+    {
+      "edition": "gcc",
+      "path": "/tmp/sirkit_12h_20261031_095733/distribution_qa_repaired/sirkit-cpp-library_gcc.zip",
+      "sha256": "a179d908d5b3f3333011665b3b04140cac6f41d530334fb0e84e0ebfb42fd171",
+      "standalone_examples": 103
+    },
+    {
+      "edition": "clang",
+      "path": "/tmp/sirkit_12h_20261031_095733/distribution_qa_repaired/sirkit-cpp-library_clang.zip",
+      "sha256": "72d0ac983370d8fc4c818aa0c5b643287cf6653df16b7e1733e483643711554f",
+      "standalone_examples": 103
+    },
+    {
+      "edition": "fast_gcc",
+      "path": "/tmp/sirkit_12h_20261031_095733/distribution_qa_repaired/sirkit-cpp-library_fast_gcc.zip",
+      "sha256": "2aee6d50fc1a7d2dff68e8f0c2cd177815c095f2c2636ebda104c4661b054713",
+      "standalone_examples": 103
+    },
+    {
+      "edition": "fast_clang",
+      "path": "/tmp/sirkit_12h_20261031_095733/distribution_qa_repaired/sirkit-cpp-library_fast_clang.zip",
+      "sha256": "3b80d800232aae2fa54760d6dd4574dcc9f33ae1d32c1785d20f146d9521e126",
+      "standalone_examples": 103
+    }
+  ],
+  "conditions": 618,
+  "examples_per_target": 103,
+  "targets": [
+    {
+      "edition": "full",
+      "compiler": "GCC",
+      "conditions": 103
+    },
+    {
+      "edition": "full",
+      "compiler": "Clang",
+      "conditions": 103
+    },
+    {
+      "edition": "gcc",
+      "compiler": "GCC",
+      "conditions": 103
+    },
+    {
+      "edition": "clang",
+      "compiler": "Clang",
+      "conditions": 103
+    },
+    {
+      "edition": "fast_gcc",
+      "compiler": "GCC",
+      "conditions": 103
+    },
+    {
+      "edition": "fast_clang",
+      "compiler": "Clang",
+      "conditions": 103
+    }
+  ],
+  "actual_sample_executions": 630,
+  "compile_cache_keys": 618,
+  "compiler_versions": {
+    "Clang": "Ubuntu clang version 21.1.8 (6ubuntu1)\nTarget: x86_64-pc-linux-gnu\nThread model: posix\nInstalledDir: /usr/lib/llvm-21/bin\n",
+    "GCC": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0\nCopyright (C) 2025 Free Software Foundation, Inc.\nThis is free software; see the source for copying conditions.  There is NO\nwarranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
+  },
+  "flags": [
+    "-std=c++23",
+    "-O2",
+    "-Wall",
+    "-Wextra"
+  ],
+  "cpu": 0,
+  "self_containment": "ZIPのStandaloneExamples entry bytesだけをSHA名cppへ保存し、そのままcompile。workspaceへの展開/上書きなし、空cwd、own/vendor -Iなし、CPATH/CPLUS_INCLUDE_PATH等を除外。独立lexical scannerでquoted/atcoder/macro include残存を事前拒否。",
+  "oracle": "完了2840-condition normal example/default実行の保存済みstdoutを参照。初回full103は各compilerで保存済みnormal codeSHA/Example mainSHA/実入力/compilerVersionが一致。正常終了と出力token一致を確認するintegration QAで、数学的なアルゴリズム独立証明ではない。",
+  "input": "stdinを読むimplicit_treap_erase_between例はVerifyに対応する3有効入力を実行。残る102例はstdin readerなし。空入力で本体未実行のPASSを根拠にしていない。",
+  "checker": "通常はtoken完全一致。line_container_2d_exampleの第7tokenだけ-0/0を同値として扱う（APIがゼロの符号を規定しないため）。他のfloat/整数/文字列は許容を広げない。",
+  "fast_contract": "有効入力だけを使用。NodeはZIPに入ったraw-pointer adapter済みmainをそのまま実行し、normal出力と比較。例外/不正入力/資源破棄/リークの保証を検査していない。",
+  "timeouts": {
+    "compile_seconds": 120,
+    "run_seconds": 30
+  },
+  "performance_measurement": false,
+  "online_status": "not_evaluated",
+  "cache": "compileはentry SHA＋compiler command/version＋flags、runはさらに実入力/期待出力/checker SHAでキー化。archiveのDoc等だけの変更では再ビルド不要。",
+  "all_pass": true,
+  "evidence": {
+    "validate.py": {
+      "path": "/tmp/sirkit_12h_20261031_095733/standalone_zip_validation/validate.py",
+      "sha256": "f2df209643180e3067a92fa74323f91be4643fec3e3f0c712a0dac5e2576f8c7"
+    },
+    "snapshot.json": {
+      "path": "/tmp/sirkit_12h_20261031_095733/standalone_zip_validation/snapshot.json",
+      "sha256": "d4672e6302cc3d3b0dc2ca5d63b49123071fa5db2c59716a94d0783849d5b58d"
+    },
+    "checkpoint.json": {
+      "path": "/tmp/sirkit_12h_20261031_095733/standalone_zip_validation/checkpoint.json",
+      "sha256": "717e8eaeeab529847ead12b617ea6b6377527d2b6a5284ff947b1366303cdaec"
+    },
+    "reference_checkpoint.snapshot.json": {
+      "path": "/tmp/sirkit_12h_20261031_095733/standalone_zip_validation/reference_checkpoint.snapshot.json",
+      "sha256": "63e471041cf1a156900dade6ee6124f2bb70933cc1ee84fcd056dc3681f4e9b2"
+    }
+  },
+  "pause": "/tmp/sirkit_12h_20261031_095733/standalone_zip_validation/pause",
+  "pause_ack": "/tmp/sirkit_12h_20261031_095733/standalone_zip_validation/pause_ack",
+  "final_delta_pending": true,
+  "repository_mutations": "なし。全cpp/実行証拠/Auditはtmp。"
+}

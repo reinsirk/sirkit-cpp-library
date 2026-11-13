@@ -1,0 +1,20 @@
+{
+  "date_jst": "2026-10-28",
+  "source": "Math/Eratosthenes.cpp",
+  "source_sha256": "1b131dd83e7c1100d39a599d2e414541858907eb43ba6c8a4be245e498c7c166",
+  "SPDX": "CC0-1.0",
+  "baseline": "現在のCC0実装を基準に改修。数学的な篩・bit加算の方式と特定のコードの継承を区別する。",
+  "new_implementation": "回転によるマスク更新、3入力をxor/and/orで桁上がりと下位に分ける集計コードを記述した。今回、新しい第三者実装の閲覧・コピーは行っていない。",
+  "ownership": "std::vectorによる所有は従来どおり。new式・新規の所有フィールド・手動解放・追加動的確保なし。",
+  "portability": "std::rotlは標準C++20の演算。AVX2 intrinsic/gnu::targetはGCC/Clang拡張であり標準C++とは説明しない。追加helperは全てinline noexcept、reinsirk::detail内に置き、既存の共通guardとSIRKIT_DISABLE_SIMDで除外する。",
+  "API": "公開APIとmainを変更しない。便利な列挙形式は既存for_each_primeで利用でき、新しい公開APIは追加しない。",
+  "previous_online": {
+    "previous_sha256": "de16c4a5fb868f3e54e00752de02011df5d0dfa99755b87fb7110254e6252cab",
+    "current_sha256": "3cde64e8125a0601767da27554a7d653024935a680f91784c36cd7a5b73ebcdf",
+    "comment_whitespace_stripped_equal": true
+  },
+  "documentation": [
+    "Document/prime_sieve.md",
+    "Document/simd.md"
+  ]
+}

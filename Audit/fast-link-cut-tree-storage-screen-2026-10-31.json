@@ -1,0 +1,213 @@
+{
+  "date": "2026-10-31",
+  "task": "Fast LinkCutTree bounded storage screen",
+  "created_utc": "2026-10-31T19:15:56.261963+00:00",
+  "decision": "reject_after_initial_screen",
+  "adopted": false,
+  "shared_changes": [],
+  "scope": "GCC15.2 Fast profile/default C++23 O2のみの速度screen。全compiler/nativeの改善・退行とは断定しない。大きな速度利益が見えず追加採用測定はしない。",
+  "candidates": {
+    "baseline": "現行Fast/GCCまたはFast/Clangの入力検査除去のみ版をbyte保存。",
+    "packed": "count/反転をmake_unsigned_t<int>の1wordへ。reverse bitはnumeric_limits<int>::digits、低bitsはn<=INT_MAXに対応。count getterはsize_tでMapping overload/API型を保つ。",
+    "unreleased": "const Config*をnew Configで生成し解放を省く。Node/ancestor配列はcanonical UnreleasedVectorで最後の破棄だけを省く。実装のclear/reset/copy代入で旧領域を最後に破棄する際も省略される。vector自身の成長/更新は通常委譲。",
+    "combined": "packedとunreleasedを併用。",
+    "preserved": "failed guard/catch、容量/索引上限、未接続/非辺/順位のoptional戻り値、非可換合成/遅延/根操作/コピー独立/move元空は変更していない。"
+  },
+  "correctness": {
+    "cpu": 0,
+    "reference_configs": 8,
+    "count_type_and_long_chain_configs": 12,
+    "layout_configs": 8,
+    "layout": [
+      {
+        "compiler": "GCC",
+        "candidate": "baseline",
+        "source_sha256": "0217b5770b6d8309297e90e7cdfc13e7ecd39ed4a0f9987de9300fcbffcf1a69",
+        "layout": "48 8 72 80",
+        "status": "PASS"
+      },
+      {
+        "compiler": "GCC",
+        "candidate": "packed",
+        "source_sha256": "26873181cda38d44d8ebce353e0e89623c838170ac28ceeeb7631c9d8d0bc17e",
+        "layout": "40 8 64 80",
+        "status": "PASS"
+      },
+      {
+        "compiler": "GCC",
+        "candidate": "unreleased",
+        "source_sha256": "33c74315139ace0f28722a769bb1b136bc301c8764f642d5cdfe5a93cca38e51",
+        "layout": "48 8 72 72",
+        "status": "PASS"
+      },
+      {
+        "compiler": "GCC",
+        "candidate": "combined",
+        "source_sha256": "ade80019f6c470c65710c9bfa11ba6362bef10b126eef283108c961871315bca",
+        "layout": "40 8 64 72",
+        "status": "PASS"
+      },
+      {
+        "compiler": "Clang",
+        "candidate": "baseline",
+        "source_sha256": "6c17493bde424eb49b0ab7fefa04a27c3ee427a278f0d456df025cc4095673de",
+        "layout": "48 8 72 80",
+        "status": "PASS"
+      },
+      {
+        "compiler": "Clang",
+        "candidate": "packed",
+        "source_sha256": "0faef67b3bffba4e4f3ca0d85019ef68719b3f987bcf8502bb497afd60231eec",
+        "layout": "40 8 64 80",
+        "status": "PASS"
+      },
+      {
+        "compiler": "Clang",
+        "candidate": "unreleased",
+        "source_sha256": "24445589a87542fde6c53b795e06a509dbed19fc0b1fd6496a39c18283ba7d1c",
+        "layout": "48 8 72 72",
+        "status": "PASS"
+      },
+      {
+        "compiler": "Clang",
+        "candidate": "combined",
+        "source_sha256": "28fc701eccae9d257b1195e099258ffc1f846bfc45c8b06f31ed3a8aa56f7937",
+        "layout": "40 8 64 72",
+        "status": "PASS"
+      }
+    ],
+    "checks": "sum/affine lazy/文字列非可換/関数合成/任意ラベル/根/LCA/kth/copy/move/reset、size_t以外をdeleteするMapping、300000頂点の長鎖を既存独立参照で照合。",
+    "status": "PASS",
+    "limits": "初回候補の正常入力検証のみ。ASan/失敗注入・広範な全設定の正式認証は未実施、採用候補として配布しない。"
+  },
+  "performance": {
+    "cpu": 12,
+    "root_exclusive_window": true,
+    "records": 380,
+    "repeats": 2,
+    "candidates_plus_control": 5,
+    "all_checksums_equal": true,
+    "compiler": "/usr/bin/g++ 15.2",
+    "flags": [
+      "-std=c++23",
+      "-O2"
+    ],
+    "verify": "同じ3main・共通fastIO・同じ合法入力。1024/100000頂点、各100000/200000操作。LC sum/compositeとrange affineを各2サイズ。",
+    "api": "32/100000頂点、chain/branch、plain/lazy、path/kth/LCA/linkcut/point update/copy/build。API build/copyはbenchmark-only empty asm escapeを使い省略を防ぐ。各全期間を計測。",
+    "metrics": "Verifyは同じthread CPU timer、APIはbuild/query/destroyを分離。process CPU/wallもrawに保存。GCC/default一回目のscreenを採用判断の十分な改善なしという根拠にする。",
+    "baseline_ratio_geomean": {
+      "verify": {
+        "packed": 1.0052453297460429,
+        "unreleased": 1.00084110542102,
+        "combined": 0.9865366619029283,
+        "control": 1.0098287075438255
+      },
+      "api query": {
+        "packed": 0.995718971055796,
+        "unreleased": 1.0073282499773144,
+        "combined": 0.9921607343918145,
+        "control": 1.0091204014369854
+      },
+      "copy/build": {
+        "packed": 0.9355742817881902,
+        "unreleased": 2.694044997426509,
+        "combined": 2.3444156686244013,
+        "control": 1.023148470702265
+      },
+      "large query": {
+        "packed": 0.996042779319981,
+        "unreleased": 1.0109103814057758,
+        "combined": 0.9914352591960146,
+        "control": 1.0195966571299
+      },
+      "small query": {
+        "packed": 0.995395268059973,
+        "unreleased": 1.0037588117270086,
+        "combined": 0.9928867404485606,
+        "control": 0.9987517882442455
+      }
+    },
+    "interpretation": "Query/Verify差はcontrolの変動幅と同程度。一部packed lazy操作が約5%遅くなる。unreleased/combinedの繰返しcopy/buildは2.69/2.34倍で、最後の領域保持による新領域への書込を含む実際の全工程コスト。メモリ減少だけで速度改善とはしない。"
+  },
+  "source_hashes": {
+    "baseline_GCC.cpp": "0217b5770b6d8309297e90e7cdfc13e7ecd39ed4a0f9987de9300fcbffcf1a69",
+    "packed_GCC.cpp": "26873181cda38d44d8ebce353e0e89623c838170ac28ceeeb7631c9d8d0bc17e",
+    "unreleased_GCC.cpp": "33c74315139ace0f28722a769bb1b136bc301c8764f642d5cdfe5a93cca38e51",
+    "combined_GCC.cpp": "ade80019f6c470c65710c9bfa11ba6362bef10b126eef283108c961871315bca",
+    "baseline_Clang.cpp": "6c17493bde424eb49b0ab7fefa04a27c3ee427a278f0d456df025cc4095673de",
+    "packed_Clang.cpp": "0faef67b3bffba4e4f3ca0d85019ef68719b3f987bcf8502bb497afd60231eec",
+    "unreleased_Clang.cpp": "24445589a87542fde6c53b795e06a509dbed19fc0b1fd6496a39c18283ba7d1c",
+    "combined_Clang.cpp": "28fc701eccae9d257b1195e099258ffc1f846bfc45c8b06f31ed3a8aa56f7937"
+  },
+  "evidence": {
+    "prepare.py": {
+      "path": "/tmp/sirkit_12h_20261031_095733/fast_lct/prepare.py",
+      "sha256": "296552336d93dffc8ab41d6c5760ee8754cffd7f248835ceb2798a7f87bf826f"
+    },
+    "layout.json": {
+      "path": "/tmp/sirkit_12h_20261031_095733/fast_lct/layout.json",
+      "sha256": "88eb43b48db0f70c1437952ef0d9f29ad614f3b306f445c9e1cf812467b816df"
+    },
+    "quick_validation.json": {
+      "path": "/tmp/sirkit_12h_20261031_095733/fast_lct/quick_validation.json",
+      "sha256": "eee05ce440df62fb002b0155cdbbe4d8be2a0bbc16556c22a0d71e9f133d520a"
+    },
+    "count_long_validation.json": {
+      "path": "/tmp/sirkit_12h_20261031_095733/fast_lct/count_long_validation.json",
+      "sha256": "d1516f18d5b7be5cfdbce151315f164517dcc16d9e5c9ce7b6b57b3f8928e39c"
+    },
+    "count_type_test.cpp": {
+      "path": "/tmp/sirkit_12h_20261031_095733/fast_lct/count_type_test.cpp",
+      "sha256": "bd40e37f5fb852ffe6de3a2da1c8b6d1f340fe2e361af8abb411e642c4819777"
+    },
+    "api_benchmark.cpp": {
+      "path": "/tmp/sirkit_12h_20261031_095733/fast_lct/api_benchmark.cpp",
+      "sha256": "6c1fdff2d4f2dc8625eeb9d0ddbd949a6a16fa6e3cf36f6c172746cbe4a237d7"
+    },
+    "prepare_screen.py": {
+      "path": "/tmp/sirkit_12h_20261031_095733/fast_lct/prepare_screen.py",
+      "sha256": "9cd66154ab2400dcae3cfd2b83207988d0b8ac9b06cc33aacead14bafeb51ea8"
+    },
+    "rebuild_api.py": {
+      "path": "/tmp/sirkit_12h_20261031_095733/fast_lct/rebuild_api.py",
+      "sha256": "e6e138451116d60e27207746af3cb0e2a54b7b43bcd213e988040a09df9b1555"
+    },
+    "screen_binaries.json": {
+      "path": "/tmp/sirkit_12h_20261031_095733/fast_lct/screen_binaries.json",
+      "sha256": "a21aced6adbb561052887d1823b2ef2f20aaf05ed16ea8263942a41018637cb8"
+    },
+    "inputs.json": {
+      "path": "/tmp/sirkit_12h_20261031_095733/fast_lct/inputs.json",
+      "sha256": "dc5873f3ba9824044132e625de5201a11d57b549b0ac143cb751c3713d2c9d18"
+    },
+    "run_screen.py": {
+      "path": "/tmp/sirkit_12h_20261031_095733/fast_lct/run_screen.py",
+      "sha256": "4f94e88279d7b859d1118e4cc1c4084ce191c69bbffd3bfcb9193cab65a60702"
+    },
+    "screen_raw.json": {
+      "path": "/tmp/sirkit_12h_20261031_095733/fast_lct/screen_raw.json",
+      "sha256": "ffc1ba5c83cf9d806804e3b892c4daff98532518d2c8160f8938261a3738e3c0"
+    },
+    "aggregate_screen.py": {
+      "path": "/tmp/sirkit_12h_20261031_095733/fast_lct/aggregate_screen.py",
+      "sha256": "fa8085af67b26156a0a2efcd24783ca63cda71ebd9a17b98bb25ef59d0d906d3"
+    },
+    "screen_aggregate.json": {
+      "path": "/tmp/sirkit_12h_20261031_095733/fast_lct/screen_aggregate.json",
+      "sha256": "189434c4e87466e073719986ac513b0923053aa3b1b2c05fdb07ce7b7f86b522"
+    }
+  },
+  "normal_source_changes": "なし。Formal/Fast/registry/generator/packageにも変更なし。",
+  "publication": "tmp experiment only、現行配布へ適用しない。",
+  "portability_and_measurement_freeze": {
+    "screen_used_portable_CountWord": true,
+    "proof": "run_screen.pyは全380row直前に実sourceSHA/binarySHAをmanifestへ照合。最終sourceはmake_unsigned_t<int>＋numeric_limits<int>::digits。GCC screen manifest/rawと最終sourceが全件同じSHA。",
+    "prototype_note": "初期のuint32/bit31版は性能測定前に置換し、reference/layoutを再実行した。初期版の性能rawは存在しない。",
+    "screen_source_hashes": {
+      "baseline": "0217b5770b6d8309297e90e7cdfc13e7ecd39ed4a0f9987de9300fcbffcf1a69",
+      "packed": "26873181cda38d44d8ebce353e0e89623c838170ac28ceeeb7631c9d8d0bc17e",
+      "unreleased": "33c74315139ace0f28722a769bb1b136bc301c8764f642d5cdfe5a93cca38e51",
+      "combined": "ade80019f6c470c65710c9bfa11ba6362bef10b126eef283108c961871315bca"
+    }
+  }
+}

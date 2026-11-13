@@ -1,0 +1,329 @@
+{
+  "date": "2026-11-10",
+  "prepared_utc": "2026-11-10T05:33:10.897256+00:00",
+  "scope": "新規ライブラリ通常版の次のVerifyとしてZ配列を選び、ACL互換のglobal z_algorithmへ統一。",
+  "public_api": {
+    "reference": "https://atcoder.github.io/ac-library/production/document_ja/string.html",
+    "signature_reference": "https://raw.githubusercontent.com/atcoder/ac-library/master/atcoder/string.hpp",
+    "overloads": [
+      "std::vector<int> z_algorithm(const std::string&)",
+      "template<class T> std::vector<int> z_algorithm(const std::vector<T>&)",
+      "添字アクセス可能なSequenceに対する同名の追加overload"
+    ],
+    "preserved": [
+      "std::string_view/std::array/std::span/独自の列への対応",
+      "PrefixMatches/ZMatches",
+      "空列/全バイト/符号なし/最小最大整数/比較のみの型",
+      "検査省略時もINT_MAX未満の長さ上限"
+    ],
+    "removed": "ZAlgorithmという別名は残さずz_algorithmへ一本化。"
+  },
+  "implementation": "旧来の独立実装をreinsirk::detail::z_algorithm_implへ移し、公開overloadから共有。計算本体は例外メッセージ内の関数名以外byte一致。文字列を整数vectorへ変換せず、入力を直接比較する。新しい高速化や性能比は主張しない。",
+  "main": "Verify mainはZAlgorithmをz_algorithmへ置換した1箇所以外byte一致。共通IOもbyte一致。",
+  "validation": {
+    "asan_ubsan_settings": 8,
+    "allocation_settings": 2,
+    "tests": [
+      {
+        "compiler": "gcc",
+        "test": "z_algorithm_acl_api_test",
+        "skip_runtime_checks": false,
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/z_algorithm_acl_api_test.cpp",
+          "-o",
+          "/tmp/sirkit_z_api_20261110/gcc_z_algorithm_acl_api_test_0"
+        ],
+        "stdout": "z_algorithm ACL API checks=10256\n",
+        "returncode": 0,
+        "stderr": "",
+        "source_sha256": "5cf3f57d55a59981d72441cab7c5bb1417cea2af01a2498161732c1930aae29f"
+      },
+      {
+        "compiler": "gcc",
+        "test": "z_algorithm_acl_api_test",
+        "skip_runtime_checks": true,
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/z_algorithm_acl_api_test.cpp",
+          "-o",
+          "/tmp/sirkit_z_api_20261110/gcc_z_algorithm_acl_api_test_1"
+        ],
+        "stdout": "z_algorithm ACL API checks=10256\n",
+        "returncode": 0,
+        "stderr": "",
+        "source_sha256": "5cf3f57d55a59981d72441cab7c5bb1417cea2af01a2498161732c1930aae29f"
+      },
+      {
+        "compiler": "gcc",
+        "test": "string_algorithms_reference_test",
+        "skip_runtime_checks": false,
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/string_algorithms_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_z_api_20261110/gcc_string_algorithms_reference_test_0"
+        ],
+        "stdout": "string reference checks=5973836\n",
+        "returncode": 0,
+        "stderr": "",
+        "source_sha256": "3b9b5dda8ccfc48ea07741cad4342f85a92ddfc9bfc6326c82fd5317ba4daf1d"
+      },
+      {
+        "compiler": "gcc",
+        "test": "string_algorithms_reference_test",
+        "skip_runtime_checks": true,
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/string_algorithms_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_z_api_20261110/gcc_string_algorithms_reference_test_1"
+        ],
+        "stdout": "string reference checks=5973827\n",
+        "returncode": 0,
+        "stderr": "",
+        "source_sha256": "3b9b5dda8ccfc48ea07741cad4342f85a92ddfc9bfc6326c82fd5317ba4daf1d"
+      },
+      {
+        "compiler": "gcc",
+        "test": "string_math_allocation_test",
+        "skip_runtime_checks": false,
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/string_math_allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_z_api_20261110/gcc_string_math_allocation_test_0"
+        ],
+        "stdout": "allocation checks=2340 failures=70 live_delta=0\n",
+        "returncode": 0,
+        "stderr": "",
+        "source_sha256": "da4194ae705598a340da4c3e1232540ebec25efc0c35d1778dad72fa7cfdfab7"
+      },
+      {
+        "compiler": "clang",
+        "test": "z_algorithm_acl_api_test",
+        "skip_runtime_checks": false,
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/z_algorithm_acl_api_test.cpp",
+          "-o",
+          "/tmp/sirkit_z_api_20261110/clang_z_algorithm_acl_api_test_0"
+        ],
+        "stdout": "z_algorithm ACL API checks=10256\n",
+        "returncode": 0,
+        "stderr": "",
+        "source_sha256": "5cf3f57d55a59981d72441cab7c5bb1417cea2af01a2498161732c1930aae29f"
+      },
+      {
+        "compiler": "clang",
+        "test": "z_algorithm_acl_api_test",
+        "skip_runtime_checks": true,
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/z_algorithm_acl_api_test.cpp",
+          "-o",
+          "/tmp/sirkit_z_api_20261110/clang_z_algorithm_acl_api_test_1"
+        ],
+        "stdout": "z_algorithm ACL API checks=10256\n",
+        "returncode": 0,
+        "stderr": "",
+        "source_sha256": "5cf3f57d55a59981d72441cab7c5bb1417cea2af01a2498161732c1930aae29f"
+      },
+      {
+        "compiler": "clang",
+        "test": "string_algorithms_reference_test",
+        "skip_runtime_checks": false,
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/string_algorithms_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_z_api_20261110/clang_string_algorithms_reference_test_0"
+        ],
+        "stdout": "string reference checks=5973836\n",
+        "returncode": 0,
+        "stderr": "",
+        "source_sha256": "3b9b5dda8ccfc48ea07741cad4342f85a92ddfc9bfc6326c82fd5317ba4daf1d"
+      },
+      {
+        "compiler": "clang",
+        "test": "string_algorithms_reference_test",
+        "skip_runtime_checks": true,
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/string_algorithms_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_z_api_20261110/clang_string_algorithms_reference_test_1"
+        ],
+        "stdout": "string reference checks=5973827\n",
+        "returncode": 0,
+        "stderr": "",
+        "source_sha256": "3b9b5dda8ccfc48ea07741cad4342f85a92ddfc9bfc6326c82fd5317ba4daf1d"
+      },
+      {
+        "compiler": "clang",
+        "test": "string_math_allocation_test",
+        "skip_runtime_checks": false,
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/string_math_allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_z_api_20261110/clang_string_math_allocation_test_0"
+        ],
+        "stdout": "allocation checks=2340 failures=70 live_delta=0\n",
+        "returncode": 0,
+        "stderr": "",
+        "source_sha256": "da4194ae705598a340da4c3e1232540ebec25efc0c35d1778dad72fa7cfdfab7"
+      }
+    ],
+    "final_checks": [
+      {
+        "compiler": "gcc",
+        "old_and_new_samples_pass": true,
+        "text_identical": false,
+        "before_text_sha256": "6fa153a063f2db00e99f26c68c427efd8ade46ca86e2119ba47d522c8e613c9e",
+        "after_text_sha256": "a3d7ab70f62df5e4f3040b79c2b39f4f674b16b82366abcbe476d2ace8dce2a5",
+        "example_output": "5 0 3 0 1 \n0 2 \n3\n"
+      },
+      {
+        "compiler": "clang",
+        "old_and_new_samples_pass": true,
+        "text_identical": false,
+        "before_text_sha256": "dc9b7e2ba9efcfe63eee73bbb91f3336f41dce3eb1205e276b46d0d8b54b210a",
+        "after_text_sha256": "63b43db37ea8f434c40bc9833aa30a2d778e65b1c55afed5c1f09e17075e0dd3",
+        "example_output": "5 0 3 0 1 \n0 2 \n3\n"
+      }
+    ],
+    "variant_and_example_samples": 10,
+    "sanitizer_note": "ASan+UBSanはdetect_leaks=0。確保失敗/生存割当数の独立試験はGCC/Clangとも2340 checks/70 failures/live_delta=0。",
+    "coverage": "ACL文字列/vectorの関数ポインタ型、推論と明示T、文字列リテラル、全二値列n<=10、string_view/array/span/equality-only、旧来のnaive参照、検索補助、20万同字列、INT_MAX/SIZE_MAXの未参照長さ拒否。",
+    "comment_note": "検証後は等値比較が同値関係である前提をAPI説明コメントとDocumentへ追記しただけで、C++本体のtokenは変更しない。GCC/Clangの機械語全体は旧公開API版とはbyte一致しないため、実行コード同一や速度向上とは説明しない。"
+  },
+  "documentation": {
+    "path": "Document/z_algorithm.md",
+    "lines": 26,
+    "scope": "26行で概要・API表・例・前提を整理。60行へ水増しせず、変更履歴・測定記録はDocument/READMEへ追加しない。"
+  },
+  "provenance": "既存CC0の独立実装を維持し、ACLは公開インターフェースの参考。ACLのZ計算本体を取り込まない。",
+  "verify": {
+    "id": "z_algorithm",
+    "file": "Verify/current/submissions/z_algorithm.cpp",
+    "url": "https://judge.yosupo.jp/problem/zalgorithm",
+    "status": "未提出",
+    "skip_runtime_checks": true,
+    "acl_external_dependency": false
+  },
+  "sources": {
+    "String/Z_Algorithm.cpp": {
+      "sha256": "6a3d9811bc19ad9edbb356daeca92162543910d766480c9da8e697f455f45daf",
+      "bytes": 3763
+    },
+    "Document/z_algorithm.md": {
+      "sha256": "5e201a134f46ac89ea6a03d5b1f9ba341ce4f7ec5f7b7f68b028704020fe72d2",
+      "bytes": 2502
+    },
+    "Examples/z_algorithm_example.cpp": {
+      "sha256": "9cd318fb1be1f773891a384e6b3504949ae41a62f22c3f5501ef94460b70c661",
+      "bytes": 467
+    },
+    "Verify/current/drivers/z_algorithm_main.cpp": {
+      "sha256": "660c45064c429ba869f70dbd69ce34584719f17adfeb818580007192eb8876a6",
+      "bytes": 293
+    },
+    "Verify/current/common/fast_io.hpp": {
+      "sha256": "291bf8dbc56a1d691f6256fe95b4714183c2cf5d9e55e4bef240e31d1eb178c1",
+      "bytes": 9227
+    },
+    "Verify/current/tests/z_algorithm_acl_api_test.cpp": {
+      "sha256": "5cf3f57d55a59981d72441cab7c5bb1417cea2af01a2498161732c1930aae29f",
+      "bytes": 3234
+    },
+    "Verify/current/tests/string_algorithms_reference_test.cpp": {
+      "sha256": "3b9b5dda8ccfc48ea07741cad4342f85a92ddfc9bfc6326c82fd5317ba4daf1d",
+      "bytes": 7337
+    },
+    "Verify/current/tests/string_math_allocation_test.cpp": {
+      "sha256": "da4194ae705598a340da4c3e1232540ebec25efc0c35d1778dad72fa7cfdfab7",
+      "bytes": 3504
+    }
+  },
+  "evidence": {
+    "path": "Audit/data/z-algorithm-acl-verify-preparation-2026-11-10.zip",
+    "sha256": "21c62664f8286b5f4af6fc268b1b1aee435045902940512f352b0f7318689130",
+    "entries": 44
+  }
+}

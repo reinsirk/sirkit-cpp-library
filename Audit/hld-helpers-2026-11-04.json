@@ -1,0 +1,484 @@
+{
+  "date": "2026-11-04",
+  "scope": "HLDの分離型APIを追加。既存本体のホットパス・main・IO・Fenwickを維持。",
+  "source_sha256": "6645ff8728c693529f15f587e8560a428a2423a87dd58b9de6576416389a787d",
+  "online": {
+    "confirmation": "Audit/online-hld-415174-2026-11-04.json",
+    "records": [
+      {
+        "id": "hld_jump",
+        "url": "https://judge.yosupo.jp/submission/415174",
+        "status": "AC",
+        "time_ms": 246,
+        "previous_ms": 272
+      },
+      {
+        "id": "hld_vertex_add_path_sum",
+        "url": "https://judge.yosupo.jp/submission/415175",
+        "status": "AC",
+        "time_ms": 327,
+        "previous_ms": 337
+      }
+    ],
+    "scope": "ACは補助API追加前の本体。現行既存mainの.textはGCC/Clangで等価。現行ソース全体と追加2本はオンライン再提出・提出待ち。"
+  },
+  "research": [
+    {
+      "url": "https://nyaannyaan.github.io/library/tree/heavy-light-decomposition.hpp.html",
+      "API": "path_query/path_noncommutative_query/subtree_queryによる区間コールバック"
+    },
+    {
+      "url": "https://ei1333.github.io/library/graph/tree/heavy-light-decomposition.hpp.html",
+      "API": "queryで集計結果を返し、addで区間更新コールバックを呼ぶ"
+    },
+    {
+      "url": "https://github.com/hitonanode/cplib-cpp/blob/master/tree/heavy_light_decomposition.hpp",
+      "API": "segtree_rearrangeと区間・非可換コールバック",
+      "retrieval": {
+        "api_url": "https://api.github.com/repos/hitonanode/cplib-cpp/contents/tree/heavy_light_decomposition.hpp",
+        "source_url": "https://raw.githubusercontent.com/hitonanode/cplib-cpp/master/tree/heavy_light_decomposition.hpp",
+        "git_blob_sha": "eb352c502d6b1f6239371bccbe36211e5ee7e86e"
+      }
+    }
+  ],
+  "licensing": "API設計を調査し、既存の自作HLDの区間走査に補助を自作。外部実装の本体をコピーせずCC0を維持。MITのhitonanode参照本文・外部の問題生成器本文は証拠ZIPに格納しない。",
+  "changes": [
+    "reorder/restoreでvectorをDFS添字順と頂点順へコピー。コピー可能なら既定構築不要、vector<bool>も対応。",
+    "path_prodはsum、ACL形式segtree/lazy_segtreeの演算推論、任意のprod/sum/関数に対応。BIT/Segtree自体に変更や依存を追加せず呼出時に渡す。",
+    "汎用path_prodの型はquery戻り値から決め、identityが整数リテラル0でもint64結果を切り詰めない。整数和は型幅で周回し、標準C++代替経路を用意。",
+    "可換版は型で可換性を推定せず前提として明記。非可換は向き対応queryまたは正しいreverseを要求。3引数queryと独自reverseの併用は制約で拒否。",
+    "subtree_prod/path_apply/subtree_applyを追加。作用は値で受け、集計器内部の値への別名でも更新中に作用が変化しない。",
+    "path_prod/path_applyは同一成分が前提。検査時は別の木を例外。集計器の並び/長さは利用側が用意。外部集計器で途中の例外が起きた場合は変更を巻き戻さない。",
+    "HLDは集計器の参照を保持しない。所有はvector、直接newなし。reorderの長さはO(1)検査、検査だけの全走査は追加しない。"
+  ],
+  "performance": {
+    "environment": "i9-14900K P-Core CPU12。GCC15.2.0/Clang21.1.8、C++23 -O2 SKIP_RUNTIME_CHECKS。-march=nativeや最適化pragmaなし。既存CPU設定を変更せず、同一main/IO/Fenwickで逐次測定。",
+    "runs": 252,
+    "repetitions": 7,
+    "cases": 6,
+    "ratios": [
+      {
+        "compiler": "gcc",
+        "case": "custom_vertex_add_path_sum_250000_balanced",
+        "median_cpu_ns": {
+          "selected": 70436000,
+          "control": 72102000,
+          "ordered": 71926000
+        },
+        "experimental_ratio": 0.9792842643828379,
+        "adopted_ratio": 1.0
+      },
+      {
+        "compiler": "gcc",
+        "case": "custom_vertex_add_path_sum_250000_random",
+        "median_cpu_ns": {
+          "selected": 66056000,
+          "control": 66747000,
+          "ordered": 66045000
+        },
+        "experimental_ratio": 1.0001665531077295,
+        "adopted_ratio": 1.0
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_vertex_add_path_sum_line_0",
+        "median_cpu_ns": {
+          "selected": 95604000,
+          "control": 96369000,
+          "ordered": 96308000
+        },
+        "experimental_ratio": 0.9926901192008971,
+        "adopted_ratio": 1.0
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_vertex_add_path_sum_long-path-decomposition_killer_0",
+        "median_cpu_ns": {
+          "selected": 55699000,
+          "control": 54847000,
+          "ordered": 54747000
+        },
+        "experimental_ratio": 1.01738908068022,
+        "adopted_ratio": 1.0
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_vertex_add_path_sum_max_random_0",
+        "median_cpu_ns": {
+          "selected": 162525000,
+          "control": 163037000,
+          "ordered": 162567000
+        },
+        "experimental_ratio": 0.9997416449832992,
+        "adopted_ratio": 1.0
+      },
+      {
+        "compiler": "gcc",
+        "case": "official_vertex_add_path_sum_max_random_2",
+        "median_cpu_ns": {
+          "selected": 163149000,
+          "control": 162524000,
+          "ordered": 162501000
+        },
+        "experimental_ratio": 1.0039876677681983,
+        "adopted_ratio": 1.0
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_vertex_add_path_sum_250000_balanced",
+        "median_cpu_ns": {
+          "selected": 73016000,
+          "control": 76067000,
+          "ordered": 75693000
+        },
+        "experimental_ratio": 0.964633453555811,
+        "adopted_ratio": 0.964633453555811
+      },
+      {
+        "compiler": "clang",
+        "case": "custom_vertex_add_path_sum_250000_random",
+        "median_cpu_ns": {
+          "selected": 68087000,
+          "control": 69839000,
+          "ordered": 69817000
+        },
+        "experimental_ratio": 0.9752209347293639,
+        "adopted_ratio": 0.9752209347293639
+      },
+      {
+        "compiler": "clang",
+        "case": "official_vertex_add_path_sum_line_0",
+        "median_cpu_ns": {
+          "selected": 96463000,
+          "control": 96506000,
+          "ordered": 96561000
+        },
+        "experimental_ratio": 0.9989850975031327,
+        "adopted_ratio": 0.9989850975031327
+      },
+      {
+        "compiler": "clang",
+        "case": "official_vertex_add_path_sum_long-path-decomposition_killer_0",
+        "median_cpu_ns": {
+          "selected": 53794000,
+          "control": 54178000,
+          "ordered": 54277000
+        },
+        "experimental_ratio": 0.9911012030878641,
+        "adopted_ratio": 0.9911012030878641
+      },
+      {
+        "compiler": "clang",
+        "case": "official_vertex_add_path_sum_max_random_0",
+        "median_cpu_ns": {
+          "selected": 169970000,
+          "control": 172865000,
+          "ordered": 172786000
+        },
+        "experimental_ratio": 0.9837023832949429,
+        "adopted_ratio": 0.9837023832949429
+      },
+      {
+        "compiler": "clang",
+        "case": "official_vertex_add_path_sum_max_random_2",
+        "median_cpu_ns": {
+          "selected": 170297000,
+          "control": 172186000,
+          "ordered": 171794000
+        },
+        "experimental_ratio": 0.9912860751830681,
+        "adopted_ratio": 0.9912860751830681
+      }
+    ],
+    "selection": "可換なpath_prodだけClangでは区間順の保存を省く。GCCは大規模killerの実験で1.7%後退したため既存の順序付き走査を使用。非可換は両コンパイラで順序付き。",
+    "scope": "新補助Verifyの同じmainで内部実装のみ比較。既存2本の今回の実行時間改善を主張しない。Clangの新補助可換経路は比較対象に対し約0〜3.5%短縮。小規模の追加CPU切替費用なし。",
+    "proof": [
+      {
+        "compiler": "gcc",
+        "benchmark_label": "ordered",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "/tmp/sirkit_hld_415174_20261104/helper_final.cpp",
+          "-o",
+          "/tmp/sirkit_hld_415174_20261104/gcc_final"
+        ],
+        "source_sha256": "6645ff8728c693529f15f587e8560a428a2423a87dd58b9de6576416389a787d",
+        "text_sha256": "71dbf53803ad6d799ced93e3fd9a5cf85685301399f304bd5902ed340006995d",
+        "exact_text_match": true
+      },
+      {
+        "compiler": "clang",
+        "benchmark_label": "selected",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "/tmp/sirkit_hld_415174_20261104/helper_final.cpp",
+          "-o",
+          "/tmp/sirkit_hld_415174_20261104/clang_final"
+        ],
+        "source_sha256": "6645ff8728c693529f15f587e8560a428a2423a87dd58b9de6576416389a787d",
+        "text_sha256": "0990199e39ad01f973c3dfdc1be06219dd2bda8738cfe406176728ecfa1ebf66",
+        "exact_text_match": true
+      }
+    ],
+    "old_main_equivalence": [
+      {
+        "label": "base",
+        "compiler": "gcc",
+        "problem": "jump",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "/tmp/sirkit_hld_415174_20261104/jump_base.cpp",
+          "-o",
+          "/tmp/sirkit_hld_415174_20261104/gcc_jump_base"
+        ],
+        "code_sha256": "ca72a8fe476bec2a61766e45e210bb8a0795faeba6a04844053215eb7634441f",
+        "text_sha256": "e894f14f181da0cddfebbbbffaade1c89a53bfa54e1255c9cd32160e7a62ec79"
+      },
+      {
+        "label": "base",
+        "compiler": "clang",
+        "problem": "jump",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "/tmp/sirkit_hld_415174_20261104/jump_base.cpp",
+          "-o",
+          "/tmp/sirkit_hld_415174_20261104/clang_jump_base"
+        ],
+        "code_sha256": "ca72a8fe476bec2a61766e45e210bb8a0795faeba6a04844053215eb7634441f",
+        "text_sha256": "0b01ff0f4512f6215cfd23f61b1861090d11541023b7e11eb0078954ee3d20da"
+      },
+      {
+        "label": "base",
+        "compiler": "gcc",
+        "problem": "sum",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "/tmp/sirkit_hld_415174_20261104/sum_base.cpp",
+          "-o",
+          "/tmp/sirkit_hld_415174_20261104/gcc_sum_base"
+        ],
+        "code_sha256": "ca72a8fe476bec2a61766e45e210bb8a0795faeba6a04844053215eb7634441f",
+        "text_sha256": "349622b19c94c87afd744a860ec6b3a200cc0f754c4a9dcb5f3135db148a8264"
+      },
+      {
+        "label": "base",
+        "compiler": "clang",
+        "problem": "sum",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "/tmp/sirkit_hld_415174_20261104/sum_base.cpp",
+          "-o",
+          "/tmp/sirkit_hld_415174_20261104/clang_sum_base"
+        ],
+        "code_sha256": "ca72a8fe476bec2a61766e45e210bb8a0795faeba6a04844053215eb7634441f",
+        "text_sha256": "f43add07de3f1e294345c08b8dfe00a7dbec2982cdb6b25ec9bf752c32c60f1c"
+      },
+      {
+        "label": "helpers",
+        "compiler": "gcc",
+        "problem": "jump",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "/tmp/sirkit_hld_415174_20261104/jump_helpers.cpp",
+          "-o",
+          "/tmp/sirkit_hld_415174_20261104/gcc_jump_helpers"
+        ],
+        "code_sha256": "6645ff8728c693529f15f587e8560a428a2423a87dd58b9de6576416389a787d",
+        "text_sha256": "e894f14f181da0cddfebbbbffaade1c89a53bfa54e1255c9cd32160e7a62ec79"
+      },
+      {
+        "label": "helpers",
+        "compiler": "clang",
+        "problem": "jump",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "/tmp/sirkit_hld_415174_20261104/jump_helpers.cpp",
+          "-o",
+          "/tmp/sirkit_hld_415174_20261104/clang_jump_helpers"
+        ],
+        "code_sha256": "6645ff8728c693529f15f587e8560a428a2423a87dd58b9de6576416389a787d",
+        "text_sha256": "0b01ff0f4512f6215cfd23f61b1861090d11541023b7e11eb0078954ee3d20da"
+      },
+      {
+        "label": "helpers",
+        "compiler": "gcc",
+        "problem": "sum",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "/tmp/sirkit_hld_415174_20261104/sum_helpers.cpp",
+          "-o",
+          "/tmp/sirkit_hld_415174_20261104/gcc_sum_helpers"
+        ],
+        "code_sha256": "6645ff8728c693529f15f587e8560a428a2423a87dd58b9de6576416389a787d",
+        "text_sha256": "349622b19c94c87afd744a860ec6b3a200cc0f754c4a9dcb5f3135db148a8264"
+      },
+      {
+        "label": "helpers",
+        "compiler": "clang",
+        "problem": "sum",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "/tmp/sirkit_hld_415174_20261104/sum_helpers.cpp",
+          "-o",
+          "/tmp/sirkit_hld_415174_20261104/clang_sum_helpers"
+        ],
+        "code_sha256": "6645ff8728c693529f15f587e8560a428a2423a87dd58b9de6576416389a787d",
+        "text_sha256": "f43add07de3f1e294345c08b8dfe00a7dbec2982cdb6b25ec9bf752c32c60f1c"
+      }
+    ],
+    "SIMD": "区間ごとの依存した集計のため新しいSIMDは追加していない。"
+  },
+  "validation": {
+    "asan_ubsan_settings": 8,
+    "standard_fallback_asan_ubsan_settings": 4,
+    "helpers": "独立BFSの21森。任意根・頂点番号置換・非可換文字列/アフィン合成・辺モード・標準/拡張整数・bool・コピー専用値・大小/和・lazy更新・型推論・検査例外・作用の別名を照合。",
+    "test_checks": [
+      "HLD helpers forests=21 checks=42705",
+      "HLD helpers forests=21 checks=42705",
+      "HLD helpers forests=21 checks=42684",
+      "HLD helpers forests=21 checks=42684",
+      "HLD helpers forests=21 checks=42705",
+      "HLD helpers forests=21 checks=42705",
+      "HLD helpers forests=21 checks=42684",
+      "HLD helpers forests=21 checks=42684"
+    ],
+    "memory": "GCC/Clang×検査有無の確保失敗試験各126失敗/1234成功/live_delta=0。Clang MSan×検査有無も成功。",
+    "normal_samples": 8,
+    "profile_and_example_samples": 22,
+    "prior_core": "既存基本APIは前回の独立参照試験を維持。今回の基本API機械コード等価と追加APIの独立参照で補足。"
+  },
+  "source_files": {
+    "Graph/Heavy_Light_Decomposition.cpp": {
+      "sha256": "6645ff8728c693529f15f587e8560a428a2423a87dd58b9de6576416389a787d",
+      "bytes": 23194
+    },
+    "Document/heavy_light_decomposition.md": {
+      "sha256": "0d16e5fc520a8bac192b4142bcdce266657a07c7402a0eca3f9dd6b60fa3cb0a",
+      "bytes": 5413
+    },
+    "Examples/heavy_light_decomposition_example.cpp": {
+      "sha256": "0697df9ab8bc8954bbf776a07197d6e1ad7c10824346109b0a1a866ea5d6ec4a",
+      "bytes": 2176
+    },
+    "Verify/current/tests/hld_helpers_test.cpp": {
+      "sha256": "07196d4d1e9ffd7962456f080db952e99441f042342d83afd70baf4f629f09a6",
+      "bytes": 22709
+    },
+    "Verify/current/tests/new_graph_allocation_test.cpp": {
+      "sha256": "b0af8711b3e25749fb27f7b3b8a1b1d9abe11c6335c8463ebb90a9e068fa01aa",
+      "bytes": 6615
+    },
+    "Verify/current/drivers/hld_path_prod_main.cpp": {
+      "sha256": "b054b5e6823e338ebf193c841b06549c4fb4a683ae392bde137e5dd2c076346c",
+      "bytes": 633
+    },
+    "Verify/current/drivers/hld_path_composite_main.cpp": {
+      "sha256": "06d6f474155c902a8fc6ddea2bd984d19c447d1a894620ba1ab6c4ade8005630",
+      "bytes": 1379
+    },
+    "Verify/current/groups/expansion_20261031.json": {
+      "sha256": "b15ec21eb0af4f19de652c3cd04dcecfe9b4a0281b06200b9b175267a9919ca7",
+      "bytes": 118262
+    },
+    "Verify/current/judgements.json": {
+      "sha256": "29013e9027603b227295956538ce8ef14ed1d4d2eab0ee723c9aeb4e8c880f93",
+      "bytes": 1058244
+    }
+  },
+  "evidence": {
+    "path": "Audit/data/hld-helpers-2026-11-04.zip",
+    "sha256": "873d1caccdd55e2b1b57458916de46ff210e77005a191b5e90d73db3cebe01e3",
+    "entries": 71
+  },
+  "resubmission": [
+    "hld_jump",
+    "hld_vertex_add_path_sum",
+    "hld_path_prod",
+    "hld_path_composite"
+  ]
+}

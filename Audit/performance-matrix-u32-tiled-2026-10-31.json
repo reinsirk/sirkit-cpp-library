@@ -1,0 +1,1257 @@
+{
+  "date_utc": "2026-10-31",
+  "decision": "GCC/x86 uint32_t only: preserve full-inner accumulator for small B; select Ktile32 and output-row group4 for inner>64 and B.size()>262144. Clang/generic path retained.",
+  "selected_source_sha256": "cac01f95cd19fac7f52b2d9eba304ce8b12bcfbb63af8610de5dd68c859291af",
+  "formal_baseline_sha256": "8769baf4ce24c2f83e9cdf16231d3cda437974185d11cea25c2dc83cb93194ac",
+  "previous_unadopted_ready_sha256": "ff2a85c211190d492e0271cecd0ea249cec862c528c7e802c69c1a368a534792",
+  "candidate_sources": {
+    "baseline": {
+      "sha256": "8769baf4ce24c2f83e9cdf16231d3cda437974185d11cea25c2dc83cb93194ac",
+      "path": "/tmp/sirkit_12h_20261031_095733/matrix_optimization/robust/baseline.cpp"
+    },
+    "ready": {
+      "sha256": "ff2a85c211190d492e0271cecd0ea249cec862c528c7e802c69c1a368a534792",
+      "path": "/tmp/sirkit_12h_20261031_095733/matrix_optimization/robust/ready.cpp"
+    },
+    "rows": {
+      "sha256": "19c10df5a64d0067883a71b5ae3774fe6492a3d074f2b440e86504f0acd21ca1",
+      "path": "/tmp/sirkit_12h_20261031_095733/matrix_optimization/robust/rows.cpp"
+    },
+    "tile32_rows4": {
+      "sha256": "cac01f95cd19fac7f52b2d9eba304ce8b12bcfbb63af8610de5dd68c859291af",
+      "path": "/tmp/sirkit_12h_20261031_095733/matrix_optimization/robust/tile32_rows4.cpp"
+    },
+    "tile32_rows8": {
+      "sha256": "baba32852a0ed353ed520a2e5299b1a0bd7e33322180f0241b6ef359e783a957",
+      "path": "/tmp/sirkit_12h_20261031_095733/matrix_optimization/robust/tile32_rows8.cpp"
+    }
+  },
+  "baseline_to_selected_diff": "--- baseline/Math/Matrix.cpp\n+++ selected/Math/Matrix.cpp\n@@ -19,6 +19,9 @@\n // MatrixApply(a,x): a*xの列ベクトルを返す。O(rows*(1+cols))時間・O(rows)領域。\n // boolには専用のGF2係数型等を用意する。係数演算は正確な環の演算が前提。固定幅整数の演算オーバーフローや浮動小数点誤差は利用側で管理する。\n \n+// GCC/x86のuint32_t行列積は、対応CPUでAVX2を使う。unsignedの積と加算は通常版と同じmod 2^32。\n+// SIRKIT_DISABLE_SIMDで専用実装とCPU判定を除外する。小さい行列・他の型・非対応CPU/コンパイラは標準ループ。\n+\n #include <algorithm>\n #include <cstddef>\n #include <cstdint>\n@@ -28,6 +31,108 @@\n #include <type_traits>\n #include <utility>\n #include <vector>\n+#include <bit>\n+#if !defined(SIRKIT_DISABLE_SIMD) && defined(__GNUC__) && !defined(__clang__) && (defined(__x86_64__) || defined(__i386__))\n+#include <immintrin.h>\n+#ifndef SIRKIT_MATRIX_U32_SIMD_DETAIL_DEFINED\n+#define SIRKIT_MATRIX_U32_SIMD_DETAIL_DEFINED\n+namespace reinsirk::detail {\n+inline bool matrix_u32_avx2_available() noexcept { return __builtin_cpu_supports(\"avx2\")!=0; }\n+__attribute__((target(\"avx2\"))) inline void matrix_u32_tiled_avx2(\n+    const std::uint32_t* left,const std::uint32_t* right,std::uint32_t* output,\n+    std::size_t rows,std::size_t inner,std::size_t columns) noexcept {\n+    constexpr std::size_t tile=32;\n+    const auto vector_end=columns-columns%8;\n+    for(std::size_t row_begin=0;row_begin<rows;) {\n+        const auto row_end=row_begin+std::min(std::size_t{4},rows-row_begin);\n+        for(std::size_t begin=0;begin<inner;) {\n+            const auto end=begin+std::min(tile,inner-begin);\n+            for(std::size_t i=row_begin;i<row_end;++i) {\n+            auto* destination=output+i*columns;\n+            std::size_t j=0;\n+            for(;vector_end-j>=32;j+=32) {\n+                __m256i s0,s1,s2,s3;\n+                if(begin==0) {s0=_mm256_setzero_si256();s1=s0;s2=s0;s3=s0;}\n+                else {\n+                    s0=_mm256_loadu_si256(reinterpret_cast<const __m256i*>(destination+j));\n+                    s1=_mm256_loadu_si256(reinterpret_cast<const __m256i*>(destination+j+8));\n+                    s2=_mm256_loadu_si256(reinterpret_cast<const __m256i*>(destination+j+16));\n+                    s3=_mm256_loadu_si256(reinterpret_cast<const __m256i*>(destination+j+24));\n+                }\n+                for(std::size_t k=begin;k<end;++k) {\n+                    const auto coefficient=_mm256_set1_epi32(std::bit_cast<std::int32_t>(left[i*inner+k]));\n+                    const auto* input=right+k*columns+j;\n+                    s0=_mm256_add_epi32(s0,_mm256_mullo_epi32(coefficient,_mm256_loadu_si256(reinterpret_cast<const __m256i*>(input))));\n+                    s1=_mm256_add_epi32(s1,_mm256_mullo_epi32(coefficient,_mm256_loadu_si256(reinterpret_cast<const __m256i*>(input+8))));\n+                    s2=_mm256_add_epi32(s2,_mm256_mullo_epi32(coefficient,_mm256_loadu_si256(reinterpret_cast<const __m256i*>(input+16))));\n+                    s3=_mm256_add_epi32(s3,_mm256_mullo_epi32(coefficient,_mm256_loadu_si256(reinterpret_cast<const __m256i*>(input+24))));\n+                }\n+                _mm256_storeu_si256(reinterpret_cast<__m256i*>(destination+j),s0);\n+                _mm256_storeu_si256(reinterpret_cast<__m256i*>(destination+j+8),s1);\n+                _mm256_storeu_si256(reinterpret_cast<__m256i*>(destination+j+16),s2);\n+                _mm256_storeu_si256(reinterpret_cast<__m256i*>(destination+j+24),s3);\n+            }\n+            for(;j<vector_end;j+=8) {\n+                auto sum=begin==0?_mm256_setzero_si256():_mm256_loadu_si256(reinterpret_cast<const __m256i*>(destination+j));\n+                for(std::size_t k=begin;k<end;++k) {\n+                    const auto coefficient=_mm256_set1_epi32(std::bit_cast<std::int32_t>(left[i*inner+k]));\n+                    sum=_mm256_add_epi32(sum,_mm256_mullo_epi32(coefficient,_mm256_loadu_si256(reinterpret_cast<const __m256i*>(right+k*columns+j))));\n+                }\n+                _mm256_storeu_si256(reinterpret_cast<__m256i*>(destination+j),sum);\n+            }\n+            for(;j<columns;++j) {\n+                std::uint32_t sum=begin==0?0:destination[j];\n+                for(std::size_t k=begin;k<end;++k)sum+=left[i*inner+k]*right[k*columns+j];\n+                destination[j]=sum;\n+            }\n+            }\n+            begin=end;\n+        }\n+        row_begin=row_end;\n+    }\n+}\n+__attribute__((target(\"avx2\"))) inline void matrix_u32_accumulate_avx2(\n+    const std::uint32_t* left,const std::uint32_t* right,std::uint32_t* output,\n+    std::size_t rows,std::size_t inner,std::size_t columns) noexcept {\n+    const auto vector_end=columns-columns%8;\n+    for(std::size_t i=0;i<rows;++i) {\n+        auto* destination=output+i*columns;\n+        std::size_t j=0;\n+        for(;vector_end-j>=32;j+=32) {\n+            auto s0=_mm256_setzero_si256(),s1=s0,s2=s0,s3=s0;\n+            for(std::size_t k=0;k<inner;++k) {\n+                const auto coefficient=_mm256_set1_epi32(std::bit_cast<std::int32_t>(left[i*inner+k]));\n+                const auto* source=right+k*columns+j;\n+                s0=_mm256_add_epi32(s0,_mm256_mullo_epi32(coefficient,_mm256_loadu_si256(reinterpret_cast<const __m256i*>(source))));\n+                s1=_mm256_add_epi32(s1,_mm256_mullo_epi32(coefficient,_mm256_loadu_si256(reinterpret_cast<const __m256i*>(source+8))));\n+                s2=_mm256_add_epi32(s2,_mm256_mullo_epi32(coefficient,_mm256_loadu_si256(reinterpret_cast<const __m256i*>(source+16))));\n+                s3=_mm256_add_epi32(s3,_mm256_mullo_epi32(coefficient,_mm256_loadu_si256(reinterpret_cast<const __m256i*>(source+24))));\n+            }\n+            _mm256_storeu_si256(reinterpret_cast<__m256i*>(destination+j),s0);\n+            _mm256_storeu_si256(reinterpret_cast<__m256i*>(destination+j+8),s1);\n+            _mm256_storeu_si256(reinterpret_cast<__m256i*>(destination+j+16),s2);\n+            _mm256_storeu_si256(reinterpret_cast<__m256i*>(destination+j+24),s3);\n+        }\n+        for(;j<vector_end;j+=8) {\n+            auto sum=_mm256_setzero_si256();\n+            for(std::size_t k=0;k<inner;++k) {\n+                const auto coefficient=_mm256_set1_epi32(std::bit_cast<std::int32_t>(left[i*inner+k]));\n+                const auto values=_mm256_loadu_si256(reinterpret_cast<const __m256i*>(right+k*columns+j));\n+                sum=_mm256_add_epi32(sum,_mm256_mullo_epi32(coefficient,values));\n+            }\n+            _mm256_storeu_si256(reinterpret_cast<__m256i*>(destination+j),sum);\n+        }\n+        for(;j<columns;++j) {\n+            std::uint32_t sum=0;\n+            for(std::size_t k=0;k<inner;++k)sum+=left[i*inner+k]*right[k*columns+j];\n+            destination[j]=sum;\n+        }\n+    }\n+}\n+}\n+#endif\n+#endif\n+\n #ifndef SIRKIT_MATRIX_DEFINED\n #define SIRKIT_MATRIX_DEFINED\n template<class T>\n@@ -145,6 +250,19 @@\n #endif\n     Matrix<T> result(a.rows(),b.cols());\n     if(result.empty()||a.cols()==0)return result;\n+#if !defined(SIRKIT_DISABLE_SIMD) && defined(__GNUC__) && !defined(__clang__) && (defined(__x86_64__) || defined(__i386__))\n+    if constexpr(std::is_same_v<T,std::uint32_t>) {\n+        if(b.cols()>=16&&a.size()>=64&&reinsirk::detail::matrix_u32_avx2_available()) {\n+            // 小さい右行列と短い内積は従来の全内積累積を維持する。\n+            if(a.cols()>64 && b.size()>262144)\n+                reinsirk::detail::matrix_u32_tiled_avx2(a.values().data(),b.values().data(),result.values().data(),a.rows(),a.cols(),b.cols());\n+            else\n+            reinsirk::detail::matrix_u32_accumulate_avx2(a.values().data(),b.values().data(),result.values().data(),a.rows(),a.cols(),b.cols());\n+            return result;\n+        }\n+    }\n+#endif\n+\n     for(std::size_t i=0;i<a.rows();++i) {\n         auto destination=result.row(i);const auto left=a.row(i);\n         for(std::size_t k=0;k<a.cols();++k) {\n",
+  "ownership": "Same std::vector-owned input/result; no extra allocation or auxiliary B packing. First K tile overwrites output, later tiles accumulate. uint32 multiply/add is mod2^32. Public API and exception behavior unchanged.",
+  "selection_reason": "Full-inner accesses at large row strides caused the original ready prototype to regress on 4096x4096 B. K slices bound active B rows; row groups reuse each B slice before progressing. Row8 only1–2% aggregate improvement in the final run, below control variation, with some 18–38% row1/4 outliers; retain row4.",
+  "conditions": {
+    "cpu": "Intel Core i9-14900K, CPU12/Core6 P-core; project compile/test workloads paused; no intentional project load on siblingCPU13; sibling/OS activity not separately instrumented",
+    "harness_cpu": 8,
+    "compiler": [
+      "GCC15.2 /usr/bin/g++",
+      "Clang21.1.8 /usr/bin/clang++ --gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15"
+    ],
+    "flags": [
+      "-std=c++23",
+      "-O2",
+      "-DSKIP_RUNTIME_CHECKS"
+    ],
+    "native_additional_flag": "-march=native",
+    "repeats": 5,
+    "randomized_task_seed": 751883,
+    "rows": 4590,
+    "duration_seconds": 154.4031552139786,
+    "main_io": "Identical fixture/main across candidates; no I/O speed change. Original six uint32 shapes use8x original loop count, other12 generic shapes unchanged. Stress repeats min(32,max(1,ceil(80M/(M*K*N))))."
+  },
+  "metrics": {
+    "thread_us": "CLOCK_THREAD_CPUTIME_ID per product, including result allocation and repeated result assignment; excludes one-time input construction, RNG, checksum and final destruction.",
+    "wall_us": "steady_clock per product over same body.",
+    "process_cpu_us": "wait4 ru_utime+ru_stime for full child, including startup, input construction/RNG, all products, checksum/output, and final destruction.",
+    "process_wall_us": "Parent elapsed from Popen through wait4/pipe collection. Scheduling and launch are included.",
+    "reference": "Per condition median5 candidate samples / pooled median10 baseline+same-binary-control samples. Raw baseline/control medians and spread remain in summary."
+  },
+  "limitations": [
+    "One hardware platform. Cutoffs are measured choices, not universal CPU/cache optima.",
+    "First two repeats show unexplained wall scheduling/interference: child-wall roughly2x childCPU, later repeats nearly equal. No cause is asserted. All5 randomized repeats retained; whole-wall medians can exceed1 despite large body/childCPU wins.",
+    "Fine differences of1–2% are not actionable: stress control median ratios span roughly0.915–1.092 default and0.920–1.084 native; median control IQR around6%, larger outliers occur.",
+    "Clang complete .text bytes match baseline in default/native; timing differences there reflect measurement variation. GCC generic products/callees have equal instruction streams after relocation normalization.",
+    "Warm repetition is explicit. Earlier one-product screen2 also confirms improvement on the original4096-stride stress; its raw2322 rows remain in temp as preliminary evidence."
+  ],
+  "per_repeat_process_totals": [
+    {
+      "repeat": 0,
+      "rows": 918,
+      "whole_child_cpu_seconds": 22.241893,
+      "whole_child_wall_seconds": 44.329943522,
+      "sum_body_thread_cpu_seconds": 13.069129328142001
+    },
+    {
+      "repeat": 1,
+      "rows": 918,
+      "whole_child_cpu_seconds": 22.04898,
+      "whole_child_wall_seconds": 44.640712089000004,
+      "sum_body_thread_cpu_seconds": 12.877744696884001
+    },
+    {
+      "repeat": 2,
+      "rows": 918,
+      "whole_child_cpu_seconds": 20.031914,
+      "whole_child_wall_seconds": 24.946667203,
+      "sum_body_thread_cpu_seconds": 11.589586739518
+    },
+    {
+      "repeat": 3,
+      "rows": 918,
+      "whole_child_cpu_seconds": 19.843877,
+      "whole_child_wall_seconds": 19.994778017,
+      "sum_body_thread_cpu_seconds": 11.560961446819
+    },
+    {
+      "repeat": 4,
+      "rows": 918,
+      "whole_child_cpu_seconds": 19.94107,
+      "whole_child_wall_seconds": 20.136982344,
+      "sum_body_thread_cpu_seconds": 11.609076417895
+    }
+  ],
+  "selected_summaries": [
+    {
+      "compiler": "gcc",
+      "native": false,
+      "family": "original_u32",
+      "candidate": "tile32_rows4",
+      "metric": "thread_us",
+      "conditions": 6,
+      "geomean_ratio": 0.142727932684004,
+      "min_ratio": 0.09070472198181644,
+      "max_ratio": 0.1810400420649634,
+      "control_median_ratio_range": [
+        0.979720272357852,
+        1.0172739900255408
+      ],
+      "control_IQR_fraction_median": 0.03754161205105373,
+      "control_IQR_fraction_max": 0.062375591507789756
+    },
+    {
+      "compiler": "gcc",
+      "native": false,
+      "family": "original_u32",
+      "candidate": "tile32_rows4",
+      "metric": "wall_us",
+      "conditions": 6,
+      "geomean_ratio": 0.13817453753104136,
+      "min_ratio": 0.08224217046076063,
+      "max_ratio": 0.3246506660222225,
+      "control_median_ratio_range": [
+        0.5153509248583856,
+        1.0282642425454538
+      ],
+      "control_IQR_fraction_median": 0.6495253281831305,
+      "control_IQR_fraction_max": 1.0097350697630758
+    },
+    {
+      "compiler": "gcc",
+      "native": false,
+      "family": "original_u32",
+      "candidate": "tile32_rows4",
+      "metric": "process_cpu_us",
+      "conditions": 6,
+      "geomean_ratio": 0.25812432414528075,
+      "min_ratio": 0.15827989437947945,
+      "max_ratio": 0.4238477973344186,
+      "control_median_ratio_range": [
+        0.92030683997443,
+        1.014022411364889
+      ],
+      "control_IQR_fraction_median": 0.05878954026903538,
+      "control_IQR_fraction_max": 0.13963248638838474
+    },
+    {
+      "compiler": "gcc",
+      "native": false,
+      "family": "original_u32",
+      "candidate": "tile32_rows4",
+      "metric": "process_wall_us",
+      "conditions": 6,
+      "geomean_ratio": 0.2602306180097907,
+      "min_ratio": 0.08934554037413063,
+      "max_ratio": 0.5194408597925478,
+      "control_median_ratio_range": [
+        0.44944665867775635,
+        1.013591076756466
+      ],
+      "control_IQR_fraction_median": 0.9880172975906538,
+      "control_IQR_fraction_max": 1.1459438104859512
+    },
+    {
+      "compiler": "gcc",
+      "native": false,
+      "family": "original_generic",
+      "candidate": "tile32_rows4",
+      "metric": "thread_us",
+      "conditions": 12,
+      "geomean_ratio": 0.9952755259687054,
+      "min_ratio": 0.9637844638712335,
+      "max_ratio": 1.0219797176309346,
+      "control_median_ratio_range": [
+        0.9751439100603664,
+        1.043877156561678
+      ],
+      "control_IQR_fraction_median": 0.031855362722333386,
+      "control_IQR_fraction_max": 0.06376887331638342
+    },
+    {
+      "compiler": "gcc",
+      "native": false,
+      "family": "original_generic",
+      "candidate": "tile32_rows4",
+      "metric": "wall_us",
+      "conditions": 12,
+      "geomean_ratio": 0.9914557387411547,
+      "min_ratio": 0.6988733480299241,
+      "max_ratio": 1.3775932184219888,
+      "control_median_ratio_range": [
+        0.6550964650796886,
+        1.9894354287477114
+      ],
+      "control_IQR_fraction_median": 0.044600719227953514,
+      "control_IQR_fraction_max": 1.022135898486066
+    },
+    {
+      "compiler": "gcc",
+      "native": false,
+      "family": "original_generic",
+      "candidate": "tile32_rows4",
+      "metric": "process_cpu_us",
+      "conditions": 12,
+      "geomean_ratio": 1.0019774292770824,
+      "min_ratio": 0.9354571783202317,
+      "max_ratio": 1.1334739379331122,
+      "control_median_ratio_range": [
+        0.9785263987391647,
+        1.2532981530343008
+      ],
+      "control_IQR_fraction_median": 0.10966542704281032,
+      "control_IQR_fraction_max": 0.25625188309731833
+    },
+    {
+      "compiler": "gcc",
+      "native": false,
+      "family": "original_generic",
+      "candidate": "tile32_rows4",
+      "metric": "process_wall_us",
+      "conditions": 12,
+      "geomean_ratio": 0.9597943536210111,
+      "min_ratio": 0.4402982681890137,
+      "max_ratio": 1.904878916798166,
+      "control_median_ratio_range": [
+        0.4889855401854741,
+        2.116535540662583
+      ],
+      "control_IQR_fraction_median": 0.9940579734095025,
+      "control_IQR_fraction_max": 1.5313064212851433
+    },
+    {
+      "compiler": "gcc",
+      "native": false,
+      "family": "stress_root16",
+      "candidate": "tile32_rows4",
+      "metric": "thread_us",
+      "conditions": 16,
+      "geomean_ratio": 0.2014442307766402,
+      "min_ratio": 0.1384189536992007,
+      "max_ratio": 0.3320275303383092,
+      "control_median_ratio_range": [
+        0.9145964070955555,
+        1.0242045614472444
+      ],
+      "control_IQR_fraction_median": 0.07378856408596807,
+      "control_IQR_fraction_max": 0.18615305367856136
+    },
+    {
+      "compiler": "gcc",
+      "native": false,
+      "family": "stress_root16",
+      "candidate": "tile32_rows4",
+      "metric": "wall_us",
+      "conditions": 16,
+      "geomean_ratio": 0.20255213437096523,
+      "min_ratio": 0.09686583166122269,
+      "max_ratio": 0.34279616619071646,
+      "control_median_ratio_range": [
+        0.5103107199291073,
+        1.8702220130401268
+      ],
+      "control_IQR_fraction_median": 0.7886510946153491,
+      "control_IQR_fraction_max": 1.4526660170694627
+    },
+    {
+      "compiler": "gcc",
+      "native": false,
+      "family": "stress_root16",
+      "candidate": "tile32_rows4",
+      "metric": "process_cpu_us",
+      "conditions": 16,
+      "geomean_ratio": 0.4460120370612732,
+      "min_ratio": 0.26020896555938,
+      "max_ratio": 0.7171349862258952,
+      "control_median_ratio_range": [
+        0.9543638745965293,
+        1.038182696955051
+      ],
+      "control_IQR_fraction_median": 0.04950029676108084,
+      "control_IQR_fraction_max": 0.19027897800459775
+    },
+    {
+      "compiler": "gcc",
+      "native": false,
+      "family": "stress_root16",
+      "candidate": "tile32_rows4",
+      "metric": "process_wall_us",
+      "conditions": 16,
+      "geomean_ratio": 0.451197901502666,
+      "min_ratio": 0.1770070005605049,
+      "max_ratio": 1.0709876114893648,
+      "control_median_ratio_range": [
+        0.4788758355831238,
+        2.044468444938141
+      ],
+      "control_IQR_fraction_median": 0.9392130965819546,
+      "control_IQR_fraction_max": 1.3422940979375002
+    },
+    {
+      "compiler": "gcc",
+      "native": false,
+      "family": "stress_all37",
+      "candidate": "tile32_rows4",
+      "metric": "thread_us",
+      "conditions": 37,
+      "geomean_ratio": 0.20545940196013307,
+      "min_ratio": 0.11860518228640589,
+      "max_ratio": 0.5562004520840867,
+      "control_median_ratio_range": [
+        0.9145964070955555,
+        1.0922941818028944
+      ],
+      "control_IQR_fraction_median": 0.057605569856441996,
+      "control_IQR_fraction_max": 0.19816815864099238
+    },
+    {
+      "compiler": "gcc",
+      "native": false,
+      "family": "stress_all37",
+      "candidate": "tile32_rows4",
+      "metric": "wall_us",
+      "conditions": 37,
+      "geomean_ratio": 0.21130306849240463,
+      "min_ratio": 0.09686583166122269,
+      "max_ratio": 1.0434364599871309,
+      "control_median_ratio_range": [
+        0.5103107199291073,
+        2.029869610485778
+      ],
+      "control_IQR_fraction_median": 0.8016258915480683,
+      "control_IQR_fraction_max": 1.4526660170694627
+    },
+    {
+      "compiler": "gcc",
+      "native": false,
+      "family": "stress_all37",
+      "candidate": "tile32_rows4",
+      "metric": "process_cpu_us",
+      "conditions": 37,
+      "geomean_ratio": 0.38094363086891986,
+      "min_ratio": 0.20491237753553193,
+      "max_ratio": 0.7171349862258952,
+      "control_median_ratio_range": [
+        0.9338973929681894,
+        1.048384809552171
+      ],
+      "control_IQR_fraction_median": 0.05019975562542045,
+      "control_IQR_fraction_max": 0.19027897800459775
+    },
+    {
+      "compiler": "gcc",
+      "native": false,
+      "family": "stress_all37",
+      "candidate": "tile32_rows4",
+      "metric": "process_wall_us",
+      "conditions": 37,
+      "geomean_ratio": 0.4018068952128832,
+      "min_ratio": 0.16003191590280674,
+      "max_ratio": 1.2432520473311217,
+      "control_median_ratio_range": [
+        0.4681670486694514,
+        2.1246193500046164
+      ],
+      "control_IQR_fraction_median": 0.9518582173200167,
+      "control_IQR_fraction_max": 1.3450967393298126
+    },
+    {
+      "compiler": "gcc",
+      "native": true,
+      "family": "original_u32",
+      "candidate": "tile32_rows4",
+      "metric": "thread_us",
+      "conditions": 6,
+      "geomean_ratio": 0.14443603288505086,
+      "min_ratio": 0.09442102622142828,
+      "max_ratio": 0.18830503646972407,
+      "control_median_ratio_range": [
+        0.975552217488734,
+        1.0365816677875457
+      ],
+      "control_IQR_fraction_median": 0.042531259751693445,
+      "control_IQR_fraction_max": 0.0457971910565544
+    },
+    {
+      "compiler": "gcc",
+      "native": true,
+      "family": "original_u32",
+      "candidate": "tile32_rows4",
+      "metric": "wall_us",
+      "conditions": 6,
+      "geomean_ratio": 0.128032410588344,
+      "min_ratio": 0.07686451041413532,
+      "max_ratio": 0.31109287974132704,
+      "control_median_ratio_range": [
+        0.980321525026699,
+        2.0396755279945666
+      ],
+      "control_IQR_fraction_median": 0.6787081835877173,
+      "control_IQR_fraction_max": 1.008109518564312
+    },
+    {
+      "compiler": "gcc",
+      "native": true,
+      "family": "original_u32",
+      "candidate": "tile32_rows4",
+      "metric": "process_cpu_us",
+      "conditions": 6,
+      "geomean_ratio": 0.2541375302379286,
+      "min_ratio": 0.1720867728930697,
+      "max_ratio": 0.3789795028347143,
+      "control_median_ratio_range": [
+        0.9487396379631196,
+        1.0871687587168761
+      ],
+      "control_IQR_fraction_median": 0.06469118280957697,
+      "control_IQR_fraction_max": 0.08667676003028009
+    },
+    {
+      "compiler": "gcc",
+      "native": true,
+      "family": "original_u32",
+      "candidate": "tile32_rows4",
+      "metric": "process_wall_us",
+      "conditions": 6,
+      "geomean_ratio": 0.2567407182836352,
+      "min_ratio": 0.14514600593418225,
+      "max_ratio": 0.6721064459389974,
+      "control_median_ratio_range": [
+        0.9443844450293997,
+        2.1398299645299943
+      ],
+      "control_IQR_fraction_median": 0.9148162687273554,
+      "control_IQR_fraction_max": 1.4450384898646356
+    },
+    {
+      "compiler": "gcc",
+      "native": true,
+      "family": "original_generic",
+      "candidate": "tile32_rows4",
+      "metric": "thread_us",
+      "conditions": 12,
+      "geomean_ratio": 1.0043479930059964,
+      "min_ratio": 0.9873305572782847,
+      "max_ratio": 1.0223461619334806,
+      "control_median_ratio_range": [
+        0.9499396620050786,
+        1.0428648232913436
+      ],
+      "control_IQR_fraction_median": 0.041799841315598295,
+      "control_IQR_fraction_max": 0.05494429432090035
+    },
+    {
+      "compiler": "gcc",
+      "native": true,
+      "family": "original_generic",
+      "candidate": "tile32_rows4",
+      "metric": "wall_us",
+      "conditions": 12,
+      "geomean_ratio": 1.0069889398212615,
+      "min_ratio": 0.7921582402627994,
+      "max_ratio": 1.3707079273685188,
+      "control_median_ratio_range": [
+        0.9489628113795633,
+        1.577187348663761
+      ],
+      "control_IQR_fraction_median": 0.04975702963479755,
+      "control_IQR_fraction_max": 0.9518135486986758
+    },
+    {
+      "compiler": "gcc",
+      "native": true,
+      "family": "original_generic",
+      "candidate": "tile32_rows4",
+      "metric": "process_cpu_us",
+      "conditions": 12,
+      "geomean_ratio": 1.006049980585094,
+      "min_ratio": 0.9150910965967687,
+      "max_ratio": 1.1246412464124642,
+      "control_median_ratio_range": [
+        0.907233757535164,
+        1.1683967704728953
+      ],
+      "control_IQR_fraction_median": 0.1376318144022562,
+      "control_IQR_fraction_max": 0.2475685234305924
+    },
+    {
+      "compiler": "gcc",
+      "native": true,
+      "family": "original_generic",
+      "candidate": "tile32_rows4",
+      "metric": "process_wall_us",
+      "conditions": 12,
+      "geomean_ratio": 1.0119290651818669,
+      "min_ratio": 0.6793281819494537,
+      "max_ratio": 1.9084242496574886,
+      "control_median_ratio_range": [
+        0.5163962754038538,
+        2.0490337612244787
+      ],
+      "control_IQR_fraction_median": 1.000429029663713,
+      "control_IQR_fraction_max": 1.7405850725075716
+    },
+    {
+      "compiler": "gcc",
+      "native": true,
+      "family": "stress_root16",
+      "candidate": "tile32_rows4",
+      "metric": "thread_us",
+      "conditions": 16,
+      "geomean_ratio": 0.2002743583616729,
+      "min_ratio": 0.13006323901182065,
+      "max_ratio": 0.33874027867064155,
+      "control_median_ratio_range": [
+        0.9277509173497818,
+        1.0844466440125644
+      ],
+      "control_IQR_fraction_median": 0.08415133210346858,
+      "control_IQR_fraction_max": 0.3439068020849199
+    },
+    {
+      "compiler": "gcc",
+      "native": true,
+      "family": "stress_root16",
+      "candidate": "tile32_rows4",
+      "metric": "wall_us",
+      "conditions": 16,
+      "geomean_ratio": 0.1762370647675,
+      "min_ratio": 0.07229795238238244,
+      "max_ratio": 0.3375521931922298,
+      "control_median_ratio_range": [
+        0.48309104271296116,
+        1.9440648407397478
+      ],
+      "control_IQR_fraction_median": 0.7680230011216331,
+      "control_IQR_fraction_max": 1.52879015736742
+    },
+    {
+      "compiler": "gcc",
+      "native": true,
+      "family": "stress_root16",
+      "candidate": "tile32_rows4",
+      "metric": "process_cpu_us",
+      "conditions": 16,
+      "geomean_ratio": 0.43638333789527645,
+      "min_ratio": 0.2426051227539402,
+      "max_ratio": 0.6813891280285328,
+      "control_median_ratio_range": [
+        0.9338332598147331,
+        1.03465414253796
+      ],
+      "control_IQR_fraction_median": 0.0594873535025114,
+      "control_IQR_fraction_max": 0.27342881641208067
+    },
+    {
+      "compiler": "gcc",
+      "native": true,
+      "family": "stress_root16",
+      "candidate": "tile32_rows4",
+      "metric": "process_wall_us",
+      "conditions": 16,
+      "geomean_ratio": 0.4097197669288028,
+      "min_ratio": 0.12554895681018552,
+      "max_ratio": 1.0322492518269055,
+      "control_median_ratio_range": [
+        0.4815277996794041,
+        1.9614761366540656
+      ],
+      "control_IQR_fraction_median": 0.805020318098728,
+      "control_IQR_fraction_max": 1.570090396624222
+    },
+    {
+      "compiler": "gcc",
+      "native": true,
+      "family": "stress_all37",
+      "candidate": "tile32_rows4",
+      "metric": "thread_us",
+      "conditions": 37,
+      "geomean_ratio": 0.2006027229493404,
+      "min_ratio": 0.13006323901182065,
+      "max_ratio": 0.5168851809276701,
+      "control_median_ratio_range": [
+        0.9199862626548974,
+        1.0844466440125644
+      ],
+      "control_IQR_fraction_median": 0.06412478929890253,
+      "control_IQR_fraction_max": 0.3439068020849199
+    },
+    {
+      "compiler": "gcc",
+      "native": true,
+      "family": "stress_all37",
+      "candidate": "tile32_rows4",
+      "metric": "wall_us",
+      "conditions": 37,
+      "geomean_ratio": 0.18877915300538797,
+      "min_ratio": 0.07229795238238244,
+      "max_ratio": 0.5060297689372718,
+      "control_median_ratio_range": [
+        0.48309104271296116,
+        1.9440648407397478
+      ],
+      "control_IQR_fraction_median": 0.8187591747342801,
+      "control_IQR_fraction_max": 1.52879015736742
+    },
+    {
+      "compiler": "gcc",
+      "native": true,
+      "family": "stress_all37",
+      "candidate": "tile32_rows4",
+      "metric": "process_cpu_us",
+      "conditions": 37,
+      "geomean_ratio": 0.36792234424466375,
+      "min_ratio": 0.180724197745013,
+      "max_ratio": 0.6813891280285328,
+      "control_median_ratio_range": [
+        0.9317646192370012,
+        1.0350616234594134
+      ],
+      "control_IQR_fraction_median": 0.054574781098231065,
+      "control_IQR_fraction_max": 0.27342881641208067
+    },
+    {
+      "compiler": "gcc",
+      "native": true,
+      "family": "stress_all37",
+      "candidate": "tile32_rows4",
+      "metric": "process_wall_us",
+      "conditions": 37,
+      "geomean_ratio": 0.3729991280995902,
+      "min_ratio": 0.12554895681018552,
+      "max_ratio": 1.0322492518269055,
+      "control_median_ratio_range": [
+        0.4726858583504556,
+        2.0292271720267534
+      ],
+      "control_IQR_fraction_median": 0.9313980953120906,
+      "control_IQR_fraction_max": 1.570090396624222
+    },
+    {
+      "compiler": "clang",
+      "native": false,
+      "family": "original_u32",
+      "candidate": "tile32_rows4",
+      "metric": "thread_us",
+      "conditions": 6,
+      "geomean_ratio": 1.001664686333162,
+      "min_ratio": 0.957513094821326,
+      "max_ratio": 1.0422212270898448,
+      "control_median_ratio_range": [
+        0.9536175252801156,
+        1.0487379547319544
+      ],
+      "control_IQR_fraction_median": 0.05324313009997312,
+      "control_IQR_fraction_max": 0.05773438650323606
+    },
+    {
+      "compiler": "clang",
+      "native": false,
+      "family": "original_u32",
+      "candidate": "tile32_rows4",
+      "metric": "wall_us",
+      "conditions": 6,
+      "geomean_ratio": 1.0864188596836795,
+      "min_ratio": 0.954559619969836,
+      "max_ratio": 1.6639112455499632,
+      "control_median_ratio_range": [
+        0.9521170825154947,
+        2.0476957590769156
+      ],
+      "control_IQR_fraction_median": 0.3787572554642312,
+      "control_IQR_fraction_max": 1.050024724028923
+    },
+    {
+      "compiler": "clang",
+      "native": false,
+      "family": "original_u32",
+      "candidate": "tile32_rows4",
+      "metric": "process_cpu_us",
+      "conditions": 6,
+      "geomean_ratio": 1.0191435716581063,
+      "min_ratio": 0.9832783796514368,
+      "max_ratio": 1.150078369905956,
+      "control_median_ratio_range": [
+        0.931193908077237,
+        1.106879606879607
+      ],
+      "control_IQR_fraction_median": 0.10299826986174124,
+      "control_IQR_fraction_max": 0.14593552908199034
+    },
+    {
+      "compiler": "clang",
+      "native": false,
+      "family": "original_u32",
+      "candidate": "tile32_rows4",
+      "metric": "process_wall_us",
+      "conditions": 6,
+      "geomean_ratio": 1.0924437337258703,
+      "min_ratio": 0.9165688956147081,
+      "max_ratio": 1.7282986151277777,
+      "control_median_ratio_range": [
+        0.8524044378750494,
+        2.258835248919044
+      ],
+      "control_IQR_fraction_median": 1.2038969941714015,
+      "control_IQR_fraction_max": 1.5999931173407569
+    },
+    {
+      "compiler": "clang",
+      "native": false,
+      "family": "original_generic",
+      "candidate": "tile32_rows4",
+      "metric": "thread_us",
+      "conditions": 12,
+      "geomean_ratio": 1.0151778876004396,
+      "min_ratio": 0.9809145014534465,
+      "max_ratio": 1.0411706914577075,
+      "control_median_ratio_range": [
+        0.9327533148436609,
+        1.0245380355113236
+      ],
+      "control_IQR_fraction_median": 0.049816518381816347,
+      "control_IQR_fraction_max": 0.09554941398755602
+    },
+    {
+      "compiler": "clang",
+      "native": false,
+      "family": "original_generic",
+      "candidate": "tile32_rows4",
+      "metric": "wall_us",
+      "conditions": 12,
+      "geomean_ratio": 1.0993706410748674,
+      "min_ratio": 0.9804780197448639,
+      "max_ratio": 1.8252672709379087,
+      "control_median_ratio_range": [
+        0.929975084586375,
+        1.6821743088805328
+      ],
+      "control_IQR_fraction_median": 0.06161648322343687,
+      "control_IQR_fraction_max": 1.0607387607811865
+    },
+    {
+      "compiler": "clang",
+      "native": false,
+      "family": "original_generic",
+      "candidate": "tile32_rows4",
+      "metric": "process_cpu_us",
+      "conditions": 12,
+      "geomean_ratio": 0.9954086389867317,
+      "min_ratio": 0.8857779191854915,
+      "max_ratio": 1.131188118811881,
+      "control_median_ratio_range": [
+        0.8537170263788969,
+        1.0979381443298968
+      ],
+      "control_IQR_fraction_median": 0.13738668524348713,
+      "control_IQR_fraction_max": 0.3261138613861386
+    },
+    {
+      "compiler": "clang",
+      "native": false,
+      "family": "original_generic",
+      "candidate": "tile32_rows4",
+      "metric": "process_wall_us",
+      "conditions": 12,
+      "geomean_ratio": 1.071588742972727,
+      "min_ratio": 0.536637925116362,
+      "max_ratio": 2.9122088703079614,
+      "control_median_ratio_range": [
+        0.4314720310732035,
+        2.0370378496567976
+      ],
+      "control_IQR_fraction_median": 0.8694594430845317,
+      "control_IQR_fraction_max": 1.9079313373013786
+    },
+    {
+      "compiler": "clang",
+      "native": false,
+      "family": "stress_root16",
+      "candidate": "tile32_rows4",
+      "metric": "thread_us",
+      "conditions": 16,
+      "geomean_ratio": 0.9861904345253432,
+      "min_ratio": 0.9400893210148761,
+      "max_ratio": 1.0297615129192554,
+      "control_median_ratio_range": [
+        0.927454884700052,
+        1.0798708304214013
+      ],
+      "control_IQR_fraction_median": 0.08372453919486761,
+      "control_IQR_fraction_max": 0.5528242675646302
+    },
+    {
+      "compiler": "clang",
+      "native": false,
+      "family": "stress_root16",
+      "candidate": "tile32_rows4",
+      "metric": "wall_us",
+      "conditions": 16,
+      "geomean_ratio": 1.1296519432273098,
+      "min_ratio": 0.6594230155715695,
+      "max_ratio": 1.8684119819303702,
+      "control_median_ratio_range": [
+        0.9000432644337693,
+        1.9309818320799959
+      ],
+      "control_IQR_fraction_median": 1.0644086043020171,
+      "control_IQR_fraction_max": 2.1031810375745943
+    },
+    {
+      "compiler": "clang",
+      "native": false,
+      "family": "stress_root16",
+      "candidate": "tile32_rows4",
+      "metric": "process_cpu_us",
+      "conditions": 16,
+      "geomean_ratio": 1.0011313504143249,
+      "min_ratio": 0.9584103811841038,
+      "max_ratio": 1.0721735502711722,
+      "control_median_ratio_range": [
+        0.9330770709206229,
+        1.0751574527641707
+      ],
+      "control_IQR_fraction_median": 0.09028820022390144,
+      "control_IQR_fraction_max": 0.40115267233334156
+    },
+    {
+      "compiler": "clang",
+      "native": false,
+      "family": "stress_root16",
+      "candidate": "tile32_rows4",
+      "metric": "process_wall_us",
+      "conditions": 16,
+      "geomean_ratio": 1.1224781751758308,
+      "min_ratio": 0.6425045581414919,
+      "max_ratio": 2.1702781559776416,
+      "control_median_ratio_range": [
+        0.8856961561972732,
+        2.1122968977149497
+      ],
+      "control_IQR_fraction_median": 1.1214059472441724,
+      "control_IQR_fraction_max": 1.854031554686758
+    },
+    {
+      "compiler": "clang",
+      "native": false,
+      "family": "stress_all37",
+      "candidate": "tile32_rows4",
+      "metric": "thread_us",
+      "conditions": 37,
+      "geomean_ratio": 0.9992242351515869,
+      "min_ratio": 0.9400893210148761,
+      "max_ratio": 1.0662048834176747,
+      "control_median_ratio_range": [
+        0.9245906800570968,
+        1.0798708304214013
+      ],
+      "control_IQR_fraction_median": 0.08433642695353373,
+      "control_IQR_fraction_max": 0.5528242675646302
+    },
+    {
+      "compiler": "clang",
+      "native": false,
+      "family": "stress_all37",
+      "candidate": "tile32_rows4",
+      "metric": "wall_us",
+      "conditions": 37,
+      "geomean_ratio": 1.0521659986342915,
+      "min_ratio": 0.6594230155715695,
+      "max_ratio": 1.9683051141447123,
+      "control_median_ratio_range": [
+        0.5016052268429706,
+        2.0969821811606533
+      ],
+      "control_IQR_fraction_median": 0.811629058493061,
+      "control_IQR_fraction_max": 2.1031810375745943
+    },
+    {
+      "compiler": "clang",
+      "native": false,
+      "family": "stress_all37",
+      "candidate": "tile32_rows4",
+      "metric": "process_cpu_us",
+      "conditions": 37,
+      "geomean_ratio": 1.0033976608367279,
+      "min_ratio": 0.9584103811841038,
+      "max_ratio": 1.0721735502711722,
+      "control_median_ratio_range": [
+        0.9216155265495797,
+        1.0751574527641707
+      ],
+      "control_IQR_fraction_median": 0.08741736327378026,
+      "control_IQR_fraction_max": 0.40115267233334156
+    },
+    {
+      "compiler": "clang",
+      "native": false,
+      "family": "stress_all37",
+      "candidate": "tile32_rows4",
+      "metric": "process_wall_us",
+      "conditions": 37,
+      "geomean_ratio": 1.025414598365599,
+      "min_ratio": 0.6135228786589464,
+      "max_ratio": 2.1702781559776416,
+      "control_median_ratio_range": [
+        0.45914460923809797,
+        2.244829133056368
+      ],
+      "control_IQR_fraction_median": 1.1111562205574461,
+      "control_IQR_fraction_max": 1.854031554686758
+    },
+    {
+      "compiler": "clang",
+      "native": true,
+      "family": "original_u32",
+      "candidate": "tile32_rows4",
+      "metric": "thread_us",
+      "conditions": 6,
+      "geomean_ratio": 1.0002005889272318,
+      "min_ratio": 0.9723419036302202,
+      "max_ratio": 1.0328450826593096,
+      "control_median_ratio_range": [
+        0.9572409975444623,
+        1.0060645676725861
+      ],
+      "control_IQR_fraction_median": 0.03737047898737385,
+      "control_IQR_fraction_max": 0.05182078575342688
+    },
+    {
+      "compiler": "clang",
+      "native": true,
+      "family": "original_u32",
+      "candidate": "tile32_rows4",
+      "metric": "wall_us",
+      "conditions": 6,
+      "geomean_ratio": 1.0909391408963218,
+      "min_ratio": 0.9715820858175866,
+      "max_ratio": 1.7560353755525742,
+      "control_median_ratio_range": [
+        0.9752975164281573,
+        1.0090602149678347
+      ],
+      "control_IQR_fraction_median": 0.046321150632177496,
+      "control_IQR_fraction_max": 0.5057305642022785
+    },
+    {
+      "compiler": "clang",
+      "native": true,
+      "family": "original_u32",
+      "candidate": "tile32_rows4",
+      "metric": "process_cpu_us",
+      "conditions": 6,
+      "geomean_ratio": 1.0279011903036048,
+      "min_ratio": 0.9348717948717948,
+      "max_ratio": 1.0971741112123974,
+      "control_median_ratio_range": [
+        0.9627712031558185,
+        1.1161150298426479
+      ],
+      "control_IQR_fraction_median": 0.07907123683795293,
+      "control_IQR_fraction_max": 0.1550000000000001
+    },
+    {
+      "compiler": "clang",
+      "native": true,
+      "family": "original_u32",
+      "candidate": "tile32_rows4",
+      "metric": "process_wall_us",
+      "conditions": 6,
+      "geomean_ratio": 1.104547516451289,
+      "min_ratio": 0.4421171400866708,
+      "max_ratio": 1.9895278345311371,
+      "control_median_ratio_range": [
+        0.5022804578964865,
+        1.0679262433388532
+      ],
+      "control_IQR_fraction_median": 1.093951558375359,
+      "control_IQR_fraction_max": 1.5665225106125675
+    },
+    {
+      "compiler": "clang",
+      "native": true,
+      "family": "original_generic",
+      "candidate": "tile32_rows4",
+      "metric": "thread_us",
+      "conditions": 12,
+      "geomean_ratio": 1.007163900855376,
+      "min_ratio": 0.9670003985523724,
+      "max_ratio": 1.0428816892201886,
+      "control_median_ratio_range": [
+        0.9748189662681072,
+        1.048600418284331
+      ],
+      "control_IQR_fraction_median": 0.043290655172496265,
+      "control_IQR_fraction_max": 0.06669377300792732
+    },
+    {
+      "compiler": "clang",
+      "native": true,
+      "family": "original_generic",
+      "candidate": "tile32_rows4",
+      "metric": "wall_us",
+      "conditions": 12,
+      "geomean_ratio": 0.986706885940518,
+      "min_ratio": 0.8083694120892081,
+      "max_ratio": 1.0438851347675167,
+      "control_median_ratio_range": [
+        0.6869641618295974,
+        1.0266799146348136
+      ],
+      "control_IQR_fraction_median": 0.04976689743264445,
+      "control_IQR_fraction_max": 1.024809532959068
+    },
+    {
+      "compiler": "clang",
+      "native": true,
+      "family": "original_generic",
+      "candidate": "tile32_rows4",
+      "metric": "process_cpu_us",
+      "conditions": 12,
+      "geomean_ratio": 0.9740695489790648,
+      "min_ratio": 0.9056603773584906,
+      "max_ratio": 1.0286106660563057,
+      "control_median_ratio_range": [
+        0.7893333333333333,
+        1.2869496855345912
+      ],
+      "control_IQR_fraction_median": 0.17214037790496772,
+      "control_IQR_fraction_max": 0.2908125915080527
+    },
+    {
+      "compiler": "clang",
+      "native": true,
+      "family": "original_generic",
+      "candidate": "tile32_rows4",
+      "metric": "process_wall_us",
+      "conditions": 12,
+      "geomean_ratio": 0.8362019459744088,
+      "min_ratio": 0.3955395541678872,
+      "max_ratio": 1.7519983477831682,
+      "control_median_ratio_range": [
+        0.4665106269305002,
+        2.214676797707125
+      ],
+      "control_IQR_fraction_median": 1.010257123101292,
+      "control_IQR_fraction_max": 1.5507929561603557
+    },
+    {
+      "compiler": "clang",
+      "native": true,
+      "family": "stress_root16",
+      "candidate": "tile32_rows4",
+      "metric": "thread_us",
+      "conditions": 16,
+      "geomean_ratio": 0.993135074599243,
+      "min_ratio": 0.8966384027252434,
+      "max_ratio": 1.1424482828655547,
+      "control_median_ratio_range": [
+        0.8398205532207463,
+        1.062352853034569
+      ],
+      "control_IQR_fraction_median": 0.16663675018086438,
+      "control_IQR_fraction_max": 0.5205337850652998
+    },
+    {
+      "compiler": "clang",
+      "native": true,
+      "family": "stress_root16",
+      "candidate": "tile32_rows4",
+      "metric": "wall_us",
+      "conditions": 16,
+      "geomean_ratio": 0.9928382975365064,
+      "min_ratio": 0.6241775360774962,
+      "max_ratio": 1.9070397348059858,
+      "control_median_ratio_range": [
+        0.49694100776050015,
+        1.9126060101126712
+      ],
+      "control_IQR_fraction_median": 0.9810767653092956,
+      "control_IQR_fraction_max": 2.067002832256699
+    },
+    {
+      "compiler": "clang",
+      "native": true,
+      "family": "stress_root16",
+      "candidate": "tile32_rows4",
+      "metric": "process_cpu_us",
+      "conditions": 16,
+      "geomean_ratio": 0.9935106132236429,
+      "min_ratio": 0.8650825157375375,
+      "max_ratio": 1.0591294516676089,
+      "control_median_ratio_range": [
+        0.8944927536231884,
+        1.0606216285640895
+      ],
+      "control_IQR_fraction_median": 0.1721306610172783,
+      "control_IQR_fraction_max": 0.3110514414923686
+    },
+    {
+      "compiler": "clang",
+      "native": true,
+      "family": "stress_root16",
+      "candidate": "tile32_rows4",
+      "metric": "process_wall_us",
+      "conditions": 16,
+      "geomean_ratio": 0.9820856295056246,
+      "min_ratio": 0.6104321543575717,
+      "max_ratio": 2.045456175058925,
+      "control_median_ratio_range": [
+        0.4560942306663838,
+        1.891957611030173
+      ],
+      "control_IQR_fraction_median": 1.063600451502028,
+      "control_IQR_fraction_max": 1.6307072683240111
+    },
+    {
+      "compiler": "clang",
+      "native": true,
+      "family": "stress_all37",
+      "candidate": "tile32_rows4",
+      "metric": "thread_us",
+      "conditions": 37,
+      "geomean_ratio": 0.9917070892830907,
+      "min_ratio": 0.8339977415325626,
+      "max_ratio": 1.1450096835498997,
+      "control_median_ratio_range": [
+        0.7903642084653233,
+        1.062352853034569
+      ],
+      "control_IQR_fraction_median": 0.17162251096554926,
+      "control_IQR_fraction_max": 0.6255260317182948
+    },
+    {
+      "compiler": "clang",
+      "native": true,
+      "family": "stress_all37",
+      "candidate": "tile32_rows4",
+      "metric": "wall_us",
+      "conditions": 37,
+      "geomean_ratio": 0.9789519167675195,
+      "min_ratio": 0.6241775360774962,
+      "max_ratio": 2.1612669890312586,
+      "control_median_ratio_range": [
+        0.45409314117993654,
+        2.050098216137061
+      ],
+      "control_IQR_fraction_median": 0.9489008156949265,
+      "control_IQR_fraction_max": 2.067002832256699
+    },
+    {
+      "compiler": "clang",
+      "native": true,
+      "family": "stress_all37",
+      "candidate": "tile32_rows4",
+      "metric": "process_cpu_us",
+      "conditions": 37,
+      "geomean_ratio": 0.9887356204611533,
+      "min_ratio": 0.85879564536215,
+      "max_ratio": 1.1033544576794188,
+      "control_median_ratio_range": [
+        0.8455428067078552,
+        1.0606216285640895
+      ],
+      "control_IQR_fraction_median": 0.17749562585709575,
+      "control_IQR_fraction_max": 0.3314332499150368
+    },
+    {
+      "compiler": "clang",
+      "native": true,
+      "family": "stress_all37",
+      "candidate": "tile32_rows4",
+      "metric": "process_wall_us",
+      "conditions": 37,
+      "geomean_ratio": 0.9664506344002917,
+      "min_ratio": 0.5733987021141551,
+      "max_ratio": 2.2105606466336845,
+      "control_median_ratio_range": [
+        0.45427138757437074,
+        2.3096765580559433
+      ],
+      "control_IQR_fraction_median": 1.074063983199169,
+      "control_IQR_fraction_max": 1.6558124313830067
+    }
+  ],
+  "validation": {
+    "final_settings": 60,
+    "full_history_runs": 80,
+    "compiler_skip_modes": "2 compilers × checked/skip × default/native/ASAN/ASAN+SIMD_DISABLED/forcedCPUfalse ×3 fixtures",
+    "checks_per_oracle_run": 219750,
+    "portable_arithmetic_fixture": "Full uint32 wrap reference; signed16/32 and unsigned16/64 with safe-value arithmetic; threshold/tail/empty/self-alias.",
+    "tiled_oracle": "Independent uint64 multiply→uint32 reduction, Ktile/tail/row-group boundaries, full threshold shapes, sampled 4096², misaligned direct kernel/canaries/nonzero prior output, self*=self513².",
+    "ownership": "24 injected allocation/copy/operation exceptions per setting; normal live_delta0, copy isolation, move-source reuse, align64 and always-on capacity overflow.",
+    "fallbacks": "Forced GCC runtime-AVX2 availability false executes standard path. Both compilers preprocessed with SIRKIT_DISABLE_SIMD: no dedicated kernel symbols, CPU builtin or AVX2 intrinsic.",
+    "ASAN_OPTIONS": "detect_leaks=0",
+    "UBSAN_OPTIONS": "halt_on_error=1",
+    "fixture_default_include_note": "A portable generic oracle was adapted from root-owned CC0 fixture with only default/double include wrapper;20 settings re-run after wrapping. History80 records preserved; final set60 uses all staged fixture hashes."
+  },
+  "byte_evidence": {
+    "handoff": "8 measured→staged loaded-section comparisons (GCC/Clang × default/native ×original/stress) pass byte equality for .text/.rodata/.data/.eh_frame and initialization sections, plus .bss size.",
+    "small_B": "Full-inner helper is773bytes, exact same bytes between ready/row4/row8 within each GCC setting. Default and native may differ; comparisons are within setting.",
+    "generic": "GCC Field2/VerifyMatrixField product and applicable native operator* instruction streams match after RIP/symbolic branch relocation normalization; Clang whole.text matches baseline."
+  },
+  "benchmark_sources": [
+    {
+      "original_path": "/tmp/sirkit_12h_20261031_095733/matrix_optimization/robust/final_original_bench.cpp",
+      "sha256": "7968727a2f7b641531a1feb9c750fbc2954b1495ccbfc0df8e3f20d8dd24d1aa",
+      "source": "// SPDX-License-Identifier: CC0-1.0\n#ifndef HEADER\n#define HEADER \"baseline.cpp\"\n#endif\n#include HEADER\n#include \"/tmp/sirkit_12h_20261031_095733/matrix_optimization/verify_field.hpp\"\n#include <chrono>\n#include <cstdint>\n#include <cstdio>\n#include <cstdlib>\n#include <ctime>\n#include <random>\n#include <type_traits>\nstruct Field2 {\n std::uint32_t value=0;Field2()=default;Field2(std::uint64_t x):value(static_cast<std::uint32_t>(x&1)){}\n std::uint32_t get()const noexcept{return value;}\n Field2&operator+=(Field2 b){value^=b.value;return *this;}friend Field2 operator*(Field2 a,Field2 b){return Field2(a.value&b.value);}\n};\n#ifndef METHOD\n#define METHOD 0\n#endif\ntemplate<class T>[[gnu::noinline]]Matrix<T> product(const Matrix<T>&a,const Matrix<T>&b){\n asm volatile(\"\":::\"memory\");\n#if METHOD==0\n return a*b;\n#else\n Matrix<T>c(a.rows(),b.cols());\n#if METHOD==1\n for(std::size_t i=0;i<a.rows();++i)for(std::size_t j=0;j<b.cols();++j)for(std::size_t k=0;k<a.cols();++k)c.row(i)[j]+=a.row(i)[k]*b.row(k)[j];\n#else\n constexpr std::size_t block=32;\n for(std::size_t ii=0;ii<a.rows();ii+=block)for(std::size_t kk=0;kk<a.cols();kk+=block)for(std::size_t jj=0;jj<b.cols();jj+=block)\n  for(std::size_t i=ii;i<std::min(a.rows(),ii+block);++i){const auto left=a.row(i);auto output=c.row(i);for(std::size_t k=kk;k<std::min(a.cols(),kk+block);++k){const T coefficient=left[k];const auto right=b.row(k);for(std::size_t j=jj;j<std::min(b.cols(),jj+block);++j)output[j]+=coefficient*right[j];}}\n#endif\n return c;\n#endif\n}\nstatic volatile std::uint64_t sink=0;\ntemplate<class T>void run(std::size_t index){const auto local=index%6;const std::size_t sizes[]={16,64,192,384};const auto m=local<4?sizes[local]:(local==4?std::size_t{16}:std::size_t{384});const auto k=local<4?sizes[local]:std::size_t{256};const auto n=local<4?sizes[local]:(local==4?std::size_t{384}:std::size_t{16});const int loops=(local==0?500:(local==1?20:1))*(std::is_same_v<T,std::uint32_t>?8:1);std::mt19937_64 rng(14);Matrix<T>a(m,k),b(k,n);for(auto&x:a.values())x=T(rng()%7);for(auto&x:b.values())x=T(rng()%7);Matrix<T>c;timespec before{},after{};clock_gettime(CLOCK_THREAD_CPUTIME_ID,&before);const auto start=std::chrono::steady_clock::now();for(int rep=0;rep<loops;++rep)c=product(a,b);asm volatile(\"\":::\"memory\");const auto stop=std::chrono::steady_clock::now();clock_gettime(CLOCK_THREAD_CPUTIME_ID,&after);std::uint64_t checksum=c.size();for(const auto&x:c.values()){if constexpr(std::is_integral_v<T>)checksum=checksum*UINT64_C(11995408973635179863)+x;else checksum=checksum*UINT64_C(11995408973635179863)+x.get();}sink=checksum;std::printf(\"%zu,%zu,%zu,%zu,%d,%.6f,%.6f,%ju\\n\",index,m,k,n,loops,std::chrono::duration<double,std::micro>(stop-start).count()/loops,((after.tv_sec-before.tv_sec)*1e6+(after.tv_nsec-before.tv_nsec)/1000.0)/loops,static_cast<std::uintmax_t>(checksum));}\nint main(int argc,char**argv){if(argc!=2)return 2;const auto index=static_cast<std::size_t>(std::strtoul(argv[1],nullptr,10));if(index<6)run<std::uint32_t>(index);else if(index<12)run<Field2>(index);else if(index<18)run<VerifyMatrixField>(index);else return 2;}\n"
+    },
+    {
+      "original_path": "/tmp/sirkit_12h_20261031_095733/matrix_optimization/robust/final_stress_bench.cpp",
+      "sha256": "84208a202484c4d2ae32838e38b20e6566a99b19e0f4c7b57f477bdc2ccbaf4b",
+      "source": "// SPDX-License-Identifier: CC0-1.0\n#ifndef HEADER\n#define HEADER \"baseline.cpp\"\n#endif\n#include HEADER\n#include <chrono>\n#include <cstdint>\n#include <cstdio>\n#include <cstdlib>\n#include <ctime>\n#include <random>\n[[gnu::noinline]] Matrix<std::uint32_t> product(const Matrix<std::uint32_t>&a,const Matrix<std::uint32_t>&b) {\n    asm volatile(\"\":::\"memory\");return a*b;\n}\nint main(int argc,char**argv) {\n    if(argc!=5)return 2;\n    const int loops=static_cast<int>(std::strtoul(argv[4],nullptr,10));if(loops<=0)return 2;\n    const auto rows=static_cast<std::size_t>(std::strtoull(argv[1],nullptr,10)),inner=static_cast<std::size_t>(std::strtoull(argv[2],nullptr,10)),columns=static_cast<std::size_t>(std::strtoull(argv[3],nullptr,10));\n    std::mt19937_64 rng(91827);Matrix<std::uint32_t>a(rows,inner),b(inner,columns);\n    for(auto&x:a.values())x=static_cast<std::uint32_t>(rng());for(auto&x:b.values())x=static_cast<std::uint32_t>(rng());\n    timespec before{},after{};clock_gettime(CLOCK_THREAD_CPUTIME_ID,&before);const auto start=std::chrono::steady_clock::now();\n    Matrix<std::uint32_t> c;for(int rep=0;rep<loops;++rep)c=product(a,b);asm volatile(\"\":::\"memory\");const auto stop=std::chrono::steady_clock::now();clock_gettime(CLOCK_THREAD_CPUTIME_ID,&after);\n    std::uint64_t checksum=c.size();for(auto x:c.values())checksum=checksum*UINT64_C(11995408973635179863)+x;\n    std::printf(\"%zu,%zu,%zu,%.6f,%.6f,%ju\\n\",rows,inner,columns,std::chrono::duration<double,std::micro>(stop-start).count()/loops,((after.tv_sec-before.tv_sec)*1e6+(after.tv_nsec-before.tv_nsec)/1000.0)/loops,static_cast<std::uintmax_t>(checksum));\n}\n"
+    }
+  ],
+  "coefficient_header": {
+    "sha256": "6a9a6aded8665043481f1fff8d6a7d4eae69343e7111828832d1467eeb854f26",
+    "repository_equivalent": "Verify/current/common/matrix_field.hpp",
+    "source": "// SPDX-License-Identifier: CC0-1.0\n#include <cstdint>\n#include <stdexcept>\n#ifndef SIRKIT_VERIFY_MATRIX_FIELD_DEFINED\n#define SIRKIT_VERIFY_MATRIX_FIELD_DEFINED\nstruct VerifyMatrixField {\n    static constexpr std::uint32_t modulus=998244353;\n    std::uint32_t value=0;\n    VerifyMatrixField()=default;\n    VerifyMatrixField(std::uint64_t input):value(static_cast<std::uint32_t>(input%modulus)){}\n    std::uint32_t get()const noexcept{return value;}\n    VerifyMatrixField& operator+=(VerifyMatrixField b)noexcept{value+=b.value;if(value>=modulus)value-=modulus;return *this;}\n    VerifyMatrixField& operator-=(VerifyMatrixField b)noexcept{value=value>=b.value?value-b.value:value+modulus-b.value;return *this;}\n    VerifyMatrixField& operator*=(VerifyMatrixField b)noexcept{value=static_cast<std::uint32_t>(std::uint64_t{value}*b.value%modulus);return *this;}\n    friend VerifyMatrixField operator+(VerifyMatrixField a,VerifyMatrixField b)noexcept{return a+=b;}\n    friend VerifyMatrixField operator-(VerifyMatrixField a,VerifyMatrixField b)noexcept{return a-=b;}\n    friend VerifyMatrixField operator*(VerifyMatrixField a,VerifyMatrixField b)noexcept{return a*=b;}\n    friend bool operator==(VerifyMatrixField,VerifyMatrixField)=default;\n    friend VerifyMatrixField operator/(VerifyMatrixField a,VerifyMatrixField b){\n        if(b.value==0)throw std::domain_error(\"verification field: zero divisor\");\n        VerifyMatrixField inverse{1};std::uint32_t exponent=modulus-2;\n        while(exponent){if(exponent&1)inverse*=b;b*=b;exponent>>=1;}return a*inverse;\n    }\n};\n#endif\n"
+  },
+  "preliminary_evidence": {
+    "raw720": "/tmp/sirkit_12h_20261031_095733/matrix_optimization/robust/screen_raw.json",
+    "raw2322": "/tmp/sirkit_12h_20261031_095733/matrix_optimization/robust/screen2_raw.json",
+    "summary720": "/tmp/sirkit_12h_20261031_095733/matrix_optimization/robust/screen_summary.json",
+    "summary2322": "/tmp/sirkit_12h_20261031_095733/matrix_optimization/robust/screen2_summary.json",
+    "source_generation": "/tmp/sirkit_12h_20261031_095733/matrix_optimization/robust/generate.py",
+    "row_generation": "/tmp/sirkit_12h_20261031_095733/matrix_optimization/robust/generate_row_tiles.py",
+    "manifests": [
+      "/tmp/sirkit_12h_20261031_095733/matrix_optimization/robust/screen_manifest.json",
+      "/tmp/sirkit_12h_20261031_095733/matrix_optimization/robust/screen2_manifest.json"
+    ]
+  },
+  "reproduction": {
+    "builder": "/tmp/sirkit_12h_20261031_095733/matrix_optimization/robust/build_final.py",
+    "runner": "/tmp/sirkit_12h_20261031_095733/matrix_optimization/robust/run_final.py",
+    "aggregate": "/tmp/sirkit_12h_20261031_095733/matrix_optimization/robust/aggregate_final.py",
+    "validation": "/tmp/sirkit_12h_20261031_095733/matrix_optimization/robust/validate_handoff.py",
+    "loaded_section_bridge": "/tmp/sirkit_12h_20261031_095733/matrix_optimization/robust/bridge_handoff.py",
+    "ELF_reader": "/tmp/sirkit_12h_20261031_095733/matrix_optimization/robust/elf_bytes.py",
+    "note": "Benchmark source text and shared coefficient header are embedded. Original include path can be redirected to the hash-identical repository field; HEADER selects baseline/candidate."
+  },
+  "artifacts": {
+    "data/matrix-u32-tiled-final-2026-10-31-raw.json": "00464ddca4654ce8cb4a5a963f3d58151587c94b1d8f6aa92c7def56033b52d9",
+    "data/matrix-u32-tiled-final-2026-10-31-summary.json": "2d14f68e6a283b6766244aac9c28c147159c31b3419edb67001c3dd0fc686d29",
+    "data/matrix-u32-tiled-final-2026-10-31-validation.json": "7359623943edb48d497d407371b925f5a28445ab6d708f816efee2a6b6285c51",
+    "data/matrix-u32-tiled-2026-10-31-validation-history.json": "82513c27edd844a42c70b23eab636eb47b204117d336bb1f603f8e4e855e7005",
+    "data/matrix-u32-tiled-2026-10-31-source-bridge.json": "b4422bf92b06c35c3a22bd382ce2679925a3c2d8e36c36535af2835753179eed",
+    "data/matrix-u32-tiled-2026-10-31-kernel-bridge.json": "3b0af3d4525b80db8fb590dc92047fc8e97cfe6869356e63ad2082c95e056b5b",
+    "data/matrix-u32-tiled-2026-10-31-generic-bridge.json": "269fb9501a7ca0b65e787a58b7fe39df4610782bba5977392826ab8454c5e8a7"
+  }
+}

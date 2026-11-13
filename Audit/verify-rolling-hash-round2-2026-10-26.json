@@ -1,0 +1,3310 @@
+{
+  "date_jst": "2026-10-26",
+  "status": "PASS_local_online_pending",
+  "source": "String/RollingHash.cpp",
+  "source_sha256": "89383bf81bdaea3aa275570b7969b4d4ee93d44bfdc0ed16c6ac62242f5fa484",
+  "tested_source_sha256": "54123c4a6deb29d1e5219d741afa2d2bd7a863ff8c4326cf70683baa5205926b",
+  "installed_equivalence": {
+    "difference": "先頭のAVX2設定に関する説明コメント1行のみ。",
+    "noncomment_code_equal": true,
+    "normalized_sha256": "a1d7ca761940c27316b548e1d3a81ffce630d24042fc70c14a4e9c4fa9020923"
+  },
+  "index": {
+    "purpose": "冗長state AVX2 RollingHash最終候補の独立検証と数学的監査",
+    "source_sha256": "54123c4a6deb29d1e5219d741afa2d2bd7a863ff8c4326cf70683baa5205926b",
+    "results": {
+      "redundant-results.json": {
+        "sha256": "49f2382c8139ae1bd5a9d9b5c8fbc3d2fecdee0fb4276e3779075fbfe3106437",
+        "configurations": 46,
+        "passed": true,
+        "diagnostics_empty": true,
+        "stderr_empty": true
+      },
+      "redundant-extra-results.json": {
+        "sha256": "b6c622ad19f0ff349a4a23b1d8dd52b4c2ec8694e0716ed8cb22a2be861ee51d",
+        "configurations": 10,
+        "passed": true,
+        "diagnostics_empty": true,
+        "stderr_empty": true
+      },
+      "redundant-modes-results.json": {
+        "sha256": "584bc888504f592a057eefcdf05d0f71c340f33469325ae6ff4bf6d72da3e7ee",
+        "configurations": 9,
+        "passed": true,
+        "diagnostics_empty": true,
+        "stderr_empty": true
+      },
+      "redundant-allocation-results.json": {
+        "sha256": "886b9171a1da04f49dc38721250580e43892358ce08dac4357f7816b515adbcb",
+        "configurations": 4,
+        "passed": true,
+        "diagnostics_empty": true,
+        "stderr_empty": true
+      }
+    },
+    "static_review": {
+      "state_bound": "初期stateはcanonical。a<=p+4=2^61+3、b<pなのでa_hi<=2^29、b_hi<=2^29-1。high<<3<=2^61-2^32<p、cross<2^62。lowの折返し、crossの折返し、high、termの和は5p未満でuint64範囲。",
+      "closure_and_congruence": "sum<5pなのでfold=(sum&p)+(sum>>61)<=p+4。foldは元の積和とmod pで同値。次stateとしてこのfoldを使うため[0,p+4]に閉じ、正規化依存を次blockへ持ち込まない。",
+      "canonical_output": "unsigned raw sumは2^63を越えうるがsigned比較はfold後だけ。fold<=p+4<2p<2^63でcmpgt(p-1)が安全、1回の減算でcanonical。prefix/powerへ書くresultとodd tailへ渡すresultは常に正規化後で、外部のハッシュ値は[0,p)。",
+      "zero_state_pattern": "底2、61個のbyte1後にNULを続けるとh60=2^60-1、h61=h62=0。AVXの62文字目でraw fold=pとなり、その後のNULを冗長state pとして進める。16384〜16387/32769で独立cpp_intの全prefixと照合。",
+      "lanes": "state=[h_i,h_i,p_i,p_i]、factors=[base,base²,base,base²]。2hash+2powerを同時演算し、正規化前foldのlane1/3を複製して次stateにする。",
+      "memory": "Entryはuint64_t1個、helper内sizeof==8 assert。vector resize後の構築済み2要素へ16byte unaligned store。i+2<=nのblock条件と残り1byteのscalar処理により範囲外参照なし。",
+      "ownership_exception": "member/class配置・vector確保順/回数・copy/move/clear/swap/非所有powers_は不変。追加はstack2KiB lookupとSIMDレジスタのみ。初回大規模構築もnew予算2で成功、clear後assign/照会は予算0で成功。",
+      "cpu_exclusion": "GCC/Clang x86_64 native128、16384byte以上でpowersを新計算する場合のみCPU AVX2を判定。native128を残すSIMD無効と標準forcedではpreprocessクラスがbaselineと一致、専用関数/CPU判定も不在。CPU非対応をfalse強制した4構成もPASS。"
+    },
+    "new_boundary_scope": "既存の16384/32768/131072境界・2/4byte末尾・7底・同長異内容reuse等に、底2/p-2、16384/16385/16386/16387/32769、全NUL/全0xff/61個byte1後NULの30casesを追加。全prefixをcpp_int逐次多項式で照合。",
+    "new_boundary_checks_per_configuration": 42205183,
+    "new_boundary_cases_per_configuration": 317,
+    "sanitizer_note": "ASan/UBSan。ptraceのためLSan無効、独立失敗注入でlive allocation差を検査。Clang/GCC nativeの全base大境界でSIMD本体も検証。",
+    "production_edited_by_agent": false,
+    "configurations_total": 69,
+    "files": {
+      "redundant-frozen.hpp": {
+        "sha256": "54123c4a6deb29d1e5219d741afa2d2bd7a863ff8c4326cf70683baa5205926b",
+        "bytes": 25593
+      },
+      "run.py": {
+        "sha256": "e7b4f6b7f317cd175cdb7377a78a7f2a75cc01675694f37910c8221228047304",
+        "bytes": 2844
+      },
+      "run_redundant_extra.py": {
+        "sha256": "028140643cc8c6b1047afbbe11b25032c48d9c3ec6f99ef74dd73ff588595474",
+        "bytes": 2163
+      },
+      "redundant_block_boundary_test.cpp": {
+        "sha256": "51e1b5e2b019d1abaa428a0eacf4104a41556fd30876c93de91b8b2c25c030fc",
+        "bytes": 3663
+      },
+      "run_redundant_modes.py": {
+        "sha256": "0daecee3f9c28b8d82da7f7b7d0da9fdde5ec0a1b609e11f1e29887871ab7f39",
+        "bytes": 3014
+      },
+      "avx_allocation_test.cpp": {
+        "sha256": "dee887b1a89b9549a2385f20bcc832d8a5484105cb98fb60d2a0068d7ac49992",
+        "bytes": 2439
+      },
+      "run_redundant_allocation.py": {
+        "sha256": "27806986f18f279ec5d27f9f8b089fe17d6526e995a803796006338a99cf8e74",
+        "bytes": 1167
+      }
+    },
+    "frozen_production_hashes": {
+      "String/RollingHash.cpp": "2a2dceca91b8eb62e8ce20035be4794f8741ed7a45163efa44505e2bcfd2ea70",
+      "Verify/current/drivers/rolling_hash_zalgorithm_main.cpp": "7a607fffa2d5726c705ca3b487e95c6063f298e48922dc968935616ac9a5c528",
+      "Verify/current/common/fast_io.hpp": "291bf8dbc56a1d691f6256fe95b4714183c2cf5d9e55e4bef240e31d1eb178c1",
+      "Verify/current/submissions/rolling_hash.cpp": "77a2eb32408f385e4261fb0da164f1d1321f139e3541b994d4754694ca0735ed"
+    },
+    "production_hashes_at_completion": {
+      "String/RollingHash.cpp": "89383bf81bdaea3aa275570b7969b4d4ee93d44bfdc0ed16c6ac62242f5fa484",
+      "Verify/current/drivers/rolling_hash_zalgorithm_main.cpp": "7a607fffa2d5726c705ca3b487e95c6063f298e48922dc968935616ac9a5c528",
+      "Verify/current/common/fast_io.hpp": "291bf8dbc56a1d691f6256fe95b4714183c2cf5d9e55e4bef240e31d1eb178c1",
+      "Verify/current/submissions/rolling_hash.cpp": "77a2eb32408f385e4261fb0da164f1d1321f139e3541b994d4754694ca0735ed"
+    },
+    "all_production_frozen_hashes_unchanged": false,
+    "completed_at_utc": "2026-10-25T21:08:38.178556+00:00",
+    "installed_source_equivalence": {
+      "installed_sha256": "89383bf81bdaea3aa275570b7969b4d4ee93d44bfdc0ed16c6ac62242f5fa484",
+      "tested_sha256": "54123c4a6deb29d1e5219d741afa2d2bd7a863ff8c4326cf70683baa5205926b",
+      "non_full_line_comment_code_identical": true,
+      "difference": "rootが先頭API説明へAVX2設定の1行コメントを追加しただけ。実行文・宣言・ガード・includeは同一。",
+      "patch": "--- \n\n+++ \n\n@@ -13,6 +13,7 @@\n\n // compare(l,r,other,ol,orr): 同じ底の2区間を符号なしバイト辞書順で比較し-1/0/1をO(log(短い方の長さ+1))で返す。\n // 比較にはハッシュ衝突による誤判定の可能性がある。検査有効時は不正な範囲にout_of_range、底・ハッシュにinvalid_argument。\n // assign(s): 現在の底で再構築し容量・利用可能な累乗表を再利用、O(旧長+|s|+1)上界、強い例外保証。clear(): 空へ戻して底・容量を保持、O(旧長+1)上界、noexcept。\n+// AVX2対応x86_64では長さ16384以上の構築を並列化。SIRKIT_DISABLE_SIMDで専用処理とCPU判定を除外。\n // 元文字列は保持しない。コピーはO(n+1)で独立、代入は容量を再利用し強い例外保証。ムーブ元は空（自己ムーブ代入は保持）。swapはO(1)。\n \n #include <algorithm>"
+    }
+  },
+  "independent_suites": {
+    "redundant-results.json": {
+      "label": "redundant",
+      "source": "/tmp/sirkit_rolling_round2_20261026/validation/redundant-frozen.hpp",
+      "source_sha256": "54123c4a6deb29d1e5219d741afa2d2bd7a863ff8c4326cf70683baa5205926b",
+      "started_at_utc": "2026-10-25T21:05:28.338004+00:00",
+      "runs": [
+        {
+          "configuration": "redundant-gcc-int128-checked-rh_reference_test",
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "-Werror",
+            "-pedantic-errors",
+            "-DSIRKIT_RH_SOURCE=\"/tmp/sirkit_rolling_round2_20261026/validation/redundant-frozen.hpp\"",
+            "/home/reinsirk/Atcoder_Env/Verify/current/tests/rh_reference_test.cpp",
+            "-o",
+            "/tmp/sirkit_rolling_round2_20261026/validation/redundant-gcc-int128-checked-rh_reference_test"
+          ],
+          "compile_exit": 0,
+          "diagnostics": "",
+          "test_sha256": "8551b5eb008027f0d14206693b7b7839c9643f835ad99f07f75f636da42efa39",
+          "run_exit": 0,
+          "stdout": "PASS checks=5801401 strings=89\n",
+          "stderr": "",
+          "run_seconds": 0.17615058296360075
+        },
+        {
+          "configuration": "redundant-gcc-int128-checked-rh_exception_test",
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "-Werror",
+            "-pedantic-errors",
+            "-DSIRKIT_RH_SOURCE=\"/tmp/sirkit_rolling_round2_20261026/validation/redundant-frozen.hpp\"",
+            "/home/reinsirk/Atcoder_Env/Verify/current/tests/rh_exception_test.cpp",
+            "-o",
+            "/tmp/sirkit_rolling_round2_20261026/validation/redundant-gcc-int128-checked-rh_exception_test"
+          ],
+          "compile_exit": 0,
+          "diagnostics": "",
+          "test_sha256": "75790928f843f44f95d6d4e58f22317593380c139bd0f4b740d116566e8b37c6",
+          "run_exit": 0,
+          "stdout": "PASS checks=12488 allocation_failures=8 live_delta=0\n",
+          "stderr": "",
+          "run_seconds": 0.0020097929518669844
+        },
+        {
+          "configuration": "redundant-gcc-int128-checked-rh_reuse_test",
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "-Werror",
+            "-pedantic-errors",
+            "-DSIRKIT_RH_SOURCE=\"/tmp/sirkit_rolling_round2_20261026/validation/redundant-frozen.hpp\"",
+            "/home/reinsirk/Atcoder_Env/Verify/current/tests/rh_reuse_test.cpp",
+            "-o",
+            "/tmp/sirkit_rolling_round2_20261026/validation/redundant-gcc-int128-checked-rh_reuse_test"
+          ],
+          "compile_exit": 0,
+          "diagnostics": "",
+          "test_sha256": "ff32e18861b98fba8e517667b2be8870ea2a0baf4280e07483e777dc0cf9a226",
+          "run_exit": 0,
+          "stdout": "PASS checks=76992 failures=6 live_delta=0\n",
+          "stderr": "",
+          "run_seconds": 1.9268852969398722
+        },
+        {
+          "configuration": "redundant-gcc-int128-checked-rh_arithmetic_boundary_test",
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "-Werror",
+            "-pedantic-errors",
+            "-DSIRKIT_RH_SOURCE=\"/tmp/sirkit_rolling_round2_20261026/validation/redundant-frozen.hpp\"",
+            "/home/reinsirk/Atcoder_Env/Verify/current/tests/rh_arithmetic_boundary_test.cpp",
+            "-o",
+            "/tmp/sirkit_rolling_round2_20261026/validation/redundant-gcc-int128-checked-rh_arithmetic_boundary_test"
+          ],
+          "compile_exit": 0,
+          "diagnostics": "",
+          "test_sha256": "a8ce149674b6aa5b9aa66f27d4c6efa571ece91bac0311d9a2a3102b10209d0c",
+          "run_exit": 0,
+          "stdout": "PASS arithmetic boundary checks=1811733\n",
+          "stderr": "",
+          "run_seconds": 0.032976035960018635
+        },
+        {
+          "configuration": "redundant-gcc-int128-checked-rh_lcp_boundary_test",
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "-Werror",
+            "-pedantic-errors",
+            "-DSIRKIT_RH_SOURCE=\"/tmp/sirkit_rolling_round2_20261026/validation/redundant-frozen.hpp\"",
+            "/home/reinsirk/Atcoder_Env/Verify/current/tests/rh_lcp_boundary_test.cpp",
+            "-o",
+            "/tmp/sirkit_rolling_round2_20261026/validation/redundant-gcc-int128-checked-rh_lcp_boundary_test"
+          ],
+          "compile_exit": 0,
+          "diagnostics": "",
+          "test_sha256": "7513f1bdc7cf2d3c4ec01bb213f41c9e58b49c25173418aa1e24f27801540ec6",
+          "run_exit": 0,
+          "stdout": "PASS lcp edge checks=4633837 collision_queries=1001\n",
+          "stderr": "",
+          "run_seconds": 0.0728458499070257
+        },
+        {
+          "configuration": "redundant-gcc-int128-skip-rh_reference_test",
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "-Werror",
+            "-pedantic-errors",
+            "-DSIRKIT_RH_SOURCE=\"/tmp/sirkit_rolling_round2_20261026/validation/redundant-frozen.hpp\"",
+            "-DSKIP_RUNTIME_CHECKS",
+            "/home/reinsirk/Atcoder_Env/Verify/current/tests/rh_reference_test.cpp",
+            "-o",
+            "/tmp/sirkit_rolling_round2_20261026/validation/redundant-gcc-int128-skip-rh_reference_test"
+          ],
+          "compile_exit": 0,
+          "diagnostics": "",
+          "test_sha256": "8551b5eb008027f0d14206693b7b7839c9643f835ad99f07f75f636da42efa39",
+          "run_exit": 0,
+          "stdout": "PASS checks=5789831 strings=89\n",
+          "stderr": "",
+          "run_seconds": 0.24483448499813676
+        },
+        {
+          "configuration": "redundant-gcc-int128-skip-rh_exception_test",
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "-Werror",
+            "-pedantic-errors",
+            "-DSIRKIT_RH_SOURCE=\"/tmp/sirkit_rolling_round2_20261026/validation/redundant-frozen.hpp\"",
+            "-DSKIP_RUNTIME_CHECKS",
+            "/home/reinsirk/Atcoder_Env/Verify/current/tests/rh_exception_test.cpp",
+            "-o",
+            "/tmp/sirkit_rolling_round2_20261026/validation/redundant-gcc-int128-skip-rh_exception_test"
+          ],
+          "compile_exit": 0,
+          "diagnostics": "",
+          "test_sha256": "75790928f843f44f95d6d4e58f22317593380c139bd0f4b740d116566e8b37c6",
+          "run_exit": 0,
+          "stdout": "PASS checks=12488 allocation_failures=8 live_delta=0\n",
+          "stderr": "",
+          "run_seconds": 0.00557503302115947
+        },
+        {
+          "configuration": "redundant-gcc-int128-skip-rh_reuse_test",
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "-Werror",
+            "-pedantic-errors",
+            "-DSIRKIT_RH_SOURCE=\"/tmp/sirkit_rolling_round2_20261026/validation/redundant-frozen.hpp\"",
+            "-DSKIP_RUNTIME_CHECKS",
+            "/home/reinsirk/Atcoder_Env/Verify/current/tests/rh_reuse_test.cpp",
+            "-o",
+            "/tmp/sirkit_rolling_round2_20261026/validation/redundant-gcc-int128-skip-rh_reuse_test"
+          ],
+          "compile_exit": 0,
+          "diagnostics": "",
+          "test_sha256": "ff32e18861b98fba8e517667b2be8870ea2a0baf4280e07483e777dc0cf9a226",
+          "run_exit": 0,
+          "stdout": "PASS checks=76992 failures=6 live_delta=0\n",
+          "stderr": "",
+          "run_seconds": 2.5237801180919632
+        },
+        {
+          "configuration": "redundant-gcc-int128-skip-rh_arithmetic_boundary_test",
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "-Werror",
+            "-pedantic-errors",
+            "-DSIRKIT_RH_SOURCE=\"/tmp/sirkit_rolling_round2_20261026/validation/redundant-frozen.hpp\"",
+            "-DSKIP_RUNTIME_CHECKS",
+            "/home/reinsirk/Atcoder_Env/Verify/current/tests/rh_arithmetic_boundary_test.cpp",
+            "-o",
+            "/tmp/sirkit_rolling_round2_20261026/validation/redundant-gcc-int128-skip-rh_arithmetic_boundary_test"
+          ],
+          "compile_exit": 0,
+          "diagnostics": "",
+          "test_sha256": "a8ce149674b6aa5b9aa66f27d4c6efa571ece91bac0311d9a2a3102b10209d0c",
+          "run_exit": 0,
+          "stdout": "PASS arithmetic boundary checks=1811733\n",
+          "stderr": "",
+          "run_seconds": 0.05574824498035014
+        },
+        {
+          "configuration": "redundant-gcc-int128-skip-rh_lcp_boundary_test",
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "-Werror",
+            "-pedantic-errors",
+            "-DSIRKIT_RH_SOURCE=\"/tmp/sirkit_rolling_round2_20261026/validation/redundant-frozen.hpp\"",
+            "-DSKIP_RUNTIME_CHECKS",
+            "/home/reinsirk/Atcoder_Env/Verify/current/tests/rh_lcp_boundary_test.cpp",
+            "-o",
+            "/tmp/sirkit_rolling_round2_20261026/validation/redundant-gcc-int128-skip-rh_lcp_boundary_test"
+          ],
+          "compile_exit": 0,
+          "diagnostics": "",
+          "test_sha256": "7513f1bdc7cf2d3c4ec01bb213f41c9e58b49c25173418aa1e24f27801540ec6",
+          "run_exit": 0,
+          "stdout": "PASS lcp edge checks=4632837 collision_queries=1001\n",
+          "stderr": "",
+          "run_seconds": 0.07112279196735471
+        },
+        {
+          "configuration": "redundant-gcc-fallback-checked-rh_reference_test",
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "-Werror",
+            "-pedantic-errors",
+            "-DSIRKIT_RH_SOURCE=\"/tmp/sirkit_rolling_round2_20261026/validation/redundant-frozen.hpp\"",
+            "-U__SIZEOF_INT128__",
+            "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+            "-DSIRKIT_DISABLE_SIMD",
+            "/home/reinsirk/Atcoder_Env/Verify/current/tests/rh_reference_test.cpp",
+            "-o",
+            "/tmp/sirkit_rolling_round2_20261026/validation/redundant-gcc-fallback-checked-rh_reference_test"
+          ],
+          "compile_exit": 0,
+          "diagnostics": "",
+          "test_sha256": "8551b5eb008027f0d14206693b7b7839c9643f835ad99f07f75f636da42efa39",
+          "run_exit": 0,
+          "stdout": "PASS checks=5801401 strings=89\n",
+          "stderr": "",
+          "run_seconds": 0.17905662197154015
+        },
+        {
+          "configuration": "redundant-gcc-fallback-checked-rh_exception_test",
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "-Werror",
+            "-pedantic-errors",
+            "-DSIRKIT_RH_SOURCE=\"/tmp/sirkit_rolling_round2_20261026/validation/redundant-frozen.hpp\"",
+            "-U__SIZEOF_INT128__",
+            "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+            "-DSIRKIT_DISABLE_SIMD",
+            "/home/reinsirk/Atcoder_Env/Verify/current/tests/rh_exception_test.cpp",
+            "-o",
+            "/tmp/sirkit_rolling_round2_20261026/validation/redundant-gcc-fallback-checked-rh_exception_test"
+          ],
+          "compile_exit": 0,
+          "diagnostics": "",
+          "test_sha256": "75790928f843f44f95d6d4e58f22317593380c139bd0f4b740d116566e8b37c6",
+          "run_exit": 0,
+          "stdout": "PASS checks=12488 allocation_failures=8 live_delta=0\n",
+          "stderr": "",
+          "run_seconds": 0.0020784259540960193
+        },
+        {
+          "configuration": "redundant-gcc-fallback-checked-rh_reuse_test",
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "-Werror",
+            "-pedantic-errors",
+            "-DSIRKIT_RH_SOURCE=\"/tmp/sirkit_rolling_round2_20261026/validation/redundant-frozen.hpp\"",
+            "-U__SIZEOF_INT128__",
+            "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+            "-DSIRKIT_DISABLE_SIMD",
+            "/home/reinsirk/Atcoder_Env/Verify/current/tests/rh_reuse_test.cpp",
+            "-o",
+            "/tmp/sirkit_rolling_round2_20261026/validation/redundant-gcc-fallback-checked-rh_reuse_test"
+          ],
+          "compile_exit": 0,
+          "diagnostics": "",
+          "test_sha256": "ff32e18861b98fba8e517667b2be8870ea2a0baf4280e07483e777dc0cf9a226",
+          "run_exit": 0,
+          "stdout": "PASS checks=76992 failures=6 live_delta=0\n",
+          "stderr": "",
+          "run_seconds": 3.27809554990381
+        },
+        {
+          "configuration": "redundant-gcc-fallback-checked-rh_arithmetic_boundary_test",
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "-Werror",
+            "-pedantic-errors",
+            "-DSIRKIT_RH_SOURCE=\"/tmp/sirkit_rolling_round2_20261026/validation/redundant-frozen.hpp\"",
+            "-U__SIZEOF_INT128__",
+            "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+            "-DSIRKIT_DISABLE_SIMD",
+            "/home/reinsirk/Atcoder_Env/Verify/current/tests/rh_arithmetic_boundary_test.cpp",
+            "-o",
+            "/tmp/sirkit_rolling_round2_20261026/validation/redundant-gcc-fallback-checked-rh_arithmetic_boundary_test"
+          ],
+          "compile_exit": 0,
+          "diagnostics": "",
+          "test_sha256": "a8ce149674b6aa5b9aa66f27d4c6efa571ece91bac0311d9a2a3102b10209d0c",
+          "run_exit": 0,
+          "stdout": "PASS arithmetic boundary checks=1811733\n",
+          "stderr": "",
+          "run_seconds": 0.46835137298330665
+        },
+        {
+          "configuration": "redundant-gcc-fallback-checked-rh_lcp_boundary_test",
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "-Werror",
+            "-pedantic-errors",
+            "-DSIRKIT_RH_SOURCE=\"/tmp/sirkit_rolling_round2_20261026/validation/redundant-frozen.hpp\"",
+            "-U__SIZEOF_INT128__",
+            "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+            "-DSIRKIT_DISABLE_SIMD",
+            "/home/reinsirk/Atcoder_Env/Verify/current/tests/rh_lcp_boundary_test.cpp",
+            "-o",
+            "/tmp/sirkit_rolling_round2_20261026/validation/redundant-gcc-fallback-checked-rh_lcp_boundary_test"
+          ],
+          "compile_exit": 0,
+          "diagnostics": "",
+          "test_sha256": "7513f1bdc7cf2d3c4ec01bb213f41c9e58b49c25173418aa1e24f27801540ec6",
+          "run_exit": 0,
+          "stdout": "PASS lcp edge checks=4633837 collision_queries=1001\n",
+          "stderr": "",
+          "run_seconds": 0.13254654500633478
+        },
+        {
+          "configuration": "redundant-gcc-fallback-skip-rh_reference_test",
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "-Werror",
+            "-pedantic-errors",
+            "-DSIRKIT_RH_SOURCE=\"/tmp/sirkit_rolling_round2_20261026/validation/redundant-frozen.hpp\"",
+            "-DSKIP_RUNTIME_CHECKS",
+            "-U__SIZEOF_INT128__",
+            "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+            "-DSIRKIT_DISABLE_SIMD",
+            "/home/reinsirk/Atcoder_Env/Verify/current/tests/rh_reference_test.cpp",
+            "-o",
+            "/tmp/sirkit_rolling_round2_20261026/validation/redundant-gcc-fallback-skip-rh_reference_test"
+          ],
+          "compile_exit": 0,
+          "diagnostics": "",
+          "test_sha256": "8551b5eb008027f0d14206693b7b7839c9643f835ad99f07f75f636da42efa39",
+          "run_exit": 0,
+          "stdout": "PASS checks=5789831 strings=89\n",
+          "stderr": "",
+          "run_seconds": 0.16764673008583486
+        },
+        {
+          "configuration": "redundant-gcc-fallback-skip-rh_exception_test",
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "-Werror",
+            "-pedantic-errors",
+            "-DSIRKIT_RH_SOURCE=\"/tmp/sirkit_rolling_round2_20261026/validation/redundant-frozen.hpp\"",
+            "-DSKIP_RUNTIME_CHECKS",
+            "-U__SIZEOF_INT128__",
+            "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+            "-DSIRKIT_DISABLE_SIMD",
+            "/home/reinsirk/Atcoder_Env/Verify/current/tests/rh_exception_test.cpp",
+            "-o",
+            "/tmp/sirkit_rolling_round2_20261026/validation/redundant-gcc-fallback-skip-rh_exception_test"
+          ],
+          "compile_exit": 0,
+          "diagnostics": "",
+          "test_sha256": "75790928f843f44f95d6d4e58f22317593380c139bd0f4b740d116566e8b37c6",
+          "run_exit": 0,
+          "stdout": "PASS checks=12488 allocation_failures=8 live_delta=0\n",
+          "stderr": "",
+          "run_seconds": 0.0030014970107004046
+        },
+        {
+          "configuration": "redundant-gcc-fallback-skip-rh_reuse_test",
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "-Werror",
+            "-pedantic-errors",
+            "-DSIRKIT_RH_SOURCE=\"/tmp/sirkit_rolling_round2_20261026/validation/redundant-frozen.hpp\"",
+            "-DSKIP_RUNTIME_CHECKS",
+            "-U__SIZEOF_INT128__",
+            "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+            "-DSIRKIT_DISABLE_SIMD",
+            "/home/reinsirk/Atcoder_Env/Verify/current/tests/rh_reuse_test.cpp",
+            "-o",
+            "/tmp/sirkit_rolling_round2_20261026/validation/redundant-gcc-fallback-skip-rh_reuse_test"
+          ],
+          "compile_exit": 0,
+          "diagnostics": "",
+          "test_sha256": "ff32e18861b98fba8e517667b2be8870ea2a0baf4280e07483e777dc0cf9a226",
+          "run_exit": 0,
+          "stdout": "PASS checks=76992 failures=6 live_delta=0\n",
+          "stderr": "",
+          "run_seconds": 2.8527871529804543
+        },
+        {
+          "configuration": "redundant-gcc-fallback-skip-rh_arithmetic_boundary_test",
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "-Werror",
+            "-pedantic-errors",
+            "-DSIRKIT_RH_SOURCE=\"/tmp/sirkit_rolling_round2_20261026/validation/redundant-frozen.hpp\"",
+            "-DSKIP_RUNTIME_CHECKS",
+            "-U__SIZEOF_INT128__",
+            "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+            "-DSIRKIT_DISABLE_SIMD",
+            "/home/reinsirk/Atcoder_Env/Verify/current/tests/rh_arithmetic_boundary_test.cpp",
+            "-o",
+            "/tmp/sirkit_rolling_round2_20261026/validation/redundant-gcc-fallback-skip-rh_arithmetic_boundary_test"
+          ],
+          "compile_exit": 0,
+          "diagnostics": "",
+          "test_sha256": "a8ce149674b6aa5b9aa66f27d4c6efa571ece91bac0311d9a2a3102b10209d0c",
+          "run_exit": 0,
+          "stdout": "PASS arithmetic boundary checks=1811733\n",
+          "stderr": "",
+          "run_seconds": 0.30489970894996077
+        },
+        {
+          "configuration": "redundant-gcc-fallback-skip-rh_lcp_boundary_test",
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "-Werror",
+            "-pedantic-errors",
+            "-DSIRKIT_RH_SOURCE=\"/tmp/sirkit_rolling_round2_20261026/validation/redundant-frozen.hpp\"",
+            "-DSKIP_RUNTIME_CHECKS",
+            "-U__SIZEOF_INT128__",
+            "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+            "-DSIRKIT_DISABLE_SIMD",
+            "/home/reinsirk/Atcoder_Env/Verify/current/tests/rh_lcp_boundary_test.cpp",
+            "-o",
+            "/tmp/sirkit_rolling_round2_20261026/validation/redundant-gcc-fallback-skip-rh_lcp_boundary_test"
+          ],
+          "compile_exit": 0,
+          "diagnostics": "",
+          "test_sha256": "7513f1bdc7cf2d3c4ec01bb213f41c9e58b49c25173418aa1e24f27801540ec6",
+          "run_exit": 0,
+          "stdout": "PASS lcp edge checks=4632837 collision_queries=1001\n",
+          "stderr": "",
+          "run_seconds": 0.2609089270699769
+        },
+        {
+          "configuration": "redundant-clang-int128-checked-rh_reference_test",
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/clang++",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "-Werror",
+            "-pedantic-errors",
+            "-DSIRKIT_RH_SOURCE=\"/tmp/sirkit_rolling_round2_20261026/validation/redundant-frozen.hpp\"",
+            "/home/reinsirk/Atcoder_Env/Verify/current/tests/rh_reference_test.cpp",
+            "-o",
+            "/tmp/sirkit_rolling_round2_20261026/validation/redundant-clang-int128-checked-rh_reference_test"
+          ],
+          "compile_exit": 0,
+          "diagnostics": "",
+          "test_sha256": "8551b5eb008027f0d14206693b7b7839c9643f835ad99f07f75f636da42efa39",
+          "run_exit": 0,
+          "stdout": "PASS checks=5801401 strings=89\n",
+          "stderr": "",
+          "run_seconds": 0.4078975070733577
+        },
+        {
+          "configuration": "redundant-clang-int128-checked-rh_exception_test",
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/clang++",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "-Werror",
+            "-pedantic-errors",
+            "-DSIRKIT_RH_SOURCE=\"/tmp/sirkit_rolling_round2_20261026/validation/redundant-frozen.hpp\"",
+            "/home/reinsirk/Atcoder_Env/Verify/current/tests/rh_exception_test.cpp",
+            "-o",
+            "/tmp/sirkit_rolling_round2_20261026/validation/redundant-clang-int128-checked-rh_exception_test"
+          ],
+          "compile_exit": 0,
+          "diagnostics": "",
+          "test_sha256": "75790928f843f44f95d6d4e58f22317593380c139bd0f4b740d116566e8b37c6",
+          "run_exit": 0,
+          "stdout": "PASS checks=12488 allocation_failures=8 live_delta=0\n",
+          "stderr": "",
+          "run_seconds": 0.0033149559749290347
+        },
+        {
+          "configuration": "redundant-clang-int128-checked-rh_reuse_test",
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/clang++",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "-Werror",
+            "-pedantic-errors",
+            "-DSIRKIT_RH_SOURCE=\"/tmp/sirkit_rolling_round2_20261026/validation/redundant-frozen.hpp\"",
+            "/home/reinsirk/Atcoder_Env/Verify/current/tests/rh_reuse_test.cpp",
+            "-o",
+            "/tmp/sirkit_rolling_round2_20261026/validation/redundant-clang-int128-checked-rh_reuse_test"
+          ],
+          "compile_exit": 0,
+          "diagnostics": "",
+          "test_sha256": "ff32e18861b98fba8e517667b2be8870ea2a0baf4280e07483e777dc0cf9a226",
+          "run_exit": 0,
+          "stdout": "PASS checks=76992 failures=6 live_delta=0\n",
+          "stderr": "",
+          "run_seconds": 2.7362247050041333
+        },
+        {
+          "configuration": "redundant-clang-int128-checked-rh_arithmetic_boundary_test",
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/clang++",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "-Werror",
+            "-pedantic-errors",
+            "-DSIRKIT_RH_SOURCE=\"/tmp/sirkit_rolling_round2_20261026/validation/redundant-frozen.hpp\"",
+            "/home/reinsirk/Atcoder_Env/Verify/current/tests/rh_arithmetic_boundary_test.cpp",
+            "-o",
+            "/tmp/sirkit_rolling_round2_20261026/validation/redundant-clang-int128-checked-rh_arithmetic_boundary_test"
+          ],
+          "compile_exit": 0,
+          "diagnostics": "",
+          "test_sha256": "a8ce149674b6aa5b9aa66f27d4c6efa571ece91bac0311d9a2a3102b10209d0c",
+          "run_exit": 0,
+          "stdout": "PASS arithmetic boundary checks=1811733\n",
+          "stderr": "",
+          "run_seconds": 0.10591805388685316
+        },
+        {
+          "configuration": "redundant-clang-int128-checked-rh_lcp_boundary_test",
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/clang++",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "-Werror",
+            "-pedantic-errors",
+            "-DSIRKIT_RH_SOURCE=\"/tmp/sirkit_rolling_round2_20261026/validation/redundant-frozen.hpp\"",
+            "/home/reinsirk/Atcoder_Env/Verify/current/tests/rh_lcp_boundary_test.cpp",
+            "-o",
+            "/tmp/sirkit_rolling_round2_20261026/validation/redundant-clang-int128-checked-rh_lcp_boundary_test"
+          ],
+          "compile_exit": 0,
+          "diagnostics": "",
+          "test_sha256": "7513f1bdc7cf2d3c4ec01bb213f41c9e58b49c25173418aa1e24f27801540ec6",
+          "run_exit": 0,
+          "stdout": "PASS lcp edge checks=4633837 collision_queries=1001\n",
+          "stderr": "",
+          "run_seconds": 0.060243010986596346
+        },
+        {
+          "configuration": "redundant-clang-int128-skip-rh_reference_test",
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/clang++",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "-Werror",
+            "-pedantic-errors",
+            "-DSIRKIT_RH_SOURCE=\"/tmp/sirkit_rolling_round2_20261026/validation/redundant-frozen.hpp\"",
+            "-DSKIP_RUNTIME_CHECKS",
+            "/home/reinsirk/Atcoder_Env/Verify/current/tests/rh_reference_test.cpp",
+            "-o",
+            "/tmp/sirkit_rolling_round2_20261026/validation/redundant-clang-int128-skip-rh_reference_test"
+          ],
+          "compile_exit": 0,
+          "diagnostics": "",
+          "test_sha256": "8551b5eb008027f0d14206693b7b7839c9643f835ad99f07f75f636da42efa39",
+          "run_exit": 0,
+          "stdout": "PASS checks=5789831 strings=89\n",
+          "stderr": "",
+          "run_seconds": 0.1757464410038665
+        },
+        {
+          "configuration": "redundant-clang-int128-skip-rh_exception_test",
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/clang++",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "-Werror",
+            "-pedantic-errors",
+            "-DSIRKIT_RH_SOURCE=\"/tmp/sirkit_rolling_round2_20261026/validation/redundant-frozen.hpp\"",
+            "-DSKIP_RUNTIME_CHECKS",
+            "/home/reinsirk/Atcoder_Env/Verify/current/tests/rh_exception_test.cpp",
+            "-o",
+            "/tmp/sirkit_rolling_round2_20261026/validation/redundant-clang-int128-skip-rh_exception_test"
+          ],
+          "compile_exit": 0,
+          "diagnostics": "",
+          "test_sha256": "75790928f843f44f95d6d4e58f22317593380c139bd0f4b740d116566e8b37c6",
+          "run_exit": 0,
+          "stdout": "PASS checks=12488 allocation_failures=8 live_delta=0\n",
+          "stderr": "",
+          "run_seconds": 0.0018358159577473998
+        },
+        {
+          "configuration": "redundant-clang-int128-skip-rh_reuse_test",
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/clang++",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "-Werror",
+            "-pedantic-errors",
+            "-DSIRKIT_RH_SOURCE=\"/tmp/sirkit_rolling_round2_20261026/validation/redundant-frozen.hpp\"",
+            "-DSKIP_RUNTIME_CHECKS",
+            "/home/reinsirk/Atcoder_Env/Verify/current/tests/rh_reuse_test.cpp",
+            "-o",
+            "/tmp/sirkit_rolling_round2_20261026/validation/redundant-clang-int128-skip-rh_reuse_test"
+          ],
+          "compile_exit": 0,
+          "diagnostics": "",
+          "test_sha256": "ff32e18861b98fba8e517667b2be8870ea2a0baf4280e07483e777dc0cf9a226",
+          "run_exit": 0,
+          "stdout": "PASS checks=76992 failures=6 live_delta=0\n",
+          "stderr": "",
+          "run_seconds": 1.3540972359478474
+        },
+        {
+          "configuration": "redundant-clang-int128-skip-rh_arithmetic_boundary_test",
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/clang++",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "-Werror",
+            "-pedantic-errors",
+            "-DSIRKIT_RH_SOURCE=\"/tmp/sirkit_rolling_round2_20261026/validation/redundant-frozen.hpp\"",
+            "-DSKIP_RUNTIME_CHECKS",
+            "/home/reinsirk/Atcoder_Env/Verify/current/tests/rh_arithmetic_boundary_test.cpp",
+            "-o",
+            "/tmp/sirkit_rolling_round2_20261026/validation/redundant-clang-int128-skip-rh_arithmetic_boundary_test"
+          ],
+          "compile_exit": 0,
+          "diagnostics": "",
+          "test_sha256": "a8ce149674b6aa5b9aa66f27d4c6efa571ece91bac0311d9a2a3102b10209d0c",
+          "run_exit": 0,
+          "stdout": "PASS arithmetic boundary checks=1811733\n",
+          "stderr": "",
+          "run_seconds": 0.05040213093161583
+        },
+        {
+          "configuration": "redundant-clang-int128-skip-rh_lcp_boundary_test",
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/clang++",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "-Werror",
+            "-pedantic-errors",
+            "-DSIRKIT_RH_SOURCE=\"/tmp/sirkit_rolling_round2_20261026/validation/redundant-frozen.hpp\"",
+            "-DSKIP_RUNTIME_CHECKS",
+            "/home/reinsirk/Atcoder_Env/Verify/current/tests/rh_lcp_boundary_test.cpp",
+            "-o",
+            "/tmp/sirkit_rolling_round2_20261026/validation/redundant-clang-int128-skip-rh_lcp_boundary_test"
+          ],
+          "compile_exit": 0,
+          "diagnostics": "",
+          "test_sha256": "7513f1bdc7cf2d3c4ec01bb213f41c9e58b49c25173418aa1e24f27801540ec6",
+          "run_exit": 0,
+          "stdout": "PASS lcp edge checks=4632837 collision_queries=1001\n",
+          "stderr": "",
+          "run_seconds": 0.0558599759824574
+        },
+        {
+          "configuration": "redundant-clang-fallback-checked-rh_reference_test",
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/clang++",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "-Werror",
+            "-pedantic-errors",
+            "-DSIRKIT_RH_SOURCE=\"/tmp/sirkit_rolling_round2_20261026/validation/redundant-frozen.hpp\"",
+            "-U__SIZEOF_INT128__",
+            "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+            "-DSIRKIT_DISABLE_SIMD",
+            "/home/reinsirk/Atcoder_Env/Verify/current/tests/rh_reference_test.cpp",
+            "-o",
+            "/tmp/sirkit_rolling_round2_20261026/validation/redundant-clang-fallback-checked-rh_reference_test"
+          ],
+          "compile_exit": 0,
+          "diagnostics": "",
+          "test_sha256": "8551b5eb008027f0d14206693b7b7839c9643f835ad99f07f75f636da42efa39",
+          "run_exit": 0,
+          "stdout": "PASS checks=5801401 strings=89\n",
+          "stderr": "",
+          "run_seconds": 0.20963440497871488
+        },
+        {
+          "configuration": "redundant-clang-fallback-checked-rh_exception_test",
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/clang++",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "-Werror",
+            "-pedantic-errors",
+            "-DSIRKIT_RH_SOURCE=\"/tmp/sirkit_rolling_round2_20261026/validation/redundant-frozen.hpp\"",
+            "-U__SIZEOF_INT128__",
+            "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+            "-DSIRKIT_DISABLE_SIMD",
+            "/home/reinsirk/Atcoder_Env/Verify/current/tests/rh_exception_test.cpp",
+            "-o",
+            "/tmp/sirkit_rolling_round2_20261026/validation/redundant-clang-fallback-checked-rh_exception_test"
+          ],
+          "compile_exit": 0,
+          "diagnostics": "",
+          "test_sha256": "75790928f843f44f95d6d4e58f22317593380c139bd0f4b740d116566e8b37c6",
+          "run_exit": 0,
+          "stdout": "PASS checks=12488 allocation_failures=8 live_delta=0\n",
+          "stderr": "",
+          "run_seconds": 0.002889491035602987
+        },
+        {
+          "configuration": "redundant-clang-fallback-checked-rh_reuse_test",
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/clang++",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "-Werror",
+            "-pedantic-errors",
+            "-DSIRKIT_RH_SOURCE=\"/tmp/sirkit_rolling_round2_20261026/validation/redundant-frozen.hpp\"",
+            "-U__SIZEOF_INT128__",
+            "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+            "-DSIRKIT_DISABLE_SIMD",
+            "/home/reinsirk/Atcoder_Env/Verify/current/tests/rh_reuse_test.cpp",
+            "-o",
+            "/tmp/sirkit_rolling_round2_20261026/validation/redundant-clang-fallback-checked-rh_reuse_test"
+          ],
+          "compile_exit": 0,
+          "diagnostics": "",
+          "test_sha256": "ff32e18861b98fba8e517667b2be8870ea2a0baf4280e07483e777dc0cf9a226",
+          "run_exit": 0,
+          "stdout": "PASS checks=76992 failures=6 live_delta=0\n",
+          "stderr": "",
+          "run_seconds": 1.3532881049904972
+        },
+        {
+          "configuration": "redundant-clang-fallback-checked-rh_arithmetic_boundary_test",
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/clang++",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "-Werror",
+            "-pedantic-errors",
+            "-DSIRKIT_RH_SOURCE=\"/tmp/sirkit_rolling_round2_20261026/validation/redundant-frozen.hpp\"",
+            "-U__SIZEOF_INT128__",
+            "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+            "-DSIRKIT_DISABLE_SIMD",
+            "/home/reinsirk/Atcoder_Env/Verify/current/tests/rh_arithmetic_boundary_test.cpp",
+            "-o",
+            "/tmp/sirkit_rolling_round2_20261026/validation/redundant-clang-fallback-checked-rh_arithmetic_boundary_test"
+          ],
+          "compile_exit": 0,
+          "diagnostics": "",
+          "test_sha256": "a8ce149674b6aa5b9aa66f27d4c6efa571ece91bac0311d9a2a3102b10209d0c",
+          "run_exit": 0,
+          "stdout": "PASS arithmetic boundary checks=1811733\n",
+          "stderr": "",
+          "run_seconds": 0.16544917307328433
+        },
+        {
+          "configuration": "redundant-clang-fallback-checked-rh_lcp_boundary_test",
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/clang++",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "-Werror",
+            "-pedantic-errors",
+            "-DSIRKIT_RH_SOURCE=\"/tmp/sirkit_rolling_round2_20261026/validation/redundant-frozen.hpp\"",
+            "-U__SIZEOF_INT128__",
+            "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+            "-DSIRKIT_DISABLE_SIMD",
+            "/home/reinsirk/Atcoder_Env/Verify/current/tests/rh_lcp_boundary_test.cpp",
+            "-o",
+            "/tmp/sirkit_rolling_round2_20261026/validation/redundant-clang-fallback-checked-rh_lcp_boundary_test"
+          ],
+          "compile_exit": 0,
+          "diagnostics": "",
+          "test_sha256": "7513f1bdc7cf2d3c4ec01bb213f41c9e58b49c25173418aa1e24f27801540ec6",
+          "run_exit": 0,
+          "stdout": "PASS lcp edge checks=4633837 collision_queries=1001\n",
+          "stderr": "",
+          "run_seconds": 0.1496711460640654
+        },
+        {
+          "configuration": "redundant-clang-fallback-skip-rh_reference_test",
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/clang++",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "-Werror",
+            "-pedantic-errors",
+            "-DSIRKIT_RH_SOURCE=\"/tmp/sirkit_rolling_round2_20261026/validation/redundant-frozen.hpp\"",
+            "-DSKIP_RUNTIME_CHECKS",
+            "-U__SIZEOF_INT128__",
+            "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+            "-DSIRKIT_DISABLE_SIMD",
+            "/home/reinsirk/Atcoder_Env/Verify/current/tests/rh_reference_test.cpp",
+            "-o",
+            "/tmp/sirkit_rolling_round2_20261026/validation/redundant-clang-fallback-skip-rh_reference_test"
+          ],
+          "compile_exit": 0,
+          "diagnostics": "",
+          "test_sha256": "8551b5eb008027f0d14206693b7b7839c9643f835ad99f07f75f636da42efa39",
+          "run_exit": 0,
+          "stdout": "PASS checks=5789831 strings=89\n",
+          "stderr": "",
+          "run_seconds": 0.17789609904866666
+        },
+        {
+          "configuration": "redundant-clang-fallback-skip-rh_exception_test",
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/clang++",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "-Werror",
+            "-pedantic-errors",
+            "-DSIRKIT_RH_SOURCE=\"/tmp/sirkit_rolling_round2_20261026/validation/redundant-frozen.hpp\"",
+            "-DSKIP_RUNTIME_CHECKS",
+            "-U__SIZEOF_INT128__",
+            "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+            "-DSIRKIT_DISABLE_SIMD",
+            "/home/reinsirk/Atcoder_Env/Verify/current/tests/rh_exception_test.cpp",
+            "-o",
+            "/tmp/sirkit_rolling_round2_20261026/validation/redundant-clang-fallback-skip-rh_exception_test"
+          ],
+          "compile_exit": 0,
+          "diagnostics": "",
+          "test_sha256": "75790928f843f44f95d6d4e58f22317593380c139bd0f4b740d116566e8b37c6",
+          "run_exit": 0,
+          "stdout": "PASS checks=12488 allocation_failures=8 live_delta=0\n",
+          "stderr": "",
+          "run_seconds": 0.0030353550100699067
+        },
+        {
+          "configuration": "redundant-clang-fallback-skip-rh_reuse_test",
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/clang++",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "-Werror",
+            "-pedantic-errors",
+            "-DSIRKIT_RH_SOURCE=\"/tmp/sirkit_rolling_round2_20261026/validation/redundant-frozen.hpp\"",
+            "-DSKIP_RUNTIME_CHECKS",
+            "-U__SIZEOF_INT128__",
+            "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+            "-DSIRKIT_DISABLE_SIMD",
+            "/home/reinsirk/Atcoder_Env/Verify/current/tests/rh_reuse_test.cpp",
+            "-o",
+            "/tmp/sirkit_rolling_round2_20261026/validation/redundant-clang-fallback-skip-rh_reuse_test"
+          ],
+          "compile_exit": 0,
+          "diagnostics": "",
+          "test_sha256": "ff32e18861b98fba8e517667b2be8870ea2a0baf4280e07483e777dc0cf9a226",
+          "run_exit": 0,
+          "stdout": "PASS checks=76992 failures=6 live_delta=0\n",
+          "stderr": "",
+          "run_seconds": 1.35302820103243
+        },
+        {
+          "configuration": "redundant-clang-fallback-skip-rh_arithmetic_boundary_test",
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/clang++",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "-Werror",
+            "-pedantic-errors",
+            "-DSIRKIT_RH_SOURCE=\"/tmp/sirkit_rolling_round2_20261026/validation/redundant-frozen.hpp\"",
+            "-DSKIP_RUNTIME_CHECKS",
+            "-U__SIZEOF_INT128__",
+            "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+            "-DSIRKIT_DISABLE_SIMD",
+            "/home/reinsirk/Atcoder_Env/Verify/current/tests/rh_arithmetic_boundary_test.cpp",
+            "-o",
+            "/tmp/sirkit_rolling_round2_20261026/validation/redundant-clang-fallback-skip-rh_arithmetic_boundary_test"
+          ],
+          "compile_exit": 0,
+          "diagnostics": "",
+          "test_sha256": "a8ce149674b6aa5b9aa66f27d4c6efa571ece91bac0311d9a2a3102b10209d0c",
+          "run_exit": 0,
+          "stdout": "PASS arithmetic boundary checks=1811733\n",
+          "stderr": "",
+          "run_seconds": 0.16331708198413253
+        },
+        {
+          "configuration": "redundant-clang-fallback-skip-rh_lcp_boundary_test",
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/clang++",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "-Werror",
+            "-pedantic-errors",
+            "-DSIRKIT_RH_SOURCE=\"/tmp/sirkit_rolling_round2_20261026/validation/redundant-frozen.hpp\"",
+            "-DSKIP_RUNTIME_CHECKS",
+            "-U__SIZEOF_INT128__",
+            "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+            "-DSIRKIT_DISABLE_SIMD",
+            "/home/reinsirk/Atcoder_Env/Verify/current/tests/rh_lcp_boundary_test.cpp",
+            "-o",
+            "/tmp/sirkit_rolling_round2_20261026/validation/redundant-clang-fallback-skip-rh_lcp_boundary_test"
+          ],
+          "compile_exit": 0,
+          "diagnostics": "",
+          "test_sha256": "7513f1bdc7cf2d3c4ec01bb213f41c9e58b49c25173418aa1e24f27801540ec6",
+          "run_exit": 0,
+          "stdout": "PASS lcp edge checks=4632837 collision_queries=1001\n",
+          "stderr": "",
+          "run_seconds": 0.13878895400557667
+        },
+        {
+          "configuration": "redundant-clang-int128-checked-san-rh_reference_test",
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/clang++",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-std=c++23",
+            "-O1",
+            "-g",
+            "-fsanitize=address,undefined",
+            "-fno-omit-frame-pointer",
+            "-no-pie",
+            "-Wall",
+            "-Wextra",
+            "-Werror",
+            "-pedantic-errors",
+            "-DSIRKIT_RH_SOURCE=\"/tmp/sirkit_rolling_round2_20261026/validation/redundant-frozen.hpp\"",
+            "/home/reinsirk/Atcoder_Env/Verify/current/tests/rh_reference_test.cpp",
+            "-o",
+            "/tmp/sirkit_rolling_round2_20261026/validation/redundant-clang-int128-checked-san-rh_reference_test"
+          ],
+          "compile_exit": 0,
+          "diagnostics": "",
+          "test_sha256": "8551b5eb008027f0d14206693b7b7839c9643f835ad99f07f75f636da42efa39",
+          "run_exit": 0,
+          "stdout": "PASS checks=5801401 strings=89\n",
+          "stderr": "",
+          "run_seconds": 0.2753855159971863
+        },
+        {
+          "configuration": "redundant-clang-int128-checked-san-rh_arithmetic_boundary_test",
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/clang++",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-std=c++23",
+            "-O1",
+            "-g",
+            "-fsanitize=address,undefined",
+            "-fno-omit-frame-pointer",
+            "-no-pie",
+            "-Wall",
+            "-Wextra",
+            "-Werror",
+            "-pedantic-errors",
+            "-DSIRKIT_RH_SOURCE=\"/tmp/sirkit_rolling_round2_20261026/validation/redundant-frozen.hpp\"",
+            "/home/reinsirk/Atcoder_Env/Verify/current/tests/rh_arithmetic_boundary_test.cpp",
+            "-o",
+            "/tmp/sirkit_rolling_round2_20261026/validation/redundant-clang-int128-checked-san-rh_arithmetic_boundary_test"
+          ],
+          "compile_exit": 0,
+          "diagnostics": "",
+          "test_sha256": "a8ce149674b6aa5b9aa66f27d4c6efa571ece91bac0311d9a2a3102b10209d0c",
+          "run_exit": 0,
+          "stdout": "PASS arithmetic boundary checks=1811733\n",
+          "stderr": "",
+          "run_seconds": 0.1964738890528679
+        },
+        {
+          "configuration": "redundant-clang-int128-checked-san-rh_lcp_boundary_test",
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/clang++",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-std=c++23",
+            "-O1",
+            "-g",
+            "-fsanitize=address,undefined",
+            "-fno-omit-frame-pointer",
+            "-no-pie",
+            "-Wall",
+            "-Wextra",
+            "-Werror",
+            "-pedantic-errors",
+            "-DSIRKIT_RH_SOURCE=\"/tmp/sirkit_rolling_round2_20261026/validation/redundant-frozen.hpp\"",
+            "/home/reinsirk/Atcoder_Env/Verify/current/tests/rh_lcp_boundary_test.cpp",
+            "-o",
+            "/tmp/sirkit_rolling_round2_20261026/validation/redundant-clang-int128-checked-san-rh_lcp_boundary_test"
+          ],
+          "compile_exit": 0,
+          "diagnostics": "",
+          "test_sha256": "7513f1bdc7cf2d3c4ec01bb213f41c9e58b49c25173418aa1e24f27801540ec6",
+          "run_exit": 0,
+          "stdout": "PASS lcp edge checks=4633837 collision_queries=1001\n",
+          "stderr": "",
+          "run_seconds": 0.3282752389786765
+        },
+        {
+          "configuration": "redundant-gcc-fallback-checked-san-rh_reference_test",
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O1",
+            "-g",
+            "-fsanitize=address,undefined",
+            "-fno-omit-frame-pointer",
+            "-no-pie",
+            "-Wall",
+            "-Wextra",
+            "-Werror",
+            "-pedantic-errors",
+            "-DSIRKIT_RH_SOURCE=\"/tmp/sirkit_rolling_round2_20261026/validation/redundant-frozen.hpp\"",
+            "-U__SIZEOF_INT128__",
+            "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+            "-DSIRKIT_DISABLE_SIMD",
+            "/home/reinsirk/Atcoder_Env/Verify/current/tests/rh_reference_test.cpp",
+            "-o",
+            "/tmp/sirkit_rolling_round2_20261026/validation/redundant-gcc-fallback-checked-san-rh_reference_test"
+          ],
+          "compile_exit": 0,
+          "diagnostics": "",
+          "test_sha256": "8551b5eb008027f0d14206693b7b7839c9643f835ad99f07f75f636da42efa39",
+          "run_exit": 0,
+          "stdout": "PASS checks=5801401 strings=89\n",
+          "stderr": "",
+          "run_seconds": 0.3021175579633564
+        },
+        {
+          "configuration": "redundant-gcc-fallback-checked-san-rh_arithmetic_boundary_test",
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O1",
+            "-g",
+            "-fsanitize=address,undefined",
+            "-fno-omit-frame-pointer",
+            "-no-pie",
+            "-Wall",
+            "-Wextra",
+            "-Werror",
+            "-pedantic-errors",
+            "-DSIRKIT_RH_SOURCE=\"/tmp/sirkit_rolling_round2_20261026/validation/redundant-frozen.hpp\"",
+            "-U__SIZEOF_INT128__",
+            "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+            "-DSIRKIT_DISABLE_SIMD",
+            "/home/reinsirk/Atcoder_Env/Verify/current/tests/rh_arithmetic_boundary_test.cpp",
+            "-o",
+            "/tmp/sirkit_rolling_round2_20261026/validation/redundant-gcc-fallback-checked-san-rh_arithmetic_boundary_test"
+          ],
+          "compile_exit": 0,
+          "diagnostics": "",
+          "test_sha256": "a8ce149674b6aa5b9aa66f27d4c6efa571ece91bac0311d9a2a3102b10209d0c",
+          "run_exit": 0,
+          "stdout": "PASS arithmetic boundary checks=1811733\n",
+          "stderr": "",
+          "run_seconds": 1.6692750590154901
+        },
+        {
+          "configuration": "redundant-gcc-fallback-checked-san-rh_lcp_boundary_test",
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O1",
+            "-g",
+            "-fsanitize=address,undefined",
+            "-fno-omit-frame-pointer",
+            "-no-pie",
+            "-Wall",
+            "-Wextra",
+            "-Werror",
+            "-pedantic-errors",
+            "-DSIRKIT_RH_SOURCE=\"/tmp/sirkit_rolling_round2_20261026/validation/redundant-frozen.hpp\"",
+            "-U__SIZEOF_INT128__",
+            "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+            "-DSIRKIT_DISABLE_SIMD",
+            "/home/reinsirk/Atcoder_Env/Verify/current/tests/rh_lcp_boundary_test.cpp",
+            "-o",
+            "/tmp/sirkit_rolling_round2_20261026/validation/redundant-gcc-fallback-checked-san-rh_lcp_boundary_test"
+          ],
+          "compile_exit": 0,
+          "diagnostics": "",
+          "test_sha256": "7513f1bdc7cf2d3c4ec01bb213f41c9e58b49c25173418aa1e24f27801540ec6",
+          "run_exit": 0,
+          "stdout": "PASS lcp edge checks=4633837 collision_queries=1001\n",
+          "stderr": "",
+          "run_seconds": 1.6686057701008394
+        }
+      ],
+      "passed": true,
+      "source_unchanged": true,
+      "completed_at_utc": "2026-10-25T21:07:06.913875+00:00"
+    },
+    "redundant-extra-results.json": {
+      "source": "/tmp/sirkit_rolling_round2_20261026/validation/redundant-frozen.hpp",
+      "source_sha256": "54123c4a6deb29d1e5219d741afa2d2bd7a863ff8c4326cf70683baa5205926b",
+      "runs": [
+        {
+          "configuration": "redundant-extra-gcc-checked-int128",
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "-Werror",
+            "-pedantic-errors",
+            "-DSIRKIT_RH_SOURCE=\"/tmp/sirkit_rolling_round2_20261026/validation/redundant-frozen.hpp\"",
+            "/tmp/sirkit_rolling_round2_20261026/validation/redundant_block_boundary_test.cpp",
+            "-o",
+            "/tmp/sirkit_rolling_round2_20261026/validation/redundant-extra-gcc-checked-int128"
+          ],
+          "compile_exit": 0,
+          "diagnostics": "",
+          "run_exit": 0,
+          "stdout": "PASS block boundary checks=42205183 cases=317\n",
+          "stderr": ""
+        },
+        {
+          "configuration": "redundant-extra-gcc-checked-fallback",
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "-Werror",
+            "-pedantic-errors",
+            "-DSIRKIT_RH_SOURCE=\"/tmp/sirkit_rolling_round2_20261026/validation/redundant-frozen.hpp\"",
+            "-U__SIZEOF_INT128__",
+            "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+            "-DSIRKIT_DISABLE_SIMD",
+            "/tmp/sirkit_rolling_round2_20261026/validation/redundant_block_boundary_test.cpp",
+            "-o",
+            "/tmp/sirkit_rolling_round2_20261026/validation/redundant-extra-gcc-checked-fallback"
+          ],
+          "compile_exit": 0,
+          "diagnostics": "",
+          "run_exit": 0,
+          "stdout": "PASS block boundary checks=42205183 cases=317\n",
+          "stderr": ""
+        },
+        {
+          "configuration": "redundant-extra-gcc-skip-int128",
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "-Werror",
+            "-pedantic-errors",
+            "-DSIRKIT_RH_SOURCE=\"/tmp/sirkit_rolling_round2_20261026/validation/redundant-frozen.hpp\"",
+            "-DSKIP_RUNTIME_CHECKS",
+            "/tmp/sirkit_rolling_round2_20261026/validation/redundant_block_boundary_test.cpp",
+            "-o",
+            "/tmp/sirkit_rolling_round2_20261026/validation/redundant-extra-gcc-skip-int128"
+          ],
+          "compile_exit": 0,
+          "diagnostics": "",
+          "run_exit": 0,
+          "stdout": "PASS block boundary checks=42205183 cases=317\n",
+          "stderr": ""
+        },
+        {
+          "configuration": "redundant-extra-gcc-skip-fallback",
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "-Werror",
+            "-pedantic-errors",
+            "-DSIRKIT_RH_SOURCE=\"/tmp/sirkit_rolling_round2_20261026/validation/redundant-frozen.hpp\"",
+            "-DSKIP_RUNTIME_CHECKS",
+            "-U__SIZEOF_INT128__",
+            "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+            "-DSIRKIT_DISABLE_SIMD",
+            "/tmp/sirkit_rolling_round2_20261026/validation/redundant_block_boundary_test.cpp",
+            "-o",
+            "/tmp/sirkit_rolling_round2_20261026/validation/redundant-extra-gcc-skip-fallback"
+          ],
+          "compile_exit": 0,
+          "diagnostics": "",
+          "run_exit": 0,
+          "stdout": "PASS block boundary checks=42205183 cases=317\n",
+          "stderr": ""
+        },
+        {
+          "configuration": "redundant-extra-clang-checked-int128",
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/clang++",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "-Werror",
+            "-pedantic-errors",
+            "-DSIRKIT_RH_SOURCE=\"/tmp/sirkit_rolling_round2_20261026/validation/redundant-frozen.hpp\"",
+            "/tmp/sirkit_rolling_round2_20261026/validation/redundant_block_boundary_test.cpp",
+            "-o",
+            "/tmp/sirkit_rolling_round2_20261026/validation/redundant-extra-clang-checked-int128"
+          ],
+          "compile_exit": 0,
+          "diagnostics": "",
+          "run_exit": 0,
+          "stdout": "PASS block boundary checks=42205183 cases=317\n",
+          "stderr": ""
+        },
+        {
+          "configuration": "redundant-extra-clang-checked-fallback",
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/clang++",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "-Werror",
+            "-pedantic-errors",
+            "-DSIRKIT_RH_SOURCE=\"/tmp/sirkit_rolling_round2_20261026/validation/redundant-frozen.hpp\"",
+            "-U__SIZEOF_INT128__",
+            "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+            "-DSIRKIT_DISABLE_SIMD",
+            "/tmp/sirkit_rolling_round2_20261026/validation/redundant_block_boundary_test.cpp",
+            "-o",
+            "/tmp/sirkit_rolling_round2_20261026/validation/redundant-extra-clang-checked-fallback"
+          ],
+          "compile_exit": 0,
+          "diagnostics": "",
+          "run_exit": 0,
+          "stdout": "PASS block boundary checks=42205183 cases=317\n",
+          "stderr": ""
+        },
+        {
+          "configuration": "redundant-extra-clang-skip-int128",
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/clang++",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "-Werror",
+            "-pedantic-errors",
+            "-DSIRKIT_RH_SOURCE=\"/tmp/sirkit_rolling_round2_20261026/validation/redundant-frozen.hpp\"",
+            "-DSKIP_RUNTIME_CHECKS",
+            "/tmp/sirkit_rolling_round2_20261026/validation/redundant_block_boundary_test.cpp",
+            "-o",
+            "/tmp/sirkit_rolling_round2_20261026/validation/redundant-extra-clang-skip-int128"
+          ],
+          "compile_exit": 0,
+          "diagnostics": "",
+          "run_exit": 0,
+          "stdout": "PASS block boundary checks=42205183 cases=317\n",
+          "stderr": ""
+        },
+        {
+          "configuration": "redundant-extra-clang-skip-fallback",
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/clang++",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "-Werror",
+            "-pedantic-errors",
+            "-DSIRKIT_RH_SOURCE=\"/tmp/sirkit_rolling_round2_20261026/validation/redundant-frozen.hpp\"",
+            "-DSKIP_RUNTIME_CHECKS",
+            "-U__SIZEOF_INT128__",
+            "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+            "-DSIRKIT_DISABLE_SIMD",
+            "/tmp/sirkit_rolling_round2_20261026/validation/redundant_block_boundary_test.cpp",
+            "-o",
+            "/tmp/sirkit_rolling_round2_20261026/validation/redundant-extra-clang-skip-fallback"
+          ],
+          "compile_exit": 0,
+          "diagnostics": "",
+          "run_exit": 0,
+          "stdout": "PASS block boundary checks=42205183 cases=317\n",
+          "stderr": ""
+        },
+        {
+          "configuration": "redundant-extra-clang-checked-int128-san",
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/clang++",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-std=c++23",
+            "-O1",
+            "-g",
+            "-fsanitize=address,undefined",
+            "-fno-omit-frame-pointer",
+            "-no-pie",
+            "-Wall",
+            "-Wextra",
+            "-Werror",
+            "-pedantic-errors",
+            "-DSIRKIT_RH_SOURCE=\"/tmp/sirkit_rolling_round2_20261026/validation/redundant-frozen.hpp\"",
+            "/tmp/sirkit_rolling_round2_20261026/validation/redundant_block_boundary_test.cpp",
+            "-o",
+            "/tmp/sirkit_rolling_round2_20261026/validation/redundant-extra-clang-checked-int128-san"
+          ],
+          "compile_exit": 0,
+          "diagnostics": "",
+          "run_exit": 0,
+          "stdout": "PASS block boundary checks=42205183 cases=317\n",
+          "stderr": ""
+        },
+        {
+          "configuration": "redundant-extra-gcc-checked-fallback-san",
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O1",
+            "-g",
+            "-fsanitize=address,undefined",
+            "-fno-omit-frame-pointer",
+            "-no-pie",
+            "-Wall",
+            "-Wextra",
+            "-Werror",
+            "-pedantic-errors",
+            "-DSIRKIT_RH_SOURCE=\"/tmp/sirkit_rolling_round2_20261026/validation/redundant-frozen.hpp\"",
+            "-U__SIZEOF_INT128__",
+            "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+            "-DSIRKIT_DISABLE_SIMD",
+            "/tmp/sirkit_rolling_round2_20261026/validation/redundant_block_boundary_test.cpp",
+            "-o",
+            "/tmp/sirkit_rolling_round2_20261026/validation/redundant-extra-gcc-checked-fallback-san"
+          ],
+          "compile_exit": 0,
+          "diagnostics": "",
+          "run_exit": 0,
+          "stdout": "PASS block boundary checks=42205183 cases=317\n",
+          "stderr": ""
+        }
+      ],
+      "passed": true,
+      "source_unchanged": true
+    },
+    "redundant-modes-results.json": {
+      "source_sha256": "54123c4a6deb29d1e5219d741afa2d2bd7a863ff8c4326cf70683baa5205926b",
+      "runs": [
+        {
+          "configuration": "redundant-gcc-disabled_native128-checked",
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "-Werror",
+            "-pedantic-errors",
+            "-DSIRKIT_RH_SOURCE=\"/tmp/sirkit_rolling_round2_20261026/validation/redundant-frozen.hpp\"",
+            "-DSIRKIT_DISABLE_SIMD",
+            "/tmp/sirkit_rolling_round2_20261026/validation/redundant_block_boundary_test.cpp",
+            "-o",
+            "/tmp/sirkit_rolling_round2_20261026/validation/redundant-gcc-disabled_native128-checked"
+          ],
+          "compile_exit": 0,
+          "diagnostics": "",
+          "run_exit": 0,
+          "stdout": "PASS block boundary checks=42205183 cases=317\n",
+          "stderr": ""
+        },
+        {
+          "configuration": "redundant-gcc-disabled_native128-skip",
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "-Werror",
+            "-pedantic-errors",
+            "-DSIRKIT_RH_SOURCE=\"/tmp/sirkit_rolling_round2_20261026/validation/redundant-frozen.hpp\"",
+            "-DSKIP_RUNTIME_CHECKS",
+            "-DSIRKIT_DISABLE_SIMD",
+            "/tmp/sirkit_rolling_round2_20261026/validation/redundant_block_boundary_test.cpp",
+            "-o",
+            "/tmp/sirkit_rolling_round2_20261026/validation/redundant-gcc-disabled_native128-skip"
+          ],
+          "compile_exit": 0,
+          "diagnostics": "",
+          "run_exit": 0,
+          "stdout": "PASS block boundary checks=42205183 cases=317\n",
+          "stderr": ""
+        },
+        {
+          "configuration": "redundant-gcc-forced_cpu_unsupported-checked",
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "-Werror",
+            "-pedantic-errors",
+            "-DSIRKIT_RH_SOURCE=\"/tmp/sirkit_rolling_round2_20261026/validation/redundant-frozen.hpp\"",
+            "-D__builtin_cpu_supports(x)=0",
+            "/tmp/sirkit_rolling_round2_20261026/validation/redundant_block_boundary_test.cpp",
+            "-o",
+            "/tmp/sirkit_rolling_round2_20261026/validation/redundant-gcc-forced_cpu_unsupported-checked"
+          ],
+          "compile_exit": 0,
+          "diagnostics": "",
+          "run_exit": 0,
+          "stdout": "PASS block boundary checks=42205183 cases=317\n",
+          "stderr": ""
+        },
+        {
+          "configuration": "redundant-gcc-forced_cpu_unsupported-skip",
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "-Werror",
+            "-pedantic-errors",
+            "-DSIRKIT_RH_SOURCE=\"/tmp/sirkit_rolling_round2_20261026/validation/redundant-frozen.hpp\"",
+            "-DSKIP_RUNTIME_CHECKS",
+            "-D__builtin_cpu_supports(x)=0",
+            "/tmp/sirkit_rolling_round2_20261026/validation/redundant_block_boundary_test.cpp",
+            "-o",
+            "/tmp/sirkit_rolling_round2_20261026/validation/redundant-gcc-forced_cpu_unsupported-skip"
+          ],
+          "compile_exit": 0,
+          "diagnostics": "",
+          "run_exit": 0,
+          "stdout": "PASS block boundary checks=42205183 cases=317\n",
+          "stderr": ""
+        },
+        {
+          "configuration": "redundant-clang-disabled_native128-checked",
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/clang++",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "-Werror",
+            "-pedantic-errors",
+            "-DSIRKIT_RH_SOURCE=\"/tmp/sirkit_rolling_round2_20261026/validation/redundant-frozen.hpp\"",
+            "-DSIRKIT_DISABLE_SIMD",
+            "/tmp/sirkit_rolling_round2_20261026/validation/redundant_block_boundary_test.cpp",
+            "-o",
+            "/tmp/sirkit_rolling_round2_20261026/validation/redundant-clang-disabled_native128-checked"
+          ],
+          "compile_exit": 0,
+          "diagnostics": "",
+          "run_exit": 0,
+          "stdout": "PASS block boundary checks=42205183 cases=317\n",
+          "stderr": ""
+        },
+        {
+          "configuration": "redundant-clang-disabled_native128-skip",
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/clang++",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "-Werror",
+            "-pedantic-errors",
+            "-DSIRKIT_RH_SOURCE=\"/tmp/sirkit_rolling_round2_20261026/validation/redundant-frozen.hpp\"",
+            "-DSKIP_RUNTIME_CHECKS",
+            "-DSIRKIT_DISABLE_SIMD",
+            "/tmp/sirkit_rolling_round2_20261026/validation/redundant_block_boundary_test.cpp",
+            "-o",
+            "/tmp/sirkit_rolling_round2_20261026/validation/redundant-clang-disabled_native128-skip"
+          ],
+          "compile_exit": 0,
+          "diagnostics": "",
+          "run_exit": 0,
+          "stdout": "PASS block boundary checks=42205183 cases=317\n",
+          "stderr": ""
+        },
+        {
+          "configuration": "redundant-clang-forced_cpu_unsupported-checked",
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/clang++",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "-Werror",
+            "-pedantic-errors",
+            "-DSIRKIT_RH_SOURCE=\"/tmp/sirkit_rolling_round2_20261026/validation/redundant-frozen.hpp\"",
+            "-D__builtin_cpu_supports(x)=0",
+            "/tmp/sirkit_rolling_round2_20261026/validation/redundant_block_boundary_test.cpp",
+            "-o",
+            "/tmp/sirkit_rolling_round2_20261026/validation/redundant-clang-forced_cpu_unsupported-checked"
+          ],
+          "compile_exit": 0,
+          "diagnostics": "",
+          "run_exit": 0,
+          "stdout": "PASS block boundary checks=42205183 cases=317\n",
+          "stderr": ""
+        },
+        {
+          "configuration": "redundant-clang-forced_cpu_unsupported-skip",
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/clang++",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "-Werror",
+            "-pedantic-errors",
+            "-DSIRKIT_RH_SOURCE=\"/tmp/sirkit_rolling_round2_20261026/validation/redundant-frozen.hpp\"",
+            "-DSKIP_RUNTIME_CHECKS",
+            "-D__builtin_cpu_supports(x)=0",
+            "/tmp/sirkit_rolling_round2_20261026/validation/redundant_block_boundary_test.cpp",
+            "-o",
+            "/tmp/sirkit_rolling_round2_20261026/validation/redundant-clang-forced_cpu_unsupported-skip"
+          ],
+          "compile_exit": 0,
+          "diagnostics": "",
+          "run_exit": 0,
+          "stdout": "PASS block boundary checks=42205183 cases=317\n",
+          "stderr": ""
+        },
+        {
+          "configuration": "redundant-gcc-enabled_native128-checked-san",
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O1",
+            "-g",
+            "-fsanitize=address,undefined",
+            "-fno-omit-frame-pointer",
+            "-no-pie",
+            "-Wall",
+            "-Wextra",
+            "-Werror",
+            "-pedantic-errors",
+            "-DSIRKIT_RH_SOURCE=\"/tmp/sirkit_rolling_round2_20261026/validation/redundant-frozen.hpp\"",
+            "/tmp/sirkit_rolling_round2_20261026/validation/redundant_block_boundary_test.cpp",
+            "-o",
+            "/tmp/sirkit_rolling_round2_20261026/validation/redundant-gcc-enabled_native128-checked-san"
+          ],
+          "compile_exit": 0,
+          "diagnostics": "",
+          "run_exit": 0,
+          "stdout": "PASS block boundary checks=42205183 cases=317\n",
+          "stderr": ""
+        }
+      ],
+      "passed": true,
+      "source_unchanged": true,
+      "preprocessing_probes": [
+        {
+          "compiler": "gcc",
+          "mode": "disabled_native128",
+          "class_normalized_preprocessor": {
+            "baseline": {
+              "sha256": "cf7cbaaee3d8f1502c311dbf0f8916a0ac14d12983acc1bf66bb1acc85c8c17b",
+              "avx_helper_present": false,
+              "cpu_dispatch_present": false,
+              "builtin_cpu_supports_present": false
+            },
+            "candidate": {
+              "sha256": "cf7cbaaee3d8f1502c311dbf0f8916a0ac14d12983acc1bf66bb1acc85c8c17b",
+              "avx_helper_present": false,
+              "cpu_dispatch_present": false,
+              "builtin_cpu_supports_present": false
+            }
+          }
+        },
+        {
+          "compiler": "gcc",
+          "mode": "standard_forced",
+          "class_normalized_preprocessor": {
+            "baseline": {
+              "sha256": "169ac1fdbe46387f01083c7787061a96aa15df11ebc5635e4b4c26c01f7d50d3",
+              "avx_helper_present": false,
+              "cpu_dispatch_present": false,
+              "builtin_cpu_supports_present": false
+            },
+            "candidate": {
+              "sha256": "169ac1fdbe46387f01083c7787061a96aa15df11ebc5635e4b4c26c01f7d50d3",
+              "avx_helper_present": false,
+              "cpu_dispatch_present": false,
+              "builtin_cpu_supports_present": false
+            }
+          }
+        },
+        {
+          "compiler": "clang",
+          "mode": "disabled_native128",
+          "class_normalized_preprocessor": {
+            "baseline": {
+              "sha256": "cf7cbaaee3d8f1502c311dbf0f8916a0ac14d12983acc1bf66bb1acc85c8c17b",
+              "avx_helper_present": false,
+              "cpu_dispatch_present": false,
+              "builtin_cpu_supports_present": false
+            },
+            "candidate": {
+              "sha256": "cf7cbaaee3d8f1502c311dbf0f8916a0ac14d12983acc1bf66bb1acc85c8c17b",
+              "avx_helper_present": false,
+              "cpu_dispatch_present": false,
+              "builtin_cpu_supports_present": false
+            }
+          }
+        },
+        {
+          "compiler": "clang",
+          "mode": "standard_forced",
+          "class_normalized_preprocessor": {
+            "baseline": {
+              "sha256": "bb5a638d15b1402b435a6a8d8cdfefc008ac01ca934b681decbf44735b3ff129",
+              "avx_helper_present": false,
+              "cpu_dispatch_present": false,
+              "builtin_cpu_supports_present": false
+            },
+            "candidate": {
+              "sha256": "bb5a638d15b1402b435a6a8d8cdfefc008ac01ca934b681decbf44735b3ff129",
+              "avx_helper_present": false,
+              "cpu_dispatch_present": false,
+              "builtin_cpu_supports_present": false
+            }
+          }
+        }
+      ],
+      "completed_at_utc": "2026-10-25T21:06:12.758652+00:00",
+      "strict_preprocessing_probes": [
+        {
+          "compiler": "gcc",
+          "mode": "disabled_native128",
+          "normalization": "Trim line edges and discard blank lines, preserving whitespace inside code/literals.",
+          "sha256": {
+            "baseline": "0127986b5fe0436c1aba7717876ea8add244c293c3b9088981093822d6a54a60",
+            "candidate": "0127986b5fe0436c1aba7717876ea8add244c293c3b9088981093822d6a54a60"
+          }
+        },
+        {
+          "compiler": "gcc",
+          "mode": "standard_forced",
+          "normalization": "Trim line edges and discard blank lines, preserving whitespace inside code/literals.",
+          "sha256": {
+            "baseline": "993a4ae18c8ebe343e55434c6b25dd281cfb2a6ad672621e65977af376c9da1d",
+            "candidate": "993a4ae18c8ebe343e55434c6b25dd281cfb2a6ad672621e65977af376c9da1d"
+          }
+        },
+        {
+          "compiler": "clang",
+          "mode": "disabled_native128",
+          "normalization": "Trim line edges and discard blank lines, preserving whitespace inside code/literals.",
+          "sha256": {
+            "baseline": "0127986b5fe0436c1aba7717876ea8add244c293c3b9088981093822d6a54a60",
+            "candidate": "0127986b5fe0436c1aba7717876ea8add244c293c3b9088981093822d6a54a60"
+          }
+        },
+        {
+          "compiler": "clang",
+          "mode": "standard_forced",
+          "normalization": "Trim line edges and discard blank lines, preserving whitespace inside code/literals.",
+          "sha256": {
+            "baseline": "5cd9ed180d2596d8470b426ea5efece7e5feaf84319afb2e382be6a0ffb36746",
+            "candidate": "5cd9ed180d2596d8470b426ea5efece7e5feaf84319afb2e382be6a0ffb36746"
+          }
+        }
+      ]
+    },
+    "redundant-allocation-results.json": {
+      "source_sha256": "54123c4a6deb29d1e5219d741afa2d2bd7a863ff8c4326cf70683baa5205926b",
+      "runs": [
+        {
+          "configuration": "redundant-allocation-gcc-checked",
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "-Werror",
+            "-pedantic-errors",
+            "-DSIRKIT_RH_SOURCE=\"/tmp/sirkit_rolling_round2_20261026/validation/redundant-frozen.hpp\"",
+            "/tmp/sirkit_rolling_round2_20261026/validation/avx_allocation_test.cpp",
+            "-o",
+            "/tmp/sirkit_rolling_round2_20261026/validation/redundant-allocation-gcc-checked"
+          ],
+          "compile_exit": 0,
+          "diagnostics": "",
+          "run_exit": 0,
+          "stdout": "PASS first AVX allocation checks=49177 failure_points=4 live_delta=0 avx2=1\n",
+          "stderr": ""
+        },
+        {
+          "configuration": "redundant-allocation-gcc-skip",
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "-Werror",
+            "-pedantic-errors",
+            "-DSIRKIT_RH_SOURCE=\"/tmp/sirkit_rolling_round2_20261026/validation/redundant-frozen.hpp\"",
+            "-DSKIP_RUNTIME_CHECKS",
+            "/tmp/sirkit_rolling_round2_20261026/validation/avx_allocation_test.cpp",
+            "-o",
+            "/tmp/sirkit_rolling_round2_20261026/validation/redundant-allocation-gcc-skip"
+          ],
+          "compile_exit": 0,
+          "diagnostics": "",
+          "run_exit": 0,
+          "stdout": "PASS first AVX allocation checks=49177 failure_points=4 live_delta=0 avx2=1\n",
+          "stderr": ""
+        },
+        {
+          "configuration": "redundant-allocation-clang-checked",
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/clang++",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "-Werror",
+            "-pedantic-errors",
+            "-DSIRKIT_RH_SOURCE=\"/tmp/sirkit_rolling_round2_20261026/validation/redundant-frozen.hpp\"",
+            "/tmp/sirkit_rolling_round2_20261026/validation/avx_allocation_test.cpp",
+            "-o",
+            "/tmp/sirkit_rolling_round2_20261026/validation/redundant-allocation-clang-checked"
+          ],
+          "compile_exit": 0,
+          "diagnostics": "",
+          "run_exit": 0,
+          "stdout": "PASS first AVX allocation checks=49177 failure_points=4 live_delta=0 avx2=1\n",
+          "stderr": ""
+        },
+        {
+          "configuration": "redundant-allocation-clang-skip",
+          "command": [
+            "taskset",
+            "-c",
+            "8",
+            "/usr/bin/clang++",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "-Werror",
+            "-pedantic-errors",
+            "-DSIRKIT_RH_SOURCE=\"/tmp/sirkit_rolling_round2_20261026/validation/redundant-frozen.hpp\"",
+            "-DSKIP_RUNTIME_CHECKS",
+            "/tmp/sirkit_rolling_round2_20261026/validation/avx_allocation_test.cpp",
+            "-o",
+            "/tmp/sirkit_rolling_round2_20261026/validation/redundant-allocation-clang-skip"
+          ],
+          "compile_exit": 0,
+          "diagnostics": "",
+          "run_exit": 0,
+          "stdout": "PASS first AVX allocation checks=49177 failure_points=4 live_delta=0 avx2=1\n",
+          "stderr": ""
+        }
+      ],
+      "passed": true
+    }
+  },
+  "production_repository_tests": [
+    {
+      "config": "gcc",
+      "skip": false,
+      "test": "rolling_hash_build_test",
+      "cmd": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/rolling_hash_build_test.cpp",
+        "-o",
+        "/tmp/sirkit_rolling_round2_20261026/production-gcc-False-rolling_hash_build_test"
+      ],
+      "diagnostics": "",
+      "stdout": "PASS block boundary checks=42205183 cases=317\n"
+    },
+    {
+      "config": "gcc",
+      "skip": false,
+      "test": "rolling_hash_avx_allocation_test",
+      "cmd": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/rolling_hash_avx_allocation_test.cpp",
+        "-o",
+        "/tmp/sirkit_rolling_round2_20261026/production-gcc-False-rolling_hash_avx_allocation_test"
+      ],
+      "diagnostics": "",
+      "stdout": "PASS first AVX allocation checks=49177 failure_points=4 live_delta=0 avx2=1\n"
+    },
+    {
+      "config": "gcc",
+      "skip": true,
+      "test": "rolling_hash_build_test",
+      "cmd": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-DSKIP_RUNTIME_CHECKS",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/rolling_hash_build_test.cpp",
+        "-o",
+        "/tmp/sirkit_rolling_round2_20261026/production-gcc-True-rolling_hash_build_test"
+      ],
+      "diagnostics": "",
+      "stdout": "PASS block boundary checks=42205183 cases=317\n"
+    },
+    {
+      "config": "gcc",
+      "skip": true,
+      "test": "rolling_hash_avx_allocation_test",
+      "cmd": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-DSKIP_RUNTIME_CHECKS",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/rolling_hash_avx_allocation_test.cpp",
+        "-o",
+        "/tmp/sirkit_rolling_round2_20261026/production-gcc-True-rolling_hash_avx_allocation_test"
+      ],
+      "diagnostics": "",
+      "stdout": "PASS first AVX allocation checks=49177 failure_points=4 live_delta=0 avx2=1\n"
+    },
+    {
+      "config": "clang",
+      "skip": false,
+      "test": "rolling_hash_build_test",
+      "cmd": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/rolling_hash_build_test.cpp",
+        "-o",
+        "/tmp/sirkit_rolling_round2_20261026/production-clang-False-rolling_hash_build_test"
+      ],
+      "diagnostics": "",
+      "stdout": "PASS block boundary checks=42205183 cases=317\n"
+    },
+    {
+      "config": "clang",
+      "skip": false,
+      "test": "rolling_hash_avx_allocation_test",
+      "cmd": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/rolling_hash_avx_allocation_test.cpp",
+        "-o",
+        "/tmp/sirkit_rolling_round2_20261026/production-clang-False-rolling_hash_avx_allocation_test"
+      ],
+      "diagnostics": "",
+      "stdout": "PASS first AVX allocation checks=49177 failure_points=4 live_delta=0 avx2=1\n"
+    },
+    {
+      "config": "clang",
+      "skip": true,
+      "test": "rolling_hash_build_test",
+      "cmd": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-DSKIP_RUNTIME_CHECKS",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/rolling_hash_build_test.cpp",
+        "-o",
+        "/tmp/sirkit_rolling_round2_20261026/production-clang-True-rolling_hash_build_test"
+      ],
+      "diagnostics": "",
+      "stdout": "PASS block boundary checks=42205183 cases=317\n"
+    },
+    {
+      "config": "clang",
+      "skip": true,
+      "test": "rolling_hash_avx_allocation_test",
+      "cmd": [
+        "taskset",
+        "-c",
+        "8",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-DSKIP_RUNTIME_CHECKS",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/rolling_hash_avx_allocation_test.cpp",
+        "-o",
+        "/tmp/sirkit_rolling_round2_20261026/production-clang-True-rolling_hash_avx_allocation_test"
+      ],
+      "diagnostics": "",
+      "stdout": "PASS first AVX allocation checks=49177 failure_points=4 live_delta=0 avx2=1\n"
+    }
+  ],
+  "production_sample_tests": {
+    "production-gcc-samples.json": {
+      "results": [
+        {
+          "id": "rolling_hash",
+          "compiler": "/usr/bin/g++",
+          "skip_runtime_checks": false,
+          "standard_fallback": false,
+          "submission_sha256": "8be2bad08f040f7eaa9396606d0d592b418895187d60b6fcd9146e2a4ecc0db7",
+          "tested_source_sha256": "63a7bef46acb2e3691becca8b4d05c7ecd5cb552bb71693f69a055be34e9a77b",
+          "command": [
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "/tmp/atcoder_verify_o95m4f4k/rolling_hash_checked.cpp"
+          ],
+          "compile_ok": true,
+          "diagnostics": "",
+          "samples": [
+            {
+              "passed": true,
+              "returncode": 0,
+              "stdout": "1\n",
+              "stderr": ""
+            },
+            {
+              "passed": true,
+              "returncode": 0,
+              "stdout": "5 4 3 2 1\n",
+              "stderr": ""
+            },
+            {
+              "passed": true,
+              "returncode": 0,
+              "stdout": "7 0 1 0 3 0 1\n",
+              "stderr": ""
+            },
+            {
+              "passed": true,
+              "returncode": 0,
+              "stdout": "9 0 0 2 0 0 3 0 0\n",
+              "stderr": ""
+            }
+          ],
+          "passed": true
+        },
+        {
+          "id": "rolling_hash",
+          "compiler": "/usr/bin/g++",
+          "skip_runtime_checks": true,
+          "standard_fallback": false,
+          "submission_sha256": "8be2bad08f040f7eaa9396606d0d592b418895187d60b6fcd9146e2a4ecc0db7",
+          "tested_source_sha256": "8be2bad08f040f7eaa9396606d0d592b418895187d60b6fcd9146e2a4ecc0db7",
+          "command": [
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "/home/reinsirk/Atcoder_Env/Verify/current/submissions/rolling_hash.cpp"
+          ],
+          "compile_ok": true,
+          "diagnostics": "",
+          "samples": [
+            {
+              "passed": true,
+              "returncode": 0,
+              "stdout": "1\n",
+              "stderr": ""
+            },
+            {
+              "passed": true,
+              "returncode": 0,
+              "stdout": "5 4 3 2 1\n",
+              "stderr": ""
+            },
+            {
+              "passed": true,
+              "returncode": 0,
+              "stdout": "7 0 1 0 3 0 1\n",
+              "stderr": ""
+            },
+            {
+              "passed": true,
+              "returncode": 0,
+              "stdout": "9 0 0 2 0 0 3 0 0\n",
+              "stderr": ""
+            }
+          ],
+          "passed": true
+        },
+        {
+          "id": "rolling_hash_local",
+          "compiler": "/usr/bin/g++",
+          "skip_runtime_checks": false,
+          "standard_fallback": false,
+          "submission_sha256": "87037667c0d26eb961be8979c9fdc29b9fc1f3577b1ea3ed3708d59826197996",
+          "tested_source_sha256": "87037667c0d26eb961be8979c9fdc29b9fc1f3577b1ea3ed3708d59826197996",
+          "command": [
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "/home/reinsirk/Atcoder_Env/Verify/current/submissions/rolling_hash_local.cpp"
+          ],
+          "compile_ok": true,
+          "diagnostics": "",
+          "samples": [
+            {
+              "passed": true,
+              "returncode": 0,
+              "stdout": "OK\n",
+              "stderr": ""
+            }
+          ],
+          "passed": true
+        },
+        {
+          "id": "rolling_hash_local",
+          "compiler": "/usr/bin/g++",
+          "skip_runtime_checks": true,
+          "standard_fallback": false,
+          "submission_sha256": "87037667c0d26eb961be8979c9fdc29b9fc1f3577b1ea3ed3708d59826197996",
+          "tested_source_sha256": "6a57b49fd6fc767525d4033b54e92181c4a105acbba6f00392f49f46b1982034",
+          "command": [
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "/tmp/atcoder_verify_o95m4f4k/rolling_hash_local_skip.cpp"
+          ],
+          "compile_ok": true,
+          "diagnostics": "",
+          "samples": [
+            {
+              "passed": true,
+              "returncode": 0,
+              "stdout": "OK\n",
+              "stderr": ""
+            }
+          ],
+          "passed": true
+        }
+      ]
+    },
+    "production-clang-samples.json": {
+      "results": [
+        {
+          "id": "rolling_hash",
+          "compiler": "/usr/bin/clang++",
+          "skip_runtime_checks": false,
+          "standard_fallback": false,
+          "submission_sha256": "8be2bad08f040f7eaa9396606d0d592b418895187d60b6fcd9146e2a4ecc0db7",
+          "tested_source_sha256": "63a7bef46acb2e3691becca8b4d05c7ecd5cb552bb71693f69a055be34e9a77b",
+          "command": [
+            "/usr/bin/clang++",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "/tmp/atcoder_verify_5i_pf3tn/rolling_hash_checked.cpp"
+          ],
+          "compile_ok": true,
+          "diagnostics": "",
+          "samples": [
+            {
+              "passed": true,
+              "returncode": 0,
+              "stdout": "1\n",
+              "stderr": ""
+            },
+            {
+              "passed": true,
+              "returncode": 0,
+              "stdout": "5 4 3 2 1\n",
+              "stderr": ""
+            },
+            {
+              "passed": true,
+              "returncode": 0,
+              "stdout": "7 0 1 0 3 0 1\n",
+              "stderr": ""
+            },
+            {
+              "passed": true,
+              "returncode": 0,
+              "stdout": "9 0 0 2 0 0 3 0 0\n",
+              "stderr": ""
+            }
+          ],
+          "passed": true
+        },
+        {
+          "id": "rolling_hash",
+          "compiler": "/usr/bin/clang++",
+          "skip_runtime_checks": true,
+          "standard_fallback": false,
+          "submission_sha256": "8be2bad08f040f7eaa9396606d0d592b418895187d60b6fcd9146e2a4ecc0db7",
+          "tested_source_sha256": "8be2bad08f040f7eaa9396606d0d592b418895187d60b6fcd9146e2a4ecc0db7",
+          "command": [
+            "/usr/bin/clang++",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "/home/reinsirk/Atcoder_Env/Verify/current/submissions/rolling_hash.cpp"
+          ],
+          "compile_ok": true,
+          "diagnostics": "",
+          "samples": [
+            {
+              "passed": true,
+              "returncode": 0,
+              "stdout": "1\n",
+              "stderr": ""
+            },
+            {
+              "passed": true,
+              "returncode": 0,
+              "stdout": "5 4 3 2 1\n",
+              "stderr": ""
+            },
+            {
+              "passed": true,
+              "returncode": 0,
+              "stdout": "7 0 1 0 3 0 1\n",
+              "stderr": ""
+            },
+            {
+              "passed": true,
+              "returncode": 0,
+              "stdout": "9 0 0 2 0 0 3 0 0\n",
+              "stderr": ""
+            }
+          ],
+          "passed": true
+        },
+        {
+          "id": "rolling_hash_local",
+          "compiler": "/usr/bin/clang++",
+          "skip_runtime_checks": false,
+          "standard_fallback": false,
+          "submission_sha256": "87037667c0d26eb961be8979c9fdc29b9fc1f3577b1ea3ed3708d59826197996",
+          "tested_source_sha256": "87037667c0d26eb961be8979c9fdc29b9fc1f3577b1ea3ed3708d59826197996",
+          "command": [
+            "/usr/bin/clang++",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "/home/reinsirk/Atcoder_Env/Verify/current/submissions/rolling_hash_local.cpp"
+          ],
+          "compile_ok": true,
+          "diagnostics": "",
+          "samples": [
+            {
+              "passed": true,
+              "returncode": 0,
+              "stdout": "OK\n",
+              "stderr": ""
+            }
+          ],
+          "passed": true
+        },
+        {
+          "id": "rolling_hash_local",
+          "compiler": "/usr/bin/clang++",
+          "skip_runtime_checks": true,
+          "standard_fallback": false,
+          "submission_sha256": "87037667c0d26eb961be8979c9fdc29b9fc1f3577b1ea3ed3708d59826197996",
+          "tested_source_sha256": "6a57b49fd6fc767525d4033b54e92181c4a105acbba6f00392f49f46b1982034",
+          "command": [
+            "/usr/bin/clang++",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "/tmp/atcoder_verify_5i_pf3tn/rolling_hash_local_skip.cpp"
+          ],
+          "compile_ok": true,
+          "diagnostics": "",
+          "samples": [
+            {
+              "passed": true,
+              "returncode": 0,
+              "stdout": "OK\n",
+              "stderr": ""
+            }
+          ],
+          "passed": true
+        }
+      ]
+    },
+    "production-gcc-fallback-samples.json": {
+      "results": [
+        {
+          "id": "rolling_hash",
+          "compiler": "/usr/bin/g++",
+          "skip_runtime_checks": false,
+          "standard_fallback": true,
+          "submission_sha256": "8be2bad08f040f7eaa9396606d0d592b418895187d60b6fcd9146e2a4ecc0db7",
+          "tested_source_sha256": "63a7bef46acb2e3691becca8b4d05c7ecd5cb552bb71693f69a055be34e9a77b",
+          "command": [
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "-U__SIZEOF_INT128__",
+            "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+            "-DSIRKIT_LINE_CONTAINER_FORCE_PORTABLE",
+            "-DSIRKIT_DISABLE_SIMD",
+            "/tmp/atcoder_verify_z6yftph9/rolling_hash_checked.cpp"
+          ],
+          "compile_ok": true,
+          "diagnostics": "",
+          "samples": [
+            {
+              "passed": true,
+              "returncode": 0,
+              "stdout": "1\n",
+              "stderr": ""
+            },
+            {
+              "passed": true,
+              "returncode": 0,
+              "stdout": "5 4 3 2 1\n",
+              "stderr": ""
+            },
+            {
+              "passed": true,
+              "returncode": 0,
+              "stdout": "7 0 1 0 3 0 1\n",
+              "stderr": ""
+            },
+            {
+              "passed": true,
+              "returncode": 0,
+              "stdout": "9 0 0 2 0 0 3 0 0\n",
+              "stderr": ""
+            }
+          ],
+          "passed": true
+        },
+        {
+          "id": "rolling_hash",
+          "compiler": "/usr/bin/g++",
+          "skip_runtime_checks": true,
+          "standard_fallback": true,
+          "submission_sha256": "8be2bad08f040f7eaa9396606d0d592b418895187d60b6fcd9146e2a4ecc0db7",
+          "tested_source_sha256": "8be2bad08f040f7eaa9396606d0d592b418895187d60b6fcd9146e2a4ecc0db7",
+          "command": [
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "-U__SIZEOF_INT128__",
+            "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+            "-DSIRKIT_LINE_CONTAINER_FORCE_PORTABLE",
+            "-DSIRKIT_DISABLE_SIMD",
+            "/home/reinsirk/Atcoder_Env/Verify/current/submissions/rolling_hash.cpp"
+          ],
+          "compile_ok": true,
+          "diagnostics": "",
+          "samples": [
+            {
+              "passed": true,
+              "returncode": 0,
+              "stdout": "1\n",
+              "stderr": ""
+            },
+            {
+              "passed": true,
+              "returncode": 0,
+              "stdout": "5 4 3 2 1\n",
+              "stderr": ""
+            },
+            {
+              "passed": true,
+              "returncode": 0,
+              "stdout": "7 0 1 0 3 0 1\n",
+              "stderr": ""
+            },
+            {
+              "passed": true,
+              "returncode": 0,
+              "stdout": "9 0 0 2 0 0 3 0 0\n",
+              "stderr": ""
+            }
+          ],
+          "passed": true
+        },
+        {
+          "id": "rolling_hash_local",
+          "compiler": "/usr/bin/g++",
+          "skip_runtime_checks": false,
+          "standard_fallback": true,
+          "submission_sha256": "87037667c0d26eb961be8979c9fdc29b9fc1f3577b1ea3ed3708d59826197996",
+          "tested_source_sha256": "87037667c0d26eb961be8979c9fdc29b9fc1f3577b1ea3ed3708d59826197996",
+          "command": [
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "-U__SIZEOF_INT128__",
+            "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+            "-DSIRKIT_LINE_CONTAINER_FORCE_PORTABLE",
+            "-DSIRKIT_DISABLE_SIMD",
+            "/home/reinsirk/Atcoder_Env/Verify/current/submissions/rolling_hash_local.cpp"
+          ],
+          "compile_ok": true,
+          "diagnostics": "",
+          "samples": [
+            {
+              "passed": true,
+              "returncode": 0,
+              "stdout": "OK\n",
+              "stderr": ""
+            }
+          ],
+          "passed": true
+        },
+        {
+          "id": "rolling_hash_local",
+          "compiler": "/usr/bin/g++",
+          "skip_runtime_checks": true,
+          "standard_fallback": true,
+          "submission_sha256": "87037667c0d26eb961be8979c9fdc29b9fc1f3577b1ea3ed3708d59826197996",
+          "tested_source_sha256": "6a57b49fd6fc767525d4033b54e92181c4a105acbba6f00392f49f46b1982034",
+          "command": [
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "-U__SIZEOF_INT128__",
+            "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+            "-DSIRKIT_LINE_CONTAINER_FORCE_PORTABLE",
+            "-DSIRKIT_DISABLE_SIMD",
+            "/tmp/atcoder_verify_z6yftph9/rolling_hash_local_skip.cpp"
+          ],
+          "compile_ok": true,
+          "diagnostics": "",
+          "samples": [
+            {
+              "passed": true,
+              "returncode": 0,
+              "stdout": "OK\n",
+              "stderr": ""
+            }
+          ],
+          "passed": true
+        }
+      ]
+    },
+    "production-clang-fallback-samples.json": {
+      "results": [
+        {
+          "id": "rolling_hash",
+          "compiler": "/usr/bin/clang++",
+          "skip_runtime_checks": false,
+          "standard_fallback": true,
+          "submission_sha256": "8be2bad08f040f7eaa9396606d0d592b418895187d60b6fcd9146e2a4ecc0db7",
+          "tested_source_sha256": "63a7bef46acb2e3691becca8b4d05c7ecd5cb552bb71693f69a055be34e9a77b",
+          "command": [
+            "/usr/bin/clang++",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-U__SIZEOF_INT128__",
+            "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+            "-DSIRKIT_LINE_CONTAINER_FORCE_PORTABLE",
+            "-DSIRKIT_DISABLE_SIMD",
+            "/tmp/atcoder_verify_6dhapafu/rolling_hash_checked.cpp"
+          ],
+          "compile_ok": true,
+          "diagnostics": "",
+          "samples": [
+            {
+              "passed": true,
+              "returncode": 0,
+              "stdout": "1\n",
+              "stderr": ""
+            },
+            {
+              "passed": true,
+              "returncode": 0,
+              "stdout": "5 4 3 2 1\n",
+              "stderr": ""
+            },
+            {
+              "passed": true,
+              "returncode": 0,
+              "stdout": "7 0 1 0 3 0 1\n",
+              "stderr": ""
+            },
+            {
+              "passed": true,
+              "returncode": 0,
+              "stdout": "9 0 0 2 0 0 3 0 0\n",
+              "stderr": ""
+            }
+          ],
+          "passed": true
+        },
+        {
+          "id": "rolling_hash",
+          "compiler": "/usr/bin/clang++",
+          "skip_runtime_checks": true,
+          "standard_fallback": true,
+          "submission_sha256": "8be2bad08f040f7eaa9396606d0d592b418895187d60b6fcd9146e2a4ecc0db7",
+          "tested_source_sha256": "8be2bad08f040f7eaa9396606d0d592b418895187d60b6fcd9146e2a4ecc0db7",
+          "command": [
+            "/usr/bin/clang++",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-U__SIZEOF_INT128__",
+            "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+            "-DSIRKIT_LINE_CONTAINER_FORCE_PORTABLE",
+            "-DSIRKIT_DISABLE_SIMD",
+            "/home/reinsirk/Atcoder_Env/Verify/current/submissions/rolling_hash.cpp"
+          ],
+          "compile_ok": true,
+          "diagnostics": "",
+          "samples": [
+            {
+              "passed": true,
+              "returncode": 0,
+              "stdout": "1\n",
+              "stderr": ""
+            },
+            {
+              "passed": true,
+              "returncode": 0,
+              "stdout": "5 4 3 2 1\n",
+              "stderr": ""
+            },
+            {
+              "passed": true,
+              "returncode": 0,
+              "stdout": "7 0 1 0 3 0 1\n",
+              "stderr": ""
+            },
+            {
+              "passed": true,
+              "returncode": 0,
+              "stdout": "9 0 0 2 0 0 3 0 0\n",
+              "stderr": ""
+            }
+          ],
+          "passed": true
+        },
+        {
+          "id": "rolling_hash_local",
+          "compiler": "/usr/bin/clang++",
+          "skip_runtime_checks": false,
+          "standard_fallback": true,
+          "submission_sha256": "87037667c0d26eb961be8979c9fdc29b9fc1f3577b1ea3ed3708d59826197996",
+          "tested_source_sha256": "87037667c0d26eb961be8979c9fdc29b9fc1f3577b1ea3ed3708d59826197996",
+          "command": [
+            "/usr/bin/clang++",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-U__SIZEOF_INT128__",
+            "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+            "-DSIRKIT_LINE_CONTAINER_FORCE_PORTABLE",
+            "-DSIRKIT_DISABLE_SIMD",
+            "/home/reinsirk/Atcoder_Env/Verify/current/submissions/rolling_hash_local.cpp"
+          ],
+          "compile_ok": true,
+          "diagnostics": "",
+          "samples": [
+            {
+              "passed": true,
+              "returncode": 0,
+              "stdout": "OK\n",
+              "stderr": ""
+            }
+          ],
+          "passed": true
+        },
+        {
+          "id": "rolling_hash_local",
+          "compiler": "/usr/bin/clang++",
+          "skip_runtime_checks": true,
+          "standard_fallback": true,
+          "submission_sha256": "87037667c0d26eb961be8979c9fdc29b9fc1f3577b1ea3ed3708d59826197996",
+          "tested_source_sha256": "6a57b49fd6fc767525d4033b54e92181c4a105acbba6f00392f49f46b1982034",
+          "command": [
+            "/usr/bin/clang++",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-U__SIZEOF_INT128__",
+            "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+            "-DSIRKIT_LINE_CONTAINER_FORCE_PORTABLE",
+            "-DSIRKIT_DISABLE_SIMD",
+            "/tmp/atcoder_verify_6dhapafu/rolling_hash_local_skip.cpp"
+          ],
+          "compile_ok": true,
+          "diagnostics": "",
+          "samples": [
+            {
+              "passed": true,
+              "returncode": 0,
+              "stdout": "OK\n",
+              "stderr": ""
+            }
+          ],
+          "passed": true
+        }
+      ]
+    }
+  },
+  "examples": [
+    {
+      "compiler": "gcc",
+      "portable": false,
+      "skip": false,
+      "cmd": [
+        "taskset",
+        "-c",
+        "6",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-pedantic-errors",
+        "/home/reinsirk/Atcoder_Env/Examples/rolling_hash_example.cpp",
+        "-o",
+        "/tmp/sirkit_rolling_round2_20261026/example-gcc-False-False"
+      ],
+      "diagnostics": "",
+      "stdout": "11 0\n1\n4\n0\n1\n1 1\n1 0\n1 1\n1 0\n"
+    },
+    {
+      "compiler": "gcc",
+      "portable": false,
+      "skip": true,
+      "cmd": [
+        "taskset",
+        "-c",
+        "6",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-pedantic-errors",
+        "-DSKIP_RUNTIME_CHECKS",
+        "/home/reinsirk/Atcoder_Env/Examples/rolling_hash_example.cpp",
+        "-o",
+        "/tmp/sirkit_rolling_round2_20261026/example-gcc-False-True"
+      ],
+      "diagnostics": "",
+      "stdout": "11 0\n1\n4\n0\n1\n1 1\n1 0\n1 1\n1 0\n"
+    },
+    {
+      "compiler": "gcc",
+      "portable": true,
+      "skip": false,
+      "cmd": [
+        "taskset",
+        "-c",
+        "6",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-pedantic-errors",
+        "-DSIRKIT_DISABLE_SIMD",
+        "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+        "-U__SIZEOF_INT128__",
+        "/home/reinsirk/Atcoder_Env/Examples/rolling_hash_example.cpp",
+        "-o",
+        "/tmp/sirkit_rolling_round2_20261026/example-gcc-True-False"
+      ],
+      "diagnostics": "",
+      "stdout": "11 0\n1\n4\n0\n1\n1 1\n1 0\n1 1\n1 0\n"
+    },
+    {
+      "compiler": "gcc",
+      "portable": true,
+      "skip": true,
+      "cmd": [
+        "taskset",
+        "-c",
+        "6",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-pedantic-errors",
+        "-DSIRKIT_DISABLE_SIMD",
+        "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+        "-U__SIZEOF_INT128__",
+        "-DSKIP_RUNTIME_CHECKS",
+        "/home/reinsirk/Atcoder_Env/Examples/rolling_hash_example.cpp",
+        "-o",
+        "/tmp/sirkit_rolling_round2_20261026/example-gcc-True-True"
+      ],
+      "diagnostics": "",
+      "stdout": "11 0\n1\n4\n0\n1\n1 1\n1 0\n1 1\n1 0\n"
+    },
+    {
+      "compiler": "clang",
+      "portable": false,
+      "skip": false,
+      "cmd": [
+        "taskset",
+        "-c",
+        "6",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-pedantic-errors",
+        "/home/reinsirk/Atcoder_Env/Examples/rolling_hash_example.cpp",
+        "-o",
+        "/tmp/sirkit_rolling_round2_20261026/example-clang-False-False"
+      ],
+      "diagnostics": "",
+      "stdout": "11 0\n1\n4\n0\n1\n1 1\n1 0\n1 1\n1 0\n"
+    },
+    {
+      "compiler": "clang",
+      "portable": false,
+      "skip": true,
+      "cmd": [
+        "taskset",
+        "-c",
+        "6",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-pedantic-errors",
+        "-DSKIP_RUNTIME_CHECKS",
+        "/home/reinsirk/Atcoder_Env/Examples/rolling_hash_example.cpp",
+        "-o",
+        "/tmp/sirkit_rolling_round2_20261026/example-clang-False-True"
+      ],
+      "diagnostics": "",
+      "stdout": "11 0\n1\n4\n0\n1\n1 1\n1 0\n1 1\n1 0\n"
+    },
+    {
+      "compiler": "clang",
+      "portable": true,
+      "skip": false,
+      "cmd": [
+        "taskset",
+        "-c",
+        "6",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-pedantic-errors",
+        "-DSIRKIT_DISABLE_SIMD",
+        "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+        "-U__SIZEOF_INT128__",
+        "/home/reinsirk/Atcoder_Env/Examples/rolling_hash_example.cpp",
+        "-o",
+        "/tmp/sirkit_rolling_round2_20261026/example-clang-True-False"
+      ],
+      "diagnostics": "",
+      "stdout": "11 0\n1\n4\n0\n1\n1 1\n1 0\n1 1\n1 0\n"
+    },
+    {
+      "compiler": "clang",
+      "portable": true,
+      "skip": true,
+      "cmd": [
+        "taskset",
+        "-c",
+        "6",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-pedantic-errors",
+        "-DSIRKIT_DISABLE_SIMD",
+        "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+        "-U__SIZEOF_INT128__",
+        "-DSKIP_RUNTIME_CHECKS",
+        "/home/reinsirk/Atcoder_Env/Examples/rolling_hash_example.cpp",
+        "-o",
+        "/tmp/sirkit_rolling_round2_20261026/example-clang-True-True"
+      ],
+      "diagnostics": "",
+      "stdout": "11 0\n1\n4\n0\n1\n1 1\n1 0\n1 1\n1 0\n"
+    }
+  ],
+  "readonly_machine_code": [
+    {
+      "config": "gcc_native",
+      "skip": false,
+      "all_executable_sections_equal": true,
+      "hashes": {
+        "baseline": {
+          ".text": "88ffeea04cb7767ef7b005432bede7f59886920c224669ad862e6b269b3510f4",
+          ".text._ZNK11RollingHash13lcp_uncheckedEmRKS_mm": "9a12a6cc99955eae26e30e060d63291799f4066f638ff952a879ee92a37a852a",
+          ".text.unlikely": "a255863b9d506e93f8102caf4357d3b49020320749d093b4ab29ca7b2074e596"
+        },
+        "production": {
+          ".text": "88ffeea04cb7767ef7b005432bede7f59886920c224669ad862e6b269b3510f4",
+          ".text._ZNK11RollingHash13lcp_uncheckedEmRKS_mm": "9a12a6cc99955eae26e30e060d63291799f4066f638ff952a879ee92a37a852a",
+          ".text.unlikely": "a255863b9d506e93f8102caf4357d3b49020320749d093b4ab29ca7b2074e596"
+        }
+      }
+    },
+    {
+      "config": "gcc_native",
+      "skip": true,
+      "all_executable_sections_equal": true,
+      "hashes": {
+        "baseline": {
+          ".text": "ccd70472a547cff75082831216f8d1a69f845625ba4dd7576754d569e97c95aa",
+          ".text._ZNK11RollingHash13lcp_uncheckedEmRKS_mm": "9a12a6cc99955eae26e30e060d63291799f4066f638ff952a879ee92a37a852a",
+          ".text.unlikely": "e5dc77e4a468dcf8278c17097153fe01c590931422708ead1fe96a22cfb1d001"
+        },
+        "production": {
+          ".text": "ccd70472a547cff75082831216f8d1a69f845625ba4dd7576754d569e97c95aa",
+          ".text._ZNK11RollingHash13lcp_uncheckedEmRKS_mm": "9a12a6cc99955eae26e30e060d63291799f4066f638ff952a879ee92a37a852a",
+          ".text.unlikely": "e5dc77e4a468dcf8278c17097153fe01c590931422708ead1fe96a22cfb1d001"
+        }
+      }
+    },
+    {
+      "config": "clang_default",
+      "skip": false,
+      "all_executable_sections_equal": true,
+      "hashes": {
+        "baseline": {
+          ".text": "b63ba0e0f67c693f678b59c17a0016074f0fb6aa8f8bf4ff1a562334b1206e2e",
+          ".text._ZNK11RollingHash3getEmm": "69b8b95d7bcde5bdd671cb7cca5764a6993237c5cbfa8d185d8c26bfed9bf778",
+          ".text._ZNK11RollingHash6concatEmmm": "9e6b3cac09ba4f381ef5d3720ad5256fdb3d1ed590f28c62fdd23ed6fa4b1420",
+          ".text._ZNK11RollingHash5equalEmmRKS_mm": "c221c82b0a3fde2a9c84ef825af3f9a30234f5a8063a67923206b78a4d9f6870",
+          ".text._ZNK11RollingHash3lcpEmRKS_mm": "d042de026a12d7604a65896d219c7930e07d0d11031ec7623ba601a8d7dbd9a0",
+          ".text._ZNK11RollingHash7compareEmmRKS_mm": "acb8d05249130c3652240902bddee98fcf980dd010ba04e9bc66dde9eb202908",
+          ".text._ZN11RollingHashaSERKS_": "2bdbbcabf6c94213101ebd48ba1d700be4cbe50723e4457ddf7ed144388fe087",
+          ".text._ZNK11RollingHash13lcp_uncheckedEmRKS_mm": "ce13a04795a75a578fd21f84f642e6babc7431188b9183c3bde230c886a4041c",
+          ".text._ZNSt6vectorIN11RollingHash5EntryESaIS1_EE17_M_default_appendEm": "5d42e72189c71325fc9fc8592b7294f9d419a0071da0a5ee598ec19a5859e1e5"
+        },
+        "production": {
+          ".text": "b63ba0e0f67c693f678b59c17a0016074f0fb6aa8f8bf4ff1a562334b1206e2e",
+          ".text._ZNK11RollingHash3getEmm": "69b8b95d7bcde5bdd671cb7cca5764a6993237c5cbfa8d185d8c26bfed9bf778",
+          ".text._ZNK11RollingHash6concatEmmm": "9e6b3cac09ba4f381ef5d3720ad5256fdb3d1ed590f28c62fdd23ed6fa4b1420",
+          ".text._ZNK11RollingHash5equalEmmRKS_mm": "c221c82b0a3fde2a9c84ef825af3f9a30234f5a8063a67923206b78a4d9f6870",
+          ".text._ZNK11RollingHash3lcpEmRKS_mm": "d042de026a12d7604a65896d219c7930e07d0d11031ec7623ba601a8d7dbd9a0",
+          ".text._ZNK11RollingHash7compareEmmRKS_mm": "acb8d05249130c3652240902bddee98fcf980dd010ba04e9bc66dde9eb202908",
+          ".text._ZN11RollingHashaSERKS_": "2bdbbcabf6c94213101ebd48ba1d700be4cbe50723e4457ddf7ed144388fe087",
+          ".text._ZNK11RollingHash13lcp_uncheckedEmRKS_mm": "ce13a04795a75a578fd21f84f642e6babc7431188b9183c3bde230c886a4041c",
+          ".text._ZNSt6vectorIN11RollingHash5EntryESaIS1_EE17_M_default_appendEm": "5d42e72189c71325fc9fc8592b7294f9d419a0071da0a5ee598ec19a5859e1e5"
+        }
+      }
+    },
+    {
+      "config": "clang_default",
+      "skip": true,
+      "all_executable_sections_equal": true,
+      "hashes": {
+        "baseline": {
+          ".text": "9103906e6c29dbfef8603c1fda651d806893a98a7b893fba736d763dc745a52f",
+          ".text._ZN11RollingHashaSERKS_": "2bdbbcabf6c94213101ebd48ba1d700be4cbe50723e4457ddf7ed144388fe087",
+          ".text._ZNK11RollingHash13lcp_uncheckedEmRKS_mm": "ce13a04795a75a578fd21f84f642e6babc7431188b9183c3bde230c886a4041c",
+          ".text._ZNSt6vectorIN11RollingHash5EntryESaIS1_EE17_M_default_appendEm": "5d42e72189c71325fc9fc8592b7294f9d419a0071da0a5ee598ec19a5859e1e5"
+        },
+        "production": {
+          ".text": "9103906e6c29dbfef8603c1fda651d806893a98a7b893fba736d763dc745a52f",
+          ".text._ZN11RollingHashaSERKS_": "2bdbbcabf6c94213101ebd48ba1d700be4cbe50723e4457ddf7ed144388fe087",
+          ".text._ZNK11RollingHash13lcp_uncheckedEmRKS_mm": "ce13a04795a75a578fd21f84f642e6babc7431188b9183c3bde230c886a4041c",
+          ".text._ZNSt6vectorIN11RollingHash5EntryESaIS1_EE17_M_default_appendEm": "5d42e72189c71325fc9fc8592b7294f9d419a0071da0a5ee598ec19a5859e1e5"
+        }
+      }
+    },
+    {
+      "config": "gcc_portable",
+      "skip": false,
+      "all_executable_sections_equal": true,
+      "hashes": {
+        "baseline": {
+          ".text": "22a35426ec974b8977e6f384f6246a64f54d477f695fb07d82f6ff4d208f7b5b",
+          ".text._ZNK11RollingHash13lcp_uncheckedEmRKS_mm": "8e697ad1607154e29ee1b287237cffdd0837541ac2c550e70eeebe06207e36ed",
+          ".text.unlikely": "4ac1a9ac4907c4e94536ed6d4c8209826d3de90395efeed84dcba970d234f468"
+        },
+        "production": {
+          ".text": "22a35426ec974b8977e6f384f6246a64f54d477f695fb07d82f6ff4d208f7b5b",
+          ".text._ZNK11RollingHash13lcp_uncheckedEmRKS_mm": "8e697ad1607154e29ee1b287237cffdd0837541ac2c550e70eeebe06207e36ed",
+          ".text.unlikely": "4ac1a9ac4907c4e94536ed6d4c8209826d3de90395efeed84dcba970d234f468"
+        }
+      }
+    },
+    {
+      "config": "gcc_portable",
+      "skip": true,
+      "all_executable_sections_equal": true,
+      "hashes": {
+        "baseline": {
+          ".text": "13fbd890aea58ffd572a677dfdd840402e1bf750aab9fba164b653e0ecb5eba7",
+          ".text._ZNK11RollingHash13lcp_uncheckedEmRKS_mm": "8e697ad1607154e29ee1b287237cffdd0837541ac2c550e70eeebe06207e36ed",
+          ".text.unlikely": "e5dc77e4a468dcf8278c17097153fe01c590931422708ead1fe96a22cfb1d001"
+        },
+        "production": {
+          ".text": "13fbd890aea58ffd572a677dfdd840402e1bf750aab9fba164b653e0ecb5eba7",
+          ".text._ZNK11RollingHash13lcp_uncheckedEmRKS_mm": "8e697ad1607154e29ee1b287237cffdd0837541ac2c550e70eeebe06207e36ed",
+          ".text.unlikely": "e5dc77e4a468dcf8278c17097153fe01c590931422708ead1fe96a22cfb1d001"
+        }
+      }
+    }
+  ],
+  "new_test_sources": {
+    "Verify/current/tests/rolling_hash_build_test.cpp": {
+      "sha256": "4b887d77400e2e28eeeb0f85ce7256c27370892b3e673b319fe595deccf7f557"
+    },
+    "Verify/current/tests/rolling_hash_avx_allocation_test.cpp": {
+      "sha256": "220b1c74a534e374a56d0da396d42fdac40d3089290ef11b606dae9a9ccaa682"
+    }
+  },
+  "main_sha256": "7a607fffa2d5726c705ca3b487e95c6063f298e48922dc968935616ac9a5c528",
+  "io_sha256": "291bf8dbc56a1d691f6256fe95b4714183c2cf5d9e55e4bef240e31d1eb178c1",
+  "submission_sha256": "8be2bad08f040f7eaa9396606d0d592b418895187d60b6fcd9146e2a4ecc0db7",
+  "submission_bytes": 35536,
+  "submission_skip_runtime_checks": true,
+  "completed_at_utc": "2026-10-25T21:19:13.432825+00:00"
+}

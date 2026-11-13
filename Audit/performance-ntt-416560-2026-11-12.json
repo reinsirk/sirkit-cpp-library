@@ -1,0 +1,2186 @@
+{
+  "date": "2026-11-12",
+  "library": "Math/NTT.cpp",
+  "decision": "adopt_recursive",
+  "selection": {
+    "chosen": "recursive",
+    "decision": "adopt_avx2_subtraction_and_recursive_known_zero_padding"
+  },
+  "required_resubmission": [
+    "Verify/current/submissions/ntt_convolution.cpp"
+  ],
+  "online_evidence": "Audit/online-ntt-416560-2026-11-12.json",
+  "online_scope": "416560は変更前d4bdef本体で全53ケースAC・61ms。本文/main/共通IOを照合済み。今回採用版は未提出で、このACを現行版や派生版へ転記しない。",
+  "source_sha256": {
+    "before": "d4bdefca3f0c7d3dc4cc1a2e1ddf00afc3ca1944bc5358d87fdbb9f56c2dfd36",
+    "after": "4430c578d353c87744681884b1288a51fc193e77d40edba4b9daff9f4dbee88b"
+  },
+  "measured_candidate_sha256": "4430c578d353c87744681884b1288a51fc193e77d40edba4b9daff9f4dbee88b",
+  "comment_bridge": "最終版と測定候補の既定経路main/coreの.text一致を確認。標準経路も変更前と同一.textであり、同経路の追加高速化とは主張しない。",
+  "frozen_main_IO_example": {
+    "Verify/current/drivers/ntt_convolution_main.cpp": "79a1ed61095e2bd8f66e361d6e05328570c439ad9b041912614a2889ab0a93ff",
+    "Verify/current/common/fast_io.hpp": "291bf8dbc56a1d691f6256fe95b4714183c2cf5d9e55e4bef240e31d1eb178c1",
+    "Examples/ntt_example.cpp": "0bd23ba7dd72f3f9ef7f5b8d125321d3c62568ddb72f35f755fbbff49addc75e",
+    "Document/ntt.md": "3008e74491a33be34a63d8c67d57000f262ee9b1e224e5234bd18826f9009c35"
+  },
+  "API_change": "公開API・型引数・重要な前提・戻り値・所有権・main/共通IOは不変。Document・使用例は変更しない。",
+  "changes": [
+    "AVX2剰余減算をmin(a-b,(a-b)+2Mod)へ簡約する。0<=a,b<2Mod・Mod<2^30で、従来のmin(a+2Mod-b,a-b)と全bit一致。uint32の巡回演算とunsigned minだけを使い、C++符号付きオーバーフローを追加しない。",
+    "元長さから3つの四分領域が追加ゼロと分かるradix4段だけ、8要素へ丸めた有効prefixを処理する。段ごとに同じprefix支持不変条件を保ち、成立しなくなれば通常の段へ継続する。入力係数の値や問題固有分布を調べない。最初の段だけ係数検査と符号化を行い、チェック漏れ・二重符号化を避ける。",
+    "前回の半分ゼロ段・constexpr根・直接逆元・固定オペランド積・blend/4点根の改善、公開API、所有権、容量保護、SKIPの除外、非対応環境の標準経路を維持する。AVX-512実装は追加せず、未対応CPUでの速度や実行成功を主張しない。"
+  ],
+  "proof_files": [
+    "subtract_review.md",
+    "review/recursive_padding_review.md",
+    "review/recursive_padding_metadata.json"
+  ],
+  "dependent_generated_sources": [
+    {
+      "path": "Math/Formal_Power_Series.cpp",
+      "before_sha256": "830601f3b3668e2e06d4b82818605a99540ce3059809f944b989d6dbb77f4b78",
+      "after_sha256": "b40ae17ba678f878cf1abbedebd4f34a6d687d00ce361170119a6d8faa1fae3e"
+    },
+    {
+      "path": "Math/Linear_Recurrence.cpp",
+      "before_sha256": "77402ff709f43a4d1486561fe9f646ef037e5a9b165997316e5dbce868a4baa7",
+      "after_sha256": "249d5b083303a153344923127598e8dc6cb5f24689406956c4545779bb74d83f"
+    },
+    {
+      "path": "Math/Convolution.cpp",
+      "before_sha256": "3021a28ff4428c2c24f7e3368e582807d91d92533832482cb6663f876f1fb26c",
+      "after_sha256": "074a25eabadc8a6a516f57470403ef751ea6c760b65f1f64cf48b77805885e38"
+    },
+    {
+      "path": "Math/Polynomial.cpp",
+      "before_sha256": "4fd9a97f26a4871a0d617cee7ed07f45339480415a869bf963b3b5671b1810b1",
+      "after_sha256": "8e8df639592d80d0b4abc4fdde911192cfc15c2c8ada006637d9b2af183bda38"
+    }
+  ],
+  "candidates": [
+    {
+      "name": "quarter",
+      "sha256": "cd4a2974ea1cb37b53106203cc587334452334a03d234ef80bf1ad6521fe0eed",
+      "adopted": false
+    },
+    {
+      "name": "subtract",
+      "sha256": "dc65154bcd43dc474f154f49031d9c7f38609ea399833ed51678c64753df4f17",
+      "adopted": false
+    },
+    {
+      "name": "quarter_subtract",
+      "sha256": "728feb4683c8190f5b0fccb0fb366cc799f7157514badda1d4aba432dc59e057",
+      "adopted": false
+    },
+    {
+      "name": "recursive",
+      "sha256": "4430c578d353c87744681884b1288a51fc193e77d40edba4b9daff9f4dbee88b",
+      "adopted": true
+    }
+  ],
+  "measurement": {
+    "topology": {
+      "cpu": 12,
+      "cpu_info": "Architecture:                            x86_64\nCPU op-mode(s):                          32-bit, 64-bit\nAddress sizes:                           46 bits physical, 48 bits virtual\nByte Order:                              Little Endian\nCPU(s):                                  32\nOn-line CPU(s) list:                     0-31\nVendor ID:                               GenuineIntel\nModel name:                              Intel(R) Core(TM) i9-14900K\nCPU family:                              6\nModel:                                   183\nThread(s) per core:                      2\nCore(s) per socket:                      24\nSocket(s):                               1\nStepping:                                1\nCPU(s) scaling MHz:                      41%\nCPU max MHz:                             6000.0000\nCPU min MHz:                             800.0000\nBogoMIPS:                                6374.40\nFlags:                                   fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx pdpe1gb rdtscp lm constant_tsc art arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc cpuid aperfmperf tsc_known_freq pni pclmulqdq dtes64 monitor ds_cpl vmx smx est tm2 ssse3 sdbg fma cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand lahf_lm abm 3dnowprefetch cpuid_fault epb ssbd ibrs ibpb stibp ibrs_enhanced tpr_shadow flexpriority ept vpid ept_ad fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid rdseed adx smap clflushopt clwb intel_pt sha_ni xsaveopt xsavec xgetbv1 xsaves split_lock_detect user_shstk avx_vnni dtherm ida arat pln pts hwp hwp_notify hwp_act_window hwp_epp hwp_pkg_req hfi vnmi umip pku ospke waitpkg gfni vaes vpclmulqdq rdpid movdiri movdir64b fsrm md_clear serialize pconfig arch_lbr ibt flush_l1d arch_capabilities\nVirtualization:                          VT-x\nL1d cache:                               896 KiB (24 instances)\nL1i cache:                               1.3 MiB (24 instances)\nL2 cache:                                32 MiB (12 instances)\nL3 cache:                                36 MiB (1 instance)\nNUMA node(s):                            1\nNUMA node0 CPU(s):                       0-31\nVulnerability Gather data sampling:      Not affected\nVulnerability Ghostwrite:                Not affected\nVulnerability Indirect target selection: Not affected\nVulnerability Itlb multihit:             Not affected\nVulnerability L1tf:                      Not affected\nVulnerability Mds:                       Not affected\nVulnerability Meltdown:                  Not affected\nVulnerability Mmio stale data:           Not affected\nVulnerability Old microcode:             Not affected\nVulnerability Reg file data sampling:    Mitigation; Clear Register File\nVulnerability Retbleed:                  Not affected\nVulnerability Spec rstack overflow:      Not affected\nVulnerability Spec store bypass:         Mitigation; Speculative Store Bypass disabled via prctl\nVulnerability Spectre v1:                Mitigation; usercopy/swapgs barriers and __user pointer sanitization\nVulnerability Spectre v2:                Mitigation; Enhanced / Automatic IBRS; IBPB conditional; PBRSB-eIBRS SW sequence; BHI BHI_DIS_S\nVulnerability Srbds:                     Not affected\nVulnerability Tsa:                       Not affected\nVulnerability Tsx async abort:           Not affected\nVulnerability Vmscape:                   Mitigation; IBPB before exit to userspace\n",
+      "topology/core_id": "24",
+      "topology/thread_siblings_list": "12-13",
+      "cpufreq/cpuinfo_max_freq": "6000000"
+    },
+    "cpu": "i9-14900K CPU12、P-Core、sibling13。E-Core対象外。",
+    "compilers": {
+      "GCC": "15.2.0",
+      "Clang": "21.1.8 --gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15"
+    },
+    "flags": [
+      "-std=c++23",
+      "-O2"
+    ],
+    "march_native": false,
+    "extra_pragmas": false,
+    "compilation_during_timing": false,
+    "lock": "/tmp/sirkit_performance_cpu12.lock",
+    "ASLR": "子だけsetarch x86_64 -R、同じactiveパス。",
+    "protocol": "旧版→候補→旧版で候補を両端中央値で割る。旧版両端が10%以内の組だけ有効とし、候補自身の時間では除外しない。基本は候補9組・対照3組、基準は候補5組・同一実行体対照2組。不足種の補充は実際のスクリプト/rawに保存。長時間は候補9組・対照9組で両方5組以上。",
+    "inputs": "固定revision73876f1cbcf082d2b22722924b924d3d65a2f00eの公式53入力と補足20入力、計73件。制約外1048576×1048576も含む。オンライン非公開入力との同一性は主張しない。",
+    "fixtures_sha256": "94a561ca0d51975c2fab72c5ac6633e6a99ad85e2ac3deb7575de540b2e226d0",
+    "independent_outputs": "38件の独立全出力SHAと全入力の端点・多項式評価0/1/−1。GCC/Clang各73件の変更前後出力SHAを照合。",
+    "whole_time": "固定main/共通IO/SKIP/コンパイラ/入力、子user+system CPU時間。L>=65536またはmax(n,m)>=200000の34入力×2compiler。",
+    "whole_rows": 68,
+    "whole_triplets": 816,
+    "whole_statistics": [
+      {
+        "compiler": "clang",
+        "total_cells": 34,
+        "qualified_cells": 34,
+        "candidate_ratio": 0.9881749967960812,
+        "identical_control_ratio": 1.0020404737823962,
+        "minimum_ratio": 0.9261687507040667,
+        "maximum_ratio": 1.014504765851637
+      },
+      {
+        "compiler": "gcc",
+        "total_cells": 34,
+        "qualified_cells": 34,
+        "candidate_ratio": 0.9841430347941064,
+        "identical_control_ratio": 0.9989656318744456,
+        "minimum_ratio": 0.9398752901552045,
+        "maximum_ratio": 1.007497656982193
+      }
+    ],
+    "official_whole_statistics": [
+      {
+        "compiler": "clang",
+        "total_cells": 24,
+        "qualified_cells": 24,
+        "candidate_ratio": 0.9890323718927837,
+        "identical_control_ratio": 1.0039625342234515,
+        "minimum_ratio": 0.9534353161547513,
+        "maximum_ratio": 1.0123160838674936
+      },
+      {
+        "compiler": "gcc",
+        "total_cells": 24,
+        "qualified_cells": 24,
+        "candidate_ratio": 0.9843446611783151,
+        "identical_control_ratio": 0.9991447416126322,
+        "minimum_ratio": 0.9479917856631167,
+        "maximum_ratio": 0.9973251691911054
+      }
+    ],
+    "core_time": "std::clock。入力準備は外、API計算・全結果checksum・返却結果破棄は内。coldは毎回NTT作成/解放。prepareは計測外transformで根を観測。基本反復max(1,32768/max(n,m))。",
+    "core_operations": {
+      "0": "normalized cold move",
+      "1": "normalized cached move",
+      "2": "generic int64 cached",
+      "3": "square cached",
+      "4": "forward",
+      "5": "inverse",
+      "6": "prepare cold"
+    },
+    "core_rows": 164,
+    "core_triplets": 1971,
+    "qualified_core_cells": 164,
+    "insufficient_core_cells": [],
+    "core_statistics": [
+      {
+        "compiler": "clang",
+        "setting": "checked",
+        "op": 0,
+        "total_cells": 10,
+        "qualified_cells": 10,
+        "candidate_ratio": 0.9799233811618917,
+        "identical_control_ratio": 1.0056983828073227,
+        "minimum_ratio": 0.8872611746017738,
+        "maximum_ratio": 1.0006492663290483
+      },
+      {
+        "compiler": "clang",
+        "setting": "checked",
+        "op": 1,
+        "total_cells": 6,
+        "qualified_cells": 6,
+        "candidate_ratio": 0.9910384994076771,
+        "identical_control_ratio": 1.0010221373899537,
+        "minimum_ratio": 0.9838056680161943,
+        "maximum_ratio": 1.0022988505747126
+      },
+      {
+        "compiler": "clang",
+        "setting": "checked",
+        "op": 2,
+        "total_cells": 5,
+        "qualified_cells": 5,
+        "candidate_ratio": 0.9901034293377196,
+        "identical_control_ratio": 0.9992215774688079,
+        "minimum_ratio": 0.9803220035778175,
+        "maximum_ratio": 1.0
+      },
+      {
+        "compiler": "clang",
+        "setting": "checked",
+        "op": 3,
+        "total_cells": 5,
+        "qualified_cells": 5,
+        "candidate_ratio": 0.9942336275490297,
+        "identical_control_ratio": 0.9921113329837646,
+        "minimum_ratio": 0.9842105263157894,
+        "maximum_ratio": 1.006896551724138
+      },
+      {
+        "compiler": "clang",
+        "setting": "checked",
+        "op": 4,
+        "total_cells": 5,
+        "qualified_cells": 5,
+        "candidate_ratio": 1.00061062807631,
+        "identical_control_ratio": 0.9990436286431338,
+        "minimum_ratio": 0.9804054188962543,
+        "maximum_ratio": 1.02020202020202
+      },
+      {
+        "compiler": "clang",
+        "setting": "checked",
+        "op": 5,
+        "total_cells": 5,
+        "qualified_cells": 5,
+        "candidate_ratio": 0.993251725516338,
+        "identical_control_ratio": 1.0060038529368869,
+        "minimum_ratio": 0.9853658536585366,
+        "maximum_ratio": 1.01
+      },
+      {
+        "compiler": "clang",
+        "setting": "checked",
+        "op": 6,
+        "total_cells": 5,
+        "qualified_cells": 5,
+        "candidate_ratio": 1.01079016986687,
+        "identical_control_ratio": 0.9996795868662919,
+        "minimum_ratio": 1.0,
+        "maximum_ratio": 1.0232558139534884
+      },
+      {
+        "compiler": "clang",
+        "setting": "skip",
+        "op": 0,
+        "total_cells": 10,
+        "qualified_cells": 10,
+        "candidate_ratio": 0.9831441481810085,
+        "identical_control_ratio": 0.9989305568353285,
+        "minimum_ratio": 0.8830776072937514,
+        "maximum_ratio": 1.0112389263519768
+      },
+      {
+        "compiler": "clang",
+        "setting": "skip",
+        "op": 1,
+        "total_cells": 6,
+        "qualified_cells": 6,
+        "candidate_ratio": 0.9870093324118705,
+        "identical_control_ratio": 0.9990704493521048,
+        "minimum_ratio": 0.9794801641586868,
+        "maximum_ratio": 0.9993520318430066
+      },
+      {
+        "compiler": "clang",
+        "setting": "skip",
+        "op": 2,
+        "total_cells": 5,
+        "qualified_cells": 5,
+        "candidate_ratio": 0.9903978178117435,
+        "identical_control_ratio": 1.0028602659577592,
+        "minimum_ratio": 0.9838998211091234,
+        "maximum_ratio": 0.9957826244125798
+      },
+      {
+        "compiler": "clang",
+        "setting": "skip",
+        "op": 3,
+        "total_cells": 5,
+        "qualified_cells": 5,
+        "candidate_ratio": 0.9975929481560254,
+        "identical_control_ratio": 0.9943374766030718,
+        "minimum_ratio": 0.9815303430079155,
+        "maximum_ratio": 1.0102560902036655
+      },
+      {
+        "compiler": "clang",
+        "setting": "skip",
+        "op": 4,
+        "total_cells": 5,
+        "qualified_cells": 5,
+        "candidate_ratio": 0.9964517959995972,
+        "identical_control_ratio": 1.0113365648644592,
+        "minimum_ratio": 0.9818181818181818,
+        "maximum_ratio": 1.0225806451612902
+      },
+      {
+        "compiler": "clang",
+        "setting": "skip",
+        "op": 5,
+        "total_cells": 5,
+        "qualified_cells": 5,
+        "candidate_ratio": 0.9952343836833556,
+        "identical_control_ratio": 0.9853917787524051,
+        "minimum_ratio": 0.9905660377358491,
+        "maximum_ratio": 0.9991266375545852
+      },
+      {
+        "compiler": "clang",
+        "setting": "skip",
+        "op": 6,
+        "total_cells": 5,
+        "qualified_cells": 5,
+        "candidate_ratio": 1.0059461668652554,
+        "identical_control_ratio": 1.0175023266221959,
+        "minimum_ratio": 0.990990990990991,
+        "maximum_ratio": 1.0196153846153846
+      },
+      {
+        "compiler": "gcc",
+        "setting": "checked",
+        "op": 0,
+        "total_cells": 10,
+        "qualified_cells": 10,
+        "candidate_ratio": 0.9664489356809592,
+        "identical_control_ratio": 1.0014554240568494,
+        "minimum_ratio": 0.8637004405286344,
+        "maximum_ratio": 1.0
+      },
+      {
+        "compiler": "gcc",
+        "setting": "checked",
+        "op": 1,
+        "total_cells": 6,
+        "qualified_cells": 6,
+        "candidate_ratio": 0.9746451674034899,
+        "identical_control_ratio": 1.0000564367271214,
+        "minimum_ratio": 0.9630996309963099,
+        "maximum_ratio": 1.0
+      },
+      {
+        "compiler": "gcc",
+        "setting": "checked",
+        "op": 2,
+        "total_cells": 5,
+        "qualified_cells": 5,
+        "candidate_ratio": 0.9837237678436929,
+        "identical_control_ratio": 0.9916008055171296,
+        "minimum_ratio": 0.9710144927536232,
+        "maximum_ratio": 1.010221012809451
+      },
+      {
+        "compiler": "gcc",
+        "setting": "checked",
+        "op": 3,
+        "total_cells": 5,
+        "qualified_cells": 5,
+        "candidate_ratio": 0.9795365656659402,
+        "identical_control_ratio": 0.9918138149878798,
+        "minimum_ratio": 0.9648711943793911,
+        "maximum_ratio": 1.0080564192252883
+      },
+      {
+        "compiler": "gcc",
+        "setting": "checked",
+        "op": 4,
+        "total_cells": 5,
+        "qualified_cells": 5,
+        "candidate_ratio": 0.9578371391999952,
+        "identical_control_ratio": 0.9795045897827902,
+        "minimum_ratio": 0.9312430011198208,
+        "maximum_ratio": 0.9868421052631579
+      },
+      {
+        "compiler": "gcc",
+        "setting": "checked",
+        "op": 5,
+        "total_cells": 5,
+        "qualified_cells": 5,
+        "candidate_ratio": 0.9928348077342883,
+        "identical_control_ratio": 1.0047321192351657,
+        "minimum_ratio": 0.979163137387769,
+        "maximum_ratio": 1.00990099009901
+      },
+      {
+        "compiler": "gcc",
+        "setting": "checked",
+        "op": 6,
+        "total_cells": 5,
+        "qualified_cells": 5,
+        "candidate_ratio": 0.999540895030909,
+        "identical_control_ratio": 0.9640382680301812,
+        "minimum_ratio": 0.970074961680558,
+        "maximum_ratio": 1.0454545454545454
+      },
+      {
+        "compiler": "gcc",
+        "setting": "skip",
+        "op": 0,
+        "total_cells": 10,
+        "qualified_cells": 10,
+        "candidate_ratio": 0.9668974517862458,
+        "identical_control_ratio": 1.0011081590055468,
+        "minimum_ratio": 0.871162330062123,
+        "maximum_ratio": 1.0033059875107138
+      },
+      {
+        "compiler": "gcc",
+        "setting": "skip",
+        "op": 1,
+        "total_cells": 6,
+        "qualified_cells": 6,
+        "candidate_ratio": 0.975700947765141,
+        "identical_control_ratio": 0.9957990309186991,
+        "minimum_ratio": 0.9646182495344506,
+        "maximum_ratio": 1.0022075055187638
+      },
+      {
+        "compiler": "gcc",
+        "setting": "skip",
+        "op": 2,
+        "total_cells": 5,
+        "qualified_cells": 5,
+        "candidate_ratio": 0.9758528317993779,
+        "identical_control_ratio": 1.0128314919579586,
+        "minimum_ratio": 0.9662434677017152,
+        "maximum_ratio": 0.997979797979798
+      },
+      {
+        "compiler": "gcc",
+        "setting": "skip",
+        "op": 3,
+        "total_cells": 5,
+        "qualified_cells": 5,
+        "candidate_ratio": 0.9775725413807075,
+        "identical_control_ratio": 0.9955257487362854,
+        "minimum_ratio": 0.9672131147540983,
+        "maximum_ratio": 0.9979919678714859
+      },
+      {
+        "compiler": "gcc",
+        "setting": "skip",
+        "op": 4,
+        "total_cells": 5,
+        "qualified_cells": 5,
+        "candidate_ratio": 0.9838713688315508,
+        "identical_control_ratio": 1.0282989703812144,
+        "minimum_ratio": 0.955177743431221,
+        "maximum_ratio": 1.0057471264367817
+      },
+      {
+        "compiler": "gcc",
+        "setting": "skip",
+        "op": 5,
+        "total_cells": 5,
+        "qualified_cells": 5,
+        "candidate_ratio": 0.9725909898205579,
+        "identical_control_ratio": 1.00171054045371,
+        "minimum_ratio": 0.9433962264150944,
+        "maximum_ratio": 0.9943419675562533
+      },
+      {
+        "compiler": "gcc",
+        "setting": "skip",
+        "op": 6,
+        "total_cells": 5,
+        "qualified_cells": 5,
+        "candidate_ratio": 1.0015577896086314,
+        "identical_control_ratio": 1.006539122180871,
+        "minimum_ratio": 0.9883720930232558,
+        "maximum_ratio": 1.0233173076923077
+      }
+    ],
+    "large_core_statistics": [
+      {
+        "compiler": "clang",
+        "setting": "checked",
+        "op": 0,
+        "total_cells": 5,
+        "qualified_cells": 5,
+        "candidate_ratio": 0.9708083797552862,
+        "identical_control_ratio": 0.9986341019847633,
+        "minimum_ratio": 0.8872611746017738,
+        "maximum_ratio": 1.0006492663290483
+      },
+      {
+        "compiler": "clang",
+        "setting": "checked",
+        "op": 1,
+        "total_cells": 1,
+        "qualified_cells": 1,
+        "candidate_ratio": 0.9904744116548375,
+        "identical_control_ratio": 1.0153271028037383,
+        "minimum_ratio": 0.9904744116548375,
+        "maximum_ratio": 0.9904744116548375
+      },
+      {
+        "compiler": "clang",
+        "setting": "checked",
+        "op": 2,
+        "total_cells": 1,
+        "qualified_cells": 1,
+        "candidate_ratio": 0.997012482095355,
+        "identical_control_ratio": 0.9975196362133113,
+        "minimum_ratio": 0.997012482095355,
+        "maximum_ratio": 0.997012482095355
+      },
+      {
+        "compiler": "clang",
+        "setting": "checked",
+        "op": 3,
+        "total_cells": 1,
+        "qualified_cells": 1,
+        "candidate_ratio": 0.9912280701754386,
+        "identical_control_ratio": 0.9965969859017987,
+        "minimum_ratio": 0.9912280701754386,
+        "maximum_ratio": 0.9912280701754386
+      },
+      {
+        "compiler": "clang",
+        "setting": "checked",
+        "op": 4,
+        "total_cells": 1,
+        "qualified_cells": 1,
+        "candidate_ratio": 1.002844680447563,
+        "identical_control_ratio": 0.993202416918429,
+        "minimum_ratio": 1.002844680447563,
+        "maximum_ratio": 1.002844680447563
+      },
+      {
+        "compiler": "clang",
+        "setting": "checked",
+        "op": 5,
+        "total_cells": 1,
+        "qualified_cells": 1,
+        "candidate_ratio": 0.9909784871616932,
+        "identical_control_ratio": 1.0280340667139816,
+        "minimum_ratio": 0.9909784871616932,
+        "maximum_ratio": 0.9909784871616932
+      },
+      {
+        "compiler": "clang",
+        "setting": "checked",
+        "op": 6,
+        "total_cells": 1,
+        "qualified_cells": 1,
+        "candidate_ratio": 1.0209371884346958,
+        "identical_control_ratio": 1.0059760956175299,
+        "minimum_ratio": 1.0209371884346958,
+        "maximum_ratio": 1.0209371884346958
+      },
+      {
+        "compiler": "clang",
+        "setting": "skip",
+        "op": 0,
+        "total_cells": 5,
+        "qualified_cells": 5,
+        "candidate_ratio": 0.9766822267405484,
+        "identical_control_ratio": 0.9973406379243673,
+        "minimum_ratio": 0.8830776072937514,
+        "maximum_ratio": 1.0112389263519768
+      },
+      {
+        "compiler": "clang",
+        "setting": "skip",
+        "op": 1,
+        "total_cells": 1,
+        "qualified_cells": 1,
+        "candidate_ratio": 0.9993520318430066,
+        "identical_control_ratio": 1.0044493882091212,
+        "minimum_ratio": 0.9993520318430066,
+        "maximum_ratio": 0.9993520318430066
+      },
+      {
+        "compiler": "clang",
+        "setting": "skip",
+        "op": 2,
+        "total_cells": 1,
+        "qualified_cells": 1,
+        "candidate_ratio": 0.9957826244125798,
+        "identical_control_ratio": 0.9949014969205041,
+        "minimum_ratio": 0.9957826244125798,
+        "maximum_ratio": 0.9957826244125798
+      },
+      {
+        "compiler": "clang",
+        "setting": "skip",
+        "op": 3,
+        "total_cells": 1,
+        "qualified_cells": 1,
+        "candidate_ratio": 0.9890294179302634,
+        "identical_control_ratio": 0.999511616549222,
+        "minimum_ratio": 0.9890294179302634,
+        "maximum_ratio": 0.9890294179302634
+      },
+      {
+        "compiler": "clang",
+        "setting": "skip",
+        "op": 4,
+        "total_cells": 1,
+        "qualified_cells": 1,
+        "candidate_ratio": 0.9899296978909368,
+        "identical_control_ratio": 1.0062845172348125,
+        "minimum_ratio": 0.9899296978909368,
+        "maximum_ratio": 0.9899296978909368
+      },
+      {
+        "compiler": "clang",
+        "setting": "skip",
+        "op": 5,
+        "total_cells": 1,
+        "qualified_cells": 1,
+        "candidate_ratio": 0.9991266375545852,
+        "identical_control_ratio": 0.9705583756345177,
+        "minimum_ratio": 0.9991266375545852,
+        "maximum_ratio": 0.9991266375545852
+      },
+      {
+        "compiler": "clang",
+        "setting": "skip",
+        "op": 6,
+        "total_cells": 1,
+        "qualified_cells": 1,
+        "candidate_ratio": 1.0024630541871922,
+        "identical_control_ratio": 1.033639143730887,
+        "minimum_ratio": 1.0024630541871922,
+        "maximum_ratio": 1.0024630541871922
+      },
+      {
+        "compiler": "gcc",
+        "setting": "checked",
+        "op": 0,
+        "total_cells": 5,
+        "qualified_cells": 5,
+        "candidate_ratio": 0.9601250429185267,
+        "identical_control_ratio": 0.9975450075939353,
+        "minimum_ratio": 0.8637004405286344,
+        "maximum_ratio": 0.9982914327556749
+      },
+      {
+        "compiler": "gcc",
+        "setting": "checked",
+        "op": 1,
+        "total_cells": 1,
+        "qualified_cells": 1,
+        "candidate_ratio": 0.9711828338357865,
+        "identical_control_ratio": 0.9931243861059024,
+        "minimum_ratio": 0.9711828338357865,
+        "maximum_ratio": 0.9711828338357865
+      },
+      {
+        "compiler": "gcc",
+        "setting": "checked",
+        "op": 2,
+        "total_cells": 1,
+        "qualified_cells": 1,
+        "candidate_ratio": 0.9834676033752052,
+        "identical_control_ratio": 0.994642925964466,
+        "minimum_ratio": 0.9834676033752052,
+        "maximum_ratio": 0.9834676033752052
+      },
+      {
+        "compiler": "gcc",
+        "setting": "checked",
+        "op": 3,
+        "total_cells": 1,
+        "qualified_cells": 1,
+        "candidate_ratio": 0.9732831981001385,
+        "identical_control_ratio": 1.0019128025855815,
+        "minimum_ratio": 0.9732831981001385,
+        "maximum_ratio": 0.9732831981001385
+      },
+      {
+        "compiler": "gcc",
+        "setting": "checked",
+        "op": 4,
+        "total_cells": 1,
+        "qualified_cells": 1,
+        "candidate_ratio": 0.9845379359942467,
+        "identical_control_ratio": 0.9933536913957248,
+        "minimum_ratio": 0.9845379359942467,
+        "maximum_ratio": 0.9845379359942467
+      },
+      {
+        "compiler": "gcc",
+        "setting": "checked",
+        "op": 5,
+        "total_cells": 1,
+        "qualified_cells": 1,
+        "candidate_ratio": 0.979163137387769,
+        "identical_control_ratio": 1.0052855924978688,
+        "minimum_ratio": 0.979163137387769,
+        "maximum_ratio": 0.979163137387769
+      },
+      {
+        "compiler": "gcc",
+        "setting": "checked",
+        "op": 6,
+        "total_cells": 1,
+        "qualified_cells": 1,
+        "candidate_ratio": 0.970074961680558,
+        "identical_control_ratio": 1.0109452736318407,
+        "minimum_ratio": 0.970074961680558,
+        "maximum_ratio": 0.970074961680558
+      },
+      {
+        "compiler": "gcc",
+        "setting": "skip",
+        "op": 0,
+        "total_cells": 5,
+        "qualified_cells": 5,
+        "candidate_ratio": 0.9633388754762537,
+        "identical_control_ratio": 0.9987306839648338,
+        "minimum_ratio": 0.871162330062123,
+        "maximum_ratio": 1.0033059875107138
+      },
+      {
+        "compiler": "gcc",
+        "setting": "skip",
+        "op": 1,
+        "total_cells": 1,
+        "qualified_cells": 1,
+        "candidate_ratio": 0.9698811826471401,
+        "identical_control_ratio": 1.0083814490594152,
+        "minimum_ratio": 0.9698811826471401,
+        "maximum_ratio": 0.9698811826471401
+      },
+      {
+        "compiler": "gcc",
+        "setting": "skip",
+        "op": 2,
+        "total_cells": 1,
+        "qualified_cells": 1,
+        "candidate_ratio": 0.9756610459908875,
+        "identical_control_ratio": 0.9956945037042784,
+        "minimum_ratio": 0.9756610459908875,
+        "maximum_ratio": 0.9756610459908875
+      },
+      {
+        "compiler": "gcc",
+        "setting": "skip",
+        "op": 3,
+        "total_cells": 1,
+        "qualified_cells": 1,
+        "candidate_ratio": 0.9790817712578104,
+        "identical_control_ratio": 1.0,
+        "minimum_ratio": 0.9790817712578104,
+        "maximum_ratio": 0.9790817712578104
+      },
+      {
+        "compiler": "gcc",
+        "setting": "skip",
+        "op": 4,
+        "total_cells": 1,
+        "qualified_cells": 1,
+        "candidate_ratio": 0.9840563589173156,
+        "identical_control_ratio": 1.0078681153990259,
+        "minimum_ratio": 0.9840563589173156,
+        "maximum_ratio": 0.9840563589173156
+      },
+      {
+        "compiler": "gcc",
+        "setting": "skip",
+        "op": 5,
+        "total_cells": 1,
+        "qualified_cells": 1,
+        "candidate_ratio": 0.9845992299614981,
+        "identical_control_ratio": 0.9970795395980072,
+        "minimum_ratio": 0.9845992299614981,
+        "maximum_ratio": 0.9845992299614981
+      },
+      {
+        "compiler": "gcc",
+        "setting": "skip",
+        "op": 6,
+        "total_cells": 1,
+        "qualified_cells": 1,
+        "candidate_ratio": 1.002020202020202,
+        "identical_control_ratio": 1.0074973713792135,
+        "minimum_ratio": 1.002020202020202,
+        "maximum_ratio": 1.002020202020202
+      }
+    ],
+    "focused_long_repetitions": {
+      "cells": 44,
+      "triplets": 792,
+      "all_qualified": true,
+      "statistics": [
+        {
+          "compiler": "clang",
+          "setting": "checked",
+          "op": 0,
+          "total_cells": 1,
+          "qualified_cells": 1,
+          "candidate_ratio": 0.9945827530332938,
+          "identical_control_ratio": 0.9972357597556567,
+          "minimum_ratio": 0.9945827530332938,
+          "maximum_ratio": 0.9945827530332938
+        },
+        {
+          "compiler": "clang",
+          "setting": "checked",
+          "op": 3,
+          "total_cells": 1,
+          "qualified_cells": 1,
+          "candidate_ratio": 0.992027972027972,
+          "identical_control_ratio": 0.9983174425126192,
+          "minimum_ratio": 0.992027972027972,
+          "maximum_ratio": 0.992027972027972
+        },
+        {
+          "compiler": "clang",
+          "setting": "checked",
+          "op": 4,
+          "total_cells": 4,
+          "qualified_cells": 4,
+          "candidate_ratio": 0.9986130662194725,
+          "identical_control_ratio": 1.0000927609770294,
+          "minimum_ratio": 0.9969895519744998,
+          "maximum_ratio": 1.0028301886792452
+        },
+        {
+          "compiler": "clang",
+          "setting": "checked",
+          "op": 5,
+          "total_cells": 2,
+          "qualified_cells": 2,
+          "candidate_ratio": 0.9899554843243388,
+          "identical_control_ratio": 1.00450212576778,
+          "minimum_ratio": 0.9793476712718986,
+          "maximum_ratio": 1.0006781959986437
+        },
+        {
+          "compiler": "clang",
+          "setting": "checked",
+          "op": 6,
+          "total_cells": 3,
+          "qualified_cells": 3,
+          "candidate_ratio": 0.9935160418208157,
+          "identical_control_ratio": 0.9968192671440592,
+          "minimum_ratio": 0.9845981517782134,
+          "maximum_ratio": 1.001301142113633
+        },
+        {
+          "compiler": "clang",
+          "setting": "skip",
+          "op": 0,
+          "total_cells": 1,
+          "qualified_cells": 1,
+          "candidate_ratio": 0.9989614058410535,
+          "identical_control_ratio": 0.9971947194719472,
+          "minimum_ratio": 0.9989614058410535,
+          "maximum_ratio": 0.9989614058410535
+        },
+        {
+          "compiler": "clang",
+          "setting": "skip",
+          "op": 3,
+          "total_cells": 1,
+          "qualified_cells": 1,
+          "candidate_ratio": 0.9977480647431386,
+          "identical_control_ratio": 1.0012647554806071,
+          "minimum_ratio": 0.9977480647431386,
+          "maximum_ratio": 0.9977480647431386
+        },
+        {
+          "compiler": "clang",
+          "setting": "skip",
+          "op": 4,
+          "total_cells": 4,
+          "qualified_cells": 4,
+          "candidate_ratio": 0.9843500649003863,
+          "identical_control_ratio": 1.0021862284534584,
+          "minimum_ratio": 0.9723477317910717,
+          "maximum_ratio": 0.9946332737030411
+        },
+        {
+          "compiler": "clang",
+          "setting": "skip",
+          "op": 5,
+          "total_cells": 2,
+          "qualified_cells": 2,
+          "candidate_ratio": 0.992328942370919,
+          "identical_control_ratio": 0.9982224828036675,
+          "minimum_ratio": 0.9843703035767959,
+          "maximum_ratio": 1.0003519267992258
+        },
+        {
+          "compiler": "clang",
+          "setting": "skip",
+          "op": 6,
+          "total_cells": 3,
+          "qualified_cells": 3,
+          "candidate_ratio": 1.0011115404276107,
+          "identical_control_ratio": 0.9999004576311051,
+          "minimum_ratio": 0.9979305587491377,
+          "maximum_ratio": 1.0037158469945355
+        },
+        {
+          "compiler": "gcc",
+          "setting": "checked",
+          "op": 0,
+          "total_cells": 1,
+          "qualified_cells": 1,
+          "candidate_ratio": 0.9624885017270592,
+          "identical_control_ratio": 1.003297138084143,
+          "minimum_ratio": 0.9624885017270592,
+          "maximum_ratio": 0.9624885017270592
+        },
+        {
+          "compiler": "gcc",
+          "setting": "checked",
+          "op": 3,
+          "total_cells": 1,
+          "qualified_cells": 1,
+          "candidate_ratio": 0.9636686133497294,
+          "identical_control_ratio": 0.9818400745332583,
+          "minimum_ratio": 0.9636686133497294,
+          "maximum_ratio": 0.9636686133497294
+        },
+        {
+          "compiler": "gcc",
+          "setting": "checked",
+          "op": 4,
+          "total_cells": 4,
+          "qualified_cells": 4,
+          "candidate_ratio": 0.9490252246031595,
+          "identical_control_ratio": 0.9958870507672589,
+          "minimum_ratio": 0.9268682989278284,
+          "maximum_ratio": 0.9728324217699273
+        },
+        {
+          "compiler": "gcc",
+          "setting": "checked",
+          "op": 5,
+          "total_cells": 2,
+          "qualified_cells": 2,
+          "candidate_ratio": 0.9969132706432039,
+          "identical_control_ratio": 0.9899593999526013,
+          "minimum_ratio": 0.9936693741041567,
+          "maximum_ratio": 1.000167757087737
+        },
+        {
+          "compiler": "gcc",
+          "setting": "checked",
+          "op": 6,
+          "total_cells": 3,
+          "qualified_cells": 3,
+          "candidate_ratio": 0.9985226638464512,
+          "identical_control_ratio": 0.9999034715113239,
+          "minimum_ratio": 0.9943955164131305,
+          "maximum_ratio": 1.003138925277943
+        },
+        {
+          "compiler": "gcc",
+          "setting": "skip",
+          "op": 0,
+          "total_cells": 1,
+          "qualified_cells": 1,
+          "candidate_ratio": 0.9799092676604018,
+          "identical_control_ratio": 0.9946585117227319,
+          "minimum_ratio": 0.9799092676604018,
+          "maximum_ratio": 0.9799092676604018
+        },
+        {
+          "compiler": "gcc",
+          "setting": "skip",
+          "op": 3,
+          "total_cells": 1,
+          "qualified_cells": 1,
+          "candidate_ratio": 0.9804709181470908,
+          "identical_control_ratio": 0.9980904455626123,
+          "minimum_ratio": 0.9804709181470908,
+          "maximum_ratio": 0.9804709181470908
+        },
+        {
+          "compiler": "gcc",
+          "setting": "skip",
+          "op": 4,
+          "total_cells": 4,
+          "qualified_cells": 4,
+          "candidate_ratio": 0.993692067217724,
+          "identical_control_ratio": 0.9988739524802189,
+          "minimum_ratio": 0.9831192660550458,
+          "maximum_ratio": 1.0127823498511643
+        },
+        {
+          "compiler": "gcc",
+          "setting": "skip",
+          "op": 5,
+          "total_cells": 2,
+          "qualified_cells": 2,
+          "candidate_ratio": 0.9714316847977889,
+          "identical_control_ratio": 1.001665775484029,
+          "minimum_ratio": 0.9560501479081561,
+          "maximum_ratio": 0.9870606895400283
+        },
+        {
+          "compiler": "gcc",
+          "setting": "skip",
+          "op": 6,
+          "total_cells": 3,
+          "qualified_cells": 3,
+          "candidate_ratio": 0.9966625671354163,
+          "identical_control_ratio": 0.996686450743586,
+          "minimum_ratio": 0.9935092785863381,
+          "maximum_ratio": 0.9989955524531592
+        }
+      ],
+      "rows": [
+        {
+          "compiler": "gcc",
+          "setting": "checked",
+          "op": 6,
+          "n": 128,
+          "repetitions": 16384,
+          "valid_counts": {
+            "final": 9,
+            "control": 9
+          },
+          "ratios": {
+            "final": 0.9943955164131305,
+            "control": 0.995580554439534
+          },
+          "sufficient": true
+        },
+        {
+          "compiler": "gcc",
+          "setting": "checked",
+          "op": 6,
+          "n": 1024,
+          "repetitions": 2048,
+          "valid_counts": {
+            "final": 9,
+            "control": 8
+          },
+          "ratios": {
+            "final": 0.9980528511821974,
+            "control": 1.0025064515126076
+          },
+          "sufficient": true
+        },
+        {
+          "compiler": "gcc",
+          "setting": "checked",
+          "op": 4,
+          "n": 128,
+          "repetitions": 8192,
+          "valid_counts": {
+            "final": 9,
+            "control": 9
+          },
+          "ratios": {
+            "final": 0.9268682989278284,
+            "control": 1.0011234151821538
+          },
+          "sufficient": true
+        },
+        {
+          "compiler": "gcc",
+          "setting": "checked",
+          "op": 4,
+          "n": 1024,
+          "repetitions": 2048,
+          "valid_counts": {
+            "final": 9,
+            "control": 8
+          },
+          "ratios": {
+            "final": 0.9356298547787909,
+            "control": 0.9857651771500986
+          },
+          "sufficient": true
+        },
+        {
+          "compiler": "gcc",
+          "setting": "checked",
+          "op": 5,
+          "n": 1024,
+          "repetitions": 2048,
+          "valid_counts": {
+            "final": 7,
+            "control": 8
+          },
+          "ratios": {
+            "final": 0.9936693741041567,
+            "control": 0.9765861114049241
+          },
+          "sufficient": true
+        },
+        {
+          "compiler": "gcc",
+          "setting": "checked",
+          "op": 4,
+          "n": 65536,
+          "repetitions": 16,
+          "valid_counts": {
+            "final": 9,
+            "control": 9
+          },
+          "ratios": {
+            "final": 0.9615035409478845,
+            "control": 0.9968225147526101
+          },
+          "sufficient": true
+        },
+        {
+          "compiler": "gcc",
+          "setting": "checked",
+          "op": 6,
+          "n": 65536,
+          "repetitions": 256,
+          "valid_counts": {
+            "final": 8,
+            "control": 8
+          },
+          "ratios": {
+            "final": 1.003138925277943,
+            "control": 1.0016376646435208
+          },
+          "sufficient": true
+        },
+        {
+          "compiler": "gcc",
+          "setting": "checked",
+          "op": 4,
+          "n": 524288,
+          "repetitions": 2,
+          "valid_counts": {
+            "final": 9,
+            "control": 9
+          },
+          "ratios": {
+            "final": 0.9728324217699273,
+            "control": 0.9999111505997335
+          },
+          "sufficient": true
+        },
+        {
+          "compiler": "gcc",
+          "setting": "checked",
+          "op": 5,
+          "n": 524288,
+          "repetitions": 2,
+          "valid_counts": {
+            "final": 9,
+            "control": 9
+          },
+          "ratios": {
+            "final": 1.000167757087737,
+            "control": 1.0035158211953792
+          },
+          "sufficient": true
+        },
+        {
+          "compiler": "gcc",
+          "setting": "checked",
+          "op": 0,
+          "n": 524288,
+          "repetitions": 1,
+          "valid_counts": {
+            "final": 8,
+            "control": 7
+          },
+          "ratios": {
+            "final": 0.9624885017270592,
+            "control": 1.003297138084143
+          },
+          "sufficient": true
+        },
+        {
+          "compiler": "gcc",
+          "setting": "checked",
+          "op": 3,
+          "n": 524288,
+          "repetitions": 1,
+          "valid_counts": {
+            "final": 8,
+            "control": 8
+          },
+          "ratios": {
+            "final": 0.9636686133497294,
+            "control": 0.9818400745332583
+          },
+          "sufficient": true
+        },
+        {
+          "compiler": "gcc",
+          "setting": "skip",
+          "op": 6,
+          "n": 128,
+          "repetitions": 16384,
+          "valid_counts": {
+            "final": 8,
+            "control": 6
+          },
+          "ratios": {
+            "final": 0.9989955524531592,
+            "control": 0.9996147204606418
+          },
+          "sufficient": true
+        },
+        {
+          "compiler": "gcc",
+          "setting": "skip",
+          "op": 6,
+          "n": 1024,
+          "repetitions": 2048,
+          "valid_counts": {
+            "final": 9,
+            "control": 9
+          },
+          "ratios": {
+            "final": 0.9974909395037636,
+            "control": 0.9915323682054084
+          },
+          "sufficient": true
+        },
+        {
+          "compiler": "gcc",
+          "setting": "skip",
+          "op": 4,
+          "n": 128,
+          "repetitions": 8192,
+          "valid_counts": {
+            "final": 9,
+            "control": 9
+          },
+          "ratios": {
+            "final": 1.0127823498511643,
+            "control": 1.0008770391159445
+          },
+          "sufficient": true
+        },
+        {
+          "compiler": "gcc",
+          "setting": "skip",
+          "op": 4,
+          "n": 1024,
+          "repetitions": 2048,
+          "valid_counts": {
+            "final": 9,
+            "control": 9
+          },
+          "ratios": {
+            "final": 0.995481708205801,
+            "control": 0.9958914159941306
+          },
+          "sufficient": true
+        },
+        {
+          "compiler": "gcc",
+          "setting": "skip",
+          "op": 5,
+          "n": 1024,
+          "repetitions": 2048,
+          "valid_counts": {
+            "final": 9,
+            "control": 9
+          },
+          "ratios": {
+            "final": 0.9560501479081561,
+            "control": 0.9950911640953717
+          },
+          "sufficient": true
+        },
+        {
+          "compiler": "gcc",
+          "setting": "skip",
+          "op": 4,
+          "n": 65536,
+          "repetitions": 16,
+          "valid_counts": {
+            "final": 9,
+            "control": 9
+          },
+          "ratios": {
+            "final": 0.983675094565001,
+            "control": 1.0001988862370723
+          },
+          "sufficient": true
+        },
+        {
+          "compiler": "gcc",
+          "setting": "skip",
+          "op": 6,
+          "n": 65536,
+          "repetitions": 256,
+          "valid_counts": {
+            "final": 9,
+            "control": 9
+          },
+          "ratios": {
+            "final": 0.9935092785863381,
+            "control": 0.9989324562162786
+          },
+          "sufficient": true
+        },
+        {
+          "compiler": "gcc",
+          "setting": "skip",
+          "op": 4,
+          "n": 524288,
+          "repetitions": 2,
+          "valid_counts": {
+            "final": 9,
+            "control": 9
+          },
+          "ratios": {
+            "final": 0.9831192660550458,
+            "control": 0.9985358711566618
+          },
+          "sufficient": true
+        },
+        {
+          "compiler": "gcc",
+          "setting": "skip",
+          "op": 5,
+          "n": 524288,
+          "repetitions": 2,
+          "valid_counts": {
+            "final": 9,
+            "control": 9
+          },
+          "ratios": {
+            "final": 0.9870606895400283,
+            "control": 1.008283825621287
+          },
+          "sufficient": true
+        },
+        {
+          "compiler": "gcc",
+          "setting": "skip",
+          "op": 0,
+          "n": 524288,
+          "repetitions": 1,
+          "valid_counts": {
+            "final": 9,
+            "control": 9
+          },
+          "ratios": {
+            "final": 0.9799092676604018,
+            "control": 0.9946585117227319
+          },
+          "sufficient": true
+        },
+        {
+          "compiler": "gcc",
+          "setting": "skip",
+          "op": 3,
+          "n": 524288,
+          "repetitions": 1,
+          "valid_counts": {
+            "final": 6,
+            "control": 8
+          },
+          "ratios": {
+            "final": 0.9804709181470908,
+            "control": 0.9980904455626123
+          },
+          "sufficient": true
+        },
+        {
+          "compiler": "clang",
+          "setting": "checked",
+          "op": 6,
+          "n": 128,
+          "repetitions": 16384,
+          "valid_counts": {
+            "final": 9,
+            "control": 9
+          },
+          "ratios": {
+            "final": 0.9947201689545935,
+            "control": 0.9929137140475198
+          },
+          "sufficient": true
+        },
+        {
+          "compiler": "clang",
+          "setting": "checked",
+          "op": 6,
+          "n": 1024,
+          "repetitions": 2048,
+          "valid_counts": {
+            "final": 9,
+            "control": 9
+          },
+          "ratios": {
+            "final": 0.9845981517782134,
+            "control": 0.9977603583426652
+          },
+          "sufficient": true
+        },
+        {
+          "compiler": "clang",
+          "setting": "checked",
+          "op": 4,
+          "n": 128,
+          "repetitions": 8192,
+          "valid_counts": {
+            "final": 9,
+            "control": 9
+          },
+          "ratios": {
+            "final": 0.9969895519744998,
+            "control": 1.0016039921582605
+          },
+          "sufficient": true
+        },
+        {
+          "compiler": "clang",
+          "setting": "checked",
+          "op": 4,
+          "n": 1024,
+          "repetitions": 2048,
+          "valid_counts": {
+            "final": 9,
+            "control": 9
+          },
+          "ratios": {
+            "final": 0.9973835688121402,
+            "control": 1.0044583147570219
+          },
+          "sufficient": true
+        },
+        {
+          "compiler": "clang",
+          "setting": "checked",
+          "op": 5,
+          "n": 1024,
+          "repetitions": 2048,
+          "valid_counts": {
+            "final": 9,
+            "control": 9
+          },
+          "ratios": {
+            "final": 0.9793476712718986,
+            "control": 1.0046004671243542
+          },
+          "sufficient": true
+        },
+        {
+          "compiler": "clang",
+          "setting": "checked",
+          "op": 4,
+          "n": 65536,
+          "repetitions": 16,
+          "valid_counts": {
+            "final": 9,
+            "control": 9
+          },
+          "ratios": {
+            "final": 0.9972608298670995,
+            "control": 0.9950837764623257
+          },
+          "sufficient": true
+        },
+        {
+          "compiler": "clang",
+          "setting": "checked",
+          "op": 6,
+          "n": 65536,
+          "repetitions": 256,
+          "valid_counts": {
+            "final": 9,
+            "control": 9
+          },
+          "ratios": {
+            "final": 1.001301142113633,
+            "control": 0.9997962806670353
+          },
+          "sufficient": true
+        },
+        {
+          "compiler": "clang",
+          "setting": "checked",
+          "op": 4,
+          "n": 524288,
+          "repetitions": 2,
+          "valid_counts": {
+            "final": 9,
+            "control": 9
+          },
+          "ratios": {
+            "final": 1.0028301886792452,
+            "control": 0.9992485440541048
+          },
+          "sufficient": true
+        },
+        {
+          "compiler": "clang",
+          "setting": "checked",
+          "op": 5,
+          "n": 524288,
+          "repetitions": 2,
+          "valid_counts": {
+            "final": 9,
+            "control": 9
+          },
+          "ratios": {
+            "final": 1.0006781959986437,
+            "control": 1.0044037940379404
+          },
+          "sufficient": true
+        },
+        {
+          "compiler": "clang",
+          "setting": "checked",
+          "op": 0,
+          "n": 524288,
+          "repetitions": 1,
+          "valid_counts": {
+            "final": 8,
+            "control": 8
+          },
+          "ratios": {
+            "final": 0.9945827530332938,
+            "control": 0.9972357597556567
+          },
+          "sufficient": true
+        },
+        {
+          "compiler": "clang",
+          "setting": "checked",
+          "op": 3,
+          "n": 524288,
+          "repetitions": 1,
+          "valid_counts": {
+            "final": 9,
+            "control": 9
+          },
+          "ratios": {
+            "final": 0.992027972027972,
+            "control": 0.9983174425126192
+          },
+          "sufficient": true
+        },
+        {
+          "compiler": "clang",
+          "setting": "skip",
+          "op": 6,
+          "n": 128,
+          "repetitions": 16384,
+          "valid_counts": {
+            "final": 9,
+            "control": 9
+          },
+          "ratios": {
+            "final": 1.0037158469945355,
+            "control": 1.0008760402978536
+          },
+          "sufficient": true
+        },
+        {
+          "compiler": "clang",
+          "setting": "skip",
+          "op": 6,
+          "n": 1024,
+          "repetitions": 2048,
+          "valid_counts": {
+            "final": 9,
+            "control": 9
+          },
+          "ratios": {
+            "final": 1.0016968325791855,
+            "control": 0.9966923925027563
+          },
+          "sufficient": true
+        },
+        {
+          "compiler": "clang",
+          "setting": "skip",
+          "op": 4,
+          "n": 128,
+          "repetitions": 8192,
+          "valid_counts": {
+            "final": 9,
+            "control": 9
+          },
+          "ratios": {
+            "final": 0.9723477317910717,
+            "control": 0.9974774774774775
+          },
+          "sufficient": true
+        },
+        {
+          "compiler": "clang",
+          "setting": "skip",
+          "op": 4,
+          "n": 1024,
+          "repetitions": 2048,
+          "valid_counts": {
+            "final": 9,
+            "control": 9
+          },
+          "ratios": {
+            "final": 0.9762267601341055,
+            "control": 1.0091673032849504
+          },
+          "sufficient": true
+        },
+        {
+          "compiler": "clang",
+          "setting": "skip",
+          "op": 5,
+          "n": 1024,
+          "repetitions": 2048,
+          "valid_counts": {
+            "final": 9,
+            "control": 9
+          },
+          "ratios": {
+            "final": 0.9843703035767959,
+            "control": 0.999466097170315
+          },
+          "sufficient": true
+        },
+        {
+          "compiler": "clang",
+          "setting": "skip",
+          "op": 4,
+          "n": 65536,
+          "repetitions": 16,
+          "valid_counts": {
+            "final": 9,
+            "control": 9
+          },
+          "ratios": {
+            "final": 0.9944043137653882,
+            "control": 1.0059818481848184
+          },
+          "sufficient": true
+        },
+        {
+          "compiler": "clang",
+          "setting": "skip",
+          "op": 6,
+          "n": 65536,
+          "repetitions": 256,
+          "valid_counts": {
+            "final": 9,
+            "control": 9
+          },
+          "ratios": {
+            "final": 0.9979305587491377,
+            "control": 1.0021410797986228
+          },
+          "sufficient": true
+        },
+        {
+          "compiler": "clang",
+          "setting": "skip",
+          "op": 4,
+          "n": 524288,
+          "repetitions": 2,
+          "valid_counts": {
+            "final": 9,
+            "control": 9
+          },
+          "ratios": {
+            "final": 0.9946332737030411,
+            "control": 0.996178830722201
+          },
+          "sufficient": true
+        },
+        {
+          "compiler": "clang",
+          "setting": "skip",
+          "op": 5,
+          "n": 524288,
+          "repetitions": 2,
+          "valid_counts": {
+            "final": 9,
+            "control": 9
+          },
+          "ratios": {
+            "final": 1.0003519267992258,
+            "control": 0.9969804158398757
+          },
+          "sufficient": true
+        },
+        {
+          "compiler": "clang",
+          "setting": "skip",
+          "op": 0,
+          "n": 524288,
+          "repetitions": 1,
+          "valid_counts": {
+            "final": 9,
+            "control": 9
+          },
+          "ratios": {
+            "final": 0.9989614058410535,
+            "control": 0.9971947194719472
+          },
+          "sufficient": true
+        },
+        {
+          "compiler": "clang",
+          "setting": "skip",
+          "op": 3,
+          "n": 524288,
+          "repetitions": 1,
+          "valid_counts": {
+            "final": 7,
+            "control": 9
+          },
+          "ratios": {
+            "final": 0.9977480647431386,
+            "control": 1.0012647554806071
+          },
+          "sufficient": true
+        }
+      ]
+    },
+    "native_comparison": {
+      "flags": [
+        "-std=c++23",
+        "-O2",
+        "-march=native"
+      ],
+      "cpu": "同じi9-14900K P-Core。Library Checker公開のMilan実機ではない。",
+      "cells": 14,
+      "triplets": 309,
+      "selected_qualified": true,
+      "all_comparators": [
+        "subtract",
+        "recursive"
+      ],
+      "statistics": {
+        "subtract": [
+          {
+            "compiler": "clang",
+            "total_cells": 7,
+            "qualified_cells": 7,
+            "candidate_ratio": 0.9940406040963128,
+            "identical_control_ratio": 0.984611695288473,
+            "minimum_ratio": 0.9722587184203612,
+            "maximum_ratio": 1.025290464104886
+          },
+          {
+            "compiler": "gcc",
+            "total_cells": 7,
+            "qualified_cells": 7,
+            "candidate_ratio": 0.9871433287866094,
+            "identical_control_ratio": 0.9978577425646924,
+            "minimum_ratio": 0.9773639761871799,
+            "maximum_ratio": 0.992926109695588
+          }
+        ],
+        "recursive": [
+          {
+            "compiler": "clang",
+            "total_cells": 7,
+            "qualified_cells": 7,
+            "candidate_ratio": 0.9786798327373019,
+            "identical_control_ratio": 0.984611695288473,
+            "minimum_ratio": 0.9376202253366309,
+            "maximum_ratio": 1.0088851169960338
+          },
+          {
+            "compiler": "gcc",
+            "total_cells": 7,
+            "qualified_cells": 7,
+            "candidate_ratio": 0.9670809320434058,
+            "identical_control_ratio": 0.9978577425646924,
+            "minimum_ratio": 0.9045671584266536,
+            "maximum_ratio": 1.0012856189685755
+          }
+        ]
+      },
+      "rows": [
+        {
+          "compiler": "gcc",
+          "case": "official_fft_killer_00",
+          "ratios": {
+            "subtract": 0.9905147539415581,
+            "recursive": 0.999692163121142,
+            "control": 1.0000319233838786
+          },
+          "valid_counts": {
+            "subtract": 9,
+            "recursive": 9,
+            "control": 3
+          },
+          "sufficient": true
+        },
+        {
+          "compiler": "gcc",
+          "case": "official_fft_killer_01",
+          "ratios": {
+            "subtract": 0.9868327682724908,
+            "recursive": 0.9886772303971607,
+            "control": 1.0004107814326793
+          },
+          "valid_counts": {
+            "subtract": 9,
+            "recursive": 9,
+            "control": 3
+          },
+          "sufficient": true
+        },
+        {
+          "compiler": "gcc",
+          "case": "official_max_random_00",
+          "ratios": {
+            "subtract": 0.9847045154307724,
+            "recursive": 1.0012856189685755,
+            "control": 1.0223331372891864
+          },
+          "valid_counts": {
+            "subtract": 9,
+            "recursive": 9,
+            "control": 3
+          },
+          "sufficient": true
+        },
+        {
+          "compiler": "gcc",
+          "case": "official_random_00",
+          "ratios": {
+            "subtract": 0.992926109695588,
+            "recursive": 0.9932352200352632,
+            "control": 0.9999663197601967
+          },
+          "valid_counts": {
+            "subtract": 7,
+            "recursive": 7,
+            "control": 3
+          },
+          "sufficient": true
+        },
+        {
+          "compiler": "gcc",
+          "case": "official_small_and_large_00",
+          "ratios": {
+            "subtract": 0.9908218951546222,
+            "recursive": 0.9507305214205475,
+            "control": 1.0063057718344028
+          },
+          "valid_counts": {
+            "subtract": 7,
+            "recursive": 6,
+            "control": 2
+          },
+          "sufficient": true
+        },
+        {
+          "compiler": "gcc",
+          "case": "official_small_and_large_01",
+          "ratios": {
+            "subtract": 0.9773639761871799,
+            "recursive": 0.9358593433760847,
+            "control": 0.9665099024345446
+          },
+          "valid_counts": {
+            "subtract": 5,
+            "recursive": 6,
+            "control": 2
+          },
+          "sufficient": true
+        },
+        {
+          "compiler": "gcc",
+          "case": "custom_33x524288_random",
+          "ratios": {
+            "subtract": 0.9869205908509208,
+            "recursive": 0.9045671584266536,
+            "control": 0.9903167176167169
+          },
+          "valid_counts": {
+            "subtract": 7,
+            "recursive": 5,
+            "control": 2
+          },
+          "sufficient": true
+        },
+        {
+          "compiler": "clang",
+          "case": "official_fft_killer_00",
+          "ratios": {
+            "subtract": 1.001536832758444,
+            "recursive": 0.9954839371856717,
+            "control": 1.0107736972329828
+          },
+          "valid_counts": {
+            "subtract": 7,
+            "recursive": 5,
+            "control": 4
+          },
+          "sufficient": true,
+          "calibration_repaired": true
+        },
+        {
+          "compiler": "clang",
+          "case": "official_fft_killer_01",
+          "ratios": {
+            "subtract": 1.025290464104886,
+            "recursive": 1.0088851169960338,
+            "control": 0.9735139202407825
+          },
+          "valid_counts": {
+            "subtract": 5,
+            "recursive": 7,
+            "control": 3
+          },
+          "sufficient": true,
+          "calibration_repaired": true
+        },
+        {
+          "compiler": "clang",
+          "case": "official_max_random_00",
+          "ratios": {
+            "subtract": 0.9722587184203612,
+            "recursive": 0.9930576578255814,
+            "control": 1.002534603138054
+          },
+          "valid_counts": {
+            "subtract": 5,
+            "recursive": 6,
+            "control": 4
+          },
+          "sufficient": true,
+          "calibration_repaired": true
+        },
+        {
+          "compiler": "clang",
+          "case": "official_random_00",
+          "ratios": {
+            "subtract": 0.9942835244170978,
+            "recursive": 1.0045734652794147,
+            "control": 1.007289612711543
+          },
+          "valid_counts": {
+            "subtract": 8,
+            "recursive": 6,
+            "control": 2
+          },
+          "sufficient": true
+        },
+        {
+          "compiler": "clang",
+          "case": "official_small_and_large_00",
+          "ratios": {
+            "subtract": 0.9911872357059095,
+            "recursive": 0.9577521069456554,
+            "control": 0.9043670267465198
+          },
+          "valid_counts": {
+            "subtract": 7,
+            "recursive": 9,
+            "control": 2
+          },
+          "sufficient": true
+        },
+        {
+          "compiler": "clang",
+          "case": "official_small_and_large_01",
+          "ratios": {
+            "subtract": 0.9980726872246696,
+            "recursive": 0.9558114991052172,
+            "control": 0.9966679688397637
+          },
+          "valid_counts": {
+            "subtract": 9,
+            "recursive": 9,
+            "control": 3
+          },
+          "sufficient": true
+        },
+        {
+          "compiler": "clang",
+          "case": "custom_33x524288_random",
+          "ratios": {
+            "subtract": 0.9765737973585269,
+            "recursive": 0.9376202253366309,
+            "control": 1.001635907006751
+          },
+          "valid_counts": {
+            "subtract": 9,
+            "recursive": 9,
+            "control": 3
+          },
+          "sufficient": true
+        }
+      ]
+    },
+    "standard_path": {
+      "machine_code": [
+        {
+          "compiler": "gcc",
+          "setting": "checked",
+          "identical": true,
+          "text_sha256": "a29da446152674962bc214c34942e146c11ff48c10f8bc1aea0dc81675a8ef06"
+        },
+        {
+          "compiler": "gcc",
+          "setting": "skip",
+          "identical": true,
+          "text_sha256": "75f6a1e1393165bc085eaf4ab245b0f855fdacef8eff7701880089e0dd252fff"
+        },
+        {
+          "compiler": "clang",
+          "setting": "checked",
+          "identical": true,
+          "text_sha256": "79b88489cc3e4b47ab59141e92d76ad34571cc1ec1aa6b19afab2324cc3dbf81"
+        },
+        {
+          "compiler": "clang",
+          "setting": "skip",
+          "identical": true,
+          "text_sha256": "9432e4ce3bb40ac18e790bcdb1bc83a44e73cb689fd09a3758187311ea213eac"
+        }
+      ],
+      "scope": "標準経路の変更前後.textは全4条件同一。追加高速化を主張しない。"
+    },
+    "comparison_outputs_equal": true,
+    "no_claim_every_condition_faster": true,
+    "outcome": "大規模固定main34入力の幾何平均はGCC約1.6%、Clang約1.2%短縮。公式small_and_large4入力の幾何平均はGCC約5%、Clang約4%短縮。native追加のP-Core比較でも選択候補は概ね同等〜改善し、測定した長時間44条件に3%以上の後退はない。Milan実機の速度比とは主張しない。"
+  },
+  "platform_evidence": "platform_evidence.json",
+  "platform_scope": "現在配信中の公式help HTMLと参照bundleでC2D/EPYC7B13表記を確認。Google公式ではMilan第3世代、AMD AVX512はGenoa第4世代以降。公開構成からの推定でworker CPUID実測ではない。公式cpp設定は-march=nativeを含み、ローカル基本測定のP-Core/追加marchなしとは区別する。",
+  "online_maximum_scope": "最大は旧53→61msだが、新61msはfft_killer_00に限られ、同規模の他ケースは多くが短縮。一部の短いケースにも孤立遅延がある。この公開結果だけで本体退行や雑音と断定せず、ローカル比較を別に保存する。",
+  "validation": {
+    "jobs": 44,
+    "all_passed": true,
+    "tests_sha256": {
+      "ntt_montgomery_reference_test.cpp": "5aaf3e06a3405c6a7e1f68b3b087ffa4ca844076cc3cda4c96785f103a038c35",
+      "formal_power_series_reference_test.cpp": "0b01545fd0f83bdf0e75927f5f0deff5ba0a7a243de0da82bad0475f2662da30",
+      "string_math_allocation_test.cpp": "fb15ad12e58f1b2bef0d0ec81390eb47dd0c81ece983fbe296a616797df62637"
+    },
+    "previous_reference_test_sha256": "bd7b3d83eb05415aa6e9b2693352f052aaf44d72d25d607bf596b8ca68da9fc6",
+    "reference_test_changed": true,
+    "reference_scope": "既存の独立DFT/直接積・11法・境界・所有権試験に加え、33×257・255×3073・33×65536の両入力順を、(Mod-1)列の積の重なり個数という独立な閉形式で照合。複数段のゼロ省略、8係数丸め、第一/中央/末尾の不正係数を両側で確認。",
+    "conditions": "GCC/Clang×検査有効/無効×default/SIRKIT_DISABLE_SIMD/CPU判定false。ASAN+UBSANは両compiler・両検査設定・default/SIMD無効。",
+    "allocation": [
+      {
+        "checks": 5521,
+        "failures": 91,
+        "live_delta": 0
+      },
+      {
+        "checks": 5521,
+        "failures": 91,
+        "live_delta": 0
+      },
+      {
+        "checks": 5521,
+        "failures": 91,
+        "live_delta": 0
+      },
+      {
+        "checks": 5521,
+        "failures": 91,
+        "live_delta": 0
+      },
+      {
+        "checks": 5521,
+        "failures": 91,
+        "live_delta": 0
+      },
+      {
+        "checks": 5521,
+        "failures": 91,
+        "live_delta": 0
+      },
+      {
+        "checks": 5521,
+        "failures": 91,
+        "live_delta": 0
+      },
+      {
+        "checks": 5521,
+        "failures": 91,
+        "live_delta": 0
+      },
+      {
+        "checks": 5521,
+        "failures": 91,
+        "live_delta": 0
+      },
+      {
+        "checks": 5521,
+        "failures": 91,
+        "live_delta": 0
+      },
+      {
+        "checks": 5521,
+        "failures": 91,
+        "live_delta": 0
+      },
+      {
+        "checks": 5521,
+        "failures": 91,
+        "live_delta": 0
+      }
+    ],
+    "sanitizers": "host ptraceのためdetect_leaks=0。別のlive counterで12条件live_delta=0も確認。",
+    "machine_code_evidence": [
+      {
+        "compiler": "gcc",
+        "setting": "checked",
+        "kind": "standard_core",
+        "final_matches_baseline": true,
+        "text_sha256": "a29da446152674962bc214c34942e146c11ff48c10f8bc1aea0dc81675a8ef06"
+      },
+      {
+        "compiler": "gcc",
+        "setting": "skip",
+        "kind": "standard_core",
+        "final_matches_baseline": true,
+        "text_sha256": "75f6a1e1393165bc085eaf4ab245b0f855fdacef8eff7701880089e0dd252fff"
+      },
+      {
+        "compiler": "gcc",
+        "setting": "",
+        "kind": "main",
+        "final_matches_measured": true,
+        "text_sha256": "986980c859225ecdf5bf92df222ac4ee034ac968416939bf511c1513629947b8"
+      },
+      {
+        "compiler": "gcc",
+        "setting": "checked",
+        "kind": "core",
+        "final_matches_measured": true,
+        "text_sha256": "9a5249a4edfb5ecaa522c4acb41e97ac25082cc6d499e2108b37885dfacb6a48"
+      },
+      {
+        "compiler": "gcc",
+        "setting": "skip",
+        "kind": "core",
+        "final_matches_measured": true,
+        "text_sha256": "9193abf5e91b25a4cb5c9a1251b71ef540cdb12c173e8ef5f97f54995822e5d3"
+      },
+      {
+        "compiler": "clang",
+        "setting": "checked",
+        "kind": "standard_core",
+        "final_matches_baseline": true,
+        "text_sha256": "79b88489cc3e4b47ab59141e92d76ad34571cc1ec1aa6b19afab2324cc3dbf81"
+      },
+      {
+        "compiler": "clang",
+        "setting": "skip",
+        "kind": "standard_core",
+        "final_matches_baseline": true,
+        "text_sha256": "9432e4ce3bb40ac18e790bcdb1bc83a44e73cb689fd09a3758187311ea213eac"
+      },
+      {
+        "compiler": "clang",
+        "setting": "",
+        "kind": "main",
+        "final_matches_measured": true,
+        "text_sha256": "ce65fe8d7fbc30f095753df3ec06098d330527fa2df8110794f382c9af4a6228"
+      },
+      {
+        "compiler": "clang",
+        "setting": "checked",
+        "kind": "core",
+        "final_matches_measured": true,
+        "text_sha256": "d3f8e8fe51b2a6fda28c1139e191f166b214dbee6b02967cd347ab5478107ec0"
+      },
+      {
+        "compiler": "clang",
+        "setting": "skip",
+        "kind": "core",
+        "final_matches_measured": true,
+        "text_sha256": "88207690b132a55aed051c7f0e8f47df16f3ddbe5056690d88da626db30a3a51"
+      }
+    ],
+    "profiles": {
+      "status": "local_samples_passed_for_snapshot",
+      "counts": {
+        "LOCAL_SAMPLE_PASS": 10
+      },
+      "run_id": "20261112T044835316312Z"
+    },
+    "current_submission_exactly_matches_compiled_final": true,
+    "current_submission_bytes": 51246
+  },
+  "license": "CC0の独自NTTへの独自実装。外部ライブラリコードは取り込まない。第三者frontend/HTML/TOMLや公式入力生成器本体は証跡へ含めない。",
+  "evidence_archive": "Audit/data/performance-ntt-416560-2026-11-12.zip",
+  "evidence_scope": "候補・証明・独立参照試験・測定raw・検証コマンド・公開提出API原本。巨大入力/出力・実行体・外部ソースを除外。プラットフォームはplatform_evidence.jsonの事実/URL/ハッシュだけ保存。",
+  "evidence_archive_sha256": "b46a8c7ac2bcae9a4d3c0d9835760a13a81a69aa39a51c1682796699d882bea1"
+}

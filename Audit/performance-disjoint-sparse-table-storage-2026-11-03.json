@@ -1,0 +1,3194 @@
+{
+  "date_jst": "2026-11-03",
+  "checked_at_utc": "2026-11-03T01:52:19.814564+00:00",
+  "status": "adopted_locally_validated_needs_online_resubmission",
+  "library": "DataStructure/Disjoint_Sparse_Table.cpp",
+  "before_source_sha256": "bb3f1eab5bae8c08d61b5670c820b89dae943ffc3b3fb73398d1b4aa3799ad93",
+  "current_source_sha256": "92ea961d019af88d6ba2e5d299b8842763df81aa075947e5e2058bb15fb50b66",
+  "online": {
+    "url": "https://judge.yosupo.jp/submission/414929",
+    "status": "AC",
+    "time_ms": 83,
+    "memory_bytes": 47243264,
+    "scope": "改修前の本体。本体・main・共通IOは確認時の提出ソースと一致。採用版のACを意味しない。",
+    "evidence": "online-disjoint-sparse-table-414929-2026-11-03.json"
+  },
+  "unchanged": {
+    "public_api": true,
+    "generic_associative_operations": true,
+    "noncommutative_order": true,
+    "bool_proxy_overload_selection": true,
+    "construction_op_call_order_and_count": true,
+    "ownership": "vectorが所有する。新たなraw所有ポインタ・手動解放は使わない。",
+    "driver_sha256": "f5f83c4a42abf5ad3ddeb3f1c14a960087a8492f5d51a43fa42646b0c9d4e4de",
+    "common_io_sha256": "291bf8dbc56a1d691f6256fe95b4714183c2cf5d9e55e4bef240e31d1eb178c1",
+    "main_unchanged": true,
+    "common_io_unchanged": true
+  },
+  "adopted": [
+    "half=1の行はOp呼出しがなく原列と同一なので、元列をtable_[0]で共用。values_メンバーを除く。n0は空、n1/n2は第0行のみ。",
+    "右prefixはmiddle<endを確認しmiddle+1から開始。各反復のi!=middle分岐を除く。",
+    "右端r-1を共有し、単要素判定をl==lastへ変更。空区間の処理を先に維持する。",
+    "公開size/get/check_range/境界探索で使う要素数length_を保持。copy/move/clear/swapで表と同期する。検査専用の状態ではない。"
+  ],
+  "memory": {
+    "array_saving": "n>=2で元列のコピー1本を削減。int32でn500000なら2000000byte。",
+    "n1_exception": "旧版は元列vectorだけだったが、新版は外側の行vectorの確保が1回増える。",
+    "object_sizes": [
+      {
+        "label": "before",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISJOINT_TEST_SOURCE=\"/tmp/sirkit_disjoint_speed_20261103/before.hpp\"",
+          "/tmp/sirkit_disjoint_speed_20261103/sizes.cpp",
+          "-o",
+          "/tmp/sirkit_disjoint_speed_20261103/size_before"
+        ],
+        "source_sha256": "bb3f1eab5bae8c08d61b5670c820b89dae943ffc3b3fb73398d1b4aa3799ad93",
+        "stdout": "int32=56 int64=56 bool=72\n"
+      },
+      {
+        "label": "after",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISJOINT_TEST_SOURCE=\"/home/reinsirk/Atcoder_Env/DataStructure/Disjoint_Sparse_Table.cpp\"",
+          "/tmp/sirkit_disjoint_speed_20261103/sizes.cpp",
+          "-o",
+          "/tmp/sirkit_disjoint_speed_20261103/size_after"
+        ],
+        "source_sha256": "92ea961d019af88d6ba2e5d299b8842763df81aa075947e5e2058bb15fb50b66",
+        "stdout": "int32=40 int64=40 bool=40\n"
+      }
+    ],
+    "actual_rss": "final_full_main_resultsのmedian_max_rss_bytes。max_random_0では両コンパイラで約2.1MB減少。"
+  },
+  "performance_environment": {
+    "cpu": "Intel Core i9-14900K",
+    "logical_cpu": 12,
+    "core_kind": "P-Core",
+    "lscpu_core_index": 6,
+    "kernel_core_id": "24",
+    "sibling_logical_cpu": 13,
+    "governor": "powersave",
+    "fixed_frequency": false,
+    "flags": [
+      "-std=c++23",
+      "-O2"
+    ],
+    "compiler_versions": {
+      "gcc": "15.2.0",
+      "clang": "21"
+    },
+    "clang_extra_flag": "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+    "march_native": false,
+    "checks": "SKIP_RUNTIME_CHECKS",
+    "simultaneous_compilation_or_other_performance_runs_during_final_measurement": false,
+    "source": "host.json"
+  },
+  "final_full_main_protocol": {
+    "cases": 25,
+    "official_generator_cases": 16,
+    "custom_cases": 9,
+    "repetitions": 15,
+    "labels": {
+      "base": "83ms提出の本体",
+      "control": "baseと同一バイナリ",
+      "selected": "採用版"
+    },
+    "same_driver_and_io": true,
+    "order": "seed984513でラベル順を混ぜる。実行ファイル名・P-Coreを統一。",
+    "timer": "wait4のuser+system CPU時間、プロセス全体。wallと最大RSSも保存。",
+    "correctness": "すべての版・反復で出力SHA256が一致。公式生成器は既存の入力を再利用し、元の生成器ソースは同梱しない。",
+    "noise": "周波数固定なし。control差を併記。特に短い操作の比率のみから無退行・普遍的な速さを断定しない。"
+  },
+  "final_full_main_results": [
+    {
+      "compiler": "gcc",
+      "case": "32_build",
+      "median_process_cpu_ms": {
+        "base": 0.991,
+        "control": 1.099,
+        "selected": 0.995
+      },
+      "selected_over_base": 1.0040363269424823,
+      "control_over_base": 1.1089808274470232,
+      "median_wall_ms": {
+        "base": 2.87474,
+        "control": 3.999493,
+        "selected": 2.949252
+      },
+      "median_max_rss_bytes": {
+        "base": 29958144,
+        "control": 29958144,
+        "selected": 29958144
+      },
+      "output_sha256": "ea9ba70be6cab371f69cdd8df37674a711aa0862b155e155c01869a352b66721"
+    },
+    {
+      "compiler": "gcc",
+      "case": "32_random",
+      "median_process_cpu_ms": {
+        "base": 6.022,
+        "control": 6.085,
+        "selected": 5.934
+      },
+      "selected_over_base": 0.9853869146462969,
+      "control_over_base": 1.0104616406509466,
+      "median_wall_ms": {
+        "base": 13.002913,
+        "control": 13.012486,
+        "selected": 12.862991
+      },
+      "median_max_rss_bytes": {
+        "base": 29958144,
+        "control": 29958144,
+        "selected": 29958144
+      },
+      "output_sha256": "0ee71c29965cd3e8b4a6ba9fd2caf9a0800f120f9349076914b6a104c60fce59"
+    },
+    {
+      "compiler": "gcc",
+      "case": "32_short",
+      "median_process_cpu_ms": {
+        "base": 5.93,
+        "control": 5.833,
+        "selected": 5.818
+      },
+      "selected_over_base": 0.9811129848229342,
+      "control_over_base": 0.9836424957841484,
+      "median_wall_ms": {
+        "base": 12.85573,
+        "control": 12.798429,
+        "selected": 12.865839
+      },
+      "median_max_rss_bytes": {
+        "base": 29958144,
+        "control": 29958144,
+        "selected": 29958144
+      },
+      "output_sha256": "2bcb0417e6b7de403534f4f86833ab258b5f5f01d962b44c11bd8a505ebe423b"
+    },
+    {
+      "compiler": "gcc",
+      "case": "4096_build",
+      "median_process_cpu_ms": {
+        "base": 1.178,
+        "control": 1.237,
+        "selected": 1.164
+      },
+      "selected_over_base": 0.9881154499151104,
+      "control_over_base": 1.0500848896434636,
+      "median_wall_ms": {
+        "base": 3.871956,
+        "control": 3.953897,
+        "selected": 3.881198
+      },
+      "median_max_rss_bytes": {
+        "base": 29958144,
+        "control": 29958144,
+        "selected": 29958144
+      },
+      "output_sha256": "4a7b38e1e22a94c537021c7f54f3bc8cd849355fcc4e637972084719fba2cee4"
+    },
+    {
+      "compiler": "gcc",
+      "case": "4096_random",
+      "median_process_cpu_ms": {
+        "base": 8.926,
+        "control": 8.903,
+        "selected": 8.515
+      },
+      "selected_over_base": 0.9539547389648219,
+      "control_over_base": 0.9974232578982747,
+      "median_wall_ms": {
+        "base": 18.554664,
+        "control": 19.000003,
+        "selected": 17.845622
+      },
+      "median_max_rss_bytes": {
+        "base": 29958144,
+        "control": 29958144,
+        "selected": 29958144
+      },
+      "output_sha256": "cf2872e3fccd622ac709e046f66ea87882da85f6eff21d9f07e6ae397c9f1b7f"
+    },
+    {
+      "compiler": "gcc",
+      "case": "4096_short",
+      "median_process_cpu_ms": {
+        "base": 9.696,
+        "control": 9.754,
+        "selected": 9.487
+      },
+      "selected_over_base": 0.9784447194719472,
+      "control_over_base": 1.0059818481848184,
+      "median_wall_ms": {
+        "base": 19.324331,
+        "control": 19.374835,
+        "selected": 19.211551
+      },
+      "median_max_rss_bytes": {
+        "base": 29958144,
+        "control": 29958144,
+        "selected": 29958144
+      },
+      "output_sha256": "9e0ad3d8ff40c0316a1095f40e86ceaf3fb192f4ed36646948a719c14bedf741"
+    },
+    {
+      "compiler": "gcc",
+      "case": "500000_build",
+      "median_process_cpu_ms": {
+        "base": 25.048,
+        "control": 24.966,
+        "selected": 20.563
+      },
+      "selected_over_base": 0.8209437879271798,
+      "control_over_base": 0.996726285531779,
+      "median_wall_ms": {
+        "base": 51.313199,
+        "control": 51.26274,
+        "selected": 40.797016
+      },
+      "median_max_rss_bytes": {
+        "base": 45867008,
+        "control": 45854720,
+        "selected": 44032000
+      },
+      "output_sha256": "87baee03b7cb5c0123998d60afe6169e2887c6039fa13de276412340b43e6748"
+    },
+    {
+      "compiler": "gcc",
+      "case": "500000_random",
+      "median_process_cpu_ms": {
+        "base": 63.402,
+        "control": 62.575,
+        "selected": 57.135
+      },
+      "selected_over_base": 0.9011545377117441,
+      "control_over_base": 0.9869562474369894,
+      "median_wall_ms": {
+        "base": 126.548622,
+        "control": 125.945405,
+        "selected": 114.285788
+      },
+      "median_max_rss_bytes": {
+        "base": 46120960,
+        "control": 46120960,
+        "selected": 44019712
+      },
+      "output_sha256": "8facac24f101eaf51929e87b2614763d8cf1e9b45e779bbd9f95d795d7233465"
+    },
+    {
+      "compiler": "gcc",
+      "case": "500000_short",
+      "median_process_cpu_ms": {
+        "base": 59.33,
+        "control": 59.065,
+        "selected": 54.052
+      },
+      "selected_over_base": 0.9110399460643857,
+      "control_over_base": 0.9955334569357829,
+      "median_wall_ms": {
+        "base": 118.29731,
+        "control": 118.903767,
+        "selected": 109.556594
+      },
+      "median_max_rss_bytes": {
+        "base": 46129152,
+        "control": 46133248,
+        "selected": 44032000
+      },
+      "output_sha256": "602aef0a82681d88056c8615f4c89c9ee88fc9150829a01edd84683ff5e345b0"
+    },
+    {
+      "compiler": "gcc",
+      "case": "official_max_random_0",
+      "median_process_cpu_ms": {
+        "base": 60.505,
+        "control": 59.392,
+        "selected": 54.076
+      },
+      "selected_over_base": 0.8937443186513512,
+      "control_over_base": 0.981604826047434,
+      "median_wall_ms": {
+        "base": 122.35727,
+        "control": 119.616864,
+        "selected": 108.339944
+      },
+      "median_max_rss_bytes": {
+        "base": 46133248,
+        "control": 46125056,
+        "selected": 44032000
+      },
+      "output_sha256": "4dc7847a415682c5729fe01b307fe02afbcfd97fe22969483d08414b52a7a068"
+    },
+    {
+      "compiler": "gcc",
+      "case": "official_max_random_1",
+      "median_process_cpu_ms": {
+        "base": 60.995,
+        "control": 60.962,
+        "selected": 54.722
+      },
+      "selected_over_base": 0.8971555045495533,
+      "control_over_base": 0.999458972046889,
+      "median_wall_ms": {
+        "base": 121.319584,
+        "control": 121.478975,
+        "selected": 109.632134
+      },
+      "median_max_rss_bytes": {
+        "base": 46133248,
+        "control": 46120960,
+        "selected": 43978752
+      },
+      "output_sha256": "965ad8e8fc83304453e5a50670ef9bd5331708640ec1312d6e588b662d5bec73"
+    },
+    {
+      "compiler": "gcc",
+      "case": "official_max_random_2",
+      "median_process_cpu_ms": {
+        "base": 63.363,
+        "control": 63.15,
+        "selected": 56.801
+      },
+      "selected_over_base": 0.8964379843126115,
+      "control_over_base": 0.9966384167416316,
+      "median_wall_ms": {
+        "base": 126.8089,
+        "control": 126.384943,
+        "selected": 114.086699
+      },
+      "median_max_rss_bytes": {
+        "base": 46108672,
+        "control": 46129152,
+        "selected": 44032000
+      },
+      "output_sha256": "495ac4ab982f56ddeb70f9eb094afca405ebe926359dd6ec02f0db9f9e8515d1"
+    },
+    {
+      "compiler": "gcc",
+      "case": "official_max_random_3",
+      "median_process_cpu_ms": {
+        "base": 61.178,
+        "control": 60.798,
+        "selected": 56.041
+      },
+      "selected_over_base": 0.9160319068946353,
+      "control_over_base": 0.993788616823041,
+      "median_wall_ms": {
+        "base": 122.627268,
+        "control": 121.647356,
+        "selected": 113.201304
+      },
+      "median_max_rss_bytes": {
+        "base": 46120960,
+        "control": 46116864,
+        "selected": 44036096
+      },
+      "output_sha256": "3ebc8b1c665d2f2f8793fc695f074f3c718fbd6aee894676608d4f95a9375139"
+    },
+    {
+      "compiler": "gcc",
+      "case": "official_max_random_4",
+      "median_process_cpu_ms": {
+        "base": 60.107,
+        "control": 59.997,
+        "selected": 54.104
+      },
+      "selected_over_base": 0.9001281048796314,
+      "control_over_base": 0.9981699302909811,
+      "median_wall_ms": {
+        "base": 121.071266,
+        "control": 120.212152,
+        "selected": 108.144485
+      },
+      "median_max_rss_bytes": {
+        "base": 46125056,
+        "control": 46129152,
+        "selected": 44032000
+      },
+      "output_sha256": "7feda076d8c6f28aa647871c250f9b25eef759fcc1cf327519597fb6b71cc498"
+    },
+    {
+      "compiler": "gcc",
+      "case": "official_random_0",
+      "median_process_cpu_ms": {
+        "base": 46.644,
+        "control": 46.83,
+        "selected": 43.61
+      },
+      "selected_over_base": 0.9349541205728497,
+      "control_over_base": 1.0039876511448418,
+      "median_wall_ms": {
+        "base": 93.583037,
+        "control": 94.577037,
+        "selected": 89.559606
+      },
+      "median_max_rss_bytes": {
+        "base": 36683776,
+        "control": 36687872,
+        "selected": 35090432
+      },
+      "output_sha256": "659c89cfdd463dfe0db70db2ae49adaef27267010366ebc0d870519bebe4ed50"
+    },
+    {
+      "compiler": "gcc",
+      "case": "official_random_1",
+      "median_process_cpu_ms": {
+        "base": 52.397,
+        "control": 52.251,
+        "selected": 48.524
+      },
+      "selected_over_base": 0.9260835544019695,
+      "control_over_base": 0.997213580930206,
+      "median_wall_ms": {
+        "base": 106.946723,
+        "control": 104.227613,
+        "selected": 97.02957
+      },
+      "median_max_rss_bytes": {
+        "base": 42975232,
+        "control": 42934272,
+        "selected": 41140224
+      },
+      "output_sha256": "e82c3cabca91ccf1d15283e84c87dcbe7ce882760633a324f2449ee10f84865e"
+    },
+    {
+      "compiler": "gcc",
+      "case": "official_random_2",
+      "median_process_cpu_ms": {
+        "base": 17.323,
+        "control": 17.155,
+        "selected": 16.253
+      },
+      "selected_over_base": 0.9382324077815621,
+      "control_over_base": 0.9903019107544883,
+      "median_wall_ms": {
+        "base": 36.016565,
+        "control": 35.355343,
+        "selected": 32.195933
+      },
+      "median_max_rss_bytes": {
+        "base": 27705344,
+        "control": 27705344,
+        "selected": 27705344
+      },
+      "output_sha256": "7c9baadf3daeb7d3aa96af8657aabad633fab6eadbd7a6d54a0e80f1e8f91bd1"
+    },
+    {
+      "compiler": "gcc",
+      "case": "official_random_3",
+      "median_process_cpu_ms": {
+        "base": 23.076,
+        "control": 23.124,
+        "selected": 19.256
+      },
+      "selected_over_base": 0.8344600450684694,
+      "control_over_base": 1.002080083203328,
+      "median_wall_ms": {
+        "base": 45.801202,
+        "control": 46.036102,
+        "selected": 39.153772
+      },
+      "median_max_rss_bytes": {
+        "base": 40099840,
+        "control": 40095744,
+        "selected": 38506496
+      },
+      "output_sha256": "61401df076eeab3feea37436d12e791416ff6518a46ab841afffeaec583b6bf4"
+    },
+    {
+      "compiler": "gcc",
+      "case": "official_random_4",
+      "median_process_cpu_ms": {
+        "base": 20.695,
+        "control": 20.569,
+        "selected": 18.367
+      },
+      "selected_over_base": 0.8875090601594589,
+      "control_over_base": 0.993911572843682,
+      "median_wall_ms": {
+        "base": 43.520361,
+        "control": 40.613127,
+        "selected": 38.300715
+      },
+      "median_max_rss_bytes": {
+        "base": 27705344,
+        "control": 27705344,
+        "selected": 27705344
+      },
+      "output_sha256": "51d18dc448ee46ed367bef2fddd2d24f072633d6a98c0dfcb7160ff8bff01fc2"
+    },
+    {
+      "compiler": "gcc",
+      "case": "official_small_values_0",
+      "median_process_cpu_ms": {
+        "base": 52.43,
+        "control": 51.946,
+        "selected": 47.346
+      },
+      "selected_over_base": 0.9030326149151249,
+      "control_over_base": 0.9907686439061606,
+      "median_wall_ms": {
+        "base": 105.960644,
+        "control": 103.980814,
+        "selected": 94.373633
+      },
+      "median_max_rss_bytes": {
+        "base": 46120960,
+        "control": 46133248,
+        "selected": 44019712
+      },
+      "output_sha256": "03860febffae10b28f5dc1394a401ef9da2e96e152870c4586a2f27637e8f74c"
+    },
+    {
+      "compiler": "gcc",
+      "case": "official_small_width_query_0",
+      "median_process_cpu_ms": {
+        "base": 61.578,
+        "control": 61.478,
+        "selected": 57.664
+      },
+      "selected_over_base": 0.9364383383675988,
+      "control_over_base": 0.9983760433921206,
+      "median_wall_ms": {
+        "base": 123.926147,
+        "control": 124.29452,
+        "selected": 115.137419
+      },
+      "median_max_rss_bytes": {
+        "base": 46120960,
+        "control": 46116864,
+        "selected": 44036096
+      },
+      "output_sha256": "1c84aec7894596ac25144ff469196151ea899e38cd7beb614659fb242876e3c1"
+    },
+    {
+      "compiler": "gcc",
+      "case": "official_small_width_query_1",
+      "median_process_cpu_ms": {
+        "base": 62.785,
+        "control": 62.639,
+        "selected": 58.668
+      },
+      "selected_over_base": 0.9344270128215338,
+      "control_over_base": 0.9976746038066417,
+      "median_wall_ms": {
+        "base": 124.977492,
+        "control": 125.203009,
+        "selected": 118.34509
+      },
+      "median_max_rss_bytes": {
+        "base": 46133248,
+        "control": 46120960,
+        "selected": 44019712
+      },
+      "output_sha256": "b49f24ae95c824a1d07638bf9251d40140748ed300d408516ac6298f70da129e"
+    },
+    {
+      "compiler": "gcc",
+      "case": "official_small_width_query_2",
+      "median_process_cpu_ms": {
+        "base": 62.591,
+        "control": 62.778,
+        "selected": 57.552
+      },
+      "selected_over_base": 0.9194932178747743,
+      "control_over_base": 1.0029876499816268,
+      "median_wall_ms": {
+        "base": 124.820552,
+        "control": 125.462347,
+        "selected": 116.727151
+      },
+      "median_max_rss_bytes": {
+        "base": 46129152,
+        "control": 46108672,
+        "selected": 44023808
+      },
+      "output_sha256": "1b1161379b324c1fa178b7b7f739c5c23a6f4529b42b5e21449101651b0aa1d3"
+    },
+    {
+      "compiler": "gcc",
+      "case": "official_small_width_query_3",
+      "median_process_cpu_ms": {
+        "base": 62.141,
+        "control": 61.681,
+        "selected": 57.079
+      },
+      "selected_over_base": 0.9185400943016688,
+      "control_over_base": 0.9925974799246874,
+      "median_wall_ms": {
+        "base": 124.43865,
+        "control": 124.311439,
+        "selected": 115.573451
+      },
+      "median_max_rss_bytes": {
+        "base": 46129152,
+        "control": 46112768,
+        "selected": 44023808
+      },
+      "output_sha256": "e9c342369ff634a0ad22ca898dea6842945c6db949cad84f883dd1b7dfca7405"
+    },
+    {
+      "compiler": "gcc",
+      "case": "official_small_width_query_4",
+      "median_process_cpu_ms": {
+        "base": 62.253,
+        "control": 62.457,
+        "selected": 58.117
+      },
+      "selected_over_base": 0.9335614347902912,
+      "control_over_base": 1.0032769505084091,
+      "median_wall_ms": {
+        "base": 124.344823,
+        "control": 124.621149,
+        "selected": 117.949497
+      },
+      "median_max_rss_bytes": {
+        "base": 46133248,
+        "control": 46129152,
+        "selected": 44032000
+      },
+      "output_sha256": "7241449e69f6621905e46da05ea6f54de24ef81c1891f550d575f897319cd452"
+    },
+    {
+      "compiler": "clang",
+      "case": "32_build",
+      "median_process_cpu_ms": {
+        "base": 1.049,
+        "control": 1.089,
+        "selected": 1.049
+      },
+      "selected_over_base": 1.0,
+      "control_over_base": 1.0381315538608198,
+      "median_wall_ms": {
+        "base": 3.938201,
+        "control": 3.898008,
+        "selected": 3.890348
+      },
+      "median_max_rss_bytes": {
+        "base": 31555584,
+        "control": 31555584,
+        "selected": 31555584
+      },
+      "output_sha256": "ea9ba70be6cab371f69cdd8df37674a711aa0862b155e155c01869a352b66721"
+    },
+    {
+      "compiler": "clang",
+      "case": "32_random",
+      "median_process_cpu_ms": {
+        "base": 5.609,
+        "control": 5.745,
+        "selected": 5.639
+      },
+      "selected_over_base": 1.005348546978071,
+      "control_over_base": 1.0242467463005884,
+      "median_wall_ms": {
+        "base": 12.844969,
+        "control": 12.884043,
+        "selected": 12.603475
+      },
+      "median_max_rss_bytes": {
+        "base": 31555584,
+        "control": 31555584,
+        "selected": 31555584
+      },
+      "output_sha256": "0ee71c29965cd3e8b4a6ba9fd2caf9a0800f120f9349076914b6a104c60fce59"
+    },
+    {
+      "compiler": "clang",
+      "case": "32_short",
+      "median_process_cpu_ms": {
+        "base": 5.473,
+        "control": 5.506,
+        "selected": 5.387
+      },
+      "selected_over_base": 0.9842864973506303,
+      "control_over_base": 1.0060295998538278,
+      "median_wall_ms": {
+        "base": 12.455604,
+        "control": 10.917293,
+        "selected": 12.17551
+      },
+      "median_max_rss_bytes": {
+        "base": 31555584,
+        "control": 31555584,
+        "selected": 31555584
+      },
+      "output_sha256": "2bcb0417e6b7de403534f4f86833ab258b5f5f01d962b44c11bd8a505ebe423b"
+    },
+    {
+      "compiler": "clang",
+      "case": "4096_build",
+      "median_process_cpu_ms": {
+        "base": 1.364,
+        "control": 1.347,
+        "selected": 1.262
+      },
+      "selected_over_base": 0.9252199413489736,
+      "control_over_base": 0.9875366568914956,
+      "median_wall_ms": {
+        "base": 3.967947,
+        "control": 3.943731,
+        "selected": 3.785505
+      },
+      "median_max_rss_bytes": {
+        "base": 31555584,
+        "control": 31555584,
+        "selected": 31555584
+      },
+      "output_sha256": "4a7b38e1e22a94c537021c7f54f3bc8cd849355fcc4e637972084719fba2cee4"
+    },
+    {
+      "compiler": "clang",
+      "case": "4096_random",
+      "median_process_cpu_ms": {
+        "base": 8.525,
+        "control": 8.554,
+        "selected": 8.466
+      },
+      "selected_over_base": 0.9930791788856305,
+      "control_over_base": 1.0034017595307918,
+      "median_wall_ms": {
+        "base": 18.510017,
+        "control": 18.303611,
+        "selected": 18.07734
+      },
+      "median_max_rss_bytes": {
+        "base": 31555584,
+        "control": 31555584,
+        "selected": 31555584
+      },
+      "output_sha256": "cf2872e3fccd622ac709e046f66ea87882da85f6eff21d9f07e6ae397c9f1b7f"
+    },
+    {
+      "compiler": "clang",
+      "case": "4096_short",
+      "median_process_cpu_ms": {
+        "base": 9.109,
+        "control": 9.124,
+        "selected": 9.106
+      },
+      "selected_over_base": 0.9996706553957624,
+      "control_over_base": 1.0016467230211878,
+      "median_wall_ms": {
+        "base": 18.599101,
+        "control": 18.631685,
+        "selected": 18.45643
+      },
+      "median_max_rss_bytes": {
+        "base": 31555584,
+        "control": 31555584,
+        "selected": 31555584
+      },
+      "output_sha256": "9e0ad3d8ff40c0316a1095f40e86ceaf3fb192f4ed36646948a719c14bedf741"
+    },
+    {
+      "compiler": "clang",
+      "case": "500000_build",
+      "median_process_cpu_ms": {
+        "base": 24.903,
+        "control": 24.898,
+        "selected": 20.54
+      },
+      "selected_over_base": 0.8248002248725054,
+      "control_over_base": 0.9997992209773923,
+      "median_wall_ms": {
+        "base": 50.888205,
+        "control": 51.008655,
+        "selected": 40.414113
+      },
+      "median_max_rss_bytes": {
+        "base": 45871104,
+        "control": 45867008,
+        "selected": 44036096
+      },
+      "output_sha256": "87baee03b7cb5c0123998d60afe6169e2887c6039fa13de276412340b43e6748"
+    },
+    {
+      "compiler": "clang",
+      "case": "500000_random",
+      "median_process_cpu_ms": {
+        "base": 64.033,
+        "control": 65.025,
+        "selected": 58.047
+      },
+      "selected_over_base": 0.9065169521965236,
+      "control_over_base": 1.015492011931348,
+      "median_wall_ms": {
+        "base": 127.595606,
+        "control": 130.472244,
+        "selected": 116.441014
+      },
+      "median_max_rss_bytes": {
+        "base": 46133248,
+        "control": 46133248,
+        "selected": 44036096
+      },
+      "output_sha256": "8facac24f101eaf51929e87b2614763d8cf1e9b45e779bbd9f95d795d7233465"
+    },
+    {
+      "compiler": "clang",
+      "case": "500000_short",
+      "median_process_cpu_ms": {
+        "base": 60.217,
+        "control": 60.469,
+        "selected": 54.737
+      },
+      "selected_over_base": 0.9089957985286548,
+      "control_over_base": 1.0041848647391933,
+      "median_wall_ms": {
+        "base": 119.674915,
+        "control": 122.888637,
+        "selected": 110.907686
+      },
+      "median_max_rss_bytes": {
+        "base": 46129152,
+        "control": 46133248,
+        "selected": 44032000
+      },
+      "output_sha256": "602aef0a82681d88056c8615f4c89c9ee88fc9150829a01edd84683ff5e345b0"
+    },
+    {
+      "compiler": "clang",
+      "case": "official_max_random_0",
+      "median_process_cpu_ms": {
+        "base": 60.347,
+        "control": 59.483,
+        "selected": 53.888
+      },
+      "selected_over_base": 0.8929689959732878,
+      "control_over_base": 0.9856828011334449,
+      "median_wall_ms": {
+        "base": 121.095369,
+        "control": 119.972048,
+        "selected": 108.109586
+      },
+      "median_max_rss_bytes": {
+        "base": 46125056,
+        "control": 46133248,
+        "selected": 44036096
+      },
+      "output_sha256": "4dc7847a415682c5729fe01b307fe02afbcfd97fe22969483d08414b52a7a068"
+    },
+    {
+      "compiler": "clang",
+      "case": "official_max_random_1",
+      "median_process_cpu_ms": {
+        "base": 59.891,
+        "control": 60.843,
+        "selected": 55.23
+      },
+      "selected_over_base": 0.9221752851012673,
+      "control_over_base": 1.0158955435708203,
+      "median_wall_ms": {
+        "base": 120.428829,
+        "control": 121.150383,
+        "selected": 111.093883
+      },
+      "median_max_rss_bytes": {
+        "base": 46129152,
+        "control": 46125056,
+        "selected": 44036096
+      },
+      "output_sha256": "965ad8e8fc83304453e5a50670ef9bd5331708640ec1312d6e588b662d5bec73"
+    },
+    {
+      "compiler": "clang",
+      "case": "official_max_random_2",
+      "median_process_cpu_ms": {
+        "base": 62.57,
+        "control": 61.952,
+        "selected": 55.904
+      },
+      "selected_over_base": 0.89346332108039,
+      "control_over_base": 0.9901230621703692,
+      "median_wall_ms": {
+        "base": 125.391491,
+        "control": 125.173709,
+        "selected": 113.078274
+      },
+      "median_max_rss_bytes": {
+        "base": 46120960,
+        "control": 46125056,
+        "selected": 44032000
+      },
+      "output_sha256": "495ac4ab982f56ddeb70f9eb094afca405ebe926359dd6ec02f0db9f9e8515d1"
+    },
+    {
+      "compiler": "clang",
+      "case": "official_max_random_3",
+      "median_process_cpu_ms": {
+        "base": 60.733,
+        "control": 61.48,
+        "selected": 55.554
+      },
+      "selected_over_base": 0.9147251082607478,
+      "control_over_base": 1.0122997381983436,
+      "median_wall_ms": {
+        "base": 121.229427,
+        "control": 125.221356,
+        "selected": 112.467216
+      },
+      "median_max_rss_bytes": {
+        "base": 46125056,
+        "control": 46129152,
+        "selected": 44036096
+      },
+      "output_sha256": "3ebc8b1c665d2f2f8793fc695f074f3c718fbd6aee894676608d4f95a9375139"
+    },
+    {
+      "compiler": "clang",
+      "case": "official_max_random_4",
+      "median_process_cpu_ms": {
+        "base": 61.04,
+        "control": 60.248,
+        "selected": 55.256
+      },
+      "selected_over_base": 0.9052424639580603,
+      "control_over_base": 0.9870249017038007,
+      "median_wall_ms": {
+        "base": 121.92911,
+        "control": 121.82873,
+        "selected": 110.960322
+      },
+      "median_max_rss_bytes": {
+        "base": 46120960,
+        "control": 46133248,
+        "selected": 44036096
+      },
+      "output_sha256": "7feda076d8c6f28aa647871c250f9b25eef759fcc1cf327519597fb6b71cc498"
+    },
+    {
+      "compiler": "clang",
+      "case": "official_random_0",
+      "median_process_cpu_ms": {
+        "base": 47.192,
+        "control": 48.047,
+        "selected": 43.052
+      },
+      "selected_over_base": 0.9122732666553653,
+      "control_over_base": 1.018117477538566,
+      "median_wall_ms": {
+        "base": 95.759537,
+        "control": 96.303024,
+        "selected": 87.559813
+      },
+      "median_max_rss_bytes": {
+        "base": 36687872,
+        "control": 36696064,
+        "selected": 35119104
+      },
+      "output_sha256": "659c89cfdd463dfe0db70db2ae49adaef27267010366ebc0d870519bebe4ed50"
+    },
+    {
+      "compiler": "clang",
+      "case": "official_random_1",
+      "median_process_cpu_ms": {
+        "base": 52.949,
+        "control": 52.79,
+        "selected": 47.576
+      },
+      "selected_over_base": 0.8985249957506279,
+      "control_over_base": 0.9969971104270147,
+      "median_wall_ms": {
+        "base": 106.719068,
+        "control": 107.14096,
+        "selected": 95.518218
+      },
+      "median_max_rss_bytes": {
+        "base": 42983424,
+        "control": 42983424,
+        "selected": 41152512
+      },
+      "output_sha256": "e82c3cabca91ccf1d15283e84c87dcbe7ce882760633a324f2449ee10f84865e"
+    },
+    {
+      "compiler": "clang",
+      "case": "official_random_2",
+      "median_process_cpu_ms": {
+        "base": 17.041,
+        "control": 16.952,
+        "selected": 16.15
+      },
+      "selected_over_base": 0.9477143360131448,
+      "control_over_base": 0.9947773018015375,
+      "median_wall_ms": {
+        "base": 35.354367,
+        "control": 33.750394,
+        "selected": 32.343526
+      },
+      "median_max_rss_bytes": {
+        "base": 31555584,
+        "control": 31555584,
+        "selected": 31555584
+      },
+      "output_sha256": "7c9baadf3daeb7d3aa96af8657aabad633fab6eadbd7a6d54a0e80f1e8f91bd1"
+    },
+    {
+      "compiler": "clang",
+      "case": "official_random_3",
+      "median_process_cpu_ms": {
+        "base": 23.263,
+        "control": 23.347,
+        "selected": 19.218
+      },
+      "selected_over_base": 0.8261187293126424,
+      "control_over_base": 1.0036108842367708,
+      "median_wall_ms": {
+        "base": 46.241385,
+        "control": 46.267408,
+        "selected": 39.333849
+      },
+      "median_max_rss_bytes": {
+        "base": 40099840,
+        "control": 40103936,
+        "selected": 38526976
+      },
+      "output_sha256": "61401df076eeab3feea37436d12e791416ff6518a46ab841afffeaec583b6bf4"
+    },
+    {
+      "compiler": "clang",
+      "case": "official_random_4",
+      "median_process_cpu_ms": {
+        "base": 20.703,
+        "control": 20.997,
+        "selected": 18.282
+      },
+      "selected_over_base": 0.8830604260252137,
+      "control_over_base": 1.0142008404579046,
+      "median_wall_ms": {
+        "base": 43.537608,
+        "control": 43.562133,
+        "selected": 37.999319
+      },
+      "median_max_rss_bytes": {
+        "base": 31555584,
+        "control": 31555584,
+        "selected": 31555584
+      },
+      "output_sha256": "51d18dc448ee46ed367bef2fddd2d24f072633d6a98c0dfcb7160ff8bff01fc2"
+    },
+    {
+      "compiler": "clang",
+      "case": "official_small_values_0",
+      "median_process_cpu_ms": {
+        "base": 52.871,
+        "control": 52.983,
+        "selected": 48.669
+      },
+      "selected_over_base": 0.9205235384237105,
+      "control_over_base": 1.0021183635641466,
+      "median_wall_ms": {
+        "base": 106.09282,
+        "control": 105.495939,
+        "selected": 98.232281
+      },
+      "median_max_rss_bytes": {
+        "base": 46133248,
+        "control": 46133248,
+        "selected": 44036096
+      },
+      "output_sha256": "03860febffae10b28f5dc1394a401ef9da2e96e152870c4586a2f27637e8f74c"
+    },
+    {
+      "compiler": "clang",
+      "case": "official_small_width_query_0",
+      "median_process_cpu_ms": {
+        "base": 63.384,
+        "control": 63.249,
+        "selected": 58.252
+      },
+      "selected_over_base": 0.9190331944970339,
+      "control_over_base": 0.9978701249526695,
+      "median_wall_ms": {
+        "base": 127.611417,
+        "control": 126.342449,
+        "selected": 116.976223
+      },
+      "median_max_rss_bytes": {
+        "base": 46133248,
+        "control": 46133248,
+        "selected": 44023808
+      },
+      "output_sha256": "1c84aec7894596ac25144ff469196151ea899e38cd7beb614659fb242876e3c1"
+    },
+    {
+      "compiler": "clang",
+      "case": "official_small_width_query_1",
+      "median_process_cpu_ms": {
+        "base": 62.673,
+        "control": 64.087,
+        "selected": 57.581
+      },
+      "selected_over_base": 0.9187528919949579,
+      "control_over_base": 1.0225615496306224,
+      "median_wall_ms": {
+        "base": 124.801708,
+        "control": 129.624434,
+        "selected": 116.802556
+      },
+      "median_max_rss_bytes": {
+        "base": 46133248,
+        "control": 46133248,
+        "selected": 44011520
+      },
+      "output_sha256": "b49f24ae95c824a1d07638bf9251d40140748ed300d408516ac6298f70da129e"
+    },
+    {
+      "compiler": "clang",
+      "case": "official_small_width_query_2",
+      "median_process_cpu_ms": {
+        "base": 63.07,
+        "control": 64.421,
+        "selected": 58.487
+      },
+      "selected_over_base": 0.9273347074678928,
+      "control_over_base": 1.0214206437291897,
+      "median_wall_ms": {
+        "base": 128.112806,
+        "control": 129.795641,
+        "selected": 117.700527
+      },
+      "median_max_rss_bytes": {
+        "base": 46133248,
+        "control": 46133248,
+        "selected": 44003328
+      },
+      "output_sha256": "1b1161379b324c1fa178b7b7f739c5c23a6f4529b42b5e21449101651b0aa1d3"
+    },
+    {
+      "compiler": "clang",
+      "case": "official_small_width_query_3",
+      "median_process_cpu_ms": {
+        "base": 63.413,
+        "control": 63.345,
+        "selected": 59.34
+      },
+      "selected_over_base": 0.935770267926135,
+      "control_over_base": 0.9989276646744358,
+      "median_wall_ms": {
+        "base": 128.192788,
+        "control": 128.317579,
+        "selected": 118.651178
+      },
+      "median_max_rss_bytes": {
+        "base": 46120960,
+        "control": 46120960,
+        "selected": 44032000
+      },
+      "output_sha256": "e9c342369ff634a0ad22ca898dea6842945c6db949cad84f883dd1b7dfca7405"
+    },
+    {
+      "compiler": "clang",
+      "case": "official_small_width_query_4",
+      "median_process_cpu_ms": {
+        "base": 63.207,
+        "control": 61.378,
+        "selected": 57.363
+      },
+      "selected_over_base": 0.9075418861834923,
+      "control_over_base": 0.9710633315930197,
+      "median_wall_ms": {
+        "base": 128.168964,
+        "control": 124.797066,
+        "selected": 116.322386
+      },
+      "median_max_rss_bytes": {
+        "base": 46133248,
+        "control": 46133248,
+        "selected": 44032000
+      },
+      "output_sha256": "7241449e69f6621905e46da05ea6f54de24ef81c1891f550d575f897319cd452"
+    }
+  ],
+  "micro_protocol": {
+    "repetitions": 11,
+    "types": {
+      "min": "int32最小値",
+      "sum": "int64和、非負値",
+      "affine": "2個のuint64による法998244353の写像合成（非可換）",
+      "bool": "bool AND"
+    },
+    "timer": "std::clockで構築/破棄、照会、get、境界探索、コピー、valuesの対象部分のみを計時。入力生成・入出力は計時外。",
+    "operation_count": "query/getは1000000回。boundaryはmax_right/min_leftの100000組。build/copy/valuesはrepeated_operationsの回数。構築・コピーは破棄時間と結果観測のall_prodを含む。",
+    "limitations": "小規模では最適化や確保器の再利用、クロック粒度、controlの揺らぎの影響が大きい。"
+  },
+  "micro_results": [
+    {
+      "compiler": "gcc",
+      "type": "affine",
+      "n": 32,
+      "mode": "build",
+      "timed_cpu_ms": {
+        "base": 4.289,
+        "control": 4.277,
+        "selected": 3.361
+      },
+      "selected_over_base": 0.7836325483795756,
+      "control_over_base": 0.9972021450221497,
+      "ns_per_operation_or_boundary_pair": {
+        "base": 214.45,
+        "control": 213.85,
+        "selected": 168.05
+      },
+      "operation_count": 20000,
+      "checksum": 19719977880000
+    },
+    {
+      "compiler": "gcc",
+      "type": "affine",
+      "n": 32,
+      "mode": "query",
+      "timed_cpu_ms": {
+        "base": 2.316,
+        "control": 2.318,
+        "selected": 2.188
+      },
+      "selected_over_base": 0.9447322970639033,
+      "control_over_base": 1.0008635578583764,
+      "ns_per_operation_or_boundary_pair": {
+        "base": 2.316,
+        "control": 2.318,
+        "selected": 2.188
+      },
+      "operation_count": 1000000,
+      "checksum": 742822899276363
+    },
+    {
+      "compiler": "gcc",
+      "type": "affine",
+      "n": 4096,
+      "mode": "build",
+      "timed_cpu_ms": {
+        "base": 32.905,
+        "control": 33.064,
+        "selected": 29.969
+      },
+      "selected_over_base": 0.9107734386871296,
+      "control_over_base": 1.0048320923871752,
+      "ns_per_operation_or_boundary_pair": {
+        "base": 219366.66666666666,
+        "control": 220426.66666666666,
+        "selected": 199793.33333333334
+      },
+      "operation_count": 150,
+      "checksum": 131391771900
+    },
+    {
+      "compiler": "gcc",
+      "type": "affine",
+      "n": 4096,
+      "mode": "query",
+      "timed_cpu_ms": {
+        "base": 2.47,
+        "control": 2.497,
+        "selected": 2.347
+      },
+      "selected_over_base": 0.9502024291497976,
+      "control_over_base": 1.0109311740890687,
+      "ns_per_operation_or_boundary_pair": {
+        "base": 2.47,
+        "control": 2.497,
+        "selected": 2.347
+      },
+      "operation_count": 1000000,
+      "checksum": 754050434777107
+    },
+    {
+      "compiler": "gcc",
+      "type": "affine",
+      "n": 500000,
+      "mode": "build",
+      "timed_cpu_ms": {
+        "base": 225.403,
+        "control": 224.854,
+        "selected": 208.721
+      },
+      "selected_over_base": 0.9259903373069569,
+      "control_over_base": 0.9975643624973936,
+      "ns_per_operation_or_boundary_pair": {
+        "base": 75134333.33333333,
+        "control": 74951333.33333333,
+        "selected": 69573666.66666667
+      },
+      "operation_count": 3,
+      "checksum": 963163302
+    },
+    {
+      "compiler": "gcc",
+      "type": "affine",
+      "n": 500000,
+      "mode": "query",
+      "timed_cpu_ms": {
+        "base": 23.194,
+        "control": 22.356,
+        "selected": 20.882
+      },
+      "selected_over_base": 0.9003190480296629,
+      "control_over_base": 0.9638699663706131,
+      "ns_per_operation_or_boundary_pair": {
+        "base": 23.194,
+        "control": 22.356,
+        "selected": 20.882
+      },
+      "operation_count": 1000000,
+      "checksum": 505585819507726
+    },
+    {
+      "compiler": "gcc",
+      "type": "bool",
+      "n": 32,
+      "mode": "build",
+      "timed_cpu_ms": {
+        "base": 7.893,
+        "control": 7.907,
+        "selected": 6.586
+      },
+      "selected_over_base": 0.8344102369187888,
+      "control_over_base": 1.0017737235525148,
+      "ns_per_operation_or_boundary_pair": {
+        "base": 394.65,
+        "control": 395.35,
+        "selected": 329.3
+      },
+      "operation_count": 20000,
+      "checksum": 20000
+    },
+    {
+      "compiler": "gcc",
+      "type": "bool",
+      "n": 32,
+      "mode": "get",
+      "timed_cpu_ms": {
+        "base": 1.204,
+        "control": 1.158,
+        "selected": 1.301
+      },
+      "selected_over_base": 1.080564784053156,
+      "control_over_base": 0.9617940199335548,
+      "ns_per_operation_or_boundary_pair": {
+        "base": 1.204,
+        "control": 1.158,
+        "selected": 1.301
+      },
+      "operation_count": 1000000,
+      "checksum": 1000000
+    },
+    {
+      "compiler": "gcc",
+      "type": "bool",
+      "n": 32,
+      "mode": "query",
+      "timed_cpu_ms": {
+        "base": 2.107,
+        "control": 2.116,
+        "selected": 2.098
+      },
+      "selected_over_base": 0.9957285239677266,
+      "control_over_base": 1.0042714760322733,
+      "ns_per_operation_or_boundary_pair": {
+        "base": 2.107,
+        "control": 2.116,
+        "selected": 2.098
+      },
+      "operation_count": 1000000,
+      "checksum": 1000000
+    },
+    {
+      "compiler": "gcc",
+      "type": "bool",
+      "n": 4096,
+      "mode": "build",
+      "timed_cpu_ms": {
+        "base": 8.278,
+        "control": 8.269,
+        "selected": 7.71
+      },
+      "selected_over_base": 0.9313843923653057,
+      "control_over_base": 0.9989127808649432,
+      "ns_per_operation_or_boundary_pair": {
+        "base": 55186.666666666664,
+        "control": 55126.666666666664,
+        "selected": 51400.0
+      },
+      "operation_count": 150,
+      "checksum": 0
+    },
+    {
+      "compiler": "gcc",
+      "type": "bool",
+      "n": 4096,
+      "mode": "query",
+      "timed_cpu_ms": {
+        "base": 1.745,
+        "control": 1.677,
+        "selected": 1.615
+      },
+      "selected_over_base": 0.9255014326647565,
+      "control_over_base": 0.9610315186246419,
+      "ns_per_operation_or_boundary_pair": {
+        "base": 1.745,
+        "control": 1.677,
+        "selected": 1.615
+      },
+      "operation_count": 1000000,
+      "checksum": 91941
+    },
+    {
+      "compiler": "gcc",
+      "type": "bool",
+      "n": 500000,
+      "mode": "build",
+      "timed_cpu_ms": {
+        "base": 34.348,
+        "control": 34.373,
+        "selected": 32.348
+      },
+      "selected_over_base": 0.9417724467217887,
+      "control_over_base": 1.0007278444159777,
+      "ns_per_operation_or_boundary_pair": {
+        "base": 11449333.333333334,
+        "control": 11457666.666666666,
+        "selected": 10782666.666666666
+      },
+      "operation_count": 3,
+      "checksum": 0
+    },
+    {
+      "compiler": "gcc",
+      "type": "bool",
+      "n": 500000,
+      "mode": "get",
+      "timed_cpu_ms": {
+        "base": 1.28,
+        "control": 1.189,
+        "selected": 1.184
+      },
+      "selected_over_base": 0.925,
+      "control_over_base": 0.92890625,
+      "ns_per_operation_or_boundary_pair": {
+        "base": 1.28,
+        "control": 1.189,
+        "selected": 1.184
+      },
+      "operation_count": 1000000,
+      "checksum": 989943
+    },
+    {
+      "compiler": "gcc",
+      "type": "bool",
+      "n": 500000,
+      "mode": "query",
+      "timed_cpu_ms": {
+        "base": 2.144,
+        "control": 2.237,
+        "selected": 2.123
+      },
+      "selected_over_base": 0.9902052238805971,
+      "control_over_base": 1.0433768656716418,
+      "ns_per_operation_or_boundary_pair": {
+        "base": 2.144,
+        "control": 2.237,
+        "selected": 2.123
+      },
+      "operation_count": 1000000,
+      "checksum": 1874
+    },
+    {
+      "compiler": "gcc",
+      "type": "min",
+      "n": 0,
+      "mode": "build",
+      "timed_cpu_ms": {
+        "base": 0.115,
+        "control": 0.106,
+        "selected": 0.08
+      },
+      "selected_over_base": 0.6956521739130435,
+      "control_over_base": 0.9217391304347826,
+      "ns_per_operation_or_boundary_pair": {
+        "base": 2.3,
+        "control": 2.12,
+        "selected": 1.6
+      },
+      "operation_count": 50000,
+      "checksum": 107374182350000
+    },
+    {
+      "compiler": "gcc",
+      "type": "min",
+      "n": 1,
+      "mode": "build",
+      "timed_cpu_ms": {
+        "base": 0.462,
+        "control": 0.475,
+        "selected": 0.766
+      },
+      "selected_over_base": 1.658008658008658,
+      "control_over_base": 1.0281385281385282,
+      "ns_per_operation_or_boundary_pair": {
+        "base": 9.24,
+        "control": 9.5,
+        "selected": 15.32
+      },
+      "operation_count": 50000,
+      "checksum": 2400000
+    },
+    {
+      "compiler": "gcc",
+      "type": "min",
+      "n": 2,
+      "mode": "build",
+      "timed_cpu_ms": {
+        "base": 1.167,
+        "control": 1.176,
+        "selected": 0.76
+      },
+      "selected_over_base": 0.6512425021422451,
+      "control_over_base": 1.0077120822622108,
+      "ns_per_operation_or_boundary_pair": {
+        "base": 23.34,
+        "control": 23.52,
+        "selected": 15.2
+      },
+      "operation_count": 50000,
+      "checksum": 700000
+    },
+    {
+      "compiler": "gcc",
+      "type": "min",
+      "n": 32,
+      "mode": "build",
+      "timed_cpu_ms": {
+        "base": 2.184,
+        "control": 2.176,
+        "selected": 1.652
+      },
+      "selected_over_base": 0.7564102564102564,
+      "control_over_base": 0.9963369963369964,
+      "ns_per_operation_or_boundary_pair": {
+        "base": 109.2,
+        "control": 108.8,
+        "selected": 82.6
+      },
+      "operation_count": 20000,
+      "checksum": 140000
+    },
+    {
+      "compiler": "gcc",
+      "type": "min",
+      "n": 32,
+      "mode": "get",
+      "timed_cpu_ms": {
+        "base": 1.045,
+        "control": 1.183,
+        "selected": 1.108
+      },
+      "selected_over_base": 1.060287081339713,
+      "control_over_base": 1.1320574162679427,
+      "ns_per_operation_or_boundary_pair": {
+        "base": 1.045,
+        "control": 1.183,
+        "selected": 1.108
+      },
+      "operation_count": 1000000,
+      "checksum": 43799152
+    },
+    {
+      "compiler": "gcc",
+      "type": "min",
+      "n": 32,
+      "mode": "query",
+      "timed_cpu_ms": {
+        "base": 1.835,
+        "control": 1.798,
+        "selected": 1.711
+      },
+      "selected_over_base": 0.932425068119891,
+      "control_over_base": 0.9798365122615804,
+      "ns_per_operation_or_boundary_pair": {
+        "base": 1.835,
+        "control": 1.798,
+        "selected": 1.711
+      },
+      "operation_count": 1000000,
+      "checksum": 15586096
+    },
+    {
+      "compiler": "gcc",
+      "type": "min",
+      "n": 4096,
+      "mode": "build",
+      "timed_cpu_ms": {
+        "base": 7.171,
+        "control": 7.169,
+        "selected": 4.414
+      },
+      "selected_over_base": 0.6155347929159113,
+      "control_over_base": 0.9997210988704505,
+      "ns_per_operation_or_boundary_pair": {
+        "base": 47806.666666666664,
+        "control": 47793.333333333336,
+        "selected": 29426.666666666668
+      },
+      "operation_count": 150,
+      "checksum": 0
+    },
+    {
+      "compiler": "gcc",
+      "type": "min",
+      "n": 4096,
+      "mode": "query",
+      "timed_cpu_ms": {
+        "base": 1.528,
+        "control": 1.525,
+        "selected": 1.494
+      },
+      "selected_over_base": 0.9777486910994765,
+      "control_over_base": 0.9980366492146597,
+      "ns_per_operation_or_boundary_pair": {
+        "base": 1.528,
+        "control": 1.525,
+        "selected": 1.494
+      },
+      "operation_count": 1000000,
+      "checksum": 632045
+    },
+    {
+      "compiler": "gcc",
+      "type": "min",
+      "n": 500000,
+      "mode": "build",
+      "timed_cpu_ms": {
+        "base": 57.323,
+        "control": 57.092,
+        "selected": 44.312
+      },
+      "selected_over_base": 0.7730230448511068,
+      "control_over_base": 0.995970203932104,
+      "ns_per_operation_or_boundary_pair": {
+        "base": 19107666.666666668,
+        "control": 19030666.666666668,
+        "selected": 14770666.666666666
+      },
+      "operation_count": 3,
+      "checksum": 0
+    },
+    {
+      "compiler": "gcc",
+      "type": "min",
+      "n": 500000,
+      "mode": "copy",
+      "timed_cpu_ms": {
+        "base": 41.183,
+        "control": 41.478,
+        "selected": 40.022
+      },
+      "selected_over_base": 0.9718087560401136,
+      "control_over_base": 1.007163149843382,
+      "ns_per_operation_or_boundary_pair": {
+        "base": 13727666.666666666,
+        "control": 13826000.0,
+        "selected": 13340666.666666666
+      },
+      "operation_count": 3,
+      "checksum": 0
+    },
+    {
+      "compiler": "gcc",
+      "type": "min",
+      "n": 500000,
+      "mode": "get",
+      "timed_cpu_ms": {
+        "base": 1.775,
+        "control": 1.704,
+        "selected": 1.677
+      },
+      "selected_over_base": 0.9447887323943662,
+      "control_over_base": 0.96,
+      "ns_per_operation_or_boundary_pair": {
+        "base": 1.775,
+        "control": 1.704,
+        "selected": 1.677
+      },
+      "operation_count": 1000000,
+      "checksum": 49589390
+    },
+    {
+      "compiler": "gcc",
+      "type": "min",
+      "n": 500000,
+      "mode": "query",
+      "timed_cpu_ms": {
+        "base": 10.306,
+        "control": 10.032,
+        "selected": 8.854
+      },
+      "selected_over_base": 0.8591111973607607,
+      "control_over_base": 0.9734135455074714,
+      "ns_per_operation_or_boundary_pair": {
+        "base": 10.306,
+        "control": 10.032,
+        "selected": 8.854
+      },
+      "operation_count": 1000000,
+      "checksum": 10110
+    },
+    {
+      "compiler": "gcc",
+      "type": "min",
+      "n": 500000,
+      "mode": "values",
+      "timed_cpu_ms": {
+        "base": 1.226,
+        "control": 1.212,
+        "selected": 1.307
+      },
+      "selected_over_base": 1.066068515497553,
+      "control_over_base": 0.9885807504078303,
+      "ns_per_operation_or_boundary_pair": {
+        "base": 408666.6666666667,
+        "control": 404000.0,
+        "selected": 435666.6666666667
+      },
+      "operation_count": 3,
+      "checksum": 21
+    },
+    {
+      "compiler": "gcc",
+      "type": "sum",
+      "n": 32,
+      "mode": "boundary",
+      "timed_cpu_ms": {
+        "base": 1.812,
+        "control": 1.808,
+        "selected": 1.681
+      },
+      "selected_over_base": 0.9277041942604857,
+      "control_over_base": 0.9977924944812362,
+      "ns_per_operation_or_boundary_pair": {
+        "base": 18.12,
+        "control": 18.08,
+        "selected": 16.81
+      },
+      "operation_count": 100000,
+      "checksum": 3264386
+    },
+    {
+      "compiler": "gcc",
+      "type": "sum",
+      "n": 32,
+      "mode": "build",
+      "timed_cpu_ms": {
+        "base": 2.464,
+        "control": 2.435,
+        "selected": 1.747
+      },
+      "selected_over_base": 0.7090097402597403,
+      "control_over_base": 0.9882305194805194,
+      "ns_per_operation_or_boundary_pair": {
+        "base": 123.2,
+        "control": 121.75,
+        "selected": 87.35
+      },
+      "operation_count": 20000,
+      "checksum": 28040000
+    },
+    {
+      "compiler": "gcc",
+      "type": "sum",
+      "n": 32,
+      "mode": "query",
+      "timed_cpu_ms": {
+        "base": 1.805,
+        "control": 1.754,
+        "selected": 1.679
+      },
+      "selected_over_base": 0.9301939058171745,
+      "control_over_base": 0.9717451523545706,
+      "ns_per_operation_or_boundary_pair": {
+        "base": 1.805,
+        "control": 1.754,
+        "selected": 1.679
+      },
+      "operation_count": 1000000,
+      "checksum": 390381027
+    },
+    {
+      "compiler": "gcc",
+      "type": "sum",
+      "n": 4096,
+      "mode": "boundary",
+      "timed_cpu_ms": {
+        "base": 9.321,
+        "control": 9.334,
+        "selected": 8.875
+      },
+      "selected_over_base": 0.9521510567535673,
+      "control_over_base": 1.00139470013947,
+      "ns_per_operation_or_boundary_pair": {
+        "base": 93.21,
+        "control": 93.34,
+        "selected": 88.75
+      },
+      "operation_count": 100000,
+      "checksum": 511892846
+    },
+    {
+      "compiler": "gcc",
+      "type": "sum",
+      "n": 4096,
+      "mode": "build",
+      "timed_cpu_ms": {
+        "base": 11.683,
+        "control": 11.659,
+        "selected": 9.025
+      },
+      "selected_over_base": 0.7724899426517162,
+      "control_over_base": 0.997945733116494,
+      "ns_per_operation_or_boundary_pair": {
+        "base": 77886.66666666667,
+        "control": 77726.66666666667,
+        "selected": 60166.666666666664
+      },
+      "operation_count": 150,
+      "checksum": 30999600
+    },
+    {
+      "compiler": "gcc",
+      "type": "sum",
+      "n": 4096,
+      "mode": "query",
+      "timed_cpu_ms": {
+        "base": 1.499,
+        "control": 1.513,
+        "selected": 1.371
+      },
+      "selected_over_base": 0.914609739826551,
+      "control_over_base": 1.009339559706471,
+      "ns_per_operation_or_boundary_pair": {
+        "base": 1.499,
+        "control": 1.513,
+        "selected": 1.371
+      },
+      "operation_count": 1000000,
+      "checksum": 52017767098
+    },
+    {
+      "compiler": "gcc",
+      "type": "sum",
+      "n": 500000,
+      "mode": "boundary",
+      "timed_cpu_ms": {
+        "base": 58.938,
+        "control": 60.103,
+        "selected": 52.307
+      },
+      "selected_over_base": 0.8874919406834301,
+      "control_over_base": 1.019766534324205,
+      "ns_per_operation_or_boundary_pair": {
+        "base": 589.38,
+        "control": 601.03,
+        "selected": 523.07
+      },
+      "operation_count": 100000,
+      "checksum": 62641059055
+    },
+    {
+      "compiler": "gcc",
+      "type": "sum",
+      "n": 500000,
+      "mode": "build",
+      "timed_cpu_ms": {
+        "base": 96.36,
+        "control": 96.157,
+        "selected": 85.291
+      },
+      "selected_over_base": 0.8851286841012869,
+      "control_over_base": 0.9978933167289332,
+      "ns_per_operation_or_boundary_pair": {
+        "base": 32120000.0,
+        "control": 32052333.333333332,
+        "selected": 28430333.333333332
+      },
+      "operation_count": 3,
+      "checksum": 74375952
+    },
+    {
+      "compiler": "gcc",
+      "type": "sum",
+      "n": 500000,
+      "mode": "query",
+      "timed_cpu_ms": {
+        "base": 11.494,
+        "control": 11.402,
+        "selected": 10.2
+      },
+      "selected_over_base": 0.887419523229511,
+      "control_over_base": 0.991995823908126,
+      "ns_per_operation_or_boundary_pair": {
+        "base": 11.494,
+        "control": 11.402,
+        "selected": 10.2
+      },
+      "operation_count": 1000000,
+      "checksum": 6208496333393
+    },
+    {
+      "compiler": "clang",
+      "type": "affine",
+      "n": 32,
+      "mode": "build",
+      "timed_cpu_ms": {
+        "base": 4.446,
+        "control": 4.442,
+        "selected": 3.917
+      },
+      "selected_over_base": 0.881016644174539,
+      "control_over_base": 0.9991003148897886,
+      "ns_per_operation_or_boundary_pair": {
+        "base": 222.3,
+        "control": 222.1,
+        "selected": 195.85
+      },
+      "operation_count": 20000,
+      "checksum": 19719977880000
+    },
+    {
+      "compiler": "clang",
+      "type": "affine",
+      "n": 32,
+      "mode": "query",
+      "timed_cpu_ms": {
+        "base": 2.08,
+        "control": 2.149,
+        "selected": 2.062
+      },
+      "selected_over_base": 0.9913461538461539,
+      "control_over_base": 1.033173076923077,
+      "ns_per_operation_or_boundary_pair": {
+        "base": 2.08,
+        "control": 2.149,
+        "selected": 2.062
+      },
+      "operation_count": 1000000,
+      "checksum": 742822899276363
+    },
+    {
+      "compiler": "clang",
+      "type": "affine",
+      "n": 4096,
+      "mode": "build",
+      "timed_cpu_ms": {
+        "base": 34.71,
+        "control": 34.829,
+        "selected": 33.944
+      },
+      "selected_over_base": 0.9779314318640161,
+      "control_over_base": 1.0034284067991932,
+      "ns_per_operation_or_boundary_pair": {
+        "base": 231400.0,
+        "control": 232193.33333333334,
+        "selected": 226293.33333333334
+      },
+      "operation_count": 150,
+      "checksum": 131391771900
+    },
+    {
+      "compiler": "clang",
+      "type": "affine",
+      "n": 4096,
+      "mode": "query",
+      "timed_cpu_ms": {
+        "base": 2.226,
+        "control": 2.26,
+        "selected": 2.2
+      },
+      "selected_over_base": 0.9883198562443846,
+      "control_over_base": 1.0152740341419586,
+      "ns_per_operation_or_boundary_pair": {
+        "base": 2.226,
+        "control": 2.26,
+        "selected": 2.2
+      },
+      "operation_count": 1000000,
+      "checksum": 754050434777107
+    },
+    {
+      "compiler": "clang",
+      "type": "affine",
+      "n": 500000,
+      "mode": "build",
+      "timed_cpu_ms": {
+        "base": 236.169,
+        "control": 237.592,
+        "selected": 231.574
+      },
+      "selected_over_base": 0.9805435937824185,
+      "control_over_base": 1.0060253462562825,
+      "ns_per_operation_or_boundary_pair": {
+        "base": 78723000.0,
+        "control": 79197333.33333333,
+        "selected": 77191333.33333333
+      },
+      "operation_count": 3,
+      "checksum": 963163302
+    },
+    {
+      "compiler": "clang",
+      "type": "affine",
+      "n": 500000,
+      "mode": "query",
+      "timed_cpu_ms": {
+        "base": 20.518,
+        "control": 20.461,
+        "selected": 18.998
+      },
+      "selected_over_base": 0.9259187055268545,
+      "control_over_base": 0.997221951457257,
+      "ns_per_operation_or_boundary_pair": {
+        "base": 20.518,
+        "control": 20.461,
+        "selected": 18.998
+      },
+      "operation_count": 1000000,
+      "checksum": 505585819507726
+    },
+    {
+      "compiler": "clang",
+      "type": "bool",
+      "n": 32,
+      "mode": "build",
+      "timed_cpu_ms": {
+        "base": 7.429,
+        "control": 7.417,
+        "selected": 6.256
+      },
+      "selected_over_base": 0.8421052631578947,
+      "control_over_base": 0.9983847085745053,
+      "ns_per_operation_or_boundary_pair": {
+        "base": 371.45,
+        "control": 370.85,
+        "selected": 312.8
+      },
+      "operation_count": 20000,
+      "checksum": 20000
+    },
+    {
+      "compiler": "clang",
+      "type": "bool",
+      "n": 32,
+      "mode": "get",
+      "timed_cpu_ms": {
+        "base": 1.023,
+        "control": 1.149,
+        "selected": 1.074
+      },
+      "selected_over_base": 1.0498533724340176,
+      "control_over_base": 1.1231671554252198,
+      "ns_per_operation_or_boundary_pair": {
+        "base": 1.023,
+        "control": 1.149,
+        "selected": 1.074
+      },
+      "operation_count": 1000000,
+      "checksum": 1000000
+    },
+    {
+      "compiler": "clang",
+      "type": "bool",
+      "n": 32,
+      "mode": "query",
+      "timed_cpu_ms": {
+        "base": 1.847,
+        "control": 1.884,
+        "selected": 1.818
+      },
+      "selected_over_base": 0.9842988630211154,
+      "control_over_base": 1.0200324851109908,
+      "ns_per_operation_or_boundary_pair": {
+        "base": 1.847,
+        "control": 1.884,
+        "selected": 1.818
+      },
+      "operation_count": 1000000,
+      "checksum": 1000000
+    },
+    {
+      "compiler": "clang",
+      "type": "bool",
+      "n": 4096,
+      "mode": "build",
+      "timed_cpu_ms": {
+        "base": 7.789,
+        "control": 7.787,
+        "selected": 6.926
+      },
+      "selected_over_base": 0.8892027217871357,
+      "control_over_base": 0.9997432276287072,
+      "ns_per_operation_or_boundary_pair": {
+        "base": 51926.666666666664,
+        "control": 51913.333333333336,
+        "selected": 46173.333333333336
+      },
+      "operation_count": 150,
+      "checksum": 0
+    },
+    {
+      "compiler": "clang",
+      "type": "bool",
+      "n": 4096,
+      "mode": "query",
+      "timed_cpu_ms": {
+        "base": 1.416,
+        "control": 1.489,
+        "selected": 1.359
+      },
+      "selected_over_base": 0.9597457627118644,
+      "control_over_base": 1.051553672316384,
+      "ns_per_operation_or_boundary_pair": {
+        "base": 1.416,
+        "control": 1.489,
+        "selected": 1.359
+      },
+      "operation_count": 1000000,
+      "checksum": 91941
+    },
+    {
+      "compiler": "clang",
+      "type": "bool",
+      "n": 500000,
+      "mode": "build",
+      "timed_cpu_ms": {
+        "base": 32.094,
+        "control": 32.094,
+        "selected": 29.139
+      },
+      "selected_over_base": 0.907926715273883,
+      "control_over_base": 1.0,
+      "ns_per_operation_or_boundary_pair": {
+        "base": 10698000.0,
+        "control": 10698000.0,
+        "selected": 9713000.0
+      },
+      "operation_count": 3,
+      "checksum": 0
+    },
+    {
+      "compiler": "clang",
+      "type": "bool",
+      "n": 500000,
+      "mode": "get",
+      "timed_cpu_ms": {
+        "base": 1.287,
+        "control": 1.107,
+        "selected": 1.155
+      },
+      "selected_over_base": 0.8974358974358975,
+      "control_over_base": 0.8601398601398601,
+      "ns_per_operation_or_boundary_pair": {
+        "base": 1.287,
+        "control": 1.107,
+        "selected": 1.155
+      },
+      "operation_count": 1000000,
+      "checksum": 989943
+    },
+    {
+      "compiler": "clang",
+      "type": "bool",
+      "n": 500000,
+      "mode": "query",
+      "timed_cpu_ms": {
+        "base": 1.859,
+        "control": 1.88,
+        "selected": 1.761
+      },
+      "selected_over_base": 0.9472834857450242,
+      "control_over_base": 1.0112963959117804,
+      "ns_per_operation_or_boundary_pair": {
+        "base": 1.859,
+        "control": 1.88,
+        "selected": 1.761
+      },
+      "operation_count": 1000000,
+      "checksum": 1874
+    },
+    {
+      "compiler": "clang",
+      "type": "min",
+      "n": 0,
+      "mode": "build",
+      "timed_cpu_ms": {
+        "base": 0.142,
+        "control": 0.141,
+        "selected": 0.071
+      },
+      "selected_over_base": 0.5,
+      "control_over_base": 0.9929577464788732,
+      "ns_per_operation_or_boundary_pair": {
+        "base": 2.84,
+        "control": 2.82,
+        "selected": 1.42
+      },
+      "operation_count": 50000,
+      "checksum": 107374182350000
+    },
+    {
+      "compiler": "clang",
+      "type": "min",
+      "n": 1,
+      "mode": "build",
+      "timed_cpu_ms": {
+        "base": 0.48,
+        "control": 0.467,
+        "selected": 0.822
+      },
+      "selected_over_base": 1.7125,
+      "control_over_base": 0.9729166666666667,
+      "ns_per_operation_or_boundary_pair": {
+        "base": 9.6,
+        "control": 9.34,
+        "selected": 16.44
+      },
+      "operation_count": 50000,
+      "checksum": 2400000
+    },
+    {
+      "compiler": "clang",
+      "type": "min",
+      "n": 2,
+      "mode": "build",
+      "timed_cpu_ms": {
+        "base": 1.317,
+        "control": 1.32,
+        "selected": 0.824
+      },
+      "selected_over_base": 0.6256643887623387,
+      "control_over_base": 1.0022779043280183,
+      "ns_per_operation_or_boundary_pair": {
+        "base": 26.34,
+        "control": 26.4,
+        "selected": 16.48
+      },
+      "operation_count": 50000,
+      "checksum": 700000
+    },
+    {
+      "compiler": "clang",
+      "type": "min",
+      "n": 32,
+      "mode": "build",
+      "timed_cpu_ms": {
+        "base": 2.107,
+        "control": 2.095,
+        "selected": 1.74
+      },
+      "selected_over_base": 0.8258186995728524,
+      "control_over_base": 0.9943046986236355,
+      "ns_per_operation_or_boundary_pair": {
+        "base": 105.35,
+        "control": 104.75,
+        "selected": 87.0
+      },
+      "operation_count": 20000,
+      "checksum": 140000
+    },
+    {
+      "compiler": "clang",
+      "type": "min",
+      "n": 32,
+      "mode": "get",
+      "timed_cpu_ms": {
+        "base": 1.061,
+        "control": 1.02,
+        "selected": 1.127
+      },
+      "selected_over_base": 1.062205466540999,
+      "control_over_base": 0.9613572101790764,
+      "ns_per_operation_or_boundary_pair": {
+        "base": 1.061,
+        "control": 1.02,
+        "selected": 1.127
+      },
+      "operation_count": 1000000,
+      "checksum": 43799152
+    },
+    {
+      "compiler": "clang",
+      "type": "min",
+      "n": 32,
+      "mode": "query",
+      "timed_cpu_ms": {
+        "base": 1.746,
+        "control": 1.805,
+        "selected": 1.641
+      },
+      "selected_over_base": 0.9398625429553265,
+      "control_over_base": 1.0337915234822452,
+      "ns_per_operation_or_boundary_pair": {
+        "base": 1.746,
+        "control": 1.805,
+        "selected": 1.641
+      },
+      "operation_count": 1000000,
+      "checksum": 15586096
+    },
+    {
+      "compiler": "clang",
+      "type": "min",
+      "n": 4096,
+      "mode": "build",
+      "timed_cpu_ms": {
+        "base": 7.117,
+        "control": 7.141,
+        "selected": 4.302
+      },
+      "selected_over_base": 0.6044681747927497,
+      "control_over_base": 1.0033722073907545,
+      "ns_per_operation_or_boundary_pair": {
+        "base": 47446.666666666664,
+        "control": 47606.666666666664,
+        "selected": 28680.0
+      },
+      "operation_count": 150,
+      "checksum": 0
+    },
+    {
+      "compiler": "clang",
+      "type": "min",
+      "n": 4096,
+      "mode": "query",
+      "timed_cpu_ms": {
+        "base": 1.403,
+        "control": 1.401,
+        "selected": 1.291
+      },
+      "selected_over_base": 0.9201710620099787,
+      "control_over_base": 0.9985744832501782,
+      "ns_per_operation_or_boundary_pair": {
+        "base": 1.403,
+        "control": 1.401,
+        "selected": 1.291
+      },
+      "operation_count": 1000000,
+      "checksum": 632045
+    },
+    {
+      "compiler": "clang",
+      "type": "min",
+      "n": 500000,
+      "mode": "build",
+      "timed_cpu_ms": {
+        "base": 57.605,
+        "control": 57.314,
+        "selected": 43.953
+      },
+      "selected_over_base": 0.7630066834476174,
+      "control_over_base": 0.9949483551775019,
+      "ns_per_operation_or_boundary_pair": {
+        "base": 19201666.666666668,
+        "control": 19104666.666666668,
+        "selected": 14651000.0
+      },
+      "operation_count": 3,
+      "checksum": 0
+    },
+    {
+      "compiler": "clang",
+      "type": "min",
+      "n": 500000,
+      "mode": "copy",
+      "timed_cpu_ms": {
+        "base": 41.046,
+        "control": 41.162,
+        "selected": 39.622
+      },
+      "selected_over_base": 0.9653072162939141,
+      "control_over_base": 1.0028260975490912,
+      "ns_per_operation_or_boundary_pair": {
+        "base": 13682000.0,
+        "control": 13720666.666666666,
+        "selected": 13207333.333333334
+      },
+      "operation_count": 3,
+      "checksum": 0
+    },
+    {
+      "compiler": "clang",
+      "type": "min",
+      "n": 500000,
+      "mode": "get",
+      "timed_cpu_ms": {
+        "base": 1.751,
+        "control": 1.771,
+        "selected": 1.695
+      },
+      "selected_over_base": 0.9680182752712736,
+      "control_over_base": 1.0114220445459736,
+      "ns_per_operation_or_boundary_pair": {
+        "base": 1.751,
+        "control": 1.771,
+        "selected": 1.695
+      },
+      "operation_count": 1000000,
+      "checksum": 49589390
+    },
+    {
+      "compiler": "clang",
+      "type": "min",
+      "n": 500000,
+      "mode": "query",
+      "timed_cpu_ms": {
+        "base": 8.752,
+        "control": 8.818,
+        "selected": 8.059
+      },
+      "selected_over_base": 0.9208180987202925,
+      "control_over_base": 1.0075411334552102,
+      "ns_per_operation_or_boundary_pair": {
+        "base": 8.752,
+        "control": 8.818,
+        "selected": 8.059
+      },
+      "operation_count": 1000000,
+      "checksum": 10110
+    },
+    {
+      "compiler": "clang",
+      "type": "min",
+      "n": 500000,
+      "mode": "values",
+      "timed_cpu_ms": {
+        "base": 1.235,
+        "control": 1.217,
+        "selected": 1.23
+      },
+      "selected_over_base": 0.9959514170040485,
+      "control_over_base": 0.9854251012145749,
+      "ns_per_operation_or_boundary_pair": {
+        "base": 411666.6666666667,
+        "control": 405666.6666666667,
+        "selected": 410000.0
+      },
+      "operation_count": 3,
+      "checksum": 21
+    },
+    {
+      "compiler": "clang",
+      "type": "sum",
+      "n": 32,
+      "mode": "boundary",
+      "timed_cpu_ms": {
+        "base": 1.717,
+        "control": 1.715,
+        "selected": 1.638
+      },
+      "selected_over_base": 0.9539895165987187,
+      "control_over_base": 0.9988351776354106,
+      "ns_per_operation_or_boundary_pair": {
+        "base": 17.17,
+        "control": 17.15,
+        "selected": 16.38
+      },
+      "operation_count": 100000,
+      "checksum": 3264386
+    },
+    {
+      "compiler": "clang",
+      "type": "sum",
+      "n": 32,
+      "mode": "build",
+      "timed_cpu_ms": {
+        "base": 1.996,
+        "control": 1.999,
+        "selected": 1.671
+      },
+      "selected_over_base": 0.8371743486973948,
+      "control_over_base": 1.001503006012024,
+      "ns_per_operation_or_boundary_pair": {
+        "base": 99.8,
+        "control": 99.95,
+        "selected": 83.55
+      },
+      "operation_count": 20000,
+      "checksum": 28040000
+    },
+    {
+      "compiler": "clang",
+      "type": "sum",
+      "n": 32,
+      "mode": "query",
+      "timed_cpu_ms": {
+        "base": 1.658,
+        "control": 1.688,
+        "selected": 1.614
+      },
+      "selected_over_base": 0.9734620024125452,
+      "control_over_base": 1.0180940892641737,
+      "ns_per_operation_or_boundary_pair": {
+        "base": 1.658,
+        "control": 1.688,
+        "selected": 1.614
+      },
+      "operation_count": 1000000,
+      "checksum": 390381027
+    },
+    {
+      "compiler": "clang",
+      "type": "sum",
+      "n": 4096,
+      "mode": "boundary",
+      "timed_cpu_ms": {
+        "base": 8.985,
+        "control": 8.972,
+        "selected": 8.844
+      },
+      "selected_over_base": 0.9843071786310518,
+      "control_over_base": 0.998553144129104,
+      "ns_per_operation_or_boundary_pair": {
+        "base": 89.85,
+        "control": 89.72,
+        "selected": 88.44
+      },
+      "operation_count": 100000,
+      "checksum": 511892846
+    },
+    {
+      "compiler": "clang",
+      "type": "sum",
+      "n": 4096,
+      "mode": "build",
+      "timed_cpu_ms": {
+        "base": 11.767,
+        "control": 11.783,
+        "selected": 9.032
+      },
+      "selected_over_base": 0.7675703237868615,
+      "control_over_base": 1.0013597348517038,
+      "ns_per_operation_or_boundary_pair": {
+        "base": 78446.66666666667,
+        "control": 78553.33333333333,
+        "selected": 60213.333333333336
+      },
+      "operation_count": 150,
+      "checksum": 30999600
+    },
+    {
+      "compiler": "clang",
+      "type": "sum",
+      "n": 4096,
+      "mode": "query",
+      "timed_cpu_ms": {
+        "base": 1.349,
+        "control": 1.454,
+        "selected": 1.486
+      },
+      "selected_over_base": 1.101556708673091,
+      "control_over_base": 1.077835433654559,
+      "ns_per_operation_or_boundary_pair": {
+        "base": 1.349,
+        "control": 1.454,
+        "selected": 1.486
+      },
+      "operation_count": 1000000,
+      "checksum": 52017767098
+    },
+    {
+      "compiler": "clang",
+      "type": "sum",
+      "n": 500000,
+      "mode": "boundary",
+      "timed_cpu_ms": {
+        "base": 54.616,
+        "control": 55.398,
+        "selected": 49.781
+      },
+      "selected_over_base": 0.9114728284751721,
+      "control_over_base": 1.0143181485279038,
+      "ns_per_operation_or_boundary_pair": {
+        "base": 546.16,
+        "control": 553.98,
+        "selected": 497.81
+      },
+      "operation_count": 100000,
+      "checksum": 62641059055
+    },
+    {
+      "compiler": "clang",
+      "type": "sum",
+      "n": 500000,
+      "mode": "build",
+      "timed_cpu_ms": {
+        "base": 97.306,
+        "control": 95.763,
+        "selected": 86.838
+      },
+      "selected_over_base": 0.8924218444905762,
+      "control_over_base": 0.9841428072266869,
+      "ns_per_operation_or_boundary_pair": {
+        "base": 32435333.333333332,
+        "control": 31921000.0,
+        "selected": 28946000.0
+      },
+      "operation_count": 3,
+      "checksum": 74375952
+    },
+    {
+      "compiler": "clang",
+      "type": "sum",
+      "n": 500000,
+      "mode": "query",
+      "timed_cpu_ms": {
+        "base": 10.071,
+        "control": 9.988,
+        "selected": 9.408
+      },
+      "selected_over_base": 0.9341674113792077,
+      "control_over_base": 0.9917585145467183,
+      "ns_per_operation_or_boundary_pair": {
+        "base": 10.071,
+        "control": 9.988,
+        "selected": 9.408
+      },
+      "operation_count": 1000000,
+      "checksum": 6208496333393
+    }
+  ],
+  "assessment": {
+    "official_large_full_main": "GCC max_randomは8.40〜10.63%、small_width_queryは6.36〜8.15%短縮。Clangは各7.78〜10.70%、6.42〜9.25%短縮。",
+    "other_official_cases": "公式相当のrandom5件・small_valuesも両コンパイラで短縮。",
+    "large_min_build": "n500000の最小値構築はGCC約22.7%、Clang約23.7%短縮。",
+    "small_cost": "n1構築はGCC9.24→15.32ns、Clang9.60→16.44ns/個（反復測定）。小規模getや中規模の和の照会にも数%〜10%の差が残り、一部はcontrolの差と重なる。全操作・全サイズでの無退行とは主張しない。",
+    "decision": "小規模の多少の退行を許容し大規模で明確な改善を採る既存方針に基づく。",
+    "online_next": "同じmainの通常版を再提出して実時間を確認する。オンライン短縮量の保証はしない。"
+  },
+  "rejected_candidates": [
+    "元列コピーを残したメンバー初期化だけの案は上積みが安定しない。",
+    "fullblockと端数を分離する構築はコードが増え、Clangの一部で単純な分岐削減案より遅いため不採用。",
+    "要素数保持/右端共有がない単純な重複削除は一部照会で退行した。採用版では両者を合わせる。"
+  ],
+  "simd": "prefix/suffixには実際の依存があり、依存を無視するSIMD指示は加えない。今回は標準C++の格納・分岐・添字計算の変更で改善した。専用CPU命令や追加CPU判定はない。",
+  "correctness": {
+    "normal": [
+      {
+        "compiler": "gcc",
+        "skip_runtime_checks": false,
+        "test": "static_tables_reference_test",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/static_tables_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_disjoint_speed_20261103/test_gcc_False_static_tables_reference_test"
+        ],
+        "returncode": 0,
+        "stdout": "Static tables checks=831604\n",
+        "stderr": "",
+        "test_sha256": "a3094a1e2340a438b7460bbe85233b76498b8dcbb20b2976c7aa251b0caf0abb"
+      },
+      {
+        "compiler": "gcc",
+        "skip_runtime_checks": false,
+        "test": "range_structures_allocation_test",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/range_structures_allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_disjoint_speed_20261103/test_gcc_False_range_structures_allocation_test"
+        ],
+        "returncode": 0,
+        "stdout": "Range allocation checks=3987 failures=2526 live_delta=0\n",
+        "stderr": "",
+        "test_sha256": "132570da1e400e4003a2803837084976525d3ab253570640f015727a7f05847d"
+      },
+      {
+        "compiler": "gcc",
+        "skip_runtime_checks": true,
+        "test": "static_tables_reference_test",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/static_tables_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_disjoint_speed_20261103/test_gcc_True_static_tables_reference_test"
+        ],
+        "returncode": 0,
+        "stdout": "Static tables checks=831478\n",
+        "stderr": "",
+        "test_sha256": "a3094a1e2340a438b7460bbe85233b76498b8dcbb20b2976c7aa251b0caf0abb"
+      },
+      {
+        "compiler": "gcc",
+        "skip_runtime_checks": true,
+        "test": "range_structures_allocation_test",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/range_structures_allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_disjoint_speed_20261103/test_gcc_True_range_structures_allocation_test"
+        ],
+        "returncode": 0,
+        "stdout": "Range allocation checks=3987 failures=2526 live_delta=0\n",
+        "stderr": "",
+        "test_sha256": "132570da1e400e4003a2803837084976525d3ab253570640f015727a7f05847d"
+      },
+      {
+        "compiler": "clang",
+        "skip_runtime_checks": false,
+        "test": "static_tables_reference_test",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/static_tables_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_disjoint_speed_20261103/test_clang_False_static_tables_reference_test"
+        ],
+        "returncode": 0,
+        "stdout": "Static tables checks=831604\n",
+        "stderr": "",
+        "test_sha256": "a3094a1e2340a438b7460bbe85233b76498b8dcbb20b2976c7aa251b0caf0abb"
+      },
+      {
+        "compiler": "gcc",
+        "skip_runtime_checks": false,
+        "test": "disjoint_sparse_table_storage_test",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/disjoint_sparse_table_storage_test.cpp",
+          "-o",
+          "/tmp/sirkit_disjoint_speed_20261103/test_gcc_False_disjoint_sparse_table_storage_test"
+        ],
+        "returncode": 0,
+        "stdout": "Disjoint storage/type/order checks=73146\n",
+        "stderr": "",
+        "test_sha256": "5fb67653d932edaf448c31b5e67bf70c7a1d2b1d9d55e1eec262eff5c689e5c5"
+      },
+      {
+        "compiler": "gcc",
+        "skip_runtime_checks": true,
+        "test": "disjoint_sparse_table_storage_test",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/disjoint_sparse_table_storage_test.cpp",
+          "-o",
+          "/tmp/sirkit_disjoint_speed_20261103/test_gcc_True_disjoint_sparse_table_storage_test"
+        ],
+        "returncode": 0,
+        "stdout": "Disjoint storage/type/order checks=73146\n",
+        "stderr": "",
+        "test_sha256": "5fb67653d932edaf448c31b5e67bf70c7a1d2b1d9d55e1eec262eff5c689e5c5"
+      },
+      {
+        "compiler": "clang",
+        "skip_runtime_checks": false,
+        "test": "disjoint_sparse_table_storage_test",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/disjoint_sparse_table_storage_test.cpp",
+          "-o",
+          "/tmp/sirkit_disjoint_speed_20261103/test_clang_False_disjoint_sparse_table_storage_test"
+        ],
+        "returncode": 0,
+        "stdout": "Disjoint storage/type/order checks=73146\n",
+        "stderr": "",
+        "test_sha256": "5fb67653d932edaf448c31b5e67bf70c7a1d2b1d9d55e1eec262eff5c689e5c5"
+      },
+      {
+        "compiler": "clang",
+        "skip_runtime_checks": false,
+        "test": "range_structures_allocation_test",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/range_structures_allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_disjoint_speed_20261103/test_clang_False_range_structures_allocation_test"
+        ],
+        "returncode": 0,
+        "stdout": "Range allocation checks=3987 failures=2526 live_delta=0\n",
+        "stderr": "",
+        "test_sha256": "132570da1e400e4003a2803837084976525d3ab253570640f015727a7f05847d"
+      },
+      {
+        "compiler": "clang",
+        "skip_runtime_checks": true,
+        "test": "static_tables_reference_test",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/static_tables_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_disjoint_speed_20261103/test_clang_True_static_tables_reference_test"
+        ],
+        "returncode": 0,
+        "stdout": "Static tables checks=831478\n",
+        "stderr": "",
+        "test_sha256": "a3094a1e2340a438b7460bbe85233b76498b8dcbb20b2976c7aa251b0caf0abb"
+      },
+      {
+        "compiler": "clang",
+        "skip_runtime_checks": true,
+        "test": "disjoint_sparse_table_storage_test",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/disjoint_sparse_table_storage_test.cpp",
+          "-o",
+          "/tmp/sirkit_disjoint_speed_20261103/test_clang_True_disjoint_sparse_table_storage_test"
+        ],
+        "returncode": 0,
+        "stdout": "Disjoint storage/type/order checks=73146\n",
+        "stderr": "",
+        "test_sha256": "5fb67653d932edaf448c31b5e67bf70c7a1d2b1d9d55e1eec262eff5c689e5c5"
+      },
+      {
+        "compiler": "clang",
+        "skip_runtime_checks": true,
+        "test": "range_structures_allocation_test",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/range_structures_allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_disjoint_speed_20261103/test_clang_True_range_structures_allocation_test"
+        ],
+        "returncode": 0,
+        "stdout": "Range allocation checks=3987 failures=2526 live_delta=0\n",
+        "stderr": "",
+        "test_sha256": "132570da1e400e4003a2803837084976525d3ab253570640f015727a7f05847d"
+      }
+    ],
+    "profile_and_baseline_type_tests": [
+      {
+        "profile": "baseline_gcc",
+        "compiler": "gcc",
+        "source_sha256": "bb3f1eab5bae8c08d61b5670c820b89dae943ffc3b3fb73398d1b4aa3799ad93",
+        "test_sha256": "5fb67653d932edaf448c31b5e67bf70c7a1d2b1d9d55e1eec262eff5c689e5c5",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-DSIRKIT_DISJOINT_TEST_SOURCE=\"/tmp/sirkit_disjoint_speed_20261103/before.hpp\"",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/disjoint_sparse_table_storage_test.cpp",
+          "-o",
+          "/tmp/sirkit_disjoint_speed_20261103/profile_baseline_gcc"
+        ],
+        "returncode": 0,
+        "stdout": "Disjoint storage/type/order checks=73146\n",
+        "stderr": ""
+      },
+      {
+        "profile": "baseline_clang",
+        "compiler": "clang",
+        "source_sha256": "bb3f1eab5bae8c08d61b5670c820b89dae943ffc3b3fb73398d1b4aa3799ad93",
+        "test_sha256": "5fb67653d932edaf448c31b5e67bf70c7a1d2b1d9d55e1eec262eff5c689e5c5",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-DSIRKIT_DISJOINT_TEST_SOURCE=\"/tmp/sirkit_disjoint_speed_20261103/before.hpp\"",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/disjoint_sparse_table_storage_test.cpp",
+          "-o",
+          "/tmp/sirkit_disjoint_speed_20261103/profile_baseline_clang"
+        ],
+        "returncode": 0,
+        "stdout": "Disjoint storage/type/order checks=73146\n",
+        "stderr": ""
+      },
+      {
+        "profile": "Variants_GCC",
+        "compiler": "gcc",
+        "source_sha256": "a90787ddab1241fe54ebbd5710ae207b4f1766dd3fa02d518e45d99fe5dedfa2",
+        "test_sha256": "5fb67653d932edaf448c31b5e67bf70c7a1d2b1d9d55e1eec262eff5c689e5c5",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-DSIRKIT_DISJOINT_TEST_SOURCE=\"/home/reinsirk/Atcoder_Env/Variants/GCC/DataStructure/Disjoint_Sparse_Table.cpp\"",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/disjoint_sparse_table_storage_test.cpp",
+          "-o",
+          "/tmp/sirkit_disjoint_speed_20261103/profile_Variants_GCC"
+        ],
+        "returncode": 0,
+        "stdout": "Disjoint storage/type/order checks=73146\n",
+        "stderr": ""
+      },
+      {
+        "profile": "Variants_Clang",
+        "compiler": "clang",
+        "source_sha256": "3ac4ff1ed0a25441545669054eb60a39910a9eee5e18a02bc8ff4289527e309a",
+        "test_sha256": "5fb67653d932edaf448c31b5e67bf70c7a1d2b1d9d55e1eec262eff5c689e5c5",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-DSIRKIT_DISJOINT_TEST_SOURCE=\"/home/reinsirk/Atcoder_Env/Variants/Clang/DataStructure/Disjoint_Sparse_Table.cpp\"",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/disjoint_sparse_table_storage_test.cpp",
+          "-o",
+          "/tmp/sirkit_disjoint_speed_20261103/profile_Variants_Clang"
+        ],
+        "returncode": 0,
+        "stdout": "Disjoint storage/type/order checks=73146\n",
+        "stderr": ""
+      },
+      {
+        "profile": "Fast_GCC",
+        "compiler": "gcc",
+        "source_sha256": "f8bde19479d6821a12b31964f12c6d10a467479363ec6e11c6f1f5b7cb2f5cab",
+        "test_sha256": "5fb67653d932edaf448c31b5e67bf70c7a1d2b1d9d55e1eec262eff5c689e5c5",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-DSIRKIT_DISJOINT_TEST_SOURCE=\"/home/reinsirk/Atcoder_Env/Fast/GCC/DataStructure/Disjoint_Sparse_Table.cpp\"",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/disjoint_sparse_table_storage_test.cpp",
+          "-o",
+          "/tmp/sirkit_disjoint_speed_20261103/profile_Fast_GCC"
+        ],
+        "returncode": 0,
+        "stdout": "Disjoint storage/type/order checks=73146\n",
+        "stderr": ""
+      },
+      {
+        "profile": "Fast_Clang",
+        "compiler": "clang",
+        "source_sha256": "cfcaa19987086a8547a4674ecfd5ff26b23067990012a96aa2ff9a9e82246f07",
+        "test_sha256": "5fb67653d932edaf448c31b5e67bf70c7a1d2b1d9d55e1eec262eff5c689e5c5",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-DSIRKIT_DISJOINT_TEST_SOURCE=\"/home/reinsirk/Atcoder_Env/Fast/Clang/DataStructure/Disjoint_Sparse_Table.cpp\"",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/disjoint_sparse_table_storage_test.cpp",
+          "-o",
+          "/tmp/sirkit_disjoint_speed_20261103/profile_Fast_Clang"
+        ],
+        "returncode": 0,
+        "stdout": "Disjoint storage/type/order checks=73146\n",
+        "stderr": ""
+      }
+    ],
+    "standard_cpp23": [
+      {
+        "compiler": "gcc",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-pedantic-errors",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/disjoint_sparse_table_storage_test.cpp",
+          "-o",
+          "/tmp/sirkit_disjoint_speed_20261103/pedantic_gcc"
+        ],
+        "stdout": "Disjoint storage/type/order checks=73146\n",
+        "returncode": 0
+      },
+      {
+        "compiler": "clang",
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-pedantic-errors",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/disjoint_sparse_table_storage_test.cpp",
+          "-o",
+          "/tmp/sirkit_disjoint_speed_20261103/pedantic_clang"
+        ],
+        "stdout": "Disjoint storage/type/order checks=73146\n",
+        "returncode": 0
+      }
+    ],
+    "profile_samples": {
+      "count": 10,
+      "status": "LOCAL_SAMPLE_PASS",
+      "evidence": "profile_runs/20261103T014201123115Z.json"
+    },
+    "scope": "既存831604/831478項目の静的表テスト、新規73146項目の型/呼出順/境界/所有権テスト、3987項目/2526回の確保失敗試験でlive_delta0。新規テストは元版でもGCC/Clangで通る。",
+    "sanitizers": "値/参照テストはASan+UBSan。独自のnew/delete置換による失敗予算試験は別実行。LSanは実行環境の制約でdetect_leaks=0。",
+    "review": "別エージェントが値型・n0/1/2・uint境界・例外時length_同期・bool proxy・非可換の呼出順を読み取り確認。検査有無のC++23をrootで実行。"
+  },
+  "documentation": {
+    "file": "Document/disjoint_sparse_table.md",
+    "changed": false,
+    "reason": "公開API・前提・計算量・参照寿命・所有権の仕様は不変。内部最適化と測定をREADME/Documentへ追加しない。"
+  },
+  "license": {
+    "implementation": "CC0-1.0。既存の自作本体を改修し、外部実装のコードは追加していない。",
+    "input_generators": "Library CheckerのApache-2.0生成器は入力作成にのみ使用した既存ファイルを再利用。生成器ソースは証跡ZIPへ含めず、URL/原ソースSHA/入力SHAをinputs_metadata.jsonへ保存。"
+  },
+  "evidence": {
+    "file": "data/disjoint-sparse-table-storage-2026-11-03.zip",
+    "sha256": "6454aeca462b58594c5e5764545ace9ca75a148baee138313180e24d99eeb818",
+    "bytes": 256252,
+    "scope": "自作ソース・比較コード・生測定・テスト結果。バイナリ、巨大入力、公式生成器原ソースは含めない。"
+  },
+  "resubmit": [
+    "Verify/current/submissions/disjoint_sparse_table.cpp"
+  ]
+}

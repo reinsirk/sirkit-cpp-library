@@ -1,0 +1,233 @@
+{
+  "format": 1,
+  "date": "2026-11-13",
+  "stage": "claude",
+  "status": "complete",
+  "model": "claude-fable-5-2",
+  "scope": "whole_program for LC; library and straightforward main for AtCoder",
+  "snapshots": {
+    "nearest_two_points": {
+      "input_source_sha256": "d6bc894d510d7e1c961afed17fd63a75099bc421eeb923bdb3ba27456efc5ccf",
+      "source_sha256": "d6bc894d510d7e1c961afed17fd63a75099bc421eeb923bdb3ba27456efc5ccf",
+      "changed": false,
+      "codex_receipt": "Verify/optimization/stages/nearest_two_points.codex.7b64a5001fe2d64b7fd49af312b063a9c6358dae381207e869866c19f1debe8a.json",
+      "codex_receipt_sha256": "7b64a5001fe2d64b7fd49af312b063a9c6358dae381207e869866c19f1debe8a"
+    },
+    "angle_sort": {
+      "input_source_sha256": "16fbb7ea52975b42b9d8527f42ff94111e4c570df08cdee14a871cc298dc7bcf",
+      "source_sha256": "16fbb7ea52975b42b9d8527f42ff94111e4c570df08cdee14a871cc298dc7bcf",
+      "changed": false,
+      "codex_receipt": "Verify/optimization/stages/angle_sort.codex.311e9caff00adaa2e00cbe4746486bdfcff8c44ed3292c3f94f7ac1299eeafa2.json",
+      "codex_receipt_sha256": "311e9caff00adaa2e00cbe4746486bdfcff8c44ed3292c3f94f7ac1299eeafa2"
+    },
+    "angle_sort_std": {
+      "input_source_sha256": "29220fa3127d7f195c6cfc52c0a4ca60ec9cfb3a9f5171e690894faa796124de",
+      "source_sha256": "38863d0692d40b57577cab028c5ba0d3cba39dc80b5f5db6798363275bc7bd6c",
+      "changed": true,
+      "codex_receipt": "Verify/optimization/stages/angle_sort_std.codex.c7a208238c2f120b2f2abeebfeb532e3642de823c1b632b538fa8aabee257c81.json",
+      "codex_receipt_sha256": "c7a208238c2f120b2f2abeebfeb532e3642de823c1b632b538fa8aabee257c81"
+    },
+    "manacher": {
+      "input_source_sha256": "e1668aae76cf92ec9e2d966015c9b9618ea5b895a943cb5c79f6cb541fcdb31c",
+      "source_sha256": "e1668aae76cf92ec9e2d966015c9b9618ea5b895a943cb5c79f6cb541fcdb31c",
+      "changed": false,
+      "codex_receipt": "Verify/optimization/stages/manacher.codex.b86d75996df9ea461fa0aef2fc8c9e042e215ef01627195dc9026a3e4b0a7d3b.json",
+      "codex_receipt_sha256": "b86d75996df9ea461fa0aef2fc8c9e042e215ef01627195dc9026a3e4b0a7d3b"
+    },
+    "rolling_hash": {
+      "input_source_sha256": "44951917e99d073391268470950d8d660ec6b64439f0e6614444d59ba7866b9e",
+      "source_sha256": "44951917e99d073391268470950d8d660ec6b64439f0e6614444d59ba7866b9e",
+      "changed": false,
+      "codex_receipt": "Verify/optimization/stages/rolling_hash.codex.ac4e6032d012412f58da193238a746c0aa82b3697575883a151258fe095751ce.json",
+      "codex_receipt_sha256": "ac4e6032d012412f58da193238a746c0aa82b3697575883a151258fe095751ce"
+    }
+  },
+  "review": {
+    "summary": "index.jsonとfocus_01/02を読了し、full_submissionは追加Readしていません（表示範囲で判断）。正しさの問題は見つからず、本体4件はすべてkeep、候補はdriver側の未測定2件のみです。",
+    "reviewed_ids": [
+      "nearest_two_points",
+      "angle_sort",
+      "angle_sort_std",
+      "manacher",
+      "rolling_hash"
+    ],
+    "libraries": [
+      {
+        "path": "Geometry/Nearest_Two_points.cpp",
+        "decision": "keep",
+        "reason": "x基数ソート・64bit分割統治・葉の打ち切り・同一軸の隣接走査はいずれも不変条件が保たれ、測定で裏付けられそうな本体変更は見当たりません。"
+      },
+      {
+        "path": "Geometry/偏角ソート.cpp",
+        "decision": "keep",
+        "reason": "半平面と零の分離、狭域int64比較、整列済み経路は推移性と多重集合を保っており、本体側に測定なしで勧められる変更はありません。"
+      },
+      {
+        "path": "String/Manacher.cpp",
+        "decision": "keep",
+        "reason": "鏡像の即確定と先頭同値区間の三角列で既に最小限の処理になっており、早期省略案は回帰済みなので追加提案はありません。"
+      },
+      {
+        "path": "String/RollingHash.cpp",
+        "decision": "keep",
+        "reason": "長さ1・全長・長さ2の順の確認はlimitが1と2の場合も正しく、指数探索への置換は長い一致で比較回数が増えうるため未測定では勧めません。"
+      }
+    ],
+    "optimization_candidates": [
+      {
+        "ids": [
+          "angle_sort_std"
+        ],
+        "reason": "std::sortに関数名arccmp_lessを渡すと関数ポインタになり、GCCがsort内部で比較をインライン化しない場合があります。関数オブジェクトなら型で呼び先が確定します。効果は未測定で、既にインライン化されていれば差は出ません。",
+        "patch": "- std::sort(points.begin(), points.end(), arccmp_less);\n+ std::sort(points.begin(), points.end(), AngleLess{});",
+        "required_validation": "AngleLessがarccmp_lessへの委譲であることを本体で確認すること。既存の全ケースで変更前後の出力バイト一致を確認し、random・同方向多数・int64広域の最大Nで同一条件の中央値を比較、全分布で非回帰かつ改善が1つ以上なら採用、混在なら不採用。"
+      },
+      {
+        "ids": [
+          "rolling_hash"
+        ],
+        "reason": "出力ループが毎回if (i)で分岐しています。manacherで採用済みの先頭別出しと同形ですが、期待値は小さく未測定です。",
+        "patch": "- for (std::size_t i = 0; i < text.size(); ++i) {\n-     if (i) verify_out << ' ';\n-     verify_out << hash.lcp(0, hash, i);\n- }\n+ if (!text.empty()) verify_out << hash.lcp(0, hash, 0);\n+ for (std::size_t i = 1; i < text.size(); ++i) verify_out << ' ' << hash.lcp(0, hash, i);",
+        "required_validation": "空・長さ1・全同一・周期・randomで素朴なZ配列と出力バイト一致を確認すること。最大Nの全同一・末尾だけ不一致・randomで同一条件の中央値を比較し、ノイズを超える改善がなければ不採用。"
+      }
+    ],
+    "correctness_findings": []
+  },
+  "candidate_decisions": {
+    "candidate_decisions": [
+      {
+        "index": 0,
+        "decision": "adopt",
+        "reason": "AngleLessはarccmp_lessへの直接委譲。本体/I/Oを変えず型で比較先を確定するmain変更。32独立構成と68Python大整数参照入力、最大5分布で非回帰。GCC設定も新mainでnone/O3/unrollを別測定しO3採用（全5分布で短縮、unrollは混在）。通常最終8構成/派生4構成もPASS。mainの変更とGCC設定の短縮率を加算せず、本体改善とも扱わない。coverage説明も同期。"
+      },
+      {
+        "index": 1,
+        "decision": "reject",
+        "reason": "空/1/同値/周期/末尾差を含む175愚直Z参照入力と32構成は通過するが、最大random/同値はほぼ同等、末尾差GCC約2.5%回帰等で効果が小さく混在。元main/本体/I/Oを維持。"
+      }
+    ],
+    "correctness_resolution": [],
+    "validation_artifacts": [
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_10/final_profiles_o3/results.json",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_10/main_candidates/angle_sort_std.patch",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_10/main_candidates/angle_sort_std_baseline_checked.cpp",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_10/main_candidates/angle_sort_std_baseline_main.cpp",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_10/main_candidates/angle_sort_std_baseline_skip.cpp",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_10/main_candidates/angle_sort_std_selected_checked.cpp",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_10/main_candidates/angle_sort_std_selected_main.cpp",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_10/main_candidates/angle_sort_std_selected_skip.cpp",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_10/main_candidates/benchmark.py",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_10/main_candidates/benchmark_results.json",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_10/main_candidates/bodies/Geometry/偏角ソート.cpp",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_10/main_candidates/bodies/String/RollingHash.cpp",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_10/main_candidates/compiler_settings/O3.cpp",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_10/main_candidates/compiler_settings/O3_unroll.cpp",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_10/main_candidates/compiler_settings/benchmark.py",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_10/main_candidates/compiler_settings/none.cpp",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_10/main_candidates/compiler_settings/recommendations.json",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_10/main_candidates/compiler_settings/results.json",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_10/main_candidates/final_report.json",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_10/main_candidates/finalize.py",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_10/main_candidates/input_manifest.json",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_10/main_candidates/machine_code_results.json",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_10/main_candidates/models.py",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_10/main_candidates/prepare.py",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_10/main_candidates/provenance.json",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_10/main_candidates/rolling_hash.patch",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_10/main_candidates/rolling_hash_baseline_checked.cpp",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_10/main_candidates/rolling_hash_baseline_main.cpp",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_10/main_candidates/rolling_hash_baseline_skip.cpp",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_10/main_candidates/rolling_hash_selected_checked.cpp",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_10/main_candidates/rolling_hash_selected_main.cpp",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_10/main_candidates/rolling_hash_selected_skip.cpp",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_10/main_candidates/selected_drivers/Verify/current/drivers/angle_sort_std_main.cpp",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_10/main_candidates/small_cases.json",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_10/main_candidates/summary.md",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_10/main_candidates/validate.py",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_10/main_candidates/validation_results.json",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_10/normal_clang.json",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_10/normal_clang_fallback.json",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_10/normal_gcc_o3.json",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_10/normal_gcc_o3_fallback.json",
+      "/tmp/sirkit_remaining_20261113/fable_compact/validate_profiles.py"
+    ],
+    "changed_source_validation": {
+      "angle_sort_std": {
+        "correctness": "passed",
+        "performance": "measured"
+      }
+    }
+  },
+  "execution": {
+    "model": "claude-fable-5-2",
+    "actual_assistant_models": [
+      "claude-fable-5-2"
+    ],
+    "tools": [
+      "Read"
+    ],
+    "apiKeySource": "none",
+    "is_error": false,
+    "terminal_reason": "completed",
+    "num_turns": 4,
+    "rate_limits_first": {
+      "status": "allowed",
+      "resetsAt": 1794584400,
+      "rateLimitType": "five_hour",
+      "overageStatus": "rejected",
+      "overageDisabledReason": "org_level_disabled",
+      "isUsingOverage": false,
+      "unifiedWindows": {
+        "five_hour": {
+          "utilization": 0.88,
+          "resetsAt": 1794584400,
+          "status": "allowed"
+        },
+        "seven_day": {
+          "utilization": 0.56,
+          "resetsAt": 1794646800,
+          "status": "allowed"
+        },
+        "seven_day_overage_included": {
+          "utilization": 0.3,
+          "resetsAt": 1794646800,
+          "status": "allowed"
+        }
+      }
+    },
+    "rate_limits_last": {
+      "status": "allowed",
+      "resetsAt": 1794584400,
+      "rateLimitType": "five_hour",
+      "overageStatus": "rejected",
+      "overageDisabledReason": "org_level_disabled",
+      "isUsingOverage": false,
+      "unifiedWindows": {
+        "five_hour": {
+          "utilization": 0.88,
+          "resetsAt": 1794584400,
+          "status": "allowed"
+        },
+        "seven_day": {
+          "utilization": 0.56,
+          "resetsAt": 1794646800,
+          "status": "allowed"
+        },
+        "seven_day_overage_included": {
+          "utilization": 0.3,
+          "resetsAt": 1794646800,
+          "status": "allowed"
+        }
+      }
+    },
+    "extra_usage_used": false,
+    "list_price_usage_is_not_a_charge": true,
+    "events_private_path": "/tmp/sirkit_remaining_20261113/fable_compact/batch_10/events.jsonl",
+    "events_sha256": "f49dc86f4611b991d1af750b328614249c6ac83b103524af05ed6157ae6df130"
+  },
+  "snapshot_archive": {
+    "path": "Audit/data/optimization-fable-batch-10-2026-11-13.zip",
+    "sha256": "997507ec9627077777587c7db55c970d4da0eb0ca66c4fe07f61b85d4bb7f274"
+  },
+  "performance_basis": "Unchanged sources retain exact predecessor measurements; candidate changes require the linked independent correctness/performance results. Old online AC is never assigned to modified source."
+}

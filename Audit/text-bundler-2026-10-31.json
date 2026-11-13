@@ -1,0 +1,705 @@
+{
+  "scope": "Readable text bundler proposal; no C++ library, formal source, registry, generator, or ZIP was modified by this task.",
+  "source_freeze": {
+    "Scripts/bundle_libraries.py": {
+      "path": "/tmp/sirkit_12h_20261031_095733/text_bundler/staged/Scripts/bundle_libraries.py",
+      "sha256": "8841d63eb1488bae3c72779bf0584d2060edb9aa0d0d09b2b2776f9da6d01899"
+    },
+    "Scripts/tests/test_bundle_libraries.py": {
+      "path": "/tmp/sirkit_12h_20261031_095733/text_bundler/staged/Scripts/tests/test_bundle_libraries.py",
+      "sha256": "51760dcc9e1ebd30b6c0e512719e2a4a348e289b3fde160d1bd80c12780bd70e"
+    },
+    "Document/bundling.md": {
+      "path": "/tmp/sirkit_12h_20261031_095733/text_bundler/staged/Document/bundling.md",
+      "sha256": "ccc993f5879cea5cb2fa64ad5d3457e5b365fd01c0b5ba1c37f7be024b897427"
+    }
+  },
+  "dependency": {
+    "path": "/tmp/sirkit_12h_20261031_095733/text_bundler/staged/Scripts/verify_distribution.py",
+    "sha256": "ef34343d98516198906f96c19b3eba950e894e84fe8cca3f45889c10b1bb2bf5"
+  },
+  "current_manifest": {
+    "path": "/home/reinsirk/Atcoder_Env/Variants/manifest.json",
+    "sha256": "31a5a1259d40ff734002f307ae0e09a41f92f695711f46dcb1227b9650fb1d65"
+  },
+  "algorithm": {
+    "eligible": "Byte-identical complete top-level unconditional #ifndef SIRKIT_*_DEFINED blocks, first unconditional directive defines the same guard, no outer branch, no code before define.",
+    "preserved": "Includes, retained component guards, conditional branches, nonidentical definitions, comments, all module leading SPDX/source/API comments. #line preserves module and post-omission line origins.",
+    "disabled": "Matching #undef disables that guard everywhere. Macro push/pop, _Pragma/__pragma, or token-paste in any #define disables all deduplication.",
+    "unsupported": "Quoted/macro/external include, include_next/import, existing #line, digraph directives, and raw literals together with any physical line splice are rejected.",
+    "paths": "Only current chosen manifest canonical libraries, one edition, exact source SHA; no temp/temp2/main template. Canonical manifest fields, profile path and resolved root containment checked.",
+    "limit": "512*1024 bytes by default, reject before output overwrite; explicit --allow-oversize; atomic replacement. All manifest source/template/manifest destinations protected."
+  },
+  "validation": {
+    "unit_count": 41,
+    "unit_log": {
+      "path": "/tmp/sirkit_12h_20261031_095733/text_bundler/unit.stderr",
+      "sha256": "78b36eeed4502fe4b874017a0a0ac507740eecdeb30b24b830ecd1a92a8bf1d2"
+    },
+    "preprocessor_conditions": 72,
+    "preprocessor_tool_sha256": "763a6dc272e8f512d955bee0a67b9fae47bbedaa27ea07cb04a326080509d9aa",
+    "final_output_bridge": {
+      "path": "/tmp/sirkit_12h_20261031_095733/text_bundler/origin_protection_output_bridge.json",
+      "sha256": "6e79bf0fa3a1d1ba5f7c9925b295df045d52aff8520d587aecb22dd5dd1a9363"
+    },
+    "preprocessor_evidence": {
+      "path": "/tmp/sirkit_12h_20261031_095733/text_bundler/preprocessor_validation.json",
+      "sha256": "71e7d8db4127beb68fb78759520773b2e0e344d42333c94e569a6dbe62c8af8b"
+    },
+    "preprocessor_scope": "normal GCC+Clang, four matching compiler profiles; math/bits/graph/recurrence; checked/SKIP/standard fallback. -std=c++23 -E -P, compare exact output bytes.",
+    "runtime_conditions": 36,
+    "runtime_evidence": {
+      "path": "/tmp/sirkit_12h_20261031_095733/text_bundler/runtime_validation.json",
+      "sha256": "ca81f0eaacb0dcffd10e57aff03317a9f44cdd13c72944c73152711d122e589f"
+    },
+    "runtime_source_bridge": {
+      "path": "/tmp/sirkit_12h_20261031_095733/text_bundler/final_runtime_output_bridge.json",
+      "sha256": "3572afb6f639f4f527e55dd9ed600d507f318f378481384648e84aef1527616f"
+    },
+    "runtime_scope": "Three bundles, six edition/compiler targets, before+after. O2; independent naive convolution/GF2 product and explicit graph distances; API known identities. This is bounded composition/transform QA, not full algorithm proof.",
+    "warning": "34 runtime conditions pass -Wall -Wextra -Werror. FastClang Bellman-Ford graph before/after needs -Wno-error=misleading-indentation for existing line425/427 warning. Original unoptimized -Werror rejection is retained; no C++ body edited.",
+    "warning_log": {
+      "path": "/tmp/sirkit_12h_20261031_095733/text_bundler/runtime_fast_clang_graph_werror_failure.stderr",
+      "sha256": "32ed81b2ab7d41618de1da81fce2f4fc364fd440f16e4b9d7dd102235659e8e8"
+    },
+    "cpp23_counterexamples": {
+      "path": "/tmp/sirkit_12h_20261031_095733/text_bundler/cpp23_regressions.json",
+      "sha256": "89205b66fe095dfbbc839af80294f32ddaf1d92828d68b36c82d4ca15cdf98e3"
+    },
+    "fixtures": [
+      {
+        "path": "/tmp/sirkit_12h_20261031_095733/text_bundler/runtime_math.inc",
+        "sha256": "10d8b43b8c586ce6a5f5d1a299c51ef5712582b998cd6a4639f3f03482589550"
+      },
+      {
+        "path": "/tmp/sirkit_12h_20261031_095733/text_bundler/runtime_bits.inc",
+        "sha256": "38c20375d06d05438c034cade1c2a44e28a8f577b023f8a627dd0a93e74887e3"
+      },
+      {
+        "path": "/tmp/sirkit_12h_20261031_095733/text_bundler/runtime_graph.inc",
+        "sha256": "ead649b199f6f39e4def546fd75f64b7fd3832e310e4d505255cc0369a2aac2c"
+      }
+    ],
+    "compiler_versions": {
+      "/usr/bin/g++": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+      "/usr/bin/clang++": "Ubuntu clang version 21.1.8 (6ubuntu1)"
+    },
+    "cpu": 0,
+    "performance_claim": false
+  },
+  "measured_sizes": [
+    {
+      "profile": "normal",
+      "group": "math",
+      "before": 190740,
+      "after": 85732,
+      "saved": 105008,
+      "removed": 11,
+      "conflicting_guards": [],
+      "sha256_before": "f12fdfa948a1cf98e3f1359d198bef290354e873b8c6d11e651c9ac676d291b3",
+      "sha256_after": "8290346c76eac6057a8e3eb57d0947964e359d836288f3c23c2892768590da31",
+      "source_hashes": [
+        {
+          "library": "Math/NTT.cpp",
+          "source": "Math/NTT.cpp",
+          "sha256": "5b5c85da53f0108b521b725b5ab014eaf8ee21446729b2e45c30100d796426fa"
+        },
+        {
+          "library": "Math/Formal_Power_Series.cpp",
+          "source": "Math/Formal_Power_Series.cpp",
+          "sha256": "5165e885185b4b01a9c7f1882859bfde4e8cba6b98af11d04bc7e4db54433b31"
+        },
+        {
+          "library": "Math/Polynomial.cpp",
+          "source": "Math/Polynomial.cpp",
+          "sha256": "46b4b1c00c1ab51296e3c38aa1bd0093da8bc19a19870937490cd374c98a5d91"
+        },
+        {
+          "library": "Math/Convolution.cpp",
+          "source": "Math/Convolution.cpp",
+          "sha256": "610a1eee375142f10f5770c293f85722c3cfbb0cbaf211a6148048e953817cb3"
+        }
+      ]
+    },
+    {
+      "profile": "normal",
+      "group": "bits",
+      "before": 43047,
+      "after": 36126,
+      "saved": 6921,
+      "removed": 1,
+      "conflicting_guards": [],
+      "sha256_before": "8effdf45b33a812fb16e23de0ca2cd3c3c0bf2808d244e653e8c55287ab8c92d",
+      "sha256_after": "fd4c50565cc4ba7b54bb54e11db92b43ce47163a895b03ab5b1ec57785734356",
+      "source_hashes": [
+        {
+          "library": "DataStructure/Dynamic_Bitset.cpp",
+          "source": "DataStructure/Dynamic_Bitset.cpp",
+          "sha256": "e1a2391a0390744ee0f4b3994fb08b7bb6185540bff7209b168fb2118cb2a907"
+        },
+        {
+          "library": "Math/Binary_Matrix.cpp",
+          "source": "Math/Binary_Matrix.cpp",
+          "sha256": "1ec784efc04c33c866e3081766442a91bdf9352b264428a290a3a69609fbddad"
+        }
+      ]
+    },
+    {
+      "profile": "normal",
+      "group": "graph",
+      "before": 93287,
+      "after": 93011,
+      "saved": 276,
+      "removed": 3,
+      "conflicting_guards": [],
+      "sha256_before": "13cc1c90eeb09a693f4e567d9c5d8268f12c9e67e1f745bb83bc6b2285873b16",
+      "sha256_after": "554cea73949afd32e1628f8703968e352988e3afb5cd085fd1ac4e2d0fa41a67",
+      "source_hashes": [
+        {
+          "library": "Graph/Bellman-Ford.cpp",
+          "source": "Graph/Bellman-Ford.cpp",
+          "sha256": "eb08c145b426b99798704b4307db5485f3f798f26a6350afa0c663e785006791"
+        },
+        {
+          "library": "Graph/Dijkstra.cpp",
+          "source": "Graph/Dijkstra.cpp",
+          "sha256": "b5a626a824c696a9fc223f3a5e98ce5c2c500d3209c96f46c81b18b2bbe3ef2c"
+        },
+        {
+          "library": "Graph/Floyd-Warshall.cpp",
+          "source": "Graph/Floyd-Warshall.cpp",
+          "sha256": "edba738f97a7145f5bb736ae0cc317549b4ad3f1eafd0eb2517b6e2e557cdddf"
+        }
+      ]
+    },
+    {
+      "profile": "normal",
+      "group": "recurrence",
+      "before": 85202,
+      "after": 52759,
+      "saved": 32443,
+      "removed": 5,
+      "conflicting_guards": [],
+      "sha256_before": "4e8e2af5fc620a6d2906dfebfc63d964683bd0906df041573f17547838ee78bd",
+      "sha256_after": "d1f91b77cdaa7d5cbe3365cea11bf02d2716032fad4963f2cd86b4e14596e9a9",
+      "source_hashes": [
+        {
+          "library": "Math/NTT.cpp",
+          "source": "Math/NTT.cpp",
+          "sha256": "5b5c85da53f0108b521b725b5ab014eaf8ee21446729b2e45c30100d796426fa"
+        },
+        {
+          "library": "Math/Berlekamp_Massey.cpp",
+          "source": "Math/Berlekamp_Massey.cpp",
+          "sha256": "77ca327c74c8295aaac689753288c81e175e7e0a10bd5f5c8bb4866c5639d81c"
+        },
+        {
+          "library": "Math/Linear_Recurrence.cpp",
+          "source": "Math/Linear_Recurrence.cpp",
+          "sha256": "ce01c0f83e4d7d8041ee8e4e6c6670bda7a3c707e6791ca97f2a48019941b2f6"
+        }
+      ]
+    },
+    {
+      "profile": "gcc",
+      "group": "math",
+      "before": 189740,
+      "after": 85577,
+      "saved": 104163,
+      "removed": 11,
+      "conflicting_guards": [],
+      "sha256_before": "8afbb7f6f9a67e95fa0647e406af3e9ded57f8a71cd88ee0c1d64056e7d16fd7",
+      "sha256_after": "915c9184125a0e2f4023549572eb2d5eb9dd0b8e47864e7666decb19cdc2a161",
+      "source_hashes": [
+        {
+          "library": "Math/NTT.cpp",
+          "source": "Variants/GCC/Math/NTT.cpp",
+          "sha256": "7ddaf903b70bb8e377991ac6dce64cfcd6d43322c4d541f5b4cb970ef02b2ce6"
+        },
+        {
+          "library": "Math/Formal_Power_Series.cpp",
+          "source": "Variants/GCC/Math/Formal_Power_Series.cpp",
+          "sha256": "a9f68937e5c638fb008e7e9b2f0f699c20dac3c5aa7968a19981da0044dee342"
+        },
+        {
+          "library": "Math/Polynomial.cpp",
+          "source": "Variants/GCC/Math/Polynomial.cpp",
+          "sha256": "80179f640017f43289098a9525c0ee785e0460b657526df5b8513708540c3e64"
+        },
+        {
+          "library": "Math/Convolution.cpp",
+          "source": "Variants/GCC/Math/Convolution.cpp",
+          "sha256": "12ab16e4fc07f5abdf4617e21367a59c702578d86d98010fa7e1f57418c67a1f"
+        }
+      ]
+    },
+    {
+      "profile": "gcc",
+      "group": "bits",
+      "before": 42491,
+      "after": 35901,
+      "saved": 6590,
+      "removed": 1,
+      "conflicting_guards": [],
+      "sha256_before": "e6065e2a78771898e91ae4839ad8c2f9206a91e79de63d2b32c833e8904d85bc",
+      "sha256_after": "6bbc115cbbf880ba537b9b367fd44a9cc511e455dfd66383efdd4e54a088a011",
+      "source_hashes": [
+        {
+          "library": "DataStructure/Dynamic_Bitset.cpp",
+          "source": "Variants/GCC/DataStructure/Dynamic_Bitset.cpp",
+          "sha256": "ce30a921bd1d3e6dca26241167e9c0571a6002e3b297da67664699c54d6600d3"
+        },
+        {
+          "library": "Math/Binary_Matrix.cpp",
+          "source": "Variants/GCC/Math/Binary_Matrix.cpp",
+          "sha256": "203727fc64de3362171becbbcd71394248ef6964258f0aef9aae415adf881065"
+        }
+      ]
+    },
+    {
+      "profile": "gcc",
+      "group": "graph",
+      "before": 89353,
+      "after": 89116,
+      "saved": 237,
+      "removed": 3,
+      "conflicting_guards": [],
+      "sha256_before": "b4964965219ad56d371918a13b6447f6dc9937a6ac2b7840ad520104bf42b838",
+      "sha256_after": "90aede133444cbff4608d2ffebe594fbd9dad4b105765d13583965d49fbb5427",
+      "source_hashes": [
+        {
+          "library": "Graph/Bellman-Ford.cpp",
+          "source": "Variants/GCC/Graph/Bellman-Ford.cpp",
+          "sha256": "4fb750869bbdce01df6d46ef00fab5004d1f52815f628d8c9bd4171906a6e0d6"
+        },
+        {
+          "library": "Graph/Dijkstra.cpp",
+          "source": "Variants/GCC/Graph/Dijkstra.cpp",
+          "sha256": "048f03a4ed3ad2702e87eff9d3916d41125e021a6d27cfaa08b3242678bd6f0e"
+        },
+        {
+          "library": "Graph/Floyd-Warshall.cpp",
+          "source": "Variants/GCC/Graph/Floyd-Warshall.cpp",
+          "sha256": "6d8149d33889d49ec54c3576a860612ff358d0eb6408c57f6d0bb136849b0d4d"
+        }
+      ]
+    },
+    {
+      "profile": "gcc",
+      "group": "recurrence",
+      "before": 81942,
+      "after": 49797,
+      "saved": 32145,
+      "removed": 5,
+      "conflicting_guards": [],
+      "sha256_before": "23ef54e5c89ba479a2103374da40256a18f95003991670da67e1b9ee4c26a513",
+      "sha256_after": "bfb39caff8a00e3d9dd880d717e66c1e6715bb8bd2e99ddbdb9dc91fd3b8f82f",
+      "source_hashes": [
+        {
+          "library": "Math/NTT.cpp",
+          "source": "Variants/GCC/Math/NTT.cpp",
+          "sha256": "7ddaf903b70bb8e377991ac6dce64cfcd6d43322c4d541f5b4cb970ef02b2ce6"
+        },
+        {
+          "library": "Math/Berlekamp_Massey.cpp",
+          "source": "Variants/GCC/Math/Berlekamp_Massey.cpp",
+          "sha256": "b58b502b573599f6151254d5d5ea9e5778acff14e85f8283ba17ae2fd3fa17ab"
+        },
+        {
+          "library": "Math/Linear_Recurrence.cpp",
+          "source": "Variants/GCC/Math/Linear_Recurrence.cpp",
+          "sha256": "aed2754c12aef40c33d1569c9133ec3f7c16f3debbc848f87f818e95f26e1a23"
+        }
+      ]
+    },
+    {
+      "profile": "clang",
+      "group": "math",
+      "before": 189756,
+      "after": 85615,
+      "saved": 104141,
+      "removed": 11,
+      "conflicting_guards": [],
+      "sha256_before": "fe7a0b58640dde3dc523d06c4a3c8e2a26763fffdae1033369464f1b72dea7fe",
+      "sha256_after": "7a39c2690534a4c05a66cc53e6a1b40f45e9b166fc6af5039532cba8561749b8",
+      "source_hashes": [
+        {
+          "library": "Math/NTT.cpp",
+          "source": "Variants/Clang/Math/NTT.cpp",
+          "sha256": "9be189c78b652a1d8f89d0173ce25956f5ecd23b6708fdfcc6f272f95ff587d6"
+        },
+        {
+          "library": "Math/Formal_Power_Series.cpp",
+          "source": "Variants/Clang/Math/Formal_Power_Series.cpp",
+          "sha256": "cb6b3325a498be16253eecce17e57dcb739960dd1409fcf7a919dd35f39a3670"
+        },
+        {
+          "library": "Math/Polynomial.cpp",
+          "source": "Variants/Clang/Math/Polynomial.cpp",
+          "sha256": "39d942bcd2c2f3c1bceb01e4d4111f18e19006228b41d617d4e7faadc0f5860f"
+        },
+        {
+          "library": "Math/Convolution.cpp",
+          "source": "Variants/Clang/Math/Convolution.cpp",
+          "sha256": "2caee79914ca9fe17b91ddc089899d97a844adf27af8a9e70047683bb59cc098"
+        }
+      ]
+    },
+    {
+      "profile": "clang",
+      "group": "bits",
+      "before": 42691,
+      "after": 36007,
+      "saved": 6684,
+      "removed": 1,
+      "conflicting_guards": [],
+      "sha256_before": "aac44d58c46ed7141e8d09b1d66bb549ce28cba15b6cb7f9e6a0654a303d5f27",
+      "sha256_after": "ee03b212f18d68074c731d0639ebf67917db845cae6e3a1f18890f7132eadd35",
+      "source_hashes": [
+        {
+          "library": "DataStructure/Dynamic_Bitset.cpp",
+          "source": "Variants/Clang/DataStructure/Dynamic_Bitset.cpp",
+          "sha256": "73bf02e1dbea0d0aca460718529027ba15edbe10a90cd3b681654ef56fc0ee21"
+        },
+        {
+          "library": "Math/Binary_Matrix.cpp",
+          "source": "Variants/Clang/Math/Binary_Matrix.cpp",
+          "sha256": "bb45fbb5f01b3abfa40da385d26ed3f87bd118dfb3ef6fe4697615cf9adf685a"
+        }
+      ]
+    },
+    {
+      "profile": "clang",
+      "group": "graph",
+      "before": 86218,
+      "after": 85987,
+      "saved": 231,
+      "removed": 3,
+      "conflicting_guards": [],
+      "sha256_before": "9c302f5dfeeb3b9e7e73a4cd762548de2bbaf47a561edd78b62fd23a9d29fb55",
+      "sha256_after": "ef177bebc44bd9c3662dceb007488e538ad81c2152616bd826d49890f517a255",
+      "source_hashes": [
+        {
+          "library": "Graph/Bellman-Ford.cpp",
+          "source": "Variants/Clang/Graph/Bellman-Ford.cpp",
+          "sha256": "3128ce4a4f59cf8ae8f8e772a815b6b70f8977b1596e73f87664b58695235f5c"
+        },
+        {
+          "library": "Graph/Dijkstra.cpp",
+          "source": "Variants/Clang/Graph/Dijkstra.cpp",
+          "sha256": "c5eae78408e80bfacd4665f6f80ee7fe0ea747a4033f509f92b2167a925bb6cb"
+        },
+        {
+          "library": "Graph/Floyd-Warshall.cpp",
+          "source": "Variants/Clang/Graph/Floyd-Warshall.cpp",
+          "sha256": "6ed1fc545e5c16218fc837ba87077fcf874657eb78f54e95f7af7d6584cfe36b"
+        }
+      ]
+    },
+    {
+      "profile": "clang",
+      "group": "recurrence",
+      "before": 84749,
+      "after": 52615,
+      "saved": 32134,
+      "removed": 5,
+      "conflicting_guards": [],
+      "sha256_before": "1266853d3688dcc4b4a232367fc01f89e954f5bf5c8c23527a2d04eeb717e8dd",
+      "sha256_after": "956b60fa67ebafbc436f0ece20559ea99bc94a9e38af63303d74bd1ec8fd4fac",
+      "source_hashes": [
+        {
+          "library": "Math/NTT.cpp",
+          "source": "Variants/Clang/Math/NTT.cpp",
+          "sha256": "9be189c78b652a1d8f89d0173ce25956f5ecd23b6708fdfcc6f272f95ff587d6"
+        },
+        {
+          "library": "Math/Berlekamp_Massey.cpp",
+          "source": "Variants/Clang/Math/Berlekamp_Massey.cpp",
+          "sha256": "b2411f8c889088cb0b2d93b359f54b86e0600cba2ff3a364efcb134f26219993"
+        },
+        {
+          "library": "Math/Linear_Recurrence.cpp",
+          "source": "Variants/Clang/Math/Linear_Recurrence.cpp",
+          "sha256": "f160f08498e3769beb2bb8e0f48750f2afb8ddf65c7c8bc8262fceac10cdfec3"
+        }
+      ]
+    },
+    {
+      "profile": "fast-gcc",
+      "group": "math",
+      "before": 179296,
+      "after": 82833,
+      "saved": 96463,
+      "removed": 11,
+      "conflicting_guards": [],
+      "sha256_before": "9e8b29872b1c6a3e9d67c9aa5366d56cbd5b6ffbb38b711b20b682d6f34b13ef",
+      "sha256_after": "04566f26b06cc03edf8a4cdd734c0455a406fa2f45c78b4ddd132f15ec965dcb",
+      "source_hashes": [
+        {
+          "library": "Math/NTT.cpp",
+          "source": "Fast/GCC/Math/NTT.cpp",
+          "sha256": "f1fa1a99ea46f3a1d660d15ca663d66f23d1ce2ac4ea857d703ca7f9a952ca02"
+        },
+        {
+          "library": "Math/Formal_Power_Series.cpp",
+          "source": "Fast/GCC/Math/Formal_Power_Series.cpp",
+          "sha256": "7f8d2cf3c3995c54616b921bf350218d9046a74704c3ea51d5efd848e27f19ad"
+        },
+        {
+          "library": "Math/Polynomial.cpp",
+          "source": "Fast/GCC/Math/Polynomial.cpp",
+          "sha256": "1e0be8afd514a5271abcfffdf7d8d725aca7c9dc1039c896abcdf4698a8994d2"
+        },
+        {
+          "library": "Math/Convolution.cpp",
+          "source": "Fast/GCC/Math/Convolution.cpp",
+          "sha256": "e6acb95fe96c48ed67a9bb611d781490c357862a1f9957f377259aa38d0fb0c1"
+        }
+      ]
+    },
+    {
+      "profile": "fast-gcc",
+      "group": "bits",
+      "before": 41060,
+      "after": 34466,
+      "saved": 6594,
+      "removed": 1,
+      "conflicting_guards": [],
+      "sha256_before": "5f2b0865311e90777939870e91ab2de7c83da9ed86d72c7fb0bac58fbf672649",
+      "sha256_after": "087b16ad90eb186c54affce1d0d119f19b70fb612f72b790559db779808b446b",
+      "source_hashes": [
+        {
+          "library": "DataStructure/Dynamic_Bitset.cpp",
+          "source": "Fast/GCC/DataStructure/Dynamic_Bitset.cpp",
+          "sha256": "271c8f19e52f95839cd46d9f669de9fde0b8983bfdbe05a76f555fdf43159efb"
+        },
+        {
+          "library": "Math/Binary_Matrix.cpp",
+          "source": "Fast/GCC/Math/Binary_Matrix.cpp",
+          "sha256": "6446ca1147cae8e69c7d4533508c5dfac447af912be24836aab855a612e2cb95"
+        }
+      ]
+    },
+    {
+      "profile": "fast-gcc",
+      "group": "graph",
+      "before": 78303,
+      "after": 78054,
+      "saved": 249,
+      "removed": 3,
+      "conflicting_guards": [],
+      "sha256_before": "d4dead593a16468b154129ced440a21beb2db42d49504f9ed44f76df335e52f8",
+      "sha256_after": "a9b5efde2bc8b2beb6ca3cb2501adf88091d8104080b26d65220a6db6cd46365",
+      "source_hashes": [
+        {
+          "library": "Graph/Bellman-Ford.cpp",
+          "source": "Fast/GCC/Graph/Bellman-Ford.cpp",
+          "sha256": "10244d9ddcfaf496a269baa7d6565c3d2ab438ae4a3bed8ab0d8a5b407ab6a5c"
+        },
+        {
+          "library": "Graph/Dijkstra.cpp",
+          "source": "Fast/GCC/Graph/Dijkstra.cpp",
+          "sha256": "530b4cf56c8100bac7479e39b5013ce89c8c29124e5be8b24f0d8f07c3c277f7"
+        },
+        {
+          "library": "Graph/Floyd-Warshall.cpp",
+          "source": "Fast/GCC/Graph/Floyd-Warshall.cpp",
+          "sha256": "b52d2ab18b5aade7673c1a689a64ffd5987a0458613a02dbd3f8c4880c44f607"
+        }
+      ]
+    },
+    {
+      "profile": "fast-gcc",
+      "group": "recurrence",
+      "before": 76945,
+      "after": 47189,
+      "saved": 29756,
+      "removed": 5,
+      "conflicting_guards": [],
+      "sha256_before": "9126095513b1d8ea1e23d2cd9cdbaafc448524b49691493372066c643caf54f1",
+      "sha256_after": "3831682427b0525ec2f630020f0fe2dea9ec09a9d0d34ae89d84f373701a1ef1",
+      "source_hashes": [
+        {
+          "library": "Math/NTT.cpp",
+          "source": "Fast/GCC/Math/NTT.cpp",
+          "sha256": "f1fa1a99ea46f3a1d660d15ca663d66f23d1ce2ac4ea857d703ca7f9a952ca02"
+        },
+        {
+          "library": "Math/Berlekamp_Massey.cpp",
+          "source": "Fast/GCC/Math/Berlekamp_Massey.cpp",
+          "sha256": "fcf2ec062f5733116245d78b540aabc61a144107bfa8dca970a18935e7d45a15"
+        },
+        {
+          "library": "Math/Linear_Recurrence.cpp",
+          "source": "Fast/GCC/Math/Linear_Recurrence.cpp",
+          "sha256": "c0535e8b3910f669b31e0dfb2839bf7dfd9690de356c48346ff97016e94fd74b"
+        }
+      ]
+    },
+    {
+      "profile": "fast-clang",
+      "group": "math",
+      "before": 179312,
+      "after": 82871,
+      "saved": 96441,
+      "removed": 11,
+      "conflicting_guards": [],
+      "sha256_before": "406a07ef43047729c431907495518750a517f9f31d558909a3e9e8d032ab98e8",
+      "sha256_after": "de6094f332eb05b48217a85501e2894252553b9d5a72d3304d4d7a08c0c8182b",
+      "source_hashes": [
+        {
+          "library": "Math/NTT.cpp",
+          "source": "Fast/Clang/Math/NTT.cpp",
+          "sha256": "c6f8ddf811eb9354a8a800bdd0d323aafef6578ec5fd178905442694b37092a1"
+        },
+        {
+          "library": "Math/Formal_Power_Series.cpp",
+          "source": "Fast/Clang/Math/Formal_Power_Series.cpp",
+          "sha256": "69285de64186c63561fc78058bc5440b190c72aae64699ee036aa140124d2b9c"
+        },
+        {
+          "library": "Math/Polynomial.cpp",
+          "source": "Fast/Clang/Math/Polynomial.cpp",
+          "sha256": "40fe0d3c869d5f1dbb92489db814efd7f05ceac78825841912bd719ba199cef4"
+        },
+        {
+          "library": "Math/Convolution.cpp",
+          "source": "Fast/Clang/Math/Convolution.cpp",
+          "sha256": "e753f30bcd252e0bc20926686008fffff966634595a5d225ddc97ad937b9c747"
+        }
+      ]
+    },
+    {
+      "profile": "fast-clang",
+      "group": "bits",
+      "before": 41260,
+      "after": 34572,
+      "saved": 6688,
+      "removed": 1,
+      "conflicting_guards": [],
+      "sha256_before": "0a1004ddc73ce2884509f765a1acfef87fd4667c39f8512d7c0fdaebfb0b9c32",
+      "sha256_after": "bf1b0ac8c553f705a882b373a3d6b471296ffd146b737a26f8bddb83ef9d8875",
+      "source_hashes": [
+        {
+          "library": "DataStructure/Dynamic_Bitset.cpp",
+          "source": "Fast/Clang/DataStructure/Dynamic_Bitset.cpp",
+          "sha256": "fd57af2c61f0de940dd25af761bbe6c08d5298dd731e1c885f09467f561b9d5e"
+        },
+        {
+          "library": "Math/Binary_Matrix.cpp",
+          "source": "Fast/Clang/Math/Binary_Matrix.cpp",
+          "sha256": "927722b4c12b871d47d47a5f73b4d361deaa858ffdf9575ffbf6d89434dcbe98"
+        }
+      ]
+    },
+    {
+      "profile": "fast-clang",
+      "group": "graph",
+      "before": 75168,
+      "after": 74925,
+      "saved": 243,
+      "removed": 3,
+      "conflicting_guards": [],
+      "sha256_before": "100da48c6e2d9becc1b5bd9f4509ce6ea6f206b87710fc83a40d2becfbca8c74",
+      "sha256_after": "a5d04ecac7686721195ab311eea474f49559e94c986b423a0e1ca4e5e3a41cbe",
+      "source_hashes": [
+        {
+          "library": "Graph/Bellman-Ford.cpp",
+          "source": "Fast/Clang/Graph/Bellman-Ford.cpp",
+          "sha256": "a161a6f078c0344ab8ebbd99963b2cd9515ca18cd017469168feb00684a7f41f"
+        },
+        {
+          "library": "Graph/Dijkstra.cpp",
+          "source": "Fast/Clang/Graph/Dijkstra.cpp",
+          "sha256": "0f82db59272a2994e8684e5e8a2ef2a14be07514c888133cad0d54853a08ffb8"
+        },
+        {
+          "library": "Graph/Floyd-Warshall.cpp",
+          "source": "Fast/Clang/Graph/Floyd-Warshall.cpp",
+          "sha256": "c3c5dd741aae7055832a3b832f5a8e3ebfbecb98268dbfbabf79e8af57ddd998"
+        }
+      ]
+    },
+    {
+      "profile": "fast-clang",
+      "group": "recurrence",
+      "before": 79752,
+      "after": 50007,
+      "saved": 29745,
+      "removed": 5,
+      "conflicting_guards": [],
+      "sha256_before": "f388fa3abd1b5b5a9f951a78715e8f00e8e4c77aaaf02b7b611d10d4208313aa",
+      "sha256_after": "8bf22129d67c75ccd54daa683fdfda388865b5d280472c6b62c6d0f9386a681a",
+      "source_hashes": [
+        {
+          "library": "Math/NTT.cpp",
+          "source": "Fast/Clang/Math/NTT.cpp",
+          "sha256": "c6f8ddf811eb9354a8a800bdd0d323aafef6578ec5fd178905442694b37092a1"
+        },
+        {
+          "library": "Math/Berlekamp_Massey.cpp",
+          "source": "Fast/Clang/Math/Berlekamp_Massey.cpp",
+          "sha256": "96b7de88f536439175dd30f362844b34b9dbb8fe14886047329eaded280aecb5"
+        },
+        {
+          "library": "Math/Linear_Recurrence.cpp",
+          "source": "Fast/Clang/Math/Linear_Recurrence.cpp",
+          "sha256": "966bda45c9a3c11684e7ee6404939c3fdbb61ad5038b0d3934d06bcfbaf3e323"
+        }
+      ]
+    }
+  ],
+  "review_corrections": {
+    "old_rejected_prototype": {
+      "path": "/tmp/sirkit_12h_20261031_095733/text_bundler/bundle_before_cpp23_fix.py",
+      "sha256": "da8f972de6699db1b5f5672f9a594b57a9ff62b786f2576338869419dd51ab8b"
+    },
+    "findings": [
+      "C++23 #elifdef/#elifndef outer alternates must prevent removal and nested alternates must be structurally tracked.",
+      "C++23 whitespace-spliced lines must be handled consistently in directive, frontmatter and dynamic pragma detection.",
+      "Token-pasting may synthesize _Pragma, so macro replacement ##/%:%: disables all deduplication.",
+      "Templates with main must be excluded; loaded manifest paths/profile/root must be checked; Fast origin paths must also be protected against output/report overwrite."
+    ],
+    "note": "The old prototype is retained only as rejected review history. The 72 preprocessor checks use source763a6dc2. The only later source change validates/protects manifest origin paths. All20 before+after rendered source SHAs and all36 runtime compilation input SHAs match final render exactly; bridge artifacts bind these checks to final source8841d63e."
+  },
+  "fixtures_archive": {
+    "path": "/tmp/sirkit_12h_20261031_095733/text_bundler/staged/Audit/data/text-bundler-2026-10-31-fixtures.zip",
+    "sha256": "64db978c0eaa8a7c5d4c1696657ad173dbc489d5546faff027349936266dea38"
+  },
+  "scripts": [
+    {
+      "path": "/tmp/sirkit_12h_20261031_095733/text_bundler/validate.py",
+      "sha256": "6871c1ae166eef36127e6a91c74f2cc2284637fb1c1d5ada1aa565ce4c4bc6a9"
+    },
+    {
+      "path": "/tmp/sirkit_12h_20261031_095733/text_bundler/runtime_validate.py",
+      "sha256": "2ecfa165d664dd025ceb68a1b0937f5608264df6c5943278e02be4a8e28f14c6"
+    },
+    {
+      "path": "/tmp/sirkit_12h_20261031_095733/text_bundler/runtime_warning_resume.py",
+      "sha256": "e50b232b3f85f71ff69fad32f23a41d5e90bb925b95eb54867839f01dd5807a3"
+    },
+    {
+      "path": "/tmp/sirkit_12h_20261031_095733/text_bundler/cpp23_regressions.py",
+      "sha256": "7dba382c5684885a759621bad693bbab4c55c75f65aa041e6c3b39e10a3befb7"
+    }
+  ],
+  "independent_review": {
+    "receipt": {
+      "path": "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/handoff/integration.json",
+      "sha256": "9379c6ef6bab2f5616e3eae945975c751afa2e205dc31d3044861ca8296d1c08"
+    },
+    "audit": {
+      "path": "/tmp/sirkit_12h_20261031_095733/text_bundler_independent_review/handoff/Audit/text-bundler-independent-review-2026-10-31.json",
+      "sha256": "f429d0210d6cbfa9aa534814c4d12dff8c57471717c5d0f11fa03cbe228e5936"
+    },
+    "final_executable_pairs": 10,
+    "additional_cli_line_frontmatter_fast_macro_checks": 18,
+    "remaining_confirmed_blockers": 0
+  },
+  "limitations": [
+    "Only current canonical manifest modules, not a general C++ preprocessor.",
+    "Caller-provided Mint remains outside bundle; external headers are not expanded.",
+    "No main/IO rewrite, minification, binary encoding, online judge AC claim, performance claim, or change to source edition contracts."
+  ]
+}

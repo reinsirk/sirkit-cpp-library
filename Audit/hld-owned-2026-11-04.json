@@ -1,0 +1,176 @@
+{
+  "date": "2026-11-04",
+  "scope": "HLDがBIT/Segtreeを所有し、頂点番号で直接値を操作するAPIを追加。既存の分解型と全操作を維持。",
+  "source_sha256": "861af0c26da53a58df0909f7f24ad6652949739eb672aedd82fc5f368df0e2ea",
+  "tested_source_sha256": "45b2681b58f6861453fef926c573c4e4231fbe48380b061f29b790c605871463",
+  "source_equivalence": [
+    {
+      "scope": "canonical_header_vs_sanitizer_snapshot",
+      "current_sha256": "861af0c26da53a58df0909f7f24ad6652949739eb672aedd82fc5f368df0e2ea",
+      "tested_sha256": "45b2681b58f6861453fef926c573c4e4231fbe48380b061f29b790c605871463",
+      "comment_line_free_sha256": "6de95a9438921b3d73dd1244aada53e6cb001f3278904558e8e89ca4edec7017",
+      "result": "Only full-line comments differ"
+    },
+    {
+      "scope": "hld_jump",
+      "current_sha256": "15308dbdb78755593872087c9fa5e2d320fd1000f032400208c291047aca1351",
+      "tested_sha256": "f574c37fc02505f0a261fb3863c9ad8491a75a242daef8c3987fba1ed3dc7415",
+      "comment_line_free_sha256": "e62a5b2963c81a6028971840ab92fc517a37ca4765db1219f925e294d7dddb3d",
+      "result": "Only full-line comments differ"
+    },
+    {
+      "scope": "hld_vertex_add_path_sum",
+      "current_sha256": "c5c8869455420d9bc8e4c930e94ac41dc9a77126e06f302653c5fb2f8b99893c",
+      "tested_sha256": "c07d2765ad553f8a8903db7ba4767b7ab4c6730bde3ec451007d103a05756c3a",
+      "comment_line_free_sha256": "9739229d9f753e8cdae197d6db80bb1a658535a695c61a70b4544a92107b3442",
+      "result": "Only full-line comments differ"
+    },
+    {
+      "scope": "hld_path_prod",
+      "current_sha256": "8288ea22c27b0ace60ca0d07b36858235793ee17f7d6018e4220b2386788b9f9",
+      "tested_sha256": "a4758307f786d307e87e33a554451a9b65d098a1a255afa55a714394c29ec687",
+      "comment_line_free_sha256": "7b03a591c538f42ca7284489144eedc82c2aeae55bc1c38a071c0ecf97bc3f47",
+      "result": "Only full-line comments differ"
+    },
+    {
+      "scope": "hld_path_composite",
+      "current_sha256": "4684f066c3d5e59b99cbd7140cac6125dc6337ff04ee1f31f406b8ad3deb8a75",
+      "tested_sha256": "236e03dd4118a264f7e32ac6f18cb4f28e701ac5424e66d7daafb7657c6b5a65",
+      "comment_line_free_sha256": "59efe0f521fd333d504167e4fec3e69bb6ef83ea09713c143d985a5d5e03721a",
+      "result": "Only full-line comments differ"
+    },
+    {
+      "scope": "existing_complete_HLD_class",
+      "result": "All original method definitions and data fields byte-identical; only 2 new factory declarations added"
+    }
+  ],
+  "changes": [
+    "with_values<Range,Ordered=false>(values)からHeavyLightValuesを返す。頂点番号順の値を内部で並べ替え、分解・集計器を独立所有。既存HLDの具体型と全メソッドは維持。",
+    "get/set/add/apply/path_prod/subtree_prod/path_apply/subtree_apply/valuesを所有版へ追加。集計器の引数・利用側の添字変換を省く。追加機能の使用条件はRangeのAPI能力に合わせる。",
+    "Ordered=trueでは同型Rangeを逆順DFS配列にも構築し、非可換積と逆向き更新を自動管理。通常モードは可換専用、逆順モードは集計器2本の領域・更新費用。",
+    "所有版のStateはmake_uniqueで一括所有。コピー/buildは完全な置換を作ってからポインタ交換。move/swapはnoexceptで移動元は空。直接new式や解放省略なし。",
+    "移動元layout.order()を初期値として渡す別名ケースも、並べ替えてから分解を移動して処理。移動後のRange構築失敗では元分解が空の場合があるため説明。",
+    "点・作用・代入の値を先にコピー。Orderedで更新途中に例外が出た場合、両集計器の同期は保証せず、clear/buildで再構築する前提。",
+    "実ACL Fenwickにはvector構築がないためint構築+addで初期化し、get/setは区間sumと安全な差分加算で補う。標準/拡張整数の型幅での周回を維持。",
+    "通常のvaluesを持つ集計器では一括取得して頂点順へ復元、ない場合は点照会で補う。低コストの検査はSKIPで除き、検査だけの全走査は追加しない。"
+  ],
+  "API_examples": [
+    "auto hld=HeavyLightDecomposition(graph).with_values<fenwick_tree<std::int64_t>>(values);",
+    "hld.add(v,delta); auto sum=hld.path_prod(u,v);",
+    "auto hld=HeavyLightDecomposition(graph).with_values<segtree<S,op,e>,true>(values);"
+  ],
+  "verification": {
+    "asan_ubsan_settings": 12,
+    "msan_settings": 2,
+    "allocation_settings": 4,
+    "independent_reference": "30種類の任意根・頂点番号置換の森を独立BFSで照合。BIT/Seg/Lazy、実ACL、非可換文字列と逆順更新、辺モード、大小/和、コピー/移動/再構築/例外、整数周回、値と分解の別名。",
+    "native_checks_checked": 291961,
+    "native_checks_skip": 291472,
+    "standard_fallback_checked": 291945,
+    "standard_fallback_skip": 291456,
+    "settings": "GCC15.2/Clang21.1.8、C++23O2、検査有無×貼付順。さらに128ビット拡張を除いた標準代替経路4設定。",
+    "allocation": "各構成248失敗・776成功、live_delta=0。factory/build/Ordered構築/コピー代入の途中失敗で旧値と分解を保持。",
+    "lsan": "環境のptrace制約でLeakSanitizerは動作せず、ASanはdetect_leaks=0。リークは独立した確保/解放数の試験で照合。MSanは2設定とも初回成功。",
+    "normal_samples": 8,
+    "variant_and_example_samples": 22,
+    "current_snapshot_scope": "Sanitizer/速度/入力例試験後の変更はAPIコメント1行のみ。コードの非コメント行の同一性を別途照合し、最終生成物・配布物は現行コメントまで同期。"
+  },
+  "performance": {
+    "source_sha256": "45b2681b58f6861453fef926c573c4e4231fbe48380b061f29b790c605871463",
+    "legacy_main": "既存オンライン2本のmain・IO・Fenwickをbyte固定。GCC/Clangとも追加前後の.textは同一。",
+    "legacy_code_evidence": "old_main_equivalence.json",
+    "environment": "environment.json",
+    "owned_measurement": {
+      "runs": 588,
+      "repetitions": 7,
+      "inputs": 7,
+      "compilers": 2,
+      "backends": [
+        "BIT",
+        "commutative Segtree"
+      ],
+      "labels": [
+        "separated",
+        "owned",
+        "control"
+      ],
+      "timing": "CPU12(P-Core)へ固定。1active実行パスへコピーしラベル順を乱数で入れ替え、rusageのuser+systemを記録。時間計測中は他エージェントの重いコンパイルを止めた。",
+      "baseline": "従来のHeavyLightDecompositionとRangeを値で所有する薄いadapter。同一のget/set/path_prodの計算手順と共通IO、同じコンパイラ設定。既存提出mainの速度比較ではなく新所有APIの費用比較。",
+      "final_mapping": "final_benchmark_mapping.json",
+      "mapping_scope": "測定後にfactoryの入力別名対策でconstructorのみ修正。最終版の4benchmark実行ファイル.text全体が、測定した対応実行ファイルとbyte一致することを別途確認。最終ヘッダーhashとmappingに記録。",
+      "results": "owner_benchmark_summary.json",
+      "raw": "owner_benchmark_raw.json",
+      "range_large": {
+        "minimum_ratio": 0.9898698791014021,
+        "maximum_ratio": 1.0521324445889557
+      },
+      "interpretation": "大規模の多くは数%以内の差。Clang BITのkillerは約5.2%遅い測定もあり、所有版を無費用または一律高速とは説明しない。既存APIの実行コードは変更なし。",
+      "tiny": "N=32,Q=32はプロセス起動・構築・破棄を含むsub-msで、+18〜20%などの比率は安定した操作単体性能を意味しない。N4096の4条件は同等または少し短縮。",
+      "scope_limits": "通常の可換BIT/Segtreeの同一logicalharness全体。Lazy・非可換モードの速度やあらゆる利用条件を保証しない。コンパイラによるコード配置の効果も含む。",
+      "output_check": "各入力・compiler・backendについて全21runの出力SHA256が一致。"
+    },
+    "candidate": {
+      "name": "path_prodでstate_->layoutを直接参照し空layout分岐を避ける",
+      "adopted": false,
+      "evidence": "candidate_code.json",
+      "reason": "Clang BITでは実行ファイル.text全体が変わらず、遅い条件を改善しない。GCCではコード量が少し減るが、追加測定/採用の根拠はなく今回の利用API改修に追加しない。"
+    },
+    "hot_clang_bit_evidence": "clang_bit_path_product_code.json",
+    "hot_clang_bit": "所有版と従来分離版のpath_product_implは467bytesでbyte同一。全体の時間差をHLDの中核算法変更として説明しない。"
+  },
+  "online": {
+    "confirmation": "Audit/online-hld-415174-2026-11-04.json",
+    "scope": "既存2本のAC246ms/327msは所有版追加前のソース。main/IO/使うFenwickは固定、GCC/Clangで.textが同一。現行ファイル全体は未提出。追加2本も未提出でACを転記しない。"
+  },
+  "driver_scope": "オンライン提出済みhld_jump/hld_vertex_add_path_sumのmainとIOはbyte固定。未提出だった補助2本(hld_path_prod/hld_path_composite)だけを所有版APIへ変更。性能比較は別の同一論理harnessで行い、既存mainの速度改善とは説明しない。",
+  "licensing": "既存CC0の自作HLDを継続し、所有部・逆順配列の対応・補助を自作。外部の実装本文をコピーしていない。API設計の参照URLは既存の表示を維持。",
+  "sources": {
+    "Graph/Heavy_Light_Decomposition.cpp": {
+      "sha256": "861af0c26da53a58df0909f7f24ad6652949739eb672aedd82fc5f368df0e2ea",
+      "bytes": 35958
+    },
+    "Document/heavy_light_decomposition.md": {
+      "sha256": "d07f7636e07439c512867d29cd56bcaeeae2738e88728dcd1f7bd776a4a38f03",
+      "bytes": 6574
+    },
+    "Examples/heavy_light_decomposition_example.cpp": {
+      "sha256": "397d8f4ecf5726706c8d973f7da3a31630badb9b0b37e1d1b082905da2657107",
+      "bytes": 2011
+    },
+    "Verify/current/tests/hld_owned_test.cpp": {
+      "sha256": "006d1ff0c67502b17937d6b7ff67773ece397c9cf7d6ef299c314c6f5e79e59c",
+      "bytes": 17968
+    },
+    "Verify/current/tests/hld_owned_allocation_test.cpp": {
+      "sha256": "906efe16c4e3d6655860719cdd5de367d0b326dec39f4cbf0ac7d450eecec966",
+      "bytes": 3559
+    },
+    "Verify/current/drivers/hld_path_prod_main.cpp": {
+      "sha256": "150248b3e34c17e391fc96f4ca16214d71d8143ab508a898dbf6bf3eec98d7a8",
+      "bytes": 619
+    },
+    "Verify/current/drivers/hld_path_composite_main.cpp": {
+      "sha256": "be8d7d8bf7003e851aa95f4c4e7df1670b34e32abb51ad86291a1d142b617f50",
+      "bytes": 1065
+    },
+    "Verify/current/groups/expansion_20261031.json": {
+      "sha256": "b15fec541d62789effafc691bcd1873fe6a02574f33ca36cc5c5be95c1cfa2f8",
+      "bytes": 118277
+    },
+    "Verify/current/judgements.json": {
+      "sha256": "385663d41b1d462396f94ebcad8c8e05c1b4e41a35ad9e350701eae1a076dfc4",
+      "bytes": 1058222
+    }
+  },
+  "evidence": {
+    "path": "Audit/data/hld-owned-2026-11-04.zip",
+    "sha256": "861e6bd10e704db446a10cb3d27a26598e77c6a634bae427dd070f02b59dd10e",
+    "entries": 96
+  },
+  "resubmission": [
+    "hld_jump",
+    "hld_vertex_add_path_sum",
+    "hld_path_prod",
+    "hld_path_composite"
+  ]
+}

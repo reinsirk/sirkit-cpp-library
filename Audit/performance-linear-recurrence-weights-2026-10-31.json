@@ -1,0 +1,1678 @@
+{
+  "date": "2026-10-31",
+  "scope": "LinearRecurrenceWeights; Term/BerlekampMassey/Prefix arithmetic unchanged",
+  "decision": "Adopt exact initial-range shortcut and Clang-only u32 Montgomery path d>=16 in ordinary source; no unsafe assumptions required. Derive compiler and Fast editions.",
+  "source_bridge": {
+    "formal": "Math/Linear_Recurrence.cpp",
+    "formal_sha256": "ce01c0f83e4d7d8041ee8e4e6c6670bda7a3c707e6791ca97f2a48019941b2f6",
+    "candidate_sha256": "7903f71c8ab635ccaaebc7c44be5ce6f6d914575fdaed36048a391259151db97",
+    "after_first_include_byte_identical": true,
+    "normal_and_fast": "Clang Montgomery path is exact safe owned arithmetic; adopt in ordinary and derive all editions."
+  },
+  "compiler_settings": [
+    "GCC15.2 -O2 -std=c++23",
+    "Clang21.1.8 -O2 -std=c++23",
+    "each default/native"
+  ],
+  "cpu": "Intel Core i9-14900K P-Core CPU12, other collaborators compile/test paused",
+  "main": "same opaque-input benchmark main and workload; library function only; no submission main changes",
+  "raw": "Audit/Measurements/linear-recurrence-weights-raw-2026-10-31.json",
+  "benchmark": "Audit/Measurements/linear-recurrence-weights-benchmark-2026-10-31.cpp",
+  "conditions": 1568,
+  "summary": [
+    {
+      "condition": [
+        "clang",
+        false,
+        0,
+        0,
+        1000
+      ],
+      "baseline_cpu_ns": 7168,
+      "ratios": {
+        "control": 0.9743303571428571,
+        "clang_weights_v2": 1.0369698660714286,
+        "normal_shortcut_v2": 1.041015625
+      }
+    },
+    {
+      "condition": [
+        "clang",
+        false,
+        1,
+        0,
+        2000
+      ],
+      "baseline_cpu_ns": 78582,
+      "ratios": {
+        "control": 1.0047339085286706,
+        "clang_weights_v2": 0.26564607670967905,
+        "normal_shortcut_v2": 0.25947417983762183
+      }
+    },
+    {
+      "condition": [
+        "clang",
+        false,
+        1,
+        18446744073709551615,
+        500
+      ],
+      "baseline_cpu_ns": 291172,
+      "ratios": {
+        "control": 1.006377673677414,
+        "clang_weights_v2": 1.0179481543555011,
+        "normal_shortcut_v2": 1.014809116261179
+      }
+    },
+    {
+      "condition": [
+        "clang",
+        false,
+        8,
+        3,
+        500
+      ],
+      "baseline_cpu_ns": 154890,
+      "ratios": {
+        "control": 0.9991994318548647,
+        "clang_weights_v2": 0.04840854800180774,
+        "normal_shortcut_v2": 0.04774355994576796
+      }
+    },
+    {
+      "condition": [
+        "clang",
+        false,
+        8,
+        18446744073709551615,
+        50
+      ],
+      "baseline_cpu_ns": 550710,
+      "ratios": {
+        "control": 0.9998619963320078,
+        "clang_weights_v2": 1.0029779738882534,
+        "normal_shortcut_v2": 1.0022661654954512
+      }
+    },
+    {
+      "condition": [
+        "clang",
+        false,
+        15,
+        18446744073709551615,
+        30
+      ],
+      "baseline_cpu_ns": 1173565,
+      "ratios": {
+        "control": 0.9967662634792278,
+        "clang_weights_v2": 0.9964117880134462,
+        "normal_shortcut_v2": 0.9940156702014801
+      }
+    },
+    {
+      "condition": [
+        "clang",
+        false,
+        16,
+        16,
+        1000
+      ],
+      "baseline_cpu_ns": 1807411,
+      "ratios": {
+        "control": 0.9987822360271128,
+        "clang_weights_v2": 0.8307662175343626,
+        "normal_shortcut_v2": 0.9982372576021724
+      }
+    },
+    {
+      "condition": [
+        "clang",
+        false,
+        16,
+        18446744073709551615,
+        30
+      ],
+      "baseline_cpu_ns": 1336563,
+      "ratios": {
+        "control": 0.9934181927825325,
+        "clang_weights_v2": 0.8141180026680374,
+        "normal_shortcut_v2": 1.0044412422010784
+      }
+    },
+    {
+      "condition": [
+        "clang",
+        false,
+        64,
+        18446744073709551615,
+        3
+      ],
+      "baseline_cpu_ns": 2236300,
+      "ratios": {
+        "control": 0.9974323659616331,
+        "clang_weights_v2": 0.7313110942181281,
+        "normal_shortcut_v2": 0.9973804945669186
+      }
+    },
+    {
+      "condition": [
+        "clang",
+        false,
+        256,
+        18446744073709551615,
+        1
+      ],
+      "baseline_cpu_ns": 11658000,
+      "ratios": {
+        "control": 1.000045119231429,
+        "clang_weights_v2": 0.7571991765311374,
+        "normal_shortcut_v2": 1.000255618459427
+      }
+    },
+    {
+      "condition": [
+        "clang",
+        false,
+        1024,
+        0,
+        1000
+      ],
+      "baseline_cpu_ns": 1814234,
+      "ratios": {
+        "control": 1.0001730757994833,
+        "clang_weights_v2": 0.40494555829071666,
+        "normal_shortcut_v2": 0.4066978129612828
+      }
+    },
+    {
+      "condition": [
+        "clang",
+        false,
+        1024,
+        511,
+        1
+      ],
+      "baseline_cpu_ns": 24862259,
+      "ratios": {
+        "control": 1.0001242847643088,
+        "clang_weights_v2": 0.0001676034345873398,
+        "normal_shortcut_v2": 0.00017102227114599683
+      }
+    },
+    {
+      "condition": [
+        "clang",
+        false,
+        1024,
+        1023,
+        1
+      ],
+      "baseline_cpu_ns": 27791588,
+      "ratios": {
+        "control": 1.0000497632593,
+        "clang_weights_v2": 0.00014777852924417273,
+        "normal_shortcut_v2": 0.00014738272602486766
+      }
+    },
+    {
+      "condition": [
+        "clang",
+        false,
+        1024,
+        1024,
+        1
+      ],
+      "baseline_cpu_ns": 16099261,
+      "ratios": {
+        "control": 0.9994678637733745,
+        "clang_weights_v2": 0.7521443375568605,
+        "normal_shortcut_v2": 1.0002872802670881
+      }
+    },
+    {
+      "condition": [
+        "clang",
+        true,
+        0,
+        0,
+        1000
+      ],
+      "baseline_cpu_ns": 7059,
+      "ratios": {
+        "clang_weights_v2": 1.0362657600226661,
+        "normal_shortcut_v2": 0.9769089106105681,
+        "control": 0.9465930018416207
+      }
+    },
+    {
+      "condition": [
+        "clang",
+        true,
+        1,
+        0,
+        2000
+      ],
+      "baseline_cpu_ns": 76397,
+      "ratios": {
+        "clang_weights_v2": 0.2723405369320785,
+        "normal_shortcut_v2": 0.25830857232613846,
+        "control": 1.0488893542940168
+      }
+    },
+    {
+      "condition": [
+        "clang",
+        true,
+        1,
+        18446744073709551615,
+        500
+      ],
+      "baseline_cpu_ns": 333846,
+      "ratios": {
+        "clang_weights_v2": 1.0054486200224055,
+        "normal_shortcut_v2": 1.0071949341912139,
+        "control": 1.0058470073027683
+      }
+    },
+    {
+      "condition": [
+        "clang",
+        true,
+        8,
+        3,
+        500
+      ],
+      "baseline_cpu_ns": 162400,
+      "ratios": {
+        "clang_weights_v2": 0.04646551724137931,
+        "normal_shortcut_v2": 0.045714285714285714,
+        "control": 0.9748399014778325
+      }
+    },
+    {
+      "condition": [
+        "clang",
+        true,
+        8,
+        18446744073709551615,
+        50
+      ],
+      "baseline_cpu_ns": 566916,
+      "ratios": {
+        "clang_weights_v2": 0.9991674251564606,
+        "normal_shortcut_v2": 0.9898979743030714,
+        "control": 0.9892382645753516
+      }
+    },
+    {
+      "condition": [
+        "clang",
+        true,
+        15,
+        18446744073709551615,
+        30
+      ],
+      "baseline_cpu_ns": 1164518,
+      "ratios": {
+        "clang_weights_v2": 1.0005727691628639,
+        "normal_shortcut_v2": 0.9965676786447268,
+        "control": 1.0114287628014338
+      }
+    },
+    {
+      "condition": [
+        "clang",
+        true,
+        16,
+        16,
+        1000
+      ],
+      "baseline_cpu_ns": 1783762,
+      "ratios": {
+        "clang_weights_v2": 0.8574938809101215,
+        "normal_shortcut_v2": 0.9968476736246203,
+        "control": 1.0019144930769912
+      }
+    },
+    {
+      "condition": [
+        "clang",
+        true,
+        16,
+        18446744073709551615,
+        30
+      ],
+      "baseline_cpu_ns": 1308226,
+      "ratios": {
+        "clang_weights_v2": 0.8508331129330865,
+        "normal_shortcut_v2": 1.000785032555537,
+        "control": 1.0025798294790045
+      }
+    },
+    {
+      "condition": [
+        "clang",
+        true,
+        64,
+        18446744073709551615,
+        3
+      ],
+      "baseline_cpu_ns": 2021302,
+      "ratios": {
+        "clang_weights_v2": 0.7517501095828333,
+        "normal_shortcut_v2": 1.0017493674868971,
+        "control": 1.0021223943774853
+      }
+    },
+    {
+      "condition": [
+        "clang",
+        true,
+        256,
+        18446744073709551615,
+        1
+      ],
+      "baseline_cpu_ns": 10524462,
+      "ratios": {
+        "clang_weights_v2": 0.7606605449285674,
+        "normal_shortcut_v2": 1.0598439141117142,
+        "control": 0.9998057857969367
+      }
+    },
+    {
+      "condition": [
+        "clang",
+        true,
+        1024,
+        0,
+        1000
+      ],
+      "baseline_cpu_ns": 1800675,
+      "ratios": {
+        "clang_weights_v2": 0.4079364682688436,
+        "normal_shortcut_v2": 0.41004456662085054,
+        "control": 1.000431504852347
+      }
+    },
+    {
+      "condition": [
+        "clang",
+        true,
+        1024,
+        511,
+        1
+      ],
+      "baseline_cpu_ns": 22857312,
+      "ratios": {
+        "clang_weights_v2": 0.000178542428786027,
+        "normal_shortcut_v2": 0.00018094866097990875,
+        "control": 0.9937629149044297
+      }
+    },
+    {
+      "condition": [
+        "clang",
+        true,
+        1024,
+        1023,
+        1
+      ],
+      "baseline_cpu_ns": 25472065,
+      "ratios": {
+        "clang_weights_v2": 0.00015970436633229383,
+        "normal_shortcut_v2": 0.00015829105335590186,
+        "control": 1.001449902079003
+      }
+    },
+    {
+      "condition": [
+        "clang",
+        true,
+        1024,
+        1024,
+        1
+      ],
+      "baseline_cpu_ns": 14742159,
+      "ratios": {
+        "clang_weights_v2": 0.747898459106295,
+        "normal_shortcut_v2": 1.014885065342193,
+        "control": 0.9999575367488575
+      }
+    },
+    {
+      "condition": [
+        "gcc",
+        false,
+        0,
+        0,
+        1000
+      ],
+      "baseline_cpu_ns": 5700,
+      "ratios": {
+        "normal_shortcut_v2": 1.109298245614035,
+        "control": 1.0021052631578948,
+        "clang_weights_v2": 1.092982456140351
+      }
+    },
+    {
+      "condition": [
+        "gcc",
+        false,
+        1,
+        0,
+        2000
+      ],
+      "baseline_cpu_ns": 78058,
+      "ratios": {
+        "normal_shortcut_v2": 0.25536139793486895,
+        "control": 0.9555971200901894,
+        "clang_weights_v2": 0.252747956647621
+      }
+    },
+    {
+      "condition": [
+        "gcc",
+        false,
+        1,
+        18446744073709551615,
+        500
+      ],
+      "baseline_cpu_ns": 304844,
+      "ratios": {
+        "normal_shortcut_v2": 1.0105496581858262,
+        "control": 0.9953779638109984,
+        "clang_weights_v2": 1.0026046108829434
+      }
+    },
+    {
+      "condition": [
+        "gcc",
+        false,
+        8,
+        3,
+        500
+      ],
+      "baseline_cpu_ns": 161998,
+      "ratios": {
+        "normal_shortcut_v2": 0.04327213916221188,
+        "control": 1.033623871899653,
+        "clang_weights_v2": 0.04413017444659811
+      }
+    },
+    {
+      "condition": [
+        "gcc",
+        false,
+        8,
+        18446744073709551615,
+        50
+      ],
+      "baseline_cpu_ns": 572423,
+      "ratios": {
+        "normal_shortcut_v2": 0.9807065753821912,
+        "control": 0.9790085304049627,
+        "clang_weights_v2": 0.992142174580686
+      }
+    },
+    {
+      "condition": [
+        "gcc",
+        false,
+        15,
+        18446744073709551615,
+        30
+      ],
+      "baseline_cpu_ns": 1203227,
+      "ratios": {
+        "normal_shortcut_v2": 0.9719163549355192,
+        "control": 0.9552902320177323,
+        "clang_weights_v2": 0.9686933554516313
+      }
+    },
+    {
+      "condition": [
+        "gcc",
+        false,
+        16,
+        16,
+        1000
+      ],
+      "baseline_cpu_ns": 1813883,
+      "ratios": {
+        "normal_shortcut_v2": 0.9883239437163257,
+        "control": 0.9930932700730973,
+        "clang_weights_v2": 0.9909790212488898
+      }
+    },
+    {
+      "condition": [
+        "gcc",
+        false,
+        16,
+        18446744073709551615,
+        30
+      ],
+      "baseline_cpu_ns": 1325391,
+      "ratios": {
+        "normal_shortcut_v2": 0.9988976837778437,
+        "control": 0.9920883724123674,
+        "clang_weights_v2": 1.0057718816560548
+      }
+    },
+    {
+      "condition": [
+        "gcc",
+        false,
+        64,
+        18446744073709551615,
+        3
+      ],
+      "baseline_cpu_ns": 2201362,
+      "ratios": {
+        "normal_shortcut_v2": 0.9963100117109317,
+        "control": 0.9903446139253789,
+        "clang_weights_v2": 0.9934499641585528
+      }
+    },
+    {
+      "condition": [
+        "gcc",
+        false,
+        256,
+        18446744073709551615,
+        1
+      ],
+      "baseline_cpu_ns": 11496898,
+      "ratios": {
+        "normal_shortcut_v2": 1.0019277373775082,
+        "control": 1.0020986530453693,
+        "clang_weights_v2": 1.0007132358658832
+      }
+    },
+    {
+      "condition": [
+        "gcc",
+        false,
+        1024,
+        0,
+        1000
+      ],
+      "baseline_cpu_ns": 1623320,
+      "ratios": {
+        "normal_shortcut_v2": 0.45451482147697314,
+        "control": 1.0017076115614914,
+        "clang_weights_v2": 0.45431954266564817
+      }
+    },
+    {
+      "condition": [
+        "gcc",
+        false,
+        1024,
+        511,
+        1
+      ],
+      "baseline_cpu_ns": 24211565,
+      "ratios": {
+        "normal_shortcut_v2": 0.00015372818733526726,
+        "control": 1.0024653507528323,
+        "clang_weights_v2": 0.00015550419809706641
+      }
+    },
+    {
+      "condition": [
+        "gcc",
+        false,
+        1024,
+        1023,
+        1
+      ],
+      "baseline_cpu_ns": 27100955,
+      "ratios": {
+        "normal_shortcut_v2": 0.00013619446251986322,
+        "control": 1.0014681770439455,
+        "clang_weights_v2": 0.00013944158056422736
+      }
+    },
+    {
+      "condition": [
+        "gcc",
+        false,
+        1024,
+        1024,
+        1
+      ],
+      "baseline_cpu_ns": 15644821,
+      "ratios": {
+        "normal_shortcut_v2": 0.9998196208189278,
+        "control": 0.9997376767685613,
+        "clang_weights_v2": 1.001226731836689
+      }
+    },
+    {
+      "condition": [
+        "gcc",
+        true,
+        0,
+        0,
+        1000
+      ],
+      "baseline_cpu_ns": 5631,
+      "ratios": {
+        "clang_weights_v2": 1.151305274374001,
+        "normal_shortcut_v2": 1.0648197478245427,
+        "control": 1.0147398330669508
+      }
+    },
+    {
+      "condition": [
+        "gcc",
+        true,
+        1,
+        0,
+        2000
+      ],
+      "baseline_cpu_ns": 75930,
+      "ratios": {
+        "clang_weights_v2": 0.26371658106150403,
+        "normal_shortcut_v2": 0.2629922296852364,
+        "control": 1.006426972211247
+      }
+    },
+    {
+      "condition": [
+        "gcc",
+        true,
+        1,
+        18446744073709551615,
+        500
+      ],
+      "baseline_cpu_ns": 314058,
+      "ratios": {
+        "clang_weights_v2": 0.9684357666418305,
+        "normal_shortcut_v2": 0.9674773449490222,
+        "control": 0.9911990778773347
+      }
+    },
+    {
+      "condition": [
+        "gcc",
+        true,
+        8,
+        3,
+        500
+      ],
+      "baseline_cpu_ns": 160086,
+      "ratios": {
+        "clang_weights_v2": 0.04541933710630536,
+        "normal_shortcut_v2": 0.044700973226890546,
+        "control": 0.9962332746148945
+      }
+    },
+    {
+      "condition": [
+        "gcc",
+        true,
+        8,
+        18446744073709551615,
+        50
+      ],
+      "baseline_cpu_ns": 565777,
+      "ratios": {
+        "clang_weights_v2": 0.9996129216988319,
+        "normal_shortcut_v2": 1.0006698752335283,
+        "control": 0.9941443360193151
+      }
+    },
+    {
+      "condition": [
+        "gcc",
+        true,
+        15,
+        18446744073709551615,
+        30
+      ],
+      "baseline_cpu_ns": 1148360,
+      "ratios": {
+        "clang_weights_v2": 0.9988609843603051,
+        "normal_shortcut_v2": 0.9981016406005085,
+        "control": 0.997406736563447
+      }
+    },
+    {
+      "condition": [
+        "gcc",
+        true,
+        16,
+        16,
+        1000
+      ],
+      "baseline_cpu_ns": 1769473,
+      "ratios": {
+        "clang_weights_v2": 1.0019627312764874,
+        "normal_shortcut_v2": 1.0031404830703832,
+        "control": 1.000926264486658
+      }
+    },
+    {
+      "condition": [
+        "gcc",
+        true,
+        16,
+        18446744073709551615,
+        30
+      ],
+      "baseline_cpu_ns": 1323168,
+      "ratios": {
+        "clang_weights_v2": 0.9946136847323999,
+        "normal_shortcut_v2": 0.9830709327916032,
+        "control": 0.9883582432465114
+      }
+    },
+    {
+      "condition": [
+        "gcc",
+        true,
+        64,
+        18446744073709551615,
+        3
+      ],
+      "baseline_cpu_ns": 2140588,
+      "ratios": {
+        "clang_weights_v2": 1.0015930202355614,
+        "normal_shortcut_v2": 1.0093301466699804,
+        "control": 1.0004111019962738
+      }
+    },
+    {
+      "condition": [
+        "gcc",
+        true,
+        256,
+        18446744073709551615,
+        1
+      ],
+      "baseline_cpu_ns": 11434507,
+      "ratios": {
+        "clang_weights_v2": 1.0001655515187493,
+        "normal_shortcut_v2": 0.9996375007685071,
+        "control": 1.0001136909531823
+      }
+    },
+    {
+      "condition": [
+        "gcc",
+        true,
+        1024,
+        0,
+        1000
+      ],
+      "baseline_cpu_ns": 1675911,
+      "ratios": {
+        "clang_weights_v2": 0.44006990824691766,
+        "normal_shortcut_v2": 0.4401510581409156,
+        "control": 0.9932711223925376
+      }
+    },
+    {
+      "condition": [
+        "gcc",
+        true,
+        1024,
+        511,
+        1
+      ],
+      "baseline_cpu_ns": 24101008,
+      "ratios": {
+        "clang_weights_v2": 0.000169660953599949,
+        "normal_shortcut_v2": 0.000160491212649695,
+        "control": 0.9996248704618496
+      }
+    },
+    {
+      "condition": [
+        "gcc",
+        true,
+        1024,
+        1023,
+        1
+      ],
+      "baseline_cpu_ns": 26931017,
+      "ratios": {
+        "clang_weights_v2": 0.0001428093116572612,
+        "normal_shortcut_v2": 0.00014084132062298278,
+        "control": 1.000156325325553
+      }
+    },
+    {
+      "condition": [
+        "gcc",
+        true,
+        1024,
+        1024,
+        1
+      ],
+      "baseline_cpu_ns": 15607359,
+      "ratios": {
+        "clang_weights_v2": 0.9987023429140062,
+        "normal_shortcut_v2": 0.9972530906734445,
+        "control": 1.0008004557337342
+      }
+    }
+  ],
+  "validation_v2": [
+    {
+      "candidate": "normal_shortcut_v2",
+      "compiler": "gcc",
+      "skip": false,
+      "mode": "default",
+      "fixture": "/home/reinsirk/Atcoder_Env/Verify/current/tests/linear_recurrence_reference_test.cpp",
+      "fixture_sha256": "0f3c3305d177d8a35139f2e9d31fc8c0143f607ca1f746f993aae9d1e6624b03",
+      "source_sha256": "ae3c682f74bbfe2379d2df7d71d8f4acc8ed53fa44c79e5008f2951e808713e8",
+      "command": [
+        "taskset",
+        "-c",
+        "2",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-DRECURRENCE_HEADER=\"/tmp/sirkit_12h_20261031_095733/recurrence_weights_candidates/normal_shortcut_v2.hpp\"",
+        "-DHEADER=\"/tmp/sirkit_12h_20261031_095733/recurrence_weights_candidates/normal_shortcut_v2.hpp\"",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/linear_recurrence_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/recurrence_weights_candidates/validation_v2/normal_shortcut_v2gccFalsedefaultlinear_recurrence_reference_test"
+      ],
+      "build_exit": 0,
+      "diagnostics": "",
+      "run_exit": 0,
+      "stdout": "PASS recurrence checks=200737; Gaussian minimum-order, GF4, ring8, matrix-power uint64, unnormalized residues\n",
+      "stderr": ""
+    },
+    {
+      "candidate": "normal_shortcut_v2",
+      "compiler": "gcc",
+      "skip": false,
+      "mode": "default",
+      "fixture": "/home/reinsirk/Atcoder_Env/Verify/current/tests/linear_recurrence_allocation_test.cpp",
+      "fixture_sha256": "cbe492e520a57bf8e58b0926de07898c650c567d3a780f422e4004f675ffc5ff",
+      "source_sha256": "ae3c682f74bbfe2379d2df7d71d8f4acc8ed53fa44c79e5008f2951e808713e8",
+      "command": [
+        "taskset",
+        "-c",
+        "2",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-DRECURRENCE_HEADER=\"/tmp/sirkit_12h_20261031_095733/recurrence_weights_candidates/normal_shortcut_v2.hpp\"",
+        "-DHEADER=\"/tmp/sirkit_12h_20261031_095733/recurrence_weights_candidates/normal_shortcut_v2.hpp\"",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/linear_recurrence_allocation_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/recurrence_weights_candidates/validation_v2/normal_shortcut_v2gccFalsedefaultlinear_recurrence_allocation_test"
+      ],
+      "build_exit": 0,
+      "diagnostics": "",
+      "run_exit": 0,
+      "stdout": "PASS 800 allocation-failure budgets, zero outstanding allocation blocks\n",
+      "stderr": ""
+    },
+    {
+      "candidate": "normal_shortcut_v2",
+      "compiler": "gcc",
+      "skip": false,
+      "mode": "native",
+      "fixture": "/home/reinsirk/Atcoder_Env/Verify/current/tests/linear_recurrence_reference_test.cpp",
+      "fixture_sha256": "0f3c3305d177d8a35139f2e9d31fc8c0143f607ca1f746f993aae9d1e6624b03",
+      "source_sha256": "ae3c682f74bbfe2379d2df7d71d8f4acc8ed53fa44c79e5008f2951e808713e8",
+      "command": [
+        "taskset",
+        "-c",
+        "2",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-DRECURRENCE_HEADER=\"/tmp/sirkit_12h_20261031_095733/recurrence_weights_candidates/normal_shortcut_v2.hpp\"",
+        "-DHEADER=\"/tmp/sirkit_12h_20261031_095733/recurrence_weights_candidates/normal_shortcut_v2.hpp\"",
+        "-march=native",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/linear_recurrence_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/recurrence_weights_candidates/validation_v2/normal_shortcut_v2gccFalsenativelinear_recurrence_reference_test"
+      ],
+      "build_exit": 0,
+      "diagnostics": "",
+      "run_exit": 0,
+      "stdout": "PASS recurrence checks=200737; Gaussian minimum-order, GF4, ring8, matrix-power uint64, unnormalized residues\n",
+      "stderr": ""
+    },
+    {
+      "candidate": "normal_shortcut_v2",
+      "compiler": "gcc",
+      "skip": true,
+      "mode": "default",
+      "fixture": "/home/reinsirk/Atcoder_Env/Verify/current/tests/linear_recurrence_reference_test.cpp",
+      "fixture_sha256": "0f3c3305d177d8a35139f2e9d31fc8c0143f607ca1f746f993aae9d1e6624b03",
+      "source_sha256": "ae3c682f74bbfe2379d2df7d71d8f4acc8ed53fa44c79e5008f2951e808713e8",
+      "command": [
+        "taskset",
+        "-c",
+        "2",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-DRECURRENCE_HEADER=\"/tmp/sirkit_12h_20261031_095733/recurrence_weights_candidates/normal_shortcut_v2.hpp\"",
+        "-DHEADER=\"/tmp/sirkit_12h_20261031_095733/recurrence_weights_candidates/normal_shortcut_v2.hpp\"",
+        "-DSKIP_RUNTIME_CHECKS",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/linear_recurrence_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/recurrence_weights_candidates/validation_v2/normal_shortcut_v2gccTruedefaultlinear_recurrence_reference_test"
+      ],
+      "build_exit": 0,
+      "diagnostics": "",
+      "run_exit": 0,
+      "stdout": "PASS recurrence checks=200736; Gaussian minimum-order, GF4, ring8, matrix-power uint64, unnormalized residues\n",
+      "stderr": ""
+    },
+    {
+      "candidate": "normal_shortcut_v2",
+      "compiler": "gcc",
+      "skip": true,
+      "mode": "default",
+      "fixture": "/home/reinsirk/Atcoder_Env/Verify/current/tests/linear_recurrence_allocation_test.cpp",
+      "fixture_sha256": "cbe492e520a57bf8e58b0926de07898c650c567d3a780f422e4004f675ffc5ff",
+      "source_sha256": "ae3c682f74bbfe2379d2df7d71d8f4acc8ed53fa44c79e5008f2951e808713e8",
+      "command": [
+        "taskset",
+        "-c",
+        "2",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-DRECURRENCE_HEADER=\"/tmp/sirkit_12h_20261031_095733/recurrence_weights_candidates/normal_shortcut_v2.hpp\"",
+        "-DHEADER=\"/tmp/sirkit_12h_20261031_095733/recurrence_weights_candidates/normal_shortcut_v2.hpp\"",
+        "-DSKIP_RUNTIME_CHECKS",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/linear_recurrence_allocation_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/recurrence_weights_candidates/validation_v2/normal_shortcut_v2gccTruedefaultlinear_recurrence_allocation_test"
+      ],
+      "build_exit": 0,
+      "diagnostics": "",
+      "run_exit": 0,
+      "stdout": "PASS 800 allocation-failure budgets, zero outstanding allocation blocks\n",
+      "stderr": ""
+    },
+    {
+      "candidate": "normal_shortcut_v2",
+      "compiler": "gcc",
+      "skip": true,
+      "mode": "native",
+      "fixture": "/home/reinsirk/Atcoder_Env/Verify/current/tests/linear_recurrence_reference_test.cpp",
+      "fixture_sha256": "0f3c3305d177d8a35139f2e9d31fc8c0143f607ca1f746f993aae9d1e6624b03",
+      "source_sha256": "ae3c682f74bbfe2379d2df7d71d8f4acc8ed53fa44c79e5008f2951e808713e8",
+      "command": [
+        "taskset",
+        "-c",
+        "2",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-DRECURRENCE_HEADER=\"/tmp/sirkit_12h_20261031_095733/recurrence_weights_candidates/normal_shortcut_v2.hpp\"",
+        "-DHEADER=\"/tmp/sirkit_12h_20261031_095733/recurrence_weights_candidates/normal_shortcut_v2.hpp\"",
+        "-DSKIP_RUNTIME_CHECKS",
+        "-march=native",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/linear_recurrence_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/recurrence_weights_candidates/validation_v2/normal_shortcut_v2gccTruenativelinear_recurrence_reference_test"
+      ],
+      "build_exit": 0,
+      "diagnostics": "",
+      "run_exit": 0,
+      "stdout": "PASS recurrence checks=200736; Gaussian minimum-order, GF4, ring8, matrix-power uint64, unnormalized residues\n",
+      "stderr": ""
+    },
+    {
+      "candidate": "normal_shortcut_v2",
+      "compiler": "clang",
+      "skip": false,
+      "mode": "default",
+      "fixture": "/home/reinsirk/Atcoder_Env/Verify/current/tests/linear_recurrence_reference_test.cpp",
+      "fixture_sha256": "0f3c3305d177d8a35139f2e9d31fc8c0143f607ca1f746f993aae9d1e6624b03",
+      "source_sha256": "ae3c682f74bbfe2379d2df7d71d8f4acc8ed53fa44c79e5008f2951e808713e8",
+      "command": [
+        "taskset",
+        "-c",
+        "2",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-DRECURRENCE_HEADER=\"/tmp/sirkit_12h_20261031_095733/recurrence_weights_candidates/normal_shortcut_v2.hpp\"",
+        "-DHEADER=\"/tmp/sirkit_12h_20261031_095733/recurrence_weights_candidates/normal_shortcut_v2.hpp\"",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/linear_recurrence_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/recurrence_weights_candidates/validation_v2/normal_shortcut_v2clangFalsedefaultlinear_recurrence_reference_test"
+      ],
+      "build_exit": 0,
+      "diagnostics": "",
+      "run_exit": 0,
+      "stdout": "PASS recurrence checks=200737; Gaussian minimum-order, GF4, ring8, matrix-power uint64, unnormalized residues\n",
+      "stderr": ""
+    },
+    {
+      "candidate": "normal_shortcut_v2",
+      "compiler": "clang",
+      "skip": false,
+      "mode": "default",
+      "fixture": "/home/reinsirk/Atcoder_Env/Verify/current/tests/linear_recurrence_allocation_test.cpp",
+      "fixture_sha256": "cbe492e520a57bf8e58b0926de07898c650c567d3a780f422e4004f675ffc5ff",
+      "source_sha256": "ae3c682f74bbfe2379d2df7d71d8f4acc8ed53fa44c79e5008f2951e808713e8",
+      "command": [
+        "taskset",
+        "-c",
+        "2",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-DRECURRENCE_HEADER=\"/tmp/sirkit_12h_20261031_095733/recurrence_weights_candidates/normal_shortcut_v2.hpp\"",
+        "-DHEADER=\"/tmp/sirkit_12h_20261031_095733/recurrence_weights_candidates/normal_shortcut_v2.hpp\"",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/linear_recurrence_allocation_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/recurrence_weights_candidates/validation_v2/normal_shortcut_v2clangFalsedefaultlinear_recurrence_allocation_test"
+      ],
+      "build_exit": 0,
+      "diagnostics": "",
+      "run_exit": 0,
+      "stdout": "PASS 800 allocation-failure budgets, zero outstanding allocation blocks\n",
+      "stderr": ""
+    },
+    {
+      "candidate": "normal_shortcut_v2",
+      "compiler": "clang",
+      "skip": false,
+      "mode": "native",
+      "fixture": "/home/reinsirk/Atcoder_Env/Verify/current/tests/linear_recurrence_reference_test.cpp",
+      "fixture_sha256": "0f3c3305d177d8a35139f2e9d31fc8c0143f607ca1f746f993aae9d1e6624b03",
+      "source_sha256": "ae3c682f74bbfe2379d2df7d71d8f4acc8ed53fa44c79e5008f2951e808713e8",
+      "command": [
+        "taskset",
+        "-c",
+        "2",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-DRECURRENCE_HEADER=\"/tmp/sirkit_12h_20261031_095733/recurrence_weights_candidates/normal_shortcut_v2.hpp\"",
+        "-DHEADER=\"/tmp/sirkit_12h_20261031_095733/recurrence_weights_candidates/normal_shortcut_v2.hpp\"",
+        "-march=native",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/linear_recurrence_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/recurrence_weights_candidates/validation_v2/normal_shortcut_v2clangFalsenativelinear_recurrence_reference_test"
+      ],
+      "build_exit": 0,
+      "diagnostics": "",
+      "run_exit": 0,
+      "stdout": "PASS recurrence checks=200737; Gaussian minimum-order, GF4, ring8, matrix-power uint64, unnormalized residues\n",
+      "stderr": ""
+    },
+    {
+      "candidate": "normal_shortcut_v2",
+      "compiler": "clang",
+      "skip": true,
+      "mode": "default",
+      "fixture": "/home/reinsirk/Atcoder_Env/Verify/current/tests/linear_recurrence_reference_test.cpp",
+      "fixture_sha256": "0f3c3305d177d8a35139f2e9d31fc8c0143f607ca1f746f993aae9d1e6624b03",
+      "source_sha256": "ae3c682f74bbfe2379d2df7d71d8f4acc8ed53fa44c79e5008f2951e808713e8",
+      "command": [
+        "taskset",
+        "-c",
+        "2",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-DRECURRENCE_HEADER=\"/tmp/sirkit_12h_20261031_095733/recurrence_weights_candidates/normal_shortcut_v2.hpp\"",
+        "-DHEADER=\"/tmp/sirkit_12h_20261031_095733/recurrence_weights_candidates/normal_shortcut_v2.hpp\"",
+        "-DSKIP_RUNTIME_CHECKS",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/linear_recurrence_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/recurrence_weights_candidates/validation_v2/normal_shortcut_v2clangTruedefaultlinear_recurrence_reference_test"
+      ],
+      "build_exit": 0,
+      "diagnostics": "",
+      "run_exit": 0,
+      "stdout": "PASS recurrence checks=200736; Gaussian minimum-order, GF4, ring8, matrix-power uint64, unnormalized residues\n",
+      "stderr": ""
+    },
+    {
+      "candidate": "normal_shortcut_v2",
+      "compiler": "clang",
+      "skip": true,
+      "mode": "default",
+      "fixture": "/home/reinsirk/Atcoder_Env/Verify/current/tests/linear_recurrence_allocation_test.cpp",
+      "fixture_sha256": "cbe492e520a57bf8e58b0926de07898c650c567d3a780f422e4004f675ffc5ff",
+      "source_sha256": "ae3c682f74bbfe2379d2df7d71d8f4acc8ed53fa44c79e5008f2951e808713e8",
+      "command": [
+        "taskset",
+        "-c",
+        "2",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-DRECURRENCE_HEADER=\"/tmp/sirkit_12h_20261031_095733/recurrence_weights_candidates/normal_shortcut_v2.hpp\"",
+        "-DHEADER=\"/tmp/sirkit_12h_20261031_095733/recurrence_weights_candidates/normal_shortcut_v2.hpp\"",
+        "-DSKIP_RUNTIME_CHECKS",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/linear_recurrence_allocation_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/recurrence_weights_candidates/validation_v2/normal_shortcut_v2clangTruedefaultlinear_recurrence_allocation_test"
+      ],
+      "build_exit": 0,
+      "diagnostics": "",
+      "run_exit": 0,
+      "stdout": "PASS 800 allocation-failure budgets, zero outstanding allocation blocks\n",
+      "stderr": ""
+    },
+    {
+      "candidate": "normal_shortcut_v2",
+      "compiler": "clang",
+      "skip": true,
+      "mode": "native",
+      "fixture": "/home/reinsirk/Atcoder_Env/Verify/current/tests/linear_recurrence_reference_test.cpp",
+      "fixture_sha256": "0f3c3305d177d8a35139f2e9d31fc8c0143f607ca1f746f993aae9d1e6624b03",
+      "source_sha256": "ae3c682f74bbfe2379d2df7d71d8f4acc8ed53fa44c79e5008f2951e808713e8",
+      "command": [
+        "taskset",
+        "-c",
+        "2",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-DRECURRENCE_HEADER=\"/tmp/sirkit_12h_20261031_095733/recurrence_weights_candidates/normal_shortcut_v2.hpp\"",
+        "-DHEADER=\"/tmp/sirkit_12h_20261031_095733/recurrence_weights_candidates/normal_shortcut_v2.hpp\"",
+        "-DSKIP_RUNTIME_CHECKS",
+        "-march=native",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/linear_recurrence_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/recurrence_weights_candidates/validation_v2/normal_shortcut_v2clangTruenativelinear_recurrence_reference_test"
+      ],
+      "build_exit": 0,
+      "diagnostics": "",
+      "run_exit": 0,
+      "stdout": "PASS recurrence checks=200736; Gaussian minimum-order, GF4, ring8, matrix-power uint64, unnormalized residues\n",
+      "stderr": ""
+    },
+    {
+      "candidate": "clang_weights_v2",
+      "compiler": "gcc",
+      "skip": false,
+      "mode": "default",
+      "fixture": "/home/reinsirk/Atcoder_Env/Verify/current/tests/linear_recurrence_reference_test.cpp",
+      "fixture_sha256": "0f3c3305d177d8a35139f2e9d31fc8c0143f607ca1f746f993aae9d1e6624b03",
+      "source_sha256": "7903f71c8ab635ccaaebc7c44be5ce6f6d914575fdaed36048a391259151db97",
+      "command": [
+        "taskset",
+        "-c",
+        "2",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-DRECURRENCE_HEADER=\"/tmp/sirkit_12h_20261031_095733/recurrence_weights_candidates/clang_weights_v2.hpp\"",
+        "-DHEADER=\"/tmp/sirkit_12h_20261031_095733/recurrence_weights_candidates/clang_weights_v2.hpp\"",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/linear_recurrence_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/recurrence_weights_candidates/validation_v2/clang_weights_v2gccFalsedefaultlinear_recurrence_reference_test"
+      ],
+      "build_exit": 0,
+      "diagnostics": "",
+      "run_exit": 0,
+      "stdout": "PASS recurrence checks=200737; Gaussian minimum-order, GF4, ring8, matrix-power uint64, unnormalized residues\n",
+      "stderr": ""
+    },
+    {
+      "candidate": "clang_weights_v2",
+      "compiler": "gcc",
+      "skip": false,
+      "mode": "default",
+      "fixture": "/home/reinsirk/Atcoder_Env/Verify/current/tests/linear_recurrence_allocation_test.cpp",
+      "fixture_sha256": "cbe492e520a57bf8e58b0926de07898c650c567d3a780f422e4004f675ffc5ff",
+      "source_sha256": "7903f71c8ab635ccaaebc7c44be5ce6f6d914575fdaed36048a391259151db97",
+      "command": [
+        "taskset",
+        "-c",
+        "2",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-DRECURRENCE_HEADER=\"/tmp/sirkit_12h_20261031_095733/recurrence_weights_candidates/clang_weights_v2.hpp\"",
+        "-DHEADER=\"/tmp/sirkit_12h_20261031_095733/recurrence_weights_candidates/clang_weights_v2.hpp\"",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/linear_recurrence_allocation_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/recurrence_weights_candidates/validation_v2/clang_weights_v2gccFalsedefaultlinear_recurrence_allocation_test"
+      ],
+      "build_exit": 0,
+      "diagnostics": "",
+      "run_exit": 0,
+      "stdout": "PASS 800 allocation-failure budgets, zero outstanding allocation blocks\n",
+      "stderr": ""
+    },
+    {
+      "candidate": "clang_weights_v2",
+      "compiler": "gcc",
+      "skip": false,
+      "mode": "native",
+      "fixture": "/home/reinsirk/Atcoder_Env/Verify/current/tests/linear_recurrence_reference_test.cpp",
+      "fixture_sha256": "0f3c3305d177d8a35139f2e9d31fc8c0143f607ca1f746f993aae9d1e6624b03",
+      "source_sha256": "7903f71c8ab635ccaaebc7c44be5ce6f6d914575fdaed36048a391259151db97",
+      "command": [
+        "taskset",
+        "-c",
+        "2",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-DRECURRENCE_HEADER=\"/tmp/sirkit_12h_20261031_095733/recurrence_weights_candidates/clang_weights_v2.hpp\"",
+        "-DHEADER=\"/tmp/sirkit_12h_20261031_095733/recurrence_weights_candidates/clang_weights_v2.hpp\"",
+        "-march=native",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/linear_recurrence_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/recurrence_weights_candidates/validation_v2/clang_weights_v2gccFalsenativelinear_recurrence_reference_test"
+      ],
+      "build_exit": 0,
+      "diagnostics": "",
+      "run_exit": 0,
+      "stdout": "PASS recurrence checks=200737; Gaussian minimum-order, GF4, ring8, matrix-power uint64, unnormalized residues\n",
+      "stderr": ""
+    },
+    {
+      "candidate": "clang_weights_v2",
+      "compiler": "gcc",
+      "skip": true,
+      "mode": "default",
+      "fixture": "/home/reinsirk/Atcoder_Env/Verify/current/tests/linear_recurrence_reference_test.cpp",
+      "fixture_sha256": "0f3c3305d177d8a35139f2e9d31fc8c0143f607ca1f746f993aae9d1e6624b03",
+      "source_sha256": "7903f71c8ab635ccaaebc7c44be5ce6f6d914575fdaed36048a391259151db97",
+      "command": [
+        "taskset",
+        "-c",
+        "2",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-DRECURRENCE_HEADER=\"/tmp/sirkit_12h_20261031_095733/recurrence_weights_candidates/clang_weights_v2.hpp\"",
+        "-DHEADER=\"/tmp/sirkit_12h_20261031_095733/recurrence_weights_candidates/clang_weights_v2.hpp\"",
+        "-DSKIP_RUNTIME_CHECKS",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/linear_recurrence_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/recurrence_weights_candidates/validation_v2/clang_weights_v2gccTruedefaultlinear_recurrence_reference_test"
+      ],
+      "build_exit": 0,
+      "diagnostics": "",
+      "run_exit": 0,
+      "stdout": "PASS recurrence checks=200736; Gaussian minimum-order, GF4, ring8, matrix-power uint64, unnormalized residues\n",
+      "stderr": ""
+    },
+    {
+      "candidate": "clang_weights_v2",
+      "compiler": "gcc",
+      "skip": true,
+      "mode": "default",
+      "fixture": "/home/reinsirk/Atcoder_Env/Verify/current/tests/linear_recurrence_allocation_test.cpp",
+      "fixture_sha256": "cbe492e520a57bf8e58b0926de07898c650c567d3a780f422e4004f675ffc5ff",
+      "source_sha256": "7903f71c8ab635ccaaebc7c44be5ce6f6d914575fdaed36048a391259151db97",
+      "command": [
+        "taskset",
+        "-c",
+        "2",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-DRECURRENCE_HEADER=\"/tmp/sirkit_12h_20261031_095733/recurrence_weights_candidates/clang_weights_v2.hpp\"",
+        "-DHEADER=\"/tmp/sirkit_12h_20261031_095733/recurrence_weights_candidates/clang_weights_v2.hpp\"",
+        "-DSKIP_RUNTIME_CHECKS",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/linear_recurrence_allocation_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/recurrence_weights_candidates/validation_v2/clang_weights_v2gccTruedefaultlinear_recurrence_allocation_test"
+      ],
+      "build_exit": 0,
+      "diagnostics": "",
+      "run_exit": 0,
+      "stdout": "PASS 800 allocation-failure budgets, zero outstanding allocation blocks\n",
+      "stderr": ""
+    },
+    {
+      "candidate": "clang_weights_v2",
+      "compiler": "gcc",
+      "skip": true,
+      "mode": "native",
+      "fixture": "/home/reinsirk/Atcoder_Env/Verify/current/tests/linear_recurrence_reference_test.cpp",
+      "fixture_sha256": "0f3c3305d177d8a35139f2e9d31fc8c0143f607ca1f746f993aae9d1e6624b03",
+      "source_sha256": "7903f71c8ab635ccaaebc7c44be5ce6f6d914575fdaed36048a391259151db97",
+      "command": [
+        "taskset",
+        "-c",
+        "2",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-DRECURRENCE_HEADER=\"/tmp/sirkit_12h_20261031_095733/recurrence_weights_candidates/clang_weights_v2.hpp\"",
+        "-DHEADER=\"/tmp/sirkit_12h_20261031_095733/recurrence_weights_candidates/clang_weights_v2.hpp\"",
+        "-DSKIP_RUNTIME_CHECKS",
+        "-march=native",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/linear_recurrence_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/recurrence_weights_candidates/validation_v2/clang_weights_v2gccTruenativelinear_recurrence_reference_test"
+      ],
+      "build_exit": 0,
+      "diagnostics": "",
+      "run_exit": 0,
+      "stdout": "PASS recurrence checks=200736; Gaussian minimum-order, GF4, ring8, matrix-power uint64, unnormalized residues\n",
+      "stderr": ""
+    },
+    {
+      "candidate": "clang_weights_v2",
+      "compiler": "clang",
+      "skip": false,
+      "mode": "default",
+      "fixture": "/home/reinsirk/Atcoder_Env/Verify/current/tests/linear_recurrence_reference_test.cpp",
+      "fixture_sha256": "0f3c3305d177d8a35139f2e9d31fc8c0143f607ca1f746f993aae9d1e6624b03",
+      "source_sha256": "7903f71c8ab635ccaaebc7c44be5ce6f6d914575fdaed36048a391259151db97",
+      "command": [
+        "taskset",
+        "-c",
+        "2",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-DRECURRENCE_HEADER=\"/tmp/sirkit_12h_20261031_095733/recurrence_weights_candidates/clang_weights_v2.hpp\"",
+        "-DHEADER=\"/tmp/sirkit_12h_20261031_095733/recurrence_weights_candidates/clang_weights_v2.hpp\"",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/linear_recurrence_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/recurrence_weights_candidates/validation_v2/clang_weights_v2clangFalsedefaultlinear_recurrence_reference_test"
+      ],
+      "build_exit": 0,
+      "diagnostics": "",
+      "run_exit": 0,
+      "stdout": "PASS recurrence checks=200737; Gaussian minimum-order, GF4, ring8, matrix-power uint64, unnormalized residues\n",
+      "stderr": ""
+    },
+    {
+      "candidate": "clang_weights_v2",
+      "compiler": "clang",
+      "skip": false,
+      "mode": "default",
+      "fixture": "/home/reinsirk/Atcoder_Env/Verify/current/tests/linear_recurrence_allocation_test.cpp",
+      "fixture_sha256": "cbe492e520a57bf8e58b0926de07898c650c567d3a780f422e4004f675ffc5ff",
+      "source_sha256": "7903f71c8ab635ccaaebc7c44be5ce6f6d914575fdaed36048a391259151db97",
+      "command": [
+        "taskset",
+        "-c",
+        "2",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-DRECURRENCE_HEADER=\"/tmp/sirkit_12h_20261031_095733/recurrence_weights_candidates/clang_weights_v2.hpp\"",
+        "-DHEADER=\"/tmp/sirkit_12h_20261031_095733/recurrence_weights_candidates/clang_weights_v2.hpp\"",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/linear_recurrence_allocation_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/recurrence_weights_candidates/validation_v2/clang_weights_v2clangFalsedefaultlinear_recurrence_allocation_test"
+      ],
+      "build_exit": 0,
+      "diagnostics": "",
+      "run_exit": 0,
+      "stdout": "PASS 800 allocation-failure budgets, zero outstanding allocation blocks\n",
+      "stderr": ""
+    },
+    {
+      "candidate": "clang_weights_v2",
+      "compiler": "clang",
+      "skip": false,
+      "mode": "native",
+      "fixture": "/home/reinsirk/Atcoder_Env/Verify/current/tests/linear_recurrence_reference_test.cpp",
+      "fixture_sha256": "0f3c3305d177d8a35139f2e9d31fc8c0143f607ca1f746f993aae9d1e6624b03",
+      "source_sha256": "7903f71c8ab635ccaaebc7c44be5ce6f6d914575fdaed36048a391259151db97",
+      "command": [
+        "taskset",
+        "-c",
+        "2",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-DRECURRENCE_HEADER=\"/tmp/sirkit_12h_20261031_095733/recurrence_weights_candidates/clang_weights_v2.hpp\"",
+        "-DHEADER=\"/tmp/sirkit_12h_20261031_095733/recurrence_weights_candidates/clang_weights_v2.hpp\"",
+        "-march=native",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/linear_recurrence_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/recurrence_weights_candidates/validation_v2/clang_weights_v2clangFalsenativelinear_recurrence_reference_test"
+      ],
+      "build_exit": 0,
+      "diagnostics": "",
+      "run_exit": 0,
+      "stdout": "PASS recurrence checks=200737; Gaussian minimum-order, GF4, ring8, matrix-power uint64, unnormalized residues\n",
+      "stderr": ""
+    },
+    {
+      "candidate": "clang_weights_v2",
+      "compiler": "clang",
+      "skip": true,
+      "mode": "default",
+      "fixture": "/home/reinsirk/Atcoder_Env/Verify/current/tests/linear_recurrence_reference_test.cpp",
+      "fixture_sha256": "0f3c3305d177d8a35139f2e9d31fc8c0143f607ca1f746f993aae9d1e6624b03",
+      "source_sha256": "7903f71c8ab635ccaaebc7c44be5ce6f6d914575fdaed36048a391259151db97",
+      "command": [
+        "taskset",
+        "-c",
+        "2",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-DRECURRENCE_HEADER=\"/tmp/sirkit_12h_20261031_095733/recurrence_weights_candidates/clang_weights_v2.hpp\"",
+        "-DHEADER=\"/tmp/sirkit_12h_20261031_095733/recurrence_weights_candidates/clang_weights_v2.hpp\"",
+        "-DSKIP_RUNTIME_CHECKS",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/linear_recurrence_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/recurrence_weights_candidates/validation_v2/clang_weights_v2clangTruedefaultlinear_recurrence_reference_test"
+      ],
+      "build_exit": 0,
+      "diagnostics": "",
+      "run_exit": 0,
+      "stdout": "PASS recurrence checks=200736; Gaussian minimum-order, GF4, ring8, matrix-power uint64, unnormalized residues\n",
+      "stderr": ""
+    },
+    {
+      "candidate": "clang_weights_v2",
+      "compiler": "clang",
+      "skip": true,
+      "mode": "default",
+      "fixture": "/home/reinsirk/Atcoder_Env/Verify/current/tests/linear_recurrence_allocation_test.cpp",
+      "fixture_sha256": "cbe492e520a57bf8e58b0926de07898c650c567d3a780f422e4004f675ffc5ff",
+      "source_sha256": "7903f71c8ab635ccaaebc7c44be5ce6f6d914575fdaed36048a391259151db97",
+      "command": [
+        "taskset",
+        "-c",
+        "2",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-DRECURRENCE_HEADER=\"/tmp/sirkit_12h_20261031_095733/recurrence_weights_candidates/clang_weights_v2.hpp\"",
+        "-DHEADER=\"/tmp/sirkit_12h_20261031_095733/recurrence_weights_candidates/clang_weights_v2.hpp\"",
+        "-DSKIP_RUNTIME_CHECKS",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/linear_recurrence_allocation_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/recurrence_weights_candidates/validation_v2/clang_weights_v2clangTruedefaultlinear_recurrence_allocation_test"
+      ],
+      "build_exit": 0,
+      "diagnostics": "",
+      "run_exit": 0,
+      "stdout": "PASS 800 allocation-failure budgets, zero outstanding allocation blocks\n",
+      "stderr": ""
+    },
+    {
+      "candidate": "clang_weights_v2",
+      "compiler": "clang",
+      "skip": true,
+      "mode": "native",
+      "fixture": "/home/reinsirk/Atcoder_Env/Verify/current/tests/linear_recurrence_reference_test.cpp",
+      "fixture_sha256": "0f3c3305d177d8a35139f2e9d31fc8c0143f607ca1f746f993aae9d1e6624b03",
+      "source_sha256": "7903f71c8ab635ccaaebc7c44be5ce6f6d914575fdaed36048a391259151db97",
+      "command": [
+        "taskset",
+        "-c",
+        "2",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-DRECURRENCE_HEADER=\"/tmp/sirkit_12h_20261031_095733/recurrence_weights_candidates/clang_weights_v2.hpp\"",
+        "-DHEADER=\"/tmp/sirkit_12h_20261031_095733/recurrence_weights_candidates/clang_weights_v2.hpp\"",
+        "-DSKIP_RUNTIME_CHECKS",
+        "-march=native",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/linear_recurrence_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/recurrence_weights_candidates/validation_v2/clang_weights_v2clangTruenativelinear_recurrence_reference_test"
+      ],
+      "build_exit": 0,
+      "diagnostics": "",
+      "run_exit": 0,
+      "stdout": "PASS recurrence checks=200736; Gaussian minimum-order, GF4, ring8, matrix-power uint64, unnormalized residues\n",
+      "stderr": ""
+    }
+  ],
+  "limitations": [
+    "Local timings are not online judge AC or speed guarantees.",
+    "Canonical-only shortcut candidate was not selected: Clang native d256 large-k +6% in repeated measurements. Selected Montgomery branch avoids that regression.",
+    "Tiny empty-input overhead increased under some compiler layouts; accepted under user large-input policy.",
+    "Montgomery uses standard uint64_t only; p<2^30 guarantees reduction sum fits."
+  ],
+  "formal_asan_ubsan": [
+    {
+      "candidate": "formal",
+      "compiler": "gcc",
+      "skip": false,
+      "mode": "sanitize",
+      "fixture": "/home/reinsirk/Atcoder_Env/Verify/current/tests/linear_recurrence_reference_test.cpp",
+      "fixture_sha256": "0f3c3305d177d8a35139f2e9d31fc8c0143f607ca1f746f993aae9d1e6624b03",
+      "source_sha256": "ce01c0f83e4d7d8041ee8e4e6c6670bda7a3c707e6791ca97f2a48019941b2f6",
+      "command": [
+        "taskset",
+        "-c",
+        "6",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-DRECURRENCE_HEADER=\"/home/reinsirk/Atcoder_Env/Math/Linear_Recurrence.cpp\"",
+        "-DHEADER=\"/home/reinsirk/Atcoder_Env/Math/Linear_Recurrence.cpp\"",
+        "-O1",
+        "-fsanitize=address,undefined",
+        "-fno-omit-frame-pointer",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/linear_recurrence_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/recurrence_weights_candidates/validation_formal_sanitize/formalgccFalsesanitizelinear_recurrence_reference_test"
+      ],
+      "build_exit": 0,
+      "diagnostics": "",
+      "run_exit": 0,
+      "stdout": "PASS recurrence checks=200737; Gaussian minimum-order, GF4, ring8, matrix-power uint64, unnormalized residues\n",
+      "stderr": ""
+    },
+    {
+      "candidate": "formal",
+      "compiler": "gcc",
+      "skip": true,
+      "mode": "sanitize",
+      "fixture": "/home/reinsirk/Atcoder_Env/Verify/current/tests/linear_recurrence_reference_test.cpp",
+      "fixture_sha256": "0f3c3305d177d8a35139f2e9d31fc8c0143f607ca1f746f993aae9d1e6624b03",
+      "source_sha256": "ce01c0f83e4d7d8041ee8e4e6c6670bda7a3c707e6791ca97f2a48019941b2f6",
+      "command": [
+        "taskset",
+        "-c",
+        "6",
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-DRECURRENCE_HEADER=\"/home/reinsirk/Atcoder_Env/Math/Linear_Recurrence.cpp\"",
+        "-DHEADER=\"/home/reinsirk/Atcoder_Env/Math/Linear_Recurrence.cpp\"",
+        "-DSKIP_RUNTIME_CHECKS",
+        "-O1",
+        "-fsanitize=address,undefined",
+        "-fno-omit-frame-pointer",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/linear_recurrence_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/recurrence_weights_candidates/validation_formal_sanitize/formalgccTruesanitizelinear_recurrence_reference_test"
+      ],
+      "build_exit": 0,
+      "diagnostics": "",
+      "run_exit": 0,
+      "stdout": "PASS recurrence checks=200736; Gaussian minimum-order, GF4, ring8, matrix-power uint64, unnormalized residues\n",
+      "stderr": ""
+    },
+    {
+      "candidate": "formal",
+      "compiler": "clang",
+      "skip": false,
+      "mode": "sanitize",
+      "fixture": "/home/reinsirk/Atcoder_Env/Verify/current/tests/linear_recurrence_reference_test.cpp",
+      "fixture_sha256": "0f3c3305d177d8a35139f2e9d31fc8c0143f607ca1f746f993aae9d1e6624b03",
+      "source_sha256": "ce01c0f83e4d7d8041ee8e4e6c6670bda7a3c707e6791ca97f2a48019941b2f6",
+      "command": [
+        "taskset",
+        "-c",
+        "6",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-DRECURRENCE_HEADER=\"/home/reinsirk/Atcoder_Env/Math/Linear_Recurrence.cpp\"",
+        "-DHEADER=\"/home/reinsirk/Atcoder_Env/Math/Linear_Recurrence.cpp\"",
+        "-O1",
+        "-fsanitize=address,undefined",
+        "-fno-omit-frame-pointer",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/linear_recurrence_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/recurrence_weights_candidates/validation_formal_sanitize/formalclangFalsesanitizelinear_recurrence_reference_test"
+      ],
+      "build_exit": 0,
+      "diagnostics": "",
+      "run_exit": 0,
+      "stdout": "PASS recurrence checks=200737; Gaussian minimum-order, GF4, ring8, matrix-power uint64, unnormalized residues\n",
+      "stderr": ""
+    },
+    {
+      "candidate": "formal",
+      "compiler": "clang",
+      "skip": true,
+      "mode": "sanitize",
+      "fixture": "/home/reinsirk/Atcoder_Env/Verify/current/tests/linear_recurrence_reference_test.cpp",
+      "fixture_sha256": "0f3c3305d177d8a35139f2e9d31fc8c0143f607ca1f746f993aae9d1e6624b03",
+      "source_sha256": "ce01c0f83e4d7d8041ee8e4e6c6670bda7a3c707e6791ca97f2a48019941b2f6",
+      "command": [
+        "taskset",
+        "-c",
+        "6",
+        "/usr/bin/clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-DRECURRENCE_HEADER=\"/home/reinsirk/Atcoder_Env/Math/Linear_Recurrence.cpp\"",
+        "-DHEADER=\"/home/reinsirk/Atcoder_Env/Math/Linear_Recurrence.cpp\"",
+        "-DSKIP_RUNTIME_CHECKS",
+        "-O1",
+        "-fsanitize=address,undefined",
+        "-fno-omit-frame-pointer",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/linear_recurrence_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit_12h_20261031_095733/recurrence_weights_candidates/validation_formal_sanitize/formalclangTruesanitizelinear_recurrence_reference_test"
+      ],
+      "build_exit": 0,
+      "diagnostics": "",
+      "run_exit": 0,
+      "stdout": "PASS recurrence checks=200736; Gaussian minimum-order, GF4, ring8, matrix-power uint64, unnormalized residues\n",
+      "stderr": ""
+    }
+  ]
+}

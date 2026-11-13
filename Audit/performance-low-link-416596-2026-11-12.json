@@ -1,0 +1,2230 @@
+{
+  "date": "2026-11-12",
+  "library": "Graph/Low_Link.cpp",
+  "decision": "adopt_single_edge_fast_path_and_bulk_reverse_block_copy",
+  "source_sha256": {
+    "before": "dc390a4e4bdd41ce51aab618b8a55947de96c863663522d59319b2e2c897597e",
+    "after": "6e24f831bd5ccec97efbe97de9ebd4b58ddbe942a7a55446975094f7ea018569"
+  },
+  "selection": {
+    "decision": "adopt_single_edge_fast_path_and_bulk_reverse_block_copy",
+    "label": "block_suffix_single",
+    "measured_candidate_sha256": "6e24f831bd5ccec97efbe97de9ebd4b58ddbe942a7a55446975094f7ea018569",
+    "changes": [
+      "build(true)の辺ブロックを逆向き接尾辞の範囲コンストラクタで一度に確保する。",
+      "1辺のブロックは従来同様の小さい確保で処理する。"
+    ],
+    "rejected_candidates": {
+      "overwrite_incident": "正しさは4参照設定で確認したが、初期化省略の効果が安定せず採用しない。",
+      "block_suffix": "単独辺の専用分岐を持つ候補を選び、木・星型の挙動を維持する。"
+    },
+    "outcome": {
+      "online_before_this_change": {
+        "low_link_two_edge": {
+          "submission": 416596,
+          "status": "AC",
+          "time_ms": 42
+        },
+        "low_link_biconnected": {
+          "submission": 416595,
+          "status": "AC",
+          "time_ms": 210
+        }
+      },
+      "local_whole_cells": 72,
+      "local_core_cells": 116,
+      "all_cells_sufficient": true,
+      "whole_max_ratio": 1.019973921973622,
+      "core_max_ratio": 1.029904947115671,
+      "cycle_and_cliques_whole_speedup_percent": [
+        3.232,
+        4.783,
+        3.006,
+        6.275,
+        4.838,
+        6.394,
+        4.476,
+        7.805
+      ],
+      "fresh_correctness_jobs": 32,
+      "independent_fixture_comparisons": 208
+    },
+    "tradeoff_notes": [
+      "初期の最終測定と追加測定を全保持し統合した。初期対照中央値の±3%超、候補3%超、標本不足の全セル14件を機械的に選び、候補7・対照3組を一度追加した。候補が遅い試行を除外しない。",
+      "最終の全188セルで候補中央値は旧版比+3%以内。1〜3%差を無条件に同速と断定しない。",
+      "blocks=falseにアルゴリズムの変更はない。Clangの2辺連結提出実行体のtextは同一で、この経路の時間差を新機能の成果に数えない。"
+    ],
+    "limitations": [
+      "i9-14900K P-Core CPU12のC++23 -O2、native/defaultでの比較。Library CheckerのAMDサーバーへの改善率を保証しない。",
+      "追加後も同一対照中央値が3%を超える4セルを保持する。短い小規模照会3セルとGCC default大規模dense whole1セルであり、これらの小さい差を積極的な改善の根拠に使わない。",
+      "公式small_random_2_02の1ms→9msを削除・ノイズと断定せずオンライン記録へ残す。",
+      "辺番号size_t経路は小さい入力で強制検証した。UINT32_MAXを超える辺数を物理的に構築した試験ではない。"
+    ],
+    "risks": [
+      "新しい通常版2本は未提出。今回確認した42ms/210msは変更前dc390aの判定であり新本体のACとは扱わない。"
+    ]
+  },
+  "required_resubmission": [
+    "Verify/current/submissions/low_link_two_edge.cpp",
+    "Verify/current/submissions/low_link_biconnected.cpp"
+  ],
+  "online_evidence": "Audit/online-low-link-416596-2026-11-12.json",
+  "online_scope": "416596のtwo_edge AC42ms・416595のbiconnected AC210msは提出時dc390a本体/main/共通IOと本文照合済み。今回採用の新本体は未提出で、このACを現行版へ転記しない。派生版へオンラインACを転記しない。",
+  "public_online_comparison": {
+    "scope": "公式APIの別提出の時間差。オンラインの同一CPU/実行条件を保証せず、ローカル条件固定比較と区別する。",
+    "programs": {
+      "low_link_two_edge": {
+        "old_submission": 416583,
+        "new_submission": 416596,
+        "old_overview": {
+          "id": 416583,
+          "is_latest": true,
+          "lang": "cpp",
+          "memory": 16678912,
+          "problem_name": "two_edge_connected_components",
+          "problem_title": "Two-Edge-Connected Components",
+          "status": "AC",
+          "submission_time": "2026-11-12T08:29:41.451281Z",
+          "time": 0.055,
+          "user_name": "reinsirk"
+        },
+        "new_overview": {
+          "id": 416596,
+          "is_latest": true,
+          "lang": "cpp",
+          "memory": 16674816,
+          "problem_name": "two_edge_connected_components",
+          "problem_title": "Two-Edge-Connected Components",
+          "status": "AC",
+          "submission_time": "2026-11-12T10:04:31.272582Z",
+          "time": 0.042,
+          "user_name": "reinsirk"
+        },
+        "cases": [
+          {
+            "case": "example_00",
+            "old_ms": 9,
+            "new_ms": 0,
+            "delta_ms": -9,
+            "percent": -100.0,
+            "old_memory_bytes": 536576,
+            "new_memory_bytes": 573440,
+            "status": "AC"
+          },
+          {
+            "case": "example_01",
+            "old_ms": 0,
+            "new_ms": 0,
+            "delta_ms": 0,
+            "percent": null,
+            "old_memory_bytes": 802816,
+            "new_memory_bytes": 577536,
+            "status": "AC"
+          },
+          {
+            "case": "example_02",
+            "old_ms": 1,
+            "new_ms": 1,
+            "delta_ms": 0,
+            "percent": 0.0,
+            "old_memory_bytes": 565248,
+            "new_memory_bytes": 798720,
+            "status": "AC"
+          },
+          {
+            "case": "small_random_1_00",
+            "old_ms": 1,
+            "new_ms": 0,
+            "delta_ms": -1,
+            "percent": -100.0,
+            "old_memory_bytes": 794624,
+            "new_memory_bytes": 528384,
+            "status": "AC"
+          },
+          {
+            "case": "small_random_1_01",
+            "old_ms": 0,
+            "new_ms": 1,
+            "delta_ms": 1,
+            "percent": null,
+            "old_memory_bytes": 581632,
+            "new_memory_bytes": 561152,
+            "status": "AC"
+          },
+          {
+            "case": "small_random_1_02",
+            "old_ms": 0,
+            "new_ms": 0,
+            "delta_ms": 0,
+            "percent": null,
+            "old_memory_bytes": 602112,
+            "new_memory_bytes": 790528,
+            "status": "AC"
+          },
+          {
+            "case": "small_random_2_00",
+            "old_ms": 0,
+            "new_ms": 0,
+            "delta_ms": 0,
+            "percent": null,
+            "old_memory_bytes": 798720,
+            "new_memory_bytes": 802816,
+            "status": "AC"
+          },
+          {
+            "case": "small_random_2_01",
+            "old_ms": 1,
+            "new_ms": 1,
+            "delta_ms": 0,
+            "percent": 0.0,
+            "old_memory_bytes": 561152,
+            "new_memory_bytes": 823296,
+            "status": "AC"
+          },
+          {
+            "case": "small_random_2_02",
+            "old_ms": 0,
+            "new_ms": 0,
+            "delta_ms": 0,
+            "percent": null,
+            "old_memory_bytes": 577536,
+            "new_memory_bytes": 581632,
+            "status": "AC"
+          },
+          {
+            "case": "random_1_00",
+            "old_ms": 36,
+            "new_ms": 26,
+            "delta_ms": -10,
+            "percent": -27.778,
+            "old_memory_bytes": 11137024,
+            "new_memory_bytes": 11087872,
+            "status": "AC"
+          },
+          {
+            "case": "random_1_01",
+            "old_ms": 41,
+            "new_ms": 31,
+            "delta_ms": -10,
+            "percent": -24.39,
+            "old_memory_bytes": 11997184,
+            "new_memory_bytes": 12488704,
+            "status": "AC"
+          },
+          {
+            "case": "random_1_02",
+            "old_ms": 20,
+            "new_ms": 13,
+            "delta_ms": -7,
+            "percent": -35.0,
+            "old_memory_bytes": 6455296,
+            "new_memory_bytes": 6414336,
+            "status": "AC"
+          },
+          {
+            "case": "random_2_00",
+            "old_ms": 10,
+            "new_ms": 6,
+            "delta_ms": -4,
+            "percent": -40.0,
+            "old_memory_bytes": 3543040,
+            "new_memory_bytes": 3534848,
+            "status": "AC"
+          },
+          {
+            "case": "random_2_01",
+            "old_ms": 3,
+            "new_ms": 1,
+            "delta_ms": -2,
+            "percent": -66.667,
+            "old_memory_bytes": 1478656,
+            "new_memory_bytes": 1323008,
+            "status": "AC"
+          },
+          {
+            "case": "random_2_02",
+            "old_ms": 13,
+            "new_ms": 10,
+            "delta_ms": -3,
+            "percent": -23.077,
+            "old_memory_bytes": 4849664,
+            "new_memory_bytes": 4849664,
+            "status": "AC"
+          },
+          {
+            "case": "random_2_03",
+            "old_ms": 20,
+            "new_ms": 14,
+            "delta_ms": -6,
+            "percent": -30.0,
+            "old_memory_bytes": 6197248,
+            "new_memory_bytes": 6197248,
+            "status": "AC"
+          },
+          {
+            "case": "random_2_04",
+            "old_ms": 7,
+            "new_ms": 5,
+            "delta_ms": -2,
+            "percent": -28.571,
+            "old_memory_bytes": 3018752,
+            "new_memory_bytes": 3047424,
+            "status": "AC"
+          },
+          {
+            "case": "max_random_00",
+            "old_ms": 55,
+            "new_ms": 42,
+            "delta_ms": -13,
+            "percent": -23.636,
+            "old_memory_bytes": 16678912,
+            "new_memory_bytes": 16674816,
+            "status": "AC"
+          },
+          {
+            "case": "max_random_01",
+            "old_ms": 54,
+            "new_ms": 42,
+            "delta_ms": -12,
+            "percent": -22.222,
+            "old_memory_bytes": 16125952,
+            "new_memory_bytes": 16662528,
+            "status": "AC"
+          },
+          {
+            "case": "max_random_02",
+            "old_ms": 55,
+            "new_ms": 42,
+            "delta_ms": -13,
+            "percent": -23.636,
+            "old_memory_bytes": 16158720,
+            "new_memory_bytes": 16117760,
+            "status": "AC"
+          },
+          {
+            "case": "large_cycle_00",
+            "old_ms": 21,
+            "new_ms": 17,
+            "delta_ms": -4,
+            "percent": -19.048,
+            "old_memory_bytes": 9605120,
+            "new_memory_bytes": 9482240,
+            "status": "AC"
+          }
+        ]
+      },
+      "low_link_biconnected": {
+        "old_submission": 416582,
+        "new_submission": 416595,
+        "old_overview": {
+          "id": 416582,
+          "is_latest": true,
+          "lang": "cpp",
+          "memory": 81494016,
+          "problem_name": "biconnected_components",
+          "problem_title": "Biconnected Components",
+          "status": "AC",
+          "submission_time": "2026-11-12T08:29:29.386303Z",
+          "time": 0.262,
+          "user_name": "reinsirk"
+        },
+        "new_overview": {
+          "id": 416595,
+          "is_latest": true,
+          "lang": "cpp",
+          "memory": 78868480,
+          "problem_name": "biconnected_components",
+          "problem_title": "Biconnected Components",
+          "status": "AC",
+          "submission_time": "2026-11-12T10:04:22.762536Z",
+          "time": 0.21,
+          "user_name": "reinsirk"
+        },
+        "cases": [
+          {
+            "case": "example_00",
+            "old_ms": 0,
+            "new_ms": 1,
+            "delta_ms": 1,
+            "percent": null,
+            "old_memory_bytes": 536576,
+            "new_memory_bytes": 839680,
+            "status": "AC"
+          },
+          {
+            "case": "example_01",
+            "old_ms": 1,
+            "new_ms": 1,
+            "delta_ms": 0,
+            "percent": 0.0,
+            "old_memory_bytes": 798720,
+            "new_memory_bytes": 806912,
+            "status": "AC"
+          },
+          {
+            "case": "example_02",
+            "old_ms": 1,
+            "new_ms": 0,
+            "delta_ms": -1,
+            "percent": -100.0,
+            "old_memory_bytes": 794624,
+            "new_memory_bytes": 577536,
+            "status": "AC"
+          },
+          {
+            "case": "min_00",
+            "old_ms": 0,
+            "new_ms": 0,
+            "delta_ms": 0,
+            "percent": null,
+            "old_memory_bytes": 536576,
+            "new_memory_bytes": 561152,
+            "status": "AC"
+          },
+          {
+            "case": "min_01",
+            "old_ms": 1,
+            "new_ms": 1,
+            "delta_ms": 0,
+            "percent": 0.0,
+            "old_memory_bytes": 565248,
+            "new_memory_bytes": 794624,
+            "status": "AC"
+          },
+          {
+            "case": "min_02",
+            "old_ms": 0,
+            "new_ms": 0,
+            "delta_ms": 0,
+            "percent": null,
+            "old_memory_bytes": 573440,
+            "new_memory_bytes": 794624,
+            "status": "AC"
+          },
+          {
+            "case": "small_random_1_00",
+            "old_ms": 1,
+            "new_ms": 1,
+            "delta_ms": 0,
+            "percent": 0.0,
+            "old_memory_bytes": 798720,
+            "new_memory_bytes": 831488,
+            "status": "AC"
+          },
+          {
+            "case": "small_random_2_00",
+            "old_ms": 1,
+            "new_ms": 0,
+            "delta_ms": -1,
+            "percent": -100.0,
+            "old_memory_bytes": 827392,
+            "new_memory_bytes": 565248,
+            "status": "AC"
+          },
+          {
+            "case": "small_random_2_01",
+            "old_ms": 0,
+            "new_ms": 0,
+            "delta_ms": 0,
+            "percent": null,
+            "old_memory_bytes": 565248,
+            "new_memory_bytes": 561152,
+            "status": "AC"
+          },
+          {
+            "case": "small_random_2_02",
+            "old_ms": 1,
+            "new_ms": 9,
+            "delta_ms": 8,
+            "percent": 800.0,
+            "old_memory_bytes": 802816,
+            "new_memory_bytes": 827392,
+            "status": "AC"
+          },
+          {
+            "case": "random_1_00",
+            "old_ms": 171,
+            "new_ms": 126,
+            "delta_ms": -45,
+            "percent": -26.316,
+            "old_memory_bytes": 44449792,
+            "new_memory_bytes": 44539904,
+            "status": "AC"
+          },
+          {
+            "case": "random_2_00",
+            "old_ms": 175,
+            "new_ms": 125,
+            "delta_ms": -50,
+            "percent": -28.571,
+            "old_memory_bytes": 41590784,
+            "new_memory_bytes": 41279488,
+            "status": "AC"
+          },
+          {
+            "case": "random_2_01",
+            "old_ms": 119,
+            "new_ms": 101,
+            "delta_ms": -18,
+            "percent": -15.126,
+            "old_memory_bytes": 42414080,
+            "new_memory_bytes": 40386560,
+            "status": "AC"
+          },
+          {
+            "case": "random_2_02",
+            "old_ms": 68,
+            "new_ms": 48,
+            "delta_ms": -20,
+            "percent": -29.412,
+            "old_memory_bytes": 21716992,
+            "new_memory_bytes": 21901312,
+            "status": "AC"
+          },
+          {
+            "case": "max_random_00",
+            "old_ms": 233,
+            "new_ms": 172,
+            "delta_ms": -61,
+            "percent": -26.18,
+            "old_memory_bytes": 55369728,
+            "new_memory_bytes": 55427072,
+            "status": "AC"
+          },
+          {
+            "case": "max_random_2_00",
+            "old_ms": 227,
+            "new_ms": 167,
+            "delta_ms": -60,
+            "percent": -26.432,
+            "old_memory_bytes": 53108736,
+            "new_memory_bytes": 53075968,
+            "status": "AC"
+          },
+          {
+            "case": "max_random_2_01",
+            "old_ms": 227,
+            "new_ms": 170,
+            "delta_ms": -57,
+            "percent": -25.11,
+            "old_memory_bytes": 53338112,
+            "new_memory_bytes": 53317632,
+            "status": "AC"
+          },
+          {
+            "case": "max_random_2_02",
+            "old_ms": 227,
+            "new_ms": 165,
+            "delta_ms": -62,
+            "percent": -27.313,
+            "old_memory_bytes": 52805632,
+            "new_memory_bytes": 52805632,
+            "status": "AC"
+          },
+          {
+            "case": "max_tree_00",
+            "old_ms": 262,
+            "new_ms": 210,
+            "delta_ms": -52,
+            "percent": -19.847,
+            "old_memory_bytes": 81494016,
+            "new_memory_bytes": 78868480,
+            "status": "AC"
+          },
+          {
+            "case": "max_star_00",
+            "old_ms": 194,
+            "new_ms": 175,
+            "delta_ms": -19,
+            "percent": -9.794,
+            "old_memory_bytes": 80482304,
+            "new_memory_bytes": 77914112,
+            "status": "AC"
+          },
+          {
+            "case": "max_line_clique_00",
+            "old_ms": 109,
+            "new_ms": 99,
+            "delta_ms": -10,
+            "percent": -9.174,
+            "old_memory_bytes": 47910912,
+            "new_memory_bytes": 47190016,
+            "status": "AC"
+          },
+          {
+            "case": "large_cycle_00",
+            "old_ms": 203,
+            "new_ms": 147,
+            "delta_ms": -56,
+            "percent": -27.586,
+            "old_memory_bytes": 49664000,
+            "new_memory_bytes": 49672192,
+            "status": "AC"
+          }
+        ]
+      }
+    }
+  },
+  "online_compiler_context": {
+    "submission_lang": "cpp",
+    "live_api": {
+      "id": "cpp",
+      "name": "C++23",
+      "version": "GCC 15.2 + AC Library(1.6)"
+    },
+    "official_repository_current_lang_definition": {
+      "id": "cpp",
+      "name": "C++23",
+      "version": "GCC 15.2 + AC Library(1.6)",
+      "source": "main.cpp",
+      "image_name": "library-checker-images-gcc",
+      "compile": [
+        "g++",
+        "-O2",
+        "-std=c++23",
+        "-DEVAL",
+        "-DONLINE_JUDGE",
+        "-march=native",
+        "-o",
+        "main",
+        "main.cpp",
+        "-I",
+        "/opt/ac-library"
+      ],
+      "exec": [
+        "./main"
+      ]
+    },
+    "scope": "言語名/versionはlive公式APIで確認。引数は取得時の公式リポジトリから。個別提出の厳密image digest/compile logはAPIに含まれない。",
+    "observed_flags_include_march_native": true,
+    "submission_image_revision_known": false
+  },
+  "frozen_public_files": {
+    "Verify/current/drivers/low_link_two_edge_main.cpp": "103549bcf94d087b4bda2b17809316ba1a026a6e76ce0d5a335e266a5c80c686",
+    "Verify/current/drivers/low_link_biconnected_main.cpp": "44f36b179e0ee59572eba15b545f9060835835e734d6723d8c587bc255313085",
+    "Verify/current/common/fast_io.hpp": "291bf8dbc56a1d691f6256fe95b4714183c2cf5d9e55e4bef240e31d1eb178c1",
+    "Examples/low_link_example.cpp": "bf13194cb876c9846ed1fd119aa13d1cf331d73ddc4192acd05b9d76593c0990",
+    "Document/low_link.md": "b0eec0e29d439a53a4570c7b76e91bcdf2406b693557ae6b6203781bad7de559"
+  },
+  "before_snapshot": {
+    "file": "frozen.json",
+    "sha256": "bdbc4c38532f5281c6d84e8e2d4ba042a79124129bbc49cb806e1dd17a4911c5",
+    "files": {
+      "Graph/Low_Link.cpp": "dc390a4e4bdd41ce51aab618b8a55947de96c863663522d59319b2e2c897597e",
+      "Verify/current/common/fast_io.hpp": "291bf8dbc56a1d691f6256fe95b4714183c2cf5d9e55e4bef240e31d1eb178c1",
+      "Document/low_link.md": "b0eec0e29d439a53a4570c7b76e91bcdf2406b693557ae6b6203781bad7de559",
+      "Examples/low_link_example.cpp": "bf13194cb876c9846ed1fd119aa13d1cf331d73ddc4192acd05b9d76593c0990",
+      "Verify/current/groups/expansion_20261031.json": "1c4f346dd8f740f60c644349f0b309d0b35cfeaf8cf00c7fdf80e9310887442a",
+      "Verify/current/judgements.json": "1ecb91b3fcddc49ecd3551ca773fe7790810b30789391f48c992d27fc933867f",
+      "Verify/current/manifest.json": "d2b4ef6dc1e3a077b3fe8d0098b9e6a83caa455fe5817f962fefead233474e30",
+      "Distribution/manifest.json": "40b17312c2d79e24924ff97f87e9d24d2f20125adc2586e024260442f03a7435",
+      "Variants/manifest.json": "780d4ff22a00c6eea58d54abf8197956dacfe1039445539b0f522ec8d8ad7f58",
+      "Variants/verify_manifest.json": "95016febbfdae9a06017090c98a3ad307bf7cd554f8d81d53ff2b291f15b9bb4",
+      "Scripts/library_layout.json": "8f809a5a3d1235a508e7144d0600060ac68859a5d663bdb9b7d47d6663b8486b",
+      "Verify/current/drivers/low_link_two_edge_main.cpp": "103549bcf94d087b4bda2b17809316ba1a026a6e76ce0d5a335e266a5c80c686",
+      "Verify/current/submissions/low_link_two_edge.cpp": "474f60223ac6fe0002b0b103cbc01f77ce08c751d14d8fd8fae4d6422628363a",
+      "Verify/current/drivers/low_link_biconnected_main.cpp": "44f36b179e0ee59572eba15b545f9060835835e734d6723d8c587bc255313085",
+      "Verify/current/submissions/low_link_biconnected.cpp": "5b9196f5675eeddd8929998151488f3675a6c8329d553158ac0cd156e4fa0603"
+    }
+  },
+  "API_scope": "公開API・全範囲・多重辺/自己辺・所有権・例外保証・件数上限を維持。main/共通IO/Document/使用例は不変。成分構成と森の対応を正規化して参照照合する。",
+  "proof_files": [
+    "review/block_suffix_review.md",
+    "review/overwrite_incident_review.md"
+  ],
+  "source_diff": "final.diff",
+  "measurement": {
+    "cpu": "Intel Core i9-14900K CPU12（P-Core、sibling13）。E-Coreを性能評価しない。",
+    "compilers": {
+      "GCC": "15.2.0",
+      "Clang": "21.1.8 --gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15"
+    },
+    "flags_scope": "C++23 -O2。native/defaultは各rowで区別。引数と実行体SHAは各builds JSONに保存。",
+    "CPU_scope": "Library CheckerのAMD実機の速度比とは断定しない。オンライン別提出時間と条件固定のローカル比較を区別。",
+    "lock": "/tmp/sirkit_performance_cpu12.lock",
+    "compilation_during_timing": false,
+    "ASLR": "子だけsetarch x86_64 -R、同じactiveパス。",
+    "protocol": "旧版→候補→旧版。候補を両端中央値で割り、両端差10%以内だけ有効。初回は候補7組/同一対照3組、有効5/2未達時のみ15/9組まで補う。初期matrix完了後、control中央値が1±3%外・final>1.03・有効数不足の全セルを一度だけ選び、候補7組/対照3組を追加。初期/追加の全rawを保持して統合中央値を使う。候補自身の時間で個別trialを除外しない。探索と9/3追加確認は別記録。",
+    "fixtures": {
+      "cases": 26,
+      "physical_graphs": 13,
+      "reused_previous_evidence": "Audit/data/performance-low-link-416583-2026-11-12.zip",
+      "prior_evidence_sha256": "7724f1adaab174dc70d29a0a18f801921c724902337dd9cdafd49a12606e8f2f",
+      "metadata_sha256": {
+        "commands.json": "42fd1dcc010a38c3e14e7f595065db0b239c18b2903b9759c6e98e11fcb92354",
+        "fixtures.json": "3f9ade0fcd3a25eb1e45f93fbbac1419c85e40da9325d0293bdcf0643d07a629",
+        "source_audit.json": "2b4e562052f66e72d2dd82f7e294ad82a3bd9d44b5e2be9c5e27bed6d79d4f88",
+        "summary.json": "e5f1685f2115e82cc7d054958bd7e88cfff3f6b5e0966c089fc40a4ed966b65c",
+        "validation.json": "dca371d2151d8e48c74b596412433e7767d29f44d1f2064777210e7a9c28fd5f"
+      },
+      "scope": "旧証跡ZIP内の固定26ケース・5JSONとbyte一致。JSONの旧/tmpパスは計測入力の参照であり収録対象として辿らない。",
+      "independent_oracle_scope": "Every full canonical output comes from an original reference implementation. Two-edge reference uses cycle-cover/LCA, not low-link. Bicon reference is separately written recursive Tarjan with same mathematical low-link criterion; structural and tiny brute-force checks provide additional independent algorithms. No baseline implementation is treated as truth.",
+      "result_scope": "群内・群集合をソートしたcanonical SHAで照合。要素の欠落・重複を隠さず、未規定の成分番号と出力順の差を許容。"
+    },
+    "exploratory": [
+      {
+        "stage": "screen",
+        "labels": {
+          "block_suffix": {
+            "file": "block_suffix.hpp",
+            "sha256": "1626d588f8def7fed2ca372fad710c43d341924caf8be40a331a19db8b63baee"
+          },
+          "block_suffix_single": {
+            "file": "block_suffix_single.hpp",
+            "sha256": "6e24f831bd5ccec97efbe97de9ebd4b58ddbe942a7a55446975094f7ea018569"
+          },
+          "overwrite_incident": {
+            "file": "overwrite_incident.hpp",
+            "sha256": "2f711db16c5ccd7d6e473f13a9da83bb115b38f67a11247dab09cec6955194f7"
+          }
+        },
+        "cells": 24,
+        "triplets": 288,
+        "summary": "screen_summary.json",
+        "summary_sha256": "1aeeaafce4bbcd2ee533bbc98e31a4f96698bb95d797fe13e873b2c6b94170bb",
+        "raw": "screen_raw.json",
+        "raw_sha256": "49956c753dbf94983334b63f8d3a7d2e9a54c8f60442d5f540a3538a56236891",
+        "scope": "探索の少数反復を保存。最終測定と区別する。"
+      },
+      {
+        "stage": "confirm",
+        "category": "additional_confirmation",
+        "labels": {
+          "block_suffix_single": {
+            "file": "block_suffix_single.hpp",
+            "sha256": "6e24f831bd5ccec97efbe97de9ebd4b58ddbe942a7a55446975094f7ea018569"
+          }
+        },
+        "script": "confirm.py",
+        "script_sha256": "0089bf715cb6fb0502033206d97e0c33771b67f6f284614859049b6e3f89c616",
+        "cases": 12,
+        "cells": 24,
+        "triplets": 288,
+        "declared_attempts_per_cell": {
+          "block_suffix_single": 9,
+          "control": 3
+        },
+        "qualified_cells": 24,
+        "insufficient_cells": [],
+        "cell_results": [
+          {
+            "compiler": "gcc",
+            "case": "two_edge_connected_components__official_two_edge_connected_components_max_random_00",
+            "ratios": {
+              "block_suffix_single": 0.989942577942167,
+              "control": 0.9821757294502805
+            },
+            "valid_counts": {
+              "block_suffix_single": 9,
+              "control": 3
+            },
+            "attempts": {
+              "block_suffix_single": 9,
+              "control": 3
+            },
+            "sufficient": true,
+            "qualification": "候補ごとに有効5組以上、同一対照2組以上。未達も除かず表示。"
+          },
+          {
+            "compiler": "gcc",
+            "case": "biconnected_components__official_two_edge_connected_components_max_random_00",
+            "ratios": {
+              "block_suffix_single": 0.9706919432715317,
+              "control": 1.0181643457146043
+            },
+            "valid_counts": {
+              "block_suffix_single": 8,
+              "control": 3
+            },
+            "attempts": {
+              "block_suffix_single": 9,
+              "control": 3
+            },
+            "sufficient": true,
+            "qualification": "候補ごとに有効5組以上、同一対照2組以上。未達も除かず表示。"
+          },
+          {
+            "compiler": "gcc",
+            "case": "two_edge_connected_components__official_biconnected_components_max_random_00",
+            "ratios": {
+              "block_suffix_single": 1.0009044856933824,
+              "control": 0.9958235360322679
+            },
+            "valid_counts": {
+              "block_suffix_single": 9,
+              "control": 3
+            },
+            "attempts": {
+              "block_suffix_single": 9,
+              "control": 3
+            },
+            "sufficient": true,
+            "qualification": "候補ごとに有効5組以上、同一対照2組以上。未達も除かず表示。"
+          },
+          {
+            "compiler": "gcc",
+            "case": "biconnected_components__official_biconnected_components_max_random_00",
+            "ratios": {
+              "block_suffix_single": 0.9704194731700979,
+              "control": 1.0146318573500555
+            },
+            "valid_counts": {
+              "block_suffix_single": 9,
+              "control": 3
+            },
+            "attempts": {
+              "block_suffix_single": 9,
+              "control": 3
+            },
+            "sufficient": true,
+            "qualification": "候補ごとに有効5組以上、同一対照2組以上。未達も除かず表示。"
+          },
+          {
+            "compiler": "gcc",
+            "case": "two_edge_connected_components__official_biconnected_components_max_tree_00",
+            "ratios": {
+              "block_suffix_single": 1.0090357655231432,
+              "control": 0.9958691257737985
+            },
+            "valid_counts": {
+              "block_suffix_single": 9,
+              "control": 2
+            },
+            "attempts": {
+              "block_suffix_single": 9,
+              "control": 3
+            },
+            "sufficient": true,
+            "qualification": "候補ごとに有効5組以上、同一対照2組以上。未達も除かず表示。"
+          },
+          {
+            "compiler": "gcc",
+            "case": "biconnected_components__official_biconnected_components_max_tree_00",
+            "ratios": {
+              "block_suffix_single": 0.9892588449221709,
+              "control": 1.010102745481776
+            },
+            "valid_counts": {
+              "block_suffix_single": 9,
+              "control": 3
+            },
+            "attempts": {
+              "block_suffix_single": 9,
+              "control": 3
+            },
+            "sufficient": true,
+            "qualification": "候補ごとに有効5組以上、同一対照2組以上。未達も除かず表示。"
+          },
+          {
+            "compiler": "gcc",
+            "case": "two_edge_connected_components__custom_star100k",
+            "ratios": {
+              "block_suffix_single": 1.0003352738577829,
+              "control": 1.0062520967397603
+            },
+            "valid_counts": {
+              "block_suffix_single": 9,
+              "control": 3
+            },
+            "attempts": {
+              "block_suffix_single": 9,
+              "control": 3
+            },
+            "sufficient": true,
+            "qualification": "候補ごとに有効5組以上、同一対照2組以上。未達も除かず表示。"
+          },
+          {
+            "compiler": "gcc",
+            "case": "biconnected_components__custom_star100k",
+            "ratios": {
+              "block_suffix_single": 0.9975964007642213,
+              "control": 1.0018988944214702
+            },
+            "valid_counts": {
+              "block_suffix_single": 7,
+              "control": 3
+            },
+            "attempts": {
+              "block_suffix_single": 9,
+              "control": 3
+            },
+            "sufficient": true,
+            "qualification": "候補ごとに有効5組以上、同一対照2組以上。未達も除かず表示。"
+          },
+          {
+            "compiler": "gcc",
+            "case": "two_edge_connected_components__custom_cycle100k",
+            "ratios": {
+              "block_suffix_single": 1.0024693749092142,
+              "control": 1.0008839996071113
+            },
+            "valid_counts": {
+              "block_suffix_single": 9,
+              "control": 3
+            },
+            "attempts": {
+              "block_suffix_single": 9,
+              "control": 3
+            },
+            "sufficient": true,
+            "qualification": "候補ごとに有効5組以上、同一対照2組以上。未達も除かず表示。"
+          },
+          {
+            "compiler": "gcc",
+            "case": "biconnected_components__custom_cycle100k",
+            "ratios": {
+              "block_suffix_single": 0.9624553534346707,
+              "control": 0.9994604689769662
+            },
+            "valid_counts": {
+              "block_suffix_single": 9,
+              "control": 3
+            },
+            "attempts": {
+              "block_suffix_single": 9,
+              "control": 3
+            },
+            "sufficient": true,
+            "qualification": "候補ごとに有効5組以上、同一対照2組以上。未達も除かず表示。"
+          },
+          {
+            "compiler": "gcc",
+            "case": "two_edge_connected_components__custom_disjoint_cliques100k",
+            "ratios": {
+              "block_suffix_single": 1.0008789577514308,
+              "control": 1.0015509963679199
+            },
+            "valid_counts": {
+              "block_suffix_single": 9,
+              "control": 3
+            },
+            "attempts": {
+              "block_suffix_single": 9,
+              "control": 3
+            },
+            "sufficient": true,
+            "qualification": "候補ごとに有効5組以上、同一対照2組以上。未達も除かず表示。"
+          },
+          {
+            "compiler": "gcc",
+            "case": "biconnected_components__custom_disjoint_cliques100k",
+            "ratios": {
+              "block_suffix_single": 0.9432074384925533,
+              "control": 1.0016737095036872
+            },
+            "valid_counts": {
+              "block_suffix_single": 9,
+              "control": 3
+            },
+            "attempts": {
+              "block_suffix_single": 9,
+              "control": 3
+            },
+            "sufficient": true,
+            "qualification": "候補ごとに有効5組以上、同一対照2組以上。未達も除かず表示。"
+          },
+          {
+            "compiler": "clang",
+            "case": "two_edge_connected_components__official_two_edge_connected_components_max_random_00",
+            "ratios": {
+              "block_suffix_single": 0.9910955253001672,
+              "control": 1.0109247222198545
+            },
+            "valid_counts": {
+              "block_suffix_single": 8,
+              "control": 2
+            },
+            "attempts": {
+              "block_suffix_single": 9,
+              "control": 3
+            },
+            "sufficient": true,
+            "qualification": "候補ごとに有効5組以上、同一対照2組以上。未達も除かず表示。"
+          },
+          {
+            "compiler": "clang",
+            "case": "biconnected_components__official_two_edge_connected_components_max_random_00",
+            "ratios": {
+              "block_suffix_single": 0.9908204543097189,
+              "control": 1.0054256444036125
+            },
+            "valid_counts": {
+              "block_suffix_single": 9,
+              "control": 3
+            },
+            "attempts": {
+              "block_suffix_single": 9,
+              "control": 3
+            },
+            "sufficient": true,
+            "qualification": "候補ごとに有効5組以上、同一対照2組以上。未達も除かず表示。"
+          },
+          {
+            "compiler": "clang",
+            "case": "two_edge_connected_components__official_biconnected_components_max_random_00",
+            "ratios": {
+              "block_suffix_single": 0.9969386617396429,
+              "control": 1.0009464417679013
+            },
+            "valid_counts": {
+              "block_suffix_single": 9,
+              "control": 3
+            },
+            "attempts": {
+              "block_suffix_single": 9,
+              "control": 3
+            },
+            "sufficient": true,
+            "qualification": "候補ごとに有効5組以上、同一対照2組以上。未達も除かず表示。"
+          },
+          {
+            "compiler": "clang",
+            "case": "biconnected_components__official_biconnected_components_max_random_00",
+            "ratios": {
+              "block_suffix_single": 0.9948521222620963,
+              "control": 1.033487705703706
+            },
+            "valid_counts": {
+              "block_suffix_single": 9,
+              "control": 3
+            },
+            "attempts": {
+              "block_suffix_single": 9,
+              "control": 3
+            },
+            "sufficient": true,
+            "qualification": "候補ごとに有効5組以上、同一対照2組以上。未達も除かず表示。"
+          },
+          {
+            "compiler": "clang",
+            "case": "two_edge_connected_components__official_biconnected_components_max_tree_00",
+            "ratios": {
+              "block_suffix_single": 0.9841319900315029,
+              "control": 0.990780630096736
+            },
+            "valid_counts": {
+              "block_suffix_single": 9,
+              "control": 3
+            },
+            "attempts": {
+              "block_suffix_single": 9,
+              "control": 3
+            },
+            "sufficient": true,
+            "qualification": "候補ごとに有効5組以上、同一対照2組以上。未達も除かず表示。"
+          },
+          {
+            "compiler": "clang",
+            "case": "biconnected_components__official_biconnected_components_max_tree_00",
+            "ratios": {
+              "block_suffix_single": 0.9812936400755948,
+              "control": 0.9867583286767773
+            },
+            "valid_counts": {
+              "block_suffix_single": 9,
+              "control": 3
+            },
+            "attempts": {
+              "block_suffix_single": 9,
+              "control": 3
+            },
+            "sufficient": true,
+            "qualification": "候補ごとに有効5組以上、同一対照2組以上。未達も除かず表示。"
+          },
+          {
+            "compiler": "clang",
+            "case": "two_edge_connected_components__custom_star100k",
+            "ratios": {
+              "block_suffix_single": 0.9981525956031775,
+              "control": 0.9997255009607466
+            },
+            "valid_counts": {
+              "block_suffix_single": 9,
+              "control": 3
+            },
+            "attempts": {
+              "block_suffix_single": 9,
+              "control": 3
+            },
+            "sufficient": true,
+            "qualification": "候補ごとに有効5組以上、同一対照2組以上。未達も除かず表示。"
+          },
+          {
+            "compiler": "clang",
+            "case": "biconnected_components__custom_star100k",
+            "ratios": {
+              "block_suffix_single": 0.9850291494850596,
+              "control": 1.0018130665833074
+            },
+            "valid_counts": {
+              "block_suffix_single": 9,
+              "control": 3
+            },
+            "attempts": {
+              "block_suffix_single": 9,
+              "control": 3
+            },
+            "sufficient": true,
+            "qualification": "候補ごとに有効5組以上、同一対照2組以上。未達も除かず表示。"
+          },
+          {
+            "compiler": "clang",
+            "case": "two_edge_connected_components__custom_cycle100k",
+            "ratios": {
+              "block_suffix_single": 1.005247590878733,
+              "control": 0.9877632327831531
+            },
+            "valid_counts": {
+              "block_suffix_single": 9,
+              "control": 3
+            },
+            "attempts": {
+              "block_suffix_single": 9,
+              "control": 3
+            },
+            "sufficient": true,
+            "qualification": "候補ごとに有効5組以上、同一対照2組以上。未達も除かず表示。"
+          },
+          {
+            "compiler": "clang",
+            "case": "biconnected_components__custom_cycle100k",
+            "ratios": {
+              "block_suffix_single": 0.9498849399130657,
+              "control": 1.004106167717902
+            },
+            "valid_counts": {
+              "block_suffix_single": 9,
+              "control": 3
+            },
+            "attempts": {
+              "block_suffix_single": 9,
+              "control": 3
+            },
+            "sufficient": true,
+            "qualification": "候補ごとに有効5組以上、同一対照2組以上。未達も除かず表示。"
+          },
+          {
+            "compiler": "clang",
+            "case": "two_edge_connected_components__custom_disjoint_cliques100k",
+            "ratios": {
+              "block_suffix_single": 1.002253883924978,
+              "control": 0.9890616235275262
+            },
+            "valid_counts": {
+              "block_suffix_single": 9,
+              "control": 3
+            },
+            "attempts": {
+              "block_suffix_single": 9,
+              "control": 3
+            },
+            "sufficient": true,
+            "qualification": "候補ごとに有効5組以上、同一対照2組以上。未達も除かず表示。"
+          },
+          {
+            "compiler": "clang",
+            "case": "biconnected_components__custom_disjoint_cliques100k",
+            "ratios": {
+              "block_suffix_single": 0.9383773021403683,
+              "control": 0.9942138025270332
+            },
+            "valid_counts": {
+              "block_suffix_single": 9,
+              "control": 3
+            },
+            "attempts": {
+              "block_suffix_single": 9,
+              "control": 3
+            },
+            "sufficient": true,
+            "qualification": "候補ごとに有効5組以上、同一対照2組以上。未達も除かず表示。"
+          }
+        ],
+        "summary": "confirm_summary.json",
+        "summary_sha256": "761daf66d1138f9bdd098a1e21866cfa0b67ebb43d2d1083bd424258b74d0018",
+        "raw": "confirm_raw.json",
+        "raw_sha256": "de3b5a734c3547b00318f5f813334f0328af68427f45c6e46548a6f8ae7b34dc",
+        "flag_scope": "confirm.pyはbench.run_wholeへflag引数を渡さず、既定nativeを使う。defaultを測定した結果とは扱わない。",
+        "scope": "9候補/3同一対照の追加確認。rawの計算・出力の正しさ・全宣言セル完了を検算し、有効組不足セルを明示する。十分な組数は採用を意味せず、結果の採否はfinal_selectionで別に決める。"
+      }
+    ],
+    "additional_records": {
+      "confirm_summary.json": "761daf66d1138f9bdd098a1e21866cfa0b67ebb43d2d1083bd424258b74d0018",
+      "confirm_raw.json": "de3b5a734c3547b00318f5f813334f0328af68427f45c6e46548a6f8ae7b34dc",
+      "final_fixture_validation.json": "d183d93b2595bb456b645b50a11d616fc558ef3992a89ea0e1d5503452ee1d77",
+      "overwrite_validation.json": "e2833ea3abaf50eac793072a0e223da9d3b911962f13af2c590a597e7ffd3497"
+    },
+    "repair": {
+      "script": "repair_measurements.py",
+      "script_sha256": "f19b3ec068b4fdabea37aec4d24c07b01bf90b7fc389585d3c71193422eab3ea",
+      "selection": "repair_selection.json",
+      "selection_sha256": "d40f8761e8b0e04068bb0d8a89fa89dfd2df0588f518a6abbdd47b1c0549c242",
+      "selected_cells": 14,
+      "by_kind": {
+        "whole": {
+          "selected_cells": 2,
+          "initial_triplets": 720,
+          "added_triplets": 20,
+          "combined_triplets": 740,
+          "initial_raw": "initial_final_whole_raw.json",
+          "initial_raw_sha256": "60fb546bed5d20a727932841e4ec89775cebb6b7cacd53d5715875b0f4ee7c44",
+          "initial_summary": "initial_final_whole_summary.json",
+          "initial_summary_sha256": "910c70b804db7ba1a859ce835310c9332a7e3fc11b3311456e743158bed76e20"
+        },
+        "core": {
+          "selected_cells": 12,
+          "initial_triplets": 1166,
+          "added_triplets": 120,
+          "combined_triplets": 1286,
+          "initial_raw": "initial_final_core_raw.json",
+          "initial_raw_sha256": "b3b3d56ff67c7b4af18bbdf3df692ae1cbfe64abed8fe63fbfdecf4998e39bdf",
+          "initial_summary": "initial_final_core_summary.json",
+          "initial_summary_sha256": "97085c76d6b0fe3cee21a6eea0452c2da1d0617dd8bb2b8d57cd40b91fa5feda"
+        }
+      },
+      "snapshot_record_correction": {
+        "before_file": "repair_selection_before_snapshot_fix.json",
+        "before_sha256": "10921f4ed5d50e1b861ce13c01144d5e5565c1caeb16e68ffce194d20292f236",
+        "restored_initial_rows": 13,
+        "scope": "producerのsummary行参照により後から変わったinitial記録を、immutable初期snapshotから復元。試行・時刻・raw・選択条件・理由は変更しない。",
+        "fix_records": {
+          "repair_snapshot_fix.json": "5678cd4aa430649ca7436b2168cbb98a2bba01956c4eeff726861ebab57b907e"
+        }
+      },
+      "remaining_control_outside_three_percent": [
+        {
+          "kind": "whole",
+          "compiler": "gcc",
+          "flag": "default",
+          "setting": "skip",
+          "case": "biconnected_components__custom_random100k_500k",
+          "ratios": {
+            "final": 0.9646858107254463,
+            "control": 1.0339783927120811
+          },
+          "valid_counts": {
+            "final": 14,
+            "control": 6
+          },
+          "sufficient": true
+        },
+        {
+          "kind": "core",
+          "compiler": "gcc",
+          "flag": "native",
+          "setting": "skip",
+          "case": {
+            "name": "custom_random64",
+            "operation": 5,
+            "repetitions": 256,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random64.in",
+            "n": 64,
+            "m": 200
+          },
+          "ratios": {
+            "final": 1.029904947115671,
+            "control": 1.0437710437710437
+          },
+          "valid_counts": {
+            "final": 12,
+            "control": 5
+          },
+          "sufficient": true
+        },
+        {
+          "kind": "core",
+          "compiler": "gcc",
+          "flag": "native",
+          "setting": "skip",
+          "case": {
+            "name": "custom_random64",
+            "operation": 6,
+            "repetitions": 256,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random64.in",
+            "n": 64,
+            "m": 200
+          },
+          "ratios": {
+            "final": 1.0272108843537415,
+            "control": 1.0531822247328533
+          },
+          "valid_counts": {
+            "final": 11,
+            "control": 4
+          },
+          "sufficient": true
+        },
+        {
+          "kind": "core",
+          "compiler": "clang",
+          "flag": "native",
+          "setting": "checked",
+          "case": {
+            "name": "custom_random64",
+            "operation": 5,
+            "repetitions": 256,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random64.in",
+            "n": 64,
+            "m": 200
+          },
+          "ratios": {
+            "final": 1.0212765957446808,
+            "control": 1.0336134453781514
+          },
+          "valid_counts": {
+            "final": 11,
+            "control": 5
+          },
+          "sufficient": true
+        }
+      ],
+      "remaining_candidate_above_three_percent": [],
+      "remaining_insufficient_cells": [],
+      "selection_rule": "初期control中央値が1±3%の外、または初期final中央値>1.03、または有効候補5組/対照2組未達の全セル。初期値だけで一度決める。",
+      "supplemental_protocol": "各選択セルへ候補7組+同一対照3組を一度だけ追加。全初期行と全追加行を保持し、両端差10%以内という同じ基準で統合中央値を計算。候補の時間を理由に個別trialを除外せず、選び直し・追加phaseの反復をしない。",
+      "scope": "機械的な再確認対象と全raw保持の検証。再確認の実施や有効数充足は採用を意味しない。採否は統合結果とfinal_selectionで別に判断する。"
+    },
+    "coverage": {
+      "whole": {
+        "default/skip": [
+          "biconnected_components__custom_cycle100k",
+          "biconnected_components__custom_disjoint_cliques100k",
+          "biconnected_components__custom_parallel100k",
+          "biconnected_components__custom_path300k",
+          "biconnected_components__custom_random100k_500k",
+          "biconnected_components__custom_star100k",
+          "biconnected_components__official_biconnected_components_max_random_00",
+          "biconnected_components__official_biconnected_components_max_tree_00",
+          "biconnected_components__official_two_edge_connected_components_max_random_00",
+          "two_edge_connected_components__custom_cycle100k",
+          "two_edge_connected_components__custom_disjoint_cliques100k",
+          "two_edge_connected_components__custom_parallel100k",
+          "two_edge_connected_components__custom_path300k",
+          "two_edge_connected_components__custom_random100k_500k",
+          "two_edge_connected_components__custom_star100k",
+          "two_edge_connected_components__official_biconnected_components_max_random_00",
+          "two_edge_connected_components__official_biconnected_components_max_tree_00",
+          "two_edge_connected_components__official_two_edge_connected_components_max_random_00"
+        ],
+        "native/skip": [
+          "biconnected_components__custom_cycle100k",
+          "biconnected_components__custom_disjoint_cliques100k",
+          "biconnected_components__custom_parallel100k",
+          "biconnected_components__custom_path300k",
+          "biconnected_components__custom_random100k_500k",
+          "biconnected_components__custom_star100k",
+          "biconnected_components__official_biconnected_components_max_random_00",
+          "biconnected_components__official_biconnected_components_max_tree_00",
+          "biconnected_components__official_two_edge_connected_components_max_random_00",
+          "two_edge_connected_components__custom_cycle100k",
+          "two_edge_connected_components__custom_disjoint_cliques100k",
+          "two_edge_connected_components__custom_parallel100k",
+          "two_edge_connected_components__custom_path300k",
+          "two_edge_connected_components__custom_random100k_500k",
+          "two_edge_connected_components__custom_star100k",
+          "two_edge_connected_components__official_biconnected_components_max_random_00",
+          "two_edge_connected_components__official_biconnected_components_max_tree_00",
+          "two_edge_connected_components__official_two_edge_connected_components_max_random_00"
+        ]
+      },
+      "core": {
+        "default/skip": [
+          {
+            "m": 500000,
+            "n": 100000,
+            "name": "custom_random100k_500k",
+            "operation": 0,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random100k_500k.in",
+            "repetitions": 1
+          },
+          {
+            "m": 500000,
+            "n": 100000,
+            "name": "custom_random100k_500k",
+            "operation": 1,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random100k_500k.in",
+            "repetitions": 1
+          },
+          {
+            "m": 500000,
+            "n": 100000,
+            "name": "custom_random100k_500k",
+            "operation": 2,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random100k_500k.in",
+            "repetitions": 1
+          },
+          {
+            "m": 500000,
+            "n": 100000,
+            "name": "custom_random100k_500k",
+            "operation": 3,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random100k_500k.in",
+            "repetitions": 1
+          },
+          {
+            "m": 500000,
+            "n": 100000,
+            "name": "custom_random100k_500k",
+            "operation": 4,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random100k_500k.in",
+            "repetitions": 1
+          },
+          {
+            "m": 500000,
+            "n": 100000,
+            "name": "custom_random100k_500k",
+            "operation": 5,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random100k_500k.in",
+            "repetitions": 1
+          },
+          {
+            "m": 500000,
+            "n": 100000,
+            "name": "custom_random100k_500k",
+            "operation": 6,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random100k_500k.in",
+            "repetitions": 1
+          },
+          {
+            "m": 500000,
+            "n": 100000,
+            "name": "custom_random100k_500k",
+            "operation": 7,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random100k_500k.in",
+            "repetitions": 256
+          }
+        ],
+        "native/checked": [
+          {
+            "m": 200,
+            "n": 64,
+            "name": "custom_random64",
+            "operation": 0,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random64.in",
+            "repetitions": 256
+          },
+          {
+            "m": 200,
+            "n": 64,
+            "name": "custom_random64",
+            "operation": 1,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random64.in",
+            "repetitions": 256
+          },
+          {
+            "m": 200,
+            "n": 64,
+            "name": "custom_random64",
+            "operation": 2,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random64.in",
+            "repetitions": 256
+          },
+          {
+            "m": 200,
+            "n": 64,
+            "name": "custom_random64",
+            "operation": 3,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random64.in",
+            "repetitions": 256
+          },
+          {
+            "m": 200,
+            "n": 64,
+            "name": "custom_random64",
+            "operation": 4,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random64.in",
+            "repetitions": 256
+          },
+          {
+            "m": 200,
+            "n": 64,
+            "name": "custom_random64",
+            "operation": 5,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random64.in",
+            "repetitions": 256
+          },
+          {
+            "m": 200,
+            "n": 64,
+            "name": "custom_random64",
+            "operation": 6,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random64.in",
+            "repetitions": 256
+          },
+          {
+            "m": 200,
+            "n": 64,
+            "name": "custom_random64",
+            "operation": 7,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random64.in",
+            "repetitions": 32768
+          },
+          {
+            "m": 500000,
+            "n": 100000,
+            "name": "custom_random100k_500k",
+            "operation": 0,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random100k_500k.in",
+            "repetitions": 1
+          },
+          {
+            "m": 500000,
+            "n": 100000,
+            "name": "custom_random100k_500k",
+            "operation": 1,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random100k_500k.in",
+            "repetitions": 1
+          },
+          {
+            "m": 500000,
+            "n": 100000,
+            "name": "custom_random100k_500k",
+            "operation": 2,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random100k_500k.in",
+            "repetitions": 1
+          },
+          {
+            "m": 500000,
+            "n": 100000,
+            "name": "custom_random100k_500k",
+            "operation": 3,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random100k_500k.in",
+            "repetitions": 1
+          },
+          {
+            "m": 500000,
+            "n": 100000,
+            "name": "custom_random100k_500k",
+            "operation": 4,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random100k_500k.in",
+            "repetitions": 1
+          },
+          {
+            "m": 500000,
+            "n": 100000,
+            "name": "custom_random100k_500k",
+            "operation": 5,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random100k_500k.in",
+            "repetitions": 1
+          },
+          {
+            "m": 500000,
+            "n": 100000,
+            "name": "custom_random100k_500k",
+            "operation": 6,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random100k_500k.in",
+            "repetitions": 1
+          },
+          {
+            "m": 500000,
+            "n": 100000,
+            "name": "custom_random100k_500k",
+            "operation": 7,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random100k_500k.in",
+            "repetitions": 256
+          },
+          {
+            "m": 99999,
+            "n": 100000,
+            "name": "custom_star100k",
+            "operation": 0,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_star100k.in",
+            "repetitions": 1
+          },
+          {
+            "m": 99999,
+            "n": 100000,
+            "name": "custom_star100k",
+            "operation": 1,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_star100k.in",
+            "repetitions": 1
+          },
+          {
+            "m": 99999,
+            "n": 100000,
+            "name": "custom_star100k",
+            "operation": 2,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_star100k.in",
+            "repetitions": 1
+          },
+          {
+            "m": 99999,
+            "n": 100000,
+            "name": "custom_star100k",
+            "operation": 3,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_star100k.in",
+            "repetitions": 1
+          },
+          {
+            "m": 99999,
+            "n": 100000,
+            "name": "custom_star100k",
+            "operation": 4,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_star100k.in",
+            "repetitions": 1
+          },
+          {
+            "m": 99999,
+            "n": 100000,
+            "name": "custom_star100k",
+            "operation": 5,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_star100k.in",
+            "repetitions": 1
+          },
+          {
+            "m": 99999,
+            "n": 100000,
+            "name": "custom_star100k",
+            "operation": 6,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_star100k.in",
+            "repetitions": 1
+          },
+          {
+            "m": 99999,
+            "n": 100000,
+            "name": "custom_star100k",
+            "operation": 7,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_star100k.in",
+            "repetitions": 1
+          }
+        ],
+        "native/skip": [
+          {
+            "m": 200,
+            "n": 64,
+            "name": "custom_random64",
+            "operation": 0,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random64.in",
+            "repetitions": 256
+          },
+          {
+            "m": 200,
+            "n": 64,
+            "name": "custom_random64",
+            "operation": 1,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random64.in",
+            "repetitions": 256
+          },
+          {
+            "m": 200,
+            "n": 64,
+            "name": "custom_random64",
+            "operation": 2,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random64.in",
+            "repetitions": 256
+          },
+          {
+            "m": 200,
+            "n": 64,
+            "name": "custom_random64",
+            "operation": 3,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random64.in",
+            "repetitions": 256
+          },
+          {
+            "m": 200,
+            "n": 64,
+            "name": "custom_random64",
+            "operation": 4,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random64.in",
+            "repetitions": 256
+          },
+          {
+            "m": 200,
+            "n": 64,
+            "name": "custom_random64",
+            "operation": 5,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random64.in",
+            "repetitions": 256
+          },
+          {
+            "m": 200,
+            "n": 64,
+            "name": "custom_random64",
+            "operation": 6,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random64.in",
+            "repetitions": 256
+          },
+          {
+            "m": 200,
+            "n": 64,
+            "name": "custom_random64",
+            "operation": 7,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random64.in",
+            "repetitions": 32768
+          },
+          {
+            "m": 200000,
+            "n": 200000,
+            "name": "official_two_edge_connected_components_max_random_00",
+            "operation": 4,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/official_two_edge_connected_components_max_random_00.in",
+            "repetitions": 1
+          },
+          {
+            "m": 200000,
+            "n": 200000,
+            "name": "official_two_edge_connected_components_max_random_00",
+            "operation": 7,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/official_two_edge_connected_components_max_random_00.in",
+            "repetitions": 1
+          },
+          {
+            "m": 500000,
+            "n": 100000,
+            "name": "custom_random100k_500k",
+            "operation": 0,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random100k_500k.in",
+            "repetitions": 1
+          },
+          {
+            "m": 500000,
+            "n": 100000,
+            "name": "custom_random100k_500k",
+            "operation": 1,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random100k_500k.in",
+            "repetitions": 1
+          },
+          {
+            "m": 500000,
+            "n": 100000,
+            "name": "custom_random100k_500k",
+            "operation": 2,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random100k_500k.in",
+            "repetitions": 1
+          },
+          {
+            "m": 500000,
+            "n": 100000,
+            "name": "custom_random100k_500k",
+            "operation": 3,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random100k_500k.in",
+            "repetitions": 1
+          },
+          {
+            "m": 500000,
+            "n": 100000,
+            "name": "custom_random100k_500k",
+            "operation": 4,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random100k_500k.in",
+            "repetitions": 1
+          },
+          {
+            "m": 500000,
+            "n": 100000,
+            "name": "custom_random100k_500k",
+            "operation": 5,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random100k_500k.in",
+            "repetitions": 1
+          },
+          {
+            "m": 500000,
+            "n": 100000,
+            "name": "custom_random100k_500k",
+            "operation": 6,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random100k_500k.in",
+            "repetitions": 1
+          },
+          {
+            "m": 500000,
+            "n": 100000,
+            "name": "custom_random100k_500k",
+            "operation": 7,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_random100k_500k.in",
+            "repetitions": 256
+          },
+          {
+            "m": 99999,
+            "n": 100000,
+            "name": "custom_star100k",
+            "operation": 0,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_star100k.in",
+            "repetitions": 1
+          },
+          {
+            "m": 99999,
+            "n": 100000,
+            "name": "custom_star100k",
+            "operation": 1,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_star100k.in",
+            "repetitions": 1
+          },
+          {
+            "m": 99999,
+            "n": 100000,
+            "name": "custom_star100k",
+            "operation": 2,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_star100k.in",
+            "repetitions": 1
+          },
+          {
+            "m": 99999,
+            "n": 100000,
+            "name": "custom_star100k",
+            "operation": 3,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_star100k.in",
+            "repetitions": 1
+          },
+          {
+            "m": 99999,
+            "n": 100000,
+            "name": "custom_star100k",
+            "operation": 4,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_star100k.in",
+            "repetitions": 1
+          },
+          {
+            "m": 99999,
+            "n": 100000,
+            "name": "custom_star100k",
+            "operation": 5,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_star100k.in",
+            "repetitions": 1
+          },
+          {
+            "m": 99999,
+            "n": 100000,
+            "name": "custom_star100k",
+            "operation": 6,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_star100k.in",
+            "repetitions": 1
+          },
+          {
+            "m": 99999,
+            "n": 100000,
+            "name": "custom_star100k",
+            "operation": 7,
+            "path": "/tmp/sirkit_lowlink_416583/fixtures/inputs/custom_star100k.in",
+            "repetitions": 1
+          }
+        ]
+      }
+    },
+    "coverage_scope": "実際の各profileで宣言したjob集合を記録し、両コンパイラで同じ条件集合か照合。対象を特定の入力名や過去の件数に固定しない。",
+    "whole": {
+      "cells": 72,
+      "cases": 18,
+      "qualified_cells": 72,
+      "triplets": 740,
+      "statistics": [
+        {
+          "compiler": "clang",
+          "flag": "default",
+          "problem": "biconnected_components",
+          "cells": 9,
+          "qualified_cells": 9,
+          "candidate_ratio": 0.9589609164328788,
+          "identical_control_ratio": 0.9966173902030413,
+          "minimum_ratio": 0.8931295837523608,
+          "maximum_ratio": 0.9891803823773898
+        },
+        {
+          "compiler": "clang",
+          "flag": "default",
+          "problem": "two_edge_connected_components",
+          "cells": 9,
+          "qualified_cells": 9,
+          "candidate_ratio": 0.9964122399668017,
+          "identical_control_ratio": 1.0018414073808983,
+          "minimum_ratio": 0.9886918035384807,
+          "maximum_ratio": 1.0073788310217078
+        },
+        {
+          "compiler": "clang",
+          "flag": "native",
+          "problem": "biconnected_components",
+          "cells": 9,
+          "qualified_cells": 9,
+          "candidate_ratio": 0.9632493282156763,
+          "identical_control_ratio": 0.9962776027118699,
+          "minimum_ratio": 0.8994874298267025,
+          "maximum_ratio": 0.9931841537667908
+        },
+        {
+          "compiler": "clang",
+          "flag": "native",
+          "problem": "two_edge_connected_components",
+          "cells": 9,
+          "qualified_cells": 9,
+          "candidate_ratio": 1.003157616475258,
+          "identical_control_ratio": 1.0002874900705607,
+          "minimum_ratio": 0.9924643325854113,
+          "maximum_ratio": 1.0174103973717663
+        },
+        {
+          "compiler": "gcc",
+          "flag": "default",
+          "problem": "biconnected_components",
+          "cells": 9,
+          "qualified_cells": 9,
+          "candidate_ratio": 0.9681762246642889,
+          "identical_control_ratio": 1.0004942837204478,
+          "minimum_ratio": 0.894372164897064,
+          "maximum_ratio": 1.0076915311434904
+        },
+        {
+          "compiler": "gcc",
+          "flag": "default",
+          "problem": "two_edge_connected_components",
+          "cells": 9,
+          "qualified_cells": 9,
+          "candidate_ratio": 1.0041710597720948,
+          "identical_control_ratio": 0.993987361186115,
+          "minimum_ratio": 0.9986440974500285,
+          "maximum_ratio": 1.019973921973622
+        },
+        {
+          "compiler": "gcc",
+          "flag": "native",
+          "problem": "biconnected_components",
+          "cells": 9,
+          "qualified_cells": 9,
+          "candidate_ratio": 0.972150663105023,
+          "identical_control_ratio": 0.9973618011836802,
+          "minimum_ratio": 0.8991378465758793,
+          "maximum_ratio": 0.9992960953997764
+        },
+        {
+          "compiler": "gcc",
+          "flag": "native",
+          "problem": "two_edge_connected_components",
+          "cells": 9,
+          "qualified_cells": 9,
+          "candidate_ratio": 0.9956167999397493,
+          "identical_control_ratio": 0.9986990946166856,
+          "minimum_ratio": 0.9829802747138523,
+          "maximum_ratio": 1.001449321357919
+        }
+      ],
+      "insufficient_cells": [],
+      "jobs": "final_whole_jobs.json",
+      "summary": "final_whole_summary.json",
+      "raw": "final_whole_raw.json",
+      "time": "固定main全体の子user+system CPU時間。SKIP設定。正規化と独立参照SHA照合は計測後。"
+    },
+    "core": {
+      "cells": 116,
+      "scenarios": 26,
+      "qualified_cells": 116,
+      "triplets": 1286,
+      "statistics": [
+        {
+          "compiler": "clang",
+          "flag": "default",
+          "setting": "skip",
+          "cells": 8,
+          "qualified_cells": 8,
+          "candidate_ratio": 0.9841166679067449,
+          "identical_control_ratio": 1.0042395749582644,
+          "minimum_ratio": 0.9369419720828851,
+          "maximum_ratio": 1.006993006993007
+        },
+        {
+          "compiler": "clang",
+          "flag": "native",
+          "setting": "checked",
+          "cells": 24,
+          "qualified_cells": 24,
+          "candidate_ratio": 0.9800793903887924,
+          "identical_control_ratio": 1.0027793257499245,
+          "minimum_ratio": 0.7773972602739726,
+          "maximum_ratio": 1.0212765957446808
+        },
+        {
+          "compiler": "clang",
+          "flag": "native",
+          "setting": "skip",
+          "cells": 26,
+          "qualified_cells": 26,
+          "candidate_ratio": 0.9805724410938305,
+          "identical_control_ratio": 1.001572224982183,
+          "minimum_ratio": 0.7688838782412627,
+          "maximum_ratio": 1.0249962126950463
+        },
+        {
+          "compiler": "gcc",
+          "flag": "default",
+          "setting": "skip",
+          "cells": 8,
+          "qualified_cells": 8,
+          "candidate_ratio": 0.9878045002550226,
+          "identical_control_ratio": 0.9955660983994622,
+          "minimum_ratio": 0.9442674451343301,
+          "maximum_ratio": 1.0118577075098814
+        },
+        {
+          "compiler": "gcc",
+          "flag": "native",
+          "setting": "checked",
+          "cells": 24,
+          "qualified_cells": 24,
+          "candidate_ratio": 0.9770845591357309,
+          "identical_control_ratio": 1.0037112786295053,
+          "minimum_ratio": 0.7522388059701492,
+          "maximum_ratio": 1.0121597096188748
+        },
+        {
+          "compiler": "gcc",
+          "flag": "native",
+          "setting": "skip",
+          "cells": 26,
+          "qualified_cells": 26,
+          "candidate_ratio": 0.9848530051521687,
+          "identical_control_ratio": 1.0015833994362755,
+          "minimum_ratio": 0.7632367632367633,
+          "maximum_ratio": 1.029904947115671
+        }
+      ],
+      "operations": {
+        "0": "build(false)",
+        "1": "build(true)",
+        "2": "rebuild(false)",
+        "3": "rebuild(true)",
+        "4": "two_edge_components",
+        "5": "biconnected_vertex_components(true)",
+        "6": "biconnected_vertex_components(false)",
+        "7": "bridge_forest"
+      },
+      "insufficient_cells": [],
+      "jobs": "final_core_jobs.json",
+      "summary": "final_core_summary.json",
+      "raw": "final_core_raw.json",
+      "time": "std::clock。入力読込と準備は計測外、指定操作と返り値生成は内、checksumの正規化と照合は後。"
+    },
+    "observed_tradeoffs": {
+      "whole_above_three_percent": [],
+      "large_core_above_three_percent": [],
+      "scope": "基準達成セルから導出。未達セルも隠さず記録。"
+    }
+  },
+  "validation": {
+    "mode": "fresh_final_candidate",
+    "jobs": 32,
+    "all_passed": true,
+    "source_sha256": "6e24f831bd5ccec97efbe97de9ebd4b58ddbe942a7a55446975094f7ea018569",
+    "completed_at_utc": "2026-11-12T10:27:12.000922+00:00",
+    "details": "final_validation.json",
+    "sha256": "5bc2d7df0720a5fcb96701c8460fd4e33af44a0b0836355dd01caf545e4067c1",
+    "matrix": "GCC/Clang×checked/SKIP×default/forced-wide×参照/構築確保失敗/照会確保失敗の24件、同8設定のASAN+UBSAN参照。",
+    "allocation_counters": [
+      {
+        "test": "new_graph2_allocation_test",
+        "compiler": "gcc",
+        "setting": "checked",
+        "mode": "default",
+        "failures": 66,
+        "successes": 814,
+        "live_delta": 0
+      },
+      {
+        "test": "low_link_components_allocation_test",
+        "compiler": "gcc",
+        "setting": "checked",
+        "mode": "default",
+        "failures": 89,
+        "successes": 611,
+        "live_delta": 0
+      },
+      {
+        "test": "new_graph2_allocation_test",
+        "compiler": "gcc",
+        "setting": "checked",
+        "mode": "forced_wide",
+        "failures": 66,
+        "successes": 814,
+        "live_delta": 0
+      },
+      {
+        "test": "low_link_components_allocation_test",
+        "compiler": "gcc",
+        "setting": "checked",
+        "mode": "forced_wide",
+        "failures": 89,
+        "successes": 611,
+        "live_delta": 0
+      },
+      {
+        "test": "new_graph2_allocation_test",
+        "compiler": "gcc",
+        "setting": "skip",
+        "mode": "default",
+        "failures": 66,
+        "successes": 814,
+        "live_delta": 0
+      },
+      {
+        "test": "low_link_components_allocation_test",
+        "compiler": "gcc",
+        "setting": "skip",
+        "mode": "default",
+        "failures": 89,
+        "successes": 611,
+        "live_delta": 0
+      },
+      {
+        "test": "new_graph2_allocation_test",
+        "compiler": "gcc",
+        "setting": "skip",
+        "mode": "forced_wide",
+        "failures": 66,
+        "successes": 814,
+        "live_delta": 0
+      },
+      {
+        "test": "low_link_components_allocation_test",
+        "compiler": "gcc",
+        "setting": "skip",
+        "mode": "forced_wide",
+        "failures": 89,
+        "successes": 611,
+        "live_delta": 0
+      },
+      {
+        "test": "new_graph2_allocation_test",
+        "compiler": "clang",
+        "setting": "checked",
+        "mode": "default",
+        "failures": 66,
+        "successes": 814,
+        "live_delta": 0
+      },
+      {
+        "test": "low_link_components_allocation_test",
+        "compiler": "clang",
+        "setting": "checked",
+        "mode": "default",
+        "failures": 89,
+        "successes": 611,
+        "live_delta": 0
+      },
+      {
+        "test": "new_graph2_allocation_test",
+        "compiler": "clang",
+        "setting": "checked",
+        "mode": "forced_wide",
+        "failures": 66,
+        "successes": 814,
+        "live_delta": 0
+      },
+      {
+        "test": "low_link_components_allocation_test",
+        "compiler": "clang",
+        "setting": "checked",
+        "mode": "forced_wide",
+        "failures": 89,
+        "successes": 611,
+        "live_delta": 0
+      },
+      {
+        "test": "new_graph2_allocation_test",
+        "compiler": "clang",
+        "setting": "skip",
+        "mode": "default",
+        "failures": 66,
+        "successes": 814,
+        "live_delta": 0
+      },
+      {
+        "test": "low_link_components_allocation_test",
+        "compiler": "clang",
+        "setting": "skip",
+        "mode": "default",
+        "failures": 89,
+        "successes": 611,
+        "live_delta": 0
+      },
+      {
+        "test": "new_graph2_allocation_test",
+        "compiler": "clang",
+        "setting": "skip",
+        "mode": "forced_wide",
+        "failures": 66,
+        "successes": 814,
+        "live_delta": 0
+      },
+      {
+        "test": "low_link_components_allocation_test",
+        "compiler": "clang",
+        "setting": "skip",
+        "mode": "forced_wide",
+        "failures": 89,
+        "successes": 611,
+        "live_delta": 0
+      }
+    ],
+    "forced_wide_conditions": {
+      "edge_ids": {
+        "expression": "edges_.size() <= std::numeric_limits<std::uint32_t>::max()",
+        "count": 1,
+        "replacement": "false"
+      },
+      "block_stamps": {
+        "expression": "blocks_.size() <= std::numeric_limits<std::uint32_t>::max()",
+        "count": 1,
+        "replacement": "false"
+      }
+    },
+    "wide_scope": "通常サイズで辺IDとstampのsize_t経路を強制。巨大Mそのものの物理試験とは扱わない。",
+    "leak_scope": "LeakSanitizerはhost ptraceのため無効。独立live allocation counterは全確保試験delta=0。",
+    "builds": 32,
+    "fixture_comparisons": 208,
+    "fixture_details": "final_fixture_validation.json",
+    "fixture_sha256": "d183d93b2595bb456b645b50a11d616fc558ef3992a89ea0e1d5503452ee1d77",
+    "profiles": {
+      "jobs": 14,
+      "file": "profiles/checkpoint.json",
+      "sha256": "103355b734f3a2185b6a0c1a0ca8ae0de0236a1cad2af503947bc11096c5257b",
+      "run_id": "20261112T103451031580Z",
+      "scope": "派生版8件と使用例6件のローカルサンプル。オンライン判定ではない。"
+    }
+  },
+  "license": "既存CC0実装への独自変更。参考ライブラリの実装コードを新規に取り込まない。",
+  "evidence_archive": "Audit/data/performance-low-link-416596-2026-11-12.zip",
+  "evidence_scope": "今回の独自候補・試験・レビュー・測定raw・自分の提出API原本・入力provenanceを保存。外部実装・コンパイラ原典・入力/出力本体・実行体・symlink参照先を除外。",
+  "outcome": {
+    "online_before_this_change": {
+      "low_link_two_edge": {
+        "submission": 416596,
+        "status": "AC",
+        "time_ms": 42
+      },
+      "low_link_biconnected": {
+        "submission": 416595,
+        "status": "AC",
+        "time_ms": 210
+      }
+    },
+    "local_whole_cells": 72,
+    "local_core_cells": 116,
+    "all_cells_sufficient": true,
+    "whole_max_ratio": 1.019973921973622,
+    "core_max_ratio": 1.029904947115671,
+    "cycle_and_cliques_whole_speedup_percent": [
+      3.232,
+      4.783,
+      3.006,
+      6.275,
+      4.838,
+      6.394,
+      4.476,
+      7.805
+    ],
+    "fresh_correctness_jobs": 32,
+    "independent_fixture_comparisons": 208
+  },
+  "tradeoff_notes": [
+    "初期の最終測定と追加測定を全保持し統合した。初期対照中央値の±3%超、候補3%超、標本不足の全セル14件を機械的に選び、候補7・対照3組を一度追加した。候補が遅い試行を除外しない。",
+    "最終の全188セルで候補中央値は旧版比+3%以内。1〜3%差を無条件に同速と断定しない。",
+    "blocks=falseにアルゴリズムの変更はない。Clangの2辺連結提出実行体のtextは同一で、この経路の時間差を新機能の成果に数えない。"
+  ],
+  "limitations": [
+    "i9-14900K P-Core CPU12のC++23 -O2、native/defaultでの比較。Library CheckerのAMDサーバーへの改善率を保証しない。",
+    "追加後も同一対照中央値が3%を超える4セルを保持する。短い小規模照会3セルとGCC default大規模dense whole1セルであり、これらの小さい差を積極的な改善の根拠に使わない。",
+    "公式small_random_2_02の1ms→9msを削除・ノイズと断定せずオンライン記録へ残す。",
+    "辺番号size_t経路は小さい入力で強制検証した。UINT32_MAXを超える辺数を物理的に構築した試験ではない。"
+  ],
+  "risks": [
+    "新しい通常版2本は未提出。今回確認した42ms/210msは変更前dc390aの判定であり新本体のACとは扱わない。"
+  ],
+  "evidence_archive_sha256": "5fd7e1209c59bd0c72679581faa6ce638cd29c2a46c523586b87c6f29a56c7d1"
+}

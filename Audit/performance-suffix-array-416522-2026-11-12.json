@@ -1,0 +1,658 @@
+{
+  "date": "2026-11-12",
+  "library": "String/Suffix_Array.cpp",
+  "decision": "retain_current_after_narrow_symbol_regressions",
+  "required_resubmission": [],
+  "online_evidence": "Audit/online-suffix-array-416522-416523-2026-11-12.json",
+  "online_scope": "現行通常版は416522 AC48ms、416523 AC44ms。提出本文と本体/main/共通IOを照合済み。候補は採用せず、再提出不要。派生版のオンラインACとは扱わない。",
+  "source_sha256": {
+    "before": "ddabec6d617bfa97a0bd94c0ac79ecc3f4d829ce78add2a52e9af1bc713b45bf",
+    "after": "ddabec6d617bfa97a0bd94c0ac79ecc3f4d829ce78add2a52e9af1bc713b45bf"
+  },
+  "frozen_main_IO_document_examples": {
+    "Verify/current/drivers/suffix_array_main.cpp": "b723184a8bba919ec45585d1172400e845e3a9352b1f403421dd7b5c5fcf882b",
+    "Verify/current/drivers/suffix_array_substrings_main.cpp": "5b934920067b755639670296e5d0f9c272b6b65cc92070fea667d8eaf0e1d494",
+    "Verify/current/common/fast_io.hpp": "291bf8dbc56a1d691f6256fe95b4714183c2cf5d9e55e4bef240e31d1eb178c1",
+    "Document/suffix_array.md": "17b3330435a59bcf82de2b681ea179157b3ebc42800c2fcfd5c0f31c7f898a81",
+    "Examples/suffix_array_example.cpp": "5fe685b14f7640300519314401f38add3292bde0340f40881c532ac34db7063a"
+  },
+  "online_comparison": [
+    {
+      "id": "suffix_array",
+      "previous_url": "https://judge.yosupo.jp/submission/416510",
+      "current_url": "https://judge.yosupo.jp/submission/416522",
+      "previous_evidence_file": "Audit/online-suffix-array-416510-416509-2026-11-12.json",
+      "previous_evidence_sha256": "9e6033a1f0ea57dbd104385bc42eb5e3b6b1c6c700489d28280ba068fb80700e",
+      "previous_time_ms": 48,
+      "current_time_ms": 48,
+      "time_delta_ms": 0,
+      "time_change_percent": 0.0,
+      "previous_memory_bytes": 14159872,
+      "current_memory_bytes": 12324864,
+      "memory_delta_bytes": -1835008,
+      "memory_change_percent": -12.959213190627716,
+      "same_driver": true,
+      "same_shared_io": true,
+      "previous_source_hashes": {
+        "String/Suffix_Array.cpp": "1a2e92cdeb08614a7dd2995cee9fd1971e7733c6d0a7ad19ce4004137dc93644"
+      },
+      "submitted_source_hashes": {
+        "String/Suffix_Array.cpp": "ddabec6d617bfa97a0bd94c0ac79ecc3f4d829ce78add2a52e9af1bc713b45bf"
+      }
+    },
+    {
+      "id": "suffix_array_substrings",
+      "previous_url": "https://judge.yosupo.jp/submission/416509",
+      "current_url": "https://judge.yosupo.jp/submission/416523",
+      "previous_evidence_file": "Audit/online-suffix-array-416510-416509-2026-11-12.json",
+      "previous_evidence_sha256": "9e6033a1f0ea57dbd104385bc42eb5e3b6b1c6c700489d28280ba068fb80700e",
+      "previous_time_ms": 46,
+      "current_time_ms": 44,
+      "time_delta_ms": -2,
+      "time_change_percent": -4.347826086956519,
+      "previous_memory_bytes": 11292672,
+      "current_memory_bytes": 9953280,
+      "memory_delta_bytes": -1339392,
+      "memory_change_percent": -11.86071817192601,
+      "same_driver": true,
+      "same_shared_io": true,
+      "previous_source_hashes": {
+        "String/Suffix_Array.cpp": "1a2e92cdeb08614a7dd2995cee9fd1971e7733c6d0a7ad19ce4004137dc93644"
+      },
+      "submitted_source_hashes": {
+        "String/Suffix_Array.cpp": "ddabec6d617bfa97a0bd94c0ac79ecc3f4d829ce78add2a52e9af1bc713b45bf"
+      }
+    }
+  ],
+  "conclusion": "16bitの文字列用符号列はSA/SA+LCPの固定Verify全体を約3%短縮した。一方、構築後のLCP単独計測ではGCC・検査有効時に約5〜11%の遅れが再現した。確保量を旧版に合わせた候補でも約3〜11%の遅れが残り、他操作の速度維持を満たさないため全候補を不採用とする。原因は特定していない。",
+  "candidates": [
+    {
+      "name": "cursor_uninit",
+      "sha256": "5a22cbc0662b5490437d6340601bc4fbd10b4ec9232611148d1bffc38609ca21",
+      "adopted": false
+    },
+    {
+      "name": "starts_uninit",
+      "sha256": "f0de33bd99a400a62eb3e5731765974efc4f3ce26db9bfdb7eb7bd0089eb7b39",
+      "adopted": false
+    },
+    {
+      "name": "combined_tables",
+      "sha256": "965f5827453999e5b1628233f013dccb29c552bb5c549591d2277250261fbe9e",
+      "adopted": false
+    },
+    {
+      "name": "templated_int",
+      "sha256": "c84a634331d6fd7e97709db68fae65e4f425c8e7d83ebb99831308b376280030",
+      "adopted": false
+    },
+    {
+      "name": "narrow_root",
+      "sha256": "b6384aafd3baba8b147d0ddadd80650c10a9e30c3df77a71a99b36956679681f",
+      "adopted": false
+    },
+    {
+      "name": "narrow_direct",
+      "sha256": "c9c38cf1c1233a0bf6f81ab375cc1ca283d83c696eaf1fec9406fe939f1c60b6",
+      "adopted": false
+    },
+    {
+      "name": "narrow_reserved",
+      "sha256": "8b175f71b491c77bedd70d4656be528a09ff918d75eefa19c6bcf0f4996a7210",
+      "adopted": false
+    }
+  ],
+  "candidate_scope": [
+    "バケット表のゼロ初期化省略3案は、同一実行ファイル対照を超える安定した効果なし。",
+    "int版をテンプレート化しただけの対照、文字列根のみuint_least16_tとする版、内部中継を省く版を比較。再帰名・添字・整数列はintのまま。",
+    "最後に符号配列の確保容量だけを調整。実際のint=4B・符号=2B環境で旧版と同じ確保バイト数とするが、アロケータの配置は保証しない。常時有効の容量上限検査・RAII・未参照領域を維持。",
+    "メモリ状態を分けるため独立SA準備のAPI単独比較も実施。単独の固定準備では概ね同等だが、構築に続ける操作の退行を解消できていない。"
+  ],
+  "measurement": {
+    "topology": {
+      "cpu": 12,
+      "cpu_info": "Architecture:                            x86_64\nCPU op-mode(s):                          32-bit, 64-bit\nAddress sizes:                           46 bits physical, 48 bits virtual\nByte Order:                              Little Endian\nCPU(s):                                  32\nOn-line CPU(s) list:                     0-31\nVendor ID:                               GenuineIntel\nModel name:                              Intel(R) Core(TM) i9-14900K\nCPU family:                              6\nModel:                                   183\nThread(s) per core:                      2\nCore(s) per socket:                      24\nSocket(s):                               1\nStepping:                                1\nCPU(s) scaling MHz:                      93%\nCPU max MHz:                             6000.0000\nCPU min MHz:                             800.0000\nBogoMIPS:                                6374.40\nFlags:                                   fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx pdpe1gb rdtscp lm constant_tsc art arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc cpuid aperfmperf tsc_known_freq pni pclmulqdq dtes64 monitor ds_cpl vmx smx est tm2 ssse3 sdbg fma cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand lahf_lm abm 3dnowprefetch cpuid_fault epb ssbd ibrs ibpb stibp ibrs_enhanced tpr_shadow flexpriority ept vpid ept_ad fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid rdseed adx smap clflushopt clwb intel_pt sha_ni xsaveopt xsavec xgetbv1 xsaves split_lock_detect user_shstk avx_vnni dtherm ida arat pln pts hwp hwp_notify hwp_act_window hwp_epp hwp_pkg_req hfi vnmi umip pku ospke waitpkg gfni vaes vpclmulqdq rdpid movdiri movdir64b fsrm md_clear serialize pconfig arch_lbr ibt flush_l1d arch_capabilities\nVirtualization:                          VT-x\nL1d cache:                               896 KiB (24 instances)\nL1i cache:                               1.3 MiB (24 instances)\nL2 cache:                                32 MiB (12 instances)\nL3 cache:                                36 MiB (1 instance)\nNUMA node(s):                            1\nNUMA node0 CPU(s):                       0-31\nVulnerability Gather data sampling:      Not affected\nVulnerability Ghostwrite:                Not affected\nVulnerability Indirect target selection: Not affected\nVulnerability Itlb multihit:             Not affected\nVulnerability L1tf:                      Not affected\nVulnerability Mds:                       Not affected\nVulnerability Meltdown:                  Not affected\nVulnerability Mmio stale data:           Not affected\nVulnerability Old microcode:             Not affected\nVulnerability Reg file data sampling:    Mitigation; Clear Register File\nVulnerability Retbleed:                  Not affected\nVulnerability Spec rstack overflow:      Not affected\nVulnerability Spec store bypass:         Mitigation; Speculative Store Bypass disabled via prctl\nVulnerability Spectre v1:                Mitigation; usercopy/swapgs barriers and __user pointer sanitization\nVulnerability Spectre v2:                Mitigation; Enhanced / Automatic IBRS; IBPB conditional; PBRSB-eIBRS SW sequence; BHI BHI_DIS_S\nVulnerability Srbds:                     Not affected\nVulnerability Tsa:                       Not affected\nVulnerability Tsx async abort:           Not affected\nVulnerability Vmscape:                   Mitigation; IBPB before exit to userspace\n",
+      "topology/core_id": "24",
+      "topology/thread_siblings_list": "12-13",
+      "cpufreq/cpuinfo_max_freq": "6000000"
+    },
+    "cpu_selection": "CPU12、SMT sibling13、sysfs core_id24、最大6GHzのi9-14900K P-Core。E-Coreは性能評価に使わない。",
+    "compilers": {
+      "GCC": "15.2.0",
+      "Clang": "21.1.8 --gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15"
+    },
+    "flags": [
+      "-std=c++23",
+      "-O2"
+    ],
+    "march_native": false,
+    "extra_pragmas": false,
+    "new_ISA_or_CPU_dispatch": false,
+    "standard_CXX23": true,
+    "lock": "/tmp/sirkit_performance_cpu12.lock",
+    "ASLR": "setarch x86_64 -R for child only",
+    "compilation_during_timing": false,
+    "protocol": "旧版→候補→旧版を1組とし、候補時間を両端の旧版中央値で割る。各条件9組の候補と3組の同一base対照を決定的shuffle。直前直後の旧版が10%以内の組だけ有効とし、候補自身の時間では除外しない。候補5組・対照2組に不足する種だけ最大3回・各3組補充。初回/raw/補充を保存。初期screenの反復数は各実行スクリプトに保存。",
+    "whole_scope": "同じmain・共通高速IO・入力・コンパイラ・SKIP設定の子プロセスuser+system CPU時間。75行・73個のbyte重複なし入力。20万以上の48ケースを各平均に使う。公開固定生成器と独立補助入力でありオンライン入力の同一性は主張しない。100万文字の制約外補足も含む。",
+    "official_generator_revision": "73876f1cbcf082d2b22722924b924d3d65a2f00e",
+    "fixtures_sha256": "407b0617fc0dc9d237990b22984d45a35880163bf1827fb15237da65cf593fae",
+    "whole_direct": [
+      {
+        "compiler": "clang",
+        "id": "suffix_array",
+        "cases": 48,
+        "candidate_ratio": 0.9723837471229255,
+        "identical_control_ratio": 0.998899318883811,
+        "minimum_ratio": 0.9547260262491829,
+        "maximum_ratio": 0.9860035483961812
+      },
+      {
+        "compiler": "clang",
+        "id": "suffix_array_substrings",
+        "cases": 48,
+        "candidate_ratio": 0.9693695465639062,
+        "identical_control_ratio": 0.997718695344864,
+        "minimum_ratio": 0.94645206560828,
+        "maximum_ratio": 0.9890712353471596
+      },
+      {
+        "compiler": "gcc",
+        "id": "suffix_array",
+        "cases": 48,
+        "candidate_ratio": 0.9712827885444749,
+        "identical_control_ratio": 1.0022324557785485,
+        "minimum_ratio": 0.9512610547002948,
+        "maximum_ratio": 0.9829555043033132
+      },
+      {
+        "compiler": "gcc",
+        "id": "suffix_array_substrings",
+        "cases": 48,
+        "candidate_ratio": 0.9659695814800467,
+        "identical_control_ratio": 1.0001751766956908,
+        "minimum_ratio": 0.9416799651820688,
+        "maximum_ratio": 0.9948094925088964
+      }
+    ],
+    "fixed_API_scope": "同じ独立SAを事前に用意し、SA構築による直前の確保状態を混ぜない。bounded SA/int64/bool/LCP/検索/大alphabet SA、長さ50万・3形状、検査有効/無効。std::clockのプロセスCPU時間。正解入力生成は計測外。",
+    "fixed_API": [
+      {
+        "compiler": "clang",
+        "setting": "checked",
+        "kind": 0,
+        "cases": 3,
+        "candidate_ratio": 0.9982831208544729,
+        "identical_control_ratio": 1.0017026562436997,
+        "minimum_ratio": 0.9972246313963573,
+        "maximum_ratio": 0.9996190890787398
+      },
+      {
+        "compiler": "clang",
+        "setting": "checked",
+        "kind": 1,
+        "cases": 3,
+        "candidate_ratio": 1.0005614792892925,
+        "identical_control_ratio": 0.9989948719916625,
+        "minimum_ratio": 0.9960567224953817,
+        "maximum_ratio": 1.006168009205984
+      },
+      {
+        "compiler": "clang",
+        "setting": "checked",
+        "kind": 2,
+        "cases": 3,
+        "candidate_ratio": 1.004225819755283,
+        "identical_control_ratio": 0.9613133655064117,
+        "minimum_ratio": 0.9985642176107684,
+        "maximum_ratio": 1.0133472596407744
+      },
+      {
+        "compiler": "clang",
+        "setting": "checked",
+        "kind": 3,
+        "cases": 3,
+        "candidate_ratio": 1.000795436053168,
+        "identical_control_ratio": 1.001945662781235,
+        "minimum_ratio": 0.994514015879262,
+        "maximum_ratio": 1.0109162661914006
+      },
+      {
+        "compiler": "clang",
+        "setting": "checked",
+        "kind": 4,
+        "cases": 3,
+        "candidate_ratio": 1.001296268277843,
+        "identical_control_ratio": 0.9960392643761555,
+        "minimum_ratio": 0.9962141698215251,
+        "maximum_ratio": 1.0059549389158329
+      },
+      {
+        "compiler": "clang",
+        "setting": "checked",
+        "kind": 5,
+        "cases": 3,
+        "candidate_ratio": 0.9995150829861769,
+        "identical_control_ratio": 1.0051739231823258,
+        "minimum_ratio": 0.9945290199809705,
+        "maximum_ratio": 1.0023744063984004
+      },
+      {
+        "compiler": "clang",
+        "setting": "skip",
+        "kind": 0,
+        "cases": 3,
+        "candidate_ratio": 1.0009076236481047,
+        "identical_control_ratio": 0.9973819943214783,
+        "minimum_ratio": 0.9992829419873188,
+        "maximum_ratio": 1.0020665128796618
+      },
+      {
+        "compiler": "clang",
+        "setting": "skip",
+        "kind": 1,
+        "cases": 3,
+        "candidate_ratio": 0.9993798864242577,
+        "identical_control_ratio": 1.0001008629693589,
+        "minimum_ratio": 0.9940199335548173,
+        "maximum_ratio": 1.002103300748106
+      },
+      {
+        "compiler": "clang",
+        "setting": "skip",
+        "kind": 2,
+        "cases": 3,
+        "candidate_ratio": 1.0011888021831574,
+        "identical_control_ratio": 1.0007122465491252,
+        "minimum_ratio": 0.9988386383880752,
+        "maximum_ratio": 1.005137995900834
+      },
+      {
+        "compiler": "clang",
+        "setting": "skip",
+        "kind": 3,
+        "cases": 3,
+        "candidate_ratio": 0.9950659635526933,
+        "identical_control_ratio": 1.0034736884395103,
+        "minimum_ratio": 0.9895636519488322,
+        "maximum_ratio": 0.9987560610291691
+      },
+      {
+        "compiler": "clang",
+        "setting": "skip",
+        "kind": 4,
+        "cases": 3,
+        "candidate_ratio": 0.9998778636846459,
+        "identical_control_ratio": 1.0013443449723367,
+        "minimum_ratio": 0.9944873208379272,
+        "maximum_ratio": 1.0043317319051746
+      },
+      {
+        "compiler": "clang",
+        "setting": "skip",
+        "kind": 5,
+        "cases": 3,
+        "candidate_ratio": 1.0025046572944458,
+        "identical_control_ratio": 1.0024386095690963,
+        "minimum_ratio": 0.9899337560998609,
+        "maximum_ratio": 1.0097343843952757
+      },
+      {
+        "compiler": "gcc",
+        "setting": "checked",
+        "kind": 0,
+        "cases": 3,
+        "candidate_ratio": 1.0055377026997538,
+        "identical_control_ratio": 0.9976302360123491,
+        "minimum_ratio": 1.0008179290037624,
+        "maximum_ratio": 1.0110655340162724
+      },
+      {
+        "compiler": "gcc",
+        "setting": "checked",
+        "kind": 1,
+        "cases": 3,
+        "candidate_ratio": 0.9988525763250635,
+        "identical_control_ratio": 1.0058162823127206,
+        "minimum_ratio": 0.9941724398362689,
+        "maximum_ratio": 1.0017915413654104
+      },
+      {
+        "compiler": "gcc",
+        "setting": "checked",
+        "kind": 2,
+        "cases": 3,
+        "candidate_ratio": 1.003409049649322,
+        "identical_control_ratio": 1.0029202685469971,
+        "minimum_ratio": 0.9992248845752031,
+        "maximum_ratio": 1.0110636480136694
+      },
+      {
+        "compiler": "gcc",
+        "setting": "checked",
+        "kind": 3,
+        "cases": 3,
+        "candidate_ratio": 1.0159734066830821,
+        "identical_control_ratio": 1.0022339559725713,
+        "minimum_ratio": 1.0140328259037041,
+        "maximum_ratio": 1.0194148072262061
+      },
+      {
+        "compiler": "gcc",
+        "setting": "checked",
+        "kind": 4,
+        "cases": 3,
+        "candidate_ratio": 0.9971000329060683,
+        "identical_control_ratio": 1.0006755814157589,
+        "minimum_ratio": 0.9913885898815931,
+        "maximum_ratio": 1.0016075182391493
+      },
+      {
+        "compiler": "gcc",
+        "setting": "checked",
+        "kind": 5,
+        "cases": 3,
+        "candidate_ratio": 0.9917724534782876,
+        "identical_control_ratio": 1.0047902331823457,
+        "minimum_ratio": 0.9908087841456883,
+        "maximum_ratio": 0.9936899550906714
+      },
+      {
+        "compiler": "gcc",
+        "setting": "skip",
+        "kind": 0,
+        "cases": 3,
+        "candidate_ratio": 1.0032305982922571,
+        "identical_control_ratio": 0.9931779585020277,
+        "minimum_ratio": 0.9981703921724604,
+        "maximum_ratio": 1.0071091333369513
+      },
+      {
+        "compiler": "gcc",
+        "setting": "skip",
+        "kind": 1,
+        "cases": 3,
+        "candidate_ratio": 1.0046424690117814,
+        "identical_control_ratio": 1.0076038653305728,
+        "minimum_ratio": 1.002936689893383,
+        "maximum_ratio": 1.0073106120655018
+      },
+      {
+        "compiler": "gcc",
+        "setting": "skip",
+        "kind": 2,
+        "cases": 3,
+        "candidate_ratio": 1.0013765716469127,
+        "identical_control_ratio": 0.9996267121558605,
+        "minimum_ratio": 0.9982836869025659,
+        "maximum_ratio": 1.005020125729275
+      },
+      {
+        "compiler": "gcc",
+        "setting": "skip",
+        "kind": 3,
+        "cases": 3,
+        "candidate_ratio": 0.9926334415502797,
+        "identical_control_ratio": 0.9983217378611747,
+        "minimum_ratio": 0.9881351423250865,
+        "maximum_ratio": 0.9969572901984474
+      },
+      {
+        "compiler": "gcc",
+        "setting": "skip",
+        "kind": 4,
+        "cases": 3,
+        "candidate_ratio": 1.0025930601599453,
+        "identical_control_ratio": 1.0011750455786697,
+        "minimum_ratio": 1.0001552674481795,
+        "maximum_ratio": 1.0040823399805707
+      },
+      {
+        "compiler": "gcc",
+        "setting": "skip",
+        "kind": 5,
+        "cases": 3,
+        "candidate_ratio": 0.9900051406412801,
+        "identical_control_ratio": 1.0011014582131932,
+        "minimum_ratio": 0.9875209056992152,
+        "maximum_ratio": 0.9947305389221557
+      }
+    ],
+    "construction_then_API_scope": "各プロセスでまず各候補のsuffix_array(string)を計測外に実行し、その後のint64 SAまたはLCPを計測。構築後の配置・キャッシュ等も含む実用上の補足。原因をアロケータだけとは断定しない。",
+    "construction_then_API": [
+      {
+        "compiler": "clang",
+        "setting": "checked",
+        "kind": 1,
+        "cases": 3,
+        "candidate_ratio": 1.0228859083525186,
+        "identical_control_ratio": 0.9908213258174304,
+        "minimum_ratio": 1.0161380190147198,
+        "maximum_ratio": 1.0268512058794408
+      },
+      {
+        "compiler": "clang",
+        "setting": "checked",
+        "kind": 3,
+        "cases": 3,
+        "candidate_ratio": 1.0082785154050697,
+        "identical_control_ratio": 1.0001392704077607,
+        "minimum_ratio": 1.0018832391713748,
+        "maximum_ratio": 1.017222659861488
+      },
+      {
+        "compiler": "clang",
+        "setting": "skip",
+        "kind": 1,
+        "cases": 3,
+        "candidate_ratio": 1.0169718594552226,
+        "identical_control_ratio": 1.0001407240217568,
+        "minimum_ratio": 0.9996073563518484,
+        "maximum_ratio": 1.0361761335734163
+      },
+      {
+        "compiler": "clang",
+        "setting": "skip",
+        "kind": 3,
+        "cases": 3,
+        "candidate_ratio": 1.0209190821573968,
+        "identical_control_ratio": 1.0058218661979001,
+        "minimum_ratio": 1.01466615206484,
+        "maximum_ratio": 1.02521670606777
+      },
+      {
+        "compiler": "gcc",
+        "setting": "checked",
+        "kind": 1,
+        "cases": 3,
+        "candidate_ratio": 1.0156796184567773,
+        "identical_control_ratio": 0.9996724719452987,
+        "minimum_ratio": 1.0037997780327683,
+        "maximum_ratio": 1.0251479910995425
+      },
+      {
+        "compiler": "gcc",
+        "setting": "checked",
+        "kind": 3,
+        "cases": 3,
+        "candidate_ratio": 1.0823833744569789,
+        "identical_control_ratio": 1.0006093660828523,
+        "minimum_ratio": 1.0484629294755876,
+        "maximum_ratio": 1.1131824234354195
+      },
+      {
+        "compiler": "gcc",
+        "setting": "skip",
+        "kind": 1,
+        "cases": 3,
+        "candidate_ratio": 1.0165156504806303,
+        "identical_control_ratio": 0.9992675036280544,
+        "minimum_ratio": 1.0024305686400121,
+        "maximum_ratio": 1.0238589211618256
+      },
+      {
+        "compiler": "gcc",
+        "setting": "skip",
+        "kind": 3,
+        "cases": 3,
+        "candidate_ratio": 1.011497169748876,
+        "identical_control_ratio": 1.0008745711252016,
+        "minimum_ratio": 0.9972799859612179,
+        "maximum_ratio": 1.0193687783807945
+      }
+    ],
+    "reserved_construction_then_API": [
+      {
+        "compiler": "clang",
+        "setting": "checked",
+        "kind": 1,
+        "cases": 3,
+        "candidate_ratio": 1.010160121778615,
+        "identical_control_ratio": 1.0054945915388398,
+        "minimum_ratio": 1.0024339597194556,
+        "maximum_ratio": 1.0209034758386824
+      },
+      {
+        "compiler": "clang",
+        "setting": "checked",
+        "kind": 3,
+        "cases": 3,
+        "candidate_ratio": 1.0017456100926156,
+        "identical_control_ratio": 0.997453857910758,
+        "minimum_ratio": 0.9906771344455348,
+        "maximum_ratio": 1.0113664928731438
+      },
+      {
+        "compiler": "clang",
+        "setting": "skip",
+        "kind": 1,
+        "cases": 3,
+        "candidate_ratio": 1.0068681193914872,
+        "identical_control_ratio": 1.0030950326730048,
+        "minimum_ratio": 0.9963341188792878,
+        "maximum_ratio": 1.014760590423617
+      },
+      {
+        "compiler": "clang",
+        "setting": "skip",
+        "kind": 3,
+        "cases": 3,
+        "candidate_ratio": 1.015840354159172,
+        "identical_control_ratio": 1.006443618899576,
+        "minimum_ratio": 1.0066328521264143,
+        "maximum_ratio": 1.0253565768621236
+      },
+      {
+        "compiler": "gcc",
+        "setting": "checked",
+        "kind": 1,
+        "cases": 3,
+        "candidate_ratio": 1.0041602309519055,
+        "identical_control_ratio": 0.9991835277781076,
+        "minimum_ratio": 1.000112551351554,
+        "maximum_ratio": 1.0080323951141794
+      },
+      {
+        "compiler": "gcc",
+        "setting": "checked",
+        "kind": 3,
+        "cases": 3,
+        "candidate_ratio": 1.070026881668969,
+        "identical_control_ratio": 0.999473186113284,
+        "minimum_ratio": 1.0326714801444044,
+        "maximum_ratio": 1.1083630106377935
+      },
+      {
+        "compiler": "gcc",
+        "setting": "skip",
+        "kind": 1,
+        "cases": 3,
+        "candidate_ratio": 1.0095808998358828,
+        "identical_control_ratio": 1.0029186564231674,
+        "minimum_ratio": 0.9973946331323658,
+        "maximum_ratio": 1.0199474253904437
+      },
+      {
+        "compiler": "gcc",
+        "setting": "skip",
+        "kind": 3,
+        "cases": 3,
+        "candidate_ratio": 1.010374415889662,
+        "identical_control_ratio": 0.9985396388646661,
+        "minimum_ratio": 0.9985115138779441,
+        "maximum_ratio": 1.0207309254114127
+      }
+    ],
+    "reserved_screen_scope": "追加案の探索的screenであり、採否はそれ以前に完了したreserved_preparedの退行で判断。同期生成処理がscreen終盤と重なった可能性があるため、このscreenの改善率を採用根拠に使わない。",
+    "partial_independent_preparation": {
+      "reason": "独立倍増法による前処理を各プロセスで反復する補助測定は途中停止。同じ正解SAを一度だけ作って読込む準備へ変更し、全候補を同じ準備条件で初めから測る。部分記録を全条件の結果とは扱わない。",
+      "completed_cells": 31,
+      "stopped_at_utc": "2026-11-12T00:16:19.146584+00:00"
+    },
+    "all_completed_comparisons_output_equal": true
+  },
+  "validation": {
+    "current": "現行本体は不変であり、前回Audit/performance-suffix-array-416510-2026-11-12.jsonのGCC/Clang・検査有効/無効32通りの検証に対応する同一SHA。今回2本のオンライン全74ケースACと本文一致を確認。",
+    "rejected_direct_candidate": {
+      "header_sha256": "c9c38cf1c1233a0bf6f81ab375cc1ca283d83c696eaf1fec9406fe939f1c60b6",
+      "passed_jobs": 40,
+      "total_jobs": 40,
+      "all_passed": true,
+      "scope": "不採用のnarrow_direct候補の40通り。これを現行本体を再検証した記録とは扱わない。新しい幅テストも正本へ追加せず証跡に保存。",
+      "tests": [
+        "ACL API/独立短列SA/LCP/検索",
+        "20万文字独立倍増法と整数・周期・大alphabet境界",
+        "NUL/255/全256文字種、長さ65535/65536/65537/600000、多数の再帰名を独立倍増法と照合",
+        "確保失敗と例外時解放"
+      ],
+      "allocation": [
+        {
+          "checks": 5521,
+          "failures": 91,
+          "live_delta": 0
+        },
+        {
+          "checks": 5521,
+          "failures": 91,
+          "live_delta": 0
+        },
+        {
+          "checks": 5521,
+          "failures": 91,
+          "live_delta": 0
+        },
+        {
+          "checks": 5521,
+          "failures": 91,
+          "live_delta": 0
+        }
+      ],
+      "sanitizers": "ASAN+UBSANを両コンパイラ・両検査設定で実行。host ptrace制約でdetect_leaks=0、確保カウンタのlive_delta=0で解放を独立検査。"
+    },
+    "current_correspondence": [
+      {
+        "id": "suffix_array",
+        "current_sha256": "35b71ea87cf7fc9973f4649d0fe3aa73fb2ca7e8325c5f26bb4d66b79f758ee0",
+        "online_url": "https://judge.yosupo.jp/submission/416522",
+        "normalized_current_matches_measured_base": true,
+        "main_and_IO_unchanged": true,
+        "source_bytes": 23701,
+        "under_512_KiB": true
+      },
+      {
+        "id": "suffix_array_substrings",
+        "current_sha256": "e5ed353e45e018265929eaacfc06420931671be3cfc114c1682e6fd653b5b38a",
+        "online_url": "https://judge.yosupo.jp/submission/416523",
+        "normalized_current_matches_measured_base": true,
+        "main_and_IO_unchanged": true,
+        "source_bytes": 23856,
+        "under_512_KiB": true
+      }
+    ]
+  },
+  "generated_API_docs_and_manifests_checked": true,
+  "source_public_API_main_IO_document_examples_changed": false,
+  "license": "CC0の現行本体を維持。候補・検査・補助スクリプトも今回の独自記述。外部の公式生成器本体は証跡ZIPへ含めない。",
+  "evidence_archive": "Audit/data/performance-suffix-array-416522-2026-11-12.zip",
+  "evidence_scope": "一時候補・生成器・静的レビュー・取得済み公開API応答・比較raw・JSON・正しさの記録。実行ファイル、巨大な入力/出力、外部生成器本体は含めない。入力の生成元は同梱fixture metadataと先行416380証跡へ対応。",
+  "evidence_archive_sha256": "5b7357cf1fdb77f435f3ad86ecdca1efa8fe977a9d76066034193d96a91b5b7d"
+}

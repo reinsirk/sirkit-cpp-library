@@ -1,0 +1,54 @@
+{
+  "status": "local verification only; online submissions pending",
+  "implementation": "independent CC0 CRT Convolution with owned vectors and existing shared NTT",
+  "source_hashes": {
+    "Math/Convolution.cpp": "1dbf1e899069f32b7979d736ab31517d3fe0a6fa6261d0889bf7030d8e5467da",
+    "embedded NTT": "5b5c85da53f0108b521b725b5ab014eaf8ee21446729b2e45c30100d796426fa"
+  },
+  "validation": {
+    "results.json": {
+      "conditions": 16,
+      "all_pass": true,
+      "path": "/tmp/sirkit_12h_20261031_095733/convolution/results.json",
+      "sha256": "2bfa18c01dfda5924dd90e1bb8e02142a860e0e7db665ce6f66181cc50ba623f"
+    },
+    "sanitizer_results.json": {
+      "conditions": 8,
+      "all_pass": true,
+      "path": "/tmp/sirkit_12h_20261031_095733/convolution/sanitizer_results.json",
+      "sha256": "d58c6e951b5b6ba9e233604d3733ae73d71921b1420601e8d7b8195fb6b87684"
+    },
+    "driver_results.json": {
+      "conditions": 14,
+      "all_pass": true,
+      "path": "/tmp/sirkit_12h_20261031_095733/convolution/driver_results.json",
+      "sha256": "cc85e706c94ba0506080a5a47b39d84ad9c8b5bfb209a55987c936256d339f9f"
+    },
+    "extra_results.json": {
+      "conditions": 12,
+      "all_pass": true,
+      "path": "/tmp/sirkit_12h_20261031_095733/convolution/extra_results.json",
+      "sha256": "2fc3f7bcc982353edbff4784dd53253224cc655164b4831c80b1b1142c884936"
+    }
+  },
+  "coverage": [
+    "arbitrary mod 1/2/4/NTT primes/1e9+7/INT32_MAX/UINT32_MAX-4/UINT32_MAX",
+    "negative int64 minimum and unsigned64 maximum normalized inputs",
+    "empty/1/31/32/33/63/64/65/129, all signed final int64 results",
+    "independent boost cpp_int direct convolution, 20000 independent portable word-product checks",
+    "(1-x)^64*(1+x)^64 cancellation with large intermediate products",
+    "decoded int64 overflow, mandatory zero modulus and length constraints",
+    "copy/move/clear/independent root cache, self square",
+    "ASan/UBSan both compilers portable128/no128 and SIMD on/off",
+    "large deterministic signed and max32mod triangular output/square/cache reuse",
+    "750 atomic allocation failure budgets per 4 compiler/SIMD configs, zero outstanding allocation blocks",
+    "NTT/FPS/Convolution co-inclusion in both orders",
+    "official LC 2samples and AtCoder 3samples on both compilers; readable example checked/skip"
+  ],
+  "timing_claim": "No measured performance improvement relative to an existing CRT library is claimed; implementation uses adopted NTT and one-transform squares.",
+  "limits": [
+    "integer API requires every final coefficient within int64 range; out-of-contract multiples of prime product can alias, so overflow detection not complete.",
+    "max result length 2^23, even naive paths.",
+    "0 modulus always rejected; mod1 returns zeros."
+  ]
+}

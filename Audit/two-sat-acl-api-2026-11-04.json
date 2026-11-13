@@ -1,0 +1,546 @@
+{
+  "date": "2026-11-04",
+  "scope": "TwoSATの通常版・各派生版をACL形式のtwo_sat APIへ統一し、初回オンラインVerify用コードを準備。",
+  "specification_sources": [
+    "https://atcoder.github.io/ac-library/production/document_ja/twosat.html",
+    "https://github.com/atcoder/ac-library/blob/master/atcoder/twosat.hpp"
+  ],
+  "implementation_origin": "ACLは型名・呼び出し・戻り値・前提の仕様を確認した参考。実装を転載せず、既存の自作2-SATと共有SCCを維持。既存のSPDX/参考URLも保持。",
+  "compatibility": {
+    "type": "global two_sat",
+    "constructors": [
+      "非explicit two_sat()",
+      "explicit two_sat(int)"
+    ],
+    "members": [
+      "void add_clause(int,bool,int,bool)",
+      "bool satisfiable()",
+      "std::vector<bool> answer()（非const、値返し）"
+    ],
+    "answer_semantics": "判定前/UNSATでも長さn。内容は未規定。返り値を書き換えても内部解に影響しない。制約追加後は再判定して新しい解として使う。",
+    "namespace": "AGENTSに従いグローバル公開。atcoder::の名前空間やACLのヘッダー配置まで同一にはしない。",
+    "removed_without_alias": [
+      "TwoSAT",
+      "solve()",
+      "byte配列のconst参照を返す旧answer()"
+    ],
+    "extensions_preserved": [
+      "imply",
+      "force",
+      "add_xor",
+      "reserve_clauses",
+      "size/clause_count",
+      "reset/swap/独立コピー/ムーブ",
+      "成功後のvalue(int) const（O(1)）"
+    ]
+  },
+  "cost_and_state": {
+    "constructor": "O(1)。答えのbyte配列を従来どおり遅延作成。",
+    "satisfiable": "旧solveから名称のみ変更。判定の関数本体は文字列一致。O(n+m)時間・追加領域、共有SCCも変更なし。",
+    "answer": "内部byte配列を保持し、取得時にvector<bool>へ変換。ACLと同じO(n)時間・領域の値返し。未実行/UNSATはn個のfalseを返す実装だが、公開仕様では内容を保証しない。",
+    "validation": "answerは判定状態で例外を投げない。成功後限定valueの有効性・変数番号検査と専用状態をSKIP_RUNTIME_CHECKSで除く。容量・添字保護と数学的矛盾判定は維持。",
+    "performance_claim": "速度の新たな改善は主張しない。従来の判定計算/byte cache/O(1)valueを維持。answerの返し方とVerify呼出はACL仕様に伴い変わるため、旧mainとの総時間を本体の速度改善とは扱わない。"
+  },
+  "verify": {
+    "submission": "Verify/current/submissions/two_sat.cpp",
+    "problem": "https://judge.yosupo.jp/problem/two_sat",
+    "status": "初回オンライン提出前",
+    "main": "同じ共通高速IOを使い、型名/判定名を移行。SAT時にanswer()を1回取得して素直に出力する。バッチ化/並べ替え/分布での切替なし。",
+    "io_sha256": "291bf8dbc56a1d691f6256fe95b4714183c2cf5d9e55e4bef240e31d1eb178c1",
+    "normal_samples": [
+      {
+        "compiler": "GCC",
+        "status": "LOCAL_SAMPLE_PASS",
+        "command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "/home/reinsirk/Atcoder_Env/Verify/current/submissions/two_sat.cpp",
+          "-o",
+          "/tmp/sirkit_two_sat_acl_20261104/normal_GCC"
+        ],
+        "submission_sha256": "30651d244586b0b260b829f73ecd676d712b4f263d038f9f89c19a2eaea89027",
+        "samples": 2
+      },
+      {
+        "compiler": "Clang",
+        "status": "LOCAL_SAMPLE_PASS",
+        "command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "/home/reinsirk/Atcoder_Env/Verify/current/submissions/two_sat.cpp",
+          "-o",
+          "/tmp/sirkit_two_sat_acl_20261104/normal_Clang"
+        ],
+        "submission_sha256": "30651d244586b0b260b829f73ecd676d712b4f263d038f9f89c19a2eaea89027",
+        "samples": 2
+      }
+    ],
+    "profiles": {
+      "LOCAL_SAMPLE_PASS": 10
+    },
+    "dependence": "ACLのインストール不要。本体と共有IOを貼付け、先頭でSKIP_RUNTIME_CHECKSを定義。"
+  },
+  "tests": {
+    "results": [
+      {
+        "compiler": "GCC",
+        "skip_runtime_checks": false,
+        "test": "two_sat_acl_api_test",
+        "compile_command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/two_sat_acl_api_test.cpp",
+          "-o",
+          "/tmp/sirkit_two_sat_acl_20261104/GCC_0_two_sat_acl_api_test"
+        ],
+        "compile_returncode": 0,
+        "compile_stderr": "",
+        "run_command": [
+          "taskset",
+          "-c",
+          "4",
+          "/tmp/sirkit_two_sat_acl_20261104/GCC_0_two_sat_acl_api_test"
+        ],
+        "environment": {
+          "ASAN_OPTIONS": "detect_leaks=0"
+        },
+        "returncode": 0,
+        "stdout": "TwoSAT ACL API formulas=14533 checks=196543\n",
+        "stderr": "",
+        "test_sha256": "df2518a0c824bab19ad439587074d97664459f810afb68c24c6eccffaab37cfb",
+        "source_sha256": "324d71a8a580170ecf9562f95a684a291c488c94b96282928fd03560b9cbf3ba"
+      },
+      {
+        "compiler": "GCC",
+        "skip_runtime_checks": false,
+        "test": "new_scc_two_sat_reference_test",
+        "compile_command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/new_scc_two_sat_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_two_sat_acl_20261104/GCC_0_new_scc_two_sat_reference_test"
+        ],
+        "compile_returncode": 0,
+        "compile_stderr": "",
+        "run_command": [
+          "taskset",
+          "-c",
+          "4",
+          "/tmp/sirkit_two_sat_acl_20261104/GCC_0_new_scc_two_sat_reference_test"
+        ],
+        "environment": {
+          "ASAN_OPTIONS": "detect_leaks=0"
+        },
+        "returncode": 0,
+        "stdout": "SCC/two_sat checks=2002082\n",
+        "stderr": "",
+        "test_sha256": "fc937b73c48d7913ae7b28174c0171d0d7949fce79ed671f5e6614559683e6a4",
+        "source_sha256": "324d71a8a580170ecf9562f95a684a291c488c94b96282928fd03560b9cbf3ba"
+      },
+      {
+        "compiler": "GCC",
+        "skip_runtime_checks": false,
+        "test": "new_graph_allocation_test",
+        "compile_command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/new_graph_allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_two_sat_acl_20261104/GCC_0_new_graph_allocation_test"
+        ],
+        "compile_returncode": 0,
+        "compile_stderr": "",
+        "run_command": [
+          "taskset",
+          "-c",
+          "4",
+          "/tmp/sirkit_two_sat_acl_20261104/GCC_0_new_graph_allocation_test"
+        ],
+        "environment": {
+          "ASAN_OPTIONS": "detect_leaks=0"
+        },
+        "returncode": 0,
+        "stdout": "graph allocation failures=109 successes=1091 live_delta=0\n",
+        "stderr": "",
+        "test_sha256": "1a6b05c4468a8e4496303e8fe175a4ea9217d98e92d21599206fbaa35f8a9d27",
+        "source_sha256": "324d71a8a580170ecf9562f95a684a291c488c94b96282928fd03560b9cbf3ba"
+      },
+      {
+        "compiler": "GCC",
+        "skip_runtime_checks": true,
+        "test": "two_sat_acl_api_test",
+        "compile_command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/two_sat_acl_api_test.cpp",
+          "-o",
+          "/tmp/sirkit_two_sat_acl_20261104/GCC_1_two_sat_acl_api_test"
+        ],
+        "compile_returncode": 0,
+        "compile_stderr": "",
+        "run_command": [
+          "taskset",
+          "-c",
+          "4",
+          "/tmp/sirkit_two_sat_acl_20261104/GCC_1_two_sat_acl_api_test"
+        ],
+        "environment": {
+          "ASAN_OPTIONS": "detect_leaks=0"
+        },
+        "returncode": 0,
+        "stdout": "TwoSAT ACL API formulas=14533 checks=196536\n",
+        "stderr": "",
+        "test_sha256": "df2518a0c824bab19ad439587074d97664459f810afb68c24c6eccffaab37cfb",
+        "source_sha256": "324d71a8a580170ecf9562f95a684a291c488c94b96282928fd03560b9cbf3ba"
+      },
+      {
+        "compiler": "GCC",
+        "skip_runtime_checks": true,
+        "test": "new_scc_two_sat_reference_test",
+        "compile_command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/new_scc_two_sat_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_two_sat_acl_20261104/GCC_1_new_scc_two_sat_reference_test"
+        ],
+        "compile_returncode": 0,
+        "compile_stderr": "",
+        "run_command": [
+          "taskset",
+          "-c",
+          "4",
+          "/tmp/sirkit_two_sat_acl_20261104/GCC_1_new_scc_two_sat_reference_test"
+        ],
+        "environment": {
+          "ASAN_OPTIONS": "detect_leaks=0"
+        },
+        "returncode": 0,
+        "stdout": "SCC/two_sat checks=2002082\n",
+        "stderr": "",
+        "test_sha256": "fc937b73c48d7913ae7b28174c0171d0d7949fce79ed671f5e6614559683e6a4",
+        "source_sha256": "324d71a8a580170ecf9562f95a684a291c488c94b96282928fd03560b9cbf3ba"
+      },
+      {
+        "compiler": "GCC",
+        "skip_runtime_checks": true,
+        "test": "new_graph_allocation_test",
+        "compile_command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/new_graph_allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_two_sat_acl_20261104/GCC_1_new_graph_allocation_test"
+        ],
+        "compile_returncode": 0,
+        "compile_stderr": "",
+        "run_command": [
+          "taskset",
+          "-c",
+          "4",
+          "/tmp/sirkit_two_sat_acl_20261104/GCC_1_new_graph_allocation_test"
+        ],
+        "environment": {
+          "ASAN_OPTIONS": "detect_leaks=0"
+        },
+        "returncode": 0,
+        "stdout": "graph allocation failures=109 successes=1091 live_delta=0\n",
+        "stderr": "",
+        "test_sha256": "1a6b05c4468a8e4496303e8fe175a4ea9217d98e92d21599206fbaa35f8a9d27",
+        "source_sha256": "324d71a8a580170ecf9562f95a684a291c488c94b96282928fd03560b9cbf3ba"
+      },
+      {
+        "compiler": "Clang",
+        "skip_runtime_checks": false,
+        "test": "two_sat_acl_api_test",
+        "compile_command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/two_sat_acl_api_test.cpp",
+          "-o",
+          "/tmp/sirkit_two_sat_acl_20261104/Clang_0_two_sat_acl_api_test"
+        ],
+        "compile_returncode": 0,
+        "compile_stderr": "",
+        "run_command": [
+          "taskset",
+          "-c",
+          "4",
+          "/tmp/sirkit_two_sat_acl_20261104/Clang_0_two_sat_acl_api_test"
+        ],
+        "environment": {
+          "ASAN_OPTIONS": "detect_leaks=0"
+        },
+        "returncode": 0,
+        "stdout": "TwoSAT ACL API formulas=14533 checks=196543\n",
+        "stderr": "",
+        "test_sha256": "df2518a0c824bab19ad439587074d97664459f810afb68c24c6eccffaab37cfb",
+        "source_sha256": "324d71a8a580170ecf9562f95a684a291c488c94b96282928fd03560b9cbf3ba"
+      },
+      {
+        "compiler": "Clang",
+        "skip_runtime_checks": false,
+        "test": "new_scc_two_sat_reference_test",
+        "compile_command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/new_scc_two_sat_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_two_sat_acl_20261104/Clang_0_new_scc_two_sat_reference_test"
+        ],
+        "compile_returncode": 0,
+        "compile_stderr": "",
+        "run_command": [
+          "taskset",
+          "-c",
+          "4",
+          "/tmp/sirkit_two_sat_acl_20261104/Clang_0_new_scc_two_sat_reference_test"
+        ],
+        "environment": {
+          "ASAN_OPTIONS": "detect_leaks=0"
+        },
+        "returncode": 0,
+        "stdout": "SCC/two_sat checks=2002082\n",
+        "stderr": "",
+        "test_sha256": "fc937b73c48d7913ae7b28174c0171d0d7949fce79ed671f5e6614559683e6a4",
+        "source_sha256": "324d71a8a580170ecf9562f95a684a291c488c94b96282928fd03560b9cbf3ba"
+      },
+      {
+        "compiler": "Clang",
+        "skip_runtime_checks": false,
+        "test": "new_graph_allocation_test",
+        "compile_command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/new_graph_allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_two_sat_acl_20261104/Clang_0_new_graph_allocation_test"
+        ],
+        "compile_returncode": 0,
+        "compile_stderr": "",
+        "run_command": [
+          "taskset",
+          "-c",
+          "4",
+          "/tmp/sirkit_two_sat_acl_20261104/Clang_0_new_graph_allocation_test"
+        ],
+        "environment": {
+          "ASAN_OPTIONS": "detect_leaks=0"
+        },
+        "returncode": 0,
+        "stdout": "graph allocation failures=109 successes=1091 live_delta=0\n",
+        "stderr": "",
+        "test_sha256": "1a6b05c4468a8e4496303e8fe175a4ea9217d98e92d21599206fbaa35f8a9d27",
+        "source_sha256": "324d71a8a580170ecf9562f95a684a291c488c94b96282928fd03560b9cbf3ba"
+      },
+      {
+        "compiler": "Clang",
+        "skip_runtime_checks": true,
+        "test": "two_sat_acl_api_test",
+        "compile_command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/two_sat_acl_api_test.cpp",
+          "-o",
+          "/tmp/sirkit_two_sat_acl_20261104/Clang_1_two_sat_acl_api_test"
+        ],
+        "compile_returncode": 0,
+        "compile_stderr": "",
+        "run_command": [
+          "taskset",
+          "-c",
+          "4",
+          "/tmp/sirkit_two_sat_acl_20261104/Clang_1_two_sat_acl_api_test"
+        ],
+        "environment": {
+          "ASAN_OPTIONS": "detect_leaks=0"
+        },
+        "returncode": 0,
+        "stdout": "TwoSAT ACL API formulas=14533 checks=196536\n",
+        "stderr": "",
+        "test_sha256": "df2518a0c824bab19ad439587074d97664459f810afb68c24c6eccffaab37cfb",
+        "source_sha256": "324d71a8a580170ecf9562f95a684a291c488c94b96282928fd03560b9cbf3ba"
+      },
+      {
+        "compiler": "Clang",
+        "skip_runtime_checks": true,
+        "test": "new_scc_two_sat_reference_test",
+        "compile_command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/new_scc_two_sat_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_two_sat_acl_20261104/Clang_1_new_scc_two_sat_reference_test"
+        ],
+        "compile_returncode": 0,
+        "compile_stderr": "",
+        "run_command": [
+          "taskset",
+          "-c",
+          "4",
+          "/tmp/sirkit_two_sat_acl_20261104/Clang_1_new_scc_two_sat_reference_test"
+        ],
+        "environment": {
+          "ASAN_OPTIONS": "detect_leaks=0"
+        },
+        "returncode": 0,
+        "stdout": "SCC/two_sat checks=2002082\n",
+        "stderr": "",
+        "test_sha256": "fc937b73c48d7913ae7b28174c0171d0d7949fce79ed671f5e6614559683e6a4",
+        "source_sha256": "324d71a8a580170ecf9562f95a684a291c488c94b96282928fd03560b9cbf3ba"
+      },
+      {
+        "compiler": "Clang",
+        "skip_runtime_checks": true,
+        "test": "new_graph_allocation_test",
+        "compile_command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/new_graph_allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_two_sat_acl_20261104/Clang_1_new_graph_allocation_test"
+        ],
+        "compile_returncode": 0,
+        "compile_stderr": "",
+        "run_command": [
+          "taskset",
+          "-c",
+          "4",
+          "/tmp/sirkit_two_sat_acl_20261104/Clang_1_new_graph_allocation_test"
+        ],
+        "environment": {
+          "ASAN_OPTIONS": "detect_leaks=0"
+        },
+        "returncode": 0,
+        "stdout": "graph allocation failures=109 successes=1091 live_delta=0\n",
+        "stderr": "",
+        "test_sha256": "1a6b05c4468a8e4496303e8fe175a4ea9217d98e92d21599206fbaa35f8a9d27",
+        "source_sha256": "324d71a8a580170ecf9562f95a684a291c488c94b96282928fd03560b9cbf3ba"
+      }
+    ],
+    "coverage": "API型/非explicit default/explicit int/旧solveなし、全2変数までの節集合（節内順序・重複を同一視）と乱数を含む14533式、返り値コピー、未実行/UNSAT/再判定/追加制約/コピー/ムーブ/追加API、独立全探索、既存SCCとの同時貼付け、確保失敗。",
+    "settings": "GCC15.2/Clang21、C++23-O2、検査有無。API/参照はASan+UBSan、SIRKIT_DISABLE_SIMD。割当試験は各設定109 failures/1091 successes/live_delta=0。",
+    "leak_scope": "ASAN_OPTIONS=detect_leaks=0。例外時の解放は割当試験のliveカウンタで補足。"
+  },
+  "hashes": {
+    "Graph/Two_SAT.cpp": "324d71a8a580170ecf9562f95a684a291c488c94b96282928fd03560b9cbf3ba",
+    "Document/two_sat.md": "e7f93ed834417b7a5d9aa7e60a25b9830ba31f15ee4aadbfb107c26765f60134",
+    "Examples/two_sat_example.cpp": "abdd8d1d3f7a35876b72397bee5fd4d0ec22729be4c4854e878733de6f204b3d",
+    "Verify/current/drivers/two_sat_main.cpp": "c08dc1f0104ee23fb38551510ed27c503ae10325c62f79aa6847ae0b39f797fd",
+    "Verify/current/tests/two_sat_acl_api_test.cpp": "df2518a0c824bab19ad439587074d97664459f810afb68c24c6eccffaab37cfb",
+    "Verify/current/tests/new_scc_two_sat_reference_test.cpp": "fc937b73c48d7913ae7b28174c0171d0d7949fce79ed671f5e6614559683e6a4",
+    "Verify/current/tests/new_graph_allocation_test.cpp": "1a6b05c4468a8e4496303e8fe175a4ea9217d98e92d21599206fbaa35f8a9d27"
+  },
+  "shared_SCC_source_sha256": "e2b5ab5e41907acf94a7fb298a53376ca1e2c6c929c170dbe93a6dbe8baafe5e",
+  "source_compatibility": "既存利用コードは型名と判定名、およびanswerの型/返し方の移行が必要。旧名aliasを追加しない。",
+  "evidence": {
+    "path": "Audit/data/two-sat-acl-api-2026-11-04.zip",
+    "sha256": "e1b81bb94e6b340248cc623a099fd63c0e288724077ea844adf9bf62ad03a60c",
+    "scope": "自作ソースと変更前スナップショット・テスト・全コマンド/結果。ACL実装の原本は含めない。"
+  },
+  "synchronization": "本体/Document/使用例/Verify driver/テスト/通常GCC-Clangと速度優先版を同期。SCC本体とAC80ms記録は変更しない。5配布ZIP検証はDistribution/validation.json。"
+}

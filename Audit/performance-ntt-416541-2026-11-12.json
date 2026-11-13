@@ -1,0 +1,1723 @@
+{
+  "date": "2026-11-12",
+  "library": "Math/NTT.cpp",
+  "decision": "adopt_constexpr_stage_roots_direct_length_inverse_and_naive_constant_operand",
+  "required_resubmission": [
+    "Verify/current/submissions/ntt_convolution.cpp"
+  ],
+  "online_evidence": "Audit/online-ntt-416541-2026-11-12.json",
+  "online_scope": "416541は変更前の根生成SIMD版で全53ケースAC・53ms。実アップロード本文と変更前スナップショットの本体/main/IOを照合した。注記だけ416532から416541へ直した再生成SHAも別途保存。今回の数式最適化版は未提出であり、そのACを現行版や派生版へ転記しない。",
+  "source_sha256": {
+    "before": "e463880ff12a76cc6ce6998ca7568411892661b71efd24956c6b10b2eba1b662",
+    "after": "83d672e6e2d74f121ed579755d3e2ba6fa0b6d880a795bafc8c17b07369ff94a"
+  },
+  "measured_candidate_sha256": "82cda4a9b6ca6e16c86e51a9a2fd6e8807908a4bcd684868770ff425b04411d6",
+  "comment_bridge": "最終ヘッダーは動的キャッシュの説明2行だけを測定候補から変更。GCC/Clangのmain、検査2設定core、標準経路coreの.textが測定済み候補と一致。",
+  "frozen_main_IO_example": {
+    "Verify/current/drivers/ntt_convolution_main.cpp": "79a1ed61095e2bd8f66e361d6e05328570c439ad9b041912614a2889ab0a93ff",
+    "Verify/current/common/fast_io.hpp": "291bf8dbc56a1d691f6256fe95b4714183c2cf5d9e55e4bef240e31d1eb178c1",
+    "Examples/ntt_example.cpp": "0bd23ba7dd72f3f9ef7f5b8d125321d3c62568ddb72f35f755fbbff49addc75e"
+  },
+  "document_change": "Document/ntt.mdはroots_capacity/clear_cacheが動的キャッシュを対象とすることだけ明確化。変更履歴・測定記録は追加しない。",
+  "document_hashes": {
+    "before": "bf1e267d856b1b99c450dd2c53a6695d319778c81e5fc6f33020f5122f4135ae",
+    "after": "3008e74491a33be34a63d8c67d57000f262ee9b1e224e5234bd18826f9009c35"
+  },
+  "changes": [
+    "段ごとの根をconstexprの配列にする。highest_rootを繰り返し二乗して各段の通常表現を作り、従来と同じMontgomery符号化をconstexprで計算する。根の値は従来のruntime pow/encodeとlazy表現まで一致する。",
+    "halfは正の2冪で、参照添字countr_zero(half)+1は2..rank。rank=1のループは空。動的キャッシュのstd::vector、サイズ上限、コピー/移動/clear、オブジェクトの大きさは変えない。静的readonly表はO(rank)で動的確保なし。",
+    "変換長nはMod−1の正の約数なので、その逆元をMod−(Mod−1)/nで計算する。n*(Mod−(Mod−1)/n)=(n−1)Mod+1。public入口の空/1要素処理と常時有効の長さ検査により、private backwardへは正の対応長だけが入る。",
+    "AVX2の直接畳み込みでは固定オペランドbに対するb*Nprime mod2^32を外側で準備し、qをa*(b*Nprime) mod2^32として計算する。通常積とqを並行に計算し、以降の還元は同じ。qの下位32bit、64bit加算範囲、結果のlazy表現を維持。",
+    "公開API・main・共通IO・所有権・係数検査・SKIP時の除外・容量保護を維持。新規の別名/公開操作やnew式は追加しない。"
+  ],
+  "dependent_generated_sources": [
+    {
+      "path": "Math/Formal_Power_Series.cpp",
+      "before_sha256": "933af962618e73ee80b145a4a44c4cd84a716732881d507a335b9ceab381c540",
+      "after_sha256": "0b1cce8dc2895ef790be2088faa02bea41eaad805035eda9e336af9aa0212d9d"
+    },
+    {
+      "path": "Math/Linear_Recurrence.cpp",
+      "before_sha256": "54a55f05eec58307ddfe76e739739f86ed1f6aa735499260fcfe5809422b0a34",
+      "after_sha256": "f997cc7950d4555ec5ae9367f6ce7cd0019fd3acda90b86c9f526b5640ec3c53"
+    },
+    {
+      "path": "Math/Convolution.cpp",
+      "before_sha256": "f72944d0bf9093ce906b809ea80443c5635d8daf2dad1c7564ba8816fb49282c",
+      "after_sha256": "4f076705f9893afa7815264367ffd47cd85418d14688b84a28ed2c18658efcb5"
+    },
+    {
+      "path": "Math/Polynomial.cpp",
+      "before_sha256": "1518c17e74a52bb4e50996a563d83b5c4b16b8d9e6f24bf9ff081f75c167e7d8",
+      "after_sha256": "284b4e4064dead05ec16eb4c7e6e06dde3a1b5037e71de8d0431f4bcd896a618"
+    }
+  ],
+  "candidates": [
+    {
+      "name": "constant_prepare",
+      "sha256": "50296e984fd1824c7d269e9cf68381d041bbf4849f3c8638b66fe116b7ece170",
+      "adopted": false,
+      "reason": "根生成の固定積だけでは安定した利益なし。"
+    },
+    {
+      "name": "constant_scale",
+      "sha256": "02692405d221027fab320d498572cd65c1071738ee6969d7e47c706c34aa5d55",
+      "adopted": false,
+      "reason": "逆変換の固定積だけでは安定した利益なし。"
+    },
+    {
+      "name": "constant_naive",
+      "sha256": "d8a5d5ba01e7530d37ac16792d271a8e3be9a8f06d9d183f3e5f4dbd2cde69de",
+      "adopted": false,
+      "reason": "GCCの偏った長さで約2〜3%改善、Clangはほぼ同等。組合せへ採用。"
+    },
+    {
+      "name": "constant_all",
+      "sha256": "7cfb703e05b5582a6bd32cb37f8393692cab643a35cda584e51206d4cec9c6f4",
+      "adopted": false,
+      "reason": "prepare/scaleまで含める追加部分に安定した利益なし。"
+    },
+    {
+      "name": "stage_roots",
+      "sha256": "fe6bc7bc2f6b7f671f61390c492a34644d3fc32c98c44cfd7a8f2e06ec7928ad",
+      "adopted": false,
+      "reason": "小さいprepareで大幅改善、組合せへ採用。"
+    },
+    {
+      "name": "inverse_length",
+      "sha256": "afa1e0ba39d76b016a03b0a17c9011e60039357b7dd020238cd0303fc086ab04",
+      "adopted": false,
+      "reason": "小さいinverseで大幅改善、組合せへ採用。"
+    },
+    {
+      "name": "stage_inverse",
+      "sha256": "6c16ad2d46f8bed5178a3cd261da866ee52f99fa95ae6e90707b94e1f8a25257",
+      "adopted": false,
+      "reason": "上記数学2変更の比較用。"
+    },
+    {
+      "name": "stage_inverse_naive",
+      "sha256": "82cda4a9b6ca6e16c86e51a9a2fd6e8807908a4bcd684868770ff425b04411d6",
+      "adopted": true,
+      "reason": "数学2変更と直接畳み込み固定積のみ採用。"
+    },
+    {
+      "name": "aligned_forward",
+      "sha256": "28804ce0397d51db9e20b7ce8c8ed1b8cc0ea3d83146d9b3140a73b43cebe9db",
+      "adopted": false,
+      "reason": "64B関数配置指定に一貫した効果はなく不採用。"
+    }
+  ],
+  "measurement": {
+    "topology": {
+      "cpu": 12,
+      "cpu_info": "Architecture:                            x86_64\nCPU op-mode(s):                          32-bit, 64-bit\nAddress sizes:                           46 bits physical, 48 bits virtual\nByte Order:                              Little Endian\nCPU(s):                                  32\nOn-line CPU(s) list:                     0-31\nVendor ID:                               GenuineIntel\nModel name:                              Intel(R) Core(TM) i9-14900K\nCPU family:                              6\nModel:                                   183\nThread(s) per core:                      2\nCore(s) per socket:                      24\nSocket(s):                               1\nStepping:                                1\nCPU(s) scaling MHz:                      40%\nCPU max MHz:                             6000.0000\nCPU min MHz:                             800.0000\nBogoMIPS:                                6374.40\nFlags:                                   fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx pdpe1gb rdtscp lm constant_tsc art arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc cpuid aperfmperf tsc_known_freq pni pclmulqdq dtes64 monitor ds_cpl vmx smx est tm2 ssse3 sdbg fma cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand lahf_lm abm 3dnowprefetch cpuid_fault epb ssbd ibrs ibpb stibp ibrs_enhanced tpr_shadow flexpriority ept vpid ept_ad fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid rdseed adx smap clflushopt clwb intel_pt sha_ni xsaveopt xsavec xgetbv1 xsaves split_lock_detect user_shstk avx_vnni dtherm ida arat pln pts hwp hwp_notify hwp_act_window hwp_epp hwp_pkg_req hfi vnmi umip pku ospke waitpkg gfni vaes vpclmulqdq rdpid movdiri movdir64b fsrm md_clear serialize pconfig arch_lbr ibt flush_l1d arch_capabilities\nVirtualization:                          VT-x\nL1d cache:                               896 KiB (24 instances)\nL1i cache:                               1.3 MiB (24 instances)\nL2 cache:                                32 MiB (12 instances)\nL3 cache:                                36 MiB (1 instance)\nNUMA node(s):                            1\nNUMA node0 CPU(s):                       0-31\nVulnerability Gather data sampling:      Not affected\nVulnerability Ghostwrite:                Not affected\nVulnerability Indirect target selection: Not affected\nVulnerability Itlb multihit:             Not affected\nVulnerability L1tf:                      Not affected\nVulnerability Mds:                       Not affected\nVulnerability Meltdown:                  Not affected\nVulnerability Mmio stale data:           Not affected\nVulnerability Old microcode:             Not affected\nVulnerability Reg file data sampling:    Mitigation; Clear Register File\nVulnerability Retbleed:                  Not affected\nVulnerability Spec rstack overflow:      Not affected\nVulnerability Spec store bypass:         Mitigation; Speculative Store Bypass disabled via prctl\nVulnerability Spectre v1:                Mitigation; usercopy/swapgs barriers and __user pointer sanitization\nVulnerability Spectre v2:                Mitigation; Enhanced / Automatic IBRS; IBPB conditional; PBRSB-eIBRS SW sequence; BHI BHI_DIS_S\nVulnerability Srbds:                     Not affected\nVulnerability Tsa:                       Not affected\nVulnerability Tsx async abort:           Not affected\nVulnerability Vmscape:                   Mitigation; IBPB before exit to userspace\n",
+      "topology/core_id": "24",
+      "topology/thread_siblings_list": "12-13",
+      "cpufreq/cpuinfo_max_freq": "6000000"
+    },
+    "cpu": "i9-14900K CPU12、SMT sibling13、sysfs core_id24、最大6GHzのP-Core。E-Coreは性能評価しない。",
+    "compilers": {
+      "GCC": "15.2.0",
+      "Clang": "21.1.8 --gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15"
+    },
+    "flags": [
+      "-std=c++23",
+      "-O2"
+    ],
+    "march_native": false,
+    "extra_pragmas": false,
+    "compilation_during_timing": false,
+    "lock": "/tmp/sirkit_performance_cpu12.lock",
+    "ASLR": "子だけsetarch x86_64 -R、同じactiveパス。",
+    "protocol": "旧版→候補→旧版で1組。候補を両端の旧版中央値で割る。各条件は各候補9組と同一実行体対照3組を決定的shuffle。両端の旧版が10%以内の組のみ有効とし、候補自身の時間では除外しない。各候補5組・対照2組に不足する種だけ最大3回、各3組補充。探索screen/配置比較/標準経路の反復は各スクリプトに別途保持。",
+    "inputs": "前回と同じ固定revision73876f1cbcf082d2b22722924b924d3d65a2f00eの公式53入力と補足20入力。計73件。オンラインとの同一性は主張しない。制約外1048576×1048576を含む。",
+    "fixtures_sha256": "94a561ca0d51975c2fab72c5ac6633e6a99ad85e2ac3deb7575de540b2e226d0",
+    "input_provenance": "同梱fixtures_metadataとAudit/data/performance-ntt-416532-2026-11-12.zip。巨大入力・外部生成器本体は今回のZIPへ含めない。",
+    "independent_outputs": "38件の独立な全出力SHA、全入力の端点と多項式評価0/1/−1、前後出力SHA一致。全73入力をGCC/Clang×2候補で一度ずつ照合し、その後は同じ検査済みSHAの全値再パースを省く。",
+    "whole_time": "固定main/共通IO/SKIP/コンパイラ/入力で子のuser+system CPU時間。L>=65536またはmax(n,m)>=200000の34入力×2compiler。",
+    "whole_statistics": [
+      {
+        "compiler": "clang",
+        "cases": 34,
+        "candidate_ratio": 0.9984496887061286,
+        "identical_control_ratio": 1.0020803010363946,
+        "minimum_ratio": 0.9852519320981404,
+        "maximum_ratio": 1.0130914486752987
+      },
+      {
+        "compiler": "gcc",
+        "cases": 34,
+        "candidate_ratio": 0.9982173973887942,
+        "identical_control_ratio": 0.9984756615317736,
+        "minimum_ratio": 0.9693416626621817,
+        "maximum_ratio": 1.011207480392371
+      }
+    ],
+    "official_whole_statistics": [
+      {
+        "compiler": "clang",
+        "cases": 24,
+        "candidate_ratio": 0.9979657180110489,
+        "identical_control_ratio": 1.0015288604489316,
+        "minimum_ratio": 0.9852519320981404,
+        "maximum_ratio": 1.0116484678345516
+      },
+      {
+        "compiler": "gcc",
+        "cases": 24,
+        "candidate_ratio": 0.9992791158410593,
+        "identical_control_ratio": 0.9978520835883087,
+        "minimum_ratio": 0.9927978009490318,
+        "maximum_ratio": 1.0092349633668427
+      }
+    ],
+    "whole_rows": 68,
+    "whole_triplets": 1428,
+    "whole_comparisons_sufficient": true,
+    "core_time": "std::clockのプロセスCPU時間。入力準備は外、API計算・全結果checksum・返却結果破棄は内。coldだけ毎回NTTを作成/解放、ほかは根を準備。prepareは計測外transformで根を観測し、消去最適化を避ける。反復max(1,32768/max(n,m))。",
+    "core_operations": {
+      "0": "normalized cold move",
+      "1": "normalized cached move",
+      "2": "generic int64 cached",
+      "3": "square cached",
+      "4": "forward",
+      "5": "inverse",
+      "6": "prepare cold"
+    },
+    "core_sizes": [
+      16,
+      128,
+      1024,
+      65536,
+      524288
+    ],
+    "core_supplement": "33境界、32/33×524288と逆順の偏り、2冪を超える出力長。",
+    "core_rows": 164,
+    "core_triplets": 3579,
+    "selected_candidate_sufficient_cells": 164,
+    "unused_candidate_limit": "比較用stage_inverseのClang checked prepare1024だけ有効3組に留まる。この未採用候補の条件を採否の5組基準達成とは扱わない。採用候補と対照は全164条件で基準を満たす。",
+    "small_inverse_and_prepare": [
+      {
+        "compiler": "clang",
+        "setting": "checked",
+        "op": 5,
+        "cases": 1,
+        "candidate_ratio": 0.4420498084291188,
+        "identical_control_ratio": 1.0,
+        "minimum_ratio": 0.4420498084291188,
+        "maximum_ratio": 0.4420498084291188
+      },
+      {
+        "compiler": "clang",
+        "setting": "checked",
+        "op": 6,
+        "cases": 1,
+        "candidate_ratio": 0.15033557046979865,
+        "identical_control_ratio": 1.0,
+        "minimum_ratio": 0.15033557046979865,
+        "maximum_ratio": 0.15033557046979865
+      },
+      {
+        "compiler": "clang",
+        "setting": "skip",
+        "op": 5,
+        "cases": 1,
+        "candidate_ratio": 0.4414890058960123,
+        "identical_control_ratio": 1.013215859030837,
+        "minimum_ratio": 0.4414890058960123,
+        "maximum_ratio": 0.4414890058960123
+      },
+      {
+        "compiler": "clang",
+        "setting": "skip",
+        "op": 6,
+        "cases": 1,
+        "candidate_ratio": 0.14634146341463414,
+        "identical_control_ratio": 1.0013568521031209,
+        "minimum_ratio": 0.14634146341463414,
+        "maximum_ratio": 0.14634146341463414
+      },
+      {
+        "compiler": "gcc",
+        "setting": "checked",
+        "op": 5,
+        "cases": 1,
+        "candidate_ratio": 0.4827586206896552,
+        "identical_control_ratio": 0.9816700610997964,
+        "minimum_ratio": 0.4827586206896552,
+        "maximum_ratio": 0.4827586206896552
+      },
+      {
+        "compiler": "gcc",
+        "setting": "checked",
+        "op": 6,
+        "cases": 1,
+        "candidate_ratio": 0.17784711388455537,
+        "identical_control_ratio": 1.001545595054096,
+        "minimum_ratio": 0.17784711388455537,
+        "maximum_ratio": 0.17784711388455537
+      },
+      {
+        "compiler": "gcc",
+        "setting": "skip",
+        "op": 5,
+        "cases": 1,
+        "candidate_ratio": 0.4791666666666667,
+        "identical_control_ratio": 0.9777777777777777,
+        "minimum_ratio": 0.4791666666666667,
+        "maximum_ratio": 0.4791666666666667
+      },
+      {
+        "compiler": "gcc",
+        "setting": "skip",
+        "op": 6,
+        "cases": 1,
+        "candidate_ratio": 0.17619783616692428,
+        "identical_control_ratio": 1.0030864197530864,
+        "minimum_ratio": 0.17619783616692428,
+        "maximum_ratio": 0.17619783616692428
+      }
+    ],
+    "large_core_statistics": [
+      {
+        "compiler": "clang",
+        "setting": "checked",
+        "op": 0,
+        "cases": 5,
+        "candidate_ratio": 0.999499513564743,
+        "identical_control_ratio": 0.9976012396417714,
+        "minimum_ratio": 0.9975163278447245,
+        "maximum_ratio": 1.0008476226261336
+      },
+      {
+        "compiler": "clang",
+        "setting": "checked",
+        "op": 1,
+        "cases": 1,
+        "candidate_ratio": 0.9995435874030123,
+        "identical_control_ratio": 0.997169767549761,
+        "minimum_ratio": 0.9995435874030123,
+        "maximum_ratio": 0.9995435874030123
+      },
+      {
+        "compiler": "clang",
+        "setting": "checked",
+        "op": 2,
+        "cases": 1,
+        "candidate_ratio": 1.000734633907436,
+        "identical_control_ratio": 0.9996758508914101,
+        "minimum_ratio": 1.000734633907436,
+        "maximum_ratio": 1.000734633907436
+      },
+      {
+        "compiler": "clang",
+        "setting": "checked",
+        "op": 3,
+        "cases": 1,
+        "candidate_ratio": 1.0002089573030577,
+        "identical_control_ratio": 0.9965425318183299,
+        "minimum_ratio": 1.0002089573030577,
+        "maximum_ratio": 1.0002089573030577
+      },
+      {
+        "compiler": "clang",
+        "setting": "checked",
+        "op": 4,
+        "cases": 1,
+        "candidate_ratio": 1.000559805933943,
+        "identical_control_ratio": 0.9961132704053304,
+        "minimum_ratio": 1.000559805933943,
+        "maximum_ratio": 1.000559805933943
+      },
+      {
+        "compiler": "clang",
+        "setting": "checked",
+        "op": 5,
+        "cases": 1,
+        "candidate_ratio": 0.9976333515383216,
+        "identical_control_ratio": 1.01267217630854,
+        "minimum_ratio": 0.9976333515383216,
+        "maximum_ratio": 0.9976333515383216
+      },
+      {
+        "compiler": "clang",
+        "setting": "checked",
+        "op": 6,
+        "cases": 1,
+        "candidate_ratio": 1.0069767441860464,
+        "identical_control_ratio": 0.9651143472763497,
+        "minimum_ratio": 1.0069767441860464,
+        "maximum_ratio": 1.0069767441860464
+      },
+      {
+        "compiler": "clang",
+        "setting": "skip",
+        "op": 0,
+        "cases": 5,
+        "candidate_ratio": 0.9997484208581763,
+        "identical_control_ratio": 0.9992755022049074,
+        "minimum_ratio": 0.9972862957937585,
+        "maximum_ratio": 1.002109977177798
+      },
+      {
+        "compiler": "clang",
+        "setting": "skip",
+        "op": 1,
+        "cases": 1,
+        "candidate_ratio": 1.0013631022326674,
+        "identical_control_ratio": 1.0033739456419868,
+        "minimum_ratio": 1.0013631022326674,
+        "maximum_ratio": 1.0013631022326674
+      },
+      {
+        "compiler": "clang",
+        "setting": "skip",
+        "op": 2,
+        "cases": 1,
+        "candidate_ratio": 0.9949119689872395,
+        "identical_control_ratio": 0.999633087365975,
+        "minimum_ratio": 0.9949119689872395,
+        "maximum_ratio": 0.9949119689872395
+      },
+      {
+        "compiler": "clang",
+        "setting": "skip",
+        "op": 3,
+        "cases": 1,
+        "candidate_ratio": 1.0031356699881542,
+        "identical_control_ratio": 1.003350083752094,
+        "minimum_ratio": 1.0031356699881542,
+        "maximum_ratio": 1.0031356699881542
+      },
+      {
+        "compiler": "clang",
+        "setting": "skip",
+        "op": 4,
+        "cases": 1,
+        "candidate_ratio": 0.9918124302195758,
+        "identical_control_ratio": 0.9938532462543219,
+        "minimum_ratio": 0.9918124302195758,
+        "maximum_ratio": 0.9918124302195758
+      },
+      {
+        "compiler": "clang",
+        "setting": "skip",
+        "op": 5,
+        "cases": 1,
+        "candidate_ratio": 1.0,
+        "identical_control_ratio": 1.0122913226930839,
+        "minimum_ratio": 1.0,
+        "maximum_ratio": 1.0
+      },
+      {
+        "compiler": "clang",
+        "setting": "skip",
+        "op": 6,
+        "cases": 1,
+        "candidate_ratio": 1.0046216291710603,
+        "identical_control_ratio": 1.004167848412409,
+        "minimum_ratio": 1.0046216291710603,
+        "maximum_ratio": 1.0046216291710603
+      },
+      {
+        "compiler": "gcc",
+        "setting": "checked",
+        "op": 0,
+        "cases": 5,
+        "candidate_ratio": 0.984264361792043,
+        "identical_control_ratio": 1.0027233607310702,
+        "minimum_ratio": 0.9608035811769844,
+        "maximum_ratio": 1.000204993645197
+      },
+      {
+        "compiler": "gcc",
+        "setting": "checked",
+        "op": 1,
+        "cases": 1,
+        "candidate_ratio": 0.9986993916509335,
+        "identical_control_ratio": 1.0017726006583945,
+        "minimum_ratio": 0.9986993916509335,
+        "maximum_ratio": 0.9986993916509335
+      },
+      {
+        "compiler": "gcc",
+        "setting": "checked",
+        "op": 2,
+        "cases": 1,
+        "candidate_ratio": 0.9950821135744583,
+        "identical_control_ratio": 0.9953248307588735,
+        "minimum_ratio": 0.9950821135744583,
+        "maximum_ratio": 0.9950821135744583
+      },
+      {
+        "compiler": "gcc",
+        "setting": "checked",
+        "op": 3,
+        "cases": 1,
+        "candidate_ratio": 0.9993105609526794,
+        "identical_control_ratio": 0.9954269247635156,
+        "minimum_ratio": 0.9993105609526794,
+        "maximum_ratio": 0.9993105609526794
+      },
+      {
+        "compiler": "gcc",
+        "setting": "checked",
+        "op": 4,
+        "cases": 1,
+        "candidate_ratio": 1.000335345405768,
+        "identical_control_ratio": 1.0091525423728813,
+        "minimum_ratio": 1.000335345405768,
+        "maximum_ratio": 1.000335345405768
+      },
+      {
+        "compiler": "gcc",
+        "setting": "checked",
+        "op": 5,
+        "cases": 1,
+        "candidate_ratio": 0.9960636659250385,
+        "identical_control_ratio": 1.003110957483581,
+        "minimum_ratio": 0.9960636659250385,
+        "maximum_ratio": 0.9960636659250385
+      },
+      {
+        "compiler": "gcc",
+        "setting": "checked",
+        "op": 6,
+        "cases": 1,
+        "candidate_ratio": 0.9910698267785596,
+        "identical_control_ratio": 0.9908883826879271,
+        "minimum_ratio": 0.9910698267785596,
+        "maximum_ratio": 0.9910698267785596
+      },
+      {
+        "compiler": "gcc",
+        "setting": "skip",
+        "op": 0,
+        "cases": 5,
+        "candidate_ratio": 0.9846002982633736,
+        "identical_control_ratio": 0.9970296936166689,
+        "minimum_ratio": 0.9587373167981962,
+        "maximum_ratio": 1.0043967555028908
+      },
+      {
+        "compiler": "gcc",
+        "setting": "skip",
+        "op": 1,
+        "cases": 1,
+        "candidate_ratio": 0.9967324421812009,
+        "identical_control_ratio": 1.0053626149131767,
+        "minimum_ratio": 0.9967324421812009,
+        "maximum_ratio": 0.9967324421812009
+      },
+      {
+        "compiler": "gcc",
+        "setting": "skip",
+        "op": 2,
+        "cases": 1,
+        "candidate_ratio": 0.9901546063714296,
+        "identical_control_ratio": 0.9949269099244673,
+        "minimum_ratio": 0.9901546063714296,
+        "maximum_ratio": 0.9901546063714296
+      },
+      {
+        "compiler": "gcc",
+        "setting": "skip",
+        "op": 3,
+        "cases": 1,
+        "candidate_ratio": 0.996295598668927,
+        "identical_control_ratio": 0.9991242337044914,
+        "minimum_ratio": 0.996295598668927,
+        "maximum_ratio": 0.996295598668927
+      },
+      {
+        "compiler": "gcc",
+        "setting": "skip",
+        "op": 4,
+        "cases": 1,
+        "candidate_ratio": 1.0053828789720438,
+        "identical_control_ratio": 1.0086896072297533,
+        "minimum_ratio": 1.0053828789720438,
+        "maximum_ratio": 1.0053828789720438
+      },
+      {
+        "compiler": "gcc",
+        "setting": "skip",
+        "op": 5,
+        "cases": 1,
+        "candidate_ratio": 1.0060851926977687,
+        "identical_control_ratio": 0.9876625541847283,
+        "minimum_ratio": 1.0060851926977687,
+        "maximum_ratio": 1.0060851926977687
+      },
+      {
+        "compiler": "gcc",
+        "setting": "skip",
+        "op": 6,
+        "cases": 1,
+        "candidate_ratio": 0.9988623435722411,
+        "identical_control_ratio": 1.005688282138794,
+        "minimum_ratio": 0.9988623435722411,
+        "maximum_ratio": 0.9988623435722411
+      }
+    ],
+    "outcome": "大規模main全体はGCC/Clangともほぼ同等（約0.2%程度の差は対照と併せて評価し、高速化成果と強く主張しない）。16要素のprepareは約82〜85%、inverseは約52〜56%短縮。GCCの16/32×524288の直接積は約2〜3%短縮、Clangは概ね同等。新しい公開機能より既存の小さい演算の固定費削減を優先した。",
+    "focused_standard_and_alignment": [
+      {
+        "mode": "alignment",
+        "compiler": "gcc",
+        "setting": "checked",
+        "op": 4,
+        "n": 65536,
+        "repetitions": 1,
+        "valid_counts": {
+          "stage_inverse_naive": 9,
+          "aligned_forward": 9,
+          "control": 5
+        },
+        "ratios": {
+          "stage_inverse_naive": 0.9868613138686131,
+          "aligned_forward": 0.9955817378497791,
+          "control": 0.9880597014925373
+        },
+        "sufficient": true
+      },
+      {
+        "mode": "alignment",
+        "compiler": "gcc",
+        "setting": "checked",
+        "op": 4,
+        "n": 65536,
+        "repetitions": 8,
+        "valid_counts": {
+          "stage_inverse_naive": 9,
+          "aligned_forward": 9,
+          "control": 9
+        },
+        "ratios": {
+          "stage_inverse_naive": 1.0025697503671072,
+          "aligned_forward": 0.9868421052631579,
+          "control": 0.9959941733430444
+        },
+        "sufficient": true
+      },
+      {
+        "mode": "alignment",
+        "compiler": "gcc",
+        "setting": "checked",
+        "op": 4,
+        "n": 524288,
+        "repetitions": 1,
+        "valid_counts": {
+          "stage_inverse_naive": 9,
+          "aligned_forward": 9,
+          "control": 9
+        },
+        "ratios": {
+          "stage_inverse_naive": 1.000338294993234,
+          "aligned_forward": 0.9901617475404368,
+          "control": 1.00117037284735
+        },
+        "sufficient": true
+      },
+      {
+        "mode": "alignment",
+        "compiler": "gcc",
+        "setting": "checked",
+        "op": 0,
+        "n": 524288,
+        "repetitions": 1,
+        "valid_counts": {
+          "stage_inverse_naive": 9,
+          "aligned_forward": 9,
+          "control": 9
+        },
+        "ratios": {
+          "stage_inverse_naive": 1.000077333539556,
+          "aligned_forward": 0.9879187469034643,
+          "control": 1.0029275147351575
+        },
+        "sufficient": true
+      },
+      {
+        "mode": "alignment",
+        "compiler": "gcc",
+        "setting": "checked",
+        "op": 5,
+        "n": 16,
+        "repetitions": 2048,
+        "valid_counts": {
+          "stage_inverse_naive": 9,
+          "aligned_forward": 9,
+          "control": 9
+        },
+        "ratios": {
+          "stage_inverse_naive": 0.4818181818181818,
+          "aligned_forward": 0.49107142857142855,
+          "control": 0.9955555555555555
+        },
+        "sufficient": true
+      },
+      {
+        "mode": "alignment",
+        "compiler": "gcc",
+        "setting": "skip",
+        "op": 4,
+        "n": 65536,
+        "repetitions": 1,
+        "valid_counts": {
+          "stage_inverse_naive": 9,
+          "aligned_forward": 9,
+          "control": 9
+        },
+        "ratios": {
+          "stage_inverse_naive": 1.0060240963855422,
+          "aligned_forward": 1.0,
+          "control": 0.9969325153374233
+        },
+        "sufficient": true
+      },
+      {
+        "mode": "alignment",
+        "compiler": "gcc",
+        "setting": "skip",
+        "op": 4,
+        "n": 65536,
+        "repetitions": 8,
+        "valid_counts": {
+          "stage_inverse_naive": 9,
+          "aligned_forward": 9,
+          "control": 9
+        },
+        "ratios": {
+          "stage_inverse_naive": 1.0059790732436473,
+          "aligned_forward": 0.9930490325004696,
+          "control": 0.9988789237668162
+        },
+        "sufficient": true
+      },
+      {
+        "mode": "alignment",
+        "compiler": "gcc",
+        "setting": "skip",
+        "op": 4,
+        "n": 524288,
+        "repetitions": 1,
+        "valid_counts": {
+          "stage_inverse_naive": 9,
+          "aligned_forward": 9,
+          "control": 9
+        },
+        "ratios": {
+          "stage_inverse_naive": 0.9977667067514173,
+          "aligned_forward": 1.0020957038071951,
+          "control": 1.0019054217910965
+        },
+        "sufficient": true
+      },
+      {
+        "mode": "alignment",
+        "compiler": "gcc",
+        "setting": "skip",
+        "op": 0,
+        "n": 524288,
+        "repetitions": 1,
+        "valid_counts": {
+          "stage_inverse_naive": 9,
+          "aligned_forward": 9,
+          "control": 9
+        },
+        "ratios": {
+          "stage_inverse_naive": 0.997384066587396,
+          "aligned_forward": 1.0069774817633999,
+          "control": 0.9977272727272727
+        },
+        "sufficient": true
+      },
+      {
+        "mode": "alignment",
+        "compiler": "gcc",
+        "setting": "skip",
+        "op": 5,
+        "n": 16,
+        "repetitions": 2048,
+        "valid_counts": {
+          "stage_inverse_naive": 9,
+          "aligned_forward": 9,
+          "control": 9
+        },
+        "ratios": {
+          "stage_inverse_naive": 0.47297297297297297,
+          "aligned_forward": 0.4943310657596372,
+          "control": 1.002247191011236
+        },
+        "sufficient": true
+      },
+      {
+        "mode": "alignment",
+        "compiler": "clang",
+        "setting": "checked",
+        "op": 4,
+        "n": 65536,
+        "repetitions": 1,
+        "valid_counts": {
+          "stage_inverse_naive": 8,
+          "aligned_forward": 9,
+          "control": 9
+        },
+        "ratios": {
+          "stage_inverse_naive": 0.9992041595925296,
+          "aligned_forward": 0.9464012251148545,
+          "control": 0.965625
+        },
+        "sufficient": true
+      },
+      {
+        "mode": "alignment",
+        "compiler": "clang",
+        "setting": "checked",
+        "op": 4,
+        "n": 65536,
+        "repetitions": 8,
+        "valid_counts": {
+          "stage_inverse_naive": 9,
+          "aligned_forward": 9,
+          "control": 9
+        },
+        "ratios": {
+          "stage_inverse_naive": 0.9961762930167035,
+          "aligned_forward": 0.9989977951493285,
+          "control": 1.003098533360876
+        },
+        "sufficient": true
+      },
+      {
+        "mode": "alignment",
+        "compiler": "clang",
+        "setting": "checked",
+        "op": 4,
+        "n": 524288,
+        "repetitions": 1,
+        "valid_counts": {
+          "stage_inverse_naive": 9,
+          "aligned_forward": 9,
+          "control": 9
+        },
+        "ratios": {
+          "stage_inverse_naive": 0.9923720930232558,
+          "aligned_forward": 1.0070007369196758,
+          "control": 1.017470565894417
+        },
+        "sufficient": true
+      },
+      {
+        "mode": "alignment",
+        "compiler": "clang",
+        "setting": "checked",
+        "op": 0,
+        "n": 524288,
+        "repetitions": 1,
+        "valid_counts": {
+          "stage_inverse_naive": 9,
+          "aligned_forward": 8,
+          "control": 9
+        },
+        "ratios": {
+          "stage_inverse_naive": 0.9976074510809194,
+          "aligned_forward": 0.9938302262530947,
+          "control": 0.99788869183346
+        },
+        "sufficient": true
+      },
+      {
+        "mode": "alignment",
+        "compiler": "clang",
+        "setting": "checked",
+        "op": 5,
+        "n": 16,
+        "repetitions": 2048,
+        "valid_counts": {
+          "stage_inverse_naive": 8,
+          "aligned_forward": 9,
+          "control": 7
+        },
+        "ratios": {
+          "stage_inverse_naive": 0.4443189999345507,
+          "aligned_forward": 0.4396551724137931,
+          "control": 0.980561555075594
+        },
+        "sufficient": true
+      },
+      {
+        "mode": "alignment",
+        "compiler": "clang",
+        "setting": "skip",
+        "op": 4,
+        "n": 65536,
+        "repetitions": 1,
+        "valid_counts": {
+          "stage_inverse_naive": 8,
+          "aligned_forward": 8,
+          "control": 7
+        },
+        "ratios": {
+          "stage_inverse_naive": 0.9878291567652288,
+          "aligned_forward": 1.0277501577287067,
+          "control": 0.9176470588235294
+        },
+        "sufficient": true
+      },
+      {
+        "mode": "alignment",
+        "compiler": "clang",
+        "setting": "skip",
+        "op": 4,
+        "n": 65536,
+        "repetitions": 8,
+        "valid_counts": {
+          "stage_inverse_naive": 9,
+          "aligned_forward": 9,
+          "control": 9
+        },
+        "ratios": {
+          "stage_inverse_naive": 1.005500101853738,
+          "aligned_forward": 0.9942763695829926,
+          "control": 1.0018003600720145
+        },
+        "sufficient": true
+      },
+      {
+        "mode": "alignment",
+        "compiler": "clang",
+        "setting": "skip",
+        "op": 4,
+        "n": 524288,
+        "repetitions": 1,
+        "valid_counts": {
+          "stage_inverse_naive": 9,
+          "aligned_forward": 9,
+          "control": 9
+        },
+        "ratios": {
+          "stage_inverse_naive": 1.003003003003003,
+          "aligned_forward": 1.0050914576654724,
+          "control": 0.9938004884463648
+        },
+        "sufficient": true
+      },
+      {
+        "mode": "alignment",
+        "compiler": "clang",
+        "setting": "skip",
+        "op": 0,
+        "n": 524288,
+        "repetitions": 1,
+        "valid_counts": {
+          "stage_inverse_naive": 9,
+          "aligned_forward": 9,
+          "control": 9
+        },
+        "ratios": {
+          "stage_inverse_naive": 0.9990531118188861,
+          "aligned_forward": 1.0017157073003347,
+          "control": 0.9986267273195434
+        },
+        "sufficient": true
+      },
+      {
+        "mode": "alignment",
+        "compiler": "clang",
+        "setting": "skip",
+        "op": 5,
+        "n": 16,
+        "repetitions": 2048,
+        "valid_counts": {
+          "stage_inverse_naive": 8,
+          "aligned_forward": 8,
+          "control": 9
+        },
+        "ratios": {
+          "stage_inverse_naive": 0.4398005236011253,
+          "aligned_forward": 0.4323043550809278,
+          "control": 0.9977728285077951
+        },
+        "sufficient": true
+      },
+      {
+        "mode": "standard",
+        "compiler": "gcc",
+        "setting": "checked_standard",
+        "op": 0,
+        "n": 16,
+        "repetitions": 2048,
+        "valid_counts": {
+          "stage_inverse_naive": 9,
+          "control": 9
+        },
+        "ratios": {
+          "stage_inverse_naive": 0.9901207464324918,
+          "control": 0.9978021978021978
+        },
+        "sufficient": true
+      },
+      {
+        "mode": "standard",
+        "compiler": "gcc",
+        "setting": "checked_standard",
+        "op": 0,
+        "n": 1024,
+        "repetitions": 32,
+        "valid_counts": {
+          "stage_inverse_naive": 9,
+          "control": 9
+        },
+        "ratios": {
+          "stage_inverse_naive": 0.9884467265725289,
+          "control": 0.9995735607675906
+        },
+        "sufficient": true
+      },
+      {
+        "mode": "standard",
+        "compiler": "gcc",
+        "setting": "checked_standard",
+        "op": 0,
+        "n": 524288,
+        "repetitions": 1,
+        "valid_counts": {
+          "stage_inverse_naive": 9,
+          "control": 9
+        },
+        "ratios": {
+          "stage_inverse_naive": 0.9965235173824131,
+          "control": 1.0020212595791709
+        },
+        "sufficient": true
+      },
+      {
+        "mode": "standard",
+        "compiler": "gcc",
+        "setting": "checked_standard",
+        "op": 5,
+        "n": 16,
+        "repetitions": 2048,
+        "valid_counts": {
+          "stage_inverse_naive": 9,
+          "control": 9
+        },
+        "ratios": {
+          "stage_inverse_naive": 0.4979757085020243,
+          "control": 1.001934235976789
+        },
+        "sufficient": true
+      },
+      {
+        "mode": "standard",
+        "compiler": "gcc",
+        "setting": "checked_standard",
+        "op": 5,
+        "n": 1024,
+        "repetitions": 32,
+        "valid_counts": {
+          "stage_inverse_naive": 8,
+          "control": 7
+        },
+        "ratios": {
+          "stage_inverse_naive": 1.0162984403815387,
+          "control": 0.9847908745247148
+        },
+        "sufficient": true
+      },
+      {
+        "mode": "standard",
+        "compiler": "gcc",
+        "setting": "checked_standard",
+        "op": 5,
+        "n": 524288,
+        "repetitions": 1,
+        "valid_counts": {
+          "stage_inverse_naive": 9,
+          "control": 9
+        },
+        "ratios": {
+          "stage_inverse_naive": 1.0012461059190032,
+          "control": 0.9997677838842015
+        },
+        "sufficient": true
+      },
+      {
+        "mode": "standard",
+        "compiler": "gcc",
+        "setting": "checked_standard",
+        "op": 6,
+        "n": 16,
+        "repetitions": 2048,
+        "valid_counts": {
+          "stage_inverse_naive": 9,
+          "control": 9
+        },
+        "ratios": {
+          "stage_inverse_naive": 0.17928902627511592,
+          "control": 1.0015503875968992
+        },
+        "sufficient": true
+      },
+      {
+        "mode": "standard",
+        "compiler": "gcc",
+        "setting": "checked_standard",
+        "op": 6,
+        "n": 1024,
+        "repetitions": 32,
+        "valid_counts": {
+          "stage_inverse_naive": 7,
+          "control": 8
+        },
+        "ratios": {
+          "stage_inverse_naive": 0.691358024691358,
+          "control": 0.9878030641082849
+        },
+        "sufficient": true
+      },
+      {
+        "mode": "standard",
+        "compiler": "gcc",
+        "setting": "checked_standard",
+        "op": 6,
+        "n": 524288,
+        "repetitions": 1,
+        "valid_counts": {
+          "stage_inverse_naive": 8,
+          "control": 9
+        },
+        "ratios": {
+          "stage_inverse_naive": 0.9985535170809473,
+          "control": 0.9875444839857651
+        },
+        "sufficient": true
+      },
+      {
+        "mode": "standard",
+        "compiler": "gcc",
+        "setting": "skip_standard",
+        "op": 0,
+        "n": 16,
+        "repetitions": 2048,
+        "valid_counts": {
+          "stage_inverse_naive": 9,
+          "control": 9
+        },
+        "ratios": {
+          "stage_inverse_naive": 0.9955947136563876,
+          "control": 1.0021978021978022
+        },
+        "sufficient": true
+      },
+      {
+        "mode": "standard",
+        "compiler": "gcc",
+        "setting": "skip_standard",
+        "op": 0,
+        "n": 1024,
+        "repetitions": 32,
+        "valid_counts": {
+          "stage_inverse_naive": 9,
+          "control": 9
+        },
+        "ratios": {
+          "stage_inverse_naive": 0.9919183326244151,
+          "control": 1.0060085836909871
+        },
+        "sufficient": true
+      },
+      {
+        "mode": "standard",
+        "compiler": "gcc",
+        "setting": "skip_standard",
+        "op": 0,
+        "n": 524288,
+        "repetitions": 1,
+        "valid_counts": {
+          "stage_inverse_naive": 9,
+          "control": 9
+        },
+        "ratios": {
+          "stage_inverse_naive": 0.9959772627896808,
+          "control": 1.0058423158940204
+        },
+        "sufficient": true
+      },
+      {
+        "mode": "standard",
+        "compiler": "gcc",
+        "setting": "skip_standard",
+        "op": 5,
+        "n": 16,
+        "repetitions": 2048,
+        "valid_counts": {
+          "stage_inverse_naive": 9,
+          "control": 9
+        },
+        "ratios": {
+          "stage_inverse_naive": 0.4823529411764706,
+          "control": 1.00390625
+        },
+        "sufficient": true
+      },
+      {
+        "mode": "standard",
+        "compiler": "gcc",
+        "setting": "skip_standard",
+        "op": 5,
+        "n": 1024,
+        "repetitions": 32,
+        "valid_counts": {
+          "stage_inverse_naive": 4,
+          "control": 7
+        },
+        "ratios": {
+          "stage_inverse_naive": 1.0170621896827399,
+          "control": 0.9758454106280193
+        },
+        "sufficient": false
+      },
+      {
+        "mode": "standard",
+        "compiler": "gcc",
+        "setting": "skip_standard",
+        "op": 5,
+        "n": 524288,
+        "repetitions": 1,
+        "valid_counts": {
+          "stage_inverse_naive": 9,
+          "control": 9
+        },
+        "ratios": {
+          "stage_inverse_naive": 1.0043136650747189,
+          "control": 0.9979956830095591
+        },
+        "sufficient": true
+      },
+      {
+        "mode": "standard",
+        "compiler": "gcc",
+        "setting": "skip_standard",
+        "op": 6,
+        "n": 16,
+        "repetitions": 2048,
+        "valid_counts": {
+          "stage_inverse_naive": 9,
+          "control": 9
+        },
+        "ratios": {
+          "stage_inverse_naive": 0.17701863354037267,
+          "control": 0.9984496124031008
+        },
+        "sufficient": true
+      },
+      {
+        "mode": "standard",
+        "compiler": "gcc",
+        "setting": "skip_standard",
+        "op": 6,
+        "n": 1024,
+        "repetitions": 32,
+        "valid_counts": {
+          "stage_inverse_naive": 8,
+          "control": 8
+        },
+        "ratios": {
+          "stage_inverse_naive": 0.675,
+          "control": 1.0
+        },
+        "sufficient": true
+      },
+      {
+        "mode": "standard",
+        "compiler": "gcc",
+        "setting": "skip_standard",
+        "op": 6,
+        "n": 524288,
+        "repetitions": 1,
+        "valid_counts": {
+          "stage_inverse_naive": 9,
+          "control": 8
+        },
+        "ratios": {
+          "stage_inverse_naive": 0.9951783992285439,
+          "control": 0.9908582778067285
+        },
+        "sufficient": true
+      },
+      {
+        "mode": "standard",
+        "compiler": "clang",
+        "setting": "checked_standard",
+        "op": 0,
+        "n": 16,
+        "repetitions": 2048,
+        "valid_counts": {
+          "stage_inverse_naive": 9,
+          "control": 9
+        },
+        "ratios": {
+          "stage_inverse_naive": 1.002169197396963,
+          "control": 0.998914223669924
+        },
+        "sufficient": true
+      },
+      {
+        "mode": "standard",
+        "compiler": "clang",
+        "setting": "checked_standard",
+        "op": 0,
+        "n": 1024,
+        "repetitions": 32,
+        "valid_counts": {
+          "stage_inverse_naive": 9,
+          "control": 9
+        },
+        "ratios": {
+          "stage_inverse_naive": 0.9983669025585193,
+          "control": 0.9934497816593887
+        },
+        "sufficient": true
+      },
+      {
+        "mode": "standard",
+        "compiler": "clang",
+        "setting": "checked_standard",
+        "op": 0,
+        "n": 524288,
+        "repetitions": 1,
+        "valid_counts": {
+          "stage_inverse_naive": 8,
+          "control": 9
+        },
+        "ratios": {
+          "stage_inverse_naive": 1.0146867796852437,
+          "control": 1.0058287589836454
+        },
+        "sufficient": true
+      },
+      {
+        "mode": "standard",
+        "compiler": "clang",
+        "setting": "checked_standard",
+        "op": 5,
+        "n": 16,
+        "repetitions": 2048,
+        "valid_counts": {
+          "stage_inverse_naive": 9,
+          "control": 9
+        },
+        "ratios": {
+          "stage_inverse_naive": 0.4852941176470588,
+          "control": 1.0074349442379182
+        },
+        "sufficient": true
+      },
+      {
+        "mode": "standard",
+        "compiler": "clang",
+        "setting": "checked_standard",
+        "op": 5,
+        "n": 1024,
+        "repetitions": 32,
+        "valid_counts": {
+          "stage_inverse_naive": 6,
+          "control": 6
+        },
+        "ratios": {
+          "stage_inverse_naive": 1.0274193952451336,
+          "control": 1.004269021945478
+        },
+        "sufficient": true
+      },
+      {
+        "mode": "standard",
+        "compiler": "clang",
+        "setting": "checked_standard",
+        "op": 5,
+        "n": 524288,
+        "repetitions": 1,
+        "valid_counts": {
+          "stage_inverse_naive": 9,
+          "control": 9
+        },
+        "ratios": {
+          "stage_inverse_naive": 0.9968246767974598,
+          "control": 1.0006762849413886
+        },
+        "sufficient": true
+      },
+      {
+        "mode": "standard",
+        "compiler": "clang",
+        "setting": "checked_standard",
+        "op": 6,
+        "n": 16,
+        "repetitions": 2048,
+        "valid_counts": {
+          "stage_inverse_naive": 9,
+          "control": 9
+        },
+        "ratios": {
+          "stage_inverse_naive": 0.1469387755102041,
+          "control": 1.0
+        },
+        "sufficient": true
+      },
+      {
+        "mode": "standard",
+        "compiler": "clang",
+        "setting": "checked_standard",
+        "op": 6,
+        "n": 1024,
+        "repetitions": 32,
+        "valid_counts": {
+          "stage_inverse_naive": 9,
+          "control": 9
+        },
+        "ratios": {
+          "stage_inverse_naive": 0.6268656716417911,
+          "control": 0.9761904761904762
+        },
+        "sufficient": true
+      },
+      {
+        "mode": "standard",
+        "compiler": "clang",
+        "setting": "checked_standard",
+        "op": 6,
+        "n": 524288,
+        "repetitions": 1,
+        "valid_counts": {
+          "stage_inverse_naive": 8,
+          "control": 9
+        },
+        "ratios": {
+          "stage_inverse_naive": 1.0110962594221866,
+          "control": 1.0009587727708533
+        },
+        "sufficient": true
+      },
+      {
+        "mode": "standard",
+        "compiler": "clang",
+        "setting": "skip_standard",
+        "op": 0,
+        "n": 16,
+        "repetitions": 2048,
+        "valid_counts": {
+          "stage_inverse_naive": 9,
+          "control": 9
+        },
+        "ratios": {
+          "stage_inverse_naive": 0.985945945945946,
+          "control": 0.9978632478632479
+        },
+        "sufficient": true
+      },
+      {
+        "mode": "standard",
+        "compiler": "clang",
+        "setting": "skip_standard",
+        "op": 0,
+        "n": 1024,
+        "repetitions": 32,
+        "valid_counts": {
+          "stage_inverse_naive": 9,
+          "control": 9
+        },
+        "ratios": {
+          "stage_inverse_naive": 0.9834368530020704,
+          "control": 0.9943502824858758
+        },
+        "sufficient": true
+      },
+      {
+        "mode": "standard",
+        "compiler": "clang",
+        "setting": "skip_standard",
+        "op": 0,
+        "n": 524288,
+        "repetitions": 1,
+        "valid_counts": {
+          "stage_inverse_naive": 9,
+          "control": 9
+        },
+        "ratios": {
+          "stage_inverse_naive": 0.9955415416433573,
+          "control": 1.0009062462595968
+        },
+        "sufficient": true
+      },
+      {
+        "mode": "standard",
+        "compiler": "clang",
+        "setting": "skip_standard",
+        "op": 5,
+        "n": 16,
+        "repetitions": 2048,
+        "valid_counts": {
+          "stage_inverse_naive": 9,
+          "control": 9
+        },
+        "ratios": {
+          "stage_inverse_naive": 0.4641509433962264,
+          "control": 1.0
+        },
+        "sufficient": true
+      },
+      {
+        "mode": "standard",
+        "compiler": "clang",
+        "setting": "skip_standard",
+        "op": 5,
+        "n": 1024,
+        "repetitions": 32,
+        "valid_counts": {
+          "stage_inverse_naive": 6,
+          "control": 8
+        },
+        "ratios": {
+          "stage_inverse_naive": 0.9974746399943251,
+          "control": 0.9973293363239015
+        },
+        "sufficient": true
+      },
+      {
+        "mode": "standard",
+        "compiler": "clang",
+        "setting": "skip_standard",
+        "op": 5,
+        "n": 524288,
+        "repetitions": 1,
+        "valid_counts": {
+          "stage_inverse_naive": 9,
+          "control": 9
+        },
+        "ratios": {
+          "stage_inverse_naive": 0.9906124273580689,
+          "control": 1.0018079096045198
+        },
+        "sufficient": true
+      },
+      {
+        "mode": "standard",
+        "compiler": "clang",
+        "setting": "skip_standard",
+        "op": 6,
+        "n": 16,
+        "repetitions": 2048,
+        "valid_counts": {
+          "stage_inverse_naive": 9,
+          "control": 9
+        },
+        "ratios": {
+          "stage_inverse_naive": 0.14500683994528044,
+          "control": 1.0013605442176872
+        },
+        "sufficient": true
+      },
+      {
+        "mode": "standard",
+        "compiler": "clang",
+        "setting": "skip_standard",
+        "op": 6,
+        "n": 1024,
+        "repetitions": 32,
+        "valid_counts": {
+          "stage_inverse_naive": 9,
+          "control": 9
+        },
+        "ratios": {
+          "stage_inverse_naive": 0.6585365853658537,
+          "control": 1.0238095238095237
+        },
+        "sufficient": true
+      },
+      {
+        "mode": "standard",
+        "compiler": "clang",
+        "setting": "skip_standard",
+        "op": 6,
+        "n": 524288,
+        "repetitions": 1,
+        "valid_counts": {
+          "stage_inverse_naive": 8,
+          "control": 9
+        },
+        "ratios": {
+          "stage_inverse_naive": 0.9947339766280727,
+          "control": 1.0
+        },
+        "sufficient": true
+      }
+    ],
+    "medium_variation": "初回Clang skip cached forward65536は候補+11.5%、同一実行体対照−8.7%。focused再確認では元の配置で約−1.2%（対照−8.2%）、8回連続では約+0.55%（対照+0.18%）。大きな初回差は安定再現せず、配置64B指定も一貫した利益なし。初回rawを消さず保存し、全条件無後退とは断定しない。",
+    "all_comparison_outputs_equal": true
+  },
+  "validation": {
+    "jobs": 44,
+    "all_passed": true,
+    "conditions": "GCC/Clang×検査有効/無効×default/SIRKIT_DISABLE_SIMD/CPU判定falseの検査用ヘッダー。",
+    "independent_tests": [
+      "独立DFT/直接積、11法、正負整数極値、bool、空、32/33境界、偏り、正規化違反",
+      "大規模全1畳み込み・順逆往復・キャッシュ成長/コピー/移動/解放",
+      "FPS独立参照、同梱NTTとの二重include",
+      "確保失敗・入力不変性・例外解放"
+    ],
+    "allocation": [
+      {
+        "checks": 5521,
+        "failures": 91,
+        "live_delta": 0
+      },
+      {
+        "checks": 5521,
+        "failures": 91,
+        "live_delta": 0
+      },
+      {
+        "checks": 5521,
+        "failures": 91,
+        "live_delta": 0
+      },
+      {
+        "checks": 5521,
+        "failures": 91,
+        "live_delta": 0
+      },
+      {
+        "checks": 5521,
+        "failures": 91,
+        "live_delta": 0
+      },
+      {
+        "checks": 5521,
+        "failures": 91,
+        "live_delta": 0
+      },
+      {
+        "checks": 5521,
+        "failures": 91,
+        "live_delta": 0
+      },
+      {
+        "checks": 5521,
+        "failures": 91,
+        "live_delta": 0
+      },
+      {
+        "checks": 5521,
+        "failures": 91,
+        "live_delta": 0
+      },
+      {
+        "checks": 5521,
+        "failures": 91,
+        "live_delta": 0
+      },
+      {
+        "checks": 5521,
+        "failures": 91,
+        "live_delta": 0
+      },
+      {
+        "checks": 5521,
+        "failures": 91,
+        "live_delta": 0
+      }
+    ],
+    "sanitizers": "NTT独立参照を両compiler・両検査設定・default/SIMD無効でASAN+UBSAN。host ptraceでdetect_leaks=0、解放は独立live counterで確認。",
+    "standard_path": "静的根と直接逆元の変更は標準経路にも適用。固定オペランドSIMDはSIRKIT_DISABLE_SIMDで除去。標準経路もP-Coreで36条件を比較し、小さい演算の改善と大規模のほぼ同等を確認。",
+    "machine_code_evidence": [
+      {
+        "compiler": "gcc",
+        "setting": "",
+        "kind": "main",
+        "final_matches_measured": true,
+        "text_sha256": "634aa0a4406f64db857314be2447c9acee642f21c275a74353d0feeae0433568"
+      },
+      {
+        "compiler": "gcc",
+        "setting": "checked",
+        "kind": "core",
+        "final_matches_measured": true,
+        "text_sha256": "0d8ab0eeb54b464780fb142fd5697994b764077ac06c92980587b61eef023307"
+      },
+      {
+        "compiler": "gcc",
+        "setting": "skip",
+        "kind": "core",
+        "final_matches_measured": true,
+        "text_sha256": "1d96a3b1c3cfcc463568afdea29fe5c6e52ccdb6ceafa9619d144b8c64e41c74"
+      },
+      {
+        "compiler": "gcc",
+        "setting": "checked",
+        "kind": "standard_core",
+        "final_matches_measured": true,
+        "text_sha256": "34475c06b58914881157e4374ab3c70655e6b9e5334e2735075eb0d2cb8b81ed"
+      },
+      {
+        "compiler": "gcc",
+        "setting": "skip",
+        "kind": "standard_core",
+        "final_matches_measured": true,
+        "text_sha256": "46e30715bbf30e8335991cb29312d6797375c845446af5a19121a0e82e230524"
+      },
+      {
+        "compiler": "clang",
+        "setting": "",
+        "kind": "main",
+        "final_matches_measured": true,
+        "text_sha256": "1cc1ab174be99b79bfcbfb35695578b3b4f21bdd725f41cde86c005d235fe17a"
+      },
+      {
+        "compiler": "clang",
+        "setting": "checked",
+        "kind": "core",
+        "final_matches_measured": true,
+        "text_sha256": "e9e58e68868dc06b6eb0db6540ec5bf6263b0dca46437607b007c4d5548b9b98"
+      },
+      {
+        "compiler": "clang",
+        "setting": "skip",
+        "kind": "core",
+        "final_matches_measured": true,
+        "text_sha256": "6769ad1b70496b6c734f5e47b7e648ae5bcda3d58c99e6dd6887dfb5b82a2c66"
+      },
+      {
+        "compiler": "clang",
+        "setting": "checked",
+        "kind": "standard_core",
+        "final_matches_measured": true,
+        "text_sha256": "79b88489cc3e4b47ab59141e92d76ad34571cc1ec1aa6b19afab2324cc3dbf81"
+      },
+      {
+        "compiler": "clang",
+        "setting": "skip",
+        "kind": "standard_core",
+        "final_matches_measured": true,
+        "text_sha256": "9432e4ce3bb40ac18e790bcdb1bc83a44e73cb689fd09a3758187311ea213eac"
+      }
+    ],
+    "profiles": {
+      "status": "local_samples_passed_for_snapshot",
+      "counts": {
+        "LOCAL_SAMPLE_PASS": 10
+      },
+      "run_id": "20261112T022202218349Z"
+    },
+    "current_submission_exactly_matches_compiled_final": true,
+    "current_submission_bytes": 46185,
+    "generated_API_docs_and_manifests_checked": true
+  },
+  "license": "CC0の独自NTTに数学式と独自実装を追加。外部実装のコードを取り込まない。公式生成器はURL/固定SHAのメタデータのみ保存し、本体は証跡・配布へ含めない。",
+  "evidence_archive": "Audit/data/performance-ntt-416541-2026-11-12.zip",
+  "evidence_scope": "候補/生成器/静的レビュー、公開API応答と注記更新の対応、raw計測/検査/コマンド。巨大入力/出力、実行体、外部生成器本体を除外。",
+  "evidence_archive_sha256": "f74a4009f78ead15146eb39e9f3221ddded0433090b6298c21dc48d045e3bb6e"
+}

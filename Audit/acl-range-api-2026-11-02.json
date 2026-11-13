@@ -1,0 +1,1237 @@
+{
+  "date_jst": "2026-11-02",
+  "checked_at_utc": "2026-11-02T03:46:57.767570+00:00",
+  "scope": "Fenwick Tree・Segment Tree・Lazy Segment TreeをACLの公開APIへ統一。追加機能は保持し、同機能の旧公開名・別名を作らない。",
+  "public_types": [
+    "fenwick_tree<T>",
+    "segtree<S,op,e>",
+    "lazy_segtree<S,op,e,F,mapping,composition,id>"
+  ],
+  "namespace": "global（従来方針。atcoder::の別名は定義しない）",
+  "canonical_details": [
+    "intのサイズ・添字・境界探索戻り値",
+    "Sを値で返すget/all_prod",
+    "segtree/lazy_segtreeの関数NTTP op/e/mapping/composition/id",
+    "述語をNTTPまたは引数で渡す2形式",
+    "fenwick_tree::sum と lazy_segtree::all_prod の非constメンバ関数型もACLと一致",
+    "Fenwickの整数剰余動作、static/dynamic modint対応"
+  ],
+  "removed_duplicates": [
+    "旧公開型FenwickTree/SegmentTree/LazySegmentTree",
+    "Fenwickのprefix_sum/all_sum（sumへ統一）",
+    "Lazyのapply_all（applyへ統一）"
+  ],
+  "extensions": [
+    "vectorからのFenwick O(n)構築。制約付きテンプレートによりACLのf({})/f({n})の解釈も保つ",
+    "get/set/values/境界探索（Fenwick）",
+    "transform/values/assign/reset/clear/swap/size/emptyの適用可能な操作",
+    "Lazy mapping(F,S,size_t)も指定可。標準のmapping(F,S)を優先する",
+    "独自の可換加法群では内部変換と復元時の余分な値コピーを避ける"
+  ],
+  "differences_from_acl": [
+    "公開型はグローバル",
+    "無効入力はassertではなく例外。SKIP_RUNTIME_CHECKSで入力検査を除く",
+    "内部容量・添字・intサイズ表現の保護は維持"
+  ],
+  "sources": [
+    {
+      "path": "DataStructure/Fenwick_Tree.cpp",
+      "before_sha256": "cb202094a983b5ad00d2fb501e87868862c50454e4f863575ac04ae04b5d1c19",
+      "current_sha256": "55488b89ded2025c6006bc2343a743e2661fe20a9e728a4c9e1feca24339919e"
+    },
+    {
+      "path": "DataStructure/Segment_Tree.cpp",
+      "before_sha256": "fa6cade4f56328cbcd3c335154d84bdec331d53082713732a1584b0e244a460b",
+      "current_sha256": "ab5ca276927c7454e0e34f84bf5d363ffbc048f8a1b61587a164b0a8e566e2e8"
+    },
+    {
+      "path": "DataStructure/Lazy_Segment_Tree.cpp",
+      "before_sha256": "bba84f6551567504ebbcd78c70a27c5fcdce07e76d12476a3919aae0b4386c33",
+      "current_sha256": "a8ad1c2d5399d49050729fcfc402bf8cc6c9ef6959ac586414ecec6dcc34a687"
+    }
+  ],
+  "algorithm_ownership": "既存の自作CC0実装を改修。ACLの仕様を参照し、参照用の公式CC0ヘッダーはvendorに別途保持する。",
+  "upstream": {
+    "downloaded_utc": "2026-11-02T02:45:43.953637+00:00",
+    "license_url": "https://github.com/atcoder/ac-library/blob/master/LICENSE",
+    "license": "CC0-1.0",
+    "files": [
+      {
+        "path": "Verify/current/vendor/atcoder/fenwicktree.hpp",
+        "url": "https://raw.githubusercontent.com/atcoder/ac-library/master/atcoder/fenwicktree.hpp",
+        "sha256": "b31862994a547ef34f1f7c68136ed6bcab66bd402371390acc8a21cb24a01bb9"
+      },
+      {
+        "path": "Verify/current/vendor/atcoder/segtree.hpp",
+        "url": "https://raw.githubusercontent.com/atcoder/ac-library/master/atcoder/segtree.hpp",
+        "sha256": "6b959283e1faeaa3de5b473eee5e774220eee60a89fe4b483ce26e652532dabb"
+      },
+      {
+        "path": "Verify/current/vendor/atcoder/lazysegtree.hpp",
+        "url": "https://raw.githubusercontent.com/atcoder/ac-library/master/atcoder/lazysegtree.hpp",
+        "sha256": "3685280a17ef0d8cd3c3510b1a6b494fa674debfc3c8651c87cf50c77cfe09da"
+      }
+    ]
+  },
+  "verification": {
+    "core_api_reference_checks_per_run": 692975,
+    "compilers": [
+      "GCC15.2",
+      "Clang21"
+    ],
+    "runtime_checks": [
+      "on",
+      "off"
+    ],
+    "tests": [
+      {
+        "compiler": "gcc",
+        "skip": false,
+        "test": "segment_tree_reference_test",
+        "command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-I",
+          "Verify/current/vendor",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "Verify/current/tests/segment_tree_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_acl_api_20261102/current_unit"
+        ],
+        "ASAN_OPTIONS": "detect_leaks=0 (ptrace environment)",
+        "stdout": "segtree checks=248744\n",
+        "stderr": "",
+        "status": "PASS"
+      },
+      {
+        "compiler": "gcc",
+        "skip": false,
+        "test": "lazy_segment_tree_reference_test",
+        "command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-I",
+          "Verify/current/vendor",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "Verify/current/tests/lazy_segment_tree_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_acl_api_20261102/current_unit"
+        ],
+        "ASAN_OPTIONS": "detect_leaks=0 (ptrace environment)",
+        "stdout": "lazy_segtree checks=259658\n",
+        "stderr": "",
+        "status": "PASS"
+      },
+      {
+        "compiler": "gcc",
+        "skip": true,
+        "test": "segment_tree_reference_test",
+        "command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-I",
+          "Verify/current/vendor",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "Verify/current/tests/segment_tree_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_acl_api_20261102/current_unit"
+        ],
+        "ASAN_OPTIONS": "detect_leaks=0 (ptrace environment)",
+        "stdout": "segtree checks=248600\n",
+        "stderr": "",
+        "status": "PASS"
+      },
+      {
+        "compiler": "gcc",
+        "skip": true,
+        "test": "lazy_segment_tree_reference_test",
+        "command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-I",
+          "Verify/current/vendor",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "Verify/current/tests/lazy_segment_tree_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_acl_api_20261102/current_unit"
+        ],
+        "ASAN_OPTIONS": "detect_leaks=0 (ptrace environment)",
+        "stdout": "lazy_segtree checks=259429\n",
+        "stderr": "",
+        "status": "PASS"
+      },
+      {
+        "compiler": "clang",
+        "skip": false,
+        "test": "segment_tree_reference_test",
+        "command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-I",
+          "Verify/current/vendor",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "Verify/current/tests/segment_tree_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_acl_api_20261102/current_unit"
+        ],
+        "ASAN_OPTIONS": "detect_leaks=0 (ptrace environment)",
+        "stdout": "segtree checks=248744\n",
+        "stderr": "",
+        "status": "PASS"
+      },
+      {
+        "compiler": "clang",
+        "skip": false,
+        "test": "lazy_segment_tree_reference_test",
+        "command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-I",
+          "Verify/current/vendor",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "Verify/current/tests/lazy_segment_tree_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_acl_api_20261102/current_unit"
+        ],
+        "ASAN_OPTIONS": "detect_leaks=0 (ptrace environment)",
+        "stdout": "lazy_segtree checks=259658\n",
+        "stderr": "",
+        "status": "PASS"
+      },
+      {
+        "compiler": "clang",
+        "skip": true,
+        "test": "segment_tree_reference_test",
+        "command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-I",
+          "Verify/current/vendor",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "Verify/current/tests/segment_tree_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_acl_api_20261102/current_unit"
+        ],
+        "ASAN_OPTIONS": "detect_leaks=0 (ptrace environment)",
+        "stdout": "segtree checks=248600\n",
+        "stderr": "",
+        "status": "PASS"
+      },
+      {
+        "compiler": "clang",
+        "skip": true,
+        "test": "lazy_segment_tree_reference_test",
+        "command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-I",
+          "Verify/current/vendor",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "Verify/current/tests/lazy_segment_tree_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_acl_api_20261102/current_unit"
+        ],
+        "ASAN_OPTIONS": "detect_leaks=0 (ptrace environment)",
+        "stdout": "lazy_segtree checks=259429\n",
+        "stderr": "",
+        "status": "PASS"
+      },
+      {
+        "test": "standard_integer_fallback",
+        "command": [
+          "taskset",
+          "-c",
+          "2",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-U__SIZEOF_INT128__",
+          "Verify/current/tests/acl_range_api_test.cpp",
+          "-o",
+          "/tmp/sirkit_acl_api_20261102/standard_api"
+        ],
+        "status": "PASS",
+        "stdout": "ACL range API checks=26432\n"
+      },
+      {
+        "compiler": "gcc",
+        "skip": false,
+        "test": "acl_range_api_test",
+        "command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-I",
+          "Verify/current/vendor",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "Verify/current/tests/acl_range_api_test.cpp",
+          "-o",
+          "/tmp/sirkit_acl_api_20261102/final_api_check"
+        ],
+        "ASAN_OPTIONS": "detect_leaks=0",
+        "stdout": "ACL range API checks=26439\n",
+        "stderr": "",
+        "status": "PASS"
+      },
+      {
+        "compiler": "gcc",
+        "skip": false,
+        "test": "acl_range_reference_test",
+        "command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-I",
+          "Verify/current/vendor",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "Verify/current/tests/acl_range_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_acl_api_20261102/final_api_check"
+        ],
+        "ASAN_OPTIONS": "detect_leaks=0",
+        "stdout": "ACL core API cross-checks=692975\n",
+        "stderr": "",
+        "status": "PASS"
+      },
+      {
+        "compiler": "gcc",
+        "skip": false,
+        "test": "fenwick_tree_reference_test",
+        "command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-I",
+          "Verify/current/vendor",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "Verify/current/tests/fenwick_tree_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_acl_api_20261102/final_api_check"
+        ],
+        "ASAN_OPTIONS": "detect_leaks=0",
+        "stdout": "fenwick_tree checks=104208\n",
+        "stderr": "",
+        "status": "PASS"
+      },
+      {
+        "compiler": "gcc",
+        "skip": false,
+        "test": "fenwick_tree_operations_test",
+        "command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-I",
+          "Verify/current/vendor",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "Verify/current/tests/fenwick_tree_operations_test.cpp",
+          "-o",
+          "/tmp/sirkit_acl_api_20261102/final_api_check"
+        ],
+        "ASAN_OPTIONS": "detect_leaks=0",
+        "stdout": "fenwick_tree supplemental checks=971923\n",
+        "stderr": "",
+        "status": "PASS"
+      },
+      {
+        "compiler": "gcc",
+        "skip": false,
+        "test": "range_structures_allocation_test",
+        "command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-I",
+          "Verify/current/vendor",
+          "Verify/current/tests/range_structures_allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_acl_api_20261102/final_api_check"
+        ],
+        "ASAN_OPTIONS": "detect_leaks=0",
+        "stdout": "Range allocation checks=4187 failures=2660 live_delta=0\n",
+        "stderr": "",
+        "status": "PASS"
+      },
+      {
+        "compiler": "gcc",
+        "skip": true,
+        "test": "acl_range_api_test",
+        "command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-I",
+          "Verify/current/vendor",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "Verify/current/tests/acl_range_api_test.cpp",
+          "-o",
+          "/tmp/sirkit_acl_api_20261102/final_api_check"
+        ],
+        "ASAN_OPTIONS": "detect_leaks=0",
+        "stdout": "ACL range API checks=26439\n",
+        "stderr": "",
+        "status": "PASS"
+      },
+      {
+        "compiler": "gcc",
+        "skip": true,
+        "test": "acl_range_reference_test",
+        "command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-I",
+          "Verify/current/vendor",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "Verify/current/tests/acl_range_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_acl_api_20261102/final_api_check"
+        ],
+        "ASAN_OPTIONS": "detect_leaks=0",
+        "stdout": "ACL core API cross-checks=692975\n",
+        "stderr": "",
+        "status": "PASS"
+      },
+      {
+        "compiler": "gcc",
+        "skip": true,
+        "test": "fenwick_tree_reference_test",
+        "command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-I",
+          "Verify/current/vendor",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "Verify/current/tests/fenwick_tree_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_acl_api_20261102/final_api_check"
+        ],
+        "ASAN_OPTIONS": "detect_leaks=0",
+        "stdout": "fenwick_tree checks=104103\n",
+        "stderr": "",
+        "status": "PASS"
+      },
+      {
+        "compiler": "gcc",
+        "skip": true,
+        "test": "fenwick_tree_operations_test",
+        "command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-I",
+          "Verify/current/vendor",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "Verify/current/tests/fenwick_tree_operations_test.cpp",
+          "-o",
+          "/tmp/sirkit_acl_api_20261102/final_api_check"
+        ],
+        "ASAN_OPTIONS": "detect_leaks=0",
+        "stdout": "fenwick_tree supplemental checks=971920\n",
+        "stderr": "",
+        "status": "PASS"
+      },
+      {
+        "compiler": "gcc",
+        "skip": true,
+        "test": "range_structures_allocation_test",
+        "command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-I",
+          "Verify/current/vendor",
+          "-DSKIP_RUNTIME_CHECKS",
+          "Verify/current/tests/range_structures_allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_acl_api_20261102/final_api_check"
+        ],
+        "ASAN_OPTIONS": "detect_leaks=0",
+        "stdout": "Range allocation checks=4187 failures=2660 live_delta=0\n",
+        "stderr": "",
+        "status": "PASS"
+      },
+      {
+        "compiler": "clang",
+        "skip": false,
+        "test": "acl_range_api_test",
+        "command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-I",
+          "Verify/current/vendor",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "Verify/current/tests/acl_range_api_test.cpp",
+          "-o",
+          "/tmp/sirkit_acl_api_20261102/final_api_check"
+        ],
+        "ASAN_OPTIONS": "detect_leaks=0",
+        "stdout": "ACL range API checks=26439\n",
+        "stderr": "",
+        "status": "PASS"
+      },
+      {
+        "compiler": "clang",
+        "skip": false,
+        "test": "acl_range_reference_test",
+        "command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-I",
+          "Verify/current/vendor",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "Verify/current/tests/acl_range_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_acl_api_20261102/final_api_check"
+        ],
+        "ASAN_OPTIONS": "detect_leaks=0",
+        "stdout": "ACL core API cross-checks=692975\n",
+        "stderr": "",
+        "status": "PASS"
+      },
+      {
+        "compiler": "clang",
+        "skip": false,
+        "test": "fenwick_tree_reference_test",
+        "command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-I",
+          "Verify/current/vendor",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "Verify/current/tests/fenwick_tree_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_acl_api_20261102/final_api_check"
+        ],
+        "ASAN_OPTIONS": "detect_leaks=0",
+        "stdout": "fenwick_tree checks=104208\n",
+        "stderr": "",
+        "status": "PASS"
+      },
+      {
+        "compiler": "clang",
+        "skip": false,
+        "test": "fenwick_tree_operations_test",
+        "command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-I",
+          "Verify/current/vendor",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "Verify/current/tests/fenwick_tree_operations_test.cpp",
+          "-o",
+          "/tmp/sirkit_acl_api_20261102/final_api_check"
+        ],
+        "ASAN_OPTIONS": "detect_leaks=0",
+        "stdout": "fenwick_tree supplemental checks=971923\n",
+        "stderr": "",
+        "status": "PASS"
+      },
+      {
+        "compiler": "clang",
+        "skip": false,
+        "test": "range_structures_allocation_test",
+        "command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-I",
+          "Verify/current/vendor",
+          "Verify/current/tests/range_structures_allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_acl_api_20261102/final_api_check"
+        ],
+        "ASAN_OPTIONS": "detect_leaks=0",
+        "stdout": "Range allocation checks=4187 failures=2660 live_delta=0\n",
+        "stderr": "",
+        "status": "PASS"
+      },
+      {
+        "compiler": "clang",
+        "skip": true,
+        "test": "acl_range_api_test",
+        "command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-I",
+          "Verify/current/vendor",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "Verify/current/tests/acl_range_api_test.cpp",
+          "-o",
+          "/tmp/sirkit_acl_api_20261102/final_api_check"
+        ],
+        "ASAN_OPTIONS": "detect_leaks=0",
+        "stdout": "ACL range API checks=26439\n",
+        "stderr": "",
+        "status": "PASS"
+      },
+      {
+        "compiler": "clang",
+        "skip": true,
+        "test": "acl_range_reference_test",
+        "command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-I",
+          "Verify/current/vendor",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "Verify/current/tests/acl_range_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_acl_api_20261102/final_api_check"
+        ],
+        "ASAN_OPTIONS": "detect_leaks=0",
+        "stdout": "ACL core API cross-checks=692975\n",
+        "stderr": "",
+        "status": "PASS"
+      },
+      {
+        "compiler": "clang",
+        "skip": true,
+        "test": "fenwick_tree_reference_test",
+        "command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-I",
+          "Verify/current/vendor",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "Verify/current/tests/fenwick_tree_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_acl_api_20261102/final_api_check"
+        ],
+        "ASAN_OPTIONS": "detect_leaks=0",
+        "stdout": "fenwick_tree checks=104103\n",
+        "stderr": "",
+        "status": "PASS"
+      },
+      {
+        "compiler": "clang",
+        "skip": true,
+        "test": "fenwick_tree_operations_test",
+        "command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-I",
+          "Verify/current/vendor",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "Verify/current/tests/fenwick_tree_operations_test.cpp",
+          "-o",
+          "/tmp/sirkit_acl_api_20261102/final_api_check"
+        ],
+        "ASAN_OPTIONS": "detect_leaks=0",
+        "stdout": "fenwick_tree supplemental checks=971920\n",
+        "stderr": "",
+        "status": "PASS"
+      },
+      {
+        "compiler": "clang",
+        "skip": true,
+        "test": "range_structures_allocation_test",
+        "command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-I",
+          "Verify/current/vendor",
+          "-DSKIP_RUNTIME_CHECKS",
+          "Verify/current/tests/range_structures_allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_acl_api_20261102/final_api_check"
+        ],
+        "ASAN_OPTIONS": "detect_leaks=0",
+        "stdout": "Range allocation checks=4187 failures=2660 live_delta=0\n",
+        "stderr": "",
+        "status": "PASS"
+      }
+    ],
+    "profile_api": [
+      {
+        "profile": "Variants/GCC",
+        "command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_FENWICK_TEST_SOURCE=\"/home/reinsirk/Atcoder_Env/Variants/GCC/DataStructure/Fenwick_Tree.cpp\"",
+          "-DSIRKIT_SEGMENT_TEST_SOURCE=\"/home/reinsirk/Atcoder_Env/Variants/GCC/DataStructure/Segment_Tree.cpp\"",
+          "-DSIRKIT_LAZY_SEGMENT_TEST_SOURCE=\"/home/reinsirk/Atcoder_Env/Variants/GCC/DataStructure/Lazy_Segment_Tree.cpp\"",
+          "Verify/current/tests/acl_range_api_test.cpp",
+          "-o",
+          "/tmp/sirkit_acl_api_20261102/profile_api"
+        ],
+        "stdout": "ACL range API checks=26439\n",
+        "status": "PASS"
+      },
+      {
+        "profile": "Fast/GCC",
+        "command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-DSIRKIT_FENWICK_TEST_SOURCE=\"/home/reinsirk/Atcoder_Env/Fast/GCC/DataStructure/Fenwick_Tree.cpp\"",
+          "-DSIRKIT_SEGMENT_TEST_SOURCE=\"/home/reinsirk/Atcoder_Env/Fast/GCC/DataStructure/Segment_Tree.cpp\"",
+          "-DSIRKIT_LAZY_SEGMENT_TEST_SOURCE=\"/home/reinsirk/Atcoder_Env/Fast/GCC/DataStructure/Lazy_Segment_Tree.cpp\"",
+          "Verify/current/tests/acl_range_api_test.cpp",
+          "-o",
+          "/tmp/sirkit_acl_api_20261102/profile_api"
+        ],
+        "stdout": "ACL range API checks=26439\n",
+        "status": "PASS"
+      },
+      {
+        "profile": "Variants/Clang",
+        "command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_FENWICK_TEST_SOURCE=\"/home/reinsirk/Atcoder_Env/Variants/Clang/DataStructure/Fenwick_Tree.cpp\"",
+          "-DSIRKIT_SEGMENT_TEST_SOURCE=\"/home/reinsirk/Atcoder_Env/Variants/Clang/DataStructure/Segment_Tree.cpp\"",
+          "-DSIRKIT_LAZY_SEGMENT_TEST_SOURCE=\"/home/reinsirk/Atcoder_Env/Variants/Clang/DataStructure/Lazy_Segment_Tree.cpp\"",
+          "Verify/current/tests/acl_range_api_test.cpp",
+          "-o",
+          "/tmp/sirkit_acl_api_20261102/profile_api"
+        ],
+        "stdout": "ACL range API checks=26439\n",
+        "status": "PASS"
+      },
+      {
+        "profile": "Fast/Clang",
+        "command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-DSIRKIT_FENWICK_TEST_SOURCE=\"/home/reinsirk/Atcoder_Env/Fast/Clang/DataStructure/Fenwick_Tree.cpp\"",
+          "-DSIRKIT_SEGMENT_TEST_SOURCE=\"/home/reinsirk/Atcoder_Env/Fast/Clang/DataStructure/Segment_Tree.cpp\"",
+          "-DSIRKIT_LAZY_SEGMENT_TEST_SOURCE=\"/home/reinsirk/Atcoder_Env/Fast/Clang/DataStructure/Lazy_Segment_Tree.cpp\"",
+          "Verify/current/tests/acl_range_api_test.cpp",
+          "-o",
+          "/tmp/sirkit_acl_api_20261102/profile_api"
+        ],
+        "stdout": "ACL range API checks=26439\n",
+        "status": "PASS"
+      },
+      {
+        "profile": "standard_integer_fallback",
+        "command": [
+          "taskset",
+          "-c",
+          "2",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-U__SIZEOF_INT128__",
+          "Verify/current/tests/acl_range_api_test.cpp",
+          "-o",
+          "/tmp/sirkit_acl_api_20261102/standard_api"
+        ],
+        "stdout": "ACL range API checks=26437\n",
+        "status": "PASS"
+      }
+    ],
+    "profile_program_result": {
+      "status": "local_samples_passed_for_snapshot",
+      "results": [
+        {
+          "cache_key": "e2435f7fb36ad2aa95c56e69450aa6343c8505de6fe742e4245d8f6e034ea001",
+          "cached": false,
+          "id": "fenwick_tree",
+          "kind": "program",
+          "profile": "Variants/GCC",
+          "setting": "default",
+          "status": "LOCAL_SAMPLE_PASS"
+        },
+        {
+          "cache_key": "3f5a1ef16994ab3e04363d62d6b027ff0e33ef2f145ea7506f7eb1a75c238deb",
+          "cached": true,
+          "id": "segment_tree",
+          "kind": "program",
+          "profile": "Variants/GCC",
+          "setting": "default",
+          "status": "LOCAL_SAMPLE_PASS"
+        },
+        {
+          "cache_key": "07861f59256a6e6ee54b2c512ac906ff72c19c883c2b018385e303ca9273936d",
+          "cached": true,
+          "id": "segment_tree_composite",
+          "kind": "program",
+          "profile": "Variants/GCC",
+          "setting": "default",
+          "status": "LOCAL_SAMPLE_PASS"
+        },
+        {
+          "cache_key": "8a0711f419142c14fd13f3fd8623d773431ddfe4f537466f485ec64b4d4df4d0",
+          "cached": true,
+          "id": "lazy_segment_tree",
+          "kind": "program",
+          "profile": "Variants/GCC",
+          "setting": "default",
+          "status": "LOCAL_SAMPLE_PASS"
+        },
+        {
+          "cache_key": "fe96f37f5fcbb0176950960015122786947cce38f81402cec8a9d354d768e7a8",
+          "cached": false,
+          "id": "hld_vertex_add_path_sum",
+          "kind": "program",
+          "profile": "Variants/GCC",
+          "setting": "default",
+          "status": "LOCAL_SAMPLE_PASS"
+        },
+        {
+          "cache_key": "96efe892553537a50267a61f80b562085b2aee6f77c3571484c67fe427d796e5",
+          "cached": false,
+          "id": "fenwick_tree",
+          "kind": "program",
+          "profile": "Fast/GCC",
+          "setting": "default",
+          "status": "LOCAL_SAMPLE_PASS"
+        },
+        {
+          "cache_key": "9a80927d3906fbfc6bbc36dc668e02a5985ce6078f184a7c4c8eb03cef2d9838",
+          "cached": true,
+          "id": "segment_tree",
+          "kind": "program",
+          "profile": "Fast/GCC",
+          "setting": "default",
+          "status": "LOCAL_SAMPLE_PASS"
+        },
+        {
+          "cache_key": "2e1f41f8a715c30c954526302eae29cc62a2ec0ab6f324d79fe7cd58d1771d58",
+          "cached": true,
+          "id": "segment_tree_composite",
+          "kind": "program",
+          "profile": "Fast/GCC",
+          "setting": "default",
+          "status": "LOCAL_SAMPLE_PASS"
+        },
+        {
+          "cache_key": "2f18001d7144de81850af0802dc0c36df07ea990c484c592a07c14510342fa2c",
+          "cached": true,
+          "id": "lazy_segment_tree",
+          "kind": "program",
+          "profile": "Fast/GCC",
+          "setting": "default",
+          "status": "LOCAL_SAMPLE_PASS"
+        },
+        {
+          "cache_key": "94edf19ca62499c5ce14c5a7394920df7dc2c6951a1de40fea6795892a198069",
+          "cached": false,
+          "id": "hld_vertex_add_path_sum",
+          "kind": "program",
+          "profile": "Fast/GCC",
+          "setting": "default",
+          "status": "LOCAL_SAMPLE_PASS"
+        },
+        {
+          "cache_key": "84c6d5d98c369e46d490a5c675cc62d2a15793ea659dcf168efea40477344b5d",
+          "cached": false,
+          "id": "fenwick_tree",
+          "kind": "program",
+          "profile": "Variants/Clang",
+          "setting": "default",
+          "status": "LOCAL_SAMPLE_PASS"
+        },
+        {
+          "cache_key": "009f322423d9fef101ebcd595e6c8a7dcb5acd423f86ea91c794f7fe2e3d3769",
+          "cached": true,
+          "id": "segment_tree",
+          "kind": "program",
+          "profile": "Variants/Clang",
+          "setting": "default",
+          "status": "LOCAL_SAMPLE_PASS"
+        },
+        {
+          "cache_key": "c3aaa678d0406d49a67721e81fbd7db0d7b96155d783d3b1acf0020b12745691",
+          "cached": true,
+          "id": "segment_tree_composite",
+          "kind": "program",
+          "profile": "Variants/Clang",
+          "setting": "default",
+          "status": "LOCAL_SAMPLE_PASS"
+        },
+        {
+          "cache_key": "90a9cb16beffbfe0a7ec63f0b09c2028216a8db676598ccb7593bf07015635d1",
+          "cached": true,
+          "id": "lazy_segment_tree",
+          "kind": "program",
+          "profile": "Variants/Clang",
+          "setting": "default",
+          "status": "LOCAL_SAMPLE_PASS"
+        },
+        {
+          "cache_key": "12d851b4772d99a40bdb90bc76515881f6e8284289afee78f0c07907da456d6d",
+          "cached": false,
+          "id": "hld_vertex_add_path_sum",
+          "kind": "program",
+          "profile": "Variants/Clang",
+          "setting": "default",
+          "status": "LOCAL_SAMPLE_PASS"
+        },
+        {
+          "cache_key": "78b5ec7af526910f594f489b83d67e291cb8d3c7106efe9741370602085cbfb0",
+          "cached": false,
+          "id": "fenwick_tree",
+          "kind": "program",
+          "profile": "Fast/Clang",
+          "setting": "default",
+          "status": "LOCAL_SAMPLE_PASS"
+        },
+        {
+          "cache_key": "1022c694ce8a276130214a65622ac337eeece884d8f3c6b66174bc45faf0f925",
+          "cached": true,
+          "id": "segment_tree",
+          "kind": "program",
+          "profile": "Fast/Clang",
+          "setting": "default",
+          "status": "LOCAL_SAMPLE_PASS"
+        },
+        {
+          "cache_key": "fa66864f3f26bebe3746f94fc298aa6b372e8c9a8602be817cacc049369c2afd",
+          "cached": true,
+          "id": "segment_tree_composite",
+          "kind": "program",
+          "profile": "Fast/Clang",
+          "setting": "default",
+          "status": "LOCAL_SAMPLE_PASS"
+        },
+        {
+          "cache_key": "48ec0002837e4daccda8cbb574d47c1a2b42765038234039ab296c079d161810",
+          "cached": true,
+          "id": "lazy_segment_tree",
+          "kind": "program",
+          "profile": "Fast/Clang",
+          "setting": "default",
+          "status": "LOCAL_SAMPLE_PASS"
+        },
+        {
+          "cache_key": "dae09ab21bfdae820d1b7c3c7340b71e1844a014b3e88cd113ed0281f0972449",
+          "cached": false,
+          "id": "hld_vertex_add_path_sum",
+          "kind": "program",
+          "profile": "Fast/Clang",
+          "setting": "default",
+          "status": "LOCAL_SAMPLE_PASS"
+        },
+        {
+          "cache_key": "38c4172cbefc6bcf47eee32fe09faa0945622af59fbccf0c42646f9fce505dfa",
+          "cached": false,
+          "id": "example:fenwick_tree_example",
+          "kind": "example_baseline",
+          "profile": "Normal/GCC",
+          "setting": "default",
+          "status": "LOCAL_SAMPLE_PASS"
+        },
+        {
+          "cache_key": "ec8fc52b93233bea9a2af8c3c50090083f676a415aa124b00b6b6d346431da57",
+          "cached": false,
+          "id": "example:fenwick_tree_example",
+          "kind": "example",
+          "profile": "Variants/GCC",
+          "setting": "default",
+          "status": "LOCAL_SAMPLE_PASS"
+        },
+        {
+          "cache_key": "b430b4b94bbb0c5f11da94c59083015c8c70cef75a5c06f8a6dd58f600cd835e",
+          "cached": false,
+          "id": "example:fenwick_tree_example",
+          "kind": "example_baseline",
+          "profile": "Normal/Clang",
+          "setting": "default",
+          "status": "LOCAL_SAMPLE_PASS"
+        },
+        {
+          "cache_key": "3bd0f623d6458e57d917d6b24733d2a7dfab27456f3879ad5aef1c63bd9851dc",
+          "cached": false,
+          "id": "example:fenwick_tree_example",
+          "kind": "example",
+          "profile": "Variants/Clang",
+          "setting": "default",
+          "status": "LOCAL_SAMPLE_PASS"
+        },
+        {
+          "cache_key": "c4af28fdf994f58fa0bc73ab3d13a4c58f99041aec8a96646fba387060485e6b",
+          "cached": false,
+          "id": "example:fenwick_tree_example",
+          "kind": "example",
+          "profile": "Fast/GCC",
+          "setting": "default",
+          "status": "LOCAL_SAMPLE_PASS"
+        },
+        {
+          "cache_key": "687b76d456a853efb51b36a99459e2956039ac0c537805391973b43347ef8592",
+          "cached": false,
+          "id": "example:fenwick_tree_example",
+          "kind": "example",
+          "profile": "Fast/Clang",
+          "setting": "default",
+          "status": "LOCAL_SAMPLE_PASS"
+        },
+        {
+          "cache_key": "0eabae9d3c8b486c3f01e0f18eaf8ac2057adc5ef3e71d92739e40bd3dfd2c94",
+          "cached": true,
+          "id": "example:segment_tree_example",
+          "kind": "example_baseline",
+          "profile": "Normal/GCC",
+          "setting": "default",
+          "status": "LOCAL_SAMPLE_PASS"
+        },
+        {
+          "cache_key": "b08ccac60607bb689848dc11ad65ae015cfecd1967ede8351f124f1e612d193d",
+          "cached": true,
+          "id": "example:segment_tree_example",
+          "kind": "example",
+          "profile": "Variants/GCC",
+          "setting": "default",
+          "status": "LOCAL_SAMPLE_PASS"
+        },
+        {
+          "cache_key": "f4eeedf32b0eafad6efb8969d142173f9a656de0a45dea73bfb5d2af8ffec9f5",
+          "cached": true,
+          "id": "example:segment_tree_example",
+          "kind": "example_baseline",
+          "profile": "Normal/Clang",
+          "setting": "default",
+          "status": "LOCAL_SAMPLE_PASS"
+        },
+        {
+          "cache_key": "d3b4b44d3292cb4a5797a46c7fcce2902cdfe7826ab5207b94540da5dcb6813f",
+          "cached": true,
+          "id": "example:segment_tree_example",
+          "kind": "example",
+          "profile": "Variants/Clang",
+          "setting": "default",
+          "status": "LOCAL_SAMPLE_PASS"
+        },
+        {
+          "cache_key": "ca0f79bf092ced7a66a6380712be8ec317894a143725c4ec969aec1b229ed03d",
+          "cached": true,
+          "id": "example:segment_tree_example",
+          "kind": "example",
+          "profile": "Fast/GCC",
+          "setting": "default",
+          "status": "LOCAL_SAMPLE_PASS"
+        },
+        {
+          "cache_key": "6f7c4b082d7918956496e08b217e69706dea33268e35aae23ca87b3da9da655f",
+          "cached": true,
+          "id": "example:segment_tree_example",
+          "kind": "example",
+          "profile": "Fast/Clang",
+          "setting": "default",
+          "status": "LOCAL_SAMPLE_PASS"
+        },
+        {
+          "cache_key": "13166fb8a3cb20d10a5a1db4c929759dcfda38415ea365c8c92d2449bac8c613",
+          "cached": true,
+          "id": "example:lazy_segment_tree_example",
+          "kind": "example_baseline",
+          "profile": "Normal/GCC",
+          "setting": "default",
+          "status": "LOCAL_SAMPLE_PASS"
+        },
+        {
+          "cache_key": "29fde7ab73bab1fee6ceff59ca78aff68d3c791e74aa7b694e7dfe70d08efd5f",
+          "cached": true,
+          "id": "example:lazy_segment_tree_example",
+          "kind": "example",
+          "profile": "Variants/GCC",
+          "setting": "default",
+          "status": "LOCAL_SAMPLE_PASS"
+        },
+        {
+          "cache_key": "c11febc6701cacaa16b7309163d7ef6c79b0b055e67c54b97ac18997d7157895",
+          "cached": true,
+          "id": "example:lazy_segment_tree_example",
+          "kind": "example_baseline",
+          "profile": "Normal/Clang",
+          "setting": "default",
+          "status": "LOCAL_SAMPLE_PASS"
+        },
+        {
+          "cache_key": "6860493f5239f3e94b18edbe6fc17797d65b6b60a451dd625858f540c3d13494",
+          "cached": true,
+          "id": "example:lazy_segment_tree_example",
+          "kind": "example",
+          "profile": "Variants/Clang",
+          "setting": "default",
+          "status": "LOCAL_SAMPLE_PASS"
+        },
+        {
+          "cache_key": "93d0cde8aa3daae80003c6e16332fecec13c93614ac7d8935a1a4c37025f01dc",
+          "cached": true,
+          "id": "example:lazy_segment_tree_example",
+          "kind": "example",
+          "profile": "Fast/GCC",
+          "setting": "default",
+          "status": "LOCAL_SAMPLE_PASS"
+        },
+        {
+          "cache_key": "4fbb69528b931cc3bfff6570c5073dcb5e51d413ae5a21269ac31b404d30153a",
+          "cached": true,
+          "id": "example:lazy_segment_tree_example",
+          "kind": "example",
+          "profile": "Fast/Clang",
+          "setting": "default",
+          "status": "LOCAL_SAMPLE_PASS"
+        }
+      ]
+    },
+    "generator_python_tests": "26 tests PASS (generate_variants/submission_annotations/example_dependencies/common_headers)",
+    "allocation_failures_per_run": 2660,
+    "allocation_live_delta": 0,
+    "sanitizer_note": "ASan+UBSan有効。ptrace環境のためLeakSanitizerは無効。独自確保失敗試験でも解放差分0を確認。"
+  },
+  "performance": {
+    "scope": "API移行に伴う退行確認。P-Core CPU12、C++23/O2、SKIP、既定target、n=q500000、9回中央値。同じI/Oと計算手順、API呼出のみ必要に応じて移行。オンライン時間ではない。",
+    "main_byte_identical": false,
+    "io_unchanged": true,
+    "segtree_rows": [
+      {
+        "compiler": "gcc",
+        "mode": "mixed",
+        "median_cpu_ms": {
+          "old": 41.761,
+          "control": 41.569,
+          "unsigned": 41.705
+        },
+        "ratio_final_to_old": 0.9986590359426258
+      },
+      {
+        "compiler": "gcc",
+        "mode": "query",
+        "median_cpu_ms": {
+          "old": 53.703,
+          "control": 53.305,
+          "unsigned": 52.512
+        },
+        "ratio_final_to_old": 0.9778224680185464
+      },
+      {
+        "compiler": "clang",
+        "mode": "mixed",
+        "median_cpu_ms": {
+          "old": 36.223,
+          "control": 36.105,
+          "unsigned": 36.48
+        },
+        "ratio_final_to_old": 1.0070949396792093
+      },
+      {
+        "compiler": "clang",
+        "mode": "query",
+        "median_cpu_ms": {
+          "old": 52.559,
+          "control": 52.791,
+          "unsigned": 53.121
+        },
+        "ratio_final_to_old": 1.010692745295763
+      }
+    ],
+    "reason": "size_tの走査をそのまま使うとClangで約6〜8%後退。prod内のみunsignedの添字にし、型変換と広い整数演算の費用を削減。",
+    "index_proof": "For valid int l/r and n<=INT_MAX, next-power-of-two base<=2^numeric_limits<int>::digits. Thus base+r<=UINT_MAX. first++ executes only first<last, so it cannot wrap; last-- is guarded by nonempty loop and odd endpoint.",
+    "limit": "最終版のClangは旧版比約0.7〜1.1%増。配置・測定揺らぎも含み、完全な同速を保証しない。探索的な他2本の測定はスナップショットの参考値として保存。"
+  },
+  "prepared_submissions": [
+    {
+      "id": "fenwick_tree",
+      "path": "Verify/current/submissions/fenwick_tree.cpp",
+      "sha256": "903e9a55622be1f9837a08a02c06b7d004cf3290a9e9368d5f949d032d324886",
+      "judge_status": "要再提出（ソース変更）"
+    },
+    {
+      "id": "segment_tree",
+      "path": "Verify/current/submissions/segment_tree.cpp",
+      "sha256": "e742f06880a8172d03b1b20ce88687df808c0b20be0dfb593ee7fe8c25c7e43c",
+      "judge_status": "未提出"
+    },
+    {
+      "id": "segment_tree_composite",
+      "path": "Verify/current/submissions/segment_tree_composite.cpp",
+      "sha256": "be5ac6aca268e26e64de4829b0ded95954284f33717da17d567e6ba64cd30bc6",
+      "judge_status": "未提出"
+    },
+    {
+      "id": "lazy_segment_tree",
+      "path": "Verify/current/submissions/lazy_segment_tree.cpp",
+      "sha256": "dd4564c98ee5a6044e697de261c970b73aa65df3f021ea54c431da2f2cf5c56e",
+      "judge_status": "未提出"
+    },
+    {
+      "id": "hld_vertex_add_path_sum",
+      "path": "Verify/current/submissions/hld_vertex_add_path_sum.cpp",
+      "sha256": "e16d0e5852126305c58849f9684eafa4748c32c6e4d667ace5f73eff0aa53c2a",
+      "judge_status": "未提出"
+    }
+  ],
+  "online": "新API版は未提出。Fenwick414659のACは旧API版として保持し、現行版を要再提出にした。",
+  "evidence": "Audit/data/acl-range-api-2026-11-02-evidence.zip",
+  "evidence_sha256": "a43978df8fe4e4aa39c3c4fbfeed35dc8733d68693e64f9531fe55486606465b"
+}

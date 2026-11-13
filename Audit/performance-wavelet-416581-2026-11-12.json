@@ -1,0 +1,637 @@
+{
+  "date": "2026-11-12",
+  "library": "DataStructure/Wavelet_Matrix.cpp",
+  "decision": "retain_current_after_seven_candidates",
+  "source_sha256": {
+    "before": "cb678711a0a132cd685259a4f00c5a30204156c582b51030f87c5c1b3ae725a2",
+    "after": "cb678711a0a132cd685259a4f00c5a30204156c582b51030f87c5c1b3ae725a2"
+  },
+  "selection": {
+    "decision": "retain_current_after_seven_candidates",
+    "label": "base",
+    "changes": [],
+    "measured_candidate_sha256": "cb678711a0a132cd685259a4f00c5a30204156c582b51030f87c5c1b3ae725a2",
+    "outcome": "main/共通IOと現行cb6787を維持。7案の探索と、rank判定3案の各9組の追加比較で、後退を伴わない明確な上積みが得られず採用を見送った。現在版は2本ともオンライン全ACで、再提出不要。",
+    "tradeoff_notes": [
+      "16B同居ブロックはpayload約33.3%増、GCCの主な提出プログラムで約8〜14%、Clangの一部頻度で約16%増のため不採用。",
+      "kthの左シフト蓄積/条件代入は小列で約8〜11%増、Clangの密なkthで約6〜8%増。初期化の非inline化も一部で後退し不採用。",
+      "rankの判定順・unsigned差・終了判定位置の3案は、9組の確認で主な差が約0〜1%。一部の改善と他条件の後退があり、前回の本体を維持。",
+      "rankだけを変えた候補のkth mainは変更前と.textが全く同じ。そこに出た時間差をrank変更の成果とは扱わない。"
+    ],
+    "limitations": [
+      "P-Core12上、GCC15.2/Clang21.1.8、C++23 -O2 -march=native、SKIP設定で比較。オンラインAMD実機とは区別する。",
+      "最大139/312msは前回137/307msから小幅増だが、頻度random_02は99→74ms、05は307→250ms。random_04や一部密なkthは遅くなっており、一律改善や雑音とは断定しない。",
+      "本体の既存60検証は同じSHAについて前回行った結果を参照し、今回再実行したとは扱わない。"
+    ]
+  },
+  "required_resubmission": [],
+  "online_evidence": "Audit/online-wavelet-416581-2026-11-12.json",
+  "online_scope": "416581のkth AC139ms・416580のfrequency AC312msは提出時の本体/main/共通IOと本文照合済み。同じ本体を維持するため現在の通常版と本文一致し、再提出不要。派生版へオンラインACを転記しない。",
+  "public_online_comparison": {
+    "scope": "公式APIの別提出のケース時間。CPUや実行環境の統一を保証せず、ローカル本体ベンチと区別する。",
+    "programs": {
+      "wavelet_kth": {
+        "old_submission": 416569,
+        "new_submission": 416581,
+        "old_overview": {
+          "id": 416569,
+          "is_latest": true,
+          "lang": "cpp",
+          "memory": 6823936,
+          "problem_name": "range_kth_smallest",
+          "problem_title": "Range Kth Smallest",
+          "status": "AC",
+          "submission_time": "2026-11-12T05:40:23.925851Z",
+          "time": 0.137,
+          "user_name": "reinsirk"
+        },
+        "new_overview": {
+          "id": 416581,
+          "is_latest": true,
+          "lang": "cpp",
+          "memory": 5791744,
+          "problem_name": "range_kth_smallest",
+          "problem_title": "Range Kth Smallest",
+          "status": "AC",
+          "submission_time": "2026-11-12T08:10:51.034547Z",
+          "time": 0.139,
+          "user_name": "reinsirk"
+        },
+        "cases": [
+          {
+            "case": "example_00",
+            "old_ms": 1,
+            "new_ms": 0,
+            "delta_ms": -1,
+            "percent": -100.0,
+            "old_memory_bytes": 831488,
+            "new_memory_bytes": 544768,
+            "status": "AC"
+          },
+          {
+            "case": "random_00",
+            "old_ms": 99,
+            "new_ms": 92,
+            "delta_ms": -7,
+            "percent": -7.071,
+            "old_memory_bytes": 4468736,
+            "new_memory_bytes": 4300800,
+            "status": "AC"
+          },
+          {
+            "case": "random_01",
+            "old_ms": 95,
+            "new_ms": 97,
+            "delta_ms": 2,
+            "percent": 2.105,
+            "old_memory_bytes": 5279744,
+            "new_memory_bytes": 4579328,
+            "status": "AC"
+          },
+          {
+            "case": "random_02",
+            "old_ms": 50,
+            "new_ms": 51,
+            "delta_ms": 1,
+            "percent": 2.0,
+            "old_memory_bytes": 2850816,
+            "new_memory_bytes": 2732032,
+            "status": "AC"
+          },
+          {
+            "case": "random_03",
+            "old_ms": 25,
+            "new_ms": 27,
+            "delta_ms": 2,
+            "percent": 8.0,
+            "old_memory_bytes": 5795840,
+            "new_memory_bytes": 4476928,
+            "status": "AC"
+          },
+          {
+            "case": "random_04",
+            "old_ms": 32,
+            "new_ms": 33,
+            "delta_ms": 1,
+            "percent": 3.125,
+            "old_memory_bytes": 2371584,
+            "new_memory_bytes": 2387968,
+            "status": "AC"
+          },
+          {
+            "case": "small_00",
+            "old_ms": 1,
+            "new_ms": 1,
+            "delta_ms": 0,
+            "percent": 0.0,
+            "old_memory_bytes": 704512,
+            "new_memory_bytes": 651264,
+            "status": "AC"
+          },
+          {
+            "case": "small_01",
+            "old_ms": 1,
+            "new_ms": 0,
+            "delta_ms": -1,
+            "percent": -100.0,
+            "old_memory_bytes": 794624,
+            "new_memory_bytes": 565248,
+            "status": "AC"
+          },
+          {
+            "case": "small_02",
+            "old_ms": 1,
+            "new_ms": 0,
+            "delta_ms": -1,
+            "percent": -100.0,
+            "old_memory_bytes": 819200,
+            "new_memory_bytes": 577536,
+            "status": "AC"
+          },
+          {
+            "case": "small_03",
+            "old_ms": 1,
+            "new_ms": 0,
+            "delta_ms": -1,
+            "percent": -100.0,
+            "old_memory_bytes": 626688,
+            "new_memory_bytes": 569344,
+            "status": "AC"
+          },
+          {
+            "case": "small_04",
+            "old_ms": 0,
+            "new_ms": 0,
+            "delta_ms": 0,
+            "percent": null,
+            "old_memory_bytes": 536576,
+            "new_memory_bytes": 577536,
+            "status": "AC"
+          },
+          {
+            "case": "small_05",
+            "old_ms": 1,
+            "new_ms": 0,
+            "delta_ms": -1,
+            "percent": -100.0,
+            "old_memory_bytes": 802816,
+            "new_memory_bytes": 540672,
+            "status": "AC"
+          },
+          {
+            "case": "small_06",
+            "old_ms": 1,
+            "new_ms": 0,
+            "delta_ms": -1,
+            "percent": -100.0,
+            "old_memory_bytes": 827392,
+            "new_memory_bytes": 622592,
+            "status": "AC"
+          },
+          {
+            "case": "small_07",
+            "old_ms": 1,
+            "new_ms": 0,
+            "delta_ms": -1,
+            "percent": -100.0,
+            "old_memory_bytes": 798720,
+            "new_memory_bytes": 569344,
+            "status": "AC"
+          },
+          {
+            "case": "small_08",
+            "old_ms": 0,
+            "new_ms": 1,
+            "delta_ms": 1,
+            "percent": null,
+            "old_memory_bytes": 548864,
+            "new_memory_bytes": 794624,
+            "status": "AC"
+          },
+          {
+            "case": "small_09",
+            "old_ms": 0,
+            "new_ms": 0,
+            "delta_ms": 0,
+            "percent": null,
+            "old_memory_bytes": 565248,
+            "new_memory_bytes": 581632,
+            "status": "AC"
+          },
+          {
+            "case": "max_random_00",
+            "old_ms": 137,
+            "new_ms": 138,
+            "delta_ms": 1,
+            "percent": 0.73,
+            "old_memory_bytes": 6594560,
+            "new_memory_bytes": 5750784,
+            "status": "AC"
+          },
+          {
+            "case": "max_random_01",
+            "old_ms": 136,
+            "new_ms": 139,
+            "delta_ms": 3,
+            "percent": 2.206,
+            "old_memory_bytes": 6602752,
+            "new_memory_bytes": 5791744,
+            "status": "AC"
+          },
+          {
+            "case": "max_random_02",
+            "old_ms": 136,
+            "new_ms": 139,
+            "delta_ms": 3,
+            "percent": 2.206,
+            "old_memory_bytes": 6819840,
+            "new_memory_bytes": 5742592,
+            "status": "AC"
+          },
+          {
+            "case": "max_random_03",
+            "old_ms": 136,
+            "new_ms": 139,
+            "delta_ms": 3,
+            "percent": 2.206,
+            "old_memory_bytes": 6823936,
+            "new_memory_bytes": 5771264,
+            "status": "AC"
+          },
+          {
+            "case": "max_random_04",
+            "old_ms": 136,
+            "new_ms": 138,
+            "delta_ms": 2,
+            "percent": 1.471,
+            "old_memory_bytes": 6811648,
+            "new_memory_bytes": 5500928,
+            "status": "AC"
+          },
+          {
+            "case": "dense_small_a_00",
+            "old_ms": 7,
+            "new_ms": 7,
+            "delta_ms": 0,
+            "percent": 0.0,
+            "old_memory_bytes": 1347584,
+            "new_memory_bytes": 1351680,
+            "status": "AC"
+          },
+          {
+            "case": "dense_large_a_00",
+            "old_ms": 26,
+            "new_ms": 35,
+            "delta_ms": 9,
+            "percent": 34.615,
+            "old_memory_bytes": 3112960,
+            "new_memory_bytes": 2949120,
+            "status": "AC"
+          },
+          {
+            "case": "all_zero_00",
+            "old_ms": 11,
+            "new_ms": 1,
+            "delta_ms": -10,
+            "percent": -90.909,
+            "old_memory_bytes": 561152,
+            "new_memory_bytes": 565248,
+            "status": "AC"
+          }
+        ]
+      },
+      "wavelet_frequency": {
+        "old_submission": 416570,
+        "new_submission": 416580,
+        "old_overview": {
+          "id": 416570,
+          "is_latest": true,
+          "lang": "cpp",
+          "memory": 15503360,
+          "problem_name": "static_range_frequency",
+          "problem_title": "Static Range Frequency",
+          "status": "AC",
+          "submission_time": "2026-11-12T05:40:39.804276Z",
+          "time": 0.307,
+          "user_name": "reinsirk"
+        },
+        "new_overview": {
+          "id": 416580,
+          "is_latest": true,
+          "lang": "cpp",
+          "memory": 11833344,
+          "problem_name": "static_range_frequency",
+          "problem_title": "Static Range Frequency",
+          "status": "AC",
+          "submission_time": "2026-11-12T08:10:40.461277Z",
+          "time": 0.312,
+          "user_name": "reinsirk"
+        },
+        "cases": [
+          {
+            "case": "example_00",
+            "old_ms": 0,
+            "new_ms": 1,
+            "delta_ms": 1,
+            "percent": null,
+            "old_memory_bytes": 794624,
+            "new_memory_bytes": 794624,
+            "status": "AC"
+          },
+          {
+            "case": "small_n_00",
+            "old_ms": 12,
+            "new_ms": 13,
+            "delta_ms": 1,
+            "percent": 8.333,
+            "old_memory_bytes": 1859584,
+            "new_memory_bytes": 1794048,
+            "status": "AC"
+          },
+          {
+            "case": "small_n_01",
+            "old_ms": 14,
+            "new_ms": 15,
+            "delta_ms": 1,
+            "percent": 7.143,
+            "old_memory_bytes": 1859584,
+            "new_memory_bytes": 1847296,
+            "status": "AC"
+          },
+          {
+            "case": "small_n_02",
+            "old_ms": 48,
+            "new_ms": 33,
+            "delta_ms": -15,
+            "percent": -31.25,
+            "old_memory_bytes": 1855488,
+            "new_memory_bytes": 1880064,
+            "status": "AC"
+          },
+          {
+            "case": "small_q_00",
+            "old_ms": 28,
+            "new_ms": 33,
+            "delta_ms": 5,
+            "percent": 17.857,
+            "old_memory_bytes": 15499264,
+            "new_memory_bytes": 11743232,
+            "status": "AC"
+          },
+          {
+            "case": "random_00",
+            "old_ms": 133,
+            "new_ms": 133,
+            "delta_ms": 0,
+            "percent": 0.0,
+            "old_memory_bytes": 12369920,
+            "new_memory_bytes": 9187328,
+            "status": "AC"
+          },
+          {
+            "case": "random_01",
+            "old_ms": 255,
+            "new_ms": 246,
+            "delta_ms": -9,
+            "percent": -3.529,
+            "old_memory_bytes": 14434304,
+            "new_memory_bytes": 10743808,
+            "status": "AC"
+          },
+          {
+            "case": "random_02",
+            "old_ms": 99,
+            "new_ms": 74,
+            "delta_ms": -25,
+            "percent": -25.253,
+            "old_memory_bytes": 2375680,
+            "new_memory_bytes": 2428928,
+            "status": "AC"
+          },
+          {
+            "case": "random_03",
+            "old_ms": 166,
+            "new_ms": 165,
+            "delta_ms": -1,
+            "percent": -0.602,
+            "old_memory_bytes": 15237120,
+            "new_memory_bytes": 11325440,
+            "status": "AC"
+          },
+          {
+            "case": "random_04",
+            "old_ms": 306,
+            "new_ms": 312,
+            "delta_ms": 6,
+            "percent": 1.961,
+            "old_memory_bytes": 15499264,
+            "new_memory_bytes": 11816960,
+            "status": "AC"
+          },
+          {
+            "case": "random_05",
+            "old_ms": 307,
+            "new_ms": 250,
+            "delta_ms": -57,
+            "percent": -18.567,
+            "old_memory_bytes": 15503360,
+            "new_memory_bytes": 11833344,
+            "status": "AC"
+          }
+        ]
+      }
+    }
+  },
+  "online_compiler_context": {
+    "submission_lang": "cpp",
+    "live_api": {
+      "id": "cpp",
+      "name": "C++23",
+      "version": "GCC 15.2 + AC Library(1.6)"
+    },
+    "official_repository_current_lang_definition": {
+      "id": "cpp",
+      "name": "C++23",
+      "version": "GCC 15.2 + AC Library(1.6)",
+      "source": "main.cpp",
+      "image_name": "library-checker-images-gcc",
+      "compile": [
+        "g++",
+        "-O2",
+        "-std=c++23",
+        "-DEVAL",
+        "-DONLINE_JUDGE",
+        "-march=native",
+        "-o",
+        "main",
+        "main.cpp",
+        "-I",
+        "/opt/ac-library"
+      ],
+      "exec": [
+        "./main"
+      ]
+    },
+    "scope": "公式live APIで言語名とversionを確認。コンパイル引数は取得時の公式リポジトリから。個々の提出に紐づくイメージdigest/コンパイラ実行ログはAPIに含まれず、この証拠だけでは提出時の厳密なイメージrevisionを断定しない。",
+    "public_source_url": "https://github.com/yosupo06/library-checker-judge/blob/master/langs/langs.toml",
+    "observed_flags_include_march_native": true,
+    "submission_image_revision_known": false
+  },
+  "frozen_public_files": {
+    "Verify/current/drivers/wavelet_kth_main.cpp": "b38514d47a9a6713240ee7d2fe8e54b08302d807ec0368c948f28d95ba9c311b",
+    "Verify/current/drivers/wavelet_frequency_main.cpp": "a55648e6e868215c2b390140db97b65fc3c4ba6f19d6aeae4adfc9efd346fb69",
+    "Verify/current/common/fast_io.hpp": "291bf8dbc56a1d691f6256fe95b4714183c2cf5d9e55e4bef240e31d1eb178c1",
+    "Document/wavelet_matrix.md": "3263acf134f81139271515cc9542304e401a7799f207eeceec166af200097d63",
+    "Examples/wavelet_matrix_example.cpp": "530d427f7589ab613de86b148c18e8c80f2b4454bb31fdf2ff0fbcbb4f2dd3c1"
+  },
+  "before_snapshot": {
+    "file": "frozen.json",
+    "sha256": "cdfbe35f880003f67a436cad884d54290e65d01bf4f607e978dc398f4704b158",
+    "files": {
+      "DataStructure/Wavelet_Matrix.cpp": "cb678711a0a132cd685259a4f00c5a30204156c582b51030f87c5c1b3ae725a2",
+      "Verify/current/common/fast_io.hpp": "291bf8dbc56a1d691f6256fe95b4714183c2cf5d9e55e4bef240e31d1eb178c1",
+      "Document/wavelet_matrix.md": "3263acf134f81139271515cc9542304e401a7799f207eeceec166af200097d63",
+      "Examples/wavelet_matrix_example.cpp": "530d427f7589ab613de86b148c18e8c80f2b4454bb31fdf2ff0fbcbb4f2dd3c1",
+      "Verify/current/groups/expansion_20261031.json": "dcc5a03d9adefdbc9a75e9df4bcb3ae9a20b8c16fdfaea6775491f810de6cd55",
+      "Verify/current/judgements.json": "8528a24d12f85fa729c39018438ff084069aab60c94fcaa2556243ecd06d9015",
+      "Verify/current/manifest.json": "e73f335f4ff985411dec50f145698d715ba1dd8782bffdfd796c552f71f3f0c1",
+      "Distribution/manifest.json": "2e81875576cc39a67d3c7be196c02f6d221780c0193b7f9d42dff511c84fa67f",
+      "Variants/manifest.json": "59ffcd527d3113efcba48bd5c462802fefa78ee90358fab6220c26d6227628c5",
+      "Variants/verify_manifest.json": "c85f2dcee0e7fe237bd2d44b18f523554769da33d1721f07b1d47239802ea646",
+      "Scripts/library_layout.json": "8f809a5a3d1235a508e7144d0600060ac68859a5d663bdb9b7d47d6663b8486b",
+      "Verify/current/drivers/wavelet_kth_main.cpp": "b38514d47a9a6713240ee7d2fe8e54b08302d807ec0368c948f28d95ba9c311b",
+      "Verify/current/submissions/wavelet_kth.cpp": "ee4fd1190a0b840ee15b32bd748a4289d11ca42d49741ca908b92f3a7439f57c",
+      "Verify/current/drivers/wavelet_frequency_main.cpp": "a55648e6e868215c2b390140db97b65fc3c4ba6f19d6aeae4adfc9efd346fb69",
+      "Verify/current/submissions/wavelet_frequency.cpp": "5162c2c4f8b75629e795e64a7c87d0b6cc04f099c5260096357beb6b53b696e9"
+    }
+  },
+  "API_scope": "型・公開呼び出し・戻り値・全符号範囲・所有権・例外保証・件数上限を維持。同じmain/共通IOで比較する。",
+  "proof_files": [
+    "review/block16_review.md",
+    "review/order_helpers_review.md"
+  ],
+  "source_diff": "final.diff",
+  "validation": {
+    "mode": "previous_same_source",
+    "prior_audit": "Audit/performance-wavelet-416569-2026-11-12.json",
+    "prior_audit_sha256": "5219b3ccd2d833cd85192528f85b9177b70a3d973e2ffb0ef19c59a7920e8a1b",
+    "prior_evidence": "Audit/data/performance-wavelet-416569-2026-11-12.zip",
+    "prior_evidence_sha256": "acd088846f2cc713c776f529dd7e50ec7cfb4eed8a33736b286b286981823b6b",
+    "details_inside_previous_archive": "final_validation.json",
+    "validation_sha256": "65f36bc9d6c35b8f7c98ee46b751e452ec68503e6f4948321be7760ae961140f",
+    "source_sha256": "cb678711a0a132cd685259a4f00c5a30204156c582b51030f87c5c1b3ae725a2",
+    "completed_at_utc": "2026-11-12T07:05:55.181125+00:00",
+    "jobs": 60,
+    "all_passed": true,
+    "scope": "同一SHAの本体について以前に実施した60件を引用。今回の再実行や候補版の検証として扱わない。",
+    "fresh_candidate_details": [
+      "kth_validation.json",
+      "outline_validation.json",
+      "review/order_helpers_validation.json",
+      "review/block16_validation.json"
+    ]
+  },
+  "measurement": {
+    "cpu": "Intel Core i9-14900K CPU12（P-Core、sibling13）。E-Coreは性能評価しない。",
+    "compilers": {
+      "GCC": "15.2.0",
+      "Clang": "21.1.8 --gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15"
+    },
+    "flags_scope": "C++23 -O2。native/default/SIRKIT_DISABLE_SIMDを各rowで区別。引数は各builds JSONに保存。",
+    "CPU_scope": "Library Checker実機の速度比を保証しない。オンライン別提出のケース時間とローカル条件固定比較を区別する。",
+    "lock": "/tmp/sirkit_performance_cpu12.lock",
+    "compilation_during_timing": false,
+    "ASLR": "子だけsetarch x86_64 -R、同じactiveパス。",
+    "protocol": "探索は各候補3組+同一対照3組。rank3候補の追加確認は各9組+対照3組。両端差10%以内だけ有効、候補自身では除外しない。確認は候補5有効組/対照2有効組を最低基準とし、不足時だけ候補18組/対照9組まで補う。12確認セルすべて基準達成。",
+    "fixtures": {
+      "cases": 28,
+      "metadata_sha256": {
+        "commands.json": "bcd3b619d36b3b8c38fb6356d94a4ba66248e84dfb3fb6c50d31946ed3088c3c",
+        "fixtures.json": "a99c15772924a281263f58d25bac751ee21489e2c80dbb03bc967f41b5756876",
+        "source_audit.json": "2ac35a3c2bc0bb932ef5371ea8d2127dcafdf9d97f73f14cd0e7f0044e5dbee2",
+        "summary.json": "43e45e33d4dcc347aba8416e18af9ea55984df3b8f6d07525844fa2dd4cfe610"
+      },
+      "reused_from_previous_evidence": "Audit/data/performance-wavelet-416569-2026-11-12.zip",
+      "scope": "旧runの固定28入力と期待出力SHAのメタデータを再利用。JSON内の旧/tmpパスは実測用参照であり、入力・出力本体・旧ディレクトリを証跡へ再収録しない。"
+    },
+    "exploratory": {
+      "labels": {
+        "block16": {
+          "file": "block16.hpp",
+          "sha256": "7b05ad70b807e6523f8b7b621543027964c866d672a41ce6de2fb9e1a981c613"
+        },
+        "kth_cmov": {
+          "file": "kth_cmov.hpp",
+          "sha256": "c6a999df3fe3fb1410bb0a70c888eb02faba414fa2a41dacd81d55959d32e2ed"
+        },
+        "kth_shift": {
+          "file": "kth_shift.hpp",
+          "sha256": "04bb4acfce5bcbacdd57d56422ed9611bffaada4805915669f65687938e2676d"
+        },
+        "order_helpers": {
+          "file": "order_helpers.hpp",
+          "sha256": "63df68bd8fd3146670d845f935d69b99a157e820f09d9764f151867f2479ab5e"
+        },
+        "outline_build": {
+          "file": "outline_build.hpp",
+          "sha256": "02c3d348eb1dd8b2fa9285f58a1db07215271e8ecaa1cf4fab06ed6d37a657ba"
+        },
+        "span_begin": {
+          "file": "span_begin.hpp",
+          "sha256": "04edf432a15245ce0537b2aa7b837a739944e20ee24ff63aa3df845aea73f936"
+        },
+        "span_guard": {
+          "file": "span_guard.hpp",
+          "sha256": "75de0b75efa4b9ac276db025bc23228563ce1968467cfff71907af29c96ed56b"
+        }
+      },
+      "cells": 28,
+      "triplets": 672,
+      "summary": "screen_summary.json",
+      "summary_sha256": "240051df8e99646ae3fabf977024a215a22ffa27709afa3dbe631aa50a4bda51",
+      "raw": "screen_raw.json",
+      "raw_sha256": "a4a20477044631b2287ca4447f43370d282bbdbe18eab6e2985ccd3d21db8341",
+      "scope": "今回Dの探索記録だけを保存。少数反復の候補比較であり、最終採用測定や全候補の完全検証とは区別する。"
+    },
+    "repeated_rank_confirmation": {
+      "labels": {
+        "order_helpers": {
+          "file": "order_helpers.hpp",
+          "sha256": "63df68bd8fd3146670d845f935d69b99a157e820f09d9764f151867f2479ab5e"
+        },
+        "span_begin": {
+          "file": "span_begin.hpp",
+          "sha256": "04edf432a15245ce0537b2aa7b837a739944e20ee24ff63aa3df845aea73f936"
+        },
+        "span_guard": {
+          "file": "span_guard.hpp",
+          "sha256": "75de0b75efa4b9ac276db025bc23228563ce1968467cfff71907af29c96ed56b"
+        }
+      },
+      "cells": 12,
+      "triplets": 360,
+      "summary": "confirm_summary.json",
+      "summary_sha256": "78542f0f5064c795345cb54078b4d63a99b33a75122059ee696529264e0953c4",
+      "raw": "confirm_raw.json",
+      "raw_sha256": "e1a36a93d9f9c00eccf66d37ba7f7469309f518dadee949cefa3942933241288",
+      "scope": "各9組で確認したrank3候補。新しい本体は採用しない。"
+    },
+    "scope": "今回は探索比較だけを実施。新候補の最終採用測定・検証を行ったとは扱わない。"
+  },
+  "license": "既存CC0実装への独自変更。参考ライブラリの実装コードを新規に取り込まない。",
+  "evidence_archive": "Audit/data/performance-wavelet-416581-2026-11-12.zip",
+  "evidence_scope": "自身の候補・生成器・独立参照試験・レビュー・今回の測定raw・自分の提出API原本・入力provenanceのみ。外部実装ソース・生成入力/出力・実行体・symlink参照先を除く。",
+  "outcome": "main/共通IOと現行cb6787を維持。7案の探索と、rank判定3案の各9組の追加比較で、後退を伴わない明確な上積みが得られず採用を見送った。現在版は2本ともオンライン全ACで、再提出不要。",
+  "tradeoff_notes": [
+    "16B同居ブロックはpayload約33.3%増、GCCの主な提出プログラムで約8〜14%、Clangの一部頻度で約16%増のため不採用。",
+    "kthの左シフト蓄積/条件代入は小列で約8〜11%増、Clangの密なkthで約6〜8%増。初期化の非inline化も一部で後退し不採用。",
+    "rankの判定順・unsigned差・終了判定位置の3案は、9組の確認で主な差が約0〜1%。一部の改善と他条件の後退があり、前回の本体を維持。",
+    "rankだけを変えた候補のkth mainは変更前と.textが全く同じ。そこに出た時間差をrank変更の成果とは扱わない。"
+  ],
+  "limitations": [
+    "P-Core12上、GCC15.2/Clang21.1.8、C++23 -O2 -march=native、SKIP設定で比較。オンラインAMD実機とは区別する。",
+    "最大139/312msは前回137/307msから小幅増だが、頻度random_02は99→74ms、05は307→250ms。random_04や一部密なkthは遅くなっており、一律改善や雑音とは断定しない。",
+    "本体の既存60検証は同じSHAについて前回行った結果を参照し、今回再実行したとは扱わない。"
+  ],
+  "evidence_archive_sha256": "6d9bb69c0d505ebf9e8011470b7fe4e9b8d6e6a6b74c84bfecc01ddd0924768f"
+}

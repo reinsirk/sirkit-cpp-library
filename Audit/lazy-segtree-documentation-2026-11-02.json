@@ -1,0 +1,480 @@
+{
+  "date": "2026-11-02",
+  "scope": "lazy_segtreeの説明を区間加算・区間和の動く例から始める構成へ改稿。",
+  "clarifications": [
+    "半開区間、applyとset、prodの意味と戻り値",
+    "S/F/op/e/mapping/composition/idの役割",
+    "合計に要素数が必要な理由とTree(n)/resetの初期化",
+    "アフィン更新とnewer/olderの合成順",
+    "max_right/min_leftの境界・単調性と非負要素の条件",
+    "3引数mappingを独自拡張として分離"
+  ],
+  "primary_reference_checked": "https://atcoder.github.io/ac-library/production/document_ja/lazysegtree.html",
+  "source_sha256": {
+    "Document/lazy_segment_tree.md": "e5008f2ef6152824a286739b8ef7bf91679d05688ededb8f0c466e647bf48fa8",
+    "Examples/lazy_segment_tree_add_sum_example.cpp": "e3b63700c58853ff0c453d978e592a29cb5ab98668c38ac19c0a3cebf1281e9b",
+    "Examples/lazy_segment_tree_example.cpp": "60657b22227c1f0da73b4860be9fa3f25c6d57baf67acbedb98debe1005a9878",
+    "Scripts/package_revised_libraries.py": "e6d90f6d02a770f3f96d623849963f2c72c2b7882ac5e14cf7b92952da110c51"
+  },
+  "validation": {
+    "document_main_matches_example": true,
+    "cpp_blocks_checked": 7,
+    "results": [
+      {
+        "compiler": "g++",
+        "skip_runtime_checks": false,
+        "source": "/tmp/sirkit_lazy_docs_20261102/document_basic.cpp",
+        "source_sha256": "59998edccd2f893c382fdced2d0de467cddc3871f9c2905b0eb60886a5a6541f",
+        "command": [
+          "g++",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-pedantic",
+          "-I",
+          "/home/reinsirk/Atcoder_Env",
+          "/tmp/sirkit_lazy_docs_20261102/document_basic.cpp",
+          "-o",
+          "/tmp/sirkit_lazy_docs_20261102/g++_False_document_basic"
+        ],
+        "status": "PASS",
+        "stdout": "18\n24\n3\n"
+      },
+      {
+        "compiler": "g++",
+        "skip_runtime_checks": false,
+        "source": "/tmp/sirkit_lazy_docs_20261102/document_advanced.cpp",
+        "source_sha256": "00641686c2a371dd5c715f1f99d420e7f79d2da79ac9f59a8fe7d8804979c34b",
+        "command": [
+          "g++",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-pedantic",
+          "-I",
+          "/home/reinsirk/Atcoder_Env",
+          "/tmp/sirkit_lazy_docs_20261102/document_advanced.cpp",
+          "-o",
+          "/tmp/sirkit_lazy_docs_20261102/g++_False_document_advanced"
+        ],
+        "status": "PASS",
+        "stdout": ""
+      },
+      {
+        "compiler": "g++",
+        "skip_runtime_checks": false,
+        "source": "/tmp/sirkit_lazy_docs_20261102/document_affine.cpp",
+        "source_sha256": "826260dcd183a89fb43511755dfa1ff422dd9477a9b3cd025c7504be48ca7148",
+        "command": [
+          "g++",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-pedantic",
+          "-I",
+          "/home/reinsirk/Atcoder_Env",
+          "/tmp/sirkit_lazy_docs_20261102/document_affine.cpp",
+          "-o",
+          "/tmp/sirkit_lazy_docs_20261102/g++_False_document_affine"
+        ],
+        "status": "PASS",
+        "stdout": ""
+      },
+      {
+        "compiler": "g++",
+        "skip_runtime_checks": false,
+        "source": "/home/reinsirk/Atcoder_Env/Examples/lazy_segment_tree_add_sum_example.cpp",
+        "source_sha256": "e3b63700c58853ff0c453d978e592a29cb5ab98668c38ac19c0a3cebf1281e9b",
+        "command": [
+          "g++",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-pedantic",
+          "-I",
+          "/home/reinsirk/Atcoder_Env",
+          "/home/reinsirk/Atcoder_Env/Examples/lazy_segment_tree_add_sum_example.cpp",
+          "-o",
+          "/tmp/sirkit_lazy_docs_20261102/g++_False_lazy_segment_tree_add_sum_example"
+        ],
+        "status": "PASS",
+        "stdout": "18\n24\n3\n"
+      },
+      {
+        "compiler": "g++",
+        "skip_runtime_checks": false,
+        "source": "/home/reinsirk/Atcoder_Env/Examples/lazy_segment_tree_example.cpp",
+        "source_sha256": "60657b22227c1f0da73b4860be9fa3f25c6d57baf67acbedb98debe1005a9878",
+        "command": [
+          "g++",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-pedantic",
+          "-I",
+          "/home/reinsirk/Atcoder_Env",
+          "/home/reinsirk/Atcoder_Env/Examples/lazy_segment_tree_example.cpp",
+          "-o",
+          "/tmp/sirkit_lazy_docs_20261102/g++_False_lazy_segment_tree_example"
+        ],
+        "status": "PASS",
+        "stdout": "9\n2\n3\n3\n3 2 3 3 3 \n"
+      },
+      {
+        "compiler": "g++",
+        "skip_runtime_checks": true,
+        "source": "/tmp/sirkit_lazy_docs_20261102/document_basic.cpp",
+        "source_sha256": "59998edccd2f893c382fdced2d0de467cddc3871f9c2905b0eb60886a5a6541f",
+        "command": [
+          "g++",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-pedantic",
+          "-I",
+          "/home/reinsirk/Atcoder_Env",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/tmp/sirkit_lazy_docs_20261102/document_basic.cpp",
+          "-o",
+          "/tmp/sirkit_lazy_docs_20261102/g++_True_document_basic"
+        ],
+        "status": "PASS",
+        "stdout": "18\n24\n3\n"
+      },
+      {
+        "compiler": "g++",
+        "skip_runtime_checks": true,
+        "source": "/tmp/sirkit_lazy_docs_20261102/document_advanced.cpp",
+        "source_sha256": "00641686c2a371dd5c715f1f99d420e7f79d2da79ac9f59a8fe7d8804979c34b",
+        "command": [
+          "g++",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-pedantic",
+          "-I",
+          "/home/reinsirk/Atcoder_Env",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/tmp/sirkit_lazy_docs_20261102/document_advanced.cpp",
+          "-o",
+          "/tmp/sirkit_lazy_docs_20261102/g++_True_document_advanced"
+        ],
+        "status": "PASS",
+        "stdout": ""
+      },
+      {
+        "compiler": "g++",
+        "skip_runtime_checks": true,
+        "source": "/tmp/sirkit_lazy_docs_20261102/document_affine.cpp",
+        "source_sha256": "826260dcd183a89fb43511755dfa1ff422dd9477a9b3cd025c7504be48ca7148",
+        "command": [
+          "g++",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-pedantic",
+          "-I",
+          "/home/reinsirk/Atcoder_Env",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/tmp/sirkit_lazy_docs_20261102/document_affine.cpp",
+          "-o",
+          "/tmp/sirkit_lazy_docs_20261102/g++_True_document_affine"
+        ],
+        "status": "PASS",
+        "stdout": ""
+      },
+      {
+        "compiler": "g++",
+        "skip_runtime_checks": true,
+        "source": "/home/reinsirk/Atcoder_Env/Examples/lazy_segment_tree_add_sum_example.cpp",
+        "source_sha256": "e3b63700c58853ff0c453d978e592a29cb5ab98668c38ac19c0a3cebf1281e9b",
+        "command": [
+          "g++",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-pedantic",
+          "-I",
+          "/home/reinsirk/Atcoder_Env",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/home/reinsirk/Atcoder_Env/Examples/lazy_segment_tree_add_sum_example.cpp",
+          "-o",
+          "/tmp/sirkit_lazy_docs_20261102/g++_True_lazy_segment_tree_add_sum_example"
+        ],
+        "status": "PASS",
+        "stdout": "18\n24\n3\n"
+      },
+      {
+        "compiler": "g++",
+        "skip_runtime_checks": true,
+        "source": "/home/reinsirk/Atcoder_Env/Examples/lazy_segment_tree_example.cpp",
+        "source_sha256": "60657b22227c1f0da73b4860be9fa3f25c6d57baf67acbedb98debe1005a9878",
+        "command": [
+          "g++",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-pedantic",
+          "-I",
+          "/home/reinsirk/Atcoder_Env",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/home/reinsirk/Atcoder_Env/Examples/lazy_segment_tree_example.cpp",
+          "-o",
+          "/tmp/sirkit_lazy_docs_20261102/g++_True_lazy_segment_tree_example"
+        ],
+        "status": "PASS",
+        "stdout": "9\n2\n3\n3\n3 2 3 3 3 \n"
+      },
+      {
+        "compiler": "clang++",
+        "skip_runtime_checks": false,
+        "source": "/tmp/sirkit_lazy_docs_20261102/document_basic.cpp",
+        "source_sha256": "59998edccd2f893c382fdced2d0de467cddc3871f9c2905b0eb60886a5a6541f",
+        "command": [
+          "clang++",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-pedantic",
+          "-I",
+          "/home/reinsirk/Atcoder_Env",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "/tmp/sirkit_lazy_docs_20261102/document_basic.cpp",
+          "-o",
+          "/tmp/sirkit_lazy_docs_20261102/clang++_False_document_basic"
+        ],
+        "status": "PASS",
+        "stdout": "18\n24\n3\n"
+      },
+      {
+        "compiler": "clang++",
+        "skip_runtime_checks": false,
+        "source": "/tmp/sirkit_lazy_docs_20261102/document_advanced.cpp",
+        "source_sha256": "00641686c2a371dd5c715f1f99d420e7f79d2da79ac9f59a8fe7d8804979c34b",
+        "command": [
+          "clang++",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-pedantic",
+          "-I",
+          "/home/reinsirk/Atcoder_Env",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "/tmp/sirkit_lazy_docs_20261102/document_advanced.cpp",
+          "-o",
+          "/tmp/sirkit_lazy_docs_20261102/clang++_False_document_advanced"
+        ],
+        "status": "PASS",
+        "stdout": ""
+      },
+      {
+        "compiler": "clang++",
+        "skip_runtime_checks": false,
+        "source": "/tmp/sirkit_lazy_docs_20261102/document_affine.cpp",
+        "source_sha256": "826260dcd183a89fb43511755dfa1ff422dd9477a9b3cd025c7504be48ca7148",
+        "command": [
+          "clang++",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-pedantic",
+          "-I",
+          "/home/reinsirk/Atcoder_Env",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "/tmp/sirkit_lazy_docs_20261102/document_affine.cpp",
+          "-o",
+          "/tmp/sirkit_lazy_docs_20261102/clang++_False_document_affine"
+        ],
+        "status": "PASS",
+        "stdout": ""
+      },
+      {
+        "compiler": "clang++",
+        "skip_runtime_checks": false,
+        "source": "/home/reinsirk/Atcoder_Env/Examples/lazy_segment_tree_add_sum_example.cpp",
+        "source_sha256": "e3b63700c58853ff0c453d978e592a29cb5ab98668c38ac19c0a3cebf1281e9b",
+        "command": [
+          "clang++",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-pedantic",
+          "-I",
+          "/home/reinsirk/Atcoder_Env",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "/home/reinsirk/Atcoder_Env/Examples/lazy_segment_tree_add_sum_example.cpp",
+          "-o",
+          "/tmp/sirkit_lazy_docs_20261102/clang++_False_lazy_segment_tree_add_sum_example"
+        ],
+        "status": "PASS",
+        "stdout": "18\n24\n3\n"
+      },
+      {
+        "compiler": "clang++",
+        "skip_runtime_checks": false,
+        "source": "/home/reinsirk/Atcoder_Env/Examples/lazy_segment_tree_example.cpp",
+        "source_sha256": "60657b22227c1f0da73b4860be9fa3f25c6d57baf67acbedb98debe1005a9878",
+        "command": [
+          "clang++",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-pedantic",
+          "-I",
+          "/home/reinsirk/Atcoder_Env",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "/home/reinsirk/Atcoder_Env/Examples/lazy_segment_tree_example.cpp",
+          "-o",
+          "/tmp/sirkit_lazy_docs_20261102/clang++_False_lazy_segment_tree_example"
+        ],
+        "status": "PASS",
+        "stdout": "9\n2\n3\n3\n3 2 3 3 3 \n"
+      },
+      {
+        "compiler": "clang++",
+        "skip_runtime_checks": true,
+        "source": "/tmp/sirkit_lazy_docs_20261102/document_basic.cpp",
+        "source_sha256": "59998edccd2f893c382fdced2d0de467cddc3871f9c2905b0eb60886a5a6541f",
+        "command": [
+          "clang++",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-pedantic",
+          "-I",
+          "/home/reinsirk/Atcoder_Env",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/tmp/sirkit_lazy_docs_20261102/document_basic.cpp",
+          "-o",
+          "/tmp/sirkit_lazy_docs_20261102/clang++_True_document_basic"
+        ],
+        "status": "PASS",
+        "stdout": "18\n24\n3\n"
+      },
+      {
+        "compiler": "clang++",
+        "skip_runtime_checks": true,
+        "source": "/tmp/sirkit_lazy_docs_20261102/document_advanced.cpp",
+        "source_sha256": "00641686c2a371dd5c715f1f99d420e7f79d2da79ac9f59a8fe7d8804979c34b",
+        "command": [
+          "clang++",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-pedantic",
+          "-I",
+          "/home/reinsirk/Atcoder_Env",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/tmp/sirkit_lazy_docs_20261102/document_advanced.cpp",
+          "-o",
+          "/tmp/sirkit_lazy_docs_20261102/clang++_True_document_advanced"
+        ],
+        "status": "PASS",
+        "stdout": ""
+      },
+      {
+        "compiler": "clang++",
+        "skip_runtime_checks": true,
+        "source": "/tmp/sirkit_lazy_docs_20261102/document_affine.cpp",
+        "source_sha256": "826260dcd183a89fb43511755dfa1ff422dd9477a9b3cd025c7504be48ca7148",
+        "command": [
+          "clang++",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-pedantic",
+          "-I",
+          "/home/reinsirk/Atcoder_Env",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/tmp/sirkit_lazy_docs_20261102/document_affine.cpp",
+          "-o",
+          "/tmp/sirkit_lazy_docs_20261102/clang++_True_document_affine"
+        ],
+        "status": "PASS",
+        "stdout": ""
+      },
+      {
+        "compiler": "clang++",
+        "skip_runtime_checks": true,
+        "source": "/home/reinsirk/Atcoder_Env/Examples/lazy_segment_tree_add_sum_example.cpp",
+        "source_sha256": "e3b63700c58853ff0c453d978e592a29cb5ab98668c38ac19c0a3cebf1281e9b",
+        "command": [
+          "clang++",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-pedantic",
+          "-I",
+          "/home/reinsirk/Atcoder_Env",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/home/reinsirk/Atcoder_Env/Examples/lazy_segment_tree_add_sum_example.cpp",
+          "-o",
+          "/tmp/sirkit_lazy_docs_20261102/clang++_True_lazy_segment_tree_add_sum_example"
+        ],
+        "status": "PASS",
+        "stdout": "18\n24\n3\n"
+      },
+      {
+        "compiler": "clang++",
+        "skip_runtime_checks": true,
+        "source": "/home/reinsirk/Atcoder_Env/Examples/lazy_segment_tree_example.cpp",
+        "source_sha256": "60657b22227c1f0da73b4860be9fa3f25c6d57baf67acbedb98debe1005a9878",
+        "command": [
+          "clang++",
+          "-std=c++23",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-pedantic",
+          "-I",
+          "/home/reinsirk/Atcoder_Env",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/home/reinsirk/Atcoder_Env/Examples/lazy_segment_tree_example.cpp",
+          "-o",
+          "/tmp/sirkit_lazy_docs_20261102/clang++_True_lazy_segment_tree_example"
+        ],
+        "status": "PASS",
+        "stdout": "9\n2\n3\n3\n3 2 3 3 3 \n"
+      }
+    ],
+    "protected_files_unchanged": {
+      "DataStructure/Lazy_Segment_Tree.cpp": true,
+      "Verify/current/submissions/lazy_segment_tree.cpp": true,
+      "Verify/current/judgements.json": true
+    }
+  },
+  "protected_files_still_unchanged": {
+    "DataStructure/Lazy_Segment_Tree.cpp": true,
+    "Verify/current/submissions/lazy_segment_tree.cpp": true,
+    "Verify/current/judgements.json": true
+  },
+  "distribution_note": "配布前の照合で、既存提出コードのSubmission URLが生成元へ未保存だったため、既存の生成器でURLを保持して生成元とmanifestを同期。ライブラリ本体・通常版提出コード・判定記録は変更していない。",
+  "limitations": [
+    "本体の実装変更はないため、本体全体の性能測定・オンライン再提出は行っていない。",
+    "掲載コード7ブロックを抽出し、初期化・境界探索・合成順・3引数mappingを含む例をGCC/Clang C++23・検査有効/無効で実行。"
+  ]
+}

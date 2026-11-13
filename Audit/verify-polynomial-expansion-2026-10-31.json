@@ -1,0 +1,50 @@
+{
+  "status": "local verification; online submission pending",
+  "source_hashes": {
+    "Math/Polynomial.cpp": "46b4b1c00c1ab51296e3c38aa1bd0093da8bc19a19870937490cd374c98a5d91",
+    "embedded FPS": "5165e885185b4b01a9c7f1882859bfde4e8cba6b98af11d04bc7e4db54433b31"
+  },
+  "validation": {
+    "results.json": {
+      "conditions": 8,
+      "all_pass": true,
+      "path": "/tmp/sirkit_12h_20261031_095733/polynomial/results.json",
+      "sha256": "a8ea52b5ce7026334db0b9deb422be5468e932baf6f64211bf74d3ee151640ff"
+    },
+    "sanitizer_results.json": {
+      "conditions": 4,
+      "all_pass": true,
+      "path": "/tmp/sirkit_12h_20261031_095733/polynomial/sanitizer_results.json",
+      "sha256": "ab6003d6840ca214ae86cce2a9d7ff281c1122195bd9cacc5302a12f141f43dd"
+    },
+    "driver_results.json": {
+      "conditions": 16,
+      "all_pass": true,
+      "path": "/tmp/sirkit_12h_20261031_095733/polynomial/driver_results.json",
+      "sha256": "3217e13e5347db92f25f78dfde5770b6f2350eac664268ebde97a5bfdb00a9c6"
+    },
+    "extra_results.json": {
+      "conditions": 12,
+      "all_pass": true,
+      "path": "/tmp/sirkit_12h_20261031_095733/polynomial/extra_results.json",
+      "sha256": "892d138cd05cadce0db71d26160231c6dcc9c21643557c15c015bc0278e16206"
+    }
+  },
+  "coverage": [
+    "independent direct Horner, direct Lagrange basis products, Pascal/binomial Taylor expansion",
+    "0/1/2/3/7/17/31/32/33/63/64/65/129 points, degree above/below point count",
+    "duplicate evaluation and denominator-zero interpolation rejection in checked/skip",
+    "negative and full uint64 points/values, signed minimum coefficients, shift UINT64_MAX",
+    "copies independent, moved-from empty, moved-from reuse, self-copy/self-move",
+    "131072-point and 4097-point monomial evaluated by independent modular powers; interpolation reconstructs known coefficients; Taylor checked at independent probes",
+    "6000 atomic allocation budgets per compiler/SIMD configuration, evaluation/interpolation/Taylor/strong assign/copy assignment and live0 after clearing documented shared FPS cache",
+    "FPS/NTT/Polynomial simultaneous includes in both orders",
+    "6 official samples on GCC/Clang and readable example checked/skip"
+  ],
+  "performance": "No improvement relative to an existing ProductTree is claimed. Remainder product-tree asymptotic algorithm, Horner small nodes, one Fermat inverse for all interpolation denominators and one for Taylor factorials.",
+  "limits": [
+    "mod998244353 only; point count<=2^22-1, coefficient count<=2^22",
+    "interpolate requires one value per point and distinct normalized points; duplicate denominator0 always rejected",
+    "copies/assign preserve tree ownership, thread-local FPS cache growth is shared and separate"
+  ]
+}

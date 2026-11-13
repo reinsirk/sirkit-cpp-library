@@ -1,0 +1,665 @@
+{
+  "date": "2026-11-12",
+  "library": "Graph/Low_Link.cpp",
+  "decision": "adopt_typed_adjacency_deferred_components_reserved_vertices",
+  "source_sha256": {
+    "before": "447197bca51ca51690281375230e99abb6c8462e804b1aa6922921d35560d4c4",
+    "after": "dc390a4e4bdd41ce51aab618b8a55947de96c863663522d59319b2e2c897597e"
+  },
+  "selection": {
+    "decision": "adopt_typed_adjacency_deferred_components_reserved_vertices",
+    "label": "cached_count",
+    "measured_candidate_sha256": "dc390a4e4bdd41ce51aab618b8a55947de96c863663522d59319b2e2c897597e",
+    "implementation_candidate_sha256": "dc390a4e4bdd41ce51aab618b8a55947de96c863663522d59319b2e2c897597e",
+    "comment_bridge": "最終版はcached_count.hppと同一。成分数を構築時に保持し、既存の成分群・橋の森の取り出しから全頂点の最大番号走査を省く。",
+    "changes": [
+      "隣接配列に接続先と辺番号を同居させ、端点表の再読込を省く。UINT32_MAX以下の辺数は32bitの辺番号を使い、それを超える場合はsize_tへ切り替える。",
+      "DFS終了後に親への参照と成分の印を連続書き込みし、参照の圧縮で2辺連結成分を確定する。2回目の隣接辺走査と追加の頂点スタックを省く。",
+      "頂点版のブロックを返す際に、接続する辺数と頂点数から容量を予約する。重複判定の印を孤立頂点判定にも使う。印も32bitに収まる個数だけ縮小し、size_tの代替経路を保つ。",
+      "2辺連結成分数をint1個で保持する。成分群・橋の森の取り出しで最大成分番号を再走査しない。two_edge_component_count()で個数だけをO(1)で返す。"
+    ],
+    "limitations": [
+      "成分番号の順序はDocumentの従来の仕様どおり未規定。各群の構成・橋の森との対応は独立参照で検証する。",
+      "P-Coreでの条件固定比較であり、Library CheckerのAMD実機の速度比とは断定しない。",
+      "辺数UINT32_MAX超を物理的に生成したとは扱わず、通常サイズでsize_t経路を強制して検証する。",
+      "頂点群の予約容量はブロックの実頂点数より多い場合がある。追加容量もO(N+M)以内だが、構造による定数差は測定して記録する。",
+      "成分数キャッシュは通常の計算に使う状態として検査省略時にも保持する。型のpaddingによりクラスサイズが数バイト増える場合がある。"
+    ],
+    "implementation_candidate": "cached_count",
+    "outcome": "P-Coreの-march=native・固定mainの公式代表入力で、GCCは2辺連結成分の最大ランダムを約25%、点二重連結成分の木を約26%、ランダムを約33%短縮。Clangも約23%・37%・29%短縮。測定した大規模72条件はすべて短縮し、公開操作116条件に3%以上の後退はない。オンラインのAMD実機の時間は再提出で確認する。"
+  },
+  "required_resubmission": [
+    "Verify/current/submissions/low_link_two_edge.cpp",
+    "Verify/current/submissions/low_link_biconnected.cpp"
+  ],
+  "online_evidence": "Audit/online-low-link-416583-2026-11-12.json",
+  "online_scope": "416583のtwo_edge AC55ms・416582のbiconnected AC262msは旧本体447197の本文/main/共通IOと一致。今回の新本体は未提出であり、そのACを現行版や派生版へ転記しない。",
+  "online_compiler_context": {
+    "submission_lang": "cpp",
+    "live_api": {
+      "id": "cpp",
+      "name": "C++23",
+      "version": "GCC 15.2 + AC Library(1.6)"
+    },
+    "official_repository_current_lang_definition": {
+      "id": "cpp",
+      "name": "C++23",
+      "version": "GCC 15.2 + AC Library(1.6)",
+      "source": "main.cpp",
+      "image_name": "library-checker-images-gcc",
+      "compile": [
+        "g++",
+        "-O2",
+        "-std=c++23",
+        "-DEVAL",
+        "-DONLINE_JUDGE",
+        "-march=native",
+        "-o",
+        "main",
+        "main.cpp",
+        "-I",
+        "/opt/ac-library"
+      ],
+      "exec": [
+        "./main"
+      ]
+    },
+    "scope": "言語名/versionはlive公式APIで確認。引数は取得時の公式リポジトリから。個別提出の厳密image digest/compile logはAPIに含まれない。",
+    "observed_flags_include_march_native": true,
+    "submission_image_revision_known": false
+  },
+  "frozen_public_files": {
+    "Verify/current/drivers/low_link_two_edge_main.cpp": "103549bcf94d087b4bda2b17809316ba1a026a6e76ce0d5a335e266a5c80c686",
+    "Verify/current/drivers/low_link_biconnected_main.cpp": "44f36b179e0ee59572eba15b545f9060835835e734d6723d8c587bc255313085",
+    "Verify/current/common/fast_io.hpp": "291bf8dbc56a1d691f6256fe95b4714183c2cf5d9e55e4bef240e31d1eb178c1",
+    "Examples/low_link_example.cpp": "bf13194cb876c9846ed1fd119aa13d1cf331d73ddc4192acd05b9d76593c0990"
+  },
+  "before_snapshot": {
+    "file": "frozen.json",
+    "sha256": "a0918799dbf7f58a769ad2f6171b5fa803a5bea8f4cc3bc456f0923279114ca2",
+    "files": {
+      "Graph/Low_Link.cpp": "447197bca51ca51690281375230e99abb6c8462e804b1aa6922921d35560d4c4",
+      "Verify/current/common/fast_io.hpp": "291bf8dbc56a1d691f6256fe95b4714183c2cf5d9e55e4bef240e31d1eb178c1",
+      "Document/low_link.md": "157ced7093a30ceaef3fc015a77e8e463dc86508d151699b54e18964ae0b77b0",
+      "Examples/low_link_example.cpp": "bf13194cb876c9846ed1fd119aa13d1cf331d73ddc4192acd05b9d76593c0990",
+      "Verify/current/groups/expansion_20261031.json": "3ee3c5a7cde7624fba2604791cf8925b4041186e0bb270284f9bdd56c023ce3e",
+      "Verify/current/judgements.json": "2e7d4b9172ab34f5dfaff44834503be065378b94a6124302b6e7da25e965aade",
+      "Verify/current/manifest.json": "22a96e64e68c758664b0361d6839b8456dfd379192d089771b21995674d7167a",
+      "Distribution/manifest.json": "2cfb691eb64307a6b8c7cd050e3aadb25cda6c1e2118880477def420d60c2887",
+      "Variants/manifest.json": "59ffcd527d3113efcba48bd5c462802fefa78ee90358fab6220c26d6227628c5",
+      "Variants/verify_manifest.json": "c85f2dcee0e7fe237bd2d44b18f523554769da33d1721f07b1d47239802ea646",
+      "Scripts/library_layout.json": "8f809a5a3d1235a508e7144d0600060ac68859a5d663bdb9b7d47d6663b8486b",
+      "Verify/current/drivers/low_link_two_edge_main.cpp": "103549bcf94d087b4bda2b17809316ba1a026a6e76ce0d5a335e266a5c80c686",
+      "Verify/current/submissions/low_link_two_edge.cpp": "7c86535e894fc02a980c02aeef9ccc1cf1f8e72583badd5296a40693f6799812",
+      "Verify/current/drivers/low_link_biconnected_main.cpp": "44f36b179e0ee59572eba15b545f9060835835e734d6723d8c587bc255313085",
+      "Verify/current/submissions/low_link_biconnected.cpp": "5ecca9fcd1ac63f76848b0f9198f8b93228f026a6ebceb4cf5caf98772e2cc96"
+    }
+  },
+  "document": {
+    "path": "Document/low_link.md",
+    "before_sha256": "157ced7093a30ceaef3fc015a77e8e463dc86508d151699b54e18964ae0b77b0",
+    "after_sha256": "b0eec0e29d439a53a4570c7b76e91bcdf2406b693557ae6b6203781bad7de559",
+    "scope": "main/IO/使用例と分離して、アルゴリズムと従来どおり未規定の成分順を説明する。本文の変更前後SHAを記録し、同一であるとは要求しない。"
+  },
+  "API_scope": "公開型・引数・戻り値・多重辺/自己辺・所有権・例外保証を維持。成分番号と外側の順は未規定。各成分の構成と森の対応を正規化して独立参照へ照合する。",
+  "proof_files": [
+    "review/cached_count_review.md",
+    "review/pending_vertices_review.md",
+    "review/typed_deferred_stamp_review.md",
+    "review/typed_marked_review.md",
+    "review/typed_reserved_review.md"
+  ],
+  "source_diff": "final.diff",
+  "measurement": {
+    "cpu": "Intel Core i9-14900K CPU12（P-Core、sibling13）。E-Coreは性能評価しない。",
+    "compilers": {
+      "GCC": "15.2.0",
+      "Clang": "21.1.8 --gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15"
+    },
+    "flags_scope": "C++23 -O2。native/defaultを区別し、全て同じmain/共通IOを使用。引数・実行体SHAはfinal_builds.jsonへ保存。",
+    "CPU_scope": "Library CheckerのAMD実機の速度比とは断定しない。",
+    "lock": "/tmp/sirkit_performance_cpu12.lock",
+    "compilation_during_timing": false,
+    "ASLR": "子だけsetarch x86_64 -R、同じactiveパス。",
+    "protocol": "旧版→候補→旧版。候補を両端中央値で割る。両端差10%以内を有効とし、候補自体の遅さで除外しない。候補7組・同一対照3組で開始。不足時のみ15組/9組まで補い、候補5組/対照2組を基準とする。",
+    "fixtures": {
+      "cases": 26,
+      "physical_graphs": 13,
+      "input_bytes_unique": 35034570,
+      "input_bytes_with_reused_rows": 70069140,
+      "metadata_sha256": {
+        "commands.json": "42fd1dcc010a38c3e14e7f595065db0b239c18b2903b9759c6e98e11fcb92354",
+        "fixtures.json": "3f9ade0fcd3a25eb1e45f93fbbac1419c85e40da9325d0293bdcf0643d07a629",
+        "source_audit.json": "2b4e562052f66e72d2dd82f7e294ad82a3bd9d44b5e2be9c5e27bed6d79d4f88",
+        "summary.json": "e5f1685f2115e82cc7d054958bd7e88cfff3f6b5e0966c089fc40a4ed966b65c",
+        "validation.json": "dca371d2151d8e48c74b596412433e7767d29f44d1f2064777210e7a9c28fd5f"
+      },
+      "independent_oracle_scope": "Every full canonical output comes from an original reference implementation. Two-edge reference uses cycle-cover/LCA, not low-link. Bicon reference is separately written recursive Tarjan with same mathematical low-link criterion; structural and tiny brute-force checks provide additional independent algorithms. No baseline implementation is treated as truth.",
+      "structural_cross_checks": [
+        "two_edge_connected_components__official_biconnected_components_max_tree_00",
+        "biconnected_components__official_biconnected_components_max_tree_00",
+        "two_edge_connected_components__custom_empty",
+        "biconnected_components__custom_empty",
+        "two_edge_connected_components__custom_singleton",
+        "biconnected_components__custom_singleton",
+        "two_edge_connected_components__custom_path300k",
+        "biconnected_components__custom_path300k",
+        "two_edge_connected_components__custom_star100k",
+        "biconnected_components__custom_star100k",
+        "two_edge_connected_components__custom_cycle100k",
+        "biconnected_components__custom_cycle100k",
+        "two_edge_connected_components__custom_disjoint_cliques100k",
+        "biconnected_components__custom_disjoint_cliques100k",
+        "two_edge_connected_components__custom_parallel100k",
+        "biconnected_components__custom_parallel100k"
+      ],
+      "tiny_bruteforce_cross_checks": [
+        "two_edge_connected_components__custom_empty",
+        "biconnected_components__custom_empty",
+        "two_edge_connected_components__custom_singleton",
+        "biconnected_components__custom_singleton",
+        "two_edge_connected_components__custom_selfloops8",
+        "biconnected_components__custom_selfloops8"
+      ],
+      "result_scope": "各群・群集合をソートして正規化した出力SHAで照合。未規定の成分番号や出力順の差を誤検出せず、群内の要素の欠落/重複は検出する。自己辺は明示したローカルの独立ブロック仕様で補足。"
+    },
+    "whole": {
+      "cells": 72,
+      "cases": 18,
+      "qualified_cells": 72,
+      "triplets": 741,
+      "statistics": [
+        {
+          "compiler": "clang",
+          "flag": "default",
+          "problem": "biconnected_components",
+          "cells": 9,
+          "qualified_cells": 9,
+          "candidate_ratio": 0.8342402908475989,
+          "identical_control_ratio": 1.0230239710002005,
+          "minimum_ratio": 0.6500323956589817,
+          "maximum_ratio": 0.9576098290792039
+        },
+        {
+          "compiler": "clang",
+          "flag": "default",
+          "problem": "two_edge_connected_components",
+          "cells": 9,
+          "qualified_cells": 9,
+          "candidate_ratio": 0.8305436601718784,
+          "identical_control_ratio": 1.000764650826496,
+          "minimum_ratio": 0.6213667505260992,
+          "maximum_ratio": 0.9710560833004678
+        },
+        {
+          "compiler": "clang",
+          "flag": "native",
+          "problem": "biconnected_components",
+          "cells": 9,
+          "qualified_cells": 9,
+          "candidate_ratio": 0.8066440387903084,
+          "identical_control_ratio": 1.0025068489868054,
+          "minimum_ratio": 0.6294633498016289,
+          "maximum_ratio": 0.9482937086302654
+        },
+        {
+          "compiler": "clang",
+          "flag": "native",
+          "problem": "two_edge_connected_components",
+          "cells": 9,
+          "qualified_cells": 9,
+          "candidate_ratio": 0.831049714439436,
+          "identical_control_ratio": 1.0084128360384008,
+          "minimum_ratio": 0.6225763161548072,
+          "maximum_ratio": 0.9774530206067813
+        },
+        {
+          "compiler": "gcc",
+          "flag": "default",
+          "problem": "biconnected_components",
+          "cells": 9,
+          "qualified_cells": 9,
+          "candidate_ratio": 0.8194542478389054,
+          "identical_control_ratio": 0.9942274112198921,
+          "minimum_ratio": 0.6638932366751792,
+          "maximum_ratio": 0.928514422528788
+        },
+        {
+          "compiler": "gcc",
+          "flag": "default",
+          "problem": "two_edge_connected_components",
+          "cells": 9,
+          "qualified_cells": 9,
+          "candidate_ratio": 0.8157321639209297,
+          "identical_control_ratio": 1.010496373837391,
+          "minimum_ratio": 0.63168338294023,
+          "maximum_ratio": 0.9494171112428373
+        },
+        {
+          "compiler": "gcc",
+          "flag": "native",
+          "problem": "biconnected_components",
+          "cells": 9,
+          "qualified_cells": 9,
+          "candidate_ratio": 0.8149093518662296,
+          "identical_control_ratio": 0.9916029092597145,
+          "minimum_ratio": 0.644069994643414,
+          "maximum_ratio": 0.9353506876588593
+        },
+        {
+          "compiler": "gcc",
+          "flag": "native",
+          "problem": "two_edge_connected_components",
+          "cells": 9,
+          "qualified_cells": 9,
+          "candidate_ratio": 0.8125952994140635,
+          "identical_control_ratio": 1.0022095161308657,
+          "minimum_ratio": 0.6053121059220922,
+          "maximum_ratio": 0.9517279172424737
+        }
+      ],
+      "insufficient_cells": [],
+      "jobs": "final_whole_jobs.json",
+      "summary": "final_whole_summary.json",
+      "raw": "final_whole_raw.json",
+      "time": "固定main全体の子user+system CPU時間。SKIP設定。出力正規化・独立参照SHA照合は計測後。"
+    },
+    "core": {
+      "cells": 116,
+      "scenarios": 26,
+      "qualified_cells": 116,
+      "triplets": 1172,
+      "statistics": [
+        {
+          "compiler": "clang",
+          "flag": "default",
+          "setting": "skip",
+          "cells": 8,
+          "qualified_cells": 8,
+          "candidate_ratio": 0.4534077860374572,
+          "identical_control_ratio": 1.0086425887377952,
+          "minimum_ratio": 0.03175670626914743,
+          "maximum_ratio": 0.9971663049404136
+        },
+        {
+          "compiler": "clang",
+          "flag": "native",
+          "setting": "checked",
+          "cells": 24,
+          "qualified_cells": 24,
+          "candidate_ratio": 0.6598214229094779,
+          "identical_control_ratio": 0.991704661585912,
+          "minimum_ratio": 0.03229597058489064,
+          "maximum_ratio": 0.9879832054437527
+        },
+        {
+          "compiler": "clang",
+          "flag": "native",
+          "setting": "skip",
+          "cells": 26,
+          "qualified_cells": 26,
+          "candidate_ratio": 0.6776821183536751,
+          "identical_control_ratio": 0.9997311439713276,
+          "minimum_ratio": 0.03266801225984899,
+          "maximum_ratio": 1.0015037593984963
+        },
+        {
+          "compiler": "gcc",
+          "flag": "default",
+          "setting": "skip",
+          "cells": 8,
+          "qualified_cells": 8,
+          "candidate_ratio": 0.39823567072305993,
+          "identical_control_ratio": 1.0033380358896384,
+          "minimum_ratio": 0.012862772674665611,
+          "maximum_ratio": 0.9700749879096652
+        },
+        {
+          "compiler": "gcc",
+          "flag": "native",
+          "setting": "checked",
+          "cells": 24,
+          "qualified_cells": 24,
+          "candidate_ratio": 0.619898165775716,
+          "identical_control_ratio": 0.9979329387428245,
+          "minimum_ratio": 0.012607648255268814,
+          "maximum_ratio": 0.9702410975486735
+        },
+        {
+          "compiler": "gcc",
+          "flag": "native",
+          "setting": "skip",
+          "cells": 26,
+          "qualified_cells": 26,
+          "candidate_ratio": 0.6356049693886079,
+          "identical_control_ratio": 0.9943033990135377,
+          "minimum_ratio": 0.01238617808440842,
+          "maximum_ratio": 0.9898221445461087
+        }
+      ],
+      "operations": {
+        "0": "build(false)",
+        "1": "build(true)",
+        "2": "rebuild(false)",
+        "3": "rebuild(true)",
+        "4": "two_edge_components",
+        "5": "biconnected_vertex_components(true)",
+        "6": "biconnected_vertex_components(false)",
+        "7": "bridge_forest"
+      },
+      "insufficient_cells": [],
+      "jobs": "final_core_jobs.json",
+      "summary": "final_core_summary.json",
+      "raw": "final_core_raw.json",
+      "time": "std::clock。入力読込とグラフ準備は計測外、指定操作と返り値の生成は内、checksumの正規化と照合は後。"
+    },
+    "exploratory": [
+      {
+        "stage": "screen",
+        "labels": {
+          "combined": {
+            "file": "combined.hpp",
+            "sha256": "3e6e6607406c852aff5c1f9d8c0e58cf2fb98526ccf7add3d9c5d0b99702259f"
+          },
+          "pending_reserved": {
+            "file": "pending_reserved.hpp",
+            "sha256": "86fb8d3022a501cdba2e1f7d7bc2149ca78ae3a82e5902e72d9e70a4cc95d514"
+          },
+          "pending_vertices": {
+            "file": "pending_vertices.hpp",
+            "sha256": "a453ad86a39813867dffffa08c6b311357ff5ab832b869832ae938dd914e189e"
+          },
+          "reserve_vertices": {
+            "file": "reserve_vertices.hpp",
+            "sha256": "3ff8afacb57d8d39e27f5c91144f53555bbb0b0643f6b3a82a078feeff317964"
+          },
+          "typed_adjacency": {
+            "file": "typed_adjacency.hpp",
+            "sha256": "0ac77ccfd3fede6014d462daa758bca9bc60b7cffa8e9a18a9c60fb034e70a28"
+          },
+          "typed_pending": {
+            "file": "typed_pending.hpp",
+            "sha256": "291db924d7066010b6f6b2fd6aa52ab2f123e7ee287ec1b4fc0f3e234fe48f9d"
+          },
+          "typed_reserved": {
+            "file": "typed_reserved.hpp",
+            "sha256": "4b97cb975aa079e32803e9e9392ad36d7fe786d72ee265d234bcc1d37adb9265"
+          }
+        },
+        "cells": 24,
+        "triplets": 576,
+        "summary": "screen_summary.json",
+        "summary_sha256": "7d34f8ee4adb9b978bbee579dff7c5a293a174330620b708d36f46c474404e85",
+        "raw": "screen_raw.json",
+        "raw_sha256": "75206aa73ee186af96f200abbb03c9bff923d865721903c67df5465b188bb0b2",
+        "scope": "探索の少数反復を保存。最終測定と区別する。"
+      },
+      {
+        "stage": "stage2",
+        "labels": {
+          "combined_stamp": {
+            "file": "combined_stamp.hpp",
+            "sha256": "a5981e06e97e9c63c1b7894a133b1f386cf0f19b74d0956ded76892bbb72ab0e"
+          },
+          "typed_marked_reserved_stamp": {
+            "file": "typed_marked_reserved_stamp.hpp",
+            "sha256": "e1201f015e51fe4df158e427b8c0e45ecfd237486349ad464a3fd410f8812ae9"
+          },
+          "typed_reserved_stamp": {
+            "file": "typed_reserved_stamp.hpp",
+            "sha256": "43f5bc9175b60f01004ca2bfa9ed1dfe97fe83bb21bd9582019c067a445bfd77"
+          }
+        },
+        "cells": 24,
+        "triplets": 288,
+        "summary": "stage2_summary.json",
+        "summary_sha256": "989d070d7ebdb1ec5e6fa5f981773f7e311944fc9a27e1444d758e75c0cb044c",
+        "raw": "stage2_raw.json",
+        "raw_sha256": "5dbb156cd00baf4ee30aca29cefbe0ae4fe9710f0d3e655a112ddf98226cdc00",
+        "scope": "探索の少数反復を保存。最終測定と区別する。"
+      },
+      {
+        "stage": "stage3",
+        "labels": {
+          "typed_deferred_stamp": {
+            "file": "typed_deferred_stamp.hpp",
+            "sha256": "1846993ae71482821160696a1425c73f7bc32998c84c1f9f068ccadd957abdfe"
+          },
+          "typed_reserved_stamp": {
+            "file": "typed_reserved_stamp.hpp",
+            "sha256": "43f5bc9175b60f01004ca2bfa9ed1dfe97fe83bb21bd9582019c067a445bfd77"
+          }
+        },
+        "cells": 24,
+        "triplets": 216,
+        "summary": "stage3_summary.json",
+        "summary_sha256": "50a477400d79eb24d4ddc368aea8b0aafb08e54dd4e4fa36f4c2d2343a56bcce",
+        "raw": "stage3_raw.json",
+        "raw_sha256": "660e6ca2203de7063cf2bc79115540e90a3a080d67945d0b15aafbf8b4578dff",
+        "scope": "探索の少数反復を保存。最終測定と区別する。"
+      }
+    ],
+    "observed_tradeoffs": {
+      "whole_above_three_percent": [],
+      "large_core_above_three_percent": [],
+      "scope": "最終測定の基準達成セルから導出。未達セルを隠さず記録する。"
+    },
+    "scope": "件数は実際のjobファイルと全署名一致で算出する。P-Core上の条件固定比較であり、全条件・全CPUで一律改善とは主張しない。",
+    "calibration_repair": {
+      "file": "calibration_repair.json",
+      "rows": [
+        {
+          "row": {
+            "compiler": "clang",
+            "flag": "native",
+            "setting": "skip",
+            "case": "biconnected_components__official_biconnected_components_max_random_00",
+            "ratios": {
+              "final": 0.7088525465315635,
+              "control": 1.0453478097838804
+            },
+            "valid_counts": {
+              "final": 5,
+              "control": 2
+            },
+            "sufficient": true,
+            "calibration_repaired": true
+          },
+          "added": 2
+        }
+      ],
+      "scope": "両端差10%で基準未達だった1セルだけ、候補最大24組を追加可能として補充。実際は2組で5有効組に到達。候補自身の時間で選別せず以前のrawもすべて保持。"
+    }
+  },
+  "validation": {
+    "jobs": 32,
+    "all_passed": true,
+    "details": "final_validation.json",
+    "sha256": "8ba310ed20dc8fa51d32e6f4ea24323546701b7259ad7b3ab21673d291128121",
+    "matrix": "GCC/Clang×checked/SKIP×default/forced-wide×参照/構築確保失敗/照会確保失敗の24件、同8設定のASAN+UBSAN参照。",
+    "allocation_counters": [
+      {
+        "test": "new_graph2_allocation_test",
+        "compiler": "gcc",
+        "setting": "checked",
+        "mode": "default",
+        "failures": 68,
+        "successes": 812,
+        "live_delta": 0
+      },
+      {
+        "test": "low_link_components_allocation_test",
+        "compiler": "gcc",
+        "setting": "checked",
+        "mode": "default",
+        "failures": 92,
+        "successes": 608,
+        "live_delta": 0
+      },
+      {
+        "test": "new_graph2_allocation_test",
+        "compiler": "gcc",
+        "setting": "checked",
+        "mode": "forced_wide",
+        "failures": 68,
+        "successes": 812,
+        "live_delta": 0
+      },
+      {
+        "test": "low_link_components_allocation_test",
+        "compiler": "gcc",
+        "setting": "checked",
+        "mode": "forced_wide",
+        "failures": 92,
+        "successes": 608,
+        "live_delta": 0
+      },
+      {
+        "test": "new_graph2_allocation_test",
+        "compiler": "gcc",
+        "setting": "skip",
+        "mode": "default",
+        "failures": 68,
+        "successes": 812,
+        "live_delta": 0
+      },
+      {
+        "test": "low_link_components_allocation_test",
+        "compiler": "gcc",
+        "setting": "skip",
+        "mode": "default",
+        "failures": 92,
+        "successes": 608,
+        "live_delta": 0
+      },
+      {
+        "test": "new_graph2_allocation_test",
+        "compiler": "gcc",
+        "setting": "skip",
+        "mode": "forced_wide",
+        "failures": 68,
+        "successes": 812,
+        "live_delta": 0
+      },
+      {
+        "test": "low_link_components_allocation_test",
+        "compiler": "gcc",
+        "setting": "skip",
+        "mode": "forced_wide",
+        "failures": 92,
+        "successes": 608,
+        "live_delta": 0
+      },
+      {
+        "test": "new_graph2_allocation_test",
+        "compiler": "clang",
+        "setting": "checked",
+        "mode": "default",
+        "failures": 68,
+        "successes": 812,
+        "live_delta": 0
+      },
+      {
+        "test": "low_link_components_allocation_test",
+        "compiler": "clang",
+        "setting": "checked",
+        "mode": "default",
+        "failures": 92,
+        "successes": 608,
+        "live_delta": 0
+      },
+      {
+        "test": "new_graph2_allocation_test",
+        "compiler": "clang",
+        "setting": "checked",
+        "mode": "forced_wide",
+        "failures": 68,
+        "successes": 812,
+        "live_delta": 0
+      },
+      {
+        "test": "low_link_components_allocation_test",
+        "compiler": "clang",
+        "setting": "checked",
+        "mode": "forced_wide",
+        "failures": 92,
+        "successes": 608,
+        "live_delta": 0
+      },
+      {
+        "test": "new_graph2_allocation_test",
+        "compiler": "clang",
+        "setting": "skip",
+        "mode": "default",
+        "failures": 68,
+        "successes": 812,
+        "live_delta": 0
+      },
+      {
+        "test": "low_link_components_allocation_test",
+        "compiler": "clang",
+        "setting": "skip",
+        "mode": "default",
+        "failures": 92,
+        "successes": 608,
+        "live_delta": 0
+      },
+      {
+        "test": "new_graph2_allocation_test",
+        "compiler": "clang",
+        "setting": "skip",
+        "mode": "forced_wide",
+        "failures": 68,
+        "successes": 812,
+        "live_delta": 0
+      },
+      {
+        "test": "low_link_components_allocation_test",
+        "compiler": "clang",
+        "setting": "skip",
+        "mode": "forced_wide",
+        "failures": 92,
+        "successes": 608,
+        "live_delta": 0
+      }
+    ],
+    "forced_wide_conditions": {
+      "edge_ids": {
+        "expression": "edges_.size() <= std::numeric_limits<std::uint32_t>::max()",
+        "count": 1,
+        "replacement": "false"
+      },
+      "block_stamps": {
+        "expression": "blocks_.size() <= std::numeric_limits<std::uint32_t>::max()",
+        "count": 1,
+        "replacement": "false"
+      }
+    },
+    "wide_scope": "通常サイズで辺IDと頂点群stampのsize_t経路を強制。UINT32_MAX超の物理入力を試したとは扱わない。",
+    "leak_scope": "host ptraceのためLeakSanitizerは無効。独立live allocation counterは全確保試験でdelta=0。",
+    "builds": 32,
+    "fixture_comparisons": 208,
+    "fixture_details": "final_fixture_validation.json",
+    "fixture_sha256": "dbba6ce1ae5107be19425c5434c1eaed7b536f6f6d75fc424c40767ae6d5f38f",
+    "profiles": {
+      "jobs": 14,
+      "file": "profiles/checkpoint.json",
+      "sha256": "37374570553b459a62bee4839b904a07e0f8a87fd9ba59bed2db7b57999daf76",
+      "run_id": "20261112T094143537685Z",
+      "scope": "派生版8件と使用例6件のローカルサンプル。オンライン判定ではない。"
+    }
+  },
+  "license": "既存CC0実装への独自変更。参考ライブラリの実装コードを新規に取り込まない。",
+  "evidence_archive": "Audit/data/performance-low-link-416583-2026-11-12.zip",
+  "evidence_scope": "自身の候補・生成スクリプト・独立参照・レビュー・最終測定raw・自分の提出API原本・入力provenanceを保存。外部実装ソース・コンパイラ原典・入力/出力本体・実行体・symlink参照先を除外。",
+  "superseded_scope": "superseded_deferred/は560e1a候補の最終という名前の記録。bridge_forestが小さい結果でもNを走査していたため、成分数キャッシュとO(1)の個数APIを追加し、dc390aの最終版ですべて検証・測定を取り直した。",
+  "outcome": "P-Coreの-march=native・固定mainの公式代表入力で、GCCは2辺連結成分の最大ランダムを約25%、点二重連結成分の木を約26%、ランダムを約33%短縮。Clangも約23%・37%・29%短縮。測定した大規模72条件はすべて短縮し、公開操作116条件に3%以上の後退はない。オンラインのAMD実機の時間は再提出で確認する。",
+  "limitations": [
+    "成分番号の順序はDocumentの従来の仕様どおり未規定。各群の構成・橋の森との対応は独立参照で検証する。",
+    "P-Coreでの条件固定比較であり、Library CheckerのAMD実機の速度比とは断定しない。",
+    "辺数UINT32_MAX超を物理的に生成したとは扱わず、通常サイズでsize_t経路を強制して検証する。",
+    "頂点群の予約容量はブロックの実頂点数より多い場合がある。追加容量もO(N+M)以内だが、構造による定数差は測定して記録する。",
+    "成分数キャッシュは通常の計算に使う状態として検査省略時にも保持する。型のpaddingによりクラスサイズが数バイト増える場合がある。"
+  ],
+  "evidence_archive_sha256": "7724f1adaab174dc70d29a0a18f801921c724902337dd9cdafd49a12606e8f2f"
+}

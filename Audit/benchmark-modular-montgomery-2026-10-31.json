@@ -1,0 +1,63 @@
+{
+  "source": "Math/Modular_Arithmetic.cpp",
+  "source_sha256": "9bd382b997e82bdd9a3ec5934051377b52b81a990cd9cd675a90d614833d805e",
+  "baseline_C_sha256": "e5a915df7be51024a2c6661e9cb0aa9781d8c73cf3484caa776dec9fcb4e0776",
+  "status": "local independent verification; root adoption decision",
+  "validation": {
+    "full_final_configs": 40,
+    "final_constexpr_configs": 8,
+    "final_coexist_configs": 16,
+    "clean_fixture_configs": 40,
+    "native_REDC_cases_per_fixture": 20000,
+    "native_odd_power_cases_per_fixture": 20000,
+    "directed_and_random_129bit_cases": 1700,
+    "directed_and_random_subtraction_borrow_cases": 17151,
+    "boundaries": [
+      "exponent32767/32768/32769/65535/65536",
+      "mod2^32-1/2^32/2^32+1",
+      "full uint64 odd prime/composite",
+      "minimum square root convention",
+      "m0 retained as mandatory domain guard in checked and skip"
+    ],
+    "coexist": [
+      "MillerRabin",
+      "PollardRho",
+      "LinearRecurrence",
+      "NTT",
+      "both include orders",
+      "checked/skip/standard/constexpr"
+    ]
+  },
+  "performance": {
+    "cpu": 12,
+    "target": "P-Core",
+    "compilers": [
+      "GCC15.2",
+      "Clang21"
+    ],
+    "flags": "C++23 O2 default/native SKIP_RUNTIME_CHECKS; same per-phase benchmark main/API/inputs/IO",
+    "raw_rows": {
+      "initial": 2856,
+      "outlined": 2448,
+      "final_GCC": 1020
+    },
+    "wide_random_Pow_thread_ratio_to_C": "approximately0.59–0.64",
+    "mixed_even_odd_Pow_ratio_to_C": "approximately0.82",
+    "wide_Sqrt_ratio_to_C": "approximately0.51–0.72",
+    "narrow_Sqrt": "GCC final around0.98; Clang around1.00. Original fully-inlined Mont prototype regressed GCC3%, fixed by outlining helper.",
+    "bridge": "All4settings exact Mont helper and ModSqrt function bytes; Clang whole.text/.rodata/.eh_frame identical to measured hybrid. GCC caller/dataset layout differs, remeasured1020rows preserving large gains.",
+    "caveats": [
+      "Short scalar operations show larger relative noise; same-binary controls vary and process whole times are dominated by startup/dataset for those cases.",
+      "GCCnative mixed-modulus exponent1 was75.113us/16384queries vsC59.643us (+25.9%, about0.94ns/query) in final run; same final control74.485us. Earlier same-candidate runs varied strongly. Record rather than claim universal no-regression.",
+      "Main/IO for submitted Verify code unchanged; reported speed ratios refer to library API fixtures, not online accepted timing.",
+      "Additive REDC variants mathematically correct but rejected for GCC performance."
+    ]
+  },
+  "provenance": {
+    "implementation": "Own modular-arithmetic source and owned Miller-Rabin subtractive Montgomery formula used as mathematical reference; independent API integration, canonical invariants and no-inline boundary. No external implementation copied.",
+    "source_reference": "Math/prime_judge(Miller-Rabin).cpp",
+    "reference_sha256": "50efbe99da24df8eed950b870827066525b1b833a455719f060767094ef22a45",
+    "license": "CC0-1.0"
+  },
+  "frozen_data_manifest": "Audit/data/modular-montgomery-2026-10-31/manifest.json"
+}

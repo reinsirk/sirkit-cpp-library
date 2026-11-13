@@ -1,0 +1,1190 @@
+{
+  "date_jst": "2026-11-02",
+  "checked_at_utc": "2026-11-02T09:33:21.864943+00:00",
+  "library": "DataStructure/Segment_Tree.cpp",
+  "before_sha256": "ab5ca276927c7454e0e34f84bf5d363ffbc048f8a1b61587a164b0a8e566e2e8",
+  "after_sha256": "e1db48cbfa592f008216859cf76d8700d686a9e0026a7078eb8a49c796592113",
+  "public_API": "ACL形式と追加機能を維持。公開名・引数・戻り値の変更なし。",
+  "change": "prodを整列ブロックの直接走査へ変更。下位1bitの幅に従って必要な節点へ進み、先頭の節点を直接コピーして単位元とのopを除く。",
+  "unchanged": [
+    "main 2本（バイト単位一致）",
+    "共通I/O（ハッシュ一致）",
+    "構築・点代入・transform・get・all_prod",
+    "max_right・min_left・values・所有権管理・容量保護",
+    "既存のunsigned走査による高速化"
+  ],
+  "proof": "# Greedy prod の独立確認\n\n- 有効な端点は `F=B+l`, `L=B+r`。`B`は2冪で、`n<=INT_MAX`から`1<=F<=L<=UINT_MAX`。空区間は先に返す。\n- 左の幅`b=lowbit(F)`が`L-F`以下なら、節点`F/b`はちょうど`[F,F+b)`を覆う。`F+b<=L`なので加算は折り返さない。加算後のlowbitは少なくとも倍になる。\n- 右へ切り替わる時点では`F<L`かつ`b=lowbit(F)>L-F`。従って`L=F+t` (`0<t<b`)。右端のlowbitはtの下位ビットだけを消すため、右端はFを下回らず、最後にFへ一致する。\n- 右節点`L/lowbit(L)-1`は`[L-lowbit(L),L)`を覆う。切り替え不変条件からLの下位にtの非零ビットがあり、商は3以上なので節点0を選ばない。選択する端点は常にF以上かつ正であり、`countr_zero(0)`は呼ばない。\n- 左は隣接する区間を右へ追加、右は隣接する区間を左へ追加する。最後に分割点で結合するので、非可換の順序を保つ。全中間値が元の列の連続部分列の積となり、ACLの部分集合S'に関する保証も維持する。\n- 左のlowbitは増え、右の非零下位ビットは減るため、走査はO(log(n+1))。\n- デフォルト構築不能S、vector<bool>、コピー／移動後の空オブジェクトも検査した。格納値を動かさずコピーし、更新されるのは局所累積値だけ。\n- 明示的にmove constructorをdeleteしたSの名前付き局所値returnは、旧版にもあった制約。今回新たに導入した制約ではない。\n\n検証: `greedy_independent_probe.cpp`。GCC15.2／Clang21、検査有効／無効、ASan＋UBSan、CPU2。各条件13,939,832項目通過。実木の非可換文字列（デフォルト構築不能型）とboolの全区間、n=0..80および2冪前後から513までを照合。別途、配列を確保しない幾何的な検査でB=2^31／n=INT_MAXまでの端点・選択節点・被覆区間を検査した。LeakSanitizerはptraceのため無効。\n",
+  "complexity": "左のlowbitは受理されるたびに少なくとも倍増する。右は下位の1bitを消すためO(log(n+1))時間、走査用追加領域O(1)。",
+  "monoid_domain": "選択節点と途中の結合は常に連続部分区間。左は後ろに連結し、右は前に連結する。非可換順序とACLの中間値の条件を保つ。",
+  "environment": {
+    "cpu_affinity": 12,
+    "core": "P-Core",
+    "compiler": [
+      "/usr/bin/g++ 15.2",
+      "/usr/bin/clang++ 21 (GCC15 stdlib)"
+    ],
+    "flags": [
+      "-std=c++23",
+      "-O2",
+      "SKIP_RUNTIME_CHECKS"
+    ],
+    "march_native": false
+  },
+  "main_benchmark": {
+    "repetitions": 11,
+    "metric": "process user+system CPU時間の中央値。before/control/candidateの順序をランダム化、同じ実行ファイル名へコピー。全出力SHA一致。",
+    "n_and_q_large": 500000,
+    "mode_mixed": "点更新50%/区間照会50%。mainの計算順序とI/Oは実際の提出版と同じ。",
+    "data": "自作ケース。sumの初期値/加算は0..999、affineはmod998244353の一様値。shortは長さ0..16。オンラインの公式データと同一ではない。",
+    "rows": [
+      {
+        "compiler": "gcc",
+        "kind": "sum",
+        "n": 32,
+        "mode": "mixed",
+        "before_ms": 6.402,
+        "after_ms": 6.045,
+        "control_ms": 6.36,
+        "ratio": 0.944236176194939
+      },
+      {
+        "compiler": "gcc",
+        "kind": "sum",
+        "n": 32,
+        "mode": "query",
+        "before_ms": 7.557,
+        "after_ms": 6.725,
+        "control_ms": 7.626,
+        "ratio": 0.8899034008204313
+      },
+      {
+        "compiler": "gcc",
+        "kind": "sum",
+        "n": 32,
+        "mode": "update",
+        "before_ms": 4.93,
+        "after_ms": 4.902,
+        "control_ms": 4.924,
+        "ratio": 0.994320486815416
+      },
+      {
+        "compiler": "gcc",
+        "kind": "sum",
+        "n": 32,
+        "mode": "short",
+        "before_ms": 6.839,
+        "after_ms": 6.276,
+        "control_ms": 6.815,
+        "ratio": 0.9176780231027927
+      },
+      {
+        "compiler": "gcc",
+        "kind": "sum",
+        "n": 4096,
+        "mode": "mixed",
+        "before_ms": 15.9,
+        "after_ms": 12.892,
+        "control_ms": 15.931,
+        "ratio": 0.810817610062893
+      },
+      {
+        "compiler": "gcc",
+        "kind": "sum",
+        "n": 4096,
+        "mode": "query",
+        "before_ms": 21.015,
+        "after_ms": 12.376,
+        "control_ms": 21.027,
+        "ratio": 0.5889126814180347
+      },
+      {
+        "compiler": "gcc",
+        "kind": "sum",
+        "n": 4096,
+        "mode": "update",
+        "before_ms": 14.519,
+        "after_ms": 14.682,
+        "control_ms": 14.824,
+        "ratio": 1.0112266685033404
+      },
+      {
+        "compiler": "gcc",
+        "kind": "sum",
+        "n": 4096,
+        "mode": "short",
+        "before_ms": 10.886,
+        "after_ms": 9.244,
+        "control_ms": 10.758,
+        "ratio": 0.8491640639353298
+      },
+      {
+        "compiler": "gcc",
+        "kind": "sum",
+        "n": 500000,
+        "mode": "mixed",
+        "before_ms": 41.945,
+        "after_ms": 35.227,
+        "control_ms": 41.902,
+        "ratio": 0.8398378829419477
+      },
+      {
+        "compiler": "gcc",
+        "kind": "sum",
+        "n": 500000,
+        "mode": "query",
+        "before_ms": 52.257,
+        "after_ms": 28.49,
+        "control_ms": 52.374,
+        "ratio": 0.5451901180703064
+      },
+      {
+        "compiler": "gcc",
+        "kind": "sum",
+        "n": 500000,
+        "mode": "update",
+        "before_ms": 40.402,
+        "after_ms": 40.558,
+        "control_ms": 40.428,
+        "ratio": 1.0038611949903469
+      },
+      {
+        "compiler": "gcc",
+        "kind": "sum",
+        "n": 500000,
+        "mode": "short",
+        "before_ms": 21.637,
+        "after_ms": 19.755,
+        "control_ms": 21.645,
+        "ratio": 0.9130193649766603
+      },
+      {
+        "compiler": "gcc",
+        "kind": "affine",
+        "n": 32,
+        "mode": "mixed",
+        "before_ms": 8.52,
+        "after_ms": 8.037,
+        "control_ms": 8.528,
+        "ratio": 0.9433098591549297
+      },
+      {
+        "compiler": "gcc",
+        "kind": "affine",
+        "n": 32,
+        "mode": "query",
+        "before_ms": 9.912,
+        "after_ms": 8.628,
+        "control_ms": 9.888,
+        "ratio": 0.8704600484261501
+      },
+      {
+        "compiler": "gcc",
+        "kind": "affine",
+        "n": 32,
+        "mode": "update",
+        "before_ms": 6.636,
+        "after_ms": 6.609,
+        "control_ms": 6.597,
+        "ratio": 0.9959312839059674
+      },
+      {
+        "compiler": "gcc",
+        "kind": "affine",
+        "n": 32,
+        "mode": "short",
+        "before_ms": 9.26,
+        "after_ms": 8.366,
+        "control_ms": 9.285,
+        "ratio": 0.9034557235421166
+      },
+      {
+        "compiler": "gcc",
+        "kind": "affine",
+        "n": 4096,
+        "mode": "mixed",
+        "before_ms": 20.613,
+        "after_ms": 16.715,
+        "control_ms": 20.644,
+        "ratio": 0.8108960364818318
+      },
+      {
+        "compiler": "gcc",
+        "kind": "affine",
+        "n": 4096,
+        "mode": "query",
+        "before_ms": 24.747,
+        "after_ms": 16.224,
+        "control_ms": 24.777,
+        "ratio": 0.6555946175293975
+      },
+      {
+        "compiler": "gcc",
+        "kind": "affine",
+        "n": 4096,
+        "mode": "update",
+        "before_ms": 16.213,
+        "after_ms": 16.167,
+        "control_ms": 16.23,
+        "ratio": 0.9971627706161722
+      },
+      {
+        "compiler": "gcc",
+        "kind": "affine",
+        "n": 4096,
+        "mode": "short",
+        "before_ms": 13.765,
+        "after_ms": 12.105,
+        "control_ms": 13.778,
+        "ratio": 0.8794042862332001
+      },
+      {
+        "compiler": "gcc",
+        "kind": "affine",
+        "n": 500000,
+        "mode": "mixed",
+        "before_ms": 61.334,
+        "after_ms": 53.832,
+        "control_ms": 61.703,
+        "ratio": 0.877686112107477
+      },
+      {
+        "compiler": "gcc",
+        "kind": "affine",
+        "n": 500000,
+        "mode": "query",
+        "before_ms": 68.363,
+        "after_ms": 53.074,
+        "control_ms": 68.392,
+        "ratio": 0.7763556309699691
+      },
+      {
+        "compiler": "gcc",
+        "kind": "affine",
+        "n": 500000,
+        "mode": "update",
+        "before_ms": 53.955,
+        "after_ms": 53.759,
+        "control_ms": 53.731,
+        "ratio": 0.996367343156334
+      },
+      {
+        "compiler": "gcc",
+        "kind": "affine",
+        "n": 500000,
+        "mode": "short",
+        "before_ms": 38.234,
+        "after_ms": 35.597,
+        "control_ms": 38.193,
+        "ratio": 0.931029973322174
+      },
+      {
+        "compiler": "clang",
+        "kind": "sum",
+        "n": 32,
+        "mode": "mixed",
+        "before_ms": 6.535,
+        "after_ms": 5.992,
+        "control_ms": 6.612,
+        "ratio": 0.9169089517980107
+      },
+      {
+        "compiler": "clang",
+        "kind": "sum",
+        "n": 32,
+        "mode": "query",
+        "before_ms": 7.8,
+        "after_ms": 6.387,
+        "control_ms": 7.808,
+        "ratio": 0.8188461538461538
+      },
+      {
+        "compiler": "clang",
+        "kind": "sum",
+        "n": 32,
+        "mode": "update",
+        "before_ms": 3.972,
+        "after_ms": 4.028,
+        "control_ms": 3.946,
+        "ratio": 1.014098690835851
+      },
+      {
+        "compiler": "clang",
+        "kind": "sum",
+        "n": 32,
+        "mode": "short",
+        "before_ms": 7.001,
+        "after_ms": 6.013,
+        "control_ms": 7.036,
+        "ratio": 0.8588773032423939
+      },
+      {
+        "compiler": "clang",
+        "kind": "sum",
+        "n": 4096,
+        "mode": "mixed",
+        "before_ms": 14.335,
+        "after_ms": 9.945,
+        "control_ms": 14.298,
+        "ratio": 0.6937565399372165
+      },
+      {
+        "compiler": "clang",
+        "kind": "sum",
+        "n": 4096,
+        "mode": "query",
+        "before_ms": 21.18,
+        "after_ms": 12.054,
+        "control_ms": 21.141,
+        "ratio": 0.5691218130311615
+      },
+      {
+        "compiler": "clang",
+        "kind": "sum",
+        "n": 4096,
+        "mode": "update",
+        "before_ms": 6.032,
+        "after_ms": 6.076,
+        "control_ms": 5.983,
+        "ratio": 1.0072944297082227
+      },
+      {
+        "compiler": "clang",
+        "kind": "sum",
+        "n": 4096,
+        "mode": "short",
+        "before_ms": 10.992,
+        "after_ms": 8.976,
+        "control_ms": 11.001,
+        "ratio": 0.8165938864628821
+      },
+      {
+        "compiler": "clang",
+        "kind": "sum",
+        "n": 500000,
+        "mode": "mixed",
+        "before_ms": 38.222,
+        "after_ms": 25.948,
+        "control_ms": 38.168,
+        "ratio": 0.6788760399769767
+      },
+      {
+        "compiler": "clang",
+        "kind": "sum",
+        "n": 500000,
+        "mode": "query",
+        "before_ms": 53.098,
+        "after_ms": 28.626,
+        "control_ms": 53.025,
+        "ratio": 0.539116350898339
+      },
+      {
+        "compiler": "clang",
+        "kind": "sum",
+        "n": 500000,
+        "mode": "update",
+        "before_ms": 19.749,
+        "after_ms": 19.755,
+        "control_ms": 19.752,
+        "ratio": 1.0003038128512836
+      },
+      {
+        "compiler": "clang",
+        "kind": "sum",
+        "n": 500000,
+        "mode": "short",
+        "before_ms": 24.078,
+        "after_ms": 21.035,
+        "control_ms": 24.08,
+        "ratio": 0.8736190713514411
+      },
+      {
+        "compiler": "clang",
+        "kind": "affine",
+        "n": 32,
+        "mode": "mixed",
+        "before_ms": 8.476,
+        "after_ms": 7.695,
+        "control_ms": 8.487,
+        "ratio": 0.9078574799433694
+      },
+      {
+        "compiler": "clang",
+        "kind": "affine",
+        "n": 32,
+        "mode": "query",
+        "before_ms": 9.627,
+        "after_ms": 8.123,
+        "control_ms": 9.583,
+        "ratio": 0.8437727225511581
+      },
+      {
+        "compiler": "clang",
+        "kind": "affine",
+        "n": 32,
+        "mode": "update",
+        "before_ms": 6.698,
+        "after_ms": 6.695,
+        "control_ms": 6.678,
+        "ratio": 0.9995521051060018
+      },
+      {
+        "compiler": "clang",
+        "kind": "affine",
+        "n": 32,
+        "mode": "short",
+        "before_ms": 8.917,
+        "after_ms": 7.801,
+        "control_ms": 8.922,
+        "ratio": 0.8748458001570035
+      },
+      {
+        "compiler": "clang",
+        "kind": "affine",
+        "n": 4096,
+        "mode": "mixed",
+        "before_ms": 20.325,
+        "after_ms": 16.189,
+        "control_ms": 20.364,
+        "ratio": 0.7965067650676507
+      },
+      {
+        "compiler": "clang",
+        "kind": "affine",
+        "n": 4096,
+        "mode": "query",
+        "before_ms": 24.117,
+        "after_ms": 15.542,
+        "control_ms": 24.102,
+        "ratio": 0.6444416801426379
+      },
+      {
+        "compiler": "clang",
+        "kind": "affine",
+        "n": 4096,
+        "mode": "update",
+        "before_ms": 16.433,
+        "after_ms": 16.386,
+        "control_ms": 16.389,
+        "ratio": 0.9971399014178787
+      },
+      {
+        "compiler": "clang",
+        "kind": "affine",
+        "n": 4096,
+        "mode": "short",
+        "before_ms": 13.857,
+        "after_ms": 11.885,
+        "control_ms": 13.922,
+        "ratio": 0.8576892545283972
+      },
+      {
+        "compiler": "clang",
+        "kind": "affine",
+        "n": 500000,
+        "mode": "mixed",
+        "before_ms": 62.047,
+        "after_ms": 54.055,
+        "control_ms": 61.652,
+        "ratio": 0.8711944171353974
+      },
+      {
+        "compiler": "clang",
+        "kind": "affine",
+        "n": 500000,
+        "mode": "query",
+        "before_ms": 67.625,
+        "after_ms": 52.961,
+        "control_ms": 67.638,
+        "ratio": 0.7831571164510166
+      },
+      {
+        "compiler": "clang",
+        "kind": "affine",
+        "n": 500000,
+        "mode": "update",
+        "before_ms": 54.537,
+        "after_ms": 54.402,
+        "control_ms": 54.421,
+        "ratio": 0.9975246163155289
+      },
+      {
+        "compiler": "clang",
+        "kind": "affine",
+        "n": 500000,
+        "mode": "short",
+        "before_ms": 39.109,
+        "after_ms": 35.958,
+        "control_ms": 39.102,
+        "ratio": 0.9194303101587868
+      }
+    ]
+  },
+  "validation": {
+    "tests": [
+      {
+        "compiler": "gcc",
+        "skip": false,
+        "test": "segment_tree_reference_test",
+        "command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-I",
+          "Verify/current/vendor",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "Verify/current/tests/segment_tree_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_segtree_speed_20261102/current_check"
+        ],
+        "ASAN_OPTIONS": "detect_leaks=0 (ptrace environment)",
+        "stdout": "segtree checks=248744\n",
+        "stderr": "",
+        "status": "PASS"
+      },
+      {
+        "compiler": "gcc",
+        "skip": false,
+        "test": "segment_tree_partition_test",
+        "command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-I",
+          "Verify/current/vendor",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "Verify/current/tests/segment_tree_partition_test.cpp",
+          "-o",
+          "/tmp/sirkit_segtree_speed_20261102/current_check"
+        ],
+        "ASAN_OPTIONS": "detect_leaks=0 (ptrace environment)",
+        "stdout": "greedy independent checks=13939832\n",
+        "stderr": "",
+        "status": "PASS"
+      },
+      {
+        "compiler": "gcc",
+        "skip": false,
+        "test": "acl_range_api_test",
+        "command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-I",
+          "Verify/current/vendor",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "Verify/current/tests/acl_range_api_test.cpp",
+          "-o",
+          "/tmp/sirkit_segtree_speed_20261102/current_check"
+        ],
+        "ASAN_OPTIONS": "detect_leaks=0 (ptrace environment)",
+        "stdout": "ACL range API checks=26439\n",
+        "stderr": "",
+        "status": "PASS"
+      },
+      {
+        "compiler": "gcc",
+        "skip": false,
+        "test": "acl_range_reference_test",
+        "command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-I",
+          "Verify/current/vendor",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "Verify/current/tests/acl_range_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_segtree_speed_20261102/current_check"
+        ],
+        "ASAN_OPTIONS": "detect_leaks=0 (ptrace environment)",
+        "stdout": "ACL core API cross-checks=692975\n",
+        "stderr": "",
+        "status": "PASS"
+      },
+      {
+        "compiler": "gcc",
+        "skip": false,
+        "test": "range_structures_allocation_test",
+        "command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-I",
+          "Verify/current/vendor",
+          "Verify/current/tests/range_structures_allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_segtree_speed_20261102/current_check"
+        ],
+        "ASAN_OPTIONS": "detect_leaks=0 (ptrace environment)",
+        "stdout": "Range allocation checks=4187 failures=2660 live_delta=0\n",
+        "stderr": "",
+        "status": "PASS"
+      },
+      {
+        "compiler": "gcc",
+        "skip": true,
+        "test": "segment_tree_reference_test",
+        "command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-I",
+          "Verify/current/vendor",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "Verify/current/tests/segment_tree_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_segtree_speed_20261102/current_check"
+        ],
+        "ASAN_OPTIONS": "detect_leaks=0 (ptrace environment)",
+        "stdout": "segtree checks=248600\n",
+        "stderr": "",
+        "status": "PASS"
+      },
+      {
+        "compiler": "gcc",
+        "skip": true,
+        "test": "segment_tree_partition_test",
+        "command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-I",
+          "Verify/current/vendor",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "Verify/current/tests/segment_tree_partition_test.cpp",
+          "-o",
+          "/tmp/sirkit_segtree_speed_20261102/current_check"
+        ],
+        "ASAN_OPTIONS": "detect_leaks=0 (ptrace environment)",
+        "stdout": "greedy independent checks=13939832\n",
+        "stderr": "",
+        "status": "PASS"
+      },
+      {
+        "compiler": "gcc",
+        "skip": true,
+        "test": "acl_range_api_test",
+        "command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-I",
+          "Verify/current/vendor",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "Verify/current/tests/acl_range_api_test.cpp",
+          "-o",
+          "/tmp/sirkit_segtree_speed_20261102/current_check"
+        ],
+        "ASAN_OPTIONS": "detect_leaks=0 (ptrace environment)",
+        "stdout": "ACL range API checks=26439\n",
+        "stderr": "",
+        "status": "PASS"
+      },
+      {
+        "compiler": "gcc",
+        "skip": true,
+        "test": "acl_range_reference_test",
+        "command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-I",
+          "Verify/current/vendor",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "Verify/current/tests/acl_range_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_segtree_speed_20261102/current_check"
+        ],
+        "ASAN_OPTIONS": "detect_leaks=0 (ptrace environment)",
+        "stdout": "ACL core API cross-checks=692975\n",
+        "stderr": "",
+        "status": "PASS"
+      },
+      {
+        "compiler": "gcc",
+        "skip": true,
+        "test": "range_structures_allocation_test",
+        "command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-I",
+          "Verify/current/vendor",
+          "-DSKIP_RUNTIME_CHECKS",
+          "Verify/current/tests/range_structures_allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_segtree_speed_20261102/current_check"
+        ],
+        "ASAN_OPTIONS": "detect_leaks=0 (ptrace environment)",
+        "stdout": "Range allocation checks=4187 failures=2660 live_delta=0\n",
+        "stderr": "",
+        "status": "PASS"
+      },
+      {
+        "compiler": "clang",
+        "skip": false,
+        "test": "segment_tree_reference_test",
+        "command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-I",
+          "Verify/current/vendor",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "Verify/current/tests/segment_tree_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_segtree_speed_20261102/current_check"
+        ],
+        "ASAN_OPTIONS": "detect_leaks=0 (ptrace environment)",
+        "stdout": "segtree checks=248744\n",
+        "stderr": "",
+        "status": "PASS"
+      },
+      {
+        "compiler": "clang",
+        "skip": false,
+        "test": "segment_tree_partition_test",
+        "command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-I",
+          "Verify/current/vendor",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "Verify/current/tests/segment_tree_partition_test.cpp",
+          "-o",
+          "/tmp/sirkit_segtree_speed_20261102/current_check"
+        ],
+        "ASAN_OPTIONS": "detect_leaks=0 (ptrace environment)",
+        "stdout": "greedy independent checks=13939832\n",
+        "stderr": "",
+        "status": "PASS"
+      },
+      {
+        "compiler": "clang",
+        "skip": false,
+        "test": "acl_range_api_test",
+        "command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-I",
+          "Verify/current/vendor",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "Verify/current/tests/acl_range_api_test.cpp",
+          "-o",
+          "/tmp/sirkit_segtree_speed_20261102/current_check"
+        ],
+        "ASAN_OPTIONS": "detect_leaks=0 (ptrace environment)",
+        "stdout": "ACL range API checks=26439\n",
+        "stderr": "",
+        "status": "PASS"
+      },
+      {
+        "compiler": "clang",
+        "skip": false,
+        "test": "acl_range_reference_test",
+        "command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-I",
+          "Verify/current/vendor",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "Verify/current/tests/acl_range_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_segtree_speed_20261102/current_check"
+        ],
+        "ASAN_OPTIONS": "detect_leaks=0 (ptrace environment)",
+        "stdout": "ACL core API cross-checks=692975\n",
+        "stderr": "",
+        "status": "PASS"
+      },
+      {
+        "compiler": "clang",
+        "skip": false,
+        "test": "range_structures_allocation_test",
+        "command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-I",
+          "Verify/current/vendor",
+          "Verify/current/tests/range_structures_allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_segtree_speed_20261102/current_check"
+        ],
+        "ASAN_OPTIONS": "detect_leaks=0 (ptrace environment)",
+        "stdout": "Range allocation checks=4187 failures=2660 live_delta=0\n",
+        "stderr": "",
+        "status": "PASS"
+      },
+      {
+        "compiler": "clang",
+        "skip": true,
+        "test": "segment_tree_reference_test",
+        "command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-I",
+          "Verify/current/vendor",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "Verify/current/tests/segment_tree_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_segtree_speed_20261102/current_check"
+        ],
+        "ASAN_OPTIONS": "detect_leaks=0 (ptrace environment)",
+        "stdout": "segtree checks=248600\n",
+        "stderr": "",
+        "status": "PASS"
+      },
+      {
+        "compiler": "clang",
+        "skip": true,
+        "test": "segment_tree_partition_test",
+        "command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-I",
+          "Verify/current/vendor",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "Verify/current/tests/segment_tree_partition_test.cpp",
+          "-o",
+          "/tmp/sirkit_segtree_speed_20261102/current_check"
+        ],
+        "ASAN_OPTIONS": "detect_leaks=0 (ptrace environment)",
+        "stdout": "greedy independent checks=13939832\n",
+        "stderr": "",
+        "status": "PASS"
+      },
+      {
+        "compiler": "clang",
+        "skip": true,
+        "test": "acl_range_api_test",
+        "command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-I",
+          "Verify/current/vendor",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "Verify/current/tests/acl_range_api_test.cpp",
+          "-o",
+          "/tmp/sirkit_segtree_speed_20261102/current_check"
+        ],
+        "ASAN_OPTIONS": "detect_leaks=0 (ptrace environment)",
+        "stdout": "ACL range API checks=26439\n",
+        "stderr": "",
+        "status": "PASS"
+      },
+      {
+        "compiler": "clang",
+        "skip": true,
+        "test": "acl_range_reference_test",
+        "command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-I",
+          "Verify/current/vendor",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "Verify/current/tests/acl_range_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_segtree_speed_20261102/current_check"
+        ],
+        "ASAN_OPTIONS": "detect_leaks=0 (ptrace environment)",
+        "stdout": "ACL core API cross-checks=692975\n",
+        "stderr": "",
+        "status": "PASS"
+      },
+      {
+        "compiler": "clang",
+        "skip": true,
+        "test": "range_structures_allocation_test",
+        "command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-I",
+          "Verify/current/vendor",
+          "-DSKIP_RUNTIME_CHECKS",
+          "Verify/current/tests/range_structures_allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_segtree_speed_20261102/current_check"
+        ],
+        "ASAN_OPTIONS": "detect_leaks=0 (ptrace environment)",
+        "stdout": "Range allocation checks=4187 failures=2660 live_delta=0\n",
+        "stderr": "",
+        "status": "PASS"
+      }
+    ],
+    "independent_probe": [
+      {
+        "compiler": "gcc",
+        "skip": false,
+        "command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "/tmp/sirkit_segtree_speed_20261102/greedy_independent_probe.cpp",
+          "-o",
+          "/tmp/sirkit_segtree_speed_20261102/greedy_independent_probe"
+        ],
+        "stdout": "greedy independent checks=13939832\n",
+        "stderr": "",
+        "status": "PASS"
+      },
+      {
+        "compiler": "gcc",
+        "skip": true,
+        "command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/tmp/sirkit_segtree_speed_20261102/greedy_independent_probe.cpp",
+          "-o",
+          "/tmp/sirkit_segtree_speed_20261102/greedy_independent_probe"
+        ],
+        "stdout": "greedy independent checks=13939832\n",
+        "stderr": "",
+        "status": "PASS"
+      },
+      {
+        "compiler": "clang",
+        "skip": false,
+        "command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "/tmp/sirkit_segtree_speed_20261102/greedy_independent_probe.cpp",
+          "-o",
+          "/tmp/sirkit_segtree_speed_20261102/greedy_independent_probe"
+        ],
+        "stdout": "greedy independent checks=13939832\n",
+        "stderr": "",
+        "status": "PASS"
+      },
+      {
+        "compiler": "clang",
+        "skip": true,
+        "command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/tmp/sirkit_segtree_speed_20261102/greedy_independent_probe.cpp",
+          "-o",
+          "/tmp/sirkit_segtree_speed_20261102/greedy_independent_probe"
+        ],
+        "stdout": "greedy independent checks=13939832\n",
+        "stderr": "",
+        "status": "PASS"
+      }
+    ],
+    "independent_assertions_per_run": 13939832,
+    "profiles": [
+      {
+        "cache_key": "64095c4f57b05058621ba1df58b8e62f743501ddbae2616b021503454d641e7f",
+        "cached": false,
+        "id": "segment_tree",
+        "kind": "program",
+        "profile": "Variants/GCC",
+        "setting": "default",
+        "status": "LOCAL_SAMPLE_PASS"
+      },
+      {
+        "cache_key": "5f34872b2e1f42e96384a254410993f2f50c83d5c2c489a08c199fafd4ebd1d8",
+        "cached": false,
+        "id": "segment_tree_composite",
+        "kind": "program",
+        "profile": "Variants/GCC",
+        "setting": "default",
+        "status": "LOCAL_SAMPLE_PASS"
+      },
+      {
+        "cache_key": "f250fe98c9f48a5c7bda512e0c8da133dd260f86b12790a734c3023fef63b7cd",
+        "cached": false,
+        "id": "segment_tree",
+        "kind": "program",
+        "profile": "Fast/GCC",
+        "setting": "default",
+        "status": "LOCAL_SAMPLE_PASS"
+      },
+      {
+        "cache_key": "3221a62517e90e49cb78dac780ddd898efc19b948633610c5ae653fd16f521ea",
+        "cached": false,
+        "id": "segment_tree_composite",
+        "kind": "program",
+        "profile": "Fast/GCC",
+        "setting": "default",
+        "status": "LOCAL_SAMPLE_PASS"
+      },
+      {
+        "cache_key": "6b2ece4f7ddc29ed064143bcfdda40ce7976c6e79307756cd80c381465e938b7",
+        "cached": false,
+        "id": "segment_tree",
+        "kind": "program",
+        "profile": "Variants/Clang",
+        "setting": "default",
+        "status": "LOCAL_SAMPLE_PASS"
+      },
+      {
+        "cache_key": "a4129a43bf528c7197939941d74f3ccaf2885aae69d1ebf246b3bd24ebfa0eb0",
+        "cached": false,
+        "id": "segment_tree_composite",
+        "kind": "program",
+        "profile": "Variants/Clang",
+        "setting": "default",
+        "status": "LOCAL_SAMPLE_PASS"
+      },
+      {
+        "cache_key": "5df7be24a5777e8757c9c958e04fdce3d19017647d5662c2c787251958feb8fe",
+        "cached": false,
+        "id": "segment_tree",
+        "kind": "program",
+        "profile": "Fast/Clang",
+        "setting": "default",
+        "status": "LOCAL_SAMPLE_PASS"
+      },
+      {
+        "cache_key": "7f28609aae483f0fbec0848ba09dd9d1e01938919f5aa373aa8b23ed2546ad99",
+        "cached": false,
+        "id": "segment_tree_composite",
+        "kind": "program",
+        "profile": "Fast/Clang",
+        "setting": "default",
+        "status": "LOCAL_SAMPLE_PASS"
+      },
+      {
+        "cache_key": "2c64a79e24165ad7b9f8e60b4d0f8623abac5ed7f19fae04eedcb45fb3608288",
+        "cached": false,
+        "id": "example:segment_tree_example",
+        "kind": "example_baseline",
+        "profile": "Normal/GCC",
+        "setting": "default",
+        "status": "LOCAL_SAMPLE_PASS"
+      },
+      {
+        "cache_key": "1d5dabb7d6764fb04f44d3bedf82073fb53da5c06ab260dfe84771c87ac84768",
+        "cached": false,
+        "id": "example:segment_tree_example",
+        "kind": "example",
+        "profile": "Variants/GCC",
+        "setting": "default",
+        "status": "LOCAL_SAMPLE_PASS"
+      },
+      {
+        "cache_key": "bee32eccce51b03c456c8553895175f15bd46466c322375ab1e744970609334a",
+        "cached": false,
+        "id": "example:segment_tree_example",
+        "kind": "example_baseline",
+        "profile": "Normal/Clang",
+        "setting": "default",
+        "status": "LOCAL_SAMPLE_PASS"
+      },
+      {
+        "cache_key": "b3a2d5ebf4c972cb6e2d18baea9c44a3aab9b1cfda1eb15e998c046418310364",
+        "cached": false,
+        "id": "example:segment_tree_example",
+        "kind": "example",
+        "profile": "Variants/Clang",
+        "setting": "default",
+        "status": "LOCAL_SAMPLE_PASS"
+      },
+      {
+        "cache_key": "9e6401c718bae2703a23f424c25f7b7b5a33a75b2e0a8a50ba38691657e29abc",
+        "cached": false,
+        "id": "example:segment_tree_example",
+        "kind": "example",
+        "profile": "Fast/GCC",
+        "setting": "default",
+        "status": "LOCAL_SAMPLE_PASS"
+      },
+      {
+        "cache_key": "e7d42c98e19b4a0da2ff68e5a793cb8e6a3d75cbc7a4f9ce1cbf6b4b7dff80e2",
+        "cached": false,
+        "id": "example:segment_tree_example",
+        "kind": "example",
+        "profile": "Fast/Clang",
+        "setting": "default",
+        "status": "LOCAL_SAMPLE_PASS"
+      }
+    ],
+    "sanitizer": "ASan+UBSan有効。LSanはptrace制約で無効。独自確保失敗試験2660通り/live_delta=0。"
+  },
+  "rejected": {
+    "unsigned_update": "改善が安定せず、小規模更新で後退する条件があるため見送り。",
+    "flagged_accumulators": "分岐費用が増え、混在ケース等で後退するため不採用。",
+    "level_build": "今回のmain全体で明確な改善を確認できず不採用。",
+    "generic_equality_early_stop": "ACLは等値比較とopの整合性を要求しないため採用しない。"
+  },
+  "online_baseline": {
+    "segment_tree": {
+      "id": 414709,
+      "status": "AC",
+      "ms": 90,
+      "cases": 21
+    },
+    "segment_tree_composite": {
+      "id": 414710,
+      "status": "AC",
+      "ms": 123,
+      "cases": 16
+    }
+  },
+  "online_status": "改修後は未提出。上記ACは改修前の本体についての記録として保持し、現行版は要再提出。",
+  "limits": [
+    "数%の差は配置・測定揺らぎも含む。全ての操作/入力で厳密に同速以上を保証しない。",
+    "ローカルの短縮率をオンライン時間の予測値として扱わない。",
+    "opの呼び出し回数は減る。モノイド則が成り立つ演算を使う。"
+  ],
+  "evidence": "Audit/data/segtree-block-query-2026-11-02-evidence.zip",
+  "evidence_sha256": "03a44705209ea03a22b4ee2761952efe686e3244e2a38549c12d9f41a1cd51ed"
+}

@@ -1,0 +1,52 @@
+{
+  "date": "2026-11-04",
+  "scope": "HLD所有APIの利用説明を丁寧に整理。実装とVerify mainは変更せず、先頭APIコメント・Document・完全例を同期。",
+  "changes": [
+    "Rangeの選び方をBIT/Segtree/Lazyの3行表にし、値型・op/e・作用の型引数と用意する配列の型を説明。",
+    "prodは選んだ和/最小値などの集計結果を返し、頂点番号で操作することを説明。元の配列との更新共有はなく、コピー/再構築の扱いも例示。",
+    "Ordered=falseは可換用、trueはu→vの順序を守る。逆元へ変える機能ではなく、集計器2本分の領域/更新であることを明記。",
+    "辺モードでもN個必要、各根に単位元、親辺は子へ格納。鎖0-1-2の親辺配置・辺更新・LCA除外・同一頂点・葉の空区間を説明。",
+    "根変更で辺の対応も作り直すこと、非可換部分木のDFS順、非constの照会、例外時の再構築、型幅周回、文字列などの演算費用を補足。",
+    "完全例の参照配列手動更新をやめ、元の値の独立性を明示。辺操作・空の辺区間・コピー・再構築の短い例を追加。"
+  ],
+  "implementation_equivalence": {
+    "before_sha256": "861af0c26da53a58df0909f7f24ad6652949739eb672aedd82fc5f368df0e2ea",
+    "after_sha256": "e306eb9610e6f0f3495b2726975182c0230db6116a5cd27a1ef49bdfd281a88b",
+    "noncomment_sha256": "6de95a9438921b3d73dd1244aada53e6cb001f3278904558e8e89ca4edec7017",
+    "result": "All implementation lines unchanged; only full-line API comments differ"
+  },
+  "validation": {
+    "document_snippets_settings": 4,
+    "example_profiles": 6,
+    "scope": "GCC15.2/Clang21.1.8 C++23O2WallWextraWerror。Documentの2コードブロックを結合し結果を照合、SKIP有無で成功。完全例は通常/コンパイラ別/速度優先の6構成がdbacと一致しassertも成功。",
+    "prior_library_validation": "実装の全非コメント行が前回と同一であることを照合。以前の検証・測定記録を現行ソースのACへ書き換えない。"
+  },
+  "document_size": {
+    "lines": 63,
+    "characters": 4107,
+    "bytes": 7424,
+    "reference_lines": 61,
+    "reference_characters": 3268,
+    "review": "基本例・集計器選択表・操作表・向き/辺の具体例・前提/所有権/計算量を配置。複数機能群があるため少し長いが、低水準APIの全列挙は本体先頭へ案内して重複を削減。変更履歴・測定記録・入門講座は追加しない。"
+  },
+  "files": {
+    "Graph/Heavy_Light_Decomposition.cpp": {
+      "sha256": "e306eb9610e6f0f3495b2726975182c0230db6116a5cd27a1ef49bdfd281a88b",
+      "bytes": 36718
+    },
+    "Document/heavy_light_decomposition.md": {
+      "sha256": "670b39f2aa977b8cf6f7fd3f57c3626f36b1661ec207e027cbe9a68b29344765",
+      "bytes": 7424
+    },
+    "Examples/heavy_light_decomposition_example.cpp": {
+      "sha256": "f2b1688fde3790d823ab29a5476b419632d14cf470a5d3f65cf7a07d7332fdcc",
+      "bytes": 3099
+    }
+  },
+  "evidence": {
+    "path": "Audit/data/hld-documentation-2026-11-04.zip",
+    "sha256": "6a70c92d586eb73f1634d1842aa2f1bf0eb7282de852c24aa37fb2734b44b447",
+    "entries": 19
+  },
+  "prior_api_and_performance": "Audit/hld-owned-2026-11-04.json"
+}

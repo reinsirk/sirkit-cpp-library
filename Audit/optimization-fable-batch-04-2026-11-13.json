@@ -1,0 +1,384 @@
+{
+  "format": 1,
+  "date": "2026-11-13",
+  "stage": "claude",
+  "status": "complete",
+  "model": "claude-fable-5-2",
+  "scope": "whole_program for LC; library and straightforward main for AtCoder",
+  "snapshots": {
+    "implicit_treap_affine": {
+      "input_source_sha256": "fc7ad145500fa7065cadd719af760f04c08870c7f465fb83b938fa447a2a4d8d",
+      "source_sha256": "fc7ad145500fa7065cadd719af760f04c08870c7f465fb83b938fa447a2a4d8d",
+      "changed": false,
+      "codex_receipt": "Verify/optimization/stages/implicit_treap_affine.codex.b20afe325a631e85ddfb1bd971bc9857e2fd89fa10479202df581c47d8ef16af.json",
+      "codex_receipt_sha256": "b20afe325a631e85ddfb1bd971bc9857e2fd89fa10479202df581c47d8ef16af"
+    },
+    "implicit_treap_deque": {
+      "input_source_sha256": "ebf8ef7a60cc285add4b686f5159527098c7aea9c3b731b8ed3d06a19e488b02",
+      "source_sha256": "70a33faf27eb34f448e19bacc04590411a933b5d314031f841b7be9fdeb6d82b",
+      "changed": true,
+      "codex_receipt": "Verify/optimization/stages/implicit_treap_deque.codex.5a7e00b428342aab1e6ec91e54fbe7ef67e04a936c585c76f9bc50a99d55fa54.json",
+      "codex_receipt_sha256": "5a7e00b428342aab1e6ec91e54fbe7ef67e04a936c585c76f9bc50a99d55fa54"
+    },
+    "line_container_2d_min": {
+      "input_source_sha256": "095cb6e41b793098846fc40a7debe6ab3ba83ef61a284b7a1f57d3a9c37ef02c",
+      "source_sha256": "095cb6e41b793098846fc40a7debe6ab3ba83ef61a284b7a1f57d3a9c37ef02c",
+      "changed": false,
+      "codex_receipt": "Verify/optimization/stages/line_container_2d_min.codex.8acfe32cee1af8b7ba05d02f1a4028c7abe23353e9b457a1eb1ac925d0ad5b41.json",
+      "codex_receipt_sha256": "8acfe32cee1af8b7ba05d02f1a4028c7abe23353e9b457a1eb1ac925d0ad5b41"
+    },
+    "line_container_min": {
+      "input_source_sha256": "0e128db3832c828e60bf1e3ab7d5b8f78fdbf94e9a395fe4d97b572e7e81a7ba",
+      "source_sha256": "0e128db3832c828e60bf1e3ab7d5b8f78fdbf94e9a395fe4d97b572e7e81a7ba",
+      "changed": false,
+      "codex_receipt": "Verify/optimization/stages/line_container_min.codex.18311cc363ecbae1b5bedc1c459af27510b96f76662d5a1a782117b38266bd09.json",
+      "codex_receipt_sha256": "18311cc363ecbae1b5bedc1c459af27510b96f76662d5a1a782117b38266bd09"
+    },
+    "persistent_union_find": {
+      "input_source_sha256": "89002b7e34cbfce60dc075a13f07910a5d15f6e1ef1dafe9ca2c4d31eda6736c",
+      "source_sha256": "89002b7e34cbfce60dc075a13f07910a5d15f6e1ef1dafe9ca2c4d31eda6736c",
+      "changed": false,
+      "codex_receipt": "Verify/optimization/stages/persistent_union_find.codex.c66406cc29d153ff50968afb93f54c55bc32300917a85dde4bb97a4676df3516.json",
+      "codex_receipt_sha256": "c66406cc29d153ff50968afb93f54c55bc32300917a85dde4bb97a4676df3516"
+    },
+    "rollback_union_find": {
+      "input_source_sha256": "022a3e33aaf58ad0794b0eff55f8feaf38a5603fcf20f1d0587cfb78ce97433c",
+      "source_sha256": "0f51741fc209bd8ff5eb11783dde4dd7af05406d6ccccf299f5dcc256276504d",
+      "changed": true,
+      "codex_receipt": "Verify/optimization/stages/rollback_union_find.codex.1f7cae889c9426371da6e2e33a5dc5b4a772512bd842222312bfd07c5f784997.json",
+      "codex_receipt_sha256": "1f7cae889c9426371da6e2e33a5dc5b4a772512bd842222312bfd07c5f784997"
+    }
+  },
+  "review": {
+    "summary": "本体6件はすべてkeep。速度候補はdriver限定の3件で、いずれも未測定のため採否は測定で決めること。有望順はrollbackの葉省略、dequeのS 32bit化、affineのopの%除去。",
+    "reviewed_ids": [
+      "implicit_treap_affine",
+      "implicit_treap_deque",
+      "line_container_2d_min",
+      "line_container_min",
+      "persistent_union_find",
+      "rollback_union_find"
+    ],
+    "libraries": [
+      {
+        "path": "DataStructure/implicit_treap.cpp",
+        "decision": "keep",
+        "reason": "affineは64バイトcompact経路に載っており、split/merge/pull/pushに無駄な再計算は見当たらない。"
+      },
+      {
+        "path": "DataStructure/line-container-2d.cpp",
+        "decision": "keep",
+        "reason": "整数経路は検査省略のうえlower_bound直行で、|値|≤2e18はlong doubleで厳密なためdouble化不採用の判断は妥当。"
+      },
+      {
+        "path": "DataStructure/line-container.cpp",
+        "decision": "keep",
+        "reason": "queryは先頭判定とlower_bound 1回のみで、overflow安全な交点計算は全合法入力に必要。"
+      },
+      {
+        "path": "DataStructure/persistent-union-find.cpp",
+        "decision": "keep",
+        "reason": "get_two/update_twoで共通経路を共有済みで、版の共有所有を保ったまま削れる複製が見当たらない。"
+      },
+      {
+        "path": "DataStructure/rollback-union-find.cpp",
+        "decision": "keep",
+        "reason": "unite/undoは最小限の処理で、残る余地はdriver側のDFSにある。"
+      }
+    ],
+    "optimization_candidates": [
+      {
+        "ids": [
+          "rollback_union_find"
+        ],
+        "reason": "子を持たないuniteは誰にも観測されないのでunite+undoごと省ける。queryは状態を変えないのでexitフレームが不要。スタック操作と履歴pushが減る見込み(未測定)。",
+        "patch": "-        if(exit){if(i!=0&&queries[i][0]==0)uf.undo();continue;}\n-        if(i!=0){const auto& a=queries[i];if(a[0]==0)uf.unite(a[1],a[2]);else answers[i]=uf.same(a[1],a[2]);}\n-        stack.push_back({i,true});for(int child=head[i];child!=-1;child=next[child])stack.push_back({child,false});\n+        if(exit){uf.undo();continue;}\n+        if(i!=0){const auto& a=queries[i];\n+            if(a[0]!=0)answers[i]=uf.same(a[1],a[2]);\n+            else if(head[i]!=-1){uf.unite(a[1],a[2]);stack.push_back({i,true});}\n+            else continue;}\n+        for(int child=head[i];child!=-1;child=next[child])stack.push_back({child,false});",
+        "required_validation": "既存のPython独立モデルとsmall全件一致(query版を親に持つ入力、葉unite、自己辺・重複辺を含む)。random/退化の両方でg++/clang++とも現行head/next版より回帰なし。"
+      },
+      {
+        "ids": [
+          "implicit_treap_deque"
+        ],
+        "reason": "Sがint64×2のためvalue/forward/backwardで48バイト、非compactのNodeは約80バイトで2キャッシュ線にまたがる。Sをuint32×2にすると約56バイトになり、%も符号なしになる(効果は未測定)。driverのみの変更。",
+        "patch": "-    struct S { std::int64_t a, b; };\n+    struct S { std::uint32_t a, b; };\n     static S op(S x, S y) {\n-        return {y.a * x.a % mod, (y.a * x.b + y.b) % mod};\n+        return {std::uint32_t(std::uint64_t(y.a) * x.a % mod), std::uint32_t((std::uint64_t(y.a) * x.b + y.b) % mod)};\n     }\n(modはstd::uint64_tにし、mainの出力は (std::uint64_t(f.a) * x + f.b) % A::mod)",
+        "required_validation": "sizeof(Node)が実際に縮むことをstatic_assert等で確認。small参照全件一致(a,b,x=mod-1の境界を含む)。成長random・退化prependに加え、成長しない低占有列でも両コンパイラ回帰なし。"
+      },
+      {
+        "ids": [
+          "implicit_treap_affine"
+        ],
+        "reason": "pullごとに2回呼ばれるopの加算に64bit符号付き%がある。両辺<modなので条件減算で足り、S/Fのサイズは変えないのでcompact経路(sizeof==64)は維持される。効果は小さい可能性があり未測定。",
+        "patch": "-    static S op(S x, S y) { return {(x.sum + y.sum) % mod, x.count + y.count}; }\n+    static S op(S x, S y) { std::int64_t s = x.sum + y.sum; return {s >= mod ? s - mod : s, x.count + y.count}; }",
+        "required_validation": "small参照全件一致(全値mod-1、e()との合成を含む)。random/退化でg++/clang++とも回帰なし。分岐化で悪化するなら不採用。S/Fを32bitへ縮める案はcompact経路を外れるため、別途測定なしには採らない。"
+      }
+    ],
+    "correctness_findings": []
+  },
+  "candidate_decisions": {
+    "candidate_decisions": [
+      {
+        "index": 0,
+        "decision": "adopt",
+        "reason": "sameはconst、unite(false含む)は1履歴なので非葉uniteにだけexit/undoを対応。葉uniteは未観測。query親/自己/重複/深鎖の独立persistentモデル8構成と最終生成CIが通過。両compilerのrandom/退化/starで短縮、GCC純lineは再測定でほぼ同等。現O3を新mainでも実測維持。"
+      },
+      {
+        "index": 1,
+        "decision": "adopt",
+        "reason": "積前uint64化でSをuint32x2へ縮小し、実StoredNode80→56B/align8。全Nodeが1cachelineに収まるとは主張しない。独立16＋実main32構成、3同seed・50万queryでGCC約1〜2%、Clang約6〜10%短縮、低占有は誤差内。製品時計seedは変更せず、計時用seedだけ揃えた。O3維持。"
+      },
+      {
+        "index": 2,
+        "decision": "reject",
+        "reason": "S/FとCompactNode64B経路を保った独立検証はPASSだが、GCC random/退化で約8%回帰しClang利益と両立しない。既存の%を維持。"
+      }
+    ],
+    "correctness_resolution": [],
+    "validation_artifacts": [
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04/rollback_main_candidate/summary.md",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04/rollback_main_candidate/final_report.json",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04/rollback_main_candidate/finalize.py",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04/rollback_main_candidate/confirmation_results.json",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04/rollback_main_candidate/confirm.py",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04/rollback_main_candidate/benchmark_results.json",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04/rollback_main_candidate/correctness_notes.md",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04/rollback_main_candidate/benchmark.py",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04/rollback_main_candidate/validation_results.json",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04/rollback_main_candidate/small_cases.json",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04/rollback_main_candidate/validate.py",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04/rollback_main_candidate/provenance.json",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04/rollback_main_candidate/candidate_skip.cpp",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04/rollback_main_candidate/candidate_checked.cpp",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04/rollback_main_candidate/baseline_skip.cpp",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04/rollback_main_candidate/baseline_checked.cpp",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04/rollback_main_candidate/candidate.patch",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04/rollback_main_candidate/rollback-union-find.cpp",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04/rollback_main_candidate/candidate_main.cpp",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04/rollback_main_candidate/baseline_main.cpp",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04/rollback_main_candidate/prepare.py",
+      "/tmp/sirkit_remaining_20261113/treap_main_candidates/findings.md",
+      "/tmp/sirkit_remaining_20261113/treap_main_candidates/final_report.json",
+      "/tmp/sirkit_remaining_20261113/treap_main_candidates/confirmation_results.json",
+      "/tmp/sirkit_remaining_20261113/treap_main_candidates/benchmark_results.json",
+      "/tmp/sirkit_remaining_20261113/treap_main_candidates/benchmark.py",
+      "/tmp/sirkit_remaining_20261113/treap_main_candidates/main_test_results.json",
+      "/tmp/sirkit_remaining_20261113/treap_main_candidates/layout_summary.json",
+      "/tmp/sirkit_remaining_20261113/treap_main_candidates/test_results.json",
+      "/tmp/sirkit_remaining_20261113/treap_main_candidates/tests.py",
+      "/tmp/sirkit_remaining_20261113/treap_main_candidates/prepare_tests.py",
+      "/tmp/sirkit_remaining_20261113/treap_main_candidates/layout_results.json",
+      "/tmp/sirkit_remaining_20261113/treap_main_candidates/layout.py",
+      "/tmp/sirkit_remaining_20261113/treap_main_candidates/metadata.json",
+      "/tmp/sirkit_remaining_20261113/treap_main_candidates/body_fixed_seed.hpp",
+      "/tmp/sirkit_remaining_20261113/treap_main_candidates/body_original.hpp",
+      "/tmp/sirkit_remaining_20261113/treap_main_candidates/prepare.py",
+      "/tmp/sirkit_remaining_20261113/treap_main_candidates/deque_flags/recommendations.json",
+      "/tmp/sirkit_remaining_20261113/treap_main_candidates/deque_flags/O3_unroll.cpp",
+      "/tmp/sirkit_remaining_20261113/treap_main_candidates/deque_flags/O3.cpp",
+      "/tmp/sirkit_remaining_20261113/treap_main_candidates/deque_flags/results.json",
+      "/tmp/sirkit_remaining_20261113/treap_main_candidates/deque_flags/O2.cpp",
+      "/tmp/sirkit_remaining_20261113/treap_main_candidates/deque_flags/benchmark.py",
+      "/tmp/sirkit_remaining_20261113/treap_main_candidates/implicit_treap_affine/final_report.json",
+      "/tmp/sirkit_remaining_20261113/treap_main_candidates/implicit_treap_affine/candidate.patch",
+      "/tmp/sirkit_remaining_20261113/treap_main_candidates/implicit_treap_affine/candidate_unit.cpp",
+      "/tmp/sirkit_remaining_20261113/treap_main_candidates/implicit_treap_affine/baseline_unit.cpp",
+      "/tmp/sirkit_remaining_20261113/treap_main_candidates/implicit_treap_affine/candidate_driver.cpp",
+      "/tmp/sirkit_remaining_20261113/treap_main_candidates/implicit_treap_affine/baseline_driver.cpp",
+      "/tmp/sirkit_remaining_20261113/treap_main_candidates/implicit_treap_deque/final_report.json",
+      "/tmp/sirkit_remaining_20261113/treap_main_candidates/implicit_treap_deque/candidate.patch",
+      "/tmp/sirkit_remaining_20261113/treap_main_candidates/implicit_treap_deque/candidate_unit.cpp",
+      "/tmp/sirkit_remaining_20261113/treap_main_candidates/implicit_treap_deque/baseline_unit.cpp",
+      "/tmp/sirkit_remaining_20261113/treap_main_candidates/implicit_treap_deque/candidate_driver.cpp",
+      "/tmp/sirkit_remaining_20261113/treap_main_candidates/implicit_treap_deque/baseline_driver.cpp",
+      "/tmp/sirkit_remaining_20261113/treap_main_candidates/implicit_treap_deque/sources/candidate_0x9e3779b97f4a7c15.cpp",
+      "/tmp/sirkit_remaining_20261113/treap_main_candidates/implicit_treap_deque/sources/baseline_0x9e3779b97f4a7c15.cpp",
+      "/tmp/sirkit_remaining_20261113/treap_main_candidates/implicit_treap_deque/sources/candidate_0x0000000000000001.cpp",
+      "/tmp/sirkit_remaining_20261113/treap_main_candidates/implicit_treap_deque/sources/baseline_0x0000000000000001.cpp",
+      "/tmp/sirkit_remaining_20261113/treap_main_candidates/implicit_treap_deque/sources/candidate_skip.cpp",
+      "/tmp/sirkit_remaining_20261113/treap_main_candidates/implicit_treap_deque/sources/candidate_checked.cpp",
+      "/tmp/sirkit_remaining_20261113/treap_main_candidates/implicit_treap_deque/sources/baseline_skip.cpp",
+      "/tmp/sirkit_remaining_20261113/treap_main_candidates/implicit_treap_deque/sources/baseline_checked.cpp",
+      "/tmp/sirkit_remaining_20261113/treap_main_candidates/implicit_treap_affine/sources/candidate_skip.cpp",
+      "/tmp/sirkit_remaining_20261113/treap_main_candidates/implicit_treap_affine/sources/candidate_checked.cpp",
+      "/tmp/sirkit_remaining_20261113/treap_main_candidates/implicit_treap_affine/sources/baseline_skip.cpp",
+      "/tmp/sirkit_remaining_20261113/treap_main_candidates/implicit_treap_affine/sources/baseline_checked.cpp",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04_05_generation/results.json",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04_05_generation/check_source_api_docs.log",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04_05_generation/update_verify_status.log",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04_05_generation/prepare_variant_verify.log",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04_05_generation/prepare_verify.log",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04_05_generation/generate_variants.log",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04_05_generation/generate_fast_sources.log",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04_05_generation/validation/summary.json",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04_05_generation/validation/results.json",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04_05_generation/validation/validate.py",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04_05_generation/validation/raw/rollback_union_find_Fast_Clang_skip_fallback.json",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04_05_generation/validation/raw/rollback_union_find_Fast_Clang_skip_default.json",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04_05_generation/validation/raw/rollback_weighted_union_find_rollback_Fast_Clang_skip_fallback.json",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04_05_generation/validation/raw/rollback_weighted_union_find_rollback_Fast_Clang_skip_default.json",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04_05_generation/validation/raw/implicit_treap_deque_Fast_Clang_skip_fallback.json",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04_05_generation/validation/raw/implicit_treap_deque_Fast_Clang_skip_default.json",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04_05_generation/validation/raw/rollback_union_find_Variants_Clang_skip_fallback.json",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04_05_generation/validation/raw/rollback_union_find_Variants_Clang_skip_default.json",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04_05_generation/validation/raw/rollback_union_find_Variants_Clang_checked_fallback.json",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04_05_generation/validation/raw/rollback_union_find_Variants_Clang_checked_default.json",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04_05_generation/validation/raw/rollback_weighted_union_find_rollback_Variants_Clang_skip_fallback.json",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04_05_generation/validation/raw/rollback_weighted_union_find_rollback_Variants_Clang_skip_default.json",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04_05_generation/validation/raw/rollback_weighted_union_find_rollback_Variants_Clang_checked_fallback.json",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04_05_generation/validation/raw/rollback_weighted_union_find_rollback_Variants_Clang_checked_default.json",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04_05_generation/validation/raw/implicit_treap_deque_Variants_Clang_skip_fallback.json",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04_05_generation/validation/raw/implicit_treap_deque_Variants_Clang_skip_default.json",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04_05_generation/validation/raw/implicit_treap_deque_Variants_Clang_checked_fallback.json",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04_05_generation/validation/raw/implicit_treap_deque_Variants_Clang_checked_default.json",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04_05_generation/validation/raw/rollback_union_find_Fast_GCC_skip_fallback.json",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04_05_generation/validation/raw/rollback_union_find_Fast_GCC_skip_default.json",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04_05_generation/validation/raw/rollback_weighted_union_find_rollback_Fast_GCC_skip_fallback.json",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04_05_generation/validation/raw/rollback_weighted_union_find_rollback_Fast_GCC_skip_default.json",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04_05_generation/validation/raw/implicit_treap_deque_Fast_GCC_skip_fallback.json",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04_05_generation/validation/raw/implicit_treap_deque_Fast_GCC_skip_default.json",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04_05_generation/validation/raw/rollback_union_find_Variants_GCC_skip_fallback.json",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04_05_generation/validation/raw/rollback_union_find_Variants_GCC_skip_default.json",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04_05_generation/validation/raw/rollback_union_find_Variants_GCC_checked_fallback.json",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04_05_generation/validation/raw/rollback_union_find_Variants_GCC_checked_default.json",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04_05_generation/validation/raw/rollback_weighted_union_find_rollback_Variants_GCC_skip_fallback.json",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04_05_generation/validation/raw/rollback_weighted_union_find_rollback_Variants_GCC_skip_default.json",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04_05_generation/validation/raw/rollback_weighted_union_find_rollback_Variants_GCC_checked_fallback.json",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04_05_generation/validation/raw/rollback_weighted_union_find_rollback_Variants_GCC_checked_default.json",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04_05_generation/validation/raw/implicit_treap_deque_Variants_GCC_skip_fallback.json",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04_05_generation/validation/raw/implicit_treap_deque_Variants_GCC_skip_default.json",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04_05_generation/validation/raw/implicit_treap_deque_Variants_GCC_checked_fallback.json",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04_05_generation/validation/raw/implicit_treap_deque_Variants_GCC_checked_default.json",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04_05_generation/validation/raw/normal_Clang_True.json",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04_05_generation/validation/raw/normal_Clang_False.json",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04_05_generation/validation/raw/normal_GCC_True.json",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04_05_generation/validation/raw/normal_GCC_False.json",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04_05_generation/validation/sources/rollback_union_find_Fast_Clang_skip_fallback.cpp",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04_05_generation/validation/sources/rollback_union_find_Fast_Clang_skip_default.cpp",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04_05_generation/validation/sources/rollback_weighted_union_find_rollback_Fast_Clang_skip_fallback.cpp",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04_05_generation/validation/sources/rollback_weighted_union_find_rollback_Fast_Clang_skip_default.cpp",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04_05_generation/validation/sources/implicit_treap_deque_Fast_Clang_skip_fallback.cpp",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04_05_generation/validation/sources/implicit_treap_deque_Fast_Clang_skip_default.cpp",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04_05_generation/validation/sources/rollback_union_find_Variants_Clang_skip_fallback.cpp",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04_05_generation/validation/sources/rollback_union_find_Variants_Clang_skip_default.cpp",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04_05_generation/validation/sources/rollback_union_find_Variants_Clang_checked_fallback.cpp",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04_05_generation/validation/sources/rollback_union_find_Variants_Clang_checked_default.cpp",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04_05_generation/validation/sources/rollback_weighted_union_find_rollback_Variants_Clang_skip_fallback.cpp",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04_05_generation/validation/sources/rollback_weighted_union_find_rollback_Variants_Clang_skip_default.cpp",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04_05_generation/validation/sources/rollback_weighted_union_find_rollback_Variants_Clang_checked_fallback.cpp",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04_05_generation/validation/sources/rollback_weighted_union_find_rollback_Variants_Clang_checked_default.cpp",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04_05_generation/validation/sources/implicit_treap_deque_Variants_Clang_skip_fallback.cpp",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04_05_generation/validation/sources/implicit_treap_deque_Variants_Clang_skip_default.cpp",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04_05_generation/validation/sources/implicit_treap_deque_Variants_Clang_checked_fallback.cpp",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04_05_generation/validation/sources/implicit_treap_deque_Variants_Clang_checked_default.cpp",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04_05_generation/validation/sources/rollback_union_find_Fast_GCC_skip_fallback.cpp",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04_05_generation/validation/sources/rollback_union_find_Fast_GCC_skip_default.cpp",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04_05_generation/validation/sources/rollback_weighted_union_find_rollback_Fast_GCC_skip_fallback.cpp",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04_05_generation/validation/sources/rollback_weighted_union_find_rollback_Fast_GCC_skip_default.cpp",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04_05_generation/validation/sources/implicit_treap_deque_Fast_GCC_skip_fallback.cpp",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04_05_generation/validation/sources/implicit_treap_deque_Fast_GCC_skip_default.cpp",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04_05_generation/validation/sources/rollback_union_find_Variants_GCC_skip_fallback.cpp",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04_05_generation/validation/sources/rollback_union_find_Variants_GCC_skip_default.cpp",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04_05_generation/validation/sources/rollback_union_find_Variants_GCC_checked_fallback.cpp",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04_05_generation/validation/sources/rollback_union_find_Variants_GCC_checked_default.cpp",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04_05_generation/validation/sources/rollback_weighted_union_find_rollback_Variants_GCC_skip_fallback.cpp",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04_05_generation/validation/sources/rollback_weighted_union_find_rollback_Variants_GCC_skip_default.cpp",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04_05_generation/validation/sources/rollback_weighted_union_find_rollback_Variants_GCC_checked_fallback.cpp",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04_05_generation/validation/sources/rollback_weighted_union_find_rollback_Variants_GCC_checked_default.cpp",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04_05_generation/validation/sources/implicit_treap_deque_Variants_GCC_skip_fallback.cpp",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04_05_generation/validation/sources/implicit_treap_deque_Variants_GCC_skip_default.cpp",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04_05_generation/validation/sources/implicit_treap_deque_Variants_GCC_checked_fallback.cpp",
+      "/tmp/sirkit_remaining_20261113/fable_compact/batch_04_05_generation/validation/sources/implicit_treap_deque_Variants_GCC_checked_default.cpp",
+      "/tmp/sirkit_remaining_20261113/fable_compact/rollback_main_compiler_settings/summary.md",
+      "/tmp/sirkit_remaining_20261113/fable_compact/rollback_main_compiler_settings/recommendations.json",
+      "/tmp/sirkit_remaining_20261113/fable_compact/rollback_main_compiler_settings/rollback_weighted_union_find_rollback_O3_unroll.cpp",
+      "/tmp/sirkit_remaining_20261113/fable_compact/rollback_main_compiler_settings/rollback_weighted_union_find_rollback_O3.cpp",
+      "/tmp/sirkit_remaining_20261113/fable_compact/rollback_main_compiler_settings/rollback_weighted_union_find_rollback_none.cpp",
+      "/tmp/sirkit_remaining_20261113/fable_compact/rollback_main_compiler_settings/rollback_union_find_O3_unroll.cpp",
+      "/tmp/sirkit_remaining_20261113/fable_compact/rollback_main_compiler_settings/rollback_union_find_O3.cpp",
+      "/tmp/sirkit_remaining_20261113/fable_compact/rollback_main_compiler_settings/results.json",
+      "/tmp/sirkit_remaining_20261113/fable_compact/rollback_main_compiler_settings/rollback_union_find_none.cpp",
+      "/tmp/sirkit_remaining_20261113/fable_compact/rollback_main_compiler_settings/benchmark.py"
+    ],
+    "changed_source_validation": {
+      "rollback_union_find": {
+        "correctness": "passed",
+        "performance": "measured"
+      },
+      "implicit_treap_deque": {
+        "correctness": "passed",
+        "performance": "measured"
+      }
+    }
+  },
+  "execution": {
+    "model": "claude-fable-5-2",
+    "actual_assistant_models": [
+      "claude-fable-5-2"
+    ],
+    "tools": [
+      "Read"
+    ],
+    "apiKeySource": "none",
+    "is_error": false,
+    "terminal_reason": "completed",
+    "num_turns": 6,
+    "rate_limits_first": {
+      "status": "allowed",
+      "resetsAt": 1794584400,
+      "rateLimitType": "five_hour",
+      "overageStatus": "rejected",
+      "overageDisabledReason": "org_level_disabled",
+      "isUsingOverage": false,
+      "unifiedWindows": {
+        "five_hour": {
+          "utilization": 0.39,
+          "resetsAt": 1794584400,
+          "status": "allowed"
+        },
+        "seven_day": {
+          "utilization": 0.52,
+          "resetsAt": 1794646800,
+          "status": "allowed"
+        },
+        "seven_day_overage_included": {
+          "utilization": 0.22,
+          "resetsAt": 1794646800,
+          "status": "allowed"
+        }
+      }
+    },
+    "rate_limits_last": {
+      "status": "allowed",
+      "resetsAt": 1794584400,
+      "rateLimitType": "five_hour",
+      "overageStatus": "rejected",
+      "overageDisabledReason": "org_level_disabled",
+      "isUsingOverage": false,
+      "unifiedWindows": {
+        "five_hour": {
+          "utilization": 0.45,
+          "resetsAt": 1794584400,
+          "status": "allowed"
+        },
+        "seven_day": {
+          "utilization": 0.52,
+          "resetsAt": 1794646800,
+          "status": "allowed"
+        },
+        "seven_day_overage_included": {
+          "utilization": 0.23,
+          "resetsAt": 1794646800,
+          "status": "allowed"
+        }
+      }
+    },
+    "extra_usage_used": false,
+    "list_price_usage_is_not_a_charge": true,
+    "events_private_path": "/tmp/sirkit_remaining_20261113/fable_compact/batch_04/events.jsonl",
+    "events_sha256": "245e9ad865ffff9b0a0a2031b20d5880f5b15be4f208d347c4b00cffc4b7d924"
+  },
+  "snapshot_archive": {
+    "path": "Audit/data/optimization-fable-batch-04-2026-11-13.zip",
+    "sha256": "559d38fb0afc7e2eb57c97c2adcd1a174349b9d16db0560a0376145c5d15c44d"
+  },
+  "performance_basis": "Unchanged sources retain exact predecessor measurements; candidate changes require the linked independent correctness/performance results. Old online AC is never assigned to modified source."
+}

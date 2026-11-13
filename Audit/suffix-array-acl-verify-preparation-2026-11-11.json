@@ -1,0 +1,509 @@
+{
+  "date": "2026-11-11",
+  "status": "normal_suffix_array_verify_prepared_unsubmitted",
+  "library": "String/Suffix_Array.cpp",
+  "purpose": "次の新規通常版Verifyとして接尾辞配列/隣接LCPの2問題を準備。既定方針に合わせACLの公開APIへ統一する。速度最適化の成果とは扱わない。",
+  "API_reference": [
+    "https://atcoder.github.io/ac-library/production/document_ja/string.html",
+    "https://raw.githubusercontent.com/atcoder/ac-library/master/atcoder/string.hpp"
+  ],
+  "changes": [
+    "global suffix_array(const std::string&)、suffix_array<T>(const vector<T>&)、suffix_array(const vector<int>&,int)をACLの型/引数/戻り値へ合わせる。",
+    "global lcp_array(const std::string&,const vector<int>&)、lcp_array<T>(const vector<T>&,const vector<int>&)をACL形式へ合わせる。",
+    "旧SuffixArray/LCPArrayという重複名は残さず、使用例/driver/依存テスト/Documentを新名へ移行。過去Auditの提出記録は変更しない。",
+    "string_view構築・汎用列LCP・空列LCP・unsigned byte順・SuffixArrayEqualRangeの追加機能は維持。",
+    "C文字列は同名のpointer templateで受け、余分なstd::string複製を避ける。nullptrは既定でO(1)検査し、SKIP時はcaller前提。pointer templateは空{}のACL形式を曖昧にしない。",
+    "非整数型vectorも<だけで座標圧縮する追加経路を用意。コピー不可の比較型も扱える。整数型の圧縮は旧経路を維持。"
+  ],
+  "retained_implementation": {
+    "SA_IS_body_unchanged": true,
+    "SA_IS_body_sha256": "644fb0884a12dc51f091fe567b21553ef7e31ecf5f1886d27b1c8e4c2d70993a",
+    "LCP_body_unchanged_except_error_label": true,
+    "drivers_changed_only_API_names": true,
+    "string_encoder_body_unchanged": true,
+    "integral_encoder_statements_unchanged": true
+  },
+  "behavior_notes": [
+    "SA-IS本体、バイト列符号化、整数圧縮、LCP演算/検査は維持。private helperへの移動とエラー文の関数名だけ変更。",
+    "型・呼出し形式はACLと共通。空列LCP、string_view/C文字列、一般の比較型vector等は追加対応。",
+    "列長INT_MAX-1未満、upperは0以上INT_MAX-1未満を保持。容量/添字保護はSKIP時も除かない。",
+    "LCPはrank構築にサイズ/添字/重複の検査を組込み、辞書順の全再検査はしない。検索も参照したsa添字だけ検査。"
+  ],
+  "source_sha256": {
+    "before": "d8b83de4c6ed7eb0ff19d4647a044ab356e2fac089c73d4a6b55863ae636cf76",
+    "after": "34b89b047679f849c3de3750730b4476567288d385c7d0ccb2916509cd32c3ee",
+    "common_IO": "291bf8dbc56a1d691f6256fe95b4714183c2cf5d9e55e4bef240e31d1eb178c1"
+  },
+  "drivers": "2本ともAPI呼出名のみ変更。計算手順/順序/共通IOは維持。IOは直前のManacher AC記録のhashとも一致。",
+  "verify_programs": [
+    {
+      "id": "suffix_array",
+      "submission": "Verify/current/submissions/suffix_array.cpp",
+      "problem_url": "https://judge.yosupo.jp/problem/suffixarray",
+      "bytes": 22367,
+      "submission_sha256": "d354b49c8ae6630d722e971c66bfe52927a75603032562cb2dd74c45a7b0abbc",
+      "skip_runtime_checks": true,
+      "judge_status": "未提出"
+    },
+    {
+      "id": "suffix_array_substrings",
+      "submission": "Verify/current/submissions/suffix_array_substrings.cpp",
+      "problem_url": "https://judge.yosupo.jp/problem/number_of_substrings",
+      "bytes": 22522,
+      "submission_sha256": "849aca12540481e55d165422163da73d69112eef285b593b30626d83af46361f",
+      "skip_runtime_checks": true,
+      "judge_status": "未提出"
+    }
+  ],
+  "dependencies": "提出コードは本体と共通IOを展開済み。ACL/自作別ファイルの外部include不要。全体512KiB未満。",
+  "validation": {
+    "compiler": {
+      "GCC": "15.2.0",
+      "Clang": "21.1.8 --gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15"
+    },
+    "language": "C++23",
+    "tests": [
+      {
+        "compiler": "gcc",
+        "test": "string_algorithms_reference_test",
+        "skip_runtime_checks": false,
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/string_algorithms_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_suffix_acl_20261111/gcc_string_algorithms_reference_test_0"
+        ],
+        "stdout": "string reference checks=5973836\n",
+        "returncode": 0,
+        "source_sha256": "522bca1cf45a9b6bbe8f7b18e8fe478e27a131d750e27465153d1733031bd1ff"
+      },
+      {
+        "compiler": "gcc",
+        "test": "string_algorithms_reference_test",
+        "skip_runtime_checks": true,
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/string_algorithms_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_suffix_acl_20261111/gcc_string_algorithms_reference_test_1"
+        ],
+        "stdout": "string reference checks=5973827\n",
+        "returncode": 0,
+        "source_sha256": "522bca1cf45a9b6bbe8f7b18e8fe478e27a131d750e27465153d1733031bd1ff"
+      },
+      {
+        "compiler": "gcc",
+        "test": "suffix_ntt_large_reference_test",
+        "skip_runtime_checks": false,
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/suffix_ntt_large_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_suffix_acl_20261111/gcc_suffix_ntt_large_reference_test_0"
+        ],
+        "stdout": "large reference checks=524326\n",
+        "returncode": 0,
+        "source_sha256": "ad1303bfbbb9023ab85c5e6a03de52db4af99a13b350fc1a4eef50e54905c26e"
+      },
+      {
+        "compiler": "gcc",
+        "test": "suffix_ntt_large_reference_test",
+        "skip_runtime_checks": true,
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/suffix_ntt_large_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_suffix_acl_20261111/gcc_suffix_ntt_large_reference_test_1"
+        ],
+        "stdout": "large reference checks=524326\n",
+        "returncode": 0,
+        "source_sha256": "ad1303bfbbb9023ab85c5e6a03de52db4af99a13b350fc1a4eef50e54905c26e"
+      },
+      {
+        "compiler": "gcc",
+        "test": "string_math_allocation_test",
+        "skip_runtime_checks": false,
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/string_math_allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_suffix_acl_20261111/gcc_string_math_allocation_test_0"
+        ],
+        "stdout": "allocation checks=2343 failures=69 live_delta=0\n",
+        "returncode": 0,
+        "source_sha256": "f2137f830e20aaa3e8ea6a780d21bb47e7beef3d795252dc3504d5bc9eb080b5"
+      },
+      {
+        "compiler": "clang",
+        "test": "string_algorithms_reference_test",
+        "skip_runtime_checks": false,
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/string_algorithms_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_suffix_acl_20261111/clang_string_algorithms_reference_test_0"
+        ],
+        "stdout": "string reference checks=5973836\n",
+        "returncode": 0,
+        "source_sha256": "522bca1cf45a9b6bbe8f7b18e8fe478e27a131d750e27465153d1733031bd1ff"
+      },
+      {
+        "compiler": "clang",
+        "test": "string_algorithms_reference_test",
+        "skip_runtime_checks": true,
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/string_algorithms_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_suffix_acl_20261111/clang_string_algorithms_reference_test_1"
+        ],
+        "stdout": "string reference checks=5973827\n",
+        "returncode": 0,
+        "source_sha256": "522bca1cf45a9b6bbe8f7b18e8fe478e27a131d750e27465153d1733031bd1ff"
+      },
+      {
+        "compiler": "clang",
+        "test": "suffix_ntt_large_reference_test",
+        "skip_runtime_checks": false,
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/suffix_ntt_large_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_suffix_acl_20261111/clang_suffix_ntt_large_reference_test_0"
+        ],
+        "stdout": "large reference checks=524326\n",
+        "returncode": 0,
+        "source_sha256": "ad1303bfbbb9023ab85c5e6a03de52db4af99a13b350fc1a4eef50e54905c26e"
+      },
+      {
+        "compiler": "clang",
+        "test": "suffix_ntt_large_reference_test",
+        "skip_runtime_checks": true,
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/suffix_ntt_large_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_suffix_acl_20261111/clang_suffix_ntt_large_reference_test_1"
+        ],
+        "stdout": "large reference checks=524326\n",
+        "returncode": 0,
+        "source_sha256": "ad1303bfbbb9023ab85c5e6a03de52db4af99a13b350fc1a4eef50e54905c26e"
+      },
+      {
+        "compiler": "clang",
+        "test": "string_math_allocation_test",
+        "skip_runtime_checks": false,
+        "command": [
+          "taskset",
+          "-c",
+          "4",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/string_math_allocation_test.cpp",
+          "-o",
+          "/tmp/sirkit_suffix_acl_20261111/clang_string_math_allocation_test_0"
+        ],
+        "stdout": "allocation checks=2343 failures=69 live_delta=0\n",
+        "returncode": 0,
+        "source_sha256": "f2137f830e20aaa3e8ea6a780d21bb47e7beef3d795252dc3504d5bc9eb080b5"
+      },
+      {
+        "compiler": "gcc",
+        "test": "suffix_array_acl_api_test",
+        "skip_runtime_checks": false,
+        "command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/suffix_array_acl_api_test.cpp",
+          "-o",
+          "/tmp/sirkit_suffix_acl_20261111/gcc_api_final_0"
+        ],
+        "stdout": "suffix ACL API checks=98\n",
+        "returncode": 0,
+        "source_sha256": "a5c020de8ad92264802133d0e49a7153c8a67567fe6efaca35fee18c49eb4725"
+      },
+      {
+        "compiler": "gcc",
+        "test": "suffix_array_acl_api_test",
+        "skip_runtime_checks": true,
+        "command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/suffix_array_acl_api_test.cpp",
+          "-o",
+          "/tmp/sirkit_suffix_acl_20261111/gcc_api_final_1"
+        ],
+        "stdout": "suffix ACL API checks=92\n",
+        "returncode": 0,
+        "source_sha256": "a5c020de8ad92264802133d0e49a7153c8a67567fe6efaca35fee18c49eb4725"
+      },
+      {
+        "compiler": "clang",
+        "test": "suffix_array_acl_api_test",
+        "skip_runtime_checks": false,
+        "command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/suffix_array_acl_api_test.cpp",
+          "-o",
+          "/tmp/sirkit_suffix_acl_20261111/clang_api_final_0"
+        ],
+        "stdout": "suffix ACL API checks=98\n",
+        "returncode": 0,
+        "source_sha256": "a5c020de8ad92264802133d0e49a7153c8a67567fe6efaca35fee18c49eb4725"
+      },
+      {
+        "compiler": "clang",
+        "test": "suffix_array_acl_api_test",
+        "skip_runtime_checks": true,
+        "command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/suffix_array_acl_api_test.cpp",
+          "-o",
+          "/tmp/sirkit_suffix_acl_20261111/clang_api_final_1"
+        ],
+        "stdout": "suffix ACL API checks=92\n",
+        "returncode": 0,
+        "source_sha256": "a5c020de8ad92264802133d0e49a7153c8a67567fe6efaca35fee18c49eb4725"
+      }
+    ],
+    "tests_scope": "ASan/UBSan付きGCC/Clang×checked/SKIPでAPI型・独立naive・独立doubling大規模参照を照合。確保失敗試験は専用global newフックを使いサニタイザなし。",
+    "API_result": "checked98/SKIP92 checksと5種類のexact function pointer static_assert。literal/空{}・view・整数極値/bool/highbyte/NUL・string/double/コピー不可<のみ・==だけのgenericLCP・invalid/巨大長・旧名不存在を確認。",
+    "independent_result": "文字列/整数列の独立参照5973836 checked/5973827 SKIP、別の20万要素doubling等の参照524326 checks。",
+    "allocation_result": "両コンパイラ2343 checks / 69 injected failures / live_delta=0。",
+    "normal_program_samples": [
+      {
+        "id": "suffix_array",
+        "compiler": "gcc",
+        "command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "/home/reinsirk/Atcoder_Env/Verify/current/submissions/suffix_array.cpp",
+          "-o",
+          "/tmp/sirkit_suffix_acl_20261111/gcc_normal_suffix_array"
+        ],
+        "status": "LOCAL_SAMPLE_PASS",
+        "source_sha256": "d354b49c8ae6630d722e971c66bfe52927a75603032562cb2dd74c45a7b0abbc",
+        "bytes": 22367,
+        "samples": 2
+      },
+      {
+        "id": "suffix_array",
+        "compiler": "clang",
+        "command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "/home/reinsirk/Atcoder_Env/Verify/current/submissions/suffix_array.cpp",
+          "-o",
+          "/tmp/sirkit_suffix_acl_20261111/clang_normal_suffix_array"
+        ],
+        "status": "LOCAL_SAMPLE_PASS",
+        "source_sha256": "d354b49c8ae6630d722e971c66bfe52927a75603032562cb2dd74c45a7b0abbc",
+        "bytes": 22367,
+        "samples": 2
+      },
+      {
+        "id": "suffix_array_substrings",
+        "compiler": "gcc",
+        "command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "/home/reinsirk/Atcoder_Env/Verify/current/submissions/suffix_array_substrings.cpp",
+          "-o",
+          "/tmp/sirkit_suffix_acl_20261111/gcc_normal_suffix_array_substrings"
+        ],
+        "status": "LOCAL_SAMPLE_PASS",
+        "source_sha256": "849aca12540481e55d165422163da73d69112eef285b593b30626d83af46361f",
+        "bytes": 22522,
+        "samples": 1
+      },
+      {
+        "id": "suffix_array_substrings",
+        "compiler": "clang",
+        "command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "/home/reinsirk/Atcoder_Env/Verify/current/submissions/suffix_array_substrings.cpp",
+          "-o",
+          "/tmp/sirkit_suffix_acl_20261111/clang_normal_suffix_array_substrings"
+        ],
+        "status": "LOCAL_SAMPLE_PASS",
+        "source_sha256": "849aca12540481e55d165422163da73d69112eef285b593b30626d83af46361f",
+        "bytes": 22522,
+        "samples": 1
+      }
+    ],
+    "migrated_callsite_builds": [
+      {
+        "compiler": "gcc",
+        "command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-fsyntax-only",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/z_algorithm_fast_test.cpp"
+        ],
+        "status": "PASS",
+        "source_sha256": "6ba66e5f0625bb9c7157dc943348e72f9cd7440af35addcd88da1727a6a59fdd"
+      },
+      {
+        "compiler": "gcc",
+        "command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-fsyntax-only",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/manacher_independent_test.cpp"
+        ],
+        "status": "PASS",
+        "source_sha256": "722815f429e2259a9855f3ec12bf21ca9ae7aee762fbe64c440cca1f766a0f23"
+      },
+      {
+        "compiler": "clang",
+        "command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-fsyntax-only",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/z_algorithm_fast_test.cpp"
+        ],
+        "status": "PASS",
+        "source_sha256": "6ba66e5f0625bb9c7157dc943348e72f9cd7440af35addcd88da1727a6a59fdd"
+      },
+      {
+        "compiler": "clang",
+        "command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-fsyntax-only",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/manacher_independent_test.cpp"
+        ],
+        "status": "PASS",
+        "source_sha256": "722815f429e2259a9855f3ec12bf21ca9ae7aee762fbe64c440cca1f766a0f23"
+      }
+    ],
+    "profiles": {
+      "run_file": "profiles/runs/20261111T115143947298Z.json",
+      "counts": {
+        "LOCAL_SAMPLE_PASS": 14
+      },
+      "scope": "コンパイラ別/速度優先の2プログラム8件と、通常GCC/Clang+派生4種の使用例6件。通常提出プログラムのGCC/Clang4件は別途normal_programs.json。"
+    },
+    "superseded_test_snapshot": "tests.jsonのAPI4件はC文字列/空{}補足前。api_final_tests.jsonの4件を最終結果とする。"
+  },
+  "performance": "SA-IS/文字列符号化/整数圧縮/LCP演算の保持をコードでも照合。新API全体の速度比較は未実施で、タイミング改善は主張しない。初回オンライン提出後に同じmain/IOで比較する。",
+  "documentation": "Document/suffix_array.mdを既存構成のままAPI表/前提/短い例へ更新。比較型vectorの例はExamplesにも追加。README/Documentに変更履歴や性能記録を追加しない。",
+  "license": "SPDX CC0-1.0を維持。SA-ISと追加圧縮/ラッパーは独自実装。ACLは公開APIの確認に参照し、本文のコピー/組込みはしない。参照ヘッダー本文は証跡ZIPへ収録しない。",
+  "files_migrated": [
+    "String/Suffix_Array.cpp",
+    "Document/suffix_array.md",
+    "Examples/suffix_array_example.cpp",
+    "Verify/current/drivers/suffix_array_main.cpp",
+    "Verify/current/drivers/suffix_array_substrings_main.cpp",
+    "Verify/current/groups/expansion_20261031.json",
+    "Distribution/manifest.json",
+    "Verify/current/tests/suffix_ntt_large_reference_test.cpp",
+    "Verify/current/tests/z_algorithm_fast_test.cpp",
+    "Verify/current/tests/manacher_independent_test.cpp",
+    "Verify/current/tests/string_math_allocation_test.cpp",
+    "Verify/current/tests/string_algorithms_reference_test.cpp"
+  ],
+  "evidence_zip": "Audit/data/suffix-array-acl-verify-preparation-2026-11-11.zip"
+}

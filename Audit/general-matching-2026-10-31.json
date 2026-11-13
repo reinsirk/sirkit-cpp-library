@@ -1,0 +1,116 @@
+{
+  "date": "2026-10-31",
+  "source": "Graph/General_Matching.cpp",
+  "source_sha256": "03803c1d3b4589a1b193649b33553f4f9637aa3c2f3104132f47263b816662d2",
+  "implementation": "奇数閉路を縮約する数学的定義から独立CC0実装。単純な反復Edmonds探索で、LuzhiledのGabowデータ構造/再帰rematchの実装を転記していない。CSRはscratchに作り、既存対応の変更前に9作業配列を全確保する。",
+  "references": [
+    {
+      "url": "https://doi.org/10.4153/CJM-1965-045-4",
+      "primary_url": "https://www.cambridge.org/core/journals/canadian-journal-of-mathematics/article/paths-trees-and-flowers/08B492B72322C4130AE800C0610E0E21",
+      "title": "Edmonds, Paths, Trees, and Flowers (1965)",
+      "role": "一般グラフの最大マッチングと奇数閉路の数学的参考。書誌・原典を確認。文章/コードの転載なし。"
+    },
+    {
+      "url": "https://ei1333.github.io/library/graph/flow/gabow-edmonds.hpp.html",
+      "license_url": "https://raw.githubusercontent.com/ei1333/library/master/LICENSE",
+      "observed_license": "Unlicense、MITとは扱わない",
+      "role": "一般matchingの機能/API選定の参考のみ。今回の単純縮約と計算量は別。"
+    },
+    {
+      "url": "https://info.atcoder.jp/entry/algorithm_lectures/index",
+      "role": "講義一覧を確認。今回のコードの出典とは扱わない。"
+    },
+    {
+      "url": "https://nyaannyaan.github.io/library/graph/general-matching.hpp.html",
+      "role": "候補URLは読取不能で、実装出典にはしていない。Nyaanに当該実装が存在しないとは断定しない。"
+    }
+  ],
+  "validation": {
+    "cpu": 0,
+    "core_configurations": 24,
+    "checked_reference_checks": 1584898,
+    "allocation_failure_positions": 18,
+    "live_allocation_delta": 0,
+    "exhaustive": "全単純グラフn=0..6、部分集合DP n<=18による最大本数、全対応辺/対称性/頂点重複を確認。",
+    "random": "280 historiesを逐次add/再solve、左右に依存しない任意ラベルと辺順、自己loop/逆向き重複/非連結/完全/奇数環/大きい奇数部分グラフ。32 relabeled adversarial graphsも逐次再solve。",
+    "nested_branch": "tmp instrumentationで縮約15139回、既に縮約された成分を再び含む縮約48回。library本体にcounterは入れない。",
+    "stack_safety": "300000頂点で初期対応を作り、長さ299999の増加路を追加して完全対応へ拡張。全端点対応を照合、全経路反復。",
+    "exceptions": "add/reserve/copy/copyassign/reset/pairs/solve準備のbad_alloc18位置で旧内容/最大性/全span pointer/liveを確認。cached solve/perfect solve/selfcopy/selfmove/move/swap/clearはbudget0でも成功。",
+    "sanitizers": "GCC15.2/Clang21 checked/skip default/native、ASan+UBSan+libstdc++vector poison。LSanは既知ptrace制約によりdetect_leaks=0、独立live allocation差0。",
+    "driver_configurations": 4,
+    "driver_random_executions": 1040,
+    "unique_driver_random_cases": 260,
+    "driver_large_cases": 3,
+    "large_n": 500,
+    "nonunique_checker_unitcases": 16,
+    "example_configurations": 8,
+    "preprocessor_configurations": 4,
+    "double_include_compilers": 2,
+    "pointers": [
+      "/tmp/sirkit_12h_20261031_095733/general_matching/final_validation.json",
+      "/tmp/sirkit_12h_20261031_095733/general_matching/comment_bridge.json",
+      "/tmp/sirkit_12h_20261031_095733/general_matching/instrument_validation.json",
+      "/tmp/sirkit_12h_20261031_095733/general_matching/driver_validation.json",
+      "/tmp/sirkit_12h_20261031_095733/general_matching/driver_large_validation.json",
+      "/tmp/sirkit_12h_20261031_095733/general_matching/checker_validation.json",
+      "/tmp/sirkit_12h_20261031_095733/general_matching/example_validation.json",
+      "/tmp/sirkit_12h_20261031_095733/general_matching/preprocessing_validation.json",
+      "/tmp/sirkit_12h_20261031_095733/general_matching/dense_odd_validation.json"
+    ],
+    "dense_odd_cases": 2,
+    "dense_odd_cases_note": "完全499頂点と非連結K249+K251、各奇数成分のfloor(size/2)上界の達成を確認。",
+    "fixture_hashes": {
+      "reference_test.cpp": "1d8da78102507a7c3677f781ea554463486251832342fc942c91d06bce9e8c58",
+      "allocation_test.cpp": "32a2d03b793f0dd9e200d92f40bacb68d421d6d38dac9f87802c595454e01f9c",
+      "validate.py": "b3497623f5947f38d0e98df48a3c2966d992396a17a85f0805479d8b725f8e21",
+      "instrument_validate.py": "4956af042a0c148e7003458b439c0e595f0b83d58676753d158538e5efc24efa",
+      "general_matching_checker.py": "096339a52ab1d4813621490ad7b8d0e662afbf891ae0d47686bef6ccc164bc1c",
+      "checker_validate.py": "1c4cc1cd1006fcab98298ca8492ee574c0672795e6d1a6698dbfc87b06d534f2",
+      "driver_validate.py": "a8d19be0581de60f35ce69f5bbbcd071ee01d03e73bedc090f9301d88e866fb0",
+      "example_validate.py": "96c49cca7f2164b965ecbf322768cd5481c75d434ba963abe25911f9b1967be5",
+      "dense_odd_validate.py": "66a803bebd6f7bbdb2553cc81f1d6ffd8d55d33e8c28585517cc0cf7a2c5b49b"
+    }
+  },
+  "comment_bridge": {
+    "before_source_sha256": "93bb136399d2aed757da20708b5031f4c0b73a79f329ceb1ec755b566411a515",
+    "final_source_sha256": "03803c1d3b4589a1b193649b33553f4f9637aa3c2f3104132f47263b816662d2",
+    "body_byte_identical": true,
+    "body_sha256": "790e33344e79ea00bf79297a7d5de726bb001654cf7ad63673a3f0322652fcbe",
+    "scope": "include前のAPIコメントのみ。reset/clear計算量とedges view clear_edgesを明記。全C++本体/PPはbyte同一。",
+    "preprocessing_bridge": [
+      {
+        "compiler": "gcc",
+        "skip": false,
+        "byte_identical": true,
+        "sha256": "0518ddd681df965509e5286cd5eadf361b1441a5639b60467a510d79c349ce44"
+      },
+      {
+        "compiler": "gcc",
+        "skip": true,
+        "byte_identical": true,
+        "sha256": "09501945b9b5919595ae950ca6071d95f331e7eecf586066f51210fc9799ed23"
+      },
+      {
+        "compiler": "clang",
+        "skip": false,
+        "byte_identical": true,
+        "sha256": "dcb84ab9ce09214c947d868247c6ffa4841fcfd66f2ba8be11992756f06465e3"
+      },
+      {
+        "compiler": "clang",
+        "skip": true,
+        "byte_identical": true,
+        "sha256": "926c8479bc0ad6adf715cc2c5288b31d31af60f83fb7dc0f527e085d43ed1a0b"
+      }
+    ]
+  },
+  "complexity": "単純グラフO(n³)、重複辺をそのまま記録する一般入力はO(n³+nm)。領域O(n+m)。自己loopは記録しない。",
+  "empty_graph": "0頂点はmaximumかつperfect。正の頂点数/辺なしはmaximum、perfectはfalse。",
+  "online_status": "未提出、local sample/random/boundary PASSのみ。",
+  "performance": "性能測定はしていない。CPU0は正誤のみ、LC大入力3例はn/2の理論上界達成を照合。",
+  "staged_include_validation": {
+    "configurations": 8,
+    "status": "PASS",
+    "record": "/tmp/sirkit_12h_20261031_095733/general_matching/formal_include_validation.json"
+  }
+}

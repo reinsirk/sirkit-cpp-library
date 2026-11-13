@@ -1,0 +1,572 @@
+{
+  "date": "2026-10-31",
+  "status": "adopted",
+  "candidate_sha256": "6fa9fc51fb69ab331d6e170cf5269b5f05cafae1aececea6d722a2e56d0a4d24",
+  "source": "Math/NTT.cpp",
+  "adopted_sha256": "5b5c85da53f0108b521b725b5ab014eaf8ee21446729b2e45c30100d796426fa",
+  "bridge": "Removing the two API comments and one invariant comment exactly reproduces candidate bytes.",
+  "integration": {
+    "ready": true,
+    "production_files_modified": false,
+    "recommended_candidate": "/tmp/sirkit_12h_20261031_095733/ntt_optimization/vector_radix4_threshold16.hpp",
+    "candidate_sha256": "6fa9fc51fb69ab331d6e170cf5269b5f05cafae1aececea6d722a2e56d0a4d24",
+    "candidate_bytes": 31930,
+    "baseline": {
+      "path": "/tmp/sirkit_12h_20261031_095733/ntt_optimization/baseline.hpp",
+      "sha256": "26d3dd4c9f9fbbf74d349a94a6ca292e4179fcb84d0889527f41579c93d9626e"
+    },
+    "baseline_fps_sha256": "a91fdd71ae23d4ff2758b5db9cc0de092401ddf7edce6d1dcd1120e984f59f91",
+    "ntt_api_unchanged": true,
+    "ownership": "single std::vector<uint32_t> roots; inputs/results remain std::vector; no raw new; same cache count/copy/move/clear semantics",
+    "arithmetic": {
+      "simd_mod_limit_exclusive": 1073741824,
+      "working_range": "[0,2Mod)",
+      "montgomery_radix": 4294967296,
+      "scalar_fallback": "standard C++ 32-bit Montgomery/lazy for Mod<2^30; canonical uint64 modulo otherwise",
+      "simd": "GCC/Clang x86 AVX2 with runtime feature check, transform >=16; naive output >=16 with scalar tails",
+      "disable_macro": "SIRKIT_DISABLE_SIMD removes added intrinsic and CPU-query code"
+    },
+    "validation": {
+      "configs": 72,
+      "results": "/tmp/sirkit_12h_20261031_095733/ntt_optimization/vector_radix4_threshold16_final_checks/results.json",
+      "moduli": [
+        [
+          998244353,
+          3
+        ],
+        [
+          167772161,
+          3
+        ],
+        [
+          469762049,
+          3
+        ],
+        [
+          754974721,
+          11
+        ],
+        [
+          17,
+          3
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          1224736769,
+          3
+        ],
+        [
+          2013265921,
+          31
+        ],
+        [
+          1053818881,
+          7
+        ],
+        [
+          1073741789,
+          2
+        ],
+        [
+          1073741827,
+          2
+        ]
+      ],
+      "large_moduli": 7,
+      "large_transform_length": 1048576,
+      "checked_reference_checks_per_config": 712740,
+      "includes": [
+        "independent DFT",
+        "independent naive convolution",
+        "integer extrema, empty, bool, alias, n=1, naive boundary, imbalanced",
+        "normalized bad values every/tiled position",
+        "SIMD disabled / CPU false",
+        "cache reuse, copy, move, clear and allocation failure",
+        "FPS full reference, both NTT/FPS include orders",
+        "allocation live counters"
+      ],
+      "fixture_sha256": "d6046772dd2656bcce4d2e9166174c029ff9810698f7139d81daecf5fd186c4f"
+    },
+    "sanitizers": {
+      "configs": 8,
+      "results": "/tmp/sirkit_12h_20261031_095733/ntt_optimization/sanitizer/results.json",
+      "enabled": "ASan+UBSan",
+      "limitation": "ASAN_OPTIONS=detect_leaks=0 because LeakSanitizer cannot run under ptrace in this executor; custom live-allocation counters verify ownership separately",
+      "initial_environment_failure": "/tmp/sirkit_12h_20261031_095733/ntt_optimization/sanitizer/initial_lsan_environment_failure.json"
+    },
+    "performance": {
+      "cpu": 12,
+      "target": "P-Core; GCC15.2/Clang21 O2 default/native SKIP_RUNTIME_CHECKS",
+      "timer": "same loop CLOCK_THREAD_CPUTIME_ID and steady_clock",
+      "raw": "/tmp/sirkit_12h_20261031_095733/ntt_optimization/thread_bench/thread_raw.json",
+      "manifest": "/tmp/sirkit_12h_20261031_095733/ntt_optimization/thread_bench/thread_manifest.json",
+      "summary": "/tmp/sirkit_12h_20261031_095733/ntt_optimization/thread_bench/thread_summary.json",
+      "selected": "/tmp/sirkit_12h_20261031_095733/ntt_optimization/selected_performance.json",
+      "rows": 9280,
+      "cases_per_setting": 58,
+      "samples_per_case": 5,
+      "same_binary_control": true,
+      "old_wall_only_data_retained": true,
+      "representative_gcc_default_cpu_ms": {
+        "normalized_move_524288x524288": [
+          32.301943,
+          12.95825
+        ],
+        "square_524288": [
+          21.887776,
+          7.72467
+        ],
+        "cold_524288x524288": [
+          37.393424,
+          16.532728
+        ]
+      },
+      "largest_small_regression": {
+        "setting": "clang-default",
+        "operation": "inverse transform16",
+        "baseline_microseconds": 0.1319,
+        "candidate_microseconds": 0.1493,
+        "delta_nanoseconds": 17.4
+      }
+    },
+    "fps_bridge": {
+      "generator": "/home/reinsirk/Atcoder_Env/Scripts/generate_formal_power_series.py",
+      "generator_sha256": "6b0691338befa595829c97bed041c5cd0da10e4493bb28c5ad40ec7d5b13d55a",
+      "validated_render": "/tmp/sirkit_12h_20261031_095733/ntt_optimization/vector_radix4_threshold16_final_checks/simd_fps.hpp",
+      "render_sha256": "b027d9f64959f19de304905644c265ceea765009569412df0fbf5b85e952bc53",
+      "instructions": "After root adopts candidate in Math/NTT.cpp, run generator, --check, then synchronize compiler/Fast variants, Verify submitted bodies, examples/distribution archives."
+    },
+    "document_proposal": "/tmp/sirkit_12h_20261031_095733/ntt_optimization/ntt_document_proposal.md",
+    "header_notes": "/tmp/sirkit_12h_20261031_095733/ntt_optimization/HEADER_NOTES.txt",
+    "design": "/tmp/sirkit_12h_20261031_095733/ntt_optimization/DESIGN.md",
+    "sources": [
+      "https://nyaannyaan.github.io/library/ntt/ntt.hpp.html",
+      "https://www.intel.com/content/dam/www/public/us/en/documents/manuals/64-ia-32-architectures-software-developer-vol-2b-manual.pdf",
+      "https://clang.llvm.org/docs/AttributeReference.html#target"
+    ],
+    "provenance": "Independent CC0 implementation; mathematical/API/instruction references only; no source implementation copied."
+  },
+  "formal_fixture": "Verify/current/tests/ntt_montgomery_reference_test.cpp",
+  "formal_fixture_sha256": "33f94be766296edfeb390584fec5d6fd35be96dd73c8a2c6ce332c5ada7cd20e",
+  "formal_fixture_change": "Reference DFT root and steps use independent local exponentiation rather than the library helper. All 16 current-source configurations passed.",
+  "fps_bridge": {
+    "source": "Math/Formal_Power_Series.cpp",
+    "sha256": "5165e885185b4b01a9c7f1882859bfde4e8cba6b98af11d04bc7e4db54433b31",
+    "validated_render_sha256": "b027d9f64959f19de304905644c265ceea765009569412df0fbf5b85e952bc53",
+    "same_executable_code": true
+  },
+  "formal_current_source_checks": {
+    "status": "passed",
+    "configurations": 16,
+    "scope": "GCC15.2/Clang21,checked/skip,default/native/SIMD disabled/forced CPU false",
+    "results": [
+      {
+        "compiler": "gcc",
+        "skip": false,
+        "mode": "default",
+        "command": [
+          "taskset",
+          "-c",
+          "6",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/ntt_montgomery_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/ntt_adopted_checks/gccFalsedefault"
+        ],
+        "fixture_sha256": "33f94be766296edfeb390584fec5d6fd35be96dd73c8a2c6ce332c5ada7cd20e",
+        "source_sha256": "5b5c85da53f0108b521b725b5ab014eaf8ee21446729b2e45c30100d796426fa",
+        "build_exit": 0,
+        "diagnostics": "",
+        "run_exit": 0,
+        "stdout": "NTT reference checks=712740\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "gcc",
+        "skip": false,
+        "mode": "native",
+        "command": [
+          "taskset",
+          "-c",
+          "6",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-march=native",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/ntt_montgomery_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/ntt_adopted_checks/gccFalsenative"
+        ],
+        "fixture_sha256": "33f94be766296edfeb390584fec5d6fd35be96dd73c8a2c6ce332c5ada7cd20e",
+        "source_sha256": "5b5c85da53f0108b521b725b5ab014eaf8ee21446729b2e45c30100d796426fa",
+        "build_exit": 0,
+        "diagnostics": "",
+        "run_exit": 0,
+        "stdout": "NTT reference checks=712740\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "gcc",
+        "skip": false,
+        "mode": "disable",
+        "command": [
+          "taskset",
+          "-c",
+          "6",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-U__SIZEOF_INT128__",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/ntt_montgomery_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/ntt_adopted_checks/gccFalsedisable"
+        ],
+        "fixture_sha256": "33f94be766296edfeb390584fec5d6fd35be96dd73c8a2c6ce332c5ada7cd20e",
+        "source_sha256": "5b5c85da53f0108b521b725b5ab014eaf8ee21446729b2e45c30100d796426fa",
+        "build_exit": 0,
+        "diagnostics": "",
+        "run_exit": 0,
+        "stdout": "NTT reference checks=712740\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "gcc",
+        "skip": false,
+        "mode": "cpu_false",
+        "command": [
+          "taskset",
+          "-c",
+          "6",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-include",
+          "/tmp/sirkit_12h_20261031_095733/ntt_adopted_checks/cpu_false.hpp",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/ntt_montgomery_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/ntt_adopted_checks/gccFalsecpu_false"
+        ],
+        "fixture_sha256": "33f94be766296edfeb390584fec5d6fd35be96dd73c8a2c6ce332c5ada7cd20e",
+        "source_sha256": "5b5c85da53f0108b521b725b5ab014eaf8ee21446729b2e45c30100d796426fa",
+        "build_exit": 0,
+        "diagnostics": "",
+        "run_exit": 0,
+        "stdout": "NTT reference checks=712740\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "gcc",
+        "skip": true,
+        "mode": "default",
+        "command": [
+          "taskset",
+          "-c",
+          "6",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/ntt_montgomery_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/ntt_adopted_checks/gccTruedefault"
+        ],
+        "fixture_sha256": "33f94be766296edfeb390584fec5d6fd35be96dd73c8a2c6ce332c5ada7cd20e",
+        "source_sha256": "5b5c85da53f0108b521b725b5ab014eaf8ee21446729b2e45c30100d796426fa",
+        "build_exit": 0,
+        "diagnostics": "",
+        "run_exit": 0,
+        "stdout": "NTT reference checks=698945\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "gcc",
+        "skip": true,
+        "mode": "native",
+        "command": [
+          "taskset",
+          "-c",
+          "6",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-march=native",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/ntt_montgomery_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/ntt_adopted_checks/gccTruenative"
+        ],
+        "fixture_sha256": "33f94be766296edfeb390584fec5d6fd35be96dd73c8a2c6ce332c5ada7cd20e",
+        "source_sha256": "5b5c85da53f0108b521b725b5ab014eaf8ee21446729b2e45c30100d796426fa",
+        "build_exit": 0,
+        "diagnostics": "",
+        "run_exit": 0,
+        "stdout": "NTT reference checks=698945\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "gcc",
+        "skip": true,
+        "mode": "disable",
+        "command": [
+          "taskset",
+          "-c",
+          "6",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-U__SIZEOF_INT128__",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/ntt_montgomery_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/ntt_adopted_checks/gccTruedisable"
+        ],
+        "fixture_sha256": "33f94be766296edfeb390584fec5d6fd35be96dd73c8a2c6ce332c5ada7cd20e",
+        "source_sha256": "5b5c85da53f0108b521b725b5ab014eaf8ee21446729b2e45c30100d796426fa",
+        "build_exit": 0,
+        "diagnostics": "",
+        "run_exit": 0,
+        "stdout": "NTT reference checks=698945\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "gcc",
+        "skip": true,
+        "mode": "cpu_false",
+        "command": [
+          "taskset",
+          "-c",
+          "6",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-include",
+          "/tmp/sirkit_12h_20261031_095733/ntt_adopted_checks/cpu_false.hpp",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/ntt_montgomery_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/ntt_adopted_checks/gccTruecpu_false"
+        ],
+        "fixture_sha256": "33f94be766296edfeb390584fec5d6fd35be96dd73c8a2c6ce332c5ada7cd20e",
+        "source_sha256": "5b5c85da53f0108b521b725b5ab014eaf8ee21446729b2e45c30100d796426fa",
+        "build_exit": 0,
+        "diagnostics": "",
+        "run_exit": 0,
+        "stdout": "NTT reference checks=698945\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "clang",
+        "skip": false,
+        "mode": "default",
+        "command": [
+          "taskset",
+          "-c",
+          "6",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/ntt_montgomery_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/ntt_adopted_checks/clangFalsedefault"
+        ],
+        "fixture_sha256": "33f94be766296edfeb390584fec5d6fd35be96dd73c8a2c6ce332c5ada7cd20e",
+        "source_sha256": "5b5c85da53f0108b521b725b5ab014eaf8ee21446729b2e45c30100d796426fa",
+        "build_exit": 0,
+        "diagnostics": "",
+        "run_exit": 0,
+        "stdout": "NTT reference checks=712740\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "clang",
+        "skip": false,
+        "mode": "native",
+        "command": [
+          "taskset",
+          "-c",
+          "6",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-march=native",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/ntt_montgomery_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/ntt_adopted_checks/clangFalsenative"
+        ],
+        "fixture_sha256": "33f94be766296edfeb390584fec5d6fd35be96dd73c8a2c6ce332c5ada7cd20e",
+        "source_sha256": "5b5c85da53f0108b521b725b5ab014eaf8ee21446729b2e45c30100d796426fa",
+        "build_exit": 0,
+        "diagnostics": "",
+        "run_exit": 0,
+        "stdout": "NTT reference checks=712740\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "clang",
+        "skip": false,
+        "mode": "disable",
+        "command": [
+          "taskset",
+          "-c",
+          "6",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-U__SIZEOF_INT128__",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/ntt_montgomery_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/ntt_adopted_checks/clangFalsedisable"
+        ],
+        "fixture_sha256": "33f94be766296edfeb390584fec5d6fd35be96dd73c8a2c6ce332c5ada7cd20e",
+        "source_sha256": "5b5c85da53f0108b521b725b5ab014eaf8ee21446729b2e45c30100d796426fa",
+        "build_exit": 0,
+        "diagnostics": "",
+        "run_exit": 0,
+        "stdout": "NTT reference checks=712740\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "clang",
+        "skip": false,
+        "mode": "cpu_false",
+        "command": [
+          "taskset",
+          "-c",
+          "6",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-include",
+          "/tmp/sirkit_12h_20261031_095733/ntt_adopted_checks/cpu_false.hpp",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/ntt_montgomery_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/ntt_adopted_checks/clangFalsecpu_false"
+        ],
+        "fixture_sha256": "33f94be766296edfeb390584fec5d6fd35be96dd73c8a2c6ce332c5ada7cd20e",
+        "source_sha256": "5b5c85da53f0108b521b725b5ab014eaf8ee21446729b2e45c30100d796426fa",
+        "build_exit": 0,
+        "diagnostics": "",
+        "run_exit": 0,
+        "stdout": "NTT reference checks=712740\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "clang",
+        "skip": true,
+        "mode": "default",
+        "command": [
+          "taskset",
+          "-c",
+          "6",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/ntt_montgomery_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/ntt_adopted_checks/clangTruedefault"
+        ],
+        "fixture_sha256": "33f94be766296edfeb390584fec5d6fd35be96dd73c8a2c6ce332c5ada7cd20e",
+        "source_sha256": "5b5c85da53f0108b521b725b5ab014eaf8ee21446729b2e45c30100d796426fa",
+        "build_exit": 0,
+        "diagnostics": "",
+        "run_exit": 0,
+        "stdout": "NTT reference checks=698945\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "clang",
+        "skip": true,
+        "mode": "native",
+        "command": [
+          "taskset",
+          "-c",
+          "6",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-march=native",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/ntt_montgomery_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/ntt_adopted_checks/clangTruenative"
+        ],
+        "fixture_sha256": "33f94be766296edfeb390584fec5d6fd35be96dd73c8a2c6ce332c5ada7cd20e",
+        "source_sha256": "5b5c85da53f0108b521b725b5ab014eaf8ee21446729b2e45c30100d796426fa",
+        "build_exit": 0,
+        "diagnostics": "",
+        "run_exit": 0,
+        "stdout": "NTT reference checks=698945\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "clang",
+        "skip": true,
+        "mode": "disable",
+        "command": [
+          "taskset",
+          "-c",
+          "6",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-U__SIZEOF_INT128__",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/ntt_montgomery_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/ntt_adopted_checks/clangTruedisable"
+        ],
+        "fixture_sha256": "33f94be766296edfeb390584fec5d6fd35be96dd73c8a2c6ce332c5ada7cd20e",
+        "source_sha256": "5b5c85da53f0108b521b725b5ab014eaf8ee21446729b2e45c30100d796426fa",
+        "build_exit": 0,
+        "diagnostics": "",
+        "run_exit": 0,
+        "stdout": "NTT reference checks=698945\n",
+        "stderr": ""
+      },
+      {
+        "compiler": "clang",
+        "skip": true,
+        "mode": "cpu_false",
+        "command": [
+          "taskset",
+          "-c",
+          "6",
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-DSKIP_RUNTIME_CHECKS",
+          "-include",
+          "/tmp/sirkit_12h_20261031_095733/ntt_adopted_checks/cpu_false.hpp",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/ntt_montgomery_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit_12h_20261031_095733/ntt_adopted_checks/clangTruecpu_false"
+        ],
+        "fixture_sha256": "33f94be766296edfeb390584fec5d6fd35be96dd73c8a2c6ce332c5ada7cd20e",
+        "source_sha256": "5b5c85da53f0108b521b725b5ab014eaf8ee21446729b2e45c30100d796426fa",
+        "build_exit": 0,
+        "diagnostics": "",
+        "run_exit": 0,
+        "stdout": "NTT reference checks=698945\n",
+        "stderr": ""
+      }
+    ]
+  }
+}

@@ -1,0 +1,1096 @@
+{
+  "date": "2026-11-10",
+  "checked_at_utc": "2026-11-10T04:31:29.076568+00:00",
+  "scope": "最大流の再提出を画像で確認し、main/IO固定でP-Core向け追加案2つを比較。採用せず既存のBFS高速化を維持。",
+  "online_confirmation": "Audit/online-max-flow-80739940-2026-11-10.json",
+  "online": {
+    "url": "https://atcoder.jp/contests/practice2/submissions/80739940",
+    "status": "AC",
+    "time_ms": 6,
+    "previous_time_ms": 7,
+    "source": "利用者の提出情報画像",
+    "source_match": false,
+    "limitations": "提出本文はHTTP403、ブラウザ接続も不可。画像のコード長21308Bとローカル20830Bの差を含め、一致を断定しない。オンラインの1ms差を本体単体の短縮率へ換算しない。"
+  },
+  "decision": "追加案を採用しない。本体・main・IOは前回の独立参照/ASan+UBSan/容量上限/確保失敗/標準C++23の試験を通過した版とbyte一致。追加の再提出は不要。",
+  "candidates": [
+    {
+      "name": "scratch",
+      "change": "Frameのvector管理をmake_unique_for_overwrite配列と局所depthへ変更。コピーは作業配列を持たず、flow前に必要領域を確保。",
+      "review": "各pushで全フィールド代入し、距離増加により深さ<=N。所有と再構築の整合を独立レビュー。容量上限にPTRDIFF_MAX相当の追加を検討できるが、本候補自体を採用しない。",
+      "result": "GCCの350000鎖は全体約5%/接続星型は約8%短縮するが、GCCのランダムグリッド約2〜3%、Clangの星型や近いsinkの大規模グラフ約3〜4%後退があり不採用。"
+    },
+    {
+      "name": "cached",
+      "change": "辺走査で隣接配列・次数・次の距離を局所変数へ保存し、繰り返し読出しを減らす。",
+      "result": "GCCの深い鎖・星型で約2〜3%短縮する一方、GCCのランダムグリッドで約2〜3%後退。Clangは多くが測定揺らぎ程度で、不採用。"
+    }
+  ],
+  "measurement": {
+    "cpu": "Intel Core i9-14900K CPU12(P-Core)",
+    "compilers": {
+      "g++": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+      "clang++": "Ubuntu clang version 21.1.8 (6ubuntu1)"
+    },
+    "flags": [
+      "-std=c++23",
+      "-O2"
+    ],
+    "skip_runtime_checks": true,
+    "whole_process_runs": 1812,
+    "scope": "同じVerify main/共通IOを使い、同じ実行パスへコピーしてbase/control/candidateの実行順を混ぜる。setarch -Rでprocess単位のASLRを揃えtaskset CPU12。rusage(user+system)には構築・入力・流量計算・出力・破棄を含む。",
+    "generic_scope": "一般容量入力の補足ベンチではflow単体のCPU時間を別記し、容量・流量保存・最小カットも検証。Verify全体の成果と区別する。",
+    "fixtures": "前回監査に保存した自作入力生成器を再実行。26入力の構成・seed・SHAをmetadataへ保存。",
+    "summary": [
+      {
+        "candidate": "scratch",
+        "compiler": "clang",
+        "case": "graph_chain_350000",
+        "kind": "graph",
+        "median_cpu_ns": {
+          "base": 37185000,
+          "control": 37347000,
+          "scratch": 37898000
+        },
+        "baseline_pooled_ns": 37266000.0,
+        "candidate_ratio": 1.0169591584822626,
+        "control_ratio": 1.0043565954013716,
+        "samples_per_label": 7
+      },
+      {
+        "candidate": "scratch",
+        "compiler": "clang",
+        "case": "graph_close_sink_large_branches_100000",
+        "kind": "graph",
+        "median_cpu_ns": {
+          "base": 14464000,
+          "control": 14520000,
+          "scratch": 15020000
+        },
+        "baseline_pooled_ns": 14503000.0,
+        "candidate_ratio": 1.0356477970075157,
+        "control_ratio": 1.0038716814159292,
+        "samples_per_label": 7
+      },
+      {
+        "candidate": "scratch",
+        "compiler": "clang",
+        "case": "graph_dense_directed_300",
+        "kind": "graph",
+        "median_cpu_ns": {
+          "base": 3069000,
+          "control": 3027000,
+          "scratch": 3034000
+        },
+        "baseline_pooled_ns": 3045500.0,
+        "candidate_ratio": 0.9962239369561648,
+        "control_ratio": 0.9863147605083089,
+        "samples_per_label": 7
+      },
+      {
+        "candidate": "scratch",
+        "compiler": "clang",
+        "case": "graph_large_capacities_4",
+        "kind": "graph",
+        "median_cpu_ns": {
+          "base": 3594000,
+          "control": 4086000,
+          "scratch": 4493000
+        },
+        "baseline_pooled_ns": 3840000.0,
+        "candidate_ratio": 1.1700520833333334,
+        "control_ratio": 1.1368948247078463,
+        "samples_per_label": 7
+      },
+      {
+        "candidate": "scratch",
+        "compiler": "clang",
+        "case": "graph_layered_10002",
+        "kind": "graph",
+        "median_cpu_ns": {
+          "base": 4044000,
+          "control": 4066000,
+          "scratch": 4134000
+        },
+        "baseline_pooled_ns": 4049000.0,
+        "candidate_ratio": 1.020992837737713,
+        "control_ratio": 1.0054401582591495,
+        "samples_per_label": 7
+      },
+      {
+        "candidate": "scratch",
+        "compiler": "clang",
+        "case": "graph_parallel_reverse_loops_4",
+        "kind": "graph",
+        "median_cpu_ns": {
+          "base": 3770000,
+          "control": 3496000,
+          "scratch": 3351000
+        },
+        "baseline_pooled_ns": 3633000.0,
+        "candidate_ratio": 0.9223781998348473,
+        "control_ratio": 0.9273209549071618,
+        "samples_per_label": 7
+      },
+      {
+        "candidate": "scratch",
+        "compiler": "clang",
+        "case": "graph_random_dag_10000",
+        "kind": "graph",
+        "median_cpu_ns": {
+          "base": 6161000,
+          "control": 6158000,
+          "scratch": 6181000
+        },
+        "baseline_pooled_ns": 6159500.0,
+        "candidate_ratio": 1.0034905430635603,
+        "control_ratio": 0.9995130660607044,
+        "samples_per_label": 7
+      },
+      {
+        "candidate": "scratch",
+        "compiler": "clang",
+        "case": "graph_random_small_2",
+        "kind": "graph",
+        "median_cpu_ns": {
+          "base": 2983000,
+          "control": 4303000,
+          "scratch": 4034000
+        },
+        "baseline_pooled_ns": 3643000.0,
+        "candidate_ratio": 1.1073291243480647,
+        "control_ratio": 1.4425075427422058,
+        "samples_per_label": 7
+      },
+      {
+        "candidate": "scratch",
+        "compiler": "clang",
+        "case": "graph_random_small_24",
+        "kind": "graph",
+        "median_cpu_ns": {
+          "base": 4815000,
+          "control": 4867000,
+          "scratch": 4948000
+        },
+        "baseline_pooled_ns": 4841000.0,
+        "candidate_ratio": 1.022102871307581,
+        "control_ratio": 1.0107995846313604,
+        "samples_per_label": 7
+      },
+      {
+        "candidate": "scratch",
+        "compiler": "clang",
+        "case": "graph_random_small_8",
+        "kind": "graph",
+        "median_cpu_ns": {
+          "base": 5008000,
+          "control": 4953000,
+          "scratch": 4980000
+        },
+        "baseline_pooled_ns": 4973000.0,
+        "candidate_ratio": 1.0014076010456465,
+        "control_ratio": 0.9890175718849841,
+        "samples_per_label": 7
+      },
+      {
+        "candidate": "scratch",
+        "compiler": "clang",
+        "case": "graph_star_connected_100000",
+        "kind": "graph",
+        "median_cpu_ns": {
+          "base": 12963000,
+          "control": 12738000,
+          "scratch": 13280000
+        },
+        "baseline_pooled_ns": 12766500.0,
+        "candidate_ratio": 1.0402224572122352,
+        "control_ratio": 0.9826429067345522,
+        "samples_per_label": 7
+      },
+      {
+        "candidate": "scratch",
+        "compiler": "clang",
+        "case": "graph_star_unreachable_100000",
+        "kind": "graph",
+        "median_cpu_ns": {
+          "base": 7218000,
+          "control": 7180000,
+          "scratch": 7476000
+        },
+        "baseline_pooled_ns": 7214000.0,
+        "candidate_ratio": 1.0363182700304963,
+        "control_ratio": 0.9947353837628152,
+        "samples_per_label": 7
+      },
+      {
+        "candidate": "scratch",
+        "compiler": "clang",
+        "case": "graph_unreachable_sink_10000",
+        "kind": "graph",
+        "median_cpu_ns": {
+          "base": 4745000,
+          "control": 4703000,
+          "scratch": 4810000
+        },
+        "baseline_pooled_ns": 4724000.0,
+        "candidate_ratio": 1.0182049110922946,
+        "control_ratio": 0.9911485774499473,
+        "samples_per_label": 7
+      },
+      {
+        "candidate": "scratch",
+        "compiler": "clang",
+        "case": "graph_zero_capacity_2",
+        "kind": "graph",
+        "median_cpu_ns": {
+          "base": 1521000,
+          "control": 1626000,
+          "scratch": 1573000
+        },
+        "baseline_pooled_ns": 1533500.0,
+        "candidate_ratio": 1.0257580697750244,
+        "control_ratio": 1.069033530571992,
+        "samples_per_label": 7
+      },
+      {
+        "candidate": "scratch",
+        "compiler": "clang",
+        "case": "grid_blocked_1x1",
+        "kind": "grid",
+        "median_cpu_ns": {
+          "base": 2449000,
+          "control": 1682000,
+          "scratch": 2055000
+        },
+        "baseline_pooled_ns": 1767000.0,
+        "candidate_ratio": 1.162988115449915,
+        "control_ratio": 0.6868109432421396,
+        "samples_per_label": 11
+      },
+      {
+        "candidate": "scratch",
+        "compiler": "clang",
+        "case": "grid_checker_blocked_100x100",
+        "kind": "grid",
+        "median_cpu_ns": {
+          "base": 2493000,
+          "control": 2452000,
+          "scratch": 2396000
+        },
+        "baseline_pooled_ns": 2472500.0,
+        "candidate_ratio": 0.9690596562184024,
+        "control_ratio": 0.9835539510629764,
+        "samples_per_label": 11
+      },
+      {
+        "candidate": "scratch",
+        "compiler": "clang",
+        "case": "grid_official_3x3",
+        "kind": "grid",
+        "median_cpu_ns": {
+          "base": 1400000,
+          "control": 1364000,
+          "scratch": 1373000
+        },
+        "baseline_pooled_ns": 1382000.0,
+        "candidate_ratio": 0.9934876989869754,
+        "control_ratio": 0.9742857142857143,
+        "samples_per_label": 11
+      },
+      {
+        "candidate": "scratch",
+        "compiler": "clang",
+        "case": "grid_open_100x100",
+        "kind": "grid",
+        "median_cpu_ns": {
+          "base": 2949000,
+          "control": 2980000,
+          "scratch": 2880000
+        },
+        "baseline_pooled_ns": 2964500.0,
+        "candidate_ratio": 0.9714960364311014,
+        "control_ratio": 1.0105120379789758,
+        "samples_per_label": 11
+      },
+      {
+        "candidate": "scratch",
+        "compiler": "clang",
+        "case": "grid_open_1x1",
+        "kind": "grid",
+        "median_cpu_ns": {
+          "base": 4402000,
+          "control": 4345000,
+          "scratch": 4304000
+        },
+        "baseline_pooled_ns": 4381000.0,
+        "candidate_ratio": 0.9824241040858251,
+        "control_ratio": 0.9870513402998637,
+        "samples_per_label": 11
+      },
+      {
+        "candidate": "scratch",
+        "compiler": "clang",
+        "case": "grid_open_1x100",
+        "kind": "grid",
+        "median_cpu_ns": {
+          "base": 1488000,
+          "control": 1525000,
+          "scratch": 1602000
+        },
+        "baseline_pooled_ns": 1506500.0,
+        "candidate_ratio": 1.0633919681380684,
+        "control_ratio": 1.0248655913978495,
+        "samples_per_label": 11
+      },
+      {
+        "candidate": "scratch",
+        "compiler": "clang",
+        "case": "grid_open_300x300",
+        "kind": "grid",
+        "median_cpu_ns": {
+          "base": 14985000,
+          "control": 14880000,
+          "scratch": 14889000
+        },
+        "baseline_pooled_ns": 14954500.0,
+        "candidate_ratio": 0.995620047477348,
+        "control_ratio": 0.992992992992993,
+        "samples_per_label": 11
+      },
+      {
+        "candidate": "scratch",
+        "compiler": "clang",
+        "case": "grid_random10_100x100",
+        "kind": "grid",
+        "median_cpu_ns": {
+          "base": 10608000,
+          "control": 10523000,
+          "scratch": 11213000
+        },
+        "baseline_pooled_ns": 10596000.0,
+        "candidate_ratio": 1.0582295205738015,
+        "control_ratio": 0.9919871794871795,
+        "samples_per_label": 11
+      },
+      {
+        "candidate": "scratch",
+        "compiler": "clang",
+        "case": "grid_random35_100x100",
+        "kind": "grid",
+        "median_cpu_ns": {
+          "base": 3880000,
+          "control": 3853000,
+          "scratch": 3944000
+        },
+        "baseline_pooled_ns": 3878000.0,
+        "candidate_ratio": 1.0170190820010314,
+        "control_ratio": 0.9930412371134021,
+        "samples_per_label": 11
+      },
+      {
+        "candidate": "scratch",
+        "compiler": "clang",
+        "case": "grid_random35_300x300",
+        "kind": "grid",
+        "median_cpu_ns": {
+          "base": 23862000,
+          "control": 23973000,
+          "scratch": 25269000
+        },
+        "baseline_pooled_ns": 23913500.0,
+        "candidate_ratio": 1.0566834633157003,
+        "control_ratio": 1.0046517475484034,
+        "samples_per_label": 11
+      },
+      {
+        "candidate": "scratch",
+        "compiler": "clang",
+        "case": "grid_random65_100x100",
+        "kind": "grid",
+        "median_cpu_ns": {
+          "base": 1968000,
+          "control": 1996000,
+          "scratch": 1977000
+        },
+        "baseline_pooled_ns": 1982000.0,
+        "candidate_ratio": 0.9974772956609486,
+        "control_ratio": 1.0142276422764227,
+        "samples_per_label": 11
+      },
+      {
+        "candidate": "scratch",
+        "compiler": "clang",
+        "case": "grid_random_8x8",
+        "kind": "grid",
+        "median_cpu_ns": {
+          "base": 1638000,
+          "control": 1552000,
+          "scratch": 1614000
+        },
+        "baseline_pooled_ns": 1614000.0,
+        "candidate_ratio": 1.0,
+        "control_ratio": 0.9474969474969475,
+        "samples_per_label": 11
+      },
+      {
+        "candidate": "scratch",
+        "compiler": "gcc",
+        "case": "graph_chain_350000",
+        "kind": "graph",
+        "median_cpu_ns": {
+          "base": 35669000,
+          "control": 35875000,
+          "scratch": 34018000
+        },
+        "baseline_pooled_ns": 35775500.0,
+        "candidate_ratio": 0.9508742016184261,
+        "control_ratio": 1.005775323109703,
+        "samples_per_label": 7
+      },
+      {
+        "candidate": "scratch",
+        "compiler": "gcc",
+        "case": "graph_close_sink_large_branches_100000",
+        "kind": "graph",
+        "median_cpu_ns": {
+          "base": 13903000,
+          "control": 13998000,
+          "scratch": 14228000
+        },
+        "baseline_pooled_ns": 13974000.0,
+        "candidate_ratio": 1.0181766137111778,
+        "control_ratio": 1.0068330576134648,
+        "samples_per_label": 7
+      },
+      {
+        "candidate": "scratch",
+        "compiler": "gcc",
+        "case": "graph_dense_directed_300",
+        "kind": "graph",
+        "median_cpu_ns": {
+          "base": 2923000,
+          "control": 2937000,
+          "scratch": 2938000
+        },
+        "baseline_pooled_ns": 2928000.0,
+        "candidate_ratio": 1.0034153005464481,
+        "control_ratio": 1.0047895997263085,
+        "samples_per_label": 7
+      },
+      {
+        "candidate": "scratch",
+        "compiler": "gcc",
+        "case": "graph_large_capacities_4",
+        "kind": "graph",
+        "median_cpu_ns": {
+          "base": 1501000,
+          "control": 1352000,
+          "scratch": 1524000
+        },
+        "baseline_pooled_ns": 1401000.0,
+        "candidate_ratio": 1.0877944325481799,
+        "control_ratio": 0.9007328447701533,
+        "samples_per_label": 7
+      },
+      {
+        "candidate": "scratch",
+        "compiler": "gcc",
+        "case": "graph_layered_10002",
+        "kind": "graph",
+        "median_cpu_ns": {
+          "base": 3973000,
+          "control": 3958000,
+          "scratch": 3924000
+        },
+        "baseline_pooled_ns": 3965500.0,
+        "candidate_ratio": 0.9895347371075527,
+        "control_ratio": 0.9962245154794865,
+        "samples_per_label": 7
+      },
+      {
+        "candidate": "scratch",
+        "compiler": "gcc",
+        "case": "graph_parallel_reverse_loops_4",
+        "kind": "graph",
+        "median_cpu_ns": {
+          "base": 1248000,
+          "control": 1238000,
+          "scratch": 1251000
+        },
+        "baseline_pooled_ns": 1241500.0,
+        "candidate_ratio": 1.0076520338300443,
+        "control_ratio": 0.9919871794871795,
+        "samples_per_label": 7
+      },
+      {
+        "candidate": "scratch",
+        "compiler": "gcc",
+        "case": "graph_random_dag_10000",
+        "kind": "graph",
+        "median_cpu_ns": {
+          "base": 5967000,
+          "control": 5976000,
+          "scratch": 5995000
+        },
+        "baseline_pooled_ns": 5971500.0,
+        "candidate_ratio": 1.0039353596248848,
+        "control_ratio": 1.0015082956259427,
+        "samples_per_label": 7
+      },
+      {
+        "candidate": "scratch",
+        "compiler": "gcc",
+        "case": "graph_random_small_2",
+        "kind": "graph",
+        "median_cpu_ns": {
+          "base": 4967000,
+          "control": 4941000,
+          "scratch": 4965000
+        },
+        "baseline_pooled_ns": 4954000.0,
+        "candidate_ratio": 1.0022204279370206,
+        "control_ratio": 0.9947654519830884,
+        "samples_per_label": 7
+      },
+      {
+        "candidate": "scratch",
+        "compiler": "gcc",
+        "case": "graph_random_small_24",
+        "kind": "graph",
+        "median_cpu_ns": {
+          "base": 5070000,
+          "control": 4780000,
+          "scratch": 4688000
+        },
+        "baseline_pooled_ns": 4876500.0,
+        "candidate_ratio": 0.9613452271096073,
+        "control_ratio": 0.9428007889546351,
+        "samples_per_label": 7
+      },
+      {
+        "candidate": "scratch",
+        "compiler": "gcc",
+        "case": "graph_random_small_8",
+        "kind": "graph",
+        "median_cpu_ns": {
+          "base": 4546000,
+          "control": 4644000,
+          "scratch": 4670000
+        },
+        "baseline_pooled_ns": 4595000.0,
+        "candidate_ratio": 1.0163220892274212,
+        "control_ratio": 1.0215574131104268,
+        "samples_per_label": 7
+      },
+      {
+        "candidate": "scratch",
+        "compiler": "gcc",
+        "case": "graph_star_connected_100000",
+        "kind": "graph",
+        "median_cpu_ns": {
+          "base": 13805000,
+          "control": 13781000,
+          "scratch": 12708000
+        },
+        "baseline_pooled_ns": 13804000.0,
+        "candidate_ratio": 0.92060272384816,
+        "control_ratio": 0.9982614994567186,
+        "samples_per_label": 7
+      },
+      {
+        "candidate": "scratch",
+        "compiler": "gcc",
+        "case": "graph_star_unreachable_100000",
+        "kind": "graph",
+        "median_cpu_ns": {
+          "base": 7480000,
+          "control": 7432000,
+          "scratch": 7488000
+        },
+        "baseline_pooled_ns": 7450500.0,
+        "candidate_ratio": 1.0050332192470304,
+        "control_ratio": 0.9935828877005347,
+        "samples_per_label": 7
+      },
+      {
+        "candidate": "scratch",
+        "compiler": "gcc",
+        "case": "graph_unreachable_sink_10000",
+        "kind": "graph",
+        "median_cpu_ns": {
+          "base": 4550000,
+          "control": 4535000,
+          "scratch": 4553000
+        },
+        "baseline_pooled_ns": 4543500.0,
+        "candidate_ratio": 1.0020908990866073,
+        "control_ratio": 0.9967032967032967,
+        "samples_per_label": 7
+      },
+      {
+        "candidate": "scratch",
+        "compiler": "gcc",
+        "case": "graph_zero_capacity_2",
+        "kind": "graph",
+        "median_cpu_ns": {
+          "base": 1430000,
+          "control": 1393000,
+          "scratch": 1401000
+        },
+        "baseline_pooled_ns": 1404000.0,
+        "candidate_ratio": 0.9978632478632479,
+        "control_ratio": 0.9741258741258741,
+        "samples_per_label": 7
+      },
+      {
+        "candidate": "scratch",
+        "compiler": "gcc",
+        "case": "grid_blocked_1x1",
+        "kind": "grid",
+        "median_cpu_ns": {
+          "base": 4684000,
+          "control": 4734000,
+          "scratch": 4585000
+        },
+        "baseline_pooled_ns": 4709000.0,
+        "candidate_ratio": 0.9736674453174772,
+        "control_ratio": 1.0106746370623398,
+        "samples_per_label": 11
+      },
+      {
+        "candidate": "scratch",
+        "compiler": "gcc",
+        "case": "grid_checker_blocked_100x100",
+        "kind": "grid",
+        "median_cpu_ns": {
+          "base": 1799000,
+          "control": 1829000,
+          "scratch": 2014000
+        },
+        "baseline_pooled_ns": 1814000.0,
+        "candidate_ratio": 1.1102535832414553,
+        "control_ratio": 1.0166759310728182,
+        "samples_per_label": 11
+      },
+      {
+        "candidate": "scratch",
+        "compiler": "gcc",
+        "case": "grid_official_3x3",
+        "kind": "grid",
+        "median_cpu_ns": {
+          "base": 5090000,
+          "control": 4833000,
+          "scratch": 4598000
+        },
+        "baseline_pooled_ns": 4982500.0,
+        "candidate_ratio": 0.9228299046663322,
+        "control_ratio": 0.9495088408644401,
+        "samples_per_label": 11
+      },
+      {
+        "candidate": "scratch",
+        "compiler": "gcc",
+        "case": "grid_open_100x100",
+        "kind": "grid",
+        "median_cpu_ns": {
+          "base": 2700000,
+          "control": 2594000,
+          "scratch": 2688000
+        },
+        "baseline_pooled_ns": 2685000.0,
+        "candidate_ratio": 1.0011173184357542,
+        "control_ratio": 0.9607407407407408,
+        "samples_per_label": 11
+      },
+      {
+        "candidate": "scratch",
+        "compiler": "gcc",
+        "case": "grid_open_1x1",
+        "kind": "grid",
+        "median_cpu_ns": {
+          "base": 3674000,
+          "control": 3550000,
+          "scratch": 3604000
+        },
+        "baseline_pooled_ns": 3572000.0,
+        "candidate_ratio": 1.0089585666293392,
+        "control_ratio": 0.9662493195427327,
+        "samples_per_label": 11
+      },
+      {
+        "candidate": "scratch",
+        "compiler": "gcc",
+        "case": "grid_open_1x100",
+        "kind": "grid",
+        "median_cpu_ns": {
+          "base": 4395000,
+          "control": 4152000,
+          "scratch": 4313000
+        },
+        "baseline_pooled_ns": 4273500.0,
+        "candidate_ratio": 1.0092430092430091,
+        "control_ratio": 0.9447098976109215,
+        "samples_per_label": 11
+      },
+      {
+        "candidate": "scratch",
+        "compiler": "gcc",
+        "case": "grid_open_300x300",
+        "kind": "grid",
+        "median_cpu_ns": {
+          "base": 15030000,
+          "control": 15038000,
+          "scratch": 14910000
+        },
+        "baseline_pooled_ns": 15036000.0,
+        "candidate_ratio": 0.9916201117318436,
+        "control_ratio": 1.0005322687957419,
+        "samples_per_label": 11
+      },
+      {
+        "candidate": "scratch",
+        "compiler": "gcc",
+        "case": "grid_random10_100x100",
+        "kind": "grid",
+        "median_cpu_ns": {
+          "base": 8217000,
+          "control": 8170000,
+          "scratch": 8417000
+        },
+        "baseline_pooled_ns": 8182000.0,
+        "candidate_ratio": 1.0287215839648007,
+        "control_ratio": 0.9942801509066569,
+        "samples_per_label": 11
+      },
+      {
+        "candidate": "scratch",
+        "compiler": "gcc",
+        "case": "grid_random35_100x100",
+        "kind": "grid",
+        "median_cpu_ns": {
+          "base": 3252000,
+          "control": 3171000,
+          "scratch": 3242000
+        },
+        "baseline_pooled_ns": 3186500.0,
+        "candidate_ratio": 1.0174172289345678,
+        "control_ratio": 0.9750922509225092,
+        "samples_per_label": 11
+      },
+      {
+        "candidate": "scratch",
+        "compiler": "gcc",
+        "case": "grid_random35_300x300",
+        "kind": "grid",
+        "median_cpu_ns": {
+          "base": 24789000,
+          "control": 24738000,
+          "scratch": 25508000
+        },
+        "baseline_pooled_ns": 24782500.0,
+        "candidate_ratio": 1.029274689801271,
+        "control_ratio": 0.9979426358465449,
+        "samples_per_label": 11
+      },
+      {
+        "candidate": "scratch",
+        "compiler": "gcc",
+        "case": "grid_random65_100x100",
+        "kind": "grid",
+        "median_cpu_ns": {
+          "base": 1954000,
+          "control": 2026000,
+          "scratch": 1972000
+        },
+        "baseline_pooled_ns": 1963000.0,
+        "candidate_ratio": 1.0045848191543556,
+        "control_ratio": 1.0368474923234392,
+        "samples_per_label": 11
+      },
+      {
+        "candidate": "scratch",
+        "compiler": "gcc",
+        "case": "grid_random_8x8",
+        "kind": "grid",
+        "median_cpu_ns": {
+          "base": 4867000,
+          "control": 4610000,
+          "scratch": 4703000
+        },
+        "baseline_pooled_ns": 4655000.0,
+        "candidate_ratio": 1.01031149301826,
+        "control_ratio": 0.9471953975755085,
+        "samples_per_label": 11
+      },
+      {
+        "candidate": "cached",
+        "compiler": "clang",
+        "case": "graph_chain_350000",
+        "kind": "graph",
+        "median_cpu_ns": {
+          "base": 37108000,
+          "control": 37299000,
+          "cached": 36909000
+        },
+        "baseline_pooled_ns": 37276000.0,
+        "candidate_ratio": 0.9901545230174912,
+        "control_ratio": 1.005147138083432,
+        "samples_per_label": 7
+      },
+      {
+        "candidate": "cached",
+        "compiler": "clang",
+        "case": "graph_close_sink_large_branches_100000",
+        "kind": "graph",
+        "median_cpu_ns": {
+          "base": 14142000,
+          "control": 14159000,
+          "cached": 14200000
+        },
+        "baseline_pooled_ns": 14153500.0,
+        "candidate_ratio": 1.0032854064365704,
+        "control_ratio": 1.0012020930561447,
+        "samples_per_label": 7
+      },
+      {
+        "candidate": "cached",
+        "compiler": "clang",
+        "case": "graph_layered_10002",
+        "kind": "graph",
+        "median_cpu_ns": {
+          "base": 4012000,
+          "control": 4036000,
+          "cached": 4022000
+        },
+        "baseline_pooled_ns": 4018500.0,
+        "candidate_ratio": 1.0008709717556301,
+        "control_ratio": 1.0059820538384845,
+        "samples_per_label": 7
+      },
+      {
+        "candidate": "cached",
+        "compiler": "clang",
+        "case": "graph_star_connected_100000",
+        "kind": "graph",
+        "median_cpu_ns": {
+          "base": 12835000,
+          "control": 12785000,
+          "cached": 12967000
+        },
+        "baseline_pooled_ns": 12785500.0,
+        "candidate_ratio": 1.0141957686441672,
+        "control_ratio": 0.9961044020257109,
+        "samples_per_label": 7
+      },
+      {
+        "candidate": "cached",
+        "compiler": "clang",
+        "case": "grid_open_300x300",
+        "kind": "grid",
+        "median_cpu_ns": {
+          "base": 14552000,
+          "control": 14503000,
+          "cached": 14594000
+        },
+        "baseline_pooled_ns": 14551000.0,
+        "candidate_ratio": 1.0029551233592193,
+        "control_ratio": 0.9966327652556349,
+        "samples_per_label": 11
+      },
+      {
+        "candidate": "cached",
+        "compiler": "clang",
+        "case": "grid_random10_100x100",
+        "kind": "grid",
+        "median_cpu_ns": {
+          "base": 7732000,
+          "control": 7752000,
+          "cached": 7764000
+        },
+        "baseline_pooled_ns": 7736500.0,
+        "candidate_ratio": 1.0035545789439668,
+        "control_ratio": 1.0025866528711846,
+        "samples_per_label": 11
+      },
+      {
+        "candidate": "cached",
+        "compiler": "clang",
+        "case": "grid_random35_100x100",
+        "kind": "grid",
+        "median_cpu_ns": {
+          "base": 3091000,
+          "control": 3093000,
+          "cached": 3082000
+        },
+        "baseline_pooled_ns": 3092000.0,
+        "candidate_ratio": 0.9967658473479948,
+        "control_ratio": 1.0006470397929472,
+        "samples_per_label": 11
+      },
+      {
+        "candidate": "cached",
+        "compiler": "clang",
+        "case": "grid_random35_300x300",
+        "kind": "grid",
+        "median_cpu_ns": {
+          "base": 23897000,
+          "control": 23940000,
+          "cached": 24081000
+        },
+        "baseline_pooled_ns": 23914000.0,
+        "candidate_ratio": 1.0069833570293552,
+        "control_ratio": 1.00179938904465,
+        "samples_per_label": 11
+      },
+      {
+        "candidate": "cached",
+        "compiler": "gcc",
+        "case": "graph_chain_350000",
+        "kind": "graph",
+        "median_cpu_ns": {
+          "base": 38050000,
+          "control": 38326000,
+          "cached": 37244000
+        },
+        "baseline_pooled_ns": 38126000.0,
+        "candidate_ratio": 0.9768661805591985,
+        "control_ratio": 1.0072536136662287,
+        "samples_per_label": 7
+      },
+      {
+        "candidate": "cached",
+        "compiler": "gcc",
+        "case": "graph_close_sink_large_branches_100000",
+        "kind": "graph",
+        "median_cpu_ns": {
+          "base": 14026000,
+          "control": 13953000,
+          "cached": 13865000
+        },
+        "baseline_pooled_ns": 13989500.0,
+        "candidate_ratio": 0.9911004682082991,
+        "control_ratio": 0.9947953800085555,
+        "samples_per_label": 7
+      },
+      {
+        "candidate": "cached",
+        "compiler": "gcc",
+        "case": "graph_layered_10002",
+        "kind": "graph",
+        "median_cpu_ns": {
+          "base": 4204000,
+          "control": 4143000,
+          "cached": 4112000
+        },
+        "baseline_pooled_ns": 4160500.0,
+        "candidate_ratio": 0.9883427472659536,
+        "control_ratio": 0.9854900095147479,
+        "samples_per_label": 7
+      },
+      {
+        "candidate": "cached",
+        "compiler": "gcc",
+        "case": "graph_star_connected_100000",
+        "kind": "graph",
+        "median_cpu_ns": {
+          "base": 14006000,
+          "control": 14145000,
+          "cached": 13701000
+        },
+        "baseline_pooled_ns": 14062500.0,
+        "candidate_ratio": 0.9742933333333333,
+        "control_ratio": 1.0099243181493645,
+        "samples_per_label": 7
+      },
+      {
+        "candidate": "cached",
+        "compiler": "gcc",
+        "case": "grid_open_300x300",
+        "kind": "grid",
+        "median_cpu_ns": {
+          "base": 15950000,
+          "control": 15773000,
+          "cached": 16135000
+        },
+        "baseline_pooled_ns": 15869500.0,
+        "candidate_ratio": 1.0167302057405716,
+        "control_ratio": 0.9889028213166144,
+        "samples_per_label": 11
+      },
+      {
+        "candidate": "cached",
+        "compiler": "gcc",
+        "case": "grid_random10_100x100",
+        "kind": "grid",
+        "median_cpu_ns": {
+          "base": 8097000,
+          "control": 8109000,
+          "cached": 8313000
+        },
+        "baseline_pooled_ns": 8103000.0,
+        "candidate_ratio": 1.0259163272861902,
+        "control_ratio": 1.0014820303816228,
+        "samples_per_label": 11
+      },
+      {
+        "candidate": "cached",
+        "compiler": "gcc",
+        "case": "grid_random35_100x100",
+        "kind": "grid",
+        "median_cpu_ns": {
+          "base": 3184000,
+          "control": 3156000,
+          "cached": 3183000
+        },
+        "baseline_pooled_ns": 3165500.0,
+        "candidate_ratio": 1.0055283525509398,
+        "control_ratio": 0.9912060301507538,
+        "samples_per_label": 11
+      },
+      {
+        "candidate": "cached",
+        "compiler": "gcc",
+        "case": "grid_random35_300x300",
+        "kind": "grid",
+        "median_cpu_ns": {
+          "base": 24734000,
+          "control": 24643000,
+          "cached": 25289000
+        },
+        "baseline_pooled_ns": 24680000.0,
+        "candidate_ratio": 1.02467585089141,
+        "control_ratio": 0.99632085388534,
+        "samples_per_label": 11
+      }
+    ],
+    "limits": "小さい入力はprocess起動・計時の揺らぎが大きい。一部対照にも大きな変動があるため小規模の比率を採用根拠としない。全体の後退を避け、前後の良い条件だけで新案を採用しない。"
+  },
+  "validation": {
+    "source_preservation": [
+      {
+        "path": "Graph/Max_Flow.cpp",
+        "sha256": "df5f0b327285ec1efd9adf0b36cb4f3b6638f0f031edd11c6ec3b62f9452f402",
+        "unchanged_from_previous_validated_release": true
+      },
+      {
+        "path": "Verify/current/drivers/max_flow_grid_main.cpp",
+        "sha256": "5d98401f72722a00e26856ad80c1f9825c0ee8f24cc3b93f62b0db680b1df4bb",
+        "unchanged_from_previous_validated_release": true
+      },
+      {
+        "path": "Verify/current/common/fast_io.hpp",
+        "sha256": "291bf8dbc56a1d691f6256fe95b4714183c2cf5d9e55e4bef240e31d1eb178c1",
+        "unchanged_from_previous_validated_release": true
+      }
+    ],
+    "outputs": "全1812実行で流量の前後一致、既知/独立参照の期待流量、グリッド配置の妥当性、一般グラフの容量/保存則/最小カットを検査。",
+    "previous_validation": "Audit/max-flow-acl-80622766-2026-11-06.json。現在の本体・main・IOが同じため、既存の同じ回帰試験を繰り返さない。"
+  },
+  "provenance": "候補は既存CC0の自作コードから独立に改変。外部実装を取り込まず、公開API・ライセンスは変更しない。",
+  "evidence": {
+    "path": "Audit/data/max-flow-followup-80739940-2026-11-10.zip",
+    "sha256": "1da6b3cef68cf0e26d1353e0fd91c798ed59de26f838259abcb1c0cbbbaad323",
+    "entries": 41
+  },
+  "required_resubmission": []
+}

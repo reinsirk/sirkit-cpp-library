@@ -1,0 +1,665 @@
+{
+  "date": "2026-11-11",
+  "library": "String/Z_Algorithm.cpp",
+  "decision": "retain_current_AC_15ms_implementation",
+  "required_resubmission": [],
+  "online": {
+    "url": "https://judge.yosupo.jp/submission/416354",
+    "status": "AC",
+    "time_ms": 15,
+    "previous_url": "https://judge.yosupo.jp/submission/416042",
+    "previous_time_ms": 22,
+    "observed_reduction_percent": 31.818181818181817,
+    "source_match": "提出本文と現行本体/main/共通IOが空行・改行・行末空白・Submission注記のみ除き一致。",
+    "evidence": "Audit/online-z-algorithm-416354-2026-11-11.json",
+    "scope": "22→15msはオンライン観測値。ケースには9→1msや7→15msの増減もあるので、約32%を本体のみの短縮率と断定しない。"
+  },
+  "unchanged": {
+    "canonical": "5ba1d30b8ab71bd9336244950614bfe829ef0ca3476d4eb92ed7f5e8d85d0dc9",
+    "main": "660c45064c429ba869f70dbd69ce34584719f17adfeb818580007192eb8876a6",
+    "shared_IO": "291bf8dbc56a1d691f6256fe95b4714183c2cf5d9e55e4bef240e31d1eb178c1",
+    "canonical_body_unchanged_from_416354": true,
+    "main_and_io_unchanged": true,
+    "API_documentation_example_unchanged": true
+  },
+  "candidates": [
+    {
+      "names": [
+        "short",
+        "skip_zero_copy",
+        "remaining",
+        "branch_advance",
+        "copy_back",
+        "cached_first"
+      ],
+      "scope": "長さ1の特別処理、コピーする0の書込み省略、残り長保持、分岐で残り長設定、比較式書換え、算術型の先頭値キャッシュ。",
+      "result": "安定した全体改善が得られない。短縮条件と退行条件が混在。"
+    },
+    {
+      "names": [
+        "long_word",
+        "long_avx2"
+      ],
+      "scope": "文字列の短い一致はscalar比較し、16byte延長に成功してからword/AVX2比較へ進む。CPU判定とヘルパー呼出しも長一致の経路だけ。",
+      "result": "周期/longrunに短縮があるが、大規模random/binary等で後退。追加実装を正当化する一貫した改善がなく不採用。"
+    },
+    {
+      "names": [
+        "leading_run",
+        "leading_word",
+        "leading_avx2"
+      ],
+      "scope": "先頭の同値runから確定Z値をまとめて出力し、最初の非同値位置を省略。word/AVX2との併用も比較。",
+      "result": "末尾だけ異なる列等で改善するが、ランダム列や他APIの退行が残る。"
+    },
+    {
+      "names": [
+        "leading_simple"
+      ],
+      "scope": "leading_runで到達不能になったtailのi==1分岐も除去。全57入力と汎用APIで詳しく比較。",
+      "result": "500000要素last_differentでGCC約3.7%・Clang約8.1%改善。ただしClang max_random_00約2.1%増、純呼出しvector<bool>/binary約3.2%増等があり不採用。"
+    },
+    {
+      "names": [
+        "leading_guard"
+      ],
+      "scope": "先頭2要素が同値の場合だけrunを処理し、短いprefixの開始位置/通常経路を維持する案。",
+      "result": "純呼出し試験の大規模int64/binaryがGCC約5.2%増、bool/binaryがClang約2.9%増等。現行版を置き換えない。"
+    }
+  ],
+  "source_sha256": {
+    "short": "98b083640824daede65066ba7fae7c1f124b3ad96d324a6313f40cc868348007",
+    "skip_zero_copy": "7627d7b4dd736a37d352f6deeac90c7972888599b8e7dc1cbbbbd3b313f5be7a",
+    "remaining": "8327b262d2d4e107de1bfcbbec6580fc4b72f50ce757a2c6dc8a9d05eeec0113",
+    "branch_advance": "b79aaf0ec0f74ccc8681236afaf377a6bcac6deff6a834f7c352f809e0a1081a",
+    "copy_back": "16e0e4198335a905269005ed4ab0d320e8814463a30de534aef3b0b5391d87c9",
+    "cached_first": "51b38bd45b35355a055215c84fe214a0975b8d9b38ecb393d7d19d44871d7c01",
+    "long_word": "93228ed2f370e4e7e1926bd9092bfce86005a5f244c1603f81326ffc5b3b2b1f",
+    "long_avx2": "ef65610420a6ac835e998b9ab7974d4a3e64634267f24adc6a9ce58b41a75c28",
+    "leading_run": "319d0c9cf8c643f9d9e82ab95f2695297d74f89bebd0c0d701fa1e910f8f46ce",
+    "leading_word": "bd6c35846663d7be031e296bb601350927153a78804aec5621b909c5456bd98c",
+    "leading_avx2": "ba8838e931400c08ccbad2883099e514e44f7cf14c6254c298c0be23f6930949",
+    "leading_simple": "2eb1efb25d34d47c1eb8fb7ada69c915915c84d0da15cc93da24bbe18b86eb04",
+    "leading_guard": "a9aaedb6b91321bef6b7731a8685bd3b8c223a4f80d621d0c742eeb5fc82269a"
+  },
+  "measurement": {
+    "host": "Intel Core i9-14900K",
+    "cpu": "P-Core CPU 12/core 6、sibling CPU 13、max 6 GHz",
+    "compiler": {
+      "gcc": "15.2.0",
+      "clang": "21.1.8 (--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15)"
+    },
+    "flags": [
+      "-std=c++23",
+      "-O2"
+    ],
+    "march_native": false,
+    "additional_pragmas": false,
+    "affinity": "taskset -c 12",
+    "ASLR": "子プロセスのみsetarch x86_64 -R。システム設定は変更しない。",
+    "lock": "/tmp/sirkit_performance_cpu12.lock",
+    "order": "before/control/candidateを決定的にシャッフルし同じ実行パスactiveで比較。controlはbeforeと同じバイナリ。",
+    "baseline": "今回のAC15ms版。前回22ms版ではない。",
+    "fixture_count": 57,
+    "whole_screen_repetitions": 3,
+    "whole_final_repetitions": 9,
+    "whole_final_runs": 4104,
+    "whole_final_scope": "全57入力の固定main/IO込みの子プロセスuser+system時間。中央値、before/control pooled中央値比。",
+    "generic_repetitions": 7,
+    "generic_operations": {
+      "4": "z_algorithm(string)",
+      "0": "z_algorithm(vector<int64_t>)",
+      "1": "z_algorithm(vector<bool>)",
+      "2": "PrefixMatches(string,string)",
+      "3": "ZMatches(string,string)"
+    },
+    "generic_sizes": [
+      32,
+      4096,
+      500000
+    ],
+    "generic_shapes": {
+      "0": "all_same",
+      "1": "periodic3",
+      "2": "binary_random"
+    },
+    "generic_scope": "入力生成を除き、結果vectorの構築/破棄を含む繰返し呼出しのsteady_clock時間。Verify全体と区別。",
+    "run_counts": {
+      "guard_typed_raw.json": 1890,
+      "typed_raw.json": 1890,
+      "final_raw.json": 4104,
+      "screen_leading_run_leading_word_leading_avx2_raw.json": 390,
+      "screen_short_skip_zero_copy_remaining_branch_advance_copy_back_cached_first_long_word_long_avx2_raw.json": 780
+    },
+    "all_outputs_or_checksums_equal": true,
+    "small_input_caveat": "全体測定の小入力は起動時間の影響が大きい。増減のすべてを本体差と見なさない。",
+    "official_revision": "73876f1cbcf082d2b22722924b924d3d65a2f00e",
+    "fixtures_reused": "Audit/data/performance-z-algorithm-416042-2026-11-10.zipの生成補助/公式固定URL/メタデータと同じ入力。現行オンラインケースのバイト列一致は主張しない。"
+  },
+  "selected_whole_results": [
+    {
+      "compiler": "gcc",
+      "case": "custom_500000_last_different",
+      "median_cpu_ns": {
+        "base": 7850000,
+        "control": 7838000,
+        "leading_run": 7518000,
+        "leading_simple": 7560000
+      },
+      "pooled_base_ns": 7848000.0,
+      "ratios": {
+        "base": 1.0002548419979613,
+        "control": 0.9987257900101937,
+        "leading_run": 0.9579510703363915,
+        "leading_simple": 0.963302752293578
+      }
+    },
+    {
+      "compiler": "gcc",
+      "case": "custom_500000_middle_different",
+      "median_cpu_ns": {
+        "base": 7622000,
+        "control": 7659000,
+        "leading_run": 7411000,
+        "leading_simple": 7408000
+      },
+      "pooled_base_ns": 7636000.0,
+      "ratios": {
+        "base": 0.9981665793609219,
+        "control": 1.0030120481927711,
+        "leading_run": 0.9705343111576742,
+        "leading_simple": 0.9701414353064431
+      }
+    },
+    {
+      "compiler": "gcc",
+      "case": "official_max_random_00",
+      "median_cpu_ns": {
+        "base": 4758000,
+        "control": 4836000,
+        "leading_run": 4835000,
+        "leading_simple": 4813000
+      },
+      "pooled_base_ns": 4786000.0,
+      "ratios": {
+        "base": 0.9941496030087756,
+        "control": 1.0104471374843293,
+        "leading_run": 1.0102381947346426,
+        "leading_simple": 1.0056414542415377
+      }
+    },
+    {
+      "compiler": "gcc",
+      "case": "official_max_random_01",
+      "median_cpu_ns": {
+        "base": 4815000,
+        "control": 4773000,
+        "leading_run": 4835000,
+        "leading_simple": 4838000
+      },
+      "pooled_base_ns": 4793000.0,
+      "ratios": {
+        "base": 1.0045900271228876,
+        "control": 0.9958272480701023,
+        "leading_run": 1.0087627790527853,
+        "leading_simple": 1.0093886918422699
+      }
+    },
+    {
+      "compiler": "gcc",
+      "case": "official_all_same_01",
+      "median_cpu_ns": {
+        "base": 7406000,
+        "control": 7410000,
+        "leading_run": 7372000,
+        "leading_simple": 7326000
+      },
+      "pooled_base_ns": 7407000.0,
+      "ratios": {
+        "base": 0.9998649925745916,
+        "control": 1.0004050222762253,
+        "leading_run": 0.995274740110706,
+        "leading_simple": 0.9890643985419199
+      }
+    },
+    {
+      "compiler": "gcc",
+      "case": "official_fib_str_00",
+      "median_cpu_ns": {
+        "base": 5917000,
+        "control": 5943000,
+        "leading_run": 5956000,
+        "leading_simple": 5817000
+      },
+      "pooled_base_ns": 5931000.0,
+      "ratios": {
+        "base": 0.9976395211600068,
+        "control": 1.002023267577137,
+        "leading_run": 1.0042151407857023,
+        "leading_simple": 0.9807789580171977
+      }
+    },
+    {
+      "compiler": "gcc",
+      "case": "official_binary_carry_00",
+      "median_cpu_ns": {
+        "base": 5940000,
+        "control": 5902000,
+        "leading_run": 5940000,
+        "leading_simple": 5902000
+      },
+      "pooled_base_ns": 5905000.0,
+      "ratios": {
+        "base": 1.005927180355631,
+        "control": 0.9994919559695173,
+        "leading_run": 1.005927180355631,
+        "leading_simple": 0.9994919559695173
+      }
+    },
+    {
+      "compiler": "clang",
+      "case": "custom_500000_last_different",
+      "median_cpu_ns": {
+        "base": 7129000,
+        "control": 7148000,
+        "leading_run": 6634000,
+        "leading_simple": 6564000
+      },
+      "pooled_base_ns": 7138500.0,
+      "ratios": {
+        "base": 0.9986691882048049,
+        "control": 1.0013308117951951,
+        "leading_run": 0.9293268894025355,
+        "leading_simple": 0.9195209077537297
+      }
+    },
+    {
+      "compiler": "clang",
+      "case": "custom_500000_middle_different",
+      "median_cpu_ns": {
+        "base": 6947000,
+        "control": 6956000,
+        "leading_run": 6853000,
+        "leading_simple": 6839000
+      },
+      "pooled_base_ns": 6951500.0,
+      "ratios": {
+        "base": 0.999352657699777,
+        "control": 1.000647342300223,
+        "leading_run": 0.9858303963173416,
+        "leading_simple": 0.9838164424944257
+      }
+    },
+    {
+      "compiler": "clang",
+      "case": "official_max_random_00",
+      "median_cpu_ns": {
+        "base": 4732000,
+        "control": 4757000,
+        "leading_run": 4864000,
+        "leading_simple": 4855000
+      },
+      "pooled_base_ns": 4753500.0,
+      "ratios": {
+        "base": 0.9954770169348901,
+        "control": 1.0007362995687388,
+        "leading_run": 1.0232460292416115,
+        "leading_simple": 1.021352687493426
+      }
+    },
+    {
+      "compiler": "clang",
+      "case": "official_max_random_01",
+      "median_cpu_ns": {
+        "base": 4722000,
+        "control": 4715000,
+        "leading_run": 4768000,
+        "leading_simple": 4723000
+      },
+      "pooled_base_ns": 4719000.0,
+      "ratios": {
+        "base": 1.0006357279084552,
+        "control": 0.9991523627887264,
+        "leading_run": 1.0103835558381014,
+        "leading_simple": 1.0008476372112736
+      }
+    },
+    {
+      "compiler": "clang",
+      "case": "official_all_same_01",
+      "median_cpu_ns": {
+        "base": 6581000,
+        "control": 6535000,
+        "leading_run": 6576000,
+        "leading_simple": 6571000
+      },
+      "pooled_base_ns": 6545000.0,
+      "ratios": {
+        "base": 1.0055003819709702,
+        "control": 0.998472116119175,
+        "leading_run": 1.0047364400305576,
+        "leading_simple": 1.0039724980901452
+      }
+    },
+    {
+      "compiler": "clang",
+      "case": "official_fib_str_00",
+      "median_cpu_ns": {
+        "base": 5689000,
+        "control": 5725000,
+        "leading_run": 5703000,
+        "leading_simple": 5719000
+      },
+      "pooled_base_ns": 5706500.0,
+      "ratios": {
+        "base": 0.9969333216507491,
+        "control": 1.0032419171120652,
+        "leading_run": 0.9993866643301498,
+        "leading_simple": 1.0021904845351792
+      }
+    },
+    {
+      "compiler": "clang",
+      "case": "official_binary_carry_00",
+      "median_cpu_ns": {
+        "base": 5840000,
+        "control": 5894000,
+        "leading_run": 5790000,
+        "leading_simple": 5842000
+      },
+      "pooled_base_ns": 5890000.0,
+      "ratios": {
+        "base": 0.9915110356536503,
+        "control": 1.000679117147708,
+        "leading_run": 0.9830220713073005,
+        "leading_simple": 0.9918505942275042
+      }
+    }
+  ],
+  "selected_generic_regressions": {
+    "leading_simple": [
+      {
+        "compiler": "gcc",
+        "operation": 0,
+        "n": 500000,
+        "shape": 2,
+        "median_ns": {
+          "base": 7071488,
+          "control": 7049654,
+          "leading_simple": 7154518
+        },
+        "pooled_base_ns": 7069730.5,
+        "ratio": 1.0119930314175343,
+        "control_ratio": 0.9971602170690947
+      },
+      {
+        "compiler": "gcc",
+        "operation": 3,
+        "n": 500000,
+        "shape": 0,
+        "median_ns": {
+          "base": 13828900,
+          "control": 13809750,
+          "leading_simple": 14068825
+        },
+        "pooled_base_ns": 13817862.5,
+        "ratio": 1.0181621795701035,
+        "control_ratio": 0.9994128976171243
+      },
+      {
+        "compiler": "clang",
+        "operation": 4,
+        "n": 500000,
+        "shape": 2,
+        "median_ns": {
+          "base": 7251014,
+          "control": 7252651,
+          "leading_simple": 7403434
+        },
+        "pooled_base_ns": 7251832.5,
+        "ratio": 1.0209052677374995,
+        "control_ratio": 1.0001128680233582
+      },
+      {
+        "compiler": "clang",
+        "operation": 1,
+        "n": 500000,
+        "shape": 2,
+        "median_ns": {
+          "base": 8212774,
+          "control": 8206319,
+          "leading_simple": 8468057
+        },
+        "pooled_base_ns": 8207491.0,
+        "ratio": 1.0317473391076517,
+        "control_ratio": 0.9998572036204487
+      },
+      {
+        "compiler": "clang",
+        "operation": 2,
+        "n": 500000,
+        "shape": 2,
+        "median_ns": {
+          "base": 22547934,
+          "control": 22559674,
+          "leading_simple": 22843879
+        },
+        "pooled_base_ns": 22553804.0,
+        "ratio": 1.0128614667397127,
+        "control_ratio": 1.00026026651646
+      },
+      {
+        "compiler": "clang",
+        "operation": 3,
+        "n": 500000,
+        "shape": 2,
+        "median_ns": {
+          "base": 23645204,
+          "control": 23687991,
+          "leading_simple": 23909722
+        },
+        "pooled_base_ns": 23666597.5,
+        "ratio": 1.010272896220084,
+        "control_ratio": 1.0009039533460609
+      }
+    ],
+    "leading_guard": [
+      {
+        "compiler": "gcc",
+        "operation": 0,
+        "n": 500000,
+        "shape": 2,
+        "median_ns": {
+          "base": 7360244,
+          "control": 7356569,
+          "leading_guard": 7740567
+        },
+        "pooled_base_ns": 7358406.5,
+        "ratio": 1.0519352253779402,
+        "control_ratio": 0.9997502856087116
+      },
+      {
+        "compiler": "clang",
+        "operation": 1,
+        "n": 500000,
+        "shape": 2,
+        "median_ns": {
+          "base": 8525778,
+          "control": 8485405,
+          "leading_guard": 8768470
+        },
+        "pooled_base_ns": 8518684.0,
+        "ratio": 1.029322134733487,
+        "control_ratio": 0.9960934106723527
+      },
+      {
+        "compiler": "clang",
+        "operation": 3,
+        "n": 500000,
+        "shape": 2,
+        "median_ns": {
+          "base": 24414771,
+          "control": 24533575,
+          "leading_guard": 24945581
+        },
+        "pooled_base_ns": 24474173.0,
+        "ratio": 1.0192614475676052,
+        "control_ratio": 1.0024271300198786
+      }
+    ]
+  },
+  "correctness": {
+    "candidate_reference": [
+      {
+        "compiler": "gcc",
+        "candidate": "leading_run",
+        "skip": false,
+        "command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-DZ_HEADER=\"/tmp/sirkit_z_416354/leading_run.hpp\"",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/z_algorithm_fast_test.cpp",
+          "-o",
+          "/tmp/sirkit_z_416354/gcc_leading_run_reference"
+        ],
+        "stdout": "z fast reference cases=115 checks=384\n"
+      },
+      {
+        "compiler": "gcc",
+        "candidate": "leading_run",
+        "skip": true,
+        "command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-DZ_HEADER=\"/tmp/sirkit_z_416354/leading_run.hpp\"",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/z_algorithm_fast_test.cpp",
+          "-o",
+          "/tmp/sirkit_z_416354/gcc_leading_run_reference"
+        ],
+        "stdout": "z fast reference cases=115 checks=384\n"
+      },
+      {
+        "compiler": "gcc",
+        "candidate": "leading_simple",
+        "skip": false,
+        "command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-DZ_HEADER=\"/tmp/sirkit_z_416354/leading_simple.hpp\"",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/z_algorithm_fast_test.cpp",
+          "-o",
+          "/tmp/sirkit_z_416354/gcc_leading_simple_reference"
+        ],
+        "stdout": "z fast reference cases=115 checks=384\n"
+      },
+      {
+        "compiler": "gcc",
+        "candidate": "leading_simple",
+        "skip": true,
+        "command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-DZ_HEADER=\"/tmp/sirkit_z_416354/leading_simple.hpp\"",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/z_algorithm_fast_test.cpp",
+          "-o",
+          "/tmp/sirkit_z_416354/gcc_leading_simple_reference"
+        ],
+        "stdout": "z fast reference cases=115 checks=384\n"
+      },
+      {
+        "compiler": "clang",
+        "candidate": "leading_run",
+        "skip": false,
+        "command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-DZ_HEADER=\"/tmp/sirkit_z_416354/leading_run.hpp\"",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/z_algorithm_fast_test.cpp",
+          "-o",
+          "/tmp/sirkit_z_416354/clang_leading_run_reference"
+        ],
+        "stdout": "z fast reference cases=115 checks=384\n"
+      },
+      {
+        "compiler": "clang",
+        "candidate": "leading_run",
+        "skip": true,
+        "command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-DZ_HEADER=\"/tmp/sirkit_z_416354/leading_run.hpp\"",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/z_algorithm_fast_test.cpp",
+          "-o",
+          "/tmp/sirkit_z_416354/clang_leading_run_reference"
+        ],
+        "stdout": "z fast reference cases=115 checks=384\n"
+      },
+      {
+        "compiler": "clang",
+        "candidate": "leading_simple",
+        "skip": false,
+        "command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-DZ_HEADER=\"/tmp/sirkit_z_416354/leading_simple.hpp\"",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/z_algorithm_fast_test.cpp",
+          "-o",
+          "/tmp/sirkit_z_416354/clang_leading_simple_reference"
+        ],
+        "stdout": "z fast reference cases=115 checks=384\n"
+      },
+      {
+        "compiler": "clang",
+        "candidate": "leading_simple",
+        "skip": true,
+        "command": [
+          "/usr/bin/clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-DZ_HEADER=\"/tmp/sirkit_z_416354/leading_simple.hpp\"",
+          "-DSKIP_RUNTIME_CHECKS",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/z_algorithm_fast_test.cpp",
+          "-o",
+          "/tmp/sirkit_z_416354/clang_leading_simple_reference"
+        ],
+        "stdout": "z fast reference cases=115 checks=384\n"
+      }
+    ],
+    "scope": "leading_run/leading_simpleをGCC/Clang×検査有効無効でASan/UBSanつき接尾辞配列/LCP独立参照と照合。各115 cases/384 checks。追加APIなし。",
+    "canonical": "本体は無変更で今回の実提出ACを確認。前回の独立参照・境界・メモリ・確保失敗・API検証を維持。無変更の試験を無用に繰返さない。",
+    "prior_evidence": "Audit/performance-z-algorithm-416042-2026-11-10.json"
+  },
+  "conclusion": "13案を比較したが、通常版を置き換えるほど安定した改善は得られない。main/IO/本体は維持し、最新ACと提出注記を同期する。Z配列一般の最適化限界を証明するものではない。",
+  "license": "候補・測定補助は独自CC0-1.0。公式外部生成器のソース本文は収録せず、前回と同じ固定URL/ハッシュだけ参照。",
+  "evidence_zip": "Audit/data/z-algorithm-followup-416354-2026-11-11.zip"
+}

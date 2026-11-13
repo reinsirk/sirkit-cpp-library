@@ -1,0 +1,655 @@
+{
+  "date": "2026-11-12",
+  "library": "Math/NTT.cpp",
+  "decision": "adopt_AVX2_root_table_generation",
+  "required_resubmission": [
+    "Verify/current/submissions/ntt_convolution.cpp"
+  ],
+  "online_evidence": "Audit/online-ntt-416532-2026-11-12.json",
+  "online_scope": "416532は変更前通常版の全53ケースAC・54ms・19,869,696B。提出本文と本体/main/共通IOが一致。今回の根生成SIMD版は未提出であり、そのACを現行版や派生版へ転記しない。",
+  "source_sha256": {
+    "before": "5b5c85da53f0108b521b725b5ab014eaf8ee21446729b2e45c30100d796426fa",
+    "after": "e463880ff12a76cc6ce6998ca7568411892661b71efd24956c6b10b2eba1b662"
+  },
+  "measured_candidate_sha256": "0d1a53fc3442736fcb7bad6fc55e3a2ce24e419acf01e5f2d37dd37825af2482",
+  "comment_bridge": "最終版の偶数/奇数べきの説明1行を除くと測定候補へ完全一致。GCC/Clangのmainと検査2設定coreの.textも一致。",
+  "frozen_main_IO_document_example": {
+    "Verify/current/drivers/ntt_convolution_main.cpp": "79a1ed61095e2bd8f66e361d6e05328570c439ad9b041912614a2889ab0a93ff",
+    "Verify/current/common/fast_io.hpp": "291bf8dbc56a1d691f6256fe95b4714183c2cf5d9e55e4bef240e31d1eb178c1",
+    "Document/ntt.md": "bf1e267d856b1b99c450dd2c53a6695d319778c81e5fc6f33020f5122f4135ae",
+    "Examples/ntt_example.cpp": "0bd23ba7dd72f3f9ef7f5b8d125321d3c62568ddb72f35f755fbbff49addc75e"
+  },
+  "dependent_generated_sources": [
+    {
+      "path": "Math/Formal_Power_Series.cpp",
+      "before_sha256": "5165e885185b4b01a9c7f1882859bfde4e8cba6b98af11d04bc7e4db54433b31",
+      "after_sha256": "933af962618e73ee80b145a4a44c4cd84a716732881d507a335b9ceab381c540"
+    },
+    {
+      "path": "Math/Linear_Recurrence.cpp",
+      "before_sha256": "ce01c0f83e4d7d8041ee8e4e6c6670bda7a3c707e6791ca97f2a48019941b2f6",
+      "after_sha256": "54a55f05eec58307ddfe76e739739f86ed1f6aa735499260fcfe5809422b0a34"
+    },
+    {
+      "path": "Math/Convolution.cpp",
+      "before_sha256": "610a1eee375142f10f5770c293f85722c3cfbb0cbaf211a6148048e953817cb3",
+      "after_sha256": "f72944d0bf9093ce906b809ea80443c5635d8daf2dad1c7564ba8816fb49282c"
+    },
+    {
+      "path": "Math/Polynomial.cpp",
+      "before_sha256": "46b4b1c00c1ab51296e3c38aa1bd0093da8bc19a19870937490cd374c98a5d91",
+      "after_sha256": "1518c17e74a52bb4e50996a563d83b5c4b16b8d9e6f24bf9ff081f75c167e7d8"
+    }
+  ],
+  "changes": [
+    "既存の根と次の奇数べきの根を8要素ずつMontgomery演算で作り、unpackと128bitレーン交換で自然な順序の16要素として格納する。読み元と書き先は別の根の段で重ならない。",
+    "Mod<2^30、長さ256以上、GCC/Clangの対応x86 CPUに限る。既存のAVX2判定を再利用し、SIRKIT_DISABLE_SIMDで追加コードとCPU判定を除外する。",
+    "根のstd::vector・確保/初期化・コピー/移動/clear・容量・上限保護・公開API・入力検査を維持。新しい動的確保やnew式は導入しない。",
+    "APIは十分揃っているため、この改修では新たな別名や公開操作を追加しない。main/共通IO/使用例/Documentは不変。"
+  ],
+  "rejected_candidates": [
+    {
+      "name": "packed_q",
+      "sha256": "1ef06f1aa3ab17ba54dd80b3b70b74c36453c0a26a4650406aa5af40ca3831ce",
+      "decision": "乗算内部の命令数削減は10〜22%程度遅くなる代表条件があり不採用。"
+    },
+    {
+      "name": "pointwise_fused",
+      "sha256": "3245f9c70f5e5fff5dde84f5e329c151bca01868e58ace6fd7ba139471185887",
+      "decision": "要素積と逆変換初段の統合に安定した利益なし。"
+    },
+    {
+      "name": "pointwise_fused_square",
+      "sha256": "27eed1285a41e3ae9693140c31baee4defe4d3886b28381a4373cc0fe63b22b5",
+      "decision": "二乗までの統合でも安定した利益なし。"
+    },
+    {
+      "name": "pointwise_square_prepare",
+      "sha256": "21d21f1be7c8deef4dda1ab67e5c61632ea2159c45c79287463ecbfadf0ef14b",
+      "decision": "根生成単独より複雑で、キャッシュ済み畳み込みに後退する条件がある。"
+    },
+    {
+      "name": "fused_inverse",
+      "sha256": "a22cd7edde0a36ae731b2608cb3a2e66e108375fc1e58d1ce4a666405ef6c776",
+      "decision": "逆変換最終段から別入力領域へ縮小・反転して直接格納する案。公開APIは保つが約90行増に見合う利益なし。"
+    },
+    {
+      "name": "fused_inverse_prepare",
+      "sha256": "eaa022c33033f9e0fb28af37e38d1f85cca80f2bcee8a6688f0f461679c0ab07",
+      "decision": "最終逆変換統合と根生成の組合せも、根生成単独に対する安定した上積みなし。"
+    }
+  ],
+  "measurement": {
+    "topology": {
+      "cpu": 12,
+      "cpu_info": "Architecture:                            x86_64\nCPU op-mode(s):                          32-bit, 64-bit\nAddress sizes:                           46 bits physical, 48 bits virtual\nByte Order:                              Little Endian\nCPU(s):                                  32\nOn-line CPU(s) list:                     0-31\nVendor ID:                               GenuineIntel\nModel name:                              Intel(R) Core(TM) i9-14900K\nCPU family:                              6\nModel:                                   183\nThread(s) per core:                      2\nCore(s) per socket:                      24\nSocket(s):                               1\nStepping:                                1\nCPU(s) scaling MHz:                      32%\nCPU max MHz:                             6000.0000\nCPU min MHz:                             800.0000\nBogoMIPS:                                6374.40\nFlags:                                   fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx pdpe1gb rdtscp lm constant_tsc art arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc cpuid aperfmperf tsc_known_freq pni pclmulqdq dtes64 monitor ds_cpl vmx smx est tm2 ssse3 sdbg fma cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand lahf_lm abm 3dnowprefetch cpuid_fault epb ssbd ibrs ibpb stibp ibrs_enhanced tpr_shadow flexpriority ept vpid ept_ad fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid rdseed adx smap clflushopt clwb intel_pt sha_ni xsaveopt xsavec xgetbv1 xsaves split_lock_detect user_shstk avx_vnni dtherm ida arat pln pts hwp hwp_notify hwp_act_window hwp_epp hwp_pkg_req hfi vnmi umip pku ospke waitpkg gfni vaes vpclmulqdq rdpid movdiri movdir64b fsrm md_clear serialize pconfig arch_lbr ibt flush_l1d arch_capabilities\nVirtualization:                          VT-x\nL1d cache:                               896 KiB (24 instances)\nL1i cache:                               1.3 MiB (24 instances)\nL2 cache:                                32 MiB (12 instances)\nL3 cache:                                36 MiB (1 instance)\nNUMA node(s):                            1\nNUMA node0 CPU(s):                       0-31\nVulnerability Gather data sampling:      Not affected\nVulnerability Ghostwrite:                Not affected\nVulnerability Indirect target selection: Not affected\nVulnerability Itlb multihit:             Not affected\nVulnerability L1tf:                      Not affected\nVulnerability Mds:                       Not affected\nVulnerability Meltdown:                  Not affected\nVulnerability Mmio stale data:           Not affected\nVulnerability Old microcode:             Not affected\nVulnerability Reg file data sampling:    Mitigation; Clear Register File\nVulnerability Retbleed:                  Not affected\nVulnerability Spec rstack overflow:      Not affected\nVulnerability Spec store bypass:         Mitigation; Speculative Store Bypass disabled via prctl\nVulnerability Spectre v1:                Mitigation; usercopy/swapgs barriers and __user pointer sanitization\nVulnerability Spectre v2:                Mitigation; Enhanced / Automatic IBRS; IBPB conditional; PBRSB-eIBRS SW sequence; BHI BHI_DIS_S\nVulnerability Srbds:                     Not affected\nVulnerability Tsa:                       Not affected\nVulnerability Tsx async abort:           Not affected\nVulnerability Vmscape:                   Mitigation; IBPB before exit to userspace\n",
+      "topology/core_id": "24",
+      "topology/thread_siblings_list": "12-13",
+      "cpufreq/cpuinfo_max_freq": "6000000"
+    },
+    "cpu": "i9-14900KのCPU12、SMT sibling13、sysfs core_id24、最大6GHzのP-Core。E-Coreの性能は考慮しない。",
+    "compilers": {
+      "GCC": "15.2.0",
+      "Clang": "21.1.8 --gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15"
+    },
+    "flags": [
+      "-std=c++23",
+      "-O2"
+    ],
+    "march_native": false,
+    "extra_pragmas": false,
+    "lock": "/tmp/sirkit_performance_cpu12.lock",
+    "ASLR": "子だけsetarch x86_64 -R。毎回同じactiveパスへ実行体を置く。",
+    "compilation_during_timing": false,
+    "paired_protocol": "旧版→候補→旧版を1組にして、候補時間を両端の旧版中央値で割る。各条件9組の候補と3組の同一実行体対照を決定的shuffle。両端の旧版が10%以内の組だけ有効（候補の時間では除外しない）。候補5組・対照2組に不足する種だけ最大3回、各3組補充。初期と補充rawを保存。探索screenは実行スクリプトに別の反復数を保持。",
+    "input_scope": "固定リビジョン73876f1cbcf082d2b22722924b924d3d65a2f00eの公開生成器による公式53入力と補足20入力、計73件。オンライン入力との同一性は主張しない。補足には制約外1048576×1048576も含む。",
+    "fixture_manifest_sha256": "94a561ca0d51975c2fab72c5ac6633e6a99ad85e2ac3deb7575de540b2e226d0",
+    "independent_oracles": "38入力は独立な直接積または定数列の重なり数等から作った全出力SHA。ほかも端点と0/1/−1での多項式評価を検査。全73入力をGCC/Clang×前後で一度ずつ照合し、その後の同一出力はSHAで確認。",
+    "whole_timer": "同じVerify main/共通IO/入力/コンパイラ/SKIP設定で子のuser+system CPU時間。L>=65536またはmax(n,m)>=200000の34入力×2コンパイラ。出力の解析・独立評価はタイマの外。",
+    "whole_statistics": [
+      {
+        "compiler": "clang",
+        "cases": 34,
+        "candidate_ratio": 0.9946303939771767,
+        "identical_control_ratio": 0.999422421247502,
+        "minimum_candidate_ratio": 0.9786330287038228,
+        "maximum_candidate_ratio": 1.0156043732863962
+      },
+      {
+        "compiler": "gcc",
+        "cases": 34,
+        "candidate_ratio": 0.9949777388831951,
+        "identical_control_ratio": 0.9996165777551487,
+        "minimum_candidate_ratio": 0.9849589317540998,
+        "maximum_candidate_ratio": 1.004456548650656
+      }
+    ],
+    "official_whole_statistics": [
+      {
+        "compiler": "clang",
+        "cases": 24,
+        "candidate_ratio": 0.9949770122022237,
+        "identical_control_ratio": 0.9991794671304947,
+        "minimum_candidate_ratio": 0.9789546984409455,
+        "maximum_candidate_ratio": 1.0156043732863962
+      },
+      {
+        "compiler": "gcc",
+        "cases": 24,
+        "candidate_ratio": 0.9946276816005322,
+        "identical_control_ratio": 1.0013094935233944,
+        "minimum_candidate_ratio": 0.9880493529424431,
+        "maximum_candidate_ratio": 1.0020483668640932
+      }
+    ],
+    "whole_rows": 68,
+    "whole_triplets": 816,
+    "all_68_whole_cells_sufficient": true,
+    "core_timer": "std::clock()のプロセスCPU時間。入力準備は外、API計算・全結果checksum・返却結果破棄は内。coldだけ毎回NTTを生成・解放、ほかは根を事前準備。prepareだけは根を計測外のtransformで使用して観測可能性を保つ。",
+    "core_operations": {
+      "0": "normalized move cold",
+      "1": "normalized move cached",
+      "2": "generic int64 cached",
+      "3": "square cached",
+      "4": "forward transform",
+      "5": "inverse transform",
+      "6": "prepare cold"
+    },
+    "core_settings": [
+      "checked",
+      "SKIP_RUNTIME_CHECKS"
+    ],
+    "core_sizes": [
+      16,
+      1024,
+      65536,
+      524288
+    ],
+    "core_supplement": "33境界、32/33×524288、逆順の偏り、2冪を超える出力長。小規模の反復はmax(1,32768/max(n,m))。",
+    "large_core_statistics": [
+      {
+        "compiler": "clang",
+        "setting": "checked",
+        "op": 0,
+        "cases": 1,
+        "candidate_ratio": 0.988126097499791,
+        "identical_control_ratio": 1.0028338056342723,
+        "minimum_candidate_ratio": 0.988126097499791,
+        "maximum_candidate_ratio": 0.988126097499791
+      },
+      {
+        "compiler": "clang",
+        "setting": "checked",
+        "op": 1,
+        "cases": 1,
+        "candidate_ratio": 0.9982962655983791,
+        "identical_control_ratio": 1.0024506404031996,
+        "minimum_candidate_ratio": 0.9982962655983791,
+        "maximum_candidate_ratio": 0.9982962655983791
+      },
+      {
+        "compiler": "clang",
+        "setting": "checked",
+        "op": 2,
+        "cases": 1,
+        "candidate_ratio": 1.000978792822186,
+        "identical_control_ratio": 1.0087651351461535,
+        "minimum_candidate_ratio": 1.000978792822186,
+        "maximum_candidate_ratio": 1.000978792822186
+      },
+      {
+        "compiler": "clang",
+        "setting": "checked",
+        "op": 3,
+        "cases": 1,
+        "candidate_ratio": 0.9931587312556147,
+        "identical_control_ratio": 1.0006269592476489,
+        "minimum_candidate_ratio": 0.9931587312556147,
+        "maximum_candidate_ratio": 0.9931587312556147
+      },
+      {
+        "compiler": "clang",
+        "setting": "checked",
+        "op": 4,
+        "cases": 1,
+        "candidate_ratio": 0.9902876354127755,
+        "identical_control_ratio": 0.99606962380685,
+        "minimum_candidate_ratio": 0.9902876354127755,
+        "maximum_candidate_ratio": 0.9902876354127755
+      },
+      {
+        "compiler": "clang",
+        "setting": "checked",
+        "op": 5,
+        "cases": 1,
+        "candidate_ratio": 0.9813642120499366,
+        "identical_control_ratio": 0.9969550420920652,
+        "minimum_candidate_ratio": 0.9813642120499366,
+        "maximum_candidate_ratio": 0.9813642120499366
+      },
+      {
+        "compiler": "clang",
+        "setting": "checked",
+        "op": 6,
+        "cases": 1,
+        "candidate_ratio": 0.8268568631384074,
+        "identical_control_ratio": 0.9926062846580407,
+        "minimum_candidate_ratio": 0.8268568631384074,
+        "maximum_candidate_ratio": 0.8268568631384074
+      },
+      {
+        "compiler": "clang",
+        "setting": "skip",
+        "op": 0,
+        "cases": 1,
+        "candidate_ratio": 0.9835088749947547,
+        "identical_control_ratio": 0.9980142802822257,
+        "minimum_candidate_ratio": 0.9835088749947547,
+        "maximum_candidate_ratio": 0.9835088749947547
+      },
+      {
+        "compiler": "clang",
+        "setting": "skip",
+        "op": 1,
+        "cases": 1,
+        "candidate_ratio": 0.9875580315691737,
+        "identical_control_ratio": 1.0058722892680445,
+        "minimum_candidate_ratio": 0.9875580315691737,
+        "maximum_candidate_ratio": 0.9875580315691737
+      },
+      {
+        "compiler": "clang",
+        "setting": "skip",
+        "op": 2,
+        "cases": 1,
+        "candidate_ratio": 0.9989477944152165,
+        "identical_control_ratio": 0.9979489241906294,
+        "minimum_candidate_ratio": 0.9989477944152165,
+        "maximum_candidate_ratio": 0.9989477944152165
+      },
+      {
+        "compiler": "clang",
+        "setting": "skip",
+        "op": 3,
+        "cases": 1,
+        "candidate_ratio": 0.9976336302895323,
+        "identical_control_ratio": 0.9960561821075209,
+        "minimum_candidate_ratio": 0.9976336302895323,
+        "maximum_candidate_ratio": 0.9976336302895323
+      },
+      {
+        "compiler": "clang",
+        "setting": "skip",
+        "op": 4,
+        "cases": 1,
+        "candidate_ratio": 0.9947955390334573,
+        "identical_control_ratio": 1.0152905198776758,
+        "minimum_candidate_ratio": 0.9947955390334573,
+        "maximum_candidate_ratio": 0.9947955390334573
+      },
+      {
+        "compiler": "clang",
+        "setting": "skip",
+        "op": 5,
+        "cases": 1,
+        "candidate_ratio": 0.999455436558359,
+        "identical_control_ratio": 1.0125568698817107,
+        "minimum_candidate_ratio": 0.999455436558359,
+        "maximum_candidate_ratio": 0.999455436558359
+      },
+      {
+        "compiler": "clang",
+        "setting": "skip",
+        "op": 6,
+        "cases": 1,
+        "candidate_ratio": 0.8272552783109405,
+        "identical_control_ratio": 1.0072763741489552,
+        "minimum_candidate_ratio": 0.8272552783109405,
+        "maximum_candidate_ratio": 0.8272552783109405
+      },
+      {
+        "compiler": "gcc",
+        "setting": "checked",
+        "op": 0,
+        "cases": 1,
+        "candidate_ratio": 0.9888825214899714,
+        "identical_control_ratio": 1.0006345888237709,
+        "minimum_candidate_ratio": 0.9888825214899714,
+        "maximum_candidate_ratio": 0.9888825214899714
+      },
+      {
+        "compiler": "gcc",
+        "setting": "checked",
+        "op": 1,
+        "cases": 1,
+        "candidate_ratio": 0.9903163870106019,
+        "identical_control_ratio": 0.9990535368914859,
+        "minimum_candidate_ratio": 0.9903163870106019,
+        "maximum_candidate_ratio": 0.9903163870106019
+      },
+      {
+        "compiler": "gcc",
+        "setting": "checked",
+        "op": 2,
+        "cases": 1,
+        "candidate_ratio": 0.9959959585375894,
+        "identical_control_ratio": 0.9929125885926426,
+        "minimum_candidate_ratio": 0.9959959585375894,
+        "maximum_candidate_ratio": 0.9959959585375894
+      },
+      {
+        "compiler": "gcc",
+        "setting": "checked",
+        "op": 3,
+        "cases": 1,
+        "candidate_ratio": 0.9977507310499467,
+        "identical_control_ratio": 1.0016903524697929,
+        "minimum_candidate_ratio": 0.9977507310499467,
+        "maximum_candidate_ratio": 0.9977507310499467
+      },
+      {
+        "compiler": "gcc",
+        "setting": "checked",
+        "op": 4,
+        "cases": 1,
+        "candidate_ratio": 1.00016849199663,
+        "identical_control_ratio": 0.9922637066935756,
+        "minimum_candidate_ratio": 1.00016849199663,
+        "maximum_candidate_ratio": 1.00016849199663
+      },
+      {
+        "compiler": "gcc",
+        "setting": "checked",
+        "op": 5,
+        "cases": 1,
+        "candidate_ratio": 0.9976174268209667,
+        "identical_control_ratio": 0.9947269943868005,
+        "minimum_candidate_ratio": 0.9976174268209667,
+        "maximum_candidate_ratio": 0.9976174268209667
+      },
+      {
+        "compiler": "gcc",
+        "setting": "checked",
+        "op": 6,
+        "cases": 1,
+        "candidate_ratio": 0.8506966073626157,
+        "identical_control_ratio": 0.9745042492917847,
+        "minimum_candidate_ratio": 0.8506966073626157,
+        "maximum_candidate_ratio": 0.8506966073626157
+      },
+      {
+        "compiler": "gcc",
+        "setting": "skip",
+        "op": 0,
+        "cases": 1,
+        "candidate_ratio": 0.9854725291708524,
+        "identical_control_ratio": 0.9948916408668731,
+        "minimum_candidate_ratio": 0.9854725291708524,
+        "maximum_candidate_ratio": 0.9854725291708524
+      },
+      {
+        "compiler": "gcc",
+        "setting": "skip",
+        "op": 1,
+        "cases": 1,
+        "candidate_ratio": 1.0007230042954962,
+        "identical_control_ratio": 1.0028938633075155,
+        "minimum_candidate_ratio": 1.0007230042954962,
+        "maximum_candidate_ratio": 1.0007230042954962
+      },
+      {
+        "compiler": "gcc",
+        "setting": "skip",
+        "op": 2,
+        "cases": 1,
+        "candidate_ratio": 0.9974819360458833,
+        "identical_control_ratio": 1.0148533514287867,
+        "minimum_candidate_ratio": 0.9974819360458833,
+        "maximum_candidate_ratio": 0.9974819360458833
+      },
+      {
+        "compiler": "gcc",
+        "setting": "skip",
+        "op": 3,
+        "cases": 1,
+        "candidate_ratio": 1.0002502815667627,
+        "identical_control_ratio": 1.0014363329794542,
+        "minimum_candidate_ratio": 1.0002502815667627,
+        "maximum_candidate_ratio": 1.0002502815667627
+      },
+      {
+        "compiler": "gcc",
+        "setting": "skip",
+        "op": 4,
+        "cases": 1,
+        "candidate_ratio": 0.9988003427592117,
+        "identical_control_ratio": 1.005540166204986,
+        "minimum_candidate_ratio": 0.9988003427592117,
+        "maximum_candidate_ratio": 0.9988003427592117
+      },
+      {
+        "compiler": "gcc",
+        "setting": "skip",
+        "op": 5,
+        "cases": 1,
+        "candidate_ratio": 1.0052197339619464,
+        "identical_control_ratio": 0.9874979163193865,
+        "minimum_candidate_ratio": 1.0052197339619464,
+        "maximum_candidate_ratio": 1.0052197339619464
+      },
+      {
+        "compiler": "gcc",
+        "setting": "skip",
+        "op": 6,
+        "cases": 1,
+        "candidate_ratio": 0.8303317535545024,
+        "identical_control_ratio": 0.9975818163998111,
+        "minimum_candidate_ratio": 0.8303317535545024,
+        "maximum_candidate_ratio": 0.8303317535545024
+      }
+    ],
+    "core_rows": 136,
+    "core_triplets": 1686,
+    "all_136_core_cells_sufficient": true,
+    "observed_limitations": "主目的の全体短縮はGCC約0.50%、Clang約0.54%に留まる。根生成単独の大規模は約15〜17%、65536要素を含めると約15〜19%短縮。中規模Clang順変換65536は初回+6.4%（同一実行体対照−5.5%）、15組ずつ再確認すると+2.35%（対照−1.06%）。小規模Clang二乗1024は初回+3.8%、再確認+0.82%。これらを一律に非後退とは説明しない。小中規模の小幅な後退を許容するユーザー方針と、大規模根生成の明確な改善に基づいて採用。",
+    "targeted_rechecks": [
+      {
+        "compiler": "clang",
+        "setting": "skip",
+        "op": 4,
+        "n": 65536,
+        "valid_counts": {
+          "prepare_avx2": 11,
+          "control": 14
+        },
+        "ratios": {
+          "prepare_avx2": 1.0235478806907379,
+          "control": 0.9894284333658518
+        }
+      },
+      {
+        "compiler": "clang",
+        "setting": "checked",
+        "op": 3,
+        "n": 1024,
+        "valid_counts": {
+          "prepare_avx2": 13,
+          "control": 15
+        },
+        "ratios": {
+          "prepare_avx2": 1.008230452674897,
+          "control": 0.9979633401221996
+        }
+      }
+    ],
+    "measurement_corrections": [
+      {
+        "reason": "反復数を32768/nから32768/max(n,m)へ訂正。極端に長さの偏った入力で大量の準備コピーを作っていたため、その計測は破棄（初期rawは保持）。n==mの既完了条件は反復数が同じなので保持し、不足条件だけ測定する。",
+        "resumed_balanced_cells": 29
+      },
+      "初回whole試行はoracleがnullである入力の読取りで停止。optional oracleを正しく扱い、出力の再パースを検査済みSHAごとに一度へ変更して全条件を最初から再実行。初期記録は不採用として保存。"
+    ],
+    "all_comparison_outputs_equal": true
+  },
+  "validation": {
+    "normal_and_standard_cpu_false_and_sanitizer_jobs": 44,
+    "all_passed": true,
+    "compiler_checks": "GCC/Clang×検査有効/無効×default/SIMD無効/CPU判定をfalseへ固定した検査用ヘッダー。",
+    "reference_tests": [
+      "独立DFT・直接積、11法、正負整数極値、bool、空、32/33境界、長さの偏り、正規化違反",
+      "大規模の全1畳み込み、順逆往復、キャッシュ成長/コピー/移動/解放",
+      "FPSを含む独立参照、同梱NTTとの二重include",
+      "確保失敗/例外時解放/入力不変性"
+    ],
+    "allocation_counters": [
+      {
+        "checks": 5521,
+        "failures": 91,
+        "live_delta": 0
+      },
+      {
+        "checks": 5521,
+        "failures": 91,
+        "live_delta": 0
+      },
+      {
+        "checks": 5521,
+        "failures": 91,
+        "live_delta": 0
+      },
+      {
+        "checks": 5521,
+        "failures": 91,
+        "live_delta": 0
+      },
+      {
+        "checks": 5521,
+        "failures": 91,
+        "live_delta": 0
+      },
+      {
+        "checks": 5521,
+        "failures": 91,
+        "live_delta": 0
+      },
+      {
+        "checks": 5521,
+        "failures": 91,
+        "live_delta": 0
+      },
+      {
+        "checks": 5521,
+        "failures": 91,
+        "live_delta": 0
+      },
+      {
+        "checks": 5521,
+        "failures": 91,
+        "live_delta": 0
+      },
+      {
+        "checks": 5521,
+        "failures": 91,
+        "live_delta": 0
+      },
+      {
+        "checks": 5521,
+        "failures": 91,
+        "live_delta": 0
+      },
+      {
+        "checks": 5521,
+        "failures": 91,
+        "live_delta": 0
+      }
+    ],
+    "sanitizer_scope": "NTT独立参照をGCC/Clang×検査2設定×default/SIMD無効でASAN+UBSAN。host ptraceによりdetect_leaks=0、解放は独立確保カウンタのlive_delta=0で確認。",
+    "standard_fallback": "GCC/Clang×検査2設定のSIRKIT_DISABLE_SIMD core .textが変更前と完全一致。",
+    "machine_code_evidence": [
+      {
+        "compiler": "gcc",
+        "setting": "",
+        "kind": "main",
+        "final_matches_measured_prepare": true,
+        "text_sha256": "ac0d757452629d223606b6f6bcef088d76aa6ecbaf11a2ed113de68726d49fa8"
+      },
+      {
+        "compiler": "gcc",
+        "setting": "checked",
+        "kind": "core",
+        "final_matches_measured_prepare": true,
+        "text_sha256": "acca8e70e5b9e476dd2be5588c64677041194fc0790df845ff21da6dd2300250"
+      },
+      {
+        "compiler": "gcc",
+        "setting": "skip",
+        "kind": "core",
+        "final_matches_measured_prepare": true,
+        "text_sha256": "29fb6fc859c7f0482b6af31681c79a899c154fcf231a5303294640ba6c60e483"
+      },
+      {
+        "compiler": "gcc",
+        "setting": "checked",
+        "kind": "standard_core",
+        "before_after_text_identical": true,
+        "text_sha256": "429e0aed0c8068dd9bd5d52d0db5c7de7e87731d8b346abfdb3c48697a9f7110"
+      },
+      {
+        "compiler": "gcc",
+        "setting": "skip",
+        "kind": "standard_core",
+        "before_after_text_identical": true,
+        "text_sha256": "d497622156530e6ff2671617ec76c31791796e20206b77e0ef94587998d263f7"
+      },
+      {
+        "compiler": "clang",
+        "setting": "",
+        "kind": "main",
+        "final_matches_measured_prepare": true,
+        "text_sha256": "366105ed5826415d815cc65dfbd61e8324e85fa3b91895f6f9c7edda1e7a5fe9"
+      },
+      {
+        "compiler": "clang",
+        "setting": "checked",
+        "kind": "core",
+        "final_matches_measured_prepare": true,
+        "text_sha256": "49538920f4c5e5aa26c6905ef8dfded07b669f23002ee288be3a5f5fe7cd0bd1"
+      },
+      {
+        "compiler": "clang",
+        "setting": "skip",
+        "kind": "core",
+        "final_matches_measured_prepare": true,
+        "text_sha256": "09d8f0642c94919cd72505df77528ec142e8f4eb7c713127b11f9c33b4593eba"
+      },
+      {
+        "compiler": "clang",
+        "setting": "checked",
+        "kind": "standard_core",
+        "before_after_text_identical": true,
+        "text_sha256": "3bcf4a07f95d997a44f55a4e9d9bd3b687fd2e5669a64d8de453985eb0f5cf51"
+      },
+      {
+        "compiler": "clang",
+        "setting": "skip",
+        "kind": "standard_core",
+        "before_after_text_identical": true,
+        "text_sha256": "3d8d8b70441fd97325f2ee563139d145ba6d1a400da6cf00d56abf16b72da78b"
+      }
+    ],
+    "variant_program_and_examples": {
+      "status": "local_samples_passed_for_snapshot",
+      "counts": {
+        "LOCAL_SAMPLE_PASS": 10
+      },
+      "run_id": "20261112T011313960969Z"
+    },
+    "generated_API_docs_and_manifests_checked": true,
+    "current_submission_bytes": 43888,
+    "current_submission_exactly_matches_compiled_final": true
+  },
+  "license": "現行CC0の独自NTTに、独自に記述したSIMD根生成だけを追加。外部の公式入力生成器の実装は証跡ZIPやライブラリ本体へ含めない。原典URL/固定SHAのメタデータのみ保持。",
+  "evidence_archive": "Audit/data/performance-ntt-416532-2026-11-12.zip",
+  "evidence_scope": "候補、生成器、静的確認、公開API応答、比較raw、検査結果、測定器修正の前後、実行コマンド。巨大入力/出力・実行体・外部生成器本体を除外。",
+  "evidence_archive_sha256": "246485ac92706d7a6f1203aa744b9198224a9b6f4b02286372af621f38bfd0a8"
+}
