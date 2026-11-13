@@ -1,0 +1,893 @@
+#define SKIP_RUNTIME_CHECKS
+// Profile: Fast/GCC; online judgement is recorded separately.
+// Verify: https://judge.yosupo.jp/problem/associative_array
+
+// Library: DataStructure/Hash_map.cpp
+// SPDX-License-Identifier: CC0-1.0 AND LicenseRef-SplitMix64-Public-Domain
+// 生成版: GCC・速度優先（入力検査を除外）。 所有・解放の省略は各APIの前提を参照。
+// 生成元: Fast/Source/DataStructure/Hash_map.cpp
+// SplitMix64部分（GenericHash::mix）はCC0ではなく、原著者のPD提供声明・無条件許諾に従う。
+// CC0-1.0はそれ以外の部分に適用する。SplitMix64の提供条件:
+// https://github.com/reinsirk/sirkit-cpp-library/blob/main/LICENSES/LicenseRef-SplitMix64-Public-Domain.txt
+// Original Source（GenericHash::mixのみ。Sebastiano Vigna、PD提供声明・無条件許諾）:
+// https://prng.di.unimi.it/splitmix64.c
+// 参考: https://nyaannyaan.github.io/library/hashmap/hashmap.hpp
+// ドキュメント: https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/hash_map.md
+//
+// API一覧
+// 速度優先版: 確保・構築成功と有効な引数が前提。例外時の状態復元は保証しない。
+// eraseは非自明な登録値を破棄する。clear・表の破棄では登録値の破棄を省く。
+// 再配置後の旧配列だけ解放し、最後の表と省略した値の資源は回収しない。
+// 格納型のデストラクタの副作用・資源回収を必要としない処理で使う。
+// [HashMap<Key,Val,Hasher,KeyEqual>]
+// Flat table。検索・追加と次要素を探さない削除は期待償却O(1)。列キーのハッシュ計算は列長に比例する。
+// 次iteratorを返す削除は空きバケットを走査し、最悪O(capacity)。返却iteratorを順に使う全削除はO(capacity)。
+// 再配置・clear・swap・ムーブでiterator/参照は無効。eraseは対象だけを無効にする。
+// Key/Valはコピー可能、またはvalue_typeのムーブ構築がnoexceptであること。
+// Hasher/KeyEqualは同値なキーに同じハッシュ値を返し、格納中に規則を変えないこと。
+// string_view等の借用キーは登録中、参照先の寿命と内容を保つ。削除後は参照先を解放できる。
+// 再配置を伴う新規追加の引数には、本表の要素への参照を渡さず先にコピーする。
+// HashMap(): 空の表を構築する。必要になるまで配列は確保しない。
+// HashMap(n, hash, equal): n要素分を予約し、指定したハッシュ・同値判定で構築する。
+// operator[](key): 未登録ならVal{}で追加し、値の参照を返す。
+// find(key): 対応するiteratorを返す。未登録はend()。const版は変更できない。
+// contain(key)/contains(key): 登録済みならtrueを返す。追加はしない。
+// count(key): 登録済みなら1、未登録なら0を返す。
+// at(key): 値の参照を返す。未登録はout_of_range。const版は変更できない。
+// insert({key, value})/emplace(key, value): 未登録なら追加し、対応するiteratorを返す。
+// try_emplace(key, args...): 未登録時だけ値を構築し、{iterator, 追加の有無}を返す。
+// insert_or_assign(key, value): 追加または上書きし、{iterator, 追加の有無}を返す。
+// get_or_default(key, fallback): 登録値またはfallbackのコピーを返す。追加はしない。
+// erase(it, next=true): 対象を削除し次のiteratorを返す。false指定ならend()。
+// erase(key): キーを削除し、次のiteratorを返す。未登録・erase(end())はend()。
+// erase(key, next): falseなら次要素を探さず削除してend()、trueならerase(key)と同じ。
+// begin()/end()/cbegin()/cend(): 格納要素を順序不定で列挙する。キーは変更できない。
+// 空表のbeginはO(1)、それ以外は先頭要素までのバケットを走査する。
+// size()/empty(): 登録数・空かどうかをO(1)で返す。
+// clear(): 登録状態を消し容量を再利用する。値のデストラクタは呼ばない。
+// reserve(n): n要素分の容量を予約する。縮小しない。
+// rehash(n): nバケット以上・現登録数に必要な容量へ再配置し、墓石を除く。
+// capacity()/load_factor(): バケット数・使用率をO(1)で返す。
+// swap(other): 内容とハッシュ・同値判定を交換する。コピーは独立した複製。
+// swapはHasher/KeyEqualのswapが例外を送出しないことを要求する。
+//
+// [GenericHash]
+// GenericHash(): 実行時に選んだ種で構築する。同じオブジェクトでは結果は一定。
+// GenericHash(seed): 指定した種で構築する。std::hash対応型の結果はその実装にも依存する。
+// operator()(x): 整数・列挙・浮動小数・tuple・range・std::hash対応型を再帰的にハッシュ化する。
+// unorderedコンテナの要素順は無視する。独自の同値関係には対応するHasherも用意する。
+
+#include <algorithm>
+#include <cstddef>
+#include <limits>
+#include <utility>
+#ifndef SIRKIT_FAST_HASH_RELEASED_ARRAY_DEFINED
+#define SIRKIT_FAST_HASH_RELEASED_ARRAY_DEFINED
+namespace reinsirk::detail {
+template<class T>class FastHashReleasedArray {
+    T* data_=nullptr;
+    std::size_t size_=0;
+public:
+    FastHashReleasedArray() noexcept=default;
+    explicit FastHashReleasedArray(std::size_t n):data_(n?new T[n]:nullptr),size_(n){}
+    FastHashReleasedArray(std::size_t n,const T& value):FastHashReleasedArray(n){if(n)std::fill_n(data_,n,value);}
+    FastHashReleasedArray(const FastHashReleasedArray&)=delete;
+    FastHashReleasedArray& operator=(const FastHashReleasedArray&)=delete;
+    FastHashReleasedArray(FastHashReleasedArray&& other)noexcept:data_(std::exchange(other.data_,nullptr)),size_(std::exchange(other.size_,0)){}
+    FastHashReleasedArray& operator=(FastHashReleasedArray&& other)noexcept{if(this!=&other){data_=std::exchange(other.data_,nullptr);size_=std::exchange(other.size_,0);}return *this;}
+    ~FastHashReleasedArray()=default;
+    static constexpr std::size_t max_size()noexcept{return static_cast<std::size_t>(std::numeric_limits<std::ptrdiff_t>::max())/sizeof(T);}
+    std::size_t size()const noexcept{return size_;}
+    bool empty()const noexcept{return size_==0;}
+    T*data()noexcept{return data_;}const T*data()const noexcept{return data_;}
+    T*begin()noexcept{return data_;}const T*begin()const noexcept{return data_;}
+    T*end()noexcept{return size_?data_+size_:data_;}const T*end()const noexcept{return size_?data_+size_:data_;}
+    T&operator[](std::size_t i)noexcept{return data_[i];}const T&operator[](std::size_t i)const noexcept{return data_[i];}
+    void release_storage()noexcept{delete[] data_;data_=nullptr;size_=0;}
+    void swap(FastHashReleasedArray& other)noexcept{std::swap(data_,other.data_);std::swap(size_,other.size_);}
+};
+}
+#endif
+
+#if !defined(SIRKIT_DISABLE_SIMD) && defined(__SSE2__) && (defined(__x86_64__) || defined(__i386__))
+#include <emmintrin.h>
+#endif
+
+#include <algorithm>
+#include <bit>
+#include <chrono>
+#include <concepts>
+#include <cstddef>
+#include <cstdint>
+#include <functional>
+#include <iterator>
+#include <limits>
+#include <memory>
+#include <optional>
+#include <stdexcept>
+#include <tuple>
+#include <type_traits>
+#include <utility>
+#include <vector>
+#if (!defined(SIRKIT_DISABLE_SIMD)) && (defined(__SSE2__)) && ((defined(__x86_64__)) || (defined(__i386__)))
+#include <emmintrin.h>
+#endif
+
+#ifndef SIRKIT_GENERIC_HASH_DEFINED
+#define SIRKIT_GENERIC_HASH_DEFINED
+struct GenericHash {
+private:
+    std::uint64_t seed_;
+    static constexpr std::uint64_t mix(std::uint64_t x) noexcept {
+        x = (x ^ (x >> 30)) * UINT64_C(0xbf58476d1ce4e5b9);
+        x = (x ^ (x >> 27)) * UINT64_C(0x94d049bb133111eb);
+        return x ^ (x >> 31);
+    }
+    template <class> static constexpr bool dependent_false = false;
+    template <class T> static constexpr bool integral_pair = requires (const T& value) {
+        value.first; value.second;
+        requires std::is_integral_v<std::remove_cvref_t<decltype(value.first)>>;
+        requires std::is_integral_v<std::remove_cvref_t<decltype(value.second)>>;
+    };
+    template <class T>
+    std::uint64_t raw(const T& value) const {
+        using U = std::remove_cvref_t<T>;
+        if constexpr (std::is_integral_v<U>) {
+            static_assert(sizeof(U) <= sizeof(std::uint64_t), "GenericHash: integer exceeds 64 bits");
+            return static_cast<std::uint64_t>(value);
+        } else if constexpr (std::is_enum_v<U>) {
+            return static_cast<std::uint64_t>(static_cast<std::underlying_type_t<U>>(value));
+        } else if constexpr (requires { typename std::tuple_size<U>::type; }) {
+            std::uint64_t result = seed_;
+            std::apply([&](const auto&... elements) {
+                ((result = result * UINT64_C(11995408973635179863) + raw(elements)), ...);
+            }, value);
+            return mix(result ^ std::tuple_size_v<U>);
+        } else if constexpr (requires { typename U::hasher; typename U::key_equal; std::begin(value); std::end(value); }) {
+            // 同じ要素集合は列挙順にかかわらず同じ値になる。
+            std::uint64_t sum = 0, second = 0, count = 0;
+            for (const auto& element : value) {
+                const auto h = mix(raw(element) + seed_);
+                sum += h;
+                second += h * h;
+                ++count;
+            }
+            return mix(sum ^ std::rotl(second, 23) ^ count);
+        } else if constexpr (requires { { std::hash<U>{}(value) } -> std::convertible_to<std::size_t>; }) {
+            // 浮動小数の+0/-0もstd::hashに従い等しい値にする。
+            return static_cast<std::uint64_t>(std::hash<U>{}(value));
+        } else if constexpr (requires { std::begin(value); std::end(value); }) {
+            std::uint64_t result = seed_, count = 0;
+            for (const auto& element : value) {
+                result = result * UINT64_C(11995408973635179863) + raw(element);
+                ++count;
+            }
+            return mix(result ^ count);
+        } else {
+            static_assert(dependent_false<U>, "GenericHash: provide std::hash or a custom Hasher for this key");
+        }
+    }
+public:
+    GenericHash() : GenericHash(static_cast<std::uint64_t>(
+        std::chrono::steady_clock::now().time_since_epoch().count())) {}
+    explicit constexpr GenericHash(std::uint64_t seed) noexcept : seed_(mix(seed) | 1) {}
+    template <class T>
+    std::uint64_t operator()(const T& value) const noexcept(
+        std::is_integral_v<T> || std::is_enum_v<T> || integral_pair<T>) {
+        using U = std::remove_cvref_t<T>;
+        if constexpr (std::is_integral_v<U> || std::is_enum_v<U>) {
+            return (raw(value) ^ seed_) * UINT64_C(11995408973635179863);
+        } else if constexpr (integral_pair<U>) {
+            return (raw(value.first) ^ seed_) * UINT64_C(11995408973635179863) +
+                   (raw(value.second) ^ seed_) * UINT64_C(10150724397891781847);
+        } else return raw(value) * seed_;
+    }
+};
+#endif
+
+#ifndef SIRKIT_HASH_MAP_DEFINED
+#define SIRKIT_HASH_MAP_DEFINED
+template <class Key, class Val, class Hasher = GenericHash, class KeyEqual = std::equal_to<Key>>
+class HashMap {
+public:
+    using key_type = Key;
+    using mapped_type = Val;
+    using value_type = std::pair<const Key, Val>;
+    using Data = value_type;
+    using size_type = std::size_t;
+private:
+    template<bool Compact>union SlotStorage {
+        std::remove_cv_t<value_type> value;
+        SlotStorage()noexcept{}
+        ~SlotStorage() requires std::is_trivially_destructible_v<value_type> = default;
+        ~SlotStorage()noexcept requires (!std::is_trivially_destructible_v<value_type>) {} // Fast契約: 登録値も破棄しない。
+        SlotStorage(const SlotStorage&)=delete;
+        SlotStorage(SlotStorage&&)=delete;
+        value_type&operator*()noexcept{return value;}
+        const value_type&operator*()const noexcept{return value;}
+        value_type*operator->()noexcept{return std::addressof(value);}
+        const value_type*operator->()const noexcept{return std::addressof(value);}
+        template<class...Args>void emplace(Args&&...args){std::construct_at(std::addressof(value),std::forward<Args>(args)...);}
+        void reset()noexcept{if constexpr(!std::is_trivially_destructible_v<value_type>)std::destroy_at(std::addressof(value));}
+    };
+    using CompactSlot=SlotStorage<true>;
+    using Slot=std::conditional_t<
+        std::is_nothrow_default_constructible_v<value_type>&&
+        std::is_nothrow_move_constructible_v<value_type>&&
+        std::is_trivially_copy_constructible_v<value_type>&&
+        std::is_trivially_destructible_v<value_type>,CompactSlot,SlotStorage<false>>;
+    static_assert(std::is_copy_constructible_v<value_type> ||
+                  std::is_nothrow_move_constructible_v<value_type>,
+                  "HashMap: entries must be copyable or nothrow movable");
+    static_assert(std::is_copy_constructible_v<Hasher> && std::is_copy_constructible_v<KeyEqual> &&
+                  std::is_nothrow_swappable_v<Hasher> && std::is_nothrow_swappable_v<KeyEqual>,
+                  "HashMap: Hasher and KeyEqual must be copyable and nothrow swappable");
+    reinsirk::detail::FastHashReleasedArray<Slot> slots_;
+    reinsirk::detail::FastHashReleasedArray<std::uint8_t> state_; // 0=空、1=登録済み、2=削除済み
+    size_type size_ = 0, occupied_ = 0;
+    unsigned shift_ = 64;
+    [[no_unique_address]] Hasher hash_;
+    [[no_unique_address]] KeyEqual equal_;
+    void invalidate() noexcept {
+    }
+    size_type max_capacity() const noexcept {
+        return std::bit_floor(std::min(slots_.max_size(), state_.max_size()));
+    }
+    static size_type threshold(size_type capacity) noexcept { return capacity == 0 ? 0 : (capacity - 1) / 2; }
+    size_type bucket(const Key& key, unsigned shift) const noexcept(
+        std::is_nothrow_invocable_v<const Hasher&, const Key&>) {
+        const auto h = static_cast<std::uint64_t>(hash_(key));
+        if constexpr (std::is_same_v<Hasher, GenericHash>) return static_cast<size_type>(h >> shift);
+        else return static_cast<size_type>((h * UINT64_C(11995408973635179863)) >> shift);
+    }
+    size_type locate(const Key& key) const {
+        if (slots_.empty()) return 0;
+        size_type p = bucket(key, shift_);
+        while (state_[p] == 1) {
+            if (equal_(slots_[p]->first, key)) return p;
+            p = (p + 1) & (slots_.size() - 1);
+        }
+        if (state_[p] == 0) return slots_.size();
+        while (state_[p]) {
+            if constexpr (std::is_same_v<Slot, CompactSlot> && std::is_integral_v<Key> &&
+                          (std::is_same_v<KeyEqual, std::equal_to<Key>> ||
+                           std::is_same_v<KeyEqual, std::equal_to<void>>)) {
+                if (equal_(slots_[p]->first, key)) return state_[p] == 1 ? p : slots_.size();
+            } else if (state_[p] == 1 && equal_(slots_[p]->first, key)) return p;
+            p = (p + 1) & (slots_.size() - 1);
+        }
+        return slots_.size();
+    }
+#if (!defined(SIRKIT_DISABLE_SIMD)) && (defined(__SSE2__)) && ((defined(__x86_64__)) || (defined(__i386__)))
+    // 単純な型の再配置で、登録状態を16バケットずつ判定する。
+    void rebuild_simd(size_type capacity) {
+        reinsirk::detail::FastHashReleasedArray<Slot> next(capacity);
+        // 値の構築前に領域を一定間隔で書き、ランダムな初回書き込みの負担を抑える。
+         {
+            if (capacity >= 256) {
+                constexpr size_type stride = std::max(size_type{1}, size_type{4096} / sizeof(Slot));
+                for (size_type i = 0; i < capacity; i += stride)
+                    *reinterpret_cast<volatile unsigned char*>(std::addressof(next[i])) = 0;
+            }
+        }
+
+        reinsirk::detail::FastHashReleasedArray<std::uint8_t> state(capacity, 0);
+        const auto shift = static_cast<unsigned>(64 - std::countr_zero(capacity));
+        const auto live = _mm_set1_epi8(1);
+        for (size_type base = 0; base < slots_.size(); base += 16) {
+            const auto states = _mm_loadu_si128(reinterpret_cast<const __m128i*>(state_.data() + base));
+            unsigned mask = static_cast<unsigned>(_mm_movemask_epi8(_mm_cmpeq_epi8(states, live)));
+            while (mask) {
+                const size_type i = base + std::countr_zero(mask);
+                size_type p = bucket(slots_[i]->first, shift);
+                while (state[p]) p = (p + 1) & (capacity - 1);
+                next[p].emplace(*slots_[i]); // 自明なコピーなので、hashが投げても元の値を保つ。
+                state[p] = 1;
+                mask &= mask - 1;
+            }
+        }
+        slots_.swap(next);
+        state_.swap(state);
+        occupied_ = size_;
+        shift_ = shift;
+        invalidate();
+        next.release_storage();state.release_storage();
+    }
+#endif
+    void rebuild(size_type capacity) {
+        if (capacity > max_capacity()) throw std::length_error("HashMap: capacity overflow");
+#if (!defined(SIRKIT_DISABLE_SIMD)) && (defined(__SSE2__)) && ((defined(__x86_64__)) || (defined(__i386__)))
+        if constexpr (std::is_same_v<Slot, CompactSlot>) {
+            if (slots_.size() >= 64) { rebuild_simd(capacity); return; }
+        }
+#endif
+        reinsirk::detail::FastHashReleasedArray<Slot> next(capacity);
+        // 値の構築前に領域を一定間隔で書き、ランダムな初回書き込みの負担を抑える。
+         {
+            if (capacity >= 256) {
+                constexpr size_type stride = std::max(size_type{1}, size_type{4096} / sizeof(Slot));
+                for (size_type i = 0; i < capacity; i += stride)
+                    *reinterpret_cast<volatile unsigned char*>(std::addressof(next[i])) = 0;
+            }
+        }
+
+        reinsirk::detail::FastHashReleasedArray<std::uint8_t> state(capacity, 0);
+        const auto shift = static_cast<unsigned>(64 - std::countr_zero(capacity));
+        for(size_type i=0;i<slots_.size();++i){
+            if(state_[i]!=1)continue;
+            size_type p=bucket(slots_[i]->first,shift);
+            while(state[p])p=(p+1)&(capacity-1);
+            if constexpr(std::is_move_constructible_v<value_type>)next[p].emplace(std::move(*slots_[i]));
+            else next[p].emplace(*slots_[i]);
+            state[p]=1;
+        }
+        slots_.swap(next);
+        state_.swap(state);
+        occupied_ = size_;
+        shift_ = shift;
+        invalidate();
+        next.release_storage();state.release_storage();
+    }
+    size_type insertion_slot(const Key& key) {
+        if (slots_.empty()) rebuild(8);
+        size_type p = bucket(key, shift_), first_deleted = slots_.size();
+        while (state_[p]) {
+            if constexpr (std::is_same_v<Slot, CompactSlot> && std::is_integral_v<Key> &&
+                          (std::is_same_v<KeyEqual, std::equal_to<Key>> ||
+                           std::is_same_v<KeyEqual, std::equal_to<void>>)) {
+                // 外部参照のない整数と標準比較だけ、同値キーの墓石で止める。
+                if (equal_(slots_[p]->first, key)) return p;
+            } else if (state_[p] == 1 && equal_(slots_[p]->first, key)) return p;
+            if (state_[p] == 2 && first_deleted == slots_.size()) first_deleted = p;
+            p = (p + 1) & (slots_.size() - 1);
+        }
+        if (size_ == threshold(slots_.size())) {
+            if (slots_.size() > max_capacity() / 2) throw std::length_error("HashMap: capacity overflow");
+            rebuild(slots_.size() * 2);
+            return insertion_slot(key);
+        }
+        if (first_deleted != slots_.size()) return first_deleted;
+        if (occupied_ == threshold(slots_.size())) {
+            rebuild(slots_.size());
+            return insertion_slot(key);
+        }
+        return p;
+    }
+    void mark_inserted(size_type p) noexcept {
+        if (state_[p] == 0) ++occupied_;
+        state_[p] = 1;
+        ++size_;
+    }
+#if (!defined(SIRKIT_DISABLE_SIMD)) && (defined(__SSE2__)) && ((defined(__x86_64__)) || (defined(__i386__)))
+    size_type next_live(size_type p) const noexcept {
+        const auto capacity = state_.size();
+        if (capacity - p >= 4) {
+            if (state_[p] == 1) return p;
+            if (state_[p+1] == 1) return p+1;
+            if (state_[p+2] == 1) return p+2;
+            if (state_[p+3] == 1) return p+3;
+            p += 4;
+        }
+        const auto live = _mm_set1_epi8(1);
+        while (capacity - p >= 16) {
+            const auto states = _mm_loadu_si128(reinterpret_cast<const __m128i*>(state_.data()+p));
+            const unsigned mask = static_cast<unsigned>(_mm_movemask_epi8(_mm_cmpeq_epi8(states,live)));
+            if (mask) return p + std::countr_zero(mask);
+            p += 16;
+        }
+        while (p < capacity && state_[p] != 1) ++p;
+        return p;
+    }
+    size_type previous_live(size_type p) const noexcept {
+        if (p >= 4) {
+            if (state_[p-1] == 1) return p-1;
+            if (state_[p-2] == 1) return p-2;
+            if (state_[p-3] == 1) return p-3;
+            if (state_[p-4] == 1) return p-4;
+            p -= 4;
+        }
+        const auto live = _mm_set1_epi8(1);
+        while (p >= 16) {
+            const auto states = _mm_loadu_si128(reinterpret_cast<const __m128i*>(state_.data()+p-16));
+            const unsigned mask = static_cast<unsigned>(_mm_movemask_epi8(_mm_cmpeq_epi8(states,live)));
+            if (mask) return p - 16 + std::bit_width(mask) - 1;
+            p -= 16;
+        }
+        while (p != 0) { --p; if (state_[p] == 1) return p; }
+        return state_.size();
+    }
+#endif
+public:
+    template <bool Const>
+    class BasicIterator {
+        friend class HashMap;
+        template <bool> friend class BasicIterator;
+        using Owner = std::conditional_t<Const, const HashMap, HashMap>;
+        Owner* owner_ = nullptr;
+        size_type index_ = 0;
+        BasicIterator(Owner* owner, size_type index) noexcept : owner_(owner), index_(index) {
+            // 内部で新しく作るiteratorは有効な要素またはendだけを指す。
+            if (index > owner->slots_.size() ||
+                (index < owner->slots_.size() && owner->state_[index] != 1)) std::unreachable();
+        }
+        void check(bool element) const {
+            (void)element;
+        }
+    public:
+        using iterator_category = std::bidirectional_iterator_tag;
+        using iterator_concept = std::bidirectional_iterator_tag;
+        using value_type = typename HashMap::value_type;
+        using difference_type = std::ptrdiff_t;
+        using reference = std::conditional_t<Const, const value_type&, value_type&>;
+        using pointer = std::conditional_t<Const, const value_type*, value_type*>;
+        BasicIterator() noexcept = default;
+        template <bool Other> requires (Const && !Other)
+        BasicIterator(const BasicIterator<Other>& other) noexcept : owner_(other.owner_), index_(other.index_) {
+        }
+        reference operator*() const { check(true); return *owner_->slots_[index_]; }
+        pointer operator->() const { return std::addressof(operator*()); }
+        BasicIterator& operator++() {
+            check(true);
+#if (!defined(SIRKIT_DISABLE_SIMD)) && (defined(__SSE2__)) && ((defined(__x86_64__)) || (defined(__i386__)))
+            if constexpr (!std::is_same_v<Slot, CompactSlot>) {
+                index_ = owner_->next_live(index_ + 1);
+                return *this;
+            }
+#endif
+            do { ++index_; } while (index_ < owner_->slots_.size() && owner_->state_[index_] != 1);
+            return *this;
+        }
+        BasicIterator operator++(int) { auto copy = *this; ++*this; return copy; }
+        BasicIterator& operator--() {
+            check(false);
+#if (!defined(SIRKIT_DISABLE_SIMD)) && (defined(__SSE2__)) && ((defined(__x86_64__)) || (defined(__i386__)))
+            if constexpr (!std::is_same_v<Slot, CompactSlot>) {
+                const auto p = owner_->previous_live(index_);
+                if (p != owner_->slots_.size()) { index_ = p; return *this; }
+                index_ = 0;
+                return *this;
+            }
+#endif
+            auto p = index_;
+            while (p != 0) { --p; if (owner_->state_[p] == 1) { index_ = p; return *this; } }
+            index_ = 0;
+            return *this;
+        }
+        BasicIterator operator--(int) { auto copy = *this; --*this; return copy; }
+        template <bool Other> bool operator==(const BasicIterator<Other>& other) const noexcept {
+            return owner_ == other.owner_ && index_ == other.index_;
+        }
+    };
+    using iterator = BasicIterator<false>;
+    using const_iterator = BasicIterator<true>;
+    using itr = iterator;
+
+    HashMap() = default;
+    explicit HashMap(size_type expected, Hasher hash = {}, KeyEqual equal = {})
+        : hash_(std::move(hash)), equal_(std::move(equal)) { reserve(expected); }
+    HashMap(const HashMap& other) requires std::is_copy_constructible_v<value_type>
+        : slots_(other.slots_.size()),state_(other.state_.size(),0),size_(other.size_),occupied_(other.occupied_),
+          shift_(other.shift_),hash_(other.hash_),equal_(other.equal_) {
+        if(!state_.empty())std::copy_n(other.state_.data(),state_.size(),state_.data());
+#if !defined(SIRKIT_DISABLE_SIMD) && defined(__SSE2__) && (defined(__x86_64__) || defined(__i386__))
+        if(slots_.size()>=16) {
+            for(size_type base=0;base<slots_.size();base+=16) {
+                const auto states=_mm_loadu_si128(reinterpret_cast<const __m128i*>(state_.data()+base));
+                unsigned mask;
+                if constexpr(std::is_same_v<Slot,CompactSlot>)mask=static_cast<unsigned>(~_mm_movemask_epi8(_mm_cmpeq_epi8(states,_mm_setzero_si128())))&65535u;
+                else mask=static_cast<unsigned>(_mm_movemask_epi8(_mm_cmpeq_epi8(states,_mm_set1_epi8(1))));
+                while(mask) {const auto i=base+std::countr_zero(mask);slots_[i].emplace(*other.slots_[i]);mask&=mask-1;}
+            }
+            return;
+        }
+#endif
+        for(size_type i=0;i<slots_.size();++i) {
+            if constexpr(std::is_same_v<Slot,CompactSlot>) {
+                if(state_[i])slots_[i].emplace(*other.slots_[i]);
+            } else if(state_[i]==1)slots_[i].emplace(*other.slots_[i]);
+        }
+    }
+    HashMap(HashMap&& other) noexcept(std::is_nothrow_copy_constructible_v<Hasher> &&
+                                    std::is_nothrow_copy_constructible_v<KeyEqual> &&
+                                    std::is_nothrow_swappable_v<Hasher> &&
+                                    std::is_nothrow_swappable_v<KeyEqual>)
+        : hash_(other.hash_), equal_(other.equal_) { swap(other); }
+    HashMap& operator=(HashMap other) { swap(other); return *this; }
+    void swap(HashMap& other) noexcept(std::is_nothrow_swappable_v<Hasher> && std::is_nothrow_swappable_v<KeyEqual>) {
+        static_assert(std::is_nothrow_swappable_v<Hasher> && std::is_nothrow_swappable_v<KeyEqual>,
+                      "HashMap: Hasher and KeyEqual must be nothrow swappable");
+        using std::swap;
+        swap(hash_, other.hash_); swap(equal_, other.equal_);
+        slots_.swap(other.slots_); state_.swap(other.state_);
+        swap(size_, other.size_); swap(occupied_, other.occupied_); swap(shift_, other.shift_);
+        invalidate(); other.invalidate();
+    }
+    iterator begin() noexcept {
+        if (size_ == 0) return end();
+#if (!defined(SIRKIT_DISABLE_SIMD)) && (defined(__SSE2__)) && ((defined(__x86_64__)) || (defined(__i386__)))
+        if constexpr (!std::is_same_v<Slot, CompactSlot>) return iterator(this,next_live(0));
+#endif
+        size_type p = 0; while (p < slots_.size() && state_[p] != 1) ++p;
+        return iterator(this, p);
+    }
+    const_iterator begin() const noexcept {
+        if (size_ == 0) return end();
+#if (!defined(SIRKIT_DISABLE_SIMD)) && (defined(__SSE2__)) && ((defined(__x86_64__)) || (defined(__i386__)))
+        if constexpr (!std::is_same_v<Slot, CompactSlot>) return const_iterator(this,next_live(0));
+#endif
+        size_type p = 0; while (p < slots_.size() && state_[p] != 1) ++p;
+        return const_iterator(this, p);
+    }
+    iterator end() noexcept { return iterator(this, slots_.size()); }
+    const_iterator end() const noexcept { return const_iterator(this, slots_.size()); }
+    const_iterator cbegin() const noexcept { return begin(); }
+    const_iterator cend() const noexcept { return end(); }
+    iterator find(const Key& key) { return iterator(this, locate(key)); }
+    const_iterator find(const Key& key) const { return const_iterator(this, locate(key)); }
+    bool contains(const Key& key) const { return locate(key) != slots_.size(); }
+    bool contain(const Key& key) const { return contains(key); }
+    int count(const Key& key) const { return contains(key) ? 1 : 0; }
+    size_type size() const noexcept { return size_; }
+    bool empty() const noexcept { return size_ == 0; }
+    size_type capacity() const noexcept { return slots_.size(); }
+    double load_factor() const noexcept { return slots_.empty() ? 0.0 : static_cast<double>(size_) / slots_.size(); }
+    Val& at(const Key& key) {
+        const auto p = locate(key);
+        if (p == slots_.size()) throw std::out_of_range("HashMap::at: missing key");
+        return slots_[p]->second;
+    }
+    const Val& at(const Key& key) const {
+        const auto p = locate(key);
+        if (p == slots_.size()) throw std::out_of_range("HashMap::at: missing key");
+        return slots_[p]->second;
+    }
+    Val get_or_default(const Key& key, Val fallback = Val{}) const {
+        const auto p = locate(key);
+        return p == slots_.size() ? std::move(fallback) : slots_[p]->second;
+    }
+    template <class... Args>
+    std::pair<iterator, bool> try_emplace(const Key& key, Args&&... args) {
+        const auto p = insertion_slot(key);
+        if (state_[p] == 1) return {iterator(this, p), false};
+        slots_[p].emplace(std::piecewise_construct, std::forward_as_tuple(key),
+                          std::forward_as_tuple(std::forward<Args>(args)...));
+        mark_inserted(p);
+        return {iterator(this, p), true};
+    }
+    Val& operator[](const Key& key) { return try_emplace(key).first->second; }
+    iterator insert(const value_type& entry) { return try_emplace(entry.first, entry.second).first; }
+    iterator insert(value_type&& entry) { return try_emplace(entry.first, std::move(entry.second)).first; }
+    iterator emplace(const Key& key, const Val& value) { return try_emplace(key, value).first; }
+    template <class V>
+    std::pair<iterator, bool> insert_or_assign(const Key& key, V&& value) {
+        auto result = try_emplace(key, std::forward<V>(value));
+        if (!result.second) result.first->second = std::forward<V>(value);
+        return result;
+    }
+    iterator erase(const_iterator it, bool get_next = true) {
+        if (it.index_ == slots_.size()) return end();
+        const auto p = it.index_;
+        slots_[p].reset(); state_[p] = 2; --size_;
+        if (!get_next) return end();
+#if (!defined(SIRKIT_DISABLE_SIMD)) && (defined(__SSE2__)) && ((defined(__x86_64__)) || (defined(__i386__)))
+        if constexpr (!std::is_same_v<Slot, CompactSlot>) return iterator(this,next_live(p+1));
+#endif
+        auto next = p;
+        do { ++next; } while (next < slots_.size() && state_[next] != 1);
+        return iterator(this, next);
+    }
+    iterator erase(iterator it, bool get_next = true) { return erase(const_iterator(it), get_next); }
+    iterator erase(const Key& key) { return erase(find(key)); }
+    iterator erase(const Key& key, bool get_next) { return erase(find(key), get_next); }
+    void clear() noexcept {
+        if (occupied_ == 0) { invalidate(); return; }
+        std::fill(state_.begin(), state_.end(), std::uint8_t{0});
+        size_ = occupied_ = 0; invalidate();
+    }
+    void reserve(size_type count) {
+        if (count <= threshold(slots_.size())) return;
+        if (count > threshold(max_capacity())) throw std::length_error("HashMap::reserve: capacity overflow");
+        size_type capacity = 8;
+        while (count > threshold(capacity)) capacity *= 2;
+        rebuild(capacity);
+    }
+    void rehash(size_type requested) {
+        if (requested > max_capacity()) throw std::length_error("HashMap::rehash: capacity overflow");
+        size_type capacity = 8;
+        while (requested > capacity || size_ > threshold(capacity)) {
+            if (capacity > max_capacity() / 2) throw std::length_error("HashMap::rehash: capacity overflow");
+            capacity *= 2;
+        }
+        rebuild(capacity);
+    }
+};
+#endif
+
+
+// SPDX-License-Identifier: CC0-1.0
+// Verify I/O: Verify/current/common/fast_io.hpp
+// SPDX-License-Identifier: CC0-1.0
+#include <algorithm>
+#include <array>
+#include <charconv>
+#include <cstddef>
+#include <cstdint>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <limits>
+#include <stdexcept>
+#include <string>
+#include <string_view>
+#include <type_traits>
+#include <vector>
+
+#ifndef SIRKIT_VERIFY_FAST_IO_DEFINED
+#define SIRKIT_VERIFY_FAST_IO_DEFINED
+
+// VerifyInput(file=stdin): 非所有のFILEから読む。別の入力方式と混用しない。
+// >> 整数: 64bit以下の十進整数を読む。検査省略時は値域内の正しい入力を前提とする。
+// >> char/string: 空白を飛ばし、1文字／空白までの文字列を読む。
+// >> 浮動小数点: 十進文字列を変換する。通常のCロケールで使う。
+// bool / !: 直前までの読み取りが成功しているか／失敗したかを返す。
+class VerifyInput {
+    static constexpr std::size_t buffer_size = 1 << 17;
+    std::FILE* file_;
+    std::array<unsigned char, buffer_size + 1> buffer_;
+    std::size_t position_ = 0, size_ = 0;
+    bool good_ = true;
+
+    int peek() {
+        if (position_ == size_) {
+            size_ = std::fread(buffer_.data(), 1, buffer_size, file_);
+            buffer_[size_] = 0; // 補充後の末尾は常に数字でない番兵。
+            position_ = 0;
+            if (size_ == 0) return EOF;
+        }
+        return buffer_[position_];
+    }
+
+    int skip_space() {
+        int c;
+        while ((c = peek()) != EOF && c <= ' ') ++position_;
+        if (c == EOF) good_ = false;
+        return c;
+    }
+
+public:
+    explicit VerifyInput(std::FILE* file = stdin) : file_(file) {}
+    VerifyInput(const VerifyInput&) = delete;
+    VerifyInput& operator=(const VerifyInput&) = delete;
+
+    explicit operator bool() const noexcept { return good_; }
+    bool operator!() const noexcept { return !good_; }
+
+    template<class T>
+        requires (std::is_integral_v<T> && sizeof(T) <= sizeof(std::uint64_t)
+                  && !std::is_same_v<T, char>)
+    VerifyInput& operator>>(T& result) {
+        if (!good_) return *this;
+        int c = skip_space();
+        if (c == EOF) return *this;
+        bool negative = false;
+        if (c == '-' || c == '+') {
+            negative = c == '-';
+            ++position_;
+            c = peek();
+        }
+        if (c == EOF) {
+            good_ = false;
+            return *this;
+        }
+#ifndef SKIP_RUNTIME_CHECKS
+        if (c < '0' || c > '9') {
+            good_ = false;
+            return *this;
+        }
+        // 先頭の0を除けば、20桁以下の末尾直前の値はuint64_tに収まる。
+        while (c == '0') {
+            ++position_;
+            c = peek();
+        }
+        std::uint64_t previous = 0;
+        unsigned last_digit = 0;
+        std::size_t digits = 0;
+#endif
+        std::uint64_t value = 0;
+#ifdef SKIP_RUNTIME_CHECKS
+        // バッファ末尾の番兵で内側の範囲判定を省き、数字が境界をまたぐときだけ補充する。
+        for (;;) {
+            const unsigned char* first = buffer_.data() + position_;
+            const unsigned char* cursor = first;
+            while (static_cast<unsigned>(*cursor - '0') < 10) {
+                value = value * 10 + static_cast<unsigned>(*cursor - '0');
+                ++cursor;
+            }
+            position_ += static_cast<std::size_t>(cursor - first);
+            if (position_ != size_) break;
+            c = peek();
+            if (c == EOF) break;
+        }
+#else
+        while (c >= '0' && c <= '9') {
+            previous = value;
+            last_digit = static_cast<unsigned>(c - '0');
+            if (digits <= 20) ++digits;
+            value = value * 10 + static_cast<unsigned>(c - '0');
+            ++position_;
+            c = peek();
+        }
+#endif
+#ifndef SKIP_RUNTIME_CHECKS
+        constexpr auto maximum = std::numeric_limits<std::uint64_t>::max();
+        if ((c != EOF && c > ' ') || digits > 20
+            || (digits == 20 && (previous > maximum / 10
+                || (previous == maximum / 10 && last_digit > maximum % 10)))) {
+            good_ = false;
+            return *this;
+        }
+        std::uint64_t limit = static_cast<std::uint64_t>(std::numeric_limits<T>::max());
+        if constexpr (std::is_signed_v<T>) limit += negative;
+        else if (negative && value != 0) good_ = false;
+        if (value > limit) good_ = false;
+        if (!good_) return *this;
+#endif
+        if constexpr (std::is_signed_v<T>) {
+            constexpr std::uint64_t minimum_magnitude =
+                static_cast<std::uint64_t>(std::numeric_limits<T>::max()) + 1;
+            // -(最小値)は評価せず、絶対値が最大値+1のときだけ最小値を使う。
+            result = negative
+                ? (value == minimum_magnitude ? std::numeric_limits<T>::min()
+                                  : static_cast<T>(-static_cast<T>(value)))
+                : static_cast<T>(value);
+        } else result = static_cast<T>(value);
+        return *this;
+    }
+
+    VerifyInput& operator>>(char& result) {
+        if (!good_) return *this;
+        const int c = skip_space();
+        if (c != EOF) {
+            result = static_cast<char>(c);
+            ++position_;
+        }
+        return *this;
+    }
+
+    VerifyInput& operator>>(std::string& result) {
+        if (!good_) return *this;
+        int c = skip_space();
+        if (c == EOF) return *this;
+        result.clear();
+        for (;;) {
+            const std::size_t first = position_;
+            while (position_ < size_ && buffer_[position_] > ' ') ++position_;
+            result.append(reinterpret_cast<const char*>(buffer_.data() + first), position_ - first);
+            if (position_ != size_ || peek() == EOF) break;
+        }
+        return *this;
+    }
+
+    template<class T> requires std::is_floating_point_v<T>
+    VerifyInput& operator>>(T& result) {
+        std::string token;
+        *this >> token;
+        if (!good_) return *this;
+#ifndef SKIP_RUNTIME_CHECKS
+        char* end = nullptr;
+        const long double value = std::strtold(token.c_str(), &end);
+        if (end != token.c_str() + token.size()) good_ = false;
+        else result = static_cast<T>(value);
+#else
+        result = static_cast<T>(std::strtold(token.c_str(), nullptr));
+#endif
+        return *this;
+    }
+};
+
+// VerifyOutput(file=stdout): 非所有のFILEへ書く。破棄時にflushし、FILEは閉じない。
+// << 整数/char/文字列/浮動小数点: 値を出力する。整数は64bit以下に対応する。
+// fixed(digits): 浮動小数点を小数点以下digits桁で出力する（digits>=0）。
+// flush(): バッファの内容をFILEへ渡す。bool / !で書き込み失敗を確認できる。
+class VerifyOutput {
+    static constexpr std::size_t buffer_size = 1 << 17;
+    std::FILE* file_;
+    std::array<char, buffer_size> buffer_;
+    std::size_t size_ = 0;
+    int precision_ = 6;
+    bool fixed_ = false, good_ = true;
+
+    void write(std::string_view text) {
+        while (!text.empty() && good_) {
+            if (size_ == buffer_.size()) flush();
+            const auto count = std::min(text.size(), buffer_.size() - size_);
+            std::memcpy(buffer_.data() + size_, text.data(), count);
+            size_ += count;
+            text.remove_prefix(count);
+        }
+    }
+
+public:
+    explicit VerifyOutput(std::FILE* file = stdout) : file_(file) {}
+    VerifyOutput(const VerifyOutput&) = delete;
+    VerifyOutput& operator=(const VerifyOutput&) = delete;
+    ~VerifyOutput() { flush(); }
+
+    explicit operator bool() const noexcept { return good_; }
+    bool operator!() const noexcept { return !good_; }
+
+    VerifyOutput& fixed(int digits) {
+        if (digits < 0) throw std::invalid_argument("negative output precision");
+        fixed_ = true;
+        precision_ = digits;
+        return *this;
+    }
+
+    void flush() noexcept {
+        std::size_t written = 0;
+        while (written < size_ && good_) {
+            const auto count = std::fwrite(buffer_.data() + written, 1, size_ - written, file_);
+            if (count == 0) good_ = false;
+            written += count;
+        }
+        size_ = 0;
+    }
+
+    template<class T>
+        requires (std::is_integral_v<T> && sizeof(T) <= sizeof(std::uint64_t)
+                  && !std::is_same_v<T, char>)
+    VerifyOutput& operator<<(T value) {
+        if constexpr (std::is_same_v<T, bool>) return *this << static_cast<char>('0' + value);
+        else {
+            constexpr std::size_t capacity = std::numeric_limits<std::uint64_t>::digits10 + 3;
+            if (buffer_.size() - size_ < capacity) flush();
+            if (!good_) return *this;
+            const auto end = std::to_chars(buffer_.data() + size_, buffer_.data() + size_ + capacity, value).ptr;
+            size_ = static_cast<std::size_t>(end - buffer_.data());
+            return *this;
+        }
+    }
+
+    VerifyOutput& operator<<(char value) {
+        if (size_ == buffer_.size()) flush();
+        if (good_) buffer_[size_++] = value;
+        return *this;
+    }
+
+    VerifyOutput& operator<<(std::string_view value) { write(value); return *this; }
+    VerifyOutput& operator<<(const std::string& value) { write(value); return *this; }
+    VerifyOutput& operator<<(const char* value) { write(value); return *this; }
+
+    template<class T> requires std::is_floating_point_v<T>
+    VerifyOutput& operator<<(T value) {
+        char local[128];
+        const char* format = fixed_ ? "%.*Lf" : "%.*Lg";
+        const int count = std::snprintf(local, sizeof(local), format, precision_,
+                                        static_cast<long double>(value));
+        if (count < 0) good_ = false;
+        else if (static_cast<std::size_t>(count) < sizeof(local))
+            write(std::string_view(local, static_cast<std::size_t>(count)));
+        else {
+            std::vector<char> text(static_cast<std::size_t>(count) + 1);
+            std::snprintf(text.data(), text.size(), format, precision_, static_cast<long double>(value));
+            write(std::string_view(text.data(), static_cast<std::size_t>(count)));
+        }
+        return *this;
+    }
+};
+
+inline VerifyInput verify_in;
+inline VerifyOutput verify_out;
+#endif
+
+#include <cstdint>
+
+int main() {
+    int q{}; if (!(verify_in >> q)) return 0;
+    HashMap<std::uint64_t, std::uint64_t> table;
+    while (q--) {
+        int t{}; std::uint64_t key{}; verify_in >> t >> key;
+        if (t == 0) { std::uint64_t value{}; verify_in >> value; table[key] = value; }
+        else { const auto it = table.find(key); verify_out << (it == table.end() ? 0 : it->second) << '\n'; }
+    }
+}
