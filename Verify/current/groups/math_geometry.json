@@ -1,0 +1,2274 @@
+{
+  "entries": [
+    {
+      "id": "zeta_and_full",
+      "libraries": [
+        "Math/Zeta_Mebius.cpp"
+      ],
+      "driver": "Verify/current/drivers/zeta_and_main.cpp",
+      "problem_url": "https://judge.yosupo.jp/problem/bitwise_and_convolution",
+      "title": "Bitwise And Convolution",
+      "selection_reason": "参照元の集合変換はunit testで検証。AND畳み込み問題を各APIに適用。",
+      "reference_url": "https://nyaannyaan.github.io/library/set-function/zeta-mobius-transform.hpp.html",
+      "evidence_url": "https://nyaannyaan.github.io/library/set-function/zeta-mobius-transform.hpp.html",
+      "coverage": "AND畳み込み",
+      "limitations": "提出412847は改修前8要素展開版の本体/main/I/Oと照合済み、全13ケースAC・最大63ms。追加候補は退行や上積み不足のため不採用（Audit/performance-zeta-and-412847-2026-10-24.json）。全API・境界・汎用/浮動型・例外/所有権・標準経路・ASan/UBSanはAudit/performance-zeta-and-412842-2026-10-24.json参照。整数篩等は今回の検証対象外。 OR側の改修時に、AND提出コードの機械語はGCC・GCC native・Clangで変更前と一致。ソースが変わったため過去ACを現行版のオンライン判定とはしない。詳細はAudit/performance-zeta-or-412849-2026-10-24.json。 今回の整数変換改修後も、GCCのAND提出コードの機械語は変更前と一致（Audit/performance-zeta-gcd-412855-2026-10-24.json）。",
+      "samples": [
+        {
+          "input": "3\n1 2 3 4 5 6 7 8\n9 10 11 12 13 14 15 16\n",
+          "output": "957 412 515 208 751 292 337 128\n",
+          "source": "Library Checker公式 example_00.in。出力は独立な小規模計算で作成。"
+        }
+      ],
+      "acl_required": false,
+      "submission_urls": [
+        "https://judge.yosupo.jp/submission/412847"
+      ]
+    },
+    {
+      "id": "zeta_and_split",
+      "libraries": [
+        "Math/Zeta/Bitwise_Convolution.cpp"
+      ],
+      "driver": "Verify/current/drivers/zeta_and_main.cpp",
+      "problem_url": "https://judge.yosupo.jp/problem/bitwise_and_convolution",
+      "title": "Bitwise And Convolution",
+      "selection_reason": "参照元の集合変換はunit testで検証。AND畳み込み問題を各APIに適用。",
+      "reference_url": "https://nyaannyaan.github.io/library/set-function/zeta-mobius-transform.hpp.html",
+      "evidence_url": "https://nyaannyaan.github.io/library/set-function/zeta-mobius-transform.hpp.html",
+      "coverage": "AND畳み込み",
+      "limitations": "提出412846は改修前8要素展開版の本体/main/I/Oと照合済み、全13ケースAC・最大62ms。追加候補は退行や上積み不足のため不採用（Audit/performance-zeta-and-412847-2026-10-24.json）。全API・境界・汎用/浮動型・例外/所有権・標準経路・ASan/UBSanはAudit/performance-zeta-and-412842-2026-10-24.json参照。整数篩等は今回の検証対象外。 現行版はOR側だけを改修し、AND提出コードの機械語はGCC・GCC native・Clangで変更前と一致。ソースが変わったため過去ACを現行版のオンライン判定とはしない。詳細はAudit/performance-zeta-or-412849-2026-10-24.json。",
+      "samples": [
+        {
+          "input": "3\n1 2 3 4 5 6 7 8\n9 10 11 12 13 14 15 16\n",
+          "output": "957 412 515 208 751 292 337 128\n",
+          "source": "Library Checker公式 example_00.in。出力は独立な小規模計算で作成。"
+        }
+      ],
+      "acl_required": false,
+      "submission_urls": [
+        "https://judge.yosupo.jp/submission/412846"
+      ]
+    },
+    {
+      "id": "zeta_or_as_and_full",
+      "libraries": [
+        "Math/Zeta_Mebius.cpp"
+      ],
+      "driver": "Verify/current/drivers/zeta_or_as_and_main.cpp",
+      "problem_url": "https://judge.yosupo.jp/problem/bitwise_and_convolution",
+      "title": "Bitwise And Convolution",
+      "selection_reason": "Library CheckerのOR専用問題APIは404。添字の補集合でAND問題へ変換し、OR畳み込みの全係数を判定する。",
+      "reference_url": "https://nyaannyaan.github.io/library/set-function/or-convolution.hpp.html",
+      "evidence_url": "https://judge.yosupo.jp/problem/bitwise_and_convolution",
+      "coverage": "添字の補集合を介したbitwise_or_convolutionの全係数・法998244353",
+      "limitations": "提出412852は提出確認時点の部分集合2段融合版の本体/main/I/Oと照合済み、全13ケースAC・最大69ms。全API・境界・汎用/浮動型・例外/所有権・検査有無・標準経路・ASan/UBSanはAudit/performance-zeta-or-412849-2026-10-24.json。整数篩等は今回の検証対象外。 追加候補は安定した上積みがなく不採用（Audit/performance-zeta-or-412852-2026-10-24.json）。 整数変換の改修により全機能版のソースが変わったため、現行版はオンライン未提出。OR本体とmainは未変更。",
+      "samples": [
+        {
+          "input": "3\n1 2 3 4 5 6 7 8\n9 10 11 12 13 14 15 16\n",
+          "output": "957 412 515 208 751 292 337 128\n",
+          "source": "Library Checker公式 example_00.in。出力は独立な小規模計算で作成。"
+        }
+      ],
+      "acl_required": false,
+      "submission_urls": [
+        "https://judge.yosupo.jp/submission/412852"
+      ]
+    },
+    {
+      "id": "zeta_or_as_and_split",
+      "libraries": [
+        "Math/Zeta/Bitwise_Convolution.cpp"
+      ],
+      "driver": "Verify/current/drivers/zeta_or_as_and_main.cpp",
+      "problem_url": "https://judge.yosupo.jp/problem/bitwise_and_convolution",
+      "title": "Bitwise And Convolution",
+      "selection_reason": "Library CheckerのOR専用問題APIは404。添字の補集合でAND問題へ変換し、OR畳み込みの全係数を判定する。",
+      "reference_url": "https://nyaannyaan.github.io/library/set-function/or-convolution.hpp.html",
+      "evidence_url": "https://judge.yosupo.jp/problem/bitwise_and_convolution",
+      "coverage": "添字の補集合を介したbitwise_or_convolutionの全係数・法998244353",
+      "limitations": "提出412851は現行の部分集合2段融合版の本体/main/I/Oと照合済み、全13ケースAC・最大67ms。全API・境界・汎用/浮動型・例外/所有権・検査有無・標準経路・ASan/UBSanはAudit/performance-zeta-or-412849-2026-10-24.json。整数篩等は今回の検証対象外。 追加候補は安定した上積みがなく不採用（Audit/performance-zeta-or-412852-2026-10-24.json）。",
+      "samples": [
+        {
+          "input": "3\n1 2 3 4 5 6 7 8\n9 10 11 12 13 14 15 16\n",
+          "output": "957 412 515 208 751 292 337 128\n",
+          "source": "Library Checker公式 example_00.in。出力は独立な小規模計算で作成。"
+        }
+      ],
+      "acl_required": false,
+      "submission_urls": [
+        "https://judge.yosupo.jp/submission/412851"
+      ]
+    },
+    {
+      "id": "zeta_set_as_and_full",
+      "libraries": [
+        "Math/Zeta_Mebius.cpp"
+      ],
+      "driver": "Verify/current/drivers/zeta_set_as_and_main.cpp",
+      "problem_url": "https://judge.yosupo.jp/problem/bitwise_and_convolution",
+      "title": "Bitwise And Convolution",
+      "selection_reason": "参照元の集合変換はunit testで検証。AND畳み込み問題を各APIに適用。",
+      "reference_url": "https://nyaannyaan.github.io/library/set-function/zeta-mobius-transform.hpp.html",
+      "evidence_url": "https://nyaannyaan.github.io/library/set-function/zeta-mobius-transform.hpp.html",
+      "coverage": "上位集合ゼータ・メビウス変換",
+      "limitations": "オンライン未提出。この問題は法998244353の対象操作を検証。集合4変換・AND/OR・自己畳み込み・符号なし整数の剰余・境界・所有権・値/確保失敗と整数SIMD/標準経路はzeta_bitwise_reference_test/zeta_bitwise_exception_testで補足。整数篩・約数/倍数/GCD/LCM/疎変換は今回の検証対象外。",
+      "samples": [
+        {
+          "input": "3\n1 2 3 4 5 6 7 8\n9 10 11 12 13 14 15 16\n",
+          "output": "957 412 515 208 751 292 337 128\n",
+          "source": "Library Checker公式 example_00.in。出力は独立な小規模計算で作成。"
+        }
+      ],
+      "acl_required": false
+    },
+    {
+      "id": "zeta_set_as_and_split",
+      "libraries": [
+        "Math/Zeta/Set_Transform.cpp"
+      ],
+      "driver": "Verify/current/drivers/zeta_set_as_and_main.cpp",
+      "problem_url": "https://judge.yosupo.jp/problem/bitwise_and_convolution",
+      "title": "Bitwise And Convolution",
+      "selection_reason": "参照元の集合変換はunit testで検証。AND畳み込み問題を各APIに適用。",
+      "reference_url": "https://nyaannyaan.github.io/library/set-function/zeta-mobius-transform.hpp.html",
+      "evidence_url": "https://nyaannyaan.github.io/library/set-function/zeta-mobius-transform.hpp.html",
+      "coverage": "上位集合ゼータ・メビウス変換",
+      "limitations": "オンライン未提出。この問題は法998244353の対象操作を検証。集合4変換・AND/OR・自己畳み込み・符号なし整数の剰余・境界・所有権・値/確保失敗と整数SIMD/標準経路はzeta_bitwise_reference_test/zeta_bitwise_exception_testで補足。整数篩・約数/倍数/GCD/LCM/疎変換は今回の検証対象外。",
+      "samples": [
+        {
+          "input": "3\n1 2 3 4 5 6 7 8\n9 10 11 12 13 14 15 16\n",
+          "output": "957 412 515 208 751 292 337 128\n",
+          "source": "Library Checker公式 example_00.in。出力は独立な小規模計算で作成。"
+        }
+      ],
+      "acl_required": false
+    },
+    {
+      "id": "zeta_gcd_conv_full",
+      "libraries": [
+        "Math/Zeta_Mebius.cpp"
+      ],
+      "driver": "Verify/current/drivers/zeta_gcd_conv_main.cpp",
+      "problem_url": "https://judge.yosupo.jp/problem/gcd_convolution",
+      "title": "GCD Convolution",
+      "selection_reason": "参照元のVerified withに掲載されている問題。",
+      "reference_url": "https://nyaannyaan.github.io/library/multiplicative-function/divisor-multiple-transform.hpp.html",
+      "evidence_url": "https://nyaannyaan.github.io/library/multiplicative-function/divisor-multiple-transform.hpp.html",
+      "coverage": "GCD畳み込み",
+      "limitations": "提出412862は現行のGCC向け8回展開版の本体/main/I/Oと照合済み、全29ケースAC・最大70ms。全API・境界・汎用型・浮動演算順・例外/所有権・検査有無・標準経路・ASan/UBSanはAudit/performance-zeta-gcd-412855-2026-10-24.json。追加候補は上積み不足や退行で不採用（Audit/performance-zeta-gcd-412862-2026-10-24.json）。",
+      "samples": [
+        {
+          "input": "6\n1 2 3 4 5 6\n6 5 4 3 2 1\n",
+          "output": "284 90 39 12 10 6\n",
+          "source": "Library Checker公式 example_00.in。出力は独立な小規模計算で作成。"
+        }
+      ],
+      "acl_required": false,
+      "submission_urls": [
+        "https://judge.yosupo.jp/submission/412862"
+      ]
+    },
+    {
+      "id": "zeta_gcd_conv_split",
+      "libraries": [
+        "Math/Zeta/Gcd_Lcm_Convolution.cpp"
+      ],
+      "driver": "Verify/current/drivers/zeta_gcd_conv_main.cpp",
+      "problem_url": "https://judge.yosupo.jp/problem/gcd_convolution",
+      "title": "GCD Convolution",
+      "selection_reason": "参照元のVerified withに掲載されている問題。",
+      "reference_url": "https://nyaannyaan.github.io/library/multiplicative-function/divisor-multiple-transform.hpp.html",
+      "evidence_url": "https://nyaannyaan.github.io/library/multiplicative-function/divisor-multiple-transform.hpp.html",
+      "coverage": "GCD畳み込み",
+      "limitations": "提出412861は現行のGCC向け8回展開版の本体/main/I/Oと照合済み、全29ケースAC・最大62ms。全API・境界・汎用型・浮動演算順・例外/所有権・検査有無・標準経路・ASan/UBSanはAudit/performance-zeta-gcd-412855-2026-10-24.json。追加候補は上積み不足や退行で不採用（Audit/performance-zeta-gcd-412862-2026-10-24.json）。",
+      "samples": [
+        {
+          "input": "6\n1 2 3 4 5 6\n6 5 4 3 2 1\n",
+          "output": "284 90 39 12 10 6\n",
+          "source": "Library Checker公式 example_00.in。出力は独立な小規模計算で作成。"
+        }
+      ],
+      "acl_required": false,
+      "submission_urls": [
+        "https://judge.yosupo.jp/submission/412861"
+      ]
+    },
+    {
+      "id": "zeta_gcd_transform_full",
+      "libraries": [
+        "Math/Zeta_Mebius.cpp"
+      ],
+      "driver": "Verify/current/drivers/zeta_gcd_transform_main.cpp",
+      "problem_url": "https://judge.yosupo.jp/problem/gcd_convolution",
+      "title": "GCD Convolution",
+      "selection_reason": "参照元のVerified withに掲載されている問題。",
+      "reference_url": "https://nyaannyaan.github.io/library/multiplicative-function/divisor-multiple-transform.hpp.html",
+      "evidence_url": "https://nyaannyaan.github.io/library/multiplicative-function/divisor-multiple-transform.hpp.html",
+      "coverage": "multipleゼータ・メビウス変換とSieve",
+      "limitations": "オンライン判定は未実施。全機能版・分割版の公式生成29入力を独立な約数和/逆変換参照と照合。自己畳み込み・符号なし整数・非可換値・境界・値操作/確保失敗はtests/zeta_integer_*_test.cppで補足。測定条件と結果はAudit/performance-zeta-integer-four-hours-2026-10-22.jsonを参照。 IntegerSieve追加改善後の現在版はAudit/verify-zeta-sieve-round2-2026-10-22.jsonで公式GCD/LCM/疎変換1160実行と因数分解512実行を再確認。",
+      "samples": [
+        {
+          "input": "6\n1 2 3 4 5 6\n6 5 4 3 2 1\n",
+          "output": "284 90 39 12 10 6\n",
+          "source": "Library Checker公式 example_00.in。出力は独立な小規模計算で作成。"
+        }
+      ],
+      "acl_required": false
+    },
+    {
+      "id": "zeta_gcd_transform_split",
+      "libraries": [
+        "Math/Zeta/Divisor_Multiple_Transform.cpp"
+      ],
+      "driver": "Verify/current/drivers/zeta_gcd_transform_main.cpp",
+      "problem_url": "https://judge.yosupo.jp/problem/gcd_convolution",
+      "title": "GCD Convolution",
+      "selection_reason": "参照元のVerified withに掲載されている問題。",
+      "reference_url": "https://nyaannyaan.github.io/library/multiplicative-function/divisor-multiple-transform.hpp.html",
+      "evidence_url": "https://nyaannyaan.github.io/library/multiplicative-function/divisor-multiple-transform.hpp.html",
+      "coverage": "multipleゼータ・メビウス変換とSieve",
+      "limitations": "オンライン判定は未実施。全機能版・分割版の公式生成29入力を独立な約数和/逆変換参照と照合。自己畳み込み・符号なし整数・非可換値・境界・値操作/確保失敗はtests/zeta_integer_*_test.cppで補足。測定条件と結果はAudit/performance-zeta-integer-four-hours-2026-10-22.jsonを参照。 IntegerSieve追加改善後の現在版はAudit/verify-zeta-sieve-round2-2026-10-22.jsonで公式GCD/LCM/疎変換1160実行と因数分解512実行を再確認。",
+      "samples": [
+        {
+          "input": "6\n1 2 3 4 5 6\n6 5 4 3 2 1\n",
+          "output": "284 90 39 12 10 6\n",
+          "source": "Library Checker公式 example_00.in。出力は独立な小規模計算で作成。"
+        }
+      ],
+      "acl_required": false
+    },
+    {
+      "id": "zeta_lcm_conv_full",
+      "libraries": [
+        "Math/Zeta_Mebius.cpp"
+      ],
+      "driver": "Verify/current/drivers/zeta_lcm_conv_main.cpp",
+      "problem_url": "https://judge.yosupo.jp/problem/lcm_convolution",
+      "title": "LCM Convolution",
+      "selection_reason": "参照元のVerified withに掲載されている問題。",
+      "reference_url": "https://nyaannyaan.github.io/library/multiplicative-function/divisor-multiple-transform.hpp.html",
+      "evidence_url": "https://nyaannyaan.github.io/library/multiplicative-function/divisor-multiple-transform.hpp.html",
+      "coverage": "LCM畳み込み",
+      "limitations": "提出412865は現行のGCC向け8回展開版の本体/main/I/Oと照合済み、全29ケースAC・最大62ms。公式29入力と標準経路はAudit/verify-zeta-lcm-ready-2026-10-24.json。全API・境界・汎用型・浮動演算順・例外/所有権・ASan/UBSanはAudit/performance-zeta-gcd-412855-2026-10-24.json。追加候補は上積み不足や退行で不採用（Audit/performance-zeta-lcm-412865-2026-10-24.json）。",
+      "samples": [
+        {
+          "input": "6\n1 2 3 4 5 6\n6 5 4 3 2 1\n",
+          "output": "6 27 34 65 42 125\n",
+          "source": "Library Checker公式 example_00.in。出力は独立な小規模計算で作成。"
+        }
+      ],
+      "acl_required": false,
+      "submission_urls": [
+        "https://judge.yosupo.jp/submission/412865"
+      ]
+    },
+    {
+      "id": "zeta_lcm_conv_split",
+      "libraries": [
+        "Math/Zeta/Gcd_Lcm_Convolution.cpp"
+      ],
+      "driver": "Verify/current/drivers/zeta_lcm_conv_main.cpp",
+      "problem_url": "https://judge.yosupo.jp/problem/lcm_convolution",
+      "title": "LCM Convolution",
+      "selection_reason": "参照元のVerified withに掲載されている問題。",
+      "reference_url": "https://nyaannyaan.github.io/library/multiplicative-function/divisor-multiple-transform.hpp.html",
+      "evidence_url": "https://nyaannyaan.github.io/library/multiplicative-function/divisor-multiple-transform.hpp.html",
+      "coverage": "LCM畳み込み",
+      "limitations": "提出412866は現行のGCC向け8回展開版の本体/main/I/Oと照合済み、全29ケースAC・最大72ms。公式29入力と標準経路はAudit/verify-zeta-lcm-ready-2026-10-24.json。全API・境界・汎用型・浮動演算順・例外/所有権・ASan/UBSanはAudit/performance-zeta-gcd-412855-2026-10-24.json。追加候補は上積み不足や退行で不採用（Audit/performance-zeta-lcm-412865-2026-10-24.json）。",
+      "samples": [
+        {
+          "input": "6\n1 2 3 4 5 6\n6 5 4 3 2 1\n",
+          "output": "6 27 34 65 42 125\n",
+          "source": "Library Checker公式 example_00.in。出力は独立な小規模計算で作成。"
+        }
+      ],
+      "acl_required": false,
+      "submission_urls": [
+        "https://judge.yosupo.jp/submission/412866"
+      ]
+    },
+    {
+      "id": "zeta_lcm_transform_full",
+      "libraries": [
+        "Math/Zeta_Mebius.cpp"
+      ],
+      "driver": "Verify/current/drivers/zeta_lcm_transform_main.cpp",
+      "problem_url": "https://judge.yosupo.jp/problem/lcm_convolution",
+      "title": "LCM Convolution",
+      "selection_reason": "参照元のVerified withに掲載されている問題。",
+      "reference_url": "https://nyaannyaan.github.io/library/multiplicative-function/divisor-multiple-transform.hpp.html",
+      "evidence_url": "https://nyaannyaan.github.io/library/multiplicative-function/divisor-multiple-transform.hpp.html",
+      "coverage": "divisorゼータ・メビウス変換とSieve",
+      "limitations": "オンライン判定は未実施。全機能版・分割版の公式生成29入力を独立な約数和/逆変換参照と照合。自己畳み込み・符号なし整数・非可換値・境界・値操作/確保失敗はtests/zeta_integer_*_test.cppで補足。測定条件と結果はAudit/performance-zeta-integer-four-hours-2026-10-22.jsonを参照。 IntegerSieve追加改善後の現在版はAudit/verify-zeta-sieve-round2-2026-10-22.jsonで公式GCD/LCM/疎変換1160実行と因数分解512実行を再確認。",
+      "samples": [
+        {
+          "input": "6\n1 2 3 4 5 6\n6 5 4 3 2 1\n",
+          "output": "6 27 34 65 42 125\n",
+          "source": "Library Checker公式 example_00.in。出力は独立な小規模計算で作成。"
+        }
+      ],
+      "acl_required": false
+    },
+    {
+      "id": "zeta_lcm_transform_split",
+      "libraries": [
+        "Math/Zeta/Divisor_Multiple_Transform.cpp"
+      ],
+      "driver": "Verify/current/drivers/zeta_lcm_transform_main.cpp",
+      "problem_url": "https://judge.yosupo.jp/problem/lcm_convolution",
+      "title": "LCM Convolution",
+      "selection_reason": "参照元のVerified withに掲載されている問題。",
+      "reference_url": "https://nyaannyaan.github.io/library/multiplicative-function/divisor-multiple-transform.hpp.html",
+      "evidence_url": "https://nyaannyaan.github.io/library/multiplicative-function/divisor-multiple-transform.hpp.html",
+      "coverage": "divisorゼータ・メビウス変換とSieve",
+      "limitations": "オンライン判定は未実施。全機能版・分割版の公式生成29入力を独立な約数和/逆変換参照と照合。自己畳み込み・符号なし整数・非可換値・境界・値操作/確保失敗はtests/zeta_integer_*_test.cppで補足。測定条件と結果はAudit/performance-zeta-integer-four-hours-2026-10-22.jsonを参照。 IntegerSieve追加改善後の現在版はAudit/verify-zeta-sieve-round2-2026-10-22.jsonで公式GCD/LCM/疎変換1160実行と因数分解512実行を再確認。",
+      "samples": [
+        {
+          "input": "6\n1 2 3 4 5 6\n6 5 4 3 2 1\n",
+          "output": "6 27 34 65 42 125\n",
+          "source": "Library Checker公式 example_00.in。出力は独立な小規模計算で作成。"
+        }
+      ],
+      "acl_required": false
+    },
+    {
+      "id": "zeta_sieve_factorize_full",
+      "libraries": [
+        "Math/Zeta_Mebius.cpp"
+      ],
+      "driver": "Verify/current/drivers/sieve_div_game_main.cpp",
+      "problem_url": "https://atcoder.jp/contests/abc169/tasks/abc169_d",
+      "title": "D - Div Game",
+      "selection_reason": "Library CheckerのFactorizeは64bit整数向けでSieveの表サイズに不適合なため、AtCoderのsqrt(N)表で処理できる問題を選定。",
+      "reference_url": null,
+      "evidence_url": "https://atcoder.jp/contests/abc169/tasks/abc169_d",
+      "coverage": "Sieve構築・1〜10^12の素因数分解と指数。",
+      "limitations": "提出80282658はユーザー画像でAC・5msを確認。提出本文はHTTP403で未取得のためソース一致は未確認。画像のコード長はローカル版からSubmissionコメントを除いてCRLF換算した長さと一致するが、本文一致とは扱わない。現在の本体/main/I/Oは準備時と同じ。公式5例を含む64入力、素因数・指数の独立参照、境界/補助APIの検証はAudit/verify-integer-sieve-ready-2026-10-24.json。",
+      "samples": [
+        {
+          "input": "24\n",
+          "output": "3\n",
+          "source": "https://atcoder.jp/contests/abc169/tasks/abc169_d",
+          "origin": "公式問題ページの入力例・出力例"
+        },
+        {
+          "input": "1\n",
+          "output": "0\n",
+          "source": "https://atcoder.jp/contests/abc169/tasks/abc169_d",
+          "origin": "公式問題ページの入力例・出力例"
+        },
+        {
+          "input": "64\n",
+          "output": "3\n",
+          "source": "https://atcoder.jp/contests/abc169/tasks/abc169_d",
+          "origin": "公式問題ページの入力例・出力例"
+        },
+        {
+          "input": "1000000007\n",
+          "output": "1\n",
+          "source": "https://atcoder.jp/contests/abc169/tasks/abc169_d",
+          "origin": "公式問題ページの入力例・出力例"
+        },
+        {
+          "input": "997764507000\n",
+          "output": "7\n",
+          "source": "https://atcoder.jp/contests/abc169/tasks/abc169_d",
+          "origin": "公式問題ページの入力例・出力例"
+        }
+      ],
+      "acl_required": false,
+      "historical_problems": [
+        {
+          "driver": "Verify/current/drivers/zeta_sieve_factorize_main.cpp",
+          "problem_url": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=NTL_1_A&lang=en",
+          "title": "Prime Factorization",
+          "selection_reason": "独立に作成したSieveに対応する標準問題。最大入力でもsqrt(n)までの表で処理。",
+          "evidence_url": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=NTL_1_A&lang=en",
+          "coverage": "Sieve構築・素因数分解",
+          "limitations": "この問題だけで全API・検査経路が確認できるわけではない。",
+          "samples": [
+            {
+              "input": "12\n",
+              "output": "12: 2 2 3\n",
+              "source": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=NTL_1_A&lang=en"
+            },
+            {
+              "input": "126\n",
+              "output": "126: 2 3 3 7\n",
+              "source": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=NTL_1_A&lang=en"
+            }
+          ],
+          "status": "historical（旧提出先・旧ドライバー。移行後の検証とは別）"
+        }
+      ],
+      "submission_urls": [
+        "https://atcoder.jp/contests/abc169/submissions/80282658"
+      ]
+    },
+    {
+      "id": "zeta_sieve_factorize_split",
+      "libraries": [
+        "Math/Zeta/Sieve.cpp"
+      ],
+      "driver": "Verify/current/drivers/sieve_div_game_main.cpp",
+      "problem_url": "https://atcoder.jp/contests/abc169/tasks/abc169_d",
+      "title": "D - Div Game",
+      "selection_reason": "Library CheckerのFactorizeは64bit整数向けでSieveの表サイズに不適合なため、AtCoderのsqrt(N)表で処理できる問題を選定。",
+      "reference_url": null,
+      "evidence_url": "https://atcoder.jp/contests/abc169/tasks/abc169_d",
+      "coverage": "Sieve構築・1〜10^12の素因数分解と指数。",
+      "limitations": "提出80282667はユーザー画像でAC・5msを確認。提出本文はHTTP403で未取得のためソース一致は未確認。画像のコード長はローカル版からSubmissionコメントを除いてCRLF換算した長さと一致するが、本文一致とは扱わない。現在の本体/main/I/Oは準備時と同じ。公式5例を含む64入力、素因数・指数の独立参照、境界/補助APIの検証はAudit/verify-integer-sieve-ready-2026-10-24.json。",
+      "samples": [
+        {
+          "input": "24\n",
+          "output": "3\n",
+          "source": "https://atcoder.jp/contests/abc169/tasks/abc169_d",
+          "origin": "公式問題ページの入力例・出力例"
+        },
+        {
+          "input": "1\n",
+          "output": "0\n",
+          "source": "https://atcoder.jp/contests/abc169/tasks/abc169_d",
+          "origin": "公式問題ページの入力例・出力例"
+        },
+        {
+          "input": "64\n",
+          "output": "3\n",
+          "source": "https://atcoder.jp/contests/abc169/tasks/abc169_d",
+          "origin": "公式問題ページの入力例・出力例"
+        },
+        {
+          "input": "1000000007\n",
+          "output": "1\n",
+          "source": "https://atcoder.jp/contests/abc169/tasks/abc169_d",
+          "origin": "公式問題ページの入力例・出力例"
+        },
+        {
+          "input": "997764507000\n",
+          "output": "7\n",
+          "source": "https://atcoder.jp/contests/abc169/tasks/abc169_d",
+          "origin": "公式問題ページの入力例・出力例"
+        }
+      ],
+      "acl_required": false,
+      "historical_problems": [
+        {
+          "driver": "Verify/current/drivers/zeta_sieve_factorize_main.cpp",
+          "problem_url": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=NTL_1_A&lang=en",
+          "title": "Prime Factorization",
+          "selection_reason": "独立に作成したSieveに対応する標準問題。最大入力でもsqrt(n)までの表で処理。",
+          "evidence_url": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=NTL_1_A&lang=en",
+          "coverage": "Sieve構築・素因数分解",
+          "limitations": "この問題だけで全API・検査経路が確認できるわけではない。",
+          "samples": [
+            {
+              "input": "12\n",
+              "output": "12: 2 2 3\n",
+              "source": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=NTL_1_A&lang=en"
+            },
+            {
+              "input": "126\n",
+              "output": "126: 2 3 3 7\n",
+              "source": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=NTL_1_A&lang=en"
+            }
+          ],
+          "status": "historical（旧提出先・旧ドライバー。移行後の検証とは別）"
+        }
+      ],
+      "submission_urls": [
+        "https://atcoder.jp/contests/abc169/submissions/80282667"
+      ]
+    },
+    {
+      "id": "geometry_orientation_full",
+      "libraries": [
+        "Geometry/geometory.cpp"
+      ],
+      "driver": "Verify/current/drivers/geometry_orientation_main.cpp",
+      "problem_url": null,
+      "title": "旧AOJ形式のローカル回帰: Counter-Clockwise",
+      "selection_reason": "AOJへの新規提出を避け、旧入力例とAPIの境界確認をローカル回帰として維持する。対応するLC/AtCoder問題は別エントリ。",
+      "reference_url": null,
+      "evidence_url": null,
+      "coverage": "ローカル回帰: orientation、内積、距離二乗",
+      "limitations": "旧AOJ入力例のローカル照合であり、現行版のオンラインACではない。この問題だけで全API・検査経路が確認できるわけではない。",
+      "samples": [
+        {
+          "input": "0 0 2 0\n2\n-1 1\n-1 -1\n",
+          "output": "COUNTER_CLOCKWISE\nCLOCKWISE\n",
+          "source": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=CGL_1_C&lang=en"
+        },
+        {
+          "input": "0 0 2 0\n3\n-1 0\n0 0\n3 0\n",
+          "output": "ONLINE_BACK\nON_SEGMENT\nONLINE_FRONT\n",
+          "source": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=CGL_1_C&lang=en"
+        }
+      ],
+      "acl_required": false,
+      "sample_checker": "tokens",
+      "absolute_tolerance": 1e-07,
+      "relative_tolerance": 1e-07,
+      "historical_problem_url": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=CGL_1_C&lang=en",
+      "historical_title": "Counter-Clockwise",
+      "historical_selection_reason": "全面書き換えのため、対応するAOJ幾何標準問題を選定。",
+      "historical_evidence_url": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=CGL_1_C&lang=en",
+      "verification_kind": "local_regression"
+    },
+    {
+      "id": "geometry_orientation_split",
+      "libraries": [
+        "Geometry/Point.cpp"
+      ],
+      "driver": "Verify/current/drivers/geometry_orientation_main.cpp",
+      "problem_url": null,
+      "title": "旧AOJ形式のローカル回帰: Counter-Clockwise",
+      "selection_reason": "AOJへの新規提出を避け、旧入力例とAPIの境界確認をローカル回帰として維持する。対応するLC/AtCoder問題は別エントリ。",
+      "reference_url": null,
+      "evidence_url": null,
+      "coverage": "ローカル回帰: orientation、内積、距離二乗",
+      "limitations": "旧AOJ入力例のローカル照合であり、現行版のオンラインACではない。この問題だけで全API・検査経路が確認できるわけではない。",
+      "samples": [
+        {
+          "input": "0 0 2 0\n2\n-1 1\n-1 -1\n",
+          "output": "COUNTER_CLOCKWISE\nCLOCKWISE\n",
+          "source": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=CGL_1_C&lang=en"
+        },
+        {
+          "input": "0 0 2 0\n3\n-1 0\n0 0\n3 0\n",
+          "output": "ONLINE_BACK\nON_SEGMENT\nONLINE_FRONT\n",
+          "source": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=CGL_1_C&lang=en"
+        }
+      ],
+      "acl_required": false,
+      "sample_checker": "tokens",
+      "absolute_tolerance": 1e-07,
+      "relative_tolerance": 1e-07,
+      "historical_problem_url": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=CGL_1_C&lang=en",
+      "historical_title": "Counter-Clockwise",
+      "historical_selection_reason": "全面書き換えのため、対応するAOJ幾何標準問題を選定。",
+      "historical_evidence_url": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=CGL_1_C&lang=en",
+      "verification_kind": "local_regression"
+    },
+    {
+      "id": "geometry_projection_full",
+      "libraries": [
+        "Geometry/geometory.cpp"
+      ],
+      "driver": "Verify/current/drivers/geometry_projection_main.cpp",
+      "problem_url": null,
+      "title": "旧AOJ形式のローカル回帰: Projection",
+      "selection_reason": "AOJへの新規提出を避け、旧入力例とAPIの境界確認をローカル回帰として維持する。対応するLC/AtCoder問題は別エントリ。",
+      "reference_url": null,
+      "evidence_url": null,
+      "coverage": "ローカル回帰: 直線への射影",
+      "limitations": "旧AOJ入力例のローカル照合であり、現行版のオンラインACではない。この問題だけで全API・検査経路が確認できるわけではない。",
+      "samples": [
+        {
+          "input": "0 0 2 0\n3\n-1 1\n0 1\n1 1\n",
+          "output": "-1.0000000000 0.0000000000\n0.0000000000 0.0000000000\n1.0000000000 0.0000000000\n",
+          "source": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=CGL_1_A&lang=en"
+        },
+        {
+          "input": "0 0 3 4\n1\n2 5\n",
+          "output": "3.1200000000 4.1600000000\n",
+          "source": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=CGL_1_A&lang=en"
+        }
+      ],
+      "acl_required": false,
+      "sample_checker": "float",
+      "absolute_tolerance": 1e-07,
+      "relative_tolerance": 1e-07,
+      "historical_problem_url": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=CGL_1_A&lang=en",
+      "historical_title": "Projection",
+      "historical_selection_reason": "全面書き換えのため、対応するAOJ幾何標準問題を選定。",
+      "historical_evidence_url": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=CGL_1_A&lang=en",
+      "verification_kind": "local_regression"
+    },
+    {
+      "id": "geometry_projection_split",
+      "libraries": [
+        "Geometry/Line_Segment.cpp"
+      ],
+      "driver": "Verify/current/drivers/geometry_projection_main.cpp",
+      "problem_url": null,
+      "title": "旧AOJ形式のローカル回帰: Projection",
+      "selection_reason": "AOJへの新規提出を避け、旧入力例とAPIの境界確認をローカル回帰として維持する。対応するLC/AtCoder問題は別エントリ。",
+      "reference_url": null,
+      "evidence_url": null,
+      "coverage": "ローカル回帰: 直線への射影",
+      "limitations": "旧AOJ入力例のローカル照合であり、現行版のオンラインACではない。この問題だけで全API・検査経路が確認できるわけではない。",
+      "samples": [
+        {
+          "input": "0 0 2 0\n3\n-1 1\n0 1\n1 1\n",
+          "output": "-1.0000000000 0.0000000000\n0.0000000000 0.0000000000\n1.0000000000 0.0000000000\n",
+          "source": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=CGL_1_A&lang=en"
+        },
+        {
+          "input": "0 0 3 4\n1\n2 5\n",
+          "output": "3.1200000000 4.1600000000\n",
+          "source": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=CGL_1_A&lang=en"
+        }
+      ],
+      "acl_required": false,
+      "sample_checker": "float",
+      "absolute_tolerance": 1e-07,
+      "relative_tolerance": 1e-07,
+      "historical_problem_url": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=CGL_1_A&lang=en",
+      "historical_title": "Projection",
+      "historical_selection_reason": "全面書き換えのため、対応するAOJ幾何標準問題を選定。",
+      "historical_evidence_url": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=CGL_1_A&lang=en",
+      "verification_kind": "local_regression"
+    },
+    {
+      "id": "geometry_reflection_full",
+      "libraries": [
+        "Geometry/geometory.cpp"
+      ],
+      "driver": "Verify/current/drivers/geometry_reflection_main.cpp",
+      "problem_url": null,
+      "title": "旧AOJ形式のローカル回帰: Reflection",
+      "selection_reason": "AOJへの新規提出を避け、旧入力例とAPIの境界確認をローカル回帰として維持する。対応するLC/AtCoder問題は別エントリ。",
+      "reference_url": null,
+      "evidence_url": null,
+      "coverage": "ローカル回帰: 直線に関する反射",
+      "limitations": "旧AOJ入力例のローカル照合であり、現行版のオンラインACではない。この問題だけで全API・検査経路が確認できるわけではない。",
+      "samples": [
+        {
+          "input": "0 0 2 0\n3\n-1 1\n0 1\n1 1\n",
+          "output": "-1.0000000000 -1.0000000000\n0.0000000000 -1.0000000000\n1.0000000000 -1.0000000000\n",
+          "source": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=CGL_1_B&lang=en"
+        },
+        {
+          "input": "0 0 3 4\n3\n2 5\n1 4\n0 3\n",
+          "output": "4.2400000000 3.3200000000\n3.5600000000 2.0800000000\n2.8800000000 0.8400000000\n",
+          "source": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=CGL_1_B&lang=en"
+        }
+      ],
+      "acl_required": false,
+      "sample_checker": "float",
+      "absolute_tolerance": 1e-07,
+      "relative_tolerance": 1e-07,
+      "historical_problem_url": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=CGL_1_B&lang=en",
+      "historical_title": "Reflection",
+      "historical_selection_reason": "全面書き換えのため、対応するAOJ幾何標準問題を選定。",
+      "historical_evidence_url": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=CGL_1_B&lang=en",
+      "verification_kind": "local_regression"
+    },
+    {
+      "id": "geometry_reflection_split",
+      "libraries": [
+        "Geometry/Line_Segment.cpp"
+      ],
+      "driver": "Verify/current/drivers/geometry_reflection_main.cpp",
+      "problem_url": null,
+      "title": "旧AOJ形式のローカル回帰: Reflection",
+      "selection_reason": "AOJへの新規提出を避け、旧入力例とAPIの境界確認をローカル回帰として維持する。対応するLC/AtCoder問題は別エントリ。",
+      "reference_url": null,
+      "evidence_url": null,
+      "coverage": "ローカル回帰: 直線に関する反射",
+      "limitations": "旧AOJ入力例のローカル照合であり、現行版のオンラインACではない。この問題だけで全API・検査経路が確認できるわけではない。",
+      "samples": [
+        {
+          "input": "0 0 2 0\n3\n-1 1\n0 1\n1 1\n",
+          "output": "-1.0000000000 -1.0000000000\n0.0000000000 -1.0000000000\n1.0000000000 -1.0000000000\n",
+          "source": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=CGL_1_B&lang=en"
+        },
+        {
+          "input": "0 0 3 4\n3\n2 5\n1 4\n0 3\n",
+          "output": "4.2400000000 3.3200000000\n3.5600000000 2.0800000000\n2.8800000000 0.8400000000\n",
+          "source": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=CGL_1_B&lang=en"
+        }
+      ],
+      "acl_required": false,
+      "sample_checker": "float",
+      "absolute_tolerance": 1e-07,
+      "relative_tolerance": 1e-07,
+      "historical_problem_url": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=CGL_1_B&lang=en",
+      "historical_title": "Reflection",
+      "historical_selection_reason": "全面書き換えのため、対応するAOJ幾何標準問題を選定。",
+      "historical_evidence_url": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=CGL_1_B&lang=en",
+      "verification_kind": "local_regression"
+    },
+    {
+      "id": "geometry_segment_intersection_full",
+      "libraries": [
+        "Geometry/geometory.cpp"
+      ],
+      "driver": "Verify/current/drivers/geometry_segment_intersection_main.cpp",
+      "problem_url": null,
+      "title": "旧AOJ形式のローカル回帰: Intersection",
+      "selection_reason": "AOJへの新規提出を避け、旧入力例とAPIの境界確認をローカル回帰として維持する。対応するLC/AtCoder問題は別エントリ。",
+      "reference_url": null,
+      "evidence_url": null,
+      "coverage": "ローカル回帰: 閉線分交差判定",
+      "limitations": "旧AOJ入力例のローカル照合であり、現行版のオンラインACではない。この問題だけで全API・検査経路が確認できるわけではない。",
+      "samples": [
+        {
+          "input": "3\n0 0 3 0 1 1 2 -1\n0 0 3 0 3 1 3 -1\n0 0 3 0 3 -2 5 0\n",
+          "output": "1\n1\n0\n",
+          "source": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=CGL_2_B&lang=en"
+        }
+      ],
+      "acl_required": false,
+      "sample_checker": "tokens",
+      "absolute_tolerance": 1e-07,
+      "relative_tolerance": 1e-07,
+      "historical_problem_url": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=CGL_2_B&lang=en",
+      "historical_title": "Intersection",
+      "historical_selection_reason": "全面書き換えのため、対応するAOJ幾何標準問題を選定。",
+      "historical_evidence_url": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=CGL_2_B&lang=en",
+      "verification_kind": "local_regression"
+    },
+    {
+      "id": "geometry_segment_intersection_split",
+      "libraries": [
+        "Geometry/Line_Segment.cpp"
+      ],
+      "driver": "Verify/current/drivers/geometry_segment_intersection_main.cpp",
+      "problem_url": null,
+      "title": "旧AOJ形式のローカル回帰: Intersection",
+      "selection_reason": "AOJへの新規提出を避け、旧入力例とAPIの境界確認をローカル回帰として維持する。対応するLC/AtCoder問題は別エントリ。",
+      "reference_url": null,
+      "evidence_url": null,
+      "coverage": "ローカル回帰: 閉線分交差判定",
+      "limitations": "旧AOJ入力例のローカル照合であり、現行版のオンラインACではない。この問題だけで全API・検査経路が確認できるわけではない。",
+      "samples": [
+        {
+          "input": "3\n0 0 3 0 1 1 2 -1\n0 0 3 0 3 1 3 -1\n0 0 3 0 3 -2 5 0\n",
+          "output": "1\n1\n0\n",
+          "source": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=CGL_2_B&lang=en"
+        }
+      ],
+      "acl_required": false,
+      "sample_checker": "tokens",
+      "absolute_tolerance": 1e-07,
+      "relative_tolerance": 1e-07,
+      "historical_problem_url": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=CGL_2_B&lang=en",
+      "historical_title": "Intersection",
+      "historical_selection_reason": "全面書き換えのため、対応するAOJ幾何標準問題を選定。",
+      "historical_evidence_url": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=CGL_2_B&lang=en",
+      "verification_kind": "local_regression"
+    },
+    {
+      "id": "geometry_segment_distance_full",
+      "libraries": [
+        "Geometry/geometory.cpp"
+      ],
+      "driver": "Verify/current/drivers/geometry_segment_distance_main.cpp",
+      "problem_url": null,
+      "title": "旧AOJ形式のローカル回帰: Distance",
+      "selection_reason": "AOJへの新規提出を避け、旧入力例とAPIの境界確認をローカル回帰として維持する。対応するLC/AtCoder問題は別エントリ。",
+      "reference_url": null,
+      "evidence_url": null,
+      "coverage": "ローカル回帰: 閉線分間距離",
+      "limitations": "旧AOJ入力例のローカル照合であり、現行版のオンラインACではない。この問題だけで全API・検査経路が確認できるわけではない。",
+      "samples": [
+        {
+          "input": "3\n0 0 1 0 0 1 1 1\n0 0 1 0 2 1 1 2\n-1 0 1 0 0 1 0 -1\n",
+          "output": "1.0000000000\n1.4142135624\n0.0000000000\n",
+          "source": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=CGL_2_D&lang=en"
+        }
+      ],
+      "acl_required": false,
+      "sample_checker": "float",
+      "absolute_tolerance": 1e-07,
+      "relative_tolerance": 1e-07,
+      "historical_problem_url": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=CGL_2_D&lang=en",
+      "historical_title": "Distance",
+      "historical_selection_reason": "全面書き換えのため、対応するAOJ幾何標準問題を選定。",
+      "historical_evidence_url": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=CGL_2_D&lang=en",
+      "verification_kind": "local_regression"
+    },
+    {
+      "id": "geometry_segment_distance_split",
+      "libraries": [
+        "Geometry/Line_Segment.cpp"
+      ],
+      "driver": "Verify/current/drivers/geometry_segment_distance_main.cpp",
+      "problem_url": null,
+      "title": "旧AOJ形式のローカル回帰: Distance",
+      "selection_reason": "AOJへの新規提出を避け、旧入力例とAPIの境界確認をローカル回帰として維持する。対応するLC/AtCoder問題は別エントリ。",
+      "reference_url": null,
+      "evidence_url": null,
+      "coverage": "ローカル回帰: 閉線分間距離",
+      "limitations": "旧AOJ入力例のローカル照合であり、現行版のオンラインACではない。この問題だけで全API・検査経路が確認できるわけではない。",
+      "samples": [
+        {
+          "input": "3\n0 0 1 0 0 1 1 1\n0 0 1 0 2 1 1 2\n-1 0 1 0 0 1 0 -1\n",
+          "output": "1.0000000000\n1.4142135624\n0.0000000000\n",
+          "source": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=CGL_2_D&lang=en"
+        }
+      ],
+      "acl_required": false,
+      "sample_checker": "float",
+      "absolute_tolerance": 1e-07,
+      "relative_tolerance": 1e-07,
+      "historical_problem_url": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=CGL_2_D&lang=en",
+      "historical_title": "Distance",
+      "historical_selection_reason": "全面書き換えのため、対応するAOJ幾何標準問題を選定。",
+      "historical_evidence_url": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=CGL_2_D&lang=en",
+      "verification_kind": "local_regression"
+    },
+    {
+      "id": "geometry_area_full",
+      "libraries": [
+        "Geometry/geometory.cpp"
+      ],
+      "driver": "Verify/current/drivers/geometry_area_main.cpp",
+      "problem_url": null,
+      "title": "旧AOJ形式のローカル回帰: Area",
+      "selection_reason": "AOJへの新規提出を避け、旧入力例とAPIの境界確認をローカル回帰として維持する。対応するLC/AtCoder問題は別エントリ。",
+      "reference_url": null,
+      "evidence_url": null,
+      "coverage": "ローカル回帰: 多角形面積",
+      "limitations": "旧AOJ入力例のローカル照合であり、現行版のオンラインACではない。この問題だけで全API・検査経路が確認できるわけではない。",
+      "samples": [
+        {
+          "input": "3\n0 0\n2 2\n-1 1\n",
+          "output": "2.0\n",
+          "source": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=CGL_3_A&lang=en"
+        },
+        {
+          "input": "4\n0 0\n1 1\n1 2\n0 2\n",
+          "output": "1.5\n",
+          "source": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=CGL_3_A&lang=en"
+        }
+      ],
+      "acl_required": false,
+      "sample_checker": "float",
+      "absolute_tolerance": 1e-07,
+      "relative_tolerance": 1e-07,
+      "historical_problem_url": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=CGL_3_A&lang=en",
+      "historical_title": "Area",
+      "historical_selection_reason": "全面書き換えのため、対応するAOJ幾何標準問題を選定。",
+      "historical_evidence_url": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=CGL_3_A&lang=en",
+      "verification_kind": "local_regression"
+    },
+    {
+      "id": "geometry_area_split",
+      "libraries": [
+        "Geometry/Polygon.cpp"
+      ],
+      "driver": "Verify/current/drivers/geometry_area_main.cpp",
+      "problem_url": null,
+      "title": "旧AOJ形式のローカル回帰: Area",
+      "selection_reason": "AOJへの新規提出を避け、旧入力例とAPIの境界確認をローカル回帰として維持する。対応するLC/AtCoder問題は別エントリ。",
+      "reference_url": null,
+      "evidence_url": null,
+      "coverage": "ローカル回帰: 多角形面積",
+      "limitations": "旧AOJ入力例のローカル照合であり、現行版のオンラインACではない。この問題だけで全API・検査経路が確認できるわけではない。",
+      "samples": [
+        {
+          "input": "3\n0 0\n2 2\n-1 1\n",
+          "output": "2.0\n",
+          "source": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=CGL_3_A&lang=en"
+        },
+        {
+          "input": "4\n0 0\n1 1\n1 2\n0 2\n",
+          "output": "1.5\n",
+          "source": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=CGL_3_A&lang=en"
+        }
+      ],
+      "acl_required": false,
+      "sample_checker": "float",
+      "absolute_tolerance": 1e-07,
+      "relative_tolerance": 1e-07,
+      "historical_problem_url": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=CGL_3_A&lang=en",
+      "historical_title": "Area",
+      "historical_selection_reason": "全面書き換えのため、対応するAOJ幾何標準問題を選定。",
+      "historical_evidence_url": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=CGL_3_A&lang=en",
+      "verification_kind": "local_regression"
+    },
+    {
+      "id": "geometry_contains_full",
+      "libraries": [
+        "Geometry/geometory.cpp"
+      ],
+      "driver": "Verify/current/drivers/geometry_contains_main.cpp",
+      "problem_url": null,
+      "title": "旧AOJ形式のローカル回帰: Polygon-Point-Containment",
+      "selection_reason": "AOJへの新規提出を避け、旧入力例とAPIの境界確認をローカル回帰として維持する。対応するLC/AtCoder問題は別エントリ。",
+      "reference_url": null,
+      "evidence_url": null,
+      "coverage": "ローカル回帰: 多角形内外判定",
+      "limitations": "旧AOJ入力例のローカル照合であり、現行版のオンラインACではない。この問題だけで全API・検査経路が確認できるわけではない。",
+      "samples": [
+        {
+          "input": "4\n0 0\n3 1\n2 3\n0 3\n3\n2 1\n0 2\n3 2\n",
+          "output": "2\n1\n0\n",
+          "source": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=CGL_3_C&lang=en"
+        }
+      ],
+      "acl_required": false,
+      "sample_checker": "tokens",
+      "absolute_tolerance": 1e-07,
+      "relative_tolerance": 1e-07,
+      "historical_problem_url": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=CGL_3_C&lang=en",
+      "historical_title": "Polygon-Point-Containment",
+      "historical_selection_reason": "全面書き換えのため、対応するAOJ幾何標準問題を選定。",
+      "historical_evidence_url": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=CGL_3_C&lang=en",
+      "verification_kind": "local_regression"
+    },
+    {
+      "id": "geometry_contains_split",
+      "libraries": [
+        "Geometry/Polygon.cpp"
+      ],
+      "driver": "Verify/current/drivers/geometry_contains_main.cpp",
+      "problem_url": null,
+      "title": "旧AOJ形式のローカル回帰: Polygon-Point-Containment",
+      "selection_reason": "AOJへの新規提出を避け、旧入力例とAPIの境界確認をローカル回帰として維持する。対応するLC/AtCoder問題は別エントリ。",
+      "reference_url": null,
+      "evidence_url": null,
+      "coverage": "ローカル回帰: 多角形内外判定",
+      "limitations": "旧AOJ入力例のローカル照合であり、現行版のオンラインACではない。この問題だけで全API・検査経路が確認できるわけではない。",
+      "samples": [
+        {
+          "input": "4\n0 0\n3 1\n2 3\n0 3\n3\n2 1\n0 2\n3 2\n",
+          "output": "2\n1\n0\n",
+          "source": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=CGL_3_C&lang=en"
+        }
+      ],
+      "acl_required": false,
+      "sample_checker": "tokens",
+      "absolute_tolerance": 1e-07,
+      "relative_tolerance": 1e-07,
+      "historical_problem_url": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=CGL_3_C&lang=en",
+      "historical_title": "Polygon-Point-Containment",
+      "historical_selection_reason": "全面書き換えのため、対応するAOJ幾何標準問題を選定。",
+      "historical_evidence_url": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=CGL_3_C&lang=en",
+      "verification_kind": "local_regression"
+    },
+    {
+      "id": "geometry_convex_cut_full",
+      "libraries": [
+        "Geometry/geometory.cpp"
+      ],
+      "driver": "Verify/current/drivers/geometry_convex_cut_main.cpp",
+      "problem_url": null,
+      "title": "旧AOJ形式のローカル回帰: Convex Cut",
+      "selection_reason": "AOJへの新規提出を避け、旧入力例とAPIの境界確認をローカル回帰として維持する。対応するLC/AtCoder問題は別エントリ。",
+      "reference_url": null,
+      "evidence_url": null,
+      "coverage": "ローカル回帰: 凸多角形切断",
+      "limitations": "旧AOJ入力例のローカル照合であり、現行版のオンラインACではない。この問題だけで全API・検査経路が確認できるわけではない。",
+      "samples": [
+        {
+          "input": "4\n1 1\n4 1\n4 3\n1 3\n2\n2 0 2 4\n2 4 2 0\n",
+          "output": "2.00000000\n4.00000000\n",
+          "source": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=CGL_4_C&lang=en"
+        }
+      ],
+      "acl_required": false,
+      "sample_checker": "float",
+      "absolute_tolerance": 1e-07,
+      "relative_tolerance": 1e-07,
+      "historical_problem_url": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=CGL_4_C&lang=en",
+      "historical_title": "Convex Cut",
+      "historical_selection_reason": "全面書き換えのため、対応するAOJ幾何標準問題を選定。",
+      "historical_evidence_url": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=CGL_4_C&lang=en",
+      "verification_kind": "local_regression"
+    },
+    {
+      "id": "geometry_convex_cut_split",
+      "libraries": [
+        "Geometry/Polygon.cpp"
+      ],
+      "driver": "Verify/current/drivers/geometry_convex_cut_main.cpp",
+      "problem_url": null,
+      "title": "旧AOJ形式のローカル回帰: Convex Cut",
+      "selection_reason": "AOJへの新規提出を避け、旧入力例とAPIの境界確認をローカル回帰として維持する。対応するLC/AtCoder問題は別エントリ。",
+      "reference_url": null,
+      "evidence_url": null,
+      "coverage": "ローカル回帰: 凸多角形切断",
+      "limitations": "旧AOJ入力例のローカル照合であり、現行版のオンラインACではない。この問題だけで全API・検査経路が確認できるわけではない。",
+      "samples": [
+        {
+          "input": "4\n1 1\n4 1\n4 3\n1 3\n2\n2 0 2 4\n2 4 2 0\n",
+          "output": "2.00000000\n4.00000000\n",
+          "source": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=CGL_4_C&lang=en"
+        }
+      ],
+      "acl_required": false,
+      "sample_checker": "float",
+      "absolute_tolerance": 1e-07,
+      "relative_tolerance": 1e-07,
+      "historical_problem_url": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=CGL_4_C&lang=en",
+      "historical_title": "Convex Cut",
+      "historical_selection_reason": "全面書き換えのため、対応するAOJ幾何標準問題を選定。",
+      "historical_evidence_url": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=CGL_4_C&lang=en",
+      "verification_kind": "local_regression"
+    },
+    {
+      "id": "geometry_circle_line_full",
+      "libraries": [
+        "Geometry/geometory.cpp"
+      ],
+      "driver": "Verify/current/drivers/geometry_circle_line_main.cpp",
+      "problem_url": null,
+      "title": "旧AOJ形式のローカル回帰: Cross Points of a Circle and a Line",
+      "selection_reason": "AOJへの新規提出を避け、旧入力例とAPIの境界確認をローカル回帰として維持する。対応するLC/AtCoder問題は別エントリ。",
+      "reference_url": null,
+      "evidence_url": null,
+      "coverage": "ローカル回帰: 円・直線交点（問題は交点あり）",
+      "limitations": "旧AOJ入力例のローカル照合であり、現行版のオンラインACではない。この問題だけで全API・検査経路が確認できるわけではない。",
+      "samples": [
+        {
+          "input": "2 1 1\n2\n0 1 4 1\n3 0 3 3\n",
+          "output": "1.00000000 1.00000000 3.00000000 1.00000000\n3.00000000 1.00000000 3.00000000 1.00000000\n",
+          "source": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=CGL_7_D&lang=en"
+        }
+      ],
+      "acl_required": false,
+      "sample_checker": "float",
+      "absolute_tolerance": 1e-07,
+      "relative_tolerance": 1e-07,
+      "historical_problem_url": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=CGL_7_D&lang=en",
+      "historical_title": "Cross Points of a Circle and a Line",
+      "historical_selection_reason": "全面書き換えのため、対応するAOJ幾何標準問題を選定。",
+      "historical_evidence_url": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=CGL_7_D&lang=en",
+      "verification_kind": "local_regression"
+    },
+    {
+      "id": "geometry_circle_line_split",
+      "libraries": [
+        "Geometry/Circle.cpp"
+      ],
+      "driver": "Verify/current/drivers/geometry_circle_line_main.cpp",
+      "problem_url": null,
+      "title": "旧AOJ形式のローカル回帰: Cross Points of a Circle and a Line",
+      "selection_reason": "AOJへの新規提出を避け、旧入力例とAPIの境界確認をローカル回帰として維持する。対応するLC/AtCoder問題は別エントリ。",
+      "reference_url": null,
+      "evidence_url": null,
+      "coverage": "ローカル回帰: 円・直線交点（問題は交点あり）",
+      "limitations": "旧AOJ入力例のローカル照合であり、現行版のオンラインACではない。この問題だけで全API・検査経路が確認できるわけではない。",
+      "samples": [
+        {
+          "input": "2 1 1\n2\n0 1 4 1\n3 0 3 3\n",
+          "output": "1.00000000 1.00000000 3.00000000 1.00000000\n3.00000000 1.00000000 3.00000000 1.00000000\n",
+          "source": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=CGL_7_D&lang=en"
+        }
+      ],
+      "acl_required": false,
+      "sample_checker": "float",
+      "absolute_tolerance": 1e-07,
+      "relative_tolerance": 1e-07,
+      "historical_problem_url": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=CGL_7_D&lang=en",
+      "historical_title": "Cross Points of a Circle and a Line",
+      "historical_selection_reason": "全面書き換えのため、対応するAOJ幾何標準問題を選定。",
+      "historical_evidence_url": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=CGL_7_D&lang=en",
+      "verification_kind": "local_regression"
+    },
+    {
+      "id": "geometry_circle_circle_full",
+      "libraries": [
+        "Geometry/geometory.cpp"
+      ],
+      "driver": "Verify/current/drivers/geometry_circle_circle_main.cpp",
+      "problem_url": null,
+      "title": "旧AOJ形式のローカル回帰: Cross Points of Circles",
+      "selection_reason": "AOJへの新規提出を避け、旧入力例とAPIの境界確認をローカル回帰として維持する。対応するLC/AtCoder問題は別エントリ。",
+      "reference_url": null,
+      "evidence_url": null,
+      "coverage": "ローカル回帰: 円同士の交点（問題は交点あり）",
+      "limitations": "旧AOJ入力例のローカル照合であり、現行版のオンラインACではない。この問題だけで全API・検査経路が確認できるわけではない。",
+      "samples": [
+        {
+          "input": "0 0 2\n2 0 2\n",
+          "output": "1.00000000 -1.73205080 1.00000000 1.73205080\n",
+          "source": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=CGL_7_E&lang=en"
+        },
+        {
+          "input": "0 0 2\n0 3 1\n",
+          "output": "0.00000000 2.00000000 0.00000000 2.00000000\n",
+          "source": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=CGL_7_E&lang=en"
+        }
+      ],
+      "acl_required": false,
+      "sample_checker": "float",
+      "absolute_tolerance": 1e-07,
+      "relative_tolerance": 1e-07,
+      "historical_problem_url": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=CGL_7_E&lang=en",
+      "historical_title": "Cross Points of Circles",
+      "historical_selection_reason": "全面書き換えのため、対応するAOJ幾何標準問題を選定。",
+      "historical_evidence_url": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=CGL_7_E&lang=en",
+      "verification_kind": "local_regression"
+    },
+    {
+      "id": "geometry_circle_circle_split",
+      "libraries": [
+        "Geometry/Circle.cpp"
+      ],
+      "driver": "Verify/current/drivers/geometry_circle_circle_main.cpp",
+      "problem_url": null,
+      "title": "旧AOJ形式のローカル回帰: Cross Points of Circles",
+      "selection_reason": "AOJへの新規提出を避け、旧入力例とAPIの境界確認をローカル回帰として維持する。対応するLC/AtCoder問題は別エントリ。",
+      "reference_url": null,
+      "evidence_url": null,
+      "coverage": "ローカル回帰: 円同士の交点（問題は交点あり）",
+      "limitations": "旧AOJ入力例のローカル照合であり、現行版のオンラインACではない。この問題だけで全API・検査経路が確認できるわけではない。",
+      "samples": [
+        {
+          "input": "0 0 2\n2 0 2\n",
+          "output": "1.00000000 -1.73205080 1.00000000 1.73205080\n",
+          "source": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=CGL_7_E&lang=en"
+        },
+        {
+          "input": "0 0 2\n0 3 1\n",
+          "output": "0.00000000 2.00000000 0.00000000 2.00000000\n",
+          "source": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=CGL_7_E&lang=en"
+        }
+      ],
+      "acl_required": false,
+      "sample_checker": "float",
+      "absolute_tolerance": 1e-07,
+      "relative_tolerance": 1e-07,
+      "historical_problem_url": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=CGL_7_E&lang=en",
+      "historical_title": "Cross Points of Circles",
+      "historical_selection_reason": "全面書き換えのため、対応するAOJ幾何標準問題を選定。",
+      "historical_evidence_url": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=CGL_7_E&lang=en",
+      "verification_kind": "local_regression"
+    },
+    {
+      "id": "nearest_two_points",
+      "libraries": [
+        "Geometry/Nearest_Two_points.cpp"
+      ],
+      "driver": "Verify/current/drivers/nearest_two_points_main.cpp",
+      "problem_url": "https://judge.yosupo.jp/problem/closest_pair",
+      "title": "Closest Pair of Points",
+      "selection_reason": "全面書き換えのため、添字を返す最近点対問題を選定。",
+      "reference_url": null,
+      "evidence_url": "https://judge.yosupo.jp/problem/closest_pair",
+      "coverage": "最近点対と元入力添字",
+      "limitations": "提出413074はAC・89ms。CRLFとSubmissionコメントを除いて現行生成コードと一致。10/11/11bitの3パス版。本体/main/共通FastIOを維持。前回の公式29保存入力×8構成・独立参照・標準代替・例外・ASan/UBSanの対象と本体/main/I/O/テストが同一。追加の未使用バケット走査省略・カウンタ平坦化・prefix集約は安定した改善がなく不採用。Audit/verify-nearest-current-2026-10-24.json。",
+      "samples": [
+        {
+          "input": "4\n5\n-1 -1\n-6 4\n-9 -7\n2 5\n-7 6\n2\n1 2\n3 4\n3\n1 1\n1 1\n1 1\n2\n-1000000000 1000000000\n1000000000 -1000000000\n",
+          "output": "1 4\n0 1\n0 1\n0 1\n",
+          "source": "Library Checker公式 example_00.in。出力は独立な小規模計算で作成。"
+        }
+      ],
+      "acl_required": false,
+      "sample_checker": "closest_pair",
+      "submission_urls": [
+        "https://judge.yosupo.jp/submission/413074",
+        "https://judge.yosupo.jp/submission/414013"
+      ],
+      "gcc_optimization": "O3"
+    },
+    {
+      "id": "angle_sort",
+      "libraries": [
+        "Geometry/偏角ソート.cpp"
+      ],
+      "driver": "Verify/current/drivers/angle_sort_main.cpp",
+      "problem_url": "https://judge.yosupo.jp/problem/sort_points_by_argument",
+      "title": "Sort Points by Argument",
+      "selection_reason": "全面書き換えのため、偏角ソート専用問題を選定。",
+      "reference_url": null,
+      "evidence_url": "https://judge.yosupo.jp/problem/sort_points_by_argument",
+      "coverage": "昇順angle_sort・零ベクトル",
+      "limitations": "提出411974は名称整理前の共通高速入出力版と一致しAC・38ms。問題の偏角範囲に合わせて二つの区間を順に出力。同方向は任意順。降順・比較補助・int64全域は独立参照で補足。 以後本体・driver・共通入出力を変更した場合は再照合する。 内部名整理後の生成コードは要再提出。",
+      "samples": [
+        {
+          "input": "8\n1 0\n0 0\n-1 0\n0 1\n0 -1\n1 1\n2 2\n-10 -1\n",
+          "output": "-10 -1\n0 -1\n1 0\n0 0\n1 1\n2 2\n0 1\n-1 0\n",
+          "source": "Library Checker公式 example_00.in。出力は独立な小規模計算で作成。"
+        }
+      ],
+      "acl_required": false,
+      "sample_checker": "angle_sort",
+      "submission_urls": [
+        "https://judge.yosupo.jp/submission/411620",
+        "https://judge.yosupo.jp/submission/411627",
+        "https://judge.yosupo.jp/submission/411974",
+        "https://judge.yosupo.jp/submission/414014"
+      ]
+    },
+    {
+      "id": "angle_sort_std",
+      "libraries": [
+        "Geometry/偏角ソート.cpp"
+      ],
+      "driver": "Verify/current/drivers/angle_sort_std_main.cpp",
+      "problem_url": "https://judge.yosupo.jp/problem/sort_points_by_argument",
+      "title": "Sort Points by Argument",
+      "selection_reason": "angle_sortと同じ問題・同じ入出力で比較関数を直接使う版を比較。",
+      "reference_url": null,
+      "evidence_url": "https://judge.yosupo.jp/problem/sort_points_by_argument",
+      "coverage": "std::sortへAngleLessを渡す昇順・零ベクトル（arccmp_lessへ委譲）",
+      "limitations": "提出411973は名称整理前の共通高速入出力版と一致しAC・37ms。問題の偏角範囲に合わせて二つの区間を順に出力。同方向は任意順。降順・比較補助・int64全域は独立参照で補足。 以後本体・driver・共通入出力を変更した場合は再照合する。 内部名整理後の生成コードは要再提出。",
+      "samples": [
+        {
+          "input": "8\n1 0\n0 0\n-1 0\n0 1\n0 -1\n1 1\n2 2\n-10 -1\n",
+          "output": "-10 -1\n0 -1\n1 0\n0 0\n1 1\n2 2\n0 1\n-1 0\n",
+          "source": "Library Checker公式 example_00.in。出力は独立な小規模計算で作成。"
+        }
+      ],
+      "acl_required": false,
+      "sample_checker": "angle_sort",
+      "submission_urls": [
+        "https://judge.yosupo.jp/submission/411973"
+      ],
+      "gcc_optimization": "O3"
+    },
+    {
+      "id": "radix_sort",
+      "libraries": [
+        "Algorithm/Radix_sort.cpp"
+      ],
+      "driver": "Verify/current/drivers/radix_sort_greater_sum_main.cpp",
+      "problem_url": "https://atcoder.jp/contests/abc331/tasks/abc331_c",
+      "title": "C - Sum of Numbers Greater Than Me",
+      "selection_reason": "Library Checkerに整数配列の単純整列問題がないため、AtCoderの整列結果を直接利用する問題を選定。",
+      "reference_url": null,
+      "evidence_url": "https://atcoder.jp/contests/abc331/tasks/abc331_c",
+      "coverage": "RadixSortによる最大20万要素の非負整数整列、重複を含む数列。",
+      "limitations": "添付画像でAC・34msを確認。提出ページ403のため提出ソース未照合。手元は前回準備版とURLコメント以外一致、画像コード長はCRLF換算と一致するが内容一致の証明ではない。本体/main/I/Oを維持。追加候補は退行が残り不採用。全8型・検査/SIMD有無・例外・48入力×8構成・ASan/UBSanの前回検証対象と同一。Audit/verify-radix-online-2026-10-24.json。",
+      "samples": [
+        {
+          "input": "5\n1 4 1 4 2\n",
+          "output": "10 0 10 0 8\n",
+          "source": "https://atcoder.jp/contests/abc331/tasks/abc331_c",
+          "origin": "公式問題ページの入力例・出力例"
+        },
+        {
+          "input": "10\n31 42 59 26 53 58 97 93 23 54\n",
+          "output": "456 414 190 487 361 249 0 97 513 307\n",
+          "source": "https://atcoder.jp/contests/abc331/tasks/abc331_c",
+          "origin": "公式問題ページの入力例・出力例"
+        },
+        {
+          "input": "50\n1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1\n",
+          "output": "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0\n",
+          "source": "https://atcoder.jp/contests/abc331/tasks/abc331_c",
+          "origin": "公式問題ページの入力例・出力例"
+        }
+      ],
+      "acl_required": false,
+      "historical_problems": [
+        {
+          "driver": "Verify/current/drivers/radix_sort_main.cpp",
+          "problem_url": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=ALDS1_6_A&lang=en",
+          "title": "Counting Sort",
+          "selection_reason": "出典不明部分を全面書き換えしたため、大きい整数配列の整列問題を選定。",
+          "evidence_url": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=ALDS1_6_A&lang=en",
+          "coverage": "RadixSort（非負の整数）",
+          "limitations": "符号付き・64bit全域・各整数幅・作業領域再利用・上限指定は補足テストで確認。",
+          "samples": [
+            {
+              "input": "7\n2 5 1 3 2 3 0\n",
+              "output": "0 1 2 2 3 3 5\n",
+              "source": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=ALDS1_6_A&lang=en"
+            }
+          ],
+          "status": "historical（旧提出先・旧ドライバー。移行後の検証とは別）"
+        }
+      ],
+      "submission_urls": [
+        "https://atcoder.jp/contests/abc331/submissions/80353324"
+      ]
+    },
+    {
+      "id": "radix_sort_uint32",
+      "libraries": [
+        "Algorithm/Radix_sort.cpp"
+      ],
+      "driver": "Verify/current/drivers/radix_sort_uint32_greater_sum_main.cpp",
+      "problem_url": "https://atcoder.jp/contests/abc331/tasks/abc331_c",
+      "title": "C - Sum of Numbers Greater Than Me (uint32_t)",
+      "selection_reason": "同じAtCoder問題を32bit APIでも実行。値域1..10^6はuint32_tに収まり、mainの計算手順は64bit版と同一。",
+      "reference_url": null,
+      "evidence_url": "https://atcoder.jp/contests/abc331/tasks/abc331_c",
+      "coverage": "RadixSort<uint32_t>による最大20万要素の整列、重複と端の値。和はint64_tで保持。",
+      "limitations": "添付画像でAC・38msを確認。提出ページ403のため提出ソース未照合。手元は前回準備版とURLコメント以外一致、画像コード長はCRLF換算と一致するが内容一致の証明ではない。本体/main/I/Oを維持。追加候補は退行が残り不採用。全8型・検査/SIMD有無・例外・48入力×8構成・ASan/UBSanの前回検証対象と同一。Audit/verify-radix-online-2026-10-24.json。",
+      "samples": [
+        {
+          "input": "5\n1 4 1 4 2\n",
+          "output": "10 0 10 0 8\n",
+          "source": "https://atcoder.jp/contests/abc331/tasks/abc331_c",
+          "origin": "公式問題ページの入力例・出力例"
+        },
+        {
+          "input": "10\n31 42 59 26 53 58 97 93 23 54\n",
+          "output": "456 414 190 487 361 249 0 97 513 307\n",
+          "source": "https://atcoder.jp/contests/abc331/tasks/abc331_c",
+          "origin": "公式問題ページの入力例・出力例"
+        },
+        {
+          "input": "50\n1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1\n",
+          "output": "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0\n",
+          "source": "https://atcoder.jp/contests/abc331/tasks/abc331_c",
+          "origin": "公式問題ページの入力例・出力例"
+        }
+      ],
+      "acl_required": false,
+      "submission_urls": [
+        "https://atcoder.jp/contests/abc331/submissions/80353300"
+      ]
+    },
+    {
+      "id": "project_selection",
+      "libraries": [
+        "Graph/Project_Selection.cpp"
+      ],
+      "driver": "Verify/current/drivers/project_selection_main.cpp",
+      "problem_url": "https://atcoder.jp/contests/typical90/tasks/typical90_an",
+      "title": "040 - Get More Money（★7）",
+      "selection_reason": "参考記事で解説・実装を示す問題を優先。",
+      "reference_url": "https://drken1215.hatenablog.com/entry/2023/11/24/034300",
+      "evidence_url": "https://drken1215.hatenablog.com/entry/2023/11/24/034300",
+      "coverage": "単項費用・厳密な含意制約・solve",
+      "limitations": "提出80354847は利用者画像でAC・1msを確認。提出ページHTTP403のためソース未照合。一般2変数項・集合利得・復元・増分追加・所有権・深い分岐/逆辺は独立参照で補足（Audit/verify-project-online-2026-10-25.json）。",
+      "samples": [
+        {
+          "input": "5 5\n5 2 10 3 6\n1 3\n1 3\n0\n1 5\n0\n",
+          "output": "2\n"
+        },
+        {
+          "input": "6 10\n8 6 9 1 2 0\n1 3\n2 3 4\n1 5\n1 5\n1 6\n0\n",
+          "output": "0\n"
+        }
+      ],
+      "acl_required": false,
+      "submission_urls": [
+        "https://atcoder.jp/contests/typical90/submissions/80354847",
+        "https://atcoder.jp/contests/typical90/submissions/80467555",
+        "https://atcoder.jp/contests/typical90/submissions/80790375"
+      ]
+    },
+    {
+      "id": "zeta_set_reference_full",
+      "libraries": [
+        "Math/Zeta_Mebius.cpp"
+      ],
+      "driver": "Verify/current/drivers/zeta_set_reference_main.cpp",
+      "problem_url": null,
+      "title": "独立参照との照合",
+      "selection_reason": "専用のオンライン判定問題で確認できないAPI・境界を補足。",
+      "reference_url": null,
+      "evidence_url": null,
+      "coverage": "集合4変換をO(n²)定義と照合。空列・長さ1を含む。",
+      "limitations": "公開APIすべての形式的な検証ではない。",
+      "samples": [
+        {
+          "input": "",
+          "output": "OK\n",
+          "source": "独立参照を組み込んだローカル補足テスト。オンライン判定ではない。"
+        }
+      ],
+      "acl_required": false
+    },
+    {
+      "id": "zeta_set_reference_split",
+      "libraries": [
+        "Math/Zeta/Set_Transform.cpp"
+      ],
+      "driver": "Verify/current/drivers/zeta_set_reference_main.cpp",
+      "problem_url": null,
+      "title": "独立参照との照合",
+      "selection_reason": "専用のオンライン判定問題で確認できないAPI・境界を補足。",
+      "reference_url": null,
+      "evidence_url": null,
+      "coverage": "集合4変換をO(n²)定義と照合。空列・長さ1を含む。",
+      "limitations": "公開APIすべての形式的な検証ではない。",
+      "samples": [
+        {
+          "input": "",
+          "output": "OK\n",
+          "source": "独立参照を組み込んだローカル補足テスト。オンライン判定ではない。"
+        }
+      ],
+      "acl_required": false
+    },
+    {
+      "id": "zeta_sparse_reference_full",
+      "libraries": [
+        "Math/Zeta_Mebius.cpp"
+      ],
+      "driver": "Verify/current/drivers/zeta_sparse_reference_main.cpp",
+      "problem_url": null,
+      "title": "独立参照との照合",
+      "selection_reason": "専用のオンライン判定問題で確認できないAPI・境界を補足。",
+      "reference_url": null,
+      "evidence_url": null,
+      "coverage": "除数閉包の疎入力で倍数和を二重ループと照合。疎・密の両経路、未整列・空列・逆変換。",
+      "limitations": "オンライン判定は未実施。提出mainは密な1..mのキー集合を使用。公式GCD29入力をfull/split・GCC/Clang・検査有無で独立参照と照合。一般の約数閉包・非連続/非整列キー・MoveOnly値・境界・確保/演算失敗・非確保経路はtests/zeta_sparse_*_test.cppで補足。測定条件と結果はAudit/performance-zeta-sparse-four-hours-2026-10-22.jsonを参照。",
+      "samples": [
+        {
+          "input": "",
+          "output": "OK\n",
+          "source": "独立参照を組み込んだローカル補足テスト。オンライン判定ではない。"
+        }
+      ],
+      "acl_required": false
+    },
+    {
+      "id": "zeta_sparse_reference_split",
+      "libraries": [
+        "Math/Zeta/Sparse_Transform.cpp"
+      ],
+      "driver": "Verify/current/drivers/zeta_sparse_reference_main.cpp",
+      "problem_url": null,
+      "title": "独立参照との照合",
+      "selection_reason": "専用のオンライン判定問題で確認できないAPI・境界を補足。",
+      "reference_url": null,
+      "evidence_url": null,
+      "coverage": "除数閉包の疎入力で倍数和を二重ループと照合。疎・密の両経路、未整列・空列・逆変換。",
+      "limitations": "オンライン判定は未実施。提出mainは密な1..mのキー集合を使用。公式GCD29入力をfull/split・GCC/Clang・検査有無で独立参照と照合。一般の約数閉包・非連続/非整列キー・MoveOnly値・境界・確保/演算失敗・非確保経路はtests/zeta_sparse_*_test.cppで補足。測定条件と結果はAudit/performance-zeta-sparse-four-hours-2026-10-22.jsonを参照。",
+      "samples": [
+        {
+          "input": "",
+          "output": "OK\n",
+          "source": "独立参照を組み込んだローカル補足テスト。オンライン判定ではない。"
+        }
+      ],
+      "acl_required": false
+    },
+    {
+      "id": "zeta_sieve_reference_full",
+      "libraries": [
+        "Math/Zeta_Mebius.cpp"
+      ],
+      "driver": "Verify/current/drivers/zeta_sieve_reference_main.cpp",
+      "problem_url": null,
+      "title": "独立参照との照合",
+      "selection_reason": "専用のオンライン判定問題で確認できないAPI・境界を補足。",
+      "reference_url": null,
+      "evidence_url": null,
+      "coverage": "最小素因数利用・素数判定・因数分解・約数・phi/mu・べき乗表・コピー/移動/交換。小範囲の独立定義に照合。",
+      "limitations": "公開APIすべての形式的な検証ではない。",
+      "samples": [
+        {
+          "input": "",
+          "output": "OK\n",
+          "source": "独立参照を組み込んだローカル補足テスト。オンライン判定ではない。"
+        }
+      ],
+      "acl_required": false
+    },
+    {
+      "id": "zeta_sieve_reference_split",
+      "libraries": [
+        "Math/Zeta/Sieve.cpp"
+      ],
+      "driver": "Verify/current/drivers/zeta_sieve_reference_main.cpp",
+      "problem_url": null,
+      "title": "独立参照との照合",
+      "selection_reason": "専用のオンライン判定問題で確認できないAPI・境界を補足。",
+      "reference_url": null,
+      "evidence_url": null,
+      "coverage": "最小素因数利用・素数判定・因数分解・約数・phi/mu・べき乗表・コピー/移動/交換。小範囲の独立定義に照合。",
+      "limitations": "公開APIすべての形式的な検証ではない。",
+      "samples": [
+        {
+          "input": "",
+          "output": "OK\n",
+          "source": "独立参照を組み込んだローカル補足テスト。オンライン判定ではない。"
+        }
+      ],
+      "acl_required": false
+    },
+    {
+      "id": "geometry_reference_full",
+      "libraries": [
+        "Geometry/geometory.cpp"
+      ],
+      "driver": "Verify/current/drivers/geometry_reference_main.cpp",
+      "problem_url": null,
+      "title": "独立参照との照合",
+      "selection_reason": "専用のオンライン判定問題で確認できないAPI・境界を補足。",
+      "reference_url": null,
+      "evidence_url": null,
+      "coverage": "収録部品ごとの独立既知値。重複・一直線・重なり・零長線分・円の非交差/接触/一致・重心など。",
+      "limitations": "公開APIすべての形式的な検証ではない。",
+      "samples": [
+        {
+          "input": "",
+          "output": "OK\n",
+          "source": "独立参照を組み込んだローカル補足テスト。オンライン判定ではない。"
+        }
+      ],
+      "acl_required": false
+    },
+    {
+      "id": "geometry_reference_point",
+      "libraries": [
+        "Geometry/Point.cpp"
+      ],
+      "driver": "Verify/current/drivers/geometry_reference_main.cpp",
+      "problem_url": null,
+      "title": "独立参照との照合",
+      "selection_reason": "専用のオンライン判定問題で確認できないAPI・境界を補足。",
+      "reference_url": null,
+      "evidence_url": null,
+      "coverage": "収録部品ごとの独立既知値。重複・一直線・重なり・零長線分・円の非交差/接触/一致・重心など。",
+      "limitations": "公開APIすべての形式的な検証ではない。",
+      "samples": [
+        {
+          "input": "",
+          "output": "OK\n",
+          "source": "独立参照を組み込んだローカル補足テスト。オンライン判定ではない。"
+        }
+      ],
+      "acl_required": false
+    },
+    {
+      "id": "geometry_reference_line",
+      "libraries": [
+        "Geometry/Line_Segment.cpp"
+      ],
+      "driver": "Verify/current/drivers/geometry_reference_main.cpp",
+      "problem_url": null,
+      "title": "独立参照との照合",
+      "selection_reason": "専用のオンライン判定問題で確認できないAPI・境界を補足。",
+      "reference_url": null,
+      "evidence_url": null,
+      "coverage": "収録部品ごとの独立既知値。重複・一直線・重なり・零長線分・円の非交差/接触/一致・重心など。",
+      "limitations": "公開APIすべての形式的な検証ではない。",
+      "samples": [
+        {
+          "input": "",
+          "output": "OK\n",
+          "source": "独立参照を組み込んだローカル補足テスト。オンライン判定ではない。"
+        }
+      ],
+      "acl_required": false
+    },
+    {
+      "id": "geometry_reference_polygon",
+      "libraries": [
+        "Geometry/Polygon.cpp"
+      ],
+      "driver": "Verify/current/drivers/geometry_reference_main.cpp",
+      "problem_url": null,
+      "title": "独立参照との照合",
+      "selection_reason": "専用のオンライン判定問題で確認できないAPI・境界を補足。",
+      "reference_url": null,
+      "evidence_url": null,
+      "coverage": "収録部品ごとの独立既知値。重複・一直線・重なり・零長線分・円の非交差/接触/一致・重心など。",
+      "limitations": "公開APIすべての形式的な検証ではない。",
+      "samples": [
+        {
+          "input": "",
+          "output": "OK\n",
+          "source": "独立参照を組み込んだローカル補足テスト。オンライン判定ではない。"
+        }
+      ],
+      "acl_required": false
+    },
+    {
+      "id": "geometry_reference_circle",
+      "libraries": [
+        "Geometry/Circle.cpp"
+      ],
+      "driver": "Verify/current/drivers/geometry_reference_main.cpp",
+      "problem_url": null,
+      "title": "独立参照との照合",
+      "selection_reason": "専用のオンライン判定問題で確認できないAPI・境界を補足。",
+      "reference_url": null,
+      "evidence_url": null,
+      "coverage": "収録部品ごとの独立既知値。重複・一直線・重なり・零長線分・円の非交差/接触/一致・重心など。",
+      "limitations": "公開APIすべての形式的な検証ではない。",
+      "samples": [
+        {
+          "input": "",
+          "output": "OK\n",
+          "source": "独立参照を組み込んだローカル補足テスト。オンライン判定ではない。"
+        }
+      ],
+      "acl_required": false
+    },
+    {
+      "id": "radix_sort_reference",
+      "libraries": [
+        "Algorithm/Radix_sort.cpp"
+      ],
+      "driver": "Verify/current/drivers/radix_sort_reference_main.cpp",
+      "problem_url": null,
+      "title": "独立参照との照合",
+      "selection_reason": "専用のオンライン判定問題で確認できないAPI・境界を補足。",
+      "reference_url": null,
+      "evidence_url": null,
+      "coverage": "8整数型全域をstd::stable_sortと照合。小配列閾値の前後、昇降順、作業領域、安定添字順。",
+      "limitations": "オンライン未提出。int64_t版とuint32_t版は同じmain手順/FastIOで整列を使う。GCCの32bitの4表集計だけ展開し、64bit経路は機械語同一を確認。8整数型全域・安定添字・SIMD境界/最大値・コピー/ムーブ・確保失敗は独立参照とradix_exception_testで補足。Audit/verify-radix-ready-2026-10-24.json参照。",
+      "samples": [
+        {
+          "input": "",
+          "output": "OK\n",
+          "source": "独立参照を組み込んだローカル補足テスト。オンライン判定ではない。"
+        }
+      ],
+      "acl_required": false
+    },
+    {
+      "id": "project_selection_reference",
+      "libraries": [
+        "Graph/Project_Selection.cpp"
+      ],
+      "driver": "Verify/current/drivers/project_selection_reference_main.cpp",
+      "problem_url": null,
+      "title": "独立参照との照合",
+      "selection_reason": "オンライン問題で直接確認できない追加API・境界を補足。",
+      "reference_url": null,
+      "evidence_url": null,
+      "coverage": "一般2変数劣モジュラ関数・集合利得・復元・再solve・追加・独立コピーを全割当参照で照合。",
+      "limitations": "有限の独立参照テストであり、全入力に対する証明やオンラインACではない。",
+      "samples": [
+        {
+          "input": "",
+          "output": "OK\n"
+        }
+      ],
+      "acl_required": false
+    },
+    {
+      "id": "nearest_two_points_reference",
+      "libraries": [
+        "Geometry/Nearest_Two_points.cpp"
+      ],
+      "driver": "Verify/current/drivers/nearest_two_points_reference_main.cpp",
+      "problem_url": null,
+      "title": "独立参照との照合",
+      "selection_reason": "オンライン問題で直接確認できない追加API・境界を補足。",
+      "reference_url": null,
+      "evidence_url": null,
+      "coverage": "O(n²)距離二乗・返却添字・既存オーバーロード・空/1点・重複・uint64超過を照合。sorted版・move-only iterator・確保失敗はtests/nearest_*_test.cppで補足。",
+      "limitations": "有限の独立参照テストであり、全入力に対する証明やオンラインACではない。 大入力の先頭重複時の全読取/末尾不正座標/確保失敗はnearest_duplicate_testで補足。",
+      "samples": [
+        {
+          "input": "",
+          "output": "OK\n"
+        }
+      ],
+      "acl_required": false
+    },
+    {
+      "id": "angle_sort_reference",
+      "libraries": [
+        "Geometry/偏角ソート.cpp"
+      ],
+      "driver": "Verify/current/drivers/angle_sort_reference_main.cpp",
+      "problem_url": null,
+      "title": "独立参照との照合",
+      "selection_reason": "オンライン問題で直接確認できない追加API・境界を補足。",
+      "reference_url": null,
+      "evidence_url": null,
+      "coverage": "小整数の独立atan2参照・厳密/非厳密比較・昇降順・添字列とint64境界の既知外積。",
+      "limitations": "有限の独立参照テストであり、全入力に対する証明やオンラインACではない。",
+      "samples": [
+        {
+          "input": "",
+          "output": "OK\n"
+        }
+      ],
+      "acl_required": false
+    },
+    {
+      "id": "zeta_sparse_gcd_full",
+      "libraries": [
+        "Math/Zeta_Mebius.cpp"
+      ],
+      "driver": "Verify/current/drivers/zeta_sparse_gcd_main.cpp",
+      "problem_url": "https://judge.yosupo.jp/problem/gcd_convolution",
+      "title": "GCD Convolution",
+      "selection_reason": "整数変換の参照元がVerifyしている問題へ疎変換APIを適用。",
+      "reference_url": "https://nyaannyaan.github.io/library/multiplicative-function/divisor-multiple-transform.hpp.html",
+      "evidence_url": "https://nyaannyaan.github.io/library/multiplicative-function/divisor-multiple-transform.hpp.html",
+      "coverage": "疎変換の公開APIによるGCD畳み込み（全キーを使用）。",
+      "limitations": "412893（全機能版）AC・74 ms、412892（用途別版）AC・72 ms。どちらも現行の提出ソースと一致。オンラインでは1..mの連続キーによるGCD畳み込みを確認。一般の約数閉包・非連続/非整列キー・MoveOnly値・境界・確保/演算失敗はローカル補足。現行本体の公式29入力・検査有無・標準代替・演算順の検証はAudit/performance-zeta-sparse-412883-2026-10-24.json、追加候補の比較と不採用理由はAudit/performance-zeta-sparse-412893-2026-10-24.json。",
+      "samples": [
+        {
+          "input": "6\n1 2 3 4 5 6\n6 5 4 3 2 1\n",
+          "output": "284 90 39 12 10 6\n",
+          "source": "Library Checker公式 example_00.in。出力は独立な小規模計算で作成。"
+        }
+      ],
+      "acl_required": false,
+      "submission_urls": [
+        "https://judge.yosupo.jp/submission/412893"
+      ]
+    },
+    {
+      "id": "zeta_sparse_gcd_split",
+      "libraries": [
+        "Math/Zeta/Sparse_Transform.cpp"
+      ],
+      "driver": "Verify/current/drivers/zeta_sparse_gcd_main.cpp",
+      "problem_url": "https://judge.yosupo.jp/problem/gcd_convolution",
+      "title": "GCD Convolution",
+      "selection_reason": "整数変換の参照元がVerifyしている問題へ疎変換APIを適用。",
+      "reference_url": "https://nyaannyaan.github.io/library/multiplicative-function/divisor-multiple-transform.hpp.html",
+      "evidence_url": "https://nyaannyaan.github.io/library/multiplicative-function/divisor-multiple-transform.hpp.html",
+      "coverage": "疎変換の公開APIによるGCD畳み込み（全キーを使用）。",
+      "limitations": "412893（全機能版）AC・74 ms、412892（用途別版）AC・72 ms。どちらも現行の提出ソースと一致。オンラインでは1..mの連続キーによるGCD畳み込みを確認。一般の約数閉包・非連続/非整列キー・MoveOnly値・境界・確保/演算失敗はローカル補足。現行本体の公式29入力・検査有無・標準代替・演算順の検証はAudit/performance-zeta-sparse-412883-2026-10-24.json、追加候補の比較と不採用理由はAudit/performance-zeta-sparse-412893-2026-10-24.json。",
+      "samples": [
+        {
+          "input": "6\n1 2 3 4 5 6\n6 5 4 3 2 1\n",
+          "output": "284 90 39 12 10 6\n",
+          "source": "Library Checker公式 example_00.in。出力は独立な小規模計算で作成。"
+        }
+      ],
+      "acl_required": false,
+      "submission_urls": [
+        "https://judge.yosupo.jp/submission/412892"
+      ]
+    },
+    {
+      "id": "geometry_convex_hull_full",
+      "libraries": [
+        "Geometry/geometory.cpp"
+      ],
+      "driver": "Verify/current/drivers/geometry_convex_hull_main.cpp",
+      "problem_url": "https://judge.yosupo.jp/problem/static_convex_hull",
+      "title": "Static Convex Hull",
+      "selection_reason": "Library Checkerの対応問題を優先。直接対応する問題がないAPIはAtCoderの問題へ割り当て、確認範囲を限定する。",
+      "reference_url": null,
+      "evidence_url": "https://judge.yosupo.jp/problem/static_convex_hull",
+      "coverage": "convex_hull: 整数点の最小凸包、反時計回り・重複除去・辺上中間点除去・空/1/2点。",
+      "limitations": "412899（全機能版）AC・53 ms、412898（用途別版）AC・54 msで、提出時のソース本文を照合済み。面積本体の更新により現行のソース全体とは異なるが、convex_hull本体は同一。オンライン対象は整数convex_hull。公式25入力/独立Jarvis参照/型/整数端/誤差/整列済み/16384閾値と4〜8バイトの変化/検査有無/標準代替/ASan/UBSanはAudit/performance-convex-hull-412894-2026-10-24.json。Clang4096点など、全条件での速度改善は保証しない。今回のケース別時間とsmall_random_04の補測はAudit/verify-convex-hull-412899-2026-10-24.json。",
+      "samples": [
+        {
+          "input": "1\n9\n0 0\n0 1\n0 2\n1 0\n1 1\n1 2\n2 0\n2 1\n2 2\n",
+          "output": "4\n0 0\n2 0\n2 2\n0 2\n",
+          "source": "https://judge.yosupo.jp/problem/static_convex_hull の公式入力例1"
+        },
+        {
+          "input": "4\n0\n1\n1 1\n3\n1 1\n1 1\n1 1\n4\n-2 -2\n-1 -1\n0 0\n0 0\n",
+          "output": "0\n1\n1 1\n1\n1 1\n2\n-2 -2\n0 0\n",
+          "source": "https://judge.yosupo.jp/problem/static_convex_hull の公式入力例2"
+        }
+      ],
+      "acl_required": false,
+      "submission_urls": [
+        "https://judge.yosupo.jp/submission/412899"
+      ]
+    },
+    {
+      "id": "geometry_convex_hull_split",
+      "libraries": [
+        "Geometry/Polygon.cpp"
+      ],
+      "driver": "Verify/current/drivers/geometry_convex_hull_main.cpp",
+      "problem_url": "https://judge.yosupo.jp/problem/static_convex_hull",
+      "title": "Static Convex Hull",
+      "selection_reason": "Library Checkerの対応問題を優先。直接対応する問題がないAPIはAtCoderの問題へ割り当て、確認範囲を限定する。",
+      "reference_url": null,
+      "evidence_url": "https://judge.yosupo.jp/problem/static_convex_hull",
+      "coverage": "convex_hull: 整数点の最小凸包、反時計回り・重複除去・辺上中間点除去・空/1/2点。",
+      "limitations": "412899（全機能版）AC・53 ms、412898（用途別版）AC・54 msで、提出時のソース本文を照合済み。面積本体の更新により現行のソース全体とは異なるが、convex_hull本体は同一。オンライン対象は整数convex_hull。公式25入力/独立Jarvis参照/型/整数端/誤差/整列済み/16384閾値と4〜8バイトの変化/検査有無/標準代替/ASan/UBSanはAudit/performance-convex-hull-412894-2026-10-24.json。Clang4096点など、全条件での速度改善は保証しない。今回のケース別時間とsmall_random_04の補測はAudit/verify-convex-hull-412899-2026-10-24.json。",
+      "samples": [
+        {
+          "input": "1\n9\n0 0\n0 1\n0 2\n1 0\n1 1\n1 2\n2 0\n2 1\n2 2\n",
+          "output": "4\n0 0\n2 0\n2 2\n0 2\n",
+          "source": "https://judge.yosupo.jp/problem/static_convex_hull の公式入力例1"
+        },
+        {
+          "input": "4\n0\n1\n1 1\n3\n1 1\n1 1\n1 1\n4\n-2 -2\n-1 -1\n0 0\n0 0\n",
+          "output": "0\n1\n1 1\n1\n1 1\n2\n-2 -2\n0 0\n",
+          "source": "https://judge.yosupo.jp/problem/static_convex_hull の公式入力例2"
+        }
+      ],
+      "acl_required": false,
+      "submission_urls": [
+        "https://judge.yosupo.jp/submission/412898"
+      ]
+    },
+    {
+      "id": "geometry_orientation_atcoder_full",
+      "libraries": [
+        "Geometry/geometory.cpp"
+      ],
+      "driver": "Verify/current/drivers/geometry_quadrilateral_main.cpp",
+      "problem_url": "https://atcoder.jp/contests/abc266/tasks/abc266_c",
+      "title": "C - Convex Quadrilateral",
+      "selection_reason": "Library Checkerの対応問題を優先。直接対応する問題がないAPIはAtCoderの問題へ割り当て、確認範囲を限定する。",
+      "reference_url": null,
+      "evidence_url": "https://atcoder.jp/contests/abc266/tasks/abc266_c",
+      "coverage": "orientation: 非退化四角形の各連続3頂点の向き（整数座標）。",
+      "limitations": "ユーザー報告で全機能版80284455・用途別版80284453ともAC・1 ms。AtCoderの提出ページはHTTP403のため、提出本文は未照合。ローカル検証済みの本体/main/I/Oは維持。オンライン対象は±100の非退化・単純・反時計回り四角形の整数orientation。多倍長整数/二進有理数の許容幅/型幅/整数端/検査有無/標準代替/ASan/UBSanと72四角形の補足はAudit/verify-orientation-ready-2026-10-24.json。定数回の処理のため、1 msを本体性能の優劣には使わない。",
+      "samples": [
+        {
+          "input": "0 0\n1 0\n1 1\n0 1\n",
+          "output": "Yes\n",
+          "source": "https://atcoder.jp/contests/abc266/tasks/abc266_c の公式入力例1"
+        },
+        {
+          "input": "0 0\n1 1\n-1 0\n1 -1\n",
+          "output": "No\n",
+          "source": "https://atcoder.jp/contests/abc266/tasks/abc266_c の公式入力例2"
+        }
+      ],
+      "acl_required": false,
+      "submission_urls": [
+        "https://atcoder.jp/contests/abc266/submissions/80284455"
+      ]
+    },
+    {
+      "id": "geometry_orientation_atcoder_split",
+      "libraries": [
+        "Geometry/Point.cpp"
+      ],
+      "driver": "Verify/current/drivers/geometry_quadrilateral_main.cpp",
+      "problem_url": "https://atcoder.jp/contests/abc266/tasks/abc266_c",
+      "title": "C - Convex Quadrilateral",
+      "selection_reason": "Library Checkerの対応問題を優先。直接対応する問題がないAPIはAtCoderの問題へ割り当て、確認範囲を限定する。",
+      "reference_url": null,
+      "evidence_url": "https://atcoder.jp/contests/abc266/tasks/abc266_c",
+      "coverage": "orientation: 非退化四角形の各連続3頂点の向き（整数座標）。",
+      "limitations": "ユーザー報告で全機能版80284455・用途別版80284453ともAC・1 ms。AtCoderの提出ページはHTTP403のため、提出本文は未照合。ローカル検証済みの本体/main/I/Oは維持。オンライン対象は±100の非退化・単純・反時計回り四角形の整数orientation。多倍長整数/二進有理数の許容幅/型幅/整数端/検査有無/標準代替/ASan/UBSanと72四角形の補足はAudit/verify-orientation-ready-2026-10-24.json。定数回の処理のため、1 msを本体性能の優劣には使わない。",
+      "samples": [
+        {
+          "input": "0 0\n1 0\n1 1\n0 1\n",
+          "output": "Yes\n",
+          "source": "https://atcoder.jp/contests/abc266/tasks/abc266_c の公式入力例1"
+        },
+        {
+          "input": "0 0\n1 1\n-1 0\n1 -1\n",
+          "output": "No\n",
+          "source": "https://atcoder.jp/contests/abc266/tasks/abc266_c の公式入力例2"
+        }
+      ],
+      "acl_required": false,
+      "submission_urls": [
+        "https://atcoder.jp/contests/abc266/submissions/80284453"
+      ]
+    },
+    {
+      "id": "geometry_segment_intersection_atcoder_full",
+      "libraries": [
+        "Geometry/geometory.cpp"
+      ],
+      "driver": "Verify/current/drivers/geometry_segment_intersection_atcoder_main.cpp",
+      "problem_url": "https://atcoder.jp/contests/math-and-algorithm/tasks/math_and_algorithm_ah",
+      "title": "037 - Intersection",
+      "selection_reason": "Library Checkerの対応問題を優先。直接対応する問題がないAPIはAtCoderの問題へ割り当て、確認範囲を限定する。",
+      "reference_url": null,
+      "evidence_url": "https://atcoder.jp/contests/math-and-algorithm/tasks/math_and_algorithm_ah",
+      "coverage": "intersects: 整数閉線分の交差判定（接触・重なり含む）。",
+      "limitations": "ユーザー報告で全機能版80284522・用途別版80284525ともAC・1 ms。提出ページは取得できず、本文未照合。AtCoder問題は0〜10^9の非零長整数閉線分の交差（接触/重なり含む）。共線後に1軸で区間を確認する現行版を、多倍長整数の媒介変数参照・小格子全組合せ・端点交換・零長・整数端・二進有理数の浮動座標で検査。GCC/Clang×検査有無×標準/拡張×full/splitの16構成とASan/UBSan2構成。整数座標/浮動計算型の両軸保持も別途確認。問題制約内72線分対×6構成の提出mainと公式5入力例を照合。定数回の呼出しなので速度はローカルAPI計測と分ける。Audit/verify-segments-ready-2026-10-24.json。",
+      "samples": [
+        {
+          "input": "1 1\n2 2\n1 2\n2 1\n",
+          "output": "Yes\n",
+          "source": "https://atcoder.jp/contests/math-and-algorithm/tasks/math_and_algorithm_ah の公式入力例1"
+        },
+        {
+          "input": "1 2\n2 2\n1 1\n1 3\n",
+          "output": "Yes\n",
+          "source": "https://atcoder.jp/contests/math-and-algorithm/tasks/math_and_algorithm_ah の公式入力例2"
+        },
+        {
+          "input": "100000001 200000000\n200000000 200000000\n100000000 100000000\n100000000 300000000\n",
+          "output": "No\n",
+          "source": "https://atcoder.jp/contests/math-and-algorithm/tasks/math_and_algorithm_ah の公式入力例3"
+        },
+        {
+          "input": "1 1\n3 3\n2 2\n4 4\n",
+          "output": "Yes\n",
+          "source": "https://atcoder.jp/contests/math-and-algorithm/tasks/math_and_algorithm_ah の公式入力例4"
+        },
+        {
+          "input": "4 1\n3 2\n2 3\n1 4\n",
+          "output": "No\n",
+          "source": "https://atcoder.jp/contests/math-and-algorithm/tasks/math_and_algorithm_ah の公式入力例5"
+        }
+      ],
+      "acl_required": false,
+      "submission_urls": [
+        "https://atcoder.jp/contests/math-and-algorithm/submissions/80284522"
+      ]
+    },
+    {
+      "id": "geometry_segment_intersection_atcoder_split",
+      "libraries": [
+        "Geometry/Line_Segment.cpp"
+      ],
+      "driver": "Verify/current/drivers/geometry_segment_intersection_atcoder_main.cpp",
+      "problem_url": "https://atcoder.jp/contests/math-and-algorithm/tasks/math_and_algorithm_ah",
+      "title": "037 - Intersection",
+      "selection_reason": "Library Checkerの対応問題を優先。直接対応する問題がないAPIはAtCoderの問題へ割り当て、確認範囲を限定する。",
+      "reference_url": null,
+      "evidence_url": "https://atcoder.jp/contests/math-and-algorithm/tasks/math_and_algorithm_ah",
+      "coverage": "intersects: 整数閉線分の交差判定（接触・重なり含む）。",
+      "limitations": "ユーザー報告で全機能版80284522・用途別版80284525ともAC・1 ms。提出ページは取得できず、本文未照合。AtCoder問題は0〜10^9の非零長整数閉線分の交差（接触/重なり含む）。共線後に1軸で区間を確認する現行版を、多倍長整数の媒介変数参照・小格子全組合せ・端点交換・零長・整数端・二進有理数の浮動座標で検査。GCC/Clang×検査有無×標準/拡張×full/splitの16構成とASan/UBSan2構成。整数座標/浮動計算型の両軸保持も別途確認。問題制約内72線分対×6構成の提出mainと公式5入力例を照合。定数回の呼出しなので速度はローカルAPI計測と分ける。Audit/verify-segments-ready-2026-10-24.json。",
+      "samples": [
+        {
+          "input": "1 1\n2 2\n1 2\n2 1\n",
+          "output": "Yes\n",
+          "source": "https://atcoder.jp/contests/math-and-algorithm/tasks/math_and_algorithm_ah の公式入力例1"
+        },
+        {
+          "input": "1 2\n2 2\n1 1\n1 3\n",
+          "output": "Yes\n",
+          "source": "https://atcoder.jp/contests/math-and-algorithm/tasks/math_and_algorithm_ah の公式入力例2"
+        },
+        {
+          "input": "100000001 200000000\n200000000 200000000\n100000000 100000000\n100000000 300000000\n",
+          "output": "No\n",
+          "source": "https://atcoder.jp/contests/math-and-algorithm/tasks/math_and_algorithm_ah の公式入力例3"
+        },
+        {
+          "input": "1 1\n3 3\n2 2\n4 4\n",
+          "output": "Yes\n",
+          "source": "https://atcoder.jp/contests/math-and-algorithm/tasks/math_and_algorithm_ah の公式入力例4"
+        },
+        {
+          "input": "4 1\n3 2\n2 3\n1 4\n",
+          "output": "No\n",
+          "source": "https://atcoder.jp/contests/math-and-algorithm/tasks/math_and_algorithm_ah の公式入力例5"
+        }
+      ],
+      "acl_required": false,
+      "submission_urls": [
+        "https://atcoder.jp/contests/math-and-algorithm/submissions/80284525"
+      ]
+    },
+    {
+      "id": "geometry_triangle_area_full",
+      "libraries": [
+        "Geometry/geometory.cpp"
+      ],
+      "driver": "Verify/current/drivers/geometry_triangle_area_main.cpp",
+      "problem_url": "https://atcoder.jp/contests/abc002/tasks/abc002_3",
+      "title": "C - 直訴",
+      "selection_reason": "Library Checkerの対応問題を優先。直接対応する問題がないAPIはAtCoderの問題へ割り当て、確認範囲を限定する。",
+      "reference_url": null,
+      "evidence_url": "https://atcoder.jp/contests/abc002/tasks/abc002_3",
+      "coverage": "area: 整数座標の非退化三角形の面積。",
+      "limitations": "ユーザー報告で全機能版80284546・用途別版80284547ともAC・1 ms。提出ページは取得できず、本文未照合。提出mainは既存の3頂点vector→geo::areaを維持。三角形のオンライン検証範囲は±1000の非退化整数座標。現行面積本体を多倍長靴紐参照・小格子全組合せ・凹形・空/退化・向き・始点・平行移動・整数端・二進有理数・整数座標/浮動Calcで照合。GCC/Clang×検査有無×通常/標準代替×full/splitの16構成とASan/UBSan2構成、問題制約内72三角形×6構成のmain、公式3例を確認。小規模の一部退行を大規模の短縮のため許容し、1回の三角形計算の提出時間と大規模API性能は分ける。Audit/verify-area-ready-2026-10-24.json。",
+      "samples": [
+        {
+          "input": "1 0 3 0 2 5\n",
+          "output": "5.0\n",
+          "source": "https://atcoder.jp/contests/abc002/tasks/abc002_3 の公式入力例1"
+        },
+        {
+          "input": "-1 -2 3 4 5 6\n",
+          "output": "2.0\n",
+          "source": "https://atcoder.jp/contests/abc002/tasks/abc002_3 の公式入力例2"
+        },
+        {
+          "input": "298 520 903 520 4 663\n",
+          "output": "43257.5\n",
+          "source": "https://atcoder.jp/contests/abc002/tasks/abc002_3 の公式入力例3"
+        }
+      ],
+      "acl_required": false,
+      "sample_checker": "float",
+      "absolute_tolerance": 1e-07,
+      "relative_tolerance": 1e-07,
+      "submission_urls": [
+        "https://atcoder.jp/contests/abc002/submissions/80284546"
+      ]
+    },
+    {
+      "id": "geometry_triangle_area_split",
+      "libraries": [
+        "Geometry/Polygon.cpp"
+      ],
+      "driver": "Verify/current/drivers/geometry_triangle_area_main.cpp",
+      "problem_url": "https://atcoder.jp/contests/abc002/tasks/abc002_3",
+      "title": "C - 直訴",
+      "selection_reason": "Library Checkerの対応問題を優先。直接対応する問題がないAPIはAtCoderの問題へ割り当て、確認範囲を限定する。",
+      "reference_url": null,
+      "evidence_url": "https://atcoder.jp/contests/abc002/tasks/abc002_3",
+      "coverage": "area: 整数座標の非退化三角形の面積。",
+      "limitations": "ユーザー報告で全機能版80284546・用途別版80284547ともAC・1 ms。提出ページは取得できず、本文未照合。提出mainは既存の3頂点vector→geo::areaを維持。三角形のオンライン検証範囲は±1000の非退化整数座標。現行面積本体を多倍長靴紐参照・小格子全組合せ・凹形・空/退化・向き・始点・平行移動・整数端・二進有理数・整数座標/浮動Calcで照合。GCC/Clang×検査有無×通常/標準代替×full/splitの16構成とASan/UBSan2構成、問題制約内72三角形×6構成のmain、公式3例を確認。小規模の一部退行を大規模の短縮のため許容し、1回の三角形計算の提出時間と大規模API性能は分ける。Audit/verify-area-ready-2026-10-24.json。",
+      "samples": [
+        {
+          "input": "1 0 3 0 2 5\n",
+          "output": "5.0\n",
+          "source": "https://atcoder.jp/contests/abc002/tasks/abc002_3 の公式入力例1"
+        },
+        {
+          "input": "-1 -2 3 4 5 6\n",
+          "output": "2.0\n",
+          "source": "https://atcoder.jp/contests/abc002/tasks/abc002_3 の公式入力例2"
+        },
+        {
+          "input": "298 520 903 520 4 663\n",
+          "output": "43257.5\n",
+          "source": "https://atcoder.jp/contests/abc002/tasks/abc002_3 の公式入力例3"
+        }
+      ],
+      "acl_required": false,
+      "sample_checker": "float",
+      "absolute_tolerance": 1e-07,
+      "relative_tolerance": 1e-07,
+      "submission_urls": [
+        "https://atcoder.jp/contests/abc002/submissions/80284547"
+      ]
+    },
+    {
+      "id": "geometry_contains_atcoder_full",
+      "libraries": [
+        "Geometry/geometory.cpp"
+      ],
+      "driver": "Verify/current/drivers/geometry_contains_atcoder_main.cpp",
+      "problem_url": "https://atcoder.jp/contests/math-and-algorithm/tasks/math_and_algorithm_bu",
+      "title": "098 - Polygon and Point",
+      "selection_reason": "Library Checkerの対応問題を優先。直接対応する問題がないAPIはAtCoderの問題へ割り当て、確認範囲を限定する。",
+      "reference_url": null,
+      "evidence_url": "https://atcoder.jp/contests/math-and-algorithm/tasks/math_and_algorithm_bu",
+      "coverage": "contains: 整数座標の一般単純多角形の内外（1照会、O(N)）。",
+      "limitations": "ユーザー報告で全機能版80293008・用途別版80292997ともAC（全機能版4 ms、用途別版5 ms）。提出ページは取得できず、本文未照合。既存の本体/main/共通FastIOを維持。オンライン対象は座標±10^9・3〜100000頂点・辺上でない点の内外判定。多倍長有理数ray交差の独立参照で凸/凹・向き/始点・平行移動・境界/零長/重複/空/1/2点・整数端・二進有理数・絶対/相対eps・整数座標/浮動Calcを補足。閾値前後と4種類の末尾、途中/閉じ辺も検査。GCC/Clang×検査有無×通常/標準代替×full/splitの16構成とASan/UBSan2構成、問題制約内72多角形照会×6提出main構成、公式5例を照合。scalar組替え/SIMD案は代表条件の退行が残り不採用。Audit/verify-contains-ready-2026-10-24.json。",
+      "samples": [
+        {
+          "input": "4\n0 0\n3 1\n2 3\n0 3\n2 1\n",
+          "output": "INSIDE\n",
+          "source": "https://atcoder.jp/contests/math-and-algorithm/tasks/math_and_algorithm_bu の公式入力例1"
+        },
+        {
+          "input": "4\n3 1\n0 0\n0 3\n2 3\n3 2\n",
+          "output": "OUTSIDE\n",
+          "source": "https://atcoder.jp/contests/math-and-algorithm/tasks/math_and_algorithm_bu の公式入力例2"
+        },
+        {
+          "input": "6\n5 5\n-1 -3\n5 1\n-3 -5\n1 1\n-5 -3\n0 -1\n",
+          "output": "INSIDE\n",
+          "source": "https://atcoder.jp/contests/math-and-algorithm/tasks/math_and_algorithm_bu の公式入力例3"
+        },
+        {
+          "input": "16\n0 0\n8 0\n8 7\n7 7\n7 1\n1 1\n1 6\n5 6\n5 3\n3 3\n3 5\n2 5\n2 2\n6 2\n6 7\n0 7\n4 4\n",
+          "output": "OUTSIDE\n",
+          "source": "https://atcoder.jp/contests/math-and-algorithm/tasks/math_and_algorithm_bu の公式入力例4"
+        },
+        {
+          "input": "3\n0 0\n1000000000 671903261\n671903261 1000000000\n520908341 350000013\n",
+          "output": "OUTSIDE\n",
+          "source": "https://atcoder.jp/contests/math-and-algorithm/tasks/math_and_algorithm_bu の公式入力例5"
+        }
+      ],
+      "acl_required": false,
+      "submission_urls": [
+        "https://atcoder.jp/contests/math-and-algorithm/submissions/80293008"
+      ],
+      "gcc_optimization": "O3"
+    },
+    {
+      "id": "geometry_contains_atcoder_split",
+      "libraries": [
+        "Geometry/Polygon.cpp"
+      ],
+      "driver": "Verify/current/drivers/geometry_contains_atcoder_main.cpp",
+      "problem_url": "https://atcoder.jp/contests/math-and-algorithm/tasks/math_and_algorithm_bu",
+      "title": "098 - Polygon and Point",
+      "selection_reason": "Library Checkerの対応問題を優先。直接対応する問題がないAPIはAtCoderの問題へ割り当て、確認範囲を限定する。",
+      "reference_url": null,
+      "evidence_url": "https://atcoder.jp/contests/math-and-algorithm/tasks/math_and_algorithm_bu",
+      "coverage": "contains: 整数座標の一般単純多角形の内外（1照会、O(N)）。",
+      "limitations": "ユーザー報告で全機能版80293008・用途別版80292997ともAC（全機能版4 ms、用途別版5 ms）。提出ページは取得できず、本文未照合。既存の本体/main/共通FastIOを維持。オンライン対象は座標±10^9・3〜100000頂点・辺上でない点の内外判定。多倍長有理数ray交差の独立参照で凸/凹・向き/始点・平行移動・境界/零長/重複/空/1/2点・整数端・二進有理数・絶対/相対eps・整数座標/浮動Calcを補足。閾値前後と4種類の末尾、途中/閉じ辺も検査。GCC/Clang×検査有無×通常/標準代替×full/splitの16構成とASan/UBSan2構成、問題制約内72多角形照会×6提出main構成、公式5例を照合。scalar組替え/SIMD案は代表条件の退行が残り不採用。Audit/verify-contains-ready-2026-10-24.json。",
+      "samples": [
+        {
+          "input": "4\n0 0\n3 1\n2 3\n0 3\n2 1\n",
+          "output": "INSIDE\n",
+          "source": "https://atcoder.jp/contests/math-and-algorithm/tasks/math_and_algorithm_bu の公式入力例1"
+        },
+        {
+          "input": "4\n3 1\n0 0\n0 3\n2 3\n3 2\n",
+          "output": "OUTSIDE\n",
+          "source": "https://atcoder.jp/contests/math-and-algorithm/tasks/math_and_algorithm_bu の公式入力例2"
+        },
+        {
+          "input": "6\n5 5\n-1 -3\n5 1\n-3 -5\n1 1\n-5 -3\n0 -1\n",
+          "output": "INSIDE\n",
+          "source": "https://atcoder.jp/contests/math-and-algorithm/tasks/math_and_algorithm_bu の公式入力例3"
+        },
+        {
+          "input": "16\n0 0\n8 0\n8 7\n7 7\n7 1\n1 1\n1 6\n5 6\n5 3\n3 3\n3 5\n2 5\n2 2\n6 2\n6 7\n0 7\n4 4\n",
+          "output": "OUTSIDE\n",
+          "source": "https://atcoder.jp/contests/math-and-algorithm/tasks/math_and_algorithm_bu の公式入力例4"
+        },
+        {
+          "input": "3\n0 0\n1000000000 671903261\n671903261 1000000000\n520908341 350000013\n",
+          "output": "OUTSIDE\n",
+          "source": "https://atcoder.jp/contests/math-and-algorithm/tasks/math_and_algorithm_bu の公式入力例5"
+        }
+      ],
+      "acl_required": false,
+      "submission_urls": [
+        "https://atcoder.jp/contests/math-and-algorithm/submissions/80292997"
+      ],
+      "gcc_optimization": "O3"
+    },
+    {
+      "id": "geometry_circle_relation_full",
+      "libraries": [
+        "Geometry/geometory.cpp"
+      ],
+      "driver": "Verify/current/drivers/geometry_circle_relation_main.cpp",
+      "problem_url": "https://atcoder.jp/contests/math-and-algorithm/tasks/math_and_algorithm_ag",
+      "title": "035 - Two Circles",
+      "selection_reason": "Library Checkerの対応問題を優先。直接対応する問題がないAPIはAtCoderの問題へ割り当て、確認範囲を限定する。",
+      "reference_url": null,
+      "evidence_url": "https://atcoder.jp/contests/math-and-algorithm/tasks/math_and_algorithm_ag",
+      "coverage": "intersection(Circle,Circle).kind: 非交差・接触・2交点・一致の分類。中心間距離から内包/外接を問題の5分類へ変換。",
+      "limitations": "ユーザー報告で全機能版80293251・用途別版80293260ともAC・1 ms。提出本文は未照合。本体は維持し、整数の近接非接触を区別するためVerifyのintersection呼出しへEpsilon{0,0}のみ指定。オンライン対象は中心0〜10^6、半径1〜10^6の整数円の5分類。多倍長二乗比較による種別・高精度交点残差・零半径/同心/ほぼ同心・許容幅・hypot極端指数・入力検査をGCC/Clang×検査有無×通常/標準代替×full/splitの16構成とASan/UBSan2構成で照合。制約内72入力×6提出main構成（接触近傍の二乗差1の4例を含む）と公式3例/独立既知値3例を確認。kind-only確保なしと重複includeも補足。速度候補は他分布の退行により不採用。Audit/verify-circles-ready-2026-10-24.json。",
+      "samples": [
+        {
+          "input": "4 1 2\n1 5 3\n",
+          "output": "4\n",
+          "source": "https://atcoder.jp/contests/math-and-algorithm/tasks/math_and_algorithm_ag の公式入力例1"
+        },
+        {
+          "input": "1 1 6\n3 3 2\n",
+          "output": "1\n",
+          "source": "https://atcoder.jp/contests/math-and-algorithm/tasks/math_and_algorithm_ag の公式入力例2"
+        },
+        {
+          "input": "6 6 6\n6 6 6\n",
+          "output": "2\n",
+          "source": "https://atcoder.jp/contests/math-and-algorithm/tasks/math_and_algorithm_ag の公式入力例3"
+        },
+        {
+          "input": "0 0 2\n2 0 2\n",
+          "output": "3\n",
+          "source": "問題の制約内で作成した独立既知値（2交点）。"
+        },
+        {
+          "input": "0 0 1\n3 0 1\n",
+          "output": "5\n",
+          "source": "問題の制約内で作成した独立既知値（外部で非交差）。"
+        },
+        {
+          "input": "0 0 3\n2 0 1\n",
+          "output": "2\n",
+          "source": "問題の制約内で作成した独立既知値（内接）。"
+        }
+      ],
+      "acl_required": false,
+      "submission_urls": [
+        "https://atcoder.jp/contests/math-and-algorithm/submissions/80293251"
+      ]
+    },
+    {
+      "id": "geometry_circle_relation_split",
+      "libraries": [
+        "Geometry/Circle.cpp"
+      ],
+      "driver": "Verify/current/drivers/geometry_circle_relation_main.cpp",
+      "problem_url": "https://atcoder.jp/contests/math-and-algorithm/tasks/math_and_algorithm_ag",
+      "title": "035 - Two Circles",
+      "selection_reason": "Library Checkerの対応問題を優先。直接対応する問題がないAPIはAtCoderの問題へ割り当て、確認範囲を限定する。",
+      "reference_url": null,
+      "evidence_url": "https://atcoder.jp/contests/math-and-algorithm/tasks/math_and_algorithm_ag",
+      "coverage": "intersection(Circle,Circle).kind: 非交差・接触・2交点・一致の分類。中心間距離から内包/外接を問題の5分類へ変換。",
+      "limitations": "ユーザー報告で全機能版80293251・用途別版80293260ともAC・1 ms。提出本文は未照合。本体は維持し、整数の近接非接触を区別するためVerifyのintersection呼出しへEpsilon{0,0}のみ指定。オンライン対象は中心0〜10^6、半径1〜10^6の整数円の5分類。多倍長二乗比較による種別・高精度交点残差・零半径/同心/ほぼ同心・許容幅・hypot極端指数・入力検査をGCC/Clang×検査有無×通常/標準代替×full/splitの16構成とASan/UBSan2構成で照合。制約内72入力×6提出main構成（接触近傍の二乗差1の4例を含む）と公式3例/独立既知値3例を確認。kind-only確保なしと重複includeも補足。速度候補は他分布の退行により不採用。Audit/verify-circles-ready-2026-10-24.json。",
+      "samples": [
+        {
+          "input": "4 1 2\n1 5 3\n",
+          "output": "4\n",
+          "source": "https://atcoder.jp/contests/math-and-algorithm/tasks/math_and_algorithm_ag の公式入力例1"
+        },
+        {
+          "input": "1 1 6\n3 3 2\n",
+          "output": "1\n",
+          "source": "https://atcoder.jp/contests/math-and-algorithm/tasks/math_and_algorithm_ag の公式入力例2"
+        },
+        {
+          "input": "6 6 6\n6 6 6\n",
+          "output": "2\n",
+          "source": "https://atcoder.jp/contests/math-and-algorithm/tasks/math_and_algorithm_ag の公式入力例3"
+        },
+        {
+          "input": "0 0 2\n2 0 2\n",
+          "output": "3\n",
+          "source": "問題の制約内で作成した独立既知値（2交点）。"
+        },
+        {
+          "input": "0 0 1\n3 0 1\n",
+          "output": "5\n",
+          "source": "問題の制約内で作成した独立既知値（外部で非交差）。"
+        },
+        {
+          "input": "0 0 3\n2 0 1\n",
+          "output": "2\n",
+          "source": "問題の制約内で作成した独立既知値（内接）。"
+        }
+      ],
+      "acl_required": false,
+      "submission_urls": [
+        "https://atcoder.jp/contests/math-and-algorithm/submissions/80293260"
+      ]
+    },
+    {
+      "id": "geometry_point_segment_distance_full",
+      "libraries": [
+        "Geometry/geometory.cpp"
+      ],
+      "driver": "Verify/current/drivers/geometry_point_segment_distance_main.cpp",
+      "problem_url": "https://atcoder.jp/contests/math-and-algorithm/tasks/math_and_algorithm_ae",
+      "title": "033 - Distance",
+      "selection_reason": "Library Checkerの対応問題を優先。直接対応する問題がないAPIはAtCoderの問題へ割り当て、確認範囲を限定する。",
+      "reference_url": null,
+      "evidence_url": "https://atcoder.jp/contests/math-and-algorithm/tasks/math_and_algorithm_ae",
+      "coverage": "distance(Point,Segment): 整数入力の点と閉線分の最短距離。",
+      "limitations": "ユーザー報告で全機能版80293653・用途別版80293657ともAC・1 ms。提出本文は未照合。main/共通FastIOを維持。整数座標の方向長を型の指数範囲で確認して直接sqrt計算し、それ以外は既存スケーリング経路。多倍長投影/内外積の距離参照で零長・端点/内部・反転/平行移動・整数端・narrow整数・浮動型・極端スケール・関連APIを照合。GCC/Clang×検査有無×通常/標準代替×full/splitの16構成とASan/UBSan2構成。制約内72入力×6提出main構成と公式3例を確認。大座標小距離に一律の絶対精度を保証せず、補足1万件では最大/平均誤差が旧版より小さい。混在ベンチの浮動に数%の差があるが、浮動単独の.textは同一。Audit/verify-distance-ready-2026-10-24.json。",
+      "samples": [
+        {
+          "input": "0 5\n1 1\n3 0\n",
+          "output": "4.123105625618\n",
+          "source": "https://atcoder.jp/contests/math-and-algorithm/tasks/math_and_algorithm_ae の公式入力例1"
+        },
+        {
+          "input": "-40 -30\n-50 -10\n-20 -20\n",
+          "output": "15.811388300842\n",
+          "source": "https://atcoder.jp/contests/math-and-algorithm/tasks/math_and_algorithm_ae の公式入力例2"
+        },
+        {
+          "input": "1000000000 1000000000\n-1000000000 -1000000000\n0 -1000000000\n",
+          "output": "2236067977.499789714813\n",
+          "source": "https://atcoder.jp/contests/math-and-algorithm/tasks/math_and_algorithm_ae の公式入力例3"
+        }
+      ],
+      "acl_required": false,
+      "sample_checker": "float",
+      "absolute_tolerance": 1e-07,
+      "relative_tolerance": 1e-07,
+      "submission_urls": [
+        "https://atcoder.jp/contests/math-and-algorithm/submissions/80293653"
+      ]
+    },
+    {
+      "id": "geometry_point_segment_distance_split",
+      "libraries": [
+        "Geometry/Line_Segment.cpp"
+      ],
+      "driver": "Verify/current/drivers/geometry_point_segment_distance_main.cpp",
+      "problem_url": "https://atcoder.jp/contests/math-and-algorithm/tasks/math_and_algorithm_ae",
+      "title": "033 - Distance",
+      "selection_reason": "Library Checkerの対応問題を優先。直接対応する問題がないAPIはAtCoderの問題へ割り当て、確認範囲を限定する。",
+      "reference_url": null,
+      "evidence_url": "https://atcoder.jp/contests/math-and-algorithm/tasks/math_and_algorithm_ae",
+      "coverage": "distance(Point,Segment): 整数入力の点と閉線分の最短距離。",
+      "limitations": "ユーザー報告で全機能版80293653・用途別版80293657ともAC・1 ms。提出本文は未照合。main/共通FastIOを維持。整数座標の方向長を型の指数範囲で確認して直接sqrt計算し、それ以外は既存スケーリング経路。多倍長投影/内外積の距離参照で零長・端点/内部・反転/平行移動・整数端・narrow整数・浮動型・極端スケール・関連APIを照合。GCC/Clang×検査有無×通常/標準代替×full/splitの16構成とASan/UBSan2構成。制約内72入力×6提出main構成と公式3例を確認。大座標小距離に一律の絶対精度を保証せず、補足1万件では最大/平均誤差が旧版より小さい。混在ベンチの浮動に数%の差があるが、浮動単独の.textは同一。Audit/verify-distance-ready-2026-10-24.json。",
+      "samples": [
+        {
+          "input": "0 5\n1 1\n3 0\n",
+          "output": "4.123105625618\n",
+          "source": "https://atcoder.jp/contests/math-and-algorithm/tasks/math_and_algorithm_ae の公式入力例1"
+        },
+        {
+          "input": "-40 -30\n-50 -10\n-20 -20\n",
+          "output": "15.811388300842\n",
+          "source": "https://atcoder.jp/contests/math-and-algorithm/tasks/math_and_algorithm_ae の公式入力例2"
+        },
+        {
+          "input": "1000000000 1000000000\n-1000000000 -1000000000\n0 -1000000000\n",
+          "output": "2236067977.499789714813\n",
+          "source": "https://atcoder.jp/contests/math-and-algorithm/tasks/math_and_algorithm_ae の公式入力例3"
+        }
+      ],
+      "acl_required": false,
+      "sample_checker": "float",
+      "absolute_tolerance": 1e-07,
+      "relative_tolerance": 1e-07,
+      "submission_urls": [
+        "https://atcoder.jp/contests/math-and-algorithm/submissions/80293657"
+      ]
+    }
+  ]
+}

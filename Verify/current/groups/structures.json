@@ -1,0 +1,964 @@
+{
+  "entries": [
+    {
+      "id": "union_find",
+      "libraries": [
+        "DataStructure/union_find.cpp"
+      ],
+      "driver": "Verify/current/drivers/union_find_main.cpp",
+      "title": "Unionfind",
+      "problem_url": "https://judge.yosupo.jp/problem/unionfind",
+      "selection_reason": "参照元に掲載されたVerify問題を使用。",
+      "reference_url": "https://zenn.dev/reputeless/books/standard-cpp-for-competitive-programming/viewer/union-find",
+      "evidence_url": "https://zenn.dev/reputeless/books/standard-cpp-for-competitive-programming/viewer/union-find",
+      "coverage": [
+        "unite",
+        "same"
+      ],
+      "limitations": "414076で現行ソース一致・全18ケースAC16msを確認。main・共通I/Oは維持。root/leader・サイズ/成分数・groups・代表のtie・コピー/移動・reset/clear/swap・境界・確保失敗はuf_reference_test/uf_exception_test、深い経路の失敗結合と代表一致はuf_merge_reference_test/uf_failed_merge_reference_testで独立照合。Audit/performance-union-find-round2-2026-10-30.mdを参照。",
+      "samples": [
+        {
+          "input": "4 7\n1 0 1\n0 0 1\n0 2 3\n1 0 1\n1 1 2\n0 0 2\n1 1 3\n",
+          "output": "0\n1\n0\n1\n"
+        }
+      ],
+      "acl_required": false,
+      "submission_urls": [
+        "https://judge.yosupo.jp/submission/414076"
+      ],
+      "gcc_optimization": "O3"
+    },
+    {
+      "id": "weighted_union_find",
+      "libraries": [
+        "DataStructure/union_find_w.cpp"
+      ],
+      "driver": "Verify/current/drivers/weighted_union_find_potential_main.cpp",
+      "title": "Unionfind with Potential",
+      "problem_url": "https://judge.yosupo.jp/problem/unionfind_with_potential",
+      "selection_reason": "Library Checkerを優先し、整数差と同じ公開APIを剰余加法群に適用。",
+      "reference_url": "https://zenn.dev/reputeless/books/standard-cpp-for-competitive-programming/viewer/weighted-union-find",
+      "evidence_url": "https://judge.yosupo.jp/problem/unionfind_with_potential",
+      "coverage": [
+        "constrain",
+        "try_diff",
+        "mod998244353の加法群",
+        "矛盾・冗長制約"
+      ],
+      "limitations": "414094で現行ソース一致・全18ケースAC13msを確認。GCC一般探索とgroups最適化後のsource0518版に対応。main/I/Oは維持。root/weight・代表・算術順・groups・小型unsigned・所有・境界・確保失敗・標準経路はwuf_reference/exception、wuf_groups_reference_test/wuf_groups_allocation_test/wuf_order_reference_testで独立照合。Audit/performance-weighted-union-find-round2-2026-10-30.mdを参照。",
+      "samples": [
+        {
+          "input": "4 10\n0 1 0 9\n1 0 2\n0 2 1 90\n0 2 0 99\n0 0 2 123\n0 3 1 990\n1 0 2\n1 2 0\n1 3 0\n1 1 1\n",
+          "output": "1\n-1\n1\n1\n0\n1\n998244254\n99\n999\n0\n",
+          "source": "https://raw.githubusercontent.com/yosupo06/library-checker-problems/master/data_structure/unionfind_with_potential/gen/example_00.in",
+          "origin": "Library Checker公式example_00.in。出力は独立した差分参照で計算。"
+        },
+        {
+          "input": "2 7\n1 0 1\n0 0 1 998244352\n1 0 1\n1 1 0\n0 1 0 1\n0 0 0 1\n1 0 0\n",
+          "output": "-1\n1\n998244352\n1\n1\n0\n0\n",
+          "source": "https://judge.yosupo.jp/problem/unionfind_with_potential",
+          "origin": "独立作成した剰余・冗長制約・矛盾の補助入力例。"
+        }
+      ],
+      "acl_required": true,
+      "historical_problems": [
+        {
+          "driver": "Verify/current/drivers/weighted_union_find_main.cpp",
+          "title": "Weighted Union Find Trees",
+          "problem_url": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=DSL_1_B",
+          "selection_reason": "参照元に掲載されたVerify問題を使用。",
+          "evidence_url": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=DSL_1_B",
+          "coverage": [
+            "unite",
+            "try_diff"
+          ],
+          "limitations": "矛盾制約・undo・rollback・整数範囲端は補助ローカル検査が必要。",
+          "samples": [
+            {
+              "input": "5 6\n0 0 2 5\n0 1 2 3\n1 0 1\n1 1 3\n0 1 4 8\n1 0 4\n",
+              "output": "2\n?\n10\n"
+            }
+          ],
+          "status": "historical（旧提出先・旧ドライバー。移行後の検証とは別）"
+        }
+      ],
+      "submission_urls": [
+        "https://judge.yosupo.jp/submission/414094"
+      ],
+      "gcc_optimization": "O3"
+    },
+    {
+      "id": "rollback_weighted_union_find",
+      "libraries": [
+        "DataStructure/rollback-union-findw.cpp"
+      ],
+      "driver": "Verify/current/drivers/rollback_weighted_union_find_potential_main.cpp",
+      "title": "Unionfind with Potential",
+      "problem_url": "https://judge.yosupo.jp/problem/unionfind_with_potential",
+      "selection_reason": "Library Checkerを優先し、公開APIの加法群・制約整合性を検証できる問題を選定。",
+      "reference_url": null,
+      "evidence_url": "https://judge.yosupo.jp/problem/unionfind_with_potential",
+      "coverage": [
+        "unite_checked",
+        "try_diff",
+        "mod998244353の加法群",
+        "矛盾・冗長制約"
+      ],
+      "limitations": "414057で現行ソース一致・全18ケースAC24msを確認。reset/groupsはオンラインmainでは未使用。非零重みの巻き戻し、初期化、任意頂点順の成分列挙、標準演算/追加SIMD無効、例外/所有は独立ローカル試験で補足。Audit/verify-rollback-weighted-union-find-round2-2026-10-30.jsonを参照。",
+      "samples": [
+        {
+          "input": "4 10\n0 1 0 9\n1 0 2\n0 2 1 90\n0 2 0 99\n0 0 2 123\n0 3 1 990\n1 0 2\n1 2 0\n1 3 0\n1 1 1\n",
+          "output": "1\n-1\n1\n1\n0\n1\n998244254\n99\n999\n0\n",
+          "source": "https://raw.githubusercontent.com/yosupo06/library-checker-problems/master/data_structure/unionfind_with_potential/gen/example_00.in",
+          "origin": "Library Checker公式example_00.in。出力は独立した差分参照で計算。"
+        },
+        {
+          "input": "2 7\n1 0 1\n0 0 1 998244352\n1 0 1\n1 1 0\n0 1 0 1\n0 0 0 1\n1 0 0\n",
+          "output": "-1\n1\n998244352\n1\n1\n0\n0\n",
+          "source": "https://judge.yosupo.jp/problem/unionfind_with_potential",
+          "origin": "独立作成した剰余・冗長制約・矛盾の補助入力例。"
+        }
+      ],
+      "acl_required": true,
+      "historical_problems": [
+        {
+          "driver": "Verify/current/drivers/rollback_weighted_union_find_main.cpp",
+          "title": "Weighted Union Find Trees",
+          "problem_url": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=DSL_1_B",
+          "selection_reason": "現在の公開APIに直接対応する問題を選択。",
+          "evidence_url": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=DSL_1_B",
+          "coverage": [
+            "unite",
+            "try_diff"
+          ],
+          "limitations": "矛盾制約・undo・rollback・整数範囲端は補助ローカル検査が必要。",
+          "samples": [
+            {
+              "input": "5 6\n0 0 2 5\n0 1 2 3\n1 0 1\n1 1 3\n0 1 4 8\n1 0 4\n",
+              "output": "2\n?\n10\n"
+            }
+          ],
+          "status": "historical（旧提出先・旧ドライバー。移行後の検証とは別）"
+        }
+      ],
+      "submission_urls": [
+        "https://judge.yosupo.jp/submission/412604",
+        "https://judge.yosupo.jp/submission/414015",
+        "https://judge.yosupo.jp/submission/414057"
+      ],
+      "gcc_optimization": "O3"
+    },
+    {
+      "id": "rollback_weighted_union_find_rollback",
+      "libraries": [
+        "DataStructure/rollback-union-findw.cpp"
+      ],
+      "driver": "Verify/current/drivers/rollback_weighted_union_find_persistent_main.cpp",
+      "title": "Persistent Unionfind（重み付きUFのrollback検証）",
+      "problem_url": "https://judge.yosupo.jp/problem/persistent_unionfind",
+      "selection_reason": "重み計算の問題にはrollback操作がないため、版木を走査して保存位置へのrollbackを使うLibrary Checker問題を併用。",
+      "reference_url": null,
+      "evidence_url": "https://raw.githubusercontent.com/yosupo06/library-checker-problems/master/data_structure/persistent_unionfind/task.md",
+      "coverage": [
+        "unite（重み0・成功/冗長）",
+        "same",
+        "get_state",
+        "rollback(state)",
+        "版木の分岐・過去の連結状態の復元"
+      ],
+      "limitations": "414058で現行ソース一致・全14ケースAC42msを確認。reset/groupsはオンラインmainでは未使用。非零重みの巻き戻し、初期化、任意頂点順の成分列挙、標準演算/追加SIMD無効、例外/所有は独立ローカル試験で補足。Audit/verify-rollback-weighted-union-find-round2-2026-10-30.jsonを参照。",
+      "samples": [
+        {
+          "input": "5 12\n0 -1 0 1\n0 0 0 2\n1 -1 0 1\n1 0 0 1\n1 1 0 1\n0 1 3 4\n0 1 2 3\n1 5 1 4\n0 5 2 3\n1 8 1 4\n0 6 3 4\n1 10 1 4\n",
+          "output": "0\n1\n1\n0\n1\n1\n"
+        }
+      ],
+      "acl_required": false,
+      "submission_urls": [
+        "https://judge.yosupo.jp/submission/412603",
+        "https://judge.yosupo.jp/submission/414058"
+      ],
+      "gcc_optimization": "O3"
+    },
+    {
+      "id": "persistent_union_find",
+      "libraries": [
+        "DataStructure/persistent-union-find.cpp"
+      ],
+      "driver": "Verify/current/drivers/persistent_union_find_main.cpp",
+      "title": "Persistent Unionfind",
+      "problem_url": "https://judge.yosupo.jp/problem/persistent_unionfind",
+      "selection_reason": "参照元に掲載されたVerify問題を使用。",
+      "reference_url": "https://nyaannyaan.github.io/library/data-structure/persistent-union-find.hpp.html",
+      "evidence_url": "https://nyaannyaan.github.io/library/verify/verify-yosupo-ds/yosupo-persistent-unionfind.test.cpp",
+      "coverage": [
+        "unite(指定版)",
+        "same(指定版)",
+        "get_root",
+        "PersistentArray内部更新"
+      ],
+      "limitations": "414055で現行ソース一致・AC101msを確認。groupsのGCC最適化はこのmainでは未使用。版別独立参照・所有/例外・最大INT_MAXとgroups1048577・14公式70実行はAudit/verify-persistent-union-find-round2-2026-10-30.json。",
+      "samples": [
+        {
+          "input": "5 12\n0 -1 0 1\n0 0 0 2\n1 -1 0 1\n1 0 0 1\n1 1 0 1\n0 1 3 4\n0 1 2 3\n1 5 1 4\n0 5 2 3\n1 8 1 4\n0 6 3 4\n1 10 1 4\n",
+          "output": "0\n1\n1\n0\n1\n1\n"
+        }
+      ],
+      "acl_required": false,
+      "submission_urls": [
+        "https://judge.yosupo.jp/submission/412452",
+        "https://judge.yosupo.jp/submission/412456",
+        "https://judge.yosupo.jp/submission/414055"
+      ],
+      "gcc_optimization": "O3,unroll-loops"
+    },
+    {
+      "id": "rollback_union_find",
+      "libraries": [
+        "DataStructure/rollback-union-find.cpp"
+      ],
+      "driver": "Verify/current/drivers/rollback_union_find_main.cpp",
+      "title": "Persistent Unionfind",
+      "problem_url": "https://judge.yosupo.jp/problem/persistent_unionfind",
+      "selection_reason": "参照元に掲載されたVerify問題を使用。",
+      "reference_url": "https://nyaannyaan.github.io/library/data-structure/rollback-union-find.hpp.html",
+      "evidence_url": "https://nyaannyaan.github.io/library/verify/verify-yosupo-ds/yosupo-rollback-union-find.test.cpp",
+      "coverage": [
+        "unite",
+        "same",
+        "undo"
+      ],
+      "limitations": "414056で現行ソース一致・全14ケースAC30msを確認。失敗結合も履歴1回分を残す。2周目追加候補は大規模の別操作に退行が残り見送り、本体据え置き。独立代表・ラベル・例外・再利用・reset・Sanitizerの記録はAudit/verify-rollback-union-find-round2-2026-10-30.json。",
+      "samples": [
+        {
+          "input": "5 12\n0 -1 0 1\n0 0 0 2\n1 -1 0 1\n1 0 0 1\n1 1 0 1\n0 1 3 4\n0 1 2 3\n1 5 1 4\n0 5 2 3\n1 8 1 4\n0 6 3 4\n1 10 1 4\n",
+          "output": "0\n1\n1\n0\n1\n1\n"
+        }
+      ],
+      "acl_required": false,
+      "submission_urls": [
+        "https://judge.yosupo.jp/submission/412482",
+        "https://judge.yosupo.jp/submission/414056"
+      ],
+      "gcc_optimization": "O3"
+    },
+    {
+      "id": "trie_dictionary",
+      "libraries": [
+        "String/Trie.cpp"
+      ],
+      "driver": "Verify/current/drivers/trie_gacha_main.cpp",
+      "title": "C - gacha",
+      "problem_url": "https://atcoder.jp/contests/abc164/tasks/abc164_c",
+      "selection_reason": "Library Checkerに文字列辞書の直接対応問題がないため、AtCoderの辞書登録・存在照会で解く問題を選定。",
+      "reference_url": null,
+      "evidence_url": "https://atcoder.jp/contests/abc164/tasks/abc164_c",
+      "coverage": [
+        "insert",
+        "contains",
+        "重複語と接頭辞を共有する語"
+      ],
+      "limitations": "全バイト・索引閾値・長い語・コピー/移動・容量/確保失敗はtrie_reference_test/radix_trie_allocation_testで補足。",
+      "samples": [
+        {
+          "input": "3\napple\norange\napple\n",
+          "output": "2\n",
+          "source": "https://atcoder.jp/contests/abc164/tasks/abc164_c",
+          "origin": "公式問題ページの入力例・出力例"
+        },
+        {
+          "input": "5\ngrape\ngrape\ngrape\ngrape\ngrape\n",
+          "output": "1\n",
+          "source": "https://atcoder.jp/contests/abc164/tasks/abc164_c",
+          "origin": "公式問題ページの入力例・出力例"
+        },
+        {
+          "input": "4\naaaa\na\naaa\naa\n",
+          "output": "4\n",
+          "source": "https://atcoder.jp/contests/abc164/tasks/abc164_c",
+          "origin": "公式問題ページの入力例・出力例"
+        }
+      ],
+      "acl_required": false,
+      "historical_problems": [
+        {
+          "driver": "Verify/current/drivers/trie_dictionary_main.cpp",
+          "title": "Search III / Dictionary",
+          "problem_url": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=ALDS1_4_C",
+          "selection_reason": "現在の公開APIに直接対応する問題を選択。",
+          "evidence_url": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=ALDS1_4_C",
+          "coverage": [
+            "insert",
+            "contains"
+          ],
+          "limitations": "文字種ACGT・長さ12以下。削除・重複個数・空文字・全バイト・順序統計はローカル補助。",
+          "samples": [
+            {
+              "input": "5\ninsert A\ninsert T\ninsert C\nfind G\nfind A\n",
+              "output": "no\nyes\n"
+            }
+          ],
+          "status": "historical（旧提出先・旧ドライバー。移行後の検証とは別）"
+        }
+      ],
+      "submission_urls": [
+        "https://atcoder.jp/contests/abc164/submissions/80264519"
+      ]
+    },
+    {
+      "id": "rolling_hash",
+      "libraries": [
+        "String/RollingHash.cpp"
+      ],
+      "driver": "Verify/current/drivers/rolling_hash_zalgorithm_main.cpp",
+      "title": "Z Algorithm",
+      "problem_url": "https://judge.yosupo.jp/problem/zalgorithm",
+      "selection_reason": "Library Checkerを優先し、公開lcp APIを各接尾辞に直接適用できる問題を選定。",
+      "reference_url": null,
+      "evidence_url": "https://judge.yosupo.jp/problem/zalgorithm",
+      "coverage": [
+        "RollingHash構築",
+        "size",
+        "lcp（同じ文字列の接尾辞）",
+        "lcp内部の区間ハッシュ比較"
+      ],
+      "limitations": "オンライン結果は判定記録のsource SHAが一致する版に対応。ハッシュ衝突による誤判定の可能性あり。各接尾辞へlcpを直接適用し最悪O(N log N)。線形Z参照は正解照合専用で、専用アルゴリズムとの速度比較には使わない。concat/equal/compare・全バイト・底の補正・所有権・assign/clear・例外・標準代替演算はrh_reference_test/rh_exception_testとrolling_hash_localで補足。 構築閾値・SIMD末尾・冗長剰余はtests/rolling_hash_build_test.cpp、初回CPU判定を含む確保数と例外保証はtests/rolling_hash_avx_allocation_test.cppで補足。 融合equal/compareの全byte対・長いprefix・衝突はtests/rolling_hash_comparison_test.cppで補足。 4096文字の切り替え境界と保護ページ隣接viewはtests/rolling_hash_threshold_test.cppで補足。",
+      "samples": [
+        {
+          "input": "a\n",
+          "output": "1\n",
+          "source": "https://judge.yosupo.jp/problem/zalgorithm",
+          "origin": "独立作成した入力例。出力は文字を順に比較して作成。"
+        },
+        {
+          "input": "aaaaa\n",
+          "output": "5 4 3 2 1\n",
+          "source": "https://judge.yosupo.jp/problem/zalgorithm",
+          "origin": "独立作成した入力例。出力は文字を順に比較して作成。"
+        },
+        {
+          "input": "abacaba\n",
+          "output": "7 0 1 0 3 0 1\n",
+          "source": "https://judge.yosupo.jp/problem/zalgorithm",
+          "origin": "独立作成した入力例。出力は文字を順に比較して作成。"
+        },
+        {
+          "input": "abcabxabc\n",
+          "output": "9 0 0 2 0 0 3 0 0\n",
+          "source": "https://judge.yosupo.jp/problem/zalgorithm",
+          "origin": "独立作成した入力例。出力は文字を順に比較して作成。"
+        }
+      ],
+      "acl_required": false,
+      "historical_problems": [
+        {
+          "driver": "Verify/current/drivers/rolling_hash_main.cpp",
+          "title": "String Search",
+          "problem_url": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=ALDS1_14_B",
+          "selection_reason": "現在の公開APIに直接対応する問題を選択。",
+          "evidence_url": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=ALDS1_14_B",
+          "coverage": [
+            "get",
+            "whole",
+            "size"
+          ],
+          "limitations": "ハッシュ衝突の可能性あり。concat/lcp/compareは補助検査。",
+          "samples": [
+            {
+              "input": "aabaaa\naa\n",
+              "output": "0\n3\n4\n"
+            },
+            {
+              "input": "xyzz\nyz\n",
+              "output": "1\n"
+            },
+            {
+              "input": "abc\nxyz\n",
+              "output": ""
+            }
+          ],
+          "status": "historical（旧提出先・旧ドライバー。移行後の検証とは別）"
+        }
+      ],
+      "submission_urls": [
+        "https://judge.yosupo.jp/submission/412622",
+        "https://judge.yosupo.jp/submission/412625",
+        "https://judge.yosupo.jp/submission/412736",
+        "https://judge.yosupo.jp/submission/413367",
+        "https://judge.yosupo.jp/submission/413369",
+        "https://judge.yosupo.jp/submission/413371"
+      ]
+    },
+    {
+      "id": "lca",
+      "libraries": [
+        "Graph/LCA.cpp"
+      ],
+      "driver": "Verify/current/drivers/lca_main.cpp",
+      "title": "Lowest Common Ancestor",
+      "problem_url": "https://judge.yosupo.jp/problem/lca",
+      "selection_reason": "現在の公開APIに直接対応する問題を選択。",
+      "reference_url": null,
+      "evidence_url": "https://judge.yosupo.jp/problem/lca",
+      "coverage": [
+        "構築",
+        "get"
+      ],
+      "limitations": "オンライン記録はsource SHA一致版だけに対応。森・任意の根・距離・祖先・パスはtests/lca_reference_test.cpp、浅い森はtests/lca_shallow_build_test.cppとtests/lca_shallow_label_test.cpp、深い分岐とRMQ境界・共有表の寿命はtests/lca_rmq_branch_test.cpp、確保失敗はtests/lca_allocation_test.cppとtests/lca_rmq_allocation_test.cppで別途検証。 根の子部分木の境界・深い単一木・状態切り替えと確保失敗はtests/lca_root_cut_test.cppとtests/lca_root_cut_allocation_test.cppで補足。 子部分木の内側の境界・片側有効・深い分岐と状態切り替えはtests/lca_nested_cut_test.cppとtests/lca_nested_cut_allocation_test.cppで補足。",
+      "samples": [
+        {
+          "input": "5 5\n0 0 2 2\n0 1\n0 4\n1 2\n2 3\n3 4\n",
+          "output": "0\n0\n0\n2\n2\n"
+        }
+      ],
+      "acl_required": false,
+      "submission_urls": [
+        "https://judge.yosupo.jp/submission/412738",
+        "https://judge.yosupo.jp/submission/412769",
+        "https://judge.yosupo.jp/submission/412793",
+        "https://judge.yosupo.jp/submission/412803",
+        "https://judge.yosupo.jp/submission/412808",
+        "https://judge.yosupo.jp/submission/416743"
+      ],
+      "gcc_optimization": "O3"
+    },
+    {
+      "id": "lis",
+      "libraries": [
+        "Algorithm/LIS.cpp"
+      ],
+      "driver": "Verify/current/drivers/lis_main.cpp",
+      "title": "Longest Increasing Subsequence",
+      "problem_url": "https://judge.yosupo.jp/problem/longest_increasing_subsequence",
+      "selection_reason": "参照元に掲載されたVerify問題を使用。",
+      "reference_url": "https://zenn.dev/reputeless/books/standard-cpp-for-competitive-programming/viewer/lis",
+      "evidence_url": "https://zenn.dev/reputeless/books/standard-cpp-for-competitive-programming/viewer/lis",
+      "coverage": [
+        "LISIndices<true>"
+      ],
+      "limitations": "提出414289はsource0331d3b8版の本体/main/共通I/Oと全文一致し全19AC20ms（max_random5件は各18〜19ms）。GCC15.2/x86-64・狭義int64で先頭/末尾8件の重複比較、段階探索のループ配置を調整。CPU/型/compiler/disableの標準経路と全API・所有権を維持。64構成＋CPU判定強制fallback8構成はAudit/verify-lis-followup-414288-2026-10-31.json参照。",
+      "samples": [
+        {
+          "input": "5\n3 1 4 1 5\n",
+          "output": "3\n1 2 4\n"
+        },
+        {
+          "input": "5\n3 3 2 3 1\n",
+          "output": "2\n2 3\n"
+        }
+      ],
+      "acl_required": false,
+      "sample_checker": "lis",
+      "submission_urls": [
+        "https://judge.yosupo.jp/submission/412815",
+        "https://judge.yosupo.jp/submission/414016",
+        "https://judge.yosupo.jp/submission/414109",
+        "https://judge.yosupo.jp/submission/414115",
+        "https://judge.yosupo.jp/submission/414139",
+        "https://judge.yosupo.jp/submission/414288",
+        "https://judge.yosupo.jp/submission/414289"
+      ]
+    },
+    {
+      "id": "topological",
+      "libraries": [
+        "Graph/Topological.cpp"
+      ],
+      "driver": "Verify/current/drivers/topological_longest_path_main.cpp",
+      "title": "G - Longest Path",
+      "problem_url": "https://atcoder.jp/contests/dp/tasks/dp_g",
+      "selection_reason": "Library Checkerに通常のトポロジカルソートの直接対応問題がないため、AtCoderのDAG処理問題を選定。",
+      "reference_url": "https://zenn.dev/reputeless/books/standard-cpp-for-competitive-programming/viewer/topological-sort",
+      "evidence_url": "https://atcoder.jp/contests/dp/tasks/dp_g",
+      "coverage": [
+        "TopologicalSort",
+        "得られた順序に沿うDAG最長路"
+      ],
+      "limitations": "提出80490084はユーザー画像でAC20ms。提出本文は未取得・未照合。再提出済みとして記録し本文未取得だけを理由に再提出待ちにはしない。6720126b版の独立参照・検査有効/無効・SIMD/標準経路・固定main比較はAudit/performance-topological-round2-2026-10-31.md参照。 再提出後の追加5案は不採用で本体不変。判断・比較はAudit/performance-topological-80490084-2026-10-31.md参照。 共有ソースの辞書順側改修後も通常FIFO専用main/APIの実行コード一致を確認。今回の変更による通常版の再提出は不要（Audit/performance-topological-lexicographical-round2-2026-10-31.md）。",
+      "samples": [
+        {
+          "input": "4 5\n1 2\n1 3\n3 2\n2 4\n3 4\n",
+          "output": "3\n",
+          "source": "https://atcoder.jp/contests/dp/tasks/dp_g",
+          "origin": "公式問題ページの入力例・出力例"
+        },
+        {
+          "input": "6 3\n2 3\n4 5\n5 6\n",
+          "output": "2\n",
+          "source": "https://atcoder.jp/contests/dp/tasks/dp_g",
+          "origin": "公式問題ページの入力例・出力例"
+        },
+        {
+          "input": "5 8\n5 3\n2 3\n2 4\n5 2\n5 1\n1 4\n4 3\n1 3\n",
+          "output": "3\n",
+          "source": "https://atcoder.jp/contests/dp/tasks/dp_g",
+          "origin": "公式問題ページの入力例・出力例"
+        }
+      ],
+      "acl_required": false,
+      "sample_checker": "tokens",
+      "historical_problems": [
+        {
+          "driver": "Verify/current/drivers/topological_main.cpp",
+          "title": "Topological Sort",
+          "problem_url": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=GRL_4_B",
+          "selection_reason": "参照元に掲載されたVerify問題を使用。",
+          "evidence_url": "https://zenn.dev/reputeless/books/standard-cpp-for-competitive-programming/viewer/topological-sort",
+          "coverage": [
+            "TopologicalSort"
+          ],
+          "limitations": "特殊ジャッジ。DAGのみ。一意性・閉路は補助または辞書順問題で検査。",
+          "samples": [
+            {
+              "input": "6 6\n0 1\n1 2\n3 1\n3 4\n4 5\n5 2\n",
+              "output": "0\n3\n1\n4\n5\n2\n"
+            }
+          ],
+          "status": "historical（旧提出先・旧ドライバー。移行後の検証とは別）"
+        }
+      ],
+      "submission_urls": [
+        "https://atcoder.jp/contests/dp/submissions/80278518",
+        "https://atcoder.jp/contests/dp/submissions/80278855",
+        "https://atcoder.jp/contests/dp/submissions/80467560",
+        "https://atcoder.jp/contests/dp/submissions/80490084",
+        "https://atcoder.jp/contests/dp/submissions/80790405"
+      ],
+      "gcc_optimization": "O3"
+    },
+    {
+      "id": "topological_lexicographical",
+      "libraries": [
+        "Graph/Topological_sort.cpp"
+      ],
+      "driver": "Verify/current/drivers/topological_lexicographical_main.cpp",
+      "title": "D - Restricted Permutation",
+      "problem_url": "https://atcoder.jp/contests/abc223/tasks/abc223_d",
+      "selection_reason": "参照元に掲載されたVerify問題を使用。",
+      "reference_url": "https://zenn.dev/reputeless/books/standard-cpp-for-competitive-programming/viewer/topological-sort",
+      "evidence_url": "https://zenn.dev/reputeless/books/standard-cpp-for-competitive-programming/viewer/topological-sort",
+      "coverage": [
+        "TopologicalSortLexicographical",
+        "閉路時の空結果"
+      ],
+      "limitations": "提出80490774はユーザー画像でAC42ms。提出本文未取得・未照合。再提出済みとして記録し、本文未取得だけを理由に再提出待ちにはしない。90997f61版の独立参照・96構成・固定main比較はAudit/performance-topological-lexicographical-80490593-2026-10-31.md参照。 42msへの変化の追加調査、AtCoder関連flags・pragma有無・8補足入力による比較と追加案不採用の判断はAudit/performance-topological-lexicographical-80490774-2026-10-31.md参照。本体90997f61は不変。",
+      "samples": [
+        {
+          "input": "4 3\n2 1\n3 4\n2 4\n",
+          "output": "2 1 3 4\n",
+          "source": "https://atcoder.jp/contests/abc223/tasks/abc223_d",
+          "origin": "公式問題ページの入力例・出力例"
+        },
+        {
+          "input": "2 3\n1 2\n1 2\n2 1\n",
+          "output": "-1\n",
+          "source": "https://atcoder.jp/contests/abc223/tasks/abc223_d",
+          "origin": "公式問題ページの入力例・出力例"
+        }
+      ],
+      "acl_required": false,
+      "submission_urls": [
+        "https://atcoder.jp/contests/abc223/submissions/80278917",
+        "https://atcoder.jp/contests/abc223/submissions/80279279",
+        "https://atcoder.jp/contests/abc223/submissions/80490593",
+        "https://atcoder.jp/contests/abc223/submissions/80490774",
+        "https://atcoder.jp/contests/abc223/submissions/80790408"
+      ]
+    },
+    {
+      "id": "next_combination",
+      "libraries": [
+        "Algorithm/next_combination.cpp"
+      ],
+      "driver": "Verify/current/drivers/next_combination_main.cpp",
+      "title": "E - Modulo MST",
+      "problem_url": "https://atcoder.jp/contests/abc328/tasks/abc328_e",
+      "selection_reason": "参照元に掲載されたVerify問題を使用。",
+      "reference_url": "https://github.com/drken1215/algorithm/blob/master/Search/next_combination.cpp",
+      "evidence_url": "https://github.com/drken1215/algorithm/blob/master/Search/next_combination.cpp",
+      "coverage": [
+        "for_each_combination",
+        "first_combination内部",
+        "next_combination内部"
+      ],
+      "limitations": "提出80280852はユーザー画像でAC51ms。本文はHTTP403で未取得・未照合。現行本体の検証はAudit/performance-next-combination-submission-2026-10-23.json、追加候補を不採用とした比較はAudit/performance-next-combination-80280852-2026-10-23.json参照。 2026-10-31のP-Core比較は全候補を不採用。本体・main・I/O不変。Prüfer独立参照と比較条件はAudit/performance-next-combination-round2-2026-10-31.md参照。",
+      "samples": [
+        {
+          "input": "5 6 328\n1 2 99\n1 3 102\n2 3 86\n2 4 94\n2 5 95\n3 4 81\n",
+          "output": "33\n",
+          "source": "https://atcoder.jp/contests/abc328/tasks/abc328_e",
+          "origin": "公式問題ページの入力例・出力例"
+        },
+        {
+          "input": "6 5 998244353\n1 2 337361568\n1 6 450343304\n2 3 61477244\n2 5 745383438\n4 5 727360840\n",
+          "output": "325437688\n",
+          "source": "https://atcoder.jp/contests/abc328/tasks/abc328_e",
+          "origin": "公式問題ページの入力例・出力例"
+        },
+        {
+          "input": "8 28 936294041850197\n1 2 473294720906780\n1 3 743030800139244\n1 4 709363019414774\n1 5 383643612490312\n1 6 557102781022861\n1 7 623179288538138\n1 8 739618599410809\n2 3 857687812294404\n2 4 893923168139714\n2 5 581822471860662\n2 6 740549363586558\n2 7 307226438833222\n2 8 447399029952998\n3 4 636318083622768\n3 5 44548707643622\n3 6 307262781240755\n3 7 12070267388230\n3 8 700247263184082\n4 5 560567890325333\n4 6 704726113717147\n4 7 588263818615687\n4 8 549007536393172\n5 6 779230871080408\n5 7 825982583786498\n5 8 713928998174272\n6 7 751331074538826\n6 8 449873635430228\n7 8 11298381761479\n",
+          "output": "11360716373\n",
+          "source": "https://atcoder.jp/contests/abc328/tasks/abc328_e",
+          "origin": "公式問題ページの入力例・出力例"
+        }
+      ],
+      "acl_required": false,
+      "submission_urls": [
+        "https://atcoder.jp/contests/abc328/submissions/80280852"
+      ]
+    },
+    {
+      "id": "matrix_rotate",
+      "libraries": [
+        "Algorithm/rotate.cpp"
+      ],
+      "driver": "Verify/current/drivers/matrix_rotate_main.cpp",
+      "title": "B - Coloring Matrix",
+      "problem_url": "https://atcoder.jp/contests/abc298/tasks/abc298_b",
+      "selection_reason": "現在の公開APIに直接対応する問題を選択。",
+      "reference_url": null,
+      "evidence_url": "https://atcoder.jp/contests/abc298/tasks/abc298_b",
+      "coverage": [
+        "rotate_90r(vector<vector<int>>)"
+      ],
+      "limitations": "80467567は画像でAC1ms、本文未照合。今回も整数版mainはGCC/Clang通常/nativeで旧版とELF全体一致。全APIの検証はAudit/verify-matrix-rotate-round2-2026-10-31.json、文字・小整数の追加改修はAudit/verify-matrix-rotate-grid-80492105-2026-10-31.jsonを参照。",
+      "samples": [
+        {
+          "input": "3\n0 1 1\n1 0 0\n0 1 0\n1 1 0\n0 0 1\n1 1 1\n",
+          "output": "Yes\n"
+        },
+        {
+          "input": "2\n0 0\n0 0\n1 1\n1 1\n",
+          "output": "Yes\n"
+        },
+        {
+          "input": "5\n0 0 1 1 0\n1 0 0 1 0\n0 0 1 0 1\n0 1 0 1 0\n0 1 0 0 1\n1 1 0 0 1\n0 1 1 1 0\n0 0 1 1 1\n1 0 1 0 1\n1 1 0 1 0\n",
+          "output": "No\n",
+          "source": "https://atcoder.jp/contests/abc298/tasks/abc298_b",
+          "origin": "公式問題ページの入力例3・出力例3"
+        }
+      ],
+      "acl_required": false,
+      "submission_urls": [
+        "https://atcoder.jp/contests/abc298/submissions/80281169",
+        "https://atcoder.jp/contests/abc298/submissions/80467567"
+      ]
+    },
+    {
+      "id": "matrix_rotate_grid",
+      "libraries": [
+        "Algorithm/rotate.cpp"
+      ],
+      "driver": "Verify/current/drivers/matrix_rotate_grid_main.cpp",
+      "title": "B - Grid Rotation",
+      "problem_url": "https://atcoder.jp/contests/abc404/tasks/abc404_b",
+      "selection_reason": "Library Checkerに文字盤面の回転へ直接対応する問題がないためAtCoderを選択。",
+      "reference_url": null,
+      "evidence_url": "https://atcoder.jp/contests/abc404/tasks/abc404_b",
+      "coverage": [
+        "rotate_90r(vector<string>)",
+        "N>=64で1バイトSIMD経路"
+      ],
+      "limitations": "80492105は画像でAC1ms、本文はHTTP403で未照合。その後のGCC専用の行ポインタ再利用・中間配列省略版は要再提出。main/I/Oは固定。26構成の独立参照/確保失敗/ASanUBSan/標準経路と36構成のmain統合試験をAudit/verify-matrix-rotate-grid-80492105-2026-10-31.jsonに記録。",
+      "samples": [
+        {
+          "input": "4\n###.\n..#.\n..#.\n..#.\n...#\n...#\n###.\n....\n",
+          "output": "2\n",
+          "source": "https://atcoder.jp/contests/abc404/tasks/abc404_b",
+          "origin": "公式問題ページの入力例1・出力例1"
+        },
+        {
+          "input": "13\n.#..###..##..\n#.#.#..#.#.#.\n#.#.###..#...\n###.#..#.#.#.\n#.#.###..##..\n.............\n..#...#....#.\n.##..#.#..##.\n#.#..#.#.#.#.\n####.#.#.####\n..#..#.#...#.\n..#...#....#.\n.............\n.............\n.#....#...#..\n.#...#.#..#..\n####.#.#.####\n.#.#.###..#.#\n.##....#..##.\n.#....#...#..\n.............\n..##..###.#.#\n.#.#.#..#.###\n.#.#..###.#.#\n.#.#.#..#.#.#\n..##..###..#.\n",
+          "output": "5\n",
+          "source": "https://atcoder.jp/contests/abc404/tasks/abc404_b",
+          "origin": "公式問題ページの入力例2・出力例2"
+        }
+      ],
+      "acl_required": false,
+      "submission_urls": [
+        "https://atcoder.jp/contests/abc404/submissions/80492105"
+      ]
+    },
+    {
+      "id": "node_reachable",
+      "libraries": [
+        "DataStructure/Node.cpp"
+      ],
+      "driver": "Verify/current/drivers/node_reachable_main.cpp",
+      "title": "ABC228 B - Takahashi's Secret",
+      "problem_url": "https://atcoder.jp/contests/abc228/tasks/abc228_b",
+      "selection_reason": "値を持たない単方向ノードの接続・循環切断・到達個数を直接使用できる問題。",
+      "reference_url": null,
+      "evidence_url": "https://atcoder.jp/contests/abc228/tasks/abc228_b",
+      "coverage": [
+        "make_node",
+        "Node::nによる接続・共有",
+        "break_cycle内の循環検出と周期末尾特定",
+        "break_cycle",
+        "chain_size",
+        "到達しない循環を含む接続解除"
+      ],
+      "limitations": [
+        "複製・逆転・先頭追加削除・長鎖の非再帰破棄は独立ローカル検査で補う。",
+        "ノードごとに所有者を配列で保持するため、この提出だけでは長鎖の反復破棄の証拠にならない。",
+        "公式上限は10万ノード。入力構築・確保と走査の内訳はローカルで測る。",
+        "ローカル検証・測定条件はAudit/verify-node-ready-2026-10-26.jsonとAudit/performance-node-2026-10-26.json参照。",
+        "cycle_entry/has_cycleのAPI自体はオンラインmainでは呼ばず、独立ローカル照合で補う。",
+        "提出80395895は画像でAC・19msを確認。HTTP403で本文未照合。今回の比較後も本体・main・IOは変更していない。",
+        "最新確認はAudit/verify-node-80395895-2026-10-26.json、追加案の採否はAudit/performance-node-80395895-2026-10-26.json参照。"
+      ],
+      "samples": [
+        {
+          "input": "4 2\n3 1 1 2\n",
+          "output": "3\n"
+        },
+        {
+          "input": "20 12\n7 11 10 1 7 20 14 2 17 3 2 5 19 20 8 14 18 2 10 10\n",
+          "output": "7\n"
+        }
+      ],
+      "acl_required": false,
+      "submission_urls": [
+        "https://atcoder.jp/contests/abc228/submissions/80395895"
+      ]
+    },
+    {
+      "id": "node_local",
+      "libraries": [
+        "DataStructure/Node.cpp"
+      ],
+      "driver": "Verify/current/drivers/node_local_main.cpp",
+      "title": "Node 独立ローカル検査",
+      "problem_url": null,
+      "selection_reason": "オンライン問題で扱わないAPI・共有所有権・長い連結の破棄を独立参照で検査。",
+      "reference_url": null,
+      "evidence_url": null,
+      "coverage": [
+        "make_node/make_chain",
+        "size/tail/nth",
+        "push/pop/reverse",
+        "cycle detection/break",
+        "共有状態",
+        "30万ノード反復破棄"
+      ],
+      "limitations": "オンライン提出用ではない。共有・複製・例外・100万ノードの小スタック破棄はtests/node_reference_test.cppでも補い、結果をAudit/verify-node-ready-2026-10-26.jsonに記録。",
+      "samples": [
+        {
+          "input": "",
+          "output": "OK\n"
+        }
+      ],
+      "acl_required": false
+    },
+    {
+      "id": "trie_local",
+      "libraries": [
+        "String/Trie.cpp"
+      ],
+      "driver": "Verify/current/drivers/trie_local_main.cpp",
+      "title": "Trie 順序統計・削除の独立ローカル検査",
+      "problem_url": null,
+      "selection_reason": "適切な提出問題がないため独立したローカル参照と比較。",
+      "reference_url": null,
+      "evidence_url": null,
+      "coverage": [
+        "空文字/全バイト",
+        "insert/count/contains",
+        "erase/erase_all",
+        "prefix/longest_prefix",
+        "kth/count_less/lower_bound/items",
+        "copy/move/clear/reserve",
+        "TrieNode共有"
+      ],
+      "limitations": "固定seedによる有限の参照比較。オンラインACとは別。",
+      "samples": [
+        {
+          "input": "",
+          "output": "OK\n"
+        }
+      ],
+      "acl_required": false
+    },
+    {
+      "id": "combination_masks_local",
+      "libraries": [
+        "Algorithm/next_combination.cpp"
+      ],
+      "driver": "Verify/current/drivers/combination_masks_local_main.cpp",
+      "title": "組合せマスク全探索・幅端ローカル検査",
+      "problem_url": null,
+      "selection_reason": "適切な提出問題がないため独立したローカル参照と比較。",
+      "reference_url": null,
+      "evidence_url": null,
+      "coverage": [
+        "全n<=14・全k列挙",
+        "first/next/for_each",
+        "幅64・0・次なし"
+      ],
+      "limitations": "有限全探索。オンラインACとは別。",
+      "samples": [
+        {
+          "input": "",
+          "output": "OK\n"
+        }
+      ],
+      "acl_required": false
+    },
+    {
+      "id": "rollback_weighted_local",
+      "libraries": [
+        "DataStructure/rollback-union-findw.cpp"
+      ],
+      "driver": "Verify/current/drivers/rollback_weighted_local_main.cpp",
+      "title": "重み付きrollback 履歴・算術端のローカル検査",
+      "problem_url": null,
+      "selection_reason": "適切な提出問題がないため独立したローカル参照と比較。",
+      "reference_url": null,
+      "evidence_url": null,
+      "coverage": [
+        "冗長/矛盾追加の履歴",
+        "undo/snapshot/rollback",
+        "copy/clear/reset",
+        "差の相殺とINT64_MAX"
+      ],
+      "limitations": "固定境界検査。広いランダム差分検査は以前の整備テストと区別。 二巡目の容量内reset/履歴コピー/groupsと型・確保例外はrollback_reuse_test/rollback_reset_value_testで補足。数学・undoは維持し、提出全体の高速化とは区別する。",
+      "samples": [
+        {
+          "input": "",
+          "output": "OK\n"
+        }
+      ],
+      "acl_required": false
+    },
+    {
+      "id": "lca_local",
+      "libraries": [
+        "Graph/LCA.cpp"
+      ],
+      "driver": "Verify/current/drivers/lca_local_main.cpp",
+      "title": "LCA 森・根変更・距離・パスの独立検査",
+      "problem_url": null,
+      "selection_reason": "提出問題で対象外のAPI・境界条件を独立参照と比較。",
+      "reference_url": null,
+      "evidence_url": null,
+      "coverage": [
+        "80個の森",
+        "BFS親列によるLCA/距離/根変更参照",
+        "祖先/パス上k番目",
+        "copy/move/clear"
+      ],
+      "limitations": "有限のローカル検査。オンラインジャッジのACとは別。",
+      "samples": [
+        {
+          "input": "",
+          "output": "OK\n"
+        }
+      ],
+      "acl_required": false
+    },
+    {
+      "id": "topological_local",
+      "libraries": [
+        "Graph/Topological.cpp",
+        "Graph/Topological_sort.cpp"
+      ],
+      "driver": "Verify/current/drivers/topological_local_main.cpp",
+      "title": "Topo 全4頂点グラフと順列参照",
+      "problem_url": null,
+      "selection_reason": "提出問題で対象外のAPI・境界条件を独立参照と比較。",
+      "reference_url": null,
+      "evidence_url": null,
+      "coverage": [
+        "0〜4頂点の全有向グラフ",
+        "全順列によるDAG/一意性/辞書順参照",
+        "Details位置",
+        "両ファイルの共有ガード"
+      ],
+      "limitations": "有限のローカル検査。オンラインジャッジのACとは別。",
+      "samples": [
+        {
+          "input": "",
+          "output": "OK\n"
+        }
+      ],
+      "acl_required": false
+    },
+    {
+      "id": "rolling_hash_local",
+      "libraries": [
+        "String/RollingHash.cpp"
+      ],
+      "driver": "Verify/current/drivers/rolling_hash_local_main.cpp",
+      "title": "RollingHash 全バイト・API独立参照",
+      "problem_url": null,
+      "selection_reason": "提出問題で対象外のAPI・境界条件を独立参照と比較。",
+      "reference_url": null,
+      "evidence_url": null,
+      "coverage": [
+        "二進加算の剰余積によるget/whole参照",
+        "全バイト/空/底の補正",
+        "concat/equal/lcp/compare",
+        "copy/move/swap"
+      ],
+      "limitations": "有限のローカル検査。オンラインジャッジのACとは別。",
+      "samples": [
+        {
+          "input": "",
+          "output": "OK\n"
+        }
+      ],
+      "acl_required": false
+    },
+    {
+      "id": "matrix_transform_local",
+      "libraries": [
+        "Algorithm/rotate.cpp"
+      ],
+      "driver": "Verify/current/drivers/matrix_transform_local_main.cpp",
+      "title": "行列全変換の座標式参照",
+      "problem_url": null,
+      "selection_reason": "提出問題で対象外のAPI・境界条件を独立参照と比較。",
+      "reference_url": null,
+      "evidence_url": null,
+      "coverage": [
+        "全回転・転置・上下左右反転/inplace",
+        "vector<int>/vector<bool>/文字盤面",
+        "空/幅0/矩形/32境界",
+        "INT_MIN/INT_MAX回転数"
+      ],
+      "limitations": "有限のローカル検査。オンラインジャッジのACとは別。",
+      "samples": [
+        {
+          "input": "",
+          "output": "OK\n"
+        }
+      ],
+      "acl_required": false
+    },
+    {
+      "id": "lis_local",
+      "libraries": [
+        "Algorithm/LIS.cpp"
+      ],
+      "driver": "Verify/current/drivers/lis_local_main.cpp",
+      "title": "LIS 部分集合全探索による独立検査",
+      "problem_url": null,
+      "selection_reason": "提出問題で対象外のAPI・境界条件を独立参照と比較。",
+      "reference_url": null,
+      "evidence_url": null,
+      "coverage": [
+        "400列・各接頭辞の全部分集合参照",
+        "狭義/広義",
+        "長さ/接頭辞長/添字復元/値列復元"
+      ],
+      "limitations": "有限の全部分集合参照。オンラインACとは別。大規模の型・cache切替・NaN・確保失敗はtests/lis_cache_reference_test.cpp、比較/コピー例外はtests/lis_exception_test.cppで補足。長さ系APIは本体不変。",
+      "samples": [
+        {
+          "input": "",
+          "output": "OK\n"
+        }
+      ],
+      "acl_required": false
+    }
+  ]
+}
