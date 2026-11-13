@@ -1,0 +1,2707 @@
+// Profile: Variants/Clang; online judgement is recorded separately.
+// Verify: ローカル独立検査
+
+// Library: Graph/Bellman-Ford.cpp
+// SPDX-License-Identifier: CC0-1.0
+// 生成版: Clang用。
+// 生成元: Graph/Bellman-Ford.cpp
+// 参考: https://zenn.dev/reputeless/books/standard-cpp-for-competitive-programming/viewer/bellman-ford
+// ドキュメント: https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/negative_shortest_paths.md
+//
+// API一覧
+// [共通型・定数]
+// Edge(to,w): 行先toとint64_tの重みwを持つ有向辺。
+// WGraph: 出発点を隣接リストの添字とする辺列。INF=std::int64_t{1}<<60。
+//
+// [Bellman-Ford]
+// BellmanFord(graph, distances, start_index): 始点からの最短距離をdistancesに格納し、到達可能な負閉路があればtrueを返す。
+// SKIP_RUNTIME_CHECKSを定義すると入力検査を省く。
+// 検査は始点と処理中に参照する辺のみ。未到達頂点の出辺は走査しない。
+// 始点から到達できる負閉路があればtrue。未到達はINF、負閉路の影響下は-INF。
+// distancesは成功時に全上書き。有限距離が(-INF, INF)の範囲外ならoverflow_error。
+// 重みは[-1e9, 1e9]。O(VE+V+E)時間・O(V)追加領域。
+
+#include <algorithm>
+#include <array>
+#include <cstddef>
+#include <cstdint>
+#include <limits>
+#include <span>
+#include <stdexcept>
+#include <tuple>
+#include <type_traits>
+#include <vector>
+
+#ifndef SIRKIT_INF_DEFINED
+#define SIRKIT_INF_DEFINED
+inline constexpr std::int64_t INF = std::int64_t{1} << 60;
+#endif
+
+#ifndef SIRKIT_GRAPH_TYPES_DEFINED
+#define SIRKIT_GRAPH_TYPES_DEFINED
+struct Edge
+{
+    int to;
+    std::int64_t w;
+    Edge(int destination, std::int64_t weight) : to(destination), w(weight) {}
+};
+using WGraph = std::vector<std::vector<Edge>>;
+#endif
+
+// 小規模・少数始点は隣接リストを走査し、多数パスでは更新頂点に処理を絞る。
+#ifndef SIRKIT_BELLMAN_FORD_DEFINED
+#define SIRKIT_BELLMAN_FORD_DEFINED
+namespace reinsirk::detail {
+// 遅い反復だけを到達部分の強連結成分ごとに解く。追加領域O(V)。
+[[gnu::noinline]]
+inline void BellmanFordComponents(const WGraph& graph, std::span<const int> sources,
+    std::vector<std::int64_t>& distance, std::int64_t unreachable, std::int64_t lower_bound,
+    std::vector<int>& negative
+#ifndef SKIP_RUNTIME_CHECKS
+    , std::vector<std::uint8_t>& checked
+#endif
+) {
+#ifndef SKIP_RUNTIME_CHECKS
+    const int n = static_cast<int>(graph.size());
+#endif
+    struct Frame { int vertex; std::size_t edge; };
+    std::vector<int> order(graph.size(), -1), low(graph.size()), component(graph.size(), -1);
+    std::vector<int> active, members;
+    std::vector<std::int64_t> tree_distance(graph.size());
+    // stateの下位bitは現在のDFS祖先、次のbitは負閉路の証拠。
+    std::vector<std::uint8_t> state(graph.size(), 0), negative_component;
+    std::vector<std::size_t> boundary{0};
+    std::vector<Frame> dfs;
+    int clock = 0;
+    const auto discover = [&](int vertex, std::int64_t tree_value) {
+        tree_distance[vertex] = tree_value;
+        state[vertex] = 1;
+        order[vertex] = low[vertex] = clock++;
+        active.push_back(vertex);
+        dfs.push_back({vertex, 0});
+    };
+    for (const int root : sources) {
+        if (distance[root] == unreachable || order[root] >= 0) continue;
+        discover(root, 0);
+        while (!dfs.empty()) {
+            auto& frame = dfs.back();
+            const int from = frame.vertex;
+            if (frame.edge != graph[from].size()) {
+                const auto& edge = graph[from][frame.edge++];
+#ifndef SKIP_RUNTIME_CHECKS
+                if (!checked[from]) {
+                    if (edge.to < 0 || edge.to >= n)
+                        throw std::out_of_range("BellmanFord: invalid destination vertex");
+                    if (edge.w < -1'000'000'000 || edge.w > 1'000'000'000)
+                        throw std::out_of_range("BellmanFord: cost must be in [-1e9, 1e9]");
+                }
+#endif
+                if (order[edge.to] < 0) discover(edge.to, tree_distance[from] + edge.w);
+                else if (component[edge.to] < 0) {
+                    low[from] = std::min(low[from], order[edge.to]);
+                    // DFS木上の祖先へ戻る辺で、閉路の重みが負と確定する。
+                    if ((state[edge.to] & 1) && tree_distance[from] + edge.w < tree_distance[edge.to])
+                        state[from] |= 2;
+                }
+            } else {
+                if (low[from] == order[from]) {
+                    const int id = static_cast<int>(boundary.size() - 1);
+                    bool found_negative = false;
+                    for (;;) {
+                        const int vertex = active.back(); active.pop_back();
+                        component[vertex] = id;
+                        found_negative |= (state[vertex] & 2) != 0;
+                        members.push_back(vertex);
+                        if (vertex == from) break;
+                    }
+                    boundary.push_back(members.size());
+                    negative_component.push_back(found_negative);
+                }
+#ifndef SKIP_RUNTIME_CHECKS
+                checked[from] = 1;
+#endif
+                state[from] &= 2;
+                dfs.pop_back();
+                if (!dfs.empty()) low[dfs.back().vertex] = std::min(low[dfs.back().vertex], low[from]);
+            }
+        }
+    }
+    const auto mark = [&](int vertex) {
+        if (distance[vertex] != lower_bound) {
+            negative.push_back(vertex);
+            distance[vertex] = lower_bound;
+        }
+    };
+    for (std::size_t block = boundary.size() - 1; block != 0; --block) {
+        const int id = static_cast<int>(block - 1);
+        const auto first = boundary[block - 1], last = boundary[block], size = last - first;
+        bool affected = negative_component[id] != 0, ring = true;
+        for (auto position = first; position != last; ++position) {
+            const int from = members[position];
+            affected |= distance[from] == lower_bound;
+            if (graph[from].size() != 1 || component[graph[from].front().to] != id) ring = false;
+        }
+        if (!affected && ring) {
+            int from = members[first];
+            for (std::size_t step = 0; step < 2 * size; ++step) {
+                const auto& edge = graph[from].front();
+                if (distance[from] != unreachable)
+                    distance[edge.to] = std::min(distance[edge.to], distance[from] + edge.w);
+                from = edge.to;
+            }
+        } else if (!affected && size > 1) {
+            std::vector<int> next;
+            active.clear();
+            for (auto position = first; position != last; ++position) {
+                const int from = members[position];
+                order[from] = distance[from] != unreachable;
+                if (order[from]) active.push_back(from);
+            }
+            bool converged = false;
+            for (std::size_t pass = 1; pass < std::min(size, std::size_t{8}); ++pass) {
+                for (const int from : active) {
+                    order[from] = 0;
+                    for (const auto& edge : graph[from]) {
+                        if (component[edge.to] != id) continue;
+                        const auto candidate = distance[from] + edge.w;
+                        if (candidate < distance[edge.to]) {
+                            if (candidate <= lower_bound) { affected = true; break; }
+                            distance[edge.to] = candidate;
+                            if (!order[edge.to]) {
+                                next.push_back(edge.to);
+                                order[edge.to] = 1;
+                            }
+                        }
+                    }
+                    if (affected) break;
+                }
+                if (affected) break;
+                if (next.empty()) { converged = true; break; }
+                active.swap(next);
+                next.clear();
+            }
+            if (!affected && !converged && size > 8) {
+                // 少数回で収束する成分の順序は保ち、残りだけ反転する。
+                std::reverse(active.begin(), active.end());
+                // Tarjanで使い終えた配列を前駆頂点へ転用する。
+                for (auto position = first; position != last; ++position) low[members[position]] = -1;
+                std::size_t cycle_budget = size;
+                for (std::size_t pass = 8; pass < size; ++pass) {
+                    for (const int from : active) {
+                        order[from] = 0;
+                        for (const auto& edge : graph[from]) {
+                            if (component[edge.to] != id) continue;
+                            const auto candidate = distance[from] + edge.w;
+                            if (candidate < distance[edge.to]) {
+                                if (candidate <= lower_bound) { affected = true; break; }
+                                distance[edge.to] = candidate;
+                                low[edge.to] = from;
+                                if (cycle_budget != 0) --cycle_budget;
+                                if (!order[edge.to]) {
+                                    next.push_back(edge.to);
+                                    order[edge.to] = 1;
+                                }
+                            }
+                        }
+                        if (affected) break;
+                    }
+                    if (affected) break;
+                    if (next.empty()) { converged = true; break; }
+                    // 厳密な緩和で得た前駆閉路は負。検出費用は緩和回数に応じて抑える。
+                    if (cycle_budget == 0) {
+                        for (auto position = first; position != last; ++position) state[members[position]] = 0;
+                        for (auto position = first; position != last; ++position) {
+                            const int root = members[position];
+                            int at = root;
+                            while (low[at] >= 0 && state[at] == 0) { state[at] = 1; at = low[at]; }
+                            if (low[at] >= 0 && state[at] == 1) { affected = true; break; }
+                            at = root;
+                            while (low[at] >= 0 && state[at] == 1) { state[at] = 2; at = low[at]; }
+                        }
+                        cycle_budget = size;
+                        if (affected) break;
+                    }
+                    active.swap(next);
+                    next.clear();
+                }
+            }
+            if (!affected && !converged) {
+                for (auto position = first; position != last; ++position) {
+                    const int from = members[position];
+                    if (distance[from] == unreachable) continue;
+                    for (const auto& edge : graph[from])
+                        if (component[edge.to] == id && distance[from] + edge.w < distance[edge.to]) affected = true;
+                }
+            }
+        }
+        if (affected)
+            for (auto position = first; position != last; ++position) mark(members[position]);
+        for (auto position = first; position != last; ++position) {
+            const int from = members[position];
+            if (distance[from] == unreachable) continue;
+            for (const auto& edge : graph[from]) {
+                if (component[edge.to] == id) continue;
+                if (affected) mark(edge.to);
+                else {
+                    const auto candidate = distance[from] + edge.w;
+                    if (candidate < distance[edge.to]) {
+                        if (candidate <= lower_bound) mark(edge.to);
+                        else distance[edge.to] = candidate;
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+// 反復1回の仕事量が大きい場合だけ成分分解を再試行する。
+[[gnu::noinline, gnu::cold]]
+inline bool BellmanFordNeedsComponents(const WGraph& graph, std::span<const int> frontier) {
+    if (frontier.size() >= std::max(std::size_t{64}, graph.size() / 16)) return true;
+    auto budget = graph.size();
+    for (const int from : frontier) {
+        const auto degree = graph[from].size();
+        if (degree >= budget) return true;
+        budget -= degree;
+    }
+    return false;
+}
+
+// 3パス目以降は距離が更新された始点だけを次のパスへ送る。
+// 1パスで各頂点を高々1回処理するので、時間上限O(VE)を保つ。
+// 戻り値は0: 未収束、1: 収束、2: 成分処理で負影響も伝播済み。
+[[gnu::noinline]]
+inline int BellmanFordContinue(const WGraph& graph, std::span<const int> sources,
+    std::vector<std::int64_t>& distance, std::int64_t unreachable, std::int64_t lower_bound,
+    std::vector<int>& negative
+#ifndef SKIP_RUNTIME_CHECKS
+    , std::vector<std::uint8_t>& checked
+#endif
+) {
+    const int n = static_cast<int>(graph.size());
+    // 単純路の非終端頂点は出辺あり頂点に限られ、辺数はその個数以下。
+    const int round_limit = sources.size() < graph.size() ? static_cast<int>(sources.size()) + 1 : n;
+    std::vector<int> frontier, next;
+    std::vector<std::uint8_t> scheduled(graph.size(), 0);
+    for (const int from : sources) if (distance[from] != unreachable) {
+        frontier.push_back(from);
+        scheduled[from] = 1;
+    }
+    const auto process = [&](int from, auto validate) {
+        for (const auto& edge : graph[from]) {
+#ifndef SKIP_RUNTIME_CHECKS
+            if constexpr (decltype(validate)::value) {
+                constexpr std::int64_t max_cost = 1'000'000'000;
+                if (edge.to < 0 || edge.to >= n)
+                    throw std::out_of_range("BellmanFord: invalid destination vertex");
+                if (edge.w < -max_cost || edge.w > max_cost)
+                    throw std::out_of_range("BellmanFord: cost must be in [-1e9, 1e9]");
+            }
+#else
+            (void)validate;
+#endif
+            const auto candidate = distance[from] + edge.w;
+            if (candidate >= distance[edge.to]) continue;
+            if (candidate <= lower_bound) [[unlikely]] {
+                if (distance[edge.to] != lower_bound) {
+                    negative.push_back(edge.to);
+                    distance[edge.to] = lower_bound;
+                }
+            } else distance[edge.to] = candidate;
+            if (!scheduled[edge.to] && !graph[edge.to].empty()) {
+                next.push_back(edge.to);
+                scheduled[edge.to] = 1;
+            }
+        }
+    };
+    // 少数回で収束する場合と更新頂点が少ない場合は、通常の反復を保つ。
+    constexpr int component_pass = 16;
+    std::size_t previous_frontier = 0;
+    for (int pass = 3; pass < std::min(round_limit, component_pass); ++pass) {
+        previous_frontier = frontier.size();
+        for (const int from : frontier) {
+            scheduled[from] = 0;
+#ifndef SKIP_RUNTIME_CHECKS
+            if (!checked[from]) {
+                process(from, std::true_type{});
+                checked[from] = 1;
+            } else
+#endif
+                process(from, std::false_type{});
+        }
+        if (next.empty()) return true;
+        frontier.swap(next);
+        next.clear();
+    }
+    if (round_limit > component_pass && frontier.size() >= previous_frontier &&
+        frontier.size() >= std::max(std::size_t{64}, graph.size() / 16)) {
+        BellmanFordComponents(graph, sources, distance, unreachable, lower_bound, negative
+#ifndef SKIP_RUNTIME_CHECKS
+            , checked
+#endif
+        );
+        return 2;
+    }
+    // 64パスごとに両端の更新頂点数から仕事量を見積もり、長い反復を分解する。
+    std::uint64_t component_budget = static_cast<std::uint64_t>(n) * 16;
+    int pass = component_pass;
+    while (pass < round_limit) {
+        const auto first_count = frontier.size();
+        const int first_pass = pass;
+        const int end_pass = pass + std::min(64 - (pass & 63), round_limit - pass);
+        for (; pass < end_pass; ++pass) {
+            for (const int from : frontier) {
+                scheduled[from] = 0;
+#ifndef SKIP_RUNTIME_CHECKS
+                if (!checked[from]) {
+                    process(from, std::true_type{});
+                    checked[from] = 1;
+                } else
+#endif
+                    process(from, std::false_type{});
+            }
+            if (next.empty()) return true;
+            frontier.swap(next);
+            next.clear();
+        }
+        if (pass == round_limit) break;
+        const auto work = static_cast<std::uint64_t>(std::min(first_count,frontier.size())) * (pass-first_pass);
+        if (work >= component_budget ||
+            (pass == 64 && BellmanFordNeedsComponents(graph, frontier))) [[unlikely]] {
+            BellmanFordComponents(graph,sources,distance,unreachable,lower_bound,negative
+#ifndef SKIP_RUNTIME_CHECKS
+                ,checked
+#endif
+            );
+            return 2;
+        }
+        component_budget -= work;
+    }
+    return false;
+}
+
+template <bool UseActive, bool Bounded = false, bool Warm = false, class... Initial>
+[[gnu::noinline]]
+inline bool BellmanFordImpl(const WGraph &graph, std::vector<std::int64_t> &distances,
+                        int start_index, Initial... initial_state)
+{
+    const auto initial = std::tuple{initial_state...};
+    auto* initial_distance = [&]() {
+        if constexpr (Warm) return std::get<0>(initial);
+        else return static_cast<std::vector<std::int64_t>*>(nullptr);
+    }();
+#ifndef SKIP_RUNTIME_CHECKS
+    const int validated_until = [&]() {
+        if constexpr (Warm) return std::get<1>(initial);
+        else return 0;
+    }();
+#endif
+    constexpr std::int64_t max_cost = 1'000'000'000;
+    if constexpr (!Warm) {
+        (void)initial_distance;
+#ifndef SKIP_RUNTIME_CHECKS
+        (void)validated_until;
+#endif
+    }
+    if (graph.size() > static_cast<std::size_t>(std::numeric_limits<int>::max()))
+        throw std::length_error("BellmanFord: too many vertices");
+    const int n = static_cast<int>(graph.size());
+#ifndef SKIP_RUNTIME_CHECKS
+    if (start_index < 0 || start_index >= n)
+        throw std::out_of_range("BellmanFord: invalid start vertex");
+#endif
+    if (graph[start_index].empty()) {
+        distances.assign(graph.size(), INF);
+        distances[start_index] = 0;
+        return false;
+    }
+    std::vector<int> large_sources;
+#ifndef SKIP_RUNTIME_CHECKS
+    std::conditional_t<Warm, std::vector<std::uint8_t>, std::false_type> initial_checked;
+    if constexpr (Warm) initial_checked.assign(graph.size(), 0);
+#endif
+    std::array<int, UseActive ? 0 : 64> small_sources;
+    std::size_t source_count = 0;
+    if constexpr (UseActive) large_sources.reserve(std::min(graph.size(), std::size_t{64}));
+    for (int from = 0; from < n; ++from)
+        if (!graph[from].empty()) {
+            if constexpr (UseActive) {
+                // 多数の始点がある場合だけ、一度の拡張で再確保を抑える。
+                if (large_sources.size() == large_sources.capacity()) large_sources.reserve(graph.size());
+                large_sources.push_back(from);
+#ifndef SKIP_RUNTIME_CHECKS
+                if constexpr (Warm) {
+                    if (from < validated_until && (*initial_distance)[from] != INF)
+                        initial_checked[from] = 1;
+                }
+#endif
+            } else small_sources[source_count++] = from;
+        }
+    const std::span<const int> sources = [&]() -> std::span<const int> {
+        if constexpr (UseActive) return large_sources;
+        else return {small_sources.data(), source_count};
+    }();
+
+    // 単純路は(n-1)辺以下。候補も[-(n+1), n+2]*max_cost内なので加算は安全。
+    const auto count = static_cast<std::int64_t>(n);
+#ifndef SKIP_RUNTIME_CHECKS
+    constexpr bool direct_inf = Bounded;
+#else
+    constexpr bool direct_inf = Bounded || !UseActive;
+#endif
+    const std::int64_t unreachable = direct_inf ? INF : (count + 1) * max_cost;
+    const std::int64_t lower_bound = -count * max_cost;
+#ifndef SKIP_RUNTIME_CHECKS
+    // 通常の緩和で、その頂点の出辺を全て検査したかを記録する。
+    std::conditional_t<UseActive, std::vector<std::uint8_t>, std::array<std::uint8_t, 64>> checked{};
+    if constexpr (UseActive) {
+        if constexpr (Warm) checked.swap(initial_checked);
+        else checked.assign(graph.size(), 0);
+    }
+#endif
+    std::vector<std::int64_t> local_distance;
+    std::array<std::int64_t, UseActive ? 0 : 64> small_distance;
+    auto& distance = [&]() -> auto& {
+        if constexpr (!UseActive) return small_distance;
+#ifndef SKIP_RUNTIME_CHECKS
+        else return local_distance;
+#else
+        else return distances;
+#endif
+    }();
+    if constexpr (UseActive) {
+        if constexpr (Warm) {
+            if (&distance != initial_distance) distance.swap(*initial_distance);
+        } else distance.assign(graph.size(), unreachable);
+    }
+    else std::fill_n(distance.begin(), n, unreachable);
+    std::vector<int> queue;
+    distance[start_index] = 0;
+
+    // 単純路では届かない下限を負影響の印にも使い、専用配列を省く。
+    const auto mark_negative = [&](int vertex)
+    {
+        if (distance[vertex] == lower_bound) return;
+        queue.push_back(vertex);
+        distance[vertex] = lower_bound;
+    };
+    const auto relax_edges = [&](int from, auto validate, bool &changed)
+    {
+        for (const auto &edge : graph[from])
+        {
+#ifndef SKIP_RUNTIME_CHECKS
+            if constexpr (decltype(validate)::value)
+            {
+                if (edge.to < 0 || edge.to >= n)
+                    throw std::out_of_range("BellmanFord: invalid destination vertex");
+                if (edge.w < -max_cost || edge.w > max_cost)
+                    throw std::out_of_range("BellmanFord: cost must be in [-1e9, 1e9]");
+            }
+#else
+            (void)validate;
+#endif
+            std::int64_t candidate = distance[from] + edge.w;
+            if (candidate >= distance[edge.to])
+                continue;
+            // 単純路では届かない下限に達した場合だけ、負閉路の種を記録する。
+            if (candidate <= lower_bound) [[unlikely]] {
+                mark_negative(edge.to);
+            } else {
+                distance[edge.to] = candidate;
+            }
+            changed = true;
+        }
+    };
+    const bool use_active = UseActive && sources.size() >= 64;
+    // 初期パス数も、出辺あり頂点から得た上限で制限する。
+    const int pass_limit = use_active ? std::min(n, 3) :
+        (sources.size() < graph.size() ? static_cast<int>(sources.size()) + 1 : n);
+    int converged = 0;
+    for (int pass = 1; pass < pass_limit; ++pass)
+    {
+        bool changed = false;
+        for (const int from : sources)
+        {
+            if (distance[from] == unreachable)
+                continue;
+#ifndef SKIP_RUNTIME_CHECKS
+            if (!checked[from])
+            {
+                relax_edges(from, std::true_type{}, changed);
+                checked[from] = 1;
+            }
+            else
+#endif
+                relax_edges(from, std::false_type{}, changed);
+        }
+        if (!changed)
+        {
+            converged = true;
+            break;
+        }
+    }
+
+    // 出辺を持つ頂点が始点だけなら、閉路は自己辺に限られる。
+    if (sources.size() == 1 && n > 1) {
+        if (distance[start_index] < 0) mark_negative(start_index);
+        converged = true;
+    }
+
+    if constexpr (UseActive) {
+        if (use_active && !converged && n > 3)
+            converged = BellmanFordContinue(graph, sources, distance, unreachable, lower_bound, queue
+#ifndef SKIP_RUNTIME_CHECKS
+                , checked
+#endif
+            );
+    }
+
+    // さらに短くできる頂点を、負閉路の影響の種として記録する。
+    if (!converged)
+    {
+        for (const int from : sources)
+        {
+            if (distance[from] == unreachable)
+                continue;
+#ifndef SKIP_RUNTIME_CHECKS
+            // 最終パスで初めて到達した頂点は、ここで検査する。
+            const bool validate = !checked[from];
+#endif
+            for (const auto &edge : graph[from])
+            {
+#ifndef SKIP_RUNTIME_CHECKS
+                if (validate)
+                {
+                    if (edge.to < 0 || edge.to >= n)
+                        throw std::out_of_range("BellmanFord: invalid destination vertex");
+                    if (edge.w < -max_cost || edge.w > max_cost)
+                        throw std::out_of_range("BellmanFord: cost must be in [-1e9, 1e9]");
+                }
+#endif
+                if (distance[from] + edge.w < distance[edge.to])
+                    mark_negative(edge.to);
+            }
+        }
+    }
+    // 成分処理が完了した場合は負影響も伝播済み。それ以外だけ辺をたどる。
+    if (converged != 2)
+        for (std::size_t head = 0; head < queue.size(); ++head)
+            for (const auto &edge : graph[queue[head]])
+                mark_negative(edge.to);
+
+    if constexpr (direct_inf) {
+        // n*最大辺重み<INFなら有限距離はINF未満。未到達の変換と範囲走査は不要。
+        for (const int vertex : queue) distance[vertex] = -INF;
+    } else {
+    for (int vertex = 0; vertex < n; ++vertex)
+    {
+        if (distance[vertex] == lower_bound)
+        {
+            distance[vertex] = -INF;
+        }
+        else if (distance[vertex] == unreachable)
+        {
+            distance[vertex] = INF;
+        }
+        else if (distance[vertex] <= -INF || distance[vertex] >= INF)
+        {
+            throw std::overflow_error("BellmanFord: finite distance collides with INF/-INF");
+        }
+    }
+    }
+    if constexpr (!UseActive) distances.assign(distance.begin(), distance.begin() + n);
+#ifndef SKIP_RUNTIME_CHECKS
+    else distances.swap(local_distance);
+#endif
+    return !queue.empty();
+}
+// 到達部分が小さければ、全頂点の出辺有無を調べずに計算する。
+// 試行は64頂点・128辺まで。上限を超えた場合は通常処理に戻る。
+[[gnu::noinline]]
+inline int BellmanFordSparse(const WGraph& graph,
+    std::vector<std::int64_t>& distances, int start_index) {
+    constexpr std::size_t vertex_limit = 64, edge_limit = 128;
+    struct CompactEdge { int from, to; std::int64_t w; };
+    std::array<int, vertex_limit> vertices;
+    std::array<CompactEdge, edge_limit> edges;
+    std::size_t vertex_count = 1, edge_count = 0;
+    vertices[0] = start_index;
+    for (std::size_t head = 0; head < vertex_count; ++head) {
+        for (const auto& edge : graph[vertices[head]]) {
+            if (edge_count == edge_limit) return 0;
+#ifndef SKIP_RUNTIME_CHECKS
+            constexpr std::int64_t max_cost = 1'000'000'000;
+            if (edge.to < 0 || static_cast<std::size_t>(edge.to) >= graph.size())
+                throw std::out_of_range("BellmanFord: invalid destination vertex");
+            if (edge.w < -max_cost || edge.w > max_cost)
+                throw std::out_of_range("BellmanFord: cost must be in [-1e9, 1e9]");
+#endif
+            std::size_t target = 0;
+            while (target < vertex_count && vertices[target] != edge.to) ++target;
+            if (target == vertex_count) {
+                if (vertex_count == vertex_limit) return 0;
+                vertices[vertex_count++] = edge.to;
+            }
+            edges[edge_count++] = {static_cast<int>(head), static_cast<int>(target), edge.w};
+        }
+    }
+    std::array<std::int64_t, vertex_limit> distance;
+    std::fill_n(distance.begin(), vertex_count, INF);
+    distance[0] = 0;
+    // 64パス・128辺・|w|<=1e9なので、負閉路があっても加算はint64_t内。
+    for (std::size_t pass = 1; pass < vertex_count; ++pass) {
+        bool changed = false;
+        for (std::size_t i = 0; i < edge_count; ++i) {
+            const auto& edge = edges[i];
+            if (distance[edge.from] == INF) continue;
+            const auto candidate = distance[edge.from] + edge.w;
+            if (candidate < distance[edge.to]) {
+                distance[edge.to] = candidate;
+                changed = true;
+            }
+        }
+        if (!changed) break;
+    }
+    std::uint64_t negative = 0;
+    for (std::size_t i = 0; i < edge_count; ++i) {
+        const auto& edge = edges[i];
+        if (distance[edge.from] != INF && distance[edge.from] + edge.w < distance[edge.to])
+            negative |= std::uint64_t{1} << edge.to;
+    }
+    if (negative != 0) {
+        for (std::size_t pass = 1; pass < vertex_count; ++pass) {
+            const auto previous = negative;
+            for (std::size_t i = 0; i < edge_count; ++i) {
+                const auto& edge = edges[i];
+                if ((negative >> edge.from) & 1) negative |= std::uint64_t{1} << edge.to;
+            }
+            if (negative == previous) break;
+        }
+        for (std::size_t i = 0; i < vertex_count; ++i)
+            if ((negative >> i) & 1) distance[i] = -INF;
+    }
+    // 到達部分の検査・計算が全て成功してから出力を更新する。
+    distances.assign(graph.size(), INF);
+    for (std::size_t i = 0; i < vertex_count; ++i) distances[vertices[i]] = distance[i];
+    return negative == 0 ? 1 : 2;
+}
+
+// 距離の更新が番号の増加方向だけなら、1回の緩和で距離が確定する。
+// 改善する後退辺で止め、初回緩和の距離を通常処理へ渡す。
+// 直前まで一本道なら祖先への改善辺は負閉路。影響を伝播して終える。
+// 戻り値は確定時-1、負影響伝播完了時-2、それ以外は通常処理へ渡す停止頂点。
+[[gnu::noinline]]
+inline int BellmanFordForward(const WGraph& graph,
+    std::vector<std::int64_t>& distance, int start_index) {
+    distance.assign(graph.size(), INF);
+    distance[start_index] = 0;
+    const int n = static_cast<int>(graph.size());
+    bool unique_prefix = true;
+    for (int from = start_index; from < n; ++from) {
+        const auto from_distance = distance[from];
+        if (from_distance == INF) continue;
+        for (const auto& edge : graph[from]) {
+#ifndef SKIP_RUNTIME_CHECKS
+            constexpr std::int64_t max_cost = 1'000'000'000;
+            if (edge.to < 0 || edge.to >= n)
+                throw std::out_of_range("BellmanFord: invalid destination vertex");
+            if (edge.w < -max_cost || edge.w > max_cost)
+                throw std::out_of_range("BellmanFord: cost must be in [-1e9, 1e9]");
+#endif
+            const auto candidate = from_distance + edge.w;
+            if (candidate >= distance[edge.to]) continue;
+            if (edge.to <= from) {
+                if (!unique_prefix || distance[edge.to] == INF) return from;
+                // 処理済みの到達頂点は一本道。後退先からfromへの経路が存在する。
+                // candidate<distance[to]は、この閉路の重みが負であることを表す。
+                std::vector<int> negative;
+                negative.push_back(edge.to);
+                distance[edge.to] = -INF;
+                for (std::size_t head = 0; head < negative.size(); ++head) {
+                    for (const auto& next : graph[negative[head]]) {
+#ifndef SKIP_RUNTIME_CHECKS
+                        if (next.to < 0 || next.to >= n)
+                            throw std::out_of_range("BellmanFord: invalid destination vertex");
+                        if (next.w < -max_cost || next.w > max_cost)
+                            throw std::out_of_range("BellmanFord: cost must be in [-1e9, 1e9]");
+#endif
+                        if (distance[next.to] != -INF) {
+                            negative.push_back(next.to);
+                            distance[next.to] = -INF;
+                        }
+                    }
+                }
+                return -2;
+            }
+            distance[edge.to] = candidate;
+        }
+        // 現在の頂点で初めて分岐した場合は、この行の祖先照合まで一本道の証明が使える。
+        if (graph[from].size() > 1) unique_prefix = false;
+    }
+    return -1;
+}
+
+} // namespace reinsirk::detail
+
+inline bool BellmanFord(const WGraph& graph, std::vector<std::int64_t>& distances, int start_index) {
+    if (graph.size() <= 64) return reinsirk::detail::BellmanFordImpl<false>(graph, distances, start_index);
+    if (graph.size() >= 4096) {
+        if (graph.size() > static_cast<std::size_t>(std::numeric_limits<int>::max()))
+            throw std::length_error("BellmanFord: too many vertices");
+#ifndef SKIP_RUNTIME_CHECKS
+        if (start_index < 0 || static_cast<std::size_t>(start_index) >= graph.size())
+            throw std::out_of_range("BellmanFord: invalid start vertex");
+#endif
+        const int sparse = reinsirk::detail::BellmanFordSparse(graph, distances, start_index);
+        if (sparse != 0) return sparse == 2;
+    }
+    if (graph.size() <= static_cast<std::size_t>((INF - 1) / 1'000'000'000)
+#ifndef SKIP_RUNTIME_CHECKS
+        && start_index >= 0 && static_cast<std::size_t>(start_index) < graph.size()
+#endif
+        && graph[start_index].size() == 1 && graph[start_index].front().to > start_index) {
+#ifndef SKIP_RUNTIME_CHECKS
+        std::vector<std::int64_t> initial;
+#else
+        auto& initial = distances;
+#endif
+        const int stopped = reinsirk::detail::BellmanFordForward(graph, initial, start_index);
+        if (stopped < 0) {
+#ifndef SKIP_RUNTIME_CHECKS
+            distances.swap(initial);
+#endif
+            return stopped == -2;
+        }
+        return reinsirk::detail::BellmanFordImpl<true, true, true>(graph, distances, start_index, &initial
+#ifndef SKIP_RUNTIME_CHECKS
+            , stopped
+#endif
+        );
+    }
+    if (graph.size() <= static_cast<std::size_t>((INF - 1) / 1'000'000'000))
+        return reinsirk::detail::BellmanFordImpl<true, true>(graph, distances, start_index);
+    return reinsirk::detail::BellmanFordImpl<true, false>(graph, distances, start_index);
+}
+
+#endif
+
+
+// Library: Graph/Bellman-Ford_SFPA.cpp
+// SPDX-License-Identifier: CC0-1.0
+// 生成版: Clang用。
+// 生成元: Graph/Bellman-Ford_SFPA.cpp
+// 参考: https://zenn.dev/reputeless/books/standard-cpp-for-competitive-programming/viewer/bellman-ford
+// ドキュメント: https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/negative_shortest_paths.md
+//
+// API一覧
+// [共通型・定数]
+// Edge(to,w): 行先toとint64_tの重みwを持つ有向辺。
+// WGraph: 出発点を隣接リストの添字とする辺列。INF=std::int64_t{1}<<60。
+//
+// [SPFA]
+// SPFA(graph, distances, start_index): 始点からの最短距離をdistancesに格納し、到達可能な負閉路があればtrueを返す。
+// SKIP_RUNTIME_CHECKSを定義すると入力検査を省く。
+// 検査は始点と処理中に参照する辺のみ。未到達成分の出辺は走査しない。
+// 通常は更新頂点をFIFO処理し、長い反復は到達部分の強連結成分ごとに解く。
+// 標準C++23、重みは[-1e9, 1e9]。
+// 到達可能な負閉路があればtrue。距離は成功時に全上書きし、未到達INF・負影響-INF。
+// 最悪O(VE+V+E)時間・O(V)追加領域。有限距離のINF/-INF衝突はoverflow_error。
+
+#include <algorithm>
+#include <array>
+#include <span>
+#include <type_traits>
+#include <cstddef>
+#include <cstdint>
+#include <limits>
+#include <memory>
+#include <stdexcept>
+#include <vector>
+
+#ifndef SIRKIT_INF_DEFINED
+#define SIRKIT_INF_DEFINED
+inline constexpr std::int64_t INF = std::int64_t{1} << 60;
+#endif
+
+#ifndef SIRKIT_GRAPH_TYPES_DEFINED
+#define SIRKIT_GRAPH_TYPES_DEFINED
+struct Edge
+{
+    int to;
+    std::int64_t w;
+    Edge(int destination, std::int64_t weight) : to(destination), w(weight) {}
+};
+using WGraph = std::vector<std::vector<Edge>>;
+#endif
+
+#ifndef SIRKIT_SPFA_COMPONENTS_DEFINED
+#define SIRKIT_SPFA_COMPONENTS_DEFINED
+namespace reinsirk::detail {
+// 遅い反復だけを到達部分の強連結成分ごとに解く。追加領域O(V)。
+[[gnu::noinline]]
+inline void SPFAComponents(const WGraph& graph, std::span<const int> sources,
+    std::vector<std::int64_t>& distance, std::int64_t unreachable, std::int64_t lower_bound,
+    std::vector<int>& negative
+#ifndef SKIP_RUNTIME_CHECKS
+    , std::vector<std::uint8_t>& checked
+#endif
+) {
+#ifndef SKIP_RUNTIME_CHECKS
+    const int n = static_cast<int>(graph.size());
+#endif
+    struct Frame { int vertex; std::size_t edge; };
+    std::vector<int> order(graph.size(), -1), low(graph.size()), component(graph.size(), -1);
+    std::vector<int> active, members;
+    std::vector<std::int64_t> tree_distance(graph.size());
+    // stateの下位bitは現在のDFS祖先、次のbitは負閉路の証拠。
+    std::vector<std::uint8_t> state(graph.size(), 0), negative_component;
+    std::vector<std::size_t> boundary{0};
+    std::vector<Frame> dfs;
+    int clock = 0;
+    const auto discover = [&](int vertex, std::int64_t tree_value) {
+        tree_distance[vertex] = tree_value;
+        state[vertex] = 1;
+        order[vertex] = low[vertex] = clock++;
+        active.push_back(vertex);
+        dfs.push_back({vertex, 0});
+    };
+    for (const int root : sources) {
+        if (distance[root] == unreachable || order[root] >= 0) continue;
+        discover(root, 0);
+        while (!dfs.empty()) {
+            auto& frame = dfs.back();
+            const int from = frame.vertex;
+            if (frame.edge != graph[from].size()) {
+                const auto& edge = graph[from][frame.edge++];
+#ifndef SKIP_RUNTIME_CHECKS
+                if (!checked[from]) {
+                    if (edge.to < 0 || edge.to >= n)
+                        throw std::out_of_range("SPFA: invalid destination vertex");
+                    if (edge.w < -1'000'000'000 || edge.w > 1'000'000'000)
+                        throw std::out_of_range("SPFA: cost must be in [-1e9, 1e9]");
+                }
+#endif
+                if (order[edge.to] < 0) discover(edge.to, tree_distance[from] + edge.w);
+                else if (component[edge.to] < 0) {
+                    low[from] = std::min(low[from], order[edge.to]);
+                    // DFS木上の祖先へ戻る辺で、閉路の重みが負と確定する。
+                    if ((state[edge.to] & 1) && tree_distance[from] + edge.w < tree_distance[edge.to])
+                        state[from] |= 2;
+                }
+            } else {
+                if (low[from] == order[from]) {
+                    const int id = static_cast<int>(boundary.size() - 1);
+                    bool found_negative = false;
+                    for (;;) {
+                        const int vertex = active.back(); active.pop_back();
+                        component[vertex] = id;
+                        found_negative |= (state[vertex] & 2) != 0;
+                        members.push_back(vertex);
+                        if (vertex == from) break;
+                    }
+                    boundary.push_back(members.size());
+                    negative_component.push_back(found_negative);
+                }
+#ifndef SKIP_RUNTIME_CHECKS
+                checked[from] = 1;
+#endif
+                state[from] &= 2;
+                dfs.pop_back();
+                if (!dfs.empty()) low[dfs.back().vertex] = std::min(low[dfs.back().vertex], low[from]);
+            }
+        }
+    }
+    const auto mark = [&](int vertex) {
+        if (distance[vertex] != lower_bound) {
+            negative.push_back(vertex);
+            distance[vertex] = lower_bound;
+        }
+    };
+    for (std::size_t block = boundary.size() - 1; block != 0; --block) {
+        const int id = static_cast<int>(block - 1);
+        const auto first = boundary[block - 1], last = boundary[block], size = last - first;
+        bool affected = negative_component[id] != 0, ring = true;
+        for (auto position = first; position != last; ++position) {
+            const int from = members[position];
+            affected |= distance[from] == lower_bound;
+            if (graph[from].size() != 1 || component[graph[from].front().to] != id) ring = false;
+        }
+        if (!affected && ring) {
+            int from = members[first];
+            for (std::size_t step = 0; step < 2 * size; ++step) {
+                const auto& edge = graph[from].front();
+                if (distance[from] != unreachable)
+                    distance[edge.to] = std::min(distance[edge.to], distance[from] + edge.w);
+                from = edge.to;
+            }
+        } else if (!affected && size > 1) {
+            std::vector<int> next;
+            active.clear();
+            for (auto position = first; position != last; ++position) {
+                const int from = members[position];
+                order[from] = distance[from] != unreachable;
+                if (order[from]) active.push_back(from);
+            }
+            bool converged = false;
+            for (std::size_t pass = 1; pass < std::min(size, std::size_t{8}); ++pass) {
+                for (const int from : active) {
+                    order[from] = 0;
+                    for (const auto& edge : graph[from]) {
+                        if (component[edge.to] != id) continue;
+                        const auto candidate = distance[from] + edge.w;
+                        if (candidate < distance[edge.to]) {
+                            if (candidate <= lower_bound) { affected = true; break; }
+                            distance[edge.to] = candidate;
+                            if (!order[edge.to]) {
+                                next.push_back(edge.to);
+                                order[edge.to] = 1;
+                            }
+                        }
+                    }
+                    if (affected) break;
+                }
+                if (affected) break;
+                if (next.empty()) { converged = true; break; }
+                active.swap(next);
+                next.clear();
+            }
+            if (!affected && !converged && size > 8) {
+                // 少数回で収束する成分の順序は保ち、残りだけ反転する。
+                std::reverse(active.begin(), active.end());
+                // Tarjanで使い終えた配列を前駆頂点へ転用する。
+                for (auto position = first; position != last; ++position) low[members[position]] = -1;
+                std::size_t cycle_budget = size;
+                for (std::size_t pass = 8; pass < size; ++pass) {
+                    for (const int from : active) {
+                        order[from] = 0;
+                        for (const auto& edge : graph[from]) {
+                            if (component[edge.to] != id) continue;
+                            const auto candidate = distance[from] + edge.w;
+                            if (candidate < distance[edge.to]) {
+                                if (candidate <= lower_bound) { affected = true; break; }
+                                distance[edge.to] = candidate;
+                                low[edge.to] = from;
+                                if (cycle_budget != 0) --cycle_budget;
+                                if (!order[edge.to]) {
+                                    next.push_back(edge.to);
+                                    order[edge.to] = 1;
+                                }
+                            }
+                        }
+                        if (affected) break;
+                    }
+                    if (affected) break;
+                    if (next.empty()) { converged = true; break; }
+                    // 厳密な緩和で得た前駆閉路は負。検出費用は緩和回数に応じて抑える。
+                    if (cycle_budget == 0) {
+                        for (auto position = first; position != last; ++position) state[members[position]] = 0;
+                        for (auto position = first; position != last; ++position) {
+                            const int root = members[position];
+                            int at = root;
+                            while (low[at] >= 0 && state[at] == 0) { state[at] = 1; at = low[at]; }
+                            if (low[at] >= 0 && state[at] == 1) { affected = true; break; }
+                            at = root;
+                            while (low[at] >= 0 && state[at] == 1) { state[at] = 2; at = low[at]; }
+                        }
+                        cycle_budget = size;
+                        if (affected) break;
+                    }
+                    active.swap(next);
+                    next.clear();
+                }
+            }
+            if (!affected && !converged) {
+                for (auto position = first; position != last; ++position) {
+                    const int from = members[position];
+                    if (distance[from] == unreachable) continue;
+                    for (const auto& edge : graph[from])
+                        if (component[edge.to] == id && distance[from] + edge.w < distance[edge.to]) affected = true;
+                }
+            }
+        }
+        if (affected)
+            for (auto position = first; position != last; ++position) mark(members[position]);
+        for (auto position = first; position != last; ++position) {
+            const int from = members[position];
+            if (distance[from] == unreachable) continue;
+            for (const auto& edge : graph[from]) {
+                if (component[edge.to] == id) continue;
+                if (affected) mark(edge.to);
+                else {
+                    const auto candidate = distance[from] + edge.w;
+                    if (candidate < distance[edge.to]) {
+                        if (candidate <= lower_bound) mark(edge.to);
+                        else distance[edge.to] = candidate;
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+// 通常のFIFO処理が長引いた場合だけ、温存した距離から残りを解く。
+[[gnu::noinline, gnu::cold]]
+inline void SPFAFinishComponents(const WGraph& graph,
+    std::vector<std::int64_t>& distance, std::int64_t unreachable,
+    std::vector<int>& affected, std::vector<std::uint8_t>& state) {
+    const auto lower_bound = -static_cast<std::int64_t>(graph.size()) * 1'000'000'000;
+    for (const int vertex : affected) distance[vertex] = lower_bound;
+    std::vector<int> sources;
+    sources.reserve(graph.size());
+#ifndef SKIP_RUNTIME_CHECKS
+    std::vector<std::uint8_t> checked(graph.size());
+#endif
+    for (std::size_t vertex = 0; vertex < graph.size(); ++vertex) {
+        if (!graph[vertex].empty()) sources.push_back(static_cast<int>(vertex));
+#ifndef SKIP_RUNTIME_CHECKS
+        checked[vertex] = (state[vertex] & 2) != 0;
+#endif
+    }
+    SPFAComponents(graph, sources, distance, unreachable, lower_bound, affected
+#ifndef SKIP_RUNTIME_CHECKS
+        , checked
+#endif
+    );
+    for (const int vertex : affected) {
+        state[vertex] |= 4;
+        distance[vertex] = -INF;
+    }
+}
+} // namespace reinsirk::detail
+#endif
+
+// 64頂点以下はキュー・補助状態をスタックに置く。
+#ifndef SIRKIT_SPFA_DEFINED
+#define SIRKIT_SPFA_DEFINED
+namespace reinsirk::detail {
+template <bool Small, bool Bounded>
+inline bool SPFARun(const WGraph &graph, std::vector<std::int64_t> &distances,
+                 int start_index)
+{
+    constexpr std::int64_t max_cost = 1'000'000'000;
+    if (graph.size() > static_cast<std::size_t>(std::numeric_limits<int>::max()))
+        throw std::length_error("SPFA: too many vertices");
+    const int n = static_cast<int>(graph.size());
+#ifndef SKIP_RUNTIME_CHECKS
+    if (start_index < 0 || start_index >= n)
+        throw std::out_of_range("SPFA: invalid start vertex");
+#endif
+
+    if (graph[start_index].empty()) {
+#ifndef SKIP_RUNTIME_CHECKS
+        std::vector<std::int64_t> result(graph.size(), INF);
+        result[start_index] = 0;
+        distances.swap(result);
+#else
+        distances.assign(graph.size(), INF);
+        distances[start_index] = 0;
+#endif
+        return false;
+    }
+
+    // n*最大辺重み<INFなら、内部値と出力値の変換が要らない。
+    const std::int64_t unreachable = Bounded ? INF : (static_cast<std::int64_t>(n) + 1) * max_cost;
+    std::vector<std::int64_t> local_distance;
+#ifndef SKIP_RUNTIME_CHECKS
+    auto& distance = local_distance;
+#else
+    auto& distance = Small ? distances : local_distance;
+#endif
+    distance.assign(graph.size(), unreachable);
+    std::conditional_t<Small, std::array<int, 64>, std::vector<int>> path_edges;
+    if constexpr (Small) path_edges.fill(0);
+    else path_edges.assign(graph.size(), 0);
+    std::vector<int> affected;
+    // stateのbit 0はキュー内、bit 1は初回検査済み、bit 2は負閉路の影響。
+    constexpr std::uint8_t queued_bit = 1;
+#ifndef SKIP_RUNTIME_CHECKS
+    constexpr std::uint8_t checked_bit = 2;
+#endif
+    constexpr std::uint8_t negative_bit = 4;
+    std::conditional_t<Small, std::array<std::uint8_t, 64>, std::vector<std::uint8_t>> state;
+    if constexpr (Small) state.fill(0);
+    else state.assign(graph.size(), 0);
+    // 同時にキューに入る頂点はV個以下。書いた要素だけ読むため初期化は不要。
+    const std::size_t queue_capacity = graph.size();
+    std::array<int, Small ? 64 : 0> local_queue;
+    std::unique_ptr<int[]> queue_owner;
+    int* queue;
+    if constexpr (Small) queue = local_queue.data();
+    else {
+        queue_owner = std::make_unique_for_overwrite<int[]>(queue_capacity);
+        queue = queue_owner.get();
+    }
+    std::size_t head = 0, tail = 0, queued = 0;
+    const auto enqueue = [&](int vertex)
+    {
+        queue[tail] = vertex;
+        if (++tail == queue_capacity)
+            tail = 0;
+        ++queued;
+    };
+    distance[start_index] = 0;
+    enqueue(start_index);
+    state[start_index] = queued_bit;
+
+    // 負閉路の下流を一度だけ走査し、以後は距離の緩和から除外する。
+    const auto mark_negative = [&](int seed)
+    {
+        if ((state[seed] & negative_bit))
+            return;
+        // 負閉路が見つかるまでは、影響頂点の領域を確保しない。
+        if (affected.empty())
+            affected.reserve(graph.size());
+        const std::size_t first = affected.size();
+        state[seed] |= negative_bit;
+        if constexpr (Bounded) distance[seed] = -INF;
+        affected.push_back(seed);
+        for (std::size_t affected_head = first; affected_head < affected.size(); ++affected_head)
+        {
+            for (const auto &edge : graph[affected[affected_head]])
+            {
+#ifndef SKIP_RUNTIME_CHECKS
+                // 初回検査の途中から来る場合もあるため、伝播側でも検査する。
+                if (edge.to < 0 || edge.to >= n)
+                    throw std::out_of_range("SPFA: invalid destination vertex");
+                if (edge.w < -max_cost || edge.w > max_cost)
+                    throw std::out_of_range("SPFA: cost must be in [-1e9, 1e9]");
+#endif
+                if ((state[edge.to] & negative_bit))
+                    continue;
+                state[edge.to] |= negative_bit;
+                if constexpr (Bounded) distance[edge.to] = -INF;
+                affected.push_back(edge.to);
+            }
+        }
+    };
+
+    // 短い処理ではFIFOを保ち、繰返しが長い場合だけ成分ごとに確定する。
+    const auto budget_limit = std::numeric_limits<std::size_t>::max();
+    std::size_t component_budget = graph.size() <= budget_limit / 16 ? graph.size() * 16 : budget_limit;
+    std::int64_t current_distance = 0;
+    int current_length = 0;
+    // 通常はfromが負影響ならtrue。Directでは未キューの更新先、なければ-1。
+    const auto relax_edge = [&]<bool Single = false, bool Direct = false>(int from, const Edge &edge)
+        -> std::conditional_t<Direct, int, bool>
+    {
+        constexpr std::conditional_t<Direct, int, bool> unchanged = Direct ? -1 : 0;
+        // Boundedでは候補>-INFなので、負影響先は距離比較だけで除外できる。
+        if constexpr (!Bounded) if (state[edge.to] & negative_bit)
+            return unchanged;
+        // 格納する経路はn辺未満なので、候補の加算もint64_t内に収まる。
+        const std::int64_t candidate = current_distance + edge.w;
+        if (candidate >= distance[edge.to])
+            return unchanged;
+        const int length = current_length;
+        // 複数辺では負自己ループを即時に処理し、保持した始点距離を使い続けない。
+        if (length >= n || (!Single && edge.to == from)) [[unlikely]]
+        {
+            mark_negative(edge.to);
+            if constexpr (!Direct) if (state[from] & negative_bit)
+                return true;
+            return unchanged;
+        }
+        distance[edge.to] = candidate;
+        path_edges[edge.to] = length;
+        if (!(state[edge.to] & queued_bit))
+        {
+            if constexpr (Direct) return edge.to;
+            else
+            {
+                enqueue(edge.to);
+                state[edge.to] |= queued_bit;
+            }
+        }
+        return unchanged;
+    };
+
+    while (queued != 0)
+    {
+        std::conditional_t<Small, const int, int> from = queue[head];
+        if (++head == queue_capacity)
+            head = 0;
+        --queued;
+    process_vertex:
+        const std::uint8_t vertex_state = state[from];
+        if (vertex_state & negative_bit)
+            continue;
+        if constexpr (!Small) {
+            if (component_budget == 0) [[unlikely]] {
+                SPFAFinishComponents(graph, distance, unreachable, affected, state);
+                break;
+            }
+            --component_budget;
+        }
+#ifndef SKIP_RUNTIME_CHECKS
+        state[from] = checked_bit;
+#else
+        state[from] = 0;
+#endif
+        current_distance = distance[from];
+        current_length = path_edges[from] + 1;
+#ifndef SKIP_RUNTIME_CHECKS
+        const bool validate = !(vertex_state & checked_bit);
+#endif
+        // 1辺ならループと途中の自己辺更新への対処を省ける。
+        if (graph[from].size() == 1) {
+            const auto& edge = graph[from].front();
+#ifndef SKIP_RUNTIME_CHECKS
+            if (validate) {
+                if (edge.to < 0 || edge.to >= n)
+                    throw std::out_of_range("SPFA: invalid destination vertex");
+                if (edge.w < -max_cost || edge.w > max_cost)
+                    throw std::out_of_range("SPFA: cost must be in [-1e9, 1e9]");
+            }
+#endif
+            // 待機頂点がなければ直接進む。小規模は従来のコードを保つ。
+            if constexpr (!Small) {
+                if (queued == 0) {
+                    const int next = relax_edge.template operator()<true, true>(from,edge);
+                    if (next >= 0) {
+                        from = next;
+                        goto process_vertex;
+                    }
+                } else relax_edge.template operator()<true>(from,edge);
+            } else
+            relax_edge.template operator()<true>(from,edge);
+            continue;
+        }
+#ifndef SKIP_RUNTIME_CHECKS
+        if (validate)
+        {
+            for (const auto &edge : graph[from])
+            {
+                if (edge.to < 0 || edge.to >= n)
+                    throw std::out_of_range("SPFA: invalid destination vertex");
+                if (edge.w < -max_cost || edge.w > max_cost)
+                    throw std::out_of_range("SPFA: cost must be in [-1e9, 1e9]");
+                if (relax_edge(from, edge))
+                    break;
+            }
+        }
+        else
+#endif
+        {
+            for (const auto &edge : graph[from])
+                if (relax_edge(from, edge))
+                    break;
+        }
+    }
+
+    if constexpr (!Bounded) for (int vertex = 0; vertex < n; ++vertex)
+    {
+        if ((state[vertex] & negative_bit))
+            distance[vertex] = -INF;
+        else if (distance[vertex] == unreachable)
+            distance[vertex] = INF;
+        else if (distance[vertex] <= -INF || distance[vertex] >= INF)
+            throw std::overflow_error("SPFA: finite distance collides with INF/-INF");
+    }
+#ifndef SKIP_RUNTIME_CHECKS
+    distances.swap(distance);
+#else
+    if constexpr (!Small) distances.swap(distance);
+#endif
+    return !affected.empty();
+}
+} // namespace reinsirk::detail
+
+inline bool SPFA(const WGraph& graph, std::vector<std::int64_t>& distances, int start_index) {
+    if (graph.size() <= 64) return reinsirk::detail::SPFARun<true, true>(graph, distances, start_index);
+    if (graph.size() <= static_cast<std::size_t>((INF - 1) / 1'000'000'000))
+        return reinsirk::detail::SPFARun<false, true>(graph, distances, start_index);
+    return reinsirk::detail::SPFARun<false, false>(graph, distances, start_index);
+}
+#endif
+
+
+// Library: Graph/Dijkstra.cpp
+// SPDX-License-Identifier: CC0-1.0
+// 生成版: Clang用。
+// 生成元: Graph/Dijkstra.cpp
+// 参考: https://zenn.dev/reputeless/books/standard-cpp-for-competitive-programming/viewer/dijkstra
+// ドキュメント: https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/dijkstra.md
+//
+// API一覧
+// [共通型・定数]
+// Edge(to,w): 行先toとint64_tの重みwを持つ有向辺。
+// WGraph: 出発点を隣接リストの添字とする辺列。INF=std::int64_t{1}<<60。
+//
+// [Dijkstra]
+// Dijkstra(graph, distances, start_index): 始点から全頂点への最短距離をdistancesへ上書きする。
+// Dijkstra(graph, distances, start_index, target_index, path): 全頂点の距離と始点から終点への頂点列を上書き。到達不能ならpathは空。
+// 重みは[0, 1e9]、未到達はINF。有限距離がINF以上ならoverflow_error。
+// Dijkstra(n, edges, distances, start_index[, target_index, path]): (始点,終点,int64重み)のtuple列を
+// span<const tuple<int,int,int64_t>>で受け、内部CSRを作って全頂点の距離を返す。vectorからも渡せる。
+// 全版O(V+E log(E+1))時間・O(V+E)追加領域。辺列版のCSR構築はO(V+E)。
+// SKIP_RUNTIME_CHECKSを定義すると入力検査を省く。
+// WGraph版の検査は始点・終点と処理中に参照する辺のみ。未到達成分は走査しない。
+// 辺列版は構築時に全辺を参照し、両端点と重みを検査する。n<0・容量超過はlength_error。
+
+#include <algorithm>
+#include <array>
+#include <bit>
+#include <cstddef>
+#include <cstdint>
+#include <functional>
+#include <limits>
+#include <queue>
+#include <stdexcept>
+#include <span>
+#include <type_traits>
+#include <tuple>
+#include <utility>
+#include <vector>
+
+#ifndef SIRKIT_INF_DEFINED
+#define SIRKIT_INF_DEFINED
+inline constexpr std::int64_t INF = std::int64_t{1} << 60;
+#endif
+
+#ifndef SIRKIT_GRAPH_TYPES_DEFINED
+#define SIRKIT_GRAPH_TYPES_DEFINED
+struct Edge
+{
+    int to;
+    std::int64_t w;
+    Edge(int destination, std::int64_t weight) : to(destination), w(weight) {}
+};
+using WGraph = std::vector<std::vector<Edge>>;
+#endif
+
+// 小規模は二分ヒープ、大規模はキューが64件を超えたらradix heapへ切り替える。
+#ifndef SIRKIT_DIJKSTRA_DEFINED
+#define SIRKIT_DIJKSTRA_DEFINED
+namespace reinsirk::detail {
+// バルク入力専用。行spanはowned arcs_を参照し、コピー/移動しない。
+class DijkstraCsrGraph {
+    struct Arc {
+        int to;
+        std::uint32_t w;
+        Arc() noexcept {} // 全要素を下の散布で上書きするため先行初期化不要。
+    };
+    std::vector<Arc> arcs_;
+    std::vector<std::span<const Arc>> rows_;
+public:
+    DijkstraCsrGraph(int n, std::span<const std::tuple<int,int,std::int64_t>> input) {
+        if(n<0) throw std::length_error("Dijkstra: negative vertex count");
+        if(input.size()>arcs_.max_size() || static_cast<std::size_t>(n)>rows_.max_size())
+            throw std::length_error("Dijkstra: CSR capacity exceeded");
+        std::vector<std::size_t> begin(static_cast<std::size_t>(n)+1);
+        for(const auto& [u,v,w]:input) {
+#ifndef SKIP_RUNTIME_CHECKS
+            if(u<0 || u>=n || v<0 || v>=n)
+                throw std::out_of_range("Dijkstra: invalid bulk endpoint");
+            if(w<0 || w>1'000'000'000)
+                throw std::out_of_range("Dijkstra: weight must be in [0, 1e9]");
+#endif
+            ++begin[static_cast<std::size_t>(u)+1];
+        }
+        for(int v=0;v<n;++v)begin[v+1]+=begin[v];
+        arcs_.resize(input.size());
+        rows_.reserve(n);
+        for(int v=0;v<n;++v) {
+            const auto length=begin[v+1]-begin[v];
+            if(length==0) rows_.emplace_back();
+            else rows_.emplace_back(arcs_.data()+begin[v],length);
+        }
+        // beginを直接cursorへ変え、次数配列のコピーを省く。
+        for(const auto& [u,v,w]:input) {
+            auto& arc=arcs_[begin[u]++];arc.to=v;arc.w=static_cast<std::uint32_t>(w);
+        }
+    }
+    DijkstraCsrGraph(const DijkstraCsrGraph&)=delete;
+    DijkstraCsrGraph& operator=(const DijkstraCsrGraph&)=delete;
+    DijkstraCsrGraph(DijkstraCsrGraph&&)=delete;
+    DijkstraCsrGraph& operator=(DijkstraCsrGraph&&)=delete;
+    std::size_t size() const noexcept{return rows_.size();}
+    const auto& operator[](std::size_t v) const noexcept{return rows_[v];}
+    const auto* data() const noexcept{return rows_.data();}
+};
+
+// 内部用の単調整数ヒープ。格納する有限距離はINF未満。
+#ifndef SIRKIT_DIJKSTRA_RADIX_HEAP_DEFINED
+#define SIRKIT_DIJKSTRA_RADIX_HEAP_DEFINED
+class DijkstraRadixHeap
+{
+    // 待機距離はlastから最大辺重み以内なので、下位32bitから復元できる。
+    using State = std::pair<std::uint32_t, int>;
+    std::array<std::vector<State>, 64> buckets_;
+    std::vector<int> zero_;
+    std::array<std::uint64_t, 64> minima_;
+    std::uint64_t last_ = 0, occupied_ = 0;
+    [[gnu::noinline]]
+    void refill()
+    {
+        const auto bucket = std::countr_zero(occupied_);
+        auto &source = buckets_[bucket];
+        last_ = minima_[bucket];
+        for (const auto &state : source)
+        {
+            const auto key = last_ + static_cast<std::uint32_t>(state.first - static_cast<std::uint32_t>(last_));
+            if (key == last_) {
+                zero_.emplace_back(state.second);
+                occupied_ |= 1;
+                continue;
+            }
+            const auto target = std::bit_width(key ^ last_);
+            buckets_[target].push_back(state);
+            minima_[target] = std::min(minima_[target], key);
+            occupied_ |= std::uint64_t{1} << target;
+        }
+        source.clear();
+        minima_[bucket] = std::numeric_limits<std::uint64_t>::max();
+        occupied_ &= ~(std::uint64_t{1} << bucket);
+    }
+public:
+    explicit DijkstraRadixHeap(std::uint64_t last = 0) : last_(last)
+    {
+        minima_.fill(std::numeric_limits<std::uint64_t>::max());
+    }
+    bool empty() const noexcept { return occupied_ == 0; }
+    [[gnu::always_inline]]
+    void emplace(std::int64_t distance, int vertex)
+    {
+        const auto key = static_cast<std::uint64_t>(distance);
+        if (key == last_) {
+            zero_.emplace_back(vertex);
+            occupied_ |= 1;
+            return;
+        }
+        const auto bucket = std::bit_width(key ^ last_);
+        buckets_[bucket].emplace_back(static_cast<std::uint32_t>(key), vertex);
+        minima_[bucket] = std::min(minima_[bucket], key);
+        occupied_ |= std::uint64_t{1} << bucket;
+    }
+    [[gnu::always_inline]]
+    std::pair<std::uint64_t, int> pop()
+    {
+        if (zero_.empty()) refill();
+        const auto vertex = zero_.back();
+        zero_.pop_back();
+        if (zero_.empty())
+            occupied_ &= ~std::uint64_t{1};
+        return {last_, vertex};
+    }
+    [[gnu::always_inline]]
+    std::pair<std::uint64_t, int> pop_singleton()
+    {
+        if (zero_.empty()) {
+            const auto bucket = std::countr_zero(occupied_);
+            auto& source = buckets_[bucket];
+            if (source.size() == 1) {
+                const int vertex = source.back().second;
+                source.pop_back();
+                last_ = minima_[bucket];
+                minima_[bucket] = std::numeric_limits<std::uint64_t>::max();
+                occupied_ &= ~(std::uint64_t{1} << bucket);
+                return {last_, vertex};
+            }
+        }
+        return pop();
+    }
+
+};
+
+
+#endif
+
+// radix移行後の末端処理。確認が64回続けて外れたら元のループへ戻す。
+template <bool RestorePath, bool MayOverflow, class GraphLike = WGraph>
+[[gnu::noinline]]
+inline void DijkstraRadixRun(const GraphLike& graph,
+    std::vector<std::int64_t>& distance, std::vector<int>& previous,
+    std::vector<int>& overflow_targets, DijkstraRadixHeap& radix,
+    int first_from = -1, std::int64_t first_distance = 0, std::size_t first_begin = 0)
+{
+#ifndef SKIP_RUNTIME_CHECKS
+    [[maybe_unused]] const int n = static_cast<int>(graph.size());
+    [[maybe_unused]] constexpr std::int64_t max_weight = 1'000'000'000;
+#endif
+    unsigned terminal_budget = 64;
+    auto* const distance_data = distance.data();
+    auto* const previous_data = previous.data();
+    const auto relax = [&, distance_data, previous_data]
+    [[gnu::always_inline]]
+    (std::int64_t current, int from, std::size_t begin = 0) {
+        (void)previous_data;
+        const auto& edges = graph[from];
+        const auto end = edges.end();
+        for (auto cursor = edges.begin() + begin; cursor != end; ++cursor) {
+            const auto& edge = *cursor;
+#ifndef SKIP_RUNTIME_CHECKS
+        if constexpr (!std::is_same_v<GraphLike, DijkstraCsrGraph>) {
+            if (edge.to < 0 || edge.to >= n)
+                throw std::out_of_range("Dijkstra: invalid destination vertex");
+            if (edge.w < 0 || edge.w > max_weight)
+                throw std::out_of_range("Dijkstra: weight must be in [0, 1e9]");
+
+        }
+#endif
+            const auto candidate = current + edge.w;
+            if constexpr (MayOverflow) if (candidate >= INF) [[unlikely]] {
+                if (distance_data[edge.to] == INF) overflow_targets.push_back(edge.to);
+                continue;
+            }
+            if (candidate >= distance_data[edge.to]) continue;
+            distance_data[edge.to] = candidate;
+            if constexpr (RestorePath) previous_data[edge.to] = from;
+            if (terminal_budget != 0) {
+                --terminal_budget;
+                // 終端と、その1辺前だけを即時処理する。長鎖はたどらない。
+                const auto& next = graph[edge.to];
+                if (next.empty()) { terminal_budget = 64; continue; }
+                if (next.size() == 1) {
+                    const auto& tail = next.front();
+#ifndef SKIP_RUNTIME_CHECKS
+        if constexpr (!std::is_same_v<GraphLike, DijkstraCsrGraph>) {
+                    if (tail.to < 0 || tail.to >= n)
+                        throw std::out_of_range("Dijkstra: invalid destination vertex");
+                    if (tail.w < 0 || tail.w > max_weight)
+                        throw std::out_of_range("Dijkstra: weight must be in [0, 1e9]");
+
+        }
+#endif
+                    if (graph[tail.to].empty()) {
+                        terminal_budget = 64;
+                        const auto terminal_distance = candidate + tail.w;
+                        if constexpr (MayOverflow) if (terminal_distance >= INF) {
+                            if (distance_data[tail.to] == INF) overflow_targets.push_back(tail.to);
+                            continue;
+                        }
+                        if (terminal_distance < distance_data[tail.to]) {
+                            distance_data[tail.to] = terminal_distance;
+                            if constexpr (RestorePath) previous_data[tail.to] = edge.to;
+                        }
+                        continue;
+                    }
+                }
+            }
+        
+            radix.emplace(candidate, edge.to);
+        }
+    };
+    if (first_from >= 0) {
+        relax(first_distance, first_from, first_begin);
+        if (terminal_budget == 0) return;
+    }
+    while (!radix.empty()) {
+        const auto [key, vertex] = radix.pop();
+        const auto value = static_cast<std::int64_t>(key);
+        if (value != distance_data[vertex]) continue;
+        relax(value, vertex);
+        if (terminal_budget == 0) return;
+    }
+}
+
+// radix移行後の所有と処理を分け、二分ヒープ側の作業領域を小さくする。
+template <bool RestorePath, bool MayOverflow, class InitialRange, class GraphLike = WGraph>
+[[gnu::noinline]]
+inline void DijkstraRadixFinish(const GraphLike& graph,
+    std::vector<std::int64_t>& distance, std::vector<int>& previous,
+    std::vector<int>& overflow_targets,
+    const InitialRange& initial,
+    std::int64_t current, int from, std::size_t resume)
+{
+#ifndef SKIP_RUNTIME_CHECKS
+    [[maybe_unused]] const int n = static_cast<int>(graph.size());
+    [[maybe_unused]] constexpr std::int64_t max_weight = 1'000'000'000;
+#endif
+    DijkstraRadixHeap radix(static_cast<std::uint64_t>(current));
+    for (const auto& value : initial) radix.emplace(value.first, value.second);
+    auto* const distance_data = distance.data();
+    auto* const previous_data = previous.data();
+    auto* const adjacency = graph.data();
+    const auto relax = [&, distance_data, previous_data, adjacency]
+    [[gnu::always_inline]]
+    (std::int64_t current, int from, std::size_t begin = 0) {
+        (void)previous_data;
+        const auto& edges = adjacency[from];
+        const auto end = edges.end();
+        for (auto cursor = edges.begin() + begin; cursor != end; ++cursor)
+        {
+            const auto& edge = *cursor;
+#ifndef SKIP_RUNTIME_CHECKS
+        if constexpr (!std::is_same_v<GraphLike, DijkstraCsrGraph>) {
+            if (edge.to < 0 || edge.to >= n)
+                throw std::out_of_range("Dijkstra: invalid destination vertex");
+            if (edge.w < 0 || edge.w > max_weight)
+                throw std::out_of_range("Dijkstra: weight must be in [0, 1e9]");
+
+        }
+#endif
+            const std::int64_t candidate = current + edge.w;
+            if constexpr (MayOverflow) if (candidate >= INF) [[unlikely]]
+            {
+                if (distance_data[edge.to] == INF) overflow_targets.push_back(edge.to);
+                continue;
+            }
+            if (candidate >= distance_data[edge.to])
+                continue;
+            distance_data[edge.to] = candidate;
+            if constexpr (RestorePath)
+                previous_data[edge.to] = from;
+            radix.emplace(candidate, edge.to);
+        }
+    };
+    if (graph.size() > 4096) {
+        DijkstraRadixRun<RestorePath, MayOverflow>(
+            graph, distance, previous, overflow_targets, radix, from, current, resume);
+    } else if (resume < graph[from].size()) {
+        relax(current, from, resume);
+    }
+    while (!radix.empty()) {
+        const auto [key, vertex] = radix.pop();
+        const auto value = static_cast<std::int64_t>(key);
+        if (value == distance_data[vertex]) relax(value, vertex);
+    }
+}
+
+// キューが65件になった辺でradix heapへ移し、残りの辺もそのまま処理する。
+// 初期ヒープ用。未使用領域を初期化しない。
+struct DijkstraInitialState {
+    std::int64_t first;
+    int second;
+};
+
+template <bool RestorePath, bool MayOverflow, bool Adaptive, bool PruneTerminal = true, bool RecordInitialChain = false, class GraphLike = WGraph>
+[[gnu::always_inline]]
+inline void DijkstraBigImpl(const GraphLike &graph, std::vector<std::int64_t> &distances,
+                         int start_index, int target_index, std::vector<int> *path)
+{
+    constexpr bool DeferPrevious = RestorePath && PruneTerminal && RecordInitialChain;
+    constexpr bool UseBounded = Adaptive;
+#ifndef SKIP_RUNTIME_CHECKS
+    [[maybe_unused]] constexpr std::int64_t max_weight = 1'000'000'000;
+#endif
+    if (graph.size() > static_cast<std::size_t>(std::numeric_limits<int>::max()))
+        throw std::length_error("Dijkstra: too many vertices");
+#ifndef SKIP_RUNTIME_CHECKS
+    [[maybe_unused]] const int n = static_cast<int>(graph.size());
+#endif
+#ifndef SKIP_RUNTIME_CHECKS
+    if (start_index < 0 || start_index >= n ||
+        (RestorePath && (target_index < 0 || target_index >= n)))
+        throw std::out_of_range("Dijkstra: invalid start or target vertex");
+#endif
+
+    // 有限距離をINF未満で保持。候補はINF+最大辺重み未満なので加算は安全。
+    constexpr std::int64_t unreachable = INF;
+#ifndef SKIP_RUNTIME_CHECKS
+    std::vector<std::int64_t> local_distance;
+    auto& distance = local_distance;
+#else
+    auto& distance = distances;
+#endif
+    distance.assign(graph.size(), unreachable);
+    std::vector<int> overflow_targets;
+    std::vector<int> previous, result;
+    // 始点に出辺がなければ、経路用配列やヒープは不要。
+    if constexpr (PruneTerminal) if (graph[start_index].empty()) {
+        distance[start_index] = 0;
+        if constexpr (RestorePath)
+            if (start_index == target_index) result.push_back(start_index);
+#ifndef SKIP_RUNTIME_CHECKS
+        distances.swap(local_distance);
+#endif
+        if constexpr (RestorePath) path->swap(result);
+        return;
+    }
+    int initial_vertex = start_index;
+    std::int64_t initial_distance = 0;
+    bool target_in_prefix = false;
+    if constexpr (RecordInitialChain) {
+        auto* const distance_data = distance.data();
+        auto* const adjacency = graph.data();
+        distance_data[start_index] = 0;
+        result.push_back(start_index);
+        target_in_prefix = start_index == target_index;
+        while (adjacency[initial_vertex].size() == 1) {
+            const auto& edge = adjacency[initial_vertex].front();
+#ifndef SKIP_RUNTIME_CHECKS
+        if constexpr (!std::is_same_v<GraphLike, DijkstraCsrGraph>) {
+            if (edge.to < 0 || edge.to >= n)
+                throw std::out_of_range("Dijkstra: invalid destination vertex");
+            if (edge.w < 0 || edge.w > max_weight)
+                throw std::out_of_range("Dijkstra: weight must be in [0, 1e9]");
+
+        }
+#endif
+            const auto candidate = initial_distance + edge.w;
+            if constexpr (MayOverflow) if (candidate >= INF) {
+                if (distance_data[edge.to] == INF) overflow_targets.push_back(edge.to);
+                break;
+            }
+            if (candidate >= distance_data[edge.to]) break;
+            distance_data[edge.to] = candidate;
+            initial_distance = candidate;
+            initial_vertex = edge.to;
+            if (!target_in_prefix) {
+                result.push_back(initial_vertex);
+                target_in_prefix = initial_vertex == target_index;
+            }
+        }
+        // 出辺が1本以下なら未処理の到達頂点はない。
+        if (adjacency[initial_vertex].size() <= 1) {
+            if (!target_in_prefix) result.clear();
+            if constexpr (MayOverflow) for (const int vertex : overflow_targets)
+                if (distance_data[vertex] == INF)
+                    throw std::overflow_error("Dijkstra: finite distance collides with INF");
+#ifndef SKIP_RUNTIME_CHECKS
+            distances.swap(local_distance);
+#endif
+            path->swap(result);
+            return;
+        }
+    }
+    if constexpr (RestorePath) {
+        if constexpr (DeferPrevious) previous.reserve(graph.size());
+        else previous.assign(graph.size(), -1);
+    }
+    // 到達範囲が小さい間は直前頂点を64件まで記録し、必要になってから全頂点分を初期化する。
+    struct PreviousRecord { int vertex, parent; };
+    std::array<PreviousRecord, DeferPrevious ? 64 : 0> previous_records;
+    std::size_t previous_record_count = 0;
+    const auto commit_previous = [&] {
+        if constexpr (DeferPrevious) {
+            return [&] {
+                if (!previous.empty()) return;
+                previous.assign(graph.size(), -1);
+                for (std::size_t i = 0; i < previous_record_count; ++i) {
+                    const auto& record = previous_records[i];
+                    previous[record.vertex] = record.parent;
+                }
+            };
+        } else {
+            return [] {};
+        }
+    }();
+    const auto record_previous = [&] {
+        if constexpr (DeferPrevious) {
+            return [&](int vertex, int parent) {
+                if (previous.empty()) {
+                    if (previous_record_count < previous_records.size()) {
+                        previous_records[previous_record_count++] = {vertex, parent};
+                        return;
+                    }
+                    commit_previous();
+                }
+                previous[vertex] = parent;
+            };
+        } else {
+            return [](int, int) {};
+        }
+    }();
+    using State = std::conditional_t<UseBounded, DijkstraInitialState, std::pair<std::int64_t, int>>;
+    struct Compare {
+        bool operator()(const State& a, const State& b) const noexcept {
+            if constexpr (UseBounded)
+                return a.first > b.first || (a.first == b.first && a.second > b.second);
+            else return a > b;
+        }
+    };
+    using InitialCompare = std::conditional_t<UseBounded, Compare, std::greater<State>>;
+    struct InitialQueue : std::priority_queue<State, std::vector<State>, InitialCompare> {
+        const std::vector<State>& states() const noexcept { return this->c; }
+    };
+    struct BoundedQueue {
+        std::array<State, 65> storage_;
+        std::size_t size_ = 0;
+        bool empty() const noexcept { return size_ == 0; }
+        std::size_t size() const noexcept { return size_; }
+        const State& top() const noexcept { return storage_.front(); }
+        void emplace(std::int64_t distance, int vertex) {
+            const State value{distance, vertex};
+            std::size_t hole = size_++;
+            while (hole != 0) {
+                const auto parent = (hole - 1) / 2;
+                if (!Compare{}(storage_[parent], value)) break;
+                storage_[hole] = storage_[parent];
+                hole = parent;
+            }
+            storage_[hole] = value;
+        }
+        void pop() {
+            const State value = storage_[--size_];
+            if (size_ == 0) return;
+            std::size_t hole = 0;
+            for (;;) {
+                auto child = hole * 2 + 1;
+                if (child >= size_) break;
+                if (child + 1 < size_ && Compare{}(storage_[child], storage_[child + 1])) ++child;
+                if (!Compare{}(value, storage_[child])) break;
+                storage_[hole] = storage_[child];
+                hole = child;
+            }
+            storage_[hole] = value;
+        }
+        std::span<const State> states() const noexcept { return {storage_.data(), size_}; }
+    };
+    // 固定配列を選ぶ版は緩和の65件目でradixへ移るため、66件目は入らない。
+    std::conditional_t<UseBounded, BoundedQueue, InitialQueue> queue;
+    distance[start_index] = 0;
+    queue.emplace(initial_distance, initial_vertex);
+
+    const auto relax = [&] {
+        if constexpr (!DeferPrevious) {
+            return [&]<bool StopWhenLarge>
+    [[gnu::always_inline]]
+    (auto& pending, std::int64_t current, int from, std::size_t begin = 0) -> std::size_t {
+        auto* const distance_data = distance.data();
+        auto* const previous_data = previous.data();
+        const auto& edges = graph[from];
+        const auto end = edges.end();
+        for (auto cursor = edges.begin() + begin; cursor != end; ++cursor)
+        {
+            const auto& edge = *cursor;
+#ifndef SKIP_RUNTIME_CHECKS
+        if constexpr (!std::is_same_v<GraphLike, DijkstraCsrGraph>) {
+            if (edge.to < 0 || edge.to >= n)
+                throw std::out_of_range("Dijkstra: invalid destination vertex");
+            if (edge.w < 0 || edge.w > max_weight)
+                throw std::out_of_range("Dijkstra: weight must be in [0, 1e9]");
+
+        }
+#endif
+            const std::int64_t candidate = current + edge.w;
+            if constexpr (MayOverflow) if (candidate >= INF) [[unlikely]]
+            {
+                if (distance_data[edge.to] == INF) overflow_targets.push_back(edge.to);
+                continue;
+            }
+            if (candidate >= distance_data[edge.to])
+                continue;
+            distance_data[edge.to] = candidate;
+            if constexpr (RestorePath)
+                previous_data[edge.to] = from;
+            pending.emplace(candidate, edge.to);
+            if constexpr (StopWhenLarge) if (pending.size() > 64) return static_cast<std::size_t>(cursor - edges.begin()) + 1;
+        }
+        return edges.size();
+    };
+        } else {
+            return [&]<bool StopWhenLarge>
+    [[gnu::always_inline]]
+    (auto& pending, std::int64_t current, int from, std::size_t begin = 0) -> std::size_t {
+        auto* const distance_data = distance.data();
+        auto* const previous_data = previous.data();
+        const auto& edges = graph[from];
+        const auto end = edges.end();
+        for (auto cursor = edges.begin() + begin; cursor != end; ++cursor)
+        {
+            const auto& edge = *cursor;
+#ifndef SKIP_RUNTIME_CHECKS
+        if constexpr (!std::is_same_v<GraphLike, DijkstraCsrGraph>) {
+            if (edge.to < 0 || edge.to >= n)
+                throw std::out_of_range("Dijkstra: invalid destination vertex");
+            if (edge.w < 0 || edge.w > max_weight)
+                throw std::out_of_range("Dijkstra: weight must be in [0, 1e9]");
+
+        }
+#endif
+            const std::int64_t candidate = current + edge.w;
+            if constexpr (MayOverflow) if (candidate >= INF) [[unlikely]]
+            {
+                if (distance_data[edge.to] == INF) overflow_targets.push_back(edge.to);
+                continue;
+            }
+            if (candidate >= distance_data[edge.to])
+                continue;
+            distance_data[edge.to] = candidate;
+            if constexpr (RestorePath) {
+                if constexpr (DeferPrevious) record_previous(edge.to, from);
+                else previous_data[edge.to] = from;
+            }
+            pending.emplace(candidate, edge.to);
+            if constexpr (StopWhenLarge) if (pending.size() > 64) return static_cast<std::size_t>(cursor - edges.begin()) + 1;
+        }
+        return edges.size();
+    };
+        }
+    }();
+    while (!queue.empty()) {
+        auto [current, from] = queue.top(); queue.pop();
+        if (current != distance[from]) continue;
+        while (queue.empty() && graph[from].size() == 1) {
+            const auto& edge = graph[from].front();
+#ifndef SKIP_RUNTIME_CHECKS
+        if constexpr (!std::is_same_v<GraphLike, DijkstraCsrGraph>) {
+            if (edge.to < 0 || edge.to >= n)
+                throw std::out_of_range("Dijkstra: invalid destination vertex");
+            if (edge.w < 0 || edge.w > max_weight)
+                throw std::out_of_range("Dijkstra: weight must be in [0, 1e9]");
+
+        }
+#endif
+            const auto candidate = current + edge.w;
+            if constexpr (MayOverflow) if (candidate >= INF) {
+                if (distance[edge.to] == INF) overflow_targets.push_back(edge.to);
+                break;
+            }
+            if (candidate >= distance[edge.to]) break;
+            distance[edge.to] = candidate;
+            if constexpr (RestorePath) {
+                if constexpr (DeferPrevious) record_previous(edge.to, from);
+                else previous[edge.to] = from;
+            }
+            current = candidate; from = edge.to;
+        }
+        std::size_t resume = graph[from].size();
+        if (graph[from].size() != 1 || !queue.empty())
+            resume = relax.template operator()<Adaptive>(queue, current, from);
+        if constexpr (Adaptive) if (queue.size() > 64) {
+            if constexpr (DeferPrevious) commit_previous();
+            if constexpr (PruneTerminal) {
+                DijkstraRadixFinish<RestorePath, MayOverflow>(
+                    graph, distance, previous, overflow_targets, queue.states(), current, from, resume);
+            } else {
+                DijkstraRadixHeap radix(static_cast<std::uint64_t>(current));
+                // 初期キューを取り出し順に並べ直す必要はない。
+                for (const auto& value : queue.states())
+                    radix.emplace(value.first, value.second);
+                if (resume < graph[from].size())
+                    relax.template operator()<false>(radix, current, from, resume);
+                while (!radix.empty()) {
+                    const auto [key, vertex] = radix.pop();
+                    const auto value = static_cast<std::int64_t>(key);
+                    if (value == distance[vertex]) relax.template operator()<false>(radix, value, vertex);
+                }
+            }
+            break;
+        }
+    }
+
+    if constexpr (RestorePath)
+    {
+        if constexpr (RecordInitialChain) {
+            if (!target_in_prefix) {
+                if (distance[target_index] == unreachable) result.clear();
+                else {
+                    const auto prefix_size = result.size();
+                    if constexpr (!DeferPrevious) {
+                        for (int vertex = target_index; vertex != initial_vertex; vertex = previous[vertex])
+                            result.push_back(vertex);
+                    } else if (!previous.empty()) {
+                        for (int vertex = target_index; vertex != initial_vertex; vertex = previous[vertex])
+                            result.push_back(vertex);
+                    } else {
+                        for (int vertex = target_index; vertex != initial_vertex;) {
+                            result.push_back(vertex);
+                            for (std::size_t i = previous_record_count; i != 0; --i) {
+                                if (previous_records[i - 1].vertex == vertex) {
+                                    vertex = previous_records[i - 1].parent;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    std::reverse(result.begin() + static_cast<std::ptrdiff_t>(prefix_size), result.end());
+                }
+            }
+        } else if (distance[target_index] != unreachable)
+        {
+            if constexpr (!DeferPrevious) {
+                for (int vertex = target_index; vertex != -1; vertex = previous[vertex])
+                    result.push_back(vertex);
+            } else if (!previous.empty()) {
+                for (int vertex = target_index; vertex != -1; vertex = previous[vertex])
+                    result.push_back(vertex);
+            } else {
+                for (int vertex = target_index; vertex != -1;) {
+                    result.push_back(vertex);
+                    if (vertex == start_index) {
+                        vertex = -1;
+                    } else {
+                        for (std::size_t i = previous_record_count; i != 0; --i) {
+                            if (previous_records[i - 1].vertex == vertex) {
+                                vertex = previous_records[i - 1].parent;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            std::reverse(result.begin(), result.end());
+        }
+    }
+    if constexpr (MayOverflow) for (const int vertex : overflow_targets)
+        if (distance[vertex] == INF)
+            throw std::overflow_error("Dijkstra: finite distance collides with INF");
+#ifndef SKIP_RUNTIME_CHECKS
+    distances.swap(local_distance);
+#endif
+    if constexpr (RestorePath)
+        path->swap(result);
+}
+
+// 始点から一本道を処理する版だけを別の作業領域に展開する。
+template <bool RestorePath, bool MayOverflow, bool PruneTerminal, class GraphLike = WGraph>
+[[gnu::noinline]]
+inline void DijkstraInitialChain(const GraphLike& graph, std::vector<std::int64_t>& distances,
+                                 int start_index, int target_index, std::vector<int>* path) {
+    DijkstraBigImpl<RestorePath, MayOverflow, true, PruneTerminal, true>(
+        graph, distances, start_index, target_index, path);
+}
+
+template <bool RestorePath, bool MayOverflow, bool PruneTerminal = true, class GraphLike = WGraph>
+[[gnu::noinline]]
+inline void DijkstraLarge(const GraphLike& graph, std::vector<std::int64_t>& distances,
+                                 int start_index, int target_index, std::vector<int>* path) {
+    if constexpr (RestorePath && PruneTerminal) {
+#ifndef SKIP_RUNTIME_CHECKS
+        const bool valid_start = start_index >= 0 && static_cast<std::size_t>(start_index) < graph.size();
+#else
+        constexpr bool valid_start = true;
+#endif
+        if (graph.size() > 4096 && valid_start && graph[start_index].size() == 1) {
+            DijkstraInitialChain<RestorePath, MayOverflow, PruneTerminal>(
+                graph, distances, start_index, target_index, path);
+            return;
+        }
+    }
+    DijkstraBigImpl<RestorePath, MayOverflow, true, PruneTerminal>(graph, distances, start_index, target_index, path);
+}
+
+// 共通処理。距離のみの場合、経路用の確保と更新をコンパイル時に除く。
+template <bool RestorePath, class GraphLike = WGraph>
+inline void DijkstraImpl(const GraphLike &graph, std::vector<std::int64_t> &distances,
+                         int start_index, int target_index, std::vector<int> *path)
+{
+#ifndef SKIP_RUNTIME_CHECKS
+    [[maybe_unused]] constexpr std::int64_t max_weight = 1'000'000'000;
+#endif
+    if (graph.size() > static_cast<std::size_t>(std::numeric_limits<int>::max()))
+        throw std::length_error("Dijkstra: too many vertices");
+#ifndef SKIP_RUNTIME_CHECKS
+    [[maybe_unused]] const int n = static_cast<int>(graph.size());
+#endif
+#ifndef SKIP_RUNTIME_CHECKS
+    if (start_index < 0 || start_index >= n ||
+        (RestorePath && (target_index < 0 || target_index >= n)))
+        throw std::out_of_range("Dijkstra: invalid start or target vertex");
+#endif
+
+    // ここは256頂点以下。全単純路がINF未満なので出力変換は不要。
+    constexpr std::int64_t unreachable = INF;
+#ifndef SKIP_RUNTIME_CHECKS
+    std::vector<std::int64_t> local_distance;
+    auto& distance = local_distance;
+#else
+    auto& distance = distances;
+#endif
+    distance.assign(graph.size(), INF);
+    std::vector<int> previous, result;
+    if constexpr (RestorePath)
+        previous.assign(graph.size(), -1);
+    // 256頂点以下・重み<=1e9なら距離は38bit以内。下位8bitに頂点を詰める。
+    using State = std::uint64_t;
+    struct Queue {
+        std::vector<State> values;
+        bool empty() const noexcept { return values.empty(); }
+        const State& top() const noexcept { return values.front(); }
+        void emplace(State value) {
+            auto hole = values.size();
+            values.push_back(value);
+            auto* const data = values.data();
+            while (hole != 0) {
+                const auto parent = (hole - 1) / 2;
+                if (data[parent] <= value) break;
+                data[hole] = data[parent];
+                hole = parent;
+            }
+            data[hole] = value;
+        }
+        void pop() {
+            if (values.size() == 1) { values.pop_back(); return; }
+            const auto value = values.back();
+            values.pop_back();
+            const auto count = values.size();
+            auto* const data = values.data();
+            std::size_t hole = 0;
+            while (hole < count / 2) {
+                auto child = hole * 2 + 1;
+                if (child + 1 < count && data[child + 1] < data[child]) ++child;
+                if (value <= data[child]) break;
+                data[hole] = data[child];
+                hole = child;
+            }
+            data[hole] = value;
+        }
+    };
+    Queue queue;
+    distance[start_index] = 0;
+    queue.emplace(static_cast<State>(start_index));
+
+    while (!queue.empty())
+    {
+        const auto key = queue.top();
+        const auto current = static_cast<std::int64_t>(key >> 8);
+        const int from = static_cast<int>(key & 255);
+        queue.pop();
+        if (current != distance[from])
+            continue;
+        for (const auto &edge : graph[from])
+        {
+#ifndef SKIP_RUNTIME_CHECKS
+        if constexpr (!std::is_same_v<GraphLike, DijkstraCsrGraph>) {
+            if (edge.to < 0 || edge.to >= n)
+                throw std::out_of_range("Dijkstra: invalid destination vertex");
+            if (edge.w < 0 || edge.w > max_weight)
+                throw std::out_of_range("Dijkstra: weight must be in [0, 1e9]");
+
+        }
+#endif
+            const std::int64_t candidate = current + edge.w;
+            if (candidate >= distance[edge.to])
+                continue;
+            distance[edge.to] = candidate;
+            if constexpr (RestorePath)
+                previous[edge.to] = from;
+            queue.emplace((static_cast<State>(candidate) << 8) | static_cast<State>(edge.to));
+        }
+    }
+
+    if constexpr (RestorePath)
+    {
+        if (distance[target_index] != unreachable)
+        {
+            for (int vertex = target_index; vertex != -1; vertex = previous[vertex])
+                result.push_back(vertex);
+            std::reverse(result.begin(), result.end());
+        }
+    }
+#ifndef SKIP_RUNTIME_CHECKS
+    distances.swap(local_distance);
+#endif
+    if constexpr (RestorePath)
+        path->swap(result);
+}
+
+} // namespace reinsirk::detail
+
+inline void Dijkstra(const WGraph &graph, std::vector<std::int64_t> &distances,
+                     int start_index)
+{
+    constexpr bool prune_terminal = true;
+    if (graph.size() <= 256) reinsirk::detail::DijkstraImpl<false>(graph, distances, start_index, -1, nullptr);
+    else if (graph.size() <= 4096)
+        reinsirk::detail::DijkstraLarge<false, false, false>(graph, distances, start_index, -1, nullptr);
+    else if (graph.size() <= static_cast<std::size_t>((INF - 1) / 1'000'000'000))
+        reinsirk::detail::DijkstraLarge<false, false, prune_terminal>(graph, distances, start_index, -1, nullptr);
+    else reinsirk::detail::DijkstraLarge<false, true, prune_terminal>(graph, distances, start_index, -1, nullptr);
+}
+
+inline void Dijkstra(const WGraph &graph, std::vector<std::int64_t> &distances,
+                     int start_index, int target_index, std::vector<int> &path)
+{
+    if (graph.size() <= 256) reinsirk::detail::DijkstraImpl<true>(graph, distances, start_index, target_index, &path);
+    else if (graph.size() <= 4096)
+        reinsirk::detail::DijkstraLarge<true, false, false>(graph, distances, start_index, target_index, &path);
+    else if (graph.size() <= static_cast<std::size_t>((INF - 1) / 1'000'000'000))
+        reinsirk::detail::DijkstraLarge<true, false>(graph, distances, start_index, target_index, &path);
+    else reinsirk::detail::DijkstraLarge<true, true>(graph, distances, start_index, target_index, &path);
+}
+
+// 辺列入力版も全頂点の距離を返す。CSR構築後は上と同じengineを使う。
+inline void Dijkstra(int n, std::span<const std::tuple<int,int,std::int64_t>> edges, std::vector<std::int64_t> &distances,
+                     int start_index)
+{
+    const reinsirk::detail::DijkstraCsrGraph graph(n,edges);
+    constexpr bool prune_terminal = true;
+    if (graph.size() <= 256) reinsirk::detail::DijkstraImpl<false>(graph, distances, start_index, -1, nullptr);
+    else if (graph.size() <= 4096)
+        reinsirk::detail::DijkstraLarge<false, false, false>(graph, distances, start_index, -1, nullptr);
+    else if (graph.size() <= static_cast<std::size_t>((INF - 1) / 1'000'000'000))
+        reinsirk::detail::DijkstraLarge<false, false, prune_terminal>(graph, distances, start_index, -1, nullptr);
+    else reinsirk::detail::DijkstraLarge<false, true, prune_terminal>(graph, distances, start_index, -1, nullptr);
+}
+
+inline void Dijkstra(int n, std::span<const std::tuple<int,int,std::int64_t>> edges, std::vector<std::int64_t> &distances,
+                     int start_index, int target_index, std::vector<int> &path)
+{
+    const reinsirk::detail::DijkstraCsrGraph graph(n,edges);
+    if (graph.size() <= 256) reinsirk::detail::DijkstraImpl<true>(graph, distances, start_index, target_index, &path);
+    else if (graph.size() <= 4096)
+        reinsirk::detail::DijkstraLarge<true, false, false>(graph, distances, start_index, target_index, &path);
+    else if (graph.size() <= static_cast<std::size_t>((INF - 1) / 1'000'000'000))
+        reinsirk::detail::DijkstraLarge<true, false>(graph, distances, start_index, target_index, &path);
+    else reinsirk::detail::DijkstraLarge<true, true>(graph, distances, start_index, target_index, &path);
+}
+
+#endif
+
+
+// Library: Graph/Floyd-Warshall.cpp
+// SPDX-License-Identifier: CC0-1.0
+// 生成版: Clang用。
+// 生成元: Graph/Floyd-Warshall.cpp
+// 参考: https://zenn.dev/reputeless/books/standard-cpp-for-competitive-programming/viewer/floyd-warshall
+// ドキュメント: https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/floyd_warshall.md
+//
+// API一覧
+// INF=std::int64_t{1}<<60。
+// [Floyd-Warshall]
+// FloydWarshall(distances): 正方行列を全点対最短距離で上書きし、グラフ内に負閉路があればtrue。O(V^3)時間。
+// FloydWarshall(distances, next): 距離に加え、経路の次頂点表nextを作る。経路更新・O(V^2)追加領域はこの版のみ。
+// FloydWarshallPath(next, from, to): 次頂点表から頂点列をO(経路長)で復元。未到達・負閉路の影響下なら空。
+// 入力はINFが未接続、有限重みは(-INF, INF)。対角はmin(入力, 0)とする。
+// 出力は未到達INF、負閉路を経由できる組だけ-INF。有限距離が(-INF, INF)外ならoverflow_error。
+// 算術範囲の算出を兼ねて初期行列を走査する。SKIP_RUNTIME_CHECKSで形状・入力値・頂点の検査を除く。
+// 通常版の追加領域はO(V)。大きな重みで広幅演算が必要な場合はO(V^2)。例外時の行列の内容は未規定。
+
+#include <algorithm>
+#include <bit>
+#include <cstddef>
+#include <cstdint>
+#include <limits>
+#include <stdexcept>
+#include <vector>
+#include <type_traits>
+#if (!defined(SIRKIT_DISABLE_SIMD)) && ((defined(__i386__)) || (defined(__x86_64__)))
+#include <immintrin.h>
+#endif
+
+#ifndef SIRKIT_INF_DEFINED
+#define SIRKIT_INF_DEFINED
+inline constexpr std::int64_t INF = std::int64_t{1} << 60;
+#endif
+
+#ifndef SIRKIT_FLOYD_WARSHALL_DEFINED
+#define SIRKIT_FLOYD_WARSHALL_DEFINED
+namespace reinsirk::detail {
+
+// boolは既存の実行経路、専用の列挙型は有限範囲のSIMD最適化を選ぶ。
+enum class FloydWarshallSimdMode { Finite = 1 };
+
+#if defined(__SIZEOF_INT128__)
+using FloydWarshallWide = __int128_t;
+#else
+// 必要なのは最大約92ビット。符号付き上位語と符号なし下位語で標準C++でも扱う。
+struct FloydWarshallWide
+{
+    std::int64_t high = 0;
+    std::uint64_t low = 0;
+    constexpr FloydWarshallWide() = default;
+    constexpr FloydWarshallWide(std::int64_t value)
+        : high(value < 0 ? -1 : 0), low(static_cast<std::uint64_t>(value)) {}
+    constexpr FloydWarshallWide(std::int64_t upper, std::uint64_t lower)
+        : high(upper), low(lower) {}
+    friend constexpr FloydWarshallWide operator+(FloydWarshallWide a,
+                                                        FloydWarshallWide b)
+    {
+        const auto lower = a.low + b.low;
+        return {a.high + b.high + (lower < a.low), lower};
+    }
+    friend constexpr FloydWarshallWide operator-(FloydWarshallWide value)
+    {
+        const auto lower = std::uint64_t{0} - value.low;
+        return {~value.high + (lower == 0), lower};
+    }
+    friend constexpr bool operator<(FloydWarshallWide a, FloydWarshallWide b)
+    {
+        return a.high < b.high || (a.high == b.high && a.low < b.low);
+    }
+    friend constexpr bool operator==(FloydWarshallWide, FloydWarshallWide) = default;
+    explicit constexpr operator std::int64_t() const { return std::bit_cast<std::int64_t>(low); }
+};
+#endif
+
+// 広幅実装でも下限の絶対値は単純路の最大絶対値より大きい。
+inline FloydWarshallWide FloydWarshallLimit(std::size_t n)
+{
+#if defined(__SIZEOF_INT128__)
+    return static_cast<FloydWarshallWide>(n) * INF;
+#else
+    return {static_cast<std::int64_t>(n >> 4), static_cast<std::uint64_t>(n) << 60};
+#endif
+}
+
+#if (!defined(SIRKIT_DISABLE_SIMD)) && ((defined(__i386__)) || (defined(__x86_64__)))
+template <bool RestorePath, bool HasNegative,
+          bool Dense>
+[[gnu::target("avx2")]]
+inline void FloydWarshallRelaxAvx2(std::vector<std::vector<std::int64_t>> &distance,
+                                 std::int64_t unreachable, std::int64_t lower,
+                                 std::vector<std::vector<int>> *next)
+{
+    const std::size_t n = distance.size();
+    const __m256i v_unreachable = _mm256_set1_epi64x(unreachable);
+    const __m256i v_lower = _mm256_set1_epi64x(lower);
+    for (std::size_t via = 0; via < n; ++via)
+    {
+        const auto *through = distance[via].data();
+        for (std::size_t from = 0; from < n; ++from)
+        {
+            auto *row = distance[from].data();
+            const auto prefix = row[via];
+            if (prefix == unreachable)
+                continue;
+            const __m256i v_prefix = _mm256_set1_epi64x(prefix);
+            int *path = nullptr;
+            int following = 0;
+            if constexpr (RestorePath)
+            {
+                path = (*next)[from].data();
+                following = path[via];
+            }
+            std::size_t to = 0;
+            for (; to + 4 <= n; to += 4)
+            {
+                const __m256i values = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(through + to));
+                const __m256i old = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(row + to));
+                __m256i candidate = _mm256_add_epi64(v_prefix, values);
+                if constexpr (HasNegative)
+                    candidate = _mm256_blendv_epi8(candidate, v_lower, _mm256_cmpgt_epi64(v_lower, candidate));
+                __m256i improve = _mm256_cmpgt_epi64(old, candidate);
+                // 未到達laneの加算結果は捨て、到達済みのlaneだけ更新する。
+                if constexpr (!Dense)
+                    improve = _mm256_andnot_si256(_mm256_cmpeq_epi64(values, v_unreachable), improve);
+                _mm256_storeu_si256(reinterpret_cast<__m256i *>(row + to), _mm256_blendv_epi8(old, candidate, improve));
+                if constexpr (RestorePath)
+                {
+                    const __m128 lo = _mm_castsi128_ps(_mm256_castsi256_si128(improve));
+                    const __m128 hi = _mm_castsi128_ps(_mm256_extracti128_si256(improve, 1));
+                    const __m128i mask = _mm_castps_si128(_mm_shuffle_ps(lo, hi, _MM_SHUFFLE(2, 0, 2, 0)));
+                    const __m128i previous = _mm_loadu_si128(reinterpret_cast<const __m128i *>(path + to));
+                    _mm_storeu_si128(reinterpret_cast<__m128i *>(path + to),
+                                     _mm_blendv_epi8(previous, _mm_set1_epi32(following), mask));
+                }
+            }
+            for (; to < n; ++to)
+            {
+                if constexpr (!Dense)
+                    if (through[to] == unreachable)
+                        continue;
+                auto candidate = prefix + through[to];
+                if constexpr (HasNegative)
+                    candidate = std::max(candidate, lower);
+                if (candidate < row[to])
+                {
+                    row[to] = candidate;
+                    if constexpr (RestorePath)
+                        path[to] = following;
+                }
+            }
+        }
+    }
+}
+#endif
+template <bool RestorePath, bool HasNegative, bool FiniteRange = false, bool Dense = false, class Distance, auto UseSimd = false>
+inline bool FloydWarshallRun(std::vector<std::vector<Distance>> &distance,
+                                    Distance unreachable, Distance lower,
+                                    std::vector<std::vector<int>> *next)
+{
+    const std::size_t n = distance.size();
+#if (!defined(SIRKIT_DISABLE_SIMD)) && ((defined(__i386__)) || (defined(__x86_64__)))
+    if constexpr (static_cast<bool>(UseSimd) && std::is_same_v<Distance, std::int64_t>)
+        FloydWarshallRelaxAvx2<RestorePath, HasNegative,
+                               Dense || (FiniteRange && std::is_same_v<decltype(UseSimd), FloydWarshallSimdMode>)>(distance, unreachable, lower, next);
+    else
+#endif
+    {
+        for (std::size_t via = 0; via < n; ++via)
+        {
+            const auto *through = distance[via].data();
+            for (std::size_t from = 0; from < n; ++from)
+            {
+                auto *row = distance[from].data();
+                const Distance prefix = row[via];
+                if (prefix == unreachable)
+                    continue;
+                for (std::size_t to = 0; to < n; ++to)
+                {
+                    if constexpr (!Dense) if (through[to] == unreachable)
+                        continue;
+                    Distance candidate = prefix + through[to];
+                    if constexpr (HasNegative)
+                        candidate = std::max(candidate, lower);
+                    if constexpr (RestorePath)
+                    {
+                        if (candidate < row[to])
+                        {
+                            row[to] = candidate;
+                            (*next)[from][to] = (*next)[from][via];
+                        }
+                    }
+                    else
+                        row[to] = std::min(row[to], candidate);
+                }
+            }
+        }
+    }
+    if constexpr (FiniteRange) return false;
+    std::vector<std::size_t> negative;
+    for (std::size_t vertex = 0; vertex < n; ++vertex)
+        if (distance[vertex][vertex] < Distance{0})
+            negative.push_back(vertex);
+    const Distance affected = lower + Distance{-1};
+    for (const std::size_t via : negative)
+    {
+        // 同じ強連結成分の負閉路は一度の伝播で足りる。
+        if (distance[via][via] == affected)
+            continue;
+        for (std::size_t from = 0; from < n; ++from)
+        {
+            if (distance[from][via] == unreachable)
+                continue;
+            for (std::size_t to = 0; to < n; ++to)
+                if (!(distance[via][to] == unreachable))
+                {
+                    distance[from][to] = affected;
+                    if constexpr (RestorePath)
+                        (*next)[from][to] = -1;
+                }
+        }
+    }
+    for (auto &row : distance)
+        for (auto &value : row)
+        {
+            if (value == unreachable)
+                value = Distance{INF};
+            else if (value == affected)
+                value = Distance{-INF};
+            else if (!(Distance{-INF} < value) || !(value < Distance{INF}))
+                throw std::overflow_error("FloydWarshall: finite distance collides with INF/-INF");
+        }
+    return !negative.empty();
+}
+
+template <bool RestorePath, auto UseSimd = false>
+inline bool FloydWarshallImpl(std::vector<std::vector<std::int64_t>> &distance,
+                                     std::vector<std::vector<int>> *next)
+{
+    const std::size_t n = distance.size();
+    if (n > static_cast<std::size_t>(std::numeric_limits<int>::max()))
+        throw std::length_error("FloydWarshall: too many vertices");
+    if constexpr (RestorePath)
+        next->assign(n, std::vector<int>(n, -1));
+    if (n == 0)
+        return false;
+    if (n == 1)
+    {
+#ifndef SKIP_RUNTIME_CHECKS
+        if (distance[0].size() != 1)
+            throw std::invalid_argument("FloydWarshall: matrix must be square");
+        if (distance[0][0] != INF && (distance[0][0] <= -INF || distance[0][0] >= INF))
+            throw std::out_of_range("FloydWarshall: weight must be in (-INF, INF)");
+#endif
+        const bool negative = distance[0][0] < 0;
+        distance[0][0] = negative ? -INF : 0;
+        if constexpr (RestorePath)
+            (*next)[0][0] = negative ? -1 : 0;
+        return negative;
+    }
+    std::int64_t maximum = 0;
+    bool has_negative = false;
+    bool dense = true;
+    constexpr auto unreachable = std::numeric_limits<std::int64_t>::max();
+    for (std::size_t from = 0; from < n; ++from)
+    {
+        auto &row = distance[from];
+#ifndef SKIP_RUNTIME_CHECKS
+        if (row.size() != n)
+            throw std::invalid_argument("FloydWarshall: matrix must be square");
+#endif
+        for (std::size_t to = 0; to < n; ++to)
+        {
+            auto &value = row[to];
+#ifndef SKIP_RUNTIME_CHECKS
+            if (value != INF && (value <= -INF || value >= INF))
+                throw std::out_of_range("FloydWarshall: weight must be in (-INF, INF)");
+#endif
+            if (from == to)
+                value = std::min(value, std::int64_t{0});
+            if (value == INF) {
+                dense = false;
+                continue;
+            }
+            maximum = std::max(maximum, value < 0 ? -value : value);
+            has_negative = has_negative || value < 0;
+            if constexpr (RestorePath)
+                (*next)[from][to] = static_cast<int>(to);
+        }
+    }
+    // 非負で最長単純路もINF未満なら、未接続値と出力の変換が要らない。
+    if (!has_negative && maximum <= (INF - 1) / static_cast<std::int64_t>(n)) {
+        if (dense) return FloydWarshallRun<RestorePath, false, true, true, std::int64_t, UseSimd>(distance, INF, std::int64_t{0}, next);
+        return FloydWarshallRun<RestorePath, false, true, false, std::int64_t, UseSimd>(distance, INF, std::int64_t{0}, next);
+    }
+    for (auto& row : distance)
+        for (auto& value : row)
+            if (value == INF) value = unreachable;
+    // 単純路はn-1辺以下。下限は-n*maximumで、負閉路での際限ない減少を抑える。
+    if (maximum <= unreachable / (2 * static_cast<std::int64_t>(n)))
+    {
+        const auto lower = -static_cast<std::int64_t>(n) * maximum;
+        if (has_negative)
+            return FloydWarshallRun<RestorePath, true, false, false, std::int64_t, UseSimd>(distance, unreachable, lower, next);
+        return FloydWarshallRun<RestorePath, false, false, false, std::int64_t, UseSimd>(distance, unreachable, lower, next);
+    }
+
+    using Wide = FloydWarshallWide;
+    const Wide wide_unreachable = FloydWarshallLimit(n) + Wide{1};
+    std::vector<std::vector<Wide>> wide(n, std::vector<Wide>(n));
+    for (std::size_t from = 0; from < n; ++from)
+        for (std::size_t to = 0; to < n; ++to)
+            wide[from][to] = distance[from][to] == unreachable ? wide_unreachable : Wide{distance[from][to]};
+    const bool negative = has_negative
+        ? FloydWarshallRun<RestorePath, true>(wide, wide_unreachable, -FloydWarshallLimit(n), next)
+        : FloydWarshallRun<RestorePath, false>(wide, wide_unreachable, -FloydWarshallLimit(n), next);
+    for (std::size_t from = 0; from < n; ++from)
+        for (std::size_t to = 0; to < n; ++to)
+            distance[from][to] = static_cast<std::int64_t>(wide[from][to]);
+    return negative;
+}
+
+#if (!defined(SIRKIT_DISABLE_SIMD)) && ((defined(__i386__)) || (defined(__x86_64__)))
+template <bool RestorePath>
+[[gnu::noinline]] inline bool FloydWarshallVectorized(
+    std::vector<std::vector<std::int64_t>> &distance, std::vector<std::vector<int>> *next)
+{
+    return FloydWarshallImpl<RestorePath, true>(distance, next);
+}
+#endif
+
+} // namespace reinsirk::detail
+
+inline bool FloydWarshall(std::vector<std::vector<std::int64_t>> &distances)
+{
+#if (!defined(SIRKIT_DISABLE_SIMD)) && ((defined(__i386__)) || (defined(__x86_64__))) && (!(defined(__AVX2__)))
+    constexpr std::size_t threshold = 32;
+    if (distances.size() >= threshold && __builtin_cpu_supports("avx2")) {
+        return reinsirk::detail::FloydWarshallVectorized<false>(distances, nullptr);
+    }
+#endif
+    return reinsirk::detail::FloydWarshallImpl<false>(distances, nullptr);
+}
+
+inline bool FloydWarshall(std::vector<std::vector<std::int64_t>> &distances,
+                          std::vector<std::vector<int>> &next)
+{
+#if (!defined(SIRKIT_DISABLE_SIMD)) && ((defined(__i386__)) || (defined(__x86_64__)))
+    constexpr std::size_t threshold = 16;
+    if (distances.size() >= threshold && __builtin_cpu_supports("avx2")) {
+        return reinsirk::detail::FloydWarshallVectorized<true>(distances, &next);
+    }
+#endif
+    return reinsirk::detail::FloydWarshallImpl<true>(distances, &next);
+}
+
+inline std::vector<int> FloydWarshallPath(const std::vector<std::vector<int>> &next,
+                                        int from, int to)
+{
+    const std::size_t n = next.size();
+#ifndef SKIP_RUNTIME_CHECKS
+    if (from < 0 || to < 0 || static_cast<std::size_t>(from) >= n || static_cast<std::size_t>(to) >= n)
+        throw std::out_of_range("FloydWarshallPath: invalid vertex");
+#endif
+    std::vector<int> path;
+    const auto target = static_cast<std::size_t>(to);
+    for (std::size_t steps = 0; steps <= n; ++steps)
+    {
+        const auto current = static_cast<std::size_t>(from);
+#ifndef SKIP_RUNTIME_CHECKS
+        if (next[current].size() != n)
+            throw std::invalid_argument("FloydWarshallPath: table must be square");
+#endif
+        const int following = next[current][target];
+        if (following == -1)
+            return {};
+        path.push_back(from);
+        if (from == to)
+            return path;
+#ifndef SKIP_RUNTIME_CHECKS
+        if (following < 0 || static_cast<std::size_t>(following) >= n)
+            throw std::out_of_range("FloydWarshallPath: invalid next vertex");
+#endif
+        from = following;
+    }
+    throw std::invalid_argument("FloydWarshallPath: cyclic next table");
+}
+#endif
+
+
+// SPDX-License-Identifier: CC0-1.0
+#include <iostream>
+#include <random>
+#include <stdexcept>
+
+int main() {
+    const auto require=[](bool ok) { if(!ok) throw std::runtime_error("graph reference mismatch"); };
+    std::mt19937 random(219381);
+    for(int test=0;test<500;++test) {
+        const int n=1+random()%14;
+        WGraph graph(n);
+        std::vector ref(n,std::vector<std::int64_t>(n,INF));
+        std::vector reach(n,std::vector<bool>(n));
+        for(int i=0;i<n;++i) { ref[i][i]=0;reach[i][i]=true; }
+        for(int i=0;i<n*n/2;++i) {
+            const int u=random()%n,v=random()%n;
+            const std::int64_t w=static_cast<int>(random()%31)-10;
+            graph[u].emplace_back(v,w);ref[u][v]=std::min(ref[u][v],w);reach[u][v]=true;
+        }
+        const auto initial=ref;
+        for(int k=0;k<n;++k) for(int i=0;i<n;++i) for(int j=0;j<n;++j) {
+            reach[i][j]=reach[i][j] || (reach[i][k]&&reach[k][j]);
+            if(ref[i][k]!=INF && ref[k][j]!=INF) ref[i][j]=std::min(ref[i][j],ref[i][k]+ref[k][j]);
+        }
+        std::vector negative(n,std::vector<bool>(n));bool any=false;
+        for(int k=0;k<n;++k) if(ref[k][k]<0) {
+            any=true;
+            for(int i=0;i<n;++i) for(int j=0;j<n;++j)
+                if(reach[i][k]&&reach[k][j]) negative[i][j]=true;
+        }
+        auto expected=ref;
+        for(int i=0;i<n;++i) for(int j=0;j<n;++j) if(negative[i][j]) expected[i][j]=-INF;
+        auto distance=initial;require(FloydWarshall(distance)==any);require(distance==expected);
+        std::vector<std::vector<int>> next;
+        distance=initial;require(FloydWarshall(distance,next)==any);require(distance==expected);
+        for(int s=0;s<n;++s) {
+            const bool cycle=std::any_of(negative[s].begin(),negative[s].end(),[](bool x){return x;});
+            std::vector<std::int64_t> actual;
+            require(BellmanFord(graph,actual,s)==cycle);require(actual==expected[s]);
+            require(SPFA(graph,actual,s)==cycle);require(actual==expected[s]);
+            for(int t=0;t<n;++t) if(!negative[s][t]) {
+                const auto path=FloydWarshallPath(next,s,t);
+                if(!reach[s][t]) {require(path.empty());continue;}
+                require(!path.empty() && path.front()==s && path.back()==t);
+                std::int64_t sum=0;
+                for(std::size_t i=1;i<path.size();++i) sum+=initial[path[i-1]][path[i]];
+                require(sum==expected[s][t]);
+            }
+        }
+    }
+    // 256頂点をまたぎ、小規模ヒープ・大規模radix heapの両経路を使う。
+    for(int n:{1,2,255,256,257,600}) {
+        WGraph graph(n);
+        for(int u=0;u<n;++u) {
+            if(u+1<n)graph[u].emplace_back(u+1,0);
+            for(int e=0;e<15;++e)graph[u].emplace_back(random()%n,random()%1'000'000'001);
+        }
+        for(int s:{0,n/2,n-1}) {
+            std::vector<std::int64_t> expected(n,INF);expected[s]=0;
+            for(int i=1;i<n;++i) {
+                bool change=false;
+                for(int u=0;u<n;++u) if(expected[u]!=INF) for(const auto& e:graph[u])
+                    if(expected[e.to]>expected[u]+e.w) { expected[e.to]=expected[u]+e.w;change=true; }
+                if(!change)break;
+            }
+            std::vector<std::int64_t> actual;Dijkstra(graph,actual,s);require(actual==expected);
+            for(int t:{0,n/2,n-1}) {
+                std::vector<int> path;Dijkstra(graph,actual,s,t,path);require(actual==expected);
+                if(expected[t]==INF) {require(path.empty());continue;}
+                require(path.front()==s && path.back()==t && path.size()<=static_cast<std::size_t>(n));
+                std::int64_t sum=0;
+                for(std::size_t i=1;i<path.size();++i) {
+                    auto w=INF;
+                    for(const auto& e:graph[path[i-1]]) if(e.to==path[i])w=std::min(w,e.w);
+                    require(w!=INF);sum+=w;
+                }
+                require(sum==expected[t]);
+            }
+        }
+    }
+    std::cout<<"OK\n";
+}

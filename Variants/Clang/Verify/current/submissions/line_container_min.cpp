@@ -1,0 +1,693 @@
+#define SKIP_RUNTIME_CHECKS
+// Profile: Variants/Clang; online judgement is recorded separately.
+// Verify: https://judge.yosupo.jp/problem/line_add_get_min
+
+// Library: DataStructure/line-container.cpp
+// SPDX-License-Identifier: CC0-1.0
+// 生成版: Clang用。
+// 生成元: DataStructure/line-container.cpp
+// Original Source: https://nyaannyaan.github.io/library/data-structure/line-container.hpp.html
+// Original Source: https://github.com/kth-competitive-programming/kactl/blob/main/content/data-structures/LineContainer.h
+// ドキュメント: https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/line_container.md
+//
+// API一覧
+// [LineContainer<T,objective>・MinLineContainer<T>・MaxLineContainer<T>]
+// add(k,m): y=k*x+mを追加、償却O(log h)。整数は符号付き64bit以下、浮動係数は有限値。
+// query(x): 最適値をO(log h)で返す。空は検査時例外、省略時は非空が前提。整数範囲外は常に例外。
+// query_optional(x): 空ならnullopt、それ以外はqueryと同じ。xは浮動小数点なら有限値。
+// query_line(x): 選択した元の(k,m)をO(log h)で返す。同点の係数は未規定。
+// query_line_optional(x): 空ならnullopt、それ以外はquery_lineと同じ。
+// query_with_line(x): 1回の探索でResult{最適値,k,m}を返す。queryと同じ前提・O(log h)。
+// query_with_line_optional(x): 空ならnullopt、それ以外はquery_with_lineと同じ。
+// size()/empty()/clear(): 有効な包絡直線の本数・空判定・全削除、O(1)/O(1)/O(h)。
+// begin()/end()/lower_bound(x): 元係数と交点を参照。最小化の傾き順は降順。直接変更は不変条件を壊す。
+// insect(x,y): 旧互換の内部交点更新。正しい包絡iterator以外では呼び出さない。
+// コピーは独立した包絡。hは有効直線数。浮動小数点版の交点・最適値には丸め誤差がある。
+// objectiveはMINIMIZE/MAXIMIZE。MinLineContainer<T>/MaxLineContainer<T>は最小化/最大化の別名。
+//
+// [Line<T>・補助関数]
+// Line<T>のk,m: 元の係数。p: この直線が選ばれる右端(整数は型の範囲に制限)。
+// lc_inf<T>(): 整数では最大値、浮動小数点では正の無限大を返す。
+// lc_div(a,b): 整数は床除算、浮動小数点は通常除算。0除算・整数結果の範囲外は例外。
+
+#include <algorithm>
+#include <cmath>
+#include <cstddef>
+#include <cstdint>
+#include <iterator>
+#include <limits>
+#include <optional>
+#include <set>
+#include <stdexcept>
+#include <type_traits>
+#include <utility>
+
+#ifndef SIRKIT_LINE_CONTAINER_DEFINED
+#define SIRKIT_LINE_CONTAINER_DEFINED
+
+enum Objective { MAXIMIZE = +1, MINIMIZE = -1 };
+
+template <typename T>
+struct Line {
+  mutable T k, m, p;
+  bool operator<(const Line& other) const { return k < other.k; }
+  bool operator<(T x) const { return p < x; }
+};
+
+template <typename T>
+constexpr T lc_inf() {
+  if constexpr (std::is_floating_point_v<T>) return std::numeric_limits<T>::infinity();
+  else return std::numeric_limits<T>::max();
+}
+
+template <typename T>
+T lc_div(T a, T b) {
+  if (b == 0) throw std::domain_error("lc_div: division by zero");
+  if constexpr (std::is_integral_v<T>) {
+    static_assert(std::is_signed_v<T>);
+    if (a == std::numeric_limits<T>::min() && b == -1)
+      throw std::overflow_error("lc_div: quotient overflow");
+    return static_cast<T>(a / b - ((a < 0) != (b < 0) && a % b != 0));
+  } else return a / b;
+}
+
+namespace reinsirk::detail {
+template <typename T, Objective objective>
+struct LineComparator {
+  using is_transparent = void;
+  bool operator()(const Line<T>& a, const Line<T>& b) const {
+    if constexpr (objective == MAXIMIZE) return a.k < b.k;
+    else return a.k > b.k;
+  }
+  bool operator()(const Line<T>& a, T x) const { return a < x; }
+  bool operator()(T x, const Line<T>& a) const { return x < a.p; }
+};
+}  // namespace reinsirk::detail
+
+template <typename T, Objective objective>
+struct LineContainer : std::multiset<Line<T>, reinsirk::detail::LineComparator<T, objective>> {
+  static_assert((std::is_integral_v<T> && std::is_signed_v<T> && sizeof(T) <= 8) ||
+                std::is_floating_point_v<T>);
+  static_assert(objective == MAXIMIZE || objective == MINIMIZE);
+  using super = std::multiset<Line<T>, reinsirk::detail::LineComparator<T, objective>>;
+  using super::begin, super::end, super::insert, super::erase;
+  using super::empty, super::lower_bound;
+  static constexpr T inf = lc_inf<T>();
+  struct Result { T value, k, m; };
+
+ private:
+  static bool boundary_less(const Line<T>& a, const Line<T>& b) {
+    return a.p < b.p;
+  }
+  static bool dominated_at_boundary(const Line<T>& left, const Line<T>& candidate, const Line<T>& right)
+      requires (std::is_integral_v<T> && std::numeric_limits<T>::digits <= 31 && objective == MINIMIZE) {
+    // 積はint64_tに収まる。第2比較を厳密にして同点時の保持も維持する。
+    using Wide = std::int64_t;
+    const Wide boundary = left.p;
+    const Wide first = (Wide(candidate.k) - Wide(left.k)) * boundary;
+    const Wide second = (Wide(candidate.k) - Wide(right.k)) * (boundary + 1);
+    return first >= Wide(left.m) - Wide(candidate.m) && second > Wide(right.m) - Wide(candidate.m);
+  }
+  template <bool known_order = false>
+  static bool intersection(Line<T> const& a, Line<T> const& b) {
+    if constexpr (std::is_integral_v<T>) {
+      using U = std::make_unsigned_t<T>;
+      const bool negative_n = b.m < a.m;
+      const bool negative_d = [&] {
+        return a.k < b.k;
+      }();
+      const U n = negative_n ? U(a.m) - U(b.m) : U(b.m) - U(a.m);
+      const U d = negative_d ? U(b.k) - U(a.k) : U(a.k) - U(b.k);
+      U q = n / d;
+      constexpr U top = U(std::numeric_limits<T>::max());
+      if (negative_n != negative_d) {
+        q = static_cast<U>(q + U(n % d != 0));
+        if (q >= top + U{1}) {
+          a.p = std::numeric_limits<T>::min();
+          return q > top + U{1};
+        }
+        else a.p = static_cast<T>(-static_cast<T>(q));
+      } else a.p = q > top ? inf : static_cast<T>(q);
+      return false;
+    } else {
+      const T n = b.m - a.m, d = a.k - b.k;
+      if (std::isfinite(n + d) || (std::isfinite(n) && std::isfinite(d))) a.p = n / d;
+      else if (!std::isfinite(n) && !std::isfinite(d))
+        a.p = (b.m / 2 - a.m / 2) / (a.k / 2 - b.k / 2);
+      else if (!std::isfinite(n)) a.p = ((b.m / 2 - a.m / 2) / d) * 2;
+      else a.p = (n / (a.k / 2 - b.k / 2)) / 2;
+      return false;
+    }
+  }
+  __attribute__((always_inline))
+  static T evaluate(T k, T m, T x) {
+    if constexpr (std::is_floating_point_v<T>) return k * x + m;
+    else if constexpr (sizeof(T) < 8) {
+      const std::int64_t result = std::int64_t(k) * x + m;
+      if (result < std::numeric_limits<T>::min() || result > std::numeric_limits<T>::max())
+        throw std::overflow_error("LineContainer: value overflow");
+      return static_cast<T>(result);
+    } else {
+#if defined(__SIZEOF_INT128__) && !defined(SIRKIT_LINE_CONTAINER_FORCE_PORTABLE)
+      T fast;
+      if (!__builtin_mul_overflow(k, x, &fast) && !__builtin_add_overflow(fast, m, &fast))
+        [[likely]]
+        return fast;
+      __extension__ using Wide = __int128;
+      const Wide result = Wide(k) * x + m;
+      if (result < std::numeric_limits<T>::min() || result > std::numeric_limits<T>::max())
+        throw std::overflow_error("LineContainer: value overflow");
+      return static_cast<T>(result);
+#else
+      using U = std::uint64_t;
+      // 32bit範囲なら積と和が64bitに収まる。
+      constexpr U narrow_offset = U{1} << 31;
+      if (((U(k) + narrow_offset) | (U(x) + narrow_offset) |
+           (U(m) + narrow_offset)) < (U{1} << 32))
+        return k * x + m;
+      const U a = k < 0 ? U{0} - U(k) : U(k);
+      const U b = x < 0 ? U{0} - U(x) : U(x);
+      const U c = m < 0 ? U{0} - U(m) : U(m);
+      constexpr U mask = 0xffffffffU;
+      const U t0 = (a & mask) * (b & mask);
+      const U t1 = (a >> 32) * (b & mask) + (t0 >> 32);
+      const U t2 = (a & mask) * (b >> 32) + (t1 & mask);
+      U hi = (a >> 32) * (b >> 32) + (t1 >> 32) + (t2 >> 32);
+      U lo = (t2 << 32) | (t0 & mask);
+      bool negative = (k < 0) != (x < 0);
+      if (negative == (m < 0)) {
+        const U previous = lo;
+        lo += c;
+        hi += lo < previous;
+      } else if (hi != 0 || lo >= c) {
+        const U previous = lo;
+        lo -= c;
+        hi -= previous < c;
+      } else { lo = c - lo; negative = m < 0; }
+      const U limit = U(std::numeric_limits<T>::max()) + U(negative);
+      if (hi != 0 || lo > limit) throw std::overflow_error("LineContainer: value overflow");
+      if (negative && lo == U(std::numeric_limits<T>::max()) + U{1})
+        return std::numeric_limits<T>::min();
+      return negative ? -static_cast<T>(lo) : static_cast<T>(lo);
+#endif
+    }
+  }
+  static void check_x(T x) {
+#ifndef SKIP_RUNTIME_CHECKS
+    if constexpr (std::is_floating_point_v<T>)
+      if (!std::isfinite(x)) throw std::invalid_argument("LineContainer: nonfinite x");
+#else
+    (void)x;
+#endif
+  }
+  __attribute__((always_inline))
+  typename super::const_iterator selected(T x) const {
+    check_x(x);
+#ifndef SKIP_RUNTIME_CHECKS
+    if (empty()) throw std::out_of_range("LineContainer: empty query");
+#endif
+    return lower_bound(x);
+  }
+
+  bool insect_impl(typename super::iterator x, typename super::iterator y, bool& below) {
+    below = false;
+    if (y == end()) { x->p = inf; return false; }
+    if (x->k == y->k) {
+      const bool better = objective == MAXIMIZE ? x->m > y->m : x->m < y->m;
+      if constexpr (std::is_integral_v<T>) {
+        x->p = better ? inf : std::numeric_limits<T>::min();
+        below = !better;
+      }
+      else x->p = better ? inf : -inf;
+    } else below = intersection(*x, *y);
+    return !below && !boundary_less(*x, *y);
+  }
+
+ public:
+  bool insect(typename super::iterator x, typename super::iterator y) {
+    bool below;
+    return insect_impl(x,y,below);
+  }
+  void add(T k, T m) {
+#ifndef SKIP_RUNTIME_CHECKS
+    if constexpr (std::is_floating_point_v<T>)
+      if (!std::isfinite(k) || !std::isfinite(m))
+        throw std::invalid_argument("LineContainer: nonfinite coefficient");
+#endif
+    add_unchecked(k, m);
+  }
+
+ private:
+  friend struct LineContainer2D;
+  void add_unchecked(T k, T m) {
+    if constexpr (std::is_integral_v<T>) {
+      // 小さい包絡では、確保前に不要な直線を除く。
+      if (super::size() <= 256) {
+        // 型・目的ごとに分け、既存の64bit・最大化経路の生成コードを保つ。
+        if constexpr (std::numeric_limits<T>::digits <= 31 && objective == MINIMIZE) {
+          Line<T> candidate{k, m, inf};
+          auto z = lower_bound(candidate);
+          if (z != end() && z->k == k) {
+            const bool better = objective == MAXIMIZE ? m > z->m : m < z->m;
+            if (!better) return;
+          }
+          auto x = z;
+          const bool has_previous = z != begin();
+          if (has_previous) --x;
+          if (has_previous && z != end() && dominated_at_boundary(*x, candidate, *z)) return;
+          if (z != end() && z->k != k && intersection(candidate, *z)) return;
+          Line<T> previous{};
+          // 下端だけで選ばれる直線と、選択域が型の範囲外の直線を区別する。
+          bool previous_below = false;
+          if (has_previous) {
+            previous = *x;
+            previous_below = intersection(previous, candidate);
+            if (!previous_below && previous.p >= candidate.p &&
+                (z == end() || candidate.p < z->p)) return;
+          }
+          auto y = insert(z, candidate);
+          while (z != end() && !boundary_less(*y, *z)) {
+            z = erase(z);
+            insect(y, z);
+          }
+          if (has_previous) {
+            x->p = previous.p;
+            if (!previous_below && !boundary_less(*x, *y)) insect(x, y = erase(y));
+          } else x = y;
+          while ((y = x) != begin() && !boundary_less(*--x, *y)) insect(x, erase(y));
+          // floorが最小値の直線はその点で最適になり得る。真の域外だけ除く。
+          if constexpr (std::is_integral_v<T>) {
+            const auto first = begin();
+            if (first->p == std::numeric_limits<T>::min()) [[unlikely]] {
+              const auto next = std::next(first);
+              if (next != end()) {
+                bool first_below;
+                insect_impl(first, next, first_below);
+                if (first_below) erase(first);
+              }
+            }
+          }
+          return;
+        } else {
+          Line<T> candidate{k, m, inf};
+          auto z = lower_bound(candidate);
+          if (z != end() && z->k == k) {
+            const bool better = objective == MAXIMIZE ? m > z->m : m < z->m;
+            if (!better) return;
+          } else if (z != end() && intersection<true>(candidate, *z)) return;
+          auto x = z;
+          const bool has_previous = z != begin();
+          Line<T> previous{};
+          // 下端だけで選ばれる直線と、選択域が型の範囲外の直線を区別する。
+          bool previous_below = false;
+          if (has_previous) {
+            --x;
+            previous = *x;
+            previous_below = intersection<true>(previous, candidate);
+            if (!previous_below && previous.p >= candidate.p &&
+                (z == end() || candidate.p < z->p)) return;
+          }
+          auto y = insert(z, candidate);
+          while (z != end() && !boundary_less(*y, *z)) {
+            z = erase(z);
+            insect(y, z);
+          }
+          if (has_previous) {
+            x->p = previous.p;
+            if (!previous_below && !boundary_less(*x, *y)) insect(x, y = erase(y));
+          } else x = y;
+          while ((y = x) != begin() && !boundary_less(*--x, *y)) insect(x, erase(y));
+          // floorが最小値の直線はその点で最適になり得る。真の域外だけ除く。
+          if constexpr (std::is_integral_v<T>) {
+            const auto first = begin();
+            if (first->p == std::numeric_limits<T>::min()) [[unlikely]] {
+              const auto next = std::next(first);
+              if (next != end()) {
+                bool first_below;
+                insect_impl(first, next, first_below);
+                if (first_below) erase(first);
+              }
+            }
+          }
+          return;
+        }
+      }
+    }
+    auto z = insert({k, m, 0}), y = z++, x = y;
+    bool below;
+    while (insect_impl(y, z, below)) z = erase(z);
+    if constexpr (std::is_integral_v<T>)
+      if (below) { erase(y); return; }
+    if (x != begin() && insect(--x, y)) insect(x, y = erase(y));
+    while ((y = x) != begin() && !boundary_less(*--x, *y)) insect(x, erase(y));
+    // floorが最小値の直線はその点で最適になり得る。真の域外だけ除く。
+    if constexpr (std::is_integral_v<T>) {
+      const auto first = begin();
+      if (first->p == std::numeric_limits<T>::min()) [[unlikely]] {
+        const auto next = std::next(first);
+        if (next != end()) {
+          bool first_below;
+          insect_impl(first, next, first_below);
+          if (first_below) erase(first);
+        }
+      }
+    }
+  }
+ public:
+  __attribute__((always_inline))
+  T query(T x) const {
+    if constexpr (std::is_integral_v<T>) {
+#ifndef SKIP_RUNTIME_CHECKS
+      if (empty()) throw std::out_of_range("LineContainer: empty query");
+#endif
+      const auto first = begin();
+      if (x <= first->p) [[unlikely]] return evaluate(first->k, first->m, x);
+      const auto line = lower_bound(x);
+      return evaluate(line->k, line->m, x);
+    } else {
+      const auto line = selected(x);
+      return evaluate(line->k, line->m, x);
+    }
+  }
+  std::optional<T> query_optional(T x) const {
+    check_x(x);
+    if (empty()) return std::nullopt;
+    const auto line = lower_bound(x);
+    return evaluate(line->k, line->m, x);
+  }
+  std::pair<T,T> query_line(T x) const {
+    const auto line = selected(x);
+    return {line->k, line->m};
+  }
+  std::optional<std::pair<T,T>> query_line_optional(T x) const {
+    check_x(x);
+    if (empty()) return std::nullopt;
+    const auto line = lower_bound(x);
+    return std::pair<T,T>{line->k, line->m};
+  }
+  __attribute__((always_inline))
+  Result query_with_line(T x) const {
+    const auto line = selected(x);
+    return {evaluate(line->k, line->m, x), line->k, line->m};
+  }
+  __attribute__((always_inline))
+  std::optional<Result> query_with_line_optional(T x) const {
+    check_x(x);
+    if (empty()) return std::nullopt;
+    const auto line = lower_bound(x);
+    return Result{evaluate(line->k, line->m, x), line->k, line->m};
+  }
+};
+template <typename T> using MinLineContainer = LineContainer<T, MINIMIZE>;
+template <typename T> using MaxLineContainer = LineContainer<T, MAXIMIZE>;
+#endif
+
+
+// SPDX-License-Identifier: CC0-1.0
+// Verify I/O: Verify/current/common/fast_io.hpp
+// SPDX-License-Identifier: CC0-1.0
+#include <algorithm>
+#include <array>
+#include <charconv>
+#include <cstddef>
+#include <cstdint>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <limits>
+#include <stdexcept>
+#include <string>
+#include <string_view>
+#include <type_traits>
+#include <vector>
+
+#ifndef SIRKIT_VERIFY_FAST_IO_DEFINED
+#define SIRKIT_VERIFY_FAST_IO_DEFINED
+
+// VerifyInput(file=stdin): 非所有のFILEから読む。別の入力方式と混用しない。
+// >> 整数: 64bit以下の十進整数を読む。検査省略時は値域内の正しい入力を前提とする。
+// >> char/string: 空白を飛ばし、1文字／空白までの文字列を読む。
+// >> 浮動小数点: 十進文字列を変換する。通常のCロケールで使う。
+// bool / !: 直前までの読み取りが成功しているか／失敗したかを返す。
+class VerifyInput {
+    static constexpr std::size_t buffer_size = 1 << 17;
+    std::FILE* file_;
+    std::array<unsigned char, buffer_size + 1> buffer_;
+    std::size_t position_ = 0, size_ = 0;
+    bool good_ = true;
+
+    int peek() {
+        if (position_ == size_) {
+            size_ = std::fread(buffer_.data(), 1, buffer_size, file_);
+            buffer_[size_] = 0; // 補充後の末尾は常に数字でない番兵。
+            position_ = 0;
+            if (size_ == 0) return EOF;
+        }
+        return buffer_[position_];
+    }
+
+    int skip_space() {
+        int c;
+        while ((c = peek()) != EOF && c <= ' ') ++position_;
+        if (c == EOF) good_ = false;
+        return c;
+    }
+
+public:
+    explicit VerifyInput(std::FILE* file = stdin) : file_(file) {}
+    VerifyInput(const VerifyInput&) = delete;
+    VerifyInput& operator=(const VerifyInput&) = delete;
+
+    explicit operator bool() const noexcept { return good_; }
+    bool operator!() const noexcept { return !good_; }
+
+    template<class T>
+        requires (std::is_integral_v<T> && sizeof(T) <= sizeof(std::uint64_t)
+                  && !std::is_same_v<T, char>)
+    VerifyInput& operator>>(T& result) {
+        if (!good_) return *this;
+        int c = skip_space();
+        if (c == EOF) return *this;
+        bool negative = false;
+        if (c == '-' || c == '+') {
+            negative = c == '-';
+            ++position_;
+            c = peek();
+        }
+        if (c == EOF) {
+            good_ = false;
+            return *this;
+        }
+#ifndef SKIP_RUNTIME_CHECKS
+        if (c < '0' || c > '9') {
+            good_ = false;
+            return *this;
+        }
+        // 先頭の0を除けば、20桁以下の末尾直前の値はuint64_tに収まる。
+        while (c == '0') {
+            ++position_;
+            c = peek();
+        }
+        std::uint64_t previous = 0;
+        unsigned last_digit = 0;
+        std::size_t digits = 0;
+#endif
+        std::uint64_t value = 0;
+#ifdef SKIP_RUNTIME_CHECKS
+        // バッファ末尾の番兵で内側の範囲判定を省き、数字が境界をまたぐときだけ補充する。
+        for (;;) {
+            const unsigned char* first = buffer_.data() + position_;
+            const unsigned char* cursor = first;
+            while (static_cast<unsigned>(*cursor - '0') < 10) {
+                value = value * 10 + static_cast<unsigned>(*cursor - '0');
+                ++cursor;
+            }
+            position_ += static_cast<std::size_t>(cursor - first);
+            if (position_ != size_) break;
+            c = peek();
+            if (c == EOF) break;
+        }
+#else
+        while (c >= '0' && c <= '9') {
+            previous = value;
+            last_digit = static_cast<unsigned>(c - '0');
+            if (digits <= 20) ++digits;
+            value = value * 10 + static_cast<unsigned>(c - '0');
+            ++position_;
+            c = peek();
+        }
+#endif
+#ifndef SKIP_RUNTIME_CHECKS
+        constexpr auto maximum = std::numeric_limits<std::uint64_t>::max();
+        if ((c != EOF && c > ' ') || digits > 20
+            || (digits == 20 && (previous > maximum / 10
+                || (previous == maximum / 10 && last_digit > maximum % 10)))) {
+            good_ = false;
+            return *this;
+        }
+        std::uint64_t limit = static_cast<std::uint64_t>(std::numeric_limits<T>::max());
+        if constexpr (std::is_signed_v<T>) limit += negative;
+        else if (negative && value != 0) good_ = false;
+        if (value > limit) good_ = false;
+        if (!good_) return *this;
+#endif
+        if constexpr (std::is_signed_v<T>) {
+            constexpr std::uint64_t minimum_magnitude =
+                static_cast<std::uint64_t>(std::numeric_limits<T>::max()) + 1;
+            // -(最小値)は評価せず、絶対値が最大値+1のときだけ最小値を使う。
+            result = negative
+                ? (value == minimum_magnitude ? std::numeric_limits<T>::min()
+                                  : static_cast<T>(-static_cast<T>(value)))
+                : static_cast<T>(value);
+        } else result = static_cast<T>(value);
+        return *this;
+    }
+
+    VerifyInput& operator>>(char& result) {
+        if (!good_) return *this;
+        const int c = skip_space();
+        if (c != EOF) {
+            result = static_cast<char>(c);
+            ++position_;
+        }
+        return *this;
+    }
+
+    VerifyInput& operator>>(std::string& result) {
+        if (!good_) return *this;
+        int c = skip_space();
+        if (c == EOF) return *this;
+        result.clear();
+        for (;;) {
+            const std::size_t first = position_;
+            while (position_ < size_ && buffer_[position_] > ' ') ++position_;
+            result.append(reinterpret_cast<const char*>(buffer_.data() + first), position_ - first);
+            if (position_ != size_ || peek() == EOF) break;
+        }
+        return *this;
+    }
+
+    template<class T> requires std::is_floating_point_v<T>
+    VerifyInput& operator>>(T& result) {
+        std::string token;
+        *this >> token;
+        if (!good_) return *this;
+#ifndef SKIP_RUNTIME_CHECKS
+        char* end = nullptr;
+        const long double value = std::strtold(token.c_str(), &end);
+        if (end != token.c_str() + token.size()) good_ = false;
+        else result = static_cast<T>(value);
+#else
+        result = static_cast<T>(std::strtold(token.c_str(), nullptr));
+#endif
+        return *this;
+    }
+};
+
+// VerifyOutput(file=stdout): 非所有のFILEへ書く。破棄時にflushし、FILEは閉じない。
+// << 整数/char/文字列/浮動小数点: 値を出力する。整数は64bit以下に対応する。
+// fixed(digits): 浮動小数点を小数点以下digits桁で出力する（digits>=0）。
+// flush(): バッファの内容をFILEへ渡す。bool / !で書き込み失敗を確認できる。
+class VerifyOutput {
+    static constexpr std::size_t buffer_size = 1 << 17;
+    std::FILE* file_;
+    std::array<char, buffer_size> buffer_;
+    std::size_t size_ = 0;
+    int precision_ = 6;
+    bool fixed_ = false, good_ = true;
+
+    void write(std::string_view text) {
+        while (!text.empty() && good_) {
+            if (size_ == buffer_.size()) flush();
+            const auto count = std::min(text.size(), buffer_.size() - size_);
+            std::memcpy(buffer_.data() + size_, text.data(), count);
+            size_ += count;
+            text.remove_prefix(count);
+        }
+    }
+
+public:
+    explicit VerifyOutput(std::FILE* file = stdout) : file_(file) {}
+    VerifyOutput(const VerifyOutput&) = delete;
+    VerifyOutput& operator=(const VerifyOutput&) = delete;
+    ~VerifyOutput() { flush(); }
+
+    explicit operator bool() const noexcept { return good_; }
+    bool operator!() const noexcept { return !good_; }
+
+    VerifyOutput& fixed(int digits) {
+        if (digits < 0) throw std::invalid_argument("negative output precision");
+        fixed_ = true;
+        precision_ = digits;
+        return *this;
+    }
+
+    void flush() noexcept {
+        std::size_t written = 0;
+        while (written < size_ && good_) {
+            const auto count = std::fwrite(buffer_.data() + written, 1, size_ - written, file_);
+            if (count == 0) good_ = false;
+            written += count;
+        }
+        size_ = 0;
+    }
+
+    template<class T>
+        requires (std::is_integral_v<T> && sizeof(T) <= sizeof(std::uint64_t)
+                  && !std::is_same_v<T, char>)
+    VerifyOutput& operator<<(T value) {
+        if constexpr (std::is_same_v<T, bool>) return *this << static_cast<char>('0' + value);
+        else {
+            constexpr std::size_t capacity = std::numeric_limits<std::uint64_t>::digits10 + 3;
+            if (buffer_.size() - size_ < capacity) flush();
+            if (!good_) return *this;
+            const auto end = std::to_chars(buffer_.data() + size_, buffer_.data() + size_ + capacity, value).ptr;
+            size_ = static_cast<std::size_t>(end - buffer_.data());
+            return *this;
+        }
+    }
+
+    VerifyOutput& operator<<(char value) {
+        if (size_ == buffer_.size()) flush();
+        if (good_) buffer_[size_++] = value;
+        return *this;
+    }
+
+    VerifyOutput& operator<<(std::string_view value) { write(value); return *this; }
+    VerifyOutput& operator<<(const std::string& value) { write(value); return *this; }
+    VerifyOutput& operator<<(const char* value) { write(value); return *this; }
+
+    template<class T> requires std::is_floating_point_v<T>
+    VerifyOutput& operator<<(T value) {
+        char local[128];
+        const char* format = fixed_ ? "%.*Lf" : "%.*Lg";
+        const int count = std::snprintf(local, sizeof(local), format, precision_,
+                                        static_cast<long double>(value));
+        if (count < 0) good_ = false;
+        else if (static_cast<std::size_t>(count) < sizeof(local))
+            write(std::string_view(local, static_cast<std::size_t>(count)));
+        else {
+            std::vector<char> text(static_cast<std::size_t>(count) + 1);
+            std::snprintf(text.data(), text.size(), format, precision_, static_cast<long double>(value));
+            write(std::string_view(text.data(), static_cast<std::size_t>(count)));
+        }
+        return *this;
+    }
+};
+
+inline VerifyInput verify_in;
+inline VerifyOutput verify_out;
+#endif
+
+#include <cstdint>
+
+int main() {
+    int n{}, q{}; if (!(verify_in >> n >> q)) return 0;
+    MinLineContainer<std::int64_t> lines;
+    while (n--) { std::int64_t a{}, b{}; verify_in >> a >> b; lines.add(a, b); }
+    while (q--) {
+        int t{}; verify_in >> t;
+        if (t == 0) { std::int64_t a{}, b{}; verify_in >> a >> b; lines.add(a, b); }
+        else { std::int64_t x{}; verify_in >> x; verify_out << lines.query(x) << '\n'; }
+    }
+}
