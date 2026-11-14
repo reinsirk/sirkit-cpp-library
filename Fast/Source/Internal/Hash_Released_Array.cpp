@@ -1,12 +1,17 @@
 // SPDX-License-Identifier: CC0-1.0
 // Fast内部用。明示的なrelease_storage以外では要素・領域を破棄しない。
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <cstddef>
 #include <limits>
 #include <utility>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_FAST_HASH_RELEASED_ARRAY_DEFINED
 #define SIRKIT_FAST_HASH_RELEASED_ARRAY_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 template<class T>class FastHashReleasedArray {
     T* data_=nullptr;
     std::size_t size_=0;
@@ -32,3 +37,7 @@ public:
 }
 #endif
 
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1

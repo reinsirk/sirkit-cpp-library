@@ -1,0 +1,23 @@
+{
+  "format": 1,
+  "entries": [
+    {
+      "path": "Math/Formal_Power_Series.cpp",
+      "source_sha256": "fdb94a9c88a32ddc35b4e2c703518cf439026008627701bdf248bee32975aeee",
+      "line": 935,
+      "column": 13,
+      "check": "bugprone-use-after-move",
+      "message": "'result' used after it was moved",
+      "reason": "inverseのresultは標準allocatorを使うstd::vector<uint32_t>。move後も有効な状態であり、result.swap(next)で次の係数列を受け取る操作に問題はない。添字参照等のmove後利用を許可するものではない。"
+    },
+    {
+      "path": "Math/Polynomial.cpp",
+      "source_sha256": "d9e84f7e9e445cf4dfaee789d344cfffa8abb2ef9705000255cff5d65b2012ab",
+      "line": 948,
+      "column": 13,
+      "check": "bugprone-use-after-move",
+      "message": "'result' used after it was moved",
+      "reason": "Formal_Power_Seriesのinverseを含む生成版で、同じ標準allocatorのstd::vector<uint32_t>をmove後にswapしている。FPS側と生成後の原本の双方を個別SHAへ結び付ける。"
+    }
+  ]
+}

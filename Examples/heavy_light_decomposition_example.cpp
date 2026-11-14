@@ -8,6 +8,8 @@
 #include <iostream>
 #include <string>
 #include <vector>
+
+using namespace sirkit;
 namespace {
 std::string concat(std::string a,const std::string& b){a+=b;return a;}
 std::string empty_word(){return {};}

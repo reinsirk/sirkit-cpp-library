@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #include "../../../DataStructure/Segment_Tree_Beats.cpp"
 #include <bit>
 #include <cassert>
@@ -6,9 +8,9 @@
 #include <random>
 
 int main() {
-    using reinsirk::detail::BeatsWide;
-    using reinsirk::detail::beats_multiply;
-    using reinsirk::detail::beats_narrow;
+    using ::sirkit::detail::BeatsWide;
+    using ::sirkit::detail::beats_multiply;
+    using ::sirkit::detail::beats_narrow;
     using Reference = __int128_t;
     std::mt19937_64 rng(0x128bea75);
     constexpr std::size_t base = std::size_t{1} << 42;

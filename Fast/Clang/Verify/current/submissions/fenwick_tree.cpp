@@ -21,7 +21,7 @@
 // fenwick_tree()/fenwick_tree(int n)/fenwick_tree(vector<T>): 空列/n要素の0/列から構築。O(n+1)時間・領域。
 // add(int p,T x): 点加算。sum(int l,int r): 半開区間[l,r)の和をT値で返す。O(log(n+1))、空区間はT{}。
 // 点添字は0<=p<size()、区間は0<=l<=r<=size()。
-// ACL形式の公開APIをグローバルに定義する。bool以外の整数は内部を符号なしにして型幅のmod 2^bitで計算する。
+// ACL形式の公開APIをsirkit内に定義する。bool以外の整数は内部を符号なしにして型幅のmod 2^bitで計算する。
 // その他のTはT{}が単位元の可換加法群とし、加減算・コピーをO(1)とする。要素数はintの範囲内。
 // size()/empty(): 要素数/空か、O(1)。get(int p)/set(int p,T value): 点取得/代入、O(log(n+1))。
 // lower_bound(target)/upper_bound(target): sum(0,i+1)>=target/>targetとなる最小int添字、なければsize()。O(log(n+1))。
@@ -30,6 +30,8 @@
 // clear()/swap(other): 空にして容量保持/交換。O(旧n+1)/O(1)。コピーは独立、移動元は空として使える。
 // 添字・区間は既定で検査しSKIP_RUNTIME_CHECKSで除く。容量・添字のオーバーフロー対策は残す。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <cstddef>
 #include <iterator>
@@ -39,9 +41,12 @@
 #include <utility>
 #include <vector>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_FAST_BUFFER_DEFINED
 #define SIRKIT_FAST_BUFFER_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 template <class T>
 class FastBuffer {
     T* data_ = nullptr;
@@ -157,23 +162,71 @@ public:
 }
 #endif
 
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <algorithm>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <bit>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <cstddef>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <limits>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <stdexcept>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <type_traits>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <utility>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <vector>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 
 #ifndef SIRKIT_HLD_FENWICK_ACCESS_FORWARD_DEFINED
 #define SIRKIT_HLD_FENWICK_ACCESS_FORWARD_DEFINED
-namespace reinsirk::detail { template<class Range> struct HldFenwickAccess; }
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ { template<class Range> struct HldFenwickAccess; }
 #endif
 
 #ifndef SIRKIT_FENWICK_STORAGE_TYPE_DEFINED
 #define SIRKIT_FENWICK_STORAGE_TYPE_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 template<class T, bool = std::is_integral_v<T> && !std::is_same_v<T, bool>>
 struct FenwickStorage { using type = T; };
 template<class T>
@@ -191,9 +244,9 @@ template<class T>
 class fenwick_tree {
     // HLD所有時の読取り専用接続。通常のFenwick操作には使わない。
     using HldFenwickTag = void;
-    template<class> friend struct reinsirk::detail::HldFenwickAccess;
-    using Storage = typename reinsirk::detail::FenwickStorage<T>::type;
-    reinsirk::detail::FastBuffer<Storage> tree_;
+    template<class> friend struct /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::HldFenwickAccess;
+    using Storage = typename /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::FenwickStorage<T>::type;
+    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::FastBuffer<Storage> tree_;
     static decltype(auto) to_storage(const T& value) {
         if constexpr (std::is_same_v<T, Storage>) return (value);
         else return static_cast<Storage>(value);
@@ -319,7 +372,7 @@ public:
         return result;
     }
     void reset(int n) {
-        reinsirk::detail::FastBuffer<Storage> replacement(storage_size(checked_size(n)), Storage{});
+        /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::FastBuffer<Storage> replacement(storage_size(checked_size(n)), Storage{});
         tree_.swap(replacement);
     }
     void reset() { std::fill(tree_.begin(), tree_.end(), Storage{}); }
@@ -328,6 +381,13 @@ public:
 };
 #endif
 
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
+
+
+namespace sirkit {}
+using namespace sirkit;
 
 // SPDX-License-Identifier: CC0-1.0
 // Verify I/O: Verify/current/common/fast_io.hpp

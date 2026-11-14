@@ -36,6 +36,8 @@
 // reserve_nodes(count): 補助頂点込みの頂点容量を予約、O(V)。辺容量の予約ではない。
 // operator<<: 現在の順方向辺をfrom->to(flow/capacity)形式で出力、O(E)。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -46,6 +48,9 @@
 #include <utility>
 #include <vector>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_TWO_VARIABLE_SUBMODULAR_OPT_DEFINED
 #define SIRKIT_TWO_VARIABLE_SUBMODULAR_OPT_DEFINED
 
@@ -496,6 +501,13 @@ public:
 };
 #endif
 
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
+
+
+namespace sirkit {}
+using namespace sirkit;
 
 // SPDX-License-Identifier: CC0-1.0
 #include <algorithm>

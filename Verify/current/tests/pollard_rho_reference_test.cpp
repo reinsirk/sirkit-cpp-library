@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #ifndef POLLARD_HEADER
 #define POLLARD_HEADER "../../../Math/Pollard_Rho.cpp"
 #endif
@@ -20,7 +22,7 @@ std::vector<std::uint64_t> trial(std::uint64_t n){std::vector<std::uint64_t>r;fo
 template<class F>void zero_reject(F f){bool yes=false;try{f();}catch(const std::domain_error&){yes=true;}check(yes);}
 }
 int main(){std::mt19937_64 rng(0x42d617801031ULL);PollardRho64 engine;
-for(int rep=0;rep<50000;++rep){auto n=rng()|1;if(n==1)n=3;reinsirk::detail::FactorizationArithmetic arithmetic(n);const auto a=rng()%n,b=rng()%n;const auto ea=arithmetic.encode(a),eb=arithmetic.encode(b);
+for(int rep=0;rep<50000;++rep){auto n=rng()|1;if(n==1)n=3;::sirkit::detail::FactorizationArithmetic arithmetic(n);const auto a=rng()%n,b=rng()%n;const auto ea=arithmetic.encode(a),eb=arithmetic.encode(b);
 #if defined(__SIZEOF_INT128__)
  const auto expected=static_cast<std::uint64_t>(static_cast<__uint128_t>(a)*b%n);check(arithmetic.multiply(arithmetic.multiply(ea,eb),1)==expected);check(arithmetic.add(ea,eb)==static_cast<std::uint64_t>((static_cast<__uint128_t>(ea)+eb)%n));
 #else

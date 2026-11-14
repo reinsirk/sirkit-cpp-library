@@ -12,7 +12,7 @@
 // ドキュメント: https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/segment_tree.md
 //
 // API一覧
-// [segtree<S, op, e>（ACL形式、グローバルに定義）]
+// [segtree<S, op, e>（ACL形式、sirkit内に定義）]
 // segtree()/segtree(int n)/segtree(vector<S>): 空列/n個の単位元/列から構築。0<=n<=INT_MAX、O(n+1)時間・領域。
 // S op(S,S)は結合的、S e()は左右の単位元。同じ呼び出し形式の関数オブジェクトも可。演算/コピーはO(1)。
 // 点添字は0<=p<size()、区間は0<=l<=r<=size()の半開区間。
@@ -25,6 +25,8 @@
 // values(): 列のコピー、O(n+1)。assign(vector<S>)/reset(int n)/reset(): 列/n個/現在の長さの単位元へ再構築、O(旧n+n+1)。
 // clear()/swap(other): 容量を保持して空へ/交換、O(旧n+1)/O(1)。コピーは独立、移動元は空。値の演算等が投げる場合は内容の強い保証なし。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <bit>
 #include <cstddef>
@@ -35,9 +37,12 @@
 #include <utility>
 #include <vector>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_HLD_SEGMENT_ACCESS_FORWARD_DEFINED
 #define SIRKIT_HLD_SEGMENT_ACCESS_FORWARD_DEFINED
-namespace reinsirk::detail { template<class Range> struct HldSegmentAccess; }
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ { template<class Range> struct HldSegmentAccess; }
 #endif
 
 #ifndef SIRKIT_SEGMENT_TREE_DEFINED
@@ -47,7 +52,7 @@ class segtree {
     static_assert(std::is_invocable_r_v<S, decltype(op), S, S>, "segtree: op(S,S) must return S");
     static_assert(std::is_invocable_r_v<S, decltype(e)>, "segtree: e() must return S");
     using HldSegmentTag = void;
-    template<class> friend struct reinsirk::detail::HldSegmentAccess;
+    template<class> friend struct /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::HldSegmentAccess;
     S identity_;
     std::size_t n_ = 0, base_ = 1;
     std::vector<S> data_;
@@ -293,6 +298,13 @@ public:
 };
 #endif
 
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
+
+
+namespace sirkit {}
+using namespace sirkit;
 
 // SPDX-License-Identifier: CC0-1.0
 // Verify I/O: Verify/current/common/fast_io.hpp

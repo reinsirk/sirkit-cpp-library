@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #ifndef SIRKIT_MAP_TEST_SOURCE
 #define SIRKIT_MAP_TEST_SOURCE "../../../DataStructure/Hash_map.cpp"
 #endif

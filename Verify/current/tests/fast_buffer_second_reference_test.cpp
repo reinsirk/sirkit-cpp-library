@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #ifndef FAST_BUFFER_SOURCE
 #define FAST_BUFFER_SOURCE "../../../Fast/Source/Internal/Buffer.cpp"
 #endif
@@ -9,7 +11,7 @@
 #include <sstream>
 #include <string>
 
-template<class T> using Buffer = reinsirk::detail::FastBuffer<T>;
+template<class T> using Buffer = ::sirkit::detail::FastBuffer<T>;
 struct NoDefault {
     int value;
     NoDefault() = delete;

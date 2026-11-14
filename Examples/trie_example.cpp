@@ -5,6 +5,8 @@
 #include <string>
 #include <utility>
 
+using namespace sirkit;
+
 int main() {
     Trie trie;
     trie.reserve_nodes(32);

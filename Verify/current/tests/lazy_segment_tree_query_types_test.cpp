@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 // 積の戻り値の型要件と、遅延伝播時の所有型・bool proxyを検証する。
 #ifndef SIRKIT_LAZY_SEGMENT_TEST_SOURCE
 #define SIRKIT_LAZY_SEGMENT_TEST_SOURCE "../../../DataStructure/Lazy_Segment_Tree.cpp"

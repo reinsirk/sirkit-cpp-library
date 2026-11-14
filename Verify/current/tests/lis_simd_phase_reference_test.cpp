@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #include <algorithm>
 #include <bit>
 #include <cstddef>
@@ -49,12 +51,12 @@ static void run(const std::vector<std::int64_t>& input) {
     const auto expected = reference(input);
     validate(input, LISIndices(input), expected);
 #if !defined(SIRKIT_DISABLE_SIMD) && defined(__GNUC__) && !defined(__clang__) && __GNUC__ == 15 && __GNUC_MINOR__ == 2 && defined(__x86_64__)
-    validate(input, reinsirk::detail::LISIndicesPhased<std::uint32_t>(input), expected);
-    validate(input, reinsirk::detail::LISIndicesPhased<std::size_t>(input), expected);
+    validate(input, ::sirkit::detail::LISIndicesPhased<std::uint32_t>(input), expected);
+    validate(input, ::sirkit::detail::LISIndicesPhased<std::size_t>(input), expected);
     phased += 2;
     if (__builtin_cpu_supports("avx2")) {
-        validate(input, reinsirk::detail::LISIndicesWithValuesAVXTail<std::uint32_t>(input), expected);
-        validate(input, reinsirk::detail::LISIndicesWithValuesAVXTail<std::size_t>(input), expected);
+        validate(input, ::sirkit::detail::LISIndicesWithValuesAVXTail<std::uint32_t>(input), expected);
+        validate(input, ::sirkit::detail::LISIndicesWithValuesAVXTail<std::size_t>(input), expected);
         avx += 2;
     }
 #endif

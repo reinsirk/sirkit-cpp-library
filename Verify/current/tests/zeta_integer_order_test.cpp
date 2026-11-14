@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #ifndef SOURCE
 #define SOURCE "../../../Math/Zeta_Mebius.cpp"
 #endif
@@ -39,7 +41,7 @@ template <bool ToMultiples, bool Subtract, class T>
 void compare(std::vector<T> values, const IntegerSieve& sieve) {
     auto expected = values;
     ordered_reference<ToMultiples, Subtract>(expected, sieve.prime_list);
-    reinsirk::detail::IntegerTransform::propagate<ToMultiples, Subtract>(values, sieve.prime_list);
+    ::sirkit::detail::IntegerTransform::propagate<ToMultiples, Subtract>(values, sieve.prime_list);
     check(values == expected);
 }
 
@@ -94,7 +96,7 @@ template <bool ToMultiples, bool Subtract> void exception_suite() {
             const auto calls = TrivialValue::calls, trace = TrivialValue::trace;
             TrivialValue::budget = limit; TrivialValue::calls = TrivialValue::trace = 0;
             bool actual_throw = false;
-            try { reinsirk::detail::IntegerTransform::propagate<ToMultiples, Subtract>(actual, sieve.prime_list); }
+            try { ::sirkit::detail::IntegerTransform::propagate<ToMultiples, Subtract>(actual, sieve.prime_list); }
             catch (const std::runtime_error&) { actual_throw = true; }
             check(expected_throw == actual_throw); check(expected == actual);
             check(calls == TrivialValue::calls); check(trace == TrivialValue::trace);

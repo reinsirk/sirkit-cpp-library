@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #ifndef SIRKIT_ORIENTATION_TEST_HEADER
 #define SIRKIT_ORIENTATION_TEST_HEADER "../../../Geometry/Point.cpp"
 #endif
@@ -31,15 +33,15 @@ template<class P> void check(const P& a, const P& b, const P& c) {
         if (x < low || x > high) { ++outside_contract; return; }
     }
     const Big determinant = p - q;
-    require(geo::orientation(a,b,c) == sign(determinant));
+    require(::sirkit::geo::orientation(a,b,c) == sign(determinant));
     if (low <= determinant && determinant <= high) {
         require(Big(a.orient(b,c)) == determinant);
         require(a.ccw(b,c) == sign(determinant));
     }
 }
 
-template<class T, class C = geo::DefaultCalc<T>> void integers() {
-    using P = geo::Point<T,C>;
+template<class T, class C = ::sirkit::geo::DefaultCalc<T>> void integers() {
+    using P = ::sirkit::geo::Point<T,C>;
     std::mt19937_64 rng(0xA891 + sizeof(T));
     for (int i=0;i<10000;++i) {
         const std::int64_t bound = sizeof(T)==1 ? 60 : sizeof(T)==2 ? 16000 : 1000000000;
@@ -56,7 +58,7 @@ template<class T, class C = geo::DefaultCalc<T>> void integers() {
 }
 
 template<class T> void floating() {
-    using P=geo::Point<T>;
+    using P=::sirkit::geo::Point<T>;
     std::mt19937_64 rng(0xF10A);
     // 座標・許容幅を二進有理数に限定し、参照側は整数だけで閾値を比較する。
     for (int i=0;i<10000;++i) {
@@ -68,7 +70,7 @@ template<class T> void floating() {
         for (const int absolute:{0,64,1024}) for (const int relative:{0,1,32}) {
             const Big value=(p-q)*1024, tolerance=Big(absolute)*256+Big(relative)*(abs(p)+abs(q));
             const int expected=int(value>tolerance)-int(value < -tolerance);
-            require(geo::orientation(a,b,c,geo::Epsilon{absolute/1024.0L,relative/1024.0L})==expected);
+            require(::sirkit::geo::orientation(a,b,c,::sirkit::geo::Epsilon{absolute/1024.0L,relative/1024.0L})==expected);
         }
     }
 }
@@ -78,7 +80,7 @@ int main() {
     integers<std::int8_t>(); integers<std::int16_t>();
     integers<std::int32_t>(); integers<std::int64_t>();
     integers<std::int64_t,std::int64_t>();
-    using P=geo::Point<std::int64_t,std::int64_t>;
+    using P=::sirkit::geo::Point<std::int64_t,std::int64_t>;
     check(P{0,0},P{3000000000,-3000000000},P{3000000000,3000000000});
     floating<float>(); floating<double>(); floating<long double>();
     std::cout << "PASS checks=" << checks << " outside_contract=" << outside_contract << '\n';

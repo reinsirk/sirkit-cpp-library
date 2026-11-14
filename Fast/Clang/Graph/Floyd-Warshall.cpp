@@ -5,16 +5,18 @@
 // ドキュメント: https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/floyd_warshall.md
 //
 // API一覧
-// INF=std::int64_t{1}<<60。
+// kInf=std::int64_t{1}<<60。
 // [Floyd-Warshall]
 // FloydWarshall(distances): 正方行列を全点対最短距離で上書きし、グラフ内に負閉路があればtrue。O(V^3)時間。
 // FloydWarshall(distances, next): 距離に加え、経路の次頂点表nextを作る。経路更新・O(V^2)追加領域はこの版のみ。
 // FloydWarshallPath(next, from, to): 次頂点表から頂点列をO(経路長)で復元。未到達・負閉路の影響下なら空。
-// 入力はINFが未接続、有限重みは(-INF, INF)。対角はmin(入力, 0)とする。
-// 出力は未到達INF、負閉路を経由できる組だけ-INF。有限距離が(-INF, INF)外ならoverflow_error。
+// 入力はkInfが未接続、有限重みは(-kInf, kInf)。対角はmin(入力, 0)とする。
+// 出力は未到達kInf、負閉路を経由できる組だけ-kInf。有限距離が(-kInf, kInf)外ならoverflow_error。
 // 算術範囲の算出を兼ねて初期行列を走査する。SKIP_RUNTIME_CHECKSで形状・入力値・頂点の検査を除く。
 // 通常版の追加領域はO(V)。大きな重みで広幅演算が必要な場合はO(V^2)。例外時の行列の内容は未規定。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <bit>
 #include <cstddef>
@@ -27,14 +29,17 @@
 #include <immintrin.h>
 #endif
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_INF_DEFINED
 #define SIRKIT_INF_DEFINED
-inline constexpr std::int64_t INF = std::int64_t{1} << 60;
+inline constexpr std::int64_t kInf = std::int64_t{1} << 60;
 #endif
 
 #ifndef SIRKIT_FLOYD_WARSHALL_DEFINED
 #define SIRKIT_FLOYD_WARSHALL_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 
 // boolは既存の実行経路、専用の列挙型は有限範囲のSIMD最適化を選ぶ。
 enum class FloydWarshallSimdMode { Finite = 1 };
@@ -76,7 +81,7 @@ struct FloydWarshallWide
 inline FloydWarshallWide FloydWarshallLimit(std::size_t n)
 {
 #if defined(__SIZEOF_INT128__)
-    return static_cast<FloydWarshallWide>(n) * INF;
+    return static_cast<FloydWarshallWide>(n) * kInf;
 #else
     return {static_cast<std::int64_t>(n >> 4), static_cast<std::uint64_t>(n) << 60};
 #endif
@@ -223,10 +228,10 @@ inline bool FloydWarshallRun(std::vector<std::vector<Distance>> &distance,
         for (auto &value : row)
         {
             if (value == unreachable)
-                value = Distance{INF};
+                value = Distance{kInf};
             else if (value == affected)
-                value = Distance{-INF};
-            else if (!(Distance{-INF} < value) || !(value < Distance{INF}))
+                value = Distance{-kInf};
+            else if (!(Distance{-kInf} < value) || !(value < Distance{kInf}))
                 throw std::overflow_error("FloydWarshall: finite distance collides with INF/-INF");
         }
     return !negative.empty();
@@ -246,7 +251,7 @@ inline bool FloydWarshallImpl(std::vector<std::vector<std::int64_t>> &distance,
     if (n == 1)
     {
         const bool negative = distance[0][0] < 0;
-        distance[0][0] = negative ? -INF : 0;
+        distance[0][0] = negative ? -kInf : 0;
         if constexpr (RestorePath)
             (*next)[0][0] = negative ? -1 : 0;
         return negative;
@@ -263,7 +268,7 @@ inline bool FloydWarshallImpl(std::vector<std::vector<std::int64_t>> &distance,
             auto &value = row[to];
             if (from == to)
                 value = std::min(value, std::int64_t{0});
-            if (value == INF) {
+            if (value == kInf) {
                 dense = false;
                 continue;
             }
@@ -273,14 +278,14 @@ inline bool FloydWarshallImpl(std::vector<std::vector<std::int64_t>> &distance,
                 (*next)[from][to] = static_cast<int>(to);
         }
     }
-    // 非負で最長単純路もINF未満なら、未接続値と出力の変換が要らない。
-    if (!has_negative && maximum <= (INF - 1) / static_cast<std::int64_t>(n)) {
-        if (dense) return FloydWarshallRun<RestorePath, false, true, true, std::int64_t, UseSimd>(distance, INF, std::int64_t{0}, next);
-        return FloydWarshallRun<RestorePath, false, true, false, std::int64_t, UseSimd>(distance, INF, std::int64_t{0}, next);
+    // 非負で最長単純路もkInf未満なら、未接続値と出力の変換が要らない。
+    if (!has_negative && maximum <= (kInf - 1) / static_cast<std::int64_t>(n)) {
+        if (dense) return FloydWarshallRun<RestorePath, false, true, true, std::int64_t, UseSimd>(distance, kInf, std::int64_t{0}, next);
+        return FloydWarshallRun<RestorePath, false, true, false, std::int64_t, UseSimd>(distance, kInf, std::int64_t{0}, next);
     }
     for (auto& row : distance)
         for (auto& value : row)
-            if (value == INF) value = unreachable;
+            if (value == kInf) value = unreachable;
     // 単純路はn-1辺以下。下限は-n*maximumで、負閉路での際限ない減少を抑える。
     if (maximum <= unreachable / (2 * static_cast<std::int64_t>(n)))
     {
@@ -321,10 +326,10 @@ inline bool FloydWarshall(std::vector<std::vector<std::int64_t>> &distances)
 #if (!defined(SIRKIT_DISABLE_SIMD)) && ((defined(__i386__)) || (defined(__x86_64__))) && (!(defined(__AVX2__)))
     constexpr std::size_t threshold = 32;
     if (distances.size() >= threshold && __builtin_cpu_supports("avx2")) {
-        return reinsirk::detail::FloydWarshallVectorized<false>(distances, nullptr);
+        return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::FloydWarshallVectorized<false>(distances, nullptr);
     }
 #endif
-    return reinsirk::detail::FloydWarshallImpl<false>(distances, nullptr);
+    return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::FloydWarshallImpl<false>(distances, nullptr);
 }
 
 inline bool FloydWarshall(std::vector<std::vector<std::int64_t>> &distances,
@@ -333,10 +338,10 @@ inline bool FloydWarshall(std::vector<std::vector<std::int64_t>> &distances,
 #if (!defined(SIRKIT_DISABLE_SIMD)) && ((defined(__i386__)) || (defined(__x86_64__)))
     constexpr std::size_t threshold = 16;
     if (distances.size() >= threshold && __builtin_cpu_supports("avx2")) {
-        return reinsirk::detail::FloydWarshallVectorized<true>(distances, &next);
+        return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::FloydWarshallVectorized<true>(distances, &next);
     }
 #endif
-    return reinsirk::detail::FloydWarshallImpl<true>(distances, &next);
+    return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::FloydWarshallImpl<true>(distances, &next);
 }
 
 inline std::vector<int> FloydWarshallPath(const std::vector<std::vector<int>> &next,
@@ -359,3 +364,7 @@ inline std::vector<int> FloydWarshallPath(const std::vector<std::vector<int>> &n
     throw std::invalid_argument("FloydWarshallPath: cyclic next table");
 }
 #endif
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1

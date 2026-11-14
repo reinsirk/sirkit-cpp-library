@@ -23,6 +23,8 @@
 // clear(): 空へ。copyは独立所有、copy代入は失敗時旧状態維持。move元は空で再利用可。swapはO(1)。
 // viewは成功したbuild/clear/代入/所有権移動まで有効。buildの入力に自身のviewを渡してよい。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <bit>
 #include <cstddef>
@@ -33,6 +35,9 @@
 #include <utility>
 #include <vector>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_FUNCTIONAL_GRAPH_DEFINED
 #define SIRKIT_FUNCTIONAL_GRAPH_DEFINED
 class FunctionalGraph {
@@ -154,6 +159,13 @@ public:
 };
 #endif
 
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
+
+
+namespace sirkit {}
+using namespace sirkit;
 
 // SPDX-License-Identifier: CC0-1.0
 #include <cstddef>

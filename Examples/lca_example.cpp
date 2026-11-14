@@ -4,6 +4,8 @@
 #include <vector>
 #include <utility>
 
+using namespace sirkit;
+
 int main() {
     std::vector<std::pair<int,int>> edges{{0,1},{0,2},{1,3},{1,4},{5,6}};
     LCA tree(7, edges);

@@ -3,6 +3,8 @@
 #include <iostream>
 #include <vector>
 #include "../Math/Polynomial.cpp"
+
+using namespace sirkit;
 int main(){
     const std::vector<int> points{0,1,2};
     const FormalPowerSeries f{1,2,3};

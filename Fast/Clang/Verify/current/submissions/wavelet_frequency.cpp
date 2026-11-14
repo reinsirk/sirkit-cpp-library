@@ -35,6 +35,8 @@
 // コンパイル対象が既にPOPCNT/AVX2を要求する場合、追加のCPU判定を省く。
 // SIRKIT_DISABLE_SIMDで追加のCPU判定・POPCNT専用経路・AVX2実装を除く。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <cstddef>
 #include <iterator>
@@ -44,9 +46,12 @@
 #include <utility>
 #include <vector>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_FAST_BUFFER_DEFINED
 #define SIRKIT_FAST_BUFFER_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 template <class T>
 class FastBuffer {
     T* data_ = nullptr;
@@ -162,26 +167,104 @@ public:
 }
 #endif
 
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <algorithm>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <array>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <bit>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <cstddef>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <cstdint>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <limits>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <optional>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <span>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <stdexcept>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <type_traits>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <utility>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <vector>
 
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
 #if (!defined(SIRKIT_DISABLE_SIMD)) && (!defined(SIRKIT_WAVELET_FORCE_SOFTWARE)) && ((defined(__x86_64__)) || (defined(__i386__)))
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <immintrin.h>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #endif
 
 #ifndef SIRKIT_WAVELET_POPCOUNT_DEFINED
 #define SIRKIT_WAVELET_POPCOUNT_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 inline unsigned wavelet_software_popcount(std::uint64_t value) noexcept {
     value -= (value >> 1) & UINT64_C(0x5555555555555555);
     value = (value & UINT64_C(0x3333333333333333)) + ((value >> 2) & UINT64_C(0x3333333333333333));
@@ -219,10 +302,10 @@ inline unsigned wavelet_popcount(std::uint64_t value) noexcept {
 
 #ifndef SIRKIT_WAVELET_RANK_BITS_DEFINED
 #define SIRKIT_WAVELET_RANK_BITS_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 class WaveletRankBits {
-    reinsirk::detail::FastBuffer<std::uint64_t> words_;
-    reinsirk::detail::FastBuffer<std::uint32_t> prefix_;
+    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::FastBuffer<std::uint64_t> words_;
+    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::FastBuffer<std::uint32_t> prefix_;
 public:
     explicit WaveletRankBits(std::size_t count) : words_(count / 64 + (count % 64 != 0)) {}
     void set(std::size_t index) noexcept { words_[index >> 6] |= std::uint64_t{1} << (index & 63); }
@@ -408,8 +491,8 @@ class WaveletMatrix {
     std::size_t n_ = 0;
     unsigned bits_ = 0;
     U base_ = 0, maximum_ = 0;
-    reinsirk::detail::FastBuffer<reinsirk::detail::WaveletRankBits> levels_;
-    reinsirk::detail::FastBuffer<std::size_t> zero_;
+    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::FastBuffer</*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::WaveletRankBits> levels_;
+    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::FastBuffer<std::size_t> zero_;
 
     void check_range(std::size_t left, std::size_t right) const {
         static_cast<void>(left); static_cast<void>(right);
@@ -573,6 +656,13 @@ template <class T> WaveletMatrix(const std::vector<T>&) -> WaveletMatrix<T>;
 template <class T> WaveletMatrix(std::span<const T>) -> WaveletMatrix<T>;
 #endif
 
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
+
+
+namespace sirkit {}
+using namespace sirkit;
 
 // SPDX-License-Identifier: CC0-1.0
 // Verify I/O: Verify/current/common/fast_io.hpp

@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 // 実行例: c++ -std=c++23 -O2 Verify/current/tests/dynamic_fenwick_2d_bplus_test.cpp -o /tmp/fenwick_test && /tmp/fenwick_test
 #ifndef FENWICK_SOURCE
 #define FENWICK_SOURCE "../../../DataStructure/dynamic-binary-indexed-tree-2d.cpp"
@@ -25,7 +27,7 @@ void operator delete[](void*p)noexcept{std::free(p);}
 void operator delete(void*p,std::size_t)noexcept{std::free(p);}
 void operator delete[](void*p,std::size_t)noexcept{std::free(p);}
 #include FENWICK_SOURCE
-using I=std::int64_t;using U=std::uint32_t;using Row=reinsirk::detail::BPlusFenwickRow<I>;
+using I=std::int64_t;using U=std::uint32_t;using Row=::sirkit::detail::BPlusFenwickRow<I>;
 static std::uint64_t assertions=0;static void check(bool x){++assertions;if(!x){std::fprintf(stderr,"assertion %ju failed\n",std::uintmax_t(assertions));std::abort();}}
 static I reference(const std::map<U,I>& vals,U l,U r){I s=0;for(auto it=vals.upper_bound(l);it!=vals.end()&&it->first<=r;++it)s+=it->second;return s;}
 static void verify(const Row& row,const std::map<U,I>& vals,const std::set<U>& cells,std::mt19937_64& rng){

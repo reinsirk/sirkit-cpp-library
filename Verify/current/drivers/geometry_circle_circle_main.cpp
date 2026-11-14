@@ -12,10 +12,10 @@
 #include <vector>
 
 int main() {
-    geo::Circle c; std::cin >> c.center.x >> c.center.y >> c.radius;
+    ::sirkit::geo::Circle c; std::cin >> c.center.x >> c.center.y >> c.radius;
     std::cout << std::fixed << std::setprecision(12);
-    geo::Circle d; std::cin >> d.center.x >> d.center.y >> d.radius;
-    auto result = geo::intersection(c, d);
+    ::sirkit::geo::Circle d; std::cin >> d.center.x >> d.center.y >> d.radius;
+    auto result = ::sirkit::geo::intersection(c, d);
     auto& points = result.points;
     if (points.empty()) return 1;
     if (points.size() == 1) points.push_back(points[0]);

@@ -25,6 +25,8 @@
 // 更新・構築の失敗時は追加ノードを取り消し、旧根とlatest_rootを維持する。
 // SKIP_RUNTIME_CHECKSで根の所属・添字・長さ・述語の単位元検査と所属用状態を除く。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <concepts>
 #include <atomic>
 #include <cstddef>
@@ -38,9 +40,12 @@
 #include <utility>
 #include <vector>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #if !defined(SKIP_RUNTIME_CHECKS) && !defined(SIRKIT_PERSISTENT_TREE_OWNER_DEFINED)
 #define SIRKIT_PERSISTENT_TREE_OWNER_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 inline std::uint64_t persistent_tree_owner() {
     static std::atomic<std::uint64_t> next{1};
     auto value = next.load(std::memory_order_relaxed);
@@ -85,7 +90,7 @@ private:
         T identity;
         std::vector<Node> nodes;
 #ifndef SKIP_RUNTIME_CHECKS
-        std::uint64_t owner = reinsirk::detail::persistent_tree_owner();
+        std::uint64_t owner = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::persistent_tree_owner();
         std::uint64_t copied_owner = 0;
         std::size_t copied_nodes = 0;
 #endif
@@ -333,3 +338,7 @@ public:
     }
 };
 #endif
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1

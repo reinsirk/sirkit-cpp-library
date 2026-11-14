@@ -21,6 +21,8 @@
 // spanはreset/clear/代入で無効化。隣接spanは対応するadd_edge/reserveでも無効化し得る。
 // SKIP_RUNTIME_CHECKSで端点・最大性の入力検査を除く。件数/内部添字の表現上限は維持する。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <cstddef>
 #include <limits>
@@ -29,6 +31,9 @@
 #include <utility>
 #include <vector>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_BIPARTITE_MATCHING_DEFINED
 #define SIRKIT_BIPARTITE_MATCHING_DEFINED
 class BipartiteMatching {
@@ -190,3 +195,7 @@ public:
     void clear() noexcept { graph_.clear(); left_.clear(); right_.clear(); edges_ = 0; cardinality_ = 0; maximum_ = true; }
 };
 #endif
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1

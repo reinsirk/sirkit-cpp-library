@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 // ACL本体は独立参照としてのみ使用する。自作3実装との公開API・結果の照合。
 #include "../../../DataStructure/Fenwick_Tree.cpp"
 #include "../../../DataStructure/Segment_Tree.cpp"
@@ -43,18 +45,18 @@ Affine compose(Affine newer, Affine older) { return {newer.a * older.a, newer.a 
 Affine identity() { return {}; }
 bool aggregate_fits(Sum value) { return value.value <= numeric_bound; }
 
-using OwnSum = ::segtree<std::int64_t, add, zero>;
+using OwnSum = ::sirkit::segtree<std::int64_t, add, zero>;
 using RefSum = atcoder::segtree<std::int64_t, add, zero>;
-using OwnWords = ::segtree<std::string, join, empty_word>;
+using OwnWords = ::sirkit::segtree<std::string, join, empty_word>;
 using RefWords = atcoder::segtree<std::string, join, empty_word>;
-using OwnLazy = ::lazy_segtree<Sum, sum_op, sum_e, Affine, map_affine, compose, identity>;
+using OwnLazy = ::sirkit::lazy_segtree<Sum, sum_op, sum_e, Affine, map_affine, compose, identity>;
 using RefLazy = atcoder::lazy_segtree<Sum, sum_op, sum_e, Affine, map_affine, compose, identity>;
 
 template<class Mint>
 void modular_fenwick_case() {
     std::vector<Mint> values(17);
     for (auto& value : values) value = Mint(random());
-    ::fenwick_tree<Mint> ours(values);
+    ::sirkit::fenwick_tree<Mint> ours(values);
     atcoder::fenwick_tree<Mint> reference(17);
     for (int i = 0; i < 17; ++i) reference.add(i, values[i]);
     for (int repeat = 0; repeat < 1000; ++repeat) {
@@ -76,7 +78,7 @@ void modular_fenwick_case() {
 // signed型も型幅を超える更新・部分和を含め、ACLのmod 2^bitの意味を照合する。
 template<class T>
 void fenwick_case(int n) {
-    ::fenwick_tree<T> ours(n);
+    ::sirkit::fenwick_tree<T> ours(n);
     atcoder::fenwick_tree<T> reference(n);
     check(ours.sum(0, n) == reference.sum(0, n));
     for (int repeat = 0; repeat < 1800; ++repeat) {
@@ -172,7 +174,7 @@ void lazy_case(int n) {
 }
 
 void empty_and_size_constructors() {
-    ::fenwick_tree<std::int64_t> own_fenwick;
+    ::sirkit::fenwick_tree<std::int64_t> own_fenwick;
     atcoder::fenwick_tree<std::int64_t> ref_fenwick;
     check(own_fenwick.sum(0, 0) == ref_fenwick.sum(0, 0));
     OwnSum own_segment; RefSum ref_segment;

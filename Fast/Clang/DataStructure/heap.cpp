@@ -16,6 +16,8 @@
 // push_pop(value): 値を追加した後の最小値を返して削除、O(log N)、空なら value を返す。
 // clear(): 全要素を削除、容量を保持。reserve(n): n 要素分の容量を確保、再確保時 O(N)。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <cstddef>
 #include <functional>
@@ -25,6 +27,9 @@
 #include <utility>
 #include <vector>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_HEAP_DEFINED
 #define SIRKIT_HEAP_DEFINED
 
@@ -186,3 +191,7 @@ public:
 };
 
 #endif
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1

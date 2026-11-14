@@ -26,6 +26,8 @@
 // 反復Dinic法で深い経路も再帰しない。入力検査はSKIP_RUNTIME_CHECKSで除くが、内部添字上限は維持。
 // get/changeのidは[0,edge_count())。辺数はINT_MAX以下。継続flowで異なる端点を使う場合も流量保存が前提。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -35,6 +37,9 @@
 #include <utility>
 #include <vector>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_MAX_FLOW_DEFINED
 #define SIRKIT_MAX_FLOW_DEFINED
 
@@ -170,6 +175,13 @@ public:
 };
 #endif
 
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
+
+
+namespace sirkit {}
+using namespace sirkit;
 
 // SPDX-License-Identifier: CC0-1.0
 // Verify I/O: Verify/current/common/fast_io.hpp

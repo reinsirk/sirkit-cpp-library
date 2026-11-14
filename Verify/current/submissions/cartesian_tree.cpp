@@ -20,6 +20,8 @@
 // move元は空/root=-1。swapはO(1)。viewはbuild成功/clear/代入/所有権移動まで有効。
 // 番号/負数の検査はSKIP_RUNTIME_CHECKSで除外。添字容量保護は常に維持する。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <cstddef>
 #include <cstdint>
 #include <functional>
@@ -30,6 +32,9 @@
 #include <utility>
 #include <vector>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_CARTESIAN_TREE_DEFINED
 #define SIRKIT_CARTESIAN_TREE_DEFINED
 class CartesianTree {
@@ -117,6 +122,13 @@ public:
 };
 #endif
 
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
+
+
+namespace sirkit {}
+using namespace sirkit;
 
 // SPDX-License-Identifier: CC0-1.0
 // Verify I/O: Verify/current/common/fast_io.hpp

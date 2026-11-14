@@ -30,6 +30,8 @@
 // 各(f,sieve)版: sieve.max_value()>=f.size()-1の素数表を再利用し、追加領域O(1)。
 // 各(f)版: 素数表も作る。f.size()-1<=INT_MAX、追加領域O(n)。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <array>
 #include <concepts>
@@ -42,6 +44,9 @@
 #include <utility>
 #include <vector>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_INTEGER_SIEVE_DEFINED
 #define SIRKIT_INTEGER_SIEVE_DEFINED
 struct IntegerSieve {
@@ -291,7 +296,7 @@ private:
 
 #ifndef SIRKIT_INTEGER_TRANSFORM_DETAIL_DEFINED
 #define SIRKIT_INTEGER_TRANSFORM_DETAIL_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 struct IntegerTransform {
     // 素数pについて、指数を1段進める／戻す伝播を行う。
 #if defined(__GNUC__) && !defined(__clang__)
@@ -438,60 +443,67 @@ struct IntegerTransform {
 #define SIRKIT_MULTIPLE_ZETA_DEFINED
 template <class T> void multiple_zeta_transform(std::vector<T>& f, const IntegerSieve& sieve) {
 #ifndef SKIP_RUNTIME_CHECKS
-    reinsirk::detail::IntegerTransform::require_sieve(f.size(), sieve);
+    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::IntegerTransform::require_sieve(f.size(), sieve);
 #endif
-    reinsirk::detail::IntegerTransform::propagate<false, false>(f, sieve.prime_list);
+    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::IntegerTransform::propagate<false, false>(f, sieve.prime_list);
 }
 template <class T> void multiple_zeta_transform(std::vector<T>& f) {
     std::vector<int> storage;
-    const auto primes = reinsirk::detail::IntegerTransform::prime_view_for(f.size(), storage);
-    reinsirk::detail::IntegerTransform::propagate<false, false>(f, primes);
+    const auto primes = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::IntegerTransform::prime_view_for(f.size(), storage);
+    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::IntegerTransform::propagate<false, false>(f, primes);
 }
 #endif
 #ifndef SIRKIT_MULTIPLE_MOEBIUS_DEFINED
 #define SIRKIT_MULTIPLE_MOEBIUS_DEFINED
 template <class T> void multiple_mobius_transform(std::vector<T>& f, const IntegerSieve& sieve) {
 #ifndef SKIP_RUNTIME_CHECKS
-    reinsirk::detail::IntegerTransform::require_sieve(f.size(), sieve);
+    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::IntegerTransform::require_sieve(f.size(), sieve);
 #endif
-    reinsirk::detail::IntegerTransform::propagate<false, true>(f, sieve.prime_list);
+    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::IntegerTransform::propagate<false, true>(f, sieve.prime_list);
 }
 template <class T> void multiple_mobius_transform(std::vector<T>& f) {
     std::vector<int> storage;
-    const auto primes = reinsirk::detail::IntegerTransform::prime_view_for(f.size(), storage);
-    reinsirk::detail::IntegerTransform::propagate<false, true>(f, primes);
+    const auto primes = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::IntegerTransform::prime_view_for(f.size(), storage);
+    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::IntegerTransform::propagate<false, true>(f, primes);
 }
 #endif
 #ifndef SIRKIT_DIVISOR_ZETA_DEFINED
 #define SIRKIT_DIVISOR_ZETA_DEFINED
 template <class T> void divisor_zeta_transform(std::vector<T>& f, const IntegerSieve& sieve) {
 #ifndef SKIP_RUNTIME_CHECKS
-    reinsirk::detail::IntegerTransform::require_sieve(f.size(), sieve);
+    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::IntegerTransform::require_sieve(f.size(), sieve);
 #endif
-    reinsirk::detail::IntegerTransform::propagate<true, false>(f, sieve.prime_list);
+    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::IntegerTransform::propagate<true, false>(f, sieve.prime_list);
 }
 template <class T> void divisor_zeta_transform(std::vector<T>& f) {
     std::vector<int> storage;
-    const auto primes = reinsirk::detail::IntegerTransform::prime_view_for(f.size(), storage);
-    reinsirk::detail::IntegerTransform::propagate<true, false>(f, primes);
+    const auto primes = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::IntegerTransform::prime_view_for(f.size(), storage);
+    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::IntegerTransform::propagate<true, false>(f, primes);
 }
 #endif
 #ifndef SIRKIT_DIVISOR_MOEBIUS_DEFINED
 #define SIRKIT_DIVISOR_MOEBIUS_DEFINED
 template <class T> void divisor_mobius_transform(std::vector<T>& f, const IntegerSieve& sieve) {
 #ifndef SKIP_RUNTIME_CHECKS
-    reinsirk::detail::IntegerTransform::require_sieve(f.size(), sieve);
+    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::IntegerTransform::require_sieve(f.size(), sieve);
 #endif
-    reinsirk::detail::IntegerTransform::propagate<true, true>(f, sieve.prime_list);
+    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::IntegerTransform::propagate<true, true>(f, sieve.prime_list);
 }
 template <class T> void divisor_mobius_transform(std::vector<T>& f) {
     std::vector<int> storage;
-    const auto primes = reinsirk::detail::IntegerTransform::prime_view_for(f.size(), storage);
-    reinsirk::detail::IntegerTransform::propagate<true, true>(f, primes);
+    const auto primes = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::IntegerTransform::prime_view_for(f.size(), storage);
+    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::IntegerTransform::propagate<true, true>(f, primes);
 }
 #endif
 
 
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
+
+
+namespace sirkit {}
+using namespace sirkit;
 
 // SPDX-License-Identifier: CC0-1.0
 // Verify I/O: Verify/current/common/fast_io.hpp

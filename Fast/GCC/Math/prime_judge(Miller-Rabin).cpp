@@ -18,6 +18,8 @@
 // prev_prime(n): n以下で最大の素数。同じ戻り値型で、n<2はnullopt。入力は64bit以下の整数。
 // C候補の探索にO(C log(max(n,2)))回の剰余乗算、追加領域O(1)。動的確保なし。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <bit>
 #include <cstdint>
 #include <initializer_list>
@@ -26,9 +28,12 @@
 #include <utility>
 #include <type_traits>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_PRIMALITY32_DEFINED
 #define SIRKIT_PRIMALITY32_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 // uint32_t全域の素数判定。Miller-Rabinの底2,7,61を使う。
 inline bool is_prime_u32(std::uint32_t n) noexcept
 {
@@ -146,7 +151,7 @@ inline bool is_prime_u32(std::uint32_t n) noexcept
 // C++20以降。64ビット整数用の内部演算。状態は判定ごとに持つ。
 #ifndef SIRKIT_MILLER_RABIN64_DEFINED
 #define SIRKIT_MILLER_RABIN64_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 // member begin/endと配列だけを判定し、ADL専用の列は保守的にfalseとする。
 template<class Bases>
 inline constexpr bool miller_rabin_bases_nothrow = [] {
@@ -355,7 +360,7 @@ private:
 #ifndef SIRKIT_MILLER_RABIN_DEFINED
 #define SIRKIT_MILLER_RABIN_DEFINED
 template <class Integer, class Bases>
-inline bool MillerRabin(Integer n, const Bases &bases) noexcept(reinsirk::detail::miller_rabin_bases_nothrow<Bases>)
+inline bool MillerRabin(Integer n, const Bases &bases) noexcept(/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::miller_rabin_bases_nothrow<Bases>)
 {
     static_assert(std::is_integral_v<Integer> && sizeof(Integer) <= sizeof(std::uint64_t),
                   "MillerRabin: n must be an integer of at most 64 bits");
@@ -368,8 +373,8 @@ inline bool MillerRabin(Integer n, const Bases &bases) noexcept(reinsirk::detail
     if ((value & 1u) == 0)
         return value == 2;
     if (value < (std::uint64_t{1} << 62))
-        return reinsirk::detail::MillerRabin64<true>(value).test(bases);
-    return reinsirk::detail::MillerRabin64<false>(value).test(bases);
+        return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::MillerRabin64<true>(value).test(bases);
+    return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::MillerRabin64<false>(value).test(bases);
 }
 
 template <class Integer>
@@ -381,7 +386,7 @@ inline bool MillerRabin(Integer n, std::initializer_list<std::uint64_t> bases) n
 
 #ifndef SIRKIT_PRIMALITY_FILTER_DEFINED
 #define SIRKIT_PRIMALITY_FILTER_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 // 105の各剰余が3・5・7のいずれでも割り切れなければ、そのbitを1にする。
 inline constexpr std::uint64_t primality_coprime_105[2] = {
     0x6c30da65a4cb2916ULL, 0x000001a2534c9699ULL};
@@ -402,18 +407,18 @@ inline bool is_prime(Integer n) noexcept
     if (value < 2)
         return false;
     if (value <= std::numeric_limits<std::uint32_t>::max())
-        return reinsirk::detail::is_prime_u32(static_cast<std::uint32_t>(value));
+        return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::is_prime_u32(static_cast<std::uint32_t>(value));
     if ((value & 1u) == 0) return false;
     // 32bitを超える値は小素数3・5・7をまとめて除外する。
     const auto residue = value % 105u;
-    if (((reinsirk::detail::primality_coprime_105[residue >> 6] >> (residue & 63)) & 1u) == 0 ||
+    if (((/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::primality_coprime_105[residue >> 6] >> (residue & 63)) & 1u) == 0 ||
         value % 11u == 0 || value % 13u == 0 || value % 17u == 0)
         return false;
     if (value < std::uint64_t{4'759'123'141})
         return MillerRabin(value, {2, 7, 61});
     if (value < (std::uint64_t{1} << 62))
-        return reinsirk::detail::MillerRabin64<true>(value).test_deterministic();
-    return reinsirk::detail::MillerRabin64<false>(value).test_deterministic();
+        return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::MillerRabin64<true>(value).test_deterministic();
+    return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::MillerRabin64<false>(value).test_deterministic();
 }
 #endif
 
@@ -447,3 +452,7 @@ inline std::optional<std::uint64_t> prev_prime(Integer n) noexcept {
     return std::uint64_t{2};
 }
 #endif
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1

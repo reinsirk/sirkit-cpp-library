@@ -33,6 +33,8 @@
 // swap(a,b): 履歴・保存位置ごと定数時間で交換、noexcept。
 // SIRKIT_DISABLE_SIMD: groupsの追加AVX2実装とCPU判定を除外。標準C++の経路を使用。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <bit>
 #include <cstddef>
@@ -46,6 +48,9 @@
 #include <vector>
 
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_ROLLBACK_WEIGHTED_UNION_FIND_DEFINED
 #define SIRKIT_ROLLBACK_WEIGHTED_UNION_FIND_DEFINED
 template <typename T>
@@ -615,6 +620,13 @@ public:
 };
 #endif
 
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
+
+
+namespace sirkit {}
+using namespace sirkit;
 
 // SPDX-License-Identifier: CC0-1.0
 // Verify I/O: Verify/current/common/fast_io.hpp

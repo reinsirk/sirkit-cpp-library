@@ -27,6 +27,8 @@
 // 検索・step・failure・output_countにはbuild済みが必要。text/語は指定アルファベット内。検査は通常処理へ統合。
 // 各ID・状態はint。枠の上限は検査省略時も確認。addの失敗時は未登録の接頭ノードが残る場合がある。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <array>
 #include <cstddef>
@@ -37,9 +39,12 @@
 #include <utility>
 #include <vector>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_AHO_CORASICK_DETAIL_DEFINED
 #define SIRKIT_AHO_CORASICK_DETAIL_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 template <std::size_t Alphabet>
 struct AhoNode {
     std::array<int, Alphabet> next;
@@ -70,8 +75,8 @@ template <std::size_t Alphabet = 26, unsigned First = 'a'>
 class AhoCorasick {
     static_assert(Alphabet > 0 && Alphabet <= 256 && First <= 256 - Alphabet,
                   "AhoCorasick alphabet must fit unsigned bytes");
-    std::vector<reinsirk::detail::AhoNode<Alphabet>> nodes_;
-    std::vector<reinsirk::detail::AhoPattern> patterns_;
+    std::vector</*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::AhoNode<Alphabet>> nodes_;
+    std::vector</*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::AhoPattern> patterns_;
     std::vector<int> order_;
     bool built_ = false;
     static std::size_t letter(unsigned char c) {
@@ -253,6 +258,13 @@ public:
 using ByteAhoCorasick = AhoCorasick<256, 0>;
 #endif
 
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
+
+
+namespace sirkit {}
+using namespace sirkit;
 
 // SPDX-License-Identifier: CC0-1.0
 // Verify I/O: Verify/current/common/fast_io.hpp

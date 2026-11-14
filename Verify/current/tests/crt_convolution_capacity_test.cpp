@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 // 最大変換長とCRT復元の補足試験。大きい領域を使うため通常の使用例とは分ける。
 #include <algorithm>
 #include <cstdint>

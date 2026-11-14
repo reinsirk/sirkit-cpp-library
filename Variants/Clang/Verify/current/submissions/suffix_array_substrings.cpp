@@ -28,6 +28,8 @@
 // 各比較/添字アクセスがO(1)の場合の計算量。Tの<は一貫した順序が前提。
 // 空patternは全接尾辞に一致。検索はsaの妥当性を全走査せず、実際に参照する添字だけ検査する。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <concepts>
 #include <cstddef>
@@ -41,9 +43,12 @@
 #include <utility>
 #include <vector>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_SUFFIX_ARRAY_DETAIL_DEFINED
 #define SIRKIT_SUFFIX_ARRAY_DETAIL_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 inline void suffix_length_check(std::size_t n) {
     if (n >= static_cast<std::size_t>(std::numeric_limits<int>::max() - 1))
         throw std::length_error("suffix_array: sequence too long");
@@ -131,11 +136,11 @@ template<class Symbol> std::vector<int> suffix_induced(std::span<const Symbol> s
 }
 
 inline std::vector<int> suffix_string(std::string_view s) {
-    reinsirk::detail::suffix_length_check(s.size());
+    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::suffix_length_check(s.size());
     auto encoded = std::make_unique_for_overwrite<std::uint16_t[]>(s.size() + 1);
     encoded[s.size()] = 0;
     for (std::size_t i = 0; i < s.size(); ++i) encoded[i] = static_cast<std::uint16_t>(static_cast<unsigned char>(s[i]) + 1);
-    auto result = reinsirk::detail::suffix_induced(std::span<const std::uint16_t>(encoded.get(), s.size() + 1), 256);
+    auto result = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::suffix_induced(std::span<const std::uint16_t>(encoded.get(), s.size() + 1), 256);
     result.erase(result.begin());
     return result;
 }
@@ -183,22 +188,22 @@ std::pair<int, int> suffix_search(const Sequence& s, const std::vector<int>& sa,
 #ifndef SIRKIT_SUFFIX_ARRAY_DEFINED
 #define SIRKIT_SUFFIX_ARRAY_DEFINED
 inline std::vector<int> suffix_array(const std::string& s) {
-    return reinsirk::detail::suffix_string(s);
+    return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::suffix_string(s);
 }
 template<class View> requires std::same_as<View, std::string_view>
 std::vector<int> suffix_array(View s) {
-    return reinsirk::detail::suffix_string(s);
+    return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::suffix_string(s);
 }
 template<class Char> requires (std::same_as<Char, char> || std::same_as<Char, const char>)
 std::vector<int> suffix_array(Char* s) {
 #ifndef SKIP_RUNTIME_CHECKS
     if (s == nullptr) throw std::invalid_argument("suffix_array: null text");
 #endif
-    return reinsirk::detail::suffix_string(std::string_view(s));
+    return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::suffix_string(std::string_view(s));
 }
 
 inline std::vector<int> suffix_array(const std::vector<int>& s, int upper) {
-    reinsirk::detail::suffix_length_check(s.size());
+    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::suffix_length_check(s.size());
     if (upper < 0 || upper >= std::numeric_limits<int>::max() - 1)
         throw std::length_error("suffix_array: alphabet too large");
     std::vector<int> encoded(s.size() + 1);
@@ -208,14 +213,14 @@ inline std::vector<int> suffix_array(const std::vector<int>& s, int upper) {
 #endif
         encoded[i] = s[i] + 1;
     }
-    auto result = reinsirk::detail::suffix_induced(std::span<const int>(encoded), upper + 1);
+    auto result = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::suffix_induced(std::span<const int>(encoded), upper + 1);
     result.erase(result.begin());
     return result;
 }
 
 template <class T>
 std::vector<int> suffix_array(const std::vector<T>& s) {
-    reinsirk::detail::suffix_length_check(s.size());
+    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::suffix_length_check(s.size());
     // 先頭要素の同値類がn個なら、その順序だけで接尾辞順が決まる。
     if constexpr (std::integral<T>) {
         std::vector<T> alphabet = s;
@@ -230,7 +235,7 @@ std::vector<int> suffix_array(const std::vector<T>& s) {
         std::vector<int> encoded(s.size() + 1);
         for (std::size_t i = 0; i < s.size(); ++i)
             encoded[i] = static_cast<int>(std::lower_bound(alphabet.begin(), alphabet.end(), s[i]) - alphabet.begin()) + 1;
-        auto result = reinsirk::detail::suffix_induced(std::span<const int>(encoded), static_cast<int>(alphabet.size()));
+        auto result = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::suffix_induced(std::span<const int>(encoded), static_cast<int>(alphabet.size()));
         result.erase(result.begin());
         return result;
     } else {
@@ -243,7 +248,7 @@ std::vector<int> suffix_array(const std::vector<T>& s) {
             encoded[positions[i]] = alphabet;
         }
         if (alphabet == static_cast<int>(s.size())) return positions;
-        auto result = reinsirk::detail::suffix_induced(std::span<const int>(encoded), alphabet);
+        auto result = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::suffix_induced(std::span<const int>(encoded), alphabet);
         result.erase(result.begin());
         return result;
     }
@@ -252,10 +257,10 @@ std::vector<int> suffix_array(const std::vector<T>& s) {
 
 #ifndef SIRKIT_LCP_ARRAY_IMPL_DEFINED
 #define SIRKIT_LCP_ARRAY_IMPL_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 template <class Sequence>
 std::vector<int> suffix_lcp(const Sequence& s, const std::vector<int>& sa) {
-    reinsirk::detail::suffix_length_check(s.size());
+    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::suffix_length_check(s.size());
 #ifndef SKIP_RUNTIME_CHECKS
     if (sa.size() != s.size()) throw std::invalid_argument("lcp_array: size");
 #endif
@@ -294,15 +299,15 @@ std::vector<int> suffix_lcp(const Sequence& s, const std::vector<int>& sa) {
 #define SIRKIT_LCP_ARRAY_DEFINED
 template<class T>
 std::vector<int> lcp_array(const std::vector<T>& s, const std::vector<int>& sa) {
-    return reinsirk::detail::suffix_lcp(s, sa);
+    return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::suffix_lcp(s, sa);
 }
 inline std::vector<int> lcp_array(const std::string& s, const std::vector<int>& sa) {
-    return reinsirk::detail::suffix_lcp(s, sa);
+    return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::suffix_lcp(s, sa);
 }
 template<class Sequence>
     requires requires(const Sequence& s) { s.size(); s[0] == s[0]; }
 std::vector<int> lcp_array(const Sequence& s, const std::vector<int>& sa) {
-    return reinsirk::detail::suffix_lcp(s, sa);
+    return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::suffix_lcp(s, sa);
 }
 #endif
 
@@ -310,15 +315,22 @@ std::vector<int> lcp_array(const Sequence& s, const std::vector<int>& sa) {
 #define SIRKIT_SUFFIX_ARRAY_EQUAL_RANGE_DEFINED
 inline std::pair<int, int> SuffixArrayEqualRange(std::string_view s, const std::vector<int>& sa,
                                                std::string_view pattern) {
-    return reinsirk::detail::suffix_search(s, sa, pattern, [](char c) { return static_cast<unsigned char>(c); });
+    return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::suffix_search(s, sa, pattern, [](char c) { return static_cast<unsigned char>(c); });
 }
 template <std::integral T>
 std::pair<int, int> SuffixArrayEqualRange(const std::vector<T>& s, const std::vector<int>& sa,
                                        const std::vector<T>& pattern) {
-    return reinsirk::detail::suffix_search(s, sa, pattern, [](T value) { return value; });
+    return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::suffix_search(s, sa, pattern, [](T value) { return value; });
 }
 #endif
 
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
+
+
+namespace sirkit {}
+using namespace sirkit;
 
 // SPDX-License-Identifier: CC0-1.0
 // Verify I/O: Verify/current/common/fast_io.hpp

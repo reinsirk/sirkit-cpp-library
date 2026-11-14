@@ -5,6 +5,8 @@
 #include <utility>
 #include <iostream>
 
+using namespace sirkit;
+
 int main() {
     TwoVariableSubmodularOpt<std::int64_t> model(3);
     model.reserve_nodes(10);

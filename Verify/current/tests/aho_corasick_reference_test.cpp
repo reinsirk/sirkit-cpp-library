@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #ifndef AHO_HEADER
 #define AHO_HEADER "../../../String/Aho_Corasick.cpp"
 #endif

@@ -1,3 +1,5 @@
+namespace sirkit {}
+using namespace sirkit;
 #include <algorithm>
 #include <cassert>
 #include <cstdint>
@@ -60,6 +62,6 @@ int main(){
  check(ConvolutionAnyMod(std::vector<int>{1,2},std::vector<int>{3,4},7)==std::vector<std::uint32_t>({3,3,1}));
  check(ConvolutionInt64({-1,2},{3,-4})==std::vector<std::int64_t>({-3,10,-8}));
  // portable limb multiplicationを独立多倍長整数で比較。
- for(int rep=0;rep<20000;++rep){const auto x=random();const auto y=static_cast<std::uint32_t>(random());const auto add=random();const auto got=reinsirk::detail::convolution_wide_product(x,y,add);const cpp_int expected=cpp_int{x}*y+add;check(cpp_int{got.high}*(cpp_int{1}<<64)+got.low==expected);}
+ for(int rep=0;rep<20000;++rep){const auto x=random();const auto y=static_cast<std::uint32_t>(random());const auto add=random();const auto got=::sirkit::detail::convolution_wide_product(x,y,add);const cpp_int expected=cpp_int{x}*y+add;check(cpp_int{got.high}*(cpp_int{1}<<64)+got.low==expected);}
  std::cout<<"PASS CRT convolution checks="<<checks<<"\n";
 }

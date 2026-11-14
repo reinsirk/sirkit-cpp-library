@@ -24,6 +24,8 @@
 // nearest_two_points_sorted(first,count): 整列済みfirstからcount個の版。count>=0かつ指定個数を参照可能。戻り値・計算量は範囲版と同じ。
 // nearest_two_points_sorted(points): 整列済みvector全体版。戻り値・前提・計算量は範囲版と同じ。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <array>
 #include <concepts>
@@ -37,6 +39,9 @@
 #include <utility>
 #include <vector>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_NEAREST_TWO_POINTS_TYPES_DEFINED
 #define SIRKIT_NEAREST_TWO_POINTS_TYPES_DEFINED
 using P = std::pair<std::int32_t, std::int32_t>;
@@ -50,7 +55,7 @@ struct NearestTwoPointsResult {
 
 #ifndef SIRKIT_INTERNAL_NEAREST_TWO_POINTS_DEFINED
 #define SIRKIT_INTERNAL_NEAREST_TWO_POINTS_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 template<class Index>
 class NearestTwoPointsSolver {
     struct Node {
@@ -392,9 +397,9 @@ std::optional<NearestTwoPointsResult> nearest_two_points(Iterator first, Sentine
     if constexpr (std::sized_sentinel_for<Sentinel, Iterator>) {
         const auto n = last - first;
         if (n >= 2048 && std::cmp_less_equal(n, std::numeric_limits<std::uint32_t>::max()))
-            return reinsirk::detail::NearestTwoPointsSolver<std::uint32_t>::run(std::move(first), std::move(last));
+            return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::NearestTwoPointsSolver<std::uint32_t>::run(std::move(first), std::move(last));
     }
-    return reinsirk::detail::NearestTwoPointsSolver<std::size_t>::run(std::move(first), std::move(last));
+    return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::NearestTwoPointsSolver<std::size_t>::run(std::move(first), std::move(last));
 }
 
 template<std::input_iterator Iterator>
@@ -428,9 +433,9 @@ std::optional<NearestTwoPointsResult> nearest_two_points_sorted(Iterator first, 
     if constexpr (std::sized_sentinel_for<Sentinel, Iterator>) {
         const auto n = last - first;
         if (n >= 2048 && std::cmp_less_equal(n, std::numeric_limits<std::uint32_t>::max()))
-            return reinsirk::detail::NearestTwoPointsSolver<std::uint32_t>::run<true>(std::move(first), std::move(last));
+            return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::NearestTwoPointsSolver<std::uint32_t>::run<true>(std::move(first), std::move(last));
     }
-    return reinsirk::detail::NearestTwoPointsSolver<std::size_t>::run<true>(std::move(first), std::move(last));
+    return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::NearestTwoPointsSolver<std::size_t>::run<true>(std::move(first), std::move(last));
 }
 template<std::input_iterator Iterator>
 std::optional<NearestTwoPointsResult> nearest_two_points_sorted(Iterator first, std::ptrdiff_t count) {
@@ -445,6 +450,13 @@ std::optional<NearestTwoPointsResult> nearest_two_points_sorted(const std::vecto
 }
 #endif
 
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
+
+
+namespace sirkit {}
+using namespace sirkit;
 
 // SPDX-License-Identifier: CC0-1.0
 // Verify I/O: Verify/current/common/fast_io.hpp

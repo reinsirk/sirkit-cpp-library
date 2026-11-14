@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #ifndef HLD_SOURCE
 #define HLD_SOURCE "../../../Graph/Heavy_Light_Decomposition.cpp"
 #endif

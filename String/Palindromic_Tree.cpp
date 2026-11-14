@@ -22,6 +22,8 @@
 // SKIP_RUNTIME_CHECKSで追加byte/頂点番号の検査を除く。照会の不一致判定とint32_t番号/長さ・容量保護は常に維持。
 // 出現回数はconstな遅延キャッシュ。集計の確保失敗は木/文字列を保つ。同じ個体の並行キャッシュ照会は外部で同期する。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <array>
 #include <cstddef>
@@ -35,6 +37,9 @@
 #include <utility>
 #include <vector>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_PALINDROMIC_TREE_DEFINED
 #define SIRKIT_PALINDROMIC_TREE_DEFINED
 template<std::size_t Alphabet=26,std::uint16_t Base='a'>
@@ -151,3 +156,7 @@ public:
     void reset(std::string_view text={}){PalindromicTree next(text);swap(next);}
 };
 #endif
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1

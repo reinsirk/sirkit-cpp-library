@@ -2,6 +2,8 @@
 #include <cstdint>
 #include <iostream>
 
+using namespace sirkit;
+
 int main() {
     constexpr std::int64_t infinity = std::int64_t{1} << 60;
     DynamicLiChaoTree<std::int64_t, infinity> tree(-10, 10); // 閉区間。

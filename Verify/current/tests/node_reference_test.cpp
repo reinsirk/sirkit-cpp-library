@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 // アドレス列の参照モデルと、共有・例外・循環・長鎖の解放を照合する。
 #ifndef SIRKIT_NODE_SOURCE
 #define SIRKIT_NODE_SOURCE "../../../DataStructure/Node.cpp"

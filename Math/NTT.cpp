@@ -20,6 +20,8 @@
 // Mod<2^30では標準C++のMontgomery演算を使用。GCC/Clangの対応x86 CPUではAVX2で8係数ずつ処理する。
 // SIRKIT_DISABLE_SIMDで追加の専用命令とCPU判定を除外できる。代替経路も同じAPI・結果を保つ。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <array>
 #include <bit>
@@ -35,9 +37,12 @@
 #include <immintrin.h>
 #endif
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_NTT_DETAIL_DEFINED
 #define SIRKIT_NTT_DETAIL_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 constexpr bool ntt_prime(std::uint32_t n) noexcept {
     if (n < 2 || n % 2 == 0) return n == 2;
     for (std::uint32_t d = 3; d <= n / d; d += 2) if (n % d == 0) return false;
@@ -57,7 +62,7 @@ constexpr std::uint32_t ntt_power(std::uint32_t a, std::uint32_t exponent, std::
 #if !defined(SIRKIT_DISABLE_SIMD) && (defined(__GNUC__) || defined(__clang__)) && (defined(__x86_64__) || defined(__i386__))
 #ifndef SIRKIT_NTT_SIMD_DETAIL_DEFINED
 #define SIRKIT_NTT_SIMD_DETAIL_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 inline bool ntt_avx2_available() noexcept {
     static const bool available=__builtin_cpu_supports("avx2");
     return available;
@@ -70,12 +75,12 @@ inline bool ntt_avx2_available() noexcept {
 #define SIRKIT_NTT_DEFINED
 template <std::uint32_t Mod = 998244353, std::uint32_t Root = 3>
 class NTT {
-    static_assert(Mod >= 3 && Mod < (std::uint32_t{1} << 31) && reinsirk::detail::ntt_prime(Mod),
+    static_assert(Mod >= 3 && Mod < (std::uint32_t{1} << 31) && /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::ntt_prime(Mod),
                   "NTT modulus must be an odd prime below 2^31");
     static_assert(Root > 0 && Root < Mod, "NTT root outside modulus");
     static constexpr int rank_ = std::countr_zero(Mod - 1);
-    static constexpr std::uint32_t highest_root_ = reinsirk::detail::ntt_power(Root, (Mod - 1) >> rank_, Mod);
-    static_assert(reinsirk::detail::ntt_power(highest_root_, std::uint32_t{1} << (rank_ - 1), Mod) == Mod - 1,
+    static constexpr std::uint32_t highest_root_ = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::ntt_power(Root, (Mod - 1) >> rank_, Mod);
+    static_assert(/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::ntt_power(highest_root_, std::uint32_t{1} << (rank_ - 1), Mod) == Mod - 1,
                   "NTT root has insufficient power-of-two order");
     std::vector<std::uint32_t> roots_;
 
@@ -182,7 +187,7 @@ class NTT {
 
 #if !defined(SIRKIT_DISABLE_SIMD) && (defined(__GNUC__) || defined(__clang__)) && (defined(__x86_64__) || defined(__i386__))
     static bool use_avx2(std::size_t n) noexcept {
-        if constexpr(montgomery_)return n>=16 && reinsirk::detail::ntt_avx2_available();
+        if constexpr(montgomery_)return n>=16 && /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::ntt_avx2_available();
         else return false;
     }
     [[gnu::always_inline,gnu::target("avx2")]]
@@ -712,3 +717,7 @@ std::vector<std::uint32_t> ConvolutionMod(const std::vector<T>& a, const std::ve
     return NTT<Mod, Root>{}.convolution(a, b);
 }
 #endif
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1

@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 // 独立した成分ラベルとの照合、全int域、所有権、確保失敗を検査する。
 #ifndef DUF_SOURCE
 #define DUF_SOURCE "../../../DataStructure/dynamic-union-find.cpp"

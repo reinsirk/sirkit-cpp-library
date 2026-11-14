@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #ifndef SIRKIT_TWO_SAT_TEST_SOURCE
 #define SIRKIT_TWO_SAT_TEST_SOURCE "../../../Graph/Two_SAT.cpp"
 #endif
@@ -32,13 +34,13 @@ void check(bool ok) { ++checks; if (!ok) std::abort(); }
 
 bool verify(int n, const Edges& edges) {
     check(n >= 0 && n % 2 == 0);
-    const auto reference = reinsirk::detail::directed_component_ids(n, edges);
+    const auto reference = ::sirkit::detail::directed_component_ids(n, edges);
     bool contradiction = false;
     for (int i = 0; i < n; i += 2)
         contradiction = contradiction || reference.second[i] == reference.second[i + 1];
-    const auto narrow = reinsirk::detail::two_sat_component_ids_index<std::uint32_t>(n, edges);
-    const auto wide = reinsirk::detail::two_sat_component_ids_index<std::size_t>(n, edges);
-    const auto selected = reinsirk::detail::two_sat_component_ids(n, edges);
+    const auto narrow = ::sirkit::detail::two_sat_component_ids_index<std::uint32_t>(n, edges);
+    const auto wide = ::sirkit::detail::two_sat_component_ids_index<std::size_t>(n, edges);
+    const auto selected = ::sirkit::detail::two_sat_component_ids(n, edges);
     for (const auto* result : {&narrow, &wide, &selected}) {
         if (contradiction) {
             check(result->first < 0);

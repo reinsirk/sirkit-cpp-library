@@ -30,6 +30,8 @@
 // count/AND countは4 wordからPOPCNT、64 wordからAVX2。parityは64 wordからAVX2。
 // ClangでAVX2を既定対象にしたビルドは、測定で速かった標準ループの自動vector化を使う。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <bit>
 #include <cstddef>
@@ -45,9 +47,12 @@
 #include <immintrin.h>
 #endif
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_DYNAMIC_BITSET_WORD_OPERATIONS_DEFINED
 #define SIRKIT_DYNAMIC_BITSET_WORD_OPERATIONS_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 inline unsigned bitset_word_popcount(std::uint64_t x) noexcept {
     x -= (x >> 1) & UINT64_C(0x5555555555555555);
     x = (x & UINT64_C(0x3333333333333333)) + ((x >> 2) & UINT64_C(0x3333333333333333));
@@ -229,7 +234,7 @@ public:
         for (std::size_t i = 0; i + 1 < words_.size(); ++i) if (words_[i] != ~std::uint64_t{0}) return false;
         return words_.back() == low_mask(static_cast<unsigned>(size_ % 64 == 0 ? 64 : size_ % 64));
     }
-    std::size_t count() const noexcept { return reinsirk::detail::bitset_count_words(words_.data(), words_.size()); }
+    std::size_t count() const noexcept { return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::bitset_count_words(words_.data(), words_.size()); }
     std::size_t count(std::size_t l, std::size_t r) const {
 #ifndef SKIP_RUNTIME_CHECKS
         if (l > r || r > size_) throw std::out_of_range("DynamicBitset range");
@@ -238,13 +243,13 @@ public:
         const auto first = l / 64, last = (r - 1) / 64;
         const auto left = ~std::uint64_t{0} << (l % 64);
         const auto right = low_mask(static_cast<unsigned>(r % 64 == 0 ? 64 : r % 64));
-        if (first == last) return reinsirk::detail::bitset_word_popcount(words_[first] & left & right);
-        return reinsirk::detail::bitset_word_popcount(words_[first] & left)
-            + reinsirk::detail::bitset_count_words(words_.data() + first + 1, last - first - 1)
-            + reinsirk::detail::bitset_word_popcount(words_[last] & right);
+        if (first == last) return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::bitset_word_popcount(words_[first] & left & right);
+        return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::bitset_word_popcount(words_[first] & left)
+            + /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::bitset_count_words(words_.data() + first + 1, last - first - 1)
+            + /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::bitset_word_popcount(words_[last] & right);
     }
-    std::size_t intersection_count(const DynamicBitset& other) const { check_length(other); return reinsirk::detail::bitset_intersection_words(words_.data(), other.words_.data(), words_.size()); }
-    bool intersection_parity(const DynamicBitset& other) const { check_length(other); return reinsirk::detail::bitset_intersection_parity_words(words_.data(), other.words_.data(), words_.size()); }
+    std::size_t intersection_count(const DynamicBitset& other) const { check_length(other); return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::bitset_intersection_words(words_.data(), other.words_.data(), words_.size()); }
+    bool intersection_parity(const DynamicBitset& other) const { check_length(other); return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::bitset_intersection_parity_words(words_.data(), other.words_.data(), words_.size()); }
     DynamicBitset& operator&=(const DynamicBitset& other) { check_length(other); for (std::size_t i = 0; i < words_.size(); ++i) words_[i] &= other.words_[i]; return *this; }
     DynamicBitset& operator|=(const DynamicBitset& other) { check_length(other); for (std::size_t i = 0; i < words_.size(); ++i) words_[i] |= other.words_[i]; return *this; }
     DynamicBitset& operator^=(const DynamicBitset& other) { check_length(other); for (std::size_t i = 0; i < words_.size(); ++i) words_[i] ^= other.words_[i]; return *this; }
@@ -318,6 +323,13 @@ public:
 };
 #endif
 
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
+
+
+namespace sirkit {}
+using namespace sirkit;
 
 // SPDX-License-Identifier: CC0-1.0
 // Verify I/O: Verify/current/common/fast_io.hpp

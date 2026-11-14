@@ -22,6 +22,8 @@
 // SKIP_RUNTIME_CHECKSで頂点・距離保存・初回の探索に組み込んだ木の入力検査を除く。
 // 入力検査のためだけの全辺走査はしない。頂点数の表現上限は省略しない。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -30,6 +32,9 @@
 #include <utility>
 #include <vector>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_UNWEIGHTED_GRAPH_DEFINED
 #define SIRKIT_UNWEIGHTED_GRAPH_DEFINED
 using Graph = std::vector<std::vector<int>>;
@@ -212,3 +217,7 @@ public:
     }
 };
 #endif
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1

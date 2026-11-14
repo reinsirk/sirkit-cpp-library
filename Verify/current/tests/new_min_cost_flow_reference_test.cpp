@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #ifndef MIN_COST_FLOW_SOURCE
 #define MIN_COST_FLOW_SOURCE "../../../Graph/Min_Cost_Flow.cpp"
 #endif

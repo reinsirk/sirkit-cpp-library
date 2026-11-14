@@ -4,6 +4,8 @@
 #include <iostream>
 
 #include "../DataStructure/rollback-union-find.cpp"
+
+using namespace sirkit;
 int main() {
     RollbackUnionFind uf(5); uf.reserve_history(20);
     uf.unite(0, 1); uf.snapshot(); const auto state = uf.get_state();

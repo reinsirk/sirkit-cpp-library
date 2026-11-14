@@ -34,6 +34,8 @@
 // reserve(nodes): 内部Fenwickセル数を目安に容量を準備するヒント。
 // stored_nodes(): 値0や相殺済みも含む登録セル数。読み取りやreserveでは変わらない。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <bit>
 #include <cstddef>
 #include <cstdint>
@@ -58,9 +60,12 @@
 #include <immintrin.h>
 #endif
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_INTERNAL_HASH_MAP_DEFINED
 #define SIRKIT_INTERNAL_HASH_MAP_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 template <class Key, class Val, bool Packed = false, unsigned Denominator = 5>
 class InternalHashMap {
     static_assert(std::is_integral_v<Key> &&
@@ -329,12 +334,30 @@ public:
 
 
 
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <array>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <memory>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <variant>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_DYNAMIC_FENWICK_BPLUS_ROW_DEFINED
 #define SIRKIT_DYNAMIC_FENWICK_BPLUS_ROW_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 // 元列の値を葉32点・内部16子で保持する。累積値はT幅の剰余で扱う。
 template <class T, bool DirectReads = false>
 class BPlusFenwickRow {
@@ -816,7 +839,7 @@ class BPlusFenwickRow {
 
 #ifndef SIRKIT_DYNAMIC_FENWICK_SMALL_ROW_DEFINED
 #define SIRKIT_DYNAMIC_FENWICK_SMALL_ROW_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 // 少数点を直接保持し、列幅に応じてFenwickセル表または集約木へ移す。
 template <class T, bool DirectReads = false>
 class SmallFenwickRow {
@@ -1399,7 +1422,7 @@ class SmallFenwickRow {
 
 #ifndef SIRKIT_DYNAMIC_FENWICK_TREE_DEFINED
 #define SIRKIT_DYNAMIC_FENWICK_TREE_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 template <typename S, typename T>
 class FenwickFallback {
   // FenwickFallback(n=0): 長さnの零配列を作る。n>=0。
@@ -1421,8 +1444,8 @@ class FenwickFallback {
   using U = std::make_unsigned_t<S>;
   U n_ = 0;
   // 広い疎領域は占有フラグをbitで持ち、密な範囲は直接配列へ移す。
-  reinsirk::detail::InternalHashMap<U, T, false, 4> data_;
-  reinsirk::detail::InternalHashMap<U, T, true, 4> sparse_;
+  /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::InternalHashMap<U, T, false, 4> data_;
+  /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::InternalHashMap<U, T, true, 4> sparse_;
   bool sparse_domain() const noexcept { return n_ > 1'000'000; }
   template <class F> decltype(auto) with_data(F&& f) {
     if (sparse_domain()) return f(sparse_);
@@ -1561,12 +1584,12 @@ class FenwickFallback {
     return *this;
   }
   FenwickFallback(FenwickFallback&& other) noexcept(
-      std::is_nothrow_move_constructible_v<reinsirk::detail::InternalHashMap<U,T,false,4>>)
+      std::is_nothrow_move_constructible_v</*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::InternalHashMap<U,T,false,4>>)
       : n_(std::exchange(other.n_, 0)), data_(std::move(other.data_)), sparse_(std::move(other.sparse_)),
         small_(std::move(other.small_)), small_used_(std::exchange(other.small_used_, 0)),
         dense_used_(std::move(other.dense_used_)) {}
   FenwickFallback& operator=(FenwickFallback&& other) noexcept(
-      std::is_nothrow_move_assignable_v<reinsirk::detail::InternalHashMap<U,T,false,4>>) {
+      std::is_nothrow_move_assignable_v</*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::InternalHashMap<U,T,false,4>>) {
     if (this != &other) {
       data_ = std::move(other.data_); sparse_ = std::move(other.sparse_);
       small_ = std::move(other.small_); small_used_ = std::exchange(other.small_used_, 0);
@@ -1980,11 +2003,15 @@ template<class S,class T>class FenwickBase<S,T,true>:public CompactFenwick<S,T>{
 
 } // namespace reinsirk::detail
 template<typename S,typename T>
-class DynamicFenwickTree : public reinsirk::detail::FenwickBase<S,T> {
- using Base=reinsirk::detail::FenwickBase<S,T>;
+class DynamicFenwickTree : public /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::FenwickBase<S,T> {
+ using Base=/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::FenwickBase<S,T>;
  public: using Base::Base;
 };
 #endif
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
 
 
 // Library: DataStructure/dynamic-binary-indexed-tree-2d.cpp
@@ -2042,6 +2069,8 @@ class DynamicFenwickTree : public reinsirk::detail::FenwickBase<S,T> {
 // reserve(nodes): 内部Fenwickセル数を目安に容量を準備するヒント。
 // stored_nodes(): 値0や相殺済みも含む登録セル数。読み取りやreserveでは変わらない。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <bit>
 #include <cstddef>
 #include <cstdint>
@@ -2066,9 +2095,12 @@ class DynamicFenwickTree : public reinsirk::detail::FenwickBase<S,T> {
 #include <immintrin.h>
 #endif
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_INTERNAL_HASH_MAP_DEFINED
 #define SIRKIT_INTERNAL_HASH_MAP_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 template <class Key, class Val, bool Packed = false, unsigned Denominator = 5>
 class InternalHashMap {
     static_assert(std::is_integral_v<Key> &&
@@ -2337,12 +2369,30 @@ public:
 
 
 
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <array>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <memory>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <variant>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_DYNAMIC_FENWICK_BPLUS_ROW_DEFINED
 #define SIRKIT_DYNAMIC_FENWICK_BPLUS_ROW_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 // 元列の値を葉32点・内部16子で保持する。累積値はT幅の剰余で扱う。
 template <class T, bool DirectReads = false>
 class BPlusFenwickRow {
@@ -2824,7 +2874,7 @@ class BPlusFenwickRow {
 
 #ifndef SIRKIT_DYNAMIC_FENWICK_SMALL_ROW_DEFINED
 #define SIRKIT_DYNAMIC_FENWICK_SMALL_ROW_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 // 少数点を直接保持し、列幅に応じてFenwickセル表または集約木へ移す。
 template <class T, bool DirectReads = false>
 class SmallFenwickRow {
@@ -3407,7 +3457,7 @@ class SmallFenwickRow {
 
 #ifndef SIRKIT_DYNAMIC_FENWICK_TREE_DEFINED
 #define SIRKIT_DYNAMIC_FENWICK_TREE_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 template <typename S, typename T>
 class FenwickFallback {
   // FenwickFallback(n=0): 長さnの零配列を作る。n>=0。
@@ -3429,8 +3479,8 @@ class FenwickFallback {
   using U = std::make_unsigned_t<S>;
   U n_ = 0;
   // 広い疎領域は占有フラグをbitで持ち、密な範囲は直接配列へ移す。
-  reinsirk::detail::InternalHashMap<U, T, false, 4> data_;
-  reinsirk::detail::InternalHashMap<U, T, true, 4> sparse_;
+  /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::InternalHashMap<U, T, false, 4> data_;
+  /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::InternalHashMap<U, T, true, 4> sparse_;
   bool sparse_domain() const noexcept { return n_ > 1'000'000; }
   template <class F> decltype(auto) with_data(F&& f) {
     if (sparse_domain()) return f(sparse_);
@@ -3569,12 +3619,12 @@ class FenwickFallback {
     return *this;
   }
   FenwickFallback(FenwickFallback&& other) noexcept(
-      std::is_nothrow_move_constructible_v<reinsirk::detail::InternalHashMap<U,T,false,4>>)
+      std::is_nothrow_move_constructible_v</*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::InternalHashMap<U,T,false,4>>)
       : n_(std::exchange(other.n_, 0)), data_(std::move(other.data_)), sparse_(std::move(other.sparse_)),
         small_(std::move(other.small_)), small_used_(std::exchange(other.small_used_, 0)),
         dense_used_(std::move(other.dense_used_)) {}
   FenwickFallback& operator=(FenwickFallback&& other) noexcept(
-      std::is_nothrow_move_assignable_v<reinsirk::detail::InternalHashMap<U,T,false,4>>) {
+      std::is_nothrow_move_assignable_v</*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::InternalHashMap<U,T,false,4>>) {
     if (this != &other) {
       data_ = std::move(other.data_); sparse_ = std::move(other.sparse_);
       small_ = std::move(other.small_); small_used_ = std::exchange(other.small_used_, 0);
@@ -3988,8 +4038,8 @@ template<class S,class T>class FenwickBase<S,T,true>:public CompactFenwick<S,T>{
 
 } // namespace reinsirk::detail
 template<typename S,typename T>
-class DynamicFenwickTree : public reinsirk::detail::FenwickBase<S,T> {
- using Base=reinsirk::detail::FenwickBase<S,T>;
+class DynamicFenwickTree : public /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::FenwickBase<S,T> {
+ using Base=/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::FenwickBase<S,T>;
  public: using Base::Base;
 };
 #endif
@@ -4002,8 +4052,8 @@ class DynamicFenwickTree2D {
                 "DynamicFenwickTree2D: int must have at most 31 value bits");
   using U = std::uint32_t;
   static constexpr bool small_rows = std::is_integral_v<T> && !std::is_same_v<T,bool>;
-  using WideRow = std::conditional_t<small_rows, reinsirk::detail::SmallFenwickRow<T>,
-                                   reinsirk::detail::InternalHashMap<U,T,false,4>>;
+  using WideRow = std::conditional_t<small_rows, /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::SmallFenwickRow<T>,
+                                   /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::InternalHashMap<U,T,false,4>>;
   struct DenseRow {
     std::vector<T> values;
     std::uint64_t used = 0;
@@ -4018,7 +4068,7 @@ class DynamicFenwickTree2D {
   U n_ = 0, m_ = 0;
   bool dense_ = true, direct_ = true, tree_ = false;
   std::vector<U> row_indices_;
-  reinsirk::detail::InternalHashMap<U,U,false,4> row_map_;
+  /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::InternalHashMap<U,U,false,4> row_map_;
   std::vector<WideRow> wide_rows_;
   std::vector<DenseRow> dense_rows_;
   std::size_t active_ = 0, nodes_ = 0;
@@ -4272,6 +4322,10 @@ class DynamicFenwickTree2D {
 };
 #endif
 
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
+
 
 // Library: DataStructure/dynamic-li-chao-tree.cpp
 // SPDX-License-Identifier: CC0-1.0
@@ -4281,16 +4335,16 @@ class DynamicFenwickTree2D {
 // ドキュメント: https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/dynamic_li_chao.md
 //
 // API一覧
-// [DynamicLiChaoTree<T,INF>]
+// [DynamicLiChaoTree<T,kInf>]
 // 整数座標の閉区間で直線・線分の最小値を管理する。Tは符号付き64ビット以下の整数。
-// 追加する線の対象区間では、数学的なa*x+bがTの範囲内かつINF未満であること。
+// 追加する線の対象区間では、数学的なa*x+bがTの範囲内かつkInf未満であること。
 // Wを座標数とすると直線追加・取得はO(log W)、線分追加はO(log² W)。
 // queryは読み取り専用。SKIP_RUNTIME_CHECKSで座標・端点値の検査を除く。
 // DynamicLiChaoTree(xmin, xmax): 整数の閉区間[xmin, xmax]で空の木を作る。
 // コピーは独立した木を作る。コピー代入の確保失敗時は元の木を維持する。
 // update(a, b) / add_line(a, b): 定義域全体にy=a*x+bを追加する。
 // update_line_segment(a, b, left, right) / add_segment(...): 閉区間[left, right]に線分を追加。left>rightは無操作。
-// query(x): xでの最小値を返す。被覆する線がなければINF。
+// query(x): xでの最小値を返す。被覆する線がなければkInf。
 // query_line(x): 最小値を与えるLineを返す。同値時は任意、非被覆ならnullopt。
 // empty(): 追加した直線・空でない線分がなければtrue。O(1)。
 // clear(): 全ての線を消し、確保した容量を再利用する。O(格納ノード数)。
@@ -4298,11 +4352,13 @@ class DynamicFenwickTree2D {
 // stored_nodes(): 現在の格納ノード数を返す。取得操作では増えない。O(1)。
 // domain_min() / domain_max(): 定義域の左端・右端を返す。O(1)。
 //
-// [DynamicLiChaoTree<T,INF>::Line]
-// Line(a, b): y=a*x+b。既定値は空を表す定数INF。
+// [DynamicLiChaoTree<T,kInf>::Line]
+// Line(a, b): y=a*x+b。既定値は空を表す定数kInf。
 // get(x): a*x+bを返す。値がTで表現可能であること。
 // over(other, x): xでotherより小さい値を与えるときtrue。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <bit>
 #include <cstddef>
 #include <cstdint>
@@ -4317,14 +4373,17 @@ class DynamicFenwickTree2D {
 #include <utility>
 #include <vector>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_DYNAMIC_LI_CHAO_TREE_DEFINED
 #define SIRKIT_DYNAMIC_LI_CHAO_TREE_DEFINED
-template <typename T, T INF>
+template <typename T, T kInf>
 class DynamicLiChaoTree {
  public:
   struct Line {
     T slope = 0;
-    T intercept = INF;
+    T intercept = kInf;
     Line() = default;
     Line(T a, T b) : slope(a), intercept(b) {}
     T get(T x) const noexcept {
@@ -4342,7 +4401,7 @@ class DynamicLiChaoTree {
   static_assert(std::is_integral_v<T> && std::is_signed_v<T> &&
                 sizeof(T) <= sizeof(std::uint64_t) &&
                 std::is_same_v<T, std::remove_cv_t<T>>);
-  static_assert(INF > 0);
+  static_assert(kInf > 0);
   using Index = std::uint32_t;
   static constexpr Index no_child = std::numeric_limits<Index>::max();
   struct Node {
@@ -4447,10 +4506,10 @@ class DynamicLiChaoTree {
     bool valid;
     if ((line.slope < 0) != (x < 0)) {
       valid = product_at_most(U(line.intercept) - U(std::numeric_limits<T>::min())) &&
-              (line.intercept < INF || !product_at_most(U(line.intercept) - U(INF)));
+              (line.intercept < kInf || !product_at_most(U(line.intercept) - U(kInf)));
     } else {
-      valid = line.intercept < INF &&
-              product_at_most(U(INF - 1) - U(line.intercept));
+      valid = line.intercept < kInf &&
+              product_at_most(U(kInf - 1) - U(line.intercept));
     }
     if (!valid) throw std::overflow_error("Li Chao value must fit T and be below INF");
   }
@@ -4485,7 +4544,7 @@ class DynamicLiChaoTree {
   void insert_line(Index index, T left, T right, Line line) {
     for (;;) {
       Node& node = nodes_[index];
-      if (node.line.intercept == INF && node.line.slope == 0) {
+      if (node.line.intercept == kInf && node.line.slope == 0) {
         node.line = line;
         return;
       }
@@ -4515,8 +4574,8 @@ class DynamicLiChaoTree {
         return;
       }
       const Line& current = nodes_[index].line;
-      // 切片INFは空ノードを含むので枝刈りを省き、通常の探索を続ける。
-      if (current.intercept != INF) {
+      // 切片kInfは空ノードを含むので枝刈りを省き、通常の探索を続ける。
+      if (current.intercept != kInf) {
         // 差が最小になる重なり区間の端でも勝てなければ追加不要。
         const T endpoint = line.slope < current.slope
             ? (qright < right ? qright : right)
@@ -4540,7 +4599,7 @@ class DynamicLiChaoTree {
   template <bool ReturnLine>
   auto find_best(T x) const noexcept {
     Line best;
-    T value = INF;
+    T value = kInf;
     T left = xmin_, right = xmax_;
     Index index = nodes_.empty() ? no_child : Index{0};
     while (index != no_child) {
@@ -4613,7 +4672,7 @@ class DynamicLiChaoTree {
     check_coordinate(x);
 #endif
     Line result = find_best<true>(x);
-    if (result.slope == 0 && result.intercept == INF) return std::nullopt;
+    if (result.slope == 0 && result.intercept == kInf) return std::nullopt;
     return result;
   }
   bool empty() const noexcept { return nodes_.empty(); }
@@ -4628,6 +4687,10 @@ class DynamicLiChaoTree {
   T domain_max() const noexcept { return xmax_; }
 };
 #endif
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
 
 
 // Library: DataStructure/dynamic-union-find.cpp
@@ -4666,6 +4729,8 @@ class DynamicLiChaoTree {
 // clear(): 全登録を消去する。確保済みの容量は再利用する。
 // dataの負の返値は、負の親キーとの区別を保証しない。判定にはfindを使う。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <array>
 #include <cstddef>
@@ -4690,9 +4755,12 @@ class DynamicLiChaoTree {
 #include <immintrin.h>
 #endif
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_INTERNAL_HASH_MAP_DEFINED
 #define SIRKIT_INTERNAL_HASH_MAP_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 template <class Key, class Val, bool Packed = false, unsigned Denominator = 5>
 class InternalHashMap {
     static_assert(std::is_integral_v<Key> &&
@@ -4967,7 +5035,7 @@ class DynamicUnionFind {
         // 根なら負のサイズ、非根なら親の添字。キーの符号とは独立。
         int parent;
     };
-    reinsirk::detail::InternalHashMap<int, int, false, 4> indices_;
+    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::InternalHashMap<int, int, false, 4> indices_;
     std::vector<Node> nodes_;
     std::size_t components_ = 0;
 
@@ -5129,6 +5197,10 @@ public:
 };
 #endif
 
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
+
 
 // Library: DataStructure/Hash_map.cpp
 // SPDX-License-Identifier: CC0-1.0 AND LicenseRef-SplitMix64-Public-Domain
@@ -5181,6 +5253,8 @@ public:
 // operator()(x): 整数・列挙・浮動小数・tuple・range・std::hash対応型を再帰的にハッシュ化する。
 // unorderedコンテナの要素順は無視する。独自の同値関係には対応するHasherも用意する。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <bit>
 #include <chrono>
@@ -5201,6 +5275,9 @@ public:
 #include <emmintrin.h>
 #endif
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_GENERIC_HASH_DEFINED
 #define SIRKIT_GENERIC_HASH_DEFINED
 struct GenericHash {
@@ -5743,6 +5820,10 @@ public:
 };
 #endif
 
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
+
 
 // Library: Internal/Nyaan_hash_map_min.cpp
 // SPDX-License-Identifier: CC0-1.0 AND LicenseRef-SplitMix64-Public-Domain
@@ -5756,7 +5837,7 @@ public:
 // ドキュメント: https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/internal_hash_map.md
 //
 // API一覧
-// [reinsirk::detail::InternalHashMap<Key,Val,Packed=false,Denominator=5>]
+// [sirkit::detail::InternalHashMap<Key,Val,Packed=false,Denominator=5>]
 // Keyはbool・const・volatileを除く64bit以下の整数型。Denominatorは2〜8。
 // dynamic系で共有する内部用の整数ハッシュ表。再確保・release・代入で参照は無効。
 // 検索は期待O(1)、追加は期待償却O(1)。値は既定構築・コピー代入可能であること。
@@ -5780,6 +5861,8 @@ public:
 // enumerate(): 登録済みの{キー, 値}を順序不定でコピーする。非空O(容量)、空O(1)。
 // swap(other): 表の内容・初期値を交換する。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <bit>
 #include <chrono>
@@ -5795,9 +5878,12 @@ public:
 #include <immintrin.h>
 #endif
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_INTERNAL_HASH_MAP_DEFINED
 #define SIRKIT_INTERNAL_HASH_MAP_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 template <class Key, class Val, bool Packed = false, unsigned Denominator = 5>
 class InternalHashMap {
     static_assert(std::is_integral_v<Key> &&
@@ -6063,6 +6149,10 @@ public:
 }  // namespace reinsirk::detail
 #endif  // SIRKIT_INTERNAL_HASH_MAP_DEFINED
 
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
+
 
 // Library: DataStructure/line-container.cpp
 // SPDX-License-Identifier: CC0-1.0
@@ -6092,6 +6182,8 @@ public:
 // lc_inf<T>(): 整数では最大値、浮動小数点では正の無限大を返す。
 // lc_div(a,b): 整数は床除算、浮動小数点は通常除算。0除算・整数結果の範囲外は例外。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
@@ -6104,6 +6196,9 @@ public:
 #include <type_traits>
 #include <utility>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_LINE_CONTAINER_DEFINED
 #define SIRKIT_LINE_CONTAINER_DEFINED
 
@@ -6133,7 +6228,7 @@ T lc_div(T a, T b) {
   } else return a / b;
 }
 
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 template <typename T, Objective objective>
 struct LineComparator {
   using is_transparent = void;
@@ -6147,11 +6242,11 @@ struct LineComparator {
 }  // namespace reinsirk::detail
 
 template <typename T, Objective objective>
-struct LineContainer : std::multiset<Line<T>, reinsirk::detail::LineComparator<T, objective>> {
+struct LineContainer : std::multiset<Line<T>, /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::LineComparator<T, objective>> {
   static_assert((std::is_integral_v<T> && std::is_signed_v<T> && sizeof(T) <= 8) ||
                 std::is_floating_point_v<T>);
   static_assert(objective == MAXIMIZE || objective == MINIMIZE);
-  using super = std::multiset<Line<T>, reinsirk::detail::LineComparator<T, objective>>;
+  using super = std::multiset<Line<T>, /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::LineComparator<T, objective>>;
   using super::begin, super::end, super::insert, super::erase;
   using super::empty, super::lower_bound;
   static constexpr T inf = lc_inf<T>();
@@ -6464,6 +6559,10 @@ template <typename T> using MinLineContainer = LineContainer<T, MINIMIZE>;
 template <typename T> using MaxLineContainer = LineContainer<T, MAXIMIZE>;
 #endif
 
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
+
 
 // Library: DataStructure/line-container-2d.cpp
 // SPDX-License-Identifier: CC0-1.0
@@ -6511,6 +6610,8 @@ template <typename T> using MaxLineContainer = LineContainer<T, MAXIMIZE>;
 // lc_inf<T>(): 整数では最大値、浮動小数点では正の無限大を返す。
 // lc_div(a,b): 整数は床除算、浮動小数点は通常除算。0除算・整数結果の範囲外は例外。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
@@ -6523,6 +6624,9 @@ template <typename T> using MaxLineContainer = LineContainer<T, MAXIMIZE>;
 #include <type_traits>
 #include <utility>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_LINE_CONTAINER_DEFINED
 #define SIRKIT_LINE_CONTAINER_DEFINED
 
@@ -6552,7 +6656,7 @@ T lc_div(T a, T b) {
   } else return a / b;
 }
 
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 template <typename T, Objective objective>
 struct LineComparator {
   using is_transparent = void;
@@ -6566,11 +6670,11 @@ struct LineComparator {
 }  // namespace reinsirk::detail
 
 template <typename T, Objective objective>
-struct LineContainer : std::multiset<Line<T>, reinsirk::detail::LineComparator<T, objective>> {
+struct LineContainer : std::multiset<Line<T>, /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::LineComparator<T, objective>> {
   static_assert((std::is_integral_v<T> && std::is_signed_v<T> && sizeof(T) <= 8) ||
                 std::is_floating_point_v<T>);
   static_assert(objective == MAXIMIZE || objective == MINIMIZE);
-  using super = std::multiset<Line<T>, reinsirk::detail::LineComparator<T, objective>>;
+  using super = std::multiset<Line<T>, /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::LineComparator<T, objective>>;
   using super::begin, super::end, super::insert, super::erase;
   using super::empty, super::lower_bound;
   static constexpr T inf = lc_inf<T>();
@@ -6890,7 +6994,7 @@ struct LineContainer2D {
   using ld = long double;
   using ll = std::int64_t;
   struct Result { ld value, x, y; };
-  static constexpr ld INF = 4.1e18L;
+  static constexpr ld kInf = 4.1e18L;
   static constexpr ll INTEGER_LIMIT = 4'100'000'000'000'000'000;
   ld Xmax = -std::numeric_limits<ld>::infinity();
   ld Xmin = std::numeric_limits<ld>::infinity();
@@ -7093,7 +7197,7 @@ struct LineContainer2D {
     return std::ldexp(sa * sx + sb * sy, e1 + e2);
   }
   static ll to_rounded_integer(ld value) {
-    const ld limited = std::clamp(value, -INF, INF);
+    const ld limited = std::clamp(value, -kInf, kInf);
     const ll integral = static_cast<ll>(limited);
     const ld fraction = limited - ld(integral);
     return integral + (fraction >= 0.5L) - (fraction <= -0.5L);
@@ -7254,8 +7358,8 @@ struct LineContainer2D {
   ld min_ld(ld a, ld b) const {
     return -max_ld(-a,-b);
   }
-  ll max_ll(ll a, ll b) const { return static_cast<ll>(std::clamp(integer_value<false>(a, b), -INF, INF)); }
-  ll min_ll(ll a, ll b) const { return static_cast<ll>(std::clamp(integer_value<true>(a, b), -INF, INF)); }
+  ll max_ll(ll a, ll b) const { return static_cast<ll>(std::clamp(integer_value<false>(a, b), -kInf, kInf)); }
+  ll min_ll(ll a, ll b) const { return static_cast<ll>(std::clamp(integer_value<true>(a, b), -kInf, kInf)); }
   ll max_rounded_ll(ll a, ll b) const { return to_rounded_integer(integer_value<false>(a, b)); }
   ll min_rounded_ll(ll a, ll b) const { return to_rounded_integer(integer_value<true>(a, b)); }
   Result max_with_point(ld a, ld b) const {
@@ -7306,6 +7410,10 @@ struct LineContainer2D {
 };
 #endif
 
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
+
 
 // Library: DataStructure/heap.cpp
 // SPDX-License-Identifier: CC0-1.0
@@ -7326,6 +7434,8 @@ struct LineContainer2D {
 // push_pop(value): 値を追加した後の最小値を返して削除、O(log N)、空なら value を返す。
 // clear(): 全要素を削除、容量を保持。reserve(n): n 要素分の容量を確保、再確保時 O(N)。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <cstddef>
 #include <functional>
@@ -7335,6 +7445,9 @@ struct LineContainer2D {
 #include <utility>
 #include <vector>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_HEAP_DEFINED
 #define SIRKIT_HEAP_DEFINED
 
@@ -7507,6 +7620,10 @@ public:
 
 #endif
 
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
+
 
 // Library: DataStructure/implicit_treap.cpp
 // SPDX-License-Identifier: CC0-1.0
@@ -7572,13 +7689,15 @@ public:
 // 検査時は負の挿入ID・重複IDと、存在が前提の操作への不存在IDを拒否。コピーはID索引枠数ぶんもかかる。
 //
 // [既定の作用: RangeAddMin]
-// 区間加算・最小値。値と加算後の値は INF 以下、各演算は int64_t に収まること。
+// 区間加算・最小値。値と加算後の値は kInf 以下、各演算は int64_t に収まること。
 // op(a,b)/e(): 最小値/単位元。mapping(f,x): 加算。composition(f,g)/id(): 加算の合成/0。
 //
 // [既定の作用: RangeAddSum]
 // 区間加算・和。各要素は S{値, 1} とし、演算結果は int64_t に収まること。
 // op(a,b)/e(): 和と個数の合計/空。mapping(f,x): 各要素へ加算。composition(f,g)/id(): 合成/0。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <chrono>
 #include <cstddef>
@@ -7589,14 +7708,17 @@ public:
 #include <utility>
 #include <vector>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_RANGE_ADD_MIN_DEFINED
 #define SIRKIT_RANGE_ADD_MIN_DEFINED
 struct RangeAddMin {
     using S = std::int64_t;
     using F = std::int64_t;
-    static constexpr S INF = INT64_C(8000000000000000000);
+    static constexpr S kInf = INT64_C(8000000000000000000);
     static S op(S a, S b) { return std::min(a, b); }
-    static S e() { return INF; }
+    static S e() { return kInf; }
     static S mapping(F f, S x) { return x + f; }
     static F composition(F f, F g) { return f + g; }
     static F id() { return 0; }
@@ -8439,6 +8561,13 @@ template<class S = RangeAddMin::S,
 using indexed_implicit_treap = lazy_implicit_treap<S, op, e, F, mapping, composition, id, Commutative, true>;
 #endif
 
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
+
+
+namespace sirkit {}
+using namespace sirkit;
 
 // SPDX-License-Identifier: CC0-1.0
 #include <algorithm>
@@ -8559,7 +8688,7 @@ int main() {
         GenericHash hash(123);
         require(hash(0.0) == hash(-0.0));
         std::unordered_set<int> first{1, 2, 3}, second{3, 2, 1}; require(hash(first) == hash(second));
-        reinsirk::detail::InternalHashMap<std::int64_t, int> internal;
+        ::sirkit::detail::InternalHashMap<std::int64_t, int> internal;
         internal.set_default(7); internal.reserve(128); require(!internal.find(-1));
         require(internal[-1] == 7); internal[-1] += 2; require(*internal.find(-1) == 9);
         require(internal.enumerate().size() == 1 && internal.count(-1) == 1);

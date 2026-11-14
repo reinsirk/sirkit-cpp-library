@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 // 長い回文を、正順+区切り+逆順の接尾辞配列/LCPから独立に照合する。
 #ifndef MANACHER_HEADER
 #define MANACHER_HEADER "../../../String/Manacher.cpp"

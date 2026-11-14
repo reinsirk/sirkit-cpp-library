@@ -5,7 +5,7 @@
 // API一覧
 // [共通型・定数]
 // Edge(to,w): 行先toとint64_tの重みwを持つ有向辺。
-// WGraph: 出発点を隣接リストの添字とする辺列。INF=std::int64_t{1}<<60。
+// WGraph: 出発点を隣接リストの添字とする辺列。kInf=std::int64_t{1}<<60。
 //
 // [SPFA]
 // SPFA(graph, distances, start_index): 始点からの最短距離をdistancesに格納し、到達可能な負閉路があればtrueを返す。
@@ -13,9 +13,11 @@
 // 検査は始点と処理中に参照する辺のみ。未到達成分の出辺は走査しない。
 // 通常は更新頂点をFIFO処理し、長い反復は到達部分の強連結成分ごとに解く。
 // 標準C++23、重みは[-1e9, 1e9]。
-// 到達可能な負閉路があればtrue。距離は成功時に全上書きし、未到達INF・負影響-INF。
-// 最悪O(VE+V+E)時間・O(V)追加領域。有限距離のINF/-INF衝突はoverflow_error。
+// 到達可能な負閉路があればtrue。距離は成功時に全上書きし、未到達kInf・負影響-kInf。
+// 最悪O(VE+V+E)時間・O(V)追加領域。有限距離のkInf/-kInf衝突はoverflow_error。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <array>
 #include <span>
@@ -27,9 +29,12 @@
 #include <stdexcept>
 #include <vector>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_INF_DEFINED
 #define SIRKIT_INF_DEFINED
-inline constexpr std::int64_t INF = std::int64_t{1} << 60;
+inline constexpr std::int64_t kInf = std::int64_t{1} << 60;
 #endif
 
 #ifndef SIRKIT_GRAPH_TYPES_DEFINED
@@ -45,7 +50,7 @@ using WGraph = std::vector<std::vector<Edge>>;
 
 #ifndef SIRKIT_SPFA_COMPONENTS_DEFINED
 #define SIRKIT_SPFA_COMPONENTS_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 // 遅い反復だけを到達部分の強連結成分ごとに解く。追加領域O(V)。
 #if defined(__GNUC__) || defined(__clang__)
 [[gnu::noinline]]
@@ -278,7 +283,7 @@ inline void SPFAFinishComponents(const WGraph& graph,
     );
     for (const int vertex : affected) {
         state[vertex] |= 4;
-        distance[vertex] = -INF;
+        distance[vertex] = -kInf;
     }
 }
 } // namespace reinsirk::detail
@@ -287,7 +292,7 @@ inline void SPFAFinishComponents(const WGraph& graph,
 // 64頂点以下はキュー・補助状態をスタックに置く。
 #ifndef SIRKIT_SPFA_DEFINED
 #define SIRKIT_SPFA_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 template <bool Small, bool Bounded>
 inline bool SPFARun(const WGraph &graph, std::vector<std::int64_t> &distances,
                  int start_index)
@@ -303,18 +308,18 @@ inline bool SPFARun(const WGraph &graph, std::vector<std::int64_t> &distances,
 
     if (graph[start_index].empty()) {
 #ifndef SKIP_RUNTIME_CHECKS
-        std::vector<std::int64_t> result(graph.size(), INF);
+        std::vector<std::int64_t> result(graph.size(), kInf);
         result[start_index] = 0;
         distances.swap(result);
 #else
-        distances.assign(graph.size(), INF);
+        distances.assign(graph.size(), kInf);
         distances[start_index] = 0;
 #endif
         return false;
     }
 
-    // n*最大辺重み<INFなら、内部値と出力値の変換が要らない。
-    const std::int64_t unreachable = Bounded ? INF : (static_cast<std::int64_t>(n) + 1) * max_cost;
+    // n*最大辺重み<kInfなら、内部値と出力値の変換が要らない。
+    const std::int64_t unreachable = Bounded ? kInf : (static_cast<std::int64_t>(n) + 1) * max_cost;
     std::vector<std::int64_t> local_distance;
 #ifndef SKIP_RUNTIME_CHECKS
     auto& distance = local_distance;
@@ -367,7 +372,7 @@ inline bool SPFARun(const WGraph &graph, std::vector<std::int64_t> &distances,
             affected.reserve(graph.size());
         const std::size_t first = affected.size();
         state[seed] |= negative_bit;
-        if constexpr (Bounded) distance[seed] = -INF;
+        if constexpr (Bounded) distance[seed] = -kInf;
         affected.push_back(seed);
         for (std::size_t affected_head = first; affected_head < affected.size(); ++affected_head)
         {
@@ -383,7 +388,7 @@ inline bool SPFARun(const WGraph &graph, std::vector<std::int64_t> &distances,
                 if ((state[edge.to] & negative_bit))
                     continue;
                 state[edge.to] |= negative_bit;
-                if constexpr (Bounded) distance[edge.to] = -INF;
+                if constexpr (Bounded) distance[edge.to] = -kInf;
                 affected.push_back(edge.to);
             }
         }
@@ -407,7 +412,7 @@ inline bool SPFARun(const WGraph &graph, std::vector<std::int64_t> &distances,
 #else
         constexpr bool unchanged = false;
 #endif
-        // Boundedでは候補>-INFなので、負影響先は距離比較だけで除外できる。
+        // Boundedでは候補>-kInfなので、負影響先は距離比較だけで除外できる。
         if constexpr (!Bounded) if (state[edge.to] & negative_bit)
             return unchanged;
         // 格納する経路はn辺未満なので、候補の加算もint64_t内に収まる。
@@ -528,10 +533,10 @@ inline bool SPFARun(const WGraph &graph, std::vector<std::int64_t> &distances,
     if constexpr (!Bounded) for (int vertex = 0; vertex < n; ++vertex)
     {
         if ((state[vertex] & negative_bit))
-            distance[vertex] = -INF;
+            distance[vertex] = -kInf;
         else if (distance[vertex] == unreachable)
-            distance[vertex] = INF;
-        else if (distance[vertex] <= -INF || distance[vertex] >= INF)
+            distance[vertex] = kInf;
+        else if (distance[vertex] <= -kInf || distance[vertex] >= kInf)
             throw std::overflow_error("SPFA: finite distance collides with INF/-INF");
     }
 #ifndef SKIP_RUNTIME_CHECKS
@@ -544,9 +549,13 @@ inline bool SPFARun(const WGraph &graph, std::vector<std::int64_t> &distances,
 } // namespace reinsirk::detail
 
 inline bool SPFA(const WGraph& graph, std::vector<std::int64_t>& distances, int start_index) {
-    if (graph.size() <= 64) return reinsirk::detail::SPFARun<true, true>(graph, distances, start_index);
-    if (graph.size() <= static_cast<std::size_t>((INF - 1) / 1'000'000'000))
-        return reinsirk::detail::SPFARun<false, true>(graph, distances, start_index);
-    return reinsirk::detail::SPFARun<false, false>(graph, distances, start_index);
+    if (graph.size() <= 64) return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::SPFARun<true, true>(graph, distances, start_index);
+    if (graph.size() <= static_cast<std::size_t>((kInf - 1) / 1'000'000'000))
+        return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::SPFARun<false, true>(graph, distances, start_index);
+    return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::SPFARun<false, false>(graph, distances, start_index);
 }
 #endif
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1

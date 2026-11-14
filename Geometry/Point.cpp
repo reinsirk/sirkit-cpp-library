@@ -25,6 +25,8 @@
 // to_real(p): long double 座標へ変換する。O(1)。
 // distance(p,q): 2点間距離を Point::Real で返す。O(1)。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <array>
 #include <cmath>
@@ -40,6 +42,9 @@
 #include <utility>
 #include <vector>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_GEO_EPSILON_DEFINED
 #define SIRKIT_GEO_EPSILON_DEFINED
 namespace geo {
@@ -211,3 +216,7 @@ template<class T, class C> RealPoint to_real(const Point<T, C>& p) { return p.te
 template<class T, class C> typename Point<T, C>::Real distance(const Point<T, C>& p, const Point<T, C>& q) { return p.dist(q); }
 }
 #endif
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1

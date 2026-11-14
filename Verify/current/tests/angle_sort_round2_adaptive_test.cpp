@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #ifndef SIRKIT_ANGLE_TEST_SOURCE
 #define SIRKIT_ANGLE_TEST_SOURCE "../../../Geometry/偏角ソート.cpp"
 #endif

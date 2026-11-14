@@ -53,6 +53,8 @@
 // centroid(poly,eps): 単純多角形の面積重心。3点未満または面積0なら nullopt。O(N)。
 // convex_cut(poly,l,eps): 凸多角形と有向非零長直線の左側（境界含む）との共通部分。O(N)。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <array>
 #include <cmath>
@@ -68,6 +70,9 @@
 #include <utility>
 #include <vector>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_GEO_EPSILON_DEFINED
 #define SIRKIT_GEO_EPSILON_DEFINED
 namespace geo {
@@ -325,7 +330,7 @@ template<class T, class C> Location contains(const std::vector<Point<T, C>>& pol
 }
 #ifndef SIRKIT_GEO_CONVEX_HULL_IMPL_DEFINED
 #define SIRKIT_GEO_CONVEX_HULL_IMPL_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 template<bool Sorted, class T, class C>
 std::vector<geo::Point<T, C>> convex_hull_impl(std::vector<geo::Point<T, C>> points, geo::Epsilon eps) {
     constexpr bool narrow_integer = std::is_integral_v<T> && sizeof(T) <= 8 &&
@@ -453,7 +458,7 @@ std::vector<geo::Point<T, C>> convex_hull_impl(std::vector<geo::Point<T, C>> poi
 #endif
 namespace geo {
 template<class T, class C> std::vector<Point<T, C>> convex_hull(std::vector<Point<T, C>> points, Epsilon eps = {}) {
-    return reinsirk::detail::convex_hull_impl<false>(std::move(points), eps);
+    return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::convex_hull_impl<false>(std::move(points), eps);
 }
 
 }
@@ -461,7 +466,7 @@ template<class T, class C> std::vector<Point<T, C>> convex_hull(std::vector<Poin
 #define SIRKIT_CONVEX_HULL_SORTED_DEFINED
 template<class T, class C>
 std::vector<geo::Point<T, C>> convex_hull_sorted(std::vector<geo::Point<T, C>> points, geo::Epsilon eps = {}) {
-    return reinsirk::detail::convex_hull_impl<true>(std::move(points), eps);
+    return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::convex_hull_impl<true>(std::move(points), eps);
 }
 #endif
 namespace geo {
@@ -521,6 +526,13 @@ namespace geo {
 }
 #endif
 
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
+
+
+namespace sirkit {}
+using namespace sirkit;
 
 // SPDX-License-Identifier: CC0-1.0
 #include <algorithm>
@@ -536,39 +548,39 @@ namespace geo {
 #include <vector>
 
 int main() {
-    const geo::PointI a{0, 0}, b{4, 0}, c{0, 3};
+    const ::sirkit::geo::PointI a{0, 0}, b{4, 0}, c{0, 3};
     assert(a.dist2(b) == 16 && a.orient(b, c) == 12);
-    assert((b.rotated90() == geo::PointI{0, 4}));
-    assert(geo::orientation(a, b, c) == 1);
-    const geo::PointLD p{3, 4};
+    assert((b.rotated90() == ::sirkit::geo::PointI{0, 4}));
+    assert(::sirkit::geo::orientation(a, b, c) == 1);
+    const ::sirkit::geo::PointLD p{3, 4};
     assert(std::abs(p.normalized().norm() - 1) < 1e-12L);
 #ifdef SIRKIT_GEO_LINEAR_DEFINED
-    const geo::Segment<std::int64_t> first{{0, 0}, {4, 0}}, overlap{{2, 0}, {6, 0}}, singleton{{1, 0}, {1, 0}};
-    assert(geo::intersection(first, overlap).kind == geo::SegmentIntersectionKind::Overlap);
-    assert(geo::intersection(first, singleton).kind == geo::SegmentIntersectionKind::Point);
-    assert(geo::intersection(geo::Line<std::int64_t>{{0, 0}, {1, 0}}, geo::Line<std::int64_t>{{0, 1}, {1, 1}}).kind == geo::LineIntersectionKind::None);
-    assert(std::abs(geo::distance(geo::PointI{1, 2}, singleton) - 2) < 1e-12L);
+    const ::sirkit::geo::Segment<std::int64_t> first{{0, 0}, {4, 0}}, overlap{{2, 0}, {6, 0}}, singleton{{1, 0}, {1, 0}};
+    assert(::sirkit::geo::intersection(first, overlap).kind == ::sirkit::geo::SegmentIntersectionKind::Overlap);
+    assert(::sirkit::geo::intersection(first, singleton).kind == ::sirkit::geo::SegmentIntersectionKind::Point);
+    assert(::sirkit::geo::intersection(::sirkit::geo::Line<std::int64_t>{{0, 0}, {1, 0}}, ::sirkit::geo::Line<std::int64_t>{{0, 1}, {1, 1}}).kind == ::sirkit::geo::LineIntersectionKind::None);
+    assert(std::abs(::sirkit::geo::distance(::sirkit::geo::PointI{1, 2}, singleton) - 2) < 1e-12L);
 #endif
 #ifdef SIRKIT_GEO_POLYGON_DEFINED
-    const auto hull = geo::convex_hull(std::vector<geo::PointI>{a, b, c, {1, 1}, a});
-    assert(hull.size() == 3 && geo::area(hull) == 6);
-    assert(geo::contains(hull, geo::PointI{1, 1}) == geo::Location::Inside);
-    assert(geo::contains(hull, a) == geo::Location::Boundary);
-    auto center = geo::centroid(hull);
+    const auto hull = ::sirkit::geo::convex_hull(std::vector<::sirkit::geo::PointI>{a, b, c, {1, 1}, a});
+    assert(hull.size() == 3 && ::sirkit::geo::area(hull) == 6);
+    assert(::sirkit::geo::contains(hull, ::sirkit::geo::PointI{1, 1}) == ::sirkit::geo::Location::Inside);
+    assert(::sirkit::geo::contains(hull, a) == ::sirkit::geo::Location::Boundary);
+    auto center = ::sirkit::geo::centroid(hull);
     assert(center && std::abs(center->x - 4.0L / 3) < 1e-12L && std::abs(center->y - 1) < 1e-12L);
-    assert(!geo::centroid(std::vector<geo::PointI>{a, b}));
-    assert(geo::convex_hull(std::vector<geo::PointI>{{0, 0}, {1, 0}, {2, 0}}).size() == 2);
+    assert(!::sirkit::geo::centroid(std::vector<::sirkit::geo::PointI>{a, b}));
+    assert(::sirkit::geo::convex_hull(std::vector<::sirkit::geo::PointI>{{0, 0}, {1, 0}, {2, 0}}).size() == 2);
 #endif
 #ifdef SIRKIT_GEO_CIRCLE_DEFINED
-    const auto circle = geo::circumcircle(a, b, c);
+    const auto circle = ::sirkit::geo::circumcircle(a, b, c);
     assert(circle && std::abs(circle->radius - 2.5L) < 1e-12L);
-    assert(!geo::circumcircle(a, a, b));
-    const geo::Circle unit{{0, 0}, 1};
-    assert(geo::intersection(unit, geo::Circle{{3, 0}, 1}).kind == geo::CircleIntersectionKind::None);
-    assert(geo::intersection(unit, unit).kind == geo::CircleIntersectionKind::Coincident);
-    assert(geo::intersection(unit, geo::Circle{{2, 0}, 1}).kind == geo::CircleIntersectionKind::Tangent);
-    assert(geo::intersection(unit, geo::Segment<long double>{{-2, 0}, {2, 0}}).size() == 2);
-    assert(geo::intersection(unit, geo::Segment<long double>{{2, 0}, {3, 0}}).empty());
+    assert(!::sirkit::geo::circumcircle(a, a, b));
+    const ::sirkit::geo::Circle unit{{0, 0}, 1};
+    assert(::sirkit::geo::intersection(unit, ::sirkit::geo::Circle{{3, 0}, 1}).kind == ::sirkit::geo::CircleIntersectionKind::None);
+    assert(::sirkit::geo::intersection(unit, unit).kind == ::sirkit::geo::CircleIntersectionKind::Coincident);
+    assert(::sirkit::geo::intersection(unit, ::sirkit::geo::Circle{{2, 0}, 1}).kind == ::sirkit::geo::CircleIntersectionKind::Tangent);
+    assert(::sirkit::geo::intersection(unit, ::sirkit::geo::Segment<long double>{{-2, 0}, {2, 0}}).size() == 2);
+    assert(::sirkit::geo::intersection(unit, ::sirkit::geo::Segment<long double>{{2, 0}, {3, 0}}).empty());
 #endif
     std::cout << "OK\n";
 }

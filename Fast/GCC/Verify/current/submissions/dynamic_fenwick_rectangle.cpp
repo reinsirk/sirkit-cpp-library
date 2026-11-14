@@ -35,6 +35,8 @@
 // reserve(nodes): 内部Fenwickセル数を目安に容量を準備するヒント。
 // stored_nodes(): 値0や相殺済みも含む登録セル数。読み取りやreserveでは変わらない。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <bit>
 #include <cstddef>
 #include <cstdint>
@@ -59,9 +61,12 @@
 #include <immintrin.h>
 #endif
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_INTERNAL_HASH_MAP_DEFINED
 #define SIRKIT_INTERNAL_HASH_MAP_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 template <class Key, class Val, bool Packed = false, unsigned Denominator = 5>
 class InternalHashMap {
     static_assert(std::is_integral_v<Key> &&
@@ -330,12 +335,30 @@ public:
 
 
 
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <array>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <memory>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <variant>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_DYNAMIC_FENWICK_BPLUS_ROW_DEFINED
 #define SIRKIT_DYNAMIC_FENWICK_BPLUS_ROW_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 // 元列の値を葉32点・内部16子で保持する。累積値はT幅の剰余で扱う。
 template <class T, bool DirectReads = false>
 class BPlusFenwickRow {
@@ -817,7 +840,7 @@ class BPlusFenwickRow {
 
 #ifndef SIRKIT_DYNAMIC_FENWICK_SMALL_ROW_DEFINED
 #define SIRKIT_DYNAMIC_FENWICK_SMALL_ROW_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 // 少数点を直接保持し、列幅に応じてFenwickセル表または集約木へ移す。
 template <class T, bool DirectReads = false>
 class SmallFenwickRow {
@@ -1400,7 +1423,7 @@ class SmallFenwickRow {
 
 #ifndef SIRKIT_DYNAMIC_FENWICK_TREE_DEFINED
 #define SIRKIT_DYNAMIC_FENWICK_TREE_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 template <typename S, typename T>
 class FenwickFallback {
   // FenwickFallback(n=0): 長さnの零配列を作る。n>=0。
@@ -1422,8 +1445,8 @@ class FenwickFallback {
   using U = std::make_unsigned_t<S>;
   U n_ = 0;
   // 広い疎領域は占有フラグをbitで持ち、密な範囲は直接配列へ移す。
-  reinsirk::detail::InternalHashMap<U, T, false, 4> data_;
-  reinsirk::detail::InternalHashMap<U, T, true, 4> sparse_;
+  /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::InternalHashMap<U, T, false, 4> data_;
+  /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::InternalHashMap<U, T, true, 4> sparse_;
   bool sparse_domain() const noexcept { return n_ > 1'000'000; }
   template <class F> decltype(auto) with_data(F&& f) {
     if (sparse_domain()) return f(sparse_);
@@ -1548,12 +1571,12 @@ class FenwickFallback {
     return *this;
   }
   FenwickFallback(FenwickFallback&& other) noexcept(
-      std::is_nothrow_move_constructible_v<reinsirk::detail::InternalHashMap<U,T,false,4>>)
+      std::is_nothrow_move_constructible_v</*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::InternalHashMap<U,T,false,4>>)
       : n_(std::exchange(other.n_, 0)), data_(std::move(other.data_)), sparse_(std::move(other.sparse_)),
         small_(std::move(other.small_)), small_used_(std::exchange(other.small_used_, 0)),
         dense_used_(std::move(other.dense_used_)) {}
   FenwickFallback& operator=(FenwickFallback&& other) noexcept(
-      std::is_nothrow_move_assignable_v<reinsirk::detail::InternalHashMap<U,T,false,4>>) {
+      std::is_nothrow_move_assignable_v</*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::InternalHashMap<U,T,false,4>>) {
     if (this != &other) {
       data_ = std::move(other.data_); sparse_ = std::move(other.sparse_);
       small_ = std::move(other.small_); small_used_ = std::exchange(other.small_used_, 0);
@@ -1950,12 +1973,19 @@ template<class S,class T>class FenwickBase<S,T,true>:public CompactFenwick<S,T>{
 
 } // namespace reinsirk::detail
 template<typename S,typename T>
-class DynamicFenwickTree : public reinsirk::detail::FenwickBase<S,T> {
- using Base=reinsirk::detail::FenwickBase<S,T>;
+class DynamicFenwickTree : public /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::FenwickBase<S,T> {
+ using Base=/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::FenwickBase<S,T>;
  public: using Base::Base;
 };
 #endif
 
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
+
+
+namespace sirkit {}
+using namespace sirkit;
 
 // SPDX-License-Identifier: CC0-1.0
 // Verify I/O: Verify/current/common/fast_io.hpp

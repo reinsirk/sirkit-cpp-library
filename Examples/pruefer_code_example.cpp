@@ -2,6 +2,8 @@
 #include "../Graph/Pruefer_Code.cpp"
 #include <iostream>
 #include <vector>
+
+using namespace sirkit;
 int main() {
     std::vector<int> code{3, 4, 3, 5, 4};
     auto edges = pruefer_decode(7, code);

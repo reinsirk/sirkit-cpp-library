@@ -2,6 +2,8 @@
 #include <cstdint>
 #include <iostream>
 
+using namespace sirkit;
+
 int main() {
     DynamicFenwickTree<std::int64_t, std::int64_t> bit(1000000000);
     bit.reserve(100);

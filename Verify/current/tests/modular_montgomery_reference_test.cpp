@@ -1,3 +1,5 @@
+namespace sirkit {}
+using namespace sirkit;
 #ifndef MODULAR_SOURCE
 #define MODULAR_SOURCE "../../../Math/Modular_Arithmetic.cpp"
 #endif
@@ -19,7 +21,7 @@ int main(){
  for(int i=0;i<20000;++i){
   auto m=random()|1;if(i%4==0)m=UINT64_MAX-(random()&UINT64_C(0x1fffe));if(m==1)m=3;
   auto a=random()%m,b=random()%m;if(i<64){m=UINT64_MAX;a=m-1;b=m-1;}else if(i<128){m=UINT64_MAX;a=1;b=1;}
-  reinsirk::detail::ModularMontgomery64 arithmetic(m);
+  ::sirkit::detail::ModularMontgomery64 arithmetic(m);
   const auto ri=inverse(R,Big{m});const auto expected=(Big{a}*b*ri%m).convert_to<std::uint64_t>();
   require(arithmetic.multiply(a,b)==expected);
   require(arithmetic.decode(arithmetic.encode(a))==a);
@@ -37,7 +39,7 @@ int main(){
   const auto a=random(),e=i%2?random():exponents[static_cast<std::size_t>(i/2)%exponents.size()];
   const auto expected=power_ref(a,e,m);require(ModPow(a,e,m)==expected);
 #if defined(__SIZEOF_INT128__) && (defined(__GNUC__) || defined(__clang__)) && !defined(SIRKIT_FORCE_STANDARD_ARITHMETIC)
-  reinsirk::detail::ModularMontgomery64 arithmetic(m);
+  ::sirkit::detail::ModularMontgomery64 arithmetic(m);
   require(arithmetic.power<true>(a%m,e)==expected);require(arithmetic.power<false>(a%m,e)==expected);
 #endif
  }

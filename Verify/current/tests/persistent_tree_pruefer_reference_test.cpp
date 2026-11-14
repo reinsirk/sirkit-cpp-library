@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #ifndef PERSISTENT_SEGMENT_TREE_SOURCE
 #define PERSISTENT_SEGMENT_TREE_SOURCE "../../../DataStructure/Persistent_Segment_Tree.cpp"
 #endif

@@ -5,6 +5,8 @@
 #include <iostream>
 #include <utility>
 
+using namespace sirkit;
+
 int main()
 {
     PrimeBinomial<atcoder::modint998244353> prime(100);

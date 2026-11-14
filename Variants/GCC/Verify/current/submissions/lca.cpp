@@ -35,6 +35,8 @@
 // 部分木は構築時の根に対するもの。DFSの兄弟順は規定しない。
 // 空のgにはroot=0を指定。検査有効時は不正な頂点・閉路・多重辺で例外。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <bit>
 #include <cstddef>
@@ -46,9 +48,12 @@
 #include <utility>
 #include <vector>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_LCA_CSR_GRAPH_DEFINED
 #define SIRKIT_LCA_CSR_GRAPH_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 class LcaCsrGraph {
     std::unique_ptr<int[]> arcs_;
     std::vector<std::size_t> begin_;
@@ -90,7 +95,7 @@ public:
 
 #ifndef SIRKIT_LCA_LADDER_DEFINED
 #define SIRKIT_LCA_LADDER_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 class AncestorLadder {
     struct Position { std::uint32_t begin; std::uint32_t index; };
     std::vector<Position> positions_;
@@ -180,7 +185,7 @@ class LCA {
     std::unique_ptr<int[]> up_;
     struct DeepQueryData {
         std::vector<std::uint32_t> rmq_storage;
-        reinsirk::detail::AncestorLadder ladder;
+        /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::AncestorLadder ladder;
     };
     std::shared_ptr<const DeepQueryData> deep_;
     std::size_t block_count_ = 0;
@@ -485,8 +490,8 @@ public:
     }
 
     LCA(int n, std::span<const std::pair<int,int>> edges, int root = 0) {
-        reinsirk::detail::LcaCsrGraph graph(n, edges);
-        build_impl<reinsirk::detail::LcaCsrGraph, true>(graph, root);
+        /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::LcaCsrGraph graph(n, edges);
+        build_impl</*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::LcaCsrGraph, true>(graph, root);
     }
 
     LCA(const LCA& other)
@@ -650,6 +655,13 @@ public:
 
 #endif
 
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
+
+
+namespace sirkit {}
+using namespace sirkit;
 
 // SPDX-License-Identifier: CC0-1.0
 // Verify I/O: Verify/current/common/fast_io.hpp

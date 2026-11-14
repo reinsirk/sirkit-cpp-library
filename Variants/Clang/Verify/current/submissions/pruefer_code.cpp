@@ -26,6 +26,8 @@
 // encodeの検査は次数構築・葉除去中に行う。未参照の入力を検査できるとは保証しない。
 // 次数列の実現可能性と件数の表現上限は検査省略時も判定する。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <cstddef>
 #include <cstdint>
 #include <limits>
@@ -35,6 +37,9 @@
 #include <utility>
 #include <vector>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_PRUEFER_DEGREES_DEFINED
 #define SIRKIT_PRUEFER_DEGREES_DEFINED
 inline std::vector<int> pruefer_degrees(int n, std::span<const int> code) {
@@ -238,6 +243,13 @@ inline std::optional<std::vector<std::pair<int, int>>> complete_tree_with_degree
 }
 #endif
 
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
+
+
+namespace sirkit {}
+using namespace sirkit;
 
 // SPDX-License-Identifier: CC0-1.0
 // Verify I/O: Verify/current/common/fast_io.hpp

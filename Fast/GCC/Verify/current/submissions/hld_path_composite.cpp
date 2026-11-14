@@ -60,6 +60,8 @@
 // path_apply(u,v,range,f,edges=false)/subtree_apply(v,range,f,edges=false): range.apply(l,r,f)で更新。O(log N)/1回。
 // prod/applyのrangeは同じDFS添字順で用意する。path_prod/path_applyは同じ木が前提、検査時は別木を例外。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <array>
 #include <concepts>
@@ -74,6 +76,9 @@
 #include <utility>
 #include <vector>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_UNWEIGHTED_GRAPH_DEFINED
 #define SIRKIT_UNWEIGHTED_GRAPH_DEFINED
 using Graph = std::vector<std::vector<int>>;
@@ -81,7 +86,7 @@ using Graph = std::vector<std::vector<int>>;
 
 #ifndef SIRKIT_HLD_QUERY_HELPERS_DEFINED
 #define SIRKIT_HLD_QUERY_HELPERS_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 template<class T, bool = std::is_integral_v<T> && !std::is_same_v<T,bool>>
 struct HldArithmetic {
     static T add(const T& a,const T& b) { return a+b; }
@@ -286,37 +291,37 @@ public:
         for(int i:index_) result.push_back(values[i]);
         return result;
     }
-    template<class Identity,class Q,class Op> requires reinsirk::detail::HldProduct<Identity,Q,Op>
+    template<class Identity,class Q,class Op> requires /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::HldProduct<Identity,Q,Op>
     auto path_prod(int u,int v,Identity&& identity,Q&& query,Op&& op,bool edges=false) const {
-        if constexpr(reinsirk::detail::hld_directional_query<Q>) {
+        if constexpr(/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::hld_directional_query<Q>) {
             return path_prod(u,v,std::forward<Identity>(identity),std::forward<Q>(query),std::forward<Op>(op),std::identity{},edges);
         } else {
             const bool connected=same_component(u,v);
-            using Value=reinsirk::detail::HldQueryValue<Q>;
+            using Value=/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::HldQueryValue<Q>;
             Value result(std::forward<Identity>(identity));
             if(!connected) return result;
             // 可換積では通行順の保存を省き、両端から直接結合する。
             while(head_[u]!=head_[v]) {
                 if(index_[u]<index_[v]) std::swap(u,v);
-                result=std::invoke(op,std::move(result),reinsirk::detail::hld_query(query,index_[head_[u]],index_[u]+1));
+                result=std::invoke(op,std::move(result),/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::hld_query(query,index_[head_[u]],index_[u]+1));
                 u=parent_[head_[u]];
             }
             if(index_[u]>index_[v]) std::swap(u,v);
             const int left=index_[u]+static_cast<int>(edges),right=index_[v]+1;
-            if(left<right) result=std::invoke(op,std::move(result),reinsirk::detail::hld_query(query,left,right));
+            if(left<right) result=std::invoke(op,std::move(result),/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::hld_query(query,left,right));
             return result;
         }
     }
-    template<class Identity,class Q,class Op,class Reverse> requires reinsirk::detail::HldReversedProduct<Identity,Q,Op,Reverse>
+    template<class Identity,class Q,class Op,class Reverse> requires /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::HldReversedProduct<Identity,Q,Op,Reverse>
     auto path_prod(int u,int v,Identity&& identity,Q&& query,Op&& op,Reverse&& reverse,bool edges=false) const {
-        using Value=reinsirk::detail::HldQueryValue<Q>;
+        using Value=/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::HldQueryValue<Q>;
         const bool connected=same_component(u,v);
         Value empty_result(std::forward<Identity>(identity));
         if(!connected) return empty_result;
         std::optional<Value> from_u,from_v;
         const auto read=[&](int l,int r,bool rev) -> Value {
-            Value part=reinsirk::detail::hld_query(query,l,r,rev);
-            if constexpr(!reinsirk::detail::hld_directional_query<Q>) if(rev) part=std::invoke(reverse,std::move(part));
+            Value part=/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::hld_query(query,l,r,rev);
+            if constexpr(!/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::hld_directional_query<Q>) if(rev) part=std::invoke(reverse,std::move(part));
             return part;
         };
         const auto append=[&](Value part) {
@@ -349,7 +354,7 @@ public:
     template<class Range> requires (requires(Range& r){r.sum(0,0);} && !requires(Range& r){r.prod(0,0);})
     auto path_prod(int u,int v,Range& range,bool edges=false) const {
         using Value=std::remove_cvref_t<decltype(range.sum(0,0))>;
-        return path_prod(u,v,Value{},range,[](const Value& a,const Value& b){return reinsirk::detail::HldArithmetic<Value>::add(a,b);},edges);
+        return path_prod(u,v,Value{},range,[](const Value& a,const Value& b){return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::HldArithmetic<Value>::add(a,b);},edges);
     }
     template<template<class,auto,auto> class R,class S,auto Op,auto E>
     S path_prod(int u,int v,const R<S,Op,E>& range,bool edges=false) const {
@@ -369,9 +374,9 @@ public:
     S path_prod(int u,int v,R<S,Op,E,F,M,C,I>& range,Reverse&& reverse,bool edges=false) const {
         return path_prod(u,v,std::invoke(E),range,Op,std::forward<Reverse>(reverse),edges);
     }
-    template<class Q> requires reinsirk::detail::HldQuery<Q>
+    template<class Q> requires /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::HldQuery<Q>
     auto subtree_prod(int v,Q&& query,bool edges=false) const {
-        auto[l,r]=subtree_range(v,edges);return reinsirk::detail::hld_query(query,l,r);
+        auto[l,r]=subtree_range(v,edges);return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::hld_query(query,l,r);
     }
     template<class Range,class F> void path_apply(int u,int v,Range& range,const F f,bool edges=false) const {
         for_each_path(u,v,[&](int l,int r,bool){range.apply(l,r,f);},edges);
@@ -388,7 +393,7 @@ public:
 
 #ifndef SIRKIT_HLD_OWNED_RANGE_TRAITS_DEFINED
 #define SIRKIT_HLD_OWNED_RANGE_TRAITS_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 template<class Range> struct HldOwnedRangeTraits {
     using Value=HldQueryValue<Range>;
     static Value identity() {return Value{};}
@@ -411,7 +416,7 @@ struct HldOwnedRangeTraits<R<S,Op,E,F,M,C,I>> {
 
 #ifndef SIRKIT_HLD_SEGMENT_ACCESS_DEFINED
 #define SIRKIT_HLD_SEGMENT_ACCESS_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 template<class Range> struct HldSegmentAccess {
     static constexpr bool enabled=[] {
         if constexpr(requires {typename Range::HldSegmentTag;}) {
@@ -426,7 +431,7 @@ template<class Range> struct HldSegmentAccess {
 #ifndef SIRKIT_HEAVY_LIGHT_VALUES_DEFINED
 #define SIRKIT_HEAVY_LIGHT_VALUES_DEFINED
 template<class Range,bool Ordered> class HeavyLightValues {
-    using Traits=reinsirk::detail::HldOwnedRangeTraits<Range>;
+    using Traits=/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::HldOwnedRangeTraits<Range>;
 public:
     using value_type=typename Traits::Value;
 private:
@@ -460,14 +465,14 @@ private:
     }
     static void range_set(Range& range,int p,const value_type& x) {
         if constexpr(requires {range.set(p,x);}) range.set(p,x);
-        else range.add(p,reinsirk::detail::HldArithmetic<value_type>::subtract(x,range_get(range,p)));
+        else range.add(p,/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::HldArithmetic<value_type>::subtract(x,range_get(range,p)));
     }
     void check_vertex(int v) const {(void)layout().index(v);}
     static value_type range_query(Range& range,int l,int r) {
         // 所有BITの一点区間は、二つの累積和を求めず直接読む。
         if constexpr(requires {range.sum(l,r);range.get(l);} && !requires {range.prod(l,r);})
             if(r-l==1) return range.get(l);
-        return reinsirk::detail::hld_query(range,l,r);
+        return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::hld_query(range,l,r);
     }
     value_type query(int l,int r,bool reverse) {
         if constexpr(Ordered) if(reverse) return range_query(*state_->backward,size()-r,size()-l);
@@ -569,6 +574,10 @@ template<class Range,bool Ordered,class T>
 HeavyLightValues<Range,Ordered> HeavyLightDecomposition::with_values(const std::vector<T>& values) && {return HeavyLightValues<Range,Ordered>(std::move(*this),values);}
 #endif
 
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
+
 
 // Library: DataStructure/Segment_Tree.cpp
 // SPDX-License-Identifier: CC0-1.0
@@ -582,7 +591,7 @@ HeavyLightValues<Range,Ordered> HeavyLightDecomposition::with_values(const std::
 // API一覧
 // 速度優先版: 内部の主要領域は破棄・解放しない。格納型のデストラクタの副作用を必要としないこと。
 // 入力・容量・件数の前提と確保成功を利用側が保証する。例外時の状態復元は保証しない。
-// [segtree<S, op, e>（ACL形式、グローバルに定義）]
+// [segtree<S, op, e>（ACL形式、sirkit内に定義）]
 // segtree()/segtree(int n)/segtree(vector<S>): 空列/n個の単位元/列から構築。0<=n<=INT_MAX、O(n+1)時間・領域。
 // S op(S,S)は結合的、S e()は左右の単位元。同じ呼び出し形式の関数オブジェクトも可。演算/コピーはO(1)。
 // 点添字は0<=p<size()、区間は0<=l<=r<=size()の半開区間。
@@ -595,6 +604,8 @@ HeavyLightValues<Range,Ordered> HeavyLightDecomposition::with_values(const std::
 // values(): 列のコピー、O(n+1)。assign(vector<S>)/reset(int n)/reset(): 列/n個/現在の長さの単位元へ再構築、O(旧n+n+1)。
 // clear()/swap(other): 容量を保持して空へ/交換、O(旧n+1)/O(1)。コピーは独立、移動元は空。値の演算等が投げる場合は内容の強い保証なし。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <cstddef>
 #include <iterator>
@@ -604,9 +615,12 @@ HeavyLightValues<Range,Ordered> HeavyLightDecomposition::with_values(const std::
 #include <utility>
 #include <vector>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_FAST_BUFFER_DEFINED
 #define SIRKIT_FAST_BUFFER_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 template <class T>
 class FastBuffer {
     T* data_ = nullptr;
@@ -722,19 +736,73 @@ public:
 }
 #endif
 
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <algorithm>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <bit>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <cstddef>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <functional>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <limits>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <stdexcept>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <type_traits>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <utility>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <vector>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 
 #ifndef SIRKIT_HLD_SEGMENT_ACCESS_FORWARD_DEFINED
 #define SIRKIT_HLD_SEGMENT_ACCESS_FORWARD_DEFINED
-namespace reinsirk::detail { template<class Range> struct HldSegmentAccess; }
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ { template<class Range> struct HldSegmentAccess; }
 #endif
 
 #ifndef SIRKIT_SEGMENT_TREE_DEFINED
@@ -744,10 +812,10 @@ class segtree {
     static_assert(std::is_invocable_r_v<S, decltype(op), S, S>, "segtree: op(S,S) must return S");
     static_assert(std::is_invocable_r_v<S, decltype(e)>, "segtree: e() must return S");
     using HldSegmentTag = void;
-    template<class> friend struct reinsirk::detail::HldSegmentAccess;
+    template<class> friend struct /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::HldSegmentAccess;
     S identity_;
     std::size_t n_ = 0, base_ = 1;
-    reinsirk::detail::FastBuffer<S> data_;
+    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::FastBuffer<S> data_;
     static std::size_t leaf_base(std::size_t n) {
         if (n == 0) return 1;
         const auto limit = std::vector<S>{}.max_size() / 2;
@@ -966,6 +1034,13 @@ public:
 };
 #endif
 
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
+
+
+namespace sirkit {}
+using namespace sirkit;
 
 // SPDX-License-Identifier: CC0-1.0
 // Verify I/O: Verify/current/common/fast_io.hpp

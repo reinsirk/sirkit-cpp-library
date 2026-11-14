@@ -4,6 +4,8 @@
 #include <cstdint>
 #include <iostream>
 #include <vector>
+
+using namespace sirkit;
 int main() {
     const auto fibonacci=BerlekampMassey(std::vector<std::uint32_t>{0,1,1,2,3,5,8,13});
     for(auto x:fibonacci)std::cout<<x<<' '; // 1 1

@@ -3,6 +3,8 @@
 #include <iostream>
 #include <cstdint>
 
+using namespace sirkit;
+
 int main()
 {
     CompressedBinaryTrie<std::uint32_t> trie; // 既定で32bit。30bitに絞るならCompressedBinaryTrie<std::uint32_t, 29>。

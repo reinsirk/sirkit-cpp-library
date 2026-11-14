@@ -47,6 +47,8 @@
 // lc_inf<T>(): 整数では最大値、浮動小数点では正の無限大を返す。
 // lc_div(a,b): 整数は床除算、浮動小数点は通常除算。0除算・整数結果の範囲外は例外。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
@@ -59,6 +61,9 @@
 #include <type_traits>
 #include <utility>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_LINE_CONTAINER_DEFINED
 #define SIRKIT_LINE_CONTAINER_DEFINED
 
@@ -88,7 +93,7 @@ T lc_div(T a, T b) {
   } else return a / b;
 }
 
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 template <typename T, Objective objective>
 struct LineComparator {
   using is_transparent = void;
@@ -102,11 +107,11 @@ struct LineComparator {
 }  // namespace reinsirk::detail
 
 template <typename T, Objective objective>
-struct LineContainer : std::multiset<Line<T>, reinsirk::detail::LineComparator<T, objective>> {
+struct LineContainer : std::multiset<Line<T>, /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::LineComparator<T, objective>> {
   static_assert((std::is_integral_v<T> && std::is_signed_v<T> && sizeof(T) <= 8) ||
                 std::is_floating_point_v<T>);
   static_assert(objective == MAXIMIZE || objective == MINIMIZE);
-  using super = std::multiset<Line<T>, reinsirk::detail::LineComparator<T, objective>>;
+  using super = std::multiset<Line<T>, /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::LineComparator<T, objective>>;
   using super::begin, super::end, super::insert, super::erase;
   using super::empty, super::lower_bound;
   static constexpr T inf = lc_inf<T>();
@@ -426,7 +431,7 @@ struct LineContainer2D {
   using ld = long double;
   using ll = std::int64_t;
   struct Result { ld value, x, y; };
-  static constexpr ld INF = 4.1e18L;
+  static constexpr ld kInf = 4.1e18L;
   static constexpr ll INTEGER_LIMIT = 4'100'000'000'000'000'000;
   ld Xmax = -std::numeric_limits<ld>::infinity();
   ld Xmin = std::numeric_limits<ld>::infinity();
@@ -639,7 +644,7 @@ struct LineContainer2D {
     return std::ldexp(sa * sx + sb * sy, e1 + e2);
   }
   static ll to_rounded_integer(ld value) {
-    const ld limited = std::clamp(value, -INF, INF);
+    const ld limited = std::clamp(value, -kInf, kInf);
     const ll integral = static_cast<ll>(limited);
     const ld fraction = limited - ld(integral);
     return integral + (fraction >= 0.5L) - (fraction <= -0.5L);
@@ -858,8 +863,8 @@ struct LineContainer2D {
     return -max_ld(-a,-b);
 #endif
   }
-  ll max_ll(ll a, ll b) const { return static_cast<ll>(std::clamp(integer_value<false>(a, b), -INF, INF)); }
-  ll min_ll(ll a, ll b) const { return static_cast<ll>(std::clamp(integer_value<true>(a, b), -INF, INF)); }
+  ll max_ll(ll a, ll b) const { return static_cast<ll>(std::clamp(integer_value<false>(a, b), -kInf, kInf)); }
+  ll min_ll(ll a, ll b) const { return static_cast<ll>(std::clamp(integer_value<true>(a, b), -kInf, kInf)); }
   ll max_rounded_ll(ll a, ll b) const { return to_rounded_integer(integer_value<false>(a, b)); }
   ll min_rounded_ll(ll a, ll b) const { return to_rounded_integer(integer_value<true>(a, b)); }
   Result max_with_point(ld a, ld b) const {
@@ -910,6 +915,13 @@ struct LineContainer2D {
 };
 #endif
 
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
+
+
+namespace sirkit {}
+using namespace sirkit;
 
 // SPDX-License-Identifier: CC0-1.0
 #include <cstdint>

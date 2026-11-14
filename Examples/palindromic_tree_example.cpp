@@ -2,6 +2,8 @@
 #include <cstdint>
 #include <iostream>
 #include "../String/Palindromic_Tree.cpp"
+
+using namespace sirkit;
 int main(){
  PalindromicTree<>tree("ababa");std::cout<<tree.distinct_palindrome_count()<<' '<<tree.longest_suffix_length()<<' '<<tree.occurrences("aba")<<'\n'; // 5 5 2
  auto longest=tree.longest_palindrome();std::cout<<longest.start<<' '<<longest.length<<'\n'; // 0 5

@@ -4,6 +4,8 @@
 #include <cstdint>
 #include <iostream>
 
+using namespace sirkit;
+
 int main() {
     using UnionFind = RollbackWeightedUnionFind<std::int64_t>;
     UnionFind uf(4);

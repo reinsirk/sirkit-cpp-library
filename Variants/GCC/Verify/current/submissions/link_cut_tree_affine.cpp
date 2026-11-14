@@ -34,6 +34,8 @@
 // 値/Actionの失敗後も安全に破棄できること。外部状態は巻き戻さない。値/Actionはcopyable、設定はmove_constructibleで破棄はnoexcept。
 // 添字検査だけをSKIP_RUNTIME_CHECKSで除く。容量・添字表現の上限、接続/辺/順位の戻り値、例外後の無効化は常に維持。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <concepts>
 #include <cstddef>
 #include <cstdint>
@@ -47,9 +49,12 @@
 #include <utility>
 #include <vector>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_LINK_CUT_TREE_SUPPORT_DEFINED
 #define SIRKIT_LINK_CUT_TREE_SUPPORT_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 struct NoLinkCutAction {};
 template<class T> struct NoLinkCutMapping {
     T operator()(NoLinkCutAction, const T& value, std::size_t) const { return value; }
@@ -65,13 +70,13 @@ template<class Action> struct LinkCutLazyState<Action, false> {};
 #ifndef SIRKIT_LINK_CUT_TREE_DEFINED
 #define SIRKIT_LINK_CUT_TREE_DEFINED
 template<class T = std::int64_t, class Op = std::plus<T>,
-         class Action = reinsirk::detail::NoLinkCutAction,
-         class Mapping = reinsirk::detail::NoLinkCutMapping<T>,
-         class Composition = reinsirk::detail::NoLinkCutComposition>
+         class Action = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::NoLinkCutAction,
+         class Mapping = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::NoLinkCutMapping<T>,
+         class Composition = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::NoLinkCutComposition>
 class LinkCutTree {
-    static constexpr bool has_action = !std::is_same_v<Action, reinsirk::detail::NoLinkCutAction>;
+    static constexpr bool has_action = !std::is_same_v<Action, /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::NoLinkCutAction>;
     static_assert(std::copyable<T>);
-    static_assert(has_action || (std::is_same_v<Mapping, reinsirk::detail::NoLinkCutMapping<T>> && std::is_same_v<Composition, reinsirk::detail::NoLinkCutComposition>), "LinkCutTree: specify Action with Mapping/Composition");
+    static_assert(has_action || (std::is_same_v<Mapping, /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::NoLinkCutMapping<T>> && std::is_same_v<Composition, /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::NoLinkCutComposition>), "LinkCutTree: specify Action with Mapping/Composition");
     static_assert(std::move_constructible<Op> && std::move_constructible<Mapping> && std::move_constructible<Composition>);
     static_assert(std::is_invocable_r_v<T, const Op&, const T&, const T&>);
     static_assert(!has_action || std::copyable<Action>);
@@ -90,7 +95,7 @@ class LinkCutTree {
         bool reversed = false;
         std::size_t count = 1;
         T value, forward, backward;
-        [[no_unique_address]] reinsirk::detail::LinkCutLazyState<Action, has_action> lazy;
+        [[no_unique_address]] /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::LinkCutLazyState<Action, has_action> lazy;
         explicit Node(const T& input, std::size_t length = 1)
             : count(length), value(input), forward(input), backward(input) {}
     };
@@ -340,6 +345,13 @@ public:
 };
 #endif
 
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
+
+
+namespace sirkit {}
+using namespace sirkit;
 
 // SPDX-License-Identifier: CC0-1.0
 // Verify I/O: Verify/current/common/fast_io.hpp

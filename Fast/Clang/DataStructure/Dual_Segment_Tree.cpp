@@ -21,6 +21,8 @@
 // 操作中に値/作用/写像等が例外を送出したらusable()==false。論理状態は保証せず、reset/clear/代入で復旧するまで操作不可。
 // 失敗後もT/Actionを安全に破棄できること。値/作用/写像から同じ木へ再入しない。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <concepts>
 #include <cstddef>
 #include <functional>
@@ -33,6 +35,9 @@
 #include <utility>
 #include <vector>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_DUAL_SEGMENT_TREE_DEFINED
 #define SIRKIT_DUAL_SEGMENT_TREE_DEFINED
 template<class T, class Action, class Mapping, class Composition>
@@ -156,3 +161,7 @@ public:
     }
 };
 #endif
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1

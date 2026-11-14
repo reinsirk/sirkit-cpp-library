@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #ifndef HULL_HEADER
 #define HULL_HEADER "../../../Geometry/Polygon.cpp"
 #endif
@@ -69,15 +71,15 @@ template<class P> void equal(const std::vector<P>& got, const std::vector<P>& ex
 
 template<class P> void check(std::vector<P> points) {
     const auto want = reference(points);
-    equal(geo::convex_hull(points), want, "gift wrapping");
+    equal(::sirkit::geo::convex_hull(points), want, "gift wrapping");
 #ifdef TEST_SORTED_HULL
     std::sort(points.begin(), points.end());
     equal(convex_hull_sorted(points), want, "sorted gift wrapping");
 #endif
 }
 
-template<class P> void float_check(std::vector<P> points, const std::vector<P>& want, geo::Epsilon eps, const char* tag) {
-    equal(geo::convex_hull(points,eps), want, tag);
+template<class P> void float_check(std::vector<P> points, const std::vector<P>& want, ::sirkit::geo::Epsilon eps, const char* tag) {
+    equal(::sirkit::geo::convex_hull(points,eps), want, tag);
 #ifdef TEST_SORTED_HULL
     std::sort(points.begin(),points.end());
     equal(convex_hull_sorted(points,eps), want, tag);
@@ -85,15 +87,15 @@ template<class P> void float_check(std::vector<P> points, const std::vector<P>& 
 }
 
 void float_tests() {
-    using P = geo::Point<double>;
+    using P = ::sirkit::geo::Point<double>;
     const std::vector<P> line{{0,0},{1,1e-9},{2,0},{1,1e-9}};
-    float_check(line, std::vector<P>{{0,0},{2,0}}, geo::Epsilon{1e-8L,0}, "absolute epsilon line");
-    float_check(line, std::vector<P>{{0,0},{2,0},{1,1e-9}}, geo::Epsilon{1e-12L,0}, "absolute epsilon triangle");
-    float_check(std::vector<P>{{0,0},{1e6,1e6},{2e6,2e6+1}}, std::vector<P>{{0,0},{2e6,2e6+1}}, geo::Epsilon{0,1e-6L}, "relative epsilon line");
-    float_check(std::vector<P>{{0,0},{1e6,1e6},{2e6,2e6+1}}, std::vector<P>{{0,0},{1e6,1e6},{2e6,2e6+1}}, geo::Epsilon{0,1e-10L}, "relative epsilon triangle");
+    float_check(line, std::vector<P>{{0,0},{2,0}}, ::sirkit::geo::Epsilon{1e-8L,0}, "absolute epsilon line");
+    float_check(line, std::vector<P>{{0,0},{2,0},{1,1e-9}}, ::sirkit::geo::Epsilon{1e-12L,0}, "absolute epsilon triangle");
+    float_check(std::vector<P>{{0,0},{1e6,1e6},{2e6,2e6+1}}, std::vector<P>{{0,0},{2e6,2e6+1}}, ::sirkit::geo::Epsilon{0,1e-6L}, "relative epsilon line");
+    float_check(std::vector<P>{{0,0},{1e6,1e6},{2e6,2e6+1}}, std::vector<P>{{0,0},{1e6,1e6},{2e6,2e6+1}}, ::sirkit::geo::Epsilon{0,1e-10L}, "relative epsilon triangle");
     std::mt19937_64 rng(0xF10A7);
     for (int rep = 0; rep < 500; ++rep) {
-        std::vector<geo::PointI> ints;
+        std::vector<::sirkit::geo::PointI> ints;
         std::vector<P> doubles;
         for (int i = 0, n = int(rng()%50); i < n; ++i) {
             const auto x = std::int64_t(rng()%2001)-1000, y = std::int64_t(rng()%2001)-1000;
@@ -101,10 +103,10 @@ void float_tests() {
         }
         std::vector<P> want;
         for (const auto& p : reference(ints)) want.push_back({double(p.x)/16,double(p.y)/16});
-        float_check(doubles, want, geo::Epsilon{}, "binary exact double");
+        float_check(doubles, want, ::sirkit::geo::Epsilon{}, "binary exact double");
     }
-    using L = geo::Point<long double>;
-    float_check(std::vector<L>{{0,0},{1,0},{1,1},{0,1},{0.5L,0.5L}}, std::vector<L>{{0,0},{1,0},{1,1},{0,1}}, geo::Epsilon{}, "long double square");
+    using L = ::sirkit::geo::Point<long double>;
+    float_check(std::vector<L>{{0,0},{1,0},{1,1},{0,1},{0.5L,0.5L}}, std::vector<L>{{0,0},{1,0},{1,1},{0,1}}, ::sirkit::geo::Epsilon{}, "long double square");
 }
 
 void radix_histogram_boundaries() {
@@ -113,7 +115,7 @@ void radix_histogram_boundaries() {
         {255,0xFFFFFF},{0xFFFF,0xFFFFFF},{0xFFFFFF,0xFFFFFF},
         {0xFFFFFF,0xFFFFFFFF},{0x7FFFFFFF,0x7FFFFFFF}}) {
         for (const std::size_t n : {16383U,16384U,16385U}) {
-            std::vector<geo::PointI> points{{0,0},{sx,0},{sx,sy},{0,sy}};
+            std::vector<::sirkit::geo::PointI> points{{0,0},{sx,0},{sx,sy},{0,sy}};
             for (std::size_t i=4;i<n;++i)
                 points.push_back({std::int64_t(rng()%std::uint64_t(sx+1)),
                                   std::int64_t(rng()%std::uint64_t(sy+1))});
@@ -124,7 +126,7 @@ void radix_histogram_boundaries() {
 }
 
 void large_tests() {
-    using P = geo::PointI;
+    using P = ::sirkit::geo::PointI;
     constexpr std::int64_t bound = 1000000000;
     std::mt19937_64 rng(0x64B17);
     for (std::size_t n : {2047U,2048U,2049U,4095U,4096U,4097U,16383U,16384U,16385U,65536U}) {
@@ -136,11 +138,11 @@ void large_tests() {
         }
         std::shuffle(points.begin(),points.end(),rng);
         check(points);
-        std::vector<geo::Point<double>> real;
+        std::vector<::sirkit::geo::Point<double>> real;
         for (const auto& p : points) real.push_back({double(p.x),double(p.y)});
-        std::vector<geo::Point<double>> want;
+        std::vector<::sirkit::geo::Point<double>> want;
         for (const auto& p : reference(points)) want.push_back({double(p.x),double(p.y)});
-        float_check(real,want,geo::Epsilon{0,0}, "billion integer/double");
+        float_check(real,want,::sirkit::geo::Epsilon{0,0}, "billion integer/double");
         // 絶対値が大きくても差が小さい。標準64 bitの積・外積にも収まる。
         constexpr auto hi = std::numeric_limits<std::int64_t>::max()-bound;
         constexpr auto lo = std::numeric_limits<std::int64_t>::min()+bound;
@@ -169,7 +171,7 @@ void large_tests() {
         if (!threw) { std::cerr << "unsorted integer input did not throw invalid_argument\n"; std::abort(); }
     }
     bool threw = false;
-    try { (void)convex_hull_sorted(std::vector<geo::Point<double>>{{1,0},{0,0}},geo::Epsilon{1e-8L,0}); } catch (const std::invalid_argument&) { threw = true; }
+    try { (void)convex_hull_sorted(std::vector<::sirkit::geo::Point<double>>{{1,0},{0,0}},::sirkit::geo::Epsilon{1e-8L,0}); } catch (const std::invalid_argument&) { threw = true; }
     ++checks;
     if (!threw) { std::cerr << "unsorted double input did not throw invalid_argument\n"; std::abort(); }
 #endif
@@ -179,7 +181,7 @@ void large_tests() {
 int main() {
     radix_histogram_boundaries();
     std::mt19937_64 rng(0xB2B8C4);
-    using P = geo::PointI;
+    using P = ::sirkit::geo::PointI;
     for (unsigned mask = 0; mask < 512; ++mask) {
         std::vector<P> points;
         for (unsigned i = 0; i < 9; ++i) if ((mask>>i)&1) points.push_back({int(i%3)-1,int(i/3)-1});
@@ -219,7 +221,7 @@ int main() {
     }
 #endif
     // 入力型が32 bitでも差が32 bitを超えるケース。
-    using Q = geo::Point<std::int32_t,std::int64_t>;
+    using Q = ::sirkit::geo::Point<std::int32_t,std::int64_t>;
     check(std::vector<Q>{{-2000000000,0},{2000000000,0},{0,1},{0,-1}});
     float_tests();
     large_tests();

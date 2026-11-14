@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #ifndef SIRKIT_TWO_SAT_TEST_SOURCE
 #define SIRKIT_TWO_SAT_TEST_SOURCE "../../../Graph/Two_SAT.cpp"
 #endif

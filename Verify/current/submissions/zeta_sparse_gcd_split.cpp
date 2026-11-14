@@ -26,6 +26,8 @@
 // sparse_multiple_zeta_transform(f,sieve): 正で一意なkeyの全約数を含むfをkey昇順にし、各値を倍数和へ置換。key<=sieve.max_value()、Valは+=対応。O((m+r)log(m+1))時間、O(m+r)補助領域。
 // sparse_multiple_mobius_transform(f,sieve): 正で一意なkeyの全約数を含むfをkey昇順にし、倍数和の逆変換を実行。key<=sieve.max_value()、Valは-=対応。O((m+r)log(m+1))時間、O(m+r)補助領域。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <array>
 #include <bit>
@@ -39,6 +41,9 @@
 #include <utility>
 #include <vector>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_INTEGER_SIEVE_DEFINED
 #define SIRKIT_INTEGER_SIEVE_DEFINED
 struct IntegerSieve {
@@ -288,7 +293,7 @@ private:
 
 #ifndef SIRKIT_INTERNAL_SPARSE_INTEGER_TRANSFORM_DEFINED
 #define SIRKIT_INTERNAL_SPARSE_INTEGER_TRANSFORM_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 // 内部用。密な範囲は位置配列、疎な範囲は素数別の伝播列を使う。
 template <bool Inverse, std::integral Int, class Val>
 void sparse_integer_transform(std::vector<std::pair<Int, Val>>& f,
@@ -526,7 +531,7 @@ void sparse_integer_transform(std::vector<std::pair<Int, Val>>& f,
 template <std::integral Int, class Val>
 void sparse_multiple_zeta_transform(std::vector<std::pair<Int, Val>>& f,
                               const IntegerSieve& sieve) {
-    reinsirk::detail::sparse_integer_transform<false>(f, sieve);
+    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::sparse_integer_transform<false>(f, sieve);
 }
 #endif
 
@@ -535,10 +540,17 @@ void sparse_multiple_zeta_transform(std::vector<std::pair<Int, Val>>& f,
 template <std::integral Int, class Val>
 void sparse_multiple_mobius_transform(std::vector<std::pair<Int, Val>>& f,
                                  const IntegerSieve& sieve) {
-    reinsirk::detail::sparse_integer_transform<true>(f, sieve);
+    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::sparse_integer_transform<true>(f, sieve);
 }
 #endif
 
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
+
+
+namespace sirkit {}
+using namespace sirkit;
 
 // SPDX-License-Identifier: CC0-1.0
 // Verify I/O: Verify/current/common/fast_io.hpp

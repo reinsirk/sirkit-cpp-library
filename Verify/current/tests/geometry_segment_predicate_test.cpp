@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #ifndef SIRKIT_SEGMENT_TEST_HEADER
 #define SIRKIT_SEGMENT_TEST_HEADER "../../../Geometry/Line_Segment.cpp"
 #endif
@@ -36,13 +38,13 @@ template<class P>bool valid(const P& a,const P& b,const P& c){
     for(const Big& x:std::array<Big,6>{u.x,u.y,v.x,v.y,u.x*v.y,u.y*v.x})if(x<lo||x>hi)return false;
     return true;
 }
-template<class T,class C>void check(geo::Segment<T,C> s,geo::Segment<T,C> t){
+template<class T,class C>void check(::sirkit::geo::Segment<T,C> s,::sirkit::geo::Segment<T,C> t){
     if(!valid(s.a,s.b,t.a)||!valid(s.a,s.b,t.b)||!valid(t.a,t.b,s.a)||!valid(t.a,t.b,s.b)){++outside_contract;return;}
     const bool want=reference(s.a,s.b,t.a,t.b);
-    require(geo::intersects(s,t)==want);require(geo::intersects(t,s)==want);
+    require(::sirkit::geo::intersects(s,t)==want);require(::sirkit::geo::intersects(t,s)==want);
 }
-template<class T,class C=geo::DefaultCalc<T>>void integers(){
-    using P=geo::Point<T,C>;using S=geo::Segment<T,C>;
+template<class T,class C=::sirkit::geo::DefaultCalc<T>>void integers(){
+    using P=::sirkit::geo::Point<T,C>;using S=::sirkit::geo::Segment<T,C>;
     std::vector<P> grid;for(int x=-1;x<=1;++x)for(int y=-1;y<=1;++y)grid.push_back({T(x),T(y)});
     for(const P& a:grid)for(const P& b:grid)for(const P& c:grid)for(const P& d:grid)check(S{a,b},S{c,d});
     std::mt19937_64 rng(8291+sizeof(T));
@@ -62,8 +64,8 @@ template<class T,class C=geo::DefaultCalc<T>>void integers(){
     for(const auto& s:edges)for(const auto& t:edges)check(s,t);
 }
 template<class T>void floating(){
-    using P=geo::Point<T>;using S=geo::Segment<T>;
-    using I=geo::Point<std::int64_t>;
+    using P=::sirkit::geo::Point<T>;using S=::sirkit::geo::Segment<T>;
+    using I=::sirkit::geo::Point<std::int64_t>;
     std::mt19937_64 rng(0xF10A7);
     for(int i=0;i<10000;++i){
         std::array<I,4> a;for(auto& p:a)p={std::int64_t(rng()%2047)-1023,std::int64_t(rng()%2047)-1023};
@@ -72,13 +74,13 @@ template<class T>void floating(){
         if(i%13==0)a[2]=a[1];
         auto real=[](const I& p){return P{T(p.x)/16,T(p.y)/16};};
         const S s{real(a[0]),real(a[1])},t{real(a[2]),real(a[3])};
-        require(geo::intersects(s,t,geo::Epsilon{0,0})==reference(a[0],a[1],a[2],a[3]));
+        require(::sirkit::geo::intersects(s,t,::sirkit::geo::Epsilon{0,0})==reference(a[0],a[1],a[2],a[3]));
     }
     const S horizontal{{0,0},{4,0}};
     for(const T delta:{T(1e-10),T(1e-6)}){
         const S near{{2,delta},{2,1}};
-        require(!geo::intersects(horizontal,near,geo::Epsilon{0,0}));
-        require(geo::intersects(horizontal,near,geo::Epsilon{1e-8L,0})==(delta<T(1e-8)));
+        require(!::sirkit::geo::intersects(horizontal,near,::sirkit::geo::Epsilon{0,0}));
+        require(::sirkit::geo::intersects(horizontal,near,::sirkit::geo::Epsilon{1e-8L,0})==(delta<T(1e-8)));
     }
 }
 }

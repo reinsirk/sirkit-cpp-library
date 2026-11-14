@@ -28,6 +28,8 @@
 // 自己辺/多重辺/循環は不可。既定では自己辺をadd時、循環を実際の探索中に検査する。
 // SKIP_RUNTIME_CHECKSで入力/結果の有無/森の検査を除く。内部の件数・添字上限は維持する。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <concepts>
 #include <cstddef>
@@ -39,6 +41,9 @@
 #include <utility>
 #include <vector>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_REROOTING_DP_DEFINED
 #define SIRKIT_REROOTING_DP_DEFINED
 template<class T>
@@ -177,3 +182,7 @@ public:
     void clear() noexcept { graph_.clear(); edges_.clear(); values_.clear(); messages_.clear(); ready_ = false; }
 };
 #endif
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1

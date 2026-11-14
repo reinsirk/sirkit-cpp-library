@@ -1,6 +1,6 @@
 # 内部整数ハッシュ表
 
-`reinsirk::detail::InternalHashMap<Key, Val, Packed, Denominator>`は動的BITと動的Union Findが共有する内部部品です。一般のキー、削除、反復子が必要なら[HashMap](hash_map.md)を使います。[使用例](../Examples/internal_hash_map_example.cpp)も参照してください。
+`sirkit::detail::InternalHashMap<Key, Val, Packed, Denominator>`は動的BITと動的Union Findが共有する内部部品です。一般のキー、削除、反復子が必要なら[HashMap](hash_map.md)を使います。[使用例](../Examples/internal_hash_map_example.cpp)も参照してください。
 
 キーはboolを除く64ビット以下の非修飾整数型です。値は既定構築・コピー代入可能である必要があり、表のコピーや`enumerate()`にはコピー構築も必要です。キー、値、占有情報を別々の配列に持ち、乗算ハッシュと線形探索を使います。ハッシュの係数はプロセス内で共有する時刻由来の奇数で、暗号学的な安全性はありません。
 

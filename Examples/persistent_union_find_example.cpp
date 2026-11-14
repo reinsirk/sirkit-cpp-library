@@ -5,6 +5,8 @@
 #include <vector>
 
 #include "../DataStructure/persistent-union-find.cpp"
+
+using namespace sirkit;
 int main() {
     PersistentUnionFind uf(5); auto initial = uf.get_root();
     assert(uf.unite(0, 1)); auto branch = uf.get_root();

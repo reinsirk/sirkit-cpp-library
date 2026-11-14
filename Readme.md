@@ -1,19 +1,25 @@
 # sirkit-cpp-library
 
+[![main向けPRのCI](https://github.com/reinsirk/sirkit-cpp-library/actions/workflows/verify.yml/badge.svg?event=pull_request)](https://github.com/reinsirk/sirkit-cpp-library/actions/workflows/verify.yml?query=event%3Apull_request)
+
 競技プログラミング向けのC++ライブラリ集です。
+
+CIバッジはVerify・ASan/UBSan・カバレッジ・通常版の作法検査・性能測定の実行結果です。[品質検査の説明](Document/ci_quality.md)を参照してください。検証件数・カバレッジ率・性能比はChecks／ActionsのSummaryで、オンラインACは下の表で確認できます。
 
 <!-- VERIFY_STATUS:START -->
 [Verify状況の一覧](Verify/current/status.md)（通常版の現行ソースと保存した判定を照合）
 
 | 提出先 | 対象 | 現行AC | 現行未照合・要再提出 | 未提出 | 非AC |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| Library Checker | 125 | 4 | 64 | 57 | 0 |
+| Library Checker | 125 | 0 | 68 | 57 | 0 |
 | AtCoder | 50 | 0 | 34 | 16 | 0 |
 
 ローカル補足: 54件。過去のAC・ローカル結果は現行ACと区別します。
 <!-- VERIFY_STATUS:END -->
 
 各ソースの冒頭に、公開APIの引数・戻り値・計算量・前提をまとめています。詳しい説明は、その直上にあるDocumentへのリンクから参照できます。
+
+公開APIは`sirkit`名前空間内です。競プロ用mainでは`using namespace sirkit;`、名前を明示したいコードでは`sirkit::segtree`等で利用します。共有の無限大定数は`sirkit::kInf`です。
 
 ## ライブラリの配置とVerify
 
@@ -38,6 +44,8 @@ Library Checkerの提出コードはmain・入出力を含めてCodex、Claude�
 
 [コンパイラ別版](Variants/README.md)と[速度優先版](Fast/README.md)も用意しています。通常版との違い・利用前提・生成方法は[説明](Document/fast_variants.md)を参照してください。
 
+配布は[GitHub Releases](https://github.com/reinsirk/sirkit-cpp-library/releases)を利用します。
+
 必要なライブラリの読みやすい連結と、提出コードの容量確認には[連結ツール](Document/bundling.md)を使えます。
 
 先頭で次を定義すると、入力検査をコンパイル時に省けます。
@@ -45,6 +53,10 @@ Library Checkerの提出コードはmain・入出力を含めてCodex、Claude�
 ```cpp
 #define SKIP_RUNTIME_CHECKS
 ```
+
+## 開発支援
+
+実装・最適化・検証・ドキュメントの整備に、Codex（OpenAI）とClaude（Anthropic）を利用しています。
 
 ## License
 

@@ -3,6 +3,8 @@
 #include <cassert>
 #include <iostream>
 #include <string>
+
+using namespace sirkit;
 struct Concat {
     std::string operator()(const std::string& a, const std::string& b) const { return a + b; }
 };

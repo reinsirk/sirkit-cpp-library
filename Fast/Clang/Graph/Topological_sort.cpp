@@ -23,6 +23,8 @@
 // 頂点数INT_MAX、各入次数UINT32_MAXの容量制限は常時検査する。
 // SIRKIT_DISABLE_SIMD: 専用SIMD処理とCPU判定を除く。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <array>
 #include <bit>
@@ -37,6 +39,9 @@
 #include <immintrin.h>
 #endif
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_UNWEIGHTED_GRAPH_DEFINED
 #define SIRKIT_UNWEIGHTED_GRAPH_DEFINED
 using Graph = std::vector<std::vector<int>>;
@@ -54,7 +59,7 @@ struct TopologicalResult {
 
 #ifndef SIRKIT_TOPOLOGICAL_READY_MASK_DEFINED
 #define SIRKIT_TOPOLOGICAL_READY_MASK_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 inline std::uint64_t TopologicalReadyMask(const std::uint32_t* degree) {
     std::uint64_t mask = 0;
     for (unsigned i = 0; i < 64; ++i)
@@ -82,7 +87,7 @@ inline std::uint64_t TopologicalReadyMaskAvx2(const std::uint32_t* degree) {
 
 #ifndef SIRKIT_TOPOLOGICAL_CORE_DEFINED
 #define SIRKIT_TOPOLOGICAL_CORE_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 template <bool Lexicographical, bool Details, bool Bulk = false>
 inline TopologicalResult TopologicalRun(const Graph& graph) {
     const auto n = graph.size();
@@ -282,22 +287,26 @@ inline TopologicalResult TopologicalRun(const Graph& graph) {
 #ifndef SIRKIT_TOPOLOGICAL_SORT_DEFINED
 #define SIRKIT_TOPOLOGICAL_SORT_DEFINED
 inline std::vector<int> TopologicalSort(const Graph& graph) {
-    return reinsirk::detail::TopologicalRun<false, false>(graph).order;
+    return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::TopologicalRun<false, false>(graph).order;
 }
 #endif
 #ifndef SIRKIT_TOPOLOGICAL_SORT_LEXICOGRAPHICAL_DEFINED
 #define SIRKIT_TOPOLOGICAL_SORT_LEXICOGRAPHICAL_DEFINED
 inline std::vector<int> TopologicalSortLexicographical(const Graph& graph) {
-    return reinsirk::detail::TopologicalRun<true, false>(graph).order;
+    return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::TopologicalRun<true, false>(graph).order;
 }
 #endif
 #ifndef SIRKIT_TOPOLOGICAL_DETAILS_DEFINED
 #define SIRKIT_TOPOLOGICAL_DETAILS_DEFINED
 inline TopologicalResult TopologicalSortDetails(const Graph& graph, bool lexicographical = false) {
-    return lexicographical ? reinsirk::detail::TopologicalRun<true, true>(graph)
-                           : reinsirk::detail::TopologicalRun<false, true>(graph);
+    return lexicographical ? /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::TopologicalRun<true, true>(graph)
+                           : /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::TopologicalRun<false, true>(graph);
 }
 inline bool IsDAG(const Graph& graph) {
     return TopologicalSort(graph).size() == graph.size();
 }
 #endif
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1

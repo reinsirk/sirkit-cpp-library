@@ -54,6 +54,8 @@
 // intersection(l,m,eps): 非零長直線の交差種別と近似交点。O(1)。
 // intersection(s,t,eps): 閉線分の交点、または元の座標で辞書順に選んだ重なりの両端点。O(1)。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <array>
 #include <cmath>
@@ -69,6 +71,9 @@
 #include <utility>
 #include <vector>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_GEO_EPSILON_DEFINED
 #define SIRKIT_GEO_EPSILON_DEFINED
 namespace geo {
@@ -419,6 +424,13 @@ template<class T, class C> SegmentIntersection intersection(const Segment<T, C>&
 }
 #endif
 
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
+
+
+namespace sirkit {}
+using namespace sirkit;
 
 // SPDX-License-Identifier: CC0-1.0
 #include <algorithm>
@@ -434,12 +446,12 @@ template<class T, class C> SegmentIntersection intersection(const Segment<T, C>&
 #include <vector>
 
 int main() {
-    geo::Line<long double> line; std::cin >> line.a.x >> line.a.y >> line.b.x >> line.b.y;
+    ::sirkit::geo::Line<long double> line; std::cin >> line.a.x >> line.a.y >> line.b.x >> line.b.y;
     int q; std::cin >> q;
     std::cout << std::fixed << std::setprecision(12);
     while (q--) {
-        geo::PointLD p; std::cin >> p.x >> p.y;
-        const auto answer = geo::projection(p, line);
+        ::sirkit::geo::PointLD p; std::cin >> p.x >> p.y;
+        const auto answer = ::sirkit::geo::projection(p, line);
         std::cout << answer.x << ' ' << answer.y << '\n';
     }
 }

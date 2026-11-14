@@ -12,16 +12,18 @@
 // API一覧
 // [共通型・定数]
 // Edge(to,w): 行先toとint64_tの重みwを持つ有向辺。
-// WGraph: 出発点を隣接リストの添字とする辺列。INF=std::int64_t{1}<<60。
+// WGraph: 出発点を隣接リストの添字とする辺列。kInf=std::int64_t{1}<<60。
 //
 // [Bellman-Ford]
 // BellmanFord(graph, distances, start_index): 始点からの最短距離をdistancesに格納し、到達可能な負閉路があればtrueを返す。
 // SKIP_RUNTIME_CHECKSを定義すると入力検査を省く。
 // 検査は始点と処理中に参照する辺のみ。未到達頂点の出辺は走査しない。
-// 始点から到達できる負閉路があればtrue。未到達はINF、負閉路の影響下は-INF。
-// distancesは成功時に全上書き。有限距離が(-INF, INF)の範囲外ならoverflow_error。
+// 始点から到達できる負閉路があればtrue。未到達はkInf、負閉路の影響下は-kInf。
+// distancesは成功時に全上書き。有限距離が(-kInf, kInf)の範囲外ならoverflow_error。
 // 重みは[-1e9, 1e9]。O(VE+V+E)時間・O(V)追加領域。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <array>
 #include <cstddef>
@@ -33,9 +35,12 @@
 #include <type_traits>
 #include <vector>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_INF_DEFINED
 #define SIRKIT_INF_DEFINED
-inline constexpr std::int64_t INF = std::int64_t{1} << 60;
+inline constexpr std::int64_t kInf = std::int64_t{1} << 60;
 #endif
 
 #ifndef SIRKIT_GRAPH_TYPES_DEFINED
@@ -52,7 +57,7 @@ using WGraph = std::vector<std::vector<Edge>>;
 // 小規模・少数始点は隣接リストを走査し、多数パスでは更新頂点に処理を絞る。
 #ifndef SIRKIT_BELLMAN_FORD_DEFINED
 #define SIRKIT_BELLMAN_FORD_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 // 遅い反復だけを到達部分の強連結成分ごとに解く。追加領域O(V)。
 [[gnu::noinline]]
 inline void BellmanFordComponents(const WGraph& graph, std::span<const int> sources,
@@ -413,7 +418,7 @@ inline bool BellmanFordImpl(const WGraph &graph, std::vector<std::int64_t> &dist
         throw std::out_of_range("BellmanFord: invalid start vertex");
 #endif
     if (graph[start_index].empty()) {
-        distances.assign(graph.size(), INF);
+        distances.assign(graph.size(), kInf);
         distances[start_index] = 0;
         return false;
     }
@@ -433,7 +438,7 @@ inline bool BellmanFordImpl(const WGraph &graph, std::vector<std::int64_t> &dist
                 large_sources.push_back(from);
 #ifndef SKIP_RUNTIME_CHECKS
                 if constexpr (Warm) {
-                    if (from < validated_until && (*initial_distance)[from] != INF)
+                    if (from < validated_until && (*initial_distance)[from] != kInf)
                         initial_checked[from] = 1;
                 }
 #endif
@@ -451,7 +456,7 @@ inline bool BellmanFordImpl(const WGraph &graph, std::vector<std::int64_t> &dist
 #else
     constexpr bool direct_inf = Bounded || !UseActive;
 #endif
-    const std::int64_t unreachable = direct_inf ? INF : (count + 1) * max_cost;
+    const std::int64_t unreachable = direct_inf ? kInf : (count + 1) * max_cost;
     const std::int64_t lower_bound = -count * max_cost;
 #ifndef SKIP_RUNTIME_CHECKS
     // 通常の緩和で、その頂点の出辺を全て検査したかを記録する。
@@ -592,20 +597,20 @@ inline bool BellmanFordImpl(const WGraph &graph, std::vector<std::int64_t> &dist
                 mark_negative(edge.to);
 
     if constexpr (direct_inf) {
-        // n*最大辺重み<INFなら有限距離はINF未満。未到達の変換と範囲走査は不要。
-        for (const int vertex : queue) distance[vertex] = -INF;
+        // n*最大辺重み<kInfなら有限距離はkInf未満。未到達の変換と範囲走査は不要。
+        for (const int vertex : queue) distance[vertex] = -kInf;
     } else {
     for (int vertex = 0; vertex < n; ++vertex)
     {
         if (distance[vertex] == lower_bound)
         {
-            distance[vertex] = -INF;
+            distance[vertex] = -kInf;
         }
         else if (distance[vertex] == unreachable)
         {
-            distance[vertex] = INF;
+            distance[vertex] = kInf;
         }
-        else if (distance[vertex] <= -INF || distance[vertex] >= INF)
+        else if (distance[vertex] <= -kInf || distance[vertex] >= kInf)
         {
             throw std::overflow_error("BellmanFord: finite distance collides with INF/-INF");
         }
@@ -648,14 +653,14 @@ inline int BellmanFordSparse(const WGraph& graph,
         }
     }
     std::array<std::int64_t, vertex_limit> distance;
-    std::fill_n(distance.begin(), vertex_count, INF);
+    std::fill_n(distance.begin(), vertex_count, kInf);
     distance[0] = 0;
     // 64パス・128辺・|w|<=1e9なので、負閉路があっても加算はint64_t内。
     for (std::size_t pass = 1; pass < vertex_count; ++pass) {
         bool changed = false;
         for (std::size_t i = 0; i < edge_count; ++i) {
             const auto& edge = edges[i];
-            if (distance[edge.from] == INF) continue;
+            if (distance[edge.from] == kInf) continue;
             const auto candidate = distance[edge.from] + edge.w;
             if (candidate < distance[edge.to]) {
                 distance[edge.to] = candidate;
@@ -667,7 +672,7 @@ inline int BellmanFordSparse(const WGraph& graph,
     std::uint64_t negative = 0;
     for (std::size_t i = 0; i < edge_count; ++i) {
         const auto& edge = edges[i];
-        if (distance[edge.from] != INF && distance[edge.from] + edge.w < distance[edge.to])
+        if (distance[edge.from] != kInf && distance[edge.from] + edge.w < distance[edge.to])
             negative |= std::uint64_t{1} << edge.to;
     }
     if (negative != 0) {
@@ -680,10 +685,10 @@ inline int BellmanFordSparse(const WGraph& graph,
             if (negative == previous) break;
         }
         for (std::size_t i = 0; i < vertex_count; ++i)
-            if ((negative >> i) & 1) distance[i] = -INF;
+            if ((negative >> i) & 1) distance[i] = -kInf;
     }
     // 到達部分の検査・計算が全て成功してから出力を更新する。
-    distances.assign(graph.size(), INF);
+    distances.assign(graph.size(), kInf);
     for (std::size_t i = 0; i < vertex_count; ++i) distances[vertices[i]] = distance[i];
     return negative == 0 ? 1 : 2;
 }
@@ -695,13 +700,13 @@ inline int BellmanFordSparse(const WGraph& graph,
 [[gnu::noinline]]
 inline int BellmanFordForward(const WGraph& graph,
     std::vector<std::int64_t>& distance, int start_index) {
-    distance.assign(graph.size(), INF);
+    distance.assign(graph.size(), kInf);
     distance[start_index] = 0;
     const int n = static_cast<int>(graph.size());
     bool unique_prefix = true;
     for (int from = start_index; from < n; ++from) {
         const auto from_distance = distance[from];
-        if (from_distance == INF) continue;
+        if (from_distance == kInf) continue;
         for (const auto& edge : graph[from]) {
 #ifndef SKIP_RUNTIME_CHECKS
             constexpr std::int64_t max_cost = 1'000'000'000;
@@ -713,12 +718,12 @@ inline int BellmanFordForward(const WGraph& graph,
             const auto candidate = from_distance + edge.w;
             if (candidate >= distance[edge.to]) continue;
             if (edge.to <= from) {
-                if (!unique_prefix || distance[edge.to] == INF) return from;
+                if (!unique_prefix || distance[edge.to] == kInf) return from;
                 // 処理済みの到達頂点は一本道。後退先からfromへの経路が存在する。
                 // candidate<distance[to]は、この閉路の重みが負であることを表す。
                 std::vector<int> negative;
                 negative.push_back(edge.to);
-                distance[edge.to] = -INF;
+                distance[edge.to] = -kInf;
                 for (std::size_t head = 0; head < negative.size(); ++head) {
                     for (const auto& next : graph[negative[head]]) {
 #ifndef SKIP_RUNTIME_CHECKS
@@ -727,9 +732,9 @@ inline int BellmanFordForward(const WGraph& graph,
                         if (next.w < -max_cost || next.w > max_cost)
                             throw std::out_of_range("BellmanFord: cost must be in [-1e9, 1e9]");
 #endif
-                        if (distance[next.to] != -INF) {
+                        if (distance[next.to] != -kInf) {
                             negative.push_back(next.to);
-                            distance[next.to] = -INF;
+                            distance[next.to] = -kInf;
                         }
                     }
                 }
@@ -746,7 +751,7 @@ inline int BellmanFordForward(const WGraph& graph,
 } // namespace reinsirk::detail
 
 inline bool BellmanFord(const WGraph& graph, std::vector<std::int64_t>& distances, int start_index) {
-    if (graph.size() <= 64) return reinsirk::detail::BellmanFordImpl<false>(graph, distances, start_index);
+    if (graph.size() <= 64) return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::BellmanFordImpl<false>(graph, distances, start_index);
     if (graph.size() >= 4096) {
         if (graph.size() > static_cast<std::size_t>(std::numeric_limits<int>::max()))
             throw std::length_error("BellmanFord: too many vertices");
@@ -754,10 +759,10 @@ inline bool BellmanFord(const WGraph& graph, std::vector<std::int64_t>& distance
         if (start_index < 0 || static_cast<std::size_t>(start_index) >= graph.size())
             throw std::out_of_range("BellmanFord: invalid start vertex");
 #endif
-        const int sparse = reinsirk::detail::BellmanFordSparse(graph, distances, start_index);
+        const int sparse = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::BellmanFordSparse(graph, distances, start_index);
         if (sparse != 0) return sparse == 2;
     }
-    if (graph.size() <= static_cast<std::size_t>((INF - 1) / 1'000'000'000)
+    if (graph.size() <= static_cast<std::size_t>((kInf - 1) / 1'000'000'000)
 #ifndef SKIP_RUNTIME_CHECKS
         && start_index >= 0 && static_cast<std::size_t>(start_index) < graph.size()
 #endif
@@ -767,26 +772,33 @@ inline bool BellmanFord(const WGraph& graph, std::vector<std::int64_t>& distance
 #else
         auto& initial = distances;
 #endif
-        const int stopped = reinsirk::detail::BellmanFordForward(graph, initial, start_index);
+        const int stopped = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::BellmanFordForward(graph, initial, start_index);
         if (stopped < 0) {
 #ifndef SKIP_RUNTIME_CHECKS
             distances.swap(initial);
 #endif
             return stopped == -2;
         }
-        return reinsirk::detail::BellmanFordImpl<true, true, true>(graph, distances, start_index, &initial
+        return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::BellmanFordImpl<true, true, true>(graph, distances, start_index, &initial
 #ifndef SKIP_RUNTIME_CHECKS
             , stopped
 #endif
         );
     }
-    if (graph.size() <= static_cast<std::size_t>((INF - 1) / 1'000'000'000))
-        return reinsirk::detail::BellmanFordImpl<true, true>(graph, distances, start_index);
-    return reinsirk::detail::BellmanFordImpl<true, false>(graph, distances, start_index);
+    if (graph.size() <= static_cast<std::size_t>((kInf - 1) / 1'000'000'000))
+        return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::BellmanFordImpl<true, true>(graph, distances, start_index);
+    return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::BellmanFordImpl<true, false>(graph, distances, start_index);
 }
 
 #endif
 
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
+
+
+namespace sirkit {}
+using namespace sirkit;
 
 // SPDX-License-Identifier: CC0-1.0
 // Verify I/O: Verify/current/common/fast_io.hpp
@@ -1077,6 +1089,6 @@ int main() {
     }
     std::vector<std::int64_t> distance;
     BellmanFord(graph, distance, 0);
-    if (distance[n - 1] == -INF) verify_out << -1 << '\n';
+    if (distance[n - 1] == -kInf) verify_out << -1 << '\n';
     else verify_out << std::max(std::int64_t{0}, -distance[n - 1]) << '\n';
 }

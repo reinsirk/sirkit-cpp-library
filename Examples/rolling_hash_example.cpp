@@ -5,6 +5,8 @@
 #include <string_view>
 #include <utility>
 
+using namespace sirkit;
+
 int main() {
     // 実運用では十分大きな底を実行時に乱数で選び、比較対象間で共有する。
     constexpr std::uint64_t base = 911382323;

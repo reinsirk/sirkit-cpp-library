@@ -23,6 +23,8 @@
 // eratosthenes(limit, ans): limit以下の素数を昇順でansの末尾へ追加する。O(limit log log limit)。
 // eratosthenes(limit): limit以下の素数を昇順のvectorで返す。同じ計算量。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <array>
 #include <bit>
@@ -37,9 +39,12 @@
 #include <immintrin.h>
 #endif
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_PRIME_SIEVE_POPCOUNT_DEFINED
 #define SIRKIT_PRIME_SIEVE_POPCOUNT_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 #if !defined(SIRKIT_DISABLE_SIMD) && (defined(__GNUC__) || defined(__clang__)) && (defined(__i386__) || defined(__x86_64__))
 // 各bit位置で3個の値を足し、桁上がりと下位bitへ分ける。
 [[gnu::target("avx2"), gnu::always_inline]] inline void carry_save_avx2(
@@ -153,7 +158,7 @@ namespace reinsirk::detail {
 
 #ifndef SIRKIT_PRIME_SIEVE_PATTERN_DEFINED
 #define SIRKIT_PRIME_SIEVE_PATTERN_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 inline constexpr auto sieve_pattern = [] {
     std::array<std::uint64_t, 1155> values{};
     for (std::size_t word = 0; word < values.size(); ++word)
@@ -175,7 +180,7 @@ public:
         if (limit < 128) {
             if (limit != 0) {
                 // 127以下の奇合成数は3・5・7・11のいずれかの倍数。
-                constexpr auto primes = (reinsirk::detail::sieve_pattern[0] |
+                constexpr auto primes = (/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::sieve_pattern[0] |
                     (std::uint64_t{1} << 1) | (std::uint64_t{1} << 2) |
                     (std::uint64_t{1} << 3) | (std::uint64_t{1} << 5)) & ~std::uint64_t{1};
                 const auto bits = static_cast<unsigned>((limit + 1) / 2);
@@ -189,8 +194,8 @@ public:
             throw std::length_error("PrimeSieve: limit exceeds capacity");
         // 周期パターンから直接構築し、同じ領域の二重初期化を避ける。
         flags_.reserve(static_cast<std::size_t>(words));
-        const auto& pattern = reinsirk::detail::sieve_pattern;
-        constexpr auto period = reinsirk::detail::sieve_pattern.size();
+        const auto& pattern = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::sieve_pattern;
+        constexpr auto period = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::sieve_pattern.size();
         auto remaining = static_cast<std::size_t>(words);
         while (remaining >= period) {
             flags_.insert(flags_.end(), pattern.begin(), pattern.end());
@@ -233,7 +238,7 @@ public:
 #if !(defined(__clang__) && defined(__AVX2__))
         if (limit_ >= 3969 && __builtin_cpu_supports("avx2")) [[unlikely]]
             return static_cast<std::uint64_t>(limit_ >= 2) +
-                   reinsirk::detail::popcount_words_avx2(flags_.data(), flags_.size());
+                   /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::popcount_words_avx2(flags_.data(), flags_.size());
 #endif
 #endif
         std::uint64_t count = limit_ >= 2;
@@ -563,6 +568,13 @@ inline std::vector<std::uint64_t> eratosthenes(std::uint64_t limit) {
 }
 #endif
 
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
+
+
+namespace sirkit {}
+using namespace sirkit;
 
 // SPDX-License-Identifier: CC0-1.0
 // Verify I/O: Verify/current/common/fast_io.hpp

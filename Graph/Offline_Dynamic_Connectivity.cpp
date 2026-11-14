@@ -20,6 +20,8 @@
 // 確保失敗時は内容を維持。solveは常に元オブジェクトを維持。span引数との自己参照可。
 // 頂点値と成分和は、内部の加算順を含め全てint64_tに収まること。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <bit>
 #include <cstddef>
@@ -30,9 +32,12 @@
 #include <utility>
 #include <vector>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_CONNECTIVITY_ROLLBACK_STATE_DEFINED
 #define SIRKIT_CONNECTIVITY_ROLLBACK_STATE_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 class ConnectivityRollbackState {
     struct Change { int root, child, root_size, child_size; std::int64_t root_sum; };
     std::vector<int> parent_;
@@ -173,7 +178,7 @@ public:
         std::vector<std::size_t> ids(offsets.back()), cursor(offsets.begin(), offsets.end() - 1);
         intervals(base, [&](std::size_t node, std::size_t id) { ids[cursor[node]++] = id; });
         const auto merge_bound = std::min(edges_.size(), initial_.empty() ? std::size_t{0} : initial_.size() - 1);
-        reinsirk::detail::ConnectivityRollbackState uf(initial_, merge_bound + additions_.size());
+        /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::ConnectivityRollbackState uf(initial_, merge_bound + additions_.size());
         struct Frame { std::size_t node, snapshot; bool exit; };
         std::vector<Frame> stack; stack.reserve(2 * std::bit_width(base) + 1); stack.push_back({1, 0, false});
         std::vector<std::int64_t> answers(q);
@@ -211,3 +216,7 @@ public:
     void clear() noexcept { initial_.clear(); clear_history(); }
 };
 #endif
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1

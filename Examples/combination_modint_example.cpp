@@ -4,6 +4,8 @@
 #include <cassert>
 #include <iostream>
 
+using namespace sirkit;
+
 int main()
 {
     ModIntBinomial<atcoder::modint998244353> prime(100);

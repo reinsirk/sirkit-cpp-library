@@ -17,6 +17,8 @@
 // 128bit拡張を使えるGCC/Clangでは高速演算、それ以外は標準C++の32bit limb演算。
 // SIRKIT_FORCE_STANDARD_ARITHMETICで拡張側を除外できる。既存is_prime/MillerRabinとは部品・guardが独立。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <array>
 #include <bit>
@@ -29,9 +31,12 @@
 #include <utility>
 #include <vector>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_POLLARD_RHO_DETAIL_DEFINED
 #define SIRKIT_POLLARD_RHO_DETAIL_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 class FactorizationArithmetic {
     std::uint64_t inverse_, r_squared_;
 public:
@@ -138,7 +143,7 @@ class PollardRho64 {
         state_ = state_ * std::uint64_t{6364136223846793005} + std::uint64_t{1442695040888963407};
         return state_ % upper;
     }
-    std::uint64_t split(const reinsirk::detail::FactorizationArithmetic& arithmetic) noexcept {
+    std::uint64_t split(const /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::FactorizationArithmetic& arithmetic) noexcept {
         const auto n = arithmetic.modulus;
         constexpr std::size_t batch = 128, attempt_budget = std::size_t{1} << 22;
         for (;;) {
@@ -183,15 +188,15 @@ public:
     explicit PollardRho64(std::uint64_t seed = 0x8b54e7163d20a9c1ULL) noexcept : state_(seed) {}
     [[nodiscard]] static bool is_prime(std::uint64_t n) noexcept {
         if (n < 2) return false;
-        for (auto prime : reinsirk::detail::factor_small_primes)
+        for (auto prime : /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::factor_small_primes)
             if (n % prime == 0) return n == prime;
-        return reinsirk::detail::FactorizationArithmetic(n).prime();
+        return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::FactorizationArithmetic(n).prime();
     }
     std::vector<std::uint64_t> prime_factors(std::uint64_t n) {
         require_positive(n);
         if (n == 1) return {};
         std::vector<std::uint64_t> result; result.reserve(64);
-        for (auto prime : reinsirk::detail::factor_small_primes)
+        for (auto prime : /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::factor_small_primes)
             while (n % prime == 0) { result.push_back(prime); n /= prime; }
         if (n == 1) return result;
         std::vector<std::pair<std::uint64_t, int>> pending;
@@ -199,12 +204,12 @@ public:
         if (n != 1) pending.emplace_back(n, 1);
         while (!pending.empty()) {
             const auto [value, multiplicity] = pending.back(); pending.pop_back();
-            const reinsirk::detail::FactorizationArithmetic arithmetic(value);
+            const /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::FactorizationArithmetic arithmetic(value);
             if (arithmetic.prime()) {
                 for (int i = 0; i < multiplicity; ++i) result.push_back(value);
                 continue;
             }
-            const auto root = reinsirk::detail::factor_square_root(value);
+            const auto root = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::factor_square_root(value);
             if (root > 1 && root == value / root && value % root == 0) {
                 pending.emplace_back(root, multiplicity * 2); continue;
             }
@@ -281,3 +286,7 @@ inline std::uint64_t DivisorCount64(std::uint64_t n) { return PollardRho64{}.div
 inline std::uint64_t EulerPhi64(std::uint64_t n) { return PollardRho64{}.totient(n); }
 inline int Mobius64(std::uint64_t n) { return PollardRho64{}.mobius(n); }
 #endif
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1

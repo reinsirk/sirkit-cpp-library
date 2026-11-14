@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #ifndef SIRKIT_LC2D_REQUIRE_EXTRA
 #define SIRKIT_LC2D_REQUIRE_EXTRA
 #endif
@@ -39,8 +41,8 @@ static void require(bool ok) { ++checks; if(!ok){std::fprintf(stderr,"failure ph
 template<class E,class F> static void throws(F f) { bool caught=false;try { f(); } catch(const E&) { caught=true; }require(caught); }
 static ld dot(Point p,ld a,ld b){return p.first*a+p.second*b;}
 static bool member(Point p,const std::vector<Point>& points){return std::find(points.begin(),points.end(),p)!=points.end();}
-static ll rounded(ld x){x=std::clamp(x,-LineContainer2D::INF,LineContainer2D::INF);return static_cast<ll>(std::round(x));}
-static ll trunced(ld x){x=std::clamp(x,-LineContainer2D::INF,LineContainer2D::INF);return static_cast<ll>(x);}
+static ll rounded(ld x){x=std::clamp(x,-LineContainer2D::kInf,LineContainer2D::kInf);return static_cast<ll>(std::round(x));}
+static ll trunced(ld x){x=std::clamp(x,-LineContainer2D::kInf,LineContainer2D::kInf);return static_cast<ll>(x);}
 template<class Table>static void extra_exact(const Table&t,const std::vector<Point>&points,ll a,ll b,ld hi,ld lo){
  if constexpr(requires{t.max_with_point(ld{},ld{});t.min_with_point(ld{},ld{});}){
   auto mx=t.max_with_point(ld(a),ld(b)),mn=t.min_with_point(ld(a),ld(b));

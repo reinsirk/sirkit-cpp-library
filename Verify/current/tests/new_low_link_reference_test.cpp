@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #ifndef LOW_LINK_SOURCE
 #define LOW_LINK_SOURCE "../../../Graph/Low_Link.cpp"
 #endif
