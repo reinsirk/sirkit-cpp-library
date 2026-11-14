@@ -168,6 +168,8 @@ def render(entry: dict, *, skip_runtime_checks: bool | None = None,
         data = source_overrides[name] if source_overrides and name in source_overrides else (ROOT / name).read_bytes()
         hashes[name] = digest(data)
         pieces.append("// Library: " + name + "\n" + data.decode() + "\n")
+    # main側だけで短い呼び出しを許可する。旧版・最小fixtureのグローバル定義とも併用可能。
+    pieces.append("namespace sirkit {}\nusing namespace sirkit;\n")
     driver = (ROOT / entry["driver"]).read_text() if driver_override is None else driver_override
     uses_fast_io = FAST_IO_INCLUDE in driver.splitlines()
     if entry.get("problem_url") and not uses_fast_io and not custom_io:

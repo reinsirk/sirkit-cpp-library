@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #ifndef SIRKIT_PROJECT_TEST_HEADER
 #define SIRKIT_PROJECT_TEST_HEADER "../../../Graph/Project_Selection.cpp"
 #endif

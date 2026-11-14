@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 // 実行例: c++ -std=c++23 -O2 Verify/current/tests/dynamic_fenwick_2d_dense_test.cpp -o /tmp/fenwick_test && /tmp/fenwick_test
 #ifndef FENWICK_SOURCE
 #define FENWICK_SOURCE "../../../DataStructure/dynamic-binary-indexed-tree-2d.cpp"
@@ -25,7 +27,7 @@ void operator delete[](void*p)noexcept{std::free(p);}
 void operator delete(void*p,std::size_t)noexcept{std::free(p);}
 void operator delete[](void*p,std::size_t)noexcept{std::free(p);}
 #include FENWICK_SOURCE
-using I=std::int64_t;using U=std::uint32_t;using Row=reinsirk::detail::BPlusFenwickRow<I>;
+using I=std::int64_t;using U=std::uint32_t;using Row=::sirkit::detail::BPlusFenwickRow<I>;
 static std::uint64_t assertions=0;static void check(bool x){++assertions;if(!x){std::fprintf(stderr,"assertion %ju failed\n",std::uintmax_t(assertions));std::abort();}}
 static void run(U m){
  Row row;std::vector<I> values(m+1);std::vector<bool> used(m+1,false);std::uint64_t cells=0;std::mt19937_64 rng(193572+m);
@@ -46,7 +48,7 @@ static void failure(std::size_t bytes){
 }
 template<class T>static void widths(){
  using V=std::make_unsigned_t<T>;using A=decltype(V{}+0u);constexpr U m=8192;
- reinsirk::detail::BPlusFenwickRow<T> row;std::vector<V> expected(m+1);
+ ::sirkit::detail::BPlusFenwickRow<T> row;std::vector<V> expected(m+1);
  for(int pass=0;pass<2;++pass){
   for(U i=1;i<=m;++i){const V delta=static_cast<V>(i*197+11);row.add(i,static_cast<T>(delta),m);expected[i]=static_cast<V>(static_cast<A>(expected[i])+static_cast<A>(delta));}
   V prefix{};for(U i=1;i<=m;++i){prefix=static_cast<V>(static_cast<A>(prefix)+static_cast<A>(expected[i]));check(static_cast<V>(row.sum(i-1,i))==expected[i]);if(i%137==0)check(static_cast<V>(row.sum(0,i))==prefix);}

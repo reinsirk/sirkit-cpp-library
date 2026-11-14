@@ -3,6 +3,8 @@
 #include <cassert>
 #include <iostream>
 
+using namespace sirkit;
+
 int main()
 {
     BinomialMod prime(998244353, 100); // 必要な範囲だけ前計算。

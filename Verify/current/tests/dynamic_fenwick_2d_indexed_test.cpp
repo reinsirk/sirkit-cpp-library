@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #ifndef FENWICK_SOURCE
 #define FENWICK_SOURCE "../../../DataStructure/dynamic-binary-indexed-tree-2d.cpp"
 #endif
@@ -37,7 +39,7 @@ struct PublicRow {
     void clear(){row.clear();}
 };
 struct DirectRow {
-    reinsirk::detail::SmallFenwickRow<I> row;
+    ::sirkit::detail::SmallFenwickRow<I> row;
     void add(int col,I v){row.add(U(col+1),v,4096);}
     void set(int col,I v){add(col,v-get(col));}
     I get(int col)const{return row.sum(U(col),U(col+1),common(U(col),U(col+1)));}

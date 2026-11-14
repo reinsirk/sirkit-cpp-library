@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 // 出辺あり頂点数の上限・多数sink・負閉路・Warm引継ぎを独立参照で照合する。
 #ifndef SIRKIT_TEST_NEGATIVE_PATH_SOURCE
 #define SIRKIT_TEST_NEGATIVE_PATH_SOURCE "../../../Graph/Bellman-Ford.cpp"
@@ -18,22 +20,22 @@ namespace {
 std::uint64_t checks=0,cases=0;
 void require(bool value){++checks;if(!value){std::cerr<<"source-bound failure "<<cases<<' '<<checks<<'\n';std::abort();}}
 std::vector<std::int64_t> oracle(const WGraph&g,int start){
- int n=int(g.size());std::vector<std::vector<std::int64_t>>d(n,std::vector<std::int64_t>(n,INF));
+ int n=int(g.size());std::vector<std::vector<std::int64_t>>d(n,std::vector<std::int64_t>(n,kInf));
  for(int v=0;v<n;++v){d[v][v]=0;for(auto e:g[v])d[v][e.to]=std::min(d[v][e.to],e.w);}
- for(int k=0;k<n;++k)for(int i=0;i<n;++i)if(d[i][k]!=INF)for(int j=0;j<n;++j)if(d[k][j]!=INF)
-  d[i][j]=std::min(d[i][j],std::max(-INF/4,d[i][k]+d[k][j]));
+ for(int k=0;k<n;++k)for(int i=0;i<n;++i)if(d[i][k]!=kInf)for(int j=0;j<n;++j)if(d[k][j]!=kInf)
+  d[i][j]=std::min(d[i][j],std::max(-kInf/4,d[i][k]+d[k][j]));
  auto expected=d[start];
- for(int k=0;k<n;++k)if(d[start][k]!=INF&&d[k][k]<0)for(int j=0;j<n;++j)if(d[k][j]!=INF)expected[j]=-INF;
+ for(int k=0;k<n;++k)if(d[start][k]!=kInf&&d[k][k]<0)for(int j=0;j<n;++j)if(d[k][j]!=kInf)expected[j]=-kInf;
  return expected;
 }
 void test(const WGraph&g,int start,const std::vector<std::int64_t>&expected){
- ++cases;bool negative=std::find(expected.begin(),expected.end(),-INF)!=expected.end();
+ ++cases;bool negative=std::find(expected.begin(),expected.end(),-kInf)!=expected.end();
  std::vector<std::int64_t>d{7,8};
  auto check=[&](bool found){require(found==negative);require(d==expected);};
  check(BellmanFord(g,d,start));d={7,8};
- check(reinsirk::detail::BellmanFordImpl<true,true>(g,d,start));d={7,8};
- check(reinsirk::detail::BellmanFordImpl<true,false>(g,d,start));
- if(g.size()<=64){d={7,8};check(reinsirk::detail::BellmanFordImpl<false,false>(g,d,start));}
+ check(::sirkit::detail::BellmanFordImpl<true,true>(g,d,start));d={7,8};
+ check(::sirkit::detail::BellmanFordImpl<true,false>(g,d,start));
+ if(g.size()<=64){d={7,8};check(::sirkit::detail::BellmanFordImpl<false,false>(g,d,start));}
 }
 }
 int main(){
@@ -64,8 +66,8 @@ int main(){
   const int n=20000;WGraph g(n);std::vector<int> path;for(int i=0;i<count;++i)path.push_back(n-2-i);path.push_back(0);
   for(int i=0;i<count;++i)for(int copy=0;copy<300/count+3;++copy)g[path[i]].emplace_back(path[i+1],-1);
   if(cycle)g[path[count-1]].emplace_back(path[0],-1);
-  std::vector<std::int64_t> expected(n,INF);
-  for(int i=0;i<=count;++i)expected[path[i]]=cycle?-INF:-i;
+  std::vector<std::int64_t> expected(n,kInf);
+  for(int i=0;i<=count;++i)expected[path[i]]=cycle?-kInf:-i;
   test(g,path[0],expected);
  }
  // 前進試行が未到達の後退先で停止し、距離をWarm経路へ引き継ぐ。
@@ -76,15 +78,15 @@ int main(){
   g[0].emplace_back(path[1],-1);
   for(int i=1;i<count;++i)for(int copy=0;copy<300/count+3;++copy)g[path[i]].emplace_back(path[i+1],-1);
   if(cycle)g[path[count-1]].emplace_back(path[0],-1);
-  std::vector<std::int64_t> expected(n,INF);
-  for(int i=0;i<=count;++i)expected[path[i]]=cycle?-INF:-i;
+  std::vector<std::int64_t> expected(n,kInf);
+  for(int i=0;i<=count;++i)expected[path[i]]=cycle?-kInf:-i;
   test(g,0,expected);
  }
  // 単一源点から多数sinkへ。負自己辺の影響が全sinkへ届く。
  for(bool cycle:{false,true}){
-  const int n=20000;WGraph g(n);std::vector<std::int64_t> expected(n,INF);expected[0]=0;
+  const int n=20000;WGraph g(n);std::vector<std::int64_t> expected(n,kInf);expected[0]=0;
   for(int i=1;i<n;++i){g[0].emplace_back(i,i%3);expected[i]=i%3;}
-  if(cycle){g[0].emplace_back(0,-1);std::fill(expected.begin(),expected.end(),-INF);}
+  if(cycle){g[0].emplace_back(0,-1);std::fill(expected.begin(),expected.end(),-kInf);}
   test(g,0,expected);
  }
  // 多数の未到達sourceと、少数の到達頂点に集中する多重辺。
@@ -94,8 +96,8 @@ int main(){
   for(int i=1;i<=count;++i)g[i].emplace_back(i%count+1,-1);
   for(int i=count+1;i<n-1;++i)g[i].emplace_back(i,-1);
   for(int i=0;i<2500;++i)g[1+i%count].emplace_back(1+(i+1)%count,-1);
-  std::vector<std::int64_t> expected(n,INF);expected[0]=0;expected[n-1]=-INF;
-  for(int i=1;i<=count;++i)expected[i]=-INF;
+  std::vector<std::int64_t> expected(n,kInf);expected[0]=0;expected[n-1]=-kInf;
+  for(int i=1;i<=count;++i)expected[i]=-kInf;
   test(g,0,expected);
  }
 #ifndef SKIP_RUNTIME_CHECKS

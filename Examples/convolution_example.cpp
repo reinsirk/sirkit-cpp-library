@@ -3,6 +3,8 @@
 #include <iostream>
 #include <vector>
 #include "../Math/Convolution.cpp"
+
+using namespace sirkit;
 int main(){
     CRTConvolution convolution;
     const std::vector<int> a{1,-2,3},b{4,5};

@@ -6,6 +6,8 @@
 #include <span>
 #include <utility>
 #include <vector>
+
+using namespace sirkit;
 int main() {
     const std::vector<std::int64_t> values{4,2,2,5,1,8,1};
     CartesianTree tree(values);

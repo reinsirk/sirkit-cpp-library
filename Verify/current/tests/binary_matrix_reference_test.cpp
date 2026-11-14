@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #ifndef SIRKIT_BINARY_MATRIX_SOURCE
 #define SIRKIT_BINARY_MATRIX_SOURCE "../../../Math/Binary_Matrix.cpp"
 #endif

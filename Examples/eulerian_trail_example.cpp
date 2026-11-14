@@ -2,6 +2,8 @@
 #include "../Graph/Eulerian_Trail.cpp"
 #include <cassert>
 #include <iostream>
+
+using namespace sirkit;
 int main(){
  UndirectedEulerianTrail graph(3);graph.add_edge(0,1);graph.add_edge(0,1);graph.add_edge(0,2);
  auto trail=graph.find(2);assert(trail&&trail->edges.size()==3&&!trail->circuit());for(int v:trail->vertices)std::cout<<v<<' ';std::cout<<'\n';assert(!graph.find(-1,true));

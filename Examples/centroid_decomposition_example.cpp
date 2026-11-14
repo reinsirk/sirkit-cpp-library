@@ -6,6 +6,8 @@
 #include <limits>
 #include <utility>
 #include <vector>
+
+using namespace sirkit;
 int main() {
     Graph graph{{1}, {0, 2}, {1, 3}, {2}};
     CentroidDecomposition decomposition(graph);

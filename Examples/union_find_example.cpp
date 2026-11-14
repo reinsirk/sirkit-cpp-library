@@ -3,6 +3,8 @@
 #include <cassert>
 #include <iostream>
 #include <utility>
+
+using namespace sirkit;
 int main() {
     UnionFind uf(5);
     uf.unite(0, 1);

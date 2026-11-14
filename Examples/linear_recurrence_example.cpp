@@ -4,6 +4,8 @@
 #include <cstdint>
 #include <iostream>
 #include <vector>
+
+using namespace sirkit;
 int main() {
     const std::vector<std::uint32_t> initial{0,1},coefficients{1,1};
     std::cout<<LinearRecurrenceTerm(initial,coefficients,10)<<'\n'; // 55

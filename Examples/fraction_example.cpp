@@ -4,6 +4,8 @@
 #include <iostream>
 #include <sstream>
 
+using namespace sirkit;
+
 int main() {
     constexpr Fraction a(2, 6), b(-3, 4);
     static_assert(a == Fraction(1, 3));

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""整備済みの本体・テンプレートと使用例から、同期した配布ZIPを作る。"""
+"""明示的に必要な場合だけ、Releases添付用の全体ZIPを作る。"""
 
 import argparse
 from pathlib import Path
@@ -150,7 +150,7 @@ def package(output: Path) -> None:
         standalone = expand_acl(expand_example_dependencies(
             source, name, known_sources, lambda dependency: entries[dependency].decode("utf-8")))
         entries["StandaloneExamples/" + example] = standalone.encode("utf-8")
-    for name in ("Readme.md", "AGENTS.md", "CLAUDE.md", ".github/workflows/verify.yml", "Scripts/package_revised_libraries.py", "Scripts/example_dependencies.py"):
+    for name in ("Readme.md", "AGENTS.md", "CLAUDE.md", ".clang-tidy", ".github/workflows/verify.yml", "Scripts/package_revised_libraries.py", "Scripts/example_dependencies.py"):
         entries[name] = (root / name).read_bytes()
     for generator in ("generate_geometry.py", "generate_zeta.py", "generate_combination.py"):
         entries["Scripts/" + generator] = (root / "Scripts" / generator).read_bytes()
@@ -175,6 +175,9 @@ def package(output: Path) -> None:
     for source_path in sorted((root / "Verify" / "optimization").rglob("*")):
         if source_path.is_file() and source_path.suffix in (".md", ".json"):
             entries[source_path.relative_to(root).as_posix()] = source_path.read_bytes()
+    for source_path in sorted((root / "Verify" / "ci").rglob("*")):
+        if source_path.is_file() and source_path.suffix in (".cpp", ".hpp", ".md", ".json"):
+            entries[source_path.relative_to(root).as_posix()] = source_path.read_bytes()
     license_path = root / "LICENSE"
     if license_path.is_file():
         entries["LICENSE"] = license_path.read_bytes()
@@ -182,7 +185,7 @@ def package(output: Path) -> None:
         entries[license_path.relative_to(root).as_posix()] = license_path.read_bytes()
     for audit_path in sorted((root / "Audit").rglob("*")):
         if (audit_path.is_file() and "__pycache__" not in audit_path.parts and
-                audit_path.suffix in (".json", ".md", ".png", ".cpp", ".hpp", ".py", ".inc", ".gz", ".zip", ".bin")):
+                audit_path.suffix in (".json", ".md", ".png", ".cpp", ".hpp", ".py", ".inc", ".gz", ".bin")):
             entries[audit_path.relative_to(root).as_posix()] = audit_path.read_bytes()
     write_archive(output, entries)
     print(f"{len(entries)}ファイルを格納: {output.resolve()}")

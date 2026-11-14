@@ -2,6 +2,8 @@
 #include <cstdint>
 #include <iostream>
 
+using namespace sirkit;
+
 int main() {
     MaxLineContainer<std::int64_t> maximum;
     std::cout << maximum.query_optional(0).has_value() << '\n'; // 0

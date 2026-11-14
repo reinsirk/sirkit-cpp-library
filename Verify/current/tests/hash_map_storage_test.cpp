@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #ifndef HEADER
 #define HEADER "../../../DataStructure/Hash_map.cpp"
 #endif

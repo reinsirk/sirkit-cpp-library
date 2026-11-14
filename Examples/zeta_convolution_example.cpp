@@ -4,6 +4,8 @@
 #include <vector>
 #include <iostream>
 
+using namespace sirkit;
+
 int main() {
     const std::vector<int> f{2, 3, 5}, g{7, 11, 13};
     IntegerSieve sieve(2);

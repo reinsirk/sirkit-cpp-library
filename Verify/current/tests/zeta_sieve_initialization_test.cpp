@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #ifndef SOURCE
 #define SOURCE "../../../Math/Zeta/Sieve.cpp"
 #endif

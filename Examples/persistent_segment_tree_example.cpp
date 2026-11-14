@@ -4,6 +4,8 @@
 #include <functional>
 #include <iostream>
 #include <vector>
+
+using namespace sirkit;
 int main() {
     PersistentSegmentTree<std::int64_t, std::plus<std::int64_t>> tree(
         std::vector<std::int64_t>{2, 4, 1}, {}, 0);

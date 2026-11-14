@@ -28,6 +28,8 @@
 // 全操作は確保/整数範囲の失敗時に関数を保つ（容量の変化は可）。容量・整数範囲保護はSKIPでも維持。
 // SKIP_RUNTIME_CHECKSはshift(a,b)のa<=b検査だけを除く。SIRKIT_FORCE_STANDARD_ARITHMETICで標準整数演算へ切替。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -38,6 +40,9 @@
 #include <utility>
 #include <vector>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_SLOPE_TRICK_DEFINED
 #define SIRKIT_SLOPE_TRICK_DEFINED
 class SlopeTrick {
@@ -165,6 +170,13 @@ public:
 };
 #endif
 
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
+
+
+namespace sirkit {}
+using namespace sirkit;
 
 // SPDX-License-Identifier: CC0-1.0
 // Verify I/O: Verify/current/common/fast_io.hpp

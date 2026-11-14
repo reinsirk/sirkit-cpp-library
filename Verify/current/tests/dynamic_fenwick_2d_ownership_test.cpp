@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #ifndef FENWICK_SOURCE
 #define FENWICK_SOURCE "../../../DataStructure/dynamic-binary-indexed-tree-2d.cpp"
 #endif
@@ -22,7 +24,7 @@ void operator delete(void*p,std::size_t)noexcept{release_allocation(p);}
 void operator delete[](void*p,std::size_t)noexcept{release_allocation(p);}
 #include FENWICK_SOURCE
 using I=std::int64_t;using U=std::uint32_t;
-using Row=reinsirk::detail::SmallFenwickRow<I>;
+using Row=::sirkit::detail::SmallFenwickRow<I>;
 static_assert(std::is_nothrow_move_constructible_v<Row> && noexcept(std::declval<Row&>().swap(std::declval<Row&>())));
 static std::uint64_t checks=0,scenarios=0;
 static void require(bool b){++checks;if(!b)std::abort();}

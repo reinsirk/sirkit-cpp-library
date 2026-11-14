@@ -6,7 +6,7 @@
 | --- | --- |
 | `Graph` | `std::vector<std::vector<int>>`。無重み隣接リスト。 |
 | `Edge` / `WGraph` | 行先`int to`・重み`std::int64_t w`と、その隣接リスト。 |
-| `INF` | `std::int64_t{1} << 60`。 |
+| `kInf` | `std::int64_t{1} << 60`。 |
 | `chmin(a,b)` / `chmax(a,b)` | 値を更新したらtrue。比較・代入各1回以下。 |
 | `pow64i(x,n)` | x^n mod 2^64。O(log(n+1))時間。0^0は1。 |
 | `is_mul_overflow(a,b)` | 積が符号付き64ビット整数の範囲外ならtrue。O(1)時間。 |

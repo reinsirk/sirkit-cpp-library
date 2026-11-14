@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 // groups単独と、平坦化後のfindを分けて計測する。
 #ifndef SIRKIT_DUF_SOURCE
 #define SIRKIT_DUF_SOURCE "../../../DataStructure/dynamic-union-find.cpp"

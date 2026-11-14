@@ -2,6 +2,8 @@
 #include "../Graph/Max_Flow.cpp"
 #include <cassert>
 #include <iostream>
+
+using namespace sirkit;
 int main(){
  mf_graph<> network(4);auto id=network.add_edge(0,1,5);network.add_edge(0,2,2);network.add_edge(1,2,2);network.add_edge(1,3,3);network.add_edge(2,3,4);
  assert(network.flow(0,3,4)==4);assert(network.flow(0,3)==3);assert(network.flow(0,3)==0);

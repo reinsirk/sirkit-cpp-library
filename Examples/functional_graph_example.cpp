@@ -4,6 +4,8 @@
 #include <iostream>
 #include <limits>
 #include <vector>
+
+using namespace sirkit;
 int main() {
     const std::vector<int> next{4, 2, 1, 6, 3, 7, 5, 6, 8};
     FunctionalGraph graph(next);

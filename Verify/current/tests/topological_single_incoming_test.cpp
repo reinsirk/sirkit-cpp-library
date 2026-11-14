@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #ifndef SIRKIT_TEST_TOPOLOGICAL_SOURCE
 #define SIRKIT_TEST_TOPOLOGICAL_SOURCE "../../../Graph/Topological.cpp"
 #endif
@@ -38,7 +40,7 @@ static void check(const Graph& graph) {
     require(TopologicalSort(graph) == (expected.acyclic ? expected.order : std::vector<int>{}));
     require(IsDAG(graph) == expected.acyclic);
     // 小さい全列挙でも、大規模用の分岐を直接選んで独立参照へ照合する。
-    const auto bulk = reinsirk::detail::TopologicalRun<false, false, true>(graph);
+    const auto bulk = ::sirkit::detail::TopologicalRun<false, false, true>(graph);
     require(bulk.acyclic == expected.acyclic);
     require(bulk.order == (expected.acyclic ? expected.order : std::vector<int>{}));
     require(graph == saved);

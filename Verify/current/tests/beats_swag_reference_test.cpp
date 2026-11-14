@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #include "../../../DataStructure/Segment_Tree_Beats.cpp"
 #include "../../../DataStructure/Sliding_Window_Aggregation.cpp"
 #include <bit>

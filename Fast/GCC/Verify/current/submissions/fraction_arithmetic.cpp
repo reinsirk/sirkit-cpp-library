@@ -22,6 +22,8 @@
 // これらの数学的・表現上の保護はSKIP_RUNTIME_CHECKS時も有効。Mは整数の絶対値の上限。
 // SIRKIT_FRACTION_DISABLE_INT128: GCC/Clangの128ビット拡張を使わず標準C++経路を選ぶ。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <bit>
 #include <compare>
 #include <concepts>
@@ -32,9 +34,12 @@
 #include <stdexcept>
 #include <utility>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_FRACTION_DETAIL_DEFINED
 #define SIRKIT_FRACTION_DETAIL_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 
 // 引数は0以上2^63以下。奇数化した正の値の差は絶対値が2^63未満。
 constexpr std::uint64_t fraction_gcd(std::uint64_t a, std::uint64_t b) {
@@ -140,12 +145,12 @@ constexpr std::uint64_t fraction_magnitude(std::int64_t x) {
 #ifndef SIRKIT_FRACTION_DEFINED
 #define SIRKIT_FRACTION_DEFINED
 class Fraction {
-    using Wide = reinsirk::detail::FractionWide;
+    using Wide = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::FractionWide;
     std::int64_t num_ = 0, den_ = 1;
     static constexpr auto max_ = static_cast<std::uint64_t>(std::numeric_limits<std::int64_t>::max());
 
     static constexpr std::uint64_t magnitude(std::int64_t n) {
-        return reinsirk::detail::fraction_magnitude(n);
+        return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::fraction_magnitude(n);
     }
     static constexpr Fraction result(Wide n, Wide d, bool negative) {
         if (!n.fits(max_ + static_cast<unsigned>(negative)) || !d.fits(max_))
@@ -167,7 +172,7 @@ class Fraction {
             left = Wide(magnitude(a.num_));
             right = Wide(magnitude(b.num_));
         } else {
-            g = reinsirk::detail::fraction_gcd(da, db);
+            g = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::fraction_gcd(da, db);
             left = Wide::product(magnitude(a.num_), db / g);
             right = Wide::product(magnitude(b.num_), da / g);
         }
@@ -179,7 +184,7 @@ class Fraction {
         else { n = right - left; negative = right_negative; }
         if (n == Wide{}) return {};
         // 各分数は既約なので、和の分子との追加の共通因子はgの約数だけ。
-        const auto h = g == 1 ? 1 : reinsirk::detail::fraction_gcd(n.divmod(g).second, g);
+        const auto h = g == 1 ? 1 : /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::fraction_gcd(n.divmod(g).second, g);
         if (h != 1) n = n.divmod(h).first;
         return result(n, Wide::product(da / g, db / h), negative);
     }
@@ -191,7 +196,7 @@ public:
         if (d == 1) { num_ = n; return; }
         if (n == 0) return;
         auto u = magnitude(n), v = magnitude(d);
-        const auto g = reinsirk::detail::fraction_gcd(u, v);
+        const auto g = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::fraction_gcd(u, v);
         if (g == 1 && d > 0) { num_ = n; den_ = d; return; }
         if (g != 1) { u /= g; v /= g; }
         *this = result(Wide(u), Wide(v), (n < 0) != (d < 0));
@@ -222,7 +227,7 @@ public:
         if (a.num_ == 0 || b.num_ == 0) return {};
         const auto na = magnitude(a.num_), nb = magnitude(b.num_);
         const auto da = static_cast<std::uint64_t>(a.den_), db = static_cast<std::uint64_t>(b.den_);
-        const auto g = reinsirk::detail::fraction_gcd(na, db), h = reinsirk::detail::fraction_gcd(nb, da);
+        const auto g = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::fraction_gcd(na, db), h = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::fraction_gcd(nb, da);
         return result(Wide::product(na / g, nb / h), Wide::product(da / h, db / g), (a.num_ < 0) != (b.num_ < 0));
     }
     friend constexpr Fraction operator/(const Fraction& a, const Fraction& b) {
@@ -230,7 +235,7 @@ public:
         if (a.num_ == 0) return {};
         const auto na = magnitude(a.num_), nb = magnitude(b.num_);
         const auto da = static_cast<std::uint64_t>(a.den_), db = static_cast<std::uint64_t>(b.den_);
-        const auto g = reinsirk::detail::fraction_gcd(na, nb), h = reinsirk::detail::fraction_gcd(da, db);
+        const auto g = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::fraction_gcd(na, nb), h = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::fraction_gcd(da, db);
         return result(Wide::product(na / g, db / h), Wide::product(da / h, nb / g), (a.num_ < 0) != (b.num_ < 0));
     }
     constexpr Fraction& operator+=(const Fraction& b) { return *this = *this + b; }
@@ -271,6 +276,13 @@ public:
 };
 #endif
 
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
+
+
+namespace sirkit {}
+using namespace sirkit;
 
 // SPDX-License-Identifier: CC0-1.0
 // Verify I/O: Verify/current/common/fast_io.hpp

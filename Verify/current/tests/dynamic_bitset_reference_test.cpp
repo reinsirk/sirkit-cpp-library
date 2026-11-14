@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #ifndef SIRKIT_BITSET_SOURCE
 #define SIRKIT_BITSET_SOURCE "../../../DataStructure/Dynamic_Bitset.cpp"
 #endif

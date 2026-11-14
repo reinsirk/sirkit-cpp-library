@@ -23,8 +23,13 @@
 // cycle_entry(head)/has_cycle(head): 循環入口/有無、O(k)。break_cycle(head): 循環の末尾を切り、切ればtrue、O(k)。
 // clear_chain(head): head=nullptrとするだけ、O(1)。全APIで例外後の回復・入力検査は省く。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <cstddef>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_NODE_DEFINED
 #define SIRKIT_NODE_DEFINED
 struct Node {
@@ -35,7 +40,7 @@ struct Node {
 
 #ifndef SIRKIT_FAST_NODE_POOL_DEFINED
 #define SIRKIT_FAST_NODE_POOL_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 inline Node* node_pool_next = nullptr;
 inline Node* node_pool_end = nullptr;
 inline Node* allocate_node_chunk(std::size_t count) {
@@ -53,7 +58,7 @@ inline Node* allocate_node_chunk(std::size_t count) {
 #ifndef SIRKIT_MAKE_NODE_DEFINED
 #define SIRKIT_MAKE_NODE_DEFINED
 inline Node* make_node(Node* next = nullptr) {
-    Node* node = reinsirk::detail::allocate_node_chunk(1);
+    Node* node = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::allocate_node_chunk(1);
     node->n = next;
     return node;
 }
@@ -63,7 +68,7 @@ inline Node* make_node(Node* next = nullptr) {
 #define SIRKIT_MAKE_CHAIN_DEFINED
 inline Node* make_chain(std::size_t count, Node* tail = nullptr) {
     if (count == 0) return tail;
-    Node* first = count <= 4096 ? reinsirk::detail::allocate_node_chunk(count) : new Node[count];
+    Node* first = count <= 4096 ? /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::allocate_node_chunk(count) : new Node[count];
     for (std::size_t i = 1; i < count; ++i) first[i - 1].n = first + i;
     first[count - 1].n = tail;
     return first;
@@ -173,6 +178,13 @@ inline bool break_cycle(Node* head) noexcept {
 inline void clear_chain(Node*& head) noexcept { head = nullptr; }
 #endif
 
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
+
+
+namespace sirkit {}
+using namespace sirkit;
 
 // SPDX-License-Identifier: CC0-1.0
 // Verify I/O: Verify/current/common/fast_io.hpp

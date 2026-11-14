@@ -33,6 +33,8 @@
 // clear(): 全登録を消去する。確保済みの容量は再利用する。
 // dataの負の返値は、負の親キーとの区別を保証しない。判定にはfindを使う。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <array>
 #include <cstddef>
@@ -57,9 +59,12 @@
 #include <immintrin.h>
 #endif
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_INTERNAL_HASH_MAP_DEFINED
 #define SIRKIT_INTERNAL_HASH_MAP_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 template <class Key, class Val, bool Packed = false, unsigned Denominator = 5>
 class InternalHashMap {
     static_assert(std::is_integral_v<Key> &&
@@ -334,7 +339,7 @@ class DynamicUnionFind {
         // 根なら負のサイズ、非根なら親の添字。キーの符号とは独立。
         int parent;
     };
-    reinsirk::detail::InternalHashMap<int, int, false, 4> indices_;
+    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::InternalHashMap<int, int, false, 4> indices_;
     std::vector<Node> nodes_;
     std::size_t components_ = 0;
 
@@ -495,3 +500,7 @@ public:
     }
 };
 #endif
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1

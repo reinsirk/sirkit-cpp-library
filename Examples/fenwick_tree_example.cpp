@@ -3,6 +3,8 @@
 #include <cstdint>
 #include <iostream>
 #include <vector>
+
+using namespace sirkit;
 int main() {
     fenwick_tree<std::int64_t> sums(std::vector<std::int64_t>{2, 0, 3, 5});
     sums.add(1, 4);

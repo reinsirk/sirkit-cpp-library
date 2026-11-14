@@ -22,6 +22,8 @@
 // prev_prime(n): n以下で最大の素数。同じ戻り値型で、n<2はnullopt。入力は64bit以下の整数。
 // C候補の探索にO(C log(max(n,2)))回の剰余乗算、追加領域O(1)。動的確保なし。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <bit>
 #include <cstdint>
 #include <initializer_list>
@@ -30,9 +32,12 @@
 #include <utility>
 #include <type_traits>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_PRIMALITY32_DEFINED
 #define SIRKIT_PRIMALITY32_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 // uint32_t全域の素数判定。Miller-Rabinの底2,7,61を使う。
 inline bool is_prime_u32(std::uint32_t n) noexcept
 {
@@ -150,7 +155,7 @@ inline bool is_prime_u32(std::uint32_t n) noexcept
 // C++20以降。64ビット整数用の内部演算。状態は判定ごとに持つ。
 #ifndef SIRKIT_MILLER_RABIN64_DEFINED
 #define SIRKIT_MILLER_RABIN64_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 // member begin/endと配列だけを判定し、ADL専用の列は保守的にfalseとする。
 template<class Bases>
 inline constexpr bool miller_rabin_bases_nothrow = [] {
@@ -359,7 +364,7 @@ private:
 #ifndef SIRKIT_MILLER_RABIN_DEFINED
 #define SIRKIT_MILLER_RABIN_DEFINED
 template <class Integer, class Bases>
-inline bool MillerRabin(Integer n, const Bases &bases) noexcept(reinsirk::detail::miller_rabin_bases_nothrow<Bases>)
+inline bool MillerRabin(Integer n, const Bases &bases) noexcept(/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::miller_rabin_bases_nothrow<Bases>)
 {
     static_assert(std::is_integral_v<Integer> && sizeof(Integer) <= sizeof(std::uint64_t),
                   "MillerRabin: n must be an integer of at most 64 bits");
@@ -372,8 +377,8 @@ inline bool MillerRabin(Integer n, const Bases &bases) noexcept(reinsirk::detail
     if ((value & 1u) == 0)
         return value == 2;
     if (value < (std::uint64_t{1} << 62))
-        return reinsirk::detail::MillerRabin64<true>(value).test(bases);
-    return reinsirk::detail::MillerRabin64<false>(value).test(bases);
+        return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::MillerRabin64<true>(value).test(bases);
+    return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::MillerRabin64<false>(value).test(bases);
 }
 
 template <class Integer>
@@ -385,7 +390,7 @@ inline bool MillerRabin(Integer n, std::initializer_list<std::uint64_t> bases) n
 
 #ifndef SIRKIT_PRIMALITY_FILTER_DEFINED
 #define SIRKIT_PRIMALITY_FILTER_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 // 105の各剰余が3・5・7のいずれでも割り切れなければ、そのbitを1にする。
 inline constexpr std::uint64_t primality_coprime_105[2] = {
     0x6c30da65a4cb2916ULL, 0x000001a2534c9699ULL};
@@ -406,18 +411,18 @@ inline bool is_prime(Integer n) noexcept
     if (value < 2)
         return false;
     if (value <= std::numeric_limits<std::uint32_t>::max())
-        return reinsirk::detail::is_prime_u32(static_cast<std::uint32_t>(value));
+        return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::is_prime_u32(static_cast<std::uint32_t>(value));
     if ((value & 1u) == 0) return false;
     // 32bitを超える値は小素数3・5・7をまとめて除外する。
     const auto residue = value % 105u;
-    if (((reinsirk::detail::primality_coprime_105[residue >> 6] >> (residue & 63)) & 1u) == 0 ||
+    if (((/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::primality_coprime_105[residue >> 6] >> (residue & 63)) & 1u) == 0 ||
         value % 11u == 0 || value % 13u == 0 || value % 17u == 0)
         return false;
     if (value < std::uint64_t{4'759'123'141})
         return MillerRabin(value, {2, 7, 61});
     if (value < (std::uint64_t{1} << 62))
-        return reinsirk::detail::MillerRabin64<true>(value).test_deterministic();
-    return reinsirk::detail::MillerRabin64<false>(value).test_deterministic();
+        return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::MillerRabin64<true>(value).test_deterministic();
+    return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::MillerRabin64<false>(value).test_deterministic();
 }
 #endif
 
@@ -452,6 +457,10 @@ inline std::optional<std::uint64_t> prev_prime(Integer n) noexcept {
 }
 #endif
 
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
+
 
 // Library: Math/Eratosthenes.cpp
 // SPDX-License-Identifier: CC0-1.0
@@ -476,6 +485,8 @@ inline std::optional<std::uint64_t> prev_prime(Integer n) noexcept {
 // eratosthenes(limit, ans): limit以下の素数を昇順でansの末尾へ追加する。O(limit log log limit)。
 // eratosthenes(limit): limit以下の素数を昇順のvectorで返す。同じ計算量。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <array>
 #include <bit>
@@ -490,9 +501,12 @@ inline std::optional<std::uint64_t> prev_prime(Integer n) noexcept {
 #include <immintrin.h>
 #endif
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_PRIME_SIEVE_POPCOUNT_DEFINED
 #define SIRKIT_PRIME_SIEVE_POPCOUNT_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 #if (!defined(SIRKIT_DISABLE_SIMD)) && ((defined(__i386__)) || (defined(__x86_64__)))
 // 各bit位置で3個の値を足し、桁上がりと下位bitへ分ける。
 [[gnu::target("avx2"), gnu::always_inline]] inline void carry_save_avx2(
@@ -606,7 +620,7 @@ namespace reinsirk::detail {
 
 #ifndef SIRKIT_PRIME_SIEVE_PATTERN_DEFINED
 #define SIRKIT_PRIME_SIEVE_PATTERN_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 inline constexpr auto sieve_pattern = [] {
     std::array<std::uint64_t, 1155> values{};
     for (std::size_t word = 0; word < values.size(); ++word)
@@ -628,7 +642,7 @@ public:
         if (limit < 128) {
             if (limit != 0) {
                 // 127以下の奇合成数は3・5・7・11のいずれかの倍数。
-                constexpr auto primes = (reinsirk::detail::sieve_pattern[0] |
+                constexpr auto primes = (/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::sieve_pattern[0] |
                     (std::uint64_t{1} << 1) | (std::uint64_t{1} << 2) |
                     (std::uint64_t{1} << 3) | (std::uint64_t{1} << 5)) & ~std::uint64_t{1};
                 const auto bits = static_cast<unsigned>((limit + 1) / 2);
@@ -642,8 +656,8 @@ public:
             throw std::length_error("PrimeSieve: limit exceeds capacity");
         // 周期パターンから直接構築し、同じ領域の二重初期化を避ける。
         flags_.reserve(static_cast<std::size_t>(words));
-        const auto& pattern = reinsirk::detail::sieve_pattern;
-        constexpr auto period = reinsirk::detail::sieve_pattern.size();
+        const auto& pattern = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::sieve_pattern;
+        constexpr auto period = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::sieve_pattern.size();
         auto remaining = static_cast<std::size_t>(words);
         while (remaining >= period) {
             flags_.insert(flags_.end(), pattern.begin(), pattern.end());
@@ -685,7 +699,7 @@ public:
 #if (!defined(SIRKIT_DISABLE_SIMD)) && ((defined(__i386__)) || (defined(__x86_64__)))
         if (limit_ >= 3969 && __builtin_cpu_supports("avx2")) [[unlikely]]
             return static_cast<std::uint64_t>(limit_ >= 2) +
-                   reinsirk::detail::popcount_words_avx2(flags_.data(), flags_.size());
+                   /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::popcount_words_avx2(flags_.data(), flags_.size());
 #endif
         std::uint64_t count = limit_ >= 2;
         for (std::uint64_t word : flags_) count += std::popcount(word);
@@ -986,6 +1000,13 @@ inline std::vector<std::uint64_t> eratosthenes(std::uint64_t limit) {
 }
 #endif
 
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
+
+
+namespace sirkit {}
+using namespace sirkit;
 
 // SPDX-License-Identifier: CC0-1.0
 #include <array>

@@ -5,17 +5,22 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
+try:
+    from public_namespace import wrap_source, unwrap_source
+except ModuleNotFoundError:
+    from Scripts.public_namespace import wrap_source, unwrap_source
+
 def render(root: Path) -> bytes:
     directory = root / 'Math/BinaryMatrix/components'
     header = (directory / 'binary_matrix_header.inc').read_text()
-    bitset = (root / 'DataStructure/Dynamic_Bitset.cpp').read_text()
+    bitset = unwrap_source((root / 'DataStructure/Dynamic_Bitset.cpp').read_text())
     start = bitset.index('#include ')
     end = bitset.index('#ifndef SIRKIT_DYNAMIC_BITSET_DEFINED')
     payload = bitset[start:end]
     if 'SIRKIT_DYNAMIC_BITSET_WORD_OPERATIONS_DEFINED' not in payload:
         raise ValueError('共有bit kernelのguardが見つかりません')
     body = (directory / 'binary_matrix_body.inc').read_text()
-    return (header.rstrip() + '\n\n' + payload.rstrip() + '\n\n' + body.rstrip() + '\n').encode()
+    return wrap_source(header.rstrip() + '\n\n' + payload.rstrip() + '\n\n' + body.rstrip() + '\n').encode()
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)

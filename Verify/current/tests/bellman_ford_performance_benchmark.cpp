@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 // 入力生成・ファイル読込を除き、同じグラフへのBellmanFord呼出しだけを計測する。
 #ifndef SIRKIT_TEST_NEGATIVE_PATH_SOURCE
 #define SIRKIT_TEST_NEGATIVE_PATH_SOURCE "../../../Graph/Bellman-Ford.cpp"

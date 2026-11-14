@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 // 検査用リンク引数: -Wl,--wrap=malloc,--wrap=realloc,--wrap=free
 #ifndef LI_CHAO_SOURCE
 #define LI_CHAO_SOURCE "../../../DataStructure/dynamic-li-chao-tree.cpp"

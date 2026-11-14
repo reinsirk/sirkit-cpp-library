@@ -17,6 +17,8 @@
 // reset(n=0)/swap(other): 空のn頂点へ/O(1)交換。コピーは独立所有、ムーブ元は空。
 // 頂点・辺IDの入力検査はSKIP_RUNTIME_CHECKSで除く。次数条件と全辺の消費判定は維持する。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <cstddef>
 #include <limits>
@@ -25,6 +27,9 @@
 #include <utility>
 #include <vector>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_EULERIAN_TRAIL_DEFINED
 #define SIRKIT_EULERIAN_TRAIL_DEFINED
 template<bool Directed = false>
@@ -142,3 +147,7 @@ public:
 using DirectedEulerianTrail = EulerianTrail<true>;
 using UndirectedEulerianTrail = EulerianTrail<false>;
 #endif
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1

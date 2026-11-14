@@ -14,6 +14,8 @@
 // values(): 元の列をコピー、O(n+1)。assign(vector<T>): 再構築。O(旧n log(旧n+1)+n log(n+1)+1)。点更新は行わない。
 // clear()/swap(other): 空へ戻す/内容交換。O(旧n log(旧n+1)+1)/O(1)。コピーは独立、移動元は空。演算等の例外時は内容の強い保証なし。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <bit>
 #include <cstddef>
@@ -22,6 +24,9 @@
 #include <utility>
 #include <vector>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_DISJOINT_SPARSE_TABLE_DEFINED
 #define SIRKIT_DISJOINT_SPARSE_TABLE_DEFINED
 template<class T, class Op>
@@ -123,3 +128,7 @@ public:
     }
 };
 #endif
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1

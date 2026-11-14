@@ -24,6 +24,8 @@
 
 // GCC 15.2/x86-64では対応CPUでAVX2を使用。SIRKIT_DISABLE_SIMDで専用処理・CPU判定を除く。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <array>
 #include <utility>
@@ -43,9 +45,12 @@
 #endif
 
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_LIS_LENGTHS_DEFINED
 #define SIRKIT_LIS_LENGTHS_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 template <bool Strict, bool Prefix, class T>
 auto LISLengths(const std::vector<T>& v) {
     std::vector<T> tails;
@@ -68,17 +73,17 @@ auto LISLengths(const std::vector<T>& v) {
 } // namespace reinsirk::detail
 template <bool Strict, class T>
 std::vector<std::size_t> LIS(const std::vector<T>& v) {
-    return reinsirk::detail::LISLengths<Strict, true>(v);
+    return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::LISLengths<Strict, true>(v);
 }
 template <bool Strict = true, class T>
 std::size_t LISLength(const std::vector<T>& v) {
-    return reinsirk::detail::LISLengths<Strict, false>(v);
+    return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::LISLengths<Strict, false>(v);
 }
 #endif
 
 #ifndef SIRKIT_LIS_RESTORE_DEFINED
 #define SIRKIT_LIS_RESTORE_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 template <bool Strict, class Index, class T>
 std::vector<std::size_t> LISIndicesImpl(const std::vector<T>& v) {
     if (v.empty()) return {};
@@ -503,8 +508,8 @@ std::vector<std::size_t> LISIndicesSelected(const std::vector<T>& v) {
 template <bool Strict = true, class T>
 std::vector<std::size_t> LISIndices(const std::vector<T>& v) {
     if (v.size() <= std::numeric_limits<std::uint32_t>::max())
-        return reinsirk::detail::LISIndicesSelected<Strict, std::uint32_t>(v);
-    return reinsirk::detail::LISIndicesSelected<Strict, std::size_t>(v);
+        return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::LISIndicesSelected<Strict, std::uint32_t>(v);
+    return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::LISIndicesSelected<Strict, std::size_t>(v);
 }
 template <bool Strict = true, class T>
 std::vector<T> LISSequence(const std::vector<T>& v) {
@@ -539,3 +544,7 @@ std::vector<std::size_t> LISEndingLengths(const std::vector<T>& v) {
     return result;
 }
 #endif
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1

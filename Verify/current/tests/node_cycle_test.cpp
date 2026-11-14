@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 // 添字で指定した入口・切断辺・所有者数を照合する。
 #ifndef SIRKIT_NODE_SOURCE
 #define SIRKIT_NODE_SOURCE "../../../DataStructure/Node.cpp"

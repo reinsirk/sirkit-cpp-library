@@ -20,6 +20,8 @@
 // RadixSortOrder(values): 昇順の元添字列を返す。同値は元の順、入力不変。
 // boolを除く8/16/32/64bit整数。O(sizeof(T)*n)時間・O(n)追加領域。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <array>
 #include <bit>
@@ -37,9 +39,12 @@
 #include <immintrin.h>
 #endif
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_RADIX_SORT_DETAIL_DEFINED
 #define SIRKIT_RADIX_SORT_DETAIL_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 template <class T>
 concept RadixInteger = std::integral<T> && !std::same_as<T, bool> &&
     !std::is_const_v<T> && !std::is_volatile_v<T> &&
@@ -223,14 +228,14 @@ template <RadixInteger T> struct RadixSortDetail {
 
 #ifndef SIRKIT_RADIX_SORT_WORKSPACE_DEFINED
 #define SIRKIT_RADIX_SORT_WORKSPACE_DEFINED
-template <reinsirk::detail::RadixInteger T> class RadixSortWorkspace {
+template </*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::RadixInteger T> class RadixSortWorkspace {
     std::vector<T> buffer_;
 public:
     void sort(std::vector<T>& values) {
-        reinsirk::detail::RadixSortDetail<T>::template sort<false>(values, buffer_, T{});
+        /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::RadixSortDetail<T>::template sort<false>(values, buffer_, T{});
     }
     void sort(std::vector<T>& values, T maximum) {
-        reinsirk::detail::RadixSortDetail<T>::template sort<true>(values, buffer_, maximum);
+        /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::RadixSortDetail<T>::template sort<true>(values, buffer_, maximum);
     }
     void reserve(std::size_t count) { buffer_.reserve(count); }
     std::size_t capacity() const noexcept { return buffer_.capacity(); }
@@ -241,11 +246,11 @@ public:
 #ifndef SIRKIT_RADIX_SORT_DEFINED
 #define SIRKIT_RADIX_SORT_DEFINED
 // 小配列は確保せず挿入ソート。整列済みは変更せず、一定のbyteは散布を省く。
-template <reinsirk::detail::RadixInteger T> void RadixSort(std::vector<T>& values) {
+template </*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::RadixInteger T> void RadixSort(std::vector<T>& values) {
     RadixSortWorkspace<T> workspace;
     workspace.sort(values);
 }
-template <reinsirk::detail::RadixInteger T> void RadixSort(std::vector<T>& values, T maximum) {
+template </*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::RadixInteger T> void RadixSort(std::vector<T>& values, T maximum) {
     RadixSortWorkspace<T> workspace;
     workspace.sort(values, maximum);
 }
@@ -253,8 +258,8 @@ template <reinsirk::detail::RadixInteger T> void RadixSort(std::vector<T>& value
 
 #ifndef SIRKIT_RADIX_SORT_ORDER_DEFINED
 #define SIRKIT_RADIX_SORT_ORDER_DEFINED
-template <reinsirk::detail::RadixInteger T> std::vector<std::size_t> RadixSortOrder(const std::vector<T>& values) {
-    using Detail = reinsirk::detail::RadixSortDetail<T>;
+template </*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::RadixInteger T> std::vector<std::size_t> RadixSortOrder(const std::vector<T>& values) {
+    using Detail = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::RadixSortDetail<T>;
     using Unsigned = typename Detail::Unsigned;
     const std::size_t n = values.size();
     std::vector<std::size_t> order(n);
@@ -298,3 +303,7 @@ template <reinsirk::detail::RadixInteger T> std::vector<std::size_t> RadixSortOr
     return order;
 }
 #endif
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1

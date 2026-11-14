@@ -2,6 +2,8 @@
 #include "../Graph/Bellman-Ford.cpp"
 #include <iostream>
 
+using namespace sirkit;
+
 int main()
 {
     WGraph graph(5);
@@ -13,9 +15,9 @@ int main()
     std::cout << BellmanFord(graph, distances, 0) << '\n'; // 1
     for (const auto distance : distances)
     {
-        if (distance == INF)
+        if (distance == kInf)
             std::cout << "unreachable\n";
-        else if (distance == -INF)
+        else if (distance == -kInf)
             std::cout << "negative cycle\n";
         else
             std::cout << distance << '\n';

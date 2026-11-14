@@ -34,6 +34,8 @@
 // reserve_nodesは最悪O(N)。使用メモリはノード枠数＋256×索引枠数に比例。
 // 個数・ノード枠の上限超過は検査省略時もlength_error。確保失敗はbad_alloc。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <array>
 #include <cstddef>
 #include <cstdint>
@@ -47,6 +49,9 @@
 #include <utility>
 #include <vector>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_TRIE_NODE_DEFINED
 #define SIRKIT_TRIE_NODE_DEFINED
 struct TrieNode {
@@ -461,3 +466,7 @@ public:
     friend void swap(Trie& a, Trie& b) noexcept { a.swap(b); }
 };
 #endif
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1

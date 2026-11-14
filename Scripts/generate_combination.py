@@ -26,6 +26,11 @@ TARGETS: dict[str, tuple[str, tuple[str, ...]]] = {
 }
 
 
+try:
+    from public_namespace import wrap_source, unwrap_source
+except ModuleNotFoundError:
+    from Scripts.public_namespace import wrap_source, unwrap_source
+
 def dependency_order(roots: tuple[str, ...]) -> list[str]:
     order: list[str] = []
     complete: set[str] = set()
@@ -91,7 +96,7 @@ def render(kind: str, roots: tuple[str, ...], headers: dict[str, str], pieces: d
         definition = definition.replace("#ifndef SIRKIT_PRIMALITY32_DEFINED", condition, 1)
     content = "// SPDX-License-Identifier: CC0-1.0\n\n" + headers[kind] + "\n" + prototype + "\n"
     content += "\n".join(pieces[name] for name in dependency_order(roots))
-    return render_api_overview(content + "\n" + definition, ("Document/binomial_coefficient.md",))
+    return wrap_source(render_api_overview(content + "\n" + definition, ("Document/binomial_coefficient.md",)))
 
 
 def main() -> int:

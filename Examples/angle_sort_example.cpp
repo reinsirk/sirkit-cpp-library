@@ -8,6 +8,8 @@
 #include <utility>
 #include <vector>
 
+using namespace sirkit;
+
 constexpr auto angle_limit = std::numeric_limits<std::int64_t>::max();
 constexpr auto angle_minimum = std::numeric_limits<std::int64_t>::min();
 static_assert(angle_cross_sign({angle_minimum, angle_limit}, {angle_limit, angle_minimum}) == 1);

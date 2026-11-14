@@ -14,7 +14,7 @@
 #include <string_view>
 #include <utility>
 
-namespace reinsirk::detail {
+namespace sirkit::detail {
 // stdinを末尾まで読み、所有する領域と読んだバイト数を返す。容量は不足時に倍にする。
 inline std::pair<std::unique_ptr<char[]>, std::size_t> verify_read_stdin() {
     std::size_t capacity = std::size_t{1} << 20, size = 0;
@@ -87,11 +87,11 @@ inline char* verify_write_with_space(char* p, std::uint32_t value) {
 }
 
 int main() {
-    const auto [input, input_size] = reinsirk::detail::verify_read_stdin();
+    const auto [input, input_size] = ::sirkit::detail::verify_read_stdin();
     const char* first = input.get();
     const char* const last = first + input_size;
     while (first != last && static_cast<unsigned char>(*first) <= ' ') ++first;
-    const char* const end = reinsirk::detail::verify_find_space(first, last);
+    const char* const end = ::sirkit::detail::verify_find_space(first, last);
     const std::string_view s(first, static_cast<std::size_t>(end - first));
     const auto z = z_algorithm(s);
 
@@ -105,7 +105,7 @@ int main() {
             if (std::fwrite(buffer, 1, size, stdout) != size) return 1;
             p = buffer;
         }
-        p = reinsirk::detail::verify_write_with_space(p, static_cast<std::uint32_t>(value));
+        p = ::sirkit::detail::verify_write_with_space(p, static_cast<std::uint32_t>(value));
     }
     if (p == buffer) *p++ = '\n';
     else p[-1] = '\n';

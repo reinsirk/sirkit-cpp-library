@@ -4,12 +4,17 @@
 from pathlib import Path
 import argparse
 
+try:
+    from public_namespace import wrap_source, unwrap_source
+except ModuleNotFoundError:
+    from Scripts.public_namespace import wrap_source, unwrap_source
+
 def render(root: Path) -> dict[Path,bytes]:
-    parts=root/'Math/Polynomial/components';fps=(root/'Math/Formal_Power_Series.cpp').read_text()
+    parts=root/'Math/Polynomial/components';fps=unwrap_source((root/'Math/Formal_Power_Series.cpp').read_text())
     overview=fps[:fps.index('#include ')].split('// API一覧\n',1)[1].strip()
     header=(parts/'polynomial_header.inc').read_text().rstrip()+'\n//\n// [同梱FPS/NTT]\n'+overview
     data=header+'\n\n'+fps[fps.index('#include '):].rstrip()+'\n\n'+(parts/'polynomial_body.inc').read_text().rstrip()+'\n'
-    return {root/'Math/Polynomial.cpp':data.encode()}
+    return {root/'Math/Polynomial.cpp':wrap_source(data).encode()}
 
 def main():
     parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--check',action='store_true');args=parser.parse_args()

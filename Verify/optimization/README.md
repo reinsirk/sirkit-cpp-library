@@ -38,7 +38,7 @@ Codexの後は、測定とローカル照合の根拠をファイルへ保存し
 }
 ```
 
-変更なしでも、正しさと性能を確認して`changed=false`・同じ入出力SHAで記録できます。Library Checker以外は`scope=library`も使えます。根拠は持ち運べるよう、リポジトリ内のAuditへ置くことを推奨します。
+変更なしでも、正しさと性能を確認して`changed=false`・同じ入出力SHAで記録できます。Library Checker以外は`scope=library`も使えます。根拠の要約JSONは`Audit/`へ置き、詳細な検証ZIPは`Audit/data/`へローカル保存します。ZIPはGitで追跡しないため、別の環境で履歴を照合する場合は必要なZIPも別途コピーしてください。不足時は照合を失敗させ、確認済みとは扱いません。
 
 ```sh
 python3 Scripts/optimization_handoff.py --record-stage Audit/z-codex-stage.json

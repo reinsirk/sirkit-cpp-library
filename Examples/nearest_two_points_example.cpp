@@ -11,6 +11,8 @@
 // ライブラリをここへ貼り付けても使える。
 #include "../Geometry/Nearest_Two_points.cpp"
 
+using namespace sirkit;
+
 int main() {
     const std::vector<P> points{{9, 7}, {-3, 2}, {4, 5}, {5, 5}};
     const auto answer = nearest_two_points(points);

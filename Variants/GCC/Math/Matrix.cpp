@@ -24,6 +24,8 @@
 // GCC/x86のuint32_t行列積は、対応CPUでAVX2を使う。unsignedの積と加算は通常版と同じmod 2^32。
 // SIRKIT_DISABLE_SIMDで専用実装とCPU判定を除外する。小さい行列・他の型・非対応CPU/コンパイラは標準ループ。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -34,11 +36,20 @@
 #include <utility>
 #include <vector>
 #include <bit>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #if (!defined(SIRKIT_DISABLE_SIMD)) && ((defined(__x86_64__)) || (defined(__i386__)))
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <immintrin.h>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_MATRIX_U32_SIMD_DETAIL_DEFINED
 #define SIRKIT_MATRIX_U32_SIMD_DETAIL_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 inline bool matrix_u32_avx2_available() noexcept { return __builtin_cpu_supports("avx2")!=0; }
 __attribute__((target("avx2"))) inline void matrix_u32_tiled_avx2(
     const std::uint32_t* left,const std::uint32_t* right,std::uint32_t* output,
@@ -254,12 +265,12 @@ Matrix<T> operator*(const Matrix<T>& a,const Matrix<T>& b) {
     if(result.empty()||a.cols()==0)return result;
 #if (!defined(SIRKIT_DISABLE_SIMD)) && ((defined(__x86_64__)) || (defined(__i386__)))
     if constexpr(std::is_same_v<T,std::uint32_t>) {
-        if(b.cols()>=16&&a.size()>=64&&reinsirk::detail::matrix_u32_avx2_available()) {
+        if(b.cols()>=16&&a.size()>=64&&/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::matrix_u32_avx2_available()) {
             // 小さい右行列と短い内積は従来の全内積累積を維持する。
             if(a.cols()>64 && b.size()>262144)
-                reinsirk::detail::matrix_u32_tiled_avx2(a.values().data(),b.values().data(),result.values().data(),a.rows(),a.cols(),b.cols());
+                /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::matrix_u32_tiled_avx2(a.values().data(),b.values().data(),result.values().data(),a.rows(),a.cols(),b.cols());
             else
-            reinsirk::detail::matrix_u32_accumulate_avx2(a.values().data(),b.values().data(),result.values().data(),a.rows(),a.cols(),b.cols());
+            /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::matrix_u32_accumulate_avx2(a.values().data(),b.values().data(),result.values().data(),a.rows(),a.cols(),b.cols());
             return result;
         }
     }
@@ -297,3 +308,7 @@ template<class T>std::vector<T> MatrixApply(const Matrix<T>& matrix,const std::v
     return result;
 }
 #endif
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1

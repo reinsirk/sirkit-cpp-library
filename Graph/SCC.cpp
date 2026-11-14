@@ -15,6 +15,8 @@
 // reset(n=0): 空のn頂点へ戻す。swap(other): O(1)交換。コピーは独立所有、ムーブ元は空の未分解グラフ。
 // 入力検査はSKIP_RUNTIME_CHECKSで除く。ids()の参照は再scc/build・代入・破棄で無効になる。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -24,6 +26,9 @@
 #include <utility>
 #include <vector>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_UNWEIGHTED_GRAPH_DEFINED
 #define SIRKIT_UNWEIGHTED_GRAPH_DEFINED
 using Graph = std::vector<std::vector<int>>;
@@ -31,7 +36,7 @@ using Graph = std::vector<std::vector<int>>;
 
 #ifndef SIRKIT_SCC_DETAIL_DEFINED
 #define SIRKIT_SCC_DETAIL_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 // 既存CSR用の次数配列を調べる。通常のm!=nでは呼ばれない。
 template<class Index>
 #if defined(__GNUC__) || defined(__clang__)
@@ -207,7 +212,7 @@ public:
 #endif
     }
     int build() {
-        auto result = reinsirk::detail::directed_component_ids(n_, edges_);
+        auto result = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::directed_component_ids(n_, edges_);
         ids_.swap(result.second); count_ = result.first;
 #ifndef SKIP_RUNTIME_CHECKS
         built_ = true;
@@ -283,3 +288,7 @@ public:
     }
 };
 #endif
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1

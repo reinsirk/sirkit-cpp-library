@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 // multisetとの独立照合。遅延削除、全API、所有権、値コピー例外を検査する。
 #ifndef EPQ_SOURCE
 #define EPQ_SOURCE "../../../DataStructure/erasable-priority-queue.cpp"

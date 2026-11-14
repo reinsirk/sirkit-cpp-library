@@ -6,6 +6,8 @@
 #include <utility>
 #include <vector>
 
+using namespace sirkit;
+
 // べき乗表の例用。実際には利用側のMintを渡す。
 struct ExamplePower {
     std::int64_t value;

@@ -2,6 +2,8 @@
 #include "../String/Manacher.cpp"
 #include <iostream>
 #include <string>
+
+using namespace sirkit;
 int main() {
     const std::string text = "abacaba";
     const PalindromeRadii radii(text);

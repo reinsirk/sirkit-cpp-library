@@ -37,6 +37,8 @@
 // viewは追加/容量変更/clear/代入/所有権移動まで有効。番号/負数/区間/時刻/負の幅の検査はSKIP_RUNTIME_CHECKSで除外。
 // 容量保護、幅0の自動選択、整数計算の0除算回避は検査省略時も維持。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -46,9 +48,12 @@
 #include <utility>
 #include <vector>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_MO_ORDERING_HELPERS_DEFINED
 #define SIRKIT_MO_ORDERING_HELPERS_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 struct MoOrderEntry { std::size_t id; std::int32_t left_block, right; };
 struct TimedMoOrderEntry { std::size_t id, time; std::int32_t left_block, right_block; };
 inline std::size_t mo_integer_sqrt(std::size_t value) noexcept {
@@ -88,8 +93,8 @@ public:
 private:
     std::int32_t length_ = 0;
     std::vector<Query> queries_;
-    std::vector<reinsirk::detail::MoOrderEntry> ordered_entries(std::int32_t requested) const {
-        std::vector<reinsirk::detail::MoOrderEntry> result;
+    std::vector</*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::MoOrderEntry> ordered_entries(std::int32_t requested) const {
+        std::vector</*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::MoOrderEntry> result;
         if (queries_.empty()) return result;
         const auto width = block_size(requested); result.reserve(queries_.size());
         for (std::size_t i = 0; i < queries_.size(); ++i) result.push_back({i, queries_[i].left / width, queries_[i].right});
@@ -117,9 +122,9 @@ public:
         return queries_[id];
     }
     std::size_t add_query(std::int32_t left, std::int32_t right) {
-        reinsirk::detail::mo_check_range(length_, left, right); const auto id = queries_.size(); queries_.push_back({left, right}); return id;
+        /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::mo_check_range(length_, left, right); const auto id = queries_.size(); queries_.push_back({left, right}); return id;
     }
-    std::int32_t block_size(std::int32_t requested = 0) const { return reinsirk::detail::mo_block_width(length_, queries_.size(), requested, false); }
+    std::int32_t block_size(std::int32_t requested = 0) const { return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::mo_block_width(length_, queries_.size(), requested, false); }
     std::vector<std::size_t> order(std::int32_t requested = 0) const {
         const auto entries = ordered_entries(requested); std::vector<std::size_t> result; result.reserve(entries.size());
         for (const auto& entry : entries) result.push_back(entry.id);
@@ -158,8 +163,8 @@ private:
     std::int32_t length_ = 0;
     std::vector<Query> queries_;
     std::vector<std::int32_t> updates_;
-    std::vector<reinsirk::detail::TimedMoOrderEntry> ordered_entries(std::int32_t requested) const {
-        std::vector<reinsirk::detail::TimedMoOrderEntry> result;
+    std::vector</*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::TimedMoOrderEntry> ordered_entries(std::int32_t requested) const {
+        std::vector</*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::TimedMoOrderEntry> result;
         if (queries_.empty()) return result;
         const auto width = block_size(requested); result.reserve(queries_.size());
         for (std::size_t i = 0; i < queries_.size(); ++i) result.push_back({i, queries_[i].time, queries_[i].left / width, queries_[i].right / width});
@@ -197,10 +202,10 @@ public:
     }
     std::size_t add_query(std::int32_t left, std::int32_t right) { return add_query(left, right, updates_.size()); }
     std::size_t add_query(std::int32_t left, std::int32_t right, std::size_t time) {
-        reinsirk::detail::mo_check_range(length_, left, right);
+        /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::mo_check_range(length_, left, right);
         const auto id = queries_.size(); queries_.push_back({left, right, time}); return id;
     }
-    std::int32_t block_size(std::int32_t requested = 0) const { return reinsirk::detail::mo_block_width(length_, queries_.size(), requested, true); }
+    std::int32_t block_size(std::int32_t requested = 0) const { return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::mo_block_width(length_, queries_.size(), requested, true); }
     std::vector<std::size_t> order(std::int32_t requested = 0) const {
         const auto entries = ordered_entries(requested); std::vector<std::size_t> result; result.reserve(entries.size());
         for (const auto& entry : entries) result.push_back(entry.id);
@@ -233,6 +238,13 @@ public:
 };
 #endif
 
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
+
+
+namespace sirkit {}
+using namespace sirkit;
 
 // SPDX-License-Identifier: CC0-1.0
 // Verify I/O: Verify/current/common/fast_io.hpp

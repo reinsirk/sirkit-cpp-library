@@ -2,6 +2,8 @@
 #include <iostream>
 #include <cassert>
 
+using namespace sirkit;
+
 int main() {
     DynamicUnionFind uf(10);
     uf.add(-7);

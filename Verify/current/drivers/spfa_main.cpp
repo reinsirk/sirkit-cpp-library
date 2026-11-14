@@ -7,5 +7,5 @@ int main() {
     for (int i=0;i<m;++i) { int u,v; std::int64_t w; std::cin>>u>>v>>w; graph[u].emplace_back(v,w); }
     std::vector<std::int64_t> distance;
     if (SPFA(graph,distance,s)) { std::cout << "NEGATIVE CYCLE\n"; return 0; }
-    for (auto x:distance) { if (x==INF) std::cout<<"INF\n"; else std::cout<<x<<'\n'; }
+    for (auto x:distance) { if (x==kInf) std::cout<<"INF\n"; else std::cout<<x<<'\n'; }
 }

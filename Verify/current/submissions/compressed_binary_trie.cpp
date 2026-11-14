@@ -39,6 +39,8 @@
 // 検索・削除はO(B)、追加は償却O(B)（再配置時O(ノード数)）。
 // 指定IDの削除はさらにその値のID数に比例する。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <array>
 #include <bit>
@@ -51,6 +53,9 @@
 #include <utility>
 #include <vector>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_COMPRESSED_BINARY_TRIE_DEFINED
 #define SIRKIT_COMPRESSED_BINARY_TRIE_DEFINED
 template <typename T, int MAX_LOG = std::numeric_limits<T>::digits - 1,
@@ -367,6 +372,13 @@ public:
 };
 #endif
 
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
+
+
+namespace sirkit {}
+using namespace sirkit;
 
 // SPDX-License-Identifier: CC0-1.0
 // Verify I/O: Verify/current/common/fast_io.hpp

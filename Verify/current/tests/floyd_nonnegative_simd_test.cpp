@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 // 非負Dijkstraとの独立照合。SIMDの閾値・疎なactive行・大きな整数・FP状態を確認する。
 #ifndef SIRKIT_FLOYD_TEST_SOURCE
 #define SIRKIT_FLOYD_TEST_SOURCE "../../../Graph/Floyd-Warshall.cpp"
@@ -35,7 +37,7 @@ struct Case {
 
 Matrix reference(const Matrix& input) {
     const std::size_t n = input.size();
-    Matrix expected(n, std::vector<std::int64_t>(n, INF));
+    Matrix expected(n, std::vector<std::int64_t>(n, kInf));
     using Entry = std::pair<std::int64_t, std::size_t>;
     for (std::size_t source = 0; source < n; ++source) {
         auto& row = expected[source];
@@ -48,10 +50,10 @@ Matrix reference(const Matrix& input) {
             if (distance != row[vertex]) continue;
             for (std::size_t to = 0; to < n; ++to) {
                 const auto weight = input[vertex][to];
-                if (weight == INF) continue;
+                if (weight == kInf) continue;
                 // 各単純路がINF未満になる入力だけを生成する。
                 // 非最短の閉路によるINF以上の候補も加算前に除く。
-                if (weight >= INF - distance) continue;
+                if (weight >= kInf - distance) continue;
                 const auto candidate = distance + weight;
                 if (candidate < row[to]) {
                     row[to] = candidate;
@@ -80,10 +82,10 @@ void compare(const Case& test, const Matrix& actual, bool negative) {
 }
 
 Matrix make_case(int n, int kind, std::mt19937_64& random) {
-    Matrix input(n, std::vector<std::int64_t>(n, INF));
+    Matrix input(n, std::vector<std::int64_t>(n, kInf));
     if (n == 0) return input;
     for (int i = 0; i < n; ++i) input[i][i] = 0;
-    const auto bound = (INF - 1) / n;
+    const auto bound = (kInf - 1) / n;
     const auto small = [&] { return static_cast<std::int64_t>(random() % 4096); };
     const int hub = n / 2;
     std::vector<int> order(n);
@@ -170,7 +172,7 @@ std::vector<Case> cases() {
     // 小重みの迂回路で境界値を消さない。各直結辺は2辺以上の経路より短い。
     // 全finiteを維持し、distance-onlyのdense専用kernelへ入る入力にする。
     for (int n : {63,64,65,100,127,128,129}) {
-        const auto bound = (INF - 1) / n;
+        const auto bound = (kInf - 1) / n;
         const std::array<std::int64_t,5> requested{
             std::int64_t{1} << 20, std::int64_t{1} << 32,
             std::int64_t{1} << 52, std::int64_t{1} << 53, bound - 1};
@@ -193,7 +195,7 @@ std::vector<Case> cases() {
             {0,1}, {0,4}, {1,0}, {1,n - 1}, {n - 1,n - 2}, {n - 2,n - 1}}};
         for (const auto& [from,to] : positions) {
             auto input = dense;
-            input[from][to] = INF;
+            input[from][to] = kInf;
             const bool fp = (n == 65 && from == 1 && to == n - 1) ||
                             (n == 129 && from == n - 2 && to == n - 1);
             tests.push_back({"rollback n=" + std::to_string(n) + ",INF=" +
@@ -201,8 +203,8 @@ std::vector<Case> cases() {
                              input, reference(input), fp});
         }
     }
-    tests.push_back({"single INF diagonal", {{INF}}, {{0}}, false});
-    tests.push_back({"single positive diagonal", {{INF - 1}}, {{0}}, false});
+    tests.push_back({"single INF diagonal", {{kInf}}, {{0}}, false});
+    tests.push_back({"single positive diagonal", {{kInf - 1}}, {{0}}, false});
     return tests;
 }
 

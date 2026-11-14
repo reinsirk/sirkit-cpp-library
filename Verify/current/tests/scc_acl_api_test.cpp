@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #ifndef SIRKIT_SCC_TEST_SOURCE
 #define SIRKIT_SCC_TEST_SOURCE "../../../Graph/SCC.cpp"
 #endif

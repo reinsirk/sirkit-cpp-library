@@ -3,14 +3,6 @@ name: Verify
 on:
   pull_request:
     branches: [main]
-  push:
-    branches: [dev]
-  workflow_dispatch:
-    inputs:
-      all:
-        description: 全てのローカルVerifyを実行する
-        type: boolean
-        default: false
 
 permissions:
   contents: read
@@ -32,15 +24,27 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
+      - name: Install test tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y g++ g++-13 clang clang-18 llvm-18 clang-tidy-18 libclang-rt-18-dev
+      - name: Compiler availability
+        run: |
+          g++ --version
+          clang++ --version
       - name: Python unit tests
-        run: python3 -m unittest discover -s Scripts/tests -p 'test_*.py'
+        env:
+          SIRKIT_CLANG_TIDY: clang-tidy-18
+        run: |
+          export SIRKIT_TIDY_GCC_INSTALL_DIR="$(dirname "$(g++-13 -print-libgcc-file-name)")"
+          python3 -m unittest discover -s Scripts/tests -p 'test_*.py'
       - name: Generated source and Verify synchronization
         run: python3 -c 'from pathlib import Path; from Scripts.package_revised_libraries import check_generated; check_generated(Path.cwd())'
       - name: README and online status synchronization
         run: python3 Scripts/update_verify_status.py --check
 
   examples:
-    name: C++23 (${{ matrix.compiler }})
+    name: C++23 (${{ matrix.compiler }}, ${{ matrix.arithmetic }})
     needs: maintenance
     runs-on: ubuntu-24.04
     timeout-minutes: 45
@@ -48,6 +52,7 @@ jobs:
       fail-fast: false
       matrix:
         compiler: [g++, clang++]
+        arithmetic: [native, portable]
     steps:
       - uses: actions/checkout@v7
         with:
@@ -59,38 +64,188 @@ jobs:
           sudo apt-get install -y g++ clang
       - name: Select and run local Verify
         env:
-          VERIFY_EVENT: ${{ github.event_name }}
-          VERIFY_BEFORE: ${{ github.event.before }}
-          VERIFY_PR_BASE: ${{ github.event.pull_request.base.sha }}
-          VERIFY_ALL: ${{ inputs.all }}
           VERIFY_COMPILER: ${{ matrix.compiler }}
+          VERIFY_ARITHMETIC: ${{ matrix.arithmetic }}
           VERIFY_RESULTS: ${{ runner.temp }}/verify-results
         shell: bash
         run: |
           set -euo pipefail
-          args=(--compiler "$VERIFY_COMPILER" --skip-sync --results "$VERIFY_RESULTS/result.json")
-          if [[ "$VERIFY_COMPILER" == clang++ ]]; then
+          args=(--all --compiler "$VERIFY_COMPILER" --skip-sync --results "$VERIFY_RESULTS/result.json")
+          if [[ "$VERIFY_ARITHMETIC" == portable ]]; then
             args+=(--fallback)
           fi
-          if [[ "$VERIFY_ALL" == true ]]; then
-            args+=(--all)
-          elif [[ "$VERIFY_EVENT" == pull_request ]]; then
-            args+=(--base "$VERIFY_PR_BASE")
-          elif [[ "$VERIFY_EVENT" == push && -n "$VERIFY_BEFORE" && ! "$VERIFY_BEFORE" =~ ^0+$ ]]; then
-            if git cat-file -e "${VERIFY_BEFORE}^{commit}"; then
-              args+=(--base "$VERIFY_BEFORE")
-            else
-              args+=(--all)
-            fi
-          else
-            args+=(--base origin/main)
-          fi
           python3 Scripts/ci_verify.py "${args[@]}"
+      - name: Summarize local Verify
+        if: always()
+        env:
+          VERIFY_RESULTS: ${{ runner.temp }}/verify-results
+        run: python3 Scripts/ci_verify_summary.py "$VERIFY_RESULTS/result.json" >> "$GITHUB_STEP_SUMMARY"
       - name: Upload local Verify report
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: local-verify-${{ matrix.compiler }}
+          name: local-verify-${{ matrix.compiler }}-${{ matrix.arithmetic }}
           path: ${{ runner.temp }}/verify-results/
           if-no-files-found: ignore
           retention-days: 14
+
+  instrumented:
+    name: C++23 (${{ matrix.mode }}, checked)
+    needs: maintenance
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        mode: [sanitizers, coverage]
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Install LLVM
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang-18 llvm-18 libclang-rt-18-dev g++-13
+      - name: Check all normal Verify programs
+        env:
+          VERIFY_MODE: ${{ matrix.mode }}
+        run: >-
+          python3 Scripts/ci_instrumented.py
+          --mode "$VERIFY_MODE" --compiler clang++-18
+          --gcc-install-dir "$(dirname "$(g++-13 -print-libgcc-file-name)")"
+          --llvm-profdata llvm-profdata-18 --llvm-cov llvm-cov-18
+          --output "$RUNNER_TEMP/instrumented"
+      - name: Summarize instrumentation
+        if: always()
+        run: |
+          if [[ -f "$RUNNER_TEMP/instrumented/summary.md" ]]; then
+            cat "$RUNNER_TEMP/instrumented/summary.md" >> "$GITHUB_STEP_SUMMARY"
+          else
+            printf '計測結果が生成されませんでした。ログを確認してください。\n' >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: instrumented-${{ matrix.mode }}
+          path: ${{ runner.temp }}/instrumented/
+          if-no-files-found: ignore
+          retention-days: 14
+
+  guidelines:
+    name: C++ style (${{ matrix.guide }}, normal only)
+    needs: maintenance
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        guide: [core, google]
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Install clang-tidy
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang-18 clang-tidy-18 g++-13
+      - name: Check normal library sources
+        env:
+          CPP_GUIDE: ${{ matrix.guide }}
+        run: >-
+          python3 Scripts/ci_cpp_guidelines.py
+          --clang-tidy clang-tidy-18
+          --gcc-install-dir "$(dirname "$(g++-13 -print-libgcc-file-name)")"
+          --guide "$CPP_GUIDE"
+          --output "$RUNNER_TEMP/guidelines"
+      - name: Summarize guidelines
+        if: always()
+        run: |
+          if [[ -f "$RUNNER_TEMP/guidelines/summary.md" ]]; then
+            cat "$RUNNER_TEMP/guidelines/summary.md" >> "$GITHUB_STEP_SUMMARY"
+          else
+            printf '作法検査の結果が生成されませんでした。ログを確認してください。\n' >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: cpp-guidelines-${{ matrix.guide }}-normal
+          path: ${{ runner.temp }}/guidelines/
+          if-no-files-found: ignore
+          retention-days: 14
+
+  performance:
+    name: Representative performance (informational timings)
+    needs: maintenance
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Install compiler
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y g++
+      - name: Compare base and current libraries
+        env:
+          VERIFY_PR_BASE: ${{ github.event.pull_request.base.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          code=0
+          python3 Scripts/ci_benchmark.py --base "$VERIFY_PR_BASE" --compiler g++ --output "$RUNNER_TEMP/performance" || code=$?
+          if [[ "$code" == 0 ]]; then
+            python3 -c 'import json,sys; r=json.load(open(sys.argv[1])); sys.exit(0 if r.get("status") in ("PASS","PARTIAL") and r.get("current_measurements_passed") is True and type(r.get("compared_cases")) is int and r["compared_cases"]>0 else 1)' "$RUNNER_TEMP/performance/result.json"
+          elif [[ "$code" == 2 ]]; then
+            python3 -c 'import json,sys; r=json.load(open(sys.argv[1])); sys.exit(0 if r.get("status")=="NO_BASELINE" and r.get("current_measurements_passed") is True and type(r.get("compared_cases")) is int and r["compared_cases"]==0 else 1)' "$RUNNER_TEMP/performance/result.json"
+            printf '::notice::性能の比較元がないため、現在版の測定だけを保存しました。\n'
+          elif [[ "$code" != 0 ]]; then
+            exit "$code"
+          fi
+      - name: Summarize performance
+        if: always()
+        run: |
+          if [[ -f "$RUNNER_TEMP/performance/summary.md" ]]; then
+            cat "$RUNNER_TEMP/performance/summary.md" >> "$GITHUB_STEP_SUMMARY"
+          else
+            printf '性能測定の結果が生成されませんでした。ログを確認してください。\n' >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: representative-performance
+          path: ${{ runner.temp }}/performance/
+          if-no-files-found: ignore
+          retention-days: 14
+
+  result:
+    name: Verify result
+    if: always()
+    needs: [maintenance, examples, instrumented, guidelines, performance]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Require all checks
+        env:
+          MAINTENANCE_RESULT: ${{ needs.maintenance.result }}
+          VERIFY_RESULT: ${{ needs.examples.result }}
+          INSTRUMENTED_RESULT: ${{ needs.instrumented.result }}
+          GUIDELINES_RESULT: ${{ needs.guidelines.result }}
+          PERFORMANCE_RESULT: ${{ needs.performance.result }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          {
+            printf '## Verify\n\n| 検査 | 結果 |\n| --- | --- |\n'
+            printf '| 生成物・Pythonテスト・README集計 | %s |\n' "$MAINTENANCE_RESULT"
+            printf '| C++23・GCC/Clang・通常/標準代替 | %s |\n' "$VERIFY_RESULT"
+            printf '| ASan/UBSan・カバレッジ（checked） | %s |\n' "$INSTRUMENTED_RESULT"
+            printf '| Core Guidelines・Google Style（通常版のみ） | %s |\n' "$GUIDELINES_RESULT"
+            printf '| 性能測定の実行（速度差は参考） | %s |\n' "$PERFORMANCE_RESULT"
+            printf '\nローカル検証の結果です。オンラインACはREADMEのVerify一覧で別に管理します。\n'
+          } >> "$GITHUB_STEP_SUMMARY"
+          [[ "$MAINTENANCE_RESULT" == success && "$VERIFY_RESULT" == success && "$INSTRUMENTED_RESULT" == success && "$GUIDELINES_RESULT" == success && "$PERFORMANCE_RESULT" == success ]]

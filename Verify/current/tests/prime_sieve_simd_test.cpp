@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #ifndef SIEVE_SOURCE
 #define SIEVE_SOURCE "../../../Math/Eratosthenes.cpp"
 #endif
@@ -54,7 +56,7 @@ void word_cases(){
  const std::array<std::size_t,24> lengths{0,1,2,3,4,5,7,8,15,16,31,32,63,64,127,128,129,255,256,511,512,4095,4096,65536};
  for(unsigned pattern=0;pattern<5;++pattern){
   for(std::size_t i=0;i<data.size();++i)data[i]=pattern==0?0:pattern==1?~std::uint64_t{0}:pattern==2?UINT64_C(0xaaaaaaaaaaaaaaaa):pattern==3?UINT64_C(0x0101010101010101)*(i%256):gen();
-  for(std::size_t offset=0;offset<4;++offset)for(auto n:lengths){std::uint64_t expected=0;for(std::size_t i=0;i<n;++i)expected+=std::popcount(data[i+offset]);require(reinsirk::detail::popcount_words_avx2(data.data()+offset,n)==expected);}
+  for(std::size_t offset=0;offset<4;++offset)for(auto n:lengths){std::uint64_t expected=0;for(std::size_t i=0;i<n;++i)expected+=std::popcount(data[i+offset]);require(::sirkit::detail::popcount_words_avx2(data.data()+offset,n)==expected);}
  }
 #endif
 }

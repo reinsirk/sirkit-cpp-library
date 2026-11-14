@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #include "../../../Fast/Source/Internal/Buffer.cpp"
 #include "../../../Fast/Source/Internal/Buffer.cpp"
 #include <cassert>
@@ -15,7 +17,7 @@ template <class T> T make_value(std::uint64_t value) {
     else return static_cast<T>(value);
 }
 template <class T> void test_type(std::mt19937_64& random) {
-    reinsirk::detail::FastBuffer<T> actual;
+    ::sirkit::detail::FastBuffer<T> actual;
     std::vector<T> expected;
     for (int step = 0; step < 12000; ++step) {
         T value = make_value<T>(random() % 10000);
@@ -36,7 +38,7 @@ template <class T> void test_type(std::mt19937_64& random) {
             break;
         case 7: {
             auto copy = actual;
-            reinsirk::detail::FastBuffer<T> assigned; assigned = copy;
+            ::sirkit::detail::FastBuffer<T> assigned; assigned = copy;
             auto moved = std::move(copy); check(copy.empty());
             assigned = std::move(moved); check(moved.empty());
             check(assigned.size() == expected.size());
@@ -48,7 +50,7 @@ template <class T> void test_type(std::mt19937_64& random) {
         for (std::size_t i = 0; i < expected.size(); ++i) check(actual[i] == expected[i]);
     }
     for (std::size_t count : {1,2,4,8,16,32,64,128}) {
-        reinsirk::detail::FastBuffer<T> alias(count, make_value<T>(42));
+        ::sirkit::detail::FastBuffer<T> alias(count, make_value<T>(42));
         alias.emplace_back(alias.front()); check(alias.back() == make_value<T>(42));
         alias.resize(alias.capacity() + 17, alias.front());
         for (const auto& value : alias) check(value == make_value<T>(42));
@@ -70,15 +72,15 @@ struct DestructorProbe {
 int main() {
     std::mt19937_64 random(0x713eb213a2);
     test_type<std::int64_t>(random); test_type<bool>(random); test_type<std::string>(random);
-    reinsirk::detail::FastBuffer<int> empty(static_cast<const int*>(nullptr), static_cast<const int*>(nullptr));
+    ::sirkit::detail::FastBuffer<int> empty(static_cast<const int*>(nullptr), static_cast<const int*>(nullptr));
     check(empty.empty());
-    reinsirk::detail::FastBuffer<Wide> wide;
+    ::sirkit::detail::FastBuffer<Wide> wide;
     for (int i = 0; i < 1000; ++i) wide.emplace_back(i);
     check(reinterpret_cast<std::uintptr_t>(wide.data()) % alignof(Wide) == 0);
     for (int i = 0; i < 1000; ++i) check(wide[i].value == i);
     const auto before = DestructorProbe::destroyed;
     {
-        reinsirk::detail::FastBuffer<DestructorProbe> values;
+        ::sirkit::detail::FastBuffer<DestructorProbe> values;
         values.reserve(8); values.emplace_back(1); values.emplace_back(2);
         values.clear(); check(DestructorProbe::destroyed == before);
     }

@@ -25,6 +25,8 @@
 // partners viewはreset/clear/代入/所有権移動まで有効。edges viewは追加/reserve/clear_edgesでも無効化し得る。
 // 頂点番号/負数の検査はSKIP_RUNTIME_CHECKSで除外。容量・n+1/2mの添字保護は常に維持する。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -35,9 +37,12 @@
 #include <utility>
 #include <vector>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_GENERAL_MATCHING_WORKSPACE_DEFINED
 #define SIRKIT_GENERAL_MATCHING_WORKSPACE_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 struct GeneralMatchingWorkspace {
     std::vector<std::size_t> offsets, cursor;
     std::vector<std::int32_t> neighbors, parent, base, queue;
@@ -64,7 +69,7 @@ class GeneralMatching {
         (void)vertex;
 #endif
     }
-    bool augment(std::int32_t root, reinsirk::detail::GeneralMatchingWorkspace& work) noexcept {
+    bool augment(std::int32_t root, /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::GeneralMatchingWorkspace& work) noexcept {
         std::fill(work.parent.begin(), work.parent.end(), -1);
         std::iota(work.base.begin(), work.base.end(), std::int32_t{0});
         std::fill(work.outer.begin(), work.outer.end(), std::uint8_t{0});
@@ -172,7 +177,7 @@ public:
         if (n == std::numeric_limits<std::size_t>::max() ||
             m > std::vector<std::int32_t>{}.max_size() / 2)
             throw std::length_error("GeneralMatching workspace capacity");
-        reinsirk::detail::GeneralMatchingWorkspace work(n, m * 2);
+        /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::GeneralMatchingWorkspace work(n, m * 2);
         for (const auto& [u,v] : edges_) { ++work.offsets[static_cast<std::size_t>(u) + 1]; ++work.offsets[static_cast<std::size_t>(v) + 1]; }
         for (std::size_t i = 0; i < n; ++i) { work.offsets[i + 1] += work.offsets[i]; work.cursor[i] = work.offsets[i]; }
         for (const auto& [u,v] : edges_) {
@@ -208,6 +213,13 @@ public:
 };
 #endif
 
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
+
+
+namespace sirkit {}
+using namespace sirkit;
 
 // SPDX-License-Identifier: CC0-1.0
 // Verify I/O: Verify/current/common/fast_io.hpp

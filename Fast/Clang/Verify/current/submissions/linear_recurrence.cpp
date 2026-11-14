@@ -48,10 +48,15 @@
 // Mod<2^30では標準C++のMontgomery演算を使用。GCC/Clangの対応x86 CPUではAVX2で8係数ずつ処理する。
 // SIRKIT_DISABLE_SIMDで追加の専用命令とCPU判定を除外できる。代替経路も同じAPI・結果を保つ。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <cstdint>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_RECURRENCE_MONTGOMERY_DEFINED
 #define SIRKIT_RECURRENCE_MONTGOMERY_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 struct RecurrenceMontgomery998 {
     static constexpr std::uint32_t modulus=998244353;
     static constexpr std::uint32_t negative_inverse=[] {
@@ -92,24 +97,96 @@ struct RecurrenceMontgomery998 {
 }
 #endif
 
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <algorithm>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <array>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <bit>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <concepts>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <cstddef>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <cstdint>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <limits>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <stdexcept>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <type_traits>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <utility>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <vector>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #if (!defined(SIRKIT_DISABLE_SIMD)) && ((defined(__x86_64__)) || (defined(__i386__)))
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <immintrin.h>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #endif
 
 #ifndef SIRKIT_NTT_DETAIL_DEFINED
 #define SIRKIT_NTT_DETAIL_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 constexpr bool ntt_prime(std::uint32_t n) noexcept {
     if (n < 2 || n % 2 == 0) return n == 2;
     for (std::uint32_t d = 3; d <= n / d; d += 2) if (n % d == 0) return false;
@@ -129,7 +206,7 @@ constexpr std::uint32_t ntt_power(std::uint32_t a, std::uint32_t exponent, std::
 #if (!defined(SIRKIT_DISABLE_SIMD)) && ((defined(__x86_64__)) || (defined(__i386__)))
 #ifndef SIRKIT_NTT_SIMD_DETAIL_DEFINED
 #define SIRKIT_NTT_SIMD_DETAIL_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 inline bool ntt_avx2_available() noexcept {
     static const bool available=__builtin_cpu_supports("avx2");
     return available;
@@ -142,12 +219,12 @@ inline bool ntt_avx2_available() noexcept {
 #define SIRKIT_NTT_DEFINED
 template <std::uint32_t Mod = 998244353, std::uint32_t Root = 3>
 class NTT {
-    static_assert(Mod >= 3 && Mod < (std::uint32_t{1} << 31) && reinsirk::detail::ntt_prime(Mod),
+    static_assert(Mod >= 3 && Mod < (std::uint32_t{1} << 31) && /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::ntt_prime(Mod),
                   "NTT modulus must be an odd prime below 2^31");
     static_assert(Root > 0 && Root < Mod, "NTT root outside modulus");
     static constexpr int rank_ = std::countr_zero(Mod - 1);
-    static constexpr std::uint32_t highest_root_ = reinsirk::detail::ntt_power(Root, (Mod - 1) >> rank_, Mod);
-    static_assert(reinsirk::detail::ntt_power(highest_root_, std::uint32_t{1} << (rank_ - 1), Mod) == Mod - 1,
+    static constexpr std::uint32_t highest_root_ = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::ntt_power(Root, (Mod - 1) >> rank_, Mod);
+    static_assert(/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::ntt_power(highest_root_, std::uint32_t{1} << (rank_ - 1), Mod) == Mod - 1,
                   "NTT root has insufficient power-of-two order");
     std::vector<std::uint32_t> roots_;
 
@@ -251,7 +328,7 @@ class NTT {
 
 #if (!defined(SIRKIT_DISABLE_SIMD)) && ((defined(__x86_64__)) || (defined(__i386__)))
     static bool use_avx2(std::size_t n) noexcept {
-        if constexpr(montgomery_)return n>=16 && reinsirk::detail::ntt_avx2_available();
+        if constexpr(montgomery_)return n>=16 && /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::ntt_avx2_available();
         else return false;
     }
     [[gnu::always_inline,gnu::target("avx2")]]
@@ -729,10 +806,16 @@ std::vector<std::uint32_t> ConvolutionMod(const std::vector<T>& a, const std::ve
 }
 #endif
 
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <cstdint>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_RECURRENCE_COEFFICIENT_DEFINED
 #define SIRKIT_RECURRENCE_COEFFICIENT_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 struct RecurrenceMod998 {
     static constexpr std::uint32_t modulus=998244353;
     std::uint32_t value=0;
@@ -759,13 +842,55 @@ struct RecurrenceMod998 {
 }
 #endif
 
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <cstddef>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <cstdint>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <limits>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <stdexcept>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <type_traits>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <utility>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <vector>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_BERLEKAMP_MASSEY_DEFINED
 #define SIRKIT_BERLEKAMP_MASSEY_DEFINED
 template<class T>
@@ -801,7 +926,7 @@ std::vector<T> BerlekampMassey(const std::vector<T>& sequence) {
     return result;
 }
 inline std::vector<std::uint32_t> BerlekampMassey(const std::vector<std::uint32_t>& sequence) {
-    using Field=reinsirk::detail::RecurrenceMod998;
+    using Field=/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::RecurrenceMod998;
     std::vector<Field> input;input.reserve(sequence.size());
     for(const auto value:sequence)input.emplace_back(value);
     const auto coefficients=BerlekampMassey(input);
@@ -811,16 +936,58 @@ inline std::vector<std::uint32_t> BerlekampMassey(const std::vector<std::uint32_
 }
 #endif
 
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <algorithm>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <cstddef>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <cstdint>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <stdexcept>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <type_traits>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <utility>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <vector>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_LINEAR_RECURRENCE_DETAIL_DEFINED
 #define SIRKIT_LINEAR_RECURRENCE_DETAIL_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 template<class T>
 std::size_t recurrence_product_size(std::size_t d) {
     const auto maximum=std::vector<T>{}.max_size();
@@ -859,7 +1026,7 @@ std::vector<T> LinearRecurrenceWeights(const std::vector<T>& coefficients,std::u
     static_assert(!std::is_integral_v<T>,"LinearRecurrenceWeights<T>: use a coefficient type, or the uint32_t overload");
     const auto d=coefficients.size();
     if(d==0)return {};
-    const auto capacity=reinsirk::detail::recurrence_product_size<T>(d);
+    const auto capacity=/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::recurrence_product_size<T>(d);
     if(k<d) {
         std::vector<T> result(d,T{0});result[static_cast<std::size_t>(k)]=T{1};return result;
     }
@@ -868,9 +1035,9 @@ std::vector<T> LinearRecurrenceWeights(const std::vector<T>& coefficients,std::u
     result[0]=T{1};
     if(d==1)power[0]=coefficients[0];else power[1]=T{1};
     while(k) {
-        if(k&1){reinsirk::detail::recurrence_product(result,power,coefficients,workspace);result.swap(workspace);}
+        if(k&1){/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::recurrence_product(result,power,coefficients,workspace);result.swap(workspace);}
         k>>=1;
-        if(k){reinsirk::detail::recurrence_product(power,power,coefficients,workspace);power.swap(workspace);}
+        if(k){/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::recurrence_product(power,power,coefficients,workspace);power.swap(workspace);}
     }
     return result;
 }
@@ -895,12 +1062,12 @@ std::vector<T> LinearRecurrencePrefix(const std::vector<T>& initial,const std::v
 }
 inline std::vector<std::uint32_t> LinearRecurrenceWeights(const std::vector<std::uint32_t>& coefficients,std::uint64_t k) {
     if(k<coefficients.size()) {
-        reinsirk::detail::recurrence_product_size<reinsirk::detail::RecurrenceMod998>(coefficients.size());
+        /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::recurrence_product_size</*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::RecurrenceMod998>(coefficients.size());
         std::vector<std::uint32_t> result(coefficients.size(),0);
         result[static_cast<std::size_t>(k)]=1;return result;
     }
     if(coefficients.size()>=16) {
-        using Field=reinsirk::detail::RecurrenceMontgomery998;
+        using Field=/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::RecurrenceMontgomery998;
         std::vector<Field> normalized;normalized.reserve(coefficients.size());
         for(auto value:coefficients)normalized.emplace_back(value);
         const auto weights=LinearRecurrenceWeights(normalized,k);
@@ -908,11 +1075,11 @@ inline std::vector<std::uint32_t> LinearRecurrenceWeights(const std::vector<std:
         for(auto value:weights)result.push_back(value.get());
         return result;
     }
-    return reinsirk::detail::recurrence_residues(LinearRecurrenceWeights(reinsirk::detail::recurrence_field_vector(coefficients),k));
+    return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::recurrence_residues(LinearRecurrenceWeights(/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::recurrence_field_vector(coefficients),k));
 }
 inline std::vector<std::uint32_t> LinearRecurrencePrefix(const std::vector<std::uint32_t>& initial,
                                                       const std::vector<std::uint32_t>& coefficients,std::size_t count) {
-    return reinsirk::detail::recurrence_residues(LinearRecurrencePrefix(reinsirk::detail::recurrence_field_vector(initial),reinsirk::detail::recurrence_field_vector(coefficients),count));
+    return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::recurrence_residues(LinearRecurrencePrefix(/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::recurrence_field_vector(initial),/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::recurrence_field_vector(coefficients),count));
 }
 inline std::uint32_t LinearRecurrenceTerm(const std::vector<std::uint32_t>& initial,
                                         const std::vector<std::uint32_t>& coefficients,std::uint64_t k) {
@@ -945,6 +1112,13 @@ inline std::uint32_t LinearRecurrenceTerm(const std::vector<std::uint32_t>& init
 }
 #endif
 
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
+
+
+namespace sirkit {}
+using namespace sirkit;
 
 // SPDX-License-Identifier: CC0-1.0
 // Verify I/O: Verify/current/common/fast_io.hpp

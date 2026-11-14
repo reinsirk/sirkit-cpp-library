@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #ifndef SIRKIT_PRIMALITY_REQUIRE_EXTRA
 #define SIRKIT_PRIMALITY_REQUIRE_EXTRA
 #endif
@@ -121,7 +123,7 @@ int main(){
  // 剰余表105通りを通常の剰余で照合し、64bit側の切替境界も調べる。
  for(unsigned r=0;r<105;++r) {
   const bool expected=r%3!=0 && r%5!=0 && r%7!=0;
-  require(bool((reinsirk::detail::primality_coprime_105[r>>6]>>(r&63))&1u)==expected);
+  require(bool((::sirkit::detail::primality_coprime_105[r>>6]>>(r&63))&1u)==expected);
  }
  for(auto start:std::array<std::uint64_t,5>{(std::uint64_t{1}<<32)-128,4759123141ULL-128,(std::uint64_t{1}<<62)-128,(std::uint64_t{1}<<63)-128,std::numeric_limits<std::uint64_t>::max()-255})
   for(std::uint64_t delta=0;delta<256;++delta)inspect(start+delta);

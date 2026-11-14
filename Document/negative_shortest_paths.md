@@ -1,6 +1,6 @@
 # 負辺を含む単一始点最短路
 
-`Graph/Bellman-Ford.cpp` の `BellmanFord` と、`Graph/Bellman-Ford_SFPA.cpp` の `SPFA` は、同じ重み付き隣接リストを受け取る。各ファイルを単独で貼り付けられる。両方を使う場合も `Edge`・`WGraph` と `INF` の共有ガードにより同時に利用できる。
+`Graph/Bellman-Ford.cpp` の `BellmanFord` と、`Graph/Bellman-Ford_SFPA.cpp` の `SPFA` は、同じ重み付き隣接リストを受け取る。各ファイルを単独で貼り付けられる。両方を使う場合も `Edge`・`WGraph` と `kInf` の共有ガードにより同時に利用できる。
 
 ```cpp
 WGraph graph(3);
@@ -11,9 +11,9 @@ const bool negative = BellmanFord(graph, distance, 0);
 // negative == false, distance == {0, -2, 3}
 ```
 
-`BellmanFord(graph, distances, start_index)` と `SPFA(graph, distances, start_index)` は、ともに始点から到達できる負閉路があれば `true` を返す。成功時は出力配列を全頂点分に上書きし、未到達の頂点を `INF`、到達できる負閉路の下流を `-INF` とする。負閉路から戻れない始点や、負閉路とは別の枝には有限距離が残る。未到達成分の負閉路だけでは `true` にならない。
+`BellmanFord(graph, distances, start_index)` と `SPFA(graph, distances, start_index)` は、ともに始点から到達できる負閉路があれば `true` を返す。成功時は出力配列を全頂点分に上書きし、未到達の頂点を `kInf`、到達できる負閉路の下流を `-kInf` とする。負閉路から戻れない始点や、負閉路とは別の枝には有限距離が残る。未到達成分の負閉路だけでは `true` にならない。
 
-辺重みは `[-1e9, 1e9]`、頂点数は `INT_MAX` 以下。有限の答えは `(-INF, INF)` に入る必要があり、衝突する場合は `std::overflow_error` になる。この有限距離と容量の保護は `SKIP_RUNTIME_CHECKS` を定義した場合も維持する。
+辺重みは `[-1e9, 1e9]`、頂点数は `INT_MAX` 以下。有限の答えは `(-kInf, kInf)` に入る必要があり、衝突する場合は `std::overflow_error` になる。この有限距離と容量の保護は `SKIP_RUNTIME_CHECKS` を定義した場合も維持する。
 
 既定では始点と、通常の計算中に参照する辺の終点・重みを検査する。未到達頂点の辺は、検査のためだけには走査しない。検査省略時は有効な始点と、参照される辺が上の条件を満たすことを利用側の前提とする。既定の入力検査や計算中の割当で例外になった場合、既存の出力配列を保つ。検査を省く場合は、例外時に古い出力を保つ保証は設けない。
 

@@ -4,6 +4,8 @@
 #include <cstdint>
 #include <iostream>
 #include <limits>
+
+using namespace sirkit;
 int main() {
     constexpr auto power = ModPow(3, 2, std::uint64_t{1} << 32);
     static_assert(power == 9);

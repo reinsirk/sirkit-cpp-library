@@ -27,6 +27,8 @@
 
 // GCC 15.2/x86-64では対応CPUでAVX2を使用。SIRKIT_DISABLE_SIMDで専用処理・CPU判定を除く。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <array>
 #include <utility>
@@ -45,10 +47,13 @@
 #include <immintrin.h>
 #endif
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SKIP_RUNTIME_CHECKS
 #ifndef SIRKIT_LIS_INPUT_CHECK_DEFINED
 #define SIRKIT_LIS_INPUT_CHECK_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 template <class T>
 void check_lis_value(const T& value) {
     if constexpr (std::is_floating_point_v<T>)
@@ -60,7 +65,7 @@ void check_lis_value(const T& value) {
 
 #ifndef SIRKIT_LIS_LENGTHS_DEFINED
 #define SIRKIT_LIS_LENGTHS_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 template <bool Strict, bool Prefix, class T>
 auto LISLengths(const std::vector<T>& v) {
     std::vector<T> tails;
@@ -70,7 +75,7 @@ auto LISLengths(const std::vector<T>& v) {
     std::size_t i = 0;
     for (const auto& value : v) {
 #ifndef SKIP_RUNTIME_CHECKS
-        reinsirk::detail::check_lis_value(value);
+        /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::check_lis_value(value);
 #endif
         const bool extend = tails.empty() || (Strict ? tails.back() < value : !(value < tails.back()));
         if (extend) tails.push_back(value);
@@ -86,17 +91,17 @@ auto LISLengths(const std::vector<T>& v) {
 } // namespace reinsirk::detail
 template <bool Strict, class T>
 std::vector<std::size_t> LIS(const std::vector<T>& v) {
-    return reinsirk::detail::LISLengths<Strict, true>(v);
+    return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::LISLengths<Strict, true>(v);
 }
 template <bool Strict = true, class T>
 std::size_t LISLength(const std::vector<T>& v) {
-    return reinsirk::detail::LISLengths<Strict, false>(v);
+    return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::LISLengths<Strict, false>(v);
 }
 #endif
 
 #ifndef SIRKIT_LIS_RESTORE_DEFINED
 #define SIRKIT_LIS_RESTORE_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 template <bool Strict, class Index, class T>
 std::vector<std::size_t> LISIndicesImpl(const std::vector<T>& v) {
     if (v.empty()) return {};
@@ -104,12 +109,12 @@ std::vector<std::size_t> LISIndicesImpl(const std::vector<T>& v) {
     auto previous = std::make_unique_for_overwrite<Index[]>(v.size());
     tails.reserve(std::min(v.size(), std::size_t{64}));
 #ifndef SKIP_RUNTIME_CHECKS
-    reinsirk::detail::check_lis_value(v[0]);
+    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::check_lis_value(v[0]);
 #endif
     tails.push_back(0);
     for (std::size_t i = 1; i < v.size(); ++i) {
 #ifndef SKIP_RUNTIME_CHECKS
-        reinsirk::detail::check_lis_value(v[i]);
+        /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::check_lis_value(v[i]);
 #endif
         if (Strict ? v[tails.back()] < v[i] : !(v[i] < v[tails.back()])) {
             previous[i] = tails.back();
@@ -246,7 +251,7 @@ std::vector<std::size_t> LISIndicesWithValues(const std::vector<T>& v) {
     auto previous = std::make_unique_for_overwrite<Index[]>(v.size());
     tails.reserve(std::min(v.size(), std::size_t{64}));
 #ifndef SKIP_RUNTIME_CHECKS
-    reinsirk::detail::check_lis_value(v[0]);
+    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::check_lis_value(v[0]);
 #endif
     tails.push_back(0);
     values.reserve(std::min(v.size(), std::size_t{64}));
@@ -254,7 +259,7 @@ std::vector<std::size_t> LISIndicesWithValues(const std::vector<T>& v) {
     std::size_t i = 1, extensions = 0;
     for (; i < v.size(); ++i) {
 #ifndef SKIP_RUNTIME_CHECKS
-        reinsirk::detail::check_lis_value(v[i]);
+        /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::check_lis_value(v[i]);
 #endif
         if (Strict ? values.back() < v[i] : !(v[i] < values.back())) {
             previous[i] = tails.back();
@@ -317,7 +322,7 @@ std::vector<std::size_t> LISIndicesWithValues(const std::vector<T>& v) {
     std::vector<T>().swap(values);
     for (; i < v.size(); ++i) {
 #ifndef SKIP_RUNTIME_CHECKS
-        reinsirk::detail::check_lis_value(v[i]);
+        /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::check_lis_value(v[i]);
 #endif
         if (Strict ? v[tails.back()] < v[i] : !(v[i] < v[tails.back()])) {
             previous[i] = tails.back();
@@ -492,7 +497,7 @@ unsigned LISValuesUseful(const std::vector<T>& v) {
     std::size_t length = 0, searches = 0, equal_neighbors = 0;
     for (std::size_t i = 0; i < tails.size(); ++i) {
 #ifndef SKIP_RUNTIME_CHECKS
-        reinsirk::detail::check_lis_value(v[i]);
+        /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::check_lis_value(v[i]);
 #endif
 #if defined(__GNUC__) && !defined(__clang__)
         if constexpr (!Strict) if (i != 0 && !(v[i - 1] < v[i]) && !(v[i] < v[i - 1])) ++equal_neighbors;
@@ -545,8 +550,8 @@ std::vector<std::size_t> LISIndicesSelected(const std::vector<T>& v) {
 template <bool Strict = true, class T>
 std::vector<std::size_t> LISIndices(const std::vector<T>& v) {
     if (v.size() <= std::numeric_limits<std::uint32_t>::max())
-        return reinsirk::detail::LISIndicesSelected<Strict, std::uint32_t>(v);
-    return reinsirk::detail::LISIndicesSelected<Strict, std::size_t>(v);
+        return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::LISIndicesSelected<Strict, std::uint32_t>(v);
+    return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::LISIndicesSelected<Strict, std::size_t>(v);
 }
 template <bool Strict = true, class T>
 std::vector<T> LISSequence(const std::vector<T>& v) {
@@ -568,7 +573,7 @@ std::vector<std::size_t> LISEndingLengths(const std::vector<T>& v) {
     result.reserve(v.size());
     for (const auto& value : v) {
 #ifndef SKIP_RUNTIME_CHECKS
-        reinsirk::detail::check_lis_value(value);
+        /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::check_lis_value(value);
 #endif
         if (tails.empty() || (Strict ? tails.back() < value : !(value < tails.back()))) {
             tails.push_back(value);
@@ -585,6 +590,13 @@ std::vector<std::size_t> LISEndingLengths(const std::vector<T>& v) {
 }
 #endif
 
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
+
+
+namespace sirkit {}
+using namespace sirkit;
 
 // SPDX-License-Identifier: CC0-1.0
 // Verify I/O: Verify/current/common/fast_io.hpp

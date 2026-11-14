@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #ifndef SIRKIT_RWUF_REQUIRE_EXTRA
 #define SIRKIT_RWUF_REQUIRE_EXTRA
 #endif

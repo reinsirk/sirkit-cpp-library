@@ -2,6 +2,8 @@
 #include "../Graph/Bipartite_Matching.cpp"
 #include <iostream>
 #include <utility>
+
+using namespace sirkit;
 int main() {
     BipartiteMatching graph(3,4);
     graph.reserve_neighbors(0,2);

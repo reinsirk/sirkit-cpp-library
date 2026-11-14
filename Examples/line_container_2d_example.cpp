@@ -2,6 +2,8 @@
 #include <iostream>
 #include <utility>
 
+using namespace sirkit;
+
 int main() {
     LineContainer2D points;
     std::cout << points.max_optional(1, 1).has_value() << '\n'; // 0

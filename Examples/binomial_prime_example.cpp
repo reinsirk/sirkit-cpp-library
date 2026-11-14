@@ -2,6 +2,8 @@
 #include "../Math/Combination_AtCoderMod.cpp"
 #include <iostream>
 
+using namespace sirkit;
+
 int main()
 {
     PrimeBinomial<atcoder::modint998244353> comb;

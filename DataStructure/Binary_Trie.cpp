@@ -37,6 +37,8 @@
 // countはID一覧を参照しない。upperはキー型より広い整数型も可、キー範囲を超えればsize()。
 // min_xor/max_xor/count_xor_lessは状態を変更しない。返す値は保存値yではなくx^y。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <array>
 #include <cstddef>
@@ -48,6 +50,9 @@
 #include <utility>
 #include <vector>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_BINARY_TRIE_DEFINED
 #define SIRKIT_BINARY_TRIE_DEFINED
 template <typename T, int MAX_LOG = std::numeric_limits<T>::digits - 1,
@@ -476,3 +481,7 @@ public:
     }
 };
 #endif
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1

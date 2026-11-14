@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #ifndef HEADER
 #define HEADER "../../../DataStructure/implicit_treap.cpp"
 #endif

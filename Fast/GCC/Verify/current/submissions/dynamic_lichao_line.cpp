@@ -13,16 +13,16 @@
 // ドキュメント: https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/dynamic_li_chao.md
 //
 // API一覧
-// [DynamicLiChaoTree<T,INF>]
+// [DynamicLiChaoTree<T,kInf>]
 // 整数座標の閉区間で直線・線分の最小値を管理する。Tは符号付き64ビット以下の整数。
-// 追加する線の対象区間では、数学的なa*x+bがTの範囲内かつINF未満であること。
+// 追加する線の対象区間では、数学的なa*x+bがTの範囲内かつkInf未満であること。
 // Wを座標数とすると直線追加・取得はO(log W)、線分追加はO(log² W)。
 // queryは読み取り専用。SKIP_RUNTIME_CHECKSで座標・端点値の検査を除く。
 // DynamicLiChaoTree(xmin, xmax): 整数の閉区間[xmin, xmax]で空の木を作る。
 // コピーは独立した木を作る。コピー代入の確保失敗時は元の木を維持する。
 // update(a, b) / add_line(a, b): 定義域全体にy=a*x+bを追加する。
 // update_line_segment(a, b, left, right) / add_segment(...): 閉区間[left, right]に線分を追加。left>rightは無操作。
-// query(x): xでの最小値を返す。被覆する線がなければINF。
+// query(x): xでの最小値を返す。被覆する線がなければkInf。
 // query_line(x): 最小値を与えるLineを返す。同値時は任意、非被覆ならnullopt。
 // empty(): 追加した直線・空でない線分がなければtrue。O(1)。
 // clear(): 全ての線を消し、確保した容量を再利用する。O(格納ノード数)。
@@ -30,11 +30,13 @@
 // stored_nodes(): 現在の格納ノード数を返す。取得操作では増えない。O(1)。
 // domain_min() / domain_max(): 定義域の左端・右端を返す。O(1)。
 //
-// [DynamicLiChaoTree<T,INF>::Line]
-// Line(a, b): y=a*x+b。既定値は空を表す定数INF。
+// [DynamicLiChaoTree<T,kInf>::Line]
+// Line(a, b): y=a*x+b。既定値は空を表す定数kInf。
 // get(x): a*x+bを返す。値がTで表現可能であること。
 // over(other, x): xでotherより小さい値を与えるときtrue。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <bit>
 #include <cstddef>
 #include <cstdint>
@@ -49,14 +51,17 @@
 #include <utility>
 #include <vector>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_DYNAMIC_LI_CHAO_TREE_DEFINED
 #define SIRKIT_DYNAMIC_LI_CHAO_TREE_DEFINED
-template <typename T, T INF>
+template <typename T, T kInf>
 class DynamicLiChaoTree {
  public:
   struct Line {
     T slope = 0;
-    T intercept = INF;
+    T intercept = kInf;
     Line() = default;
     Line(T a, T b) : slope(a), intercept(b) {}
     T get(T x) const noexcept {
@@ -74,7 +79,7 @@ class DynamicLiChaoTree {
   static_assert(std::is_integral_v<T> && std::is_signed_v<T> &&
                 sizeof(T) <= sizeof(std::uint64_t) &&
                 std::is_same_v<T, std::remove_cv_t<T>>);
-  static_assert(INF > 0);
+  static_assert(kInf > 0);
   using Index = std::uint32_t;
   static constexpr Index no_child = std::numeric_limits<Index>::max();
   struct Node {
@@ -190,7 +195,7 @@ class DynamicLiChaoTree {
   void insert_line(Index index, T left, T right, Line line) {
     for (;;) {
       Node& node = nodes_[index];
-      if (node.line.intercept == INF && node.line.slope == 0) {
+      if (node.line.intercept == kInf && node.line.slope == 0) {
         node.line = line;
         return;
       }
@@ -220,8 +225,8 @@ class DynamicLiChaoTree {
         return;
       }
       const Line& current = nodes_[index].line;
-      // 切片INFは空ノードを含むので枝刈りを省き、通常の探索を続ける。
-      if (current.intercept != INF) {
+      // 切片kInfは空ノードを含むので枝刈りを省き、通常の探索を続ける。
+      if (current.intercept != kInf) {
         // 差が最小になる重なり区間の端でも勝てなければ追加不要。
         const T endpoint = line.slope < current.slope
             ? (qright < right ? qright : right)
@@ -245,7 +250,7 @@ class DynamicLiChaoTree {
   template <bool ReturnLine>
   auto find_best(T x) const noexcept {
     Line best;
-    T value = INF;
+    T value = kInf;
     T left = xmin_, right = xmax_;
     Index index = nodes_.empty() ? no_child : Index{0};
     while (index != no_child) {
@@ -301,7 +306,7 @@ class DynamicLiChaoTree {
   }
   std::optional<Line> query_line(T x) const {
     Line result = find_best<true>(x);
-    if (result.slope == 0 && result.intercept == INF) return std::nullopt;
+    if (result.slope == 0 && result.intercept == kInf) return std::nullopt;
     return result;
   }
   bool empty() const noexcept { return nodes_.empty(); }
@@ -317,6 +322,13 @@ class DynamicLiChaoTree {
 };
 #endif
 
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
+
+
+namespace sirkit {}
+using namespace sirkit;
 
 // SPDX-License-Identifier: CC0-1.0
 // Verify I/O: Verify/current/common/fast_io.hpp

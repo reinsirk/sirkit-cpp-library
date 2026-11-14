@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #ifndef MATRIX_HEADER
 #define MATRIX_HEADER "../../../Algorithm/rotate.cpp"
 #endif

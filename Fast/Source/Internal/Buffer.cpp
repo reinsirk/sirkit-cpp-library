@@ -8,6 +8,8 @@
 // コピーは有効な要素を独立にコピーし、ムーブ元は空。サイズ・容量・添字は有効範囲が前提。
 // Tのデストラクタの副作用や資源回収を必要としない処理でだけ使う。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <cstddef>
 #include <iterator>
@@ -17,9 +19,12 @@
 #include <utility>
 #include <vector>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_FAST_BUFFER_DEFINED
 #define SIRKIT_FAST_BUFFER_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 template <class T>
 class FastBuffer {
     T* data_ = nullptr;
@@ -134,3 +139,7 @@ public:
 };
 }
 #endif
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1

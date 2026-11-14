@@ -6,7 +6,7 @@ int main() {
     for(auto& [u,v,w]:edges)verify_in>>u>>v>>w;
     std::vector<std::int64_t> distance; std::vector<int> path;
     Dijkstra(n,edges,distance,s,t,path);
-    if (distance[t]==INF) { verify_out<<"-1\n"; return 0; }
+    if (distance[t]==kInf) { verify_out<<"-1\n"; return 0; }
     verify_out<<distance[t]<<' '<<path.size()-1<<'\n';
     for (std::size_t i=1;i<path.size();++i) verify_out<<path[i-1]<<' '<<path[i]<<'\n';
 }

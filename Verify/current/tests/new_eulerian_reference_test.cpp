@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #ifndef EULERIAN_SOURCE
 #define EULERIAN_SOURCE "../../../Graph/Eulerian_Trail.cpp"
 #endif

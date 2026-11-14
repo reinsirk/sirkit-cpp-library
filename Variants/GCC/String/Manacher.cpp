@@ -15,6 +15,8 @@
 // size()/添字アクセス/同値関係の==が使える列が前提。各比較O(1)、列長はINT_MAX未満。元の列は保持しない。
 // 検査省略時もis_palindromeの添字は0<=l<=r<=size()が必要。公開半径配列は変更しないこと。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -23,6 +25,9 @@
 #include <utility>
 #include <vector>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_PALINDROME_RADII_DEFINED
 #define SIRKIT_PALINDROME_RADII_DEFINED
 class PalindromeRadii {
@@ -138,3 +143,7 @@ std::vector<int> PalindromicLengths(const Sequence& s) {
     return result;
 }
 #endif
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1

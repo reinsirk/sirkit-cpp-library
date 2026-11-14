@@ -5,6 +5,8 @@
 #include <iostream>
 #include <utility>
 #include <vector>
+
+using namespace sirkit;
 int main(){
     using I=std::int64_t;
     LinkCutTree<I> tree(std::vector<I>{2,4,1,7});

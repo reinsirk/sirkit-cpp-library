@@ -15,8 +15,8 @@ int main() {
     int q; std::cin >> q;
     std::cout << std::fixed << std::setprecision(12);
     while (q--) {
-        geo::Segment<long double> a, b;
+        ::sirkit::geo::Segment<long double> a, b;
         std::cin >> a.a.x >> a.a.y >> a.b.x >> a.b.y >> b.a.x >> b.a.y >> b.b.x >> b.b.y;
-        std::cout << geo::distance(a, b) << '\n';
+        std::cout << ::sirkit::geo::distance(a, b) << '\n';
     }
 }

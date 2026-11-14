@@ -1,0 +1,31 @@
+---
+# 通常版本体をScripts/ci_cpp_guidelines.pyで検査する。Fast/・生成版は対象外。
+# Core GuidelinesとGoogle Style Guideの選択した項目を検証する。
+Checks: >-
+  -*,
+  cppcoreguidelines-avoid-capturing-lambda-coroutines,
+  cppcoreguidelines-interfaces-global-init,
+  cppcoreguidelines-no-malloc,
+  cppcoreguidelines-owning-memory,
+  cppcoreguidelines-pro-type-member-init,
+  cppcoreguidelines-slicing,
+  cppcoreguidelines-virtual-class-destructor,
+  bugprone-use-after-move,
+  bugprone-unused-raii,
+  bugprone-suspicious-memset-usage,
+  performance-move-const-arg,
+  performance-unnecessary-copy-initialization,
+  performance-unnecessary-value-param,
+  google-build-explicit-make-pair,
+  google-build-using-namespace,
+  google-readability-casting,
+  google-runtime-int,
+  google-runtime-operator
+# 本体以外のテスト用コードをgateへ混ぜないよう、runnerが位置で分類する。
+WarningsAsErrors: ''
+FormatStyle: none
+CheckOptions:
+  google-runtime-int.SignedTypePrefix: 'std::int'
+  google-runtime-int.UnsignedTypePrefix: 'std::uint'
+  google-runtime-int.TypeSuffix: '_t'
+...

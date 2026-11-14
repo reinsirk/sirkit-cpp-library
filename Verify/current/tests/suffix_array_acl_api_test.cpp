@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 // 公開APIの型・呼出し形式と、追加の列型を独立な短列参照で確認する。
 #ifndef SUFFIX_HEADER
 #define SUFFIX_HEADER "../../../String/Suffix_Array.cpp"

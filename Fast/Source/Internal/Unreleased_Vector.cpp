@@ -9,6 +9,8 @@
 // コピーは独立。moveはnoexcept、自己move代入を除き移動元は空。Tの最後の破棄や資源回収を必要としない場合だけ使う。
 // boolはstd::vector<bool>のproxyを使う。真のbool&/bool*が必要な既存Fast APIはFastBuffer<bool>を維持する。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <concepts>
 #include <cstddef>
 #include <initializer_list>
@@ -17,9 +19,12 @@
 #include <utility>
 #include <vector>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_UNRELEASED_VECTOR_DEFINED
 #define SIRKIT_UNRELEASED_VECTOR_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 template<class T>
 class UnreleasedVector {
     union {std::vector<T> values_;};
@@ -99,3 +104,7 @@ public:
 };
 }
 #endif
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1

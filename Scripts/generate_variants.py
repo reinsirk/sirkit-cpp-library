@@ -20,6 +20,11 @@ class Expression:
     text: str
 
 
+try:
+    from public_namespace import wrap_source, unwrap_source
+except ModuleNotFoundError:
+    from Scripts.public_namespace import wrap_source, unwrap_source
+
 def strip_outer(text: str) -> str:
     while text.startswith("(") and text.endswith(")"):
         depth = 0
@@ -169,6 +174,9 @@ def parse(source: str) -> list:
 
 
 def specialize(source: str, compiler: str, fast: bool = False) -> str:
+    original = source
+    source = unwrap_source(source)
+    wrapped = original != source
     if compiler not in ("GCC", "Clang"):
         raise ValueError("GCCまたはClangを指定してください")
     known = {"__GNUC__": True, "__GNUG__": True, "__clang__": compiler == "Clang",
@@ -208,7 +216,8 @@ def specialize(source: str, compiler: str, fast: bool = False) -> str:
             if emitted:
                 pieces.append(node.ending)
         return "".join(pieces)
-    return render(parse(source))
+    result = render(parse(source))
+    return wrap_source(result) if wrapped else result
 
 
 def sources(root: Path) -> list[Path]:

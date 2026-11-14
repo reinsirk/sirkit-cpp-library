@@ -5,6 +5,8 @@
 #include <utility>
 #include <vector>
 
+using namespace sirkit;
+
 int main() {
     std::vector<std::int64_t> f{1, 2, 3, 4};
     subset_zeta_transform(f);

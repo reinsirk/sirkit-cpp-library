@@ -3,6 +3,8 @@
 #include <cassert>
 #include <vector>
 
+using namespace sirkit;
+
 int main() {
     IntegerSieve sieve(6);
     const std::vector<int> original{7, 1, 2, 3, 4, 5, 6};

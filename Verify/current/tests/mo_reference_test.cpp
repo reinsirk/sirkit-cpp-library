@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #ifndef SIRKIT_MO_SOURCE
 #define SIRKIT_MO_SOURCE "../../../Algorithm/Mo.cpp"
 #endif
@@ -58,7 +60,7 @@ void checks_all(){
   auto copy=mo;copy.add_query(0,n);require(copy.query_count()==mo.query_count()+1);require(copy.update_count()==mo.update_count());auto* alias=&copy;copy=*alias;copy=std::move(*alias);auto moved=std::move(copy);require(copy.empty()&&copy.length()==0&&copy.update_count()==0);copy=std::move(moved);require(moved.empty()&&moved.update_count()==0);copy.clear_requests();require(copy.length()==n&&copy.empty()&&copy.update_count()==0);copy.reset(3);swap(copy,moved);require(moved.length()==3);moved.clear();
  }
  require(applied&&undone&&inside&&outside);
- for(const auto x:std::array<std::size_t,10>{0,1,2,3,63,64,65,SIZE_MAX/2,SIZE_MAX-1,SIZE_MAX}){const auto s=reinsirk::detail::mo_integer_sqrt(x);require(s==0||s<=x/s);require(s+1>x/(s+1));}
+ for(const auto x:std::array<std::size_t,10>{0,1,2,3,63,64,65,SIZE_MAX/2,SIZE_MAX-1,SIZE_MAX}){const auto s=::sirkit::detail::mo_integer_sqrt(x);require(s==0||s<=x/s);require(s+1>x/(s+1));}
  for(const std::int32_t n:{0,1,2,3,64,65,INT32_MAX}){MoWithUpdates mo(n);const auto b=mo.block_size();require(b>=1);if(n){const auto square=static_cast<std::uint64_t>(n)*static_cast<std::uint64_t>(n);const auto value=static_cast<std::uint64_t>(b);require(value*value*value<=square);require((value+1)*(value+1)*(value+1)>square);}}
  Mo huge(INT32_MAX);huge.add_query(INT32_MAX,INT32_MAX);int touched=0;const auto state=huge.run([&](std::int32_t){++touched;},[&](std::int32_t){++touched;},[](std::size_t){});require(touched==0&&state==Mo::Window{INT32_MAX,INT32_MAX});MoWithUpdates timed(INT32_MAX);timed.add_update(0);timed.add_query(INT32_MAX,INT32_MAX);std::size_t seen=0;const auto ts=timed.run([&](std::int32_t){++touched;},[&](std::int32_t){++touched;},[&](std::size_t,std::int32_t l,std::int32_t r){require(l==INT32_MAX&&l==r);++seen;},[](std::size_t,std::int32_t,std::int32_t){},[](std::size_t){});require(seen==1&&touched==0&&ts.time==1);
  Mo move_only(3);move_only.add_query(0,3);int move_sum=0;auto owned_add=[owner=std::make_unique<int>(0),&move_sum](std::int32_t i){++*owner;move_sum+=i+1;};move_only.run(std::move(owned_add),[&](std::int32_t i){move_sum-=i+1;},[&](std::size_t){require(move_sum==6);});

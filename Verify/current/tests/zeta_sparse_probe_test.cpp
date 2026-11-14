@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 // 疎な約数閉包、検索の衝突、既定構築・コピーを禁じた値型を直接定義と照合する。
 #include <algorithm>
 #include <cstddef>

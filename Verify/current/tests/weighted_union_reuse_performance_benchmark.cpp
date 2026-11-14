@@ -1,10 +1,12 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #ifndef SIRKIT_WUF_SOURCE
 #define SIRKIT_WUF_SOURCE "../../../DataStructure/union_find_w.cpp"
 #endif
 #include SIRKIT_WUF_SOURCE
 #include <cstdint>
-namespace reinsirk::detail {
+namespace sirkit::detail {
 struct BenchmarkMod {
  std::uint32_t v=0;
  BenchmarkMod()=default;
@@ -44,6 +46,6 @@ int main(int argc,char**argv){
  for(int i=0;i+1<n;i+=2)source.merge(i,i+1,T(7));
  std::uint64_t checksum=0;
  const auto start=std::chrono::steady_clock::now();
- for(int r=0;r<repeats;++r){if(mode=="reset")target.reset(static_cast<std::size_t>(n));else if(mode=="copy")target=source;else return 2;escaped=&target;checksum+=static_cast<std::uint64_t>(target.component_count());if(n)checksum+=reinsirk::detail::checksum_value(target.weight(n-1))+target.size(0);}
+ for(int r=0;r<repeats;++r){if(mode=="reset")target.reset(static_cast<std::size_t>(n));else if(mode=="copy")target=source;else return 2;escaped=&target;checksum+=static_cast<std::uint64_t>(target.component_count());if(n)checksum+=::sirkit::detail::checksum_value(target.weight(n-1))+target.size(0);}
  const auto stop=std::chrono::steady_clock::now();std::printf("%.6f %ju\n",std::chrono::duration<double,std::milli>(stop-start).count(),static_cast<std::uintmax_t>(checksum));
 }

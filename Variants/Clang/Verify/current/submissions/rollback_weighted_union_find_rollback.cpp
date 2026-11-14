@@ -33,6 +33,8 @@
 // swap(a,b): 履歴・保存位置ごと定数時間で交換、noexcept。
 // SIRKIT_DISABLE_SIMD: groupsの追加AVX2実装とCPU判定を除外。標準C++の経路を使用。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <bit>
 #include <cstddef>
@@ -48,10 +50,13 @@
 #include <utility>
 #include <vector>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #if (!defined(SIRKIT_DISABLE_SIMD)) && (!defined(__AVX2__)) && ((defined(__x86_64__)) || (defined(__i386__)))
 #ifndef SIRKIT_UNION_GROUP_ROOTS_AVX2_DEFINED
 #define SIRKIT_UNION_GROUP_ROOTS_AVX2_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 template<bool Compress>
 [[gnu::target("avx2")]]
 inline void GatherGroupRoots(const int* parents, int* leaders, std::size_t n, int* writable = nullptr) {
@@ -639,7 +644,7 @@ public:
         if (parent_.size() >= 256 && __builtin_cpu_supports("avx2")) {
             auto roots_storage = std::make_unique_for_overwrite<int[]>(parent_.size());
             int* const roots = roots_storage.get();
-            reinsirk::detail::GatherGroupRoots<false>(parent_.data(), roots, parent_.size());
+            /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::GatherGroupRoots<false>(parent_.data(), roots, parent_.size());
             std::vector<int> slot(parent_.size());
             for (int v = 0; v < size(); ++v) if (parent_[v] < 0) {
                 slot[v] = static_cast<int>(result.size());
@@ -663,6 +668,13 @@ public:
 };
 #endif
 
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
+
+
+namespace sirkit {}
+using namespace sirkit;
 
 // SPDX-License-Identifier: CC0-1.0
 // Verify I/O: Verify/current/common/fast_io.hpp

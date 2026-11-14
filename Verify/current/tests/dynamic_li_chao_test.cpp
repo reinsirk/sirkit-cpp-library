@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 // 検査用リンク引数: -Wl,--wrap=malloc,--wrap=realloc
 // 総当たり・多倍長演算で閉区間、全整数幅、所有権、入力検査を照合する。
 #ifndef LI_CHAO_SOURCE

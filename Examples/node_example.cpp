@@ -2,6 +2,8 @@
 #include <iostream>
 #include <utility>
 
+using namespace sirkit;
+
 int main() {
     auto head = make_chain(3);
     push_front_node(head);

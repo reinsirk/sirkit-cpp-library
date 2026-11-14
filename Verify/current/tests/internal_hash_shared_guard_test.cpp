@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 // 内部表を4本体と重複して含め、整数・汎用値の共有利用を検査する。
 #ifndef SIRKIT_INTERNAL_HASH_SOURCE
 #define SIRKIT_INTERNAL_HASH_SOURCE "../../../Internal/Nyaan_hash_map_min.cpp"
@@ -17,7 +19,7 @@
 #include <limits>
 #include <string>
 int main() {
-    reinsirk::detail::InternalHashMap<std::int64_t, std::string> table;
+    ::sirkit::detail::InternalHashMap<std::int64_t, std::string> table;
     table[std::numeric_limits<std::int64_t>::min()] = "min";
     table[std::numeric_limits<std::int64_t>::max()] = "max";
     assert(table.size() == 2 && *table.find(std::numeric_limits<std::int64_t>::min()) == "min");

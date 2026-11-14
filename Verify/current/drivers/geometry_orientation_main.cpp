@@ -12,11 +12,11 @@
 #include <vector>
 
 int main() {
-    geo::PointI a, b; std::cin >> a.x >> a.y >> b.x >> b.y;
+    ::sirkit::geo::PointI a, b; std::cin >> a.x >> a.y >> b.x >> b.y;
     int q; std::cin >> q;
     while (q--) {
-        geo::PointI p; std::cin >> p.x >> p.y;
-        const int orientation = geo::orientation(a, b, p);
+        ::sirkit::geo::PointI p; std::cin >> p.x >> p.y;
+        const int orientation = ::sirkit::geo::orientation(a, b, p);
         if (orientation > 0) std::cout << "COUNTER_CLOCKWISE\n";
         else if (orientation < 0) std::cout << "CLOCKWISE\n";
         else if ((b - a).dot(p - a) < 0) std::cout << "ONLINE_BACK\n";

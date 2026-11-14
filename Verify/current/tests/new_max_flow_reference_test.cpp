@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #ifndef MAX_FLOW_SOURCE
 #define MAX_FLOW_SOURCE "../../../Graph/Max_Flow.cpp"
 #endif

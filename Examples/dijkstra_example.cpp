@@ -1,6 +1,8 @@
 #include "../Graph/Dijkstra.cpp"
 #include <iostream>
 
+using namespace sirkit;
+
 int main()
 {
     WGraph graph(5);
@@ -13,7 +15,7 @@ int main()
     Dijkstra(graph, distances, 0, 3, path);
     for (const auto distance : distances)
     {
-        if (distance == INF)
+        if (distance == kInf)
             std::cout << "INF\n";
         else
             std::cout << distance << '\n';

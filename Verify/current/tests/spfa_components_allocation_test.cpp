@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 // SCC切替・長い追跡・非負成分で、全確保位置の失敗・出力保証・解放を確認する。
 #ifndef SIRKIT_TEST_NEGATIVE_PATH_SOURCE
 #define SIRKIT_TEST_NEGATIVE_PATH_SOURCE "../../../Graph/Bellman-Ford_SFPA.cpp"
@@ -68,7 +70,7 @@ struct Work {
 #ifndef SKIP_RUNTIME_CHECKS
     std::vector<std::uint8_t> checked;
 #endif
-    Work(int n, bool direct) : distance(direct ? std::size_t(n) : 2, direct ? INF : 321) {
+    Work(int n, bool direct) : distance(direct ? std::size_t(n) : 2, direct ? kInf : 321) {
         if (!direct) { distance[1] = 654; return; }
         distance[0] = 0;
         for (int i = 0; i < n; ++i) sources.push_back(i);
@@ -79,7 +81,7 @@ struct Work {
 };
 template<bool Direct> void invoke(const WGraph& graph, Work& work) {
     if constexpr (Direct) {
-        reinsirk::detail::SPFAComponents(graph, work.sources, work.distance, INF,
+        ::sirkit::detail::SPFAComponents(graph, work.sources, work.distance, kInf,
             -static_cast<std::int64_t>(graph.size()) * 1'000'000'000, work.negative
 #ifndef SKIP_RUNTIME_CHECKS
             , work.checked
@@ -87,7 +89,7 @@ template<bool Direct> void invoke(const WGraph& graph, Work& work) {
         );
     } else {
 #ifdef SIRKIT_TEST_SPFA_FORCE_UNBOUNDED
-        work.negative_result = reinsirk::detail::SPFARun<false, false>(graph, work.distance, 0);
+        work.negative_result = ::sirkit::detail::SPFARun<false, false>(graph, work.distance, 0);
 #else
         work.negative_result = SPFA(graph, work.distance, 0);
 #endif
@@ -98,9 +100,9 @@ template<bool Direct> void check_result(const WGraph& graph, const Work& work,
     const auto lower = -static_cast<std::int64_t>(graph.size()) * 1'000'000'000;
     require(work.distance.size() == graph.size());
     for (std::size_t i = 0; i < expected.size(); ++i)
-        require(work.distance[i] == (Direct && expected[i] == -INF ? lower : expected[i]));
+        require(work.distance[i] == (Direct && expected[i] == -kInf ? lower : expected[i]));
     if constexpr (!Direct)
-        require(work.negative_result == (std::find(expected.begin(), expected.end(), -INF) != expected.end()));
+        require(work.negative_result == (std::find(expected.begin(), expected.end(), -kInf) != expected.end()));
 }
 template<bool Direct> Statistics inject(const WGraph& graph, const std::vector<std::int64_t>& expected) {
     const auto n = static_cast<int>(graph.size());
@@ -184,7 +186,7 @@ int main() {
         if (kind == 2)
             for (int i = 0; i < n; ++i) for (int j = 1; j <= 3; ++j)
                 graph[i].emplace_back((i * 17 + j * 31) % n, (i + j) % 7);
-        run_graph(graph, std::vector<std::int64_t>(graph.size(), -INF));
+        run_graph(graph, std::vector<std::int64_t>(graph.size(), -kInf));
     }
     {
         constexpr int count = 64; WGraph graph(2 * count + 2); graph[0].emplace_back(1, 0);
@@ -193,7 +195,7 @@ int main() {
         for (int i = 0; i < count; ++i) {
             graph[i + 2].emplace_back(1, 0); graph[i + count + 2].emplace_back(i + 2, -1);
         }
-        std::vector<std::int64_t> expected(graph.size(), -INF); expected[0] = 0;
+        std::vector<std::int64_t> expected(graph.size(), -kInf); expected[0] = 0;
         run_graph(graph, expected);
     }
     {
@@ -226,7 +228,7 @@ int main() {
         for (int i = 0; i < count; ++i) {
             graph[size + 2 + i].emplace_back(center, 0); graph[size + count + 2 + i].emplace_back(size + 2 + i, -1);
         }
-        std::vector<std::int64_t> expected(graph.size(), -INF); expected[0] = expected[entry] = expected[delay] = 0;
+        std::vector<std::int64_t> expected(graph.size(), -kInf); expected[0] = expected[entry] = expected[delay] = 0;
         for (int i = 1; i <= size; ++i) expected[i] = 1;
         run_graph(graph, expected);
     }

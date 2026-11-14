@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 // 独自入出力の十進変換と空白走査を、標準変換と1文字ずつの走査で照合する。
 #include <array>
 #include <cassert>
@@ -16,7 +18,7 @@ void check_number(std::uint32_t value) {
     std::array<char, 32> actual, expected;
     actual.fill('@');
     expected.fill('@');
-    char* end = reinsirk::detail::verify_write_with_space(actual.data() + 8, value);
+    char* end = ::sirkit::detail::verify_write_with_space(actual.data() + 8, value);
     char* ref = std::to_chars(expected.data() + 8, expected.data() + 18, value).ptr;
     *ref++ = ' ';
     assert(end - actual.data() == ref - expected.data());
@@ -27,7 +29,7 @@ void check_number(std::uint32_t value) {
 void check_space(const char* first, std::size_t n) {
     const char* ref = first;
     while (ref != first + n && static_cast<unsigned char>(*ref) > ' ') ++ref;
-    assert(reinsirk::detail::verify_find_space(first, first + n) == ref);
+    assert(::sirkit::detail::verify_find_space(first, first + n) == ref);
 }
 
 int main() {

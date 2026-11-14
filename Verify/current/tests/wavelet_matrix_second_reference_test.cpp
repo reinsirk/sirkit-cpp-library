@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #ifndef WAVELET_SOURCE
 #define WAVELET_SOURCE "../../../DataStructure/Wavelet_Matrix.cpp"
 #endif
@@ -89,7 +91,7 @@ int main() {
     exercise<std::uint64_t>(random); exercise<std::int64_t>(random);
     // rankの64bit語境界と、末尾の未使用bitを単独で全位置照合。
     for (std::size_t n : {0,1,63,64,65,127,128,129,255,256,257}) {
-        reinsirk::detail::WaveletRankBits bits(n); std::vector<bool> expected(n);
+        ::sirkit::detail::WaveletRankBits bits(n); std::vector<bool> expected(n);
         for (std::size_t i=0;i<n;++i)if((i*37+11)%13<5){bits.set(i);expected[i]=true;}
         bits.finish(); std::size_t count=0;
         for(std::size_t i=0;i<=n;++i){check(bits.rank1(i)==count);if(i<n){check(bits.at(i)==expected[i]);count+=expected[i];}}

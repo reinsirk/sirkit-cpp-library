@@ -4,18 +4,23 @@
 from pathlib import Path
 import argparse
 
+try:
+    from public_namespace import wrap_source, unwrap_source
+except ModuleNotFoundError:
+    from Scripts.public_namespace import wrap_source, unwrap_source
+
 def render(root: Path) -> dict[Path, bytes]:
     parts=root/'Math/Recurrence/components'
     coefficient=(parts/'recurrence_coefficient.inc').read_text()
     bm=(parts/'berlekamp_massey_body.inc').read_text()
-    ntt=(root/'Math/NTT.cpp').read_text()
+    ntt=unwrap_source((root/'Math/NTT.cpp').read_text())
     ntt_overview=ntt[:ntt.index('#include ')].split('// API一覧\n',1)[1].strip()
     ntt=ntt[ntt.index('#include '):]
     bm_overview=(parts/'berlekamp_massey_header.inc').read_text().split('// API一覧\n',1)[1].strip()
     linear_header=(parts/'linear_recurrence_header.inc').read_text().rstrip()+'\n//\n// [同梱BerlekampMassey]\n'+bm_overview+'\n//\n// [同梱NTT]\n'+ntt_overview
     return {
-        root/'Math/Berlekamp_Massey.cpp': ((parts/'berlekamp_massey_header.inc').read_text().rstrip()+'\n\n'+coefficient.rstrip()+'\n\n'+bm.rstrip()+'\n').encode(),
-        root/'Math/Linear_Recurrence.cpp': (linear_header+'\n\n'+(parts/'recurrence_montgomery.inc').read_text().rstrip()+'\n\n'+ntt.rstrip()+'\n\n'+coefficient.rstrip()+'\n\n'+bm.rstrip()+'\n\n'+(parts/'linear_recurrence_body.inc').read_text().rstrip()+'\n').encode(),
+        root/'Math/Berlekamp_Massey.cpp': wrap_source((parts/'berlekamp_massey_header.inc').read_text().rstrip()+'\n\n'+coefficient.rstrip()+'\n\n'+bm.rstrip()+'\n').encode(),
+        root/'Math/Linear_Recurrence.cpp': wrap_source(linear_header+'\n\n'+(parts/'recurrence_montgomery.inc').read_text().rstrip()+'\n\n'+ntt.rstrip()+'\n\n'+coefficient.rstrip()+'\n\n'+bm.rstrip()+'\n\n'+(parts/'linear_recurrence_body.inc').read_text().rstrip()+'\n').encode(),
     }
 
 def main() -> None:

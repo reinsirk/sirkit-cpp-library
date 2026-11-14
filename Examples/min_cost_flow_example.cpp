@@ -2,6 +2,8 @@
 #include "../Graph/Min_Cost_Flow.cpp"
 #include <cassert>
 #include <iostream>
+
+using namespace sirkit;
 int main(){
  MinCostFlow<> network(2);network.add_edge(0,1,2,-3);auto expensive=network.add_edge(0,1,4,5);
  auto[first,cost]=network.flow(0,1,1);assert(first==1&&cost==-3);

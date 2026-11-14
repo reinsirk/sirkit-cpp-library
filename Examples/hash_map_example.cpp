@@ -7,6 +7,8 @@
 #include <unordered_map>
 #include <vector>
 
+using namespace sirkit;
+
 struct Point {
     int x, y;
     bool operator==(const Point&) const = default;

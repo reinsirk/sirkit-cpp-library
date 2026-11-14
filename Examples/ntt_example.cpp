@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: CC0-1.0
 #include "../Math/NTT.cpp"
 #include <iostream>
+
+using namespace sirkit;
 int main() {
     const std::vector<std::int64_t> a{1, -2, 3}, b{4, 5};
     NTT<> engine;

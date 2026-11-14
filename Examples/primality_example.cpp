@@ -7,6 +7,8 @@
 #include <cstdint>
 #include <iostream>
 
+using namespace sirkit;
+
 int main()
 {
     const std::array<std::uint64_t, 6> values{

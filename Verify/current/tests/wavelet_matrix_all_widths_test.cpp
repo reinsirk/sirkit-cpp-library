@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #ifndef WAVELET_SOURCE
 #define WAVELET_SOURCE "../../../DataStructure/Wavelet_Matrix.cpp"
 #endif

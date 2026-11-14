@@ -5,14 +5,19 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
+try:
+    from public_namespace import wrap_source, unwrap_source
+except ModuleNotFoundError:
+    from Scripts.public_namespace import wrap_source, unwrap_source
+
 def render(root: Path) -> bytes:
     directory = root / 'Math/FPS/components'
     header = (directory / 'formal_power_series_header.inc').read_text()
-    ntt = (root / 'Math/NTT.cpp').read_text()
+    ntt = unwrap_source((root / 'Math/NTT.cpp').read_text())
     payload = ntt[ntt.index('#include '):]
     overview = ntt[:ntt.index('#include ')].split('// API一覧\n', 1)[1].strip()
     body = (directory / 'formal_power_series_body.inc').read_text()
-    return (header.rstrip() + '\n//\n// [同梱NTT]\n' + overview + '\n\n' +
+    return wrap_source(header.rstrip() + '\n//\n// [同梱NTT]\n' + overview + '\n\n' +
             payload.rstrip() + '\n\n' + body.rstrip() + '\n').encode()
 
 def main() -> None:

@@ -24,6 +24,8 @@
 // コンパイル対象が既にPOPCNT/AVX2を要求する場合、追加のCPU判定を省く。
 // SIRKIT_DISABLE_SIMDで追加のCPU判定・POPCNT専用経路・AVX2実装を除く。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <array>
 #include <bit>
@@ -41,9 +43,12 @@
 #include <immintrin.h>
 #endif
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_WAVELET_POPCOUNT_DEFINED
 #define SIRKIT_WAVELET_POPCOUNT_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 inline unsigned wavelet_software_popcount(std::uint64_t value) noexcept {
     value -= (value >> 1) & UINT64_C(0x5555555555555555);
     value = (value & UINT64_C(0x3333333333333333)) + ((value >> 2) & UINT64_C(0x3333333333333333));
@@ -81,7 +86,7 @@ inline unsigned wavelet_popcount(std::uint64_t value) noexcept {
 
 #ifndef SIRKIT_WAVELET_RANK_BITS_DEFINED
 #define SIRKIT_WAVELET_RANK_BITS_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 class WaveletRankBits {
     std::vector<std::uint64_t> words_;
     std::vector<std::uint32_t> prefix_;
@@ -270,7 +275,7 @@ class WaveletMatrix {
     std::size_t n_ = 0;
     unsigned bits_ = 0;
     U base_ = 0, maximum_ = 0;
-    std::vector<reinsirk::detail::WaveletRankBits> levels_;
+    std::vector</*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::WaveletRankBits> levels_;
     std::vector<std::size_t> zero_;
 
     void check_range(std::size_t left, std::size_t right) const {
@@ -447,3 +452,7 @@ public:
 template <class T> WaveletMatrix(const std::vector<T>&) -> WaveletMatrix<T>;
 template <class T> WaveletMatrix(std::span<const T>) -> WaveletMatrix<T>;
 #endif
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1

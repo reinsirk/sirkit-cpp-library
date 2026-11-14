@@ -4,6 +4,8 @@
 #include <iostream>
 #include <vector>
 
+using namespace sirkit;
+
 // S: 区間の合計と要素数。1要素は{値,1}、空区間は{0,0}。
 struct Sum { std::int64_t value; int length; };
 // F: 各要素への更新 x -> a*x+b。{1,b}は加算、{0,b}は代入。

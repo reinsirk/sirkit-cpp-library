@@ -54,6 +54,7 @@ class CompileSettingsTests(unittest.TestCase):
     def test_default_source_and_metadata_preserve_previous_bytes(self):
         expected = ('#define SKIP_RUNTIME_CHECKS\n// Verify: ' + self.entry["problem_url"] + '\n\n'
                     '// Library: DataStructure/example.cpp\n' + self.library + '\n\n'
+                    'namespace sirkit {}\nusing namespace sirkit;\n\n'
                     '// Verify I/O: ' + verify.FAST_IO + '\n// shared IO fixture\n'
                     '\n#include <cstdio>\nint main() { std::puts("ok"); }\n').encode()
         self.assertEqual(self.render(), expected)

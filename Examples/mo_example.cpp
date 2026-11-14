@@ -5,6 +5,8 @@
 #include <iostream>
 #include <utility>
 #include <vector>
+
+using namespace sirkit;
 struct Change {std::int32_t position;std::int64_t before,after;};
 int main(){
     const std::vector<std::int64_t>a{2,7,1,8,2};Mo mo(5);

@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 // capacity/load_factor/releaseの解放・初期値保持と再利用を検査する。
 #ifndef SIRKIT_INTERNAL_HASH_SOURCE
 #define SIRKIT_INTERNAL_HASH_SOURCE "../../../Internal/Nyaan_hash_map_min.cpp"
@@ -31,7 +33,7 @@ static void require(bool ok) { ++checks; if (!ok) std::abort(); }
 
 template<bool Packed, unsigned D>
 static void numeric() {
-    using Map = reinsirk::detail::InternalHashMap<std::uint64_t, std::int64_t, Packed, D>;
+    using Map = ::sirkit::detail::InternalHashMap<std::uint64_t, std::int64_t, Packed, D>;
     const auto before = live_allocations;
     {
         Map table;
@@ -65,7 +67,7 @@ template<bool Packed>
 static void resources() {
     std::weak_ptr<int> default_weak, item_weak;
     {
-        reinsirk::detail::InternalHashMap<int, std::shared_ptr<int>, Packed> table;
+        ::sirkit::detail::InternalHashMap<int, std::shared_ptr<int>, Packed> table;
         auto first = std::make_shared<int>(17), second = std::make_shared<int>(29);
         default_weak = first; item_weak = second;
         table.set_default(first); table[1] = second; first.reset(); second.reset();

@@ -70,6 +70,11 @@ DOCUMENTS: dict[str, tuple[str, ...]] = {
 }
 
 
+try:
+    from public_namespace import wrap_source, unwrap_source
+except ModuleNotFoundError:
+    from Scripts.public_namespace import wrap_source, unwrap_source
+
 def dependency_order(roots: tuple[str, ...]) -> list[str]:
     order: list[str] = []
     complete: set[str] = set()
@@ -129,6 +134,7 @@ def main() -> int:
             content = "// SPDX-License-Identifier: CC0-1.0\n" + headers + "\n"
             content += "\n".join(pieces[name] for name in dependency_order(roots))
             content = render_api_overview(content, DOCUMENTS[relative])
+            content = wrap_source(content)
             target = options.output_dir / relative
             if options.check:
                 if not target.is_file() or target.read_bytes() != content.encode("utf-8"):

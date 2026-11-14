@@ -6,6 +6,8 @@
 #include <functional>
 #include <iostream>
 #include <vector>
+
+using namespace sirkit;
 using I=std::int64_t;
 struct Affine {I a,b;};
 struct Mapping {I operator()(const Affine&f,I sum,std::size_t n)const{return f.a*sum+f.b*static_cast<I>(n);}};

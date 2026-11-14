@@ -61,13 +61,15 @@
 // 検査時は負の挿入ID・重複IDと、存在が前提の操作への不存在IDを拒否。コピーはID索引枠数ぶんもかかる。
 //
 // [既定の作用: RangeAddMin]
-// 区間加算・最小値。値と加算後の値は INF 以下、各演算は int64_t に収まること。
+// 区間加算・最小値。値と加算後の値は kInf 以下、各演算は int64_t に収まること。
 // op(a,b)/e(): 最小値/単位元。mapping(f,x): 加算。composition(f,g)/id(): 加算の合成/0。
 //
 // [既定の作用: RangeAddSum]
 // 区間加算・和。各要素は S{値, 1} とし、演算結果は int64_t に収まること。
 // op(a,b)/e(): 和と個数の合計/空。mapping(f,x): 各要素へ加算。composition(f,g)/id(): 合成/0。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <chrono>
 #include <cstddef>
@@ -78,14 +80,17 @@
 #include <utility>
 #include <vector>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_RANGE_ADD_MIN_DEFINED
 #define SIRKIT_RANGE_ADD_MIN_DEFINED
 struct RangeAddMin {
     using S = std::int64_t;
     using F = std::int64_t;
-    static constexpr S INF = INT64_C(8000000000000000000);
+    static constexpr S kInf = INT64_C(8000000000000000000);
     static S op(S a, S b) { return std::min(a, b); }
-    static S e() { return INF; }
+    static S e() { return kInf; }
     static S mapping(F f, S x) { return x + f; }
     static F composition(F f, F g) { return f + g; }
     static F id() { return 0; }
@@ -927,3 +932,7 @@ template<class S = RangeAddMin::S,
          bool Commutative = false>
 using indexed_implicit_treap = lazy_implicit_treap<S, op, e, F, mapping, composition, id, Commutative, true>;
 #endif
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1

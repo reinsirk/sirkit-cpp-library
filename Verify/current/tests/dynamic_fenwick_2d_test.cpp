@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 // 実行例: c++ -std=c++23 -O2 Verify/current/tests/dynamic_fenwick_2d_test.cpp -o /tmp/fenwick_test && /tmp/fenwick_test
 // 検査省略時は-DSKIP_RUNTIME_CHECKS、異なる保持閾値では-DSMALL_POINT_LIMIT=値を追加する。
 #ifndef FENWICK_SOURCE

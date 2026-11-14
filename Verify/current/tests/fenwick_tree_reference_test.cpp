@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #ifndef SIRKIT_FENWICK_TEST_SOURCE
 #define SIRKIT_FENWICK_TEST_SOURCE "../../../DataStructure/Fenwick_Tree.cpp"
 #endif

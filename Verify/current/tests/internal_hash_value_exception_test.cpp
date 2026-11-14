@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 // 非自明な値のコピー失敗・再配置失敗後も登録済み内容を保つ。
 #ifndef SIRKIT_INTERNAL_HASH_SOURCE
 #define SIRKIT_INTERNAL_HASH_SOURCE "../../../Internal/Nyaan_hash_map_min.cpp"
@@ -48,7 +50,7 @@ static void inspect(const Table& table, const std::map<int, std::string>& ref) {
 
 template<bool Packed, unsigned D>
 static void copy_and_assignment() {
-    using Table = reinsirk::detail::InternalHashMap<int, Bomb, Packed, D>;
+    using Table = ::sirkit::detail::InternalHashMap<int, Bomb, Packed, D>;
     Table source, destination;
     std::map<int, std::string> ref, old;
     for (int i = 0; i < 31; ++i) { source.find_or_emplace(i, [i] { return Bomb(std::to_string(i)); }); ref[i] = std::to_string(i); }
@@ -98,7 +100,7 @@ struct SwapFaultValue {
     }
 };
 static void throwing_default_swap() {
-    using Table = reinsirk::detail::InternalHashMap<int, SwapFaultValue>;
+    using Table = ::sirkit::detail::InternalHashMap<int, SwapFaultValue>;
     Table a, b; a[1].value = 17; b[2].value = 29;
     SwapFaultValue::armed = true; bool failed = false;
     try { a.swap(b); } catch (Fault) { failed = true; }

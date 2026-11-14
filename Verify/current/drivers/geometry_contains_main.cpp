@@ -13,13 +13,13 @@
 
 int main() {
     int n; std::cin >> n;
-    std::vector<geo::PointLD> polygon(n);
+    std::vector<::sirkit::geo::PointLD> polygon(n);
     for (auto& p : polygon) std::cin >> p.x >> p.y;
     std::cout << std::fixed << std::setprecision(12);
     int q; std::cin >> q;
     while (q--) {
-        geo::PointLD p; std::cin >> p.x >> p.y;
-        const auto where = geo::contains(polygon, p);
-        std::cout << (where == geo::Location::Inside ? 2 : where == geo::Location::Boundary ? 1 : 0) << '\n';
+        ::sirkit::geo::PointLD p; std::cin >> p.x >> p.y;
+        const auto where = ::sirkit::geo::contains(polygon, p);
+        std::cout << (where == ::sirkit::geo::Location::Inside ? 2 : where == ::sirkit::geo::Location::Boundary ? 1 : 0) << '\n';
     }
 }

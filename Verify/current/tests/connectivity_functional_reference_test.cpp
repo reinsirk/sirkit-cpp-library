@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #ifndef SIRKIT_ODC_SOURCE
 #define SIRKIT_ODC_SOURCE "../../../Graph/Offline_Dynamic_Connectivity.cpp"
 #endif

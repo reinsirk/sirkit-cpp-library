@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 // 確保失敗時のコピー代入と、容量を再利用する代入を照合する。
 #ifndef SIEVE_SOURCE
 #define SIEVE_SOURCE "../../../Math/Eratosthenes.cpp"

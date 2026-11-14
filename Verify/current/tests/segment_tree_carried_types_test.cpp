@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 // 点更新の値持ち越しによる型要件の増加と、左右の演算順を検証する。
 #ifndef SIRKIT_SEGMENT_TEST_SOURCE
 #define SIRKIT_SEGMENT_TEST_SOURCE "../../../DataStructure/Segment_Tree.cpp"

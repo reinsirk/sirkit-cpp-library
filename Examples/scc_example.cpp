@@ -2,6 +2,8 @@
 #include "../Graph/SCC.cpp"
 #include <cassert>
 #include <iostream>
+
+using namespace sirkit;
 int main(){
  scc_graph graph(5);
  graph.add_edge(0,1);graph.add_edge(1,0);graph.add_edge(1,2);graph.add_edge(2,3);graph.add_edge(3,2);graph.add_edge(3,4);

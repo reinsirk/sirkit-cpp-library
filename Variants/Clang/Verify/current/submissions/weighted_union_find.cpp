@@ -29,6 +29,8 @@
 // swap(other)/swap(a,b): 内容交換、O(1)、noexcept。コピーはO(n+1)で独立、コピー代入は強い例外保証。移動元は空。
 // groupsの根走査は対応CPUでAVX2を使用。SIRKIT_DISABLE_SIMDで標準経路に固定。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <cstddef>
 #include <limits>
@@ -38,12 +40,27 @@
 #include <utility>
 #include <vector>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #if (!defined(SIRKIT_DISABLE_SIMD)) && ((defined(__x86_64__)) || (defined(__i386__)))
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <bit>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <immintrin.h>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_UNION_GROUP_ROOT_SLOTS_AVX2_DEFINED
 #define SIRKIT_UNION_GROUP_ROOT_SLOTS_AVX2_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 __attribute__((target("avx2"))) inline void ReserveGroupRootSlots(
     const int* parents, int* slots, std::size_t n, std::vector<std::vector<int>>& result) {
     std::size_t i = 0;
@@ -198,7 +215,7 @@ public:
         std::vector<int> slot(param.size());
 #if (!defined(SIRKIT_DISABLE_SIMD)) && ((defined(__x86_64__)) || (defined(__i386__)))
         if (param.size() >= 256 && __builtin_cpu_supports("avx2"))
-            reinsirk::detail::ReserveGroupRootSlots(param.data(), slot.data(), param.size(), result);
+            /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::ReserveGroupRootSlots(param.data(), slot.data(), param.size(), result);
         else
 #endif
         for (int i = 0; i < size(); ++i) if (param[i] < 0) {
@@ -215,6 +232,13 @@ public:
 };
 #endif
 
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
+
+
+namespace sirkit {}
+using namespace sirkit;
 
 // SPDX-License-Identifier: CC0-1.0
 // Verify I/O: Verify/current/common/fast_io.hpp

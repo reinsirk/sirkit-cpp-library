@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #include "wuf_groups_test_model.hpp"
 template<class T> void run() {
     for(int n:{0,1,7,17,255,256,257,263,511,512,513,4097})for(int b:{1,8,128,8192})for(int order=0;order<5;++order){

@@ -31,6 +31,8 @@
 // 更新・構築の失敗時は追加ノードを取り消し、旧根とlatest_rootを維持する。
 // SKIP_RUNTIME_CHECKSで根の所属・添字・長さ・述語の単位元検査と所属用状態を除く。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <concepts>
 #include <atomic>
 #include <cstddef>
@@ -45,6 +47,9 @@
 #include <vector>
 
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_PERSISTENT_SEGMENT_TREE_DEFINED
 #define SIRKIT_PERSISTENT_SEGMENT_TREE_DEFINED
 template<class T, class Op>
@@ -282,3 +287,7 @@ public:
     }
 };
 #endif
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1

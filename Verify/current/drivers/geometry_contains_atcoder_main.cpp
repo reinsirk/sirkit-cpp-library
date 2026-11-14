@@ -5,9 +5,9 @@
 int main() {
     int n{};
     verify_in >> n;
-    std::vector<geo::PointI> polygon(n);
+    std::vector<::sirkit::geo::PointI> polygon(n);
     for (auto& p : polygon) verify_in >> p.x >> p.y;
-    geo::PointI p;
+    ::sirkit::geo::PointI p;
     verify_in >> p.x >> p.y;
-    verify_out << (geo::contains(polygon, p) == geo::Location::Inside ? "INSIDE" : "OUTSIDE") << '\n';
+    verify_out << (::sirkit::geo::contains(polygon, p) == ::sirkit::geo::Location::Inside ? "INSIDE" : "OUTSIDE") << '\n';
 }

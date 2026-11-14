@@ -5,6 +5,8 @@
 #include <utility>
 #include <vector>
 
+using namespace sirkit;
+
 using SumTreap = lazy_implicit_treap<
     RangeAddSum::S, RangeAddSum::op, RangeAddSum::e, RangeAddSum::F,
     RangeAddSum::mapping, RangeAddSum::composition, RangeAddSum::id>;

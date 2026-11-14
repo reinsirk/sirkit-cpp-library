@@ -2,6 +2,10 @@
 
 開発は`dev`で行い、まとまった変更をGitHubのPRで`main`へ反映します。push・PR作成は手動で行います。未コミットの変更はブランチ切り替えだけではコミットされません。
 
+配布は[GitHub Releases](https://github.com/reinsirk/sirkit-cpp-library/releases)を使います。配布ZIPとその管理用manifest・検査結果はリポジトリに置かず、通常の変更時には再生成しません。本体・使用例・Verifyなどの生成物の同期確認は引き続き行います。
+
+`Audit/data/`の検証ZIPはローカル保存で、Gitでは追跡しません。GitHub Actionsはこれらを使わずに検査します。過去の最適化履歴を手元で照合する場合は、参照するZIPを別途用意してください。
+
 ## 最適化
 
 受理履歴のあるVerifyコードを[一覧](../Verify/optimization/README.md)から選びます。Library Checkerでは本体・main・入出力を含めてCodex→Claudeの順に改善し、各段階のコード・正しさの照合・測定結果を保存します。本体単独の比較と全体の比較は分けます。
@@ -26,7 +30,13 @@ python3 Scripts/ci_verify.py --base origin/main --list
 
 `--id`は個別指定、`--base`は指定した版からの変更に対応するVerifyの選択、`--all`は全件です。検査有効・無効の両方でローカルの入出力例を照合します。Clangで標準C++の代替経路も確認するには`--compiler clang++ --fallback`を付けます。
 
-[GitHub Actions](../.github/workflows/verify.yml)は`dev`へのpushと`main`向けPRで、生成物・Pythonテスト・README集計と、GCC/ClangのローカルVerifyを確認します。手動実行では全件を選べます。オンライン提出は別途行います。
+[GitHub Actions](../.github/workflows/verify.yml)は、`main`向けPRの作成・更新時に毎回全件を実行します。`dev`や`main`へのpush単独では起動しません。
+
+生成物・Pythonテスト・README集計を確認した後、GCC/Clangそれぞれで通常経路と標準C++の代替経路を実行します。各経路で入力検査有効・無効の両方を照合します。対象なしは「対象なし」と表示し、未実行のコードを検証済みとは数えません。
+
+README先頭のバッジは`main`向けPRのCI結果です。PRごとの結果はChecksの`Verify result`、コンパイラごとの件数・成否はActionsのSummary、詳しいJSONは14日間保存するArtifactで確認できます。GitHubのmain保護ルールで`Verify result`を必須にすると、いずれかの検査が失敗したPRを取り込まない運用にできます。オンライン提出とAC判定は別途行います。
+
+ASan/UBSan、カバレッジ、代表APIの性能測定、通常版のCore Guidelines・Google Style検査も実行します。対象と結果の読み方、ローカルでの実行方法は[CIの品質検査](ci_quality.md)を参照してください。速度優先版は作法検査の対象外です。
 
 ## 手動提出と判定の取り込み
 

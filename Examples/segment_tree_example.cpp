@@ -3,6 +3,8 @@
 #include <cstdint>
 #include <iostream>
 #include <vector>
+
+using namespace sirkit;
 std::int64_t op(std::int64_t a, std::int64_t b) { return a + b; }
 std::int64_t e() { return 0; }
 bool at_most_six(std::int64_t value) { return value <= 6; }

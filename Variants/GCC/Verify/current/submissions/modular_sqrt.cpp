@@ -36,6 +36,8 @@
 // 法0は演算を定義できないため、検査省略時もinvalid_argument。
 // 素数性や後続の未参照合同式は検査しない。不能の判定・容量保護は検査省略時も維持する。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <bit>
 #include <cstdint>
 #include <limits>
@@ -45,9 +47,12 @@
 #include <stdexcept>
 #include <utility>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_MODULAR_ARITHMETIC_DETAIL_DEFINED
 #define SIRKIT_MODULAR_ARITHMETIC_DETAIL_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 inline constexpr void check_modulus64(std::uint64_t modulus) {
     if (!modulus) throw std::invalid_argument("modular arithmetic: zero modulus");
 }
@@ -193,37 +198,37 @@ inline constexpr std::uint64_t modular_power_residue64(std::uint64_t base, std::
 #ifndef SIRKIT_MODULAR_ARITHMETIC_DEFINED
 #define SIRKIT_MODULAR_ARITHMETIC_DEFINED
 inline constexpr std::uint64_t NormalizeMod(std::int64_t value, std::uint64_t modulus) {
-    reinsirk::detail::check_modulus64(modulus);
+    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::check_modulus64(modulus);
     if (value >= 0) return static_cast<std::uint64_t>(value) % modulus;
     const auto residue = (std::uint64_t{0} - static_cast<std::uint64_t>(value)) % modulus;
     return residue ? modulus - residue : 0;
 }
 inline constexpr std::uint64_t ModAdd(std::uint64_t a, std::uint64_t b, std::uint64_t modulus) {
-    reinsirk::detail::check_modulus64(modulus);
-    return reinsirk::detail::modular_add_residues64(a % modulus, b % modulus, modulus);
+    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::check_modulus64(modulus);
+    return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::modular_add_residues64(a % modulus, b % modulus, modulus);
 }
 inline constexpr std::uint64_t ModSubtract(std::uint64_t a, std::uint64_t b, std::uint64_t modulus) {
-    reinsirk::detail::check_modulus64(modulus);
-    return reinsirk::detail::modular_subtract_residues64(a % modulus, b % modulus, modulus);
+    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::check_modulus64(modulus);
+    return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::modular_subtract_residues64(a % modulus, b % modulus, modulus);
 }
 inline constexpr std::uint64_t ModMultiply(std::uint64_t a, std::uint64_t b, std::uint64_t modulus) {
-    reinsirk::detail::check_modulus64(modulus);
-    return reinsirk::detail::modular_multiply64(a, b, modulus);
+    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::check_modulus64(modulus);
+    return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::modular_multiply64(a, b, modulus);
 }
 inline constexpr std::uint64_t ModPow(std::uint64_t a, std::uint64_t exponent, std::uint64_t modulus) {
-    reinsirk::detail::check_modulus64(modulus);
+    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::check_modulus64(modulus);
     a %= modulus;
     if (!exponent) return 1 % modulus;
     if (a <= 1) return a;
     if (modulus <= (std::uint64_t{1} << 32))
-        return reinsirk::detail::modular_power_residue64<true>(a, exponent, modulus);
+        return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::modular_power_residue64<true>(a, exponent, modulus);
 #if (defined(__SIZEOF_INT128__)) && (!defined(SIRKIT_FORCE_STANDARD_ARITHMETIC))
-    if(exponent>=(std::uint64_t{1}<<15)&&(modulus&1))return reinsirk::detail::modular_montgomery_power64(a,exponent,modulus);
+    if(exponent>=(std::uint64_t{1}<<15)&&(modulus&1))return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::modular_montgomery_power64(a,exponent,modulus);
 #endif
-    return reinsirk::detail::modular_power_residue64<false>(a, exponent, modulus);
+    return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::modular_power_residue64<false>(a, exponent, modulus);
 }
 inline constexpr std::optional<std::uint64_t> ModInverse(std::uint64_t a, std::uint64_t modulus) {
-    reinsirk::detail::check_modulus64(modulus);
+    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::check_modulus64(modulus);
     a %= modulus;
     auto r0 = modulus, r1 = a;
 #if (defined(__SIZEOF_INT128__)) && (!defined(SIRKIT_FORCE_STANDARD_ARITHMETIC))
@@ -241,8 +246,8 @@ inline constexpr std::optional<std::uint64_t> ModInverse(std::uint64_t a, std::u
     std::uint64_t u0 = 0, u1 = 1 % modulus;
     while (r1) {
         const auto quotient = r0 / r1, remainder = r0 % r1;
-        const auto next = reinsirk::detail::modular_subtract_residues64(u0,
-            reinsirk::detail::modular_multiply64(quotient, u1, modulus), modulus);
+        const auto next = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::modular_subtract_residues64(u0,
+            /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::modular_multiply64(quotient, u1, modulus), modulus);
         r0 = r1; r1 = remainder; u0 = u1; u1 = next;
     }
     if (r0 != 1) return std::nullopt;
@@ -254,17 +259,17 @@ struct Congruence {
     friend constexpr bool operator==(const Congruence&, const Congruence&) = default;
 };
 inline constexpr std::optional<Congruence> SolveLinearCongruence(std::uint64_t a, std::uint64_t b, std::uint64_t modulus) {
-    reinsirk::detail::check_modulus64(modulus);
+    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::check_modulus64(modulus);
     a %= modulus; b %= modulus;
     const auto divisor = std::gcd(a, modulus);
     if (b % divisor) return std::nullopt;
     const auto period = modulus / divisor;
     const auto inverse = ModInverse(a / divisor, period);
-    return Congruence{reinsirk::detail::modular_multiply64(b / divisor, *inverse, period), period};
+    return Congruence{/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::modular_multiply64(b / divisor, *inverse, period), period};
 }
 inline constexpr std::optional<Congruence> ChineseRemainder(Congruence first, Congruence second) {
-    reinsirk::detail::check_modulus64(first.modulus);
-    reinsirk::detail::check_modulus64(second.modulus);
+    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::check_modulus64(first.modulus);
+    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::check_modulus64(second.modulus);
     first.remainder %= first.modulus; second.remainder %= second.modulus;
     const auto divisor = std::gcd(first.modulus, second.modulus);
     if (first.remainder % divisor != second.remainder % divisor) return std::nullopt;
@@ -280,7 +285,7 @@ inline constexpr std::optional<Congruence> ChineseRemainder(Congruence first, Co
         delta = residue ? reduced_second - residue : 0;
     }
     const auto inverse = ModInverse(first.modulus / divisor, reduced_second);
-    const auto multiplier = reinsirk::detail::modular_multiply64(delta, *inverse, reduced_second);
+    const auto multiplier = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::modular_multiply64(delta, *inverse, reduced_second);
     return Congruence{first.remainder + first.modulus * multiplier, combined_modulus};
 }
 inline constexpr std::optional<Congruence> ChineseRemainder(std::span<const Congruence> equations) {
@@ -293,7 +298,7 @@ inline constexpr std::optional<Congruence> ChineseRemainder(std::span<const Cong
     return result;
 }
 inline constexpr std::optional<std::uint64_t> ModSqrt(std::uint64_t a, std::uint64_t prime) {
-    reinsirk::detail::check_modulus64(prime);
+    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::check_modulus64(prime);
 #ifndef SKIP_RUNTIME_CHECKS
     if (prime < 2 || (prime != 2 && !(prime & 1))) throw std::invalid_argument("ModSqrt: prime required");
 #endif
@@ -301,18 +306,18 @@ inline constexpr std::optional<std::uint64_t> ModSqrt(std::uint64_t a, std::uint
     if (!a || prime == 2) return a;
     if(a==1)return a;
 #if (defined(__SIZEOF_INT128__)) && (!defined(SIRKIT_FORCE_STANDARD_ARITHMETIC))
-    if((prime>(std::uint64_t{1}<<32)||(prime>=(std::uint64_t{1}<<16)&&prime%8==1))&&(prime&1))return reinsirk::detail::modular_montgomery_sqrt64(a,prime);
+    if((prime>(std::uint64_t{1}<<32)||(prime>=(std::uint64_t{1}<<16)&&prime%8==1))&&(prime&1))return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::modular_montgomery_sqrt64(a,prime);
 #endif
     if (prime % 4 == 3) {
         const auto root = ModPow(a, prime / 4 + 1, prime);
-        if(reinsirk::detail::modular_multiply64(root,root,prime)!=a)return std::nullopt;
+        if(/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::modular_multiply64(root,root,prime)!=a)return std::nullopt;
         return root < prime - root ? root : prime - root;
     }
     if(prime%8==5){
-        auto root=ModPow(a,prime/8+1,prime);const auto square=reinsirk::detail::modular_multiply64(root,root,prime);
+        auto root=ModPow(a,prime/8+1,prime);const auto square=/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::modular_multiply64(root,root,prime);
         if(square!=a){
             if(square!=prime-a)return std::nullopt;
-            root=reinsirk::detail::modular_multiply64(root,ModPow(2,prime/4,prime),prime);
+            root=/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::modular_multiply64(root,ModPow(2,prime/4,prime),prime);
         }
         return root<prime-root?root:prime-root;
     }
@@ -324,21 +329,28 @@ inline constexpr std::optional<std::uint64_t> ModSqrt(std::uint64_t a, std::uint
     auto c = ModPow(non_residue, odd, prime), root = ModPow(a, (odd + 1) / 2, prime), t = ModPow(a, odd, prime);
     auto remaining = shifts;
     while (t != 1) {
-        auto value = reinsirk::detail::modular_multiply64(t, t, prime);
+        auto value = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::modular_multiply64(t, t, prime);
         unsigned i = 1;
-        while (i < remaining && value != 1) { value = reinsirk::detail::modular_multiply64(value, value, prime); ++i; }
+        while (i < remaining && value != 1) { value = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::modular_multiply64(value, value, prime); ++i; }
         if (i == remaining) return std::nullopt;
         auto factor = c;
-        for (unsigned j = 0; j < remaining - i - 1; ++j) factor = reinsirk::detail::modular_multiply64(factor, factor, prime);
-        root = reinsirk::detail::modular_multiply64(root, factor, prime);
-        c = reinsirk::detail::modular_multiply64(factor, factor, prime);
-        t = reinsirk::detail::modular_multiply64(t, c, prime);
+        for (unsigned j = 0; j < remaining - i - 1; ++j) factor = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::modular_multiply64(factor, factor, prime);
+        root = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::modular_multiply64(root, factor, prime);
+        c = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::modular_multiply64(factor, factor, prime);
+        t = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::modular_multiply64(t, c, prime);
         remaining = i;
     }
     return root < prime - root ? root : prime - root;
 }
 #endif
 
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
+
+
+namespace sirkit {}
+using namespace sirkit;
 
 // SPDX-License-Identifier: CC0-1.0
 // Verify I/O: Verify/current/common/fast_io.hpp

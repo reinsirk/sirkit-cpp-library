@@ -9,7 +9,7 @@ int main() {
     for(int test=0;test<500;++test) {
         const int n=1+random()%14;
         WGraph graph(n);
-        std::vector ref(n,std::vector<std::int64_t>(n,INF));
+        std::vector ref(n,std::vector<std::int64_t>(n,kInf));
         std::vector reach(n,std::vector<bool>(n));
         for(int i=0;i<n;++i) { ref[i][i]=0;reach[i][i]=true; }
         for(int i=0;i<n*n/2;++i) {
@@ -20,7 +20,7 @@ int main() {
         const auto initial=ref;
         for(int k=0;k<n;++k) for(int i=0;i<n;++i) for(int j=0;j<n;++j) {
             reach[i][j]=reach[i][j] || (reach[i][k]&&reach[k][j]);
-            if(ref[i][k]!=INF && ref[k][j]!=INF) ref[i][j]=std::min(ref[i][j],ref[i][k]+ref[k][j]);
+            if(ref[i][k]!=kInf && ref[k][j]!=kInf) ref[i][j]=std::min(ref[i][j],ref[i][k]+ref[k][j]);
         }
         std::vector negative(n,std::vector<bool>(n));bool any=false;
         for(int k=0;k<n;++k) if(ref[k][k]<0) {
@@ -29,7 +29,7 @@ int main() {
                 if(reach[i][k]&&reach[k][j]) negative[i][j]=true;
         }
         auto expected=ref;
-        for(int i=0;i<n;++i) for(int j=0;j<n;++j) if(negative[i][j]) expected[i][j]=-INF;
+        for(int i=0;i<n;++i) for(int j=0;j<n;++j) if(negative[i][j]) expected[i][j]=-kInf;
         auto distance=initial;require(FloydWarshall(distance)==any);require(distance==expected);
         std::vector<std::vector<int>> next;
         distance=initial;require(FloydWarshall(distance,next)==any);require(distance==expected);
@@ -56,23 +56,23 @@ int main() {
             for(int e=0;e<15;++e)graph[u].emplace_back(random()%n,random()%1'000'000'001);
         }
         for(int s:{0,n/2,n-1}) {
-            std::vector<std::int64_t> expected(n,INF);expected[s]=0;
+            std::vector<std::int64_t> expected(n,kInf);expected[s]=0;
             for(int i=1;i<n;++i) {
                 bool change=false;
-                for(int u=0;u<n;++u) if(expected[u]!=INF) for(const auto& e:graph[u])
+                for(int u=0;u<n;++u) if(expected[u]!=kInf) for(const auto& e:graph[u])
                     if(expected[e.to]>expected[u]+e.w) { expected[e.to]=expected[u]+e.w;change=true; }
                 if(!change)break;
             }
             std::vector<std::int64_t> actual;Dijkstra(graph,actual,s);require(actual==expected);
             for(int t:{0,n/2,n-1}) {
                 std::vector<int> path;Dijkstra(graph,actual,s,t,path);require(actual==expected);
-                if(expected[t]==INF) {require(path.empty());continue;}
+                if(expected[t]==kInf) {require(path.empty());continue;}
                 require(path.front()==s && path.back()==t && path.size()<=static_cast<std::size_t>(n));
                 std::int64_t sum=0;
                 for(std::size_t i=1;i<path.size();++i) {
-                    auto w=INF;
+                    auto w=kInf;
                     for(const auto& e:graph[path[i-1]]) if(e.to==path[i])w=std::min(w,e.w);
-                    require(w!=INF);sum+=w;
+                    require(w!=kInf);sum+=w;
                 }
                 require(sum==expected[t]);
             }

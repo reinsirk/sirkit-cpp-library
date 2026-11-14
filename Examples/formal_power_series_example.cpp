@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: CC0-1.0
 #include "../Math/Formal_Power_Series.cpp"
 #include <iostream>
+
+using namespace sirkit;
 int main() {
     const FormalPowerSeries f{1, 2, 1};
     const auto inverse = f.inverse(6);

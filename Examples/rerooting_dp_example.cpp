@@ -3,6 +3,8 @@
 #include <cstdint>
 #include <iostream>
 #include <utility>
+
+using namespace sirkit;
 struct State { std::int64_t sum=0,count=0; };
 int main() {
     RerootingDP<State> tree(5);

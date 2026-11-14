@@ -4,6 +4,8 @@
 #include <iostream>
 #include <vector>
 
+using namespace sirkit;
+
 // Sに当たる型。区間の「合計」と「要素数」を保持する。
 struct Sum { std::int64_t value; int length; };
 // Fに当たる型。「各要素にいくつ足すか」を表す。

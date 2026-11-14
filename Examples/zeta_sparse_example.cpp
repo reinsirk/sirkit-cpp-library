@@ -5,6 +5,8 @@
 #include <utility>
 #include <vector>
 
+using namespace sirkit;
+
 int main() {
     IntegerSieve sieve(100);
     const std::vector<std::pair<int, int>> original{{1, 1}, {2, 2}, {3, 3}, {6, 6}};

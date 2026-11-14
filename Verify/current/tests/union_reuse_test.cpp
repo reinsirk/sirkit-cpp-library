@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #ifndef SIRKIT_UF_SOURCE
 #define SIRKIT_UF_SOURCE "../../../DataStructure/union_find.cpp"
 #endif

@@ -4,9 +4,10 @@
 // ドキュメント: https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/template.md
 //
 // API一覧
+// 公開APIは sirkit 内。main はグローバルに置く。
 // [共有型・定数]
 // Graph: 無重み隣接リスト。Edge{to,w}/WGraph: 行先int・重みint64_tの隣接リスト。
-// INF: int64_t{1}<<60。型・定数はライブラリの共通ガードで共有する。
+// kInf: int64_t{1}<<60。型・定数はライブラリの共通ガードで共有する。
 // [補助関数]
 // chmin(a, b): b < a なら a を更新して true を返す。比較・代入各1回以下。
 // chmax(a, b): a < b なら a を更新して true を返す。比較・代入各1回以下。
@@ -23,9 +24,11 @@ using namespace atcoder;
 
 #define SKIP_RUNTIME_CHECKS
 
+namespace sirkit {
+
 #ifndef SIRKIT_INF_DEFINED
 #define SIRKIT_INF_DEFINED
-inline constexpr std::int64_t INF = std::int64_t{1} << 60;
+inline constexpr std::int64_t kInf = std::int64_t{1} << 60;
 #endif
 
 #ifndef SIRKIT_UNWEIGHTED_GRAPH_DEFINED
@@ -66,6 +69,8 @@ constexpr std::uint64_t pow64i(std::uint64_t x, std::uint64_t n);
 #define SIRKIT_TEMP_DEFINE_IS_MUL_OVERFLOW
 constexpr bool is_mul_overflow(std::int64_t a, std::int64_t b);
 #endif
+} // namespace sirkit
+
 // cout << std::fixed << std::setprecision(15);
 
 int main() {
@@ -74,6 +79,8 @@ int main() {
 
     return 0;
 }
+
+namespace sirkit {
 
 #ifdef SIRKIT_TEMP_DEFINE_CHMIN
 #undef SIRKIT_TEMP_DEFINE_CHMIN
@@ -131,3 +138,5 @@ constexpr bool is_mul_overflow(std::int64_t a, std::int64_t b) {
 #endif
 }
 #endif
+
+} // namespace sirkit

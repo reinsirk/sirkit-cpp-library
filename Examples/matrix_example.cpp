@@ -3,6 +3,8 @@
 #include <cstdint>
 #include <iostream>
 #include <vector>
+
+using namespace sirkit;
 int main(){
     const Matrix<std::int64_t> a{{1,2},{3,4}},b{{5,6},{7,8}};
     const auto product=a*b;

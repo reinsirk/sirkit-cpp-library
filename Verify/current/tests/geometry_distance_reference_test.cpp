@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #ifndef SIRKIT_DISTANCE_TEST_HEADER
 #define SIRKIT_DISTANCE_TEST_HEADER "../../../Geometry/Line_Segment.cpp"
 #endif
@@ -51,7 +53,7 @@ Reference decimal_reference(DPoint p, DPoint a, DPoint b) {
     if (dot >= den) return {sqrt(vx * vx + vy * vy), span};
     return {abs(ux * dy - uy * dx) / sqrt(den), span};
 }
-Reference integer_reference(geo::PointI p, geo::PointI a, geo::PointI b) {
+Reference integer_reference(::sirkit::geo::PointI p, ::sirkit::geo::PointI a, ::sirkit::geo::PointI b) {
     const Big dx = Big(b.x) - a.x, dy = Big(b.y) - a.y;
     const Big ux = Big(p.x) - a.x, uy = Big(p.y) - a.y;
     const Big vx = Big(p.x) - b.x, vy = Big(p.y) - b.y;
@@ -75,23 +77,23 @@ void distance_result(long double actual, const Reference& expected) {
     }
     require(error <= allowance);
 }
-void integer_case(geo::PointI p, geo::PointI a, geo::PointI b) {
-    const auto representable = [](geo::PointI q) {
+void integer_case(::sirkit::geo::PointI p, ::sirkit::geo::PointI a, ::sirkit::geo::PointI b) {
+    const auto representable = [](::sirkit::geo::PointI q) {
         return Big(static_cast<long double>(q.x)) == Big(q.x) && Big(static_cast<long double>(q.y)) == Big(q.y);
     };
-    const auto converted = [](geo::PointI q) {
+    const auto converted = [](::sirkit::geo::PointI q) {
         return DPoint{binary_value(static_cast<long double>(q.x)), binary_value(static_cast<long double>(q.y))};
     };
     // long doubleの仮数が短いABIでは、API通り座標変換の丸めを先に反映する。
     const auto expected = representable(p) && representable(a) && representable(b)
         ? integer_reference(p, a, b) : decimal_reference(converted(p), converted(a), converted(b));
-    distance_result(geo::distance(p, geo::Segment<std::int64_t>{a, b}), expected);
-    distance_result(geo::distance(p, geo::Segment<std::int64_t>{b, a}), expected);
-    const auto swap = [](geo::PointI q) { return geo::PointI{q.y, q.x}; };
-    distance_result(geo::distance(swap(p), geo::Segment<std::int64_t>{swap(a), swap(b)}), expected);
+    distance_result(::sirkit::geo::distance(p, ::sirkit::geo::Segment<std::int64_t>{a, b}), expected);
+    distance_result(::sirkit::geo::distance(p, ::sirkit::geo::Segment<std::int64_t>{b, a}), expected);
+    const auto swap = [](::sirkit::geo::PointI q) { return ::sirkit::geo::PointI{q.y, q.x}; };
+    distance_result(::sirkit::geo::distance(swap(p), ::sirkit::geo::Segment<std::int64_t>{swap(a), swap(b)}), expected);
 }
 void integers() {
-    using P = geo::PointI;
+    using P = ::sirkit::geo::PointI;
     const std::array<P, 9> grid{{{-1,-1},{-1,0},{-1,1},{0,-1},{0,0},{0,1},{1,-1},{1,0},{1,1}}};
     for (auto p : grid) for (auto a : grid) for (auto b : grid) integer_case(p, a, b);
     std::mt19937_64 random(0xD157A);
@@ -113,12 +115,12 @@ void integers() {
         {{{1000000000,1000000000},{0,0},{1000000001,1000000001}}}
     }}) integer_case(v[0], v[1], v[2]);
     // 軸平行の既知値は、巨大座標でも小距離を直接確認する。
-    require(geo::distance(P{0,1}, geo::Segment<std::int64_t>{{low,0},{high,0}}) == 1);
+    require(::sirkit::geo::distance(P{0,1}, ::sirkit::geo::Segment<std::int64_t>{{low,0},{high,0}}) == 1);
     if constexpr (std::numeric_limits<long double>::digits >= 64)
-        require(geo::distance(P{high-1,high}, geo::Segment<std::int64_t>{{high-2,high-2},{high,high-2}}) == 2);
+        require(::sirkit::geo::distance(P{high-1,high}, ::sirkit::geo::Segment<std::int64_t>{{high-2,high-2},{high,high-2}}) == 2);
 }
 template<class T> void floating() {
-    using P = geo::Point<T>;
+    using P = ::sirkit::geo::Point<T>;
     std::mt19937_64 random(0xF10A7 + sizeof(T));
     for (int trial = 0; trial < 600; ++trial) {
         const auto point = [&] { return P{T(int(random() % 2049) - 1024) / T(16),
@@ -126,8 +128,8 @@ template<class T> void floating() {
         const P p = point(), a = point(), b = trial % 17 == 0 ? a : point();
         const auto exact = [](P q) { return DPoint{binary_value(q.x), binary_value(q.y)}; };
         const auto expected = decimal_reference(exact(p), exact(a), exact(b));
-        distance_result(geo::distance(p, geo::Segment<T>{a,b}), expected);
-        distance_result(geo::distance(p, geo::Segment<T>{b,a}), expected);
+        distance_result(::sirkit::geo::distance(p, ::sirkit::geo::Segment<T>{a,b}), expected);
+        distance_result(::sirkit::geo::distance(p, ::sirkit::geo::Segment<T>{b,a}), expected);
     }
 }
 void scales() {
@@ -137,49 +139,49 @@ void scales() {
         std::numeric_limits<long double>::min() * 16}};
     for (long double scale : scales) {
         context = "scale " + std::to_string(std::ilogb(scale));
-        const geo::RealPoint a{0,0}, b{3*scale,4*scale};
-        for (auto p : {geo::RealPoint{-4*scale,3*scale}, geo::RealPoint{-3*scale,-4*scale},
-                       geo::RealPoint{6*scale,8*scale}, geo::RealPoint{0,0}}) {
-            const auto exact = [](geo::RealPoint q) { return DPoint{binary_value(q.x),binary_value(q.y)}; };
+        const ::sirkit::geo::RealPoint a{0,0}, b{3*scale,4*scale};
+        for (auto p : {::sirkit::geo::RealPoint{-4*scale,3*scale}, ::sirkit::geo::RealPoint{-3*scale,-4*scale},
+                       ::sirkit::geo::RealPoint{6*scale,8*scale}, ::sirkit::geo::RealPoint{0,0}}) {
+            const auto exact = [](::sirkit::geo::RealPoint q) { return DPoint{binary_value(q.x),binary_value(q.y)}; };
             const auto expected = decimal_reference(exact(p),exact(a),exact(b));
-            distance_result(geo::distance(p,geo::Segment<long double>{a,b}),expected);
-            distance_result(geo::distance(p,geo::Segment<long double>{b,a}),expected);
+            distance_result(::sirkit::geo::distance(p,::sirkit::geo::Segment<long double>{a,b}),expected);
+            distance_result(::sirkit::geo::distance(p,::sirkit::geo::Segment<long double>{b,a}),expected);
         }
     }
     const long double large = std::numeric_limits<long double>::max() / 4;
-    require(geo::distance(geo::RealPoint{0,1},geo::Segment<long double>{{-large,0},{large,0}}) == 1);
-    require(geo::distance(geo::RealPoint{1,0},geo::Segment<long double>{{0,-large},{0,large}}) == 1);
+    require(::sirkit::geo::distance(::sirkit::geo::RealPoint{0,1},::sirkit::geo::Segment<long double>{{-large,0},{large,0}}) == 1);
+    require(::sirkit::geo::distance(::sirkit::geo::RealPoint{1,0},::sirkit::geo::Segment<long double>{{0,-large},{0,large}}) == 1);
 }
 template<class T> void narrow_integers() {
-    using P = geo::Point<T>;
-    require(geo::distance(P{2,3},geo::Segment<T>{{0,0},{4,0}}) == 3);
-    require(geo::distance(P{-3,4},geo::Segment<T>{{0,0},{4,0}}) == 5);
-    require(geo::distance(P{7,4},geo::Segment<T>{{0,0},{4,0}}) == 5);
+    using P = ::sirkit::geo::Point<T>;
+    require(::sirkit::geo::distance(P{2,3},::sirkit::geo::Segment<T>{{0,0},{4,0}}) == 3);
+    require(::sirkit::geo::distance(P{-3,4},::sirkit::geo::Segment<T>{{0,0},{4,0}}) == 5);
+    require(::sirkit::geo::distance(P{7,4},::sirkit::geo::Segment<T>{{0,0},{4,0}}) == 5);
 }
 void integer_related() {
-    using S = geo::Segment<std::int64_t>;
-    require(geo::distance(S{{0,0},{4,0}},S{{0,3},{4,3}},{0,0}) == 3);
-    require(geo::distance(S{{0,0},{4,0}},S{{2,-1},{2,1}},{0,0}) == 0);
-    using P = geo::Point<std::int64_t,double>;
-    require(geo::distance(P{2,3},geo::Segment<std::int64_t,double>{{0,0},{4,0}}) == 3);
+    using S = ::sirkit::geo::Segment<std::int64_t>;
+    require(::sirkit::geo::distance(S{{0,0},{4,0}},S{{0,3},{4,3}},{0,0}) == 3);
+    require(::sirkit::geo::distance(S{{0,0},{4,0}},S{{2,-1},{2,1}},{0,0}) == 0);
+    using P = ::sirkit::geo::Point<std::int64_t,double>;
+    require(::sirkit::geo::distance(P{2,3},::sirkit::geo::Segment<std::int64_t,double>{{0,0},{4,0}}) == 3);
 }
 void related_apis() {
-    using P = geo::RealPoint;
-    const geo::Segment<long double> segment{{0,0},{4,0}};
+    using P = ::sirkit::geo::RealPoint;
+    const ::sirkit::geo::Segment<long double> segment{{0,0},{4,0}};
     for (P p : {P{-3,4},P{2,3},P{7,4},P{0,0}}) {
-        const auto nearest = geo::closest_point(p,segment);
+        const auto nearest = ::sirkit::geo::closest_point(p,segment);
         require(nearest.y == 0 && nearest.x >= 0 && nearest.x <= 4);
-        require(std::abs(geo::distance(p,segment)-p.dist(nearest)) < 1e-17L);
-        require(geo::distance(p,geo::Line<long double>{{0,0},{4,0}}) == std::abs(p.y));
+        require(std::abs(::sirkit::geo::distance(p,segment)-p.dist(nearest)) < 1e-17L);
+        require(::sirkit::geo::distance(p,::sirkit::geo::Line<long double>{{0,0},{4,0}}) == std::abs(p.y));
     }
-    require((geo::closest_point(P{2,3},geo::Segment<long double>{{1,1},{1,1}}) == P{1,1}));
-    require(geo::distance(segment,geo::Segment<long double>{{0,3},{4,3}},{0,0}) == 3);
-    require(geo::distance(segment,geo::Segment<long double>{{2,-1},{2,1}},{0,0}) == 0);
+    require((::sirkit::geo::closest_point(P{2,3},::sirkit::geo::Segment<long double>{{1,1},{1,1}}) == P{1,1}));
+    require(::sirkit::geo::distance(segment,::sirkit::geo::Segment<long double>{{0,3},{4,3}},{0,0}) == 3);
+    require(::sirkit::geo::distance(segment,::sirkit::geo::Segment<long double>{{2,-1},{2,1}},{0,0}) == 0);
     for (bool projection : {false,true}) {
         bool threw = false;
         try {
-            if (projection) (void)geo::projection(P{2,3},geo::Line<long double>{{1,1},{1,1}});
-            else (void)geo::distance(P{2,3},geo::Line<long double>{{1,1},{1,1}});
+            if (projection) (void)::sirkit::geo::projection(P{2,3},::sirkit::geo::Line<long double>{{1,1},{1,1}});
+            else (void)::sirkit::geo::distance(P{2,3},::sirkit::geo::Line<long double>{{1,1},{1,1}});
         } catch (const std::domain_error&) { threw = true; }
         require(threw);
     }

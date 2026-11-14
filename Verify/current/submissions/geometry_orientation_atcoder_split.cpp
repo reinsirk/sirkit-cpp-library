@@ -30,6 +30,8 @@
 // to_real(p): long double 座標へ変換する。O(1)。
 // distance(p,q): 2点間距離を Point::Real で返す。O(1)。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <array>
 #include <cmath>
@@ -45,6 +47,9 @@
 #include <utility>
 #include <vector>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_GEO_EPSILON_DEFINED
 #define SIRKIT_GEO_EPSILON_DEFINED
 namespace geo {
@@ -217,6 +222,13 @@ template<class T, class C> typename Point<T, C>::Real distance(const Point<T, C>
 }
 #endif
 
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
+
+
+namespace sirkit {}
+using namespace sirkit;
 
 // SPDX-License-Identifier: CC0-1.0
 // Verify I/O: Verify/current/common/fast_io.hpp
@@ -497,11 +509,11 @@ inline VerifyOutput verify_out;
 #include <array>
 
 int main() {
-    std::array<geo::PointI, 4> points;
+    std::array<::sirkit::geo::PointI, 4> points;
     for (auto& p : points) verify_in >> p.x >> p.y;
     bool convex = true;
     for (int i = 0; i < 4; ++i)
-        if (geo::orientation(points[i], points[(i + 1) % 4], points[(i + 2) % 4]) <= 0)
+        if (::sirkit::geo::orientation(points[i], points[(i + 1) % 4], points[(i + 2) % 4]) <= 0)
             convex = false;
     verify_out << (convex ? "Yes" : "No") << '\n';
 }

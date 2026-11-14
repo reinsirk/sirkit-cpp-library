@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 // 内部の行実装と共通部品の併用を検証するテスト。
 // 実行例: c++ -std=c++23 -O2 Verify/current/tests/dynamic_fenwick_2d_rows_test.cpp -o /tmp/fenwick_test && /tmp/fenwick_test
 // 検査省略時は-DSKIP_RUNTIME_CHECKS、異なる保持閾値では-DSMALL_POINT_LIMIT=値を追加する。
@@ -35,7 +37,7 @@ static std::uint64_t checks=0;
 static void require(bool ok){++checks;if(!ok)std::abort();}
 static void mark(std::set<std::uint64_t>& nodes,U c,U m){for(std::uint64_t k=c;k<=m;k+=k&(0-k))nodes.insert(k);}
 static U common(U l,U r){return (l&r)&(U{0}-std::bit_floor(l^r));}
-static void verify(const reinsirk::detail::SmallFenwickRow<I>& row,const std::map<U,I>& values,const std::set<std::uint64_t>& nodes,U m){
+static void verify(const ::sirkit::detail::SmallFenwickRow<I>& row,const std::map<U,I>& values,const std::set<std::uint64_t>& nodes,U m){
     require(row.size()==nodes.size());
     const U ends[]={0,1,m/2,m-1,m};
     for(U l:ends)for(U r:ends)if(l<=r){I ref=0;for(auto [c,v]:values)if(l<c&&c<=r)ref+=v;require(row.sum(l,r,common(l,r))==ref);}
@@ -45,7 +47,7 @@ int main(){
         std::vector<U> cols;
         if(m<=129){for(U c=1;c<=m;++c)cols.push_back(c);}else cols={1,2,3,4,63,64,65,1023,1024,1025,U(1)<<30,(U(1)<<30)+1,m-1,m};
         for(U a:cols)for(U b:cols){
-            reinsirk::detail::SmallFenwickRow<I> row;std::map<U,I> values;std::set<std::uint64_t> nodes;
+            ::sirkit::detail::SmallFenwickRow<I> row;std::map<U,I> values;std::set<std::uint64_t> nodes;
             for(auto [c,v]:{std::pair{a,I(0)},std::pair{b,I(3)},std::pair{a,I(9)},std::pair{b,I(-3)},std::pair{m,I(5)},std::pair{U(1),I(7)}}){
                 row.add(c,v,m);values[c]+=v;mark(nodes,c,m);verify(row,values,nodes,m);
             }
@@ -54,7 +56,7 @@ int main(){
         }
     }
     for(U m:{U(65),U(127),U(129),U(2049),U(INT_MAX)}) {
-        reinsirk::detail::SmallFenwickRow<I> row;std::map<U,I> values;std::set<std::uint64_t> nodes;
+        ::sirkit::detail::SmallFenwickRow<I> row;std::map<U,I> values;std::set<std::uint64_t> nodes;
         std::vector<U> columns={m,m/2,m/2+1};for(U c=1;c<=std::min(m,U(SMALL_POINT_LIMIT+8));++c)columns.push_back(c);
         std::sort(columns.begin(),columns.end());columns.erase(std::unique(columns.begin(),columns.end()),columns.end());
         std::mt19937 shuffle_rng(m);std::shuffle(columns.begin(),columns.end(),shuffle_rng);

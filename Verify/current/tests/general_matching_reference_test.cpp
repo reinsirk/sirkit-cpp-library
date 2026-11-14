@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #ifndef SIRKIT_GENERAL_MATCHING_SOURCE
 #define SIRKIT_GENERAL_MATCHING_SOURCE "../../../Graph/General_Matching.cpp"
 #endif

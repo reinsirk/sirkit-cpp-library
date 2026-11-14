@@ -1,6 +1,8 @@
 #include "../Math/Combination_Mod.cpp"
 #include <iostream>
 
+using namespace sirkit;
+
 int main()
 {
     BinomialMod prime(998244353); // 既定で500万まで前計算。

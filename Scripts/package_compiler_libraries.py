@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: CC0-1.0
-"""通常版/速度優先版のGCC・Clang配布ZIPを個別に作る。"""
+"""明示的に必要な場合だけ、Releases添付用のGCC・Clang別ZIPを作る。"""
 from __future__ import annotations
 
 import argparse
@@ -67,7 +67,8 @@ def package(directory: Path, check_generators: bool = True) -> list[dict]:
                            if fast else "このコンパイラで不要な分岐を除いた通常版です。CPU判定と設定マクロは保持します。")
             contents["Readme.md"] = ("# sirkit-cpp-library / " + compiler + (" / Fast" if fast else "") + "\n\n" + explanation +
                 "\n\n[使い方と通常版との違い](Document/fast_variants.md)・[資料一覧](Document/README.md)・[使用例](Examples)を参照。\n" +
-                "\n提出用コードはVerify/current/submissionsにあります。この配布版へ通常版のオンラインACは転記していません。\n").encode()
+                "\n提出用コードはVerify/current/submissionsにあります。この配布版へ通常版のオンラインACは転記していません。\n" +
+                "\n開発支援: 実装・最適化・検証・ドキュメントの整備に、Codex（OpenAI）とClaude（Anthropic）を利用しています。\n").encode()
             contents["Verify/current/README.md"] = verify_index(selected, compiler, fast)
             repair_flattened_markdown(contents, ROOT, fast=fast)
             slug = ("fast_" if fast else "") + compiler.lower()

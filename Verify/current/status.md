@@ -142,8 +142,8 @@
 | [link\_cut\_tree\_composite](submissions/link_cut_tree_composite.cpp) | [Library Checker](https://judge.yosupo.jp/problem/dynamic_tree_vertex_set_path_composite) | 未提出 | — | — |
 | [lis](submissions/lis.cpp) | [Library Checker](https://judge.yosupo.jp/problem/longest_increasing_subsequence) | 現行未照合・要再提出 | [AC](https://judge.yosupo.jp/submission/414289) | — |
 | [lis\_local](submissions/lis_local.cpp) | ローカル | ローカル補足 | — | — |
-| [low\_link\_biconnected](submissions/low_link_biconnected.cpp) | [Library Checker](https://judge.yosupo.jp/problem/biconnected_components) | 現行AC | [AC](https://judge.yosupo.jp/submission/416745) | 140 ms |
-| [low\_link\_two\_edge](submissions/low_link_two_edge.cpp) | [Library Checker](https://judge.yosupo.jp/problem/two_edge_connected_components) | 現行AC | [AC](https://judge.yosupo.jp/submission/416746) | 31 ms |
+| [low\_link\_biconnected](submissions/low_link_biconnected.cpp) | [Library Checker](https://judge.yosupo.jp/problem/biconnected_components) | 現行未照合・要再提出 | [AC](https://judge.yosupo.jp/submission/416745) | — |
+| [low\_link\_two\_edge](submissions/low_link_two_edge.cpp) | [Library Checker](https://judge.yosupo.jp/problem/two_edge_connected_components) | 現行未照合・要再提出 | [AC](https://judge.yosupo.jp/submission/416746) | — |
 | [manacher](submissions/manacher.cpp) | [Library Checker](https://judge.yosupo.jp/problem/enumerate_palindromes) | 現行未照合・要再提出 | [AC](https://judge.yosupo.jp/submission/416371) | — |
 | [matrix\_determinant](submissions/matrix_determinant.cpp) | [Library Checker](https://judge.yosupo.jp/problem/matrix_det) | 未提出 | — | — |
 | [matrix\_inverse](submissions/matrix_inverse.cpp) | [Library Checker](https://judge.yosupo.jp/problem/inverse_matrix) | 未提出 | — | — |
@@ -206,13 +206,13 @@
 | [topological\_local](submissions/topological_local.cpp) | ローカル | ローカル補足 | — | — |
 | [trie\_dictionary](submissions/trie_dictionary.cpp) | [AtCoder](https://atcoder.jp/contests/abc164/tasks/abc164_c) | 現行未照合・要再提出 | [AC](https://atcoder.jp/contests/abc164/submissions/80264519) | — |
 | [trie\_local](submissions/trie_local.cpp) | ローカル | ローカル補足 | — | — |
-| [two\_sat](submissions/two_sat.cpp) | [Library Checker](https://judge.yosupo.jp/problem/two_sat) | 現行AC | [AC](https://judge.yosupo.jp/submission/416749) | 80 ms |
+| [two\_sat](submissions/two_sat.cpp) | [Library Checker](https://judge.yosupo.jp/problem/two_sat) | 現行未照合・要再提出 | [AC](https://judge.yosupo.jp/submission/416749) | — |
 | [union\_find](submissions/union_find.cpp) | [Library Checker](https://judge.yosupo.jp/problem/unionfind) | 現行未照合・要再提出 | [AC](https://judge.yosupo.jp/submission/414076) | — |
 | [wavelet\_frequency](submissions/wavelet_frequency.cpp) | [Library Checker](https://judge.yosupo.jp/problem/static_range_frequency) | 現行未照合・要再提出 | [AC](https://judge.yosupo.jp/submission/416580) | — |
 | [wavelet\_kth](submissions/wavelet_kth.cpp) | [Library Checker](https://judge.yosupo.jp/problem/range_kth_smallest) | 現行未照合・要再提出 | [AC](https://judge.yosupo.jp/submission/416581) | — |
 | [weighted\_union\_find](submissions/weighted_union_find.cpp) | [Library Checker](https://judge.yosupo.jp/problem/unionfind_with_potential) | 現行未照合・要再提出 | [AC](https://judge.yosupo.jp/submission/414094) | — |
 | [xor\_basis](submissions/xor_basis.cpp) | [AtCoder](https://atcoder.jp/contests/abc141/tasks/abc141_f) | 未提出 | — | — |
-| [z\_algorithm](submissions/z_algorithm.cpp) | [Library Checker](https://judge.yosupo.jp/problem/zalgorithm) | 現行AC | [AC](https://judge.yosupo.jp/submission/416725) | 12 ms |
+| [z\_algorithm](submissions/z_algorithm.cpp) | [Library Checker](https://judge.yosupo.jp/problem/zalgorithm) | 現行未照合・要再提出 | [AC](https://judge.yosupo.jp/submission/416725) | — |
 | [zeta\_and\_full](submissions/zeta_and_full.cpp) | [Library Checker](https://judge.yosupo.jp/problem/bitwise_and_convolution) | 現行未照合・要再提出 | [AC](https://judge.yosupo.jp/submission/412847) | — |
 | [zeta\_and\_split](submissions/zeta_and_split.cpp) | [Library Checker](https://judge.yosupo.jp/problem/bitwise_and_convolution) | 現行未照合・要再提出 | [AC](https://judge.yosupo.jp/submission/412846) | — |
 | [zeta\_gcd\_conv\_full](submissions/zeta_gcd_conv_full.cpp) | [Library Checker](https://judge.yosupo.jp/problem/gcd_convolution) | 現行未照合・要再提出 | [AC](https://judge.yosupo.jp/submission/412862) | — |

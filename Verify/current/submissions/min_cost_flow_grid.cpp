@@ -26,6 +26,8 @@
 // SKIP_RUNTIME_CHECKSは端点・負容量等の入力検査だけを除く。負閉路・費用範囲判定は維持する。
 // SIRKIT_FORCE_STANDARD_ARITHMETIC: 128bit整数拡張・算術組込み関数を除き、標準C++23の演算を使う。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -36,6 +38,9 @@
 #include <utility>
 #include <vector>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_MIN_COST_FLOW_DEFINED
 #define SIRKIT_MIN_COST_FLOW_DEFINED
 template<class Capacity = std::int64_t, class Cost = std::int64_t>
@@ -277,6 +282,13 @@ public:
 };
 #endif
 
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
+
+
+namespace sirkit {}
+using namespace sirkit;
 
 // SPDX-License-Identifier: CC0-1.0
 // Verify I/O: Verify/current/common/fast_io.hpp

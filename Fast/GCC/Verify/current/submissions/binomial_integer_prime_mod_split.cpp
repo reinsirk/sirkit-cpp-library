@@ -28,6 +28,8 @@
 // H(n,k): (n+k-1)Ckの剰余。0H0=1（法1は0）、0Hk=0（k>0）。int64_t超過はoverflow_error。
 // 表外は積で計算し、積の回数上限も超えるとlength_error。SKIP_RUNTIME_CHECKSで入力検査を除く。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <bit>
 #include <cstddef>
@@ -38,9 +40,12 @@
 #include <type_traits>
 #include <vector>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_PRIMALITY32_DEFINED
 // 内部の素数判定。定義はファイル末尾。
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 inline bool is_prime_u32(std::uint32_t n) noexcept;
 } // namespace reinsirk::detail
 #endif
@@ -201,7 +206,7 @@ private:
     // 法を素数冪に分解し、CRTの係数を準備する。O(sqrt(mod))。
     void factorize()
     {
-        if (reinsirk::detail::is_prime_u32(modulus_))
+        if (/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::is_prime_u32(modulus_))
         {
             factors_.emplace_back(modulus_, modulus_, 1);
             return;
@@ -222,7 +227,7 @@ private:
             } while (remaining % p == 0);
             factors_.emplace_back(p, static_cast<value_type>(prime_power), exponent);
             if (remaining > primality_threshold && u64{p} * p < remaining &&
-                reinsirk::detail::is_prime_u32(static_cast<value_type>(remaining))) {
+                /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::is_prime_u32(static_cast<value_type>(remaining))) {
                 factors_.emplace_back(remaining, remaining, 1);
                 remaining = 1;
             }
@@ -233,7 +238,7 @@ private:
             const auto power = static_cast<value_type>(u64{1} << exponent);
             remaining >>= exponent;
             factors_.emplace_back(2, power, exponent);
-            if (remaining > primality_threshold && reinsirk::detail::is_prime_u32(static_cast<value_type>(remaining))) {
+            if (remaining > primality_threshold && /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::is_prime_u32(static_cast<value_type>(remaining))) {
                 factors_.emplace_back(remaining, remaining, 1);
                 remaining = 1;
             }
@@ -254,7 +259,7 @@ private:
             } while (remaining % p == 0);
             factors_.emplace_back(p, static_cast<value_type>(prime_power), exponent);
             if (remaining > primality_threshold && u64{p} * p < remaining &&
-                reinsirk::detail::is_prime_u32(static_cast<value_type>(remaining))) {
+                /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::is_prime_u32(static_cast<value_type>(remaining))) {
                 factors_.emplace_back(remaining, remaining, 1);
                 remaining = 1;
                 break;
@@ -1134,7 +1139,7 @@ public:
 
 #ifndef SIRKIT_PRIMALITY32_DEFINED
 #define SIRKIT_PRIMALITY32_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 // uint32_t全域の素数判定。Miller-Rabinの底2,7,61を使う。
 inline bool is_prime_u32(std::uint32_t n) noexcept
 {
@@ -1249,6 +1254,13 @@ inline bool is_prime_u32(std::uint32_t n) noexcept
 } // namespace reinsirk::detail
 #endif
 
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
+
+
+namespace sirkit {}
+using namespace sirkit;
 
 // SPDX-License-Identifier: CC0-1.0
 // Verify I/O: Verify/current/common/fast_io.hpp

@@ -10,6 +10,11 @@ from fast_hash_source import build as build_fast_hash
 ROOT = Path(__file__).resolve().parents[1]
 
 
+try:
+    from public_namespace import wrap_source, unwrap_source
+except ModuleNotFoundError:
+    from Scripts.public_namespace import wrap_source, unwrap_source
+
 def replace_once(text: str, old: str, new: str) -> str:
     if text.count(old) != 1:
         raise ValueError("通常版が変わっています。高速版の差分を見直してください: " + old[:100])
@@ -99,7 +104,7 @@ def fast_buffer_storage(source: str, replacements: list[tuple[str, str]]) -> str
     source = fast_introduction(source)
     for old, new in replacements:
         source = replace_once(source, old, new)
-    helper = (ROOT / "Fast/Source/Internal/Buffer.cpp").read_text()
+    helper = unwrap_source((ROOT / "Fast/Source/Internal/Buffer.cpp").read_text())
     helper = helper[helper.index("#include "):]
     index = source.index("#include ")
     return source[:index] + helper + "\n" + source[index:]
@@ -123,7 +128,7 @@ def lazy_segment(source: str) -> str:
 
 
 def helper_body(path):
-    text=path.read_text();return text[text.index('#include '):]
+    text=unwrap_source(path.read_text());return text[text.index('#include '):]
 
 def introduce(source,note):
     source=replace_once(source,'//\n// API一覧','// ドキュメント: https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/fast_variants.md\n//\n// API一覧')
@@ -203,7 +208,7 @@ def generate(check: bool = False) -> None:
     records = []
     for name, build in builders.items():
         original = (ROOT / name).read_text()
-        content = build(original).encode()
+        content = wrap_source(build(unwrap_source(original))).encode()
         target = "Fast/Source/" + name
         output = ROOT / target
         if check:
@@ -217,7 +222,11 @@ def generate(check: bool = False) -> None:
                         "path": target, "sha256": hashlib.sha256(content).hexdigest()})
     for name in ("DataStructure/Node.cpp",):
         target = "Fast/Source/" + name
-        content = (ROOT / target).read_bytes()
+        content = wrap_source((ROOT / target).read_text()).encode()
+        if check and (ROOT / target).read_bytes() != content:
+            raise ValueError("Fast手書き版のnamespaceが未同期です: " + target)
+        if not check:
+            (ROOT / target).write_bytes(content)
         mapping[name] = target
         records.append({"source": name, "source_sha256": hashlib.sha256((ROOT / name).read_bytes()).hexdigest(),
                         "path": target, "sha256": hashlib.sha256(content).hexdigest(), "handwritten": True})

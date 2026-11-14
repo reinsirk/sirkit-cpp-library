@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #ifndef SIRKIT_SCC_TEST_SOURCE
 #define SIRKIT_SCC_TEST_SOURCE "../../../Graph/SCC.cpp"
 #endif
@@ -58,9 +60,9 @@ Result reference(int n, const Edges& edges) {
 }
 
 Result verify(int n, const Edges& edges) {
-    const auto narrow = reinsirk::detail::directed_component_ids_index<std::uint32_t>(n, edges);
-    const auto wide = reinsirk::detail::directed_component_ids_index<std::size_t>(n, edges);
-    const auto selected = reinsirk::detail::directed_component_ids(n, edges);
+    const auto narrow = ::sirkit::detail::directed_component_ids_index<std::uint32_t>(n, edges);
+    const auto wide = ::sirkit::detail::directed_component_ids_index<std::size_t>(n, edges);
+    const auto selected = ::sirkit::detail::directed_component_ids(n, edges);
     check(narrow == wide);
     check(narrow == selected);
     check(narrow.second.size() == static_cast<std::size_t>(n));

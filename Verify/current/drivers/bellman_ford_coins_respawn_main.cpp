@@ -13,6 +13,6 @@ int main() {
     }
     std::vector<std::int64_t> distance;
     BellmanFord(graph, distance, 0);
-    if (distance[n - 1] == -INF) verify_out << -1 << '\n';
+    if (distance[n - 1] == -kInf) verify_out << -1 << '\n';
     else verify_out << std::max(std::int64_t{0}, -distance[n - 1]) << '\n';
 }

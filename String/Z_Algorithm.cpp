@@ -12,6 +12,8 @@
 // size()/添字アクセスと同値関係の==が使える列が前提。比較O(1)ならZはO(n)、後2者はO(n+m)時間。
 // 各列長はINT_MAX未満。Z/PrefixMatchesの領域は返却値とpattern長、ZMatchesはこれに一致数。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <cstddef>
 #include <limits>
@@ -19,9 +21,12 @@
 #include <string>
 #include <vector>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_Z_ALGORITHM_IMPL_DEFINED
 #define SIRKIT_Z_ALGORITHM_IMPL_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 template <class Sequence>
 std::vector<int> z_algorithm_impl(const Sequence& s) {
     if (s.size() >= static_cast<std::size_t>(std::numeric_limits<int>::max()))
@@ -67,15 +72,15 @@ std::vector<int> z_algorithm_impl(const Sequence& s) {
 #define SIRKIT_Z_ALGORITHM_DEFINED
 template<class T>
 std::vector<int> z_algorithm(const std::vector<T>& s) {
-    return reinsirk::detail::z_algorithm_impl(s);
+    return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::z_algorithm_impl(s);
 }
 inline std::vector<int> z_algorithm(const std::string& s) {
-    return reinsirk::detail::z_algorithm_impl(s);
+    return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::z_algorithm_impl(s);
 }
 template<class Sequence>
     requires requires(const Sequence& s) { s.size(); s[0] == s[0]; }
 std::vector<int> z_algorithm(const Sequence& s) {
-    return reinsirk::detail::z_algorithm_impl(s);
+    return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::z_algorithm_impl(s);
 }
 #endif
 
@@ -109,3 +114,7 @@ std::vector<int> ZMatches(const Pattern& pattern, const Text& text) {
     return positions;
 }
 #endif
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1

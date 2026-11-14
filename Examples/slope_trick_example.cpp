@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: CC0-1.0
 #include <iostream>
 #include "../DataStructure/Slope_Trick.cpp"
+
+using namespace sirkit;
 int main(){
  SlopeTrick f;f.add_abs(2);f.add_abs(8);f.add_constant(3);
  auto interval=f.argmin();std::cout<<*interval.lower<<' '<<*interval.upper<<' '<<f.min_value()<<'\n'; // 2 8 9

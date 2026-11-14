@@ -51,6 +51,8 @@
 // intersection(a,b,eps): 円周同士の交差種別と交点。半径0同士の同一点は Tangent。O(1)。
 // circle_intersection_kind(a,b,eps): 円周の交差種別。geo::intersection と同じ判定で交点を確保しない。O(1)。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <array>
 #include <cmath>
@@ -66,6 +68,9 @@
 #include <utility>
 #include <vector>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_GEO_EPSILON_DEFINED
 #define SIRKIT_GEO_EPSILON_DEFINED
 namespace geo {
@@ -335,7 +340,7 @@ inline std::vector<RealPoint> intersection(const Circle& c, const Segment<long d
 }
 
 }
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 template<bool StorePoints>
 geo::CircleIntersection circle_intersection_impl(const geo::Circle& a, const geo::Circle& b, geo::Epsilon eps) {
     using geo::CircleIntersectionKind;
@@ -404,15 +409,19 @@ geo::CircleIntersection circle_intersection_impl(const geo::Circle& a, const geo
 }
 namespace geo {
 inline CircleIntersection intersection(const Circle& a, const Circle& b, Epsilon eps = {}) {
-    return reinsirk::detail::circle_intersection_impl<true>(a, b, eps);
+    return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::circle_intersection_impl<true>(a, b, eps);
 }
 }
 #ifndef SIRKIT_CIRCLE_INTERSECTION_KIND_DEFINED
 #define SIRKIT_CIRCLE_INTERSECTION_KIND_DEFINED
 inline geo::CircleIntersectionKind circle_intersection_kind(const geo::Circle& a, const geo::Circle& b, geo::Epsilon eps = {}) {
-    return reinsirk::detail::circle_intersection_impl<false>(a, b, eps).kind;
+    return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::circle_intersection_impl<false>(a, b, eps).kind;
 }
 #endif
 namespace geo {
 }
 #endif
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1

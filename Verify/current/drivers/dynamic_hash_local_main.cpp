@@ -117,7 +117,7 @@ int main() {
         GenericHash hash(123);
         require(hash(0.0) == hash(-0.0));
         std::unordered_set<int> first{1, 2, 3}, second{3, 2, 1}; require(hash(first) == hash(second));
-        reinsirk::detail::InternalHashMap<std::int64_t, int> internal;
+        ::sirkit::detail::InternalHashMap<std::int64_t, int> internal;
         internal.set_default(7); internal.reserve(128); require(!internal.find(-1));
         require(internal[-1] == 7); internal[-1] += 2; require(*internal.find(-1) == 9);
         require(internal.enumerate().size() == 1 && internal.count(-1) == 1);

@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #ifndef SUFFIX_HEADER
 #define SUFFIX_HEADER "../../../String/Suffix_Array.cpp"
 #endif

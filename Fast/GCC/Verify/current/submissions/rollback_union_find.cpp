@@ -28,6 +28,8 @@
 // clear_history(): 森林を保ち履歴と保存位置を消去。容量は保持し、旧stateは無効。O(h+1)上界、noexcept。
 // SIRKIT_DISABLE_SIMD: groupsの追加AVX2実装とCPU判定を除き、標準C++の処理を使う。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <memory>
 #include <cstddef>
@@ -37,6 +39,9 @@
 #include <vector>
 
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_ROLLBACK_UNION_FIND_DEFINED
 #define SIRKIT_ROLLBACK_UNION_FIND_DEFINED
 class RollbackUnionFind {
@@ -164,6 +169,13 @@ public:
 };
 #endif
 
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
+
+
+namespace sirkit {}
+using namespace sirkit;
 
 // SPDX-License-Identifier: CC0-1.0
 // Verify I/O: Verify/current/common/fast_io.hpp

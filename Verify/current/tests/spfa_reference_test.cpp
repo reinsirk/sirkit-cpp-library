@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 // 全距離・有限枝・未到達・負閉路を独立Floyd参照と照合する。
 #ifndef SIRKIT_TEST_NEGATIVE_PATH_SOURCE
 #define SIRKIT_TEST_NEGATIVE_PATH_SOURCE "../../../Graph/Bellman-Ford_SFPA.cpp"
@@ -14,18 +16,18 @@
 static std::uint64_t cases=0,checks=0;
 static void require(bool b){++checks;if(!b)throw std::runtime_error("SPFA supplemental reference mismatch");}
 static std::vector<std::int64_t> reference(const WGraph&g,int start){
-    const int n=int(g.size());std::vector<std::vector<std::int64_t>> d(n,std::vector<std::int64_t>(n,INF));
+    const int n=int(g.size());std::vector<std::vector<std::int64_t>> d(n,std::vector<std::int64_t>(n,kInf));
     for(int i=0;i<n;++i){d[i][i]=0;for(auto e:g[i])d[i][e.to]=std::min(d[i][e.to],e.w);}
-    for(int k=0;k<n;++k)for(int i=0;i<n;++i)if(d[i][k]!=INF)for(int j=0;j<n;++j)if(d[k][j]!=INF)
-        d[i][j]=std::min(d[i][j],std::max(-INF/4,d[i][k]+d[k][j]));
-    auto out=d[start];for(int k=0;k<n;++k)if(d[start][k]!=INF&&d[k][k]<0)
-        for(int j=0;j<n;++j)if(d[k][j]!=INF)out[j]=-INF;
+    for(int k=0;k<n;++k)for(int i=0;i<n;++i)if(d[i][k]!=kInf)for(int j=0;j<n;++j)if(d[k][j]!=kInf)
+        d[i][j]=std::min(d[i][j],std::max(-kInf/4,d[i][k]+d[k][j]));
+    auto out=d[start];for(int k=0;k<n;++k)if(d[start][k]!=kInf&&d[k][k]<0)
+        for(int j=0;j<n;++j)if(d[k][j]!=kInf)out[j]=-kInf;
     return out;
 }
 static void test(const WGraph&g,int start,const std::vector<std::int64_t>*known=nullptr){
-    ++cases;auto expected=known?*known:reference(g,start);const bool negative=std::find(expected.begin(),expected.end(),-INF)!=expected.end();
+    ++cases;auto expected=known?*known:reference(g,start);const bool negative=std::find(expected.begin(),expected.end(),-kInf)!=expected.end();
     std::vector<std::int64_t> actual{333,444};require(SPFA(g,actual,start)==negative);require(actual==expected);
-    actual={555};require((reinsirk::detail::SPFARun<false,false>(g,actual,start))==negative);require(actual==expected);
+    actual={555};require((::sirkit::detail::SPFARun<false,false>(g,actual,start))==negative);require(actual==expected);
 }
 int main(){
     std::mt19937 rng(20261026);
@@ -57,8 +59,8 @@ int main(){
         for(int i=0;i<count;++i)add(1,2+count+i,0);
         for(int i=0;i<count;++i){add(2+i,1,0);add(2+count+i,2+i,-1);}
         add(0,finite,7);add(finite,sink,5);add(unreachable,unreachable,-1);
-        std::vector<std::int64_t> expected(n,-INF);expected[0]=0;expected[2*count+2]=INF;
-        expected[finite]=7+potential[finite]-potential[0];expected[sink]=12+potential[sink]-potential[0];expected[unreachable]=INF;
+        std::vector<std::int64_t> expected(n,-kInf);expected[0]=0;expected[2*count+2]=kInf;
+        expected[finite]=7+potential[finite]-potential[0];expected[sink]=12+potential[sink]-potential[0];expected[unreachable]=kInf;
         if(count<=32)require(reference(g,0)==expected);
         test(g,0,&expected);
     }

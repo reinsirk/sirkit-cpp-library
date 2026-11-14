@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 // 再測定用。各反復の結果を集計し、計測外で状態を確認する。
 #ifndef SIRKIT_RUF_SOURCE
 #define SIRKIT_RUF_SOURCE "../../../DataStructure/rollback-union-find.cpp"

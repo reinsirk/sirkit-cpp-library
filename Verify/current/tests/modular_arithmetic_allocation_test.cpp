@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #ifndef MODULAR_SOURCE
 #define MODULAR_SOURCE "../../../Math/Modular_Arithmetic.cpp"
 #endif

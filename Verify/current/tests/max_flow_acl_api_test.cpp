@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 // ACL形式の署名・残余状態・コピーと、追加APIの互換性を確認する。
 #ifndef MAX_FLOW_SOURCE
 #define MAX_FLOW_SOURCE "../../../Graph/Max_Flow.cpp"

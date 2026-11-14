@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #include <array>
 #include <cstddef>
 #include <cstdint>
@@ -31,12 +33,12 @@ void check(const std::array<std::uint32_t, 64>& values, bool avx2) {
         const auto expected = reference(degree);
         ++cases;
         ++checks;
-        if (reinsirk::detail::TopologicalReadyMask(degree) != expected)
+        if (::sirkit::detail::TopologicalReadyMask(degree) != expected)
             throw std::runtime_error("topological scalar ready mask mismatch");
 #if !defined(SIRKIT_DISABLE_SIMD) && (defined(__GNUC__) || defined(__clang__)) && (defined(__x86_64__) || defined(__i386__))
         if (avx2) {
             ++checks;
-            if (reinsirk::detail::TopologicalReadyMaskAvx2(degree) != expected)
+            if (::sirkit::detail::TopologicalReadyMaskAvx2(degree) != expected)
                 throw std::runtime_error("topological AVX2 ready mask mismatch");
         }
 #else

@@ -2,6 +2,8 @@
 #include <cstdint>
 #include <iostream>
 #include "../String/Suffix_Automaton.cpp"
+
+using namespace sirkit;
 int main(){
  SuffixAutomaton<>automaton("ababa");
  std::cout<<automaton.distinct_substring_count()<<' '<<automaton.occurrences("aba")<<'\n'; // 9 2

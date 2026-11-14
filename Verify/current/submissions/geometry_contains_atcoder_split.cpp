@@ -58,6 +58,8 @@
 // centroid(poly,eps): 単純多角形の面積重心。3点未満または面積0なら nullopt。O(N)。
 // convex_cut(poly,l,eps): 凸多角形と有向非零長直線の左側（境界含む）との共通部分。O(N)。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <array>
 #include <cmath>
@@ -73,6 +75,9 @@
 #include <utility>
 #include <vector>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_GEO_EPSILON_DEFINED
 #define SIRKIT_GEO_EPSILON_DEFINED
 namespace geo {
@@ -330,7 +335,7 @@ template<class T, class C> Location contains(const std::vector<Point<T, C>>& pol
 }
 #ifndef SIRKIT_GEO_CONVEX_HULL_IMPL_DEFINED
 #define SIRKIT_GEO_CONVEX_HULL_IMPL_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 template<bool Sorted, class T, class C>
 std::vector<geo::Point<T, C>> convex_hull_impl(std::vector<geo::Point<T, C>> points, geo::Epsilon eps) {
     constexpr bool narrow_integer = std::is_integral_v<T> && sizeof(T) <= 8 &&
@@ -458,7 +463,7 @@ std::vector<geo::Point<T, C>> convex_hull_impl(std::vector<geo::Point<T, C>> poi
 #endif
 namespace geo {
 template<class T, class C> std::vector<Point<T, C>> convex_hull(std::vector<Point<T, C>> points, Epsilon eps = {}) {
-    return reinsirk::detail::convex_hull_impl<false>(std::move(points), eps);
+    return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::convex_hull_impl<false>(std::move(points), eps);
 }
 
 }
@@ -466,7 +471,7 @@ template<class T, class C> std::vector<Point<T, C>> convex_hull(std::vector<Poin
 #define SIRKIT_CONVEX_HULL_SORTED_DEFINED
 template<class T, class C>
 std::vector<geo::Point<T, C>> convex_hull_sorted(std::vector<geo::Point<T, C>> points, geo::Epsilon eps = {}) {
-    return reinsirk::detail::convex_hull_impl<true>(std::move(points), eps);
+    return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::convex_hull_impl<true>(std::move(points), eps);
 }
 #endif
 namespace geo {
@@ -526,6 +531,13 @@ namespace geo {
 }
 #endif
 
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
+
+
+namespace sirkit {}
+using namespace sirkit;
 
 // SPDX-License-Identifier: CC0-1.0
 // Verify I/O: Verify/current/common/fast_io.hpp
@@ -808,9 +820,9 @@ inline VerifyOutput verify_out;
 int main() {
     int n{};
     verify_in >> n;
-    std::vector<geo::PointI> polygon(n);
+    std::vector<::sirkit::geo::PointI> polygon(n);
     for (auto& p : polygon) verify_in >> p.x >> p.y;
-    geo::PointI p;
+    ::sirkit::geo::PointI p;
     verify_in >> p.x >> p.y;
-    verify_out << (geo::contains(polygon, p) == geo::Location::Inside ? "INSIDE" : "OUTSIDE") << '\n';
+    verify_out << (::sirkit::geo::contains(polygon, p) == ::sirkit::geo::Location::Inside ? "INSIDE" : "OUTSIDE") << '\n';
 }

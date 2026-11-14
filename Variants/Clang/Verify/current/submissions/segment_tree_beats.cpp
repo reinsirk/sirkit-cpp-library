@@ -22,6 +22,8 @@
 // 内部和/遅延はGCC/Clangの128bit拡張、SIRKIT_FORCE_STANDARD_ARITHMETIC時は標準C++の2ワード演算。
 // 桁あふれ・容量検査はSKIP_RUNTIME_CHECKS時も維持。添字/区間検査だけを同マクロで除く。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -31,9 +33,12 @@
 #include <utility>
 #include <vector>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_SEGMENT_TREE_BEATS_WIDE_DEFINED
 #define SIRKIT_SEGMENT_TREE_BEATS_WIDE_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 #if (defined(__SIZEOF_INT128__)) && (!defined(SIRKIT_FORCE_STANDARD_ARITHMETIC))
 using BeatsWide = __int128_t;
 inline BeatsWide beats_multiply(BeatsWide value, std::size_t count) noexcept { return value * static_cast<BeatsWide>(count); }
@@ -121,7 +126,7 @@ public:
 #ifndef SIRKIT_SEGMENT_TREE_BEATS_DEFINED
 #define SIRKIT_SEGMENT_TREE_BEATS_DEFINED
 class SegmentTreeBeats {
-    using Wide = reinsirk::detail::BeatsWide;
+    using Wide = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::BeatsWide;
     struct Node {
         Wide sum{}, add{};
         std::int64_t minimum = 0, maximum = 0, second_minimum = 0, second_maximum = 0;
@@ -130,11 +135,11 @@ class SegmentTreeBeats {
     std::size_t size_ = 0;
     std::vector<Node> nodes_;
     static Wide multiply(Wide value, std::size_t count) noexcept {
-        using reinsirk::detail::beats_multiply;
+        using /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::beats_multiply;
         return beats_multiply(value, count);
     }
     static std::int64_t narrow(Wide value) {
-        using reinsirk::detail::beats_narrow;
+        using /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::beats_narrow;
         return beats_narrow(value);
     }
     static void uniform(Node& node, std::int64_t value, std::size_t length) noexcept {
@@ -338,6 +343,13 @@ public:
 };
 #endif
 
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
+
+
+namespace sirkit {}
+using namespace sirkit;
 
 // SPDX-License-Identifier: CC0-1.0
 // Verify I/O: Verify/current/common/fast_io.hpp

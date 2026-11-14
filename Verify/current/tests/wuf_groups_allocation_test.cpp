@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #include "wuf_groups_test_model.hpp"
 #include <new>
 static volatile std::ptrdiff_t countdown=-1;

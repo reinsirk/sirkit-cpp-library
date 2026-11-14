@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #ifndef MATCHING_SOURCE
 #define MATCHING_SOURCE "../../../Graph/Bipartite_Matching.cpp"
 #endif

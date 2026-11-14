@@ -21,6 +21,8 @@
 // front/backの参照は更新/clear/交換/移動で無効になり得る。
 // push/pop中のコピー・演算・確保の例外では列を保つ。代入の強い保証はT/Opのswapがnoexceptの場合。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <cstddef>
 #include <limits>
 #include <stdexcept>
@@ -28,6 +30,9 @@
 #include <utility>
 #include <vector>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_SLIDING_WINDOW_AGGREGATION_DEFINED
 #define SIRKIT_SLIDING_WINDOW_AGGREGATION_DEFINED
 template<class T, class Op>
@@ -102,6 +107,13 @@ public:
 };
 #endif
 
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
+
+
+namespace sirkit {}
+using namespace sirkit;
 
 // SPDX-License-Identifier: CC0-1.0
 // Verify I/O: Verify/current/common/fast_io.hpp

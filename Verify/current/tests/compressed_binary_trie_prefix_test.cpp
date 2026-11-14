@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #ifndef TRIE_SOURCE
 #define TRIE_SOURCE "../../../DataStructure/Compressed_Binary_Trie.cpp"
 #endif

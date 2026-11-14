@@ -2,6 +2,8 @@
 #include "../String/Suffix_Array.cpp"
 #include <iostream>
 #include <string>
+
+using namespace sirkit;
 int main() {
     const std::string text = "banana";
     const auto sa = suffix_array(text);

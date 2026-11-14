@@ -25,6 +25,8 @@
 // reset(n=0): 制約を捨てn変数へ。swap(other): O(1)。コピーは独立所有、ムーブ元は空の未解決状態。
 // 入力検査はSKIP_RUNTIME_CHECKSで除く。answer()の返り値は独立したコピー。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -34,9 +36,12 @@
 #include <utility>
 #include <vector>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_TWO_SAT_SCC_DETAIL_DEFINED
 #define SIRKIT_TWO_SAT_SCC_DETAIL_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 // nは偶数、相補リテラルはvと(v^1)。Indexは総辺数を表現できる符号なし型。
 // 矛盾を検出したら{-1,{}}、成功時はトポロジカル順の成分番号を返す。
 template<class Index>
@@ -210,7 +215,7 @@ public:
 #endif
             return true;
         }
-        const auto components = reinsirk::detail::two_sat_component_ids(2 * n_, implications_);
+        const auto components = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::two_sat_component_ids(2 * n_, implications_);
         if (components.first < 0) {
             answer_.clear();
 #ifndef SKIP_RUNTIME_CHECKS
@@ -241,6 +246,13 @@ public:
 };
 #endif
 
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
+
+
+namespace sirkit {}
+using namespace sirkit;
 
 // SPDX-License-Identifier: CC0-1.0
 // Verify I/O: Verify/current/common/fast_io.hpp

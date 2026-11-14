@@ -20,6 +20,8 @@
 // rank(): 次元、0..64。has_nonempty_zero(): 非空部分集合のXORが0になるか。O(1)。
 // clear()/swap(other): 空の入力集合へ戻す/全内容交換。O(64)。コピー・移動は固定配列の値コピー（移動元も保持）。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <array>
 #include <cstddef>
@@ -27,6 +29,9 @@
 #include <optional>
 #include <utility>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_XOR_BASIS_DEFINED
 #define SIRKIT_XOR_BASIS_DEFINED
 class XorBasis {
@@ -89,6 +94,13 @@ public:
 };
 #endif
 
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
+
+
+namespace sirkit {}
+using namespace sirkit;
 
 // SPDX-License-Identifier: CC0-1.0
 // Verify I/O: Verify/current/common/fast_io.hpp

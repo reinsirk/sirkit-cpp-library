@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 // 自明な構造体・配列・非所有ポインタ値でも値の生存期間とコピーを検査する。
 #ifndef SIRKIT_INTERNAL_HASH_SOURCE
 #define SIRKIT_INTERNAL_HASH_SOURCE "../../../Internal/Nyaan_hash_map_min.cpp"
@@ -16,7 +18,7 @@ static std::uint64_t checks = 0;
 static void require(bool ok) { ++checks; if (!ok) std::abort(); }
 
 template<bool Packed, unsigned D> static void run() {
-    reinsirk::detail::InternalHashMap<std::int64_t, Pair, Packed, D> pairs;
+    ::sirkit::detail::InternalHashMap<std::int64_t, Pair, Packed, D> pairs;
     pairs.set_default({17, 29});
     for (std::int64_t key = -1000; key <= 1000; ++key) {
         auto& item = pairs[key]; require(item.a == 17 && item.b == 29);
@@ -31,7 +33,7 @@ template<bool Packed, unsigned D> static void run() {
     for (std::int64_t key = -1000; key <= 1000; ++key) require(copy.find(key)->a == key);
     using Array = std::array<std::uint16_t, 2>;
     static_assert(std::is_trivial_v<Array>);
-    reinsirk::detail::InternalHashMap<std::uint32_t, Array, Packed, D> arrays;
+    ::sirkit::detail::InternalHashMap<std::uint32_t, Array, Packed, D> arrays;
     arrays.set_default({31, 37});
     for (std::uint32_t key = 0; key < 1000; ++key) {
         require((arrays[key] == Array{31,37})); arrays[key] = {std::uint16_t(key), std::uint16_t(key+7)};
@@ -39,7 +41,7 @@ template<bool Packed, unsigned D> static void run() {
     auto array_copy = arrays; arrays.clear();
     for (std::uint32_t key = 0; key < 1000; ++key) require(((*array_copy.find(key)) == Array{std::uint16_t(key), std::uint16_t(key+7)}));
     std::array<std::int64_t, 1000> storage{};
-    reinsirk::detail::InternalHashMap<std::uint64_t, std::int64_t*, Packed, D> pointers;
+    ::sirkit::detail::InternalHashMap<std::uint64_t, std::int64_t*, Packed, D> pointers;
     pointers.set_default(nullptr);
     for (std::uint64_t key = 0; key < storage.size(); ++key) {
         require(pointers[key] == nullptr); storage[std::size_t(key)] = std::int64_t(key); pointers[key] = &storage[std::size_t(key)];

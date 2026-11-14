@@ -40,6 +40,8 @@
 // Mod<2^30では標準C++のMontgomery演算を使用。GCC/Clangの対応x86 CPUではAVX2で8係数ずつ処理する。
 // SIRKIT_DISABLE_SIMDで追加の専用命令とCPU判定を除外できる。代替経路も同じAPI・結果を保つ。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <array>
 #include <bit>
@@ -55,9 +57,12 @@
 #include <immintrin.h>
 #endif
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_NTT_DETAIL_DEFINED
 #define SIRKIT_NTT_DETAIL_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 constexpr bool ntt_prime(std::uint32_t n) noexcept {
     if (n < 2 || n % 2 == 0) return n == 2;
     for (std::uint32_t d = 3; d <= n / d; d += 2) if (n % d == 0) return false;
@@ -77,7 +82,7 @@ constexpr std::uint32_t ntt_power(std::uint32_t a, std::uint32_t exponent, std::
 #if !defined(SIRKIT_DISABLE_SIMD) && (defined(__GNUC__) || defined(__clang__)) && (defined(__x86_64__) || defined(__i386__))
 #ifndef SIRKIT_NTT_SIMD_DETAIL_DEFINED
 #define SIRKIT_NTT_SIMD_DETAIL_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 inline bool ntt_avx2_available() noexcept {
     static const bool available=__builtin_cpu_supports("avx2");
     return available;
@@ -90,12 +95,12 @@ inline bool ntt_avx2_available() noexcept {
 #define SIRKIT_NTT_DEFINED
 template <std::uint32_t Mod = 998244353, std::uint32_t Root = 3>
 class NTT {
-    static_assert(Mod >= 3 && Mod < (std::uint32_t{1} << 31) && reinsirk::detail::ntt_prime(Mod),
+    static_assert(Mod >= 3 && Mod < (std::uint32_t{1} << 31) && /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::ntt_prime(Mod),
                   "NTT modulus must be an odd prime below 2^31");
     static_assert(Root > 0 && Root < Mod, "NTT root outside modulus");
     static constexpr int rank_ = std::countr_zero(Mod - 1);
-    static constexpr std::uint32_t highest_root_ = reinsirk::detail::ntt_power(Root, (Mod - 1) >> rank_, Mod);
-    static_assert(reinsirk::detail::ntt_power(highest_root_, std::uint32_t{1} << (rank_ - 1), Mod) == Mod - 1,
+    static constexpr std::uint32_t highest_root_ = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::ntt_power(Root, (Mod - 1) >> rank_, Mod);
+    static_assert(/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::ntt_power(highest_root_, std::uint32_t{1} << (rank_ - 1), Mod) == Mod - 1,
                   "NTT root has insufficient power-of-two order");
     std::vector<std::uint32_t> roots_;
 
@@ -202,7 +207,7 @@ class NTT {
 
 #if !defined(SIRKIT_DISABLE_SIMD) && (defined(__GNUC__) || defined(__clang__)) && (defined(__x86_64__) || defined(__i386__))
     static bool use_avx2(std::size_t n) noexcept {
-        if constexpr(montgomery_)return n>=16 && reinsirk::detail::ntt_avx2_available();
+        if constexpr(montgomery_)return n>=16 && /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::ntt_avx2_available();
         else return false;
     }
     [[gnu::always_inline,gnu::target("avx2")]]
@@ -733,12 +738,24 @@ std::vector<std::uint32_t> ConvolutionMod(const std::vector<T>& a, const std::ve
 }
 #endif
 
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <initializer_list>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <optional>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 
 #ifndef SIRKIT_FORMAL_POWER_SERIES_DETAIL_DEFINED
 #define SIRKIT_FORMAL_POWER_SERIES_DETAIL_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 inline constexpr std::uint32_t fps_modulus = 998244353;
 inline std::uint32_t fps_add(std::uint32_t a, std::uint32_t b) noexcept {
     const auto value = a + b; return value >= fps_modulus ? value - fps_modulus : value;
@@ -819,7 +836,7 @@ class FormalPowerSeries {
         return FormalPowerSeries(std::move(values), Normalized{});
     }
 public:
-    static constexpr std::uint32_t modulus() noexcept { return reinsirk::detail::fps_modulus; }
+    static constexpr std::uint32_t modulus() noexcept { return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::fps_modulus; }
     static constexpr std::size_t max_precision() noexcept { return NTT<>::max_length() / 2; }
     FormalPowerSeries() = default;
     explicit FormalPowerSeries(std::size_t n) : coefficients_(n) {}
@@ -859,16 +876,16 @@ public:
     }
     FormalPowerSeries& operator+=(const FormalPowerSeries& other) {
         if (other.size() > size()) coefficients_.resize(other.size());
-        for (std::size_t i = 0; i < other.size(); ++i) coefficients_[i] = reinsirk::detail::fps_add(coefficients_[i], other.coefficients_[i]);
+        for (std::size_t i = 0; i < other.size(); ++i) coefficients_[i] = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::fps_add(coefficients_[i], other.coefficients_[i]);
         return *this;
     }
     FormalPowerSeries& operator-=(const FormalPowerSeries& other) {
         if (other.size() > size()) coefficients_.resize(other.size());
-        for (std::size_t i = 0; i < other.size(); ++i) coefficients_[i] = reinsirk::detail::fps_subtract(coefficients_[i], other.coefficients_[i]);
+        for (std::size_t i = 0; i < other.size(); ++i) coefficients_[i] = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::fps_subtract(coefficients_[i], other.coefficients_[i]);
         return *this;
     }
     FormalPowerSeries& operator*=(const FormalPowerSeries& other) {
-        auto result = reinsirk::detail::fps_engine().convolution_normalized(coefficients_, other.coefficients_);
+        auto result = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::fps_engine().convolution_normalized(coefficients_, other.coefficients_);
         coefficients_.swap(result); return *this;
     }
     FormalPowerSeries& operator/=(const FormalPowerSeries& other) { *this = divmod(other).first; return *this; }
@@ -876,7 +893,7 @@ public:
     friend FormalPowerSeries operator+(FormalPowerSeries a, const FormalPowerSeries& b) { a += b; return a; }
     friend FormalPowerSeries operator-(FormalPowerSeries a, const FormalPowerSeries& b) { a -= b; return a; }
     friend FormalPowerSeries operator*(const FormalPowerSeries& a, const FormalPowerSeries& b) {
-        return normalized(reinsirk::detail::fps_engine().convolution_normalized(a.coefficients_, b.coefficients_));
+        return normalized(/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::fps_engine().convolution_normalized(a.coefficients_, b.coefficients_));
     }
     friend FormalPowerSeries operator/(const FormalPowerSeries& a, const FormalPowerSeries& b) { return a.divmod(b).first; }
     friend FormalPowerSeries operator%(const FormalPowerSeries& a, const FormalPowerSeries& b) { return a.divmod(b).second; }
@@ -884,36 +901,36 @@ public:
     template <std::integral T>
     [[nodiscard]] FormalPowerSeries scale(T scalar) const {
         auto result = coefficients_; const auto value = normalize(scalar);
-        for (auto& coefficient : result) coefficient = reinsirk::detail::fps_multiply(coefficient, value);
+        for (auto& coefficient : result) coefficient = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::fps_multiply(coefficient, value);
         return normalized(std::move(result));
     }
     [[nodiscard]] FormalPowerSeries derivative() const {
         if (empty()) return {};
         std::vector<std::uint32_t> result(size() - 1);
         for (std::size_t i = 1; i < size(); ++i)
-            result[i - 1] = reinsirk::detail::fps_multiply(coefficients_[i], static_cast<std::uint32_t>(i % modulus()));
+            result[i - 1] = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::fps_multiply(coefficients_[i], static_cast<std::uint32_t>(i % modulus()));
         return normalized(std::move(result));
     }
     [[nodiscard]] FormalPowerSeries integral() const {
         if (empty()) return FormalPowerSeries{0};
-        reinsirk::detail::fps_prepare_inverses(size());
-        const auto& inverses = reinsirk::detail::fps_integer_inverses();
+        /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::fps_prepare_inverses(size());
+        const auto& inverses = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::fps_integer_inverses();
         std::vector<std::uint32_t> result(size() + 1);
-        for (std::size_t i = 0; i < size(); ++i) result[i + 1] = reinsirk::detail::fps_multiply(coefficients_[i], inverses[i + 1]);
+        for (std::size_t i = 0; i < size(); ++i) result[i + 1] = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::fps_multiply(coefficients_[i], inverses[i + 1]);
         return normalized(std::move(result));
     }
     [[nodiscard]] FormalPowerSeries inverse(std::size_t n) const {
-        reinsirk::detail::fps_require_precision(n);
+        /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::fps_require_precision(n);
         if (n == 0) return {};
         if (get(0) == 0) throw std::domain_error("FormalPowerSeries: inverse of zero constant");
-        std::vector<std::uint32_t> result{reinsirk::detail::fps_power(get(0), modulus() - 2)};
-        auto& engine = reinsirk::detail::fps_engine();
+        std::vector<std::uint32_t> result{/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::fps_power(get(0), modulus() - 2)};
+        auto& engine = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::fps_engine();
         for (std::size_t known = 1; known < n;) {
             const auto target = std::min(n, known * 2);
             auto error = engine.convolution_normalized(short_prefix(target), result);
             error.resize(target);
             for (auto& coefficient : error) coefficient = coefficient == 0 ? 0 : modulus() - coefficient;
-            error[0] = reinsirk::detail::fps_add(error[0], 2);
+            error[0] = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::fps_add(error[0], 2);
             auto next = engine.convolution_normalized(std::move(result), std::move(error)); next.resize(target);
             result.swap(next); known = target;
         }
@@ -921,20 +938,20 @@ public:
     }
     [[nodiscard]] FormalPowerSeries inverse() const { return inverse(size()); }
     [[nodiscard]] FormalPowerSeries log(std::size_t n) const {
-        reinsirk::detail::fps_require_precision(n);
+        /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::fps_require_precision(n);
         if (n == 0) return {};
 #ifndef SKIP_RUNTIME_CHECKS
         if (get(0) != 1) throw std::domain_error("FormalPowerSeries: logarithm constant must be one");
 #endif
         auto differentiated = normalized(short_prefix(n)).derivative();
-        auto result = reinsirk::detail::fps_engine().convolution_normalized(
+        auto result = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::fps_engine().convolution_normalized(
             std::move(differentiated.coefficients_), inverse(n).coefficients_);
         result.resize(n - 1);
         return normalized(std::move(result)).integral();
     }
     [[nodiscard]] FormalPowerSeries log() const { return log(size()); }
     [[nodiscard]] FormalPowerSeries exp(std::size_t n) const {
-        reinsirk::detail::fps_require_precision(n);
+        /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::fps_require_precision(n);
         if (n == 0) return {};
 #ifndef SKIP_RUNTIME_CHECKS
         if (get(0) != 0) throw std::domain_error("FormalPowerSeries: exponential constant must be zero");
@@ -943,16 +960,16 @@ public:
         for (std::size_t known = 1; known < n;) {
             const auto target = std::min(n, known * 2);
             auto correction = result.log(target).coefficients_;
-            for (std::size_t i = 0; i < target; ++i) correction[i] = reinsirk::detail::fps_subtract(get(i), correction[i]);
-            correction[0] = reinsirk::detail::fps_add(correction[0], 1);
-            auto next = reinsirk::detail::fps_engine().convolution_normalized(std::move(result.coefficients_), std::move(correction));
+            for (std::size_t i = 0; i < target; ++i) correction[i] = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::fps_subtract(get(i), correction[i]);
+            correction[0] = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::fps_add(correction[0], 1);
+            auto next = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::fps_engine().convolution_normalized(std::move(result.coefficients_), std::move(correction));
             next.resize(target); result.coefficients_.swap(next); known = target;
         }
         return result;
     }
     [[nodiscard]] FormalPowerSeries exp() const { return exp(size()); }
     [[nodiscard]] FormalPowerSeries pow(std::uint64_t exponent, std::size_t n) const {
-        reinsirk::detail::fps_require_precision(n);
+        /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::fps_require_precision(n);
         if (n == 0) return {};
         if (exponent == 0) { auto result = FormalPowerSeries(n); result.coefficients_[0] = 1; return result; }
         std::size_t leading = 0;
@@ -960,27 +977,27 @@ public:
         if (leading == std::min(n, size()) || (leading != 0 && exponent > (n - 1) / leading)) return FormalPowerSeries(n);
         const auto shift = leading == 0 ? 0 : leading * static_cast<std::size_t>(exponent);
         const auto remaining = n - shift;
-        const auto first = coefficients_[leading], inverse_first = reinsirk::detail::fps_power(first, modulus() - 2);
+        const auto first = coefficients_[leading], inverse_first = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::fps_power(first, modulus() - 2);
         std::vector<std::uint32_t> unit(std::min(remaining, size() - leading));
-        for (std::size_t i = 0; i < unit.size(); ++i) unit[i] = reinsirk::detail::fps_multiply(coefficients_[leading + i], inverse_first);
+        for (std::size_t i = 0; i < unit.size(); ++i) unit[i] = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::fps_multiply(coefficients_[leading + i], inverse_first);
         auto logarithm = normalized(std::move(unit)).log(remaining);
         const auto reduced_exponent = static_cast<std::uint32_t>(exponent % modulus());
-        for (auto& coefficient : logarithm.coefficients_) coefficient = reinsirk::detail::fps_multiply(coefficient, reduced_exponent);
+        for (auto& coefficient : logarithm.coefficients_) coefficient = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::fps_multiply(coefficient, reduced_exponent);
         auto powered = logarithm.exp(remaining);
-        const auto multiplier = reinsirk::detail::fps_power(first, exponent);
+        const auto multiplier = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::fps_power(first, exponent);
         std::vector<std::uint32_t> result(n);
-        for (std::size_t i = 0; i < remaining; ++i) result[shift + i] = reinsirk::detail::fps_multiply(powered.coefficients_[i], multiplier);
+        for (std::size_t i = 0; i < remaining; ++i) result[shift + i] = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::fps_multiply(powered.coefficients_[i], multiplier);
         return normalized(std::move(result));
     }
     [[nodiscard]] FormalPowerSeries pow(std::uint64_t exponent) const { return pow(exponent, size()); }
     [[nodiscard]] std::optional<FormalPowerSeries> sqrt(std::size_t n) const {
-        reinsirk::detail::fps_require_precision(n);
+        /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::fps_require_precision(n);
         if (n == 0) return FormalPowerSeries{};
         std::size_t leading = 0;
         while (leading < std::min(n, size()) && coefficients_[leading] == 0) ++leading;
         if (leading == std::min(n, size())) return FormalPowerSeries(n);
         if (leading & 1) return std::nullopt;
-        const auto root = reinsirk::detail::fps_scalar_sqrt(coefficients_[leading]);
+        const auto root = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::fps_scalar_sqrt(coefficients_[leading]);
         if (!root) return std::nullopt;
         const auto needed = n - leading;
         FormalPowerSeries result{static_cast<std::int64_t>(*root)};
@@ -988,10 +1005,10 @@ public:
             const auto target = std::min(needed, known * 2);
             std::vector<std::uint32_t> part(std::min(target, size() - leading));
             std::copy_n(coefficients_.begin() + leading, part.size(), part.begin());
-            auto ratio = reinsirk::detail::fps_engine().convolution_normalized(std::move(part), result.inverse(target).coefficients_);
+            auto ratio = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::fps_engine().convolution_normalized(std::move(part), result.inverse(target).coefficients_);
             ratio.resize(target);
             for (std::size_t i = 0; i < target; ++i)
-                ratio[i] = reinsirk::detail::fps_multiply(reinsirk::detail::fps_add(ratio[i], result.get(i)), (modulus() + 1) / 2);
+                ratio[i] = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::fps_multiply(/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::fps_add(ratio[i], result.get(i)), (modulus() + 1) / 2);
             result.coefficients_.swap(ratio); known = target;
         }
         std::vector<std::uint32_t> shifted(n);
@@ -1007,23 +1024,23 @@ public:
         FormalPowerSeries quotient;
         if (std::min(quotient_size, b.size()) <= 32) {
             quotient.resize(quotient_size);
-            const auto inverse_leading = reinsirk::detail::fps_power(b.coefficients_.back(), modulus() - 2);
+            const auto inverse_leading = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::fps_power(b.coefficients_.back(), modulus() - 2);
             for (std::size_t at = quotient_size; at != 0; --at) {
                 const auto index = at - 1;
-                const auto coefficient = reinsirk::detail::fps_multiply(a.coefficients_[index + b.size() - 1], inverse_leading);
+                const auto coefficient = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::fps_multiply(a.coefficients_[index + b.size() - 1], inverse_leading);
                 quotient.coefficients_[index] = coefficient;
                 for (std::size_t j = 0; j < b.size(); ++j)
-                    a.coefficients_[index + j] = reinsirk::detail::fps_subtract(a.coefficients_[index + j],
-                        reinsirk::detail::fps_multiply(coefficient, b.coefficients_[j]));
+                    a.coefficients_[index + j] = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::fps_subtract(a.coefficients_[index + j],
+                        /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::fps_multiply(coefficient, b.coefficients_[j]));
             }
             a.resize(b.size() - 1); a.trim(); quotient.trim();
             return {std::move(quotient), std::move(a)};
         }
-        reinsirk::detail::fps_require_precision(quotient_size);
+        /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::fps_require_precision(quotient_size);
         std::vector<std::uint32_t> reversed_a(quotient_size), reversed_b(std::min(quotient_size, b.size()));
         std::copy_n(a.coefficients_.rbegin(), quotient_size, reversed_a.begin());
         std::copy_n(b.coefficients_.rbegin(), reversed_b.size(), reversed_b.begin());
-        auto reversed_quotient = reinsirk::detail::fps_engine().convolution_normalized(
+        auto reversed_quotient = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::fps_engine().convolution_normalized(
             std::move(reversed_a), normalized(std::move(reversed_b)).inverse(quotient_size).coefficients_);
         reversed_quotient.resize(quotient_size); std::reverse(reversed_quotient.begin(), reversed_quotient.end());
         quotient = normalized(std::move(reversed_quotient));
@@ -1032,8 +1049,12 @@ public:
         return {std::move(quotient), std::move(remainder)};
     }
     static void clear_cache() noexcept {
-        reinsirk::detail::fps_engine().clear_cache();
-        std::vector<std::uint32_t>{}.swap(reinsirk::detail::fps_integer_inverses());
+        /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::fps_engine().clear_cache();
+        std::vector<std::uint32_t>{}.swap(/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::fps_integer_inverses());
     }
 };
 #endif
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1

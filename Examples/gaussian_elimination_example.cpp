@@ -3,6 +3,8 @@
 #include "../Math/Fraction.cpp"
 #include <iostream>
 #include <vector>
+
+using namespace sirkit;
 int main(){
     const Matrix<Fraction> a{{1,2},{3,5}};
     const auto reduced=GaussianElimination(a,true);

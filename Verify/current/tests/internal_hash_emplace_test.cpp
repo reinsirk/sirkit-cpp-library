@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 // find_or_emplaceの遅延生成、公開タイミング、確保失敗後の内容を検査する。
 #ifndef INTERNAL_HASH_SOURCE
 #define INTERNAL_HASH_SOURCE "../../../Internal/Nyaan_hash_map_min.cpp"
@@ -83,7 +85,7 @@ struct RvalueFactory {
 
 template<bool Packed, unsigned Denominator>
 static void ordinary_and_factory_exceptions() {
-    using Table = reinsirk::detail::InternalHashMap<int, int, Packed, Denominator>;
+    using Table = ::sirkit::detail::InternalHashMap<int, int, Packed, Denominator>;
     Table table;
     table.set_default(12345);
     require(table.empty() && table.size() == 0);
@@ -134,7 +136,7 @@ static void ordinary_and_factory_exceptions() {
     require(table.find_or_emplace(-12345, [] { return -7; }) == -7);
 
     // 他のdynamic系でも使う64ビットキーを切り詰めず区別する。
-    reinsirk::detail::InternalHashMap<std::int64_t, int, Packed, Denominator> wide;
+    ::sirkit::detail::InternalHashMap<std::int64_t, int, Packed, Denominator> wide;
     int value = 0;
     for (std::int64_t key : {std::numeric_limits<std::int64_t>::min(), std::int64_t{-1},
                              std::int64_t{0}, std::int64_t{1},
@@ -148,7 +150,7 @@ static void ordinary_and_factory_exceptions() {
 
 template<bool Packed, unsigned Denominator>
 static void allocation_failures() {
-    using Table = reinsirk::detail::InternalHashMap<int, int, Packed, Denominator>;
+    using Table = ::sirkit::detail::InternalHashMap<int, int, Packed, Denominator>;
     const int threshold = 8 - 8 / int(Denominator);
     for (bool filled : {false, true}) {
         bool reached_success = false;
@@ -193,7 +195,7 @@ static void allocation_failures() {
 
 template<bool Packed, unsigned Denominator>
 static void value_assignment_and_rehash_exceptions() {
-    using Table = reinsirk::detail::InternalHashMap<int, ThrowValue, Packed, Denominator>;
+    using Table = ::sirkit::detail::InternalHashMap<int, ThrowValue, Packed, Denominator>;
     const int threshold = 8 - 8 / int(Denominator);
     Table table;
     for (int i = 0; i < threshold; ++i)

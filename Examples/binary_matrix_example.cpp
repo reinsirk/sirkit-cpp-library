@@ -5,6 +5,8 @@
 #include <iostream>
 #include <utility>
 #include <vector>
+
+using namespace sirkit;
 void print(const BinaryMatrix& a) {
     for(std::size_t i=0;i<a.rows();++i){for(std::size_t j=0;j<a.cols();++j)std::cout<<a.test(i,j);std::cout<<'\n';}
 }

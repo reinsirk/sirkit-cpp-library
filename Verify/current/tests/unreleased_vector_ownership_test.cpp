@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #include <cassert>
 #include <cinttypes>
 #include <cstddef>
@@ -29,6 +31,6 @@ static volatile std::int64_t live_blocks=0,live_bytes=0;
 #endif
 #include SIRKIT_UNRELEASED_VECTOR_SOURCE
 struct Tracked{static inline int live=0,destroyed=0;int value=0;explicit Tracked(int n=0):value(n){++live;}Tracked(const Tracked&x):value(x.value){++live;}Tracked(Tracked&&x)noexcept:value(std::exchange(x.value,-1)){++live;}Tracked&operator=(const Tracked&x){value=x.value;return *this;}Tracked&operator=(Tracked&&x)noexcept{value=std::exchange(x.value,-1);return *this;}~Tracked(){--live;++destroyed;}};
-int main(){using V=reinsirk::detail::UnreleasedVector<Tracked>;assert(live_blocks==0);{std::vector<Tracked>normal;for(int i=0;i<1000;++i)normal.emplace_back(i);}assert(live_blocks==0&&live_bytes==0&&Tracked::live==0);std::printf("normal_live0=%" PRId64 " normal_bytes0=%" PRId64 "\n",live_blocks,live_bytes);
+int main(){using V=::sirkit::detail::UnreleasedVector<Tracked>;assert(live_blocks==0);{std::vector<Tracked>normal;for(int i=0;i<1000;++i)normal.emplace_back(i);}assert(live_blocks==0&&live_bytes==0&&Tracked::live==0);std::printf("normal_live0=%" PRId64 " normal_bytes0=%" PRId64 "\n",live_blocks,live_bytes);
  std::size_t retained=0;int dtor_before=0;{V v;for(int i=0;i<10000;++i)v.emplace_back(i);assert(live_blocks==1&&live_bytes==static_cast<std::int64_t>(v.capacity()*sizeof(Tracked))&&Tracked::live==10000);v.erase(v.begin(),v.begin()+5000);assert(Tracked::live==5000);v.resize(6000);assert(Tracked::live==6000);v.clear();assert(Tracked::live==0&&live_blocks==1);for(int i=0;i<300;++i)v.emplace_back(i);V dest;dest.emplace_back(900);assert(Tracked::live==301);dest=std::move(v);assert(v.empty()&&dest.size()==300&&live_blocks==1&&Tracked::live==300);dest=std::move(dest);assert(dest.size()==300);retained=dest.capacity()*sizeof(Tracked);dtor_before=Tracked::destroyed;}assert(live_blocks==1&&live_bytes==static_cast<std::int64_t>(retained)&&Tracked::live==300&&Tracked::destroyed==dtor_before);std::printf("fast_retained_blocks=%" PRId64 " fast_retained_bytes=%" PRId64 " final_elements_not_destroyed=%d; old_growth_blocks_reclaimed\n",live_blocks,live_bytes,Tracked::live);
 }

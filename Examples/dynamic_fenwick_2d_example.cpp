@@ -2,6 +2,8 @@
 #include <cstdint>
 #include <iostream>
 
+using namespace sirkit;
+
 int main() {
     DynamicFenwickTree2D<std::int64_t> bit(1000000000, 1000000000);
     bit.reserve(2000); // 内部セル数の目安による予約ヒント。各行の内容量は必要時に確保。
