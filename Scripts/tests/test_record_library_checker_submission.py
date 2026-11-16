@@ -74,7 +74,7 @@ class RecordSubmissionTest(unittest.TestCase):
         self.entry["submission_urls"] = [self.url]
         with importer.verify_status.repository(self.root):
             updated = importer.verify_status.prepare_verify.render(self.entry)[0]
-        self.assertEqual(importer.verify_status.source_match(record, updated), "submission_metadata_normalized")
+        self.assertEqual(importer.verify_status.source_match(record, updated), "generated_preamble_metadata_normalized")
         self.assertIsNone(importer.verify_status.source_match(record, updated + b"// implementation changed\n"))
 
     def test_line_endings_record_survives_submission_url_update(self):
@@ -83,7 +83,46 @@ class RecordSubmissionTest(unittest.TestCase):
         self.entry["submission_urls"] = [self.url]
         with importer.verify_status.repository(self.root):
             updated = importer.verify_status.prepare_verify.render(self.entry)[0]
-        self.assertEqual(importer.verify_status.source_match(record, updated), "submission_metadata_normalized")
+        self.assertEqual(importer.verify_status.source_match(record, updated), "generated_preamble_metadata_normalized")
+
+    def test_v2_proof_comes_from_actual_crlf_submission_with_body_marker(self):
+        self.write("DataStructure/example.cpp", "/* namespace marker */ int library_value=1;\n")
+        with importer.verify_status.repository(self.root):
+            self.source = importer.verify_status.prepare_verify.render(self.entry)[0]
+        uploaded = self.source.replace(b"\n", b"\r\n")
+        self.response["source"] = uploaded.decode()
+        record = self.prepare()["record"]
+        self.assertNotIn("source_normalization", record)
+        self.assertEqual(record["source_normalization_proofs"],
+                         [importer.verify_status.preamble_source_proof(uploaded)])
+        self.assertEqual(record["source_normalization_proofs"][0]["uploaded_source_sha256"],
+                         importer.digest(uploaded))
+        self.entry["submission_urls"] = [self.url]
+        with importer.verify_status.repository(self.root):
+            updated = importer.verify_status.prepare_verify.render(self.entry)[0]
+        self.assertEqual(importer.verify_status.source_match(record, updated),
+                         "generated_preamble_metadata_normalized")
+        self.assertIsNone(importer.verify_status.source_match(record, updated.replace(b"namespace marker", b"updated marker")))
+
+    def test_v2_import_matches_metadata_with_body_raw_and_no_crlf(self):
+        self.write("DataStructure/example.cpp", 'const char* text=R"(// Submission: literal)"; int library_value=1;\n')
+        with importer.verify_status.repository(self.root):
+            current = importer.verify_status.prepare_verify.render(self.entry)[0]
+        self.response["source"] = current.decode().replace("// Verify: ",
+            "// Submission: https://judge.yosupo.jp/submission/1\n// Verify: ", 1)
+        record = self.prepare()["record"]
+        self.assertEqual(record["source_match_method"], "generated_preamble_metadata_normalized")
+        self.assertTrue(record["source_normalization_proofs"])
+        changed = current.replace(b"Submission: literal", b"Submission: different literal")
+        self.assertIsNone(importer.verify_status.source_match(record, changed))
+
+    def test_v2_import_first_library_label_change_does_not_claim_v1_proof(self):
+        self.response["source"] = self.source.decode().replace(
+            "// Library: DataStructure/example.cpp", "// Library: DataStructure/previous-name.cpp", 1)
+        record = self.prepare()["record"]
+        self.assertEqual(record["source_match_method"], "generated_preamble_metadata_normalized")
+        self.assertNotIn("source_normalization", record)
+        self.assertTrue(record["source_normalization_proofs"])
 
     def test_custom_online_io_matches_generation_metadata(self):
         self.entry["allow_custom_io"] = True
@@ -101,12 +140,10 @@ class RecordSubmissionTest(unittest.TestCase):
         self.assertEqual(record["source_match_method"], "line_endings")
         self.assertNotEqual(record["uploaded_source_sha256"], record["submission_sha256"])
 
-    def test_narrow_metadata_and_trailing_whitespace_match(self):
+    def test_generated_body_trailing_whitespace_is_not_metadata(self):
         self.response["source"] = "// Submission: https://judge.yosupo.jp/submission/1\r\n\r\n" + self.source.decode().replace("\n", " \r\n")
-        record = self.prepare()["record"]
-        self.assertEqual(record["source_match_method"], "submission_metadata_normalized")
-        self.assertEqual(record["source_normalization"], "submission-metadata-v1")
-        self.assertEqual(importer.verify_status.source_match(record, self.source), "exact")
+        with self.assertRaisesRegex(ValueError, "提出ソース全文"):
+            self.prepare()
 
     def test_main_library_and_io_tampering_rejected(self):
         for old, new in (("library_value=1", "library_value=9"), ("io_value=2", "io_value=7"),

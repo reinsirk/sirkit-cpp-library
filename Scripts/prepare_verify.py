@@ -19,6 +19,13 @@ ROOT = Path(__file__).resolve().parents[1]
 BASE = ROOT / "Verify/current"
 FAST_IO = "Verify/current/common/fast_io.hpp"
 FAST_IO_INCLUDE = '#include "' + FAST_IO + '"'
+ONLINE_JUDGE_NAMES = {
+    "judge.yosupo.jp": "Library Checker",
+    "onlinejudge.u-aizu.ac.jp": "AOJ",
+    "judge.u-aizu.ac.jp": "AOJ",
+    "yukicoder.me": "Yukicoder",
+    "atcoder.jp": "AtCoder",
+}
 COMMON_INCLUDE = re.compile(r'^#include "(Verify/current/common/[A-Za-z0-9_]+\.hpp)"[ \t]*$', re.M)
 CXX_NON_CODE = re.compile(
     r'''//[^\r\n]*|/\*.*?\*/|(?:u8|u|U|L)?R"(?P<delimiter>[^\s()\\]{0,16})\(.*?\)(?P=delimiter)"'''
@@ -86,8 +93,8 @@ def custom_io_enabled(entry: dict) -> bool:
     """独自入出力はLibrary Checkerの明示指定だけで許可する。"""
     url = entry.get("problem_url")
     host = urlsplit(url).hostname if url else None
-    if url and host not in {"judge.yosupo.jp", "atcoder.jp"}:
-        raise ValueError("Verify先はLibrary CheckerまたはAtCoderを指定してください: " + entry["id"])
+    if url and host not in ONLINE_JUDGE_NAMES:
+        raise ValueError("Verify先はLibrary Checker・AOJ・Yukicoder・AtCoderを指定してください: " + entry["id"])
     if "allow_custom_io" not in entry:
         return False
     flag = entry["allow_custom_io"]
@@ -106,7 +113,7 @@ def gcc_optimization(entry: dict) -> str | None:
     if type(value) is not str or value not in {"O2", "O3", "O3,unroll-loops"}:
         raise ValueError("gcc_optimizationはO2/O3/O3,unroll-loopsを指定してください: " + entry["id"])
     url = entry.get("problem_url")
-    if not url or urlsplit(url).hostname not in {"judge.yosupo.jp", "atcoder.jp"}:
+    if not url or urlsplit(url).hostname not in ONLINE_JUDGE_NAMES:
         raise ValueError("gcc_optimizationはオンラインVerify専用です: " + entry["id"])
     return value
 
@@ -258,13 +265,15 @@ def graph_sample_checkers():
     spec.loader.exec_module(module)
     return {name: getattr(module, "check_" + name) for name in (
         "scc", "two_sat", "max_flow_grid", "component_sets",
-        "eulerian_trail_directed", "eulerian_trail_undirected", "min_cost_flow_grid", "pruefer_completion", "bipartite_matching", "linear_recurrence", "matrix_linear_system", "longest_common_substring", "binary_linear_system", "general_matching", "modular_square_root")}
+        "eulerian_trail_directed", "eulerian_trail_undirected", "min_cost_flow_grid", "pruefer_completion", "bipartite_matching", "linear_recurrence", "matrix_linear_system", "longest_common_substring", "binary_linear_system", "general_matching", "modular_square_root", "topological_order", "maximum_independent_set")}
 
 
 def matches(entry: dict, sample: dict, output: str) -> bool:
     mode = entry.get("sample_checker", "tokens")
+    if mode == "topological":
+        mode = "topological_order"
     if mode in {"scc", "two_sat", "max_flow_grid", "component_sets",
-                "eulerian_trail_directed", "eulerian_trail_undirected", "min_cost_flow_grid", "pruefer_completion", "bipartite_matching", "linear_recurrence", "matrix_linear_system", "longest_common_substring", "binary_linear_system", "general_matching", "modular_square_root"}:
+                "eulerian_trail_directed", "eulerian_trail_undirected", "min_cost_flow_grid", "pruefer_completion", "bipartite_matching", "linear_recurrence", "matrix_linear_system", "longest_common_substring", "binary_linear_system", "general_matching", "modular_square_root", "topological_order", "maximum_independent_set"}:
         return graph_sample_checkers()[mode](entry, sample, output)
     actual, expected = output.split(), sample["output"].split()
     if mode == "float":
@@ -295,14 +304,6 @@ def matches(entry: dict, sample: dict, output: str) -> bool:
         indices = out[1:]
         return all(0 <= i < inp[0] for i in indices) and all(
             i < j and values[i] < values[j] for i,j in zip(indices,indices[1:]))
-    if mode == "topological":
-        inp = list(map(int, sample["input"].split()))
-        n, m = inp[:2]
-        order = list(map(int, actual))
-        if sorted(order) != list(range(n)):
-            return False
-        position = {v:i for i,v in enumerate(order)}
-        return all(position[u] < position[v] for u,v in zip(inp[2::2],inp[3::2]))
     if mode == "closest_pair":
         inp = list(map(int, sample["input"].split()))
         count, pos = inp[0], 1
