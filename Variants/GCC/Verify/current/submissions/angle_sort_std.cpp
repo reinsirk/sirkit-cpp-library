@@ -5,10 +5,10 @@
 #endif
 // Verify: https://judge.yosupo.jp/problem/sort_points_by_argument
 
-// Library: Geometry/偏角ソート.cpp
+// Library: Geometry/angle_sort.cpp
 // SPDX-License-Identifier: CC0-1.0
 // 生成版: GCC用。
-// 生成元: Geometry/偏角ソート.cpp
+// 生成元: Geometry/angle_sort.cpp
 // ドキュメント: https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/angle_sort.md
 //
 // API一覧

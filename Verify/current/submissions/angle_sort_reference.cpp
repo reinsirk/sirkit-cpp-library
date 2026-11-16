@@ -1,6 +1,6 @@
 // Verify: ローカル独立検査
 
-// Library: Geometry/偏角ソート.cpp
+// Library: Geometry/angle_sort.cpp
 // SPDX-License-Identifier: CC0-1.0
 // ドキュメント: https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/angle_sort.md
 //
