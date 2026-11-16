@@ -353,15 +353,17 @@ def run_selected(entries: list[dict], plan: dict, cache: Path, output: Path, pin
                         break
                 actual = [case["name"] for case in row["cases"]]
                 passed = sum(case["status"] == "PASS" for case in row["cases"])
-                row["case_counts"].update(completed=len(actual), passed=passed, failed=len(actual) - passed)
-                row["elapsed_ns"] = sum(case["elapsed_ns"] for case in row["cases"])
-                row["performance_scope"] = PERFORMANCE_SCOPE
                 if actual == details["expected_cases"] and passed == len(actual) and actual:
                     row["status"] = "PASS"
             except (OSError, ValueError, subprocess.SubprocessError, RunnerError) as error:
                 row["unavailable"] = True
                 row["error_kind"] = error.kind if isinstance(error, RunnerError) else type(error).__name__
             finally:
+                passed = sum(case["status"] == "PASS" for case in row["cases"])
+                row["case_counts"].update(completed=len(row["cases"]), passed=passed,
+                                          failed=len(row["cases"]) - passed)
+                row["elapsed_ns"] = sum(case["elapsed_ns"] for case in row["cases"])
+                row["performance_scope"] = PERFORMANCE_SCOPE
                 remaining[problem] -= 1
                 if discard_data and problem is not None and remaining[problem] == 0:
                     group = [value for value in report["results"] if problem_id(selected[value["id"]]) == problem]

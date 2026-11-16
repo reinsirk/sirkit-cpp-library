@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: CC0-1.0
-"""通常版の代表本体を、同じ計測コードで基準commitと交互比較する。速度差は参考値。"""
+"""通常版の代表本体の絶対時間を計測する。指定時だけ基準commitと交互比較する。"""
 from __future__ import annotations
 
 import argparse
@@ -25,6 +25,25 @@ LIBRARIES = {
     "rolling_hash": "String/RollingHash.cpp",
 }
 FLAGS = ["-std=c++23", "-O2", "-DNDEBUG", "-DSKIP_RUNTIME_CHECKS"]
+# ライブラリの上限・オンライン問題の最大制約とは別の、CIで扱う規模上限。
+STRESS_SIZE = 2_000_000
+SCENARIOS = {
+    "fenwick": ("random", "prefix", "empty_full_lowbit", "alternating_updates"),
+    "union_find": ("random", "sequential", "balanced_before_compression", "redundant_disconnected"),
+    "rolling_hash": ("random", "identical", "long_lcp_last_mismatch", "binary_bytes_boundaries"),
+}
+
+
+def case_plan(identifier: str, quick: bool) -> list[dict]:
+    sizes = [(2048, "smoke")] if quick else [(1024, "small"), (262144, "large"),
+                                                           (STRESS_SIZE, "ci_stress_limit")]
+    cases = [{"size": size, "scale": scale, "pattern_id": pattern, "scenario": name}
+             for size, scale in sizes for pattern, name in enumerate(SCENARIOS[identifier])]
+    if not quick:
+        # 冪ちょうどだけでなく、その直前・直後も同じ難ケースで照合する。
+        cases += [{"size": size, "scale": "power_of_two_boundary", "pattern_id": 2,
+                   "scenario": SCENARIOS[identifier][2]} for size in (262143, 262145)]
+    return cases
 
 
 class BenchmarkError(ValueError):
@@ -139,20 +158,32 @@ def code(value: str) -> str:
 
 
 def markdown(report: dict) -> str:
-    lines = ["## 本体の性能比較（参考値）", "",
-             "同じ計測コード・コンパイラ・O2・検査省略設定で、基準と現在版を交互に測定します。",
+    lines = ["## 本体の性能（参考値）", "",
+             "現在版の絶対時間を表示します。基準commitを指定したときだけ、同じ計測コード・コンパイラ・O2・検査省略設定で交互比較します。",
              "入力生成・独立参照・プロセス起動・入出力は時間に含めません。本体の構築・操作・破棄と同じchecksum集約を含みます。",
              "Verifyのmainやオンライン提出時間の比較ではありません。速度差だけでは不合格にしません。", "",
              "状態: " + str(report["status"])]
+    lines += ["", "対象はFenwick Tree・UnionFind・RollingHashの代表3本です。",
+              "通常実行の既定対象は各14ケース（計42）。--id指定時は対象分だけ実行します。",
+              "2,000,000要素はCIのstress上限で、問題のMax制約やAPIの上限を意味しません。",
+              "--quickは小規模の動作確認だけで、大規模・最大ケースの実施とは扱いません。"]
+    if report.get("scale_scope"):
+        lines += ["", "今回の規模: " + code(report["scale_scope"]) +
+                  "、予定ケース数: " + str(report["expected_cases"])]
     if report.get("base_revision"):
         lines += ["", "基準: " + code(report["base_revision"])]
-    lines += ["", "| 本体 | 入力 | 要素数 | 基準 ms | 現在 ms | 現在/基準 |",
-              "| --- | --- | ---: | ---: | ---: | ---: |"]
+    compare = report.get("comparison_requested", True)
+    lines += (["", "| 本体 | 入力 | 要素数 | 現在 ms | 基準 ms | 現在/基準 |",
+               "| --- | --- | ---: | ---: | ---: | ---: |"] if compare else
+              ["", "| 本体 | 入力 | 要素数 | 実行時間 ms |", "| --- | --- | ---: | ---: |"])
     for row in report.get("results", []):
         median = row["median_ns"]
-        base = f"{median['base'] / 1e6:.3f}" if "base" in median else "N/A"
-        ratio = f"{row['current_over_base']:.3f}" if row["current_over_base"] is not None else "N/A"
-        lines.append(f"| {row['id']} | {row['pattern']} | {row['size']} | {base} | {median['current']/1e6:.3f} | {ratio} |")
+        line = f"| {row['id']} | {row['pattern']} | {row['size']} | {median['current']/1e6:.3f} |"
+        if compare:
+            base = f"{median['base'] / 1e6:.3f}" if "base" in median else "N/A"
+            ratio = f"{row['current_over_base']:.3f}" if row["current_over_base"] is not None else "N/A"
+            line += f" {base} | {ratio} |"
+        lines.append(line)
     if any(row["status"] == "NO_BASELINE" for row in report.get("results", [])):
         lines += ["", "N/Aは基準commitに本体がないため比較未実施です。現在版の計測と独立照合だけを行いました。"]
     if report["status"] == "FAIL":
@@ -189,20 +220,25 @@ def run(args: argparse.Namespace) -> int:
               "results": [], "sources": {}}
     write_report(output, report)
     try:
-        revision = resolve_base(args.base)
+        revision = resolve_base(args.base) if args.base is not None else None
         report["base_revision"] = revision
+        report["comparison_requested"] = revision is not None
         compiler = compiler_command(args.compiler)
         report["compiler"] = {"command": compiler,
                               "version": command([compiler[0], "--version"], timeout=15).stdout.decode().splitlines()[0]}
         common = (FIXTURES / "benchmark_common.hpp").read_bytes()
         selected = args.id or list(LIBRARIES)
-        sizes = [2048] if args.quick else [1024, 262144]
+        plans = {identifier: case_plan(identifier, args.quick) for identifier in selected}
+        report["case_plan"] = plans
+        report["expected_cases"] = sum(map(len, plans.values()))
+        report["scale_scope"] = "smoke_only" if args.quick else "small_large_ci_stress_and_power_of_two_boundaries"
+        report["ci_stress_size_limit"] = STRESS_SIZE
         with tempfile.TemporaryDirectory(prefix="sirkit-benchmark-") as temporary:
             directory = Path(temporary)
             for identifier in selected:
                 path = LIBRARIES[identifier]
                 current = (ROOT / path).read_bytes()
-                base = baseline_source(revision, path)
+                base = baseline_source(revision, path) if revision is not None else None
                 fixture = (FIXTURES / (identifier + ".cpp")).read_bytes()
                 snapshots = output / "sources" / identifier
                 snapshots.mkdir(parents=True, exist_ok=True)
@@ -225,21 +261,29 @@ def run(args: argparse.Namespace) -> int:
                                                 directory / identifier, "base")
                 executables["current"] = build(compiler, current, fixture, common,
                                                directory / identifier, "current")
-                for size in sizes:
+                for case in plans[identifier]:
+                    size, pattern = case["size"], case["pattern_id"]
                     rounds = 1 if args.quick else max(1, 262144 // size)
-                    for pattern in (0, 1):
-                        row = measure(executables, size, pattern, rounds, args.repetitions, args.warmups)
-                        row["id"] = identifier
-                        report["results"].append(row)
-                        write_report(output, report)
+                    row = measure(executables, size, pattern, rounds, args.repetitions, args.warmups)
+                    if revision is None:
+                        row["status"] = "CURRENT_ONLY"
+                    row.update(id=identifier, pattern=case["scenario"], pattern_id=pattern, scale=case["scale"])
+                    report["results"].append(row)
+                    write_report(output, report)
+        expected = {(identifier, case["size"], case["pattern_id"])
+                    for identifier, cases in plans.items() for case in cases}
+        completed = [(row["id"], row["size"], row["pattern_id"]) for row in report["results"]]
+        if len(completed) != len(expected) or set(completed) != expected:
+            raise BenchmarkError("予定した性能ケースの省略または重複があります")
         compared = sum(row["status"] == "MEASURED" for row in report["results"])
         report["compared_cases"] = compared
         report["uncompared_cases"] = len(report["results"]) - compared
         report["current_measurements_passed"] = bool(report["results"])
-        report["status"] = "NO_BASELINE" if not compared else "PARTIAL" if report["uncompared_cases"] else "PASS"
+        report["status"] = ("CURRENT_ONLY" if revision is None else "NO_BASELINE" if not compared
+                            else "PARTIAL" if report["uncompared_cases"] else "PASS")
         write_report(output, report)
         print(report["status"] + ": " + str(output / "summary.md"))
-        return 2 if not compared else 0
+        return 2 if revision is not None and not compared else 0
     except (BenchmarkError, OSError, ValueError, KeyError) as error:
         report["status"] = "FAIL"
         report["error"] = str(error)
@@ -250,7 +294,7 @@ def run(args: argparse.Namespace) -> int:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--base", required=True, help="基準commit/ref（履歴から本体だけを読み出す）")
+    parser.add_argument("--base", help="比較が必要な場合だけ指定する基準commit/ref")
     parser.add_argument("--compiler", default="g++")
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--id", action="append", choices=tuple(LIBRARIES))
