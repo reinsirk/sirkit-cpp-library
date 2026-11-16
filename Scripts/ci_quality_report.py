@@ -19,14 +19,16 @@ import sys
 
 sys.dont_write_bytecode = True
 try:
-    from . import prepare_verify
+    from . import prepare_verify, ci_benchmark, ci_performance_all
 except ImportError:
     import prepare_verify
+    import ci_benchmark
+    import ci_performance_all
 
 ROOT = Path(__file__).resolve().parents[1]
 LIBRARY_DIRS = {"Algorithm", "DataStructure", "Geometry", "Graph", "Internal", "Math", "String"}
 CATEGORIES = ("normal", "failure", "library_checker", "performance", "sanitizers", "coverage")
-LABELS = dict(normal="正常系", failure="失敗系", library_checker="Library Checker公式ケース", performance="本体の性能測定", sanitizers="ASan/UBSan", coverage="カバレッジ")
+LABELS = dict(normal="正常系", failure="失敗系", library_checker="Library Checker公式ケース", performance="性能測定", sanitizers="ASan/UBSan", coverage="カバレッジ")
 STATUS_LABELS = dict(PASS="通過", FAIL="失敗", STALE="ソース変更", UNAVAILABLE="未測定", PARTIAL="一部のみ")
 SHA = re.compile(r"[0-9a-f]{64}\Z")
 IDENTIFIER = re.compile(r"[A-Za-z0-9_-]+\Z")
@@ -434,9 +436,12 @@ def collect_performance(value: dict, root: Path, entries: dict, append) -> None:
         raise ReportError("性能測定のコンパイラ版がありません")
     text_list(compiler.get("command")); text_list(value.get("flags"))
     revision = value.get("base_revision")
-    if not isinstance(revision, str) or not re.fullmatch(r"(?:[0-9a-f]{40}|[0-9a-f]{64})", revision):
+    if value.get("comparison_requested") is False:
+        if revision is not None:
+            raise ReportError("比較しない性能記録に比較元commitがあります")
+    elif not isinstance(revision, str) or not re.fullmatch(r"(?:[0-9a-f]{40}|[0-9a-f]{64})", revision):
         raise ReportError("性能測定の比較元commitがありません")
-    if value.get("status") not in {"PASS", "PARTIAL", "NO_BASELINE", "FAIL"}:
+    if value.get("status") not in {"PASS", "PARTIAL", "NO_BASELINE", "CURRENT_ONLY", "FAIL"}:
         raise ReportError("性能測定の状態が不正です")
     seen, compared = set(), 0
     for row in rows:
@@ -462,7 +467,7 @@ def collect_performance(value: dict, root: Path, entries: dict, append) -> None:
                 raise ReportError("性能測定の中央値が生データと一致しません")
         ratio = medians["current"] / medians["base"] if "base" in samples else None
         if ratio is None:
-            if row.get("status") != "NO_BASELINE" or row.get("current_over_base") is not None:
+            if row.get("status") != ("CURRENT_ONLY" if value.get("comparison_requested") is False else "NO_BASELINE") or row.get("current_over_base") is not None:
                 raise ReportError("比較元なしの性能測定が不正です")
         else:
             compared += 1
@@ -476,13 +481,27 @@ def collect_performance(value: dict, root: Path, entries: dict, append) -> None:
         if "base" in samples:
             sha(source.get("base_sha256"))
         key = (identifier, integer(row.get("size"), minimum=1), row.get("pattern"), integer(row.get("rounds"), minimum=1))
-        if key in seen or key[2] not in {"random", "structured"}:
+        patterns = {"random", "structured", *ci_benchmark.SCENARIOS.get(identifier, ())}
+        if key in seen or key[2] not in patterns:
             raise ReportError("性能測定の条件が重複・不正です")
+        scale = row.get("scale")
+        if scale is not None:
+            if scale not in {"small", "large", "ci_stress_limit", "power_of_two_boundary", "smoke"}:
+                raise ReportError("性能測定の規模が不正です")
+            if scale == "ci_stress_limit" and key[1] != ci_benchmark.STRESS_SIZE:
+                raise ReportError("CI stress上限と実際の要素数が一致しません")
+            if scale == "smoke" and value.get("scale_scope") != "smoke_only":
+                raise ReportError("縮小検査の規模区分が不正です")
+        if "pattern_id" in row:
+            pattern = integer(row["pattern_id"])
+            if identifier not in ci_benchmark.SCENARIOS or pattern >= len(ci_benchmark.SCENARIOS[identifier]) or key[2] != ci_benchmark.SCENARIOS[identifier][pattern]:
+                raise ReportError("性能測定のパターン番号と名前が一致しません")
         seen.add(key)
-        status = "STALE" if changed else "PASS" if value["status"] != "FAIL" and value.get("current_measurements_passed") is True else "FAIL"
+        status = "STALE" if changed else ("PARTIAL" if value.get("scale_scope") == "smoke_only" else "PASS") if value["status"] != "FAIL" and value.get("current_measurements_passed") is True else "FAIL"
         append(library, "performance", dict(status=status, id=identifier, scope="代表本体（入出力・Verify mainは除外）",
-               size=key[1], pattern=key[2], rounds=key[3], repetitions=repetitions, warmups=value.get("warmups"), samples_ns=samples,
-               median_ns=medians, current_over_base=ratio, comparison="MEASURED" if ratio is not None else "NO_BASELINE",
+               size=key[1], pattern=key[2], scale=scale, scale_scope=value.get("scale_scope"),
+               rounds=key[3], repetitions=repetitions, warmups=value.get("warmups"), samples_ns=samples,
+               median_ns=medians, current_over_base=ratio, comparison="MEASURED" if ratio is not None else "NOT_REQUESTED" if value.get("comparison_requested") is False else "NO_BASELINE",
                compiler=value.get("compiler"), flags=value["flags"], cpu_model=value.get("cpu_model"),
                base_revision=value.get("base_revision"), source_mismatches=changed,
                advisory=True))
@@ -490,6 +509,149 @@ def collect_performance(value: dict, root: Path, entries: dict, append) -> None:
         raise ReportError("性能測定の集約件数と実行結果が不一致です")
     if {row["id"] for row in rows} != set(sources):
         raise ReportError("性能測定の対象に結果がありません")
+
+
+def all_performance_case_names(value: dict, row: dict, entry: dict) -> list[str]:
+    profile = value.get("size_profile")
+    if profile not in {"quick_smoke", "full_representative"}:
+        raise ReportError("全体性能の入力規模が不正です")
+    names = row.get("expected_case_names")
+    if not isinstance(names, list) or not names or len(names) != len(set(names)):
+        raise ReportError("全体性能のケース名が不正です")
+    if row.get("case_source") == "deterministic_non_lc":
+        plans = ci_performance_all.nonlc_module().plans_for_library(row["library"], quick=profile == "quick_smoke")
+        if names != [plan["name"] for plan in plans]:
+            raise ReportError("設定された非LC性能ケースが欠落しています")
+        for case, plan in zip(row.get("cases", []), plans):
+            if case.get("metadata", {}).get("dimensions") != plan["dimensions"]:
+                raise ReportError("性能ケースの入力規模が設定と一致しません")
+    elif row.get("case_source") == "official_library_checker":
+        if profile == "quick_smoke":
+            if names != ["registered_sample_" + str(i).zfill(2) for i in range(len(entry.get("samples", [])))]:
+                raise ReportError("縮小版の登録入力例が欠落しています")
+        else:
+            official = row.get("official", {})
+            available = official.get("expected_cases")
+            if not isinstance(available, list) or not available or len(available) != len(set(available)) or not set(names) <= set(available):
+                raise ReportError("性能ケースが公式ケース集合と一致しません")
+            for key in ("info_sha256", "hash_json_sha256", "checker_sha256"):
+                sha(official.get(key))
+            sizes = row.get("official_case_input_bytes")
+            if not isinstance(sizes, dict) or set(sizes) != set(available):
+                raise ReportError("公式ケースの入力サイズ記録が不足しています")
+            for size in sizes.values():
+                integer(size)
+            if names != list(ci_performance_all.official_selection(sizes, False)):
+                raise ReportError("公式系列・最大入力・専用難ケースが欠落しています")
+    else:
+        raise ReportError("全体性能のケース生成元が不正です")
+    return names
+
+
+def collect_all_performance(value: dict, root: Path, entries: dict, append) -> None:
+    """全ライブラリの固定main・入出力込みの絶対時間。kernelとは区別する。"""
+    actual_paths = sorted(p.relative_to(root).as_posix() for directory in LIBRARY_DIRS
+                          for p in (root / directory).rglob("*.cpp")
+                          if p.is_file() and p.resolve().is_relative_to(root))
+    all_paths = value.get("all_library_paths")
+    selected = value.get("selected_library_paths")
+    if all_paths != actual_paths or not isinstance(selected, list) or len(selected) != len(set(selected)) or not set(selected) <= set(all_paths):
+        raise ReportError("全ライブラリ性能の分母・対象が原本一覧と一致しません")
+    count = integer(value.get("shard_count"), minimum=1)
+    index = integer(value.get("shard_index"))
+    if index >= count:
+        raise ReportError("性能shard番号が不正です")
+    if value.get("selection_kind") == "all_libraries":
+        if selected != all_paths[index::count]:
+            raise ReportError("性能shardの対象ライブラリが欠落しています")
+    elif value.get("selection_kind") != "explicit_libraries":
+        raise ReportError("全ライブラリ性能の選択方法が不正です")
+    rows = value.get("results")
+    if not isinstance(rows, list) or [r.get("library") for r in rows] != selected:
+        raise ReportError("性能shardの測定結果に欠落・重複があります")
+    if value.get("scope") != "whole_verify_program_fixed_main_io" or value.get("status") not in {"PASS", "FAIL", "running"}:
+        raise ReportError("全ライブラリ性能の範囲・状態が不正です")
+    repetitions = integer(value.get("repetitions"), minimum=1)
+    integer(value.get("warmups"))
+    if value.get("size_profile") not in {"quick_smoke", "full_representative"}:
+        raise ReportError("全体性能の入力規模が不正です")
+    compiler = value.get("compiler")
+    if not isinstance(compiler, dict) or not isinstance(compiler.get("version"), str) or not compiler["version"]:
+        raise ReportError("全ライブラリ性能のコンパイラ記録がありません")
+    text_list(compiler.get("command")); text_list(value.get("flags"))
+    frozen = hashes(value.get("source_hashes"))
+    changed_global = mismatches(root, frozen)
+    runner = value.get("runner", {})
+    changed_global += mismatches(root, {relative(runner.get("source")): sha(runner.get("sha256"))})
+    for row in rows:
+        library = relative(row["library"], library=True)
+        identifier = row.get("verify_id")
+        if identifier not in entries or library not in entries[identifier]["libraries"]:
+            raise ReportError("性能測定のライブラリとdriverが一致しません")
+        entry = entries[identifier]
+        if row.get("libraries") != entry["libraries"]:
+            raise ReportError("複合ライブラリの測定範囲が一致しません")
+        if row.get("status") != "PASS":
+            append(library, "performance", dict(status="FAIL" if row.get("status") == "FAIL" else "UNAVAILABLE",
+                   id=identifier, scope="Verify全体（起動・入出力込み）", checks=0,
+                   error=row.get("error", "測定未完了"), absolute_current=True))
+            continue
+        if row.get("current_build", {}).get("status") != "PASS":
+            raise ReportError("ビルド未成功の性能記録です")
+        recorded = hashes(row.get("source_hashes"))
+        if set(recorded) != set(entry["libraries"]) or row.get("driver") != entry["driver"]:
+            raise ReportError("全ライブラリ性能のソースSHAが不足しています")
+        recorded[entry["driver"]] = sha(row.get("driver_sha256"))
+        recorded.update(hashes(row.get("support_source_hashes", {}), nonempty=False))
+        if not set(entry.get("support_source_hashes", {})) <= recorded.keys():
+            raise ReportError("全ライブラリ性能の共通部品SHAが不足しています")
+        if row.get("submission_sha256") != entry.get("submission_sha256"):
+            raise ReportError("全ライブラリ性能の提出本文SHAが一致しません")
+        changed = sorted(set(changed_global + mismatches(root, recorded)))
+        cases = row.get("cases")
+        expected = all_performance_case_names(value, row, entry)
+        if (not isinstance(cases, list) or not expected or len(expected) != len(set(expected))
+                or [c.get("name") for c in cases] != expected or row.get("current_measurements_passed") is not True):
+            raise ReportError("ライブラリの性能ケースが欠落しています")
+        for case in cases:
+            if case.get("status") != "PASS" or case.get("correctness_passed") is not True:
+                raise ReportError("正しさの確認されていない性能ケースです")
+            sha(case.get("input_sha256")); sha(case.get("expected_sha256"))
+            samples, medians = case.get("samples_ns"), case.get("median_ns")
+            if not isinstance(samples, dict) or set(samples) not in ({"current"}, {"base", "current"}) or not isinstance(medians, dict) or set(medians) != set(samples):
+                raise ReportError("全体性能の生データが不足しています")
+            for role, times in samples.items():
+                if not isinstance(times, list) or len(times) != repetitions:
+                    raise ReportError("全体性能の反復数が一致しません")
+                for ns in times:
+                    integer(ns, minimum=1)
+                if type(medians[role]) not in (int, float) or not math.isfinite(medians[role]) or medians[role] != statistics.median(times):
+                    raise ReportError("全体性能の中央値が生データと一致しません")
+            ratio = medians["current"] / medians["base"] if "base" in medians else None
+            if case.get("current_over_base") != ratio:
+                raise ReportError("全体性能の比較値が不正です")
+            cpu_samples, cpu_medians = case.get("cpu_samples_ns"), case.get("cpu_median_ns")
+            if not isinstance(cpu_samples, dict) or not isinstance(cpu_medians, dict) or set(cpu_samples) != set(samples) or set(cpu_medians) != set(samples):
+                raise ReportError("子プロセスCPU時間の記録が不足しています")
+            for role, times in cpu_samples.items():
+                if not isinstance(times, list) or len(times) != repetitions:
+                    raise ReportError("子プロセスCPU時間の反復数が一致しません")
+                for ns in times:
+                    integer(ns)
+                if type(cpu_medians[role]) not in (int, float) or not math.isfinite(cpu_medians[role]) or cpu_medians[role] != statistics.median(times):
+                    raise ReportError("子プロセスCPU時間の中央値が不正です")
+            status = "STALE" if changed else ("PARTIAL" if value["size_profile"] == "quick_smoke" else "PASS") if value.get("source_freeze_passed") is True and value.get("status") == "PASS" else "FAIL"
+            append(library, "performance", dict(status=status, id=identifier,
+                   scope="Verify全体（起動・入出力込み。複合本体はlibraries参照）",
+                   timing_scope=value.get("timing_scope"), absolute_current=True, size_profile=value["size_profile"],
+                   size=integer(case.get("input_bytes")), size_unit="input_bytes", pattern=case["name"],
+                   workload=case.get("metadata", {}), combined_libraries=row["libraries"],
+                   repetitions=repetitions, warmups=value["warmups"], samples_ns=samples,
+                   median_ns=medians, cpu_samples_ns=cpu_samples, cpu_median_ns=cpu_medians,
+                   current_over_base=ratio, comparison=case.get("comparison"), compiler=compiler,
+                   flags=value["flags"], cpu_model=value.get("cpu_model"), platform=value.get("platform"),
+                   affinity=value.get("affinity"), base_revision=value.get("base_revision"),
+                   source_mismatches=changed, advisory=True))
 
 
 def collect_library_checker(value: dict, root: Path, entries: dict, append) -> None:
@@ -619,7 +781,9 @@ def aggregate(root: Path, inputs: list[Path], *, source_manifest: dict[str, dict
                 raise ReportError("レポート形式が不正です")
             if value.get("online_status") != "not_evaluated":
                 raise ReportError("ローカル結果にオンライン判定が混在しています")
-            if value.get("type") == "sirkit.library-checker":
+            if value.get("type") == "sirkit.performance-all":
+                kind, collector = "performance_all", collect_all_performance
+            elif value.get("type") == "sirkit.library-checker":
                 kind, collector = "library_checker", collect_library_checker
             elif value.get("type") == "sirkit.contracts":
                 kind, collector = "contracts", collect_contracts
@@ -653,7 +817,8 @@ def aggregate(root: Path, inputs: list[Path], *, source_manifest: dict[str, dict
     state = "FAIL" if run_state == "FAIL" else "UNAVAILABLE" if not global_states else "PASS" if covered and set(covered) == {"PASS"} else "PARTIAL"
     return {"format": 1, "type": "sirkit.quality-report", "generated_at_utc": datetime.now(timezone.utc).isoformat(),
             "status": state, "input_report_status": run_state, "online_status": "not_evaluated", "provenance": provenance(root),
-            "scope": "各欄は記録されたケースだけの結果。未測定のAPIや入力を含む完全な保証ではない。性能差は参考値。",
+            "scope": "各欄は記録されたケースだけの結果。未測定のAPIや入力を含む完全な保証ではない。性能時間は環境・入力規模と合わせて参照する。",
+            "performance_coverage": {"all_libraries": len(libraries), "whole_program_full_measured": sum(any(e.get("absolute_current") and e.get("size_profile") == "full_representative" and e["status"] == "PASS" for e in lib["categories"]["performance"]["evidence"]) for lib in libraries.values())},
             "categories": LABELS, "libraries": [libraries[key] for key in sorted(libraries)],
             "reports": reports, "errors": errors}
 
@@ -691,23 +856,36 @@ def markdown(report: dict) -> str:
             lines.append(f"| {inline(library['path'])} | {inline(row['id'])} | {count['passed']}/{count['expected']} | {elapsed} | {STATUS_LABELS[row['status']]} |")
     measured = [(library, row) for library in report["libraries"] for row in library["categories"]["performance"]["evidence"]]
     if measured:
-        lines += ["", "## 本体の性能測定の条件と結果", "",
-                  "入出力・プロセス起動を除く代表カーネルです。CI環境の速度差は参考で、オンライン提出時間とは比較しません。",
-                  "", "| コンパイラ | 設定 | CPU | 比較元commit | 反復/除外warmup |",
+        coverage = report.get("performance_coverage", {})
+        lines += ["", f"全ライブラリの規定規模の性能記録: {coverage.get('whole_program_full_measured', 0)}/{coverage.get('all_libraries', 0)}。縮小確認と代表3本のkernelはこの件数に含めません。"]
+        lines += ["", "## 性能測定の条件と結果", "",
+                  "全ライブラリのVerify全体時間と、代表カーネルの本体時間を分けて表示します。各ケースの規模・CPU・コンパイラと合わせて参照し、オンライン提出時間とは比較しません。",
+                  "", "| コンパイラ | 設定 | CPU | OS | 反復/除外warmup |",
                   "| --- | --- | --- | --- | ---: |"]
         environments = set()
         for _, row in measured:
+            if "median_ns" not in row:
+                continue
             key = json.dumps([row.get(name) for name in ("compiler", "flags", "cpu_model", "base_revision", "repetitions", "warmups")], sort_keys=True)
             if key in environments:
                 continue
             environments.add(key)
             compiler = row.get("compiler")
             compiler = compiler.get("version", "記録なし") if isinstance(compiler, dict) else compiler
-            lines.append("| " + " | ".join(inline(x) for x in (compiler, " ".join(row.get("flags", [])), row.get("cpu_model") or "記録なし", row.get("base_revision") or "記録なし")) + f" | {row['repetitions']}/{row.get('warmups') if row.get('warmups') is not None else '記録なし'} |")
-        lines += ["", "| 本体 | 入力 | 要素数 | 現在 ms | 現在/基準 | 状態 |", "| --- | --- | ---: | ---: | ---: | --- |"]
+            lines.append("| " + " | ".join(inline(x) for x in (compiler, " ".join(row.get("flags", [])), row.get("cpu_model") or "記録なし", row.get("platform") or "記録なし")) + f" | {row['repetitions']}/{row.get('warmups') if row.get('warmups') is not None else '記録なし'} |")
+        lines += ["", "| ライブラリ | 測定範囲 | ケース | 規模 | wall ms | CPU ms | 状態 |", "| --- | --- | --- | --- | ---: | ---: | --- |"]
         for library, row in measured:
-            ratio = f"{row['current_over_base']:.3f}" if row["current_over_base"] is not None else "比較元なし"
-            lines.append(f"| {inline(library['path'])} | {inline(row['pattern'])} | {row['size']} | {row['median_ns']['current']/1e6:.3f} | {ratio} | {STATUS_LABELS[row['status']]} |")
+            if "median_ns" not in row:
+                lines.append(f"| {inline(library['path'])} | {inline(row['scope'])} | 未実施 | — | — | — | {STATUS_LABELS[row['status']]} |")
+                continue
+            cpu = row.get("cpu_median_ns", {}).get("current")
+            cpu_text = f"{cpu/1e6:.3f}" if cpu is not None else "対象外"
+            workload = row.get("workload", {})
+            dimensions = workload.get("dimensions") or workload.get("input_header")
+            scale = inline(dimensions) if dimensions else str(row['size']) + (" bytes" if row.get("size_unit") == "input_bytes" else "要素")
+            lines.append(f"| {inline(library['path'])} | {inline(row['scope'] + ("・縮小確認のみ" if row.get("size_profile") == "quick_smoke" or row.get("scale_scope") == "smoke_only" else ""))} | {inline(row['pattern'])} | {scale} | {row['median_ns']['current']/1e6:.3f} | {cpu_text} | {STATUS_LABELS[row['status']]} |")
+        if any(row.get("comparison") == "NO_BASELINE" for _, row in measured):
+            lines += ["", "比較元なしの記録は絶対時間だけを表示します。"]
     if report["errors"]:
         lines += ["", "未完了・不正なレポートがあります。JSONのerrorsと元の実行ログを確認してください。"]
     return "\n".join(lines) + "\n"

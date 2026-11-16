@@ -14,10 +14,10 @@
 | 正常系 | 入力例・独立参照・checked契約テストの照合結果。 |
 | 失敗系 | 期待した型の例外と、失敗後にも状態が保たれることを検査する。 |
 | Library Checker公式ケース | 外部で生成した全ケースを公式checkerで照合。プログラム全体の時間も記録する。 |
-| 本体性能 | 同じ入力・コンパイラ・ハーネスで比較した中央値・生データ・実行環境。 |
+| 性能測定 | 全103本のVerify全体時間と、代表3本の本体時間。入力規模・中央値・生データ・実行環境を区別して表示。 |
 | ASan/UBSan・Coverage | checked実行の診断と、通常版本体の行・分岐到達状況。 |
 
-結果がない対象は「未実施」、記録時からソースが変わった対象は「ソース変更後は未検証」です。代表テストの成功を全APIの保証にはしません。失敗系は現在Fenwick Tree・Segment Tree・Lazy Segment Tree・Union Find・Low Link・Rolling Hash、本体性能はFenwick Tree・Union Find・Rolling Hashから開始しています。
+結果がない対象は「未実施」、記録時からソースが変わった対象は「ソース変更後は未検証」です。代表テストの成功を全APIの保証にはしません。失敗系は現在Fenwick Tree・Segment Tree・Lazy Segment Tree・Union Find・Low Link・Rolling Hashが対象です。本体だけの補足性能はFenwick Tree・Union Find・Rolling Hashを測ります。
 
 ## ローカルで確認
 
@@ -27,7 +27,7 @@ Python 3.11以上、Ruby 3.3、Bundler 2.6.9を用意します。
 python3 -m venv /tmp/sirkit-pages-venv
 /tmp/sirkit-pages-venv/bin/pip install -r .competitive-verifier/requirements.txt
 python3 Scripts/ci_contracts.py --compiler g++ --output /tmp/contracts
-python3 Scripts/ci_benchmark.py --base origin/main --output /tmp/performance
+python3 Scripts/ci_performance_all.py --cache /tmp/performance-cache --output /tmp/performance
 /tmp/sirkit-pages-venv/bin/python Scripts/build_library_pages.py \
   --report /tmp/contracts --report /tmp/performance \
   --output /tmp/library-pages --baseurl '' --render
@@ -51,7 +51,7 @@ python3 Scripts/ci_library_checker.py --id dynamic_union_find \
 
 ## PRと公開
 
-`main`向けPRで正常系・失敗系・Sanitizer・Coverage・代表性能と、変更対象の公式ケースを実行し、ページ一式を`library-pages-preview`成果物へ保存します。公式ケースは8分割です。CI環境の時間はP-Coreの手元測定やオンライン時間と区別し、速度差だけでは不合格にしません。
+`main`向けPRで正常系・失敗系・Sanitizer・Coverage・全103本の性能と代表本体性能、全LC対象の公式ケースを実行し、ページ一式を`library-pages-preview`成果物へ保存します。公式ケースと全ライブラリ性能は各8分割です。別のMax・構造ケースはActionsの`stress-cases`成果物へ保存します。入力規模・実行環境とともに絶対時間を表示し、全体時間と本体時間、手元・オンラインの時間を区別します。測定漏れは未実施とします。
 
 mainへ取り込んだPRのcloseイベントで、取り込まれたcommitから公開版を生成します。直前の同じPR headのCI成果物を使い、再度SHAを照合します。成果物が失われた場合は「未実施」とし、過去の成功を補いません。未取り込みPR・通常push・手動起動では公開しません。
 

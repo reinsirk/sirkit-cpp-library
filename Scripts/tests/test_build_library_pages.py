@@ -140,6 +140,20 @@ class LibraryPagesTest(unittest.TestCase):
             with self.assertRaises(ValueError):
                 pages.prepare_output(root, root / "Graph")
 
+    def test_performance_shows_absolute_times_and_workload_before_raw_data(self):
+        text = pages.quality_table({"categories": {"performance": {"status": "PASS", "evidence": [{
+            "status": "PASS", "scope": "Verify全体", "pattern": "chain", "size": 100,
+            "size_unit": "input_bytes", "median_ns": {"current": 1234000},
+            "cpu_median_ns": {"current": 1000000}, "workload": {"dimensions": {"n": 10}},
+            "compiler": {"version": "GCC test"}, "flags": ["-O2"], "cpu_model": "unit CPU",
+            "repetitions": 3, "warmups": 1}]}}})
+        self.assertIn("wall ms", text)
+        self.assertIn("1.234", text)
+        self.assertIn("1.000", text)
+        self.assertIn("GCC test", text)
+        self.assertLess(text.index("wall ms"), text.index("測定の生データ"))
+        self.assertNotIn("現在/基準", text)
+
     def test_missing_quality_is_not_pass(self):
         text = pages.quality_table(None)
         self.assertEqual(text.count("未実施"), len(pages.CATEGORIES))

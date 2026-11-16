@@ -40,7 +40,7 @@ VERIFIER_LICENSES = (
 )
 SOURCE_DIRS = ("Graph", "DataStructure", "Math", "String", "Geometry", "Algorithm", "Internal")
 CATEGORIES = {"normal": "正常系", "failure": "失敗系", "library_checker": "Library Checker公式ケース",
-              "performance": "本体の性能測定", "sanitizers": "ASan/UBSan", "coverage": "カバレッジ"}
+              "performance": "性能測定", "sanitizers": "ASan/UBSan", "coverage": "カバレッジ"}
 LABELS = {"PASS": "合格", "FAIL": "失敗", "STALE": "ソース変更後は未検証", "UNAVAILABLE": "未実施",
           "PARTIAL": "一部のみ", "current_ac": "現行AC", "source_changed": "現行未照合・要再提出",
           "unsubmitted": "未提出", "non_ac": "非AC", "local_only": "ローカル補足"}
@@ -306,6 +306,35 @@ def online_table(entries: list[dict]) -> str:
     return "\n".join(lines) + "\n"
 
 
+def performance_table(evidence: list[dict]) -> str:
+    rows = [item for item in evidence if "median_ns" in item]
+    if not rows:
+        return ""
+    def safe(value):
+        return ci_quality_report.inline(value).replace("{", "&#123;").replace("}", "&#125;")
+    lines = ["起動・入出力込みのVerify全体と、本体だけの測定を区別します。時間は中央値です。", "",
+             "| 測定範囲 | ケース | 規模 | wall ms | CPU ms | 状態 |",
+             "| --- | --- | --- | ---: | ---: | --- |"]
+    for item in rows:
+        workload = item.get("workload", {})
+        scale = workload.get("dimensions") or workload.get("input_header") or str(item["size"]) + (" bytes" if item.get("size_unit") == "input_bytes" else "要素")
+        scope = item["scope"] + ("・縮小確認のみ" if item.get("size_profile") == "quick_smoke" or item.get("scale_scope") == "smoke_only" else "")
+        cpu = item.get("cpu_median_ns", {}).get("current")
+        cpu_text = f"{cpu/1e6:.3f}" if cpu is not None else "対象外"
+        lines.append(f"| {safe(scope)} | {safe(item['pattern'])} | {safe(scale)} | {item['median_ns']['current']/1e6:.3f} | {cpu_text} | {LABELS[item['status']]} |")
+    environments = set()
+    for item in rows:
+        compiler = item.get("compiler", {})
+        environment = (compiler.get("version", "記録なし") if isinstance(compiler, dict) else compiler,
+                       " ".join(item.get("flags", [])), item.get("cpu_model") or "記録なし",
+                       item.get("repetitions"), item.get("warmups"))
+        if environment not in environments:
+            environments.add(environment)
+            lines += ["", "測定環境: " + safe(environment[0]) + " / " + safe(environment[1]) + " / " + safe(environment[2])
+                      + f"。測定{environment[3]}回、ウォームアップ{environment[4]}回。"]
+    return "\n".join(lines) + "\n"
+
+
 def quality_table(library: dict | None) -> str:
     categories = (library or {}).get("categories", {})
     lines = ["### ローカル・CI検査", "", "| 検査 | 状態 |", "| --- | --- |"]
@@ -318,12 +347,16 @@ def quality_table(library: dict | None) -> str:
         evidence = categories.get(key, {}).get("evidence", [])
         if not evidence:
             continue
-        lines += ["", "<details><summary>" + CATEGORIES[key] + "の詳細</summary>", ""]
+        lines += ["", '<details markdown="1"><summary>' + CATEGORIES[key] + "の詳細</summary>", ""]
+        if key == "performance":
+            lines += [performance_table(evidence), "<details><summary>測定の生データ</summary>", ""]
         for item in evidence:
             # 表示内容もJSON由来。生のHTML・コマンドを解釈しない。
             encoded = html.escape(json.dumps(item, ensure_ascii=False, indent=2))
             encoded = encoded.replace("{", "&#123;").replace("}", "&#125;")
             lines += ["<pre><code class=\"language-json\">" + encoded + "</code></pre>", ""]
+        if key == "performance":
+            lines += ["</details>"]
         lines += ["</details>"]
     return "\n".join(lines) + "\n"
 
