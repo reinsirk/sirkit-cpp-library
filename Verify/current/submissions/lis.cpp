@@ -1,6 +1,6 @@
 #define SKIP_RUNTIME_CHECKS
 // Verify: https://judge.yosupo.jp/problem/longest_increasing_subsequence
-// Submission: https://judge.yosupo.jp/submission/414289
+// Submission: https://judge.yosupo.jp/submission/417243
 
 // Library: Algorithm/LIS.cpp
 // SPDX-License-Identifier: CC0-1.0

@@ -3,7 +3,7 @@
 #pragma GCC optimize("O3", "unroll-loops")
 #endif
 // Verify: https://judge.yosupo.jp/problem/scc
-// Submission: https://judge.yosupo.jp/submission/416748
+// Submission: https://judge.yosupo.jp/submission/417256
 
 // Library: Graph/SCC.cpp
 // SPDX-License-Identifier: CC0-1.0

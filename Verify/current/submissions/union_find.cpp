@@ -3,7 +3,7 @@
 #pragma GCC optimize("O3")
 #endif
 // Verify: https://judge.yosupo.jp/problem/unionfind
-// Submission: https://judge.yosupo.jp/submission/414076
+// Submission: https://judge.yosupo.jp/submission/417264
 
 // Library: DataStructure/union_find.cpp
 // SPDX-License-Identifier: CC0-1.0

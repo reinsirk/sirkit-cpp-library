@@ -1,0 +1,97 @@
+{
+  "entries": [
+    {
+      "id": "rollback_weighted_union_find_reset_constraints",
+      "libraries": [
+        "DataStructure/rollback-union-findw.cpp"
+      ],
+      "driver": "Verify/current/drivers/rollback_weighted_union_find_reset_constraints_main.cpp",
+      "title": "無向辺 2-SAT（非零重みと全制約のrollback）",
+      "problem_url": "https://yukicoder.me/problems/no/2293",
+      "selection_reason": "Library Checkerに非零の重みと巻き戻しを同時に扱う対応問題が見つからず、AOJのWeighted Union Find Treesにも巻き戻しがないため、次の優先先yukicoderの自然な問題を採用。同値/反対をmod2の差として管理し、全条件の消去にrollback(0)を使う。",
+      "reference_url": null,
+      "evidence_url": "https://yukicoder.me/problems/no/2293",
+      "coverage": [
+        "unite_checked（重み0/1・新規/冗長/矛盾・自己制約）",
+        "component_count",
+        "rollback(0)（非零重み・冗長/矛盾履歴・複数件の全復元）"
+      ],
+      "limitations": "未提出。任意の保存位置や版の分岐、差分値の照会はAtCoder版で補足。符号付き整数の範囲端、undo・引数なしrollback、reset/groups、所有権と例外は独立ローカル試験で補足する。",
+      "samples": [
+        {
+          "input": "3 6\n1 1 1\n1 1 2\n1 1 3\n2 1 3\n3\n2 1 2\n",
+          "output": "8\n4\n2\n0\n8\n4\n",
+          "source": "https://yukicoder.me/problems/no/2293",
+          "origin": "yukicoder公式サンプル1。"
+        },
+        {
+          "input": "200000 8\n1 89665 165712\n2 196000 34983\n2 68937 26550\n1 134868 1102\n3\n2 47394 59946\n3\n1 181969 181298\n",
+          "output": "895248717\n946746535\n972495444\n486247722\n792253081\n895248717\n792253081\n895248717\n",
+          "source": "https://yukicoder.me/problems/no/2293",
+          "origin": "yukicoder公式サンプル2。"
+        },
+        {
+          "input": "10 7\n1 6 3\n1 3 2\n2 3 8\n1 9 3\n2 3 10\n2 8 1\n2 7 8\n",
+          "output": "512\n256\n128\n64\n32\n16\n8\n",
+          "source": "https://yukicoder.me/problems/no/2293",
+          "origin": "yukicoder公式サンプル3。"
+        }
+      ],
+      "acl_required": true,
+      "submission_urls": []
+    },
+    {
+      "id": "rollback_weighted_union_find_versioned_potential",
+      "libraries": [
+        "DataStructure/rollback-union-findw.cpp"
+      ],
+      "driver": "Verify/current/drivers/rollback_weighted_union_find_versioned_potential_main.cpp",
+      "title": "秘密の数列と分岐するノート（非零重みとrollback）",
+      "problem_url": "https://atcoder.jp/contests/awc0100/tasks/awc0100_m",
+      "selection_reason": "非零重みと全復元はyukicoderで主に検証し、任意の版からの分岐と差分値の照会を自然に扱う既存AtCoder問題を補足に使用。区間和を累積和の差modKへ変換する。",
+      "reference_url": null,
+      "evidence_url": "https://atcoder.jp/contests/awc0100/tasks/awc0100_m",
+      "coverage": [
+        "unite_checked（非零の剰余重み・整合・冗長・矛盾）",
+        "try_diff（既知の非零差・未連結）",
+        "get_state",
+        "rollback(state)（非零重み・冗長/矛盾履歴・兄弟版・質問からの分岐）"
+      ],
+      "limitations": "未提出。符号付き整数の範囲端、undo・引数なしrollback、reset/groups、所有権と例外は独立ローカル試験で補足する。",
+      "samples": [
+        {
+          "input": "4 5 8\n1 0 1 2\n0 0 1 2 3\n1 2 1 2\n0 2 3 4 4\n1 4 1 4\n0 2 1 4 1\n1 6 3 4\n1 4 3 4\n",
+          "output": "UNKNOWN\nYES\n3\nYES\n2\nYES\n3\n4\n",
+          "source": "https://atcoder.jp/contests/awc0100/tasks/awc0100_m",
+          "origin": "AtCoder公式入力例・出力例1。"
+        },
+        {
+          "input": "3 7 7\n0 0 1 3 2\n0 1 1 1 4\n0 2 2 3 5\n0 2 2 3 6\n1 4 2 3\n0 4 1 3 3\n0 0 1 3 3\n",
+          "output": "YES\nYES\nYES\nNO\n5\nNO\nYES\n",
+          "source": "https://atcoder.jp/contests/awc0100/tasks/awc0100_m",
+          "origin": "AtCoder公式入力例・出力例2。"
+        },
+        {
+          "input": "8 10 18\n0 0 1 4 6\n0 1 5 8 3\n1 2 1 8\n0 2 3 6 7\n1 4 1 2\n0 4 1 2 9\n1 6 3 6\n0 6 1 8 0\n1 8 1 8\n0 4 1 2 1\n1 10 5 6\n0 10 5 6 3\n1 12 7 8\n0 0 2 7 4\n1 14 1 8\n0 14 1 1 2\n0 16 8 8 5\n1 17 1 8\n",
+          "output": "YES\nYES\n9\nYES\nUNKNOWN\nYES\n7\nNO\n9\nYES\n2\nNO\n1\nYES\nUNKNOWN\nYES\nYES\n1\n",
+          "source": "https://atcoder.jp/contests/awc0100/tasks/awc0100_m",
+          "origin": "AtCoder公式入力例・出力例3。"
+        },
+        {
+          "input": "20 1000000000 30\n0 0 1 10 123456789\n0 1 11 20 987654321\n1 2 1 20\n0 2 5 15 555555555\n1 4 1 4\n0 4 1 4 222222222\n1 6 5 10\n1 6 11 15\n0 6 16 20 333333333\n0 6 16 20 333333334\n1 10 16 20\n0 4 1 4 111111111\n1 12 5 10\n0 12 11 15 123456789\n0 0 3 18 700000000\n1 15 1 20\n0 15 1 2 100000000\n0 17 19 20 200000000\n1 18 1 20\n0 18 1 20 0\n0 18 1 20 1\n1 21 3 18\n0 6 7 14 444444444\n1 23 1 15\n0 23 1 15 777777777\n0 23 1 15 777777778\n1 26 1 15\n0 12 16 20 333333333\n0 12 16 20 444444444\n1 29 1 20\n",
+          "output": "YES\nYES\n111111110\nYES\nUNKNOWN\nYES\n901234567\n654320988\nYES\nNO\n333333333\nYES\n12345678\nNO\nYES\nUNKNOWN\nYES\nYES\n0\nYES\nNO\n700000000\nYES\n777777777\nYES\nNO\n777777777\nNO\nYES\n111111110\n",
+          "source": "https://atcoder.jp/contests/awc0100/tasks/awc0100_m",
+          "origin": "AtCoder公式入力例・出力例4。"
+        },
+        {
+          "input": "1 2 8\n1 0 1 1\n0 0 1 1 0\n1 2 1 1\n0 2 1 1 1\n1 4 1 1\n0 0 1 1 1\n1 6 1 1\n0 6 1 1 1\n",
+          "output": "UNKNOWN\nYES\n0\nNO\n0\nYES\n1\nYES\n",
+          "source": "https://atcoder.jp/contests/awc0100/tasks/awc0100_m",
+          "origin": "AtCoder公式入力例・出力例5。"
+        }
+      ],
+      "acl_required": true,
+      "submission_urls": []
+    }
+  ]
+}

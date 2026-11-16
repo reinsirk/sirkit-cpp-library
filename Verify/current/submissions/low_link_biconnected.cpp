@@ -3,7 +3,7 @@
 #pragma GCC optimize("O3")
 #endif
 // Verify: https://judge.yosupo.jp/problem/biconnected_components
-// Submission: https://judge.yosupo.jp/submission/416745
+// Submission: https://judge.yosupo.jp/submission/417244
 
 // Library: Graph/Low_Link.cpp
 // SPDX-License-Identifier: CC0-1.0

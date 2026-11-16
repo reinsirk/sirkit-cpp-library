@@ -1,6 +1,6 @@
 #define SKIP_RUNTIME_CHECKS
 // Verify: https://judge.yosupo.jp/problem/bitwise_and_convolution
-// Submission: https://judge.yosupo.jp/submission/412851
+// Submission: https://judge.yosupo.jp/submission/417276
 
 // Library: Math/Zeta/Bitwise_Convolution.cpp
 // SPDX-License-Identifier: CC0-1.0

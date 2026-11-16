@@ -1,6 +1,6 @@
 #define SKIP_RUNTIME_CHECKS
 // Verify: https://judge.yosupo.jp/problem/primality_test
-// Submission: https://judge.yosupo.jp/submission/414012
+// Submission: https://judge.yosupo.jp/submission/417251
 
 // Library: Math/prime_judge(Miller-Rabin).cpp
 // SPDX-License-Identifier: CC0-1.0

@@ -1,6 +1,6 @@
 #define SKIP_RUNTIME_CHECKS
 // Verify: https://judge.yosupo.jp/problem/line_add_get_min
-// Submission: https://judge.yosupo.jp/submission/414050
+// Submission: https://judge.yosupo.jp/submission/417242
 
 // Library: DataStructure/line-container.cpp
 // SPDX-License-Identifier: CC0-1.0

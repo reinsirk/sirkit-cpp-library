@@ -3,7 +3,7 @@
 #pragma GCC optimize("O3")
 #endif
 // Verify: https://judge.yosupo.jp/problem/jump_on_tree
-// Submission: https://judge.yosupo.jp/submission/416738
+// Submission: https://judge.yosupo.jp/submission/417231
 
 // Library: Graph/Heavy_Light_Decomposition.cpp
 // SPDX-License-Identifier: CC0-1.0

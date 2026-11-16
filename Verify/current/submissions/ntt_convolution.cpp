@@ -1,6 +1,6 @@
 #define SKIP_RUNTIME_CHECKS
 // Verify: https://judge.yosupo.jp/problem/convolution_mod
-// Submission: https://judge.yosupo.jp/submission/416562
+// Submission: https://judge.yosupo.jp/submission/417249
 
 // Library: Math/NTT.cpp
 // SPDX-License-Identifier: CC0-1.0

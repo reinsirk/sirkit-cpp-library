@@ -1,6 +1,6 @@
 #define SKIP_RUNTIME_CHECKS
 // Verify: https://judge.yosupo.jp/problem/gcd_convolution
-// Submission: https://judge.yosupo.jp/submission/412861
+// Submission: https://judge.yosupo.jp/submission/417272
 
 // Library: Math/Zeta/Gcd_Lcm_Convolution.cpp
 // SPDX-License-Identifier: CC0-1.0

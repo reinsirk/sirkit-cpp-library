@@ -3,7 +3,7 @@
 #pragma GCC optimize("O3")
 #endif
 // Verify: https://judge.yosupo.jp/problem/set_xor_min
-// Submission: https://judge.yosupo.jp/submission/411981
+// Submission: https://judge.yosupo.jp/submission/417214
 
 // Library: DataStructure/Compressed_Binary_Trie.cpp
 // SPDX-License-Identifier: CC0-1.0

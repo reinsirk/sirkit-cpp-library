@@ -1,6 +1,6 @@
 #define SKIP_RUNTIME_CHECKS
 // Verify: https://judge.yosupo.jp/problem/vertex_set_path_composite
-// Submission: https://judge.yosupo.jp/submission/416739
+// Submission: https://judge.yosupo.jp/submission/417232
 
 // Library: Graph/Heavy_Light_Decomposition.cpp
 // SPDX-License-Identifier: CC0-1.0

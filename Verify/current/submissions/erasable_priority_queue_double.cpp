@@ -1,6 +1,6 @@
 #define SKIP_RUNTIME_CHECKS
 // Verify: https://judge.yosupo.jp/problem/double_ended_priority_queue
-// Submission: https://judge.yosupo.jp/submission/413713
+// Submission: https://judge.yosupo.jp/submission/417225
 
 // Library: DataStructure/erasable-priority-queue.cpp
 // SPDX-License-Identifier: CC0-1.0

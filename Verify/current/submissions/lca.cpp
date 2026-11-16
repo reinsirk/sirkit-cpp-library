@@ -3,7 +3,7 @@
 #pragma GCC optimize("O3")
 #endif
 // Verify: https://judge.yosupo.jp/problem/lca
-// Submission: https://judge.yosupo.jp/submission/416743
+// Submission: https://judge.yosupo.jp/submission/417240
 
 // Library: Graph/LCA.cpp
 // SPDX-License-Identifier: CC0-1.0

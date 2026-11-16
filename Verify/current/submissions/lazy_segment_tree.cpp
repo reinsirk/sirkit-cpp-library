@@ -3,7 +3,7 @@
 #pragma GCC optimize("O3", "unroll-loops")
 #endif
 // Verify: https://judge.yosupo.jp/problem/range_affine_range_sum
-// Submission: https://judge.yosupo.jp/submission/414727
+// Submission: https://judge.yosupo.jp/submission/417238
 
 // Library: DataStructure/Lazy_Segment_Tree.cpp
 // SPDX-License-Identifier: CC0-1.0

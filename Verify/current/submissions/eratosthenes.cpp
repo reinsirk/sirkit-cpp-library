@@ -1,6 +1,6 @@
 #define SKIP_RUNTIME_CHECKS
 // Verify: https://judge.yosupo.jp/problem/enumerate_primes
-// Submission: https://judge.yosupo.jp/submission/413748
+// Submission: https://judge.yosupo.jp/submission/417226
 
 // Library: Math/Eratosthenes.cpp
 // SPDX-License-Identifier: CC0-1.0

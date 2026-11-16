@@ -1,6 +1,6 @@
 #define SKIP_RUNTIME_CHECKS
 // Verify: https://judge.yosupo.jp/problem/enumerate_palindromes
-// Submission: https://judge.yosupo.jp/submission/416371
+// Submission: https://judge.yosupo.jp/submission/417247
 
 // Library: String/Manacher.cpp
 // SPDX-License-Identifier: CC0-1.0

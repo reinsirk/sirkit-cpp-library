@@ -1,6 +1,6 @@
 #define SKIP_RUNTIME_CHECKS
 // Verify: https://judge.yosupo.jp/problem/vertex_add_path_sum
-// Submission: https://judge.yosupo.jp/submission/416740
+// Submission: https://judge.yosupo.jp/submission/417233
 
 // Library: Graph/Heavy_Light_Decomposition.cpp
 // SPDX-License-Identifier: CC0-1.0

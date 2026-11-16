@@ -1,6 +1,6 @@
 #define SKIP_RUNTIME_CHECKS
 // Verify: https://judge.yosupo.jp/problem/static_convex_hull
-// Submission: https://judge.yosupo.jp/submission/412898
+// Submission: https://judge.yosupo.jp/submission/417229
 
 // Library: Geometry/Polygon.cpp
 // SPDX-License-Identifier: CC0-1.0
