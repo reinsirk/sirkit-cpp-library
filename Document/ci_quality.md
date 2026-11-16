@@ -5,10 +5,23 @@
 | 検査 | 対象・結果 |
 | --- | --- |
 | C++23 Verify | 全対象をGCC/Clang、通常/標準代替、入力検査有効/無効でビルド・照合する。 |
+| 正常系・失敗系 | checked契約テストで正常結果・期待した例外型・失敗後の状態を照合する。 |
+| Library Checker公式ケース | 変更に関係する対象を外部キャッシュで生成し、全ケースを公式checkerで照合する。 |
 | ASan/UBSan | 通常版のchecked実行で、範囲外アクセス・解放後の参照・未定義動作を検出する。 |
 | カバレッジ | checked実行で通常版本体の行・直接分岐の到達状況をHTML/JSONへ出す。 |
 | 作法 | 通常版をCore Guidelines・Google Styleの2プロファイルで検査する。`Fast/`は対象外。 |
 | 性能 | 固定入力の代表APIを、比較元と同じプログラム・コンパイラ設定で交互測定する。 |
+
+各ライブラリの結果は[ライブラリページ](https://reinsirk.github.io/sirkit-cpp-library/)にも表示します。ソースSHAが合わない記録は未検証、対象のない項目は未実施です。[生成・公開・外部問題資産の扱い](library_pages.md)を参照してください。
+
+```sh
+python3 Scripts/ci_contracts.py --compiler g++ --output /tmp/contracts
+python3 Scripts/ci_library_checker.py --base origin/main \
+  --cache /tmp/library-checker-cache --output /tmp/official-cases
+python3 Scripts/ci_quality_report.py --input /tmp/contracts --input /tmp/official-cases --output /tmp/quality
+```
+
+失敗系の例外は「期待した失敗を正しく処理した」ことを表します。異常終了・例外型の不一致・空の結果を合格にはしません。公式ケースの時間は起動・入出力を含むプログラム全体で、本体だけの代表性能とは別です。
 
 ## ASan/UBSanとカバレッジ
 
