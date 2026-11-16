@@ -1,0 +1,68 @@
+{
+  "format": 1,
+  "date": "2026-11-15",
+  "status": "PASS",
+  "scope": "CI registration of custom/default inf shortest-path independent regression tests",
+  "library_changes": false,
+  "test_files": [
+    "Verify/current/tests/custom_inf_graph_test.cpp",
+    "Scripts/tests/test_custom_inf_graph_runtime.py"
+  ],
+  "source_sha256": {
+    "Graph/Dijkstra.cpp": "65644fbf124206fc37a1530f9b778177c4c7c70436b9dfabe5778b40d125fd41",
+    "Graph/Bellman-Ford.cpp": "1d9fe84114476b2e996ff9aee24d26233f1305e2d378e343a0c5f6fac766ac00",
+    "Graph/Bellman-Ford_SFPA.cpp": "46b26af6ff145399422817f338ede49d4bdd53a20c19001ca24ff0b0a25cce6c",
+    "Graph/Floyd-Warshall.cpp": "cdb673fb73599bd852a1ee5e7a830aff96463613771471fa5aaeb3db3f759cfc",
+    "Verify/current/tests/custom_inf_graph_test.cpp": "468bc2718b4779375b28f6445d76468712b31a47e720e53ed4beb53ca650835e",
+    "Scripts/tests/test_custom_inf_graph_runtime.py": "e6dc8064e14ff8dc2632393756aab804b94b5d91ff1ea628f83f25bd0a8c2202"
+  },
+  "reference": {
+    "method": "Arbitrary-precision synchronous Bellman-Ford. A further improving edge marks negative-cycle seeds; graph reachability propagates affected vertices. Floyd-Warshall rows and Dijkstra results are compared to it; returned vertex paths are checked for endpoints, actual edges and exact total weight.",
+    "dependency": "boost::multiprecision::cpp_int (test only)",
+    "prior_oracle_sha256": "a3e43f86d183e6fcf391afdc70e86ba9bdc1d784720799c11374fd2c72a21a62",
+    "port": "Removed old-source conditional branches and changed includes to repo-relative paths; retained the independent algorithm, seed, cases and result digest. Added explicit standard headers.",
+    "custom_digest": "12406194268881761387",
+    "default_digest": "7793224970262508757"
+  },
+  "coverage": [
+    "1500 seeded small random graphs: disconnected vertices, self-loops, multiple edges, nonnegative and signed weights, negative cycles.",
+    "Custom inf 1, 2, 7, 100, 1e12, around 2^60 and INT64_MAX; nonpositive inf throws even in skip builds.",
+    "Dijkstra adjacency and bulk-edge APIs, each with and without path output; Bellman-Ford and SPFA.",
+    "Floyd-Warshall with/without path reconstruction, including very large signed weights requiring wide arithmetic and finite-answer collisions with +/-inf.",
+    "64/65/256/257/4096/4097-vertex chains and cycles, including paths temporarily outside the output range.",
+    "Default API calls run on the same fixed graph sequence and preserve the prior default digest.",
+    "FW graph cases with input edges outside its documented (-inf,inf) domain are deliberately skipped; their output is not interpreted."
+  ],
+  "validation": {
+    "manual_compiler_configuration_count": 6,
+    "manual_test_executions": 12,
+    "manual_compilers": [
+      "/usr/bin/g++ 15.2.0",
+      "/usr/bin/clang++-21 21.1.8 --gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15"
+    ],
+    "configurations": "GCC/Clang x checked/skip; GCC additionally standard arithmetic and SIMD disabled x checked/skip. -std=c++23 -O2 -Wall -Wextra.",
+    "checked_custom_checks": 194267,
+    "skip_custom_checks": 193477,
+    "default_checks": 231736,
+    "runtime_registration": "unittest discover: 6 tests, each runs custom and default modes. All passed.",
+    "portable_flags": [
+      "-U__SIZEOF_INT128__",
+      "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+      "-DSIRKIT_DISABLE_SIMD"
+    ],
+    "diagnostics": "No compiler warnings in the six explicit compiler configurations."
+  },
+  "sanitizer": "No new sanitizer or performance claim in this registration task; parent graph implementation task separately archived those results.",
+  "limitations": [
+    "This is local independent verification; it does not establish online AC for changed sources.",
+    "Future Dijkstra implementation edits must rerun the registered test; hashes here identify exactly the version manually validated."
+  ],
+  "artifacts": {
+    "archive": "Audit/data/custom-inf-graph-ci-20261115.zip",
+    "raw_validation": "validation.json",
+    "runner": "validate.py",
+    "unittest_log": "unittest.log",
+    "snapshot": "source-snapshot/",
+    "archive_sha256": "ca37eeb1a26f350f7208246a7be7704a29491fa6c17687f5efafd21e693ffc35"
+  }
+}

@@ -2,45 +2,73 @@
 
 [実装](../Graph/Floyd-Warshall.cpp)・[使用例](../Examples/floyd_warshall_example.cpp)
 
-距離行列を中継頂点ごとに更新して、全点対最短距離を求めます。時間はO(V³)です。
-未接続は`kInf`、負閉路を通って到達できる組の距離は`-kInf`とします。
-経路復元表を指定した場合は、更新した距離の次頂点も記録します。
+有向グラフの距離行列から、全点対最短距離と負閉路の影響を求めます。
+中継頂点を順に追加して距離を更新します。
 
-有限距離の計算範囲を調べ、必要な場合は広幅の整数演算を使います。
-有限な答えが許容範囲を超えた場合の例外と、負閉路による`-kInf`は区別します。
+## API
 
-## SIMDの更新
+V=頂点数、L=返す経路の頂点数です。
 
-AVX2対応環境では、64bit整数の4列を同時に更新します。
-未到達の列は更新対象から外し、負辺があるときの下限処理も各列に適用します。
-端数の列と広幅演算は通常の処理を使います。負閉路の伝播処理も共通です。
+### FloydWarshall
 
-GCCの64頂点以上のSIMD処理では、非負で有限距離の範囲が保証できる場合に未到達laneのmaskを省きます。
-GCCでAVX2がコンパイル対象に含まれる場合は、64頂点の切り替えを呼出側で行い、小行列のラッパー内の分岐を減らします。
-未到達値`kInf`に非負の距離を足しても候補は`kInf`以上になるため、距離も経路表も更新されません。和は`2*kInf`未満で64bit整数に収まります。
-負辺・広幅演算・標準実装は共通の範囲処理を使います。
+```text
+inline bool FloydWarshall(std::vector<std::vector<std::int64_t>> &distances, std::int64_t inf = (std::int64_t{1} << 60));
+inline bool FloydWarshall(std::vector<std::vector<std::int64_t>> &distances, std::vector<std::vector<int>> &next, std::int64_t inf = (std::int64_t{1} << 60));
+```
 
-小さい行列は通常の処理を選び、CPU判定は各列のループの外で行います。
-GCCでは8頂点以上、Clangでは距離のみ32頂点以上・経路復元あり16頂点以上が専用処理の対象です。
-ClangでAVX2がコンパイル対象に含まれる距離のみの版は、コンパイラの自動ベクトル化を使います。
+全距離で上書きし、負閉路があれば`true`。O(V³)時間 次頂点表`next`も作る。O(V³)時間・O(V²)追加領域
 
-GCCの64頂点以上・非負・有限範囲が保証できる距離のみの版では、全要素が有限の場合に最小値選択を短縮します。
-各整数へ`0x3ff0000000000000`を加え、正の正規化doubleと同じビット列へ移します。
-距離の加算は64bit整数で行い、最小値の選択にはAVXの浮動小数点命令を使います。この範囲では整数とビット列の大小順が一致するので、結果は厳密です。
+**制約:** 行列・番兵・有限距離の前提は下記の通りです。
 
-元の距離は`[0, kInf)`、候補は`[0, 2*kInf)`です。定数を加えたビット列は`[0x3ff0000000000000, 0x5ff0000000000000)`に収まり、すべて正の有限正規化数を表します。
-NaN・非正規化数・負の0が生じず、浮動小数点の丸めモード・FTZ・DAZに依存しません。
+**計算量:** O(V³)時間。追加領域は通常O(V)、広幅演算時や次頂点表を作る版はO(V²)。
 
-変換中に`kInf`が見つかった場合は、変換した先頭部分だけを元に戻して従来の整数処理へ進みます。
-変換・復元はO(V²)、追加のヒープ領域は不要です。この実装選択は入力の正否の検査とは別で、`SKIP_RUNTIME_CHECKS`を定義しても行います。
-負辺・経路復元・広幅演算・Clangでは従来の更新方法を使います。`SIRKIT_DISABLE_SIMD`ではこの処理も除外します。
+### FloydWarshallPath
 
-環境条件と無効化の指定は[SIMDによる内部処理](simd.md)を参照してください。
+```text
+inline std::vector<int> FloydWarshallPath(const std::vector<std::vector<int>> &next, int from, int to);
+```
 
-## Verify
+頂点列を返す。O(L+1)時間・領域。未到達・負影響なら空
 
-[ABC012 D](https://atcoder.jp/contests/abc012/tasks/abc012_4)で、非負・無向・連結グラフの全点対距離を検証します。
-負辺・負閉路の影響範囲、未到達、経路復元、INF境界、広幅演算は独立したBellman–Ford参照でも照合します。
-測定条件と検証結果は`Audit/`に置きます。
+**制約:** distanceは正方行列。nextには本関数で作った表を渡し、from/toは有効な頂点番号です。
 
-[非負SIMDの補足検査](../Verify/current/tests/floyd_nonnegative_simd_test.cpp)は整数Dijkstraを参照し、変換途中の復元、64頂点前後と端数列、整数のbit境界、浮動小数点の状態を確認します。
+**計算量:** O(L+1)時間・領域。
+
+
+`distance`は`std::vector<std::vector<std::int64_t>>`の正方行列です。
+正の`std::int64_t inf`を未接続値として指定し、省略時は`kInf = std::int64_t{1} << 60`を使います。
+入力行列も同じ`inf`で初期化してください。有限重みは`(-inf, inf)`で、対角は入力値と0の小さい方を使います。
+出力は未到達が`inf`、負閉路を経由して到達できる組だけが`-inf`になります。
+
+```cpp
+const std::int64_t inf = 1'000'000'000'000;
+std::vector distance(4, std::vector<std::int64_t>(4, inf));
+distance[0][1] = 4;
+distance[1][2] = -2;
+std::vector<std::vector<int>> next;
+const bool negative = FloydWarshall(distance, next, inf);
+auto path = FloydWarshallPath(next, 0, 2);
+// negative=false, distance[0][2]=2, path={0,1,2}
+// distance[0][3]=inf、distance[i][i]=0
+```
+
+## 前提・例外
+
+頂点数は`INT_MAX`以下とし、`next`はこの関数で作った表を渡します。
+有限な最短距離が`(-inf, inf)`を外れる場合は`overflow_error`です。
+負閉路の影響による`-inf`とは区別します。途中の和だけが範囲外でも、答えが範囲内なら正常に返ります。
+`inf<=0`は`invalid_argument`、容量超過は`length_error`です。
+
+既定では行列の形状・入力値・経路復元の頂点を検査します。
+不正な形状は`invalid_argument`、値や頂点は`out_of_range`です。
+`SKIP_RUNTIME_CHECKS`で入力検査を省く場合も、容量・算術範囲・`inf`の正値の保護は維持します。
+例外時の距離行列の内容は未規定です。
+
+## 計算量
+
+時間O(V³)、通常版の追加領域O(V)、大きな重みで広幅演算が必要な場合はO(V²)です。
+経路版はさらにO(V²)の表を作り、経路復元はO(L+1)時間・領域です。
+既定の番兵では対応CPU上でSIMDを使う場合があります。無効化は[SIMDの指定](simd.md)を参照してください。
+
+Verify先は[ABC012 D](https://atcoder.jp/contests/abc012/tasks/abc012_4)です。
+負辺・負閉路・未到達・経路復元・大きな重みとカスタム番兵は独立参照でも照合します。
