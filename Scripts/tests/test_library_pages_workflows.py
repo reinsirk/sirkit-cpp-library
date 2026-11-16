@@ -3,6 +3,7 @@ from copy import deepcopy
 import json
 import os
 from pathlib import Path
+import shlex
 import subprocess
 import sys
 import tempfile
@@ -86,13 +87,13 @@ class StructureTests(unittest.TestCase):
     def test_preview_waits_for_evidence_even_when_individual_checks_fail(self):
         value = workflow("verify.yml")
         docs = value["jobs"]["documentation"]
-        self.assertEqual(set(docs["needs"]), {"maintenance", "examples", "instrumented", "performance", "contracts", "library_checker"})
+        self.assertEqual(set(docs["needs"]), {"maintenance", "examples", "instrumented", "performance", "all_performance", "contracts", "library_checker", "stress"})
         self.assertIn("!cancelled()", docs["if"])
         self.assertIn("needs.maintenance.result == 'success'", docs["if"])
         self.assertNotIn("needs.examples.result == 'success'", docs["if"])
         downloads = [step for step in docs["steps"] if step.get("uses", "").startswith("actions/download-artifact@")]
         self.assertEqual({step["with"]["pattern"] for step in downloads}, {
-            "local-verify-*", "instrumented-*", "representative-performance", "contracts-*", "library-checker-*"})
+            "local-verify-*", "instrumented-*", "representative-performance", "all-library-performance-*", "contracts-*", "library-checker-*"})
         for step in downloads:
             self.assertNotIn("run-id", step["with"])
             self.assertFalse(step["with"]["merge-multiple"])
@@ -107,10 +108,11 @@ class StructureTests(unittest.TestCase):
         jobs = workflow("verify.yml")["jobs"]
         self.assertEqual(jobs["contracts"]["strategy"]["matrix"], {"compiler": ["g++", "clang++"], "arithmetic": ["native", "portable"]})
         self.assertEqual(jobs["library_checker"]["strategy"]["matrix"]["shard"], list(range(8)))
-        command = next(step["run"] for step in jobs["library_checker"]["steps"] if step.get("name") == "Run affected official full cases")
+        command = next(step["run"] for step in jobs["library_checker"]["steps"] if step.get("name") == "Run all official full cases")
         self.assertIn('--base "$VERIFY_PR_BASE"', command)
         self.assertIn("--shard-count 8", command)
-        self.assertNotIn("--all", command)
+        self.assertIn("--all", command)
+        self.assertIn("--discard-test-data", command)
         self.assertIn('--cache "$RUNNER_TEMP/library-checker-cache"', command)
         upload = next(step for step in jobs["library_checker"]["steps"] if step.get("name") == "Upload metadata only")
         self.assertEqual(upload["with"]["path"], "${{ runner.temp }}/library-checker-report/result.json")
@@ -118,10 +120,81 @@ class StructureTests(unittest.TestCase):
 
     def test_final_gate_includes_contracts_official_cases_and_documentation(self):
         gate = workflow("verify.yml")["jobs"]["result"]
-        self.assertEqual(set(gate["needs"]), {"maintenance", "examples", "instrumented", "guidelines", "performance", "contracts", "library_checker", "documentation"})
+        self.assertEqual(set(gate["needs"]), {"maintenance", "examples", "instrumented", "guidelines", "performance", "all_performance", "contracts", "library_checker", "stress", "documentation"})
         command = gate["steps"][0]["run"]
-        for variable in ("CONTRACT_RESULT", "LIBRARY_CHECKER_RESULT", "DOCUMENTATION_RESULT"):
+        for variable in ("CONTRACT_RESULT", "LIBRARY_CHECKER_RESULT", "STRESS_RESULT", "DOCUMENTATION_RESULT", "ALL_PERFORMANCE_RESULT"):
             self.assertIn('"$' + variable + '" == success', command)
+        self.assertEqual(gate["steps"][0]["env"]["ALL_PERFORMANCE_RESULT"], "${{ needs.all_performance.result }}")
+
+    def test_all_library_performance_shards_measure_current_full_scope_and_upload_only_metadata(self):
+        job = workflow("verify.yml")["jobs"]["all_performance"]
+        self.assertEqual(job["needs"], "maintenance")
+        self.assertEqual(job["timeout-minutes"], 90)
+        self.assertFalse(job["strategy"]["fail-fast"])
+        self.assertEqual(job["strategy"]["matrix"], {"shard": list(range(8))})
+        steps = job["steps"]
+        install = next(step["run"] for step in steps if step.get("name") == "Install compiler and headers")
+        self.assertIn("g++ libboost-dev", install)
+        command = next(step["run"] for step in steps if step.get("name") == "Measure all current Verify programs")
+        self.assertIn("Scripts/ci_performance_all.py", command)
+        self.assertIn('--shard-index "$VERIFY_SHARD" --shard-count 8', command)
+        self.assertIn('--cache "$RUNNER_TEMP/all-library-performance-cache"', command)
+        self.assertIn('--output "$RUNNER_TEMP/all-library-performance"', command)
+        for option in ("--base", "--quick", "--library", "--plan"):
+            self.assertNotIn(option, command)
+        upload = next(step for step in steps if step.get("uses", "").startswith("actions/upload-artifact@"))
+        self.assertEqual(upload["if"], "always()")
+        self.assertEqual(upload["with"]["name"], "all-library-performance-${{ matrix.shard }}")
+        self.assertEqual(upload["with"]["path"].splitlines(), [
+            "${{ runner.temp }}/all-library-performance/result.json",
+            "${{ runner.temp }}/all-library-performance/summary.md"])
+        provenance = next(step for step in steps if step.get("name") == "Attach report provenance")
+        self.assertEqual(provenance["if"], "always()")
+        self.assertEqual(provenance["env"]["REPORT_FILE"], "${{ runner.temp }}/all-library-performance/result.json")
+        self.assertIn("pull_request_head_sha", python_block(provenance["run"], "PYPROVENANCE"))
+        summary = next(step for step in steps if step.get("name") == "Summarize all-library performance")
+        self.assertEqual(summary["if"], "always()")
+        self.assertIn('>> "$GITHUB_STEP_SUMMARY"', summary["run"])
+
+    def test_kernel_performance_current_only_gate_rejects_incomplete_reports(self):
+        job = workflow("verify.yml")["jobs"]["performance"]
+        command = next(step["run"] for step in job["steps"] if step.get("name") == "Measure current library kernels")
+        self.assertNotIn("--base", command)
+        gate = next(line for line in command.splitlines() if line.startswith("python3 -c "))
+        code = shlex.split(gate)[2]
+        good = {"status": "CURRENT_ONLY", "current_measurements_passed": True,
+                "expected_cases": 2, "results": [{}, {}]}
+        fixtures = [(good, 0)]
+        for mutation in ({"status": "PARTIAL"}, {"status": "NO_BASELINE"},
+                         {"current_measurements_passed": False}, {"expected_cases": 3},
+                         {"expected_cases": True}, {"expected_cases": 0, "results": []},
+                         {"results": None}):
+            fixtures.append(({**good, **mutation}, 1))
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "result.json"
+            for report, expected in fixtures:
+                with self.subTest(report=report):
+                    path.write_text(json.dumps(report))
+                    actual = subprocess.run([sys.executable, "-c", code, str(path)], capture_output=True)
+                    self.assertEqual(actual.returncode, expected, actual.stderr)
+        upload = next(step for step in job["steps"] if step.get("uses", "").startswith("actions/upload-artifact@"))
+        self.assertEqual(upload["with"]["path"].splitlines(), [
+            "${{ runner.temp }}/performance/result.json", "${{ runner.temp }}/performance/summary.md"])
+
+    def test_max_cases_run_once_outside_matrices_and_quick_is_not_used_in_ci(self):
+        jobs = workflow("verify.yml")["jobs"]
+        stress = jobs["stress"]
+        self.assertNotIn("strategy", stress)
+        command = next(step["run"] for step in stress["steps"] if step.get("name") == "Run deterministic full-size cases")
+        self.assertIn("Scripts/ci_stress.py", command)
+        self.assertNotIn("--quick", command)
+        self.assertNotIn("--case ", command)
+        performance = next(step["run"] for step in jobs["performance"]["steps"] if step.get("name") == "Measure current library kernels")
+        self.assertNotIn("--quick", performance)
+        self.assertNotIn("--id ", performance)
+        upload = next(step for step in stress["steps"] if step.get("uses", "").startswith("actions/upload-artifact@"))
+        self.assertNotIn(".in", upload["with"]["path"])
+        self.assertNotIn(".out", upload["with"]["path"])
 
     def test_documentation_tools_are_pinned_and_reports_are_outside_checkout(self):
         self.assertEqual((ROOT / ".competitive-verifier/requirements.txt").read_text().strip(), "competitive-verifier==4.2.2")
@@ -223,6 +296,18 @@ class ArtifactSelectionTests(unittest.TestCase):
         self.assertIn("artifact_ids=\n", output)
         self.assertIn("::warning::", process.stdout)
         self.assertEqual(len(calls), 1)
+
+    def test_all_library_performance_artifacts_allow_only_eight_exact_shards(self):
+        valid = [artifact(300 + i, name="all-library-performance-" + str(i)) for i in range(8)]
+        invalid = [artifact(400 + i, name=name) for i, name in enumerate((
+            "all-library-performance-8", "all-library-performance--1",
+            "all-library-performance-00", "all-library-performance-7-cache",
+            "all-library-performance-0/../../outside"))]
+        process, metadata, output, calls = self.execute([run_record()], valid + invalid)
+        self.assertEqual(process.returncode, 0, process.stderr)
+        self.assertEqual({row["name"] for row in metadata["artifacts"]},
+                         {"all-library-performance-" + str(i) for i in range(8)})
+        self.assertEqual({row["id"] for row in metadata["artifacts"]}, set(range(300, 308)))
 
     def test_api_failure_is_recorded_without_inventing_results(self):
         process, metadata, output, calls = self.execute([run_record()], [artifact()], failure=True)

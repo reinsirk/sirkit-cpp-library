@@ -101,6 +101,96 @@ class QualityTests(unittest.TestCase):
                              "median_ns": {"base": 101, "current": 201}, "current_over_base": 201/101,
                              "checksum": "42", "independent_reference": "passed"}]}
 
+    def all_performance(self, quick=False):
+        runner = "Scripts/ci_performance_all.py"
+        self.write(runner, "// runner fixture\n")
+        names = ["registered_sample_00"] if quick else ["example_00", "max_random_00"]
+        row = {"library": self.library, "verify_id": "alpha", "libraries": [self.library],
+               "case_source": "official_library_checker", "status": "PASS", "current_measurements_passed": True,
+               "current_build": {"status": "PASS"}, "source_hashes": self.entry["source_hashes"],
+               "driver": self.driver, "driver_sha256": self.hash(self.driver), "support_source_hashes": {},
+               "submission_sha256": self.entry["submission_sha256"], "expected_case_names": names,
+               "official": {"expected_cases": ["example_00", "max_random_00"],
+                            "info_sha256": "1" * 64, "hash_json_sha256": "2" * 64, "checker_sha256": "3" * 64},
+               "official_case_input_bytes": {"example_00": 8, "max_random_00": 20},
+               "cases": [{"name": name, "status": "PASS", "correctness_passed": True,
+                          "input_sha256": "4" * 64, "expected_sha256": "5" * 64,
+                          "input_bytes": 8, "metadata": {"dimensions": {"n": 5}},
+                          "samples_ns": {"current": [100, 200, 300]}, "median_ns": {"current": 200},
+                          "cpu_samples_ns": {"current": [10, 20, 30]}, "cpu_median_ns": {"current": 20},
+                          "current_over_base": None, "comparison": "NOT_REQUESTED"} for name in names]}
+        return {"format": 1, "type": "sirkit.performance-all", "status": "PASS", "online_status": "not_evaluated",
+                "scope": "whole_verify_program_fixed_main_io", "size_profile": "quick_smoke" if quick else "full_representative",
+                "all_library_paths": [self.library, "Graph/B.cpp"], "selected_library_paths": [self.library],
+                "selection_kind": "all_libraries", "shard_count": 2, "shard_index": 0,
+                "repetitions": 3, "warmups": 1, "base_revision": None,
+                "source_freeze_passed": True, "source_hashes": {runner: self.hash(runner)},
+                "runner": {"source": runner, "sha256": self.hash(runner)},
+                "flags": ["-std=c++23", "-O2"], "compiler": {"command": ["g++"], "version": "test GCC"},
+                "cpu_model": "unit CPU", "platform": "test Linux", "results": [row]}
+
+    def test_absolute_kernel_without_comparison(self):
+        value = self.performance()
+        value.update(status="CURRENT_ONLY", comparison_requested=False, base_revision=None, compared_cases=0, uncompared_cases=1)
+        row = value["results"][0]
+        row.update(status="CURRENT_ONLY", current_over_base=None)
+        del row["samples_ns"]["base"]; del row["median_ns"]["base"]
+        with patch.dict(quality.ci_benchmark.LIBRARIES, {"alpha": self.library}):
+            report = self.aggregate(value)
+        self.assertEqual(report["input_report_status"], "PASS", report["errors"])
+        self.assertIn("wall ms", quality.markdown(report))
+
+    def test_all_performance_absolute_times_and_coverage(self):
+        report = self.aggregate(self.all_performance())
+        self.assertEqual(report["input_report_status"], "PASS", report["errors"])
+        self.assertEqual(report["performance_coverage"], {"all_libraries": 2, "whole_program_full_measured": 1})
+        rows = self.category(report, "performance")["evidence"]
+        self.assertEqual(rows[0]["cpu_median_ns"]["current"], 20)
+        self.assertIsNone(rows[0]["current_over_base"])
+        self.assertIn("1/2", quality.markdown(report))
+        self.assertIn("Verify全体", quality.markdown(report))
+
+    def test_all_performance_omissions_are_not_success(self):
+        for mutate in (lambda v: v["results"].clear(),
+                       lambda v: v["selected_library_paths"].clear(),
+                       lambda v: v["all_library_paths"].pop(),
+                       lambda v: v["results"][0]["cases"].pop(),
+                       lambda v: (v["results"][0]["cases"].pop(), v["results"][0]["expected_case_names"].pop()),
+                       lambda v: v["results"][0]["current_build"].update(status="FAIL"),
+                       lambda v: v["results"][0]["cases"][0]["median_ns"].update(current=999),
+                       lambda v: v["results"][0]["cases"][0]["cpu_samples_ns"]["current"].pop()):
+            value = self.all_performance(); mutate(value)
+            with self.subTest(value=value):
+                self.assertEqual(self.aggregate(value)["input_report_status"], "FAIL")
+
+    def test_all_performance_quick_is_only_partial_and_source_changes_stale(self):
+        report = self.aggregate(self.all_performance(quick=True))
+        self.assertEqual(self.category(report, "performance")["status"], "PARTIAL")
+        self.assertEqual(report["performance_coverage"]["whole_program_full_measured"], 0)
+        self.assertIn("縮小確認のみ", quality.markdown(report))
+        value = self.all_performance(); self.write(self.library, "// changed\n")
+        self.assertEqual(self.category(self.aggregate(value), "performance")["status"], "STALE")
+
+    def test_nonlc_plan_deletion_and_scale_change_are_not_success(self):
+        from types import SimpleNamespace
+        plans = [{"name": "example_00", "dimensions": {"n": 5}},
+                 {"name": "max_random_00", "dimensions": {"n": 5}}]
+        with patch.object(quality.ci_performance_all, "nonlc_module", return_value=SimpleNamespace(plans_for_library=lambda *args, **kw: plans)):
+            value = self.all_performance(); value["results"][0]["case_source"] = "deterministic_non_lc"
+            self.assertEqual(self.aggregate(value)["input_report_status"], "PASS")
+            value["results"][0]["cases"].pop(); value["results"][0]["expected_case_names"].pop()
+            self.assertEqual(self.aggregate(value)["input_report_status"], "FAIL")
+            value = self.all_performance(); value["results"][0]["case_source"] = "deterministic_non_lc"
+            value["results"][0]["cases"][0]["metadata"]["dimensions"]["n"] = 1
+            self.assertEqual(self.aggregate(value)["input_report_status"], "FAIL")
+
+    def test_all_performance_failed_rows_render_without_fake_time(self):
+        value = self.all_performance(); value["results"][0].update(status="FAIL", error="compile failed")
+        report = self.aggregate(value)
+        self.assertEqual(self.category(report, "performance")["status"], "FAIL")
+        self.assertIn("未実施", quality.markdown(report))
+        self.assertEqual(report["performance_coverage"]["whole_program_full_measured"], 0)
+
     def instrumented(self, mode="sanitizers"):
         hashes = {self.library: self.hash(self.library), self.driver: self.hash(self.driver)}
         flags = ["-fsanitize=address,undefined"] if mode == "sanitizers" else ["-fprofile-instr-generate", "-fcoverage-mapping"]
@@ -178,6 +268,24 @@ class QualityTests(unittest.TestCase):
         report = self.aggregate(value)
         self.assertEqual(self.category(report, "performance")["evidence"][0]["comparison"], "NO_BASELINE")
         self.assertIn("比較元なし", quality.markdown(report))
+
+    def test_structural_benchmark_names_and_scale_are_preserved(self):
+        value = self.performance()
+        source = value["sources"].pop("alpha")
+        self.write("Verify/ci/benchmarks/fenwick.cpp", "// benchmark\n")
+        value["sources"]["fenwick"] = source
+        value["scale_scope"] = "small_large_ci_stress_and_power_of_two_boundaries"
+        row = value["results"][0]
+        row.update(id="fenwick", pattern="empty_full_lowbit", pattern_id=2,
+                   size=2_000_000, scale="ci_stress_limit")
+        data = self.category(self.aggregate(value), "performance")
+        self.assertEqual(data["status"], "PASS")
+        self.assertEqual(data["evidence"][0]["scale"], "ci_stress_limit")
+        for changes in ({"size": 1024}, {"pattern_id": 3}, {"pattern": "invented_case"},
+                        {"scale": "smoke"}):
+            wrong = deepcopy(value)
+            wrong["results"][0].update(changes)
+            self.assertEqual(self.aggregate(wrong)["status"], "FAIL")
 
     def test_performance_recomputes_medians_ratios_and_counts(self):
         for mutation in (lambda v: v["results"][0]["median_ns"].update(current=1),

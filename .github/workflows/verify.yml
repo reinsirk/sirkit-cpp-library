@@ -216,7 +216,7 @@ jobs:
           retention-days: 14
 
   performance:
-    name: Representative performance (informational timings)
+    name: Supplemental kernel performance (absolute timings)
     needs: maintenance
     runs-on: ubuntu-24.04
     timeout-minutes: 20
@@ -229,22 +229,12 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y g++
-      - name: Compare base and current libraries
-        env:
-          VERIFY_PR_BASE: ${{ github.event.pull_request.base.sha }}
+      - name: Measure current library kernels
         shell: bash
         run: |
           set -euo pipefail
-          code=0
-          python3 Scripts/ci_benchmark.py --base "$VERIFY_PR_BASE" --compiler g++ --output "$RUNNER_TEMP/performance" || code=$?
-          if [[ "$code" == 0 ]]; then
-            python3 -c 'import json,sys; r=json.load(open(sys.argv[1])); sys.exit(0 if r.get("status") in ("PASS","PARTIAL") and r.get("current_measurements_passed") is True and type(r.get("compared_cases")) is int and r["compared_cases"]>0 else 1)' "$RUNNER_TEMP/performance/result.json"
-          elif [[ "$code" == 2 ]]; then
-            python3 -c 'import json,sys; r=json.load(open(sys.argv[1])); sys.exit(0 if r.get("status")=="NO_BASELINE" and r.get("current_measurements_passed") is True and type(r.get("compared_cases")) is int and r["compared_cases"]==0 else 1)' "$RUNNER_TEMP/performance/result.json"
-            printf '::notice::性能の比較元がないため、現在版の測定だけを保存しました。\n'
-          elif [[ "$code" != 0 ]]; then
-            exit "$code"
-          fi
+          python3 Scripts/ci_benchmark.py --compiler g++ --output "$RUNNER_TEMP/performance"
+          python3 -c 'import json,sys; r=json.load(open(sys.argv[1])); sys.exit(0 if r.get("status")=="CURRENT_ONLY" and r.get("current_measurements_passed") is True and type(r.get("expected_cases")) is int and isinstance(r.get("results"),list) and r["expected_cases"]==len(r["results"])>0 else 1)' "$RUNNER_TEMP/performance/result.json"
       - name: Summarize performance
         if: always()
         run: |
@@ -275,7 +265,125 @@ jobs:
         if: always()
         with:
           name: representative-performance
-          path: ${{ runner.temp }}/performance/
+          path: |
+            ${{ runner.temp }}/performance/result.json
+            ${{ runner.temp }}/performance/summary.md
+          if-no-files-found: ignore
+          retention-days: 14
+
+  all_performance:
+    name: All-library Verify performance (${{ matrix.shard }}, absolute timings)
+    needs: maintenance
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5, 6, 7]
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Install compiler and headers
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y g++ libboost-dev
+      - name: Measure all current Verify programs
+        env:
+          VERIFY_SHARD: ${{ matrix.shard }}
+        run: >-
+          python3 Scripts/ci_performance_all.py
+          --shard-index "$VERIFY_SHARD" --shard-count 8
+          --compiler g++
+          --cache "$RUNNER_TEMP/all-library-performance-cache"
+          --output "$RUNNER_TEMP/all-library-performance"
+      - name: Summarize all-library performance
+        if: always()
+        run: |
+          if [[ -f "$RUNNER_TEMP/all-library-performance/summary.md" ]]; then
+            cat "$RUNNER_TEMP/all-library-performance/summary.md" >> "$GITHUB_STEP_SUMMARY"
+          else
+            printf '全ライブラリの性能測定結果が生成されませんでした。ログを確認してください。\n' >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+      - name: Attach report provenance
+        if: always()
+        env:
+          REPORT_FILE: ${{ runner.temp }}/all-library-performance/result.json
+        run: |
+          python3 - <<'PYPROVENANCE'
+          import json, os
+          from pathlib import Path
+          path = Path(os.environ["REPORT_FILE"])
+          if path.is_file():
+              value = json.loads(path.read_text())
+              current = {key.lower(): os.environ.get(key) for key in (
+                  "GITHUB_SHA", "GITHUB_RUN_ID", "GITHUB_RUN_ATTEMPT", "GITHUB_REPOSITORY", "GITHUB_JOB")}
+              current["pull_request_head_sha"] = os.environ.get("SIRKIT_PR_HEAD_SHA")
+              value.setdefault("provenance", {}).update(current)
+              path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n")
+          PYPROVENANCE
+      - name: Upload performance metadata only
+        uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: all-library-performance-${{ matrix.shard }}
+          path: |
+            ${{ runner.temp }}/all-library-performance/result.json
+            ${{ runner.temp }}/all-library-performance/summary.md
+          if-no-files-found: ignore
+          retention-days: 14
+
+  stress:
+    name: Deterministic Max and structural cases
+    needs: maintenance
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Install compiler
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y g++
+      - name: Run deterministic full-size cases
+        run: >-
+          python3 Scripts/ci_stress.py --compiler g++
+          --output "$RUNNER_TEMP/stress-cases"
+      - name: Summarize Max and structural cases
+        if: always()
+        run: |
+          if [[ -f "$RUNNER_TEMP/stress-cases/summary.md" ]]; then
+            cat "$RUNNER_TEMP/stress-cases/summary.md" >> "$GITHUB_STEP_SUMMARY"
+          else
+            printf 'Max・構造ケースの結果が生成されませんでした。\n' >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+      - name: Attach report provenance
+        if: always()
+        env:
+          REPORT_FILE: ${{ runner.temp }}/stress-cases/result.json
+        run: |
+          python3 - <<'PYPROVENANCE'
+          import json, os
+          from pathlib import Path
+          path = Path(os.environ["REPORT_FILE"])
+          if path.is_file():
+              value = json.loads(path.read_text())
+              current = {key.lower(): os.environ.get(key) for key in (
+                  "GITHUB_SHA", "GITHUB_RUN_ID", "GITHUB_RUN_ATTEMPT", "GITHUB_REPOSITORY", "GITHUB_JOB")}
+              current["pull_request_head_sha"] = os.environ.get("SIRKIT_PR_HEAD_SHA")
+              value.setdefault("provenance", {}).update(current)
+              path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n")
+          PYPROVENANCE
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: stress-cases
+          path: |
+            ${{ runner.temp }}/stress-cases/result.json
+            ${{ runner.temp }}/stress-cases/summary.md
           if-no-files-found: ignore
           retention-days: 14
 
@@ -358,12 +466,12 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y g++
-      - name: Run affected official full cases
+      - name: Run all official full cases
         env:
           VERIFY_PR_BASE: ${{ github.event.pull_request.base.sha }}
           VERIFY_SHARD: ${{ matrix.shard }}
         run: >-
-          python3 Scripts/ci_library_checker.py
+          python3 Scripts/ci_library_checker.py --all --discard-test-data
           --base "$VERIFY_PR_BASE"
           --shard-index "$VERIFY_SHARD" --shard-count 8
           --compiler g++
@@ -414,7 +522,7 @@ jobs:
   documentation:
     name: Library pages preview
     if: ${{ !cancelled() && needs.maintenance.result == 'success' }}
-    needs: [maintenance, examples, instrumented, performance, contracts, library_checker]
+    needs: [maintenance, examples, instrumented, performance, all_performance, contracts, library_checker, stress]
     permissions:
       contents: read
       actions: read
@@ -453,6 +561,11 @@ jobs:
           merge-multiple: false
       - uses: actions/download-artifact@v8
         with:
+          pattern: all-library-performance-*
+          path: ${{ runner.temp }}/pages-input
+          merge-multiple: false
+      - uses: actions/download-artifact@v8
+        with:
           pattern: contracts-*
           path: ${{ runner.temp }}/pages-input
           merge-multiple: false
@@ -482,7 +595,7 @@ jobs:
   result:
     name: Verify result
     if: always()
-    needs: [maintenance, examples, instrumented, guidelines, performance, contracts, library_checker, documentation]
+    needs: [maintenance, examples, instrumented, guidelines, performance, all_performance, contracts, library_checker, stress, documentation]
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
@@ -493,8 +606,10 @@ jobs:
           INSTRUMENTED_RESULT: ${{ needs.instrumented.result }}
           GUIDELINES_RESULT: ${{ needs.guidelines.result }}
           PERFORMANCE_RESULT: ${{ needs.performance.result }}
+          ALL_PERFORMANCE_RESULT: ${{ needs.all_performance.result }}
           CONTRACT_RESULT: ${{ needs.contracts.result }}
           LIBRARY_CHECKER_RESULT: ${{ needs.library_checker.result }}
+          STRESS_RESULT: ${{ needs.stress.result }}
           DOCUMENTATION_RESULT: ${{ needs.documentation.result }}
         shell: bash
         run: |
@@ -505,10 +620,12 @@ jobs:
             printf '| C++23・GCC/Clang・通常/標準代替 | %s |\n' "$VERIFY_RESULT"
             printf '| ASan/UBSan・カバレッジ（checked） | %s |\n' "$INSTRUMENTED_RESULT"
             printf '| Core Guidelines・Google Style（通常版のみ） | %s |\n' "$GUIDELINES_RESULT"
-            printf '| 性能測定の実行（速度差は参考） | %s |\n' "$PERFORMANCE_RESULT"
+            printf '| 補足の本体性能測定（絶対時間） | %s |\n' "$PERFORMANCE_RESULT"
+            printf '| 全ライブラリのVerify全体性能（絶対時間） | %s |\n' "$ALL_PERFORMANCE_RESULT"
             printf '| checked正常系・期待した失敗系 | %s |\n' "$CONTRACT_RESULT"
             printf '| 公式Library Checkerケース（ローカル） | %s |\n' "$LIBRARY_CHECKER_RESULT"
+            printf '| 決定的Max・構造ケース | %s |\n' "$STRESS_RESULT"
             printf '| ライブラリページのプレビュー | %s |\n' "$DOCUMENTATION_RESULT"
             printf '\nローカル検証の結果です。オンラインACはREADMEのVerify一覧で別に管理します。\n'
           } >> "$GITHUB_STEP_SUMMARY"
-          [[ "$MAINTENANCE_RESULT" == success && "$VERIFY_RESULT" == success && "$INSTRUMENTED_RESULT" == success && "$GUIDELINES_RESULT" == success && "$PERFORMANCE_RESULT" == success && "$CONTRACT_RESULT" == success && "$LIBRARY_CHECKER_RESULT" == success && "$DOCUMENTATION_RESULT" == success ]]
+          [[ "$MAINTENANCE_RESULT" == success && "$VERIFY_RESULT" == success && "$INSTRUMENTED_RESULT" == success && "$GUIDELINES_RESULT" == success && "$PERFORMANCE_RESULT" == success && "$ALL_PERFORMANCE_RESULT" == success && "$CONTRACT_RESULT" == success && "$LIBRARY_CHECKER_RESULT" == success && "$STRESS_RESULT" == success && "$DOCUMENTATION_RESULT" == success ]]
