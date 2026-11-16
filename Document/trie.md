@@ -1,35 +1,323 @@
 # バイト列の多重集合
 
-`String/Trie.cpp` の `Trie` は文字列の重複を数え、接頭辞の照会と辞書順の操作を提供する。空文字列とNULを含む全256種類のバイトを扱い、辞書順は符号なしバイトの順とする。入力の文字種を制限しない。
+`Trie`は文字列の重複個数、接頭辞、辞書順の照会を扱います。空文字列とNULを含む全256バイトに対応し、辞書順は符号なしバイトの順です。
 
-| 操作 | 結果 |
-|---|---|
-| `insert(word, copies=1)` | 個数を追加し、その語の個数を返す。0個なら照会のみ |
-| `erase(word, copies=1)` / `erase_all(word)` | 指定個数を削除できたか / すべて削除した個数 |
-| `count(word)` / `contains(word)` | その語の個数 / 存在 |
-| `prefix_count(prefix)` / `starts_with(prefix)` | 接頭辞を持つ語の総個数 / 存在 |
-| `size()` / `distinct_size()` / `empty()` | 総個数 / 異なる語数 / 空判定 |
-| `longest_prefix(text)` | 登録語のうちtextの最長接頭辞長。なければnullopt |
-| `count_less(word)` | word未満の語の総個数 |
-| `kth(k)` / `lower_bound(word)` | 重複込みの0始まりk番目 / word以上の最小語。なければnullopt |
-| `items(prefix="", limit=SIZE_MAX)` | 接頭辞を持つ異なる語と個数を辞書順に最大limit件 |
-| `node_count()` / `capacity()` | rootを含む使用ノード数 / 確保済みノード枠数 |
-| `clear()` / `reserve_nodes(n)` / `swap(other)` | 全削除して容量を保持 / ノード枠の予約 / 内容と容量を交換 |
 
-子はソート済みの兄弟リストで保持し、次数16で256要素の直接索引を追加、8未満で回収する。新しく連続確保した末尾は単一路として接続し、再利用する空きノードがある場合は空きリストを使う。削除したノードと索引の枠は再利用される。深い語の破棄・削除・列挙で再帰しない。
+以下、Lは入力語長、Kは返す語長、Nは保持ノード枠数、Tは保持索引枠数です。
 
-語長Lに対し登録・削除・通常の照会はO(16L+256)、総個数などはO(1)。登録の再確保では保持しているノード枠・索引枠のコピーも発生する。`count_less` はO(256L)、長さKの `kth` はO(256K)、`lower_bound` はO(256L+K)。列挙は接頭辞の探索に加え、訪問したノード数と返す文字列の総長に比例する。コピーは保持ノード枠数N・索引枠数TとしてO(N+256T)、破棄・全削除はO(N+T)。
+## 登録・検索
 
-`lower_bound` は入力と一致する経路をたどり、その経路から右へ進める最も深い候補を保持する。一致が途切れたらその候補へ進み、以降は最小の子だけをたどって語を復元する。入力の全体が一致した場合は、その位置以下の最小語を返す。順位の計算や根からの再探索は不要で、結果文字列以外の作業領域はO(1)。空の照会は `kth(0)` で最小語を返し、この場合は最小の子だけをたどるためO(K)。
+### Trie
 
-コピーは独立し、ムーブ元は空で再利用できる。個数不足の削除はfalseで不変。登録の確保失敗とコピー代入の失敗では論理的な内容を保持するが、確保済み容量が増える場合はある。個数と容量の上限は `SKIP_RUNTIME_CHECKS` にかかわらず保護する。
+```text
+Trie();
+Trie(const Trie&);
+Trie(Trie&& other) noexcept;
+```
 
-従来の `TrieNode` も別の公開型として残す。`children` のコピーは子の所有権を共有する。子が指すノード自体を所有する使い方を対象とし、別対象を所有するaliasingポインタと循環所有は対象外。こちらの破棄も反復処理で行う。
+空／独立コピー／所有権移動で構築します。
 
-[使用例](../Examples/trie_example.cpp)と[独立した順序付き辞書との照合](../Verify/current/tests/trie_reference_test.cpp)を参照。
+**制約:** 追加の制約はありません。
 
-## Verify
+**計算量:** 空・moveはO(1)、コピーはO(N+256T)。
 
-提出用コードは[AtCoder C - gacha](https://atcoder.jp/contests/abc164/tasks/abc164_c)で、登録・存在確認・重複語と接頭辞を共有する語を扱う。英小文字・長さ10以下の問題なので、全APIの検証にはならない。
+### operator=
 
-全バイト・空語・長い語・削除と再利用・重複個数・接頭辞照会・辞書順操作・所有権は、独立した順序付き辞書を使う `trie_reference_test.cpp` で照合する。索引の追加・回収時の確保失敗とコピー代入の状態保持は `radix_trie_allocation_test.cpp` で補う。`lower_bound` の祖先側の候補への復帰、全バイト、最大個数、長い語と結果の確保失敗は [専用の独立照合](../Verify/current/tests/trie_lower_bound_reference_test.cpp)でも検証する。
+```text
+Trie& operator=(const Trie& other);
+Trie& operator=(Trie&& other) noexcept;
+```
+
+独立コピー／所有権移動で代入し、自身への参照を返します。
+
+**制約:** 同じ型の個体。
+
+**計算量:** コピーは新旧の保持量に比例、move代入は旧状態の解放も含みます。
+
+### insert
+
+```text
+std::size_t insert(std::string_view word, std::size_t copies = 1);
+```
+
+copies個追加してその語の個数を返します。copies=0なら照会のみ。
+
+**制約:** 長さ付きバイト列を渡します。空語・NUL・全256バイトを扱います。
+
+**計算量:** 償却O(16L+256)、再確保時は保持ノード・索引枠のコピーも加算。
+
+### erase
+
+```text
+bool erase(std::string_view word, std::size_t copies = 1) noexcept;
+```
+
+指定個数を削除できればtrueです。個数不足ならfalseで不変、0個ならtrue。
+
+**制約:** 長さ付きバイト列を渡します。空語・NUL・全256バイトを扱います。
+
+**計算量:** O(16L+256)。
+
+### erase_all
+
+```text
+std::size_t erase_all(std::string_view word) noexcept;
+```
+
+その語を全て削除し、削除した個数を返します。
+
+**制約:** 長さ付きバイト列を渡します。空語・NUL・全256バイトを扱います。
+
+**計算量:** O(16L+256)。
+
+### count
+
+```text
+std::size_t count(std::string_view word) const noexcept;
+```
+
+その語の個数を返します。
+
+**制約:** 長さ付きバイト列を渡します。空語・NUL・全256バイトを扱います。
+
+**計算量:** 語長LにO(16L+1)。
+
+### contains
+
+```text
+bool contains(std::string_view word) const noexcept;
+```
+
+その語が1個以上あればtrueです。
+
+**制約:** 長さ付きバイト列を渡します。空語・NUL・全256バイトを扱います。
+
+**計算量:** 語長LにO(16L+1)。
+
+### prefix_count
+
+```text
+std::size_t prefix_count(std::string_view prefix) const noexcept;
+```
+
+接頭辞を持つ語の総個数を返します。
+
+**制約:** 長さ付きバイト列を渡します。空語・NUL・全256バイトを扱います。
+
+**計算量:** 語長LにO(16L+1)。
+
+### starts_with
+
+```text
+bool starts_with(std::string_view prefix) const noexcept;
+```
+
+接頭辞を持つ語が存在すればtrueです。
+
+**制約:** 長さ付きバイト列を渡します。空語・NUL・全256バイトを扱います。
+
+**計算量:** 語長LにO(16L+1)。
+
+### longest_prefix
+
+```text
+std::optional<std::size_t> longest_prefix(std::string_view text) const noexcept;
+```
+
+登録語のうちtextの最長接頭辞長を返し、該当なしならnulloptです。
+
+**制約:** 長さ付きバイト列を渡します。空語・NUL・全256バイトを扱います。
+
+**計算量:** 語長LにO(16L+1)。
+
+
+語長Lに対し通常の検索はO(16L)、登録は償却O(16L+256)、削除はO(16L+256)です。登録の再確保には保持ノード枠・索引枠のコピーも加わります。個数不足の削除はfalseで内容不変です。
+
+## 辞書順
+
+### count_less
+
+```text
+std::size_t count_less(std::string_view word) const noexcept;
+```
+
+word未満の語の総個数を重複込みで返します。
+
+**制約:** 符号なしバイトの辞書順を使います。
+
+**計算量:** O(256L)。
+
+### kth
+
+```text
+std::optional<std::string> kth(std::size_t k) const;
+```
+
+重複込み・0始まりk番目の語を返し、範囲外ならnulloptです。
+
+**制約:** 追加の制約はありません。
+
+**計算量:** 返す語の長さKにO(256K+1)。
+
+### lower_bound
+
+```text
+std::optional<std::string> lower_bound(std::string_view word) const;
+```
+
+word以上の最小登録語を返し、なければnulloptです。
+
+**制約:** 符号なしバイトの辞書順を使います。
+
+**計算量:** O(256L+K)、空wordではO(K+1)。
+
+### items
+
+```text
+std::vector<std::pair<std::string, std::size_t>> items( std::string_view prefix = {}, std::size_t limit = std::numeric_limits<std::size_t>::max()) const;
+```
+
+異なる語と個数を辞書順に最大limit件返します。
+
+**制約:** prefixは長さ付きバイト列。
+
+**計算量:** 接頭辞探索＋訪問ノード数＋返却文字列総長。
+
+
+Kは返す語の長さです。空のlower_boundはO(K)です。
+
+## 管理・所有
+
+### size
+
+```text
+std::size_t size() const noexcept;
+```
+
+重複込みの総個数を返します。
+
+**制約:** 追加の制約はありません。
+
+**計算量:** O(1)。
+
+### distinct_size
+
+```text
+std::size_t distinct_size() const noexcept;
+```
+
+異なる語数を返します。
+
+**制約:** 追加の制約はありません。
+
+**計算量:** O(1)。
+
+### empty
+
+```text
+bool empty() const noexcept;
+```
+
+空ならtrueです。
+
+**制約:** 追加の制約はありません。
+
+**計算量:** O(1)。
+
+### node_count
+
+```text
+std::size_t node_count() const noexcept;
+```
+
+根を含む使用ノード数を返します。
+
+**制約:** 追加の制約はありません。
+
+**計算量:** O(1)。
+
+### capacity
+
+```text
+std::size_t capacity() const noexcept;
+```
+
+確保済みノード枠数を返します。
+
+**制約:** 追加の制約はありません。
+
+**計算量:** O(1)。
+
+### clear
+
+```text
+void clear() noexcept;
+```
+
+全削除し、確保枠を保持します。
+
+**制約:** 追加の制約はありません。
+
+**計算量:** O(N+T)。
+
+### reserve_nodes
+
+```text
+void reserve_nodes(std::size_t n);
+```
+
+少なくともnノード分の枠を予約します。
+
+**制約:** ノード容量の上限以下。
+
+**計算量:** 最悪O(N)。
+
+### swap
+
+```text
+void swap(Trie& other) noexcept;
+void swap(Trie& a, Trie& b) noexcept;
+```
+
+内容と確保枠を交換します。
+
+**制約:** 追加の制約はありません。
+
+**計算量:** O(1)。
+
+### TrieNode::TrieNode
+
+```text
+TrieNode();
+explicit TrieNode(std::unordered_map<char, std::shared_ptr<TrieNode>> values);
+TrieNode(const TrieNode&);
+TrieNode(TrieNode&&) noexcept;
+```
+
+既定／子map／子の所有権を共有するコピー／所有権移動で構築します。
+
+**制約:** 別対象を所有するaliasingポインタ・循環所有は対象外。
+
+**計算量:** 子mapのコピーに比例。既定とmoveはO(1)。
+
+### TrieNode::operator=
+
+```text
+TrieNode& operator=(const TrieNode&);
+TrieNode& operator=(TrieNode&&) noexcept;
+```
+
+子mapをコピー／移動して代入します。
+
+**制約:** 別対象を所有するaliasingポインタ・循環所有は対象外。
+
+**計算量:** 子mapのコピーや旧所有状態の解放に比例。
+
+
+保持ノード枠数N・索引枠数Tとして、コピーはO(N+256T)、破棄・clearはO(N+T)、reserve_nodesは最悪O(N)、swapはO(1)です。保持領域はO(N+256T)。コピーは独立し、移動元は空で再利用できます。
+
+登録・コピー代入の確保失敗では論理的内容を保持しますが、容量は増える場合があります。個数と容量の上限保護は`SKIP_RUNTIME_CHECKS`でも残ります。
+
+別の公開型`TrieNode`は、既定構築または子mapから構築でき、`children`のコピーは子の所有権を共有します。別対象を所有するaliasingポインタ・循環所有は対象外です。深い木の破棄も反復処理です。
+
+[完全な使用例](../Examples/trie_example.cpp) · [実装・検証の記録](../Audit/document-detail-archive-algorithm-string-2026-11-15.json)

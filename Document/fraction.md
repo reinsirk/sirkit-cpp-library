@@ -2,6 +2,288 @@
 
 [実装](../Math/Fraction.cpp)・[使用例](../Examples/fraction_example.cpp)
 
+## API
+
+### Fraction::Fraction
+
+```text
+constexpr Fraction();
+constexpr Fraction(std::int64_t n, std::int64_t d = 1);
+```
+
+整数またはn/dから既約分数を構築します。既定構築は0/1です。
+
+**制約:** 分母は非零。約分後の分子と正分母がint64_tに収まること。
+
+**計算量:** Mを整数の絶対値の上限としてO(log(M+1))。既定構築と単項演算はO(1)。
+
+### Fraction::numerator
+
+```text
+constexpr std::int64_t numerator() const noexcept;
+```
+
+既約分子を返します。
+
+**制約:** 有効なFractionなら追加制約なし。
+
+**計算量:** O(1)。
+
+### Fraction::denominator
+
+```text
+constexpr std::int64_t denominator() const noexcept;
+```
+
+正の既約分母を返します。
+
+**制約:** 有効なFractionなら追加制約なし。
+
+**計算量:** O(1)。
+
+### Fraction::sign
+
+```text
+constexpr int sign() const noexcept;
+```
+
+値の符号を-1/0/1で返します。
+
+**制約:** 有効なFractionなら追加制約なし。
+
+**計算量:** O(1)。
+
+### Fraction::is_integer
+
+```text
+constexpr bool is_integer() const noexcept;
+```
+
+整数ならtrueを返します。
+
+**制約:** 有効なFractionなら追加制約なし。
+
+**計算量:** O(1)。
+
+### Fraction::trunc
+
+```text
+constexpr std::int64_t trunc() const noexcept;
+```
+
+0方向へ丸めた整数を返します。
+
+**制約:** 有効なFractionなら追加制約なし。
+
+**計算量:** O(1)。
+
+### Fraction::floor
+
+```text
+constexpr std::int64_t floor() const noexcept;
+```
+
+床関数で丸めた整数を返します。
+
+**制約:** 有効なFractionなら追加制約なし。
+
+**計算量:** O(1)。
+
+### Fraction::ceil
+
+```text
+constexpr std::int64_t ceil() const noexcept;
+```
+
+天井関数で丸めた整数を返します。
+
+**制約:** 有効なFractionなら追加制約なし。
+
+**計算量:** O(1)。
+
+### Fraction::inverse
+
+```text
+constexpr Fraction inverse() const;
+```
+
+逆数。
+
+**制約:** 分母となる値は非零。既約結果がint64_tの分子・正分母で表せること。
+
+**計算量:** O(1)。
+
+### Fraction::abs
+
+```text
+constexpr Fraction abs() const;
+```
+
+絶対値を返します。
+
+**制約:** 表現可能な結果を渡すこと。範囲外はoverflow_error。
+
+**計算量:** O(1)。
+
+### Fraction::operator T
+
+```text
+template<std::floating_point T> explicit constexpr operator T() const noexcept;
+```
+
+浮動小数点型Tへ明示的に変換します。
+
+**制約:** 有効なFractionなら追加制約なし。
+
+**計算量:** O(1)。
+
+### Fraction::operator+
+
+```text
+constexpr Fraction operator+() const noexcept;
+friend constexpr Fraction operator+(const Fraction& a, const Fraction& b);
+```
+
+和を返します。単項版は同じ値を返します。
+
+**制約:** 表現可能な結果を渡すこと。範囲外はoverflow_error。
+
+**計算量:** Mを整数の絶対値の上限としてO(log(M+1))。既定構築と単項演算はO(1)。
+
+### Fraction::operator-
+
+```text
+constexpr Fraction operator-() const;
+friend constexpr Fraction operator-(const Fraction& a, const Fraction& b);
+```
+
+差を返します。単項版は符号を反転します。
+
+**制約:** 表現可能な結果を渡すこと。範囲外はoverflow_error。
+
+**計算量:** Mを整数の絶対値の上限としてO(log(M+1))。既定構築と単項演算はO(1)。
+
+### Fraction::operator*
+
+```text
+friend constexpr Fraction operator*(const Fraction& a, const Fraction& b);
+```
+
+積を返します。
+
+**制約:** 表現可能な結果を渡すこと。範囲外はoverflow_error。
+
+**計算量:** Mを整数の絶対値の上限としてO(log(M+1))。既定構築と単項演算はO(1)。
+
+### Fraction::operator/
+
+```text
+friend constexpr Fraction operator/(const Fraction& a, const Fraction& b);
+```
+
+商を返します。
+
+**制約:** 分母となる値は非零。既約結果がint64_tの分子・正分母で表せること。
+
+**計算量:** Mを整数の絶対値の上限としてO(log(M+1))。既定構築と単項演算はO(1)。
+
+### Fraction::operator+=
+
+```text
+constexpr Fraction& operator+=(const Fraction& b);
+```
+
+加算して自身を更新します。
+
+**制約:** 表現可能な結果を渡すこと。範囲外はoverflow_error。
+
+**計算量:** Mを整数の絶対値の上限としてO(log(M+1))。既定構築と単項演算はO(1)。
+
+### Fraction::operator-=
+
+```text
+constexpr Fraction& operator-=(const Fraction& b);
+```
+
+減算して自身を更新します。
+
+**制約:** 表現可能な結果を渡すこと。範囲外はoverflow_error。
+
+**計算量:** Mを整数の絶対値の上限としてO(log(M+1))。既定構築と単項演算はO(1)。
+
+### Fraction::operator*=
+
+```text
+constexpr Fraction& operator*=(const Fraction& b);
+```
+
+乗算して自身を更新します。
+
+**制約:** 表現可能な結果を渡すこと。範囲外はoverflow_error。
+
+**計算量:** Mを整数の絶対値の上限としてO(log(M+1))。既定構築と単項演算はO(1)。
+
+### Fraction::operator/=
+
+```text
+constexpr Fraction& operator/=(const Fraction& b);
+```
+
+除算して自身を更新します。
+
+**制約:** 分母となる値は非零。既約結果がint64_tの分子・正分母で表せること。
+
+**計算量:** Mを整数の絶対値の上限としてO(log(M+1))。既定構築と単項演算はO(1)。
+
+### Fraction::operator==
+
+```text
+constexpr bool operator==(const Fraction&) const;
+```
+
+値と形が等しいかを返します。
+
+**制約:** 有効なFractionなら追加制約なし。
+
+**計算量:** O(1)。
+
+### Fraction::operator<=>
+
+```text
+constexpr std::strong_ordering operator<=>(const Fraction& b) const;
+```
+
+大小を三方比較します。
+
+**制約:** 有効なFractionなら追加制約なし。
+
+**計算量:** O(1)。
+
+### Fraction::operator<<
+
+```text
+friend std::ostream& operator<<(std::ostream& out, const Fraction& x);
+```
+
+ストリームへ値を出力します。
+
+**制約:** 有効なFraction。ストリームの例外設定に従う。
+
+**計算量:** 入出力の費用。読込みは約分のO(log(M+1))を加える。
+
+### Fraction::operator>>
+
+```text
+friend std::istream& operator>>(std::istream& in, Fraction& x);
+```
+
+整数またはn/dを読み、成功時だけ代入します。分母0・範囲外等はfailbitを立て、代入先を保ちます。
+
+**制約:** 「/」は分子の直後。ストリームの例外設定に従う。
+
+**計算量:** 入出力の費用。読込みは約分のO(log(M+1))を加える。
+
+
 `Fraction` は分子・分母を `std::int64_t` で持つ厳密な分数です。構築と演算の結果を必ず約分し、分母は正、0は `0/1` に揃えます。無限大やNaNは扱いません。値の保持と正常系の算術では動的なメモリ確保を行いません。
 
 ```cpp
@@ -12,20 +294,6 @@ auto integer = b.floor();        // -1
 double approximate = static_cast<double>(a);
 ```
 
-## API
-
-| 操作 | 戻り値・意味 | 計算量 |
-| --- | --- | --- |
-| `Fraction()` / `Fraction(n)` / `Fraction(n,d)` | 0 / 整数n / 分数n/d。引数はint64_t | O(1) / O(log M) / O(log M) |
-| `numerator()`, `denominator()` | 既約分子・正分母をint64_tで返す | O(1) |
-| `sign()`, `is_integer()` | -1・0・1の符号 / 分母が1か | O(1) |
-| `+ - * /`, `+= -= *= /=` | 既約の四則演算。整数からの暗黙変換も利用可 | O(log M) |
-| 単項 `+ -` | 同じ値 / 符号反転 | O(1) |
-| `== != < <= > >= <=>` | 近似を介さない等値・大小比較 | O(1) |
-| `inverse()`, `abs()` | 逆数 / 絶対値 | O(1) |
-| `floor()`, `ceil()`, `trunc()` | 床 / 天井 / 0方向への整数丸めをint64_tで返す | O(1) |
-| `static_cast<T>(x)` | 浮動小数点型Tへ明示変換。近似値 | O(1) |
-| `out << x`, `in >> x` | `n/d`を出力 / 整数または`n/d`を入力 | 入出力と約分の費用 |
 
 Mは扱う整数の絶対値の上限です。固定幅の乗算・比較・除算を定数時間、ユークリッド互除法をO(log M)として記しています。構築・算術・比較・丸めは定数式でも使えます。
 
@@ -39,20 +307,6 @@ Mは扱う整数の絶対値の上限です。固定幅の乗算・比較・除�
 
 これらは数学的な0判定と内部表現の保護なので、`SKIP_RUNTIME_CHECKS` を定義しても維持します。省略対象となる追加の検査状態はありません。入力はint64_tを前提とし、それを超える符号なし整数を渡す前の型変換は利用側で確認してください。
 
-## 演算方法
+`SIRKIT_FRACTION_DISABLE_INT128`で標準C++の演算経路を選べます。設定マクロは貼り付け前に指定し、複数の翻訳単位で揃えてください。
 
-乗除算は交差する分子・分母の最大公約数を先に消します。加減算では分母の最大公約数gを使って交差積を小さくし、和の分子とgの追加の共通因子を消します。同分母なら通分用の積と除算を省きます。構築時の分母が1の場合や、互いに素で正分母の場合も、不要な除算を省きます。
-
-最大公約数は2の因子を除き、奇数の差と末尾の0bit数から更新する二進法で計算します。引数1は即座に返します。差の絶対値と0bit数を別々に求め、次の反復までの依存を短くします。内部で使う整数は0以上2^63以下であり、奇数化した正の値の差の絶対値は2^63未満です。
-
-比較は同分母を先に判定し、128ビット拡張が使える場合は符号付き交差積を直接比べます。標準経路では符号と絶対値の2語積を使います。いずれも分子・分母の全表現範囲で中間値を保持できます。
-
-GCC/Clangで128ビット整数拡張が使える場合は、中間演算にその拡張を利用します。拡張を使えない環境では、標準のuint64_tを2語組み合わせた積・和・差・除算を使います。`SIRKIT_FRACTION_DISABLE_INT128` で標準経路を強制でき、両経路で公開APIと表現範囲は共通です。設定マクロは最初に貼り付ける前に指定し、複数の翻訳単位で揃えてください。
-
-## Verify
-
-- [比較・ソート](../Verify/current/submissions/fraction_sort.cpp)：AtCoder ABC308 C。
-- [四則演算](../Verify/current/submissions/fraction_arithmetic.cpp)：AtCoder ABC028 D。
-- [ローカル補足](../Verify/current/tests/fraction_test.cpp)：Pythonの任意精度分数を独立参照とし、整数端・四則・約分・比較・丸め・例外を照合します。
-
-オンライン提出用コードは本体込みで、共通入出力と素直なAPI呼び出しを使います。判定の記録と検証範囲は `Audit/` に置きます。
+[完全な使用例](../Examples/fraction_example.cpp)・[演算方法と検証の記録](../Audit/library-docs-concise-math-geometry-2026-11-15.json)

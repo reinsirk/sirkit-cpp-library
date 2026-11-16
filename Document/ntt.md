@@ -4,15 +4,138 @@
 
 ## API
 
-| API | 動作 |
-| --- | --- |
-| `convolution(a,b)` | 整数vectorを法へ正規化し、vector<uint32_t>の畳み込みを返す。負数・UINT64_MAXも可。 |
-| `square(a)` | aとaの畳み込み。大きい入力では順変換を1回にする。 |
-| `convolution_normalized(a,b)` | 正規化済みuint32_tのvectorを値で受け取る。moveした領域を再利用可。 |
-| `transform(a,inverse=false)` | 係数と周波数を正順で相互変換する。aを直接変更する。 |
-| `prepare(length)` / `modulus()` / `max_length()` | 根を準備 / 法 / 最大変換長を返す。 |
-| `roots_capacity()` / `clear_cache()` | 動的キャッシュの要素数 / その領域を解放する。 |
-| `ConvolutionMod(a,b)` | 一時NTTを使う簡易版。同じ長さを繰り返すならengineを再利用する。 |
+### NTT::modulus
+
+```text
+static constexpr std::uint32_t modulus() noexcept;
+```
+
+使用する法を返します。
+
+**制約:** なし。
+
+**計算量:** O(1)。
+
+### NTT::max_length
+
+```text
+static constexpr std::size_t max_length() noexcept;
+```
+
+対応する最大長を返します。
+
+**制約:** なし。
+
+**計算量:** O(1)。
+
+### NTT::roots_capacity
+
+```text
+std::size_t roots_capacity() const noexcept;
+```
+
+保持している根の個数を返します。
+
+**制約:** なし。
+
+**計算量:** O(1)。
+
+### NTT::clear_cache
+
+```text
+void clear_cache() noexcept;
+```
+
+保持する計算用キャッシュを解放します。
+
+**制約:** 共通の型・入力条件を満たすこと。
+
+**計算量:** O(保持する根の数)。
+
+### NTT::prepare
+
+```text
+void prepare(std::size_t length);
+```
+
+指定した範囲の計算用表を準備します。
+
+**制約:** lengthは0またはmax_length()以下の2冪。
+
+**計算量:** 新規準備O(length)時間・保持O(length)領域。
+
+### NTT::transform
+
+```text
+void transform(std::vector<std::uint32_t>& a, bool inverse = false);
+```
+
+係数と周波数を正順で相互変換する。aを直接変更する。
+
+**制約:** 長さは0または対応する2冪、各係数は0..Mod-1。
+
+**計算量:** O(n log(n+1))時間、根以外の追加領域O(1)。
+
+### NTT::convolution
+
+```text
+template <std::integral T, std::integral U> std::vector<std::uint32_t> convolution(const std::vector<T>& a, const std::vector<U>& b);
+```
+
+整数vectorを法へ正規化し、vector<uint32_t>の畳み込みを返す。負数・UINT64_MAXも可。
+
+**制約:** 共通の型・入力条件を満たすこと。
+
+**計算量:** 短辺32以下はO(nm)、他はL=bit_ceil(n+m-1)としてO(L log L)時間・O(L)領域。
+
+### NTT::convolution_normalized
+
+```text
+std::vector<std::uint32_t> convolution_normalized(std::vector<std::uint32_t> a, std::vector<std::uint32_t> b);
+```
+
+正規化済みuint32_tのvectorを値で受け取る。moveした領域を再利用可。
+
+**制約:** 各係数は0..Mod-1。必要なNTT長は上限以下。
+
+**計算量:** 短辺32以下はO(nm)、他はO(L log L)時間・O(L)領域。
+
+### NTT::square
+
+```text
+template <std::integral T> std::vector<std::uint32_t> square(const std::vector<T>& a);
+```
+
+aとaの畳み込み。大きい入力では順変換を1回にする。
+
+**制約:** 共通の型・入力条件を満たすこと。
+
+**計算量:** 短い入力はO(n²)、他はL=bit_ceil(2n-1)としてO(L log L)時間・O(L)領域。
+
+### ConvolutionMod
+
+```text
+template <std::uint32_t Mod = 998244353, std::uint32_t Root = 3, std::integral T, std::integral U> std::vector<std::uint32_t> ConvolutionMod(const std::vector<T>& a, const std::vector<U>& b);
+```
+
+一時NTTを使い素数法の畳み込みを返します。
+
+**制約:** 共通の型・入力条件を満たすこと。
+
+**計算量:** NTT::convolutionと同じ。
+
+### NTT::NTT
+
+```text
+NTT();
+```
+
+動的キャッシュなしで生成。
+
+**制約:** 共通の型・入力条件を満たすこと。
+
+**計算量:** O(1)。
+
 
 ```cpp
 NTT<> engine;

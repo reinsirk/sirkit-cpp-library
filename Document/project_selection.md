@@ -1,46 +1,361 @@
 # Project Selection
 
-`Graph/Project_Selection.cpp` の `TwoVariableSubmodularOpt<COST>` は、二値変数に対する劣モジュラなコストの総和を最小化する。`true` を最小カットの始点側、`false` を終点側として表す。公開 API はファイル先頭、実行例は `Examples/project_selection_example.cpp` を参照。
+`TwoVariableSubmodularOpt<COST>`は、二値変数の劣モジュラなコストの総和を最小化します。`true`を始点側、`false`を終点側とする最小カットとして解きます。[本体](../Graph/Project_Selection.cpp)・[使用例](../Examples/project_selection_example.cpp)。
 
-## 項と制約
+## API
 
-`add_single_cost(i,F,T)` は変数が false/true のとき F/T を加える。`add_psp_penalty(i,j,C)` は `xi=true, xj=false` に非負費用 C を加え、`add_psp_constraint(i,j)` は同じ組を禁止する。`force` と `add_equality` で固定値・等値制約も指定できる。
+nは変数数、Vは補助頂点込みの頂点数、Eは順方向辺数です。単一項の追加は償却O(1)、集合項はO(|xs|)。項は既存のコストへ加算され、利得Pはコスト−Pを表します。
 
-`add_submodular_function(i,j,A,B,C,D)` は FF/FT/TF/TT のコストを追加する。異なる変数では `B+C >= A+D` が必要。同じ変数には A/D だけを使用する。条件の判定と辺への分解では、加算の前に差を取り、符号付き整数の未定義オーバーフローを避ける。
+### TwoVariableSubmodularOpt
 
-`add_both_true_profit` / `add_both_false_profit` は二変数がともに true/false の場合の非負利得、`add_all_true_profit(xs,P)` / `add_all_false_profit(xs,P)` は集合全体の非負利得を表す。空集合では利得 P を常に得る。集合内の重複は許される。
+```text
+TwoVariableSubmodularOpt();
+TwoVariableSubmodularOpt(const TwoVariableSubmodularOpt&);
+TwoVariableSubmodularOpt(TwoVariableSubmodularOpt&& other);
+explicit TwoVariableSubmodularOpt(int n);
+TwoVariableSubmodularOpt(int n, COST );
+```
 
-`add_any_true_cost(xs,C)` / `add_any_false_cost(xs,C)` は、少なくとも一つが true/false の場合の非負費用 C を表す。空集合の費用は 0。例えば、利用した設備の種類ごとに一度だけかかる費用を、複数の変数をまとめて指定できる。これらは補助頂点で直接表現し、定数加算と利得の二段階操作による一時的な offset の超過を避ける。
+n変数・コスト項なしのモデルを作ります。旧inf引数の値は使用しません。
+
+**制約:** 頂点数・入力構造・型の前提を満たすこと。空の構築も可能です。
+
+**計算量:** O(n)時間・領域。コピーは保持領域に比例、ムーブはO(1)。
+
+### init
+
+```text
+void init(int n, COST = 0);
+```
+
+n変数へ再構築／変数数を残して全項を消す。initはO(n+旧V+旧E)、clearはO(V+E)・確保なし。
+
+**制約:** 頂点数・入力構造・型の前提を満たすこと。空の構築も可能です。
+
+**計算量:** O(n+旧V+旧E)時間。
+
+### clear
+
+```text
+void clear() noexcept;
+```
+
+変数数と容量を残して全ての項を消します。
+
+**制約:** なし。
+
+**計算量:** O(V+E)時間。確保しません。
+
+### add_single_cost
+
+```text
+void add_single_cost(int xi, COST false_cost, COST true_cost);
+```
+
+xiがfalse／trueの場合にF／Tを加える。
+
+**制約:** iは有効な変数番号。F,Tと分解途中のコストもCOSTに収まること。
+
+**計算量:** 償却O(1)。定数項だけの追加はO(1)です。
+
+### add_psp_penalty
+
+```text
+void add_psp_penalty(int xi, int xj, COST cost);
+```
+
+xi=trueかつxj=falseに非負費用Cを加える。
+
+**制約:** 変数番号は有効で、C>=0。数値範囲は共通の前提に従います。
+
+**計算量:** 償却O(1)。定数項だけの追加はO(1)です。
+
+### add_psp_constraint
+
+```text
+void add_psp_constraint(int xi, int xj);
+```
+
+xi=trueかつxj=falseを禁止する。
+
+**制約:** 変数番号は0..n-1。
+
+**計算量:** 償却O(1)。定数項だけの追加はO(1)です。
+
+### force
+
+```text
+void force(int xi, bool value);
+```
+
+xiを固定／xi=xjを強制する。
+
+**制約:** 変数番号は0..n-1。
+
+**計算量:** 償却O(1)。定数項だけの追加はO(1)です。
+
+### add_equality
+
+```text
+void add_equality(int xi, int xj);
+```
+
+2変数の値が等しいことを強制します。
+
+**制約:** 変数番号は0..n-1。
+
+**計算量:** 償却O(1)。定数項だけの追加はO(1)です。
+
+### add_submodular_function
+
+```text
+void add_submodular_function(int xi, int xj, COST A, COST B, COST C, COST D);
+```
+
+FF/FT/TF/TTのコストを加える。i≠jではB+C≥A+D、i=jはA/Dだけ使う。
+
+**制約:** i,jは有効な変数番号。i≠jではB+C≥A+D、i=jではA,Dだけを使います。数値は共通の範囲内です。
+
+**計算量:** 償却O(1)。定数項だけの追加はO(1)です。
+
+### add_both_true_profit
+
+```text
+void add_both_true_profit(int xi, int xj, COST profit);
+```
+
+両変数がtrueのとき非負利得Pを加えます。
+
+**制約:** 変数番号は有効で、P>=0。数値範囲は共通の前提に従います。
+
+**計算量:** 償却O(1)。定数項だけの追加はO(1)です。
+
+### add_both_false_profit
+
+```text
+void add_both_false_profit(int xi, int xj, COST profit);
+```
+
+両変数がfalseのとき非負利得Pを加えます。
+
+**制約:** 変数番号は有効で、P>=0。数値範囲は共通の前提に従います。
+
+**計算量:** 償却O(1)。定数項だけの追加はO(1)です。
+
+### add_all_true_profit
+
+```text
+void add_all_true_profit(const std::vector<int>& xs, COST profit);
+```
+
+指定した変数が全てtrueのとき非負利得Pを加えます。空集合もPを得ます。
+
+**制約:** 変数番号は有効で、P>=0。数値範囲は共通の前提に従います。
+
+**計算量:** O(|xs|)時間。
+
+### add_all_false_profit
+
+```text
+void add_all_false_profit(const std::vector<int>& xs, COST profit);
+```
+
+指定した変数が全てfalseのとき非負利得Pを加えます。空集合もPを得ます。
+
+**制約:** 変数番号は有効で、P>=0。数値範囲は共通の前提に従います。
+
+**計算量:** O(|xs|)時間。
+
+### add_any_true_cost
+
+```text
+void add_any_true_cost(const std::vector<int>& xs, COST cost);
+```
+
+指定した変数の1個以上がtrueなら非負費用Cを加えます。空集合は0です。
+
+**制約:** 変数番号は有効で、C>=0。数値範囲は共通の前提に従います。
+
+**計算量:** O(|xs|)時間。
+
+### add_any_false_cost
+
+```text
+void add_any_false_cost(const std::vector<int>& xs, COST cost);
+```
+
+指定した変数の1個以上がfalseなら非負費用Cを加えます。空集合は0です。
+
+**制約:** 変数番号は有効で、C>=0。数値範囲は共通の前提に従います。
+
+**計算量:** O(|xs|)時間。
+
+### add_constant
+
+```text
+void add_constant(COST cost);
+```
+
+全割当に定数Cを加える。O(1)。
+
+**制約:** Cと累積定数がCOSTに収まること。負のCも使えます。
+
+**計算量:** 償却O(1)。定数項だけの追加はO(1)です。
+
+### solve
+
+```text
+COST solve();
+```
+
+最小コスト。初回・項追加後は最悪O(V²E)、変更なしの再照会はO(1)。
+
+**制約:** 共通の数値範囲を満たすこと。制約が矛盾すればdomain_errorです。
+
+**計算量:** 変更後は最悪O(V²E)時間・O(V+E)領域。変更なしの再照会はO(1)。
+
+### reconstruct
+
+```text
+std::vector<bool> reconstruct();
+```
+
+最適割当vector<bool>。必要ならsolveし、追加O(n)。同点時の選択は未規定。
+
+**制約:** 共通の数値範囲を満たすこと。制約が矛盾すればdomain_errorです。
+
+**計算量:** solveの費用＋O(n)時間・領域。
+
+### solve_with_assignment
+
+```text
+std::pair<COST, std::vector<bool>> solve_with_assignment();
+```
+
+{最小コスト,最適割当}。solve＋O(n)。
+
+**制約:** 共通の数値範囲を満たすこと。制約が矛盾すればdomain_errorです。
+
+**計算量:** solveの費用＋O(n)時間・領域。
+
+### empty
+
+```text
+bool empty() const noexcept;
+```
+
+変数数が0ならtrueを返します。
+
+**制約:** なし。
+
+**計算量:** O(1)。
+
+### variable_count
+
+```text
+int variable_count() const noexcept;
+```
+
+変数数を返します。
+
+**制約:** なし。
+
+**計算量:** O(1)。
+
+### node_count
+
+```text
+int node_count() const noexcept;
+```
+
+補助頂点を含む頂点数を返します。
+
+**制約:** なし。
+
+**計算量:** O(1)。
+
+### edge_count
+
+```text
+std::size_t edge_count() const noexcept;
+```
+
+登録した元辺の数を返します。
+
+**制約:** なし。
+
+**計算量:** O(1)。
+
+### reserve_nodes
+
+```text
+void reserve_nodes(std::size_t count);
+```
+
+頂点容量を予約する。O(V)。辺容量の予約ではない。
+
+**制約:** 指定件数は内部の容量上限以内です。
+
+**計算量:** 再確保する場合は現在の保持要素数に比例します。
+
+### swap
+
+```text
+void swap(TwoVariableSubmodularOpt& other) noexcept;
+void swap(TwoVariableSubmodularOpt& a, TwoVariableSubmodularOpt& b) noexcept;
+```
+
+保持するグラフ・結果・状態を交換します。
+
+**制約:** なし。
+
+**計算量:** O(1)。
+
+### operator<<
+
+```text
+std::ostream& operator<<(std::ostream& out, const TwoVariableSubmodularOpt& optimizer);
+```
+
+現在の順方向辺をfrom→to(flow/capacity)形式で出力する。O(E)。
+
+**制約:** 変数番号、非負費用・利得、劣モジュラ条件と数値範囲は下記の前提に従います。
+
+**計算量:** O(E)。
+
+
+集合内の変数番号は重複しても構いません。費用・利得0の集合項は無操作で、未参照の添字は検査しません。
 
 ```cpp
 TwoVariableSubmodularOpt<std::int64_t> model(3);
-model.add_single_cost(0, 0, -8); // 選ぶと8の利得
-model.add_psp_constraint(0, 1);  // 0を選ぶなら1も選ぶ
+model.add_single_cost(0, 0, -8); // 選ぶと8の利得。
+model.add_psp_constraint(0, 1);  // 0を選ぶなら1も選ぶ。
 model.add_any_true_cost({0, 1}, 3);
 model.add_any_false_cost({0, 1, 2}, 2);
 auto [cost, assignment] = model.solve_with_assignment();
 ```
 
-集合項の費用・利得が 0 の場合は無操作で、未参照の添字は検査しない。`SKIP_RUNTIME_CHECKS` を定義すると、添字・非負性・劣モジュラ性の入力検査を除く。変数数・内部添字・容量予算・算術の上限は省略時も維持する。不正入力を未参照部分まで一括検査する API ではない。
+## 前提・所有・失敗
 
-## 数値と解法
+COSTは64ビット以下の符号付き整数です。入力・分解途中のコスト・定数項・最適値もCOSTに収まり、有限辺容量の総和は`std::make_unsigned_t<COST>`の最大値未満とします。超過は`overflow_error`、制約矛盾はsolve時に`domain_error`です。領域はO(V+E)。
 
-`COST` は 64 bit 以下の符号付き整数型。入力値だけでなく、分解途中の符号付きコスト・offset・最適値もこの型の範囲に収まる必要がある。有限辺の容量総和は `std::make_unsigned_t<COST>` の最大値未満に制限する。差は符号なし演算で正確に表し、厳密制約の容量にはその最大値を使用する。有限容量の総和を超えるフローが流れたら制約矛盾として `std::domain_error` を送出する。容量・数値の超過は `std::overflow_error`。旧コンストラクタの `inf` 引数は互換性のために受け付け、値は使用しない。
+項追加後のsolveは残余から再開し、定数の追加だけならフローを再計算しません。制約矛盾はclear/initで作り直します。最適値の型超過は定数調整後に再取得できます。
 
-残余網を隣接配列で保持し、Dinic 法で解く。再帰は固定の深さまでに制限し、それより長い増加路は明示的なスタックで処理する。同じ層グラフで使い切った頂点を無効にし、再訪を減らす。補助頂点込みで65536頂点以上なら、BFSキューに残る訪問頂点を使って層と探索位置を初期化する。訪問が全頂点の4分の1以下なら該当する添字だけを戻し、多ければ連続領域を一括で埋める。終点の層は個別に戻す。層配列の新規領域は規模にかかわらず未訪問で初期化し、確保失敗後の再試行でも訪問済み頂点をキューから復元できるようにする。頂点追加後の再開・最小カットの復元にも同じ残余網を使い、訪問管理用の追加配列は持たない。標準 C++23 だけで実装し、専用の SIMD・128 bit 整数経路は持たない。
+コピーは独立、move元は空の0変数モデルです。項追加・init・コピー代入の失敗時は変数数・項・最適値を保ちますが、容量は変わり得ます。solveの確保失敗後も再試行できます。clearは容量を再利用し、initは隣接配列を作り直します。
 
-補助頂点込みの頂点数を V、辺数を E とすると、解法は `O(V²E)`、保存領域は `O(V+E)`。単一項の追加は償却 `O(1)`、集合項は `O(|xs|)`。`solve()` は変更がなければ `O(1)` で、項の追加後は残余網から再開する。定数の追加はフローを再計算しない。`reconstruct()` は必要に応じて解いてから、追加 `O(n)` で最適割当を返す。同点時の割当は固定しない。
+`SKIP_RUNTIME_CHECKS`で添字・非負性・劣モジュラ性の検査を除きます。内部容量・算術の上限は維持します。[内部処理・出典・検証の記録](../Audit/graph-document-details-2026-11-15.md)を参照してください。
 
-## 再利用・所有権・例外
+## 構築・状態と補助型
 
-`clear()` は変数数を維持して項と解を消去する。補助頂点を取り除き、残る頂点の辺配列と作業配列の容量を再利用する。確保を行わず `noexcept`、計算量は `O(V+E)`。`init(n)` は隣接配列を作り直すため、旧隣接配列の領域を解放する。作業配列の容量は保持する。`reserve_nodes(count)` は頂点配列の予約で、辺配列の予約ではない。
+### operator=
 
-コピーは独立した所有、移動後の元は空の 0 変数モデル。`empty()` は変数数が 0 かを返す。メンバ `swap` と ADL の `swap(a,b)` は定数時間で所有権を交換する。
+```text
+TwoVariableSubmodularOpt& operator=(const TwoVariableSubmodularOpt& other);
+TwoVariableSubmodularOpt& operator=(TwoVariableSubmodularOpt&& other);
+```
 
-項の追加・`init`・コピー代入が失敗しても、変数数・追加済みの項・最適値は変えない。ただし確保済み容量は変わり得る。複数辺を追加する操作は先に必要な容量を予約し、集合項は失敗時に追加分だけ巻き戻す。`solve()` の確保失敗後も再試行できる。制約矛盾は項追加では解消できないので `clear` / `init` で作り直す。最適値の型超過はフロー計算後に判定し、定数を調整して収まる場合は再取得できる。
+コピー／ムーブ代入し、自身への参照を返します。
 
-## 検証と資料
+**制約:** なし。
 
-Verify は [AtCoder 典型90 040](https://atcoder.jp/contests/typical90/tasks/typical90_an)。main は入力を単一項・含意制約に変換して解くだけとする。公開サンプルに加え、全割当列挙と独立な行列形式の Edmonds–Karp 法を使った補足入力を生成する。この問題で扱わない集合項などは、`Verify/current/tests/project_selection_reference_test.cpp` の独立エネルギー表・境界試験で照合する。深い分岐・合流・逆辺による経路変更は `project_selection_deep_flow_test.cpp` で独立な最大流と照合する。
-
-アルゴリズムの参考は [drken の解説](https://drken1215.hatenablog.com/entry/2023/11/24/034300)。由来とライセンス、測定条件・不採用案、検証結果は `Audit/` の Project Selection 関連記録を参照。ローカル検証とオンライン提出の状態は区別する。
+**計算量:** コピーは保持領域に比例します。旧状態の破棄費用を加えます。

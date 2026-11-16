@@ -4,15 +4,152 @@
 
 ## APIと前提
 
-- `ErasablePriorityQueue()`：空で構築します。`ErasablePriorityQueue(values)`はvectorを受け取り、線形時間で一括構築します。
-- `push(value)` / `push(T&&)` / `emplace(args...)`：1要素を追加します。
-- `top()` / `pop()`：先頭の値を返す／先頭を1個削除します。空でないことが前提です。
-- `erase(value)`：存在する値を1個削除します。重複があれば1個分だけです。存在と個数の検査は行いません。
-- `size()` / `empty()`：有効な要素数／空かどうかを返します。遅延削除の回収は行いません。
-- `try_top()`：空なら`nullopt`、そうでなければ先頭の値を返します。
-- `extract_top()`：空なら`nullopt`、そうでなければ先頭を1個削除して値を返します。
-- `swap(other)`：有効な要素と遅延削除を定数時間で交換します。
-- `clear()`：要素と遅延削除を破棄し、容量を解放します。
+### ErasablePriorityQueue
+
+```text
+ErasablePriorityQueue();
+explicit ErasablePriorityQueue(std::vector<T> values);
+```
+
+空／vectorの要素から構築します。
+
+**制約:** Tの比較と==が共通の同値関係を表すこと。
+
+**計算量:** 空はO(1)、n要素からはO(n)。
+
+### push
+
+```text
+void push(const T& value);
+void push(T&& value);
+```
+
+値を1個追加します。
+
+**制約:** 冒頭のTの比較・コピー要件を満たすこと。
+
+**計算量:** O(log(H+1))。
+
+### emplace
+
+```text
+template<class... Args> void emplace(Args&&... args);
+```
+
+引数からTを構築して追加します。
+
+**制約:** 引数からTを構築できること。
+
+**計算量:** 構築とO(log(H+1))。
+
+### top
+
+```text
+T top();
+```
+
+先頭値を返し、必要な遅延削除を回収します。
+
+**制約:** 空でないこと。
+
+**計算量:** 償却O(log(H+1))。
+
+### pop
+
+```text
+void pop();
+```
+
+先頭を1個削除します。
+
+**制約:** 空でないこと。
+
+**計算量:** 償却O(log(H+1))。
+
+### erase
+
+```text
+void erase(const T& value);
+```
+
+存在する値を1個分だけ遅延削除します。
+
+**制約:** その値が有効な集合に存在すること。存在・個数は検査しません。
+
+**計算量:** O(log(H+1))。
+
+### size
+
+```text
+std::size_t size() const noexcept;
+```
+
+有効な要素数を返します。遅延削除の回収はしません。
+
+**制約:** 追加の制約はありません。
+
+**計算量:** O(1)。
+
+### empty
+
+```text
+bool empty() const noexcept;
+```
+
+有効な要素がなければtrueです。
+
+**制約:** 追加の制約はありません。
+
+**計算量:** O(1)。
+
+### try_top
+
+```text
+std::optional<T> try_top();
+```
+
+先頭値を返し、空ならnulloptです。
+
+**制約:** 追加の制約はありません。
+
+**計算量:** 償却O(log(H+1))。
+
+### extract_top
+
+```text
+std::optional<T> extract_top();
+```
+
+先頭を削除して値を返し、空ならnulloptです。
+
+**制約:** 追加の制約はありません。
+
+**計算量:** 償却O(log(H+1))。
+
+### swap
+
+```text
+void swap(ErasablePriorityQueue& other) noexcept;
+```
+
+有効な要素と遅延削除をまとめて交換します。
+
+**制約:** 追加の制約はありません。
+
+**計算量:** O(1)。
+
+### clear
+
+```text
+void clear() noexcept;
+```
+
+全要素と遅延削除を破棄し、容量を解放します。
+
+**制約:** 追加の制約はありません。
+
+**計算量:** O(H)。
+
 
 `T`は比較・コピーが可能な型を使います。比較は厳密弱順序を満たし、`==`はその同値関係と一致する必要があります。浮動小数点のNaNはこの条件を満たしません。move元は空になり、再利用できます。
 
@@ -22,23 +159,8 @@
 
 値を保持するヒープと、削除する値を保持するヒープを使います。先頭の取得・削除時に両方の先頭が一致していれば、両方から取り除きます。削除の記録は、対象が先頭に来るまで残ります。
 
-GCC（Clangを除く）の64bit整数型では、1つの親に最大4個の子を持つ4分岐ヒープを使います。子の比較を明示し、木の段数と依存する読み取りを減らします。一括構築では葉に近い親から順に処理し、線形時間でヒープを作ります。
-
-先頭削除では穴を葉まで下げ、末尾の値を親と比較しながら戻します。相殺する2つのヒープは交互に降り、各配列を独立に復元します。子が存在する親かを確認してから子の添字を計算し、容量や添字のオーバーフローを避けます。
-
-GCCの32bit以下の整数型と、Clangなどの整数型では二分ヒープを使い、相殺時だけ2つの配列を交互に降ります。GCCでは通常の削除も配列上で下降・復元し、Clangなどは`std::priority_queue`を使います。整数以外と`bool`は保持型も処理も`std::priority_queue`です。追加の所有領域やCPU固有の命令は使わず、いずれも標準C++の処理です。
-
-GCCの整数型では、削除待ちがなければ先頭照会の正規化を省きます。4分岐版では相殺処理の展開位置を調整し、その経路の呼出し費用を抑えます。
-
 未回収の削除済み要素を含む保存数を`H`とすると、追加と削除予約は`O(log(H+1))`です。先頭取得・削除は回収を含めて償却`O(log(H+1))`ですが、1回の操作で多数の削除を回収することがあります。`size()`・`empty()`は`O(1)`、一括構築は`O(n)`、使用領域は`O(H)`です。
 
 要素型や比較演算が例外を投げる場合の保証は、内部の`std::priority_queue`の操作に依存します。
 
-## 使用例とVerify
-
-- [使用例](../Examples/erasable_priority_queue_example.cpp)
-- [Library Checker提出コード](../Verify/current/submissions/erasable_priority_queue_double.cpp)：Double-Ended Priority Queue。最小値・最大値優先の2表を同期し、入力を逐次処理します。
-- [ローカル補足](../Verify/current/tests/erasable_priority_queue_test.cpp)：`std::multiset`との照合で、整数端・重複・補助API・コピーとmoveを確認します。
-- [ヒープ境界の補足](../Verify/current/tests/erasable_priority_queue_boundary_test.cpp)：整数各幅の小サイズと4冪前後で、一括構築・逐次追加・遅延削除・コピーを独立照合します。
-
-A+Bへの提出は、このライブラリのオンラインVerifyには使用しません。原典のunit testは方式の参考とし、独立照合はローカルで実行します。
+[完全な使用例](../Examples/erasable_priority_queue_example.cpp)・[実装・検証の記録](../Audit/document-detail-before-concise-data-structure-2026-11-15.md#erasable-priority-queue)

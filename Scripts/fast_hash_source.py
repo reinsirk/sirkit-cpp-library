@@ -22,9 +22,9 @@ def build(source: str, kind: str, root: Path) -> str:
 // 再配置後の旧配列だけ解放し、最後の表と省略した値の資源は回収しない。
 // 格納型のデストラクタの副作用・資源回収を必要としない処理で使う。
 """)
-    clear_comment = ("// clear(): 全要素を破棄し、確保済みの容量を再利用する。" if kind == "HashMap" else
+    clear_comment = ("// clear(): 全要素を破棄し容量を再利用。O(C)、要素も墓石もなければO(1)。" if kind == "HashMap" else
                      "// clear(): O(capacity())で全要素を破棄し、確保済み容量を再利用する。")
-    fast_clear = ("// clear(): 登録状態を消し容量を再利用する。値のデストラクタは呼ばない。" if kind == "HashMap" else
+    fast_clear = ("// clear(): O(C)で登録状態を消し容量を再利用。要素・墓石なしはO(1)。値のデストラクタは呼ばない。" if kind == "HashMap" else
                   "// clear(): O(capacity())で登録状態を消し、容量を再利用する。値のデストラクタは呼ばない。")
     source = once(source, clear_comment, fast_clear)
     source = once(source, f"    {kind}(const {kind}&) = default;", f"""    {kind}(const {kind}& other) requires std::is_copy_constructible_v<value_type>

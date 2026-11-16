@@ -1,76 +1,290 @@
 # 巻き戻せるUnion Find
 
-結合操作の履歴を逆順に戻せるUnion Findです。保存した位置まで戻って別の結合を試す探索や、オフライン動的連結性で使えます。[使用例](../Examples/rollback_union_find_example.cpp)を参照してください。
-
-各頂点に親、根には成分サイズの負数を持ちます。小さい成分を大きい成分へ接続し、経路圧縮は行いません。変更情報を履歴へ残すため、`undo`は直前の`unite`呼出しを1回戻せます。公開`undo()`では、既に同じ成分だった履歴に対する頂点配列の書き戻しを省きます。
+成分の結合を履歴へ残し、直前または保存位置まで戻せます。頂点は`0<=v<n<=INT_MAX`です。
 
 ## API
 
-| API | 動作 |
-| --- | --- |
-| `RollbackUnionFind(n=0)` | `n`頂点を別々の成分として構築する。`n<=INT_MAX`。 |
-| `find(i)`、`root(i)`、`leader(i)` | 代表頂点を返す。 |
-| `same(a,b)`、`issame(a,b)` | 同じ成分かを返す。 |
-| `size(i)` | 指定頂点の成分サイズ。 |
-| `unite(a,b)`、`merge(a,b)` | 成分を結合し、新しく結合したときだけ`true`を返す。 |
-| `undo()` | 直前の結合呼出しを1回戻す。履歴が空でないこと。 |
-| `get_state()` | 現在残っている結合呼出し数を`int`で返す。 |
-| `snapshot()` | 現在の履歴位置を1個だけ保存する。 |
-| `rollback(state=-1)` | 指定位置まで戻す。`-1`なら保存した位置まで戻す。 |
-| `clear_history()` | 現在の連結状態を保ち、履歴と保存位置を0にする。 |
-| `reserve_history(k)` | `k`回分の履歴容量を確保する。 |
-| `size()`、`empty()`、`component_count()` | 全頂点数、空か、成分数。 |
-| `groups()` | 成分ごとの頂点一覧。各一覧の頂点は昇順。 |
-| `reset(n)`、`reset()` | 指定した頂点数、または現在の頂点数で全成分を独立にし、履歴と保存位置を消す。 |
-| `clear()` | 頂点と履歴を空にし、確保済み容量を保持する。 |
-| `swap(other)`、`swap(a,b)` | 履歴と保存位置を含めて内容を交換する。 |
+### RollbackUnionFind
 
-頂点は`0<=i<n`、指定位置は`0<=state<=get_state()`です。履歴の回数も`INT_MAX`以下です。既に同じ成分だった場合も`unite`は履歴を1回進め、`undo`の対象になります。
+```text
+explicit RollbackUnionFind(std::size_t n = 0);
+```
+
+空／n頂点の独立した成分を構築します。
+
+**制約:** 0<=n<=INT_MAX。
+
+**計算量:** O(n+1)時間・領域。
+
+### find
+
+```text
+int find(int v) const;
+```
+
+代表頂点を返します。
+
+**制約:** 頂点番号は0以上n未満。
+
+**計算量:** O(log(n+1))。
+
+### root
+
+```text
+int root(int v) const;
+```
+
+代表頂点を返します。
+
+**制約:** 頂点番号は0以上n未満。
+
+**計算量:** O(log(n+1))。
+
+### leader
+
+```text
+int leader(int v) const;
+```
+
+代表頂点を返します。
+
+**制約:** 頂点番号は0以上n未満。
+
+**計算量:** O(log(n+1))。
+
+### same
+
+```text
+bool same(int x, int y) const;
+```
+
+同じ成分ならtrueを返します。
+
+**制約:** 頂点番号は0以上n未満。
+
+**計算量:** O(log(n+1))。
+
+### issame
+
+```text
+bool issame(int x, int y) const;
+```
+
+同じ成分ならtrueを返します。
+
+**制約:** 頂点番号は0以上n未満。
+
+**計算量:** O(log(n+1))。
+
+### size
+
+```text
+int size(int v) const;
+int size() const noexcept;
+```
+
+引数付きは所属成分の頂点数、引数なしは全頂点数を返します。
+
+**制約:** 引数付きは頂点番号は0以上n未満。
+
+**計算量:** 引数付きはO(log(n+1))、引数なしはO(1)。
+
+### unite
+
+```text
+bool unite(int x, int y);
+```
+
+新規結合ならtrueです。冗長な呼出しも履歴を1回進めます。
+
+**制約:** 頂点番号は0以上n未満。
+
+**計算量:** 償却O(log(n+1))。
+
+### merge
+
+```text
+bool merge(int x, int y);
+```
+
+新規結合ならtrueです。冗長な呼出しも履歴を1回進めます。
+
+**制約:** 頂点番号は0以上n未満。
+
+**計算量:** 償却O(log(n+1))。
+
+### undo
+
+```text
+void undo();
+```
+
+直前の追加呼出しを1回取り消します。
+
+**制約:** 履歴が空でないこと。
+
+**計算量:** O(1)。
+
+### get_state
+
+```text
+int get_state() const noexcept;
+```
+
+現在の履歴位置を返します。
+
+**制約:** 追加の制約はありません。
+
+**計算量:** O(1)。
+
+### snapshot
+
+```text
+void snapshot() noexcept;
+```
+
+現在の履歴位置を1個だけ保存します。
+
+**制約:** 追加の制約はありません。
+
+**計算量:** O(1)。
+
+### rollback
+
+```text
+void rollback(int state = -1);
+```
+
+指定位置、または-1なら保存位置まで戻します。
+
+**制約:** 0<=state<=get_state()、またはstate=-1。現在の枝で得た位置を使います。
+
+**計算量:** 戻す回数kにO(k+1)。
+
+### clear_history
+
+```text
+void clear_history() noexcept;
+```
+
+成分を保ち、履歴・保存位置を消します。容量は保持します。
+
+**制約:** 古い履歴位置は以後使えません。
+
+**計算量:** O(h+1)の上界。
+
+### reserve_history
+
+```text
+void reserve_history(std::size_t k);
+```
+
+k回分の履歴容量を予約します。
+
+**制約:** 容量上限以下。
+
+**計算量:** 再確保時O(h+1)、予約済みならO(1)。
+
+### empty
+
+```text
+bool empty() const noexcept;
+```
+
+頂点数が0ならtrueを返します。
+
+**制約:** 追加の制約はありません。
+
+**計算量:** O(1)。
+
+### component_count
+
+```text
+int component_count() const noexcept;
+```
+
+成分数を返します。
+
+**制約:** 追加の制約はありません。
+
+**計算量:** O(1)。
+
+### groups
+
+```text
+std::vector<std::vector<int>> groups() const;
+```
+
+成分ごとの頂点昇順一覧を返します。
+
+**制約:** 追加の制約はありません。
+
+**計算量:** O(1+n log(n+1))時間・O(n+1)追加領域。
+
+### reset
+
+```text
+void reset(std::size_t n);
+void reset();
+```
+
+指定／現在の頂点数で独立な成分へ戻し、履歴・保存位置を消します。
+
+**制約:** 新頂点数mは0以上INT_MAX以下。
+
+**計算量:** 旧頂点数n・旧履歴長hにO(n+h+m+1)。
+
+### clear
+
+```text
+void clear() noexcept;
+```
+
+頂点と履歴を空にし、確保済み容量を保持します。
+
+**制約:** 古い履歴位置は以後使えません。
+
+**計算量:** O(n+h+1)の上界。
+
+### swap
+
+```text
+void swap(RollbackUnionFind& other) noexcept;
+void swap(RollbackUnionFind& a, RollbackUnionFind& b) noexcept;
+```
+
+履歴・保存位置も含めて交換します。
+
+**制約:** 追加の制約はありません。
+
+**計算量:** O(1)。
+
+
+同じ成分への結合も履歴を1回進め、`undo`の対象になります。位置は現在の枝だけに有効で、捨てた枝や別インスタンスを選ぶ版番号ではありません。`snapshot`の保存枠は1個で、そこより手前へ戻すと保存位置も切り詰めます。
 
 ```cpp
 RollbackUnionFind uf(4);
 const auto state = uf.get_state();
-assert(uf.unite(0, 1));
-assert(!uf.unite(0, 1));
-uf.undo();
-assert(uf.same(0, 1));
-uf.rollback(state);
-assert(!uf.same(0, 1));
-```
-
-## 保存位置と履歴の消去
-
-`get_state()`は現在の履歴上の位置です。完全永続Union Findの版ハンドルとは異なり、巻き戻しで捨てた枝を再び選ぶことはできません。整数が範囲内でも、別の枝や別インスタンスで得た位置を同じ状態として扱うことはできません。
-
-`snapshot`の保存枠は1個です。保存位置より手前へ`undo`や`rollback`した場合、保存位置も到達位置へ切り詰めます。
-
-`clear_history()`は成分と代表を保ったまま、その状態を新しい履歴の開始点にします。例外を送出しません。保存済みの位置は無効になり、`get_state()`とsnapshot位置は0になります。履歴の確保済み容量は保持し、その後の結合へ再利用します。
-
-```cpp
 uf.unite(0, 1);
-uf.clear_history();
-assert(uf.get_state() == 0 && uf.same(0, 1));
 uf.unite(1, 2);
-uf.rollback(0);
-assert(uf.same(0, 1) && !uf.same(0, 2));
+uf.rollback(state);
+assert(!uf.same(0, 2));
 ```
 
-`reset(n)`は頂点・履歴に必要な容量を先に確保し、全頂点を別々の成分へ戻します。引数なし`reset()`は頂点数を保ちます。`clear()`は頂点数も0にします。いずれも履歴と保存位置を0にし、以前の状態位置は無効になります。`clear_history()`と異なり、以前の連結関係は残りません。確保済み容量は減らしません。
+## 計算量
 
-## 計算量と所有権
+nは頂点数、hは履歴長、Hは確保済み履歴容量です。構築はO(n+1)、保持領域はO(n+H+1)。代表・同一成分・成分サイズはO(log(n+1))、結合は履歴確保を含め償却O(log(n+1))です。
 
-頂点数を`n`、現在の履歴長を`h`、確保済み履歴容量を`H`とします。構築はO(n+1)時間、領域はO(n+H+1)です。巻き戻しや`clear_history`では履歴容量を減らしません。代表探索・同一成分判定・成分サイズはO(log(n+1))、結合は履歴確保を含めて償却O(log(n+1))時間です。履歴の再確保が起きた1回だけを見ると、既存履歴の移動費用もかかります。
+`undo`はO(1)、`rollback`は戻す回数kに対しO(k+1)、`clear_history`はO(h+1)の上界。引数なし`size`・`empty`・`component_count`・`snapshot`・`get_state`・`swap`はO(1)。`groups`はO(1+n log(n+1))時間・O(n+1)追加領域で、成分は代表順、内部は頂点順です。
 
-`undo`はO(1)、`rollback`は戻す呼出し数を`k`としてO(1+k)です。Clangの`rollback`は末尾に連続する不成功結合の履歴を、頂点配列への書戻しを行わずに取り除きます。残りの履歴は保存した値を逆順に復元します。履歴位置と`undo`の回数は変わりません。`clear_history`は標準コンテナの保証に基づく上界でO(h+1)時間です。引数なし`size`、`empty`、`component_count`、`snapshot`、`get_state`、`swap`はO(1)です。`groups`はO(1+n log(n+1))時間、O(n+1)追加領域です。全頂点が独立または全頂点が1成分なら代表探索を省いてO(n+1)時間で一覧を作ります。その他は根の負サイズから各成分の容量を確保し、代表から出力位置への作業配列1本で頂点を並べます。ClangのAVX2対応CPUでは256頂点以上の代表探索を8頂点ずつ行い、代表・成分位置の2配列を使います。出力領域の確保より前に代表を求め、根や探索済みのlaneは読み直しません。Clangの標準経路は代表・件数・成分位置の3配列です。成分は代表頂点の昇順、成分内は頂点の昇順です。`SIRKIT_DISABLE_SIMD`で追加のAVX2実装とCPU判定を除きます。`reserve_history`は再確保する場合O(h+1)時間、しない場合O(1)です。
+`reserve_history`は再確保時O(h+1)、予約済みならO(1)。コピー構築はO(n+h+1)、コピー代入は新旧の頂点数・履歴長の和に比例します。`reset(m)`はO(n+h+m+1)、`clear`はO(n+h+1)の上界です。
 
-コピー構築は履歴と保存位置も含めて独立し、O(n+h+1)時間・領域を使います。コピー代入は必要な頂点・履歴容量を先に確保し、代入先の領域を再利用します。代入先の旧頂点数・履歴長も含めた時間の上界はO(旧n+旧h+n+h+1)です。`reset(m)`の時間上界はO(n+h+m+1)、`clear()`はO(n+h+1)で、`clear()`は例外を送出しません。一方の変更はもう一方へ影響しません。`groups`の戻り値も自身で値を所有します。別インスタンスへ移動すると移動元は空になります。自己代入・自己移動では内容を保ちます。
+## 所有・履歴・検査
 
-結合時の履歴確保、コピー、`reset`が例外で失敗しても、既存インスタンスの連結状態・履歴・保存位置は保たれます。コピー代入と`reset`では先行した予約によって容量が増える場合があります。所有には標準コンテナを使い、破棄で領域を解放します。
+コピーは履歴・保存位置も含め独立し、ムーブ元は空です。結合時の確保、コピー、`reset`の失敗では連結状態・履歴・保存位置を保ちますが、容量は増える場合があります。`groups`の戻り値も独立した値です。
 
-## 入力検査
+`clear_history`は成分を残して履歴の開始点を作り直します。`reset`・`clear`は成分も消し、いずれも古い履歴位置を無効にします。容量は保持します。
 
-既定では指定した頂点、空履歴への`undo`、不正な巻き戻し位置を拒否します。検査のためだけに配列や全履歴を走査しません。
+`undo`は非空履歴、`rollback`は`0<=state<=get_state()`が前提です。頂点・履歴回数の上限はINT_MAX。`SKIP_RUNTIME_CHECKS`は入力検査を省きますが、容量保護は残します。追加SIMDは`SIRKIT_DISABLE_SIMD`で除外できます。
 
-`SKIP_RUNTIME_CHECKS`を定義すると入力検査を除外します。頂点や履歴位置の前提は利用側で満たしてください。頂点数と履歴回数の内部上限は検査省略時も維持します。
-
-Nyaanの実装から、負サイズ・サイズによる結合・不成功結合も履歴へ残す方式を引き継いでいます。[来歴とライセンスの監査](../Audit/provenance-rollback-union-find-second-pass-2026-10-22.json)に、原典と改修部分の根拠を記録しています。
+[完全な使用例](../Examples/rollback_union_find_example.cpp)・[実装・検証の記録](../Audit/document-detail-before-concise-data-structure-2026-11-15.md#rollback-union-find)

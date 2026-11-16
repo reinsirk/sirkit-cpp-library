@@ -2,23 +2,229 @@
 
 `LineContainer<T, objective>`は直線`y=k*x+m`を追加し、指定した`x`での最小値または最大値を返します。傾きや照会順の制約はありません。`MinLineContainer<T>`と`MaxLineContainer<T>`を使うと目的を省略できます。[使用例](../Examples/line_container_example.cpp)を参照してください。
 
-直線を傾き順に保持し、最適になる区間の右端`p`を保存します。追加した直線と隣接する直線の交点を更新し、不要になった直線を除きます。整数で包絡が小さい場合は、隣接する直線から不要と判断できる追加の確保を省き、残す場合は計算した交点を再利用します。照会では`x<=p`となる最初の直線を探します。以下、hは包絡に保持する直線数です。領域はO(h)、追加は償却O(log h)、照会はO(log h)です。1回の追加で多数の直線を除く場合はO(h)かかります。
+保持直線数をhとすると、領域O(h)、追加は償却O(log(h+1))、照会はO(log(h+1))です。1回の追加で多数の直線を除く場合はO(h)かかります。
 
 ## API
 
-| API | 動作 |
-| --- | --- |
-| `add(k,m)` | 直線を追加する。既存直線より常に劣るものや重複は包絡から除かれ得る。 |
-| `query(x)` | 最適値をTで返す。非空が前提。 |
-| `query_optional(x)` | 空ならnullopt、それ以外はqueryと同じ。 |
-| `query_line(x)` | 選択した元係数の組`pair<T,T>{k,m}`を返す。非空が前提。値の評価は行わない。 |
-| `query_line_optional(x)` | 空ならnullopt、それ以外はquery_lineと同じ。 |
-| `query_with_line(x)` | 1回の探索で`Result{value,k,m}`を返す。非空が前提。 |
-| `query_with_line_optional(x)` | 空ならnullopt、それ以外はquery_with_lineと同じ。 |
-| `size()` / `empty()` | 保持する直線数・空判定。O(1)。追加回数とは異なる。 |
-| `clear()` / `swap(other)` | 全削除 / 同じ型の包絡を交換する。O(h) / O(1)。 |
-| `lc_div(a,b)` | 整数では床除算、浮動小数点では通常の除算。 |
-| `lc_inf<T>()` | 整数ではTの最大値、浮動小数点では正の無限大。 |
+### LineContainer
+
+```text
+LineContainer();
+```
+
+空の包絡を構築します。
+
+**制約:** Tとobjectiveは冒頭の型・目的の条件を満たすこと。
+
+**計算量:** O(1)。
+
+### add
+
+```text
+void add(T k, T m);
+```
+
+直線y=k*x+mを追加します。常に劣る線や重複は除かれ得ます。
+
+**制約:** 整数係数はT内、浮動係数は有限。
+
+**計算量:** 償却O(log(h+1))、1回の最悪O(h)。
+
+### query
+
+```text
+T query(T x) const;
+```
+
+最適値を返します。同点の直線の選択は未規定です。
+
+**制約:** 非空で、浮動xは有限。整数の最適値がT外なら常にoverflow_error。
+
+**計算量:** O(log(h+1))。
+
+### query_optional
+
+```text
+std::optional<T> query_optional(T x) const;
+```
+
+最適値を返します。空ならnulloptです。
+
+**制約:** 浮動xは有限。整数の最適値がT外なら常にoverflow_error。
+
+**計算量:** O(log(h+1))。
+
+### query_line
+
+```text
+std::pair<T,T> query_line(T x) const;
+```
+
+選択した元係数{k,m}を返します。同点の直線の選択は未規定です。
+
+**制約:** 非空で、浮動xは有限。値の評価は行いません。
+
+**計算量:** O(log(h+1))。
+
+### query_line_optional
+
+```text
+std::optional<std::pair<T,T>> query_line_optional(T x) const;
+```
+
+選択した元係数{k,m}を返します。空ならnulloptです。
+
+**制約:** 浮動xは有限。値の評価は行いません。
+
+**計算量:** O(log(h+1))。
+
+### query_with_line
+
+```text
+Result query_with_line(T x) const;
+```
+
+Result{value,k,m}を返します。同点の直線の選択は未規定です。
+
+**制約:** 非空で、浮動xは有限。整数の最適値がT外なら常にoverflow_error。
+
+**計算量:** O(log(h+1))。
+
+### query_with_line_optional
+
+```text
+std::optional<Result> query_with_line_optional(T x) const;
+```
+
+Result{value,k,m}を返します。空ならnulloptです。
+
+**制約:** 浮動xは有限。整数の最適値がT外なら常にoverflow_error。
+
+**計算量:** O(log(h+1))。
+
+### size
+
+```text
+size_type size() const noexcept;
+```
+
+包絡に保持する直線数を返します。追加回数とは異なります。
+
+**制約:** 追加の制約はありません。
+
+**計算量:** O(1)。
+
+### empty
+
+```text
+bool empty() const noexcept;
+```
+
+包絡が空ならtrueです。
+
+**制約:** 追加の制約はありません。
+
+**計算量:** O(1)。
+
+### clear
+
+```text
+void clear() noexcept;
+```
+
+全直線を破棄します。
+
+**制約:** 追加の制約はありません。
+
+**計算量:** O(h)。
+
+### swap
+
+```text
+void swap(super& other) noexcept;
+```
+
+同じ型の基底multisetと内容を交換します。superは公開される基底型の別名です。
+
+**制約:** 追加の制約はありません。
+
+**計算量:** O(1)。
+
+### lc_div
+
+```text
+template<class T> T lc_div(T a, T b);
+```
+
+整数では床除算、浮動小数点では通常の除算を返します。
+
+**制約:** b!=0。整数結果がT外なら常にoverflow_error。
+
+**計算量:** O(1)。
+
+### lc_inf
+
+```text
+template<class T> constexpr T lc_inf();
+```
+
+整数ではTの最大値、浮動小数点では正の無限大を返します。
+
+**制約:** 追加の制約はありません。
+
+**計算量:** O(1)。
+
+
+### begin
+
+```text
+super::iterator begin() noexcept;
+super::const_iterator begin() const noexcept;
+```
+
+傾き順の先頭iteratorを返します。
+
+**制約:** 削除された直線へのiteratorは保持しません。
+
+**計算量:** O(1)。
+
+### end
+
+```text
+super::iterator end() noexcept;
+super::const_iterator end() const noexcept;
+```
+
+末尾の次を表すiteratorを返します。
+
+**制約:** 追加の制約はありません。
+
+**計算量:** O(1)。
+
+### lower_bound
+
+```text
+super::iterator lower_bound(T x);
+super::const_iterator lower_bound(T x) const;
+```
+
+右端境界pがx以上の最初の直線を指すiteratorを返します。
+
+**制約:** 正しい包絡状態で使います。
+
+**計算量:** O(log(h+1))。
+
+### insect
+
+```text
+bool insect(super::iterator x, super::iterator y);
+```
+
+旧互換の交点更新を行い、更新後の境界関係をboolで返します。通常の更新にはaddを使います。
+
+**制約:** 包絡の正しいiteratorだけを渡す内部用の操作です。
+
+**計算量:** O(1)。
 
 同じ値を与える直線の選択は未規定です。`Result`は値と係数を所有し、コンテナ内の要素への参照を持ちません。値と直線が両方必要な場合に使います。
 
@@ -29,14 +235,6 @@ lines.add(-1, 4);
 auto result = lines.query_with_line(3);
 // result.value == 1, result.k == -1, result.m == 4
 ```
-
-## 小さい整数包絡の事前棄却
-
-最小化でTが32bit以下、保持直線が256本以下なら、隣接直線の既存境界`p`を使って候補を先に比較します。候補が左の直線以上となるのを`p`で、右の直線より大きいのを`p+1`で確認できれば、整数の照会域全体で不要です。第2比較を厳密にすることで、同点の直線を保持する従来の状態も維持します。
-
-係数差と境界の積はint64_tに収まり、交点の除算前に判定できます。この経路は標準C++のみで、128bit整数拡張の有無によらず使えます。64bit・最大化・浮動小数点では従来経路を使います。
-
-64bit最小化では、包絡の傾きが降順なので、候補と隣接線の交点の分母は正になります。GCCでは小包絡の事前棄却にある2回の交点計算だけ、この順序を使って符号判定を省きます。差は符号なし整数で計算し、床除算・範囲制限・最小値境界の処理を維持します。大包絡・32bit・最大化・浮動小数点、および他のコンパイラでは従来の計算を使います。
 
 ## 数値と入力の前提
 
@@ -56,6 +254,6 @@ auto result = lines.query_with_line(3);
 
 基底の`insert`・`erase`やmutable係数を直接変更すると、隣接交点との整合性が壊れます。更新には`add`と`clear`を使います。`insect(x,y)`は旧互換の内部交点更新で、利用者が通常操作として呼ぶ関数ではありません。
 
-同梱の1D部品は2次元版と`SIRKIT_LINE_CONTAINER_DEFINED`を共有し、どちらを先に含めても重複定義しません。提出先は[Library Checker Line Add Get Min](https://judge.yosupo.jp/problem/line_add_get_min)です。最大化・浮動係数・追加API・整数端・所有権は独立ローカル検査で補います。出典とライセンスの調査根拠は[監査記録](../Audit/provenance-line-container-min-2026-10-22.json)に置きます。
+同梱部品は2次元版と共有ガードで併用できます。
 
-[独立補足試験](../Verify/current/tests/line_container_test.cpp)では全登録直線の内積を参照に、全取得API・整数端・相殺・浮動値・所有権を照合します。
+[実装・検証の記録](../Audit/document-detail-before-concise-data-structure-2026-11-15.md#line-container)

@@ -4,15 +4,127 @@
 
 ## API
 
-| API | 動作 |
-| --- | --- |
-| `NormalizeMod(int64_t a,uint64_t m)` | 負数を含むaを0以上m未満へ正規化する。INT64_MINも可。 |
-| `ModAdd(a,b,m)` / `ModSubtract(a,b,m)` / `ModMultiply(a,b,m)` | uint64_tの和 / 差 / 積の剰余を返す。a,bは正規化不要。 |
-| `ModPow(a,e,m)` | a^eの剰余。指数0は1 mod m。 |
-| `ModInverse(a,m)` | 逆元のoptional。存在しなければnullopt、m=1では0。合成数法も可。 |
-| `SolveLinearCongruence(a,b,m)` | a*x=b (mod m)のoptional<Congruence>。不能ならnullopt。 |
-| `ChineseRemainder(a,b)` / `(span<const Congruence>)` | 合同式を統合する。互いに素でない法も可。不能はnullopt、空列は{0,1}。 |
-| `ModSqrt(a,p)` | x²=a (mod p)の根の小さい方をoptionalで返す。根がなければnullopt。pは素数が前提。 |
+### NormalizeMod
+
+```text
+constexpr std::uint64_t NormalizeMod(std::int64_t value, std::uint64_t modulus);
+```
+
+符号付き整数を0以上modulus未満へ正規化します。
+
+**制約:** modulus>=1。
+
+**計算量:** O(1)。
+
+### ModAdd
+
+```text
+constexpr std::uint64_t ModAdd(std::uint64_t a, std::uint64_t b, std::uint64_t modulus);
+```
+
+和の剰余を返します。
+
+**制約:** modulus>=1。a,bは正規化不要。
+
+**計算量:** O(1)。
+
+### ModSubtract
+
+```text
+constexpr std::uint64_t ModSubtract(std::uint64_t a, std::uint64_t b, std::uint64_t modulus);
+```
+
+差の剰余を返します。
+
+**制約:** modulus>=1。a,bは正規化不要。
+
+**計算量:** O(1)。
+
+### ModMultiply
+
+```text
+constexpr std::uint64_t ModMultiply(std::uint64_t a, std::uint64_t b, std::uint64_t modulus);
+```
+
+積の剰余を返します。
+
+**制約:** modulus>=1。a,bは正規化不要。
+
+**計算量:** 拡張整数経路O(1)、標準経路O(log(m+1))。
+
+### ModPow
+
+```text
+constexpr std::uint64_t ModPow(std::uint64_t a, std::uint64_t exponent, std::uint64_t modulus);
+```
+
+非負整数乗の剰余を返します。
+
+**制約:** modulus>=1、指数は非負。
+
+**計算量:** 剰余乗算の費用をL(m)としてO(log(e+2)*L(m))時間・O(1)領域。
+
+### ModInverse
+
+```text
+constexpr std::optional<std::uint64_t> ModInverse(std::uint64_t a, std::uint64_t modulus);
+```
+
+逆元をoptionalで返します。存在しなければnullopt、modulus=1では0です。
+
+**制約:** modulus>=1。逆元がなければnullopt。
+
+**計算量:** O(log(m+1)*L(m))時間・O(1)領域。合同式列は統合回数分を加える。
+
+### Congruence::operator==
+
+```text
+friend constexpr bool operator==(const Congruence&, const Congruence&);
+```
+
+剰余と法が等しいかを返します。
+
+**制約:** なし。
+
+**計算量:** O(1)。
+
+### SolveLinearCongruence
+
+```text
+constexpr std::optional<Congruence> SolveLinearCongruence(std::uint64_t a, std::uint64_t b, std::uint64_t modulus);
+```
+
+a*x=bの合同式の解をoptionalで返します。
+
+**制約:** modulus>=1。
+
+**計算量:** O(log(m+1)*L(m))時間・O(1)領域。合同式列は統合回数分を加える。
+
+### ChineseRemainder
+
+```text
+constexpr std::optional<Congruence> ChineseRemainder(Congruence first, Congruence second);
+constexpr std::optional<Congruence> ChineseRemainder(std::span<const Congruence> equations);
+```
+
+合同式を統合した解をoptionalで返します。不能ならnullopt、空列は{0,1}です。
+
+**制約:** 法は正。解のある中間周期がuint64_tに収まる。
+
+**計算量:** 統合1回にO(log(m+1)L(m))時間。k式なら合計O(k log(m+1)L(m))の上界、追加領域O(1)。
+
+### ModSqrt
+
+```text
+constexpr std::optional<std::uint64_t> ModSqrt(std::uint64_t a, std::uint64_t prime);
+```
+
+素数法で平方根の小さい方をoptionalで返します。
+
+**制約:** primeは素数。素数判定は行わない。
+
+**計算量:** 非平方剰余をz候補調べる場合O((z+log p)log p)回の剰余乗算。
+
 
 Congruenceは`{remainder,modulus}`で、解全体を`remainder + k*modulus`と表します。一次合同式ではmodulusはm/gcd(a,m)、中国剰余定理では元の法のLCMです。
 
