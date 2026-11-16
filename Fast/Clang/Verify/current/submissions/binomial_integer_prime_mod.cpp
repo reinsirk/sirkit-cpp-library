@@ -24,6 +24,10 @@
 // Lucas(n,k): 素数の法でCOMと同じ結果。合成数・法1ではdomain_error（COMを使う）。
 // H(n,k): (n+k-1)Ckの剰余。0H0=1（法1は0）、0Hk=0（k>0）。int64_t超過はoverflow_error。
 // 表外は積で計算し、積の回数上限も超えるとlength_error。SKIP_RUNTIME_CHECKSで入力検査を除く。
+// m=法、r=異なる素因子数、B=全表の総要素数。構築はO(sqrt(m)+B+r log m)、prepareはO(B+r log m)、領域O(B+r)。
+// 準備済みの一般照会はO(Σ_p(1+log_p(n+1)))。素数pの表外Lucasは桁数d・積の総項数sとしてO(d+s+d log p)。
+// 素数冪p^eの表外直接積はs=min(k,n-k)としてO((s+1)(1+log_p(n+1))+log m)。自動拡張にはprepareの費用を加える。
+// 以上は固定幅整数演算をO(1)とした上界。Hは対応するCOMと同じ費用。
 //
 // [ModIntBinomial<Mint>]
 // AtCoder modint用。Mintは利用側で用意し、動的な法を変えたら計算器も作り直す。
@@ -31,6 +35,9 @@
 // ModIntBinomial(options): 指定した上限で500万まで前計算する。
 // prepare(max_n=5'000'000): 上限内で表を準備。制限・例外はBinomialModと同じ。
 // COM(n,k): nCkをMintで返す。n<0,k<0,k>nと法1は0。素数でn<modかつ準備済みならO(1)。
+// m=法、B=全表の総要素数、r=異なる素因子数。構築O(sqrt(m)+B+r log m)、prepareはO(B+r log m)、領域O(B+r)。
+// 素数pのLucasはd桁・表外の積の総項数sとしてO(d+s)回のMint演算と高々d回のinv、表内はO(d)。
+// 通常のmodintではinvはO(log p)、他の演算はO(1)。自動拡張の費用を別途加え、合成数はBinomialModと同じ。
 // Lucas(n,k): 素数の法でCOMと同じ結果。合成数・法1ではCOMを使う。
 // H(n,k): nHkをMintで返す。0H0=1（法1は0）、0Hk=0（k>0）。int64_t超過はoverflow_error。
 
@@ -1760,6 +1767,7 @@ inline VerifyOutput verify_out;
 #include <algorithm>
 #include <cstdint>
 
+#include <array>
 int main() {
     int q{}; std::uint32_t modulus{}; verify_in >> q >> modulus;
     std::vector<std::pair<std::uint32_t, std::uint32_t>> queries(q);
@@ -1767,5 +1775,14 @@ int main() {
     for (auto& [n, k] : queries) { verify_in >> n >> k; max_n = std::max(max_n, n); }
     BinomialOptions options; options.table_limit = 9'999'999;
     BinomialMod comb(modulus, max_n, options);
-    for (const auto& [n, k] : queries) verify_out << comb.COM(n, k) << '\n';
+    const std::size_t batch = max_n < (std::uint32_t{1} << 20) ? 1 : 256;
+    std::array<std::uint32_t, 256> answers;
+    for (std::size_t first = 0; first < queries.size(); first += batch) {
+        const auto count = std::min(batch, queries.size() - first);
+        for (std::size_t i = 0; i < count; ++i) {
+            const auto& [n, k] = queries[first + i];
+            answers[i] = comb.COM(n, k);
+        }
+        for (std::size_t i = 0; i < count; ++i) verify_out << answers[i] << '\n';
+    }
 }
