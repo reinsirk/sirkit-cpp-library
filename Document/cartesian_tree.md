@@ -4,15 +4,167 @@
 
 ## API
 
-| API | 動作 |
-| --- | --- |
-| `CartesianTree()` | 空の木を作る。 |
-| `CartesianTree(values[,compare])` / `build(values[,compare])` | spanまたはvectorから構築／再構築する。 |
-| `root()` | 根の添字をstd::int32_tで返す。空なら-1。 |
-| `parent(v)` / `left_child(v)` / `right_child(v)` | 親／左の子／右の子の添字。存在しなければ-1。 |
-| `children(v)` | {左の子,右の子}を返す。 |
-| `parents()` / `left_children()` / `right_children()` | 各配列への読み取り専用span。 |
-| `size()` / `empty()` / `clear()` | 頂点数／空か／空にする。 |
+### CartesianTree
+
+```text
+CartesianTree();
+template<class T, std::size_t Extent, class Compare = std::less<>> explicit CartesianTree(std::span<T, Extent> values, Compare&& compare = Compare{});
+template<class T, class Allocator, class Compare = std::less<>> requires (!std::is_same_v<T, bool>) explicit CartesianTree(const std::vector<T, Allocator>& values, Compare&& compare = Compare{});
+CartesianTree(const CartesianTree&);
+CartesianTree(CartesianTree&& other) noexcept;
+```
+
+空、またはspan・vectorの値列から木を構築します。比較器は省略時std::less<>です。
+
+**制約:** 入力長はINT32_MAX以下で、比較器は一貫した狭義弱順序です。
+
+**計算量:** 空の構築・ムーブはO(1)、コピーはO(N)。入力からはO(N)時間・領域、比較O(N)回。
+
+### build
+
+```text
+template<class T, std::size_t Extent, class Compare = std::less<>> void build(std::span<T, Extent> values, Compare&& compare = Compare{});
+template<class T, class Allocator, class Compare = std::less<>> requires (!std::is_same_v<T, bool>) void build(const std::vector<T, Allocator>& values, Compare&& compare = Compare{});
+```
+
+spanまたはvectorから構築／再構築する。
+
+**制約:** 入力長はINT32_MAX以下で、比較器は一貫した狭義弱順序です。
+
+**計算量:** O(旧N+新N)時間、O(新N)追加領域。比較はO(新N)回。
+
+### root
+
+```text
+std::int32_t root() const noexcept;
+```
+
+根の頂点番号を返します。空なら-1です。
+
+**制約:** なし。
+
+**計算量:** O(1)。
+
+### parent
+
+```text
+std::int32_t parent(std::int32_t vertex) const;
+```
+
+親の頂点番号を返します。根の親は-1です。
+
+**制約:** 引数の頂点番号・添字は有効範囲内です。その他の前提は共通条件に従います。
+
+**計算量:** O(1)。
+
+### left_child
+
+```text
+std::int32_t left_child(std::int32_t vertex) const;
+```
+
+左の子の添字を返します。存在しなければ-1です。
+
+**制約:** 引数の頂点番号・添字は有効範囲内です。その他の前提は共通条件に従います。
+
+**計算量:** O(1)。
+
+### right_child
+
+```text
+std::int32_t right_child(std::int32_t vertex) const;
+```
+
+右の子の添字を返します。存在しなければ-1です。
+
+**制約:** 引数の頂点番号・添字は有効範囲内です。その他の前提は共通条件に従います。
+
+**計算量:** O(1)。
+
+### children
+
+```text
+std::pair<std::int32_t, std::int32_t> children(std::int32_t vertex) const;
+```
+
+左の子と右の子の添字をpairで返します。
+
+**制約:** 引数の頂点番号・添字は有効範囲内です。その他の前提は共通条件に従います。
+
+**計算量:** O(1)。
+
+### parents
+
+```text
+std::span<const std::int32_t> parents() const noexcept;
+```
+
+親番号の配列を読み取り専用で返します。
+
+**制約:** なし。
+
+**計算量:** O(1)。
+
+### left_children
+
+```text
+std::span<const std::int32_t> left_children() const noexcept;
+```
+
+左の子の配列への読み取り専用spanを返します。
+
+**制約:** なし。
+
+**計算量:** O(1)。
+
+### right_children
+
+```text
+std::span<const std::int32_t> right_children() const noexcept;
+```
+
+右の子の配列への読み取り専用spanを返します。
+
+**制約:** なし。
+
+**計算量:** O(1)。
+
+### size
+
+```text
+std::size_t size() const noexcept;
+```
+
+頂点数を返します。
+
+**制約:** なし。
+
+**計算量:** O(1)。
+
+### empty
+
+```text
+bool empty() const noexcept;
+```
+
+頂点数が0ならtrueを返します。
+
+**制約:** なし。
+
+**計算量:** O(1)。
+
+### clear
+
+```text
+void clear() noexcept;
+```
+
+領域を解放して空の状態へ戻します。
+
+**制約:** なし。
+
+**計算量:** O(N)。
+
 
 ```cpp
 std::vector<std::int64_t> a{4,2,2,5,1};
@@ -32,3 +184,31 @@ CartesianTree maximum(a,std::greater<>{}); // 最大元を優先する木。
 コピーは独立。build・コピー代入の確保や比較に失敗しても旧木とviewを維持しますが、比較器の外部状態は戻しません。自身の配列spanもbuildの入力に使えます。成功したbuild・clear・代入・所有権移動後は古いspanを使わないでください。move元は空でroot=-1です。
 
 頂点は0<=v<size()です。頂点番号の入力検査は`SKIP_RUNTIME_CHECKS`で除き、容量・添字の保護は維持します。比較器の順序を検査するための追加走査はしません。区間[l,r]の両端のLCAは、その区間の左優先の最小元に対応します。Library Checkerの出力では、根の親を根自身に変換します。
+
+## 構築・状態と補助型
+
+### operator=
+
+```text
+CartesianTree& operator=(const CartesianTree& other);
+CartesianTree& operator=(CartesianTree&& other) noexcept;
+```
+
+コピー／ムーブ代入し、自身への参照を返します。
+
+**制約:** なし。
+
+**計算量:** コピーは保持領域に比例します。旧状態の破棄費用を加えます。
+
+### swap
+
+```text
+void swap(CartesianTree& other) noexcept;
+void swap(CartesianTree& a, CartesianTree& b) noexcept;
+```
+
+保持する状態を交換します。
+
+**制約:** なし。
+
+**計算量:** O(1)。

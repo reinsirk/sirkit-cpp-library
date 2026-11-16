@@ -12,22 +12,277 @@ Nを頂点数、Eを隣接リストの要素数（辺列版では無向辺数の
 
 ## API
 
-| API | 動作・戻り値 | 計算量 |
-| --- | --- | --- |
-| `LCA()` | 空の表を作る。 | O(1) |
-| `LCA(g,root=0)` / `build(g,root=0)` | 隣接リストから構築 / 再構築する。 | 構築と同じ |
-| `LCA(n,edges,root=0)` / `build(n,edges,root=0)` | 無向辺列から構築 / 再構築する。 | 構築と同じ |
-| `size()/empty()/component_count()/root()` | 頂点数・空判定・成分数・指定根。空の根は-1。 | O(1) |
-| `parent(v)/depth_of(v)/component_of(v)/root_of(v)` | 親・深さ・成分番号・成分根。根の親は-1。 | O(1) |
-| `same_component(u,v)/is_ancestor(u,v)` | 同成分か / uがvの祖先か。自身も含む。 | O(1) |
-| `get(u,v)/operator()(u,v)` | 最近共通祖先。異成分なら-1。 | O(1) |
-| `get(u,v,new_root)` | new_rootを根としたLCA。3頂点の成分が揃わなければ-1。 | O(1) |
-| `get_distance(u,v)` | パスの辺数。異成分なら-1。 | O(1) |
-| `kth_ancestor(v,k)` | k個上の祖先。k=0ならv、根を越えると-1。 | O(log(H+2)) |
-| `kth_on_path(u,v,k)` | uからvへのパスのk番目（0始まり）。異成分・範囲外なら-1。 | O(log(H+2)) |
-| `order_index(v)` | 森全体でのDFS順添字。 | O(1) |
-| `subtree_range(v)/subtree_size(v)` | DFS順の部分木半開区間 / 部分木の頂点数。 | O(1) |
-| `clear()/swap(other)` | 領域を解放して空にする / 内容を交換する。 | O(N+B log(B+1)) / O(1) |
+### LCA
+
+```text
+LCA() noexcept;
+explicit LCA(const std::vector<std::vector<int>>& graph, int root = 0);
+LCA(int n, std::span<const std::pair<int,int>> edges, int root = 0);
+LCA(const LCA& other);
+LCA(LCA&& other) noexcept;
+```
+
+空の表、隣接リスト、または無向辺列から構築します。コピー後の再構築は互いに影響しません。
+
+**制約:** 頂点数・入力構造・型の前提を満たすこと。空の構築も可能です。
+
+**計算量:** 空の構築・ムーブはO(1)、コピーはO(N)。入力からはO(N+E+B log(B+1))時間・O(N+B log(B+1))保持領域。
+
+### build
+
+```text
+void build(const std::vector<std::vector<int>>& graph, int root = 0);
+void build(int n, std::span<const std::pair<int,int>> edges, int root = 0);
+```
+
+隣接リストから構築 / 再構築する。 無向辺列から構築 / 再構築する。
+
+**制約:** 入力グラフ・関数・比較器の前提は下記の共通条件に従います。
+
+**計算量:** 空の構築はO(1)。その他はO(N+E+B log(B+1))時間、O(N+B log(B+1))保持領域です。
+
+### size
+
+```text
+std::size_t size() const noexcept;
+```
+
+頂点数を返します。
+
+**制約:** なし。
+
+**計算量:** O(1)。
+
+### empty
+
+```text
+bool empty() const noexcept;
+```
+
+頂点数が0ならtrueを返します。
+
+**制約:** なし。
+
+**計算量:** O(1)。
+
+### component_count
+
+```text
+std::size_t component_count() const noexcept;
+```
+
+分解した連結成分の数を返します。
+
+**制約:** 引数の頂点番号・添字は有効範囲内です。その他の前提は共通条件に従います。
+
+**計算量:** O(1)。
+
+### root
+
+```text
+int root() const noexcept;
+```
+
+根の頂点番号を返します。空なら-1です。
+
+**制約:** なし。
+
+**計算量:** O(1)。
+
+### parent
+
+```text
+int parent(int v) const;
+```
+
+親の頂点番号を返します。根の親は-1です。
+
+**制約:** 引数の頂点番号・添字は有効範囲内です。その他の前提は共通条件に従います。
+
+**計算量:** O(1)。
+
+### depth_of
+
+```text
+int depth_of(int v) const;
+```
+
+構築時の根からの深さを返します。
+
+**制約:** 引数の頂点番号・添字は有効範囲内です。その他の前提は共通条件に従います。
+
+**計算量:** O(1)。
+
+### component_of
+
+```text
+int component_of(int v) const;
+```
+
+所属する木の番号を返します。
+
+**制約:** 引数の頂点番号・添字は有効範囲内です。その他の前提は共通条件に従います。
+
+**計算量:** O(1)。
+
+### root_of
+
+```text
+int root_of(int v) const;
+```
+
+所属する木の根の頂点番号を返します。
+
+**制約:** 引数の頂点番号・添字は有効範囲内です。その他の前提は共通条件に従います。
+
+**計算量:** O(1)。
+
+### same_component
+
+```text
+bool same_component(int u, int v) const;
+```
+
+2頂点が同じ木に属すならtrueを返します。
+
+**制約:** 引数の頂点番号・添字は有効範囲内です。その他の前提は共通条件に従います。
+
+**計算量:** O(1)。
+
+### is_ancestor
+
+```text
+bool is_ancestor(int u, int v) const;
+```
+
+uがvの祖先ならtrueを返します。自身は祖先とし、異成分ならfalseです。
+
+**制約:** 引数の頂点番号・添字は有効範囲内です。その他の前提は共通条件に従います。
+
+**計算量:** O(1)。
+
+### get
+
+```text
+[[gnu::always_inline]] #endif int get(int u, int v) const;
+[[gnu::always_inline]] #endif int get(int u, int v, int new_root) const;
+```
+
+最近共通祖先を返します。3引数版はnew_rootを根とした答えです。成分が揃わなければ-1です。
+
+**制約:** 引数の頂点番号・添字は有効範囲内です。その他の前提は共通条件に従います。
+
+**計算量:** O(1)。
+
+### operator()
+
+```text
+int operator()(int u, int v) const;
+```
+
+2頂点の最近共通祖先を返します。異成分なら-1です。
+
+**制約:** 引数の頂点番号・添字は有効範囲内です。その他の前提は共通条件に従います。
+
+**計算量:** O(1)。
+
+### get_distance
+
+```text
+int get_distance(int u, int v) const;
+```
+
+パスの辺数。異成分なら-1。
+
+**制約:** 引数の頂点番号・添字は有効範囲内です。その他の前提は共通条件に従います。
+
+**計算量:** O(1)。
+
+### kth_ancestor
+
+```text
+int kth_ancestor(int v, std::uint64_t k) const;
+```
+
+k個上の祖先。k=0ならv、根を越えると-1。
+
+**制約:** 引数の頂点番号・添字は有効範囲内です。その他の前提は共通条件に従います。
+
+**計算量:** O(log(H+2))。
+
+### kth_on_path
+
+```text
+int kth_on_path(int u, int v, std::uint64_t k) const;
+```
+
+uからvへのパスのk番目（0始まり）。異成分・範囲外なら-1。
+
+**制約:** 引数の頂点番号・添字は有効範囲内です。その他の前提は共通条件に従います。
+
+**計算量:** O(log(H+2))。
+
+### order_index
+
+```text
+int order_index(int v) const;
+```
+
+森全体でのDFS順添字。
+
+**制約:** 引数の頂点番号・添字は有効範囲内です。その他の前提は共通条件に従います。
+
+**計算量:** O(1)。
+
+### subtree_range
+
+```text
+std::pair<int, int> subtree_range(int v) const;
+```
+
+DFS順の部分木半開区間 / 部分木の頂点数。
+
+**制約:** 引数の頂点番号・添字は有効範囲内です。その他の前提は共通条件に従います。
+
+**計算量:** O(1)。
+
+### subtree_size
+
+```text
+int subtree_size(int v) const;
+```
+
+指定頂点を含む部分木の頂点数を返します。
+
+**制約:** 引数の頂点番号・添字は有効範囲内です。その他の前提は共通条件に従います。
+
+**計算量:** O(1)。
+
+### clear
+
+```text
+void clear() noexcept;
+```
+
+領域を解放して空の状態へ戻します。
+
+**制約:** なし。
+
+**計算量:** O(N+B log(B+1))。
+
+### swap
+
+```text
+void swap(LCA& other) noexcept;
+void swap(LCA& a, LCA& b) noexcept;
+```
+
+保持するグラフ・結果・状態を交換します。
+
+**制約:** なし。
+
+**計算量:** O(1)。
+
 
 ```cpp
 std::vector<std::pair<int,int>> edges{{0,1},{0,2},{1,3},{1,4},{5,6}};
@@ -48,6 +303,18 @@ tree.build(7, edges, 4);           // 根を変更して再構築
 
 `build`とコピー代入は失敗時に元の内容を保持します。コピー後の再構築・破棄は互いに影響しません。頂点情報と親表は各オブジェクトが所有し、深い森の不変な照会表は内部共有します。ムーブ元は空で再利用でき、自己コピー・自己ムーブは内容を保持します。
 
-深い森は32要素ブロックのRMQでLCAを求め、Ladder分解で祖先を探索します。浅い森は小さな祖先表を使います。Ladderの数学的参考は[Bender・Farach-Colton](https://www3.cs.stonybrook.edu/~bender/newpub/2004-level.pdf)です。実装の出典ではありません。
 
-提出先は[Library Checker](https://judge.yosupo.jp/problem/lca)です。森・任意の根・追加API・所有権・例外保証は[独立テスト](../Verify/current/tests/lca_reference_test.cpp)で補い、詳しい検証・測定は作業記録に置きます。
+## 構築・状態と補助型
+
+### operator=
+
+```text
+LCA& operator=(const LCA& other);
+LCA& operator=(LCA&& other) noexcept;
+```
+
+コピー／ムーブ代入し、自身への参照を返します。
+
+**制約:** なし。
+
+**計算量:** コピーは保持領域に比例します。旧状態の破棄費用を加えます。

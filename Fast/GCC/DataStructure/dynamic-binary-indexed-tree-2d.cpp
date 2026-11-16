@@ -27,10 +27,10 @@
 // set(i,j,x): 位置(i,j)の値をxへ変更する。
 // sum_all(): 配列全体の和を返す。
 // rows()/cols()/empty(): 行数／列数／いずれかの次元が0かを返す。
-// clear(): 行数・列数と確保済み容量を維持して、全要素を0にする。
-// reset(n,m): n行m列の零配列へ変更する。確保済み容量を再利用する。
-// reserve(nodes): 内部セル数の目安から行pool・疎索引を予約するヒント。行内容量は必要時確保。
-// stored_nodes(): 更新が到達したFenwickセル数。保持形式によらず、値が0になったセルも含む。
+// clear(): 寸法と容量を保ち零へ戻す。O(I+H)、I=行索引の長さ、H=疎行索引の表容量。
+// reset(n,m): n行m列の零配列へ変更し容量を再利用。O(I+H)。各行の値配列は即座に走査しない。
+// reserve(nodes): 行pool・疎索引の予約ヒント。再配置は期待O(C+C')、C/C'=予約前後の全保持容量。
+// stored_nodes(): 更新が到達したFenwickセル数をO(1)で返す。値が0になったセルも含む。
 // swap(other): 寸法・値・確保済み領域を交換する。
 //
 // [同梱: DynamicFenwickTree<S,T>]
@@ -47,10 +47,10 @@
 // lower_bound(w)/upper_bound(w): 前方累積和がw以上／より大きくなる最初の位置。なければsize()。
 // 検索は全要素非負が前提。lower_bound(w<=0)とupper_bound(w<0)は0。
 // size()/empty(): 配列の長さ／長さが0かを返す（全要素0とは区別）。
-// clear(): 長さと再利用できる容量を保ち、全要素を0へ戻す。
-// reset(n): 長さn>=0の零配列へ変更する。保持形式が対応するとき容量を再利用する。
-// reserve(nodes): 内部Fenwickセル数を目安に容量を準備するヒント。
-// stored_nodes(): 値0や相殺済みも含む登録セル数。読み取りやreserveでは変わらない。
+// clear(): 長さと容量を保ち零へ戻す。最悪O(C)、C=保持する全配列・表・木の総容量。
+// reset(n): 長さn>=0の零配列へ変更。保持形式が対応するとき容量を再利用。最悪O(C)。
+// reserve(nodes): 内部Fenwickセル数を目安に予約。再配置は期待O(C+C'+log(n+1))、C'=予約後の総容量。
+// stored_nodes(): 値0や相殺済みも含む登録セル数。通常O(1)、連続追加の途中はO(log n)。予約では変わらない。
 
 
 // SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。

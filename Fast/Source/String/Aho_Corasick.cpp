@@ -19,7 +19,8 @@
 // count_total(text): 重なり・重複込みの総一致数。空語は全境界に一致。O(text長)、uint64_t上限超過は例外。
 // match_counts(text): 各IDの一致数。O(text長+状態数+語数)時間・O(状態数+語数)領域。
 // for_each_match(text,callback): callback(id,begin,end)へ半開区間を通知。O(text長+一致数)。callbackから構造を変更しないこと。
-// find_all(text): AhoMatch{pattern,begin,end}のvectorを返す。終了位置の昇順、同位置内のID順は保証しない。
+// find_all(text): AhoMatch{pattern,begin,end}のvectorを返す。一致数RとしてO(text長+R)時間・O(R)返却領域。
+// 終了位置の昇順、同位置内のID順は保証しない。
 // size()/empty()/state_count(): 語数/語が空か/rootを含む状態数。pattern_length(id)/pattern_state(id): 語長/終端状態。
 // reserve_nodes(n)/reserve_patterns(n): 確保枠を予約。node_capacity(): 状態の確保枠。swap(other): O(1)で交換。
 // 検索・step・failure・output_countにはbuild済みが必要。text/語は指定アルファベット内。検査は通常処理へ統合。

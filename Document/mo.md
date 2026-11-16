@@ -2,21 +2,289 @@
 
 [本体](../Algorithm/Mo.cpp)は、区間の問い合わせを並べ替えて、要素の追加・削除が少なくなる順に処理します。Moは変更のない配列、MoWithUpdatesは点変更を含む配列を扱います。値と集計状態は利用側で持ちます。[使用例](../Examples/mo_example.cpp)を参照してください。
 
+
+以下、Nは配列長、Qは照会数、Uは変更数、Bは使用ブロック幅、K=1+floor(N/B)です。
+
 ## API
 
-| API | 動作 |
-| --- | --- |
-| `Mo(n)` / `MoWithUpdates(n)` | 長さnの配列への問い合わせを管理する。既定n=0。 |
-| `add_query(l,r)` | 半開区間[l,r)を登録し、追加順の要求IDを返す。更新版では現在の時刻を使う。 |
-| `add_update(pos)` | 更新版専用。変更位置を登録し変更IDを返す。旧値・新値は利用側で保存する。 |
-| `add_query(l,r,time)` | 更新版専用。記録済みの指定時刻での照会を登録する。 |
-| `run(add,erase,answer,b=0)` | 要素の追加・削除で区間を動かし、answer(要求ID)で答えを保存する。 |
-| `run(add_left,add_right,erase_left,erase_right,answer,b=0)` | 追加・削除を左右で分ける形。順序に依存する集計に使う。 |
-| `order(b=0)` / `block_size(b=0)` | 処理順のID列 / 使用する正のブロック幅を返す。0は自動選択。 |
-| `length()` / `query_count()` / `empty()` | 配列長 / 要求数 / 要求がないか。更新版はupdate_count()も使える。 |
-| `query(id)` / `queries()` | Query{left,right[,time]}の値 / 読み取り専用span。更新版はupdate_position(id)・updates()も使える。 |
-| `reserve_queries(cap)` / `reserve_updates(cap)` | 記録の容量を予約する。後者は更新版専用。 |
-| `clear_requests()` / `reset(n=0)` / `clear()` | 長さを保ち記録を消す / 再初期化 / 長さ0へ戻す。 |
+### Mo
+
+```text
+explicit Mo(std::int32_t n = 0);
+```
+
+長さnの静的な列への問い合わせを管理します。
+
+**制約:** n>=0。
+
+**計算量:** O(1)。
+
+### MoWithUpdates
+
+```text
+explicit MoWithUpdates(std::int32_t n = 0);
+```
+
+点変更を含む長さnの列への問い合わせを管理します。
+
+**制約:** n>=0。
+
+**計算量:** O(1)。
+
+### add_query
+
+```text
+std::size_t add_query(std::int32_t l, std::int32_t r);
+// MoWithUpdatesのみ
+std::size_t add_query(std::int32_t l, std::int32_t r, std::size_t time);
+```
+
+半開区間[l,r)を登録し、追加順の要求IDを返します。更新版の2引数形は現在の変更数を時刻にします。
+
+**制約:** 0<=l<=r<=length()、指定時刻は記録済みの変更数以下。
+
+**計算量:** 償却O(1)。
+
+### add_update
+
+```text
+std::size_t add_update(std::int32_t pos); // MoWithUpdatesのみ
+```
+
+変更位置を登録して変更IDを返します。旧値・新値は利用側で保存します。
+
+**制約:** 0<=pos<length()。
+
+**計算量:** 償却O(1)。
+
+### run（Mo）
+
+```text
+template<class Add, class Erase, class Answer>
+Window run(Add&& add, Erase&& erase, Answer&& answer, std::int32_t b = 0) const;
+template<class AddLeft, class AddRight, class EraseLeft, class EraseRight, class Answer>
+Window run(AddLeft&& add_left, AddRight&& add_right, EraseLeft&& erase_left,
+           EraseRight&& erase_right, Answer&& answer, std::int32_t b = 0) const;
+```
+
+区間を伸縮してanswer(要求ID)を呼び、最後のWindow{left,right}を返します。左右共通／別々のcallbackを選べます。
+
+**制約:** 集計は空から開始し、callbackは後述の契約を満たすこと。b>=0、0は自動選択。
+
+**計算量:** 並べ替えにO(Q log(Q+1)+log(N+Q+1))時間・O(Q)領域。区間移動O(QB+NK+Q)回とcallbackの費用。
+
+### run（MoWithUpdates）
+
+```text
+template<class Add, class Erase, class Apply, class Undo, class Answer>
+State run(Add&& add, Erase&& erase, Apply&& apply, Undo&& undo,
+          Answer&& answer, std::int32_t b = 0) const;
+template<class AddLeft, class AddRight, class EraseLeft, class EraseRight,
+         class Apply, class Undo, class Answer>
+State run(AddLeft&& add_left, AddRight&& add_right, EraseLeft&& erase_left,
+          EraseRight&& erase_right, Apply&& apply, Undo&& undo, Answer&& answer,
+          std::int32_t b = 0) const;
+```
+
+区間と時刻を動かし、最後のState{left,right,time}を返します。
+
+**制約:** 集計は空、外部の値は時刻0。callbackは後述の契約を満たすこと。b>=0。
+
+**計算量:** 並べ替えは静的版と同じ。移動O(QB+NK+UK²+Q)回とcallbackの費用。
+
+### order
+
+```text
+std::vector<std::size_t> order(std::int32_t b = 0) const;
+```
+
+処理順の要求IDを返します。要求ID自体は変えません。
+
+**制約:** b>=0。
+
+**計算量:** O(Q log(Q+1)+log(N+Q+1))時間・O(Q)領域。
+
+### block_size
+
+```text
+std::int32_t block_size(std::int32_t b = 0) const;
+```
+
+使う正のブロック幅を返します。0は自動選択です。
+
+**制約:** b>=0。
+
+**計算量:** 静的版O(log(Q+1))、更新版O(log(N+1))。
+
+### length
+
+```text
+std::int32_t length() const noexcept;
+```
+
+配列長を返します。
+
+**制約:** 追加の制約はありません。
+
+**計算量:** O(1)。
+
+### query_count
+
+```text
+std::size_t query_count() const noexcept;
+```
+
+問い合わせ数を返します。
+
+**制約:** 追加の制約はありません。
+
+**計算量:** O(1)。
+
+### update_count
+
+```text
+std::size_t update_count() const noexcept; // MoWithUpdatesのみ
+```
+
+変更数を返します。
+
+**制約:** 追加の制約はありません。
+
+**計算量:** O(1)。
+
+### empty
+
+```text
+bool empty() const noexcept;
+```
+
+問い合わせがなければtrueです。
+
+**制約:** 追加の制約はありません。
+
+**計算量:** O(1)。
+
+### query
+
+```text
+Query query(std::size_t id) const;
+```
+
+Query{left,right[,time]}を値で返します。
+
+**制約:** id<query_count()。
+
+**計算量:** O(1)。
+
+### queries
+
+```text
+std::span<const Query> queries() const noexcept;
+```
+
+問い合わせ記録の読み取り専用viewを返します。
+
+**制約:** viewの寿命は後述の所有契約に従います。
+
+**計算量:** O(1)。
+
+### update_position
+
+```text
+std::int32_t update_position(std::size_t id) const; // MoWithUpdatesのみ
+```
+
+変更IDの位置を返します。
+
+**制約:** id<update_count()。
+
+**計算量:** O(1)。
+
+### updates
+
+```text
+std::span<const std::int32_t> updates() const noexcept; // MoWithUpdatesのみ
+```
+
+変更位置の読み取り専用viewを返します。
+
+**制約:** viewの寿命は後述の所有契約に従います。
+
+**計算量:** O(1)。
+
+### reserve_queries
+
+```text
+void reserve_queries(std::size_t cap);
+```
+
+問い合わせ記録の容量を予約します。
+
+**制約:** 容量上限以下。
+
+**計算量:** 再確保時O(Q)、確保済みならO(1)。
+
+### reserve_updates
+
+```text
+void reserve_updates(std::size_t cap); // MoWithUpdatesのみ
+```
+
+変更記録の容量を予約します。
+
+**制約:** 容量上限以下。
+
+**計算量:** 再確保時O(U)、確保済みならO(1)。
+
+### clear_requests
+
+```text
+void clear_requests() noexcept;
+```
+
+長さを保ち全記録を消します。
+
+**制約:** 取得済みIDとviewは無効になります。
+
+**計算量:** O(Q+U+1)の上界。
+
+### reset
+
+```text
+void reset(std::int32_t n = 0);
+```
+
+指定した長さで全記録を消して再初期化します。
+
+**制約:** n>=0。
+
+**計算量:** 旧記録の破棄を含めO(Q+U+1)の上界。
+
+### clear
+
+```text
+void clear() noexcept;
+```
+
+長さ0・記録なしに戻します。
+
+**制約:** 取得済みIDとviewは無効になります。
+
+**計算量:** O(Q+U+1)の上界。
+
+### swap
+
+```text
+void Mo::swap(Mo& other) noexcept;
+void MoWithUpdates::swap(MoWithUpdates& other) noexcept;
+```
+
+長さと全記録の所有権を交換します。
+
+**制約:** 追加の制約はありません。
+
+**計算量:** O(1)。
+
 
 ```cpp
 std::vector<std::int64_t> a{2,7,1,8};

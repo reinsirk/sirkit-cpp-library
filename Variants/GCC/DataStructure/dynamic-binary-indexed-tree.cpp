@@ -25,10 +25,10 @@
 // lower_bound(w)/upper_bound(w): 前方累積和がw以上／より大きくなる最初の位置。なければsize()。
 // 検索は全要素非負が前提。lower_bound(w<=0)とupper_bound(w<0)は0。
 // size()/empty(): 配列の長さ／長さが0かを返す（全要素0とは区別）。
-// clear(): 長さと再利用できる容量を保ち、全要素を0へ戻す。
-// reset(n): 長さn>=0の零配列へ変更する。保持形式が対応するとき容量を再利用する。
-// reserve(nodes): 内部Fenwickセル数を目安に容量を準備するヒント。
-// stored_nodes(): 値0や相殺済みも含む登録セル数。読み取りやreserveでは変わらない。
+// clear(): 長さと容量を保ち零へ戻す。最悪O(C)、C=保持する全配列・表・木の総容量。
+// reset(n): 長さn>=0の零配列へ変更。保持形式が対応するとき容量を再利用。最悪O(C)。
+// reserve(nodes): 内部Fenwickセル数を目安に予約。再配置は期待O(C+C'+log(n+1))、C'=予約後の総容量。
+// stored_nodes(): 値0や相殺済みも含む登録セル数。通常O(1)、連続追加の途中はO(log n)。予約では変わらない。
 
 
 // SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。

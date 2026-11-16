@@ -4,17 +4,543 @@
 
 ## API
 
-| API | 動作・前提 |
-| --- | --- |
-| `FormalPowerSeries(n)` / `(vector)` / `{...}` | n個の0 / 整数係数を法へ正規化して構築する。 |
-| `size()` / `coefficients()` / `operator[]` / `get(i)` | 係数数 / const参照 / 既存係数 / 範囲外を0とする取得。 |
-| `set(i,value)` / `resize(n)` / `prefix(n)` / `trim()` | 既存係数変更 / 0拡張・切詰め / n係数のコピー / 末尾0の除去。 |
-| `+` / `-` / `*` / `scale(value)` | 係数の和 / 差 / 積 / 全係数の定数倍。 |
-| `derivative()` / `integral()` | 微分 / 積分。積分定数0、積分前の係数数は法未満。 |
-| `inverse(n)` / `log(n)` / `exp(n)` | 逆数 / 形式log / 形式exp。定数項は順に非0 / 1 / 0。 |
-| `pow(k,n)` / `sqrt(n)` | 非負整数乗 / 平方根のoptional。不可能ならnullopt。 |
-| `divmod(g)` / `/` / `%` | 多項式の商と剰余の組 / 商 / 剰余。0除算は常に例外。 |
-| `clear_cache()` | このスレッドのNTT根・整数逆数の表を解放する。 |
+### FormalPowerSeries::modulus
+
+```text
+static constexpr std::uint32_t modulus() noexcept;
+```
+
+使用する法を返します。
+
+**制約:** なし。
+
+**計算量:** O(1)。
+
+### FormalPowerSeries::max_precision
+
+```text
+static constexpr std::size_t max_precision() noexcept;
+```
+
+精度操作の最大係数数を返します。
+
+**制約:** なし。
+
+**計算量:** O(1)。
+
+### FormalPowerSeries::FormalPowerSeries
+
+```text
+FormalPowerSeries();
+explicit FormalPowerSeries(std::size_t n);
+explicit FormalPowerSeries(std::vector<std::uint32_t> values);
+template <std::integral T> explicit FormalPowerSeries(const std::vector<T>& values);
+FormalPowerSeries(std::initializer_list<std::int64_t> values);
+```
+
+空・指定係数数の零列・正規化した整数係数列から構築します。
+
+**制約:** 共通の型・入力条件を満たすこと。
+
+**計算量:** 係数数nにO(n+1)時間。コピー・返却値はO(n)領域。
+
+### FormalPowerSeries::size
+
+```text
+std::size_t size() const noexcept;
+```
+
+要素数を返します。
+
+**制約:** なし。
+
+**計算量:** O(1)。
+
+### FormalPowerSeries::empty
+
+```text
+bool empty() const noexcept;
+```
+
+空ならtrueを返します。
+
+**制約:** なし。
+
+**計算量:** O(1)。
+
+### FormalPowerSeries::coefficients
+
+```text
+const std::vector<std::uint32_t>& coefficients() const noexcept;
+```
+
+const参照。
+
+**制約:** 返したconst参照は所有者の更新・代入・破棄までの借用。
+
+**計算量:** O(1)。
+
+### FormalPowerSeries::operator[]
+
+```text
+std::uint32_t operator[](std::size_t i) const;
+```
+
+指定した要素を返します。
+
+**制約:** i<size()。
+
+**計算量:** O(1)。
+
+### FormalPowerSeries::get
+
+```text
+std::uint32_t get(std::size_t i) const noexcept;
+```
+
+範囲外を0とする取得。
+
+**制約:** iは任意。範囲外は0を返す。
+
+**計算量:** O(1)。
+
+### FormalPowerSeries::set
+
+```text
+template <std::integral T> void set(std::size_t i, T value);
+```
+
+既存係数変更。
+
+**制約:** i<size()。
+
+**計算量:** O(1)。
+
+### FormalPowerSeries::resize
+
+```text
+void resize(std::size_t n);
+```
+
+0拡張・切詰め。
+
+**制約:** 共通の型・入力条件を満たすこと。
+
+**計算量:** 係数数nにO(n+1)時間。コピー・返却値はO(n)領域。
+
+### FormalPowerSeries::trim
+
+```text
+void trim() noexcept;
+```
+
+末尾の零係数を除きます。零多項式は空になります。
+
+**制約:** なし。
+
+**計算量:** O(n+1)時間・O(1)追加領域。
+
+### FormalPowerSeries::prefix
+
+```text
+FormalPowerSeries prefix(std::size_t n) const;
+```
+
+n係数のコピー。
+
+**制約:** 共通の型・入力条件を満たすこと。
+
+**計算量:** 係数数nにO(n+1)時間。コピー・返却値はO(n)領域。
+
+### FormalPowerSeries::operator+=
+
+```text
+FormalPowerSeries& operator+=(const FormalPowerSeries& other);
+```
+
+加算して自身を更新します。
+
+**制約:** 共通の型・入力条件を満たすこと。
+
+**計算量:** 係数数nにO(n+1)時間。コピー・返却値はO(n)領域。
+
+### FormalPowerSeries::operator-=
+
+```text
+FormalPowerSeries& operator-=(const FormalPowerSeries& other);
+```
+
+減算して自身を更新します。
+
+**制約:** 共通の型・入力条件を満たすこと。
+
+**計算量:** 係数数nにO(n+1)時間。コピー・返却値はO(n)領域。
+
+### FormalPowerSeries::operator*=
+
+```text
+FormalPowerSeries& operator*=(const FormalPowerSeries& other);
+```
+
+乗算して自身を更新します。
+
+**制約:** 共通の型・入力条件を満たすこと。
+
+**計算量:** M(n)=O(n log(n+1))としてO(M(n))時間・O(n)作業領域。積・除算は対象長を用いる。
+
+### FormalPowerSeries::operator/=
+
+```text
+FormalPowerSeries& operator/=(const FormalPowerSeries& other);
+```
+
+除算して自身を更新します。
+
+**制約:** 除数は零多項式でないこと。必要なNTT長は2^23以下。
+
+**計算量:** M(n)=O(n log(n+1))としてO(M(n))時間・O(n)作業領域。積・除算は対象長を用いる。
+
+### FormalPowerSeries::operator%=
+
+```text
+FormalPowerSeries& operator%=(const FormalPowerSeries& other);
+```
+
+多項式の剰余で自身を更新します。
+
+**制約:** 除数は零多項式でないこと。必要なNTT長は2^23以下。
+
+**計算量:** M(n)=O(n log(n+1))としてO(M(n))時間・O(n)作業領域。積・除算は対象長を用いる。
+
+### FormalPowerSeries::operator+
+
+```text
+friend FormalPowerSeries operator+(FormalPowerSeries a, const FormalPowerSeries& b);
+```
+
+係数ごとの和を返します。
+
+**制約:** 共通の型・入力条件を満たすこと。
+
+**計算量:** 係数数nにO(n+1)時間。コピー・返却値はO(n)領域。
+
+### FormalPowerSeries::operator-
+
+```text
+friend FormalPowerSeries operator-(FormalPowerSeries a, const FormalPowerSeries& b);
+```
+
+係数ごとの差を返します。
+
+**制約:** 共通の型・入力条件を満たすこと。
+
+**計算量:** 係数数nにO(n+1)時間。コピー・返却値はO(n)領域。
+
+### FormalPowerSeries::operator*
+
+```text
+friend FormalPowerSeries operator*(const FormalPowerSeries& a, const FormalPowerSeries& b);
+```
+
+積を返します。
+
+**制約:** 共通の型・入力条件を満たすこと。
+
+**計算量:** M(n)=O(n log(n+1))としてO(M(n))時間・O(n)作業領域。積・除算は対象長を用いる。
+
+### FormalPowerSeries::operator/
+
+```text
+friend FormalPowerSeries operator/(const FormalPowerSeries& a, const FormalPowerSeries& b);
+```
+
+商を返します。
+
+**制約:** 除数は零多項式でないこと。必要なNTT長は2^23以下。
+
+**計算量:** M(n)=O(n log(n+1))としてO(M(n))時間・O(n)作業領域。積・除算は対象長を用いる。
+
+### FormalPowerSeries::operator%
+
+```text
+friend FormalPowerSeries operator%(const FormalPowerSeries& a, const FormalPowerSeries& b);
+```
+
+多項式の剰余を返します。
+
+**制約:** 除数は零多項式でないこと。必要なNTT長は2^23以下。
+
+**計算量:** M(n)=O(n log(n+1))としてO(M(n))時間・O(n)作業領域。積・除算は対象長を用いる。
+
+### FormalPowerSeries::operator==
+
+```text
+friend bool operator==(const FormalPowerSeries&, const FormalPowerSeries&);
+```
+
+長さと係数列が完全に一致するかを返します。
+
+**制約:** なし。
+
+**計算量:** 最悪O(n+1)時間・O(1)追加領域。
+
+### FormalPowerSeries::scale
+
+```text
+template <std::integral T> FormalPowerSeries scale(T scalar) const;
+```
+
+全係数をscalar倍したコピーを返します。
+
+**制約:** 共通の型・入力条件を満たすこと。
+
+**計算量:** 係数数nにO(n+1)時間。コピー・返却値はO(n)領域。
+
+### FormalPowerSeries::derivative
+
+```text
+FormalPowerSeries derivative() const;
+```
+
+微分。
+
+**制約:** 共通の型・入力条件を満たすこと。
+
+**計算量:** 係数数nにO(n+1)時間。コピー・返却値はO(n)領域。
+
+### FormalPowerSeries::integral
+
+```text
+FormalPowerSeries integral() const;
+```
+
+積分。積分定数0、積分前の係数数は法未満。
+
+**制約:** 共通の型・入力条件を満たすこと。
+
+**計算量:** 係数数nにO(n+1)時間。コピー・返却値はO(n)領域。
+
+### FormalPowerSeries::inverse
+
+```text
+FormalPowerSeries inverse(std::size_t n) const;
+FormalPowerSeries inverse() const;
+```
+
+x^n未満で形式的冪級数の逆数を返します。
+
+**制約:** n>0のとき定数項は非零。n<=2^22。n=0は空列、n省略時はsize()。
+
+**計算量:** M(n)=O(n log(n+1))としてO(M(n))時間・O(n)作業領域。積・除算は対象長を用いる。
+
+### FormalPowerSeries::log
+
+```text
+FormalPowerSeries log(std::size_t n) const;
+FormalPowerSeries log() const;
+```
+
+x^n未満で形式的対数を返します。
+
+**制約:** n>0のとき定数項は1。n<=2^22。n=0は空列、n省略時はsize()。
+
+**計算量:** M(n)=O(n log(n+1))としてO(M(n))時間・O(n)作業領域。積・除算は対象長を用いる。
+
+### FormalPowerSeries::exp
+
+```text
+FormalPowerSeries exp(std::size_t n) const;
+FormalPowerSeries exp() const;
+```
+
+x^n未満で形式的指数を返します。
+
+**制約:** n>0のとき定数項は0。n<=2^22。n=0は空列、n省略時はsize()。
+
+**計算量:** M(n)=O(n log(n+1))としてO(M(n))時間・O(n)作業領域。積・除算は対象長を用いる。
+
+### FormalPowerSeries::pow
+
+```text
+FormalPowerSeries pow(std::uint64_t exponent, std::size_t n) const;
+FormalPowerSeries pow(std::uint64_t exponent) const;
+```
+
+非負整数乗。
+
+**制約:** 指数は非負。精度n<=2^22。n省略時は現在のsize()。
+
+**計算量:** O(M(n)+log(k+1))時間・O(n)作業領域。
+
+### FormalPowerSeries::sqrt
+
+```text
+std::optional<FormalPowerSeries> sqrt(std::size_t n) const;
+std::optional<FormalPowerSeries> sqrt() const;
+```
+
+平方根のoptional。不可能ならnullopt。
+
+**制約:** 根が存在しなければnullopt。精度n<=2^22。n省略時は現在のsize()。
+
+**計算量:** M(n)=O(n log(n+1))としてO(M(n))時間・O(n)作業領域。積・除算は対象長を用いる。
+
+### FormalPowerSeries::divmod
+
+```text
+std::pair<FormalPowerSeries, FormalPowerSeries> divmod(const FormalPowerSeries& divisor) const;
+```
+
+多項式の商と剰余の組 / 商 / 剰余。0除算は常に例外。
+
+**制約:** 除数は零多項式でないこと。必要なNTT長は2^23以下。
+
+**計算量:** M(n)=O(n log(n+1))としてO(M(n))時間・O(n)作業領域。積・除算は対象長を用いる。
+
+### FormalPowerSeries::clear_cache
+
+```text
+static void clear_cache() noexcept;
+```
+
+保持する計算用キャッシュを解放します。
+
+**制約:** 共通の型・入力条件を満たすこと。
+
+**計算量:** 保持キャッシュの解放費用。
+
+### NTT::modulus
+
+```text
+static constexpr std::uint32_t modulus() noexcept;
+```
+
+使用する法を返します。
+
+**制約:** なし。
+
+**計算量:** O(1)。
+
+### NTT::max_length
+
+```text
+static constexpr std::size_t max_length() noexcept;
+```
+
+対応する最大長を返します。
+
+**制約:** なし。
+
+**計算量:** O(1)。
+
+### NTT::roots_capacity
+
+```text
+std::size_t roots_capacity() const noexcept;
+```
+
+保持している根の個数を返します。
+
+**制約:** なし。
+
+**計算量:** O(1)。
+
+### NTT::clear_cache
+
+```text
+void clear_cache() noexcept;
+```
+
+保持する計算用キャッシュを解放します。
+
+**制約:** 共通の型・入力条件を満たすこと。
+
+**計算量:** O(保持する根の数)。
+
+### NTT::prepare
+
+```text
+void prepare(std::size_t length);
+```
+
+指定した範囲の計算用表を準備します。
+
+**制約:** lengthは0またはmax_length()以下の2冪。
+
+**計算量:** 新規準備O(length)時間・保持O(length)領域。
+
+### NTT::transform
+
+```text
+void transform(std::vector<std::uint32_t>& a, bool inverse = false);
+```
+
+係数と周波数を正順で相互変換する。aを直接変更する。
+
+**制約:** 長さは0または対応する2冪、各係数は0..Mod-1。
+
+**計算量:** O(n log(n+1))時間、根以外の追加領域O(1)。
+
+### NTT::convolution
+
+```text
+template <std::integral T, std::integral U> std::vector<std::uint32_t> convolution(const std::vector<T>& a, const std::vector<U>& b);
+```
+
+整数vectorを法へ正規化し、vector<uint32_t>の畳み込みを返す。負数・UINT64_MAXも可。
+
+**制約:** 共通の型・入力条件を満たすこと。
+
+**計算量:** 短辺32以下はO(nm)、他はL=bit_ceil(n+m-1)としてO(L log L)時間・O(L)領域。
+
+### NTT::convolution_normalized
+
+```text
+std::vector<std::uint32_t> convolution_normalized(std::vector<std::uint32_t> a, std::vector<std::uint32_t> b);
+```
+
+正規化済みuint32_tのvectorを値で受け取る。moveした領域を再利用可。
+
+**制約:** 各係数は0..Mod-1。必要なNTT長は上限以下。
+
+**計算量:** 短辺32以下はO(nm)、他はO(L log L)時間・O(L)領域。
+
+### NTT::square
+
+```text
+template <std::integral T> std::vector<std::uint32_t> square(const std::vector<T>& a);
+```
+
+aとaの畳み込み。大きい入力では順変換を1回にする。
+
+**制約:** 共通の型・入力条件を満たすこと。
+
+**計算量:** 短い入力はO(n²)、他はL=bit_ceil(2n-1)としてO(L log L)時間・O(L)領域。
+
+### ConvolutionMod
+
+```text
+template <std::uint32_t Mod = 998244353, std::uint32_t Root = 3, std::integral T, std::integral U> std::vector<std::uint32_t> ConvolutionMod(const std::vector<T>& a, const std::vector<U>& b);
+```
+
+一時NTTを使い素数法の畳み込みを返します。
+
+**制約:** 共通の型・入力条件を満たすこと。
+
+**計算量:** NTT::convolutionと同じ。
+
+### NTT::NTT
+
+```text
+NTT();
+```
+
+動的キャッシュなしで生成。
+
+**制約:** 共通の型・入力条件を満たすこと。
+
+**計算量:** O(1)。
+
 
 ```cpp
 const FormalPowerSeries f{1,2,1}; // 1+2x+x²。

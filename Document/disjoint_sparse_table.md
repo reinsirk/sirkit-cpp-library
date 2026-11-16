@@ -4,16 +4,153 @@
 
 Opには、括り方で結果が変わらない結合演算と、左右どちらに混ぜても結果を変えない単位元を指定します。左右の順序は保持します。Sparse Tableと異なり`op(x,x)==x`は不要なので、和も扱えます。
 
-## API
+以下、Nは要素数です。値の演算・コピーをO(1)として計算量を記します。
 
-| API | 動作 |
-| --- | --- |
-| `(values,identity=T{},op=Op{})` | vectorから構築する。既定構築は空列。 |
-| `get(i)` | 元の要素のconst参照を返す。T=boolでは値。 |
-| `prod(l,r)` / `all_prod()` | [l,r) / 全体を左から集約した値を返す。空はidentity。O(1)。 |
-| `max_right(l,pred)` / `min_left(r,pred)` | 条件を満たす最大右端 / 最小左端を返す。O(log(N+1))。 |
-| `size()` / `empty()` / `values()` | 要素数 / 空か / 元の列のコピー。列のコピーはO(N+1)。 |
-| `assign(values)` / `clear()` / `swap(other)` | 再構築 / 空にする / 内容をO(1)で交換する。点更新は行わない。 |
+## コンストラクタ
+
+```text
+explicit DisjointSparseTable(const std::vector<T>& values = {}, const T& identity = T{}, Op op = Op{});
+DisjointSparseTable(const DisjointSparseTable&) = default;
+DisjointSparseTable(DisjointSparseTable&& other);
+```
+
+引数省略は空列、values形は指定列で構築します。コピーは独立です。
+
+**制約:** 冒頭の値型・演算の前提を満たすこと。指定する列長は内部容量の上限内です。
+
+**計算量:** N要素にO(N log(N+1)+1)時間・領域。 ムーブ構築はO(1)、コピーは保持領域に比例。
+
+## get
+
+```text
+const_reference get(std::size_t i) const;
+```
+
+元の要素のconst参照を返します。T=boolでは値を返します。
+
+**制約:** 指定位置は0以上size()未満。
+
+**計算量:** O(1)。
+
+## prod
+
+```text
+T prod(std::size_t l, std::size_t r) const;
+```
+
+半開区間[l,r)を左から集約した値を返します。空区間は単位元です。
+
+**制約:** 区間は0<=l<=r<=size()。点を指定する形は0<=p<size()。
+
+**計算量:** O(1)。
+
+## all_prod
+
+```text
+T all_prod() const;
+```
+
+列全体を先頭から集約した値を返します。空列は単位元です。
+
+**制約:** 共通の前提を満たすこと。
+
+**計算量:** O(1)。
+
+## max_right
+
+```text
+template<class Pred> std::size_t max_right(std::size_t l, Pred pred) const;
+```
+
+左端lを固定し、述語を満たす最大の右端を返します。
+
+**制約:** 端点は[0,size()]内。pred(単位元)=trueで、区間を伸ばしてfalseの後はtrueへ戻らないこと。
+
+**計算量:** O(log(N+1))。述語の費用は別です。
+
+## min_left
+
+```text
+template<class Pred> std::size_t min_left(std::size_t r, Pred pred) const;
+```
+
+右端rを固定し、述語を満たす最小の左端を返します。
+
+**制約:** 端点は[0,size()]内。pred(単位元)=trueで、区間を伸ばしてfalseの後はtrueへ戻らないこと。
+
+**計算量:** O(log(N+1))。述語の費用は別です。
+
+## size
+
+```text
+std::size_t size() const noexcept;
+```
+
+要素数を返します。
+
+**制約:** 共通の前提を満たすこと。
+
+**計算量:** O(1)。
+
+## empty
+
+```text
+bool empty() const noexcept;
+```
+
+空ならtrueを返します。
+
+**制約:** 共通の前提を満たすこと。
+
+**計算量:** O(1)。
+
+## values
+
+```text
+std::vector<T> values() const;
+```
+
+元の列をvectorへコピーして返します。
+
+**制約:** 共通の前提を満たすこと。
+
+**計算量:** O(N+1)時間・O(N)追加領域。
+
+## assign
+
+```text
+void assign(const std::vector<T>& values);
+```
+
+指定した列で再構築します。
+
+**制約:** 共通の前提を満たすこと。
+
+**計算量:** O(旧N log(旧N+1)+新N log(新N+1)+1)時間・新列分の領域。
+
+## clear
+
+```text
+void clear() noexcept;
+```
+
+空の状態へ戻します。容量や資源の扱いは末尾の所有・例外の説明に従います。
+
+**制約:** 共通の前提を満たすこと。
+
+**計算量:** 旧列の保持領域の破棄に比例。
+
+## swap
+
+```text
+void swap(DisjointSparseTable& other);
+```
+
+内容と設定を交換します。
+
+**制約:** 共通の前提を満たすこと。
+
+**計算量:** O(1)。値型・比較器のswapの費用は別です。
 
 ```cpp
 DisjointSparseTable<std::int64_t, std::plus<std::int64_t>> table(
@@ -30,3 +167,16 @@ auto sum = table.prod(1,4); // 8 = 0+3+5。
 Opはconst呼出可能な型を使います。添字・区間・述語の単位元条件は既定で検査し、`SKIP_RUNTIME_CHECKS`で除きます。参照は再構築・clear・移動・交換後まで保持しないでください。コピーは独立、移動元は空として再利用できます。演算等の例外時に内容の強い保証は行いません。
 
 数学的参考は[AtCoder Algorithm Lectures](https://info.atcoder.jp/entry/algorithm_lectures/disjoint_sparse_table)です。実装は本ライブラリ用のCC0です。
+
+## operator=
+
+```text
+DisjointSparseTable& operator=(const DisjointSparseTable& other);
+DisjointSparseTable& operator=(DisjointSparseTable&& other);
+```
+
+コピーまたはムーブで内容を置き換え、自身への参照を返します。コピーは独立した内容を持ちます。
+
+**制約:** 型・所有・例外保証は共通の説明に従います。
+
+**計算量:** 保持する配列・ノードのコピーと旧内容の破棄に比例。ムーブ構築とは異なり、代入では旧内容の解放費用も含みます。

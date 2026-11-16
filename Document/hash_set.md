@@ -1,56 +1,379 @@
 # HashSet
 
-`DataStructure/Hash_set.cpp`は、キーの値を所有する開番地法の集合です。`string_view`などの参照先は所有せず、登録中は参照先が有効で、キーとして不変である必要があります。順序は持ちません。`GenericHash`は整数・文字列・pair・tuple・列などに対応し、独自の同値関係には対応するHasherとKeyEqualを渡します。
+`HashSet<Key,Hasher,KeyEqual>`は、重複しないキーを所有する順序なし集合です。
 
-同じ要素を持つ`HashSet`は、内部のハッシュ種・列挙順・再配置の違いによらず、外側の`HashMap`や`HashSet`のキーとして同じハッシュ値になります。要素に独自の同値関係を使う集合をキーにするときは、その同値関係に合う外側のHasherも指定してください。
+以下、size_typeはstd::size_t、Nは登録数、Cは現在の容量、C′は再配置後の容量です。ハッシュ・比較・値操作の費用は別途加わります。
 
-## 基本操作
+## コンストラクタ
 
-`insert(key)`は既存または追加した要素のiteratorを返します。`insert_checked(key)`と`emplace(args...)`は`{iterator, 追加の有無}`を返します。`contains(key)`と`count(key)`は追加を行いません。検索・追加は期待償却O(1)で、列キーのハッシュ計算には列長に比例する費用がかかります。衝突が多い入力では時間が増えます。
+```text
+HashSet() = default;
+explicit HashSet(size_type expected, Hasher hash = {}, KeyEqual equal = {});
+HashSet(std::initializer_list<Key> keys, Hasher hash = {}, KeyEqual equal = {});
+template <std::input_iterator It, std::sentinel_for<It> Sentinel> HashSet(It first, Sentinel last, Hasher hash = {}, KeyEqual equal = {});
+HashSet(const HashSet&) = default;
+HashSet(HashSet&& other);
+```
 
-`erase(key, false)`は次の要素を探さず削除し、`end()`を返します。有効なiteratorを使う`erase(it, false)`はO(1)です。省略時の`erase(key)`や`erase(it)`は次のiteratorを返すため、最悪O(capacity())です。
+空集合、予約付き空集合、初期値リスト、iterator範囲から構築します。コピーは独立です。
+
+**制約:** 冒頭の値型・演算の前提を満たすこと。指定する列長は内部容量の上限内です。
+
+**計算量:** 空の構築はO(1)。予約・範囲構築の費用はreserveとinsert_rangeに準じます。 ムーブ構築はO(1)、コピーは保持領域に比例。
+
+## insert
+
+```text
+iterator insert(const Key& key);
+iterator insert(Key&& key);
+```
+
+追加または既存要素のiteratorを返します。
+
+**制約:** 共通のキー・ハッシュ・同値判定の前提を満たすこと。
+
+**計算量:** 期待償却O(1)。再配置や衝突集中時の上界は共通の計算量を参照。
+
+## insert_checked
+
+```text
+std::pair<iterator, bool> insert_checked(const Key& key);
+std::pair<iterator, bool> insert_checked(Key&& key);
+```
+
+キーが未登録なら追加し、{iterator,追加したか}を返します。
+
+**制約:** 共通のキー・ハッシュ・同値判定の前提を満たすこと。
+
+**計算量:** 期待償却O(1)。再配置や衝突集中時の上界は共通の計算量を参照。
+
+## emplace
+
+```text
+template <class... Args> std::pair<iterator, bool> emplace(Args&&... args);
+```
+
+argsからキーを構築し、{iterator,追加したか}を返します。
+
+**制約:** 共通のキー・ハッシュ・同値判定の前提を満たすこと。
+
+**計算量:** 期待償却O(1)。再配置や衝突集中時の上界は共通の計算量を参照。
+
+## insert_range
+
+```text
+template <std::input_iterator It, std::sentinel_for<It> Sentinel> void insert_range(It first, Sentinel last);
+```
+
+範囲内のキーを追加します。重複は増やしません。
+
+**制約:** 有効な範囲を渡し、同じ表のiteratorを入力にしないこと。
+
+**計算量:** M個の追加に期待償却O(M)、再配置の費用は共通の計算量に従います。
+
+## find
+
+```text
+iterator find(const Key& key) const;
+```
+
+指定キーのiteratorを返します。不在ならend()です。
+
+**制約:** 共通のキー・ハッシュ・同値判定の前提を満たすこと。
+
+**計算量:** 期待O(1)、最悪O(C)。ハッシュ・比較・値のコピー費用は別です。
+
+## contain
+
+```text
+bool contain(const Key& key) const;
+```
+
+指定したキーが登録されていればtrueを返します。
+
+**制約:** 共通のキー・ハッシュ・同値判定の前提を満たすこと。
+
+**計算量:** 期待O(1)、最悪O(C)。ハッシュ・比較・値のコピー費用は別です。
+
+## contains
+
+```text
+bool contains(const Key& key) const;
+```
+
+指定したキーが登録されていればtrueを返します。
+
+**制約:** 共通のキー・ハッシュ・同値判定の前提を満たすこと。
+
+**計算量:** 期待O(1)、最悪O(C)。ハッシュ・比較・値のコピー費用は別です。
+
+## count
+
+```text
+int count(const Key& key) const;
+```
+
+登録済みなら1、不在なら0を返します。
+
+**制約:** 共通のキー・ハッシュ・同値判定の前提を満たすこと。
+
+**計算量:** 期待O(1)、最悪O(C)。ハッシュ・比較・値のコピー費用は別です。
+
+## erase
+
+```text
+iterator erase(const_iterator it, bool get_next = true);
+iterator erase(const Key& key, bool get_next = true);
+```
+
+指定キーまたはiteratorの要素を削除し、次iteratorを返します。get_next=falseならend()です。不在/end()は無操作です。
+
+**制約:** iterator版は同じ表の有効なiteratorまたはend()を渡すこと。
+
+**計算量:** 次iteratorを探す形は最悪O(C)。false指定はキー版が期待償却O(1)、iterator版がO(1)。
+
+## erase_if
+
+```text
+template <class Predicate> size_type erase_if(Predicate predicate);
+```
+
+述語を満たす要素を削除し、削除数を返します。
+
+**制約:** 述語から同じ表を変更しないこと。
+
+**計算量:** O(C)、空表はO(1)。述語の費用は別です。
+
+## begin
+
+```text
+iterator begin() const noexcept;
+friend iterator begin(const HashSet& set) noexcept;
+```
+
+先頭のiteratorを返します。列挙順は規定しません。
+
+**制約:** 共通の所有・iteratorの有効期間に従います。
+
+**計算量:** 最悪O(C)、空表はO(1)。全走査はO(C)。
+
+## end
+
+```text
+iterator end() const noexcept;
+friend iterator end(const HashSet& set) noexcept;
+```
+
+終端iteratorを返します。
+
+**制約:** 共通の所有・iteratorの有効期間に従います。
+
+**計算量:** O(1)。
+
+## cbegin
+
+```text
+const_iterator cbegin() const noexcept;
+```
+
+先頭のconst_iteratorを返します。
+
+**制約:** 共通の所有・iteratorの有効期間に従います。
+
+**計算量:** 最悪O(C)、空表はO(1)。全走査はO(C)。
+
+## cend
+
+```text
+const_iterator cend() const noexcept;
+```
+
+終端const_iteratorを返します。
+
+**制約:** 共通の所有・iteratorの有効期間に従います。
+
+**計算量:** O(1)。
+
+## size
+
+```text
+size_type size() const noexcept;
+```
+
+要素数を返します。
+
+**制約:** 共通の前提を満たすこと。
+
+**計算量:** O(1)。
+
+## empty
+
+```text
+bool empty() const noexcept;
+```
+
+空ならtrueを返します。
+
+**制約:** 共通の前提を満たすこと。
+
+**計算量:** O(1)。
+
+## capacity
+
+```text
+size_type capacity() const noexcept;
+```
+
+確保済みのバケット数を返します。
+
+**制約:** 共通の前提を満たすこと。
+
+**計算量:** O(1)。
+
+## load_factor
+
+```text
+double load_factor() const noexcept;
+```
+
+登録数を容量で割った使用率を返します。
+
+**制約:** 共通の前提を満たすこと。
+
+**計算量:** O(1)。
+
+## reserve
+
+```text
+void reserve(size_type count);
+```
+
+指定した要素数まで再確保せず格納できる容量を予約します。
+
+**制約:** 共通のキー・ハッシュ・同値判定の前提を満たすこと。
+
+**計算量:** 再配置時は期待O(C+C′)、最悪O(C+C′+N²)。予約済みreserveはO(1)。
+
+## rehash
+
+```text
+void rehash(size_type requested);
+```
+
+指定数以上のバケットへ再配置します。
+
+**制約:** 共通のキー・ハッシュ・同値判定の前提を満たすこと。
+
+**計算量:** 再配置時は期待O(C+C′)、最悪O(C+C′+N²)。予約済みreserveはO(1)。
+
+## clear
+
+```text
+void clear() noexcept;
+```
+
+容量を保って全要素と墓石を削除します。
+
+**制約:** 共通の前提を満たすこと。
+
+**計算量:** O(C)。要素・墓石がなければO(1)。
+
+## swap
+
+```text
+void swap(HashSet& other);
+friend void swap(HashSet& left, HashSet& right) noexcept;
+```
+
+内容と設定を交換します。
+
+**制約:** 共通の前提を満たすこと。
+
+**計算量:** O(1)。値型・比較器のswapの費用は別です。
+
+## operator==
+
+```text
+friend bool operator==(const HashSet& left, const HashSet& right);
+```
+
+格納するキー集合が等しければtrueを返します。
+
+**制約:** 共通の所有・iteratorの有効期間に従います。
+
+**計算量:** 期待O(両表の容量)。空同士はO(1)、衝突集中で増加します。
+
+## operator!=
+
+```text
+bool operator!=(const HashSet& left, const HashSet& right);
+```
+
+C++23のoperator==から得られる不等値比較です。
+
+格納するキー集合が異なればtrueを返します。
+
+**制約:** 共通の所有・iteratorの有効期間に従います。
+
+**計算量:** 期待O(両表の容量)。空同士はO(1)、衝突集中で増加します。
+
+C/C'は再配置前後の容量、Nは登録数です。ハッシュ・比較・要素操作をO(1)として記します。列キーのハッシュは列長に比例します。衝突集中時の再配置は最悪O(C+C'+N²)。予約済みreserveはO(1)、削除では自動縮小せず`rehash(0)`で縮めます。
+
+次iteratorを返すeraseは最悪O(C)。false指定のキー削除は期待償却O(1)、有効iteratorの削除はO(1)です。`erase_if`の述語から表を変更してはいけません。
 
 ```cpp
 HashSet<int> values;
 values.insert(7);
-if (auto it = values.find(7); it != values.end()) values.erase(it, false);
-for (auto it = values.begin(); it != values.end();) it = values.erase(it);
+assert(values.contains(7));
+values.erase(7, false);
+assert(values.empty());
 ```
 
-`erase_if(pred)`は条件に合う要素を削除し、その数を返します。空集合ではO(1)、それ以外ではO(capacity())です。述語から表を変更しないでください。
+## 所有・制約
 
-`CompactSlot`に整数キーを保持し、`std::equal_to<Key>`または`std::equal_to<>`で比較する場合は、削除したキーの値を再登録の探索にも利用します。同値なキーの墓石に着いた時点で、その後ろに有効な同値キーはないため、その位置へ再登録できます。それ以外の型・比較器では登録済みの位置だけを比較します。削除したキーの参照先を保持し続ける必要はありません。削除したiteratorや参照が再び有効になるという意味ではありません。
+Keyはコピー可能、またはムーブ構築がnoexceptであることが必要です。コピーはKeyのコピー構築を使って独立し、ムーブ元は空。キーの書き換えは禁止です。再配置・clear・swap・ムーブでiteratorと参照が無効になり、eraseは対象だけを無効にします。
 
-## 容量・所有・反復子
+Hasher/KeyEqualは同値なキーへ同じハッシュを返し、登録中に規則を変えません。swapは両比較器の非送出swapが前提です。借用キーの参照先は登録中に寿命・内容を保ち、削除後は解放できます。同じ要素の集合は種・列挙順によらず同じ外側ハッシュになりますが、独自の同値関係には対応する外側Hasherも必要です。
 
-`reserve(n)`はn要素分を予約し、`rehash(n)`はnバケット以上かつ現登録数に足りる容量へ再配置します。削除では自動縮小しません。`rehash(0)`で必要容量まで縮められます。
+同梱`GenericHash()`は実行時の種、`GenericHash(seed)`は指定種で構築し、`operator()(x)`は整数・列挙・浮動値・tuple・range・std::hash対応型を再帰的にハッシュ化します。unorderedコンテナの列挙順は無視します。
 
-空集合の検索・`begin()`・集合比較は容量によらずO(1)です。`clear()`は容量を保ち、要素も墓石もなければ走査を省きます。コピーは独立した集合を作り、移動元は空になって再利用できます。
+`SKIP_RUNTIME_CHECKS`でiterator検査を除きます。検査有効でも全ての無効な再利用を検出する保証はありません。容量保護は維持し、追加SIMDは`SIRKIT_DISABLE_SIMD`で除外できます。
 
-キーの書き換えは禁止です。再配置・clear・swap・ムーブでiteratorと要素参照が無効になり、eraseは対象だけを無効にします。`SKIP_RUNTIME_CHECKS`でiterator検査とその専用状態を除きます。検査でも、消して同じ位置へ再登録したiteratorなど全ての無効な使用は検出できません。容量オーバーフローの保護は維持します。
+[完全な使用例](../Examples/hash_set_example.cpp)
 
-## 再配置の高速化
+## operator=
 
-GCCのSSE2対応x86では、64バケット以上の表の再配置で登録状態を16個ずつ判定します。自明にコピー・破棄できるキーだけに適用し、ハッシュが例外を送出しても元の表を保持します。GCCのx86では新しい格納領域の一部を値の構築前に順に書き、最初のランダムな書き込みの負担も抑えます。
+```text
+HashSet& operator=(HashSet other);
+```
 
-小さい表・非自明なキー・Clang・その他の対象環境では標準C++のループを使います。`SIRKIT_DISABLE_SIMD`でSIMD専用コードを除外できます。領域の事前準備は標準C++の処理として維持します。キーを探す探索手順は共通です。
+コピーまたはムーブで内容を置き換え、自身への参照を返します。コピーは独立した内容を持ちます。
 
-## 反復子の状態走査
+**制約:** 型・所有・例外保証は共通の説明に従います。
 
-GCCのSSE2対応x86では、`optional`でキーを保持する場合、`begin()`・前後のiterator移動・次iteratorを返す削除で、先頭4バケットを逐次確認し、続く空き区間を16バケットずつ調べます。登録状態だけを読み、範囲外や破棄済みのキーには触れません。
+**計算量:** 保持する配列・ノードのコピーと旧内容の破棄に比例。ムーブ構築とは異なり、代入では旧内容の解放費用も含みます。
 
-`CompactSlot`、Clang、その他の対象環境、`SIRKIT_DISABLE_SIMD`指定時には通常の逐次走査を使います。iteratorや表の追加状態はありません。
+## GenericHash（コンストラクタ）
 
-## Verify
+```text
+GenericHash();
+explicit constexpr GenericHash(std::uint64_t seed) noexcept;
+```
 
-オンライン問題の入力に対する集合操作が、実際の出力に反映される問題を使います。
+省略形は実行時の種、引数形は指定した種で構築します。同じ個体の規則は一定です。
 
-| 提出先 | 確認する操作 |
-|---|---|
-| [ABC344 C - A+B+C](https://atcoder.jp/contests/abc344/tasks/abc344_c) | 最大100万回の整数追加、重複、所属照会 |
-| [ABC073 C - Write and Erase](https://atcoder.jp/contests/abc073/tasks/abc073_c) | 整数の追加・検索・削除・再登録・要素数 |
-| [ABC164 C - gacha](https://atcoder.jp/contests/abc164/tasks/abc164_c) | 文字列の追加・重複・要素数 |
+**制約:** 同値なキーには同じハッシュ値を返すこと。独自の同値関係には対応するHasherを用意します。
 
-他のAPI・衝突・例外・コピー/移動・容量境界は、`Verify/current/tests/hash_set_test.cpp`と`hash_set_boundary_test.cpp`で独立参照に照合します。`hash_set_unit`は固定種のローカル検査です。速度比較は同じ問題・main・入出力・コンパイラ設定で行います。
+**計算量:** O(1)。
 
-使用例は`Examples/hash_set_example.cpp`、提出コードは`Verify/current/submissions/hash_set_membership.cpp`、`hash_set_toggle.cpp`、`hash_set_strings.cpp`です。
+## GenericHash::operator()
+
+```text
+template<class T> std::uint64_t operator()(const T& value) const;
+```
+
+整数・列挙・浮動小数・tuple・range・std::hash対応型を再帰的にハッシュ化します。unorderedコンテナの要素順は無視します。
+
+**制約:** 構成要素もハッシュ化可能であること。std::hash対応型の結果はその実装にも依存します。
+
+**計算量:** 固定幅の整数はO(1)、tupleは各要素の和、列は走査する要素数とそのハッシュ費用の和。

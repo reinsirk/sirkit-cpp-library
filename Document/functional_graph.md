@@ -1,8 +1,221 @@
 # FunctionalGraph
 
-[本体](../Graph/Functional_Graph.cpp) / [使用例](../Examples/functional_graph_example.cpp)
+各頂点から出る辺が1本の有向グラフを分解します。頂点は0..N-1です。自己辺、複数の周期、周期へ合流する木を扱います。各弱連結成分は有向周期を1つ持ちます。
 
-各頂点から出る辺が1本の有向グラフを分解する。頂点は `0..n-1`、行先のラベル順に制約はない。自己辺、複数の周期、周期へ合流する木を扱う。各弱連結成分は1つの有向周期を持つ。
+## FunctionalGraph
+
+```text
+FunctionalGraph();
+explicit FunctionalGraph(std::span<const int> successors);
+FunctionalGraph(const FunctionalGraph&);
+FunctionalGraph(FunctionalGraph&& other) noexcept;
+```
+
+空／行先配列から構築します。行先をコピーして所有し、構築後は入力を保持しません。
+
+**制約:** 全ての行先は0..N-1。空列も可。
+
+**計算量:** 空の構築O(1)、列からの構築・コピーO(N log(N+1))時間・領域、ムーブO(1)。
+
+## build
+
+```text
+void build(std::span<const int> successors);
+```
+
+行先配列から再構築します。自身のsuccessors()を入力にしても構いません。
+
+**制約:** 全ての行先は0..N-1。
+
+**計算量:** O(N log(N+1))時間・領域。旧状態の破棄費用も加わります。
+
+## kth_successor
+
+```text
+int kth_successor(int v, std::uint64_t k) const;
+```
+
+vからk本の辺を進んだ頂点を返します。k=0はvです。
+
+**制約:** 0<=v<N。kはstd::uint64_t全域を扱います。
+
+**計算量:** O(log(N+1))。
+
+## distance
+
+```text
+std::int64_t distance(int from, int to) const;
+```
+
+fromからtoへ初めて到達する辺数を返します。到達不能は-1、自身へは0です。
+
+**制約:** from,toは有効な頂点番号。
+
+**計算量:** O(log(N+1))。
+
+## reachable
+
+```text
+bool reachable(int from, int to) const;
+```
+
+fromからtoへ到達可能ならtrueを返します。同じ弱連結成分でも到達不能な場合があります。
+
+**制約:** from,toは有効な頂点番号。
+
+**計算量:** O(log(N+1))。
+
+## info
+
+```text
+CycleInfo info(int v) const;
+```
+
+CycleInfo{id,entry,depth,position,length}を返します。idは到達する周期、entryは最初に着く周期頂点、depthはそこまでの辺数です。positionはentryの周期内添字、lengthは周期長です。
+
+**制約:** 0<=v<N。
+
+**計算量:** O(1)。
+
+## cycle
+
+```text
+std::span<const int> cycle(int id) const;
+```
+
+successor方向に並ぶ周期頂点への読み取り専用spanを返します。周期の始点やID順は未規定です。
+
+**制約:** 0<=id<cycle_count()。
+
+**計算量:** O(1)。
+
+## successor
+
+```text
+int successor(int v) const;
+```
+
+vの行先を返します。
+
+**制約:** 0<=v<N。
+
+**計算量:** O(1)。
+
+## successors
+
+```text
+std::span<const int> successors() const noexcept;
+```
+
+全頂点の行先への読み取り専用spanを返します。
+
+**制約:** なし。
+
+**計算量:** O(1)。
+
+## on_cycle
+
+```text
+bool on_cycle(int v) const;
+```
+
+vが周期上ならtrueを返します。周期上ではinfo(v).depth=0、entry=vです。
+
+**制約:** 0<=v<N。
+
+**計算量:** O(1)。
+
+## cycle_count
+
+```text
+int cycle_count() const noexcept;
+```
+
+周期の個数を返します。空グラフでは0です。
+
+**制約:** なし。
+
+**計算量:** O(1)。
+
+## component_size
+
+```text
+int component_size(int v) const;
+```
+
+vと同じ弱連結成分全体の頂点数を返します。周期長とは異なります。
+
+**制約:** 0<=v<N。
+
+**計算量:** O(1)。
+
+## size
+
+```text
+int size() const noexcept;
+```
+
+頂点数を返します。
+
+**制約:** なし。
+
+**計算量:** O(1)。
+
+## empty
+
+```text
+bool empty() const noexcept;
+```
+
+0頂点ならtrueを返します。
+
+**制約:** なし。
+
+**計算量:** O(1)。
+
+## clear
+
+```text
+void clear() noexcept;
+```
+
+空へ戻します。
+
+**制約:** なし。
+
+**計算量:** 保持領域の解放に比例します。
+
+## swap
+
+```text
+void swap(FunctionalGraph& other) noexcept;
+void swap(FunctionalGraph& a, FunctionalGraph& b) noexcept;
+```
+
+状態を交換します。
+
+**制約:** なし。
+
+**計算量:** O(1)。
+
+## operator=
+
+```text
+FunctionalGraph& operator=(const FunctionalGraph& other);
+FunctionalGraph& operator=(FunctionalGraph&& other) noexcept;
+```
+
+コピー／ムーブ代入し、自身への参照を返します。
+
+**制約:** なし。
+
+**計算量:** コピーはO(N log(N+1))、旧状態の破棄費用を加えます。
+
+## 所有・例外
+
+コピーは独立、move元は空です。build・コピー代入の確保失敗では旧状態とviewを保ちます。viewは成功した再構築・clear・代入・所有権移動まで有効です。
+
+頂点・周期ID・入力の行先を既定で検査し、`SKIP_RUNTIME_CHECKS`で除きます。容量保護は維持します。
 
 ```cpp
 std::vector<int> next{2, 0, 3, 2};
@@ -11,18 +224,4 @@ int v = graph.kth_successor(1, 1000000000000000000ULL);
 auto distance = graph.distance(1, 3); // 3
 ```
 
-`FunctionalGraph()` は空。`FunctionalGraph(std::span<const int> successor)` / `build(successor)` は行先をコピーして構築する。空配列も使える。再構築の入力として自身の `successors()` を渡してよい。
-
-`kth_successor(v,k)` はk本の辺を進んだ頂点を返す。k=0はv自身で、`std::uint64_t` の最大値まで対応する。木の深さより小さい歩数だけダブリングを使い、周期に到達する場合は歩数から深さを引いて周期長の剰余を取る。周期用に64段の表を持つ必要はない。
-
-`distance(from,to)` はfromからtoへ初めて到達する辺数で、到達不能は-1。自分自身は0。`reachable(from,to)` はその到達可否。同じ弱連結成分でも、枝の異なる木の頂点へは到達できない。行先が木の頂点なら深さの差だけ進んで一致を調べ、周期頂点なら周期内の向き付き距離を足す。
-
-`info(v)` は `CycleInfo {id,entry,depth,position,length}` を返す。idは最終的に入る周期ID、entryは最初に到達する周期頂点、depthはそこまでの辺数、positionはentryの周期内添字、lengthは周期長。`cycle(id)` はsuccessor方向に並ぶ周期頂点の `std::span<const int>`。IDと周期の始点は内部の構築順で、外部の特定ラベルと対応付けない。周期上の頂点はdepth=0、entry=vとなる。
-
-`size()` / `empty()`、`successor(v)` / `successors()`、`on_cycle(v)`、`cycle_count()`、`component_size(v)` も使える。`component_size(v)` はvと同じ弱連結成分全体の頂点数で、周期長とは異なる。空グラフの周期数は0。
-
-入次数0の頂点をキューで取り除き、残った頂点から周期を列挙する。取り除いた順を逆にたどって各頂点の周期情報と深さを決める。全処理は反復式で、長鎖にも再帰を使わない。構築は O(n log(n+1)) 時間・領域。`kth_successor`、`distance`、`reachable` は O(log(n+1))、その他の照会は O(1)。
-
-コピーは全配列を独立所有する。copy代入と `build` は、確保失敗時に旧状態と旧viewを維持する。move / swapはO(1)で、move元は空となり再利用できる。`clear()` は空へ戻す。viewは成功した再構築・clear・代入・所有権移動まで有効。頂点と周期IDの検査は既定で有効で、行先の検査は構築に必要な入力走査の中で行う。`SKIP_RUNTIME_CHECKS` 定義時は検査を除き、有効な番号を前提とする。配列容量の上限保護は残す。
-
-Library Checkerで直接対応する周期・到達距離問題を確認できなかったため、Verifyには [AtCoder ABC367 E - Permute K times](https://atcoder.jp/contests/abc367/tasks/abc367_e) を使う。k回先の取得を実問題で扱い、到達距離・周期情報・全uint64_t範囲・所有と例外保証は独立参照で補足する。
+[完全な使用例](../Examples/functional_graph_example.cpp)・[AtCoder ABC367 E](https://atcoder.jp/contests/abc367/tasks/abc367_e)

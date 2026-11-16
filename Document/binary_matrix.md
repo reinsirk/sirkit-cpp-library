@@ -2,23 +2,415 @@
 
 [BinaryMatrix](../Math/Binary_Matrix.cpp)は0/1の行列です。要素の和をXOR、積をANDとして計算するGF(2)上で、行列積・階数・逆行列・連立方程式を扱います。Mintは不要です。[使用例](../Examples/binary_matrix_example.cpp)を参照してください。
 
+R行C列、r=min(R,C)、W=ceil(C/64)とします。積では(R,M)*(M,K)の形を用います。
+
 ## API
 
-| API | 動作 |
-| --- | --- |
-| `BinaryMatrix(rows=0,cols=0)` | 指定した形の全0行列を作る。0×n・n×0も形を保持する。 |
-| `rows()` / `cols()` / `empty()` | 行数 / 列数 / 要素数が0か。 |
-| `test(r,c)` / `a(r,c)` | 要素をboolで返す。 |
-| `set(r,c,value=true)` / `flip(r,c)` | 要素を変更し、自身への参照を返す。 |
-| `row_words(r)` | 行の読み取り専用word span。word iのbit jは列64i+j。 |
-| `swap_rows(a,b)` / `xor_rows(target,source,first_col=0)` | 行交換 / 指定列以降だけXORする。自己XORも可。 |
-| `+` / `^` / `+=` / `^=` | 同形行列のGF(2)和。`==`は形と値を比較する。 |
-| `transpose()` / `*` / `multiply(other)` / `*=` | 転置 / 行列積。自己積代入も可。 |
-| `identity(n)` / `pow(k)` | n次単位行列 / 正方行列の非負整数乗。指数0は単位行列。 |
-| `rank()` / `determinant()` | 階数 / 正方行列の行列式bool。0×0の行列式は1。 |
-| `inverse()` | 逆行列のoptional。非正則ならnullopt、0×0は空の単位行列。 |
-| `solve(rhs)` | Ax=rhsのoptional<LinearSolution>。不能ならnullopt。rhsは行数個のuint8_tの0/1。 |
-| `reset(rows=0,cols=0)` / `clear()` / `swap(other)` | 全0への再初期化 / 0×0へ戻す / O(1)で交換する。 |
+### BinaryMatrix::BinaryMatrix
+
+```text
+explicit BinaryMatrix(std::size_t rows = 0, std::size_t cols = 0);
+BinaryMatrix(const BinaryMatrix&);
+BinaryMatrix(BinaryMatrix&& other) noexcept;
+```
+
+指定した形の全0行列を作る。0×n・n×0も形を保持する。
+
+**制約:** 共通の型・入力条件を満たすこと。
+
+**計算量:** R行C列にO(1+R ceil(C/64))時間・領域。移動構築・swapはO(1)。
+
+### BinaryMatrix::operator=
+
+```text
+BinaryMatrix& operator=(const BinaryMatrix& other);
+BinaryMatrix& operator=(BinaryMatrix&& other) noexcept;
+```
+
+コピーまたは移動で内容を置き換え、自身への参照を返します。
+
+**制約:** 共通の型・入力条件を満たすこと。
+
+**計算量:** R行C列にO(1+R ceil(C/64))時間・領域。移動構築・swapはO(1)。
+
+### BinaryMatrix::swap
+
+```text
+void swap(BinaryMatrix& other) noexcept;
+friend void swap(BinaryMatrix& a, BinaryMatrix& b) noexcept;
+```
+
+内容と所有する領域を交換します。
+
+**制約:** 共通の型・入力条件を満たすこと。
+
+**計算量:** O(1)。
+
+### BinaryMatrix::rows
+
+```text
+std::size_t rows() const noexcept;
+```
+
+行数を返します。
+
+**制約:** なし。
+
+**計算量:** O(1)。
+
+### BinaryMatrix::cols
+
+```text
+std::size_t cols() const noexcept;
+```
+
+列数を返します。
+
+**制約:** なし。
+
+**計算量:** O(1)。
+
+### BinaryMatrix::empty
+
+```text
+bool empty() const noexcept;
+```
+
+空ならtrueを返します。
+
+**制約:** なし。
+
+**計算量:** O(1)。
+
+### BinaryMatrix::row_words
+
+```text
+std::span<const std::uint64_t> row_words(std::size_t row) const;
+```
+
+行の読み取り専用word span。word iのbit jは列64i+j。
+
+**制約:** 行添字が範囲内。viewは所有権移動・再構築まで有効。
+
+**計算量:** O(1)。
+
+### BinaryMatrix::test
+
+```text
+bool test(std::size_t row, std::size_t col) const;
+```
+
+要素をboolで返す。
+
+**制約:** 行・列添字が範囲内。
+
+**計算量:** O(1)。
+
+### BinaryMatrix::operator()
+
+```text
+bool operator()(std::size_t row, std::size_t col) const;
+```
+
+指定した要素を返します。
+
+**制約:** r<rows()、c<cols()。
+
+**計算量:** O(1)。
+
+### BinaryMatrix::set
+
+```text
+BinaryMatrix& set(std::size_t row, std::size_t col, bool value = true);
+```
+
+要素を変更し、自身への参照を返す。
+
+**制約:** 更新する添字が範囲内。
+
+**計算量:** O(1)。
+
+### BinaryMatrix::flip
+
+```text
+BinaryMatrix& flip(std::size_t row, std::size_t col);
+```
+
+要素を変更し、自身への参照を返す。
+
+**制約:** 行・列添字が範囲内。
+
+**計算量:** O(1)。
+
+### BinaryMatrix::swap_rows
+
+```text
+void swap_rows(std::size_t a, std::size_t b);
+```
+
+行交換。
+
+**制約:** 共通の型・入力条件を満たすこと。
+
+**計算量:** W=ceil(C/64)としてO(W)。
+
+### BinaryMatrix::xor_rows
+
+```text
+void xor_rows(std::size_t target, std::size_t source, std::size_t first_col = 0);
+```
+
+指定列以降だけXORする。自己XORも可。
+
+**制約:** 共通の型・入力条件を満たすこと。
+
+**計算量:** W=ceil(C/64)としてO(W)。
+
+### BinaryMatrix::identity
+
+```text
+static BinaryMatrix identity(std::size_t n);
+```
+
+n次単位行列。
+
+**制約:** n次行列を確保できる容量。
+
+**計算量:** O(1+n ceil(n/64))時間・領域。
+
+### BinaryMatrix::transpose
+
+```text
+BinaryMatrix transpose() const;
+```
+
+転置。
+
+**制約:** 共通の型・入力条件を満たすこと。
+
+**計算量:** O(1+RC)時間。
+
+### BinaryMatrix::multiply
+
+```text
+BinaryMatrix multiply(const BinaryMatrix& other) const;
+```
+
+行列積。自己積代入も可。
+
+**制約:** 左行列の列数と右行列の行数が同じ。
+
+**計算量:** (R,M)*(M,K)にO(1+MK+R ceil(K/64)+RK ceil(M/64))時間。
+
+### BinaryMatrix::operator*
+
+```text
+BinaryMatrix operator*(const BinaryMatrix& other) const;
+```
+
+積を返します。
+
+**制約:** 左行列の列数と右行列の行数が同じ。
+
+**計算量:** (R,M)*(M,K)にO(1+MK+R ceil(K/64)+RK ceil(M/64))時間。
+
+### BinaryMatrix::operator*=
+
+```text
+BinaryMatrix& operator*=(const BinaryMatrix& other);
+```
+
+乗算して自身を更新します。
+
+**制約:** 左行列の列数と右行列の行数が同じ。
+
+**計算量:** (R,M)*(M,K)にO(1+MK+R ceil(K/64)+RK ceil(M/64))時間。
+
+### BinaryMatrix::operator+=
+
+```text
+BinaryMatrix& operator+=(const BinaryMatrix& other);
+```
+
+同形行列のGF(2)上の和を自身に代入して自身への参照を返します。
+
+**制約:** 両行列の行数・列数が同じ。
+
+**計算量:** R行C列にO(1+R ceil(C/64))時間・領域。移動構築・swapはO(1)。
+
+### BinaryMatrix::operator^=
+
+```text
+BinaryMatrix& operator^=(const BinaryMatrix& other);
+```
+
+同形行列のGF(2)上の和を自身に代入して自身への参照を返します。
+
+**制約:** 両行列の行数・列数が同じ。
+
+**計算量:** R行C列にO(1+R ceil(C/64))時間・領域。移動構築・swapはO(1)。
+
+### BinaryMatrix::operator+
+
+```text
+friend BinaryMatrix operator+(BinaryMatrix a, const BinaryMatrix& b);
+```
+
+同形行列のGF(2)上の和を新しい行列で返します。
+
+**制約:** 両行列の行数・列数が同じ。
+
+**計算量:** R行C列にO(1+R ceil(C/64))時間・領域。移動構築・swapはO(1)。
+
+### BinaryMatrix::operator^
+
+```text
+friend BinaryMatrix operator^(BinaryMatrix a, const BinaryMatrix& b);
+```
+
+同形行列のGF(2)上の和を新しい行列で返します。
+
+**制約:** 両行列の行数・列数が同じ。
+
+**計算量:** R行C列にO(1+R ceil(C/64))時間・領域。移動構築・swapはO(1)。
+
+### BinaryMatrix::operator==
+
+```text
+bool operator==(const BinaryMatrix& other) const noexcept;
+```
+
+値と形が等しいかを返します。
+
+**制約:** 共通の型・入力条件を満たすこと。
+
+**計算量:** R行C列にO(1+R ceil(C/64))時間・領域。移動構築・swapはO(1)。
+
+### BinaryMatrix::pow
+
+```text
+BinaryMatrix pow(std::uint64_t exponent) const;
+```
+
+正方行列の非負整数乗。指数0は単位行列。
+
+**制約:** 正方行列。powの指数は非負。
+
+**計算量:** O(log(k+1))回の行列積。
+
+### BinaryMatrix::rank
+
+```text
+std::size_t rank() const;
+```
+
+階数を返します。
+
+**制約:** なし。
+
+**計算量:** r=min(R,C)、W=ceil(C/64)としてO(1+RC+RrW)時間。
+
+### BinaryMatrix::determinant
+
+```text
+bool determinant() const;
+```
+
+正方行列の行列式bool。0×0の行列式は1。
+
+**制約:** 正方行列。
+
+**計算量:** r=min(R,C)、W=ceil(C/64)としてO(1+RC+RrW)時間。
+
+### BinaryMatrix::inverse
+
+```text
+std::optional<BinaryMatrix> inverse() const;
+```
+
+逆行列のoptional。非正則ならnullopt、0×0は空の単位行列。
+
+**制約:** 正方行列。
+
+**計算量:** r=min(R,C)、W=ceil(C/64)としてO(1+RC+RrW)時間。
+
+### BinaryMatrix::solve
+
+```text
+std::optional<LinearSolution> solve(std::span<const std::uint8_t> rhs) const;
+```
+
+Ax=rhsのoptional<LinearSolution>。不能ならnullopt。rhsは行数個のuint8_tの0/1。
+
+**制約:** 共通の型・入力条件を満たすこと。
+
+**計算量:** 消去O(1+RC+RrW)に核の生成O(R+C+C(C-rank))を加える。
+
+### BinaryMatrix::reset
+
+```text
+void reset(std::size_t rows = 0, std::size_t cols = 0);
+```
+
+全0への再初期化。
+
+**制約:** 共通の型・入力条件を満たすこと。
+
+**計算量:** R行C列にO(1+R ceil(C/64))時間・領域。移動構築・swapはO(1)。
+
+### BinaryMatrix::clear
+
+```text
+void clear() noexcept;
+```
+
+内容を空に戻します。
+
+**制約:** 共通の型・入力条件を満たすこと。
+
+**計算量:** R行C列にO(1+R ceil(C/64))時間・領域。移動構築・swapはO(1)。
+
+### LinearSolution::LinearSolution
+
+```text
+LinearSolution();
+LinearSolution(std::vector<std::uint8_t> value, BinaryMatrix basis, std::vector<std::size_t> pivots);
+LinearSolution(const LinearSolution&);
+LinearSolution(LinearSolution&& other) noexcept;
+```
+
+空または指定した入力から構築します。コピーは独立、移動は所有権を移します。
+
+**制約:** なし。
+
+**計算量:** コピーはparticular・pivot_columns・kernelの保持量に比例。移動構築・swapはO(1)、代入は旧状態の破棄も加える。
+
+### LinearSolution::operator=
+
+```text
+LinearSolution& operator=(const LinearSolution& other);
+LinearSolution& operator=(LinearSolution&& other) noexcept;
+```
+
+コピーまたは移動で内容を置き換え、自身への参照を返します。
+
+**制約:** なし。
+
+**計算量:** コピーはparticular・pivot_columns・kernelの保持量に比例。移動構築・swapはO(1)、代入は旧状態の破棄も加える。
+
+### LinearSolution::swap
+
+```text
+void swap(LinearSolution& other) noexcept;
+friend void swap(LinearSolution& a, LinearSolution& b) noexcept;
+```
+
+内容と所有する領域を交換します。
+
+**制約:** なし。
+
+**計算量:** コピーはparticular・pivot_columns・kernelの保持量に比例。移動構築・swapはO(1)、代入は旧状態の破棄も加える。
+
 
 ```cpp
 BinaryMatrix a(2,3);
