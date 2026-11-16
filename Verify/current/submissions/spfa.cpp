@@ -13,13 +13,13 @@
 // WGraph: 出発点を隣接リストの添字とする辺列。kInf=std::int64_t{1}<<60。
 //
 // [SPFA]
-// SPFA(graph, distances, start_index): 始点からの最短距離をdistancesに格納し、到達可能な負閉路があればtrueを返す。
+// SPFA(graph, distances, start_index, inf=2^60): 始点からの最短距離をdistancesに格納し、到達可能な負閉路があればtrueを返す。
 // SKIP_RUNTIME_CHECKSを定義すると入力検査を省く。
 // 検査は始点と処理中に参照する辺のみ。未到達成分の出辺は走査しない。
 // 通常は更新頂点をFIFO処理し、長い反復は到達部分の強連結成分ごとに解く。
 // 標準C++23、重みは[-1e9, 1e9]。
-// 到達可能な負閉路があればtrue。距離は成功時に全上書きし、未到達kInf・負影響-kInf。
-// 最悪O(VE+V+E)時間・O(V)追加領域。有限距離のkInf/-kInf衝突はoverflow_error。
+// 到達可能な負閉路があればtrue。距離は成功時に全上書きし、未到達inf・負影響-inf。inf>0。
+// V=頂点数、E=辺数。最悪O(VE+V+E)時間・O(V)追加領域。inf/-inf衝突はoverflow_error。
 
 
 // SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
@@ -267,7 +267,7 @@ inline void SPFAComponents(const WGraph& graph, std::span<const int> sources,
 #endif
 inline void SPFAFinishComponents(const WGraph& graph,
     std::vector<std::int64_t>& distance, std::int64_t unreachable,
-    std::vector<int>& affected, std::vector<std::uint8_t>& state) {
+    std::vector<int>& affected, std::vector<std::uint8_t>& state, std::int64_t inf = kInf) {
     const auto lower_bound = -static_cast<std::int64_t>(graph.size()) * 1'000'000'000;
     for (const int vertex : affected) distance[vertex] = lower_bound;
     std::vector<int> sources;
@@ -288,7 +288,7 @@ inline void SPFAFinishComponents(const WGraph& graph,
     );
     for (const int vertex : affected) {
         state[vertex] |= 4;
-        distance[vertex] = -kInf;
+        distance[vertex] = -inf;
     }
 }
 } // namespace reinsirk::detail
@@ -298,10 +298,11 @@ inline void SPFAFinishComponents(const WGraph& graph,
 #ifndef SIRKIT_SPFA_DEFINED
 #define SIRKIT_SPFA_DEFINED
 namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
-template <bool Small, bool Bounded>
+template <bool Small, bool Bounded, bool CustomInf = false>
 inline bool SPFARun(const WGraph &graph, std::vector<std::int64_t> &distances,
-                 int start_index)
+                 int start_index, std::int64_t requested_inf = kInf)
 {
+    const std::int64_t inf = CustomInf ? requested_inf : kInf;
     constexpr std::int64_t max_cost = 1'000'000'000;
     if (graph.size() > static_cast<std::size_t>(std::numeric_limits<int>::max()))
         throw std::length_error("SPFA: too many vertices");
@@ -313,18 +314,18 @@ inline bool SPFARun(const WGraph &graph, std::vector<std::int64_t> &distances,
 
     if (graph[start_index].empty()) {
 #ifndef SKIP_RUNTIME_CHECKS
-        std::vector<std::int64_t> result(graph.size(), kInf);
+        std::vector<std::int64_t> result(graph.size(), inf);
         result[start_index] = 0;
         distances.swap(result);
 #else
-        distances.assign(graph.size(), kInf);
+        distances.assign(graph.size(), inf);
         distances[start_index] = 0;
 #endif
         return false;
     }
 
-    // n*最大辺重み<kInfなら、内部値と出力値の変換が要らない。
-    const std::int64_t unreachable = Bounded ? kInf : (static_cast<std::int64_t>(n) + 1) * max_cost;
+    // n*最大辺重み<infなら、内部値と出力値の変換が要らない。
+    const std::int64_t unreachable = Bounded ? inf : (static_cast<std::int64_t>(n) + 1) * max_cost;
     std::vector<std::int64_t> local_distance;
 #ifndef SKIP_RUNTIME_CHECKS
     auto& distance = local_distance;
@@ -377,7 +378,7 @@ inline bool SPFARun(const WGraph &graph, std::vector<std::int64_t> &distances,
             affected.reserve(graph.size());
         const std::size_t first = affected.size();
         state[seed] |= negative_bit;
-        if constexpr (Bounded) distance[seed] = -kInf;
+        if constexpr (Bounded) distance[seed] = -inf;
         affected.push_back(seed);
         for (std::size_t affected_head = first; affected_head < affected.size(); ++affected_head)
         {
@@ -393,7 +394,7 @@ inline bool SPFARun(const WGraph &graph, std::vector<std::int64_t> &distances,
                 if ((state[edge.to] & negative_bit))
                     continue;
                 state[edge.to] |= negative_bit;
-                if constexpr (Bounded) distance[edge.to] = -kInf;
+                if constexpr (Bounded) distance[edge.to] = -inf;
                 affected.push_back(edge.to);
             }
         }
@@ -417,7 +418,7 @@ inline bool SPFARun(const WGraph &graph, std::vector<std::int64_t> &distances,
 #else
         constexpr bool unchanged = false;
 #endif
-        // Boundedでは候補>-kInfなので、負影響先は距離比較だけで除外できる。
+        // Boundedでは候補>-infなので、負影響先は距離比較だけで除外できる。
         if constexpr (!Bounded) if (state[edge.to] & negative_bit)
             return unchanged;
         // 格納する経路はn辺未満なので、候補の加算もint64_t内に収まる。
@@ -472,7 +473,7 @@ inline bool SPFARun(const WGraph &graph, std::vector<std::int64_t> &distances,
             continue;
         if constexpr (!Small) {
             if (component_budget == 0) [[unlikely]] {
-                SPFAFinishComponents(graph, distance, unreachable, affected, state);
+                SPFAFinishComponents(graph, distance, unreachable, affected, state, inf);
                 break;
             }
             --component_budget;
@@ -538,10 +539,10 @@ inline bool SPFARun(const WGraph &graph, std::vector<std::int64_t> &distances,
     if constexpr (!Bounded) for (int vertex = 0; vertex < n; ++vertex)
     {
         if ((state[vertex] & negative_bit))
-            distance[vertex] = -kInf;
+            distance[vertex] = -inf;
         else if (distance[vertex] == unreachable)
-            distance[vertex] = kInf;
-        else if (distance[vertex] <= -kInf || distance[vertex] >= kInf)
+            distance[vertex] = inf;
+        else if (distance[vertex] <= -inf || distance[vertex] >= inf)
             throw std::overflow_error("SPFA: finite distance collides with INF/-INF");
     }
 #ifndef SKIP_RUNTIME_CHECKS
@@ -553,7 +554,13 @@ inline bool SPFARun(const WGraph &graph, std::vector<std::int64_t> &distances,
 }
 } // namespace reinsirk::detail
 
-inline bool SPFA(const WGraph& graph, std::vector<std::int64_t>& distances, int start_index) {
+inline bool SPFA(const WGraph& graph, std::vector<std::int64_t>& distances, int start_index,
+                 std::int64_t inf = (std::int64_t{1} << 60)) {
+    if (inf <= 0) throw std::invalid_argument("SPFA: inf must be positive");
+    if (inf != kInf) {
+        if (graph.size() <= 64) return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::SPFARun<true, false, true>(graph, distances, start_index, inf);
+        return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::SPFARun<false, false, true>(graph, distances, start_index, inf);
+    }
     if (graph.size() <= 64) return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::SPFARun<true, true>(graph, distances, start_index);
     if (graph.size() <= static_cast<std::size_t>((kInf - 1) / 1'000'000'000))
         return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::SPFARun<false, true>(graph, distances, start_index);

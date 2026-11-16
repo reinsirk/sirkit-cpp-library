@@ -14,12 +14,12 @@
 // WGraph: 出発点を隣接リストの添字とする辺列。kInf=std::int64_t{1}<<60。
 //
 // [Bellman-Ford]
-// BellmanFord(graph, distances, start_index): 始点からの最短距離をdistancesに格納し、到達可能な負閉路があればtrueを返す。
+// BellmanFord(graph, distances, start_index, inf=2^60): 始点からの最短距離をdistancesに格納し、到達可能な負閉路があればtrueを返す。
 // SKIP_RUNTIME_CHECKSを定義すると入力検査を省く。
 // 検査は始点と処理中に参照する辺のみ。未到達頂点の出辺は走査しない。
-// 始点から到達できる負閉路があればtrue。未到達はkInf、負閉路の影響下は-kInf。
-// distancesは成功時に全上書き。有限距離が(-kInf, kInf)の範囲外ならoverflow_error。
-// 重みは[-1e9, 1e9]。O(VE+V+E)時間・O(V)追加領域。
+// 始点から到達できる負閉路があればtrue。未到達はinf、負閉路の影響下は-inf。inf>0。
+// distancesは成功時に全上書き。有限距離が(-inf, inf)の範囲外ならoverflow_error。
+// V=頂点数、E=辺数。重みは[-1e9, 1e9]。O(VE+V+E)時間・O(V)追加領域。
 
 
 // SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
@@ -386,11 +386,12 @@ inline int BellmanFordContinue(const WGraph& graph, std::span<const int> sources
     return false;
 }
 
-template <bool UseActive, bool Bounded = false, bool Warm = false, class... Initial>
+template <bool UseActive, bool Bounded = false, bool Warm = false, bool CustomInf = false, class... Initial>
 [[gnu::noinline]]
 inline bool BellmanFordImpl(const WGraph &graph, std::vector<std::int64_t> &distances,
-                        int start_index, Initial... initial_state)
+                        int start_index, std::int64_t requested_inf = kInf, Initial... initial_state)
 {
+    const std::int64_t inf = CustomInf ? requested_inf : kInf;
     const auto initial = std::tuple{initial_state...};
     auto* initial_distance = [&]() {
         if constexpr (Warm) return std::get<0>(initial);
@@ -417,7 +418,7 @@ inline bool BellmanFordImpl(const WGraph &graph, std::vector<std::int64_t> &dist
         throw std::out_of_range("BellmanFord: invalid start vertex");
 #endif
     if (graph[start_index].empty()) {
-        distances.assign(graph.size(), kInf);
+        distances.assign(graph.size(), inf);
         distances[start_index] = 0;
         return false;
     }
@@ -438,7 +439,7 @@ inline bool BellmanFordImpl(const WGraph &graph, std::vector<std::int64_t> &dist
                 large_sources.push_back(from);
 #ifndef SKIP_RUNTIME_CHECKS
                 if constexpr (Warm) {
-                    if (from < validated_until && (*initial_distance)[from] != kInf)
+                    if (from < validated_until && (*initial_distance)[from] != inf)
                         initial_checked[from] = 1;
                 }
 #endif
@@ -456,7 +457,7 @@ inline bool BellmanFordImpl(const WGraph &graph, std::vector<std::int64_t> &dist
 #else
     constexpr bool direct_inf = Bounded || !UseActive;
 #endif
-    const std::int64_t unreachable = direct_inf ? kInf : (count + 1) * max_cost;
+    const std::int64_t unreachable = direct_inf ? inf : (count + 1) * max_cost;
     const std::int64_t lower_bound = -count * max_cost;
 #ifndef SKIP_RUNTIME_CHECKS
     // 通常の緩和で、その頂点の出辺を全て検査したかを記録する。
@@ -598,20 +599,20 @@ inline bool BellmanFordImpl(const WGraph &graph, std::vector<std::int64_t> &dist
                 mark_negative(edge.to);
 
     if constexpr (direct_inf) {
-        // n*最大辺重み<kInfなら有限距離はkInf未満。未到達の変換と範囲走査は不要。
-        for (const int vertex : queue) distance[vertex] = -kInf;
+        // n*最大辺重み<infなら有限距離はinf未満。未到達の変換と範囲走査は不要。
+        for (const int vertex : queue) distance[vertex] = -inf;
     } else {
     for (int vertex = 0; vertex < n; ++vertex)
     {
         if (distance[vertex] == lower_bound)
         {
-            distance[vertex] = -kInf;
+            distance[vertex] = -inf;
         }
         else if (distance[vertex] == unreachable)
         {
-            distance[vertex] = kInf;
+            distance[vertex] = inf;
         }
-        else if (distance[vertex] <= -kInf || distance[vertex] >= kInf)
+        else if (distance[vertex] <= -inf || distance[vertex] >= inf)
         {
             throw std::overflow_error("BellmanFord: finite distance collides with INF/-INF");
         }
@@ -751,7 +752,10 @@ inline int BellmanFordForward(const WGraph& graph,
 
 } // namespace reinsirk::detail
 
-inline bool BellmanFord(const WGraph& graph, std::vector<std::int64_t>& distances, int start_index) {
+inline bool BellmanFord(const WGraph& graph, std::vector<std::int64_t>& distances, int start_index,
+                       std::int64_t inf = (std::int64_t{1} << 60)) {
+    if (inf <= 0) throw std::invalid_argument("BellmanFord: inf must be positive");
+    if (inf != kInf) return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::BellmanFordImpl<true, false, false, true>(graph, distances, start_index, inf);
     if (graph.size() <= 64) return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::BellmanFordImpl<false>(graph, distances, start_index);
     if (graph.size() >= 4096) {
         if (graph.size() > static_cast<std::size_t>(std::numeric_limits<int>::max()))
@@ -780,7 +784,7 @@ inline bool BellmanFord(const WGraph& graph, std::vector<std::int64_t>& distance
 #endif
             return stopped == -2;
         }
-        return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::BellmanFordImpl<true, true, true>(graph, distances, start_index, &initial
+        return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::BellmanFordImpl<true, true, true>(graph, distances, start_index, kInf, &initial
 #ifndef SKIP_RUNTIME_CHECKS
             , stopped
 #endif
@@ -811,13 +815,13 @@ inline bool BellmanFord(const WGraph& graph, std::vector<std::int64_t>& distance
 // WGraph: 出発点を隣接リストの添字とする辺列。kInf=std::int64_t{1}<<60。
 //
 // [SPFA]
-// SPFA(graph, distances, start_index): 始点からの最短距離をdistancesに格納し、到達可能な負閉路があればtrueを返す。
+// SPFA(graph, distances, start_index, inf=2^60): 始点からの最短距離をdistancesに格納し、到達可能な負閉路があればtrueを返す。
 // SKIP_RUNTIME_CHECKSを定義すると入力検査を省く。
 // 検査は始点と処理中に参照する辺のみ。未到達成分の出辺は走査しない。
 // 通常は更新頂点をFIFO処理し、長い反復は到達部分の強連結成分ごとに解く。
 // 標準C++23、重みは[-1e9, 1e9]。
-// 到達可能な負閉路があればtrue。距離は成功時に全上書きし、未到達kInf・負影響-kInf。
-// 最悪O(VE+V+E)時間・O(V)追加領域。有限距離のkInf/-kInf衝突はoverflow_error。
+// 到達可能な負閉路があればtrue。距離は成功時に全上書きし、未到達inf・負影響-inf。inf>0。
+// V=頂点数、E=辺数。最悪O(VE+V+E)時間・O(V)追加領域。inf/-inf衝突はoverflow_error。
 
 
 // SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
@@ -1061,7 +1065,7 @@ inline void SPFAComponents(const WGraph& graph, std::span<const int> sources,
 [[gnu::noinline, gnu::cold]]
 inline void SPFAFinishComponents(const WGraph& graph,
     std::vector<std::int64_t>& distance, std::int64_t unreachable,
-    std::vector<int>& affected, std::vector<std::uint8_t>& state) {
+    std::vector<int>& affected, std::vector<std::uint8_t>& state, std::int64_t inf = kInf) {
     const auto lower_bound = -static_cast<std::int64_t>(graph.size()) * 1'000'000'000;
     for (const int vertex : affected) distance[vertex] = lower_bound;
     std::vector<int> sources;
@@ -1082,7 +1086,7 @@ inline void SPFAFinishComponents(const WGraph& graph,
     );
     for (const int vertex : affected) {
         state[vertex] |= 4;
-        distance[vertex] = -kInf;
+        distance[vertex] = -inf;
     }
 }
 } // namespace reinsirk::detail
@@ -1092,10 +1096,11 @@ inline void SPFAFinishComponents(const WGraph& graph,
 #ifndef SIRKIT_SPFA_DEFINED
 #define SIRKIT_SPFA_DEFINED
 namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
-template <bool Small, bool Bounded>
+template <bool Small, bool Bounded, bool CustomInf = false>
 inline bool SPFARun(const WGraph &graph, std::vector<std::int64_t> &distances,
-                 int start_index)
+                 int start_index, std::int64_t requested_inf = kInf)
 {
+    const std::int64_t inf = CustomInf ? requested_inf : kInf;
     constexpr std::int64_t max_cost = 1'000'000'000;
     if (graph.size() > static_cast<std::size_t>(std::numeric_limits<int>::max()))
         throw std::length_error("SPFA: too many vertices");
@@ -1107,18 +1112,18 @@ inline bool SPFARun(const WGraph &graph, std::vector<std::int64_t> &distances,
 
     if (graph[start_index].empty()) {
 #ifndef SKIP_RUNTIME_CHECKS
-        std::vector<std::int64_t> result(graph.size(), kInf);
+        std::vector<std::int64_t> result(graph.size(), inf);
         result[start_index] = 0;
         distances.swap(result);
 #else
-        distances.assign(graph.size(), kInf);
+        distances.assign(graph.size(), inf);
         distances[start_index] = 0;
 #endif
         return false;
     }
 
-    // n*最大辺重み<kInfなら、内部値と出力値の変換が要らない。
-    const std::int64_t unreachable = Bounded ? kInf : (static_cast<std::int64_t>(n) + 1) * max_cost;
+    // n*最大辺重み<infなら、内部値と出力値の変換が要らない。
+    const std::int64_t unreachable = Bounded ? inf : (static_cast<std::int64_t>(n) + 1) * max_cost;
     std::vector<std::int64_t> local_distance;
 #ifndef SKIP_RUNTIME_CHECKS
     auto& distance = local_distance;
@@ -1171,7 +1176,7 @@ inline bool SPFARun(const WGraph &graph, std::vector<std::int64_t> &distances,
             affected.reserve(graph.size());
         const std::size_t first = affected.size();
         state[seed] |= negative_bit;
-        if constexpr (Bounded) distance[seed] = -kInf;
+        if constexpr (Bounded) distance[seed] = -inf;
         affected.push_back(seed);
         for (std::size_t affected_head = first; affected_head < affected.size(); ++affected_head)
         {
@@ -1187,7 +1192,7 @@ inline bool SPFARun(const WGraph &graph, std::vector<std::int64_t> &distances,
                 if ((state[edge.to] & negative_bit))
                     continue;
                 state[edge.to] |= negative_bit;
-                if constexpr (Bounded) distance[edge.to] = -kInf;
+                if constexpr (Bounded) distance[edge.to] = -inf;
                 affected.push_back(edge.to);
             }
         }
@@ -1202,7 +1207,7 @@ inline bool SPFARun(const WGraph &graph, std::vector<std::int64_t> &distances,
     const auto relax_edge = [&]<bool Single = false>(int from, const Edge &edge)
     {
         constexpr bool unchanged = false;
-        // Boundedでは候補>-kInfなので、負影響先は距離比較だけで除外できる。
+        // Boundedでは候補>-infなので、負影響先は距離比較だけで除外できる。
         if constexpr (!Bounded) if (state[edge.to] & negative_bit)
             return unchanged;
         // 格納する経路はn辺未満なので、候補の加算もint64_t内に収まる。
@@ -1241,7 +1246,7 @@ inline bool SPFARun(const WGraph &graph, std::vector<std::int64_t> &distances,
             continue;
         if constexpr (!Small) {
             if (component_budget == 0) [[unlikely]] {
-                SPFAFinishComponents(graph, distance, unreachable, affected, state);
+                SPFAFinishComponents(graph, distance, unreachable, affected, state, inf);
                 break;
             }
             --component_budget;
@@ -1295,10 +1300,10 @@ inline bool SPFARun(const WGraph &graph, std::vector<std::int64_t> &distances,
     if constexpr (!Bounded) for (int vertex = 0; vertex < n; ++vertex)
     {
         if ((state[vertex] & negative_bit))
-            distance[vertex] = -kInf;
+            distance[vertex] = -inf;
         else if (distance[vertex] == unreachable)
-            distance[vertex] = kInf;
-        else if (distance[vertex] <= -kInf || distance[vertex] >= kInf)
+            distance[vertex] = inf;
+        else if (distance[vertex] <= -inf || distance[vertex] >= inf)
             throw std::overflow_error("SPFA: finite distance collides with INF/-INF");
     }
 #ifndef SKIP_RUNTIME_CHECKS
@@ -1310,7 +1315,13 @@ inline bool SPFARun(const WGraph &graph, std::vector<std::int64_t> &distances,
 }
 } // namespace reinsirk::detail
 
-inline bool SPFA(const WGraph& graph, std::vector<std::int64_t>& distances, int start_index) {
+inline bool SPFA(const WGraph& graph, std::vector<std::int64_t>& distances, int start_index,
+                 std::int64_t inf = (std::int64_t{1} << 60)) {
+    if (inf <= 0) throw std::invalid_argument("SPFA: inf must be positive");
+    if (inf != kInf) {
+        if (graph.size() <= 64) return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::SPFARun<true, false, true>(graph, distances, start_index, inf);
+        return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::SPFARun<false, false, true>(graph, distances, start_index, inf);
+    }
     if (graph.size() <= 64) return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::SPFARun<true, true>(graph, distances, start_index);
     if (graph.size() <= static_cast<std::size_t>((kInf - 1) / 1'000'000'000))
         return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::SPFARun<false, true>(graph, distances, start_index);
@@ -1335,13 +1346,14 @@ inline bool SPFA(const WGraph& graph, std::vector<std::int64_t>& distances, int 
 // Edge(to,w): 行先toとint64_tの重みwを持つ有向辺。
 // WGraph: 出発点を隣接リストの添字とする辺列。kInf=std::int64_t{1}<<60。
 //
-// [Dijkstra]
-// Dijkstra(graph, distances, start_index): 始点から全頂点への最短距離をdistancesへ上書きする。
-// Dijkstra(graph, distances, start_index, target_index, path): 全頂点の距離と始点から終点への頂点列を上書き。到達不能ならpathは空。
-// 重みは[0, 1e9]、未到達はkInf。有限距離がkInf以上ならoverflow_error。
+// [Dijkstra] V=頂点数、E=辺数、L=返す経路の頂点数。
+// Dijkstra(graph, distances, start_index, inf=2^60): 全距離を上書き。O(V+E log(E+1))時間・O(V+E)追加領域。
+// Dijkstra(graph, distances, start_index, target_index, path, inf=2^60): 全距離と頂点列を上書き。上と同じ計算量（復元O(L+1)を含む）。到達不能なら空。
+// 重みは[0, 1e9]、未到達はinf。inf>0。有限最短距離がinf以上ならoverflow_error。
 // Dijkstra(n, edges, distances, start_index[, target_index, path]): (始点,終点,int64重み)のtuple列を
 // span<const tuple<int,int,int64_t>>で受け、内部CSRを作って全頂点の距離を返す。vectorからも渡せる。
-// 全版O(V+E log(E+1))時間・O(V+E)追加領域。辺列版のCSR構築はO(V+E)。
+// 辺列版も末尾にinfを指定できる。既定呼出しは従来の定数番兵の高速経路を使う。
+// 辺列2版もO(V+E log(E+1))時間・O(V+E)追加領域。CSR構築のO(V+E)を含む。
 // SKIP_RUNTIME_CHECKSを定義すると入力検査を省く。
 // WGraph版の検査は始点・終点と処理中に参照する辺のみ。未到達成分は走査しない。
 // 辺列版は構築時に全辺を参照し、両端点と重みを検査する。n<0・容量超過はlength_error。
@@ -2155,11 +2167,77 @@ inline void DijkstraImpl(const GraphLike &graph, std::vector<std::int64_t> &dist
         path->swap(result);
 }
 
+// 任意の番兵用。非負の候補を符号なしで加算し、範囲外の最短距離だけを報告する。
+template <bool RestorePath, class GraphLike>
+inline void DijkstraCustomInf(const GraphLike& graph, std::vector<std::int64_t>& distances,
+    int start_index, int target_index, std::vector<int>* path, std::int64_t inf)
+{
+    if (graph.size() > static_cast<std::size_t>(std::numeric_limits<int>::max()))
+        throw std::length_error("Dijkstra: too many vertices");
+#ifndef SKIP_RUNTIME_CHECKS
+    const int n = static_cast<int>(graph.size());
+    if (start_index < 0 || start_index >= n ||
+        (RestorePath && (target_index < 0 || target_index >= n)))
+        throw std::out_of_range("Dijkstra: invalid start or target vertex");
+    std::vector<std::int64_t> local_distance;
+    auto& distance = local_distance;
+#else
+    auto& distance = distances;
+#endif
+    distance.assign(graph.size(), inf);
+    std::vector<int> previous, result, overflow_targets;
+    if constexpr (RestorePath) previous.assign(graph.size(), -1);
+    using State = std::pair<std::int64_t, int>;
+    std::priority_queue<State, std::vector<State>, std::greater<State>> queue;
+    distance[start_index] = 0;
+    queue.emplace(0, start_index);
+    while (!queue.empty()) {
+        const auto [current, from] = queue.top();
+        queue.pop();
+        if (current != distance[from]) continue;
+        for (const auto& edge : graph[from]) {
+#ifndef SKIP_RUNTIME_CHECKS
+            if constexpr (!std::is_same_v<GraphLike, DijkstraCsrGraph>) {
+                if (edge.to < 0 || edge.to >= n)
+                    throw std::out_of_range("Dijkstra: invalid destination vertex");
+                if (edge.w < 0 || edge.w > 1'000'000'000)
+                    throw std::out_of_range("Dijkstra: weight must be in [0, 1e9]");
+            }
+#endif
+            const auto candidate = static_cast<std::uint64_t>(current) + static_cast<std::uint64_t>(edge.w);
+            if (candidate >= static_cast<std::uint64_t>(inf)) {
+                if (distance[edge.to] == inf) overflow_targets.push_back(edge.to);
+                continue;
+            }
+            if (candidate >= static_cast<std::uint64_t>(distance[edge.to])) continue;
+            distance[edge.to] = static_cast<std::int64_t>(candidate);
+            if constexpr (RestorePath) previous[edge.to] = from;
+            queue.emplace(distance[edge.to], edge.to);
+        }
+    }
+    for (const int vertex : overflow_targets)
+        if (distance[vertex] == inf)
+            throw std::overflow_error("Dijkstra: finite distance collides with inf");
+    if constexpr (RestorePath) {
+        if (distance[target_index] != inf) {
+            for (int vertex = target_index; vertex != -1; vertex = previous[vertex]) result.push_back(vertex);
+            std::reverse(result.begin(), result.end());
+        }
+    }
+#ifndef SKIP_RUNTIME_CHECKS
+    distances.swap(local_distance);
+#endif
+    if constexpr (RestorePath) path->swap(result);
+}
+
 } // namespace reinsirk::detail
 
 inline void Dijkstra(const WGraph &graph, std::vector<std::int64_t> &distances,
-                     int start_index)
+                     int start_index, std::int64_t inf = (std::int64_t{1} << 60))
 {
+    if (inf <= 0) throw std::invalid_argument("Dijkstra: inf must be positive");
+    if (inf != kInf) return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::DijkstraCustomInf<false>(
+        graph, distances, start_index, -1, nullptr, inf);
     // GCCの距離版は従来のカーネルを維持する。
     constexpr bool prune_terminal = false;
     if (graph.size() <= 256) /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::DijkstraImpl<false>(graph, distances, start_index, -1, nullptr);
@@ -2171,8 +2249,12 @@ inline void Dijkstra(const WGraph &graph, std::vector<std::int64_t> &distances,
 }
 
 inline void Dijkstra(const WGraph &graph, std::vector<std::int64_t> &distances,
-                     int start_index, int target_index, std::vector<int> &path)
+                     int start_index, int target_index, std::vector<int> &path,
+                     std::int64_t inf = (std::int64_t{1} << 60))
 {
+    if (inf <= 0) throw std::invalid_argument("Dijkstra: inf must be positive");
+    if (inf != kInf) return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::DijkstraCustomInf<true>(
+        graph, distances, start_index, target_index, &path, inf);
     if (graph.size() <= 256) /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::DijkstraImpl<true>(graph, distances, start_index, target_index, &path);
     else if (graph.size() <= 4096)
         /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::DijkstraLarge<true, false, false>(graph, distances, start_index, target_index, &path);
@@ -2183,9 +2265,12 @@ inline void Dijkstra(const WGraph &graph, std::vector<std::int64_t> &distances,
 
 // 辺列入力版も全頂点の距離を返す。CSR構築後は上と同じengineを使う。
 inline void Dijkstra(int n, std::span<const std::tuple<int,int,std::int64_t>> edges, std::vector<std::int64_t> &distances,
-                     int start_index)
+                     int start_index, std::int64_t inf = (std::int64_t{1} << 60))
 {
+    if (inf <= 0) throw std::invalid_argument("Dijkstra: inf must be positive");
     const /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::DijkstraCsrGraph graph(n,edges);
+    if (inf != kInf) return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::DijkstraCustomInf<false>(
+        graph, distances, start_index, -1, nullptr, inf);
     // GCCの距離版は従来のカーネルを維持する。
     constexpr bool prune_terminal = false;
     if (graph.size() <= 256) /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::DijkstraImpl<false>(graph, distances, start_index, -1, nullptr);
@@ -2197,9 +2282,13 @@ inline void Dijkstra(int n, std::span<const std::tuple<int,int,std::int64_t>> ed
 }
 
 inline void Dijkstra(int n, std::span<const std::tuple<int,int,std::int64_t>> edges, std::vector<std::int64_t> &distances,
-                     int start_index, int target_index, std::vector<int> &path)
+                     int start_index, int target_index, std::vector<int> &path,
+                     std::int64_t inf = (std::int64_t{1} << 60))
 {
+    if (inf <= 0) throw std::invalid_argument("Dijkstra: inf must be positive");
     const /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::DijkstraCsrGraph graph(n,edges);
+    if (inf != kInf) return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::DijkstraCustomInf<true>(
+        graph, distances, start_index, target_index, &path, inf);
     if (graph.size() <= 256) /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::DijkstraImpl<true>(graph, distances, start_index, target_index, &path);
     else if (graph.size() <= 4096)
         /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::DijkstraLarge<true, false, false>(graph, distances, start_index, target_index, &path);
@@ -2224,12 +2313,12 @@ inline void Dijkstra(int n, std::span<const std::tuple<int,int,std::int64_t>> ed
 //
 // API一覧
 // kInf=std::int64_t{1}<<60。
-// [Floyd-Warshall]
-// FloydWarshall(distances): 正方行列を全点対最短距離で上書きし、グラフ内に負閉路があればtrue。O(V^3)時間。
-// FloydWarshall(distances, next): 距離に加え、経路の次頂点表nextを作る。経路更新・O(V^2)追加領域はこの版のみ。
-// FloydWarshallPath(next, from, to): 次頂点表から頂点列をO(経路長)で復元。未到達・負閉路の影響下なら空。
-// 入力はkInfが未接続、有限重みは(-kInf, kInf)。対角はmin(入力, 0)とする。
-// 出力は未到達kInf、負閉路を経由できる組だけ-kInf。有限距離が(-kInf, kInf)外ならoverflow_error。
+// [Floyd-Warshall] V=頂点数、L=返す経路の頂点数。
+// FloydWarshall(distances, inf=2^60): 正方行列を全点対最短距離で上書きし、グラフ内に負閉路があればtrue。O(V^3)時間。追加領域は下記。
+// FloydWarshall(distances, next, inf=2^60): 次頂点表nextも作る。O(V^3)時間・O(V^2)追加領域。
+// FloydWarshallPath(next, from, to): 次頂点表から頂点列をO(L+1)時間・領域で復元。未到達・負閉路の影響下なら空。
+// 入力はinf>0が未接続、有限重みは(-inf, inf)。対角はmin(入力, 0)とする。
+// 出力は未到達inf、負閉路を経由できる組だけ-inf。有限距離が(-inf, inf)外ならoverflow_error。
 // 算術範囲の算出を兼ねて初期行列を走査する。SKIP_RUNTIME_CHECKSで形状・入力値・頂点の検査を除く。
 // 通常版の追加領域はO(V)。大きな重みで広幅演算が必要な場合はO(V^2)。例外時の行列の内容は未規定。
 
@@ -2302,6 +2391,20 @@ inline FloydWarshallWide FloydWarshallLimit(std::size_t n)
     return static_cast<FloydWarshallWide>(n) * kInf;
 #else
     return {static_cast<std::int64_t>(n >> 4), static_cast<std::uint64_t>(n) << 60};
+#endif
+}
+
+// n<=INT_MAX、inf<=INT64_MAXなので積は94bit以内。標準経路も積を分割する。
+inline FloydWarshallWide FloydWarshallCustomLimit(std::size_t n, std::int64_t inf)
+{
+#if defined(__SIZEOF_INT128__)
+    return static_cast<FloydWarshallWide>(n) * inf;
+#else
+    const auto value = static_cast<std::uint64_t>(inf);
+    const auto first = static_cast<std::uint64_t>(n) * (value & 0xffffffffu);
+    const auto second = static_cast<std::uint64_t>(n) * (value >> 32);
+    const auto low = first + (second << 32);
+    return {static_cast<std::int64_t>((second >> 32) + (low < first)), low};
 #endif
 }
 
@@ -2435,11 +2538,12 @@ inline void FloydWarshallRelaxAvx2(std::vector<std::vector<std::int64_t>> &dista
     }
 }
 #endif
-template <bool RestorePath, bool HasNegative, bool FiniteRange = false, bool Dense = false, class Distance, auto UseSimd = false>
+template <bool RestorePath, bool HasNegative, bool FiniteRange = false, bool Dense = false, class Distance, auto UseSimd = false, bool CustomInf = false>
 inline bool FloydWarshallRun(std::vector<std::vector<Distance>> &distance,
                                     Distance unreachable, Distance lower,
-                                    std::vector<std::vector<int>> *next)
+                                    std::vector<std::vector<int>> *next, std::int64_t requested_inf = kInf)
 {
+    const std::int64_t inf = CustomInf ? requested_inf : kInf;
     const std::size_t n = distance.size();
 #if (!defined(SIRKIT_DISABLE_SIMD)) && ((defined(__i386__)) || (defined(__x86_64__)))
     if constexpr (static_cast<bool>(UseSimd) && std::is_same_v<Distance, std::int64_t>)
@@ -2507,19 +2611,20 @@ inline bool FloydWarshallRun(std::vector<std::vector<Distance>> &distance,
         for (auto &value : row)
         {
             if (value == unreachable)
-                value = Distance{kInf};
+                value = Distance{inf};
             else if (value == affected)
-                value = Distance{-kInf};
-            else if (!(Distance{-kInf} < value) || !(value < Distance{kInf}))
+                value = Distance{-inf};
+            else if (!(Distance{-inf} < value) || !(value < Distance{inf}))
                 throw std::overflow_error("FloydWarshall: finite distance collides with INF/-INF");
         }
     return !negative.empty();
 }
 
-template <bool RestorePath, auto UseSimd = false>
+template <bool RestorePath, auto UseSimd = false, bool CustomInf = false>
 inline bool FloydWarshallImpl(std::vector<std::vector<std::int64_t>> &distance,
-                                     std::vector<std::vector<int>> *next)
+                                     std::vector<std::vector<int>> *next, std::int64_t requested_inf = kInf)
 {
+    const std::int64_t inf = CustomInf ? requested_inf : kInf;
     const std::size_t n = distance.size();
     if (n > static_cast<std::size_t>(std::numeric_limits<int>::max()))
         throw std::length_error("FloydWarshall: too many vertices");
@@ -2532,11 +2637,11 @@ inline bool FloydWarshallImpl(std::vector<std::vector<std::int64_t>> &distance,
 #ifndef SKIP_RUNTIME_CHECKS
         if (distance[0].size() != 1)
             throw std::invalid_argument("FloydWarshall: matrix must be square");
-        if (distance[0][0] != kInf && (distance[0][0] <= -kInf || distance[0][0] >= kInf))
+        if (distance[0][0] != inf && (distance[0][0] <= -inf || distance[0][0] >= inf))
             throw std::out_of_range("FloydWarshall: weight must be in (-INF, INF)");
 #endif
         const bool negative = distance[0][0] < 0;
-        distance[0][0] = negative ? -kInf : 0;
+        distance[0][0] = negative ? -inf : 0;
         if constexpr (RestorePath)
             (*next)[0][0] = negative ? -1 : 0;
         return negative;
@@ -2556,12 +2661,12 @@ inline bool FloydWarshallImpl(std::vector<std::vector<std::int64_t>> &distance,
         {
             auto &value = row[to];
 #ifndef SKIP_RUNTIME_CHECKS
-            if (value != kInf && (value <= -kInf || value >= kInf))
+            if (value != inf && (value <= -inf || value >= inf))
                 throw std::out_of_range("FloydWarshall: weight must be in (-INF, INF)");
 #endif
             if (from == to)
                 value = std::min(value, std::int64_t{0});
-            if (value == kInf) {
+            if (value == inf) {
                 dense = false;
                 continue;
             }
@@ -2571,32 +2676,33 @@ inline bool FloydWarshallImpl(std::vector<std::vector<std::int64_t>> &distance,
                 (*next)[from][to] = static_cast<int>(to);
         }
     }
-    // 非負で最長単純路もkInf未満なら、未接続値と出力の変換が要らない。
-    if (!has_negative && maximum <= (kInf - 1) / static_cast<std::int64_t>(n)) {
-        if (dense) return FloydWarshallRun<RestorePath, false, true, true, std::int64_t, UseSimd>(distance, kInf, std::int64_t{0}, next);
-        return FloydWarshallRun<RestorePath, false, true, false, std::int64_t, UseSimd>(distance, kInf, std::int64_t{0}, next);
+    // 非負で最長単純路もinf未満なら、未接続値と出力の変換が要らない。
+    if (!has_negative && maximum <= (inf - 1) / static_cast<std::int64_t>(n) &&
+        (!CustomInf || maximum <= unreachable / (2 * static_cast<std::int64_t>(n)))) {
+        if (dense) return FloydWarshallRun<RestorePath, false, true, true, std::int64_t, UseSimd, CustomInf>(distance, inf, std::int64_t{0}, next, inf);
+        return FloydWarshallRun<RestorePath, false, true, false, std::int64_t, UseSimd, CustomInf>(distance, inf, std::int64_t{0}, next, inf);
     }
     for (auto& row : distance)
         for (auto& value : row)
-            if (value == kInf) value = unreachable;
+            if (value == inf) value = unreachable;
     // 単純路はn-1辺以下。下限は-n*maximumで、負閉路での際限ない減少を抑える。
     if (maximum <= unreachable / (2 * static_cast<std::int64_t>(n)))
     {
         const auto lower = -static_cast<std::int64_t>(n) * maximum;
         if (has_negative)
-            return FloydWarshallRun<RestorePath, true, false, false, std::int64_t, UseSimd>(distance, unreachable, lower, next);
-        return FloydWarshallRun<RestorePath, false, false, false, std::int64_t, UseSimd>(distance, unreachable, lower, next);
+            return FloydWarshallRun<RestorePath, true, false, false, std::int64_t, UseSimd, CustomInf>(distance, unreachable, lower, next, inf);
+        return FloydWarshallRun<RestorePath, false, false, false, std::int64_t, UseSimd, CustomInf>(distance, unreachable, lower, next, inf);
     }
 
     using Wide = FloydWarshallWide;
-    const Wide wide_unreachable = FloydWarshallLimit(n) + Wide{1};
+    const Wide wide_unreachable = (CustomInf ? FloydWarshallCustomLimit(n, inf) : FloydWarshallLimit(n)) + Wide{1};
     std::vector<std::vector<Wide>> wide(n, std::vector<Wide>(n));
     for (std::size_t from = 0; from < n; ++from)
         for (std::size_t to = 0; to < n; ++to)
             wide[from][to] = distance[from][to] == unreachable ? wide_unreachable : Wide{distance[from][to]};
     const bool negative = has_negative
-        ? FloydWarshallRun<RestorePath, true>(wide, wide_unreachable, -FloydWarshallLimit(n), next)
-        : FloydWarshallRun<RestorePath, false>(wide, wide_unreachable, -FloydWarshallLimit(n), next);
+        ? FloydWarshallRun<RestorePath, true, false, false, Wide, false, CustomInf>(wide, wide_unreachable, -(CustomInf ? FloydWarshallCustomLimit(n, inf) : FloydWarshallLimit(n)), next, inf)
+        : FloydWarshallRun<RestorePath, false, false, false, Wide, false, CustomInf>(wide, wide_unreachable, -(CustomInf ? FloydWarshallCustomLimit(n, inf) : FloydWarshallLimit(n)), next, inf);
     for (std::size_t from = 0; from < n; ++from)
         for (std::size_t to = 0; to < n; ++to)
             distance[from][to] = static_cast<std::int64_t>(wide[from][to]);
@@ -2624,8 +2730,11 @@ template <bool RestorePath>
 
 } // namespace reinsirk::detail
 
-inline bool FloydWarshall(std::vector<std::vector<std::int64_t>> &distances)
+inline bool FloydWarshall(std::vector<std::vector<std::int64_t>> &distances,
+                          std::int64_t inf = (std::int64_t{1} << 60))
 {
+    if (inf <= 0) throw std::invalid_argument("FloydWarshall: inf must be positive");
+    if (inf != kInf) return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::FloydWarshallImpl<false, false, true>(distances, nullptr, inf);
 #if (!defined(SIRKIT_DISABLE_SIMD)) && ((defined(__i386__)) || (defined(__x86_64__)))
     constexpr std::size_t threshold = 8;
     if (distances.size() >= threshold && __builtin_cpu_supports("avx2")) {
@@ -2640,8 +2749,11 @@ inline bool FloydWarshall(std::vector<std::vector<std::int64_t>> &distances)
 }
 
 inline bool FloydWarshall(std::vector<std::vector<std::int64_t>> &distances,
-                          std::vector<std::vector<int>> &next)
+                          std::vector<std::vector<int>> &next,
+                          std::int64_t inf = (std::int64_t{1} << 60))
 {
+    if (inf <= 0) throw std::invalid_argument("FloydWarshall: inf must be positive");
+    if (inf != kInf) return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::FloydWarshallImpl<true, false, true>(distances, &next, inf);
 #if (!defined(SIRKIT_DISABLE_SIMD)) && ((defined(__i386__)) || (defined(__x86_64__)))
     constexpr std::size_t threshold = 8;
     if (distances.size() >= threshold && __builtin_cpu_supports("avx2")) {
