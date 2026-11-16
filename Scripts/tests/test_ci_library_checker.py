@@ -156,6 +156,66 @@ class OfficialCaseTests(unittest.TestCase):
             with self.assertRaises(lc.RunnerError):
                 lc.expected_cases(data)
 
+    def test_maximum_killer_and_overflow_groups_are_not_filtered(self):
+        info = {"tests": [{"name": "example.in", "number": 1},
+                          {"name": "max_random.cpp", "number": 3},
+                          {"name": "conchon_filliatre_tle.cpp", "number": 2},
+                          {"name": "unordered_map_killer.cpp", "number": 1},
+                          {"name": "overflow.cpp", "number": 1}]}
+        self.assertEqual(lc.expected_cases(info), sorted([
+            "example_00", "max_random_00", "max_random_01", "max_random_02",
+            "conchon_filliatre_tle_00", "conchon_filliatre_tle_01",
+            "unordered_map_killer_00", "overflow_00"]))
+
+    def test_case_counts_require_positive_integers_not_boolean_or_fraction(self):
+        for count in (-1, 0, True, False, 1.5, "1"):
+            with self.subTest(count=count):
+                with self.assertRaisesRegex(lc.RunnerError, "case_count"):
+                    lc.expected_cases({"tests": [{"name": "max_random.cpp", "number": count}]})
+
+    def test_missing_expected_output_cannot_become_a_smaller_case_set(self):
+        (self.problem / "out/example_00.out").unlink()
+        with patch.object(lc, "execute", return_value=(0, 1)):
+            with self.assertRaisesRegex(lc.RunnerError, "case_set_mismatch"):
+                lc.official_problem(self.checkout, "owned_problem", self.cache, PIN, 10)
+
+    def test_extra_input_or_output_is_not_silently_ignored(self):
+        for subdir, extension in [("in", ".in"), ("out", ".out")]:
+            with self.subTest(subdir=subdir):
+                extra = self.problem / subdir / ("max_random_99" + extension)
+                extra.write_text("unexpected generated case\n")
+                try:
+                    with patch.object(lc, "execute", return_value=(0, 1)):
+                        with self.assertRaisesRegex(lc.RunnerError, "case_set_mismatch"):
+                            lc.official_problem(self.checkout, "owned_problem", self.cache, PIN, 10)
+                finally:
+                    extra.unlink()
+
+    def test_missing_or_extra_hash_manifest_entries_are_rejected(self):
+        variants = [
+            {name: value for name, value in self.hashes.items() if not name.endswith(".out")},
+            self.hashes | {"max_random_99.in": "a" * 64},
+            self.hashes | {"max_random_99.in": "a" * 64, "max_random_99.out": "b" * 64},
+        ]
+        for manifest in variants:
+            with self.subTest(names=sorted(manifest)):
+                (self.problem / "hash.json").write_text(json.dumps(manifest))
+                with patch.object(lc, "execute", return_value=(0, 1)):
+                    with self.assertRaisesRegex(lc.RunnerError, "case_manifest_mismatch"):
+                        lc.official_problem(self.checkout, "owned_problem", self.cache, PIN, 10)
+
+    def test_missing_or_nonexecutable_checker_cannot_become_pass(self):
+        checker = self.problem / "checker"
+        for missing in (False, True):
+            with self.subTest(missing=missing):
+                if missing:
+                    checker.unlink()
+                else:
+                    checker.chmod(0o600)
+                with patch.object(lc, "execute", return_value=(0, 1)):
+                    with self.assertRaisesRegex(lc.RunnerError, "checker_unavailable"):
+                        lc.official_problem(self.checkout, "owned_problem", self.cache, PIN, 10)
+
     def test_official_checker_accepts_nonidentical_witness(self):
         binary = self.cache / "own_solution"
         self.script(binary, "print('alternative')\n")
@@ -246,6 +306,31 @@ class ReportTests(unittest.TestCase):
         self.assertEqual(report["counts"]["case_expected"], 2)
         self.assertEqual(report["counts"]["case_completed"], 1)
         self.assertEqual(report["counts"]["case_failed"], 1)
+
+    def test_missing_last_required_case_cannot_become_pass(self):
+        first = {"name": "a", "status": "PASS", "elapsed_ns": 123,
+                 "returncode": 0, "checker_returncode": 0}
+        report = self.run_with([first, lc.RunnerError("last_official_case_missing")])
+        self.assertEqual(report["status"], "FAIL")
+        self.assertEqual(report["counts"]["case_expected"], 2)
+        self.assertEqual(report["counts"]["unavailable"], 1)
+        self.assertEqual(report["counts"]["case_completed"], 1)
+        self.assertEqual(report["counts"]["case_passed"], 1)
+        self.assertEqual(report["counts"]["case_failed"], 0)
+        row = report["results"][0]
+        self.assertEqual(row["status"], "FAIL")
+        self.assertEqual(row["error_kind"], "last_official_case_missing")
+        self.assertEqual([case["name"] for case in row["cases"]], ["a"])
+        self.assertEqual(row["elapsed_ns"], 123)
+        self.assertEqual(row["performance_scope"], lc.PERFORMANCE_SCOPE)
+
+    def test_repeating_a_passed_case_cannot_substitute_for_the_last_case(self):
+        first = {"name": "a", "status": "PASS", "elapsed_ns": 123,
+                 "returncode": 0, "checker_returncode": 0}
+        report = self.run_with([first, first.copy()])
+        self.assertEqual(report["status"], "FAIL")
+        self.assertEqual(report["counts"]["case_expected"], 2)
+        self.assertEqual([case["name"] for case in report["results"][0]["cases"]], ["a", "a"])
 
     def test_unavailable_checkout_cannot_become_pass_or_zero_success(self):
         with patch.object(lc.subprocess, "run", return_value=subprocess.CompletedProcess([], 0, "own compiler\n")), \

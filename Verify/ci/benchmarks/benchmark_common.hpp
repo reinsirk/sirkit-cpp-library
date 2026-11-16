@@ -35,7 +35,7 @@ int benchmark_main(int argc, char** argv, Generate generate, Reference reference
     try {
         if (argc != 4) throw std::invalid_argument("expected size pattern rounds");
         const auto size = benchmark_argument(argv[1], 2000000);
-        const auto pattern = benchmark_argument(argv[2], 1);
+        const auto pattern = benchmark_argument(argv[2], 3);
         const auto rounds = benchmark_argument(argv[3], 4096);
         if (size < 2 || rounds == 0) throw std::invalid_argument("empty benchmark");
         const auto input = generate(size, pattern);

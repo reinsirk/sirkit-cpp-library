@@ -113,6 +113,45 @@ class GitAndFailureTests(unittest.TestCase):
         self.assertEqual(caught.exception.code, 2)
 
 
+class CasePlanTests(unittest.TestCase):
+    def test_normal_plan_contains_stress_limit_and_both_power_boundaries(self):
+        all_cases = []
+        for identifier in bench.LIBRARIES:
+            cases = bench.case_plan(identifier, False)
+            self.assertEqual(len(cases), 14)
+            self.assertEqual(len({(c["size"], c["pattern_id"]) for c in cases}), 14)
+            self.assertEqual({c["pattern_id"] for c in cases if c["scale"] == "ci_stress_limit"}, set(range(4)))
+            self.assertTrue(all(c["size"] == 2_000_000 for c in cases if c["scale"] == "ci_stress_limit"))
+            self.assertEqual({c["size"] for c in cases if c["scale"] == "power_of_two_boundary"}, {262143, 262145})
+            all_cases.extend(cases)
+        self.assertEqual(len(all_cases), 42)
+
+    def test_quick_covers_every_scenario_without_claiming_maximum_scale(self):
+        for identifier in bench.LIBRARIES:
+            cases = bench.case_plan(identifier, True)
+            self.assertEqual({c["pattern_id"] for c in cases}, set(range(4)))
+            self.assertTrue(all(c["size"] == 2048 and c["scale"] == "smoke" for c in cases))
+
+    def test_missing_or_wrong_size_case_cannot_be_reported_pass(self):
+        def wrong_case(executables, size, pattern, rounds, repetitions, warmups):
+            return {"status": "NO_BASELINE", "size": size + 1, "pattern": "random",
+                    "rounds": rounds, "samples_ns": {"current": [1]},
+                    "median_ns": {"current": 1}, "current_over_base": None}
+        with tempfile.TemporaryDirectory() as directory:
+            args = argparse.Namespace(output=Path(directory), base="HEAD", compiler="fake",
+                                      quick=True, repetitions=1, warmups=0, id=["fenwick"])
+            with patch.object(bench, "resolve_base", return_value="a" * 40), \
+                 patch.object(bench, "compiler_command", return_value=["fake"]), \
+                 patch.object(bench, "command", return_value=subprocess.CompletedProcess([], 0, b"fake compiler\n")), \
+                 patch.object(bench, "baseline_source", return_value=None), \
+                 patch.object(bench, "build", return_value=Path("fake-binary")), \
+                 patch.object(bench, "measure", side_effect=wrong_case), redirect_stderr(io.StringIO()):
+                self.assertEqual(bench.run(args), 1)
+            report = json.loads((Path(directory) / "result.json").read_text())
+            self.assertEqual(report["status"], "FAIL")
+            self.assertIn("省略", report["error"])
+
+
 class RuntimeTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -127,7 +166,9 @@ class RuntimeTests(unittest.TestCase):
             with redirect_stdout(io.StringIO()):self.assertEqual(bench.run(args), 0)
             report = json.loads((Path(directory) / "result.json").read_text())
             self.assertEqual(report["status"], "PASS")
-            self.assertEqual(len(report["results"]), 6)
+            self.assertEqual(len(report["results"]), 12)
+            self.assertEqual(report["expected_cases"], 12)
+            self.assertEqual(report["scale_scope"], "smoke_only")
             for source in report["sources"].values():
                 folder = Path(directory) / source["snapshots"]
                 self.assertEqual(bench.digest((folder / "current-library.hpp").read_bytes()), source["current_sha256"])
@@ -144,7 +185,7 @@ class RuntimeTests(unittest.TestCase):
             self.assertEqual(report["status"], "NO_BASELINE")
             self.assertEqual(report["compared_cases"], 0)
             self.assertTrue(report["current_measurements_passed"])
-            self.assertEqual(len(report["results"]), 2)
+            self.assertEqual(len(report["results"]), 4)
 
     def test_real_wrong_kernel_is_detected_before_any_measurement(self):
         fixture = b'''#include "benchmark_common.hpp"
@@ -169,9 +210,22 @@ int main(int argc,char**argv) {
             binary = bench.build(compiler, (bench.ROOT / bench.LIBRARIES["rolling_hash"]).read_bytes(),
                                  (bench.FIXTURES / "rolling_hash.cpp").read_bytes(),
                                  (bench.FIXTURES / "benchmark_common.hpp").read_bytes(), Path(directory), "standard")
-            for pattern in ("0", "1"):
+            for pattern in ("0", "1", "2", "3"):
                 result = subprocess.run([str(binary), "256", pattern, "1"], capture_output=True, check=True)
                 self.assertGreater(bench.parse_result(result.stdout)["elapsed_ns"], 0)
+
+    def test_structural_cases_at_tiny_odd_and_power_boundary_sizes(self):
+        with tempfile.TemporaryDirectory() as directory:
+            for identifier, library in bench.LIBRARIES.items():
+                binary = bench.build(bench.compiler_command(self.compiler), (bench.ROOT / library).read_bytes(),
+                                     (bench.FIXTURES / (identifier + ".cpp")).read_bytes(),
+                                     (bench.FIXTURES / "benchmark_common.hpp").read_bytes(),
+                                     Path(directory) / identifier, "boundaries")
+                for size in (2, 3, 31, 32, 33):
+                    for pattern in (2, 3):
+                        result = subprocess.run([str(binary), str(size), str(pattern), "1"],
+                                                capture_output=True, check=True)
+                        self.assertGreater(bench.parse_result(result.stdout)["elapsed_ns"], 0)
 
     def test_real_build_failure_is_not_a_measurement(self):
         with tempfile.TemporaryDirectory() as directory, self.assertRaises(bench.BenchmarkError):
