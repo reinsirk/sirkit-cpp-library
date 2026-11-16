@@ -35,7 +35,7 @@
 | [binomial\_modint\_split](submissions/binomial_modint_split.cpp) | [Library Checker](https://judge.yosupo.jp/problem/binomial_coefficient) | 説明変更のみ・再提出不要 | [AC](https://judge.yosupo.jp/submission/417210) | — |
 | [binomial\_prime](submissions/binomial_prime.cpp) | [Library Checker](https://judge.yosupo.jp/problem/binomial_coefficient_prime_mod) | 現行AC | [AC](https://judge.yosupo.jp/submission/417295) | 140 ms |
 | [binomial\_prime\_split](submissions/binomial_prime_split.cpp) | [Library Checker](https://judge.yosupo.jp/problem/binomial_coefficient_prime_mod) | 現行AC | [AC](https://judge.yosupo.jp/submission/417294) | 139 ms |
-| [bipartite\_matching](submissions/bipartite_matching.cpp) | [Library Checker](https://judge.yosupo.jp/problem/bipartitematching) | 未提出 | — | — |
+| [bipartite\_matching](submissions/bipartite_matching.cpp) | [Library Checker](https://judge.yosupo.jp/problem/bipartitematching) | 現行AC | [AC](https://judge.yosupo.jp/submission/417460) | 94 ms |
 | [cartesian\_tree](submissions/cartesian_tree.cpp) | [Library Checker](https://judge.yosupo.jp/problem/cartesian_tree) | 未提出 | — | — |
 | [centroid\_decomposition](submissions/centroid_decomposition.cpp) | [AtCoder](https://atcoder.jp/contests/abc291/tasks/abc291_h) | 未提出 | — | — |
 | [chinese\_remainder](submissions/chinese_remainder.cpp) | [AtCoder](https://atcoder.jp/contests/abc193/tasks/abc193_e) | 未提出 | — | — |
@@ -221,7 +221,7 @@
 | [preferred\_fraction\_rational\_approximation](submissions/preferred_fraction_rational_approximation.cpp) | [Library Checker](https://judge.yosupo.jp/problem/rational_approximation) | 現行AC | [AC](https://judge.yosupo.jp/submission/417350) | 287 ms |
 | [preferred\_matrix\_rotate\_grid](submissions/preferred_matrix_rotate_grid.cpp) | [Yukicoder](https://yukicoder.me/problems/no/565) | 未提出 | — | — |
 | [preferred\_matrix\_rotate\_integer](submissions/preferred_matrix_rotate_integer.cpp) | [Yukicoder](https://yukicoder.me/problems/no/565) | 未提出 | — | — |
-| [preferred\_max\_flow\_bipartite](submissions/preferred_max_flow_bipartite.cpp) | [Library Checker](https://judge.yosupo.jp/problem/bipartitematching) | 現行AC | [AC](https://judge.yosupo.jp/submission/417351) | 2112 ms |
+| [preferred\_max\_flow\_bipartite](submissions/preferred_max_flow_bipartite.cpp) | [Library Checker](https://judge.yosupo.jp/problem/bipartitematching) | 現行未照合・要再提出 | [AC](https://judge.yosupo.jp/submission/417351) | — |
 | [preferred\_project\_selection\_yuki](submissions/preferred_project_selection_yuki.cpp) | [Yukicoder](https://yukicoder.me/problems/no/957) | 未提出 | — | — |
 | [preferred\_sieve\_factorize\_full](submissions/preferred_sieve_factorize_full.cpp) | [Yukicoder](https://yukicoder.me/problems/no/2) | 現行AC | [AC](https://yukicoder.me/submissions/1199507) | 1 ms |
 | [preferred\_sieve\_factorize\_split](submissions/preferred_sieve_factorize_split.cpp) | [Yukicoder](https://yukicoder.me/problems/no/2) | 未提出 | — | — |
