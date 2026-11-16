@@ -128,8 +128,9 @@ int main() {
     }
     {
         LineContainer2D tree; tree.add(1e20L, -1e20L);
-        assert(tree.max_ll(1, 0) == tree.INTEGER_LIMIT);
-        assert(tree.min_ll(0, 1) == -tree.INTEGER_LIMIT);
+        assert(tree.infinity() == (std::int64_t{1} << 60));
+        assert(tree.max_ll(1, 0) == tree.infinity());
+        assert(tree.min_ll(0, 1) == -tree.infinity());
         checks += 2;
     }
     // 有限積の相殺、及び検査省略時も残る比のoverflow保護。

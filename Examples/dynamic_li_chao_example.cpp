@@ -6,7 +6,7 @@ using namespace sirkit;
 
 int main() {
     constexpr std::int64_t infinity = std::int64_t{1} << 60;
-    DynamicLiChaoTree<std::int64_t, infinity> tree(-10, 10); // 閉区間。
+    DynamicLiChaoTree<> tree(-10, 10, infinity); // 閉区間と番兵を指定。
     tree.reserve(32);
     tree.add_line(2, 3);
     tree.add_segment(-1, 0, 0, 4); // 線分も閉区間。

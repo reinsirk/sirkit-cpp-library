@@ -8,11 +8,12 @@
 //
 // API一覧
 // [LineContainer2D]
+// LineContainer2D(inf=2^60): O(1)で空表を作る。infは正のint64_t。infinity(): 設定値をO(1)で返す。
 // add(x,y): 有限の点を追加、償却O(log h)。確保失敗時は空に戻して例外を伝える。
 // max_ld(a,b)/min_ld(a,b): ax+byの最大/最小をO(log h)で返す。有限係数・非空が前提。
 // max_ld/min_ld(整数,整数): 値域がint64_t内の整数型は、型から保証できる有限性・比の検査を省く。
 // b/aが浮動型の範囲を超える問い合わせは常にoverflow_error。
-// max_ll(a,b)/min_ll(a,b): 浮動計算を±4.1e18に制限し、0方向へ切り捨てる(旧挙動)。
+// max_ll(a,b)/min_ll(a,b): 浮動計算を±infに制限し、0方向へ切り捨てる。O(log h)。
 // max_rounded_ll(a,b)/min_rounded_ll(a,b): 同じ範囲制限後、半整数は0から遠い方へ丸める。
 // max_optional(a,b)/min_optional(a,b): 空ならnullopt、それ以外はld版と同じ。
 // argmax(a,b)/argmin(a,b): 最適な元の点(x,y)をO(log h)で返す。同点の点は未規定。
@@ -20,6 +21,7 @@
 // argmax_optional(a,b)/argmin_optional(a,b): 空ならnullopt、それ以外はarg版と同じ。
 // size()/empty()/clear(): 登録点数(重複込み)・空判定・全削除、O(1)/O(1)/O(h)。
 // swap(other): 2コンテナの全状態をO(1)で交換する。コピーは独立、move後の元は空。
+// コピーはO(h)、moveはO(1)。コピー・移動・clearでもinfを保持し、swapでは設定も交換する。
 // 公開のminlc/maxlc・座標範囲は参照用。外からの変更は不変条件を壊す。
 // long doubleの丸め誤差があり、ll版も厳密な整数内積ではない。hは包絡に残る点数。
 // 既定の丸めモード・型本来の精度が前提。ゼロの符号は未規定。
@@ -427,7 +429,7 @@ struct LineContainer2D {
   using ld = long double;
   using ll = std::int64_t;
   struct Result { ld value, x, y; };
-  static constexpr ld kInf = 4.1e18L;
+  static constexpr ld kInf = static_cast<ld>(std::int64_t{1} << 60);
   static constexpr ll INTEGER_LIMIT = 4'100'000'000'000'000'000;
   ld Xmax = -std::numeric_limits<ld>::infinity();
   ld Xmin = std::numeric_limits<ld>::infinity();
@@ -437,6 +439,7 @@ struct LineContainer2D {
   MaxLineContainer<ld> maxlc;
 
  private:
+  ll inf_ = kInf;
   std::size_t count_ = 0;
   // 照会では状態を変えず、包絡が変わった追加後にだけ更新する。
   // 算術の代替指定と、処理系に合わせたキャッシュ選択を分ける。
@@ -639,10 +642,17 @@ struct LineContainer2D {
     const ld sx = std::ldexp(x, -e2), sy = std::ldexp(y, -e2);
     return std::ldexp(sa * sx + sb * sy, e1 + e2);
   }
-  static ll to_rounded_integer(ld value) {
-    const ld limited = std::clamp(value, -kInf, kInf);
-    const ll integral = static_cast<ll>(limited);
-    const ld fraction = limited - ld(integral);
+  ll to_integer(ld value) const {
+    // 浮動型がint64_t最大値を2^63へ丸める環境でも、範囲外の整数変換をしない。
+    if (value >= static_cast<ld>(inf_)) return inf_;
+    if (value <= -static_cast<ld>(inf_)) return -inf_;
+    return static_cast<ll>(value);
+  }
+  ll to_rounded_integer(ld value) const {
+    if (value >= static_cast<ld>(inf_)) return inf_;
+    if (value <= -static_cast<ld>(inf_)) return -inf_;
+    const ll integral = static_cast<ll>(value);
+    const ld fraction = value - ld(integral);
     return integral + (fraction >= 0.5L) - (fraction <= -0.5L);
   }
   template <bool ratio_is_finite = false>
@@ -794,16 +804,22 @@ struct LineContainer2D {
 #endif
  public:
   LineContainer2D() = default;
+  explicit LineContainer2D(ll inf) : inf_(inf) {
+#ifndef SKIP_RUNTIME_CHECKS
+    if (inf <= 0) throw std::invalid_argument("LineContainer2D: inf must be positive");
+#endif
+  }
+  ll infinity() const noexcept { return inf_; }
   LineContainer2D(const LineContainer2D& other)
       : Xmax(other.Xmax), Xmin(other.Xmin), Ymax(other.Ymax), Ymin(other.Ymin),
-        minlc(other.minlc), maxlc(other.maxlc), count_(other.count_) { refresh_hints(); }
+        minlc(other.minlc), maxlc(other.maxlc), inf_(other.inf_), count_(other.count_) { refresh_hints(); }
   LineContainer2D& operator = (const LineContainer2D& other) {
     if (this != &other) { LineContainer2D copy(other); swap(copy); }
     return *this;
   }
   LineContainer2D(LineContainer2D&& other) noexcept
       : Xmax(other.Xmax), Xmin(other.Xmin), Ymax(other.Ymax), Ymin(other.Ymin),
-        minlc(std::move(other.minlc)), maxlc(std::move(other.maxlc)), count_(other.count_),
+        minlc(std::move(other.minlc)), maxlc(std::move(other.maxlc)), inf_(other.inf_), count_(other.count_),
         min_hint_(other.min_hint_), max_hint_(other.max_hint_) {
     other.clear();
   }
@@ -812,6 +828,7 @@ struct LineContainer2D {
       minlc = std::move(other.minlc); maxlc = std::move(other.maxlc);
       Xmax = other.Xmax; Xmin = other.Xmin; Ymax = other.Ymax; Ymin = other.Ymin;
       count_ = other.count_;
+      inf_ = other.inf_;
       min_hint_ = other.min_hint_; max_hint_ = other.max_hint_;
       other.clear();
     }
@@ -859,8 +876,8 @@ struct LineContainer2D {
     return -max_ld(-a,-b);
 #endif
   }
-  ll max_ll(ll a, ll b) const { return static_cast<ll>(std::clamp(integer_value<false>(a, b), -kInf, kInf)); }
-  ll min_ll(ll a, ll b) const { return static_cast<ll>(std::clamp(integer_value<true>(a, b), -kInf, kInf)); }
+  ll max_ll(ll a, ll b) const { return to_integer(integer_value<false>(a, b)); }
+  ll min_ll(ll a, ll b) const { return to_integer(integer_value<true>(a, b)); }
   ll max_rounded_ll(ll a, ll b) const { return to_rounded_integer(integer_value<false>(a, b)); }
   ll min_rounded_ll(ll a, ll b) const { return to_rounded_integer(integer_value<true>(a, b)); }
   Result max_with_point(ld a, ld b) const {
@@ -898,6 +915,7 @@ struct LineContainer2D {
     std::swap(Xmax, other.Xmax); std::swap(Xmin, other.Xmin);
     std::swap(Ymax, other.Ymax); std::swap(Ymin, other.Ymin);
     std::swap(count_, other.count_);
+    std::swap(inf_, other.inf_);
     std::swap(min_hint_, other.min_hint_); std::swap(max_hint_, other.max_hint_);
   }
   std::size_t size() const noexcept { return count_; }

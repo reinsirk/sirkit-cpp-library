@@ -29,10 +29,10 @@
 // lower_bound(w)/upper_bound(w): 前方累積和がw以上／より大きくなる最初の位置。なければsize()。
 // 検索は全要素非負が前提。lower_bound(w<=0)とupper_bound(w<0)は0。
 // size()/empty(): 配列の長さ／長さが0かを返す（全要素0とは区別）。
-// clear(): 長さと再利用できる容量を保ち、全要素を0へ戻す。
-// reset(n): 長さn>=0の零配列へ変更する。保持形式が対応するとき容量を再利用する。
-// reserve(nodes): 内部Fenwickセル数を目安に容量を準備するヒント。
-// stored_nodes(): 値0や相殺済みも含む登録セル数。読み取りやreserveでは変わらない。
+// clear(): 長さと容量を保ち零へ戻す。最悪O(C)、C=保持する全配列・表・木の総容量。
+// reset(n): 長さn>=0の零配列へ変更。保持形式が対応するとき容量を再利用。最悪O(C)。
+// reserve(nodes): 内部Fenwickセル数を目安に予約。再配置は期待O(C+C'+log(n+1))、C'=予約後の総容量。
+// stored_nodes(): 値0や相殺済みも含む登録セル数。通常O(1)、連続追加の途中はO(log n)。予約では変わらない。
 
 
 // SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
@@ -2044,10 +2044,10 @@ class DynamicFenwickTree : public /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpb
 // set(i,j,x): 位置(i,j)の値をxへ変更する。
 // sum_all(): 配列全体の和を返す。
 // rows()/cols()/empty(): 行数／列数／いずれかの次元が0かを返す。
-// clear(): 行数・列数と確保済み容量を維持して、全要素を0にする。
-// reset(n,m): n行m列の零配列へ変更する。確保済み容量を再利用する。
-// reserve(nodes): 内部セル数の目安から行pool・疎索引を予約するヒント。行内容量は必要時確保。
-// stored_nodes(): 更新が到達したFenwickセル数。保持形式によらず、値が0になったセルも含む。
+// clear(): 寸法と容量を保ち零へ戻す。O(I+H)、I=行索引の長さ、H=疎行索引の表容量。
+// reset(n,m): n行m列の零配列へ変更し容量を再利用。O(I+H)。各行の値配列は即座に走査しない。
+// reserve(nodes): 行pool・疎索引の予約ヒント。再配置は期待O(C+C')、C/C'=予約前後の全保持容量。
+// stored_nodes(): 更新が到達したFenwickセル数をO(1)で返す。値が0になったセルも含む。
 // swap(other): 寸法・値・確保済み領域を交換する。
 //
 // [同梱: DynamicFenwickTree<S,T>]
@@ -2064,10 +2064,10 @@ class DynamicFenwickTree : public /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpb
 // lower_bound(w)/upper_bound(w): 前方累積和がw以上／より大きくなる最初の位置。なければsize()。
 // 検索は全要素非負が前提。lower_bound(w<=0)とupper_bound(w<0)は0。
 // size()/empty(): 配列の長さ／長さが0かを返す（全要素0とは区別）。
-// clear(): 長さと再利用できる容量を保ち、全要素を0へ戻す。
-// reset(n): 長さn>=0の零配列へ変更する。保持形式が対応するとき容量を再利用する。
-// reserve(nodes): 内部Fenwickセル数を目安に容量を準備するヒント。
-// stored_nodes(): 値0や相殺済みも含む登録セル数。読み取りやreserveでは変わらない。
+// clear(): 長さと容量を保ち零へ戻す。最悪O(C)、C=保持する全配列・表・木の総容量。
+// reset(n): 長さn>=0の零配列へ変更。保持形式が対応するとき容量を再利用。最悪O(C)。
+// reserve(nodes): 内部Fenwickセル数を目安に予約。再配置は期待O(C+C'+log(n+1))、C'=予約後の総容量。
+// stored_nodes(): 値0や相殺済みも含む登録セル数。通常O(1)、連続追加の途中はO(log n)。予約では変わらない。
 
 
 // SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
@@ -4336,24 +4336,26 @@ class DynamicFenwickTree2D {
 //
 // API一覧
 // [DynamicLiChaoTree<T,kInf>]
+// Tの既定はint64_t、kInfの既定は2^60（Tで表せなければTの最大値）。
 // 整数座標の閉区間で直線・線分の最小値を管理する。Tは符号付き64ビット以下の整数。
-// 追加する線の対象区間では、数学的なa*x+bがTの範囲内かつkInf未満であること。
+// 追加する線の対象区間では、数学的なa*x+bがTの範囲内かつ設定したinf未満であること。
 // Wを座標数とすると直線追加・取得はO(log W)、線分追加はO(log² W)。
 // queryは読み取り専用。SKIP_RUNTIME_CHECKSで座標・端点値の検査を除く。
-// DynamicLiChaoTree(xmin, xmax): 整数の閉区間[xmin, xmax]で空の木を作る。
-// コピーは独立した木を作る。コピー代入の確保失敗時は元の木を維持する。
+// DynamicLiChaoTree(xmin,xmax,inf=kInf): 閉区間[xmin,xmax]の空の木をO(1)で作る。inf>0。
+// infinity(): 設定したinfをO(1)で返す。コピー・移動・clearでも設定を保持する。
+// コピーはO(M)で独立した木を作り、moveはO(1)。M=格納ノード数。コピー代入の確保失敗時は元を維持する。
 // update(a, b) / add_line(a, b): 定義域全体にy=a*x+bを追加する。
 // update_line_segment(a, b, left, right) / add_segment(...): 閉区間[left, right]に線分を追加。left>rightは無操作。
-// query(x): xでの最小値を返す。被覆する線がなければkInf。
+// query(x): xでの最小値を返す。被覆する線がなければ設定したinf。
 // query_line(x): 最小値を与えるLineを返す。同値時は任意、非被覆ならnullopt。
 // empty(): 追加した直線・空でない線分がなければtrue。O(1)。
 // clear(): 全ての線を消し、確保した容量を再利用する。O(格納ノード数)。
-// reserve(n): nノード分を事前確保する。直線本数とは異なる。
+// reserve(n): nノード分を事前確保する。直線本数とは異なる。再確保時O(M)、予約済みならO(1)。
 // stored_nodes(): 現在の格納ノード数を返す。取得操作では増えない。O(1)。
 // domain_min() / domain_max(): 定義域の左端・右端を返す。O(1)。
 //
 // [DynamicLiChaoTree<T,kInf>::Line]
-// Line(a, b): y=a*x+b。既定値は空を表す定数kInf。
+// Line(a=0,b=kInf): y=a*x+b。既定値はテンプレート引数側で、木ごとのinf指定とは別。
 // get(x): a*x+bを返す。値がTで表現可能であること。
 // over(other, x): xでotherより小さい値を与えるときtrue。
 
@@ -4378,7 +4380,10 @@ class DynamicFenwickTree2D {
 namespace sirkit {
 #ifndef SIRKIT_DYNAMIC_LI_CHAO_TREE_DEFINED
 #define SIRKIT_DYNAMIC_LI_CHAO_TREE_DEFINED
-template <typename T, T kInf>
+template <typename T = std::int64_t,
+          T kInf = (std::numeric_limits<T>::max() < (std::int64_t{1} << 60)
+                        ? std::numeric_limits<T>::max()
+                        : static_cast<T>(std::int64_t{1} << 60))>
 class DynamicLiChaoTree {
  public:
   struct Line {
@@ -4409,7 +4414,7 @@ class DynamicLiChaoTree {
     Index left = no_child;
     Index right = no_child;
   };
-  T xmin_, xmax_;
+  T xmin_, xmax_, inf_;
   class NodeStorage {
     static_assert(std::is_trivially_copyable_v<Node> &&
                   std::is_trivially_destructible_v<Node>);
@@ -4495,7 +4500,7 @@ class DynamicLiChaoTree {
   void check_coordinate(T x) const {
     if (x < xmin_ || xmax_ < x) throw std::out_of_range("Li Chao coordinate");
   }
-  static void check_value(const Line& line, T x) {
+  void check_value(const Line& line, T x) const {
     using U = std::make_unsigned_t<T>;
     const U a = line.slope < 0 ? U{} - U(line.slope) : U(line.slope);
     const U v = x < 0 ? U{} - U(x) : U(x);
@@ -4506,14 +4511,14 @@ class DynamicLiChaoTree {
     bool valid;
     if ((line.slope < 0) != (x < 0)) {
       valid = product_at_most(U(line.intercept) - U(std::numeric_limits<T>::min())) &&
-              (line.intercept < kInf || !product_at_most(U(line.intercept) - U(kInf)));
+              (line.intercept < inf_ || !product_at_most(U(line.intercept) - U(inf_)));
     } else {
-      valid = line.intercept < kInf &&
-              product_at_most(U(kInf - 1) - U(line.intercept));
+      valid = line.intercept < inf_ &&
+              product_at_most(U(inf_ - 1) - U(line.intercept));
     }
     if (!valid) throw std::overflow_error("Li Chao value must fit T and be below INF");
   }
-  static void check_line(const Line& line, T left, T right) {
+  void check_line(const Line& line, T left, T right) const {
     check_value(line, left);
     if (left != right) check_value(line, right);
   }
@@ -4529,7 +4534,7 @@ class DynamicLiChaoTree {
     if (nodes_.size() >= no_child || nodes_.size() == nodes_.max_size())
       throw std::length_error("Li Chao node limit");
     const Index result = static_cast<Index>(nodes_.size());
-    nodes_.emplace_back();
+    nodes_.push_back(Node{Line(T{}, inf_), no_child, no_child});
     return result;
   }
   Index child(Index index, bool right) {
@@ -4544,7 +4549,7 @@ class DynamicLiChaoTree {
   void insert_line(Index index, T left, T right, Line line) {
     for (;;) {
       Node& node = nodes_[index];
-      if (node.line.intercept == kInf && node.line.slope == 0) {
+      if (node.line.intercept == inf_ && node.line.slope == 0) {
         node.line = line;
         return;
       }
@@ -4575,7 +4580,7 @@ class DynamicLiChaoTree {
       }
       const Line& current = nodes_[index].line;
       // 切片kInfは空ノードを含むので枝刈りを省き、通常の探索を続ける。
-      if (current.intercept != kInf) {
+      if (current.intercept != inf_) {
         // 差が最小になる重なり区間の端でも勝てなければ追加不要。
         const T endpoint = line.slope < current.slope
             ? (qright < right ? qright : right)
@@ -4598,8 +4603,8 @@ class DynamicLiChaoTree {
   }
   template <bool ReturnLine>
   auto find_best(T x) const noexcept {
-    Line best;
-    T value = kInf;
+    Line best(T{}, inf_);
+    T value = inf_;
     T left = xmin_, right = xmax_;
     Index index = nodes_.empty() ? no_child : Index{0};
     while (index != no_child) {
@@ -4624,9 +4629,10 @@ class DynamicLiChaoTree {
   }
 
  public:
-  DynamicLiChaoTree(T xmin, T xmax) : xmin_(xmin), xmax_(xmax) {
+  DynamicLiChaoTree(T xmin, T xmax, T inf = kInf) : xmin_(xmin), xmax_(xmax), inf_(inf) {
 #ifndef SKIP_RUNTIME_CHECKS
     if (xmax < xmin) throw std::invalid_argument("Li Chao domain");
+    if (inf <= 0) throw std::invalid_argument("Li Chao inf must be positive");
 #endif
   }
   DynamicLiChaoTree(const DynamicLiChaoTree&) = default;
@@ -4635,6 +4641,7 @@ class DynamicLiChaoTree {
     nodes_ = other.nodes_;
     xmin_ = other.xmin_;
     xmax_ = other.xmax_;
+    inf_ = other.inf_;
     return *this;
   }
   DynamicLiChaoTree& operator=(DynamicLiChaoTree&&) noexcept = default;
@@ -4672,10 +4679,11 @@ class DynamicLiChaoTree {
     check_coordinate(x);
 #endif
     Line result = find_best<true>(x);
-    if (result.slope == 0 && result.intercept == kInf) return std::nullopt;
+    if (result.slope == 0 && result.intercept == inf_) return std::nullopt;
     return result;
   }
   bool empty() const noexcept { return nodes_.empty(); }
+  T infinity() const noexcept { return inf_; }
   void clear() noexcept { nodes_.clear(); }
   void reserve(std::size_t count) {
     if (count > no_child || count > nodes_.max_size())
@@ -5238,11 +5246,12 @@ public:
 // erase(key): キーを削除し、次のiteratorを返す。未登録・erase(end())はend()。
 // erase(key, next): falseなら次要素を探さず削除してend()、trueならerase(key)と同じ。
 // begin()/end()/cbegin()/cend(): 格納要素を順序不定で列挙する。キーは変更できない。
-// 空表のbeginはO(1)、それ以外は先頭要素までのバケットを走査する。
+// 空表のbeginはO(1)、それ以外は先頭要素まで走査。全列挙はO(C)、C=バケット数、N=登録数。
 // size()/empty(): 登録数・空かどうかをO(1)で返す。
-// clear(): 全要素を破棄し、確保済みの容量を再利用する。
-// reserve(n): n要素分の容量を予約する。縮小しない。
-// rehash(n): nバケット以上・現登録数に必要な容量へ再配置し、墓石を除く。
+// clear(): 全要素を破棄し容量を再利用。O(C)、要素も墓石もなければO(1)。
+// reserve(n): n要素分を予約し縮小しない。予約済みはO(1)、再配置は期待O(C+C')。
+// rehash(n): nバケット以上・登録数に足りる容量C'へ再配置し墓石を除く。期待O(C+C')。
+// 再配置の最悪時間は衝突によりO(C+C'+N^2)。ハッシュ・要素操作をO(1)とした費用。
 // capacity()/load_factor(): バケット数・使用率をO(1)で返す。
 // swap(other): 内容とハッシュ・同値判定を交換する。コピーは独立した複製。
 // swapはHasher/KeyEqualのswapが例外を送出しないことを要求する。
@@ -6575,11 +6584,12 @@ template <typename T> using MaxLineContainer = LineContainer<T, MAXIMIZE>;
 //
 // API一覧
 // [LineContainer2D]
+// LineContainer2D(inf=2^60): O(1)で空表を作る。infは正のint64_t。infinity(): 設定値をO(1)で返す。
 // add(x,y): 有限の点を追加、償却O(log h)。確保失敗時は空に戻して例外を伝える。
 // max_ld(a,b)/min_ld(a,b): ax+byの最大/最小をO(log h)で返す。有限係数・非空が前提。
 // max_ld/min_ld(整数,整数): 値域がint64_t内の整数型は、型から保証できる有限性・比の検査を省く。
 // b/aが浮動型の範囲を超える問い合わせは常にoverflow_error。
-// max_ll(a,b)/min_ll(a,b): 浮動計算を±4.1e18に制限し、0方向へ切り捨てる(旧挙動)。
+// max_ll(a,b)/min_ll(a,b): 浮動計算を±infに制限し、0方向へ切り捨てる。O(log h)。
 // max_rounded_ll(a,b)/min_rounded_ll(a,b): 同じ範囲制限後、半整数は0から遠い方へ丸める。
 // max_optional(a,b)/min_optional(a,b): 空ならnullopt、それ以外はld版と同じ。
 // argmax(a,b)/argmin(a,b): 最適な元の点(x,y)をO(log h)で返す。同点の点は未規定。
@@ -6587,6 +6597,7 @@ template <typename T> using MaxLineContainer = LineContainer<T, MAXIMIZE>;
 // argmax_optional(a,b)/argmin_optional(a,b): 空ならnullopt、それ以外はarg版と同じ。
 // size()/empty()/clear(): 登録点数(重複込み)・空判定・全削除、O(1)/O(1)/O(h)。
 // swap(other): 2コンテナの全状態をO(1)で交換する。コピーは独立、move後の元は空。
+// コピーはO(h)、moveはO(1)。コピー・移動・clearでもinfを保持し、swapでは設定も交換する。
 // 公開のminlc/maxlc・座標範囲は参照用。外からの変更は不変条件を壊す。
 // long doubleの丸め誤差があり、ll版も厳密な整数内積ではない。hは包絡に残る点数。
 // 既定の丸めモード・型本来の精度が前提。ゼロの符号は未規定。
@@ -6994,7 +7005,7 @@ struct LineContainer2D {
   using ld = long double;
   using ll = std::int64_t;
   struct Result { ld value, x, y; };
-  static constexpr ld kInf = 4.1e18L;
+  static constexpr ld kInf = static_cast<ld>(std::int64_t{1} << 60);
   static constexpr ll INTEGER_LIMIT = 4'100'000'000'000'000'000;
   ld Xmax = -std::numeric_limits<ld>::infinity();
   ld Xmin = std::numeric_limits<ld>::infinity();
@@ -7004,6 +7015,7 @@ struct LineContainer2D {
   MaxLineContainer<ld> maxlc;
 
  private:
+  ll inf_ = kInf;
   std::size_t count_ = 0;
   // 照会では状態を変えず、包絡が変わった追加後にだけ更新する。
   // 算術の代替指定と、処理系に合わせたキャッシュ選択を分ける。
@@ -7196,10 +7208,17 @@ struct LineContainer2D {
     const ld sx = std::ldexp(x, -e2), sy = std::ldexp(y, -e2);
     return std::ldexp(sa * sx + sb * sy, e1 + e2);
   }
-  static ll to_rounded_integer(ld value) {
-    const ld limited = std::clamp(value, -kInf, kInf);
-    const ll integral = static_cast<ll>(limited);
-    const ld fraction = limited - ld(integral);
+  ll to_integer(ld value) const {
+    // 浮動型がint64_t最大値を2^63へ丸める環境でも、範囲外の整数変換をしない。
+    if (value >= static_cast<ld>(inf_)) return inf_;
+    if (value <= -static_cast<ld>(inf_)) return -inf_;
+    return static_cast<ll>(value);
+  }
+  ll to_rounded_integer(ld value) const {
+    if (value >= static_cast<ld>(inf_)) return inf_;
+    if (value <= -static_cast<ld>(inf_)) return -inf_;
+    const ll integral = static_cast<ll>(value);
+    const ld fraction = value - ld(integral);
     return integral + (fraction >= 0.5L) - (fraction <= -0.5L);
   }
   template <bool ratio_is_finite = false>
@@ -7301,16 +7320,22 @@ struct LineContainer2D {
 
  public:
   LineContainer2D() = default;
+  explicit LineContainer2D(ll inf) : inf_(inf) {
+#ifndef SKIP_RUNTIME_CHECKS
+    if (inf <= 0) throw std::invalid_argument("LineContainer2D: inf must be positive");
+#endif
+  }
+  ll infinity() const noexcept { return inf_; }
   LineContainer2D(const LineContainer2D& other)
       : Xmax(other.Xmax), Xmin(other.Xmin), Ymax(other.Ymax), Ymin(other.Ymin),
-        minlc(other.minlc), maxlc(other.maxlc), count_(other.count_) { refresh_hints(); }
+        minlc(other.minlc), maxlc(other.maxlc), inf_(other.inf_), count_(other.count_) { refresh_hints(); }
   LineContainer2D& operator = (const LineContainer2D& other) {
     if (this != &other) { LineContainer2D copy(other); swap(copy); }
     return *this;
   }
   LineContainer2D(LineContainer2D&& other) noexcept
       : Xmax(other.Xmax), Xmin(other.Xmin), Ymax(other.Ymax), Ymin(other.Ymin),
-        minlc(std::move(other.minlc)), maxlc(std::move(other.maxlc)), count_(other.count_),
+        minlc(std::move(other.minlc)), maxlc(std::move(other.maxlc)), inf_(other.inf_), count_(other.count_),
         min_hint_(other.min_hint_), max_hint_(other.max_hint_) {
     other.clear();
   }
@@ -7319,6 +7344,7 @@ struct LineContainer2D {
       minlc = std::move(other.minlc); maxlc = std::move(other.maxlc);
       Xmax = other.Xmax; Xmin = other.Xmin; Ymax = other.Ymax; Ymin = other.Ymin;
       count_ = other.count_;
+      inf_ = other.inf_;
       min_hint_ = other.min_hint_; max_hint_ = other.max_hint_;
       other.clear();
     }
@@ -7358,8 +7384,8 @@ struct LineContainer2D {
   ld min_ld(ld a, ld b) const {
     return -max_ld(-a,-b);
   }
-  ll max_ll(ll a, ll b) const { return static_cast<ll>(std::clamp(integer_value<false>(a, b), -kInf, kInf)); }
-  ll min_ll(ll a, ll b) const { return static_cast<ll>(std::clamp(integer_value<true>(a, b), -kInf, kInf)); }
+  ll max_ll(ll a, ll b) const { return to_integer(integer_value<false>(a, b)); }
+  ll min_ll(ll a, ll b) const { return to_integer(integer_value<true>(a, b)); }
   ll max_rounded_ll(ll a, ll b) const { return to_rounded_integer(integer_value<false>(a, b)); }
   ll min_rounded_ll(ll a, ll b) const { return to_rounded_integer(integer_value<true>(a, b)); }
   Result max_with_point(ld a, ld b) const {
@@ -7397,6 +7423,7 @@ struct LineContainer2D {
     std::swap(Xmax, other.Xmax); std::swap(Xmin, other.Xmin);
     std::swap(Ymax, other.Ymax); std::swap(Ymin, other.Ymin);
     std::swap(count_, other.count_);
+    std::swap(inf_, other.inf_);
     std::swap(min_hint_, other.min_hint_); std::swap(max_hint_, other.max_hint_);
   }
   std::size_t size() const noexcept { return count_; }
@@ -7639,22 +7666,25 @@ public:
 // op・mapping等の計算時間をO(1)として記す。
 // 非可換 op では順方向・逆方向を保持する。添字と区間は 0 始まり・半開区間。
 // 第8引数 Commutative=true は op の可換性を指定する。既知の既定 op は自動認識する。
-// lazy_implicit_treap() は空列、(vector<S>) は O(N) で列を構築する。
+// lazy_implicit_treap()/lazy_implicit_treap(identity): O(1)で空列。後者は空区間の単位元を指定する。
+// (vector<S>[,identity]) は O(N)時間・追加O(N)で列を構築。({値,...})の既存構築も保持する。
+// identity()は設定した単位元をO(1)で返す。単位元のみの指定は丸括弧(identity)、空列は()か{}。
+// 既定はe()。RangeAddMinの既定は2^60。指定値もopの単位元となること。
 // コピーは O(スロット数) で独立した所有。コピー代入失敗時は元の列を保持する。
 // ムーブ元は空列、swap は O(1)。
 // size() / empty() は要素数・空判定を O(1) で返す。
 // clear() は O(スロット数) で要素を破棄し、確保済み容量を保持する。
-// reserve(n) は容量を確保する。int の範囲を超える要求は例外。
+// reserve(n) は容量を確保。再確保時O(保持スロット数)、足りていればO(1)。int超は例外。
 // get(pos) / set(pos,value) は要素の取得・置換。0 <= pos < size()。
 // front() / back() は先頭・末尾の値を返す。空でないこと。期待O(log N)。
 // insert_at(pos,value) は位置 pos の直前へ挿入。0 <= pos <= size()。
 // push_back(value) / push_front(value) は末尾・先頭へ追加する。
 // erase(l,r) は区間を削除。不正な区間は検査有効時に何もしない。
-// erase_prod(l,r) は区間の集約を返して削除する。空区間はe()。期待O(削除数 + log N)。
+// erase_prod(l,r) は区間の集約を返して削除する。空区間はidentity()。期待O(削除数 + log N)。
 // erase_at(pos) は1要素を削除。0 <= pos < size()。
 // pop_back() / pop_front() は末尾・先頭を削除。空列なら何もしない。
 // apply(l,r,f) は区間に作用 f を適用する。空区間は何もしない。
-// prod(l,r) は順序を保って集約し、空区間は e()。all_prod() は O(1)。
+// prod(l,r) は順序を保って集約し、空区間はidentity()。all_prod() は O(1)。
 // reverse(l,r) は区間を反転。rotate(l,m,r) は [l,m),[m,r) を交換。l <= m <= r。
 // move_range(l,r,pos): [l,r)を移動前の隙間posの直前へ移す。0<=pos<=size()。期待O(log N)。
 // l<=pos<=r または空区間なら不変。例: [a,b,c,d,e]でmove_range(1,3,5)は[a,d,e,b,c]。
@@ -7667,7 +7697,7 @@ public:
 // erase_max() は最大要素を1個削除。空列なら何もしない。
 // max_right(l,g) / max_right<g>(l) は g(prod(l,r)) が真となる最大 r。
 // min_left(r,g) / min_left<g>(r) は g(prod(l,r)) が真となる最小 l。
-// 境界探索は g(e()) が真で区間伸長に単調であること。検査省略時の不正入力は未定義。
+// 境界探索は g(identity()) が真で区間伸長に単調であること。検査省略時の不正入力は未定義。
 //
 // [indexed_implicit_treap / 第9引数 TrackIds=true]
 // 同じ先頭8テンプレート引数でID追跡を有効にする別名。既定falseではID状態・親の更新を持たない。
@@ -7680,7 +7710,7 @@ public:
 // get_by_id(id) / set_by_id(id,value): 存在するIDの値を取得・置換。期待O(log N)。IDは保持する。
 // erase_id(id): IDの要素を削除してtrue。不在はfalse。期待O(log N)。
 // prod_between(a,b) / erase_between(a,b): 2つのIDの間を集約／集約して削除。端点は含めない。
-// IDの前後は任意。同じID・隣接要素ならe()。双方のIDが存在すること。
+// IDの前後は任意。同じID・隣接要素ならidentity()。双方のIDが存在すること。
 // prod_betweenは期待O(log N)、erase_betweenは期待O(削除数 + log N)。
 // reserve_ids(n): ID 0..n-1 の索引を準備する。O(追加枠数)、再確保時O(現在のID索引枠数)。
 // ID取得・位置特定は期待O(log N)、挿入は償却期待O(log N)。索引拡張・再確保の費用は別途かかる。
@@ -7689,7 +7719,7 @@ public:
 // 検査時は負の挿入ID・重複IDと、存在が前提の操作への不存在IDを拒否。コピーはID索引枠数ぶんもかかる。
 //
 // [既定の作用: RangeAddMin]
-// 区間加算・最小値。値と加算後の値は kInf 以下、各演算は int64_t に収まること。
+// 区間加算・最小値。値と加算後の値は設定した単位元以下、各演算はint64_tに収まること。
 // op(a,b)/e(): 最小値/単位元。mapping(f,x): 加算。composition(f,g)/id(): 加算の合成/0。
 //
 // [既定の作用: RangeAddSum]
@@ -7700,9 +7730,11 @@ public:
 // SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <chrono>
+#include <concepts>
 #include <cstddef>
 #include <cstdint>
 #include <limits>
+#include <memory>
 #include <stdexcept>
 #include <type_traits>
 #include <utility>
@@ -7716,7 +7748,7 @@ namespace sirkit {
 struct RangeAddMin {
     using S = std::int64_t;
     using F = std::int64_t;
-    static constexpr S kInf = INT64_C(8000000000000000000);
+    static constexpr S kInf = std::int64_t{1} << 60;
     static S op(S a, S b) { return std::min(a, b); }
     static S e() { return kInf; }
     static S mapping(F f, S x) { return x + f; }
@@ -7798,6 +7830,9 @@ class lazy_implicit_treap {
     using StoredNode = std::conditional_t<compact_nodes_, CompactNode, Node>;
     struct PriorityIndex { std::vector<std::uint64_t> slots; };
     struct NoPriorityIndex {};
+    // 既定の単位元はe()を使い、指定された場合だけ不変の値を所有する。
+    std::shared_ptr<const S> identity_;
+    S identity_value() const { return identity_ ? *identity_ : e(); }
     std::vector<StoredNode> nodes_;
     [[no_unique_address]] std::conditional_t<compact_nodes_, PriorityIndex, NoPriorityIndex> priorities_;
     int root_ = -1, free_ = -1;
@@ -7852,10 +7887,10 @@ class lazy_implicit_treap {
     }
     static constexpr bool deferred_actions_ = compact_nodes_ && sizeof(S) >= 16 && sizeof(F) >= 16;
     int length(int p) const { return p < 0 ? 0 : nodes_[p].length; }
-    S forward(int p) const { return p < 0 ? e() : nodes_[p].forward; }
+    S forward(int p) const { return p < 0 ? identity_value() : nodes_[p].forward; }
     S backward(int p) const {
         if constexpr (commutative_) return forward(p);
-        else return p < 0 ? e() : nodes_[p].backward.value;
+        else return p < 0 ? identity_value() : nodes_[p].backward.value;
     }
     void pull(int p) {
         StoredNode& n = nodes_[p];
@@ -8022,7 +8057,7 @@ class lazy_implicit_treap {
         if constexpr (TrackIds) {
             if (nodes_[p].link.identifier >= 0) ids_.slots[nodes_[p].link.identifier] = -1;
         }
-        if constexpr (!compact_nodes_) nodes_[p] = StoredNode(e(), 0);
+        if constexpr (!compact_nodes_) nodes_[p] = StoredNode(identity_value(), 0);
         nodes_[p].left = free_;
         free_ = p;
     }
@@ -8249,9 +8284,7 @@ class lazy_implicit_treap {
         if (first > second) std::swap(first, second);
         return {first == second ? first : first + 1, second};
     }
-public:
-    lazy_implicit_treap() = default;
-    explicit lazy_implicit_treap(const std::vector<S>& values) {
+    void build_values(const std::vector<S>& values) {
         reserve(values.size());
         std::vector<int> stack;
         stack.reserve(values.size());
@@ -8269,6 +8302,15 @@ public:
         if (!stack.empty()) root_ = stack.front();
         while (!stack.empty()) { pull(stack.back()); stack.pop_back(); }
     }
+public:
+    lazy_implicit_treap() = default;
+    template<class I> requires std::convertible_to<I, S>
+    explicit lazy_implicit_treap(I&& identity)
+        : identity_(std::make_shared<const S>(std::forward<I>(identity))) {}
+    explicit lazy_implicit_treap(const std::vector<S>& values) { build_values(values); }
+    lazy_implicit_treap(const std::vector<S>& values, S identity)
+        : lazy_implicit_treap(std::move(identity)) { build_values(values); }
+    S identity() const { return identity_value(); }
     lazy_implicit_treap(const lazy_implicit_treap&) = default;
     lazy_implicit_treap& operator=(const lazy_implicit_treap& other) {
         if (this == &other) return *this;
@@ -8283,6 +8325,7 @@ public:
                     if constexpr (compact_nodes_) priorities_.slots = other.priorities_.slots;
                     nodes_ = other.nodes_;
                 }
+                identity_ = other.identity_;
                 root_ = other.root_;
                 free_ = other.free_;
                 random_ = other.random_;
@@ -8294,7 +8337,7 @@ public:
         return *this;
     }
     lazy_implicit_treap(lazy_implicit_treap&& other) noexcept
-        : nodes_(std::move(other.nodes_)), root_(std::exchange(other.root_, -1)),
+        : identity_(other.identity_), nodes_(std::move(other.nodes_)), root_(std::exchange(other.root_, -1)),
           free_(std::exchange(other.free_, -1)), random_(other.random_), ids_(std::move(other.ids_)) {
         if constexpr (compact_nodes_) priorities_.slots = std::move(other.priorities_.slots);
         other.nodes_.clear();
@@ -8306,6 +8349,7 @@ public:
         return *this;
     }
     void swap(lazy_implicit_treap& other) noexcept {
+        identity_.swap(other.identity_);
         nodes_.swap(other.nodes_);
         if constexpr (compact_nodes_) priorities_.slots.swap(other.priorities_.slots);
         std::swap(root_, other.root_);
@@ -8377,7 +8421,7 @@ public:
     }
     S erase_prod(int l, int r) {
         check_range(l, r);
-        if (l == r) return e();
+        if (l == r) return identity_value();
         if constexpr (!(std::is_nothrow_copy_constructible_v<S> && std::is_nothrow_move_constructible_v<S>)) {
             S result = query(root_, l, r);
             erase(l, r);
@@ -8412,7 +8456,7 @@ public:
         check_range(l, r);
         if (l != r) apply_range(root_, l, r, f);
     }
-    S prod(int l, int r) { check_range(l, r); return l == r ? e() : query(root_, l, r); }
+    S prod(int l, int r) { check_range(l, r); return l == r ? identity_value() : query(root_, l, r); }
     S all_prod() const { return forward(root_); }
     void reverse(int l, int r) {
         check_range(l, r);
@@ -8525,7 +8569,7 @@ public:
     void erase_max() { pop_back(); }
     template<class G> int max_right(int l, G g) {
         check_position(l, true);
-        S acc = e();
+        S acc = identity_value();
 #ifndef SKIP_RUNTIME_CHECKS
         if (!g(acc)) throw std::invalid_argument("lazy_implicit_treap predicate identity");
 #endif
@@ -8536,7 +8580,7 @@ public:
     template<bool (*g)(S)> int max_right(int l) { return max_right(l, g); }
     template<class G> int min_left(int r, G g) {
         check_position(r, true);
-        S acc = e();
+        S acc = identity_value();
 #ifndef SKIP_RUNTIME_CHECKS
         if (!g(acc)) throw std::invalid_argument("lazy_implicit_treap predicate identity");
 #endif
