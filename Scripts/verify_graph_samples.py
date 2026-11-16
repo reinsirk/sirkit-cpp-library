@@ -2,6 +2,61 @@
 """非一意な解の出力を独立に検査する。"""
 from collections import deque
 from functools import lru_cache
+import re
+
+
+def check_maximum_independent_set(entry, sample, output):
+    """参照解の最大サイズと、返された頂点集合の独立性を別々に確認する。"""
+    try:
+        tokens = sample["input"].split()
+        actual = output.split()
+        expected = sample["output"].split()
+        if not expected or any(re.fullmatch(r"[+-]?[0-9]+", x) is None
+                               for x in [*tokens, *actual, expected[0]]):
+            return False
+        data = list(map(int, tokens))
+        values = list(map(int, actual))
+        if len(data) < 2 or not values:
+            return False
+        n, m = data[:2]
+        size = values[0]
+        selected = set(values[1:])
+        if (not 1 <= n <= 40 or m < 0 or len(data) != 2 + 2 * m
+                or not 0 <= size <= n or size != int(expected[0])
+                or len(values) != size + 1 or len(selected) != size
+                or any(not 0 <= v < n for v in selected)):
+            return False
+        return all(0 <= u < n and 0 <= v < n and u != v
+                   and not (u in selected and v in selected)
+                   for u, v in zip(data[2::2], data[3::2]))
+    except (ValueError, TypeError, KeyError, AttributeError):
+        return False
+
+
+def check_topological_order(entry, sample, output):
+    """頂点の完全な順列と全有向辺を確認し、非一意な正解を許す。"""
+    try:
+        tokens = sample["input"].split()
+        actual = output.split()
+        # int()が受理するunderscore・Unicode数字等を出力形式に含めない。
+        if any(re.fullmatch(r"[+-]?[0-9]+", token) is None for token in [*tokens, *actual]):
+            return False
+        data = list(map(int, tokens))
+        if len(data) < 2:
+            return False
+        n, m = data[:2]
+        if n < 0 or m < 0 or len(data) != 2 + 2 * m or len(actual) != n:
+            return False
+        position = [-1] * n
+        for index, token in enumerate(actual):
+            vertex = int(token)
+            if not 0 <= vertex < n or position[vertex] != -1:
+                return False
+            position[vertex] = index
+        return all(0 <= u < n and 0 <= v < n and position[u] < position[v]
+                   for u, v in zip(data[2::2], data[3::2]))
+    except (ValueError, KeyError, TypeError, AttributeError):
+        return False
 
 def check_scc(entry, sample, output):
     try:

@@ -61,7 +61,10 @@ def verifier_root(root: Path):
 
 def accepted(record: dict, host: str) -> bool:
     url = record.get("url")
-    return record.get("status") == "AC" and isinstance(url, str) and urlsplit(url).hostname == host
+    return (record.get("status") == "AC" and isinstance(url, str)
+            and verify.ONLINE_JUDGE_NAMES.get(host) is not None
+            and verify.ONLINE_JUDGE_NAMES.get(urlsplit(url).hostname)
+                == verify.ONLINE_JUDGE_NAMES.get(host))
 
 
 def pending_source_confirmation(record: dict | None, host: str, source: bytes) -> bool:
@@ -77,14 +80,7 @@ def pending_source_confirmation(record: dict | None, host: str, source: bytes) -
     if expected == digest(source):
         return True
     normalized = record.get("expected_normalized_source_sha256")
-    if (record.get("expected_source_normalization") != "submission-metadata-v1"
-            or not isinstance(normalized, str) or not SHA.fullmatch(normalized)):
-        return False
-    # status.source_matchと同じく、特殊なC++本文では完全一致だけを使う。
-    if b'/*' in source or re.search(rb'\b(?:u8|u|U|L)?R"|\\\r?\n', source):
-        return False
-    data = status.normalized_source(source)
-    return normalized in {digest(data), digest(data + b"\n")}
+    return status.normalization_matches(record.get("expected_source_normalization"), normalized, source)
 
 
 def dependency_hashes(root: Path, texts: list[str]) -> dict[str, str]:
@@ -113,7 +109,9 @@ def catalog(root: Path) -> list[dict]:
     records = {identity: status.history(item) for identity, item in latest.items()}
     result = []
     with verifier_root(root):
-        for entry in verify.collect():
+        catalog_entries = verify.collect()
+        policies = status.submission_policy(root, catalog_entries)
+        for entry in catalog_entries:
             identity = safe_id(entry["id"])
             for name in [*entry["libraries"], entry["driver"]]:
                 source_path(root, name)
@@ -141,6 +139,9 @@ def catalog(root: Path) -> list[dict]:
                            "library_checker": host == "judge.yosupo.jp",
                            "historical_ac": bool(ac),
                            "current_ac": bool(current_matches), "accepted_source_aliases": sorted(aliases)}
+            action = status.submission_action(policies.get(identity), digest(source))
+            if action:
+                item["submission_policy"] = action
             if pending_source_confirmation(latest.get(identity), host, source):
                 # stageの本文照合専用。受理済み本文の別名には加えない。
                 item["source_confirmation_expected_sha256"] = latest[identity]["expected_source_sha256"]
@@ -221,6 +222,17 @@ def queue(root: Path, ledger_dir: Path, include_unverified: bool = False) -> dic
         entry = item["entry"]
         if not entry.get("problem_url") or not (item["historical_ac"] or include_unverified):
             continue
+        action = item.get("submission_policy", {})
+        if action.get("kind") == "reference":
+            continue
+        if action.get("kind") == "documentation_only":
+            rows.append({"id": item["id"], "problem_url": entry["problem_url"],
+                         "libraries": entry["libraries"], "source_sha256": item["source_sha256"],
+                         "current_ac": item["current_ac"], "historical_ac": item["historical_ac"],
+                         "submission_required": False, "next_stage": "exempt",
+                         "scope": "whole_program" if item["library_checker"] else "library",
+                         "reason": action["reason"]})
+            continue
         stage_aliases = set(item["accepted_source_aliases"])
         confirmation = item.get("source_confirmation_expected_sha256")
         if confirmation is not None:
@@ -261,6 +273,8 @@ def record_stage(root: Path, ledger_dir: Path, receipt_path: Path,
                 predecessors.append(external_predecessor)
             if not codex_predecessor(entry, predecessors, value["input_source_sha256"]):
                 raise ValueError("Claude入力に一致する先行Codex receiptが必要です")
+    elif value["scope"] != "library":
+        raise ValueError("Library Checker以外ではライブラリ本体だけが最適化対象です")
     ledger_dir.mkdir(parents=True, exist_ok=True)
     values = [value]
     if external_predecessor is not None and codex_predecessor(entry, [external_predecessor], value["input_source_sha256"]):
@@ -316,13 +330,17 @@ def prepare(root: Path, identity: str, directory: Path, *, stage: str = "claude"
     files = {name: digest(value) for name, value in sorted(data.items())}
     manifest = {"format": 1, "id": identity, "stage": stage,
                 "problem_url": entry["problem_url"], "source_sha256": item["source_sha256"],
+                "optimization_scope": "whole_program" if item["library_checker"] else "library",
                 "current_ac": item["current_ac"], "historical_ac": item["historical_ac"],
                 "library_hashes": item["library_hashes"], "driver_sha256": item["driver_sha256"],
                 "common_hashes": item["common_hashes"], "dependency_hashes": item["dependency_hashes"], "files": files,
                 "affected_library_verify_ids": sorted(e["id"] for e in catalog(root)
                     if set(entry["libraries"]).intersection(e["entry"]["libraries"]))}
     scope = "Library Checker向けなのでmain・共通入出力・ライブラリを含むプログラム全体" if item["library_checker"] else "ライブラリ本体"
-    prompt = f"""# {identity}: {stage} 最適化\n\n対象: {scope}。問題: {entry['problem_url']}\n入力ソースSHA-256: {item['source_sha256']}\n\n- submission.cppが固定した現在版です。manifest.jsonの各SHAを確認してください。\n- inputs/AGENTS.mdの制約を読み、公開API・正しさ・所有権を維持してください。\n- Library CheckerはCodex→Claudeの順です。Claudeへは先行Codex receiptを添付しています。\n- 現在のオンラインAC: {item['current_ac']}。過去のACを変更後の検証済みとは扱いません。\n- 同じ問題・入力・コンパイラ設定で正しさと実行時間を測り、基準版と候補を比較してください。\n- 本体・main・入出力のどこを変えたかを区別し、本体だけの比較は同じmain/入出力で行ってください。\n- 変更はcandidate.patchとして提示し、測定条件・入力SHA・結果・不採用案も根拠ファイルへ記録してください。\n- 変更を採用したら提出コードと派生版を再生成し、ローカル照合後にオンライン再提出してください。\n- 対象外の未コミット変更・判定履歴・認証情報を変更しないでください。未実行の確認をPASSとしないでください。\n- 変更なしの結論も、実測根拠とともにstage receiptへ記録できます。\n\nstage receiptはformat=1、id、stage、status=complete、input_source_sha256、source_sha256、changed、scope、checks={{correctness:passed,performance:measured}}、evidence=[{{path,sha256}}]を持ちます。最終SHAは採用後の生成コードを指します。\n"""
+    target_policy = ("main・入出力・問題ごとの計算手順も含めて最速を狙ってください。receiptのscopeはwhole_programです。"
+                     if item["library_checker"] else
+                     "正しさの検証を優先し、最適化はライブラリ本体だけに限定してください。main・入出力を個別にチューニングせず、問題を解くための必要な手順と素直なAPI呼び出しを保ってください。receiptのscopeはlibraryです。")
+    prompt = f"""# {identity}: {stage} 最適化\n\n対象: {scope}。問題: {entry['problem_url']}\n入力ソースSHA-256: {item['source_sha256']}\n\n- {target_policy}\n- submission.cppが固定した現在版です。manifest.jsonの各SHAを確認してください。\n- inputs/AGENTS.mdの制約を読み、公開API・正しさ・所有権を維持してください。\n- Library CheckerはCodex→Claudeの順です。Claudeへは先行Codex receiptを添付しています。\n- 現在のオンラインAC: {item['current_ac']}。過去のACを変更後の検証済みとは扱いません。\n- 同じ問題・入力・コンパイラ設定で正しさと実行時間を測り、基準版と候補を比較してください。\n- 本体・main・入出力のどこを変えたかを区別し、本体だけの比較は同じmain/入出力で行ってください。\n- 変更はcandidate.patchとして提示し、測定条件・入力SHA・結果・不採用案も根拠ファイルへ記録してください。\n- 変更を採用したら提出コードと派生版を再生成し、ローカル照合後にオンライン再提出してください。\n- 対象外の未コミット変更・判定履歴・認証情報を変更しないでください。未実行の確認をPASSとしないでください。\n- 変更なしの結論も、実測根拠とともにstage receiptへ記録できます。\n\nstage receiptはformat=1、id、stage、status=complete、input_source_sha256、source_sha256、changed、scope、checks={{correctness:passed,performance:measured}}、evidence=[{{path,sha256}}]を持ちます。最終SHAは採用後の生成コードを指します。\n"""
     data["prompt.md"] = prompt.encode()
     manifest["files"] = {name: digest(value) for name, value in sorted(data.items())}
     data["manifest.json"] = encode(manifest)

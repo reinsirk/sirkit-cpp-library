@@ -4,16 +4,16 @@
 
 1. 下表の問題を開き、リンク先の提出コードをそのまま貼り付けます。ライブラリ本体を埋め込み済みです。
 2. C++23を選びます。問題の制約内の入力を前提に、`SKIP_RUNTIME_CHECKS`を定義しています。実行時assertを含む提出では`NDEBUG`も定義し、効果を測定した問題にはGCC専用の最適化設定を付けます。
-3. 提出URLはコードの`Submission`コメントに最新版だけを記載し、[manifest](manifest.json)でソースと判定の対応を確認します。
+3. 提出URLはコードの`Submission`コメントに最新版だけを記載し、[Verify状況](status.md)でソースと判定・再提出方針を確認します。
 
 オンラインACはソースが一致する版だけに対応付けます。ローカル検査はオンライン判定と区別します。
 手動提出後の判定取り込み・CI・集計の操作は[開発とVerify](../../Document/development.md)を参照してください。
 
 ## 最適化と再提出
 
-Library Checkerはmain・入出力・問題ごとの処理を含む全体を最適化し、Codexの検討・測定後にClaudeへ引き継ぎます。公開APIと全入力の正しさを保ち、本体だけの効果と全体の効果は分けて記録します。AtCoder向けmainは[共通高速入出力](common/fast_io.hpp)と素直なAPI呼び出しを基本とします。
+Library Checkerはmain・入出力・問題ごとの処理を含む全体を最適化し、Codexの検討・測定後にClaudeへ引き継ぎます。公開APIと全入力の正しさを保ち、本体だけの効果と全体の効果は分けて記録します。Library Checker以外は正しさの検証を優先し、最適化はライブラリ本体だけを対象とします。mainは[共通入出力](common/fast_io.hpp)と素直なAPI呼び出しを基本とし、問題を解くための必要な手順を記します。
 
-コードを変更した場合は影響する提出コードを再生成・ローカル検証し、オンラインへ再提出します。旧版のACは新しいコードへ引き継ぎません。PRのCIは生成物とローカル検証を確認し、オンライン提出とは区別します。
+コードを変更した場合は影響する提出コードを再生成・ローカル検証し、オンラインへ再提出します。旧版のACは新しいコードへ引き継ぎません。説明コメントのみの変更8件は、利用者指定の当該ソースSHAに限り再提出不要とします。移行前の問題は参考検証として残し、[提出方針](submission_policy.json)で再提出対象から分離します。PRのCIは生成物とローカル検証を確認し、オンライン提出とは区別します。
 
 ## 共通入出力の扱い
 
@@ -27,7 +27,11 @@ Library Checkerはmain・入出力・問題ごとの処理を含む全体を最�
 
 ## 検証範囲
 
-Verify先はLibrary Checkerを第一候補とし、対応問題がなければAtCoderを使います。AOJは時間分解能のため提出先に選びません。対応問題のないAPIは独立参照や入力例のローカル検査で補います。
+[全LC130本の適切さ・追加39本と併用先](../optimization/verify-coverage-2026-11-15.md)を参照してください。ACは当該提出プログラムに対する判定で、全公開APIの検証済みとは区別します。
+
+前回の34本の見直し結果と提出用ソース名は[移行一覧](../optimization/verify-targets-2026-11-15.md)を参照してください。移行前の入口は参考検証として残しています。
+
+Verify先はLibrary Checker→yukicoder→AtCoder→AOJの順で探します。APIを自然に検証できる問題を選び、適切な上位問題が見つからなければ現在の提出先を維持します。対応問題のないAPIは独立参照や入力例のローカル検査で補います。
 検証するAPI・入力範囲は[manifest](manifest.json)の`coverage`と`limitations`を参照してください。
 偏角ソートには[angle_sort版](submissions/angle_sort.cpp)と[std::sortへ比較関数を渡す版](submissions/angle_sort_std.cpp)を用意しています。
 整数二項係数の素数法問題では、提出コード側で`table_limit=9'999'999`、前計算範囲を`min(modulus-1,9'999'999)`に設定しています。設定方法は[二項係数の説明](../../Math/Combination/README.md)を参照してください。
@@ -36,7 +40,7 @@ Verify先はLibrary Checkerを第一候補とし、対応問題がなければAt
 
 - 提出用コードは提出先のACLインストールに依存しません。二項係数のMintには[公式ACL](https://github.com/atcoder/ac-library)のmodintと必要な内部ヘッダーを展開済みです。
 - 使用したACLの版は[vendor/ACL_COMMIT](vendor/ACL_COMMIT)、ライセンスは[vendor/ACL_LICENSE](vendor/ACL_LICENSE)に保存しています。他の提出コードは標準ヘッダーだけを使います。
-- 旧AOJ・Yukicoderの入力例はローカル回帰として保持しています。現在のオンライン提出先やAC判定には数えません。
+- `verification_kind: local_regression`の過去の入力例はローカル回帰です。新しいオンライン用の登録・提出結果とは区別します。
 - 全コードを512 KiB以下に制限しています。上限は各提出ファイル単位です。
 - `local`のコードは提出用の問題を持たない補足検査です。HashSetと削除可能PQのunit driverは独立参照と照合します。オンライン判定・速度比較には、それぞれの操作が出力に反映される別の問題を使います。
 
@@ -49,20 +53,20 @@ Verify先はLibrary Checkerを第一候補とし、対応問題がなければAt
 | [Graph/Dijkstra.cpp](../../Graph/Dijkstra.cpp) | [Shortest Path](submissions/dijkstra.cpp) |
 | [Graph/Floyd-Warshall.cpp](../../Graph/Floyd-Warshall.cpp) | [D - バスと避けられない運命](submissions/floyd_warshall.cpp) |
 | [Graph/LCA.cpp](../../Graph/LCA.cpp) | [Lowest Common Ancestor](submissions/lca.cpp) |
-| [Graph/Project_Selection.cpp](../../Graph/Project_Selection.cpp) | [040 - Get More Money（★7）](submissions/project_selection.cpp) |
-| [Graph/Topological.cpp](../../Graph/Topological.cpp) | [G - Longest Path](submissions/topological.cpp) |
+| [Graph/Project_Selection.cpp](../../Graph/Project_Selection.cpp) | [植林 (binary submodular optimization)](submissions/preferred_project_selection_yuki.cpp) |
+| [Graph/Topological.cpp](../../Graph/Topological.cpp) | [Matrix Exponentiation (topological order)](submissions/preferred_topological_yuki.cpp) |
 | [Graph/Topological_sort.cpp](../../Graph/Topological_sort.cpp) | [D - Restricted Permutation](submissions/topological_lexicographical.cpp) |
 | [DataStructure/Binary_Trie.cpp](../../DataStructure/Binary_Trie.cpp) | [Set Xor-Min](submissions/binary_trie.cpp) |
 | [DataStructure/Compressed_Binary_Trie.cpp](../../DataStructure/Compressed_Binary_Trie.cpp) | [Set Xor-Min](submissions/compressed_binary_trie.cpp) |
 | [DataStructure/Hash_map.cpp](../../DataStructure/Hash_map.cpp) | [Associative Array](submissions/hash_map.cpp) |
-| [DataStructure/Hash_set.cpp](../../DataStructure/Hash_set.cpp) | [ABC344 C](submissions/hash_set_membership.cpp)・[ABC073 C](submissions/hash_set_toggle.cpp)・[ABC164 C](submissions/hash_set_strings.cpp) |
+| [DataStructure/Hash_set.cpp](../../DataStructure/Hash_set.cpp) | [AND Set (HashSet)](submissions/preferred_data_hash_set_and_yuki.cpp)・[ABC164 C](submissions/hash_set_strings.cpp) |
 | [DataStructure/Node.cpp](../../DataStructure/Node.cpp) | [Takahashi's Secret](submissions/node_reachable.cpp)・[独立ローカル検査](submissions/node_local.cpp) |
 | [DataStructure/dynamic-binary-indexed-tree-2d.cpp](../../DataStructure/dynamic-binary-indexed-tree-2d.cpp) | [Point Add Rectangle Sum](submissions/dynamic_fenwick_2d_rectangle.cpp) |
 | [DataStructure/dynamic-binary-indexed-tree.cpp](../../DataStructure/dynamic-binary-indexed-tree.cpp) | [Point Add Range Sum](submissions/dynamic_fenwick_range.cpp) |
 | [DataStructure/dynamic-li-chao-tree.cpp](../../DataStructure/dynamic-li-chao-tree.cpp) | [Segment Add Get Min](submissions/dynamic_lichao_segment.cpp) |
 | [DataStructure/dynamic-union-find.cpp](../../DataStructure/dynamic-union-find.cpp) | [Unionfind](submissions/dynamic_union_find.cpp) |
 | [DataStructure/erasable-priority-queue.cpp](../../DataStructure/erasable-priority-queue.cpp) | [Double-Ended Priority Queue](submissions/erasable_priority_queue_double.cpp) |
-| [DataStructure/heap.cpp](../../DataStructure/heap.cpp) | [D - Prefix K-th Max](submissions/heap_priority_queue.cpp) |
+| [DataStructure/heap.cpp](../../DataStructure/heap.cpp) | [Double-Ended Priority Queue (Heap)](submissions/preferred_data_heap_double.cpp) |
 | [DataStructure/implicit_treap.cpp](../../DataStructure/implicit_treap.cpp) | [区間アフィン作用・和](submissions/implicit_treap_affine.cpp)・[両端操作・関数合成](submissions/implicit_treap_deque.cpp) |
 | [DataStructure/line-container-2d.cpp](../../DataStructure/line-container-2d.cpp) | [Line Add Get Min](submissions/line_container_2d_min.cpp) |
 | [DataStructure/line-container.cpp](../../DataStructure/line-container.cpp) | [Line Add Get Min](submissions/line_container_min.cpp) |
@@ -77,36 +81,35 @@ Verify先はLibrary Checkerを第一候補とし、対応問題がなければAt
 | [Math/Combination_AtCoderMod.cpp](../../Math/Combination_AtCoderMod.cpp) | [Binomial Coefficient (Prime Mod)](submissions/binomial_prime.cpp) |
 | [Math/Combination_Mod.cpp](../../Math/Combination_Mod.cpp) | [Binomial Coefficient](submissions/binomial_integer.cpp) |
 | [Math/Eratosthenes.cpp](../../Math/Eratosthenes.cpp) | [Enumerate Primes](submissions/eratosthenes.cpp) |
-| [Math/Fraction.cpp](../../Math/Fraction.cpp) | [比較・整列](submissions/fraction_sort.cpp)・[四則演算](submissions/fraction_arithmetic.cpp) |
+| [Math/Fraction.cpp](../../Math/Fraction.cpp) | [Rational Approximation（Fractionの比較・四則）](submissions/preferred_fraction_rational_approximation.cpp) |
 | [Math/Zeta/Bitwise_Convolution.cpp](../../Math/Zeta/Bitwise_Convolution.cpp) | [Bitwise And Convolution](submissions/zeta_and_split.cpp) |
 | [Math/Zeta/Divisor_Multiple_Transform.cpp](../../Math/Zeta/Divisor_Multiple_Transform.cpp) | [GCD Convolution](submissions/zeta_gcd_transform_split.cpp) |
 | [Math/Zeta/Gcd_Lcm_Convolution.cpp](../../Math/Zeta/Gcd_Lcm_Convolution.cpp) | [GCD Convolution](submissions/zeta_gcd_conv_split.cpp) |
 | [Math/Zeta/Set_Transform.cpp](../../Math/Zeta/Set_Transform.cpp) | [Bitwise And Convolution](submissions/zeta_set_as_and_split.cpp) |
-| [Math/Zeta/Sieve.cpp](../../Math/Zeta/Sieve.cpp) | [D - Div Game](submissions/zeta_sieve_factorize_split.cpp) |
+| [Math/Zeta/Sieve.cpp](../../Math/Zeta/Sieve.cpp) | [素因数ゲーム（IntegerSieve）](submissions/preferred_sieve_factorize_split.cpp) |
 | [Math/Zeta/Sparse_Transform.cpp](../../Math/Zeta/Sparse_Transform.cpp) | [GCD Convolution](submissions/zeta_sparse_gcd_split.cpp) |
 | [Math/Zeta_Mebius.cpp](../../Math/Zeta_Mebius.cpp) | [Bitwise And Convolution](submissions/zeta_and_full.cpp) |
 | [Math/prime_judge(Miller-Rabin).cpp](../../Math/prime_judge(Miller-Rabin).cpp) | [Primality Test](submissions/primality.cpp) |
 | [String/RollingHash.cpp](../../String/RollingHash.cpp) | [Z Algorithm](submissions/rolling_hash.cpp) |
-| [String/Trie.cpp](../../String/Trie.cpp) | [C - gacha](submissions/trie_dictionary.cpp) |
+| [String/Trie.cpp](../../String/Trie.cpp) | [文字列検索（Trie）](submissions/preferred_trie_dictionary.cpp) |
 | [Geometry/Circle.cpp](../../Geometry/Circle.cpp) | [035 - Two Circles](submissions/geometry_circle_relation_split.cpp) |
 | [Geometry/Line_Segment.cpp](../../Geometry/Line_Segment.cpp) | [037 - Intersection](submissions/geometry_segment_intersection_atcoder_split.cpp) |
 | [Geometry/Nearest_Two_points.cpp](../../Geometry/Nearest_Two_points.cpp) | [Closest Pair of Points](submissions/nearest_two_points.cpp) |
-| [Geometry/Point.cpp](../../Geometry/Point.cpp) | [C - Convex Quadrilateral](submissions/geometry_orientation_atcoder_split.cpp) |
+| [Geometry/Point.cpp](../../Geometry/Point.cpp) | [貫け！（向き判定）](submissions/coverage_geometry_orientation_stabbing_split.cpp) |
 | [Geometry/Polygon.cpp](../../Geometry/Polygon.cpp) | [Static Convex Hull](submissions/geometry_convex_hull_split.cpp) |
 | [Geometry/geometory.cpp](../../Geometry/geometory.cpp) | [Static Convex Hull](submissions/geometry_convex_hull_full.cpp) |
-| [Geometry/偏角ソート.cpp](../../Geometry/偏角ソート.cpp) | [Sort Points by Argument](submissions/angle_sort.cpp) |
+| [Geometry/angle_sort.cpp](../../Geometry/angle_sort.cpp) | [Sort Points by Argument](submissions/angle_sort.cpp) |
 | [Algorithm/LIS.cpp](../../Algorithm/LIS.cpp) | [Longest Increasing Subsequence](submissions/lis.cpp) |
-| [Algorithm/Radix_sort.cpp](../../Algorithm/Radix_sort.cpp) | [C - Sum of Numbers Greater Than Me](submissions/radix_sort.cpp) |
+| [Algorithm/Radix_sort.cpp](../../Algorithm/Radix_sort.cpp) | [Static Range Frequency (RadixSort int64)](submissions/preferred_data_radix_frequency_int64.cpp) |
 | [Algorithm/next_combination.cpp](../../Algorithm/next_combination.cpp) | [E - Modulo MST](submissions/next_combination.cpp) |
-| [Algorithm/rotate.cpp](../../Algorithm/rotate.cpp) | [B - Coloring Matrix](submissions/matrix_rotate.cpp) |
+| [Algorithm/rotate.cpp](../../Algorithm/rotate.cpp) | [回転拡大（integer）](submissions/preferred_matrix_rotate_integer.cpp) |
 | [Internal/Nyaan_hash_map_min.cpp](../../Internal/Nyaan_hash_map_min.cpp) | [Associative Array](submissions/internal_hash_map.cpp) |
 
 ## 提出用コード一覧
 
 | ID・コード | 提出先 | 主な対象 |
 | --- | --- | --- |
-| [fraction_sort](submissions/fraction_sort.cpp) | [C - Standings](https://atcoder.jp/contests/abc308/tasks/abc308_c) | 約分・厳密比較・等値判定 |
-| [fraction_arithmetic](submissions/fraction_arithmetic.cpp) | [D - 乱数生成](https://atcoder.jp/contests/abc028/tasks/abc028_d) | 加減乗除・浮動小数点変換 |
+| [preferred_fraction_rational_approximation](submissions/preferred_fraction_rational_approximation.cpp) | [Rational Approximation（Fractionの比較・四則）](https://judge.yosupo.jp/problem/rational_approximation) | Fraction構築・約分・比較・加減乗除・単項負・floor・分子分母取得 |
 | [angle_sort](submissions/angle_sort.cpp) | [Sort Points by Argument](https://judge.yosupo.jp/problem/sort_points_by_argument) | 昇順angle_sort・零ベクトル |
 | [angle_sort_std](submissions/angle_sort_std.cpp) | [Sort Points by Argument](https://judge.yosupo.jp/problem/sort_points_by_argument) | std::sortへarccmp_lessを直接渡す昇順・零ベクトル |
 | [binary_trie](submissions/binary_trie.cpp) | [Set Xor-Min](https://judge.yosupo.jp/problem/set_xor_min) | insert_unique・重複抑止・削除・最小XOR。共通高速入出力。 |
@@ -134,8 +137,7 @@ Verify先はLibrary Checkerを第一候補とし、対応問題がなければAt
 | [geometry_convex_hull_full](submissions/geometry_convex_hull_full.cpp) | [Static Convex Hull](https://judge.yosupo.jp/problem/static_convex_hull) | convex_hull: 整数点の最小凸包、反時計回り・重複除去・辺上中間点除去・空/1/2点。 |
 | [geometry_convex_hull_split](submissions/geometry_convex_hull_split.cpp) | [Static Convex Hull](https://judge.yosupo.jp/problem/static_convex_hull) | convex_hull: 整数点の最小凸包、反時計回り・重複除去・辺上中間点除去・空/1/2点。 |
 | [hash_map](submissions/hash_map.cpp) | [Associative Array](https://judge.yosupo.jp/problem/associative_array) | operator[]・64ビット整数キー/値・未登録時の零初期値 |
-| [hash_set_membership](submissions/hash_set_membership.cpp) | [ABC344 C - A+B+C](https://atcoder.jp/contests/abc344/tasks/abc344_c) | 整数の追加・重複・所属照会 |
-| [hash_set_toggle](submissions/hash_set_toggle.cpp) | [ABC073 C - Write and Erase](https://atcoder.jp/contests/abc073/tasks/abc073_c) | 追加・検索・削除・再登録・要素数 |
+| [preferred_data_hash_set_and_yuki](submissions/preferred_data_hash_set_and_yuki.cpp) | [AND Set (HashSet)](https://yukicoder.me/problems/no/2195) | insert_checkedによる重複判定・find/erase(iterator,false)による未登録削除と再挿入・empty/sizeと整数キー所有 |
 | [hash_set_strings](submissions/hash_set_strings.cpp) | [ABC164 C - gacha](https://atcoder.jp/contests/abc164/tasks/abc164_c) | 文字列の追加・重複・要素数 |
 | [implicit_treap_affine](submissions/implicit_treap_affine.cpp) | [Dynamic Sequence Range Affine Range Sum](https://judge.yosupo.jp/problem/dynamic_sequence_range_affine_range_sum) | 線形一括構築・insert_at・erase_at・reverse・apply・prod・非自明な作用の合成 |
 | [implicit_treap_deque](submissions/implicit_treap_deque.cpp) | [Deque Operate All Composite](https://judge.yosupo.jp/problem/deque_operate_all_composite) | 両端の追加削除・非可換な関数合成・全体集約・空列 |
@@ -177,25 +179,29 @@ Verify先はLibrary Checkerを第一候補とし、対応問題がなければAt
 | [geometry_circle_relation_split](submissions/geometry_circle_relation_split.cpp) | [035 - Two Circles](https://atcoder.jp/contests/math-and-algorithm/tasks/math_and_algorithm_ag) | intersection(Circle,Circle).kind: 非交差・接触・2交点・一致の分類。中心間距離から内包/外接を問題の5分類へ変換。 |
 | [geometry_contains_atcoder_full](submissions/geometry_contains_atcoder_full.cpp) | [098 - Polygon and Point](https://atcoder.jp/contests/math-and-algorithm/tasks/math_and_algorithm_bu) | contains: 整数座標の一般単純多角形の内外（1照会、O(N)）。 |
 | [geometry_contains_atcoder_split](submissions/geometry_contains_atcoder_split.cpp) | [098 - Polygon and Point](https://atcoder.jp/contests/math-and-algorithm/tasks/math_and_algorithm_bu) | contains: 整数座標の一般単純多角形の内外（1照会、O(N)）。 |
-| [geometry_orientation_atcoder_full](submissions/geometry_orientation_atcoder_full.cpp) | [C - Convex Quadrilateral](https://atcoder.jp/contests/abc266/tasks/abc266_c) | orientation: 非退化四角形の各連続3頂点の向き（整数座標）。 |
-| [geometry_orientation_atcoder_split](submissions/geometry_orientation_atcoder_split.cpp) | [C - Convex Quadrilateral](https://atcoder.jp/contests/abc266/tasks/abc266_c) | orientation: 非退化四角形の各連続3頂点の向き（整数座標）。 |
+| [geometry_orientation_atcoder_full](submissions/coverage_geometry_orientation_stabbing_full.cpp) | [C - Convex Quadrilateral](https://atcoder.jp/contests/abc266/tasks/abc266_c) | orientation: 非退化四角形の各連続3頂点の向き（整数座標）。 |
+| [geometry_orientation_atcoder_split](submissions/coverage_geometry_orientation_stabbing_split.cpp) | [C - Convex Quadrilateral](https://atcoder.jp/contests/abc266/tasks/abc266_c) | orientation: 非退化四角形の各連続3頂点の向き（整数座標）。 |
 | [geometry_point_segment_distance_full](submissions/geometry_point_segment_distance_full.cpp) | [033 - Distance](https://atcoder.jp/contests/math-and-algorithm/tasks/math_and_algorithm_ae) | distance(Point,Segment): 整数入力の点と閉線分の最短距離。 |
 | [geometry_point_segment_distance_split](submissions/geometry_point_segment_distance_split.cpp) | [033 - Distance](https://atcoder.jp/contests/math-and-algorithm/tasks/math_and_algorithm_ae) | distance(Point,Segment): 整数入力の点と閉線分の最短距離。 |
 | [geometry_segment_intersection_atcoder_full](submissions/geometry_segment_intersection_atcoder_full.cpp) | [037 - Intersection](https://atcoder.jp/contests/math-and-algorithm/tasks/math_and_algorithm_ah) | intersects: 整数閉線分の交差判定（接触・重なり含む）。 |
 | [geometry_segment_intersection_atcoder_split](submissions/geometry_segment_intersection_atcoder_split.cpp) | [037 - Intersection](https://atcoder.jp/contests/math-and-algorithm/tasks/math_and_algorithm_ah) | intersects: 整数閉線分の交差判定（接触・重なり含む）。 |
 | [geometry_triangle_area_full](submissions/geometry_triangle_area_full.cpp) | [C - 直訴](https://atcoder.jp/contests/abc002/tasks/abc002_3) | area: 整数座標の非退化三角形の面積。 |
 | [geometry_triangle_area_split](submissions/geometry_triangle_area_split.cpp) | [C - 直訴](https://atcoder.jp/contests/abc002/tasks/abc002_3) | area: 整数座標の非退化三角形の面積。 |
-| [heap_priority_queue](submissions/heap_priority_queue.cpp) | [D - Prefix K-th Max](https://atcoder.jp/contests/abc234/tasks/abc234_d) | push・pop_value・top・最大50万要素 |
-| [matrix_rotate](submissions/matrix_rotate.cpp) | [B - Coloring Matrix](https://atcoder.jp/contests/abc298/tasks/abc298_b) | rotate_90r(vector<vector<int>>) |
+| [preferred_data_heap_double](submissions/preferred_data_heap_double.cpp) | [Double-Ended Priority Queue (Heap)](https://judge.yosupo.jp/problem/double_ended_priority_queue) | vectorからのheapify・push/top/pop/pop_value/empty・重複を含む最小・最大値と遅延削除 |
+| [preferred_matrix_rotate_integer](submissions/preferred_matrix_rotate_integer.cpp) | [回転拡大（integer）](https://yukicoder.me/problems/no/565) | rotate_90r/rotate_180/rotate_90l vector<vector<int>> |
 | [next_combination](submissions/next_combination.cpp) | [E - Modulo MST](https://atcoder.jp/contests/abc328/tasks/abc328_e) | for_each_combination・first_combination内部・next_combination内部 |
-| [project_selection](submissions/project_selection.cpp) | [040 - Get More Money（★7）](https://atcoder.jp/contests/typical90/tasks/typical90_an) | 単項費用・厳密な含意制約・solve |
-| [radix_sort](submissions/radix_sort.cpp) | [C - Sum of Numbers Greater Than Me](https://atcoder.jp/contests/abc331/tasks/abc331_c) | RadixSortによる最大20万要素の非負整数整列、重複を含む数列。 |
+| [preferred_project_selection_yuki](submissions/preferred_project_selection_yuki.cpp) | [植林 (binary submodular optimization)](https://yukicoder.me/problems/no/957) | add_single_costのtrue側費用・add_all_true_profitの行・列高階利益・solveの最適値・int64費用 |
+| [preferred_data_radix_frequency_int64](submissions/preferred_data_radix_frequency_int64.cpp) | [Static Range Frequency (RadixSort int64)](https://judge.yosupo.jp/problem/static_range_frequency) | RadixSort(vector<int64_t>)・空列・重複・値境界・半開区間の頻度 |
 | [spfa](submissions/spfa.cpp) | [E - Coins Respawn](https://atcoder.jp/contests/abc137/tasks/abc137_e) | 負辺を含む単一始点最短路、終点へ伝播する-INFと終点に無関係な負閉路。 |
-| [topological](submissions/topological.cpp) | [G - Longest Path](https://atcoder.jp/contests/dp/tasks/dp_g) | TopologicalSort・得られた順序に沿うDAG最長路 |
+| [preferred_topological_yuki](submissions/preferred_topological_yuki.cpp) | [Matrix Exponentiation (topological order)](https://yukicoder.me/problems/no/1660) | 全頂点のトポロジカル順序を使うDAG最長路・自己ループを含む閉路判定・辺なしグラフ |
 | [topological_lexicographical](submissions/topological_lexicographical.cpp) | [D - Restricted Permutation](https://atcoder.jp/contests/abc223/tasks/abc223_d) | TopologicalSortLexicographical・閉路時の空結果 |
-| [trie_dictionary](submissions/trie_dictionary.cpp) | [C - gacha](https://atcoder.jp/contests/abc164/tasks/abc164_c) | insert・contains・重複語と接頭辞を共有する語 |
-| [zeta_sieve_factorize_full](submissions/zeta_sieve_factorize_full.cpp) | [D - Div Game](https://atcoder.jp/contests/abc169/tasks/abc169_d) | Sieve構築・1〜10^12の素因数分解と指数。 |
-| [zeta_sieve_factorize_split](submissions/zeta_sieve_factorize_split.cpp) | [D - Div Game](https://atcoder.jp/contests/abc169/tasks/abc169_d) | Sieve構築・1〜10^12の素因数分解と指数。 |
+| [preferred_trie_dictionary](submissions/preferred_trie_dictionary.cpp) | [文字列検索（Trie）](https://yukicoder.me/problems/no/430) | Trie.insert/count、接頭辞を共有する異なる語・部分文字列の重複出現 |
+| [preferred_sieve_factorize_full](submissions/preferred_sieve_factorize_full.cpp) | [素因数ゲーム（IntegerSieve）](https://yukicoder.me/problems/no/2) | IntegerSieve構築・prime_factorizationで得る素因数指数 |
+| [preferred_sieve_factorize_split](submissions/preferred_sieve_factorize_split.cpp) | [素因数ゲーム（IntegerSieve）](https://yukicoder.me/problems/no/2) | IntegerSieve構築・prime_factorizationで得る素因数指数 |
+
+| [preferred_data_radix_frequency_uint32](submissions/preferred_data_radix_frequency_uint32.cpp) | [Static Range Frequency (RadixSort uint32)](https://judge.yosupo.jp/problem/static_range_frequency) | RadixSort(vector<uint32_t>)・空列・重複・値境界・半開区間の頻度 |
+| [preferred_matrix_rotate_grid](submissions/preferred_matrix_rotate_grid.cpp) | [回転拡大（grid）](https://yukicoder.me/problems/no/565) | rotate_90r/rotate_180/rotate_90l vector<string> |
+| [preferred_max_flow_bipartite](submissions/preferred_max_flow_bipartite.cpp) | [Matching on Bipartite Graph (mf_graph)](https://judge.yosupo.jp/problem/bipartitematching) | mf_graph<int>::add_edge・単位容量二部ネットワークのflow・get_edgeのflowによる最大マッチング復元 |
 
 ## 独立参照による補足検査
 

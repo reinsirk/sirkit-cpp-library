@@ -1,0 +1,39 @@
+"""Verify先の追加と、提出先を混同しないための検査。"""
+import sys
+from pathlib import Path
+import unittest
+sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
+import prepare_verify as verify
+import update_verify_status as status
+import optimization_handoff as handoff
+
+class JudgeDomainsTest(unittest.TestCase):
+    def test_approved_online_judges(self):
+        for host in verify.ONLINE_JUDGE_NAMES:
+            with self.subTest(host=host):
+                entry={'id':'x','problem_url':'https://'+host+'/problem/1','gcc_optimization':'O3'}
+                self.assertFalse(verify.custom_io_enabled(entry))
+                self.assertEqual(verify.gcc_optimization(entry),'O3')
+                self.assertEqual(status.safe_url(entry['problem_url']),entry['problem_url'])
+    def test_custom_io_remains_lc_only(self):
+        for host in verify.ONLINE_JUDGE_NAMES:
+            entry={'id':'x','problem_url':'https://'+host+'/problem/1','allow_custom_io':True}
+            if host=='judge.yosupo.jp':self.assertTrue(verify.custom_io_enabled(entry))
+            else:
+                with self.assertRaises(ValueError):verify.custom_io_enabled(entry)
+    def test_aoj_aliases_share_judge_but_not_other_sites(self):
+        url='https://judge.u-aizu.ac.jp/onlinejudge/review.jsp?rid=1'
+        self.assertEqual(status.safe_url(url,judge='onlinejudge.u-aizu.ac.jp'),url)
+        self.assertTrue(handoff.accepted({'status':'AC','url':url},'onlinejudge.u-aizu.ac.jp'))
+        with self.assertRaises(ValueError):status.safe_url(url,judge='yukicoder.me')
+        self.assertFalse(handoff.accepted({'status':'AC','url':url},'yukicoder.me'))
+    def test_url_injection_still_rejected(self):
+        for url in ['http://yukicoder.me/problems/no/1','https://yukicoder.me.evil.test/1','https://u@onlinejudge.u-aizu.ac.jp/1','https://judge.u-aizu.ac.jp:444/1','https://evil.test/1']:
+            with self.subTest(url=url),self.assertRaises(ValueError):status.safe_url(url)
+    def test_summary_combines_aoj_hosts(self):
+        data={'entries':[{'judge':host,'status':'unsubmitted'} for host in verify.ONLINE_JUDGE_NAMES],'counts':{'local_only':0}}
+        text=status.readme_summary(data)
+        self.assertIn('| AOJ | 2 | 0 | 0 | 2 | 0 |',text)
+        self.assertIn('| Yukicoder | 1 | 0 | 0 | 1 | 0 |',text)
+        self.assertIn('| AtCoder | 1 | 0 | 0 | 1 | 0 |',text)
+if __name__=='__main__':unittest.main()
