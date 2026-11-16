@@ -1171,9 +1171,10 @@ void sparse_integer_transform(std::vector<std::pair<Int, Val>>& f,
             return;
         }
     }
-    std::sort(f.begin(), f.end(), [](const auto& a, const auto& b) {
+    const auto by_key = [](const auto& a, const auto& b) {
         return a.first < b.first;
-    });
+    };
+    if (!std::is_sorted(f.begin(), f.end(), by_key)) std::sort(f.begin(), f.end(), by_key);
 #ifndef SKIP_RUNTIME_CHECKS
     if (sieve.max_value() < 0 || f.front().first <= 0
         || static_cast<std::uintmax_t>(f.back().first)
