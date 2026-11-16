@@ -1,0 +1,807 @@
+{
+  "task": "Per-source library-page scope audit: Algorithm, DataStructure, Graph, String, Internal",
+  "compiler": "g++ (GCC) 15.3.0",
+  "flags": [
+    "-std=c++23",
+    "-fsyntax-only"
+  ],
+  "source_count": 69,
+  "scope": "Document public API identifiers compared against source tokens; shared-document scope reviewed; C++ snippets syntax-checked in their documented context. Syntax checking does not prove all prose or mathematical contracts.",
+  "findings": [
+    "BinaryTrie and CompressedBinaryTrie previously embedded one shared guide containing the other class and normal-only implementation details. Dedicated source-scoped guides now distinguish types, reserve, ownership, capacity and examples.",
+    "SPFA previously embedded BellmanFord-only usage example; BellmanFord page also listed SPFA API not included in its source. Dedicated source-scoped guides now call the correct function.",
+    "HLD deliberately needs a user-selected range structure; documentation now states before the first example that Fenwick Tree is a separate source. Noncommutative example uses prose-defined concat/empty_word and the separately included Segment Tree.",
+    "Topological.cpp and Topological_sort.cpp have identical implementations; their shared guide is applicable to both.",
+    "No other missing public type/function was found by the identifier check; conceptual potentials, callback parameter names and external comparison types are not claims of supplied APIs."
+  ],
+  "sources": [
+    {
+      "source": "Algorithm/LIS.cpp",
+      "document": "Document/lis.md",
+      "source_sha256": "3002ce4839d2e7b209789f8c2a43d126154bd007cac7062e8cf24e3ac0b1b658",
+      "document_sha256": "40265f7382031fd4ce37310600a60a1a97af31374f795f7f6cfca30cd85d3b6b",
+      "blocks": 1,
+      "status": "compiled"
+    },
+    {
+      "source": "Algorithm/Mo.cpp",
+      "document": "Document/mo.md",
+      "source_sha256": "5eedfaee6446de2843c3deec1093a6797336878f2a9c7e2920d4c6b4f07cb838",
+      "document_sha256": "f4a8a9eab852d76bc5bb32d556458f343527d88b3fe46ea1c2b0962841276174",
+      "blocks": 1,
+      "status": "compiled"
+    },
+    {
+      "source": "Algorithm/Radix_sort.cpp",
+      "document": "Document/radix_sort.md",
+      "source_sha256": "0b527277b26307e434513f0bbe6afd90e77d52ffceac550f5e445504daa34e73",
+      "document_sha256": "222f2aec562484a58fa0d73e0f1d85c23ea5ac1112ba5b3b74d67fe242c51480",
+      "blocks": 0,
+      "status": "no-inline-example",
+      "linked_examples": [
+        {
+          "path": "Examples/radix_sort_example.cpp",
+          "status": "PASS",
+          "diagnostic": "",
+          "sha256": "158a428d598fab545a3d6ea4a54ffb93a3d7bec1742e6af4a45f5cf141099676"
+        }
+      ]
+    },
+    {
+      "source": "Algorithm/next_combination.cpp",
+      "document": "Document/combination_masks.md",
+      "source_sha256": "009ef56f571de5d0f5439c880cf68d3e479b15071386f72f5ba5e11534ee6b4a",
+      "document_sha256": "c98f3113a0f28c18e4c67ea81dfaa3f38480f056ca7949843254bc3142305564",
+      "blocks": 0,
+      "status": "no-inline-example",
+      "linked_examples": [
+        {
+          "path": "Examples/next_combination_example.cpp",
+          "status": "PASS",
+          "diagnostic": "",
+          "sha256": "e25764deb96c9c61f505ef91316a962d9f2d3f1a86b1e7b284747044bc8dfd22"
+        }
+      ]
+    },
+    {
+      "source": "Algorithm/rotate.cpp",
+      "document": "Document/matrix_transform.md",
+      "source_sha256": "b7614f2c46ca58687afac6cb907dfb46feb945f6c70e7ae2a12e18c1944e0bc5",
+      "document_sha256": "80b1c4de9d43aad72a95ada6df2b0490f43140fc049f268f32be1b69c3708988",
+      "blocks": 1,
+      "status": "compiled"
+    },
+    {
+      "source": "DataStructure/Binary_Trie.cpp",
+      "document": "Document/pages/binary_trie.md",
+      "source_sha256": "d76c62cba55987fecc730c8a969db370b779f5db1ab309d00b4ec4a866fd0c1a",
+      "document_sha256": "9013358d9bd1c9a39ed713ffeb98133d91b828730d7b983e648d2a3464cc8dc6",
+      "blocks": 1,
+      "status": "compiled"
+    },
+    {
+      "source": "DataStructure/Compressed_Binary_Trie.cpp",
+      "document": "Document/pages/compressed_binary_trie.md",
+      "source_sha256": "7dd272adb8c27fbd63ab9ac5bc57b160ec73817a26bd2c9948533cabaa87c103",
+      "document_sha256": "e9d553bbe9d07cd149f991627dd43dd7d37b632473e14ee747c332f47ba2018c",
+      "blocks": 1,
+      "status": "compiled"
+    },
+    {
+      "source": "DataStructure/Disjoint_Sparse_Table.cpp",
+      "document": "Document/disjoint_sparse_table.md",
+      "source_sha256": "91a6c15c7501385f279dbdf006b31800072995c8d4afbc12e229e04dd792e20f",
+      "document_sha256": "39d700dcaa4b75e532eb7f1430f5693cf7389bb38a9f6c06ae1379f8d13f7aa2",
+      "blocks": 1,
+      "status": "compiled"
+    },
+    {
+      "source": "DataStructure/Dual_Segment_Tree.cpp",
+      "document": "Document/dual_segment_tree.md",
+      "source_sha256": "2a4edc95581761a38cd00f5e9257adf07242ea664f275012b9991c597ba3d3e1",
+      "document_sha256": "b47696c39254e62edbc2c3bd88b00a6aec320167e6a2f803bcc2125a9b1e4882",
+      "blocks": 1,
+      "status": "compiled"
+    },
+    {
+      "source": "DataStructure/Dynamic_Bitset.cpp",
+      "document": "Document/dynamic_bitset.md",
+      "source_sha256": "712a551a8a44c9325fb616de49a409c36eb73ef924b0969ff605b4bc918b428a",
+      "document_sha256": "8811ae57377fcbbee8d5b02986f375f0c9feb4bb4abeb6d61e3275532e280203",
+      "blocks": 1,
+      "status": "compiled"
+    },
+    {
+      "source": "DataStructure/Fenwick_Tree.cpp",
+      "document": "Document/fenwick_tree.md",
+      "source_sha256": "3185047256b4fa6ede5686a72a3dff8babce338a6a11caf9ad2eb422a9a7cf1a",
+      "document_sha256": "d881f728088634a8757256fa51e85efb378b6bd5a04cc8d284d6b439395de1c8",
+      "blocks": 1,
+      "status": "compiled"
+    },
+    {
+      "source": "DataStructure/Hash_map.cpp",
+      "document": "Document/hash_map.md",
+      "source_sha256": "26a74a7eac70ca3caa2da641b66f568f26b7670f6ab0b1e5be9bebc88d3317c4",
+      "document_sha256": "704de104e6237fd547678df0fde11284431246368aba5ed81d9d4bdd4b575a6f",
+      "blocks": 1,
+      "status": "compiled"
+    },
+    {
+      "source": "DataStructure/Hash_set.cpp",
+      "document": "Document/hash_set.md",
+      "source_sha256": "08f912edd377be39ef1245eb6ee71214a49bad255688fdaf4542169c2725f7a3",
+      "document_sha256": "aef6d91ab9f45ba2fe6dce208cf197e147ea4fec54a6873998eba8730c321fb1",
+      "blocks": 1,
+      "status": "compiled"
+    },
+    {
+      "source": "DataStructure/Lazy_Segment_Tree.cpp",
+      "document": "Document/lazy_segment_tree.md",
+      "source_sha256": "4f484a110cd4cb1a20a18cc61f640550a162aadd73e307b6f04fafb01dd44255",
+      "document_sha256": "ea5036edca6b8a66d0cf2517ee67ca7fb90b7025e8d252f716c39210e03b5007",
+      "blocks": 1,
+      "status": "compiled"
+    },
+    {
+      "source": "DataStructure/Link_Cut_Tree.cpp",
+      "document": "Document/link_cut_tree.md",
+      "source_sha256": "9feb20f04f08b3ab27eacf4601487c8fa6cb59c5e74ce1846dbff8738b5802bf",
+      "document_sha256": "e5f13848e54b3db1a69f69ace3bea9eaf33f3744854aec533f363a7f629db9e5",
+      "blocks": 1,
+      "status": "compiled"
+    },
+    {
+      "source": "DataStructure/Node.cpp",
+      "document": "Document/node.md",
+      "source_sha256": "e0798a6798942feb36c6119393592373cb17cad68972c62d4c2b0bd50c3a42bd",
+      "document_sha256": "fb3056ef6b7fc2904a251a642a55fcc19848022d98193f3fbf4ae04cdb176a57",
+      "blocks": 0,
+      "status": "no-inline-example",
+      "linked_examples": [
+        {
+          "path": "Examples/node_example.cpp",
+          "status": "PASS",
+          "diagnostic": "",
+          "sha256": "2f4e4419b476d6a5084376e16b4c46bd63343651884d25397e1b489dbca085e7"
+        }
+      ]
+    },
+    {
+      "source": "DataStructure/Persistent_Segment_Tree.cpp",
+      "document": "Document/persistent_segment_tree.md",
+      "source_sha256": "84774bc0a6295daf231f782cb53ae971b31d1012c05325dea7562b7b94366a16",
+      "document_sha256": "aee6812c3656fe5a57dbdcb9b65a7f6d766a4650d5e02f595fb979e719ec7081",
+      "blocks": 1,
+      "status": "compiled"
+    },
+    {
+      "source": "DataStructure/Segment_Tree.cpp",
+      "document": "Document/segment_tree.md",
+      "source_sha256": "563c970487176efb5ff54850abb848da34600fa44af282ec62ecbdcad61f2207",
+      "document_sha256": "3578e118461ff0d1eebf62c2338e698994cba9f84522eb5987bbebbb6d8d7154",
+      "blocks": 1,
+      "status": "compiled"
+    },
+    {
+      "source": "DataStructure/Segment_Tree_Beats.cpp",
+      "document": "Document/segment_tree_beats.md",
+      "source_sha256": "49de3105749f4ce57809b82854e7b314f63e2cc56c906022be9379b0a89c1c85",
+      "document_sha256": "8c0f82d6efd861b24250e5b35f2a12c425ae098591c09745f58d629acf2cdd43",
+      "blocks": 1,
+      "status": "compiled"
+    },
+    {
+      "source": "DataStructure/Sliding_Window_Aggregation.cpp",
+      "document": "Document/sliding_window_aggregation.md",
+      "source_sha256": "ee199915fe02e63044ec1a8f2a2378d80c1d51cf5a9e3e4f6406f3c9c2ea6a80",
+      "document_sha256": "11969f9a94d74d4b1b701d2eb1b19441f4dcccbfc97ee0f0b2a20b7a2475652c",
+      "blocks": 1,
+      "status": "compiled"
+    },
+    {
+      "source": "DataStructure/Slope_Trick.cpp",
+      "document": "Document/slope_trick.md",
+      "source_sha256": "dab652cfa1e5b8087c163f7395498325d3a83d084eeecc6547b10090db641f6c",
+      "document_sha256": "99c264cc8bde9b9205b0844cb9e4aa094cedbaf99305a895ccaac0bd86675df7",
+      "blocks": 1,
+      "status": "compiled"
+    },
+    {
+      "source": "DataStructure/Sparse_Table.cpp",
+      "document": "Document/sparse_table.md",
+      "source_sha256": "8a58ed0c637d95ef291524e4679d817c9c5c3479f9e1120f54021e6b5878c7fb",
+      "document_sha256": "c177fd57d607353834696e363816cf8aac7ed23abc2659544e1de580df59b196",
+      "blocks": 1,
+      "status": "compiled"
+    },
+    {
+      "source": "DataStructure/Wavelet_Matrix.cpp",
+      "document": "Document/wavelet_matrix.md",
+      "source_sha256": "adebb5a890da13843a5730df6efd15ad477a8819308be1008f27b801a0804500",
+      "document_sha256": "3263acf134f81139271515cc9542304e401a7799f207eeceec166af200097d63",
+      "blocks": 1,
+      "status": "compiled"
+    },
+    {
+      "source": "DataStructure/dynamic-binary-indexed-tree-2d.cpp",
+      "document": "Document/dynamic_fenwick_2d.md",
+      "source_sha256": "a36629e57b75dd6c0016049273205386f650cad74c04db1a5bbebfc834c87dcb",
+      "document_sha256": "e7cfef4aa6f180d57b4b8a246012462fef15a629a232157da712ea23f7a83821",
+      "blocks": 0,
+      "status": "no-inline-example",
+      "linked_examples": [
+        {
+          "path": "Examples/dynamic_fenwick_2d_example.cpp",
+          "status": "PASS",
+          "diagnostic": "",
+          "sha256": "5de12914339d10dd284109237792299131a60479364c3cdb9372098897648308"
+        }
+      ]
+    },
+    {
+      "source": "DataStructure/dynamic-binary-indexed-tree.cpp",
+      "document": "Document/dynamic_fenwick.md",
+      "source_sha256": "f88cdc782c0fbd7d5751d30f32829f557f7640a657ab1301b38a60cd9a6f3e86",
+      "document_sha256": "e743dff4d52d3857de647a6c3cb13f24756d97c5d746cfa256d5879824146344",
+      "blocks": 0,
+      "status": "no-inline-example",
+      "linked_examples": [
+        {
+          "path": "Examples/dynamic_fenwick_example.cpp",
+          "status": "PASS",
+          "diagnostic": "",
+          "sha256": "14320dc54dcfb3e77c8c37bbdacc75365ec5394a1ced1fbb2151070a92576256"
+        }
+      ]
+    },
+    {
+      "source": "DataStructure/dynamic-li-chao-tree.cpp",
+      "document": "Document/dynamic_li_chao.md",
+      "source_sha256": "2ff51f192307866d868a722dd33ebdccd061a0af772a60f711ba06d72ae25a0d",
+      "document_sha256": "eca0e2275eb54f3e1e485ebce4ef7b940405af3385464400ab07126881cd9053",
+      "blocks": 0,
+      "status": "no-inline-example",
+      "linked_examples": [
+        {
+          "path": "Examples/dynamic_li_chao_example.cpp",
+          "status": "PASS",
+          "diagnostic": "",
+          "sha256": "aaaea81a1d926ca1f4f347ae9a786f5f9c5508e9d2229d45f4f645628879d2c0"
+        }
+      ]
+    },
+    {
+      "source": "DataStructure/dynamic-union-find.cpp",
+      "document": "Document/dynamic_union_find.md",
+      "source_sha256": "912edd475064f36b801cd3d0a22459041fd5ba73d120cef4102c42da538cef5c",
+      "document_sha256": "88116b5ff502ad9e0ae48fa872fddcf1dad021a926e2d4ef1c4ac950946542d5",
+      "blocks": 0,
+      "status": "no-inline-example",
+      "linked_examples": [
+        {
+          "path": "Examples/dynamic_union_find_example.cpp",
+          "status": "PASS",
+          "diagnostic": "",
+          "sha256": "d769bb27c5ef69dbdcfc0a65703d2d57b5ed8182edc4aa47ede88471bfe68cc4"
+        }
+      ]
+    },
+    {
+      "source": "DataStructure/erasable-priority-queue.cpp",
+      "document": "Document/erasable_priority_queue.md",
+      "source_sha256": "eb276613a730e2ba36eb5ef362ee4e0350574280d95de9b4e0f53470ae935092",
+      "document_sha256": "6dbef3f7aef1859c72b4536ca9b6c9d81925b82a71986ad971d997f07729459a",
+      "blocks": 0,
+      "status": "no-inline-example",
+      "linked_examples": [
+        {
+          "path": "Examples/erasable_priority_queue_example.cpp",
+          "status": "PASS",
+          "diagnostic": "",
+          "sha256": "e4e4ceee59d8c6e64e261b7878d09fd8e0a3a3174ca937c00e15902d9d525c64"
+        }
+      ]
+    },
+    {
+      "source": "DataStructure/heap.cpp",
+      "document": "Document/heap.md",
+      "source_sha256": "45d24c1d78141c5652011e44b3045240abeab14b226351a2d3909ae251513a1c",
+      "document_sha256": "dee80ada6d58f99b6b67879915d0b659ccf41a7d65151ecbb008b182fa5c22b6",
+      "blocks": 0,
+      "status": "no-inline-example",
+      "linked_examples": [
+        {
+          "path": "Examples/heap_example.cpp",
+          "status": "PASS",
+          "diagnostic": "",
+          "sha256": "4e2da5039fa622a3b25cbf9de637aa1315a4f15a01987b5527f937fd01010fbb"
+        }
+      ]
+    },
+    {
+      "source": "DataStructure/implicit_treap.cpp",
+      "document": "Document/implicit_treap.md",
+      "source_sha256": "957220716c227d58cb0939d8682e2200fa4d337ba532457f1e49f69963cbd97a",
+      "document_sha256": "2d368e8de1dff5dd3cf1a61060d9b42733ee9a7457b9a13801d5b2407d1a9f18",
+      "blocks": 1,
+      "status": "compiled"
+    },
+    {
+      "source": "DataStructure/line-container-2d.cpp",
+      "document": "Document/line_container_2d.md",
+      "source_sha256": "bfc1f6f6d49130db16d24be2e875956f2555aa41300afae3da1b2e20bd8bae94",
+      "document_sha256": "578a5352c027129604165941ee73e4fe856a77668dab1a0a852df263284ac3e4",
+      "blocks": 1,
+      "status": "compiled"
+    },
+    {
+      "source": "DataStructure/line-container.cpp",
+      "document": "Document/line_container.md",
+      "source_sha256": "fcd084d435010118f363d3e91814225dda3eb1716c15a52e25c5b98fe3ee6914",
+      "document_sha256": "491f42c56e5eaa7d14d88e2968245d3c95d6f7906421e1c03e136b30dcb4777a",
+      "blocks": 1,
+      "status": "compiled"
+    },
+    {
+      "source": "DataStructure/persistent-union-find.cpp",
+      "document": "Document/persistent_union_find.md",
+      "source_sha256": "1055b28b3c15e9ccf4a51139059b03473b96746553ba9c9dc9822e057af7e7d8",
+      "document_sha256": "78137ff2fa4cf326118cd4583e9c855af9eab05c35a43c6b84a7fe46f19c5ffe",
+      "blocks": 2,
+      "status": "compiled"
+    },
+    {
+      "source": "DataStructure/rollback-union-find.cpp",
+      "document": "Document/rollback_union_find.md",
+      "source_sha256": "f4a1bdea9219c5c0376d9b2f356424b679afae4acb02d34809c97755bf69607f",
+      "document_sha256": "dc1bc5c286c384365571b97753f15328bdda004b9ed57d26b57d7a95618c1fee",
+      "blocks": 2,
+      "status": "compiled-with-documented-context",
+      "context": "previous snippets in same main"
+    },
+    {
+      "source": "DataStructure/rollback-union-findw.cpp",
+      "document": "Document/rollback_weighted_union_find.md",
+      "source_sha256": "38ac061e08952ac8fc2252e73616c54fb606913f75822232df426a748059d6bd",
+      "document_sha256": "4bb39d567afbe084a01942e27abb70b76345454535ebbb6a65c057ef988deae1",
+      "blocks": 1,
+      "status": "compiled"
+    },
+    {
+      "source": "DataStructure/union_find.cpp",
+      "document": "Document/union_find.md",
+      "source_sha256": "dae4e7daebb36dc4385727ea28f2cf43bf23003fce69c64a4d881eb7dd2c0a01",
+      "document_sha256": "b15e971a653a0794224b9a3cec4cd0dbec7945739320c449b4a6a4d3b28d9db4",
+      "blocks": 1,
+      "status": "compiled"
+    },
+    {
+      "source": "DataStructure/union_find_w.cpp",
+      "document": "Document/weighted_union_find.md",
+      "source_sha256": "e9aa280d3ca4fb0625d3af4561148783a78e1f4b9a69c779b26d7fd849f81a04",
+      "document_sha256": "81fcdbc57bf9dbdd7c6f01d331bac0d17f96ea34c568cd27ec53b1f9c0fe0c3d",
+      "blocks": 1,
+      "status": "compiled"
+    },
+    {
+      "source": "Graph/Bellman-Ford.cpp",
+      "document": "Document/pages/bellman_ford.md",
+      "source_sha256": "1d9fe84114476b2e996ff9aee24d26233f1305e2d378e343a0c5f6fac766ac00",
+      "document_sha256": "82d6e21ed296646c1ddf17a865cafb403c4192173299343926bb4bb9932cbf07",
+      "blocks": 1,
+      "status": "compiled"
+    },
+    {
+      "source": "Graph/Bellman-Ford_SFPA.cpp",
+      "document": "Document/pages/spfa.md",
+      "source_sha256": "46b26af6ff145399422817f338ede49d4bdd53a20c19001ca24ff0b0a25cce6c",
+      "document_sha256": "1e439da63220bb7dac90295549d78657764dac8d53a551f5c2b37d1b1450cdd2",
+      "blocks": 1,
+      "status": "compiled"
+    },
+    {
+      "source": "Graph/Bipartite_Matching.cpp",
+      "document": "Document/bipartite_matching.md",
+      "source_sha256": "48304884828b5b33e368e9464e4ed4c2a700e8e8caf731952818defd654f65dd",
+      "document_sha256": "6bee7e9b36eac012e180c4cf58db76e3a46b86730fd5924e1c1dc27c15f15325",
+      "blocks": 1,
+      "status": "compiled"
+    },
+    {
+      "source": "Graph/Cartesian_Tree.cpp",
+      "document": "Document/cartesian_tree.md",
+      "source_sha256": "6ee6f40a14725842afc3592e3cc35fb5b4601fe1f011108f7d4f027a2f3ec151",
+      "document_sha256": "433883aacb0d37d76cc8d627452b9e08a0994e837870e90561fead9db4c31b33",
+      "blocks": 1,
+      "status": "compiled"
+    },
+    {
+      "source": "Graph/Centroid_Decomposition.cpp",
+      "document": "Document/centroid_decomposition.md",
+      "source_sha256": "bf4ffd793aa13a594d5496b04991e8947fcb3aaaf3b4be484d7240ff6fc95f06",
+      "document_sha256": "69f857c0925093229a75ffbea806dff813e851c914f48b281ea730fd5505b227",
+      "blocks": 1,
+      "status": "compiled"
+    },
+    {
+      "source": "Graph/Dijkstra.cpp",
+      "document": "Document/dijkstra.md",
+      "source_sha256": "65644fbf124206fc37a1530f9b778177c4c7c70436b9dfabe5778b40d125fd41",
+      "document_sha256": "3faf71c556427f0ea99589115050293044e212b12de50a48b6cb1f6349964b8e",
+      "blocks": 2,
+      "status": "compiled-with-documented-context",
+      "context": "previous snippets in same main"
+    },
+    {
+      "source": "Graph/Eulerian_Trail.cpp",
+      "document": "Document/eulerian_trail.md",
+      "source_sha256": "daf350d58c8b75451c782064d28cc5e79f5057432e53bd92337a45c79172f64c",
+      "document_sha256": "d328681077a2bb916d113fe3223cbd10bf39ea3c566bc9f41a6ded3a2325ba75",
+      "blocks": 0,
+      "status": "no-inline-example",
+      "linked_examples": [
+        {
+          "path": "Examples/eulerian_trail_example.cpp",
+          "status": "PASS",
+          "diagnostic": "",
+          "sha256": "01272c929ac439a0f03dc424e1c3ca3cca7c4975484f688473dcb2a9fc476ce1"
+        }
+      ]
+    },
+    {
+      "source": "Graph/Floyd-Warshall.cpp",
+      "document": "Document/floyd_warshall.md",
+      "source_sha256": "cdb673fb73599bd852a1ee5e7a830aff96463613771471fa5aaeb3db3f759cfc",
+      "document_sha256": "4c568f560d52645d7eb87971a54ba5a503b09734d8ecf991219b935d7423f54a",
+      "blocks": 1,
+      "status": "compiled"
+    },
+    {
+      "source": "Graph/Functional_Graph.cpp",
+      "document": "Document/functional_graph.md",
+      "source_sha256": "71949a5d3ec67fd16239ccfa4abbf40a73d3df43d8b52f86d0c0e9dba4894475",
+      "document_sha256": "913595f09347394f37f8108bd7b95e4419f0380ec07e942d7c6838687763ffc0",
+      "blocks": 1,
+      "status": "compiled"
+    },
+    {
+      "source": "Graph/General_Matching.cpp",
+      "document": "Document/general_matching.md",
+      "source_sha256": "2d8481f1856fc77327c6d33c0a92eab893a8cb6101deccee4250890cbff5dfad",
+      "document_sha256": "0c48446b1e237891297abc11a73af1ccb071f675a034ed1c4695d580605fc8eb",
+      "blocks": 1,
+      "status": "compiled"
+    },
+    {
+      "source": "Graph/Heavy_Light_Decomposition.cpp",
+      "document": "Document/heavy_light_decomposition.md",
+      "source_sha256": "ca49ccb7049783f6f7f60ea02bb5cfc8ad6befc4d5e687eca5f47b28f128e17e",
+      "document_sha256": "96da48189e16888cf1cdfb2c727bad179e68605da0821616e1bf8b388d8ad6ac",
+      "blocks": 3,
+      "status": "compiled-with-documented-context",
+      "context": "previous snippets, both selected range headers, prose-specified concat/empty_word functions",
+      "companion_source": "DataStructure/Fenwick_Tree.cpp",
+      "companion_sources": [
+        "DataStructure/Fenwick_Tree.cpp",
+        "DataStructure/Segment_Tree.cpp"
+      ]
+    },
+    {
+      "source": "Graph/LCA.cpp",
+      "document": "Document/lca.md",
+      "source_sha256": "6e05cfbe789d6be77cb73d62b7aa9e3cbaf153bcc59b420b315207febdc2c2c8",
+      "document_sha256": "8273afc9c732c088daafda20f94317bca4ce285965ffd5f2a35fa3760a4e4421",
+      "blocks": 1,
+      "status": "compiled"
+    },
+    {
+      "source": "Graph/Low_Link.cpp",
+      "document": "Document/low_link.md",
+      "source_sha256": "11da015d01ab2cac84e3050c1d12c1556e1f8d70cf354acc53535e7afe906de4",
+      "document_sha256": "b0eec0e29d439a53a4570c7b76e91bcdf2406b693557ae6b6203781bad7de559",
+      "blocks": 1,
+      "status": "compiled"
+    },
+    {
+      "source": "Graph/Max_Flow.cpp",
+      "document": "Document/max_flow.md",
+      "source_sha256": "b1eee30a5d93b695073f33f20b1108558b9d29639364c6c0550ebab2bfa4dbe6",
+      "document_sha256": "e664f5d22ac9c01d0ae154d76512656f7b2ece5a109b12a8330f7f04d15eb84f",
+      "blocks": 1,
+      "status": "compiled"
+    },
+    {
+      "source": "Graph/Min_Cost_Flow.cpp",
+      "document": "Document/min_cost_flow.md",
+      "source_sha256": "ec775be139002e08b16ecf8cf622ba853547a494f048e6e4255861a7ffd6ceb1",
+      "document_sha256": "5583a9958735e76a7447b771c55319aa2a8609bc3a12d1ac228d1635d2fa109a",
+      "blocks": 1,
+      "status": "compiled"
+    },
+    {
+      "source": "Graph/Offline_Dynamic_Connectivity.cpp",
+      "document": "Document/offline_dynamic_connectivity.md",
+      "source_sha256": "163968bff8907a8161e0685c631ac1f17bf49987ff4de1dce060684077e1aac4",
+      "document_sha256": "6a5a41baaa5026bf3878344f81a43fbb8b4dd43996d499ab5da65a4cf79eef12",
+      "blocks": 1,
+      "status": "compiled"
+    },
+    {
+      "source": "Graph/Project_Selection.cpp",
+      "document": "Document/project_selection.md",
+      "source_sha256": "b5a0e9f10d9271976bcc0b9fea362e3c3342f96f4b4e70ea307f8e7d230056fe",
+      "document_sha256": "9de7273ee7040f201066a4266930760d8d97cce41ce07579fd86c085fa1a31af",
+      "blocks": 1,
+      "status": "compiled"
+    },
+    {
+      "source": "Graph/Pruefer_Code.cpp",
+      "document": "Document/pruefer_code.md",
+      "source_sha256": "62b2a270bb8d8ae1f6aa92d7ccb486dd9f99897e7b3c920e825a921bb09e9b36",
+      "document_sha256": "b1a320aae17fb6dc92bb3318c4bc9dfdf9030d291c7b9eb0ea4e1d9203745fd7",
+      "blocks": 3,
+      "status": "compiled"
+    },
+    {
+      "source": "Graph/Rerooting_DP.cpp",
+      "document": "Document/rerooting_dp.md",
+      "source_sha256": "2cf1fe4441ee66069fb5a75ac8d62d65d233505b631ad2da2f375fedbcb01fcc",
+      "document_sha256": "11aded5ae9a3b08d076084a359fc9cd390b507597a7ab06d394cf5291832c9c0",
+      "blocks": 1,
+      "status": "compiled"
+    },
+    {
+      "source": "Graph/SCC.cpp",
+      "document": "Document/scc.md",
+      "source_sha256": "4b5c4f63db1ae715a97d77702cf07f67ca053e62a81767597f0defd080c093bb",
+      "document_sha256": "eafdb93c7a241acb99622da879801b940a512d7bbdefe9928484f147e386ac96",
+      "blocks": 1,
+      "status": "compiled"
+    },
+    {
+      "source": "Graph/Topological.cpp",
+      "document": "Document/topological.md",
+      "source_sha256": "5ab6ddeb1d2d8b1c4bf7eb13a31cdc289100b6a5659269db23391f010aa1e383",
+      "document_sha256": "ebe9f2eefc0d88332fb1509efdef50e492a232e452a11f488d65d554331a8667",
+      "blocks": 1,
+      "status": "compiled"
+    },
+    {
+      "source": "Graph/Topological_sort.cpp",
+      "document": "Document/topological.md",
+      "source_sha256": "5ab6ddeb1d2d8b1c4bf7eb13a31cdc289100b6a5659269db23391f010aa1e383",
+      "document_sha256": "ebe9f2eefc0d88332fb1509efdef50e492a232e452a11f488d65d554331a8667",
+      "blocks": 1,
+      "status": "compiled"
+    },
+    {
+      "source": "Graph/Two_SAT.cpp",
+      "document": "Document/two_sat.md",
+      "source_sha256": "7fea50d30c55946710a69bf6fe8da7974e4eecb1071fb2ddb17f6df7e97efaef",
+      "document_sha256": "2106224b7fb37ba6e8558524af3e2da5d6ecb06bd71dd55b8c6f08d4a83523b4",
+      "blocks": 1,
+      "status": "compiled"
+    },
+    {
+      "source": "String/Aho_Corasick.cpp",
+      "document": "Document/aho_corasick.md",
+      "source_sha256": "cbfd9bc1cf1cc4d7ce3497677c07becb98885c3d2198372ceea000a146679e19",
+      "document_sha256": "87ab3b8cfe3a247e3ae6ff39119542f51286964e3fc278dfa23fc34005e9f09a",
+      "blocks": 1,
+      "status": "compiled"
+    },
+    {
+      "source": "String/Manacher.cpp",
+      "document": "Document/manacher.md",
+      "source_sha256": "538caf62fc2b6b14fefa31a74cf31d58d10e0f3f0a49e4d109cbd89ef39c5b14",
+      "document_sha256": "eee26955d86536ba8af663da32dd932dc9556a8180fc1b0eefa96392468c352c",
+      "blocks": 0,
+      "status": "no-inline-example",
+      "linked_examples": [
+        {
+          "path": "Examples/manacher_example.cpp",
+          "status": "PASS",
+          "diagnostic": "",
+          "sha256": "38b67587e4e5ce3e93066273d31a7b9ef3cd3361ccdcd1d0c6a247b998ffac3e"
+        }
+      ]
+    },
+    {
+      "source": "String/Palindromic_Tree.cpp",
+      "document": "Document/palindromic_tree.md",
+      "source_sha256": "d680bcd377c7d08e270c92c2a73edcbab7903519b02b7d1ac9c657bc46fdb907",
+      "document_sha256": "1843a49359f295959a2271c95a928cea7a046cbd2e21ad1849f5022a2be080db",
+      "blocks": 1,
+      "status": "compiled"
+    },
+    {
+      "source": "String/RollingHash.cpp",
+      "document": "Document/rolling_hash.md",
+      "source_sha256": "b1b25c93d3e399f05d5f6cc0a04008356ac56fd5d939acd0bcb49d1fa97a9e69",
+      "document_sha256": "d3d9259a74490173bcc5b0acd1bf2bf5aff481334203554a0fa11b2b75250d96",
+      "blocks": 1,
+      "status": "compiled"
+    },
+    {
+      "source": "String/Suffix_Array.cpp",
+      "document": "Document/suffix_array.md",
+      "source_sha256": "a2e1643e72cb2459b364d0aec7682f5a8759b02866f1bb8a2d73041ed9ebddf5",
+      "document_sha256": "17b3330435a59bcf82de2b681ea179157b3ebc42800c2fcfd5c0f31c7f898a81",
+      "blocks": 1,
+      "status": "compiled"
+    },
+    {
+      "source": "String/Suffix_Automaton.cpp",
+      "document": "Document/suffix_automaton.md",
+      "source_sha256": "61cc2e3c21d52f69bbde379d11f66c0d606cbd32aca6251e82f25bb81c4b5846",
+      "document_sha256": "22c3a94c28fc213ddc40080dd76bbd032506375cc01b6b356d51092f47cfba49",
+      "blocks": 1,
+      "status": "compiled"
+    },
+    {
+      "source": "String/Trie.cpp",
+      "document": "Document/trie.md",
+      "source_sha256": "5a98d6239d7851d49e7830b6ee98b4124759c5565f79326b4bce8184af8e48c8",
+      "document_sha256": "80723b17e4a7628a32a9c407b0fe4a9ff9be6f186e938064f79906afee371b28",
+      "blocks": 0,
+      "status": "no-inline-example",
+      "linked_examples": [
+        {
+          "path": "Examples/trie_example.cpp",
+          "status": "PASS",
+          "diagnostic": "",
+          "sha256": "dc00052150c309113d4864c757c749d6c9b204c58f388557c052b70fdbb43e8a"
+        }
+      ]
+    },
+    {
+      "source": "String/Z_Algorithm.cpp",
+      "document": "Document/z_algorithm.md",
+      "source_sha256": "49f57734cc011123d93747d304ef208c4ff5c8c773be65743e38026bf426295a",
+      "document_sha256": "5e201a134f46ac89ea6a03d5b1f9ba341ce4f7ec5f7b7f68b028704020fe72d2",
+      "blocks": 1,
+      "status": "compiled"
+    },
+    {
+      "source": "Internal/Nyaan_hash_map_min.cpp",
+      "document": "Document/internal_hash_map.md",
+      "source_sha256": "2e353c9daa09faaf53ccef4146a2b1a2b8a0f9a586a49bca99cfbcbeccef0b73",
+      "document_sha256": "5e2a094a396bd1a3ea977cc5ab60f79be5e53f0dbedcca312707bed6f37a6f13",
+      "blocks": 0,
+      "status": "no-inline-example",
+      "linked_examples": [
+        {
+          "path": "Examples/internal_hash_map_example.cpp",
+          "status": "PASS",
+          "diagnostic": "",
+          "sha256": "592a936081024054e886e0ec382013fc859adee7fe743b4e022d961b41d2a79c"
+        }
+      ]
+    }
+  ],
+  "new_guide_checked_and_unchecked_runtime": [
+    {
+      "source": "DataStructure/Binary_Trie.cpp",
+      "document": "Document/pages/binary_trie.md",
+      "source_sha256": "d76c62cba55987fecc730c8a969db370b779f5db1ab309d00b4ec4a866fd0c1a",
+      "document_sha256": "9013358d9bd1c9a39ed713ffeb98133d91b828730d7b983e648d2a3464cc8dc6",
+      "skip_runtime_checks": false,
+      "flags": [
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic"
+      ],
+      "result": "PASS"
+    },
+    {
+      "source": "DataStructure/Binary_Trie.cpp",
+      "document": "Document/pages/binary_trie.md",
+      "source_sha256": "d76c62cba55987fecc730c8a969db370b779f5db1ab309d00b4ec4a866fd0c1a",
+      "document_sha256": "9013358d9bd1c9a39ed713ffeb98133d91b828730d7b983e648d2a3464cc8dc6",
+      "skip_runtime_checks": true,
+      "flags": [
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic"
+      ],
+      "result": "PASS"
+    },
+    {
+      "source": "DataStructure/Compressed_Binary_Trie.cpp",
+      "document": "Document/pages/compressed_binary_trie.md",
+      "source_sha256": "7dd272adb8c27fbd63ab9ac5bc57b160ec73817a26bd2c9948533cabaa87c103",
+      "document_sha256": "e9d553bbe9d07cd149f991627dd43dd7d37b632473e14ee747c332f47ba2018c",
+      "skip_runtime_checks": false,
+      "flags": [
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic"
+      ],
+      "result": "PASS"
+    },
+    {
+      "source": "DataStructure/Compressed_Binary_Trie.cpp",
+      "document": "Document/pages/compressed_binary_trie.md",
+      "source_sha256": "7dd272adb8c27fbd63ab9ac5bc57b160ec73817a26bd2c9948533cabaa87c103",
+      "document_sha256": "e9d553bbe9d07cd149f991627dd43dd7d37b632473e14ee747c332f47ba2018c",
+      "skip_runtime_checks": true,
+      "flags": [
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic"
+      ],
+      "result": "PASS"
+    },
+    {
+      "source": "Graph/Bellman-Ford.cpp",
+      "document": "Document/pages/bellman_ford.md",
+      "source_sha256": "1d9fe84114476b2e996ff9aee24d26233f1305e2d378e343a0c5f6fac766ac00",
+      "document_sha256": "82d6e21ed296646c1ddf17a865cafb403c4192173299343926bb4bb9932cbf07",
+      "skip_runtime_checks": false,
+      "flags": [
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic"
+      ],
+      "result": "PASS"
+    },
+    {
+      "source": "Graph/Bellman-Ford.cpp",
+      "document": "Document/pages/bellman_ford.md",
+      "source_sha256": "1d9fe84114476b2e996ff9aee24d26233f1305e2d378e343a0c5f6fac766ac00",
+      "document_sha256": "82d6e21ed296646c1ddf17a865cafb403c4192173299343926bb4bb9932cbf07",
+      "skip_runtime_checks": true,
+      "flags": [
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic"
+      ],
+      "result": "PASS"
+    },
+    {
+      "source": "Graph/Bellman-Ford_SFPA.cpp",
+      "document": "Document/pages/spfa.md",
+      "source_sha256": "46b26af6ff145399422817f338ede49d4bdd53a20c19001ca24ff0b0a25cce6c",
+      "document_sha256": "1e439da63220bb7dac90295549d78657764dac8d53a551f5c2b37d1b1450cdd2",
+      "skip_runtime_checks": false,
+      "flags": [
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic"
+      ],
+      "result": "PASS"
+    },
+    {
+      "source": "Graph/Bellman-Ford_SFPA.cpp",
+      "document": "Document/pages/spfa.md",
+      "source_sha256": "46b26af6ff145399422817f338ede49d4bdd53a20c19001ca24ff0b0a25cce6c",
+      "document_sha256": "1e439da63220bb7dac90295549d78657764dac8d53a551f5c2b37d1b1450cdd2",
+      "skip_runtime_checks": true,
+      "flags": [
+        "-std=c++23",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic"
+      ],
+      "result": "PASS"
+    }
+  ],
+  "online_submission_performed": false,
+  "library_sources_modified": false
+}
