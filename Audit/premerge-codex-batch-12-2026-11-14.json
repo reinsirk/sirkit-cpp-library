@@ -1,0 +1,518 @@
+{
+  "format": 1,
+  "date": "2026-11-14",
+  "stage": "codex",
+  "status": "complete",
+  "scope": "Current-source static review + independent/official sample validation + whole-program measurement; same-source control is not a speedup claim",
+  "entries": [
+    {
+      "id": "floyd_warshall",
+      "source_sha256": "5a219d31d0ab87511df8a7907e4417203e260ac149a0d9ec5af5a62ed37bbe2a",
+      "input_source_sha256": "5a219d31d0ab87511df8a7907e4417203e260ac149a0d9ec5af5a62ed37bbe2a",
+      "decision": {
+        "decision": "retain pending Fable independent review",
+        "notes": [
+          {
+            "family": "Other graph",
+            "ids": [
+              "project_selection",
+              "floyd_warshall",
+              "bellman_ford",
+              "spfa",
+              "two_sat",
+              "low_link_two_edge",
+              "low_link_biconnected"
+            ],
+            "decision": "No new source edit proposed by this read-only reviewer; fresh constraints-valid benchmark inputs supplied.",
+            "basis": [
+              "Audit/optimization-codex-graph-2026-11-13.json"
+            ],
+            "details": "Read driver/input contracts. Do not attribute main-only input/output savings to body performance, and preserve independent correctness and API checks."
+          }
+        ]
+      },
+      "compiler": {
+        "path": "/usr/bin/g++",
+        "version": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0"
+      },
+      "flags_and_gcc_pragmas": [
+        "#pragma GCC optimize(\"O3\", \"unroll-loops\")"
+      ],
+      "timing_definition": "child process CPU time and wall time. Full process includes startup, main, I/O, library and teardown. Input generation/hash/reference checks excluded. No body-only speed claim.",
+      "same_source_control": true,
+      "measurement_record_sha256": "306f66a2f9d7c2b0959db2710566d16fd8ea5c0389406a883a6d6cb5ce2fb06e",
+      "official_sample_count": 3,
+      "profiles": [
+        {
+          "profile": "chain",
+          "input_sha256": "d6afbeba3a1b94f21fca7ebbbd1c5f871ea5bd80de973ff724e2ae454fb85808",
+          "validation": "independent_expected_and_baseline_output",
+          "expected_output_sha256": "9a7f91a861f59c0cb27f0af9323d158fdab7740d5e3c8016a60f4b04c0fc41e0",
+          "median_cpu_seconds": {
+            "baseline": 0.005707000000000573,
+            "current": 0.005691999999998476
+          },
+          "measured_trials": 5,
+          "current_over_baseline": 0.9973716488519195,
+          "ratio_is_speedup_claim": false
+        },
+        {
+          "profile": "dense",
+          "input_sha256": "bf85e2ccf2a6752fcf0c687c13b33616f5ae8595ec4019675d97a5aea2d91faf",
+          "validation": "independent_expected_and_baseline_output",
+          "expected_output_sha256": "ea243e5457028e97f9bc93b37a72f8e80ea61ae081911bb037765590ee6aa435",
+          "median_cpu_seconds": {
+            "baseline": 0.007798999999999889,
+            "current": 0.0078030000000004485
+          },
+          "measured_trials": 5,
+          "current_over_baseline": 1.0005128862675419,
+          "ratio_is_speedup_claim": false
+        }
+      ]
+    },
+    {
+      "id": "geometry_circle_relation_split",
+      "source_sha256": "483c97230ccc0fd69780981c87ff208e07352a83806ffe3045fdc759fee08c9d",
+      "input_source_sha256": "483c97230ccc0fd69780981c87ff208e07352a83806ffe3045fdc759fee08c9d",
+      "decision": {
+        "decision": "unchanged_no_new_candidate",
+        "current_review_reason": "小規模なcircle intersection kindと距離関係から5種類へ対応付ける。許容幅0の問題判定を維持し、doubleへの縮小や種別専用別APIで検証対象を外さない。",
+        "historical_candidate_decisions": []
+      },
+      "compiler": {
+        "path": "/usr/bin/g++",
+        "version": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0"
+      },
+      "flags_and_gcc_pragmas": [],
+      "timing_definition": "child process CPU time and wall time. Full process includes startup, main, I/O, library and teardown. Input generation/hash/reference checks excluded. No body-only speed claim.",
+      "same_source_control": true,
+      "measurement_record_sha256": "b666d8062cfc260ef8cbb83b6758ae9693a36c9d6a940280ac0ac19ed6b12088",
+      "official_sample_count": 6,
+      "profiles": [
+        {
+          "profile": "fixed-official-0",
+          "input_sha256": "b0fb76fafeb805ee10381cc997078cac246ff6c9a63e095d2258407240a76e3b",
+          "validation": "independent_expected_and_baseline_output",
+          "expected_output_sha256": "7de1555df0c2700329e815b93b32c571c3ea54dc967b89e81ab73b9972b72d1d",
+          "median_cpu_seconds": {
+            "baseline": 0.0008209999999992945,
+            "current": 0.0008199999999995988
+          },
+          "measured_trials": 5,
+          "current_over_baseline": 0.99878197320378,
+          "ratio_is_speedup_claim": false
+        },
+        {
+          "profile": "fixed-official-1",
+          "input_sha256": "892fe979e28f7b921efba3177b17c09b1127f900089c73a37a161ef4aa862851",
+          "validation": "independent_expected_and_baseline_output",
+          "expected_output_sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+          "median_cpu_seconds": {
+            "baseline": 0.0007819999999991722,
+            "current": 0.0007860000000032841
+          },
+          "measured_trials": 5,
+          "current_over_baseline": 1.00511508951933,
+          "ratio_is_speedup_claim": false
+        },
+        {
+          "profile": "fixed-official-2",
+          "input_sha256": "24a00708f9853f546c2cbe607a8cdbc0cea86a62134647cab593feb02d4871b8",
+          "validation": "independent_expected_and_baseline_output",
+          "expected_output_sha256": "53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3",
+          "median_cpu_seconds": {
+            "baseline": 0.0007930000000020421,
+            "current": 0.0007949999999996571
+          },
+          "measured_trials": 5,
+          "current_over_baseline": 1.0025220680928246,
+          "ratio_is_speedup_claim": false
+        },
+        {
+          "profile": "fixed-official-3",
+          "input_sha256": "097bae4540619c6bf4f070ffa2f5d9df3c8190bda3d535b64fe971f9b4a165d5",
+          "validation": "independent_expected_and_baseline_output",
+          "expected_output_sha256": "1121cfccd5913f0a63fec40a6ffd44ea64f9dc135c66634ba001d10bcf4302a2",
+          "median_cpu_seconds": {
+            "baseline": 0.0008040000000026915,
+            "current": 0.0008129999999959558
+          },
+          "measured_trials": 5,
+          "current_over_baseline": 1.0111940298423312,
+          "ratio_is_speedup_claim": false
+        },
+        {
+          "profile": "fixed-official-4",
+          "input_sha256": "c4856e6d13e99732cbf1fa5d0f63b17ba1d09be13fe83bc88bca3773eca97990",
+          "validation": "independent_expected_and_baseline_output",
+          "expected_output_sha256": "f0b5c2c2211c8d67ed15e75e656c7862d086e9245420892a7de62cd9ec582a06",
+          "median_cpu_seconds": {
+            "baseline": 0.0008089999999962849,
+            "current": 0.0008179999999984311
+          },
+          "measured_trials": 5,
+          "current_over_baseline": 1.0111248454909612,
+          "ratio_is_speedup_claim": false
+        },
+        {
+          "profile": "fixed-official-5",
+          "input_sha256": "8b761908b181b4b551a5c6096938429415f468872a09d712980b4a6f84a72e62",
+          "validation": "independent_expected_and_baseline_output",
+          "expected_output_sha256": "53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3",
+          "median_cpu_seconds": {
+            "baseline": 0.0008089999999989494,
+            "current": 0.0007989999999984398
+          },
+          "measured_trials": 5,
+          "current_over_baseline": 0.9876390605679572,
+          "ratio_is_speedup_claim": false
+        }
+      ]
+    },
+    {
+      "id": "geometry_point_segment_distance_split",
+      "source_sha256": "2fdfc744d161b30e2b4c40de73b5b2b1fb66100f763ebe4bb1ab4a68e5a89e64",
+      "input_source_sha256": "2fdfc744d161b30e2b4c40de73b5b2b1fb66100f763ebe4bb1ab4a68e5a89e64",
+      "decision": {
+        "decision": "unchanged_no_new_candidate",
+        "current_review_reason": "整数点・線分をdistanceへ渡し固定12桁出力。正規化前の端点判定案は旧Clang interior13%回帰。汎用浮動精度と端点連続性を崩さない現経路を維持。",
+        "historical_candidate_decisions": [
+          {
+            "record": "Audit/optimization-fable-batch-09-2026-11-13.json",
+            "decision": "reject",
+            "candidate_reason": "整数経路では射影の符号は正規化前のd=b-aとの内積で判定できるため、端点ケースで長さのsqrtと除算2回を省ける。内部ケースはabs(cross(offset,d))/lengthで除算が1回減る。端点距離は同じconstexpr条件下で二乗和がオーバーフローしないので、hypotを直接sqrtに置換できる。既存測定でendpoint 8.88msに対しinterior 5.50msなので端点経路に余地があるとみるが未測定。結果は最終ビットが変わり得て、垂線の足が端点にごく近い入力では分岐が入れ替わり得る（距離は連続なので誤差範囲内）。浮動小数点経路は現行のスケール付きnormalizedのまま。",
+            "decision_reason": "端点で大きく速くなるがClang interiorでは21回交互で約13%回帰。16構成598272 checks、full/split main8構成600照合は全通過しても全域非回帰条件を満たさない。"
+          }
+        ]
+      },
+      "compiler": {
+        "path": "/usr/bin/g++",
+        "version": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0"
+      },
+      "flags_and_gcc_pragmas": [],
+      "timing_definition": "child process CPU time and wall time. Full process includes startup, main, I/O, library and teardown. Input generation/hash/reference checks excluded. No body-only speed claim.",
+      "same_source_control": true,
+      "measurement_record_sha256": "b0588244622c43e13e0240049bc32648d35ad2148639b8c4bd941041d4384c31",
+      "official_sample_count": 3,
+      "profiles": [
+        {
+          "profile": "fixed-official-0",
+          "input_sha256": "333ccaec6a0b96fb9a8090b34cb135b07cc208b8de83c9502c6728480f3387d9",
+          "validation": "independent_expected_and_baseline_output",
+          "expected_output_sha256": "3e31e91ee43dcde9edce292cba7a7550187185fd2626955793e3011002ee6255",
+          "median_cpu_seconds": {
+            "baseline": 0.0008040000000040237,
+            "current": 0.000804000000000471
+          },
+          "measured_trials": 5,
+          "current_over_baseline": 0.9999999999955812,
+          "ratio_is_speedup_claim": false
+        },
+        {
+          "profile": "fixed-official-1",
+          "input_sha256": "63aadbfd79d4514b81e89aaa8861ff66aff4295b1b2e35ef3aaeec6f5eab469a",
+          "validation": "independent_expected_and_baseline_output",
+          "expected_output_sha256": "6c26f3d6c540a675a01221e1c6214a8c80d791b8ccc7f836487091945980aead",
+          "median_cpu_seconds": {
+            "baseline": 0.000800000000000356,
+            "current": 0.0007829999999988679
+          },
+          "measured_trials": 5,
+          "current_over_baseline": 0.9787499999981494,
+          "ratio_is_speedup_claim": false
+        },
+        {
+          "profile": "fixed-official-2",
+          "input_sha256": "918cd9d1f6745654a28cc3c0a7ed660f9aa5d047cf8d771856d2953aa9dfe2fd",
+          "validation": "independent_expected_and_baseline_output",
+          "expected_output_sha256": "c0c1a339369b30c9ed73ea158712ede692584ae6d54b6aed7026682419aba6d9",
+          "median_cpu_seconds": {
+            "baseline": 0.0007970000000034894,
+            "current": 0.0007919999999983496
+          },
+          "measured_trials": 5,
+          "current_over_baseline": 0.9937264742721231,
+          "ratio_is_speedup_claim": false
+        }
+      ]
+    },
+    {
+      "id": "geometry_segment_intersection_atcoder_split",
+      "source_sha256": "254a81ed67604c4d1531ab57c3234762bbe933d89698b630b75b9e654ec3fea5",
+      "input_source_sha256": "254a81ed67604c4d1531ab57c3234762bbe933d89698b630b75b9e654ec3fea5",
+      "decision": {
+        "decision": "unchanged_no_new_candidate",
+        "current_review_reason": "PointI線分2本のintersectsを1回呼ぶ。共線/端点/重なる区間の境界とint128又は標準代替の正確判定を維持。",
+        "historical_candidate_decisions": []
+      },
+      "compiler": {
+        "path": "/usr/bin/g++",
+        "version": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0"
+      },
+      "flags_and_gcc_pragmas": [],
+      "timing_definition": "child process CPU time and wall time. Full process includes startup, main, I/O, library and teardown. Input generation/hash/reference checks excluded. No body-only speed claim.",
+      "same_source_control": true,
+      "measurement_record_sha256": "e1f55d99907bb09cd86593461f9d719baf07f53f4bbbaa934f551d56e6881a77",
+      "official_sample_count": 5,
+      "profiles": [
+        {
+          "profile": "fixed-official-0",
+          "input_sha256": "4845094330145c7b315ff4b51b02689bf7f6a4b66154eb0f3864d289e6185eba",
+          "validation": "independent_expected_and_baseline_output",
+          "expected_output_sha256": "927580bf287560d4a26a5d6e129f91ffa9cb63031b1a8c772be6ec584e65e82b",
+          "median_cpu_seconds": {
+            "baseline": 0.0007940000000008496,
+            "current": 0.0007760000000001099
+          },
+          "measured_trials": 5,
+          "current_over_baseline": 0.9773299748101758,
+          "ratio_is_speedup_claim": false
+        },
+        {
+          "profile": "fixed-official-1",
+          "input_sha256": "1b366a3f0c5b77f61310dcb9144c43787d845c04d24f086287329d57925640ab",
+          "validation": "independent_expected_and_baseline_output",
+          "expected_output_sha256": "927580bf287560d4a26a5d6e129f91ffa9cb63031b1a8c772be6ec584e65e82b",
+          "median_cpu_seconds": {
+            "baseline": 0.0007789999999960884,
+            "current": 0.0007750000000026347
+          },
+          "measured_trials": 5,
+          "current_over_baseline": 0.9948652118183905,
+          "ratio_is_speedup_claim": false
+        },
+        {
+          "profile": "fixed-official-2",
+          "input_sha256": "0ded0ba56f4defcbabba3cca22c24f442f344b5b32b988dba7e5e48768a299df",
+          "validation": "independent_expected_and_baseline_output",
+          "expected_output_sha256": "31375587f8bedb1f33f6eca3d8cee94ab70845a6dd1a7c7eeb929f4aa7dc10ab",
+          "median_cpu_seconds": {
+            "baseline": 0.0007919999999987937,
+            "current": 0.0007659999999987122
+          },
+          "measured_trials": 5,
+          "current_over_baseline": 0.9671717171715642,
+          "ratio_is_speedup_claim": false
+        },
+        {
+          "profile": "fixed-official-3",
+          "input_sha256": "37db1df90be9be126dec19c66c3305c407eaba02d4bbc4591fe040d8c804c1a1",
+          "validation": "independent_expected_and_baseline_output",
+          "expected_output_sha256": "927580bf287560d4a26a5d6e129f91ffa9cb63031b1a8c772be6ec584e65e82b",
+          "median_cpu_seconds": {
+            "baseline": 0.000924999999996956,
+            "current": 0.0008719999999993178
+          },
+          "measured_trials": 5,
+          "current_over_baseline": 0.9427027027050674,
+          "ratio_is_speedup_claim": false
+        },
+        {
+          "profile": "fixed-official-4",
+          "input_sha256": "21ea74223914a6d6de48a09cb842f421341fb370cddaf7c5394f43a8bc2841bc",
+          "validation": "independent_expected_and_baseline_output",
+          "expected_output_sha256": "31375587f8bedb1f33f6eca3d8cee94ab70845a6dd1a7c7eeb929f4aa7dc10ab",
+          "median_cpu_seconds": {
+            "baseline": 0.0007669999999997401,
+            "current": 0.0007669999999997401
+          },
+          "measured_trials": 5,
+          "current_over_baseline": 1.0,
+          "ratio_is_speedup_claim": false
+        }
+      ]
+    },
+    {
+      "id": "primality",
+      "source_sha256": "d099d506558b95da3d3618b85a9ac86d0aeeb7a624078ef352343349f488d76d",
+      "input_source_sha256": "d099d506558b95da3d3618b85a9ac86d0aeeb7a624078ef352343349f488d76d",
+      "decision": {
+        "decision": "unchanged_no_new_candidate",
+        "current_review_reason": "uint64の決定的な判定APIを直接呼び、Montgomery/小数経路と標準乗算fallbackを保つ。Fermatだけへの置換や判定base削減は合法入力全体の正しさを失う。",
+        "historical_candidate_decisions": []
+      },
+      "compiler": {
+        "path": "/usr/bin/g++",
+        "version": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0"
+      },
+      "flags_and_gcc_pragmas": [],
+      "timing_definition": "child process CPU time and wall time. Full process includes startup, main, I/O, library and teardown. Input generation/hash/reference checks excluded. No body-only speed claim.",
+      "same_source_control": true,
+      "measurement_record_sha256": "5dd8357defe6851b8f82827303e91af816ac9371b92d91e5a4ecd9d9fe7ba7fa",
+      "official_sample_count": 1,
+      "profiles": [
+        {
+          "profile": "random",
+          "input_sha256": "48012c64be21897802a9abcfbbebc8f055c34c27e038b7b20c767b5e3e801746",
+          "validation": "baseline_output_equality_only",
+          "expected_output_sha256": "2fcadeb2fbe50346b53d5f96475684b000b3de9cd952a31545cd5a83eb43695a",
+          "median_cpu_seconds": {
+            "baseline": 0.012006000000002182,
+            "current": 0.012045999999998891
+          },
+          "measured_trials": 5,
+          "current_over_baseline": 1.003331667499309,
+          "ratio_is_speedup_claim": false
+        },
+        {
+          "profile": "even",
+          "input_sha256": "c89967be8ed29fa7b0d016821de1e527e415d81a49121fa99b5219a37fe8e175",
+          "validation": "baseline_output_equality_only",
+          "expected_output_sha256": "65ef8393a161495bfef12dc6b481bacd00e7bdbede837da3cffb12da9f933dab",
+          "median_cpu_seconds": {
+            "baseline": 0.003166000000008218,
+            "current": 0.0032210000000016947
+          },
+          "measured_trials": 5,
+          "current_over_baseline": 1.017372078330175,
+          "ratio_is_speedup_claim": false
+        }
+      ]
+    },
+    {
+      "id": "spfa",
+      "source_sha256": "ce4f8b1a8ec1acc3fe7dfff5b414987e1d001bcd6e83adcae151a968cc3d1d7d",
+      "input_source_sha256": "ce4f8b1a8ec1acc3fe7dfff5b414987e1d001bcd6e83adcae151a968cc3d1d7d",
+      "decision": {
+        "decision": "retain pending Fable independent review",
+        "notes": [
+          {
+            "family": "Other graph",
+            "ids": [
+              "project_selection",
+              "floyd_warshall",
+              "bellman_ford",
+              "spfa",
+              "two_sat",
+              "low_link_two_edge",
+              "low_link_biconnected"
+            ],
+            "decision": "No new source edit proposed by this read-only reviewer; fresh constraints-valid benchmark inputs supplied.",
+            "basis": [
+              "Audit/optimization-codex-graph-2026-11-13.json"
+            ],
+            "details": "Read driver/input contracts. Do not attribute main-only input/output savings to body performance, and preserve independent correctness and API checks."
+          }
+        ]
+      },
+      "compiler": {
+        "path": "/usr/bin/g++",
+        "version": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0"
+      },
+      "flags_and_gcc_pragmas": [],
+      "timing_definition": "child process CPU time and wall time. Full process includes startup, main, I/O, library and teardown. Input generation/hash/reference checks excluded. No body-only speed claim.",
+      "same_source_control": true,
+      "measurement_record_sha256": "016ad585cef75c356f722cc8b4a1afe4377b0eeb4ada5831bcad2f05ab146478",
+      "official_sample_count": 3,
+      "profiles": [
+        {
+          "profile": "dag_profit",
+          "input_sha256": "072dc93c8bc2218cf52e4b26467bad32bac9b35305a7742c3277c643e25644e1",
+          "validation": "independent_expected_and_baseline_output",
+          "expected_output_sha256": "587ef1170962927cca95d4e16f0045383781150d7c5666db3209c22718a09958",
+          "median_cpu_seconds": {
+            "baseline": 0.0019689999999989993,
+            "current": 0.0020219999999957494
+          },
+          "measured_trials": 5,
+          "current_over_baseline": 1.026917216859714,
+          "ratio_is_speedup_claim": false
+        },
+        {
+          "profile": "profitable_cycle",
+          "input_sha256": "5745a642fadf21e3e1e9f37c993cd8ea8a038f54febdcdac88b0d43abe24e4f3",
+          "validation": "independent_expected_and_baseline_output",
+          "expected_output_sha256": "ee3aa64bb94a50845d5024cd4bd20202a4567aed5cd5328c0d97e9920775fc28",
+          "median_cpu_seconds": {
+            "baseline": 0.002037999999997986,
+            "current": 0.002033999999999203
+          },
+          "measured_trials": 5,
+          "current_over_baseline": 0.9980372914628132,
+          "ratio_is_speedup_claim": false
+        }
+      ]
+    },
+    {
+      "id": "trie_dictionary",
+      "source_sha256": "5748ca962f4a0694dff1060f814dcbf98b4be62bd0a6e8fce76bb42b28156654",
+      "input_source_sha256": "5748ca962f4a0694dff1060f814dcbf98b4be62bd0a6e8fce76bb42b28156654",
+      "decision": {
+        "decision": "unchanged_no_new_candidate",
+        "current_review_reason": "contains→insertを保つ。insert一発化は旧重複列で20〜30%回帰、全n*10予約も短語/重複でClang回帰。distinct意味と一般バイトTrieの所有を変えない。",
+        "historical_candidate_decisions": [
+          {
+            "record": "Audit/optimization-fable-batch-11-2026-11-13.json",
+            "decision": "reject",
+            "candidate_reason": "nodes_(1ノード40byte)が倍々で再確保され、最悪約2e6ノードで累計約80MBのコピーと新領域のページフォルトが起きる。mainで問題制約(|S|≤10)の上限をreserveすれば再確保が消える(未測定)。reserve_nodesはnodes_.reserveのみで未使用ページには触れない。本体は無変更で、却下済みのinsert一発化とは別の案。",
+            "decision_reason": "reserveは相異10文字で36〜39%短縮/RSS約45MiB減だが、Clang重複/短語の21回再確認で約3.85%/1.66%回帰し非回帰条件を満たさない。AtCoder取得不能でオンライン効果を主張しない。Trie/driverは維持。"
+          }
+        ]
+      },
+      "compiler": {
+        "path": "/usr/bin/g++",
+        "version": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0"
+      },
+      "flags_and_gcc_pragmas": [],
+      "timing_definition": "child process CPU time and wall time. Full process includes startup, main, I/O, library and teardown. Input generation/hash/reference checks excluded. No body-only speed claim.",
+      "same_source_control": true,
+      "measurement_record_sha256": "8358c850b3cb9c1236d983e2217253909e3fabea615ce35994d3ceb0502bec22",
+      "official_sample_count": 3,
+      "profiles": [
+        {
+          "profile": "random",
+          "input_sha256": "f1bbb60911f47bd04b7823a1cee54d87f712a8808f03f5fd3e4c558bde0e7f92",
+          "validation": "baseline_output_equality_only",
+          "expected_output_sha256": "1b93aa0d541b012739dea12b0e24db25f2ba4b74599186d8ebf32fe1dba84f0b",
+          "median_cpu_seconds": {
+            "baseline": 0.06387299999999385,
+            "current": 0.06473900000000299
+          },
+          "measured_trials": 5,
+          "current_over_baseline": 1.0135581544629064,
+          "ratio_is_speedup_claim": false
+        },
+        {
+          "profile": "equal",
+          "input_sha256": "c9c4b0d0c050d68db5fd7a420fbf6a4333740d46739bde41082a0e6261285251",
+          "validation": "baseline_output_equality_only",
+          "expected_output_sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+          "median_cpu_seconds": {
+            "baseline": 0.002559000000000644,
+            "current": 0.0025539999999972807
+          },
+          "measured_trials": 5,
+          "current_over_baseline": 0.9980461117610934,
+          "ratio_is_speedup_claim": false
+        }
+      ]
+    }
+  ],
+  "source_hashes": {
+    "Geometry/Circle.cpp": "41923965ac28ae501cb716ede6382bf6d438b7ac71cd8faa2ef33aaf61a4d0d5",
+    "Geometry/Line_Segment.cpp": "ac9f54cf55e9e0f0722deddb18eb7a75fd646683001b16f0b0c751995654e81b",
+    "Graph/Bellman-Ford_SFPA.cpp": "9c84180ee4eb762d7fc41c55b22c3321905bf00c190fb90c7bfccf334d999732",
+    "Graph/Floyd-Warshall.cpp": "54cddf444ee6fba013aea34144d7b0f9bcee3595a6cc9fdf0293c12da87f703e",
+    "Math/prime_judge(Miller-Rabin).cpp": "e17080d520b84fc195a397ae04b198c731673f308236b1a28d26194cc96a18bd",
+    "String/Trie.cpp": "5a98d6239d7851d49e7830b6ee98b4124759c5565f79326b4bce8184af8e48c8",
+    "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab",
+    "Verify/current/drivers/floyd_warshall_bus_main.cpp": "cf18621dc3d12c52cc0aba1dcf1cdde65d2f829d90fc4e1ac9131ffe277fea1a",
+    "Verify/current/drivers/geometry_circle_relation_main.cpp": "d314840d37aba4e959ba4944f9b45f350bee6e0623788e3ba84b92ad50e550c0",
+    "Verify/current/drivers/geometry_point_segment_distance_main.cpp": "3f161ca3ff1009108dfce6c25fe72b2d7947266289600334684daa13ca1ae3cb",
+    "Verify/current/drivers/geometry_segment_intersection_atcoder_main.cpp": "f1ee5b5b95dcaf09a2c912b8a62b11c3136245d26cfef3805166cce06b57a179",
+    "Verify/current/drivers/primality_main.cpp": "cab22e68d5607277a3283b130e05f199f62facbc3fdc09d951c041dac3db8ede",
+    "Verify/current/drivers/spfa_coins_respawn_main.cpp": "06ec04d9119f5ae2030f98528257ec6538476ec202a12dd8f843f3ef9483c95c",
+    "Verify/current/drivers/trie_gacha_main.cpp": "5fc9518bc1e13a41cb0f4e3ea45878df17cf5ea569d5cd0b168d7495356415b7",
+    "Verify/current/submissions/floyd_warshall.cpp": "5a219d31d0ab87511df8a7907e4417203e260ac149a0d9ec5af5a62ed37bbe2a",
+    "Verify/current/submissions/geometry_circle_relation_split.cpp": "483c97230ccc0fd69780981c87ff208e07352a83806ffe3045fdc759fee08c9d",
+    "Verify/current/submissions/geometry_point_segment_distance_split.cpp": "2fdfc744d161b30e2b4c40de73b5b2b1fb66100f763ebe4bb1ab4a68e5a89e64",
+    "Verify/current/submissions/geometry_segment_intersection_atcoder_split.cpp": "254a81ed67604c4d1531ab57c3234762bbe933d89698b630b75b9e654ec3fea5",
+    "Verify/current/submissions/primality.cpp": "d099d506558b95da3d3618b85a9ac86d0aeeb7a624078ef352343349f488d76d",
+    "Verify/current/submissions/spfa.cpp": "ce4f8b1a8ec1acc3fe7dfff5b414987e1d001bcd6e83adcae151a968cc3d1d7d",
+    "Verify/current/submissions/trie_dictionary.cpp": "5748ca962f4a0694dff1060f814dcbf98b4be62bd0a6e8fce76bb42b28156654"
+  },
+  "measurement_tools": "/tmp/sirkit-premerge-optimization-20261114/measurements",
+  "commit_or_push": false,
+  "online_status": "not_evaluated"
+}

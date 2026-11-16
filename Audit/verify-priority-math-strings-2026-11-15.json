@@ -1,0 +1,187 @@
+{
+  "format": 1,
+  "date": "2026-11-15",
+  "scope": "旧AtCoder8件をLC/AOJ/yukicoderの7提出へ移行。旧entry/判定を参考として維持し、オンラインACは未取得。",
+  "source_sha256": {
+    "Verify/current/drivers/preferred_next_combination_enumeration_main.cpp": "c9b1818ec4e80a196775dfbcf5d08a9ff18a78bc76ca1308c090628c98579fcf",
+    "Verify/current/drivers/preferred_trie_dictionary_main.cpp": "9a243dc927dd1510176d8aef132de9c9200a27ec2b2213b5ae61d627b154a67b",
+    "Verify/current/drivers/preferred_matrix_rotate_grid_main.cpp": "889d31a480bebc344cbaa4b2d6ea4bfd8f2ec205a8c2abf07a214cac39c54470",
+    "Math/Zeta/Sieve.cpp": "dee1a44ed7c1d0386bf89be509ee015321b438d74a4431accb82b8b63ef5a3c1",
+    "String/Trie.cpp": "5a98d6239d7851d49e7830b6ee98b4124759c5565f79326b4bce8184af8e48c8",
+    "Math/Fraction.cpp": "bd8937304f1b8eb555fff33da9e159874113199dfb80b88a4f64c37ed76814af",
+    "Algorithm/next_combination.cpp": "009ef56f571de5d0f5439c880cf68d3e479b15071386f72f5ba5e11534ee6b4a",
+    "Verify/current/groups/preferred_math_strings_20261115.json": "839ffa24780f879b5e71ca4a13fd377e31d2c69a27b2364910ad14532a5788da",
+    "Verify/current/drivers/preferred_matrix_rotate_integer_main.cpp": "a7e5f2df1398348ff88583763b823670c9e5def579bc58c42f90ebbe52924b68",
+    "Verify/current/drivers/preferred_fraction_rational_approximation_main.cpp": "cab5258cc0bf8b104756bc99d83cda14eedf0c00d695f4ef7febabdea3c397cb",
+    "Math/Zeta_Mebius.cpp": "9555793c1661f1328a73447831ca4738d548dbd9cf878366df6302b5b433e70b",
+    "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab",
+    "Verify/current/drivers/preferred_sieve_factorize_main.cpp": "1cd0efd4743b53b51fabea9787b9dbf2573fee316e8aceca11e621671fabe684",
+    "Algorithm/rotate.cpp": "b7614f2c46ca58687afac6cb907dfb46feb945f6c70e7ae2a12e18c1944e0bc5"
+  },
+  "mapping": [
+    {
+      "old_id": "fraction_sort",
+      "new_id": "preferred_fraction_rational_approximation",
+      "problem_url": "https://judge.yosupo.jp/problem/rational_approximation",
+      "reason": "LCの分数近似をFractionの比較と四則で解く。旧sort/arithmetic2件を同一の自然な検証へ集約。",
+      "coverage": "Fraction構築・約分・比較・加減乗除・単項負・floor・分子分母取得",
+      "limitations": "オンライン未提出。N,x,y<=1e9の正値。途中のギャップ分子は1e18以下、比もint64_tに収まる。負入力・整数端・文字列I/O・全丸めAPIと所有権等は既存ローカル試験で補足。移動回数O(log N)、各Fraction四則のgcd費用を別に含む。",
+      "action": "add_preferred_entry_preserve_old"
+    },
+    {
+      "old_id": "fraction_arithmetic",
+      "new_id": "preferred_fraction_rational_approximation",
+      "problem_url": "https://judge.yosupo.jp/problem/rational_approximation",
+      "reason": "LCの分数近似をFractionの比較と四則で解く。旧sort/arithmetic2件を同一の自然な検証へ集約。",
+      "coverage": "Fraction構築・約分・比較・加減乗除・単項負・floor・分子分母取得",
+      "limitations": "オンライン未提出。N,x,y<=1e9の正値。途中のギャップ分子は1e18以下、比もint64_tに収まる。負入力・整数端・文字列I/O・全丸めAPIと所有権等は既存ローカル試験で補足。移動回数O(log N)、各Fraction四則のgcd費用を別に含む。",
+      "action": "add_preferred_entry_preserve_old"
+    },
+    {
+      "old_id": "next_combination",
+      "new_id": "preferred_next_combination_enumeration",
+      "problem_url": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=ITP2_11_D&lang=en",
+      "reason": "LC公式catalogに固定個数の組合せ列挙問題が見つからず、AOJの直接問題を優先。",
+      "coverage": "for_each_combination/first_combination/next_combination・昇順列挙",
+      "limitations": "オンライン未提出。1<=n<=18,0<=k<=n。64bit端・不正入力・補助APIはローカル補足。",
+      "action": "add_preferred_entry_preserve_old"
+    },
+    {
+      "old_id": "trie_dictionary",
+      "new_id": "preferred_trie_dictionary",
+      "problem_url": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=ALDS1_4_C&lang=en",
+      "reason": "LCに汎用文字列辞書の直接問題が見つからずAOJ標準辞書を採用。",
+      "coverage": "Trie.insert/contains/clear、重複・接頭辞の異なる語",
+      "limitations": "オンライン未提出。DNA4文字・長さ12・命令1e6。128MiB内に収めるため先頭6文字で分割、群内の命令順と全find出力順を保ち、末尾6文字以下をTrieで処理。1群の異なる末尾は最大5461通り、保持ノードも5461以下。O(Q)の命令保存を使う。全バイト・長語・順序統計・削除は既存ローカル補足。",
+      "action": "add_preferred_entry_preserve_old"
+    },
+    {
+      "old_id": "matrix_rotate",
+      "new_id": "preferred_matrix_rotate_integer",
+      "problem_url": "https://yukicoder.me/problems/no/565",
+      "reason": "LC公式catalogに2次元配列の回転問題がなく、AOJの1次元RotateはAPI不一致。公式の行列回転・拡大問題があるyukicoderを採用。",
+      "coverage": "rotate_90r/rotate_180/rotate_90l vector<vector<int>>",
+      "limitations": "オンライン未提出。H,W<=10,scale<=10の矩形、文字は./#。integer版は画素をintで保持する。大きい整数・幅0・空・inplace等は既存ローカル補足。",
+      "action": "add_preferred_entry_preserve_old"
+    },
+    {
+      "old_id": "matrix_rotate_grid",
+      "new_id": "preferred_matrix_rotate_grid",
+      "problem_url": "https://yukicoder.me/problems/no/565",
+      "reason": "LC公式catalogに2次元配列の回転問題がなく、AOJの1次元RotateはAPI不一致。公式の行列回転・拡大問題があるyukicoderを採用。",
+      "coverage": "rotate_90r/rotate_180/rotate_90l vector<string>",
+      "limitations": "オンライン未提出。H,W<=10,scale<=10の矩形、文字は./#。integer版は画素をintで保持する。大きい整数・幅0・空・inplace等は既存ローカル補足。",
+      "action": "add_preferred_entry_preserve_old"
+    },
+    {
+      "old_id": "zeta_sieve_factorize_full",
+      "new_id": "preferred_sieve_factorize_full",
+      "problem_url": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=NTL_1_A&lang=en",
+      "reason": "LC Factorizeのn<=1e18はsqrt表が最大1e9必要となりSieveの前提・領域に不適合。次優先のAOJ NTL_1_Aはn<=1e9で表上限31623まで。",
+      "coverage": "IntegerSieve構築・prime_factorizationの素因子と指数",
+      "limitations": "オンライン未提出。2<=n<=1e9。旧AtCoder DivGameは1e12までの補足として残す。その他のSieve API・大きな寸法・例外はローカル補足。",
+      "action": "add_preferred_entry_preserve_old"
+    },
+    {
+      "old_id": "zeta_sieve_factorize_split",
+      "new_id": "preferred_sieve_factorize_split",
+      "problem_url": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=NTL_1_A&lang=en",
+      "reason": "LC Factorizeのn<=1e18はsqrt表が最大1e9必要となりSieveの前提・領域に不適合。次優先のAOJ NTL_1_Aはn<=1e9で表上限31623まで。",
+      "coverage": "IntegerSieve構築・prime_factorizationの素因子と指数",
+      "limitations": "オンライン未提出。2<=n<=1e9。旧AtCoder DivGameは1e12までの補足として残す。その他のSieve API・大きな寸法・例外はローカル補足。",
+      "action": "add_preferred_entry_preserve_old"
+    }
+  ],
+  "validation": {
+    "status": "PASS",
+    "builds": 56,
+    "program_executions": 4544,
+    "compilers": [
+      "GCC15.2",
+      "Clang21"
+    ],
+    "modes": [
+      "checked/skip",
+      "native/standard-int128-disabled/SIMD-disabled"
+    ],
+    "independent_oracles": [
+      "Fraction.limit_denominator+Farey隣接；小9375例は全分母列挙と参照自体を照合",
+      "Python itertools.combinations→bitmask昇順",
+      "Python setによる完全語辞書",
+      "元座標から出力座標への独立写像",
+      "整数試し割り"
+    ],
+    "fraction_dataset_queries_per_build": 11402,
+    "maximum": [
+      {
+        "case": "distinct-inserts",
+        "standard": false,
+        "source_sha256": "d440995acb1e6f7cd4e2ada765255495763a0da46fb8acac8de2cb323886e948",
+        "input_sha256": "9197484a9b683811a8e5cea2797fa2936b253ed4af22948d933d99028b47b585",
+        "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "seconds": 0.12,
+        "peak_rss_kib": 20668,
+        "status": "PASS"
+      },
+      {
+        "case": "distinct-inserts",
+        "standard": true,
+        "source_sha256": "d440995acb1e6f7cd4e2ada765255495763a0da46fb8acac8de2cb323886e948",
+        "input_sha256": "9197484a9b683811a8e5cea2797fa2936b253ed4af22948d933d99028b47b585",
+        "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "seconds": 0.14,
+        "peak_rss_kib": 20668,
+        "status": "PASS"
+      },
+      {
+        "case": "interleaved-queries",
+        "standard": false,
+        "source_sha256": "d440995acb1e6f7cd4e2ada765255495763a0da46fb8acac8de2cb323886e948",
+        "input_sha256": "99b0d47a952a09ecbca0a265209ec4f197626ddc3141d5a7646374d37417b24f",
+        "output_sha256": "18fbb2e4d294c50e2f3be838a10eb08ee00276d27f02f8acd1200395fbed68f8",
+        "seconds": 0.1,
+        "peak_rss_kib": 20692,
+        "status": "PASS"
+      },
+      {
+        "case": "interleaved-queries",
+        "standard": true,
+        "source_sha256": "d440995acb1e6f7cd4e2ada765255495763a0da46fb8acac8de2cb323886e948",
+        "input_sha256": "99b0d47a952a09ecbca0a265209ec4f197626ddc3141d5a7646374d37417b24f",
+        "output_sha256": "18fbb2e4d294c50e2f3be838a10eb08ee00276d27f02f8acd1200395fbed68f8",
+        "seconds": 0.1,
+        "peak_rss_kib": 20676,
+        "status": "PASS"
+      },
+      {
+        "case": "fibonacci-100000",
+        "standard": false,
+        "source_sha256": "8e8e3c34840a105e8003e744b0a72fe0bf499cd0027c89df22a93beaf68059ad",
+        "input_sha256": "87611e15df5a7d24bb582c6d6766a4964ed817261c45c11c1cb56850b2c04a5f",
+        "output_sha256": "efdad502dd1366347fd0631cda3dbf95a4aa88aa25a04560257a00c8a8d11209",
+        "seconds": 0.5,
+        "peak_rss_kib": 4112,
+        "status": "PASS"
+      },
+      {
+        "case": "fibonacci-100000",
+        "standard": true,
+        "source_sha256": "8e8e3c34840a105e8003e744b0a72fe0bf499cd0027c89df22a93beaf68059ad",
+        "input_sha256": "87611e15df5a7d24bb582c6d6766a4964ed817261c45c11c1cb56850b2c04a5f",
+        "output_sha256": "efdad502dd1366347fd0631cda3dbf95a4aa88aa25a04560257a00c8a8d11209",
+        "seconds": 0.6,
+        "peak_rss_kib": 4112,
+        "status": "PASS"
+      }
+    ]
+  },
+  "trie_memory_reason": "AOJ128MiBに合わせ、DNA先頭6文字と末尾6文字以下へオフライン分割。群内順序と全find出力順を保持。Trie insert/containsが各答えを決定し、群ごとclear。1群5461ノード以下。ライブラリ本体は変更しない。",
+  "benchmark_limitations": "ローカルGCC15.2 -O2、CPU25固定、各1回。オンラインの時間・メモリ保証やFastest達成を意味しない。",
+  "claude": "本タスクはVerify先移行。新規mainのFable最適化完了を主張しない。",
+  "evidence": {
+    "path": "Audit/data/verify-priority-math-strings-20261115.zip",
+    "sha256": "bd5f14d55a4cbd832a64fbb7e566bf05abcfe011b27deebecebef119ddc8ee3a",
+    "tracking": "ignored local only"
+  },
+  "disposition": "探索時のAOJ候補を含む試験記録。利用者が優先順をLC→yuki→AtCoder→AOJへ変更したため、最終採用・現在版の証拠はverify-priority-math-strings-final-2026-11-15.jsonを参照。"
+}

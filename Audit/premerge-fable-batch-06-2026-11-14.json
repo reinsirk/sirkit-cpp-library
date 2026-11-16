@@ -1,0 +1,100 @@
+{
+  "format": 1,
+  "date": "2026-11-14",
+  "stage": "claude",
+  "model": "claude-fable-5-2",
+  "actual_models": [
+    "claude-fable-5-2"
+  ],
+  "effort": "low",
+  "completed_utc": "2026-11-14T11:15:42.414559+00:00",
+  "source_hashes": {
+    "Algorithm/next_combination.cpp": "009ef56f571de5d0f5439c880cf68d3e479b15071386f72f5ba5e11534ee6b4a",
+    "DataStructure/line-container-2d.cpp": "282afcadeb89816149aa7d6ae3539b5a4f99f23125115720b757595ca9f4f191",
+    "Math/Combination/Prime_Binomial.cpp": "5f6290f830768ade9a89ea8ee08a7852351d83d6e545a3b2bc73e8701990a03a",
+    "Math/NTT.cpp": "d6929010dc1813296e1970df3bd12c86f2d3605b9da29e8ea46801d2a687a9dd",
+    "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab",
+    "Verify/current/drivers/binomial_prime_main.cpp": "2a371ae6a2de238788da8e1d1b0cffddd93e58205382b512338bfad4fb015a05",
+    "Verify/current/drivers/line_container_2d_min_main.cpp": "e55ca503138c4d7e8fcd35a6ece8d5022996aa085ca10b9c7dd2f698b3ff988a",
+    "Verify/current/drivers/next_combination_main.cpp": "4d155206c67fe88a61cbf6d784a5f1f92c44a02a313542ed3299c9dab381ce3f",
+    "Verify/current/drivers/ntt_convolution_main.cpp": "b6596362ba09f80f9f66c88d4fc95301b58bb42c28e82ad3afb0ca1a798dceff",
+    "Verify/current/vendor/atcoder/internal_math.hpp": "487416d11ce878d7785559a02c84f094529e39fa5cc593d4c45e91fc7da53f56",
+    "Verify/current/vendor/atcoder/internal_type_traits.hpp": "52c1c0d56535043c2b8f2f776d534fd8e931cf92a511d697fb56649cd4935000",
+    "Verify/current/vendor/atcoder/modint.hpp": "aef131053e67300be6def657f1ef1eb1c80ef2c92ffc8220d7be0cccab583318",
+    "Verify/current/submissions/binomial_prime_split.cpp": "7fb647e02b96936f4a6f83d8c78324d4606b30b66608d8a1d6ec7feca4455dcd",
+    "Verify/current/submissions/line_container_2d_min.cpp": "b90e98e6ff5c3e6f9d7fe67bedc51a4a0a6a1039e15a40539cfb37e877dcc723",
+    "Verify/current/submissions/next_combination.cpp": "17d0147524f143e625ff22549437f9835060f4a2be2566c95404438a9e5ec303",
+    "Verify/current/submissions/ntt_convolution.cpp": "71404e271a450392a70cbfa94d861000f885ded552357c4db6088c43bf6e6f22"
+  },
+  "codex_receipts": {
+    "binomial_prime_split": "Verify/optimization/stages/binomial_prime_split.codex.29b183ad11204b7ebbe6ec743eef8c27aee3ad6f35e272fcd7ebad942ead3ee8.json",
+    "line_container_2d_min": "Verify/optimization/stages/line_container_2d_min.codex.54aebb68affa597e2618802c430e7cee5b6907c3370c98f52ebd58f1d3965693.json",
+    "next_combination": "Verify/optimization/stages/next_combination.codex.08b04491e9ab0f90055ae580f7a99930593edd8eb2b6cd5e5529297d3818b19d.json",
+    "ntt_convolution": "Verify/optimization/stages/ntt_convolution.codex.44e6a62c4e560ccff275a8599ba8cf0678ed7c9b8f53f5d4ce43af5dddf06c89.json"
+  },
+  "review": {
+    "reviews": [
+      {
+        "id": "binomial_prime_split",
+        "source_sha256": "7fb647e02b96936f4a6f83d8c78324d4606b30b66608d8a1d6ec7feca4455dcd",
+        "verdict": "keep",
+        "reason": "4項ずつの階乗・逆階乗漸化式、Wilson経路の符号、未初期化の表拡張、max_n先読みのmainを机上で追って誤りは見当たらず、一括逆元案は記録済みの小入力回帰があるため新候補はありません。"
+      },
+      {
+        "id": "line_container_2d_min",
+        "source_sha256": "b90e98e6ff5c3e6f9d7fe67bedc51a4a0a6a1039e15a40539cfb37e877dcc723",
+        "verdict": "keep",
+        "reason": "min_rounded_ll(x,1)は制約内で積和が2^63未満のためlong doubleで正確に評価でき、x=0のYmin経路も正しく、境界付近の丸め誤差も整数差1未満に収まる見積もりなので、未測定の分岐追加やdouble化は勧めません。"
+      },
+      {
+        "id": "next_combination",
+        "source_sha256": "17d0147524f143e625ff22549437f9835060f4a2be2566c95404438a9e5ec303",
+        "verdict": "keep",
+        "reason": "Gosper更新と終端判定、固定長DSUでの閉路検出、sum%kの64bit範囲は正しく、最大でもC(28,7)通りなので入出力を含めても改善余地は実質ありません。"
+      },
+      {
+        "id": "ntt_convolution",
+        "source_sha256": "71404e271a450392a70cbfa94d861000f885ded552357c4db6088c43bf6e6f22",
+        "verdict": "keep",
+        "reason": "根表の配置、radix-4/2蝶形の遅延簡約範囲[0,2Mod)、ゼロ詰め段の省略条件、逆変換での添字反転と1/n倍による同時デコード、小サイズ素朴経路の境界を机上で追って誤りは見当たらず、resize再確保の回避などは全体時間に対し微小と見込まれるため変更を提案しません。"
+      }
+    ],
+    "experiments": []
+  },
+  "usage_after": {
+    "windows": {
+      "five_hour": {
+        "utilization": 82.0,
+        "resets_at": "2026-11-14T15:40:00.768870+00:00"
+      },
+      "seven_day": {
+        "utilization": 7.0,
+        "resets_at": "2026-11-21T09:00:00.768888+00:00"
+      },
+      "seven_day_breakdown": {}
+    },
+    "extra_usage_enabled": false
+  },
+  "prompt_sha256": "34ef1505badfc9724f1566f9db62180e46bc5c9ec4f360816e7e02d79d9f3d9c",
+  "response_sha256": "503ad4242224ed2ffed6bab9f6c492528f0501803cd621b50fcf983003844475",
+  "model_usage": {
+    "claude-fable-5-2": {
+      "inputTokens": 2,
+      "outputTokens": 7749,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 62186,
+      "webSearchRequests": 0,
+      "costUSD": 1.3049520000000001,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 7020,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 62186,
+      "canonicalModel": "claude-fable-5-2",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "source_representation": "All library/main/I/O/vendor code supplied once per file; only comments removed with full token/literal equality verification.",
+  "review_limitations": "Static review plus supplied measured evidence, not new model-executed measurements. No online submission or AC inference."
+}

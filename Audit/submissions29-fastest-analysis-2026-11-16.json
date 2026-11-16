@@ -1,0 +1,568 @@
+{
+  "schema_version": 1,
+  "date": "2026-11-16",
+  "status": "static_analysis_frozen",
+  "scope": "主要差の説明に限定。全14問題の網羅調査ではない。",
+  "comparison_snapshot_sha256": "ce3435f8dc969a59c054ce6cc064e9b7cbd5b4d22d672cb4db363f25e913831d",
+  "records": [
+    {
+      "problem": "bipartitematching",
+      "classification": "専用matchingと一般maxflowの方式・表現差。",
+      "explanation": "最速はHopcroftKarp名前空間のCSR隣接＋BFSラベル＋再割当queue。現行はsource/sinkとL+R+M本の辺・逆辺を持つmf_graphの残余networkを経由し、容量・reverse番号・DFS frameを扱う。",
+      "complexity": "一般容量maxflowのO(V²E)上界だけから30倍差を説明してはいけない。単位二部networkのDinicと通常Hopcroft–KarpはO(E√V)となり得る。最速の実装はqueue再割当の変種で、厳密な最悪界は今回証明していない。",
+      "verify_api_constraint": "mf_graph内部の表現/単位network処理の改善余地は未測定。直接matchingへ置換するとflow/get_edgeを検証しない。",
+      "evidence": [
+        {
+          "path": "/tmp/sirkit-submissions-29-20261115/fastest-sources/bipartitematching.cpp",
+          "sha256": "c9b9555d1bbe5fb705507646fb6a4833fc030004ef871565af5b7973964f87f7",
+          "line": 74,
+          "observation": "専用matching本体",
+          "anchor_found": true
+        },
+        {
+          "path": "/tmp/sirkit-submissions-29-20261115/fastest-sources/bipartitematching.cpp",
+          "sha256": "c9b9555d1bbe5fb705507646fb6a4833fc030004ef871565af5b7973964f87f7",
+          "line": 120,
+          "observation": "ラベル更新・再割当",
+          "anchor_found": true
+        },
+        {
+          "path": "/home/reinsirk/Atcoder_Env/Verify/current/drivers/preferred_max_flow_bipartite_main.cpp",
+          "sha256": "75d86696a8ad816db4484938aa7cb8d7f97b7d87eb0d53456cb53323ef444e60",
+          "line": 28,
+          "observation": "一般networkへの帰着",
+          "anchor_found": true
+        },
+        {
+          "path": "/home/reinsirk/Atcoder_Env/Graph/Max_Flow.cpp",
+          "sha256": "b1eee30a5d93b695073f33f20b1108558b9d29639364c6c0550ebab2bfa4dbe6",
+          "line": 80,
+          "observation": "明示frameによる残余路処理",
+          "anchor_found": true
+        }
+      ],
+      "comparison": [
+        {
+          "id": "preferred_max_flow_bipartite",
+          "time_ms": 2112.0,
+          "submission_url": "https://judge.yosupo.jp/submission/417351",
+          "fastest_ms": 70.0,
+          "fastest_url": "https://judge.yosupo.jp/submission/396318"
+        }
+      ]
+    },
+    {
+      "problem": "static_range_inversions_query",
+      "classification": "アルゴリズム差：Moではなくoffline sweep。",
+      "explanation": "最速は右端降順の走査と値block384/位置block256、tag・uint16表・cacheで照会する。Fenwickは初期prefixの構築にだけ使う。現行はMoの左右4callbackごとにFenwick prefix/updateを行う。",
+      "complexity": "現行はMoの移動量×O(log N)。NとQが同程度なら概ねO(N^(3/2)log N)。最速の反復部はblockの線形走査で、logを反復ごとに払わない。コードからの上界は初期O(NlogN)に加えO(N(B+N/B)+Q(C+N/B+N/C)+N²/(BC))。一般の厳密な最良界までは未証明。",
+      "verify_api_constraint": "各callbackの頻度集計を軽くする余地はあるが、最速方式へ全面変更するとMo.runの検証を失う。",
+      "evidence": [
+        {
+          "path": "/tmp/sirkit-submissions-29-20261115/fastest-sources/static_range_inversions_query.cpp",
+          "sha256": "c5bd83ed3a8df3d15db91dfcf9cd5b98f09ee712ea47f4152a4dea7971a9ed7f",
+          "line": 4,
+          "observation": "二段block",
+          "anchor_found": true
+        },
+        {
+          "path": "/tmp/sirkit-submissions-29-20261115/fastest-sources/static_range_inversions_query.cpp",
+          "sha256": "c5bd83ed3a8df3d15db91dfcf9cd5b98f09ee712ea47f4152a4dea7971a9ed7f",
+          "line": 184,
+          "observation": "右端降順sweep",
+          "anchor_found": true
+        },
+        {
+          "path": "/tmp/sirkit-submissions-29-20261115/fastest-sources/static_range_inversions_query.cpp",
+          "sha256": "c5bd83ed3a8df3d15db91dfcf9cd5b98f09ee712ea47f4152a4dea7971a9ed7f",
+          "line": 110,
+          "observation": "表/cacheを使う照会",
+          "anchor_found": true
+        },
+        {
+          "path": "/home/reinsirk/Atcoder_Env/Verify/current/drivers/coverage_algorithm_mo_inversions_main.cpp",
+          "sha256": "ab863fe25a8052fb1170274ba1fe4e8592ceeeaef92c8d466d4415390af3ae3a",
+          "line": 26,
+          "observation": "左右4callbackとFenwick集計",
+          "anchor_found": true
+        }
+      ],
+      "comparison": [
+        {
+          "id": "coverage_mo_inversions",
+          "time_ms": 570.0,
+          "submission_url": "https://judge.yosupo.jp/submission/417353",
+          "fastest_ms": 39.0,
+          "fastest_url": "https://judge.yosupo.jp/submission/415486"
+        }
+      ]
+    },
+    {
+      "problem": "predecessor_problem",
+      "classification": "データ構造の差：word並列bitmapと二分木。",
+      "explanation": "最速は64bitの非空wordを上位bitmapへ要約する階層、bit走査、16要素以下のcacheとAVX2 rankを使う。現行はFenwickのprefix+順位探索、Segtreeのmax_right/min_left。",
+      "complexity": "概ねbitmapはO(log_64 N)階層、Fenwick/SegtreeはO(log_2 N)。固定word幅では双方対数だが、階層数・表現・処理量が異なる。",
+      "verify_api_constraint": "bitmapへ全面置換するとFenwick/Segtree境界探索の検証にならない。APIを維持する内部改善は別途実測が必要。",
+      "evidence": [
+        {
+          "path": "/tmp/sirkit-submissions-29-20261115/fastest-sources/predecessor_problem.cpp",
+          "sha256": "59fd15abf763b5a59bb2069e1916e21ccfebbe291d116fb5240690cbce6357d7",
+          "line": 2915,
+          "observation": "階層bitmap",
+          "anchor_found": true
+        },
+        {
+          "path": "/tmp/sirkit-submissions-29-20261115/fastest-sources/predecessor_problem.cpp",
+          "sha256": "59fd15abf763b5a59bb2069e1916e21ccfebbe291d116fb5240690cbce6357d7",
+          "line": 3381,
+          "observation": "同word処理とcache",
+          "anchor_found": true
+        },
+        {
+          "path": "/tmp/sirkit-submissions-29-20261115/fastest-sources/predecessor_problem.cpp",
+          "sha256": "59fd15abf763b5a59bb2069e1916e21ccfebbe291d116fb5240690cbce6357d7",
+          "line": 3465,
+          "observation": "AVX2少数rank",
+          "anchor_found": true
+        },
+        {
+          "path": "/home/reinsirk/Atcoder_Env/Verify/current/drivers/coverage_structure_fenwick_predecessor_main.cpp",
+          "sha256": "5bd636bb78f5392fd1e496b3103cd3a7a280f1177f912017db9a2ec48a152e20",
+          "line": 26,
+          "observation": "prefix+順位探索",
+          "anchor_found": true
+        },
+        {
+          "path": "/home/reinsirk/Atcoder_Env/Verify/current/drivers/coverage_structure_segment_predecessor_main.cpp",
+          "sha256": "e2e405265f84b597f2a80a258eb267526b23fad63aefec740dd41d5e33eb28f3",
+          "line": 29,
+          "observation": "一般境界探索",
+          "anchor_found": true
+        }
+      ],
+      "comparison": [
+        {
+          "id": "coverage_structure_fenwick_predecessor",
+          "time_ms": 286.0,
+          "submission_url": "https://judge.yosupo.jp/submission/417365",
+          "fastest_ms": 16.0,
+          "fastest_url": "https://judge.yosupo.jp/submission/403023"
+        },
+        {
+          "id": "coverage_structure_segment_predecessor",
+          "time_ms": 194.0,
+          "submission_url": "https://judge.yosupo.jp/submission/417366",
+          "fastest_ms": 16.0,
+          "fastest_url": "https://judge.yosupo.jp/submission/403023"
+        }
+      ]
+    },
+    {
+      "problem": "rational_approximation",
+      "classification": "同じバッチ移動だがFraction四則の費用が異なる。",
+      "explanation": "最速も現行もStern–Brocotの連続移動を除算でまとめる。最速は整数の残余a,bと隣接端点を直接更新する。現行は差をFractionで保持し、除算・floor・乗算・加減算を行い、その内部にgcd・交差約分・表現範囲保証がある。",
+      "complexity": "外側は同系統のEuclid型バッチ移動。現行の各操作は汎用Fraction演算で、直接word整数更新と同単価ではない。入力bit長込みの厳密な総計算量は今回未証明。",
+      "verify_api_constraint": "Fraction四則や呼び出し回数の改善は可能性がある。整数だけの最速解への置換ではFractionの比較/四則/丸め検証を失う。",
+      "evidence": [
+        {
+          "path": "/tmp/sirkit-submissions-29-20261115/fastest-sources/rational_approximation.cpp",
+          "sha256": "c6002faca6644b19bee4830b95d411812779a24ab92c965ba950486009badb81",
+          "line": 175,
+          "observation": "整数状態の直接更新",
+          "anchor_found": true
+        },
+        {
+          "path": "/tmp/sirkit-submissions-29-20261115/fastest-sources/rational_approximation.cpp",
+          "sha256": "c6002faca6644b19bee4830b95d411812779a24ab92c965ba950486009badb81",
+          "line": 179,
+          "observation": "連続移動回数",
+          "anchor_found": true
+        },
+        {
+          "path": "/home/reinsirk/Atcoder_Env/Verify/current/drivers/preferred_fraction_rational_approximation_main.cpp",
+          "sha256": "72ca945ae708b2bcdeaba0e1ce8507e72bef5f21d0a889fc456a749b01d414b6",
+          "line": 21,
+          "observation": "Fractionによるバッチ移動",
+          "anchor_found": true
+        },
+        {
+          "path": "/home/reinsirk/Atcoder_Env/Math/Fraction.cpp",
+          "sha256": "bd8937304f1b8eb555fff33da9e159874113199dfb80b88a4f64c37ed76814af",
+          "line": 226,
+          "observation": "除算と交差gcd",
+          "anchor_found": true
+        }
+      ],
+      "comparison": [
+        {
+          "id": "preferred_fraction_rational_approximation",
+          "time_ms": 287.0,
+          "submission_url": "https://judge.yosupo.jp/submission/417350",
+          "fastest_ms": 31.0,
+          "fastest_url": "https://judge.yosupo.jp/submission/412924"
+        }
+      ]
+    },
+    {
+      "problem": "bitwise_and_convolution",
+      "classification": "同じO(K log K)変換、SIMD・配置・融合・I/Oの差。",
+      "explanation": "最速もZeta→積→逆変換。AVX2 8lane・固定法Barrett乗算・行/列のcache分割・skew配置・入力直後の変換・積/逆変換の融合を行う。mmap/hugepage、ELF preinitと_exit等も見える。現行は汎用型の変換API/convolution APIで、OR/subsetから帰着する版もある。",
+      "complexity": "K=2^nの変換は双方O(K log K)。別の低い漸近計算量の畳み込みへ変えた根拠はない。各施策が何ms寄与するかは未測定。",
+      "verify_api_constraint": "convolution内部の型/法別SIMDやcache分割はAPI維持で検討可能。個別変換を検証する版では全体融合をそのまま採用できず、OR/subsetの帰着も残す必要がある。",
+      "evidence": [
+        {
+          "path": "/tmp/sirkit-submissions-29-20261115/fastest-sources/bitwise_and_convolution.cpp",
+          "sha256": "39864a20af00f746c4940087050a689f15f61bad04ecb32aa70fd1bf84ead68d",
+          "line": 1192,
+          "observation": "AVX2",
+          "anchor_found": true
+        },
+        {
+          "path": "/tmp/sirkit-submissions-29-20261115/fastest-sources/bitwise_and_convolution.cpp",
+          "sha256": "39864a20af00f746c4940087050a689f15f61bad04ecb32aa70fd1bf84ead68d",
+          "line": 1314,
+          "observation": "cache分割",
+          "anchor_found": true
+        },
+        {
+          "path": "/tmp/sirkit-submissions-29-20261115/fastest-sources/bitwise_and_convolution.cpp",
+          "sha256": "39864a20af00f746c4940087050a689f15f61bad04ecb32aa70fd1bf84ead68d",
+          "line": 1330,
+          "observation": "固定法乗算",
+          "anchor_found": true
+        },
+        {
+          "path": "/tmp/sirkit-submissions-29-20261115/fastest-sources/bitwise_and_convolution.cpp",
+          "sha256": "39864a20af00f746c4940087050a689f15f61bad04ecb32aa70fd1bf84ead68d",
+          "line": 1401,
+          "observation": "入力と計算の融合",
+          "anchor_found": true
+        },
+        {
+          "path": "/tmp/sirkit-submissions-29-20261115/fastest-sources/bitwise_and_convolution.cpp",
+          "sha256": "39864a20af00f746c4940087050a689f15f61bad04ecb32aa70fd1bf84ead68d",
+          "line": 1432,
+          "observation": "preinitと_exit",
+          "anchor_found": true
+        }
+      ],
+      "comparison": [
+        {
+          "id": "coverage_subset_transform_full",
+          "time_ms": 44.0,
+          "submission_url": "https://judge.yosupo.jp/submission/417354",
+          "fastest_ms": 11.0,
+          "fastest_url": "https://judge.yosupo.jp/submission/409492"
+        },
+        {
+          "id": "coverage_subset_transform_split",
+          "time_ms": 44.0,
+          "submission_url": "https://judge.yosupo.jp/submission/417355",
+          "fastest_ms": 11.0,
+          "fastest_url": "https://judge.yosupo.jp/submission/409492"
+        },
+        {
+          "id": "zeta_and_full",
+          "time_ms": 51.0,
+          "submission_url": "https://judge.yosupo.jp/submission/417370",
+          "fastest_ms": 11.0,
+          "fastest_url": "https://judge.yosupo.jp/submission/409492"
+        },
+        {
+          "id": "zeta_or_as_and_full",
+          "time_ms": 50.0,
+          "submission_url": "https://judge.yosupo.jp/submission/417371",
+          "fastest_ms": 11.0,
+          "fastest_url": "https://judge.yosupo.jp/submission/409492"
+        },
+        {
+          "id": "zeta_set_as_and_full",
+          "time_ms": 58.0,
+          "submission_url": "https://judge.yosupo.jp/submission/417372",
+          "fastest_ms": 11.0,
+          "fastest_url": "https://judge.yosupo.jp/submission/409492"
+        }
+      ]
+    },
+    {
+      "problem": "gcd_convolution",
+      "classification": "同じZeta/Möbius数学、固定上限向けgrouped sweep。",
+      "explanation": "最速は小素数passとrough multiplierの段階別sweepを組み合わせる。a,bのinterleave、固定法SIMD/Montgomery、cache区間処理、入力chunkとの融合がある。現行のdense版は汎用Valの素数passが基本。",
+      "complexity": "現行dense素数passは通常O(N log log N)。最速はN<=10^6に特化した倍率集合のstage分割で、一般Nへ延ばした厳密なOの同値性/優越性は今回未証明。FFT等への方式変更ではない。",
+      "verify_api_constraint": "公開convolution内部の高速経路は検討可能だが未測定。個別変換・疎なキーAPIのVerifyでは全体融合やdense専用への置換はscopeを失う。",
+      "evidence": [
+        {
+          "path": "/tmp/sirkit-submissions-29-20261115/fastest-sources/gcd_convolution.cpp",
+          "sha256": "c4fc75ac5a848159580de512c02ae35928cbb4b168c40ba7bd5ba8e91851b325",
+          "line": 1429,
+          "observation": "固定stageの倍率集合",
+          "anchor_found": true
+        },
+        {
+          "path": "/tmp/sirkit-submissions-29-20261115/fastest-sources/gcd_convolution.cpp",
+          "sha256": "c4fc75ac5a848159580de512c02ae35928cbb4b168c40ba7bd5ba8e91851b325",
+          "line": 1687,
+          "observation": "変換/積/逆変換の融合",
+          "anchor_found": true
+        },
+        {
+          "path": "/tmp/sirkit-submissions-29-20261115/fastest-sources/gcd_convolution.cpp",
+          "sha256": "c4fc75ac5a848159580de512c02ae35928cbb4b168c40ba7bd5ba8e91851b325",
+          "line": 868,
+          "observation": "chunk処理とinterleave",
+          "anchor_found": true
+        }
+      ],
+      "comparison": [
+        {
+          "id": "coverage_sparse_gcd_holes_full",
+          "time_ms": 150.0,
+          "submission_url": "https://judge.yosupo.jp/submission/417357",
+          "fastest_ms": 13.0,
+          "fastest_url": "https://judge.yosupo.jp/submission/409724"
+        },
+        {
+          "id": "coverage_sparse_gcd_holes_split",
+          "time_ms": 158.0,
+          "submission_url": "https://judge.yosupo.jp/submission/417358",
+          "fastest_ms": 13.0,
+          "fastest_url": "https://judge.yosupo.jp/submission/409724"
+        },
+        {
+          "id": "zeta_gcd_conv_full",
+          "time_ms": 49.0,
+          "submission_url": "https://judge.yosupo.jp/submission/417373",
+          "fastest_ms": 13.0,
+          "fastest_url": "https://judge.yosupo.jp/submission/409724"
+        },
+        {
+          "id": "zeta_gcd_transform_full",
+          "time_ms": 52.0,
+          "submission_url": "https://judge.yosupo.jp/submission/417374",
+          "fastest_ms": 13.0,
+          "fastest_url": "https://judge.yosupo.jp/submission/409724"
+        },
+        {
+          "id": "zeta_sparse_gcd_full",
+          "time_ms": 64.0,
+          "submission_url": "https://judge.yosupo.jp/submission/417377",
+          "fastest_ms": 13.0,
+          "fastest_url": "https://judge.yosupo.jp/submission/409724"
+        },
+        {
+          "id": "zeta_sparse_gcd_split",
+          "time_ms": 57.0,
+          "submission_url": "https://judge.yosupo.jp/submission/417378",
+          "fastest_ms": 13.0,
+          "fastest_url": "https://judge.yosupo.jp/submission/409724"
+        }
+      ]
+    },
+    {
+      "problem": "lcm_convolution",
+      "classification": "同じZeta/Möbius数学、固定上限向けgrouped sweep。",
+      "explanation": "最速はdivisor変換を素数群/rough multiplierの複数stageへ分け、interleave・SIMD・積との融合・cache区間処理を行う。",
+      "complexity": "現行dense素数passは通常O(N log log N)。最速の固定N<=10^6用stage分割を一般Nへ延ばした厳密な計算量比較は今回は未証明。より低い計算量の別畳み込みを使うと断定しない。",
+      "verify_api_constraint": "convolution API内部の専用経路は検討可能。個別divisor変換Verifyでは各API呼び出しscopeの維持が必要。",
+      "evidence": [
+        {
+          "path": "/tmp/sirkit-submissions-29-20261115/fastest-sources/lcm_convolution.cpp",
+          "sha256": "96bbfa37d576eb2531746bec422edb612aa67888e9a3cade2eedade9b269c523",
+          "line": 1757,
+          "observation": "stage別変換",
+          "anchor_found": true
+        },
+        {
+          "path": "/tmp/sirkit-submissions-29-20261115/fastest-sources/lcm_convolution.cpp",
+          "sha256": "96bbfa37d576eb2531746bec422edb612aa67888e9a3cade2eedade9b269c523",
+          "line": 1806,
+          "observation": "変換/積/逆変換の融合",
+          "anchor_found": true
+        },
+        {
+          "path": "/tmp/sirkit-submissions-29-20261115/fastest-sources/lcm_convolution.cpp",
+          "sha256": "96bbfa37d576eb2531746bec422edb612aa67888e9a3cade2eedade9b269c523",
+          "line": 868,
+          "observation": "chunk処理と作業領域再利用",
+          "anchor_found": true
+        }
+      ],
+      "comparison": [
+        {
+          "id": "zeta_lcm_conv_full",
+          "time_ms": 55.0,
+          "submission_url": "https://judge.yosupo.jp/submission/417375",
+          "fastest_ms": 14.0,
+          "fastest_url": "https://judge.yosupo.jp/submission/409729"
+        },
+        {
+          "id": "zeta_lcm_transform_full",
+          "time_ms": 61.0,
+          "submission_url": "https://judge.yosupo.jp/submission/417376",
+          "fastest_ms": 14.0,
+          "fastest_url": "https://judge.yosupo.jp/submission/409729"
+        }
+      ]
+    },
+    {
+      "problem": "persistent_queue",
+      "classification": "offline版木DFSと永続Segment Treeの差。",
+      "explanation": "最速mainはOfflinePersistentQueueを使い、全操作を版木へ先読みしてDFSし、配列front/backを更新・復元する。現行はPersistentSegmentTreeのset/getで版を保持する。",
+      "complexity": "最速は全体O(Q)時間・O(Q)領域。現行はset/getがO(log Q)、nodeコピーを含めO(Q log Q)系。",
+      "verify_api_constraint": "offline queueへ置換すると永続Segment Treeの検証ではなくなる。node配置/確保の定数改善は未測定。",
+      "evidence": [
+        {
+          "path": "/tmp/sirkit-submissions-29-20261115/fastest-sources/persistent_queue.cpp",
+          "sha256": "7690833d5a94e2d905cfb5fff922ea6ea4a627f03454ffe43efd4bc3d2eb413e",
+          "line": 1404,
+          "observation": "offline版木",
+          "anchor_found": true
+        },
+        {
+          "path": "/tmp/sirkit-submissions-29-20261115/fastest-sources/persistent_queue.cpp",
+          "sha256": "7690833d5a94e2d905cfb5fff922ea6ea4a627f03454ffe43efd4bc3d2eb413e",
+          "line": 1415,
+          "observation": "配列状態の更新・復元",
+          "anchor_found": true
+        },
+        {
+          "path": "/tmp/sirkit-submissions-29-20261115/fastest-sources/persistent_queue.cpp",
+          "sha256": "7690833d5a94e2d905cfb5fff922ea6ea4a627f03454ffe43efd4bc3d2eb413e",
+          "line": 1815,
+          "observation": "mainが選ぶ実装",
+          "anchor_found": true
+        },
+        {
+          "path": "/home/reinsirk/Atcoder_Env/Verify/current/drivers/coverage_structure_persistent_queue_main.cpp",
+          "sha256": "998087331d5344abeb6e2ee219b668ac77281576389bba5b4a031ed559e3a35a",
+          "line": 10,
+          "observation": "検証対象の永続木",
+          "anchor_found": true
+        }
+      ],
+      "comparison": [
+        {
+          "id": "coverage_structure_persistent_queue",
+          "time_ms": 254.0,
+          "submission_url": "https://judge.yosupo.jp/submission/417363",
+          "fastest_ms": 24.0,
+          "fastest_url": "https://judge.yosupo.jp/submission/404575"
+        }
+      ]
+    },
+    {
+      "problem": "queue_operate_all_composite",
+      "classification": "償却線形queueと静的DSTの前処理差。",
+      "explanation": "最速はsuffixとback側合成を持つ集約queueでpush/popし、apply(x)で最大2写像を直接作用させる。現行はpush値全体にDisjointSparseTableを構築し区間prodを使う。",
+      "complexity": "最速は全体償却O(Q)系。現行はP個のpush値にO(P log P)前処理/領域、prodはO(1)。",
+      "verify_api_constraint": "queueへ全面変更するとDisjointSparseTable.prodの検証を失う。DST構築・確保・演算の定数改善は未測定。",
+      "evidence": [
+        {
+          "path": "/tmp/sirkit-submissions-29-20261115/fastest-sources/queue_operate_all_composite.cpp",
+          "sha256": "5428b5f629bb54786fb4feeef91c02184c11dfe444f8c248ffe350b483c9980f",
+          "line": 3015,
+          "observation": "back側集約",
+          "anchor_found": true
+        },
+        {
+          "path": "/tmp/sirkit-submissions-29-20261115/fastest-sources/queue_operate_all_composite.cpp",
+          "sha256": "5428b5f629bb54786fb4feeef91c02184c11dfe444f8c248ffe350b483c9980f",
+          "line": 3022,
+          "observation": "suffix再構築",
+          "anchor_found": true
+        },
+        {
+          "path": "/tmp/sirkit-submissions-29-20261115/fastest-sources/queue_operate_all_composite.cpp",
+          "sha256": "5428b5f629bb54786fb4feeef91c02184c11dfe444f8c248ffe350b483c9980f",
+          "line": 3113,
+          "observation": "合成写像を直接作用",
+          "anchor_found": true
+        },
+        {
+          "path": "/home/reinsirk/Atcoder_Env/Verify/current/drivers/coverage_structure_disjoint_composite_main.cpp",
+          "sha256": "3f3783515d536ff6e677881267e0c5056f0a18d5d76e44e31d14b7ca2cbea2c7",
+          "line": 24,
+          "observation": "静的DSTによる区間検証",
+          "anchor_found": true
+        }
+      ],
+      "comparison": [
+        {
+          "id": "coverage_structure_disjoint_composite",
+          "time_ms": 75.0,
+          "submission_url": "https://judge.yosupo.jp/submission/417364",
+          "fastest_ms": 10.0,
+          "fastest_url": "https://judge.yosupo.jp/submission/403012"
+        }
+      ]
+    },
+    {
+      "scope": "coverage_sparse_gcd_holes_full/split",
+      "classification": "dense最速との追加仕事量・表現の差",
+      "explanation": "i→2iに写し全約数閉包として約1.5N個の(key,value)、IntegerSieve(2N)で変換する。今回のキーはlargest<=4mなので実際にはposition配列経路を選ぶ。hash/Transfer構築が主因とは言えない。拡張値域・欠番判定・pair stride・位置表作成がdense Nの最速にはない。",
+      "complexity": "今回の位置配列＋素数passは拡張値域2NについてO(N log log N)系。同じ問題でも保持キー数と走査範囲が違う。一般疎APIの上界を実際の分岐へ無条件に当てはめない。",
+      "verify_api_constraint": "穴をなくしてdense convolutionだけを呼ぶと非連続キーの検証scopeを失う。API維持の位置表再利用や配置改善は未測定。",
+      "evidence": [
+        {
+          "path": "/home/reinsirk/Atcoder_Env/Verify/current/drivers/coverage_math_sparse_holes_main.cpp",
+          "sha256": "affcda955ee29297404b931cb61b2d85230b03e3e4062a84349ab2d481130de8",
+          "line": 35,
+          "observation": "約1.5Nキー",
+          "anchor_found": true
+        },
+        {
+          "path": "/home/reinsirk/Atcoder_Env/Verify/current/drivers/coverage_math_sparse_holes_main.cpp",
+          "sha256": "affcda955ee29297404b931cb61b2d85230b03e3e4062a84349ab2d481130de8",
+          "line": 50,
+          "observation": "2Nの篩",
+          "anchor_found": true
+        },
+        {
+          "path": "/home/reinsirk/Atcoder_Env/Math/Zeta/Sparse_Transform.cpp",
+          "sha256": "cc76c23e89968a1df152c5a8235df6039f1605b2f18af13b37a7c81a6a8b95d6",
+          "line": 386,
+          "observation": "実際に選ぶ位置表経路",
+          "anchor_found": true
+        },
+        {
+          "path": "/home/reinsirk/Atcoder_Env/Math/Zeta/Sparse_Transform.cpp",
+          "sha256": "cc76c23e89968a1df152c5a8235df6039f1605b2f18af13b37a7c81a6a8b95d6",
+          "line": 408,
+          "observation": "欠番のある伝播",
+          "anchor_found": true
+        }
+      ],
+      "comparison": [
+        {
+          "id": "coverage_sparse_gcd_holes_full",
+          "time_ms": 150.0,
+          "fastest_ms": 13.0
+        },
+        {
+          "id": "coverage_sparse_gcd_holes_split",
+          "time_ms": 158.0,
+          "fastest_ms": 13.0
+        }
+      ]
+    }
+  ],
+  "not_fully_assessed": [
+    "double_ended_priority_queue",
+    "maximum_independent_set",
+    "ordered_set",
+    "set_xor_min",
+    "static_range_frequency"
+  ],
+  "limitations": [
+    "CPU・コンパイラ版・全オプション・実行時刻をそろえた測定は行っていない。言語cpp表示だけでは同条件と確認できない。",
+    "時間は取得済みオンライン最大時間。どの施策が何msの差を生んだかの要因分離は未測定。静的な構造の違いからの推定を含む。",
+    "主要計算とmainを読んだ範囲の分析。巨大な共通I/Oを全て精査したとは主張しない。",
+    "最速への置換で検証対象APIを呼ばなくなる場合、ライブラリの速度差として扱わない。"
+  ],
+  "benchmark_performed": false,
+  "code_modified": false,
+  "group_or_journal_modified": false,
+  "existing_audit_modified": false,
+  "claude_called": false,
+  "committed": false
+}

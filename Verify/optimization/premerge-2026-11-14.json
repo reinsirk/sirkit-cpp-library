@@ -1,0 +1,903 @@
+{
+  "date": "2026-11-14",
+  "base_commit": "bf0299433409922c863a7e21f8984b33fa9bb88b",
+  "status": "historical_pass_complete_followup_in_progress",
+  "scope": "受理履歴のある102件を現在SHAでCodex→Fable再検討。Library CheckerはmainとI/Oを含む全体。",
+  "requested_model": "claude-fable-5-2",
+  "authorized_account_confirmed": true,
+  "counts": {
+    "targets": 102,
+    "codex_complete": 102,
+    "fable_complete": 102,
+    "online_current_ac": 0
+  },
+  "adopted_changes": [
+    "hld_vertex_add_path_sum: 1要素区間をFenwick getで取得（mainのみ）",
+    "angle_sort: rotateを2区間出力へ置換（mainのみ、std版は維持）",
+    "wavelet_kth / wavelet_frequency: Verify mainをuint32へ限定。値と検索値の制約0..1e9を利用し、公開ライブラリは維持。",
+    "rollback_weighted_union_find_rollback: mainを16Bのqueryレコードへ統合。typeをuの上位bitへ格納し、vを判定後の答えとして再利用。"
+  ],
+  "rejected_changes": [
+    "Fenwick coupled-prefix: O2汎用uniform APIの約2%退行。hybrid64は実mainの1～2%退行。本文を維持。",
+    "angle_sort_stdのrotate除去: GCCの一部入力で約0.8～1.3%退行。",
+    "zeta_and_fullのO3/AVX2/併用: 入力依存の全体時間退行があり、本体も短縮せず。GCC15.2の再測定で不採用。"
+  ],
+  "latest_usage": {
+    "checked_utc": "2026-11-15T07:14:35.360953+00:00",
+    "authorized_email_matches": true,
+    "http_status": 200,
+    "inference_executed": false,
+    "windows": {
+      "five_hour": {
+        "utilization": 17.0,
+        "resets_at": "2026-11-15T12:00:00.268808+00:00"
+      },
+      "seven_day": {
+        "utilization": 17.0,
+        "resets_at": "2026-11-21T09:00:00.268830+00:00"
+      },
+      "seven_day_breakdown": {},
+      "limit_0": {
+        "kind": "session",
+        "model": null,
+        "utilization": 17,
+        "resets_at": "2026-11-15T12:00:00.268808+00:00"
+      },
+      "limit_1": {
+        "kind": "weekly_all",
+        "model": null,
+        "utilization": 17,
+        "resets_at": "2026-11-21T09:00:00.268830+00:00"
+      },
+      "limit_2": {
+        "kind": "weekly_scoped",
+        "model": "Fable",
+        "utilization": 34,
+        "resets_at": "2026-11-21T09:00:00.269147+00:00"
+      }
+    },
+    "extra_usage_enabled": false
+  },
+  "automatic_resume": {
+    "enabled": false
+  },
+  "entries": [
+    {
+      "id": "angle_sort",
+      "source_sha256": "340c8d7f963db1cbd1d27af10220017767e2e8befe17334f0eed4c9d9d21c767",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/angle_sort.cpp"
+    },
+    {
+      "id": "angle_sort_std",
+      "source_sha256": "988d8cc5a9e07fe4b4bc8c81c5147345a154580d5e097655e7f9ed707ab309ff",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/angle_sort_std.cpp"
+    },
+    {
+      "id": "bellman_ford",
+      "source_sha256": "c4456696bd02beb0b26646f5441b903e9dc737d21ea6eb46571fb2f49f817476",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/bellman_ford.cpp"
+    },
+    {
+      "id": "binary_trie",
+      "source_sha256": "e6fbfc17c19d7f0121cafdac70e36029d8c4d399c253ae7046527ac41f7100d9",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/binary_trie.cpp"
+    },
+    {
+      "id": "binomial_integer_prime_mod_split",
+      "source_sha256": "aa33ae7acffd6409acca25734dc24aa7b44d5db3003028f7cc6dee1fb9904496",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/binomial_integer_prime_mod_split.cpp"
+    },
+    {
+      "id": "binomial_integer_split",
+      "source_sha256": "bd4a3cf0201397725dcd16ce2c0a0a6b423679c7d1174fc11592e119f31f9cb0",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/binomial_integer_split.cpp"
+    },
+    {
+      "id": "binomial_modint_prime_mod_split",
+      "source_sha256": "b6a5a457ff2a18058f7e048877279a61f062f4cd10a55fcde6ff0914e1904b45",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/binomial_modint_prime_mod_split.cpp"
+    },
+    {
+      "id": "binomial_modint_split",
+      "source_sha256": "a51aef4adca679f77f5c49be796eec7abf98a1862363ee4577fa4317d1f4fd61",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/binomial_modint_split.cpp"
+    },
+    {
+      "id": "binomial_prime_split",
+      "source_sha256": "7fb647e02b96936f4a6f83d8c78324d4606b30b66608d8a1d6ec7feca4455dcd",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/binomial_prime_split.cpp"
+    },
+    {
+      "id": "compressed_binary_trie",
+      "source_sha256": "56f19890b0a47a0e5da985b26df719b811122aef876e55fc033773028603dd37",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/compressed_binary_trie.cpp"
+    },
+    {
+      "id": "dijkstra",
+      "source_sha256": "e9151b033a7edd7d6eb884af7654233954b30cf2f621a21e1c0e0e7e6e0e66c5",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/dijkstra.cpp"
+    },
+    {
+      "id": "disjoint_sparse_table",
+      "source_sha256": "a88e51f946d09dceb7f98ca70581babf8c90e5219faf4a490b2695e83608cea7",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/disjoint_sparse_table.cpp"
+    },
+    {
+      "id": "dynamic_fenwick_2d_rectangle",
+      "source_sha256": "255d43993f02be584aaeb49a774240c278d163621a7bc9fc775155053fce78b4",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/dynamic_fenwick_2d_rectangle.cpp"
+    },
+    {
+      "id": "dynamic_fenwick_range",
+      "source_sha256": "06b482ae1c221d340bb4ec829246d0460e3e5fe73ff1dfe2157f0db7f8c5fafb",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/dynamic_fenwick_range.cpp"
+    },
+    {
+      "id": "dynamic_fenwick_rectangle",
+      "source_sha256": "65ad0587f742fed916ea419647e06cd2df57b7eee202198d739fc77d3b7b6085",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/dynamic_fenwick_rectangle.cpp"
+    },
+    {
+      "id": "dynamic_lichao_line",
+      "source_sha256": "a14a87cd957fdf0288372d776101c12bfd23d88ae4aad966270c5cc6392f7321",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/dynamic_lichao_line.cpp"
+    },
+    {
+      "id": "dynamic_lichao_segment",
+      "source_sha256": "39e8f2c2a9662d807a6dff32630ab41b9d80ed4f4b88f30d541a2e9daf6f58c7",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/dynamic_lichao_segment.cpp"
+    },
+    {
+      "id": "dynamic_union_find",
+      "source_sha256": "afa9ce73b8b7940a373701379c324a05f12d3228773534f1a9d3d08caf1a7515",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/dynamic_union_find.cpp"
+    },
+    {
+      "id": "erasable_priority_queue_double",
+      "source_sha256": "f4fe34871510cc7ef042c80cd5df2785d86cab03e220beb6b2b8d292139ab6cc",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/erasable_priority_queue_double.cpp"
+    },
+    {
+      "id": "eratosthenes",
+      "source_sha256": "c22c53aac5ab7ec632a97e39e73283675b415bdb98f877972d0b97ba03db9168",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/eratosthenes.cpp"
+    },
+    {
+      "id": "fenwick_tree",
+      "source_sha256": "7f8d054d1949f704c8c0b801a884cefb2bccdd7fec1fdbffd5f1022b26a3b8a3",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/fenwick_tree.cpp"
+    },
+    {
+      "id": "floyd_warshall",
+      "source_sha256": "5a219d31d0ab87511df8a7907e4417203e260ac149a0d9ec5af5a62ed37bbe2a",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/floyd_warshall.cpp"
+    },
+    {
+      "id": "fraction_arithmetic",
+      "source_sha256": "60247b56cac364e92f4396fe1b641e6120d805cee28c29091a9acc980cce4019",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/fraction_arithmetic.cpp"
+    },
+    {
+      "id": "fraction_sort",
+      "source_sha256": "0de8561f6e0afe4b28be2a320568c058590bbf9ca4c01fd57cf591a2859061cc",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/fraction_sort.cpp"
+    },
+    {
+      "id": "geometry_circle_relation_full",
+      "source_sha256": "7044a0c36ef3cec6897d059cdccd1b812b17b514d71cb0b22bfa4e42ca1c9324",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/geometry_circle_relation_full.cpp"
+    },
+    {
+      "id": "geometry_circle_relation_split",
+      "source_sha256": "483c97230ccc0fd69780981c87ff208e07352a83806ffe3045fdc759fee08c9d",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/geometry_circle_relation_split.cpp"
+    },
+    {
+      "id": "geometry_contains_atcoder_full",
+      "source_sha256": "4e93e0deba640694e095ec72625d9af1bcb8d7299339630990d137d51e25b674",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/geometry_contains_atcoder_full.cpp"
+    },
+    {
+      "id": "geometry_contains_atcoder_split",
+      "source_sha256": "1e95a73fbfc378b055055b7116759985b85e30a934a15cb7ebfffdc0c3c181a8",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/geometry_contains_atcoder_split.cpp"
+    },
+    {
+      "id": "geometry_convex_hull_full",
+      "source_sha256": "f0d96523a806da1cf2753c4b371e928d7ab2c792fefa8ed46920982eb0fc3b35",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/geometry_convex_hull_full.cpp"
+    },
+    {
+      "id": "geometry_convex_hull_split",
+      "source_sha256": "7cd56e9c41022baa448b794e6f0c3a3e5aa9514f3b0832b768803aac1f53c998",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/geometry_convex_hull_split.cpp"
+    },
+    {
+      "id": "geometry_orientation_atcoder_full",
+      "source_sha256": "7e09a56d7e8d74cadbaba03d981ac71bed98e1f549d04212e3d23f19b054c586",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/geometry_orientation_atcoder_full.cpp"
+    },
+    {
+      "id": "geometry_orientation_atcoder_split",
+      "source_sha256": "2bf8ea65805b0c7390e43a409af37074f285a446a87b26aa56555a0e679f152b",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/geometry_orientation_atcoder_split.cpp"
+    },
+    {
+      "id": "geometry_point_segment_distance_full",
+      "source_sha256": "9cb735ab015acf1abc2c13176e6556ac8e441b3c5d0190156c200619cb434478",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/geometry_point_segment_distance_full.cpp"
+    },
+    {
+      "id": "geometry_point_segment_distance_split",
+      "source_sha256": "2fdfc744d161b30e2b4c40de73b5b2b1fb66100f763ebe4bb1ab4a68e5a89e64",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/geometry_point_segment_distance_split.cpp"
+    },
+    {
+      "id": "geometry_segment_intersection_atcoder_full",
+      "source_sha256": "b22377d63cbc554dd98666bb1198c1b20aa42ad6e021083d8e9b6573438c17a5",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/geometry_segment_intersection_atcoder_full.cpp"
+    },
+    {
+      "id": "geometry_segment_intersection_atcoder_split",
+      "source_sha256": "254a81ed67604c4d1531ab57c3234762bbe933d89698b630b75b9e654ec3fea5",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/geometry_segment_intersection_atcoder_split.cpp"
+    },
+    {
+      "id": "geometry_triangle_area_full",
+      "source_sha256": "4e89d586de38f896f0c7973116660ccb8522ac9df746a774433aaeeb0a3723c3",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/geometry_triangle_area_full.cpp"
+    },
+    {
+      "id": "geometry_triangle_area_split",
+      "source_sha256": "f5f9b4b354cdce4f3ba10cbc8f9d8fe4f9e26e3dd088511fc903adbb71bee78e",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/geometry_triangle_area_split.cpp"
+    },
+    {
+      "id": "hash_map",
+      "source_sha256": "bec878884a0f7895630f9b55b97ca20105edde1c089c6496369905d610e51a0b",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/hash_map.cpp"
+    },
+    {
+      "id": "hash_set_membership",
+      "source_sha256": "742e4504d58ff66b96c7da3ffb24ce061b029facdaad003998cde1b6b79e633e",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/hash_set_membership.cpp"
+    },
+    {
+      "id": "hash_set_strings",
+      "source_sha256": "4c140e716fe145ed96dfa3104454abfbd211fabed718bd5393a7dcf2b1a3c6ff",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/hash_set_strings.cpp"
+    },
+    {
+      "id": "hash_set_toggle",
+      "source_sha256": "8aaac68addabacaaae9f6e7ba6f334515207c1b07151dac47351c29b9f70aee6",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/hash_set_toggle.cpp"
+    },
+    {
+      "id": "heap_priority_queue",
+      "source_sha256": "46afd7cb55910e73a178c77138f5b78efb081c686fe21cd2365232ecdfc6acf7",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/heap_priority_queue.cpp"
+    },
+    {
+      "id": "hld_jump",
+      "source_sha256": "e79932964952243f96faba520628ad6801daeb2821f8ecdca7a75c369f3afcb0",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/hld_jump.cpp"
+    },
+    {
+      "id": "hld_path_composite",
+      "source_sha256": "16d4c68fc07ec15ade81c3474b7b776634fa365ac4ba95b13d67d5fe6acf5f9f",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/hld_path_composite.cpp"
+    },
+    {
+      "id": "hld_path_prod",
+      "source_sha256": "62f791f6846653553a990e7514bcab298dd38f6f0f0486263bb07c84015e42f6",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/hld_path_prod.cpp"
+    },
+    {
+      "id": "hld_vertex_add_path_sum",
+      "source_sha256": "1af19035d7859164cd132d17fd8315ff7d44645a1ae6856846b9b80adf551e97",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/hld_vertex_add_path_sum.cpp"
+    },
+    {
+      "id": "implicit_treap_affine",
+      "source_sha256": "18052b31790730881c23756998a15f5588842d4739e9de61124c3010639f9681",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/implicit_treap_affine.cpp"
+    },
+    {
+      "id": "implicit_treap_deque",
+      "source_sha256": "53f419660d28f6bf0767ec71cffb1da47691fdb4202305a9e385f33ff7049d71",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/implicit_treap_deque.cpp"
+    },
+    {
+      "id": "internal_hash_map",
+      "source_sha256": "b05c781acb6ef5eb752f01b88c2f9f594e99e4646ebbdc1daf9de531a754d260",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/internal_hash_map.cpp"
+    },
+    {
+      "id": "lazy_segment_tree",
+      "source_sha256": "3719f1b8639894161651fc77b742e4a5b353df93d4fa1a7b0a8b4d6fc90e3be3",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/lazy_segment_tree.cpp"
+    },
+    {
+      "id": "lca",
+      "source_sha256": "db3e8eee2342e9c2fddb401be4ca099c0f72f05f53e82547fc0496791d2bd3c6",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/lca.cpp"
+    },
+    {
+      "id": "line_container_2d_min",
+      "source_sha256": "b90e98e6ff5c3e6f9d7fe67bedc51a4a0a6a1039e15a40539cfb37e877dcc723",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/line_container_2d_min.cpp"
+    },
+    {
+      "id": "line_container_min",
+      "source_sha256": "39225c58762bfeefbfbc240ea3fa23066afdd3716b13393c03a83efb7037d5c9",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/line_container_min.cpp"
+    },
+    {
+      "id": "lis",
+      "source_sha256": "3269dac04038c67045b59e65496a56786edb1e95373a2f2d2194f44df8fcc0fa",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/lis.cpp"
+    },
+    {
+      "id": "low_link_biconnected",
+      "source_sha256": "2f157d76a33719bbe4d4bc64fff45747672480c34fdf2439ac334f24874e34ca",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/low_link_biconnected.cpp"
+    },
+    {
+      "id": "low_link_two_edge",
+      "source_sha256": "4ca11a587716270c20a1fffcf3bc6d1d50035518ac38bd294f348ec14058ab9a",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/low_link_two_edge.cpp"
+    },
+    {
+      "id": "manacher",
+      "source_sha256": "9f7a1182856834c83d31c393bf73cc1bc55f6e0877095ff99c6a0ca014923339",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/manacher.cpp"
+    },
+    {
+      "id": "matrix_rotate",
+      "source_sha256": "247496ce35da16d9d5f972a87583aa026444c69339b8c8c215637962822a1bf3",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/matrix_rotate.cpp"
+    },
+    {
+      "id": "matrix_rotate_grid",
+      "source_sha256": "f380a8927d35eba410363519d1fa8f8f0e075c4a0d69715a117dd14aa491f3eb",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/matrix_rotate_grid.cpp"
+    },
+    {
+      "id": "max_flow_grid",
+      "source_sha256": "4d1fd5d86c2ac4a0d79886ae9fbd71cb0a15037974eba2ebebb025315feacdfe",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/max_flow_grid.cpp"
+    },
+    {
+      "id": "nearest_two_points",
+      "source_sha256": "21951bef1bf7d308452fd4fa1d9ee38f3333e4f36b498abf6a8b5d3109446500",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/nearest_two_points.cpp"
+    },
+    {
+      "id": "next_combination",
+      "source_sha256": "17d0147524f143e625ff22549437f9835060f4a2be2566c95404438a9e5ec303",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/next_combination.cpp"
+    },
+    {
+      "id": "node_reachable",
+      "source_sha256": "dac417f08246290c1885afed1bc235ff4390e033af28710cd0a4d05448331254",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/node_reachable.cpp"
+    },
+    {
+      "id": "ntt_convolution",
+      "source_sha256": "71404e271a450392a70cbfa94d861000f885ded552357c4db6088c43bf6e6f22",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/ntt_convolution.cpp"
+    },
+    {
+      "id": "persistent_union_find",
+      "source_sha256": "5bbbde2905186bf2fb2efacd5cbc2781eba247f66dd97040396d83e572748cd9",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/persistent_union_find.cpp"
+    },
+    {
+      "id": "primality",
+      "source_sha256": "d099d506558b95da3d3618b85a9ac86d0aeeb7a624078ef352343349f488d76d",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/primality.cpp"
+    },
+    {
+      "id": "project_selection",
+      "source_sha256": "a6dd8d50cb68369d837626f047cf9ee4791de1c5634bf18bdd99354d22024c49",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/project_selection.cpp"
+    },
+    {
+      "id": "radix_sort",
+      "source_sha256": "b3ac7aa3e417e7c109e8a9b588a9dad368db3bc53d2d8e0cef4cd5409aa091d3",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/radix_sort.cpp"
+    },
+    {
+      "id": "radix_sort_uint32",
+      "source_sha256": "84c7f36d357059067a96d2f202b81e7922477ed3009db9f388ae9adc73afe6cc",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/radix_sort_uint32.cpp"
+    },
+    {
+      "id": "rollback_union_find",
+      "source_sha256": "f5c3b831e7e2ad68dc9d08ab7b7ae55c17c5203f923cdb48e48aaf2bb29f2ec8",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/rollback_union_find.cpp"
+    },
+    {
+      "id": "rollback_weighted_union_find",
+      "source_sha256": "36ab1dcfc63c8c4a5a5b77238695e81913233a4fe05f430411df01c896b80e53",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/rollback_weighted_union_find.cpp"
+    },
+    {
+      "id": "rollback_weighted_union_find_rollback",
+      "source_sha256": "da43f48fb757a20fd02dcd2c52d3061839cedfeb517ac753d618c13f726f01aa",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/rollback_weighted_union_find_rollback.cpp"
+    },
+    {
+      "id": "rolling_hash",
+      "source_sha256": "50d6c98ca83c5eb9d46dfd3bae44714733cf8bdd0dafe1fe28f903739600970a",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/rolling_hash.cpp"
+    },
+    {
+      "id": "scc",
+      "source_sha256": "ffb38e5e4cea0b53f8be2ebd2ee585a1a840861b5fc12b348ca64c4c0007bb88",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/scc.cpp"
+    },
+    {
+      "id": "segment_tree",
+      "source_sha256": "f4a92eb5e6be2ffe51f9469e84ea373cb2b7f4da0066712cdf05a1b09e6628c8",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/segment_tree.cpp"
+    },
+    {
+      "id": "segment_tree_composite",
+      "source_sha256": "e01ff00b62bcc69f563826939a087b08961e23fa968ed5716ed3ef3c3985b6e3",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/segment_tree_composite.cpp"
+    },
+    {
+      "id": "sparse_table",
+      "source_sha256": "25c1f57868bab6404e431e007fd339d6b2d62e9b67674a30f8639d7864ed362e",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/sparse_table.cpp"
+    },
+    {
+      "id": "spfa",
+      "source_sha256": "ce4f8b1a8ec1acc3fe7dfff5b414987e1d001bcd6e83adcae151a968cc3d1d7d",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/spfa.cpp"
+    },
+    {
+      "id": "suffix_array",
+      "source_sha256": "a2fb4ac3f4f4f705e118e0b30bd73ab60a77d8a266b54908fbbe8255afb66330",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/suffix_array.cpp"
+    },
+    {
+      "id": "suffix_array_substrings",
+      "source_sha256": "da208645830eea19895f9606f943c9a462b62c86e99182697e0c827961e91356",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/suffix_array_substrings.cpp"
+    },
+    {
+      "id": "topological",
+      "source_sha256": "a9f697a38559baef9a7c0e3e8a6bf0ad0d2ad0fccaec701822cb248be2851dcc",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/topological.cpp"
+    },
+    {
+      "id": "topological_lexicographical",
+      "source_sha256": "4d8f458841db4c775edbf297c0b2b2e42d0b73414684b82adcb00e8155797a0a",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/topological_lexicographical.cpp"
+    },
+    {
+      "id": "trie_dictionary",
+      "source_sha256": "5748ca962f4a0694dff1060f814dcbf98b4be62bd0a6e8fce76bb42b28156654",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/trie_dictionary.cpp"
+    },
+    {
+      "id": "two_sat",
+      "source_sha256": "153f232146def11e8dbb0a6ab4a2fc0d6127e51f8cccdf69ad22770fe9032253",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/two_sat.cpp"
+    },
+    {
+      "id": "union_find",
+      "source_sha256": "58d08acb2f6dc48ad620edb35a9de92e29c3b04fbe464af210454b0dec14f390",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/union_find.cpp"
+    },
+    {
+      "id": "wavelet_frequency",
+      "source_sha256": "3ad6eb2759a816f37606fc3a98240a3da9dc78c86f0dec857f4ed9db07d86832",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/wavelet_frequency.cpp"
+    },
+    {
+      "id": "wavelet_kth",
+      "source_sha256": "ffbefcf65eac359c7af14171da1e1c4a30496cb050d1253172db25f1c12f6b36",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/wavelet_kth.cpp"
+    },
+    {
+      "id": "weighted_union_find",
+      "source_sha256": "20c4629c0e4a3915ad48dd5683ac0f96a58fda2f6156d99095a49f5f495b9910",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/weighted_union_find.cpp"
+    },
+    {
+      "id": "z_algorithm",
+      "source_sha256": "84aa9c26a12baf354335dc8950a995f375e2675dcd6d71ded4bb146eb21f9fb8",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/z_algorithm.cpp"
+    },
+    {
+      "id": "zeta_and_full",
+      "source_sha256": "a65a3c9482ded41003e581207cbf5a5a2e7a0ea0f431186725c63cc5427f487b",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/zeta_and_full.cpp"
+    },
+    {
+      "id": "zeta_and_split",
+      "source_sha256": "40e134f1eb00bfc47bf7b3b66da0610fa56f66cd982da9178fda47251a1aa8a1",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/zeta_and_split.cpp"
+    },
+    {
+      "id": "zeta_gcd_conv_full",
+      "source_sha256": "1320a4f1bcb08e9380ef52d2d5a383c38b5f0d294e9e647d72e4c1ffe1cc04c1",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/zeta_gcd_conv_full.cpp"
+    },
+    {
+      "id": "zeta_gcd_conv_split",
+      "source_sha256": "b1a4c106d11d16a2cc24156f56d22325c498dab5c653b6ed707a4d0b68e6ba6e",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/zeta_gcd_conv_split.cpp"
+    },
+    {
+      "id": "zeta_lcm_conv_full",
+      "source_sha256": "a030118cc7da3396a78fa46f13f713880334f2c1d91688705da4c1723efcd38d",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/zeta_lcm_conv_full.cpp"
+    },
+    {
+      "id": "zeta_lcm_conv_split",
+      "source_sha256": "4009c577093ecbfe01c8e83297212b85911dad20619048f90fee5b3c5c2236b1",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/zeta_lcm_conv_split.cpp"
+    },
+    {
+      "id": "zeta_or_as_and_full",
+      "source_sha256": "8efd13054f3fa03f6e51449f919682d85d70458b4ad6c58fb352ddc660015f15",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/zeta_or_as_and_full.cpp"
+    },
+    {
+      "id": "zeta_or_as_and_split",
+      "source_sha256": "9167fad8939ff9ba028d7ffbd3a1d0b5e0080f26d641a6626128b7669bb4f3cc",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/zeta_or_as_and_split.cpp"
+    },
+    {
+      "id": "zeta_sieve_factorize_full",
+      "source_sha256": "8e7d997056d70b4d211d869fcba44ec90357597127cf2d1bffd9a11736884b8c",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/zeta_sieve_factorize_full.cpp"
+    },
+    {
+      "id": "zeta_sieve_factorize_split",
+      "source_sha256": "92f9deb1db34352e34ac359a5a2fb3aca3bad37a956a944b2ade7c04f80eda63",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/zeta_sieve_factorize_split.cpp"
+    },
+    {
+      "id": "zeta_sparse_gcd_full",
+      "source_sha256": "e2149468a8bf35b1ad892fee8559462cd3bd64ce5aae5ee9beecc339b286dd57",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/zeta_sparse_gcd_full.cpp"
+    },
+    {
+      "id": "zeta_sparse_gcd_split",
+      "source_sha256": "b4f624f61e697a546feba5515abb2753cb28cbb9289c4ecbc02d3c15a0f5b5e9",
+      "codex": "complete",
+      "fable": "complete",
+      "online": "resubmission_required",
+      "submission": "Verify/current/submissions/zeta_sparse_gcd_split.cpp"
+    }
+  ],
+  "commit_or_push_performed": false,
+  "online_submission_performed": false,
+  "notes": [
+    "同文対照測定を速度向上とは扱わない。",
+    "最初のHLD Fable出力はCLI継続の最終断片だけで不完全なため承認に使わない。再構成可能なstream-json形式へ変更した。",
+    "古い最適化receipt/ACは現在SHAへ転記しない。",
+    "前回の/tmp詳細ログは消失。公開Auditの集計とSHA記録を保持し、未採用候補は2026-11-15に新規測定。今回の詳細はローカルZIPにも逐次退避する。",
+    "2026-11-15の初回102件完了後、angle_sort改名・全kInf引数化・二項係数/共通部品の追検討を実施。上記counts/entriesはその初回完了時のSHA記録であり、最新のオンライン状況はVerify/current/status.jsonを参照。"
+  ],
+  "updated_utc": "2026-11-15T07:17:42.884454+00:00",
+  "validation_reports": [
+    "Audit/premerge-final-validation-2026-11-15.json"
+  ],
+  "local_archives": [
+    "Audit/data/premerge-wavelet-resume-20261115.zip",
+    "Audit/data/premerge-zeta-resume-20261115.zip",
+    "Audit/data/premerge-rollback-resume-20261115.zip",
+    "Audit/data/premerge-derived-variant-validation-20261115.zip",
+    "Audit/data/premerge-resume-20261115.zip"
+  ],
+  "counts_scope": "Historical102-source checkpoint at completion of the first pass; later URL annotations, API changes and new main optimizations are tracked separately."
+}

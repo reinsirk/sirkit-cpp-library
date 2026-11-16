@@ -1,0 +1,87 @@
+{
+  "format": 1,
+  "date": "2026-11-15",
+  "status": "PASS",
+  "scope": "Safe generated-preamble source matching for metadata-only submission annotation updates",
+  "normalization": "generated-preamble-metadata-v2",
+  "source_sha256": {
+    "Scripts/update_verify_status.py": "8ba106ea8df2be514bb0bd5c9cff7dae6d38f32cc96c05f1cdee391e6f301a17",
+    "Scripts/record_library_checker_submission.py": "4b09ad85a6de3bed1bee51d6ccaa65679d2c8e488f4c62d5fb56ec7a6cc602f3",
+    "Scripts/optimization_handoff.py": "35b470548b654e91042cc75bb93e0686ac87a75bf986d5344eabbce40072806d",
+    "Scripts/tests/test_source_preamble_normalization.py": "e1993edc6f8d5f631a800501a131df76e393c7f844caff83444e00a4daec0b99",
+    "Scripts/tests/test_record_library_checker_submission.py": "ca0a83886e991fc35fe29f6b3f05b3606e2d52b563920947c7dab4b9df86cc8c",
+    "Scripts/tests/test_optimization_handoff.py": "c3e4b8a98a7510b845cd417e19ef0e410f319df720371f1af6bfaa7374be58b4",
+    "Scripts/tests/test_verify_status.py": "aa2d0f845f09615b8f5a0c3e97e35dfc82b5904b21ce7175260929f29aad222e"
+  },
+  "schema": {
+    "field": "source_normalization_proofs",
+    "value": [
+      {
+        "normalization": "generated-preamble-metadata-v2",
+        "uploaded_source_sha256": "SHA-256 of actual fetched uploaded bytes",
+        "normalized_source_sha256": "SHA-256 after the explicitly bounded v2 transformation"
+      }
+    ],
+    "binding": "The proof uploaded SHA must equal the record actual uploaded_source_sha256; validation rejects malformed or mismatched proof entries. No current generated SHA is substituted for the actual uploaded SHA."
+  },
+  "algorithm": {
+    "prefix": "Only line comments, blank lines, fixed SKIP_RUNTIME_CHECKS/NDEBUG defines and the exact generated three-line GCC optimize guard are traversed. All nonmetadata prefix bytes remain.",
+    "removed": "Only // Verify, // Submission and the first // Library label. The first Library boundary ends scanning immediately; all following library preamble comments, raw strings, block comments, includes, main and I/O bytes are opaque.",
+    "line_endings": "CRLF is mapped to LF only when no raw-string token occurs anywhere. No other whitespace/blank-line/trailing-newline normalization is performed. LF raw strings are allowed when body bytes agree.",
+    "conservative_refusals": [
+      "Line continuations, including whitespace after backslash; trigraph and digraph preprocessing spellings; token pasting; lone CR/NUL.",
+      "Known line/source observability (__LINE__, source_location, line/file builtins, __FILE__ family, stacktrace), #line and #embed.",
+      "Unknown prefix macros/directives, raw/block state before the library label, duplicate Verify labels, missing generated boundaries."
+    ],
+    "purpose": "A narrow source transformation with conservative guards, not general C++ token, semantic or machine-code equivalence."
+  },
+  "legacy_compatibility": {
+    "v1": "Existing v1 records and legacy unsafe/raw/block/continuation tests remain supported under their prior rules.",
+    "v2_precedence": "A record with the additive v2 proof field never falls back to the wider old v1 normalization.",
+    "importer": "New generated-source imports use v2 first; a generated body mismatch or safety refusal cannot be rescued by v1. The previous generated-body trailing-whitespace acceptance test was intentionally tightened to require rejection. Exact bytes still match. Nongenerated old/manual fixtures retain their old restricted comparison behavior.",
+    "handoff": "Expected normalized screenshot sources use the same versioned matching helper. Expected-only evidence still yields source confirmation, never online AC."
+  },
+  "tests": {
+    "python_tests": 104,
+    "modules": [
+      "test_verify_status",
+      "test_record_library_checker_submission",
+      "test_optimization_handoff",
+      "test_source_preamble_normalization"
+    ],
+    "adversarial_cases": [
+      "Per-byte mutations across the body; ordinary comment, whitespace, blank-line and terminal-newline changes.",
+      "Fake metadata in raw strings, block comments, library preamble comments, later Library labels and appended body comments.",
+      "Spoofed prelude macros/includes/raw/block state and changed compiler settings.",
+      "CRLF raw refusal, LF raw acceptance, physical line continuations and line/source introspection.",
+      "Absent/mismatched uploaded SHA, malformed proof list, legacy fallback bypass and expected-only screenshot evidence."
+    ],
+    "independent_compiler_observations": 12,
+    "compiler_observations": "Actual GCC15.2 and Clang21 programs confirm metadata-only output equality, changed raw literal output, identical runtime output but rejected ordinary-comment changes, and a __LINE__ output change that v2 refuses."
+  },
+  "public_source_preview": {
+    "source_count": 72,
+    "proof_available": 70,
+    "current_body_matches": 51,
+    "real_body_differences": 19,
+    "conservative_unavailable": [
+      "nearest_two_points",
+      "rolling_hash"
+    ],
+    "unavailable_reason": "Both contain physical backslash-newline macro continuations. No normalized match is asserted for them.",
+    "method": "Read-only proof recomputation from actual public uploaded bytes, exact uploaded SHA checks and current generated source comparison. No judgement/status writes by this review agent."
+  },
+  "evidence_updates": "The root task separately added the 70 actual-source proofs without changing historical, nonproof or SHA fields; see the linked evidence audit. This tool review did not rewrite the journal, generated source, README/status or optimization receipts.",
+  "related_audits": [
+    "Audit/source-preamble-metadata-proofs-2026-11-15.json"
+  ],
+  "artifacts": {
+    "archive": "Audit/data/source-metadata-v2-20261115.zip",
+    "tests": "unit-tests.log",
+    "compiler_cases": "compiler-oracle.json",
+    "public_preview": "public-preview.json",
+    "snapshot": "snapshot/",
+    "review_script": "finalize-tool-review.py",
+    "archive_sha256": "4701dec406151e394375e4993122c8ae51b1fd74eb01af67d2f60722945899c9"
+  }
+}

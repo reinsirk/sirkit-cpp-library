@@ -1,0 +1,148 @@
+{
+  "format": 1,
+  "date": "2026-11-14",
+  "stage": "claude",
+  "model": "claude-fable-5-2",
+  "actual_models": [
+    "claude-fable-5-2"
+  ],
+  "effort": "low",
+  "completed_utc": "2026-11-14T16:26:36.088865+00:00",
+  "source_hashes": {
+    "DataStructure/Wavelet_Matrix.cpp": "adebb5a890da13843a5730df6efd15ad477a8819308be1008f27b801a0804500",
+    "Graph/Bellman-Ford_SFPA.cpp": "9c84180ee4eb762d7fc41c55b22c3321905bf00c190fb90c7bfccf334d999732",
+    "Graph/Floyd-Warshall.cpp": "54cddf444ee6fba013aea34144d7b0f9bcee3595a6cc9fdf0293c12da87f703e",
+    "Math/prime_judge(Miller-Rabin).cpp": "e17080d520b84fc195a397ae04b198c731673f308236b1a28d26194cc96a18bd",
+    "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab",
+    "Verify/current/drivers/floyd_warshall_bus_main.cpp": "cf18621dc3d12c52cc0aba1dcf1cdde65d2f829d90fc4e1ac9131ffe277fea1a",
+    "Verify/current/drivers/primality_main.cpp": "cab22e68d5607277a3283b130e05f199f62facbc3fdc09d951c041dac3db8ede",
+    "Verify/current/drivers/spfa_coins_respawn_main.cpp": "06ec04d9119f5ae2030f98528257ec6538476ec202a12dd8f843f3ef9483c95c",
+    "Verify/current/drivers/wavelet_frequency_main.cpp": "a55648e6e868215c2b390140db97b65fc3c4ba6f19d6aeae4adfc9efd346fb69",
+    "Verify/current/drivers/wavelet_kth_main.cpp": "b38514d47a9a6713240ee7d2fe8e54b08302d807ec0368c948f28d95ba9c311b",
+    "Verify/current/submissions/floyd_warshall.cpp": "5a219d31d0ab87511df8a7907e4417203e260ac149a0d9ec5af5a62ed37bbe2a",
+    "Verify/current/submissions/primality.cpp": "d099d506558b95da3d3618b85a9ac86d0aeeb7a624078ef352343349f488d76d",
+    "Verify/current/submissions/spfa.cpp": "ce4f8b1a8ec1acc3fe7dfff5b414987e1d001bcd6e83adcae151a968cc3d1d7d",
+    "Verify/current/submissions/wavelet_frequency.cpp": "0e5e5e66e3cf23b9edfd52d7270fd27b63fde6e453d764a4abec859035a36d12",
+    "Verify/current/submissions/wavelet_kth.cpp": "91bc7db5aac92ea56663a0407886e37cae5b349eca354966b2a4c88e517cd9ec",
+    "AGENTS.md": "f4cdb9332d66307604443358b5ae5d087e609462e25303cab013e3fdc813a569"
+  },
+  "codex_receipts": {
+    "floyd_warshall": "Verify/optimization/stages/floyd_warshall.codex.3244288ac7550bc7e0047a837970a5f63d14ba9c72ce734c0f12256293313fe5.json",
+    "primality": "Verify/optimization/stages/primality.codex.a833c106185e8a51dbc19fb98cc24669a0480ae033ff3c319115416725a62b60.json",
+    "spfa": "Verify/optimization/stages/spfa.codex.6ccb27da8a3769c0718f252481e5de84cb17a043472b91f04e8a486187c24281.json",
+    "wavelet_frequency": "Verify/optimization/stages/wavelet_frequency.codex.f4732d33429f2a15516cb3a1d3b59b4b4a74aac6fcc90b1b41c3c11978c84660.json",
+    "wavelet_kth": "Verify/optimization/stages/wavelet_kth.codex.cf2c1c72693ab0d650f53845dc68b9c6399f9792985e10c4e70fa67449bd2672.json"
+  },
+  "review": {
+    "reviews": [
+      {
+        "id": "floyd_warshall",
+        "source_sha256": "5a219d31d0ab87511df8a7907e4417203e260ac149a0d9ec5af5a62ed37bbe2a",
+        "verdict": "keep",
+        "reason": "全文を机上確認し、誤りは見つからなかった(未実行)。非負・非密の入力はFiniteRange経路に入る。GCCでn>=64のときはbias符号化を試み、kInfを見つけた時点で符号化済みの完全行と部分行だけを復号して通常AVX2ループへ戻るため、復号範囲は正しい。そのループはDense=trueで未到達判定を省くが、prefix>=0かつ和<2^61なのでkInfの要素を改善せず安全。min_pdによる整数比較も、bias後の値が正の有限doubleのビット列に収まるため成立する。mainは素直なAPI呼び出しで、N<=300ではI/Oの寄与も小さい。測定に裏付けられた改善案はない。"
+      },
+      {
+        "id": "primality",
+        "source_sha256": "d099d506558b95da3d3618b85a9ac86d0aeeb7a624078ef352343349f488d76d",
+        "verdict": "keep",
+        "reason": "全文を机上確認し、誤りは見つからなかった(未実行)。2^32以下は基底{2,7,61}のMontgomery判定で、範囲上決定的。2^32超は105剰余表と11/13/17で除外するが、値が大きいので割り切れれば合成数と断定できる。剰余表は先頭16ビットのみ照合した。n<2^62のrelaxed乗算は入力<2nで4n<2^64を満たし、one_は(0,n)に入るので比較は正しい。n>=2^62は厳密還元。7基底は標準の決定的集合で、test_tripleの2bit窓と-1判定の累積も正しい。基底削減や単一基底hash表への置換は、表の独立検証なしには採用できない。"
+      },
+      {
+        "id": "spfa",
+        "source_sha256": "ce4f8b1a8ec1acc3fe7dfff5b414987e1d001bcd6e83adcae151a968cc3d1d7d",
+        "verdict": "keep",
+        "reason": "全文を机上確認し、誤りは見つからなかった(未実行)。辺数カウントがn以上になった頂点から前方へ-kInfを伝播する方式で、Bounded時はcandidateが-kInfを下回らないため、マーク済み頂点は再緩和されない。キューはqueued_bitにより容量nで足りる。16n回のdequeueを超えるとSCC処理へ移る。そこでは、DFS経路上の祖先への後退辺で負閉路を十分条件として検出し、輪状成分は2周、一般成分は合計size-1回の緩和の後に残る緩和可能辺で判定する。成分間はトポロジカル順に伝播するので、結果は不動点として正確。order/low/stateの再利用もTarjan完了後かつ成分内に限られる。mainはコスト範囲と頂点Nへの到達保証の下で正しい。N<=2500では改善余地は測定ノイズ以下と推定(仮説)。"
+      },
+      {
+        "id": "wavelet_frequency",
+        "source_sha256": "0e5e5e66e3cf23b9edfd52d7270fd27b63fde6e453d764a4abec859035a36d12",
+        "verdict": "keep",
+        "reason": "全文を机上確認し、誤りは見つからなかった(未実行)。N=0でもrankはleft==rightを先に判定して0を返し、空のlevels_に触れない。値域から実ビット幅を求め、32bit以下はuint32作業配列で構築する。AVX2構築のmovemaskと、分割の置換表・maskstoreは、語境界をまたがず、書き込み範囲を越えず、安定。rank1はoffset==0のとき末尾語を読まない。__POPCNT__なしのビルドでは実行時フラグの分岐が残るが、予測可能で、支配的なのはキャッシュミスと推定(仮説、未測定)。word/prefix同居化はCodexの回帰記録に従い見送る。"
+      },
+      {
+        "id": "wavelet_kth",
+        "source_sha256": "91bc7db5aac92ea56663a0407886e37cae5b349eca354966b2a4c88e517cd9ec",
+        "verdict": "keep",
+        "reason": "全文を机上確認し、誤りは見つからなかった(未実行)。kth_smallestは各段で両端のrank1から0側の個数を求め、kと比較して降りる標準形。復元はbase_+codeに符号biasを戻すので、int64全域で正しい。構築と分割はwavelet_frequencyと共通で、同じ確認が当てはまる。mainを32bit固定にすると公開契約が狭まるため、現状の値域適応を維持するのが妥当。クエリのバッチ化やプリフェッチは、公開APIの素直な呼び出しを崩すうえ、効果も未測定なので提案しない。"
+      }
+    ],
+    "experiments": []
+  },
+  "usage_after": {
+    "windows": {
+      "five_hour": {
+        "utilization": 60.0,
+        "resets_at": "2026-11-14T21:10:00.430773+00:00"
+      },
+      "seven_day": {
+        "utilization": 13.0,
+        "resets_at": "2026-11-21T09:00:00.430793+00:00"
+      },
+      "seven_day_breakdown": {},
+      "limit_0_session_all": {
+        "utilization": 60,
+        "resets_at": "2026-11-14T21:10:00.430773+00:00",
+        "kind": "session",
+        "model": "all"
+      },
+      "limit_1_weekly_all_all": {
+        "utilization": 13,
+        "resets_at": "2026-11-21T09:00:00.430793+00:00",
+        "kind": "weekly_all",
+        "model": "all"
+      },
+      "limit_2_weekly_scoped_Fable": {
+        "utilization": 26,
+        "resets_at": "2026-11-21T09:00:00.431067+00:00",
+        "kind": "weekly_scoped",
+        "model": "Fable"
+      }
+    },
+    "extra_usage_enabled": false
+  },
+  "prompt_sha256": "14205979427fe2c1aea0e8c28cc103594c2b04559ea31f9a46a2d14fd621ee99",
+  "response_sha256": "73cb3845930ba170780d3cabff9b261144b61d7d47656e2006030d87dc0634db",
+  "model_usage": {
+    "claude-fable-5-2": {
+      "inputTokens": 2,
+      "outputTokens": 11359,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 47129,
+      "webSearchRequests": 0,
+      "costUSD": 1.20844,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 9651,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 47129,
+      "canonicalModel": "claude-fable-5-2",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "source_representation": "Fresh complete current library/main/I/O/vendor code supplied as shared guarded components with ordered file assembly references. All unique code included; identical non-comment token sequences, exact preprocessor logical lines, lexical adjacency and literals retained. Exact original layout reconstructed and verified separately. No historical review used to omit current code.",
+  "representation_proof": {
+    "method": "fresh_full_current_code_guard_component_dedup",
+    "status": "PASS",
+    "proof_path": "/tmp/sirkit-premerge-optimization-20261114/full-code-dedup/reconstruction-proofs.json",
+    "proof_sha256": "e75a4bc8e4ca5f2905e4955567d2e7906ba6f6c7651a2c9c2952e318e5a38951",
+    "verifier_sha256": "73a408f208e42b2db77aaf05559fe1d06f71626a7a9bd851eb258586fbfdbee2",
+    "verification_sha256": "735097b0599c57dabf071c89ebf1bfc3c722869afec1ce14962fc880ebda05ea",
+    "summary": {
+      "status": "PASS",
+      "IDs": 55,
+      "batches": 9,
+      "source_files": 91,
+      "component_occurrences_across_batches": 229,
+      "exact_stripped_bytes_tokens_literals_directives_newlines": true,
+      "lexical_operator_adjacency_and_macro_spacing_preserved": true,
+      "all_live_raw_hashes_match": true,
+      "verifier_sha256": "73a408f208e42b2db77aaf05559fe1d06f71626a7a9bd851eb258586fbfdbee2",
+      "unique_code_payload_total_bytes": 783498,
+      "unshared_stripped_file_total_bytes": 940575,
+      "prompt_total_bytes": 884631
+    },
+    "historical_approval_transfer": false
+  },
+  "review_limitations": "Static review plus supplied measured evidence, not new model-executed measurements. No online submission or AC inference."
+}

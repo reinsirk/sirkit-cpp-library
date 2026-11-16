@@ -4,15 +4,21 @@
 
 競技プログラミング向けのC++ライブラリ集です。
 
+[ライブラリページ](https://reinsirk.github.io/sirkit-cpp-library/)にAPI・使用例・ソース・テストと性能の結果をまとめます。[ページの生成と公開](Document/library_pages.md)を参照してください。
+
 CIバッジはVerify・ASan/UBSan・カバレッジ・通常版の作法検査・性能測定の実行結果です。[品質検査の説明](Document/ci_quality.md)を参照してください。検証件数・カバレッジ率・性能比はChecks／ActionsのSummaryで、オンラインACは下の表で確認できます。
 
 <!-- VERIFY_STATUS:START -->
 [Verify状況の一覧](Verify/current/status.md)（通常版の現行ソースと保存した判定を照合）
 
-| 提出先 | 対象 | 現行AC | 現行未照合・要再提出 | 未提出 | 非AC |
+| 提出先 | 対象 | 現行AC | 現行未照合 | 未提出 | 非AC |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| Library Checker | 125 | 0 | 68 | 57 | 0 |
-| AtCoder | 50 | 0 | 34 | 16 | 0 |
+| Library Checker | 144 | 86 | 10 | 48 | 0 |
+| AOJ | 0 | 0 | 0 | 0 | 0 |
+| Yukicoder | 34 | 2 | 0 | 32 | 0 |
+| AtCoder | 52 | 0 | 34 | 18 | 0 |
+
+説明変更のみの再提出免除: 8件、移行前の参考検証: 17件。いずれも再提出対象から除き、現行ACへの新規照合とは区別します。
 
 ローカル補足: 54件。過去のAC・ローカル結果は現行ACと区別します。
 <!-- VERIFY_STATUS:END -->

@@ -1,0 +1,1254 @@
+{
+  "date": "2026-11-15",
+  "definitions": {
+    "direct": "中心となる公開操作と問題が自然に一致する。全公開API/全型/所有権/例外をオンラインで確認した意味ではない。",
+    "partial": "自然な帰着として有効だが、中心機能の一部・投影・表現制限を残す。",
+    "inappropriate": "実際の出力に対象APIが必要でない、または制約/意味/計算量が適合しない。"
+  },
+  "records": [
+    {
+      "id": "preferred_fraction_rational_approximation",
+      "libraries": [
+        "Math/Fraction.cpp"
+      ],
+      "driver": "Verify/current/drivers/preferred_fraction_rational_approximation_main.cpp",
+      "problem_url": "https://judge.yosupo.jp/problem/rational_approximation",
+      "assessment": "partial",
+      "exercised_apis": [
+        "Fraction構築・約分",
+        "==/<=>",
+        "+/-/*/÷・単項-",
+        "floor",
+        "numerator/denominator"
+      ],
+      "not_covered": [
+        "N,x,y<=1e9の正値のみ。負分母・負数・int64端・0除算/overflow例外",
+        "ceil/trunc/inverse/abs/浮動変換/stream",
+        "任意分数列の整列そのもの"
+      ],
+      "reasoning": "Stern–Brocotの移動数をFractionの四則と大小で決める自然な帰着。0/1・1/0の境界だけは整数組で扱い、無限大Fractionを作らない。結果の正負・端の全域を検証する問題ではない。",
+      "sources": [
+        "https://raw.githubusercontent.com/yosupo06/library-checker-problems/73876f1cbcf082d2b22722924b924d3d65a2f00e/number_theory/rational_approximation/task.md",
+        "https://raw.githubusercontent.com/yosupo06/library-checker-problems/73876f1cbcf082d2b22722924b924d3d65a2f00e/number_theory/rational_approximation/info.toml"
+      ],
+      "official_spec_sha256": {
+        "primary/lc/number_theory/rational_approximation/task.md": "e350e63139443cee9caadd9158ee0f1e0c96a60a1c4151eee298ea5b2312103e",
+        "primary/lc/number_theory/rational_approximation/info.toml": "2cfd5f980500c1f29bf7b7ad4bbaca59d12ffbd332c30e9320ec6802b97b8066"
+      },
+      "official_parameters": {
+        "MAX_T": 100000,
+        "MAX_N": 1000000000
+      },
+      "source_sha256": {
+        "Math/Fraction.cpp": "bd8937304f1b8eb555fff33da9e159874113199dfb80b88a4f64c37ed76814af",
+        "Verify/current/drivers/preferred_fraction_rational_approximation_main.cpp": "cab5258cc0bf8b104756bc99d83cda14eedf0c00d695f4ef7febabdea3c397cb"
+      },
+      "supplemental_ids": [
+        "fraction_sort",
+        "fraction_arithmetic"
+      ]
+    },
+    {
+      "id": "preferred_data_radix_frequency_int64",
+      "libraries": [
+        "Algorithm/Radix_sort.cpp"
+      ],
+      "driver": "Verify/current/drivers/preferred_data_radix_frequency_int64_main.cpp",
+      "problem_url": "https://judge.yosupo.jp/problem/static_range_frequency",
+      "assessment": "partial",
+      "exercised_apis": [
+        "RadixSort(vector<int64_t>)"
+      ],
+      "not_covered": [
+        "負の入力・符号境界・型の全域",
+        "8/16bit型・maximum指定・Workspace再利用・SortOrderの安定添字",
+        "入力容量/保管先の保持"
+      ],
+      "reasoning": "(value<<32)|indexを64bitに連結してソート。x<=1e9なので連結後もINT64_MAXを超えず、整列結果の下限位置の差が頻度となる。",
+      "sources": [
+        "https://raw.githubusercontent.com/yosupo06/library-checker-problems/73876f1cbcf082d2b22722924b924d3d65a2f00e/data_structure/static_range_frequency/task.md",
+        "https://raw.githubusercontent.com/yosupo06/library-checker-problems/73876f1cbcf082d2b22722924b924d3d65a2f00e/data_structure/static_range_frequency/info.toml"
+      ],
+      "official_spec_sha256": {
+        "primary/lc/data_structure/static_range_frequency/task.md": "90d7041c253f59250c085eb09e4be34ca8197fae6b2fe1c27937558790cc9e7a",
+        "primary/lc/data_structure/static_range_frequency/info.toml": "2539017ab2378adf7f33d6635d7262b660d120108a571408c4b8af40ee4aca1a"
+      },
+      "official_parameters": {
+        "N_MIN": 0,
+        "N_MAX": 500000,
+        "Q_MIN": 0,
+        "Q_MAX": 500000,
+        "A_MIN": 0,
+        "A_MAX": 1000000000
+      },
+      "source_sha256": {
+        "Algorithm/Radix_sort.cpp": "0b527277b26307e434513f0bbe6afd90e77d52ffceac550f5e445504daa34e73",
+        "Verify/current/drivers/preferred_data_radix_frequency_int64_main.cpp": "9401dec260067fa7972523970ca23817e9b40328c96265f19b558f6f6cfcefde"
+      },
+      "supplemental_ids": [
+        "radix_sort",
+        "radix_sort_uint32"
+      ]
+    },
+    {
+      "id": "preferred_data_radix_frequency_uint32",
+      "libraries": [
+        "Algorithm/Radix_sort.cpp"
+      ],
+      "driver": "Verify/current/drivers/preferred_data_radix_frequency_uint32_main.cpp",
+      "problem_url": "https://judge.yosupo.jp/problem/static_range_frequency",
+      "assessment": "partial",
+      "exercised_apis": [
+        "RadixSort(vector<uint32_t>)"
+      ],
+      "not_covered": [
+        "負の入力・符号境界・型の全域",
+        "8/16bit型・maximum指定・Workspace再利用・SortOrderの安定添字",
+        "入力容量/保管先の保持"
+      ],
+      "reasoning": "ソートした値を座標圧縮し、元の添字のCSRから区間頻度を得る。ソート結果を捨てるダミー呼出しではない。",
+      "sources": [
+        "https://raw.githubusercontent.com/yosupo06/library-checker-problems/73876f1cbcf082d2b22722924b924d3d65a2f00e/data_structure/static_range_frequency/task.md",
+        "https://raw.githubusercontent.com/yosupo06/library-checker-problems/73876f1cbcf082d2b22722924b924d3d65a2f00e/data_structure/static_range_frequency/info.toml"
+      ],
+      "official_spec_sha256": {
+        "primary/lc/data_structure/static_range_frequency/task.md": "90d7041c253f59250c085eb09e4be34ca8197fae6b2fe1c27937558790cc9e7a",
+        "primary/lc/data_structure/static_range_frequency/info.toml": "2539017ab2378adf7f33d6635d7262b660d120108a571408c4b8af40ee4aca1a"
+      },
+      "official_parameters": {
+        "N_MIN": 0,
+        "N_MAX": 500000,
+        "Q_MIN": 0,
+        "Q_MAX": 500000,
+        "A_MIN": 0,
+        "A_MAX": 1000000000
+      },
+      "source_sha256": {
+        "Algorithm/Radix_sort.cpp": "0b527277b26307e434513f0bbe6afd90e77d52ffceac550f5e445504daa34e73",
+        "Verify/current/drivers/preferred_data_radix_frequency_uint32_main.cpp": "f679ca19989d0f59332ca78f556c41a86dd366242c297e69e85e8d14c06f33b5"
+      },
+      "supplemental_ids": [
+        "radix_sort",
+        "radix_sort_uint32"
+      ]
+    },
+    {
+      "id": "z_algorithm",
+      "libraries": [
+        "String/Z_Algorithm.cpp"
+      ],
+      "driver": "Verify/current/drivers/z_algorithm_main.cpp",
+      "problem_url": "https://judge.yosupo.jp/problem/zalgorithm",
+      "assessment": "direct",
+      "exercised_apis": [
+        "z_algorithm(string_view)"
+      ],
+      "not_covered": [
+        "空入力・任意整数列/汎用sequence・別overload",
+        "PrefixMatches/ZMatches・空pattern・全バイト"
+      ],
+      "reasoning": "N<=500000の英小文字列のZ配列を全要素出力。custom IOは入力をstring_viewに渡し、計算を別手法へ差し替えていない。",
+      "sources": [
+        "https://raw.githubusercontent.com/yosupo06/library-checker-problems/73876f1cbcf082d2b22722924b924d3d65a2f00e/string/zalgorithm/task.md",
+        "https://raw.githubusercontent.com/yosupo06/library-checker-problems/73876f1cbcf082d2b22722924b924d3d65a2f00e/string/zalgorithm/info.toml"
+      ],
+      "official_spec_sha256": {
+        "primary/lc/string/zalgorithm/task.md": "2b291b403bf6d2148f097d591486fc0bf0ab1ff8f3d7dbe8190ee9d144d837c4",
+        "primary/lc/string/zalgorithm/info.toml": "75d80d297a4f12c13c828b289a4e5795d8573d1a668ad07e4f19c81dcc54fc4c"
+      },
+      "official_parameters": {
+        "N_MAX": 500000
+      },
+      "source_sha256": {
+        "String/Z_Algorithm.cpp": "49f57734cc011123d93747d304ef208c4ff5c8c773be65743e38026bf426295a",
+        "Verify/current/drivers/z_algorithm_main.cpp": "4b240c396fc8b6756bc2eb01eec75637c2c4b56852c29017c00a728814e103ab"
+      },
+      "supplemental_ids": []
+    },
+    {
+      "id": "manacher",
+      "libraries": [
+        "String/Manacher.cpp"
+      ],
+      "driver": "Verify/current/drivers/manacher_main.cpp",
+      "problem_url": "https://judge.yosupo.jp/problem/enumerate_palindromes",
+      "assessment": "direct",
+      "exercised_apis": [
+        "PalindromicLengths(string)"
+      ],
+      "not_covered": [
+        "PalindromeRadiiの個別assign/is_palindrome/longest/count",
+        "空入力・汎用値列/全バイト"
+      ],
+      "reasoning": "文字上/文字間の全2N-1中心の最長回文長を出力し、奇数/偶数両方の構築結果に依存する。",
+      "sources": [
+        "https://raw.githubusercontent.com/yosupo06/library-checker-problems/73876f1cbcf082d2b22722924b924d3d65a2f00e/string/enumerate_palindromes/task.md",
+        "https://raw.githubusercontent.com/yosupo06/library-checker-problems/73876f1cbcf082d2b22722924b924d3d65a2f00e/string/enumerate_palindromes/info.toml"
+      ],
+      "official_spec_sha256": {
+        "primary/lc/string/enumerate_palindromes/task.md": "c92ed622067e10abf4b0d9a3431b27fca65b3aa2e8030365719368ed76934aa8",
+        "primary/lc/string/enumerate_palindromes/info.toml": "28447fffa557ed36637ed3d6566beaf3674034c4de76d8fc8b1020c468724030"
+      },
+      "official_parameters": {
+        "N_MAX": 500000
+      },
+      "source_sha256": {
+        "String/Manacher.cpp": "538caf62fc2b6b14fefa31a74cf31d58d10e0f3f0a49e4d109cbd89ef39c5b14",
+        "Verify/current/drivers/manacher_main.cpp": "3ebad30ccbcaebf98972d1d9ae975066986168162adcf0fe5bee806b36fb7341"
+      },
+      "supplemental_ids": []
+    },
+    {
+      "id": "suffix_array",
+      "libraries": [
+        "String/Suffix_Array.cpp"
+      ],
+      "driver": "Verify/current/drivers/suffix_array_main.cpp",
+      "problem_url": "https://judge.yosupo.jp/problem/suffixarray",
+      "assessment": "direct",
+      "exercised_apis": [
+        "suffix_array(string)"
+      ],
+      "not_covered": [
+        "vector<int>,upper/汎用vector/char*/string_view別overload",
+        "空列・0byte/高byte/負整数/uint64上限",
+        "SuffixArrayEqualRange検索"
+      ],
+      "reasoning": "英小文字の接尾辞順を開始添字として全て出力する直接問題。",
+      "sources": [
+        "https://raw.githubusercontent.com/yosupo06/library-checker-problems/73876f1cbcf082d2b22722924b924d3d65a2f00e/string/suffixarray/task.md",
+        "https://raw.githubusercontent.com/yosupo06/library-checker-problems/73876f1cbcf082d2b22722924b924d3d65a2f00e/string/suffixarray/info.toml"
+      ],
+      "official_spec_sha256": {
+        "primary/lc/string/suffixarray/task.md": "9c37d8803888e3fdd25137dd9f3f466a55c5b40dac02a13584cefc9cf50d9b91",
+        "primary/lc/string/suffixarray/info.toml": "1aaefab37b6e34bf4400012d2c3667db85fbc7cb1008d8c87324359f2506f596"
+      },
+      "official_parameters": {
+        "N_MAX": 500000
+      },
+      "source_sha256": {
+        "String/Suffix_Array.cpp": "a2e1643e72cb2459b364d0aec7682f5a8759b02866f1bb8a2d73041ed9ebddf5",
+        "Verify/current/drivers/suffix_array_main.cpp": "d2ae99f2d7897c3c8a2bdd50ce2755496b18d5c4cc89c072f7f13ff64b96f848"
+      },
+      "supplemental_ids": [
+        "suffix_array_substrings"
+      ]
+    },
+    {
+      "id": "suffix_array_substrings",
+      "libraries": [
+        "String/Suffix_Array.cpp"
+      ],
+      "driver": "Verify/current/drivers/suffix_array_substrings_main.cpp",
+      "problem_url": "https://judge.yosupo.jp/problem/number_of_substrings",
+      "assessment": "partial",
+      "exercised_apis": [
+        "suffix_array(string)",
+        "lcp_array(string,sa)"
+      ],
+      "not_covered": [
+        "vector<int>,upper/汎用vector/char*/string_view別overload",
+        "空列・0byte/高byte/負整数/uint64上限",
+        "SuffixArrayEqualRange検索",
+        "LCP配列の個々の値（出力では和のみを使用）"
+      ],
+      "reasoning": "全部分文字列数N(N+1)/2から隣接LCP和を引く標準帰着。SAだけのVerifyに加えてLCPを出力へ反映するが、配列各値を独立出力する問題ではない。",
+      "sources": [
+        "https://raw.githubusercontent.com/yosupo06/library-checker-problems/73876f1cbcf082d2b22722924b924d3d65a2f00e/string/number_of_substrings/task.md",
+        "https://raw.githubusercontent.com/yosupo06/library-checker-problems/73876f1cbcf082d2b22722924b924d3d65a2f00e/string/number_of_substrings/info.toml"
+      ],
+      "official_spec_sha256": {
+        "primary/lc/string/number_of_substrings/task.md": "7fcde3653e17c99421bcc092822cd880eb7ac5bcab6384b8c6dc6cda860a74ac",
+        "primary/lc/string/number_of_substrings/info.toml": "9d3432c5f5c46632d6c4e716f65053fa20ec0e8a7e2daaff36f1b5cce935eb75"
+      },
+      "official_parameters": {},
+      "source_sha256": {
+        "String/Suffix_Array.cpp": "a2e1643e72cb2459b364d0aec7682f5a8759b02866f1bb8a2d73041ed9ebddf5",
+        "Verify/current/drivers/suffix_array_substrings_main.cpp": "5b934920067b755639670296e5d0f9c272b6b65cc92070fea667d8eaf0e1d494"
+      },
+      "supplemental_ids": [
+        "suffix_array"
+      ]
+    },
+    {
+      "id": "aho_corasick",
+      "libraries": [
+        "String/Aho_Corasick.cpp"
+      ],
+      "driver": "Verify/current/drivers/aho_corasick_main.cpp",
+      "problem_url": "https://judge.yosupo.jp/problem/aho_corasick",
+      "assessment": "partial",
+      "exercised_apis": [
+        "AhoCorasick<>::add/build",
+        "state_count/parent/failure/pattern_state"
+      ],
+      "not_covered": [
+        "本文検索step/count_total/match_counts/for_each_match/find_all",
+        "空/重複pattern・Alphabet/First変更/全バイト",
+        "output_count/出力リンクの一致数伝播"
+      ],
+      "reasoning": "LC問題が要求するTrie親・failureリンク・各語の終端状態の構築をそのまま出力するので構造Verifyには適切。一般の多パターン検索API全体のVerifyとは呼ばない。",
+      "sources": [
+        "https://raw.githubusercontent.com/yosupo06/library-checker-problems/73876f1cbcf082d2b22722924b924d3d65a2f00e/string/aho_corasick/task.md",
+        "https://raw.githubusercontent.com/yosupo06/library-checker-problems/73876f1cbcf082d2b22722924b924d3d65a2f00e/string/aho_corasick/info.toml"
+      ],
+      "official_spec_sha256": {
+        "primary/lc/string/aho_corasick/task.md": "476beca7a9f6e9f2ae5598aa61a3d6e0d05b77e92558bc4c94716743897f3ce5",
+        "primary/lc/string/aho_corasick/info.toml": "52eef2e729c82b52acc10bf0c6085b897b711fa85e22749b9cc2010989dadb28"
+      },
+      "official_parameters": {
+        "MIN_N": 1,
+        "MAX_N": 1000000,
+        "MIN_S_SUM": 1,
+        "MAX_S_SUM": 1000000
+      },
+      "source_sha256": {
+        "String/Aho_Corasick.cpp": "cbfd9bc1cf1cc4d7ce3497677c07becb98885c3d2198372ceea000a146679e19",
+        "Verify/current/drivers/aho_corasick_main.cpp": "a4868adce1b31137efb9b2dd37e05522fea025be7c094e9c4311479de9cd0330"
+      },
+      "supplemental_ids": [
+        "aho_corasick_counts",
+        "coverage_aho_total_search"
+      ]
+    },
+    {
+      "id": "suffix_automaton",
+      "libraries": [
+        "String/Suffix_Automaton.cpp"
+      ],
+      "driver": "Verify/current/drivers/suffix_automaton_main.cpp",
+      "problem_url": "https://judge.yosupo.jp/problem/number_of_substrings",
+      "assessment": "direct",
+      "exercised_apis": [
+        "SuffixAutomaton(string)",
+        "distinct_substring_count"
+      ],
+      "not_covered": [
+        "明示append・occurrences/contains・出現回数キャッシュ",
+        "空列・Alphabet/Base別指定・reset/clear/reserve・所有権"
+      ],
+      "reasoning": "相異なる非空部分文字列の総数を出力する直接問題。",
+      "sources": [
+        "https://raw.githubusercontent.com/yosupo06/library-checker-problems/73876f1cbcf082d2b22722924b924d3d65a2f00e/string/number_of_substrings/task.md",
+        "https://raw.githubusercontent.com/yosupo06/library-checker-problems/73876f1cbcf082d2b22722924b924d3d65a2f00e/string/number_of_substrings/info.toml"
+      ],
+      "official_spec_sha256": {
+        "primary/lc/string/number_of_substrings/task.md": "7fcde3653e17c99421bcc092822cd880eb7ac5bcab6384b8c6dc6cda860a74ac",
+        "primary/lc/string/number_of_substrings/info.toml": "9d3432c5f5c46632d6c4e716f65053fa20ec0e8a7e2daaff36f1b5cce935eb75"
+      },
+      "official_parameters": {},
+      "source_sha256": {
+        "String/Suffix_Automaton.cpp": "61cc2e3c21d52f69bbde379d11f66c0d606cbd32aca6251e82f25bb81c4b5846",
+        "Verify/current/drivers/suffix_automaton_main.cpp": "1fb8c33f04cff7ba086e4bb06718478845fee54e2183c796d9c2db0d7d09a15c"
+      },
+      "supplemental_ids": [
+        "suffix_automaton_lcs"
+      ]
+    },
+    {
+      "id": "suffix_automaton_lcs",
+      "libraries": [
+        "String/Suffix_Automaton.cpp"
+      ],
+      "driver": "Verify/current/drivers/suffix_automaton_lcs_main.cpp",
+      "problem_url": "https://judge.yosupo.jp/problem/longest_common_substring",
+      "assessment": "direct",
+      "exercised_apis": [
+        "SuffixAutomaton(string)",
+        "longest_common_substring"
+      ],
+      "not_covered": [
+        "明示append・occurrences/contains・出現回数キャッシュ",
+        "空列・Alphabet/Base別指定・reset/clear/reserve・所有権"
+      ],
+      "reasoning": "二つの文字列の最長共通部分文字列の両位置・長さをそのまま出力し、空一致も表現する。",
+      "sources": [
+        "https://raw.githubusercontent.com/yosupo06/library-checker-problems/73876f1cbcf082d2b22722924b924d3d65a2f00e/string/longest_common_substring/task.md",
+        "https://raw.githubusercontent.com/yosupo06/library-checker-problems/73876f1cbcf082d2b22722924b924d3d65a2f00e/string/longest_common_substring/info.toml"
+      ],
+      "official_spec_sha256": {
+        "primary/lc/string/longest_common_substring/task.md": "2ea4931b465663c19e7c25eed8532789693f02df498373a44a6f4d06abb9b039",
+        "primary/lc/string/longest_common_substring/info.toml": "414589cd7333c45eedb27d2578b509d28e7f76847f36bec4ce52b2bbb46f8ca4"
+      },
+      "official_parameters": {
+        "N_MAX": 500000
+      },
+      "source_sha256": {
+        "String/Suffix_Automaton.cpp": "61cc2e3c21d52f69bbde379d11f66c0d606cbd32aca6251e82f25bb81c4b5846",
+        "Verify/current/drivers/suffix_automaton_lcs_main.cpp": "0cb57654fb09beb16c4ef17eb3ae826efe0c252ce01a33523d9dc855924326b3"
+      },
+      "supplemental_ids": [
+        "suffix_automaton"
+      ]
+    },
+    {
+      "id": "palindromic_tree",
+      "libraries": [
+        "String/Palindromic_Tree.cpp"
+      ],
+      "driver": "Verify/current/drivers/palindromic_tree_main.cpp",
+      "problem_url": "https://judge.yosupo.jp/problem/eertree",
+      "assessment": "direct",
+      "exercised_apis": [
+        "PalindromicTree<>::reserve/append(byte)",
+        "distinct_palindrome_count/parent/suffix_link"
+      ],
+      "not_covered": [
+        "occurrences/node_info/palindromesの遅延cache・find/contains",
+        "length/first_position/longest系を直接比較しない",
+        "空列・Alphabet/Base別指定・文字列append/reset/clear・所有権"
+      ],
+      "reasoning": "LC Eertreeで全頂点の親・suffixリンクと各appendの最長接尾辞頂点を出力。対応する木構築機能に直接合う。",
+      "sources": [
+        "https://raw.githubusercontent.com/yosupo06/library-checker-problems/73876f1cbcf082d2b22722924b924d3d65a2f00e/string/eertree/task.md",
+        "https://raw.githubusercontent.com/yosupo06/library-checker-problems/73876f1cbcf082d2b22722924b924d3d65a2f00e/string/eertree/info.toml"
+      ],
+      "official_spec_sha256": {
+        "primary/lc/string/eertree/task.md": "497188744e1d99640ad61411c86879ac612607f12531732659657078ff93de5a",
+        "primary/lc/string/eertree/info.toml": "1f5b93f6bf191ec6c6e475b6e15d95168781fb7683a1e8ac420be4033c5c5df3"
+      },
+      "official_parameters": {
+        "MIN_N": 1,
+        "MAX_N": 1000000
+      },
+      "source_sha256": {
+        "String/Palindromic_Tree.cpp": "d680bcd377c7d08e270c92c2a73edcbab7903519b02b7d1ac9c657bc46fdb907",
+        "Verify/current/drivers/palindromic_tree_main.cpp": "4586408b9a407f3a66d4ee4bb3c410fa00adabdf0e510d288e809d21e2849405"
+      },
+      "supplemental_ids": []
+    },
+    {
+      "id": "mo",
+      "libraries": [
+        "Algorithm/Mo.cpp"
+      ],
+      "driver": "Verify/current/drivers/mo_main.cpp",
+      "problem_url": "https://judge.yosupo.jp/problem/static_range_count_distinct",
+      "assessment": "partial",
+      "exercised_apis": [
+        "Mo/add_query/run(add,erase,answer)"
+      ],
+      "not_covered": [
+        "左右非対称4callback",
+        "手動block幅/明示orderの返却値・空Q・再実行時状態",
+        "更新版の時刻巻戻し"
+      ],
+      "reasoning": "相異なる値数を、Moが要求する区間伸縮のadd/erase結果から出す自然な静的用途。ただし左右で同じ集計を使うため4callbackの違いを検証できない。",
+      "sources": [
+        "https://raw.githubusercontent.com/yosupo06/library-checker-problems/73876f1cbcf082d2b22722924b924d3d65a2f00e/data_structure/static_range_count_distinct/task.md",
+        "https://raw.githubusercontent.com/yosupo06/library-checker-problems/73876f1cbcf082d2b22722924b924d3d65a2f00e/data_structure/static_range_count_distinct/info.toml"
+      ],
+      "official_spec_sha256": {
+        "primary/lc/data_structure/static_range_count_distinct/task.md": "8f8d281b91fc93097d967471c5a20991249f5d1116e6576cf3df59fcbfcb9e2c",
+        "primary/lc/data_structure/static_range_count_distinct/info.toml": "bf9eca28f4952279b9f04f028d28866e1993cbc6ae24ee6b88d89123e4a00bad"
+      },
+      "official_parameters": {
+        "N_MIN": 0,
+        "N_MAX": 500000,
+        "Q_MIN": 0,
+        "Q_MAX": 500000,
+        "A_MIN": 0,
+        "A_MAX": 1000000000
+      },
+      "source_sha256": {
+        "Algorithm/Mo.cpp": "5eedfaee6446de2843c3deec1093a6797336878f2a9c7e2920d4c6b4f07cb838",
+        "Verify/current/drivers/mo_main.cpp": "b452c7ab17c4dbfac5b3693024e7b49eeca415b58c2d6aa5231090e2dccbd224"
+      },
+      "supplemental_ids": [
+        "mo_updates",
+        "coverage_mo_inversions"
+      ]
+    },
+    {
+      "id": "mo_updates",
+      "libraries": [
+        "Algorithm/Mo.cpp"
+      ],
+      "driver": "Verify/current/drivers/mo_updates_main.cpp",
+      "problem_url": "https://judge.yosupo.jp/problem/point_set_range_frequency",
+      "assessment": "direct",
+      "exercised_apis": [
+        "MoWithUpdates/add_update/add_query/run",
+        "apply/undo"
+      ],
+      "not_covered": [
+        "左右非対称4callback・明示time付きadd_query",
+        "空Q/U・手動block幅・返却State・再利用/所有権"
+      ],
+      "reasoning": "代入と頻度照会の時刻を記録し、apply/undoで真に旧値へ往復する。更新を先読みするだけで答えを別計算するダミーではない。",
+      "sources": [
+        "https://raw.githubusercontent.com/yosupo06/library-checker-problems/73876f1cbcf082d2b22722924b924d3d65a2f00e/data_structure/point_set_range_frequency/task.md",
+        "https://raw.githubusercontent.com/yosupo06/library-checker-problems/73876f1cbcf082d2b22722924b924d3d65a2f00e/data_structure/point_set_range_frequency/info.toml"
+      ],
+      "official_spec_sha256": {
+        "primary/lc/data_structure/point_set_range_frequency/task.md": "a58e571fdec6bd550a994ede200826b7a8a3ebcec28f78373e823e7e1d453770",
+        "primary/lc/data_structure/point_set_range_frequency/info.toml": "aec73e05bef124e2555ca6529b108ad2afa373ac3ba15b90f719493f60a97156"
+      },
+      "official_parameters": {
+        "N_MIN": 0,
+        "N_MAX": 200000,
+        "Q_MIN": 0,
+        "Q_MAX": 200000,
+        "A_MIN": 0,
+        "A_MAX": 1000000000
+      },
+      "source_sha256": {
+        "Algorithm/Mo.cpp": "5eedfaee6446de2843c3deec1093a6797336878f2a9c7e2920d4c6b4f07cb838",
+        "Verify/current/drivers/mo_updates_main.cpp": "fc03a4be14fc51cae6bcbd562f594f99adca30d8caeea3c234d09297b6249909"
+      },
+      "supplemental_ids": [
+        "mo",
+        "coverage_mo_inversions"
+      ]
+    },
+    {
+      "id": "rolling_hash",
+      "libraries": [
+        "String/RollingHash.cpp"
+      ],
+      "driver": "Verify/current/drivers/rolling_hash_zalgorithm_main.cpp",
+      "problem_url": "https://judge.yosupo.jp/problem/zalgorithm",
+      "assessment": "partial",
+      "exercised_apis": [
+        "RollingHash(string,1000000007)",
+        "lcp(0,self,i)"
+      ],
+      "not_covered": [
+        "同じ底の異なる個体とのlcp/equal/compare",
+        "get/whole/concatの公開呼出し・limit指定",
+        "assign/clear/底補正/所有権・全バイト/空列",
+        "ハッシュ衝突の不存在（単一固定底なので確率的誤りは残る）"
+      ],
+      "reasoning": "各接尾辞と接頭辞のLCPはZ配列そのものなので自然な使用。中心が常に先頭0の同一個体比較であり、衝突のない厳密文字列比較を保証するVerifyとは区別する。",
+      "sources": [
+        "https://raw.githubusercontent.com/yosupo06/library-checker-problems/73876f1cbcf082d2b22722924b924d3d65a2f00e/string/zalgorithm/task.md",
+        "https://raw.githubusercontent.com/yosupo06/library-checker-problems/73876f1cbcf082d2b22722924b924d3d65a2f00e/string/zalgorithm/info.toml"
+      ],
+      "official_spec_sha256": {
+        "primary/lc/string/zalgorithm/task.md": "2b291b403bf6d2148f097d591486fc0bf0ab1ff8f3d7dbe8190ee9d144d837c4",
+        "primary/lc/string/zalgorithm/info.toml": "75d80d297a4f12c13c828b289a4e5795d8573d1a668ad07e4f19c81dcc54fc4c"
+      },
+      "official_parameters": {
+        "N_MAX": 500000
+      },
+      "source_sha256": {
+        "String/RollingHash.cpp": "b1b25c93d3e399f05d5f6cc0a04008356ac56fd5d939acd0bcb49d1fa97a9e69",
+        "Verify/current/drivers/rolling_hash_zalgorithm_main.cpp": "7a607fffa2d5726c705ca3b487e95c6063f298e48922dc968935616ac9a5c528"
+      },
+      "supplemental_ids": [
+        "coverage_rolling_hash_short_search"
+      ]
+    },
+    {
+      "id": "lis",
+      "libraries": [
+        "Algorithm/LIS.cpp"
+      ],
+      "driver": "Verify/current/drivers/lis_main.cpp",
+      "problem_url": "https://judge.yosupo.jp/problem/longest_increasing_subsequence",
+      "assessment": "direct",
+      "exercised_apis": [
+        "LISIndices<true>(vector<int64_t>)"
+      ],
+      "not_covered": [
+        "Strict=falseの広義LIS",
+        "LISLength/LIS/LISSequence/LISEndingLengthsの別結果",
+        "空列・負値/全int64範囲・浮動NaN・非copy型"
+      ],
+      "reasoning": "最長の狭義増加部分列を実際の元添字で返す直接問題。semantic checkerが長さ・添字順・値の狭義増加を確認する。",
+      "sources": [
+        "https://raw.githubusercontent.com/yosupo06/library-checker-problems/73876f1cbcf082d2b22722924b924d3d65a2f00e/other/longest_increasing_subsequence/task.md",
+        "https://raw.githubusercontent.com/yosupo06/library-checker-problems/73876f1cbcf082d2b22722924b924d3d65a2f00e/other/longest_increasing_subsequence/info.toml"
+      ],
+      "official_spec_sha256": {
+        "primary/lc/other/longest_increasing_subsequence/task.md": "e86310396c5e6bde1b1c4bd68450626068e09d1d1e45ef19fa6f02a6364d0eff",
+        "primary/lc/other/longest_increasing_subsequence/info.toml": "d835fe397d3b36e9ca45300c73072cbc30a5ea9fdf1c5a7fd64ed8d7b1e94b9f"
+      },
+      "official_parameters": {
+        "N_MIN": 1,
+        "A_MIN": 0,
+        "N_MAX": 500000,
+        "A_MAX": 1000000000
+      },
+      "source_sha256": {
+        "Algorithm/LIS.cpp": "3002ce4839d2e7b209789f8c2a43d126154bd007cac7062e8cf24e3ac0b1b658",
+        "Verify/current/drivers/lis_main.cpp": "a29976f6877b9608c0f81b5d9397d55462ec6d9d1e237f2032abd8c16ec7f26a"
+      },
+      "supplemental_ids": []
+    },
+    {
+      "id": "internal_hash_map",
+      "libraries": [
+        "Internal/Nyaan_hash_map_min.cpp"
+      ],
+      "driver": "Verify/current/drivers/internal_hash_map_main.cpp",
+      "problem_url": "https://judge.yosupo.jp/problem/associative_array",
+      "assessment": "direct",
+      "exercised_apis": [
+        "detail::InternalHashMap<uint64_t,uint64_t>::operator[]",
+        "find"
+      ],
+      "not_covered": [
+        "Packed=true/Denominator変更・符号付きキー・非自明Val",
+        "find_or_emplace/find_nonempty/列挙・default値変更",
+        "clear/release/再利用・copy/move/参照無効化・確保失敗"
+      ],
+      "reasoning": "代入・未登録時0の検索を表の実値から出す直接問題。公開HashMapとは別の内部共有部品として区別する。",
+      "sources": [
+        "https://raw.githubusercontent.com/yosupo06/library-checker-problems/73876f1cbcf082d2b22722924b924d3d65a2f00e/data_structure/associative_array/task.md",
+        "https://raw.githubusercontent.com/yosupo06/library-checker-problems/73876f1cbcf082d2b22722924b924d3d65a2f00e/data_structure/associative_array/info.toml"
+      ],
+      "official_spec_sha256": {
+        "primary/lc/data_structure/associative_array/task.md": "b09c2d849bd141744824df5c89580a7d2e811a3161bcb51902defc783a27700b",
+        "primary/lc/data_structure/associative_array/info.toml": "235aaecdbf2574f548d50a0327dc38690bf7779b2e64aa0dafdf8a717c81fbfd"
+      },
+      "official_parameters": {
+        "Q_MAX": 1000000,
+        "K_AND_V_MAX": 1000000000000000000
+      },
+      "source_sha256": {
+        "Internal/Nyaan_hash_map_min.cpp": "2e353c9daa09faaf53ccef4146a2b1a2b8a0f9a586a49bca99cfbcbeccef0b73",
+        "Verify/current/drivers/internal_hash_map_main.cpp": "403ea0c12c96eb7f38d56f7c0e25741d993f063c2c9db7c9f94cedc49990a5d4"
+      },
+      "supplemental_ids": []
+    },
+    {
+      "id": "zeta_and_full",
+      "libraries": [
+        "Math/Zeta_Mebius.cpp"
+      ],
+      "driver": "Verify/current/drivers/zeta_and_main.cpp",
+      "problem_url": "https://judge.yosupo.jp/problem/bitwise_and_convolution",
+      "assessment": "direct",
+      "exercised_apis": [
+        "bitwise_and_convolution"
+      ],
+      "not_covered": [
+        "固定法998244353以外の値型/非可換な値/符号付き途中overflow",
+        "空配列/値操作の例外・入力保持/所有権",
+        "bitwise_and_squareの専用経路",
+        "同梱のOR/各transform操作単独"
+      ],
+      "reasoning": "全i&j=kの畳み込みをそのまま出力。",
+      "sources": [
+        "https://raw.githubusercontent.com/yosupo06/library-checker-problems/73876f1cbcf082d2b22722924b924d3d65a2f00e/convolution/bitwise_and_convolution/task.md",
+        "https://raw.githubusercontent.com/yosupo06/library-checker-problems/73876f1cbcf082d2b22722924b924d3d65a2f00e/convolution/bitwise_and_convolution/info.toml"
+      ],
+      "official_spec_sha256": {
+        "primary/lc/convolution/bitwise_and_convolution/task.md": "f46d4948e2004fb465ff214e510158a27e83b719a221f3bbf038bc511d0b6d1a",
+        "primary/lc/convolution/bitwise_and_convolution/info.toml": "6dbe418b3605c2737c43bef9e227c9f992f7726581c16b8a0034df65330d2826"
+      },
+      "official_parameters": {
+        "N_MAX": 20,
+        "MOD": 998244353
+      },
+      "source_sha256": {
+        "Math/Zeta_Mebius.cpp": "9555793c1661f1328a73447831ca4738d548dbd9cf878366df6302b5b433e70b",
+        "Verify/current/drivers/zeta_and_main.cpp": "aa2d5b6aef207c329e7e2d1bf915febf347ea44c6f3658d79e44f438d2198130"
+      },
+      "supplemental_ids": [
+        "zeta_or_as_and_full"
+      ]
+    },
+    {
+      "id": "zeta_and_split",
+      "libraries": [
+        "Math/Zeta/Bitwise_Convolution.cpp"
+      ],
+      "driver": "Verify/current/drivers/zeta_and_main.cpp",
+      "problem_url": "https://judge.yosupo.jp/problem/bitwise_and_convolution",
+      "assessment": "direct",
+      "exercised_apis": [
+        "bitwise_and_convolution"
+      ],
+      "not_covered": [
+        "固定法998244353以外の値型/非可換な値/符号付き途中overflow",
+        "空配列/値操作の例外・入力保持/所有権",
+        "bitwise_and_squareの専用経路",
+        "同梱のOR/各transform操作単独"
+      ],
+      "reasoning": "全i&j=kの畳み込みをそのまま出力。",
+      "sources": [
+        "https://raw.githubusercontent.com/yosupo06/library-checker-problems/73876f1cbcf082d2b22722924b924d3d65a2f00e/convolution/bitwise_and_convolution/task.md",
+        "https://raw.githubusercontent.com/yosupo06/library-checker-problems/73876f1cbcf082d2b22722924b924d3d65a2f00e/convolution/bitwise_and_convolution/info.toml"
+      ],
+      "official_spec_sha256": {
+        "primary/lc/convolution/bitwise_and_convolution/task.md": "f46d4948e2004fb465ff214e510158a27e83b719a221f3bbf038bc511d0b6d1a",
+        "primary/lc/convolution/bitwise_and_convolution/info.toml": "6dbe418b3605c2737c43bef9e227c9f992f7726581c16b8a0034df65330d2826"
+      },
+      "official_parameters": {
+        "N_MAX": 20,
+        "MOD": 998244353
+      },
+      "source_sha256": {
+        "Math/Zeta/Bitwise_Convolution.cpp": "7b8c3650b6b610cf3cbcccdadca8a63f59efa82c183e432c188c80998a5f7b6e",
+        "Verify/current/drivers/zeta_and_main.cpp": "aa2d5b6aef207c329e7e2d1bf915febf347ea44c6f3658d79e44f438d2198130"
+      },
+      "supplemental_ids": [
+        "zeta_or_as_and_split"
+      ]
+    },
+    {
+      "id": "zeta_or_as_and_full",
+      "libraries": [
+        "Math/Zeta_Mebius.cpp"
+      ],
+      "driver": "Verify/current/drivers/zeta_or_as_and_main.cpp",
+      "problem_url": "https://judge.yosupo.jp/problem/bitwise_and_convolution",
+      "assessment": "direct",
+      "exercised_apis": [
+        "bitwise_or_convolution"
+      ],
+      "not_covered": [
+        "固定法998244353以外の値型/非可換な値/符号付き途中overflow",
+        "空配列/値操作の例外・入力保持/所有権",
+        "bitwise_or_squareの専用経路",
+        "ORを返す別問題ではなく補集合でANDに帰着"
+      ],
+      "reasoning": "長さ2^bの添字反転はb-bit補集合。~(i|j)=(~i)&(~j)により入力/出力の反転でLC ANDと全入力で同値。",
+      "sources": [
+        "https://raw.githubusercontent.com/yosupo06/library-checker-problems/73876f1cbcf082d2b22722924b924d3d65a2f00e/convolution/bitwise_and_convolution/task.md",
+        "https://raw.githubusercontent.com/yosupo06/library-checker-problems/73876f1cbcf082d2b22722924b924d3d65a2f00e/convolution/bitwise_and_convolution/info.toml"
+      ],
+      "official_spec_sha256": {
+        "primary/lc/convolution/bitwise_and_convolution/task.md": "f46d4948e2004fb465ff214e510158a27e83b719a221f3bbf038bc511d0b6d1a",
+        "primary/lc/convolution/bitwise_and_convolution/info.toml": "6dbe418b3605c2737c43bef9e227c9f992f7726581c16b8a0034df65330d2826"
+      },
+      "official_parameters": {
+        "N_MAX": 20,
+        "MOD": 998244353
+      },
+      "source_sha256": {
+        "Math/Zeta_Mebius.cpp": "9555793c1661f1328a73447831ca4738d548dbd9cf878366df6302b5b433e70b",
+        "Verify/current/drivers/zeta_or_as_and_main.cpp": "9b2d583470094c4fa7acf786884dd4c815734fad60669c769bd641f737e516b3"
+      },
+      "supplemental_ids": [
+        "zeta_and_full"
+      ]
+    },
+    {
+      "id": "zeta_or_as_and_split",
+      "libraries": [
+        "Math/Zeta/Bitwise_Convolution.cpp"
+      ],
+      "driver": "Verify/current/drivers/zeta_or_as_and_main.cpp",
+      "problem_url": "https://judge.yosupo.jp/problem/bitwise_and_convolution",
+      "assessment": "direct",
+      "exercised_apis": [
+        "bitwise_or_convolution"
+      ],
+      "not_covered": [
+        "固定法998244353以外の値型/非可換な値/符号付き途中overflow",
+        "空配列/値操作の例外・入力保持/所有権",
+        "bitwise_or_squareの専用経路",
+        "ORを返す別問題ではなく補集合でANDに帰着"
+      ],
+      "reasoning": "長さ2^bの添字反転はb-bit補集合。~(i|j)=(~i)&(~j)により入力/出力の反転でLC ANDと全入力で同値。",
+      "sources": [
+        "https://raw.githubusercontent.com/yosupo06/library-checker-problems/73876f1cbcf082d2b22722924b924d3d65a2f00e/convolution/bitwise_and_convolution/task.md",
+        "https://raw.githubusercontent.com/yosupo06/library-checker-problems/73876f1cbcf082d2b22722924b924d3d65a2f00e/convolution/bitwise_and_convolution/info.toml"
+      ],
+      "official_spec_sha256": {
+        "primary/lc/convolution/bitwise_and_convolution/task.md": "f46d4948e2004fb465ff214e510158a27e83b719a221f3bbf038bc511d0b6d1a",
+        "primary/lc/convolution/bitwise_and_convolution/info.toml": "6dbe418b3605c2737c43bef9e227c9f992f7726581c16b8a0034df65330d2826"
+      },
+      "official_parameters": {
+        "N_MAX": 20,
+        "MOD": 998244353
+      },
+      "source_sha256": {
+        "Math/Zeta/Bitwise_Convolution.cpp": "7b8c3650b6b610cf3cbcccdadca8a63f59efa82c183e432c188c80998a5f7b6e",
+        "Verify/current/drivers/zeta_or_as_and_main.cpp": "9b2d583470094c4fa7acf786884dd4c815734fad60669c769bd641f737e516b3"
+      },
+      "supplemental_ids": [
+        "zeta_and_split"
+      ]
+    },
+    {
+      "id": "zeta_set_as_and_full",
+      "libraries": [
+        "Math/Zeta_Mebius.cpp"
+      ],
+      "driver": "Verify/current/drivers/zeta_set_as_and_main.cpp",
+      "problem_url": "https://judge.yosupo.jp/problem/bitwise_and_convolution",
+      "assessment": "partial",
+      "exercised_apis": [
+        "superset_zeta_transform",
+        "superset_mobius_transform"
+      ],
+      "not_covered": [
+        "固定法998244353以外の値型/非可換な値/符号付き途中overflow",
+        "空配列/値操作の例外・入力保持/所有権",
+        "subset_zeta_transform/subset_mobius_transform"
+      ],
+      "reasoning": "上位集合和の積をMöbius逆変換するとAND畳み込みになる。上位集合2操作への自然な帰着だが、下位集合2操作は既存driverが呼んでいない。",
+      "sources": [
+        "https://raw.githubusercontent.com/yosupo06/library-checker-problems/73876f1cbcf082d2b22722924b924d3d65a2f00e/convolution/bitwise_and_convolution/task.md",
+        "https://raw.githubusercontent.com/yosupo06/library-checker-problems/73876f1cbcf082d2b22722924b924d3d65a2f00e/convolution/bitwise_and_convolution/info.toml"
+      ],
+      "official_spec_sha256": {
+        "primary/lc/convolution/bitwise_and_convolution/task.md": "f46d4948e2004fb465ff214e510158a27e83b719a221f3bbf038bc511d0b6d1a",
+        "primary/lc/convolution/bitwise_and_convolution/info.toml": "6dbe418b3605c2737c43bef9e227c9f992f7726581c16b8a0034df65330d2826"
+      },
+      "official_parameters": {
+        "N_MAX": 20,
+        "MOD": 998244353
+      },
+      "source_sha256": {
+        "Math/Zeta_Mebius.cpp": "9555793c1661f1328a73447831ca4738d548dbd9cf878366df6302b5b433e70b",
+        "Verify/current/drivers/zeta_set_as_and_main.cpp": "6c98b49afe62eb6de417aa5809512846c85e9a2ad08d08a1605d19fdcbb27044"
+      },
+      "supplemental_ids": [
+        "coverage_subset_transform_full"
+      ]
+    },
+    {
+      "id": "zeta_set_as_and_split",
+      "libraries": [
+        "Math/Zeta/Set_Transform.cpp"
+      ],
+      "driver": "Verify/current/drivers/zeta_set_as_and_main.cpp",
+      "problem_url": "https://judge.yosupo.jp/problem/bitwise_and_convolution",
+      "assessment": "partial",
+      "exercised_apis": [
+        "superset_zeta_transform",
+        "superset_mobius_transform"
+      ],
+      "not_covered": [
+        "固定法998244353以外の値型/非可換な値/符号付き途中overflow",
+        "空配列/値操作の例外・入力保持/所有権",
+        "subset_zeta_transform/subset_mobius_transform"
+      ],
+      "reasoning": "上位集合和の積をMöbius逆変換するとAND畳み込みになる。上位集合2操作への自然な帰着だが、下位集合2操作は既存driverが呼んでいない。",
+      "sources": [
+        "https://raw.githubusercontent.com/yosupo06/library-checker-problems/73876f1cbcf082d2b22722924b924d3d65a2f00e/convolution/bitwise_and_convolution/task.md",
+        "https://raw.githubusercontent.com/yosupo06/library-checker-problems/73876f1cbcf082d2b22722924b924d3d65a2f00e/convolution/bitwise_and_convolution/info.toml"
+      ],
+      "official_spec_sha256": {
+        "primary/lc/convolution/bitwise_and_convolution/task.md": "f46d4948e2004fb465ff214e510158a27e83b719a221f3bbf038bc511d0b6d1a",
+        "primary/lc/convolution/bitwise_and_convolution/info.toml": "6dbe418b3605c2737c43bef9e227c9f992f7726581c16b8a0034df65330d2826"
+      },
+      "official_parameters": {
+        "N_MAX": 20,
+        "MOD": 998244353
+      },
+      "source_sha256": {
+        "Math/Zeta/Set_Transform.cpp": "235196851691205e22933a79cde83a7952e1a916f98cf54278ef397ad0d8fd3a",
+        "Verify/current/drivers/zeta_set_as_and_main.cpp": "6c98b49afe62eb6de417aa5809512846c85e9a2ad08d08a1605d19fdcbb27044"
+      },
+      "supplemental_ids": [
+        "coverage_subset_transform_split"
+      ]
+    },
+    {
+      "id": "zeta_gcd_conv_full",
+      "libraries": [
+        "Math/Zeta_Mebius.cpp"
+      ],
+      "driver": "Verify/current/drivers/zeta_gcd_conv_main.cpp",
+      "problem_url": "https://judge.yosupo.jp/problem/gcd_convolution",
+      "assessment": "direct",
+      "exercised_apis": [
+        "gcd_convolution(f,g,sieve)",
+        "IntegerSieve"
+      ],
+      "not_covered": [
+        "固定法998244353以外の値型/非可換な値/符号付き途中overflow",
+        "空配列/値操作の例外・入力保持/所有権",
+        "添字0の非零値・表なしoverload・gcd_square",
+        "IntegerSieveの素因数分解/約数/phi/mobius/power系"
+      ],
+      "reasoning": "正の添字に対するGCD畳み込みを全て出力する直接問題。LCに存在しない0添字の仕様はローカル補足。",
+      "sources": [
+        "https://raw.githubusercontent.com/yosupo06/library-checker-problems/73876f1cbcf082d2b22722924b924d3d65a2f00e/convolution/gcd_convolution/task.md",
+        "https://raw.githubusercontent.com/yosupo06/library-checker-problems/73876f1cbcf082d2b22722924b924d3d65a2f00e/convolution/gcd_convolution/info.toml"
+      ],
+      "official_spec_sha256": {
+        "primary/lc/convolution/gcd_convolution/task.md": "8069e3fd223744bf147711d840b2273696a374d36edfd9582cfeddbd4a7e8045",
+        "primary/lc/convolution/gcd_convolution/info.toml": "5e0bfcaadd6106ecb2cbc0e554d4994085434acad388ada5bfe0414288458ed6"
+      },
+      "official_parameters": {
+        "N_MAX": 1000000,
+        "MOD": 998244353
+      },
+      "source_sha256": {
+        "Math/Zeta_Mebius.cpp": "9555793c1661f1328a73447831ca4738d548dbd9cf878366df6302b5b433e70b",
+        "Verify/current/drivers/zeta_gcd_conv_main.cpp": "15e231633baeabcc4c24166d4529cb2afcc2531e8cc357606ec6197afb9b0dc2"
+      },
+      "supplemental_ids": [
+        "zeta_gcd_transform_full"
+      ]
+    },
+    {
+      "id": "zeta_gcd_conv_split",
+      "libraries": [
+        "Math/Zeta/Gcd_Lcm_Convolution.cpp"
+      ],
+      "driver": "Verify/current/drivers/zeta_gcd_conv_main.cpp",
+      "problem_url": "https://judge.yosupo.jp/problem/gcd_convolution",
+      "assessment": "direct",
+      "exercised_apis": [
+        "gcd_convolution(f,g,sieve)",
+        "IntegerSieve"
+      ],
+      "not_covered": [
+        "固定法998244353以外の値型/非可換な値/符号付き途中overflow",
+        "空配列/値操作の例外・入力保持/所有権",
+        "添字0の非零値・表なしoverload・gcd_square",
+        "IntegerSieveの素因数分解/約数/phi/mobius/power系"
+      ],
+      "reasoning": "正の添字に対するGCD畳み込みを全て出力する直接問題。LCに存在しない0添字の仕様はローカル補足。",
+      "sources": [
+        "https://raw.githubusercontent.com/yosupo06/library-checker-problems/73876f1cbcf082d2b22722924b924d3d65a2f00e/convolution/gcd_convolution/task.md",
+        "https://raw.githubusercontent.com/yosupo06/library-checker-problems/73876f1cbcf082d2b22722924b924d3d65a2f00e/convolution/gcd_convolution/info.toml"
+      ],
+      "official_spec_sha256": {
+        "primary/lc/convolution/gcd_convolution/task.md": "8069e3fd223744bf147711d840b2273696a374d36edfd9582cfeddbd4a7e8045",
+        "primary/lc/convolution/gcd_convolution/info.toml": "5e0bfcaadd6106ecb2cbc0e554d4994085434acad388ada5bfe0414288458ed6"
+      },
+      "official_parameters": {
+        "N_MAX": 1000000,
+        "MOD": 998244353
+      },
+      "source_sha256": {
+        "Math/Zeta/Gcd_Lcm_Convolution.cpp": "9595f23875f349a1dc31559e545bed525180e40e438c8299f803d02a132387b9",
+        "Verify/current/drivers/zeta_gcd_conv_main.cpp": "15e231633baeabcc4c24166d4529cb2afcc2531e8cc357606ec6197afb9b0dc2"
+      },
+      "supplemental_ids": [
+        "zeta_gcd_transform_split"
+      ]
+    },
+    {
+      "id": "zeta_gcd_transform_full",
+      "libraries": [
+        "Math/Zeta_Mebius.cpp"
+      ],
+      "driver": "Verify/current/drivers/zeta_gcd_transform_main.cpp",
+      "problem_url": "https://judge.yosupo.jp/problem/gcd_convolution",
+      "assessment": "direct",
+      "exercised_apis": [
+        "multiple_zeta_transform",
+        "multiple_mobius_transform",
+        "IntegerSieve"
+      ],
+      "not_covered": [
+        "固定法998244353以外の値型/非可換な値/符号付き途中overflow",
+        "空配列/値操作の例外・入力保持/所有権",
+        "表なしoverload・添字0の非零値",
+        "IntegerSieveの他API"
+      ],
+      "reasoning": "倍数和の積をMöbius逆変換する恒等式により、LCのGCD畳み込みへ自然に一致する。",
+      "sources": [
+        "https://raw.githubusercontent.com/yosupo06/library-checker-problems/73876f1cbcf082d2b22722924b924d3d65a2f00e/convolution/gcd_convolution/task.md",
+        "https://raw.githubusercontent.com/yosupo06/library-checker-problems/73876f1cbcf082d2b22722924b924d3d65a2f00e/convolution/gcd_convolution/info.toml"
+      ],
+      "official_spec_sha256": {
+        "primary/lc/convolution/gcd_convolution/task.md": "8069e3fd223744bf147711d840b2273696a374d36edfd9582cfeddbd4a7e8045",
+        "primary/lc/convolution/gcd_convolution/info.toml": "5e0bfcaadd6106ecb2cbc0e554d4994085434acad388ada5bfe0414288458ed6"
+      },
+      "official_parameters": {
+        "N_MAX": 1000000,
+        "MOD": 998244353
+      },
+      "source_sha256": {
+        "Math/Zeta_Mebius.cpp": "9555793c1661f1328a73447831ca4738d548dbd9cf878366df6302b5b433e70b",
+        "Verify/current/drivers/zeta_gcd_transform_main.cpp": "0cc98d2caf33972b1622b744071ccf8e2ffc42567258430a88d0c964318a511f"
+      },
+      "supplemental_ids": [
+        "zeta_lcm_transform_full"
+      ]
+    },
+    {
+      "id": "zeta_gcd_transform_split",
+      "libraries": [
+        "Math/Zeta/Divisor_Multiple_Transform.cpp"
+      ],
+      "driver": "Verify/current/drivers/zeta_gcd_transform_main.cpp",
+      "problem_url": "https://judge.yosupo.jp/problem/gcd_convolution",
+      "assessment": "direct",
+      "exercised_apis": [
+        "multiple_zeta_transform",
+        "multiple_mobius_transform",
+        "IntegerSieve"
+      ],
+      "not_covered": [
+        "固定法998244353以外の値型/非可換な値/符号付き途中overflow",
+        "空配列/値操作の例外・入力保持/所有権",
+        "表なしoverload・添字0の非零値",
+        "IntegerSieveの他API"
+      ],
+      "reasoning": "倍数和の積をMöbius逆変換する恒等式により、LCのGCD畳み込みへ自然に一致する。",
+      "sources": [
+        "https://raw.githubusercontent.com/yosupo06/library-checker-problems/73876f1cbcf082d2b22722924b924d3d65a2f00e/convolution/gcd_convolution/task.md",
+        "https://raw.githubusercontent.com/yosupo06/library-checker-problems/73876f1cbcf082d2b22722924b924d3d65a2f00e/convolution/gcd_convolution/info.toml"
+      ],
+      "official_spec_sha256": {
+        "primary/lc/convolution/gcd_convolution/task.md": "8069e3fd223744bf147711d840b2273696a374d36edfd9582cfeddbd4a7e8045",
+        "primary/lc/convolution/gcd_convolution/info.toml": "5e0bfcaadd6106ecb2cbc0e554d4994085434acad388ada5bfe0414288458ed6"
+      },
+      "official_parameters": {
+        "N_MAX": 1000000,
+        "MOD": 998244353
+      },
+      "source_sha256": {
+        "Math/Zeta/Divisor_Multiple_Transform.cpp": "f4a1829cfadb352cf80939522b94ed4d4a9974cbaadf30c12c4eaa2c7deb60a6",
+        "Verify/current/drivers/zeta_gcd_transform_main.cpp": "0cc98d2caf33972b1622b744071ccf8e2ffc42567258430a88d0c964318a511f"
+      },
+      "supplemental_ids": [
+        "zeta_lcm_transform_split"
+      ]
+    },
+    {
+      "id": "zeta_lcm_conv_full",
+      "libraries": [
+        "Math/Zeta_Mebius.cpp"
+      ],
+      "driver": "Verify/current/drivers/zeta_lcm_conv_main.cpp",
+      "problem_url": "https://judge.yosupo.jp/problem/lcm_convolution",
+      "assessment": "direct",
+      "exercised_apis": [
+        "lcm_convolution(f,g,sieve)",
+        "IntegerSieve"
+      ],
+      "not_covered": [
+        "固定法998244353以外の値型/非可換な値/符号付き途中overflow",
+        "空配列/値操作の例外・入力保持/所有権",
+        "添字0の非零値・表なしoverload・lcm_square",
+        "IntegerSieveの素因数分解/約数/phi/mobius/power系"
+      ],
+      "reasoning": "正の添字に対するLCM畳み込みを全て出力する直接問題。LCに存在しない0添字の仕様はローカル補足。",
+      "sources": [
+        "https://raw.githubusercontent.com/yosupo06/library-checker-problems/73876f1cbcf082d2b22722924b924d3d65a2f00e/convolution/lcm_convolution/task.md",
+        "https://raw.githubusercontent.com/yosupo06/library-checker-problems/73876f1cbcf082d2b22722924b924d3d65a2f00e/convolution/lcm_convolution/info.toml"
+      ],
+      "official_spec_sha256": {
+        "primary/lc/convolution/lcm_convolution/task.md": "b00a82a663911e8ff891b27cc7abd43cfdac233f83cd0331bab1624f4cd4967a",
+        "primary/lc/convolution/lcm_convolution/info.toml": "322d82414931267d2b4bc6c0a040e575a09ea1fe759c6a5963c5d478bbdefef6"
+      },
+      "official_parameters": {
+        "N_MAX": 1000000,
+        "MOD": 998244353
+      },
+      "source_sha256": {
+        "Math/Zeta_Mebius.cpp": "9555793c1661f1328a73447831ca4738d548dbd9cf878366df6302b5b433e70b",
+        "Verify/current/drivers/zeta_lcm_conv_main.cpp": "8a54f48170f96f19bd6c3b9f13bde4624f91ed70a51d3ada6ba01e7d6f03a0af"
+      },
+      "supplemental_ids": [
+        "zeta_lcm_transform_full"
+      ]
+    },
+    {
+      "id": "zeta_lcm_conv_split",
+      "libraries": [
+        "Math/Zeta/Gcd_Lcm_Convolution.cpp"
+      ],
+      "driver": "Verify/current/drivers/zeta_lcm_conv_main.cpp",
+      "problem_url": "https://judge.yosupo.jp/problem/lcm_convolution",
+      "assessment": "direct",
+      "exercised_apis": [
+        "lcm_convolution(f,g,sieve)",
+        "IntegerSieve"
+      ],
+      "not_covered": [
+        "固定法998244353以外の値型/非可換な値/符号付き途中overflow",
+        "空配列/値操作の例外・入力保持/所有権",
+        "添字0の非零値・表なしoverload・lcm_square",
+        "IntegerSieveの素因数分解/約数/phi/mobius/power系"
+      ],
+      "reasoning": "正の添字に対するLCM畳み込みを全て出力する直接問題。LCに存在しない0添字の仕様はローカル補足。",
+      "sources": [
+        "https://raw.githubusercontent.com/yosupo06/library-checker-problems/73876f1cbcf082d2b22722924b924d3d65a2f00e/convolution/lcm_convolution/task.md",
+        "https://raw.githubusercontent.com/yosupo06/library-checker-problems/73876f1cbcf082d2b22722924b924d3d65a2f00e/convolution/lcm_convolution/info.toml"
+      ],
+      "official_spec_sha256": {
+        "primary/lc/convolution/lcm_convolution/task.md": "b00a82a663911e8ff891b27cc7abd43cfdac233f83cd0331bab1624f4cd4967a",
+        "primary/lc/convolution/lcm_convolution/info.toml": "322d82414931267d2b4bc6c0a040e575a09ea1fe759c6a5963c5d478bbdefef6"
+      },
+      "official_parameters": {
+        "N_MAX": 1000000,
+        "MOD": 998244353
+      },
+      "source_sha256": {
+        "Math/Zeta/Gcd_Lcm_Convolution.cpp": "9595f23875f349a1dc31559e545bed525180e40e438c8299f803d02a132387b9",
+        "Verify/current/drivers/zeta_lcm_conv_main.cpp": "8a54f48170f96f19bd6c3b9f13bde4624f91ed70a51d3ada6ba01e7d6f03a0af"
+      },
+      "supplemental_ids": [
+        "zeta_lcm_transform_split"
+      ]
+    },
+    {
+      "id": "zeta_lcm_transform_full",
+      "libraries": [
+        "Math/Zeta_Mebius.cpp"
+      ],
+      "driver": "Verify/current/drivers/zeta_lcm_transform_main.cpp",
+      "problem_url": "https://judge.yosupo.jp/problem/lcm_convolution",
+      "assessment": "direct",
+      "exercised_apis": [
+        "divisor_zeta_transform",
+        "divisor_mobius_transform",
+        "IntegerSieve"
+      ],
+      "not_covered": [
+        "固定法998244353以外の値型/非可換な値/符号付き途中overflow",
+        "空配列/値操作の例外・入力保持/所有権",
+        "表なしoverload・添字0の非零値",
+        "IntegerSieveの他API"
+      ],
+      "reasoning": "約数和の積をMöbius逆変換する恒等式により、LCのLCM畳み込みへ自然に一致する。",
+      "sources": [
+        "https://raw.githubusercontent.com/yosupo06/library-checker-problems/73876f1cbcf082d2b22722924b924d3d65a2f00e/convolution/lcm_convolution/task.md",
+        "https://raw.githubusercontent.com/yosupo06/library-checker-problems/73876f1cbcf082d2b22722924b924d3d65a2f00e/convolution/lcm_convolution/info.toml"
+      ],
+      "official_spec_sha256": {
+        "primary/lc/convolution/lcm_convolution/task.md": "b00a82a663911e8ff891b27cc7abd43cfdac233f83cd0331bab1624f4cd4967a",
+        "primary/lc/convolution/lcm_convolution/info.toml": "322d82414931267d2b4bc6c0a040e575a09ea1fe759c6a5963c5d478bbdefef6"
+      },
+      "official_parameters": {
+        "N_MAX": 1000000,
+        "MOD": 998244353
+      },
+      "source_sha256": {
+        "Math/Zeta_Mebius.cpp": "9555793c1661f1328a73447831ca4738d548dbd9cf878366df6302b5b433e70b",
+        "Verify/current/drivers/zeta_lcm_transform_main.cpp": "b54df1690d5e31bc69012c865dced0a008d287980e35331ad393a64c08516eec"
+      },
+      "supplemental_ids": [
+        "zeta_gcd_transform_full"
+      ]
+    },
+    {
+      "id": "zeta_lcm_transform_split",
+      "libraries": [
+        "Math/Zeta/Divisor_Multiple_Transform.cpp"
+      ],
+      "driver": "Verify/current/drivers/zeta_lcm_transform_main.cpp",
+      "problem_url": "https://judge.yosupo.jp/problem/lcm_convolution",
+      "assessment": "direct",
+      "exercised_apis": [
+        "divisor_zeta_transform",
+        "divisor_mobius_transform",
+        "IntegerSieve"
+      ],
+      "not_covered": [
+        "固定法998244353以外の値型/非可換な値/符号付き途中overflow",
+        "空配列/値操作の例外・入力保持/所有権",
+        "表なしoverload・添字0の非零値",
+        "IntegerSieveの他API"
+      ],
+      "reasoning": "約数和の積をMöbius逆変換する恒等式により、LCのLCM畳み込みへ自然に一致する。",
+      "sources": [
+        "https://raw.githubusercontent.com/yosupo06/library-checker-problems/73876f1cbcf082d2b22722924b924d3d65a2f00e/convolution/lcm_convolution/task.md",
+        "https://raw.githubusercontent.com/yosupo06/library-checker-problems/73876f1cbcf082d2b22722924b924d3d65a2f00e/convolution/lcm_convolution/info.toml"
+      ],
+      "official_spec_sha256": {
+        "primary/lc/convolution/lcm_convolution/task.md": "b00a82a663911e8ff891b27cc7abd43cfdac233f83cd0331bab1624f4cd4967a",
+        "primary/lc/convolution/lcm_convolution/info.toml": "322d82414931267d2b4bc6c0a040e575a09ea1fe759c6a5963c5d478bbdefef6"
+      },
+      "official_parameters": {
+        "N_MAX": 1000000,
+        "MOD": 998244353
+      },
+      "source_sha256": {
+        "Math/Zeta/Divisor_Multiple_Transform.cpp": "f4a1829cfadb352cf80939522b94ed4d4a9974cbaadf30c12c4eaa2c7deb60a6",
+        "Verify/current/drivers/zeta_lcm_transform_main.cpp": "b54df1690d5e31bc69012c865dced0a008d287980e35331ad393a64c08516eec"
+      },
+      "supplemental_ids": [
+        "zeta_gcd_transform_split"
+      ]
+    },
+    {
+      "id": "zeta_sparse_gcd_full",
+      "libraries": [
+        "Math/Zeta_Mebius.cpp"
+      ],
+      "driver": "Verify/current/drivers/zeta_sparse_gcd_main.cpp",
+      "problem_url": "https://judge.yosupo.jp/problem/gcd_convolution",
+      "assessment": "partial",
+      "exercised_apis": [
+        "sparse_multiple_zeta_transform",
+        "sparse_multiple_mobius_transform",
+        "IntegerSieve"
+      ],
+      "not_covered": [
+        "固定法998244353以外の値型/非可換な値/符号付き途中overflow",
+        "空配列/値操作の例外・入力保持/所有権",
+        "キーが1..Nの連続列のみで非連続キーが未検証",
+        "非常に疎なhash/transfer分岐・キーの入力並べ替え",
+        "キー型の全域・約数閉包がない入力の拒否"
+      ],
+      "reasoning": "疎な変換APIの積と逆変換はGCD畳み込みに一致するが、現driverは密なキーを渡しており疎な表現の中心的な穴を検証しない。単独では疎な一般入力のVerifyとして不足。",
+      "sources": [
+        "https://raw.githubusercontent.com/yosupo06/library-checker-problems/73876f1cbcf082d2b22722924b924d3d65a2f00e/convolution/gcd_convolution/task.md",
+        "https://raw.githubusercontent.com/yosupo06/library-checker-problems/73876f1cbcf082d2b22722924b924d3d65a2f00e/convolution/gcd_convolution/info.toml"
+      ],
+      "official_spec_sha256": {
+        "primary/lc/convolution/gcd_convolution/task.md": "8069e3fd223744bf147711d840b2273696a374d36edfd9582cfeddbd4a7e8045",
+        "primary/lc/convolution/gcd_convolution/info.toml": "5e0bfcaadd6106ecb2cbc0e554d4994085434acad388ada5bfe0414288458ed6"
+      },
+      "official_parameters": {
+        "N_MAX": 1000000,
+        "MOD": 998244353
+      },
+      "source_sha256": {
+        "Math/Zeta_Mebius.cpp": "9555793c1661f1328a73447831ca4738d548dbd9cf878366df6302b5b433e70b",
+        "Verify/current/drivers/zeta_sparse_gcd_main.cpp": "eed32758016c4c82eaf6548a403749847a5a3a8df0ce41853ea9fa2fcce01fea"
+      },
+      "supplemental_ids": [
+        "coverage_sparse_gcd_holes_full"
+      ]
+    },
+    {
+      "id": "zeta_sparse_gcd_split",
+      "libraries": [
+        "Math/Zeta/Sparse_Transform.cpp"
+      ],
+      "driver": "Verify/current/drivers/zeta_sparse_gcd_main.cpp",
+      "problem_url": "https://judge.yosupo.jp/problem/gcd_convolution",
+      "assessment": "partial",
+      "exercised_apis": [
+        "sparse_multiple_zeta_transform",
+        "sparse_multiple_mobius_transform",
+        "IntegerSieve"
+      ],
+      "not_covered": [
+        "固定法998244353以外の値型/非可換な値/符号付き途中overflow",
+        "空配列/値操作の例外・入力保持/所有権",
+        "キーが1..Nの連続列のみで非連続キーが未検証",
+        "非常に疎なhash/transfer分岐・キーの入力並べ替え",
+        "キー型の全域・約数閉包がない入力の拒否"
+      ],
+      "reasoning": "疎な変換APIの積と逆変換はGCD畳み込みに一致するが、現driverは密なキーを渡しており疎な表現の中心的な穴を検証しない。単独では疎な一般入力のVerifyとして不足。",
+      "sources": [
+        "https://raw.githubusercontent.com/yosupo06/library-checker-problems/73876f1cbcf082d2b22722924b924d3d65a2f00e/convolution/gcd_convolution/task.md",
+        "https://raw.githubusercontent.com/yosupo06/library-checker-problems/73876f1cbcf082d2b22722924b924d3d65a2f00e/convolution/gcd_convolution/info.toml"
+      ],
+      "official_spec_sha256": {
+        "primary/lc/convolution/gcd_convolution/task.md": "8069e3fd223744bf147711d840b2273696a374d36edfd9582cfeddbd4a7e8045",
+        "primary/lc/convolution/gcd_convolution/info.toml": "5e0bfcaadd6106ecb2cbc0e554d4994085434acad388ada5bfe0414288458ed6"
+      },
+      "official_parameters": {
+        "N_MAX": 1000000,
+        "MOD": 998244353
+      },
+      "source_sha256": {
+        "Math/Zeta/Sparse_Transform.cpp": "3e937436560e54927084617dba2a161a009b9efbba7898159ba26aed88c5a266",
+        "Verify/current/drivers/zeta_sparse_gcd_main.cpp": "eed32758016c4c82eaf6548a403749847a5a3a8df0ce41853ea9fa2fcce01fea"
+      },
+      "supplemental_ids": [
+        "coverage_sparse_gcd_holes_split"
+      ]
+    }
+  ],
+  "counts": {
+    "direct": 21,
+    "partial": 11,
+    "inappropriate": 0
+  },
+  "pinned_lc_commit": "73876f1cbcf082d2b22722924b924d3d65a2f00e",
+  "method": "全32 entryのmain・前置helper・公開API一覧・固定commitの公式task/infoを確認した読み取り監査。ACの新規取得やAPI全網羅を意味しない。",
+  "evidence": {
+    "path": "Audit/data/verify-coverage-root-review-20261115.zip",
+    "sha256": "dd6c2b9e24b07b228abd8403b52adf9680fd75d2db5da799c578e99f50acc34e",
+    "tracking": "ignored local only"
+  }
+}

@@ -1,0 +1,190 @@
+{
+  "date": "2026-11-14",
+  "scope": "hld_vertex_add_path_sum whole-program main-only optimization; library/I/O unchanged",
+  "input_source_sha256": "7e53a555174858170c31b9fff5807a140436c2189a7bb4d01458b1850d9b6916",
+  "source_sha256": "1af19035d7859164cd132d17fd8315ff7d44645a1ae6856846b9b80adf551e97",
+  "change": {
+    "old": "answer+=sums.sum(l,r);",
+    "new": "answer+=(r-l==1?sums.get(l):sums.sum(l,r));"
+  },
+  "correctness": {
+    "status": "PASS",
+    "cases": 105,
+    "independent_reference": "BFS reconstructs each tree path and sums a plain mutable array; arbitrary vertex labels, n=1, identical endpoints, chain/star/random, values/deltas0..1e9",
+    "query_comparisons": 48930
+  },
+  "performance": {
+    "method": "同compiler/flags、同main/I/Oのcallbackだけ変更。chain/star/random、大小、baseline/candidate/同一baseline controlを11回順序交替。process CPU時間でありAPI本体単独ではない。",
+    "cpu": 23,
+    "flags": [
+      "-std=c++23",
+      "-O2"
+    ],
+    "compiler_versions": {
+      "GCC": "g++ (GCC) 15.3.0",
+      "Clang": "Ubuntu clang version 21.1.8 (6ubuntu1)"
+    },
+    "cases": [
+      {
+        "compiler": "GCC",
+        "input": "hld_vertex_add_path_sum_chain_small.in",
+        "input_sha256": "afce909d823b6fe885a4758b32de67cbc30b50b08ff537ea3f23247cec707488",
+        "stdout_sha256": "b26089e34aee026a34107d5b6f0a9386dc3ff05b18e64d981a6f8ec62cff0804",
+        "median_cpu_s": {
+          "baseline": 0.0012859999999998983,
+          "candidate": 0.0012750000000001371,
+          "control": 0.0012780000000001124
+        },
+        "candidate_ratio": 0.9914463452567946,
+        "control_ratio": 0.9937791601867911
+      },
+      {
+        "compiler": "GCC",
+        "input": "hld_vertex_add_path_sum_chain_large.in",
+        "input_sha256": "8672e26fd90e89802c89abc560d272b03437b8f1c07c6ce83e58cb1d1a76c684",
+        "stdout_sha256": "5e098a44b27433faa3e3238085c5312376eceee00f7c7a2027c79825e5e0342f",
+        "median_cpu_s": {
+          "baseline": 0.02381600000000006,
+          "candidate": 0.023606000000000016,
+          "control": 0.023604999999999876
+        },
+        "candidate_ratio": 0.9911823983876368,
+        "control_ratio": 0.9911404098085244
+      },
+      {
+        "compiler": "GCC",
+        "input": "hld_vertex_add_path_sum_star_small.in",
+        "input_sha256": "a2cf5214be9f2786b8c94de2dc1fc6c3a40d52b4418e3da718ae1bc89bca0167",
+        "stdout_sha256": "eb4503a8e69d5fd6e91d477d76573396e1f58c930a113366e44368ef5f8a8cad",
+        "median_cpu_s": {
+          "baseline": 0.0013340000000003904,
+          "candidate": 0.0013100000000001444,
+          "control": 0.0013320000000001109
+        },
+        "candidate_ratio": 0.9820089955020697,
+        "control_ratio": 0.9985007496249783
+      },
+      {
+        "compiler": "GCC",
+        "input": "hld_vertex_add_path_sum_star_large.in",
+        "input_sha256": "30c69f07ad192b7247b412e6eb6f28375583443ab563c76a93a5d3ce7e9a16d2",
+        "stdout_sha256": "3a0c6bea12547814799dfa900d9ab2c023278c1d223fe1a425b0138a4a7b7e2b",
+        "median_cpu_s": {
+          "baseline": 0.02617600000000042,
+          "candidate": 0.023289000000000115,
+          "control": 0.026281999999999694
+        },
+        "candidate_ratio": 0.8897081295843422,
+        "control_ratio": 1.0040495110024172
+      },
+      {
+        "compiler": "GCC",
+        "input": "hld_vertex_add_path_sum_random_small.in",
+        "input_sha256": "02ab570319d0e84a99fbe47d70e7626773873c7161cbfc8e6d32968368f16c9b",
+        "stdout_sha256": "58575faceb790464272d9005bd8af55b14682ca777659e01a05178e52073c28d",
+        "median_cpu_s": {
+          "baseline": 0.0013580000000001924,
+          "candidate": 0.0013819999999999943,
+          "control": 0.0013700000000000934
+        },
+        "candidate_ratio": 1.0176730486007353,
+        "control_ratio": 1.0088365243003676
+      },
+      {
+        "compiler": "GCC",
+        "input": "hld_vertex_add_path_sum_random_large.in",
+        "input_sha256": "090dd6771f1385bc2aa9aff120b4e9d9f9918f3a936a5cf7e62561e361c6a2d6",
+        "stdout_sha256": "f203cbe9b0389f5ef48347bb76cd51e298e7b34c5d270e7570a203ad43aa2f95",
+        "median_cpu_s": {
+          "baseline": 0.05025800000000036,
+          "candidate": 0.0490339999999998,
+          "control": 0.05039700000000025
+        },
+        "candidate_ratio": 0.9756456683512963,
+        "control_ratio": 1.0027657288391876
+      },
+      {
+        "compiler": "Clang",
+        "input": "hld_vertex_add_path_sum_chain_small.in",
+        "input_sha256": "afce909d823b6fe885a4758b32de67cbc30b50b08ff537ea3f23247cec707488",
+        "stdout_sha256": "b26089e34aee026a34107d5b6f0a9386dc3ff05b18e64d981a6f8ec62cff0804",
+        "median_cpu_s": {
+          "baseline": 0.0012990000000003832,
+          "candidate": 0.0013079999999998648,
+          "control": 0.0012970000000001036
+        },
+        "candidate_ratio": 1.0069284064661117,
+        "control_ratio": 0.998460354118338
+      },
+      {
+        "compiler": "Clang",
+        "input": "hld_vertex_add_path_sum_chain_large.in",
+        "input_sha256": "8672e26fd90e89802c89abc560d272b03437b8f1c07c6ce83e58cb1d1a76c684",
+        "stdout_sha256": "5e098a44b27433faa3e3238085c5312376eceee00f7c7a2027c79825e5e0342f",
+        "median_cpu_s": {
+          "baseline": 0.0256779999999992,
+          "candidate": 0.025613000000001662,
+          "control": 0.02549899999999994
+        },
+        "candidate_ratio": 0.9974686502064981,
+        "control_ratio": 0.9930290521068904
+      },
+      {
+        "compiler": "Clang",
+        "input": "hld_vertex_add_path_sum_star_small.in",
+        "input_sha256": "a2cf5214be9f2786b8c94de2dc1fc6c3a40d52b4418e3da718ae1bc89bca0167",
+        "stdout_sha256": "eb4503a8e69d5fd6e91d477d76573396e1f58c930a113366e44368ef5f8a8cad",
+        "median_cpu_s": {
+          "baseline": 0.001313000000001452,
+          "candidate": 0.0013049999999985573,
+          "control": 0.0009969999999999146
+        },
+        "candidate_ratio": 0.993907083013796,
+        "control_ratio": 0.7593297791308546
+      },
+      {
+        "compiler": "Clang",
+        "input": "hld_vertex_add_path_sum_star_large.in",
+        "input_sha256": "30c69f07ad192b7247b412e6eb6f28375583443ab563c76a93a5d3ce7e9a16d2",
+        "stdout_sha256": "3a0c6bea12547814799dfa900d9ab2c023278c1d223fe1a425b0138a4a7b7e2b",
+        "median_cpu_s": {
+          "baseline": 0.02826599999999857,
+          "candidate": 0.025323999999999458,
+          "control": 0.0281640000000003
+        },
+        "candidate_ratio": 0.895917356541454,
+        "control_ratio": 0.9963914243261064
+      },
+      {
+        "compiler": "Clang",
+        "input": "hld_vertex_add_path_sum_random_small.in",
+        "input_sha256": "02ab570319d0e84a99fbe47d70e7626773873c7161cbfc8e6d32968368f16c9b",
+        "stdout_sha256": "58575faceb790464272d9005bd8af55b14682ca777659e01a05178e52073c28d",
+        "median_cpu_s": {
+          "baseline": 0.0013830000000005782,
+          "candidate": 0.0013830000000005782,
+          "control": 0.0013779999999989911
+        },
+        "candidate_ratio": 1.0,
+        "control_ratio": 0.9963846710039154
+      },
+      {
+        "compiler": "Clang",
+        "input": "hld_vertex_add_path_sum_random_large.in",
+        "input_sha256": "090dd6771f1385bc2aa9aff120b4e9d9f9918f3a936a5cf7e62561e361c6a2d6",
+        "stdout_sha256": "f203cbe9b0389f5ef48347bb76cd51e298e7b34c5d270e7570a203ad43aa2f95",
+        "median_cpu_s": {
+          "baseline": 0.05264600000000108,
+          "candidate": 0.05111699999999786,
+          "control": 0.05256999999999756
+        },
+        "candidate_ratio": 0.970956957793504,
+        "control_ratio": 0.9985563955475532
+      }
+    ]
+  },
+  "decision": "大きいstarはGCC/Clangとも約11%短縮、randomは約2～3%、chainはほぼ同等。小ケースの差はnoise/controlも参照し一律の高速化とは扱わない。",
+  "fable_status": "pending_current_source_review",
+  "online_status": "resubmission_required",
+  "commit_requested": false
+}

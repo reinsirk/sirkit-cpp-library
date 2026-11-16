@@ -1,0 +1,2545 @@
+{
+  "recorded_utc": "2026-11-15T13:49:07.391645+00:00",
+  "scope": "追加LC19件のうち担当6件、4mainをCodex検討。実際の変更は3main、Moは再現する最大random退行を理由に元mainへ戻した。",
+  "records": [
+    {
+      "id": "coverage_next_combination_independent_set",
+      "libraries": [
+        "Algorithm/next_combination.cpp"
+      ],
+      "driver": "Verify/current/drivers/coverage_math_independent_combinations_main.cpp",
+      "codex_review_done": true,
+      "claude_review_done": false,
+      "decision": "adopt",
+      "reasoning": "右半分DPは最大個数だけを1byteで保存し、最良の許可集合から右頂点集合を最後に1回復元。左の非独立集合では許可集合の書込みを省く。for_each_combinationは全個数で中心DPを引き続き担う。",
+      "baseline_source_sha256": "1949ee4c35266b4a2de8f2cab45bbe44b1cf856f4fb8d776b60b501d8a713546",
+      "source_sha256": "8cee40618ef37510b9af6cfd65f26b507a9e716f663050f755fab30502771230",
+      "final_source_sha256": "8cee40618ef37510b9af6cfd65f26b507a9e716f663050f755fab30502771230",
+      "driver_sha256": "410f2437abe2f1191d1589b7272d0729b0f53390133146ef63e932db5d6abe23",
+      "recommended_compile_settings": {
+        "gcc_optimization": "O2"
+      },
+      "requires_root_group_setting": true,
+      "verification_source_hashes": {
+        "Algorithm/next_combination.cpp": "009ef56f571de5d0f5439c880cf68d3e479b15071386f72f5ba5e11534ee6b4a",
+        "Verify/current/drivers/coverage_math_independent_combinations_main.cpp": "410f2437abe2f1191d1589b7272d0729b0f53390133146ef63e932db5d6abe23",
+        "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+      },
+      "performance": [
+        {
+          "profile": "mis_empty40",
+          "baseline_median_seconds": 0.012539906005258672,
+          "selected_median_seconds": 0.010515068002860062,
+          "ratio": 0.8385284545554421,
+          "baseline_range": [
+            0.012148310997872613,
+            0.012691074996837415
+          ],
+          "selected_range": [
+            0.009791602002223954,
+            0.011065791011787951
+          ],
+          "trials_each": 7
+        },
+        {
+          "profile": "mis_clique40",
+          "baseline_median_seconds": 0.011571734998142347,
+          "selected_median_seconds": 0.009421034992556088,
+          "ratio": 0.8141419583207256,
+          "baseline_range": [
+            0.010888340999372303,
+            0.011785441005486064
+          ],
+          "selected_range": [
+            0.008799557996098883,
+            0.009687076002592221
+          ],
+          "trials_each": 7
+        },
+        {
+          "profile": "mis_bipartite_random40",
+          "baseline_median_seconds": 0.012516839997260831,
+          "selected_median_seconds": 0.010415659009595402,
+          "ratio": 0.832131673159899,
+          "baseline_range": [
+            0.012324160998105071,
+            0.013226297000073828
+          ],
+          "selected_range": [
+            0.010121793995494954,
+            0.011064947000704706
+          ],
+          "trials_each": 7
+        }
+      ],
+      "scope": "同じライブラリ本体/共通I/Oでmain全体を比較。本体単体測定は実施しておらず、ライブラリ単体の速度改善とは主張しない。"
+    },
+    {
+      "id": "coverage_mo_inversions",
+      "libraries": [
+        "Algorithm/Mo.cpp"
+      ],
+      "driver": "Verify/current/drivers/coverage_algorithm_mo_inversions_main.cpp",
+      "codex_review_done": true,
+      "claude_review_done": false,
+      "decision": "unchanged",
+      "reasoning": "BIT統合下降走査は高cardinalityで2.3〜2.5倍遅く棄却。2値以下のcallback専用経路はbinaryで約32%改善するが、最も遅いrandom profileが2回の系列で約1.3%悪化したため、最速狙いの最終版では元mainを保持する。",
+      "baseline_source_sha256": "496240dd9653a2fbb21099d95641d7008c00bdb709a19d1f471d6580191787e2",
+      "source_sha256": "496240dd9653a2fbb21099d95641d7008c00bdb709a19d1f471d6580191787e2",
+      "final_source_sha256": "496240dd9653a2fbb21099d95641d7008c00bdb709a19d1f471d6580191787e2",
+      "driver_sha256": "5695c8508db8ecaba48b252356fa0e446e3109bd10ac3fe3af46c7540ef76819",
+      "recommended_compile_settings": {
+        "gcc_optimization": "O2"
+      },
+      "requires_root_group_setting": true,
+      "verification_source_hashes": {
+        "Algorithm/Mo.cpp": "5eedfaee6446de2843c3deec1093a6797336878f2a9c7e2920d4c6b4f07cb838",
+        "Verify/current/drivers/coverage_algorithm_mo_inversions_main.cpp": "5695c8508db8ecaba48b252356fa0e446e3109bd10ac3fe3af46c7540ef76819",
+        "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+      },
+      "performance": [
+        {
+          "profile": "mo_descending",
+          "baseline_median_seconds": 0.279533420005464,
+          "selected_median_seconds": 0.279533420005464,
+          "ratio": 1.0,
+          "baseline_range": [
+            0.2776007270003902,
+            0.2873347510030726
+          ],
+          "selected_range": [
+            0.2776007270003902,
+            0.2873347510030726
+          ],
+          "trials_each": 7
+        },
+        {
+          "profile": "mo_ascending",
+          "baseline_median_seconds": 0.27310879100696184,
+          "selected_median_seconds": 0.27310879100696184,
+          "ratio": 1.0,
+          "baseline_range": [
+            0.27272151099168696,
+            0.2755300409917254
+          ],
+          "selected_range": [
+            0.27272151099168696,
+            0.2755300409917254
+          ],
+          "trials_each": 7
+        },
+        {
+          "profile": "mo_binary",
+          "baseline_median_seconds": 0.13709196100535337,
+          "selected_median_seconds": 0.13709196100535337,
+          "ratio": 1.0,
+          "baseline_range": [
+            0.13595425301173236,
+            0.1398478639894165
+          ],
+          "selected_range": [
+            0.13595425301173236,
+            0.1398478639894165
+          ],
+          "trials_each": 7
+        },
+        {
+          "profile": "mo_random",
+          "baseline_median_seconds": 0.5926164359989343,
+          "selected_median_seconds": 0.5926164359989343,
+          "ratio": 1.0,
+          "baseline_range": [
+            0.5834534940076992,
+            0.6020319220115198
+          ],
+          "selected_range": [
+            0.5834534940076992,
+            0.6020319220115198
+          ],
+          "trials_each": 7
+        }
+      ],
+      "scope": "同じライブラリ本体/共通I/Oでmain全体を比較。本体単体測定は実施しておらず、ライブラリ単体の速度改善とは主張しない。"
+    },
+    {
+      "id": "coverage_subset_transform_full",
+      "libraries": [
+        "Math/Zeta_Mebius.cpp"
+      ],
+      "driver": "Verify/current/drivers/coverage_math_subset_transform_main.cpp",
+      "codex_review_done": true,
+      "claude_review_done": false,
+      "decision": "adopt",
+      "reasoning": "driver専用VerifyMod998の加減算を、2mod未満の一時値から条件付き減算する形へ統一。API呼出し・De Morganの添字反転・I/Oは維持。大規模3profilesで約6〜9%短縮。",
+      "baseline_source_sha256": "037e604fb1bb9d52a638bd3c79ab5330cee19f7b1651d994624c0132d8433a72",
+      "source_sha256": "a8c5783c86d52649b239e8c06d4853b27850d89951225704875f48d3b4c6140f",
+      "final_source_sha256": "a8c5783c86d52649b239e8c06d4853b27850d89951225704875f48d3b4c6140f",
+      "driver_sha256": "63ecb79a7a3d39e1f67006dcd1356552a7dca3f083982858d4553a5bc26c6fd6",
+      "recommended_compile_settings": {
+        "gcc_optimization": "O2"
+      },
+      "requires_root_group_setting": true,
+      "verification_source_hashes": {
+        "Math/Zeta_Mebius.cpp": "9555793c1661f1328a73447831ca4738d548dbd9cf878366df6302b5b433e70b",
+        "Verify/current/drivers/coverage_math_subset_transform_main.cpp": "63ecb79a7a3d39e1f67006dcd1356552a7dca3f083982858d4553a5bc26c6fd6",
+        "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+      },
+      "performance": [
+        {
+          "profile": "subset_all_one20",
+          "baseline_median_seconds": 0.03772102200309746,
+          "selected_median_seconds": 0.034375264003756456,
+          "ratio": 0.9113025622936126,
+          "baseline_range": [
+            0.0366722850012593,
+            0.03821819000586402
+          ],
+          "selected_range": [
+            0.03405243399902247,
+            0.03560358099639416
+          ],
+          "trials_each": 7
+        },
+        {
+          "profile": "subset_impulse20",
+          "baseline_median_seconds": 0.034939756005769596,
+          "selected_median_seconds": 0.032126138990861364,
+          "ratio": 0.9194723336235199,
+          "baseline_range": [
+            0.034543967005447485,
+            0.03736646099423524
+          ],
+          "selected_range": [
+            0.03167739600758068,
+            0.03292513500491623
+          ],
+          "trials_each": 7
+        },
+        {
+          "profile": "subset_random20",
+          "baseline_median_seconds": 0.054660677997162566,
+          "selected_median_seconds": 0.051423133991193026,
+          "ratio": 0.9407701454757367,
+          "baseline_range": [
+            0.05345758098701481,
+            0.05543768600909971
+          ],
+          "selected_range": [
+            0.05113597400486469,
+            0.05336384000838734
+          ],
+          "trials_each": 7
+        },
+        {
+          "profile": "subset_small12",
+          "baseline_median_seconds": 0.0016761870065238327,
+          "selected_median_seconds": 0.0016490859998157248,
+          "ratio": 0.9838317523029179,
+          "baseline_range": [
+            0.0016215170035138726,
+            0.001786250009899959
+          ],
+          "selected_range": [
+            0.0016014979919418693,
+            0.0017789550038287416
+          ],
+          "trials_each": 7
+        }
+      ],
+      "scope": "同じライブラリ本体/共通I/Oでmain全体を比較。本体単体測定は実施しておらず、ライブラリ単体の速度改善とは主張しない。"
+    },
+    {
+      "id": "coverage_subset_transform_split",
+      "libraries": [
+        "Math/Zeta/Set_Transform.cpp"
+      ],
+      "driver": "Verify/current/drivers/coverage_math_subset_transform_main.cpp",
+      "codex_review_done": true,
+      "claude_review_done": false,
+      "decision": "adopt",
+      "reasoning": "driver専用VerifyMod998の加減算を、2mod未満の一時値から条件付き減算する形へ統一。API呼出し・De Morganの添字反転・I/Oは維持。大規模3profilesで約6〜9%短縮。",
+      "baseline_source_sha256": "20ed3d864ae6330e1c6d2406cbddda371bffc60a84c5748c4322c46d0db67ff9",
+      "source_sha256": "e4be923e40e595927f95d9507a38e24b3ca9d4a70f918cc34b8372eb7d5fe324",
+      "final_source_sha256": "e4be923e40e595927f95d9507a38e24b3ca9d4a70f918cc34b8372eb7d5fe324",
+      "driver_sha256": "63ecb79a7a3d39e1f67006dcd1356552a7dca3f083982858d4553a5bc26c6fd6",
+      "recommended_compile_settings": {
+        "gcc_optimization": "O2"
+      },
+      "requires_root_group_setting": true,
+      "verification_source_hashes": {
+        "Math/Zeta/Set_Transform.cpp": "235196851691205e22933a79cde83a7952e1a916f98cf54278ef397ad0d8fd3a",
+        "Verify/current/drivers/coverage_math_subset_transform_main.cpp": "63ecb79a7a3d39e1f67006dcd1356552a7dca3f083982858d4553a5bc26c6fd6",
+        "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+      },
+      "performance": [
+        {
+          "profile": "subset_all_one20",
+          "baseline_median_seconds": 0.03772102200309746,
+          "selected_median_seconds": 0.034375264003756456,
+          "ratio": 0.9113025622936126,
+          "baseline_range": [
+            0.0366722850012593,
+            0.03821819000586402
+          ],
+          "selected_range": [
+            0.03405243399902247,
+            0.03560358099639416
+          ],
+          "trials_each": 7
+        },
+        {
+          "profile": "subset_impulse20",
+          "baseline_median_seconds": 0.034939756005769596,
+          "selected_median_seconds": 0.032126138990861364,
+          "ratio": 0.9194723336235199,
+          "baseline_range": [
+            0.034543967005447485,
+            0.03736646099423524
+          ],
+          "selected_range": [
+            0.03167739600758068,
+            0.03292513500491623
+          ],
+          "trials_each": 7
+        },
+        {
+          "profile": "subset_random20",
+          "baseline_median_seconds": 0.054660677997162566,
+          "selected_median_seconds": 0.051423133991193026,
+          "ratio": 0.9407701454757367,
+          "baseline_range": [
+            0.05345758098701481,
+            0.05543768600909971
+          ],
+          "selected_range": [
+            0.05113597400486469,
+            0.05336384000838734
+          ],
+          "trials_each": 7
+        },
+        {
+          "profile": "subset_small12",
+          "baseline_median_seconds": 0.0016761870065238327,
+          "selected_median_seconds": 0.0016490859998157248,
+          "ratio": 0.9838317523029179,
+          "baseline_range": [
+            0.0016215170035138726,
+            0.001786250009899959
+          ],
+          "selected_range": [
+            0.0016014979919418693,
+            0.0017789550038287416
+          ],
+          "trials_each": 7
+        }
+      ],
+      "scope": "同じライブラリ本体/共通I/Oでmain全体を比較。本体単体測定は実施しておらず、ライブラリ単体の速度改善とは主張しない。"
+    },
+    {
+      "id": "coverage_sparse_gcd_holes_full",
+      "libraries": [
+        "Math/Zeta_Mebius.cpp"
+      ],
+      "driver": "Verify/current/drivers/coverage_math_sparse_holes_main.cpp",
+      "codex_review_done": true,
+      "claude_review_done": false,
+      "decision": "adopt_memory",
+      "reasoning": "同じ全約数閉包キーを構築し、2i位置のpair.secondへ入力を直接格納。a/bの一時2配列を除去。速度差はcontrol変動に近く、明確な高速化とは主張せず約7.6MiBの実RSS減を主な採用理由とする。",
+      "baseline_source_sha256": "bb630d13601d2050869718f700eff0135487678406a746bb69fd4c11d2f6b059",
+      "source_sha256": "29a14a709541702dd09d64f7ec57acf3a3760393f87e93f378f8855fe73c383a",
+      "final_source_sha256": "29a14a709541702dd09d64f7ec57acf3a3760393f87e93f378f8855fe73c383a",
+      "driver_sha256": "affcda955ee29297404b931cb61b2d85230b03e3e4062a84349ab2d481130de8",
+      "recommended_compile_settings": {
+        "gcc_optimization": "O2"
+      },
+      "requires_root_group_setting": true,
+      "verification_source_hashes": {
+        "Math/Zeta_Mebius.cpp": "9555793c1661f1328a73447831ca4738d548dbd9cf878366df6302b5b433e70b",
+        "Verify/current/drivers/coverage_math_sparse_holes_main.cpp": "affcda955ee29297404b931cb61b2d85230b03e3e4062a84349ab2d481130de8",
+        "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+      },
+      "performance": [
+        {
+          "profile": "sparse_impulse1m",
+          "baseline_median_seconds": 0.25942577100067865,
+          "selected_median_seconds": 0.25835626799380407,
+          "ratio": 0.9958774218816072,
+          "baseline_range": [
+            0.25168775700149126,
+            0.2926695870119147
+          ],
+          "selected_range": [
+            0.2539397680084221,
+            0.2653718430083245
+          ],
+          "trials_each": 7
+        },
+        {
+          "profile": "sparse_reverse_impulse1m",
+          "baseline_median_seconds": 0.26562676299363375,
+          "selected_median_seconds": 0.2606474869971862,
+          "ratio": 0.9812546147822956,
+          "baseline_range": [
+            0.2593366490036715,
+            0.2857695610000519
+          ],
+          "selected_range": [
+            0.25513360201148316,
+            0.2861054639943177
+          ],
+          "trials_each": 7
+        },
+        {
+          "profile": "sparse_random1m",
+          "baseline_median_seconds": 0.2959685069945408,
+          "selected_median_seconds": 0.29205194499809295,
+          "ratio": 0.9867669637009046,
+          "baseline_range": [
+            0.2898189909901703,
+            0.2984369350015186
+          ],
+          "selected_range": [
+            0.289833066999563,
+            0.3059113910130691
+          ],
+          "trials_each": 7
+        },
+        {
+          "profile": "sparse_small1000",
+          "baseline_median_seconds": 0.001666779993684031,
+          "selected_median_seconds": 0.00167152400535997,
+          "ratio": 1.0028462134738332,
+          "baseline_range": [
+            0.0016174129996215925,
+            0.0018858889961848035
+          ],
+          "selected_range": [
+            0.0016482089995406568,
+            0.001780134000000544
+          ],
+          "trials_each": 7
+        }
+      ],
+      "scope": "同じライブラリ本体/共通I/Oでmain全体を比較。本体単体測定は実施しておらず、ライブラリ単体の速度改善とは主張しない。"
+    },
+    {
+      "id": "coverage_sparse_gcd_holes_split",
+      "libraries": [
+        "Math/Zeta/Sparse_Transform.cpp"
+      ],
+      "driver": "Verify/current/drivers/coverage_math_sparse_holes_main.cpp",
+      "codex_review_done": true,
+      "claude_review_done": false,
+      "decision": "adopt_memory",
+      "reasoning": "同じ全約数閉包キーを構築し、2i位置のpair.secondへ入力を直接格納。a/bの一時2配列を除去。速度差はcontrol変動に近く、明確な高速化とは主張せず約7.6MiBの実RSS減を主な採用理由とする。",
+      "baseline_source_sha256": "522fb167839f5b928dccc1a9d2473e841f8bd78e7ae700dc7d767ccd55e342b3",
+      "source_sha256": "793ac3cb648e40e163c8c8d055da366dfa68c45ae223c2966aad0760b525ba5b",
+      "final_source_sha256": "793ac3cb648e40e163c8c8d055da366dfa68c45ae223c2966aad0760b525ba5b",
+      "driver_sha256": "affcda955ee29297404b931cb61b2d85230b03e3e4062a84349ab2d481130de8",
+      "recommended_compile_settings": {
+        "gcc_optimization": "O2"
+      },
+      "requires_root_group_setting": true,
+      "verification_source_hashes": {
+        "Math/Zeta/Sparse_Transform.cpp": "3e937436560e54927084617dba2a161a009b9efbba7898159ba26aed88c5a266",
+        "Verify/current/drivers/coverage_math_sparse_holes_main.cpp": "affcda955ee29297404b931cb61b2d85230b03e3e4062a84349ab2d481130de8",
+        "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+      },
+      "performance": [
+        {
+          "profile": "sparse_impulse1m",
+          "baseline_median_seconds": 0.25942577100067865,
+          "selected_median_seconds": 0.25835626799380407,
+          "ratio": 0.9958774218816072,
+          "baseline_range": [
+            0.25168775700149126,
+            0.2926695870119147
+          ],
+          "selected_range": [
+            0.2539397680084221,
+            0.2653718430083245
+          ],
+          "trials_each": 7
+        },
+        {
+          "profile": "sparse_reverse_impulse1m",
+          "baseline_median_seconds": 0.26562676299363375,
+          "selected_median_seconds": 0.2606474869971862,
+          "ratio": 0.9812546147822956,
+          "baseline_range": [
+            0.2593366490036715,
+            0.2857695610000519
+          ],
+          "selected_range": [
+            0.25513360201148316,
+            0.2861054639943177
+          ],
+          "trials_each": 7
+        },
+        {
+          "profile": "sparse_random1m",
+          "baseline_median_seconds": 0.2959685069945408,
+          "selected_median_seconds": 0.29205194499809295,
+          "ratio": 0.9867669637009046,
+          "baseline_range": [
+            0.2898189909901703,
+            0.2984369350015186
+          ],
+          "selected_range": [
+            0.289833066999563,
+            0.3059113910130691
+          ],
+          "trials_each": 7
+        },
+        {
+          "profile": "sparse_small1000",
+          "baseline_median_seconds": 0.001666779993684031,
+          "selected_median_seconds": 0.00167152400535997,
+          "ratio": 1.0028462134738332,
+          "baseline_range": [
+            0.0016174129996215925,
+            0.0018858889961848035
+          ],
+          "selected_range": [
+            0.0016482089995406568,
+            0.001780134000000544
+          ],
+          "trials_each": 7
+        }
+      ],
+      "scope": "同じライブラリ本体/共通I/Oでmain全体を比較。本体単体測定は実施しておらず、ライブラリ単体の速度改善とは主張しない。"
+    }
+  ],
+  "environment": {
+    "cpu": 25,
+    "compiler": "/usr/bin/g++",
+    "version": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+    "compiler_sha256": "e6718f7e0c7d057c3ff77b550c603da9bc4030e3ede3c053705acce1293dbe4d",
+    "io_sha256": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab",
+    "flags": "-std=c++23 -O2 -march=native; each source has GCC optimization pragma O2/O3/O3,unroll-loops",
+    "timing": "whole process including main/I/O; Python output checking and hashing outside timer; stdin/stdout local files",
+    "trials": 7
+  },
+  "benchmark_kind": "whole-program including main/I/O only",
+  "library_body_changed": false,
+  "common_fast_io_changed": false,
+  "existing_group_or_journal_changed": false,
+  "compiler_flags_review": {
+    "compared": [
+      "O2",
+      "O3",
+      "O3,unroll-loops"
+    ],
+    "selected": "O2",
+    "reason": "最大profiles間で一貫した優位がなく、Moのunrollはbinaryを悪化させるため、6entryとも測定したO2を推奨。"
+  },
+  "validation": {
+    "adopted_builds": 48,
+    "adopted_small_and_sample_runs": 1976,
+    "adopted_large_runs": 46,
+    "all_pass": true,
+    "source_exact": true,
+    "matrix": "GCC15.2/Clang21 × native/standard-fallback(no int128,FORCE_STANDARD_ARITHMETIC,DISABLE_SIMD) × checked/skip",
+    "evidence_sets": [
+      {
+        "path": "final-validation",
+        "use": "Mo以外5entry40buildを採用。Mo candidate2の8buildは候補としてだけ保持し最終版検証へ転記しない。"
+      },
+      {
+        "path": "retained-mo-validation",
+        "use": "元mainへ戻したMoの8build。最終採用版。"
+      }
+    ],
+    "build_records": [
+      {
+        "id": "coverage_next_combination_independent_set",
+        "name": "coverage_next_combination_independent_set-gcc-native-checked",
+        "command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-march=native",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/final-validation/sources/coverage_next_combination_independent_set-checked.cpp",
+          "-o",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/final-validation/bin/coverage_next_combination_independent_set-gcc-native-checked"
+        ],
+        "exit": 0,
+        "portable": false,
+        "skip": false,
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "compiler_sha256": "e6718f7e0c7d057c3ff77b550c603da9bc4030e3ede3c053705acce1293dbe4d",
+        "rendered_source_sha256": "ddba7de4de03966f61c49286e7b828b5f0f7e4374cafff4b871e7f1176d37ba2",
+        "source_hashes": {
+          "Algorithm/next_combination.cpp": "009ef56f571de5d0f5439c880cf68d3e479b15071386f72f5ba5e11534ee6b4a",
+          "Verify/current/drivers/coverage_math_independent_combinations_main.cpp": "410f2437abe2f1191d1589b7272d0729b0f53390133146ef63e932db5d6abe23",
+          "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+        }
+      },
+      {
+        "id": "coverage_next_combination_independent_set",
+        "name": "coverage_next_combination_independent_set-gcc-native-skip",
+        "command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-march=native",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/final-validation/sources/coverage_next_combination_independent_set-skip.cpp",
+          "-o",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/final-validation/bin/coverage_next_combination_independent_set-gcc-native-skip"
+        ],
+        "exit": 0,
+        "portable": false,
+        "skip": true,
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "compiler_sha256": "e6718f7e0c7d057c3ff77b550c603da9bc4030e3ede3c053705acce1293dbe4d",
+        "rendered_source_sha256": "8cee40618ef37510b9af6cfd65f26b507a9e716f663050f755fab30502771230",
+        "source_hashes": {
+          "Algorithm/next_combination.cpp": "009ef56f571de5d0f5439c880cf68d3e479b15071386f72f5ba5e11534ee6b4a",
+          "Verify/current/drivers/coverage_math_independent_combinations_main.cpp": "410f2437abe2f1191d1589b7272d0729b0f53390133146ef63e932db5d6abe23",
+          "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+        }
+      },
+      {
+        "id": "coverage_next_combination_independent_set",
+        "name": "coverage_next_combination_independent_set-gcc-portable-checked",
+        "command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+          "-U__SIZEOF_INT128__",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/final-validation/sources/coverage_next_combination_independent_set-checked.cpp",
+          "-o",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/final-validation/bin/coverage_next_combination_independent_set-gcc-portable-checked"
+        ],
+        "exit": 0,
+        "portable": true,
+        "skip": false,
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "compiler_sha256": "e6718f7e0c7d057c3ff77b550c603da9bc4030e3ede3c053705acce1293dbe4d",
+        "rendered_source_sha256": "ddba7de4de03966f61c49286e7b828b5f0f7e4374cafff4b871e7f1176d37ba2",
+        "source_hashes": {
+          "Algorithm/next_combination.cpp": "009ef56f571de5d0f5439c880cf68d3e479b15071386f72f5ba5e11534ee6b4a",
+          "Verify/current/drivers/coverage_math_independent_combinations_main.cpp": "410f2437abe2f1191d1589b7272d0729b0f53390133146ef63e932db5d6abe23",
+          "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+        }
+      },
+      {
+        "id": "coverage_next_combination_independent_set",
+        "name": "coverage_next_combination_independent_set-gcc-portable-skip",
+        "command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+          "-U__SIZEOF_INT128__",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/final-validation/sources/coverage_next_combination_independent_set-skip.cpp",
+          "-o",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/final-validation/bin/coverage_next_combination_independent_set-gcc-portable-skip"
+        ],
+        "exit": 0,
+        "portable": true,
+        "skip": true,
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "compiler_sha256": "e6718f7e0c7d057c3ff77b550c603da9bc4030e3ede3c053705acce1293dbe4d",
+        "rendered_source_sha256": "8cee40618ef37510b9af6cfd65f26b507a9e716f663050f755fab30502771230",
+        "source_hashes": {
+          "Algorithm/next_combination.cpp": "009ef56f571de5d0f5439c880cf68d3e479b15071386f72f5ba5e11534ee6b4a",
+          "Verify/current/drivers/coverage_math_independent_combinations_main.cpp": "410f2437abe2f1191d1589b7272d0729b0f53390133146ef63e932db5d6abe23",
+          "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+        }
+      },
+      {
+        "id": "coverage_next_combination_independent_set",
+        "name": "coverage_next_combination_independent_set-clang-native-checked",
+        "command": [
+          "/usr/bin/clang++-21",
+          "-std=c++23",
+          "-O2",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-march=native",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/final-validation/sources/coverage_next_combination_independent_set-checked.cpp",
+          "-o",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/final-validation/bin/coverage_next_combination_independent_set-clang-native-checked"
+        ],
+        "exit": 0,
+        "portable": false,
+        "skip": false,
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "compiler_sha256": "412bbe8c60571a1eb06f48fde89635033621caeb01a9b4ee76d46711bae8e932",
+        "rendered_source_sha256": "ddba7de4de03966f61c49286e7b828b5f0f7e4374cafff4b871e7f1176d37ba2",
+        "source_hashes": {
+          "Algorithm/next_combination.cpp": "009ef56f571de5d0f5439c880cf68d3e479b15071386f72f5ba5e11534ee6b4a",
+          "Verify/current/drivers/coverage_math_independent_combinations_main.cpp": "410f2437abe2f1191d1589b7272d0729b0f53390133146ef63e932db5d6abe23",
+          "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+        }
+      },
+      {
+        "id": "coverage_next_combination_independent_set",
+        "name": "coverage_next_combination_independent_set-clang-native-skip",
+        "command": [
+          "/usr/bin/clang++-21",
+          "-std=c++23",
+          "-O2",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-march=native",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/final-validation/sources/coverage_next_combination_independent_set-skip.cpp",
+          "-o",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/final-validation/bin/coverage_next_combination_independent_set-clang-native-skip"
+        ],
+        "exit": 0,
+        "portable": false,
+        "skip": true,
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "compiler_sha256": "412bbe8c60571a1eb06f48fde89635033621caeb01a9b4ee76d46711bae8e932",
+        "rendered_source_sha256": "8cee40618ef37510b9af6cfd65f26b507a9e716f663050f755fab30502771230",
+        "source_hashes": {
+          "Algorithm/next_combination.cpp": "009ef56f571de5d0f5439c880cf68d3e479b15071386f72f5ba5e11534ee6b4a",
+          "Verify/current/drivers/coverage_math_independent_combinations_main.cpp": "410f2437abe2f1191d1589b7272d0729b0f53390133146ef63e932db5d6abe23",
+          "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+        }
+      },
+      {
+        "id": "coverage_next_combination_independent_set",
+        "name": "coverage_next_combination_independent_set-clang-portable-checked",
+        "command": [
+          "/usr/bin/clang++-21",
+          "-std=c++23",
+          "-O2",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+          "-U__SIZEOF_INT128__",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/final-validation/sources/coverage_next_combination_independent_set-checked.cpp",
+          "-o",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/final-validation/bin/coverage_next_combination_independent_set-clang-portable-checked"
+        ],
+        "exit": 0,
+        "portable": true,
+        "skip": false,
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "compiler_sha256": "412bbe8c60571a1eb06f48fde89635033621caeb01a9b4ee76d46711bae8e932",
+        "rendered_source_sha256": "ddba7de4de03966f61c49286e7b828b5f0f7e4374cafff4b871e7f1176d37ba2",
+        "source_hashes": {
+          "Algorithm/next_combination.cpp": "009ef56f571de5d0f5439c880cf68d3e479b15071386f72f5ba5e11534ee6b4a",
+          "Verify/current/drivers/coverage_math_independent_combinations_main.cpp": "410f2437abe2f1191d1589b7272d0729b0f53390133146ef63e932db5d6abe23",
+          "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+        }
+      },
+      {
+        "id": "coverage_next_combination_independent_set",
+        "name": "coverage_next_combination_independent_set-clang-portable-skip",
+        "command": [
+          "/usr/bin/clang++-21",
+          "-std=c++23",
+          "-O2",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+          "-U__SIZEOF_INT128__",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/final-validation/sources/coverage_next_combination_independent_set-skip.cpp",
+          "-o",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/final-validation/bin/coverage_next_combination_independent_set-clang-portable-skip"
+        ],
+        "exit": 0,
+        "portable": true,
+        "skip": true,
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "compiler_sha256": "412bbe8c60571a1eb06f48fde89635033621caeb01a9b4ee76d46711bae8e932",
+        "rendered_source_sha256": "8cee40618ef37510b9af6cfd65f26b507a9e716f663050f755fab30502771230",
+        "source_hashes": {
+          "Algorithm/next_combination.cpp": "009ef56f571de5d0f5439c880cf68d3e479b15071386f72f5ba5e11534ee6b4a",
+          "Verify/current/drivers/coverage_math_independent_combinations_main.cpp": "410f2437abe2f1191d1589b7272d0729b0f53390133146ef63e932db5d6abe23",
+          "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+        }
+      },
+      {
+        "id": "coverage_subset_transform_full",
+        "name": "coverage_subset_transform_full-gcc-native-checked",
+        "command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-march=native",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/final-validation/sources/coverage_subset_transform_full-checked.cpp",
+          "-o",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/final-validation/bin/coverage_subset_transform_full-gcc-native-checked"
+        ],
+        "exit": 0,
+        "portable": false,
+        "skip": false,
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "compiler_sha256": "e6718f7e0c7d057c3ff77b550c603da9bc4030e3ede3c053705acce1293dbe4d",
+        "rendered_source_sha256": "d6c71e67d75bfada340b4f85fd7ce1b5ead42ade9b1a8bb026d659ce0830486b",
+        "source_hashes": {
+          "Math/Zeta_Mebius.cpp": "9555793c1661f1328a73447831ca4738d548dbd9cf878366df6302b5b433e70b",
+          "Verify/current/drivers/coverage_math_subset_transform_main.cpp": "63ecb79a7a3d39e1f67006dcd1356552a7dca3f083982858d4553a5bc26c6fd6",
+          "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+        }
+      },
+      {
+        "id": "coverage_subset_transform_full",
+        "name": "coverage_subset_transform_full-gcc-native-skip",
+        "command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-march=native",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/final-validation/sources/coverage_subset_transform_full-skip.cpp",
+          "-o",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/final-validation/bin/coverage_subset_transform_full-gcc-native-skip"
+        ],
+        "exit": 0,
+        "portable": false,
+        "skip": true,
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "compiler_sha256": "e6718f7e0c7d057c3ff77b550c603da9bc4030e3ede3c053705acce1293dbe4d",
+        "rendered_source_sha256": "a8c5783c86d52649b239e8c06d4853b27850d89951225704875f48d3b4c6140f",
+        "source_hashes": {
+          "Math/Zeta_Mebius.cpp": "9555793c1661f1328a73447831ca4738d548dbd9cf878366df6302b5b433e70b",
+          "Verify/current/drivers/coverage_math_subset_transform_main.cpp": "63ecb79a7a3d39e1f67006dcd1356552a7dca3f083982858d4553a5bc26c6fd6",
+          "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+        }
+      },
+      {
+        "id": "coverage_subset_transform_full",
+        "name": "coverage_subset_transform_full-gcc-portable-checked",
+        "command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+          "-U__SIZEOF_INT128__",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/final-validation/sources/coverage_subset_transform_full-checked.cpp",
+          "-o",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/final-validation/bin/coverage_subset_transform_full-gcc-portable-checked"
+        ],
+        "exit": 0,
+        "portable": true,
+        "skip": false,
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "compiler_sha256": "e6718f7e0c7d057c3ff77b550c603da9bc4030e3ede3c053705acce1293dbe4d",
+        "rendered_source_sha256": "d6c71e67d75bfada340b4f85fd7ce1b5ead42ade9b1a8bb026d659ce0830486b",
+        "source_hashes": {
+          "Math/Zeta_Mebius.cpp": "9555793c1661f1328a73447831ca4738d548dbd9cf878366df6302b5b433e70b",
+          "Verify/current/drivers/coverage_math_subset_transform_main.cpp": "63ecb79a7a3d39e1f67006dcd1356552a7dca3f083982858d4553a5bc26c6fd6",
+          "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+        }
+      },
+      {
+        "id": "coverage_subset_transform_full",
+        "name": "coverage_subset_transform_full-gcc-portable-skip",
+        "command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+          "-U__SIZEOF_INT128__",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/final-validation/sources/coverage_subset_transform_full-skip.cpp",
+          "-o",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/final-validation/bin/coverage_subset_transform_full-gcc-portable-skip"
+        ],
+        "exit": 0,
+        "portable": true,
+        "skip": true,
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "compiler_sha256": "e6718f7e0c7d057c3ff77b550c603da9bc4030e3ede3c053705acce1293dbe4d",
+        "rendered_source_sha256": "a8c5783c86d52649b239e8c06d4853b27850d89951225704875f48d3b4c6140f",
+        "source_hashes": {
+          "Math/Zeta_Mebius.cpp": "9555793c1661f1328a73447831ca4738d548dbd9cf878366df6302b5b433e70b",
+          "Verify/current/drivers/coverage_math_subset_transform_main.cpp": "63ecb79a7a3d39e1f67006dcd1356552a7dca3f083982858d4553a5bc26c6fd6",
+          "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+        }
+      },
+      {
+        "id": "coverage_subset_transform_full",
+        "name": "coverage_subset_transform_full-clang-native-checked",
+        "command": [
+          "/usr/bin/clang++-21",
+          "-std=c++23",
+          "-O2",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-march=native",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/final-validation/sources/coverage_subset_transform_full-checked.cpp",
+          "-o",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/final-validation/bin/coverage_subset_transform_full-clang-native-checked"
+        ],
+        "exit": 0,
+        "portable": false,
+        "skip": false,
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "compiler_sha256": "412bbe8c60571a1eb06f48fde89635033621caeb01a9b4ee76d46711bae8e932",
+        "rendered_source_sha256": "d6c71e67d75bfada340b4f85fd7ce1b5ead42ade9b1a8bb026d659ce0830486b",
+        "source_hashes": {
+          "Math/Zeta_Mebius.cpp": "9555793c1661f1328a73447831ca4738d548dbd9cf878366df6302b5b433e70b",
+          "Verify/current/drivers/coverage_math_subset_transform_main.cpp": "63ecb79a7a3d39e1f67006dcd1356552a7dca3f083982858d4553a5bc26c6fd6",
+          "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+        }
+      },
+      {
+        "id": "coverage_subset_transform_full",
+        "name": "coverage_subset_transform_full-clang-native-skip",
+        "command": [
+          "/usr/bin/clang++-21",
+          "-std=c++23",
+          "-O2",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-march=native",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/final-validation/sources/coverage_subset_transform_full-skip.cpp",
+          "-o",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/final-validation/bin/coverage_subset_transform_full-clang-native-skip"
+        ],
+        "exit": 0,
+        "portable": false,
+        "skip": true,
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "compiler_sha256": "412bbe8c60571a1eb06f48fde89635033621caeb01a9b4ee76d46711bae8e932",
+        "rendered_source_sha256": "a8c5783c86d52649b239e8c06d4853b27850d89951225704875f48d3b4c6140f",
+        "source_hashes": {
+          "Math/Zeta_Mebius.cpp": "9555793c1661f1328a73447831ca4738d548dbd9cf878366df6302b5b433e70b",
+          "Verify/current/drivers/coverage_math_subset_transform_main.cpp": "63ecb79a7a3d39e1f67006dcd1356552a7dca3f083982858d4553a5bc26c6fd6",
+          "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+        }
+      },
+      {
+        "id": "coverage_subset_transform_full",
+        "name": "coverage_subset_transform_full-clang-portable-checked",
+        "command": [
+          "/usr/bin/clang++-21",
+          "-std=c++23",
+          "-O2",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+          "-U__SIZEOF_INT128__",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/final-validation/sources/coverage_subset_transform_full-checked.cpp",
+          "-o",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/final-validation/bin/coverage_subset_transform_full-clang-portable-checked"
+        ],
+        "exit": 0,
+        "portable": true,
+        "skip": false,
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "compiler_sha256": "412bbe8c60571a1eb06f48fde89635033621caeb01a9b4ee76d46711bae8e932",
+        "rendered_source_sha256": "d6c71e67d75bfada340b4f85fd7ce1b5ead42ade9b1a8bb026d659ce0830486b",
+        "source_hashes": {
+          "Math/Zeta_Mebius.cpp": "9555793c1661f1328a73447831ca4738d548dbd9cf878366df6302b5b433e70b",
+          "Verify/current/drivers/coverage_math_subset_transform_main.cpp": "63ecb79a7a3d39e1f67006dcd1356552a7dca3f083982858d4553a5bc26c6fd6",
+          "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+        }
+      },
+      {
+        "id": "coverage_subset_transform_full",
+        "name": "coverage_subset_transform_full-clang-portable-skip",
+        "command": [
+          "/usr/bin/clang++-21",
+          "-std=c++23",
+          "-O2",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+          "-U__SIZEOF_INT128__",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/final-validation/sources/coverage_subset_transform_full-skip.cpp",
+          "-o",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/final-validation/bin/coverage_subset_transform_full-clang-portable-skip"
+        ],
+        "exit": 0,
+        "portable": true,
+        "skip": true,
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "compiler_sha256": "412bbe8c60571a1eb06f48fde89635033621caeb01a9b4ee76d46711bae8e932",
+        "rendered_source_sha256": "a8c5783c86d52649b239e8c06d4853b27850d89951225704875f48d3b4c6140f",
+        "source_hashes": {
+          "Math/Zeta_Mebius.cpp": "9555793c1661f1328a73447831ca4738d548dbd9cf878366df6302b5b433e70b",
+          "Verify/current/drivers/coverage_math_subset_transform_main.cpp": "63ecb79a7a3d39e1f67006dcd1356552a7dca3f083982858d4553a5bc26c6fd6",
+          "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+        }
+      },
+      {
+        "id": "coverage_subset_transform_split",
+        "name": "coverage_subset_transform_split-gcc-native-checked",
+        "command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-march=native",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/final-validation/sources/coverage_subset_transform_split-checked.cpp",
+          "-o",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/final-validation/bin/coverage_subset_transform_split-gcc-native-checked"
+        ],
+        "exit": 0,
+        "portable": false,
+        "skip": false,
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "compiler_sha256": "e6718f7e0c7d057c3ff77b550c603da9bc4030e3ede3c053705acce1293dbe4d",
+        "rendered_source_sha256": "781d240340f9147b8b52c73404200d6a31cd0f6b07baf79b7a005f31a7809dab",
+        "source_hashes": {
+          "Math/Zeta/Set_Transform.cpp": "235196851691205e22933a79cde83a7952e1a916f98cf54278ef397ad0d8fd3a",
+          "Verify/current/drivers/coverage_math_subset_transform_main.cpp": "63ecb79a7a3d39e1f67006dcd1356552a7dca3f083982858d4553a5bc26c6fd6",
+          "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+        }
+      },
+      {
+        "id": "coverage_subset_transform_split",
+        "name": "coverage_subset_transform_split-gcc-native-skip",
+        "command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-march=native",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/final-validation/sources/coverage_subset_transform_split-skip.cpp",
+          "-o",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/final-validation/bin/coverage_subset_transform_split-gcc-native-skip"
+        ],
+        "exit": 0,
+        "portable": false,
+        "skip": true,
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "compiler_sha256": "e6718f7e0c7d057c3ff77b550c603da9bc4030e3ede3c053705acce1293dbe4d",
+        "rendered_source_sha256": "e4be923e40e595927f95d9507a38e24b3ca9d4a70f918cc34b8372eb7d5fe324",
+        "source_hashes": {
+          "Math/Zeta/Set_Transform.cpp": "235196851691205e22933a79cde83a7952e1a916f98cf54278ef397ad0d8fd3a",
+          "Verify/current/drivers/coverage_math_subset_transform_main.cpp": "63ecb79a7a3d39e1f67006dcd1356552a7dca3f083982858d4553a5bc26c6fd6",
+          "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+        }
+      },
+      {
+        "id": "coverage_subset_transform_split",
+        "name": "coverage_subset_transform_split-gcc-portable-checked",
+        "command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+          "-U__SIZEOF_INT128__",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/final-validation/sources/coverage_subset_transform_split-checked.cpp",
+          "-o",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/final-validation/bin/coverage_subset_transform_split-gcc-portable-checked"
+        ],
+        "exit": 0,
+        "portable": true,
+        "skip": false,
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "compiler_sha256": "e6718f7e0c7d057c3ff77b550c603da9bc4030e3ede3c053705acce1293dbe4d",
+        "rendered_source_sha256": "781d240340f9147b8b52c73404200d6a31cd0f6b07baf79b7a005f31a7809dab",
+        "source_hashes": {
+          "Math/Zeta/Set_Transform.cpp": "235196851691205e22933a79cde83a7952e1a916f98cf54278ef397ad0d8fd3a",
+          "Verify/current/drivers/coverage_math_subset_transform_main.cpp": "63ecb79a7a3d39e1f67006dcd1356552a7dca3f083982858d4553a5bc26c6fd6",
+          "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+        }
+      },
+      {
+        "id": "coverage_subset_transform_split",
+        "name": "coverage_subset_transform_split-gcc-portable-skip",
+        "command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+          "-U__SIZEOF_INT128__",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/final-validation/sources/coverage_subset_transform_split-skip.cpp",
+          "-o",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/final-validation/bin/coverage_subset_transform_split-gcc-portable-skip"
+        ],
+        "exit": 0,
+        "portable": true,
+        "skip": true,
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "compiler_sha256": "e6718f7e0c7d057c3ff77b550c603da9bc4030e3ede3c053705acce1293dbe4d",
+        "rendered_source_sha256": "e4be923e40e595927f95d9507a38e24b3ca9d4a70f918cc34b8372eb7d5fe324",
+        "source_hashes": {
+          "Math/Zeta/Set_Transform.cpp": "235196851691205e22933a79cde83a7952e1a916f98cf54278ef397ad0d8fd3a",
+          "Verify/current/drivers/coverage_math_subset_transform_main.cpp": "63ecb79a7a3d39e1f67006dcd1356552a7dca3f083982858d4553a5bc26c6fd6",
+          "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+        }
+      },
+      {
+        "id": "coverage_subset_transform_split",
+        "name": "coverage_subset_transform_split-clang-native-checked",
+        "command": [
+          "/usr/bin/clang++-21",
+          "-std=c++23",
+          "-O2",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-march=native",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/final-validation/sources/coverage_subset_transform_split-checked.cpp",
+          "-o",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/final-validation/bin/coverage_subset_transform_split-clang-native-checked"
+        ],
+        "exit": 0,
+        "portable": false,
+        "skip": false,
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "compiler_sha256": "412bbe8c60571a1eb06f48fde89635033621caeb01a9b4ee76d46711bae8e932",
+        "rendered_source_sha256": "781d240340f9147b8b52c73404200d6a31cd0f6b07baf79b7a005f31a7809dab",
+        "source_hashes": {
+          "Math/Zeta/Set_Transform.cpp": "235196851691205e22933a79cde83a7952e1a916f98cf54278ef397ad0d8fd3a",
+          "Verify/current/drivers/coverage_math_subset_transform_main.cpp": "63ecb79a7a3d39e1f67006dcd1356552a7dca3f083982858d4553a5bc26c6fd6",
+          "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+        }
+      },
+      {
+        "id": "coverage_subset_transform_split",
+        "name": "coverage_subset_transform_split-clang-native-skip",
+        "command": [
+          "/usr/bin/clang++-21",
+          "-std=c++23",
+          "-O2",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-march=native",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/final-validation/sources/coverage_subset_transform_split-skip.cpp",
+          "-o",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/final-validation/bin/coverage_subset_transform_split-clang-native-skip"
+        ],
+        "exit": 0,
+        "portable": false,
+        "skip": true,
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "compiler_sha256": "412bbe8c60571a1eb06f48fde89635033621caeb01a9b4ee76d46711bae8e932",
+        "rendered_source_sha256": "e4be923e40e595927f95d9507a38e24b3ca9d4a70f918cc34b8372eb7d5fe324",
+        "source_hashes": {
+          "Math/Zeta/Set_Transform.cpp": "235196851691205e22933a79cde83a7952e1a916f98cf54278ef397ad0d8fd3a",
+          "Verify/current/drivers/coverage_math_subset_transform_main.cpp": "63ecb79a7a3d39e1f67006dcd1356552a7dca3f083982858d4553a5bc26c6fd6",
+          "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+        }
+      },
+      {
+        "id": "coverage_subset_transform_split",
+        "name": "coverage_subset_transform_split-clang-portable-checked",
+        "command": [
+          "/usr/bin/clang++-21",
+          "-std=c++23",
+          "-O2",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+          "-U__SIZEOF_INT128__",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/final-validation/sources/coverage_subset_transform_split-checked.cpp",
+          "-o",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/final-validation/bin/coverage_subset_transform_split-clang-portable-checked"
+        ],
+        "exit": 0,
+        "portable": true,
+        "skip": false,
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "compiler_sha256": "412bbe8c60571a1eb06f48fde89635033621caeb01a9b4ee76d46711bae8e932",
+        "rendered_source_sha256": "781d240340f9147b8b52c73404200d6a31cd0f6b07baf79b7a005f31a7809dab",
+        "source_hashes": {
+          "Math/Zeta/Set_Transform.cpp": "235196851691205e22933a79cde83a7952e1a916f98cf54278ef397ad0d8fd3a",
+          "Verify/current/drivers/coverage_math_subset_transform_main.cpp": "63ecb79a7a3d39e1f67006dcd1356552a7dca3f083982858d4553a5bc26c6fd6",
+          "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+        }
+      },
+      {
+        "id": "coverage_subset_transform_split",
+        "name": "coverage_subset_transform_split-clang-portable-skip",
+        "command": [
+          "/usr/bin/clang++-21",
+          "-std=c++23",
+          "-O2",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+          "-U__SIZEOF_INT128__",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/final-validation/sources/coverage_subset_transform_split-skip.cpp",
+          "-o",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/final-validation/bin/coverage_subset_transform_split-clang-portable-skip"
+        ],
+        "exit": 0,
+        "portable": true,
+        "skip": true,
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "compiler_sha256": "412bbe8c60571a1eb06f48fde89635033621caeb01a9b4ee76d46711bae8e932",
+        "rendered_source_sha256": "e4be923e40e595927f95d9507a38e24b3ca9d4a70f918cc34b8372eb7d5fe324",
+        "source_hashes": {
+          "Math/Zeta/Set_Transform.cpp": "235196851691205e22933a79cde83a7952e1a916f98cf54278ef397ad0d8fd3a",
+          "Verify/current/drivers/coverage_math_subset_transform_main.cpp": "63ecb79a7a3d39e1f67006dcd1356552a7dca3f083982858d4553a5bc26c6fd6",
+          "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+        }
+      },
+      {
+        "id": "coverage_sparse_gcd_holes_full",
+        "name": "coverage_sparse_gcd_holes_full-gcc-native-checked",
+        "command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-march=native",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/final-validation/sources/coverage_sparse_gcd_holes_full-checked.cpp",
+          "-o",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/final-validation/bin/coverage_sparse_gcd_holes_full-gcc-native-checked"
+        ],
+        "exit": 0,
+        "portable": false,
+        "skip": false,
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "compiler_sha256": "e6718f7e0c7d057c3ff77b550c603da9bc4030e3ede3c053705acce1293dbe4d",
+        "rendered_source_sha256": "655db00143a6bb0553954c95716bb970c74634bc1cd8db959c18a9515dc6b5a4",
+        "source_hashes": {
+          "Math/Zeta_Mebius.cpp": "9555793c1661f1328a73447831ca4738d548dbd9cf878366df6302b5b433e70b",
+          "Verify/current/drivers/coverage_math_sparse_holes_main.cpp": "affcda955ee29297404b931cb61b2d85230b03e3e4062a84349ab2d481130de8",
+          "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+        }
+      },
+      {
+        "id": "coverage_sparse_gcd_holes_full",
+        "name": "coverage_sparse_gcd_holes_full-gcc-native-skip",
+        "command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-march=native",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/final-validation/sources/coverage_sparse_gcd_holes_full-skip.cpp",
+          "-o",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/final-validation/bin/coverage_sparse_gcd_holes_full-gcc-native-skip"
+        ],
+        "exit": 0,
+        "portable": false,
+        "skip": true,
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "compiler_sha256": "e6718f7e0c7d057c3ff77b550c603da9bc4030e3ede3c053705acce1293dbe4d",
+        "rendered_source_sha256": "29a14a709541702dd09d64f7ec57acf3a3760393f87e93f378f8855fe73c383a",
+        "source_hashes": {
+          "Math/Zeta_Mebius.cpp": "9555793c1661f1328a73447831ca4738d548dbd9cf878366df6302b5b433e70b",
+          "Verify/current/drivers/coverage_math_sparse_holes_main.cpp": "affcda955ee29297404b931cb61b2d85230b03e3e4062a84349ab2d481130de8",
+          "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+        }
+      },
+      {
+        "id": "coverage_sparse_gcd_holes_full",
+        "name": "coverage_sparse_gcd_holes_full-gcc-portable-checked",
+        "command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+          "-U__SIZEOF_INT128__",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/final-validation/sources/coverage_sparse_gcd_holes_full-checked.cpp",
+          "-o",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/final-validation/bin/coverage_sparse_gcd_holes_full-gcc-portable-checked"
+        ],
+        "exit": 0,
+        "portable": true,
+        "skip": false,
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "compiler_sha256": "e6718f7e0c7d057c3ff77b550c603da9bc4030e3ede3c053705acce1293dbe4d",
+        "rendered_source_sha256": "655db00143a6bb0553954c95716bb970c74634bc1cd8db959c18a9515dc6b5a4",
+        "source_hashes": {
+          "Math/Zeta_Mebius.cpp": "9555793c1661f1328a73447831ca4738d548dbd9cf878366df6302b5b433e70b",
+          "Verify/current/drivers/coverage_math_sparse_holes_main.cpp": "affcda955ee29297404b931cb61b2d85230b03e3e4062a84349ab2d481130de8",
+          "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+        }
+      },
+      {
+        "id": "coverage_sparse_gcd_holes_full",
+        "name": "coverage_sparse_gcd_holes_full-gcc-portable-skip",
+        "command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+          "-U__SIZEOF_INT128__",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/final-validation/sources/coverage_sparse_gcd_holes_full-skip.cpp",
+          "-o",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/final-validation/bin/coverage_sparse_gcd_holes_full-gcc-portable-skip"
+        ],
+        "exit": 0,
+        "portable": true,
+        "skip": true,
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "compiler_sha256": "e6718f7e0c7d057c3ff77b550c603da9bc4030e3ede3c053705acce1293dbe4d",
+        "rendered_source_sha256": "29a14a709541702dd09d64f7ec57acf3a3760393f87e93f378f8855fe73c383a",
+        "source_hashes": {
+          "Math/Zeta_Mebius.cpp": "9555793c1661f1328a73447831ca4738d548dbd9cf878366df6302b5b433e70b",
+          "Verify/current/drivers/coverage_math_sparse_holes_main.cpp": "affcda955ee29297404b931cb61b2d85230b03e3e4062a84349ab2d481130de8",
+          "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+        }
+      },
+      {
+        "id": "coverage_sparse_gcd_holes_full",
+        "name": "coverage_sparse_gcd_holes_full-clang-native-checked",
+        "command": [
+          "/usr/bin/clang++-21",
+          "-std=c++23",
+          "-O2",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-march=native",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/final-validation/sources/coverage_sparse_gcd_holes_full-checked.cpp",
+          "-o",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/final-validation/bin/coverage_sparse_gcd_holes_full-clang-native-checked"
+        ],
+        "exit": 0,
+        "portable": false,
+        "skip": false,
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "compiler_sha256": "412bbe8c60571a1eb06f48fde89635033621caeb01a9b4ee76d46711bae8e932",
+        "rendered_source_sha256": "655db00143a6bb0553954c95716bb970c74634bc1cd8db959c18a9515dc6b5a4",
+        "source_hashes": {
+          "Math/Zeta_Mebius.cpp": "9555793c1661f1328a73447831ca4738d548dbd9cf878366df6302b5b433e70b",
+          "Verify/current/drivers/coverage_math_sparse_holes_main.cpp": "affcda955ee29297404b931cb61b2d85230b03e3e4062a84349ab2d481130de8",
+          "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+        }
+      },
+      {
+        "id": "coverage_sparse_gcd_holes_full",
+        "name": "coverage_sparse_gcd_holes_full-clang-native-skip",
+        "command": [
+          "/usr/bin/clang++-21",
+          "-std=c++23",
+          "-O2",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-march=native",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/final-validation/sources/coverage_sparse_gcd_holes_full-skip.cpp",
+          "-o",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/final-validation/bin/coverage_sparse_gcd_holes_full-clang-native-skip"
+        ],
+        "exit": 0,
+        "portable": false,
+        "skip": true,
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "compiler_sha256": "412bbe8c60571a1eb06f48fde89635033621caeb01a9b4ee76d46711bae8e932",
+        "rendered_source_sha256": "29a14a709541702dd09d64f7ec57acf3a3760393f87e93f378f8855fe73c383a",
+        "source_hashes": {
+          "Math/Zeta_Mebius.cpp": "9555793c1661f1328a73447831ca4738d548dbd9cf878366df6302b5b433e70b",
+          "Verify/current/drivers/coverage_math_sparse_holes_main.cpp": "affcda955ee29297404b931cb61b2d85230b03e3e4062a84349ab2d481130de8",
+          "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+        }
+      },
+      {
+        "id": "coverage_sparse_gcd_holes_full",
+        "name": "coverage_sparse_gcd_holes_full-clang-portable-checked",
+        "command": [
+          "/usr/bin/clang++-21",
+          "-std=c++23",
+          "-O2",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+          "-U__SIZEOF_INT128__",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/final-validation/sources/coverage_sparse_gcd_holes_full-checked.cpp",
+          "-o",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/final-validation/bin/coverage_sparse_gcd_holes_full-clang-portable-checked"
+        ],
+        "exit": 0,
+        "portable": true,
+        "skip": false,
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "compiler_sha256": "412bbe8c60571a1eb06f48fde89635033621caeb01a9b4ee76d46711bae8e932",
+        "rendered_source_sha256": "655db00143a6bb0553954c95716bb970c74634bc1cd8db959c18a9515dc6b5a4",
+        "source_hashes": {
+          "Math/Zeta_Mebius.cpp": "9555793c1661f1328a73447831ca4738d548dbd9cf878366df6302b5b433e70b",
+          "Verify/current/drivers/coverage_math_sparse_holes_main.cpp": "affcda955ee29297404b931cb61b2d85230b03e3e4062a84349ab2d481130de8",
+          "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+        }
+      },
+      {
+        "id": "coverage_sparse_gcd_holes_full",
+        "name": "coverage_sparse_gcd_holes_full-clang-portable-skip",
+        "command": [
+          "/usr/bin/clang++-21",
+          "-std=c++23",
+          "-O2",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+          "-U__SIZEOF_INT128__",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/final-validation/sources/coverage_sparse_gcd_holes_full-skip.cpp",
+          "-o",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/final-validation/bin/coverage_sparse_gcd_holes_full-clang-portable-skip"
+        ],
+        "exit": 0,
+        "portable": true,
+        "skip": true,
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "compiler_sha256": "412bbe8c60571a1eb06f48fde89635033621caeb01a9b4ee76d46711bae8e932",
+        "rendered_source_sha256": "29a14a709541702dd09d64f7ec57acf3a3760393f87e93f378f8855fe73c383a",
+        "source_hashes": {
+          "Math/Zeta_Mebius.cpp": "9555793c1661f1328a73447831ca4738d548dbd9cf878366df6302b5b433e70b",
+          "Verify/current/drivers/coverage_math_sparse_holes_main.cpp": "affcda955ee29297404b931cb61b2d85230b03e3e4062a84349ab2d481130de8",
+          "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+        }
+      },
+      {
+        "id": "coverage_sparse_gcd_holes_split",
+        "name": "coverage_sparse_gcd_holes_split-gcc-native-checked",
+        "command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-march=native",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/final-validation/sources/coverage_sparse_gcd_holes_split-checked.cpp",
+          "-o",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/final-validation/bin/coverage_sparse_gcd_holes_split-gcc-native-checked"
+        ],
+        "exit": 0,
+        "portable": false,
+        "skip": false,
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "compiler_sha256": "e6718f7e0c7d057c3ff77b550c603da9bc4030e3ede3c053705acce1293dbe4d",
+        "rendered_source_sha256": "049b108ff936ea287c135de65837ee4866cfc6ddf7cf18d0b359008545a09213",
+        "source_hashes": {
+          "Math/Zeta/Sparse_Transform.cpp": "3e937436560e54927084617dba2a161a009b9efbba7898159ba26aed88c5a266",
+          "Verify/current/drivers/coverage_math_sparse_holes_main.cpp": "affcda955ee29297404b931cb61b2d85230b03e3e4062a84349ab2d481130de8",
+          "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+        }
+      },
+      {
+        "id": "coverage_sparse_gcd_holes_split",
+        "name": "coverage_sparse_gcd_holes_split-gcc-native-skip",
+        "command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-march=native",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/final-validation/sources/coverage_sparse_gcd_holes_split-skip.cpp",
+          "-o",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/final-validation/bin/coverage_sparse_gcd_holes_split-gcc-native-skip"
+        ],
+        "exit": 0,
+        "portable": false,
+        "skip": true,
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "compiler_sha256": "e6718f7e0c7d057c3ff77b550c603da9bc4030e3ede3c053705acce1293dbe4d",
+        "rendered_source_sha256": "793ac3cb648e40e163c8c8d055da366dfa68c45ae223c2966aad0760b525ba5b",
+        "source_hashes": {
+          "Math/Zeta/Sparse_Transform.cpp": "3e937436560e54927084617dba2a161a009b9efbba7898159ba26aed88c5a266",
+          "Verify/current/drivers/coverage_math_sparse_holes_main.cpp": "affcda955ee29297404b931cb61b2d85230b03e3e4062a84349ab2d481130de8",
+          "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+        }
+      },
+      {
+        "id": "coverage_sparse_gcd_holes_split",
+        "name": "coverage_sparse_gcd_holes_split-gcc-portable-checked",
+        "command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+          "-U__SIZEOF_INT128__",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/final-validation/sources/coverage_sparse_gcd_holes_split-checked.cpp",
+          "-o",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/final-validation/bin/coverage_sparse_gcd_holes_split-gcc-portable-checked"
+        ],
+        "exit": 0,
+        "portable": true,
+        "skip": false,
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "compiler_sha256": "e6718f7e0c7d057c3ff77b550c603da9bc4030e3ede3c053705acce1293dbe4d",
+        "rendered_source_sha256": "049b108ff936ea287c135de65837ee4866cfc6ddf7cf18d0b359008545a09213",
+        "source_hashes": {
+          "Math/Zeta/Sparse_Transform.cpp": "3e937436560e54927084617dba2a161a009b9efbba7898159ba26aed88c5a266",
+          "Verify/current/drivers/coverage_math_sparse_holes_main.cpp": "affcda955ee29297404b931cb61b2d85230b03e3e4062a84349ab2d481130de8",
+          "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+        }
+      },
+      {
+        "id": "coverage_sparse_gcd_holes_split",
+        "name": "coverage_sparse_gcd_holes_split-gcc-portable-skip",
+        "command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+          "-U__SIZEOF_INT128__",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/final-validation/sources/coverage_sparse_gcd_holes_split-skip.cpp",
+          "-o",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/final-validation/bin/coverage_sparse_gcd_holes_split-gcc-portable-skip"
+        ],
+        "exit": 0,
+        "portable": true,
+        "skip": true,
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "compiler_sha256": "e6718f7e0c7d057c3ff77b550c603da9bc4030e3ede3c053705acce1293dbe4d",
+        "rendered_source_sha256": "793ac3cb648e40e163c8c8d055da366dfa68c45ae223c2966aad0760b525ba5b",
+        "source_hashes": {
+          "Math/Zeta/Sparse_Transform.cpp": "3e937436560e54927084617dba2a161a009b9efbba7898159ba26aed88c5a266",
+          "Verify/current/drivers/coverage_math_sparse_holes_main.cpp": "affcda955ee29297404b931cb61b2d85230b03e3e4062a84349ab2d481130de8",
+          "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+        }
+      },
+      {
+        "id": "coverage_sparse_gcd_holes_split",
+        "name": "coverage_sparse_gcd_holes_split-clang-native-checked",
+        "command": [
+          "/usr/bin/clang++-21",
+          "-std=c++23",
+          "-O2",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-march=native",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/final-validation/sources/coverage_sparse_gcd_holes_split-checked.cpp",
+          "-o",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/final-validation/bin/coverage_sparse_gcd_holes_split-clang-native-checked"
+        ],
+        "exit": 0,
+        "portable": false,
+        "skip": false,
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "compiler_sha256": "412bbe8c60571a1eb06f48fde89635033621caeb01a9b4ee76d46711bae8e932",
+        "rendered_source_sha256": "049b108ff936ea287c135de65837ee4866cfc6ddf7cf18d0b359008545a09213",
+        "source_hashes": {
+          "Math/Zeta/Sparse_Transform.cpp": "3e937436560e54927084617dba2a161a009b9efbba7898159ba26aed88c5a266",
+          "Verify/current/drivers/coverage_math_sparse_holes_main.cpp": "affcda955ee29297404b931cb61b2d85230b03e3e4062a84349ab2d481130de8",
+          "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+        }
+      },
+      {
+        "id": "coverage_sparse_gcd_holes_split",
+        "name": "coverage_sparse_gcd_holes_split-clang-native-skip",
+        "command": [
+          "/usr/bin/clang++-21",
+          "-std=c++23",
+          "-O2",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-march=native",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/final-validation/sources/coverage_sparse_gcd_holes_split-skip.cpp",
+          "-o",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/final-validation/bin/coverage_sparse_gcd_holes_split-clang-native-skip"
+        ],
+        "exit": 0,
+        "portable": false,
+        "skip": true,
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "compiler_sha256": "412bbe8c60571a1eb06f48fde89635033621caeb01a9b4ee76d46711bae8e932",
+        "rendered_source_sha256": "793ac3cb648e40e163c8c8d055da366dfa68c45ae223c2966aad0760b525ba5b",
+        "source_hashes": {
+          "Math/Zeta/Sparse_Transform.cpp": "3e937436560e54927084617dba2a161a009b9efbba7898159ba26aed88c5a266",
+          "Verify/current/drivers/coverage_math_sparse_holes_main.cpp": "affcda955ee29297404b931cb61b2d85230b03e3e4062a84349ab2d481130de8",
+          "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+        }
+      },
+      {
+        "id": "coverage_sparse_gcd_holes_split",
+        "name": "coverage_sparse_gcd_holes_split-clang-portable-checked",
+        "command": [
+          "/usr/bin/clang++-21",
+          "-std=c++23",
+          "-O2",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+          "-U__SIZEOF_INT128__",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/final-validation/sources/coverage_sparse_gcd_holes_split-checked.cpp",
+          "-o",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/final-validation/bin/coverage_sparse_gcd_holes_split-clang-portable-checked"
+        ],
+        "exit": 0,
+        "portable": true,
+        "skip": false,
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "compiler_sha256": "412bbe8c60571a1eb06f48fde89635033621caeb01a9b4ee76d46711bae8e932",
+        "rendered_source_sha256": "049b108ff936ea287c135de65837ee4866cfc6ddf7cf18d0b359008545a09213",
+        "source_hashes": {
+          "Math/Zeta/Sparse_Transform.cpp": "3e937436560e54927084617dba2a161a009b9efbba7898159ba26aed88c5a266",
+          "Verify/current/drivers/coverage_math_sparse_holes_main.cpp": "affcda955ee29297404b931cb61b2d85230b03e3e4062a84349ab2d481130de8",
+          "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+        }
+      },
+      {
+        "id": "coverage_sparse_gcd_holes_split",
+        "name": "coverage_sparse_gcd_holes_split-clang-portable-skip",
+        "command": [
+          "/usr/bin/clang++-21",
+          "-std=c++23",
+          "-O2",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+          "-U__SIZEOF_INT128__",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/final-validation/sources/coverage_sparse_gcd_holes_split-skip.cpp",
+          "-o",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/final-validation/bin/coverage_sparse_gcd_holes_split-clang-portable-skip"
+        ],
+        "exit": 0,
+        "portable": true,
+        "skip": true,
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "compiler_sha256": "412bbe8c60571a1eb06f48fde89635033621caeb01a9b4ee76d46711bae8e932",
+        "rendered_source_sha256": "793ac3cb648e40e163c8c8d055da366dfa68c45ae223c2966aad0760b525ba5b",
+        "source_hashes": {
+          "Math/Zeta/Sparse_Transform.cpp": "3e937436560e54927084617dba2a161a009b9efbba7898159ba26aed88c5a266",
+          "Verify/current/drivers/coverage_math_sparse_holes_main.cpp": "affcda955ee29297404b931cb61b2d85230b03e3e4062a84349ab2d481130de8",
+          "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+        }
+      },
+      {
+        "id": "coverage_mo_inversions",
+        "name": "coverage_mo_inversions-gcc-native-checked",
+        "command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-march=native",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/retained-mo-validation/sources/coverage_mo_inversions-checked.cpp",
+          "-o",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/retained-mo-validation/bin/coverage_mo_inversions-gcc-native-checked"
+        ],
+        "exit": 0,
+        "portable": false,
+        "skip": false,
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "compiler_sha256": "e6718f7e0c7d057c3ff77b550c603da9bc4030e3ede3c053705acce1293dbe4d",
+        "rendered_source_sha256": "02be0f0b85a59d43d9a66ee6657aa285278944858be974bd0925d96714419456",
+        "source_hashes": {
+          "Algorithm/Mo.cpp": "5eedfaee6446de2843c3deec1093a6797336878f2a9c7e2920d4c6b4f07cb838",
+          "Verify/current/drivers/coverage_algorithm_mo_inversions_main.cpp": "5695c8508db8ecaba48b252356fa0e446e3109bd10ac3fe3af46c7540ef76819",
+          "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+        }
+      },
+      {
+        "id": "coverage_mo_inversions",
+        "name": "coverage_mo_inversions-gcc-native-skip",
+        "command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-march=native",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/retained-mo-validation/sources/coverage_mo_inversions-skip.cpp",
+          "-o",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/retained-mo-validation/bin/coverage_mo_inversions-gcc-native-skip"
+        ],
+        "exit": 0,
+        "portable": false,
+        "skip": true,
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "compiler_sha256": "e6718f7e0c7d057c3ff77b550c603da9bc4030e3ede3c053705acce1293dbe4d",
+        "rendered_source_sha256": "496240dd9653a2fbb21099d95641d7008c00bdb709a19d1f471d6580191787e2",
+        "source_hashes": {
+          "Algorithm/Mo.cpp": "5eedfaee6446de2843c3deec1093a6797336878f2a9c7e2920d4c6b4f07cb838",
+          "Verify/current/drivers/coverage_algorithm_mo_inversions_main.cpp": "5695c8508db8ecaba48b252356fa0e446e3109bd10ac3fe3af46c7540ef76819",
+          "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+        }
+      },
+      {
+        "id": "coverage_mo_inversions",
+        "name": "coverage_mo_inversions-gcc-portable-checked",
+        "command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+          "-U__SIZEOF_INT128__",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/retained-mo-validation/sources/coverage_mo_inversions-checked.cpp",
+          "-o",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/retained-mo-validation/bin/coverage_mo_inversions-gcc-portable-checked"
+        ],
+        "exit": 0,
+        "portable": true,
+        "skip": false,
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "compiler_sha256": "e6718f7e0c7d057c3ff77b550c603da9bc4030e3ede3c053705acce1293dbe4d",
+        "rendered_source_sha256": "02be0f0b85a59d43d9a66ee6657aa285278944858be974bd0925d96714419456",
+        "source_hashes": {
+          "Algorithm/Mo.cpp": "5eedfaee6446de2843c3deec1093a6797336878f2a9c7e2920d4c6b4f07cb838",
+          "Verify/current/drivers/coverage_algorithm_mo_inversions_main.cpp": "5695c8508db8ecaba48b252356fa0e446e3109bd10ac3fe3af46c7540ef76819",
+          "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+        }
+      },
+      {
+        "id": "coverage_mo_inversions",
+        "name": "coverage_mo_inversions-gcc-portable-skip",
+        "command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+          "-U__SIZEOF_INT128__",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/retained-mo-validation/sources/coverage_mo_inversions-skip.cpp",
+          "-o",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/retained-mo-validation/bin/coverage_mo_inversions-gcc-portable-skip"
+        ],
+        "exit": 0,
+        "portable": true,
+        "skip": true,
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "compiler_sha256": "e6718f7e0c7d057c3ff77b550c603da9bc4030e3ede3c053705acce1293dbe4d",
+        "rendered_source_sha256": "496240dd9653a2fbb21099d95641d7008c00bdb709a19d1f471d6580191787e2",
+        "source_hashes": {
+          "Algorithm/Mo.cpp": "5eedfaee6446de2843c3deec1093a6797336878f2a9c7e2920d4c6b4f07cb838",
+          "Verify/current/drivers/coverage_algorithm_mo_inversions_main.cpp": "5695c8508db8ecaba48b252356fa0e446e3109bd10ac3fe3af46c7540ef76819",
+          "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+        }
+      },
+      {
+        "id": "coverage_mo_inversions",
+        "name": "coverage_mo_inversions-clang-native-checked",
+        "command": [
+          "/usr/bin/clang++-21",
+          "-std=c++23",
+          "-O2",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-march=native",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/retained-mo-validation/sources/coverage_mo_inversions-checked.cpp",
+          "-o",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/retained-mo-validation/bin/coverage_mo_inversions-clang-native-checked"
+        ],
+        "exit": 0,
+        "portable": false,
+        "skip": false,
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "compiler_sha256": "412bbe8c60571a1eb06f48fde89635033621caeb01a9b4ee76d46711bae8e932",
+        "rendered_source_sha256": "02be0f0b85a59d43d9a66ee6657aa285278944858be974bd0925d96714419456",
+        "source_hashes": {
+          "Algorithm/Mo.cpp": "5eedfaee6446de2843c3deec1093a6797336878f2a9c7e2920d4c6b4f07cb838",
+          "Verify/current/drivers/coverage_algorithm_mo_inversions_main.cpp": "5695c8508db8ecaba48b252356fa0e446e3109bd10ac3fe3af46c7540ef76819",
+          "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+        }
+      },
+      {
+        "id": "coverage_mo_inversions",
+        "name": "coverage_mo_inversions-clang-native-skip",
+        "command": [
+          "/usr/bin/clang++-21",
+          "-std=c++23",
+          "-O2",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-march=native",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/retained-mo-validation/sources/coverage_mo_inversions-skip.cpp",
+          "-o",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/retained-mo-validation/bin/coverage_mo_inversions-clang-native-skip"
+        ],
+        "exit": 0,
+        "portable": false,
+        "skip": true,
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "compiler_sha256": "412bbe8c60571a1eb06f48fde89635033621caeb01a9b4ee76d46711bae8e932",
+        "rendered_source_sha256": "496240dd9653a2fbb21099d95641d7008c00bdb709a19d1f471d6580191787e2",
+        "source_hashes": {
+          "Algorithm/Mo.cpp": "5eedfaee6446de2843c3deec1093a6797336878f2a9c7e2920d4c6b4f07cb838",
+          "Verify/current/drivers/coverage_algorithm_mo_inversions_main.cpp": "5695c8508db8ecaba48b252356fa0e446e3109bd10ac3fe3af46c7540ef76819",
+          "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+        }
+      },
+      {
+        "id": "coverage_mo_inversions",
+        "name": "coverage_mo_inversions-clang-portable-checked",
+        "command": [
+          "/usr/bin/clang++-21",
+          "-std=c++23",
+          "-O2",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+          "-U__SIZEOF_INT128__",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/retained-mo-validation/sources/coverage_mo_inversions-checked.cpp",
+          "-o",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/retained-mo-validation/bin/coverage_mo_inversions-clang-portable-checked"
+        ],
+        "exit": 0,
+        "portable": true,
+        "skip": false,
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "compiler_sha256": "412bbe8c60571a1eb06f48fde89635033621caeb01a9b4ee76d46711bae8e932",
+        "rendered_source_sha256": "02be0f0b85a59d43d9a66ee6657aa285278944858be974bd0925d96714419456",
+        "source_hashes": {
+          "Algorithm/Mo.cpp": "5eedfaee6446de2843c3deec1093a6797336878f2a9c7e2920d4c6b4f07cb838",
+          "Verify/current/drivers/coverage_algorithm_mo_inversions_main.cpp": "5695c8508db8ecaba48b252356fa0e446e3109bd10ac3fe3af46c7540ef76819",
+          "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+        }
+      },
+      {
+        "id": "coverage_mo_inversions",
+        "name": "coverage_mo_inversions-clang-portable-skip",
+        "command": [
+          "/usr/bin/clang++-21",
+          "-std=c++23",
+          "-O2",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-DSIRKIT_DISABLE_SIMD",
+          "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+          "-U__SIZEOF_INT128__",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/retained-mo-validation/sources/coverage_mo_inversions-skip.cpp",
+          "-o",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-math/retained-mo-validation/bin/coverage_mo_inversions-clang-portable-skip"
+        ],
+        "exit": 0,
+        "portable": true,
+        "skip": true,
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "compiler_sha256": "412bbe8c60571a1eb06f48fde89635033621caeb01a9b4ee76d46711bae8e932",
+        "rendered_source_sha256": "496240dd9653a2fbb21099d95641d7008c00bdb709a19d1f471d6580191787e2",
+        "source_hashes": {
+          "Algorithm/Mo.cpp": "5eedfaee6446de2843c3deec1093a6797336878f2a9c7e2920d4c6b4f07cb838",
+          "Verify/current/drivers/coverage_algorithm_mo_inversions_main.cpp": "5695c8508db8ecaba48b252356fa0e446e3109bd10ac3fe3af46c7540ef76819",
+          "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+        }
+      }
+    ]
+  },
+  "rejected_candidates": [
+    {
+      "name": "MIS mask+size packed32",
+      "reason": "各profile1〜4%程度でidentical-controlの変動に近く、1byteサイズDPの16〜19%改善に及ばず"
+    },
+    {
+      "name": "Mo merged update/prefix descending BIT",
+      "reason": "多値の最大3profilesで2.3〜2.5倍遅い。分岐とループ内の依存を増やした"
+    },
+    {
+      "name": "Mo small alphabet fast path plus reserve",
+      "reason": "binaryでは改善するがrandom最大profileが約1.27%悪化し、11回確認でも再現。最終版では採用しない",
+      "confirmation": [
+        {
+          "profile": "mo_descending",
+          "variant": "baseline",
+          "trial": 0,
+          "seconds": 0.2776057370065246,
+          "input_sha256": "8b80f137aa8cfc67d28bc3df5e0910ee04c9872ad5625bf79ed9e899f3d0b533",
+          "output_sha256": "71f23f69cd2981053ba1c7ac3ca1b23fe9630d3970c0b72f0a088e40bb7c5672"
+        },
+        {
+          "profile": "mo_descending",
+          "variant": "candidate2",
+          "trial": 0,
+          "seconds": 0.2689912200003164,
+          "input_sha256": "8b80f137aa8cfc67d28bc3df5e0910ee04c9872ad5625bf79ed9e899f3d0b533",
+          "output_sha256": "71f23f69cd2981053ba1c7ac3ca1b23fe9630d3970c0b72f0a088e40bb7c5672"
+        },
+        {
+          "profile": "mo_descending",
+          "variant": "candidate2",
+          "trial": 1,
+          "seconds": 0.2756268759985687,
+          "input_sha256": "8b80f137aa8cfc67d28bc3df5e0910ee04c9872ad5625bf79ed9e899f3d0b533",
+          "output_sha256": "71f23f69cd2981053ba1c7ac3ca1b23fe9630d3970c0b72f0a088e40bb7c5672"
+        },
+        {
+          "profile": "mo_descending",
+          "variant": "baseline",
+          "trial": 1,
+          "seconds": 0.2778687469981378,
+          "input_sha256": "8b80f137aa8cfc67d28bc3df5e0910ee04c9872ad5625bf79ed9e899f3d0b533",
+          "output_sha256": "71f23f69cd2981053ba1c7ac3ca1b23fe9630d3970c0b72f0a088e40bb7c5672"
+        },
+        {
+          "profile": "mo_descending",
+          "variant": "baseline",
+          "trial": 2,
+          "seconds": 0.2818729650025489,
+          "input_sha256": "8b80f137aa8cfc67d28bc3df5e0910ee04c9872ad5625bf79ed9e899f3d0b533",
+          "output_sha256": "71f23f69cd2981053ba1c7ac3ca1b23fe9630d3970c0b72f0a088e40bb7c5672"
+        },
+        {
+          "profile": "mo_descending",
+          "variant": "candidate2",
+          "trial": 2,
+          "seconds": 0.27361412200843915,
+          "input_sha256": "8b80f137aa8cfc67d28bc3df5e0910ee04c9872ad5625bf79ed9e899f3d0b533",
+          "output_sha256": "71f23f69cd2981053ba1c7ac3ca1b23fe9630d3970c0b72f0a088e40bb7c5672"
+        },
+        {
+          "profile": "mo_descending",
+          "variant": "candidate2",
+          "trial": 3,
+          "seconds": 0.2755019809992518,
+          "input_sha256": "8b80f137aa8cfc67d28bc3df5e0910ee04c9872ad5625bf79ed9e899f3d0b533",
+          "output_sha256": "71f23f69cd2981053ba1c7ac3ca1b23fe9630d3970c0b72f0a088e40bb7c5672"
+        },
+        {
+          "profile": "mo_descending",
+          "variant": "baseline",
+          "trial": 3,
+          "seconds": 0.28143684899259824,
+          "input_sha256": "8b80f137aa8cfc67d28bc3df5e0910ee04c9872ad5625bf79ed9e899f3d0b533",
+          "output_sha256": "71f23f69cd2981053ba1c7ac3ca1b23fe9630d3970c0b72f0a088e40bb7c5672"
+        },
+        {
+          "profile": "mo_descending",
+          "variant": "baseline",
+          "trial": 4,
+          "seconds": 0.279726643988397,
+          "input_sha256": "8b80f137aa8cfc67d28bc3df5e0910ee04c9872ad5625bf79ed9e899f3d0b533",
+          "output_sha256": "71f23f69cd2981053ba1c7ac3ca1b23fe9630d3970c0b72f0a088e40bb7c5672"
+        },
+        {
+          "profile": "mo_descending",
+          "variant": "candidate2",
+          "trial": 4,
+          "seconds": 0.2716003360110335,
+          "input_sha256": "8b80f137aa8cfc67d28bc3df5e0910ee04c9872ad5625bf79ed9e899f3d0b533",
+          "output_sha256": "71f23f69cd2981053ba1c7ac3ca1b23fe9630d3970c0b72f0a088e40bb7c5672"
+        },
+        {
+          "profile": "mo_descending",
+          "variant": "candidate2",
+          "trial": 5,
+          "seconds": 0.2725331690016901,
+          "input_sha256": "8b80f137aa8cfc67d28bc3df5e0910ee04c9872ad5625bf79ed9e899f3d0b533",
+          "output_sha256": "71f23f69cd2981053ba1c7ac3ca1b23fe9630d3970c0b72f0a088e40bb7c5672"
+        },
+        {
+          "profile": "mo_descending",
+          "variant": "baseline",
+          "trial": 5,
+          "seconds": 0.27713847800623626,
+          "input_sha256": "8b80f137aa8cfc67d28bc3df5e0910ee04c9872ad5625bf79ed9e899f3d0b533",
+          "output_sha256": "71f23f69cd2981053ba1c7ac3ca1b23fe9630d3970c0b72f0a088e40bb7c5672"
+        },
+        {
+          "profile": "mo_descending",
+          "variant": "baseline",
+          "trial": 6,
+          "seconds": 0.2753016229980858,
+          "input_sha256": "8b80f137aa8cfc67d28bc3df5e0910ee04c9872ad5625bf79ed9e899f3d0b533",
+          "output_sha256": "71f23f69cd2981053ba1c7ac3ca1b23fe9630d3970c0b72f0a088e40bb7c5672"
+        },
+        {
+          "profile": "mo_descending",
+          "variant": "candidate2",
+          "trial": 6,
+          "seconds": 0.2676831319986377,
+          "input_sha256": "8b80f137aa8cfc67d28bc3df5e0910ee04c9872ad5625bf79ed9e899f3d0b533",
+          "output_sha256": "71f23f69cd2981053ba1c7ac3ca1b23fe9630d3970c0b72f0a088e40bb7c5672"
+        },
+        {
+          "profile": "mo_descending",
+          "variant": "candidate2",
+          "trial": 7,
+          "seconds": 0.26790844299830496,
+          "input_sha256": "8b80f137aa8cfc67d28bc3df5e0910ee04c9872ad5625bf79ed9e899f3d0b533",
+          "output_sha256": "71f23f69cd2981053ba1c7ac3ca1b23fe9630d3970c0b72f0a088e40bb7c5672"
+        },
+        {
+          "profile": "mo_descending",
+          "variant": "baseline",
+          "trial": 7,
+          "seconds": 0.27634720799687784,
+          "input_sha256": "8b80f137aa8cfc67d28bc3df5e0910ee04c9872ad5625bf79ed9e899f3d0b533",
+          "output_sha256": "71f23f69cd2981053ba1c7ac3ca1b23fe9630d3970c0b72f0a088e40bb7c5672"
+        },
+        {
+          "profile": "mo_descending",
+          "variant": "baseline",
+          "trial": 8,
+          "seconds": 0.32150669500697404,
+          "input_sha256": "8b80f137aa8cfc67d28bc3df5e0910ee04c9872ad5625bf79ed9e899f3d0b533",
+          "output_sha256": "71f23f69cd2981053ba1c7ac3ca1b23fe9630d3970c0b72f0a088e40bb7c5672"
+        },
+        {
+          "profile": "mo_descending",
+          "variant": "candidate2",
+          "trial": 8,
+          "seconds": 0.27032312599476427,
+          "input_sha256": "8b80f137aa8cfc67d28bc3df5e0910ee04c9872ad5625bf79ed9e899f3d0b533",
+          "output_sha256": "71f23f69cd2981053ba1c7ac3ca1b23fe9630d3970c0b72f0a088e40bb7c5672"
+        },
+        {
+          "profile": "mo_descending",
+          "variant": "candidate2",
+          "trial": 9,
+          "seconds": 0.26336316000379156,
+          "input_sha256": "8b80f137aa8cfc67d28bc3df5e0910ee04c9872ad5625bf79ed9e899f3d0b533",
+          "output_sha256": "71f23f69cd2981053ba1c7ac3ca1b23fe9630d3970c0b72f0a088e40bb7c5672"
+        },
+        {
+          "profile": "mo_descending",
+          "variant": "baseline",
+          "trial": 9,
+          "seconds": 0.27958842100633774,
+          "input_sha256": "8b80f137aa8cfc67d28bc3df5e0910ee04c9872ad5625bf79ed9e899f3d0b533",
+          "output_sha256": "71f23f69cd2981053ba1c7ac3ca1b23fe9630d3970c0b72f0a088e40bb7c5672"
+        },
+        {
+          "profile": "mo_descending",
+          "variant": "baseline",
+          "trial": 10,
+          "seconds": 0.2748766769946087,
+          "input_sha256": "8b80f137aa8cfc67d28bc3df5e0910ee04c9872ad5625bf79ed9e899f3d0b533",
+          "output_sha256": "71f23f69cd2981053ba1c7ac3ca1b23fe9630d3970c0b72f0a088e40bb7c5672"
+        },
+        {
+          "profile": "mo_descending",
+          "variant": "candidate2",
+          "trial": 10,
+          "seconds": 0.2671348870062502,
+          "input_sha256": "8b80f137aa8cfc67d28bc3df5e0910ee04c9872ad5625bf79ed9e899f3d0b533",
+          "output_sha256": "71f23f69cd2981053ba1c7ac3ca1b23fe9630d3970c0b72f0a088e40bb7c5672"
+        },
+        {
+          "profile": "mo_binary",
+          "variant": "baseline",
+          "trial": 0,
+          "seconds": 0.13440094199904706,
+          "input_sha256": "85479227097fbdaee5db4a56326b02e7eccdf9e6439a5aba1bbaaacbb4194a52",
+          "output_sha256": "9432943e45abdf9e29e6caaaf57671587d708fb4562106d5a7f973c57471f84d"
+        },
+        {
+          "profile": "mo_binary",
+          "variant": "candidate2",
+          "trial": 0,
+          "seconds": 0.09199750301195309,
+          "input_sha256": "85479227097fbdaee5db4a56326b02e7eccdf9e6439a5aba1bbaaacbb4194a52",
+          "output_sha256": "9432943e45abdf9e29e6caaaf57671587d708fb4562106d5a7f973c57471f84d"
+        },
+        {
+          "profile": "mo_binary",
+          "variant": "candidate2",
+          "trial": 1,
+          "seconds": 0.09071995299018454,
+          "input_sha256": "85479227097fbdaee5db4a56326b02e7eccdf9e6439a5aba1bbaaacbb4194a52",
+          "output_sha256": "9432943e45abdf9e29e6caaaf57671587d708fb4562106d5a7f973c57471f84d"
+        },
+        {
+          "profile": "mo_binary",
+          "variant": "baseline",
+          "trial": 1,
+          "seconds": 0.13142848100687843,
+          "input_sha256": "85479227097fbdaee5db4a56326b02e7eccdf9e6439a5aba1bbaaacbb4194a52",
+          "output_sha256": "9432943e45abdf9e29e6caaaf57671587d708fb4562106d5a7f973c57471f84d"
+        },
+        {
+          "profile": "mo_binary",
+          "variant": "baseline",
+          "trial": 2,
+          "seconds": 0.13184949800779577,
+          "input_sha256": "85479227097fbdaee5db4a56326b02e7eccdf9e6439a5aba1bbaaacbb4194a52",
+          "output_sha256": "9432943e45abdf9e29e6caaaf57671587d708fb4562106d5a7f973c57471f84d"
+        },
+        {
+          "profile": "mo_binary",
+          "variant": "candidate2",
+          "trial": 2,
+          "seconds": 0.0912601000018185,
+          "input_sha256": "85479227097fbdaee5db4a56326b02e7eccdf9e6439a5aba1bbaaacbb4194a52",
+          "output_sha256": "9432943e45abdf9e29e6caaaf57671587d708fb4562106d5a7f973c57471f84d"
+        },
+        {
+          "profile": "mo_binary",
+          "variant": "candidate2",
+          "trial": 3,
+          "seconds": 0.09121857798891142,
+          "input_sha256": "85479227097fbdaee5db4a56326b02e7eccdf9e6439a5aba1bbaaacbb4194a52",
+          "output_sha256": "9432943e45abdf9e29e6caaaf57671587d708fb4562106d5a7f973c57471f84d"
+        },
+        {
+          "profile": "mo_binary",
+          "variant": "baseline",
+          "trial": 3,
+          "seconds": 0.13401941499614622,
+          "input_sha256": "85479227097fbdaee5db4a56326b02e7eccdf9e6439a5aba1bbaaacbb4194a52",
+          "output_sha256": "9432943e45abdf9e29e6caaaf57671587d708fb4562106d5a7f973c57471f84d"
+        },
+        {
+          "profile": "mo_binary",
+          "variant": "baseline",
+          "trial": 4,
+          "seconds": 0.1340695870021591,
+          "input_sha256": "85479227097fbdaee5db4a56326b02e7eccdf9e6439a5aba1bbaaacbb4194a52",
+          "output_sha256": "9432943e45abdf9e29e6caaaf57671587d708fb4562106d5a7f973c57471f84d"
+        },
+        {
+          "profile": "mo_binary",
+          "variant": "candidate2",
+          "trial": 4,
+          "seconds": 0.09155161700618919,
+          "input_sha256": "85479227097fbdaee5db4a56326b02e7eccdf9e6439a5aba1bbaaacbb4194a52",
+          "output_sha256": "9432943e45abdf9e29e6caaaf57671587d708fb4562106d5a7f973c57471f84d"
+        },
+        {
+          "profile": "mo_binary",
+          "variant": "candidate2",
+          "trial": 5,
+          "seconds": 0.09164592200249899,
+          "input_sha256": "85479227097fbdaee5db4a56326b02e7eccdf9e6439a5aba1bbaaacbb4194a52",
+          "output_sha256": "9432943e45abdf9e29e6caaaf57671587d708fb4562106d5a7f973c57471f84d"
+        },
+        {
+          "profile": "mo_binary",
+          "variant": "baseline",
+          "trial": 5,
+          "seconds": 0.13694307499099523,
+          "input_sha256": "85479227097fbdaee5db4a56326b02e7eccdf9e6439a5aba1bbaaacbb4194a52",
+          "output_sha256": "9432943e45abdf9e29e6caaaf57671587d708fb4562106d5a7f973c57471f84d"
+        },
+        {
+          "profile": "mo_binary",
+          "variant": "baseline",
+          "trial": 6,
+          "seconds": 0.1377370720001636,
+          "input_sha256": "85479227097fbdaee5db4a56326b02e7eccdf9e6439a5aba1bbaaacbb4194a52",
+          "output_sha256": "9432943e45abdf9e29e6caaaf57671587d708fb4562106d5a7f973c57471f84d"
+        },
+        {
+          "profile": "mo_binary",
+          "variant": "candidate2",
+          "trial": 6,
+          "seconds": 0.0920520090003265,
+          "input_sha256": "85479227097fbdaee5db4a56326b02e7eccdf9e6439a5aba1bbaaacbb4194a52",
+          "output_sha256": "9432943e45abdf9e29e6caaaf57671587d708fb4562106d5a7f973c57471f84d"
+        },
+        {
+          "profile": "mo_binary",
+          "variant": "candidate2",
+          "trial": 7,
+          "seconds": 0.09274814899254125,
+          "input_sha256": "85479227097fbdaee5db4a56326b02e7eccdf9e6439a5aba1bbaaacbb4194a52",
+          "output_sha256": "9432943e45abdf9e29e6caaaf57671587d708fb4562106d5a7f973c57471f84d"
+        },
+        {
+          "profile": "mo_binary",
+          "variant": "baseline",
+          "trial": 7,
+          "seconds": 0.1339902269974118,
+          "input_sha256": "85479227097fbdaee5db4a56326b02e7eccdf9e6439a5aba1bbaaacbb4194a52",
+          "output_sha256": "9432943e45abdf9e29e6caaaf57671587d708fb4562106d5a7f973c57471f84d"
+        },
+        {
+          "profile": "mo_binary",
+          "variant": "baseline",
+          "trial": 8,
+          "seconds": 0.13210009000613354,
+          "input_sha256": "85479227097fbdaee5db4a56326b02e7eccdf9e6439a5aba1bbaaacbb4194a52",
+          "output_sha256": "9432943e45abdf9e29e6caaaf57671587d708fb4562106d5a7f973c57471f84d"
+        },
+        {
+          "profile": "mo_binary",
+          "variant": "candidate2",
+          "trial": 8,
+          "seconds": 0.09007824699801859,
+          "input_sha256": "85479227097fbdaee5db4a56326b02e7eccdf9e6439a5aba1bbaaacbb4194a52",
+          "output_sha256": "9432943e45abdf9e29e6caaaf57671587d708fb4562106d5a7f973c57471f84d"
+        },
+        {
+          "profile": "mo_binary",
+          "variant": "candidate2",
+          "trial": 9,
+          "seconds": 0.09181741700740531,
+          "input_sha256": "85479227097fbdaee5db4a56326b02e7eccdf9e6439a5aba1bbaaacbb4194a52",
+          "output_sha256": "9432943e45abdf9e29e6caaaf57671587d708fb4562106d5a7f973c57471f84d"
+        },
+        {
+          "profile": "mo_binary",
+          "variant": "baseline",
+          "trial": 9,
+          "seconds": 0.13300610599981155,
+          "input_sha256": "85479227097fbdaee5db4a56326b02e7eccdf9e6439a5aba1bbaaacbb4194a52",
+          "output_sha256": "9432943e45abdf9e29e6caaaf57671587d708fb4562106d5a7f973c57471f84d"
+        },
+        {
+          "profile": "mo_binary",
+          "variant": "baseline",
+          "trial": 10,
+          "seconds": 0.13354389400046784,
+          "input_sha256": "85479227097fbdaee5db4a56326b02e7eccdf9e6439a5aba1bbaaacbb4194a52",
+          "output_sha256": "9432943e45abdf9e29e6caaaf57671587d708fb4562106d5a7f973c57471f84d"
+        },
+        {
+          "profile": "mo_binary",
+          "variant": "candidate2",
+          "trial": 10,
+          "seconds": 0.09227933699730784,
+          "input_sha256": "85479227097fbdaee5db4a56326b02e7eccdf9e6439a5aba1bbaaacbb4194a52",
+          "output_sha256": "9432943e45abdf9e29e6caaaf57671587d708fb4562106d5a7f973c57471f84d"
+        },
+        {
+          "profile": "mo_random",
+          "variant": "baseline",
+          "trial": 0,
+          "seconds": 0.5740792189899366,
+          "input_sha256": "a43086e2ea2eb494095efb763772dab0d6ab7877cc06de0a818ef903d2d2a226",
+          "output_sha256": "4887931f214e3ce8e47f76d8fde04ee487840cb5c56a9ce90211b7412b97fdd7"
+        },
+        {
+          "profile": "mo_random",
+          "variant": "candidate2",
+          "trial": 0,
+          "seconds": 0.573960581998108,
+          "input_sha256": "a43086e2ea2eb494095efb763772dab0d6ab7877cc06de0a818ef903d2d2a226",
+          "output_sha256": "4887931f214e3ce8e47f76d8fde04ee487840cb5c56a9ce90211b7412b97fdd7"
+        },
+        {
+          "profile": "mo_random",
+          "variant": "candidate2",
+          "trial": 1,
+          "seconds": 0.5829687670047861,
+          "input_sha256": "a43086e2ea2eb494095efb763772dab0d6ab7877cc06de0a818ef903d2d2a226",
+          "output_sha256": "4887931f214e3ce8e47f76d8fde04ee487840cb5c56a9ce90211b7412b97fdd7"
+        },
+        {
+          "profile": "mo_random",
+          "variant": "baseline",
+          "trial": 1,
+          "seconds": 0.5707292739971308,
+          "input_sha256": "a43086e2ea2eb494095efb763772dab0d6ab7877cc06de0a818ef903d2d2a226",
+          "output_sha256": "4887931f214e3ce8e47f76d8fde04ee487840cb5c56a9ce90211b7412b97fdd7"
+        },
+        {
+          "profile": "mo_random",
+          "variant": "baseline",
+          "trial": 2,
+          "seconds": 0.5711545509984717,
+          "input_sha256": "a43086e2ea2eb494095efb763772dab0d6ab7877cc06de0a818ef903d2d2a226",
+          "output_sha256": "4887931f214e3ce8e47f76d8fde04ee487840cb5c56a9ce90211b7412b97fdd7"
+        },
+        {
+          "profile": "mo_random",
+          "variant": "candidate2",
+          "trial": 2,
+          "seconds": 0.5774565659958171,
+          "input_sha256": "a43086e2ea2eb494095efb763772dab0d6ab7877cc06de0a818ef903d2d2a226",
+          "output_sha256": "4887931f214e3ce8e47f76d8fde04ee487840cb5c56a9ce90211b7412b97fdd7"
+        },
+        {
+          "profile": "mo_random",
+          "variant": "candidate2",
+          "trial": 3,
+          "seconds": 0.5701822679984616,
+          "input_sha256": "a43086e2ea2eb494095efb763772dab0d6ab7877cc06de0a818ef903d2d2a226",
+          "output_sha256": "4887931f214e3ce8e47f76d8fde04ee487840cb5c56a9ce90211b7412b97fdd7"
+        },
+        {
+          "profile": "mo_random",
+          "variant": "baseline",
+          "trial": 3,
+          "seconds": 0.5643090969970217,
+          "input_sha256": "a43086e2ea2eb494095efb763772dab0d6ab7877cc06de0a818ef903d2d2a226",
+          "output_sha256": "4887931f214e3ce8e47f76d8fde04ee487840cb5c56a9ce90211b7412b97fdd7"
+        },
+        {
+          "profile": "mo_random",
+          "variant": "baseline",
+          "trial": 4,
+          "seconds": 0.5807194450026145,
+          "input_sha256": "a43086e2ea2eb494095efb763772dab0d6ab7877cc06de0a818ef903d2d2a226",
+          "output_sha256": "4887931f214e3ce8e47f76d8fde04ee487840cb5c56a9ce90211b7412b97fdd7"
+        },
+        {
+          "profile": "mo_random",
+          "variant": "candidate2",
+          "trial": 4,
+          "seconds": 0.5815799929987406,
+          "input_sha256": "a43086e2ea2eb494095efb763772dab0d6ab7877cc06de0a818ef903d2d2a226",
+          "output_sha256": "4887931f214e3ce8e47f76d8fde04ee487840cb5c56a9ce90211b7412b97fdd7"
+        },
+        {
+          "profile": "mo_random",
+          "variant": "candidate2",
+          "trial": 5,
+          "seconds": 0.5815264470002148,
+          "input_sha256": "a43086e2ea2eb494095efb763772dab0d6ab7877cc06de0a818ef903d2d2a226",
+          "output_sha256": "4887931f214e3ce8e47f76d8fde04ee487840cb5c56a9ce90211b7412b97fdd7"
+        },
+        {
+          "profile": "mo_random",
+          "variant": "baseline",
+          "trial": 5,
+          "seconds": 0.5810335749993101,
+          "input_sha256": "a43086e2ea2eb494095efb763772dab0d6ab7877cc06de0a818ef903d2d2a226",
+          "output_sha256": "4887931f214e3ce8e47f76d8fde04ee487840cb5c56a9ce90211b7412b97fdd7"
+        },
+        {
+          "profile": "mo_random",
+          "variant": "baseline",
+          "trial": 6,
+          "seconds": 0.5742070319975028,
+          "input_sha256": "a43086e2ea2eb494095efb763772dab0d6ab7877cc06de0a818ef903d2d2a226",
+          "output_sha256": "4887931f214e3ce8e47f76d8fde04ee487840cb5c56a9ce90211b7412b97fdd7"
+        },
+        {
+          "profile": "mo_random",
+          "variant": "candidate2",
+          "trial": 6,
+          "seconds": 0.5752459749928676,
+          "input_sha256": "a43086e2ea2eb494095efb763772dab0d6ab7877cc06de0a818ef903d2d2a226",
+          "output_sha256": "4887931f214e3ce8e47f76d8fde04ee487840cb5c56a9ce90211b7412b97fdd7"
+        },
+        {
+          "profile": "mo_random",
+          "variant": "candidate2",
+          "trial": 7,
+          "seconds": 0.5805983099999139,
+          "input_sha256": "a43086e2ea2eb494095efb763772dab0d6ab7877cc06de0a818ef903d2d2a226",
+          "output_sha256": "4887931f214e3ce8e47f76d8fde04ee487840cb5c56a9ce90211b7412b97fdd7"
+        },
+        {
+          "profile": "mo_random",
+          "variant": "baseline",
+          "trial": 7,
+          "seconds": 0.5717844149912708,
+          "input_sha256": "a43086e2ea2eb494095efb763772dab0d6ab7877cc06de0a818ef903d2d2a226",
+          "output_sha256": "4887931f214e3ce8e47f76d8fde04ee487840cb5c56a9ce90211b7412b97fdd7"
+        },
+        {
+          "profile": "mo_random",
+          "variant": "baseline",
+          "trial": 8,
+          "seconds": 0.5789208170026541,
+          "input_sha256": "a43086e2ea2eb494095efb763772dab0d6ab7877cc06de0a818ef903d2d2a226",
+          "output_sha256": "4887931f214e3ce8e47f76d8fde04ee487840cb5c56a9ce90211b7412b97fdd7"
+        },
+        {
+          "profile": "mo_random",
+          "variant": "candidate2",
+          "trial": 8,
+          "seconds": 0.5818857900012517,
+          "input_sha256": "a43086e2ea2eb494095efb763772dab0d6ab7877cc06de0a818ef903d2d2a226",
+          "output_sha256": "4887931f214e3ce8e47f76d8fde04ee487840cb5c56a9ce90211b7412b97fdd7"
+        },
+        {
+          "profile": "mo_random",
+          "variant": "candidate2",
+          "trial": 9,
+          "seconds": 0.599034628001391,
+          "input_sha256": "a43086e2ea2eb494095efb763772dab0d6ab7877cc06de0a818ef903d2d2a226",
+          "output_sha256": "4887931f214e3ce8e47f76d8fde04ee487840cb5c56a9ce90211b7412b97fdd7"
+        },
+        {
+          "profile": "mo_random",
+          "variant": "baseline",
+          "trial": 9,
+          "seconds": 0.5884888540022075,
+          "input_sha256": "a43086e2ea2eb494095efb763772dab0d6ab7877cc06de0a818ef903d2d2a226",
+          "output_sha256": "4887931f214e3ce8e47f76d8fde04ee487840cb5c56a9ce90211b7412b97fdd7"
+        },
+        {
+          "profile": "mo_random",
+          "variant": "baseline",
+          "trial": 10,
+          "seconds": 0.5848755079932744,
+          "input_sha256": "a43086e2ea2eb494095efb763772dab0d6ab7877cc06de0a818ef903d2d2a226",
+          "output_sha256": "4887931f214e3ce8e47f76d8fde04ee487840cb5c56a9ce90211b7412b97fdd7"
+        },
+        {
+          "profile": "mo_random",
+          "variant": "candidate2",
+          "trial": 10,
+          "seconds": 0.5889765930041904,
+          "input_sha256": "a43086e2ea2eb494095efb763772dab0d6ab7877cc06de0a818ef903d2d2a226",
+          "output_sha256": "4887931f214e3ce8e47f76d8fde04ee487840cb5c56a9ce90211b7412b97fdd7"
+        }
+      ]
+    }
+  ],
+  "full_split_equality": [
+    {
+      "family": "subset",
+      "variant": "baseline",
+      "optimization": "O2",
+      "ids": [
+        "coverage_subset_transform_full",
+        "coverage_subset_transform_split"
+      ],
+      "text_hashes": [
+        "a25418bb5fab5702a52f0d8de149d975a133a29618adace1c9058325f419d681",
+        "a25418bb5fab5702a52f0d8de149d975a133a29618adace1c9058325f419d681"
+      ],
+      "equal": true
+    },
+    {
+      "family": "subset",
+      "variant": "baseline",
+      "optimization": "O3",
+      "ids": [
+        "coverage_subset_transform_full",
+        "coverage_subset_transform_split"
+      ],
+      "text_hashes": [
+        "a247c06d7068ae6962558f360a55dfb5e7433c0402f92279f330d863a35a43f2",
+        "a247c06d7068ae6962558f360a55dfb5e7433c0402f92279f330d863a35a43f2"
+      ],
+      "equal": true
+    },
+    {
+      "family": "subset",
+      "variant": "baseline",
+      "optimization": "O3,unroll-loops",
+      "ids": [
+        "coverage_subset_transform_full",
+        "coverage_subset_transform_split"
+      ],
+      "text_hashes": [
+        "f4ff93f7e38f18d3c14b5137ce85c89d9055aa4eb54e399d0c33726a118bb268",
+        "f4ff93f7e38f18d3c14b5137ce85c89d9055aa4eb54e399d0c33726a118bb268"
+      ],
+      "equal": true
+    },
+    {
+      "family": "subset",
+      "variant": "candidate",
+      "optimization": "O2",
+      "ids": [
+        "coverage_subset_transform_full",
+        "coverage_subset_transform_split"
+      ],
+      "text_hashes": [
+        "8b417dad7ed67378ff1408154f39cb6d616341ceba8634513ce9c220afca2b2d",
+        "8b417dad7ed67378ff1408154f39cb6d616341ceba8634513ce9c220afca2b2d"
+      ],
+      "equal": true
+    },
+    {
+      "family": "subset",
+      "variant": "candidate",
+      "optimization": "O3",
+      "ids": [
+        "coverage_subset_transform_full",
+        "coverage_subset_transform_split"
+      ],
+      "text_hashes": [
+        "121d75d924ca7bdaa1a45e2f8e2888e72e7f7afffce3f1486696f6323ccfea88",
+        "121d75d924ca7bdaa1a45e2f8e2888e72e7f7afffce3f1486696f6323ccfea88"
+      ],
+      "equal": true
+    },
+    {
+      "family": "subset",
+      "variant": "candidate",
+      "optimization": "O3,unroll-loops",
+      "ids": [
+        "coverage_subset_transform_full",
+        "coverage_subset_transform_split"
+      ],
+      "text_hashes": [
+        "4d26566f43352f779b5cbedaf739dce8b0e9b2376716ef9a689add5742876e3a",
+        "4d26566f43352f779b5cbedaf739dce8b0e9b2376716ef9a689add5742876e3a"
+      ],
+      "equal": true
+    },
+    {
+      "family": "sparse",
+      "variant": "baseline",
+      "optimization": "O2",
+      "ids": [
+        "coverage_sparse_gcd_holes_full",
+        "coverage_sparse_gcd_holes_split"
+      ],
+      "text_hashes": [
+        "11376ae0cb255380ef8424a2626385a81ae072b67d6766d2500e3a757dc29bf7",
+        "11376ae0cb255380ef8424a2626385a81ae072b67d6766d2500e3a757dc29bf7"
+      ],
+      "equal": true
+    },
+    {
+      "family": "sparse",
+      "variant": "baseline",
+      "optimization": "O3",
+      "ids": [
+        "coverage_sparse_gcd_holes_full",
+        "coverage_sparse_gcd_holes_split"
+      ],
+      "text_hashes": [
+        "1c12fe09dba2711002b8a1a3e8556632e00ee0d1ded33da7ec2286cbb9112d46",
+        "1c12fe09dba2711002b8a1a3e8556632e00ee0d1ded33da7ec2286cbb9112d46"
+      ],
+      "equal": true
+    },
+    {
+      "family": "sparse",
+      "variant": "baseline",
+      "optimization": "O3,unroll-loops",
+      "ids": [
+        "coverage_sparse_gcd_holes_full",
+        "coverage_sparse_gcd_holes_split"
+      ],
+      "text_hashes": [
+        "5d40b7513e1b72083f96575fd12ce2d59be7bb78fa8feb21e7f48c432a51caff",
+        "5d40b7513e1b72083f96575fd12ce2d59be7bb78fa8feb21e7f48c432a51caff"
+      ],
+      "equal": true
+    },
+    {
+      "family": "sparse",
+      "variant": "candidate",
+      "optimization": "O2",
+      "ids": [
+        "coverage_sparse_gcd_holes_full",
+        "coverage_sparse_gcd_holes_split"
+      ],
+      "text_hashes": [
+        "6f586d60bcdf09122fe90166bcde3d17202079a041e3ff1e716b87a2d3929993",
+        "6f586d60bcdf09122fe90166bcde3d17202079a041e3ff1e716b87a2d3929993"
+      ],
+      "equal": true
+    },
+    {
+      "family": "sparse",
+      "variant": "candidate",
+      "optimization": "O3",
+      "ids": [
+        "coverage_sparse_gcd_holes_full",
+        "coverage_sparse_gcd_holes_split"
+      ],
+      "text_hashes": [
+        "0ca8771bf90cedbb34a2af74cb30272701efa4b7d3ba8bcf1d479400dcc40311",
+        "0ca8771bf90cedbb34a2af74cb30272701efa4b7d3ba8bcf1d479400dcc40311"
+      ],
+      "equal": true
+    },
+    {
+      "family": "sparse",
+      "variant": "candidate",
+      "optimization": "O3,unroll-loops",
+      "ids": [
+        "coverage_sparse_gcd_holes_full",
+        "coverage_sparse_gcd_holes_split"
+      ],
+      "text_hashes": [
+        "6804335c7b739c9aaa2091a7445b0924ffc89748ec03a35ebef4c67ce249a033",
+        "6804335c7b739c9aaa2091a7445b0924ffc89748ec03a35ebef4c67ce249a033"
+      ],
+      "equal": true
+    }
+  ],
+  "sparse_memory": [
+    {
+      "profile": "sparse_impulse1m",
+      "variant": "baseline",
+      "stats": "0.26 59212",
+      "scope": "single maxRSS sample; stdout /dev/null and not reused for primary timing comparison"
+    },
+    {
+      "profile": "sparse_impulse1m",
+      "variant": "candidate",
+      "stats": "0.27 51516",
+      "scope": "single maxRSS sample; stdout /dev/null and not reused for primary timing comparison"
+    },
+    {
+      "profile": "sparse_reverse_impulse1m",
+      "variant": "baseline",
+      "stats": "0.27 59336",
+      "scope": "single maxRSS sample; stdout /dev/null and not reused for primary timing comparison"
+    },
+    {
+      "profile": "sparse_reverse_impulse1m",
+      "variant": "candidate",
+      "stats": "0.26 51516",
+      "scope": "single maxRSS sample; stdout /dev/null and not reused for primary timing comparison"
+    },
+    {
+      "profile": "sparse_random1m",
+      "variant": "baseline",
+      "stats": "0.30 59336",
+      "scope": "single maxRSS sample; stdout /dev/null and not reused for primary timing comparison"
+    },
+    {
+      "profile": "sparse_random1m",
+      "variant": "candidate",
+      "stats": "0.31 51524",
+      "scope": "single maxRSS sample; stdout /dev/null and not reused for primary timing comparison"
+    }
+  ],
+  "limitations": [
+    "大規模randomの一部はbaselineとの出力一致確認であり独立oracleとは呼ばない。独立照合は旧small corpusと構造的最大ケースで別途行った。",
+    "最終Moは変更なしで、候補の32%改善を採用版の改善として計上しない。",
+    "Sparseの小さな時間差を確かな速度改善とせず、同一計算/8MB一時配列除去と実RSS低下で採用判断。",
+    "今後FableやI/O変更後のコードへ、このsource SHAの検証/測定を自動継承しない。"
+  ],
+  "online_submission_done": false,
+  "commit_done": false,
+  "local_evidence_zip": {
+    "path": "Audit/data/added-lc-codex-math-20261115.zip",
+    "sha256": "5b120a679805c521d515a79d7c77f9f0823e9d48fddd5edd6dfe4bd2ee85cb8e",
+    "tracked": false
+  }
+}

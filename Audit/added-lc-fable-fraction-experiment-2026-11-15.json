@@ -1,0 +1,471 @@
+{
+  "recorded_utc": "2026-11-15T13:55:38.698324+00:00",
+  "id": "preferred_fraction_rational_approximation",
+  "decision": "adopt",
+  "experiment": "Fable experiments[0]: stepが整数limit capへ達した最終反復で未使用gap更新を省略",
+  "review_provenance": {
+    "path": "/tmp/sirkit-added-lc-optimization-20261115/claude/root/review.json",
+    "copied": "fable-review.json",
+    "reviewed_baseline_sha256": "929b76b137d7b133507da7ecb79ea2e6c9b16c6753b5d7475e26f3a218d4618c",
+    "additional_fable_call": false,
+    "note": "Fableはbaselineの机上レビューと本候補の仮説を提示。変更後ソースのオンラインACやFableによる再読済み判定へ書き換えない。"
+  },
+  "baseline_source_sha256": "929b76b137d7b133507da7ecb79ea2e6c9b16c6753b5d7475e26f3a218d4618c",
+  "final_source_sha256": "86f60db4f38320f9dbcea3cdb46c4fd3657c00b3b8e039df0905256def379c08",
+  "driver_sha256": "72ca945ae708b2bcdeaba0e1ce8507e72bef5f21d0a889fc456a749b01d414b6",
+  "source_hashes_before": {
+    "Math/Fraction.cpp": "bd8937304f1b8eb555fff33da9e159874113199dfb80b88a4f64c37ed76814af",
+    "Verify/current/drivers/preferred_fraction_rational_approximation_main.cpp": "1d6325c9082d025dc5bd5f16ace105f29369819d16a004a203c086a0fe6d6914",
+    "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+  },
+  "source_hashes_after": {
+    "Math/Fraction.cpp": "bd8937304f1b8eb555fff33da9e159874113199dfb80b88a4f64c37ed76814af",
+    "Verify/current/drivers/preferred_fraction_rational_approximation_main.cpp": "72ca945ae708b2bcdeaba0e1ce8507e72bef5f21d0a889fc456a749b01d414b6",
+    "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+  },
+  "library_and_common_io_unchanged": true,
+  "performance": {
+    "environment": {
+      "cpu": 25,
+      "compiler": "/usr/bin/g++",
+      "compiler_version": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+      "compiler_sha256": "e6718f7e0c7d057c3ff77b550c603da9bc4030e3ede3c053705acce1293dbe4d",
+      "flags": [
+        "-std=c++23",
+        "-O2"
+      ],
+      "benchmark": "whole-process including main/I/O; input/output file identical for A/B, checking outside timer",
+      "trials": 7,
+      "control_binary_sha256": "6093b6184d9e1d87eb5c6846d4f88e067a2f9b5e31803e703157f5c43913734e"
+    },
+    "profiles": [
+      {
+        "profile": "fraction-exact",
+        "medians": {
+          "AB/baseline": 0.01096900699485559,
+          "AB/candidate": 0.01081784800044261,
+          "identical-control/baseline": 0.010866174998227507,
+          "identical-control/control": 0.010862094000913203
+        },
+        "ranges": {
+          "AB/baseline": [
+            0.010250744002405554,
+            0.011158859997522086
+          ],
+          "AB/candidate": [
+            0.010178714990615845,
+            0.011069329004385509
+          ],
+          "identical-control/baseline": [
+            0.010737774005974643,
+            0.011069557993323542
+          ],
+          "identical-control/control": [
+            0.01075647799007129,
+            0.011131553997984156
+          ]
+        },
+        "candidate_ratio": 0.9862194458911482,
+        "control_ratio": 0.9996244311070851
+      },
+      {
+        "profile": "fraction-fibonacci",
+        "medians": {
+          "AB/baseline": 0.2854757180029992,
+          "AB/candidate": 0.27919554099207744,
+          "identical-control/baseline": 0.2852590840047924,
+          "identical-control/control": 0.2853757249977207
+        },
+        "ranges": {
+          "AB/baseline": [
+            0.2852410269988468,
+            0.28651812800671905
+          ],
+          "AB/candidate": [
+            0.2779865930060623,
+            0.2799830949952593
+          ],
+          "identical-control/baseline": [
+            0.2849290320009459,
+            0.2859634429914877
+          ],
+          "identical-control/control": [
+            0.2849376539961668,
+            0.28879944200161844
+          ]
+        },
+        "candidate_ratio": 0.9780010115926715,
+        "control_ratio": 1.0004088949290966
+      },
+      {
+        "profile": "fraction-random",
+        "medians": {
+          "AB/baseline": 0.10409965500002727,
+          "AB/candidate": 0.10055445300531574,
+          "identical-control/baseline": 0.10418777700397186,
+          "identical-control/control": 0.10404668499541003
+        },
+        "ranges": {
+          "AB/baseline": [
+            0.10366798700124491,
+            0.10447175599983893
+          ],
+          "AB/candidate": [
+            0.09991450699453708,
+            0.10106049399473704
+          ],
+          "identical-control/baseline": [
+            0.10377622600935865,
+            0.10426556099264417
+          ],
+          "identical-control/control": [
+            0.10346656400361098,
+            0.1044106930057751
+          ]
+        },
+        "candidate_ratio": 0.9659441523152924,
+        "control_ratio": 0.998645791160738
+      },
+      {
+        "profile": "fraction-small-limits",
+        "medians": {
+          "AB/baseline": 0.072092631002306,
+          "AB/candidate": 0.0646234710002318,
+          "identical-control/baseline": 0.07224803300050553,
+          "identical-control/control": 0.07198699099535588
+        },
+        "ranges": {
+          "AB/baseline": [
+            0.07143027200072538,
+            0.07238329299434554
+          ],
+          "AB/candidate": [
+            0.06401146500138566,
+            0.06469822900544386
+          ],
+          "identical-control/baseline": [
+            0.07160610098799225,
+            0.07241997700475622
+          ],
+          "identical-control/control": [
+            0.07172305299900472,
+            0.0723116520093754
+          ]
+        },
+        "candidate_ratio": 0.8963949588435011,
+        "control_ratio": 0.9963868634991374
+      }
+    ],
+    "raw_count": 124,
+    "scope": "同一ライブラリ・共通I/O・GCC15.2・-std=c++23 -O2のmain全体。CPU25、4profiles、各AB7回＋byte同一binarycontrol7回。チェック/出力hash計算は計測外。",
+    "conclusion": "Fibonacci約2.2%、random約3.4%、small-limits約10.4%短縮。exactは変動内で同等。対照の中央値差は0.4%以下。特定構造入力での実測であり全入力の実行時間を保証しない。"
+  },
+  "correctness": {
+    "builds": 8,
+    "process_runs": 16,
+    "individual_instances": 91256,
+    "passed": true,
+    "independent_cases": 11402,
+    "validation": [
+      {
+        "name": "gcc-native-checked",
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "compiler_sha256": "e6718f7e0c7d057c3ff77b550c603da9bc4030e3ede3c053705acce1293dbe4d",
+        "source_sha256": "acc04c76fbc06fbaf5dcdd600df7fc9be53ddca7b5a709a3458def51c0852719",
+        "command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-march=native",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-root-fable-fraction/validation/gcc-native-checked.cpp",
+          "-o",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-root-fable-fraction/validation/gcc-native-checked"
+        ],
+        "cases": [
+          {
+            "case": 0,
+            "pass_": true,
+            "exit": 0,
+            "input_sha256": "4392bd1832fbb3fc49d76387a8f7801ad1e7c290fc1838c972951a2e2c24202d",
+            "output_sha256": "d2e7923b8533646d60e4573ae9ebd356e0fde5d6c6841ebf7d3051da77a895e1",
+            "instances": 5
+          },
+          {
+            "case": 1,
+            "pass_": true,
+            "exit": 0,
+            "input_sha256": "eb11389be19560c20c058f4612b19823f1b09d7398885a675c5de9de19aa4adb",
+            "output_sha256": "d1f1b26cbb2f13386ef3c14086941357c11d1857862de1fae5640c1d322f632e",
+            "instances": 11402
+          }
+        ],
+        "pass_": true
+      },
+      {
+        "name": "gcc-portable-checked",
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "compiler_sha256": "e6718f7e0c7d057c3ff77b550c603da9bc4030e3ede3c053705acce1293dbe4d",
+        "source_sha256": "acc04c76fbc06fbaf5dcdd600df7fc9be53ddca7b5a709a3458def51c0852719",
+        "command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-U__SIZEOF_INT128__",
+          "-DSIRKIT_FRACTION_DISABLE_INT128",
+          "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-root-fable-fraction/validation/gcc-portable-checked.cpp",
+          "-o",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-root-fable-fraction/validation/gcc-portable-checked"
+        ],
+        "cases": [
+          {
+            "case": 0,
+            "pass_": true,
+            "exit": 0,
+            "input_sha256": "4392bd1832fbb3fc49d76387a8f7801ad1e7c290fc1838c972951a2e2c24202d",
+            "output_sha256": "d2e7923b8533646d60e4573ae9ebd356e0fde5d6c6841ebf7d3051da77a895e1",
+            "instances": 5
+          },
+          {
+            "case": 1,
+            "pass_": true,
+            "exit": 0,
+            "input_sha256": "eb11389be19560c20c058f4612b19823f1b09d7398885a675c5de9de19aa4adb",
+            "output_sha256": "d1f1b26cbb2f13386ef3c14086941357c11d1857862de1fae5640c1d322f632e",
+            "instances": 11402
+          }
+        ],
+        "pass_": true
+      },
+      {
+        "name": "gcc-native-skip",
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "compiler_sha256": "e6718f7e0c7d057c3ff77b550c603da9bc4030e3ede3c053705acce1293dbe4d",
+        "source_sha256": "86f60db4f38320f9dbcea3cdb46c4fd3657c00b3b8e039df0905256def379c08",
+        "command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-march=native",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-root-fable-fraction/validation/gcc-native-skip.cpp",
+          "-o",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-root-fable-fraction/validation/gcc-native-skip"
+        ],
+        "cases": [
+          {
+            "case": 0,
+            "pass_": true,
+            "exit": 0,
+            "input_sha256": "4392bd1832fbb3fc49d76387a8f7801ad1e7c290fc1838c972951a2e2c24202d",
+            "output_sha256": "d2e7923b8533646d60e4573ae9ebd356e0fde5d6c6841ebf7d3051da77a895e1",
+            "instances": 5
+          },
+          {
+            "case": 1,
+            "pass_": true,
+            "exit": 0,
+            "input_sha256": "eb11389be19560c20c058f4612b19823f1b09d7398885a675c5de9de19aa4adb",
+            "output_sha256": "d1f1b26cbb2f13386ef3c14086941357c11d1857862de1fae5640c1d322f632e",
+            "instances": 11402
+          }
+        ],
+        "pass_": true
+      },
+      {
+        "name": "gcc-portable-skip",
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "compiler_sha256": "e6718f7e0c7d057c3ff77b550c603da9bc4030e3ede3c053705acce1293dbe4d",
+        "source_sha256": "86f60db4f38320f9dbcea3cdb46c4fd3657c00b3b8e039df0905256def379c08",
+        "command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-U__SIZEOF_INT128__",
+          "-DSIRKIT_FRACTION_DISABLE_INT128",
+          "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-root-fable-fraction/validation/gcc-portable-skip.cpp",
+          "-o",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-root-fable-fraction/validation/gcc-portable-skip"
+        ],
+        "cases": [
+          {
+            "case": 0,
+            "pass_": true,
+            "exit": 0,
+            "input_sha256": "4392bd1832fbb3fc49d76387a8f7801ad1e7c290fc1838c972951a2e2c24202d",
+            "output_sha256": "d2e7923b8533646d60e4573ae9ebd356e0fde5d6c6841ebf7d3051da77a895e1",
+            "instances": 5
+          },
+          {
+            "case": 1,
+            "pass_": true,
+            "exit": 0,
+            "input_sha256": "eb11389be19560c20c058f4612b19823f1b09d7398885a675c5de9de19aa4adb",
+            "output_sha256": "d1f1b26cbb2f13386ef3c14086941357c11d1857862de1fae5640c1d322f632e",
+            "instances": 11402
+          }
+        ],
+        "pass_": true
+      },
+      {
+        "name": "clang-native-checked",
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "compiler_sha256": "412bbe8c60571a1eb06f48fde89635033621caeb01a9b4ee76d46711bae8e932",
+        "source_sha256": "acc04c76fbc06fbaf5dcdd600df7fc9be53ddca7b5a709a3458def51c0852719",
+        "command": [
+          "/usr/bin/clang++-21",
+          "-std=c++23",
+          "-O2",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-march=native",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-root-fable-fraction/validation/clang-native-checked.cpp",
+          "-o",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-root-fable-fraction/validation/clang-native-checked"
+        ],
+        "cases": [
+          {
+            "case": 0,
+            "pass_": true,
+            "exit": 0,
+            "input_sha256": "4392bd1832fbb3fc49d76387a8f7801ad1e7c290fc1838c972951a2e2c24202d",
+            "output_sha256": "d2e7923b8533646d60e4573ae9ebd356e0fde5d6c6841ebf7d3051da77a895e1",
+            "instances": 5
+          },
+          {
+            "case": 1,
+            "pass_": true,
+            "exit": 0,
+            "input_sha256": "eb11389be19560c20c058f4612b19823f1b09d7398885a675c5de9de19aa4adb",
+            "output_sha256": "d1f1b26cbb2f13386ef3c14086941357c11d1857862de1fae5640c1d322f632e",
+            "instances": 11402
+          }
+        ],
+        "pass_": true
+      },
+      {
+        "name": "clang-portable-checked",
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "compiler_sha256": "412bbe8c60571a1eb06f48fde89635033621caeb01a9b4ee76d46711bae8e932",
+        "source_sha256": "acc04c76fbc06fbaf5dcdd600df7fc9be53ddca7b5a709a3458def51c0852719",
+        "command": [
+          "/usr/bin/clang++-21",
+          "-std=c++23",
+          "-O2",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-U__SIZEOF_INT128__",
+          "-DSIRKIT_FRACTION_DISABLE_INT128",
+          "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-root-fable-fraction/validation/clang-portable-checked.cpp",
+          "-o",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-root-fable-fraction/validation/clang-portable-checked"
+        ],
+        "cases": [
+          {
+            "case": 0,
+            "pass_": true,
+            "exit": 0,
+            "input_sha256": "4392bd1832fbb3fc49d76387a8f7801ad1e7c290fc1838c972951a2e2c24202d",
+            "output_sha256": "d2e7923b8533646d60e4573ae9ebd356e0fde5d6c6841ebf7d3051da77a895e1",
+            "instances": 5
+          },
+          {
+            "case": 1,
+            "pass_": true,
+            "exit": 0,
+            "input_sha256": "eb11389be19560c20c058f4612b19823f1b09d7398885a675c5de9de19aa4adb",
+            "output_sha256": "d1f1b26cbb2f13386ef3c14086941357c11d1857862de1fae5640c1d322f632e",
+            "instances": 11402
+          }
+        ],
+        "pass_": true
+      },
+      {
+        "name": "clang-native-skip",
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "compiler_sha256": "412bbe8c60571a1eb06f48fde89635033621caeb01a9b4ee76d46711bae8e932",
+        "source_sha256": "86f60db4f38320f9dbcea3cdb46c4fd3657c00b3b8e039df0905256def379c08",
+        "command": [
+          "/usr/bin/clang++-21",
+          "-std=c++23",
+          "-O2",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-march=native",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-root-fable-fraction/validation/clang-native-skip.cpp",
+          "-o",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-root-fable-fraction/validation/clang-native-skip"
+        ],
+        "cases": [
+          {
+            "case": 0,
+            "pass_": true,
+            "exit": 0,
+            "input_sha256": "4392bd1832fbb3fc49d76387a8f7801ad1e7c290fc1838c972951a2e2c24202d",
+            "output_sha256": "d2e7923b8533646d60e4573ae9ebd356e0fde5d6c6841ebf7d3051da77a895e1",
+            "instances": 5
+          },
+          {
+            "case": 1,
+            "pass_": true,
+            "exit": 0,
+            "input_sha256": "eb11389be19560c20c058f4612b19823f1b09d7398885a675c5de9de19aa4adb",
+            "output_sha256": "d1f1b26cbb2f13386ef3c14086941357c11d1857862de1fae5640c1d322f632e",
+            "instances": 11402
+          }
+        ],
+        "pass_": true
+      },
+      {
+        "name": "clang-portable-skip",
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "compiler_sha256": "412bbe8c60571a1eb06f48fde89635033621caeb01a9b4ee76d46711bae8e932",
+        "source_sha256": "86f60db4f38320f9dbcea3cdb46c4fd3657c00b3b8e039df0905256def379c08",
+        "command": [
+          "/usr/bin/clang++-21",
+          "-std=c++23",
+          "-O2",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-U__SIZEOF_INT128__",
+          "-DSIRKIT_FRACTION_DISABLE_INT128",
+          "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-root-fable-fraction/validation/clang-portable-skip.cpp",
+          "-o",
+          "/tmp/sirkit-added-lc-optimization-20261115/codex-root-fable-fraction/validation/clang-portable-skip"
+        ],
+        "cases": [
+          {
+            "case": 0,
+            "pass_": true,
+            "exit": 0,
+            "input_sha256": "4392bd1832fbb3fc49d76387a8f7801ad1e7c290fc1838c972951a2e2c24202d",
+            "output_sha256": "d2e7923b8533646d60e4573ae9ebd356e0fde5d6c6841ebf7d3051da77a895e1",
+            "instances": 5
+          },
+          {
+            "case": 1,
+            "pass_": true,
+            "exit": 0,
+            "input_sha256": "eb11389be19560c20c058f4612b19823f1b09d7398885a675c5de9de19aa4adb",
+            "output_sha256": "d1f1b26cbb2f13386ef3c14086941357c11d1857862de1fae5640c1d322f632e",
+            "instances": 11402
+          }
+        ],
+        "pass_": true
+      }
+    ],
+    "proof": "proof.md in local ZIP",
+    "matrix": "GCC15.2 / Clang21 × native / standard fallback(no int128,FRACTION_DISABLE_INT128,FORCE_STANDARD_ARITHMETIC,DISABLE_SIMD) × checked / skip"
+  },
+  "existing_codex_evidence_modified": false,
+  "group_or_stage_modified": false,
+  "online_submission_done": false,
+  "commit_done": false,
+  "local_evidence_zip": {
+    "path": "Audit/data/added-lc-fable-fraction-experiment-20261115.zip",
+    "sha256": "6bea524d94148819f9ecd1054fe78b78ee1d2fa876058cda75013f7964ce9e4c",
+    "tracked": false
+  }
+}

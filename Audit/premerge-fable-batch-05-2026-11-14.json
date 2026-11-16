@@ -1,0 +1,98 @@
+{
+  "format": 1,
+  "date": "2026-11-14",
+  "stage": "claude",
+  "model": "claude-fable-5-2",
+  "actual_models": [
+    "claude-fable-5-2"
+  ],
+  "effort": "low",
+  "completed_utc": "2026-11-14T11:14:16.468749+00:00",
+  "source_hashes": {
+    "Math/Combination/ModInt_Binomial.cpp": "0bc0da0d4eeb36142e73b1f1b6b61c7a6e4908e71631561253c3ff7f79295af3",
+    "Math/Zeta/Gcd_Lcm_Convolution.cpp": "9595f23875f349a1dc31559e545bed525180e40e438c8299f803d02a132387b9",
+    "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab",
+    "Verify/current/drivers/binomial_modint_main.cpp": "aec5dd894f99011e6734822472571ef35904e8381c5f057e1f7578c9289de3c6",
+    "Verify/current/drivers/binomial_modint_prime_mod_main.cpp": "e663a8f46bb34e59208b250cf946af7e35f2ed5d566d814f1551bed75688c453",
+    "Verify/current/drivers/zeta_gcd_conv_main.cpp": "15e231633baeabcc4c24166d4529cb2afcc2531e8cc357606ec6197afb9b0dc2",
+    "Verify/current/drivers/zeta_lcm_conv_main.cpp": "8a54f48170f96f19bd6c3b9f13bde4624f91ed70a51d3ada6ba01e7d6f03a0af",
+    "Verify/current/vendor/atcoder/internal_math.hpp": "487416d11ce878d7785559a02c84f094529e39fa5cc593d4c45e91fc7da53f56",
+    "Verify/current/vendor/atcoder/internal_type_traits.hpp": "52c1c0d56535043c2b8f2f776d534fd8e931cf92a511d697fb56649cd4935000",
+    "Verify/current/vendor/atcoder/modint.hpp": "aef131053e67300be6def657f1ef1eb1c80ef2c92ffc8220d7be0cccab583318",
+    "Verify/current/submissions/binomial_modint_prime_mod_split.cpp": "b6a5a457ff2a18058f7e048877279a61f062f4cd10a55fcde6ff0914e1904b45",
+    "Verify/current/submissions/binomial_modint_split.cpp": "a51aef4adca679f77f5c49be796eec7abf98a1862363ee4577fa4317d1f4fd61",
+    "Verify/current/submissions/zeta_gcd_conv_split.cpp": "b1a4c106d11d16a2cc24156f56d22325c498dab5c653b6ed707a4d0b68e6ba6e",
+    "Verify/current/submissions/zeta_lcm_conv_split.cpp": "4009c577093ecbfe01c8e83297212b85911dad20619048f90fee5b3c5c2236b1"
+  },
+  "codex_receipts": {
+    "binomial_modint_prime_mod_split": "Verify/optimization/stages/binomial_modint_prime_mod_split.codex.2d3ba5623f256063d397d7d0bb1ebe920da4bbf4e978880ef0dc18741d7b9fc4.json",
+    "binomial_modint_split": "Verify/optimization/stages/binomial_modint_split.codex.cebe0631a35d6b1dd710dcd77174f1a562bac24d8975b45b7da75c4b5c26012c.json",
+    "zeta_gcd_conv_split": "Verify/optimization/stages/zeta_gcd_conv_split.codex.ad98e8d0db74ec604628c9c033a76c00d1fcfaeacd0152f8fa0549a4643a3908.json",
+    "zeta_lcm_conv_split": "Verify/optimization/stages/zeta_lcm_conv_split.codex.082d5b51ff3758efa054e77b4f3ee16e5fc8475516c99247ef67c5d459dd1eba.json"
+  },
+  "review": {
+    "reviews": [
+      {
+        "id": "binomial_modint_prime_mod_split",
+        "source_sha256": "b6a5a457ff2a18058f7e048877279a61f062f4cd10a55fcde6ff0914e1904b45",
+        "verdict": "keep",
+        "reason": "全queryのmax_nで必要な表だけ構築しており、k>n・p=2・max_n=p-1の経路も静的には正しく読め、COM_many不採用の測定根拠を覆す新候補は見当たらない。"
+      },
+      {
+        "id": "binomial_modint_split",
+        "source_sha256": "a51aef4adca679f77f5c49be796eec7abf98a1862363ee4577fa4317d1f4fd61",
+        "verdict": "keep",
+        "reason": "m≤1e6ではmod-1までの前計算が安価で、素数経路・素数冪CRT経路・m=1の扱いとも静的には正しく読め、測定なしに勧められる変更はない。"
+      },
+      {
+        "id": "zeta_gcd_conv_split",
+        "source_sha256": "b1a4c106d11d16a2cc24156f56d22325c498dab5c653b6ed707a4d0b68e6ba6e",
+        "verdict": "keep",
+        "reason": "入力をmove渡しし、0項省略と8展開の素数stride伝播で余分な確保・コピーがなく、残るのは定数mod乗算と入出力だけで有力な追加候補はない。"
+      },
+      {
+        "id": "zeta_lcm_conv_split",
+        "source_sha256": "4009c577093ecbfe01c8e83297212b85911dad20619048f90fee5b3c5c2236b1",
+        "verdict": "keep",
+        "reason": "gcd版と同じ構成でmove渡しと0項省略が効いており、倍数方向伝播と添字1以降の点積も静的には正しく読め、変更を勧める根拠はない。"
+      }
+    ],
+    "experiments": []
+  },
+  "usage_after": {
+    "windows": {
+      "five_hour": {
+        "utilization": 70.0,
+        "resets_at": "2026-11-14T15:40:00.766760+00:00"
+      },
+      "seven_day": {
+        "utilization": 6.0,
+        "resets_at": "2026-11-21T09:00:00.766787+00:00"
+      },
+      "seven_day_breakdown": {}
+    },
+    "extra_usage_enabled": false
+  },
+  "prompt_sha256": "d6c1baf9b8ee52fe3d549afeb174286f1889cbf3a17f4d7e6fb519e540201a41",
+  "response_sha256": "c8e9b5d9dc64fc988429ee114d114bb9a674784c59b4c3d598b7eac8520fca84",
+  "model_usage": {
+    "claude-fable-5-2": {
+      "inputTokens": 2,
+      "outputTokens": 1390,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 57862,
+      "webSearchRequests": 0,
+      "costUSD": 0.981408,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 769,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 57862,
+      "canonicalModel": "claude-fable-5-2",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "source_representation": "All library/main/I/O/vendor code supplied once per file; only comments removed with full token/literal equality verification.",
+  "review_limitations": "Static review plus supplied measured evidence, not new model-executed measurements. No online submission or AC inference."
+}

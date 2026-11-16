@@ -1,0 +1,3336 @@
+{
+  "recorded_utc": "2026-11-15T14:25:59.772602+00:00",
+  "scope": "Shared sparse sort-guard followup:9LC whole-program static reviews and1Yuki library-body-only review at exact currentSHA. No new performance claims, no legacy approval transfer.",
+  "records": [
+    {
+      "id": "zeta_and_full",
+      "scope": "whole_program",
+      "source_sha256": "c41b178f283c689f7830558d17ad413cb2bc8f5fec043faa566e000f267ceec8",
+      "current_source_sha256": "c41b178f283c689f7830558d17ad413cb2bc8f5fec043faa566e000f267ceec8",
+      "checked_source_sha256": "77ab1eea1c40bbbe7cae99e3f5a32956cd88e9d324a685c4bc03a14dcaa60982",
+      "before_source_sha256": "772c8ac7fe9ed51da874c4067b9227e4df845a99cc425057619ede569b5bfa36",
+      "driver": "Verify/current/drivers/zeta_and_main.cpp",
+      "source_file_hashes": {
+        "Math/Zeta_Mebius.cpp": "819bd63f2ccc5d31c7cba7844269aef48c5a3079fc92bd8d828313e42e4dcd51",
+        "Verify/current/drivers/zeta_and_main.cpp": "aa2d5b6aef207c329e7e2d1bf915febf347ea44c6f3658d79e44f438d2198130",
+        "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+      },
+      "status": "review_complete_unchanged",
+      "decision": "retain current code; no new edit needed for this shared-only followup",
+      "exercised_apis": [
+        "bitwise_and_convolution(move(a),move(b))"
+      ],
+      "main_or_body_review": "AND畳み込みをAPIで計算して全係数を出力。入力長2^k、k=0..20のシフトはsize_tに収まる。共有差分のsparse関数は呼ばれない。",
+      "official_input_domain": "LC:法998244353、正規化係数。ANDは0≤k≤20で長さ2^k、GCD/LCMは1≤N≤10^6。",
+      "arithmetic_review": "LC係数valueは[0,p)。加減算の一時値<2p<2^32、uint64積<(p-1)^2<2^64。正添字N+1/篩N≤10^6と2^20長はint/size_tに収まる。",
+      "ownership_review": "入力vector/pairは値として所有し、変換は明示的な破壊的操作。moveしたa/bはその後使わず、const結果の出力まで寿命がある。篩は全変換/因数分解が終わるまで生存。所有権が変わる差分はない。",
+      "changed_component_is_called": false,
+      "changed_is_sorted_branch_executed": false,
+      "change_reuse_proof": "before→currentは疎変換内のsortを同一比較子のis_sorted guardで囲む1hunkのみ。main/IO・他の本体はbyte同一。呼出しなし7LC+Yuki/連番early return2LCのため、今回の分岐はこの10mainの合法入力では実行されない。",
+      "validation_reuse": {
+        "audit": "Audit/added-lc-sparse-affected-validation-2026-11-15.json",
+        "audit_sha256": "2748cb3eabfa5bfb22219e3e9b61b84b878e16b42cb372331680169669c4359c",
+        "exact_current_skip_and_checked_SHA_match": true,
+        "builds": 8,
+        "process_sample_runs": 8,
+        "records": [
+          {
+            "id": "zeta_and_full",
+            "compiler": "gcc",
+            "skip": false,
+            "portable": false,
+            "source_sha256": "77ab1eea1c40bbbe7cae99e3f5a32956cd88e9d324a685c4bc03a14dcaa60982",
+            "command": [
+              "/usr/bin/g++",
+              "-std=c++23",
+              "-O2",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_and_full-gcc-False-False.cpp",
+              "-o",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_and_full-gcc-False-False"
+            ],
+            "cases": [
+              {
+                "input_sha256": "acecdd59db4150b807eb79c681f856a496e449c3d25c5b59d5dd201432d2fd34",
+                "output_sha256": "c5882b43e5b9b399953e61e1dacf0136c734f9055b4e071d1281f32de83d69f4",
+                "passed": true
+              }
+            ],
+            "passed": true
+          },
+          {
+            "id": "zeta_and_full",
+            "compiler": "gcc",
+            "skip": false,
+            "portable": true,
+            "source_sha256": "77ab1eea1c40bbbe7cae99e3f5a32956cd88e9d324a685c4bc03a14dcaa60982",
+            "command": [
+              "/usr/bin/g++",
+              "-std=c++23",
+              "-O2",
+              "-U__SIZEOF_INT128__",
+              "-DSIRKIT_DISABLE_SIMD",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_and_full-gcc-False-True.cpp",
+              "-o",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_and_full-gcc-False-True"
+            ],
+            "cases": [
+              {
+                "input_sha256": "acecdd59db4150b807eb79c681f856a496e449c3d25c5b59d5dd201432d2fd34",
+                "output_sha256": "c5882b43e5b9b399953e61e1dacf0136c734f9055b4e071d1281f32de83d69f4",
+                "passed": true
+              }
+            ],
+            "passed": true
+          },
+          {
+            "id": "zeta_and_full",
+            "compiler": "gcc",
+            "skip": true,
+            "portable": false,
+            "source_sha256": "c41b178f283c689f7830558d17ad413cb2bc8f5fec043faa566e000f267ceec8",
+            "command": [
+              "/usr/bin/g++",
+              "-std=c++23",
+              "-O2",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_and_full-gcc-True-False.cpp",
+              "-o",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_and_full-gcc-True-False"
+            ],
+            "cases": [
+              {
+                "input_sha256": "acecdd59db4150b807eb79c681f856a496e449c3d25c5b59d5dd201432d2fd34",
+                "output_sha256": "c5882b43e5b9b399953e61e1dacf0136c734f9055b4e071d1281f32de83d69f4",
+                "passed": true
+              }
+            ],
+            "passed": true
+          },
+          {
+            "id": "zeta_and_full",
+            "compiler": "gcc",
+            "skip": true,
+            "portable": true,
+            "source_sha256": "c41b178f283c689f7830558d17ad413cb2bc8f5fec043faa566e000f267ceec8",
+            "command": [
+              "/usr/bin/g++",
+              "-std=c++23",
+              "-O2",
+              "-U__SIZEOF_INT128__",
+              "-DSIRKIT_DISABLE_SIMD",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_and_full-gcc-True-True.cpp",
+              "-o",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_and_full-gcc-True-True"
+            ],
+            "cases": [
+              {
+                "input_sha256": "acecdd59db4150b807eb79c681f856a496e449c3d25c5b59d5dd201432d2fd34",
+                "output_sha256": "c5882b43e5b9b399953e61e1dacf0136c734f9055b4e071d1281f32de83d69f4",
+                "passed": true
+              }
+            ],
+            "passed": true
+          },
+          {
+            "id": "zeta_and_full",
+            "compiler": "clang",
+            "skip": false,
+            "portable": false,
+            "source_sha256": "77ab1eea1c40bbbe7cae99e3f5a32956cd88e9d324a685c4bc03a14dcaa60982",
+            "command": [
+              "/usr/bin/clang++-21",
+              "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+              "-std=c++23",
+              "-O2",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_and_full-clang-False-False.cpp",
+              "-o",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_and_full-clang-False-False"
+            ],
+            "cases": [
+              {
+                "input_sha256": "acecdd59db4150b807eb79c681f856a496e449c3d25c5b59d5dd201432d2fd34",
+                "output_sha256": "c5882b43e5b9b399953e61e1dacf0136c734f9055b4e071d1281f32de83d69f4",
+                "passed": true
+              }
+            ],
+            "passed": true
+          },
+          {
+            "id": "zeta_and_full",
+            "compiler": "clang",
+            "skip": false,
+            "portable": true,
+            "source_sha256": "77ab1eea1c40bbbe7cae99e3f5a32956cd88e9d324a685c4bc03a14dcaa60982",
+            "command": [
+              "/usr/bin/clang++-21",
+              "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+              "-std=c++23",
+              "-O2",
+              "-U__SIZEOF_INT128__",
+              "-DSIRKIT_DISABLE_SIMD",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_and_full-clang-False-True.cpp",
+              "-o",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_and_full-clang-False-True"
+            ],
+            "cases": [
+              {
+                "input_sha256": "acecdd59db4150b807eb79c681f856a496e449c3d25c5b59d5dd201432d2fd34",
+                "output_sha256": "c5882b43e5b9b399953e61e1dacf0136c734f9055b4e071d1281f32de83d69f4",
+                "passed": true
+              }
+            ],
+            "passed": true
+          },
+          {
+            "id": "zeta_and_full",
+            "compiler": "clang",
+            "skip": true,
+            "portable": false,
+            "source_sha256": "c41b178f283c689f7830558d17ad413cb2bc8f5fec043faa566e000f267ceec8",
+            "command": [
+              "/usr/bin/clang++-21",
+              "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+              "-std=c++23",
+              "-O2",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_and_full-clang-True-False.cpp",
+              "-o",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_and_full-clang-True-False"
+            ],
+            "cases": [
+              {
+                "input_sha256": "acecdd59db4150b807eb79c681f856a496e449c3d25c5b59d5dd201432d2fd34",
+                "output_sha256": "c5882b43e5b9b399953e61e1dacf0136c734f9055b4e071d1281f32de83d69f4",
+                "passed": true
+              }
+            ],
+            "passed": true
+          },
+          {
+            "id": "zeta_and_full",
+            "compiler": "clang",
+            "skip": true,
+            "portable": true,
+            "source_sha256": "c41b178f283c689f7830558d17ad413cb2bc8f5fec043faa566e000f267ceec8",
+            "command": [
+              "/usr/bin/clang++-21",
+              "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+              "-std=c++23",
+              "-O2",
+              "-U__SIZEOF_INT128__",
+              "-DSIRKIT_DISABLE_SIMD",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_and_full-clang-True-True.cpp",
+              "-o",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_and_full-clang-True-True"
+            ],
+            "cases": [
+              {
+                "input_sha256": "acecdd59db4150b807eb79c681f856a496e449c3d25c5b59d5dd201432d2fd34",
+                "output_sha256": "c5882b43e5b9b399953e61e1dacf0136c734f9055b4e071d1281f32de83d69f4",
+                "passed": true
+              }
+            ],
+            "passed": true
+          }
+        ]
+      },
+      "prior_review_reuse": {
+        "exact_before_SHA_receipts": 0,
+        "automatic_approval_or_performance_transfer": false,
+        "reason": "before SHAに一致するstage内容のsource_sha256がない。別SHAの旧レビューは背景としてのみ参照し、現在版の承認/速度へ転記しない。",
+        "other_historical_receipts": [
+          {
+            "path": "Verify/optimization/stages/zeta_and_full.codex.b3780f21fa77336a13111b701d7f6ec0a48130bb7c848c1659fa88f85570e0ef.json",
+            "stage": "codex",
+            "scope": "whole_program",
+            "source_sha256": "34f12c307d2fc77bdbd897c8e91dc6ca619c86553d31ba6264038f656903db92",
+            "status": "complete"
+          },
+          {
+            "path": "Verify/optimization/stages/zeta_and_full.codex.1256f510bad25b9c4c5876c5915f9d2dcfa541b42427c0227af4bb66000b6cc8.json",
+            "stage": "codex",
+            "scope": "whole_program",
+            "source_sha256": "a65a3c9482ded41003e581207cbf5a5a2e7a0ea0f431186725c63cc5427f487b",
+            "status": "complete"
+          },
+          {
+            "path": "Verify/optimization/stages/zeta_and_full.claude.2b05016d4defd07e1afad34a6992e2a87fc11363d043717eb4e14044fc035bac.json",
+            "stage": "claude",
+            "scope": "whole_program",
+            "source_sha256": "eaffe6bf899d29427020b3fa8246f96a79d9148d2773cef492f40d2254bea6ac",
+            "status": "complete"
+          },
+          {
+            "path": "Verify/optimization/stages/zeta_and_full.codex.a3a99c411c185e0e92010d46db760b35b1fc3159dc059058a2497120aa636015.json",
+            "stage": "codex",
+            "scope": "whole_program",
+            "source_sha256": "b38c59cdb691f2a7a4fd4af71cf0d3c574fbf6c3df81664102cec5787b93cfdc",
+            "status": "complete"
+          },
+          {
+            "path": "Verify/optimization/stages/zeta_and_full.claude.a45cb1ddfae53a45a6c46b44dc6b190a1f6db8e8a4313b65b260d923eeb8c528.json",
+            "stage": "claude",
+            "scope": "whole_program",
+            "source_sha256": "a65a3c9482ded41003e581207cbf5a5a2e7a0ea0f431186725c63cc5427f487b",
+            "status": "complete"
+          },
+          {
+            "path": "Verify/optimization/stages/zeta_and_full.codex.2a66796b6b1f492484dc9f94281681c982ea38abf59c7ea71b857c4dce3793f5.json",
+            "stage": "codex",
+            "scope": "whole_program",
+            "source_sha256": "a65a3c9482ded41003e581207cbf5a5a2e7a0ea0f431186725c63cc5427f487b",
+            "status": "complete"
+          }
+        ]
+      },
+      "not_covered": [
+        "所有権のcopy/move/例外保証・確保失敗をこのmainで直接検証しない",
+        "全体の本体APIを使うVerifyとは説明しない",
+        "固定mod998244353以外/一般加法型",
+        "負数や法以上入力の正規化（公式は正規化済み）"
+      ],
+      "sources": [
+        "https://judge.yosupo.jp/problem/bitwise_and_convolution",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/convolution/bitwise_and_convolution/task.md"
+      ]
+    },
+    {
+      "id": "zeta_or_as_and_full",
+      "scope": "whole_program",
+      "source_sha256": "f0b6eb7b81de8afba9a90c4cdf298f4698e45adc69a4bb02b36a18c8196f2fb5",
+      "current_source_sha256": "f0b6eb7b81de8afba9a90c4cdf298f4698e45adc69a4bb02b36a18c8196f2fb5",
+      "checked_source_sha256": "647688360ae137333085531c815b4afea0a00b44c6a8a67acf3d3df68321294b",
+      "before_source_sha256": "b318810575d9269c58c72296f2c8c1c6e054fa5bd645455bf4f5001665b2d81b",
+      "driver": "Verify/current/drivers/zeta_or_as_and_main.cpp",
+      "source_file_hashes": {
+        "Math/Zeta_Mebius.cpp": "819bd63f2ccc5d31c7cba7844269aef48c5a3079fc92bd8d828313e42e4dcd51",
+        "Verify/current/drivers/zeta_or_as_and_main.cpp": "9b2d583470094c4fa7acf786884dd4c815734fad60669c769bd641f737e516b3",
+        "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+      },
+      "status": "review_complete_unchanged",
+      "decision": "retain current code; no new edit needed for this shared-only followup",
+      "exercised_apis": [
+        "bitwise_or_convolution(move(a),move(b))"
+      ],
+      "main_or_body_review": "入力/出力をbitwise補集合i→2^k-1-iで反転しDe MorganによりANDをORへ写す。OR APIの全係数が出力を決める。k=0でも反転は恒等。共有sparseは呼ばれない。",
+      "official_input_domain": "LC:法998244353、正規化係数。ANDは0≤k≤20で長さ2^k、GCD/LCMは1≤N≤10^6。",
+      "arithmetic_review": "LC係数valueは[0,p)。加減算の一時値<2p<2^32、uint64積<(p-1)^2<2^64。正添字N+1/篩N≤10^6と2^20長はint/size_tに収まる。",
+      "ownership_review": "入力vector/pairは値として所有し、変換は明示的な破壊的操作。moveしたa/bはその後使わず、const結果の出力まで寿命がある。篩は全変換/因数分解が終わるまで生存。所有権が変わる差分はない。",
+      "changed_component_is_called": false,
+      "changed_is_sorted_branch_executed": false,
+      "change_reuse_proof": "before→currentは疎変換内のsortを同一比較子のis_sorted guardで囲む1hunkのみ。main/IO・他の本体はbyte同一。呼出しなし7LC+Yuki/連番early return2LCのため、今回の分岐はこの10mainの合法入力では実行されない。",
+      "validation_reuse": {
+        "audit": "Audit/added-lc-sparse-affected-validation-2026-11-15.json",
+        "audit_sha256": "2748cb3eabfa5bfb22219e3e9b61b84b878e16b42cb372331680169669c4359c",
+        "exact_current_skip_and_checked_SHA_match": true,
+        "builds": 8,
+        "process_sample_runs": 8,
+        "records": [
+          {
+            "id": "zeta_or_as_and_full",
+            "compiler": "gcc",
+            "skip": false,
+            "portable": false,
+            "source_sha256": "647688360ae137333085531c815b4afea0a00b44c6a8a67acf3d3df68321294b",
+            "command": [
+              "/usr/bin/g++",
+              "-std=c++23",
+              "-O2",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_or_as_and_full-gcc-False-False.cpp",
+              "-o",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_or_as_and_full-gcc-False-False"
+            ],
+            "cases": [
+              {
+                "input_sha256": "acecdd59db4150b807eb79c681f856a496e449c3d25c5b59d5dd201432d2fd34",
+                "output_sha256": "c5882b43e5b9b399953e61e1dacf0136c734f9055b4e071d1281f32de83d69f4",
+                "passed": true
+              }
+            ],
+            "passed": true
+          },
+          {
+            "id": "zeta_or_as_and_full",
+            "compiler": "gcc",
+            "skip": false,
+            "portable": true,
+            "source_sha256": "647688360ae137333085531c815b4afea0a00b44c6a8a67acf3d3df68321294b",
+            "command": [
+              "/usr/bin/g++",
+              "-std=c++23",
+              "-O2",
+              "-U__SIZEOF_INT128__",
+              "-DSIRKIT_DISABLE_SIMD",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_or_as_and_full-gcc-False-True.cpp",
+              "-o",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_or_as_and_full-gcc-False-True"
+            ],
+            "cases": [
+              {
+                "input_sha256": "acecdd59db4150b807eb79c681f856a496e449c3d25c5b59d5dd201432d2fd34",
+                "output_sha256": "c5882b43e5b9b399953e61e1dacf0136c734f9055b4e071d1281f32de83d69f4",
+                "passed": true
+              }
+            ],
+            "passed": true
+          },
+          {
+            "id": "zeta_or_as_and_full",
+            "compiler": "gcc",
+            "skip": true,
+            "portable": false,
+            "source_sha256": "f0b6eb7b81de8afba9a90c4cdf298f4698e45adc69a4bb02b36a18c8196f2fb5",
+            "command": [
+              "/usr/bin/g++",
+              "-std=c++23",
+              "-O2",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_or_as_and_full-gcc-True-False.cpp",
+              "-o",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_or_as_and_full-gcc-True-False"
+            ],
+            "cases": [
+              {
+                "input_sha256": "acecdd59db4150b807eb79c681f856a496e449c3d25c5b59d5dd201432d2fd34",
+                "output_sha256": "c5882b43e5b9b399953e61e1dacf0136c734f9055b4e071d1281f32de83d69f4",
+                "passed": true
+              }
+            ],
+            "passed": true
+          },
+          {
+            "id": "zeta_or_as_and_full",
+            "compiler": "gcc",
+            "skip": true,
+            "portable": true,
+            "source_sha256": "f0b6eb7b81de8afba9a90c4cdf298f4698e45adc69a4bb02b36a18c8196f2fb5",
+            "command": [
+              "/usr/bin/g++",
+              "-std=c++23",
+              "-O2",
+              "-U__SIZEOF_INT128__",
+              "-DSIRKIT_DISABLE_SIMD",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_or_as_and_full-gcc-True-True.cpp",
+              "-o",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_or_as_and_full-gcc-True-True"
+            ],
+            "cases": [
+              {
+                "input_sha256": "acecdd59db4150b807eb79c681f856a496e449c3d25c5b59d5dd201432d2fd34",
+                "output_sha256": "c5882b43e5b9b399953e61e1dacf0136c734f9055b4e071d1281f32de83d69f4",
+                "passed": true
+              }
+            ],
+            "passed": true
+          },
+          {
+            "id": "zeta_or_as_and_full",
+            "compiler": "clang",
+            "skip": false,
+            "portable": false,
+            "source_sha256": "647688360ae137333085531c815b4afea0a00b44c6a8a67acf3d3df68321294b",
+            "command": [
+              "/usr/bin/clang++-21",
+              "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+              "-std=c++23",
+              "-O2",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_or_as_and_full-clang-False-False.cpp",
+              "-o",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_or_as_and_full-clang-False-False"
+            ],
+            "cases": [
+              {
+                "input_sha256": "acecdd59db4150b807eb79c681f856a496e449c3d25c5b59d5dd201432d2fd34",
+                "output_sha256": "c5882b43e5b9b399953e61e1dacf0136c734f9055b4e071d1281f32de83d69f4",
+                "passed": true
+              }
+            ],
+            "passed": true
+          },
+          {
+            "id": "zeta_or_as_and_full",
+            "compiler": "clang",
+            "skip": false,
+            "portable": true,
+            "source_sha256": "647688360ae137333085531c815b4afea0a00b44c6a8a67acf3d3df68321294b",
+            "command": [
+              "/usr/bin/clang++-21",
+              "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+              "-std=c++23",
+              "-O2",
+              "-U__SIZEOF_INT128__",
+              "-DSIRKIT_DISABLE_SIMD",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_or_as_and_full-clang-False-True.cpp",
+              "-o",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_or_as_and_full-clang-False-True"
+            ],
+            "cases": [
+              {
+                "input_sha256": "acecdd59db4150b807eb79c681f856a496e449c3d25c5b59d5dd201432d2fd34",
+                "output_sha256": "c5882b43e5b9b399953e61e1dacf0136c734f9055b4e071d1281f32de83d69f4",
+                "passed": true
+              }
+            ],
+            "passed": true
+          },
+          {
+            "id": "zeta_or_as_and_full",
+            "compiler": "clang",
+            "skip": true,
+            "portable": false,
+            "source_sha256": "f0b6eb7b81de8afba9a90c4cdf298f4698e45adc69a4bb02b36a18c8196f2fb5",
+            "command": [
+              "/usr/bin/clang++-21",
+              "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+              "-std=c++23",
+              "-O2",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_or_as_and_full-clang-True-False.cpp",
+              "-o",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_or_as_and_full-clang-True-False"
+            ],
+            "cases": [
+              {
+                "input_sha256": "acecdd59db4150b807eb79c681f856a496e449c3d25c5b59d5dd201432d2fd34",
+                "output_sha256": "c5882b43e5b9b399953e61e1dacf0136c734f9055b4e071d1281f32de83d69f4",
+                "passed": true
+              }
+            ],
+            "passed": true
+          },
+          {
+            "id": "zeta_or_as_and_full",
+            "compiler": "clang",
+            "skip": true,
+            "portable": true,
+            "source_sha256": "f0b6eb7b81de8afba9a90c4cdf298f4698e45adc69a4bb02b36a18c8196f2fb5",
+            "command": [
+              "/usr/bin/clang++-21",
+              "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+              "-std=c++23",
+              "-O2",
+              "-U__SIZEOF_INT128__",
+              "-DSIRKIT_DISABLE_SIMD",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_or_as_and_full-clang-True-True.cpp",
+              "-o",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_or_as_and_full-clang-True-True"
+            ],
+            "cases": [
+              {
+                "input_sha256": "acecdd59db4150b807eb79c681f856a496e449c3d25c5b59d5dd201432d2fd34",
+                "output_sha256": "c5882b43e5b9b399953e61e1dacf0136c734f9055b4e071d1281f32de83d69f4",
+                "passed": true
+              }
+            ],
+            "passed": true
+          }
+        ]
+      },
+      "prior_review_reuse": {
+        "exact_before_SHA_receipts": 0,
+        "automatic_approval_or_performance_transfer": false,
+        "reason": "before SHAに一致するstage内容のsource_sha256がない。別SHAの旧レビューは背景としてのみ参照し、現在版の承認/速度へ転記しない。",
+        "other_historical_receipts": [
+          {
+            "path": "Verify/optimization/stages/zeta_or_as_and_full.codex.5b80bc8cb87045b697dd921d946c5775b5e41d7f6392844054085cd0e03b2e9e.json",
+            "stage": "codex",
+            "scope": "whole_program",
+            "source_sha256": "70fc1f28a13d53782810819d07ab54b8bab964948e118dac3b5c1470fd8be394",
+            "status": "complete"
+          },
+          {
+            "path": "Verify/optimization/stages/zeta_or_as_and_full.codex.fb03cb4314f6618a30d760eedd2b46acb6a4a62830dff8294372ae34ac20eb90.json",
+            "stage": "codex",
+            "scope": "whole_program",
+            "source_sha256": "75e489d6f4b94a65e0d29365f4e519431f85ecac5f943ad556a92411cd350f81",
+            "status": "complete"
+          },
+          {
+            "path": "Verify/optimization/stages/zeta_or_as_and_full.claude.9e91b78a0d7c9bbb99da7b68b7fcdc7dd4fa8e081f040ad4dc01461b8767d6ee.json",
+            "stage": "claude",
+            "scope": "whole_program",
+            "source_sha256": "d0617cf0a6eea557ebf0a215b1d90f77ad7381f4e8ed19b4ccce206674a40dea",
+            "status": "complete"
+          },
+          {
+            "path": "Verify/optimization/stages/zeta_or_as_and_full.codex.8b06ecdd85c0fa74aad8cd17fad3376a2c4086ac6ef40bd1aea73c053c36888d.json",
+            "stage": "codex",
+            "scope": "whole_program",
+            "source_sha256": "8efd13054f3fa03f6e51449f919682d85d70458b4ad6c58fb352ddc660015f15",
+            "status": "complete"
+          },
+          {
+            "path": "Verify/optimization/stages/zeta_or_as_and_full.claude.458193b2836fdb4da0509737e846364637b03cb6202fde3448fccef7b3a5687a.json",
+            "stage": "claude",
+            "scope": "whole_program",
+            "source_sha256": "8efd13054f3fa03f6e51449f919682d85d70458b4ad6c58fb352ddc660015f15",
+            "status": "complete"
+          }
+        ]
+      },
+      "not_covered": [
+        "所有権のcopy/move/例外保証・確保失敗をこのmainで直接検証しない",
+        "全体の本体APIを使うVerifyとは説明しない",
+        "固定mod998244353以外/一般加法型",
+        "負数や法以上入力の正規化（公式は正規化済み）"
+      ],
+      "sources": [
+        "https://judge.yosupo.jp/problem/bitwise_and_convolution",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/convolution/bitwise_and_convolution/task.md"
+      ]
+    },
+    {
+      "id": "zeta_set_as_and_full",
+      "scope": "whole_program",
+      "source_sha256": "61e8bed7896ef364f94b8c8d2652e4b3ed00b6c8437fa09726655189fff86376",
+      "current_source_sha256": "61e8bed7896ef364f94b8c8d2652e4b3ed00b6c8437fa09726655189fff86376",
+      "checked_source_sha256": "2365d392e1c6f163b9a07f5df4ca1a1f8569cbc1fdf54ee3061b182be23f1a70",
+      "before_source_sha256": "74bb0367a3ba3e1a727fd0ce6c7b34ac6fa4ee017bbbe3c55a3559aedcbf2f6c",
+      "driver": "Verify/current/drivers/zeta_set_as_and_main.cpp",
+      "source_file_hashes": {
+        "Math/Zeta_Mebius.cpp": "819bd63f2ccc5d31c7cba7844269aef48c5a3079fc92bd8d828313e42e4dcd51",
+        "Verify/current/drivers/zeta_set_as_and_main.cpp": "6c98b49afe62eb6de417aa5809512846c85e9a2ad08d08a1605d19fdcbb27044",
+        "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+      },
+      "status": "review_complete_unchanged",
+      "decision": "retain current code; no new edit needed for this shared-only followup",
+      "exercised_apis": [
+        "superset_zeta_transform(a/b)",
+        "superset_mobius_transform(a)"
+      ],
+      "main_or_body_review": "各superset和の点積を逆変換する標準AND畳み込み。2本の前変換と逆変換が全係数を決める。subset操作は別entryの補完対象。共有sparseは呼ばれない。",
+      "official_input_domain": "LC:法998244353、正規化係数。ANDは0≤k≤20で長さ2^k、GCD/LCMは1≤N≤10^6。",
+      "arithmetic_review": "LC係数valueは[0,p)。加減算の一時値<2p<2^32、uint64積<(p-1)^2<2^64。正添字N+1/篩N≤10^6と2^20長はint/size_tに収まる。",
+      "ownership_review": "入力vector/pairは値として所有し、変換は明示的な破壊的操作。moveしたa/bはその後使わず、const結果の出力まで寿命がある。篩は全変換/因数分解が終わるまで生存。所有権が変わる差分はない。",
+      "changed_component_is_called": false,
+      "changed_is_sorted_branch_executed": false,
+      "change_reuse_proof": "before→currentは疎変換内のsortを同一比較子のis_sorted guardで囲む1hunkのみ。main/IO・他の本体はbyte同一。呼出しなし7LC+Yuki/連番early return2LCのため、今回の分岐はこの10mainの合法入力では実行されない。",
+      "validation_reuse": {
+        "audit": "Audit/added-lc-sparse-affected-validation-2026-11-15.json",
+        "audit_sha256": "2748cb3eabfa5bfb22219e3e9b61b84b878e16b42cb372331680169669c4359c",
+        "exact_current_skip_and_checked_SHA_match": true,
+        "builds": 8,
+        "process_sample_runs": 8,
+        "records": [
+          {
+            "id": "zeta_set_as_and_full",
+            "compiler": "gcc",
+            "skip": false,
+            "portable": false,
+            "source_sha256": "2365d392e1c6f163b9a07f5df4ca1a1f8569cbc1fdf54ee3061b182be23f1a70",
+            "command": [
+              "/usr/bin/g++",
+              "-std=c++23",
+              "-O2",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_set_as_and_full-gcc-False-False.cpp",
+              "-o",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_set_as_and_full-gcc-False-False"
+            ],
+            "cases": [
+              {
+                "input_sha256": "acecdd59db4150b807eb79c681f856a496e449c3d25c5b59d5dd201432d2fd34",
+                "output_sha256": "adf4ad81a410a87742a99bf343792e7887cf784cc3dd51ec969204f61e99fd31",
+                "passed": true
+              }
+            ],
+            "passed": true
+          },
+          {
+            "id": "zeta_set_as_and_full",
+            "compiler": "gcc",
+            "skip": false,
+            "portable": true,
+            "source_sha256": "2365d392e1c6f163b9a07f5df4ca1a1f8569cbc1fdf54ee3061b182be23f1a70",
+            "command": [
+              "/usr/bin/g++",
+              "-std=c++23",
+              "-O2",
+              "-U__SIZEOF_INT128__",
+              "-DSIRKIT_DISABLE_SIMD",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_set_as_and_full-gcc-False-True.cpp",
+              "-o",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_set_as_and_full-gcc-False-True"
+            ],
+            "cases": [
+              {
+                "input_sha256": "acecdd59db4150b807eb79c681f856a496e449c3d25c5b59d5dd201432d2fd34",
+                "output_sha256": "adf4ad81a410a87742a99bf343792e7887cf784cc3dd51ec969204f61e99fd31",
+                "passed": true
+              }
+            ],
+            "passed": true
+          },
+          {
+            "id": "zeta_set_as_and_full",
+            "compiler": "gcc",
+            "skip": true,
+            "portable": false,
+            "source_sha256": "61e8bed7896ef364f94b8c8d2652e4b3ed00b6c8437fa09726655189fff86376",
+            "command": [
+              "/usr/bin/g++",
+              "-std=c++23",
+              "-O2",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_set_as_and_full-gcc-True-False.cpp",
+              "-o",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_set_as_and_full-gcc-True-False"
+            ],
+            "cases": [
+              {
+                "input_sha256": "acecdd59db4150b807eb79c681f856a496e449c3d25c5b59d5dd201432d2fd34",
+                "output_sha256": "adf4ad81a410a87742a99bf343792e7887cf784cc3dd51ec969204f61e99fd31",
+                "passed": true
+              }
+            ],
+            "passed": true
+          },
+          {
+            "id": "zeta_set_as_and_full",
+            "compiler": "gcc",
+            "skip": true,
+            "portable": true,
+            "source_sha256": "61e8bed7896ef364f94b8c8d2652e4b3ed00b6c8437fa09726655189fff86376",
+            "command": [
+              "/usr/bin/g++",
+              "-std=c++23",
+              "-O2",
+              "-U__SIZEOF_INT128__",
+              "-DSIRKIT_DISABLE_SIMD",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_set_as_and_full-gcc-True-True.cpp",
+              "-o",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_set_as_and_full-gcc-True-True"
+            ],
+            "cases": [
+              {
+                "input_sha256": "acecdd59db4150b807eb79c681f856a496e449c3d25c5b59d5dd201432d2fd34",
+                "output_sha256": "adf4ad81a410a87742a99bf343792e7887cf784cc3dd51ec969204f61e99fd31",
+                "passed": true
+              }
+            ],
+            "passed": true
+          },
+          {
+            "id": "zeta_set_as_and_full",
+            "compiler": "clang",
+            "skip": false,
+            "portable": false,
+            "source_sha256": "2365d392e1c6f163b9a07f5df4ca1a1f8569cbc1fdf54ee3061b182be23f1a70",
+            "command": [
+              "/usr/bin/clang++-21",
+              "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+              "-std=c++23",
+              "-O2",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_set_as_and_full-clang-False-False.cpp",
+              "-o",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_set_as_and_full-clang-False-False"
+            ],
+            "cases": [
+              {
+                "input_sha256": "acecdd59db4150b807eb79c681f856a496e449c3d25c5b59d5dd201432d2fd34",
+                "output_sha256": "adf4ad81a410a87742a99bf343792e7887cf784cc3dd51ec969204f61e99fd31",
+                "passed": true
+              }
+            ],
+            "passed": true
+          },
+          {
+            "id": "zeta_set_as_and_full",
+            "compiler": "clang",
+            "skip": false,
+            "portable": true,
+            "source_sha256": "2365d392e1c6f163b9a07f5df4ca1a1f8569cbc1fdf54ee3061b182be23f1a70",
+            "command": [
+              "/usr/bin/clang++-21",
+              "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+              "-std=c++23",
+              "-O2",
+              "-U__SIZEOF_INT128__",
+              "-DSIRKIT_DISABLE_SIMD",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_set_as_and_full-clang-False-True.cpp",
+              "-o",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_set_as_and_full-clang-False-True"
+            ],
+            "cases": [
+              {
+                "input_sha256": "acecdd59db4150b807eb79c681f856a496e449c3d25c5b59d5dd201432d2fd34",
+                "output_sha256": "adf4ad81a410a87742a99bf343792e7887cf784cc3dd51ec969204f61e99fd31",
+                "passed": true
+              }
+            ],
+            "passed": true
+          },
+          {
+            "id": "zeta_set_as_and_full",
+            "compiler": "clang",
+            "skip": true,
+            "portable": false,
+            "source_sha256": "61e8bed7896ef364f94b8c8d2652e4b3ed00b6c8437fa09726655189fff86376",
+            "command": [
+              "/usr/bin/clang++-21",
+              "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+              "-std=c++23",
+              "-O2",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_set_as_and_full-clang-True-False.cpp",
+              "-o",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_set_as_and_full-clang-True-False"
+            ],
+            "cases": [
+              {
+                "input_sha256": "acecdd59db4150b807eb79c681f856a496e449c3d25c5b59d5dd201432d2fd34",
+                "output_sha256": "adf4ad81a410a87742a99bf343792e7887cf784cc3dd51ec969204f61e99fd31",
+                "passed": true
+              }
+            ],
+            "passed": true
+          },
+          {
+            "id": "zeta_set_as_and_full",
+            "compiler": "clang",
+            "skip": true,
+            "portable": true,
+            "source_sha256": "61e8bed7896ef364f94b8c8d2652e4b3ed00b6c8437fa09726655189fff86376",
+            "command": [
+              "/usr/bin/clang++-21",
+              "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+              "-std=c++23",
+              "-O2",
+              "-U__SIZEOF_INT128__",
+              "-DSIRKIT_DISABLE_SIMD",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_set_as_and_full-clang-True-True.cpp",
+              "-o",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_set_as_and_full-clang-True-True"
+            ],
+            "cases": [
+              {
+                "input_sha256": "acecdd59db4150b807eb79c681f856a496e449c3d25c5b59d5dd201432d2fd34",
+                "output_sha256": "adf4ad81a410a87742a99bf343792e7887cf784cc3dd51ec969204f61e99fd31",
+                "passed": true
+              }
+            ],
+            "passed": true
+          }
+        ]
+      },
+      "prior_review_reuse": {
+        "exact_before_SHA_receipts": 0,
+        "automatic_approval_or_performance_transfer": false,
+        "reason": "before SHAに一致するstage内容のsource_sha256がない。別SHAの旧レビューは背景としてのみ参照し、現在版の承認/速度へ転記しない。",
+        "other_historical_receipts": []
+      },
+      "not_covered": [
+        "所有権のcopy/move/例外保証・確保失敗をこのmainで直接検証しない",
+        "全体の本体APIを使うVerifyとは説明しない",
+        "固定mod998244353以外/一般加法型",
+        "負数や法以上入力の正規化（公式は正規化済み）"
+      ],
+      "sources": [
+        "https://judge.yosupo.jp/problem/bitwise_and_convolution",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/convolution/bitwise_and_convolution/task.md"
+      ]
+    },
+    {
+      "id": "zeta_gcd_conv_full",
+      "scope": "whole_program",
+      "source_sha256": "cf910db0af903f949a29425319e23ce84a4bf7bd3502e051fb8df7e10591354e",
+      "current_source_sha256": "cf910db0af903f949a29425319e23ce84a4bf7bd3502e051fb8df7e10591354e",
+      "checked_source_sha256": "56c425830796a77bf78bc745d13ffdb00cd55b15e4da1213a6c703a6c27989a6",
+      "before_source_sha256": "f69bff740ff7c87e8afb93de3220266f5cf45245d70ce1c037e067f1ebada315",
+      "driver": "Verify/current/drivers/zeta_gcd_conv_main.cpp",
+      "source_file_hashes": {
+        "Math/Zeta_Mebius.cpp": "819bd63f2ccc5d31c7cba7844269aef48c5a3079fc92bd8d828313e42e4dcd51",
+        "Verify/current/drivers/zeta_gcd_conv_main.cpp": "15e231633baeabcc4c24166d4529cb2afcc2531e8cc357606ec6197afb9b0dc2",
+        "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+      },
+      "status": "review_complete_unchanged",
+      "decision": "retain current code; no new edit needed for this shared-only followup",
+      "exercised_apis": [
+        "IntegerSieve(n)",
+        "gcd_convolution(move(a),move(b),sieve)"
+      ],
+      "main_or_body_review": "a[0]/b[0]は0で正添字1..NのGCD畳み込み。APIが全係数を返す。IntegerSieveとmultiple変換を使用し、共有sparseは呼ばれない。",
+      "official_input_domain": "LC:法998244353、正規化係数。ANDは0≤k≤20で長さ2^k、GCD/LCMは1≤N≤10^6。",
+      "arithmetic_review": "LC係数valueは[0,p)。加減算の一時値<2p<2^32、uint64積<(p-1)^2<2^64。正添字N+1/篩N≤10^6と2^20長はint/size_tに収まる。",
+      "ownership_review": "入力vector/pairは値として所有し、変換は明示的な破壊的操作。moveしたa/bはその後使わず、const結果の出力まで寿命がある。篩は全変換/因数分解が終わるまで生存。所有権が変わる差分はない。",
+      "changed_component_is_called": false,
+      "changed_is_sorted_branch_executed": false,
+      "change_reuse_proof": "before→currentは疎変換内のsortを同一比較子のis_sorted guardで囲む1hunkのみ。main/IO・他の本体はbyte同一。呼出しなし7LC+Yuki/連番early return2LCのため、今回の分岐はこの10mainの合法入力では実行されない。",
+      "validation_reuse": {
+        "audit": "Audit/added-lc-sparse-affected-validation-2026-11-15.json",
+        "audit_sha256": "2748cb3eabfa5bfb22219e3e9b61b84b878e16b42cb372331680169669c4359c",
+        "exact_current_skip_and_checked_SHA_match": true,
+        "builds": 8,
+        "process_sample_runs": 8,
+        "records": [
+          {
+            "id": "zeta_gcd_conv_full",
+            "compiler": "gcc",
+            "skip": false,
+            "portable": false,
+            "source_sha256": "56c425830796a77bf78bc745d13ffdb00cd55b15e4da1213a6c703a6c27989a6",
+            "command": [
+              "/usr/bin/g++",
+              "-std=c++23",
+              "-O2",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_gcd_conv_full-gcc-False-False.cpp",
+              "-o",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_gcd_conv_full-gcc-False-False"
+            ],
+            "cases": [
+              {
+                "input_sha256": "affc05d5ed0fa472e37c8c22d0450d1bbbc14c3a7a065c77e867f0a00953fcf5",
+                "output_sha256": "9ac35d61e8c76b43a7332a1020c2f5fd1338bd198e43cba62bade4b165fb426d",
+                "passed": true
+              }
+            ],
+            "passed": true
+          },
+          {
+            "id": "zeta_gcd_conv_full",
+            "compiler": "gcc",
+            "skip": false,
+            "portable": true,
+            "source_sha256": "56c425830796a77bf78bc745d13ffdb00cd55b15e4da1213a6c703a6c27989a6",
+            "command": [
+              "/usr/bin/g++",
+              "-std=c++23",
+              "-O2",
+              "-U__SIZEOF_INT128__",
+              "-DSIRKIT_DISABLE_SIMD",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_gcd_conv_full-gcc-False-True.cpp",
+              "-o",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_gcd_conv_full-gcc-False-True"
+            ],
+            "cases": [
+              {
+                "input_sha256": "affc05d5ed0fa472e37c8c22d0450d1bbbc14c3a7a065c77e867f0a00953fcf5",
+                "output_sha256": "9ac35d61e8c76b43a7332a1020c2f5fd1338bd198e43cba62bade4b165fb426d",
+                "passed": true
+              }
+            ],
+            "passed": true
+          },
+          {
+            "id": "zeta_gcd_conv_full",
+            "compiler": "gcc",
+            "skip": true,
+            "portable": false,
+            "source_sha256": "cf910db0af903f949a29425319e23ce84a4bf7bd3502e051fb8df7e10591354e",
+            "command": [
+              "/usr/bin/g++",
+              "-std=c++23",
+              "-O2",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_gcd_conv_full-gcc-True-False.cpp",
+              "-o",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_gcd_conv_full-gcc-True-False"
+            ],
+            "cases": [
+              {
+                "input_sha256": "affc05d5ed0fa472e37c8c22d0450d1bbbc14c3a7a065c77e867f0a00953fcf5",
+                "output_sha256": "9ac35d61e8c76b43a7332a1020c2f5fd1338bd198e43cba62bade4b165fb426d",
+                "passed": true
+              }
+            ],
+            "passed": true
+          },
+          {
+            "id": "zeta_gcd_conv_full",
+            "compiler": "gcc",
+            "skip": true,
+            "portable": true,
+            "source_sha256": "cf910db0af903f949a29425319e23ce84a4bf7bd3502e051fb8df7e10591354e",
+            "command": [
+              "/usr/bin/g++",
+              "-std=c++23",
+              "-O2",
+              "-U__SIZEOF_INT128__",
+              "-DSIRKIT_DISABLE_SIMD",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_gcd_conv_full-gcc-True-True.cpp",
+              "-o",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_gcd_conv_full-gcc-True-True"
+            ],
+            "cases": [
+              {
+                "input_sha256": "affc05d5ed0fa472e37c8c22d0450d1bbbc14c3a7a065c77e867f0a00953fcf5",
+                "output_sha256": "9ac35d61e8c76b43a7332a1020c2f5fd1338bd198e43cba62bade4b165fb426d",
+                "passed": true
+              }
+            ],
+            "passed": true
+          },
+          {
+            "id": "zeta_gcd_conv_full",
+            "compiler": "clang",
+            "skip": false,
+            "portable": false,
+            "source_sha256": "56c425830796a77bf78bc745d13ffdb00cd55b15e4da1213a6c703a6c27989a6",
+            "command": [
+              "/usr/bin/clang++-21",
+              "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+              "-std=c++23",
+              "-O2",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_gcd_conv_full-clang-False-False.cpp",
+              "-o",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_gcd_conv_full-clang-False-False"
+            ],
+            "cases": [
+              {
+                "input_sha256": "affc05d5ed0fa472e37c8c22d0450d1bbbc14c3a7a065c77e867f0a00953fcf5",
+                "output_sha256": "9ac35d61e8c76b43a7332a1020c2f5fd1338bd198e43cba62bade4b165fb426d",
+                "passed": true
+              }
+            ],
+            "passed": true
+          },
+          {
+            "id": "zeta_gcd_conv_full",
+            "compiler": "clang",
+            "skip": false,
+            "portable": true,
+            "source_sha256": "56c425830796a77bf78bc745d13ffdb00cd55b15e4da1213a6c703a6c27989a6",
+            "command": [
+              "/usr/bin/clang++-21",
+              "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+              "-std=c++23",
+              "-O2",
+              "-U__SIZEOF_INT128__",
+              "-DSIRKIT_DISABLE_SIMD",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_gcd_conv_full-clang-False-True.cpp",
+              "-o",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_gcd_conv_full-clang-False-True"
+            ],
+            "cases": [
+              {
+                "input_sha256": "affc05d5ed0fa472e37c8c22d0450d1bbbc14c3a7a065c77e867f0a00953fcf5",
+                "output_sha256": "9ac35d61e8c76b43a7332a1020c2f5fd1338bd198e43cba62bade4b165fb426d",
+                "passed": true
+              }
+            ],
+            "passed": true
+          },
+          {
+            "id": "zeta_gcd_conv_full",
+            "compiler": "clang",
+            "skip": true,
+            "portable": false,
+            "source_sha256": "cf910db0af903f949a29425319e23ce84a4bf7bd3502e051fb8df7e10591354e",
+            "command": [
+              "/usr/bin/clang++-21",
+              "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+              "-std=c++23",
+              "-O2",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_gcd_conv_full-clang-True-False.cpp",
+              "-o",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_gcd_conv_full-clang-True-False"
+            ],
+            "cases": [
+              {
+                "input_sha256": "affc05d5ed0fa472e37c8c22d0450d1bbbc14c3a7a065c77e867f0a00953fcf5",
+                "output_sha256": "9ac35d61e8c76b43a7332a1020c2f5fd1338bd198e43cba62bade4b165fb426d",
+                "passed": true
+              }
+            ],
+            "passed": true
+          },
+          {
+            "id": "zeta_gcd_conv_full",
+            "compiler": "clang",
+            "skip": true,
+            "portable": true,
+            "source_sha256": "cf910db0af903f949a29425319e23ce84a4bf7bd3502e051fb8df7e10591354e",
+            "command": [
+              "/usr/bin/clang++-21",
+              "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+              "-std=c++23",
+              "-O2",
+              "-U__SIZEOF_INT128__",
+              "-DSIRKIT_DISABLE_SIMD",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_gcd_conv_full-clang-True-True.cpp",
+              "-o",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_gcd_conv_full-clang-True-True"
+            ],
+            "cases": [
+              {
+                "input_sha256": "affc05d5ed0fa472e37c8c22d0450d1bbbc14c3a7a065c77e867f0a00953fcf5",
+                "output_sha256": "9ac35d61e8c76b43a7332a1020c2f5fd1338bd198e43cba62bade4b165fb426d",
+                "passed": true
+              }
+            ],
+            "passed": true
+          }
+        ]
+      },
+      "prior_review_reuse": {
+        "exact_before_SHA_receipts": 0,
+        "automatic_approval_or_performance_transfer": false,
+        "reason": "before SHAに一致するstage内容のsource_sha256がない。別SHAの旧レビューは背景としてのみ参照し、現在版の承認/速度へ転記しない。",
+        "other_historical_receipts": [
+          {
+            "path": "Verify/optimization/stages/zeta_gcd_conv_full.codex.ffaa0f302c121ec8c68371eaff0f08deca227e4674e835a925c40d0acd693fc2.json",
+            "stage": "codex",
+            "scope": "whole_program",
+            "source_sha256": "1320a4f1bcb08e9380ef52d2d5a383c38b5f0d294e9e647d72e4c1ffe1cc04c1",
+            "status": "complete"
+          },
+          {
+            "path": "Verify/optimization/stages/zeta_gcd_conv_full.codex.06822e8c605daf664b7b1ef352cd4d60929a20fbd6ed1efbdadb09ba4a21c805.json",
+            "stage": "codex",
+            "scope": "whole_program",
+            "source_sha256": "c83f190ce795702288403a9b8ac5b4344967a98b4358020935d0ae4ed58e4e88",
+            "status": "complete"
+          },
+          {
+            "path": "Verify/optimization/stages/zeta_gcd_conv_full.claude.11d1cd9281140304da8e4f420757abe0e62dc1a9c079684fb8b94b4146b38dc2.json",
+            "stage": "claude",
+            "scope": "whole_program",
+            "source_sha256": "3270eb5f332e8b9f1c8758f5201e377a7535c0f06bb7e5076af010d50427a287",
+            "status": "complete"
+          },
+          {
+            "path": "Verify/optimization/stages/zeta_gcd_conv_full.claude.a805afcb4172c43e2c1b2a7be5c5d3a1d3cb446ec8fd3734dc2eddeb63ae9a05.json",
+            "stage": "claude",
+            "scope": "whole_program",
+            "source_sha256": "1320a4f1bcb08e9380ef52d2d5a383c38b5f0d294e9e647d72e4c1ffe1cc04c1",
+            "status": "complete"
+          },
+          {
+            "path": "Verify/optimization/stages/zeta_gcd_conv_full.codex.adee19c72b5d36c0d78b47239a4e2b8dab794561acf8512359541bf292eba8ff.json",
+            "stage": "codex",
+            "scope": "whole_program",
+            "source_sha256": "9ddd61ff13855def031545037ad427beebe5aaeeec99fb51ba579f3a215484c9",
+            "status": "complete"
+          }
+        ]
+      },
+      "not_covered": [
+        "所有権のcopy/move/例外保証・確保失敗をこのmainで直接検証しない",
+        "全体の本体APIを使うVerifyとは説明しない",
+        "固定mod998244353以外/一般加法型",
+        "負数や法以上入力の正規化（公式は正規化済み）"
+      ],
+      "sources": [
+        "https://judge.yosupo.jp/problem/gcd_convolution",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/convolution/gcd_convolution/task.md"
+      ]
+    },
+    {
+      "id": "zeta_gcd_transform_full",
+      "scope": "whole_program",
+      "source_sha256": "172c2688bab054b73c4fe09501247c703c29893daf4995a445727fea20f967f6",
+      "current_source_sha256": "172c2688bab054b73c4fe09501247c703c29893daf4995a445727fea20f967f6",
+      "checked_source_sha256": "52e310e4b33f79436c422f8b930d0d20a77bcbf195c589efa60b776fb32dd862",
+      "before_source_sha256": "6ded6b460bcc987c2949b427be7746dffc784f8bfed820c4a13bd45b48493175",
+      "driver": "Verify/current/drivers/zeta_gcd_transform_main.cpp",
+      "source_file_hashes": {
+        "Math/Zeta_Mebius.cpp": "819bd63f2ccc5d31c7cba7844269aef48c5a3079fc92bd8d828313e42e4dcd51",
+        "Verify/current/drivers/zeta_gcd_transform_main.cpp": "0cc98d2caf33972b1622b744071ccf8e2ffc42567258430a88d0c964318a511f",
+        "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+      },
+      "status": "review_complete_unchanged",
+      "decision": "retain current code; no new edit needed for this shared-only followup",
+      "exercised_apis": [
+        "IntegerSieve(n)",
+        "multiple_zeta_transform(a/b,sieve)",
+        "multiple_mobius_transform(a,sieve)"
+      ],
+      "main_or_body_review": "倍数和の点積と逆変換からGCD畳み込みを構成する。返却係数はAPI変換に依存する。1..Nで0添字は未使用、共有sparseは呼ばれない。",
+      "official_input_domain": "LC:法998244353、正規化係数。ANDは0≤k≤20で長さ2^k、GCD/LCMは1≤N≤10^6。",
+      "arithmetic_review": "LC係数valueは[0,p)。加減算の一時値<2p<2^32、uint64積<(p-1)^2<2^64。正添字N+1/篩N≤10^6と2^20長はint/size_tに収まる。",
+      "ownership_review": "入力vector/pairは値として所有し、変換は明示的な破壊的操作。moveしたa/bはその後使わず、const結果の出力まで寿命がある。篩は全変換/因数分解が終わるまで生存。所有権が変わる差分はない。",
+      "changed_component_is_called": false,
+      "changed_is_sorted_branch_executed": false,
+      "change_reuse_proof": "before→currentは疎変換内のsortを同一比較子のis_sorted guardで囲む1hunkのみ。main/IO・他の本体はbyte同一。呼出しなし7LC+Yuki/連番early return2LCのため、今回の分岐はこの10mainの合法入力では実行されない。",
+      "validation_reuse": {
+        "audit": "Audit/added-lc-sparse-affected-validation-2026-11-15.json",
+        "audit_sha256": "2748cb3eabfa5bfb22219e3e9b61b84b878e16b42cb372331680169669c4359c",
+        "exact_current_skip_and_checked_SHA_match": true,
+        "builds": 8,
+        "process_sample_runs": 8,
+        "records": [
+          {
+            "id": "zeta_gcd_transform_full",
+            "compiler": "gcc",
+            "skip": false,
+            "portable": false,
+            "source_sha256": "52e310e4b33f79436c422f8b930d0d20a77bcbf195c589efa60b776fb32dd862",
+            "command": [
+              "/usr/bin/g++",
+              "-std=c++23",
+              "-O2",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_gcd_transform_full-gcc-False-False.cpp",
+              "-o",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_gcd_transform_full-gcc-False-False"
+            ],
+            "cases": [
+              {
+                "input_sha256": "affc05d5ed0fa472e37c8c22d0450d1bbbc14c3a7a065c77e867f0a00953fcf5",
+                "output_sha256": "e12fcada798fab54148ecb1b8d459b1e208a11e34a3760f82eea226fff452c8a",
+                "passed": true
+              }
+            ],
+            "passed": true
+          },
+          {
+            "id": "zeta_gcd_transform_full",
+            "compiler": "gcc",
+            "skip": false,
+            "portable": true,
+            "source_sha256": "52e310e4b33f79436c422f8b930d0d20a77bcbf195c589efa60b776fb32dd862",
+            "command": [
+              "/usr/bin/g++",
+              "-std=c++23",
+              "-O2",
+              "-U__SIZEOF_INT128__",
+              "-DSIRKIT_DISABLE_SIMD",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_gcd_transform_full-gcc-False-True.cpp",
+              "-o",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_gcd_transform_full-gcc-False-True"
+            ],
+            "cases": [
+              {
+                "input_sha256": "affc05d5ed0fa472e37c8c22d0450d1bbbc14c3a7a065c77e867f0a00953fcf5",
+                "output_sha256": "e12fcada798fab54148ecb1b8d459b1e208a11e34a3760f82eea226fff452c8a",
+                "passed": true
+              }
+            ],
+            "passed": true
+          },
+          {
+            "id": "zeta_gcd_transform_full",
+            "compiler": "gcc",
+            "skip": true,
+            "portable": false,
+            "source_sha256": "172c2688bab054b73c4fe09501247c703c29893daf4995a445727fea20f967f6",
+            "command": [
+              "/usr/bin/g++",
+              "-std=c++23",
+              "-O2",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_gcd_transform_full-gcc-True-False.cpp",
+              "-o",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_gcd_transform_full-gcc-True-False"
+            ],
+            "cases": [
+              {
+                "input_sha256": "affc05d5ed0fa472e37c8c22d0450d1bbbc14c3a7a065c77e867f0a00953fcf5",
+                "output_sha256": "e12fcada798fab54148ecb1b8d459b1e208a11e34a3760f82eea226fff452c8a",
+                "passed": true
+              }
+            ],
+            "passed": true
+          },
+          {
+            "id": "zeta_gcd_transform_full",
+            "compiler": "gcc",
+            "skip": true,
+            "portable": true,
+            "source_sha256": "172c2688bab054b73c4fe09501247c703c29893daf4995a445727fea20f967f6",
+            "command": [
+              "/usr/bin/g++",
+              "-std=c++23",
+              "-O2",
+              "-U__SIZEOF_INT128__",
+              "-DSIRKIT_DISABLE_SIMD",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_gcd_transform_full-gcc-True-True.cpp",
+              "-o",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_gcd_transform_full-gcc-True-True"
+            ],
+            "cases": [
+              {
+                "input_sha256": "affc05d5ed0fa472e37c8c22d0450d1bbbc14c3a7a065c77e867f0a00953fcf5",
+                "output_sha256": "e12fcada798fab54148ecb1b8d459b1e208a11e34a3760f82eea226fff452c8a",
+                "passed": true
+              }
+            ],
+            "passed": true
+          },
+          {
+            "id": "zeta_gcd_transform_full",
+            "compiler": "clang",
+            "skip": false,
+            "portable": false,
+            "source_sha256": "52e310e4b33f79436c422f8b930d0d20a77bcbf195c589efa60b776fb32dd862",
+            "command": [
+              "/usr/bin/clang++-21",
+              "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+              "-std=c++23",
+              "-O2",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_gcd_transform_full-clang-False-False.cpp",
+              "-o",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_gcd_transform_full-clang-False-False"
+            ],
+            "cases": [
+              {
+                "input_sha256": "affc05d5ed0fa472e37c8c22d0450d1bbbc14c3a7a065c77e867f0a00953fcf5",
+                "output_sha256": "e12fcada798fab54148ecb1b8d459b1e208a11e34a3760f82eea226fff452c8a",
+                "passed": true
+              }
+            ],
+            "passed": true
+          },
+          {
+            "id": "zeta_gcd_transform_full",
+            "compiler": "clang",
+            "skip": false,
+            "portable": true,
+            "source_sha256": "52e310e4b33f79436c422f8b930d0d20a77bcbf195c589efa60b776fb32dd862",
+            "command": [
+              "/usr/bin/clang++-21",
+              "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+              "-std=c++23",
+              "-O2",
+              "-U__SIZEOF_INT128__",
+              "-DSIRKIT_DISABLE_SIMD",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_gcd_transform_full-clang-False-True.cpp",
+              "-o",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_gcd_transform_full-clang-False-True"
+            ],
+            "cases": [
+              {
+                "input_sha256": "affc05d5ed0fa472e37c8c22d0450d1bbbc14c3a7a065c77e867f0a00953fcf5",
+                "output_sha256": "e12fcada798fab54148ecb1b8d459b1e208a11e34a3760f82eea226fff452c8a",
+                "passed": true
+              }
+            ],
+            "passed": true
+          },
+          {
+            "id": "zeta_gcd_transform_full",
+            "compiler": "clang",
+            "skip": true,
+            "portable": false,
+            "source_sha256": "172c2688bab054b73c4fe09501247c703c29893daf4995a445727fea20f967f6",
+            "command": [
+              "/usr/bin/clang++-21",
+              "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+              "-std=c++23",
+              "-O2",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_gcd_transform_full-clang-True-False.cpp",
+              "-o",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_gcd_transform_full-clang-True-False"
+            ],
+            "cases": [
+              {
+                "input_sha256": "affc05d5ed0fa472e37c8c22d0450d1bbbc14c3a7a065c77e867f0a00953fcf5",
+                "output_sha256": "e12fcada798fab54148ecb1b8d459b1e208a11e34a3760f82eea226fff452c8a",
+                "passed": true
+              }
+            ],
+            "passed": true
+          },
+          {
+            "id": "zeta_gcd_transform_full",
+            "compiler": "clang",
+            "skip": true,
+            "portable": true,
+            "source_sha256": "172c2688bab054b73c4fe09501247c703c29893daf4995a445727fea20f967f6",
+            "command": [
+              "/usr/bin/clang++-21",
+              "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+              "-std=c++23",
+              "-O2",
+              "-U__SIZEOF_INT128__",
+              "-DSIRKIT_DISABLE_SIMD",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_gcd_transform_full-clang-True-True.cpp",
+              "-o",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_gcd_transform_full-clang-True-True"
+            ],
+            "cases": [
+              {
+                "input_sha256": "affc05d5ed0fa472e37c8c22d0450d1bbbc14c3a7a065c77e867f0a00953fcf5",
+                "output_sha256": "e12fcada798fab54148ecb1b8d459b1e208a11e34a3760f82eea226fff452c8a",
+                "passed": true
+              }
+            ],
+            "passed": true
+          }
+        ]
+      },
+      "prior_review_reuse": {
+        "exact_before_SHA_receipts": 0,
+        "automatic_approval_or_performance_transfer": false,
+        "reason": "before SHAに一致するstage内容のsource_sha256がない。別SHAの旧レビューは背景としてのみ参照し、現在版の承認/速度へ転記しない。",
+        "other_historical_receipts": []
+      },
+      "not_covered": [
+        "所有権のcopy/move/例外保証・確保失敗をこのmainで直接検証しない",
+        "全体の本体APIを使うVerifyとは説明しない",
+        "固定mod998244353以外/一般加法型",
+        "負数や法以上入力の正規化（公式は正規化済み）"
+      ],
+      "sources": [
+        "https://judge.yosupo.jp/problem/gcd_convolution",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/convolution/gcd_convolution/task.md"
+      ]
+    },
+    {
+      "id": "zeta_lcm_conv_full",
+      "scope": "whole_program",
+      "source_sha256": "f01c57942facdf59769a90676c7074baa351b55663c22d18796dd4975404f85d",
+      "current_source_sha256": "f01c57942facdf59769a90676c7074baa351b55663c22d18796dd4975404f85d",
+      "checked_source_sha256": "9c995bacb56dc7237eb8d3bfdef729dbdcecdb8ad02af672d305c292c85ae9db",
+      "before_source_sha256": "6a23215db8f685601f9dd85ec4c48006eba9678f3aab094519f37921ce1b5745",
+      "driver": "Verify/current/drivers/zeta_lcm_conv_main.cpp",
+      "source_file_hashes": {
+        "Math/Zeta_Mebius.cpp": "819bd63f2ccc5d31c7cba7844269aef48c5a3079fc92bd8d828313e42e4dcd51",
+        "Verify/current/drivers/zeta_lcm_conv_main.cpp": "8a54f48170f96f19bd6c3b9f13bde4624f91ed70a51d3ada6ba01e7d6f03a0af",
+        "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+      },
+      "status": "review_complete_unchanged",
+      "decision": "retain current code; no new edit needed for this shared-only followup",
+      "exercised_apis": [
+        "IntegerSieve(n)",
+        "lcm_convolution(move(a),move(b),sieve)"
+      ],
+      "main_or_body_review": "正添字1..NのLCM畳み込みをAPIへ渡し、LCM≤Nに対応する係数だけを出力。nを超えるLCM値をmainで掛算していない。共有sparseは呼ばれない。",
+      "official_input_domain": "LC:法998244353、正規化係数。ANDは0≤k≤20で長さ2^k、GCD/LCMは1≤N≤10^6。",
+      "arithmetic_review": "LC係数valueは[0,p)。加減算の一時値<2p<2^32、uint64積<(p-1)^2<2^64。正添字N+1/篩N≤10^6と2^20長はint/size_tに収まる。",
+      "ownership_review": "入力vector/pairは値として所有し、変換は明示的な破壊的操作。moveしたa/bはその後使わず、const結果の出力まで寿命がある。篩は全変換/因数分解が終わるまで生存。所有権が変わる差分はない。",
+      "changed_component_is_called": false,
+      "changed_is_sorted_branch_executed": false,
+      "change_reuse_proof": "before→currentは疎変換内のsortを同一比較子のis_sorted guardで囲む1hunkのみ。main/IO・他の本体はbyte同一。呼出しなし7LC+Yuki/連番early return2LCのため、今回の分岐はこの10mainの合法入力では実行されない。",
+      "validation_reuse": {
+        "audit": "Audit/added-lc-sparse-affected-validation-2026-11-15.json",
+        "audit_sha256": "2748cb3eabfa5bfb22219e3e9b61b84b878e16b42cb372331680169669c4359c",
+        "exact_current_skip_and_checked_SHA_match": true,
+        "builds": 8,
+        "process_sample_runs": 8,
+        "records": [
+          {
+            "id": "zeta_lcm_conv_full",
+            "compiler": "gcc",
+            "skip": false,
+            "portable": false,
+            "source_sha256": "9c995bacb56dc7237eb8d3bfdef729dbdcecdb8ad02af672d305c292c85ae9db",
+            "command": [
+              "/usr/bin/g++",
+              "-std=c++23",
+              "-O2",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_lcm_conv_full-gcc-False-False.cpp",
+              "-o",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_lcm_conv_full-gcc-False-False"
+            ],
+            "cases": [
+              {
+                "input_sha256": "affc05d5ed0fa472e37c8c22d0450d1bbbc14c3a7a065c77e867f0a00953fcf5",
+                "output_sha256": "57a794e54f564f9a35ea8ace69aea67b6f43bb2fcc7dd2a08c1b2b5df2ea65d6",
+                "passed": true
+              }
+            ],
+            "passed": true
+          },
+          {
+            "id": "zeta_lcm_conv_full",
+            "compiler": "gcc",
+            "skip": false,
+            "portable": true,
+            "source_sha256": "9c995bacb56dc7237eb8d3bfdef729dbdcecdb8ad02af672d305c292c85ae9db",
+            "command": [
+              "/usr/bin/g++",
+              "-std=c++23",
+              "-O2",
+              "-U__SIZEOF_INT128__",
+              "-DSIRKIT_DISABLE_SIMD",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_lcm_conv_full-gcc-False-True.cpp",
+              "-o",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_lcm_conv_full-gcc-False-True"
+            ],
+            "cases": [
+              {
+                "input_sha256": "affc05d5ed0fa472e37c8c22d0450d1bbbc14c3a7a065c77e867f0a00953fcf5",
+                "output_sha256": "57a794e54f564f9a35ea8ace69aea67b6f43bb2fcc7dd2a08c1b2b5df2ea65d6",
+                "passed": true
+              }
+            ],
+            "passed": true
+          },
+          {
+            "id": "zeta_lcm_conv_full",
+            "compiler": "gcc",
+            "skip": true,
+            "portable": false,
+            "source_sha256": "f01c57942facdf59769a90676c7074baa351b55663c22d18796dd4975404f85d",
+            "command": [
+              "/usr/bin/g++",
+              "-std=c++23",
+              "-O2",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_lcm_conv_full-gcc-True-False.cpp",
+              "-o",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_lcm_conv_full-gcc-True-False"
+            ],
+            "cases": [
+              {
+                "input_sha256": "affc05d5ed0fa472e37c8c22d0450d1bbbc14c3a7a065c77e867f0a00953fcf5",
+                "output_sha256": "57a794e54f564f9a35ea8ace69aea67b6f43bb2fcc7dd2a08c1b2b5df2ea65d6",
+                "passed": true
+              }
+            ],
+            "passed": true
+          },
+          {
+            "id": "zeta_lcm_conv_full",
+            "compiler": "gcc",
+            "skip": true,
+            "portable": true,
+            "source_sha256": "f01c57942facdf59769a90676c7074baa351b55663c22d18796dd4975404f85d",
+            "command": [
+              "/usr/bin/g++",
+              "-std=c++23",
+              "-O2",
+              "-U__SIZEOF_INT128__",
+              "-DSIRKIT_DISABLE_SIMD",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_lcm_conv_full-gcc-True-True.cpp",
+              "-o",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_lcm_conv_full-gcc-True-True"
+            ],
+            "cases": [
+              {
+                "input_sha256": "affc05d5ed0fa472e37c8c22d0450d1bbbc14c3a7a065c77e867f0a00953fcf5",
+                "output_sha256": "57a794e54f564f9a35ea8ace69aea67b6f43bb2fcc7dd2a08c1b2b5df2ea65d6",
+                "passed": true
+              }
+            ],
+            "passed": true
+          },
+          {
+            "id": "zeta_lcm_conv_full",
+            "compiler": "clang",
+            "skip": false,
+            "portable": false,
+            "source_sha256": "9c995bacb56dc7237eb8d3bfdef729dbdcecdb8ad02af672d305c292c85ae9db",
+            "command": [
+              "/usr/bin/clang++-21",
+              "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+              "-std=c++23",
+              "-O2",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_lcm_conv_full-clang-False-False.cpp",
+              "-o",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_lcm_conv_full-clang-False-False"
+            ],
+            "cases": [
+              {
+                "input_sha256": "affc05d5ed0fa472e37c8c22d0450d1bbbc14c3a7a065c77e867f0a00953fcf5",
+                "output_sha256": "57a794e54f564f9a35ea8ace69aea67b6f43bb2fcc7dd2a08c1b2b5df2ea65d6",
+                "passed": true
+              }
+            ],
+            "passed": true
+          },
+          {
+            "id": "zeta_lcm_conv_full",
+            "compiler": "clang",
+            "skip": false,
+            "portable": true,
+            "source_sha256": "9c995bacb56dc7237eb8d3bfdef729dbdcecdb8ad02af672d305c292c85ae9db",
+            "command": [
+              "/usr/bin/clang++-21",
+              "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+              "-std=c++23",
+              "-O2",
+              "-U__SIZEOF_INT128__",
+              "-DSIRKIT_DISABLE_SIMD",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_lcm_conv_full-clang-False-True.cpp",
+              "-o",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_lcm_conv_full-clang-False-True"
+            ],
+            "cases": [
+              {
+                "input_sha256": "affc05d5ed0fa472e37c8c22d0450d1bbbc14c3a7a065c77e867f0a00953fcf5",
+                "output_sha256": "57a794e54f564f9a35ea8ace69aea67b6f43bb2fcc7dd2a08c1b2b5df2ea65d6",
+                "passed": true
+              }
+            ],
+            "passed": true
+          },
+          {
+            "id": "zeta_lcm_conv_full",
+            "compiler": "clang",
+            "skip": true,
+            "portable": false,
+            "source_sha256": "f01c57942facdf59769a90676c7074baa351b55663c22d18796dd4975404f85d",
+            "command": [
+              "/usr/bin/clang++-21",
+              "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+              "-std=c++23",
+              "-O2",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_lcm_conv_full-clang-True-False.cpp",
+              "-o",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_lcm_conv_full-clang-True-False"
+            ],
+            "cases": [
+              {
+                "input_sha256": "affc05d5ed0fa472e37c8c22d0450d1bbbc14c3a7a065c77e867f0a00953fcf5",
+                "output_sha256": "57a794e54f564f9a35ea8ace69aea67b6f43bb2fcc7dd2a08c1b2b5df2ea65d6",
+                "passed": true
+              }
+            ],
+            "passed": true
+          },
+          {
+            "id": "zeta_lcm_conv_full",
+            "compiler": "clang",
+            "skip": true,
+            "portable": true,
+            "source_sha256": "f01c57942facdf59769a90676c7074baa351b55663c22d18796dd4975404f85d",
+            "command": [
+              "/usr/bin/clang++-21",
+              "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+              "-std=c++23",
+              "-O2",
+              "-U__SIZEOF_INT128__",
+              "-DSIRKIT_DISABLE_SIMD",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_lcm_conv_full-clang-True-True.cpp",
+              "-o",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_lcm_conv_full-clang-True-True"
+            ],
+            "cases": [
+              {
+                "input_sha256": "affc05d5ed0fa472e37c8c22d0450d1bbbc14c3a7a065c77e867f0a00953fcf5",
+                "output_sha256": "57a794e54f564f9a35ea8ace69aea67b6f43bb2fcc7dd2a08c1b2b5df2ea65d6",
+                "passed": true
+              }
+            ],
+            "passed": true
+          }
+        ]
+      },
+      "prior_review_reuse": {
+        "exact_before_SHA_receipts": 0,
+        "automatic_approval_or_performance_transfer": false,
+        "reason": "before SHAに一致するstage内容のsource_sha256がない。別SHAの旧レビューは背景としてのみ参照し、現在版の承認/速度へ転記しない。",
+        "other_historical_receipts": [
+          {
+            "path": "Verify/optimization/stages/zeta_lcm_conv_full.codex.83313d873a5a63c009c1ed4a9d197584aaf0fdc29338f612da07cb1198e59a77.json",
+            "stage": "codex",
+            "scope": "whole_program",
+            "source_sha256": "a030118cc7da3396a78fa46f13f713880334f2c1d91688705da4c1723efcd38d",
+            "status": "complete"
+          },
+          {
+            "path": "Verify/optimization/stages/zeta_lcm_conv_full.claude.1aab3d777c2751edea40eaad15f9c2fcd2e5d12c19b8cd4074d3e55f961f0946.json",
+            "stage": "claude",
+            "scope": "whole_program",
+            "source_sha256": "a030118cc7da3396a78fa46f13f713880334f2c1d91688705da4c1723efcd38d",
+            "status": "complete"
+          },
+          {
+            "path": "Verify/optimization/stages/zeta_lcm_conv_full.claude.9642347c4ce205d8e868df71c9ee9d1ba4ce656e055021f9dc596f5a7b8637b2.json",
+            "stage": "claude",
+            "scope": "whole_program",
+            "source_sha256": "f7d14f4dc21225af765e949fba7c5fc6d5a16b52412eeda1a6ef2083d6afadde",
+            "status": "complete"
+          },
+          {
+            "path": "Verify/optimization/stages/zeta_lcm_conv_full.codex.8431009825d22cf32de3a761f9f94710f96eddca3ef71d614229039583e09a49.json",
+            "stage": "codex",
+            "scope": "whole_program",
+            "source_sha256": "fd3ed7ec6534b12f6092a3d0384fd25429e8c259129529f46143de7432a651e3",
+            "status": "complete"
+          },
+          {
+            "path": "Verify/optimization/stages/zeta_lcm_conv_full.codex.afbc77c596e7264c523fb4aeddb6b891d22877ee0a90c4491811f8c2263873ee.json",
+            "stage": "codex",
+            "scope": "whole_program",
+            "source_sha256": "584f8b470e48e226ea6ed115a4d90089abb5c5ce5a1948621cf1c0c5583f5ec4",
+            "status": "complete"
+          }
+        ]
+      },
+      "not_covered": [
+        "所有権のcopy/move/例外保証・確保失敗をこのmainで直接検証しない",
+        "全体の本体APIを使うVerifyとは説明しない",
+        "固定mod998244353以外/一般加法型",
+        "負数や法以上入力の正規化（公式は正規化済み）"
+      ],
+      "sources": [
+        "https://judge.yosupo.jp/problem/lcm_convolution",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/convolution/lcm_convolution/task.md"
+      ]
+    },
+    {
+      "id": "zeta_lcm_transform_full",
+      "scope": "whole_program",
+      "source_sha256": "be4e737a7ec7b6b756e3c44b7c3f62b2457a4e71883c6c3c62d9b420d447a61f",
+      "current_source_sha256": "be4e737a7ec7b6b756e3c44b7c3f62b2457a4e71883c6c3c62d9b420d447a61f",
+      "checked_source_sha256": "4d9b36101436341df9e5be027198da064156bb355e05f43adcccd8b048fea2cb",
+      "before_source_sha256": "29c0e03218eabfbe98b5dc3505c17fe7ccb25263fa65a646fd4c915df9c3f785",
+      "driver": "Verify/current/drivers/zeta_lcm_transform_main.cpp",
+      "source_file_hashes": {
+        "Math/Zeta_Mebius.cpp": "819bd63f2ccc5d31c7cba7844269aef48c5a3079fc92bd8d828313e42e4dcd51",
+        "Verify/current/drivers/zeta_lcm_transform_main.cpp": "b54df1690d5e31bc69012c865dced0a008d287980e35331ad393a64c08516eec",
+        "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+      },
+      "status": "review_complete_unchanged",
+      "decision": "retain current code; no new edit needed for this shared-only followup",
+      "exercised_apis": [
+        "IntegerSieve(n)",
+        "divisor_zeta_transform(a/b,sieve)",
+        "divisor_mobius_transform(a,sieve)"
+      ],
+      "main_or_body_review": "約数和の点積と逆変換でLCM畳み込みを計算する。各出力係数が変換APIに直接依存。共有sparseは呼ばれない。",
+      "official_input_domain": "LC:法998244353、正規化係数。ANDは0≤k≤20で長さ2^k、GCD/LCMは1≤N≤10^6。",
+      "arithmetic_review": "LC係数valueは[0,p)。加減算の一時値<2p<2^32、uint64積<(p-1)^2<2^64。正添字N+1/篩N≤10^6と2^20長はint/size_tに収まる。",
+      "ownership_review": "入力vector/pairは値として所有し、変換は明示的な破壊的操作。moveしたa/bはその後使わず、const結果の出力まで寿命がある。篩は全変換/因数分解が終わるまで生存。所有権が変わる差分はない。",
+      "changed_component_is_called": false,
+      "changed_is_sorted_branch_executed": false,
+      "change_reuse_proof": "before→currentは疎変換内のsortを同一比較子のis_sorted guardで囲む1hunkのみ。main/IO・他の本体はbyte同一。呼出しなし7LC+Yuki/連番early return2LCのため、今回の分岐はこの10mainの合法入力では実行されない。",
+      "validation_reuse": {
+        "audit": "Audit/added-lc-sparse-affected-validation-2026-11-15.json",
+        "audit_sha256": "2748cb3eabfa5bfb22219e3e9b61b84b878e16b42cb372331680169669c4359c",
+        "exact_current_skip_and_checked_SHA_match": true,
+        "builds": 8,
+        "process_sample_runs": 8,
+        "records": [
+          {
+            "id": "zeta_lcm_transform_full",
+            "compiler": "gcc",
+            "skip": false,
+            "portable": false,
+            "source_sha256": "4d9b36101436341df9e5be027198da064156bb355e05f43adcccd8b048fea2cb",
+            "command": [
+              "/usr/bin/g++",
+              "-std=c++23",
+              "-O2",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_lcm_transform_full-gcc-False-False.cpp",
+              "-o",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_lcm_transform_full-gcc-False-False"
+            ],
+            "cases": [
+              {
+                "input_sha256": "affc05d5ed0fa472e37c8c22d0450d1bbbc14c3a7a065c77e867f0a00953fcf5",
+                "output_sha256": "97dec27bf4335758563b24470a3380566d5f2480f26595dbfcb88d4b0d7dcc93",
+                "passed": true
+              }
+            ],
+            "passed": true
+          },
+          {
+            "id": "zeta_lcm_transform_full",
+            "compiler": "gcc",
+            "skip": false,
+            "portable": true,
+            "source_sha256": "4d9b36101436341df9e5be027198da064156bb355e05f43adcccd8b048fea2cb",
+            "command": [
+              "/usr/bin/g++",
+              "-std=c++23",
+              "-O2",
+              "-U__SIZEOF_INT128__",
+              "-DSIRKIT_DISABLE_SIMD",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_lcm_transform_full-gcc-False-True.cpp",
+              "-o",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_lcm_transform_full-gcc-False-True"
+            ],
+            "cases": [
+              {
+                "input_sha256": "affc05d5ed0fa472e37c8c22d0450d1bbbc14c3a7a065c77e867f0a00953fcf5",
+                "output_sha256": "97dec27bf4335758563b24470a3380566d5f2480f26595dbfcb88d4b0d7dcc93",
+                "passed": true
+              }
+            ],
+            "passed": true
+          },
+          {
+            "id": "zeta_lcm_transform_full",
+            "compiler": "gcc",
+            "skip": true,
+            "portable": false,
+            "source_sha256": "be4e737a7ec7b6b756e3c44b7c3f62b2457a4e71883c6c3c62d9b420d447a61f",
+            "command": [
+              "/usr/bin/g++",
+              "-std=c++23",
+              "-O2",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_lcm_transform_full-gcc-True-False.cpp",
+              "-o",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_lcm_transform_full-gcc-True-False"
+            ],
+            "cases": [
+              {
+                "input_sha256": "affc05d5ed0fa472e37c8c22d0450d1bbbc14c3a7a065c77e867f0a00953fcf5",
+                "output_sha256": "97dec27bf4335758563b24470a3380566d5f2480f26595dbfcb88d4b0d7dcc93",
+                "passed": true
+              }
+            ],
+            "passed": true
+          },
+          {
+            "id": "zeta_lcm_transform_full",
+            "compiler": "gcc",
+            "skip": true,
+            "portable": true,
+            "source_sha256": "be4e737a7ec7b6b756e3c44b7c3f62b2457a4e71883c6c3c62d9b420d447a61f",
+            "command": [
+              "/usr/bin/g++",
+              "-std=c++23",
+              "-O2",
+              "-U__SIZEOF_INT128__",
+              "-DSIRKIT_DISABLE_SIMD",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_lcm_transform_full-gcc-True-True.cpp",
+              "-o",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_lcm_transform_full-gcc-True-True"
+            ],
+            "cases": [
+              {
+                "input_sha256": "affc05d5ed0fa472e37c8c22d0450d1bbbc14c3a7a065c77e867f0a00953fcf5",
+                "output_sha256": "97dec27bf4335758563b24470a3380566d5f2480f26595dbfcb88d4b0d7dcc93",
+                "passed": true
+              }
+            ],
+            "passed": true
+          },
+          {
+            "id": "zeta_lcm_transform_full",
+            "compiler": "clang",
+            "skip": false,
+            "portable": false,
+            "source_sha256": "4d9b36101436341df9e5be027198da064156bb355e05f43adcccd8b048fea2cb",
+            "command": [
+              "/usr/bin/clang++-21",
+              "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+              "-std=c++23",
+              "-O2",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_lcm_transform_full-clang-False-False.cpp",
+              "-o",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_lcm_transform_full-clang-False-False"
+            ],
+            "cases": [
+              {
+                "input_sha256": "affc05d5ed0fa472e37c8c22d0450d1bbbc14c3a7a065c77e867f0a00953fcf5",
+                "output_sha256": "97dec27bf4335758563b24470a3380566d5f2480f26595dbfcb88d4b0d7dcc93",
+                "passed": true
+              }
+            ],
+            "passed": true
+          },
+          {
+            "id": "zeta_lcm_transform_full",
+            "compiler": "clang",
+            "skip": false,
+            "portable": true,
+            "source_sha256": "4d9b36101436341df9e5be027198da064156bb355e05f43adcccd8b048fea2cb",
+            "command": [
+              "/usr/bin/clang++-21",
+              "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+              "-std=c++23",
+              "-O2",
+              "-U__SIZEOF_INT128__",
+              "-DSIRKIT_DISABLE_SIMD",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_lcm_transform_full-clang-False-True.cpp",
+              "-o",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_lcm_transform_full-clang-False-True"
+            ],
+            "cases": [
+              {
+                "input_sha256": "affc05d5ed0fa472e37c8c22d0450d1bbbc14c3a7a065c77e867f0a00953fcf5",
+                "output_sha256": "97dec27bf4335758563b24470a3380566d5f2480f26595dbfcb88d4b0d7dcc93",
+                "passed": true
+              }
+            ],
+            "passed": true
+          },
+          {
+            "id": "zeta_lcm_transform_full",
+            "compiler": "clang",
+            "skip": true,
+            "portable": false,
+            "source_sha256": "be4e737a7ec7b6b756e3c44b7c3f62b2457a4e71883c6c3c62d9b420d447a61f",
+            "command": [
+              "/usr/bin/clang++-21",
+              "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+              "-std=c++23",
+              "-O2",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_lcm_transform_full-clang-True-False.cpp",
+              "-o",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_lcm_transform_full-clang-True-False"
+            ],
+            "cases": [
+              {
+                "input_sha256": "affc05d5ed0fa472e37c8c22d0450d1bbbc14c3a7a065c77e867f0a00953fcf5",
+                "output_sha256": "97dec27bf4335758563b24470a3380566d5f2480f26595dbfcb88d4b0d7dcc93",
+                "passed": true
+              }
+            ],
+            "passed": true
+          },
+          {
+            "id": "zeta_lcm_transform_full",
+            "compiler": "clang",
+            "skip": true,
+            "portable": true,
+            "source_sha256": "be4e737a7ec7b6b756e3c44b7c3f62b2457a4e71883c6c3c62d9b420d447a61f",
+            "command": [
+              "/usr/bin/clang++-21",
+              "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+              "-std=c++23",
+              "-O2",
+              "-U__SIZEOF_INT128__",
+              "-DSIRKIT_DISABLE_SIMD",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_lcm_transform_full-clang-True-True.cpp",
+              "-o",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_lcm_transform_full-clang-True-True"
+            ],
+            "cases": [
+              {
+                "input_sha256": "affc05d5ed0fa472e37c8c22d0450d1bbbc14c3a7a065c77e867f0a00953fcf5",
+                "output_sha256": "97dec27bf4335758563b24470a3380566d5f2480f26595dbfcb88d4b0d7dcc93",
+                "passed": true
+              }
+            ],
+            "passed": true
+          }
+        ]
+      },
+      "prior_review_reuse": {
+        "exact_before_SHA_receipts": 0,
+        "automatic_approval_or_performance_transfer": false,
+        "reason": "before SHAに一致するstage内容のsource_sha256がない。別SHAの旧レビューは背景としてのみ参照し、現在版の承認/速度へ転記しない。",
+        "other_historical_receipts": []
+      },
+      "not_covered": [
+        "所有権のcopy/move/例外保証・確保失敗をこのmainで直接検証しない",
+        "全体の本体APIを使うVerifyとは説明しない",
+        "固定mod998244353以外/一般加法型",
+        "負数や法以上入力の正規化（公式は正規化済み）"
+      ],
+      "sources": [
+        "https://judge.yosupo.jp/problem/lcm_convolution",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/convolution/lcm_convolution/task.md"
+      ]
+    },
+    {
+      "id": "zeta_sparse_gcd_full",
+      "scope": "whole_program",
+      "source_sha256": "7ac00b12fdf36d64366faaf97a48ab11c8b3d5dca3d393ff054d0c7b9457e818",
+      "current_source_sha256": "7ac00b12fdf36d64366faaf97a48ab11c8b3d5dca3d393ff054d0c7b9457e818",
+      "checked_source_sha256": "00163de20f09f2c1c975c4cfb7f0769161be8bf744549fa865acd4251b38e09f",
+      "before_source_sha256": "d3628dcd134d92ade768ab7e991d7f11f0a730f4c413c7cb7a3674c24b5b715f",
+      "driver": "Verify/current/drivers/zeta_sparse_gcd_main.cpp",
+      "source_file_hashes": {
+        "Math/Zeta_Mebius.cpp": "819bd63f2ccc5d31c7cba7844269aef48c5a3079fc92bd8d828313e42e4dcd51",
+        "Verify/current/drivers/zeta_sparse_gcd_main.cpp": "eed32758016c4c82eaf6548a403749847a5a3a8df0ce41853ea9fa2fcce01fea",
+        "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+      },
+      "status": "review_complete_unchanged",
+      "decision": "retain current code; no new edit needed for this shared-only followup",
+      "exercised_apis": [
+        "IntegerSieve(n)",
+        "sparse_multiple_zeta_transform(a/b,sieve)",
+        "sparse_multiple_mobius_transform(a,sieve)"
+      ],
+      "main_or_body_review": "キー1..Nの連続pair列で倍数和を使いGCD畳み込みを計算。3回ともdense連番判定でreturnし、今回追加したis_sorted/sort条件は通らない。API自体は全係数を決めるが、穴のあるキーや今回のsort guardはこのmainで検証されない。",
+      "official_input_domain": "LC:法998244353、正規化係数。ANDは0≤k≤20で長さ2^k、GCD/LCMは1≤N≤10^6。",
+      "arithmetic_review": "LC係数valueは[0,p)。加減算の一時値<2p<2^32、uint64積<(p-1)^2<2^64。正添字N+1/篩N≤10^6と2^20長はint/size_tに収まる。",
+      "ownership_review": "入力vector/pairは値として所有し、変換は明示的な破壊的操作。moveしたa/bはその後使わず、const結果の出力まで寿命がある。篩は全変換/因数分解が終わるまで生存。所有権が変わる差分はない。",
+      "changed_component_is_called": true,
+      "changed_is_sorted_branch_executed": false,
+      "change_reuse_proof": "before→currentは疎変換内のsortを同一比較子のis_sorted guardで囲む1hunkのみ。main/IO・他の本体はbyte同一。呼出しなし7LC+Yuki/連番early return2LCのため、今回の分岐はこの10mainの合法入力では実行されない。",
+      "validation_reuse": {
+        "audit": "Audit/added-lc-sparse-affected-validation-2026-11-15.json",
+        "audit_sha256": "2748cb3eabfa5bfb22219e3e9b61b84b878e16b42cb372331680169669c4359c",
+        "exact_current_skip_and_checked_SHA_match": true,
+        "builds": 8,
+        "process_sample_runs": 8,
+        "records": [
+          {
+            "id": "zeta_sparse_gcd_full",
+            "compiler": "gcc",
+            "skip": false,
+            "portable": false,
+            "source_sha256": "00163de20f09f2c1c975c4cfb7f0769161be8bf744549fa865acd4251b38e09f",
+            "command": [
+              "/usr/bin/g++",
+              "-std=c++23",
+              "-O2",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_sparse_gcd_full-gcc-False-False.cpp",
+              "-o",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_sparse_gcd_full-gcc-False-False"
+            ],
+            "cases": [
+              {
+                "input_sha256": "affc05d5ed0fa472e37c8c22d0450d1bbbc14c3a7a065c77e867f0a00953fcf5",
+                "output_sha256": "9ac35d61e8c76b43a7332a1020c2f5fd1338bd198e43cba62bade4b165fb426d",
+                "passed": true
+              }
+            ],
+            "passed": true
+          },
+          {
+            "id": "zeta_sparse_gcd_full",
+            "compiler": "gcc",
+            "skip": false,
+            "portable": true,
+            "source_sha256": "00163de20f09f2c1c975c4cfb7f0769161be8bf744549fa865acd4251b38e09f",
+            "command": [
+              "/usr/bin/g++",
+              "-std=c++23",
+              "-O2",
+              "-U__SIZEOF_INT128__",
+              "-DSIRKIT_DISABLE_SIMD",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_sparse_gcd_full-gcc-False-True.cpp",
+              "-o",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_sparse_gcd_full-gcc-False-True"
+            ],
+            "cases": [
+              {
+                "input_sha256": "affc05d5ed0fa472e37c8c22d0450d1bbbc14c3a7a065c77e867f0a00953fcf5",
+                "output_sha256": "9ac35d61e8c76b43a7332a1020c2f5fd1338bd198e43cba62bade4b165fb426d",
+                "passed": true
+              }
+            ],
+            "passed": true
+          },
+          {
+            "id": "zeta_sparse_gcd_full",
+            "compiler": "gcc",
+            "skip": true,
+            "portable": false,
+            "source_sha256": "7ac00b12fdf36d64366faaf97a48ab11c8b3d5dca3d393ff054d0c7b9457e818",
+            "command": [
+              "/usr/bin/g++",
+              "-std=c++23",
+              "-O2",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_sparse_gcd_full-gcc-True-False.cpp",
+              "-o",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_sparse_gcd_full-gcc-True-False"
+            ],
+            "cases": [
+              {
+                "input_sha256": "affc05d5ed0fa472e37c8c22d0450d1bbbc14c3a7a065c77e867f0a00953fcf5",
+                "output_sha256": "9ac35d61e8c76b43a7332a1020c2f5fd1338bd198e43cba62bade4b165fb426d",
+                "passed": true
+              }
+            ],
+            "passed": true
+          },
+          {
+            "id": "zeta_sparse_gcd_full",
+            "compiler": "gcc",
+            "skip": true,
+            "portable": true,
+            "source_sha256": "7ac00b12fdf36d64366faaf97a48ab11c8b3d5dca3d393ff054d0c7b9457e818",
+            "command": [
+              "/usr/bin/g++",
+              "-std=c++23",
+              "-O2",
+              "-U__SIZEOF_INT128__",
+              "-DSIRKIT_DISABLE_SIMD",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_sparse_gcd_full-gcc-True-True.cpp",
+              "-o",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_sparse_gcd_full-gcc-True-True"
+            ],
+            "cases": [
+              {
+                "input_sha256": "affc05d5ed0fa472e37c8c22d0450d1bbbc14c3a7a065c77e867f0a00953fcf5",
+                "output_sha256": "9ac35d61e8c76b43a7332a1020c2f5fd1338bd198e43cba62bade4b165fb426d",
+                "passed": true
+              }
+            ],
+            "passed": true
+          },
+          {
+            "id": "zeta_sparse_gcd_full",
+            "compiler": "clang",
+            "skip": false,
+            "portable": false,
+            "source_sha256": "00163de20f09f2c1c975c4cfb7f0769161be8bf744549fa865acd4251b38e09f",
+            "command": [
+              "/usr/bin/clang++-21",
+              "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+              "-std=c++23",
+              "-O2",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_sparse_gcd_full-clang-False-False.cpp",
+              "-o",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_sparse_gcd_full-clang-False-False"
+            ],
+            "cases": [
+              {
+                "input_sha256": "affc05d5ed0fa472e37c8c22d0450d1bbbc14c3a7a065c77e867f0a00953fcf5",
+                "output_sha256": "9ac35d61e8c76b43a7332a1020c2f5fd1338bd198e43cba62bade4b165fb426d",
+                "passed": true
+              }
+            ],
+            "passed": true
+          },
+          {
+            "id": "zeta_sparse_gcd_full",
+            "compiler": "clang",
+            "skip": false,
+            "portable": true,
+            "source_sha256": "00163de20f09f2c1c975c4cfb7f0769161be8bf744549fa865acd4251b38e09f",
+            "command": [
+              "/usr/bin/clang++-21",
+              "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+              "-std=c++23",
+              "-O2",
+              "-U__SIZEOF_INT128__",
+              "-DSIRKIT_DISABLE_SIMD",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_sparse_gcd_full-clang-False-True.cpp",
+              "-o",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_sparse_gcd_full-clang-False-True"
+            ],
+            "cases": [
+              {
+                "input_sha256": "affc05d5ed0fa472e37c8c22d0450d1bbbc14c3a7a065c77e867f0a00953fcf5",
+                "output_sha256": "9ac35d61e8c76b43a7332a1020c2f5fd1338bd198e43cba62bade4b165fb426d",
+                "passed": true
+              }
+            ],
+            "passed": true
+          },
+          {
+            "id": "zeta_sparse_gcd_full",
+            "compiler": "clang",
+            "skip": true,
+            "portable": false,
+            "source_sha256": "7ac00b12fdf36d64366faaf97a48ab11c8b3d5dca3d393ff054d0c7b9457e818",
+            "command": [
+              "/usr/bin/clang++-21",
+              "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+              "-std=c++23",
+              "-O2",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_sparse_gcd_full-clang-True-False.cpp",
+              "-o",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_sparse_gcd_full-clang-True-False"
+            ],
+            "cases": [
+              {
+                "input_sha256": "affc05d5ed0fa472e37c8c22d0450d1bbbc14c3a7a065c77e867f0a00953fcf5",
+                "output_sha256": "9ac35d61e8c76b43a7332a1020c2f5fd1338bd198e43cba62bade4b165fb426d",
+                "passed": true
+              }
+            ],
+            "passed": true
+          },
+          {
+            "id": "zeta_sparse_gcd_full",
+            "compiler": "clang",
+            "skip": true,
+            "portable": true,
+            "source_sha256": "7ac00b12fdf36d64366faaf97a48ab11c8b3d5dca3d393ff054d0c7b9457e818",
+            "command": [
+              "/usr/bin/clang++-21",
+              "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+              "-std=c++23",
+              "-O2",
+              "-U__SIZEOF_INT128__",
+              "-DSIRKIT_DISABLE_SIMD",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_sparse_gcd_full-clang-True-True.cpp",
+              "-o",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_sparse_gcd_full-clang-True-True"
+            ],
+            "cases": [
+              {
+                "input_sha256": "affc05d5ed0fa472e37c8c22d0450d1bbbc14c3a7a065c77e867f0a00953fcf5",
+                "output_sha256": "9ac35d61e8c76b43a7332a1020c2f5fd1338bd198e43cba62bade4b165fb426d",
+                "passed": true
+              }
+            ],
+            "passed": true
+          }
+        ]
+      },
+      "prior_review_reuse": {
+        "exact_before_SHA_receipts": 0,
+        "automatic_approval_or_performance_transfer": false,
+        "reason": "before SHAに一致するstage内容のsource_sha256がない。別SHAの旧レビューは背景としてのみ参照し、現在版の承認/速度へ転記しない。",
+        "other_historical_receipts": [
+          {
+            "path": "Verify/optimization/stages/zeta_sparse_gcd_full.claude.0875712b89ee5f837c7988a7aff990c83b661a2581c4babfbfd478e162efd403.json",
+            "stage": "claude",
+            "scope": "whole_program",
+            "source_sha256": "905fd791fd7cb6e8f6b8f7255cd664d038713caa3874430bb33b41f16e2bd092",
+            "status": "complete"
+          },
+          {
+            "path": "Verify/optimization/stages/zeta_sparse_gcd_full.codex.a13cb1f778062c95394312f2d5eddd3965267653b92d57e601bd3605d74a47c8.json",
+            "stage": "codex",
+            "scope": "whole_program",
+            "source_sha256": "905fd791fd7cb6e8f6b8f7255cd664d038713caa3874430bb33b41f16e2bd092",
+            "status": "complete"
+          },
+          {
+            "path": "Verify/optimization/stages/zeta_sparse_gcd_full.codex.bde922d5681ed5fef97b07d4a1959d1b85b4a1d5a8b7b749cc4b19ade31fe7bb.json",
+            "stage": "codex",
+            "scope": "whole_program",
+            "source_sha256": "1f09d9dd39658a55fd027f375cda7d7f6e6b885603edbcf69734f1fe33404ae8",
+            "status": "complete"
+          },
+          {
+            "path": "Verify/optimization/stages/zeta_sparse_gcd_full.claude.d32f895ba1bbac63628d92d04117c8eea783084cb628f1fe5c18e8dae4e6f603.json",
+            "stage": "claude",
+            "scope": "whole_program",
+            "source_sha256": "e2149468a8bf35b1ad892fee8559462cd3bd64ce5aae5ee9beecc339b286dd57",
+            "status": "complete"
+          },
+          {
+            "path": "Verify/optimization/stages/zeta_sparse_gcd_full.codex.b7cd8c2306865ed1463b8bd1bce39f7ef9775a733a3f023bc9cdaa482eb4ad40.json",
+            "stage": "codex",
+            "scope": "whole_program",
+            "source_sha256": "e2149468a8bf35b1ad892fee8559462cd3bd64ce5aae5ee9beecc339b286dd57",
+            "status": "complete"
+          }
+        ]
+      },
+      "not_covered": [
+        "所有権のcopy/move/例外保証・確保失敗をこのmainで直接検証しない",
+        "全体の本体APIを使うVerifyとは説明しない",
+        "固定mod998244353以外/一般加法型",
+        "負数や法以上入力の正規化（公式は正規化済み）",
+        "非連続/未整列キーのsort guardは独立sparse API検証とcoverage_sparse_gcd_holes full/splitが補完"
+      ],
+      "sources": [
+        "https://judge.yosupo.jp/problem/gcd_convolution",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/convolution/gcd_convolution/task.md"
+      ]
+    },
+    {
+      "id": "zeta_sparse_gcd_split",
+      "scope": "whole_program",
+      "source_sha256": "752d17cf589251fc136c9091d2d68d36c060d277e5f66d3cc044467cbc0acbc3",
+      "current_source_sha256": "752d17cf589251fc136c9091d2d68d36c060d277e5f66d3cc044467cbc0acbc3",
+      "checked_source_sha256": "3f7a72152e90f7ce84f95a24e3549939d8002be131ee32f6bdfbaf7649aadf25",
+      "before_source_sha256": "cf84b2883ec2edf052bf81b4d5535d24faebdba9b3c99a2c314c4aa8502fc7ff",
+      "driver": "Verify/current/drivers/zeta_sparse_gcd_main.cpp",
+      "source_file_hashes": {
+        "Math/Zeta/Sparse_Transform.cpp": "cc76c23e89968a1df152c5a8235df6039f1605b2f18af13b37a7c81a6a8b95d6",
+        "Verify/current/drivers/zeta_sparse_gcd_main.cpp": "eed32758016c4c82eaf6548a403749847a5a3a8df0ce41853ea9fa2fcce01fea",
+        "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+      },
+      "status": "review_complete_unchanged",
+      "decision": "retain current code; no new edit needed for this shared-only followup",
+      "exercised_apis": [
+        "IntegerSieve(n)",
+        "sparse_multiple_zeta_transform(a/b,sieve)",
+        "sparse_multiple_mobius_transform(a,sieve)"
+      ],
+      "main_or_body_review": "fullと同じmainで分割配布形だけが異なる。キー1..Nのdense連番判定で3回ともreturnするため新sort guardは実行されない。API結果がGCD全係数を決める点は同じ。",
+      "official_input_domain": "LC:法998244353、正規化係数。ANDは0≤k≤20で長さ2^k、GCD/LCMは1≤N≤10^6。",
+      "arithmetic_review": "LC係数valueは[0,p)。加減算の一時値<2p<2^32、uint64積<(p-1)^2<2^64。正添字N+1/篩N≤10^6と2^20長はint/size_tに収まる。",
+      "ownership_review": "入力vector/pairは値として所有し、変換は明示的な破壊的操作。moveしたa/bはその後使わず、const結果の出力まで寿命がある。篩は全変換/因数分解が終わるまで生存。所有権が変わる差分はない。",
+      "changed_component_is_called": true,
+      "changed_is_sorted_branch_executed": false,
+      "change_reuse_proof": "before→currentは疎変換内のsortを同一比較子のis_sorted guardで囲む1hunkのみ。main/IO・他の本体はbyte同一。呼出しなし7LC+Yuki/連番early return2LCのため、今回の分岐はこの10mainの合法入力では実行されない。",
+      "validation_reuse": {
+        "audit": "Audit/added-lc-sparse-affected-validation-2026-11-15.json",
+        "audit_sha256": "2748cb3eabfa5bfb22219e3e9b61b84b878e16b42cb372331680169669c4359c",
+        "exact_current_skip_and_checked_SHA_match": true,
+        "builds": 8,
+        "process_sample_runs": 8,
+        "records": [
+          {
+            "id": "zeta_sparse_gcd_split",
+            "compiler": "gcc",
+            "skip": false,
+            "portable": false,
+            "source_sha256": "3f7a72152e90f7ce84f95a24e3549939d8002be131ee32f6bdfbaf7649aadf25",
+            "command": [
+              "/usr/bin/g++",
+              "-std=c++23",
+              "-O2",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_sparse_gcd_split-gcc-False-False.cpp",
+              "-o",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_sparse_gcd_split-gcc-False-False"
+            ],
+            "cases": [
+              {
+                "input_sha256": "affc05d5ed0fa472e37c8c22d0450d1bbbc14c3a7a065c77e867f0a00953fcf5",
+                "output_sha256": "9ac35d61e8c76b43a7332a1020c2f5fd1338bd198e43cba62bade4b165fb426d",
+                "passed": true
+              }
+            ],
+            "passed": true
+          },
+          {
+            "id": "zeta_sparse_gcd_split",
+            "compiler": "gcc",
+            "skip": false,
+            "portable": true,
+            "source_sha256": "3f7a72152e90f7ce84f95a24e3549939d8002be131ee32f6bdfbaf7649aadf25",
+            "command": [
+              "/usr/bin/g++",
+              "-std=c++23",
+              "-O2",
+              "-U__SIZEOF_INT128__",
+              "-DSIRKIT_DISABLE_SIMD",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_sparse_gcd_split-gcc-False-True.cpp",
+              "-o",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_sparse_gcd_split-gcc-False-True"
+            ],
+            "cases": [
+              {
+                "input_sha256": "affc05d5ed0fa472e37c8c22d0450d1bbbc14c3a7a065c77e867f0a00953fcf5",
+                "output_sha256": "9ac35d61e8c76b43a7332a1020c2f5fd1338bd198e43cba62bade4b165fb426d",
+                "passed": true
+              }
+            ],
+            "passed": true
+          },
+          {
+            "id": "zeta_sparse_gcd_split",
+            "compiler": "gcc",
+            "skip": true,
+            "portable": false,
+            "source_sha256": "752d17cf589251fc136c9091d2d68d36c060d277e5f66d3cc044467cbc0acbc3",
+            "command": [
+              "/usr/bin/g++",
+              "-std=c++23",
+              "-O2",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_sparse_gcd_split-gcc-True-False.cpp",
+              "-o",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_sparse_gcd_split-gcc-True-False"
+            ],
+            "cases": [
+              {
+                "input_sha256": "affc05d5ed0fa472e37c8c22d0450d1bbbc14c3a7a065c77e867f0a00953fcf5",
+                "output_sha256": "9ac35d61e8c76b43a7332a1020c2f5fd1338bd198e43cba62bade4b165fb426d",
+                "passed": true
+              }
+            ],
+            "passed": true
+          },
+          {
+            "id": "zeta_sparse_gcd_split",
+            "compiler": "gcc",
+            "skip": true,
+            "portable": true,
+            "source_sha256": "752d17cf589251fc136c9091d2d68d36c060d277e5f66d3cc044467cbc0acbc3",
+            "command": [
+              "/usr/bin/g++",
+              "-std=c++23",
+              "-O2",
+              "-U__SIZEOF_INT128__",
+              "-DSIRKIT_DISABLE_SIMD",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_sparse_gcd_split-gcc-True-True.cpp",
+              "-o",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_sparse_gcd_split-gcc-True-True"
+            ],
+            "cases": [
+              {
+                "input_sha256": "affc05d5ed0fa472e37c8c22d0450d1bbbc14c3a7a065c77e867f0a00953fcf5",
+                "output_sha256": "9ac35d61e8c76b43a7332a1020c2f5fd1338bd198e43cba62bade4b165fb426d",
+                "passed": true
+              }
+            ],
+            "passed": true
+          },
+          {
+            "id": "zeta_sparse_gcd_split",
+            "compiler": "clang",
+            "skip": false,
+            "portable": false,
+            "source_sha256": "3f7a72152e90f7ce84f95a24e3549939d8002be131ee32f6bdfbaf7649aadf25",
+            "command": [
+              "/usr/bin/clang++-21",
+              "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+              "-std=c++23",
+              "-O2",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_sparse_gcd_split-clang-False-False.cpp",
+              "-o",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_sparse_gcd_split-clang-False-False"
+            ],
+            "cases": [
+              {
+                "input_sha256": "affc05d5ed0fa472e37c8c22d0450d1bbbc14c3a7a065c77e867f0a00953fcf5",
+                "output_sha256": "9ac35d61e8c76b43a7332a1020c2f5fd1338bd198e43cba62bade4b165fb426d",
+                "passed": true
+              }
+            ],
+            "passed": true
+          },
+          {
+            "id": "zeta_sparse_gcd_split",
+            "compiler": "clang",
+            "skip": false,
+            "portable": true,
+            "source_sha256": "3f7a72152e90f7ce84f95a24e3549939d8002be131ee32f6bdfbaf7649aadf25",
+            "command": [
+              "/usr/bin/clang++-21",
+              "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+              "-std=c++23",
+              "-O2",
+              "-U__SIZEOF_INT128__",
+              "-DSIRKIT_DISABLE_SIMD",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_sparse_gcd_split-clang-False-True.cpp",
+              "-o",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_sparse_gcd_split-clang-False-True"
+            ],
+            "cases": [
+              {
+                "input_sha256": "affc05d5ed0fa472e37c8c22d0450d1bbbc14c3a7a065c77e867f0a00953fcf5",
+                "output_sha256": "9ac35d61e8c76b43a7332a1020c2f5fd1338bd198e43cba62bade4b165fb426d",
+                "passed": true
+              }
+            ],
+            "passed": true
+          },
+          {
+            "id": "zeta_sparse_gcd_split",
+            "compiler": "clang",
+            "skip": true,
+            "portable": false,
+            "source_sha256": "752d17cf589251fc136c9091d2d68d36c060d277e5f66d3cc044467cbc0acbc3",
+            "command": [
+              "/usr/bin/clang++-21",
+              "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+              "-std=c++23",
+              "-O2",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_sparse_gcd_split-clang-True-False.cpp",
+              "-o",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_sparse_gcd_split-clang-True-False"
+            ],
+            "cases": [
+              {
+                "input_sha256": "affc05d5ed0fa472e37c8c22d0450d1bbbc14c3a7a065c77e867f0a00953fcf5",
+                "output_sha256": "9ac35d61e8c76b43a7332a1020c2f5fd1338bd198e43cba62bade4b165fb426d",
+                "passed": true
+              }
+            ],
+            "passed": true
+          },
+          {
+            "id": "zeta_sparse_gcd_split",
+            "compiler": "clang",
+            "skip": true,
+            "portable": true,
+            "source_sha256": "752d17cf589251fc136c9091d2d68d36c060d277e5f66d3cc044467cbc0acbc3",
+            "command": [
+              "/usr/bin/clang++-21",
+              "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+              "-std=c++23",
+              "-O2",
+              "-U__SIZEOF_INT128__",
+              "-DSIRKIT_DISABLE_SIMD",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_sparse_gcd_split-clang-True-True.cpp",
+              "-o",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/zeta_sparse_gcd_split-clang-True-True"
+            ],
+            "cases": [
+              {
+                "input_sha256": "affc05d5ed0fa472e37c8c22d0450d1bbbc14c3a7a065c77e867f0a00953fcf5",
+                "output_sha256": "9ac35d61e8c76b43a7332a1020c2f5fd1338bd198e43cba62bade4b165fb426d",
+                "passed": true
+              }
+            ],
+            "passed": true
+          }
+        ]
+      },
+      "prior_review_reuse": {
+        "exact_before_SHA_receipts": 0,
+        "automatic_approval_or_performance_transfer": false,
+        "reason": "before SHAに一致するstage内容のsource_sha256がない。別SHAの旧レビューは背景としてのみ参照し、現在版の承認/速度へ転記しない。",
+        "other_historical_receipts": [
+          {
+            "path": "Verify/optimization/stages/zeta_sparse_gcd_split.claude.9f20b3ba158544124521d88c2aa2d0ba2a4d1f3b095f791f6677eecee36e48da.json",
+            "stage": "claude",
+            "scope": "whole_program",
+            "source_sha256": "b23a480d60fc017d97e6704b7378555e7fa83091f2d0b442a139f5f4cf615afc",
+            "status": "complete"
+          },
+          {
+            "path": "Verify/optimization/stages/zeta_sparse_gcd_split.codex.53d03ffb4932b06813eea167541f25c5aab473f8704236155f04aaf48ad232a2.json",
+            "stage": "codex",
+            "scope": "whole_program",
+            "source_sha256": "b23a480d60fc017d97e6704b7378555e7fa83091f2d0b442a139f5f4cf615afc",
+            "status": "complete"
+          },
+          {
+            "path": "Verify/optimization/stages/zeta_sparse_gcd_split.codex.89f8a6b4d02a38caf6935a59433fd867cfe6e43ecd3a4f98bf9842907113f1c4.json",
+            "stage": "codex",
+            "scope": "whole_program",
+            "source_sha256": "9c32d6e727e0f0e503bd1dd5844ad35d47b040613a541fa2fc0edfac8762035c",
+            "status": "complete"
+          },
+          {
+            "path": "Verify/optimization/stages/zeta_sparse_gcd_split.codex.201ad891efcb02eaf32a8ce7cb9791df14da46b5858edc6eb9afdfc7a27cbbdb.json",
+            "stage": "codex",
+            "scope": "whole_program",
+            "source_sha256": "b4f624f61e697a546feba5515abb2753cb28cbb9289c4ecbc02d3c15a0f5b5e9",
+            "status": "complete"
+          },
+          {
+            "path": "Verify/optimization/stages/zeta_sparse_gcd_split.claude.20d97b5367701e2ab3e251c90f62986a2f6a3a3bb5fbab4f212a6f1c6e6a8ee0.json",
+            "stage": "claude",
+            "scope": "whole_program",
+            "source_sha256": "b4f624f61e697a546feba5515abb2753cb28cbb9289c4ecbc02d3c15a0f5b5e9",
+            "status": "complete"
+          }
+        ]
+      },
+      "not_covered": [
+        "所有権のcopy/move/例外保証・確保失敗をこのmainで直接検証しない",
+        "全体の本体APIを使うVerifyとは説明しない",
+        "固定mod998244353以外/一般加法型",
+        "負数や法以上入力の正規化（公式は正規化済み）",
+        "非連続/未整列キーのsort guardは独立sparse API検証とcoverage_sparse_gcd_holes full/splitが補完"
+      ],
+      "sources": [
+        "https://judge.yosupo.jp/problem/gcd_convolution",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/convolution/gcd_convolution/task.md"
+      ]
+    },
+    {
+      "id": "preferred_sieve_factorize_full",
+      "scope": "library_body",
+      "source_sha256": "da450ec0dc0501d9764eee5e5d5bea6bb70c67e801883b32400572f78e0c0019",
+      "current_source_sha256": "da450ec0dc0501d9764eee5e5d5bea6bb70c67e801883b32400572f78e0c0019",
+      "checked_source_sha256": "a00e25fa02b7faea33b9fa0730d34621797363cba822b359ee409c315df0d25f",
+      "before_source_sha256": "6da7a8875c906894025e2f04e15ad9b24fcdc3a319950447e561d38e802ff001",
+      "driver": "Verify/current/drivers/preferred_sieve_factor_game_main.cpp",
+      "source_file_hashes": {
+        "Math/Zeta_Mebius.cpp": "819bd63f2ccc5d31c7cba7844269aef48c5a3079fc92bd8d828313e42e4dcd51",
+        "Verify/current/drivers/preferred_sieve_factor_game_main.cpp": "bae30e9f29de37d8bcc58b3aa619e8de57a8f33099c8beaff9b78083e8221235",
+        "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+      },
+      "status": "review_complete_unchanged",
+      "decision": "retain current code; no new edit needed for this shared-only followup",
+      "exercised_apis": [
+        "IntegerSieve(ceil_sqrt(n))",
+        "prime_factorization(n)"
+      ],
+      "main_or_body_review": "本体のみをレビュー。Yuki2は素因数の指数をNimの山とするゲームで、prime_factorizationの返す指数のXORが勝敗を決める。N=2..10^8なのでbound≤10000、int64(bound)*boundと素因数分解の整数範囲は安全。共有sparse関数は呼ばれない。main/IOを新規最適化したとは扱わない。",
+      "official_input_domain": "Yuki2:2≤N≤10^8",
+      "arithmetic_review": "ceil√Nの構築にint64乗算を使う。√Nまでの素数表で完全な因数分解ができ、残る大きい素因数もAPIが返す。指数XORはint内。",
+      "ownership_review": "入力vector/pairは値として所有し、変換は明示的な破壊的操作。moveしたa/bはその後使わず、const結果の出力まで寿命がある。篩は全変換/因数分解が終わるまで生存。所有権が変わる差分はない。",
+      "changed_component_is_called": false,
+      "changed_is_sorted_branch_executed": false,
+      "change_reuse_proof": "before→currentは疎変換内のsortを同一比較子のis_sorted guardで囲む1hunkのみ。main/IO・他の本体はbyte同一。呼出しなし7LC+Yuki/連番early return2LCのため、今回の分岐はこの10mainの合法入力では実行されない。",
+      "validation_reuse": {
+        "audit": "Audit/added-lc-sparse-affected-validation-2026-11-15.json",
+        "audit_sha256": "2748cb3eabfa5bfb22219e3e9b61b84b878e16b42cb372331680169669c4359c",
+        "exact_current_skip_and_checked_SHA_match": true,
+        "builds": 8,
+        "process_sample_runs": 32,
+        "records": [
+          {
+            "id": "preferred_sieve_factorize_full",
+            "compiler": "gcc",
+            "skip": false,
+            "portable": false,
+            "source_sha256": "a00e25fa02b7faea33b9fa0730d34621797363cba822b359ee409c315df0d25f",
+            "command": [
+              "/usr/bin/g++",
+              "-std=c++23",
+              "-O2",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/preferred_sieve_factorize_full-gcc-False-False.cpp",
+              "-o",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/preferred_sieve_factorize_full-gcc-False-False"
+            ],
+            "cases": [
+              {
+                "input_sha256": "7de1555df0c2700329e815b93b32c571c3ea54dc967b89e81ab73b9972b72d1d",
+                "output_sha256": "dc3c6ea0958331c423499af6c2eb14f3c300faf367337c017e3b1b760ff41f2a",
+                "passed": true
+              },
+              {
+                "input_sha256": "25d4f2a86deb5e2574bb3210b67bb24fcc4afb19f93a7b65a057daa874a9d18e",
+                "output_sha256": "dc3c6ea0958331c423499af6c2eb14f3c300faf367337c017e3b1b760ff41f2a",
+                "passed": true
+              },
+              {
+                "input_sha256": "68ca3fba3b7e864770cb61aeb306d4bd4354b68ab4dd38450860c5d823e42a53",
+                "output_sha256": "dc3c6ea0958331c423499af6c2eb14f3c300faf367337c017e3b1b760ff41f2a",
+                "passed": true
+              },
+              {
+                "input_sha256": "ab8e9a58c47abe1aeff8ae620a0ed614ee77d507ef52799d4c103d69ff35d85c",
+                "output_sha256": "e5ceb56bbcbcc843254b3500e054eb8e8fea0553400bd6ed8e6fe745d9f40846",
+                "passed": true
+              }
+            ],
+            "passed": true
+          },
+          {
+            "id": "preferred_sieve_factorize_full",
+            "compiler": "gcc",
+            "skip": false,
+            "portable": true,
+            "source_sha256": "a00e25fa02b7faea33b9fa0730d34621797363cba822b359ee409c315df0d25f",
+            "command": [
+              "/usr/bin/g++",
+              "-std=c++23",
+              "-O2",
+              "-U__SIZEOF_INT128__",
+              "-DSIRKIT_DISABLE_SIMD",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/preferred_sieve_factorize_full-gcc-False-True.cpp",
+              "-o",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/preferred_sieve_factorize_full-gcc-False-True"
+            ],
+            "cases": [
+              {
+                "input_sha256": "7de1555df0c2700329e815b93b32c571c3ea54dc967b89e81ab73b9972b72d1d",
+                "output_sha256": "dc3c6ea0958331c423499af6c2eb14f3c300faf367337c017e3b1b760ff41f2a",
+                "passed": true
+              },
+              {
+                "input_sha256": "25d4f2a86deb5e2574bb3210b67bb24fcc4afb19f93a7b65a057daa874a9d18e",
+                "output_sha256": "dc3c6ea0958331c423499af6c2eb14f3c300faf367337c017e3b1b760ff41f2a",
+                "passed": true
+              },
+              {
+                "input_sha256": "68ca3fba3b7e864770cb61aeb306d4bd4354b68ab4dd38450860c5d823e42a53",
+                "output_sha256": "dc3c6ea0958331c423499af6c2eb14f3c300faf367337c017e3b1b760ff41f2a",
+                "passed": true
+              },
+              {
+                "input_sha256": "ab8e9a58c47abe1aeff8ae620a0ed614ee77d507ef52799d4c103d69ff35d85c",
+                "output_sha256": "e5ceb56bbcbcc843254b3500e054eb8e8fea0553400bd6ed8e6fe745d9f40846",
+                "passed": true
+              }
+            ],
+            "passed": true
+          },
+          {
+            "id": "preferred_sieve_factorize_full",
+            "compiler": "gcc",
+            "skip": true,
+            "portable": false,
+            "source_sha256": "da450ec0dc0501d9764eee5e5d5bea6bb70c67e801883b32400572f78e0c0019",
+            "command": [
+              "/usr/bin/g++",
+              "-std=c++23",
+              "-O2",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/preferred_sieve_factorize_full-gcc-True-False.cpp",
+              "-o",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/preferred_sieve_factorize_full-gcc-True-False"
+            ],
+            "cases": [
+              {
+                "input_sha256": "7de1555df0c2700329e815b93b32c571c3ea54dc967b89e81ab73b9972b72d1d",
+                "output_sha256": "dc3c6ea0958331c423499af6c2eb14f3c300faf367337c017e3b1b760ff41f2a",
+                "passed": true
+              },
+              {
+                "input_sha256": "25d4f2a86deb5e2574bb3210b67bb24fcc4afb19f93a7b65a057daa874a9d18e",
+                "output_sha256": "dc3c6ea0958331c423499af6c2eb14f3c300faf367337c017e3b1b760ff41f2a",
+                "passed": true
+              },
+              {
+                "input_sha256": "68ca3fba3b7e864770cb61aeb306d4bd4354b68ab4dd38450860c5d823e42a53",
+                "output_sha256": "dc3c6ea0958331c423499af6c2eb14f3c300faf367337c017e3b1b760ff41f2a",
+                "passed": true
+              },
+              {
+                "input_sha256": "ab8e9a58c47abe1aeff8ae620a0ed614ee77d507ef52799d4c103d69ff35d85c",
+                "output_sha256": "e5ceb56bbcbcc843254b3500e054eb8e8fea0553400bd6ed8e6fe745d9f40846",
+                "passed": true
+              }
+            ],
+            "passed": true
+          },
+          {
+            "id": "preferred_sieve_factorize_full",
+            "compiler": "gcc",
+            "skip": true,
+            "portable": true,
+            "source_sha256": "da450ec0dc0501d9764eee5e5d5bea6bb70c67e801883b32400572f78e0c0019",
+            "command": [
+              "/usr/bin/g++",
+              "-std=c++23",
+              "-O2",
+              "-U__SIZEOF_INT128__",
+              "-DSIRKIT_DISABLE_SIMD",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/preferred_sieve_factorize_full-gcc-True-True.cpp",
+              "-o",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/preferred_sieve_factorize_full-gcc-True-True"
+            ],
+            "cases": [
+              {
+                "input_sha256": "7de1555df0c2700329e815b93b32c571c3ea54dc967b89e81ab73b9972b72d1d",
+                "output_sha256": "dc3c6ea0958331c423499af6c2eb14f3c300faf367337c017e3b1b760ff41f2a",
+                "passed": true
+              },
+              {
+                "input_sha256": "25d4f2a86deb5e2574bb3210b67bb24fcc4afb19f93a7b65a057daa874a9d18e",
+                "output_sha256": "dc3c6ea0958331c423499af6c2eb14f3c300faf367337c017e3b1b760ff41f2a",
+                "passed": true
+              },
+              {
+                "input_sha256": "68ca3fba3b7e864770cb61aeb306d4bd4354b68ab4dd38450860c5d823e42a53",
+                "output_sha256": "dc3c6ea0958331c423499af6c2eb14f3c300faf367337c017e3b1b760ff41f2a",
+                "passed": true
+              },
+              {
+                "input_sha256": "ab8e9a58c47abe1aeff8ae620a0ed614ee77d507ef52799d4c103d69ff35d85c",
+                "output_sha256": "e5ceb56bbcbcc843254b3500e054eb8e8fea0553400bd6ed8e6fe745d9f40846",
+                "passed": true
+              }
+            ],
+            "passed": true
+          },
+          {
+            "id": "preferred_sieve_factorize_full",
+            "compiler": "clang",
+            "skip": false,
+            "portable": false,
+            "source_sha256": "a00e25fa02b7faea33b9fa0730d34621797363cba822b359ee409c315df0d25f",
+            "command": [
+              "/usr/bin/clang++-21",
+              "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+              "-std=c++23",
+              "-O2",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/preferred_sieve_factorize_full-clang-False-False.cpp",
+              "-o",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/preferred_sieve_factorize_full-clang-False-False"
+            ],
+            "cases": [
+              {
+                "input_sha256": "7de1555df0c2700329e815b93b32c571c3ea54dc967b89e81ab73b9972b72d1d",
+                "output_sha256": "dc3c6ea0958331c423499af6c2eb14f3c300faf367337c017e3b1b760ff41f2a",
+                "passed": true
+              },
+              {
+                "input_sha256": "25d4f2a86deb5e2574bb3210b67bb24fcc4afb19f93a7b65a057daa874a9d18e",
+                "output_sha256": "dc3c6ea0958331c423499af6c2eb14f3c300faf367337c017e3b1b760ff41f2a",
+                "passed": true
+              },
+              {
+                "input_sha256": "68ca3fba3b7e864770cb61aeb306d4bd4354b68ab4dd38450860c5d823e42a53",
+                "output_sha256": "dc3c6ea0958331c423499af6c2eb14f3c300faf367337c017e3b1b760ff41f2a",
+                "passed": true
+              },
+              {
+                "input_sha256": "ab8e9a58c47abe1aeff8ae620a0ed614ee77d507ef52799d4c103d69ff35d85c",
+                "output_sha256": "e5ceb56bbcbcc843254b3500e054eb8e8fea0553400bd6ed8e6fe745d9f40846",
+                "passed": true
+              }
+            ],
+            "passed": true
+          },
+          {
+            "id": "preferred_sieve_factorize_full",
+            "compiler": "clang",
+            "skip": false,
+            "portable": true,
+            "source_sha256": "a00e25fa02b7faea33b9fa0730d34621797363cba822b359ee409c315df0d25f",
+            "command": [
+              "/usr/bin/clang++-21",
+              "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+              "-std=c++23",
+              "-O2",
+              "-U__SIZEOF_INT128__",
+              "-DSIRKIT_DISABLE_SIMD",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/preferred_sieve_factorize_full-clang-False-True.cpp",
+              "-o",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/preferred_sieve_factorize_full-clang-False-True"
+            ],
+            "cases": [
+              {
+                "input_sha256": "7de1555df0c2700329e815b93b32c571c3ea54dc967b89e81ab73b9972b72d1d",
+                "output_sha256": "dc3c6ea0958331c423499af6c2eb14f3c300faf367337c017e3b1b760ff41f2a",
+                "passed": true
+              },
+              {
+                "input_sha256": "25d4f2a86deb5e2574bb3210b67bb24fcc4afb19f93a7b65a057daa874a9d18e",
+                "output_sha256": "dc3c6ea0958331c423499af6c2eb14f3c300faf367337c017e3b1b760ff41f2a",
+                "passed": true
+              },
+              {
+                "input_sha256": "68ca3fba3b7e864770cb61aeb306d4bd4354b68ab4dd38450860c5d823e42a53",
+                "output_sha256": "dc3c6ea0958331c423499af6c2eb14f3c300faf367337c017e3b1b760ff41f2a",
+                "passed": true
+              },
+              {
+                "input_sha256": "ab8e9a58c47abe1aeff8ae620a0ed614ee77d507ef52799d4c103d69ff35d85c",
+                "output_sha256": "e5ceb56bbcbcc843254b3500e054eb8e8fea0553400bd6ed8e6fe745d9f40846",
+                "passed": true
+              }
+            ],
+            "passed": true
+          },
+          {
+            "id": "preferred_sieve_factorize_full",
+            "compiler": "clang",
+            "skip": true,
+            "portable": false,
+            "source_sha256": "da450ec0dc0501d9764eee5e5d5bea6bb70c67e801883b32400572f78e0c0019",
+            "command": [
+              "/usr/bin/clang++-21",
+              "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+              "-std=c++23",
+              "-O2",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/preferred_sieve_factorize_full-clang-True-False.cpp",
+              "-o",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/preferred_sieve_factorize_full-clang-True-False"
+            ],
+            "cases": [
+              {
+                "input_sha256": "7de1555df0c2700329e815b93b32c571c3ea54dc967b89e81ab73b9972b72d1d",
+                "output_sha256": "dc3c6ea0958331c423499af6c2eb14f3c300faf367337c017e3b1b760ff41f2a",
+                "passed": true
+              },
+              {
+                "input_sha256": "25d4f2a86deb5e2574bb3210b67bb24fcc4afb19f93a7b65a057daa874a9d18e",
+                "output_sha256": "dc3c6ea0958331c423499af6c2eb14f3c300faf367337c017e3b1b760ff41f2a",
+                "passed": true
+              },
+              {
+                "input_sha256": "68ca3fba3b7e864770cb61aeb306d4bd4354b68ab4dd38450860c5d823e42a53",
+                "output_sha256": "dc3c6ea0958331c423499af6c2eb14f3c300faf367337c017e3b1b760ff41f2a",
+                "passed": true
+              },
+              {
+                "input_sha256": "ab8e9a58c47abe1aeff8ae620a0ed614ee77d507ef52799d4c103d69ff35d85c",
+                "output_sha256": "e5ceb56bbcbcc843254b3500e054eb8e8fea0553400bd6ed8e6fe745d9f40846",
+                "passed": true
+              }
+            ],
+            "passed": true
+          },
+          {
+            "id": "preferred_sieve_factorize_full",
+            "compiler": "clang",
+            "skip": true,
+            "portable": true,
+            "source_sha256": "da450ec0dc0501d9764eee5e5d5bea6bb70c67e801883b32400572f78e0c0019",
+            "command": [
+              "/usr/bin/clang++-21",
+              "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+              "-std=c++23",
+              "-O2",
+              "-U__SIZEOF_INT128__",
+              "-DSIRKIT_DISABLE_SIMD",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/preferred_sieve_factorize_full-clang-True-True.cpp",
+              "-o",
+              "/tmp/sirkit-added-lc-optimization-20261115/sparse-affected/preferred_sieve_factorize_full-clang-True-True"
+            ],
+            "cases": [
+              {
+                "input_sha256": "7de1555df0c2700329e815b93b32c571c3ea54dc967b89e81ab73b9972b72d1d",
+                "output_sha256": "dc3c6ea0958331c423499af6c2eb14f3c300faf367337c017e3b1b760ff41f2a",
+                "passed": true
+              },
+              {
+                "input_sha256": "25d4f2a86deb5e2574bb3210b67bb24fcc4afb19f93a7b65a057daa874a9d18e",
+                "output_sha256": "dc3c6ea0958331c423499af6c2eb14f3c300faf367337c017e3b1b760ff41f2a",
+                "passed": true
+              },
+              {
+                "input_sha256": "68ca3fba3b7e864770cb61aeb306d4bd4354b68ab4dd38450860c5d823e42a53",
+                "output_sha256": "dc3c6ea0958331c423499af6c2eb14f3c300faf367337c017e3b1b760ff41f2a",
+                "passed": true
+              },
+              {
+                "input_sha256": "ab8e9a58c47abe1aeff8ae620a0ed614ee77d507ef52799d4c103d69ff35d85c",
+                "output_sha256": "e5ceb56bbcbcc843254b3500e054eb8e8fea0553400bd6ed8e6fe745d9f40846",
+                "passed": true
+              }
+            ],
+            "passed": true
+          }
+        ]
+      },
+      "prior_review_reuse": {
+        "exact_before_SHA_receipts": 0,
+        "automatic_approval_or_performance_transfer": false,
+        "reason": "before SHAに一致するstage内容のsource_sha256がない。別SHAの旧レビューは背景としてのみ参照し、現在版の承認/速度へ転記しない。",
+        "other_historical_receipts": []
+      },
+      "not_covered": [
+        "所有権のcopy/move/例外保証・確保失敗をこのmainで直接検証しない",
+        "全体の本体APIを使うVerifyとは説明しない"
+      ],
+      "sources": [
+        "https://yukicoder.me/problems/no/2"
+      ]
+    }
+  ],
+  "target_IDs_exact": true,
+  "shared_diff": "Replace unconditional std::sort by is_sorted guard with the same pure integral-key comparator. The comparator is identical; sorted unique legal inputs preserve order, unsorted inputs receive the original sort. Duplicate/missing-divisor/out-of-range checks remain afterwards.",
+  "independent_sparse_API_evidence": {
+    "component_proof": {
+      "component": "Math/Zeta/components/sparse_transform.inc",
+      "before_sha256": "347ea4f659b6e4f07dfb72ba7fb6a11898b2fb24d24b387c9cff55256b6e6223",
+      "candidate_sha256": "cea5f9098347f6290985998edbb28e5f69722ac67b3044d9b43ca15116603a60",
+      "public_API_changed": false,
+      "only_algorithm_change": "is_sorted guard around previous sort",
+      "before_component_untouched": true
+    },
+    "component_current_sha256": "cea5f9098347f6290985998edbb28e5f69722ac67b3044d9b43ca15116603a60",
+    "canonical_body_match": true,
+    "candidate_api_builds": 16,
+    "valid_cases_each": 309,
+    "total_valid_cases": 4944,
+    "checked_exception_cases": 72,
+    "cases": "empty;dense1..50;holes1..2N;signed values;reverse/shuffle;very sparse divisors{1,101,103,10403};uint64 keys; duplicate/missing-divisor/nonpositive/out-of-range keys in checked",
+    "records": [
+      {
+        "name": "check-candidate-full-gcc-checked-native",
+        "variant": "candidate",
+        "form": "full",
+        "compiler": "gcc",
+        "skip": false,
+        "portable": false,
+        "source_sha256": "c71cdc5bdac6a505b5f740336bd8162d606e4ccc61b9e6c8578e5fe6fe4ddaec",
+        "valid_cases": 309,
+        "invalid_exceptions": 9,
+        "passed": true,
+        "command": [
+          "taskset",
+          "-c",
+          "27",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "/tmp/sirkit-added-lc-optimization-20261115/sparse-sort/sources/check-candidate-full-gcc-checked-native.cpp",
+          "-o",
+          "/tmp/sirkit-added-lc-optimization-20261115/sparse-sort/bin/check-candidate-full-gcc-checked-native"
+        ],
+        "source_file": "/tmp/sirkit-added-lc-optimization-20261115/sparse-sort/sources/check-candidate-full-gcc-checked-native.cpp",
+        "canonical_library_embedded_byte_for_byte": true,
+        "canonical_library_sha256": "819bd63f2ccc5d31c7cba7844269aef48c5a3079fc92bd8d828313e42e4dcd51"
+      },
+      {
+        "name": "check-candidate-full-gcc-checked-portable",
+        "variant": "candidate",
+        "form": "full",
+        "compiler": "gcc",
+        "skip": false,
+        "portable": true,
+        "source_sha256": "c71cdc5bdac6a505b5f740336bd8162d606e4ccc61b9e6c8578e5fe6fe4ddaec",
+        "valid_cases": 309,
+        "invalid_exceptions": 9,
+        "passed": true,
+        "command": [
+          "taskset",
+          "-c",
+          "27",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-U__SIZEOF_INT128__",
+          "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+          "-DSIRKIT_LINE_CONTAINER_FORCE_PORTABLE",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/tmp/sirkit-added-lc-optimization-20261115/sparse-sort/sources/check-candidate-full-gcc-checked-portable.cpp",
+          "-o",
+          "/tmp/sirkit-added-lc-optimization-20261115/sparse-sort/bin/check-candidate-full-gcc-checked-portable"
+        ],
+        "source_file": "/tmp/sirkit-added-lc-optimization-20261115/sparse-sort/sources/check-candidate-full-gcc-checked-portable.cpp",
+        "canonical_library_embedded_byte_for_byte": true,
+        "canonical_library_sha256": "819bd63f2ccc5d31c7cba7844269aef48c5a3079fc92bd8d828313e42e4dcd51"
+      },
+      {
+        "name": "check-candidate-full-gcc-skip-native",
+        "variant": "candidate",
+        "form": "full",
+        "compiler": "gcc",
+        "skip": true,
+        "portable": false,
+        "source_sha256": "239c68803962b573f8ffa9af0825abd1bc9e73c4702ee4d819776b5a6b54f9b8",
+        "valid_cases": 309,
+        "invalid_exceptions": 0,
+        "passed": true,
+        "command": [
+          "taskset",
+          "-c",
+          "27",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "/tmp/sirkit-added-lc-optimization-20261115/sparse-sort/sources/check-candidate-full-gcc-skip-native.cpp",
+          "-o",
+          "/tmp/sirkit-added-lc-optimization-20261115/sparse-sort/bin/check-candidate-full-gcc-skip-native"
+        ],
+        "source_file": "/tmp/sirkit-added-lc-optimization-20261115/sparse-sort/sources/check-candidate-full-gcc-skip-native.cpp",
+        "canonical_library_embedded_byte_for_byte": true,
+        "canonical_library_sha256": "819bd63f2ccc5d31c7cba7844269aef48c5a3079fc92bd8d828313e42e4dcd51"
+      },
+      {
+        "name": "check-candidate-full-gcc-skip-portable",
+        "variant": "candidate",
+        "form": "full",
+        "compiler": "gcc",
+        "skip": true,
+        "portable": true,
+        "source_sha256": "239c68803962b573f8ffa9af0825abd1bc9e73c4702ee4d819776b5a6b54f9b8",
+        "valid_cases": 309,
+        "invalid_exceptions": 0,
+        "passed": true,
+        "command": [
+          "taskset",
+          "-c",
+          "27",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-U__SIZEOF_INT128__",
+          "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+          "-DSIRKIT_LINE_CONTAINER_FORCE_PORTABLE",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/tmp/sirkit-added-lc-optimization-20261115/sparse-sort/sources/check-candidate-full-gcc-skip-portable.cpp",
+          "-o",
+          "/tmp/sirkit-added-lc-optimization-20261115/sparse-sort/bin/check-candidate-full-gcc-skip-portable"
+        ],
+        "source_file": "/tmp/sirkit-added-lc-optimization-20261115/sparse-sort/sources/check-candidate-full-gcc-skip-portable.cpp",
+        "canonical_library_embedded_byte_for_byte": true,
+        "canonical_library_sha256": "819bd63f2ccc5d31c7cba7844269aef48c5a3079fc92bd8d828313e42e4dcd51"
+      },
+      {
+        "name": "check-candidate-full-clang-checked-native",
+        "variant": "candidate",
+        "form": "full",
+        "compiler": "clang",
+        "skip": false,
+        "portable": false,
+        "source_sha256": "c71cdc5bdac6a505b5f740336bd8162d606e4ccc61b9e6c8578e5fe6fe4ddaec",
+        "valid_cases": 309,
+        "invalid_exceptions": 9,
+        "passed": true,
+        "command": [
+          "taskset",
+          "-c",
+          "27",
+          "/usr/bin/clang++-21",
+          "-std=c++23",
+          "-O2",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "/tmp/sirkit-added-lc-optimization-20261115/sparse-sort/sources/check-candidate-full-clang-checked-native.cpp",
+          "-o",
+          "/tmp/sirkit-added-lc-optimization-20261115/sparse-sort/bin/check-candidate-full-clang-checked-native"
+        ],
+        "source_file": "/tmp/sirkit-added-lc-optimization-20261115/sparse-sort/sources/check-candidate-full-clang-checked-native.cpp",
+        "canonical_library_embedded_byte_for_byte": true,
+        "canonical_library_sha256": "819bd63f2ccc5d31c7cba7844269aef48c5a3079fc92bd8d828313e42e4dcd51"
+      },
+      {
+        "name": "check-candidate-full-clang-checked-portable",
+        "variant": "candidate",
+        "form": "full",
+        "compiler": "clang",
+        "skip": false,
+        "portable": true,
+        "source_sha256": "c71cdc5bdac6a505b5f740336bd8162d606e4ccc61b9e6c8578e5fe6fe4ddaec",
+        "valid_cases": 309,
+        "invalid_exceptions": 9,
+        "passed": true,
+        "command": [
+          "taskset",
+          "-c",
+          "27",
+          "/usr/bin/clang++-21",
+          "-std=c++23",
+          "-O2",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-U__SIZEOF_INT128__",
+          "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+          "-DSIRKIT_LINE_CONTAINER_FORCE_PORTABLE",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/tmp/sirkit-added-lc-optimization-20261115/sparse-sort/sources/check-candidate-full-clang-checked-portable.cpp",
+          "-o",
+          "/tmp/sirkit-added-lc-optimization-20261115/sparse-sort/bin/check-candidate-full-clang-checked-portable"
+        ],
+        "source_file": "/tmp/sirkit-added-lc-optimization-20261115/sparse-sort/sources/check-candidate-full-clang-checked-portable.cpp",
+        "canonical_library_embedded_byte_for_byte": true,
+        "canonical_library_sha256": "819bd63f2ccc5d31c7cba7844269aef48c5a3079fc92bd8d828313e42e4dcd51"
+      },
+      {
+        "name": "check-candidate-full-clang-skip-native",
+        "variant": "candidate",
+        "form": "full",
+        "compiler": "clang",
+        "skip": true,
+        "portable": false,
+        "source_sha256": "239c68803962b573f8ffa9af0825abd1bc9e73c4702ee4d819776b5a6b54f9b8",
+        "valid_cases": 309,
+        "invalid_exceptions": 0,
+        "passed": true,
+        "command": [
+          "taskset",
+          "-c",
+          "27",
+          "/usr/bin/clang++-21",
+          "-std=c++23",
+          "-O2",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "/tmp/sirkit-added-lc-optimization-20261115/sparse-sort/sources/check-candidate-full-clang-skip-native.cpp",
+          "-o",
+          "/tmp/sirkit-added-lc-optimization-20261115/sparse-sort/bin/check-candidate-full-clang-skip-native"
+        ],
+        "source_file": "/tmp/sirkit-added-lc-optimization-20261115/sparse-sort/sources/check-candidate-full-clang-skip-native.cpp",
+        "canonical_library_embedded_byte_for_byte": true,
+        "canonical_library_sha256": "819bd63f2ccc5d31c7cba7844269aef48c5a3079fc92bd8d828313e42e4dcd51"
+      },
+      {
+        "name": "check-candidate-full-clang-skip-portable",
+        "variant": "candidate",
+        "form": "full",
+        "compiler": "clang",
+        "skip": true,
+        "portable": true,
+        "source_sha256": "239c68803962b573f8ffa9af0825abd1bc9e73c4702ee4d819776b5a6b54f9b8",
+        "valid_cases": 309,
+        "invalid_exceptions": 0,
+        "passed": true,
+        "command": [
+          "taskset",
+          "-c",
+          "27",
+          "/usr/bin/clang++-21",
+          "-std=c++23",
+          "-O2",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-U__SIZEOF_INT128__",
+          "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+          "-DSIRKIT_LINE_CONTAINER_FORCE_PORTABLE",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/tmp/sirkit-added-lc-optimization-20261115/sparse-sort/sources/check-candidate-full-clang-skip-portable.cpp",
+          "-o",
+          "/tmp/sirkit-added-lc-optimization-20261115/sparse-sort/bin/check-candidate-full-clang-skip-portable"
+        ],
+        "source_file": "/tmp/sirkit-added-lc-optimization-20261115/sparse-sort/sources/check-candidate-full-clang-skip-portable.cpp",
+        "canonical_library_embedded_byte_for_byte": true,
+        "canonical_library_sha256": "819bd63f2ccc5d31c7cba7844269aef48c5a3079fc92bd8d828313e42e4dcd51"
+      },
+      {
+        "name": "check-candidate-split-gcc-checked-native",
+        "variant": "candidate",
+        "form": "split",
+        "compiler": "gcc",
+        "skip": false,
+        "portable": false,
+        "source_sha256": "8b687159d4e068007b498f5617c0b844f6eafd5fb1ee49ac6effa750f4d9c24e",
+        "valid_cases": 309,
+        "invalid_exceptions": 9,
+        "passed": true,
+        "command": [
+          "taskset",
+          "-c",
+          "27",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "/tmp/sirkit-added-lc-optimization-20261115/sparse-sort/sources/check-candidate-split-gcc-checked-native.cpp",
+          "-o",
+          "/tmp/sirkit-added-lc-optimization-20261115/sparse-sort/bin/check-candidate-split-gcc-checked-native"
+        ],
+        "source_file": "/tmp/sirkit-added-lc-optimization-20261115/sparse-sort/sources/check-candidate-split-gcc-checked-native.cpp",
+        "canonical_library_embedded_byte_for_byte": true,
+        "canonical_library_sha256": "cc76c23e89968a1df152c5a8235df6039f1605b2f18af13b37a7c81a6a8b95d6"
+      },
+      {
+        "name": "check-candidate-split-gcc-checked-portable",
+        "variant": "candidate",
+        "form": "split",
+        "compiler": "gcc",
+        "skip": false,
+        "portable": true,
+        "source_sha256": "8b687159d4e068007b498f5617c0b844f6eafd5fb1ee49ac6effa750f4d9c24e",
+        "valid_cases": 309,
+        "invalid_exceptions": 9,
+        "passed": true,
+        "command": [
+          "taskset",
+          "-c",
+          "27",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-U__SIZEOF_INT128__",
+          "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+          "-DSIRKIT_LINE_CONTAINER_FORCE_PORTABLE",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/tmp/sirkit-added-lc-optimization-20261115/sparse-sort/sources/check-candidate-split-gcc-checked-portable.cpp",
+          "-o",
+          "/tmp/sirkit-added-lc-optimization-20261115/sparse-sort/bin/check-candidate-split-gcc-checked-portable"
+        ],
+        "source_file": "/tmp/sirkit-added-lc-optimization-20261115/sparse-sort/sources/check-candidate-split-gcc-checked-portable.cpp",
+        "canonical_library_embedded_byte_for_byte": true,
+        "canonical_library_sha256": "cc76c23e89968a1df152c5a8235df6039f1605b2f18af13b37a7c81a6a8b95d6"
+      },
+      {
+        "name": "check-candidate-split-gcc-skip-native",
+        "variant": "candidate",
+        "form": "split",
+        "compiler": "gcc",
+        "skip": true,
+        "portable": false,
+        "source_sha256": "f0f8fbc3932db4abee11a42decce0bc60f95b98702360d5a97a618f033492bc3",
+        "valid_cases": 309,
+        "invalid_exceptions": 0,
+        "passed": true,
+        "command": [
+          "taskset",
+          "-c",
+          "27",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "/tmp/sirkit-added-lc-optimization-20261115/sparse-sort/sources/check-candidate-split-gcc-skip-native.cpp",
+          "-o",
+          "/tmp/sirkit-added-lc-optimization-20261115/sparse-sort/bin/check-candidate-split-gcc-skip-native"
+        ],
+        "source_file": "/tmp/sirkit-added-lc-optimization-20261115/sparse-sort/sources/check-candidate-split-gcc-skip-native.cpp",
+        "canonical_library_embedded_byte_for_byte": true,
+        "canonical_library_sha256": "cc76c23e89968a1df152c5a8235df6039f1605b2f18af13b37a7c81a6a8b95d6"
+      },
+      {
+        "name": "check-candidate-split-gcc-skip-portable",
+        "variant": "candidate",
+        "form": "split",
+        "compiler": "gcc",
+        "skip": true,
+        "portable": true,
+        "source_sha256": "f0f8fbc3932db4abee11a42decce0bc60f95b98702360d5a97a618f033492bc3",
+        "valid_cases": 309,
+        "invalid_exceptions": 0,
+        "passed": true,
+        "command": [
+          "taskset",
+          "-c",
+          "27",
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-U__SIZEOF_INT128__",
+          "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+          "-DSIRKIT_LINE_CONTAINER_FORCE_PORTABLE",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/tmp/sirkit-added-lc-optimization-20261115/sparse-sort/sources/check-candidate-split-gcc-skip-portable.cpp",
+          "-o",
+          "/tmp/sirkit-added-lc-optimization-20261115/sparse-sort/bin/check-candidate-split-gcc-skip-portable"
+        ],
+        "source_file": "/tmp/sirkit-added-lc-optimization-20261115/sparse-sort/sources/check-candidate-split-gcc-skip-portable.cpp",
+        "canonical_library_embedded_byte_for_byte": true,
+        "canonical_library_sha256": "cc76c23e89968a1df152c5a8235df6039f1605b2f18af13b37a7c81a6a8b95d6"
+      },
+      {
+        "name": "check-candidate-split-clang-checked-native",
+        "variant": "candidate",
+        "form": "split",
+        "compiler": "clang",
+        "skip": false,
+        "portable": false,
+        "source_sha256": "8b687159d4e068007b498f5617c0b844f6eafd5fb1ee49ac6effa750f4d9c24e",
+        "valid_cases": 309,
+        "invalid_exceptions": 9,
+        "passed": true,
+        "command": [
+          "taskset",
+          "-c",
+          "27",
+          "/usr/bin/clang++-21",
+          "-std=c++23",
+          "-O2",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "/tmp/sirkit-added-lc-optimization-20261115/sparse-sort/sources/check-candidate-split-clang-checked-native.cpp",
+          "-o",
+          "/tmp/sirkit-added-lc-optimization-20261115/sparse-sort/bin/check-candidate-split-clang-checked-native"
+        ],
+        "source_file": "/tmp/sirkit-added-lc-optimization-20261115/sparse-sort/sources/check-candidate-split-clang-checked-native.cpp",
+        "canonical_library_embedded_byte_for_byte": true,
+        "canonical_library_sha256": "cc76c23e89968a1df152c5a8235df6039f1605b2f18af13b37a7c81a6a8b95d6"
+      },
+      {
+        "name": "check-candidate-split-clang-checked-portable",
+        "variant": "candidate",
+        "form": "split",
+        "compiler": "clang",
+        "skip": false,
+        "portable": true,
+        "source_sha256": "8b687159d4e068007b498f5617c0b844f6eafd5fb1ee49ac6effa750f4d9c24e",
+        "valid_cases": 309,
+        "invalid_exceptions": 9,
+        "passed": true,
+        "command": [
+          "taskset",
+          "-c",
+          "27",
+          "/usr/bin/clang++-21",
+          "-std=c++23",
+          "-O2",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-U__SIZEOF_INT128__",
+          "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+          "-DSIRKIT_LINE_CONTAINER_FORCE_PORTABLE",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/tmp/sirkit-added-lc-optimization-20261115/sparse-sort/sources/check-candidate-split-clang-checked-portable.cpp",
+          "-o",
+          "/tmp/sirkit-added-lc-optimization-20261115/sparse-sort/bin/check-candidate-split-clang-checked-portable"
+        ],
+        "source_file": "/tmp/sirkit-added-lc-optimization-20261115/sparse-sort/sources/check-candidate-split-clang-checked-portable.cpp",
+        "canonical_library_embedded_byte_for_byte": true,
+        "canonical_library_sha256": "cc76c23e89968a1df152c5a8235df6039f1605b2f18af13b37a7c81a6a8b95d6"
+      },
+      {
+        "name": "check-candidate-split-clang-skip-native",
+        "variant": "candidate",
+        "form": "split",
+        "compiler": "clang",
+        "skip": true,
+        "portable": false,
+        "source_sha256": "f0f8fbc3932db4abee11a42decce0bc60f95b98702360d5a97a618f033492bc3",
+        "valid_cases": 309,
+        "invalid_exceptions": 0,
+        "passed": true,
+        "command": [
+          "taskset",
+          "-c",
+          "27",
+          "/usr/bin/clang++-21",
+          "-std=c++23",
+          "-O2",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "/tmp/sirkit-added-lc-optimization-20261115/sparse-sort/sources/check-candidate-split-clang-skip-native.cpp",
+          "-o",
+          "/tmp/sirkit-added-lc-optimization-20261115/sparse-sort/bin/check-candidate-split-clang-skip-native"
+        ],
+        "source_file": "/tmp/sirkit-added-lc-optimization-20261115/sparse-sort/sources/check-candidate-split-clang-skip-native.cpp",
+        "canonical_library_embedded_byte_for_byte": true,
+        "canonical_library_sha256": "cc76c23e89968a1df152c5a8235df6039f1605b2f18af13b37a7c81a6a8b95d6"
+      },
+      {
+        "name": "check-candidate-split-clang-skip-portable",
+        "variant": "candidate",
+        "form": "split",
+        "compiler": "clang",
+        "skip": true,
+        "portable": true,
+        "source_sha256": "f0f8fbc3932db4abee11a42decce0bc60f95b98702360d5a97a618f033492bc3",
+        "valid_cases": 309,
+        "invalid_exceptions": 0,
+        "passed": true,
+        "command": [
+          "taskset",
+          "-c",
+          "27",
+          "/usr/bin/clang++-21",
+          "-std=c++23",
+          "-O2",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-U__SIZEOF_INT128__",
+          "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+          "-DSIRKIT_LINE_CONTAINER_FORCE_PORTABLE",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/tmp/sirkit-added-lc-optimization-20261115/sparse-sort/sources/check-candidate-split-clang-skip-portable.cpp",
+          "-o",
+          "/tmp/sirkit-added-lc-optimization-20261115/sparse-sort/bin/check-candidate-split-clang-skip-portable"
+        ],
+        "source_file": "/tmp/sirkit-added-lc-optimization-20261115/sparse-sort/sources/check-candidate-split-clang-skip-portable.cpp",
+        "canonical_library_embedded_byte_for_byte": true,
+        "canonical_library_sha256": "cc76c23e89968a1df152c5a8235df6039f1605b2f18af13b37a7c81a6a8b95d6"
+      }
+    ]
+  },
+  "additional_independent_cases_required": false,
+  "why_no_additional_dynamic_tests": "Current8config official/sample executions match exactly for all10; only changed branch is unreachable from these10main inputs, and the shared branch itself has current canonical body embedded in16 independent API builds including sorted/unsorted/invalid cases. Re-running unchanged small oracles adds no new coverage.",
+  "performance_review": {
+    "new_timings_measured": false,
+    "old_numeric_results_copied": false,
+    "reviewed_main_IO": "9LC included; Yuki library-body only",
+    "limitation": "Source-level unchanged executed algorithms do not prove identical machine layout/timing. No blanket speedup/zero-regression timing claim is made without a fresh matched measurement."
+  },
+  "nonblocking_unmeasured_main_proposals": [
+    {
+      "ids": [
+        "zeta_set_as_and_full",
+        "zeta_gcd_transform_full",
+        "zeta_lcm_transform_full"
+      ],
+      "proposal": "公式normalized入力をint64→VerifyMod998 ctorで再正規化せずuint32 .valueへ直接読む候補。API呼出しは維持できる。",
+      "status": "not measured, not adopted; no extra source edit in this followup"
+    }
+  ],
+  "code_edited": false,
+  "fable_called": false,
+  "stage_modified": false,
+  "existing_audits_modified": false,
+  "commit_done": false,
+  "local_evidence_zip": {
+    "path": "Audit/data/shared-followup-codex-review-20261115.zip",
+    "sha256": "e661c6b424768fe5a79798a4fb647ed4ba7b84c2922d14d1fe98b9cfba13f02c",
+    "tracked": false
+  }
+}

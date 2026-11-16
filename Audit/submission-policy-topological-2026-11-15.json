@@ -1,0 +1,90 @@
+{
+  "format": 1,
+  "date": "2026-11-15",
+  "status": "PASS",
+  "scope": "Submission exemption/reference policy validation, consistent Pages display, and semantic topological-order sample checking",
+  "source_sha256": {
+    "Scripts/update_verify_status.py": "094689ad30c804eed8dc9cb7c1b2253bce4136781906020d97b2fdeedbdd8343",
+    "Scripts/optimization_handoff.py": "66e76b7ce5a5838a88572bac9e2607e2f59be3ac8d582eabe86d5a5741f4dc7e",
+    "Scripts/prepare_verify.py": "6725ac6e46c8087bd47de41598ebbbaf16c208c57a772f301142f4bc49dc69b5",
+    "Scripts/verify_graph_samples.py": "0fb9f2d39bdb6fe83587f8944c031a3c6187d68422851ea2b2f5e5be98d1a374",
+    "Scripts/build_library_pages.py": "e735c729ea37be29b281ea024853f3003f417b3e7e3ba3d08825d51dde010062",
+    "Scripts/tests/test_submission_policy.py": "f7e1cb40d2d6aa3fdf6134e36f200c30eb842f7f15e931d7e47987256608b43b",
+    "Scripts/tests/test_topological_order_checker.py": "e487263cc5bd8aa2d8c2183644543454119f9f6e913e43541ad8d8ab9527452b",
+    "Scripts/tests/test_verify_status.py": "aa2d0f845f09615b8f5a0c3e97e35dfc82b5904b21ce7175260929f29aad222e",
+    "Scripts/tests/test_optimization_handoff.py": "c3e4b8a98a7510b845cd417e19ef0e410f319df720371f1af6bfaa7374be58b4",
+    "Scripts/tests/test_verify_graph_samples.py": "dcc73d116056d56523ff57c03fca465ef2c056ebeef3e326a8c9bc23b147f62f",
+    "Scripts/tests/test_build_library_pages.py": "6aa96c39b0e1ce20a4a88bf2cb3ba159d67d67acb42496ef001fed16ea7c9db9"
+  },
+  "policy": {
+    "origin": "Root added submission_policy/submission_action and SHA-bound user-authorized documentation_only rules. This follow-up hardens parsing and adds regression coverage.",
+    "documentation_only": "Exemption applies only to its exact current full-source SHA. Implementation changes and even Submission-annotation byte changes invalidate it. It changes submission_required/queue stage only, never source-match evidence or current_ac.",
+    "reference": "Known, unique, nonself replacements are required; all must be direct non-reference primaries. This intentionally rejects reference chains as well as cycles. Historical status/evidence stay unchanged; old reference IDs do not enter either queue mode.",
+    "hardening": [
+      "Strict integer format=1 (bool is not accepted).",
+      "Duplicate JSON keys, duplicate/unknown/invalid-type IDs, missing reason, unknown kind and invalid source SHA fail closed.",
+      "Reference replacement lists must exist and contain valid, unique, nonself IDs.",
+      "Action output copies replacement lists and accepts hexadecimal SHA case consistently."
+    ],
+    "tests": [
+      "Absent/empty policy preserves default status and queue behavior.",
+      "Exact-SHA exemption never creates AC or rewrites recorded submitted SHA/history.",
+      "New implementation byte changes reactivate resubmission; no normalized-source alias is used for the exemption.",
+      "Reference entries retain historical status but are excluded from queues; unsubmitted replacement remains pending.",
+      "Readme/status and Pages distinguish exemption/reference from current AC."
+    ]
+  },
+  "pages": {
+    "change": "Only online_table status-label selection and two tests were added; other existing Pages work is preserved.",
+    "labels": [
+      "説明変更のみ・再提出不要",
+      "参考検証・移行先あり"
+    ],
+    "nonpromotion": "Old [AC] remains in the separate submission-result column, while current status stays source_changed. Rendering does not mutate the entry; unknown policy kinds keep default labels.",
+    "scope": "No Pages site was generated or published by this follow-up."
+  },
+  "topological_checker": {
+    "name": "topological_order",
+    "compatibility": "Legacy topological mode delegates to the same checker.",
+    "semantics": "Exactly N ASCII integer tokens forming a complete0..N-1 permutation, and position[u]<position[v] for every one of M declared edges. All valid orders are accepted.",
+    "input_validation": "Checks exact edge count, vertex bounds, missing/duplicate IDs, malformed/underscore/Unicode/float tokens, extra output, cycles and self-loops. Signed decimal spellings are parsed as integers; negative vertices are rejected by bounds.",
+    "complexity": "O(V+E) time and O(V+E) parsed input/output storage.",
+    "independent_oracle": "Kahn-style exhaustive branch enumeration, rather than the checker position-map algorithm.",
+    "permutations_checked": 3990,
+    "cpp_integration": "Four GCC15.2/Clang21 checked/skip candidate-driver builds;20 cases (official, alternative-order, isolated vertices and100000-vertex chain/fan) semantically passed.",
+    "candidate_disposition": "The AOJ driver is no longer adopted under final priority LC→Yukicoder→AtCoder→AOJ. Its pre-compatibility-change snapshots remain only integration-test evidence; no online AC or active-target claim."
+  },
+  "validation": {
+    "python_tests": 157,
+    "modules": [
+      "test_submission_policy",
+      "test_topological_order_checker",
+      "test_verify_status",
+      "test_optimization_handoff",
+      "test_verify_graph_samples",
+      "test_record_library_checker_submission",
+      "test_source_preamble_normalization",
+      "test_build_library_pages"
+    ],
+    "new_policy_tests": 11,
+    "new_topological_tests": 5,
+    "new_pages_policy_tests": 2,
+    "compiler_builds": 4,
+    "semantic_case_runs": 20,
+    "unrelated_changes": "None to public libraries/mains, live policy JSON, generated source, live status/Readme/journal or commit state by this follow-up. Test fixtures write only temporary repositories. Root owns global generation and final live policy edits.",
+    "compatibility_experiment": "Abandoned GCC11/std::unreachable exploratory checks are stored separately in a private ignored archive and are excluded from these public result totals."
+  },
+  "related_audits": [
+    "Audit/source-preamble-normalization-v2-2026-11-15.json",
+    "Audit/verify-priority-geometry-2026-11-15.json"
+  ],
+  "artifacts": {
+    "archive": "Audit/data/submission-policy-topological-20261115.zip",
+    "tests": "unit-tests.log",
+    "cpp_results": "topological-main.json",
+    "cpp_cases": "topological-cases.json",
+    "cpp_runner": "topological-main.py",
+    "snapshot": "snapshot/",
+    "archive_sha256": "ee1cf95037c9bd6186329189dcf4225aa2cfbf492cdd65cb62f67b6d08a8ac94"
+  }
+}

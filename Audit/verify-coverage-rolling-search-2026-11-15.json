@@ -1,0 +1,150 @@
+{
+  "recorded_utc": "2026-11-15T13:05:08.924528+00:00",
+  "id": "coverage_rolling_hash_short_search",
+  "problem_url": "https://yukicoder.me/problems/no/430",
+  "assessment": "direct",
+  "exercised_apis": [
+    "RollingHash(text,27)",
+    "RollingHash(pattern,27)",
+    "get(l,r)",
+    "whole()"
+  ],
+  "not_covered": [
+    "concat/compare/lcp/assign/clearの公開API",
+    "空列/空区間/任意byte",
+    "底27以外・長さ10超のパターン",
+    "コピー/move/独立所有/例外",
+    "一般RollingHashの衝突可能性（本問題の限定証明だけ）"
+  ],
+  "reasoning": "本文の短区間getと別個体pattern.wholeを同じ長さの集合で比較する。これらのAPI結果が総一致数の出力を決める。ASCII大文字65..90と底27・語長≤10では整数多項式値が法より小さく、同長の差は先頭桁が後続差を支配するので衝突しない。",
+  "mathematical_proof": {
+    "base": 27,
+    "max_length": 10,
+    "byte_min": 65,
+    "byte_max": 90,
+    "byte_delta_max": 25,
+    "raw_byte_not_plus_one_confirmed": true,
+    "max_integer_polynomial": 712700072635320,
+    "modulus": 2305843009213693951,
+    "leading_difference": "27^k",
+    "tail_difference_upper": "25*(27^k-1)/26 < 27^k",
+    "short_window_modular_prefix": "get(l,r) is congruent to the short-window integer polynomial; its [0,p) bound makes the residue exact",
+    "scope": "Yuki430のASCII大文字・語長≤10・底27・同長比較のみ。任意byte/長さ/底での衝突不存在は主張しない。",
+    "proof_in_local_zip": "proof.md"
+  },
+  "sources": [
+    "https://yukicoder.me/problems/no/430"
+  ],
+  "primary": {
+    "url": "https://yukicoder.me/problems/no/430",
+    "sha256": "c8118a938357a4579064ec9b50242c107bd5c18a806312735aca81067de1d5e1",
+    "file": "primary-yuki-430.html"
+  },
+  "supplemental_ids": [
+    "rolling_hash"
+  ],
+  "validation": {
+    "build_count": 8,
+    "sample_and_independent_run_count": 376,
+    "maximum_run_count": 2,
+    "all_pass": true,
+    "compiler_matrix": "GCC15.2 / Clang21 × native / standard fallback(-U__SIZEOF_INT128__,SIRKIT_FORCE_STANDARD_ARITHMETIC,SIRKIT_DISABLE_SIMD) × checked / skip",
+    "oracle": "公式4例＋root8の独立startswith全開始点40ケース＋A/Z境界3ケース。最大はtext50k/pattern5000で一致数499955の閉形式。",
+    "source_hashes_before": {
+      "coverage_rolling_hash_short_search": {
+        "String/RollingHash.cpp": "b1b25c93d3e399f05d5f6cc0a04008356ac56fd5d939acd0bcb49d1fa97a9e69",
+        "Verify/current/drivers/coverage_string_rolling_search_main.cpp": "63988fd06c1f5ad445aa6b0c0ca56f96d94b06e76f5358b9f25f6666f2aa08e9",
+        "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+      }
+    },
+    "source_hashes_after": {
+      "coverage_rolling_hash_short_search": {
+        "String/RollingHash.cpp": "b1b25c93d3e399f05d5f6cc0a04008356ac56fd5d939acd0bcb49d1fa97a9e69",
+        "Verify/current/drivers/coverage_string_rolling_search_main.cpp": "63988fd06c1f5ad445aa6b0c0ca56f96d94b06e76f5358b9f25f6666f2aa08e9",
+        "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+      }
+    },
+    "sources_unchanged": true,
+    "rendered_sources": [
+      {
+        "binary": "coverage_rolling_hash_short_search-gcc-native-checked",
+        "sha256": "852a642fbb2c10b7be25104eb1703d49ddf45e869c6c751ee1135afcb3044c44",
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "compiler_sha256": "e6718f7e0c7d057c3ff77b550c603da9bc4030e3ede3c053705acce1293dbe4d"
+      },
+      {
+        "binary": "coverage_rolling_hash_short_search-gcc-native-skip",
+        "sha256": "4161bdeab93daef528471e95131a6b842a9ed3a4682812506c84dc319bf15ec6",
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "compiler_sha256": "e6718f7e0c7d057c3ff77b550c603da9bc4030e3ede3c053705acce1293dbe4d"
+      },
+      {
+        "binary": "coverage_rolling_hash_short_search-gcc-portable-checked",
+        "sha256": "852a642fbb2c10b7be25104eb1703d49ddf45e869c6c751ee1135afcb3044c44",
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "compiler_sha256": "e6718f7e0c7d057c3ff77b550c603da9bc4030e3ede3c053705acce1293dbe4d"
+      },
+      {
+        "binary": "coverage_rolling_hash_short_search-gcc-portable-skip",
+        "sha256": "4161bdeab93daef528471e95131a6b842a9ed3a4682812506c84dc319bf15ec6",
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "compiler_sha256": "e6718f7e0c7d057c3ff77b550c603da9bc4030e3ede3c053705acce1293dbe4d"
+      },
+      {
+        "binary": "coverage_rolling_hash_short_search-clang-native-checked",
+        "sha256": "852a642fbb2c10b7be25104eb1703d49ddf45e869c6c751ee1135afcb3044c44",
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "compiler_sha256": "412bbe8c60571a1eb06f48fde89635033621caeb01a9b4ee76d46711bae8e932"
+      },
+      {
+        "binary": "coverage_rolling_hash_short_search-clang-native-skip",
+        "sha256": "4161bdeab93daef528471e95131a6b842a9ed3a4682812506c84dc319bf15ec6",
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "compiler_sha256": "412bbe8c60571a1eb06f48fde89635033621caeb01a9b4ee76d46711bae8e932"
+      },
+      {
+        "binary": "coverage_rolling_hash_short_search-clang-portable-checked",
+        "sha256": "852a642fbb2c10b7be25104eb1703d49ddf45e869c6c751ee1135afcb3044c44",
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "compiler_sha256": "412bbe8c60571a1eb06f48fde89635033621caeb01a9b4ee76d46711bae8e932"
+      },
+      {
+        "binary": "coverage_rolling_hash_short_search-clang-portable-skip",
+        "sha256": "4161bdeab93daef528471e95131a6b842a9ed3a4682812506c84dc319bf15ec6",
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "compiler_sha256": "412bbe8c60571a1eb06f48fde89635033621caeb01a9b4ee76d46711bae8e932"
+      }
+    ],
+    "maximum_profiles": [
+      {
+        "binary": "coverage_rolling_hash_short_search-gcc-native-skip",
+        "case": "uppercase50k_5kpatterns",
+        "pass_": true,
+        "exit": 0,
+        "wall_seconds": 0.005783243992482312,
+        "time_maxrss": "0.00 4860",
+        "proof": "Only A^1..A^10 match the A^50000 text, other4990 patterns contain a different uppercase letter; exactsum499955",
+        "input_sha256": "5f363f27eb770fb30065fb084c7f12de560917e8cc0dacbe36319c15d54ac0f4",
+        "expected_sha256": "5847befba15eecb38ee03d46a1b3b76be75301f8f3bea56c3bbf0e3f00f2e38c"
+      },
+      {
+        "binary": "coverage_rolling_hash_short_search-clang-native-skip",
+        "case": "uppercase50k_5kpatterns",
+        "pass_": true,
+        "exit": 0,
+        "wall_seconds": 0.005821345999720506,
+        "time_maxrss": "0.00 4860",
+        "proof": "Only A^1..A^10 match the A^50000 text, other4990 patterns contain a different uppercase letter; exactsum499955",
+        "input_sha256": "5f363f27eb770fb30065fb084c7f12de560917e8cc0dacbe36319c15d54ac0f4",
+        "expected_sha256": "5847befba15eecb38ee03d46a1b3b76be75301f8f3bea56c3bbf0e3f00f2e38c"
+      }
+    ]
+  },
+  "online_submission_done": false,
+  "code_changed": false,
+  "local_evidence_zip": {
+    "path": "Audit/data/verify-coverage-rolling-search-20261115.zip",
+    "sha256": "a2485b60e2515fffb4f4f6ceb3f73ccc380f8588245dec595a38ce021ea4e60a",
+    "tracked": false
+  }
+}

@@ -1,0 +1,729 @@
+{
+  "schema_version": 1,
+  "date": "2026-11-15",
+  "status": "codex_complete_ready_for_fable",
+  "entries": [
+    {
+      "id": "preferred_data_heap_double",
+      "decision": "adopt_for_fable_review",
+      "driver": "Verify/current/drivers/preferred_data_heap_double_main.cpp",
+      "driver_sha256": "5b84381c62bea1a4b8fdfbb84e9b9cdbb50f45ce26cff89010243c1d25edf2ec",
+      "baseline_submission_sha256": "cf66b51d263f3fc892f3fae5860850aa70a5e91632ac01d3ea86c3a1eebbc4d2",
+      "expected_submission_sha256": "ebc6d3da9ec5db65853278c200e1233f05beb3530ddf1ad8b681c7f39c680010",
+      "gcc_optimization": "O3",
+      "gcc_unroll_loops": false,
+      "unconditional_cpu_target": false,
+      "algorithm": "4個のHeapによる遅延削除を維持。抽出値が反対側Heapのtopと同じ場合はその場でpopし、削除待ちHeapへのpushを省く。",
+      "verification_scope": "Heapのtop/pop_valueが出力値を決める。削除待ちもHeapの順序で照合する。std::heap/sort等への置換なし。",
+      "correctness_argument": "値vごとに「主Heap内の個数−削除待ちHeap内の個数＝生存個数」を維持。反対側のtopがvなら、その主Heapを1個popすることは削除待ちへvを1個追加することと同じ差分。",
+      "whole_program_reference": "凍結した旧driver + 同本体/共通IO/GCC15.2 -O2、候補は条件付きGCC O3。CPU29、同入力、AB/BA交替11回、中央値。",
+      "whole_program_comparison": [
+        {
+          "profile": "heap_max_alternating",
+          "input_sha256": "e8a33042ebfde3c57644f31d03b14584466c3393b112d59c0075b5dcf41864c5",
+          "baseline_median_seconds": 0.062124076,
+          "candidate_median_seconds": 0.060621962,
+          "ratio": 0.9758207429918153
+        },
+        {
+          "profile": "heap_random_mixed",
+          "input_sha256": "2e073b437a379fa9b53318b4888483355cf24dd8be30e8305d2c458936e95f34",
+          "baseline_median_seconds": 0.067271313,
+          "candidate_median_seconds": 0.06372067,
+          "ratio": 0.9472190620093887
+        },
+        {
+          "profile": "heap_small_value",
+          "input_sha256": "8b1217b6847dc2b5df3d2ed8109ab82b0abe09e9a22ef3c999d2a173db89a5b3",
+          "baseline_median_seconds": 0.035404352,
+          "candidate_median_seconds": 0.034165315,
+          "ratio": 0.9650032572266822
+        },
+        {
+          "profile": "heap_only_min",
+          "input_sha256": "f1d625607e342ae4cd762e144686dd063735c817b5a5e8ac073c858085b8c8d4",
+          "baseline_median_seconds": 0.064044392,
+          "candidate_median_seconds": 0.063431474,
+          "ratio": 0.9904297943838705
+        },
+        {
+          "profile": "heap_empty_stream",
+          "input_sha256": "d92e1e0215b2c8f1b80e82bec7222a1d4694fb7bfee0470f98ab7f9da2d05988",
+          "baseline_median_seconds": 0.025149802,
+          "candidate_median_seconds": 0.01444143,
+          "ratio": 0.5742164490996788
+        }
+      ],
+      "same_compiler_setting_main_comparison": [
+        {
+          "compiler": "gcc",
+          "setting": "GCC O3 both",
+          "profile": "heap_max_alternating",
+          "input_sha256": "e8a33042ebfde3c57644f31d03b14584466c3393b112d59c0075b5dcf41864c5",
+          "baseline_median_seconds": 0.050753717,
+          "candidate_median_seconds": 0.050043692,
+          "ratio": 0.9860103842246668
+        },
+        {
+          "compiler": "gcc",
+          "setting": "GCC O3 both",
+          "profile": "heap_random_mixed",
+          "input_sha256": "2e073b437a379fa9b53318b4888483355cf24dd8be30e8305d2c458936e95f34",
+          "baseline_median_seconds": 0.049965036,
+          "candidate_median_seconds": 0.049169571,
+          "ratio": 0.9840795671597236
+        },
+        {
+          "compiler": "gcc",
+          "setting": "GCC O3 both",
+          "profile": "heap_small_value",
+          "input_sha256": "8b1217b6847dc2b5df3d2ed8109ab82b0abe09e9a22ef3c999d2a173db89a5b3",
+          "baseline_median_seconds": 0.030402245,
+          "candidate_median_seconds": 0.029786545,
+          "ratio": 0.9797482060946486
+        },
+        {
+          "compiler": "gcc",
+          "setting": "GCC O3 both",
+          "profile": "heap_only_min",
+          "input_sha256": "f1d625607e342ae4cd762e144686dd063735c817b5a5e8ac073c858085b8c8d4",
+          "baseline_median_seconds": 0.056789333,
+          "candidate_median_seconds": 0.055619231,
+          "ratio": 0.9793957432111414
+        },
+        {
+          "compiler": "gcc",
+          "setting": "GCC O3 both",
+          "profile": "heap_empty_stream",
+          "input_sha256": "d92e1e0215b2c8f1b80e82bec7222a1d4694fb7bfee0470f98ab7f9da2d05988",
+          "baseline_median_seconds": 0.021296595,
+          "candidate_median_seconds": 0.012154762,
+          "ratio": 0.570737340875384
+        },
+        {
+          "compiler": "clang",
+          "setting": "Clang O2 both; GCC pragma ignored",
+          "profile": "heap_max_alternating",
+          "input_sha256": "e8a33042ebfde3c57644f31d03b14584466c3393b112d59c0075b5dcf41864c5",
+          "baseline_median_seconds": 0.070238113,
+          "candidate_median_seconds": 0.068226301,
+          "ratio": 0.9713572601245708
+        },
+        {
+          "compiler": "clang",
+          "setting": "Clang O2 both; GCC pragma ignored",
+          "profile": "heap_random_mixed",
+          "input_sha256": "2e073b437a379fa9b53318b4888483355cf24dd8be30e8305d2c458936e95f34",
+          "baseline_median_seconds": 0.070339803,
+          "candidate_median_seconds": 0.069672311,
+          "ratio": 0.9905104653193298
+        },
+        {
+          "compiler": "clang",
+          "setting": "Clang O2 both; GCC pragma ignored",
+          "profile": "heap_small_value",
+          "input_sha256": "8b1217b6847dc2b5df3d2ed8109ab82b0abe09e9a22ef3c999d2a173db89a5b3",
+          "baseline_median_seconds": 0.048974408,
+          "candidate_median_seconds": 0.047704748,
+          "ratio": 0.9740750311877175
+        },
+        {
+          "compiler": "clang",
+          "setting": "Clang O2 both; GCC pragma ignored",
+          "profile": "heap_only_min",
+          "input_sha256": "f1d625607e342ae4cd762e144686dd063735c817b5a5e8ac073c858085b8c8d4",
+          "baseline_median_seconds": 0.077642952,
+          "candidate_median_seconds": 0.076862451,
+          "ratio": 0.9899475614992073
+        },
+        {
+          "compiler": "clang",
+          "setting": "Clang O2 both; GCC pragma ignored",
+          "profile": "heap_empty_stream",
+          "input_sha256": "d92e1e0215b2c8f1b80e82bec7222a1d4694fb7bfee0470f98ab7f9da2d05988",
+          "baseline_median_seconds": 0.025486563,
+          "candidate_median_seconds": 0.013598216,
+          "ratio": 0.5335445191256271
+        }
+      ],
+      "tradeoffs": []
+    },
+    {
+      "id": "preferred_data_radix_frequency_int64",
+      "decision": "adopt_for_fable_review",
+      "driver": "Verify/current/drivers/preferred_data_radix_frequency_int64_main.cpp",
+      "driver_sha256": "06afa4d20947154dd72e4c49f3f5db0a23e3f11b5399da98356bf42e02c94179",
+      "baseline_submission_sha256": "a60e6cfb1a6c842a7d5b385eba726ec1ce1b4a41d7c26e154a4b4bdbec90cd94",
+      "expected_submission_sha256": "04d1e894f13f6a54d8bc1268bf2f71daf0e1f9a5ae9311d84240c310da043cfe",
+      "gcc_optimization": "O3",
+      "gcc_unroll_loops": false,
+      "unconditional_cpu_target": false,
+      "algorithm": "RadixSortの結果から値ごとの索引を構築。値域の上位bitで探索区間を絞り、出現1個の値は添字の包含判定だけで答える。同一値だけの入力は一致時r-l。 q<n/16のときは追加索引を作らず従来の連結キー探索を使う。閾値は前処理費用を避ける経験的選択。",
+      "verification_scope": "RadixSortの昇順性でuniqueと範囲索引を構築し、同一値内の位置順を問い合わせに使用する。順序を無視する単なる全走査や別ソートへの置換なし。",
+      "correctness_argument": "int64の連結キーは上位32bitが値、下位32bitが元位置。昇順なら同値の位置列も昇順。uint32は昇順uniqueからrankを作り、元位置順でCSRへ入れる。上位bit区間の境界は単調に構築され、その区間だけのlower_boundは全域検索と同じ結果。",
+      "whole_program_reference": "凍結した旧driver + 同本体/共通IO/GCC15.2 -O2、候補は条件付きGCC O3。CPU29、同入力、AB/BA交替11回、中央値。",
+      "whole_program_comparison": [
+        {
+          "profile": "frequency_max_positions",
+          "input_sha256": "8ab0e6cc083de69cbc316642a9a02845d49661c9535566719fcda156d92c9fd2",
+          "baseline_median_seconds": 0.118740813,
+          "candidate_median_seconds": 0.075362621,
+          "ratio": 0.6346816995433575
+        },
+        {
+          "profile": "frequency_uniform",
+          "input_sha256": "1a4318e6042d279593d072c0b1bbe29528ae041ff0adf5b01f34009ae8409a64",
+          "baseline_median_seconds": 0.118759279,
+          "candidate_median_seconds": 0.063308591,
+          "ratio": 0.5330833222724433
+        },
+        {
+          "profile": "frequency_ordered",
+          "input_sha256": "1e88b4ac471e7810a21bf300c2362e4b60cad51cd07fb246b7a59b8104ac6022",
+          "baseline_median_seconds": 0.069939633,
+          "candidate_median_seconds": 0.043164515,
+          "ratio": 0.6171681655807373
+        },
+        {
+          "profile": "frequency_equal",
+          "input_sha256": "200a4ab37519b33e120b41be18e788fa14c41e755a000bdb2e1856f41ca976b0",
+          "baseline_median_seconds": 0.082356494,
+          "candidate_median_seconds": 0.024584523,
+          "ratio": 0.29851347241663784
+        },
+        {
+          "profile": "frequency_small_n",
+          "input_sha256": "06e3f30f1e61d88b859dd8e7926cf21474f71c065779619aea25bfaa3eb38db3",
+          "baseline_median_seconds": 0.022160274,
+          "candidate_median_seconds": 0.024260672,
+          "ratio": 1.094782131303972
+        },
+        {
+          "profile": "frequency_small_q",
+          "input_sha256": "6f49d35119996afdbb8d6bcac24e6413619e43f3e70c5001687b43dee35a9930",
+          "baseline_median_seconds": 0.020373064,
+          "candidate_median_seconds": 0.018562295,
+          "ratio": 0.9111194565530251
+        }
+      ],
+      "same_compiler_setting_main_comparison": [
+        {
+          "compiler": "gcc",
+          "setting": "GCC O3 both",
+          "profile": "frequency_max_positions",
+          "input_sha256": "8ab0e6cc083de69cbc316642a9a02845d49661c9535566719fcda156d92c9fd2",
+          "baseline_median_seconds": 0.114446364,
+          "candidate_median_seconds": 0.070945941,
+          "ratio": 0.6199055917582493
+        },
+        {
+          "compiler": "gcc",
+          "setting": "GCC O3 both",
+          "profile": "frequency_uniform",
+          "input_sha256": "1a4318e6042d279593d072c0b1bbe29528ae041ff0adf5b01f34009ae8409a64",
+          "baseline_median_seconds": 0.114550077,
+          "candidate_median_seconds": 0.05442881,
+          "ratio": 0.4751529761084316
+        },
+        {
+          "compiler": "gcc",
+          "setting": "GCC O3 both",
+          "profile": "frequency_ordered",
+          "input_sha256": "1e88b4ac471e7810a21bf300c2362e4b60cad51cd07fb246b7a59b8104ac6022",
+          "baseline_median_seconds": 0.06844222,
+          "candidate_median_seconds": 0.036009735,
+          "ratio": 0.5261333574510003
+        },
+        {
+          "compiler": "gcc",
+          "setting": "GCC O3 both",
+          "profile": "frequency_equal",
+          "input_sha256": "200a4ab37519b33e120b41be18e788fa14c41e755a000bdb2e1856f41ca976b0",
+          "baseline_median_seconds": 0.083309453,
+          "candidate_median_seconds": 0.023080543,
+          "ratio": 0.2770459073834034
+        },
+        {
+          "compiler": "gcc",
+          "setting": "GCC O3 both",
+          "profile": "frequency_small_n",
+          "input_sha256": "06e3f30f1e61d88b859dd8e7926cf21474f71c065779619aea25bfaa3eb38db3",
+          "baseline_median_seconds": 0.021683323,
+          "candidate_median_seconds": 0.023079855,
+          "ratio": 1.0644058108621082
+        },
+        {
+          "compiler": "gcc",
+          "setting": "GCC O3 both",
+          "profile": "frequency_small_q",
+          "input_sha256": "6f49d35119996afdbb8d6bcac24e6413619e43f3e70c5001687b43dee35a9930",
+          "baseline_median_seconds": 0.017280047,
+          "candidate_median_seconds": 0.017078213,
+          "ratio": 0.9883198234356654
+        },
+        {
+          "compiler": "clang",
+          "setting": "Clang O2 both; GCC pragma ignored",
+          "profile": "frequency_max_positions",
+          "input_sha256": "8ab0e6cc083de69cbc316642a9a02845d49661c9535566719fcda156d92c9fd2",
+          "baseline_median_seconds": 0.095715306,
+          "candidate_median_seconds": 0.070939362,
+          "ratio": 0.7411496129992
+        },
+        {
+          "compiler": "clang",
+          "setting": "Clang O2 both; GCC pragma ignored",
+          "profile": "frequency_uniform",
+          "input_sha256": "1a4318e6042d279593d072c0b1bbe29528ae041ff0adf5b01f34009ae8409a64",
+          "baseline_median_seconds": 0.087601497,
+          "candidate_median_seconds": 0.054139931,
+          "ratio": 0.6180251805514237
+        },
+        {
+          "compiler": "clang",
+          "setting": "Clang O2 both; GCC pragma ignored",
+          "profile": "frequency_ordered",
+          "input_sha256": "1e88b4ac471e7810a21bf300c2362e4b60cad51cd07fb246b7a59b8104ac6022",
+          "baseline_median_seconds": 0.064809864,
+          "candidate_median_seconds": 0.038240972,
+          "ratio": 0.590048638275186
+        },
+        {
+          "compiler": "clang",
+          "setting": "Clang O2 both; GCC pragma ignored",
+          "profile": "frequency_equal",
+          "input_sha256": "200a4ab37519b33e120b41be18e788fa14c41e755a000bdb2e1856f41ca976b0",
+          "baseline_median_seconds": 0.082490474,
+          "candidate_median_seconds": 0.026428475,
+          "ratio": 0.32038214497349116
+        },
+        {
+          "compiler": "clang",
+          "setting": "Clang O2 both; GCC pragma ignored",
+          "profile": "frequency_small_n",
+          "input_sha256": "06e3f30f1e61d88b859dd8e7926cf21474f71c065779619aea25bfaa3eb38db3",
+          "baseline_median_seconds": 0.021138691,
+          "candidate_median_seconds": 0.020582951,
+          "ratio": 0.9737098195910049
+        },
+        {
+          "compiler": "clang",
+          "setting": "Clang O2 both; GCC pragma ignored",
+          "profile": "frequency_small_q",
+          "input_sha256": "6f49d35119996afdbb8d6bcac24e6413619e43f3e70c5001687b43dee35a9930",
+          "baseline_median_seconds": 0.017327968,
+          "candidate_median_seconds": 0.01677409,
+          "ratio": 0.9680356057905923
+        }
+      ],
+      "tradeoffs": [
+        {
+          "profile": "frequency_small_n",
+          "ratio": 1.094782131303972,
+          "baseline_ms": 22.160274,
+          "candidate_ms": 24.260672
+        }
+      ]
+    },
+    {
+      "id": "preferred_data_radix_frequency_uint32",
+      "decision": "adopt_for_fable_review",
+      "driver": "Verify/current/drivers/preferred_data_radix_frequency_uint32_main.cpp",
+      "driver_sha256": "c6460a6fcc484c74ee8c2a57eab14311cae7a98c7e949ab426de333f93f690bd",
+      "baseline_submission_sha256": "96f22b5fb55be20cf8ea2a4db89e594c0b9472d8e64414b0e0b80336b5177d39",
+      "expected_submission_sha256": "b42fdf93ab75f7a9a5d7236ec7e6127a8b66d022ffa633b1764b2d33c7038486",
+      "gcc_optimization": "O3",
+      "gcc_unroll_loops": false,
+      "unconditional_cpu_target": false,
+      "algorithm": "RadixSortの結果から値ごとの索引を構築。値域の上位bitで探索区間を絞り、出現1個の値は添字の包含判定だけで答える。同一値だけの入力は一致時r-l。",
+      "verification_scope": "RadixSortの昇順性でuniqueと範囲索引を構築し、同一値内の位置順を問い合わせに使用する。順序を無視する単なる全走査や別ソートへの置換なし。",
+      "correctness_argument": "int64の連結キーは上位32bitが値、下位32bitが元位置。昇順なら同値の位置列も昇順。uint32は昇順uniqueからrankを作り、元位置順でCSRへ入れる。上位bit区間の境界は単調に構築され、その区間だけのlower_boundは全域検索と同じ結果。",
+      "whole_program_reference": "凍結した旧driver + 同本体/共通IO/GCC15.2 -O2、候補は条件付きGCC O3。CPU29、同入力、AB/BA交替11回、中央値。",
+      "whole_program_comparison": [
+        {
+          "profile": "frequency_max_positions",
+          "input_sha256": "8ab0e6cc083de69cbc316642a9a02845d49661c9535566719fcda156d92c9fd2",
+          "baseline_median_seconds": 0.104126568,
+          "candidate_median_seconds": 0.078739886,
+          "ratio": 0.7561940003630965
+        },
+        {
+          "profile": "frequency_uniform",
+          "input_sha256": "1a4318e6042d279593d072c0b1bbe29528ae041ff0adf5b01f34009ae8409a64",
+          "baseline_median_seconds": 0.172706036,
+          "candidate_median_seconds": 0.091869136,
+          "ratio": 0.5319393469258944
+        },
+        {
+          "profile": "frequency_ordered",
+          "input_sha256": "1e88b4ac471e7810a21bf300c2362e4b60cad51cd07fb246b7a59b8104ac6022",
+          "baseline_median_seconds": 0.10145315,
+          "candidate_median_seconds": 0.053773061,
+          "ratio": 0.5300285008400428
+        },
+        {
+          "profile": "frequency_equal",
+          "input_sha256": "200a4ab37519b33e120b41be18e788fa14c41e755a000bdb2e1856f41ca976b0",
+          "baseline_median_seconds": 0.081615461,
+          "candidate_median_seconds": 0.025695214,
+          "ratio": 0.3148326761273823
+        },
+        {
+          "profile": "frequency_small_n",
+          "input_sha256": "06e3f30f1e61d88b859dd8e7926cf21474f71c065779619aea25bfaa3eb38db3",
+          "baseline_median_seconds": 0.022777997,
+          "candidate_median_seconds": 0.022295225,
+          "ratio": 0.9788053356930373
+        },
+        {
+          "profile": "frequency_small_q",
+          "input_sha256": "6f49d35119996afdbb8d6bcac24e6413619e43f3e70c5001687b43dee35a9930",
+          "baseline_median_seconds": 0.068966509,
+          "candidate_median_seconds": 0.037062631,
+          "ratio": 0.5374004214132398
+        }
+      ],
+      "same_compiler_setting_main_comparison": [
+        {
+          "compiler": "gcc",
+          "setting": "GCC O3 both",
+          "profile": "frequency_max_positions",
+          "input_sha256": "8ab0e6cc083de69cbc316642a9a02845d49661c9535566719fcda156d92c9fd2",
+          "baseline_median_seconds": 0.107784067,
+          "candidate_median_seconds": 0.076429808,
+          "ratio": 0.7091011698417355
+        },
+        {
+          "compiler": "gcc",
+          "setting": "GCC O3 both",
+          "profile": "frequency_uniform",
+          "input_sha256": "1a4318e6042d279593d072c0b1bbe29528ae041ff0adf5b01f34009ae8409a64",
+          "baseline_median_seconds": 0.150223616,
+          "candidate_median_seconds": 0.075799952,
+          "ratio": 0.5045807977355571
+        },
+        {
+          "compiler": "gcc",
+          "setting": "GCC O3 both",
+          "profile": "frequency_ordered",
+          "input_sha256": "1e88b4ac471e7810a21bf300c2362e4b60cad51cd07fb246b7a59b8104ac6022",
+          "baseline_median_seconds": 0.082378734,
+          "candidate_median_seconds": 0.042390702,
+          "ratio": 0.5145830718884319
+        },
+        {
+          "compiler": "gcc",
+          "setting": "GCC O3 both",
+          "profile": "frequency_equal",
+          "input_sha256": "200a4ab37519b33e120b41be18e788fa14c41e755a000bdb2e1856f41ca976b0",
+          "baseline_median_seconds": 0.081388529,
+          "candidate_median_seconds": 0.024095344,
+          "ratio": 0.296053317292416
+        },
+        {
+          "compiler": "gcc",
+          "setting": "GCC O3 both",
+          "profile": "frequency_small_n",
+          "input_sha256": "06e3f30f1e61d88b859dd8e7926cf21474f71c065779619aea25bfaa3eb38db3",
+          "baseline_median_seconds": 0.021311134,
+          "candidate_median_seconds": 0.020942854,
+          "ratio": 0.9827188923874254
+        },
+        {
+          "compiler": "gcc",
+          "setting": "GCC O3 both",
+          "profile": "frequency_small_q",
+          "input_sha256": "6f49d35119996afdbb8d6bcac24e6413619e43f3e70c5001687b43dee35a9930",
+          "baseline_median_seconds": 0.068343709,
+          "candidate_median_seconds": 0.035055816,
+          "ratio": 0.5129340580564627
+        },
+        {
+          "compiler": "clang",
+          "setting": "Clang O2 both; GCC pragma ignored",
+          "profile": "frequency_max_positions",
+          "input_sha256": "8ab0e6cc083de69cbc316642a9a02845d49661c9535566719fcda156d92c9fd2",
+          "baseline_median_seconds": 0.074836623,
+          "candidate_median_seconds": 0.070129645,
+          "ratio": 0.9371032816379221
+        },
+        {
+          "compiler": "clang",
+          "setting": "Clang O2 both; GCC pragma ignored",
+          "profile": "frequency_uniform",
+          "input_sha256": "1a4318e6042d279593d072c0b1bbe29528ae041ff0adf5b01f34009ae8409a64",
+          "baseline_median_seconds": 0.112742942,
+          "candidate_median_seconds": 0.063981072,
+          "ratio": 0.5674951430662507
+        },
+        {
+          "compiler": "clang",
+          "setting": "Clang O2 both; GCC pragma ignored",
+          "profile": "frequency_ordered",
+          "input_sha256": "1e88b4ac471e7810a21bf300c2362e4b60cad51cd07fb246b7a59b8104ac6022",
+          "baseline_median_seconds": 0.075391624,
+          "candidate_median_seconds": 0.044171119,
+          "ratio": 0.5858889443739798
+        },
+        {
+          "compiler": "clang",
+          "setting": "Clang O2 both; GCC pragma ignored",
+          "profile": "frequency_equal",
+          "input_sha256": "200a4ab37519b33e120b41be18e788fa14c41e755a000bdb2e1856f41ca976b0",
+          "baseline_median_seconds": 0.066058738,
+          "candidate_median_seconds": 0.027504996,
+          "ratio": 0.41637180534693224
+        },
+        {
+          "compiler": "clang",
+          "setting": "Clang O2 both; GCC pragma ignored",
+          "profile": "frequency_small_n",
+          "input_sha256": "06e3f30f1e61d88b859dd8e7926cf21474f71c065779619aea25bfaa3eb38db3",
+          "baseline_median_seconds": 0.02013403,
+          "candidate_median_seconds": 0.020854239,
+          "ratio": 1.0357707324365764
+        },
+        {
+          "compiler": "clang",
+          "setting": "Clang O2 both; GCC pragma ignored",
+          "profile": "frequency_small_q",
+          "input_sha256": "6f49d35119996afdbb8d6bcac24e6413619e43f3e70c5001687b43dee35a9930",
+          "baseline_median_seconds": 0.052193321,
+          "candidate_median_seconds": 0.03006394,
+          "ratio": 0.5760112486423311
+        }
+      ],
+      "tradeoffs": [
+        {
+          "compiler": "clang",
+          "profile": "frequency_small_n",
+          "ratio": 1.0357707324365764,
+          "baseline_ms": 20.13403,
+          "candidate_ms": 20.854239
+        }
+      ]
+    }
+  ],
+  "compiler": {
+    "host": "reinsirk-Precision-3680",
+    "cpu": 29,
+    "compiler_version": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0\nCopyright (C) 2025 Free Software Foundation, Inc.\nThis is free software; see the source for copying conditions.  There is NO\nwarranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n",
+    "compiler_realpath": "/usr/bin/x86_64-linux-gnu-g++-15",
+    "compiler_sha256": "e6718f7e0c7d057c3ff77b550c603da9bc4030e3ede3c053705acce1293dbe4d",
+    "flags": "-std=c++23 -O2; conditional per-source GCC O3/unroll pragmas only",
+    "configurations": 15,
+    "comparisons": 67,
+    "trials_per_comparison": 5,
+    "source_unchanged": true,
+    "passed": true
+  },
+  "measurement_scope": "本体・共通入出力のソースは不変。主張する速度差はmain/型/索引/設定を含むプログラム全体のもの。同設定ABはGCC O3同士、Clang O2同士を別に5回測定。本体単独の改善とはしない。",
+  "trial_counts": {
+    "initial_screen": 5,
+    "confirmation": 11,
+    "same_setting_main_only": 5
+  },
+  "same_binary_controls": [
+    {
+      "id": "preferred_data_heap_double",
+      "profile": "heap_max_alternating",
+      "ratio": 1.0125738587698698
+    },
+    {
+      "id": "preferred_data_heap_double",
+      "profile": "heap_random_mixed",
+      "ratio": 0.9832809489676696
+    },
+    {
+      "id": "preferred_data_heap_double",
+      "profile": "heap_small_value",
+      "ratio": 0.9878568376577871
+    },
+    {
+      "id": "preferred_data_heap_double",
+      "profile": "heap_only_min",
+      "ratio": 0.999159485999666
+    },
+    {
+      "id": "preferred_data_heap_double",
+      "profile": "heap_empty_stream",
+      "ratio": 0.9909700820630498
+    },
+    {
+      "id": "preferred_data_radix_frequency_int64",
+      "profile": "frequency_max_positions",
+      "ratio": 1.0002958055712987
+    },
+    {
+      "id": "preferred_data_radix_frequency_int64",
+      "profile": "frequency_uniform",
+      "ratio": 1.0004919891953898
+    },
+    {
+      "id": "preferred_data_radix_frequency_int64",
+      "profile": "frequency_ordered",
+      "ratio": 0.9999166836201024
+    },
+    {
+      "id": "preferred_data_radix_frequency_int64",
+      "profile": "frequency_equal",
+      "ratio": 0.9988705987763713
+    },
+    {
+      "id": "preferred_data_radix_frequency_int64",
+      "profile": "frequency_small_n",
+      "ratio": 0.9910200245193196
+    },
+    {
+      "id": "preferred_data_radix_frequency_int64",
+      "profile": "frequency_small_q",
+      "ratio": 0.9977370171044778
+    },
+    {
+      "id": "preferred_data_radix_frequency_uint32",
+      "profile": "frequency_max_positions",
+      "ratio": 1.0151518457626485
+    },
+    {
+      "id": "preferred_data_radix_frequency_uint32",
+      "profile": "frequency_uniform",
+      "ratio": 1.001048830077819
+    },
+    {
+      "id": "preferred_data_radix_frequency_uint32",
+      "profile": "frequency_ordered",
+      "ratio": 1.0066135838839185
+    },
+    {
+      "id": "preferred_data_radix_frequency_uint32",
+      "profile": "frequency_equal",
+      "ratio": 0.9904860824366674
+    },
+    {
+      "id": "preferred_data_radix_frequency_uint32",
+      "profile": "frequency_small_n",
+      "ratio": 0.9984691729468461
+    },
+    {
+      "id": "preferred_data_radix_frequency_uint32",
+      "profile": "frequency_small_q",
+      "ratio": 1.0023944331865218
+    }
+  ],
+  "correctness": {
+    "builds": 24,
+    "case_runs": 2904,
+    "passed": true,
+    "inputs_and_library_sources_unchanged": true,
+    "compiler_versions": {
+      "gcc": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0\nCopyright (C) 2025 Free Software Foundation, Inc.\nThis is free software; see the source for copying conditions.  There is NO\nwarranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n",
+      "clang": "Ubuntu clang version 21.1.8 (6ubuntu1)\nTarget: x86_64-pc-linux-gnu\nThread model: posix\nInstalledDir: /usr/lib/llvm-21/bin\n"
+    },
+    "source_sha256": {
+      "DataStructure/heap.cpp": "45d24c1d78141c5652011e44b3045240abeab14b226351a2d3909ae251513a1c",
+      "Algorithm/Radix_sort.cpp": "0b527277b26307e434513f0bbe6afd90e77d52ffceac550f5e445504daa34e73",
+      "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+    }
+  },
+  "rejected_candidates": [
+    {
+      "candidate": "baseline O3 / O3,unroll-loops alone",
+      "reason": "設定だけではHeapやRadixの複数profileで退行。設定は最終mainとの組合せで選択。",
+      "evidence": "screen-results.json"
+    },
+    {
+      "candidate": "heap reserve / eager+reserve",
+      "reason": "N+Q容量予約や削除待ちの一括予約による一貫した上積みがなく、eagerのみの小変更を選択。",
+      "evidence": "screen-results.json"
+    },
+    {
+      "candidate": "int64 plain CSR",
+      "reason": "最大低エントロピー入力では改善するが、一様/整列入力の利得不足とsmall_q約11%退行。",
+      "evidence": "screen-results.json"
+    },
+    {
+      "candidate": "int64 directory without amortization guard",
+      "reason": "主要入力0.60〜0.66倍だがsmall_q約16%退行。",
+      "evidence": "screen-results.json"
+    },
+    {
+      "candidate": "adaptive baseline-loop branches only",
+      "reason": "分岐で旧loopを残しても最適化文脈の変化により小表に退行。最終は値1種類/出現1個の分岐を組み合わせる。",
+      "evidence": "confirmation-results.json"
+    },
+    {
+      "candidate": "small-table one-lower-bound + sequential scan",
+      "reason": "小表の退行が解消せず、コード増加に見合う効果なし。",
+      "evidence": "smallscan-results.json"
+    },
+    {
+      "candidate": "small-table GCC O2/noinline helper",
+      "reason": "小表1.233倍へ悪化。属性と重複処理を増やす複雑な版は不採用。",
+      "evidence": "isolated-results.json"
+    },
+    {
+      "candidate": "final O3,unroll-loops",
+      "reason": "最終O3に比べ安定した全体上積みなし。Heapでは複数profileの退行、Radixでも一様/小Q等の退行がありO3のみ。",
+      "evidence": [
+        "confirmation-results.json",
+        "fastpaths-results.json"
+      ]
+    }
+  ],
+  "source_unchanged_library_and_common_io": true,
+  "existing_judgements_modified": false,
+  "online_submission": false,
+  "claude_invoked": false,
+  "committed": false,
+  "pending": [
+    "rootが3entryのgcc_optimizationをO3へ設定し、上記expected SHAとの一致を確認する。",
+    "Fableのレビューと必要に応じた再測定。",
+    "採用後にオンライン新規提出し、実際の提出ソースSHAへ結果を結び付ける。"
+  ],
+  "evidence": [
+    "screen-results.json",
+    "confirmation-results.json",
+    "fastpaths-results.json",
+    "smallscan-results.json",
+    "isolated-results.json",
+    "main-only-results.json",
+    "final-validation.json",
+    "fixtures.json",
+    "extra-oracles.json",
+    "adopted-driver.patch"
+  ],
+  "records": [
+    {
+      "id": "preferred_data_heap_double",
+      "baseline_source_sha256": "cf66b51d263f3fc892f3fae5860850aa70a5e91632ac01d3ea86c3a1eebbc4d2",
+      "source_sha256": "ebc6d3da9ec5db65853278c200e1233f05beb3530ddf1ad8b681c7f39c680010",
+      "driver_sha256": "5b84381c62bea1a4b8fdfbb84e9b9cdbb50f45ce26cff89010243c1d25edf2ec",
+      "recommended_compile_settings": {
+        "gcc_optimization": "O3"
+      }
+    },
+    {
+      "id": "preferred_data_radix_frequency_int64",
+      "baseline_source_sha256": "a60e6cfb1a6c842a7d5b385eba726ec1ce1b4a41d7c26e154a4b4bdbec90cd94",
+      "source_sha256": "04d1e894f13f6a54d8bc1268bf2f71daf0e1f9a5ae9311d84240c310da043cfe",
+      "driver_sha256": "06afa4d20947154dd72e4c49f3f5db0a23e3f11b5399da98356bf42e02c94179",
+      "recommended_compile_settings": {
+        "gcc_optimization": "O3"
+      }
+    },
+    {
+      "id": "preferred_data_radix_frequency_uint32",
+      "baseline_source_sha256": "96f22b5fb55be20cf8ea2a4db89e594c0b9472d8e64414b0e0b80336b5177d39",
+      "source_sha256": "b42fdf93ab75f7a9a5d7236ec7e6127a8b66d022ffa633b1764b2d33c7038486",
+      "driver_sha256": "c6460a6fcc484c74ee8c2a57eab14311cae7a98c7e949ab426de333f93f690bd",
+      "recommended_compile_settings": {
+        "gcc_optimization": "O3"
+      }
+    }
+  ],
+  "local_archive": {
+    "path": "Audit/data/added-lc-codex-priority-data-20261115.zip",
+    "sha256": "0bcc0bdcd53c1afec30ca3bffb983776d37124c07079cac80c0ce4f08055b2ef",
+    "bytes": 47472775
+  }
+}

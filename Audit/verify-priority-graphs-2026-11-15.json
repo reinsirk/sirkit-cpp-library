@@ -1,0 +1,237 @@
+{
+  "recorded_utc": "2026-11-15T12:04:41.778174+00:00",
+  "scope": "未照合AtCoder8入口のVerify優先先調査。利用者指定LC→AOJ→yukicoder→AtCoderに従う。",
+  "result": {
+    "new_lc_entries": 1,
+    "new_aoj_entries": 5,
+    "atcoder_retained": 2,
+    "old_entries_drivers_and_judgements_preserved": true,
+    "library_body_changed_by_this_agent": false,
+    "online_submission_done": false,
+    "old_ac_copied_to_new_ids": false
+  },
+  "mapping": [
+    {
+      "old_id": "bellman_ford",
+      "new_id": "preferred_bellman_ford_aoj",
+      "domain": "onlinejudge.u-aizu.ac.jp",
+      "problem_url": "https://onlinejudge.u-aizu.ac.jp/problems/GRL_1_B",
+      "action": "add_preferred_entry_preserve_old",
+      "reason": "LCに負辺・到達可能負閉路を直接検証する単一始点問題を確認できない。AOJ GRL_1_BはAPIの全距離/負閉路判定に直接対応する。",
+      "coverage": [
+        "負辺",
+        "全頂点の最短距離",
+        "未到達INF",
+        "始点から到達可能な負閉路判定"
+      ],
+      "limitations": "新規・未提出。旧AtCoder判定は引き継がない。負閉路がある入力はNEGATIVE CYCLEだけを出すため、影響頂点ごとの-infの伝播範囲・custom infは独立参照の補足検証。LC Shortest Pathは非負辺専用で代替しない。",
+      "old_entry_disposition": "rootがreferenceへ分離。旧driver/判定historyは維持。"
+    },
+    {
+      "old_id": "spfa",
+      "new_id": "preferred_spfa_aoj",
+      "domain": "onlinejudge.u-aizu.ac.jp",
+      "problem_url": "https://onlinejudge.u-aizu.ac.jp/problems/GRL_1_B",
+      "action": "add_preferred_entry_preserve_old",
+      "reason": "LCに負辺・到達可能負閉路を直接検証する単一始点問題を確認できない。AOJ GRL_1_BはAPIの全距離/負閉路判定に直接対応する。",
+      "coverage": [
+        "負辺",
+        "全頂点の最短距離",
+        "未到達INF",
+        "始点から到達可能な負閉路判定"
+      ],
+      "limitations": "新規・未提出。旧AtCoder判定は引き継がない。負閉路がある入力はNEGATIVE CYCLEだけを出すため、影響頂点ごとの-infの伝播範囲・custom infは独立参照の補足検証。LC Shortest Pathは非負辺専用で代替しない。",
+      "old_entry_disposition": "rootがreferenceへ分離。旧driver/判定historyは維持。"
+    },
+    {
+      "old_id": "floyd_warshall",
+      "new_id": "preferred_floyd_warshall_aoj",
+      "domain": "onlinejudge.u-aizu.ac.jp",
+      "problem_url": "https://onlinejudge.u-aizu.ac.jp/problems/GRL_1_C",
+      "action": "add_preferred_entry_preserve_old",
+      "reason": "LCに負辺・負閉路を含む全点対最短路の直接問題を確認できない。AOJ GRL_1_Cは距離行列と負閉路判定に直接対応する。",
+      "coverage": [
+        "負辺を含む全点対距離",
+        "未到達INF",
+        "任意の成分の負閉路判定"
+      ],
+      "limitations": "新規・未提出。旧AtCoder判定は引き継がない。負閉路の影響ペアごとの-inf、next/経路復元、custom inf、int64上限付近の広幅演算は独立参照で補足。",
+      "old_entry_disposition": "rootがreferenceへ分離。旧driver/判定historyは維持。"
+    },
+    {
+      "old_id": "topological",
+      "new_id": "preferred_topological_aoj",
+      "domain": "onlinejudge.u-aizu.ac.jp",
+      "problem_url": "https://onlinejudge.u-aizu.ac.jp/problems/GRL_4_B",
+      "action": "add_preferred_entry_preserve_old",
+      "reason": "LCのrooted-tree topological/minimum-inversionsは一般DAGのAPIと異なる。AOJ GRL_4_Bは一般DAGの順序を直接出力し意味判定する。",
+      "coverage": [
+        "DAGの全頂点のトポロジカル順序"
+      ],
+      "limitations": "新規・未提出。旧AtCoder判定は引き継がない。入力はDAGであり、閉路判定、一意性、辞書順最小はこの問題では検証されない。これらは独立参照と旧AtCoder入口で補足。",
+      "old_entry_disposition": "rootがreferenceへ分離。旧driver/判定historyは維持。"
+    },
+    {
+      "old_id": "max_flow_grid",
+      "new_id": "preferred_max_flow_bipartite",
+      "domain": "judge.yosupo.jp",
+      "problem_url": "https://judge.yosupo.jp/problem/bipartitematching",
+      "action": "add_preferred_entry_preserve_old",
+      "reason": "LC Matching on Bipartite Graphを最大流へ自然に帰着でき、flow値と返却された辺flowが出力そのものになる。旧gridマッチングより一般の二部入力を検証する。",
+      "coverage": [
+        "mf_graph<int>::add_edge",
+        "単位容量二部ネットワークのflow",
+        "get_edgeのflowによる最大マッチング復元"
+      ],
+      "limitations": "新規・未提出。旧AtCoder判定は引き継がない。LCは容量1の二部ネットワークに限定される。一般容量、min_cut/change_edge、途中flow/reuse、edges一括返却と盤面復元は旧driver/独立参照で補足。",
+      "old_entry_disposition": "rootがreferenceへ分離。旧driver/判定historyは維持。"
+    },
+    {
+      "old_id": "project_selection",
+      "new_id": "preferred_project_selection_cut_aoj",
+      "domain": "onlinejudge.u-aizu.ac.jp",
+      "problem_url": "https://onlinejudge.u-aizu.ac.jp/problems/GRL_6_A",
+      "action": "add_preferred_entry_preserve_old",
+      "reason": "LCにこのAPIの二値費用最小化を直接出力できる問題を確認できない。AOJ GRL_6_Aを最小cutへ帰着するとforce/penalty/solveの値がそのまま出力となる。",
+      "coverage": [
+        "forceによる始点/終点側固定",
+        "add_psp_penaltyの二変数費用",
+        "solveの最適値"
+      ],
+      "limitations": "新規・未提出。旧AtCoder判定は引き継がない。単項/高階profit、厳密依存制約、reconstruct/増分solve、例外・所有はこの提出だけでは検証されない。旧Typical90の利益/依存モデルと独立全列挙で補足。",
+      "old_entry_disposition": "rootがreferenceへ分離。旧driver/判定historyは維持。"
+    },
+    {
+      "old_id": "topological_lexicographical",
+      "new_id": "topological_lexicographical",
+      "domain": "atcoder.jp",
+      "problem_url": "https://atcoder.jp/contests/abc223/tasks/abc223_d",
+      "action": "retain_current_primary",
+      "reason": "上位優先先を調査したが、AOJ GRL_4_Bは任意のトポロジカル順を許し辞書順最小を判定しない。LCの木限定順序問題も同一API範囲ではない。yukicoderで直接一致する問題を確認できず、辞書順最小と閉路を要求する現問題を維持。",
+      "coverage": [
+        "辞書順最小の一般有向グラフのトポロジカル順",
+        "閉路時-1"
+      ],
+      "limitations": "上位問題の不在を網羅的に証明したものではない。適切な直接問題が確認できたら優先規則に従って移行。"
+    },
+    {
+      "old_id": "node_reachable",
+      "new_id": "node_reachable",
+      "domain": "atcoder.jp",
+      "problem_url": "https://atcoder.jp/contests/abc228/tasks/abc228_b",
+      "action": "retain_current_primary",
+      "reason": "上位優先先を調査したが、AOJのstack/doubly-linked-listは一方向循環列の到達数・break_cycleを検証しない。LC一般グラフcycle問題もNodeの単一nextとはAPI対象が異なる。同一scopeのAOJ/yukicoder問題を確認できず現問題を維持。",
+      "coverage": [
+        "make_node/next接続",
+        "break_cycle",
+        "chain_sizeによる機能グラフの到達数"
+      ],
+      "limitations": "clone/reverse/nth/共有所有は独立参照の補足範囲。上位問題が見つからないことの網羅的証明ではない。"
+    }
+  ],
+  "owned_group": "Verify/current/groups/preferred_graphs_20261115.json",
+  "new_drivers": [
+    "Verify/current/drivers/preferred_bellman_ford_aoj_main.cpp",
+    "Verify/current/drivers/preferred_spfa_aoj_main.cpp",
+    "Verify/current/drivers/preferred_floyd_warshall_aoj_main.cpp",
+    "Verify/current/drivers/preferred_topological_aoj_main.cpp",
+    "Verify/current/drivers/preferred_max_flow_bipartite_main.cpp",
+    "Verify/current/drivers/preferred_project_selection_cut_aoj_main.cpp"
+  ],
+  "primary_evidence": {
+    "archive_subdir": "primary/",
+    "manifest": "primary/manifest.json",
+    "lc_bipartite_task": "https://raw.githubusercontent.com/yosupo06/library-checker-problems/master/graph/bipartitematching/task.md",
+    "lc_official_input": "https://raw.githubusercontent.com/yosupo06/library-checker-problems/master/graph/bipartitematching/gen/example_00.in",
+    "lc_sample_output_note": "最大マッチング出力は非一意。公式入力例に対し最大数3と有効組を独立参照・意味検査した期待出力を使用し、公式表示の特定出力と偽称しない。",
+    "aoj_problem_urls": [
+      "https://onlinejudge.u-aizu.ac.jp/problems/GRL_1_B",
+      "https://onlinejudge.u-aizu.ac.jp/problems/GRL_1_C",
+      "https://onlinejudge.u-aizu.ac.jp/problems/GRL_4_B",
+      "https://onlinejudge.u-aizu.ac.jp/problems/GRL_6_A"
+    ],
+    "retained_primary_urls": [
+      "https://atcoder.jp/contests/abc223/tasks/abc223_d",
+      "https://atcoder.jp/contests/abc228/tasks/abc228_b"
+    ],
+    "search_limitation": "上位サービスの全問題を網羅的に不存在証明したものではない。特にlexTopo/Nodeは同じscopeを直接検証する上位問題を確認できず、別scopeへの不自然な置換を避け現行継続。"
+  },
+  "validation": {
+    "compilers": [
+      "Ubuntu clang version 21.1.8 (6ubuntu1)",
+      "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0"
+    ],
+    "compiler_sha256": [
+      "412bbe8c60571a1eb06f48fde89635033621caeb01a9b4ee76d46711bae8e932",
+      "e6718f7e0c7d057c3ff77b550c603da9bc4030e3ede3c053705acce1293dbe4d"
+    ],
+    "builds": 64,
+    "matrix": "8入口×GCC15.2/Clang21×native/標準代替(SIRKIT_DISABLE_SIMD,-U__SIZEOF_INT128__)×checked/skip(NDEBUG)",
+    "flags_base": [
+      "-std=c++23",
+      "-O2"
+    ],
+    "executions": 3664,
+    "all_pass": true,
+    "independent_oracles": [
+      "同期Bellman-Fordの全距離/負閉路判定",
+      "各始点からの同期Bellman-Fordによる全点対参照",
+      "全頂点順列/全辺のトポロジカル順意味検査",
+      "二部matchingの右集合bitmask DP＋返却辺集合検査",
+      "固定両端の全二値割当による最小cut",
+      "全順列列挙の辞書順最小トポロジカル順",
+      "配列nextの訪問集合による機能グラフ到達数"
+    ],
+    "per_id_cases": {
+      "preferred_bellman_ford_aoj": 59,
+      "preferred_spfa_aoj": 59,
+      "preferred_floyd_warshall_aoj": 58,
+      "preferred_topological_aoj": 56,
+      "preferred_max_flow_bipartite": 56,
+      "preferred_project_selection_cut_aoj": 56,
+      "topological_lexicographical": 57,
+      "node_reachable": 57
+    },
+    "snapshot_sha256": {
+      "Graph/Bellman-Ford.cpp": "1d9fe84114476b2e996ff9aee24d26233f1305e2d378e343a0c5f6fac766ac00",
+      "Verify/current/drivers/preferred_bellman_ford_aoj_main.cpp": "91b2109310a38bdc8a767e232e7fe8e602cec4726d3032f69f37537e08067f0b",
+      "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab",
+      "Graph/Bellman-Ford_SFPA.cpp": "46b26af6ff145399422817f338ede49d4bdd53a20c19001ca24ff0b0a25cce6c",
+      "Verify/current/drivers/preferred_spfa_aoj_main.cpp": "9ea75729e7896dec9efdb0e54fc5df23d2f2e058089752ec2b9df8741f930d12",
+      "Graph/Floyd-Warshall.cpp": "cdb673fb73599bd852a1ee5e7a830aff96463613771471fa5aaeb3db3f759cfc",
+      "Verify/current/drivers/preferred_floyd_warshall_aoj_main.cpp": "cb055a7cba9d63331ac8007c91585b89eac8ec7f4038f5a32516eba31fd3becf",
+      "Graph/Topological.cpp": "5ab6ddeb1d2d8b1c4bf7eb13a31cdc289100b6a5659269db23391f010aa1e383",
+      "Verify/current/drivers/preferred_topological_aoj_main.cpp": "7e2dcb756c943575d49ab56a9f6c370275c4d2d9bdb4e84a227360369eb18b68",
+      "Graph/Max_Flow.cpp": "b1eee30a5d93b695073f33f20b1108558b9d29639364c6c0550ebab2bfa4dbe6",
+      "Verify/current/drivers/preferred_max_flow_bipartite_main.cpp": "ff6d4f73b62ed3eccd86c1ec1b5d5fbd7c41012ef410d8118cd44f8292085f84",
+      "Graph/Project_Selection.cpp": "b5a0e9f10d9271976bcc0b9fea362e3c3342f96f4b4e70ea307f8e7d230056fe",
+      "Verify/current/drivers/preferred_project_selection_cut_aoj_main.cpp": "cb2cc6ba8c149b9e37aff135882a402b62631c8af8c98a99f306fd18b803b04a",
+      "Graph/Topological_sort.cpp": "5ab6ddeb1d2d8b1c4bf7eb13a31cdc289100b6a5659269db23391f010aa1e383",
+      "Verify/current/drivers/topological_lexicographical_main.cpp": "04e14b31a2767f6e9964f73a118e53e11118dbcf3ba3588baa9768f641c500bb",
+      "DataStructure/Node.cpp": "e0798a6798942feb36c6119393592373cb17cad68972c62d4c2b0bd50c3a42bd",
+      "Verify/current/drivers/node_reachable_main.cpp": "d966a0463fe5769ff97130dd1bdcd9f91d4162ed735d79971c859ecbfc64ab86"
+    },
+    "source_snapshot_location": "tested-source-snapshot/",
+    "current_diff_after_root_compatibility_work": {}
+  },
+  "boundary_validation": {
+    "runs": 18,
+    "all_pass": true,
+    "estimates_file": "maximum-cases.json",
+    "results_file": "maximum-results.json",
+    "max_matching_size": "L=R100000,M200000→flowgraph V200002,E400000",
+    "max_matching_observed_ms": [
+      39.603782,
+      40.250308
+    ],
+    "max_matching_peak_rss_kib": [
+      28944,
+      28928
+    ],
+    "limitations": "各問題の上限サイズを含む単発の境界実行。全入力の時間上限や性能改善の証明ではない。"
+  },
+  "source_compatibility_note": "RootがAOJ C++23環境GCC11.4.1のstd::unreachable未実装を調査し、Topological2ファイルの最小互換修正を別途担当。ここでの64ビルド・結果は凍結したtested SHAに限り、新SHAやGCC11での結果へ転記しない。",
+  "generation_note": "ここでは一時TUが本体/共通I/O/driverをincludeして確認。生成物・status/journal・旧entry役割・AGENTS変更はroot担当であり本作業では触れていない。LC GCC設定の再選択はせず標準O2で検証。",
+  "evidence_archive": "Audit/data/verify-priority-graphs-20261115.zip",
+  "reproduction": "ZIPを/tmp/sirkit-verify-priority-20261115/graphsへ展開し、SIRKIT_VERIFY_GRAPH_ROOTをtested-source-snapshotの絶対パスに設定してbuild.py→corpus.py→validate.py→maximum.pyを実行。root互換修正後を検証する場合はそのソースSHAで別実施する。"
+}

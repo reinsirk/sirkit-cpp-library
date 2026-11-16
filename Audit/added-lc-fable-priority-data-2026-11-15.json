@@ -1,0 +1,164 @@
+{
+  "format": 1,
+  "stage": "claude",
+  "date": "2026-11-15",
+  "model": "claude-fable-5-2",
+  "actual_models": [
+    "claude-fable-5-2"
+  ],
+  "completed_utc": "2026-11-15T13:58:52.292864+00:00",
+  "input_source_hashes": {
+    "/tmp/sirkit-added-lc-optimization-20261115/claude/priority-data/preferred_data_heap_double.cpp": "ebc6d3da9ec5db65853278c200e1233f05beb3530ddf1ad8b681c7f39c680010",
+    "DataStructure/heap.cpp": "45d24c1d78141c5652011e44b3045240abeab14b226351a2d3909ae251513a1c",
+    "Verify/current/drivers/preferred_data_heap_double_main.cpp": "5b84381c62bea1a4b8fdfbb84e9b9cdbb50f45ce26cff89010243c1d25edf2ec",
+    "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab",
+    "/tmp/sirkit-added-lc-optimization-20261115/claude/priority-data/preferred_data_radix_frequency_int64.cpp": "04d1e894f13f6a54d8bc1268bf2f71daf0e1f9a5ae9311d84240c310da043cfe",
+    "Algorithm/Radix_sort.cpp": "0b527277b26307e434513f0bbe6afd90e77d52ffceac550f5e445504daa34e73",
+    "Verify/current/drivers/preferred_data_radix_frequency_int64_main.cpp": "06afa4d20947154dd72e4c49f3f5db0a23e3f11b5399da98356bf42e02c94179",
+    "/tmp/sirkit-added-lc-optimization-20261115/claude/priority-data/preferred_data_radix_frequency_uint32.cpp": "b42fdf93ab75f7a9a5d7236ec7e6127a8b66d022ffa633b1764b2d33c7038486",
+    "Verify/current/drivers/preferred_data_radix_frequency_uint32_main.cpp": "c6460a6fcc484c74ee8c2a57eab14311cae7a98c7e949ab426de333f93f690bd",
+    "/tmp/sirkit-added-lc-optimization-20261115/claude/priority-data/policy.md": "9a8704bce27c66588dbbe301a20d8098fcc3b0183487a0571e1e8a362cc776f2"
+  },
+  "source_representation": "Canonical rendered snapshots hashed per ID. Complete unique library, driver and shared IO components supplied once below. Rendering concatenates library code, namespace sirkit{};using namespace sirkit;, expanded driver. Online prefix SKIP_RUNTIME_CHECKS and NDEBUG when assert. Optional GCC-only optimization pragma is specified in metadata.",
+  "codex_receipts": {
+    "preferred_data_heap_double": "Verify/optimization/stages/preferred_data_heap_double.codex.e4b0a49e4c078a13986213098d331e50200803e740777d35367ec3c5aa3d4fe4.json",
+    "preferred_data_radix_frequency_int64": "Verify/optimization/stages/preferred_data_radix_frequency_int64.codex.7b4a7c682013142b7d942fa92d67fbbab1fd41fb95a5c2180970cfc6d9cc9f99.json",
+    "preferred_data_radix_frequency_uint32": "Verify/optimization/stages/preferred_data_radix_frequency_uint32.codex.1706712445bd5f8109f4bef3bba11aae93c7af10637ea6cb05a55df37876f2c0.json"
+  },
+  "review": {
+    "reviews": [
+      {
+        "id": "preferred_data_heap_double",
+        "source_sha256": "ebc6d3da9ec5db65853278c200e1233f05beb3530ddf1ad8b681c7f39c680010",
+        "verdict": "keep",
+        "reason": "机上確認のみ（実行なし）で欠陥は見つからない。値ごとに「主Heap個数−削除待ち個数＝生存個数」が保たれ、抽出値xは生存しているため反対側Heapは非空で、top()の空時-1との誤一致は起きない。反対側topが一致した場合の直接popは削除待ちへのpushと同じ差分で、削除待ちは主Heapの部分多重集合のままなのでcleanのtop一致判定も正しい。4分木経路（親(p+1)/4、子4p-1..4p+2、最後の親count/4）と2分木経路の添字、N=0、±1e9の符号反転も問題ない。出力はHeapのtop/pop_valueが決めておりAPI検証範囲は保たれる。reserveやunrollは測定済みで却下されており、追加の有意な高速化案はない。"
+      },
+      {
+        "id": "preferred_data_radix_frequency_int64",
+        "source_sha256": "04d1e894f13f6a54d8bc1268bf2f71daf0e1f9a5ae9311d84240c310da043cfe",
+        "verdict": "candidate",
+        "reason": "机上確認のみ（実行なし）で欠陥は見つからない。連結キーは値<2^30で非負、昇順なら同値内の位置も昇順になる。n=0と全同値の分岐、q<n/16の連結キー直接探索、unique/offsets/positionsの構築はいずれも正しい。ValueDirectoryはbuckets<=2^bits、offsets_[buckets]=keys.size()で、範囲外の値は事前に除外されるため区間内lower_boundは全域探索と一致する。RadixSortの64bit経路（AVX2走査、active<=4の集計、変動なしbyteの省略）も整合している。出力はRadixSortの順序に依存しておりAPI検証範囲は保たれる。高速化の余地として、ディレクトリのbit上限16は未測定の仮説として試す価値がある（experiments参照）。"
+      },
+      {
+        "id": "preferred_data_radix_frequency_uint32",
+        "source_sha256": "b42fdf93ab75f7a9a5d7236ec7e6127a8b66d022ffa633b1764b2d33c7038486",
+        "verdict": "candidate",
+        "reason": "机上確認のみ（実行なし）で欠陥は見つからない。RadixSort後のuniqueでkeysは昇順かつ重複なしになり、全values[i]はfindで必ず見つかるためranksは正しい。CSRは元位置の昇順で詰めるので各値の位置列は昇順になる。keys.size()<=1の分岐（n=0を含む）、l==r、出現1個の包含判定、2回のlower_boundも正しい。keys_の参照先はmainのkeysで、構築後は変更されず寿命も足りる。出力はRadixSort(vector<uint32_t>)の昇順性に依存しておりAPI検証範囲は保たれる。前処理でn回、照会でq回のfindがバケット内の二分探索を行うため、ディレクトリのbit上限の引き上げが効く可能性がある（未測定の仮説、experiments参照）。"
+      }
+    ],
+    "experiments": [
+      {
+        "ids": [
+          "preferred_data_radix_frequency_uint32",
+          "preferred_data_radix_frequency_int64"
+        ],
+        "hypothesis": "未測定の仮説。相異なる値が最大5e5個あるとき、bit上限16では1バケットに平均約8キーが入り、find1回あたり約3段のlower_boundと分岐予測ミスが生じる。上限を18（さらに20）へ上げると1バケットが約1〜2キーになり、findはoffsets_の参照とほぼ1回の比較で済む。uint32版は前処理でもn回findを呼ぶため効果が大きいと見込む。一方offsets_は最大1MB（18bit）または4MB（20bit）になり、キャッシュミスの増加と構築費用で相殺されるか、small_n/small_qで退行する可能性がある。",
+        "minimal_patch": "両driverのValueDirectoryコンストラクタで `const unsigned bits=std::min<unsigned>(16,std::bit_width(static_cast<std::uint32_t>(keys.size())));` の16を18に変えた版と20に変えた版を別々に作る。他は変更しない。buckets<=2^bitsとoffsets_のuint32添字はそのまま成り立つ。",
+        "required_validation": "既存の全fixtureと追加oracleで、GCC/Clangの検査あり・なし両方について出力一致を確認する。GCC15.2 O3同士で、frequency_max_positions/uniform/ordered/equal/small_n/small_qをAB/BA交替11回の中央値で現行版と比較する。相異値数が多い一様入力で改善し、small_n/small_qで同一バイナリ対照の揺らぎを超える退行がない場合だけ採用する。int64版とuint32版は別々に判定し、片方だけの採用も可とする。採用時は提出ソースのSHA-256を更新する。"
+      }
+    ]
+  },
+  "resolved_records": [
+    {
+      "id": "preferred_data_heap_double",
+      "input_source_sha256": "ebc6d3da9ec5db65853278c200e1233f05beb3530ddf1ad8b681c7f39c680010",
+      "source_sha256": "ebc6d3da9ec5db65853278c200e1233f05beb3530ddf1ad8b681c7f39c680010",
+      "resolution_evidence": [],
+      "review": {
+        "id": "preferred_data_heap_double",
+        "source_sha256": "ebc6d3da9ec5db65853278c200e1233f05beb3530ddf1ad8b681c7f39c680010",
+        "verdict": "keep",
+        "reason": "机上確認のみ（実行なし）で欠陥は見つからない。値ごとに「主Heap個数−削除待ち個数＝生存個数」が保たれ、抽出値xは生存しているため反対側Heapは非空で、top()の空時-1との誤一致は起きない。反対側topが一致した場合の直接popは削除待ちへのpushと同じ差分で、削除待ちは主Heapの部分多重集合のままなのでcleanのtop一致判定も正しい。4分木経路（親(p+1)/4、子4p-1..4p+2、最後の親count/4）と2分木経路の添字、N=0、±1e9の符号反転も問題ない。出力はHeapのtop/pop_valueが決めておりAPI検証範囲は保たれる。reserveやunrollは測定済みで却下されており、追加の有意な高速化案はない。"
+      }
+    },
+    {
+      "id": "preferred_data_radix_frequency_int64",
+      "input_source_sha256": "04d1e894f13f6a54d8bc1268bf2f71daf0e1f9a5ae9311d84240c310da043cfe",
+      "source_sha256": "04d1e894f13f6a54d8bc1268bf2f71daf0e1f9a5ae9311d84240c310da043cfe",
+      "resolution_evidence": [
+        "Audit/added-lc-fable-priority-data-experiment-2026-11-15.json"
+      ],
+      "review": {
+        "id": "preferred_data_radix_frequency_int64",
+        "source_sha256": "04d1e894f13f6a54d8bc1268bf2f71daf0e1f9a5ae9311d84240c310da043cfe",
+        "verdict": "candidate",
+        "reason": "机上確認のみ（実行なし）で欠陥は見つからない。連結キーは値<2^30で非負、昇順なら同値内の位置も昇順になる。n=0と全同値の分岐、q<n/16の連結キー直接探索、unique/offsets/positionsの構築はいずれも正しい。ValueDirectoryはbuckets<=2^bits、offsets_[buckets]=keys.size()で、範囲外の値は事前に除外されるため区間内lower_boundは全域探索と一致する。RadixSortの64bit経路（AVX2走査、active<=4の集計、変動なしbyteの省略）も整合している。出力はRadixSortの順序に依存しておりAPI検証範囲は保たれる。高速化の余地として、ディレクトリのbit上限16は未測定の仮説として試す価値がある（experiments参照）。"
+      }
+    },
+    {
+      "id": "preferred_data_radix_frequency_uint32",
+      "input_source_sha256": "b42fdf93ab75f7a9a5d7236ec7e6127a8b66d022ffa633b1764b2d33c7038486",
+      "source_sha256": "14743e5474e6de1d14f486206b47d60cfa9f70add54a09163a76269ea46f6371",
+      "resolution_evidence": [
+        "Audit/added-lc-fable-priority-data-experiment-2026-11-15.json"
+      ],
+      "review": {
+        "id": "preferred_data_radix_frequency_uint32",
+        "source_sha256": "b42fdf93ab75f7a9a5d7236ec7e6127a8b66d022ffa633b1764b2d33c7038486",
+        "verdict": "candidate",
+        "reason": "机上確認のみ（実行なし）で欠陥は見つからない。RadixSort後のuniqueでkeysは昇順かつ重複なしになり、全values[i]はfindで必ず見つかるためranksは正しい。CSRは元位置の昇順で詰めるので各値の位置列は昇順になる。keys.size()<=1の分岐（n=0を含む）、l==r、出現1個の包含判定、2回のlower_boundも正しい。keys_の参照先はmainのkeysで、構築後は変更されず寿命も足りる。出力はRadixSort(vector<uint32_t>)の昇順性に依存しておりAPI検証範囲は保たれる。前処理でn回、照会でq回のfindがバケット内の二分探索を行うため、ディレクトリのbit上限の引き上げが効く可能性がある（未測定の仮説、experiments参照）。"
+      }
+    }
+  ],
+  "resolution_evidence_sha256": {
+    "Audit/added-lc-fable-priority-data-experiment-2026-11-15.json": "42c851318c53936c447bad208b64567d65ef9a517e26efe8f3996e4e4f69f859"
+  },
+  "prompt_sha256": "b39da74292ecf1fbc734883cfd0b2c47e07786cca53aac1562b8bb5b17daedc8",
+  "response_sha256": "40a687f4e803ebcd6389bb3686767940d1f20ec84cb7ebd3b40adc75bbb82d9b",
+  "model_usage": {
+    "claude-fable-5-2": {
+      "inputTokens": 2,
+      "outputTokens": 5609,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 38452,
+      "webSearchRequests": 0,
+      "costUSD": 0.839608,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 3812,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 38452,
+      "canonicalModel": "claude-fable-5-2",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "usage_after": {
+    "checked_utc": "2026-11-15T13:58:52.618523+00:00",
+    "authorized_email_matches": true,
+    "http_status": 200,
+    "inference_executed": false,
+    "windows": {
+      "five_hour": {
+        "utilization": 58.0,
+        "resets_at": "2026-11-15T18:40:00.527248+00:00"
+      },
+      "seven_day": {
+        "utilization": 28.0,
+        "resets_at": "2026-11-21T09:00:00.527270+00:00"
+      },
+      "seven_day_breakdown": {},
+      "limit_0": {
+        "kind": "session",
+        "model": null,
+        "utilization": 58,
+        "resets_at": "2026-11-15T18:40:00.527248+00:00"
+      },
+      "limit_1": {
+        "kind": "weekly_all",
+        "model": null,
+        "utilization": 28,
+        "resets_at": "2026-11-21T09:00:00.527270+00:00"
+      },
+      "limit_2": {
+        "kind": "weekly_scoped",
+        "model": "Fable",
+        "utilization": 56,
+        "resets_at": "2026-11-21T09:00:00.527593+00:00"
+      }
+    },
+    "extra_usage_enabled": false
+  },
+  "limits": "Fable performed static review; root/agents independently ran listed experiments and validation. Online AC and online fastest are not inferred.",
+  "local_raw_archive": "Audit/data/added-lc-optimization-20261115.zip"
+}

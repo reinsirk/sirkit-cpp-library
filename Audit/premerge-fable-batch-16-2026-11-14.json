@@ -1,0 +1,116 @@
+{
+  "format": 1,
+  "date": "2026-11-14",
+  "stage": "claude",
+  "model": "claude-fable-5-2",
+  "actual_models": [
+    "claude-fable-5-2"
+  ],
+  "effort": "medium",
+  "completed_utc": "2026-11-14T11:10:11.121006+00:00",
+  "source_hashes": {
+    "Geometry/偏角ソート.cpp": "b6caaa8c6290d2ad637d6d4a72b16b8017f5ebbfbe3ec3f55e71c08d2cd291f3",
+    "Verify/current/drivers/angle_sort_main.cpp": "4c2e2cc7acd88816f6b423e32ba3a61327227e4e4a2e691e5d4e5f2bf1379a14",
+    "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab",
+    "Verify/current/submissions/angle_sort.cpp": "340c8d7f963db1cbd1d27af10220017767e2e8befe17334f0eed4c9d9d21c767",
+    "DataStructure/Fenwick_Tree.cpp": "3185047256b4fa6ede5686a72a3dff8babce338a6a11caf9ad2eb422a9a7cf1a",
+    "Verify/current/drivers/fenwick_tree_main.cpp": "156e2eeeae73ac721f308309ad492c09d6e5cf80988f196f262449d5d162b7bc",
+    "Verify/current/submissions/fenwick_tree.cpp": "7f8d054d1949f704c8c0b801a884cefb2bccdd7fec1fdbffd5f1022b26a3b8a3",
+    "Graph/Heavy_Light_Decomposition.cpp": "ca49ccb7049783f6f7f60ea02bb5cfc8ad6befc4d5e687eca5f47b28f128e17e",
+    "Verify/current/drivers/hld_jump_main.cpp": "bbbec8a725b9e39b2c1326e4edfab0fbd185dedc47491c93278544179fdb6f73",
+    "Verify/current/submissions/hld_jump.cpp": "e79932964952243f96faba520628ad6801daeb2821f8ecdca7a75c369f3afcb0",
+    "DataStructure/Segment_Tree.cpp": "563c970487176efb5ff54850abb848da34600fa44af282ec62ecbdcad61f2207",
+    "Verify/current/drivers/hld_path_composite_main.cpp": "787b5956aff811fd24d2d42dd662231f6ec1dfb82b51392aa28b0fc694b9a4fa",
+    "Verify/current/submissions/hld_path_composite.cpp": "16d4c68fc07ec15ade81c3474b7b776634fa365ac4ba95b13d67d5fe6acf5f9f",
+    "Verify/current/drivers/hld_path_prod_main.cpp": "84e9e8f64573b2af1ce67d339b9ff311e2344bb86d77d6acccbd78548f29d231",
+    "Verify/current/submissions/hld_path_prod.cpp": "62f791f6846653553a990e7514bcab298dd38f6f0f0486263bb07c84015e42f6",
+    "Verify/current/drivers/hld_vertex_add_path_sum_main.cpp": "9d9616fa9c915b92625c0633a19108d1de236a7cc1c627f9cd6f5fc992ddfa81",
+    "Verify/current/submissions/hld_vertex_add_path_sum.cpp": "1af19035d7859164cd132d17fd8315ff7d44645a1ae6856846b9b80adf551e97",
+    "Document/heavy_light_decomposition.md": "49144528ba7b3337389a518716b8c38f0764acad8c2ddd953d759d5581d096d5"
+  },
+  "codex_receipts": {
+    "angle_sort": "Verify/optimization/stages/angle_sort.codex.d473db6c2d5ec709d30dd5fde0f87dddff62b296af2dfde38efcb43f0ecf9c9e.json",
+    "fenwick_tree": "Verify/optimization/stages/fenwick_tree.codex.725f810bdb9831fc0056ecb1248f6b67e40fe203ba61f76914cb4330107891d4.json",
+    "hld_jump": "Verify/optimization/stages/hld_jump.codex.6a40c57ca8ca76220230a6c0ccc74006bfc238748efc77aaaa787cb9193db7c2.json",
+    "hld_path_composite": "Verify/optimization/stages/hld_path_composite.codex.fe4aaf6a4f169092d304b61bc32e00fb4428bbea40b6e6438f8fe00420cf536c.json",
+    "hld_path_prod": "Verify/optimization/stages/hld_path_prod.codex.0c30afe65d7aebd60e96bbfc42ab842995dc187fd9325f366d89cc30bcc6537c.json",
+    "hld_vertex_add_path_sum": "Verify/optimization/stages/hld_vertex_add_path_sum.codex.f18bceff643ed95c6275ea9ed6fed464859f17c420be001d45961079f4c95594.json"
+  },
+  "review": {
+    "reviews": [
+      {
+        "id": "angle_sort",
+        "source_sha256": "340c8d7f963db1cbd1d27af10220017767e2e8befe17334f0eed4c9d9d21c767",
+        "verdict": "keep",
+        "reason": "静的読解のみ（未実行）で正しさの問題なし。ライブラリ順は原点→+x軸→上半→-x軸(π)→y<0で、mainは最初のy<0を境にy<0側を先に出力するため(-π,π]順と一致し、原点は角度0の同値位置に入る。小規模用arccmp_lessと大規模用の半平面分割+外積比較は同じ順序。32bit判定はpartitionの述語が全点に1回ずつ適用されるので全点を見ており、int64積は溢れない。AngleTrySortedの末尾併合と32回上限の挿入は、失敗時も順列を保つ。rotate回避はmainのみの変更で、添付の全体測定と整合する。本体だけの効果は主張しない。追加提案なし。"
+      },
+      {
+        "id": "fenwick_tree",
+        "source_sha256": "7f8d054d1949f704c8c0b801a884cefb2bccdd7fec1fdbffd5f1022b26a3b8a3",
+        "verdict": "keep",
+        "reason": "静的読解で問題なし（未実行）。線形構築、addの打切り条件step>n-i、prefix、getの差分復元、valuesの降順逆変換、符号なしStorageでの周回演算、move後の空状態はいずれも正しい。mainは型1のrをint64で読んでintへ変換しており制約内。fast_ioは番兵0と境界での再充填、符号処理、to_charsの容量22が妥当。coupled-prefixとhybrid64は、対立ケース（汎用APIの一様照会の後退、実提出mainの1〜2%悪化）を解消する別仮説を持たないため再提案しない。現行はbaselineと同一ソースで、対照比は速度改善の主張ではない。"
+      },
+      {
+        "id": "hld_jump",
+        "source_sha256": "e79932964952243f96faba520628ad6801daeb2821f8ecdca7a75c369f3afcb0",
+        "verdict": "keep",
+        "reason": "静的読解で問題なし（未実行）。分解は非再帰。重鎖を先に採番し、軽い子をLIFOで処理するため、各部分木と各連結成分のDFS添字は連続になる。subtree_rangeとis_ancestorはこれに依存しており妥当。lcaはheadの深さ比較、kth_ancestorはk<=depthを保つので親-1へ到達しない。jumpは同一鎖の近道、k=0、k>before+afterの-1、v側をbefore+after-kで求める処理が正しく、n=1も可。copy/move/swap/clear/buildは一時オブジェクト+swapで、build失敗時は元を保持する。現行はbaselineと同一ソース。"
+      },
+      {
+        "id": "hld_path_composite",
+        "source_sha256": "16d4c68fc07ec15ade81c3474b7b776634fa365ac4ba95b13d67d5fe6acf5f9f",
+        "verdict": "keep",
+        "reason": "静的読解で非可換の向きは正しい（未実行）。添字の大きい側を持ち上げる選択は、鎖の添字連続性からLCAを越えない。u側は即時append、v側はprependし、中央区間はu側の末尾へ付けて最後にop(from_u,from_v)とするので通行順になる。逆向き区間[l,r)はbackwardの[N-r,N-l)と対応し、setはpとN-1-pの両方を更新する。append_affineは「先に適用する方が左」で、出力式と一致。segtreeのprodは、左はlowbit加算、右はlowbit減算でstopに正確に到達し（最上位相違ビットで場合分けして確認）、左右の結合順も保つ。update_carried_ancestorsも正しい。directionalな3引数queryはstd::identity経由でreverseを二重適用しない。State構築は強い保証で、moveした分解からの構築失敗時だけ移動元が空になり得るが、文書に記載済み。HldFenwickAccess（前方宣言のみ）とHldSegmentAccess::enabledは現行コードで未使用の残置で、動作には無害。整理するかはrootの判断。"
+      },
+      {
+        "id": "hld_path_prod",
+        "source_sha256": "62f791f6846653553a990e7514bcab298dd38f6f0f0486263bb07c84015e42f6",
+        "verdict": "keep",
+        "reason": "静的読解で問題なし（未実行）。fenwickはHldOwnedRangeTraitsの一次テンプレートに入り、value_typeはint64、単位元はT{}、結合は符号なし周回加算。可換版path_prodは添字比較でswapし、最後に同一鎖の区間を照会する。所有版range_queryの単独要素get近道はsumと同値。with_valuesの&&版は分解をmoveし、値配列への参照は保持しない。コピーはStateの深いコピーで独立、代入はcopy-and-swap。最大値は約1e15でint64に収まる。現行はbaselineと同一ソースで、速度改善の主張はない。"
+      },
+      {
+        "id": "hld_vertex_add_path_sum",
+        "source_sha256": "1af19035d7859164cd132d17fd8315ff7d44645a1ae6856846b9b80adf551e97",
+        "verdict": "keep",
+        "reason": "静的読解で問題なし（未実行）。r-l==1のときのget(l)はsum(l,l+1)と同値で、get_uncheckedの差分範囲も正しい。for_each_pathは空区間を渡さず、tailは32要素あり、v側の軽辺数（最大でlog2 N程度）に対して十分で、ヒープ確保もない。index/for_each_pathのAPI被覆は維持されている。和は可換なのでreversedを無視してよい。star/randomの改善はmain込みの全体測定での結果として扱う。旧screenはGCC15.3、現行測定はGCC15.2で、両者を混同しない。Fenwick本体の却下案は適用しない。オンライン判定は未評価。"
+      }
+    ],
+    "experiments": []
+  },
+  "usage_after": {
+    "windows": {
+      "five_hour": {
+        "utilization": 38.0,
+        "resets_at": "2026-11-14T15:40:00.441451+00:00"
+      },
+      "seven_day": {
+        "utilization": 4.0,
+        "resets_at": "2026-11-21T09:00:00.441468+00:00"
+      },
+      "seven_day_breakdown": {}
+    },
+    "extra_usage_enabled": false
+  },
+  "prompt_sha256": "64fb7362bab3323c7d773871f27e046f22043c4efaae62165a402966d763dba4",
+  "response_sha256": "c9d8a3c95c80cf5c152f9ee3789df7a993933a0475c4a4a9af38cbf16ef02551",
+  "model_usage": {
+    "claude-fable-5-2": {
+      "inputTokens": 2,
+      "outputTokens": 14806,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 58253,
+      "webSearchRequests": 0,
+      "costUSD": 1.5243039999999999,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 12701,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 58253,
+      "canonicalModel": "claude-fable-5-2",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "source_representation": "All library/main/I/O/vendor code supplied once per file; only comments removed with full token/literal equality verification.",
+  "review_limitations": "Static review plus supplied measured evidence, not new model-executed measurements. No online submission or AC inference."
+}

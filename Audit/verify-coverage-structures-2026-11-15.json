@@ -1,0 +1,2297 @@
+{
+  "date": "2026-11-15",
+  "scope": "DataStructureを含むLC37entry。Graph混在HLDは別担当。",
+  "assessment_meaning": {
+    "direct": "選んだ問題は主操作へ直接対応する。ただしnot_covered記載のAPIまで全検証済みとはしない。",
+    "partial": "主要な公開機能または型・状態の組合せがこの問題では実行されない。現在の問題の正しさを否定する意味ではない。",
+    "inappropriate": "主回答が対象ライブラリへ依存しない、または問題制約/計算量と不整合。"
+  },
+  "records": [
+    {
+      "id": "binary_trie",
+      "libraries": [
+        "DataStructure/Binary_Trie.cpp"
+      ],
+      "problem_url": "https://judge.yosupo.jp/problem/set_xor_min",
+      "assessment": "partial",
+      "exercised_apis": [
+        "uint32/最高bit29",
+        "insert_unique/del",
+        "min_xor(x).first"
+      ],
+      "not_covered": [
+        "重複を許すadd/count・匿名とID混在",
+        "operate_xor",
+        "get_kth/count_less/min/max_element",
+        "ID一覧と指定ID削除",
+        "max_xor/count_xor_less",
+        "既定MAX_LOG・64bitキー・容量境界"
+      ],
+      "reasoning": "集合XOR最小値として適切だが、集合・匿名・狭い整数幅だけ。最小値のsecond(ID)は読まれない。",
+      "supplemental_ids": [
+        "coverage_structure_binary_ordered",
+        "coverage_structure_binary_xor_ids"
+      ],
+      "sources": [
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/data_structure/set_xor_min/task.md",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/data_structure/set_xor_min/info.toml"
+      ],
+      "official_constraints": {
+        "MAX_Q": 500000
+      },
+      "official_time_limit": 5.0,
+      "driver": "Verify/current/drivers/binary_trie_main.cpp",
+      "driver_sha256": "ffd1f56f2785089ed0884abfb3b45341007b899f6d115fb3c15c45238c503ff6",
+      "library_sha256": {
+        "DataStructure/Binary_Trie.cpp": "d76c62cba55987fecc730c8a969db370b779f5db1ab309d00b4ec4a866fd0c1a"
+      },
+      "official_task_sha256": "f60a59234c2d8309397bcef42e11fa93170f9289baef06c4048f6fd928b33c62",
+      "official_info_sha256": "f77177cd93cb39f905b5c458a8148c1abffce720e63a12229310257243e483fc"
+    },
+    {
+      "id": "compressed_binary_trie",
+      "libraries": [
+        "DataStructure/Compressed_Binary_Trie.cpp"
+      ],
+      "problem_url": "https://judge.yosupo.jp/problem/set_xor_min",
+      "assessment": "partial",
+      "exercised_apis": [
+        "uint32/最高bit29",
+        "insert_unique/del",
+        "min_xor(x).first"
+      ],
+      "not_covered": [
+        "重複を許すadd/count・匿名とID混在",
+        "operate_xor",
+        "get_kth/count_less/min/max_element",
+        "ID一覧と指定ID削除",
+        "max_xor/count_xor_less",
+        "既定MAX_LOG・64bitキー・容量境界"
+      ],
+      "reasoning": "集合XOR最小値として適切だが、集合・匿名・狭い整数幅だけ。最小値のsecond(ID)は読まれない。",
+      "supplemental_ids": [
+        "coverage_structure_compressed_ordered",
+        "coverage_structure_compressed_xor_ids"
+      ],
+      "sources": [
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/data_structure/set_xor_min/task.md",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/data_structure/set_xor_min/info.toml"
+      ],
+      "official_constraints": {
+        "MAX_Q": 500000
+      },
+      "official_time_limit": 5.0,
+      "driver": "Verify/current/drivers/compressed_binary_trie_main.cpp",
+      "driver_sha256": "c5763def1647d50ca3abdbe2e8e4efaaa0221dd0f6ca1a831f1fe861bc9d82e3",
+      "library_sha256": {
+        "DataStructure/Compressed_Binary_Trie.cpp": "7dd272adb8c27fbd63ab9ac5bc57b160ec73817a26bd2c9948533cabaa87c103"
+      },
+      "official_task_sha256": "f60a59234c2d8309397bcef42e11fa93170f9289baef06c4048f6fd928b33c62",
+      "official_info_sha256": "f77177cd93cb39f905b5c458a8148c1abffce720e63a12229310257243e483fc"
+    },
+    {
+      "id": "preferred_data_heap_double",
+      "libraries": [
+        "DataStructure/heap.cpp"
+      ],
+      "problem_url": "https://judge.yosupo.jp/problem/double_ended_priority_queue",
+      "assessment": "direct",
+      "exercised_apis": [
+        "vector移動からのheapify",
+        "push/top/pop/pop_value/empty",
+        "重複を含むmin/maxと遅延削除"
+      ],
+      "not_covered": [
+        "replace_top/push_pop/top_or",
+        "空時API・clear/reserve・copy/move",
+        "int全域（問題値は±1e9）"
+      ],
+      "reasoning": "4個すべて公開Heapであり、主順序・削除順序とも出力に必要。補助std構造の答えで代用していない。",
+      "supplemental_ids": [],
+      "sources": [
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/data_structure/double_ended_priority_queue/task.md",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/data_structure/double_ended_priority_queue/info.toml"
+      ],
+      "official_constraints": {
+        "N_MIN": 0,
+        "N_MAX": 500000,
+        "Q_MIN": 1,
+        "Q_MAX": 500000,
+        "V_MIN": -1000000000,
+        "V_MAX": 1000000000
+      },
+      "official_time_limit": 10.0,
+      "driver": "Verify/current/drivers/preferred_data_heap_double_main.cpp",
+      "driver_sha256": "a35398b86b93b56f5394a4247bed28de09d61c53da15e9d4b3f5d71dd8d81aab",
+      "library_sha256": {
+        "DataStructure/heap.cpp": "45d24c1d78141c5652011e44b3045240abeab14b226351a2d3909ae251513a1c"
+      },
+      "official_task_sha256": "1a6347d65ac366646749c237b4a090205555d92dc5834fa0289fe5b7bdb8f505",
+      "official_info_sha256": "f1eb6dc5b8028b6da8c2d994cbc4d919330facd3c984836b1b6887bb9bfa8d32"
+    },
+    {
+      "id": "fenwick_tree",
+      "libraries": [
+        "DataStructure/Fenwick_Tree.cpp"
+      ],
+      "problem_url": "https://judge.yosupo.jp/problem/point_add_range_sum",
+      "assessment": "direct",
+      "exercised_apis": [
+        "vector構築",
+        "int64 add/sum(l,r)"
+      ],
+      "not_covered": [
+        "get/set・lower_bound/upper_bound",
+        "values/reset/clear/ownership",
+        "mod2^bit整数境界・他のT"
+      ],
+      "reasoning": "点加算/半開区間和はAPIに直接一致する。非負入力だが境界探索は呼ばない。",
+      "supplemental_ids": [
+        "coverage_structure_fenwick_predecessor"
+      ],
+      "sources": [
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/data_structure/point_add_range_sum/task.md",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/data_structure/point_add_range_sum/info.toml"
+      ],
+      "official_constraints": {
+        "N_AND_Q_MAX": 500000,
+        "A_AND_X_MAX": 1000000000
+      },
+      "official_time_limit": 5.0,
+      "driver": "Verify/current/drivers/fenwick_tree_main.cpp",
+      "driver_sha256": "156e2eeeae73ac721f308309ad492c09d6e5cf80988f196f262449d5d162b7bc",
+      "library_sha256": {
+        "DataStructure/Fenwick_Tree.cpp": "3185047256b4fa6ede5686a72a3dff8babce338a6a11caf9ad2eb422a9a7cf1a"
+      },
+      "official_task_sha256": "dbc0e31eea2326becc0ed5d5fc4e9abd56599692c7e1b1a2198b4d5e268ddb88",
+      "official_info_sha256": "e4bc11b1c68357961379ed2d14344e723bb91aaa85406094c6b75063e054aaf2"
+    },
+    {
+      "id": "segment_tree",
+      "libraries": [
+        "DataStructure/Segment_Tree.cpp"
+      ],
+      "problem_url": "https://judge.yosupo.jp/problem/point_add_range_sum",
+      "assessment": "direct",
+      "exercised_apis": [
+        "vector構築",
+        "set/get/prod（int64加法）"
+      ],
+      "not_covered": [
+        "max_right/min_left",
+        "all_prod/transform/values・再構築/ownership",
+        "このentry単体では非可換積"
+      ],
+      "reasoning": "点加算をget+setで正しく実装。別composite entryが非可換性を補う。",
+      "supplemental_ids": [
+        "segment_tree_composite",
+        "coverage_structure_segment_predecessor"
+      ],
+      "sources": [
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/data_structure/point_add_range_sum/task.md",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/data_structure/point_add_range_sum/info.toml"
+      ],
+      "official_constraints": {
+        "N_AND_Q_MAX": 500000,
+        "A_AND_X_MAX": 1000000000
+      },
+      "official_time_limit": 5.0,
+      "driver": "Verify/current/drivers/segment_tree_main.cpp",
+      "driver_sha256": "6b9628a6072ea3685d685641a633160f06c6137914ff9c23438eccda27873ba4",
+      "library_sha256": {
+        "DataStructure/Segment_Tree.cpp": "563c970487176efb5ff54850abb848da34600fa44af282ec62ecbdcad61f2207"
+      },
+      "official_task_sha256": "dbc0e31eea2326becc0ed5d5fc4e9abd56599692c7e1b1a2198b4d5e268ddb88",
+      "official_info_sha256": "e4bc11b1c68357961379ed2d14344e723bb91aaa85406094c6b75063e054aaf2"
+    },
+    {
+      "id": "segment_tree_composite",
+      "libraries": [
+        "DataStructure/Segment_Tree.cpp"
+      ],
+      "problem_url": "https://judge.yosupo.jp/problem/point_set_range_composite",
+      "assessment": "direct",
+      "exercised_apis": [
+        "set/prod",
+        "非可換なアフィン関数合成"
+      ],
+      "not_covered": [
+        "max_right/min_left",
+        "空列・空区間（公式はN>=1、l<r）",
+        "全積・所有権/再構築"
+      ],
+      "reasoning": "関数の適用順が答えに影響し、可換和だけのentryを補う。",
+      "supplemental_ids": [
+        "segment_tree"
+      ],
+      "sources": [
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/data_structure/point_set_range_composite/task.md",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/data_structure/point_set_range_composite/info.toml"
+      ],
+      "official_constraints": {},
+      "official_time_limit": 5.0,
+      "driver": "Verify/current/drivers/segment_tree_composite_main.cpp",
+      "driver_sha256": "589ba9bf3b342e6534d81cf95867ce6f04509c9b6addc2ee1e2e0d4b4e24437c",
+      "library_sha256": {
+        "DataStructure/Segment_Tree.cpp": "563c970487176efb5ff54850abb848da34600fa44af282ec62ecbdcad61f2207"
+      },
+      "official_task_sha256": "86dc6871ff1fa8601881dd6d6762261e714ba6f79b136780d8ae805c43cbd626",
+      "official_info_sha256": "d32bcc980ff2fbe0e071c511109d28419c843885639f91f5e8dcc48a283969c3"
+    },
+    {
+      "id": "sparse_table",
+      "libraries": [
+        "DataStructure/Sparse_Table.cpp"
+      ],
+      "problem_url": "https://judge.yosupo.jp/problem/staticrmq",
+      "assessment": "direct",
+      "exercised_apis": [
+        "int minのvector構築/prod"
+      ],
+      "not_covered": [
+        "非可換な冪等演算",
+        "空区間の単位元・境界探索",
+        "get/all_prod/values・所有権/再構築"
+      ],
+      "reasoning": "RMQは結合的かつ冪等というSparseTableの前提に合致。ただし他の冪等演算を保証する結果ではない。",
+      "supplemental_ids": [],
+      "sources": [
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/data_structure/staticrmq/task.md",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/data_structure/staticrmq/info.toml"
+      ],
+      "official_constraints": {
+        "N_AND_Q_MAX": 500000,
+        "A_MAX": 1000000000
+      },
+      "official_time_limit": 5.0,
+      "driver": "Verify/current/drivers/sparse_table_main.cpp",
+      "driver_sha256": "6601da375131716c6d0f278d95c6ed17b3d4191bf4edc3aca9aeedfdb8be87e5",
+      "library_sha256": {
+        "DataStructure/Sparse_Table.cpp": "8a58ed0c637d95ef291524e4679d817c9c5c3479f9e1120f54021e6b5878c7fb"
+      },
+      "official_task_sha256": "7690bc99e3640decd640bf8cf0feb604b7a8d9359480698e38666670e7a7a532",
+      "official_info_sha256": "6efb4f756209387d8046d01b25cd927151205f2b5b074fb171b5c8fc983263cd"
+    },
+    {
+      "id": "disjoint_sparse_table",
+      "libraries": [
+        "DataStructure/Disjoint_Sparse_Table.cpp"
+      ],
+      "problem_url": "https://judge.yosupo.jp/problem/staticrmq",
+      "assessment": "partial",
+      "exercised_apis": [
+        "int minのvector構築/prod"
+      ],
+      "not_covered": [
+        "非冪等な結合演算",
+        "非可換の順序",
+        "境界探索/空区間/再構築/所有権"
+      ],
+      "reasoning": "minは冪等なので、通常SparseTableと異なる能力を検証していなかった。非可換・非冪等の関数合成を追加する。",
+      "supplemental_ids": [
+        "coverage_structure_disjoint_composite"
+      ],
+      "sources": [
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/data_structure/staticrmq/task.md",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/data_structure/staticrmq/info.toml"
+      ],
+      "official_constraints": {
+        "N_AND_Q_MAX": 500000,
+        "A_MAX": 1000000000
+      },
+      "official_time_limit": 5.0,
+      "driver": "Verify/current/drivers/disjoint_sparse_table_main.cpp",
+      "driver_sha256": "f5f83c4a42abf5ad3ddeb3f1c14a960087a8492f5d51a43fa42646b0c9d4e4de",
+      "library_sha256": {
+        "DataStructure/Disjoint_Sparse_Table.cpp": "91a6c15c7501385f279dbdf006b31800072995c8d4afbc12e229e04dd792e20f"
+      },
+      "official_task_sha256": "7690bc99e3640decd640bf8cf0feb604b7a8d9359480698e38666670e7a7a532",
+      "official_info_sha256": "6efb4f756209387d8046d01b25cd927151205f2b5b074fb171b5c8fc983263cd"
+    },
+    {
+      "id": "lazy_segment_tree",
+      "libraries": [
+        "DataStructure/Lazy_Segment_Tree.cpp"
+      ],
+      "problem_url": "https://judge.yosupo.jp/problem/range_affine_range_sum",
+      "assessment": "direct",
+      "exercised_apis": [
+        "vector構築",
+        "apply(l,r,f)/prod",
+        "非可換作用compositionとlength付きmapping"
+      ],
+      "not_covered": [
+        "ACL形の2引数mapping",
+        "点set/get/apply・境界探索",
+        "values/all_prod・所有権/再構築",
+        "非可換集約op"
+      ],
+      "reasoning": "アフィン作用の適用順は直接検証。集約opは可換和であり、任意モノイドの順序まで検証したとは扱わない。",
+      "supplemental_ids": [],
+      "sources": [
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/data_structure/range_affine_range_sum/task.md",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/data_structure/range_affine_range_sum/info.toml"
+      ],
+      "official_constraints": {
+        "N_AND_Q_MAX": 500000,
+        "MOD": 998244353
+      },
+      "official_time_limit": 5.0,
+      "driver": "Verify/current/drivers/lazy_segment_tree_main.cpp",
+      "driver_sha256": "280beb528da436c15c7d9b1164ed2f87ecdd8db9da09c230b2c63467c4f90bc7",
+      "library_sha256": {
+        "DataStructure/Lazy_Segment_Tree.cpp": "4f484a110cd4cb1a20a18cc61f640550a162aadd73e307b6f04fafb01dd44255"
+      },
+      "official_task_sha256": "ce46165674209f80bb331078c5961682074d7b0ac7621e750d9e51e56ac84e64",
+      "official_info_sha256": "0220e986598fae77c34065edc2cf9b3e4e3eab7803f7713c6d1e4855837733c1"
+    },
+    {
+      "id": "wavelet_kth",
+      "libraries": [
+        "DataStructure/Wavelet_Matrix.cpp"
+      ],
+      "problem_url": "https://judge.yosupo.jp/problem/range_kth_smallest",
+      "assessment": "partial",
+      "exercised_apis": [
+        "uint32 vector構築",
+        "kth_smallest"
+      ],
+      "not_covered": [
+        "signed/64bitと大きいbit幅",
+        "kth_largest・range_min/max",
+        "access・count_less/range_freq・predecessor/successor",
+        "build/ownership"
+      ],
+      "reasoning": "静的区間順位は直接一致。ただしu32・値≤1e9へ問題特化したmainであり汎用の型幅/符号は対象外。",
+      "supplemental_ids": [
+        "wavelet_frequency"
+      ],
+      "sources": [
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/data_structure/range_kth_smallest/task.md",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/data_structure/range_kth_smallest/info.toml"
+      ],
+      "official_constraints": {
+        "N_MIN": 1,
+        "N_MAX": 200000,
+        "Q_MIN": 1,
+        "Q_MAX": 200000,
+        "A_MIN": 0,
+        "A_MAX": 1000000000
+      },
+      "official_time_limit": 5.0,
+      "driver": "Verify/current/drivers/wavelet_kth_main.cpp",
+      "driver_sha256": "a1a16532d28d5b69e7abee5fae326847ce41e651fe1beeb9c020a4ab1c13735f",
+      "library_sha256": {
+        "DataStructure/Wavelet_Matrix.cpp": "adebb5a890da13843a5730df6efd15ad477a8819308be1008f27b801a0804500"
+      },
+      "official_task_sha256": "a98f35d63f839bfa48aa92134bc9ab9a1faef81fc98d0f015e2c08a1e5e859ad",
+      "official_info_sha256": "1012b42cc29866df46fef6c24f07c8300d7c05cbd1e9bcf4375c8292ff4e2bfa"
+    },
+    {
+      "id": "wavelet_frequency",
+      "libraries": [
+        "DataStructure/Wavelet_Matrix.cpp"
+      ],
+      "problem_url": "https://judge.yosupo.jp/problem/static_range_frequency",
+      "assessment": "partial",
+      "exercised_apis": [
+        "uint32 vector構築",
+        "rank(value,l,r)"
+      ],
+      "not_covered": [
+        "signed/64bit",
+        "count_less/less_equal/range_freq",
+        "predecessor/successor/access",
+        "build/ownership"
+      ],
+      "reasoning": "等値頻度には直接一致するが、値の大小範囲とアクセス・前後探索は実行しない。",
+      "supplemental_ids": [
+        "wavelet_kth"
+      ],
+      "sources": [
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/data_structure/static_range_frequency/task.md",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/data_structure/static_range_frequency/info.toml"
+      ],
+      "official_constraints": {
+        "N_MIN": 0,
+        "N_MAX": 500000,
+        "Q_MIN": 0,
+        "Q_MAX": 500000,
+        "A_MIN": 0,
+        "A_MAX": 1000000000
+      },
+      "official_time_limit": 5.0,
+      "driver": "Verify/current/drivers/wavelet_frequency_main.cpp",
+      "driver_sha256": "7571e9729ca30db1e4eab5bce7b2adb0622fca9719df3d96a2331b7d8d41866e",
+      "library_sha256": {
+        "DataStructure/Wavelet_Matrix.cpp": "adebb5a890da13843a5730df6efd15ad477a8819308be1008f27b801a0804500"
+      },
+      "official_task_sha256": "90d7041c253f59250c085eb09e4be34ca8197fae6b2fe1c27937558790cc9e7a",
+      "official_info_sha256": "2539017ab2378adf7f33d6635d7262b660d120108a571408c4b8af40ee4aca1a"
+    },
+    {
+      "id": "persistent_segment_tree",
+      "libraries": [
+        "DataStructure/Persistent_Segment_Tree.cpp"
+      ],
+      "problem_url": "https://judge.yosupo.jp/problem/point_add_range_sum",
+      "assessment": "partial",
+      "exercised_apis": [
+        "vector構築",
+        "latest_root/transform",
+        "現在版prod"
+      ],
+      "not_covered": [
+        "更新前のRootの再照会",
+        "任意過去版からの分岐と旧版の不変性",
+        "set/get・非可換積・境界探索",
+        "build/remap_from/ownership"
+      ],
+      "reasoning": "rootを毎回上書きし現在版だけを照会するため、永続性が壊れていても通る。過去版を参照するQueueを追加する。",
+      "supplemental_ids": [
+        "coverage_structure_persistent_queue"
+      ],
+      "sources": [
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/data_structure/point_add_range_sum/task.md",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/data_structure/point_add_range_sum/info.toml"
+      ],
+      "official_constraints": {
+        "N_AND_Q_MAX": 500000,
+        "A_AND_X_MAX": 1000000000
+      },
+      "official_time_limit": 5.0,
+      "driver": "Verify/current/drivers/persistent_segment_tree_main.cpp",
+      "driver_sha256": "4bf7d46472a15c44418be00fdfadf0708d92348c2efbafdcfa9f0ee5b5a688c3",
+      "library_sha256": {
+        "DataStructure/Persistent_Segment_Tree.cpp": "84774bc0a6295daf231f782cb53ae971b31d1012c05325dea7562b7b94366a16"
+      },
+      "official_task_sha256": "dbc0e31eea2326becc0ed5d5fc4e9abd56599692c7e1b1a2198b4d5e268ddb88",
+      "official_info_sha256": "e4bc11b1c68357961379ed2d14344e723bb91aaa85406094c6b75063e054aaf2"
+    },
+    {
+      "id": "segment_tree_beats",
+      "libraries": [
+        "DataStructure/Segment_Tree_Beats.cpp"
+      ],
+      "problem_url": "https://judge.yosupo.jp/problem/range_chmin_chmax_add_range_sum",
+      "assessment": "direct",
+      "exercised_apis": [
+        "vector構築",
+        "chmin/chmax/add/sumの混在"
+      ],
+      "not_covered": [
+        "get/set/min/max/values",
+        "int64全域・overflow検出/変更なし",
+        "空列/所有権/reset"
+      ],
+      "reasoning": "問題の全更新が公開APIに直接一致。公式入力の数値域を越える桁あふれ保証は別の補足検査対象。",
+      "supplemental_ids": [],
+      "sources": [
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/data_structure/range_chmin_chmax_add_range_sum/task.md",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/data_structure/range_chmin_chmax_add_range_sum/info.toml"
+      ],
+      "official_constraints": {
+        "N_AND_Q_MAX": 200000,
+        "A_ABS_MAX": 1000000000000
+      },
+      "official_time_limit": 10.0,
+      "driver": "Verify/current/drivers/segment_tree_beats_main.cpp",
+      "driver_sha256": "88a7f9daee829ca24f1a69d27a61b9c08d91ea5c5ee802b1b8f230b4e59c7a1e",
+      "library_sha256": {
+        "DataStructure/Segment_Tree_Beats.cpp": "49de3105749f4ce57809b82854e7b314f63e2cc56c906022be9379b0a89c1c85"
+      },
+      "official_task_sha256": "59c6c9a172c985e4656eed92637f78d0b08deb45adbf93b6ac02700d0612818d",
+      "official_info_sha256": "f9ea8afba2fc9871f7b52598a56580223d7b0da0ba3c51251ce5e4f904549166"
+    },
+    {
+      "id": "sliding_window_aggregation",
+      "libraries": [
+        "DataStructure/Sliding_Window_Aggregation.cpp"
+      ],
+      "problem_url": "https://judge.yosupo.jp/problem/queue_operate_all_composite",
+      "assessment": "direct",
+      "exercised_apis": [
+        "push_back/pop_front/all_prod",
+        "非可換関数合成・空キュー積"
+      ],
+      "not_covered": [
+        "front/back",
+        "size/empty・clear・所有権",
+        "要素演算/確保失敗時の保証"
+      ],
+      "reasoning": "FIFO関数合成をそのまま解く。オフライン別解のDSTを使っていない。",
+      "supplemental_ids": [],
+      "sources": [
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/data_structure/queue_operate_all_composite/task.md",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/data_structure/queue_operate_all_composite/info.toml"
+      ],
+      "official_constraints": {},
+      "official_time_limit": 5.0,
+      "driver": "Verify/current/drivers/sliding_window_aggregation_main.cpp",
+      "driver_sha256": "4ecc4a1a5e574443d8da2b332aa7ee0f21d1f5947b8067c19938becabe46933f",
+      "library_sha256": {
+        "DataStructure/Sliding_Window_Aggregation.cpp": "ee199915fe02e63044ec1a8f2a2378d80c1d51cf5a9e3e4f6406f3c9c2ea6a80"
+      },
+      "official_task_sha256": "a27557a1ded1a708163496934028f0356450d650e2e9b0169e76a78518baabfe",
+      "official_info_sha256": "f588c3e8a13eefd0f280a3fb4ee02ddf3f52c32a095612dcf28e2abc1a9cc6eb"
+    },
+    {
+      "id": "link_cut_tree",
+      "libraries": [
+        "DataStructure/Link_Cut_Tree.cpp"
+      ],
+      "problem_url": "https://judge.yosupo.jp/problem/dynamic_tree_vertex_add_path_sum",
+      "assessment": "direct",
+      "exercised_apis": [
+        "link/cut",
+        "transform",
+        "path_prodの加算"
+      ],
+      "not_covered": [
+        "非連結path_prod・connected/find_root",
+        "path_size/length/kth/lca",
+        "パス作用・非可換積",
+        "reset/所有権/失敗時保証"
+      ],
+      "reasoning": "動的木の辺の張替えとパス積は直接対応。ただし入力は常に木なので拒否されるlink/cutや非連結はない。",
+      "supplemental_ids": [
+        "link_cut_tree_composite",
+        "link_cut_tree_affine"
+      ],
+      "sources": [
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/tree/dynamic_tree_vertex_add_path_sum/task.md",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/tree/dynamic_tree_vertex_add_path_sum/info.toml"
+      ],
+      "official_constraints": {
+        "N_AND_Q_MIN": 1,
+        "N_AND_Q_MAX": 200000,
+        "A_AND_X_MIN": 0,
+        "A_AND_X_MAX": 1000000000
+      },
+      "official_time_limit": 5.0,
+      "driver": "Verify/current/drivers/link_cut_tree_main.cpp",
+      "driver_sha256": "444b0abb2388a5dfe601bb56250ce38a6ccff308330b4f0d14e51d3ce0f46e51",
+      "library_sha256": {
+        "DataStructure/Link_Cut_Tree.cpp": "9feb20f04f08b3ab27eacf4601487c8fa6cb59c5e74ce1846dbff8738b5802bf"
+      },
+      "official_task_sha256": "31b47a3e5f7d13f3eb76718d8aa907f2167b48837fb0b9251670666973bdb8e6",
+      "official_info_sha256": "86580dd57efa1720286adeda802ce3c044ff3909e1dc913365235b736dbff501"
+    },
+    {
+      "id": "link_cut_tree_composite",
+      "libraries": [
+        "DataStructure/Link_Cut_Tree.cpp"
+      ],
+      "problem_url": "https://judge.yosupo.jp/problem/dynamic_tree_vertex_set_path_composite",
+      "assessment": "direct",
+      "exercised_apis": [
+        "link/cut/set",
+        "u→v方向付きpath_prodの非可換積"
+      ],
+      "not_covered": [
+        "動的木でのパス作用",
+        "非連結/不正辺・kth/lca",
+        "所有権/再構築"
+      ],
+      "reasoning": "方向により変わる合成が出力され、加法版だけでは分からない反転順序を検証。",
+      "supplemental_ids": [
+        "link_cut_tree",
+        "link_cut_tree_affine"
+      ],
+      "sources": [
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/tree/dynamic_tree_vertex_set_path_composite/task.md",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/tree/dynamic_tree_vertex_set_path_composite/info.toml"
+      ],
+      "official_constraints": {
+        "N_AND_Q_MIN": 1,
+        "N_AND_Q_MAX": 200000,
+        "MOD": 998244353
+      },
+      "official_time_limit": 5.0,
+      "driver": "Verify/current/drivers/link_cut_tree_composite_main.cpp",
+      "driver_sha256": "6fc251ea63a3ec15f04ce29adc0912734e61292108e8e3f2725c40d518b0ab7c",
+      "library_sha256": {
+        "DataStructure/Link_Cut_Tree.cpp": "9feb20f04f08b3ab27eacf4601487c8fa6cb59c5e74ce1846dbff8738b5802bf"
+      },
+      "official_task_sha256": "2649cb6cfa396b82a94f2fcaf8230241a0c2f379be2b2c9fdea285387410a0c0",
+      "official_info_sha256": "d8c2d1f8b516652f5f5ff55546f86b7e6a03842c01b8ebbed33c44729c85b3f2"
+    },
+    {
+      "id": "link_cut_tree_affine",
+      "libraries": [
+        "DataStructure/Link_Cut_Tree.cpp"
+      ],
+      "problem_url": "https://judge.yosupo.jp/problem/range_affine_range_sum",
+      "assessment": "partial",
+      "exercised_apis": [
+        "chainのlink",
+        "apply(u,v,f)/path_prod",
+        "アフィン作用のcomposition"
+      ],
+      "not_covered": [
+        "作用とcut/link張替えの相互作用",
+        "非可換opと作用の組合せ",
+        "非連結パス・点apply・所有権"
+      ],
+      "reasoning": "固定鎖へ区間操作を帰着してパス作用は検証するが、作用を保持した木の張替えまでは検証しない。",
+      "supplemental_ids": [
+        "link_cut_tree",
+        "link_cut_tree_composite"
+      ],
+      "sources": [
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/data_structure/range_affine_range_sum/task.md",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/data_structure/range_affine_range_sum/info.toml"
+      ],
+      "official_constraints": {
+        "N_AND_Q_MAX": 500000,
+        "MOD": 998244353
+      },
+      "official_time_limit": 5.0,
+      "driver": "Verify/current/drivers/link_cut_tree_affine_main.cpp",
+      "driver_sha256": "034538a8e73ad6b7ea46bcaac5df7ec889e96f0ccb195e6d74b550fe9b6c9aea",
+      "library_sha256": {
+        "DataStructure/Link_Cut_Tree.cpp": "9feb20f04f08b3ab27eacf4601487c8fa6cb59c5e74ce1846dbff8738b5802bf"
+      },
+      "official_task_sha256": "ce46165674209f80bb331078c5961682074d7b0ac7621e750d9e51e56ac84e64",
+      "official_info_sha256": "0220e986598fae77c34065edc2cf9b3e4e3eab7803f7713c6d1e4855837733c1"
+    },
+    {
+      "id": "dual_segment_tree",
+      "libraries": [
+        "DataStructure/Dual_Segment_Tree.cpp"
+      ],
+      "problem_url": "https://judge.yosupo.jp/problem/range_affine_point_get",
+      "assessment": "direct",
+      "exercised_apis": [
+        "vector構築",
+        "apply(l,r,f)/get",
+        "非可換作用の適用順"
+      ],
+      "not_covered": [
+        "点set/apply",
+        "空列/reset/clear/所有権",
+        "他の型・作用の例外"
+      ],
+      "reasoning": "区間アフィン更新と点値取得が公開機能に直接一致。",
+      "supplemental_ids": [],
+      "sources": [
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/data_structure/range_affine_point_get/task.md",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/data_structure/range_affine_point_get/info.toml"
+      ],
+      "official_constraints": {
+        "N_AND_Q_MAX": 500000,
+        "MOD": 998244353
+      },
+      "official_time_limit": 5.0,
+      "driver": "Verify/current/drivers/dual_segment_tree_main.cpp",
+      "driver_sha256": "65f3ae9bd5eb7d7d67dee63533ff269030635269d46f1bad95d7d5baf9069655",
+      "library_sha256": {
+        "DataStructure/Dual_Segment_Tree.cpp": "2a4edc95581761a38cd00f5e9257adf07242ea664f275012b9991c597ba3d3e1"
+      },
+      "official_task_sha256": "82f2d09abb82b873ed237c87b985ce14aed534c5d7e3cc6afbff7446161261eb",
+      "official_info_sha256": "a0dc87c7818d25428512f3222028d757e7692b0d127c4f179b4bdf58ef826cbd"
+    },
+    {
+      "id": "dynamic_bitset",
+      "libraries": [
+        "DataStructure/Dynamic_Bitset.cpp"
+      ],
+      "problem_url": "https://judge.yosupo.jp/problem/matrix_product_mod_2",
+      "assessment": "partial",
+      "exercised_apis": [
+        "string構築・長さ構築",
+        "set(pos)",
+        "intersection_parity"
+      ],
+      "not_covered": [
+        "count/intersection_count",
+        "bit論理演算・shift/shift_or",
+        "find_first/last/next/prev",
+        "resize/proxy/所有権"
+      ],
+      "reasoning": "GF(2)行列積はAND偶奇を検証する自然な問題。しかしDynamicBitsetのその他の操作を全体的に検証したとは言えない。",
+      "supplemental_ids": [],
+      "sources": [
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/linear_algebra/matrix_product_mod_2/task.md",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/linear_algebra/matrix_product_mod_2/info.toml"
+      ],
+      "official_constraints": {
+        "N_MAX": 4096,
+        "MOD": 2
+      },
+      "official_time_limit": 10.0,
+      "driver": "Verify/current/drivers/dynamic_bitset_main.cpp",
+      "driver_sha256": "2391a4e602779bc19cfe9467d31ba591092d751277c75670697d87d912d0e87e",
+      "library_sha256": {
+        "DataStructure/Dynamic_Bitset.cpp": "712a551a8a44c9325fb616de49a409c36eb73ef924b0969ff605b4bc918b428a"
+      },
+      "official_task_sha256": "79b020c2874261558331b2ac912242e681b4185caf49f5fd3871ef4e5521db25",
+      "official_info_sha256": "63d03614e7c2aa26c016f5c333c5302f5f1f9e26ea3849e62cbaee799cd1ff5c"
+    },
+    {
+      "id": "union_find",
+      "libraries": [
+        "DataStructure/union_find.cpp"
+      ],
+      "problem_url": "https://judge.yosupo.jp/problem/unionfind",
+      "assessment": "direct",
+      "exercised_apis": [
+        "構築/unite/same"
+      ],
+      "not_covered": [
+        "component_count/size/groups",
+        "reset/clear/copy/move",
+        "SIMD groups"
+      ],
+      "reasoning": "連結判定そのものを解く。成分列挙・サイズ・所有権の判定とは区別する。",
+      "supplemental_ids": [],
+      "sources": [
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/data_structure/unionfind/task.md",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/data_structure/unionfind/info.toml"
+      ],
+      "official_constraints": {
+        "N_MAX": 200000,
+        "Q_MAX": 200000
+      },
+      "official_time_limit": 5.0,
+      "driver": "Verify/current/drivers/union_find_main.cpp",
+      "driver_sha256": "4eaa2d1fb03798169633d103a7a3cf4b93e1b99b8986f7abd05b35183bd3a84d",
+      "library_sha256": {
+        "DataStructure/union_find.cpp": "dae4e7daebb36dc4385727ea28f2cf43bf23003fce69c64a4d881eb7dd2c0a01"
+      },
+      "official_task_sha256": "ca0c8013eb9dc48ac5b0ac855b47c5e5c978ac0fa8276300fa035a4e0cc95ce9",
+      "official_info_sha256": "848ea059fdd5dd16444ea3323882ca7bbae64a0f88090506dc1522eb6e15a796"
+    },
+    {
+      "id": "weighted_union_find",
+      "libraries": [
+        "DataStructure/union_find_w.cpp"
+      ],
+      "problem_url": "https://judge.yosupo.jp/problem/unionfind_with_potential",
+      "assessment": "direct",
+      "exercised_apis": [
+        "Mint998244353 constrain/try_diff",
+        "冗長整合/矛盾/未連結"
+      ],
+      "not_covered": [
+        "signed/uint64の整数境界",
+        "unite/mergeの戻り値仕様",
+        "root/weight/groups/reset/所有権"
+      ],
+      "reasoning": "値の法と符号向きをdriverで問題仕様へ合わせる。重みなしunionfindだけで代用していない。",
+      "supplemental_ids": [],
+      "sources": [
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/data_structure/unionfind_with_potential/task.md",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/data_structure/unionfind_with_potential/info.toml"
+      ],
+      "official_constraints": {
+        "N_MAX": 200000,
+        "Q_MAX": 200000,
+        "MOD": 998244353
+      },
+      "official_time_limit": 5.0,
+      "driver": "Verify/current/drivers/weighted_union_find_potential_main.cpp",
+      "driver_sha256": "918239c6779de3889687d870b8558bd5b954e9a50c1807edcfda02fbf1f94f55",
+      "library_sha256": {
+        "DataStructure/union_find_w.cpp": "e9aa280d3ca4fb0625d3af4561148783a78e1f4b9a69c779b26d7fd849f81a04"
+      },
+      "official_task_sha256": "20c5c1375acfb960615d12447298474c021287254e20f5f516683c86666b04e0",
+      "official_info_sha256": "9afe1564279801e5312ac3862be6bbe7df9bea73d7e05f99517cb7222f6659a9"
+    },
+    {
+      "id": "rollback_weighted_union_find",
+      "libraries": [
+        "DataStructure/rollback-union-findw.cpp"
+      ],
+      "problem_url": "https://judge.yosupo.jp/problem/unionfind_with_potential",
+      "assessment": "partial",
+      "exercised_apis": [
+        "Mint998244353 unite_checked/try_diff",
+        "矛盾/冗長整合/未連結"
+      ],
+      "not_covered": [
+        "undo/rollback/snapshotとの非零重み相互作用",
+        "signed int64/overflow",
+        "groups/reset/所有権"
+      ],
+      "reasoning": "重み付き整合性は適切に検証するが、このentryは履歴を一度も戻さない。既存Yuki/AtCoderで補完済みなので重複追加しない。",
+      "supplemental_ids": [
+        "rollback_weighted_union_find_rollback",
+        "rollback_weighted_union_find_reset_constraints",
+        "rollback_weighted_union_find_versioned_potential"
+      ],
+      "sources": [
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/data_structure/unionfind_with_potential/task.md",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/data_structure/unionfind_with_potential/info.toml"
+      ],
+      "official_constraints": {
+        "N_MAX": 200000,
+        "Q_MAX": 200000,
+        "MOD": 998244353
+      },
+      "official_time_limit": 5.0,
+      "driver": "Verify/current/drivers/rollback_weighted_union_find_potential_main.cpp",
+      "driver_sha256": "3fb2181607a62ff3bac9232f1c3df2b0bb3b85a757d3e0a9c76dd6fb72a65b22",
+      "library_sha256": {
+        "DataStructure/rollback-union-findw.cpp": "38ac061e08952ac8fc2252e73616c54fb606913f75822232df426a748059d6bd"
+      },
+      "official_task_sha256": "20c5c1375acfb960615d12447298474c021287254e20f5f516683c86666b04e0",
+      "official_info_sha256": "9afe1564279801e5312ac3862be6bbe7df9bea73d7e05f99517cb7222f6659a9"
+    },
+    {
+      "id": "rollback_weighted_union_find_rollback",
+      "libraries": [
+        "DataStructure/rollback-union-findw.cpp"
+      ],
+      "problem_url": "https://judge.yosupo.jp/problem/persistent_unionfind",
+      "assessment": "partial",
+      "exercised_apis": [
+        "int64重み0のunite/same",
+        "get_state/rollbackで版木をDFS"
+      ],
+      "not_covered": [
+        "非零重みを持つ履歴の復元",
+        "矛盾履歴とdiffの相互作用",
+        "snapshot/undo直接呼出し・所有権"
+      ],
+      "reasoning": "永続連結をrollbackで解くのは自然。ただし全uniteの重みが0なので、重み付きrollbackの算術復元は判定できない。既存補完を利用する。",
+      "supplemental_ids": [
+        "rollback_weighted_union_find",
+        "rollback_weighted_union_find_reset_constraints",
+        "rollback_weighted_union_find_versioned_potential"
+      ],
+      "sources": [
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/data_structure/persistent_unionfind/task.md",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/data_structure/persistent_unionfind/info.toml"
+      ],
+      "official_constraints": {
+        "MAX_N": 200000,
+        "MAX_Q": 200000
+      },
+      "official_time_limit": 5.0,
+      "driver": "Verify/current/drivers/rollback_weighted_union_find_persistent_main.cpp",
+      "driver_sha256": "10fdf545716b0a7f9f521aed69d748ebe6c632ad8d397fb31d3890765fa99535",
+      "library_sha256": {
+        "DataStructure/rollback-union-findw.cpp": "38ac061e08952ac8fc2252e73616c54fb606913f75822232df426a748059d6bd"
+      },
+      "official_task_sha256": "c2a53e60995135982fd10d87222963c8aebd28fe110cba26c91bc1281589cd1f",
+      "official_info_sha256": "32b06d43189a2e6861526a268c4c482a963a9ef4ec62357effb9ec536ce84b48"
+    },
+    {
+      "id": "persistent_union_find",
+      "libraries": [
+        "DataStructure/persistent-union-find.cpp"
+      ],
+      "problem_url": "https://judge.yosupo.jp/problem/persistent_unionfind",
+      "assessment": "direct",
+      "exercised_apis": [
+        "過去版root付きunite/same",
+        "任意の過去版から分岐"
+      ],
+      "not_covered": [
+        "size/groups・ownershipの共有寿命",
+        "PersistentArrayの汎用T/任意update/restore/get_two単独"
+      ],
+      "reasoning": "分岐する過去版への接続判定が出力に直接影響する。配列ヘルパー全APIを個別検証した結果とは扱わない。",
+      "supplemental_ids": [],
+      "sources": [
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/data_structure/persistent_unionfind/task.md",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/data_structure/persistent_unionfind/info.toml"
+      ],
+      "official_constraints": {
+        "MAX_N": 200000,
+        "MAX_Q": 200000
+      },
+      "official_time_limit": 5.0,
+      "driver": "Verify/current/drivers/persistent_union_find_main.cpp",
+      "driver_sha256": "22c250df7a6f9f378ab792ea56e8204419103648eed046cffa42400fc33eae71",
+      "library_sha256": {
+        "DataStructure/persistent-union-find.cpp": "1055b28b3c15e9ccf4a51139059b03473b96746553ba9c9dc9822e057af7e7d8"
+      },
+      "official_task_sha256": "c2a53e60995135982fd10d87222963c8aebd28fe110cba26c91bc1281589cd1f",
+      "official_info_sha256": "32b06d43189a2e6861526a268c4c482a963a9ef4ec62357effb9ec536ce84b48"
+    },
+    {
+      "id": "rollback_union_find",
+      "libraries": [
+        "DataStructure/rollback-union-find.cpp"
+      ],
+      "problem_url": "https://judge.yosupo.jp/problem/persistent_unionfind",
+      "assessment": "direct",
+      "exercised_apis": [
+        "unite/undo/same",
+        "版木DFSによる状態復元"
+      ],
+      "not_covered": [
+        "get_state/snapshot/rollback直接呼出し",
+        "clear_history/reset/groups/所有権"
+      ],
+      "reasoning": "過去版の連結判定をLIFO復元で解く適切な問題。版を持つAPI自体を提供すると誤解させない。",
+      "supplemental_ids": [],
+      "sources": [
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/data_structure/persistent_unionfind/task.md",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/data_structure/persistent_unionfind/info.toml"
+      ],
+      "official_constraints": {
+        "MAX_N": 200000,
+        "MAX_Q": 200000
+      },
+      "official_time_limit": 5.0,
+      "driver": "Verify/current/drivers/rollback_union_find_main.cpp",
+      "driver_sha256": "2fe293e98cbc53ae83b85360e5394dbc8289c6e92725f7bca9f76576dc2191e1",
+      "library_sha256": {
+        "DataStructure/rollback-union-find.cpp": "f4a1bdea9219c5c0376d9b2f356424b679afae4acb02d34809c97755bf69607f"
+      },
+      "official_task_sha256": "c2a53e60995135982fd10d87222963c8aebd28fe110cba26c91bc1281589cd1f",
+      "official_info_sha256": "32b06d43189a2e6861526a268c4c482a963a9ef4ec62357effb9ec536ce84b48"
+    },
+    {
+      "id": "dynamic_fenwick_range",
+      "libraries": [
+        "DataStructure/dynamic-binary-indexed-tree.cpp"
+      ],
+      "problem_url": "https://judge.yosupo.jp/problem/point_add_range_sum",
+      "assessment": "partial",
+      "exercised_apis": [
+        "int index/int64 add/sum(l,r)"
+      ],
+      "not_covered": [
+        "巨大64bit添字と全疎経路",
+        "get/set/sum_all/境界探索",
+        "reserve/clear/reset/保持セル数"
+      ],
+      "reasoning": "範囲和は直接一致するがnは小さく初期全点を入れるため、動的疎構造の巨大添字を検証しない。",
+      "supplemental_ids": [
+        "dynamic_fenwick_rectangle"
+      ],
+      "sources": [
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/data_structure/point_add_range_sum/task.md",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/data_structure/point_add_range_sum/info.toml"
+      ],
+      "official_constraints": {
+        "N_AND_Q_MAX": 500000,
+        "A_AND_X_MAX": 1000000000
+      },
+      "official_time_limit": 5.0,
+      "driver": "Verify/current/drivers/dynamic_fenwick_range_main.cpp",
+      "driver_sha256": "df8e15a56df0dce95b04c22ebc182480f38d9512f35b63e1a74e851b2f5a4d8f",
+      "library_sha256": {
+        "DataStructure/dynamic-binary-indexed-tree.cpp": "f88cdc782c0fbd7d5751d30f32829f557f7640a657ab1301b38a60cd9a6f3e86"
+      },
+      "official_task_sha256": "dbc0e31eea2326becc0ed5d5fc4e9abd56599692c7e1b1a2198b4d5e268ddb88",
+      "official_info_sha256": "e4bc11b1c68357961379ed2d14344e723bb91aaa85406094c6b75063e054aaf2"
+    },
+    {
+      "id": "dynamic_fenwick_rectangle",
+      "libraries": [
+        "DataStructure/dynamic-binary-indexed-tree.cpp"
+      ],
+      "problem_url": "https://judge.yosupo.jp/problem/point_add_rectangle_sum",
+      "assessment": "partial",
+      "exercised_apis": [
+        "座標圧縮後の1D DynamicFenwick add/sum",
+        "外側Fenwickで矩形和"
+      ],
+      "not_covered": [
+        "生の巨大添字/オンライン新座標",
+        "境界探索/get/set/reset/保持セル数"
+      ],
+      "reasoning": "外側Fenwickをmainで実装するが、各行の和は対象1D APIが答えを計算する。2D本体を検証した結果とはしない。",
+      "supplemental_ids": [
+        "dynamic_fenwick_range"
+      ],
+      "sources": [
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/data_structure/point_add_rectangle_sum/task.md",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/data_structure/point_add_rectangle_sum/info.toml"
+      ],
+      "official_constraints": {
+        "N_MAX": 100000,
+        "Q_MAX": 100000,
+        "COORD_MAX": 1000000000,
+        "WEIGHT_MAX": 1000000000
+      },
+      "official_time_limit": 5.0,
+      "driver": "Verify/current/drivers/dynamic_fenwick_rectangle_main.cpp",
+      "driver_sha256": "6d9c9141f0e73b151e9eb2cc83b02d4fc7feefd47eb732f00fbe4e2accd51a93",
+      "library_sha256": {
+        "DataStructure/dynamic-binary-indexed-tree.cpp": "f88cdc782c0fbd7d5751d30f32829f557f7640a657ab1301b38a60cd9a6f3e86"
+      },
+      "official_task_sha256": "320115dd8bd1118f91d832617f6c2f8b5c7dcad51c032741b3bec34656d57c2e",
+      "official_info_sha256": "b34c778b198d5569b5cb4a352983a3a103c0cc66c0dc879001a0a29a0c7dad46"
+    },
+    {
+      "id": "dynamic_fenwick_2d_rectangle",
+      "libraries": [
+        "DataStructure/dynamic-binary-indexed-tree-2d.cpp"
+      ],
+      "problem_url": "https://judge.yosupo.jp/problem/point_add_rectangle_sum",
+      "assessment": "partial",
+      "exercised_apis": [
+        "圧縮した座標への2D add/sum"
+      ],
+      "not_covered": [
+        "圧縮しない巨大座標（寸法はint）",
+        "get/set/sum_all/clear/reset",
+        "各保持形式と切替を必ず通る保証"
+      ],
+      "reasoning": "任意の元座標は圧縮して2D APIへ直接渡す。回答範囲として適切だが疎密切替や再利用全体は補足対象。",
+      "supplemental_ids": [],
+      "sources": [
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/data_structure/point_add_rectangle_sum/task.md",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/data_structure/point_add_rectangle_sum/info.toml"
+      ],
+      "official_constraints": {
+        "N_MAX": 100000,
+        "Q_MAX": 100000,
+        "COORD_MAX": 1000000000,
+        "WEIGHT_MAX": 1000000000
+      },
+      "official_time_limit": 5.0,
+      "driver": "Verify/current/drivers/dynamic_fenwick_2d_rectangle_main.cpp",
+      "driver_sha256": "f2b509ab43823f3b99d03423eaaa491cf2ed50a53317167cf33396ee05806efa",
+      "library_sha256": {
+        "DataStructure/dynamic-binary-indexed-tree-2d.cpp": "a36629e57b75dd6c0016049273205386f650cad74c04db1a5bbebfc834c87dcb"
+      },
+      "official_task_sha256": "320115dd8bd1118f91d832617f6c2f8b5c7dcad51c032741b3bec34656d57c2e",
+      "official_info_sha256": "b34c778b198d5569b5cb4a352983a3a103c0cc66c0dc879001a0a29a0c7dad46"
+    },
+    {
+      "id": "dynamic_lichao_segment",
+      "libraries": [
+        "DataStructure/dynamic-li-chao-tree.cpp"
+      ],
+      "problem_url": "https://judge.yosupo.jp/problem/segment_add_get_min",
+      "assessment": "direct",
+      "exercised_apis": [
+        "add_segment（半開rを閉r-1へ変換）",
+        "query（segment版のみ未被覆時INFINITY）",
+        "int64係数・x±1e9・独自inf=INT64_MAX"
+      ],
+      "not_covered": [
+        "他の許容整数型・x範囲外・任意の探索範囲",
+        "query_line/所有権/clear",
+        "int64全域境界と例外"
+      ],
+      "reasoning": "APIの直線/線分最小値に直接対応。既定kInf=2^60では問題値±2e18に不足するため明示infを使う。",
+      "supplemental_ids": [
+        "dynamic_lichao_line"
+      ],
+      "sources": [
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/data_structure/segment_add_get_min/task.md",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/data_structure/segment_add_get_min/info.toml"
+      ],
+      "official_constraints": {
+        "N_AND_Q_MIN": 1,
+        "N_AND_Q_MAX": 200000,
+        "A_ABS_MAX": 1000000000,
+        "B_ABS_MAX": 1000000000000000000
+      },
+      "official_time_limit": 5.0,
+      "driver": "Verify/current/drivers/dynamic_lichao_segment_main.cpp",
+      "driver_sha256": "478c63a327381d0e6be139a2c2957b0238f938a2e3d8c3ba2f6b3edb7f3744e6",
+      "library_sha256": {
+        "DataStructure/dynamic-li-chao-tree.cpp": "2ff51f192307866d868a722dd33ebdccd061a0af772a60f711ba06d72ae25a0d"
+      },
+      "official_task_sha256": "8f8f70d5fde5ea197c082026d8cef93fb844fa61e3f679f21944c0463f6d70ba",
+      "official_info_sha256": "8803a1ff0f1fcb7a316b524b2e18790555cae5941a60bd709d6e092867a33a4f"
+    },
+    {
+      "id": "dynamic_lichao_line",
+      "libraries": [
+        "DataStructure/dynamic-li-chao-tree.cpp"
+      ],
+      "problem_url": "https://judge.yosupo.jp/problem/line_add_get_min",
+      "assessment": "direct",
+      "exercised_apis": [
+        "add_line",
+        "query（segment版のみ未被覆時INFINITY）",
+        "int64係数・x±1e9・独自inf=INT64_MAX"
+      ],
+      "not_covered": [
+        "他の許容整数型・x範囲外・任意の探索範囲",
+        "query_line/所有権/clear",
+        "int64全域境界と例外"
+      ],
+      "reasoning": "APIの直線/線分最小値に直接対応。既定kInf=2^60では問題値±2e18に不足するため明示infを使う。",
+      "supplemental_ids": [
+        "dynamic_lichao_segment"
+      ],
+      "sources": [
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/data_structure/line_add_get_min/task.md",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/data_structure/line_add_get_min/info.toml"
+      ],
+      "official_constraints": {
+        "N_AND_Q_MIN": 1,
+        "N_AND_Q_MAX": 200000,
+        "A_ABS_MAX": 1000000000,
+        "B_ABS_MAX": 1000000000000000000
+      },
+      "official_time_limit": 5.0,
+      "driver": "Verify/current/drivers/dynamic_lichao_line_main.cpp",
+      "driver_sha256": "11962a8cabe3deff1a6beb3edb62eedcc9591ce25460fd03fcb0bfe09b4d1baa",
+      "library_sha256": {
+        "DataStructure/dynamic-li-chao-tree.cpp": "2ff51f192307866d868a722dd33ebdccd061a0af772a60f711ba06d72ae25a0d"
+      },
+      "official_task_sha256": "e67bc9bc571e90804bb96d03977aad0de810c79c0c504e83b9686f7ae100e17d",
+      "official_info_sha256": "7c81be734e9f3e5d406ee846bbd3dbcf5d03f3319b7e758eeb0723ed91603822"
+    },
+    {
+      "id": "dynamic_union_find",
+      "libraries": [
+        "DataStructure/dynamic-union-find.cpp"
+      ],
+      "problem_url": "https://judge.yosupo.jp/problem/unionfind",
+      "assessment": "partial",
+      "exercised_apis": [
+        "整数unite/same",
+        "未登録キーの遅延登録"
+      ],
+      "not_covered": [
+        "負/64bitキー",
+        "登録数/成分数/size/groups",
+        "reserve/clear/所有権"
+      ],
+      "reasoning": "連結は直接一致。ただし固定頂点問題のnはmainで使わず、照会に現れたキーだけを登録する。未出現頂点を含む全体統計はこのdriverでは検証しない。",
+      "supplemental_ids": [],
+      "sources": [
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/data_structure/unionfind/task.md",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/data_structure/unionfind/info.toml"
+      ],
+      "official_constraints": {
+        "N_MAX": 200000,
+        "Q_MAX": 200000
+      },
+      "official_time_limit": 5.0,
+      "driver": "Verify/current/drivers/dynamic_union_find_main.cpp",
+      "driver_sha256": "3bf11077095fbfdd1803851de4aea3d29357034e2f3be66445165f13677ff818",
+      "library_sha256": {
+        "DataStructure/dynamic-union-find.cpp": "912edd475064f36b801cd3d0a22459041fd5ba73d120cef4102c42da538cef5c"
+      },
+      "official_task_sha256": "ca0c8013eb9dc48ac5b0ac855b47c5e5c978ac0fa8276300fa035a4e0cc95ce9",
+      "official_info_sha256": "848ea059fdd5dd16444ea3323882ca7bbae64a0f88090506dc1522eb6e15a796"
+    },
+    {
+      "id": "hash_map",
+      "libraries": [
+        "DataStructure/Hash_map.cpp"
+      ],
+      "problem_url": "https://judge.yosupo.jp/problem/associative_array",
+      "assessment": "partial",
+      "exercised_apis": [
+        "uint64 operator[]による追加/上書き",
+        "find/endによる未登録既定0"
+      ],
+      "not_covered": [
+        "erase/墓石再利用・reserve/rehash",
+        "非自明なキー/値・GenericHashの他の型",
+        "iterator列挙/const・try_emplace・所有権"
+      ],
+      "reasoning": "Associative Arrayは適切だが削除は問題に存在しない。GC/所有権や削除性能をこのACで主張しない。",
+      "supplemental_ids": [],
+      "sources": [
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/data_structure/associative_array/task.md",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/data_structure/associative_array/info.toml"
+      ],
+      "official_constraints": {
+        "Q_MAX": 1000000,
+        "K_AND_V_MAX": 1000000000000000000
+      },
+      "official_time_limit": 5.0,
+      "driver": "Verify/current/drivers/hash_map_main.cpp",
+      "driver_sha256": "6857a90be50efd7d688979dccabedfb085aaf25d16add82cefff6acca67e9f7a",
+      "library_sha256": {
+        "DataStructure/Hash_map.cpp": "26a74a7eac70ca3caa2da641b66f568f26b7670f6ab0b1e5be9bebc88d3317c4"
+      },
+      "official_task_sha256": "b09c2d849bd141744824df5c89580a7d2e811a3161bcb51902defc783a27700b",
+      "official_info_sha256": "235aaecdbf2574f548d50a0327dc38690bf7779b2e64aa0dafdf8a717c81fbfd"
+    },
+    {
+      "id": "line_container_min",
+      "libraries": [
+        "DataStructure/line-container.cpp"
+      ],
+      "problem_url": "https://judge.yosupo.jp/problem/line_add_get_min",
+      "assessment": "partial",
+      "exercised_apis": [
+        "int64 MinLineContainer add/query"
+      ],
+      "not_covered": [
+        "最大化/浮動型",
+        "query_line/with_line/optional",
+        "空時・int64全域・lc_div/所有権"
+      ],
+      "reasoning": "線形最小値は直接一致するが最大化・選択された直線と空処理は別の機能。",
+      "supplemental_ids": [],
+      "sources": [
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/data_structure/line_add_get_min/task.md",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/data_structure/line_add_get_min/info.toml"
+      ],
+      "official_constraints": {
+        "N_AND_Q_MIN": 1,
+        "N_AND_Q_MAX": 200000,
+        "A_ABS_MAX": 1000000000,
+        "B_ABS_MAX": 1000000000000000000
+      },
+      "official_time_limit": 5.0,
+      "driver": "Verify/current/drivers/line_container_min_main.cpp",
+      "driver_sha256": "7e2779e4931cd3d03a9aad063f840dd71037cda1c3c631d602ebe5022b3004f8",
+      "library_sha256": {
+        "DataStructure/line-container.cpp": "fcd084d435010118f363d3e91814225dda3eb1716c15a52e25c5b98fe3ee6914"
+      },
+      "official_task_sha256": "e67bc9bc571e90804bb96d03977aad0de810c79c0c504e83b9686f7ae100e17d",
+      "official_info_sha256": "7c81be734e9f3e5d406ee846bbd3dbcf5d03f3319b7e758eeb0723ed91603822"
+    },
+    {
+      "id": "erasable_priority_queue_double",
+      "libraries": [
+        "DataStructure/erasable-priority-queue.cpp"
+      ],
+      "problem_url": "https://judge.yosupo.jp/problem/double_ended_priority_queue",
+      "assessment": "direct",
+      "exercised_apis": [
+        "int64最小/最大両型 push/top/pop/erase"
+      ],
+      "not_covered": [
+        "emplace/vector構築・try_top/extract_top",
+        "size/empty/clear/所有権"
+      ],
+      "reasoning": "片方で取り出した値をもう片方からeraseするため遅延削除は出力に必要。問題の重複個数も保持する。",
+      "supplemental_ids": [
+        "erasable_priority_queue_unit"
+      ],
+      "sources": [
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/data_structure/double_ended_priority_queue/task.md",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/data_structure/double_ended_priority_queue/info.toml"
+      ],
+      "official_constraints": {
+        "N_MIN": 0,
+        "N_MAX": 500000,
+        "Q_MIN": 1,
+        "Q_MAX": 500000,
+        "V_MIN": -1000000000,
+        "V_MAX": 1000000000
+      },
+      "official_time_limit": 10.0,
+      "driver": "Verify/current/drivers/erasable_priority_queue_double_main.cpp",
+      "driver_sha256": "e7e796d7768a99a8f1ecb11e5f01e69ed608697ca9b2bfba724260edd6a237bc",
+      "library_sha256": {
+        "DataStructure/erasable-priority-queue.cpp": "eb276613a730e2ba36eb5ef362ee4e0350574280d95de9b4e0f53470ae935092"
+      },
+      "official_task_sha256": "1a6347d65ac366646749c237b4a090205555d92dc5834fa0289fe5b7bdb8f505",
+      "official_info_sha256": "f1eb6dc5b8028b6da8c2d994cbc4d919330facd3c984836b1b6887bb9bfa8d32"
+    },
+    {
+      "id": "implicit_treap_affine",
+      "libraries": [
+        "DataStructure/implicit_treap.cpp"
+      ],
+      "problem_url": "https://judge.yosupo.jp/problem/dynamic_sequence_range_affine_range_sum",
+      "assessment": "partial",
+      "exercised_apis": [
+        "vector構築/insert_at/erase_at",
+        "reverse/apply/prod",
+        "可換sumとアフィン作用"
+      ],
+      "not_covered": [
+        "ID付き全API",
+        "非可換opとreverse/applyの相互作用",
+        "move_range/rotate・境界探索",
+        "所有権・既定RangeAddMin/RangeAddSum"
+      ],
+      "reasoning": "可変列の各操作を直接利用するが、可換集約なので逆方向の非可換積まで検証しない。",
+      "supplemental_ids": [
+        "implicit_treap_deque"
+      ],
+      "sources": [
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/data_structure/dynamic_sequence_range_affine_range_sum/task.md",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/data_structure/dynamic_sequence_range_affine_range_sum/info.toml"
+      ],
+      "official_constraints": {
+        "N_AND_Q_MAX": 500000,
+        "MOD": 998244353
+      },
+      "official_time_limit": 10.0,
+      "driver": "Verify/current/drivers/implicit_treap_affine_main.cpp",
+      "driver_sha256": "164e8597c277d90da07e3f627141c3864d53311fb8cc4425b2f644b473a8f28b",
+      "library_sha256": {
+        "DataStructure/implicit_treap.cpp": "957220716c227d58cb0939d8682e2200fa4d337ba532457f1e49f69963cbd97a"
+      },
+      "official_task_sha256": "ee3db25c9f39d012a1a86296634e8ee5b9570517ffa758e212296a884699a263",
+      "official_info_sha256": "7fec92a173993f86960385cb8c9d7f3da089baf939e6fedf7ed15a4a2302530c"
+    },
+    {
+      "id": "implicit_treap_deque",
+      "libraries": [
+        "DataStructure/implicit_treap.cpp"
+      ],
+      "problem_url": "https://judge.yosupo.jp/problem/deque_operate_all_composite",
+      "assessment": "partial",
+      "exercised_apis": [
+        "push_front/back/pop_front/back",
+        "非可換all_prod/reserve"
+      ],
+      "not_covered": [
+        "非可換な任意reverse",
+        "ID付き全API",
+        "既定作用・区間更新・境界探索・所有権"
+      ],
+      "reasoning": "dequeの非可換順序には直接対応。反転操作のない問題のためaffine版との合算でも非可換reverseは不足。",
+      "supplemental_ids": [
+        "implicit_treap_affine"
+      ],
+      "sources": [
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/data_structure/deque_operate_all_composite/task.md",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/data_structure/deque_operate_all_composite/info.toml"
+      ],
+      "official_constraints": {},
+      "official_time_limit": 5.0,
+      "driver": "Verify/current/drivers/implicit_treap_deque_main.cpp",
+      "driver_sha256": "d9604072e82a9c3826520e77cb873e309a169d27da83d0d935416dca76af2521",
+      "library_sha256": {
+        "DataStructure/implicit_treap.cpp": "957220716c227d58cb0939d8682e2200fa4d337ba532457f1e49f69963cbd97a"
+      },
+      "official_task_sha256": "b6c8c2aa46dff3b0c48d9ec5f3d56825a4f672b1de0f8ed91ad3bdc463cb522f",
+      "official_info_sha256": "1f8e73271889c625c922c7ec114326bf934ccf7ff26f46f8ddc44df7388c0015"
+    },
+    {
+      "id": "line_container_2d_min",
+      "libraries": [
+        "DataStructure/line-container-2d.cpp"
+      ],
+      "problem_url": "https://judge.yosupo.jp/problem/line_add_get_min",
+      "assessment": "partial",
+      "exercised_apis": [
+        "add(a,b)",
+        "min_rounded_ll(x,1)",
+        "int64相当の直線最小値"
+      ],
+      "not_covered": [
+        "独立した第2方向係数・b<=0/両係数0",
+        "max/argmin/argmax/optional",
+        "浮動係数・丸め境界・inf clamp/所有権"
+      ],
+      "reasoning": "内積方向が常に(x,1)で上半平面に限られ、2D全方向の機能を十分検証しない。",
+      "supplemental_ids": [
+        "coverage_structure_line2d_triangle",
+        "coverage_structure_line2d_linear"
+      ],
+      "sources": [
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/data_structure/line_add_get_min/task.md",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/data_structure/line_add_get_min/info.toml"
+      ],
+      "official_constraints": {
+        "N_AND_Q_MIN": 1,
+        "N_AND_Q_MAX": 200000,
+        "A_ABS_MAX": 1000000000,
+        "B_ABS_MAX": 1000000000000000000
+      },
+      "official_time_limit": 5.0,
+      "driver": "Verify/current/drivers/line_container_2d_min_main.cpp",
+      "driver_sha256": "e2485bb4a3512c6078e6a06222e8712928d0a7cf1eadd869b705ee422e6574fd",
+      "library_sha256": {
+        "DataStructure/line-container-2d.cpp": "bfc1f6f6d49130db16d24be2e875956f2555aa41300afae3da1b2e20bd8bae94"
+      },
+      "official_task_sha256": "e67bc9bc571e90804bb96d03977aad0de810c79c0c504e83b9686f7ae100e17d",
+      "official_info_sha256": "7c81be734e9f3e5d406ee846bbd3dbcf5d03f3319b7e758eeb0723ed91603822"
+    }
+  ],
+  "local_entry_confirmation": {
+    "id": "erasable_priority_queue_unit",
+    "problem_url": null,
+    "driver": "Verify/current/drivers/erasable_priority_queue_unit_main.cpp",
+    "reason": "A+B提出のダミーではなく入力なしローカル独立検査へ分離済み。std::multiset参照、自己検査失敗を例外で検出する。"
+  },
+  "rejected_candidates": [
+    {
+      "problem_url": "https://judge.yosupo.jp/problem/predecessor_problem",
+      "library": "DataStructure/Dynamic_Bitset.cpp",
+      "reason": "N最大1e7/Q最大1e6に対し単独find_next/find_prevは最悪O(N/64)。大きい空隙を繰り返す合法入力に時間保証が合わない。階層索引を追加すれば別解は可能だが単純なBitset探索として採用しない。",
+      "sources": [
+        "https://judge.yosupo.jp/problem/predecessor_problem"
+      ]
+    }
+  ],
+  "no_old_ac_transferred": true,
+  "new_supplemental_entries": [
+    {
+      "id": "coverage_structure_binary_ordered",
+      "libraries": [
+        "DataStructure/Binary_Trie.cpp"
+      ],
+      "driver": "Verify/current/drivers/coverage_structure_binary_ordered_main.cpp",
+      "problem_url": "https://judge.yosupo.jp/problem/ordered_set",
+      "exercised_apis": [
+        "insert_unique/del",
+        "重複なしget_kth/count_less",
+        "順位・個数・前後要素"
+      ],
+      "not_covered": "新規・未提出。旧ACは引き継がない。多重集合・全体XOR・ID付き要素は別entry/ローカル補足。キー0..1e9、最高bit29。",
+      "reasoning": "既存set_xor_minは順位を使わない。Ordered Setの答えを順位とcount_lessから直接求める。",
+      "online_status": "not_submitted",
+      "old_ac_transferred": false,
+      "source_sha256": "eb3b53c844e782d9a7bf661e6ae1c856f81430dfca1bc6f5e48e963fcfa409f2",
+      "builds": 8,
+      "independent_and_official_runs": 336,
+      "maximum_runs": [
+        {
+          "build": "coverage_structure_binary_ordered-gcc-skip-native",
+          "id": "coverage_structure_binary_ordered",
+          "fixture": "ordered-million-elements",
+          "kind": "maximum",
+          "input_sha256": "dff769943d00d178866160538e2df7690642bb0cef3c75656f68658207d12854",
+          "expected_sha256": "930869ea9ed406da03e0f24057a82660b1ee1f6817e0291320fb5ae787b1dbf7",
+          "output_sha256": "930869ea9ed406da03e0f24057a82660b1ee1f6817e0291320fb5ae787b1dbf7",
+          "answers": 1,
+          "returncode": 0,
+          "passed": true,
+          "seconds": 0.18374491199210752,
+          "time_seconds": 0.18,
+          "maxrss_kib": 253404.0,
+          "command": [
+            "/usr/bin/time",
+            "-f",
+            "%e %M",
+            "-o",
+            "/tmp/sirkit-verify-coverage-20261115/structures/time.txt",
+            "taskset",
+            "-c",
+            "24",
+            "/tmp/sirkit-verify-coverage-20261115/structures/bin/coverage_structure_binary_ordered-gcc-skip-native"
+          ]
+        },
+        {
+          "build": "coverage_structure_binary_ordered-clang-skip-native",
+          "id": "coverage_structure_binary_ordered",
+          "fixture": "ordered-million-elements",
+          "kind": "maximum",
+          "input_sha256": "dff769943d00d178866160538e2df7690642bb0cef3c75656f68658207d12854",
+          "expected_sha256": "930869ea9ed406da03e0f24057a82660b1ee1f6817e0291320fb5ae787b1dbf7",
+          "output_sha256": "930869ea9ed406da03e0f24057a82660b1ee1f6817e0291320fb5ae787b1dbf7",
+          "answers": 1,
+          "returncode": 0,
+          "passed": true,
+          "seconds": 0.18324929400114343,
+          "time_seconds": 0.18,
+          "maxrss_kib": 253436.0,
+          "command": [
+            "/usr/bin/time",
+            "-f",
+            "%e %M",
+            "-o",
+            "/tmp/sirkit-verify-coverage-20261115/structures/time.txt",
+            "taskset",
+            "-c",
+            "24",
+            "/tmp/sirkit-verify-coverage-20261115/structures/bin/coverage_structure_binary_ordered-clang-skip-native"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "coverage_structure_binary_xor_ids",
+      "libraries": [
+        "DataStructure/Binary_Trie.cpp"
+      ],
+      "driver": "Verify/current/drivers/coverage_structure_binary_xor_ids_main.cpp",
+      "problem_url": "https://judge.yosupo.jp/problem/set_xor_min",
+      "exercised_apis": [
+        "operate_xor後のinsert_unique/find/指定ID付きdel",
+        "min_elementのID一覧を用いた答え復元"
+      ],
+      "not_covered": "新規・未提出。旧ACは引き継がない。各値の生存IDは1個。重複した値/ID・max_xor/count_xor_less・匿名との混在はローカル補足。",
+      "reasoning": "min_xorを使う既存entryと異なり、全体XOR状態を照会の座標系に合わせて維持し、IDの元値から答える。全体XORやID保持が壊れると答えが変わる。",
+      "online_status": "not_submitted",
+      "old_ac_transferred": false,
+      "source_sha256": "48c08f02081d5ca3c9d5332e11324821ff71a64851d1385475259e3a4f7ff57f",
+      "builds": 8,
+      "independent_and_official_runs": 328,
+      "maximum_runs": [
+        {
+          "build": "coverage_structure_binary_xor_ids-gcc-skip-native",
+          "id": "coverage_structure_binary_xor_ids",
+          "fixture": "xor-id-full-lowbits",
+          "kind": "maximum",
+          "input_sha256": "888fb631005d6fc46ae09d98945ad02944c3cb21cb3cf3ef9928a259ebc2e85b",
+          "expected_sha256": "e4d896fd4e2547b5b3d51d4453ed51b2736e1af914db35408cff0cd38ee331ee",
+          "output_sha256": "e4d896fd4e2547b5b3d51d4453ed51b2736e1af914db35408cff0cd38ee331ee",
+          "answers": 237856,
+          "returncode": 0,
+          "passed": true,
+          "seconds": 0.18911451500025578,
+          "time_seconds": 0.18,
+          "maxrss_kib": 36604.0,
+          "command": [
+            "/usr/bin/time",
+            "-f",
+            "%e %M",
+            "-o",
+            "/tmp/sirkit-verify-coverage-20261115/structures/time.txt",
+            "taskset",
+            "-c",
+            "24",
+            "/tmp/sirkit-verify-coverage-20261115/structures/bin/coverage_structure_binary_xor_ids-gcc-skip-native"
+          ]
+        },
+        {
+          "build": "coverage_structure_binary_xor_ids-clang-skip-native",
+          "id": "coverage_structure_binary_xor_ids",
+          "fixture": "xor-id-full-lowbits",
+          "kind": "maximum",
+          "input_sha256": "888fb631005d6fc46ae09d98945ad02944c3cb21cb3cf3ef9928a259ebc2e85b",
+          "expected_sha256": "e4d896fd4e2547b5b3d51d4453ed51b2736e1af914db35408cff0cd38ee331ee",
+          "output_sha256": "e4d896fd4e2547b5b3d51d4453ed51b2736e1af914db35408cff0cd38ee331ee",
+          "answers": 237856,
+          "returncode": 0,
+          "passed": true,
+          "seconds": 0.18063810499734245,
+          "time_seconds": 0.17,
+          "maxrss_kib": 36600.0,
+          "command": [
+            "/usr/bin/time",
+            "-f",
+            "%e %M",
+            "-o",
+            "/tmp/sirkit-verify-coverage-20261115/structures/time.txt",
+            "taskset",
+            "-c",
+            "24",
+            "/tmp/sirkit-verify-coverage-20261115/structures/bin/coverage_structure_binary_xor_ids-clang-skip-native"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "coverage_structure_compressed_ordered",
+      "libraries": [
+        "DataStructure/Compressed_Binary_Trie.cpp"
+      ],
+      "driver": "Verify/current/drivers/coverage_structure_compressed_ordered_main.cpp",
+      "problem_url": "https://judge.yosupo.jp/problem/ordered_set",
+      "exercised_apis": [
+        "insert_unique/del",
+        "重複なしget_kth/count_less",
+        "順位・個数・前後要素"
+      ],
+      "not_covered": "新規・未提出。旧ACは引き継がない。多重集合・全体XOR・ID付き要素は別entry/ローカル補足。キー0..1e9、最高bit29。",
+      "reasoning": "既存set_xor_minは順位を使わない。Ordered Setの答えを順位とcount_lessから直接求める。",
+      "online_status": "not_submitted",
+      "old_ac_transferred": false,
+      "source_sha256": "f37ac4d55d88477fbd234e5297574bd98a3bce2eae21fc7ed28172488bc037f3",
+      "builds": 8,
+      "independent_and_official_runs": 336,
+      "maximum_runs": [
+        {
+          "build": "coverage_structure_compressed_ordered-gcc-skip-native",
+          "id": "coverage_structure_compressed_ordered",
+          "fixture": "ordered-million-elements",
+          "kind": "maximum",
+          "input_sha256": "dff769943d00d178866160538e2df7690642bb0cef3c75656f68658207d12854",
+          "expected_sha256": "930869ea9ed406da03e0f24057a82660b1ee1f6817e0291320fb5ae787b1dbf7",
+          "output_sha256": "930869ea9ed406da03e0f24057a82660b1ee1f6817e0291320fb5ae787b1dbf7",
+          "answers": 1,
+          "returncode": 0,
+          "passed": true,
+          "seconds": 0.12462553700606804,
+          "time_seconds": 0.12,
+          "maxrss_kib": 53212.0,
+          "command": [
+            "/usr/bin/time",
+            "-f",
+            "%e %M",
+            "-o",
+            "/tmp/sirkit-verify-coverage-20261115/structures/time.txt",
+            "taskset",
+            "-c",
+            "24",
+            "/tmp/sirkit-verify-coverage-20261115/structures/bin/coverage_structure_compressed_ordered-gcc-skip-native"
+          ]
+        },
+        {
+          "build": "coverage_structure_compressed_ordered-clang-skip-native",
+          "id": "coverage_structure_compressed_ordered",
+          "fixture": "ordered-million-elements",
+          "kind": "maximum",
+          "input_sha256": "dff769943d00d178866160538e2df7690642bb0cef3c75656f68658207d12854",
+          "expected_sha256": "930869ea9ed406da03e0f24057a82660b1ee1f6817e0291320fb5ae787b1dbf7",
+          "output_sha256": "930869ea9ed406da03e0f24057a82660b1ee1f6817e0291320fb5ae787b1dbf7",
+          "answers": 1,
+          "returncode": 0,
+          "passed": true,
+          "seconds": 0.12718691599729937,
+          "time_seconds": 0.12,
+          "maxrss_kib": 53216.0,
+          "command": [
+            "/usr/bin/time",
+            "-f",
+            "%e %M",
+            "-o",
+            "/tmp/sirkit-verify-coverage-20261115/structures/time.txt",
+            "taskset",
+            "-c",
+            "24",
+            "/tmp/sirkit-verify-coverage-20261115/structures/bin/coverage_structure_compressed_ordered-clang-skip-native"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "coverage_structure_compressed_xor_ids",
+      "libraries": [
+        "DataStructure/Compressed_Binary_Trie.cpp"
+      ],
+      "driver": "Verify/current/drivers/coverage_structure_compressed_xor_ids_main.cpp",
+      "problem_url": "https://judge.yosupo.jp/problem/set_xor_min",
+      "exercised_apis": [
+        "operate_xor後のinsert_unique/find/指定ID付きdel",
+        "min_elementのID一覧を用いた答え復元"
+      ],
+      "not_covered": "新規・未提出。旧ACは引き継がない。各値の生存IDは1個。重複した値/ID・max_xor/count_xor_less・匿名との混在はローカル補足。",
+      "reasoning": "min_xorを使う既存entryと異なり、全体XOR状態を照会の座標系に合わせて維持し、IDの元値から答える。全体XORやID保持が壊れると答えが変わる。",
+      "online_status": "not_submitted",
+      "old_ac_transferred": false,
+      "source_sha256": "2670ff7f6193d32b5ac77657c20c26db7dcabe7682b32408bc338e820ae27155",
+      "builds": 8,
+      "independent_and_official_runs": 328,
+      "maximum_runs": [
+        {
+          "build": "coverage_structure_compressed_xor_ids-gcc-skip-native",
+          "id": "coverage_structure_compressed_xor_ids",
+          "fixture": "xor-id-full-lowbits",
+          "kind": "maximum",
+          "input_sha256": "888fb631005d6fc46ae09d98945ad02944c3cb21cb3cf3ef9928a259ebc2e85b",
+          "expected_sha256": "e4d896fd4e2547b5b3d51d4453ed51b2736e1af914db35408cff0cd38ee331ee",
+          "output_sha256": "e4d896fd4e2547b5b3d51d4453ed51b2736e1af914db35408cff0cd38ee331ee",
+          "answers": 237856,
+          "returncode": 0,
+          "passed": true,
+          "seconds": 0.2732816450006794,
+          "time_seconds": 0.27,
+          "maxrss_kib": 38668.0,
+          "command": [
+            "/usr/bin/time",
+            "-f",
+            "%e %M",
+            "-o",
+            "/tmp/sirkit-verify-coverage-20261115/structures/time.txt",
+            "taskset",
+            "-c",
+            "24",
+            "/tmp/sirkit-verify-coverage-20261115/structures/bin/coverage_structure_compressed_xor_ids-gcc-skip-native"
+          ]
+        },
+        {
+          "build": "coverage_structure_compressed_xor_ids-clang-skip-native",
+          "id": "coverage_structure_compressed_xor_ids",
+          "fixture": "xor-id-full-lowbits",
+          "kind": "maximum",
+          "input_sha256": "888fb631005d6fc46ae09d98945ad02944c3cb21cb3cf3ef9928a259ebc2e85b",
+          "expected_sha256": "e4d896fd4e2547b5b3d51d4453ed51b2736e1af914db35408cff0cd38ee331ee",
+          "output_sha256": "e4d896fd4e2547b5b3d51d4453ed51b2736e1af914db35408cff0cd38ee331ee",
+          "answers": 237856,
+          "returncode": 0,
+          "passed": true,
+          "seconds": 0.2661560229898896,
+          "time_seconds": 0.26,
+          "maxrss_kib": 38664.0,
+          "command": [
+            "/usr/bin/time",
+            "-f",
+            "%e %M",
+            "-o",
+            "/tmp/sirkit-verify-coverage-20261115/structures/time.txt",
+            "taskset",
+            "-c",
+            "24",
+            "/tmp/sirkit-verify-coverage-20261115/structures/bin/coverage_structure_compressed_xor_ids-clang-skip-native"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "coverage_structure_persistent_queue",
+      "libraries": [
+        "DataStructure/Persistent_Segment_Tree.cpp"
+      ],
+      "driver": "Verify/current/drivers/coverage_structure_persistent_queue_main.cpp",
+      "problem_url": "https://judge.yosupo.jp/problem/persistent_queue",
+      "exercised_apis": [
+        "不変Rootの保持・任意の旧版からset分岐",
+        "過去版のget・同じ位置の分岐上書き独立性"
+      ],
+      "not_covered": "新規・未提出。旧ACは引き継がない。最新版transform/prodは既存point_add_range_sumで検証。過去版の範囲prod/all_prod・非可換集約・境界探索/コピーremap・例外はこの提出では未検証。",
+      "reasoning": "各版のキューを永続配列上の区間として表す。任意の過去版を更新するためlatest一本では正答できない。",
+      "online_status": "not_submitted",
+      "old_ac_transferred": false,
+      "source_sha256": "2e2919261b07200441eda2528836abb1f2b6a0bc7f3ab31d37d4818b1a1092a4",
+      "builds": 8,
+      "independent_and_official_runs": 328,
+      "maximum_runs": [
+        {
+          "build": "coverage_structure_persistent_queue-gcc-skip-native",
+          "id": "coverage_structure_persistent_queue",
+          "fixture": "persistent-queue-maximum",
+          "kind": "maximum",
+          "input_sha256": "d6f94db1488376a13b7897139b233c954db36c1bc0ab2253f5e512bfc144ee83",
+          "expected_sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+          "output_sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+          "answers": 1,
+          "returncode": 0,
+          "passed": true,
+          "seconds": 0.325776498997584,
+          "time_seconds": 0.32,
+          "maxrss_kib": 408944.0,
+          "command": [
+            "/usr/bin/time",
+            "-f",
+            "%e %M",
+            "-o",
+            "/tmp/sirkit-verify-coverage-20261115/structures/time.txt",
+            "taskset",
+            "-c",
+            "24",
+            "/tmp/sirkit-verify-coverage-20261115/structures/bin/coverage_structure_persistent_queue-gcc-skip-native"
+          ]
+        },
+        {
+          "build": "coverage_structure_persistent_queue-clang-skip-native",
+          "id": "coverage_structure_persistent_queue",
+          "fixture": "persistent-queue-maximum",
+          "kind": "maximum",
+          "input_sha256": "d6f94db1488376a13b7897139b233c954db36c1bc0ab2253f5e512bfc144ee83",
+          "expected_sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+          "output_sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+          "answers": 1,
+          "returncode": 0,
+          "passed": true,
+          "seconds": 0.34074651199625805,
+          "time_seconds": 0.33,
+          "maxrss_kib": 409008.0,
+          "command": [
+            "/usr/bin/time",
+            "-f",
+            "%e %M",
+            "-o",
+            "/tmp/sirkit-verify-coverage-20261115/structures/time.txt",
+            "taskset",
+            "-c",
+            "24",
+            "/tmp/sirkit-verify-coverage-20261115/structures/bin/coverage_structure_persistent_queue-clang-skip-native"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "coverage_structure_disjoint_composite",
+      "libraries": [
+        "DataStructure/Disjoint_Sparse_Table.cpp"
+      ],
+      "driver": "Verify/current/drivers/coverage_structure_disjoint_composite_main.cpp",
+      "problem_url": "https://judge.yosupo.jp/problem/queue_operate_all_composite",
+      "exercised_apis": [
+        "非冪等・非可換なprod",
+        "空区間の単位元",
+        "O(QlogQ)事前構築とO(1)照会"
+      ],
+      "not_covered": "新規・未提出。旧ACは引き継がない。全pushを事前に読むオフライン解法。max_right/min_left・再構築・所有権はローカル補足。",
+      "reasoning": "queueのpush値は追加順が固定なので全値を事前構築し、現在のキュー区間の関数合成をDSTで直接求める。minだけの既存entryを補う。",
+      "online_status": "not_submitted",
+      "old_ac_transferred": false,
+      "source_sha256": "e57d61f089a724695a053923b3492e44f2e0f212835fe9b481375a654b85b209",
+      "builds": 8,
+      "independent_and_official_runs": 336,
+      "maximum_runs": [
+        {
+          "build": "coverage_structure_disjoint_composite-gcc-skip-native",
+          "id": "coverage_structure_disjoint_composite",
+          "fixture": "disjoint-composite-maximum",
+          "kind": "maximum",
+          "input_sha256": "92ce53ad1ca4a05aeed2972ec8f3fde880697d95ab259ed5f2d0d506afe4f6fd",
+          "expected_sha256": "79b428ae765a7cfff6fc0e4b3a19dd44fe1e4647b8a1997cd36923d4080969f9",
+          "output_sha256": "79b428ae765a7cfff6fc0e4b3a19dd44fe1e4647b8a1997cd36923d4080969f9",
+          "answers": 1,
+          "returncode": 0,
+          "passed": true,
+          "seconds": 0.08335275499848649,
+          "time_seconds": 0.08,
+          "maxrss_kib": 85888.0,
+          "command": [
+            "/usr/bin/time",
+            "-f",
+            "%e %M",
+            "-o",
+            "/tmp/sirkit-verify-coverage-20261115/structures/time.txt",
+            "taskset",
+            "-c",
+            "24",
+            "/tmp/sirkit-verify-coverage-20261115/structures/bin/coverage_structure_disjoint_composite-gcc-skip-native"
+          ]
+        },
+        {
+          "build": "coverage_structure_disjoint_composite-clang-skip-native",
+          "id": "coverage_structure_disjoint_composite",
+          "fixture": "disjoint-composite-maximum",
+          "kind": "maximum",
+          "input_sha256": "92ce53ad1ca4a05aeed2972ec8f3fde880697d95ab259ed5f2d0d506afe4f6fd",
+          "expected_sha256": "79b428ae765a7cfff6fc0e4b3a19dd44fe1e4647b8a1997cd36923d4080969f9",
+          "output_sha256": "79b428ae765a7cfff6fc0e4b3a19dd44fe1e4647b8a1997cd36923d4080969f9",
+          "answers": 1,
+          "returncode": 0,
+          "passed": true,
+          "seconds": 0.09813934899284504,
+          "time_seconds": 0.09,
+          "maxrss_kib": 85988.0,
+          "command": [
+            "/usr/bin/time",
+            "-f",
+            "%e %M",
+            "-o",
+            "/tmp/sirkit-verify-coverage-20261115/structures/time.txt",
+            "taskset",
+            "-c",
+            "24",
+            "/tmp/sirkit-verify-coverage-20261115/structures/bin/coverage_structure_disjoint_composite-clang-skip-native"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "coverage_structure_line2d_triangle",
+      "libraries": [
+        "DataStructure/line-container-2d.cpp"
+      ],
+      "driver": "Verify/current/drivers/coverage_structure_line2d_triangle_main.cpp",
+      "problem_url": "https://yukicoder.me/problems/no/2012",
+      "exercised_apis": [
+        "両係数が変わるmax_rounded_ll/min_rounded_ll",
+        "符号の異なる方向と点の追加"
+      ],
+      "not_covered": "新規・未提出。旧ACは引き継がない。座標±1e6、原点・原点上同一直線の複数点は禁止。零係数/任意方向を網羅する問題ではない。既存local回帰のACを転記しない。",
+      "reasoning": "LCのmin(x,1)方向だけの検証を、原典の自然なyukicoder問題で補う。",
+      "online_status": "not_submitted",
+      "old_ac_transferred": false,
+      "source_sha256": "695ffe60437820502c446b7b2bef12298d8a0b96b2c04f96c3765e17870e964c",
+      "builds": 8,
+      "independent_and_official_runs": 328,
+      "maximum_runs": [
+        {
+          "build": "coverage_structure_line2d_triangle-gcc-skip-native",
+          "id": "coverage_structure_line2d_triangle",
+          "fixture": "line-triangle-maximum",
+          "kind": "maximum",
+          "input_sha256": "1a04fefda8aec473b84133903a2be28b9ce70ab73ca526163471752357d39807",
+          "expected_sha256": "00d9cd208c4bb685541067ed529222ed418e5cc75d71304d8ef159f3ea3aa50e",
+          "output_sha256": "00d9cd208c4bb685541067ed529222ed418e5cc75d71304d8ef159f3ea3aa50e",
+          "answers": 1,
+          "returncode": 0,
+          "passed": true,
+          "seconds": 0.015964506994350813,
+          "time_seconds": 0.01,
+          "maxrss_kib": 4124.0,
+          "command": [
+            "/usr/bin/time",
+            "-f",
+            "%e %M",
+            "-o",
+            "/tmp/sirkit-verify-coverage-20261115/structures/time.txt",
+            "taskset",
+            "-c",
+            "24",
+            "/tmp/sirkit-verify-coverage-20261115/structures/bin/coverage_structure_line2d_triangle-gcc-skip-native"
+          ]
+        },
+        {
+          "build": "coverage_structure_line2d_triangle-clang-skip-native",
+          "id": "coverage_structure_line2d_triangle",
+          "fixture": "line-triangle-maximum",
+          "kind": "maximum",
+          "input_sha256": "1a04fefda8aec473b84133903a2be28b9ce70ab73ca526163471752357d39807",
+          "expected_sha256": "00d9cd208c4bb685541067ed529222ed418e5cc75d71304d8ef159f3ea3aa50e",
+          "output_sha256": "00d9cd208c4bb685541067ed529222ed418e5cc75d71304d8ef159f3ea3aa50e",
+          "answers": 1,
+          "returncode": 0,
+          "passed": true,
+          "seconds": 0.019581617001676932,
+          "time_seconds": 0.01,
+          "maxrss_kib": 3860.0,
+          "command": [
+            "/usr/bin/time",
+            "-f",
+            "%e %M",
+            "-o",
+            "/tmp/sirkit-verify-coverage-20261115/structures/time.txt",
+            "taskset",
+            "-c",
+            "24",
+            "/tmp/sirkit-verify-coverage-20261115/structures/bin/coverage_structure_line2d_triangle-clang-skip-native"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "coverage_structure_line2d_linear",
+      "libraries": [
+        "DataStructure/line-container-2d.cpp"
+      ],
+      "driver": "Verify/current/drivers/coverage_structure_line2d_linear_main.cpp",
+      "problem_url": "https://atcoder.jp/contests/abc244/tasks/abc244_h",
+      "exercised_apis": [
+        "任意の整数方向でmax_rounded_ll",
+        "係数の両符号・零・軸方向・原点・座標/係数±1e9"
+      ],
+      "not_covered": "新規・未提出。旧ACは引き継がない。浮動係数/丸め境界・argmax/optional・空時/inf clampはローカル補足。整数内積は±2e18内、long doubleがその整数を表現できる実行環境で検証。",
+      "reasoning": "Yuki2012は方向が入力点に連動し原点/同一直線を禁止する。独立な方向を与えるAtCoder問題を追加し、その制約の隙間を補う。",
+      "online_status": "not_submitted",
+      "old_ac_transferred": false,
+      "source_sha256": "6ab7bc4d16d07ce7b28a7a503db206cac99175b3bc30c0ff78eb81d0264f48b3",
+      "builds": 8,
+      "independent_and_official_runs": 336,
+      "maximum_runs": [
+        {
+          "build": "coverage_structure_line2d_linear-gcc-skip-native",
+          "id": "coverage_structure_line2d_linear",
+          "fixture": "line-linear-maximum",
+          "kind": "maximum",
+          "input_sha256": "b3e18d91e92e813a427fc8e4fcb145c37536dcaeecdd87d60ba058968d48ad12",
+          "expected_sha256": "4c03135c43b07f1aaf58bcc6a7864f92c50232edd877f24c4f27cb9e91192cbf",
+          "output_sha256": "4c03135c43b07f1aaf58bcc6a7864f92c50232edd877f24c4f27cb9e91192cbf",
+          "answers": 200000,
+          "returncode": 0,
+          "passed": true,
+          "seconds": 0.030973097993410192,
+          "time_seconds": 0.02,
+          "maxrss_kib": 3860.0,
+          "command": [
+            "/usr/bin/time",
+            "-f",
+            "%e %M",
+            "-o",
+            "/tmp/sirkit-verify-coverage-20261115/structures/time.txt",
+            "taskset",
+            "-c",
+            "24",
+            "/tmp/sirkit-verify-coverage-20261115/structures/bin/coverage_structure_line2d_linear-gcc-skip-native"
+          ]
+        },
+        {
+          "build": "coverage_structure_line2d_linear-clang-skip-native",
+          "id": "coverage_structure_line2d_linear",
+          "fixture": "line-linear-maximum",
+          "kind": "maximum",
+          "input_sha256": "b3e18d91e92e813a427fc8e4fcb145c37536dcaeecdd87d60ba058968d48ad12",
+          "expected_sha256": "4c03135c43b07f1aaf58bcc6a7864f92c50232edd877f24c4f27cb9e91192cbf",
+          "output_sha256": "4c03135c43b07f1aaf58bcc6a7864f92c50232edd877f24c4f27cb9e91192cbf",
+          "answers": 200000,
+          "returncode": 0,
+          "passed": true,
+          "seconds": 0.034360304998699576,
+          "time_seconds": 0.03,
+          "maxrss_kib": 4140.0,
+          "command": [
+            "/usr/bin/time",
+            "-f",
+            "%e %M",
+            "-o",
+            "/tmp/sirkit-verify-coverage-20261115/structures/time.txt",
+            "taskset",
+            "-c",
+            "24",
+            "/tmp/sirkit-verify-coverage-20261115/structures/bin/coverage_structure_line2d_linear-clang-skip-native"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "coverage_structure_fenwick_predecessor",
+      "libraries": [
+        "DataStructure/Fenwick_Tree.cpp"
+      ],
+      "driver": "Verify/current/drivers/coverage_structure_fenwick_predecessor_main.cpp",
+      "problem_url": "https://judge.yosupo.jp/problem/predecessor_problem",
+      "exercised_apis": [
+        "set/get",
+        "非負0/1列のlower_bound/upper_bound",
+        "sumの直後/直前の境界"
+      ],
+      "not_covered": "新規・未提出。旧ACは引き継がない。0/1の非負列、探索の述語は単調なcount==0または累積個数。任意述語/非可換演算の境界探索・不正述語/所有権はローカル補足。O(N+QlogN)時間・O(N)領域。",
+      "reasoning": "既存点加算/区間積では呼ばれない境界探索を、前後の登録要素の検索に直接使用する。",
+      "online_status": "not_submitted",
+      "old_ac_transferred": false,
+      "source_sha256": "6b63536a96d3a43365a148cdaf168e1cca8e191e427a972de8084492a936a7b5",
+      "builds": 8,
+      "independent_and_official_runs": 328,
+      "maximum_runs": [
+        {
+          "build": "coverage_structure_fenwick_predecessor-gcc-skip-native",
+          "id": "coverage_structure_fenwick_predecessor",
+          "fixture": "predecessor-max-dense",
+          "kind": "maximum",
+          "input_sha256": "b731a8b81c0c1439498986b634ccddf69e1267f774a2e9914056662119589330",
+          "expected_sha256": "c8762ab36548142648c6046118d503043787c06905f37266d7ed513615e71a24",
+          "output_sha256": "c8762ab36548142648c6046118d503043787c06905f37266d7ed513615e71a24",
+          "answers": 500000,
+          "returncode": 0,
+          "passed": true,
+          "seconds": 0.15484959300374612,
+          "time_seconds": 0.15,
+          "maxrss_kib": 91744.0,
+          "command": [
+            "/usr/bin/time",
+            "-f",
+            "%e %M",
+            "-o",
+            "/tmp/sirkit-verify-coverage-20261115/structures/time.txt",
+            "taskset",
+            "-c",
+            "24",
+            "/tmp/sirkit-verify-coverage-20261115/structures/bin/coverage_structure_fenwick_predecessor-gcc-skip-native"
+          ]
+        },
+        {
+          "build": "coverage_structure_fenwick_predecessor-gcc-skip-native",
+          "id": "coverage_structure_fenwick_predecessor",
+          "fixture": "predecessor-max-sparse",
+          "kind": "maximum",
+          "input_sha256": "37ddb2c56fc3b2b880c670b4991c0acdad6f7a807db997485dfb5bafd1632c78",
+          "expected_sha256": "f37d1cde683ad17e411dbcdf1693acf88aecfef0d483546199882373d969f6f3",
+          "output_sha256": "f37d1cde683ad17e411dbcdf1693acf88aecfef0d483546199882373d969f6f3",
+          "answers": 1000000,
+          "returncode": 0,
+          "passed": true,
+          "seconds": 0.18059453599562403,
+          "time_seconds": 0.17,
+          "maxrss_kib": 91744.0,
+          "command": [
+            "/usr/bin/time",
+            "-f",
+            "%e %M",
+            "-o",
+            "/tmp/sirkit-verify-coverage-20261115/structures/time.txt",
+            "taskset",
+            "-c",
+            "24",
+            "/tmp/sirkit-verify-coverage-20261115/structures/bin/coverage_structure_fenwick_predecessor-gcc-skip-native"
+          ]
+        },
+        {
+          "build": "coverage_structure_fenwick_predecessor-clang-skip-native",
+          "id": "coverage_structure_fenwick_predecessor",
+          "fixture": "predecessor-max-dense",
+          "kind": "maximum",
+          "input_sha256": "b731a8b81c0c1439498986b634ccddf69e1267f774a2e9914056662119589330",
+          "expected_sha256": "c8762ab36548142648c6046118d503043787c06905f37266d7ed513615e71a24",
+          "output_sha256": "c8762ab36548142648c6046118d503043787c06905f37266d7ed513615e71a24",
+          "answers": 500000,
+          "returncode": 0,
+          "passed": true,
+          "seconds": 0.15305329000693746,
+          "time_seconds": 0.15,
+          "maxrss_kib": 91740.0,
+          "command": [
+            "/usr/bin/time",
+            "-f",
+            "%e %M",
+            "-o",
+            "/tmp/sirkit-verify-coverage-20261115/structures/time.txt",
+            "taskset",
+            "-c",
+            "24",
+            "/tmp/sirkit-verify-coverage-20261115/structures/bin/coverage_structure_fenwick_predecessor-clang-skip-native"
+          ]
+        },
+        {
+          "build": "coverage_structure_fenwick_predecessor-clang-skip-native",
+          "id": "coverage_structure_fenwick_predecessor",
+          "fixture": "predecessor-max-sparse",
+          "kind": "maximum",
+          "input_sha256": "37ddb2c56fc3b2b880c670b4991c0acdad6f7a807db997485dfb5bafd1632c78",
+          "expected_sha256": "f37d1cde683ad17e411dbcdf1693acf88aecfef0d483546199882373d969f6f3",
+          "output_sha256": "f37d1cde683ad17e411dbcdf1693acf88aecfef0d483546199882373d969f6f3",
+          "answers": 1000000,
+          "returncode": 0,
+          "passed": true,
+          "seconds": 0.18357449599716347,
+          "time_seconds": 0.18,
+          "maxrss_kib": 91516.0,
+          "command": [
+            "/usr/bin/time",
+            "-f",
+            "%e %M",
+            "-o",
+            "/tmp/sirkit-verify-coverage-20261115/structures/time.txt",
+            "taskset",
+            "-c",
+            "24",
+            "/tmp/sirkit-verify-coverage-20261115/structures/bin/coverage_structure_fenwick_predecessor-clang-skip-native"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "coverage_structure_segment_predecessor",
+      "libraries": [
+        "DataStructure/Segment_Tree.cpp"
+      ],
+      "driver": "Verify/current/drivers/coverage_structure_segment_predecessor_main.cpp",
+      "problem_url": "https://judge.yosupo.jp/problem/predecessor_problem",
+      "exercised_apis": [
+        "set/get",
+        "max_right/min_leftの述語境界探索",
+        "0/1計数モノイド"
+      ],
+      "not_covered": "新規・未提出。旧ACは引き継がない。0/1の非負列、探索の述語は単調なcount==0または累積個数。任意述語/非可換演算の境界探索・不正述語/所有権はローカル補足。O(N+QlogN)時間・O(N)領域。",
+      "reasoning": "既存点加算/区間積では呼ばれない境界探索を、前後の登録要素の検索に直接使用する。",
+      "online_status": "not_submitted",
+      "old_ac_transferred": false,
+      "source_sha256": "02b6816ef3030c2a75f59bc500b1028f3dd9e1d3d60ab98750ec8dffe75ec8da",
+      "builds": 8,
+      "independent_and_official_runs": 328,
+      "maximum_runs": [
+        {
+          "build": "coverage_structure_segment_predecessor-gcc-skip-native",
+          "id": "coverage_structure_segment_predecessor",
+          "fixture": "predecessor-max-dense",
+          "kind": "maximum",
+          "input_sha256": "b731a8b81c0c1439498986b634ccddf69e1267f774a2e9914056662119589330",
+          "expected_sha256": "c8762ab36548142648c6046118d503043787c06905f37266d7ed513615e71a24",
+          "output_sha256": "c8762ab36548142648c6046118d503043787c06905f37266d7ed513615e71a24",
+          "answers": 500000,
+          "returncode": 0,
+          "passed": true,
+          "seconds": 0.1717248280037893,
+          "time_seconds": 0.16,
+          "maxrss_kib": 183892.0,
+          "command": [
+            "/usr/bin/time",
+            "-f",
+            "%e %M",
+            "-o",
+            "/tmp/sirkit-verify-coverage-20261115/structures/time.txt",
+            "taskset",
+            "-c",
+            "24",
+            "/tmp/sirkit-verify-coverage-20261115/structures/bin/coverage_structure_segment_predecessor-gcc-skip-native"
+          ]
+        },
+        {
+          "build": "coverage_structure_segment_predecessor-gcc-skip-native",
+          "id": "coverage_structure_segment_predecessor",
+          "fixture": "predecessor-max-sparse",
+          "kind": "maximum",
+          "input_sha256": "37ddb2c56fc3b2b880c670b4991c0acdad6f7a807db997485dfb5bafd1632c78",
+          "expected_sha256": "f37d1cde683ad17e411dbcdf1693acf88aecfef0d483546199882373d969f6f3",
+          "output_sha256": "f37d1cde683ad17e411dbcdf1693acf88aecfef0d483546199882373d969f6f3",
+          "answers": 1000000,
+          "returncode": 0,
+          "passed": true,
+          "seconds": 0.2268229430046631,
+          "time_seconds": 0.22,
+          "maxrss_kib": 183912.0,
+          "command": [
+            "/usr/bin/time",
+            "-f",
+            "%e %M",
+            "-o",
+            "/tmp/sirkit-verify-coverage-20261115/structures/time.txt",
+            "taskset",
+            "-c",
+            "24",
+            "/tmp/sirkit-verify-coverage-20261115/structures/bin/coverage_structure_segment_predecessor-gcc-skip-native"
+          ]
+        },
+        {
+          "build": "coverage_structure_segment_predecessor-clang-skip-native",
+          "id": "coverage_structure_segment_predecessor",
+          "fixture": "predecessor-max-dense",
+          "kind": "maximum",
+          "input_sha256": "b731a8b81c0c1439498986b634ccddf69e1267f774a2e9914056662119589330",
+          "expected_sha256": "c8762ab36548142648c6046118d503043787c06905f37266d7ed513615e71a24",
+          "output_sha256": "c8762ab36548142648c6046118d503043787c06905f37266d7ed513615e71a24",
+          "answers": 500000,
+          "returncode": 0,
+          "passed": true,
+          "seconds": 0.1714991850021761,
+          "time_seconds": 0.16,
+          "maxrss_kib": 183904.0,
+          "command": [
+            "/usr/bin/time",
+            "-f",
+            "%e %M",
+            "-o",
+            "/tmp/sirkit-verify-coverage-20261115/structures/time.txt",
+            "taskset",
+            "-c",
+            "24",
+            "/tmp/sirkit-verify-coverage-20261115/structures/bin/coverage_structure_segment_predecessor-clang-skip-native"
+          ]
+        },
+        {
+          "build": "coverage_structure_segment_predecessor-clang-skip-native",
+          "id": "coverage_structure_segment_predecessor",
+          "fixture": "predecessor-max-sparse",
+          "kind": "maximum",
+          "input_sha256": "37ddb2c56fc3b2b880c670b4991c0acdad6f7a807db997485dfb5bafd1632c78",
+          "expected_sha256": "f37d1cde683ad17e411dbcdf1693acf88aecfef0d483546199882373d969f6f3",
+          "output_sha256": "f37d1cde683ad17e411dbcdf1693acf88aecfef0d483546199882373d969f6f3",
+          "answers": 1000000,
+          "returncode": 0,
+          "passed": true,
+          "seconds": 0.20005024399142712,
+          "time_seconds": 0.19,
+          "maxrss_kib": 183888.0,
+          "command": [
+            "/usr/bin/time",
+            "-f",
+            "%e %M",
+            "-o",
+            "/tmp/sirkit-verify-coverage-20261115/structures/time.txt",
+            "taskset",
+            "-c",
+            "24",
+            "/tmp/sirkit-verify-coverage-20261115/structures/bin/coverage_structure_segment_predecessor-clang-skip-native"
+          ]
+        }
+      ]
+    }
+  ],
+  "validation": {
+    "builds": 80,
+    "regular_runs": 3312,
+    "maximum_runs": 24,
+    "answers": 7666074,
+    "all_passed": true
+  },
+  "compilers": {
+    "gcc": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+    "clang": "Ubuntu clang version 21.1.8 (6ubuntu1)"
+  },
+  "new_source_files": {
+    "DataStructure/Binary_Trie.cpp": "d76c62cba55987fecc730c8a969db370b779f5db1ab309d00b4ec4a866fd0c1a",
+    "Verify/current/drivers/coverage_structure_binary_ordered_main.cpp": "21305fd0f70565c148c2da6487cedbc54738d4201f14bf881487196e88a3ab8a",
+    "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab",
+    "Verify/current/drivers/coverage_structure_binary_xor_ids_main.cpp": "0a3ac839dff5a3dedc02d0780b79e0abe66e1914543ee4925754d19d88d02b60",
+    "DataStructure/Compressed_Binary_Trie.cpp": "7dd272adb8c27fbd63ab9ac5bc57b160ec73817a26bd2c9948533cabaa87c103",
+    "Verify/current/drivers/coverage_structure_compressed_ordered_main.cpp": "91ff81494d768566c14d5f44311cfeb4630a492db4f91b702080dbdc52edb9d6",
+    "Verify/current/drivers/coverage_structure_compressed_xor_ids_main.cpp": "c74c0c5dfa3706c21d349ca60dcdf3ba5a1f37b801996adada5ee9b0cdc26b77",
+    "DataStructure/Persistent_Segment_Tree.cpp": "84774bc0a6295daf231f782cb53ae971b31d1012c05325dea7562b7b94366a16",
+    "Verify/current/drivers/coverage_structure_persistent_queue_main.cpp": "fd7b25790dc09f21734e05dd5027db7ebc8df3543844ec1364cfec7409618d2c",
+    "DataStructure/Disjoint_Sparse_Table.cpp": "91a6c15c7501385f279dbdf006b31800072995c8d4afbc12e229e04dd792e20f",
+    "Verify/current/drivers/coverage_structure_disjoint_composite_main.cpp": "2550e38d4a10307b0a32f30696662e6b521e6cacbddc765514fbff7a8cddfe35",
+    "DataStructure/line-container-2d.cpp": "bfc1f6f6d49130db16d24be2e875956f2555aa41300afae3da1b2e20bd8bae94",
+    "Verify/current/drivers/coverage_structure_line2d_triangle_main.cpp": "da0bf211a49e66e01fd918a208ba1e8ff3a3f43d3cfd679ac22e481003c401fa",
+    "Verify/current/drivers/coverage_structure_line2d_linear_main.cpp": "c031d3f1333955410df3963e76b68372b1a488101a192e9b7b8545248b06e300",
+    "DataStructure/Fenwick_Tree.cpp": "3185047256b4fa6ede5686a72a3dff8babce338a6a11caf9ad2eb422a9a7cf1a",
+    "Verify/current/drivers/coverage_structure_fenwick_predecessor_main.cpp": "b0a83f5fa545580244828743e1997edef43994506a7ecf624242ef7b90baa7de",
+    "DataStructure/Segment_Tree.cpp": "563c970487176efb5ff54850abb848da34600fa44af282ec62ecbdcad61f2207",
+    "Verify/current/drivers/coverage_structure_segment_predecessor_main.cpp": "d8049bf4eab0022980bc3c24a72e12d12f0d44bf9e680cd335284c24a5412eec"
+  },
+  "new_online_ac_count": 0,
+  "fable_run_for_new_drivers": false,
+  "archive": {
+    "path": "Audit/data/verify-coverage-structures-20261115.zip",
+    "sha256": "d44f479cd4d1763f7a5a0343e9adff6f0532f63c9add0c0c1951707387f72947",
+    "bytes": 10070583,
+    "members": 825,
+    "verification": "CRC/member SHA/copy SHA PASS",
+    "git_tracking": "ignored/local-only"
+  }
+}

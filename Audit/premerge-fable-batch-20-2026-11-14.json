@@ -1,0 +1,138 @@
+{
+  "format": 1,
+  "date": "2026-11-14",
+  "stage": "claude",
+  "model": "claude-fable-5-2",
+  "actual_models": [
+    "claude-fable-5-2"
+  ],
+  "effort": "low",
+  "completed_utc": "2026-11-14T16:14:47.176578+00:00",
+  "source_hashes": {
+    "DataStructure/dynamic-binary-indexed-tree-2d.cpp": "48f0140f426beea8889620f9ccc61b6acd205c078d2833acdd11c919f2832c3d",
+    "DataStructure/dynamic-binary-indexed-tree.cpp": "1f8ebbefb54c3be51ca9d748e1564088ba5d2fa7a64b1edd64dbc5b473c2fa94",
+    "Internal/Nyaan_hash_map_min.cpp": "2e353c9daa09faaf53ccef4146a2b1a2b8a0f9a586a49bca99cfbcbeccef0b73",
+    "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab",
+    "Verify/current/drivers/dynamic_fenwick_2d_rectangle_main.cpp": "f2b509ab43823f3b99d03423eaaa491cf2ed50a53317167cf33396ee05806efa",
+    "Verify/current/drivers/dynamic_fenwick_range_main.cpp": "df8e15a56df0dce95b04c22ebc182480f38d9512f35b63e1a74e851b2f5a4d8f",
+    "Verify/current/drivers/dynamic_fenwick_rectangle_main.cpp": "6d9c9141f0e73b151e9eb2cc83b02d4fc7feefd47eb732f00fbe4e2accd51a93",
+    "Verify/current/drivers/internal_hash_map_main.cpp": "403ea0c12c96eb7f38d56f7c0e25741d993f063c2c9db7c9f94cedc49990a5d4",
+    "Verify/current/submissions/dynamic_fenwick_2d_rectangle.cpp": "255d43993f02be584aaeb49a774240c278d163621a7bc9fc775155053fce78b4",
+    "Verify/current/submissions/dynamic_fenwick_range.cpp": "06b482ae1c221d340bb4ec829246d0460e3e5fe73ff1dfe2157f0db7f8c5fafb",
+    "Verify/current/submissions/dynamic_fenwick_rectangle.cpp": "65ad0587f742fed916ea419647e06cd2df57b7eee202198d739fc77d3b7b6085",
+    "Verify/current/submissions/internal_hash_map.cpp": "b05c781acb6ef5eb752f01b88c2f9f594e99e4646ebbdc1daf9de531a754d260",
+    "AGENTS.md": "f4cdb9332d66307604443358b5ae5d087e609462e25303cab013e3fdc813a569"
+  },
+  "codex_receipts": {
+    "dynamic_fenwick_2d_rectangle": "Verify/optimization/stages/dynamic_fenwick_2d_rectangle.codex.bb60f9cc2c6c9d852f1abbb66c8a3812010b6ac2edf79827e73d6f05c490c4e7.json",
+    "dynamic_fenwick_range": "Verify/optimization/stages/dynamic_fenwick_range.codex.0c7b8182e92c3e7ed877601a4125dec493688432a4d5ce319a73afb732959ba6.json",
+    "dynamic_fenwick_rectangle": "Verify/optimization/stages/dynamic_fenwick_rectangle.codex.40fe0b1f1fdfecdc889a36f9164aa0cbd7b37fcb9067791916218a00b269810b.json",
+    "internal_hash_map": "Verify/optimization/stages/internal_hash_map.codex.907723916482f7f797be07e45dd90809c035cb353491f566707577a96f7c40e9.json"
+  },
+  "review": {
+    "reviews": [
+      {
+        "id": "dynamic_fenwick_2d_rectangle",
+        "source_sha256": "255d43993f02be584aaeb49a774240c278d163621a7bc9fc775155053fce78b4",
+        "verdict": "keep",
+        "reason": "全component読了、実行なし。更新点のみの座標圧縮とlower_boundによる半開区間変換は正しく、n=0や空矩形はnl==nr/ml==mrで0を返す。dense/direct/treeの分岐、Small→Flat→B+木→denseの移行、extra_cellsによるnode数管理、flag伝播に矛盾は見当たらない。row_indicesとrowsは全てvector所有。fast_ioの番兵読みとバッファ境界処理も問題なし。高速化余地は未測定の仮説しかなく、追加提案なし。"
+      },
+      {
+        "id": "dynamic_fenwick_range",
+        "source_sha256": "06b482ae1c221d340bb4ec829246d0460e3e5fe73ff1dfe2157f0db7f8c5fafb",
+        "verdict": "keep",
+        "reason": "全component読了、実行なし。先頭から順のaddでprefix昇格→append方式→finish_appendの不変条件を手で追い、整合を確認した（root以下は完成cell、祖先鎖は完成済み子の部分和、昇格時の差分変換も一致）。完成後はdirect_valuesの2段展開ループで、values[0]=0により安全。n<=64のTiny、n<8192のhash→Tiny移行、(l^r)<64のGCC非AVX2専用経路も正しい。公開API呼び出しは素直。reserve案の再提案はしない。"
+      },
+      {
+        "id": "dynamic_fenwick_rectangle",
+        "source_sha256": "65ad0587f742fed916ea419647e06cd2df57b7eee202198d739fc77d3b7b6085",
+        "verdict": "keep",
+        "reason": "全component読了、実行なし。外側BITのl!=r交互降下と各行のsum(d,u)は半開区間として正しく、d==uは各storageで0を返す。rowsはwidth+1個で添字0は未使用、emplace_back時の再配置はnoexcept moveで安全。intではWide経路に入らない。行ごとのSmall点列（符号なし範囲判定）・Flat・B+木のinterval/prefix_from・dense maskの各読み出しも整合。行オブジェクトは1個百数十byte程度（目視見積り、未測定）でメモリ上の懸念は小さい。rows/座標reserveは既測の混在差に従い再提案しない。"
+      },
+      {
+        "id": "internal_hash_map",
+        "source_sha256": "b05c781acb6ef5eb752f01b88c2f9f594e99e4646ebbdc1daf9de531a754d260",
+        "verdict": "keep",
+        "reason": "全component読了、実行なし。代入はoperator[]、参照はfindポインタで未登録を0とし、miss時に挿入しない。初期shift 61と容量8、負荷率4/5、rehash時のnext_shift、線形probeの終了性は整合。AVX2のoccupied32はCPU判定付きで、標準代替のoccupied8は乗算のbit衝突がなく正しい。SIRKIT_DISABLE_SIMDで除外可能。uint64の入出力はto_chars容量22で足りる。所有は全てvector。"
+      }
+    ],
+    "experiments": []
+  },
+  "usage_after": {
+    "windows": {
+      "five_hour": {
+        "utilization": 15.0,
+        "resets_at": "2026-11-14T21:10:00.554288+00:00"
+      },
+      "seven_day": {
+        "utilization": 9.0,
+        "resets_at": "2026-11-21T09:00:00.554316+00:00"
+      },
+      "seven_day_breakdown": {},
+      "limit_0_session_all": {
+        "utilization": 15,
+        "resets_at": "2026-11-14T21:10:00.554288+00:00",
+        "kind": "session",
+        "model": "all"
+      },
+      "limit_1_weekly_all_all": {
+        "utilization": 9,
+        "resets_at": "2026-11-21T09:00:00.554316+00:00",
+        "kind": "weekly_all",
+        "model": "all"
+      },
+      "limit_2_weekly_scoped_Fable": {
+        "utilization": 18,
+        "resets_at": "2026-11-21T09:00:00.554711+00:00",
+        "kind": "weekly_scoped",
+        "model": "Fable"
+      }
+    },
+    "extra_usage_enabled": false
+  },
+  "prompt_sha256": "23c3e42b4d40d70adca0497d4003081ba9ef1745d66f5c77f4619dd2223e6317",
+  "response_sha256": "57188299642530dcd5db502b248fce89f056d8c9605811109cd11b7c212ed17d",
+  "model_usage": {
+    "claude-fable-5-2": {
+      "inputTokens": 2,
+      "outputTokens": 12368,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 58333,
+      "webSearchRequests": 0,
+      "costUSD": 1.428064,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 11217,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 58333,
+      "canonicalModel": "claude-fable-5-2",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "source_representation": "Fresh complete current library/main/I/O/vendor code supplied as shared guarded components with ordered file assembly references. All unique code included; identical non-comment token sequences, exact preprocessor logical lines, lexical adjacency and literals retained. Exact original layout reconstructed and verified separately. No historical review used to omit current code.",
+  "representation_proof": {
+    "method": "fresh_full_current_code_guard_component_dedup",
+    "status": "PASS",
+    "proof_path": "/tmp/sirkit-premerge-optimization-20261114/full-code-dedup/reconstruction-proofs.json",
+    "proof_sha256": "e75a4bc8e4ca5f2905e4955567d2e7906ba6f6c7651a2c9c2952e318e5a38951",
+    "verifier_sha256": "73a408f208e42b2db77aaf05559fe1d06f71626a7a9bd851eb258586fbfdbee2",
+    "verification_sha256": "735097b0599c57dabf071c89ebf1bfc3c722869afec1ce14962fc880ebda05ea",
+    "summary": {
+      "status": "PASS",
+      "IDs": 55,
+      "batches": 9,
+      "source_files": 91,
+      "component_occurrences_across_batches": 229,
+      "exact_stripped_bytes_tokens_literals_directives_newlines": true,
+      "lexical_operator_adjacency_and_macro_spacing_preserved": true,
+      "all_live_raw_hashes_match": true,
+      "verifier_sha256": "73a408f208e42b2db77aaf05559fe1d06f71626a7a9bd851eb258586fbfdbee2",
+      "unique_code_payload_total_bytes": 783498,
+      "unshared_stripped_file_total_bytes": 940575,
+      "prompt_total_bytes": 884631
+    },
+    "historical_approval_transfer": false
+  },
+  "review_limitations": "Static review plus supplied measured evidence, not new model-executed measurements. No online submission or AC inference."
+}

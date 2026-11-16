@@ -1,0 +1,563 @@
+{
+  "schema_version": 1,
+  "date": "2026-11-15",
+  "scope": "Geometry retained AtCoder12 + LC5 scope audit and natural Yukicoder supplemental Verify",
+  "online_submission": false,
+  "old_ac_transferred": false,
+  "public_library_modified": false,
+  "new_entry_count": 13,
+  "new_driver_count": 7,
+  "builds": 104,
+  "case_runs": 9624,
+  "official_sample_runs": 344,
+  "independent_reference_and_boundary_case_runs": 9280,
+  "compilers": {
+    "gcc": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0\nCopyright (C) 2025 Free Software Foundation, Inc.\nThis is free software; see the source for copying conditions.  There is NO\nwarranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n",
+    "clang": "Ubuntu clang version 21.1.8 (6ubuntu1)\nTarget: x86_64-pc-linux-gnu\nThread model: posix\nInstalledDir: /usr/lib/llvm-21/bin\n"
+  },
+  "cpu_affinity": 25,
+  "settings": "C++23 -O2, checked/skip × native/standard arithmetic + SIMD disabled",
+  "passed": true,
+  "source_changes_during_compile": false,
+  "rendered_sha256": {
+    "coverage_geometry_orientation_stabbing_full": "8d84fe85d076452057cf08b44017350579a9bc3ab46a644013b228ca79057385",
+    "coverage_geometry_orientation_stabbing_split": "de1e9b6b670ef2eda4c5e4fd9e51eb82a11995944594dfcc9396287f047256ab",
+    "coverage_geometry_segment_stabbing_full": "2e48ee6e69502468bfb149f735c4300c336c222ebb9ce6373fe12d8699de3e61",
+    "coverage_geometry_segment_stabbing_split": "17818bcfed934a91034e82d68bd0a08d7a2032acb2873169fc6b779b36b6bc64",
+    "coverage_geometry_circle_in_diamond_full": "396e2471a605d8356ca16ca585a29450371a4230c27bfb8719cb914b1c418d6b",
+    "coverage_geometry_circle_in_diamond_split": "dfc758958734fa2ed55c27c8ca1ec03f7e7500e8954ec411e10422a7891164f5",
+    "coverage_geometry_coin_overlap_full": "127354477999b78c97b701a6e5911fa026e88aee515d908073a1839b13a44026",
+    "coverage_geometry_coin_overlap_split": "ea9f524a53054182318eb561f6cbca642b77ea239c0b5f6c65d4759b83804e6f",
+    "coverage_geometry_convex_polygon_area_full": "413f7cf25b1438a2f2cff192c6b47e4ace259a9818e57f4da59dc08c295731db",
+    "coverage_geometry_convex_polygon_area_split": "e43620711c48a482ca35a69646fdfdc165b74415c7cc5767ea926bb08d7b6bea",
+    "coverage_geometry_parabola_polygon_area_full": "31acd8fe82e5763d556416cd38af5047ab9aa0b38615defc893bb08255e0e1aa",
+    "coverage_geometry_parabola_polygon_area_split": "db083311f6abf2514bf5262b7d5128ecc2b240215da50faa9c444ca6faf488d2",
+    "coverage_geometry_nearest_sorted_line": "ae26a699fd5532f33e0cd59bc2eb229258ae86e1b42e25d1ddfff17fcbfa8f7b"
+  },
+  "lc_entry_review": "lc-entry-review.json",
+  "mapping": "final-mapping.json",
+  "candidate_dispositions": "candidate-dispositions.json",
+  "proof": "parabola-error-proof.json",
+  "local_results": [
+    "results.json",
+    "nearest-results.json"
+  ],
+  "maximum_input_smoke": {
+    "coverage_geometry_orientation_stabbing_full": {
+      "max_wall_seconds": 0.014245429003494792,
+      "interpretation": "入力生成・compile時間は除く。tasksetを含む単発プロセス時間で速度改善の比較測定ではない。"
+    },
+    "coverage_geometry_orientation_stabbing_split": {
+      "max_wall_seconds": 0.014093852005316876,
+      "interpretation": "入力生成・compile時間は除く。tasksetを含む単発プロセス時間で速度改善の比較測定ではない。"
+    },
+    "coverage_geometry_segment_stabbing_full": {
+      "max_wall_seconds": 0.022295986011158675,
+      "interpretation": "入力生成・compile時間は除く。tasksetを含む単発プロセス時間で速度改善の比較測定ではない。"
+    },
+    "coverage_geometry_segment_stabbing_split": {
+      "max_wall_seconds": 0.022630754014244303,
+      "interpretation": "入力生成・compile時間は除く。tasksetを含む単発プロセス時間で速度改善の比較測定ではない。"
+    },
+    "coverage_geometry_coin_overlap_full": {
+      "max_wall_seconds": 0.02740135400381405,
+      "interpretation": "入力生成・compile時間は除く。tasksetを含む単発プロセス時間で速度改善の比較測定ではない。"
+    },
+    "coverage_geometry_coin_overlap_split": {
+      "max_wall_seconds": 0.028288771994994022,
+      "interpretation": "入力生成・compile時間は除く。tasksetを含む単発プロセス時間で速度改善の比較測定ではない。"
+    }
+  },
+  "limitations": [
+    "オンラインは全て未提出、既存ACは移さない。",
+    "LC5 directは実際にmainで使う中核APIに対する評価でありライブラリ全APIという意味ではない。",
+    "新Yukiの円は同半径、包含/距離はひし形4辺、整数areaはCCW凸多角形。既存一般AtCoderも補完として必要。",
+    "1009は数値積分由来の一族のみ、716はy=0の整列済み点列のみ。",
+    "公開APIを実際の解答へ反映する。空呼び出しや結果を捨てる検証は追加しない。"
+  ],
+  "lc_records": [
+    {
+      "id": "nearest_two_points",
+      "libraries": [
+        "Geometry/Nearest_Two_points.cpp"
+      ],
+      "problem_url": "https://judge.yosupo.jp/problem/closest_pair",
+      "assessment": "direct",
+      "exercised_apis": [
+        "nearest_two_points(vector<P>)",
+        "NearestTwoPointsResult.first_index/second_index"
+      ],
+      "not_covered": [
+        "distance_squaredは現mainが出力しない",
+        "nearest_two_points_sortedの全overload",
+        "範囲/個数overload・closest_pair",
+        "N<2のnullopt・全int32範囲・uint64_t超過",
+        "入力不変・例外/所有権"
+      ],
+      "reasoning": "任意2次元整数点の最近点対をそのまま解くためdirect。最初の2点が同座標の場合はmainが0 1を即答し、そのケースではAPIを呼ばない。全APIのオンライン検証という意味には広げない。",
+      "sources": [
+        "https://judge.yosupo.jp/problem/closest_pair",
+        "https://github.com/yosupo06/library-checker-problems/tree/73876f1cbcf082d2b22722924b924d3d65a2f00e/geo/closest_pair"
+      ],
+      "supplemental_ids": [
+        "coverage_geometry_nearest_sorted_line"
+      ],
+      "official_scope": {
+        "T_max": 100000,
+        "N_min": 2,
+        "sum_N_max": 500000,
+        "coordinate_abs_max": 1000000000,
+        "duplicates_allowed": true,
+        "output": "任意の最短対の異なる添字"
+      },
+      "driver": "Verify/current/drivers/nearest_two_points_main.cpp",
+      "driver_sha256": "0e1aef36bd93beed25eca3ed40320ce4cf488456b357eca007e4c7d67a17bd86",
+      "library_sha256": {
+        "Geometry/Nearest_Two_points.cpp": "2dd332ffd9f8bcc3395eaa9accd12bf420799f9ab1b543534abe82a2129f82ca"
+      }
+    },
+    {
+      "id": "angle_sort",
+      "libraries": [
+        "Geometry/angle_sort.cpp"
+      ],
+      "problem_url": "https://judge.yosupo.jp/problem/sort_points_by_argument",
+      "assessment": "direct",
+      "exercised_apis": [
+        "angle_sort(points,false)"
+      ],
+      "not_covered": [
+        "降順angle_sort/AngleGreater/arccmp_g等",
+        "angle_sort_indices",
+        "same_angleと単独比較APIの戻り値",
+        "int64_t座標の全域・出力以外の契約"
+      ],
+      "reasoning": "整数の偏角順という本来の操作を解くためdirect。APIの[0,2π)順からLCの(-π,π]順へy<0の境界で巡回順を変換する。零ベクトルと同方向の順序は公式定義に従う。座標±1e9なのでint32狭幅高速経路の範囲に限定される。",
+      "sources": [
+        "https://judge.yosupo.jp/problem/sort_points_by_argument",
+        "https://github.com/yosupo06/library-checker-problems/tree/73876f1cbcf082d2b22722924b924d3d65a2f00e/geo/sort_points_by_argument"
+      ],
+      "supplemental_ids": [],
+      "official_scope": {
+        "N_min": 1,
+        "N_max": 200000,
+        "coordinate_abs_max": 1000000000,
+        "zero_allowed": true,
+        "same_argument_order": "arbitrary",
+        "output": "入力点の多重集合を保つ反時計回りの偏角順"
+      },
+      "driver": "Verify/current/drivers/angle_sort_main.cpp",
+      "driver_sha256": "4c2e2cc7acd88816f6b423e32ba3a61327227e4e4a2e691e5d4e5f2bf1379a14",
+      "library_sha256": {
+        "Geometry/angle_sort.cpp": "b6caaa8c6290d2ad637d6d4a72b16b8017f5ebbfbe3ec3f55e71c08d2cd291f3"
+      }
+    },
+    {
+      "id": "angle_sort_std",
+      "libraries": [
+        "Geometry/angle_sort.cpp"
+      ],
+      "problem_url": "https://judge.yosupo.jp/problem/sort_points_by_argument",
+      "assessment": "direct",
+      "exercised_apis": [
+        "AngleLess::operator() (std::sort)"
+      ],
+      "not_covered": [
+        "降順angle_sort/AngleGreater/arccmp_g等",
+        "angle_sort_indices",
+        "same_angleと単独比較APIの戻り値",
+        "int64_t座標の全域・出力以外の契約"
+      ],
+      "reasoning": "整数の偏角順という本来の操作を解くためdirect。APIの[0,2π)順からLCの(-π,π]順へy<0の境界で巡回順を変換する。零ベクトルと同方向の順序は公式定義に従う。座標±1e9なのでint32狭幅高速経路の範囲に限定される。",
+      "sources": [
+        "https://judge.yosupo.jp/problem/sort_points_by_argument",
+        "https://github.com/yosupo06/library-checker-problems/tree/73876f1cbcf082d2b22722924b924d3d65a2f00e/geo/sort_points_by_argument"
+      ],
+      "supplemental_ids": [],
+      "official_scope": {
+        "N_min": 1,
+        "N_max": 200000,
+        "coordinate_abs_max": 1000000000,
+        "zero_allowed": true,
+        "same_argument_order": "arbitrary",
+        "output": "入力点の多重集合を保つ反時計回りの偏角順"
+      },
+      "driver": "Verify/current/drivers/angle_sort_std_main.cpp",
+      "driver_sha256": "80b82cc5eb67365226e4fd696bd0a1d2309e91ef930758e851617b0a05b24b82",
+      "library_sha256": {
+        "Geometry/angle_sort.cpp": "b6caaa8c6290d2ad637d6d4a72b16b8017f5ebbfbe3ec3f55e71c08d2cd291f3"
+      }
+    },
+    {
+      "id": "geometry_convex_hull_full",
+      "libraries": [
+        "Geometry/geometory.cpp"
+      ],
+      "problem_url": "https://judge.yosupo.jp/problem/static_convex_hull",
+      "assessment": "direct",
+      "exercised_apis": [
+        "geo::convex_hull(vector<PointI>)"
+      ],
+      "not_covered": [
+        "geo::area/signed_area2/contains/perimeter/triangle_area",
+        "浮動座標・Epsilon・全int64_t範囲",
+        "入力不変（mainはmove）・全幾何API"
+      ],
+      "reasoning": "凸包の全頂点を実際に出力するためdirect。公式はN=0/1/2・重複・共線を許し、辺上の中間点を除くCCW巡回列を要求する。Polygon/全機能版に含まれる他APIが検証済みになるわけではない。",
+      "sources": [
+        "https://judge.yosupo.jp/problem/static_convex_hull",
+        "https://github.com/yosupo06/library-checker-problems/tree/73876f1cbcf082d2b22722924b924d3d65a2f00e/geo/static_convex_hull"
+      ],
+      "supplemental_ids": [
+        "coverage_geometry_convex_polygon_area_full",
+        "coverage_geometry_parabola_polygon_area_full",
+        "coverage_geometry_circle_in_diamond_full"
+      ],
+      "official_scope": {
+        "T_max": 100000,
+        "N_min": 0,
+        "sum_N_max": 500000,
+        "coordinate_abs_max": 1000000000,
+        "duplicates_allowed": true,
+        "collinear_intermediate_vertices": "excluded",
+        "output": "最小頂点集合、3頂点以上はCCW、循環シフト可"
+      },
+      "driver": "Verify/current/drivers/geometry_convex_hull_main.cpp",
+      "driver_sha256": "3dde860ac43c281c13359a6d16251839e1db14ace45ff3957aa0c9e487461a5c",
+      "library_sha256": {
+        "Geometry/geometory.cpp": "7e9a69bc51531800b59c99858cd57826b1881f64860700fe3d61041889f0fe79"
+      }
+    },
+    {
+      "id": "geometry_convex_hull_split",
+      "libraries": [
+        "Geometry/Polygon.cpp"
+      ],
+      "problem_url": "https://judge.yosupo.jp/problem/static_convex_hull",
+      "assessment": "direct",
+      "exercised_apis": [
+        "geo::convex_hull(vector<PointI>)"
+      ],
+      "not_covered": [
+        "geo::area/signed_area2/contains/perimeter/triangle_area",
+        "浮動座標・Epsilon・全int64_t範囲",
+        "入力不変（mainはmove）・全幾何API"
+      ],
+      "reasoning": "凸包の全頂点を実際に出力するためdirect。公式はN=0/1/2・重複・共線を許し、辺上の中間点を除くCCW巡回列を要求する。Polygon/全機能版に含まれる他APIが検証済みになるわけではない。",
+      "sources": [
+        "https://judge.yosupo.jp/problem/static_convex_hull",
+        "https://github.com/yosupo06/library-checker-problems/tree/73876f1cbcf082d2b22722924b924d3d65a2f00e/geo/static_convex_hull"
+      ],
+      "supplemental_ids": [
+        "coverage_geometry_convex_polygon_area_split",
+        "coverage_geometry_parabola_polygon_area_split",
+        "coverage_geometry_circle_in_diamond_split"
+      ],
+      "official_scope": {
+        "T_max": 100000,
+        "N_min": 0,
+        "sum_N_max": 500000,
+        "coordinate_abs_max": 1000000000,
+        "duplicates_allowed": true,
+        "collinear_intermediate_vertices": "excluded",
+        "output": "最小頂点集合、3頂点以上はCCW、循環シフト可"
+      },
+      "driver": "Verify/current/drivers/geometry_convex_hull_main.cpp",
+      "driver_sha256": "3dde860ac43c281c13359a6d16251839e1db14ace45ff3957aa0c9e487461a5c",
+      "library_sha256": {
+        "Geometry/Polygon.cpp": "5cd3669e2180e69f9e31f03d87c73a0f349cccc98858dc428fe5a2f54df2e077"
+      }
+    }
+  ],
+  "old_to_new_mapping": [
+    {
+      "old_id": "geometry_orientation_atcoder_full",
+      "old_problem_url": "https://atcoder.jp/contests/abc266/tasks/abc266_c",
+      "new_ids": [
+        "coverage_geometry_orientation_stabbing_full"
+      ],
+      "action": "replace",
+      "reason": "旧AtCoderと同じ±100の整数向き判定。Yukiでは共線を含む任意の端点三つが実際の交差数へ反映されるため、主入口を上位へ変更できる。旧記録と問題は参考として保持。",
+      "old_ac_transferred": false
+    },
+    {
+      "old_id": "geometry_orientation_atcoder_split",
+      "old_problem_url": "https://atcoder.jp/contests/abc266/tasks/abc266_c",
+      "new_ids": [
+        "coverage_geometry_orientation_stabbing_split"
+      ],
+      "action": "replace",
+      "reason": "旧AtCoderと同じ±100の整数向き判定。Yukiでは共線を含む任意の端点三つが実際の交差数へ反映されるため、主入口を上位へ変更できる。旧記録と問題は参考として保持。",
+      "old_ac_transferred": false
+    },
+    {
+      "old_id": "geometry_segment_intersection_atcoder_full",
+      "old_problem_url": "https://atcoder.jp/contests/math-and-algorithm/tasks/math_and_algorithm_ah",
+      "new_ids": [
+        "coverage_geometry_segment_stabbing_full"
+      ],
+      "action": "supplement",
+      "reason": "Yukiは延長した候補線分対に限定し座標も小さい。旧AtCoderの0..1e9の独立した非零長線分対と接触・重なりの一般入力をactiveで保持。",
+      "old_ac_transferred": false
+    },
+    {
+      "old_id": "geometry_segment_intersection_atcoder_split",
+      "old_problem_url": "https://atcoder.jp/contests/math-and-algorithm/tasks/math_and_algorithm_ah",
+      "new_ids": [
+        "coverage_geometry_segment_stabbing_split"
+      ],
+      "action": "supplement",
+      "reason": "Yukiは延長した候補線分対に限定し座標も小さい。旧AtCoderの0..1e9の独立した非零長線分対と接触・重なりの一般入力をactiveで保持。",
+      "old_ac_transferred": false
+    },
+    {
+      "old_id": "geometry_triangle_area_full",
+      "old_problem_url": "https://atcoder.jp/contests/abc002/tasks/abc002_3",
+      "new_ids": [
+        "coverage_geometry_convex_polygon_area_full",
+        "coverage_geometry_parabola_polygon_area_full"
+      ],
+      "action": "supplement",
+      "reason": "Yuki1447はCCW凸多角形、1009は放物線族の浮動点列。旧AtCoderの頂点順を限定しない整数三角形の絶対面積もactiveで保持。",
+      "old_ac_transferred": false
+    },
+    {
+      "old_id": "geometry_triangle_area_split",
+      "old_problem_url": "https://atcoder.jp/contests/abc002/tasks/abc002_3",
+      "new_ids": [
+        "coverage_geometry_convex_polygon_area_split",
+        "coverage_geometry_parabola_polygon_area_split"
+      ],
+      "action": "supplement",
+      "reason": "Yuki1447はCCW凸多角形、1009は放物線族の浮動点列。旧AtCoderの頂点順を限定しない整数三角形の絶対面積もactiveで保持。",
+      "old_ac_transferred": false
+    },
+    {
+      "old_id": "geometry_contains_atcoder_full",
+      "old_problem_url": "https://atcoder.jp/contests/math-and-algorithm/tasks/math_and_algorithm_bu",
+      "new_ids": [
+        "coverage_geometry_circle_in_diamond_full"
+      ],
+      "action": "supplement",
+      "reason": "Yukiは4頂点ひし形のみ。旧AtCoderの凹形を含む一般単純多角形・N<=100000・座標±1e9をactiveで保持。",
+      "old_ac_transferred": false
+    },
+    {
+      "old_id": "geometry_contains_atcoder_split",
+      "old_problem_url": "https://atcoder.jp/contests/math-and-algorithm/tasks/math_and_algorithm_bu",
+      "new_ids": [
+        "coverage_geometry_circle_in_diamond_split"
+      ],
+      "action": "supplement",
+      "reason": "Yukiは4頂点ひし形のみ。旧AtCoderの凹形を含む一般単純多角形・N<=100000・座標±1e9をactiveで保持。",
+      "old_ac_transferred": false
+    },
+    {
+      "old_id": "geometry_circle_relation_full",
+      "old_problem_url": "https://atcoder.jp/contests/math-and-algorithm/tasks/math_and_algorithm_ag",
+      "new_ids": [
+        "coverage_geometry_coin_overlap_full"
+      ],
+      "action": "supplement",
+      "reason": "Yukiは半径10の同半径円のみ。旧AtCoderの任意の正整数半径・内接/内包/外接等の5分類をactiveで保持。交点座標までは旧問題も出力しない。",
+      "old_ac_transferred": false
+    },
+    {
+      "old_id": "geometry_circle_relation_split",
+      "old_problem_url": "https://atcoder.jp/contests/math-and-algorithm/tasks/math_and_algorithm_ag",
+      "new_ids": [
+        "coverage_geometry_coin_overlap_split"
+      ],
+      "action": "supplement",
+      "reason": "Yukiは半径10の同半径円のみ。旧AtCoderの任意の正整数半径・内接/内包/外接等の5分類をactiveで保持。交点座標までは旧問題も出力しない。",
+      "old_ac_transferred": false
+    },
+    {
+      "old_id": "geometry_point_segment_distance_full",
+      "old_problem_url": "https://atcoder.jp/contests/math-and-algorithm/tasks/math_and_algorithm_ae",
+      "new_ids": [
+        "coverage_geometry_circle_in_diamond_full"
+      ],
+      "action": "supplement",
+      "reason": "Yukiの辺はひし形の4辺で最終合否だけを出力する。旧AtCoderの任意の整数線分と点に対する最近距離そのもの（端点/内部への射影）をactiveで保持。",
+      "old_ac_transferred": false
+    },
+    {
+      "old_id": "geometry_point_segment_distance_split",
+      "old_problem_url": "https://atcoder.jp/contests/math-and-algorithm/tasks/math_and_algorithm_ae",
+      "new_ids": [
+        "coverage_geometry_circle_in_diamond_split"
+      ],
+      "action": "supplement",
+      "reason": "Yukiの辺はひし形の4辺で最終合否だけを出力する。旧AtCoderの任意の整数線分と点に対する最近距離そのもの（端点/内部への射影）をactiveで保持。",
+      "old_ac_transferred": false
+    }
+  ],
+  "new_entries": [
+    {
+      "id": "coverage_geometry_orientation_stabbing_full",
+      "libraries": [
+        "Geometry/geometory.cpp"
+      ],
+      "driver": "Verify/current/drivers/coverage_geometry_orientation_stabbing_main.cpp",
+      "problem_url": "https://yukicoder.me/problems/no/245",
+      "coverage": [
+        "orientation（整数・共線・異なる向き）"
+      ],
+      "limitations": "未提出。一般座標範囲・浮動小数点は対象外。"
+    },
+    {
+      "id": "coverage_geometry_orientation_stabbing_split",
+      "libraries": [
+        "Geometry/Point.cpp"
+      ],
+      "driver": "Verify/current/drivers/coverage_geometry_orientation_stabbing_main.cpp",
+      "problem_url": "https://yukicoder.me/problems/no/245",
+      "coverage": [
+        "orientation（整数・共線・異なる向き）"
+      ],
+      "limitations": "未提出。一般座標範囲・浮動小数点は対象外。"
+    },
+    {
+      "id": "coverage_geometry_segment_stabbing_full",
+      "libraries": [
+        "Geometry/geometory.cpp"
+      ],
+      "driver": "Verify/current/drivers/coverage_geometry_segment_stabbing_main.cpp",
+      "problem_url": "https://yukicoder.me/problems/no/245",
+      "coverage": [
+        "intersects（端点接触・共線重なりを含む閉線分）"
+      ],
+      "limitations": "未提出。直線を十分延長した線分と入力線分の組に限定。全退化形は旧AtCoderとローカル試験で補足。"
+    },
+    {
+      "id": "coverage_geometry_segment_stabbing_split",
+      "libraries": [
+        "Geometry/Line_Segment.cpp"
+      ],
+      "driver": "Verify/current/drivers/coverage_geometry_segment_stabbing_main.cpp",
+      "problem_url": "https://yukicoder.me/problems/no/245",
+      "coverage": [
+        "intersects（端点接触・共線重なりを含む閉線分）"
+      ],
+      "limitations": "未提出。直線を十分延長した線分と入力線分の組に限定。全退化形は旧AtCoderとローカル試験で補足。"
+    },
+    {
+      "id": "coverage_geometry_circle_in_diamond_full",
+      "libraries": [
+        "Geometry/geometory.cpp"
+      ],
+      "driver": "Verify/current/drivers/coverage_geometry_circle_in_diamond_main.cpp",
+      "problem_url": "https://yukicoder.me/problems/no/172",
+      "coverage": [
+        "contains（中心のInside判定）",
+        "distance(Point,Segment)（境界の接触除外）"
+      ],
+      "limitations": "未提出。ひし形4辺・整数中心・半径正に限定。一般多角形と端点への最近距離は旧AtCoder等で補足。"
+    },
+    {
+      "id": "coverage_geometry_circle_in_diamond_split",
+      "libraries": [
+        "Geometry/Polygon.cpp",
+        "Geometry/Line_Segment.cpp"
+      ],
+      "driver": "Verify/current/drivers/coverage_geometry_circle_in_diamond_main.cpp",
+      "problem_url": "https://yukicoder.me/problems/no/172",
+      "coverage": [
+        "contains（中心のInside判定）",
+        "distance(Point,Segment)（境界の接触除外）"
+      ],
+      "limitations": "未提出。ひし形4辺・整数中心・半径正に限定。一般多角形と端点への最近距離は旧AtCoder等で補足。"
+    },
+    {
+      "id": "coverage_geometry_coin_overlap_full",
+      "libraries": [
+        "Geometry/geometory.cpp"
+      ],
+      "driver": "Verify/current/drivers/coverage_geometry_coin_overlap_main.cpp",
+      "problem_url": "https://yukicoder.me/problems/no/202",
+      "coverage": [
+        "circle_intersection_kind（None/Tangent/TwoPoints/Coincident）"
+      ],
+      "limitations": "未提出。半径10の円のみ。任意半径・内接・交点座標は既存AtCoderと独立ローカル試験で補足。"
+    },
+    {
+      "id": "coverage_geometry_coin_overlap_split",
+      "libraries": [
+        "Geometry/Circle.cpp"
+      ],
+      "driver": "Verify/current/drivers/coverage_geometry_coin_overlap_main.cpp",
+      "problem_url": "https://yukicoder.me/problems/no/202",
+      "coverage": [
+        "circle_intersection_kind（None/Tangent/TwoPoints/Coincident）"
+      ],
+      "limitations": "未提出。半径10の円のみ。任意半径・内接・交点座標は既存AtCoderと独立ローカル試験で補足。"
+    },
+    {
+      "id": "coverage_geometry_convex_polygon_area_full",
+      "libraries": [
+        "Geometry/geometory.cpp"
+      ],
+      "driver": "Verify/current/drivers/coverage_geometry_convex_polygon_area_main.cpp",
+      "problem_url": "https://yukicoder.me/problems/no/1447",
+      "coverage": [
+        "area（整数座標の凸多角形）"
+      ],
+      "limitations": "未提出。CCW凸多角形N<=30のみ。凹多角形・逆順・浮動座標はこの問題単独では未検証。"
+    },
+    {
+      "id": "coverage_geometry_convex_polygon_area_split",
+      "libraries": [
+        "Geometry/Polygon.cpp"
+      ],
+      "driver": "Verify/current/drivers/coverage_geometry_convex_polygon_area_main.cpp",
+      "problem_url": "https://yukicoder.me/problems/no/1447",
+      "coverage": [
+        "area（整数座標の凸多角形）"
+      ],
+      "limitations": "未提出。CCW凸多角形N<=30のみ。凹多角形・逆順・浮動座標はこの問題単独では未検証。"
+    },
+    {
+      "id": "coverage_geometry_parabola_polygon_area_full",
+      "libraries": [
+        "Geometry/geometory.cpp"
+      ],
+      "driver": "Verify/current/drivers/coverage_geometry_parabola_polygon_area_main.cpp",
+      "problem_url": "https://yukicoder.me/problems/no/1009",
+      "coverage": [
+        "area（long double・8193頂点・退化図形）"
+      ],
+      "limitations": "未提出。単一の放物線の点列に限定。一般多角形・一般曲線の数値誤差を保証する問題ではない。"
+    },
+    {
+      "id": "coverage_geometry_parabola_polygon_area_split",
+      "libraries": [
+        "Geometry/Polygon.cpp"
+      ],
+      "driver": "Verify/current/drivers/coverage_geometry_parabola_polygon_area_main.cpp",
+      "problem_url": "https://yukicoder.me/problems/no/1009",
+      "coverage": [
+        "area（long double・8193頂点・退化図形）"
+      ],
+      "limitations": "未提出。単一の放物線の点列に限定。一般多角形・一般曲線の数値誤差を保証する問題ではない。"
+    },
+    {
+      "id": "coverage_geometry_nearest_sorted_line",
+      "libraries": [
+        "Geometry/Nearest_Two_points.cpp"
+      ],
+      "driver": "Verify/current/drivers/coverage_geometry_nearest_sorted_line_main.cpp",
+      "problem_url": "https://yukicoder.me/problems/no/716",
+      "coverage": [
+        "nearest_two_points_sorted(vector<P>)",
+        "NearestTwoPointsResult.distance_squared"
+      ],
+      "limitations": "未提出。y=0の1次元点列N<=1000・座標±100000に限定。一般2次元の最近点対の添字は既存LCで検証。nullopt・全int32範囲・所有権はローカル補足。"
+    }
+  ],
+  "local_archive": {
+    "path": "Audit/data/verify-coverage-geometry-20261115.zip",
+    "sha256": "b0bb87f1797fa1ad7461101dccbb77b91fb90b212e94c5fdbcc6d7c7991876f5",
+    "bytes": 4137845
+  }
+}

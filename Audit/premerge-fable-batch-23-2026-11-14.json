@@ -1,0 +1,148 @@
+{
+  "format": 1,
+  "date": "2026-11-14",
+  "stage": "claude",
+  "model": "claude-fable-5-2",
+  "actual_models": [
+    "claude-fable-5-2"
+  ],
+  "effort": "low",
+  "completed_utc": "2026-11-14T16:24:11.379672+00:00",
+  "source_hashes": {
+    "Algorithm/LIS.cpp": "3002ce4839d2e7b209789f8c2a43d126154bd007cac7062e8cf24e3ac0b1b658",
+    "Graph/Project_Selection.cpp": "b5a0e9f10d9271976bcc0b9fea362e3c3342f96f4b4e70ea307f8e7d230056fe",
+    "Math/Eratosthenes.cpp": "2a4e3c641d39869a6b7c69bc8b536b12dcaec880a565a71e9ed15ced2074565b",
+    "Math/Fraction.cpp": "bd8937304f1b8eb555fff33da9e159874113199dfb80b88a4f64c37ed76814af",
+    "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab",
+    "Verify/current/drivers/eratosthenes_main.cpp": "05dd72016a4f49ea0d9b827bb10d0a1e16f77fa7de37f8c13fdfe5776712c2dd",
+    "Verify/current/drivers/fraction_arithmetic_main.cpp": "4d994e14f8877ff5e53f1c215b6b57b0609c754256cc99c5b5367de8f6ccd6b4",
+    "Verify/current/drivers/fraction_sort_main.cpp": "248dc154c98add08bb4913694e3c87aa4d1e19845f291e6772639b04d8e93caf",
+    "Verify/current/drivers/lis_main.cpp": "a29976f6877b9608c0f81b5d9397d55462ec6d9d1e237f2032abd8c16ec7f26a",
+    "Verify/current/drivers/project_selection_main.cpp": "250b98a7c2785922b37c1817d9f74e69066a03c640b8854b27e5809acff60fa4",
+    "Verify/current/submissions/eratosthenes.cpp": "c22c53aac5ab7ec632a97e39e73283675b415bdb98f877972d0b97ba03db9168",
+    "Verify/current/submissions/fraction_arithmetic.cpp": "60247b56cac364e92f4396fe1b641e6120d805cee28c29091a9acc980cce4019",
+    "Verify/current/submissions/fraction_sort.cpp": "0de8561f6e0afe4b28be2a320568c058590bbf9ca4c01fd57cf591a2859061cc",
+    "Verify/current/submissions/lis.cpp": "3269dac04038c67045b59e65496a56786edb1e95373a2f2d2194f44df8fcc0fa",
+    "Verify/current/submissions/project_selection.cpp": "a6dd8d50cb68369d837626f047cf9ee4791de1c5634bf18bdd99354d22024c49",
+    "AGENTS.md": "f4cdb9332d66307604443358b5ae5d087e609462e25303cab013e3fdc813a569"
+  },
+  "codex_receipts": {
+    "eratosthenes": "Verify/optimization/stages/eratosthenes.codex.3def1c50cd89826c61f81fef2da66989148f7cf76b62aa3da0ce19f4d5d7d56a.json",
+    "fraction_arithmetic": "Verify/optimization/stages/fraction_arithmetic.codex.dd777d902e464bb605c2b621b8f3b5fb7e15bbba086046c4864ad54bb40c796c.json",
+    "fraction_sort": "Verify/optimization/stages/fraction_sort.codex.66674360cdf84cc843d109edf5fda9b6f7d163c42f931a8b401039361f4ee784.json",
+    "lis": "Verify/optimization/stages/lis.codex.f4df410a647bdbba395189ee0b268a2cc46b08259727ff5cceeee0d378191d09.json",
+    "project_selection": "Verify/optimization/stages/project_selection.codex.ee45306dceb11e4f9cc76b8deab6ff55a49cd95b2ba58a6f95070d159910b977.json"
+  },
+  "review": {
+    "reviews": [
+      {
+        "id": "eratosthenes",
+        "source_sha256": "c22c53aac5ab7ec632a97e39e73283675b415bdb98f877972d0b97ba03db9168",
+        "verdict": "keep",
+        "reason": "全文を読んだ範囲で誤りなし。limit<128の定数マスク、3/5/7/11周期パターン、13〜127の周期マスクと末尾のflags[0]復元ビット(13..127の26素数)、131以上のブロック篩、末尾語マスクは整合。strideはstep<8の逐次経路とword-popcount飛ばし経路が同じ「first+k*step番目」を出力し、mainのX=(π-1-B)/A+1とも一致。中間配列なしで所有権も問題なし。速度は未測定のため追加提案なし。"
+      },
+      {
+        "id": "fraction_arithmetic",
+        "source_sha256": "60247b56cac364e92f4396fe1b641e6120d805cee28c29091a9acc980cce4019",
+        "verdict": "keep",
+        "reason": "式は(1+3(n-1)+6(k-1)(n-k))/n^3と一致。N≤1e6なら分母n^3≤1e18でint64に収まり、途中は128bit(または代替Wide)で既約化後に範囲検査される。k=1の0分子も正しい。定数回の演算でI/Oが支配的とみられ、APIを素直に使うAtCoder方針に合う。注記: fraction_gcdの符号判定は奇数部<2^63が前提だが、int64由来の絶対値とその剰余しか渡らず、現行の呼び出しでは安全。"
+      },
+      {
+        "id": "fraction_sort",
+        "source_sha256": "0de8561f6e0afe4b28be2a320568c058590bbf9ca4c01fd57cf591a2859061cc",
+        "verdict": "keep",
+        "reason": "a+b≤2e9でコンストラクタは既約・正分母に正規化するため、default ==は値の等価と一致。<=>は__int128の交差積(代替経路は符号分岐+Wide)で厳密。比較器は率の降順・番号の昇順でstrict weak orderingを満たす。reserve済みでpairを所有。Codex記録の<=>単一化の退行を踏まえ再提案しない。"
+      },
+      {
+        "id": "lis",
+        "source_sha256": "3269dac04038c67045b59e65496a56786edb1e95373a2f2d2194f44df8fcc0fa",
+        "verdict": "keep",
+        "reason": "先頭・末尾の特別扱いと[1,size-1)の二分探索は正しく、previous未初期化要素は復元で読まれない。4分探索はcount<4やcount=0も含め全分岐で残区間が正しい。AVX尾部の8要素2組・4要素の読み込みはvalues範囲内で、単調性による位置決定も正しい。相切替(34/4099/4096)は探索方式だけを変える。LISValuesUsefulはn≥65536でのみ先頭256要素を読む。mainは0-index出力で問題仕様どおり。区切りの\" \"をcharにする案は効果未測定の仮説で、提案しない。"
+      },
+      {
+        "id": "project_selection",
+        "source_sha256": "a6dd8d50cb68369d837626f047cf9ee4791de1c5634bf18bdd99354d22024c49",
+        "verdict": "keep",
+        "reason": "true=入る(source側)でadd_single_cost(i,0,fee-reward)、add_psp_constraint(target-1,i)は「targetに入るならiにも入る」の無限容量辺となり、-solve()が最大利益。逆辺の~a符号化、remaining=有限容量-流量+1による矛盾検出、level/cursorの疎リセット、深さ64で反復へ切り替えるDFSは整合。N≤100では密経路のみ通る。driverの未使用include(cassert/cmath/numeric/random/string)は実行時に影響せず、削除は任意の整理で、再提出を要するほどの根拠はない。"
+      }
+    ],
+    "experiments": []
+  },
+  "usage_after": {
+    "windows": {
+      "five_hour": {
+        "utilization": 48.0,
+        "resets_at": "2026-11-14T21:10:00.666398+00:00"
+      },
+      "seven_day": {
+        "utilization": 12.0,
+        "resets_at": "2026-11-21T09:00:00.666421+00:00"
+      },
+      "seven_day_breakdown": {},
+      "limit_0_session_all": {
+        "utilization": 48,
+        "resets_at": "2026-11-14T21:10:00.666398+00:00",
+        "kind": "session",
+        "model": "all"
+      },
+      "limit_1_weekly_all_all": {
+        "utilization": 12,
+        "resets_at": "2026-11-21T09:00:00.666421+00:00",
+        "kind": "weekly_all",
+        "model": "all"
+      },
+      "limit_2_weekly_scoped_Fable": {
+        "utilization": 24,
+        "resets_at": "2026-11-21T09:00:00.666754+00:00",
+        "kind": "weekly_scoped",
+        "model": "Fable"
+      }
+    },
+    "extra_usage_enabled": false
+  },
+  "prompt_sha256": "0080e5c1ffc361ec6c7ad3ff902797ae79f65c82c0b4f1feb82a77629812f5ff",
+  "response_sha256": "c666c1c0f8287a6033814edc2cf473d3181949fe7f8c5211018b86274541aa27",
+  "model_usage": {
+    "claude-fable-5-2": {
+      "inputTokens": 2,
+      "outputTokens": 6196,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 48263,
+      "webSearchRequests": 0,
+      "costUSD": 1.020064,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 4840,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 48263,
+      "canonicalModel": "claude-fable-5-2",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "source_representation": "Fresh complete current library/main/I/O/vendor code supplied as shared guarded components with ordered file assembly references. All unique code included; identical non-comment token sequences, exact preprocessor logical lines, lexical adjacency and literals retained. Exact original layout reconstructed and verified separately. No historical review used to omit current code.",
+  "representation_proof": {
+    "method": "fresh_full_current_code_guard_component_dedup",
+    "status": "PASS",
+    "proof_path": "/tmp/sirkit-premerge-optimization-20261114/full-code-dedup/reconstruction-proofs.json",
+    "proof_sha256": "e75a4bc8e4ca5f2905e4955567d2e7906ba6f6c7651a2c9c2952e318e5a38951",
+    "verifier_sha256": "73a408f208e42b2db77aaf05559fe1d06f71626a7a9bd851eb258586fbfdbee2",
+    "verification_sha256": "735097b0599c57dabf071c89ebf1bfc3c722869afec1ce14962fc880ebda05ea",
+    "summary": {
+      "status": "PASS",
+      "IDs": 55,
+      "batches": 9,
+      "source_files": 91,
+      "component_occurrences_across_batches": 229,
+      "exact_stripped_bytes_tokens_literals_directives_newlines": true,
+      "lexical_operator_adjacency_and_macro_spacing_preserved": true,
+      "all_live_raw_hashes_match": true,
+      "verifier_sha256": "73a408f208e42b2db77aaf05559fe1d06f71626a7a9bd851eb258586fbfdbee2",
+      "unique_code_payload_total_bytes": 783498,
+      "unshared_stripped_file_total_bytes": 940575,
+      "prompt_total_bytes": 884631
+    },
+    "historical_approval_transfer": false
+  },
+  "review_limitations": "Static review plus supplied measured evidence, not new model-executed measurements. No online submission or AC inference."
+}
