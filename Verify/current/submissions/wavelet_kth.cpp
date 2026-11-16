@@ -3,7 +3,7 @@
 #pragma GCC optimize("O3")
 #endif
 // Verify: https://judge.yosupo.jp/problem/range_kth_smallest
-// Submission: https://judge.yosupo.jp/submission/416581
+// Submission: https://judge.yosupo.jp/submission/417266
 
 // Library: DataStructure/Wavelet_Matrix.cpp
 // SPDX-License-Identifier: CC0-1.0
@@ -748,9 +748,9 @@ inline VerifyOutput verify_out;
 
 int main() {
     int n{}, q{}; verify_in >> n >> q;
-    std::vector<std::int64_t> values(n);
+    std::vector<std::uint32_t> values(n);
     for (auto& value : values) verify_in >> value;
-    WaveletMatrix<std::int64_t> matrix(values);
+    WaveletMatrix<std::uint32_t> matrix(values);
     while (q--) {
         int left{}, right{}, k{}; verify_in >> left >> right >> k;
         verify_out << matrix.kth_smallest(left, right, k) << '\n';
