@@ -14,24 +14,26 @@
 //
 // API一覧
 // [DynamicLiChaoTree<T,kInf>]
+// Tの既定はint64_t、kInfの既定は2^60（Tで表せなければTの最大値）。
 // 整数座標の閉区間で直線・線分の最小値を管理する。Tは符号付き64ビット以下の整数。
-// 追加する線の対象区間では、数学的なa*x+bがTの範囲内かつkInf未満であること。
+// 追加する線の対象区間では、数学的なa*x+bがTの範囲内かつ設定したinf未満であること。
 // Wを座標数とすると直線追加・取得はO(log W)、線分追加はO(log² W)。
 // queryは読み取り専用。SKIP_RUNTIME_CHECKSで座標・端点値の検査を除く。
-// DynamicLiChaoTree(xmin, xmax): 整数の閉区間[xmin, xmax]で空の木を作る。
-// コピーは独立した木を作る。コピー代入の確保失敗時は元の木を維持する。
+// DynamicLiChaoTree(xmin,xmax,inf=kInf): 閉区間[xmin,xmax]の空の木をO(1)で作る。inf>0。
+// infinity(): 設定したinfをO(1)で返す。コピー・移動・clearでも設定を保持する。
+// コピーはO(M)で独立した木を作り、moveはO(1)。M=格納ノード数。コピー代入の確保失敗時は元を維持する。
 // update(a, b) / add_line(a, b): 定義域全体にy=a*x+bを追加する。
 // update_line_segment(a, b, left, right) / add_segment(...): 閉区間[left, right]に線分を追加。left>rightは無操作。
-// query(x): xでの最小値を返す。被覆する線がなければkInf。
+// query(x): xでの最小値を返す。被覆する線がなければ設定したinf。
 // query_line(x): 最小値を与えるLineを返す。同値時は任意、非被覆ならnullopt。
 // empty(): 追加した直線・空でない線分がなければtrue。O(1)。
 // clear(): 全ての線を消し、確保した容量を再利用する。O(格納ノード数)。
-// reserve(n): nノード分を事前確保する。直線本数とは異なる。
+// reserve(n): nノード分を事前確保する。直線本数とは異なる。再確保時O(M)、予約済みならO(1)。
 // stored_nodes(): 現在の格納ノード数を返す。取得操作では増えない。O(1)。
 // domain_min() / domain_max(): 定義域の左端・右端を返す。O(1)。
 //
 // [DynamicLiChaoTree<T,kInf>::Line]
-// Line(a, b): y=a*x+b。既定値は空を表す定数kInf。
+// Line(a=0,b=kInf): y=a*x+b。既定値はテンプレート引数側で、木ごとのinf指定とは別。
 // get(x): a*x+bを返す。値がTで表現可能であること。
 // over(other, x): xでotherより小さい値を与えるときtrue。
 
@@ -56,7 +58,10 @@
 namespace sirkit {
 #ifndef SIRKIT_DYNAMIC_LI_CHAO_TREE_DEFINED
 #define SIRKIT_DYNAMIC_LI_CHAO_TREE_DEFINED
-template <typename T, T kInf>
+template <typename T = std::int64_t,
+          T kInf = (std::numeric_limits<T>::max() < (std::int64_t{1} << 60)
+                        ? std::numeric_limits<T>::max()
+                        : static_cast<T>(std::int64_t{1} << 60))>
 class DynamicLiChaoTree {
  public:
   struct Line {
@@ -87,7 +92,7 @@ class DynamicLiChaoTree {
     Index left = no_child;
     Index right = no_child;
   };
-  T xmin_, xmax_;
+  T xmin_, xmax_, inf_;
   class NodeStorage {
     static_assert(std::is_trivially_copyable_v<Node> &&
                   std::is_trivially_destructible_v<Node>);
@@ -180,7 +185,7 @@ class DynamicLiChaoTree {
     if (nodes_.size() >= no_child || nodes_.size() == nodes_.max_size())
       throw std::length_error("Li Chao node limit");
     const Index result = static_cast<Index>(nodes_.size());
-    nodes_.emplace_back();
+    nodes_.push_back(Node{Line(T{}, inf_), no_child, no_child});
     return result;
   }
   Index child(Index index, bool right) {
@@ -195,7 +200,7 @@ class DynamicLiChaoTree {
   void insert_line(Index index, T left, T right, Line line) {
     for (;;) {
       Node& node = nodes_[index];
-      if (node.line.intercept == kInf && node.line.slope == 0) {
+      if (node.line.intercept == inf_ && node.line.slope == 0) {
         node.line = line;
         return;
       }
@@ -226,7 +231,7 @@ class DynamicLiChaoTree {
       }
       const Line& current = nodes_[index].line;
       // 切片kInfは空ノードを含むので枝刈りを省き、通常の探索を続ける。
-      if (current.intercept != kInf) {
+      if (current.intercept != inf_) {
         // 差が最小になる重なり区間の端でも勝てなければ追加不要。
         const T endpoint = line.slope < current.slope
             ? (qright < right ? qright : right)
@@ -249,8 +254,8 @@ class DynamicLiChaoTree {
   }
   template <bool ReturnLine>
   auto find_best(T x) const noexcept {
-    Line best;
-    T value = kInf;
+    Line best(T{}, inf_);
+    T value = inf_;
     T left = xmin_, right = xmax_;
     Index index = nodes_.empty() ? no_child : Index{0};
     while (index != no_child) {
@@ -275,7 +280,7 @@ class DynamicLiChaoTree {
   }
 
  public:
-  DynamicLiChaoTree(T xmin, T xmax) : xmin_(xmin), xmax_(xmax) {
+  DynamicLiChaoTree(T xmin, T xmax, T inf = kInf) : xmin_(xmin), xmax_(xmax), inf_(inf) {
   }
   DynamicLiChaoTree(const DynamicLiChaoTree&) = default;
   DynamicLiChaoTree(DynamicLiChaoTree&&) noexcept = default;
@@ -283,6 +288,7 @@ class DynamicLiChaoTree {
     nodes_ = other.nodes_;
     xmin_ = other.xmin_;
     xmax_ = other.xmax_;
+    inf_ = other.inf_;
     return *this;
   }
   DynamicLiChaoTree& operator=(DynamicLiChaoTree&&) noexcept = default;
@@ -306,10 +312,11 @@ class DynamicLiChaoTree {
   }
   std::optional<Line> query_line(T x) const {
     Line result = find_best<true>(x);
-    if (result.slope == 0 && result.intercept == kInf) return std::nullopt;
+    if (result.slope == 0 && result.intercept == inf_) return std::nullopt;
     return result;
   }
   bool empty() const noexcept { return nodes_.empty(); }
+  T infinity() const noexcept { return inf_; }
   void clear() noexcept { nodes_.clear(); }
   void reserve(std::size_t count) {
     if (count > no_child || count > nodes_.max_size())

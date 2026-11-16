@@ -24,22 +24,25 @@
 // op・mapping等の計算時間をO(1)として記す。
 // 非可換 op では順方向・逆方向を保持する。添字と区間は 0 始まり・半開区間。
 // 第8引数 Commutative=true は op の可換性を指定する。既知の既定 op は自動認識する。
-// lazy_implicit_treap() は空列、(vector<S>) は O(N) で列を構築する。
+// lazy_implicit_treap()/lazy_implicit_treap(identity): O(1)で空列。後者は空区間の単位元を指定する。
+// (vector<S>[,identity]) は O(N)時間・追加O(N)で列を構築。({値,...})の既存構築も保持する。
+// identity()は設定した単位元をO(1)で返す。単位元のみの指定は丸括弧(identity)、空列は()か{}。
+// 既定はe()。RangeAddMinの既定は2^60。指定値もopの単位元となること。
 // コピーは O(スロット数) で独立した所有。コピー代入失敗時は元の列を保持する。
 // ムーブ元は空列、swap は O(1)。
 // size() / empty() は要素数・空判定を O(1) で返す。
 // clear() は O(スロット数) で要素を破棄し、確保済み容量を保持する。
-// reserve(n) は容量を確保する。int の範囲を超える要求は例外。
+// reserve(n) は容量を確保。再確保時O(保持スロット数)、足りていればO(1)。int超は例外。
 // get(pos) / set(pos,value) は要素の取得・置換。0 <= pos < size()。
 // front() / back() は先頭・末尾の値を返す。空でないこと。期待O(log N)。
 // insert_at(pos,value) は位置 pos の直前へ挿入。0 <= pos <= size()。
 // push_back(value) / push_front(value) は末尾・先頭へ追加する。
 // erase(l,r) は区間を削除。不正な区間は検査有効時に何もしない。
-// erase_prod(l,r) は区間の集約を返して削除する。空区間はe()。期待O(削除数 + log N)。
+// erase_prod(l,r) は区間の集約を返して削除する。空区間はidentity()。期待O(削除数 + log N)。
 // erase_at(pos) は1要素を削除。0 <= pos < size()。
 // pop_back() / pop_front() は末尾・先頭を削除。空列なら何もしない。
 // apply(l,r,f) は区間に作用 f を適用する。空区間は何もしない。
-// prod(l,r) は順序を保って集約し、空区間は e()。all_prod() は O(1)。
+// prod(l,r) は順序を保って集約し、空区間はidentity()。all_prod() は O(1)。
 // reverse(l,r) は区間を反転。rotate(l,m,r) は [l,m),[m,r) を交換。l <= m <= r。
 // move_range(l,r,pos): [l,r)を移動前の隙間posの直前へ移す。0<=pos<=size()。期待O(log N)。
 // l<=pos<=r または空区間なら不変。例: [a,b,c,d,e]でmove_range(1,3,5)は[a,d,e,b,c]。
@@ -52,7 +55,7 @@
 // erase_max() は最大要素を1個削除。空列なら何もしない。
 // max_right(l,g) / max_right<g>(l) は g(prod(l,r)) が真となる最大 r。
 // min_left(r,g) / min_left<g>(r) は g(prod(l,r)) が真となる最小 l。
-// 境界探索は g(e()) が真で区間伸長に単調であること。検査省略時の不正入力は未定義。
+// 境界探索は g(identity()) が真で区間伸長に単調であること。検査省略時の不正入力は未定義。
 //
 // [indexed_implicit_treap / 第9引数 TrackIds=true]
 // 同じ先頭8テンプレート引数でID追跡を有効にする別名。既定falseではID状態・親の更新を持たない。
@@ -65,7 +68,7 @@
 // get_by_id(id) / set_by_id(id,value): 存在するIDの値を取得・置換。期待O(log N)。IDは保持する。
 // erase_id(id): IDの要素を削除してtrue。不在はfalse。期待O(log N)。
 // prod_between(a,b) / erase_between(a,b): 2つのIDの間を集約／集約して削除。端点は含めない。
-// IDの前後は任意。同じID・隣接要素ならe()。双方のIDが存在すること。
+// IDの前後は任意。同じID・隣接要素ならidentity()。双方のIDが存在すること。
 // prod_betweenは期待O(log N)、erase_betweenは期待O(削除数 + log N)。
 // reserve_ids(n): ID 0..n-1 の索引を準備する。O(追加枠数)、再確保時O(現在のID索引枠数)。
 // ID取得・位置特定は期待O(log N)、挿入は償却期待O(log N)。索引拡張・再確保の費用は別途かかる。
@@ -74,7 +77,7 @@
 // 検査時は負の挿入ID・重複IDと、存在が前提の操作への不存在IDを拒否。コピーはID索引枠数ぶんもかかる。
 //
 // [既定の作用: RangeAddMin]
-// 区間加算・最小値。値と加算後の値は kInf 以下、各演算は int64_t に収まること。
+// 区間加算・最小値。値と加算後の値は設定した単位元以下、各演算はint64_tに収まること。
 // op(a,b)/e(): 最小値/単位元。mapping(f,x): 加算。composition(f,g)/id(): 加算の合成/0。
 //
 // [既定の作用: RangeAddSum]
@@ -194,6 +197,13 @@ namespace sirkit {
 
 } // namespace sirkit
 // SIRKIT_NAMESPACE_CLOSE_V1
+#include <concepts>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <cstddef>
 
 // SIRKIT_NAMESPACE_OPEN_V1
@@ -209,6 +219,13 @@ namespace sirkit {
 } // namespace sirkit
 // SIRKIT_NAMESPACE_CLOSE_V1
 #include <limits>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+#include <memory>
 
 // SIRKIT_NAMESPACE_OPEN_V1
 namespace sirkit {
@@ -246,7 +263,7 @@ namespace sirkit {
 struct RangeAddMin {
     using S = std::int64_t;
     using F = std::int64_t;
-    static constexpr S kInf = INT64_C(8000000000000000000);
+    static constexpr S kInf = std::int64_t{1} << 60;
     static S op(S a, S b) { return std::min(a, b); }
     static S e() { return kInf; }
     static S mapping(F f, S x) { return x + f; }
@@ -328,6 +345,9 @@ class lazy_implicit_treap {
     using StoredNode = std::conditional_t<compact_nodes_, CompactNode, Node>;
     struct PriorityIndex { std::vector<std::uint64_t> slots; };
     struct NoPriorityIndex {};
+    // 既定の単位元はe()を使い、指定された場合だけ不変の値を所有する。
+    std::shared_ptr<const S> identity_;
+    S identity_value() const { return identity_ ? *identity_ : e(); }
     /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::UnreleasedVector<StoredNode> nodes_;
     [[no_unique_address]] std::conditional_t<compact_nodes_, PriorityIndex, NoPriorityIndex> priorities_;
     int root_ = -1, free_ = -1;
@@ -382,10 +402,10 @@ class lazy_implicit_treap {
     }
     static constexpr bool deferred_actions_ = compact_nodes_ && sizeof(S) >= 16 && sizeof(F) >= 16;
     int length(int p) const { return p < 0 ? 0 : nodes_[p].length; }
-    S forward(int p) const { return p < 0 ? e() : nodes_[p].forward; }
+    S forward(int p) const { return p < 0 ? identity_value() : nodes_[p].forward; }
     S backward(int p) const {
         if constexpr (commutative_) return forward(p);
-        else return p < 0 ? e() : nodes_[p].backward.value;
+        else return p < 0 ? identity_value() : nodes_[p].backward.value;
     }
     void pull(int p) {
         StoredNode& n = nodes_[p];
@@ -552,7 +572,7 @@ class lazy_implicit_treap {
         if constexpr (TrackIds) {
             if (nodes_[p].link.identifier >= 0) ids_.slots[nodes_[p].link.identifier] = -1;
         }
-        if constexpr (!compact_nodes_) nodes_[p] = StoredNode(e(), 0);
+        if constexpr (!compact_nodes_) nodes_[p] = StoredNode(identity_value(), 0);
         nodes_[p].left = free_;
         free_ = p;
     }
@@ -766,9 +786,7 @@ class lazy_implicit_treap {
         if (first > second) std::swap(first, second);
         return {first == second ? first : first + 1, second};
     }
-public:
-    lazy_implicit_treap() = default;
-    explicit lazy_implicit_treap(const std::vector<S>& values) {
+    void build_values(const std::vector<S>& values) {
         reserve(values.size());
         std::vector<int> stack;
         stack.reserve(values.size());
@@ -786,6 +804,15 @@ public:
         if (!stack.empty()) root_ = stack.front();
         while (!stack.empty()) { pull(stack.back()); stack.pop_back(); }
     }
+public:
+    lazy_implicit_treap() = default;
+    template<class I> requires std::convertible_to<I, S>
+    explicit lazy_implicit_treap(I&& identity)
+        : identity_(std::make_shared<const S>(std::forward<I>(identity))) {}
+    explicit lazy_implicit_treap(const std::vector<S>& values) { build_values(values); }
+    lazy_implicit_treap(const std::vector<S>& values, S identity)
+        : lazy_implicit_treap(std::move(identity)) { build_values(values); }
+    S identity() const { return identity_value(); }
     lazy_implicit_treap(const lazy_implicit_treap&) = default;
     lazy_implicit_treap& operator=(const lazy_implicit_treap& other) {
         if (this == &other) return *this;
@@ -800,6 +827,7 @@ public:
                     if constexpr (compact_nodes_) priorities_.slots = other.priorities_.slots;
                     nodes_ = other.nodes_;
                 }
+                identity_ = other.identity_;
                 root_ = other.root_;
                 free_ = other.free_;
                 random_ = other.random_;
@@ -811,7 +839,7 @@ public:
         return *this;
     }
     lazy_implicit_treap(lazy_implicit_treap&& other) noexcept
-        : nodes_(std::move(other.nodes_)), root_(std::exchange(other.root_, -1)),
+        : identity_(other.identity_), nodes_(std::move(other.nodes_)), root_(std::exchange(other.root_, -1)),
           free_(std::exchange(other.free_, -1)), random_(other.random_), ids_(std::move(other.ids_)) {
         if constexpr (compact_nodes_) priorities_.slots = std::move(other.priorities_.slots);
         other.nodes_.clear();
@@ -823,6 +851,7 @@ public:
         return *this;
     }
     void swap(lazy_implicit_treap& other) noexcept {
+        identity_.swap(other.identity_);
         nodes_.swap(other.nodes_);
         if constexpr (compact_nodes_) priorities_.slots.swap(other.priorities_.slots);
         std::swap(root_, other.root_);
@@ -891,7 +920,7 @@ public:
     }
     S erase_prod(int l, int r) {
         check_range(l, r);
-        if (l == r) return e();
+        if (l == r) return identity_value();
         if constexpr (!(std::is_nothrow_copy_constructible_v<S> && std::is_nothrow_move_constructible_v<S>)) {
             S result = query(root_, l, r);
             erase(l, r);
@@ -926,7 +955,7 @@ public:
         check_range(l, r);
         if (l != r) apply_range(root_, l, r, f);
     }
-    S prod(int l, int r) { check_range(l, r); return l == r ? e() : query(root_, l, r); }
+    S prod(int l, int r) { check_range(l, r); return l == r ? identity_value() : query(root_, l, r); }
     S all_prod() const { return forward(root_); }
     void reverse(int l, int r) {
         check_range(l, r);
@@ -1029,7 +1058,7 @@ public:
     void erase_max() { pop_back(); }
     template<class G> int max_right(int l, G g) {
         check_position(l, true);
-        S acc = e();
+        S acc = identity_value();
         int result = size();
         right_walk(root_, l, 0, acc, g, result);
         return result;
@@ -1037,7 +1066,7 @@ public:
     template<bool (*g)(S)> int max_right(int l) { return max_right(l, g); }
     template<class G> int min_left(int r, G g) {
         check_position(r, true);
-        S acc = e();
+        S acc = identity_value();
         int result = 0;
         left_walk(root_, r, 0, acc, g, result);
         return result;

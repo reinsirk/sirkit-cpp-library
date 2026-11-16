@@ -4,39 +4,222 @@
 
 ## APIと前提
 
-`DynamicLiChaoTree<T, kInf>(xmin, xmax)`で定義域`[xmin, xmax]`を指定します。`T`は符号付き64ビット以下の整数、`kInf`は正の定数です。
+`DynamicLiChaoTree<T, kInf>(xmin, xmax, inf=kInf)`で定義域`[xmin,xmax]`と正の番兵infを指定します。Tは符号付き64bit以下の整数で、既定はint64_t。kInfの既定は2^60で、Tで表せない場合はTの最大値です。テンプレート引数による指定も維持します。
 
-- `add_line(a, b)` / `update(a, b)`：定義域全体に`y=a*x+b`を追加します。
-- `add_segment(a, b, l, r)` / `update_line_segment(...)`：閉区間`[l,r]`に追加します。`l>r`なら無操作です。
-- `query(x)`：最小値を返します。被覆する線がなければ`kInf`です。
-- `query_line(x)`：最小値を与える`Line`を返します。同値時は任意、非被覆なら`nullopt`です。
-- `empty()` / `domain_min()` / `domain_max()`：追加の有無と定義域を取得します。
-- `stored_nodes()`：実際の格納ノード数です。照会では増えません。
-- `clear()`：全ての線を消し、確保済み容量を再利用します。
-- `reserve(n)`：ノード用の容量を確保します。直線本数とは異なります。
+### DynamicLiChaoTree
 
-各直線・線分の**対象区間内**で、数学的な`a*x+b`が`T`に収まり、`kInf`未満である必要があります。中間の積だけが範囲を超え、切片との相殺で最終値が収まる場合も扱えます。線分の対象区間外の値は前提に含めません。
+```text
+DynamicLiChaoTree(T xmin, T xmax, T inf = kInf);
+```
+
+閉区間[xmin,xmax]で使う空の木を構築します。
+
+**制約:** xmin<=xmax、inf>0。
+
+**計算量:** O(1)。
+
+### add_line
+
+```text
+void add_line(T a, T b);
+```
+
+定義域全体へ直線y=a*x+bを追加します。
+
+**制約:** 対象区間で数学的なa*x+bがTに収まり、設定したinf未満。
+
+**計算量:** O(log W)。
+
+### update
+
+```text
+void update(T a, T b);
+```
+
+定義域全体へ直線y=a*x+bを追加します。
+
+**制約:** 対象区間で数学的なa*x+bがTに収まり、設定したinf未満。
+
+**計算量:** O(log W)。
+
+### add_segment
+
+```text
+void add_segment(T a, T b, T left, T right);
+```
+
+閉区間[left,right]へ線分を追加します。left>rightは無操作です。
+
+**制約:** 空区間でないとき両端は定義域内で、対象区間の値がT内かつinf未満。
+
+**計算量:** O(log² W)。
+
+### update_line_segment
+
+```text
+void update_line_segment(T a, T b, T left, T right);
+```
+
+閉区間[left,right]へ線分を追加します。left>rightは無操作です。
+
+**制約:** 空区間でないとき両端は定義域内で、対象区間の値がT内かつinf未満。
+
+**計算量:** O(log² W)。
+
+### query
+
+```text
+T query(T x) const;
+```
+
+最小値を返し、被覆する線がなければ設定したinfです。
+
+**制約:** xは定義域内。
+
+**計算量:** O(log W)。
+
+### query_line
+
+```text
+std::optional<Line> query_line(T x) const;
+```
+
+最小値を与えるLineを返します。同値時は任意、非被覆ならnulloptです。
+
+**制約:** xは定義域内。
+
+**計算量:** O(log W)。
+
+### infinity
+
+```text
+T infinity() const noexcept;
+```
+
+設定したinfを返します。
+
+**制約:** 追加の制約はありません。
+
+**計算量:** O(1)。
+
+### empty
+
+```text
+bool empty() const noexcept;
+```
+
+追加した直線・空でない線分がなければtrueです。
+
+**制約:** 追加の制約はありません。
+
+**計算量:** O(1)。
+
+### domain_min
+
+```text
+T domain_min() const noexcept;
+```
+
+定義域の左端を返します。
+
+**制約:** 追加の制約はありません。
+
+**計算量:** O(1)。
+
+### domain_max
+
+```text
+T domain_max() const noexcept;
+```
+
+定義域の右端を返します。
+
+**制約:** 追加の制約はありません。
+
+**計算量:** O(1)。
+
+### stored_nodes
+
+```text
+std::size_t stored_nodes() const noexcept;
+```
+
+現在の格納ノード数を返します。照会では増えません。
+
+**制約:** 追加の制約はありません。
+
+**計算量:** O(1)。
+
+### clear
+
+```text
+void clear() noexcept;
+```
+
+全ての線を消し、容量を再利用します。
+
+**制約:** 追加の制約はありません。
+
+**計算量:** 格納ノード数MにO(M)。
+
+### reserve
+
+```text
+void reserve(std::size_t n);
+```
+
+nノード分の容量を予約します。直線本数ではありません。
+
+**制約:** ノード容量の上限以下。
+
+**計算量:** 再確保時O(M)、予約済みならO(1)。
+
+### Line::Line
+
+```text
+Line();
+Line(T a, T b);
+```
+
+既定ではy=kInf、指定時はy=a*x+bの係数を持ちます。kInfは木ごとのinfとは別です。
+
+**制約:** 係数はTの範囲内。
+
+**計算量:** O(1)。
+
+### Line::get
+
+```text
+T get(T x) const noexcept;
+```
+
+直線の値a*x+bを返します。
+
+**制約:** 数学的な最終値がTで表現可能。
+
+**計算量:** O(1)。
+
+### Line::over
+
+```text
+bool over(const Line& other, T x) const noexcept;
+```
+
+xでotherより小さい値を与えればtrueです。
+
+**制約:** 両直線の数学的な最終値がTで表現可能。
+
+**計算量:** O(1)。
+
+
+各直線・線分の**対象区間内**で、数学的な`a*x+b`が`T`に収まり、指定した`inf`未満である必要があります。中間の積だけが範囲を超え、切片との相殺で最終値が収まる場合も扱えます。線分の対象区間外の値は前提に含めません。
 
 既定では座標と両端の値を検査します。線形関数なので、両端の確認で対象区間内の値域を判定できます。`SKIP_RUNTIME_CHECKS`で入力検査を除いても、内部のノード数上限は維持します。
 
 ## 方式と計算量
 
-各ノードに区間の中央付近で有利な直線を保持し、競合する直線だけを子へ送ります。必要なノードを連続した配列へ追加し、子は添字で参照します。GCCでは、満杯の配列を`realloc`で拡張してコピーを減らします。所有権は`unique_ptr`と専用の解放処理で管理し、Clangなどでは`vector`を使います。
-
-線分が区間の片側に収まる場合は反復で降下し、両側へまたがる場合だけ分岐します。既存直線との差は線形なので、重なる区間で差が最小になる端点を比較し、全域で勝てない線分の探索を省きます。この比較は線分の対象区間内で行います。切片が`kInf`の場合は枝刈りを省略しますが、有効な直線なら通常通り格納・評価します。
-
-中点は順序付きの符号なし差分で計算し、符号付き整数の全域を定義域にしてもオーバーフローさせません。値だけの照会と直線を返す照会は同じ探索を使い、値だけの場合は係数の保存を省きます。
-
 座標数を`W`、格納ノード数を`M`とすると、直線追加・照会は`O(log W)`、線分追加は`O(log² W)`、使用メモリは`O(M)`です。全域の64ビット整数座標でも高さは最大64です。
 
-ノードは自明にコピー・破棄できる型に限定します。予約容量に空きがある場合の拡張では、有効なノードだけを新しい領域へコピーします。
+空の構築・状態取得はO(1)、clearはO(M)、reserveは再確保時O(M)です。コピーはO(M)で独立した木を作り、moveはO(1)です。コピー・move・clear後もinfの設定を保持します。コピー代入ではノードのコピーを先に完了させ、確保失敗時に元の定義域とノードを維持します。
 
-コピーは独立した木を作ります。コピー代入ではノードのコピーを先に完了させ、確保失敗時に元の定義域とノードを維持します。
-
-## 使用例とVerify
-
-- [使用例](../Examples/dynamic_li_chao_example.cpp)
-- [直線追加の提出コード](../Verify/current/submissions/dynamic_lichao_line.cpp)：Library CheckerのLine Add Get Min。
-- [線分追加の提出コード](../Verify/current/submissions/dynamic_lichao_segment.cpp)：Segment Add Get Min。問題の半開区間を`[l,r-1]`へ変換します。
-
-API・全整数幅・入力検査・所有権はローカルの総当たり参照でも検証します。測定条件と検証結果は`Audit/`に保存します。
+[完全な使用例](../Examples/dynamic_li_chao_example.cpp)

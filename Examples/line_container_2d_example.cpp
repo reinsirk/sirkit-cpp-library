@@ -5,7 +5,7 @@
 using namespace sirkit;
 
 int main() {
-    LineContainer2D points;
+    LineContainer2D points(1000000); // 整数で返す照会は±1000000に制限。
     std::cout << points.max_optional(1, 1).has_value() << '\n'; // 0
     points.add(1, 2);
     points.add(3, -1);
