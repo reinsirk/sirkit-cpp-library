@@ -57,7 +57,7 @@ LIBRARIES = {
     "geometry_example.cpp": "Geometry/geometory.cpp",
     "rollback_weighted_union_find_example.cpp": "DataStructure/rollback-union-findw.cpp",
     "matrix_transform_example.cpp": "Algorithm/rotate.cpp",
-    "angle_sort_example.cpp": "Geometry/偏角ソート.cpp",
+    "angle_sort_example.cpp": "Geometry/angle_sort.cpp",
     "node_example.cpp": "DataStructure/Node.cpp",
     "trie_example.cpp": "String/Trie.cpp",
     "hash_set_example.cpp": "DataStructure/Hash_set.cpp",

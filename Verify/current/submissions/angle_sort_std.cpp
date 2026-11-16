@@ -3,9 +3,9 @@
 #pragma GCC optimize("O3")
 #endif
 // Verify: https://judge.yosupo.jp/problem/sort_points_by_argument
-// Submission: https://judge.yosupo.jp/submission/411973
+// Submission: https://judge.yosupo.jp/submission/417203
 
-// Library: Geometry/偏角ソート.cpp
+// Library: Geometry/angle_sort.cpp
 // SPDX-License-Identifier: CC0-1.0
 // ドキュメント: https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/angle_sort.md
 //

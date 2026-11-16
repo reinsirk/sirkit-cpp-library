@@ -2,13 +2,13 @@
 
 各 `.cpp` は標準ヘッダー以外の依存がなく、そのまま単独で貼り付けられます。
 複数ファイルの併用・重複した貼り付けにも部品ごとのガードで対応します。
-全機能が必要なら従来の `geometory.cpp` を使ってください。呼び出し名は従来どおり `geo::` です。
+全機能が必要なら `geometory.cpp` を使ってください。通常の公開APIは `sirkit::geo`、`convex_hull_sorted`・三角形の面積関数・`circle_intersection_kind` は `sirkit` 直下です。
 
 | ファイル | 主な用途・関数 |
 | --- | --- |
 | `Point.cpp` | `Point`、内積・外積・距離・回転・偏角順、`orientation`、`to_real` |
 | `Line_Segment.cpp` | `Line/Segment`、`on_segment/intersects`、射影・反射・最近点、距離、交点 |
-| `Polygon.cpp` | 面積・周長・内外判定・凸包・重心、`convex_cut`、整列済み点列用の`::convex_hull_sorted` |
+| `Polygon.cpp` | 面積・周長・内外判定・凸包・重心、`convex_cut`、整列済み点列用の`sirkit::convex_hull_sorted` |
 | `Circle.cpp` | `Circle`、`circumcircle`、円盤の内外判定、円と直線・線分・円の交点 |
 
 Pointは全ファイルに含まれます。Polygonは必要な線分判定とLine型、Circleは必要な線分判定を含みます。
@@ -22,6 +22,7 @@ Polygonだけで直線間の交点計算も使う場合はLine_Segmentを併用�
 #include <cassert>
 #include <vector>
 
+using namespace sirkit;
 int main() {
     std::vector<geo::PointI> points{{0, 0}, {4, 0}, {0, 3}, {1, 1}};
     auto hull = geo::convex_hull(points);
@@ -59,7 +60,7 @@ python3 Scripts/generate_geometry.py --check
 | --- | --- |
 | [geometory.cpp](geometory.cpp) | 従来の全機能版 |
 | [Nearest_Two_points.cpp](Nearest_Two_points.cpp) | 最近点対 |
-| [偏角ソート.cpp](偏角ソート.cpp) | 偏角順の比較・ソート |
+| [angle_sort.cpp](angle_sort.cpp) | 偏角順の比較・ソート |
 
 現在版の提出コード・検査一覧は[Verify](../Verify/current/README.md)を参照してください。
 

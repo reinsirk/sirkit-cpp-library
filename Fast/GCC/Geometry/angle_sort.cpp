@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
-// 生成版: Clang用。
-// 生成元: Geometry/偏角ソート.cpp
+// 生成版: GCC・速度優先（入力検査を除外）。 所有・解放の省略は各APIの前提を参照。
+// 生成元: Geometry/angle_sort.cpp
 // ドキュメント: https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/angle_sort.md
 //
 // API一覧

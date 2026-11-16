@@ -3,7 +3,7 @@
 `Geometry/Polygon.cpp`と全機能版`Geometry/geometory.cpp`に収録しています。
 従来の`geo::convex_hull(points, eps)`は点列を値で受け取り、辞書順最小点を先頭とする反時計回りの凸包を返します。完全一致する点と辺上の中間点を除き、空列は空、一点は一点、一直線上の点列は両端だけを返します。
 
-`convex_hull_sorted(points, eps)`は辞書順整列済みの点列を受け取る追加APIで、グローバル名前空間にあります。重複を含めても構いません。既定では通常の走査に組み込んで整列順を検査し、未整列なら`std::invalid_argument`を送出します。`SKIP_RUNTIME_CHECKS`を定義するとこの検査を除き、整列済みが前提になります。
+`sirkit::convex_hull_sorted(points, eps)`は辞書順整列済みの点列を受け取る追加APIで、`sirkit`直下にあります。重複を含めても構いません。既定では通常の走査に組み込んで整列順を検査し、未整列なら`std::invalid_argument`を送出します。`SKIP_RUNTIME_CHECKS`を定義するとこの検査を除き、整列済みが前提になります。
 
 ## 方式と計算量
 
