@@ -2,6 +2,7 @@
 // 生成版: Clang・速度優先（入力検査を除外）。 所有・解放の省略は各APIの前提を参照。
 // 生成元: Graph/Bipartite_Matching.cpp
 // 数学的参考: https://doi.org/10.1137/0202019
+// 参考（距離ラベルによる再割当）: https://judge.yosupo.jp/submission/339108
 // 参考: https://ei1333.github.io/library/graph/flow/bipartite-matching.hpp.html
 // ドキュメント: https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/bipartite_matching.md
 //
@@ -9,8 +10,8 @@
 // BipartiteMatching(left=0,right=0): 左0..left-1、右0..right-1を別々に番号付け。O(left+right)。
 // add_edge(l,r): 左lと右rの辺を追加。多重辺可、償却O(1)。現在の対応は保ち最大性を無効化。
 // reserve_neighbors(l,count): 左lの隣接列を予約。再確保時は次数に比例。neighbors(l): const span。
-// solve(): 現在の対応から最大マッチングへ拡張し、総本数を返す。反復Hopcroft-Karp法。
-// V=left+right、m=辺数としてO((V+m)*sqrt(V+1))時間・追加O(left)領域。最大性が既知ならO(1)。
+// solve(): 現在の対応から最大マッチングへ拡張し、総本数を返す。線形予算の再割当後に反復Hopcroft-Karp法へ進む。
+// V=left+right、m=辺数としてO((V+m)*sqrt(V+1))時間・追加O(V+m)領域。最大性が既知ならO(1)。
 // left_size()/right_size()/edge_count()/matching_size()/is_maximum()/empty(): O(1)。emptyは両頂点集合が空。
 // match_left(l)/match_right(r): 対応先、未対応なら-1。left_matches()/right_matches(): const span。
 // pairs(): 左番号順の対応辺をvectorで返す。O(left)時間・O(matching_size())領域。
@@ -131,6 +132,80 @@ public:
         std::vector<int> distance(n), queue, path_left, path_right;
         std::vector<std::size_t> next(n);
         queue.reserve(n); path_left.reserve(n); path_right.reserve(n);
+
+        // 逆隣接はsolveだけの作業領域。公開neighborsの格納先は変更しない。
+        std::vector<std::size_t> offsets(right_.size() + 1);
+        int active_left = 0, active_right = 0;
+        for (const auto& row : graph_) {
+            active_left += !row.empty();
+            for (int v : row) ++offsets[v + 1];
+        }
+        for (std::size_t v = 0; v < right_.size(); ++v) {
+            active_right += offsets[v + 1] != 0;
+            offsets[v + 1] += offsets[v];
+        }
+        const int matching_bound = std::min(active_left, active_right);
+        if (cardinality_ == matching_bound) { maximum_ = true; return cardinality_; }
+        auto cursor = offsets;
+        std::vector<int> reverse_edges(edges_), active(right_.size());
+        for (int u = 0; u < left_size(); ++u)
+            for (int v : graph_[u]) reverse_edges[cursor[v]++] = u;
+        const auto vertices = left_.size() + right_.size();
+        constexpr std::size_t multiplier = 64;
+        constexpr auto maximum = std::numeric_limits<std::size_t>::max();
+        const auto unit = edges_ > maximum - vertices ? maximum : edges_ + vertices;
+        std::size_t remaining = unit > maximum / multiplier ? maximum : unit * multiplier;
+        auto relabel = [&] {
+            std::fill(distance.begin(), distance.end(), left_size());
+            queue.clear();
+            for (int u = 0; u < left_size(); ++u) if (left_[u] == -1) {
+                distance[u] = 0; queue.push_back(u);
+            }
+            for (std::size_t head = 0; head < queue.size(); ++head) {
+                int u = queue[head];
+                for (int v : graph_[u]) {
+                    int mate = right_[v];
+                    if (mate != -1 && distance[mate] == left_size()) {
+                        distance[mate] = distance[u] + 1; queue.push_back(mate);
+                    }
+                }
+            }
+        };
+        if (remaining >= unit) {
+            remaining -= unit; relabel();
+            std::size_t head = 0, tail = 0, pending = 0;
+            for (int v = 0; v < right_size(); ++v) if (right_[v] == -1) active[pending++] = v;
+            tail = pending == right_.size() ? 0 : pending;
+            std::size_t processed = 0;
+            while (pending != 0) {
+                if (processed == vertices) {
+                    if (remaining < unit) break;
+                    remaining -= unit; relabel(); processed = 0;
+                }
+                int v = active[head];
+                const auto work = offsets[v + 1] - offsets[v] + 1;
+                if (work > remaining) break;
+                remaining -= work;
+                if (++head == right_.size()) head = 0;
+                --pending; ++processed;
+                int chosen = -1, best = left_size();
+                for (std::size_t i = offsets[v]; i < offsets[v + 1]; ++i) {
+                    int u = reverse_edges[i];
+                    if (distance[u] < best) { best = distance[u]; chosen = u; }
+                }
+                if (chosen == -1) continue;
+                int old = left_[chosen];
+                if (old != -1) {
+                    right_[old] = -1; active[tail] = old;
+                    if (++tail == right_.size()) tail = 0;
+                    ++pending;
+                } else ++cardinality_;
+                left_[chosen] = v; right_[v] = chosen; ++distance[chosen];
+                if (cardinality_ == matching_bound) {
+                    maximum_ = true; return cardinality_;
+                }
+            }
+        }
         for (;;) {
             std::fill(distance.begin(), distance.end(), -1);
             queue.clear();
@@ -160,7 +235,9 @@ public:
                                 const int previous = path_left[i - 1], chosen = path_right[i - 1];
                                 left_[previous] = chosen; right_[chosen] = previous; distance[previous] = -1;
                             }
-                            ++cardinality_; augmented = true; break;
+                            ++cardinality_;
+                            if (cardinality_ == matching_bound) { maximum_ = true; return cardinality_; }
+                            augmented = true; break;
                         }
                         if (distance[mate] == distance[u] + 1 && distance[mate] < shortest) {
                             path_left.push_back(mate); path_right.push_back(v); descended = true; break;
