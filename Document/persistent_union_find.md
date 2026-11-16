@@ -1,95 +1,323 @@
 # 完全永続Union Find
 
-保存した過去の版を参照し、その版から新しく結合できます。各版は非所有の`Node*`で表し、変更前の版を維持します。[使用例](../Examples/persistent_union_find_example.cpp)を参照してください。
-
-各頂点に親、根には成分サイズの負数を保持します。成分サイズの小さい根を大きい根へ接続し、経路圧縮は行いません。親とサイズは永続配列に保存し、更新経路だけをコピーします。結合時の2点更新は共通経路を一度だけ複製します。同一成分照会・結合では2頂点の親を並行して参照し、独立な経路の読み出しを重ねます。任意の保存版から分岐できる完全永続構造です。
+過去の版を保ち、任意の保存版から新しい結合へ分岐できます。
+永続配列と成分サイズによる結合を使い、経路圧縮は行いません。代表の取得・連結判定はO(log²(n+1))、結合は償却O(log²(n+1))です。
+全操作を先読みできる問題では、版を木にしてrollback UFで処理する方法が速い場合があります。このライブラリは先読みせずに保存版を照会・更新できます。
 
 ## Union FindのAPI
 
-| API | 動作 |
-| --- | --- |
-| `PersistentUnionFind(n=0)` | `n`頂点を別々の成分として構築する。`n<=INT_MAX`。 |
-| `find(i[,version])`、`leader`、`root_of` | 指定版、または現在版での代表頂点。 |
-| `find_with_size(i[,version])` | `{代表頂点,負の成分サイズ}`。 |
-| `size(i[,version])` | 指定頂点の成分サイズ。 |
-| `same(i,j[,version])` | 同じ成分か。 |
-| `unite(i,j[,version])`、`merge` | 指定版から結合し、結果を現在版にする。新しく結合したときだけ`true`。 |
-| `get_root()`、`restore(version)` | 現在版の取得、現在版の選択。 |
-| `size()` | 全頂点数。 |
-| `component_count([version])` | 成分数。 |
-| `groups([version])` | 成分ごとの頂点一覧。各一覧の頂点は昇順。 |
+`Version`は`PersistentUnionFind::Version`を指し、実体は非所有の`Node*`です（`Node = PersistentArray<int>::Node`）。代表頂点番号の`int`とは区別します。頂点は`0<=i<n`、指定版は同じ保存領域の有効なハンドルを渡します。
 
-`[,version]`は版を末尾に指定するオーバーロードがあることを表します。頂点は`0<=i<n`です。結合が不要な場合も、渡した版が現在版になります。
+### PersistentUnionFind
 
-代表探索は親を最大O(log(n+1))回たどり、そのたびに永続配列を参照するため、`find`、`size(i)`、`same`はO(log²(n+1))時間、`unite`はO(log²(n+1))償却時間です。成功した結合はO(log(n+1))個のノードを追加します。`get_root`、`restore`、引数なし`size`はO(1)時間です。`component_count`はO(n log(n+1))、`groups`はO(n log²(n+1))時間です。
-
-```cpp
-PersistentUnionFind uf(4);
-auto initial = uf.get_root();
-uf.unite(0, 1);
-auto left = uf.get_root();
-uf.unite(2, 3, initial); // initialから別の枝へ
-assert(!uf.same(0, 1));
-assert(uf.same(0, 1, left));
-uf.restore(left);
-assert(uf.size(0) == 2);
+```text
+explicit PersistentUnionFind(std::size_t n = 0);
 ```
 
-## 成分列挙の参照
+n頂点を独立した成分として構築します。
 
-GCCの`groups`内部では、最初は疎な配列として参照し、親をたどるときは確保済みの経路を参照します。`unite`は親代表のサイズと子の親番号を同じ版へ記録するため、親リンク先にはその版のノードが必ず存在します。版の分岐・復元や頂点番号の付け替えでもこの性質を保ちます。列挙する添字は`[0,n)`にあり、版の検査は列挙前に一度行います。
+**制約:** n<=INT_MAX。
+
+**計算量:** B=16としてO(B+log_B(n+1))時間。
+
+### find
+
+```text
+int find(int i) const;
+int find(int i, Version version) const;
+```
+
+現在版／指定版で代表頂点を返します。
+
+**制約:** 指定する頂点は0以上n未満、版は同じ保存領域の有効なハンドル。
+
+**計算量:** O(log²(n+1))。
+
+### leader
+
+```text
+int leader(int i) const;
+int leader(int i, Version version) const;
+```
+
+現在版／指定版で代表頂点を返します。
+
+**制約:** 指定する頂点は0以上n未満、版は同じ保存領域の有効なハンドル。
+
+**計算量:** O(log²(n+1))。
+
+### root
+
+```text
+int root(int i) const;
+int root(int i, Version version) const;
+```
+
+現在版／指定版で代表頂点を返します。
+
+**制約:** 指定する頂点は0以上n未満、版は同じ保存領域の有効なハンドル。
+
+**計算量:** O(log²(n+1))。
+
+### find_with_size
+
+```text
+std::pair<int,int> find_with_size(int i) const;
+std::pair<int,int> find_with_size(int i, Version version) const;
+```
+
+現在版／指定版で{代表頂点, 負の成分サイズ}を返します。
+
+**制約:** 指定する頂点は0以上n未満、版は同じ保存領域の有効なハンドル。
+
+**計算量:** O(log²(n+1))。
+
+### size
+
+```text
+int size(int i) const;
+int size(int i, Version version) const;
+int size() const noexcept;
+```
+
+現在版／指定版で頂点iの成分サイズ。引数なしは全頂点数を返します。
+
+**制約:** 指定する頂点は0以上n未満、版は同じ保存領域の有効なハンドル。
+
+**計算量:** O(log²(n+1))。引数なしはO(1)。
+
+### same
+
+```text
+bool same(int i, int j) const;
+bool same(int i, int j, Version version) const;
+```
+
+現在版／指定版で同じ成分かを返します。
+
+**制約:** 指定する頂点は0以上n未満、版は同じ保存領域の有効なハンドル。
+
+**計算量:** O(log²(n+1))。
+
+### issame
+
+```text
+bool issame(int i, int j) const;
+bool issame(int i, int j, Version version) const;
+```
+
+`same`の別名です。同じ引数で現在版／指定版を照会し、戻り値・前提も同じです。計算量はO(log²(n+1))です。
+
+### unite
+
+```text
+bool unite(int i, int j);
+bool unite(int i, int j, Version version);
+```
+
+現在版／指定版から分岐して結合し、結果を現在版にします。新規結合したときだけtrueです。 戻り値は版ではなく、結果のハンドルは`version()`で取得します。
+
+**制約:** 頂点は範囲内、版は同じ保存領域の有効なハンドル。
+
+**計算量:** 償却O(log²(n+1))時間、成功時O(log(n+1))ノードを追加。
+
+### merge
+
+```text
+bool merge(int i, int j);
+bool merge(int i, int j, Version version);
+```
+
+現在版／指定版から分岐して結合し、結果を現在版にします。新規結合したときだけtrueです。
+
+**制約:** 頂点は範囲内、版は同じ保存領域の有効なハンドル。
+
+**計算量:** 償却O(log²(n+1))時間、成功時O(log(n+1))ノードを追加。
+
+### version
+
+```text
+Version version() const noexcept;
+```
+
+現在版の非所有ハンドルを返します。
+
+**制約:** 保持する間は同じ保存領域の所有者を存続させます。
+
+**計算量:** O(1)。
+
+### restore
+
+```text
+void restore(Version version);
+```
+
+現在版を選択します。
+
+**制約:** 同じ保存領域の有効な版。非空UFではnullを指定できません。
+
+**計算量:** O(1)。
+
+### component_count
+
+```text
+int component_count() const;
+int component_count(Version version) const;
+```
+
+現在版／指定版の成分数を返します。
+
+**制約:** 同じ保存領域の有効な版。
+
+**計算量:** O(n log(n+1))。
+
+### groups
+
+```text
+std::vector<std::vector<int>> groups() const;
+std::vector<std::vector<int>> groups(Version version) const;
+```
+
+現在版／指定版の成分一覧を返します。各成分内の頂点は昇順です。
+
+**制約:** 同じ保存領域の有効な版。
+
+**計算量:** O(n log²(n+1))時間・O(n+1)返却領域。
+
+
+`[,version]`は版を末尾に指定するオーバーロードです。頂点は`0<=i<n`。結合不要でも、指定版が現在版になります。
+
+```cpp
+using UF = PersistentUnionFind;
+UF uf(4);
+auto initial = uf.version();
+uf.unite(0, 1);
+UF::Version left = uf.version();
+std::vector<UF::Version> versions{initial, left};
+uf.unite(2, 3, versions[0]);
+assert(!uf.same(0, 1) && uf.issame(0, 1, versions[1]));
+```
+
+nは頂点数です。`find`・`leader`・`root`・`find_with_size`・`size(i)`・`same`・`issame`はO(log²(n+1))、結合は償却O(log²(n+1))時間で、成功時O(log(n+1))ノードを追加します。構築は後述の定数配列と同じ費用です。版の取得・選択・引数なし`size`はO(1)、`component_count`はO(n log(n+1))、`groups`はO(n log²(n+1))時間です。
 
 ## 永続配列のAPI
 
-`PersistentArray<T,shift=4>`も単独で使えます。分岐数を`B=2^shift`とし、`1<=shift<=8`です。座標は`int64_t`で表す添字で、サイズは`0<=n<=INT64_MAX`です。値型にはコピー構築とコピー代入を要求します。既定引数の`T{}`を使う場合は、デフォルト構築も必要です。
+`PersistentArray<T,shift=4>`も単独で使えます。`B=2^shift`、`1<=shift<=8`、添字はint64_t、`0<=n<=INT64_MAX`。Tはコピー構築・代入に対応し、初期値省略時は`T{}`を構築できることが必要です。
 
-| API | 動作 |
-| --- | --- |
-| `PersistentArray(n=0,ID=T{})` | 全要素の初期値が`ID`の疎な配列。 |
-| `PersistentArray(vector,ID=T{})` | `vector`の値から構築する。 |
-| `get(k)`、`get(version,k)` | 現在版、指定版の要素を値で返す。 |
-| `get_two(a,b)`、`get_two(version,a,b)` | 2要素を `pair<T,T>` で返す。指定順を保ち、同じ添字も許す。 |
-| `update(k,value)`、`update(version,k,value)` | 1点を変更して現在版にし、その`Node*`を返す。 |
-| `update_two(a,x,b,y)`、`update_two(version,a,x,b,y)` | 2点を同時に変更し、結果を現在版にして`Node*`を返す。同じ添字なら`y`を優先する。 |
-| `restore(version)`、`root` | 現在版の選択、現在版のハンドル。 |
-| `size()` | 要素数。 |
+### PersistentArray
 
-配列の`nullptr`版は、全要素が`ID`の版です。Union Findの非空インスタンスでは、公開APIから得た非null版を使ってください。
-
-`get_two`は2本の経路を同じ反復で参照します。片方が疎な未確保部分なら、その要素だけ初期値を返します。`get`と`get_two`はO(log_B(n+1))時間、`update`と`update_two`はO(B log_B(n+1))償却時間・償却追加領域です。保存ブロックを管理するvectorの拡張費用を含みます。定数配列の構築はO(B+log_B(n+1))時間で、全要素を確保しません。`vector`からの構築は葉ごとに値を続けて代入し、根から葉までの再走査を減らします。O(B+n+(n/B+1)log_B(n+1))時間、O(n+B)領域です。
-
-```cpp
-PersistentArray<int> a(4, 0);
-auto initial = a.root;
-a.update_two(0, 7, 3, 9);
-assert(a.get(0) == 7 && a.get(3) == 9);
-assert(a.get(initial, 0) == 0);
-auto pair = a.get_two(0, 3); // {7,9}
-auto previous = a.get_two(initial, 0, 3); // {0,0}
-a.update_two(initial, 1, 4, 1, 8);
-assert(a.get(1) == 8 && a.get(0) == 0);
+```text
+explicit PersistentArray(std::int64_t n = 0, T ID = T{});
+explicit PersistentArray(const std::vector<T>& values, T ID = T{});
 ```
 
-## 版と所有権
+全要素IDの疎な配列／vectorから構築します。
 
-ノードは小さいブロックから段階的に確保します。各ブロックの容量内でだけ追加し、以後の更新で過去のノードのアドレスを変えません。
+**制約:** 0<=n<=INT64_MAX、1<=shift<=8。Tのコピー・代入が必要です。
 
-葉と枝は木の深さから決まります。GCCでは、自明にコピーできる値型のノードをタグのないunionで保持します。Clang・その他のコンパイラと、自明にコピーできない値型にはvariantを使います。どちらも同じAPIと版の所有権を保ちます。
+**計算量:** 定数配列はO(B+log_B(n+1))時間。vector版はO(B+n+(n/B+1)log_B(n+1))時間・O(n+B)領域。
 
-コピーは保存領域を共有し、現在版のハンドルをそれぞれ保持します。一方のコピーで更新しても、もう一方の現在版や保存済みの版は変わりません。移動元は空になります。
+### get
 
-`Node*`は非所有ハンドルです。同じ保存領域を所有するインスタンスが1つ以上残っている間だけ使えます。最後の所有者の破棄で全版をまとめて解放し、木の深さに応じた再帰解放はしません。別の保存領域のハンドル、寿命切れのハンドルは渡せません。並行更新には外部同期が必要です。
+```text
+T get(std::int64_t k) const;
+T get(Node* version, std::int64_t k) const;
+```
 
-更新が例外で失敗しても、現在版と既存の版の内容は維持します。作成途中の未公開ノードを保存領域に保持する場合があり、失敗時に保存領域の容量まで巻き戻す保証はありません。
+現在版／指定版の値をコピーして返します。
 
-Union Findの`arr`と`root`は互換用の公開フィールドです。`arr`を直接書き換えると親とサイズの不変条件を壊せるため、通常はUnion FindのAPIを使います。
+**制約:** 0<=k<size()。同じ保存領域の有効な版、nullは全要素IDの版。
 
-## 入力検査
+**計算量:** O(log_B(n+1))。
 
-既定では添字の範囲と版の所有元を、対象への操作中に確認します。Union Findの非空インスタンスにnull版を渡すと`invalid_argument`、範囲外の添字は`out_of_range`です。寿命切れポインタを検査できる機能ではありません。
+### get_two
 
-`SKIP_RUNTIME_CHECKS`を定義すると入力検査と検査専用の所有元情報を除外します。サイズ・ノード容量の内部上限は維持します。検査省略時も、添字と版の前提を満たす必要があります。
+```text
+std::pair<T,T> get_two(std::int64_t a, std::int64_t b) const;
+std::pair<T,T> get_two(Node* version, std::int64_t a, std::int64_t b) const;
+```
 
-出典とライセンスの根拠は[来歴監査](../Audit/provenance-persistent-union-find-second-pass-2026-10-22.json)を参照してください。
+2要素を指定した順に返します。同じ添字も使えます。
 
-[成分列挙の独立参照試験](../Verify/current/tests/puf_groups_reference_test.cpp)では、保存版ごとのラベルモデルと親リンク先の確保を照合します。
+**制約:** 添字は範囲内、版はgetと同じ条件。
+
+**計算量:** O(log_B(n+1))。
+
+### update
+
+```text
+Node* update(std::int64_t k, const T& value);
+Node* update(Node* version, std::int64_t k, const T& value);
+```
+
+1点を変更した新しい版を現在版にし、そのハンドルを返します。
+
+**制約:** 添字は範囲内、版はgetと同じ条件。
+
+**計算量:** 償却O(B log_B(n+1))時間・追加領域。
+
+### update_two
+
+```text
+Node* update_two(std::int64_t a, const T& x, std::int64_t b, const T& y);
+Node* update_two(Node* version, std::int64_t a, const T& x, std::int64_t b, const T& y);
+```
+
+2点を同時更新した版を現在版にし、ハンドルを返します。同じ添字ならyを優先します。
+
+**制約:** 添字は範囲内、版はgetと同じ条件。
+
+**計算量:** 償却O(B log_B(n+1))時間・追加領域。
+
+### restore（PersistentArray）
+
+```text
+void restore(Node* version);
+```
+
+現在版を選択します。
+
+**制約:** 同じ保存領域の有効なハンドル。nullは全要素IDの版。
+
+**計算量:** O(1)。
+
+### root（公開データ）
+
+```text
+Node* root;
+```
+
+現在版の非所有ハンドルです。
+
+**制約:** 同じ保存領域の所有者が残る間だけ有効です。
+
+**計算量:** 読取りO(1)。
+
+### size（PersistentArray）
+
+```text
+std::int64_t size() const noexcept;
+```
+
+配列の要素数を返します。
+
+**制約:** 追加の制約はありません。
+
+**計算量:** O(1)。
+
+
+配列のnullptr版は全要素がIDの版です。Union Findの非空インスタンスでは、公開APIから得た非null版を渡します。
+
+`get`・`get_two`はO(log_B(n+1))、更新は償却O(B log_B(n+1))時間・追加領域です。定数配列の構築はO(B+log_B(n+1))時間、vectorからはO(B+n+(n/B+1)log_B(n+1))時間・O(n+B)領域です。
+
+## 版の寿命・失敗
+
+コピーは保存領域を共有し、現在版を個別に保持します。一方の更新は他方の現在版・過去版を変えません。ムーブ元は空です。
+
+版ハンドルは同じ保存領域を所有するインスタンス（UFでは元のUFまたはそのコピー）が残る間だけ有効です。ハンドル自体は所有権を持たず、`delete`や直接の参照外しはしません。別領域・寿命切れのハンドルは渡せず、並行更新は外部同期が必要です。最後の所有者の破棄で全版を解放します。
+
+更新失敗でも現在版・保存版を保ちますが、作成途中のノードや確保済み容量は残る場合があります。公開`arr`の直接変更はUnion Findの不変条件を壊すため、通常操作には使いません。
+
+既定では添字・版の所有元を検査し、非空Union Findのnull版は`invalid_argument`、範囲外は`out_of_range`です。寿命切れ検出の保証はありません。`SKIP_RUNTIME_CHECKS`で入力検査を省いても、サイズ・ノード容量の保護は維持します。
+
+[完全な使用例](../Examples/persistent_union_find_example.cpp)・[実装・検証の記録](../Audit/document-detail-before-concise-data-structure-2026-11-15.md#persistent-union-find)

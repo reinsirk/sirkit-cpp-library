@@ -1,0 +1,4686 @@
+{
+  "format": 1,
+  "stage": "codex",
+  "date": "2026-11-16",
+  "records": [
+    {
+      "id": "persistent_union_find",
+      "source_sha256": "f121be97fd308ee04c1a97926b392a393875cb64571bcda58b422f03e689fdf4",
+      "scope": "whole_program",
+      "libraries": [
+        "DataStructure/persistent-union-find.cpp"
+      ],
+      "driver": "Verify/current/drivers/persistent_union_find_main.cpp",
+      "driver_sha256": "944d4f5b542d8c95b7c457afb7f0e5aa3fde36c1e6d80496de0ecd9b25550ab3"
+    },
+    {
+      "id": "persistent_union_find_union_path_query",
+      "source_sha256": "14e35dccddafbaebb629d6fd7b32dd539fe87f89a7a90dfc7862d60c96f45d74",
+      "scope": "library",
+      "libraries": [
+        "DataStructure/persistent-union-find.cpp"
+      ],
+      "driver": "Verify/current/drivers/persistent_union_find_union_path_query_main.cpp",
+      "driver_sha256": "de7d233cf8247fb6eb539646d609afb1e12f19e84bec5e71756cf3a6ca0d1627"
+    }
+  ],
+  "api_changes": {
+    "root": "root(i[,Version]) returns int representative; former root_of and public Node* root removed",
+    "version": "using Version=Node*; version() replaces get_root(); handle non-owning, owning storage remains shared_ptr/vector",
+    "issame": "issame(i,j[,Version]) aliases same as explicitly requested",
+    "persistent_array_root": "unchanged",
+    "compatibility": "old get_root/root_of and UF root field are replaced; arr retained"
+  },
+  "library_sha256": "df9100eb08ebfa735c318c374aa634ced94af8ce175834c149d566002fc12970",
+  "documentation_sha256": "61a4bb89d7d42375bdb706ec253509434c3317404b983a9a54b6442d8094ac38",
+  "example_sha256": "21c6ec96d353cd6fe2ed9b9ea2f23e3b9d9b8b15b335cf694775b74ff738901e",
+  "validation_evidence": {
+    "path": "Audit/persistent-uf-root-api-validation-2026-11-16.json",
+    "sha256": "0ab59918e858e288fc63b5f0be8906488f1dc49742557f9f495534b42e72e78a"
+  },
+  "example_validation": [
+    {
+      "name": "gcc-checked",
+      "command": [
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "/home/reinsirk/Atcoder_Env/Examples/persistent_union_find_example.cpp",
+        "-o",
+        "/tmp/sirkit-persistent-uf-api-20261116/examples/gcc-checked"
+      ],
+      "example_sha256": "21c6ec96d353cd6fe2ed9b9ea2f23e3b9d9b8b15b335cf694775b74ff738901e",
+      "library_sha256": "df9100eb08ebfa735c318c374aa634ced94af8ce175834c149d566002fc12970",
+      "build_exit": 0,
+      "run_exit": 0,
+      "stdout": "4 3\n6 9 8\n",
+      "passed": true
+    },
+    {
+      "name": "gcc-skip",
+      "command": [
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O2",
+        "-DSKIP_RUNTIME_CHECKS",
+        "/home/reinsirk/Atcoder_Env/Examples/persistent_union_find_example.cpp",
+        "-o",
+        "/tmp/sirkit-persistent-uf-api-20261116/examples/gcc-skip"
+      ],
+      "example_sha256": "21c6ec96d353cd6fe2ed9b9ea2f23e3b9d9b8b15b335cf694775b74ff738901e",
+      "library_sha256": "df9100eb08ebfa735c318c374aa634ced94af8ce175834c149d566002fc12970",
+      "build_exit": 0,
+      "run_exit": 0,
+      "stdout": "4 3\n6 9 8\n",
+      "passed": true
+    },
+    {
+      "name": "clang-checked",
+      "command": [
+        "/usr/bin/clang++-21",
+        "-std=c++23",
+        "-O2",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "/home/reinsirk/Atcoder_Env/Examples/persistent_union_find_example.cpp",
+        "-o",
+        "/tmp/sirkit-persistent-uf-api-20261116/examples/clang-checked"
+      ],
+      "example_sha256": "21c6ec96d353cd6fe2ed9b9ea2f23e3b9d9b8b15b335cf694775b74ff738901e",
+      "library_sha256": "df9100eb08ebfa735c318c374aa634ced94af8ce175834c149d566002fc12970",
+      "build_exit": 0,
+      "run_exit": 0,
+      "stdout": "4 3\n6 9 8\n",
+      "passed": true
+    },
+    {
+      "name": "clang-skip",
+      "command": [
+        "/usr/bin/clang++-21",
+        "-std=c++23",
+        "-O2",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-DSKIP_RUNTIME_CHECKS",
+        "/home/reinsirk/Atcoder_Env/Examples/persistent_union_find_example.cpp",
+        "-o",
+        "/tmp/sirkit-persistent-uf-api-20261116/examples/clang-skip"
+      ],
+      "example_sha256": "21c6ec96d353cd6fe2ed9b9ea2f23e3b9d9b8b15b335cf694775b74ff738901e",
+      "library_sha256": "df9100eb08ebfa735c318c374aa634ced94af8ce175834c149d566002fc12970",
+      "build_exit": 0,
+      "run_exit": 0,
+      "stdout": "4 3\n6 9 8\n",
+      "passed": true
+    }
+  ],
+  "yuki2295": {
+    "notes": {
+      "id": "persistent_union_find_union_path_query",
+      "problem_url": "https://yukicoder.me/problems/no/2295",
+      "official_problem_id": 9156,
+      "primary_checked": "Official page task, constraints and all 3 samples checked using web tool on 2026-11-16 JST",
+      "limits": {
+        "n": 200000,
+        "q": 300000,
+        "weight": 1000000000,
+        "time_seconds": 4,
+        "memory_mb": 512
+      },
+      "samples": [
+        {
+          "input": "5 1 10\n1 0 1\n2 0 1\n1 1 2\n2 0 2\n3 1\n2 4 1\n1 1 4\n4 1\n1 4 4\n3 1\n",
+          "output": "1\n2\n5\n-1\n17\n"
+        },
+        {
+          "input": "10 2 12\n1 0 14\n2 0 2\n1 2 22\n1 1 28\n1 7 94\n2 4 6\n3 8\n1 5 126\n1 3 212\n1 6 223\n1 9 245\n3 6\n",
+          "output": "14\n-1\n0\n4135\n"
+        },
+        {
+          "input": "4 2 11\n1 3 91\n1 0 111\n2 1 0\n3 2\n2 0 1\n1 1 210\n1 2 230\n3 1\n2 3 3\n2 0 3\n2 1 2\n",
+          "output": "-1\n313\n-1\n943\n0\n111\n210\n"
+        }
+      ],
+      "driver": "Verify/current/drivers/persistent_union_find_union_path_query_main.cpp",
+      "driver_sha256": "de7d233cf8247fb6eb539646d609afb1e12f19e84bec5e71756cf3a6ca0d1627",
+      "coverage": [
+        "root(i) produces component-sum key",
+        "size(i) supplies cross-component pair count",
+        "unite(i,j) determines a successful merge",
+        "version()/Version saves each successful merge handle",
+        "issame(i,j) handles current reachability",
+        "issame(i,j,Version) determines earliest minimax threshold"
+      ],
+      "limitations": [
+        "Only chronological successful-merge versions here; existing LC persistent_unionfind remains needed for arbitrary branching versions.",
+        "No restore, copy/move/exception or externally supplied foreign handle exercised by this problem.",
+        "Maximum-constraint timing/RSS and large balanced-merge modular check are handled separately by root agent."
+      ],
+      "proof": [
+        "Edges arrive in nondecreasing weight order: adding an edge inside one component cannot lower any existing minimax distance.",
+        "A merge with weight w newly connects exactly sizeA*sizeB unordered pairs, all at minimax distance w; old internal distances stay unchanged.",
+        "The first retained version connecting distinct u,v corresponds exactly to their minimax distance; self-distance is zero.",
+        "A disconnected type-2 query outputs -1 without updating X.",
+        "After modular reduction each multiplication is at most (998244353-1)*200000 < 2**63; component-sum addition is less than 3*998244353.",
+        "Version handles are retained while their owning uf object remains alive."
+      ],
+      "complexity": {
+        "type1": "O(log^2(N+1))",
+        "type2": "O(log^3(N+1))",
+        "type3": "O(log^2(N+1))",
+        "type4": "O(1)",
+        "space": "O(N log(N+1)) persistent nodes; at most N retained versions"
+      },
+      "oracle": "Independent all-pairs Floyd minimax closure after every inserted edge; all type-2 answers and component pair sums directly read/summed from matrix. No Union-Find, retained versions or threshold binary search in reference.",
+      "fixture_count": 87,
+      "query_count": 10331
+    },
+    "all_small_build_results": {
+      "input_sources": {
+        "DataStructure/persistent-union-find.cpp": "df9100eb08ebfa735c318c374aa634ced94af8ce175834c149d566002fc12970",
+        "Verify/current/drivers/persistent_union_find_union_path_query_main.cpp": "de7d233cf8247fb6eb539646d609afb1e12f19e84bec5e71756cf3a6ca0d1627",
+        "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+      },
+      "fixture_count": 87,
+      "results": [
+        {
+          "name": "gcc-checked-native",
+          "command": [
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O2",
+            "/tmp/sirkit-persistent-root-api-20261116/yuki2295/build/gcc-checked-native.cpp",
+            "-o",
+            "/tmp/sirkit-persistent-root-api-20261116/yuki2295/build/gcc-checked-native"
+          ],
+          "compiler_version": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+          "compiler_sha256": "e6718f7e0c7d057c3ff77b550c603da9bc4030e3ede3c053705acce1293dbe4d",
+          "source_sha256": "8fa511989a814b9d91cc8d3ccb3dea942b869ba280094c49974a1d4122eee915",
+          "library_hashes": {
+            "DataStructure/persistent-union-find.cpp": "df9100eb08ebfa735c318c374aa634ced94af8ce175834c149d566002fc12970"
+          },
+          "build_exit": 0,
+          "build_seconds": 0.5604153259919258,
+          "cases": [
+            {
+              "name": "sample1",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "c8190d1ff0eb1aa76cb3472baeb4e0941d0da8929a951c8c3f9205afaa19797c"
+            },
+            {
+              "name": "sample2",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "f37c62f5f32ed53909615fd752c392274e145c6d6df0d6ee37a2a498b37c9b54"
+            },
+            {
+              "name": "sample3",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "1d2129fd5ce9a8dbd0c541480ae30994e6f566dfb39ea216b2c6121fa654d3c8"
+            },
+            {
+              "name": "single_vertex",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "6a33a504c8d16194914401f4f46532de96e1b63119fc5981341c6b65c6c27096"
+            },
+            {
+              "name": "empty_graph",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "9305b61456928dd55a2cb30619b38be328c2e4eff73e333decd6c01623d232d2"
+            },
+            {
+              "name": "zero_and_equal",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "d0c5d56cd8ed40805691571b7c49946b4b125aacedd65c489c3dce9b7bcd7b0b"
+            },
+            {
+              "name": "mod_large_weights",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "51e766e1275fdafe5d1fe6854590e377e9dcf9f2b6e92043b29db2769747646f"
+            },
+            {
+              "name": "random00",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "4635a623bd9a3d2d358ab681dbd0153f914fc02007d1dfbb514c046c75ea7568"
+            },
+            {
+              "name": "random01",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "5a0d4abe5b39e9946b0e330d80929878d51b54d469957d8f8ca855ab64a417a8"
+            },
+            {
+              "name": "random02",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "124a31f36deffd43e3be718c3f3b67ee008a61dc4457e0fe4db888806c570d56"
+            },
+            {
+              "name": "random03",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "6637f47e87a8162627dc0e3002a03c802e5d89cf12d79865cda27efc185c2679"
+            },
+            {
+              "name": "random04",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "bcffd56946225a3ad9a5f8094d52e7b329baa3c9833e1056df970c697c70116f"
+            },
+            {
+              "name": "random05",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "190a70b4572f1cfe81885848306a16bc087829694b93cfde67f9adfd2d4df80b"
+            },
+            {
+              "name": "random06",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "7b688f41c6e5661d3804725b54a8467cc51998f097c2ceeec3be7030fdd3f6e1"
+            },
+            {
+              "name": "random07",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "d0549639c15a922f2621301a0623a5de54d06c86de9d72a3307f8d45ee7d6ad0"
+            },
+            {
+              "name": "random08",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "82e507853789ce094ddabc9745a3ec34bd28b438bd9cc31fe03e651ac1af5d6d"
+            },
+            {
+              "name": "random09",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "c36277c56925bd43402493fd938840397e924c94be274d3be474673e54aa1fa9"
+            },
+            {
+              "name": "random10",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "db635c653c5eeca31f191827303a95cf7bd3c8c2de6c541a713c6164eaec9a7c"
+            },
+            {
+              "name": "random11",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "12b98c146980eab96cc15b36eb4689cdb6672fb82ba9d0a6114c5d9d0ed67369"
+            },
+            {
+              "name": "random12",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "3dd3dd5e5e9ec8a4dfff33c17895133a493dc497607f2f4fca698f809cc3e42b"
+            },
+            {
+              "name": "random13",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "491c6fa1b973679d13726adde0640ef901aedf858731d0b3453df98a17d57ab8"
+            },
+            {
+              "name": "random14",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "f673cfb0d63a493394f9e3c942dac5e439dea6741a33ad49984b32fec4bd2b31"
+            },
+            {
+              "name": "random15",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "5e2ea70a22781996290bb003942947fa07ce1d621cfeb67482377d30a61d68de"
+            },
+            {
+              "name": "random16",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "34abfd07dcd2e46dd9ceba12aac9cc29c1d9915893328d7926ded74f9274dfd3"
+            },
+            {
+              "name": "random17",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "f0202650eac0f2d80b406dc6709059913e23a34962a90d73dd1b58edbf4ae30f"
+            },
+            {
+              "name": "random18",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "2468d154808508e5d122fc2c464c1276d44413f1ebafdd0ec514adf385b70b30"
+            },
+            {
+              "name": "random19",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "f7981b2fedb89a75b5d2750e57cc07d64c7878cbb3e9cb0b42f77e860e3b48da"
+            },
+            {
+              "name": "random20",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "0c3f7003e59d924ec0f09452ef4daa40c2bbac8c691f8105da07c94f4f55fb58"
+            },
+            {
+              "name": "random21",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "9f7768fcc1f9215ea65816e382172827f6082b3ee00af26fedcbb09bc0156be0"
+            },
+            {
+              "name": "random22",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "dfd563f6438c96de03251dce8bcdad1eddd501405ca71f72c08e87e9cb8bc392"
+            },
+            {
+              "name": "random23",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "a9ba798a49392798191bcf9f897aba7204bdea9e8651a81072f3763a6f9256ee"
+            },
+            {
+              "name": "random24",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "80fd9bd72397eec09f51602ccbe23e25feb10ee19aff4cb2a3fd1e91daf0c164"
+            },
+            {
+              "name": "random25",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "52dc322e4f128f25215e89ecd08a3bd926375007b885dec9aa565e878d216e64"
+            },
+            {
+              "name": "random26",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "cb1a36bd282d3f340a7eefb27327c8b26b656c5ade043da6670a6d75da6faec2"
+            },
+            {
+              "name": "random27",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "d35a0c096d98cda0d0f80883b8770fd6fc2b3280031475fd2b059b375650bff1"
+            },
+            {
+              "name": "random28",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "5eb15a3341f223447f4a3813065a0e9cf8fc4ac55b9af7e242d4dfe313562797"
+            },
+            {
+              "name": "random29",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "d41006cc6d2972be4f288ec2c049b7dabb7d4e45e644476a481ac3580db5f4a3"
+            },
+            {
+              "name": "random30",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "b072bc1b8bb1763f34b7628133af986a7e2859c5a74afbd4bf326abb6c93f045"
+            },
+            {
+              "name": "random31",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "6f625ef6294f46585929a2f510851e0784bb2be385aecac19bfd9ec9aebcd683"
+            },
+            {
+              "name": "random32",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "4c08968f4f48cc95cd373929d04b4877edb330ccb1578a308620db15261f6e17"
+            },
+            {
+              "name": "random33",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "c1d3b5c23a9c727557edc4d5bea81a6ef93b10d2afdddca507f78c3f0d0f17e6"
+            },
+            {
+              "name": "random34",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "5734c36abddea3495ba83e83ef5cd296256f29c1268211490472f7ba179c75c5"
+            },
+            {
+              "name": "random35",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "ba4d69810be42ecb6b36d8ceed8a94b701d50bf4112a1fc3fc6924f004da207d"
+            },
+            {
+              "name": "random36",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "0c103e86c8a2a244db85744fd39fcf8efeed7af938579c7d8a3a8d0512cd76e0"
+            },
+            {
+              "name": "random37",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "2b15f0d519a6ea85d5b6848fd9d42d75862e2fa632bfcc592a2f457defa8aae3"
+            },
+            {
+              "name": "random38",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "b5ae59dd71fa10e40bd47c66d44402118fbab40abf8a104cd6cef8d2651cdc46"
+            },
+            {
+              "name": "random39",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "d912fe3660e8399807db234ec011f4d3c0662090209d8d3bb489f11f698e64ab"
+            },
+            {
+              "name": "random40",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "fa30e060e11da87938cf175afbfec0d136bf88f5ba8a6f14a1fddb4bcd58574c"
+            },
+            {
+              "name": "random41",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "393105fb68e6d9eb5f579eb9e01062c68f6eea3a6a4751332d8055d17925163d"
+            },
+            {
+              "name": "random42",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "2d23c0702c265cff0bd3e17b654c7f546af624d7bf40bd10ceb798c87471d37f"
+            },
+            {
+              "name": "random43",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "846264c1a14c19ad1da23ba41fe449b3779324b81bc6db5552621d2aa7c835a9"
+            },
+            {
+              "name": "random44",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "06b29f4a7c9aeef8e05c8b7fa338e354249fc3f2b36ad6ba856e8ddfa693cc8a"
+            },
+            {
+              "name": "random45",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "d7df558aaf1970dd0c45ac72d7b4e27101920d35473fcb02f4fe2815c4933454"
+            },
+            {
+              "name": "random46",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "e7bb21db35d0f9903d795762b17caff7745b3313be37a961cc540d142da28e1b"
+            },
+            {
+              "name": "random47",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "2543d1d4443f8a3b47f2665346d65236a1e930ea8387a21486e819551e81ec94"
+            },
+            {
+              "name": "random48",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "daf773ea282867a92ef3120c81d9f746327c9172c2c53483ec4291a6977b6feb"
+            },
+            {
+              "name": "random49",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "5fb4b42532e65f22484f847caaec57db58de37948d502a49fa120911af48b4e4"
+            },
+            {
+              "name": "random50",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "8feeba4542a12dc27b5e74801afd968f917f1bcef3bbe099d085d2a5cc73caea"
+            },
+            {
+              "name": "random51",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "fa2f423cec3f0c5e6578d97d508266308a6efb3fe7f1eb2e76b383dd32e5872f"
+            },
+            {
+              "name": "random52",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "32641dbbfd56dc195a007c909e21edb8095399ccbed97a5d0d9740be937df21a"
+            },
+            {
+              "name": "random53",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "4e33a6f9e8026214efc3cb4c5bd98e184668741601c409464829923de51188fc"
+            },
+            {
+              "name": "random54",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "be0512436563cc8bcbfe68da3de4a2935c47471198e3febd8a506823d0fcff8c"
+            },
+            {
+              "name": "random55",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "b3a9ce456fd5d140ab6ca7ea85be97d9198c6305131f3e52d5f17667ff9d0ca9"
+            },
+            {
+              "name": "random56",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "9eab3d494ecc40d5e731b1207076401a6207ee8608c102f388610347cf36f095"
+            },
+            {
+              "name": "random57",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "bc12b4f7935f8324d94db1536139d8fd14c91b76cc99c9788284ed399efad40d"
+            },
+            {
+              "name": "random58",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "0e0143e5087ca6be8b511df41c12215884d6a40c361e19c132f2adb9eb9a204c"
+            },
+            {
+              "name": "random59",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "e0652c22fa8c865fad979aa6a89f98c20e0bf933a3b76156f2be7d9a2fc5001e"
+            },
+            {
+              "name": "random60",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "b98c9507fdab7358e2a0cce19fc150504fc7be33cec638180017b014e2bb632d"
+            },
+            {
+              "name": "random61",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "407218867786643a1bdaa96dc32925c587d37962598347c81d55534d4b075eba"
+            },
+            {
+              "name": "random62",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "c51ce4239a8b43973a65daba7d98d7a41e09e7fb4640224c16c7972c39ac3768"
+            },
+            {
+              "name": "random63",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "707adaa66e8757d8fc932627e0b60750953d9b1def7506c59f07e8b0fafd39e1"
+            },
+            {
+              "name": "random64",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "ea3f77eaa31cd6bbf94b62d8f457c4610854e99a6e421a6d2ede9f555618add4"
+            },
+            {
+              "name": "random65",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "e4d7b8501f47380321249e8473fa4924c39af3cf48ebd7fb693784eb3be5baf5"
+            },
+            {
+              "name": "random66",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "c04be198236d98cdc954a4fa7a86f15eb3ad59c8e5e487e47f2f5eebe2401931"
+            },
+            {
+              "name": "random67",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "0f978a5a10f7858b65270d1b8131cc83eab343d6970414cc38f84b7b00fc5ac1"
+            },
+            {
+              "name": "random68",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "fb35afb527910223f37559f950d36aca36d30c169370aef7edc663dc37b23bb8"
+            },
+            {
+              "name": "random69",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "b15f27a4b7f8ce24b8db487b6887692e970702e8201935ca1603c7a6d833e35b"
+            },
+            {
+              "name": "random70",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "05bd9b1ffe1fffdb2a040fe82edf8fb7fdc3cfaf0edefac8e279a65c6c8891a3"
+            },
+            {
+              "name": "random71",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "a3c0225e43da6706821dd7ac67bfde83ccb4f593df90530c63bf0e6d05b901d1"
+            },
+            {
+              "name": "random72",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "121a209f174a193e9c53b333ad4148ff3b62eeb8830307fa70aa4d19e3680b33"
+            },
+            {
+              "name": "random73",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "eacd6549307f028a657aa595c0877993dbcdbba0e79c305c552dd2aeefa0b81e"
+            },
+            {
+              "name": "random74",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "bbd2cb8fa6920e813cea4b8d22887b639b5dea84bd8e452826e36165182d91d2"
+            },
+            {
+              "name": "random75",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "2468d154808508e5d122fc2c464c1276d44413f1ebafdd0ec514adf385b70b30"
+            },
+            {
+              "name": "random76",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "7e90a7a463569ffbfca2e94950a18c036f434715aec47a7e59b45a42fa78cf7f"
+            },
+            {
+              "name": "random77",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "11c9ccac797f02d47663bbad57270ae098c945a8591dfadf3fc880e341d3dfa4"
+            },
+            {
+              "name": "random78",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "e1469e995d9ddb82801339a7a79082604c3fb14c00e10f3fe8e928cf290a3832"
+            },
+            {
+              "name": "random79",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "c2a6abc437b47d8b38dc43568d58dc03d229db3ecea377c584c015ad7813214d"
+            }
+          ],
+          "passed": true
+        },
+        {
+          "name": "gcc-checked-portable",
+          "command": [
+            "/usr/bin/g++",
+            "-U__SIZEOF_INT128__",
+            "-DSIRKIT_DISABLE_SIMD",
+            "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+            "-std=c++23",
+            "-O2",
+            "/tmp/sirkit-persistent-root-api-20261116/yuki2295/build/gcc-checked-portable.cpp",
+            "-o",
+            "/tmp/sirkit-persistent-root-api-20261116/yuki2295/build/gcc-checked-portable"
+          ],
+          "compiler_version": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+          "compiler_sha256": "e6718f7e0c7d057c3ff77b550c603da9bc4030e3ede3c053705acce1293dbe4d",
+          "source_sha256": "8fa511989a814b9d91cc8d3ccb3dea942b869ba280094c49974a1d4122eee915",
+          "library_hashes": {
+            "DataStructure/persistent-union-find.cpp": "df9100eb08ebfa735c318c374aa634ced94af8ce175834c149d566002fc12970"
+          },
+          "build_exit": 0,
+          "build_seconds": 0.5552189340087352,
+          "cases": [
+            {
+              "name": "sample1",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "c8190d1ff0eb1aa76cb3472baeb4e0941d0da8929a951c8c3f9205afaa19797c"
+            },
+            {
+              "name": "sample2",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "f37c62f5f32ed53909615fd752c392274e145c6d6df0d6ee37a2a498b37c9b54"
+            },
+            {
+              "name": "sample3",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "1d2129fd5ce9a8dbd0c541480ae30994e6f566dfb39ea216b2c6121fa654d3c8"
+            },
+            {
+              "name": "single_vertex",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "6a33a504c8d16194914401f4f46532de96e1b63119fc5981341c6b65c6c27096"
+            },
+            {
+              "name": "empty_graph",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "9305b61456928dd55a2cb30619b38be328c2e4eff73e333decd6c01623d232d2"
+            },
+            {
+              "name": "zero_and_equal",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "d0c5d56cd8ed40805691571b7c49946b4b125aacedd65c489c3dce9b7bcd7b0b"
+            },
+            {
+              "name": "mod_large_weights",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "51e766e1275fdafe5d1fe6854590e377e9dcf9f2b6e92043b29db2769747646f"
+            },
+            {
+              "name": "random00",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "4635a623bd9a3d2d358ab681dbd0153f914fc02007d1dfbb514c046c75ea7568"
+            },
+            {
+              "name": "random01",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "5a0d4abe5b39e9946b0e330d80929878d51b54d469957d8f8ca855ab64a417a8"
+            },
+            {
+              "name": "random02",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "124a31f36deffd43e3be718c3f3b67ee008a61dc4457e0fe4db888806c570d56"
+            },
+            {
+              "name": "random03",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "6637f47e87a8162627dc0e3002a03c802e5d89cf12d79865cda27efc185c2679"
+            },
+            {
+              "name": "random04",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "bcffd56946225a3ad9a5f8094d52e7b329baa3c9833e1056df970c697c70116f"
+            },
+            {
+              "name": "random05",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "190a70b4572f1cfe81885848306a16bc087829694b93cfde67f9adfd2d4df80b"
+            },
+            {
+              "name": "random06",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "7b688f41c6e5661d3804725b54a8467cc51998f097c2ceeec3be7030fdd3f6e1"
+            },
+            {
+              "name": "random07",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "d0549639c15a922f2621301a0623a5de54d06c86de9d72a3307f8d45ee7d6ad0"
+            },
+            {
+              "name": "random08",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "82e507853789ce094ddabc9745a3ec34bd28b438bd9cc31fe03e651ac1af5d6d"
+            },
+            {
+              "name": "random09",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "c36277c56925bd43402493fd938840397e924c94be274d3be474673e54aa1fa9"
+            },
+            {
+              "name": "random10",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "db635c653c5eeca31f191827303a95cf7bd3c8c2de6c541a713c6164eaec9a7c"
+            },
+            {
+              "name": "random11",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "12b98c146980eab96cc15b36eb4689cdb6672fb82ba9d0a6114c5d9d0ed67369"
+            },
+            {
+              "name": "random12",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "3dd3dd5e5e9ec8a4dfff33c17895133a493dc497607f2f4fca698f809cc3e42b"
+            },
+            {
+              "name": "random13",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "491c6fa1b973679d13726adde0640ef901aedf858731d0b3453df98a17d57ab8"
+            },
+            {
+              "name": "random14",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "f673cfb0d63a493394f9e3c942dac5e439dea6741a33ad49984b32fec4bd2b31"
+            },
+            {
+              "name": "random15",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "5e2ea70a22781996290bb003942947fa07ce1d621cfeb67482377d30a61d68de"
+            },
+            {
+              "name": "random16",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "34abfd07dcd2e46dd9ceba12aac9cc29c1d9915893328d7926ded74f9274dfd3"
+            },
+            {
+              "name": "random17",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "f0202650eac0f2d80b406dc6709059913e23a34962a90d73dd1b58edbf4ae30f"
+            },
+            {
+              "name": "random18",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "2468d154808508e5d122fc2c464c1276d44413f1ebafdd0ec514adf385b70b30"
+            },
+            {
+              "name": "random19",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "f7981b2fedb89a75b5d2750e57cc07d64c7878cbb3e9cb0b42f77e860e3b48da"
+            },
+            {
+              "name": "random20",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "0c3f7003e59d924ec0f09452ef4daa40c2bbac8c691f8105da07c94f4f55fb58"
+            },
+            {
+              "name": "random21",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "9f7768fcc1f9215ea65816e382172827f6082b3ee00af26fedcbb09bc0156be0"
+            },
+            {
+              "name": "random22",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "dfd563f6438c96de03251dce8bcdad1eddd501405ca71f72c08e87e9cb8bc392"
+            },
+            {
+              "name": "random23",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "a9ba798a49392798191bcf9f897aba7204bdea9e8651a81072f3763a6f9256ee"
+            },
+            {
+              "name": "random24",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "80fd9bd72397eec09f51602ccbe23e25feb10ee19aff4cb2a3fd1e91daf0c164"
+            },
+            {
+              "name": "random25",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "52dc322e4f128f25215e89ecd08a3bd926375007b885dec9aa565e878d216e64"
+            },
+            {
+              "name": "random26",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "cb1a36bd282d3f340a7eefb27327c8b26b656c5ade043da6670a6d75da6faec2"
+            },
+            {
+              "name": "random27",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "d35a0c096d98cda0d0f80883b8770fd6fc2b3280031475fd2b059b375650bff1"
+            },
+            {
+              "name": "random28",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "5eb15a3341f223447f4a3813065a0e9cf8fc4ac55b9af7e242d4dfe313562797"
+            },
+            {
+              "name": "random29",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "d41006cc6d2972be4f288ec2c049b7dabb7d4e45e644476a481ac3580db5f4a3"
+            },
+            {
+              "name": "random30",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "b072bc1b8bb1763f34b7628133af986a7e2859c5a74afbd4bf326abb6c93f045"
+            },
+            {
+              "name": "random31",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "6f625ef6294f46585929a2f510851e0784bb2be385aecac19bfd9ec9aebcd683"
+            },
+            {
+              "name": "random32",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "4c08968f4f48cc95cd373929d04b4877edb330ccb1578a308620db15261f6e17"
+            },
+            {
+              "name": "random33",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "c1d3b5c23a9c727557edc4d5bea81a6ef93b10d2afdddca507f78c3f0d0f17e6"
+            },
+            {
+              "name": "random34",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "5734c36abddea3495ba83e83ef5cd296256f29c1268211490472f7ba179c75c5"
+            },
+            {
+              "name": "random35",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "ba4d69810be42ecb6b36d8ceed8a94b701d50bf4112a1fc3fc6924f004da207d"
+            },
+            {
+              "name": "random36",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "0c103e86c8a2a244db85744fd39fcf8efeed7af938579c7d8a3a8d0512cd76e0"
+            },
+            {
+              "name": "random37",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "2b15f0d519a6ea85d5b6848fd9d42d75862e2fa632bfcc592a2f457defa8aae3"
+            },
+            {
+              "name": "random38",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "b5ae59dd71fa10e40bd47c66d44402118fbab40abf8a104cd6cef8d2651cdc46"
+            },
+            {
+              "name": "random39",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "d912fe3660e8399807db234ec011f4d3c0662090209d8d3bb489f11f698e64ab"
+            },
+            {
+              "name": "random40",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "fa30e060e11da87938cf175afbfec0d136bf88f5ba8a6f14a1fddb4bcd58574c"
+            },
+            {
+              "name": "random41",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "393105fb68e6d9eb5f579eb9e01062c68f6eea3a6a4751332d8055d17925163d"
+            },
+            {
+              "name": "random42",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "2d23c0702c265cff0bd3e17b654c7f546af624d7bf40bd10ceb798c87471d37f"
+            },
+            {
+              "name": "random43",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "846264c1a14c19ad1da23ba41fe449b3779324b81bc6db5552621d2aa7c835a9"
+            },
+            {
+              "name": "random44",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "06b29f4a7c9aeef8e05c8b7fa338e354249fc3f2b36ad6ba856e8ddfa693cc8a"
+            },
+            {
+              "name": "random45",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "d7df558aaf1970dd0c45ac72d7b4e27101920d35473fcb02f4fe2815c4933454"
+            },
+            {
+              "name": "random46",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "e7bb21db35d0f9903d795762b17caff7745b3313be37a961cc540d142da28e1b"
+            },
+            {
+              "name": "random47",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "2543d1d4443f8a3b47f2665346d65236a1e930ea8387a21486e819551e81ec94"
+            },
+            {
+              "name": "random48",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "daf773ea282867a92ef3120c81d9f746327c9172c2c53483ec4291a6977b6feb"
+            },
+            {
+              "name": "random49",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "5fb4b42532e65f22484f847caaec57db58de37948d502a49fa120911af48b4e4"
+            },
+            {
+              "name": "random50",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "8feeba4542a12dc27b5e74801afd968f917f1bcef3bbe099d085d2a5cc73caea"
+            },
+            {
+              "name": "random51",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "fa2f423cec3f0c5e6578d97d508266308a6efb3fe7f1eb2e76b383dd32e5872f"
+            },
+            {
+              "name": "random52",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "32641dbbfd56dc195a007c909e21edb8095399ccbed97a5d0d9740be937df21a"
+            },
+            {
+              "name": "random53",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "4e33a6f9e8026214efc3cb4c5bd98e184668741601c409464829923de51188fc"
+            },
+            {
+              "name": "random54",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "be0512436563cc8bcbfe68da3de4a2935c47471198e3febd8a506823d0fcff8c"
+            },
+            {
+              "name": "random55",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "b3a9ce456fd5d140ab6ca7ea85be97d9198c6305131f3e52d5f17667ff9d0ca9"
+            },
+            {
+              "name": "random56",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "9eab3d494ecc40d5e731b1207076401a6207ee8608c102f388610347cf36f095"
+            },
+            {
+              "name": "random57",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "bc12b4f7935f8324d94db1536139d8fd14c91b76cc99c9788284ed399efad40d"
+            },
+            {
+              "name": "random58",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "0e0143e5087ca6be8b511df41c12215884d6a40c361e19c132f2adb9eb9a204c"
+            },
+            {
+              "name": "random59",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "e0652c22fa8c865fad979aa6a89f98c20e0bf933a3b76156f2be7d9a2fc5001e"
+            },
+            {
+              "name": "random60",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "b98c9507fdab7358e2a0cce19fc150504fc7be33cec638180017b014e2bb632d"
+            },
+            {
+              "name": "random61",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "407218867786643a1bdaa96dc32925c587d37962598347c81d55534d4b075eba"
+            },
+            {
+              "name": "random62",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "c51ce4239a8b43973a65daba7d98d7a41e09e7fb4640224c16c7972c39ac3768"
+            },
+            {
+              "name": "random63",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "707adaa66e8757d8fc932627e0b60750953d9b1def7506c59f07e8b0fafd39e1"
+            },
+            {
+              "name": "random64",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "ea3f77eaa31cd6bbf94b62d8f457c4610854e99a6e421a6d2ede9f555618add4"
+            },
+            {
+              "name": "random65",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "e4d7b8501f47380321249e8473fa4924c39af3cf48ebd7fb693784eb3be5baf5"
+            },
+            {
+              "name": "random66",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "c04be198236d98cdc954a4fa7a86f15eb3ad59c8e5e487e47f2f5eebe2401931"
+            },
+            {
+              "name": "random67",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "0f978a5a10f7858b65270d1b8131cc83eab343d6970414cc38f84b7b00fc5ac1"
+            },
+            {
+              "name": "random68",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "fb35afb527910223f37559f950d36aca36d30c169370aef7edc663dc37b23bb8"
+            },
+            {
+              "name": "random69",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "b15f27a4b7f8ce24b8db487b6887692e970702e8201935ca1603c7a6d833e35b"
+            },
+            {
+              "name": "random70",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "05bd9b1ffe1fffdb2a040fe82edf8fb7fdc3cfaf0edefac8e279a65c6c8891a3"
+            },
+            {
+              "name": "random71",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "a3c0225e43da6706821dd7ac67bfde83ccb4f593df90530c63bf0e6d05b901d1"
+            },
+            {
+              "name": "random72",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "121a209f174a193e9c53b333ad4148ff3b62eeb8830307fa70aa4d19e3680b33"
+            },
+            {
+              "name": "random73",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "eacd6549307f028a657aa595c0877993dbcdbba0e79c305c552dd2aeefa0b81e"
+            },
+            {
+              "name": "random74",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "bbd2cb8fa6920e813cea4b8d22887b639b5dea84bd8e452826e36165182d91d2"
+            },
+            {
+              "name": "random75",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "2468d154808508e5d122fc2c464c1276d44413f1ebafdd0ec514adf385b70b30"
+            },
+            {
+              "name": "random76",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "7e90a7a463569ffbfca2e94950a18c036f434715aec47a7e59b45a42fa78cf7f"
+            },
+            {
+              "name": "random77",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "11c9ccac797f02d47663bbad57270ae098c945a8591dfadf3fc880e341d3dfa4"
+            },
+            {
+              "name": "random78",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "e1469e995d9ddb82801339a7a79082604c3fb14c00e10f3fe8e928cf290a3832"
+            },
+            {
+              "name": "random79",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "c2a6abc437b47d8b38dc43568d58dc03d229db3ecea377c584c015ad7813214d"
+            }
+          ],
+          "passed": true
+        },
+        {
+          "name": "gcc-skip-native",
+          "command": [
+            "/usr/bin/g++",
+            "-std=c++23",
+            "-O2",
+            "/tmp/sirkit-persistent-root-api-20261116/yuki2295/build/gcc-skip-native.cpp",
+            "-o",
+            "/tmp/sirkit-persistent-root-api-20261116/yuki2295/build/gcc-skip-native"
+          ],
+          "compiler_version": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+          "compiler_sha256": "e6718f7e0c7d057c3ff77b550c603da9bc4030e3ede3c053705acce1293dbe4d",
+          "source_sha256": "14e35dccddafbaebb629d6fd7b32dd539fe87f89a7a90dfc7862d60c96f45d74",
+          "library_hashes": {
+            "DataStructure/persistent-union-find.cpp": "df9100eb08ebfa735c318c374aa634ced94af8ce175834c149d566002fc12970"
+          },
+          "build_exit": 0,
+          "build_seconds": 0.5988216059922706,
+          "cases": [
+            {
+              "name": "sample1",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "c8190d1ff0eb1aa76cb3472baeb4e0941d0da8929a951c8c3f9205afaa19797c"
+            },
+            {
+              "name": "sample2",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "f37c62f5f32ed53909615fd752c392274e145c6d6df0d6ee37a2a498b37c9b54"
+            },
+            {
+              "name": "sample3",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "1d2129fd5ce9a8dbd0c541480ae30994e6f566dfb39ea216b2c6121fa654d3c8"
+            },
+            {
+              "name": "single_vertex",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "6a33a504c8d16194914401f4f46532de96e1b63119fc5981341c6b65c6c27096"
+            },
+            {
+              "name": "empty_graph",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "9305b61456928dd55a2cb30619b38be328c2e4eff73e333decd6c01623d232d2"
+            },
+            {
+              "name": "zero_and_equal",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "d0c5d56cd8ed40805691571b7c49946b4b125aacedd65c489c3dce9b7bcd7b0b"
+            },
+            {
+              "name": "mod_large_weights",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "51e766e1275fdafe5d1fe6854590e377e9dcf9f2b6e92043b29db2769747646f"
+            },
+            {
+              "name": "random00",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "4635a623bd9a3d2d358ab681dbd0153f914fc02007d1dfbb514c046c75ea7568"
+            },
+            {
+              "name": "random01",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "5a0d4abe5b39e9946b0e330d80929878d51b54d469957d8f8ca855ab64a417a8"
+            },
+            {
+              "name": "random02",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "124a31f36deffd43e3be718c3f3b67ee008a61dc4457e0fe4db888806c570d56"
+            },
+            {
+              "name": "random03",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "6637f47e87a8162627dc0e3002a03c802e5d89cf12d79865cda27efc185c2679"
+            },
+            {
+              "name": "random04",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "bcffd56946225a3ad9a5f8094d52e7b329baa3c9833e1056df970c697c70116f"
+            },
+            {
+              "name": "random05",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "190a70b4572f1cfe81885848306a16bc087829694b93cfde67f9adfd2d4df80b"
+            },
+            {
+              "name": "random06",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "7b688f41c6e5661d3804725b54a8467cc51998f097c2ceeec3be7030fdd3f6e1"
+            },
+            {
+              "name": "random07",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "d0549639c15a922f2621301a0623a5de54d06c86de9d72a3307f8d45ee7d6ad0"
+            },
+            {
+              "name": "random08",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "82e507853789ce094ddabc9745a3ec34bd28b438bd9cc31fe03e651ac1af5d6d"
+            },
+            {
+              "name": "random09",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "c36277c56925bd43402493fd938840397e924c94be274d3be474673e54aa1fa9"
+            },
+            {
+              "name": "random10",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "db635c653c5eeca31f191827303a95cf7bd3c8c2de6c541a713c6164eaec9a7c"
+            },
+            {
+              "name": "random11",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "12b98c146980eab96cc15b36eb4689cdb6672fb82ba9d0a6114c5d9d0ed67369"
+            },
+            {
+              "name": "random12",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "3dd3dd5e5e9ec8a4dfff33c17895133a493dc497607f2f4fca698f809cc3e42b"
+            },
+            {
+              "name": "random13",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "491c6fa1b973679d13726adde0640ef901aedf858731d0b3453df98a17d57ab8"
+            },
+            {
+              "name": "random14",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "f673cfb0d63a493394f9e3c942dac5e439dea6741a33ad49984b32fec4bd2b31"
+            },
+            {
+              "name": "random15",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "5e2ea70a22781996290bb003942947fa07ce1d621cfeb67482377d30a61d68de"
+            },
+            {
+              "name": "random16",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "34abfd07dcd2e46dd9ceba12aac9cc29c1d9915893328d7926ded74f9274dfd3"
+            },
+            {
+              "name": "random17",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "f0202650eac0f2d80b406dc6709059913e23a34962a90d73dd1b58edbf4ae30f"
+            },
+            {
+              "name": "random18",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "2468d154808508e5d122fc2c464c1276d44413f1ebafdd0ec514adf385b70b30"
+            },
+            {
+              "name": "random19",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "f7981b2fedb89a75b5d2750e57cc07d64c7878cbb3e9cb0b42f77e860e3b48da"
+            },
+            {
+              "name": "random20",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "0c3f7003e59d924ec0f09452ef4daa40c2bbac8c691f8105da07c94f4f55fb58"
+            },
+            {
+              "name": "random21",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "9f7768fcc1f9215ea65816e382172827f6082b3ee00af26fedcbb09bc0156be0"
+            },
+            {
+              "name": "random22",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "dfd563f6438c96de03251dce8bcdad1eddd501405ca71f72c08e87e9cb8bc392"
+            },
+            {
+              "name": "random23",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "a9ba798a49392798191bcf9f897aba7204bdea9e8651a81072f3763a6f9256ee"
+            },
+            {
+              "name": "random24",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "80fd9bd72397eec09f51602ccbe23e25feb10ee19aff4cb2a3fd1e91daf0c164"
+            },
+            {
+              "name": "random25",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "52dc322e4f128f25215e89ecd08a3bd926375007b885dec9aa565e878d216e64"
+            },
+            {
+              "name": "random26",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "cb1a36bd282d3f340a7eefb27327c8b26b656c5ade043da6670a6d75da6faec2"
+            },
+            {
+              "name": "random27",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "d35a0c096d98cda0d0f80883b8770fd6fc2b3280031475fd2b059b375650bff1"
+            },
+            {
+              "name": "random28",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "5eb15a3341f223447f4a3813065a0e9cf8fc4ac55b9af7e242d4dfe313562797"
+            },
+            {
+              "name": "random29",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "d41006cc6d2972be4f288ec2c049b7dabb7d4e45e644476a481ac3580db5f4a3"
+            },
+            {
+              "name": "random30",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "b072bc1b8bb1763f34b7628133af986a7e2859c5a74afbd4bf326abb6c93f045"
+            },
+            {
+              "name": "random31",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "6f625ef6294f46585929a2f510851e0784bb2be385aecac19bfd9ec9aebcd683"
+            },
+            {
+              "name": "random32",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "4c08968f4f48cc95cd373929d04b4877edb330ccb1578a308620db15261f6e17"
+            },
+            {
+              "name": "random33",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "c1d3b5c23a9c727557edc4d5bea81a6ef93b10d2afdddca507f78c3f0d0f17e6"
+            },
+            {
+              "name": "random34",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "5734c36abddea3495ba83e83ef5cd296256f29c1268211490472f7ba179c75c5"
+            },
+            {
+              "name": "random35",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "ba4d69810be42ecb6b36d8ceed8a94b701d50bf4112a1fc3fc6924f004da207d"
+            },
+            {
+              "name": "random36",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "0c103e86c8a2a244db85744fd39fcf8efeed7af938579c7d8a3a8d0512cd76e0"
+            },
+            {
+              "name": "random37",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "2b15f0d519a6ea85d5b6848fd9d42d75862e2fa632bfcc592a2f457defa8aae3"
+            },
+            {
+              "name": "random38",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "b5ae59dd71fa10e40bd47c66d44402118fbab40abf8a104cd6cef8d2651cdc46"
+            },
+            {
+              "name": "random39",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "d912fe3660e8399807db234ec011f4d3c0662090209d8d3bb489f11f698e64ab"
+            },
+            {
+              "name": "random40",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "fa30e060e11da87938cf175afbfec0d136bf88f5ba8a6f14a1fddb4bcd58574c"
+            },
+            {
+              "name": "random41",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "393105fb68e6d9eb5f579eb9e01062c68f6eea3a6a4751332d8055d17925163d"
+            },
+            {
+              "name": "random42",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "2d23c0702c265cff0bd3e17b654c7f546af624d7bf40bd10ceb798c87471d37f"
+            },
+            {
+              "name": "random43",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "846264c1a14c19ad1da23ba41fe449b3779324b81bc6db5552621d2aa7c835a9"
+            },
+            {
+              "name": "random44",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "06b29f4a7c9aeef8e05c8b7fa338e354249fc3f2b36ad6ba856e8ddfa693cc8a"
+            },
+            {
+              "name": "random45",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "d7df558aaf1970dd0c45ac72d7b4e27101920d35473fcb02f4fe2815c4933454"
+            },
+            {
+              "name": "random46",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "e7bb21db35d0f9903d795762b17caff7745b3313be37a961cc540d142da28e1b"
+            },
+            {
+              "name": "random47",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "2543d1d4443f8a3b47f2665346d65236a1e930ea8387a21486e819551e81ec94"
+            },
+            {
+              "name": "random48",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "daf773ea282867a92ef3120c81d9f746327c9172c2c53483ec4291a6977b6feb"
+            },
+            {
+              "name": "random49",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "5fb4b42532e65f22484f847caaec57db58de37948d502a49fa120911af48b4e4"
+            },
+            {
+              "name": "random50",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "8feeba4542a12dc27b5e74801afd968f917f1bcef3bbe099d085d2a5cc73caea"
+            },
+            {
+              "name": "random51",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "fa2f423cec3f0c5e6578d97d508266308a6efb3fe7f1eb2e76b383dd32e5872f"
+            },
+            {
+              "name": "random52",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "32641dbbfd56dc195a007c909e21edb8095399ccbed97a5d0d9740be937df21a"
+            },
+            {
+              "name": "random53",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "4e33a6f9e8026214efc3cb4c5bd98e184668741601c409464829923de51188fc"
+            },
+            {
+              "name": "random54",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "be0512436563cc8bcbfe68da3de4a2935c47471198e3febd8a506823d0fcff8c"
+            },
+            {
+              "name": "random55",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "b3a9ce456fd5d140ab6ca7ea85be97d9198c6305131f3e52d5f17667ff9d0ca9"
+            },
+            {
+              "name": "random56",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "9eab3d494ecc40d5e731b1207076401a6207ee8608c102f388610347cf36f095"
+            },
+            {
+              "name": "random57",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "bc12b4f7935f8324d94db1536139d8fd14c91b76cc99c9788284ed399efad40d"
+            },
+            {
+              "name": "random58",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "0e0143e5087ca6be8b511df41c12215884d6a40c361e19c132f2adb9eb9a204c"
+            },
+            {
+              "name": "random59",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "e0652c22fa8c865fad979aa6a89f98c20e0bf933a3b76156f2be7d9a2fc5001e"
+            },
+            {
+              "name": "random60",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "b98c9507fdab7358e2a0cce19fc150504fc7be33cec638180017b014e2bb632d"
+            },
+            {
+              "name": "random61",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "407218867786643a1bdaa96dc32925c587d37962598347c81d55534d4b075eba"
+            },
+            {
+              "name": "random62",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "c51ce4239a8b43973a65daba7d98d7a41e09e7fb4640224c16c7972c39ac3768"
+            },
+            {
+              "name": "random63",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "707adaa66e8757d8fc932627e0b60750953d9b1def7506c59f07e8b0fafd39e1"
+            },
+            {
+              "name": "random64",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "ea3f77eaa31cd6bbf94b62d8f457c4610854e99a6e421a6d2ede9f555618add4"
+            },
+            {
+              "name": "random65",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "e4d7b8501f47380321249e8473fa4924c39af3cf48ebd7fb693784eb3be5baf5"
+            },
+            {
+              "name": "random66",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "c04be198236d98cdc954a4fa7a86f15eb3ad59c8e5e487e47f2f5eebe2401931"
+            },
+            {
+              "name": "random67",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "0f978a5a10f7858b65270d1b8131cc83eab343d6970414cc38f84b7b00fc5ac1"
+            },
+            {
+              "name": "random68",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "fb35afb527910223f37559f950d36aca36d30c169370aef7edc663dc37b23bb8"
+            },
+            {
+              "name": "random69",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "b15f27a4b7f8ce24b8db487b6887692e970702e8201935ca1603c7a6d833e35b"
+            },
+            {
+              "name": "random70",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "05bd9b1ffe1fffdb2a040fe82edf8fb7fdc3cfaf0edefac8e279a65c6c8891a3"
+            },
+            {
+              "name": "random71",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "a3c0225e43da6706821dd7ac67bfde83ccb4f593df90530c63bf0e6d05b901d1"
+            },
+            {
+              "name": "random72",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "121a209f174a193e9c53b333ad4148ff3b62eeb8830307fa70aa4d19e3680b33"
+            },
+            {
+              "name": "random73",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "eacd6549307f028a657aa595c0877993dbcdbba0e79c305c552dd2aeefa0b81e"
+            },
+            {
+              "name": "random74",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "bbd2cb8fa6920e813cea4b8d22887b639b5dea84bd8e452826e36165182d91d2"
+            },
+            {
+              "name": "random75",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "2468d154808508e5d122fc2c464c1276d44413f1ebafdd0ec514adf385b70b30"
+            },
+            {
+              "name": "random76",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "7e90a7a463569ffbfca2e94950a18c036f434715aec47a7e59b45a42fa78cf7f"
+            },
+            {
+              "name": "random77",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "11c9ccac797f02d47663bbad57270ae098c945a8591dfadf3fc880e341d3dfa4"
+            },
+            {
+              "name": "random78",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "e1469e995d9ddb82801339a7a79082604c3fb14c00e10f3fe8e928cf290a3832"
+            },
+            {
+              "name": "random79",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "c2a6abc437b47d8b38dc43568d58dc03d229db3ecea377c584c015ad7813214d"
+            }
+          ],
+          "passed": true
+        },
+        {
+          "name": "gcc-skip-portable",
+          "command": [
+            "/usr/bin/g++",
+            "-U__SIZEOF_INT128__",
+            "-DSIRKIT_DISABLE_SIMD",
+            "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+            "-std=c++23",
+            "-O2",
+            "/tmp/sirkit-persistent-root-api-20261116/yuki2295/build/gcc-skip-portable.cpp",
+            "-o",
+            "/tmp/sirkit-persistent-root-api-20261116/yuki2295/build/gcc-skip-portable"
+          ],
+          "compiler_version": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+          "compiler_sha256": "e6718f7e0c7d057c3ff77b550c603da9bc4030e3ede3c053705acce1293dbe4d",
+          "source_sha256": "14e35dccddafbaebb629d6fd7b32dd539fe87f89a7a90dfc7862d60c96f45d74",
+          "library_hashes": {
+            "DataStructure/persistent-union-find.cpp": "df9100eb08ebfa735c318c374aa634ced94af8ce175834c149d566002fc12970"
+          },
+          "build_exit": 0,
+          "build_seconds": 0.6411838110070676,
+          "cases": [
+            {
+              "name": "sample1",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "c8190d1ff0eb1aa76cb3472baeb4e0941d0da8929a951c8c3f9205afaa19797c"
+            },
+            {
+              "name": "sample2",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "f37c62f5f32ed53909615fd752c392274e145c6d6df0d6ee37a2a498b37c9b54"
+            },
+            {
+              "name": "sample3",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "1d2129fd5ce9a8dbd0c541480ae30994e6f566dfb39ea216b2c6121fa654d3c8"
+            },
+            {
+              "name": "single_vertex",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "6a33a504c8d16194914401f4f46532de96e1b63119fc5981341c6b65c6c27096"
+            },
+            {
+              "name": "empty_graph",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "9305b61456928dd55a2cb30619b38be328c2e4eff73e333decd6c01623d232d2"
+            },
+            {
+              "name": "zero_and_equal",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "d0c5d56cd8ed40805691571b7c49946b4b125aacedd65c489c3dce9b7bcd7b0b"
+            },
+            {
+              "name": "mod_large_weights",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "51e766e1275fdafe5d1fe6854590e377e9dcf9f2b6e92043b29db2769747646f"
+            },
+            {
+              "name": "random00",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "4635a623bd9a3d2d358ab681dbd0153f914fc02007d1dfbb514c046c75ea7568"
+            },
+            {
+              "name": "random01",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "5a0d4abe5b39e9946b0e330d80929878d51b54d469957d8f8ca855ab64a417a8"
+            },
+            {
+              "name": "random02",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "124a31f36deffd43e3be718c3f3b67ee008a61dc4457e0fe4db888806c570d56"
+            },
+            {
+              "name": "random03",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "6637f47e87a8162627dc0e3002a03c802e5d89cf12d79865cda27efc185c2679"
+            },
+            {
+              "name": "random04",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "bcffd56946225a3ad9a5f8094d52e7b329baa3c9833e1056df970c697c70116f"
+            },
+            {
+              "name": "random05",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "190a70b4572f1cfe81885848306a16bc087829694b93cfde67f9adfd2d4df80b"
+            },
+            {
+              "name": "random06",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "7b688f41c6e5661d3804725b54a8467cc51998f097c2ceeec3be7030fdd3f6e1"
+            },
+            {
+              "name": "random07",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "d0549639c15a922f2621301a0623a5de54d06c86de9d72a3307f8d45ee7d6ad0"
+            },
+            {
+              "name": "random08",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "82e507853789ce094ddabc9745a3ec34bd28b438bd9cc31fe03e651ac1af5d6d"
+            },
+            {
+              "name": "random09",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "c36277c56925bd43402493fd938840397e924c94be274d3be474673e54aa1fa9"
+            },
+            {
+              "name": "random10",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "db635c653c5eeca31f191827303a95cf7bd3c8c2de6c541a713c6164eaec9a7c"
+            },
+            {
+              "name": "random11",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "12b98c146980eab96cc15b36eb4689cdb6672fb82ba9d0a6114c5d9d0ed67369"
+            },
+            {
+              "name": "random12",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "3dd3dd5e5e9ec8a4dfff33c17895133a493dc497607f2f4fca698f809cc3e42b"
+            },
+            {
+              "name": "random13",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "491c6fa1b973679d13726adde0640ef901aedf858731d0b3453df98a17d57ab8"
+            },
+            {
+              "name": "random14",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "f673cfb0d63a493394f9e3c942dac5e439dea6741a33ad49984b32fec4bd2b31"
+            },
+            {
+              "name": "random15",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "5e2ea70a22781996290bb003942947fa07ce1d621cfeb67482377d30a61d68de"
+            },
+            {
+              "name": "random16",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "34abfd07dcd2e46dd9ceba12aac9cc29c1d9915893328d7926ded74f9274dfd3"
+            },
+            {
+              "name": "random17",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "f0202650eac0f2d80b406dc6709059913e23a34962a90d73dd1b58edbf4ae30f"
+            },
+            {
+              "name": "random18",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "2468d154808508e5d122fc2c464c1276d44413f1ebafdd0ec514adf385b70b30"
+            },
+            {
+              "name": "random19",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "f7981b2fedb89a75b5d2750e57cc07d64c7878cbb3e9cb0b42f77e860e3b48da"
+            },
+            {
+              "name": "random20",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "0c3f7003e59d924ec0f09452ef4daa40c2bbac8c691f8105da07c94f4f55fb58"
+            },
+            {
+              "name": "random21",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "9f7768fcc1f9215ea65816e382172827f6082b3ee00af26fedcbb09bc0156be0"
+            },
+            {
+              "name": "random22",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "dfd563f6438c96de03251dce8bcdad1eddd501405ca71f72c08e87e9cb8bc392"
+            },
+            {
+              "name": "random23",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "a9ba798a49392798191bcf9f897aba7204bdea9e8651a81072f3763a6f9256ee"
+            },
+            {
+              "name": "random24",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "80fd9bd72397eec09f51602ccbe23e25feb10ee19aff4cb2a3fd1e91daf0c164"
+            },
+            {
+              "name": "random25",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "52dc322e4f128f25215e89ecd08a3bd926375007b885dec9aa565e878d216e64"
+            },
+            {
+              "name": "random26",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "cb1a36bd282d3f340a7eefb27327c8b26b656c5ade043da6670a6d75da6faec2"
+            },
+            {
+              "name": "random27",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "d35a0c096d98cda0d0f80883b8770fd6fc2b3280031475fd2b059b375650bff1"
+            },
+            {
+              "name": "random28",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "5eb15a3341f223447f4a3813065a0e9cf8fc4ac55b9af7e242d4dfe313562797"
+            },
+            {
+              "name": "random29",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "d41006cc6d2972be4f288ec2c049b7dabb7d4e45e644476a481ac3580db5f4a3"
+            },
+            {
+              "name": "random30",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "b072bc1b8bb1763f34b7628133af986a7e2859c5a74afbd4bf326abb6c93f045"
+            },
+            {
+              "name": "random31",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "6f625ef6294f46585929a2f510851e0784bb2be385aecac19bfd9ec9aebcd683"
+            },
+            {
+              "name": "random32",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "4c08968f4f48cc95cd373929d04b4877edb330ccb1578a308620db15261f6e17"
+            },
+            {
+              "name": "random33",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "c1d3b5c23a9c727557edc4d5bea81a6ef93b10d2afdddca507f78c3f0d0f17e6"
+            },
+            {
+              "name": "random34",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "5734c36abddea3495ba83e83ef5cd296256f29c1268211490472f7ba179c75c5"
+            },
+            {
+              "name": "random35",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "ba4d69810be42ecb6b36d8ceed8a94b701d50bf4112a1fc3fc6924f004da207d"
+            },
+            {
+              "name": "random36",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "0c103e86c8a2a244db85744fd39fcf8efeed7af938579c7d8a3a8d0512cd76e0"
+            },
+            {
+              "name": "random37",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "2b15f0d519a6ea85d5b6848fd9d42d75862e2fa632bfcc592a2f457defa8aae3"
+            },
+            {
+              "name": "random38",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "b5ae59dd71fa10e40bd47c66d44402118fbab40abf8a104cd6cef8d2651cdc46"
+            },
+            {
+              "name": "random39",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "d912fe3660e8399807db234ec011f4d3c0662090209d8d3bb489f11f698e64ab"
+            },
+            {
+              "name": "random40",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "fa30e060e11da87938cf175afbfec0d136bf88f5ba8a6f14a1fddb4bcd58574c"
+            },
+            {
+              "name": "random41",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "393105fb68e6d9eb5f579eb9e01062c68f6eea3a6a4751332d8055d17925163d"
+            },
+            {
+              "name": "random42",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "2d23c0702c265cff0bd3e17b654c7f546af624d7bf40bd10ceb798c87471d37f"
+            },
+            {
+              "name": "random43",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "846264c1a14c19ad1da23ba41fe449b3779324b81bc6db5552621d2aa7c835a9"
+            },
+            {
+              "name": "random44",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "06b29f4a7c9aeef8e05c8b7fa338e354249fc3f2b36ad6ba856e8ddfa693cc8a"
+            },
+            {
+              "name": "random45",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "d7df558aaf1970dd0c45ac72d7b4e27101920d35473fcb02f4fe2815c4933454"
+            },
+            {
+              "name": "random46",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "e7bb21db35d0f9903d795762b17caff7745b3313be37a961cc540d142da28e1b"
+            },
+            {
+              "name": "random47",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "2543d1d4443f8a3b47f2665346d65236a1e930ea8387a21486e819551e81ec94"
+            },
+            {
+              "name": "random48",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "daf773ea282867a92ef3120c81d9f746327c9172c2c53483ec4291a6977b6feb"
+            },
+            {
+              "name": "random49",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "5fb4b42532e65f22484f847caaec57db58de37948d502a49fa120911af48b4e4"
+            },
+            {
+              "name": "random50",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "8feeba4542a12dc27b5e74801afd968f917f1bcef3bbe099d085d2a5cc73caea"
+            },
+            {
+              "name": "random51",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "fa2f423cec3f0c5e6578d97d508266308a6efb3fe7f1eb2e76b383dd32e5872f"
+            },
+            {
+              "name": "random52",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "32641dbbfd56dc195a007c909e21edb8095399ccbed97a5d0d9740be937df21a"
+            },
+            {
+              "name": "random53",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "4e33a6f9e8026214efc3cb4c5bd98e184668741601c409464829923de51188fc"
+            },
+            {
+              "name": "random54",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "be0512436563cc8bcbfe68da3de4a2935c47471198e3febd8a506823d0fcff8c"
+            },
+            {
+              "name": "random55",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "b3a9ce456fd5d140ab6ca7ea85be97d9198c6305131f3e52d5f17667ff9d0ca9"
+            },
+            {
+              "name": "random56",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "9eab3d494ecc40d5e731b1207076401a6207ee8608c102f388610347cf36f095"
+            },
+            {
+              "name": "random57",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "bc12b4f7935f8324d94db1536139d8fd14c91b76cc99c9788284ed399efad40d"
+            },
+            {
+              "name": "random58",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "0e0143e5087ca6be8b511df41c12215884d6a40c361e19c132f2adb9eb9a204c"
+            },
+            {
+              "name": "random59",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "e0652c22fa8c865fad979aa6a89f98c20e0bf933a3b76156f2be7d9a2fc5001e"
+            },
+            {
+              "name": "random60",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "b98c9507fdab7358e2a0cce19fc150504fc7be33cec638180017b014e2bb632d"
+            },
+            {
+              "name": "random61",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "407218867786643a1bdaa96dc32925c587d37962598347c81d55534d4b075eba"
+            },
+            {
+              "name": "random62",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "c51ce4239a8b43973a65daba7d98d7a41e09e7fb4640224c16c7972c39ac3768"
+            },
+            {
+              "name": "random63",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "707adaa66e8757d8fc932627e0b60750953d9b1def7506c59f07e8b0fafd39e1"
+            },
+            {
+              "name": "random64",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "ea3f77eaa31cd6bbf94b62d8f457c4610854e99a6e421a6d2ede9f555618add4"
+            },
+            {
+              "name": "random65",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "e4d7b8501f47380321249e8473fa4924c39af3cf48ebd7fb693784eb3be5baf5"
+            },
+            {
+              "name": "random66",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "c04be198236d98cdc954a4fa7a86f15eb3ad59c8e5e487e47f2f5eebe2401931"
+            },
+            {
+              "name": "random67",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "0f978a5a10f7858b65270d1b8131cc83eab343d6970414cc38f84b7b00fc5ac1"
+            },
+            {
+              "name": "random68",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "fb35afb527910223f37559f950d36aca36d30c169370aef7edc663dc37b23bb8"
+            },
+            {
+              "name": "random69",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "b15f27a4b7f8ce24b8db487b6887692e970702e8201935ca1603c7a6d833e35b"
+            },
+            {
+              "name": "random70",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "05bd9b1ffe1fffdb2a040fe82edf8fb7fdc3cfaf0edefac8e279a65c6c8891a3"
+            },
+            {
+              "name": "random71",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "a3c0225e43da6706821dd7ac67bfde83ccb4f593df90530c63bf0e6d05b901d1"
+            },
+            {
+              "name": "random72",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "121a209f174a193e9c53b333ad4148ff3b62eeb8830307fa70aa4d19e3680b33"
+            },
+            {
+              "name": "random73",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "eacd6549307f028a657aa595c0877993dbcdbba0e79c305c552dd2aeefa0b81e"
+            },
+            {
+              "name": "random74",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "bbd2cb8fa6920e813cea4b8d22887b639b5dea84bd8e452826e36165182d91d2"
+            },
+            {
+              "name": "random75",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "2468d154808508e5d122fc2c464c1276d44413f1ebafdd0ec514adf385b70b30"
+            },
+            {
+              "name": "random76",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "7e90a7a463569ffbfca2e94950a18c036f434715aec47a7e59b45a42fa78cf7f"
+            },
+            {
+              "name": "random77",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "11c9ccac797f02d47663bbad57270ae098c945a8591dfadf3fc880e341d3dfa4"
+            },
+            {
+              "name": "random78",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "e1469e995d9ddb82801339a7a79082604c3fb14c00e10f3fe8e928cf290a3832"
+            },
+            {
+              "name": "random79",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "c2a6abc437b47d8b38dc43568d58dc03d229db3ecea377c584c015ad7813214d"
+            }
+          ],
+          "passed": true
+        },
+        {
+          "name": "clang-checked-native",
+          "command": [
+            "/usr/bin/clang++-21",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-std=c++23",
+            "-O2",
+            "/tmp/sirkit-persistent-root-api-20261116/yuki2295/build/clang-checked-native.cpp",
+            "-o",
+            "/tmp/sirkit-persistent-root-api-20261116/yuki2295/build/clang-checked-native"
+          ],
+          "compiler_version": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+          "compiler_sha256": "412bbe8c60571a1eb06f48fde89635033621caeb01a9b4ee76d46711bae8e932",
+          "source_sha256": "8fa511989a814b9d91cc8d3ccb3dea942b869ba280094c49974a1d4122eee915",
+          "library_hashes": {
+            "DataStructure/persistent-union-find.cpp": "df9100eb08ebfa735c318c374aa634ced94af8ce175834c149d566002fc12970"
+          },
+          "build_exit": 0,
+          "build_seconds": 0.8246128219907405,
+          "cases": [
+            {
+              "name": "sample1",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "c8190d1ff0eb1aa76cb3472baeb4e0941d0da8929a951c8c3f9205afaa19797c"
+            },
+            {
+              "name": "sample2",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "f37c62f5f32ed53909615fd752c392274e145c6d6df0d6ee37a2a498b37c9b54"
+            },
+            {
+              "name": "sample3",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "1d2129fd5ce9a8dbd0c541480ae30994e6f566dfb39ea216b2c6121fa654d3c8"
+            },
+            {
+              "name": "single_vertex",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "6a33a504c8d16194914401f4f46532de96e1b63119fc5981341c6b65c6c27096"
+            },
+            {
+              "name": "empty_graph",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "9305b61456928dd55a2cb30619b38be328c2e4eff73e333decd6c01623d232d2"
+            },
+            {
+              "name": "zero_and_equal",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "d0c5d56cd8ed40805691571b7c49946b4b125aacedd65c489c3dce9b7bcd7b0b"
+            },
+            {
+              "name": "mod_large_weights",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "51e766e1275fdafe5d1fe6854590e377e9dcf9f2b6e92043b29db2769747646f"
+            },
+            {
+              "name": "random00",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "4635a623bd9a3d2d358ab681dbd0153f914fc02007d1dfbb514c046c75ea7568"
+            },
+            {
+              "name": "random01",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "5a0d4abe5b39e9946b0e330d80929878d51b54d469957d8f8ca855ab64a417a8"
+            },
+            {
+              "name": "random02",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "124a31f36deffd43e3be718c3f3b67ee008a61dc4457e0fe4db888806c570d56"
+            },
+            {
+              "name": "random03",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "6637f47e87a8162627dc0e3002a03c802e5d89cf12d79865cda27efc185c2679"
+            },
+            {
+              "name": "random04",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "bcffd56946225a3ad9a5f8094d52e7b329baa3c9833e1056df970c697c70116f"
+            },
+            {
+              "name": "random05",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "190a70b4572f1cfe81885848306a16bc087829694b93cfde67f9adfd2d4df80b"
+            },
+            {
+              "name": "random06",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "7b688f41c6e5661d3804725b54a8467cc51998f097c2ceeec3be7030fdd3f6e1"
+            },
+            {
+              "name": "random07",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "d0549639c15a922f2621301a0623a5de54d06c86de9d72a3307f8d45ee7d6ad0"
+            },
+            {
+              "name": "random08",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "82e507853789ce094ddabc9745a3ec34bd28b438bd9cc31fe03e651ac1af5d6d"
+            },
+            {
+              "name": "random09",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "c36277c56925bd43402493fd938840397e924c94be274d3be474673e54aa1fa9"
+            },
+            {
+              "name": "random10",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "db635c653c5eeca31f191827303a95cf7bd3c8c2de6c541a713c6164eaec9a7c"
+            },
+            {
+              "name": "random11",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "12b98c146980eab96cc15b36eb4689cdb6672fb82ba9d0a6114c5d9d0ed67369"
+            },
+            {
+              "name": "random12",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "3dd3dd5e5e9ec8a4dfff33c17895133a493dc497607f2f4fca698f809cc3e42b"
+            },
+            {
+              "name": "random13",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "491c6fa1b973679d13726adde0640ef901aedf858731d0b3453df98a17d57ab8"
+            },
+            {
+              "name": "random14",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "f673cfb0d63a493394f9e3c942dac5e439dea6741a33ad49984b32fec4bd2b31"
+            },
+            {
+              "name": "random15",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "5e2ea70a22781996290bb003942947fa07ce1d621cfeb67482377d30a61d68de"
+            },
+            {
+              "name": "random16",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "34abfd07dcd2e46dd9ceba12aac9cc29c1d9915893328d7926ded74f9274dfd3"
+            },
+            {
+              "name": "random17",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "f0202650eac0f2d80b406dc6709059913e23a34962a90d73dd1b58edbf4ae30f"
+            },
+            {
+              "name": "random18",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "2468d154808508e5d122fc2c464c1276d44413f1ebafdd0ec514adf385b70b30"
+            },
+            {
+              "name": "random19",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "f7981b2fedb89a75b5d2750e57cc07d64c7878cbb3e9cb0b42f77e860e3b48da"
+            },
+            {
+              "name": "random20",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "0c3f7003e59d924ec0f09452ef4daa40c2bbac8c691f8105da07c94f4f55fb58"
+            },
+            {
+              "name": "random21",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "9f7768fcc1f9215ea65816e382172827f6082b3ee00af26fedcbb09bc0156be0"
+            },
+            {
+              "name": "random22",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "dfd563f6438c96de03251dce8bcdad1eddd501405ca71f72c08e87e9cb8bc392"
+            },
+            {
+              "name": "random23",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "a9ba798a49392798191bcf9f897aba7204bdea9e8651a81072f3763a6f9256ee"
+            },
+            {
+              "name": "random24",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "80fd9bd72397eec09f51602ccbe23e25feb10ee19aff4cb2a3fd1e91daf0c164"
+            },
+            {
+              "name": "random25",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "52dc322e4f128f25215e89ecd08a3bd926375007b885dec9aa565e878d216e64"
+            },
+            {
+              "name": "random26",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "cb1a36bd282d3f340a7eefb27327c8b26b656c5ade043da6670a6d75da6faec2"
+            },
+            {
+              "name": "random27",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "d35a0c096d98cda0d0f80883b8770fd6fc2b3280031475fd2b059b375650bff1"
+            },
+            {
+              "name": "random28",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "5eb15a3341f223447f4a3813065a0e9cf8fc4ac55b9af7e242d4dfe313562797"
+            },
+            {
+              "name": "random29",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "d41006cc6d2972be4f288ec2c049b7dabb7d4e45e644476a481ac3580db5f4a3"
+            },
+            {
+              "name": "random30",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "b072bc1b8bb1763f34b7628133af986a7e2859c5a74afbd4bf326abb6c93f045"
+            },
+            {
+              "name": "random31",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "6f625ef6294f46585929a2f510851e0784bb2be385aecac19bfd9ec9aebcd683"
+            },
+            {
+              "name": "random32",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "4c08968f4f48cc95cd373929d04b4877edb330ccb1578a308620db15261f6e17"
+            },
+            {
+              "name": "random33",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "c1d3b5c23a9c727557edc4d5bea81a6ef93b10d2afdddca507f78c3f0d0f17e6"
+            },
+            {
+              "name": "random34",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "5734c36abddea3495ba83e83ef5cd296256f29c1268211490472f7ba179c75c5"
+            },
+            {
+              "name": "random35",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "ba4d69810be42ecb6b36d8ceed8a94b701d50bf4112a1fc3fc6924f004da207d"
+            },
+            {
+              "name": "random36",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "0c103e86c8a2a244db85744fd39fcf8efeed7af938579c7d8a3a8d0512cd76e0"
+            },
+            {
+              "name": "random37",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "2b15f0d519a6ea85d5b6848fd9d42d75862e2fa632bfcc592a2f457defa8aae3"
+            },
+            {
+              "name": "random38",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "b5ae59dd71fa10e40bd47c66d44402118fbab40abf8a104cd6cef8d2651cdc46"
+            },
+            {
+              "name": "random39",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "d912fe3660e8399807db234ec011f4d3c0662090209d8d3bb489f11f698e64ab"
+            },
+            {
+              "name": "random40",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "fa30e060e11da87938cf175afbfec0d136bf88f5ba8a6f14a1fddb4bcd58574c"
+            },
+            {
+              "name": "random41",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "393105fb68e6d9eb5f579eb9e01062c68f6eea3a6a4751332d8055d17925163d"
+            },
+            {
+              "name": "random42",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "2d23c0702c265cff0bd3e17b654c7f546af624d7bf40bd10ceb798c87471d37f"
+            },
+            {
+              "name": "random43",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "846264c1a14c19ad1da23ba41fe449b3779324b81bc6db5552621d2aa7c835a9"
+            },
+            {
+              "name": "random44",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "06b29f4a7c9aeef8e05c8b7fa338e354249fc3f2b36ad6ba856e8ddfa693cc8a"
+            },
+            {
+              "name": "random45",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "d7df558aaf1970dd0c45ac72d7b4e27101920d35473fcb02f4fe2815c4933454"
+            },
+            {
+              "name": "random46",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "e7bb21db35d0f9903d795762b17caff7745b3313be37a961cc540d142da28e1b"
+            },
+            {
+              "name": "random47",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "2543d1d4443f8a3b47f2665346d65236a1e930ea8387a21486e819551e81ec94"
+            },
+            {
+              "name": "random48",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "daf773ea282867a92ef3120c81d9f746327c9172c2c53483ec4291a6977b6feb"
+            },
+            {
+              "name": "random49",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "5fb4b42532e65f22484f847caaec57db58de37948d502a49fa120911af48b4e4"
+            },
+            {
+              "name": "random50",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "8feeba4542a12dc27b5e74801afd968f917f1bcef3bbe099d085d2a5cc73caea"
+            },
+            {
+              "name": "random51",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "fa2f423cec3f0c5e6578d97d508266308a6efb3fe7f1eb2e76b383dd32e5872f"
+            },
+            {
+              "name": "random52",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "32641dbbfd56dc195a007c909e21edb8095399ccbed97a5d0d9740be937df21a"
+            },
+            {
+              "name": "random53",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "4e33a6f9e8026214efc3cb4c5bd98e184668741601c409464829923de51188fc"
+            },
+            {
+              "name": "random54",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "be0512436563cc8bcbfe68da3de4a2935c47471198e3febd8a506823d0fcff8c"
+            },
+            {
+              "name": "random55",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "b3a9ce456fd5d140ab6ca7ea85be97d9198c6305131f3e52d5f17667ff9d0ca9"
+            },
+            {
+              "name": "random56",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "9eab3d494ecc40d5e731b1207076401a6207ee8608c102f388610347cf36f095"
+            },
+            {
+              "name": "random57",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "bc12b4f7935f8324d94db1536139d8fd14c91b76cc99c9788284ed399efad40d"
+            },
+            {
+              "name": "random58",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "0e0143e5087ca6be8b511df41c12215884d6a40c361e19c132f2adb9eb9a204c"
+            },
+            {
+              "name": "random59",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "e0652c22fa8c865fad979aa6a89f98c20e0bf933a3b76156f2be7d9a2fc5001e"
+            },
+            {
+              "name": "random60",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "b98c9507fdab7358e2a0cce19fc150504fc7be33cec638180017b014e2bb632d"
+            },
+            {
+              "name": "random61",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "407218867786643a1bdaa96dc32925c587d37962598347c81d55534d4b075eba"
+            },
+            {
+              "name": "random62",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "c51ce4239a8b43973a65daba7d98d7a41e09e7fb4640224c16c7972c39ac3768"
+            },
+            {
+              "name": "random63",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "707adaa66e8757d8fc932627e0b60750953d9b1def7506c59f07e8b0fafd39e1"
+            },
+            {
+              "name": "random64",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "ea3f77eaa31cd6bbf94b62d8f457c4610854e99a6e421a6d2ede9f555618add4"
+            },
+            {
+              "name": "random65",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "e4d7b8501f47380321249e8473fa4924c39af3cf48ebd7fb693784eb3be5baf5"
+            },
+            {
+              "name": "random66",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "c04be198236d98cdc954a4fa7a86f15eb3ad59c8e5e487e47f2f5eebe2401931"
+            },
+            {
+              "name": "random67",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "0f978a5a10f7858b65270d1b8131cc83eab343d6970414cc38f84b7b00fc5ac1"
+            },
+            {
+              "name": "random68",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "fb35afb527910223f37559f950d36aca36d30c169370aef7edc663dc37b23bb8"
+            },
+            {
+              "name": "random69",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "b15f27a4b7f8ce24b8db487b6887692e970702e8201935ca1603c7a6d833e35b"
+            },
+            {
+              "name": "random70",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "05bd9b1ffe1fffdb2a040fe82edf8fb7fdc3cfaf0edefac8e279a65c6c8891a3"
+            },
+            {
+              "name": "random71",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "a3c0225e43da6706821dd7ac67bfde83ccb4f593df90530c63bf0e6d05b901d1"
+            },
+            {
+              "name": "random72",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "121a209f174a193e9c53b333ad4148ff3b62eeb8830307fa70aa4d19e3680b33"
+            },
+            {
+              "name": "random73",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "eacd6549307f028a657aa595c0877993dbcdbba0e79c305c552dd2aeefa0b81e"
+            },
+            {
+              "name": "random74",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "bbd2cb8fa6920e813cea4b8d22887b639b5dea84bd8e452826e36165182d91d2"
+            },
+            {
+              "name": "random75",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "2468d154808508e5d122fc2c464c1276d44413f1ebafdd0ec514adf385b70b30"
+            },
+            {
+              "name": "random76",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "7e90a7a463569ffbfca2e94950a18c036f434715aec47a7e59b45a42fa78cf7f"
+            },
+            {
+              "name": "random77",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "11c9ccac797f02d47663bbad57270ae098c945a8591dfadf3fc880e341d3dfa4"
+            },
+            {
+              "name": "random78",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "e1469e995d9ddb82801339a7a79082604c3fb14c00e10f3fe8e928cf290a3832"
+            },
+            {
+              "name": "random79",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "c2a6abc437b47d8b38dc43568d58dc03d229db3ecea377c584c015ad7813214d"
+            }
+          ],
+          "passed": true
+        },
+        {
+          "name": "clang-checked-portable",
+          "command": [
+            "/usr/bin/clang++-21",
+            "-U__SIZEOF_INT128__",
+            "-DSIRKIT_DISABLE_SIMD",
+            "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-std=c++23",
+            "-O2",
+            "/tmp/sirkit-persistent-root-api-20261116/yuki2295/build/clang-checked-portable.cpp",
+            "-o",
+            "/tmp/sirkit-persistent-root-api-20261116/yuki2295/build/clang-checked-portable"
+          ],
+          "compiler_version": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+          "compiler_sha256": "412bbe8c60571a1eb06f48fde89635033621caeb01a9b4ee76d46711bae8e932",
+          "source_sha256": "8fa511989a814b9d91cc8d3ccb3dea942b869ba280094c49974a1d4122eee915",
+          "library_hashes": {
+            "DataStructure/persistent-union-find.cpp": "df9100eb08ebfa735c318c374aa634ced94af8ce175834c149d566002fc12970"
+          },
+          "build_exit": 0,
+          "build_seconds": 0.5924711499974364,
+          "cases": [
+            {
+              "name": "sample1",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "c8190d1ff0eb1aa76cb3472baeb4e0941d0da8929a951c8c3f9205afaa19797c"
+            },
+            {
+              "name": "sample2",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "f37c62f5f32ed53909615fd752c392274e145c6d6df0d6ee37a2a498b37c9b54"
+            },
+            {
+              "name": "sample3",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "1d2129fd5ce9a8dbd0c541480ae30994e6f566dfb39ea216b2c6121fa654d3c8"
+            },
+            {
+              "name": "single_vertex",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "6a33a504c8d16194914401f4f46532de96e1b63119fc5981341c6b65c6c27096"
+            },
+            {
+              "name": "empty_graph",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "9305b61456928dd55a2cb30619b38be328c2e4eff73e333decd6c01623d232d2"
+            },
+            {
+              "name": "zero_and_equal",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "d0c5d56cd8ed40805691571b7c49946b4b125aacedd65c489c3dce9b7bcd7b0b"
+            },
+            {
+              "name": "mod_large_weights",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "51e766e1275fdafe5d1fe6854590e377e9dcf9f2b6e92043b29db2769747646f"
+            },
+            {
+              "name": "random00",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "4635a623bd9a3d2d358ab681dbd0153f914fc02007d1dfbb514c046c75ea7568"
+            },
+            {
+              "name": "random01",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "5a0d4abe5b39e9946b0e330d80929878d51b54d469957d8f8ca855ab64a417a8"
+            },
+            {
+              "name": "random02",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "124a31f36deffd43e3be718c3f3b67ee008a61dc4457e0fe4db888806c570d56"
+            },
+            {
+              "name": "random03",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "6637f47e87a8162627dc0e3002a03c802e5d89cf12d79865cda27efc185c2679"
+            },
+            {
+              "name": "random04",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "bcffd56946225a3ad9a5f8094d52e7b329baa3c9833e1056df970c697c70116f"
+            },
+            {
+              "name": "random05",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "190a70b4572f1cfe81885848306a16bc087829694b93cfde67f9adfd2d4df80b"
+            },
+            {
+              "name": "random06",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "7b688f41c6e5661d3804725b54a8467cc51998f097c2ceeec3be7030fdd3f6e1"
+            },
+            {
+              "name": "random07",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "d0549639c15a922f2621301a0623a5de54d06c86de9d72a3307f8d45ee7d6ad0"
+            },
+            {
+              "name": "random08",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "82e507853789ce094ddabc9745a3ec34bd28b438bd9cc31fe03e651ac1af5d6d"
+            },
+            {
+              "name": "random09",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "c36277c56925bd43402493fd938840397e924c94be274d3be474673e54aa1fa9"
+            },
+            {
+              "name": "random10",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "db635c653c5eeca31f191827303a95cf7bd3c8c2de6c541a713c6164eaec9a7c"
+            },
+            {
+              "name": "random11",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "12b98c146980eab96cc15b36eb4689cdb6672fb82ba9d0a6114c5d9d0ed67369"
+            },
+            {
+              "name": "random12",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "3dd3dd5e5e9ec8a4dfff33c17895133a493dc497607f2f4fca698f809cc3e42b"
+            },
+            {
+              "name": "random13",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "491c6fa1b973679d13726adde0640ef901aedf858731d0b3453df98a17d57ab8"
+            },
+            {
+              "name": "random14",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "f673cfb0d63a493394f9e3c942dac5e439dea6741a33ad49984b32fec4bd2b31"
+            },
+            {
+              "name": "random15",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "5e2ea70a22781996290bb003942947fa07ce1d621cfeb67482377d30a61d68de"
+            },
+            {
+              "name": "random16",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "34abfd07dcd2e46dd9ceba12aac9cc29c1d9915893328d7926ded74f9274dfd3"
+            },
+            {
+              "name": "random17",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "f0202650eac0f2d80b406dc6709059913e23a34962a90d73dd1b58edbf4ae30f"
+            },
+            {
+              "name": "random18",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "2468d154808508e5d122fc2c464c1276d44413f1ebafdd0ec514adf385b70b30"
+            },
+            {
+              "name": "random19",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "f7981b2fedb89a75b5d2750e57cc07d64c7878cbb3e9cb0b42f77e860e3b48da"
+            },
+            {
+              "name": "random20",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "0c3f7003e59d924ec0f09452ef4daa40c2bbac8c691f8105da07c94f4f55fb58"
+            },
+            {
+              "name": "random21",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "9f7768fcc1f9215ea65816e382172827f6082b3ee00af26fedcbb09bc0156be0"
+            },
+            {
+              "name": "random22",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "dfd563f6438c96de03251dce8bcdad1eddd501405ca71f72c08e87e9cb8bc392"
+            },
+            {
+              "name": "random23",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "a9ba798a49392798191bcf9f897aba7204bdea9e8651a81072f3763a6f9256ee"
+            },
+            {
+              "name": "random24",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "80fd9bd72397eec09f51602ccbe23e25feb10ee19aff4cb2a3fd1e91daf0c164"
+            },
+            {
+              "name": "random25",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "52dc322e4f128f25215e89ecd08a3bd926375007b885dec9aa565e878d216e64"
+            },
+            {
+              "name": "random26",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "cb1a36bd282d3f340a7eefb27327c8b26b656c5ade043da6670a6d75da6faec2"
+            },
+            {
+              "name": "random27",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "d35a0c096d98cda0d0f80883b8770fd6fc2b3280031475fd2b059b375650bff1"
+            },
+            {
+              "name": "random28",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "5eb15a3341f223447f4a3813065a0e9cf8fc4ac55b9af7e242d4dfe313562797"
+            },
+            {
+              "name": "random29",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "d41006cc6d2972be4f288ec2c049b7dabb7d4e45e644476a481ac3580db5f4a3"
+            },
+            {
+              "name": "random30",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "b072bc1b8bb1763f34b7628133af986a7e2859c5a74afbd4bf326abb6c93f045"
+            },
+            {
+              "name": "random31",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "6f625ef6294f46585929a2f510851e0784bb2be385aecac19bfd9ec9aebcd683"
+            },
+            {
+              "name": "random32",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "4c08968f4f48cc95cd373929d04b4877edb330ccb1578a308620db15261f6e17"
+            },
+            {
+              "name": "random33",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "c1d3b5c23a9c727557edc4d5bea81a6ef93b10d2afdddca507f78c3f0d0f17e6"
+            },
+            {
+              "name": "random34",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "5734c36abddea3495ba83e83ef5cd296256f29c1268211490472f7ba179c75c5"
+            },
+            {
+              "name": "random35",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "ba4d69810be42ecb6b36d8ceed8a94b701d50bf4112a1fc3fc6924f004da207d"
+            },
+            {
+              "name": "random36",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "0c103e86c8a2a244db85744fd39fcf8efeed7af938579c7d8a3a8d0512cd76e0"
+            },
+            {
+              "name": "random37",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "2b15f0d519a6ea85d5b6848fd9d42d75862e2fa632bfcc592a2f457defa8aae3"
+            },
+            {
+              "name": "random38",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "b5ae59dd71fa10e40bd47c66d44402118fbab40abf8a104cd6cef8d2651cdc46"
+            },
+            {
+              "name": "random39",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "d912fe3660e8399807db234ec011f4d3c0662090209d8d3bb489f11f698e64ab"
+            },
+            {
+              "name": "random40",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "fa30e060e11da87938cf175afbfec0d136bf88f5ba8a6f14a1fddb4bcd58574c"
+            },
+            {
+              "name": "random41",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "393105fb68e6d9eb5f579eb9e01062c68f6eea3a6a4751332d8055d17925163d"
+            },
+            {
+              "name": "random42",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "2d23c0702c265cff0bd3e17b654c7f546af624d7bf40bd10ceb798c87471d37f"
+            },
+            {
+              "name": "random43",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "846264c1a14c19ad1da23ba41fe449b3779324b81bc6db5552621d2aa7c835a9"
+            },
+            {
+              "name": "random44",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "06b29f4a7c9aeef8e05c8b7fa338e354249fc3f2b36ad6ba856e8ddfa693cc8a"
+            },
+            {
+              "name": "random45",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "d7df558aaf1970dd0c45ac72d7b4e27101920d35473fcb02f4fe2815c4933454"
+            },
+            {
+              "name": "random46",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "e7bb21db35d0f9903d795762b17caff7745b3313be37a961cc540d142da28e1b"
+            },
+            {
+              "name": "random47",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "2543d1d4443f8a3b47f2665346d65236a1e930ea8387a21486e819551e81ec94"
+            },
+            {
+              "name": "random48",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "daf773ea282867a92ef3120c81d9f746327c9172c2c53483ec4291a6977b6feb"
+            },
+            {
+              "name": "random49",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "5fb4b42532e65f22484f847caaec57db58de37948d502a49fa120911af48b4e4"
+            },
+            {
+              "name": "random50",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "8feeba4542a12dc27b5e74801afd968f917f1bcef3bbe099d085d2a5cc73caea"
+            },
+            {
+              "name": "random51",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "fa2f423cec3f0c5e6578d97d508266308a6efb3fe7f1eb2e76b383dd32e5872f"
+            },
+            {
+              "name": "random52",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "32641dbbfd56dc195a007c909e21edb8095399ccbed97a5d0d9740be937df21a"
+            },
+            {
+              "name": "random53",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "4e33a6f9e8026214efc3cb4c5bd98e184668741601c409464829923de51188fc"
+            },
+            {
+              "name": "random54",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "be0512436563cc8bcbfe68da3de4a2935c47471198e3febd8a506823d0fcff8c"
+            },
+            {
+              "name": "random55",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "b3a9ce456fd5d140ab6ca7ea85be97d9198c6305131f3e52d5f17667ff9d0ca9"
+            },
+            {
+              "name": "random56",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "9eab3d494ecc40d5e731b1207076401a6207ee8608c102f388610347cf36f095"
+            },
+            {
+              "name": "random57",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "bc12b4f7935f8324d94db1536139d8fd14c91b76cc99c9788284ed399efad40d"
+            },
+            {
+              "name": "random58",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "0e0143e5087ca6be8b511df41c12215884d6a40c361e19c132f2adb9eb9a204c"
+            },
+            {
+              "name": "random59",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "e0652c22fa8c865fad979aa6a89f98c20e0bf933a3b76156f2be7d9a2fc5001e"
+            },
+            {
+              "name": "random60",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "b98c9507fdab7358e2a0cce19fc150504fc7be33cec638180017b014e2bb632d"
+            },
+            {
+              "name": "random61",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "407218867786643a1bdaa96dc32925c587d37962598347c81d55534d4b075eba"
+            },
+            {
+              "name": "random62",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "c51ce4239a8b43973a65daba7d98d7a41e09e7fb4640224c16c7972c39ac3768"
+            },
+            {
+              "name": "random63",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "707adaa66e8757d8fc932627e0b60750953d9b1def7506c59f07e8b0fafd39e1"
+            },
+            {
+              "name": "random64",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "ea3f77eaa31cd6bbf94b62d8f457c4610854e99a6e421a6d2ede9f555618add4"
+            },
+            {
+              "name": "random65",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "e4d7b8501f47380321249e8473fa4924c39af3cf48ebd7fb693784eb3be5baf5"
+            },
+            {
+              "name": "random66",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "c04be198236d98cdc954a4fa7a86f15eb3ad59c8e5e487e47f2f5eebe2401931"
+            },
+            {
+              "name": "random67",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "0f978a5a10f7858b65270d1b8131cc83eab343d6970414cc38f84b7b00fc5ac1"
+            },
+            {
+              "name": "random68",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "fb35afb527910223f37559f950d36aca36d30c169370aef7edc663dc37b23bb8"
+            },
+            {
+              "name": "random69",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "b15f27a4b7f8ce24b8db487b6887692e970702e8201935ca1603c7a6d833e35b"
+            },
+            {
+              "name": "random70",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "05bd9b1ffe1fffdb2a040fe82edf8fb7fdc3cfaf0edefac8e279a65c6c8891a3"
+            },
+            {
+              "name": "random71",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "a3c0225e43da6706821dd7ac67bfde83ccb4f593df90530c63bf0e6d05b901d1"
+            },
+            {
+              "name": "random72",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "121a209f174a193e9c53b333ad4148ff3b62eeb8830307fa70aa4d19e3680b33"
+            },
+            {
+              "name": "random73",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "eacd6549307f028a657aa595c0877993dbcdbba0e79c305c552dd2aeefa0b81e"
+            },
+            {
+              "name": "random74",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "bbd2cb8fa6920e813cea4b8d22887b639b5dea84bd8e452826e36165182d91d2"
+            },
+            {
+              "name": "random75",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "2468d154808508e5d122fc2c464c1276d44413f1ebafdd0ec514adf385b70b30"
+            },
+            {
+              "name": "random76",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "7e90a7a463569ffbfca2e94950a18c036f434715aec47a7e59b45a42fa78cf7f"
+            },
+            {
+              "name": "random77",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "11c9ccac797f02d47663bbad57270ae098c945a8591dfadf3fc880e341d3dfa4"
+            },
+            {
+              "name": "random78",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "e1469e995d9ddb82801339a7a79082604c3fb14c00e10f3fe8e928cf290a3832"
+            },
+            {
+              "name": "random79",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "c2a6abc437b47d8b38dc43568d58dc03d229db3ecea377c584c015ad7813214d"
+            }
+          ],
+          "passed": true
+        },
+        {
+          "name": "clang-skip-native",
+          "command": [
+            "/usr/bin/clang++-21",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-std=c++23",
+            "-O2",
+            "/tmp/sirkit-persistent-root-api-20261116/yuki2295/build/clang-skip-native.cpp",
+            "-o",
+            "/tmp/sirkit-persistent-root-api-20261116/yuki2295/build/clang-skip-native"
+          ],
+          "compiler_version": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+          "compiler_sha256": "412bbe8c60571a1eb06f48fde89635033621caeb01a9b4ee76d46711bae8e932",
+          "source_sha256": "14e35dccddafbaebb629d6fd7b32dd539fe87f89a7a90dfc7862d60c96f45d74",
+          "library_hashes": {
+            "DataStructure/persistent-union-find.cpp": "df9100eb08ebfa735c318c374aa634ced94af8ce175834c149d566002fc12970"
+          },
+          "build_exit": 0,
+          "build_seconds": 0.9547179100045469,
+          "cases": [
+            {
+              "name": "sample1",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "c8190d1ff0eb1aa76cb3472baeb4e0941d0da8929a951c8c3f9205afaa19797c"
+            },
+            {
+              "name": "sample2",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "f37c62f5f32ed53909615fd752c392274e145c6d6df0d6ee37a2a498b37c9b54"
+            },
+            {
+              "name": "sample3",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "1d2129fd5ce9a8dbd0c541480ae30994e6f566dfb39ea216b2c6121fa654d3c8"
+            },
+            {
+              "name": "single_vertex",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "6a33a504c8d16194914401f4f46532de96e1b63119fc5981341c6b65c6c27096"
+            },
+            {
+              "name": "empty_graph",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "9305b61456928dd55a2cb30619b38be328c2e4eff73e333decd6c01623d232d2"
+            },
+            {
+              "name": "zero_and_equal",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "d0c5d56cd8ed40805691571b7c49946b4b125aacedd65c489c3dce9b7bcd7b0b"
+            },
+            {
+              "name": "mod_large_weights",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "51e766e1275fdafe5d1fe6854590e377e9dcf9f2b6e92043b29db2769747646f"
+            },
+            {
+              "name": "random00",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "4635a623bd9a3d2d358ab681dbd0153f914fc02007d1dfbb514c046c75ea7568"
+            },
+            {
+              "name": "random01",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "5a0d4abe5b39e9946b0e330d80929878d51b54d469957d8f8ca855ab64a417a8"
+            },
+            {
+              "name": "random02",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "124a31f36deffd43e3be718c3f3b67ee008a61dc4457e0fe4db888806c570d56"
+            },
+            {
+              "name": "random03",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "6637f47e87a8162627dc0e3002a03c802e5d89cf12d79865cda27efc185c2679"
+            },
+            {
+              "name": "random04",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "bcffd56946225a3ad9a5f8094d52e7b329baa3c9833e1056df970c697c70116f"
+            },
+            {
+              "name": "random05",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "190a70b4572f1cfe81885848306a16bc087829694b93cfde67f9adfd2d4df80b"
+            },
+            {
+              "name": "random06",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "7b688f41c6e5661d3804725b54a8467cc51998f097c2ceeec3be7030fdd3f6e1"
+            },
+            {
+              "name": "random07",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "d0549639c15a922f2621301a0623a5de54d06c86de9d72a3307f8d45ee7d6ad0"
+            },
+            {
+              "name": "random08",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "82e507853789ce094ddabc9745a3ec34bd28b438bd9cc31fe03e651ac1af5d6d"
+            },
+            {
+              "name": "random09",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "c36277c56925bd43402493fd938840397e924c94be274d3be474673e54aa1fa9"
+            },
+            {
+              "name": "random10",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "db635c653c5eeca31f191827303a95cf7bd3c8c2de6c541a713c6164eaec9a7c"
+            },
+            {
+              "name": "random11",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "12b98c146980eab96cc15b36eb4689cdb6672fb82ba9d0a6114c5d9d0ed67369"
+            },
+            {
+              "name": "random12",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "3dd3dd5e5e9ec8a4dfff33c17895133a493dc497607f2f4fca698f809cc3e42b"
+            },
+            {
+              "name": "random13",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "491c6fa1b973679d13726adde0640ef901aedf858731d0b3453df98a17d57ab8"
+            },
+            {
+              "name": "random14",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "f673cfb0d63a493394f9e3c942dac5e439dea6741a33ad49984b32fec4bd2b31"
+            },
+            {
+              "name": "random15",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "5e2ea70a22781996290bb003942947fa07ce1d621cfeb67482377d30a61d68de"
+            },
+            {
+              "name": "random16",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "34abfd07dcd2e46dd9ceba12aac9cc29c1d9915893328d7926ded74f9274dfd3"
+            },
+            {
+              "name": "random17",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "f0202650eac0f2d80b406dc6709059913e23a34962a90d73dd1b58edbf4ae30f"
+            },
+            {
+              "name": "random18",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "2468d154808508e5d122fc2c464c1276d44413f1ebafdd0ec514adf385b70b30"
+            },
+            {
+              "name": "random19",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "f7981b2fedb89a75b5d2750e57cc07d64c7878cbb3e9cb0b42f77e860e3b48da"
+            },
+            {
+              "name": "random20",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "0c3f7003e59d924ec0f09452ef4daa40c2bbac8c691f8105da07c94f4f55fb58"
+            },
+            {
+              "name": "random21",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "9f7768fcc1f9215ea65816e382172827f6082b3ee00af26fedcbb09bc0156be0"
+            },
+            {
+              "name": "random22",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "dfd563f6438c96de03251dce8bcdad1eddd501405ca71f72c08e87e9cb8bc392"
+            },
+            {
+              "name": "random23",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "a9ba798a49392798191bcf9f897aba7204bdea9e8651a81072f3763a6f9256ee"
+            },
+            {
+              "name": "random24",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "80fd9bd72397eec09f51602ccbe23e25feb10ee19aff4cb2a3fd1e91daf0c164"
+            },
+            {
+              "name": "random25",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "52dc322e4f128f25215e89ecd08a3bd926375007b885dec9aa565e878d216e64"
+            },
+            {
+              "name": "random26",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "cb1a36bd282d3f340a7eefb27327c8b26b656c5ade043da6670a6d75da6faec2"
+            },
+            {
+              "name": "random27",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "d35a0c096d98cda0d0f80883b8770fd6fc2b3280031475fd2b059b375650bff1"
+            },
+            {
+              "name": "random28",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "5eb15a3341f223447f4a3813065a0e9cf8fc4ac55b9af7e242d4dfe313562797"
+            },
+            {
+              "name": "random29",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "d41006cc6d2972be4f288ec2c049b7dabb7d4e45e644476a481ac3580db5f4a3"
+            },
+            {
+              "name": "random30",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "b072bc1b8bb1763f34b7628133af986a7e2859c5a74afbd4bf326abb6c93f045"
+            },
+            {
+              "name": "random31",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "6f625ef6294f46585929a2f510851e0784bb2be385aecac19bfd9ec9aebcd683"
+            },
+            {
+              "name": "random32",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "4c08968f4f48cc95cd373929d04b4877edb330ccb1578a308620db15261f6e17"
+            },
+            {
+              "name": "random33",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "c1d3b5c23a9c727557edc4d5bea81a6ef93b10d2afdddca507f78c3f0d0f17e6"
+            },
+            {
+              "name": "random34",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "5734c36abddea3495ba83e83ef5cd296256f29c1268211490472f7ba179c75c5"
+            },
+            {
+              "name": "random35",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "ba4d69810be42ecb6b36d8ceed8a94b701d50bf4112a1fc3fc6924f004da207d"
+            },
+            {
+              "name": "random36",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "0c103e86c8a2a244db85744fd39fcf8efeed7af938579c7d8a3a8d0512cd76e0"
+            },
+            {
+              "name": "random37",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "2b15f0d519a6ea85d5b6848fd9d42d75862e2fa632bfcc592a2f457defa8aae3"
+            },
+            {
+              "name": "random38",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "b5ae59dd71fa10e40bd47c66d44402118fbab40abf8a104cd6cef8d2651cdc46"
+            },
+            {
+              "name": "random39",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "d912fe3660e8399807db234ec011f4d3c0662090209d8d3bb489f11f698e64ab"
+            },
+            {
+              "name": "random40",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "fa30e060e11da87938cf175afbfec0d136bf88f5ba8a6f14a1fddb4bcd58574c"
+            },
+            {
+              "name": "random41",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "393105fb68e6d9eb5f579eb9e01062c68f6eea3a6a4751332d8055d17925163d"
+            },
+            {
+              "name": "random42",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "2d23c0702c265cff0bd3e17b654c7f546af624d7bf40bd10ceb798c87471d37f"
+            },
+            {
+              "name": "random43",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "846264c1a14c19ad1da23ba41fe449b3779324b81bc6db5552621d2aa7c835a9"
+            },
+            {
+              "name": "random44",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "06b29f4a7c9aeef8e05c8b7fa338e354249fc3f2b36ad6ba856e8ddfa693cc8a"
+            },
+            {
+              "name": "random45",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "d7df558aaf1970dd0c45ac72d7b4e27101920d35473fcb02f4fe2815c4933454"
+            },
+            {
+              "name": "random46",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "e7bb21db35d0f9903d795762b17caff7745b3313be37a961cc540d142da28e1b"
+            },
+            {
+              "name": "random47",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "2543d1d4443f8a3b47f2665346d65236a1e930ea8387a21486e819551e81ec94"
+            },
+            {
+              "name": "random48",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "daf773ea282867a92ef3120c81d9f746327c9172c2c53483ec4291a6977b6feb"
+            },
+            {
+              "name": "random49",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "5fb4b42532e65f22484f847caaec57db58de37948d502a49fa120911af48b4e4"
+            },
+            {
+              "name": "random50",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "8feeba4542a12dc27b5e74801afd968f917f1bcef3bbe099d085d2a5cc73caea"
+            },
+            {
+              "name": "random51",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "fa2f423cec3f0c5e6578d97d508266308a6efb3fe7f1eb2e76b383dd32e5872f"
+            },
+            {
+              "name": "random52",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "32641dbbfd56dc195a007c909e21edb8095399ccbed97a5d0d9740be937df21a"
+            },
+            {
+              "name": "random53",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "4e33a6f9e8026214efc3cb4c5bd98e184668741601c409464829923de51188fc"
+            },
+            {
+              "name": "random54",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "be0512436563cc8bcbfe68da3de4a2935c47471198e3febd8a506823d0fcff8c"
+            },
+            {
+              "name": "random55",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "b3a9ce456fd5d140ab6ca7ea85be97d9198c6305131f3e52d5f17667ff9d0ca9"
+            },
+            {
+              "name": "random56",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "9eab3d494ecc40d5e731b1207076401a6207ee8608c102f388610347cf36f095"
+            },
+            {
+              "name": "random57",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "bc12b4f7935f8324d94db1536139d8fd14c91b76cc99c9788284ed399efad40d"
+            },
+            {
+              "name": "random58",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "0e0143e5087ca6be8b511df41c12215884d6a40c361e19c132f2adb9eb9a204c"
+            },
+            {
+              "name": "random59",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "e0652c22fa8c865fad979aa6a89f98c20e0bf933a3b76156f2be7d9a2fc5001e"
+            },
+            {
+              "name": "random60",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "b98c9507fdab7358e2a0cce19fc150504fc7be33cec638180017b014e2bb632d"
+            },
+            {
+              "name": "random61",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "407218867786643a1bdaa96dc32925c587d37962598347c81d55534d4b075eba"
+            },
+            {
+              "name": "random62",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "c51ce4239a8b43973a65daba7d98d7a41e09e7fb4640224c16c7972c39ac3768"
+            },
+            {
+              "name": "random63",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "707adaa66e8757d8fc932627e0b60750953d9b1def7506c59f07e8b0fafd39e1"
+            },
+            {
+              "name": "random64",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "ea3f77eaa31cd6bbf94b62d8f457c4610854e99a6e421a6d2ede9f555618add4"
+            },
+            {
+              "name": "random65",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "e4d7b8501f47380321249e8473fa4924c39af3cf48ebd7fb693784eb3be5baf5"
+            },
+            {
+              "name": "random66",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "c04be198236d98cdc954a4fa7a86f15eb3ad59c8e5e487e47f2f5eebe2401931"
+            },
+            {
+              "name": "random67",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "0f978a5a10f7858b65270d1b8131cc83eab343d6970414cc38f84b7b00fc5ac1"
+            },
+            {
+              "name": "random68",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "fb35afb527910223f37559f950d36aca36d30c169370aef7edc663dc37b23bb8"
+            },
+            {
+              "name": "random69",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "b15f27a4b7f8ce24b8db487b6887692e970702e8201935ca1603c7a6d833e35b"
+            },
+            {
+              "name": "random70",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "05bd9b1ffe1fffdb2a040fe82edf8fb7fdc3cfaf0edefac8e279a65c6c8891a3"
+            },
+            {
+              "name": "random71",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "a3c0225e43da6706821dd7ac67bfde83ccb4f593df90530c63bf0e6d05b901d1"
+            },
+            {
+              "name": "random72",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "121a209f174a193e9c53b333ad4148ff3b62eeb8830307fa70aa4d19e3680b33"
+            },
+            {
+              "name": "random73",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "eacd6549307f028a657aa595c0877993dbcdbba0e79c305c552dd2aeefa0b81e"
+            },
+            {
+              "name": "random74",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "bbd2cb8fa6920e813cea4b8d22887b639b5dea84bd8e452826e36165182d91d2"
+            },
+            {
+              "name": "random75",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "2468d154808508e5d122fc2c464c1276d44413f1ebafdd0ec514adf385b70b30"
+            },
+            {
+              "name": "random76",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "7e90a7a463569ffbfca2e94950a18c036f434715aec47a7e59b45a42fa78cf7f"
+            },
+            {
+              "name": "random77",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "11c9ccac797f02d47663bbad57270ae098c945a8591dfadf3fc880e341d3dfa4"
+            },
+            {
+              "name": "random78",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "e1469e995d9ddb82801339a7a79082604c3fb14c00e10f3fe8e928cf290a3832"
+            },
+            {
+              "name": "random79",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "c2a6abc437b47d8b38dc43568d58dc03d229db3ecea377c584c015ad7813214d"
+            }
+          ],
+          "passed": true
+        },
+        {
+          "name": "clang-skip-portable",
+          "command": [
+            "/usr/bin/clang++-21",
+            "-U__SIZEOF_INT128__",
+            "-DSIRKIT_DISABLE_SIMD",
+            "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "-std=c++23",
+            "-O2",
+            "/tmp/sirkit-persistent-root-api-20261116/yuki2295/build/clang-skip-portable.cpp",
+            "-o",
+            "/tmp/sirkit-persistent-root-api-20261116/yuki2295/build/clang-skip-portable"
+          ],
+          "compiler_version": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+          "compiler_sha256": "412bbe8c60571a1eb06f48fde89635033621caeb01a9b4ee76d46711bae8e932",
+          "source_sha256": "14e35dccddafbaebb629d6fd7b32dd539fe87f89a7a90dfc7862d60c96f45d74",
+          "library_hashes": {
+            "DataStructure/persistent-union-find.cpp": "df9100eb08ebfa735c318c374aa634ced94af8ce175834c149d566002fc12970"
+          },
+          "build_exit": 0,
+          "build_seconds": 0.7741083659930155,
+          "cases": [
+            {
+              "name": "sample1",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "c8190d1ff0eb1aa76cb3472baeb4e0941d0da8929a951c8c3f9205afaa19797c"
+            },
+            {
+              "name": "sample2",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "f37c62f5f32ed53909615fd752c392274e145c6d6df0d6ee37a2a498b37c9b54"
+            },
+            {
+              "name": "sample3",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "1d2129fd5ce9a8dbd0c541480ae30994e6f566dfb39ea216b2c6121fa654d3c8"
+            },
+            {
+              "name": "single_vertex",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "6a33a504c8d16194914401f4f46532de96e1b63119fc5981341c6b65c6c27096"
+            },
+            {
+              "name": "empty_graph",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "9305b61456928dd55a2cb30619b38be328c2e4eff73e333decd6c01623d232d2"
+            },
+            {
+              "name": "zero_and_equal",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "d0c5d56cd8ed40805691571b7c49946b4b125aacedd65c489c3dce9b7bcd7b0b"
+            },
+            {
+              "name": "mod_large_weights",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "51e766e1275fdafe5d1fe6854590e377e9dcf9f2b6e92043b29db2769747646f"
+            },
+            {
+              "name": "random00",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "4635a623bd9a3d2d358ab681dbd0153f914fc02007d1dfbb514c046c75ea7568"
+            },
+            {
+              "name": "random01",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "5a0d4abe5b39e9946b0e330d80929878d51b54d469957d8f8ca855ab64a417a8"
+            },
+            {
+              "name": "random02",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "124a31f36deffd43e3be718c3f3b67ee008a61dc4457e0fe4db888806c570d56"
+            },
+            {
+              "name": "random03",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "6637f47e87a8162627dc0e3002a03c802e5d89cf12d79865cda27efc185c2679"
+            },
+            {
+              "name": "random04",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "bcffd56946225a3ad9a5f8094d52e7b329baa3c9833e1056df970c697c70116f"
+            },
+            {
+              "name": "random05",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "190a70b4572f1cfe81885848306a16bc087829694b93cfde67f9adfd2d4df80b"
+            },
+            {
+              "name": "random06",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "7b688f41c6e5661d3804725b54a8467cc51998f097c2ceeec3be7030fdd3f6e1"
+            },
+            {
+              "name": "random07",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "d0549639c15a922f2621301a0623a5de54d06c86de9d72a3307f8d45ee7d6ad0"
+            },
+            {
+              "name": "random08",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "82e507853789ce094ddabc9745a3ec34bd28b438bd9cc31fe03e651ac1af5d6d"
+            },
+            {
+              "name": "random09",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "c36277c56925bd43402493fd938840397e924c94be274d3be474673e54aa1fa9"
+            },
+            {
+              "name": "random10",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "db635c653c5eeca31f191827303a95cf7bd3c8c2de6c541a713c6164eaec9a7c"
+            },
+            {
+              "name": "random11",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "12b98c146980eab96cc15b36eb4689cdb6672fb82ba9d0a6114c5d9d0ed67369"
+            },
+            {
+              "name": "random12",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "3dd3dd5e5e9ec8a4dfff33c17895133a493dc497607f2f4fca698f809cc3e42b"
+            },
+            {
+              "name": "random13",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "491c6fa1b973679d13726adde0640ef901aedf858731d0b3453df98a17d57ab8"
+            },
+            {
+              "name": "random14",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "f673cfb0d63a493394f9e3c942dac5e439dea6741a33ad49984b32fec4bd2b31"
+            },
+            {
+              "name": "random15",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "5e2ea70a22781996290bb003942947fa07ce1d621cfeb67482377d30a61d68de"
+            },
+            {
+              "name": "random16",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "34abfd07dcd2e46dd9ceba12aac9cc29c1d9915893328d7926ded74f9274dfd3"
+            },
+            {
+              "name": "random17",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "f0202650eac0f2d80b406dc6709059913e23a34962a90d73dd1b58edbf4ae30f"
+            },
+            {
+              "name": "random18",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "2468d154808508e5d122fc2c464c1276d44413f1ebafdd0ec514adf385b70b30"
+            },
+            {
+              "name": "random19",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "f7981b2fedb89a75b5d2750e57cc07d64c7878cbb3e9cb0b42f77e860e3b48da"
+            },
+            {
+              "name": "random20",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "0c3f7003e59d924ec0f09452ef4daa40c2bbac8c691f8105da07c94f4f55fb58"
+            },
+            {
+              "name": "random21",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "9f7768fcc1f9215ea65816e382172827f6082b3ee00af26fedcbb09bc0156be0"
+            },
+            {
+              "name": "random22",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "dfd563f6438c96de03251dce8bcdad1eddd501405ca71f72c08e87e9cb8bc392"
+            },
+            {
+              "name": "random23",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "a9ba798a49392798191bcf9f897aba7204bdea9e8651a81072f3763a6f9256ee"
+            },
+            {
+              "name": "random24",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "80fd9bd72397eec09f51602ccbe23e25feb10ee19aff4cb2a3fd1e91daf0c164"
+            },
+            {
+              "name": "random25",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "52dc322e4f128f25215e89ecd08a3bd926375007b885dec9aa565e878d216e64"
+            },
+            {
+              "name": "random26",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "cb1a36bd282d3f340a7eefb27327c8b26b656c5ade043da6670a6d75da6faec2"
+            },
+            {
+              "name": "random27",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "d35a0c096d98cda0d0f80883b8770fd6fc2b3280031475fd2b059b375650bff1"
+            },
+            {
+              "name": "random28",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "5eb15a3341f223447f4a3813065a0e9cf8fc4ac55b9af7e242d4dfe313562797"
+            },
+            {
+              "name": "random29",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "d41006cc6d2972be4f288ec2c049b7dabb7d4e45e644476a481ac3580db5f4a3"
+            },
+            {
+              "name": "random30",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "b072bc1b8bb1763f34b7628133af986a7e2859c5a74afbd4bf326abb6c93f045"
+            },
+            {
+              "name": "random31",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "6f625ef6294f46585929a2f510851e0784bb2be385aecac19bfd9ec9aebcd683"
+            },
+            {
+              "name": "random32",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "4c08968f4f48cc95cd373929d04b4877edb330ccb1578a308620db15261f6e17"
+            },
+            {
+              "name": "random33",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "c1d3b5c23a9c727557edc4d5bea81a6ef93b10d2afdddca507f78c3f0d0f17e6"
+            },
+            {
+              "name": "random34",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "5734c36abddea3495ba83e83ef5cd296256f29c1268211490472f7ba179c75c5"
+            },
+            {
+              "name": "random35",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "ba4d69810be42ecb6b36d8ceed8a94b701d50bf4112a1fc3fc6924f004da207d"
+            },
+            {
+              "name": "random36",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "0c103e86c8a2a244db85744fd39fcf8efeed7af938579c7d8a3a8d0512cd76e0"
+            },
+            {
+              "name": "random37",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "2b15f0d519a6ea85d5b6848fd9d42d75862e2fa632bfcc592a2f457defa8aae3"
+            },
+            {
+              "name": "random38",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "b5ae59dd71fa10e40bd47c66d44402118fbab40abf8a104cd6cef8d2651cdc46"
+            },
+            {
+              "name": "random39",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "d912fe3660e8399807db234ec011f4d3c0662090209d8d3bb489f11f698e64ab"
+            },
+            {
+              "name": "random40",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "fa30e060e11da87938cf175afbfec0d136bf88f5ba8a6f14a1fddb4bcd58574c"
+            },
+            {
+              "name": "random41",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "393105fb68e6d9eb5f579eb9e01062c68f6eea3a6a4751332d8055d17925163d"
+            },
+            {
+              "name": "random42",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "2d23c0702c265cff0bd3e17b654c7f546af624d7bf40bd10ceb798c87471d37f"
+            },
+            {
+              "name": "random43",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "846264c1a14c19ad1da23ba41fe449b3779324b81bc6db5552621d2aa7c835a9"
+            },
+            {
+              "name": "random44",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "06b29f4a7c9aeef8e05c8b7fa338e354249fc3f2b36ad6ba856e8ddfa693cc8a"
+            },
+            {
+              "name": "random45",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "d7df558aaf1970dd0c45ac72d7b4e27101920d35473fcb02f4fe2815c4933454"
+            },
+            {
+              "name": "random46",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "e7bb21db35d0f9903d795762b17caff7745b3313be37a961cc540d142da28e1b"
+            },
+            {
+              "name": "random47",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "2543d1d4443f8a3b47f2665346d65236a1e930ea8387a21486e819551e81ec94"
+            },
+            {
+              "name": "random48",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "daf773ea282867a92ef3120c81d9f746327c9172c2c53483ec4291a6977b6feb"
+            },
+            {
+              "name": "random49",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "5fb4b42532e65f22484f847caaec57db58de37948d502a49fa120911af48b4e4"
+            },
+            {
+              "name": "random50",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "8feeba4542a12dc27b5e74801afd968f917f1bcef3bbe099d085d2a5cc73caea"
+            },
+            {
+              "name": "random51",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "fa2f423cec3f0c5e6578d97d508266308a6efb3fe7f1eb2e76b383dd32e5872f"
+            },
+            {
+              "name": "random52",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "32641dbbfd56dc195a007c909e21edb8095399ccbed97a5d0d9740be937df21a"
+            },
+            {
+              "name": "random53",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "4e33a6f9e8026214efc3cb4c5bd98e184668741601c409464829923de51188fc"
+            },
+            {
+              "name": "random54",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "be0512436563cc8bcbfe68da3de4a2935c47471198e3febd8a506823d0fcff8c"
+            },
+            {
+              "name": "random55",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "b3a9ce456fd5d140ab6ca7ea85be97d9198c6305131f3e52d5f17667ff9d0ca9"
+            },
+            {
+              "name": "random56",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "9eab3d494ecc40d5e731b1207076401a6207ee8608c102f388610347cf36f095"
+            },
+            {
+              "name": "random57",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "bc12b4f7935f8324d94db1536139d8fd14c91b76cc99c9788284ed399efad40d"
+            },
+            {
+              "name": "random58",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "0e0143e5087ca6be8b511df41c12215884d6a40c361e19c132f2adb9eb9a204c"
+            },
+            {
+              "name": "random59",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "e0652c22fa8c865fad979aa6a89f98c20e0bf933a3b76156f2be7d9a2fc5001e"
+            },
+            {
+              "name": "random60",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "b98c9507fdab7358e2a0cce19fc150504fc7be33cec638180017b014e2bb632d"
+            },
+            {
+              "name": "random61",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "407218867786643a1bdaa96dc32925c587d37962598347c81d55534d4b075eba"
+            },
+            {
+              "name": "random62",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "c51ce4239a8b43973a65daba7d98d7a41e09e7fb4640224c16c7972c39ac3768"
+            },
+            {
+              "name": "random63",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "707adaa66e8757d8fc932627e0b60750953d9b1def7506c59f07e8b0fafd39e1"
+            },
+            {
+              "name": "random64",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "ea3f77eaa31cd6bbf94b62d8f457c4610854e99a6e421a6d2ede9f555618add4"
+            },
+            {
+              "name": "random65",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "e4d7b8501f47380321249e8473fa4924c39af3cf48ebd7fb693784eb3be5baf5"
+            },
+            {
+              "name": "random66",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "c04be198236d98cdc954a4fa7a86f15eb3ad59c8e5e487e47f2f5eebe2401931"
+            },
+            {
+              "name": "random67",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "0f978a5a10f7858b65270d1b8131cc83eab343d6970414cc38f84b7b00fc5ac1"
+            },
+            {
+              "name": "random68",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "fb35afb527910223f37559f950d36aca36d30c169370aef7edc663dc37b23bb8"
+            },
+            {
+              "name": "random69",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "b15f27a4b7f8ce24b8db487b6887692e970702e8201935ca1603c7a6d833e35b"
+            },
+            {
+              "name": "random70",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "05bd9b1ffe1fffdb2a040fe82edf8fb7fdc3cfaf0edefac8e279a65c6c8891a3"
+            },
+            {
+              "name": "random71",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "a3c0225e43da6706821dd7ac67bfde83ccb4f593df90530c63bf0e6d05b901d1"
+            },
+            {
+              "name": "random72",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "121a209f174a193e9c53b333ad4148ff3b62eeb8830307fa70aa4d19e3680b33"
+            },
+            {
+              "name": "random73",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "eacd6549307f028a657aa595c0877993dbcdbba0e79c305c552dd2aeefa0b81e"
+            },
+            {
+              "name": "random74",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "bbd2cb8fa6920e813cea4b8d22887b639b5dea84bd8e452826e36165182d91d2"
+            },
+            {
+              "name": "random75",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "2468d154808508e5d122fc2c464c1276d44413f1ebafdd0ec514adf385b70b30"
+            },
+            {
+              "name": "random76",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "7e90a7a463569ffbfca2e94950a18c036f434715aec47a7e59b45a42fa78cf7f"
+            },
+            {
+              "name": "random77",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "11c9ccac797f02d47663bbad57270ae098c945a8591dfadf3fc880e341d3dfa4"
+            },
+            {
+              "name": "random78",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "e1469e995d9ddb82801339a7a79082604c3fb14c00e10f3fe8e928cf290a3832"
+            },
+            {
+              "name": "random79",
+              "passed": true,
+              "exit": 0,
+              "stdout_sha256": "c2a6abc437b47d8b38dc43568d58dc03d229db3ecea377c584c015ad7813214d"
+            }
+          ],
+          "passed": true
+        }
+      ]
+    },
+    "maximum_profiles": [
+      {
+        "name": "balanced",
+        "n": 131072,
+        "q": 300000,
+        "successful_merges": 131071,
+        "input_path": "/tmp/sirkit-persistent-root-api-20261116/yuki2295-max/balanced.in",
+        "expected_path": "/tmp/sirkit-persistent-root-api-20261116/yuki2295-max/balanced.out",
+        "input_sha256": "d026694e58f6041f122e3dc1cd2e9d4de80247ac29480c0279921eb399bdd654",
+        "expected_sha256": "ae5d0df34a4b7aee836c3cabebd48b87a0ed05f1a5e6d4a4dd2e86954b5c6a23",
+        "oracle": "Closed-form minimax distance from known balanced merge schedule / two-star tree, plus exact Python big-integer pair-sum increment; no persistent UF or version binary search."
+      },
+      {
+        "name": "two-stars-overflow",
+        "n": 200000,
+        "q": 300000,
+        "successful_merges": 199999,
+        "input_path": "/tmp/sirkit-persistent-root-api-20261116/yuki2295-max/two-stars-overflow.in",
+        "expected_path": "/tmp/sirkit-persistent-root-api-20261116/yuki2295-max/two-stars-overflow.out",
+        "input_sha256": "98b48b3ef5aec8f0228f7ee1ee92bc438ae81b064e3255e892636a29f67c72c9",
+        "expected_sha256": "b5ef435e5bb5cbbebdeb543ce3c90b467439d160d5bd1e8502788885badf0073",
+        "oracle": "Closed-form minimax distance from known balanced merge schedule / two-star tree, plus exact Python big-integer pair-sum increment; no persistent UF or version binary search."
+      },
+      {
+        "name": "singleton",
+        "n": 1,
+        "q": 300000,
+        "successful_merges": 0,
+        "input_path": "/tmp/sirkit-persistent-root-api-20261116/yuki2295-max/singleton.in",
+        "expected_path": "/tmp/sirkit-persistent-root-api-20261116/yuki2295-max/singleton.out",
+        "input_sha256": "0b9dd82d48ecb3b85fff9178c06a00ab8af44fdbec0de0ccaf54ffec943acb23",
+        "expected_sha256": "34eb6a42c971c033e7faa67360705369760392e9c47815d8101e6fa5dfda6293",
+        "oracle": "Closed-form minimax distance from known balanced merge schedule / two-star tree, plus exact Python big-integer pair-sum increment; no persistent UF or version binary search."
+      }
+    ],
+    "maximum_results": [
+      {
+        "compiler": "gcc",
+        "skip": false,
+        "source_sha256": "8fa511989a814b9d91cc8d3ccb3dea942b869ba280094c49974a1d4122eee915",
+        "profile": "balanced",
+        "seconds": 0.08,
+        "max_rss_kib": 95172,
+        "output_sha256": "ae5d0df34a4b7aee836c3cabebd48b87a0ed05f1a5e6d4a4dd2e86954b5c6a23",
+        "passed": true
+      },
+      {
+        "compiler": "gcc",
+        "skip": false,
+        "source_sha256": "8fa511989a814b9d91cc8d3ccb3dea942b869ba280094c49974a1d4122eee915",
+        "profile": "two-stars-overflow",
+        "seconds": 0.19,
+        "max_rss_kib": 234236,
+        "output_sha256": "b5ef435e5bb5cbbebdeb543ce3c90b467439d160d5bd1e8502788885badf0073",
+        "passed": true
+      },
+      {
+        "compiler": "gcc",
+        "skip": false,
+        "source_sha256": "8fa511989a814b9d91cc8d3ccb3dea942b869ba280094c49974a1d4122eee915",
+        "profile": "singleton",
+        "seconds": 0.0,
+        "max_rss_kib": 4116,
+        "output_sha256": "34eb6a42c971c033e7faa67360705369760392e9c47815d8101e6fa5dfda6293",
+        "passed": true
+      },
+      {
+        "compiler": "gcc",
+        "skip": true,
+        "source_sha256": "14e35dccddafbaebb629d6fd7b32dd539fe87f89a7a90dfc7862d60c96f45d74",
+        "profile": "balanced",
+        "seconds": 0.08,
+        "max_rss_kib": 90104,
+        "output_sha256": "ae5d0df34a4b7aee836c3cabebd48b87a0ed05f1a5e6d4a4dd2e86954b5c6a23",
+        "passed": true
+      },
+      {
+        "compiler": "gcc",
+        "skip": true,
+        "source_sha256": "14e35dccddafbaebb629d6fd7b32dd539fe87f89a7a90dfc7862d60c96f45d74",
+        "profile": "two-stars-overflow",
+        "seconds": 0.18,
+        "max_rss_kib": 220860,
+        "output_sha256": "b5ef435e5bb5cbbebdeb543ce3c90b467439d160d5bd1e8502788885badf0073",
+        "passed": true
+      },
+      {
+        "compiler": "gcc",
+        "skip": true,
+        "source_sha256": "14e35dccddafbaebb629d6fd7b32dd539fe87f89a7a90dfc7862d60c96f45d74",
+        "profile": "singleton",
+        "seconds": 0.0,
+        "max_rss_kib": 4096,
+        "output_sha256": "34eb6a42c971c033e7faa67360705369760392e9c47815d8101e6fa5dfda6293",
+        "passed": true
+      },
+      {
+        "compiler": "clang",
+        "skip": true,
+        "source_sha256": "14e35dccddafbaebb629d6fd7b32dd539fe87f89a7a90dfc7862d60c96f45d74",
+        "profile": "balanced",
+        "seconds": 0.09,
+        "max_rss_kib": 95228,
+        "output_sha256": "ae5d0df34a4b7aee836c3cabebd48b87a0ed05f1a5e6d4a4dd2e86954b5c6a23",
+        "passed": true
+      },
+      {
+        "compiler": "clang",
+        "skip": true,
+        "source_sha256": "14e35dccddafbaebb629d6fd7b32dd539fe87f89a7a90dfc7862d60c96f45d74",
+        "profile": "two-stars-overflow",
+        "seconds": 0.21,
+        "max_rss_kib": 234236,
+        "output_sha256": "b5ef435e5bb5cbbebdeb543ce3c90b467439d160d5bd1e8502788885badf0073",
+        "passed": true
+      },
+      {
+        "compiler": "clang",
+        "skip": true,
+        "source_sha256": "14e35dccddafbaebb629d6fd7b32dd539fe87f89a7a90dfc7862d60c96f45d74",
+        "profile": "singleton",
+        "seconds": 0.01,
+        "max_rss_kib": 4144,
+        "output_sha256": "34eb6a42c971c033e7faa67360705369760392e9c47815d8101e6fa5dfda6293",
+        "passed": true
+      }
+    ],
+    "online_status": "not submitted",
+    "optimization_scope": "library only; new readable main implements necessary algorithm, no individual IO/driver tuning"
+  },
+  "scope_limits": "LC includes main/IO. Yuki is correctness verification/library review; timings are local limit checks, not an optimization or online AC claim. No commit.",
+  "local_raw_archive": "Audit/data/persistent-root-api-20261116.zip"
+}

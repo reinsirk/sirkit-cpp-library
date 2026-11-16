@@ -1,0 +1,153 @@
+{
+  "format": 1,
+  "date": "2026-11-16",
+  "model": "claude-fable-5-2",
+  "actual_models": [
+    "claude-fable-5-2"
+  ],
+  "records": [
+    {
+      "id": "persistent_union_find",
+      "source_sha256": "d2acf637f6b2d78c1b97402ad00c1b6440ab48827b52142ac6ee7c5529a7bbfe",
+      "verdict": "keep",
+      "reason": "静的レビューのみで、テストは実行していない。正しさの問題は見当たらない。unite は代表2点だけを update_two で同一版に書くため、親番号の経路は必ず存在し、get_existing / get_two_existing の null 省略は妥当(arr 直接更新は文書で対象外)。same の並行上昇と早期一致判定も、片側が代表に達した後の残りループを含めて正しい。併合方向、非結合時の version_ = arr.root = r、例外時に root を公開しない点、GCC の union コピーと Clang の variant 経路も問題ない。15ms との差はオフライン rollback とオンライン完全永続の機能差が主因。残る案(unite での再降下省略、allocate の高速経路、葉コピーの64バイト化)は、効果が小さい見込みか、却下済みのノード分割と同じ変更になるため提案しない。",
+      "scope": "whole_program"
+    },
+    {
+      "id": "persistent_union_find_union_path_query",
+      "source_sha256": "147492bfb00112248fba976a63f51ae3afad20b5bbb4c43406716db700357c24",
+      "verdict": "keep",
+      "reason": "静的レビューのみで、テストは実行していない。ライブラリ側のみ確認した。このドライバが使う root / size / unite / issame(版指定) は上と同じ不変条件に依存しており、正しさの問題は見当たらない。二分探索中の issame は get_two_existing と早期一致判定を既に使っており、探索コストは高さ O(log n) × 配列深さで、公開 API と shift=4 を保ったまま削れる余地は静的には見つからない。main は調整対象外で、未計測の改善は主張しない。",
+      "scope": "library"
+    }
+  ],
+  "review": {
+    "reviews": [
+      {
+        "id": "persistent_union_find",
+        "source_sha256": "d2acf637f6b2d78c1b97402ad00c1b6440ab48827b52142ac6ee7c5529a7bbfe",
+        "verdict": "keep",
+        "reason": "静的レビューのみで、テストは実行していない。正しさの問題は見当たらない。unite は代表2点だけを update_two で同一版に書くため、親番号の経路は必ず存在し、get_existing / get_two_existing の null 省略は妥当(arr 直接更新は文書で対象外)。same の並行上昇と早期一致判定も、片側が代表に達した後の残りループを含めて正しい。併合方向、非結合時の version_ = arr.root = r、例外時に root を公開しない点、GCC の union コピーと Clang の variant 経路も問題ない。15ms との差はオフライン rollback とオンライン完全永続の機能差が主因。残る案(unite での再降下省略、allocate の高速経路、葉コピーの64バイト化)は、効果が小さい見込みか、却下済みのノード分割と同じ変更になるため提案しない。"
+      },
+      {
+        "id": "persistent_union_find_union_path_query",
+        "source_sha256": "147492bfb00112248fba976a63f51ae3afad20b5bbb4c43406716db700357c24",
+        "verdict": "keep",
+        "reason": "静的レビューのみで、テストは実行していない。ライブラリ側のみ確認した。このドライバが使う root / size / unite / issame(版指定) は上と同じ不変条件に依存しており、正しさの問題は見当たらない。二分探索中の issame は get_two_existing と早期一致判定を既に使っており、探索コストは高さ O(log n) × 配列深さで、公開 API と shift=4 を保ったまま削れる余地は静的には見つからない。main は調整対象外で、未計測の改善は主張しない。"
+      }
+    ],
+    "experiments": []
+  },
+  "completed_utc": "2026-11-16T05:57:58.805773+00:00",
+  "source_hashes": {
+    "/tmp/sirkit-puf-opt-20261116/claude/performance-review/persistent_union_find.cpp": "d2acf637f6b2d78c1b97402ad00c1b6440ab48827b52142ac6ee7c5529a7bbfe",
+    "/tmp/sirkit-puf-opt-20261116/claude/performance-review/persistent_union_find_union_path_query.cpp": "147492bfb00112248fba976a63f51ae3afad20b5bbb4c43406716db700357c24",
+    "DataStructure/persistent-union-find.cpp": "9959ae5291d3a8fb0c91d3eb11e012f612a07a5fb082c336a7979d16ca06bf68",
+    "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab",
+    "Verify/current/drivers/persistent_union_find_main.cpp": "944d4f5b542d8c95b7c457afb7f0e5aa3fde36c1e6d80496de0ecd9b25550ab3",
+    "Verify/current/drivers/persistent_union_find_union_path_query_main.cpp": "de7d233cf8247fb6eb539646d609afb1e12f19e84bec5e71756cf3a6ca0d1627"
+  },
+  "prompt_sha256": "71f44e9d83f89ccacbd3b90decd4942cf680f47a730f72c82c6b729614e9d4df",
+  "response_sha256": "e4419a66da1555f8016922045423bbb32dfe5f62e4bdf38f42e5295aae62c6d7",
+  "usage_after": {
+    "checked_utc": "2026-11-16T05:57:59.178686+00:00",
+    "authorized_email_matches": true,
+    "http_status": 200,
+    "inference_executed": false,
+    "windows": {
+      "five_hour": {
+        "utilization": 50.0,
+        "resets_at": "2026-11-16T10:40:00.068862+00:00"
+      },
+      "seven_day": {
+        "utilization": 35.0,
+        "resets_at": "2026-11-21T09:00:00.068885+00:00"
+      },
+      "seven_day_breakdown": {},
+      "limit_0": {
+        "kind": "session",
+        "model": null,
+        "utilization": 50,
+        "resets_at": "2026-11-16T10:40:00.068862+00:00"
+      },
+      "limit_1": {
+        "kind": "weekly_all",
+        "model": null,
+        "utilization": 35,
+        "resets_at": "2026-11-21T09:00:00.068885+00:00"
+      },
+      "limit_2": {
+        "kind": "weekly_scoped",
+        "model": "Fable",
+        "utilization": 69,
+        "resets_at": "2026-11-21T09:00:00.069165+00:00"
+      }
+    },
+    "extra_usage_enabled": false
+  },
+  "model_usage": {
+    "claude-fable-5-2": {
+      "inputTokens": 2,
+      "outputTokens": 2100,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 15190,
+      "webSearchRequests": 0,
+      "costUSD": 0.327056,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 1445,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 15190,
+      "canonicalModel": "claude-fable-5-2",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "codex_receipts": {
+    "persistent_union_find": "Verify/optimization/stages/persistent_union_find.codex.e74bd6891e96e195474b2600293bf70007b732c385c93f2d572c7e3256021c47.json",
+    "persistent_union_find_union_path_query": "Verify/optimization/stages/persistent_union_find_union_path_query.codex.49d497e05fea801714eab345983ce73602f04ba1c4bdb64fd8c6ead8feeeda69.json"
+  },
+  "failed_initial_attempt": {
+    "complete": false,
+    "error_type": "TimeoutExpired",
+    "reason": "High-effort request repeatedly hit output token limit, then timed out600s without a text review. Not counted as a completed review.",
+    "usage_after": {
+      "checked_utc": "2026-11-16T05:56:50.580807+00:00",
+      "authorized_email_matches": true,
+      "http_status": 200,
+      "inference_executed": false,
+      "windows": {
+        "five_hour": {
+          "utilization": 47.0,
+          "resets_at": "2026-11-16T10:40:00.480607+00:00"
+        },
+        "seven_day": {
+          "utilization": 34.0,
+          "resets_at": "2026-11-21T09:00:00.480626+00:00"
+        },
+        "seven_day_breakdown": {},
+        "limit_0": {
+          "kind": "session",
+          "model": null,
+          "utilization": 47,
+          "resets_at": "2026-11-16T10:40:00.480607+00:00"
+        },
+        "limit_1": {
+          "kind": "weekly_all",
+          "model": null,
+          "utilization": 34,
+          "resets_at": "2026-11-21T09:00:00.480626+00:00"
+        },
+        "limit_2": {
+          "kind": "weekly_scoped",
+          "model": "Fable",
+          "utilization": 68,
+          "resets_at": "2026-11-21T09:00:00.480900+00:00"
+        }
+      },
+      "extra_usage_enabled": false
+    }
+  },
+  "scope_note": "Fable静的レビューのみ。独立参照・計測はCodexで実施。LCのmain/IOは全体レビュー対象、yukicoderは本体だけ。オンライン再提出前。",
+  "raw_archive": "Audit/data/persistent-uf-opt-20261116.zip"
+}
