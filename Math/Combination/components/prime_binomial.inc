@@ -7,6 +7,9 @@
 // Lucas(n,k): COMと同じ。COMもLucasを自動選択する。
 // H(n,k): nHkをMintで返す。0H0=1、0Hk=0（k>0）。int64_t超過はoverflow_error。
 // 表外は積で計算し、回数上限超過はlength_error。SKIP_RUNTIME_CHECKSで入力検査を除く。
+// p=法、B=準備後の上限+1。構築・prepareはO(B)回のMint演算と高々1回のinv、領域O(B)。
+// Lucasはd=O(1+log_p(n+1))桁。表内はO(d)、表外は積の総項数sとしてO(d+s)回のMint演算と高々d回のinv。
+// HはCOMと同じ費用。通常のmodintではinvはO(log p)、他のMint演算はO(1)。
 // SIRKIT_API_END
 #ifndef SIRKIT_PRIME_BINOMIAL_DEFINED
 #define SIRKIT_PRIME_BINOMIAL_DEFINED

@@ -1,6 +1,6 @@
 #define SKIP_RUNTIME_CHECKS
 // Verify: https://judge.yosupo.jp/problem/binomial_coefficient
-// Submission: https://judge.yosupo.jp/submission/414010
+// Submission: https://judge.yosupo.jp/submission/417206
 
 // Library: Math/Combination/Binomial_Mod.cpp
 // SPDX-License-Identifier: CC0-1.0
@@ -22,6 +22,10 @@
 // Lucas(n,k): 素数の法でCOMと同じ結果。合成数・法1ではdomain_error（COMを使う）。
 // H(n,k): (n+k-1)Ckの剰余。0H0=1（法1は0）、0Hk=0（k>0）。int64_t超過はoverflow_error。
 // 表外は積で計算し、積の回数上限も超えるとlength_error。SKIP_RUNTIME_CHECKSで入力検査を除く。
+// m=法、r=異なる素因子数、B=全表の総要素数。構築はO(sqrt(m)+B+r log m)、prepareはO(B+r log m)、領域O(B+r)。
+// 準備済みの一般照会はO(Σ_p(1+log_p(n+1)))。素数pの表外Lucasは桁数d・積の総項数sとしてO(d+s+d log p)。
+// 素数冪p^eの表外直接積はs=min(k,n-k)としてO((s+1)(1+log_p(n+1))+log m)。自動拡張にはprepareの費用を加える。
+// 以上は固定幅整数演算をO(1)とした上界。Hは対応するCOMと同じ費用。
 
 
 // SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。

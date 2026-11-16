@@ -5,6 +5,9 @@
 // ModIntBinomial(options): 指定した上限で500万まで前計算する。
 // prepare(max_n=5'000'000): 上限内で表を準備。制限・例外はBinomialModと同じ。
 // COM(n,k): nCkをMintで返す。n<0,k<0,k>nと法1は0。素数でn<modかつ準備済みならO(1)。
+// m=法、B=全表の総要素数、r=異なる素因子数。構築O(sqrt(m)+B+r log m)、prepareはO(B+r log m)、領域O(B+r)。
+// 素数pのLucasはd桁・表外の積の総項数sとしてO(d+s)回のMint演算と高々d回のinv、表内はO(d)。
+// 通常のmodintではinvはO(log p)、他の演算はO(1)。自動拡張の費用を別途加え、合成数はBinomialModと同じ。
 // Lucas(n,k): 素数の法でCOMと同じ結果。合成数・法1ではCOMを使う。
 // H(n,k): nHkをMintで返す。0H0=1（法1は0）、0Hk=0（k>0）。int64_t超過はoverflow_error。
 // SIRKIT_API_END
