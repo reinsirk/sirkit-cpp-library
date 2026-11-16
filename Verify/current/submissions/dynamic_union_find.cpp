@@ -3,7 +3,7 @@
 #pragma GCC optimize("O3")
 #endif
 // Verify: https://judge.yosupo.jp/problem/unionfind
-// Submission: https://judge.yosupo.jp/submission/412312
+// Submission: https://judge.yosupo.jp/submission/417223
 
 // Library: DataStructure/dynamic-union-find.cpp
 // SPDX-License-Identifier: CC0-1.0 AND LicenseRef-SplitMix64-Public-Domain

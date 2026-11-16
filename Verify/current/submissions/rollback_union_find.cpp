@@ -3,7 +3,7 @@
 #pragma GCC optimize("O3")
 #endif
 // Verify: https://judge.yosupo.jp/problem/persistent_unionfind
-// Submission: https://judge.yosupo.jp/submission/414056
+// Submission: https://judge.yosupo.jp/submission/417252
 
 // Library: DataStructure/rollback-union-find.cpp
 // SPDX-License-Identifier: CC0-1.0

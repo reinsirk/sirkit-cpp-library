@@ -3,7 +3,7 @@
 #pragma GCC optimize("O3")
 #endif
 // Verify: https://judge.yosupo.jp/problem/number_of_substrings
-// Submission: https://judge.yosupo.jp/submission/416523
+// Submission: https://judge.yosupo.jp/submission/417262
 
 // Library: String/Suffix_Array.cpp
 // SPDX-License-Identifier: CC0-1.0

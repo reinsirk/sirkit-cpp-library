@@ -3,7 +3,7 @@
 #pragma GCC optimize("O3")
 #endif
 // Verify: https://judge.yosupo.jp/problem/point_add_range_sum
-// Submission: https://judge.yosupo.jp/submission/414659
+// Submission: https://judge.yosupo.jp/submission/417227
 
 // Library: DataStructure/Fenwick_Tree.cpp
 // SPDX-License-Identifier: CC0-1.0

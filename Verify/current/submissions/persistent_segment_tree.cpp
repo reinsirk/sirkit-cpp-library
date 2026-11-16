@@ -1,5 +1,6 @@
 #define SKIP_RUNTIME_CHECKS
 // Verify: https://judge.yosupo.jp/problem/point_add_range_sum
+// Submission: https://judge.yosupo.jp/submission/417441
 
 // Library: DataStructure/Persistent_Segment_Tree.cpp
 // SPDX-License-Identifier: CC0-1.0

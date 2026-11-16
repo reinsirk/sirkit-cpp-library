@@ -3,7 +3,7 @@
 #pragma GCC optimize("O3")
 #endif
 // Verify: https://judge.yosupo.jp/problem/closest_pair
-// Submission: https://judge.yosupo.jp/submission/414013
+// Submission: https://judge.yosupo.jp/submission/417248
 
 // Library: Geometry/Nearest_Two_points.cpp
 // SPDX-License-Identifier: CC0-1.0

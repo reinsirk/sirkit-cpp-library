@@ -3,7 +3,7 @@
 #pragma GCC optimize("O3")
 #endif
 // Verify: https://judge.yosupo.jp/problem/staticrmq
-// Submission: https://judge.yosupo.jp/submission/414928
+// Submission: https://judge.yosupo.jp/submission/417260
 
 // Library: DataStructure/Sparse_Table.cpp
 // SPDX-License-Identifier: CC0-1.0

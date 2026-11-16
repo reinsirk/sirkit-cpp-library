@@ -1,6 +1,6 @@
 #define SKIP_RUNTIME_CHECKS
 // Verify: https://judge.yosupo.jp/problem/zalgorithm
-// Submission: https://judge.yosupo.jp/submission/416723
+// Submission: https://judge.yosupo.jp/submission/417268
 
 // Library: String/Z_Algorithm.cpp
 // SPDX-License-Identifier: CC0-1.0

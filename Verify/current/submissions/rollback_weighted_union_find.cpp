@@ -4,7 +4,7 @@
 #pragma GCC optimize("O3")
 #endif
 // Verify: https://judge.yosupo.jp/problem/unionfind_with_potential
-// Submission: https://judge.yosupo.jp/submission/414057
+// Submission: https://judge.yosupo.jp/submission/417254
 
 // Library: DataStructure/rollback-union-findw.cpp
 // SPDX-License-Identifier: CC0-1.0

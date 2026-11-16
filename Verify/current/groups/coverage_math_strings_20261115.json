@@ -1,0 +1,241 @@
+{
+  "entries": [
+    {
+      "id": "coverage_next_combination_independent_set",
+      "libraries": [
+        "Algorithm/next_combination.cpp"
+      ],
+      "driver": "Verify/current/drivers/coverage_math_independent_combinations_main.cpp",
+      "title": "Maximum Independent Set（組合せ列挙）",
+      "problem_url": "https://judge.yosupo.jp/problem/maximum_independent_set",
+      "selection_reason": "固定個数列挙の直接問題だけに限定せず、半分全列挙の中心処理へ使う。各個数を順に生成するため部分集合DPの依存も満たす。",
+      "coverage": "for_each_combination/first_combination/next_combination、k=0から全個数、32bitマスク",
+      "limitations": "オンライン未提出。N<=40を20頂点以下ずつに分割。列挙maskで独立集合DPと最適解復元を行う。計算量O(2^(ceil(N/2)))、領域も同じ。64bit端/last_combination/列挙順の直接比較は独立ローカル補足。",
+      "samples": [
+        {
+          "input": "8 10\n0 1\n2 3\n4 5\n6 7\n0 2\n2 4\n4 6\n1 3\n3 5\n5 7\n",
+          "output": "4\n0 3 4 7\n",
+          "source": "https://raw.githubusercontent.com/yosupo06/library-checker-problems/73876f1cbcf082d2b22722924b924d3d65a2f00e/graph/maximum_independent_set/gen/example_00.in",
+          "origin": "公式入力例。出力は独立全列挙/二重ループで算出した許容解（公式outではない）。"
+        },
+        {
+          "input": "7 9\n0 1\n1 2\n2 0\n2 3\n3 4\n4 2\n4 5\n5 6\n6 4\n",
+          "output": "3\n0 3 5\n",
+          "source": "https://raw.githubusercontent.com/yosupo06/library-checker-problems/73876f1cbcf082d2b22722924b924d3d65a2f00e/graph/maximum_independent_set/gen/example_01.in",
+          "origin": "公式入力例。出力は独立全列挙/二重ループで算出した許容解（公式outではない）。"
+        }
+      ],
+      "acl_required": false,
+      "submission_urls": [
+        "https://judge.yosupo.jp/submission/417352"
+      ],
+      "sample_checker": "maximum_independent_set",
+      "gcc_optimization": "O2"
+    },
+    {
+      "id": "coverage_mo_inversions",
+      "libraries": [
+        "Algorithm/Mo.cpp"
+      ],
+      "driver": "Verify/current/drivers/coverage_algorithm_mo_inversions_main.cpp",
+      "title": "Static Range Inversions Query（左右非対称Mo）",
+      "problem_url": "https://judge.yosupo.jp/problem/static_range_inversions_query",
+      "selection_reason": "既存の相異なる値数は左右対称のみ。転倒数は左追加と右追加が異なり、4callbackが実際の答えに必要。",
+      "coverage": "Mo.runのadd_left/add_right/erase_left/erase_rightを別々に使い、各位置の転倒数を集計する",
+      "limitations": "オンライン未提出。N,Q<=1e5。Fenwick型の頻度集計はmain内の独立補助で、左右の更新をMoが決める。O((N+Q)sqrt(N)log(N)+Qlog(Q))程度。更新時刻は既存mo_updatesで補完。",
+      "samples": [
+        {
+          "input": "4 2\n4 1 4 0\n1 3\n0 4\n",
+          "output": "0\n4\n",
+          "source": "https://raw.githubusercontent.com/yosupo06/library-checker-problems/73876f1cbcf082d2b22722924b924d3d65a2f00e/data_structure/static_range_inversions_query/gen/example_00.in",
+          "origin": "公式入力例。出力は独立全列挙/二重ループで算出した許容解（公式outではない）。"
+        }
+      ],
+      "acl_required": false,
+      "submission_urls": [
+        "https://judge.yosupo.jp/submission/417353"
+      ],
+      "gcc_optimization": "O2"
+    },
+    {
+      "id": "coverage_hash_set_string_search",
+      "libraries": [
+        "DataStructure/Hash_set.cpp"
+      ],
+      "driver": "Verify/current/drivers/coverage_string_hash_set_search_main.cpp",
+      "title": "文字列検索（HashSet<string>）",
+      "problem_url": "https://yukicoder.me/problems/no/430",
+      "selection_reason": "Trieと同じ問題を文字列HashSetでも自然に解ける。所属判定が一致数の出力そのものを決める。",
+      "coverage": "文字列insert/contains、実入力の各部分文字列の所属判定",
+      "limitations": "オンライン未提出。大文字S<=5e4、5000パターン以下、語長<=10。パターンは相異なるため重複挿入/sizeは旧AtCoder gachaで併せて検証する。",
+      "samples": [
+        {
+          "input": "ABCDABCD\n3\nA\nDA\nABCDABCD\n",
+          "output": "4\n",
+          "source": "https://yukicoder.me/problems/no/430",
+          "origin": "公式問題ページの入力例・出力例"
+        },
+        {
+          "input": "YUKICODER\n2\nX\nABCDEFGHIJ\n",
+          "output": "0\n",
+          "source": "https://yukicoder.me/problems/no/430",
+          "origin": "公式問題ページの入力例・出力例"
+        },
+        {
+          "input": "AAAA\n4\nA\nAA\nAAA\nAAAA\n",
+          "output": "10\n",
+          "source": "https://yukicoder.me/problems/no/430",
+          "origin": "公式問題ページの入力例・出力例"
+        },
+        {
+          "input": "ABAACABCAACBABABACBBAC\n7\nA\nC\nAA\nABB\nABA\nBA\nCBBAC\n",
+          "output": "26\n",
+          "source": "https://yukicoder.me/problems/no/430",
+          "origin": "公式問題ページの入力例・出力例"
+        }
+      ],
+      "acl_required": false,
+      "submission_urls": []
+    },
+    {
+      "id": "coverage_aho_total_search",
+      "libraries": [
+        "String/Aho_Corasick.cpp"
+      ],
+      "driver": "Verify/current/drivers/coverage_string_aho_total_main.cpp",
+      "title": "文字列検索（AhoCorasick総一致数）",
+      "problem_url": "https://yukicoder.me/problems/no/430",
+      "selection_reason": "LCのautomaton構造出力だけでは総一致数APIを検証しないため、本文検索の答えを直接出す補完。",
+      "coverage": "AhoCorasick<26,'A'>のadd/build/count_total、重なる一致とfailure遷移",
+      "limitations": "オンライン未提出。大文字S<=5e4、5000パターン以下、語長<=10。重複/空パターン・位置列挙はローカル、ID別match_countsは既存AtCoderで補完。",
+      "samples": [
+        {
+          "input": "ABCDABCD\n3\nA\nDA\nABCDABCD\n",
+          "output": "4\n",
+          "source": "https://yukicoder.me/problems/no/430",
+          "origin": "公式問題ページの入力例・出力例"
+        },
+        {
+          "input": "YUKICODER\n2\nX\nABCDEFGHIJ\n",
+          "output": "0\n",
+          "source": "https://yukicoder.me/problems/no/430",
+          "origin": "公式問題ページの入力例・出力例"
+        },
+        {
+          "input": "AAAA\n4\nA\nAA\nAAA\nAAAA\n",
+          "output": "10\n",
+          "source": "https://yukicoder.me/problems/no/430",
+          "origin": "公式問題ページの入力例・出力例"
+        },
+        {
+          "input": "ABAACABCAACBABABACBBAC\n7\nA\nC\nAA\nABB\nABA\nBA\nCBBAC\n",
+          "output": "26\n",
+          "source": "https://yukicoder.me/problems/no/430",
+          "origin": "公式問題ページの入力例・出力例"
+        }
+      ],
+      "acl_required": false,
+      "submission_urls": []
+    },
+    {
+      "id": "coverage_subset_transform_full",
+      "libraries": [
+        "Math/Zeta_Mebius.cpp"
+      ],
+      "driver": "Verify/current/drivers/coverage_math_subset_transform_main.cpp",
+      "title": "Bitwise And Convolution（部分集合変換）",
+      "problem_url": "https://judge.yosupo.jp/problem/bitwise_and_convolution",
+      "selection_reason": "既存Set Transform driverはsuperset2操作だけ。De Morganの等価変換でsubset2操作も出力へ反映する。",
+      "coverage": "subset_zeta_transformとsubset_mobius_transform、0次元からの全部分集合和",
+      "limitations": "オンライン未提出。法998244353、固定2冪長。補集合反転によりOR畳み込みへ等価変換し、2本を変換して積を逆変換する。AND出力だがsubset変換を実行する。一般加法型/空配列はローカル補足。",
+      "samples": [
+        {
+          "input": "3\n1 2 3 4 5 6 7 8\n9 10 11 12 13 14 15 16\n",
+          "output": "957 412 515 208 751 292 337 128\n",
+          "source": "https://raw.githubusercontent.com/yosupo06/library-checker-problems/73876f1cbcf082d2b22722924b924d3d65a2f00e/convolution/bitwise_and_convolution/gen/example_00.in",
+          "origin": "公式入力例。出力は独立全列挙/二重ループで算出した許容解（公式outではない）。"
+        }
+      ],
+      "acl_required": false,
+      "submission_urls": [
+        "https://judge.yosupo.jp/submission/417354"
+      ],
+      "gcc_optimization": "O2"
+    },
+    {
+      "id": "coverage_subset_transform_split",
+      "libraries": [
+        "Math/Zeta/Set_Transform.cpp"
+      ],
+      "driver": "Verify/current/drivers/coverage_math_subset_transform_main.cpp",
+      "title": "Bitwise And Convolution（部分集合変換）",
+      "problem_url": "https://judge.yosupo.jp/problem/bitwise_and_convolution",
+      "selection_reason": "既存Set Transform driverはsuperset2操作だけ。De Morganの等価変換でsubset2操作も出力へ反映する。",
+      "coverage": "subset_zeta_transformとsubset_mobius_transform、0次元からの全部分集合和",
+      "limitations": "オンライン未提出。法998244353、固定2冪長。補集合反転によりOR畳み込みへ等価変換し、2本を変換して積を逆変換する。AND出力だがsubset変換を実行する。一般加法型/空配列はローカル補足。",
+      "samples": [
+        {
+          "input": "3\n1 2 3 4 5 6 7 8\n9 10 11 12 13 14 15 16\n",
+          "output": "957 412 515 208 751 292 337 128\n",
+          "source": "https://raw.githubusercontent.com/yosupo06/library-checker-problems/73876f1cbcf082d2b22722924b924d3d65a2f00e/convolution/bitwise_and_convolution/gen/example_00.in",
+          "origin": "公式入力例。出力は独立全列挙/二重ループで算出した許容解（公式outではない）。"
+        }
+      ],
+      "acl_required": false,
+      "submission_urls": [
+        "https://judge.yosupo.jp/submission/417355"
+      ],
+      "gcc_optimization": "O2"
+    },
+    {
+      "id": "coverage_sparse_gcd_holes_full",
+      "libraries": [
+        "Math/Zeta_Mebius.cpp"
+      ],
+      "driver": "Verify/current/drivers/coverage_math_sparse_holes_main.cpp",
+      "title": "GCD Convolution（穴のある疎なキー）",
+      "problem_url": "https://judge.yosupo.jp/problem/gcd_convolution",
+      "selection_reason": "既存のsparse driverは1..N連続キーだけ。等価な添字拡大により、全合法入力で疎な探索経路が出力へ必要となる。",
+      "coverage": "sparse_multiple_zeta_transformとsparse_multiple_mobius_transform、非連続・全約数閉包のキー",
+      "limitations": "オンライン未提出。入力添字iを2iへ写し全約数閉包を取る。キー集合は1..NとNより大きい偶数で、N>=2なら穴が生じる。最大キー2N、Sieve(2N)、法998244353。gcd(2i,2j)=2gcd(i,j)の偶数位置を出力。",
+      "samples": [
+        {
+          "input": "6\n1 2 3 4 5 6\n6 5 4 3 2 1\n",
+          "output": "284 90 39 12 10 6\n",
+          "source": "https://raw.githubusercontent.com/yosupo06/library-checker-problems/73876f1cbcf082d2b22722924b924d3d65a2f00e/convolution/gcd_convolution/gen/example_00.in",
+          "origin": "公式入力例。出力は独立全列挙/二重ループで算出した許容解（公式outではない）。"
+        }
+      ],
+      "acl_required": false,
+      "submission_urls": [
+        "https://judge.yosupo.jp/submission/417357"
+      ],
+      "gcc_optimization": "O2"
+    },
+    {
+      "id": "coverage_sparse_gcd_holes_split",
+      "libraries": [
+        "Math/Zeta/Sparse_Transform.cpp"
+      ],
+      "driver": "Verify/current/drivers/coverage_math_sparse_holes_main.cpp",
+      "title": "GCD Convolution（穴のある疎なキー）",
+      "problem_url": "https://judge.yosupo.jp/problem/gcd_convolution",
+      "selection_reason": "既存のsparse driverは1..N連続キーだけ。等価な添字拡大により、全合法入力で疎な探索経路が出力へ必要となる。",
+      "coverage": "sparse_multiple_zeta_transformとsparse_multiple_mobius_transform、非連続・全約数閉包のキー",
+      "limitations": "オンライン未提出。入力添字iを2iへ写し全約数閉包を取る。キー集合は1..NとNより大きい偶数で、N>=2なら穴が生じる。最大キー2N、Sieve(2N)、法998244353。gcd(2i,2j)=2gcd(i,j)の偶数位置を出力。",
+      "samples": [
+        {
+          "input": "6\n1 2 3 4 5 6\n6 5 4 3 2 1\n",
+          "output": "284 90 39 12 10 6\n",
+          "source": "https://raw.githubusercontent.com/yosupo06/library-checker-problems/73876f1cbcf082d2b22722924b924d3d65a2f00e/convolution/gcd_convolution/gen/example_00.in",
+          "origin": "公式入力例。出力は独立全列挙/二重ループで算出した許容解（公式outではない）。"
+        }
+      ],
+      "acl_required": false,
+      "submission_urls": [
+        "https://judge.yosupo.jp/submission/417358"
+      ],
+      "gcc_optimization": "O2"
+    }
+  ]
+}

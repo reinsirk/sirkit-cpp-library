@@ -3,7 +3,7 @@
 #pragma GCC optimize("O3")
 #endif
 // Verify: https://judge.yosupo.jp/problem/two_edge_connected_components
-// Submission: https://judge.yosupo.jp/submission/416746
+// Submission: https://judge.yosupo.jp/submission/417245
 
 // Library: Graph/Low_Link.cpp
 // SPDX-License-Identifier: CC0-1.0

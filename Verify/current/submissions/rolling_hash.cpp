@@ -1,6 +1,6 @@
 #define SKIP_RUNTIME_CHECKS
 // Verify: https://judge.yosupo.jp/problem/zalgorithm
-// Submission: https://judge.yosupo.jp/submission/413371
+// Submission: https://judge.yosupo.jp/submission/417255
 
 // Library: String/RollingHash.cpp
 // SPDX-License-Identifier: CC0-1.0

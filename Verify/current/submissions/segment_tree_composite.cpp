@@ -3,7 +3,7 @@
 #pragma GCC optimize("O3", "unroll-loops")
 #endif
 // Verify: https://judge.yosupo.jp/problem/point_set_range_composite
-// Submission: https://judge.yosupo.jp/submission/414722
+// Submission: https://judge.yosupo.jp/submission/417259
 
 // Library: DataStructure/Segment_Tree.cpp
 // SPDX-License-Identifier: CC0-1.0

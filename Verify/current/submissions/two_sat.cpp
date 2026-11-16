@@ -3,7 +3,7 @@
 #pragma GCC optimize("O3", "unroll-loops")
 #endif
 // Verify: https://judge.yosupo.jp/problem/two_sat
-// Submission: https://judge.yosupo.jp/submission/416749
+// Submission: https://judge.yosupo.jp/submission/417263
 
 // Library: Graph/Two_SAT.cpp
 // SPDX-License-Identifier: CC0-1.0

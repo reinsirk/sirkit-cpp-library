@@ -1,6 +1,6 @@
 #define SKIP_RUNTIME_CHECKS
 // Verify: https://judge.yosupo.jp/problem/set_xor_min
-// Submission: https://judge.yosupo.jp/submission/413374
+// Submission: https://judge.yosupo.jp/submission/417204
 
 // Library: DataStructure/Binary_Trie.cpp
 // SPDX-License-Identifier: CC0-1.0
