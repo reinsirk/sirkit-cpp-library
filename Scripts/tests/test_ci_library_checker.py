@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: CC0-1.0
 import hashlib
 import json
+import resource
 from pathlib import Path
 import shutil
 import subprocess
@@ -114,6 +115,36 @@ class SelectionTests(unittest.TestCase):
             self.assertIsNone(lc.problem_id({"problem_url": url}))
 
 
+class GenerationStackTests(unittest.TestCase):
+    def test_generation_stack_preserves_hard_limit_and_unlimited_soft_limit(self):
+        for inherited, expected in [((8 << 20, -1), (512 << 20, -1)),
+                                    ((8 << 20, 16 << 20), (16 << 20, 16 << 20)),
+                                    ((-1, -1), (-1, -1)),
+                                    ((1 << 30, -1), (1 << 30, -1))]:
+            with self.subTest(inherited=inherited), patch.object(lc.resource, "getrlimit", return_value=inherited), patch.object(lc.resource, "setrlimit") as setlimit:
+                self.assertEqual(lc.generation_stack_limit(), expected)
+                setlimit.assert_not_called()
+
+    def test_stack_and_core_limits_apply_only_inside_generation_child(self):
+        with tempfile.TemporaryDirectory() as temporary, \
+             patch.object(lc.resource, "getrlimit", return_value=(8 << 20, -1)), \
+             patch.object(lc.resource, "setrlimit") as setlimit, \
+             patch.object(lc.subprocess, "Popen") as popen:
+            popen.return_value.wait.return_value = 0
+            args = dict(cwd=Path(temporary), log=Path(temporary)/"execute.log", timeout=1)
+            lc.execute(["own-fixture"], **args, stack_bytes=lc.GENERATION_STACK_BYTES)
+            setup = popen.call_args.kwargs["preexec_fn"]
+            self.assertTrue(callable(setup))
+            setlimit.assert_not_called()
+            setup()
+            self.assertEqual(setlimit.call_args_list[0].args, (resource.RLIMIT_STACK, (512 << 20, -1)))
+            self.assertEqual(setlimit.call_args_list[1].args, (resource.RLIMIT_CORE, (0, 0)))
+            setlimit.reset_mock()
+            lc.execute(["own-solution"], **args)
+            self.assertIsNone(popen.call_args.kwargs["preexec_fn"])
+            setlimit.assert_not_called()
+
+
 class OfficialCaseTests(unittest.TestCase):
     def setUp(self):
         self.directory = tempfile.TemporaryDirectory()
@@ -166,6 +197,23 @@ class OfficialCaseTests(unittest.TestCase):
             "example_00", "max_random_00", "max_random_01", "max_random_02",
             "conchon_filliatre_tle_00", "conchon_filliatre_tle_01",
             "unordered_map_killer_00", "overflow_00"]))
+
+    def test_generation_failure_keeps_typed_diagnostics_without_raw_log(self):
+        def fail(*args, **kwargs):
+            kwargs["log"].write_text("private raw input should stay local\nCalledProcessError: correct died with <Signals.SIGSEGV: 11>\n")
+            self.assertEqual(kwargs["stack_bytes"], 512 << 20)
+            return 1, 100
+        with patch.object(lc, "execute", side_effect=fail):
+            with self.assertRaises(lc.RunnerError) as raised:
+                lc.official_problem(self.checkout, "owned_problem", self.cache, PIN, 10)
+        self.assertEqual(raised.exception.kind, "official_generation_unavailable")
+        details = raised.exception.details
+        self.assertEqual(details["signals"], ["SIGSEGV"])
+        self.assertEqual(details["returncode"], 1)
+        self.assertFalse(details["timed_out"])
+        self.assertEqual(len(details["log_sha256"]), 64)
+        self.assertNotIn("private raw", json.dumps(details))
+        self.assertNotIn("correct died", json.dumps(details))
 
     def test_case_counts_require_positive_integers_not_boolean_or_fraction(self):
         for count in (-1, 0, True, False, 1.5, "1"):

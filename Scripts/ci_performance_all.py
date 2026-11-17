@@ -373,6 +373,9 @@ def complete(report: dict, *, entries: dict | None = None, nonlc=None) -> bool:
         return False
     for row in rows:
         cases = row.get("cases", [])
+        # 生成・ビルドに失敗した行にはケース一覧がない。元の失敗を保持する。
+        if row.get("status") != "PASS" or row.get("current_measurements_passed") is not True:
+            return False
         if entries is not None:
             entry = entries[row["verify_id"]]
             quick = report["size_profile"] == "quick_smoke"
@@ -382,13 +385,12 @@ def complete(report: dict, *, entries: dict | None = None, nonlc=None) -> bool:
                 expected = ["registered_sample_" + str(i).zfill(2) for i, _ in enumerate(entry.get("samples", []))]
             else:
                 manifest = row.get("official_case_input_bytes", {})
-                if set(manifest) != set(row.get("official", {}).get("expected_cases", [])):
+                if not manifest or set(manifest) != set(row.get("official", {}).get("expected_cases", [])):
                     return False
                 expected = list(official_selection(manifest, False))
             if row.get("expected_case_names") != expected:
                 return False
-        if (row.get("status") != "PASS" or row.get("current_measurements_passed") is not True
-                or not row.get("expected_case_names")
+        if (not row.get("expected_case_names")
                 or len(row["expected_case_names"]) != len(set(row["expected_case_names"]))
                 or [c["name"] for c in cases] != row["expected_case_names"]):
             return False
@@ -432,6 +434,13 @@ def write_report(output: Path, report: dict) -> None:
     if report.get("error"):
         lines += ["", str(report["error"]).replace("\n", " ")[:1000]]
     (output / "summary.md").write_text("\n".join(lines) + "\n")
+
+
+def record_failure(target: dict, error: Exception, *, key: str = "error") -> None:
+    target["status"], target[key] = "FAIL", str(error)
+    details = getattr(error, "details", None)
+    if isinstance(details, dict):
+        target[key + "_details"] = dict(details)
 
 
 def run(args: argparse.Namespace) -> int:
@@ -547,7 +556,7 @@ def run(args: argparse.Namespace) -> int:
                         write_report(output, report)
                     row["current_measurements_passed"], row["status"] = True, "PASS"
                 except (OSError, ValueError, official.RunnerError, subprocess.SubprocessError) as error:
-                    row["status"], row["error"] = "FAIL", str(error)
+                    record_failure(row, error)
                 finally:
                     # 入力・正解はhashと規模を記録済み。Max入力をshard全体で溜め込まない。
                     problem = row.get("problem_id")
@@ -556,7 +565,9 @@ def run(args: argparse.Namespace) -> int:
                             directory = prepared.pop(problem)[0] if problem in prepared else official.find_problem(checkout, problem)
                             row["test_data_cleanup"] = official.discard_test_data(checkout, directory)
                         except (OSError, official.RunnerError) as error:
-                            row["status"], row["error"] = "FAIL", str(error)
+                            record_failure(row, error, key="cleanup_error")
+                            if "error" not in row:
+                                record_failure(row, error)
                     shutil.rmtree(work / "inputs", ignore_errors=True)
                     for actual in work.glob("*.actual"):
                         actual.unlink(missing_ok=True)
@@ -566,14 +577,14 @@ def run(args: argparse.Namespace) -> int:
             report["current_measurements_passed"] = complete(report, entries=by_id, nonlc=nonlc)
             report["status"] = "PASS" if report["current_measurements_passed"] else "FAIL"
     except (OSError, ValueError, official.RunnerError, subprocess.SubprocessError) as error:
-        report["status"], report["error"] = "FAIL", str(error)
+        record_failure(report, error)
     finally:
         if frozen is not None:
             try:
                 check_frozen(frozen, root)
             except (OSError, PerformanceError) as error:
                 report["source_freeze_passed"], report["current_measurements_passed"] = False, False
-                report["status"], report["error"] = "FAIL", str(error)
+                record_failure(report, error)
         write_report(output, report)
     return 0 if report["status"] == "PASS" else 1
 
