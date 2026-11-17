@@ -192,12 +192,85 @@ class CompletionTests(unittest.TestCase):
             official={"expected_cases":["one","killer_00"]},official_case_input_bytes={"one":1,"killer_00":100})
         self.assertFalse(perf.complete(data,entries={"a":{}},nonlc=None))
 
+    def test_failed_generation_without_case_manifest_keeps_original_error(self):
+        data=self.good();data["size_profile"]="full_representative"
+        row=data["results"][0]
+        row.update(verify_id="a",case_source="official_library_checker",status="FAIL",
+                   current_measurements_passed=False,error="official_generation_unavailable",cases=[])
+        row.pop("expected_case_names")
+        before=dict(row)
+        with patch.object(perf,"official_selection",side_effect=AssertionError("failed row has no cases")):
+            self.assertFalse(perf.complete(data,entries={"a":{}},nonlc=None))
+        self.assertEqual(row,before)
+
+    def test_successful_official_row_requires_nonempty_manifest(self):
+        data=self.good();data["size_profile"]="full_representative"
+        row=data["results"][0]
+        row.update(verify_id="a",case_source="official_library_checker")
+        for value in ({}, {"official": {"expected_cases": []}, "official_case_input_bytes": {}}):
+            row.update(value)
+            self.assertFalse(perf.complete(data,entries={"a":{}},nonlc=None))
+
     def test_duplicate_declared_case_names_are_not_complete(self):
         data=self.good();row=data["results"][0];row["cases"]*=2;row["expected_case_names"]*=2
         self.assertFalse(perf.complete(data))
 
 
 class RunnerTests(unittest.TestCase):
+    def test_generation_failure_report_survives_completion_and_cleanup(self):
+        with tempfile.TemporaryDirectory()as temporary:
+            folder=Path(temporary);root=folder/"repo";root.mkdir()
+            library=root/"A.cpp";library.write_text("struct A {};\n")
+            (root/"driver.cpp").write_text("int main(){}\n")
+            entry={"id":"a","libraries":["A.cpp"],"driver":"driver.cpp","allow_custom_io":True,
+                   "problem_url":"https://judge.yosupo.jp/problem/unionfind"}
+            rows=[{"library":"A.cpp","verify_id":"a","libraries":["A.cpp"],
+                   "case_source":"official_library_checker","problem_id":"unionfind"}]
+            args=SimpleNamespace(cache=folder/"cache",output=folder/"reports",base=None,compiler="fake",
+                repetitions=1,warmups=0,quick=False,plan=False,library=None,shard_index=0,shard_count=1,
+                compile_timeout=1,case_timeout=1,generation_timeout=1,memory_mib=64)
+            generation=perf.official.RunnerError("official_generation_unavailable")
+            generation.details={"returncode":-11,"diagnostic_excerpt":"reference failed"}
+            cleanup=perf.official.RunnerError("test_data_cleanup_unavailable")
+            cleanup.details={"phase":"cleanup"}
+            with patch.object(perf,"ROOT",root),patch.object(perf,"nonlc_module",return_value=SimpleNamespace()), \
+                 patch.object(perf.prepare_verify,"collect",return_value=[entry]),patch.object(perf,"catalog",return_value=rows), \
+                 patch.object(perf.shutil,"which",return_value="/bin/true"), \
+                 patch.object(perf.subprocess,"check_output",return_value="fake compiler\n"), \
+                 patch.object(perf.subprocess,"Popen",side_effect=AssertionError("no children")), \
+                 patch.object(perf,"freeze_sources",return_value={}),patch.object(perf,"check_frozen"), \
+                 patch.object(perf.official,"load_pin",return_value={}), \
+                 patch.object(perf,"build",return_value={"status":"PASS","binary":"fake"}), \
+                 patch.object(perf.official,"checkout_official",return_value=folder/"checkout"), \
+                 patch.object(perf.official,"official_problem",side_effect=generation), \
+                 patch.object(perf.official,"find_problem",return_value=folder/"problem"), \
+                 patch.object(perf.official,"discard_test_data",side_effect=cleanup):
+                self.assertEqual(perf.run(args),1)
+            report=json.loads((args.output/"result.json").read_text());row=report["results"][0]
+            self.assertEqual(report["status"],"FAIL")
+            self.assertNotIn("error",report)
+            self.assertEqual(row["error"],"official_generation_unavailable")
+            self.assertEqual(row["error_details"],generation.details)
+            self.assertEqual(row["cleanup_error_details"],cleanup.details)
+            self.assertFalse(report["current_measurements_passed"])
+
+    def test_generation_diagnostics_and_cleanup_failure_preserve_original_cause(self):
+        generation=perf.official.RunnerError("official_generation_unavailable")
+        generation.details={"returncode":-11,"diagnostic_excerpt":"reference received SIGSEGV","stack_bytes":67108864}
+        row={}
+        perf.record_failure(row,generation)
+        cleanup=perf.official.RunnerError("test_data_cleanup_unavailable")
+        cleanup.details={"phase":"cleanup"}
+        perf.record_failure(row,cleanup,key="cleanup_error")
+        self.assertEqual(row["status"],"FAIL")
+        self.assertEqual(row["error"],"official_generation_unavailable")
+        self.assertEqual(row["error_details"],generation.details)
+        self.assertEqual(row["cleanup_error_details"],cleanup.details)
+        report={}
+        perf.record_failure(report,generation)
+        self.assertEqual(report["error_details"],generation.details)
+        self.assertIsNot(report["error_details"],generation.details)
+
     def test_real_103_library_plan_spawns_no_children(self):
         with tempfile.TemporaryDirectory()as temporary,redirect_stdout(io.StringIO())as stream, \
              patch.object(perf.subprocess,"Popen",side_effect=AssertionError("plan must not spawn children")), \

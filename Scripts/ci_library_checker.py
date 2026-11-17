@@ -14,6 +14,7 @@ import math
 import os
 from pathlib import Path
 import re
+import resource
 import shutil
 import signal
 import subprocess
@@ -30,6 +31,7 @@ except ImportError:
 
 ROOT = Path(__file__).resolve().parents[1]
 PIN = ROOT / "Verify/ci/library_checker.json"
+GENERATION_STACK_BYTES = 512 * 1024 * 1024
 OWN_INPUTS = {"Scripts/ci_library_checker.py", "Verify/ci/library_checker.json"}
 PERFORMANCE_SCOPE = (
     "whole_program_wall_time_including_process_start_io_and_runner_wait; checker excluded; "
@@ -38,9 +40,10 @@ PERFORMANCE_SCOPE = (
 
 
 class RunnerError(RuntimeError):
-    def __init__(self, kind: str):
+    def __init__(self, kind: str, details: dict | None = None):
         super().__init__(kind)
         self.kind = kind
+        self.details = details or {}
 
 
 def digest(path: Path) -> str:
@@ -109,13 +112,20 @@ def write_report(directory: Path, report: dict) -> None:
 
 
 def execute(command: list[str], *, cwd: Path, log: Path, timeout: float,
-            stdin=None, stdout=None, env: dict | None = None) -> tuple[int | None, int]:
+            stdin=None, stdout=None, env: dict | None = None,
+            stack_bytes: int | None = None) -> tuple[int | None, int]:
     """生ログは外部cacheだけへ保存し、タイムアウト時は子プロセス群も止める。"""
     started = time.perf_counter_ns()
+    child_setup = None
+    if stack_bytes is not None:
+        soft, hard = generation_stack_limit(stack_bytes)
+        def child_setup():
+            resource.setrlimit(resource.RLIMIT_STACK, (soft, hard))
+            resource.setrlimit(resource.RLIMIT_CORE, (0, 0))
     with log.open("ab") as errors:
         process = subprocess.Popen(command, cwd=cwd, stdin=stdin,
                                    stdout=stdout if stdout is not None else errors,
-                                   stderr=errors, env=env, start_new_session=True)
+                                   stderr=errors, env=env, start_new_session=True, preexec_fn=child_setup)
         try:
             code = process.wait(timeout=timeout)
         except subprocess.TimeoutExpired:
@@ -180,6 +190,29 @@ def expected_cases(info: dict) -> list[str]:
     return sorted(names)
 
 
+def generation_stack_limit(requested: int = GENERATION_STACK_BYTES) -> tuple[int, int]:
+    """公式正解の深い再帰用。親プロセスと提出実行の制限は変更しない。"""
+    soft, hard = resource.getrlimit(resource.RLIMIT_STACK)
+    if soft == resource.RLIM_INFINITY:
+        return soft, hard
+    target = max(soft, requested)
+    return (target if hard == resource.RLIM_INFINITY else min(target, hard)), hard
+
+
+def generation_failure(log: Path, returncode: int | None, stack_bytes: int) -> dict:
+    # 生ログや公式の入出力は成果物に含めず、原因の分類と照合用SHAだけ残す。
+    with log.open("rb") as stream:
+        stream.seek(0, os.SEEK_END)
+        size = stream.tell()
+        stream.seek(max(0, size - 16384))
+        tail = stream.read().decode("utf-8", errors="replace")
+    return {"returncode": returncode, "timed_out": returncode is None,
+            "signals": sorted(set(re.findall(r"\bSIG[A-Z0-9]+\b", tail))),
+            "compiler_error_detected": bool(re.search(r"(?:^|\n).*\berror:", tail)),
+            "generation_stack_bytes": stack_bytes,
+            "log_sha256": digest(log), "log_bytes": size}
+
+
 def official_problem(checkout: Path, identifier: str, cache: Path, pin: dict,
                      generation_timeout: float) -> tuple[Path, dict]:
     directory = find_problem(checkout, identifier)
@@ -188,9 +221,13 @@ def official_problem(checkout: Path, identifier: str, cache: Path, pin: dict,
     command = [sys.executable, str(checkout / "generate.py"), str(directory / "info.toml")]
     env = os.environ.copy()
     env["CXX"] = "g++"
-    if execute(command, cwd=checkout, log=cache_path(cache, identifier + ".generation.log"),
-               timeout=generation_timeout, env=env)[0] != 0:
-        raise RunnerError("official_generation_unavailable")
+    log = cache_path(cache, identifier + ".generation.log")
+    log.write_bytes(b"")
+    stack_bytes, _ = generation_stack_limit()
+    code, _ = execute(command, cwd=checkout, log=log, timeout=generation_timeout,
+                      env=env, stack_bytes=GENERATION_STACK_BYTES)
+    if code != 0:
+        raise RunnerError("official_generation_unavailable", generation_failure(log, code, stack_bytes))
     hashes = json.loads((directory / "hash.json").read_text())
     if set(hashes) != {name + extension for name in names for extension in (".in", ".out")}:
         raise RunnerError("official_case_manifest_mismatch")
@@ -210,7 +247,8 @@ def official_problem(checkout: Path, identifier: str, cache: Path, pin: dict,
                        "checker_source_sha256": digest(directory / "checker.cpp"),
                        "checker_sha256": digest(checker), "expected_cases": names,
                        "official_timelimit_seconds": info.get("timelimit"),
-                       "generation_command": command, "generation_compiler_env": "g++"}
+                       "generation_command": command, "generation_compiler_env": "g++",
+                       "generation_stack_bytes": stack_bytes}
 
 
 def provenance(entry: dict, root: Path = ROOT) -> dict:
@@ -358,6 +396,8 @@ def run_selected(entries: list[dict], plan: dict, cache: Path, output: Path, pin
             except (OSError, ValueError, subprocess.SubprocessError, RunnerError) as error:
                 row["unavailable"] = True
                 row["error_kind"] = error.kind if isinstance(error, RunnerError) else type(error).__name__
+                if isinstance(error, RunnerError) and error.details:
+                    row["error_details"] = error.details
             finally:
                 passed = sum(case["status"] == "PASS" for case in row["cases"])
                 row["case_counts"].update(completed=len(row["cases"]), passed=passed,
@@ -382,6 +422,8 @@ def run_selected(entries: list[dict], plan: dict, cache: Path, output: Path, pin
     except (OSError, ValueError, subprocess.SubprocessError, RunnerError) as error:
         report["status"] = "FAIL"
         report["error_kind"] = error.kind if isinstance(error, RunnerError) else type(error).__name__
+        if isinstance(error, RunnerError) and error.details:
+            report["error_details"] = error.details
         present = {row["id"] for row in report["results"]}
         for identifier in plan["selected_ids"]:
             if identifier in present:

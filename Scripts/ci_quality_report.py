@@ -594,7 +594,7 @@ def collect_all_performance(value: dict, root: Path, entries: dict, append) -> N
         if row.get("status") != "PASS":
             append(library, "performance", dict(status="FAIL" if row.get("status") == "FAIL" else "UNAVAILABLE",
                    id=identifier, scope="Verify全体（起動・入出力込み）", checks=0,
-                   error=row.get("error", "測定未完了"), absolute_current=True))
+                   error=row.get("error", "測定未完了"), error_details=row.get("error_details", {}), absolute_current=True))
             continue
         if row.get("current_build", {}).get("status") != "PASS":
             raise ReportError("ビルド未成功の性能記録です")
@@ -640,7 +640,13 @@ def collect_all_performance(value: dict, root: Path, entries: dict, append) -> N
                     integer(ns)
                 if type(cpu_medians[role]) not in (int, float) or not math.isfinite(cpu_medians[role]) or cpu_medians[role] != statistics.median(times):
                     raise ReportError("子プロセスCPU時間の中央値が不正です")
-            status = "STALE" if changed else ("PARTIAL" if value["size_profile"] == "quick_smoke" else "PASS") if value.get("source_freeze_passed") is True and value.get("status") == "PASS" else "FAIL"
+            # shard全体の失敗はaggregateで保持し、照合済みの行へ波及させない。
+            if changed:
+                status = "STALE"
+            elif value.get("source_freeze_passed") is not True:
+                status = "FAIL"
+            else:
+                status = "PARTIAL" if value["size_profile"] == "quick_smoke" else "PASS"
             append(library, "performance", dict(status=status, id=identifier,
                    scope="Verify全体（起動・入出力込み。複合本体はlibraries参照）",
                    timing_scope=value.get("timing_scope"), absolute_current=True, size_profile=value["size_profile"],
@@ -752,7 +758,8 @@ def collect_library_checker(value: dict, root: Path, entries: dict, append) -> N
                    cases=cases, case_counts=counts, elapsed_ns=elapsed if cases else None, official=run_official,
                    compile_command=compile_command, embedded_compile_settings=row.get("embedded_compile_settings", {}),
                    submission=row["submission"], submission_sha256=row["submission_sha256"],
-                   source_hashes=recorded, runner=runner,
+                   source_hashes=recorded, runner=runner, error_kind=row.get("error_kind"),
+                   error_details=row.get("error_details", {}), cleanup_error_kind=row.get("cleanup_error_kind"),
                    performance_scope=row.get("performance_scope"), source_mismatches=changed))
     if value["status"] == "PASS" and seen != set(selected):
         raise ReportError("PASS Library Checkerの選択対象に未実行があります")

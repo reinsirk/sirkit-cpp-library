@@ -1,0 +1,180 @@
+{
+  "format": 1,
+  "date": "2026-11-17",
+  "topic": "CI official generation stack failure",
+  "run_url": "https://github.com/reinsirk/sirkit-cpp-library/actions/runs/43851304037",
+  "run_head_sha": "d2efb416412ff361372ca5de6e1ac20e25a11569",
+  "run_event": "pull_request",
+  "online_status": "not_evaluated",
+  "failures": {
+    "library-checker-": {
+      "passed": 134,
+      "failed": [
+        {
+          "id": "two_sat",
+          "error": "official_generation_unavailable"
+        },
+        {
+          "id": "hld_vertex_add_path_sum",
+          "error": "official_generation_unavailable"
+        },
+        {
+          "id": "persistent_union_find",
+          "error": "official_generation_unavailable"
+        },
+        {
+          "id": "hld_path_prod",
+          "error": "official_generation_unavailable"
+        },
+        {
+          "id": "rollback_union_find",
+          "error": "official_generation_unavailable"
+        },
+        {
+          "id": "scc",
+          "error": "official_generation_unavailable"
+        },
+        {
+          "id": "hld_path_composite",
+          "error": "official_generation_unavailable"
+        },
+        {
+          "id": "rollback_weighted_union_find_rollback",
+          "error": "official_generation_unavailable"
+        },
+        {
+          "id": "low_link_biconnected",
+          "error": "official_generation_unavailable"
+        },
+        {
+          "id": "hld_jump",
+          "error": "official_generation_unavailable"
+        }
+      ]
+    },
+    "all-library-performance-": {
+      "passed": 97,
+      "failed": [
+        {
+          "id": "two_sat",
+          "error": "official_generation_unavailable"
+        },
+        {
+          "id": "scc",
+          "error": "official_generation_unavailable"
+        },
+        {
+          "id": "rollback_union_find",
+          "error": "official_generation_unavailable"
+        },
+        {
+          "id": "persistent_union_find",
+          "error": "official_generation_unavailable"
+        },
+        {
+          "id": "low_link_biconnected",
+          "error": "official_generation_unavailable"
+        },
+        {
+          "id": "hld_jump",
+          "error": "official_generation_unavailable"
+        }
+      ]
+    }
+  },
+  "diagnosis": {
+    "observed_error_kind": "official_generation_unavailable",
+    "inference": "All failed official problems use recursive reference solutions. Default Linux stack is insufficient for deep cases. The exact original CI process stderr is not in uploaded artifacts.",
+    "official_generation_workflow": "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/.github/workflows/generate.yml#L53",
+    "reproduction": {
+      "source": "/tmp/sirkit-general-matching-lc-cache-20261117/official/73876f1cbcf082d2b22722924b924d3d65a2f00e/data_structure/persistent_unionfind/sol/correct.cpp",
+      "source_sha256": "aa264438d10008204a1808b6a0f522957d6e7fa20d0739bf61f12b5aefaef65c",
+      "input_sha256": "bf365cc8aa6a1e806cd01cc6650cfbcad344f09d6dbdd1f92da8ef831336c5ef",
+      "q": 200000,
+      "runs": [
+        {
+          "stack_bytes": 8388608,
+          "returncode": -11,
+          "stdout": "",
+          "stderr": ""
+        },
+        {
+          "stack_bytes": 536870912,
+          "returncode": 0,
+          "stdout": "1\n",
+          "stderr": ""
+        }
+      ]
+    },
+    "fixed_runner": {
+      "returncode": 0,
+      "stdout": "1\n",
+      "parent_limits_before": [
+        8388608,
+        -1
+      ],
+      "parent_limits_after": [
+        8388608,
+        -1
+      ],
+      "generation_child_requested_stack": 536870912,
+      "grandchild": "unmodified pinned official persistent_unionfind reference",
+      "elapsed_ns": 116267493
+    }
+  },
+  "changes": [
+    "Raise stack for official generator subprocesses to at least512MiB within inherited hard limit; leave parent and solution runs unchanged.",
+    "Record generation returncode, signal classification and log SHA/size without publishing raw logs or problem inputs.",
+    "Keep the original generation failure instead of throwing an empty-case error during final performance aggregation.",
+    "Preserve successful per-library timings when another library in the same shard fails; overall failure remains FAIL."
+  ],
+  "validation": {
+    "pure_python_tests": 193,
+    "fixed_official_generation": {
+      "status": "PASS",
+      "problem_id": "persistent_unionfind",
+      "expected_cases": 14,
+      "generation_stack_bytes": 536870912,
+      "all_case_hashes_match": true,
+      "official_revision": "73876f1cbcf082d2b22722924b924d3d65a2f00e",
+      "parent_stack_unchanged": true,
+      "info_sha256": "32b06d43189a2e6861526a268c4c482a963a9ef4ec62357effb9ec536ce84b48",
+      "hash_json_sha256": "0812797724d2c7b0024aa93536548285b942b23998cc10ed956fd19a899fe0fb"
+    },
+    "current_library_official_verify": {
+      "id": "persistent_union_find",
+      "status": "PASS",
+      "counts": {
+        "selected": 1,
+        "completed": 1,
+        "passed": 1,
+        "failed": 0,
+        "unavailable": 0,
+        "case_expected": 14,
+        "case_completed": 14,
+        "case_passed": 14,
+        "case_failed": 0
+      },
+      "cases": {
+        "expected": 14,
+        "completed": 14,
+        "passed": 14,
+        "failed": 0
+      },
+      "source_sha256": "ba17b50b25f4207ba01f9487478e901677531db57bdac4c222196644afe4d45c"
+    },
+    "resource_policy": "Serial child execution; CPU27; nice19. Only one failed official problem was regenerated and verified, no network during tests. Existing pinned official sources copied to a separate temporary cache.",
+    "github_rerun": "not started; fixes are uncommitted",
+    "git_diff_check": "PASS"
+  },
+  "source_sha256": {
+    "Scripts/ci_library_checker.py": "8ffe9ab6b5a12b642bd1dfc4e5a063083d5fe73832321457e9ee974d1fa9c367",
+    "Scripts/ci_performance_all.py": "5567720fea5bbd99034395b5fe61b5c1313e15e9ae0f26a218dc7b93c511bd62",
+    "Scripts/ci_quality_report.py": "bc15ba89ccdc9aa14590a80c81efa1946d96d9dd76f8397035f4cc91d2a301b6",
+    "Scripts/tests/test_ci_library_checker.py": "29c990b16598489e3e439c72b13c5b5ac84223c8fe06442f5ccf05a5f10d5000",
+    "Scripts/tests/test_ci_performance_all.py": "cb159724c3cbac748618b9fb208e2cebd7432b91e5b4d46e9e783fdc22a8e878",
+    "Scripts/tests/test_ci_quality_report.py": "8078ee7feca06b8862d6dcbf1d7e9a368cf400366b01770a790332ee24537a1a",
+    "Document/ci_quality.md": "8252a00e585c633d2f7aa58595122ea980b2e5e75e07e1abf926c0e3e153e88c"
+  },
+  "unrelated_changes": "General_Matching optimization and its generated verification files are being changed in another work and were not edited by this task."
+}

@@ -191,6 +191,56 @@ class QualityTests(unittest.TestCase):
         self.assertIn("未実施", quality.markdown(report))
         self.assertEqual(report["performance_coverage"]["whole_program_full_measured"], 0)
 
+    def failed_performance_shard(self, *, quick=False, peer_status="FAIL"):
+        value = self.all_performance(quick=quick)
+        value.update(status="FAIL", current_measurements_passed=False, shard_count=1,
+                     selected_library_paths=list(value["all_library_paths"]))
+        value["results"].append({"library": "Graph/B.cpp", "verify_id": "beta",
+                                 "libraries": ["Graph/B.cpp"], "status": peer_status,
+                                 "current_measurements_passed": False, "cases": [],
+                                 "error": "compile failed" if peer_status == "FAIL" else "not run"})
+        entries = {"alpha": self.entry, "beta": {"id": "beta", "libraries": ["Graph/B.cpp"]}}
+        return value, entries
+
+    def test_failed_performance_shard_preserves_successful_library_measurements(self):
+        for peer_status in ("FAIL", "NOT_RUN"):
+            with self.subTest(peer_status=peer_status):
+                value, entries = self.failed_performance_shard(peer_status=peer_status)
+                report = quality.aggregate(self.root, [self.report_file(value)], source_manifest=entries)
+                self.assertEqual(report["errors"], [])
+                self.assertEqual(report["status"], "FAIL")
+                self.assertEqual(report["input_report_status"], "FAIL")
+                self.assertEqual(report["reports"][0]["status"], "FAIL")
+                passed = self.category(report, "performance")
+                self.assertEqual(passed["status"], "PASS")
+                self.assertEqual(len(passed["evidence"]), 2)
+                self.assertEqual(passed["evidence"][0]["median_ns"]["current"], 200)
+                self.assertEqual(passed["evidence"][0]["cpu_median_ns"]["current"], 20)
+                peer = self.category(report, "performance", "Graph/B.cpp")
+                self.assertEqual(peer["status"], "FAIL" if peer_status == "FAIL" else "UNAVAILABLE")
+                self.assertNotIn("median_ns", peer["evidence"][0])
+                self.assertEqual(report["performance_coverage"]["whole_program_full_measured"], 1)
+
+    def test_failed_performance_shard_keeps_quick_and_source_integrity_limits(self):
+        for profile, freeze, stale, expected in (
+                (True, True, False, "PARTIAL"),
+                (False, False, False, "FAIL"),
+                (False, True, True, "STALE")):
+            with self.subTest(quick=profile, freeze=freeze, stale=stale):
+                value, entries = self.failed_performance_shard(quick=profile)
+                value["source_freeze_passed"] = freeze
+                original = (self.root / self.library).read_bytes()
+                if stale:
+                    self.write(self.library, original + b"// changed after measurement\n")
+                try:
+                    report = quality.aggregate(self.root, [self.report_file(value)], source_manifest=entries)
+                finally:
+                    self.write(self.library, original)
+                self.assertEqual(report["errors"], [])
+                self.assertEqual(report["status"], "FAIL")
+                self.assertEqual(self.category(report, "performance")["status"], expected)
+                self.assertEqual(report["performance_coverage"]["whole_program_full_measured"], 0)
+
     def instrumented(self, mode="sanitizers"):
         hashes = {self.library: self.hash(self.library), self.driver: self.hash(self.driver)}
         flags = ["-fsanitize=address,undefined"] if mode == "sanitizers" else ["-fprofile-instr-generate", "-fcoverage-mapping"]
