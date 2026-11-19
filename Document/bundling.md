@@ -12,7 +12,7 @@ python3 Scripts/bundle_libraries.py --profile normal \
 
 | 指定 | 動作 |
 | --- | --- |
-| `--profile` | normal・gcc・clang・fast-gcc・fast-clangから選ぶ。Fastの前提は[配布版の説明](fast_variants.md)を参照。 |
+| `--profile` | 原本の `normal`、安全版の `portable`・`gcc`・`clang`・`msvc`、または同名に `fast-` を付けた速度優先版を選ぶ。前提は[配布版の説明](fast_variants.md)を参照。 |
 | `--library` | 通常版の正規パスを繰り返し指定する。temp.cpp・temp2.cppは対象外。 |
 | `--output` / `--report` | 結合先 / 変更前後のバイト数・SHA-256・省略部品を記録するJSON。 |
 | `--no-deduplicate` | 重複省略を行わず結合する。 |

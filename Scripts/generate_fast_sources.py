@@ -140,7 +140,7 @@ def treap_unreleased(source,unreleased_helper):
     at=source.index('#include ');return source[:at]+helper_body(unreleased_helper)+'\n'+source[at:]
 
 def aho_compiler_storage(source,buffer_helper,unreleased_helper):
-    source=introduce(source,'// 速度優先版: GCCでは最後の主要配列の破棄・解放を省き、成長時はvectorとして旧領域を回収する。\n// Clangでは従来のFastBufferを使い、成長中の旧領域も保持する。最後の領域はプロセス終了まで累積する。\n// 格納型の破棄の副作用を必要としないこと。')
+    source=introduce(source,'// 速度優先版: GCCでは最後の主要配列の破棄・解放を省き、成長時はvectorとして旧領域を回収する。\n// Clang・MSVCではFastBufferを使い、成長中の旧領域も保持する。共通版は処理系に応じて選ぶ。\n// 解放を省く領域はプロセス終了まで残る。格納型の破棄の副作用を必要としないこと。')
     for old,new in [('std::vector<reinsirk::detail::AhoNode<Alphabet>> nodes_;','reinsirk::detail::AhoStorage<reinsirk::detail::AhoNode<Alphabet>> nodes_;'),('std::vector<reinsirk::detail::AhoPattern> patterns_;','reinsirk::detail::AhoStorage<reinsirk::detail::AhoPattern> patterns_;'),('std::vector<int> order_;','reinsirk::detail::AhoStorage<int> order_;'),('std::vector<int> order; order.reserve(nodes_.size()); order.push_back(0);','reinsirk::detail::AhoStorage<int> order; order.reserve(nodes_.size()); order.push_back(0);')]:source=replace_once(source,old,new)
     alias='''#ifndef SIRKIT_AHO_FAST_STORAGE_DEFINED
 #define SIRKIT_AHO_FAST_STORAGE_DEFINED

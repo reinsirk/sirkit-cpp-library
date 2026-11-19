@@ -5,6 +5,7 @@
 | 検査 | 対象・結果 |
 | --- | --- |
 | C++23 Verify | 全対象をGCC/Clang、通常/標準代替、入力検査有効/無効でビルド・照合する。 |
+| 配布8版の検査 | 全ファイルの単独構文検査と、主要13ライブラリの動作テストを行う。共通版はGCC・Clang・MSVCで実行する。 |
 | 正常系・失敗系 | checked契約テストで正常結果・期待した例外型・失敗後の状態を照合する。 |
 | Library Checker公式ケース | 全LC対象を外部キャッシュで生成し、全ケースを公式checkerで照合する。 |
 | 決定的Max・構造ケース | Unionfindと永続UFのNo.2295向けに、制約上限や平衡結合・版探索・大きな積を独立参照と照合する。 |
@@ -23,6 +24,19 @@ python3 Scripts/ci_quality_report.py --input /tmp/contracts --input /tmp/officia
 ```
 
 失敗系の例外は「期待した失敗を正しく処理した」ことを表します。異常終了・例外型の不一致・空の結果を合格にはしません。公式ケースの時間は起動・入出力を含むプログラム全体で、本体だけの代表性能とは別です。
+
+## 配布版の構文・動作検査
+
+各処理系で共通版と専用版を検査します。安全版は入力検査の有効・省略の両方で、速度優先版は配布時の設定で実行します。動作テストには専用の速度優先実装を持つ11本すべてを含み、独立参照との照合を行います。無効な入力の失敗系は検査有効版で実行します。
+
+`variant-builds-GCC`、`variant-builds-Clang`、`variant-builds-MSVC`に原本・生成物・動作テストのSHAと構成別の判定を保存します。MSVCはWindowsでVisual Studioの`cl.exe`を使います。ACL入りのテンプレートには`Verify/current/vendor/ACL_COMMIT`で固定したACLを使います。
+
+```sh
+python3 Scripts/verify_variants.py --compiler GCC --compiler Clang --syntax-only --run-tests \
+  --acl-include /path/to/ac-library --output /tmp/variant-builds.json
+```
+
+Visual Studioの開発者コマンドプロンプトでは`--compiler MSVC`を指定し、出力先をWindowsのパスに置き換えます。
 
 ## Max・難ケースの範囲
 

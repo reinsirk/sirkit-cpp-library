@@ -266,7 +266,7 @@ inline void DijkstraRadixRun(const GraphLike& graph,
                     }
                 }
             }
-        
+
             radix.emplace(candidate, edge.to);
         }
     };

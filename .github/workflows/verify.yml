@@ -112,6 +112,78 @@ jobs:
           if-no-files-found: ignore
           retention-days: 14
 
+  variant_builds:
+    name: 配布版のビルド・動作検査 (${{ matrix.compiler }})
+    needs: maintenance
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {os: ubuntu-24.04, compiler: GCC}
+          - {os: ubuntu-24.04, compiler: Clang}
+          - {os: windows-2025, compiler: MSVC}
+    steps:
+      - name: Keep source bytes for SHA verification
+        if: matrix.compiler == 'MSVC'
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - name: Read pinned ACL revision
+        id: acl
+        shell: bash
+        run: |
+          set -euo pipefail
+          commit="$(cat Verify/current/vendor/ACL_COMMIT)"
+          [[ "$commit" =~ ^[0-9a-f]{40}$ ]]
+          printf 'commit=%s\n' "$commit" >> "$GITHUB_OUTPUT"
+      - uses: actions/checkout@v7
+        with:
+          repository: atcoder/ac-library
+          ref: ${{ steps.acl.outputs.commit }}
+          path: .verify-acl
+          persist-credentials: false
+      - name: Install Linux compilers
+        if: matrix.compiler != 'MSVC'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y g++ clang
+      - name: Find Visual Studio developer command
+        if: matrix.compiler == 'MSVC'
+        shell: pwsh
+        run: |
+          $vswhere = Join-Path "${env:ProgramFiles(x86)}" "Microsoft Visual Studio\Installer\vswhere.exe"
+          $install = & $vswhere -latest -products '*' -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
+          if (-not $install) { throw "Visual Studio C++ tools not found" }
+          $developer = Join-Path $install "Common7\Tools\VsDevCmd.bat"
+          "SIRKIT_VS_DEVELOPER_COMMAND=$developer" >> $env:GITHUB_ENV
+      - name: Verify common and compiler-specific variants on Linux
+        if: matrix.compiler != 'MSVC'
+        shell: bash
+        run: >-
+          python3 Scripts/verify_variants.py --compiler "${{ matrix.compiler }}"
+          --syntax-only --run-tests --jobs 2 --acl-include .verify-acl
+          --output "$RUNNER_TEMP/variant-builds.json" --summary "$GITHUB_STEP_SUMMARY"
+      - name: Verify common and MSVC-specific variants on Windows
+        if: matrix.compiler == 'MSVC'
+        shell: cmd
+        run: |
+          call "%SIRKIT_VS_DEVELOPER_COMMAND%" -no_logo -arch=x64 || exit /b 1
+          cd /d "%GITHUB_WORKSPACE%"
+          python Scripts/verify_variants.py --compiler MSVC --syntax-only --run-tests --jobs 2 --acl-include .verify-acl --output "%RUNNER_TEMP%\variant-builds.json" --summary "%GITHUB_STEP_SUMMARY%"
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: variant-builds-${{ matrix.compiler }}
+          path: ${{ runner.temp }}/variant-builds.json
+          if-no-files-found: ignore
+          retention-days: 14
+
   instrumented:
     name: C++23 (${{ matrix.mode }}, checked)
     needs: maintenance
@@ -599,7 +671,7 @@ jobs:
   result:
     name: Verify result
     if: always()
-    needs: [maintenance, examples, instrumented, guidelines, performance, all_performance, contracts, library_checker, stress, documentation]
+    needs: [maintenance, examples, variant_builds, instrumented, guidelines, performance, all_performance, contracts, library_checker, stress, documentation]
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
@@ -607,6 +679,7 @@ jobs:
         env:
           MAINTENANCE_RESULT: ${{ needs.maintenance.result }}
           VERIFY_RESULT: ${{ needs.examples.result }}
+          VARIANT_BUILDS_RESULT: ${{ needs.variant_builds.result }}
           INSTRUMENTED_RESULT: ${{ needs.instrumented.result }}
           GUIDELINES_RESULT: ${{ needs.guidelines.result }}
           PERFORMANCE_RESULT: ${{ needs.performance.result }}
@@ -622,6 +695,7 @@ jobs:
             printf '## Verify\n\n| 検査 | 結果 |\n| --- | --- |\n'
             printf '| 生成物・Pythonテスト・README集計 | %s |\n' "$MAINTENANCE_RESULT"
             printf '| C++23・GCC/Clang・通常/標準代替 | %s |\n' "$VERIFY_RESULT"
+            printf '| 配布8版の単独ビルド・動作検査 | %s |\n' "$VARIANT_BUILDS_RESULT"
             printf '| ASan/UBSan・カバレッジ（checked） | %s |\n' "$INSTRUMENTED_RESULT"
             printf '| Core Guidelines・Google Style（通常版のみ） | %s |\n' "$GUIDELINES_RESULT"
             printf '| 補足の本体性能測定（絶対時間） | %s |\n' "$PERFORMANCE_RESULT"
@@ -632,4 +706,4 @@ jobs:
             printf '| ライブラリページのプレビュー | %s |\n' "$DOCUMENTATION_RESULT"
             printf '\nローカル検証の結果です。オンラインACはREADMEのVerify一覧で別に管理します。\n'
           } >> "$GITHUB_STEP_SUMMARY"
-          [[ "$MAINTENANCE_RESULT" == success && "$VERIFY_RESULT" == success && "$INSTRUMENTED_RESULT" == success && "$GUIDELINES_RESULT" == success && "$PERFORMANCE_RESULT" == success && "$ALL_PERFORMANCE_RESULT" == success && "$CONTRACT_RESULT" == success && "$LIBRARY_CHECKER_RESULT" == success && "$STRESS_RESULT" == success && "$DOCUMENTATION_RESULT" == success ]]
+          [[ "$MAINTENANCE_RESULT" == success && "$VERIFY_RESULT" == success && "$VARIANT_BUILDS_RESULT" == success && "$INSTRUMENTED_RESULT" == success && "$GUIDELINES_RESULT" == success && "$PERFORMANCE_RESULT" == success && "$ALL_PERFORMANCE_RESULT" == success && "$CONTRACT_RESULT" == success && "$LIBRARY_CHECKER_RESULT" == success && "$STRESS_RESULT" == success && "$DOCUMENTATION_RESULT" == success ]]
