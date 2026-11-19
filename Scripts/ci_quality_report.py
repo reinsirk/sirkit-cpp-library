@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+from collections import Counter
 from contextlib import contextmanager
 from datetime import datetime, timezone
 import hashlib
@@ -19,13 +20,14 @@ import sys
 
 sys.dont_write_bytecode = True
 try:
-    from . import prepare_verify, ci_benchmark, ci_instrumented, ci_performance_all, performance_limits
+    from . import prepare_verify, ci_benchmark, ci_instrumented, ci_performance_all, performance_limits, performance_regression
 except ImportError:
     import prepare_verify
     import ci_benchmark
     import ci_instrumented
     import ci_performance_all
     import performance_limits
+    import performance_regression
 
 ROOT = Path(__file__).resolve().parents[1]
 LIBRARY_DIRS = {"Algorithm", "DataStructure", "Geometry", "Graph", "Internal", "Math", "String"}
@@ -576,6 +578,58 @@ def checked_performance_limit(limits, entry: dict | None, row: dict, samples: li
     return measured
 
 
+def validate_regression_mode(value: dict) -> bool:
+    if "performance_regression_passed" not in value:
+        return False
+    revision = value.get("base_revision")
+    if (type(value["performance_regression_passed"]) is not bool or not isinstance(revision, str)
+            or not re.fullmatch(r"(?:[0-9a-f]{40}|[0-9a-f]{64})", revision)
+            or value.get("comparison_requested") is False):
+        raise ReportError("性能退行比較の判定・比較元・設定が不正です")
+    return True
+
+
+def checked_performance_regression(enabled: bool, row: dict, metric: str,
+                                   samples: dict, repetitions: int, *, unavailable: dict | None = None) -> dict:
+    paired = "base" in samples
+    if not enabled or not paired and unavailable is None:
+        if "performance_regression" in row or "regression_confirmation" in row:
+            raise ReportError("基準となる生データのない性能退行判定です")
+        return {}
+    result = performance_regression.evaluate(metric, samples) if paired else unavailable
+    evidence = {}
+    if "regression_confirmation" in row:
+        initial = row["regression_confirmation"]
+        if (not isinstance(initial, dict) or set(initial) != {"base", "current"}
+                or any(not isinstance(times, list) or len(times) != repetitions for times in initial.values())):
+            raise ReportError("再測定前の値が不足しています")
+        for times in initial.values():
+            for ns in times:
+                integer(ns, minimum=1 if metric == "kernel_elapsed_ns" else 0)
+        if performance_regression.evaluate(metric, initial)["status"] != "FAIL":
+            raise ReportError("最初の測定が通過しているケースで再測定が行われています")
+        if not paired:
+            if row.get("comparison") != "BASELINE_INVALID":
+                raise ReportError("基準版の再測定不能の理由が記録と一致しません")
+            result = dict(status="FAIL", metric=metric, reason="BASELINE_CONFIRMATION_UNAVAILABLE")
+        evidence["regression_confirmation"] = initial
+    elif paired and result["status"] == "FAIL":
+        raise ReportError("性能退行判定の再測定がありません")
+    recorded = row.get("performance_regression")
+    if not isinstance(recorded, dict) or recorded != result or (paired and any(
+            type(recorded[key]) not in (int, float)
+            for key in ("baseline_median_ns", "limit_ns", "observed_median_ns"))):
+        raise ReportError("性能退行判定が比較元・現在版の生データと一致しません")
+    evidence["performance_regression"] = result
+    return evidence
+
+
+def validate_regression_summary(value: dict, passed: bool, *, failed_case: bool) -> None:
+    if "performance_regression_passed" in value and (
+            value["performance_regression_passed"] is not passed or failed_case and value.get("status") != "FAIL"):
+        raise ReportError("性能退行判定の全体状態が個々の結果と一致しません")
+
+
 def collect_performance(value: dict, root: Path, entries: dict, append) -> None:
     sources = value.get("sources"); rows = value.get("results")
     if not isinstance(sources, dict) or not sources or not isinstance(rows, list) or not rows:
@@ -595,6 +649,8 @@ def collect_performance(value: dict, root: Path, entries: dict, append) -> None:
         raise ReportError("性能測定の比較元commitがありません")
     if value.get("status") not in {"PASS", "PARTIAL", "NO_BASELINE", "CURRENT_ONLY", "FAIL"}:
         raise ReportError("性能測定の状態が不正です")
+    regression_mode = validate_regression_mode(value)
+    regressions_passed = True
     limits = recorded_performance_limits(value, root)
     seen, compared = set(), 0
     for row in rows:
@@ -658,8 +714,19 @@ def collect_performance(value: dict, root: Path, entries: dict, append) -> None:
         else:
             bound = None
         gate = checked_performance_limit(limits, bound, row, samples["current"])
-        status = "STALE" if changed else ("PARTIAL" if value.get("scale_scope") == "smoke_only" else "PASS") if (value["status"] != "FAIL" or limits is not None) and value.get("current_measurements_passed") is True else "FAIL"
-        if status == "PASS" and gate["status"] == "FAIL":
+        regression = checked_performance_regression(regression_mode, row, "kernel_elapsed_ns", samples, repetitions)
+        regressed = regression.get("performance_regression", {}).get("status") == "FAIL"
+        regressions_passed = regressions_passed and not regressed
+        if changed:
+            status = "STALE"
+        elif (value.get("current_measurements_passed") is not True
+                or value["status"] == "FAIL" and limits is None and not regression_mode):
+            status = "FAIL"
+        else:
+            status = "PARTIAL" if value.get("scale_scope") == "smoke_only" else "PASS"
+        if status == "PASS" and regression_mode and ratio is None:
+            status = "PARTIAL"
+        if status != "STALE" and (regressed or status == "PASS" and gate["status"] == "FAIL"):
             status = "FAIL"
         append(library, "performance", dict(status=status, id=identifier, scope="代表本体（入出力・Verify mainは除外）",
                size=key[1], pattern=key[2], scale=scale, scale_scope=value.get("scale_scope"),
@@ -667,7 +734,11 @@ def collect_performance(value: dict, root: Path, entries: dict, append) -> None:
                median_ns=medians, current_over_base=ratio, comparison="MEASURED" if ratio is not None else "NOT_REQUESTED" if value.get("comparison_requested") is False else "NO_BASELINE",
                compiler=value.get("compiler"), flags=value["flags"], cpu_model=value.get("cpu_model"),
                base_revision=value.get("base_revision"), source_mismatches=changed,
-               advisory=limits is None, performance_limit=gate))
+               advisory=limits is None and not regression_mode, performance_limit=gate, **regression))
+    expected_cases = value.get("expected_cases", len(rows))
+    if regression_mode and integer(expected_cases, minimum=1) != len(rows):
+        raise ReportError("性能退行比較の予定ケース数と生データが一致しません")
+    validate_regression_summary(value, regressions_passed and compared == len(rows), failed_case=not regressions_passed)
     if compared != value.get("compared_cases") or len(rows) - compared != value.get("uncompared_cases"):
         raise ReportError("性能測定の集約件数と実行結果が不一致です")
     if {row["id"] for row in rows} != set(sources):
@@ -711,8 +782,70 @@ def all_performance_case_names(value: dict, row: dict, entry: dict) -> list[str]
     return names
 
 
+def whole_baseline_provenance(row: dict) -> dict:
+    libraries = set(row["libraries"])
+    baseline = row.get("baseline_sources")
+    if not isinstance(baseline, dict):
+        raise ReportError("比較元の原本記録がありません")
+    source_hashes = hashes(baseline.get("source_hashes"), nonempty=False)
+    paths = baseline.get("resolved_paths")
+    missing = baseline.get("missing_paths", [])
+    if (not isinstance(paths, dict) or paths.keys() != source_hashes.keys() or not isinstance(missing, list)
+            or len(missing) != len(set(missing)) or paths.keys() & set(missing)
+            or paths.keys() | set(missing) != libraries
+            or baseline.get("missing_path") != (missing[0] if missing else None)
+            or any(relative(path, library=True) not in {name, ci_performance_all.BASE_PATH_ALIASES.get(name)}
+                   for name, path in paths.items())):
+        raise ReportError("比較元の原本記録と不足する依存が一致しません")
+    evidence = {"baseline_sources": baseline}
+    if missing:
+        expected = "BASELINE_NEW_LIBRARY" if row["library"] in missing else "BASELINE_DEPENDENCY_MISSING"
+    else:
+        build = row.get("baseline_build")
+        driver = row.get("baseline_driver")
+        if not isinstance(build, dict) or not isinstance(driver, dict) or driver.get("path") != row["driver"]:
+            raise ReportError("比較元のビルドとdriverが確認できません")
+        driver_hash = sha(driver.get("sha256"))
+        kind = driver.get("kind")
+        if kind == "current":
+            if driver.get("same_as_current") is not True or driver_hash != row["driver_sha256"]:
+                raise ReportError("比較に使う現在版driverが一致しません")
+        elif kind == "archived_same_problem_and_io":
+            sha(driver.get("manifest_sha256"))
+            if driver.get("same_as_current") is not False or driver_hash == row["driver_sha256"]:
+                raise ReportError("比較に使う旧driverが一致しません")
+        else:
+            raise ReportError("比較元のdriverの種類が不正です")
+        evidence["baseline_driver"] = driver
+        if build.get("status") == "PASS":
+            expected = "MEASURED"
+        elif build.get("status") == "FAIL":
+            expected = "BASELINE_BUILD_TIMEOUT" if build.get("timed_out") is True else "BASELINE_API_INCOMPATIBLE"
+        else:
+            raise ReportError("比較元のビルド判定が不正です")
+    if row.get("baseline_comparison") != expected:
+        raise ReportError("比較可否が比較元の原本・ビルドと一致しません")
+    return evidence
+
+
+def whole_unpaired_regression(case: dict, planned: str, repetitions: int, warmups: int) -> dict:
+    comparison = case.get("comparison")
+    if comparison == "BASELINE_INVALID" and planned == "MEASURED":
+        failure = case.get("baseline_failure")
+        if (not isinstance(failure, dict) or integer(failure.get("trial")) >= repetitions + warmups
+                or type(failure.get("returncode")) is not int or type(failure.get("timed_out")) is not bool):
+            raise ReportError("比較元の実行失敗が確認できません")
+        sha(failure.get("output_sha256"))
+        mismatch = failure["returncode"] == 0 and failure["timed_out"] is False
+        if "oracle_passed" not in failure or failure["oracle_passed"] is not (False if mismatch else None):
+            raise ReportError("比較元の照合結果が実行結果と一致しません")
+    elif comparison == "MEASURED" or comparison != planned or case.get("baseline_failure") is not None:
+        raise ReportError("全体性能の比較可否が生データと一致しません")
+    return ci_performance_all.regression_result(case)
+
+
 def collect_all_performance(value: dict, root: Path, entries: dict, append) -> None:
-    """全ライブラリの固定main・入出力込みの絶対時間。kernelとは区別する。"""
+    """全ライブラリの固定main・入出力込みの性能を原本へ結び付ける。"""
     actual_paths = sorted(p.relative_to(root).as_posix() for directory in LIBRARY_DIRS
                           for p in (root / directory).rglob("*.cpp")
                           if p.is_file() and p.resolve().is_relative_to(root))
@@ -746,6 +879,7 @@ def collect_all_performance(value: dict, root: Path, entries: dict, append) -> N
     changed_global = mismatches(root, frozen)
     runner = value.get("runner", {})
     changed_global += mismatches(root, {relative(runner.get("source")): sha(runner.get("sha256"))})
+    regression_mode = validate_regression_mode(value)
     limits = recorded_performance_limits(value, root)
     for row in rows:
         library = relative(row["library"], library=True)
@@ -772,6 +906,7 @@ def collect_all_performance(value: dict, root: Path, entries: dict, append) -> N
         if row.get("submission_sha256") != entry.get("submission_sha256"):
             raise ReportError("全ライブラリ性能の提出本文SHAが一致しません")
         changed = sorted(set(changed_global + mismatches(root, recorded)))
+        baseline = whole_baseline_provenance(row) if regression_mode else {}
         cases = row.get("cases")
         expected = all_performance_case_names(value, row, entry)
         if (not isinstance(cases, list) or not expected or len(expected) != len(set(expected))
@@ -794,6 +929,14 @@ def collect_all_performance(value: dict, root: Path, entries: dict, append) -> N
             ratio = medians["current"] / medians["base"] if "base" in medians else None
             if case.get("current_over_base") != ratio:
                 raise ReportError("全体性能の比較値が不正です")
+            comparison = case.get("comparison")
+            unavailable = None
+            if regression_mode:
+                planned = row["baseline_comparison"]
+                if ratio is None:
+                    unavailable = whole_unpaired_regression(case, planned, repetitions, value["warmups"])
+                elif comparison != "MEASURED" or planned != "MEASURED" or case.get("baseline_failure") is not None:
+                    raise ReportError("全体性能の比較可否が生データと一致しません")
             cpu_samples, cpu_medians = case.get("cpu_samples_ns"), case.get("cpu_median_ns")
             if not isinstance(cpu_samples, dict) or not isinstance(cpu_medians, dict) or set(cpu_samples) != set(samples) or set(cpu_medians) != set(samples):
                 raise ReportError("子プロセスCPU時間の記録が不足しています")
@@ -807,13 +950,16 @@ def collect_all_performance(value: dict, root: Path, entries: dict, append) -> N
             # shard全体の失敗はaggregateで保持し、照合済みの行へ波及させない。
             bound = limits.whole(library, identifier, case["name"], integer(case.get("input_bytes"))) if limits is not None else None
             gate = checked_performance_limit(limits, bound, case, cpu_samples["current"])
+            regression = checked_performance_regression(regression_mode, case, "child_cpu_ns", cpu_samples, repetitions,
+                                                        unavailable=unavailable)
+            regressed = regression.get("performance_regression", {}).get("status") == "FAIL"
             if changed:
                 status = "STALE"
             elif value.get("source_freeze_passed") is not True:
                 status = "FAIL"
             else:
                 status = "PARTIAL" if value["size_profile"] == "quick_smoke" else "PASS"
-            if status == "PASS" and gate["status"] == "FAIL":
+            if status != "STALE" and (regressed or status == "PASS" and gate["status"] == "FAIL"):
                 status = "FAIL"
             append(library, "performance", dict(status=status, id=identifier,
                    scope="Verify全体（起動・入出力込み。複合本体はlibraries参照）",
@@ -822,11 +968,22 @@ def collect_all_performance(value: dict, root: Path, entries: dict, append) -> N
                    workload=case.get("metadata", {}), combined_libraries=row["libraries"],
                    repetitions=repetitions, warmups=value["warmups"], samples_ns=samples,
                    median_ns=medians, cpu_samples_ns=cpu_samples, cpu_median_ns=cpu_medians,
-                   current_over_base=ratio, comparison=case.get("comparison"), compiler=compiler,
+                   current_over_base=ratio, comparison=comparison, compiler=compiler,
                    flags=value["flags"], cpu_model=value.get("cpu_model"), platform=value.get("platform"),
                    affinity=value.get("affinity"), base_revision=value.get("base_revision"),
                    source_mismatches=changed, measurement_passed=not changed and value.get("source_freeze_passed") is True,
-                   advisory=limits is None, performance_limit=gate))
+                   advisory=limits is None and not regression_mode, performance_limit=gate, **baseline, **regression,
+                   **({"baseline_failure": case["baseline_failure"]} if regression_mode and "baseline_failure" in case else {})))
+    if regression_mode:
+        counts = Counter(case["performance_regression"]["status"] for row in rows for case in row.get("cases", []))
+        recorded_counts = value.get("performance_regression_counts")
+        if (not isinstance(recorded_counts, dict) or recorded_counts != dict(counts)
+                or counts.keys() - {"PASS", "FAIL", "NOT_COMPARABLE"}
+                or any(type(count) is not int for count in recorded_counts.values())):
+            raise ReportError("全体性能の比較件数がケースと一致しません")
+        existing = any(row.get("baseline_comparison") != "BASELINE_NEW_LIBRARY" for row in rows)
+        passed = ci_performance_all.complete(value) and not counts["FAIL"] and (counts["PASS"] > 0 or not existing)
+        validate_regression_summary(value, passed, failed_case=not passed)
 
 
 def collect_library_checker(value: dict, root: Path, entries: dict, append) -> None:
@@ -1007,6 +1164,57 @@ def inline(value: object) -> str:
     return "<code>" + html.escape(text).replace("|", "&#124;").replace("`", "&#96;").replace("{", "&#123;").replace("}", "&#125;") + "</code>"
 
 
+def performance_timing_cells(row: dict) -> list[str]:
+    """集約ページ・個別ライブラリページで同じ時間と判定を表示する。"""
+    def milliseconds(value) -> str:
+        return "—" if value is None else f"{value/1e6:.3f}"
+
+    wall = row.get("median_ns", {})
+    cpu = row.get("cpu_median_ns", {})
+    regression = row.get("performance_regression")
+    fixed = row.get("performance_limit", {})
+    ratio = "—"
+    if regression and "baseline_median_ns" in regression:
+        baseline = regression["baseline_median_ns"]
+        limit = regression["limit_ns"]
+        if baseline:
+            ratio = f"{regression['observed_median_ns'] / baseline:.3f}×"
+        metric = "CPU" if regression["metric"] == "child_cpu_ns" else "wall"
+        kind = "退行" if regression["status"] == "FAIL" else "通過"
+        confirmation = "・再測定" if "regression_confirmation" in row else ""
+        decision = f"{kind}（{metric}{confirmation}）"
+        if fixed.get("status") == "FAIL":
+            decision += "、固定上限超過"
+    elif regression:
+        baseline = limit = None
+        reason = {
+            "BASELINE_NEW_LIBRARY": "比較元なし",
+            "BASELINE_DEPENDENCY_MISSING": "旧版の依存不足",
+            "BASELINE_API_INCOMPATIBLE": "旧版ビルド不可",
+            "BASELINE_BUILD_TIMEOUT": "旧版ビルド時間切れ",
+            "BASELINE_CONFIRMATION_UNAVAILABLE": "基準版の再測定不可",
+            "BASELINE_INVALID": "旧版照合失敗" if regression["status"] == "NOT_COMPARABLE" else "旧版実行失敗",
+        }.get(regression.get("reason"), "計測不可")
+        decision = ("比較対象外" if regression["status"] == "NOT_COMPARABLE" else "比較失敗") + f"（{reason}）"
+    elif fixed.get("status") in {"PASS", "FAIL"}:
+        baseline = fixed.get("baseline_median_ns")
+        limit = fixed.get("limit_ns")
+        decision = STATUS_LABELS[fixed["status"]] + "（固定上限）"
+    else:
+        baseline = cpu.get("base", wall.get("base"))
+        limit = None
+        decision = {
+            "BASELINE_MISSING": "比較対象外（比較元なし）",
+            "BASELINE_UNAVAILABLE": "比較対象外（比較元なし）",
+            "NO_BASELINE": "比較対象外（比較元なし）",
+            "BASELINE_API_INCOMPATIBLE": "比較対象外（旧版ビルド不可）",
+            "BASELINE_INVALID": "比較対象外（旧版照合失敗）",
+            "NOT_REQUESTED": "比較なし",
+        }.get(row.get("comparison"), "未判定")
+    return [milliseconds(wall.get("current")), milliseconds(cpu.get("current")) if cpu else "対象外",
+            milliseconds(baseline), ratio, milliseconds(limit), decision]
+
+
 def coverage_percent(metric: dict) -> str:
     if not metric["count"]:
         return "対象条件なし"
@@ -1067,38 +1275,38 @@ def markdown(report: dict) -> str:
         coverage = report.get("performance_coverage", {})
         lines += ["", f"全ライブラリの規定規模の性能記録: {coverage.get('whole_program_full_measured', 0)}/{coverage.get('all_libraries', 0)}。縮小確認と代表3本のkernelはこの件数に含めません。"]
         lines += ["", "## 性能測定の条件と結果", "",
-                  "全ライブラリのVerify全体時間と、代表カーネルの本体時間を分けて表示します。各ケースの規模・CPU・コンパイラと合わせて参照し、オンライン提出時間とは比較しません。",
-                  "固定上限は基準実測の2倍。Verify全体は子CPU時間（最低10ms）、本体はハーネス内の経過時間で判定します。上限来歴のない旧記録は未判定です。",
-                  "", "| コンパイラ | 設定 | CPU | OS | 反復/除外warmup |",
-                  "| --- | --- | --- | --- | ---: |"]
+                  "Verify全体は子プロセスCPU時間、本体はハーネス内の経過時間で判定します。比較元と倍率は判定に使った指標の中央値に基づきます。"]
+        if any(row.get("performance_regression") for _, row in measured):
+            lines += ["同じジョブの同じ入力で測った比較元と現行版を照合します。初回に上限を超えたケースは再測定の結果で判定します。"]
+        lines += ["", "| コンパイラ | 設定 | CPU | OS | 反復/除外warmup | 比較元コミット |",
+                  "| --- | --- | --- | --- | ---: | --- |"]
         environments = set()
         for _, row in measured:
             if "median_ns" not in row:
                 continue
-            key = json.dumps([row.get(name) for name in ("compiler", "flags", "cpu_model", "base_revision", "repetitions", "warmups")], sort_keys=True)
+            key = json.dumps([row.get(name) for name in ("compiler", "flags", "cpu_model", "platform", "base_revision", "repetitions", "warmups")], sort_keys=True)
             if key in environments:
                 continue
             environments.add(key)
             compiler = row.get("compiler")
             compiler = compiler.get("version", "記録なし") if isinstance(compiler, dict) else compiler
-            lines.append("| " + " | ".join(inline(x) for x in (compiler, " ".join(row.get("flags", [])), row.get("cpu_model") or "記録なし", row.get("platform") or "記録なし")) + f" | {row['repetitions']}/{row.get('warmups') if row.get('warmups') is not None else '記録なし'} |")
-        lines += ["", "| ライブラリ | 測定範囲 | ケース | 規模 | wall ms | CPU ms | 上限 ms | 上限判定 | 状態 |", "| --- | --- | --- | --- | ---: | ---: | ---: | --- | --- |"]
+            baseline_revision = inline(row["base_revision"]) if row.get("base_revision") else "—"
+            lines.append("| " + " | ".join(inline(x) for x in (compiler, " ".join(row.get("flags", [])), row.get("cpu_model") or "記録なし", row.get("platform") or "記録なし")) + f" | {row['repetitions']}/{row.get('warmups') if row.get('warmups') is not None else '記録なし'} | {baseline_revision} |")
+        lines += ["", "| ライブラリ | 測定範囲 | ケース | 規模 | 現行 wall ms | 現行 CPU ms | 比較元 ms | 現行/比較元 | 上限 ms | 判定 | 状態 |",
+                  "| --- | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | --- | --- |"]
         for library, row in measured:
             if "median_ns" not in row:
-                lines.append(f"| {inline(library['path'])} | {inline(row['scope'])} | 未実施 | — | — | — | — | 未判定 | {STATUS_LABELS[row['status']]} |")
+                lines.append(f"| {inline(library['path'])} | {inline(row['scope'])} | 未実施 | — | — | — | — | — | — | 未判定 | {STATUS_LABELS[row['status']]} |")
                 continue
-            cpu = row.get("cpu_median_ns", {}).get("current")
-            cpu_text = f"{cpu/1e6:.3f}" if cpu is not None else "対象外"
             workload = row.get("workload", {})
             dimensions = workload.get("dimensions") or workload.get("input_header")
             scale = inline(dimensions) if dimensions else str(row['size']) + (" bytes" if row.get("size_unit") == "input_bytes" else "要素")
             scope = row['scope'] + ("・縮小確認のみ" if row.get("size_profile") == "quick_smoke" or row.get("scale_scope") == "smoke_only" else "")
-            gate = row.get("performance_limit", {})
-            limit_text = f"{gate['limit_ns']/1e6:.3f}" if "limit_ns" in gate else "—"
-            limit_status = STATUS_LABELS.get(gate.get("status"), "未判定") if gate.get("status") != "UNAVAILABLE" else "未判定"
-            lines.append(f"| {inline(library['path'])} | {inline(scope)} | {inline(row['pattern'])} | {scale} | {row['median_ns']['current']/1e6:.3f} | {cpu_text} | {limit_text} | {limit_status} | {STATUS_LABELS[row['status']]} |")
-        if any(row.get("comparison") == "NO_BASELINE" for _, row in measured):
-            lines += ["", "比較元なしの記録は絶対時間だけを表示します。"]
+            if row.get("baseline_driver", {}).get("same_as_current") is False:
+                scope += "・比較元は旧driver"
+            cells = [inline(library["path"]), inline(scope), inline(row["pattern"]), scale,
+                     *performance_timing_cells(row), STATUS_LABELS[row["status"]]]
+            lines.append("| " + " | ".join(cells) + " |")
     if report["errors"]:
         lines += ["", "未完了・不正なレポートがあります。JSONのerrorsと元の実行ログを確認してください。"]
     return "\n".join(lines) + "\n"

@@ -102,8 +102,72 @@ class CatalogTests(unittest.TestCase):
         _, adapter = perf.render_program(entry, {"Geometry/Point.cpp": b"namespace sirkit { namespace geo { struct Point {}; } }\n"}, "int main(){}", self.root, legacy_adapter=True)
         self.assertEqual(adapter["kind"],"none")
 
+    def test_archived_driver_requires_matching_problem_samples_and_confirmed_source(self):
+        path = "Verify/current/drivers/example.cpp"
+        old_driver = b"int main() { return 0; }\n"
+        entry = {"id": "a", "driver": path, "libraries": ["DataStructure/a.cpp"],
+                 "problem_url": "https://judge.yosupo.jp/problem/unionfind",
+                 "samples": [{"input": "a", "output": "b"}]}
+        archive = dict(entry, driver_sha256=perf.digest(old_driver))
+        def baseline(_revision, name, _root):
+            if name == path:
+                return old_driver
+            return json.dumps({"entries": [archive]}).encode()
+        with patch.object(perf.ci_benchmark, "baseline_source", side_effect=baseline):
+            text, proof = perf.archived_driver("base", entry, perf.digest(b"new"), {}, self.root)
+            self.assertEqual(text.encode(), old_driver)
+            self.assertFalse(proof["same_as_current"])
+            self.assertEqual(proof["sha256"], perf.digest(old_driver))
+            for fields in ({"samples": []}, {"driver_sha256": perf.digest(b"modified")},
+                           {"problem_url": "https://judge.yosupo.jp/problem/associative_array"},
+                           {"support_source_hashes": {"old-header": "changed"}}):
+                with self.subTest(fields=fields):
+                    archive = {**entry, "driver_sha256": perf.digest(old_driver), **fields}
+                    self.assertIsNone(perf.archived_driver("base", entry, perf.digest(b"new"), {}, self.root))
+
 
 class MeasurementTests(unittest.TestCase):
+    def test_regression_confirms_only_initial_fail_with_same_options(self):
+        binaries = {"base": Path("base"), "current": Path("current")}
+        first = {"comparison": "MEASURED", "cpu_samples_ns": {"base": [10_000_000] * 3, "current": [10_600_000] * 3}}
+        for cpu, expected in ((10_500_000, "PASS"), (10_500_001, "FAIL")):
+            second = {"comparison": "MEASURED", "cpu_samples_ns": {"base": [10_000_000] * 3, "current": [cpu] * 3}}
+            with self.subTest(cpu=cpu), patch.object(perf, "measure_case", side_effect=[first, second]) as measure:
+                row = perf.measure_with_comparison(binaries, {}, {}, Path("work"), "MEASURED", repetitions=3)
+                self.assertEqual(measure.call_count, 2)
+                self.assertEqual(measure.call_args_list[0], measure.call_args_list[1])
+                self.assertEqual(list(measure.call_args_list[0].args[0]), ["base", "current"])
+                self.assertEqual(list(measure.call_args_list[1].args[0]), ["current", "base"])
+            self.assertEqual(row["performance_regression"]["status"], expected)
+            self.assertEqual(row["regression_confirmation"], first["cpu_samples_ns"])
+        with patch.object(perf, "measure_case", return_value={"comparison": "MEASURED", "cpu_samples_ns": {
+                "base": [400_000], "current": [500_000]}}) as measure:
+            row = perf.measure_with_comparison(binaries, {}, {}, Path("work"), "MEASURED", repetitions=1)
+        self.assertEqual(row["performance_regression"]["status"], "PASS")
+        self.assertNotIn("regression_confirmation", row)
+        measure.assert_called_once()
+
+    def test_unavailable_baseline_is_classified_by_recorded_cause(self):
+        for comparison, failure, expected in (
+                ("BASELINE_NEW_LIBRARY", {}, "NOT_COMPARABLE"),
+                ("BASELINE_DEPENDENCY_MISSING", {}, "FAIL"),
+                ("BASELINE_API_INCOMPATIBLE", {}, "FAIL"),
+                ("BASELINE_INVALID", {"returncode": 0, "timed_out": False, "oracle_passed": False}, "NOT_COMPARABLE"),
+                ("BASELINE_INVALID", {"returncode": -9, "timed_out": True, "oracle_passed": None}, "FAIL")):
+            with self.subTest(comparison=comparison, failure=failure):
+                gate = perf.regression_result({"comparison": comparison, "baseline_failure": failure})
+                self.assertEqual(gate, {"status": expected, "metric": "child_cpu_ns", "reason": comparison})
+
+    def test_unavailable_confirmation_keeps_initial_regression_failure(self):
+        first = {"comparison": "MEASURED", "cpu_samples_ns": {"base": [200_000], "current": [900_000]}}
+        second = {"comparison": "BASELINE_INVALID", "baseline_failure": {
+            "returncode": 0, "timed_out": False, "oracle_passed": False}}
+        with patch.object(perf, "measure_case", side_effect=[first, second]):
+            row = perf.measure_with_comparison({"base": Path("base")}, {}, {}, Path("work"), "MEASURED")
+        self.assertEqual(row["performance_regression"], {"status": "FAIL", "metric": "child_cpu_ns",
+                         "reason": "BASELINE_CONFIRMATION_UNAVAILABLE"})
+        self.assertEqual(row["regression_confirmation"], first["cpu_samples_ns"])
+
     def test_absolute_current_time_and_cpu_samples_are_separate(self):
         with tempfile.TemporaryDirectory() as temporary:
             work = Path(temporary); profile = case(work / "input")
@@ -144,6 +208,21 @@ class MeasurementTests(unittest.TestCase):
             Path(profile["expected_path"]).write_bytes(b" \n\t");profile["expected_sha256"]=perf.file_digest(Path(profile["expected_path"]))
             profile.pop("allow_empty_output")
             self.assertFalse(perf.output_matches(actual,profile,{},work))
+
+    def test_official_checker_error_is_distinct_from_rejected_answer(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            work = Path(temporary)
+            profile = case(work / "input")
+            checker = work / "checker"
+            checker.write_bytes(b"checker")
+            profile.update(checker="official", checker_path=str(checker), checker_sha256=perf.file_digest(checker))
+            for returncode, timed_out in ((-11, False), (0, True), (3, False)):
+                with self.subTest(returncode=returncode, timed_out=timed_out):
+                    with patch.object(perf, "execute", return_value={"returncode": returncode, "timed_out": timed_out}):
+                        with self.assertRaisesRegex(perf.PerformanceError, "official checker failed"):
+                            perf.output_matches(work / "actual", profile, {}, work)
+            with patch.object(perf, "execute", return_value={"returncode": 1, "timed_out": False}):
+                self.assertFalse(perf.output_matches(work / "actual", profile, {}, work))
 
     def test_wait4_captures_actual_child_cpu_without_polling_wait_timeout(self):
         with tempfile.TemporaryDirectory() as temporary:
@@ -293,14 +372,14 @@ class RunnerTests(unittest.TestCase):
             self.assertEqual(report["all_library_paths"],report["selected_library_paths"])
             self.assertFalse(report["executed"])
 
-    def run_fake_quick(self, folder, *, cpu_ns=50, wall_ns=100, missing_budget=False):
+    def run_fake_quick(self, folder, *, cpu_ns=50, wall_ns=100, missing_budget=False, fixed_budget=True):
         folder=Path(folder);root=folder/"repo";root.mkdir();library=root/"DataStructure/A.cpp";library.parent.mkdir();library.write_text("struct A {};\n")
         driver=root/"driver.cpp";driver.write_text("int main(){}\n")
         entry={"id":"a","libraries":["DataStructure/A.cpp"],"driver":"driver.cpp","allow_custom_io":True,"problem_url":"https://judge.yosupo.jp/problem/unionfind","samples":[{"input":"1\n","output":"42\n"}]}
         rows=[{"library":"DataStructure/A.cpp","verify_id":"a","libraries":entry["libraries"],"case_source":"official_library_checker","problem_id":"unionfind","combined_library_scope":False}]
         args=SimpleNamespace(cache=folder/"cache",output=folder/"reports",base=None,compiler="fake",repetitions=2,warmups=0,quick=True,plan=False,library=None,shard_index=0,shard_count=1,compile_timeout=1,case_timeout=1,generation_timeout=1,memory_mib=64,
-            limits=fixed_limits(folder,name="other_case" if missing_budget else "registered_sample_00"))
-        before=args.limits.read_bytes()
+            limits=fixed_limits(folder,name="other_case" if missing_budget else "registered_sample_00") if fixed_budget else None)
+        before=args.limits.read_bytes() if args.limits is not None else None
         def build(source,compiler,directory,timeout):
             directory.mkdir(parents=True,exist_ok=True);binary=directory/"binary";binary.write_bytes(b"fake")
             return {"status":"PASS","binary":str(binary),"source_sha256":perf.digest(source)}
@@ -318,7 +397,8 @@ class RunnerTests(unittest.TestCase):
              patch.object(perf.official,"official_problem",side_effect=AssertionError("no Max generator")):
             result=perf.run(args)
         report=json.loads((args.output/"result.json").read_text())
-        self.assertEqual(args.limits.read_bytes(),before)
+        if args.limits is not None:
+            self.assertEqual(args.limits.read_bytes(),before)
         return result,report,executed.call_count
 
     def test_current_only_quick_uses_explicit_budget_without_git_or_official_generator(self):
@@ -331,6 +411,18 @@ class RunnerTests(unittest.TestCase):
         self.assertIn("cpu_model",report)
         self.assertTrue(report["source_freeze_passed"])
         self.assertTrue(report["performance_limits_passed"])
+
+    def test_current_only_without_explicit_budget_records_no_performance_gate(self):
+        with (
+            tempfile.TemporaryDirectory() as temporary,
+            patch.object(perf.performance_limits, "load", side_effect=AssertionError("no fixed budget")),
+        ):
+            result, report, _ = self.run_fake_quick(temporary, fixed_budget=False)
+        self.assertEqual(result, 0)
+        self.assertTrue(report["current_measurements_passed"])
+        self.assertNotIn("performance_limits_passed", report)
+        self.assertNotIn("performance_regression_passed", report)
+        self.assertNotIn("performance_limit", report["results"][0]["cases"][0])
 
     def test_gate_uses_child_cpu_not_startup_or_runner_wall_time(self):
         for cpu_ns,expected in ((9_000_000,0),(10_000_000,0),(10_000_001,1)):

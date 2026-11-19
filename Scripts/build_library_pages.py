@@ -476,29 +476,29 @@ def performance_table(evidence: list[dict]) -> str:
         return ""
     def safe(value):
         return ci_quality_report.inline(value).replace("{", "&#123;").replace("}", "&#125;")
-    lines = ["起動・入出力込みのVerify全体と、本体だけの測定を区別します。時間は中央値です。", "",
-             "| 測定範囲 | ケース | 規模 | wall ms | CPU ms | 上限 ms | 上限判定 | 状態 |",
-             "| --- | --- | --- | ---: | ---: | ---: | --- | --- |"]
+    lines = ["起動・入出力込みのVerify全体はCPU時間、本体測定は経過時間で判定します。比較元と倍率は判定に使った指標の中央値に基づきます。", "",
+             "| 測定範囲 | ケース | 規模 | 現行 wall ms | 現行 CPU ms | 比較元 ms | 現行/比較元 | 上限 ms | 判定 | 状態 |",
+             "| --- | --- | --- | ---: | ---: | ---: | ---: | ---: | --- | --- |"]
     for item in rows:
         workload = item.get("workload", {})
         scale = workload.get("dimensions") or workload.get("input_header") or str(item["size"]) + (" bytes" if item.get("size_unit") == "input_bytes" else "要素")
         scope = item["scope"] + ("・縮小確認のみ" if item.get("size_profile") == "quick_smoke" or item.get("scale_scope") == "smoke_only" else "")
-        cpu = item.get("cpu_median_ns", {}).get("current")
-        cpu_text = f"{cpu/1e6:.3f}" if cpu is not None else "対象外"
-        gate = item.get("performance_limit", {})
-        limit_text = f"{gate['limit_ns']/1e6:.3f}" if "limit_ns" in gate else "—"
-        limit_status = LABELS.get(gate.get("status"), "未判定") if gate.get("status") != "UNAVAILABLE" else "未判定"
-        lines.append(f"| {safe(scope)} | {safe(item['pattern'])} | {safe(scale)} | {item['median_ns']['current']/1e6:.3f} | {cpu_text} | {limit_text} | {limit_status} | {LABELS[item['status']]} |")
+        if item.get("baseline_driver", {}).get("same_as_current") is False:
+            scope += "・比較元は旧driver"
+        cells = [safe(scope), safe(item["pattern"]), safe(scale),
+                 *ci_quality_report.performance_timing_cells(item), LABELS[item["status"]]]
+        lines.append("| " + " | ".join(cells) + " |")
     environments = set()
     for item in rows:
         compiler = item.get("compiler", {})
         environment = (compiler.get("version", "記録なし") if isinstance(compiler, dict) else compiler,
                        " ".join(item.get("flags", [])), item.get("cpu_model") or "記録なし",
-                       item.get("repetitions"), item.get("warmups"))
+                       item.get("repetitions"), item.get("warmups"), item.get("base_revision"))
         if environment not in environments:
             environments.add(environment)
-            lines += ["", "測定環境: " + safe(environment[0]) + " / " + safe(environment[1]) + " / " + safe(environment[2])
-                      + f"。測定{environment[3]}回、ウォームアップ{environment[4]}回。"]
+            baseline = " 比較元 " + safe(environment[5]) + "。" if environment[5] else ""
+            lines += ["", "測定環境は " + safe(environment[0]) + " / " + safe(environment[1]) + " / " + safe(environment[2])
+                      + f"。測定{environment[3]}回、ウォームアップ{environment[4]}回。" + baseline]
     return "\n".join(lines) + "\n"
 
 

@@ -286,9 +286,37 @@ class LibraryPagesTest(unittest.TestCase):
             "median_ns": {"current": 20000000}, "cpu_median_ns": {"current": 11000000},
             "performance_limit": {"status": "FAIL", "metric": "child_cpu_ns", "limit_ns": 10000000}}]}}})
         self.assertIn("上限 ms", text)
-        self.assertIn("20.000 | 11.000 | 10.000 | 失敗", text)
+        self.assertIn("20.000 | 11.000 | — | — | 10.000 | 失敗（固定上限）", text)
 
+    def test_performance_regression_displays_the_comparison_metric_and_retry(self):
+        compared = {
+            "status": "FAIL", "scope": "Verify全体", "pattern": "chain", "size": 100,
+            "median_ns": {"current": 11_000_000, "base": 8_000_000},
+            "cpu_median_ns": {"current": 6_000_000, "base": 5_000_000},
+            "comparison": "MEASURED", "base_revision": "e" * 40,
+            "performance_regression": {"status": "FAIL", "metric": "child_cpu_ns",
+                                       "baseline_median_ns": 5_000_000, "limit_ns": 5_250_000,
+                                       "observed_median_ns": 6_000_000},
+            "regression_confirmation": {"base": [5_100_000], "current": [6_000_000]},
+        }
+        unavailable = {"status": "PASS", "scope": "Verify全体", "pattern": "new", "size": 5,
+                       "median_ns": {"current": 3_000_000}, "comparison": "BASELINE_MISSING"}
+        text = pages.performance_table([compared, unavailable])
+        self.assertIn("比較元 ms", text)
+        self.assertIn("11.000 | 6.000 | 5.000 | 1.200× | 5.250 | 退行（CPU・再測定）", text)
+        self.assertIn("3.000 | 対象外 | — | — | — | 比較対象外（比較元なし）", text)
+        self.assertIn("e" * 40, text)
 
+    def test_performance_ratio_is_unavailable_when_old_cpu_median_is_zero(self):
+        text = pages.performance_table([{
+            "status": "PASS", "scope": "Verify全体", "pattern": "empty", "size": 3,
+            "median_ns": {"current": 3_000_000, "base": 2_000_000},
+            "cpu_median_ns": {"current": 80_000, "base": 0},
+            "performance_regression": {"status": "PASS", "metric": "child_cpu_ns",
+                                       "baseline_median_ns": 0, "limit_ns": 100_000,
+                                       "observed_median_ns": 80_000},
+        }])
+        self.assertIn("3.000 | 0.080 | 0.000 | — | 0.100 | 通過（CPU）", text)
 
     def test_old_ac_is_labelled_stale(self):
         text = pages.online_table([dict(title="test", status="source_changed", problem_url=None,

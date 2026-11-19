@@ -436,6 +436,127 @@ class QualityTests(unittest.TestCase):
         value = self.performance(); self.write("Verify/ci/benchmarks/alpha.cpp", "// changed harness\n")
         self.assertEqual(self.category(self.aggregate(value), "performance")["status"], "STALE")
 
+    def kernel_comparison(self, *, regressed=False):
+        value = self.performance()
+        value.update(status="FAIL" if regressed else "PASS", performance_regression_passed=not regressed)
+        row = value["results"][0]
+        current = 1_050_001 if regressed else 1_050_000
+        row.update(samples_ns={"base": [1_000_000] * 3, "current": [current] * 3},
+                   median_ns={"base": 1_000_000, "current": current},
+                   current_over_base=current / 1_000_000,
+                   regression_confirmation={"base": [1_000_000] * 3, "current": [1_060_000] * 3})
+        row["performance_regression"] = quality.performance_regression.evaluate("kernel_elapsed_ns", row["samples_ns"])
+        return value
+
+    def test_kernel_comparison_uses_final_samples_after_confirmation(self):
+        for regressed in (False, True):
+            with self.subTest(regressed=regressed):
+                value = self.kernel_comparison(regressed=regressed)
+                report = self.aggregate(value)
+                self.assertFalse(report["errors"])
+                expected = "FAIL" if regressed else "PASS"
+                self.assertEqual(report["input_report_status"], expected)
+                evidence, = self.category(report, "performance")["evidence"]
+                self.assertEqual(evidence["status"], expected)
+                self.assertEqual(evidence["performance_regression"]["limit_ns"], 1_050_000)
+                self.assertEqual(evidence["regression_confirmation"], value["results"][0]["regression_confirmation"])
+                self.assertIn("比較元コミット", quality.markdown(report))
+                self.assertIn("（wall・再測定）", quality.markdown(report))
+
+    def test_regression_confirmation_and_summary_cannot_be_forged(self):
+        for mutate in (
+                lambda report: report.update(performance_regression_passed=True),
+                lambda report: report.update(performance_regression_passed=0),
+                lambda report: report.update(status="PASS"),
+                lambda report: report.update(base_revision=None),
+                lambda report: report["results"][0].pop("regression_confirmation"),
+                lambda report: report["results"][0]["regression_confirmation"].update(current=[1_020_000] * 3),
+                lambda report: report["results"][0]["regression_confirmation"].update(base=[1_000_000] * 2),
+                lambda report: report["results"][0]["performance_regression"].update(limit_ns=1_050_001)):
+            with self.subTest(mutate=mutate):
+                value = self.kernel_comparison(regressed=True)
+                mutate(value)
+                report = self.aggregate(value)
+                self.assertTrue(report["errors"])
+                self.assertEqual(report["input_report_status"], "FAIL")
+
+    def test_whole_uses_cpu_baseline_and_preserves_comparison_unavailable(self):
+        value = self.all_performance()
+        value.update(status="FAIL", base_revision="a" * 40, performance_regression_passed=False,
+                     performance_regression_counts={"FAIL": 1, "NOT_COMPARABLE": 1})
+        row = value["results"][0]
+        row.update(baseline_sources={"source_hashes": {self.library: "a" * 64},
+                                     "resolved_paths": {self.library: self.library}},
+                   baseline_comparison="MEASURED", baseline_build={"status": "PASS"},
+                   baseline_driver={"kind": "current", "path": self.driver,
+                                    "sha256": row["driver_sha256"], "same_as_current": True})
+        compared, unavailable = row["cases"]
+        compared.update(samples_ns={"base": [50_000_000] * 3, "current": [2_000_000] * 3},
+                        median_ns={"base": 50_000_000, "current": 2_000_000},
+                        cpu_samples_ns={"base": [1_000_000] * 3, "current": [1_101_000] * 3},
+                        cpu_median_ns={"base": 1_000_000, "current": 1_101_000},
+                        current_over_base=0.04, comparison="MEASURED",
+                        regression_confirmation={"base": [1_000_000] * 3, "current": [1_102_000] * 3})
+        compared["performance_regression"] = quality.performance_regression.evaluate(
+            "child_cpu_ns", compared["cpu_samples_ns"])
+        unavailable.update(comparison="BASELINE_INVALID",
+                           baseline_failure={"trial": 0, "returncode": 0, "timed_out": False,
+                                             "oracle_passed": False, "output_sha256": "a" * 64},
+                           performance_regression={"status": "NOT_COMPARABLE", "metric": "child_cpu_ns",
+                                                   "reason": "BASELINE_INVALID"})
+        report = self.aggregate(value)
+        self.assertFalse(report["errors"])
+        self.assertEqual(report["input_report_status"], "FAIL")
+        bad, missing = self.category(report, "performance")["evidence"]
+        self.assertEqual(bad["performance_regression"]["baseline_median_ns"], 1_000_000)
+        self.assertEqual(bad["status"], "FAIL")
+        self.assertEqual(missing["status"], "PASS")
+        self.assertNotIn("baseline_median_ns", missing["performance_regression"])
+        markdown = quality.markdown(report)
+        self.assertIn("2.000 | 1.101 | 1.000 | 1.101× | 1.100 | 退行（CPU・再測定）", markdown)
+        self.assertIn("比較対象外（旧版照合失敗）", markdown)
+        unavailable["performance_regression"] = compared["performance_regression"]
+        self.assertTrue(self.aggregate(value)["errors"])
+        unavailable["regression_confirmation"] = compared["regression_confirmation"]
+        unavailable["performance_regression"] = {"status": "FAIL", "metric": "child_cpu_ns",
+                                                "reason": "BASELINE_CONFIRMATION_UNAVAILABLE"}
+        value["performance_regression_counts"] = {"FAIL": 2}
+        report = self.aggregate(value)
+        self.assertFalse(report["errors"])
+        self.assertIn("比較失敗（基準版の再測定不可）", quality.markdown(report))
+
+    def test_new_whole_library_has_no_comparable_cases(self):
+        value = self.all_performance()
+        value.update(base_revision="a" * 40, performance_regression_passed=True,
+                     performance_regression_counts={"NOT_COMPARABLE": 2})
+        item = value["results"][0]
+        item.update(baseline_sources={"source_hashes": {}, "resolved_paths": {},
+                                      "missing_path": self.library, "missing_paths": [self.library]},
+                    baseline_comparison="BASELINE_NEW_LIBRARY")
+        for case in item["cases"]:
+            case.update(comparison="BASELINE_NEW_LIBRARY",
+                        performance_regression={"status": "NOT_COMPARABLE", "metric": "child_cpu_ns",
+                                                "reason": "BASELINE_NEW_LIBRARY"})
+        report = self.aggregate(value)
+        self.assertFalse(report["errors"])
+        self.assertEqual(report["input_report_status"], "PASS")
+        self.assertIn("比較対象外（比較元なし）", quality.markdown(report))
+        item["baseline_sources"]["missing_paths"] = []
+        self.assertTrue(self.aggregate(value)["errors"])
+
+    def test_unpaired_kernel_does_not_claim_regression_pass(self):
+        value = self.performance()
+        value.update(status="NO_BASELINE", compared_cases=0, uncompared_cases=1, expected_cases=1,
+                     performance_regression_passed=False)
+        case = value["results"][0]
+        case.update(status="NO_BASELINE", current_over_base=None)
+        del case["samples_ns"]["base"]
+        del case["median_ns"]["base"]
+        report = self.aggregate(value)
+        self.assertFalse(report["errors"])
+        self.assertEqual(report["input_report_status"], "PARTIAL")
+        self.assertIn("比較対象外（比較元なし）", quality.markdown(report))
+
     def test_instrumented_requires_checked_flags_full_hashes_and_nonempty_samples(self):
         self.assertEqual(self.category(self.aggregate(self.instrumented()), "sanitizers")["status"], "PASS")
         for mutation in (lambda v: v.update(checked=False),

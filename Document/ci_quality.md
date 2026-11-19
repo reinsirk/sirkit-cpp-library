@@ -12,7 +12,7 @@
 | ASan/UBSan | 通常版のchecked実行で、範囲外アクセス・解放後の参照・未定義動作を検出する。 |
 | カバレッジ | checked実行で通常版本体の行・直接分岐を測定し、両方100%を必須にする。未計測も失敗。 |
 | 作法 | 通常版をCore Guidelines・Google Styleの2プロファイルで検査する。`Fast/`は対象外。 |
-| 性能 | 通常版全103本のVerify全体時間と、代表3本の本体時間を記録する。入力規模・CPU・コンパイラを併記する。 |
+| 性能退行 | 通常版全103本のVerify全体時間と代表3本の本体時間を、PRのベースコミットと比較する。 |
 
 各ライブラリの結果は[ライブラリページ](https://reinsirk.github.io/sirkit-cpp-library/)にも表示します。ソースSHAが合わない記録は未検証、対象のない項目は未実施です。[生成・公開・外部問題資産の扱い](library_pages.md)を参照してください。
 
@@ -98,23 +98,23 @@ python3 Scripts/ci_cpp_guidelines.py --guide google --clang-tidy clang-tidy-18 -
 
 確認済みの誤検出は`Scripts/ci_cpp_guidelines_exceptions.json`に理由・位置・診断・原本SHAを限定して保存し、レポートからは消しません。原本や診断が変わると例外は失効します。重大な規則が設定から抜けた場合も検査を失敗させます。
 
-## 性能測定
+## 性能退行の検査
 
 全103ライブラリについて、固定したVerifyプログラムの実行時間を8分割で測ります。テンプレート・`Fast/`・生成された派生版はこの103本に含めません。Library Checker対応の83本は公式入力の小規模例・最大バイト数・全generator系列・専用難ケースから選び、残り20本には各2形状の決定的入力を用意します。公式全ケースの正誤照合は別ジョブでも行います。
 
 ```sh
-python3 Scripts/ci_performance_all.py --compiler g++ \
+python3 Scripts/ci_performance_all.py --base origin/main --compiler g++ \
   --cache /tmp/all-performance-cache --output /tmp/all-performance
 ```
 
-ActionsのSummary・ライブラリページ・JSONに、ケース名、入力規模、実行時間の中央値と全測定値、CPU・コンパイラ・設定を残します。既定はウォームアップ1回・測定3回です。時間は起動・入出力を含むwall時間と子プロセスCPU時間を分け、入力生成・コンパイル・正解checkerの時間は除きます。Library Checker提出時間や本体だけの時間とは区別して参照してください。
+ActionsではPRのベースSHAを固定し、変更前後を同じジョブで、同じ入力・コンパイラ・設定で交互に測ります。Verifyは原則として同じmainと入出力を使います。旧APIでのみビルドできる場合は、同一問題・入出力で照合した旧driverを使い、JSONに出典とSHAを記録します。測定の既定はウォームアップ1回・測定3回です。Verify全体では起動・入出力を含むwall時間と子プロセスCPU時間を記録し、入力生成・コンパイル・正解checkerの時間は除きます。
 
 非LCの規模はCI用の処理量で、問題Maxの網羅を意味しません。数値制約を未再確認の4件はJSONへその旨を記し、既存driverを使うAPI測定として扱います。呼び出していない公開APIの性能まで保証しません。現在版のライブラリ・ケース・測定値が欠ければ失敗とし、縮小確認は全件測定済みに数えません。
 
 本体だけの補足測定には次を使います。入力生成・独立参照・起動・入出力は測らず、構築・操作・破棄・checksum集約を含めます。
 
 ```sh
-python3 Scripts/ci_benchmark.py --compiler g++ --output /tmp/kernel-performance
+python3 Scripts/ci_benchmark.py --base origin/main --compiler g++ --output /tmp/kernel-performance
 ```
 
 代表3本の各14ケース、計42ケースを実行します。小規模・大規模・2の冪の直前直後に加え、200万要素をCI用stress上限とします。この値はAPIやオンライン問題の最大制約ではありません。
@@ -123,8 +123,8 @@ python3 Scripts/ci_benchmark.py --compiler g++ --output /tmp/kernel-performance
 - UnionFind：ランダム・逐次結合、平衡結合後の圧縮前探索、未連結成分・重複結合。
 - RollingHash：ランダム・同一文字、末尾だけ違う長いLCP、NUL・上位bitを含むバイト列と端点。
 
-どちらも`--quick`は小規模の動作確認だけで、CIでは指定しません。比較元は不要ですが、必要なら`--base origin/main`で同じmain・入出力またはハーネスを使った比較もできます。
+`--quick`は小規模なローカル確認用です。
 
-性能の合格条件は、[固定上限](../Verify/ci/performance_limits.json)以内であることです。初期値はVerify実行`44026748544`の成果物から作り、Verify全体748ケースは子CPU時間の中央値の2倍（最低10ms）、本体42ケースはハーネス内の測定中央値の2倍に固定しています。毎回の測定値で上限を更新しません。上限の欠落・対象規模の不一致・上限超過も失敗です。入力・ケースを追加または変更したときは、固定上限の根拠も確認します。
+Verify全体の判定には子プロセスCPU時間を使い、本体の判定にはハーネス内の経過時間を使います。変更後の中央値が基準の中央値を超えた場合に備え、基準時間の5%と最小許容幅の大きい方を測定誤差として加えます。最小許容幅はVerify全体で100 µs、本体で5 µsです。上限を超えたケースは同じ条件で再測定し、再度超えればCIを失敗にします。
 
-共有runnerの待機はwall時間を大きく変えるため、Verify全体の合否には子CPU時間を使い、wall時間も記録します。本体測定はハーネス内の経過時間です。CPUはジョブ間で異なり、P-Coreでの測定や高速化の証明とは扱いません。ビルド・正答照合・計測・上限判定を別に記録します。
+ActionsのSummary・ライブラリページ・JSONに比較元、現在版、時間、比率、判定を表示します。比較元にコードがない場合や旧版の出力が独立参照と一致しない場合は、理由を記録して比較不能と表示します。現在版の誤答・ビルド失敗・計測漏れは失敗です。

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: CC0-1.0
-"""通常版の代表本体の絶対時間を計測する。指定時だけ基準commitと交互比較する。"""
+"""通常版の代表本体を計測し、基準commitからの退行を検査する。"""
 from __future__ import annotations
 
 import argparse
@@ -18,9 +18,10 @@ import sys
 import tempfile
 
 try:
-    from . import performance_limits
+    from . import performance_limits, performance_regression
 except ImportError:
     import performance_limits
+    import performance_regression
 
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURES = ROOT / "Verify/ci/benchmarks"
@@ -163,11 +164,15 @@ def code(value: str) -> str:
 
 
 def markdown(report: dict) -> str:
-    lines = ["## 本体の性能（固定予算検査）", "",
-             "現在版の絶対時間を表示します。基準commitを指定したときだけ、同じ計測コード・コンパイラ・O2・検査省略設定で交互比較します。",
-             "入力生成・独立参照・プロセス起動・入出力は時間に含めません。本体の構築・操作・破棄と同じchecksum集約を含みます。",
-             "Verifyのmainやオンライン提出時間の比較ではありません。保存した固定予算を超えれば性能検査は失敗です。", "",
-             "状態: " + str(report["status"])]
+    compare = report.get("comparison_requested", False)
+    method = ("基準commitと現在版を、同じ計測コード・コンパイラ・O2・検査省略設定で交互に測ります。"
+              if compare else "現在版の測定値を表示します。")
+    lines = ["## 本体の性能", "",
+             method,
+             "時間は本体の構築・操作・破棄とchecksum集約です。"]
+    if compare:
+        lines.append("退行判定には基準中央値に5%（最低5 µs）を加えた上限を使い、超過時は同じケースを再測定します。")
+    lines += ["", "状態: " + str(report["status"])]
     lines += ["", "対象はFenwick Tree・UnionFind・RollingHashの代表3本です。",
               "通常実行の既定対象は各14ケース（計42）。--id指定時は対象分だけ実行します。",
               "2,000,000要素はCIのstress上限で、問題のMax制約やAPIの上限を意味しません。",
@@ -177,8 +182,7 @@ def markdown(report: dict) -> str:
                   "、予定ケース数: " + str(report["expected_cases"])]
     if report.get("base_revision"):
         lines += ["", "基準: " + code(report["base_revision"])]
-    compare = report.get("comparison_requested", True)
-    lines += (["", "| 本体 | 入力 | 要素数 | 現在 ms | 基準 ms | 現在/基準 | 固定予算 ms | 判定 |",
+    lines += (["", "| 本体 | 入力 | 要素数 | 現在 ms | 基準 ms | 現在/基準 | 上限 ms | 判定 |",
                "| --- | --- | ---: | ---: | ---: | ---: | ---: | --- |"] if compare else
               ["", "| 本体 | 入力 | 要素数 | 実行時間 ms | 固定予算 ms | 判定 |",
                "| --- | --- | ---: | ---: | ---: | --- |"])
@@ -189,7 +193,7 @@ def markdown(report: dict) -> str:
             base = f"{median['base'] / 1e6:.3f}" if "base" in median else "N/A"
             ratio = f"{row['current_over_base']:.3f}" if row["current_over_base"] is not None else "N/A"
             line += f" {base} | {ratio} |"
-        gate = row.get("performance_limit")
+        gate = row.get("performance_regression") or row.get("performance_limit")
         if gate:
             line += f" {gate['limit_ns']/1e6:.3f} | {gate['status']} |"
         else:
@@ -198,7 +202,7 @@ def markdown(report: dict) -> str:
     if any(row["status"] == "NO_BASELINE" for row in report.get("results", [])):
         lines += ["", "N/Aは基準commitに本体がないため比較未実施です。現在版の計測と独立照合だけを行いました。"]
     if report["status"] == "FAIL":
-        lines += ["", "ビルド・照合・計測・固定性能予算のいずれかが失敗しました。詳細はJSONを確認してください。"]
+        lines += ["", "ビルド・照合・計測・性能判定のいずれかが失敗しました。詳細はJSONを確認してください。"]
     return "\n".join(lines) + "\n"
 
 
@@ -223,19 +227,24 @@ def run(args: argparse.Namespace) -> int:
     output = args.output.resolve()
     output.mkdir(parents=True, exist_ok=True)
     report = {"format": 1, "status": "running", "scope": "representative_normal_library_kernels",
+              "comparison_requested": args.base is not None,
               "timing_scope": "library construction, operations, destruction and shared digest only",
               "online_status": "not_evaluated", "flags": FLAGS,
               "repetitions": args.repetitions, "warmups": args.warmups,
               "platform": platform.platform(), "machine": platform.machine(), "cpu_model": cpu_model(),
               "affinity": sorted(os.sched_getaffinity(0)) if hasattr(os, "sched_getaffinity") else None,
-              "performance_limits_passed": False, "results": [], "sources": {}}
+              "results": [], "sources": {}}
     write_report(output, report)
     try:
         revision = resolve_base(args.base) if args.base is not None else None
         report["base_revision"] = revision
         report["comparison_requested"] = revision is not None
-        limits = performance_limits.load(getattr(args, "limits", ROOT / "Verify/ci/performance_limits.json"))
-        report["performance_limits"] = limits.metadata
+        limits = performance_limits.load(args.limits) if getattr(args, "limits", None) else None
+        if limits is not None:
+            report["performance_limits"] = limits.metadata
+            report["performance_limits_passed"] = False
+        if revision is not None:
+            report["performance_regression_passed"] = False
         compiler = compiler_command(args.compiler)
         report["compiler"] = {"command": compiler,
                               "version": command([compiler[0], "--version"], timeout=15).stdout.decode().splitlines()[0]}
@@ -247,11 +256,12 @@ def run(args: argparse.Namespace) -> int:
         report["scale_scope"] = "smoke_only" if args.quick else "small_large_ci_stress_and_power_of_two_boundaries"
         report["ci_stress_size_limit"] = STRESS_SIZE
         budgets = {}
-        for identifier, cases in plans.items():
-            for case in cases:
-                rounds = 1 if args.quick else max(1, 262144 // case["size"])
-                budgets[identifier, case["size"], case["pattern_id"]] = limits.kernel(
-                    LIBRARIES[identifier], identifier, case["scenario"], case["size"], case["pattern_id"], rounds)
+        if limits is not None:
+            for identifier, cases in plans.items():
+                for case in cases:
+                    rounds = 1 if args.quick else max(1, 262144 // case["size"])
+                    budgets[identifier, case["size"], case["pattern_id"]] = limits.kernel(
+                        LIBRARIES[identifier], identifier, case["scenario"], case["size"], case["pattern_id"], rounds)
         with tempfile.TemporaryDirectory(prefix="sirkit-benchmark-") as temporary:
             directory = Path(temporary)
             for identifier in selected:
@@ -284,10 +294,20 @@ def run(args: argparse.Namespace) -> int:
                     size, pattern = case["size"], case["pattern_id"]
                     rounds = 1 if args.quick else max(1, 262144 // size)
                     row = measure(executables, size, pattern, rounds, args.repetitions, args.warmups)
+                    if row["status"] == "MEASURED":
+                        gate = performance_regression.evaluate("kernel_elapsed_ns", row["samples_ns"])
+                        if gate["status"] == "FAIL":
+                            first = row["samples_ns"]
+                            reversed_order = dict(reversed(list(executables.items())))
+                            row = measure(reversed_order, size, pattern, rounds, args.repetitions, args.warmups)
+                            row["regression_confirmation"] = first
+                            gate = performance_regression.evaluate("kernel_elapsed_ns", row["samples_ns"])
+                        row["performance_regression"] = gate
                     if revision is None:
                         row["status"] = "CURRENT_ONLY"
                     row.update(id=identifier, pattern=case["scenario"], pattern_id=pattern, scale=case["scale"])
-                    row["performance_limit"] = limits.evaluate(budgets[identifier, size, pattern], row["samples_ns"]["current"])
+                    if limits is not None:
+                        row["performance_limit"] = limits.evaluate(budgets[identifier, size, pattern], row["samples_ns"]["current"])
                     report["results"].append(row)
                     write_report(output, report)
         expected = {(identifier, case["size"], case["pattern_id"])
@@ -299,16 +319,23 @@ def run(args: argparse.Namespace) -> int:
         report["compared_cases"] = compared
         report["uncompared_cases"] = len(report["results"]) - compared
         report["current_measurements_passed"] = bool(report["results"])
-        limits.check_unchanged()
-        report["performance_limits_passed"] = all(row["performance_limit"]["status"] == "PASS" for row in report["results"])
+        if limits is not None:
+            limits.check_unchanged()
+            report["performance_limits_passed"] = all(row["performance_limit"]["status"] == "PASS" for row in report["results"])
         report["status"] = ("CURRENT_ONLY" if revision is None else "NO_BASELINE" if not compared
                             else "PARTIAL" if report["uncompared_cases"] else "PASS")
-        if not report["performance_limits_passed"]:
+        regressed = any(row.get("performance_regression", {}).get("status") == "FAIL" for row in report["results"])
+        if revision is not None:
+            report["performance_regression_passed"] = compared == len(expected) and not regressed
+        if regressed:
+            report["status"] = "FAIL"
+            report["error"] = "再測定でも基準からの性能退行を検出しました。"
+        elif limits is not None and not report["performance_limits_passed"]:
             report["status"] = "FAIL"
             report["error"] = "固定性能予算を超過しました。正しさの照合結果と測定値はresultsへ保存しています。"
         write_report(output, report)
         print(report["status"] + ": " + str(output / "summary.md"))
-        return 1 if not report["performance_limits_passed"] else 2 if revision is not None and not compared else 0
+        return 1 if report["status"] == "FAIL" else 2 if revision is not None and not compared else 0
     except (BenchmarkError, OSError, ValueError, KeyError) as error:
         report["status"] = "FAIL"
         report["error"] = str(error)
@@ -322,8 +349,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--base", help="比較が必要な場合だけ指定する基準commit/ref")
     parser.add_argument("--compiler", default="g++")
     parser.add_argument("--output", type=Path, required=True)
-    parser.add_argument("--limits", type=Path, default=ROOT / "Verify/ci/performance_limits.json",
-                        help="保存済み実測から固定した性能予算JSON。測定後も更新しない")
+    parser.add_argument("--limits", type=Path, help="明示した場合だけ従来の固定性能予算も検査する")
     parser.add_argument("--id", action="append", choices=tuple(LIBRARIES))
     parser.add_argument("--quick", action="store_true", help="小規模の動作確認。性能判定には使わない")
     parser.add_argument("--repetitions", type=int, default=7)
