@@ -48,7 +48,7 @@ Library Checkerの提出コードはmain・入出力を含めてCodex、Claude�
 
 使用例は[Examples](Examples)、二項係数のテーブル上限などの設定は[二項係数の説明](Math/Combination/README.md)を参照してください。
 
-[コンパイラ別版](Variants/README.md)と[速度優先版](Fast/README.md)も用意しています。通常版との違い・利用前提・生成方法は[説明](Document/fast_variants.md)を参照してください。
+[安全版](Variants/README.md)と[速度優先版](Fast/README.md)は、それぞれコンパイラ共通・GCC専用・Clang専用・MSVC専用を用意しています。利用前提と生成方法は[配布版の説明](Document/fast_variants.md)を参照してください。
 
 配布は[GitHub Releases](https://github.com/reinsirk/sirkit-cpp-library/releases)を利用します。
 

@@ -10,6 +10,11 @@ struct Epsilon {
     long double abs = 1e-12L;
     long double rel = 1e-12L;
     constexpr long double tolerance(long double scale) const {
+        if consteval {
+            // 実行時のfabsに依存せず、負のゼロも正のゼロへ揃える。
+            const long double magnitude = scale == 0 ? 0.0L : (scale < 0 ? -scale : scale);
+            return abs + rel * magnitude;
+        }
         return abs + rel * std::abs(scale);
     }
 };

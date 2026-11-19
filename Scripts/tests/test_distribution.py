@@ -167,7 +167,11 @@ class DistributionTests(unittest.TestCase):
         self.assert_error('current_manifest_source_sha')
 
     def test_current_verify_library_mismatch(self):
-        d=json.loads(self.read('Variants/verify_manifest.json'));d['entries'][0]['source_hashes'][self.libraries[0]]='0'*64;self.write('Variants/verify_manifest.json',json.dumps(d));self.assert_error('current_verify_library_sha')
+        manifest = json.loads(self.read('Variants/verify_manifest.json'))
+        entry = next(item for item in manifest['entries'] if item['compiler'] == 'GCC' and not item['fast'])
+        entry['source_hashes'][self.libraries[0]] = '0'*64
+        self.write('Variants/verify_manifest.json', json.dumps(manifest))
+        self.assert_error('current_verify_library_sha')
 
     def test_unsafe_paths(self):
         for name in ['../bad.cpp','/abs.cpp','a//b','a/./b','C:/x','a\\b','a/../../x']:

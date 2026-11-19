@@ -120,11 +120,28 @@ class StructureTests(unittest.TestCase):
 
     def test_final_gate_includes_contracts_official_cases_and_documentation(self):
         gate = workflow("verify.yml")["jobs"]["result"]
-        self.assertEqual(set(gate["needs"]), {"maintenance", "examples", "instrumented", "guidelines", "performance", "all_performance", "contracts", "library_checker", "stress", "documentation"})
+        self.assertEqual(set(gate["needs"]), {"maintenance", "examples", "variant_builds", "instrumented", "guidelines", "performance", "all_performance", "contracts", "library_checker", "stress", "documentation"})
         command = gate["steps"][0]["run"]
-        for variable in ("CONTRACT_RESULT", "LIBRARY_CHECKER_RESULT", "STRESS_RESULT", "DOCUMENTATION_RESULT", "ALL_PERFORMANCE_RESULT"):
+        for variable in ("CONTRACT_RESULT", "LIBRARY_CHECKER_RESULT", "STRESS_RESULT", "DOCUMENTATION_RESULT",
+                         "ALL_PERFORMANCE_RESULT", "VARIANT_BUILDS_RESULT"):
             self.assertIn('"$' + variable + '" == success', command)
         self.assertEqual(gate["steps"][0]["env"]["ALL_PERFORMANCE_RESULT"], "${{ needs.all_performance.result }}")
+
+    def test_variant_build_matrix_runs_native_msvc_on_windows(self):
+        job = workflow("verify.yml")["jobs"]["variant_builds"]
+        self.assertEqual(job["needs"], "maintenance")
+        self.assertEqual(job["strategy"]["matrix"]["include"], [
+            {"os": "ubuntu-24.04", "compiler": "GCC"}, {"os": "ubuntu-24.04", "compiler": "Clang"},
+            {"os": "windows-2025", "compiler": "MSVC"},
+        ])
+        windows = next(step for step in job["steps"] if "on Windows" in step.get("name", ""))
+        self.assertEqual(windows["shell"], "cmd")
+        self.assertIn("SIRKIT_VS_DEVELOPER_COMMAND", windows["run"])
+        self.assertIn("--compiler MSVC --syntax-only --run-tests", windows["run"])
+        linux = next(step for step in job["steps"] if "on Linux" in step.get("name", ""))
+        self.assertIn("--run-tests", linux["run"])
+        self.assertIn("--summary", linux["run"])
+        self.assertIn("--summary", windows["run"])
 
     def test_all_library_performance_shards_measure_current_full_scope_and_upload_only_metadata(self):
         job = workflow("verify.yml")["jobs"]["all_performance"]

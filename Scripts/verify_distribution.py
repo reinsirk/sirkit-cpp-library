@@ -14,8 +14,15 @@ import stat
 import zipfile
 from urllib.parse import unquote, urlsplit
 
-EDITIONS = {"full": None, "gcc": ("GCC", False), "clang": ("Clang", False),
-            "fast_gcc": ("GCC", True), "fast_clang": ("Clang", True)}
+try:
+    from .generate_variants import COMPILERS
+except ImportError:
+    from generate_variants import COMPILERS
+
+EDITIONS = {"full": None, **{
+    ("fast_" if fast else "") + compiler.lower(): (compiler, fast)
+    for compiler in COMPILERS for fast in (False, True)
+}}
 VERIFY_LIMIT = 512 * 1024
 
 

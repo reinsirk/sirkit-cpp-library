@@ -4,14 +4,20 @@
 #endif
 #include SIRKIT_TEST_CIRCLE_SOURCE
 
+#include <bit>
 #include <cassert>
 #include <cmath>
+#include <cstdint>
 #include <limits>
 #include <stdexcept>
 #include <vector>
 
 int main() {
     using namespace sirkit::geo;
+    static_assert(Epsilon{0.25L, 0.5L}.tolerance(3.5L) == 2.0L);
+    static_assert(Epsilon{0.25L, 0.5L}.tolerance(-3.5L) == 2.0L);
+    constexpr auto zero = static_cast<double>(Epsilon{-0.0L, 1.0L}.tolerance(-0.0L));
+    static_assert(std::bit_cast<std::uint64_t>(zero) == 0);
     const Epsilon exact{0, 0};
     const RealPoint center{2, 1}, boundary{5, 5};
     const Circle circle{center, 5};

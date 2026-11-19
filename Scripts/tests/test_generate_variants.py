@@ -3,6 +3,7 @@
 """生成時にガードや利用側の設定を壊さないことを確認する。"""
 import importlib.util
 import itertools
+import json
 from pathlib import Path
 import subprocess
 import sys
@@ -40,6 +41,40 @@ class VariantsTest(unittest.TestCase):
         self.assertEqual(MODULE.specialize(source, "GCC", True), "UNCHECKED\nCODE\n")
         self.assertEqual(MODULE.specialize(source, "Clang", False), source)
 
+    def test_compiler_and_cpu_conditions(self):
+        source = ("#if defined(__clang__)\nCLANG\n"
+                  "#elif defined(__GNUC__)\nGCC\n#elif defined(_MSC_VER)\nMSVC\n#endif\n"
+                  "#ifdef __AVX2__\nSIMD\n#endif\n"
+                  "#if defined(__POPCNT__) || (defined(__x86_64__) && defined(__SSE2__))\nGNU_X86\n#endif\n"
+                  "#ifdef __SIZEOF_INT128__\nWIDE\n#else\nSTANDARD\n#endif\n")
+        self.assertEqual(MODULE.specialize(source, "Portable"), source)
+        self.assertEqual(MODULE.specialize(source, "MSVC"), "MSVC\n#ifdef __AVX2__\nSIMD\n#endif\nSTANDARD\n")
+        self.assertTrue(MODULE.specialize(source, "Clang").startswith("CLANG\n"))
+        self.assertTrue(MODULE.specialize(source, "GCC").startswith("GCC\n"))
+
+    def test_manifest_has_eight_editions_and_safe_templates_do_not_set_skip(self):
+        code = "#ifndef SKIP_RUNTIME_CHECKS\nCHECK\n#else\nUNCHECKED\n#endif\n"
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "Math").mkdir()
+            (root / "Math/example.cpp").write_text(code)
+            for template in MODULE.TEMPLATES:
+                (root / template).write_text("#define SKIP_RUNTIME_CHECKS\n" + code)
+            manifest = MODULE.generate(root)
+            self.assertEqual(manifest, json.loads((root / "Variants/manifest.json").read_bytes()))
+            self.assertEqual(manifest, MODULE.generate(root, check=True))
+            self.assertEqual({(x["compiler"], x["fast"]) for x in manifest["entries"] if x["source"] == "Math/example.cpp"},
+                             set(itertools.product(MODULE.COMPILERS, (False, True))))
+            self.assertEqual(len(manifest["entries"]), 24)
+            for entry in manifest["entries"]:
+                path = root / entry["path"]
+                _, _, body = path.read_text().split("\n", 2)
+                if entry["fast"]:
+                    prefix = "#define SKIP_RUNTIME_CHECKS\n" if entry["source"] in MODULE.TEMPLATES else ""
+                    self.assertEqual(body, prefix + "UNCHECKED\n")
+                else:
+                    self.assertEqual(body, code)
+
     def test_refuse_macro_mutation_and_bad_structure(self):
         for source in ["#undef __clang__\n", "#define __GNUC__ 12\n", "#endif\n", "#if A\n", "#if A\n#else\n#elif B\n#endif\n"]:
             with self.assertRaises(ValueError):
@@ -61,9 +96,20 @@ class VariantsTest(unittest.TestCase):
         ]
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "active.cpp"
-            for compiler, fast, a, b in itertools.product(("GCC", "Clang"), (False, True), (False, True), (False, True)):
+            without_gnu = ["-U__GNUC__", "-U__GNUG__"]
+            profiles = [
+                ("GCC", []),
+                ("Clang", ["-D__clang__=1", "-D__llvm__=1"]),
+                ("Clang", [*without_gnu, "-D__clang__=1", "-D__llvm__=1", "-D_MSC_VER=1944"]),
+                ("MSVC", [*without_gnu, "-U__SIZEOF_INT128__", "-D_MSC_VER=1944"]),
+                ("Portable", []),
+                ("Portable", [*without_gnu, "-U__SIZEOF_INT128__", "-D_MSC_VER=1944"]),
+            ]
+            conditions += ["defined(__llvm__) && !defined(__GNUC__)",
+                           "defined(_MSC_VER) && !defined(__clang__)",
+                           "defined(_MSC_VER) && defined(__SIZEOF_INT128__)"]
+            for (compiler, profile), fast, a, b in itertools.product(profiles, (False, True), (False, True), (False, True)):
                 source = "".join(f"#if {condition}\nYES_{i}\n#elif defined(A)\nALT_{i}\n#else\nNO_{i}\n#endif\n" for i, condition in enumerate(conditions))
-                profile = ["-D__clang__=1"] if compiler == "Clang" else []
                 flags = ["-DA=1" if a else "-UA", "-DB=1" if b else "-UB"]
                 # A/Bの裸の識別子も、未定義ならCプリプロセッサは0と解釈する。
                 baseline_flags = profile + flags + (["-DSKIP_RUNTIME_CHECKS"] if fast else [])

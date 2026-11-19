@@ -14,15 +14,55 @@
 // pow64i(x, n): x^n mod 2^64 を O(log(n + 1)) で返す。0^0 は1。
 // is_mul_overflow(a, b): a*b が符号付き64ビット整数の範囲外なら true。O(1)。
 
+#if !defined(_MSC_VER) && __has_include(<bits/stdc++.h>)
 #include <bits/stdc++.h>
+#else
+#include <algorithm>
+#include <array>
+#include <bit>
+#include <cassert>
+#include <chrono>
+#include <cmath>
+#include <compare>
+#include <complex>
+#include <concepts>
+#include <cstddef>
+#include <cstdint>
+#include <cstdlib>
+#include <deque>
+#include <functional>
+#include <iomanip>
+#include <initializer_list>
+#include <iostream>
+#include <iterator>
+#include <limits>
+#include <map>
+#include <memory>
+#include <numeric>
+#include <optional>
+#include <queue>
+#include <random>
+#include <ranges>
+#include <set>
+#include <span>
+#include <sstream>
+#include <stack>
+#include <stdexcept>
+#include <string>
+#include <string_view>
+#include <tuple>
+#include <type_traits>
+#include <unordered_map>
+#include <unordered_set>
+#include <utility>
+#include <vector>
+#endif
 //GCC バグ対策 https://gcc.gnu.org/bugzilla/show_bug.cgi?id=128217
-#pragma GCC optimize("no-tree-loop-vectorize")
 // #include <atcoder/all>
 
 using namespace std;
 // using namespace atcoder;
 
-#define SKIP_RUNTIME_CHECKS
 
 namespace sirkit {
 
