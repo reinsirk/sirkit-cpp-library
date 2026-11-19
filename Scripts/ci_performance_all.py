@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: CC0-1.0
-"""全通常ライブラリの固定Verifyプログラムの絶対性能を記録する。"""
+"""全通常ライブラリのVerifyプログラムを計測し、基準commitからの退行を検査する。"""
 from __future__ import annotations
 
 import argparse
+from collections import Counter
 from contextlib import contextmanager
 import hashlib
 import importlib
@@ -24,13 +25,14 @@ import threading
 
 sys.dont_write_bytecode = True
 try:
-    from . import ci_benchmark, ci_instrumented, ci_library_checker as official, prepare_verify, performance_limits
+    from . import ci_benchmark, ci_instrumented, ci_library_checker as official, prepare_verify, performance_limits, performance_regression
 except ImportError:
     import ci_benchmark
     import ci_instrumented
     import ci_library_checker as official
     import prepare_verify
     import performance_limits
+    import performance_regression
 
 ROOT = Path(__file__).resolve().parents[1]
 FLAGS = ["-std=c++23", "-O2", "-DNDEBUG"]
@@ -166,20 +168,33 @@ def repository(root: Path):
 
 def render_program(entry: dict, libraries: dict[str, bytes], driver: str, root: Path = ROOT,
                    *, legacy_adapter: bool = False) -> tuple[bytes, dict]:
-    adapter = ""
+    aliases = []
     if legacy_adapter:
         code = "\n".join(prepare_verify.CXX_NON_CODE.sub(" ", data.decode()) for data in libraries.values())
-        if re.search(r"\bnamespace\s+geo\s*\{", code) and not re.search(r"\bnamespace\s+sirkit\s*(?:::|\{)", code):
-            adapter = "namespace sirkit { namespace geo = ::geo; }\n"
+        driver_code = prepare_verify.CXX_NON_CODE.sub(" ", driver)
+        unwrapped = not re.search(r"\bnamespace\s+sirkit\s*(?:::|\{)", code)
+        if unwrapped and re.search(r"\bnamespace\s+geo\s*\{", code):
+            aliases.append("namespace sirkit { namespace geo = ::geo; }\n")
+        if (unwrapped and re.search(r"\bkInf\b", driver_code) and not re.search(r"\bkInf\b", code)
+                and re.search(r"\binline\s+constexpr\s+std::int64_t\s+INF\s*=", code)):
+            aliases.append("namespace sirkit { static_assert(::INF == (std::int64_t{1} << 60)); "
+                           "inline constexpr std::int64_t kInf = ::INF; }\n")
+        if (unwrapped and "sirkit::circle_intersection_kind" in driver_code
+                and re.search(r"\binline\s+geo::CircleIntersectionKind\s+circle_intersection_kind\s*\(", code)):
+            aliases.append("namespace sirkit { using ::circle_intersection_kind; }\n")
+        if (unwrapped and "sirkit::detail::InternalHashMap" in driver_code
+                and re.search(r"\bnamespace\s+reinsirk::detail\s*\{\s*template[^;]+\bclass\s+InternalHashMap\b", code)):
+            aliases.append("namespace sirkit::detail { using ::reinsirk::detail::InternalHashMap; }\n")
+    adapter = "".join(aliases)
     with repository(root):
         source, _ = prepare_verify.render(entry, skip_runtime_checks=True,
                     source_overrides=libraries, driver_override=adapter + driver)
-    return source, {"kind": "legacy_global_geo_namespace_alias" if adapter else "none",
+    return source, {"kind": "legacy_cpp_api_aliases" if adapter else "none",
                     "source": adapter, "sha256": digest(adapter.encode())}
 
 
 def baseline_libraries(revision: str, names: list[str], root: Path = ROOT) -> tuple[dict[str, bytes] | None, dict]:
-    contents, paths = {}, {}
+    contents, paths, missing = {}, {}, []
     for name in names:
         actual = name
         value = ci_benchmark.baseline_source(revision, actual, root)
@@ -187,13 +202,48 @@ def baseline_libraries(revision: str, names: list[str], root: Path = ROOT) -> tu
             actual = BASE_PATH_ALIASES[name]
             value = ci_benchmark.baseline_source(revision, actual, root)
         if value is None:
-            return None, {"missing_path": name, "resolved_paths": paths}
-        contents[name], paths[name] = value, actual
-    return contents, {"resolved_paths": paths, "source_hashes": {n: digest(b) for n, b in contents.items()}}
+            missing.append(name)
+        else:
+            contents[name], paths[name] = value, actual
+    proof = {"resolved_paths": paths, "source_hashes": {name: digest(data) for name, data in contents.items()}}
+    if missing:
+        return None, {**proof, "missing_path": missing[0], "missing_paths": missing}
+    return contents, proof
+
+
+def archived_driver(revision: str, entry: dict, current_sha: str, support: dict[str, str],
+                    root: Path = ROOT) -> tuple[str, dict] | None:
+    """同じ問題・入出力契約が確認できる旧driverだけを使う。"""
+    manifest_path = "Verify/current/manifest.json"
+    manifest = ci_benchmark.baseline_source(revision, manifest_path, root)
+    if manifest is None:
+        return None
+    records = [row for row in json.loads(manifest)["entries"] if row.get("id") == entry["id"]]
+    if len(records) != 1:
+        return None
+    record = records[0]
+    path = entry["driver"]
+    if (record.get("driver") != path or record.get("problem_url") != entry.get("problem_url")
+            or record.get("libraries") != entry["libraries"]
+            or record.get("sample_checker") != entry.get("sample_checker")
+            or record.get("support_source_hashes", {}) != support
+            or [(sample["input"], sample["output"]) for sample in record.get("samples", [])]
+            != [(sample["input"], sample["output"]) for sample in entry.get("samples", [])]):
+        return None
+    previous = ci_benchmark.baseline_source(revision, path, root)
+    if previous is None or digest(previous) != record.get("driver_sha256") or digest(previous) == current_sha:
+        return None
+    driver = previous.decode()
+    with repository(root):
+        if prepare_verify.common_source_hashes(driver) != support:
+            return None
+    return driver, {"kind": "archived_same_problem_and_io", "path": path, "sha256": digest(previous),
+                    "manifest_sha256": digest(manifest), "same_as_current": False}
 
 
 def freeze_sources(rows: list[dict], entries: dict, root: Path = ROOT) -> dict[str, str]:
-    names = {"Scripts/ci_performance_all.py", "Scripts/performance_limits.py", "Verify/ci/performance_cases.py", "Scripts/prepare_verify.py",
+    names = {"Scripts/ci_performance_all.py", "Scripts/performance_limits.py", "Scripts/performance_regression.py",
+             "Verify/ci/performance_cases.py", "Scripts/prepare_verify.py",
              "Scripts/ci_library_checker.py", "Scripts/ci_benchmark.py", "Verify/ci/library_checker.json"}
     for row in rows:
         entry = entries[row["verify_id"]]
@@ -263,9 +313,12 @@ def build(source: bytes, compiler: str, directory: Path, timeout: float) -> dict
     snapshot, binary = directory / "submission.cpp", directory / "solution"
     snapshot.write_bytes(source)
     command = [compiler, *FLAGS, str(snapshot), "-o", str(binary)]
-    result = execute(command, work=directory, output=directory / "compile.stdout", log=directory / "compile.stderr",
+    diagnostics = directory / "compile.stderr"
+    result = execute(command, work=directory, output=directory / "compile.stdout", log=diagnostics,
                      timeout=timeout, memory_mib=2048)
     passed = result["returncode"] == 0 and not result["timed_out"] and binary.is_file()
+    if not passed:
+        result["diagnostic_excerpt"] = diagnostics.read_bytes()[-16000:].decode(errors="replace")
     return {"status": "PASS" if passed else "FAIL", "command": command,
             "source_sha256": digest(source), "binary": str(binary),
             "executable_sha256": file_digest(binary) if passed else None, **result}
@@ -280,7 +333,10 @@ def output_matches(actual: Path, case: dict, entry: dict, work: Path) -> bool:
             raise PerformanceError("official checker changed")
         result = execute([case["checker_path"], str(source), str(actual), str(expected)],
                          work=work, output=work / "checker.stdout", log=work / "checker.stderr", timeout=60)
-        return result["returncode"] == 0 and not result["timed_out"]
+        # testlibの解答不一致と、チェッカー自身の異常終了を区別する。
+        if result["timed_out"] or result["returncode"] not in (0, 1, 2, 4):
+            raise PerformanceError("official checker failed to judge: " + case["name"])
+        return result["returncode"] == 0
     if case["checker"] == "tokens":
         with actual.open("rb") as a, expected.open("rb") as e:
             import itertools
@@ -323,39 +379,44 @@ def measure_case(binaries: dict[str, Path], case: dict, entry: dict, work: Path,
     cpu_samples = {name: [] for name in binaries}
     output_hashes = {name: [] for name in binaries}
     comparison = "MEASURED" if "base" in binaries else "BASELINE_UNAVAILABLE"
-    baseline_failed = None
+    baseline_failure = None
     orders = []
     for trial in range(warmups + repetitions):
         order = list(binaries)
         if trial % 2:
             order.reverse()
-        if baseline_failed is not None:
+        if baseline_failure is not None:
             order = [role for role in order if role != "base"]
         orders.append(order)
         for role in order:
             actual = work / (role + ".actual")
             run = execute([str(binaries[role])], stdin=Path(case["input_path"]), work=work, output=actual,
                           log=work / (role + ".runtime.log"), timeout=timeout, memory_mib=memory_mib)
-            correct = run["returncode"] == 0 and not run["timed_out"] and output_matches(actual, case, entry, work)
+            executed = run["returncode"] == 0 and not run["timed_out"]
+            correct = executed and output_matches(actual, case, entry, work)
             if not correct:
                 if role == "current":
                     raise PerformanceError("current program failed correctness or execution: " + case["name"])
-                baseline_failed = "BASELINE_INVALID"
-                comparison = baseline_failed
+                baseline_failure = {"trial": trial, "returncode": run["returncode"], "timed_out": run["timed_out"],
+                                    "oracle_passed": False if executed else None,
+                                    "output_sha256": file_digest(actual)}
+                comparison = "BASELINE_INVALID"
                 samples.pop("base", None)
                 cpu_samples.pop("base", None)
                 output_hashes.pop("base", None)
                 continue
             if trial >= warmups:
+                if type(run.get("cpu_ns")) is not int or run["cpu_ns"] < 0:
+                    raise PerformanceError("child CPU timing unavailable: " + case["name"])
                 samples[role].append(run["elapsed_ns"])
-                cpu_samples[role].append(run.get("cpu_ns", 0))
+                cpu_samples[role].append(run["cpu_ns"])
                 output_hashes[role].append(file_digest(actual))
     if len(samples.get("current", [])) != repetitions:
         raise PerformanceError("current measurement repetition missing")
     if "base" in samples and len(samples["base"]) != repetitions:
         raise PerformanceError("baseline measurement repetition missing")
     medians = {role: statistics.median(values) for role, values in samples.items()}
-    return {"name": case["name"], "status": "PASS", "correctness_passed": True,
+    result = {"name": case["name"], "status": "PASS", "correctness_passed": True,
             "input_sha256": case["input_sha256"], "expected_sha256": case["expected_sha256"],
             "input_bytes": Path(case["input_path"]).stat().st_size, "metadata": case.get("metadata", {}),
             "pattern": case.get("category", "official_representative" if case["checker"] == "official" else case["name"]),
@@ -364,6 +425,42 @@ def measure_case(binaries: dict[str, Path], case: dict, entry: dict, work: Path,
             "cpu_samples_ns": cpu_samples, "cpu_median_ns": {role: statistics.median(values) for role, values in cpu_samples.items()},
             "current_over_base": medians["current"] / medians["base"] if "base" in medians else None,
             "comparison": comparison, "orders": orders}
+    if baseline_failure is not None:
+        result["baseline_failure"] = baseline_failure
+    return result
+
+
+def regression_result(case: dict) -> dict:
+    metric = "child_cpu_ns"
+    reason = case["comparison"]
+    if reason == "MEASURED":
+        return performance_regression.evaluate(metric, case["cpu_samples_ns"])
+    failure = case.get("baseline_failure", {})
+    prior_wrong_answer = (reason == "BASELINE_INVALID" and type(failure.get("returncode")) is int
+                          and failure["returncode"] == 0
+                          and failure.get("timed_out") is False and failure.get("oracle_passed") is False)
+    status = "NOT_COMPARABLE" if reason == "BASELINE_NEW_LIBRARY" or prior_wrong_answer else "FAIL"
+    return {"status": status, "metric": metric, "reason": reason}
+
+
+def measure_with_comparison(binaries: dict[str, Path], case: dict, entry: dict, work: Path,
+                            baseline_comparison: str, **options) -> dict:
+    result = measure_case(binaries, case, entry, work, **options)
+    if "base" not in binaries:
+        result["comparison"] = baseline_comparison
+    if baseline_comparison == "NOT_REQUESTED":
+        return result
+    gate = regression_result(result)
+    if gate["status"] == "FAIL" and result["comparison"] == "MEASURED":
+        initial_samples = result["cpu_samples_ns"]
+        result = measure_case(dict(reversed(tuple(binaries.items()))), case, entry, work, **options)
+        result["regression_confirmation"] = initial_samples
+        gate = regression_result(result)
+        if result["comparison"] != "MEASURED":
+            # 初回の比較は成立していたため、再計測不能だけで退行判定を覆さない。
+            gate.update(status="FAIL", reason="BASELINE_CONFIRMATION_UNAVAILABLE")
+    result["performance_regression"] = gate
+    return result
 
 
 def complete(report: dict, *, entries: dict | None = None, nonlc=None) -> bool:
@@ -411,7 +508,7 @@ def write_report(output: Path, report: dict) -> None:
     lines = ["## 全ライブラリのVerifyプログラム性能", "", "状態: " + report["status"], "",
              "現在版の入力規模・wall時間・子プロセスCPU時間の中央値と生データを保存します。",
              "wall時間はプロセス起動・入出力・runnerの待機遅延を含みます。本体だけのkernel測定・オンライン時間とは区別します。",
-             "現在版のケース・測定結果・固定予算が欠けていれば失敗です。予算判定には子プロセスCPU時間の中央値を使います。", "",
+             "基準指定時は前の版と同じ入力で子プロセスCPU時間を比較します。固定予算は明示指定時だけ検査します。", "",
              "入力プロファイル: " + report["size_profile"], "",
              "CPU: " + str(report.get("cpu_model", "unknown")),
              "環境: " + str(report.get("platform", "unknown")),
@@ -419,8 +516,8 @@ def write_report(output: Path, report: dict) -> None:
              "コンパイラ: " + str(report.get("compiler", {}).get("version", "未取得")),
              "フラグ: " + " ".join(report.get("flags", [])), "",
              f"全対象 {len(report['all_library_paths'])}、このshard {len(report['selected_library_paths'])}。", "",
-             "| 本体 | Verify | ケース | 入力規模・先頭行 | wall ms | CPU ms | 固定CPU予算 ms | 判定 | 入力 bytes | 繰り返し |",
-             "| --- | --- | --- | --- | ---: | ---: | ---: | --- | ---: | ---: |"]
+             "| 本体 | Verify | ケース | 入力規模・先頭行 | wall ms | CPU ms | 基準CPU ms | 現行/基準 | 上限CPU ms | 判定 | 入力 bytes | 繰り返し |",
+             "| --- | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | --- | ---: | ---: |"]
     for row in report["results"]:
         for case in row.get("cases", []):
             med = case["median_ns"]
@@ -429,12 +526,21 @@ def write_report(output: Path, report: dict) -> None:
             dimensions = metadata.get("dimensions", metadata.get("input_header", "登録入力例"))
             description = json.dumps(dimensions, ensure_ascii=False) if isinstance(dimensions, dict) else str(dimensions)
             description = description.replace("|", "&#124;").replace("\n", " ")
-            gate = case.get("performance_limit")
-            budget = f"{gate['limit_ns']/1e6:.3f}" if gate else "—"
-            result = gate["status"] if gate else "未照合"
-            lines.append(f"| {row['library']} | {row['verify_id']} | {case['name']} | {description} | {med['current']/1e6:.3f} | {cpu:.3f} | {budget} | {result} | {case['input_bytes']} | {report['repetitions']} |")
+            gate = case.get("performance_regression") or case.get("performance_limit") or {}
+            baseline = f"{gate['baseline_median_ns']/1e6:.3f}" if "baseline_median_ns" in gate else "—"
+            comparison = case.get("performance_regression", {})
+            base_cpu = comparison.get("baseline_median_ns")
+            ratio = f"{comparison['observed_median_ns'] / base_cpu:.3f}×" if base_cpu else "—"
+            budget = f"{gate['limit_ns']/1e6:.3f}" if "limit_ns" in gate else "—"
+            judgement = gate.get("status", "計測のみ")
+            if "reason" in gate:
+                judgement += " (" + gate["reason"] + ")"
+            lines.append(f"| {row['library']} | {row['verify_id']} | {case['name']} | {description} | {med['current']/1e6:.3f} | {cpu:.3f} | {baseline} | {ratio} | {budget} | {judgement} | {case['input_bytes']} | {report['repetitions']} |")
     if report.get("base_revision"):
-        lines += ["", "比較元の詳細はresult.jsonに保存します。欠落・API非互換・誤答の比率は作りません。"]
+        counts = report.get("performance_regression_counts", {})
+        lines += ["", "比較元 " + report["base_revision"],
+                  f"比較合格 {counts.get('PASS', 0)}、失敗 {counts.get('FAIL', 0)}、比較不可 {counts.get('NOT_COMPARABLE', 0)}。",
+                  "旧driverを使った理由とソースSHA、再計測前の値はresult.jsonで確認できます。"]
     if report.get("error"):
         lines += ["", str(report["error"]).replace("\n", " ")[:1000]]
     (output / "summary.md").write_text("\n".join(lines) + "\n")
@@ -473,16 +579,20 @@ def run(args: argparse.Namespace) -> int:
               "platform": platform.platform(), "machine": platform.machine(), "cpu_model": ci_benchmark.cpu_model(),
               "affinity": sorted(os.sched_getaffinity(0)) if hasattr(os, "sched_getaffinity") else None,
               "repetitions": args.repetitions, "warmups": args.warmups,
-              "base_revision": None, "source_freeze_passed": False, "performance_limits_passed": False,
+              "base_revision": None, "source_freeze_passed": False,
               "runner": {"source": "Scripts/ci_performance_all.py", "sha256": file_digest(Path(__file__))},
               "compiler": {}, "source_hashes": {}, "results": [dict(row, status="NOT_RUN", cases=[], current_measurements_passed=False) for row in selected]}
     write_report(output, report)
     frozen = None
     try:
-        limits = performance_limits.load(getattr(args, "limits", root / "Verify/ci/performance_limits.json"))
-        report["performance_limits"] = limits.metadata
+        limits_path = getattr(args, "limits", None)
+        limits = performance_limits.load(limits_path) if limits_path is not None else None
+        if limits is not None:
+            report.update(performance_limits=limits.metadata, performance_limits_passed=False)
         revision = ci_benchmark.resolve_base(args.base, root) if args.base else None
         report["base_revision"] = revision
+        if revision is not None:
+            report.update(performance_regression_passed=False, performance_regression_counts={})
         compiler = shutil.which(args.compiler)
         if compiler is None:
             raise PerformanceError("compiler missing")
@@ -519,17 +629,36 @@ def run(args: argparse.Namespace) -> int:
                     binaries = {"current": Path(row["current_build"]["binary"])}
                     base, baseline_proof = baseline_libraries(revision, list(current_libraries), root) if revision else (None, {})
                     row["baseline_sources"] = baseline_proof
-                    row["baseline_comparison"] = "BASELINE_MISSING" if revision else "NOT_REQUESTED"
-                    if base is not None:
+                    row["baseline_comparison"] = "NOT_REQUESTED"
+                    if revision and base is None:
+                        row["baseline_comparison"] = ("BASELINE_NEW_LIBRARY" if row["library"] in baseline_proof["missing_paths"]
+                                                      else "BASELINE_DEPENDENCY_MISSING")
+                    elif revision and base is not None:
                         baseline_source, adapter = render_program(entry, base, driver, root, legacy_adapter=True)
                         row["baseline_adapter"] = adapter
+                        row["baseline_driver"] = {"kind": "current", "path": row["driver"],
+                                                  "sha256": row["driver_sha256"], "same_as_current": True}
                         base_key = digest(baseline_source)
                         if base_key not in builds:
                             builds[base_key] = build(baseline_source, compiler, work / "base", args.compile_timeout)
+                        if builds[base_key]["status"] != "PASS" and not builds[base_key].get("timed_out"):
+                            previous = archived_driver(revision, entry, row["driver_sha256"], support, root)
+                            if previous is not None:
+                                row["baseline_initial_build"] = builds[base_key]
+                                previous_source, row["baseline_driver"] = previous
+                                baseline_source, row["baseline_adapter"] = render_program(
+                                    entry, base, previous_source, root, legacy_adapter=True)
+                                base_key = digest(baseline_source)
+                                if base_key not in builds:
+                                    builds[base_key] = build(baseline_source, compiler, work / "base_archived_driver",
+                                                            args.compile_timeout)
                         row["baseline_build"] = builds[base_key]
-                        row["baseline_comparison"] = "MEASURED" if builds[base_key]["status"] == "PASS" else "BASELINE_API_INCOMPATIBLE"
                         if builds[base_key]["status"] == "PASS":
                             binaries["base"] = Path(builds[base_key]["binary"])
+                            row["baseline_comparison"] = "MEASURED"
+                        else:
+                            row["baseline_comparison"] = ("BASELINE_BUILD_TIMEOUT" if builds[base_key].get("timed_out")
+                                                          else "BASELINE_API_INCOMPATIBLE")
                     if row["case_source"] == "official_library_checker" and args.quick:
                         cases = inline_cases(entry, work)
                     elif row["case_source"] == "official_library_checker":
@@ -553,18 +682,19 @@ def run(args: argparse.Namespace) -> int:
                     row["expected_case_names"] = [case["name"] for case in cases]
                     if not cases or len(row["expected_case_names"]) != len(set(row["expected_case_names"])):
                         raise PerformanceError("empty or duplicate performance cases")
-                    budgets = {case["name"]: limits.whole(row["library"], row["verify_id"], case["name"],
-                                Path(case["input_path"]).stat().st_size) for case in cases}
+                    budgets = ({case["name"]: limits.whole(row["library"], row["verify_id"], case["name"],
+                                Path(case["input_path"]).stat().st_size) for case in cases} if limits is not None else {})
                     for case in cases:
-                        result = measure_case(binaries, case, entry, work, repetitions=args.repetitions,
-                                              warmups=args.warmups, timeout=args.case_timeout, memory_mib=args.memory_mib)
-                        if "base" not in binaries:
-                            result["comparison"] = row["baseline_comparison"]
-                        result["performance_limit"] = limits.evaluate(budgets[case["name"]], result["cpu_samples_ns"]["current"])
+                        result = measure_with_comparison(binaries, case, entry, work, row["baseline_comparison"],
+                                                         repetitions=args.repetitions, warmups=args.warmups,
+                                                         timeout=args.case_timeout, memory_mib=args.memory_mib)
+                        if limits is not None:
+                            result["performance_limit"] = limits.evaluate(budgets[case["name"]], result["cpu_samples_ns"]["current"])
                         row["cases"].append(result)
                         write_report(output, report)
                     row["current_measurements_passed"], row["status"] = True, "PASS"
-                    row["performance_limits_passed"] = all(case["performance_limit"]["status"] == "PASS" for case in row["cases"])
+                    if limits is not None:
+                        row["performance_limits_passed"] = all(c["performance_limit"]["status"] == "PASS" for c in row["cases"])
                 except (OSError, ValueError, official.RunnerError, subprocess.SubprocessError) as error:
                     record_failure(row, error)
                 finally:
@@ -583,14 +713,29 @@ def run(args: argparse.Namespace) -> int:
                         actual.unlink(missing_ok=True)
                 write_report(output, report)
             check_frozen(frozen, root)
-            limits.check_unchanged()
+            if limits is not None:
+                limits.check_unchanged()
             report["source_freeze_passed"] = True
             report["current_measurements_passed"] = complete(report, entries=by_id, nonlc=nonlc)
-            report["performance_limits_passed"] = (bool(report["results"]) and all(
-                row.get("performance_limits_passed") is True for row in report["results"]))
-            report["status"] = "PASS" if report["current_measurements_passed"] and report["performance_limits_passed"] else "FAIL"
-            if report["current_measurements_passed"] and not report["performance_limits_passed"]:
-                report["error"] = "固定性能予算を超過しました。正しさの照合結果と測定値はresultsへ保存しています。"
+            if revision is not None:
+                counts = Counter(c["performance_regression"]["status"] for row in report["results"] for c in row["cases"])
+                has_existing_libraries = any(row.get("baseline_comparison") != "BASELINE_NEW_LIBRARY"
+                                             for row in report["results"])
+                report["performance_regression_counts"] = dict(counts)
+                report["performance_regression_passed"] = (
+                    report["current_measurements_passed"] and not counts["FAIL"]
+                    and (counts["PASS"] > 0 or not has_existing_libraries))
+                if report["current_measurements_passed"] and not report["performance_regression_passed"]:
+                    report["error"] = ("性能退行または基準版の比較失敗を検出しました。" if counts["FAIL"]
+                                       else "比較対象が既存ですが、比較できたケースがありません。")
+            if limits is not None:
+                report["performance_limits_passed"] = bool(report["results"]) and all(
+                    row.get("performance_limits_passed") is True for row in report["results"])
+                if report["current_measurements_passed"] and not report["performance_limits_passed"] and "error" not in report:
+                    report["error"] = "固定性能予算を超過しました。正しさの照合結果と測定値はresultsへ保存しています。"
+            report["status"] = "PASS" if (report["current_measurements_passed"]
+                                         and report.get("performance_regression_passed", True)
+                                         and report.get("performance_limits_passed", True)) else "FAIL"
     except (OSError, ValueError, official.RunnerError, subprocess.SubprocessError) as error:
         record_failure(report, error)
     finally:
@@ -599,6 +744,8 @@ def run(args: argparse.Namespace) -> int:
                 check_frozen(frozen, root)
             except (OSError, PerformanceError) as error:
                 report["source_freeze_passed"], report["current_measurements_passed"] = False, False
+                if "performance_regression_passed" in report:
+                    report["performance_regression_passed"] = False
                 record_failure(report, error)
         write_report(output, report)
     return 0 if report["status"] == "PASS" else 1
@@ -606,11 +753,10 @@ def run(args: argparse.Namespace) -> int:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--base", help="省略時は現在版の絶対性能だけを測定する")
+    parser.add_argument("--base", help="同じ入力で退行を検査する基準commit。省略時は現在版だけを計測する")
     parser.add_argument("--cache", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
-    parser.add_argument("--limits", type=Path, default=ROOT / "Verify/ci/performance_limits.json",
-                        help="保存済み実測から固定した性能予算JSON。測定後も更新しない")
+    parser.add_argument("--limits", type=Path, help="旧方式の固定性能予算JSONを任意で照合する")
     parser.add_argument("--compiler", default="g++")
     parser.add_argument("--repetitions", type=int, default=3)
     parser.add_argument("--warmups", type=int, default=1)

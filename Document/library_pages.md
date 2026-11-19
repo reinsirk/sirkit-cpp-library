@@ -22,7 +22,7 @@
 | 正常系 | 入力例・独立参照・checked契約テストの照合結果。 |
 | 失敗系 | 期待した型の例外と、失敗後にも状態が保たれることを検査する。 |
 | Library Checker公式ケース | 外部で生成した全ケースを公式checkerで照合。プログラム全体の時間も記録する。 |
-| 性能測定 | 全103本のVerify全体時間と、代表3本の本体時間。入力規模・中央値・生データ・実行環境を区別して表示。 |
+| 性能退行 | 全103本のVerify全体時間と代表3本の本体時間をPRのベースと比較。入力規模・両版の中央値・判定を表示。 |
 | ASan/UBSan・Coverage | checked実行の診断と、通常版本体の行・分岐到達状況。coverageは両方100%を必須にする。 |
 
 結果がない対象は「未実施」、記録時からソースが変わった対象は「ソース変更後は未検証」です。代表テストの成功を全APIの保証にはしません。失敗系は現在Fenwick Tree・Segment Tree・Lazy Segment Tree・Union Find・Low Link・Rolling Hashが対象です。本体だけの補足性能はFenwick Tree・Union Find・Rolling Hashを測ります。
@@ -59,7 +59,7 @@ python3 Scripts/ci_library_checker.py --id dynamic_union_find \
 
 ## PRと公開
 
-`main`向けPRで正常系・失敗系・Sanitizer・Coverage・全103本の性能と代表本体性能、全LC対象の公式ケースを実行し、ページ一式を`library-pages-preview`成果物へ保存します。公式ケースと全ライブラリ性能は各8分割です。別のMax・構造ケースはActionsの`stress-cases`成果物へ保存します。入力規模・実行環境とともに絶対時間を表示し、全体時間と本体時間、手元・オンラインの時間を区別します。測定漏れは未実施とします。
+`main`向けPRで正常系・失敗系・Sanitizer・Coverage・全103本と代表本体の性能退行検査、全LC対象の公式ケースを実行し、ページ一式を`library-pages-preview`成果物へ保存します。公式ケースと全ライブラリ性能は各8分割です。別のMax・構造ケースはActionsの`stress-cases`成果物へ保存します。性能は入力規模・実行環境、PRのベースと変更後の時間、退行判定を表示します。Verify全体・本体のみ・オンラインの測定結果はそれぞれ表示します。
 
 mainへ取り込んだPRのcloseイベントで、取り込まれたcommitから公開版を生成します。直前の同じPR headのCI成果物を使い、再度SHAを照合します。成果物が失われた場合は「未実施」とし、過去の成功を補いません。未取り込みPR・通常push・手動起動では公開しません。
 

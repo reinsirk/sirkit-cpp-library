@@ -214,6 +214,46 @@ class FixedBudgetRunnerTests(unittest.TestCase):
             self.assertEqual(builds, 0)
 
 
+class RegressionRunnerTests(unittest.TestCase):
+    def test_noise_margin_uses_the_measured_baseline(self):
+        for metric, base, current, limit, status in (
+            ("kernel_elapsed_ns", 1_000_000, 1_050_000, 1_050_000, "PASS"),
+            ("kernel_elapsed_ns", 1_000_000, 1_050_001, 1_050_000, "FAIL"),
+            ("child_cpu_ns", 1_000, 101_001, 101_000, "FAIL"),
+        ):
+            with self.subTest(metric=metric, current=current):
+                result = bench.performance_regression.evaluate(metric, {"base": [base], "current": [current]})
+                self.assertEqual((result["limit_ns"], result["status"]), (limit, status))
+        with self.assertRaises(ValueError):
+            bench.performance_regression.evaluate("child_cpu_ns", {"base": [1, 2], "current": [1]})
+
+    def test_overshoot_is_checked_again_before_failing_and_needs_no_fixed_budget(self):
+        for confirm, status in ((1_010_000, "PASS"), (1_200_000, "FAIL")):
+            with self.subTest(confirm=confirm), tempfile.TemporaryDirectory() as folder:
+                args = argparse.Namespace(output=Path(folder), base="HEAD", compiler="fake",
+                                          quick=True, repetitions=3, warmups=0, id=["fenwick"])
+                def measure(executables, size, pattern, rounds, repetitions, warmups):
+                    current = 1_200_000 if next(iter(executables)) == "base" else confirm
+                    return {"status": "MEASURED", "size": size, "rounds": rounds,
+                            "samples_ns": {"base": [1_000_000] * repetitions, "current": [current] * repetitions},
+                            "median_ns": {"base": 1_000_000, "current": current},
+                            "current_over_base": current / 1_000_000}
+                with patch.object(bench, "resolve_base", return_value="a" * 40), \
+                     patch.object(bench, "baseline_source", return_value=b"base"), \
+                     patch.object(bench, "compiler_command", return_value=["fake"]), \
+                     patch.object(bench, "command", return_value=subprocess.CompletedProcess([], 0, b"fake compiler\n")), \
+                     patch.object(bench, "build", return_value=Path("fake-binary")), \
+                     patch.object(bench, "measure", side_effect=measure) as runs, redirect_stdout(io.StringIO()):
+                    self.assertEqual(bench.run(args), int(status == "FAIL"))
+                report = json.loads((args.output / "result.json").read_bytes())
+                self.assertEqual(runs.call_count, 8)
+                self.assertEqual(report["status"], status)
+                self.assertEqual(report["performance_regression_passed"], status == "PASS")
+                self.assertNotIn("performance_limits", report)
+                self.assertTrue(all(row["regression_confirmation"]["current"] == [1_200_000] * 3
+                                    and row["performance_regression"]["status"] == status for row in report["results"]))
+
+
 class RuntimeTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -224,7 +264,7 @@ class RuntimeTests(unittest.TestCase):
     def test_real_three_library_smoke_and_snapshots(self):
         with tempfile.TemporaryDirectory() as directory:
             args = argparse.Namespace(output=Path(directory), base="HEAD", compiler=self.compiler,
-                                      quick=True, repetitions=1, warmups=0, id=None,
+                                      quick=True, repetitions=5, warmups=1, id=None,
                                       limits=fixed_limits(directory))
             with redirect_stdout(io.StringIO()):self.assertEqual(bench.run(args), 0)
             report = json.loads((Path(directory) / "result.json").read_text())

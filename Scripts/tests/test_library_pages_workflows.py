@@ -3,7 +3,6 @@ from copy import deepcopy
 import json
 import os
 from pathlib import Path
-import shlex
 import subprocess
 import sys
 import tempfile
@@ -143,7 +142,7 @@ class StructureTests(unittest.TestCase):
         self.assertIn("--summary", linux["run"])
         self.assertIn("--summary", windows["run"])
 
-    def test_all_library_performance_shards_measure_current_full_scope_and_upload_only_metadata(self):
+    def test_all_library_performance_shards_compare_full_scope_and_upload_only_metadata(self):
         job = workflow("verify.yml")["jobs"]["all_performance"]
         self.assertEqual(job["needs"], "maintenance")
         self.assertEqual(job["timeout-minutes"], 90)
@@ -152,12 +151,15 @@ class StructureTests(unittest.TestCase):
         steps = job["steps"]
         install = next(step["run"] for step in steps if step.get("name") == "Install compiler and headers")
         self.assertIn("g++ libboost-dev", install)
-        command = next(step["run"] for step in steps if step.get("name") == "Measure all current Verify programs")
+        comparison = next(step for step in steps if step.get("name") == "Compare all Verify programs against the PR base")
+        self.assertEqual(comparison["env"]["VERIFY_PR_BASE"], "${{ github.event.pull_request.base.sha }}")
+        command = comparison["run"]
         self.assertIn("Scripts/ci_performance_all.py", command)
         self.assertIn('--shard-index "$VERIFY_SHARD" --shard-count 8', command)
         self.assertIn('--cache "$RUNNER_TEMP/all-library-performance-cache"', command)
         self.assertIn('--output "$RUNNER_TEMP/all-library-performance"', command)
-        for option in ("--base", "--quick", "--library", "--plan"):
+        self.assertIn('--base "$VERIFY_PR_BASE"', command)
+        for option in ("--limits", "--quick", "--library", "--plan"):
             self.assertNotIn(option, command)
         upload = next(step for step in steps if step.get("uses", "").startswith("actions/upload-artifact@"))
         self.assertEqual(upload["if"], "always()")
@@ -173,26 +175,33 @@ class StructureTests(unittest.TestCase):
         self.assertEqual(summary["if"], "always()")
         self.assertIn('>> "$GITHUB_STEP_SUMMARY"', summary["run"])
 
-    def test_kernel_performance_current_only_gate_rejects_incomplete_reports(self):
+    def test_kernel_performance_regression_gate_rejects_incomplete_reports(self):
         job = workflow("verify.yml")["jobs"]["performance"]
-        command = next(step["run"] for step in job["steps"] if step.get("name") == "Measure current library kernels")
-        self.assertNotIn("--base", command)
-        gate = next(line for line in command.splitlines() if line.startswith("python3 -c "))
-        code = shlex.split(gate)[2]
-        good = {"status": "CURRENT_ONLY", "current_measurements_passed": True,
-                "expected_cases": 2, "results": [{}, {}]}
+        comparison = next(step for step in job["steps"] if step.get("name") == "Compare library kernels against the PR base")
+        self.assertEqual(comparison["env"]["VERIFY_PR_BASE"], "${{ github.event.pull_request.base.sha }}")
+        command = comparison["run"]
+        self.assertIn('--base "$VERIFY_PR_BASE"', command)
+        self.assertNotIn("--limits", command)
+        code = python_block(command, "PYREGRESSION")
+        baseline = "a" * 40
+        good = {"status": "PASS", "current_measurements_passed": True, "performance_regression_passed": True,
+                "base_revision": baseline, "expected_cases": 2, "compared_cases": 2, "results": [{}, {}]}
         fixtures = [(good, 0)]
         for mutation in ({"status": "PARTIAL"}, {"status": "NO_BASELINE"},
+                         {"status": "CURRENT_ONLY"}, {"performance_regression_passed": False},
+                         {"base_revision": "b" * 40}, {"compared_cases": 1},
                          {"current_measurements_passed": False}, {"expected_cases": 3},
                          {"expected_cases": True}, {"expected_cases": 0, "results": []},
                          {"results": None}):
             fixtures.append(({**good, **mutation}, 1))
         with tempfile.TemporaryDirectory() as directory:
-            path = Path(directory) / "result.json"
+            path = Path(directory) / "performance/result.json"
+            path.parent.mkdir()
+            env = {**os.environ, "RUNNER_TEMP": directory, "VERIFY_PR_BASE": baseline}
             for report, expected in fixtures:
                 with self.subTest(report=report):
                     path.write_text(json.dumps(report))
-                    actual = subprocess.run([sys.executable, "-c", code, str(path)], capture_output=True)
+                    actual = subprocess.run([sys.executable, "-c", code], env=env, capture_output=True)
                     self.assertEqual(actual.returncode, expected, actual.stderr)
         upload = next(step for step in job["steps"] if step.get("uses", "").startswith("actions/upload-artifact@"))
         self.assertEqual(upload["with"]["path"].splitlines(), [
@@ -206,7 +215,7 @@ class StructureTests(unittest.TestCase):
         self.assertIn("Scripts/ci_stress.py", command)
         self.assertNotIn("--quick", command)
         self.assertNotIn("--case ", command)
-        performance = next(step["run"] for step in jobs["performance"]["steps"] if step.get("name") == "Measure current library kernels")
+        performance = next(step["run"] for step in jobs["performance"]["steps"] if step.get("name") == "Compare library kernels against the PR base")
         self.assertNotIn("--quick", performance)
         self.assertNotIn("--id ", performance)
         upload = next(step for step in stress["steps"] if step.get("uses", "").startswith("actions/upload-artifact@"))
