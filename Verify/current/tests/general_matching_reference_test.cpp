@@ -95,4 +95,40 @@ void long_path() {
     require(graph.solve()==n/2&&graph.is_perfect());
     for(std::int32_t i=0;i<n;i+=2)require(graph.mate(i)==i+1&&graph.mate(i+1)==i);
 }
-int main(){exhaustive();random_and_blossoms();ownership();long_path();std::cout<<"GeneralMatching independent checks="<<checks<<'\n';}
+void many_odd_cycles() {
+    // 共通頂点を持つ多数の三角形と最後の葉。全頂点を覆う対応は一意。
+    for(const std::int32_t cycles : {257,513})for(const std::int32_t isolated : {0,17}) {
+        const auto leaf=2*cycles+1;GeneralMatching graph(leaf+1+isolated);
+        for(std::int32_t i=0;i<cycles;++i)graph.add_edge(2*i+1,2*i+2);
+        for(std::int32_t i=0;i<cycles;++i){graph.add_edge(0,2*i+1);graph.add_edge(0,2*i+2);}
+        graph.add_edge(0,leaf);require(graph.solve()==cycles+1&&graph.is_maximum());
+        require(graph.mate(0)==leaf&&graph.mate(leaf)==0);
+        for(std::int32_t i=0;i<cycles;++i)require(graph.mate(2*i+1)==2*i+2&&graph.mate(2*i+2)==2*i+1);
+        for(auto v=leaf+1;v<graph.size();++v)require(graph.mate(v)==-1);
+        require(graph.is_perfect()==(isolated==0));
+    }
+    GeneralMatching sparse(10001);sparse.add_edge(0,1);require(sparse.solve()==1);
+    sparse.add_edge(2,3);require(sparse.solve()==2&&sparse.is_maximum()&&!sparse.is_perfect());
+}
+void search_tree_transitions() {
+    // 大きい奇数成分と小さい奇数成分を並べ、探索木の大小・順序を切り替える。
+    for(const std::int32_t cycles : {257,513})for(const bool reversed : {false,true}) {
+        constexpr std::int32_t triangles=80;const auto core=2*cycles+1,n=core+3*triangles;
+        GeneralMatching graph(n);auto edge=[&](std::int32_t u,std::int32_t v){graph.add_edge(reversed?n-1-u:u,reversed?n-1-v:v);};
+        for(std::int32_t i=0;i<cycles;++i)edge(2*i+1,2*i+2);
+        for(std::int32_t i=0;i<cycles;++i){edge(0,2*i+1);edge(0,2*i+2);}
+        for(auto u=core;u<n;u+=3){edge(u,u+1);edge(u+1,u+2);edge(u+2,u);}
+        require(graph.solve()==cycles+triangles&&graph.is_maximum()&&!graph.is_perfect());valid(graph);
+        graph.clear_matching();require(graph.solve()==cycles+triangles);valid(graph);
+    }
+}
+int main(){
+    const auto maximum_edges = std::vector<std::int32_t>{}.max_size() / 2;
+    require(sirkit::detail::GeneralMatchingArcCount(maximum_edges) == 2 * maximum_edges);
+    bool rejected_capacity = false;
+    try { (void)sirkit::detail::GeneralMatchingArcCount(maximum_edges + 1); }
+    catch (const std::length_error&) { rejected_capacity = true; }
+    require(rejected_capacity);
+    exhaustive();random_and_blossoms();ownership();long_path();many_odd_cycles();search_tree_transitions();
+    std::cout<<"GeneralMatching independent checks="<<checks<<'\n';
+}

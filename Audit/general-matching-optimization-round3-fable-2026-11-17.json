@@ -1,0 +1,246 @@
+{
+  "recorded_at": "2026-11-17T05:36:56.389489+00:00",
+  "id": "general_matching",
+  "stage": "claude",
+  "requested_model": "claude-fable-5-2",
+  "actual_model_usage": {
+    "claude-fable-5-2": {
+      "inputTokens": 2,
+      "outputTokens": 5582,
+      "cacheReadInputTokens": 3665,
+      "cacheCreationInputTokens": 12753,
+      "webSearchRequests": 0,
+      "costUSD": 0.42807700000000004,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 3080,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 12753,
+      "canonicalModel": "claude-fable-5-2",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "source_sha256": "1c6eaf5e28903d01bebf71979819be432bef421e6745e8838501d273d91b1d78",
+  "source_changed": false,
+  "scope": "whole_program",
+  "execution": "Reasoning-only static review. Fable ran no tools, builds, tests or benchmarks; these were Codex evidence supplied in prompt.",
+  "prompt_sha256": "fa750d981cea89e4e428ed9e61ea1914b119772ad4b379b0ae9d656f9b53b0a9",
+  "raw_response_sha256": "00b5599694e18857cf01737f98ec0c196c87d08ddfb671849fcc3439c1b98ded",
+  "codex_evidence": {
+    "path": "Audit/general-matching-optimization-round3-codex-2026-11-17.json",
+    "sha256": "4f6a3b624be162baf7c0b66d9ccdfac3b2200fc3f58535576ee07f2ae8e413ef"
+  },
+  "usage_before": {
+    "five_hour": {
+      "utilization": 10.0,
+      "resets_at": "2026-11-17T09:30:00.274860+00:00",
+      "limit_dollars": null,
+      "used_dollars": null,
+      "remaining_dollars": null,
+      "locked_reason": null
+    },
+    "seven_day": {
+      "utilization": 39.0,
+      "resets_at": "2026-11-21T09:00:00.274883+00:00",
+      "limit_dollars": null,
+      "used_dollars": null,
+      "remaining_dollars": null,
+      "locked_reason": null
+    },
+    "seven_day_oauth_apps": null,
+    "seven_day_opus": null,
+    "seven_day_sonnet": null,
+    "seven_day_cowork": null,
+    "seven_day_omelette": null,
+    "extra_usage": {
+      "is_enabled": false,
+      "monthly_limit": null,
+      "used_credits": null,
+      "utilization": null,
+      "currency": null,
+      "decimal_places": null,
+      "disabled_reason": null,
+      "user_disabled": false,
+      "spend_limit_reached": false,
+      "credits_ever_enabled": false,
+      "daily": null,
+      "weekly": null
+    },
+    "seven_day_breakdown": {
+      "as_of": "2026-11-17T05:33:12.322440+00:00",
+      "window_started_at": "2026-11-14T09:00:00.274883+00:00",
+      "rows": [
+        {
+          "key": "claude_code",
+          "display_name": "Claude Code",
+          "percent": 100
+        },
+        {
+          "key": "chat",
+          "display_name": "Chats",
+          "percent": 0
+        },
+        {
+          "key": "cowork",
+          "display_name": "Cowork",
+          "percent": 0
+        },
+        {
+          "key": "other",
+          "display_name": "Other",
+          "percent": 0
+        }
+      ]
+    }
+  },
+  "usage_after": {
+    "five_hour": {
+      "utilization": 15.0,
+      "resets_at": "2026-11-17T09:30:00.333024+00:00",
+      "limit_dollars": null,
+      "used_dollars": null,
+      "remaining_dollars": null,
+      "locked_reason": null
+    },
+    "seven_day": {
+      "utilization": 39.0,
+      "resets_at": "2026-11-21T09:00:00.333047+00:00",
+      "limit_dollars": null,
+      "used_dollars": null,
+      "remaining_dollars": null,
+      "locked_reason": null
+    },
+    "seven_day_oauth_apps": null,
+    "seven_day_opus": null,
+    "seven_day_sonnet": null,
+    "seven_day_cowork": null,
+    "seven_day_omelette": null,
+    "extra_usage": {
+      "is_enabled": false,
+      "monthly_limit": null,
+      "used_credits": null,
+      "utilization": null,
+      "currency": null,
+      "decimal_places": null,
+      "disabled_reason": null,
+      "user_disabled": false,
+      "spend_limit_reached": false,
+      "credits_ever_enabled": false,
+      "daily": null,
+      "weekly": null
+    },
+    "seven_day_breakdown": {
+      "as_of": "2026-11-17T05:36:24.373804+00:00",
+      "window_started_at": "2026-11-14T09:00:00.333047+00:00",
+      "rows": [
+        {
+          "key": "claude_code",
+          "display_name": "Claude Code",
+          "percent": 100
+        },
+        {
+          "key": "chat",
+          "display_name": "Chats",
+          "percent": 0
+        },
+        {
+          "key": "cowork",
+          "display_name": "Cowork",
+          "percent": 0
+        },
+        {
+          "key": "other",
+          "display_name": "Other",
+          "percent": 0
+        }
+      ]
+    }
+  },
+  "review": {
+    "verdict": "keep",
+    "review_basis": "Static reasoning over the provided source only; nothing was compiled, run or measured by me. All test and timing figures are Codex's, taken as reported.",
+    "correctness_findings": [
+      {
+        "severity": "none",
+        "topic": "upper bound floor(active/2)",
+        "finding": "Sound, including for incremental solves. Every matched vertex is non-isolated: matches only arise from edges, clear_edges also clears the matching, and copy/move/reset carry edges and partners together. So cardinality <= active_vertices/2 always holds, and reaching it proves maximality. Odd active counts floor correctly (a triangle gives bound 1, greedy reaches 1, arrays omitted)."
+      },
+      {
+        "severity": "none",
+        "topic": "tentative greedy in parent",
+        "finding": "The loop has the same vertex order, CSR neighbor order and first-free-neighbor rule, applied to a copy of partners_. The committed matching is therefore what an in-place greedy would produce, and tie order is preserved. Self-loops are never stored, so v != u; multi-edges are harmless."
+      },
+      {
+        "severity": "none",
+        "topic": "first-augment reset",
+        "finding": "cursor[n] is value-initialised to 0 and the CSR fill only writes cursor[0..n-1], so the first augment always takes the bulk path. That overwrites the temporary matching in parent with -1 and initialises base (iota) and outer (0). The offset garbage left in cursor[0..n-1] is never read as a reached list. Later augments see cursor[n] >= 1, and their partial reset covers every vertex whose parent, base or outer was touched, since blossom vertices are all in the reached list."
+      },
+      {
+        "severity": "none",
+        "topic": "omitted arrays are unreachable",
+        "finding": "The resize condition and the augment-loop condition test the same value (next_cardinality, then cardinality_ assigned from it) against the same matching_bound. augment therefore never runs with empty base, queue, outer, ancestor or contracted."
+      },
+      {
+        "severity": "none",
+        "topic": "bounds",
+        "finding": "Each vertex enters the reached list at most once (root once; an inner vertex only while parent == -1 and not outer; its mate once with it), so reached <= n and cursor[reached++] stays within the first n slots. The queue likewise holds each vertex at most once. The uint8 generation wrap clears ancestor and contracted before reuse."
+      },
+      {
+        "severity": "none",
+        "topic": "isolated vertices and trivial sizes",
+        "finding": "Isolated vertices are excluded from the bound, never chosen as roots, and never appear as neighbors. n = 0 and n = 1 return through the cardinality == n/2 fast path before any workspace is built. With m = 0, maximum_ is already true."
+      },
+      {
+        "severity": "none",
+        "topic": "single pass over roots and early break",
+        "finding": "Still valid: a root with no augmenting path keeps none after later augmentations, and the break at the bound is justified by the bound proof. When the bound is unreachable (e.g. a 3-leaf star: bound 2, optimum 1), the arrays are allocated and every exposed non-isolated root is tried, as before."
+      }
+    ],
+    "ownership_exception_API_findings": [
+      {
+        "severity": "none",
+        "topic": "strong guarantee on late allocation failure",
+        "finding": "The throwing points are the length_error guard, the workspace constructor and the five resizes. All come before the first write to partners_ or cardinality_, and maximum_ stays false, so a retry is well-defined. A partially completed resize sequence only touches the local workspace, which RAII releases. This matches the N=12 regression's assertions and the documented contract that solve changes the matching only after all needed workspace is allocated."
+      },
+      {
+        "severity": "none",
+        "topic": "post-commit path",
+        "finding": "After the last resize, the only operations are std::copy of int32 into existing storage, scalar assignments and the noexcept augment. No throw can leave a half-committed matching."
+      },
+      {
+        "severity": "none",
+        "topic": "partners() span lifetime",
+        "finding": "The commit copies into partners_' existing buffer with no swap or reallocation, so data() and size() are unchanged across solve on both the success and failure paths. Copy, move, swap and reset are untouched."
+      },
+      {
+        "severity": "none",
+        "topic": "capacity guards",
+        "finding": "The n == SIZE_MAX guard (for n+1) and the m > max_size/2 guard (for 2m) are retained and run before any allocation. The int32 cast of u in the greedy is safe because n <= INT32_MAX by construction."
+      },
+      {
+        "severity": "info",
+        "topic": "workspace struct behind an include guard",
+        "finding": "The constructor now leaves five vectors empty under the same SIRKIT_GENERAL_MATCHING_WORKSPACE_DEFINED guard. If an older definition wins within one TU, resize(n) is a no-op and behaviour is still correct. Mixing old and new library versions across TUs would be an ODR violation, but that was already true of any struct change. No action needed for a single-file submission."
+      },
+      {
+        "severity": "info",
+        "topic": "no new ownership surface",
+        "finding": "No raw new, pointers or manual lifetime management were added; everything is std::vector members of a stack-local workspace."
+      }
+    ],
+    "performance_assessment": {
+      "conclusion": "Keep as a low-risk generic improvement; do not claim an online gain.",
+      "mechanism": "When greedy reaches the bound, five zero-initialised O(n) allocations (two int32 and three byte arrays, about 11 bytes per vertex) are skipped, taking allocations from 9 to 4. The added cost on every path is two O(n) int32 copies, which is negligible next to the CSR build.",
+      "consistency_with_reported_data": "The reported pattern fits the mechanism: a large win where greedy is already optimal on a sparse instance (one-edge 10000: 0.274 GCC, 0.742 Clang), and near-neutral results where augmentation is needed (flower, maxrandom, and Clang generally at 0.995 to 1.017). The Clang ratios slightly above 1 are within the noise described and match the expected cost of the extra copies. The full-program change of +0.104% is startup-dominated and correctly reported as no change.",
+      "caveats": "The gain is confined to instances where greedy hits floor(active/2). The 2 ms AC belongs to the previous upload only, as stated. The decision to reject edge-order greedy fusion is sound given the reported 1.75x to 2x regressions from changed tie order."
+    },
+    "optional_suggestion_UNMEASURED": {
+      "status": "UNMEASURED - do not fold into the frozen source",
+      "idea": "Tighten the bound from floor(active/2) to the sum over connected components of floor(component_size/2). Graphs with many odd components (e.g. disjoint triangles) would then also skip the five allocations and the futile root searches.",
+      "risk": "It adds an O(n+m) component pass to every solve and could regress dense or single-component inputs. It would need its own allocation-failure and tie-order checks before adoption."
+    }
+  },
+  "Codex_review_caveat": "Allocation omission applies only when greedy reaches the active-vertex upper bound. Disjoint triangles do not reach that bound and still allocate all9 vectors, so their measured GCC improvement must not be attributed to omitting5 allocations. No universal gain or verified cause for every per-case difference is claimed.",
+  "optional_suggestion_disposition": "Not adopted; component upper bound requires separate proof/measurement and is outside this frozen round."
+}

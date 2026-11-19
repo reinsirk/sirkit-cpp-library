@@ -1,0 +1,6065 @@
+{
+  "recorded_at": "2026-11-17T05:34:17.057561+00:00",
+  "id": "general_matching",
+  "baseline_online": {
+    "id": 417626,
+    "is_latest": true,
+    "lang": "cpp",
+    "memory": 1622016,
+    "problem_name": "general_matching",
+    "problem_title": "Matching on General Graph",
+    "status": "AC",
+    "submission_time": "2026-11-17T05:25:38.977808Z",
+    "time": 0.002,
+    "user_name": "reinsirk"
+  },
+  "baseline_uploaded_source_sha256": "19a19815fb04af301ba564f7f92710a503267543e5db23646a2280de9dc41107",
+  "baseline_library_sha256": "e2817948526efec07c2b95ded4cb05ec4fd857f15757b8860614927f1c38eec2",
+  "final_library_sha256": "ee4b69ee1d327eabf6d8263a18d836c57272efeceb801f9ded2b96bc52a248cd",
+  "final_source_sha256": "1c6eaf5e28903d01bebf71979819be432bef421e6745e8838501d273d91b1d78",
+  "driver_sha256": "84f7f36d0dee19efc5392e6cf1a03222860ab286ece49a29cd74e9e668788954",
+  "allocation_test_sha256": "d1db8ea903cc333fcfd7b8f932e2f9b2d4888da10d99b2627ee8b82bf63a3d90",
+  "scope": "whole_program; adopted library change only, driver/I/O/GCC O3 unchanged",
+  "adopted": [
+    "Allocate only offsets/cursor/neighbors/parent initially. Reuse parent as temporary copy of matching for exact same-order greedy pass.",
+    "If greedy reaches floor(nonisolated_vertices/2), omit base/queue/outer/ancestor/contracted allocations (9->4). Otherwise resize all5 before committing temporary matching.",
+    "Commit by copy into existing partners storage, not swap; preserve partners view lifetime, strong allocation-failure behavior and all previous adaptive reset/generation/bound optimizations."
+  ],
+  "public_API": "Unchanged. All potentially throwing allocations finish before any externally visible matching/cardinality mutation. No direct new; RAII preserved. Worst-case complexity unchanged.",
+  "environment": {
+    "cpu": "Intel Core i9-14900K P-Cores12 (GCC and focused final); initial Clang CPU8 later observed busy and rechecked on CPU12",
+    "gcc": "15.3.0; sanitizer15.2.0",
+    "clang": "21.1.8 with libstdc++15",
+    "kernel_flags": [
+      "-std=c++23",
+      "-O2",
+      "-DNDEBUG",
+      "SKIP_RUNTIME_CHECKS"
+    ],
+    "kernel_scope": "clear_matching()+solve repetitions, excludes graph input/build/process launch; includes solve workspace/CSR",
+    "sampling": "initial5 randomized samples targeting50ms; focused15 samples targeting65ms/repetition batch on CPU12; whole31 randomized paired runs/official case",
+    "whole_flags": [
+      "-std=c++23",
+      "-O2",
+      "-DNDEBUG",
+      "same embedded GCC O3"
+    ]
+  },
+  "measurements": {
+    "gcc_initial": [
+      {
+        "case": {
+          "name": "clique-499",
+          "path": "/tmp/sirkit-general-matching-opt-20261117/custom/clique-499.in",
+          "n": 499,
+          "m": 124251,
+          "optimum": 249,
+          "sha256": "bcd2d1cde28cbb2cf85628f4dc05558769125a15cc1d5aeb85c8418406ace435"
+        },
+        "reps": 63,
+        "ns_per_solve": {
+          "baseline": [
+            407112.7301587302,
+            416211.8095238095,
+            411713.61904761905,
+            402129.28571428574,
+            401654.3650793651
+          ],
+          "deferred": [
+            411730.49206349207,
+            407359.04761904763,
+            405257.38095238095,
+            400977.8888888889,
+            401624.2698412698
+          ]
+        },
+        "medians_ns": {
+          "baseline": 407112.7301587302,
+          "deferred": 405257.38095238095
+        },
+        "ratios_to_baseline": {
+          "baseline": 1.0,
+          "deferred": 0.9954426647242747
+        }
+      },
+      {
+        "case": {
+          "name": "clique-500",
+          "path": "/tmp/sirkit-general-matching-opt-20261117/custom/clique-500.in",
+          "n": 500,
+          "m": 124750,
+          "optimum": 250,
+          "sha256": "b8a37e6285e59747093803ea55fc8e8689abcf430aeb030f73d7d8703f08a11d"
+        },
+        "reps": 62,
+        "ns_per_solve": {
+          "baseline": [
+            410022.79032258067,
+            406553.22580645164,
+            408848.1935483871,
+            405254.2419354839,
+            408093.8870967742
+          ],
+          "deferred": [
+            405040.32258064515,
+            408915.20967741933,
+            405498.62903225806,
+            404392.93548387097,
+            401919.4193548387
+          ]
+        },
+        "medians_ns": {
+          "baseline": 408093.8870967742,
+          "deferred": 405040.32258064515
+        },
+        "ratios_to_baseline": {
+          "baseline": 1.0,
+          "deferred": 0.9925174950846424
+        }
+      },
+      {
+        "case": {
+          "name": "triangles-498",
+          "path": "/tmp/sirkit-general-matching-opt-20261117/custom/triangles-498.in",
+          "n": 498,
+          "m": 498,
+          "optimum": 166,
+          "sha256": "60303d4f909f5ef25c8c9e6bf38189556c1501daeb76717bc51130b3f28fd950"
+        },
+        "reps": 4073,
+        "ns_per_solve": {
+          "baseline": [
+            7320.8131598330465,
+            7393.298551436288,
+            7342.4380063835015,
+            7417.289467223177,
+            7282.615271298797
+          ],
+          "deferred": [
+            5948.37318929536,
+            5941.562730174319,
+            5953.324576479254,
+            6082.87429413209,
+            6051.266879450037
+          ]
+        },
+        "medians_ns": {
+          "baseline": 7342.4380063835015,
+          "deferred": 5953.324576479254
+        },
+        "ratios_to_baseline": {
+          "baseline": 1.0,
+          "deferred": 0.8108103291173102
+        }
+      },
+      {
+        "case": {
+          "name": "triangles-499",
+          "path": "/tmp/sirkit-general-matching-opt-20261117/custom/triangles-499.in",
+          "n": 499,
+          "m": 498,
+          "optimum": 166,
+          "sha256": "3a292fb152d947869fdb85f64b175022ebe22e11250f7441568922235dcf1628"
+        },
+        "reps": 3023,
+        "ns_per_solve": {
+          "baseline": [
+            7483.792590142243,
+            7469.741647370162,
+            7472.503804168045,
+            7418.728746278532,
+            7379.826331458816
+          ],
+          "deferred": [
+            6166.367846510089,
+            6126.472709229242,
+            6134.653986106517,
+            6137.278862057558,
+            6088.854118425405
+          ]
+        },
+        "medians_ns": {
+          "baseline": 7469.741647370162,
+          "deferred": 6134.653986106517
+        },
+        "ratios_to_baseline": {
+          "baseline": 1.0,
+          "deferred": 0.8212672239161466
+        }
+      },
+      {
+        "case": {
+          "name": "triangles-3000",
+          "path": "/tmp/sirkit-general-matching-opt-20261117/custom/triangles-3000.in",
+          "n": 3000,
+          "m": 3000,
+          "optimum": 1000,
+          "sha256": "122a72cff68523de29d81837c5e38f9de685908297e3fc93361fd99d1f32b481"
+        },
+        "reps": 577,
+        "ns_per_solve": {
+          "baseline": [
+            45613.09705372617,
+            44324.804159445404,
+            44247.42287694974,
+            44426.24263431542,
+            43471.36568457539
+          ],
+          "deferred": [
+            36071.9410745234,
+            35088.52166377816,
+            34871.894280762564,
+            35293.800693240904,
+            35629.63778162911
+          ]
+        },
+        "medians_ns": {
+          "baseline": 44324.804159445404,
+          "deferred": 35293.800693240904
+        },
+        "ratios_to_baseline": {
+          "baseline": 1.0,
+          "deferred": 0.7962539567300031
+        }
+      },
+      {
+        "case": {
+          "name": "one-edge-500",
+          "path": "/tmp/sirkit-general-matching-opt-20261117/custom/one-edge-500.in",
+          "n": 500,
+          "m": 1,
+          "optimum": 1,
+          "sha256": "724cf6d93256d33e251f222e00c4b9a9dd1ca5738715b8b8286d54220a3331cf"
+        },
+        "reps": 4816,
+        "ns_per_solve": {
+          "baseline": [
+            2392.0625,
+            2401.4341777408636,
+            2403.8965946843855,
+            2399.796303986711,
+            2411.0961378737543
+          ],
+          "deferred": [
+            712.735257475083,
+            779.6821013289036,
+            793.0984219269103,
+            785.2541528239203,
+            797.5282392026578
+          ]
+        },
+        "medians_ns": {
+          "baseline": 2401.4341777408636,
+          "deferred": 785.2541528239203
+        },
+        "ratios_to_baseline": {
+          "baseline": 1.0,
+          "deferred": 0.3269938273147441
+        }
+      },
+      {
+        "case": {
+          "name": "one-edge-10000",
+          "path": "/tmp/sirkit-general-matching-opt-20261117/custom/one-edge-10000.in",
+          "n": 10000,
+          "m": 1,
+          "optimum": 1,
+          "sha256": "f7df2d0cfee12cf70c8e237f879db7b060a092d9aa290ec86b28ab7d10ac09f1"
+        },
+        "reps": 337,
+        "ns_per_solve": {
+          "baseline": [
+            60104.836795252224,
+            58989.12166172107,
+            59178.6765578635,
+            58726.59940652819,
+            59427.77151335312
+          ],
+          "deferred": [
+            17433.575667655787,
+            16632.709198813056,
+            16679.632047477746,
+            16975.320474777447,
+            16774.367952522254
+          ]
+        },
+        "medians_ns": {
+          "baseline": 59178.6765578635,
+          "deferred": 16774.367952522254
+        },
+        "ratios_to_baseline": {
+          "baseline": 1.0,
+          "deferred": 0.2834529078412336
+        }
+      },
+      {
+        "case": {
+          "name": "flower-pendant-500",
+          "path": "/tmp/sirkit-general-matching-opt-20261117/custom/flower-pendant-500.in",
+          "n": 500,
+          "m": 748,
+          "optimum": 250,
+          "sha256": "774b27387f17a9929b89007449996b9cb383368024aafce1603114faf6a40f06"
+        },
+        "reps": 1070,
+        "ns_per_solve": {
+          "baseline": [
+            38182.17102803738,
+            36838.2570093458,
+            37354.02336448598,
+            37332.589719626165,
+            37020.13831775701
+          ],
+          "deferred": [
+            36097.503738317755,
+            36603.29813084112,
+            35080.528971962616,
+            35359.07102803738,
+            36206.642056074765
+          ]
+        },
+        "medians_ns": {
+          "baseline": 37332.589719626165,
+          "deferred": 36097.503738317755
+        },
+        "ratios_to_baseline": {
+          "baseline": 1.0,
+          "deferred": 0.96691668082541
+        }
+      },
+      {
+        "case": {
+          "name": "flower-pendant-1026",
+          "path": "/tmp/sirkit-general-matching-opt-20261117/custom/flower-pendant-1026.in",
+          "n": 1026,
+          "m": 1537,
+          "optimum": 513,
+          "sha256": "6dd7b982371638d5190f6aea912f729eb1530d1524c8bc350c8e1d6574cca6fd"
+        },
+        "reps": 363,
+        "ns_per_solve": {
+          "baseline": [
+            124357.38292011019,
+            132427.33333333334,
+            134237.49311294765,
+            130720.72451790633,
+            127269.99449035812
+          ],
+          "deferred": [
+            128108.34435261707,
+            127949.77961432507,
+            125046.89807162534,
+            124588.36363636363,
+            128331.89531680441
+          ]
+        },
+        "medians_ns": {
+          "baseline": 130720.72451790633,
+          "deferred": 127949.77961432507
+        },
+        "ratios_to_baseline": {
+          "baseline": 1.0,
+          "deferred": 0.978802558555268
+        }
+      },
+      {
+        "case": {
+          "name": "flower-pendant-2050",
+          "path": "/tmp/sirkit-general-matching-opt-20261117/custom/flower-pendant-2050.in",
+          "n": 2050,
+          "m": 3073,
+          "optimum": 1025,
+          "sha256": "9da2179313882d9fa10b9f7d2d933d5d4db4171ec7bd433a5097c2b41816f2ee"
+        },
+        "reps": 99,
+        "ns_per_solve": {
+          "baseline": [
+            473366.82828282827,
+            464044.7878787879,
+            457744.45454545453,
+            471012.1818181818,
+            469066.82828282827
+          ],
+          "deferred": [
+            459506.9191919192,
+            462061.36363636365,
+            467106.9393939394,
+            448877.0404040404,
+            463147.8585858586
+          ]
+        },
+        "medians_ns": {
+          "baseline": 469066.82828282827,
+          "deferred": 462061.36363636365
+        },
+        "ratios_to_baseline": {
+          "baseline": 1.0,
+          "deferred": 0.9850651032559467
+        }
+      },
+      {
+        "case": {
+          "name": "planted-random-500",
+          "path": "/tmp/sirkit-general-matching-opt-20261117/custom/planted-random-500.in",
+          "n": 500,
+          "m": 3946,
+          "optimum": 250,
+          "sha256": "d826d0a603fe75f8e0853d4bf68e9ad85c6ab69f2df0c377b54e3588543c57c2"
+        },
+        "reps": 791,
+        "ns_per_solve": {
+          "baseline": [
+            40876.713021491785,
+            41565.36409608091,
+            41071.80783817952,
+            37670.32364096081,
+            28629.390644753475
+          ],
+          "deferred": [
+            39589.950695322375,
+            39740.23261694058,
+            38035.11757269279,
+            37972.60556257901,
+            25581.500632111252
+          ]
+        },
+        "medians_ns": {
+          "baseline": 40876.713021491785,
+          "deferred": 38035.11757269279
+        },
+        "ratios_to_baseline": {
+          "baseline": 1.0,
+          "deferred": 0.930483758630373
+        }
+      },
+      {
+        "case": {
+          "name": "planted-random-499",
+          "path": "/tmp/sirkit-general-matching-opt-20261117/custom/planted-random-499.in",
+          "n": 499,
+          "m": 3982,
+          "optimum": 249,
+          "sha256": "4b8d668e6c16f2d36abcb9a82af55d6430db0f015797bb0c71bef7736b69512f"
+        },
+        "reps": 1510,
+        "ns_per_solve": {
+          "baseline": [
+            17588.18741721854,
+            18333.645695364237,
+            17067.35033112583,
+            16278.093377483443,
+            17837.298013245032
+          ],
+          "deferred": [
+            16182.572847682119,
+            16932.75099337748,
+            14732.665562913908,
+            15218.781456953642,
+            14887.031125827814
+          ]
+        },
+        "medians_ns": {
+          "baseline": 17588.18741721854,
+          "deferred": 15218.781456953642
+        },
+        "ratios_to_baseline": {
+          "baseline": 1.0,
+          "deferred": 0.8652842442453569
+        }
+      },
+      {
+        "case": {
+          "name": "official-example_00",
+          "path": "/tmp/sirkit-general-matching-lc-cache-20261117/official/73876f1cbcf082d2b22722924b924d3d65a2f00e/graph/general_matching/in/example_00.in",
+          "optimum": 3
+        },
+        "reps": 5000,
+        "ns_per_solve": {
+          "baseline": [
+            88.153,
+            89.708,
+            89.2924,
+            95.1378,
+            92.608
+          ],
+          "deferred": [
+            45.2528,
+            45.3062,
+            45.2968,
+            45.2974,
+            45.6112
+          ]
+        },
+        "medians_ns": {
+          "baseline": 89.708,
+          "deferred": 45.2974
+        },
+        "ratios_to_baseline": {
+          "baseline": 1.0,
+          "deferred": 0.5049427029919294
+        }
+      },
+      {
+        "case": {
+          "name": "official-example_01",
+          "path": "/tmp/sirkit-general-matching-lc-cache-20261117/official/73876f1cbcf082d2b22722924b924d3d65a2f00e/graph/general_matching/in/example_01.in",
+          "optimum": 1
+        },
+        "reps": 5000,
+        "ns_per_solve": {
+          "baseline": [
+            124.2248,
+            112.547,
+            115.8802,
+            121.7022,
+            114.2466
+          ],
+          "deferred": [
+            117.5486,
+            116.2786,
+            114.5414,
+            117.4732,
+            117.8256
+          ]
+        },
+        "medians_ns": {
+          "baseline": 115.8802,
+          "deferred": 117.4732
+        },
+        "ratios_to_baseline": {
+          "baseline": 1.0,
+          "deferred": 1.0137469559079118
+        }
+      },
+      {
+        "case": {
+          "name": "official-issue610_00",
+          "path": "/tmp/sirkit-general-matching-lc-cache-20261117/official/73876f1cbcf082d2b22722924b924d3d65a2f00e/graph/general_matching/in/issue610_00.in",
+          "optimum": 7
+        },
+        "reps": 5000,
+        "ns_per_solve": {
+          "baseline": [
+            200.3892,
+            205.9674,
+            194.4464,
+            202.4154,
+            196.3536
+          ],
+          "deferred": [
+            164.6378,
+            165.5772,
+            174.9362,
+            165.0054,
+            180.4306
+          ]
+        },
+        "medians_ns": {
+          "baseline": 200.3892,
+          "deferred": 165.5772
+        },
+        "ratios_to_baseline": {
+          "baseline": 1.0,
+          "deferred": 0.8262780628896169
+        }
+      },
+      {
+        "case": {
+          "name": "official-max_random_00",
+          "path": "/tmp/sirkit-general-matching-lc-cache-20261117/official/73876f1cbcf082d2b22722924b924d3d65a2f00e/graph/general_matching/in/max_random_00.in",
+          "optimum": 250
+        },
+        "reps": 442,
+        "ns_per_solve": {
+          "baseline": [
+            63271.76470588235,
+            63761.11312217195,
+            63012.343891402714,
+            64514.26696832579,
+            65691.10633484164
+          ],
+          "deferred": [
+            63693.97511312217,
+            63785.128959276015,
+            63010.27149321267,
+            63390.09728506787,
+            62907.76696832579
+          ]
+        },
+        "medians_ns": {
+          "baseline": 63761.11312217195,
+          "deferred": 63390.09728506787
+        },
+        "ratios_to_baseline": {
+          "baseline": 1.0,
+          "deferred": 0.9941811580925011
+        }
+      },
+      {
+        "case": {
+          "name": "official-max_random_01",
+          "path": "/tmp/sirkit-general-matching-lc-cache-20261117/official/73876f1cbcf082d2b22722924b924d3d65a2f00e/graph/general_matching/in/max_random_01.in",
+          "optimum": 250
+        },
+        "reps": 143,
+        "ns_per_solve": {
+          "baseline": [
+            145408.2097902098,
+            146623.2867132867,
+            151950.95104895104,
+            145327.06993006993,
+            145765.96503496505
+          ],
+          "deferred": [
+            148705.74125874127,
+            143421.7902097902,
+            150313.18181818182,
+            152165.95804195805,
+            150689.41258741257
+          ]
+        },
+        "medians_ns": {
+          "baseline": 145765.96503496505,
+          "deferred": 150313.18181818182
+        },
+        "ratios_to_baseline": {
+          "baseline": 1.0,
+          "deferred": 1.0311953258919258
+        }
+      },
+      {
+        "case": {
+          "name": "official-random_00",
+          "path": "/tmp/sirkit-general-matching-lc-cache-20261117/official/73876f1cbcf082d2b22722924b924d3d65a2f00e/graph/general_matching/in/random_00.in",
+          "optimum": 90
+        },
+        "reps": 4359,
+        "ns_per_solve": {
+          "baseline": [
+            3636.428538655655,
+            3418.369350768525,
+            3550.5326909841706,
+            3415.108511126405,
+            3725.793989447121
+          ],
+          "deferred": [
+            2926.025464556091,
+            2874.8245010323467,
+            2841.230557467309,
+            2822.9525120440467,
+            3245.462720807525
+          ]
+        },
+        "medians_ns": {
+          "baseline": 3550.5326909841706,
+          "deferred": 2874.8245010323467
+        },
+        "ratios_to_baseline": {
+          "baseline": 1.0,
+          "deferred": 0.8096882218074931
+        }
+      },
+      {
+        "case": {
+          "name": "official-random_01",
+          "path": "/tmp/sirkit-general-matching-lc-cache-20261117/official/73876f1cbcf082d2b22722924b924d3d65a2f00e/graph/general_matching/in/random_01.in",
+          "optimum": 99
+        },
+        "reps": 618,
+        "ns_per_solve": {
+          "baseline": [
+            39131.668284789645,
+            39821.02427184466,
+            37780.55663430421,
+            41070.297734627835,
+            40188.482200647246
+          ],
+          "deferred": [
+            33050.203883495145,
+            39191.86893203884,
+            39105.0,
+            37256.99352750809,
+            38247.42071197411
+          ]
+        },
+        "medians_ns": {
+          "baseline": 39821.02427184466,
+          "deferred": 38247.42071197411
+        },
+        "ratios_to_baseline": {
+          "baseline": 1.0,
+          "deferred": 0.9604830968403
+        }
+      },
+      {
+        "case": {
+          "name": "official-sparse_00",
+          "path": "/tmp/sirkit-general-matching-lc-cache-20261117/official/73876f1cbcf082d2b22722924b924d3d65a2f00e/graph/general_matching/in/sparse_00.in",
+          "optimum": 228
+        },
+        "reps": 1316,
+        "ns_per_solve": {
+          "baseline": [
+            12569.155775075988,
+            12293.50151975684,
+            12499.855623100304,
+            12369.072188449849,
+            12693.70668693009
+          ],
+          "deferred": [
+            11035.818389057751,
+            10981.687689969605,
+            11174.424012158055,
+            11131.919452887538,
+            10768.30699088146
+          ]
+        },
+        "medians_ns": {
+          "baseline": 12499.855623100304,
+          "deferred": 11035.818389057751
+        },
+        "ratios_to_baseline": {
+          "baseline": 1.0,
+          "deferred": 0.8828756684727666
+        }
+      },
+      {
+        "case": {
+          "name": "official-sparse_01",
+          "path": "/tmp/sirkit-general-matching-lc-cache-20261117/official/73876f1cbcf082d2b22722924b924d3d65a2f00e/graph/general_matching/in/sparse_01.in",
+          "optimum": 113
+        },
+        "reps": 3150,
+        "ns_per_solve": {
+          "baseline": [
+            4110.757777777778,
+            4040.9466666666667,
+            4246.945079365079,
+            4104.287936507936,
+            4089.370158730159
+          ],
+          "deferred": [
+            2162.248888888889,
+            2678.7161904761906,
+            2650.543492063492,
+            2661.583492063492,
+            2666.4984126984127
+          ]
+        },
+        "medians_ns": {
+          "baseline": 4104.287936507936,
+          "deferred": 2661.583492063492
+        },
+        "ratios_to_baseline": {
+          "baseline": 1.0,
+          "deferred": 0.6484884913625372
+        }
+      },
+      {
+        "case": {
+          "name": "official-sparse_02",
+          "path": "/tmp/sirkit-general-matching-lc-cache-20261117/official/73876f1cbcf082d2b22722924b924d3d65a2f00e/graph/general_matching/in/sparse_02.in",
+          "optimum": 61
+        },
+        "reps": 3868,
+        "ns_per_solve": {
+          "baseline": [
+            3345.53360910031,
+            3329.1075491209926,
+            3342.550672182006,
+            3341.7029472595655,
+            3394.16468459152
+          ],
+          "deferred": [
+            1975.7675801447776,
+            1964.778955532575,
+            2009.7797311271975,
+            1965.664943123061,
+            1989.8412616339194
+          ]
+        },
+        "medians_ns": {
+          "baseline": 3342.550672182006,
+          "deferred": 1975.7675801447776
+        },
+        "ratios_to_baseline": {
+          "baseline": 1.0,
+          "deferred": 0.5910957750282969
+        }
+      },
+      {
+        "case": {
+          "name": "official-sparse_03",
+          "path": "/tmp/sirkit-general-matching-lc-cache-20261117/official/73876f1cbcf082d2b22722924b924d3d65a2f00e/graph/general_matching/in/sparse_03.in",
+          "optimum": 245
+        },
+        "reps": 497,
+        "ns_per_solve": {
+          "baseline": [
+            70959.22132796781,
+            71254.58953722334,
+            73453.70020120725,
+            71927.34808853119,
+            71083.41649899396
+          ],
+          "deferred": [
+            69380.76861167002,
+            71684.78873239437,
+            71752.14688128773,
+            72275.83299798793,
+            69572.82696177062
+          ]
+        },
+        "medians_ns": {
+          "baseline": 71254.58953722334,
+          "deferred": 71684.78873239437
+        },
+        "ratios_to_baseline": {
+          "baseline": 1.0,
+          "deferred": 1.0060374945384578
+        }
+      },
+      {
+        "case": {
+          "name": "official-sparse_04",
+          "path": "/tmp/sirkit-general-matching-lc-cache-20261117/official/73876f1cbcf082d2b22722924b924d3d65a2f00e/graph/general_matching/in/sparse_04.in",
+          "optimum": 204
+        },
+        "reps": 2207,
+        "ns_per_solve": {
+          "baseline": [
+            6740.810602628002,
+            6511.083824195741,
+            6513.545536927956,
+            6721.368826461259,
+            6519.883552333485
+          ],
+          "deferred": [
+            5146.664703217037,
+            5189.48210240145,
+            5115.011327594019,
+            5408.195740824649,
+            5092.75623017671
+          ]
+        },
+        "medians_ns": {
+          "baseline": 6519.883552333485,
+          "deferred": 5146.664703217037
+        },
+        "ratios_to_baseline": {
+          "baseline": 1.0,
+          "deferred": 0.7893798504077624
+        }
+      }
+    ],
+    "clang_initial": [
+      {
+        "case": {
+          "name": "clique-499",
+          "path": "/tmp/sirkit-general-matching-opt-20261117/custom/clique-499.in",
+          "n": 499,
+          "m": 124251,
+          "optimum": 249,
+          "sha256": "bcd2d1cde28cbb2cf85628f4dc05558769125a15cc1d5aeb85c8418406ace435"
+        },
+        "reps": 13,
+        "ns_per_solve": {
+          "baseline": [
+            532554.3076923077,
+            466209.3846153846,
+            462082.1538461539,
+            463884.92307692306,
+            441000.76923076925
+          ],
+          "deferred": [
+            912269.2307692308,
+            433880.53846153844,
+            434203.8461538461,
+            459275.3846153846,
+            464958.6153846154
+          ]
+        },
+        "medians_ns": {
+          "baseline": 463884.92307692306,
+          "deferred": 459275.3846153846
+        },
+        "ratios_to_baseline": {
+          "baseline": 1.0,
+          "deferred": 0.9900631854319307
+        }
+      },
+      {
+        "case": {
+          "name": "clique-500",
+          "path": "/tmp/sirkit-general-matching-opt-20261117/custom/clique-500.in",
+          "n": 500,
+          "m": 124750,
+          "optimum": 250,
+          "sha256": "b8a37e6285e59747093803ea55fc8e8689abcf430aeb030f73d7d8703f08a11d"
+        },
+        "reps": 67,
+        "ns_per_solve": {
+          "baseline": [
+            418056.94029850746,
+            426735.1194029851,
+            415638.82089552237,
+            407624.6567164179,
+            410310.8805970149
+          ],
+          "deferred": [
+            402973.53731343284,
+            420643.89552238805,
+            417177.25373134325,
+            413514.85074626864,
+            406124.77611940296
+          ]
+        },
+        "medians_ns": {
+          "baseline": 415638.82089552237,
+          "deferred": 413514.85074626864
+        },
+        "ratios_to_baseline": {
+          "baseline": 1.0,
+          "deferred": 0.9948898658102304
+        }
+      },
+      {
+        "case": {
+          "name": "triangles-498",
+          "path": "/tmp/sirkit-general-matching-opt-20261117/custom/triangles-498.in",
+          "n": 498,
+          "m": 498,
+          "optimum": 166,
+          "sha256": "60303d4f909f5ef25c8c9e6bf38189556c1501daeb76717bc51130b3f28fd950"
+        },
+        "reps": 3362,
+        "ns_per_solve": {
+          "baseline": [
+            6413.170731707317,
+            6641.445270672219,
+            6460.312016656752,
+            6730.365258774539,
+            7335.814098750744
+          ],
+          "deferred": [
+            6297.574657941701,
+            7455.879833432481,
+            6717.416121356336,
+            8117.54759071981,
+            7636.120761451517
+          ]
+        },
+        "medians_ns": {
+          "baseline": 6641.445270672219,
+          "deferred": 7455.879833432481
+        },
+        "ratios_to_baseline": {
+          "baseline": 1.0,
+          "deferred": 1.1226291160384476
+        }
+      },
+      {
+        "case": {
+          "name": "triangles-499",
+          "path": "/tmp/sirkit-general-matching-opt-20261117/custom/triangles-499.in",
+          "n": 499,
+          "m": 498,
+          "optimum": 166,
+          "sha256": "3a292fb152d947869fdb85f64b175022ebe22e11250f7441568922235dcf1628"
+        },
+        "reps": 3109,
+        "ns_per_solve": {
+          "baseline": [
+            7758.059183017047,
+            7390.649083306529,
+            6608.1994210357025,
+            6701.055323255066,
+            7426.264072048891
+          ],
+          "deferred": [
+            7391.642007076231,
+            7596.33451270505,
+            5772.53522032808,
+            7394.777420392409,
+            7400.411386297845
+          ]
+        },
+        "medians_ns": {
+          "baseline": 7390.649083306529,
+          "deferred": 7394.777420392409
+        },
+        "ratios_to_baseline": {
+          "baseline": 1.0,
+          "deferred": 1.000558589244239
+        }
+      },
+      {
+        "case": {
+          "name": "triangles-3000",
+          "path": "/tmp/sirkit-general-matching-opt-20261117/custom/triangles-3000.in",
+          "n": 3000,
+          "m": 3000,
+          "optimum": 1000,
+          "sha256": "122a72cff68523de29d81837c5e38f9de685908297e3fc93361fd99d1f32b481"
+        },
+        "reps": 551,
+        "ns_per_solve": {
+          "baseline": [
+            45422.8221415608,
+            46580.212341197825,
+            50672.16696914701,
+            44157.22504537205,
+            45870.39564428312
+          ],
+          "deferred": [
+            47240.15426497278,
+            44302.22323049002,
+            43196.60254083484,
+            42387.050816696916,
+            43784.44101633394
+          ]
+        },
+        "medians_ns": {
+          "baseline": 45870.39564428312,
+          "deferred": 43784.44101633394
+        },
+        "ratios_to_baseline": {
+          "baseline": 1.0,
+          "deferred": 0.9545250351855391
+        }
+      },
+      {
+        "case": {
+          "name": "one-edge-500",
+          "path": "/tmp/sirkit-general-matching-opt-20261117/custom/one-edge-500.in",
+          "n": 500,
+          "m": 1,
+          "optimum": 1,
+          "sha256": "724cf6d93256d33e251f222e00c4b9a9dd1ca5738715b8b8286d54220a3331cf"
+        },
+        "reps": 5000,
+        "ns_per_solve": {
+          "baseline": [
+            1255.0386,
+            1267.0492,
+            1251.5608,
+            1165.4272,
+            1251.5146
+          ],
+          "deferred": [
+            1178.2416,
+            1080.849,
+            1129.2812,
+            1127.0348,
+            1103.9402
+          ]
+        },
+        "medians_ns": {
+          "baseline": 1251.5608,
+          "deferred": 1127.0348
+        },
+        "ratios_to_baseline": {
+          "baseline": 1.0,
+          "deferred": 0.900503435390434
+        }
+      },
+      {
+        "case": {
+          "name": "one-edge-10000",
+          "path": "/tmp/sirkit-general-matching-opt-20261117/custom/one-edge-10000.in",
+          "n": 10000,
+          "m": 1,
+          "optimum": 1,
+          "sha256": "f7df2d0cfee12cf70c8e237f879db7b060a092d9aa290ec86b28ab7d10ac09f1"
+        },
+        "reps": 386,
+        "ns_per_solve": {
+          "baseline": [
+            35272.18652849741,
+            44882.54663212435,
+            36274.362694300515,
+            35956.238341968914,
+            40241.61917098446
+          ],
+          "deferred": [
+            25771.002590673575,
+            22796.816062176167,
+            24846.683937823833,
+            25229.497409326425,
+            25900.28756476684
+          ]
+        },
+        "medians_ns": {
+          "baseline": 36274.362694300515,
+          "deferred": 25229.497409326425
+        },
+        "ratios_to_baseline": {
+          "baseline": 1.0,
+          "deferred": 0.6955186951717424
+        }
+      },
+      {
+        "case": {
+          "name": "flower-pendant-500",
+          "path": "/tmp/sirkit-general-matching-opt-20261117/custom/flower-pendant-500.in",
+          "n": 500,
+          "m": 748,
+          "optimum": 250,
+          "sha256": "774b27387f17a9929b89007449996b9cb383368024aafce1603114faf6a40f06"
+        },
+        "reps": 724,
+        "ns_per_solve": {
+          "baseline": [
+            67546.67541436464,
+            72791.4267955801,
+            72400.08011049723,
+            68215.42541436464,
+            69752.63535911602
+          ],
+          "deferred": [
+            73002.19475138122,
+            72824.78453038674,
+            72377.23618784531,
+            74291.57458563536,
+            73230.0773480663
+          ]
+        },
+        "medians_ns": {
+          "baseline": 69752.63535911602,
+          "deferred": 73002.19475138122
+        },
+        "ratios_to_baseline": {
+          "baseline": 1.0,
+          "deferred": 1.0465869049324819
+        }
+      },
+      {
+        "case": {
+          "name": "flower-pendant-1026",
+          "path": "/tmp/sirkit-general-matching-opt-20261117/custom/flower-pendant-1026.in",
+          "n": 1026,
+          "m": 1537,
+          "optimum": 513,
+          "sha256": "6dd7b982371638d5190f6aea912f729eb1530d1524c8bc350c8e1d6574cca6fd"
+        },
+        "reps": 240,
+        "ns_per_solve": {
+          "baseline": [
+            267174.5916666667,
+            289983.9875,
+            286011.94166666665,
+            289574.7625,
+            273677.2916666667
+          ],
+          "deferred": [
+            278766.4583333333,
+            277803.7875,
+            235573.1625,
+            265956.8333333333,
+            277685.45416666666
+          ]
+        },
+        "medians_ns": {
+          "baseline": 286011.94166666665,
+          "deferred": 277685.45416666666
+        },
+        "ratios_to_baseline": {
+          "baseline": 1.0,
+          "deferred": 0.970887622903158
+        }
+      },
+      {
+        "case": {
+          "name": "flower-pendant-2050",
+          "path": "/tmp/sirkit-general-matching-opt-20261117/custom/flower-pendant-2050.in",
+          "n": 2050,
+          "m": 3073,
+          "optimum": 1025,
+          "sha256": "9da2179313882d9fa10b9f7d2d933d5d4db4171ec7bd433a5097c2b41816f2ee"
+        },
+        "reps": 56,
+        "ns_per_solve": {
+          "baseline": [
+            928654.0,
+            945838.9107142857,
+            964438.3392857143,
+            960277.4642857143,
+            1119935.607142857
+          ],
+          "deferred": [
+            1126104.5714285714,
+            1059735.1607142857,
+            1127249.0,
+            971463.75,
+            1097968.4107142857
+          ]
+        },
+        "medians_ns": {
+          "baseline": 960277.4642857143,
+          "deferred": 1097968.4107142857
+        },
+        "ratios_to_baseline": {
+          "baseline": 1.0,
+          "deferred": 1.1433866268339332
+        }
+      },
+      {
+        "case": {
+          "name": "planted-random-500",
+          "path": "/tmp/sirkit-general-matching-opt-20261117/custom/planted-random-500.in",
+          "n": 500,
+          "m": 3946,
+          "optimum": 250,
+          "sha256": "d826d0a603fe75f8e0853d4bf68e9ad85c6ab69f2df0c377b54e3588543c57c2"
+        },
+        "reps": 544,
+        "ns_per_solve": {
+          "baseline": [
+            64187.001838235294,
+            61555.80147058824,
+            69924.49264705883,
+            60912.643382352944,
+            58518.512867647056
+          ],
+          "deferred": [
+            70962.94485294117,
+            54099.21507352941,
+            52421.78492647059,
+            62980.841911764706,
+            54487.805147058825
+          ]
+        },
+        "medians_ns": {
+          "baseline": 61555.80147058824,
+          "deferred": 54487.805147058825
+        },
+        "ratios_to_baseline": {
+          "baseline": 1.0,
+          "deferred": 0.8851774137502451
+        }
+      },
+      {
+        "case": {
+          "name": "planted-random-499",
+          "path": "/tmp/sirkit-general-matching-opt-20261117/custom/planted-random-499.in",
+          "n": 499,
+          "m": 3982,
+          "optimum": 249,
+          "sha256": "4b8d668e6c16f2d36abcb9a82af55d6430db0f015797bb0c71bef7736b69512f"
+        },
+        "reps": 690,
+        "ns_per_solve": {
+          "baseline": [
+            28251.165217391303,
+            29819.50579710145,
+            29149.966666666667,
+            30969.30579710145,
+            29421.298550724638
+          ],
+          "deferred": [
+            26104.020289855074,
+            26601.227536231883,
+            28112.544927536233,
+            28937.108695652172,
+            30267.610144927537
+          ]
+        },
+        "medians_ns": {
+          "baseline": 29421.298550724638,
+          "deferred": 28112.544927536233
+        },
+        "ratios_to_baseline": {
+          "baseline": 1.0,
+          "deferred": 0.955516796074381
+        }
+      },
+      {
+        "case": {
+          "name": "official-example_00",
+          "path": "/tmp/sirkit-general-matching-lc-cache-20261117/official/73876f1cbcf082d2b22722924b924d3d65a2f00e/graph/general_matching/in/example_00.in",
+          "optimum": 3
+        },
+        "reps": 5000,
+        "ns_per_solve": {
+          "baseline": [
+            97.9452,
+            147.5282,
+            164.3946,
+            92.9134,
+            92.1304
+          ],
+          "deferred": [
+            66.3226,
+            62.3926,
+            54.638,
+            62.2936,
+            59.4416
+          ]
+        },
+        "medians_ns": {
+          "baseline": 97.9452,
+          "deferred": 62.2936
+        },
+        "ratios_to_baseline": {
+          "baseline": 1.0,
+          "deferred": 0.6360046229932657
+        }
+      },
+      {
+        "case": {
+          "name": "official-example_01",
+          "path": "/tmp/sirkit-general-matching-lc-cache-20261117/official/73876f1cbcf082d2b22722924b924d3d65a2f00e/graph/general_matching/in/example_01.in",
+          "optimum": 1
+        },
+        "reps": 5000,
+        "ns_per_solve": {
+          "baseline": [
+            132.341,
+            150.2068,
+            157.4756,
+            148.5416,
+            126.3588
+          ],
+          "deferred": [
+            166.3762,
+            169.1378,
+            187.0096,
+            167.1714,
+            149.5438
+          ]
+        },
+        "medians_ns": {
+          "baseline": 148.5416,
+          "deferred": 167.1714
+        },
+        "ratios_to_baseline": {
+          "baseline": 1.0,
+          "deferred": 1.12541806470376
+        }
+      },
+      {
+        "case": {
+          "name": "official-issue610_00",
+          "path": "/tmp/sirkit-general-matching-lc-cache-20261117/official/73876f1cbcf082d2b22722924b924d3d65a2f00e/graph/general_matching/in/issue610_00.in",
+          "optimum": 7
+        },
+        "reps": 5000,
+        "ns_per_solve": {
+          "baseline": [
+            352.765,
+            198.7022,
+            213.7114,
+            284.166,
+            302.484
+          ],
+          "deferred": [
+            229.3228,
+            266.092,
+            261.0188,
+            232.8086,
+            314.5162
+          ]
+        },
+        "medians_ns": {
+          "baseline": 284.166,
+          "deferred": 261.0188
+        },
+        "ratios_to_baseline": {
+          "baseline": 1.0,
+          "deferred": 0.9185433866120507
+        }
+      },
+      {
+        "case": {
+          "name": "official-max_random_00",
+          "path": "/tmp/sirkit-general-matching-lc-cache-20261117/official/73876f1cbcf082d2b22722924b924d3d65a2f00e/graph/general_matching/in/max_random_00.in",
+          "optimum": 250
+        },
+        "reps": 222,
+        "ns_per_solve": {
+          "baseline": [
+            121322.03153153154,
+            134928.1936936937,
+            110158.05405405405,
+            133806.7027027027,
+            115958.60360360361
+          ],
+          "deferred": [
+            120906.2927927928,
+            117004.46396396396,
+            101532.09009009009,
+            130788.83783783784,
+            108307.66666666667
+          ]
+        },
+        "medians_ns": {
+          "baseline": 121322.03153153154,
+          "deferred": 117004.46396396396
+        },
+        "ratios_to_baseline": {
+          "baseline": 1.0,
+          "deferred": 0.9644123370416408
+        }
+      },
+      {
+        "case": {
+          "name": "official-max_random_01",
+          "path": "/tmp/sirkit-general-matching-lc-cache-20261117/official/73876f1cbcf082d2b22722924b924d3d65a2f00e/graph/general_matching/in/max_random_01.in",
+          "optimum": 250
+        },
+        "reps": 110,
+        "ns_per_solve": {
+          "baseline": [
+            180587.3818181818,
+            160516.5909090909,
+            196227.53636363638,
+            186532.8818181818,
+            166109.93636363637
+          ],
+          "deferred": [
+            185389.52727272728,
+            165379.32727272727,
+            193212.06363636363,
+            192977.79090909092,
+            168304.27272727274
+          ]
+        },
+        "medians_ns": {
+          "baseline": 180587.3818181818,
+          "deferred": 185389.52727272728
+        },
+        "ratios_to_baseline": {
+          "baseline": 1.0,
+          "deferred": 1.0265918106026939
+        }
+      },
+      {
+        "case": {
+          "name": "official-random_00",
+          "path": "/tmp/sirkit-general-matching-lc-cache-20261117/official/73876f1cbcf082d2b22722924b924d3d65a2f00e/graph/general_matching/in/random_00.in",
+          "optimum": 90
+        },
+        "reps": 3637,
+        "ns_per_solve": {
+          "baseline": [
+            5337.617816882045,
+            5585.222711025571,
+            3952.740995325818,
+            3848.4204014297497,
+            4438.27247731647
+          ],
+          "deferred": [
+            4209.352213362661,
+            4375.851251031069,
+            4393.258179818532,
+            4381.659334616442,
+            4777.527357712401
+          ]
+        },
+        "medians_ns": {
+          "baseline": 4438.27247731647,
+          "deferred": 4381.659334616442
+        },
+        "ratios_to_baseline": {
+          "baseline": 1.0,
+          "deferred": 0.9872443291867788
+        }
+      },
+      {
+        "case": {
+          "name": "official-random_01",
+          "path": "/tmp/sirkit-general-matching-lc-cache-20261117/official/73876f1cbcf082d2b22722924b924d3d65a2f00e/graph/general_matching/in/random_01.in",
+          "optimum": 99
+        },
+        "reps": 443,
+        "ns_per_solve": {
+          "baseline": [
+            36535.40632054176,
+            42994.30474040632,
+            35438.995485327316,
+            45026.74040632054,
+            49254.530474040635
+          ],
+          "deferred": [
+            36905.616252821674,
+            73450.67268623025,
+            37449.778781038374,
+            51846.722347629795,
+            44130.045146726865
+          ]
+        },
+        "medians_ns": {
+          "baseline": 42994.30474040632,
+          "deferred": 44130.045146726865
+        },
+        "ratios_to_baseline": {
+          "baseline": 1.0,
+          "deferred": 1.0264160663412978
+        }
+      },
+      {
+        "case": {
+          "name": "official-sparse_00",
+          "path": "/tmp/sirkit-general-matching-lc-cache-20261117/official/73876f1cbcf082d2b22722924b924d3d65a2f00e/graph/general_matching/in/sparse_00.in",
+          "optimum": 228
+        },
+        "reps": 1432,
+        "ns_per_solve": {
+          "baseline": [
+            15113.143854748603,
+            13794.430167597766,
+            15584.743016759776,
+            15644.328910614526,
+            15002.715782122905
+          ],
+          "deferred": [
+            15774.926675977653,
+            15533.74092178771,
+            14564.201117318436,
+            15498.53282122905,
+            13438.261871508379
+          ]
+        },
+        "medians_ns": {
+          "baseline": 15113.143854748603,
+          "deferred": 15498.53282122905
+        },
+        "ratios_to_baseline": {
+          "baseline": 1.0,
+          "deferred": 1.0255002513166283
+        }
+      },
+      {
+        "case": {
+          "name": "official-sparse_01",
+          "path": "/tmp/sirkit-general-matching-lc-cache-20261117/official/73876f1cbcf082d2b22722924b924d3d65a2f00e/graph/general_matching/in/sparse_01.in",
+          "optimum": 113
+        },
+        "reps": 3589,
+        "ns_per_solve": {
+          "baseline": [
+            2669.564502646977,
+            2864.0674282529953,
+            2559.7013095569796,
+            2934.5332961827808,
+            3117.3078852047925
+          ],
+          "deferred": [
+            3183.40568403455,
+            2499.876845918083,
+            2731.1095012538312,
+            3115.7105043187516,
+            3112.2159375870715
+          ]
+        },
+        "medians_ns": {
+          "baseline": 2864.0674282529953,
+          "deferred": 3112.2159375870715
+        },
+        "ratios_to_baseline": {
+          "baseline": 1.0,
+          "deferred": 1.0866419927429711
+        }
+      },
+      {
+        "case": {
+          "name": "official-sparse_02",
+          "path": "/tmp/sirkit-general-matching-lc-cache-20261117/official/73876f1cbcf082d2b22722924b924d3d65a2f00e/graph/general_matching/in/sparse_02.in",
+          "optimum": 61
+        },
+        "reps": 4219,
+        "ns_per_solve": {
+          "baseline": [
+            1888.1422137947382,
+            2017.884569803271,
+            1766.2114245081773,
+            1946.708698743778,
+            2259.012562218535
+          ],
+          "deferred": [
+            1918.8874140791656,
+            1915.3105001185115,
+            2143.996681678123,
+            1877.9798530457454,
+            2195.078217587106
+          ]
+        },
+        "medians_ns": {
+          "baseline": 1946.708698743778,
+          "deferred": 1918.8874140791656
+        },
+        "ratios_to_baseline": {
+          "baseline": 1.0,
+          "deferred": 0.9857085527575
+        }
+      },
+      {
+        "case": {
+          "name": "official-sparse_03",
+          "path": "/tmp/sirkit-general-matching-lc-cache-20261117/official/73876f1cbcf082d2b22722924b924d3d65a2f00e/graph/general_matching/in/sparse_03.in",
+          "optimum": 245
+        },
+        "reps": 302,
+        "ns_per_solve": {
+          "baseline": [
+            112777.22516556291,
+            95657.64569536423,
+            89579.90066225166,
+            94792.40397350994,
+            101183.92052980133
+          ],
+          "deferred": [
+            103826.40728476821,
+            119139.4238410596,
+            99364.63907284768,
+            135488.9834437086,
+            88478.50331125828
+          ]
+        },
+        "medians_ns": {
+          "baseline": 95657.64569536423,
+          "deferred": 103826.40728476821
+        },
+        "ratios_to_baseline": {
+          "baseline": 1.0,
+          "deferred": 1.0853958042770422
+        }
+      },
+      {
+        "case": {
+          "name": "official-sparse_04",
+          "path": "/tmp/sirkit-general-matching-lc-cache-20261117/official/73876f1cbcf082d2b22722924b924d3d65a2f00e/graph/general_matching/in/sparse_04.in",
+          "optimum": 204
+        },
+        "reps": 2291,
+        "ns_per_solve": {
+          "baseline": [
+            4885.6752509821035,
+            5236.34831951113,
+            4772.476211261458,
+            9476.597992143168,
+            5506.632038411174
+          ],
+          "deferred": [
+            5085.29463116543,
+            4926.545613269314,
+            4963.370580532519,
+            4941.900480139677,
+            4835.883457005674
+          ]
+        },
+        "medians_ns": {
+          "baseline": 5236.34831951113,
+          "deferred": 4941.900480139677
+        },
+        "ratios_to_baseline": {
+          "baseline": 1.0,
+          "deferred": 0.943768477304248
+        }
+      }
+    ],
+    "focused": [
+      {
+        "case": "triangles-498",
+        "compiler": "GCC",
+        "cpu": 12,
+        "reps": 7118,
+        "ns_per_solve": {
+          "baseline": [
+            4844.5137679123345,
+            4873.7284349536385,
+            4968.210733352065,
+            5011.42034279292,
+            4888.05507164934,
+            4869.264119134588,
+            4852.631076144985,
+            4902.579938184884,
+            4871.670694015173,
+            4863.697527395336,
+            4863.970637819612,
+            4852.605226187131,
+            4872.895335768474,
+            4879.282101713965,
+            4900.453638662546
+          ],
+          "deferred": [
+            3275.1861477943244,
+            3253.435094127564,
+            3645.098482719865,
+            3319.8812868783366,
+            3248.136836189941,
+            3237.823264962068,
+            3247.348693453217,
+            3260.028940713684,
+            3236.6403484124753,
+            3300.727030064625,
+            3249.016437201461,
+            3250.642034279292,
+            3265.3263557178984,
+            3294.40404608036,
+            3564.083450407418
+          ]
+        },
+        "medians_ns": {
+          "baseline": 4872.895335768474,
+          "deferred": 3260.028940713684
+        },
+        "ratios": {
+          "baseline": 1.0,
+          "deferred": 0.6690127154556593
+        }
+      },
+      {
+        "case": "triangles-3000",
+        "compiler": "GCC",
+        "cpu": 12,
+        "reps": 1360,
+        "ns_per_solve": {
+          "baseline": [
+            30704.944117647057,
+            31062.795588235294,
+            31673.582352941175,
+            30700.14632352941,
+            32236.207352941175,
+            30433.21323529412,
+            31100.358088235294,
+            30334.86911764706,
+            31376.408088235294,
+            31941.832352941175,
+            30330.553676470587,
+            30462.82573529412,
+            30673.413235294116,
+            30345.219852941176,
+            35261.45
+          ],
+          "deferred": [
+            23179.152205882354,
+            21716.258088235296,
+            23330.709558823528,
+            22409.014705882353,
+            22423.113235294117,
+            21640.194852941175,
+            23200.11544117647,
+            21924.891176470588,
+            22758.161029411764,
+            23236.46544117647,
+            21881.42720588235,
+            23470.52573529412,
+            21706.53382352941,
+            21474.44338235294,
+            28400.45588235294
+          ]
+        },
+        "medians_ns": {
+          "baseline": 30704.944117647057,
+          "deferred": 22423.113235294117
+        },
+        "ratios": {
+          "baseline": 1.0,
+          "deferred": 0.7302769596120801
+        }
+      },
+      {
+        "case": "one-edge-10000",
+        "compiler": "GCC",
+        "cpu": 12,
+        "reps": 747,
+        "ns_per_solve": {
+          "baseline": [
+            51302.697456492635,
+            51047.46452476573,
+            50854.48460508702,
+            51098.60240963855,
+            50543.48058902276,
+            50849.870147255686,
+            51262.239625167334,
+            51127.586345381525,
+            51092.8032128514,
+            51302.615796519414,
+            51441.08032128514,
+            51333.92101740294,
+            51169.3734939759,
+            51540.60240963855,
+            51305.732262382866
+          ],
+          "deferred": [
+            14143.931726907631,
+            13111.069611780455,
+            11646.598393574297,
+            12067.87282463186,
+            14166.998661311914,
+            11735.45515394913,
+            12611.18607764391,
+            13062.394912985274,
+            11688.04953145917,
+            14307.805890227577,
+            14454.524765729586,
+            14280.518072289156,
+            14026.791164658634,
+            14422.995983935743,
+            14433.326639892904
+          ]
+        },
+        "medians_ns": {
+          "baseline": 51169.3734939759,
+          "deferred": 14026.791164658634
+        },
+        "ratios": {
+          "baseline": 1.0,
+          "deferred": 0.27412473921162994
+        }
+      },
+      {
+        "case": "flower-pendant-2050",
+        "compiler": "GCC",
+        "cpu": 12,
+        "reps": 234,
+        "ns_per_solve": {
+          "baseline": [
+            267524.03846153844,
+            428823.8717948718,
+            429226.8717948718,
+            431557.39743589744,
+            430150.8461538461,
+            429831.49572649575,
+            430579.75641025644,
+            430219.22222222225,
+            430150.6153846154,
+            430482.8376068376,
+            430077.6324786325,
+            426160.53846153844,
+            441415.1538461539,
+            431090.6452991453,
+            431256.53846153844
+          ],
+          "deferred": [
+            266682.1538461539,
+            349338.45726495725,
+            424598.3846153846,
+            425113.18803418806,
+            423671.1581196581,
+            424179.5641025641,
+            423966.75641025644,
+            424649.2008547009,
+            424564.0641025641,
+            424549.1923076923,
+            425200.31623931625,
+            425218.2051282051,
+            434084.547008547,
+            424916.41025641025,
+            424211.452991453
+          ]
+        },
+        "medians_ns": {
+          "baseline": 430150.8461538461,
+          "deferred": 424564.0641025641
+        },
+        "ratios": {
+          "baseline": 1.0,
+          "deferred": 0.9870120398431488
+        }
+      },
+      {
+        "case": "max_random_01",
+        "compiler": "GCC",
+        "cpu": 12,
+        "reps": 145,
+        "ns_per_solve": {
+          "baseline": [
+            233986.5724137931,
+            240966.6344827586,
+            234328.16551724137,
+            233635.5448275862,
+            229398.2896551724,
+            234052.04827586206,
+            235009.42068965518,
+            232655.3448275862,
+            234786.5172413793,
+            234613.0,
+            234659.06896551725,
+            234216.57931034482,
+            237738.98620689654,
+            230971.4275862069,
+            238459.8620689655
+          ],
+          "deferred": [
+            233987.43448275863,
+            233181.93103448275,
+            235271.27586206896,
+            231365.02068965518,
+            232241.28275862068,
+            234009.2896551724,
+            234297.57931034482,
+            233722.89655172414,
+            230628.75172413792,
+            235095.93793103448,
+            234499.93103448275,
+            233515.8620689655,
+            234721.43448275863,
+            234475.66206896552,
+            232225.43448275863
+          ]
+        },
+        "medians_ns": {
+          "baseline": 234328.16551724137,
+          "deferred": 233987.43448275863
+        },
+        "ratios": {
+          "baseline": 1.0,
+          "deferred": 0.9985459236889828
+        }
+      },
+      {
+        "case": "random_00",
+        "compiler": "GCC",
+        "cpu": 12,
+        "reps": 4939,
+        "ns_per_solve": {
+          "baseline": [
+            5458.595869609233,
+            5446.962138084633,
+            5429.001822231221,
+            5488.1210771411215,
+            7167.363028953229,
+            5347.826078153473,
+            5494.792063170682,
+            5508.702773840859,
+            5469.974083822636,
+            5453.2966187487345,
+            5428.321927515692,
+            5464.3757845717755,
+            5437.37699939259,
+            5453.743065397854,
+            5321.439562664507
+          ],
+          "deferred": [
+            4898.4063575622595,
+            4701.296416278599,
+            5070.378619153675,
+            4865.405345211581,
+            4900.443004656813,
+            4872.992711075117,
+            4886.186677465074,
+            4899.143956266451,
+            4883.542822433691,
+            4979.661469933185,
+            4879.208544239725,
+            4883.4954444219475,
+            4891.238307349666,
+            4985.310386717959,
+            4882.315650941486
+          ]
+        },
+        "medians_ns": {
+          "baseline": 5453.743065397854,
+          "deferred": 4886.186677465074
+        },
+        "ratios": {
+          "baseline": 1.0,
+          "deferred": 0.89593268675715
+        }
+      },
+      {
+        "case": "sparse_00",
+        "compiler": "GCC",
+        "cpu": 12,
+        "reps": 2141,
+        "ns_per_solve": {
+          "baseline": [
+            12755.852405418029,
+            12668.453526389538,
+            12710.747314339094,
+            12654.040635217189,
+            12663.384866884633,
+            12766.761326482952,
+            12769.185894441849,
+            13096.252218589445,
+            12819.878094348436,
+            12827.940214852873,
+            12657.227463801963,
+            12649.434376459598,
+            12226.600653900046,
+            12715.02382064456,
+            12960.096216721158
+          ],
+          "deferred": [
+            11324.581036898646,
+            11502.134516581036,
+            11286.682391405886,
+            11313.28257823447,
+            11508.828117702009,
+            11272.397477814106,
+            11230.01681457263,
+            11473.935077066792,
+            11710.477814105558,
+            11223.32835123774,
+            11323.782344698739,
+            11281.940214852873,
+            11239.122372723026,
+            11349.56515646894,
+            11318.263895375992
+          ]
+        },
+        "medians_ns": {
+          "baseline": 12715.02382064456,
+          "deferred": 11318.263895375992
+        },
+        "ratios": {
+          "baseline": 1.0,
+          "deferred": 0.8901488550103431
+        }
+      },
+      {
+        "case": "sparse_01",
+        "compiler": "GCC",
+        "cpu": 12,
+        "reps": 5274,
+        "ns_per_solve": {
+          "baseline": [
+            3981.716154721274,
+            3959.7698141827836,
+            3958.089495638984,
+            3996.824042472507,
+            3963.1052332195677,
+            3946.875237011756,
+            4003.8297307546454,
+            3949.4704209328784,
+            3987.328593098218,
+            3989.9099355328026,
+            3947.7493363670837,
+            3959.385286310201,
+            3957.2472506636327,
+            4023.087978763747,
+            3982.3064087978764
+          ],
+          "deferred": [
+            2554.9903299203643,
+            2602.2098976109214,
+            2568.7834660599165,
+            2610.8769434963974,
+            2339.1135760333714,
+            2581.217671596511,
+            2567.5638983693593,
+            2573.3098217671595,
+            2570.4768676526355,
+            2560.6384148653774,
+            2561.7758816837313,
+            2554.8919226393627,
+            2550.0618126659083,
+            2556.428517254456,
+            2555.4844520288207
+          ]
+        },
+        "medians_ns": {
+          "baseline": 3963.1052332195677,
+          "deferred": 2561.7758816837313
+        },
+        "ratios": {
+          "baseline": 1.0,
+          "deferred": 0.6464062221236004
+        }
+      },
+      {
+        "case": "sparse_03",
+        "compiler": "GCC",
+        "cpu": 12,
+        "reps": 699,
+        "ns_per_solve": {
+          "baseline": [
+            66523.65808297569,
+            65365.789699570814,
+            65212.70672389127,
+            66222.52217453506,
+            48481.48211731044,
+            46590.64091559371,
+            45467.254649499286,
+            46300.602288984264,
+            45097.070100143064,
+            45108.87410586552,
+            45020.6652360515,
+            47095.93991416309,
+            46603.981402002864,
+            46834.65951359084,
+            47681.12589413448
+          ],
+          "deferred": [
+            66290.8912732475,
+            63664.03719599428,
+            64412.35193133047,
+            63233.54935622318,
+            65551.09728183119,
+            44614.400572246064,
+            42430.81258941345,
+            42377.585121602286,
+            42809.14735336194,
+            42586.34763948498,
+            42795.31473533619,
+            42772.556509299,
+            43633.14306151645,
+            43320.41201716738,
+            43273.636623748214
+          ]
+        },
+        "medians_ns": {
+          "baseline": 46834.65951359084,
+          "deferred": 43320.41201716738
+        },
+        "ratios": {
+          "baseline": 1.0,
+          "deferred": 0.9249648116817488
+        }
+      },
+      {
+        "case": "triangles-498",
+        "compiler": "Clang",
+        "cpu": 12,
+        "reps": 8860,
+        "ns_per_solve": {
+          "baseline": [
+            4075.234650112867,
+            4048.834198645598,
+            4012.4642212189615,
+            6089.598645598194,
+            3939.9341986455984,
+            3893.772573363431,
+            3893.7424379232507,
+            3894.0976297968396,
+            3897.3075620767495,
+            3903.1651241534987,
+            3895.254966139955,
+            3897.96467268623,
+            3895.4300225733637,
+            4164.586455981941,
+            3892.6029345372463
+          ],
+          "deferred": [
+            4105.518171557562,
+            4050.465237020316,
+            4109.888713318284,
+            4018.2995485327315,
+            4695.037020316027,
+            3955.665914221219,
+            3932.476072234763,
+            3945.8299097065465,
+            3924.334085778781,
+            3944.7185101580135,
+            3951.958126410835,
+            3929.2338600451467,
+            3977.3004514672684,
+            3956.82539503386,
+            3935.4437923250566
+          ]
+        },
+        "medians_ns": {
+          "baseline": 3897.96467268623,
+          "deferred": 3955.665914221219
+        },
+        "ratios": {
+          "baseline": 1.0,
+          "deferred": 1.0148029154649123
+        }
+      },
+      {
+        "case": "triangles-3000",
+        "compiler": "Clang",
+        "cpu": 12,
+        "reps": 1535,
+        "ns_per_solve": {
+          "baseline": [
+            25292.03973941368,
+            25179.180456026057,
+            25936.671009771988,
+            25148.98697068404,
+            25833.498371335503,
+            25532.878827361565,
+            25071.680781758958,
+            26038.652117263842,
+            25493.40977198697,
+            26418.288599348532,
+            25719.922475570034,
+            24780.547882736155,
+            25774.760260586318,
+            27418.985667752444,
+            25691.488599348533
+          ],
+          "deferred": [
+            27632.231270358305,
+            25057.839087947883,
+            29634.732247557004,
+            26673.482084690553,
+            26235.753745928338,
+            25877.84690553746,
+            25210.984364820848,
+            26694.40390879479,
+            25524.09706840391,
+            25351.081433224757,
+            25581.328990228012,
+            25717.867100977197,
+            25296.386970684038,
+            25576.721824104236,
+            26329.559609120523
+          ]
+        },
+        "medians_ns": {
+          "baseline": 25691.488599348533,
+          "deferred": 25717.867100977197
+        },
+        "ratios": {
+          "baseline": 1.0,
+          "deferred": 1.0010267408806095
+        }
+      },
+      {
+        "case": "one-edge-10000",
+        "compiler": "Clang",
+        "cpu": 12,
+        "reps": 1044,
+        "ns_per_solve": {
+          "baseline": [
+            27201.03448275862,
+            27278.72030651341,
+            27254.72988505747,
+            27227.20593869732,
+            26915.919540229886,
+            27295.47701149425,
+            27416.037356321838,
+            27381.483716475097,
+            27199.761494252874,
+            27067.038314176247,
+            27577.256704980842,
+            27367.45785440613,
+            27127.956896551725,
+            27260.1091954023,
+            27351.751915708814
+          ],
+          "deferred": [
+            20233.105363984676,
+            20285.86111111111,
+            20323.44061302682,
+            19934.693486590037,
+            20229.499042145595,
+            20126.469348659004,
+            20032.63122605364,
+            20256.6561302682,
+            20251.3438697318,
+            20180.672413793105,
+            20204.081417624522,
+            20379.819923371648,
+            20315.15134099617,
+            20296.47701149425,
+            20229.8591954023
+          ]
+        },
+        "medians_ns": {
+          "baseline": 27260.1091954023,
+          "deferred": 20233.105363984676
+        },
+        "ratios": {
+          "baseline": 1.0,
+          "deferred": 0.742223929440356
+        }
+      },
+      {
+        "case": "flower-pendant-2050",
+        "compiler": "Clang",
+        "cpu": 12,
+        "reps": 131,
+        "ns_per_solve": {
+          "baseline": [
+            495993.6030534351,
+            494568.85496183205,
+            494456.90839694656,
+            494647.7633587786,
+            491997.2748091603,
+            495551.48854961834,
+            509032.80916030536,
+            492917.29770992365,
+            509202.9465648855,
+            506505.24427480914,
+            506796.2900763359,
+            508783.0534351145,
+            494916.7633587786,
+            495145.9465648855,
+            509403.58778625954
+          ],
+          "deferred": [
+            494266.0076335878,
+            506132.5267175573,
+            492999.56488549616,
+            491800.14503816795,
+            506573.6106870229,
+            493631.9236641221,
+            493588.1526717557,
+            493177.09160305344,
+            493523.35877862596,
+            511440.2671755725,
+            508534.2748091603,
+            494859.3129770992,
+            493961.35114503815,
+            508725.48091603053,
+            498558.7175572519
+          ]
+        },
+        "medians_ns": {
+          "baseline": 495551.48854961834,
+          "deferred": 494266.0076335878
+        },
+        "ratios": {
+          "baseline": 1.0,
+          "deferred": 0.99740595892509
+        }
+      },
+      {
+        "case": "max_random_01",
+        "compiler": "Clang",
+        "cpu": 12,
+        "reps": 190,
+        "ns_per_solve": {
+          "baseline": [
+            147603.11052631578,
+            149309.3052631579,
+            144786.74736842106,
+            168048.93684210526,
+            156029.26842105263,
+            139547.72631578948,
+            150419.78421052633,
+            147012.03157894738,
+            143797.88947368422,
+            167534.26315789475,
+            153023.2947368421,
+            147627.78421052633,
+            147481.43157894738,
+            149493.76315789475,
+            149575.62631578947
+          ],
+          "deferred": [
+            158659.07894736843,
+            143059.3105263158,
+            186430.7947368421,
+            166369.66315789474,
+            144207.1947368421,
+            173902.55263157896,
+            152341.43157894738,
+            174196.87368421053,
+            164308.3105263158,
+            144589.8052631579,
+            149094.76315789475,
+            145606.8842105263,
+            146374.46315789473,
+            144644.31578947368,
+            148347.5052631579
+          ]
+        },
+        "medians_ns": {
+          "baseline": 149309.3052631579,
+          "deferred": 149094.76315789475
+        },
+        "ratios": {
+          "baseline": 1.0,
+          "deferred": 0.9985631029165595
+        }
+      },
+      {
+        "case": "random_00",
+        "compiler": "Clang",
+        "cpu": 12,
+        "reps": 6328,
+        "ns_per_solve": {
+          "baseline": [
+            2868.6689317319847,
+            3705.7868204804045,
+            5072.278445006321,
+            4664.208754740835,
+            4732.599241466498,
+            4668.5911820480405,
+            4692.143331226296,
+            4673.8501896333755,
+            4663.498261694058,
+            4640.497945638433,
+            4687.949905183313,
+            4672.464127686473,
+            4847.003160556258,
+            5336.813053097345,
+            4712.101769911505
+          ],
+          "deferred": [
+            2922.5379266750947,
+            4208.1752528445,
+            3322.36298988622,
+            4673.205436156763,
+            5067.301833122629,
+            4704.86409608091,
+            4893.84228824273,
+            4666.565423514538,
+            4677.705120101138,
+            4664.290297092288,
+            4751.192477876106,
+            5114.346713021492,
+            5106.712231352718,
+            5073.8983881163085,
+            4754.503634639696
+          ]
+        },
+        "medians_ns": {
+          "baseline": 4673.8501896333755,
+          "deferred": 4704.86409608091
+        },
+        "ratios": {
+          "baseline": 1.0,
+          "deferred": 1.0066356227070186
+        }
+      },
+      {
+        "case": "sparse_00",
+        "compiler": "Clang",
+        "cpu": 12,
+        "reps": 2323,
+        "ns_per_solve": {
+          "baseline": [
+            12000.640551011624,
+            11756.224278949634,
+            11829.943176926388,
+            11773.092122255704,
+            11399.223848471804,
+            7989.556177356866,
+            8146.178217821782,
+            8289.083943176927,
+            7956.513560051657,
+            10376.5368058545,
+            8814.316831683169,
+            7968.528626775721,
+            8448.590615583298,
+            8112.180800688765,
+            8230.496340938442
+          ],
+          "deferred": [
+            11933.452862677572,
+            11789.09814894533,
+            11837.934997847611,
+            11858.917348256566,
+            11759.295307791648,
+            8405.189410245372,
+            7916.174773999139,
+            8076.309944037882,
+            8483.746879035729,
+            8182.047352561343,
+            7908.229444683599,
+            7940.115798536375,
+            7924.630650021524,
+            8426.400774860094,
+            7911.440378820491
+          ]
+        },
+        "medians_ns": {
+          "baseline": 8448.590615583298,
+          "deferred": 8405.189410245372
+        },
+        "ratios": {
+          "baseline": 1.0,
+          "deferred": 0.9948629058605498
+        }
+      },
+      {
+        "case": "sparse_01",
+        "compiler": "Clang",
+        "cpu": 12,
+        "reps": 8740,
+        "ns_per_solve": {
+          "baseline": [
+            1858.2892448512587,
+            1851.299885583524,
+            1843.475743707094,
+            1853.6858123569793,
+            1965.6567505720823,
+            1858.9676201372997,
+            1826.2143020594965,
+            2480.863844393593,
+            1839.7410755148742,
+            1942.554805491991,
+            1978.658352402746,
+            1837.9681922196796,
+            1819.220480549199,
+            1834.6178489702518,
+            1831.791876430206
+          ],
+          "deferred": [
+            1859.0713958810068,
+            1878.1553775743707,
+            1876.2560640732265,
+            1890.504576659039,
+            1852.341533180778,
+            1906.450800915332,
+            1997.2597254004577,
+            1887.983638443936,
+            3293.666704805492,
+            1877.1505720823798,
+            1875.7525171624713,
+            1863.200800915332,
+            1885.6093821510296,
+            1864.5644164759726,
+            1880.0559496567505
+          ]
+        },
+        "medians_ns": {
+          "baseline": 1851.299885583524,
+          "deferred": 1878.1553775743707
+        },
+        "ratios": {
+          "baseline": 1.0,
+          "deferred": 1.0145062894455816
+        }
+      },
+      {
+        "case": "sparse_03",
+        "compiler": "Clang",
+        "cpu": 12,
+        "reps": 836,
+        "ns_per_solve": {
+          "baseline": [
+            54231.95574162679,
+            54466.232057416266,
+            54486.06578947369,
+            55706.767942583734,
+            54502.003588516745,
+            54864.85765550239,
+            54222.08492822966,
+            54712.14234449761,
+            54543.43540669856,
+            54650.645933014355,
+            55152.424641148325,
+            54564.50956937799,
+            54703.916267942586,
+            53975.36363636364,
+            55513.661483253585
+          ],
+          "deferred": [
+            54510.06578947369,
+            55478.85885167464,
+            54757.02033492823,
+            55477.254784688994,
+            55699.174641148325,
+            54708.254784688994,
+            56928.19258373206,
+            58117.59928229665,
+            55984.11363636364,
+            54621.34090909091,
+            54501.824162679426,
+            54541.72607655502,
+            54309.783492822964,
+            55493.95574162679,
+            57936.55980861244
+          ]
+        },
+        "medians_ns": {
+          "baseline": 54564.50956937799,
+          "deferred": 55477.254784688994
+        },
+        "ratios": {
+          "baseline": 1.0,
+          "deferred": 1.0167278185493533
+        }
+      }
+    ],
+    "whole": [
+      {
+        "case": "example_00",
+        "input_sha256": "7ff88918e647012e0d1e0e50b952798309bf34fd9c0b6378b568e87aa974e1ff",
+        "wall_ns": {
+          "baseline": [
+            6135855,
+            1705807,
+            1388647,
+            1441264,
+            1390099,
+            1475817,
+            1405734,
+            1408569,
+            1341379,
+            1366243,
+            1318884,
+            1400372,
+            1330557,
+            1444964,
+            1367709,
+            1482223,
+            1323462,
+            1369336,
+            1431303,
+            1336726,
+            1360961,
+            1373679,
+            1329104,
+            1377227,
+            1308374,
+            1297340,
+            1360108,
+            1383095,
+            1361614,
+            1418078,
+            1431145
+          ],
+          "final": [
+            3906684,
+            2092883,
+            1687898,
+            1504236,
+            1440435,
+            1427491,
+            1408517,
+            1415528,
+            1444052,
+            1337066,
+            1319454,
+            1345649,
+            1418741,
+            1363750,
+            1348027,
+            1345555,
+            1311795,
+            1413716,
+            1318026,
+            1288002,
+            1354147,
+            1330655,
+            1306854,
+            1398102,
+            1324614,
+            1307686,
+            1359382,
+            1489340,
+            1481347,
+            1369077,
+            1537639
+          ]
+        },
+        "cpu_ns": {
+          "baseline": [
+            1912000.0,
+            1545999.9999999995,
+            1239999.9999999998,
+            1301000.0,
+            1256000.0000000002,
+            1344999.999999999,
+            1280999.999999999,
+            1277999.999999998,
+            1219000.0000000014,
+            1239000.0000000005,
+            1194999.9999999981,
+            1272999.9999999998,
+            1197000.0000000002,
+            1305999.9999999981,
+            1246000.000000004,
+            1337999.9999999988,
+            1194999.9999999946,
+            1238000.000000003,
+            1293999.9999999965,
+            1213999.9999999998,
+            1238999.999999997,
+            1219999.9999999988,
+            1204000.0000000037,
+            1257000.0000000012,
+            1189999.9999999965,
+            1177999.9999999986,
+            1226999.9999999988,
+            1257000.0000000012,
+            1241999.999999993,
+            1272000.0000000093,
+            1303999.9999999995
+          ],
+          "final": [
+            2154000.0,
+            1782999.9999999998,
+            1534000.0000000007,
+            1360999.9999999993,
+            1311000.0000000014,
+            1301000.0,
+            1275999.9999999993,
+            1293000.0000000026,
+            1316999.9999999988,
+            1215000.0000000007,
+            1195000.0000000016,
+            1220000.0000000023,
+            1287000.0,
+            1239999.9999999981,
+            1222000.000000001,
+            1215000.0000000007,
+            1189000.0000000026,
+            1282000.0000000054,
+            1194000.0000000007,
+            1169999.9999999974,
+            1228000.0,
+            1202000.0000000016,
+            1182999.9999999965,
+            1279999.9999999965,
+            1205000.0000000047,
+            1190000.0000000035,
+            1238999.999999997,
+            1357999.9999999981,
+            1339000.0000000068,
+            1243999.999999995,
+            1392999.9999999914
+          ]
+        },
+        "median_wall_ns": {
+          "baseline": 1377227,
+          "final": 1369077
+        },
+        "ratio_to_baseline": {
+          "baseline": 1.0,
+          "final": 0.9940823117757639
+        },
+        "output_sha256": {
+          "final": "2ce895875020d471f37c6072e81f295667f51e1297d1883a173e4e64cc75632a",
+          "baseline": "2ce895875020d471f37c6072e81f295667f51e1297d1883a173e4e64cc75632a"
+        },
+        "all_checked": true
+      },
+      {
+        "case": "example_01",
+        "input_sha256": "65cdbbaf7bdcbe7e5699e145abe31605d104e685455bef7f8d8e618d6247c5ef",
+        "wall_ns": {
+          "baseline": [
+            1903689,
+            1699961,
+            4952342,
+            3042463,
+            9053843,
+            3903723,
+            3969622,
+            6138584,
+            5087095,
+            2912998,
+            2984057,
+            5377875,
+            3163702,
+            3284390,
+            3480268,
+            3352406,
+            2973731,
+            5639096,
+            9308656,
+            6052507,
+            7939246,
+            4837743,
+            3762609,
+            4894861,
+            3927138,
+            2958664,
+            5176441,
+            3935838,
+            4046517,
+            4119185,
+            2780538
+          ],
+          "final": [
+            1557618,
+            1826911,
+            1968210,
+            3526629,
+            6121787,
+            3922922,
+            4889646,
+            3908701,
+            3065105,
+            2677525,
+            3737840,
+            5618477,
+            1694340,
+            3120278,
+            4364945,
+            4440984,
+            4172308,
+            3078484,
+            3719744,
+            7003201,
+            9957470,
+            8962413,
+            5115585,
+            4012985,
+            3974547,
+            2984354,
+            4846916,
+            3992061,
+            3838200,
+            4941057,
+            5030177
+          ]
+        },
+        "cpu_ns": {
+          "baseline": [
+            1557000.0000000028,
+            1311999.9999999937,
+            1693000.0,
+            1410999.9999999956,
+            1293000.0000000026,
+            1653000.0000000016,
+            1603999.9999999944,
+            1780000.0000000037,
+            1489999.9999999914,
+            1464000.000000007,
+            1793999.99999999,
+            1559000.000000005,
+            1775999.9999999998,
+            1589999.9999999942,
+            1564999.999999997,
+            1804000.0,
+            1760999.9999999986,
+            1710999.9999999902,
+            1659999.9999999949,
+            2188000.0000000233,
+            2126000.000000003,
+            2074000.0000000063,
+            1695000.000000002,
+            1508999.9999999965,
+            1696000.000000003,
+            1567999.999999986,
+            1804000.0,
+            1698000.0000000051,
+            1770999.9999999949,
+            1812000.0000000081,
+            1582000.0
+          ],
+          "final": [
+            1402000.0000000005,
+            1476000.0000000051,
+            1532000.0000000056,
+            1701999.999999995,
+            1913999.999999999,
+            1696000.000000003,
+            1395000.0000000075,
+            1911999.999999997,
+            1502000.0000000033,
+            1996999.9999999988,
+            1806000.000000002,
+            2173999.9999999953,
+            1544999.999999991,
+            1477000.000000006,
+            1797999.999999994,
+            1851000.0000000054,
+            1768999.9999999928,
+            1677000.0000000119,
+            2102999.999999994,
+            2066999.9999999856,
+            2076999.9999999956,
+            1428999.9999999998,
+            2210999.9999999907,
+            1948000.0000000054,
+            1722000.0000000014,
+            1560000.0000000058,
+            1838000.0000000063,
+            1722000.0000000014,
+            1722000.0000000014,
+            1817999.9999999863,
+            1436999.999999994
+          ]
+        },
+        "median_wall_ns": {
+          "baseline": 3935838,
+          "final": 3974547
+        },
+        "ratio_to_baseline": {
+          "baseline": 1.0,
+          "final": 1.0098350084530918
+        },
+        "output_sha256": {
+          "final": "ac32484008273bfad640c497ad1937ca94f96090fdd0e92b02b796ff7e50e758",
+          "baseline": "ac32484008273bfad640c497ad1937ca94f96090fdd0e92b02b796ff7e50e758"
+        },
+        "all_checked": true
+      },
+      {
+        "case": "issue610_00",
+        "input_sha256": "bad6abe2e07118a13a4ae6f854c74242f7cbb693f5f3a5b358583a3e86dfc2a2",
+        "wall_ns": {
+          "baseline": [
+            3796352,
+            4129259,
+            4750661,
+            3971129,
+            4068144,
+            4062249,
+            1127477,
+            1240707,
+            1240444,
+            1226005,
+            4435065,
+            3900043,
+            4105458,
+            6071336,
+            4902051,
+            2966092,
+            3911198,
+            1454662,
+            1377293,
+            1361243,
+            1384852,
+            1346970,
+            1402791,
+            1308662,
+            1327135,
+            1406814,
+            1437746,
+            1293391,
+            1441275,
+            1378011,
+            1340276
+          ],
+          "final": [
+            5564616,
+            3644302,
+            4978781,
+            3875544,
+            2835719,
+            5006563,
+            1417608,
+            1315800,
+            4136715,
+            1513652,
+            3933796,
+            4040147,
+            3866554,
+            5023043,
+            3922971,
+            4182883,
+            1574479,
+            1369630,
+            1370533,
+            1365899,
+            1401740,
+            1504137,
+            1340624,
+            1422260,
+            1356543,
+            1507897,
+            1541795,
+            1325881,
+            1344804,
+            1353889,
+            1420399
+          ]
+        },
+        "cpu_ns": {
+          "baseline": [
+            2012000.0000000137,
+            2267999.999999992,
+            1994999.9999999967,
+            1673000.000000008,
+            1724000.0000000033,
+            2095999.9999999867,
+            981999.9999999829,
+            1121999.9999999842,
+            1115000.000000005,
+            1094000.0000000116,
+            1473000.000000002,
+            1558000.0000000037,
+            1678999.999999986,
+            1919999.9999999772,
+            1583000.0000000012,
+            1682999.99999999,
+            1970000.0000000272,
+            1331999.9999999998,
+            1255000.000000006,
+            1226000.000000005,
+            1255000.000000006,
+            1220999.9999999998,
+            1201000.0000000077,
+            1180999.9999999877,
+            1198999.9999999779,
+            1267000.0000000182,
+            1315999.999999984,
+            1174000.0000000084,
+            1318000.0000000135,
+            1249000.0,
+            1216000.0000000226
+          ],
+          "final": [
+            2039999.9999999863,
+            1902999.9999999881,
+            2332000.000000001,
+            1833000.0000000014,
+            1679000.0000000137,
+            1420999.9999999779,
+            1277000.0000000005,
+            1195000.0000000016,
+            1255000.000000006,
+            1367999.9999999804,
+            1599000.000000017,
+            1573999.999999992,
+            1631000.0000000214,
+            1467999.999999997,
+            1970000.0000000272,
+            1906999.999999992,
+            1433999.999999991,
+            1247999.999999999,
+            1243999.999999995,
+            1241999.999999993,
+            1256000.0000000072,
+            1290999.9999999865,
+            1207000.0000000135,
+            1290000.0000000133,
+            1223000.0000000019,
+            1275999.9999999993,
+            1362000.000000002,
+            1202999.9999999818,
+            1216000.0000000226,
+            1234000.0000000128,
+            1291999.9999999877
+          ]
+        },
+        "median_wall_ns": {
+          "baseline": 1437746,
+          "final": 1513652
+        },
+        "ratio_to_baseline": {
+          "baseline": 1.0,
+          "final": 1.052795139057942
+        },
+        "output_sha256": {
+          "baseline": "c86b080fc938e532388e14b6ed54b8e8ed64ce389e626169621859850199ff17",
+          "final": "c86b080fc938e532388e14b6ed54b8e8ed64ce389e626169621859850199ff17"
+        },
+        "all_checked": true
+      },
+      {
+        "case": "max_random_00",
+        "input_sha256": "c9bd1769487704aa77f9c6ab632f01ffe2a5065fa1bc5d8a3f71445fb2b7bd09",
+        "wall_ns": {
+          "baseline": [
+            2920754,
+            2709746,
+            2370242,
+            2058780,
+            1936860,
+            1885578,
+            2013165,
+            1964303,
+            1854708,
+            1954131,
+            2001830,
+            1868516,
+            1848062,
+            2051101,
+            1849260,
+            1882425,
+            1953883,
+            1826758,
+            1779806,
+            1755975,
+            1846815,
+            1779012,
+            1867049,
+            1943998,
+            2077847,
+            1818628,
+            1898127,
+            1970872,
+            1785584,
+            2840409,
+            1891135
+          ],
+          "final": [
+            1902729,
+            2043199,
+            2224012,
+            1969077,
+            1836793,
+            2040050,
+            1882878,
+            1954695,
+            1978146,
+            1927398,
+            1968286,
+            1905923,
+            2109769,
+            1865671,
+            1826600,
+            1897729,
+            1917009,
+            1820532,
+            1821909,
+            1828464,
+            1844038,
+            1798270,
+            1849997,
+            1821011,
+            1891409,
+            1876912,
+            1846447,
+            1864609,
+            1763515,
+            1976709,
+            1842029
+          ]
+        },
+        "cpu_ns": {
+          "baseline": [
+            2585000.000000004,
+            2295999.9999999925,
+            2027000.000000001,
+            1912000.0000000247,
+            1797999.999999994,
+            1746999.9999999986,
+            1867000.0000000075,
+            1779999.999999976,
+            1675999.999999983,
+            1782000.0000000058,
+            1812000.0000000081,
+            1732000.0000000114,
+            1707999.9999999872,
+            1842000.0000000102,
+            1712999.9999999923,
+            1752000.0000000312,
+            1818000.000000014,
+            1662999.999999998,
+            1654000.0000000165,
+            1623999.9999999865,
+            1628999.9999999916,
+            1638000.0000000005,
+            1734000.0000000133,
+            1793000.0000000168,
+            1867999.9999999807,
+            1687999.9999999118,
+            1722000.0000000014,
+            1771999.9999999958,
+            1659999.9999999949,
+            1636000.0000000263,
+            1713999.9999999932
+          ],
+          "final": [
+            1759999.9999999837,
+            1772999.9999999967,
+            2058000.0000000042,
+            1827999.9999999963,
+            1702000.000000009,
+            1792999.999999989,
+            1754000.0000000056,
+            1723000.0000000023,
+            1811000.0000000347,
+            1763000.0000000147,
+            1792999.999999989,
+            1746999.9999999986,
+            1873000.0000000135,
+            1727999.9999999795,
+            1677999.999999985,
+            1765999.9999999898,
+            1787999.999999984,
+            1630999.9999999935,
+            1693999.9999999732,
+            1700000.000000007,
+            1669000.0000000037,
+            1671000.0000000058,
+            1721000.0000000002,
+            1680999.9999999881,
+            1759000.0000000384,
+            1700000.000000035,
+            1697999.9999999774,
+            1728000.0000000072,
+            1637999.9999999728,
+            1807000.000000003,
+            1634000.0000000242
+          ]
+        },
+        "median_wall_ns": {
+          "baseline": 1898127,
+          "final": 1882878
+        },
+        "ratio_to_baseline": {
+          "baseline": 1.0,
+          "final": 0.9919662909805298
+        },
+        "output_sha256": {
+          "final": "ece27ac0f4c021311e4b3106044ee1f0ee6e72030a28c1415f68c8972e83cd5e",
+          "baseline": "ece27ac0f4c021311e4b3106044ee1f0ee6e72030a28c1415f68c8972e83cd5e"
+        },
+        "all_checked": true
+      },
+      {
+        "case": "max_random_01",
+        "input_sha256": "c7cc48f9531628f1617f92068c4dc25b76d3f2516c18d0260010307d72bc8080",
+        "wall_ns": {
+          "baseline": [
+            4172596,
+            3898815,
+            3222388,
+            3080208,
+            3078703,
+            2952010,
+            2851762,
+            2977221,
+            2985424,
+            2810214,
+            2954007,
+            2994435,
+            3103252,
+            3018049,
+            2876662,
+            2933089,
+            2888438,
+            2911023,
+            3086051,
+            2998045,
+            3094574,
+            3002642,
+            3189948,
+            2812010,
+            2959354,
+            2972058,
+            3002010,
+            2974379,
+            3082692,
+            2987268,
+            3166057
+          ],
+          "final": [
+            2481239,
+            4521194,
+            3540402,
+            3091955,
+            2977062,
+            2955437,
+            2893442,
+            3023387,
+            2944600,
+            2845020,
+            2830888,
+            2828837,
+            3027103,
+            2882949,
+            2878401,
+            2766145,
+            2794075,
+            2787475,
+            2908170,
+            3103073,
+            3027919,
+            3003744,
+            3108848,
+            2955796,
+            2973655,
+            2950927,
+            2906994,
+            3167439,
+            3443793,
+            2935631,
+            3053320
+          ]
+        },
+        "cpu_ns": {
+          "baseline": [
+            3688000.0000000247,
+            3429999.999999989,
+            2880999.999999967,
+            2933999.999999992,
+            2935000.000000021,
+            2813999.9999999832,
+            2715000.000000023,
+            2841000.0000000377,
+            2844999.9999999865,
+            2678999.999999987,
+            2805000.000000002,
+            2812000.000000037,
+            2956000.000000014,
+            2878999.999999965,
+            2691999.999999972,
+            2761999.9999999865,
+            2754000.000000034,
+            2763000.0000000154,
+            2935999.999999994,
+            2810000.000000035,
+            2944999.9999999753,
+            2858999.999999945,
+            2975000.0000000056,
+            2675000.0000000386,
+            2815000.000000012,
+            2825999.9999999953,
+            2857000.000000054,
+            2830999.9999999725,
+            2932000.0000000456,
+            2844999.9999999865,
+            3025000.0
+          ],
+          "final": [
+            2332000.000000001,
+            3991999.9999999953,
+            3070000.000000017,
+            2944000.0000000023,
+            2837000.000000034,
+            2827999.999999997,
+            2753999.9999999786,
+            2890999.9999999767,
+            2804999.9999999464,
+            2709999.99999999,
+            2676999.999999985,
+            2647000.0000000102,
+            2829999.999999999,
+            2751999.9999999767,
+            2711000.000000019,
+            2630999.999999939,
+            2663999.9999999995,
+            2649000.0000000126,
+            2755000.0000000075,
+            2960999.9999999916,
+            2881000.0000000224,
+            2863000.0000000047,
+            2967000.000000053,
+            2765999.9999999353,
+            2832000.0000000014,
+            2803000.0,
+            2763999.999999989,
+            2985999.999999989,
+            3045999.999999993,
+            2788999.999999986,
+            2908999.9999999395
+          ]
+        },
+        "median_wall_ns": {
+          "baseline": 2994435,
+          "final": 2955437
+        },
+        "ratio_to_baseline": {
+          "baseline": 1.0,
+          "final": 0.986976508089172
+        },
+        "output_sha256": {
+          "final": "20b7eede362e5c80e68498269e2089c630ae59aadbb19dd723e97a08e40966bc",
+          "baseline": "20b7eede362e5c80e68498269e2089c630ae59aadbb19dd723e97a08e40966bc"
+        },
+        "all_checked": true
+      },
+      {
+        "case": "random_00",
+        "input_sha256": "4c0691705879872230b0708e0ce47c3fb35b9543b3042709098c40b98fd5c64f",
+        "wall_ns": {
+          "baseline": [
+            1895373,
+            1908809,
+            1451377,
+            1378551,
+            1438426,
+            1515801,
+            1320595,
+            1508733,
+            1483054,
+            1579608,
+            1501468,
+            1468540,
+            1498911,
+            1404248,
+            1382550,
+            1391821,
+            1493026,
+            1455377,
+            1298261,
+            1310754,
+            1329266,
+            1396171,
+            1393932,
+            1276041,
+            1553544,
+            1369977,
+            1636337,
+            1539170,
+            1426464,
+            1386671,
+            1323557
+          ],
+          "final": [
+            2300903,
+            1534870,
+            1513211,
+            1362282,
+            1379478,
+            2476974,
+            1399476,
+            1612942,
+            1401260,
+            1762992,
+            1580934,
+            1375540,
+            1336142,
+            1340318,
+            1397461,
+            1530916,
+            1377589,
+            1304470,
+            1358640,
+            1440136,
+            1344932,
+            1375902,
+            1358135,
+            1605754,
+            1373325,
+            1334354,
+            1611428,
+            1342577,
+            1418769,
+            1336956,
+            1419031
+          ]
+        },
+        "cpu_ns": {
+          "baseline": [
+            1676000.0000000107,
+            1565000.0000000386,
+            1267999.9999999914,
+            1232000.000000011,
+            1307000.0000000026,
+            1379999.9999999923,
+            1199999.9999999788,
+            1390000.0000000023,
+            1358999.999999999,
+            1385000.0000000251,
+            1370999.9999999555,
+            1331000.0000000265,
+            1375999.9999999884,
+            1282000.0000000054,
+            1259000.00000001,
+            1269999.9999999932,
+            1340999.9999999811,
+            1323000.0000000186,
+            1180000.0000000144,
+            1190999.9999999977,
+            1209000.0000000156,
+            1252000.000000031,
+            1278000.0000000014,
+            1159999.9999999944,
+            1435000.0000000196,
+            1246999.9999999981,
+            1514999.9999999886,
+            1416999.999999946,
+            1267000.0000000182,
+            1271000.0000000221,
+            1209000.0000000156
+          ],
+          "final": [
+            1975000.0000000044,
+            1281999.99999995,
+            1344000.0000000119,
+            1214999.999999966,
+            1253000.0000000042,
+            1294000.0000000175,
+            1275000.000000026,
+            1493000.0000000221,
+            1275999.9999999993,
+            1631999.9999999667,
+            1458000.000000015,
+            1254000.0000000328,
+            1222999.9999999742,
+            1224000.0000000028,
+            1272999.9999999686,
+            1410000.0000000224,
+            1259999.9999999835,
+            1186999.9999999937,
+            1244999.999999996,
+            1315999.999999984,
+            1230999.999999982,
+            1255000.000000006,
+            1228999.9999999802,
+            1485999.9999999874,
+            1253000.0000000042,
+            1213999.9999999928,
+            1420000.0000000324,
+            1222000.000000001,
+            1294000.0000000175,
+            1211999.999999991,
+            1302999.9999999986
+          ]
+        },
+        "median_wall_ns": {
+          "baseline": 1438426,
+          "final": 1397461
+        },
+        "ratio_to_baseline": {
+          "baseline": 1.0,
+          "final": 0.9715209541540545
+        },
+        "output_sha256": {
+          "baseline": "41106890f2ea4fd3641b948a55e036b8d22a036fd2386371224bcf8a248c3088",
+          "final": "41106890f2ea4fd3641b948a55e036b8d22a036fd2386371224bcf8a248c3088"
+        },
+        "all_checked": true
+      },
+      {
+        "case": "random_01",
+        "input_sha256": "99a765a1dbfd3f9e13791eb96760495f055222eaa425e4d9175bfb8b951ad59b",
+        "wall_ns": {
+          "baseline": [
+            2645798,
+            2868002,
+            2278441,
+            1907604,
+            1943823,
+            2042651,
+            2032118,
+            1850458,
+            1850276,
+            1848309,
+            1956314,
+            1933073,
+            1975179,
+            1893506,
+            1854796,
+            1807587,
+            2130975,
+            1891547,
+            1772127,
+            1899368,
+            2227104,
+            1795804,
+            1906219,
+            1897643,
+            1897473,
+            1894250,
+            1923780,
+            2003810,
+            1754071,
+            1814007,
+            1841299
+          ],
+          "final": [
+            1819112,
+            2510220,
+            1988419,
+            3091474,
+            2030221,
+            1954616,
+            1840379,
+            1765058,
+            1771148,
+            1851245,
+            2006541,
+            1839406,
+            1855154,
+            1835629,
+            1886257,
+            2097356,
+            1832392,
+            1903218,
+            1828867,
+            2137484,
+            2060027,
+            1824517,
+            1819431,
+            1874843,
+            2079223,
+            2215521,
+            2164152,
+            1913912,
+            1763653,
+            1763260,
+            1979169
+          ]
+        },
+        "cpu_ns": {
+          "baseline": [
+            2299999.999999969,
+            2485999.9999999884,
+            2016000.0000000177,
+            1757999.9999999818,
+            1801999.9999999702,
+            1841999.9999999548,
+            1855000.000000051,
+            1732000.0000000114,
+            1722000.0000000014,
+            1726999.9999999786,
+            1772999.999999969,
+            1802999.999999999,
+            1842000.0000000102,
+            1759999.9999999837,
+            1732000.0000000114,
+            1668999.999999976,
+            1977999.9999999797,
+            1742999.9999999946,
+            1630000.0000000203,
+            1746999.9999999986,
+            2023999.9999999702,
+            1663000.0000000256,
+            1782999.999999979,
+            1778000.0000000573,
+            1771999.9999999958,
+            1767000.0000000186,
+            1802000.0000000258,
+            1801999.9999999702,
+            1624999.9999999877,
+            1674999.999999982,
+            1645000.0000000077
+          ],
+          "final": [
+            1682999.99999999,
+            2188000.0000000233,
+            1750999.9999999471,
+            1857000.000000053,
+            1806000.0000000298,
+            1754000.0000000333,
+            1671999.9999999513,
+            1645000.0000000077,
+            1642000.0000000324,
+            1654999.999999962,
+            1827000.000000023,
+            1661000.0000000235,
+            1707999.9999999872,
+            1709000.000000016,
+            1749000.0000000005,
+            1942999.9999999725,
+            1700000.000000035,
+            1755000.0000000065,
+            1671000.0000000335,
+            1852999.9999999935,
+            1919000.000000004,
+            1701999.9999999814,
+            1695999.9999999753,
+            1755000.0000000065,
+            1955999.9999999579,
+            2037999.9999999842,
+            1912999.9999999981,
+            1765000.0000000165,
+            1636999.9999999995,
+            1643000.0000000056,
+            1784000.000000008
+          ]
+        },
+        "median_wall_ns": {
+          "baseline": 1899368,
+          "final": 1886257
+        },
+        "ratio_to_baseline": {
+          "baseline": 1.0,
+          "final": 0.9930971775874923
+        },
+        "output_sha256": {
+          "final": "3336f3b02a292e70d8d1fb54e77059f0ab24c429b4036306b0066bfdf12dec1e",
+          "baseline": "3336f3b02a292e70d8d1fb54e77059f0ab24c429b4036306b0066bfdf12dec1e"
+        },
+        "all_checked": true
+      },
+      {
+        "case": "sparse_00",
+        "input_sha256": "696b95978c548d0349c7f33fd04800918afe8cdc4819ae96e53c7830da75ef1f",
+        "wall_ns": {
+          "baseline": [
+            1682017,
+            1899099,
+            1563490,
+            1366836,
+            1458985,
+            1306337,
+            1338721,
+            1358822,
+            1384067,
+            1377336,
+            1347793,
+            1375942,
+            1329250,
+            1357346,
+            1321241,
+            1415462,
+            1293781,
+            1316357,
+            1387119,
+            1387966,
+            1354624,
+            1334935,
+            1435997,
+            1364382,
+            1531232,
+            1498847,
+            1430244,
+            1386373,
+            1374403,
+            1373372,
+            1375150
+          ],
+          "final": [
+            1906263,
+            1635717,
+            1504706,
+            1405691,
+            2409657,
+            1339162,
+            1329813,
+            1292748,
+            1313228,
+            1376154,
+            1360580,
+            1355404,
+            1406034,
+            1319055,
+            1327072,
+            1328718,
+            1389505,
+            1337647,
+            1448233,
+            1386911,
+            1339164,
+            1326414,
+            1342802,
+            1388557,
+            1385591,
+            1400473,
+            1391152,
+            1613496,
+            1491379,
+            1547342,
+            1437608
+          ]
+        },
+        "cpu_ns": {
+          "baseline": [
+            1541000.0000000147,
+            1611000.000000029,
+            1249000.0000000556,
+            1227000.0000000892,
+            1329999.9999999423,
+            1188999.9999999956,
+            1213999.9999999374,
+            1224999.9999999206,
+            1259000.00000001,
+            1251000.000000002,
+            1226999.999999978,
+            1250000.0000000843,
+            1207999.999999987,
+            1233999.9999999574,
+            1202999.9999999541,
+            1276999.9999999725,
+            1178999.9999999302,
+            1199000.0000000612,
+            1265999.9999999893,
+            1273000.0000000796,
+            1228000.0000000068,
+            1218999.9999999702,
+            1324999.9999999097,
+            1249000.0000000556,
+            1399000.000000039,
+            1291000.0000000421,
+            1300999.9999999965,
+            1271000.0000000221,
+            1255000.000000006,
+            1248999.9999999446,
+            1251000.000000002
+          ],
+          "final": [
+            1604000.0000000498,
+            1371000.0000000112,
+            1214999.999999966,
+            1226000.0000000603,
+            1230000.0000000643,
+            1210999.999999962,
+            1202000.0000000363,
+            1173000.0000000906,
+            1189999.9999999134,
+            1254000.0000000885,
+            1236999.9999999327,
+            1229000.0000000356,
+            1286000.0000000093,
+            1205000.0000000116,
+            1214000.0000000484,
+            1209999.9999999334,
+            1272000.0000000508,
+            1213000.0000000196,
+            1313999.9999999264,
+            1267000.0000000182,
+            1217999.9999999413,
+            1213000.0000000196,
+            1230000.0000000643,
+            1270999.999999911,
+            1269999.9999999932,
+            1279000.00000003,
+            1275000.000000026,
+            1488999.9999999625,
+            1368999.9999999537,
+            1426000.0000000384,
+            1317999.9999999304
+          ]
+        },
+        "median_wall_ns": {
+          "baseline": 1375150,
+          "final": 1386911
+        },
+        "ratio_to_baseline": {
+          "baseline": 1.0,
+          "final": 1.0085525215431044
+        },
+        "output_sha256": {
+          "baseline": "f2b362dc742464e20a342ee747afa45b585b4e41d924693dcb0d13e21b85973b",
+          "final": "f2b362dc742464e20a342ee747afa45b585b4e41d924693dcb0d13e21b85973b"
+        },
+        "all_checked": true
+      },
+      {
+        "case": "sparse_01",
+        "input_sha256": "41855abdd3acff536a90f8cb170259e1875c9e8d8175237e5af8fb67f0205e8f",
+        "wall_ns": {
+          "baseline": [
+            1631566,
+            1698611,
+            1877923,
+            1823111,
+            1350873,
+            1351090,
+            1516306,
+            1354146,
+            1339983,
+            1353755,
+            2549541,
+            1496282,
+            1405397,
+            1467187,
+            1380671,
+            1310166,
+            1525919,
+            1550855,
+            1398931,
+            1465335,
+            1519474,
+            1334332,
+            1313814,
+            1338664,
+            1344279,
+            1312188,
+            1430864,
+            1435487,
+            1465133,
+            1332996,
+            1338662
+          ],
+          "final": [
+            1506131,
+            1880283,
+            1661713,
+            1554642,
+            1469683,
+            1366007,
+            1569631,
+            1390575,
+            1328751,
+            1316801,
+            1456301,
+            1392021,
+            1359158,
+            1368573,
+            1347702,
+            1396214,
+            1471227,
+            1459517,
+            1334639,
+            1382278,
+            1401627,
+            1486639,
+            1351767,
+            1341867,
+            1385969,
+            1466149,
+            1395196,
+            1337964,
+            1478969,
+            1339456,
+            1295044
+          ]
+        },
+        "cpu_ns": {
+          "baseline": [
+            1325999.9999999383,
+            1429000.0000000135,
+            1500000.0000000568,
+            1626000.0000000163,
+            1223000.0000000852,
+            1229000.0000000356,
+            1330999.9999999711,
+            1241000.0000000477,
+            1225999.9999999492,
+            1240000.0000000189,
+            1309000.0000000047,
+            1367999.9999999248,
+            1215999.9999999949,
+            1338000.0000000615,
+            1194000.0000000284,
+            1196000.000000086,
+            1334000.0000000573,
+            1343999.9999999008,
+            1271000.0000000221,
+            1284000.0000000629,
+            1321000.0000000165,
+            1219999.9999999988,
+            1201000.0000000077,
+            1217999.9999999413,
+            1236000.000000015,
+            1199999.9999999788,
+            1303999.9999999718,
+            1275999.999999944,
+            1331999.9999999998,
+            1221000.0000000277,
+            1226999.999999978
+          ],
+          "final": [
+            1369000.0000000645,
+            1593000.0000000666,
+            1336999.9999999215,
+            1334999.999999975,
+            1268000.0000000468,
+            1205999.9999999295,
+            1458000.0000000703,
+            1251999.99999992,
+            1214999.999999966,
+            1202000.0000000363,
+            1249999.9999999735,
+            1278999.999999919,
+            1245000.0000000517,
+            1180999.9999999877,
+            1228000.0000000068,
+            1208999.9999999045,
+            1340000.000000008,
+            1271000.0000000221,
+            1213000.0000000196,
+            1191999.999999971,
+            1219999.9999999988,
+            1286999.9999999271,
+            1225000.0000000317,
+            1230000.0000000643,
+            1278000.0000000014,
+            1256999.9999999525,
+            1206000.0000000403,
+            1223000.0000000852,
+            1311999.9999999797,
+            1210000.0000000445,
+            1179999.9999999588
+          ]
+        },
+        "median_wall_ns": {
+          "baseline": 1405397,
+          "final": 1392021
+        },
+        "ratio_to_baseline": {
+          "baseline": 1.0,
+          "final": 0.99048240461592
+        },
+        "output_sha256": {
+          "final": "b2ac9667c4795af306c91a00d5709523a297fe211cd5c606687db2c7da05dd90",
+          "baseline": "b2ac9667c4795af306c91a00d5709523a297fe211cd5c606687db2c7da05dd90"
+        },
+        "all_checked": true
+      },
+      {
+        "case": "sparse_02",
+        "input_sha256": "7a38ab703421b42577b558cea6733f7f0eed13ccec31e6644b3807c8e99502b4",
+        "wall_ns": {
+          "baseline": [
+            1577274,
+            1671715,
+            1567804,
+            1558249,
+            1435316,
+            1404818,
+            1536486,
+            1509408,
+            1332797,
+            1420714,
+            1358954,
+            1371924,
+            1378185,
+            1319921,
+            1331369,
+            1320201,
+            1398562,
+            1324556,
+            1307084,
+            1381319,
+            1296038,
+            1450375,
+            1383504,
+            1339579,
+            1311736,
+            1324346,
+            1298134,
+            1334433,
+            1395647,
+            1392271,
+            1397577
+          ],
+          "final": [
+            1940091,
+            1691096,
+            1489866,
+            1449451,
+            1557568,
+            1290946,
+            1341056,
+            1342380,
+            1333038,
+            1353698,
+            1388689,
+            1384818,
+            1335956,
+            1286305,
+            1360801,
+            1309235,
+            1339017,
+            1343682,
+            1394995,
+            1309793,
+            1303216,
+            1377841,
+            1388857,
+            1343903,
+            1368548,
+            1368178,
+            1376197,
+            1364163,
+            1389443,
+            1336904,
+            1345644
+          ]
+        },
+        "cpu_ns": {
+          "baseline": [
+            1334000.0000000573,
+            1476000.0000000328,
+            1346999.9999999872,
+            1390000.0000000023,
+            1291999.99999996,
+            1282000.0000000054,
+            1408999.9999999935,
+            1369000.0000000645,
+            1210999.999999962,
+            1283999.9999999518,
+            1232000.000000011,
+            1235000.000000097,
+            1240000.0000000189,
+            1191999.999999971,
+            1214000.0000000484,
+            1189999.9999999134,
+            1273999.9999999974,
+            1197000.0000000037,
+            1186000.0000001313,
+            1241000.0000000477,
+            1168999.9999999756,
+            1326000.0000000494,
+            1261999.9999999853,
+            1218999.9999999702,
+            1188000.000000078,
+            1197000.0000000037,
+            1174999.9999999262,
+            1206000.0000000403,
+            1269000.0000000757,
+            1261999.9999999853,
+            1267000.0000000182
+          ],
+          "final": [
+            1612000.0000000577,
+            1464000.000000021,
+            1306999.9999999471,
+            1300000.000000079,
+            1414000.0000000263,
+            1167999.999999947,
+            1217000.0000000235,
+            1211999.999999991,
+            1205000.0000000116,
+            1232000.000000011,
+            1261999.9999999853,
+            1233999.9999999574,
+            1195999.9999999749,
+            1162999.999999914,
+            1233000.0000000396,
+            1186999.999999938,
+            1214000.0000000484,
+            1216999.9999999127,
+            1261999.9999999853,
+            1183000.0000000452,
+            1182000.0000000163,
+            1187999.999999967,
+            1268000.0000000468,
+            1225000.0000000317,
+            1241999.9999999653,
+            1238999.9999999902,
+            1256000.000000035,
+            1241999.9999999653,
+            1253999.9999999774,
+            1205000.0000000116,
+            1214999.999999966
+          ]
+        },
+        "median_wall_ns": {
+          "baseline": 1381319,
+          "final": 1360801
+        },
+        "ratio_to_baseline": {
+          "baseline": 1.0,
+          "final": 0.9851460813903233
+        },
+        "output_sha256": {
+          "baseline": "4f2a7959d494396b5a726b16e118b67aaf56736119cc3317870ba30fac30f8ba",
+          "final": "4f2a7959d494396b5a726b16e118b67aaf56736119cc3317870ba30fac30f8ba"
+        },
+        "all_checked": true
+      },
+      {
+        "case": "sparse_03",
+        "input_sha256": "61ac17b48a916844d80a1f9accbc7131286811b2b8882198d2384743da37717e",
+        "wall_ns": {
+          "baseline": [
+            2138524,
+            2057434,
+            1881703,
+            1621061,
+            1577253,
+            1547120,
+            1570082,
+            1524984,
+            1585542,
+            1453248,
+            1481412,
+            6522518,
+            4916841,
+            4938663,
+            6041777,
+            2788641,
+            3578917,
+            4290460,
+            2525798,
+            8964638,
+            4371269,
+            5726559,
+            4370663,
+            2981657,
+            2225196,
+            3184575,
+            6998536,
+            2853333,
+            3854965,
+            4018157,
+            4005977
+          ],
+          "final": [
+            1548680,
+            2284298,
+            1826752,
+            1633838,
+            1502195,
+            1500349,
+            1484510,
+            1518957,
+            1503788,
+            1546384,
+            1528857,
+            8788185,
+            4744799,
+            3967841,
+            3966388,
+            3298218,
+            2989083,
+            3015274,
+            4389434,
+            2107481,
+            5581762,
+            2288678,
+            2633084,
+            2023558,
+            3673606,
+            5451565,
+            3995326,
+            3107272,
+            3415555,
+            5294595,
+            4925893
+          ]
+        },
+        "cpu_ns": {
+          "baseline": [
+            1839000.0000000352,
+            1623000.000000041,
+            1479999.9999999257,
+            1414000.0000000263,
+            1346999.9999999872,
+            1370000.0000000934,
+            1353999.9999999662,
+            1340999.9999999255,
+            1453000.0000000375,
+            1338000.0000000615,
+            1371000.0000000112,
+            2489999.999999992,
+            1805999.9999999744,
+            1533000.0000000065,
+            1728000.0000000629,
+            1632999.9999999956,
+            1902999.999999877,
+            1930000.0000000983,
+            1880999.9999999106,
+            1564000.0000001208,
+            2623999.9999999595,
+            1807000.000000003,
+            2628999.9999999925,
+            1484999.9999999586,
+            1831000.000000027,
+            1677000.0000000396,
+            2402999.999999933,
+            1514999.9999999332,
+            1855000.000000051,
+            2075999.9999999667,
+            2027000.000000001
+          ],
+          "final": [
+            1404000.000000072,
+            1842999.999999928,
+            1426000.0000000384,
+            1399000.000000039,
+            1350999.9999999912,
+            1352999.9999999376,
+            1352000.0000000198,
+            1400000.0000000678,
+            1323000.000000074,
+            1327000.0000000782,
+            1333999.9999999464,
+            1412999.9999999977,
+            2041999.9999998773,
+            1786000.0000000654,
+            1989000.0000000186,
+            1502999.999999921,
+            1955999.9999999579,
+            1636999.9999999995,
+            2066000.0000000123,
+            1688000.0000000228,
+            1950000.0000000072,
+            1975999.9999999779,
+            1950000.0000001183,
+            1340000.000000008,
+            1958999.999999933,
+            2036000.0000000377,
+            2268000.000000048,
+            1748000.000000083,
+            1654999.999999962,
+            1897000.0000000375,
+            1856000.0000000799
+          ]
+        },
+        "median_wall_ns": {
+          "baseline": 2981657,
+          "final": 2989083
+        },
+        "ratio_to_baseline": {
+          "baseline": 1.0,
+          "final": 1.002490561456264
+        },
+        "output_sha256": {
+          "final": "bf39c1cbdc4d298244e5189c53b20eb6365defb0413b5e0fd31da54de0da6bdb",
+          "baseline": "bf39c1cbdc4d298244e5189c53b20eb6365defb0413b5e0fd31da54de0da6bdb"
+        },
+        "all_checked": true
+      },
+      {
+        "case": "sparse_04",
+        "input_sha256": "7d4831440f0bc8884494cb44f20a917e5b1f1d92c1c4048a125564ebf863c0a5",
+        "wall_ns": {
+          "baseline": [
+            4033465,
+            6158272,
+            4509606,
+            4003191,
+            6136275,
+            4122004,
+            4885208,
+            1954043,
+            1803152,
+            1628747,
+            1531270,
+            1359222,
+            1433920,
+            1446828,
+            1511133,
+            1356393,
+            2521829,
+            1515022,
+            1417250,
+            1439411,
+            1351944,
+            1535934,
+            1371863,
+            1366246,
+            1379341,
+            1357516,
+            1391352,
+            1344941,
+            1349801,
+            1433748,
+            1410406
+          ],
+          "final": [
+            5325328,
+            6013160,
+            3957485,
+            3965642,
+            4889768,
+            3759968,
+            3214916,
+            3677261,
+            1513392,
+            1589263,
+            1479222,
+            1456493,
+            1505845,
+            1481234,
+            1366370,
+            1399926,
+            1486960,
+            1402748,
+            1510555,
+            1493983,
+            1385815,
+            2528689,
+            1419154,
+            1488001,
+            1458054,
+            1443663,
+            1362075,
+            1401713,
+            1444426,
+            1480053,
+            1512594
+          ]
+        },
+        "cpu_ns": {
+          "baseline": [
+            2143000.000000006,
+            2435999.999999994,
+            2060000.0000000617,
+            1856000.0000000799,
+            1997000.0000000265,
+            1789999.9999999583,
+            1835000.000000031,
+            1771999.9999999958,
+            1641000.0000000035,
+            1437000.0000000217,
+            1417000.0000000016,
+            1242000.0000000764,
+            1280999.9999999767,
+            1261999.9999999853,
+            1391999.9999999488,
+            1245000.0000000517,
+            1292999.9999999886,
+            1273999.9999999974,
+            1283999.9999999518,
+            1255999.9999999239,
+            1238000.0000000724,
+            1419999.999999977,
+            1234000.0000000685,
+            1249000.0000000556,
+            1268999.9999999646,
+            1219999.9999999988,
+            1282000.0000000054,
+            1231000.0000000931,
+            1235999.9999999038,
+            1246999.9999999981,
+            1280000.000000059
+          ],
+          "final": [
+            1679999.9999999038,
+            1881000.0000000217,
+            1731999.9999999558,
+            1789000.0000000405,
+            1527000.000000056,
+            1975999.9999999779,
+            1482999.999999901,
+            1551999.999999998,
+            1322999.999999963,
+            1403000.000000043,
+            1292000.0000000708,
+            1346999.9999998761,
+            1317999.9999999304,
+            1334000.0000000573,
+            1255000.000000006,
+            1280000.000000059,
+            1364999.9999999495,
+            1284000.0000000629,
+            1315999.999999984,
+            1314000.0000000373,
+            1271999.99999994,
+            1315999.999999984,
+            1306000.0000000293,
+            1310999.999999951,
+            1334999.999999975,
+            1314999.999999955,
+            1251000.000000002,
+            1242000.0000000764,
+            1323000.000000074,
+            1333999.9999999464,
+            1327999.9999999958
+          ]
+        },
+        "median_wall_ns": {
+          "baseline": 1446828,
+          "final": 1488001
+        },
+        "ratio_to_baseline": {
+          "baseline": 1.0,
+          "final": 1.0284574254852685
+        },
+        "output_sha256": {
+          "final": "84320496e81087abd117d5e209e880e42caead81eca32b232d24f51fdf5f4ac6",
+          "baseline": "84320496e81087abd117d5e209e880e42caead81eca32b232d24f51fdf5f4ac6"
+        },
+        "all_checked": true
+      }
+    ],
+    "whole_summary": {
+      "sum_of_12_case_medians_ns": {
+        "baseline": 23571518,
+        "final": 23596126
+      },
+      "change_percent": 0.10439717968100393,
+      "conclusion": "Effectively equal within process startup noise; not an online speedup prediction."
+    }
+  },
+  "measured_experimental_to_final_binary_equivalence": [
+    {
+      "compiler": "GCC",
+      "final_binary_sha256": "7ef5ec4ddde8e6b9dcbd29c073d607672832855256ff56dafb32d09bc18fd29a",
+      "measured_candidate_binary_sha256": "7ef5ec4ddde8e6b9dcbd29c073d607672832855256ff56dafb32d09bc18fd29a",
+      "identical": true,
+      "command": [
+        "g++",
+        "-std=c++23",
+        "-O2",
+        "-DNDEBUG",
+        "-DGENERAL_MATCHING_SOURCE=\"/home/reinsirk/Atcoder_Env/Graph/General_Matching.cpp\"",
+        "/tmp/sirkit-general-matching-opt3-20261117/kernel_bench.cpp",
+        "-o",
+        "/tmp/sirkit-general-matching-opt3-20261117/root-GCC"
+      ]
+    },
+    {
+      "compiler": "Clang",
+      "final_binary_sha256": "076ff157c95e21097b10d44035fcb140e03c55c56dc11ad7a07409cf6f172b9a",
+      "measured_candidate_binary_sha256": "076ff157c95e21097b10d44035fcb140e03c55c56dc11ad7a07409cf6f172b9a",
+      "identical": true,
+      "command": [
+        "clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-DNDEBUG",
+        "-DGENERAL_MATCHING_SOURCE=\"/home/reinsirk/Atcoder_Env/Graph/General_Matching.cpp\"",
+        "/tmp/sirkit-general-matching-opt3-20261117/kernel_bench.cpp",
+        "-o",
+        "/tmp/sirkit-general-matching-opt3-20261117/root-Clang"
+      ]
+    }
+  ],
+  "builds": {
+    "gcc": [
+      {
+        "name": "baseline",
+        "source": "/tmp/sirkit-general-matching-opt3-20261117/baseline-library.cpp",
+        "source_sha256": "e2817948526efec07c2b95ded4cb05ec4fd857f15757b8860614927f1c38eec2",
+        "command": [
+          "g++",
+          "-std=c++23",
+          "-O2",
+          "-DNDEBUG",
+          "-DGENERAL_MATCHING_SOURCE=\"/tmp/sirkit-general-matching-opt3-20261117/baseline-library.cpp\"",
+          "/tmp/sirkit-general-matching-opt3-20261117/kernel_bench.cpp",
+          "-o",
+          "/tmp/sirkit-general-matching-opt3-20261117/bench-deferred/baseline"
+        ]
+      },
+      {
+        "name": "deferred",
+        "source": "/tmp/sirkit-general-matching-opt3-review-20261117/greedy-deferred-same-order.cpp",
+        "source_sha256": "067e7c643150596f481ce8b3195eb89cc24f852891bdedf8c54db231aaf53d8f",
+        "command": [
+          "g++",
+          "-std=c++23",
+          "-O2",
+          "-DNDEBUG",
+          "-DGENERAL_MATCHING_SOURCE=\"/tmp/sirkit-general-matching-opt3-review-20261117/greedy-deferred-same-order.cpp\"",
+          "/tmp/sirkit-general-matching-opt3-20261117/kernel_bench.cpp",
+          "-o",
+          "/tmp/sirkit-general-matching-opt3-20261117/bench-deferred/deferred"
+        ]
+      }
+    ],
+    "clang": [
+      {
+        "name": "baseline",
+        "source": "/tmp/sirkit-general-matching-opt3-20261117/baseline-library.cpp",
+        "source_sha256": "e2817948526efec07c2b95ded4cb05ec4fd857f15757b8860614927f1c38eec2",
+        "command": [
+          "clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-DNDEBUG",
+          "-DGENERAL_MATCHING_SOURCE=\"/tmp/sirkit-general-matching-opt3-20261117/baseline-library.cpp\"",
+          "/tmp/sirkit-general-matching-opt3-20261117/kernel_bench.cpp",
+          "-o",
+          "/tmp/sirkit-general-matching-opt3-20261117/bench-deferred-clang/baseline"
+        ]
+      },
+      {
+        "name": "deferred",
+        "source": "/tmp/sirkit-general-matching-opt3-review-20261117/greedy-deferred-same-order.cpp",
+        "source_sha256": "067e7c643150596f481ce8b3195eb89cc24f852891bdedf8c54db231aaf53d8f",
+        "command": [
+          "clang++",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-std=c++23",
+          "-O2",
+          "-DNDEBUG",
+          "-DGENERAL_MATCHING_SOURCE=\"/tmp/sirkit-general-matching-opt3-review-20261117/greedy-deferred-same-order.cpp\"",
+          "/tmp/sirkit-general-matching-opt3-20261117/kernel_bench.cpp",
+          "-o",
+          "/tmp/sirkit-general-matching-opt3-20261117/bench-deferred-clang/deferred"
+        ]
+      }
+    ],
+    "whole": [
+      {
+        "name": "baseline",
+        "source_sha256": "19a19815fb04af301ba564f7f92710a503267543e5db23646a2280de9dc41107",
+        "command": [
+          "g++",
+          "-std=c++23",
+          "-O2",
+          "-DNDEBUG",
+          "/tmp/sirkit-general-matching-opt3-20261117/whole/baseline.cpp",
+          "-o",
+          "/tmp/sirkit-general-matching-opt3-20261117/whole/baseline"
+        ]
+      },
+      {
+        "name": "final",
+        "source_sha256": "1c6eaf5e28903d01bebf71979819be432bef421e6745e8838501d273d91b1d78",
+        "command": [
+          "g++",
+          "-std=c++23",
+          "-O2",
+          "-DNDEBUG",
+          "/tmp/sirkit-general-matching-opt3-20261117/whole/final.cpp",
+          "-o",
+          "/tmp/sirkit-general-matching-opt3-20261117/whole/final"
+        ]
+      }
+    ]
+  },
+  "correctness": [
+    {
+      "name": "gpp-checked",
+      "compile": [
+        "g++",
+        "-std=c++23",
+        "-O2",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/general_matching_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit-general-matching-opt3-20261117/gpp-checked"
+      ],
+      "returncode": 0,
+      "stdout": "GeneralMatching independent checks=1616926\n",
+      "log_path": "/tmp/sirkit-general-matching-opt3-20261117/gpp-checked.log",
+      "runtime_seconds": 0.38902870499441633,
+      "environment": {}
+    },
+    {
+      "name": "gpp-skip",
+      "compile": [
+        "g++",
+        "-std=c++23",
+        "-O2",
+        "-DSKIP_RUNTIME_CHECKS",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/general_matching_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit-general-matching-opt3-20261117/gpp-skip"
+      ],
+      "returncode": 0,
+      "stdout": "GeneralMatching independent checks=1616919\n",
+      "log_path": "/tmp/sirkit-general-matching-opt3-20261117/gpp-skip.log",
+      "runtime_seconds": 0.3938590789985028,
+      "environment": {}
+    },
+    {
+      "name": "gpp-allocation",
+      "compile": [
+        "g++",
+        "-std=c++23",
+        "-O2",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/general_matching_allocation_test.cpp",
+        "-o",
+        "/tmp/sirkit-general-matching-opt3-20261117/gpp-allocation"
+      ],
+      "returncode": 0,
+      "stdout": "GeneralMatching allocation failures=27\nlive allocation delta=0\n",
+      "log_path": "/tmp/sirkit-general-matching-opt3-20261117/gpp-allocation.log",
+      "runtime_seconds": 0.0029348180032684468,
+      "environment": {}
+    },
+    {
+      "name": "clangpp-checked",
+      "compile": [
+        "clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/general_matching_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit-general-matching-opt3-20261117/clangpp-checked"
+      ],
+      "returncode": 0,
+      "stdout": "GeneralMatching independent checks=1616926\n",
+      "log_path": "/tmp/sirkit-general-matching-opt3-20261117/clangpp-checked.log",
+      "runtime_seconds": 0.3026608920044964,
+      "environment": {}
+    },
+    {
+      "name": "clangpp-skip",
+      "compile": [
+        "clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "-DSKIP_RUNTIME_CHECKS",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/general_matching_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit-general-matching-opt3-20261117/clangpp-skip"
+      ],
+      "returncode": 0,
+      "stdout": "GeneralMatching independent checks=1616919\n",
+      "log_path": "/tmp/sirkit-general-matching-opt3-20261117/clangpp-skip.log",
+      "runtime_seconds": 0.298092777004058,
+      "environment": {}
+    },
+    {
+      "name": "clangpp-allocation",
+      "compile": [
+        "clang++",
+        "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+        "-std=c++23",
+        "-O2",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/general_matching_allocation_test.cpp",
+        "-o",
+        "/tmp/sirkit-general-matching-opt3-20261117/clangpp-allocation"
+      ],
+      "returncode": 0,
+      "stdout": "GeneralMatching allocation failures=27\nlive allocation delta=0\n",
+      "log_path": "/tmp/sirkit-general-matching-opt3-20261117/clangpp-allocation.log",
+      "runtime_seconds": 0.0027297269989503548,
+      "environment": {}
+    },
+    {
+      "name": "asan-ubsan",
+      "compile": [
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O1",
+        "-g",
+        "-fsanitize=address,undefined",
+        "-fno-omit-frame-pointer",
+        "/home/reinsirk/Atcoder_Env/Verify/current/tests/general_matching_reference_test.cpp",
+        "-o",
+        "/tmp/sirkit-general-matching-opt3-20261117/asan-ubsan"
+      ],
+      "returncode": 0,
+      "stdout": "GeneralMatching independent checks=1616926\n",
+      "log_path": "/tmp/sirkit-general-matching-opt3-20261117/asan-ubsan.log",
+      "runtime_seconds": 1.1956910980006796,
+      "environment": {
+        "ASAN_OPTIONS": "detect_leaks=0"
+      }
+    }
+  ],
+  "official": {
+    "gcc": {
+      "status": "PASS",
+      "counts": {
+        "selected": 1,
+        "completed": 1,
+        "passed": 1,
+        "failed": 0,
+        "unavailable": 0,
+        "case_expected": 12,
+        "case_completed": 12,
+        "case_passed": 12,
+        "case_failed": 0
+      },
+      "compiler": {
+        "command": [
+          "g++"
+        ],
+        "version": "g++ (GCC) 15.3.0",
+        "flags": [
+          "-std=c++23",
+          "-O2",
+          "-DSKIP_RUNTIME_CHECKS=",
+          "-DNDEBUG="
+        ]
+      },
+      "official": {
+        "repository": "https://github.com/yosupo06/library-checker-problems.git",
+        "revision": "73876f1cbcf082d2b22722924b924d3d65a2f00e",
+        "license_url": "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/LICENSE"
+      },
+      "performance_scope": "whole_program_wall_time_including_process_start_io_and_runner_wait; checker excluded; not a kernel benchmark, baseline comparison, or online judge result",
+      "external_result_sha256": "7ad4ed97c177ca97547a8f6539fddb8b001594b26c33ad075fe3bf8dc6bd70a7"
+    },
+    "clang": {
+      "status": "PASS",
+      "counts": {
+        "selected": 1,
+        "completed": 1,
+        "passed": 1,
+        "failed": 0,
+        "unavailable": 0,
+        "case_expected": 12,
+        "case_completed": 12,
+        "case_passed": 12,
+        "case_failed": 0
+      },
+      "compiler": {
+        "command": [
+          "/tmp/sirkit-general-matching-opt-20261117/clang23"
+        ],
+        "version": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "flags": [
+          "-std=c++23",
+          "-O2",
+          "-DSKIP_RUNTIME_CHECKS=",
+          "-DNDEBUG="
+        ]
+      },
+      "official": {
+        "repository": "https://github.com/yosupo06/library-checker-problems.git",
+        "revision": "73876f1cbcf082d2b22722924b924d3d65a2f00e",
+        "license_url": "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/LICENSE"
+      },
+      "performance_scope": "whole_program_wall_time_including_process_start_io_and_runner_wait; checker excluded; not a kernel benchmark, baseline comparison, or online judge result",
+      "external_result_sha256": "2ddc5ad9e66a9d6b286fe2bd78b48eae3b713c54c40e52ff6145ca6c9f4b6bd5"
+    }
+  },
+  "samples": {
+    "gcc": {
+      "results": [
+        {
+          "id": "general_matching",
+          "compiler": "g++",
+          "skip_runtime_checks": false,
+          "standard_fallback": false,
+          "submission_sha256": "1c6eaf5e28903d01bebf71979819be432bef421e6745e8838501d273d91b1d78",
+          "tested_source_sha256": "a45d1f061ee9ab6fb8818f0e540fb7c801d7f8e7ad657664bea17ffa9d1033f9",
+          "command": [
+            "g++",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "/tmp/atcoder_verify_sm8nz8ef/general_matching_checked.cpp"
+          ],
+          "compile_ok": true,
+          "diagnostics": "",
+          "samples": [
+            {
+              "passed": true,
+              "returncode": 0,
+              "stdout": "3\n0 1\n2 5\n3 4\n",
+              "stderr": ""
+            },
+            {
+              "passed": true,
+              "returncode": 0,
+              "stdout": "2\n0 1\n2 3\n",
+              "stderr": ""
+            },
+            {
+              "passed": true,
+              "returncode": 0,
+              "stdout": "0\n",
+              "stderr": ""
+            }
+          ],
+          "passed": true
+        },
+        {
+          "id": "general_matching",
+          "compiler": "g++",
+          "skip_runtime_checks": true,
+          "standard_fallback": false,
+          "submission_sha256": "1c6eaf5e28903d01bebf71979819be432bef421e6745e8838501d273d91b1d78",
+          "tested_source_sha256": "1c6eaf5e28903d01bebf71979819be432bef421e6745e8838501d273d91b1d78",
+          "command": [
+            "g++",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "/home/reinsirk/Atcoder_Env/Verify/current/submissions/general_matching.cpp"
+          ],
+          "compile_ok": true,
+          "diagnostics": "",
+          "samples": [
+            {
+              "passed": true,
+              "returncode": 0,
+              "stdout": "3\n0 1\n2 5\n3 4\n",
+              "stderr": ""
+            },
+            {
+              "passed": true,
+              "returncode": 0,
+              "stdout": "2\n0 1\n2 3\n",
+              "stderr": ""
+            },
+            {
+              "passed": true,
+              "returncode": 0,
+              "stdout": "0\n",
+              "stderr": ""
+            }
+          ],
+          "passed": true
+        }
+      ]
+    },
+    "clang": {
+      "results": [
+        {
+          "id": "general_matching",
+          "compiler": "/tmp/sirkit-general-matching-opt-20261117/clang23",
+          "skip_runtime_checks": false,
+          "standard_fallback": false,
+          "submission_sha256": "1c6eaf5e28903d01bebf71979819be432bef421e6745e8838501d273d91b1d78",
+          "tested_source_sha256": "a45d1f061ee9ab6fb8818f0e540fb7c801d7f8e7ad657664bea17ffa9d1033f9",
+          "command": [
+            "/tmp/sirkit-general-matching-opt-20261117/clang23",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "/tmp/atcoder_verify_ls4d7jzu/general_matching_checked.cpp"
+          ],
+          "compile_ok": true,
+          "diagnostics": "",
+          "samples": [
+            {
+              "passed": true,
+              "returncode": 0,
+              "stdout": "3\n0 1\n2 5\n3 4\n",
+              "stderr": ""
+            },
+            {
+              "passed": true,
+              "returncode": 0,
+              "stdout": "2\n0 1\n2 3\n",
+              "stderr": ""
+            },
+            {
+              "passed": true,
+              "returncode": 0,
+              "stdout": "0\n",
+              "stderr": ""
+            }
+          ],
+          "passed": true
+        },
+        {
+          "id": "general_matching",
+          "compiler": "/tmp/sirkit-general-matching-opt-20261117/clang23",
+          "skip_runtime_checks": true,
+          "standard_fallback": false,
+          "submission_sha256": "1c6eaf5e28903d01bebf71979819be432bef421e6745e8838501d273d91b1d78",
+          "tested_source_sha256": "1c6eaf5e28903d01bebf71979819be432bef421e6745e8838501d273d91b1d78",
+          "command": [
+            "/tmp/sirkit-general-matching-opt-20261117/clang23",
+            "-std=c++23",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+            "/home/reinsirk/Atcoder_Env/Verify/current/submissions/general_matching.cpp"
+          ],
+          "compile_ok": true,
+          "diagnostics": "",
+          "samples": [
+            {
+              "passed": true,
+              "returncode": 0,
+              "stdout": "3\n0 1\n2 5\n3 4\n",
+              "stderr": ""
+            },
+            {
+              "passed": true,
+              "returncode": 0,
+              "stdout": "2\n0 1\n2 3\n",
+              "stderr": ""
+            },
+            {
+              "passed": true,
+              "returncode": 0,
+              "stdout": "0\n",
+              "stderr": ""
+            }
+          ],
+          "passed": true
+        }
+      ]
+    }
+  },
+  "variant_checks": {
+    "snapshot_id": "6c6d3d3e1642daaf4f727846a4266187bceaa6033ab4d67381dbe35b2e0c0908",
+    "counts": {
+      "LOCAL_SAMPLE_PASS": 10
+    },
+    "results": [
+      {
+        "cache_key": "f43fccddded3336ddea8fc5402864045bdab5d00e6c4f1e99f2e4191f8ee046f",
+        "cached": false,
+        "id": "general_matching",
+        "kind": "program",
+        "profile": "Variants/GCC",
+        "setting": "default",
+        "status": "LOCAL_SAMPLE_PASS"
+      },
+      {
+        "cache_key": "617dae5c48fe5420a5e9a007ed2e0077faa9dc5a4de19734bb240cafaec3d66a",
+        "cached": false,
+        "id": "general_matching",
+        "kind": "program",
+        "profile": "Fast/GCC",
+        "setting": "default",
+        "status": "LOCAL_SAMPLE_PASS"
+      },
+      {
+        "cache_key": "760f45b298483d33770aa66835091d2710f9755e1227aa288a730e85fd52e935",
+        "cached": false,
+        "id": "general_matching",
+        "kind": "program",
+        "profile": "Variants/Clang",
+        "setting": "default",
+        "status": "LOCAL_SAMPLE_PASS"
+      },
+      {
+        "cache_key": "eff3a49ab9815baafab38d5c62739a00408e4bcc53034f88cc7fb2ee5b15bea9",
+        "cached": false,
+        "id": "general_matching",
+        "kind": "program",
+        "profile": "Fast/Clang",
+        "setting": "default",
+        "status": "LOCAL_SAMPLE_PASS"
+      },
+      {
+        "cache_key": "e5bca9768671275940774a2e0c4501c5668e835ec64a09f947396c67e19269d0",
+        "cached": false,
+        "id": "example:general_matching_example",
+        "kind": "example_baseline",
+        "profile": "Normal/GCC",
+        "setting": "default",
+        "status": "LOCAL_SAMPLE_PASS"
+      },
+      {
+        "cache_key": "0784ade2e2c360197bf58bb87ebe8fd546c40ab5fe30f5230620a686473ae3e1",
+        "cached": false,
+        "id": "example:general_matching_example",
+        "kind": "example",
+        "profile": "Variants/GCC",
+        "setting": "default",
+        "status": "LOCAL_SAMPLE_PASS"
+      },
+      {
+        "cache_key": "a8eb0d604bdc37fe88d56d9b183ff052149b72ef33eb0b2e5151d973000ae12a",
+        "cached": false,
+        "id": "example:general_matching_example",
+        "kind": "example_baseline",
+        "profile": "Normal/Clang",
+        "setting": "default",
+        "status": "LOCAL_SAMPLE_PASS"
+      },
+      {
+        "cache_key": "00a913d67084e37a6e901ea0afa1e854ccdaebc559e1f8a07409859173e9eea4",
+        "cached": false,
+        "id": "example:general_matching_example",
+        "kind": "example",
+        "profile": "Variants/Clang",
+        "setting": "default",
+        "status": "LOCAL_SAMPLE_PASS"
+      },
+      {
+        "cache_key": "7ec0d3fe558b2c59650a82e0ea028bbab24128c1820bec90ffd403828e81d39a",
+        "cached": false,
+        "id": "example:general_matching_example",
+        "kind": "example",
+        "profile": "Fast/GCC",
+        "setting": "default",
+        "status": "LOCAL_SAMPLE_PASS"
+      },
+      {
+        "cache_key": "90a09621542a05e0ccdb0de3bb3408989c5128c43268b1677907353430ac7fb1",
+        "cached": false,
+        "id": "example:general_matching_example",
+        "kind": "example",
+        "profile": "Fast/Clang",
+        "setting": "default",
+        "status": "LOCAL_SAMPLE_PASS"
+      }
+    ],
+    "workspace_snapshot_drift": {}
+  },
+  "rejected": {
+    "description": "Fused input-edge greedy and bound-immediate greedy alter tie order and increase augment work on other inputs; rejected despite clique gains.",
+    "gcc_measurements": [
+      {
+        "case": {
+          "name": "clique-499",
+          "path": "/tmp/sirkit-general-matching-opt-20261117/custom/clique-499.in",
+          "n": 499,
+          "m": 124251,
+          "optimum": 249,
+          "sha256": "bcd2d1cde28cbb2cf85628f4dc05558769125a15cc1d5aeb85c8418406ace435"
+        },
+        "reps": 67,
+        "ns_per_solve": {
+          "baseline": [
+            415245.2686567164,
+            390331.9552238806,
+            422274.0298507463,
+            393341.89552238805,
+            406457.25373134325
+          ],
+          "fused": [
+            220965.53731343284,
+            202566.14925373133,
+            216585.79104477612,
+            205158.4328358209,
+            197714.67164179104
+          ],
+          "early": [
+            200600.8805970149,
+            202027.38805970148,
+            203042.92537313432,
+            201961.92537313432,
+            205713.37313432837
+          ]
+        },
+        "medians_ns": {
+          "baseline": 406457.25373134325,
+          "fused": 205158.4328358209,
+          "early": 202027.38805970148
+        },
+        "ratios_to_baseline": {
+          "baseline": 1.0,
+          "fused": 0.5047478694313691,
+          "early": 0.4970446122072061
+        }
+      },
+      {
+        "case": {
+          "name": "clique-500",
+          "path": "/tmp/sirkit-general-matching-opt-20261117/custom/clique-500.in",
+          "n": 500,
+          "m": 124750,
+          "optimum": 250,
+          "sha256": "b8a37e6285e59747093803ea55fc8e8689abcf430aeb030f73d7d8703f08a11d"
+        },
+        "reps": 55,
+        "ns_per_solve": {
+          "baseline": [
+            439598.4727272727,
+            384292.36363636365,
+            404237.85454545455,
+            422577.2727272727,
+            435101.56363636366
+          ],
+          "fused": [
+            209539.36363636365,
+            205766.41818181818,
+            199267.23636363636,
+            210035.65454545454,
+            275563.63636363635
+          ],
+          "early": [
+            201261.70909090908,
+            205342.36363636365,
+            206961.81818181818,
+            210629.56363636363,
+            204422.9818181818
+          ]
+        },
+        "medians_ns": {
+          "baseline": 422577.2727272727,
+          "fused": 209539.36363636365,
+          "early": 205342.36363636365
+        },
+        "ratios_to_baseline": {
+          "baseline": 1.0,
+          "fused": 0.4958604666171868,
+          "early": 0.48592855529381396
+        }
+      },
+      {
+        "case": {
+          "name": "triangles-498",
+          "path": "/tmp/sirkit-general-matching-opt-20261117/custom/triangles-498.in",
+          "n": 498,
+          "m": 498,
+          "optimum": 166,
+          "sha256": "60303d4f909f5ef25c8c9e6bf38189556c1501daeb76717bc51130b3f28fd950"
+        },
+        "reps": 2799,
+        "ns_per_solve": {
+          "baseline": [
+            8603.619506966774,
+            6690.386923901393,
+            8905.8996070025,
+            7584.56841729189,
+            7743.0539478385135
+          ],
+          "fused": [
+            7976.704537334763,
+            6201.706680957484,
+            8105.584137191854,
+            6974.364058592354,
+            6381.960342979635
+          ],
+          "early": [
+            8061.44587352626,
+            8066.046802429439,
+            7127.116470167917,
+            6581.710253662022,
+            7806.116470167917
+          ]
+        },
+        "medians_ns": {
+          "baseline": 7743.0539478385135,
+          "fused": 6974.364058592354,
+          "early": 7806.116470167917
+        },
+        "ratios_to_baseline": {
+          "baseline": 1.0,
+          "fused": 0.9007252313590375,
+          "early": 1.008144399193681
+        }
+      },
+      {
+        "case": {
+          "name": "triangles-499",
+          "path": "/tmp/sirkit-general-matching-opt-20261117/custom/triangles-499.in",
+          "n": 499,
+          "m": 498,
+          "optimum": 166,
+          "sha256": "3a292fb152d947869fdb85f64b175022ebe22e11250f7441568922235dcf1628"
+        },
+        "reps": 2523,
+        "ns_per_solve": {
+          "baseline": [
+            8073.193816884661,
+            8131.805786761792,
+            7020.401109789933,
+            8518.743955608403,
+            7736.4891002774475
+          ],
+          "fused": [
+            7946.16091954023,
+            7806.667855727309,
+            7111.29924692826,
+            6587.634165675783,
+            6904.525961157352
+          ],
+          "early": [
+            7946.854934601664,
+            7327.790328973444,
+            7724.859690844233,
+            7264.457788347206,
+            6232.455410225922
+          ]
+        },
+        "medians_ns": {
+          "baseline": 8073.193816884661,
+          "fused": 7111.29924692826,
+          "early": 7327.790328973444
+        },
+        "ratios_to_baseline": {
+          "baseline": 1.0,
+          "fused": 0.8808532791638609,
+          "early": 0.9076693183864551
+        }
+      },
+      {
+        "case": {
+          "name": "triangles-3000",
+          "path": "/tmp/sirkit-general-matching-opt-20261117/custom/triangles-3000.in",
+          "n": 3000,
+          "m": 3000,
+          "optimum": 1000,
+          "sha256": "122a72cff68523de29d81837c5e38f9de685908297e3fc93361fd99d1f32b481"
+        },
+        "reps": 498,
+        "ns_per_solve": {
+          "baseline": [
+            45553.36546184739,
+            46803.694779116464,
+            50488.43373493976,
+            47375.12248995984,
+            41932.596385542165
+          ],
+          "fused": [
+            50732.48995983936,
+            44240.36947791165,
+            45038.68674698795,
+            47227.909638554214,
+            47338.1827309237
+          ],
+          "early": [
+            41044.52610441767,
+            41845.576305220886,
+            47660.73493975904,
+            42809.45381526105,
+            48848.36546184739
+          ]
+        },
+        "medians_ns": {
+          "baseline": 46803.694779116464,
+          "fused": 47227.909638554214,
+          "early": 42809.45381526105
+        },
+        "ratios_to_baseline": {
+          "baseline": 1.0,
+          "fused": 1.0090637045096498,
+          "early": 0.9146597083263259
+        }
+      },
+      {
+        "case": {
+          "name": "one-edge-500",
+          "path": "/tmp/sirkit-general-matching-opt-20261117/custom/one-edge-500.in",
+          "n": 500,
+          "m": 1,
+          "optimum": 1,
+          "sha256": "724cf6d93256d33e251f222e00c4b9a9dd1ca5738715b8b8286d54220a3331cf"
+        },
+        "reps": 5000,
+        "ns_per_solve": {
+          "baseline": [
+            2266.424,
+            2246.8776,
+            2170.955,
+            2248.961,
+            2239.9638
+          ],
+          "fused": [
+            2022.06,
+            1969.94,
+            1945.822,
+            1975.2992,
+            1959.366
+          ],
+          "early": [
+            1997.716,
+            1996.18,
+            1952.4684,
+            1979.8296,
+            1982.2424
+          ]
+        },
+        "medians_ns": {
+          "baseline": 2246.8776,
+          "fused": 1969.94,
+          "early": 1982.2424
+        },
+        "ratios_to_baseline": {
+          "baseline": 1.0,
+          "fused": 0.8767455779522659,
+          "early": 0.8822209095858182
+        }
+      },
+      {
+        "case": {
+          "name": "one-edge-10000",
+          "path": "/tmp/sirkit-general-matching-opt-20261117/custom/one-edge-10000.in",
+          "n": 10000,
+          "m": 1,
+          "optimum": 1,
+          "sha256": "f7df2d0cfee12cf70c8e237f879db7b060a092d9aa290ec86b28ab7d10ac09f1"
+        },
+        "reps": 371,
+        "ns_per_solve": {
+          "baseline": [
+            61410.188679245286,
+            57053.49056603773,
+            61796.02425876011,
+            58296.4204851752,
+            57862.00808625337
+          ],
+          "fused": [
+            51442.74932614555,
+            50998.94070080863,
+            55361.67924528302,
+            50567.35579514825,
+            51265.76819407008
+          ],
+          "early": [
+            51560.622641509435,
+            57538.142857142855,
+            52664.61994609165,
+            50828.32884097035,
+            50877.88948787062
+          ]
+        },
+        "medians_ns": {
+          "baseline": 58296.4204851752,
+          "fused": 51265.76819407008,
+          "early": 51560.622641509435
+        },
+        "ratios_to_baseline": {
+          "baseline": 1.0,
+          "fused": 0.8793982163468679,
+          "early": 0.8844560645815521
+        }
+      },
+      {
+        "case": {
+          "name": "flower-pendant-500",
+          "path": "/tmp/sirkit-general-matching-opt-20261117/custom/flower-pendant-500.in",
+          "n": 500,
+          "m": 748,
+          "optimum": 250,
+          "sha256": "774b27387f17a9929b89007449996b9cb383368024aafce1603114faf6a40f06"
+        },
+        "reps": 668,
+        "ns_per_solve": {
+          "baseline": [
+            45924.71856287425,
+            46873.39221556886,
+            47928.12125748503,
+            37325.476047904194,
+            37271.97754491018
+          ],
+          "fused": [
+            35663.35628742515,
+            37403.86826347305,
+            36932.74401197605,
+            38353.61976047904,
+            49937.017964071856
+          ],
+          "early": [
+            41616.69760479042,
+            43460.799401197604,
+            43242.39520958084,
+            37176.350299401194,
+            41490.293413173655
+          ]
+        },
+        "medians_ns": {
+          "baseline": 45924.71856287425,
+          "fused": 37403.86826347305,
+          "early": 41616.69760479042
+        },
+        "ratios_to_baseline": {
+          "baseline": 1.0,
+          "fused": 0.8144604786693348,
+          "early": 0.9061938517448759
+        }
+      },
+      {
+        "case": {
+          "name": "flower-pendant-1026",
+          "path": "/tmp/sirkit-general-matching-opt-20261117/custom/flower-pendant-1026.in",
+          "n": 1026,
+          "m": 1537,
+          "optimum": 513,
+          "sha256": "6dd7b982371638d5190f6aea912f729eb1530d1524c8bc350c8e1d6574cca6fd"
+        },
+        "reps": 384,
+        "ns_per_solve": {
+          "baseline": [
+            161992.640625,
+            154895.30208333334,
+            155457.22395833334,
+            153263.20572916666,
+            158583.54947916666
+          ],
+          "fused": [
+            123087.3515625,
+            135345.5078125,
+            128113.5,
+            180485.421875,
+            123152.42447916667
+          ],
+          "early": [
+            144805.375,
+            150608.97395833334,
+            123754.90364583333,
+            152947.72135416666,
+            126918.15885416667
+          ]
+        },
+        "medians_ns": {
+          "baseline": 155457.22395833334,
+          "fused": 128113.5,
+          "early": 144805.375
+        },
+        "ratios_to_baseline": {
+          "baseline": 1.0,
+          "fused": 0.8241077303319002,
+          "early": 0.9314805147865736
+        }
+      },
+      {
+        "case": {
+          "name": "flower-pendant-2050",
+          "path": "/tmp/sirkit-general-matching-opt-20261117/custom/flower-pendant-2050.in",
+          "n": 2050,
+          "m": 3073,
+          "optimum": 1025,
+          "sha256": "9da2179313882d9fa10b9f7d2d933d5d4db4171ec7bd433a5097c2b41816f2ee"
+        },
+        "reps": 122,
+        "ns_per_solve": {
+          "baseline": [
+            568964.5409836066,
+            508599.7950819672,
+            513900.7786885246,
+            588909.2704918033,
+            485842.91803278687
+          ],
+          "fused": [
+            565779.9016393443,
+            517526.2704918033,
+            430333.131147541,
+            559462.4098360656,
+            527100.6885245901
+          ],
+          "early": [
+            498424.12295081967,
+            553726.024590164,
+            574693.344262295,
+            514817.4426229508,
+            546418.6393442623
+          ]
+        },
+        "medians_ns": {
+          "baseline": 513900.7786885246,
+          "fused": 527100.6885245901,
+          "early": 546418.6393442623
+        },
+        "ratios_to_baseline": {
+          "baseline": 1.0,
+          "fused": 1.0256857167442939,
+          "early": 1.063276535090535
+        }
+      },
+      {
+        "case": {
+          "name": "planted-random-500",
+          "path": "/tmp/sirkit-general-matching-opt-20261117/custom/planted-random-500.in",
+          "n": 500,
+          "m": 3946,
+          "optimum": 250,
+          "sha256": "d826d0a603fe75f8e0853d4bf68e9ad85c6ab69f2df0c377b54e3588543c57c2"
+        },
+        "reps": 825,
+        "ns_per_solve": {
+          "baseline": [
+            44661.16121212121,
+            45360.752727272724,
+            47231.24363636364,
+            50845.635151515155,
+            43508.33090909091
+          ],
+          "fused": [
+            43556.58181818182,
+            46769.79151515151,
+            41896.25575757576,
+            46303.975757575754,
+            40580.80848484849
+          ],
+          "early": [
+            47551.36,
+            44381.13696969697,
+            43268.16,
+            41672.156363636364,
+            84328.20363636364
+          ]
+        },
+        "medians_ns": {
+          "baseline": 45360.752727272724,
+          "fused": 43556.58181818182,
+          "early": 44381.13696969697
+        },
+        "ratios_to_baseline": {
+          "baseline": 1.0,
+          "fused": 0.9602261690863396,
+          "early": 0.9784038910582987
+        }
+      },
+      {
+        "case": {
+          "name": "planted-random-499",
+          "path": "/tmp/sirkit-general-matching-opt-20261117/custom/planted-random-499.in",
+          "n": 499,
+          "m": 3982,
+          "optimum": 249,
+          "sha256": "4b8d668e6c16f2d36abcb9a82af55d6430db0f015797bb0c71bef7736b69512f"
+        },
+        "reps": 809,
+        "ns_per_solve": {
+          "baseline": [
+            25057.599505562423,
+            24423.163164400496,
+            25057.583436341163,
+            23425.310259579728,
+            24992.363411619284
+          ],
+          "fused": [
+            48698.65512978986,
+            46963.05933250927,
+            44906.13720642769,
+            52101.39431396786,
+            46023.12978986403
+          ],
+          "early": [
+            54032.43510506798,
+            43228.22126081582,
+            45160.222496909766,
+            45106.08158220025,
+            41291.5302843016
+          ]
+        },
+        "medians_ns": {
+          "baseline": 24992.363411619284,
+          "fused": 46963.05933250927,
+          "early": 45106.08158220025
+        },
+        "ratios_to_baseline": {
+          "baseline": 1.0,
+          "fused": 1.8790963687201954,
+          "early": 1.8047945622153456
+        }
+      },
+      {
+        "case": {
+          "name": "official-example_00",
+          "path": "/tmp/sirkit-general-matching-lc-cache-20261117/official/73876f1cbcf082d2b22722924b924d3d65a2f00e/graph/general_matching/in/example_00.in",
+          "optimum": 3
+        },
+        "reps": 5000,
+        "ns_per_solve": {
+          "baseline": [
+            116.2004,
+            113.165,
+            111.475,
+            120.9866,
+            114.016
+          ],
+          "fused": [
+            76.7554,
+            97.4422,
+            82.7522,
+            91.4286,
+            76.4942
+          ],
+          "early": [
+            94.6618,
+            99.4466,
+            96.9006,
+            74.3238,
+            77.0796
+          ]
+        },
+        "medians_ns": {
+          "baseline": 114.016,
+          "fused": 82.7522,
+          "early": 94.6618
+        },
+        "ratios_to_baseline": {
+          "baseline": 1.0,
+          "fused": 0.7257946253157451,
+          "early": 0.8302501403311815
+        }
+      },
+      {
+        "case": {
+          "name": "official-example_01",
+          "path": "/tmp/sirkit-general-matching-lc-cache-20261117/official/73876f1cbcf082d2b22722924b924d3d65a2f00e/graph/general_matching/in/example_01.in",
+          "optimum": 1
+        },
+        "reps": 5000,
+        "ns_per_solve": {
+          "baseline": [
+            174.6056,
+            154.6844,
+            134.7392,
+            157.9414,
+            125.6336
+          ],
+          "fused": [
+            145.7626,
+            157.8564,
+            149.2144,
+            150.5706,
+            131.8466
+          ],
+          "early": [
+            144.7956,
+            137.0928,
+            139.1552,
+            179.568,
+            123.187
+          ]
+        },
+        "medians_ns": {
+          "baseline": 154.6844,
+          "fused": 149.2144,
+          "early": 139.1552
+        },
+        "ratios_to_baseline": {
+          "baseline": 1.0,
+          "fused": 0.9646376751631063,
+          "early": 0.8996072002089416
+        }
+      },
+      {
+        "case": {
+          "name": "official-issue610_00",
+          "path": "/tmp/sirkit-general-matching-lc-cache-20261117/official/73876f1cbcf082d2b22722924b924d3d65a2f00e/graph/general_matching/in/issue610_00.in",
+          "optimum": 7
+        },
+        "reps": 5000,
+        "ns_per_solve": {
+          "baseline": [
+            296.1972,
+            256.801,
+            286.9938,
+            318.9626,
+            306.562
+          ],
+          "fused": [
+            266.0664,
+            244.128,
+            319.3736,
+            317.4296,
+            268.5738
+          ],
+          "early": [
+            242.9112,
+            337.83,
+            321.7346,
+            325.5728,
+            305.2688
+          ]
+        },
+        "medians_ns": {
+          "baseline": 296.1972,
+          "fused": 268.5738,
+          "early": 321.7346
+        },
+        "ratios_to_baseline": {
+          "baseline": 1.0,
+          "fused": 0.9067398341375272,
+          "early": 1.0862175604630968
+        }
+      },
+      {
+        "case": {
+          "name": "official-max_random_00",
+          "path": "/tmp/sirkit-general-matching-lc-cache-20261117/official/73876f1cbcf082d2b22722924b924d3d65a2f00e/graph/general_matching/in/max_random_00.in",
+          "optimum": 250
+        },
+        "reps": 350,
+        "ns_per_solve": {
+          "baseline": [
+            79634.82571428572,
+            88997.40571428572,
+            93006.86857142857,
+            88477.64571428571,
+            97539.30571428571
+          ],
+          "fused": [
+            99024.95142857142,
+            87717.94571428571,
+            89052.84,
+            86361.00571428571,
+            83807.69428571429
+          ],
+          "early": [
+            79916.24285714286,
+            77462.39714285714,
+            93042.87428571428,
+            92432.62285714285,
+            91977.20571428571
+          ]
+        },
+        "medians_ns": {
+          "baseline": 88997.40571428572,
+          "fused": 87717.94571428571,
+          "early": 91977.20571428571
+        },
+        "ratios_to_baseline": {
+          "baseline": 1.0,
+          "fused": 0.9856236258828989,
+          "early": 1.0334818748488719
+        }
+      },
+      {
+        "case": {
+          "name": "official-max_random_01",
+          "path": "/tmp/sirkit-general-matching-lc-cache-20261117/official/73876f1cbcf082d2b22722924b924d3d65a2f00e/graph/general_matching/in/max_random_01.in",
+          "optimum": 250
+        },
+        "reps": 129,
+        "ns_per_solve": {
+          "baseline": [
+            188693.37209302327,
+            189138.27131782947,
+            173020.80620155038,
+            227101.62790697673,
+            192502.1085271318
+          ],
+          "fused": [
+            253185.71317829457,
+            241345.42635658916,
+            269861.6511627907,
+            241960.42635658916,
+            254690.77519379844
+          ],
+          "early": [
+            237400.31782945737,
+            238546.16279069768,
+            238895.2480620155,
+            222730.27906976745,
+            256776.50387596898
+          ]
+        },
+        "medians_ns": {
+          "baseline": 189138.27131782947,
+          "fused": 253185.71317829457,
+          "early": 238546.16279069768
+        },
+        "ratios_to_baseline": {
+          "baseline": 1.0,
+          "fused": 1.3386276157343073,
+          "early": 1.2612263035324183
+        }
+      },
+      {
+        "case": {
+          "name": "official-random_00",
+          "path": "/tmp/sirkit-general-matching-lc-cache-20261117/official/73876f1cbcf082d2b22722924b924d3d65a2f00e/graph/general_matching/in/random_00.in",
+          "optimum": 90
+        },
+        "reps": 3018,
+        "ns_per_solve": {
+          "baseline": [
+            5915.59211398277,
+            5440.939363817098,
+            11365.644466534128,
+            5679.84393638171,
+            5374.105036447979
+          ],
+          "fused": [
+            11288.94565937707,
+            14742.092445328031,
+            12539.760768721007,
+            11434.65407554672,
+            11010.228628230616
+          ],
+          "early": [
+            11031.483764082173,
+            9765.56958250497,
+            11063.985420808482,
+            16889.920145791915,
+            12526.486083499007
+          ]
+        },
+        "medians_ns": {
+          "baseline": 5679.84393638171,
+          "fused": 11434.65407554672,
+          "early": 11063.985420808482
+        },
+        "ratios_to_baseline": {
+          "baseline": 1.0,
+          "fused": 2.013198637783533,
+          "early": 1.9479382787155748
+        }
+      },
+      {
+        "case": {
+          "name": "official-random_01",
+          "path": "/tmp/sirkit-general-matching-lc-cache-20261117/official/73876f1cbcf082d2b22722924b924d3d65a2f00e/graph/general_matching/in/random_01.in",
+          "optimum": 99
+        },
+        "reps": 474,
+        "ns_per_solve": {
+          "baseline": [
+            44186.48101265823,
+            45394.398734177215,
+            43807.35654008439,
+            41515.07805907173,
+            42398.16244725738
+          ],
+          "fused": [
+            20288.755274261603,
+            15755.200421940928,
+            20159.143459915613,
+            20758.651898734177,
+            19575.48734177215
+          ],
+          "early": [
+            17040.105485232067,
+            16760.130801687763,
+            13244.664556962025,
+            17387.84388185654,
+            16222.559071729958
+          ]
+        },
+        "medians_ns": {
+          "baseline": 43807.35654008439,
+          "fused": 20159.143459915613,
+          "early": 16760.130801687763
+        },
+        "ratios_to_baseline": {
+          "baseline": 1.0,
+          "fused": 0.4601771266766506,
+          "early": 0.3825871297746987
+        }
+      },
+      {
+        "case": {
+          "name": "official-sparse_00",
+          "path": "/tmp/sirkit-general-matching-lc-cache-20261117/official/73876f1cbcf082d2b22722924b924d3d65a2f00e/graph/general_matching/in/sparse_00.in",
+          "optimum": 228
+        },
+        "reps": 1433,
+        "ns_per_solve": {
+          "baseline": [
+            13867.511514305652,
+            13924.295882763434,
+            13846.131891137475,
+            14588.935101186322,
+            12523.169574319609
+          ],
+          "fused": [
+            24013.88974180042,
+            24685.270062805303,
+            24539.037683182134,
+            24143.05373342638,
+            25093.052337752964
+          ],
+          "early": [
+            24316.623866015354,
+            23522.300069783672,
+            24512.173761339847,
+            24202.549197487788,
+            22630.066992323795
+          ]
+        },
+        "medians_ns": {
+          "baseline": 13867.511514305652,
+          "fused": 24539.037683182134,
+          "early": 24202.549197487788
+        },
+        "ratios_to_baseline": {
+          "baseline": 1.0,
+          "fused": 1.769534329058807,
+          "early": 1.7452698108467815
+        }
+      },
+      {
+        "case": {
+          "name": "official-sparse_01",
+          "path": "/tmp/sirkit-general-matching-lc-cache-20261117/official/73876f1cbcf082d2b22722924b924d3d65a2f00e/graph/general_matching/in/sparse_01.in",
+          "optimum": 113
+        },
+        "reps": 3219,
+        "ns_per_solve": {
+          "baseline": [
+            3625.6337371854615,
+            4153.486486486487,
+            3637.327120223672,
+            3985.84715750233,
+            3766.417210313762
+          ],
+          "fused": [
+            3519.4165890027957,
+            3723.027958993476,
+            3600.748679714197,
+            3310.0155327741536,
+            3428.0587138863
+          ],
+          "early": [
+            3370.071450761106,
+            3859.227089158124,
+            3557.5147561354456,
+            3307.910841876359,
+            3625.542404473439
+          ]
+        },
+        "medians_ns": {
+          "baseline": 3766.417210313762,
+          "fused": 3519.4165890027957,
+          "early": 3557.5147561354456
+        },
+        "ratios_to_baseline": {
+          "baseline": 1.0,
+          "fused": 0.934420270639537,
+          "early": 0.944535498190092
+        }
+      },
+      {
+        "case": {
+          "name": "official-sparse_02",
+          "path": "/tmp/sirkit-general-matching-lc-cache-20261117/official/73876f1cbcf082d2b22722924b924d3d65a2f00e/graph/general_matching/in/sparse_02.in",
+          "optimum": 61
+        },
+        "reps": 3117,
+        "ns_per_solve": {
+          "baseline": [
+            3087.5970484440168,
+            3200.79114533205,
+            2960.5835739493104,
+            3281.177735001604,
+            2998.426050689766
+          ],
+          "fused": [
+            2877.596085980109,
+            2886.034969521976,
+            2738.3798524222007,
+            2754.5976900866217,
+            3020.2062880975295
+          ],
+          "early": [
+            2888.198588386269,
+            2812.6047481552773,
+            2783.868142444658,
+            2918.1286493423163,
+            2767.604427333975
+          ]
+        },
+        "medians_ns": {
+          "baseline": 3087.5970484440168,
+          "fused": 2877.596085980109,
+          "early": 2812.6047481552773
+        },
+        "ratios_to_baseline": {
+          "baseline": 1.0,
+          "fused": 0.9319856318136666,
+          "early": 0.9109364674294786
+        }
+      },
+      {
+        "case": {
+          "name": "official-sparse_03",
+          "path": "/tmp/sirkit-general-matching-lc-cache-20261117/official/73876f1cbcf082d2b22722924b924d3d65a2f00e/graph/general_matching/in/sparse_03.in",
+          "optimum": 245
+        },
+        "reps": 562,
+        "ns_per_solve": {
+          "baseline": [
+            66840.96975088968,
+            68706.1565836299,
+            75977.81494661921,
+            78929.19572953737,
+            73080.55693950178
+          ],
+          "fused": [
+            99490.93238434164,
+            98087.07295373666,
+            101831.92704626334,
+            100135.47864768683,
+            95423.96263345196
+          ],
+          "early": [
+            85640.99110320285,
+            98223.17615658364,
+            90856.42348754448,
+            95086.00533807829,
+            95731.58362989324
+          ]
+        },
+        "medians_ns": {
+          "baseline": 73080.55693950178,
+          "fused": 99490.93238434164,
+          "early": 95086.00533807829
+        },
+        "ratios_to_baseline": {
+          "baseline": 1.0,
+          "fused": 1.3613871671326088,
+          "early": 1.301112215343313
+        }
+      },
+      {
+        "case": {
+          "name": "official-sparse_04",
+          "path": "/tmp/sirkit-general-matching-lc-cache-20261117/official/73876f1cbcf082d2b22722924b924d3d65a2f00e/graph/general_matching/in/sparse_04.in",
+          "optimum": 204
+        },
+        "reps": 2544,
+        "ns_per_solve": {
+          "baseline": [
+            10175.127751572327,
+            6695.0231918239,
+            6330.774764150943,
+            6867.212264150943,
+            7588.93356918239
+          ],
+          "fused": [
+            9949.114386792453,
+            7580.726415094339,
+            7260.014150943396,
+            7363.200864779874,
+            6946.596305031447
+          ],
+          "early": [
+            9735.297955974842,
+            7446.009433962264,
+            8883.579009433963,
+            6502.756289308176,
+            6261.187893081761
+          ]
+        },
+        "medians_ns": {
+          "baseline": 6867.212264150943,
+          "fused": 7363.200864779874,
+          "early": 7446.009433962264
+        },
+        "ratios_to_baseline": {
+          "baseline": 1.0,
+          "fused": 1.0722256108520412,
+          "early": 1.0842841530955476
+        }
+      }
+    ],
+    "correctness": [
+      {
+        "name": "fused",
+        "compile": [
+          "g++",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_GENERAL_MATCHING_SOURCE=\"/tmp/sirkit-general-matching-opt3-review-20261117/greedy-edge-fused.cpp\"",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/general_matching_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit-general-matching-opt3-20261117/reference-fused"
+        ],
+        "compile_returncode": 0,
+        "returncode": 0,
+        "stdout": "GeneralMatching independent checks=1616926\n",
+        "stderr": ""
+      },
+      {
+        "name": "early",
+        "compile": [
+          "g++",
+          "-std=c++23",
+          "-O2",
+          "-DSIRKIT_GENERAL_MATCHING_SOURCE=\"/tmp/sirkit-general-matching-opt3-review-20261117/greedy-edge-early.cpp\"",
+          "/home/reinsirk/Atcoder_Env/Verify/current/tests/general_matching_reference_test.cpp",
+          "-o",
+          "/tmp/sirkit-general-matching-opt3-20261117/reference-early"
+        ],
+        "compile_returncode": 0,
+        "returncode": 0,
+        "stdout": "GeneralMatching independent checks=1616926\n",
+        "stderr": ""
+      }
+    ]
+  },
+  "allocation_regression": "Added greedy_then_augment fixture: tentative greedy adds9-10 then allocation can fail before remaining augment, assert contents/count/maximality/pointers/live allocations unchanged;27 injected failures, live delta0 both compilers.",
+  "sanitizer_note": "ASan+UBSan passed. LSan disabled under ptrace; allocation-failure tests independently check live allocation balance.",
+  "source_match": "Uploaded417626 matches previous frozen reviewed5e2a... after CRLF/LF normalization. Source comment was updated to417626; public importer confirmed correspondence.",
+  "local_evidence_root": "/tmp/sirkit-general-matching-opt3-20261117",
+  "official_revision": "73876f1cbcf082d2b22722924b924d3d65a2f00e",
+  "claude_stage": "Pending separate round3 Fable review"
+}
