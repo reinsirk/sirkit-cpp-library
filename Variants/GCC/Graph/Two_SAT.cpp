@@ -111,6 +111,7 @@ inline std::pair<int, std::vector<int>> two_sat_component_ids_index(
     for (auto& id : ids) id = count - 1 - id;
     return {count, std::move(ids)};
 }
+template<std::uint32_t kCompactEdgeLimit = std::numeric_limits<std::uint32_t>::max()>
 inline std::pair<int, std::vector<int>> two_sat_component_ids(
         int n, const std::vector<std::pair<int, int>>& edges) {
     // 無辺では各頂点が1成分。従来と同じ逆番号で返す。
@@ -120,9 +121,16 @@ inline std::pair<int, std::vector<int>> two_sat_component_ids(
         return {n, std::move(ids)};
     }
     // 辺数が収まる場合だけCSRの添字を32bitにする。
-    if (edges.size() <= std::numeric_limits<std::uint32_t>::max())
+    if (edges.size() <= kCompactEdgeLimit)
         return two_sat_component_ids_index<std::uint32_t>(n, edges);
     return two_sat_component_ids_index<std::size_t>(n, edges);
+}
+
+inline std::size_t TwoSatImplicationCapacity(std::size_t current, std::size_t capacity,
+                                            std::size_t extra, std::size_t maximum) {
+    if (extra > maximum - current) throw std::length_error("two_sat: too many clauses");
+    const auto grown = capacity <= maximum / 2 ? capacity * 2 : maximum;
+    return std::max(current + extra, std::max(std::min(std::size_t{4}, maximum), grown));
 }
 }
 #endif
@@ -143,12 +151,11 @@ class two_sat {
     }
 #endif
     void room(std::size_t extra) {
-        const auto maximum = implications_.max_size(), current = implications_.size();
-        if (extra > maximum - current) throw std::length_error("two_sat: too many clauses");
-        if (implications_.capacity() - current >= extra) return;
-        const auto capacity = implications_.capacity();
-        const auto grown = capacity <= maximum / 2 ? capacity * 2 : maximum;
-        implications_.reserve(std::max(current + extra, std::max(std::min(std::size_t{4}, maximum), grown)));
+        const auto current = implications_.size(), capacity = implications_.capacity();
+        if (capacity - current >= extra) return;
+        const auto target = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::TwoSatImplicationCapacity(
+            current, capacity, extra, implications_.max_size());
+        implications_.reserve(target);
     }
     void invalidate() noexcept {
 #ifndef SKIP_RUNTIME_CHECKS

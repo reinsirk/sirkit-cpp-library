@@ -44,15 +44,19 @@ namespace sirkit {
 #ifndef SIRKIT_ROLLING_HASH_DEFINED
 #define SIRKIT_ROLLING_HASH_DEFINED
 
+namespace detail {
+inline void CheckRollingHashCapacity(std::size_t size, std::size_t maximum) {
+    if (size >= maximum / 2) throw std::length_error("RollingHash: capacity overflow");
+}
+}
+
 class RollingHash {
 public:
     static constexpr std::uint64_t modulus = (std::uint64_t{1} << 61) - 1;
 
     RollingHash(std::string_view s, std::uint64_t base)
         : base_(normalize_base(base)) {
-        if (s.size() >= data_.max_size() / 2) {
-            throw std::length_error("RollingHash: capacity overflow");
-        }
+        detail::CheckRollingHashCapacity(s.size(), data_.max_size());
         data_.resize(s.size() + 1);
         power_data_.resize(s.size() + 1);
         const std::size_t offset = s.size() + 1;
@@ -120,9 +124,7 @@ public:
     }
 
     void assign(std::string_view s) {
-        if (s.size() >= data_.max_size() / 2) {
-            throw std::length_error("RollingHash: capacity overflow");
-        }
+        detail::CheckRollingHashCapacity(s.size(), data_.max_size());
         const std::size_t count = s.size() + 1;
         const bool reuse_powers = power_data_.size() >= count;
         // 両方の確保を先に終え、失敗時も内容と非所有ポインタを保つ。
@@ -392,6 +394,7 @@ public:
         const Entry* const right = other.data_.data() + ol;
         const std::uint64_t start = left[0].value + modulus - right[0].value;
         const std::uint64_t delta = start >= modulus ? start - modulus : start;
+        // lcp_uncheckedが上限未満なら、その次の長さのハッシュは不一致。
         // 一致したprefixの次1byteの差だけを1回の乗算で求める。
         const std::size_t length_next = common + 1;
 #if (defined(__GNUC__) || defined(__clang__)) && defined(__SIZEOF_INT128__) && !defined(SIRKIT_FORCE_STANDARD_ARITHMETIC)
@@ -400,13 +403,11 @@ public:
             (right[length_next].value + modulus - left[length_next].value);
         const std::uint64_t folded = (static_cast<std::uint64_t>(product) & modulus) +
             static_cast<std::uint64_t>(product >> 61);
-        if (folded == modulus) return 0;
         return static_cast<int>((folded >> 60) & 1U) * 2 - 1;
 #else
         const std::uint64_t difference = left[length_next].value + 5 * modulus -
             multiply_raw(delta, powers_[length_next].value) - right[length_next].value;
         const std::uint64_t folded = (difference & modulus) + (difference >> 61);
-        if (folded == modulus) return 0;
         return 1 - static_cast<int>((folded >> 60) & 1U) * 2;
 #endif
     }

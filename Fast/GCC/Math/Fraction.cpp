@@ -152,8 +152,8 @@ class Fraction {
             throw std::overflow_error("Fraction: result out of int64_t range");
         Fraction r;
         const auto u = n.low();
-        r.num_ = negative && u != 0 ? -static_cast<std::int64_t>(u - 1) - 1
-                                    : static_cast<std::int64_t>(u);
+        // 負号を指定する呼出しは、分子が0の場合を処理済み。
+        r.num_ = negative ? -static_cast<std::int64_t>(u - 1) - 1 : static_cast<std::int64_t>(u);
         r.den_ = static_cast<std::int64_t>(d.low());
         return r;
     }

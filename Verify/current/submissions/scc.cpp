@@ -153,6 +153,7 @@ inline std::pair<int, std::vector<int>> directed_component_ids_index(
     for (auto& id : ids) id = count - 1 - id;
     return {count, std::move(ids)};
 }
+template<std::uint32_t kCompactEdgeLimit = std::numeric_limits<std::uint32_t>::max()>
 inline std::pair<int, std::vector<int>> directed_component_ids(
         int n, const std::vector<std::pair<int, int>>& edges) {
     // 無辺では各頂点が1成分。従来と同じ逆番号で返す。
@@ -162,9 +163,15 @@ inline std::pair<int, std::vector<int>> directed_component_ids(
         return {n, std::move(ids)};
     }
     // 辺数が収まる場合だけCSRの添字を32bitにする。
-    if (edges.size() <= std::numeric_limits<std::uint32_t>::max())
+    if (edges.size() <= kCompactEdgeLimit)
         return directed_component_ids_index<std::uint32_t>(n, edges);
     return directed_component_ids_index<std::size_t>(n, edges);
+}
+
+inline int SccVertexCount(std::size_t vertices) {
+    if (vertices > static_cast<std::size_t>(std::numeric_limits<int>::max()))
+        throw std::length_error("SCC: too many vertices");
+    return static_cast<int>(vertices);
 }
 }
 #endif
@@ -189,10 +196,8 @@ public:
     explicit scc_graph(int n) : n_(n) {
         if (n < 0) throw std::length_error("SCC: negative size");
     }
-    explicit scc_graph(const Graph& g) {
-        if (g.size() > static_cast<std::size_t>(std::numeric_limits<int>::max()))
-            throw std::length_error("SCC: too many vertices");
-        n_ = static_cast<int>(g.size());
+    explicit scc_graph(const Graph& g)
+        : n_(/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::SccVertexCount(g.size())) {
         for (int u = 0; u < n_; ++u) for (int v : g[u]) add_edge(u, v);
         build();
     }

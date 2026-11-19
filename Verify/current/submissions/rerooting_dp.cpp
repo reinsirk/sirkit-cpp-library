@@ -50,6 +50,12 @@
 namespace sirkit {
 #ifndef SIRKIT_REROOTING_DP_DEFINED
 #define SIRKIT_REROOTING_DP_DEFINED
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
+inline void CheckRerootingArcCount(std::size_t edges) {
+    if (edges >= std::numeric_limits<std::size_t>::max() / 2)
+        throw std::length_error("RerootingDP arc count");
+}
+}
 template<class T>
 class RerootingDP {
     static_assert(std::copyable<T> && !std::is_same_v<T, bool> && std::is_same_v<T, std::remove_cv_t<T>> && std::is_nothrow_destructible_v<T>);
@@ -109,8 +115,7 @@ public:
 #ifndef SKIP_RUNTIME_CHECKS
         if (u == v) throw std::invalid_argument("RerootingDP self loop");
 #endif
-        if (edges_.size() >= std::numeric_limits<std::size_t>::max() / 2)
-            throw std::length_error("RerootingDP arc count");
+        /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::CheckRerootingArcCount(edges_.size());
         const auto id = edges_.size();
         edges_.emplace_back(u,v);
         try { graph_[u].push_back(2 * id); }
@@ -146,8 +151,7 @@ public:
             }
         }
         std::vector<T> answer(n, identity), messages(2 * m, identity), prefix;
-        if (maximum_degree == std::numeric_limits<std::size_t>::max())
-            throw std::length_error("RerootingDP prefix count");
+        // add_edgeが辺数を制限しており、次数は2*m以下。
         prefix.reserve(maximum_degree + 1);
         for (auto it = order.rbegin(); it != order.rend(); ++it) {
             const int v = *it; T aggregate = identity;

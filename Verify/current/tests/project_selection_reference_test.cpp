@@ -57,5 +57,42 @@ template<class Cost>void boundaries(){using Model=TwoVariableSubmodularOpt<Cost>
  Model any(2);any.add_constant(maximum);any.add_any_true_cost({},1);any.add_any_false_cost({},1);any.add_any_true_cost({0,1},1);require(any.solve()==maximum);any.force(0,true);throws<std::overflow_error>([&]{(void)any.solve();});any.clear();any.add_constant(maximum);any.add_any_false_cost({0,1},1);require(any.solve()==maximum);any.force(1,false);throws<std::overflow_error>([&]{(void)any.solve();});
 #endif
  Model dump(2);dump.add_single_cost(0,0,-2);dump.add_single_cost(1,0,1);dump.add_psp_constraint(0,1);require(dump.solve()==-1);std::ostringstream stream;stream<<dump;require(!stream.str().empty());dump.add_constant(3);require(dump.solve()==2);}
-int main(){trials<std::int8_t>(71,150,10);trials<std::int16_t>(72,150,25);trials<std::int32_t>(73,200,35);trials<std::int64_t>(74,300,40);boundaries<std::int8_t>();boundaries<std::int16_t>();boundaries<std::int32_t>();boundaries<std::int64_t>();
+void rejected_small_cost_boundaries() {
+    using Model = TwoVariableSubmodularOpt<std::int8_t>;
+    constexpr auto kMin = std::numeric_limits<std::int8_t>::min();
+    constexpr auto kMax = std::numeric_limits<std::int8_t>::max();
+    constexpr int kTooMany = std::numeric_limits<int>::max();
+    throws<std::length_error>([] { Model invalid(-1); });
+    throws<std::length_error>([] { Model invalid(kTooMany); });
+    Model model(2);
+    throws<std::length_error>([&] { model.init(kTooMany); });
+#ifndef SKIP_RUNTIME_CHECKS
+    throws<std::out_of_range>([&] { model.force(-1, true); });
+    throws<std::invalid_argument>([&] { model.add_submodular_function(0, 1, 0, 0, 0, 1); });
+    throws<std::invalid_argument>([&] { model.add_submodular_function(0, 1, 2, 1, 0, 0); });
+#endif
+    model.add_constant(kMax);
+    throws<std::overflow_error>([&] { model.add_constant(1); });
+    require(model.solve() == kMax);
+    model.clear();
+    model.add_constant(kMin);
+    throws<std::overflow_error>([&] { model.add_constant(-1); });
+    throws<std::overflow_error>([&] { model.add_both_true_profit(0, 1, 1); });
+    require(model.solve() == kMin);
+
+    model.clear();
+    throws<std::overflow_error>([&] { model.add_submodular_function(0, 1, kMin, kMin + 1, kMax, kMin); });
+    model.add_psp_penalty(0, 1, 60);
+    throws<std::overflow_error>([&] { model.add_both_true_profit(0, 1, 100); });
+    throws<std::overflow_error>([&] { model.add_both_false_profit(0, 1, 100); });
+    model.add_psp_penalty(0, 1, 80);
+    throws<std::overflow_error>([&] { model.add_submodular_function(0, 1, 0, 120, 0, 120); });
+    require(model.edge_count() == 2 && model.solve() == 0);
+    model.add_constant(-1);
+    model.force(0, true);
+    model.force(1, false);
+    throws<std::overflow_error>([&] { (void)model.solve(); });
+}
+
+int main(){trials<std::int8_t>(71,150,10);trials<std::int16_t>(72,150,25);trials<std::int32_t>(73,200,35);trials<std::int64_t>(74,300,40);boundaries<std::int8_t>();boundaries<std::int16_t>();boundaries<std::int32_t>();boundaries<std::int64_t>();rejected_small_cost_boundaries();
  TwoVariableSubmodularOpt<std::int64_t> long_path(100000);long_path.add_single_cost(0,0,1);long_path.add_single_cost(99999,0,-1);for(int i=1;i<100000;++i)long_path.add_psp_constraint(i,i-1);require(long_path.solve()==0);long_path.force(99999,true);require(long_path.solve()==0);long_path.force(0,false);throws<std::domain_error>([&]{(void)long_path.solve();});std::cout<<checks<<" independent project selection checks passed\n";}

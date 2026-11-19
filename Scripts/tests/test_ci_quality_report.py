@@ -251,6 +251,93 @@ class QualityTests(unittest.TestCase):
                  "driver_sha256": hashes[self.driver], "command": ["clang++", "-UNDEBUG", "-USKIP_RUNTIME_CHECKS", *flags],
                  "samples": [{"passed": True, "returncode": 0}]}]}
 
+    def with_limits(self, value, *, kernel=False):
+        module = quality.performance_limits
+        configured = []
+        if kernel:
+            for row in value["results"]:
+                row["pattern_id"] = 0
+                configured.append({"scope": "kernel", "library": self.library,
+                    "kernel_id": row["id"], "case": row["pattern"], "size": row["size"],
+                    "pattern": 0, "rounds": row["rounds"], "metric": "kernel_elapsed_ns",
+                    "baseline_median_ns": 100, "limit_ns": 200})
+        else:
+            for row in value["results"]:
+                for case in row["cases"]:
+                    configured.append({"scope": "whole_program", "library": self.library,
+                        "verify_id": row["verify_id"], "case": case["name"],
+                        "input_bytes": case["input_bytes"], "metric": "child_cpu_ns",
+                        "baseline_median_ns": 100, "limit_ns": 10000000})
+        path = self.write("Verify/ci/performance_limits.json", {"format": 1,
+            "baseline": {"fixture": "fixed"},
+            "policy": {"multiplier": 2, "whole_program_minimum_ns": 10000000}, "limits": configured})
+        limits = module.load(path)
+        value["performance_limits"] = limits.metadata
+        gates = []
+        for row in value["results"]:
+            if kernel:
+                entry = limits.kernel(self.library, row["id"], row["pattern"], row["size"], 0, row["rounds"])
+                row["performance_limit"] = limits.evaluate(entry, row["samples_ns"]["current"])
+                gates.append(row["performance_limit"])
+            else:
+                for case in row["cases"]:
+                    entry = limits.whole(self.library, row["verify_id"], case["name"], case["input_bytes"])
+                    case["performance_limit"] = limits.evaluate(entry, case["cpu_samples_ns"]["current"])
+                    gates.append(case["performance_limit"])
+        value["performance_limits_passed"] = all(g["status"] == "PASS" for g in gates)
+        if not value["performance_limits_passed"]:
+            value["status"] = "FAIL"
+        return value
+
+    def test_whole_limits_use_cpu_not_noisy_wall_time(self):
+        value = self.all_performance()
+        for case in value["results"][0]["cases"]:
+            case["samples_ns"]["current"] = [1000000000] * 3
+            case["median_ns"]["current"] = 1000000000
+        report = self.aggregate(self.with_limits(value))
+        data = self.category(report, "performance")
+        self.assertEqual(data["status"], "PASS", report["errors"])
+        self.assertTrue(all(e["performance_limit"]["metric"] == "child_cpu_ns" for e in data["evidence"]))
+        self.assertIn("上限 ms", quality.markdown(report))
+        case = value["results"][0]["cases"][0]
+        case["cpu_samples_ns"]["current"] = [10000001] * 3
+        case["cpu_median_ns"]["current"] = 10000001
+        report = self.aggregate(self.with_limits(value))
+        self.assertEqual(self.category(report, "performance")["status"], "FAIL")
+        self.assertEqual(value["results"][0]["cases"][0]["status"], "PASS")
+        self.assertTrue(value["results"][0]["cases"][0]["correctness_passed"])
+
+    def test_kernel_fixed_limit_boundary_and_tampering(self):
+        self.enterContext(patch.dict(quality.ci_benchmark.SCENARIOS, {"alpha": ("random",)}))
+        value = self.performance()
+        value["results"][0]["samples_ns"]["current"] = [199, 200, 201]
+        value["results"][0]["median_ns"]["current"] = 200
+        value["results"][0]["current_over_base"] = 200 / 101
+        report = self.aggregate(self.with_limits(value, kernel=True))
+        self.assertEqual(self.category(report, "performance")["status"], "PASS", report["errors"])
+        row = value["results"][0]
+        row["samples_ns"]["current"] = [200, 201, 202]
+        row["median_ns"]["current"] = 201
+        row["current_over_base"] = 201 / 101
+        self.with_limits(value, kernel=True)
+        report = self.aggregate(value)
+        self.assertEqual(self.category(report, "performance")["status"], "FAIL", report["errors"])
+        row["performance_limit"]["status"] = "PASS"
+        self.assertTrue(self.aggregate(value)["errors"])
+
+    def test_changed_budget_or_missing_gate_cannot_reuse_pass(self):
+        value = self.with_limits(self.all_performance())
+        del value["results"][0]["cases"][0]["performance_limit"]
+        self.assertTrue(self.aggregate(value)["errors"])
+        value = self.with_limits(self.all_performance())
+        path = self.root / "Verify/ci/performance_limits.json"
+        current = json.loads(path.read_text());current["baseline"]["fixture"] = "changed"
+        self.write("Verify/ci/performance_limits.json", current)
+        self.assertTrue(self.aggregate(value)["errors"])
+
+    def test_coverage_display_does_not_round_missing_path_to_hundred(self):
+        self.assertEqual(quality.coverage_percent({"count": 1000000, "covered": 999999}), "100未満")
+
     def test_missing_reports_and_unmeasured_libraries_never_pass(self):
         report = quality.aggregate(self.root, [])
         self.assertEqual(report["status"], "UNAVAILABLE")
@@ -358,18 +445,220 @@ class QualityTests(unittest.TestCase):
             value = self.instrumented(); mutation(value)
             self.assertEqual(self.aggregate(value)["status"], "FAIL")
 
-    def test_coverage_uses_per_source_metrics_and_missing_data_unavailable(self):
+    def test_coverage_requires_exact_full_metrics_and_missing_data_fails(self):
         value = self.instrumented("coverage")
         report = self.aggregate(value)
-        self.assertEqual(self.category(report, "coverage")["status"], "UNAVAILABLE")
+        self.assertEqual(self.category(report, "coverage")["status"], "FAIL")
+        self.assertEqual(report["input_report_status"], "FAIL")
         path = self.inputs / "one/coverage.json"
         metric = {"count": 2, "covered": 1, "percent": 50}
         path.write_text(json.dumps({"format": 1, "type": "sirkit.source-coverage-union", "files": [
             {"filename": "/old/runner/checkout/" + self.library, "lines": [[1, True], [2, False]],
              "branches": [[1, 1, 1, 5, True, False]], "summary": {"lines": metric, "branches": metric}}]}))
         data = self.category(self.aggregate(value), "coverage")
-        self.assertEqual(data["status"], "PASS")
+        self.assertEqual(data["status"], "FAIL")
         self.assertEqual(data["evidence"][0]["metrics"]["lines"]["percent"], 50)
+
+    def test_full_coverage_and_no_conditions_can_pass_without_rounding(self):
+        value = self.instrumented("coverage")
+        self.report_file(value)
+        path = self.inputs / "one/coverage.json"
+        def measured(line_hit=True, branch_hit=True, branches=True):
+            metric = {"count": 2, "covered": 1 + line_hit, "percent": 100}
+            branch_metric = {"count": 2 if branches else 0,
+                             "covered": 1 + branch_hit if branches else 0, "percent": 100}
+            path.write_text(json.dumps({"format": 1, "type": "sirkit.source-coverage-union", "files": [
+                {"filename": self.library, "lines": [[1, True], [2, line_hit]],
+                 "branches": [[1, 1, 1, 5, True, branch_hit]] if branches else [],
+                 "summary": {"lines": metric, "branches": branch_metric}}]}))
+            return self.aggregate(value)
+        for line_hit, branch_hit in ((False, True), (True, False), (False, False)):
+            report = measured(line_hit, branch_hit)
+            self.assertEqual(self.category(report, "coverage")["status"], "FAIL")
+            self.assertEqual(report["input_report_status"], "FAIL")
+        report = measured()
+        self.assertEqual(self.category(report, "coverage")["status"], "PASS")
+        self.assertEqual(report["input_report_status"], "PASS")
+        self.assertEqual(report["coverage_policy"]["required_percent"], 100)
+        self.assertIn("どちらも100%", quality.markdown(report))
+        self.assertIn("2/2", quality.markdown(report))
+        self.assertEqual(self.category(measured(branches=False), "coverage")["status"], "PASS")
+        for field, setting in (("coverage_complete", False), ("unmapped_sources", [self.library])):
+            value[field] = setting
+            self.assertEqual(self.aggregate(value)["input_report_status"], "FAIL")
+            del value[field]
+
+    def test_coverage_accepts_registered_standalone_test_with_matching_sources(self):
+        value = self.instrumented("coverage")
+        name = "standalone_test.cpp"
+        driver = "Verify/current/tests/" + name
+        registry = quality.ci_instrumented.COVERAGE_TESTS
+        self.write(driver, "int main() {}\n")
+        self.write(registry, {"format": 1, "tests": {name: [self.library]}})
+        value["all_source_hashes"].update({registry: self.hash(registry), driver: self.hash(driver)})
+        value["source_hashes_after"] = deepcopy(value["all_source_hashes"])
+        identifier = "coverage_test_standalone_test"
+        value["selected_ids"] = [identifier]
+        value["results"][0].update(id=identifier, driver=driver, driver_sha256=self.hash(driver),
+                                   coverage_test="assertions")
+        self.write("artifacts/one/coverage.json",
+                   {"format": 1, "type": "sirkit.source-coverage-union", "files": [{
+                       "filename": self.library, "lines": [[1, True]], "branches": [],
+                       "summary": {"lines": {"count": 1, "covered": 1},
+                                   "branches": {"count": 0, "covered": 0}}
+                   }]})
+        report = self.aggregate(value)
+        self.assertEqual(self.category(report, "coverage")["status"], "PASS", report["errors"])
+        self.write(registry, {"format": 1, "tests": {name: ["Graph/B.cpp"]}})
+        self.assertEqual(self.aggregate(value)["input_report_status"], "FAIL")
+
+    def test_coverage_accepts_gcov_lines_only_for_registered_checked_run(self):
+        value = self.instrumented("coverage")
+        name = "standalone_test.cpp"
+        driver = "Verify/current/tests/" + name
+        registry = quality.ci_instrumented.COVERAGE_TESTS
+        self.write(driver, "int main() {}\n")
+        self.write(registry, {"format": 1, "tests": {name: [self.library]}, "gcc_line_tests": [name]})
+        value["all_source_hashes"].update({registry: self.hash(registry), driver: self.hash(driver)})
+        value["source_hashes_after"] = deepcopy(value["all_source_hashes"])
+        identifier = "coverage_test_standalone_test"
+        value["selected_ids"] = [identifier]
+        entry = value["results"][0]
+        entry.update(id=identifier, driver=driver, driver_sha256=self.hash(driver),
+                     coverage_test="assertions", gcc_line_coverage={"version": "13.3.0"})
+        path = "artifacts/one/coverage.json"
+        row = {"filename": self.library, "lines": [[1, True]], "branches": [], "gcov_line_counts": [[1, 12]],
+               "summary": {"lines": {"count": 1, "covered": 1}, "branches": {"count": 0, "covered": 0}}}
+        report = {"format": 1, "type": "sirkit.source-coverage-union", "files": [row]}
+        self.write(path, report)
+        data = self.aggregate(value)
+        self.assertEqual(self.category(data, "coverage")["status"], "PASS", data["errors"])
+        row["gcov_line_counts"] = [[2, 50]]
+        self.write(path, report)
+        self.assertEqual(self.aggregate(value)["input_report_status"], "FAIL")
+        row["gcov_line_counts"] = [[1, 12]]
+        self.write(path, report)
+        entry.pop("gcc_line_coverage")
+        self.assertEqual(self.aggregate(value)["input_report_status"], "FAIL")
+
+    def test_i386_coverage_requires_a_profile_and_the_registered_environment(self):
+        value = self.instrumented("coverage")
+        name = "limits_test.cpp"
+        driver = "Verify/current/tests/" + name
+        registry = quality.ci_instrumented.COVERAGE_TESTS
+        self.write(driver, "int main() {}\n")
+        self.write(registry, {"format": 1, "tests": {name: [self.library]}, "i386_tests": [name]})
+        value["all_source_hashes"].update({registry: self.hash(registry), driver: self.hash(driver)})
+        value["source_hashes_after"] = deepcopy(value["all_source_hashes"])
+        value["tools"] = {"qemu_i386": {"command": "/usr/bin/qemu-i386", "version": "QEMU 8.2"}}
+        identifier = "coverage_test_limits_test"
+        value["selected_ids"] = [identifier]
+        row = value["results"][0]
+        row.update(id=identifier, driver=driver, driver_sha256=self.hash(driver), coverage_test="assertions",
+                   coverage_target="i386", execution_command=["/usr/bin/qemu-i386", "/tmp/entry"])
+        row["command"].extend(["-m32", "-o", "/tmp/entry"])
+        row["samples"][0]["profile_written"] = True
+        self.write("artifacts/one/coverage.json", {
+            "format": 1, "type": "sirkit.source-coverage-union", "files": [{
+                "filename": self.library, "lines": [[1, True]], "branches": [],
+                "summary": {"lines": {"count": 1, "covered": 1}, "branches": {"count": 0, "covered": 0}},
+            }],
+        })
+        report = self.aggregate(value)
+        category = self.category(report, "coverage")
+        self.assertEqual(category["status"], "PASS", report["errors"])
+        self.assertIn("i386", category["evidence"][0]["scope"])
+        for mutation in (
+            lambda v: v["results"][0]["samples"][0].pop("profile_written"),
+            lambda v: v["results"][0]["command"].remove("-m32"),
+            lambda v: v["results"][0].update(execution_command=["/tmp/entry"]),
+            lambda v: v["tools"].pop("qemu_i386"),
+        ):
+            candidate = deepcopy(value)
+            mutation(candidate)
+            self.assertEqual(self.aggregate(candidate)["input_report_status"], "FAIL")
+
+    def test_gcov_unchecked_lines_require_the_matching_registration(self):
+        value = self.instrumented("coverage")
+        name = "unchecked_test.cpp"
+        driver = "Verify/current/tests/" + name
+        registry = quality.ci_instrumented.COVERAGE_TESTS
+        self.write(driver, "int main() {}\n")
+        self.write(registry, {"format": 1, "tests": {name: [self.library]}, "gcc_unchecked_line_tests": [name]})
+        value["all_source_hashes"].update({registry: self.hash(registry), driver: self.hash(driver)})
+        value["source_hashes_after"] = deepcopy(value["all_source_hashes"])
+        identifier = "coverage_test_unchecked_test"
+        value["selected_ids"] = [identifier]
+        row = value["results"][0]
+        row.update(id=identifier, driver=driver, driver_sha256=self.hash(driver), coverage_test="assertions",
+                   gcc_unchecked_line_coverage={"version": "13.3.0"})
+        self.write("artifacts/one/coverage.json", {
+            "format": 1, "type": "sirkit.source-coverage-union", "files": [{
+                "filename": self.library, "lines": [[1, True]], "branches": [], "gcov_unchecked_line_counts": [[1, 7]],
+                "summary": {"lines": {"count": 1, "covered": 1}, "branches": {"count": 0, "covered": 0}},
+            }],
+        })
+        report = self.aggregate(value)
+        self.assertEqual(self.category(report, "coverage")["status"], "PASS", report["errors"])
+        row["gcc_line_coverage"] = row.pop("gcc_unchecked_line_coverage")
+        self.assertEqual(self.aggregate(value)["input_report_status"], "FAIL")
+
+    def test_clang_unchecked_coverage_requires_two_successful_builds_and_profiles(self):
+        value = self.instrumented("coverage")
+        name = "unchecked_test.cpp"
+        driver = "Verify/current/tests/" + name
+        registry = quality.ci_instrumented.COVERAGE_TESTS
+        self.write(driver, "int main() {}\n")
+        self.write(registry, {"format": 1, "tests": {name: [self.library]}, "clang_unchecked_tests": [name]})
+        value["all_source_hashes"].update({registry: self.hash(registry), driver: self.hash(driver)})
+        value["source_hashes_after"] = deepcopy(value["all_source_hashes"])
+        identifier = "coverage_test_unchecked_test"
+        value["selected_ids"] = [identifier]
+        row = value["results"][0]
+        row.update(id=identifier, driver=driver, driver_sha256=self.hash(driver), coverage_test="assertions")
+        row["clang_unchecked_coverage"] = {
+            "command": [*row["command"], "-DSKIP_RUNTIME_CHECKS"],
+            "samples": [{"index": 0, "returncode": 0, "passed": True, "profile_written": True}],
+        }
+        self.write("artifacts/one/coverage.json", {
+            "format": 1, "type": "sirkit.source-coverage-union", "files": [{
+                "filename": self.library, "lines": [[1, True]], "branches": [],
+                "summary": {"lines": {"count": 1, "covered": 1}, "branches": {"count": 0, "covered": 0}},
+            }],
+        })
+        report = self.aggregate(value)
+        self.assertEqual(self.category(report, "coverage")["status"], "PASS", report["errors"])
+        row["clang_unchecked_coverage"]["samples"][0]["profile_written"] = False
+        self.assertEqual(self.aggregate(value)["input_report_status"], "FAIL")
+
+    def test_coverage_requires_registered_proof_and_raw_counters_for_each_exclusion(self):
+        value = self.instrumented("coverage")
+        policy = quality.ci_instrumented.COVERAGE_EXCLUSIONS
+        proved = {"region": [1, 1, 1, 5], "side": "false", "reason": "常に正の範囲"}
+        self.write(policy, {"format": 1, "files": {
+            self.library: {"sha256": self.hash(self.library), "regions": [proved]}}})
+        value["all_source_hashes"][policy] = self.hash(policy)
+        value["source_hashes_after"] = deepcopy(value["all_source_hashes"])
+        metric = {"count": 1, "covered": 1}
+        row = {"filename": self.library, "lines": [[1, True]],
+               "branches": [[1, 1, 1, 5, True, False]], "exclusions": [proved],
+               "summary": {"lines": metric, "branches": metric}}
+
+        def aggregate(measurement):
+            self.write("artifacts/one/coverage.json",
+                       {"format": 1, "type": "sirkit.source-coverage-union", "files": [measurement]})
+            return self.aggregate(value)
+
+        report = aggregate(row)
+        self.assertEqual(self.category(report, "coverage")["status"], "PASS", report["errors"])
+        for mutation in (lambda m: m.update(exclusions=[]),
+                         lambda m: m["exclusions"][0].update(reason="別の理由"),
+                         lambda m: m["branches"][0].__setitem__(-1, True)):
+            changed = deepcopy(row)
+            mutation(changed)
+            self.assertEqual(aggregate(changed)["input_report_status"], "FAIL")
+        self.write(policy, {"format": 1, "files": {}})
+        self.assertEqual(aggregate(row)["input_report_status"], "FAIL")
 
     def official(self):
         self.entry["problem_url"] = "https://judge.yosupo.jp/problem/aplusb"

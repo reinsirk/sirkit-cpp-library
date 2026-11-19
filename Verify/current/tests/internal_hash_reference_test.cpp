@@ -6,6 +6,7 @@ using namespace sirkit;
 #define SIRKIT_INTERNAL_HASH_SOURCE "../../../Internal/Nyaan_hash_map_min.cpp"
 #endif
 #include SIRKIT_INTERNAL_HASH_SOURCE
+#include "internal_hash_capacity_checks.hpp"
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
@@ -173,6 +174,7 @@ static void owned_values() {
 }
 
 int main() {
+    sirkit_internal_hash_capacity_test::run();
     denominators<std::int8_t, false>(); denominators<std::int8_t, true>();
     denominators<std::uint8_t, false>(); denominators<std::uint8_t, true>();
     denominators<std::int16_t, false>(); denominators<std::int16_t, true>();

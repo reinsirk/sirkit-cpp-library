@@ -31,6 +31,10 @@ struct ResidueHash {
 struct ResidueEqual {
     bool operator()(int x, int y) const noexcept { return x % 10 == y % 10; }
 };
+struct ModuloEqual {
+    int modulus;
+    bool operator()(int x, int y) const noexcept { return x % modulus == y % modulus; }
+};
 struct MoveValue {
     int value;
     MoveValue() noexcept : value(37) {}
@@ -69,6 +73,29 @@ template<class Exception, class Action> void throws(Action action) {
     try { action(); } catch (const Exception&) { caught = true; }
     assert(caught);
 }
+#ifndef SKIP_RUNTIME_CHECKS
+namespace {
+using GenerationSet = sirkit::HashSet<int>;
+struct GenerationField { friend constexpr auto generation_field(GenerationField); };
+template<auto Member> struct GenerationAccess {
+    friend constexpr auto generation_field(GenerationField) { return Member; }
+};
+template struct GenerationAccess<&GenerationSet::generation_>;
+
+void check_wrapped_generation_set() {
+    GenerationSet set;
+    set.rehash(1024);
+    auto& generation = set.*generation_field(GenerationField{});
+    generation = 0;
+    const auto stale_end = set.end();
+    set.rehash(8);
+    generation = std::numeric_limits<std::size_t>::max();
+    set.clear();
+    assert(generation == 0);
+    throws<std::out_of_range>([&] { (void)*stale_end; });
+}
+}
+#endif
 int main() {
     static_assert(std::bidirectional_iterator<HashSet<int>::iterator>);
     static_assert(std::is_const_v<std::remove_reference_t<decltype(*HashSet<int>{}.begin())>>);
@@ -128,6 +155,13 @@ int main() {
     equivalent.insert(43);
     assert(equivalent.contains(3));
 
+    // 比較器の設定が異なると片方向の包含だけでは等値といえない。
+    const HashSet<int, WrapHash, ModuloEqual> exact({1, 2}, WrapHash{}, ModuloEqual{10});
+    const HashSet<int, WrapHash, ModuloEqual> modulo({1, 5}, WrapHash{}, ModuloEqual{3});
+    assert(modulo.contains(1) && modulo.contains(2));
+    assert(!exact.contains(5));
+    assert(exact != modulo && modulo != exact);
+
     // 自明なコピーと非自明なムーブを持つキーの再配置・例外。
     HashSet<MoveValue, MoveHash> moves;
     for (int key = 0; key < 100; ++key) moves.emplace(key);
@@ -170,7 +204,11 @@ int main() {
     throws<std::length_error>([&] { capacity.rehash(std::numeric_limits<std::size_t>::max()); });
     assert(capacity.empty());
 #ifndef SKIP_RUNTIME_CHECKS
+    check_wrapped_generation_set();
     HashSet<int> checked{1, 2}, foreign{3};
+    const HashSet<int>::iterator unbound;
+    throws<std::out_of_range>([&] { (void)*unbound; });
+    assert(checked.end() != foreign.end());
     throws<std::out_of_range>([&] { auto it = checked.end(); ++it; });
     throws<std::out_of_range>([&] { auto it = checked.begin(); --it; });
     throws<std::out_of_range>([&] { checked.erase(foreign.begin()); });
@@ -178,6 +216,12 @@ int main() {
     auto stale = checked.begin();
     checked.rehash(1024);
     throws<std::out_of_range>([&] { (void)*stale; });
+    throws<std::out_of_range>([&] { checked.erase(stale); });
+    auto erased = checked.begin();
+    checked.erase(erased, false);
+    throws<std::out_of_range>([&] { (void)*erased; });
 #endif
+    ::sirkit::detail::CheckHashCapacity(8, 8, "test");
+    throws<std::length_error>([] { ::sirkit::detail::CheckHashCapacity(16, 8, "test"); });
     std::cout << "PASS wraparound/tombstone/cv-key copies, custom equality, nontrivial move/hash exception, alignment, iterator/capacity limits\n";
 }

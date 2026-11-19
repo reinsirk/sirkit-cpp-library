@@ -321,14 +321,18 @@ inline bool FloydWarshallRun(std::vector<std::vector<Distance>> &distance,
     return !negative.empty();
 }
 
+inline void CheckFloydVertexCount(std::size_t vertices) {
+    if (vertices > static_cast<std::size_t>(std::numeric_limits<int>::max()))
+        throw std::length_error("FloydWarshall: too many vertices");
+}
+
 template <bool RestorePath, auto UseSimd = false, bool CustomInf = false>
 inline bool FloydWarshallImpl(std::vector<std::vector<std::int64_t>> &distance,
                                      std::vector<std::vector<int>> *next, std::int64_t requested_inf = kInf)
 {
     const std::int64_t inf = CustomInf ? requested_inf : kInf;
     const std::size_t n = distance.size();
-    if (n > static_cast<std::size_t>(std::numeric_limits<int>::max()))
-        throw std::length_error("FloydWarshall: too many vertices");
+    CheckFloydVertexCount(n);
     if constexpr (RestorePath)
         next->assign(n, std::vector<int>(n, -1));
     if (n == 0)
@@ -407,10 +411,8 @@ template <bool RestorePath>
 [[gnu::noinline]] inline bool FloydWarshallVectorized(
     std::vector<std::vector<std::int64_t>> &distance, std::vector<std::vector<int>> *next)
 {
-#if !defined(__AVX2__)
     if (distance.size() >= 64)
         return FloydWarshallFiniteVectorized<RestorePath>(distance, next);
-#endif
     return FloydWarshallImpl<RestorePath, true>(distance, next);
 }
 #endif
@@ -425,10 +427,6 @@ inline bool FloydWarshall(std::vector<std::vector<std::int64_t>> &distances,
 #if (!defined(SIRKIT_DISABLE_SIMD)) && ((defined(__i386__)) || (defined(__x86_64__)))
     constexpr std::size_t threshold = 8;
     if (distances.size() >= threshold && __builtin_cpu_supports("avx2")) {
-#if defined(__AVX2__)
-        if (distances.size() >= 64)
-            return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::FloydWarshallFiniteVectorized<false>(distances, nullptr);
-#endif
         return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::FloydWarshallVectorized<false>(distances, nullptr);
     }
 #endif
@@ -444,10 +442,6 @@ inline bool FloydWarshall(std::vector<std::vector<std::int64_t>> &distances,
 #if (!defined(SIRKIT_DISABLE_SIMD)) && ((defined(__i386__)) || (defined(__x86_64__)))
     constexpr std::size_t threshold = 8;
     if (distances.size() >= threshold && __builtin_cpu_supports("avx2")) {
-#if defined(__AVX2__)
-        if (distances.size() >= 64)
-            return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::FloydWarshallFiniteVectorized<true>(distances, &next);
-#endif
         return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::FloydWarshallVectorized<true>(distances, &next);
     }
 #endif

@@ -236,11 +236,11 @@ template<class Compare>
 bool AngleTrySorted(std::vector<std::pair<std::int64_t, std::int64_t>>& points, Compare less) {
     if (less(points.back(), points.front())) return false;
     unsigned inversions = 0;
-    for (std::size_t tail = points.size() - 1, count = 0; tail > 0 && count < 16; --tail, ++count)
+    for (std::size_t tail = points.size() - 1, count = 0; count < 16; --tail, ++count)
         if (less(points[tail], points[tail - 1]) && ++inversions == 2) return false;
     for (std::size_t sample = 1; sample <= 16; ++sample) {
         const auto at = points.size() - 1 - sample * (points.size() / 64);
-        if (at > 0 && less(points[at], points[at - 1]) && ++inversions == 2) return false;
+        if (less(points[at], points[at - 1]) && ++inversions == 2) return false;
     }
     for (std::size_t sample = 1; sample <= 16; ++sample) {
         const auto at = sample * (points.size() / 17);
@@ -249,7 +249,8 @@ bool AngleTrySorted(std::vector<std::pair<std::int64_t, std::int64_t>>& points, 
     auto next = std::is_sorted_until(points.begin(), points.end(), less);
     if (next == points.end()) return true;
     const auto remaining = static_cast<std::size_t>(points.end() - next);
-    if (remaining <= 16 && std::is_sorted(next, points.end(), less)) {
+    // 末尾16点に2回以上の逆転があれば、冒頭の検査で終了済み。
+    if (remaining <= 16) {
         std::array<std::pair<std::int64_t, std::int64_t>, 16> tail;
         std::copy(next, points.end(), tail.begin());
         auto left = next, output = points.end();

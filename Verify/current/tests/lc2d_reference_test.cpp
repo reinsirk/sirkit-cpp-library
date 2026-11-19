@@ -43,6 +43,12 @@ static ld dot(Point p,ld a,ld b){return p.first*a+p.second*b;}
 static bool member(Point p,const std::vector<Point>& points){return std::find(points.begin(),points.end(),p)!=points.end();}
 static ll rounded(ld x){x=std::clamp(x,-LineContainer2D::kInf,LineContainer2D::kInf);return static_cast<ll>(std::round(x));}
 static ll trunced(ld x){x=std::clamp(x,-LineContainer2D::kInf,LineContainer2D::kInf);return static_cast<ll>(x);}
+static constexpr ll kDefaultIntegerLimit = ll{1} << 60;
+static ll clamped_exact(const Big& value, ll limit) {
+ if (value > limit) return limit;
+ if (value < -limit) return -limit;
+ return value.convert_to<ll>();
+}
 template<class Table>static void extra_exact(const Table&t,const std::vector<Point>&points,ll a,ll b,ld hi,ld lo){
  if constexpr(requires{t.max_with_point(ld{},ld{});t.min_with_point(ld{},ld{});}){
   auto mx=t.max_with_point(ld(a),ld(b)),mn=t.min_with_point(ld(a),ld(b));
@@ -121,12 +127,45 @@ static void boundaries(){
  phase="half integer rounding and clamping";
  for(ld x:{-4.1e18L,-4.1e18L-8,-3.5L,-2.5L,-1.5L,-.5L,0.L,.5L,1.5L,2.5L,3.5L,4.1e18L,4.1e18L+8}){LineContainer2D t;t.add(x,-x);inspect_exact(t,{{x,-x}},1,0);inspect_exact(t,{{x,-x}},0,1);inspect_exact(t,{{x,-x}},-1,0);}
 }
+static void integer_clamp_regression() {
+ phase="integer clamp regression";
+ // 失敗した乱数ケースの最大点と最小点だけを残す。
+ constexpr ll max_x=995985293, max_y=949896778, min_x=-983067609, min_y=-952161404;
+ constexpr ll a=947768221, b=599915709;
+ const Big hi=Big(max_x)*a+Big(max_y)*b, lo=Big(min_x)*a+Big(min_y)*b;
+ require(hi>kDefaultIntegerLimit && lo<-kDefaultIntegerLimit);
+ LineContainer2D defaults;
+ defaults.add(max_x,max_y);defaults.add(min_x,min_y);
+ require(defaults.infinity()==kDefaultIntegerLimit);
+ require(defaults.max_ll(a,b)==clamped_exact(hi,kDefaultIntegerLimit));
+ require(defaults.min_ll(a,b)==clamped_exact(lo,kDefaultIntegerLimit));
+ require(defaults.max_rounded_ll(a,b)==clamped_exact(hi,kDefaultIntegerLimit));
+ require(defaults.min_rounded_ll(a,b)==clamped_exact(lo,kDefaultIntegerLimit));
+
+ // 2のべき乗同士の積はlong doubleの精度にかかわらず表現できる。
+ constexpr ll coordinate=ll{1}<<30, coefficient=ll{1}<<31;
+ const Big exact=Big(coordinate)*coefficient;
+ for (ll limit : {ll{7}, std::numeric_limits<ll>::max()}) {
+  LineContainer2D custom(limit);
+  custom.add(coordinate,0);custom.add(-coordinate,0);
+  require(custom.infinity()==limit);
+  require(custom.max_ll(coefficient,0)==clamped_exact(exact,limit));
+  require(custom.min_ll(coefficient,0)==clamped_exact(-exact,limit));
+  require(custom.max_rounded_ll(coefficient,0)==clamped_exact(exact,limit));
+  require(custom.min_rounded_ll(coefficient,0)==clamped_exact(-exact,limit));
+ }
+}
 static void exact_integer_reference(){
  phase="cpp_int exact bounded integer";std::mt19937_64 rng(137);
+ // 積および和を誤差なく表現できる整数の範囲で比較する。
+ constexpr ll bound=std::numeric_limits<ld>::digits>=61 ? 1000000000 :
+     (ll{1}<<((std::numeric_limits<ld>::digits-1)/2));
+ const auto coordinate=[&]{return static_cast<ll>(rng()%static_cast<std::uint64_t>(2*bound+1))-bound;};
  for(int trial=0;trial<30;++trial){LineContainer2D t;std::vector<std::pair<ll,ll>> points;
-  for(int i=0;i<200;++i){ll x=static_cast<ll>(rng()%2000000001)-1000000000,y=static_cast<ll>(rng()%2000000001)-1000000000;t.add(x,y);points.emplace_back(x,y);}
-  for(int q=0;q<200;++q){ll a=static_cast<ll>(rng()%2000000001)-1000000000,b=static_cast<ll>(rng()%2000000001)-1000000000;Big hi,lo;bool first=true;for(auto[x,y]:points){Big v=Big(x)*a+Big(y)*b;if(first){hi=lo=v;first=false;}else{hi=std::max(hi,v);lo=std::min(lo,v);}}
-   require(t.max_rounded_ll(a,b)==hi.convert_to<ll>());require(t.min_rounded_ll(a,b)==lo.convert_to<ll>());
+  for(int i=0;i<200;++i){ll x=coordinate(),y=coordinate();t.add(x,y);points.emplace_back(x,y);}
+  for(int q=0;q<200;++q){ll a=coordinate(),b=coordinate();Big hi,lo;bool first=true;for(auto[x,y]:points){Big v=Big(x)*a+Big(y)*b;if(first){hi=lo=v;first=false;}else{hi=std::max(hi,v);lo=std::min(lo,v);}}
+   require(t.max_rounded_ll(a,b)==clamped_exact(hi,kDefaultIntegerLimit));
+   require(t.min_rounded_ll(a,b)==clamped_exact(lo,kDefaultIntegerLimit));
   }
  }
 }
@@ -138,6 +177,18 @@ static void check_high(const LineContainer2D& t,const std::vector<Point>& points
   if(abs(target)>High(std::numeric_limits<ld>::max())){require(std::isinf(value)&&std::signbit(value)==(target<0));}
   else {require(std::isfinite(value)&&abs(High(value)-target)<=tol);if(target==0 && scale>High(std::numeric_limits<ld>::max()))require(value==0);}
   auto selected=minimum?t.argmin(a,b):t.argmax(a,b);require(member(selected,points));High selected_value=High(a)*High(selected.first)+High(b)*High(selected.second);require(abs(selected_value-target)<=tol);
+ }
+}
+static void separate_hint_intervals(){
+ phase="separate hint intervals";
+ // 交点が(2*y+1)/8に並ぶ包絡を、中央付近と両端から引く。
+ for(ld sign:{-1.L,1.L}){
+  LineContainer2D t;std::vector<Point> points;
+  for(int y=-5;y<=5;++y){
+   const ld x=sign*y*y/8;
+   t.add(x,y);points.emplace_back(x,y);
+  }
+  for(ld a:{-1.L,1.L})for(ld b:{-3.L,-.5L,.5L,3.L})check_high(t,points,a,b);
  }
 }
 static void unit_boundary_cases(){
@@ -160,17 +211,31 @@ static void high_precision_boundaries(){
  phase="integer central-hull overflow cancellation";
  const ld central_scale=std::numeric_limits<ld>::max()/16;const ll ia=std::numeric_limits<ll>::max()-1,ib=ia/2;
  for(int direction:{-1,1}){LineContainer2D ct;std::vector<Point> cp{{direction*central_scale,-direction*2*central_scale},{-direction*3*central_scale,4*central_scale},{-direction*3*central_scale,-4*central_scale}};for(auto[x,y]:cp)ct.add(x,y);check_high(ct,cp,ld(ia),ld(ib));
-  if(direction==1){require(ct.max_ld(ia,ib)==0);require(ct.max_ll(ia,ib)==0);require(ct.max_rounded_ll(ia,ib)==0);require(ct.min_ll(ia,ib)==-LineContainer2D::INTEGER_LIMIT);}
-  else{require(ct.min_ld(ia,ib)==0);require(ct.min_ll(ia,ib)==0);require(ct.min_rounded_ll(ia,ib)==0);require(ct.max_ll(ia,ib)==LineContainer2D::INTEGER_LIMIT);}
+  if(direction==1){require(ct.max_ld(ia,ib)==0);require(ct.max_ll(ia,ib)==0);require(ct.max_rounded_ll(ia,ib)==0);require(ct.min_ll(ia,ib)==-kDefaultIntegerLimit);}
+  else{require(ct.min_ld(ia,ib)==0);require(ct.min_ll(ia,ib)==0);require(ct.min_rounded_ll(ia,ib)==0);require(ct.max_ll(ia,ib)==kDefaultIntegerLimit);}
  }
  phase="huge two-point intersections";
  const ld largest=std::numeric_limits<ld>::max()/4;
  for(const auto& ps2:std::vector<std::vector<Point>>{{{largest,largest},{-largest,-largest}},{{largest,-largest},{-largest,largest}},{{largest,0},{-largest,0},{0,largest},{0,-largest}}}){LineContainer2D ht;for(auto[x,y]:ps2)ht.add(x,y);for(auto[a,b]:std::vector<Point>{{1,1},{1,-1},{-1,1},{-1,-1},{0,1},{1,0}})check_high(ht,ps2,a,b);}
+ // 交点計算で差の片方・両方、または判定用の和だけが溢れる場合。
+ const ld wide=3*largest;
+ const std::vector<std::vector<Point>> overflow_intersections{
+  {{wide,-1},{-wide,1}},
+  {{1,-wide},{-1,wide}},
+  {{wide,-wide},{-wide,wide}},
+  {{wide/2,-wide/2},{-wide/2,wide/2}},
+ };
+ for(const auto& points:overflow_intersections){
+  LineContainer2D t;for(auto[x,y]:points)t.add(x,y);
+  for(ld a:{-.5L,.5L})for(ld b:{-.25L,.25L})check_high(t,points,a,b);
+ }
  phase="ratio overflow";LineContainer2D one;one.add(1,2);const ld tiny=std::numeric_limits<ld>::denorm_min(),large=std::numeric_limits<ld>::max();
  throws<std::overflow_error>([&]{(void)one.max_ld(tiny,large);});throws<std::overflow_error>([&]{(void)one.min_ld(tiny,large);});throws<std::overflow_error>([&]{(void)one.argmax(tiny,large);});throws<std::overflow_error>([&]{(void)one.argmin_optional(tiny,large);});extra_ratio(one,tiny,large);
 }
 static void validation(){
  phase="empty, nonfinite, finite coefficients";LineContainer2D t;inspect_exact(t,{},0,0);extra_empty(t);const ld inf=std::numeric_limits<ld>::infinity(),nan=std::numeric_limits<ld>::quiet_NaN();
+ const LineContainer2D empty_copy(t);
+ require(empty_copy.empty() && !empty_copy.max_optional(1, 2) && !empty_copy.min_optional(1, 2));
 #ifndef SKIP_RUNTIME_CHECKS
  throws<std::out_of_range>([&]{(void)t.max_ld(0,0);});throws<std::out_of_range>([&]{(void)t.min_ld(0.L,0.L);});throws<std::out_of_range>([&]{(void)t.argmax(0,0);});throws<std::out_of_range>([&]{(void)t.max_ll(0,0);});
  throws<std::invalid_argument>([&]{t.add(inf,0);});throws<std::invalid_argument>([&]{t.add(0,nan);});require(t.empty());throws<std::invalid_argument>([&]{(void)t.max_optional(inf,0);});
@@ -180,4 +245,4 @@ static void validation(){
 #endif
  require(t.max_ld(std::uint32_t{2},std::uint32_t{3})==8);require(t.min_ld(std::int8_t{-2},std::int16_t{-3})==-8);require(t.max_ld(true,false)==1);
 }
-int main(){validation();random_exact();boundaries();exact_integer_reference();unit_boundary_cases();high_precision_boundaries();std::cout<<"PASS "<<checks<<" independent LineContainer2D checks; "<<queries<<" exact-direction queries; ld_digits="<<std::numeric_limits<ld>::digits<<'\n';}
+int main(){validation();random_exact();boundaries();integer_clamp_regression();exact_integer_reference();separate_hint_intervals();unit_boundary_cases();high_precision_boundaries();std::cout<<"PASS "<<checks<<" independent LineContainer2D checks; "<<queries<<" exact-direction queries; ld_digits="<<std::numeric_limits<ld>::digits<<'\n';}

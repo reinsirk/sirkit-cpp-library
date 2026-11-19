@@ -2,9 +2,11 @@
 namespace sirkit {}
 using namespace sirkit;
 #include <algorithm>
+#include <array>
 #include <cstdint>
 #include <deque>
 #include <iostream>
+#include <limits>
 #include <numeric>
 #include <random>
 #include <set>
@@ -20,7 +22,36 @@ static void require(bool b){++checks;if(!b)throw std::runtime_error("topological
 static std::vector<int> slow_lex(const Graph& g){std::vector<int> order;std::vector<bool> used(g.size());while(order.size()<g.size()){int next=-1;for(int v=0;v<static_cast<int>(g.size());++v)if(!used[v]){bool blocked=false;for(int u=0;u<static_cast<int>(g.size());++u)if(!used[u])for(int to:g[u])if(to==v)blocked=true;if(!blocked){next=v;break;}}if(next<0)break;used[next]=true;order.push_back(next);}return order;}
 static TopologicalResult reference(const Graph& g,bool lex){std::vector<std::size_t>degree(g.size());for(const auto& es:g)for(int to:es)++degree[to];std::deque<int>fifo;std::set<int>ready;for(int i=0;i<static_cast<int>(g.size());++i)if(!degree[i]){fifo.push_back(i);ready.insert(i);}TopologicalResult r;r.position.assign(g.size(),-1);while(lex?!ready.empty():!fifo.empty()){if((lex?ready.size():fifo.size())>1)r.unique=false;int v;if(lex){v=*ready.begin();ready.erase(ready.begin());}else{v=fifo.front();fifo.pop_front();}r.position[v]=static_cast<int>(r.order.size());r.order.push_back(v);for(int to:g[v])if(--degree[to]==0){if(lex)ready.insert(to);else fifo.push_back(to);}}r.acyclic=r.order.size()==g.size();r.unique=r.unique&&r.acyclic;return r;}
 static void test(const Graph& g,bool slow=false){++cases;const auto before=g;for(bool lex:{false,true}){auto expected=reference(g,lex);auto actual=TopologicalSortDetails(g,lex);require(actual.order==expected.order);require(actual.position==expected.position);require(actual.acyclic==expected.acyclic);require(actual.unique==expected.unique);auto order=lex?TopologicalSortLexicographical(g):TopologicalSort(g);require(order==(expected.acyclic?expected.order:std::vector<int>{}));if(lex&&slow)require(expected.order==slow_lex(g));}require(IsDAG(g)==reference(g,false).acyclic);require(g==before);}
+static void test_scalar_ready_mask() {
+ std::array<std::uint32_t, 64> indegree;
+ indegree.fill(7);
+ for (unsigned zero : {0U, 31U, 32U, 63U}) {
+  indegree[zero] = 0;
+  require(sirkit::detail::TopologicalReadyMask(indegree.data()) == (std::uint64_t{1} << zero));
+  indegree[zero] = 7;
+ }
+}
+static void test_capacity() {
+ using sirkit::detail::CheckTopologicalVertexCount;
+ using sirkit::detail::AddTopologicalDegree;
+ constexpr auto kVertexLimit = static_cast<std::size_t>(std::numeric_limits<int>::max());
+ CheckTopologicalVertexCount(kVertexLimit);
+ bool rejected = false;
+ try { CheckTopologicalVertexCount(kVertexLimit + 1); }
+ catch (const std::length_error&) { rejected = true; }
+ require(rejected);
+ constexpr auto kDegreeLimit = std::numeric_limits<std::uint32_t>::max();
+ auto degree = kDegreeLimit - 1;
+ AddTopologicalDegree(degree);
+ require(degree == kDegreeLimit);
+ rejected = false;
+ try { AddTopologicalDegree(degree); }
+ catch (const std::length_error&) { rejected = true; }
+ require(rejected && degree == kDegreeLimit);
+}
 int main(){try{
+ test_scalar_ready_mask();
+ test_capacity();
  for(int n=0;n<=4;++n)for(std::uint32_t mask=0;mask<(std::uint32_t{1}<<(n*n));++mask){Graph g(n);for(int i=0;i<n;++i)for(int j=0;j<n;++j)if((mask>>(i*n+j))&1)g[i].push_back(j);test(g,true);}
  std::mt19937 rng(0x81FA22);for(int trial=0;trial<1000;++trial){int n=1+static_cast<int>(rng()%40);Graph g(n);int edges=static_cast<int>(rng()%(n*6+1));for(int e=0;e<edges;++e)g[rng()%n].push_back(static_cast<int>(rng()%n));test(g,true);}
  for(int n:{1,2,31,32,63,64,65,255,256,257,4096,200000,262145})for(int kind=0;kind<7;++kind){Graph g(n);if(kind==1)for(int i=1;i<n;++i)g[i-1].push_back(i);if(kind==2)for(int i=n-1;i>0;--i)g[i].push_back(i-1);if(kind==3)for(int i=1;i<n;++i)g[0].push_back(i);if(kind==4)for(int i=1;i<n;++i)g[i].push_back(0);if(kind==5)for(int i=1;i<n;++i){g[i-1].push_back(i);g[i-1].push_back(i);}if(kind==6)for(int i=0;i<n;++i)g[i].push_back((i+1)%n);test(g);}

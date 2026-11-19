@@ -108,12 +108,13 @@ struct ChainCycleCheck {
 
 #ifndef SIRKIT_CHAIN_SIZE_DEFINED
 #define SIRKIT_CHAIN_SIZE_DEFINED
-inline std::size_t chain_size(const std::shared_ptr<Node>& head) {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
+template<std::size_t Maximum>
+inline std::size_t chain_size_bounded(const Node* current) {
     std::size_t size = 0;
-    const Node* current = head.get();
 #ifdef SKIP_RUNTIME_CHECKS
-    constexpr auto max = std::numeric_limits<std::size_t>::max();
-    while (current != nullptr && size <= max - 2) {
+    static_assert(Maximum >= 2);
+    while (current != nullptr && size <= Maximum - 2) {
         current = current->n.get();
         if (current == nullptr) return size + 1;
         current = current->n.get();
@@ -121,10 +122,10 @@ inline std::size_t chain_size(const std::shared_ptr<Node>& head) {
     }
 #endif
 #ifndef SKIP_RUNTIME_CHECKS
-    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::ChainCycleCheck cycle_check(current);
+    ChainCycleCheck cycle_check(current);
 #endif
     while (current != nullptr) {
-        if (size == std::numeric_limits<std::size_t>::max()) {
+        if (size == Maximum) {
             throw std::length_error("chain size is not representable");
         }
         ++size;
@@ -134,6 +135,12 @@ inline std::size_t chain_size(const std::shared_ptr<Node>& head) {
 #endif
     }
     return size;
+}
+}
+
+inline std::size_t chain_size(const std::shared_ptr<Node>& head) {
+    return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::chain_size_bounded<
+        std::numeric_limits<std::size_t>::max()>(head.get());
 }
 #endif
 

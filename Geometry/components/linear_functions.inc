@@ -82,27 +82,43 @@ template<class T, class C> LineIntersection intersection(const Line<T, C>& l, co
 }
 
 template<class T, class C> SegmentIntersection intersection(const Segment<T, C>& s, const Segment<T, C>& t, Epsilon eps = {}) {
+    const std::array endpoints{s.a, s.b, t.a, t.b};
+    std::array<int, 4> sides;
+    std::array<bool, 4> contacts;
+    if constexpr (::sirkit::detail::kExactFloatingSegment<C>) {
+        sides = ::sirkit::detail::floating_segment_sides(s, t, eps);
+        contacts = ::sirkit::detail::floating_segment_contacts(s, t, sides, eps);
+    } else {
+        contacts = {on_segment(s.a, t, eps), on_segment(s.b, t, eps),
+                    on_segment(t.a, s, eps), on_segment(t.b, s, eps)};
+    }
     std::array<Point<T, C>, 4> candidates;
     std::size_t n = 0;
-    if (on_segment(s.a, t, eps)) candidates[n++] = s.a;
-    if (on_segment(s.b, t, eps)) candidates[n++] = s.b;
-    if (on_segment(t.a, s, eps)) candidates[n++] = t.a;
-    if (on_segment(t.b, s, eps)) candidates[n++] = t.b;
+    for (std::size_t i = 0; i < endpoints.size(); ++i)
+        if (contacts[i]) candidates[n++] = endpoints[i];
     if (n != 0) {
         auto ends = std::minmax_element(candidates.begin(), candidates.begin() + static_cast<std::ptrdiff_t>(n));
         if (*ends.first == *ends.second) return {SegmentIntersectionKind::Point, {to_real(*ends.first)}};
         return {SegmentIntersectionKind::Overlap, {to_real(*ends.first), to_real(*ends.second)}};
     }
-    int a = orientation(s.a, s.b, t.a, eps), b = orientation(s.a, s.b, t.b, eps);
-    int c = orientation(t.a, t.b, s.a, eps), d = orientation(t.a, t.b, s.b, eps);
-    if (!(a * b < 0 && c * d < 0)) return {};
-    C ux = C(s.b.x) - C(s.a.x), uy = C(s.b.y) - C(s.a.y);
-    C vx = C(t.b.x) - C(t.a.x), vy = C(t.b.y) - C(t.a.y);
-    C wx = C(t.a.x) - C(s.a.x), wy = C(t.a.y) - C(s.a.y);
-    C determinant = ux * vy - uy * vx;
-    if (determinant == 0) return {};
-    long double ratio = static_cast<long double>(wx * vy - wy * vx) / static_cast<long double>(determinant);
-    return {SegmentIntersectionKind::Point, {{static_cast<long double>(s.a.x) + ratio * static_cast<long double>(ux), static_cast<long double>(s.a.y) + ratio * static_cast<long double>(uy)}}};
+    if constexpr (::sirkit::detail::kExactFloatingSegment<C>) {
+        if (!::sirkit::detail::segment_proper_crossing(sides)) return {};
+        return {SegmentIntersectionKind::Point, {::sirkit::detail::floating_segment_crossing(s, t)}};
+    } else {
+        sides = {orientation(t.a, t.b, s.a, eps), orientation(t.a, t.b, s.b, eps),
+                 orientation(s.a, s.b, t.a, eps), orientation(s.a, s.b, t.b, eps)};
+        if (!::sirkit::detail::segment_proper_crossing(sides)) return {};
+        C ux = C(s.b.x) - C(s.a.x), uy = C(s.b.y) - C(s.a.y);
+        C vx = C(t.b.x) - C(t.a.x), vy = C(t.b.y) - C(t.a.y);
+        C wx = C(t.a.x) - C(s.a.x), wy = C(t.a.y) - C(s.a.y);
+        C determinant = ux * vy - uy * vx;
+        if constexpr (!std::numeric_limits<C>::is_integer) {
+            if (determinant == 0) return {};
+        }
+        long double ratio = static_cast<long double>(wx * vy - wy * vx) / static_cast<long double>(determinant);
+        return {SegmentIntersectionKind::Point, {{static_cast<long double>(s.a.x) + ratio * static_cast<long double>(ux),
+                                                  static_cast<long double>(s.a.y) + ratio * static_cast<long double>(uy)}}};
+    }
 }
 }
 #endif

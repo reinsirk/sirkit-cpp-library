@@ -101,4 +101,22 @@ static void random_cases(){
  }
  RollbackUnionFind balanced(1024);Model bm(1024);for(int gap=1;gap<1024;gap*=2)for(int i=0;i<1024;i+=gap*2)merges(balanced,bm,i,i+gap);inspect(balanced,bm,false);balanced.rollback(500);bm.rollback(500);inspect(balanced,bm,false);balanced.rollback(0);bm.rollback(0);inspect(balanced,bm,false);
 }
-int main(){boundary();explicit_cases();noop_runs();random_cases();std::printf("PASS checks=%zu states=%zu operations=%zu\n",checks,states,operations);}
+int main(){
+ const auto int_limit=static_cast<std::size_t>(std::numeric_limits<int>::max());
+ ::sirkit::detail::CheckRollbackHistorySize(int_limit-1);
+ bool rejected=false;
+ try { ::sirkit::detail::CheckRollbackHistorySize(int_limit); }
+ catch(const std::length_error&) { rejected=true; }
+ require(rejected);
+#if !defined(SIRKIT_DISABLE_SIMD) && defined(__clang__) && (defined(__x86_64__) || defined(__i386__))
+ if (__builtin_cpu_supports("avx2")) {
+     std::array<int,10> parents{-3,0,1,-1,-1,-1,-1,-1,-2,8};
+     std::array<int,10> leaders{};
+     ::sirkit::detail::GatherGroupRoots<true>(parents.data(), leaders.data(), parents.size(), parents.data());
+     const std::array expected{0,0,0,3,4,5,6,7,8,8};
+     require(leaders==expected);
+     require(parents[0]==-3&&parents[2]==0&&parents[8]==-2&&parents[9]==8);
+ }
+#endif
+ boundary();explicit_cases();noop_runs();random_cases();std::printf("PASS checks=%zu states=%zu operations=%zu\n",checks,states,operations);
+}

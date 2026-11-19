@@ -103,6 +103,12 @@ class InternalHashMap {
         return std::bit_floor(std::min({keys_.max_size(), values_.max_size(), used_.max_size()}));
     }
 
+    static std::size_t doubled_capacity(std::size_t capacity, std::size_t maximum) {
+        if (capacity > maximum / 2)
+            throw std::length_error("InternalHashMap: capacity overflow");
+        return capacity * 2;
+    }
+
     static std::uint32_t occupied8(const std::uint8_t* flags) noexcept {
         std::uint64_t word;
         std::memcpy(&word, flags, sizeof(word));
@@ -216,11 +222,8 @@ public:
     void reserve(std::size_t n) {
         if (n <= keys_.size() - keys_.size() / Denominator) return;
         std::size_t capacity = std::max(std::size_t{8}, keys_.size());
-        while (n > capacity - capacity / Denominator) {
-            if (capacity > max_capacity() / 2)
-                throw std::length_error("InternalHashMap: capacity overflow");
-            capacity *= 2;
-        }
+        while (n > capacity - capacity / Denominator)
+            capacity = doubled_capacity(capacity, max_capacity());
         rehash(capacity);
     }
 
@@ -228,9 +231,7 @@ public:
         if (keys_.empty()) {
             rehash(8);
         } else {
-            if (keys_.size() > max_capacity() / 2)
-                throw std::length_error("InternalHashMap: capacity overflow");
-            rehash(keys_.size() * 2);
+            rehash(doubled_capacity(keys_.size(), max_capacity()));
         }
     }
 

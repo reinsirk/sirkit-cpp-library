@@ -2,6 +2,8 @@
 
 `DataStructure/heap.cpp`の`Heap`は、`int`を所有する最小ヒープです。外部ライブラリに依存せず貼り付けられます。使用例は[heap_example.cpp](../Examples/heap_example.cpp)です。
 
+`SIRKIT_HEAP_FORCE_QUATERNARY`を定義すると、処理系による既定の選択にかかわらず、根が2子で他の内部節点が最大4子の構成を使います。
+
 ## API
 
 ### Heap

@@ -53,6 +53,7 @@ inline bool is_prime_u32(std::uint32_t n) noexcept
     case 1004535809u:
     case 1224736769u:
     case 2013265921u:
+    case 61u: // Miller–Rabinの底のため先に処理する。
         return true;
     default:
         break;
@@ -72,7 +73,7 @@ inline bool is_prime_u32(std::uint32_t n) noexcept
         ++shifts;
     }
 #if (defined(__SIZEOF_INT128__)) && (!defined(SIRKIT_FORCE_STANDARD_ARITHMETIC))
-    // R=2^64。n<2^32なので、累乗中の剰余は2n未満のまま保持できる。
+    // R=2^64。還元結果はn以下で、nも0の表現として保持できる。
     using u64 = std::uint64_t;
     using u128 = __uint128_t; // GCC/Clangの128ビット整数拡張。
     u64 inverse = n;
@@ -86,18 +87,15 @@ inline bool is_prime_u32(std::uint32_t n) noexcept
     const u64 one = (u64{0} - n) % n;
     const u64 r_squared = one * one % n;
     for (std::uint32_t base : {2u, 7u, 61u}) {
-        if (base % n == 0) continue;
         u64 value = one, power = multiply(base % n, r_squared);
         for (std::uint32_t exponent = odd; exponent; exponent >>= 1) {
             if (exponent & 1u) value = multiply(value, power);
             power = multiply(power, power);
         }
-        if (value >= n) value -= n;
         if (value == one || value == n - one) continue;
         unsigned step = 1;
         for (; step < shifts; ++step) {
             value = multiply(value, value);
-            if (value >= n) value -= n;
             if (value == n - one) break;
         }
         if (step == shifts) return false;
@@ -123,8 +121,6 @@ inline bool is_prime_u32(std::uint32_t n) noexcept
     const auto r_squared = static_cast<std::uint32_t>(static_cast<std::uint64_t>(one) * one % n);
     for (std::uint32_t base : {2u, 7u, 61u})
     {
-        if (base % n == 0)
-            continue;
         std::uint32_t value = one, power = multiply(base % n, r_squared);
         for (std::uint32_t exponent = odd; ;)
         {
@@ -628,6 +624,11 @@ inline constexpr auto sieve_pattern = [] {
         }
     return values;
 }();
+inline std::size_t sieve_checked_capacity(std::uint64_t count, std::size_t maximum,
+                                          const char* error) {
+    if (count > maximum) throw std::length_error(error);
+    return static_cast<std::size_t>(count);
+}
 } // namespace reinsirk::detail
 #endif
 #ifndef SIRKIT_PRIME_SIEVE_DEFINED
@@ -648,14 +649,13 @@ public:
             return;
         }
         const std::uint64_t odds = limit / 2 + limit % 2;
-        const std::uint64_t words = odds / 64 + (odds % 64 != 0);
-        if (words > flags_.max_size())
-            throw std::length_error("PrimeSieve: limit exceeds capacity");
+        const auto words = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::sieve_checked_capacity(
+            odds / 64 + (odds % 64 != 0), flags_.max_size(), "PrimeSieve: limit exceeds capacity");
         // 周期パターンから直接構築し、同じ領域の二重初期化を避ける。
-        flags_.reserve(static_cast<std::size_t>(words));
+        flags_.reserve(words);
         const auto& pattern = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::sieve_pattern;
         constexpr auto period = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::sieve_pattern.size();
-        auto remaining = static_cast<std::size_t>(words);
+        auto remaining = words;
         while (remaining >= period) {
             flags_.insert(flags_.end(), pattern.begin(), pattern.end());
             remaining -= period;
@@ -709,10 +709,8 @@ public:
         std::vector<std::uint64_t> result;
         if (limit_ < 2) return result;
         if (limit_ >= 16) {
-            const auto count = prime_count();
-            if (count > result.max_size())
-                throw std::length_error("PrimeSieve::primes: capacity exceeded");
-            result.reserve(static_cast<std::size_t>(count));
+            result.reserve(/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::sieve_checked_capacity(
+                prime_count(), result.max_size(), "PrimeSieve::primes: capacity exceeded"));
         }
         append_to(result);
         return result;

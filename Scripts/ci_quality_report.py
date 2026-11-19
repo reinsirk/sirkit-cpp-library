@@ -19,11 +19,13 @@ import sys
 
 sys.dont_write_bytecode = True
 try:
-    from . import prepare_verify, ci_benchmark, ci_performance_all
+    from . import prepare_verify, ci_benchmark, ci_instrumented, ci_performance_all, performance_limits
 except ImportError:
     import prepare_verify
     import ci_benchmark
+    import ci_instrumented
     import ci_performance_all
+    import performance_limits
 
 ROOT = Path(__file__).resolve().parents[1]
 LIBRARY_DIRS = {"Algorithm", "DataStructure", "Geometry", "Graph", "Internal", "Math", "String"}
@@ -337,40 +339,142 @@ def collect_instrumented(value: dict, root: Path, entries: dict, append) -> None
     changed = mismatches(root, recorded)
     vendor = hashes(value.get("vendor_source_hashes", {}), nonempty=False)
     changed += mismatches(root, vendor)
+    if mode == "coverage" and ci_instrumented.COVERAGE_EXCLUSIONS in changed:
+        raise ReportError("到達不能箇所の登録が計測時から変わりました")
     rows = value.get("results"); identifiers = value.get("selected_ids")
     if not isinstance(rows, list) or not rows or not isinstance(identifiers, list) or len(set(identifiers)) != len(identifiers):
         raise ReportError("計測対象が空・重複しています")
+    if mode == "coverage" and any(isinstance(i, str) and i.startswith("coverage_test_") for i in identifiers):
+        registry = ci_instrumented.COVERAGE_TESTS
+        if registry not in recorded:
+            raise ReportError("補足カバレッジテストの登録SHAがありません")
+        if registry in changed:
+            raise ReportError("補足カバレッジテストの登録が変更されています")
+        tests = {entry["id"]: entry for entry in ci_instrumented.coverage_tests(root)}
+        if entries.keys() & tests.keys():
+            raise ReportError("Verifyと補足カバレッジテストのIDが重複しています")
+        entries = {**entries, **tests}
     if any(not isinstance(x, str) or x not in entries for x in identifiers):
         raise ReportError("計測に未知のIDがあります")
+    value["_gcc_line_sources"] = {
+        library for identifier in identifiers if entries[identifier].get("gcc_line_coverage")
+        for library in entries[identifier]["libraries"]
+    }
+    value["_gcc_unchecked_line_sources"] = {
+        library for identifier in identifiers if entries[identifier].get("gcc_unchecked_line_coverage")
+        for library in entries[identifier]["libraries"]
+    }
+    if mode == "coverage" and value["status"] == "PASS":
+        if value.get("coverage_complete") is False or value.get("unmapped_sources"):
+            raise ReportError("PASS coverageに未計測のTU・原本があります")
     seen = set()
     for row in rows:
         if not isinstance(row, dict) or row.get("id") not in identifiers or row["id"] in seen:
             raise ReportError("計測結果のIDが不正です")
         seen.add(row["id"]); entry = entries[row["id"]]
+        if row.get("coverage_test") != entry.get("coverage_test"):
+            raise ReportError("補足カバレッジテストの種類が一致しません")
         command = text_list(row.get("command")); checked_flags(command)
         required_flags = {"-fsanitize=address,undefined"} if mode == "sanitizers" else {"-fprofile-instr-generate", "-fcoverage-mapping"}
         if not required_flags <= set(command):
             raise ReportError("計測modeのコンパイラ設定がありません")
+        target = entry.get("coverage_target") if mode == "coverage" else None
+        if row.get("coverage_target") != target:
+            raise ReportError("カバレッジの対象アーキテクチャが登録と一致しません")
+        if target == "i386":
+            execution = text_list(row.get("execution_command"))
+            emulator = value.get("tools", {}).get("qemu_i386", {})
+            if ("-m32" not in command or len(execution) < 2 or command[-2:] != ["-o", execution[-1]]
+                    or emulator.get("command") != execution[0] or not emulator.get("version")):
+                raise ReportError("i386のビルド・実行環境が記録されていません")
         required = set(entry["libraries"]) | {entry["driver"]} | set(entry.get("support_source_hashes", {}))
         if not required <= recorded.keys() or row.get("driver_sha256") != recorded.get(entry["driver"]):
             raise ReportError("計測結果の原本・driver SHAが不足しています")
         if row.get("status") not in {"PASS", "FAIL"} or not isinstance(row.get("samples"), list):
             raise ReportError("計測結果の形式が不正です")
+        for setting in ("gcc_line_coverage", "gcc_unchecked_line_coverage"):
+            supplemental = row.get(setting)
+            gcc_expected = mode == "coverage" and entry.get(setting) and row["status"] == "PASS"
+            if gcc_expected and (not isinstance(supplemental, dict)
+                                 or not isinstance(supplemental.get("version"), str) or not supplemental["version"]):
+                raise ReportError("登録したGCC行計測の記録がありません")
+            if supplemental is not None and not gcc_expected:
+                raise ReportError("GCC行計測の対象が登録と一致しません")
+        for setting, flag in (("clang_unchecked_coverage", "-DSKIP_RUNTIME_CHECKS"),
+                              ("x86_avx2_coverage", "-mavx2"),
+                              ("x86_binary128_coverage", "-mlong-double-128")):
+            alternate = row.get(setting)
+            alternate_expected = mode == "coverage" and entry.get(setting)
+            if alternate is None:
+                if alternate_expected and row["status"] == "PASS":
+                    raise ReportError("登録したClang補足計測の記録がありません")
+                continue
+            if not alternate_expected or not isinstance(alternate, dict):
+                raise ReportError("Clang補足計測の対象が登録と一致しません")
+            alternate_command = text_list(alternate.get("command"))
+            alternate_samples = alternate.get("samples")
+            if (flag not in alternate_command or "-UNDEBUG" not in alternate_command
+                    or not required_flags <= set(alternate_command)
+                    or not isinstance(alternate_samples, list) or len(alternate_samples) != len(row["samples"])):
+                raise ReportError("Clang補足計測のビルド・実行環境の記録が不正です")
+            if setting == "x86_avx2_coverage":
+                checked_flags(alternate_command)
+                execution = text_list(alternate.get("execution_command"))
+                tool = value.get("tools", {}).get("qemu_x86_avx2", {})
+                if (len(execution) != 4 or execution[:3] !=
+                        [tool.get("command"), "-cpu", ci_instrumented.X86_AVX2_CPU]
+                        or tool.get("cpu") != ci_instrumented.X86_AVX2_CPU or not tool.get("version")
+                        or alternate_command[-2:] != ["-o", execution[-1]]):
+                    raise ReportError("x86 AVX2の実行環境が記録されていません")
+            if setting == "x86_binary128_coverage":
+                checked_flags(alternate_command)
+                execution = text_list(alternate.get("execution_command"))
+                if len(execution) != 1 or alternate_command[-2:] != ["-o", execution[0]]:
+                    raise ReportError("x86 binary128の実行環境が記録されていません")
+            for index, sample in enumerate(alternate_samples):
+                if (not isinstance(sample, dict) or sample.get("index") != index
+                        or sample.get("passed") is not True or sample.get("profile_written") is not True
+                        or type(sample.get("returncode")) is not int or sample["returncode"] != 0):
+                    raise ReportError("Clang補足計測の実測記録が不正です")
         ok = row["status"] == "PASS" and type(row.get("compile_returncode")) is int and row["compile_returncode"] == 0 and bool(row["samples"])
         for sample in row["samples"]:
             if not isinstance(sample, dict) or type(sample.get("passed")) is not bool or type(sample.get("returncode")) is not int:
                 raise ReportError("計測結果のsampleが不正です")
             ok &= sample["passed"] and sample["returncode"] == 0
+            if target == "i386":
+                ok &= sample.get("profile_written") is True
+            baseline = sample.get("x86_baseline")
+            if mode == "coverage" and entry.get("x86_baseline_coverage"):
+                if row["status"] == "PASS" and (not isinstance(baseline, dict) or baseline.get("passed") is not True
+                        or baseline.get("profile_written") is not True or type(baseline.get("returncode")) is not int
+                        or baseline["returncode"] != 0):
+                    raise ReportError("登録したx86代替経路の実測記録がありません")
+            elif baseline is not None:
+                raise ReportError("x86代替経路の計測対象が登録と一致しません")
         if row["status"] == "PASS" and not ok:
             raise ReportError("計測結果の集約PASSと実行結果が一致しません")
         status = "STALE" if changed else "PASS" if ok else "FAIL"
         for library in entry["libraries"]:
             metrics = coverage_metrics(value, library, root) if mode == "coverage" and ok and not changed else None
-            actual_status = "UNAVAILABLE" if mode == "coverage" and ok and metrics is None and not changed else status
+            actual_status = status
+            if mode == "coverage" and ok and not changed:
+                # 旧形式のPASS記録も現在の100%条件で判定し、丸めた率は使わない。
+                complete = metrics is not None and metrics["lines"]["count"] > 0 and all(
+                    metrics[key]["covered"] == metrics[key]["count"] for key in ("lines", "branches"))
+                actual_status = "PASS" if complete else "FAIL"
+            scope = "checked入力例とローカル補足（coverageは原本ごとの到達和集合）"
+            if target == "i386":
+                scope = "i386（32ビット）で実行したcheckedテスト"
+            if row.get("clang_unchecked_coverage") is not None:
+                scope = "検査有効・検査省略のClangビルドを別々に実行して原本の到達を集計"
+            if row.get("x86_avx2_coverage") is not None:
+                scope += "。AVX2を指定したClangビルドもQEMUで実行"
+            if row.get("x86_binary128_coverage") is not None:
+                scope += "。long doubleをIEEE 754 binary128としたClangビルドも実行"
             append(library, mode, dict(id=row["id"], status=actual_status, checks=len(row["samples"]),
-                   scope="checked入力例とローカル補足（coverageは原本ごとの到達和集合）", command=command,
+                   scope=scope, command=command,
                    compiler=value.get("tools", {}).get("compiler"), source_mismatches=sorted(set(changed)),
-                   metrics=metrics))
+                   metrics=metrics, **({"required_percent": 100} if mode == "coverage" else {})))
     if value["status"] == "PASS" and seen != set(identifiers):
         raise ReportError("PASS計測結果の対象が不足しています")
 
@@ -380,7 +484,9 @@ def coverage_metrics(value: dict, library: str, root: Path) -> dict | None:
     path = file_path(directory, "coverage.json")
     if not path.is_file():
         return None
-    coverage = read_json(path)
+    if "_coverage_data" not in value:
+        value["_coverage_data"] = read_json(path)
+    coverage = value["_coverage_data"]
     if not isinstance(coverage, dict) or coverage.get("type") != "sirkit.source-coverage-union" or not isinstance(coverage.get("files"), list):
         raise ReportError("原本coverageの形式が不正です")
     matched = [row for row in coverage["files"] if isinstance(row, dict) and isinstance(row.get("filename"), str)
@@ -404,6 +510,21 @@ def coverage_metrics(value: dict, library: str, root: Path) -> dict | None:
         if number in seen_lines:
             raise ReportError("coverage行が重複しています")
         seen_lines.add(number)
+    line_hits = dict(lines)
+    for key, sources in (("gcov_line_counts", "_gcc_line_sources"),
+                         ("gcov_unchecked_line_counts", "_gcc_unchecked_line_sources")):
+        gcov = row.get(key, [])
+        if not isinstance(gcov, list) or (gcov and library not in value[sources]):
+            raise ReportError("GCC行計測の対象原本が不正です")
+        confirmed = set()
+        for item in gcov:
+            if not isinstance(item, list) or len(item) != 2:
+                raise ReportError("GCC行計測の行形式が不正です")
+            number = integer(item[0], minimum=1)
+            integer(item[1], minimum=1)
+            if not line_hits.get(number) or number in confirmed:
+                raise ReportError("GCC行計測が原本の到達行と一致しません")
+            confirmed.add(number)
     for item in branches:
         if (not isinstance(item, list) or len(item) != 6 or
                 any(type(x) is not bool for x in item[4:])):
@@ -414,14 +535,45 @@ def coverage_metrics(value: dict, library: str, root: Path) -> dict | None:
         if key in seen_branches:
             raise ReportError("coverage分岐が重複しています")
         seen_branches.add(key)
-    metrics = {"lines": {"count": len(lines), "covered": sum(item[1] for item in lines)},
-               "branches": {"count": 2 * len(branches), "covered": sum(sum(item[4:]) for item in branches)}}
+    recorded = value.get("all_source_hashes", {})
+    policy_path = ci_instrumented.COVERAGE_EXCLUSIONS
+    exclusions = {}
+    if policy_path in recorded:
+        if "_coverage_exclusion_policy" not in value:
+            value["_coverage_exclusion_policy"] = ci_instrumented.load_coverage_exclusions(root)
+        exclusions = value["_coverage_exclusion_policy"]
+    metrics, applied = ci_instrumented.coverage_file_summary(
+        row, library, recorded.get(library, ""), exclusions)
+    if row.get("exclusions", []) != applied:
+        raise ReportError("coverageの除外理由・座標が登録と一致しません")
     for key, metric in metrics.items():
-        metric["percent"] = 100 * metric["covered"] / metric["count"] if metric["count"] else 0
         actual = row.get("summary", {}).get(key)
         if not isinstance(actual, dict) or any(actual.get(name) != metric[name] for name in ("count", "covered")):
             raise ReportError("原本coverageの集約値が一致しません")
     return metrics
+
+
+def recorded_performance_limits(value: dict, root: Path):
+    metadata = value.get("performance_limits")
+    if metadata is None:
+        return None
+    if not isinstance(metadata, dict):
+        raise ReportError("固定性能上限の記録が不正です")
+    limits = performance_limits.load(root / "Verify/ci/performance_limits.json")
+    if any(metadata.get(key) != limits.metadata[key] for key in ("sha256", "baseline", "policy")):
+        raise ReportError("固定性能上限が記録時から変更されています")
+    return limits
+
+
+def checked_performance_limit(limits, entry: dict | None, row: dict, samples: list) -> dict:
+    if limits is None:
+        if row.get("performance_limit") is not None:
+            raise ReportError("性能上限の設定来歴がありません")
+        return {"status": "UNAVAILABLE"}
+    measured = limits.evaluate(entry, samples)
+    if row.get("performance_limit") != measured:
+        raise ReportError("性能上限の判定が固定設定・生データと一致しません")
+    return measured
 
 
 def collect_performance(value: dict, root: Path, entries: dict, append) -> None:
@@ -443,6 +595,7 @@ def collect_performance(value: dict, root: Path, entries: dict, append) -> None:
         raise ReportError("性能測定の比較元commitがありません")
     if value.get("status") not in {"PASS", "PARTIAL", "NO_BASELINE", "CURRENT_ONLY", "FAIL"}:
         raise ReportError("性能測定の状態が不正です")
+    limits = recorded_performance_limits(value, root)
     seen, compared = set(), 0
     for row in rows:
         if not isinstance(row, dict) or row.get("id") not in sources:
@@ -497,14 +650,24 @@ def collect_performance(value: dict, root: Path, entries: dict, append) -> None:
             if identifier not in ci_benchmark.SCENARIOS or pattern >= len(ci_benchmark.SCENARIOS[identifier]) or key[2] != ci_benchmark.SCENARIOS[identifier][pattern]:
                 raise ReportError("性能測定のパターン番号と名前が一致しません")
         seen.add(key)
-        status = "STALE" if changed else ("PARTIAL" if value.get("scale_scope") == "smoke_only" else "PASS") if value["status"] != "FAIL" and value.get("current_measurements_passed") is True else "FAIL"
+        pattern_id = row.get("pattern_id")
+        if limits is not None:
+            if pattern_id is None:
+                pattern_id = list(ci_benchmark.SCENARIOS.get(identifier, ())).index(key[2])
+            bound = limits.kernel(library, identifier, key[2], key[1], pattern_id, key[3])
+        else:
+            bound = None
+        gate = checked_performance_limit(limits, bound, row, samples["current"])
+        status = "STALE" if changed else ("PARTIAL" if value.get("scale_scope") == "smoke_only" else "PASS") if (value["status"] != "FAIL" or limits is not None) and value.get("current_measurements_passed") is True else "FAIL"
+        if status == "PASS" and gate["status"] == "FAIL":
+            status = "FAIL"
         append(library, "performance", dict(status=status, id=identifier, scope="代表本体（入出力・Verify mainは除外）",
                size=key[1], pattern=key[2], scale=scale, scale_scope=value.get("scale_scope"),
                rounds=key[3], repetitions=repetitions, warmups=value.get("warmups"), samples_ns=samples,
                median_ns=medians, current_over_base=ratio, comparison="MEASURED" if ratio is not None else "NOT_REQUESTED" if value.get("comparison_requested") is False else "NO_BASELINE",
                compiler=value.get("compiler"), flags=value["flags"], cpu_model=value.get("cpu_model"),
                base_revision=value.get("base_revision"), source_mismatches=changed,
-               advisory=True))
+               advisory=limits is None, performance_limit=gate))
     if compared != value.get("compared_cases") or len(rows) - compared != value.get("uncompared_cases"):
         raise ReportError("性能測定の集約件数と実行結果が不一致です")
     if {row["id"] for row in rows} != set(sources):
@@ -583,6 +746,7 @@ def collect_all_performance(value: dict, root: Path, entries: dict, append) -> N
     changed_global = mismatches(root, frozen)
     runner = value.get("runner", {})
     changed_global += mismatches(root, {relative(runner.get("source")): sha(runner.get("sha256"))})
+    limits = recorded_performance_limits(value, root)
     for row in rows:
         library = relative(row["library"], library=True)
         identifier = row.get("verify_id")
@@ -641,12 +805,16 @@ def collect_all_performance(value: dict, root: Path, entries: dict, append) -> N
                 if type(cpu_medians[role]) not in (int, float) or not math.isfinite(cpu_medians[role]) or cpu_medians[role] != statistics.median(times):
                     raise ReportError("子プロセスCPU時間の中央値が不正です")
             # shard全体の失敗はaggregateで保持し、照合済みの行へ波及させない。
+            bound = limits.whole(library, identifier, case["name"], integer(case.get("input_bytes"))) if limits is not None else None
+            gate = checked_performance_limit(limits, bound, case, cpu_samples["current"])
             if changed:
                 status = "STALE"
             elif value.get("source_freeze_passed") is not True:
                 status = "FAIL"
             else:
                 status = "PARTIAL" if value["size_profile"] == "quick_smoke" else "PASS"
+            if status == "PASS" and gate["status"] == "FAIL":
+                status = "FAIL"
             append(library, "performance", dict(status=status, id=identifier,
                    scope="Verify全体（起動・入出力込み。複合本体はlibraries参照）",
                    timing_scope=value.get("timing_scope"), absolute_current=True, size_profile=value["size_profile"],
@@ -657,7 +825,8 @@ def collect_all_performance(value: dict, root: Path, entries: dict, append) -> N
                    current_over_base=ratio, comparison=case.get("comparison"), compiler=compiler,
                    flags=value["flags"], cpu_model=value.get("cpu_model"), platform=value.get("platform"),
                    affinity=value.get("affinity"), base_revision=value.get("base_revision"),
-                   source_mismatches=changed, advisory=True))
+                   source_mismatches=changed, measurement_passed=not changed and value.get("source_freeze_passed") is True,
+                   advisory=limits is None, performance_limit=gate))
 
 
 def collect_library_checker(value: dict, root: Path, entries: dict, append) -> None:
@@ -825,7 +994,9 @@ def aggregate(root: Path, inputs: list[Path], *, source_manifest: dict[str, dict
     return {"format": 1, "type": "sirkit.quality-report", "generated_at_utc": datetime.now(timezone.utc).isoformat(),
             "status": state, "input_report_status": run_state, "online_status": "not_evaluated", "provenance": provenance(root),
             "scope": "各欄は記録されたケースだけの結果。未測定のAPIや入力を含む完全な保証ではない。性能時間は環境・入力規模と合わせて参照する。",
-            "performance_coverage": {"all_libraries": len(libraries), "whole_program_full_measured": sum(any(e.get("absolute_current") and e.get("size_profile") == "full_representative" and e["status"] == "PASS" for e in lib["categories"]["performance"]["evidence"]) for lib in libraries.values())},
+            "coverage_policy": {"required_percent": 100, "metrics": ["lines", "branches"],
+                                "scope": "通常版原本の計測行・直接条件。未実体化template・マクロ内部は含まない。"},
+            "performance_coverage": {"all_libraries": len(libraries), "whole_program_full_measured": sum(any(e.get("absolute_current") and e.get("size_profile") == "full_representative" and (e.get("measurement_passed") is True or e["status"] == "PASS") for e in lib["categories"]["performance"]["evidence"]) for lib in libraries.values())},
             "categories": LABELS, "libraries": [libraries[key] for key in sorted(libraries)],
             "reports": reports, "errors": errors}
 
@@ -834,6 +1005,15 @@ def inline(value: object) -> str:
     text = " ".join(str(value).split())
     text = "".join(c for c in text if ord(c) >= 32 and not 0x202A <= ord(c) <= 0x202E and not 0x2066 <= ord(c) <= 0x2069)
     return "<code>" + html.escape(text).replace("|", "&#124;").replace("`", "&#96;").replace("{", "&#123;").replace("}", "&#125;") + "</code>"
+
+
+def coverage_percent(metric: dict) -> str:
+    if not metric["count"]:
+        return "対象条件なし"
+    percent = 100 * metric["covered"] / metric["count"]
+    if metric["covered"] < metric["count"] and round(percent, 2) >= 100:
+        return "100未満"
+    return f"{percent:.2f}"
 
 
 def markdown(report: dict) -> str:
@@ -851,6 +1031,27 @@ def markdown(report: dict) -> str:
             detail = (f"のべ{checks}照合・{len(value['evidence'])}記録" if checks else f"{len(value['evidence'])}記録") if value["evidence"] else ""
             cells.append(STATUS_LABELS[value["status"]] + (" (" + detail + ")" if detail else ""))
         lines.append("| " + inline(library["path"]) + " | " + " | ".join(cells) + " |")
+    coverage_rows = {}
+    for library in report["libraries"]:
+        for row in library["categories"]["coverage"]["evidence"]:
+            coverage_rows.setdefault((library["path"], row.get("report")), row)
+    if coverage_rows:
+        lines += ["", "## カバレッジの合格条件と実測値", "",
+                  "証明済みの到達不能箇所を除き、通常版本体の行・直接条件のtrue/falseを、どちらも100%到達した場合だけ通過とします。",
+                  "未計測の原本・計測漏れも失敗です。百分率の丸めではなく到達件数の一致で判定します。",
+                  "未実体化template・マクロ展開内部・型別の網羅を保証する値ではありません。", "",
+                  "| 本体 | 行 到達/計測 | 行 % | 分岐 到達/計測 | 分岐 % | 状態 |",
+                  "| --- | ---: | ---: | ---: | ---: | --- |"]
+        for (library, _), row in coverage_rows.items():
+            metrics = row.get("metrics")
+            cells = []
+            for key in ("lines", "branches"):
+                metric = metrics.get(key) if metrics else None
+                cells += ([f"{metric['covered']}/{metric['count']}",
+                           coverage_percent(metric)]
+                          if metric else ["未計測", "—"])
+            lines.append("| " + inline(library) + " | " + " | ".join(cells) +
+                         " | " + STATUS_LABELS[row["status"]] + " |")
     official_rows = [(library, row) for library in report["libraries"] for row in library["categories"]["library_checker"]["evidence"]]
     if official_rows:
         lines += ["", "## Library Checker公式ケースのローカル実行", "",
@@ -867,6 +1068,7 @@ def markdown(report: dict) -> str:
         lines += ["", f"全ライブラリの規定規模の性能記録: {coverage.get('whole_program_full_measured', 0)}/{coverage.get('all_libraries', 0)}。縮小確認と代表3本のkernelはこの件数に含めません。"]
         lines += ["", "## 性能測定の条件と結果", "",
                   "全ライブラリのVerify全体時間と、代表カーネルの本体時間を分けて表示します。各ケースの規模・CPU・コンパイラと合わせて参照し、オンライン提出時間とは比較しません。",
+                  "固定上限は基準実測の2倍。Verify全体は子CPU時間（最低10ms）、本体はハーネス内の経過時間で判定します。上限来歴のない旧記録は未判定です。",
                   "", "| コンパイラ | 設定 | CPU | OS | 反復/除外warmup |",
                   "| --- | --- | --- | --- | ---: |"]
         environments = set()
@@ -880,17 +1082,21 @@ def markdown(report: dict) -> str:
             compiler = row.get("compiler")
             compiler = compiler.get("version", "記録なし") if isinstance(compiler, dict) else compiler
             lines.append("| " + " | ".join(inline(x) for x in (compiler, " ".join(row.get("flags", [])), row.get("cpu_model") or "記録なし", row.get("platform") or "記録なし")) + f" | {row['repetitions']}/{row.get('warmups') if row.get('warmups') is not None else '記録なし'} |")
-        lines += ["", "| ライブラリ | 測定範囲 | ケース | 規模 | wall ms | CPU ms | 状態 |", "| --- | --- | --- | --- | ---: | ---: | --- |"]
+        lines += ["", "| ライブラリ | 測定範囲 | ケース | 規模 | wall ms | CPU ms | 上限 ms | 上限判定 | 状態 |", "| --- | --- | --- | --- | ---: | ---: | ---: | --- | --- |"]
         for library, row in measured:
             if "median_ns" not in row:
-                lines.append(f"| {inline(library['path'])} | {inline(row['scope'])} | 未実施 | — | — | — | {STATUS_LABELS[row['status']]} |")
+                lines.append(f"| {inline(library['path'])} | {inline(row['scope'])} | 未実施 | — | — | — | — | 未判定 | {STATUS_LABELS[row['status']]} |")
                 continue
             cpu = row.get("cpu_median_ns", {}).get("current")
             cpu_text = f"{cpu/1e6:.3f}" if cpu is not None else "対象外"
             workload = row.get("workload", {})
             dimensions = workload.get("dimensions") or workload.get("input_header")
             scale = inline(dimensions) if dimensions else str(row['size']) + (" bytes" if row.get("size_unit") == "input_bytes" else "要素")
-            lines.append(f"| {inline(library['path'])} | {inline(row['scope'] + ("・縮小確認のみ" if row.get("size_profile") == "quick_smoke" or row.get("scale_scope") == "smoke_only" else ""))} | {inline(row['pattern'])} | {scale} | {row['median_ns']['current']/1e6:.3f} | {cpu_text} | {STATUS_LABELS[row['status']]} |")
+            scope = row['scope'] + ("・縮小確認のみ" if row.get("size_profile") == "quick_smoke" or row.get("scale_scope") == "smoke_only" else "")
+            gate = row.get("performance_limit", {})
+            limit_text = f"{gate['limit_ns']/1e6:.3f}" if "limit_ns" in gate else "—"
+            limit_status = STATUS_LABELS.get(gate.get("status"), "未判定") if gate.get("status") != "UNAVAILABLE" else "未判定"
+            lines.append(f"| {inline(library['path'])} | {inline(scope)} | {inline(row['pattern'])} | {scale} | {row['median_ns']['current']/1e6:.3f} | {cpu_text} | {limit_text} | {limit_status} | {STATUS_LABELS[row['status']]} |")
         if any(row.get("comparison") == "NO_BASELINE" for _, row in measured):
             lines += ["", "比較元なしの記録は絶対時間だけを表示します。"]
     if report["errors"]:

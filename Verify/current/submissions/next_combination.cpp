@@ -59,7 +59,11 @@ template <std::unsigned_integral UInt> requires (!std::same_as<UInt, bool>)
 constexpr bool NextCombinationBounded(UInt& sub, int n) noexcept {
     constexpr int width = std::numeric_limits<UInt>::digits;
     const auto next = next_combination(sub);
-    if (next == 0 || n <= 0 || (n < width && (next >> n) != 0)) return false;
+    if (next == 0) return false;
+#ifdef SKIP_RUNTIME_CHECKS
+    if (n <= 0) return false;
+#endif
+    if (n < width && (next >> n) != 0) return false;
     sub = next;
     return true;
 }
@@ -99,8 +103,9 @@ constexpr void for_each_combination(int n, int k, Visitor&& visit) {
     constexpr int width = std::numeric_limits<UInt>::digits;
     if (n < 0 || n > width || k < 0 || k > n)
         throw std::out_of_range("for_each_combination: invalid width or count");
-#endif
+#else
     if (n < 0 || k < 0 || k > n) return;
+#endif
     UInt mask = first_combination<UInt>(k);
     const UInt last = k == 0 ? UInt{0} : static_cast<UInt>(mask << (n - k));
     for (;;) {

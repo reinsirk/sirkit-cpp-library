@@ -74,6 +74,7 @@ int main(){
     check(ZMatches(std::string_view("x"),std::string_view{})==Result{});
     for(std::size_t n:{static_cast<std::size_t>(std::numeric_limits<int>::max()),std::numeric_limits<std::size_t>::max()}){
         bool rejected=false;try{(void)z_algorithm(Huge{n});}catch(const std::length_error&){rejected=true;}check(rejected);
+        rejected=false;try{(void)PrefixMatches(std::string_view("a"),Huge{n});}catch(const std::length_error&){rejected=true;}check(rejected);
     }
     std::printf("z_algorithm ACL API checks=%zu\n",checks);
 }

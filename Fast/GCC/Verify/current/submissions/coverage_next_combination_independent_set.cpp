@@ -61,7 +61,9 @@ template <std::unsigned_integral UInt> requires (!std::same_as<UInt, bool>)
 constexpr bool NextCombinationBounded(UInt& sub, int n) noexcept {
     constexpr int width = std::numeric_limits<UInt>::digits;
     const auto next = next_combination(sub);
-    if (next == 0 || n <= 0 || (n < width && (next >> n) != 0)) return false;
+    if (next == 0) return false;
+    if (n <= 0) return false;
+    if (n < width && (next >> n) != 0) return false;
     sub = next;
     return true;
 }

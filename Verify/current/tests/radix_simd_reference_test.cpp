@@ -5,6 +5,7 @@ using namespace sirkit;
 #define RADIX_HEADER "../../../Algorithm/Radix_sort.cpp"
 #endif
 #include RADIX_HEADER
+#include <array>
 #include <cassert>
 #include <cstdint>
 #include <iostream>
@@ -19,6 +20,14 @@ template<class T>void check(const std::vector<T>& input){
 }
 template<class T>void test(){
     std::mt19937_64 rng(917344);
+    for (const T step : {static_cast<T>(1) << 16, static_cast<T>(1) << 24}) {
+        const auto top = static_cast<T>(step * 3);
+        // 変化する桁が3または4バイトで、昇順・降順のどちらでもない入力。
+        const std::array<T, 6> pattern{top, 0, step, top, static_cast<T>(step * 2), 1};
+        std::vector<T> values;
+        for (int rep = 0; rep < 24; ++rep) values.insert(values.end(), pattern.begin(), pattern.end());
+        check(values);
+    }
     for(int n:{65,66,67,127,128,129,130,131,132,255,256,257,258,259,260,511,512,513,514,515,516,1023,1024,1025,1026,1027,1028}){
         std::vector<T> values(n);for(auto& x:values)x=static_cast<T>(rng());check(values);
         std::sort(values.begin(),values.end());check(values);

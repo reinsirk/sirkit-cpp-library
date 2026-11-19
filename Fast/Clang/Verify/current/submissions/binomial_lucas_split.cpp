@@ -72,6 +72,14 @@ inline std::uint32_t lucas_mod3(std::uint64_t n, std::uint64_t k) noexcept {
 } // namespace reinsirk::detail
 #endif
 
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
+inline std::size_t prime_binomial_table_bound(std::uint64_t bound, std::size_t capacity) {
+    if (bound >= capacity)
+        throw std::length_error("PrimeBinomial: table size exceeds size_t");
+    return static_cast<std::size_t>(bound);
+}
+}
+
 template <class Mint>
 class PrimeBinomial
 {
@@ -165,8 +173,8 @@ class PrimeBinomial
                     ifac_[i] = -fac_[target - i];
                     ifac_[i + 1] = fac_[target - i - 1];
                 }
-                if (i <= target)
-                    ifac_[i] = -fac_[target - i];
+                // targetは偶数なので、最後の組の直後がtargetになる。
+                ifac_[target] = -fac_[0];
                 return;
             }
         }
@@ -284,9 +292,8 @@ public:
     {
         check_modulus();
         const auto bound = static_cast<u64>(std::min<i64>(max_n, modulus() - 1));
-        if (bound >= std::numeric_limits<std::size_t>::max())
-            throw std::length_error("PrimeBinomial: table size exceeds size_t");
-        const auto target = static_cast<std::size_t>(bound);
+        const auto target = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::prime_binomial_table_bound(
+            bound, std::numeric_limits<std::size_t>::max());
         auto old_size = fac_.size();
         if (target < old_size)
             return;

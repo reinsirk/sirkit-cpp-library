@@ -16,6 +16,58 @@ using namespace sirkit;
 #include <vector>
 static std::uint64_t checks=0;
 static void require(bool ok){++checks;if(!ok)std::abort();}
+
+namespace {
+using CountTrie = sirkit::CompressedBinaryTrie<std::uint8_t, 0, 3>;
+struct NodesMember {
+    friend constexpr auto member_pointer(NodesMember);
+};
+template<class Tag, auto Member>
+struct MemberAccess {
+    friend constexpr auto member_pointer(Tag) { return Member; }
+};
+template struct MemberAccess<NodesMember, &CountTrie::nodes_>;
+
+template<class Exception, class Operation>
+void rejects(Operation operation) {
+    try {
+        operation();
+    } catch (const Exception&) {
+        return;
+    }
+    require(false);
+}
+
+void check_limits() {
+    sirkit::CompressedBinaryTrie<unsigned, 2, 5> small;
+    small.reserve(0);
+    small.reserve(1000);
+    small.reserve(1);
+    small.add(0, 10);
+    small.add(1, 11);
+    rejects<std::length_error>([&] { small.add(4, 12); });
+    require(small.size() == 2 && small.count(4) == 0);
+    require(small.find(0).second == std::vector{10} && small.find(1).second == std::vector{11});
+    require(small.del(0, 10) && small.del(1, 11));
+    small.add(4, 12);
+    require(small.find(4).second == std::vector{12});
+
+    CountTrie counted;
+    counted.add(0);
+    constexpr auto maximum = std::numeric_limits<CountTrie::size_type>::max();
+    // 葉しかないトライでは、この要素数で同一キーの最大回数挿入を表せる。
+    (counted.*member_pointer(NodesMember{})).front().count = maximum;
+    require(counted.size() == maximum && counted.count(0) == maximum);
+    require(!counted.insert_unique(0));
+    rejects<std::overflow_error>([&] { (void)counted.insert_unique(1); });
+    rejects<std::overflow_error>([&] { counted.add(0); });
+    require(counted.size() == maximum && counted.count(1) == 0);
+    require(counted.del(0) && counted.size() == maximum - 1);
+    counted.add(0);
+    require(counted.size() == maximum && counted.count(0) == maximum);
+}
+} // namespace
+
 template<class T,int L>void run() {
     using U=std::make_unsigned_t<T>;
     constexpr U mask=[] {if constexpr(L+1==std::numeric_limits<U>::digits)return std::numeric_limits<U>::max();else return static_cast<U>((U{1}<<(L+1))-1);}();
@@ -68,6 +120,7 @@ template<class T,int L>void run() {
     }
 }
 int main() {
+    check_limits();
     run<std::uint8_t,7>();run<std::int8_t,6>();run<std::uint16_t,15>();run<std::uint32_t,29>();run<std::int64_t,62>();run<std::uint64_t,63>();run<unsigned,0>();
     std::printf("PASS %llu compressed prefix/stale representative/lazy XOR/deletion/reuse checks\n",static_cast<unsigned long long>(checks));
 }

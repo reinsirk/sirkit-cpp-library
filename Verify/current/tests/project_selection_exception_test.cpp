@@ -29,13 +29,39 @@ void free_test(void* pointer)noexcept{if(!pointer)return;auto*header=static_cast
 void*operator new(std::size_t n){return allocate_test(n,alignof(std::max_align_t));}void*operator new[](std::size_t n){return allocate_test(n,alignof(std::max_align_t));}void*operator new(std::size_t n,std::align_val_t a){return allocate_test(n,std::size_t(a));}void*operator new[](std::size_t n,std::align_val_t a){return allocate_test(n,std::size_t(a));}
 void operator delete(void*p)noexcept{free_test(p);}void operator delete[](void*p)noexcept{free_test(p);}void operator delete(void*p,std::size_t)noexcept{free_test(p);}void operator delete[](void*p,std::size_t)noexcept{free_test(p);}void operator delete(void*p,std::align_val_t)noexcept{free_test(p);}void operator delete[](void*p,std::align_val_t)noexcept{free_test(p);}void operator delete(void*p,std::size_t,std::align_val_t)noexcept{free_test(p);}void operator delete[](void*p,std::size_t,std::align_val_t)noexcept{free_test(p);}
 using Model=TwoVariableSubmodularOpt<std::int64_t>;
+namespace {
+template<class Call> void rejects_capacity(Call call) {
+    try {
+        call();
+    } catch (const std::length_error&) {
+        return;
+    }
+    assert(false);
+}
+
+void capacity_boundaries() {
+    using sirkit::detail::ProjectIncidentCapacity;
+    using sirkit::detail::CheckProjectIncidentCounts;
+    using sirkit::detail::CheckProjectVertexCount;
+    constexpr auto kLimit = static_cast<std::size_t>(std::numeric_limits<int>::max());
+    assert(ProjectIncidentCapacity(4, 4, 1, 6) == 6);
+    assert(ProjectIncidentCapacity(2, 4, 3, 16) == 8);
+    assert(ProjectIncidentCapacity(2, 4, 2, 16) == 4);
+    rejects_capacity([] { (void)ProjectIncidentCapacity(4, 4, 3, 6); });
+    rejects_capacity([] { CheckProjectIncidentCounts(kLimit, 0); });
+    rejects_capacity([] { CheckProjectIncidentCounts(0, kLimit); });
+    CheckProjectIncidentCounts(kLimit - 1, kLimit - 1);
+    rejects_capacity([] { CheckProjectVertexCount(kLimit + 1); });
+    CheckProjectVertexCount(kLimit);
+}
+}
 Model seed(int op=0){Model model(4);const int count=op==5?7:8;for(int k=0;k<count;++k){model.add_psp_penalty(0,2,1);model.add_psp_penalty(1,3,1);}for(int k=0;k<8;++k){model.add_single_cost(2,0,1);model.add_single_cost(3,1,0);}return model;}
 void apply(Model&model,int op){switch(op){case 0:model.add_single_cost(0,0,-5);break;case 1:model.force(0,true);break;case 2:model.add_both_true_profit(0,1,5);break;case 3:model.add_both_false_profit(0,1,5);break;case 4:model.add_submodular_function(0,1,-3,2,4,1);break;case 5:model.add_equality(0,1);break;case 6:model.add_all_true_profit({0,1,2,3,0,1,2,3,0},5);break;case 7:model.add_all_false_profit({0,1,2,3,0,1,2,3,0},5);break;
 #if SIRKIT_PROJECT_REQUIRE_EXTRA
 case 8:model.add_any_true_cost({0,1,2,3,0,1,2,3,0},5);break;case 9:model.add_any_false_cost({0,1,2,3,0,1,2,3,0},5);break;
 #endif
 }}
-int main(){const auto initial_live=live_allocations;std::size_t injected=0,partial_failures=0;for(int op=0;op<(SIRKIT_PROJECT_REQUIRE_EXTRA?10:8);++op){bool succeeded=false;for(int fail=0;fail<100&&!succeeded;++fail){auto model=seed(op);const auto value=model.solve();const auto edges=model.edge_count();const auto nodes=model.node_count();bool failed=false;allocation_budget=fail;try{apply(model,op);}catch(const std::bad_alloc&){failed=true;}allocation_budget=-1;if(failed){++injected;const bool unchanged=model.edge_count()==edges&&model.node_count()==nodes&&model.solve()==value;if(!unchanged)++partial_failures;
+int main(){capacity_boundaries();const auto initial_live=live_allocations;std::size_t injected=0,partial_failures=0;for(int op=0;op<(SIRKIT_PROJECT_REQUIRE_EXTRA?10:8);++op){bool succeeded=false;for(int fail=0;fail<100&&!succeeded;++fail){auto model=seed(op);const auto value=model.solve();const auto edges=model.edge_count();const auto nodes=model.node_count();bool failed=false;allocation_budget=fail;try{apply(model,op);}catch(const std::bad_alloc&){failed=true;}allocation_budget=-1;if(failed){++injected;const bool unchanged=model.edge_count()==edges&&model.node_count()==nodes&&model.solve()==value;if(!unchanged)++partial_failures;
 #if SIRKIT_PROJECT_REQUIRE_STRONG
 assert(unchanged);
 #endif

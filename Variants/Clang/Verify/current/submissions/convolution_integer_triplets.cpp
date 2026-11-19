@@ -64,18 +64,25 @@ namespace sirkit {
 #ifndef SIRKIT_NTT_DETAIL_DEFINED
 #define SIRKIT_NTT_DETAIL_DEFINED
 namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
-constexpr bool ntt_prime(std::uint32_t n) noexcept {
+consteval bool ntt_prime(std::uint32_t n) noexcept {
     if (n < 2 || n % 2 == 0) return n == 2;
     for (std::uint32_t d = 3; d <= n / d; d += 2) if (n % d == 0) return false;
     return true;
 }
-constexpr std::uint32_t ntt_power(std::uint32_t a, std::uint32_t exponent, std::uint32_t mod) noexcept {
+consteval std::uint32_t ntt_power(std::uint32_t a, std::uint32_t exponent, std::uint32_t mod) noexcept {
     std::uint32_t result = 1;
     for (; exponent != 0; exponent >>= 1) {
         if (exponent & 1) result = static_cast<std::uint32_t>(std::uint64_t{result} * a % mod);
         a = static_cast<std::uint32_t>(std::uint64_t{a} * a % mod);
     }
     return result;
+}
+
+inline std::size_t convolution_result_size(std::size_t a, std::size_t b, const char* overflow_message) {
+    if (a == 0 || b == 0) return 0;
+    if (a - 1 > std::numeric_limits<std::size_t>::max() - b)
+        throw std::length_error(overflow_message);
+    return a - 1 + b;
 }
 }
 #endif
@@ -187,10 +194,7 @@ class NTT {
         } else return static_cast<std::uint32_t>(static_cast<std::uint64_t>(value) % Mod);
     }
     static std::size_t result_size(std::size_t a, std::size_t b) {
-        if (a == 0 || b == 0) return 0;
-        if (a - 1 > std::numeric_limits<std::size_t>::max() - b)
-            throw std::length_error("NTT: convolution size overflow");
-        return (a - 1) + b;
+        return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::convolution_result_size(a, b, "NTT: convolution size overflow");
     }
     static std::size_t transform_size(std::size_t output) {
         if (output > max_length()) throw std::length_error("NTT: transform too long");
@@ -808,13 +812,8 @@ namespace sirkit {
 namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 inline constexpr std::uint32_t convolution_prime0=167772161,convolution_prime1=469762049,convolution_prime2=998244353;
 inline constexpr std::uint64_t convolution_product01=std::uint64_t{convolution_prime0}*convolution_prime1;
-constexpr std::uint32_t convolution_power(std::uint32_t a,std::uint32_t e,std::uint32_t p) noexcept {
-    std::uint32_t r=1;
-    for(;e;e>>=1,a=static_cast<std::uint32_t>(std::uint64_t{a}*a%p))if(e&1)r=static_cast<std::uint32_t>(std::uint64_t{r}*a%p);
-    return r;
-}
-inline constexpr auto convolution_inverse0=convolution_power(convolution_prime0,convolution_prime1-2,convolution_prime1);
-inline constexpr auto convolution_inverse01=convolution_power(static_cast<std::uint32_t>(convolution_product01%convolution_prime2),convolution_prime2-2,convolution_prime2);
+inline constexpr auto convolution_inverse0=ntt_power(convolution_prime0,convolution_prime1-2,convolution_prime1);
+inline constexpr auto convolution_inverse01=ntt_power(static_cast<std::uint32_t>(convolution_product01%convolution_prime2),convolution_prime2-2,convolution_prime2);
 struct ConvolutionDigits {std::uint64_t low;std::uint32_t high;};
 inline ConvolutionDigits convolution_crt_digits(std::uint32_t a,std::uint32_t b,std::uint32_t c) noexcept {
     const auto delta1=b>=a?b-a:b+convolution_prime1-a;
@@ -872,9 +871,7 @@ class CRTConvolution {
     NTT<469762049> second_;
     NTT<998244353> third_;
     static std::size_t output_size(std::size_t a,std::size_t b) {
-        if(!a||!b)return 0;
-        if(a-1>std::numeric_limits<std::size_t>::max()-b)throw std::length_error("CRTConvolution: size overflow");
-        const auto n=a-1+b;
+        const auto n=/*SIRKIT_NS_REWRITE_V1:R:OjpyZWluc2lyazo6ZGV0YWls*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::convolution_result_size(a,b,"CRTConvolution: size overflow");
         if(n>max_length())throw std::length_error("CRTConvolution: result too long");
         return n;
     }

@@ -26,6 +26,7 @@
 // swap(other): 2コンテナの全状態をO(1)で交換する。コピーは独立、move後の元は空。
 // コピーはO(h)、moveはO(1)。コピー・移動・clearでもinfを保持し、swapでは設定も交換する。
 // 公開のminlc/maxlc・座標範囲は参照用。外からの変更は不変条件を壊す。
+// SIRKIT_LINE_CONTAINER_STANDARD_HINTS: 座標を複製しない標準の探索経路を使う。
 // long doubleの丸め誤差があり、ll版も厳密な整数内積ではない。hは包絡に残る点数。
 // 既定の丸めモード・型本来の精度が前提。ゼロの符号は未規定。
 //
@@ -294,8 +295,8 @@ struct LineContainer : std::multiset<Line<T>, /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpc
           if (has_previous) {
             previous = *x;
             previous_below = intersection(previous, candidate);
-            if (!previous_below && previous.p >= candidate.p &&
-                (z == end() || candidate.p < z->p)) return;
+            // 整数順序では後続を削除できる候補はその後続の旧右端で前任より良い。
+            if (!previous_below && previous.p >= candidate.p) return;
           }
           auto y = insert(z, candidate);
           while (z != end() && !boundary_less(*y, *z)) {
@@ -304,7 +305,6 @@ struct LineContainer : std::multiset<Line<T>, /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpc
           }
           if (has_previous) {
             x->p = previous.p;
-            if (!previous_below && !boundary_less(*x, *y)) insect(x, y = erase(y));
           } else x = y;
           while ((y = x) != begin() && !boundary_less(*--x, *y)) insect(x, erase(y));
           // floorが最小値の直線はその点で最適になり得る。真の域外だけ除く。
@@ -312,11 +312,10 @@ struct LineContainer : std::multiset<Line<T>, /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpc
             const auto first = begin();
             if (first->p == std::numeric_limits<T>::min()) [[unlikely]] {
               const auto next = std::next(first);
-              if (next != end()) {
-                bool first_below;
-                insect_impl(first, next, first_below);
-                if (first_below) erase(first);
-              }
+              // 末尾の上端は最大値なので、ここでは次の直線が存在する。
+              bool first_below;
+              insect_impl(first, next, first_below);
+              if (first_below) erase(first);
             }
           }
           return;
@@ -336,8 +335,8 @@ struct LineContainer : std::multiset<Line<T>, /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpc
             --x;
             previous = *x;
             previous_below = intersection<true>(previous, candidate);
-            if (!previous_below && previous.p >= candidate.p &&
-                (z == end() || candidate.p < z->p)) return;
+            // 整数順序では後続を削除できる候補はその後続の旧右端で前任より良い。
+            if (!previous_below && previous.p >= candidate.p) return;
           }
           auto y = insert(z, candidate);
           while (z != end() && !boundary_less(*y, *z)) {
@@ -346,7 +345,6 @@ struct LineContainer : std::multiset<Line<T>, /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpc
           }
           if (has_previous) {
             x->p = previous.p;
-            if (!previous_below && !boundary_less(*x, *y)) insect(x, y = erase(y));
           } else x = y;
           while ((y = x) != begin() && !boundary_less(*--x, *y)) insect(x, erase(y));
           // floorが最小値の直線はその点で最適になり得る。真の域外だけ除く。
@@ -354,11 +352,10 @@ struct LineContainer : std::multiset<Line<T>, /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpc
             const auto first = begin();
             if (first->p == std::numeric_limits<T>::min()) [[unlikely]] {
               const auto next = std::next(first);
-              if (next != end()) {
-                bool first_below;
-                insect_impl(first, next, first_below);
-                if (first_below) erase(first);
-              }
+              // 末尾の上端は最大値なので、ここでは次の直線が存在する。
+              bool first_below;
+              insect_impl(first, next, first_below);
+              if (first_below) erase(first);
             }
           }
           return;
@@ -377,11 +374,9 @@ struct LineContainer : std::multiset<Line<T>, /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpc
       const auto first = begin();
       if (first->p == std::numeric_limits<T>::min()) [[unlikely]] {
         const auto next = std::next(first);
-        if (next != end()) {
-          bool first_below;
-          insect_impl(first, next, first_below);
-          if (first_below) erase(first);
-        }
+        bool first_below;
+        insect_impl(first, next, first_below);
+        if (first_below) erase(first);
       }
     }
   }
@@ -461,7 +456,7 @@ struct LineContainer2D {
   std::size_t count_ = 0;
   // 照会では状態を変えず、包絡が変わった追加後にだけ更新する。
   // 算術の代替指定と、処理系に合わせたキャッシュ選択を分ける。
-#if (defined(__clang__) || defined(__GNUC__))
+#if !defined(SIRKIT_LINE_CONTAINER_STANDARD_HINTS) && (defined(__clang__) || defined(__GNUC__))
   static constexpr bool cache_points = true;
 #else
   static constexpr bool cache_points = false;
@@ -545,7 +540,6 @@ struct LineContainer2D {
     hint.negative.line = &*negative;
     if constexpr (cache_points) { hint.negative.cached.k = (*negative).k; hint.negative.cached.m = (*negative).m; }
     hint.negative.previous = negative == hull.begin() ? nullptr : &*std::prev(negative);
-    if (positive == negative) hint.small = 3;
   }
   void refresh_hints() {
     refresh_hint(minlc, min_hint_);
@@ -685,39 +679,32 @@ struct LineContainer2D {
     const ld fraction = value - ld(integral);
     return integral + (fraction >= 0.5L) - (fraction <= -0.5L);
   }
-  template <bool ratio_is_finite = false>
   std::pair<ld, ld> select(ld a, ld b) const {
     if (a == 0) {
-      if constexpr (!ratio_is_finite) check_coefficients(a, b);
+      check_coefficients(a, b);
       const auto it = b > 0 ? std::prev(maxlc.end()) : maxlc.begin();
       return {it->m, it->k};
     }
     if (b == 0) {
-      if constexpr (!ratio_is_finite) check_coefficients(a, b);
+      check_coefficients(a, b);
       const auto& line = a > 0 ? *maxlc.lower_bound(ld{0}) : *minlc.lower_bound(ld{0});
       return {line.m, line.k};
     }
-    return select_nonzero<ratio_is_finite>(a, b);
+    return select_nonzero(a, b);
   }
   [[noreturn]] static void slope_error(ld a, ld b) {
     check_coefficients(a, b);
     throw std::overflow_error("LineContainer2D: query slope overflow");
   }
-  template <bool ratio_is_finite>
   std::pair<ld, ld> select_nonzero(ld a, ld b) const {
     const ld c = b / a;
-    if constexpr (!ratio_is_finite) {
 #ifndef SKIP_RUNTIME_CHECKS
-      // 有限aと有限b / aからbの有限性も分かる。bを重ねて検査しない。
-      if (!std::isfinite(a) || !std::isfinite(c)) [[unlikely]] slope_error(a, b);
+    // 有限aと有限b / aからbの有限性も分かる。bを重ねて検査しない。
+    if (!std::isfinite(a) || !std::isfinite(c)) [[unlikely]] slope_error(a, b);
 #else
-      if (!std::isfinite(c)) [[unlikely]] slope_error(a, b);
+    if (!std::isfinite(c)) [[unlikely]] slope_error(a, b);
 #endif
-    }
-    const auto& line = [&]() -> const Line<ld>& {
-      if constexpr (ratio_is_finite) return a > 0 ? *maxlc.lower_bound(c) : *minlc.lower_bound(c);
-      else return a > 0 ? hinted_line<ratio_is_finite>(maxlc, max_hint_, c) : hinted_line<ratio_is_finite>(minlc, min_hint_, c);
-    }();
+    const auto& line = a > 0 ? hinted_line(maxlc, max_hint_, c) : hinted_line(minlc, min_hint_, c);
     return {line.m, line.k};
   }
 #if (defined(__GNUC__) || defined(__clang__))

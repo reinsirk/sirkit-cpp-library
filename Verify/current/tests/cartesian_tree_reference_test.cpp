@@ -89,6 +89,9 @@ void chains() {
     }
 }
 int main() {
+    constexpr auto kLimit = static_cast<std::size_t>(std::numeric_limits<std::int32_t>::max());
+    sirkit::detail::CheckCartesianIndexCount(kLimit);
+    rejected([] { sirkit::detail::CheckCartesianIndexCount(kLimit + 1); });
     for (std::size_t n = 0, possibilities = 1; n <= 8; ++n, possibilities *= 3) {
         std::vector<int> values(n);
         for (std::size_t code = 0; code < possibilities; ++code) {

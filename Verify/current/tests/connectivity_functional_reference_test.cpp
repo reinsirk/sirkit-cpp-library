@@ -12,8 +12,10 @@ using namespace sirkit;
 #include <array>
 #include <cstdlib>
 #include <iostream>
+#include <limits>
 #include <numeric>
 #include <random>
+#include <stdexcept>
 #include <string>
 #include <tuple>
 
@@ -65,6 +67,17 @@ void functional_case(const std::vector<int>& next) {
     }
 }
 void functional_tests() {
+    using sirkit::detail::CheckFunctionalVertexCount;
+    using sirkit::detail::FunctionalLiftingCount;
+    constexpr auto kVertexLimit = static_cast<std::size_t>(std::numeric_limits<int>::max());
+    CheckFunctionalVertexCount(kVertexLimit);
+    rejected([] { CheckFunctionalVertexCount(kVertexLimit + 1); });
+    const auto max_vertices = std::vector<int>{}.max_size() / 2;
+    require(FunctionalLiftingCount(max_vertices, 2) == 2 * max_vertices);
+    rejected([&] { (void)FunctionalLiftingCount(max_vertices + 1, 2); });
+#ifndef SKIP_RUNTIME_CHECKS
+    rejected([] { FunctionalGraph invalid(std::array{-1}); });
+#endif
     functional_case({});
     for(int n=1;n<=5;++n){std::uint64_t total=1;for(int i=0;i<n;++i)total*=static_cast<unsigned>(n);for(std::uint64_t mask=0;mask<total;++mask){auto code=mask;std::vector<int> next(n);for(auto& v:next){v=static_cast<int>(code%static_cast<unsigned>(n));code/=static_cast<unsigned>(n);}functional_case(next);}}
     for(int trial=0;trial<350;++trial){const int n=static_cast<int>(rng(65)+1);std::vector<int> next(n);for(auto& v:next)v=static_cast<int>(rng(static_cast<std::size_t>(n)));functional_case(next);}
@@ -116,4 +129,24 @@ void connectivity_tests() {
 #endif
     rejected([&]{g.reset(-1);});require(g.size()==n);
 }
-int main(){functional_tests();connectivity_tests();std::cout<<"connectivity/functional independent checks="<<checks<<'\n';}
+void connectivity_capacity_boundaries() {
+    using sirkit::detail::CheckConnectivityWeightCount;
+    using sirkit::detail::ConnectivityTimelineBase;
+    using sirkit::detail::CheckedConnectivitySum;
+    constexpr auto kVertexLimit = static_cast<std::size_t>(std::numeric_limits<int>::max());
+    CheckConnectivityWeightCount(kVertexLimit);
+    rejected([] { CheckConnectivityWeightCount(kVertexLimit + 1); });
+    require(ConnectivityTimelineBase(1, 3) == 1);
+    require(ConnectivityTimelineBase(3, 9) == 4);
+    rejected([] { (void)ConnectivityTimelineBase(5, 9); });
+    constexpr auto kIdLimit = std::numeric_limits<std::size_t>::max();
+    require(CheckedConnectivitySum(kIdLimit - 2, 2, kIdLimit, "test overflow") == kIdLimit);
+    rejected([] { (void)CheckedConnectivitySum(kIdLimit - 2, 3, kIdLimit, "test overflow"); });
+    require(CheckedConnectivitySum(5, 3, 8, "test overflow") == 8);
+    rejected([] { (void)CheckedConnectivitySum(5, 4, 8, "test overflow"); });
+}
+int main(){
+    connectivity_capacity_boundaries();
+    functional_tests();connectivity_tests();
+    std::cout<<"connectivity/functional independent checks="<<checks<<'\n';
+}

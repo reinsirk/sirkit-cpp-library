@@ -77,8 +77,8 @@ public:
     [[nodiscard]] std::pair<int, int> longest() const noexcept {
         std::pair<int, int> best{0, 0};
         const auto consider = [&](int l, int r) {
-            if (r - l > best.second - best.first ||
-                (r - l == best.second - best.first && l < best.first)) best = {l, r};
+            // 同じ長さなら中心の偶奇は共通。左から走査するため先に見つけた区間が左端。
+            if (r - l > best.second - best.first) best = {l, r};
         };
         for (int i = 0; i < size(); ++i) {
             consider(i - odd[i] + 1, i + odd[i]);

@@ -19,6 +19,21 @@ def output(ns=100, checksum="42", expected="42"):
     return json.dumps({"elapsed_ns": ns, "checksum": checksum, "expected": expected}).encode()
 
 
+def fixed_limits(folder, *, quick=True, baseline_ns=10_000_000_000):
+    rows = []
+    for identifier, library in bench.LIBRARIES.items():
+        for case in bench.case_plan(identifier, quick):
+            rows.append({"scope": "kernel", "library": library, "kernel_id": identifier,
+                         "case": case["scenario"], "size": case["size"], "pattern": case["pattern_id"],
+                         "rounds": 1 if quick else max(1, 262144 // case["size"]),
+                         "metric": "kernel_elapsed_ns", "baseline_median_ns": baseline_ns,
+                         "limit_ns": 2 * baseline_ns})
+    path = Path(folder) / "fixed-limits.json"
+    path.write_text(json.dumps({"format": 1, "baseline": {"run_id": "unit-fixture"},
+        "policy": {"multiplier": 2, "whole_program_minimum_ns": 10_000_000}, "limits": rows}))
+    return path
+
+
 class ProtocolTests(unittest.TestCase):
     def test_results_require_actual_time_and_independent_reference_equality(self):
         self.assertEqual(bench.parse_result(output())["elapsed_ns"], 100)
@@ -139,7 +154,8 @@ class CasePlanTests(unittest.TestCase):
                     "median_ns": {"current": 1}, "current_over_base": None}
         with tempfile.TemporaryDirectory() as directory:
             args = argparse.Namespace(output=Path(directory), base="HEAD", compiler="fake",
-                                      quick=True, repetitions=1, warmups=0, id=["fenwick"])
+                                      quick=True, repetitions=1, warmups=0, id=["fenwick"],
+                                      limits=fixed_limits(directory))
             with patch.object(bench, "resolve_base", return_value="a" * 40), \
                  patch.object(bench, "compiler_command", return_value=["fake"]), \
                  patch.object(bench, "command", return_value=subprocess.CompletedProcess([], 0, b"fake compiler\n")), \
@@ -152,6 +168,52 @@ class CasePlanTests(unittest.TestCase):
             self.assertIn("省略", report["error"])
 
 
+class FixedBudgetRunnerTests(unittest.TestCase):
+    def run_fake(self, folder, ns, *, remove_case=False):
+        path = fixed_limits(folder, baseline_ns=50)
+        if remove_case:
+            data = json.loads(path.read_text()); data["limits"].pop(0)
+            path.write_text(json.dumps(data))
+        before = path.read_bytes()
+        args = argparse.Namespace(output=Path(folder) / "report", base=None, compiler="fake",
+            quick=True, repetitions=3, warmups=0, id=["fenwick"], limits=path)
+        def measure(executables, size, pattern, rounds, repetitions, warmups):
+            return {"status": "NO_BASELINE", "size": size, "rounds": rounds,
+                    "samples_ns": {"current": [ns] * repetitions}, "median_ns": {"current": ns},
+                    "current_over_base": None, "independent_reference": "passed"}
+        with patch.object(bench, "compiler_command", return_value=["fake"]), \
+             patch.object(bench, "command", return_value=subprocess.CompletedProcess([], 0, b"fake compiler\n")), \
+             patch.object(bench, "build", return_value=Path("fake-binary")) as build, \
+             patch.object(bench, "measure", side_effect=measure), \
+             redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()):
+            result = bench.run(args)
+        self.assertEqual(path.read_bytes(), before)
+        return result, json.loads((args.output / "result.json").read_text()), build.call_count
+
+    def test_fixed_cap_passes_at_boundary_and_fails_above_without_losing_correctness(self):
+        for ns, expected in ((100, 0), (101, 1)):
+            with self.subTest(ns=ns), tempfile.TemporaryDirectory() as folder:
+                result, report, _ = self.run_fake(folder, ns)
+                self.assertEqual(result, expected)
+                self.assertTrue(report["current_measurements_passed"])
+                self.assertEqual(report["performance_limits_passed"], not expected)
+                self.assertEqual(report["status"], "FAIL" if expected else "CURRENT_ONLY")
+                self.assertEqual(len(report["results"]), 4)
+                for row in report["results"]:
+                    self.assertEqual(row["independent_reference"], "passed")
+                    self.assertEqual(row["median_ns"]["current"], ns)
+                    self.assertEqual(row["performance_limit"]["limit_ns"], 100)
+                    self.assertEqual(row["performance_limit"]["status"], "FAIL" if expected else "PASS")
+
+    def test_selected_case_without_saved_budget_fails_before_compiling(self):
+        with tempfile.TemporaryDirectory() as folder:
+            result, report, builds = self.run_fake(folder, 1, remove_case=True)
+            self.assertEqual(result, 1)
+            self.assertEqual(report["status"], "FAIL")
+            self.assertIn("固定性能予算がありません", report["error"])
+            self.assertEqual(builds, 0)
+
+
 class RuntimeTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -162,7 +224,8 @@ class RuntimeTests(unittest.TestCase):
     def test_real_three_library_smoke_and_snapshots(self):
         with tempfile.TemporaryDirectory() as directory:
             args = argparse.Namespace(output=Path(directory), base="HEAD", compiler=self.compiler,
-                                      quick=True, repetitions=1, warmups=0, id=None)
+                                      quick=True, repetitions=1, warmups=0, id=None,
+                                      limits=fixed_limits(directory))
             with redirect_stdout(io.StringIO()):self.assertEqual(bench.run(args), 0)
             report = json.loads((Path(directory) / "result.json").read_text())
             self.assertEqual(report["status"], "PASS")
@@ -178,7 +241,8 @@ class RuntimeTests(unittest.TestCase):
     def test_all_base_blobs_missing_measures_current_but_does_not_pass(self):
         with tempfile.TemporaryDirectory() as directory:
             args = argparse.Namespace(output=Path(directory), base="HEAD", compiler=self.compiler,
-                                      quick=True, repetitions=1, warmups=0, id=["fenwick"])
+                                      quick=True, repetitions=1, warmups=0, id=["fenwick"],
+                                      limits=fixed_limits(directory))
             with patch.object(bench, "baseline_source", return_value=None), redirect_stdout(io.StringIO()):
                 self.assertEqual(bench.run(args), 2)
             report = json.loads((Path(directory) / "result.json").read_text())

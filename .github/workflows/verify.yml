@@ -128,8 +128,11 @@ jobs:
       - name: Install LLVM
         run: |
           sudo apt-get update
-          sudo apt-get install -y clang-18 llvm-18 libclang-rt-18-dev g++-13
-      - name: Check all normal Verify programs
+          sudo apt-get install -y clang-18 llvm-18 libclang-rt-18-dev g++-13 libboost-dev
+          if [[ "${{ matrix.mode }}" == coverage ]]; then
+            sudo apt-get install -y qemu-user g++-13-multilib
+          fi
+      - name: Run checked library tests
         env:
           VERIFY_MODE: ${{ matrix.mode }}
         run: >-
@@ -137,6 +140,7 @@ jobs:
           --mode "$VERIFY_MODE" --compiler clang++-18
           --gcc-install-dir "$(dirname "$(g++-13 -print-libgcc-file-name)")"
           --llvm-profdata llvm-profdata-18 --llvm-cov llvm-cov-18
+          --gcc g++-13 --gcov gcov-13
           --output "$RUNNER_TEMP/instrumented"
       - name: Summarize instrumentation
         if: always()

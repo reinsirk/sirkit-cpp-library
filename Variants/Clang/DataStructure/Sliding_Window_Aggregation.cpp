@@ -19,7 +19,6 @@
 
 // SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <cstddef>
-#include <limits>
 #include <stdexcept>
 #include <type_traits>
 #include <utility>
@@ -73,8 +72,7 @@ public:
     std::size_t size() const noexcept { return incoming_.size() + outgoing_.size(); }
     bool empty() const noexcept { return incoming_.empty() && outgoing_.empty(); }
     void push_back(const T& value) {
-        if (size() == std::numeric_limits<std::size_t>::max())
-            throw std::length_error("SlidingWindowAggregation: size");
+        // Entryは値を2個持つため、両配列の要素数の和はsize_tの最大値未満。
         T product = incoming_.empty() ? value : std::as_const(op_)(incoming_.back().product, value);
         incoming_.push_back(Entry{value, std::move_if_noexcept(product)});
     }

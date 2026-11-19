@@ -34,7 +34,6 @@ class ProductTree {
     std::vector<std::uint32_t> points_;
     std::vector<FormalPowerSeries> products_;
     void evaluate_node(const FormalPowerSeries& f,std::size_t node,std::size_t begin,std::size_t width,std::vector<std::uint32_t>& out) const {
-        if(begin>=size())return;
         const auto count=std::min(width,size()-begin);
         if(count<=32||f.size()<=32){for(std::size_t i=begin;i<begin+count;++i)out[i]=reinsirk::detail::polynomial_horner(f,points_[i]);return;}
         const auto half=width/2;

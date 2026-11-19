@@ -313,15 +313,18 @@ def performance_table(evidence: list[dict]) -> str:
     def safe(value):
         return ci_quality_report.inline(value).replace("{", "&#123;").replace("}", "&#125;")
     lines = ["起動・入出力込みのVerify全体と、本体だけの測定を区別します。時間は中央値です。", "",
-             "| 測定範囲 | ケース | 規模 | wall ms | CPU ms | 状態 |",
-             "| --- | --- | --- | ---: | ---: | --- |"]
+             "| 測定範囲 | ケース | 規模 | wall ms | CPU ms | 上限 ms | 上限判定 | 状態 |",
+             "| --- | --- | --- | ---: | ---: | ---: | --- | --- |"]
     for item in rows:
         workload = item.get("workload", {})
         scale = workload.get("dimensions") or workload.get("input_header") or str(item["size"]) + (" bytes" if item.get("size_unit") == "input_bytes" else "要素")
         scope = item["scope"] + ("・縮小確認のみ" if item.get("size_profile") == "quick_smoke" or item.get("scale_scope") == "smoke_only" else "")
         cpu = item.get("cpu_median_ns", {}).get("current")
         cpu_text = f"{cpu/1e6:.3f}" if cpu is not None else "対象外"
-        lines.append(f"| {safe(scope)} | {safe(item['pattern'])} | {safe(scale)} | {item['median_ns']['current']/1e6:.3f} | {cpu_text} | {LABELS[item['status']]} |")
+        gate = item.get("performance_limit", {})
+        limit_text = f"{gate['limit_ns']/1e6:.3f}" if "limit_ns" in gate else "—"
+        limit_status = LABELS.get(gate.get("status"), "未判定") if gate.get("status") != "UNAVAILABLE" else "未判定"
+        lines.append(f"| {safe(scope)} | {safe(item['pattern'])} | {safe(scale)} | {item['median_ns']['current']/1e6:.3f} | {cpu_text} | {limit_text} | {limit_status} | {LABELS[item['status']]} |")
     environments = set()
     for item in rows:
         compiler = item.get("compiler", {})
@@ -341,6 +344,19 @@ def quality_table(library: dict | None) -> str:
     for key, label in CATEGORIES.items():
         status = categories.get(key, {}).get("status", "UNAVAILABLE")
         lines.append("| " + label + " | " + LABELS.get(status, "未実施") + " |")
+    lines += ["", "証明済みの到達不能箇所を除き、カバレッジの合格条件は通常版本体の行・直接分岐とも100%です。未計測も失敗として扱います。"]
+    coverage = categories.get("coverage", {}).get("evidence", [])
+    shown = set()
+    for row in coverage:
+        metrics = row.get("metrics")
+        if metrics and row.get("report") not in shown:
+            shown.add(row.get("report"))
+            parts = []
+            for key, label in (("lines", "行"), ("branches", "分岐")):
+                metric = metrics[key]
+                percent = ci_quality_report.coverage_percent(metric) + ("%" if metric["count"] else "")
+                parts.append(f"{label} {metric['covered']}/{metric['count']}（{percent}）")
+            lines += ["", " · ".join(parts)]
     lines += ["", "[実行条件・件数・測定結果](" + site_link("quality.html") + ") · "
               "[結果JSON](" + site_link("assets/quality.json") + ")"]
     for key in ("failure", "performance", "library_checker", "coverage"):

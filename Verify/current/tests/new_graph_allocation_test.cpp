@@ -33,6 +33,28 @@ void operator delete[](void*p,std::size_t)noexcept{::operator delete(p);}
 #include <cassert>
 #include <iostream>
 #include <string>
+
+void max_flow_preflow_allocation_failure() {
+    constexpr int kPaths = 6, kVertices = 2 + kPaths * (kPaths - 1) / 2;
+    mf_graph<> graph(kVertices);
+    int next_vertex = 2;
+    for (int length = 1; length <= kPaths; ++length) {
+        int from = 0;
+        for (int step = 1; step < length; ++step) {
+            graph.add_edge(from, next_vertex, 1);
+            from = next_vertex++;
+        }
+        graph.add_edge(from, 1, 1);
+    }
+    assert(next_vertex == kVertices);
+    // 長さの違う6本の経路。5段目で選ばれるpreflowの確保を拒否する。
+    budget = 1;
+    const auto flow = graph.flow(0, 1);
+    budget = -1;
+    assert(flow == kPaths && graph.flow(0, 1) == 0);
+    for (const auto edge : graph.edges()) assert(edge.cap == 1 && edge.flow == 1);
+}
+
 int main(){
  const auto initial=owned.load();std::size_t failures=0,successes=0;
  for(int b=0;b<80;++b){
@@ -100,5 +122,7 @@ int main(){
   }
   assert(owned==initial);
  }
+ max_flow_preflow_allocation_failure();
+ assert(owned==initial);
  assert(failures>0&&successes>0);std::cout<<"graph allocation failures="<<failures<<" successes="<<successes<<" live_delta="<<(owned.load()-initial)<<'\n';
 }

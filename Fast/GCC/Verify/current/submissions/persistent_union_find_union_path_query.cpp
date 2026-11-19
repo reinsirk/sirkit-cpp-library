@@ -55,6 +55,19 @@
 namespace sirkit {
 #ifndef SIRKIT_PERSISTENT_ARRAY_DEFINED
 #define SIRKIT_PERSISTENT_ARRAY_DEFINED
+namespace detail {
+inline void CheckPersistentArrayNodeCount(std::size_t size) {
+    if (size == std::numeric_limits<std::size_t>::max())
+        throw std::length_error("PersistentArray: node capacity");
+}
+
+inline std::int64_t CheckedPersistentArraySize(std::size_t size) {
+    if (size > static_cast<std::uint64_t>(std::numeric_limits<std::int64_t>::max()))
+        throw std::length_error("PersistentArray: size overflow");
+    return static_cast<std::int64_t>(size);
+}
+}
+
 template<typename T, int shift = 4>
 class PersistentArray {
     friend struct PersistentUnionFind;
@@ -113,8 +126,7 @@ private:
         (void)n;
     }
     Node* allocate(Node* original, bool leaf) {
-        if (storage_->node_count == std::numeric_limits<std::size_t>::max())
-            throw std::length_error("PersistentArray: node capacity");
+        detail::CheckPersistentArrayNodeCount(storage_->node_count);
         if (storage_->blocks.empty() || storage_->blocks.back().size() == storage_->blocks.back().capacity()) {
             std::vector<Node> block;
             block.reserve(std::min<std::size_t>(512, std::size_t{4} << std::min<std::size_t>(storage_->blocks.size(), 9)));
@@ -273,9 +285,7 @@ private:
         return {left->values()[ia & (width - 1)], right->values()[ib & (width - 1)]};
     }
     static std::int64_t vector_size(const std::vector<T>& values) {
-        if (values.size() > static_cast<std::uint64_t>(std::numeric_limits<std::int64_t>::max()))
-            throw std::length_error("PersistentArray: size overflow");
-        return static_cast<std::int64_t>(values.size());
+        return detail::CheckedPersistentArraySize(values.size());
     }
 };
 #endif
@@ -374,8 +384,7 @@ private:
         while (value >= 0) { i = value; value = arr.get_existing(r, i); }
         return i;
     }
-    void check_version(Version r) const {
-        (void)r;
+    void check_version([[maybe_unused]] Version r) const {
     }
     std::pair<std::pair<int,int>, std::pair<int,int>> find_pair(int i, int j, Version r) const {
         check_version(r); arr.check_index(i); arr.check_index(j);

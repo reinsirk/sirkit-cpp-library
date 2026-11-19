@@ -12,6 +12,7 @@ using namespace sirkit;
 #include <iostream>
 #include <limits>
 #include <random>
+#include <stdexcept>
 #include <vector>
 
 namespace {
@@ -74,6 +75,33 @@ template<class T> void floating() {
         }
     }
 }
+
+void rotation_and_normalization() {
+    using IntegerPoint = ::sirkit::geo::PointI;
+    const IntegerPoint point{3, 4};
+    constexpr std::array<IntegerPoint, 4> quarter_turns{{{3, 4}, {-4, 3}, {-3, -4}, {4, -3}}};
+    for (int turns = -12; turns <= 12; ++turns) {
+        require(point.rotated90(turns) == quarter_turns[(turns + 12) % 4]);
+        auto in_place = point;
+        in_place.rot90(turns);
+        require(in_place == quarter_turns[(turns + 12) % 4]);
+    }
+    using Real = ::sirkit::geo::RealPoint;
+    const auto normal = Real{0, -8}.normalized();
+    require(normal == Real{0, -1});
+    const auto reject_normalization = [](Real invalid) {
+        bool rejected = false;
+        try { (void)invalid.normalized(); }
+        catch (const std::domain_error&) { rejected = true; }
+        require(rejected);
+    };
+    reject_normalization({0, 0});
+#ifndef SKIP_RUNTIME_CHECKS
+    const auto inf = std::numeric_limits<long double>::infinity();
+    reject_normalization({inf, 1});
+    reject_normalization({1, inf});
+#endif
+}
 }
 
 int main() {
@@ -83,5 +111,6 @@ int main() {
     using P=::sirkit::geo::Point<std::int64_t,std::int64_t>;
     check(P{0,0},P{3000000000,-3000000000},P{3000000000,3000000000});
     floating<float>(); floating<double>(); floating<long double>();
+    rotation_and_normalization();
     std::cout << "PASS checks=" << checks << " outside_contract=" << outside_contract << '\n';
 }

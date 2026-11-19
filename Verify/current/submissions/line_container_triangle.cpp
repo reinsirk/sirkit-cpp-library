@@ -272,8 +272,8 @@ struct LineContainer : std::multiset<Line<T>, /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpc
           if (has_previous) {
             previous = *x;
             previous_below = intersection(previous, candidate);
-            if (!previous_below && previous.p >= candidate.p &&
-                (z == end() || candidate.p < z->p)) return;
+            // 整数順序では後続を削除できる候補はその後続の旧右端で前任より良い。
+            if (!previous_below && previous.p >= candidate.p) return;
           }
           auto y = insert(z, candidate);
           while (z != end() && !boundary_less(*y, *z)) {
@@ -282,7 +282,6 @@ struct LineContainer : std::multiset<Line<T>, /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpc
           }
           if (has_previous) {
             x->p = previous.p;
-            if (!previous_below && !boundary_less(*x, *y)) insect(x, y = erase(y));
           } else x = y;
           while ((y = x) != begin() && !boundary_less(*--x, *y)) insect(x, erase(y));
           // floorが最小値の直線はその点で最適になり得る。真の域外だけ除く。
@@ -290,11 +289,10 @@ struct LineContainer : std::multiset<Line<T>, /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpc
             const auto first = begin();
             if (first->p == std::numeric_limits<T>::min()) [[unlikely]] {
               const auto next = std::next(first);
-              if (next != end()) {
-                bool first_below;
-                insect_impl(first, next, first_below);
-                if (first_below) erase(first);
-              }
+              // 末尾の上端は最大値なので、ここでは次の直線が存在する。
+              bool first_below;
+              insect_impl(first, next, first_below);
+              if (first_below) erase(first);
             }
           }
           return;
@@ -314,8 +312,8 @@ struct LineContainer : std::multiset<Line<T>, /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpc
             --x;
             previous = *x;
             previous_below = intersection<true>(previous, candidate);
-            if (!previous_below && previous.p >= candidate.p &&
-                (z == end() || candidate.p < z->p)) return;
+            // 整数順序では後続を削除できる候補はその後続の旧右端で前任より良い。
+            if (!previous_below && previous.p >= candidate.p) return;
           }
           auto y = insert(z, candidate);
           while (z != end() && !boundary_less(*y, *z)) {
@@ -324,7 +322,6 @@ struct LineContainer : std::multiset<Line<T>, /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpc
           }
           if (has_previous) {
             x->p = previous.p;
-            if (!previous_below && !boundary_less(*x, *y)) insect(x, y = erase(y));
           } else x = y;
           while ((y = x) != begin() && !boundary_less(*--x, *y)) insect(x, erase(y));
           // floorが最小値の直線はその点で最適になり得る。真の域外だけ除く。
@@ -332,11 +329,10 @@ struct LineContainer : std::multiset<Line<T>, /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpc
             const auto first = begin();
             if (first->p == std::numeric_limits<T>::min()) [[unlikely]] {
               const auto next = std::next(first);
-              if (next != end()) {
-                bool first_below;
-                insect_impl(first, next, first_below);
-                if (first_below) erase(first);
-              }
+              // 末尾の上端は最大値なので、ここでは次の直線が存在する。
+              bool first_below;
+              insect_impl(first, next, first_below);
+              if (first_below) erase(first);
             }
           }
           return;
@@ -355,11 +351,9 @@ struct LineContainer : std::multiset<Line<T>, /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpc
       const auto first = begin();
       if (first->p == std::numeric_limits<T>::min()) [[unlikely]] {
         const auto next = std::next(first);
-        if (next != end()) {
-          bool first_below;
-          insect_impl(first, next, first_below);
-          if (first_below) erase(first);
-        }
+        bool first_below;
+        insect_impl(first, next, first_below);
+        if (first_below) erase(first);
       }
     }
   }

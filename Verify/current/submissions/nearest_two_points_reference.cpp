@@ -294,15 +294,17 @@ class NearestTwoPointsSolver {
     }
 
 public:
-    template<bool Sorted = false, std::input_iterator Iterator, std::sentinel_for<Iterator> Sentinel>
+    template<bool Sorted = false, std::size_t kNodeLimit = std::numeric_limits<std::size_t>::max(),
+             std::input_iterator Iterator, std::sentinel_for<Iterator> Sentinel>
     static std::optional<NearestTwoPointsResult> run(Iterator first, Sentinel last) {
         NearestTwoPointsSolver solver;
+        const auto capacity = std::min(kNodeLimit, solver.nodes_.max_size());
         if constexpr (std::sized_sentinel_for<Sentinel, Iterator>) {
             const auto count = last - first;
 #ifndef SKIP_RUNTIME_CHECKS
             if (count < 0) throw std::invalid_argument("nearest_two_points: reversed range");
 #endif
-            if (std::cmp_greater(count, solver.nodes_.max_size()))
+            if (std::cmp_greater(count, capacity))
                 throw std::length_error("nearest_two_points: too many points");
             solver.nodes_.reserve(static_cast<std::size_t>(count));
         }
@@ -315,7 +317,7 @@ public:
             if (!valid_coordinate(point.first) || !valid_coordinate(point.second))
                 throw std::out_of_range("nearest_two_points: coordinates must fit int32_t");
 #endif
-            if (solver.nodes_.size() == solver.nodes_.max_size())
+            if (solver.nodes_.size() == capacity)
                 throw std::length_error("nearest_two_points: too many points");
 #ifndef SKIP_RUNTIME_CHECKS
             if constexpr (Sorted) {

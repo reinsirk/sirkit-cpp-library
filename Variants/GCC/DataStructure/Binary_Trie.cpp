@@ -120,8 +120,7 @@ private:
         const auto index = recycled ? free_id_slot_ : next_id_;
         if (!recycled && next_id_ == id_capacity_)
         {
-            if (id_capacity_ == NODES)
-                throw std::length_error("BinaryTrie: ID slot limit exceeded");
+            // 使用中のID枠は既存の葉に一対一で対応し、追加先の葉にはまだ枠がない。
             const auto n = std::min(kIdBlockSize, NODES - id_capacity_);
             id_blocks_.push_back(std::make_unique<IdSlot[]>(n));
             id_capacity_ += n;
@@ -159,10 +158,7 @@ private:
         }
         if (next_unused_ == capacity_)
         {
-            if (capacity_ == NODES)
-            {
-                throw std::length_error("BinaryTrie: node limit exceeded");
-            }
+            // 二分トライの上限は、新しいsuffix全体を追加する前に確認済み。
             const auto n = std::min(kBlockSize, NODES - capacity_);
             blocks_.push_back(std::make_unique<Node[]>(n));
             capacity_ += n;

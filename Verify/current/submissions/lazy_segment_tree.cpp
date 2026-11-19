@@ -41,6 +41,22 @@
 
 // SIRKIT_NAMESPACE_OPEN_V1
 namespace sirkit {
+#ifndef SIRKIT_SEGMENT_ARRAY_CAPACITY_DEFINED
+#define SIRKIT_SEGMENT_ARRAY_CAPACITY_DEFINED
+namespace detail {
+inline std::size_t CheckedSegmentLeafBase(std::size_t count, std::size_t limit, const char* error) {
+    if (count == 0) return 1;
+    if (count > std::bit_floor(limit)) throw std::length_error(error);
+    return std::bit_ceil(count);
+}
+
+inline int CheckedSegmentArrayCount(std::size_t count, const char* error) {
+    if (count > static_cast<std::size_t>(std::numeric_limits<int>::max())) throw std::length_error(error);
+    return static_cast<int>(count);
+}
+}
+#endif
+
 #ifndef SIRKIT_LAZY_SEGMENT_TREE_DEFINED
 #define SIRKIT_LAZY_SEGMENT_TREE_DEFINED
 template<class S, auto op, auto e, class F, auto mapping, auto composition, auto id>
@@ -58,16 +74,9 @@ class lazy_segtree {
     std::vector<F> lazy_;
     std::vector<std::uint8_t> pending_;
     static std::size_t leaf_base(std::size_t n) {
-        if (!n) return 1;
         const auto limit = std::min({std::vector<S>{}.max_size() / 2,
                                      std::vector<F>{}.max_size(), std::vector<std::uint8_t>{}.max_size()});
-        std::size_t base = 1;
-        while (base < n) {
-            if (base > limit / 2) throw std::length_error("lazy_segtree: size");
-            base *= 2;
-        }
-        if (base > limit) throw std::length_error("lazy_segtree: size");
-        return base;
+        return detail::CheckedSegmentLeafBase(n, limit, "lazy_segtree: size");
     }
     static std::size_t checked_size(int n) {
 #ifndef SKIP_RUNTIME_CHECKS
@@ -76,9 +85,7 @@ class lazy_segtree {
         return static_cast<std::size_t>(n);
     }
     static int vector_size(const std::vector<S>& values) {
-        if (values.size() > static_cast<std::size_t>(std::numeric_limits<int>::max()))
-            throw std::length_error("lazy_segtree: size");
-        return static_cast<int>(values.size());
+        return detail::CheckedSegmentArrayCount(values.size(), "lazy_segtree: size");
     }
     void check_index(int i) const {
 #ifndef SKIP_RUNTIME_CHECKS

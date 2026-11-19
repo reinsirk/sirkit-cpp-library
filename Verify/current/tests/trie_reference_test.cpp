@@ -145,6 +145,10 @@ static void deterministic() {
     full(assigned, ref);
     Trie moved(std::move(copy));
     assert(copy.empty() && copy.node_count() == 1);
+    assert(copy.count("original") == 0);
+    assert(!copy.longest_prefix("original"));
+    assert(copy.count_less("original") == 0);
+    copy.clear();
     copy.insert("reuse");
     assert(copy.count("reuse") == 1);
     assert(moved.count("unique-copy-word") == 1);
@@ -152,10 +156,14 @@ static void deterministic() {
     move_assigned.insert("old");
     move_assigned = std::move(assigned);
     full(move_assigned, ref);
+    auto* self = &move_assigned;
+    move_assigned = std::move(*self);
+    full(move_assigned, ref);
     assert(assigned.empty());
     assigned.insert("again", 2);
     assert(assigned.count("again") == 2);
-    t.swap(assigned);
+    using std::swap;
+    swap(t, assigned);
     full(assigned, ref);
     assert(t.count("again") == 2);
     t.swap(assigned);
@@ -238,6 +246,11 @@ static void degree_transitions() {
 }
 
 static void overflow() {
+    ::sirkit::detail::CheckTrieCapacity(7, 7, "test");
+    bool capacity_rejected = false;
+    try { ::sirkit::detail::CheckTrieCapacity(8, 7, "test"); }
+    catch (const std::length_error&) { capacity_rejected = true; }
+    assert(capacity_rejected);
     const auto maximum = std::numeric_limits<std::size_t>::max();
     Trie t;
     assert(t.insert("", maximum) == maximum);

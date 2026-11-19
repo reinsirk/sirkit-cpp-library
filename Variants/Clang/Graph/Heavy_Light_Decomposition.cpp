@@ -82,6 +82,12 @@ using Graph = std::vector<std::vector<int>>;
 #ifndef SIRKIT_HLD_QUERY_HELPERS_DEFINED
 #define SIRKIT_HLD_QUERY_HELPERS_DEFINED
 namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
+inline int HldVertexCount(std::size_t vertices) {
+    if (vertices > static_cast<std::size_t>(std::numeric_limits<int>::max()))
+        throw std::length_error("HLD: int size overflow");
+    return static_cast<int>(vertices);
+}
+
 template<class T, bool = std::is_integral_v<T> && !std::is_same_v<T,bool>>
 struct HldArithmetic {
     static T add(const T& a,const T& b) { return a+b; }
@@ -149,9 +155,7 @@ class HeavyLightDecomposition {
 #endif
     }
     void construct(const Graph& graph,int root) {
-        if(graph.size()>static_cast<std::size_t>(std::numeric_limits<int>::max()))
-            throw std::length_error("HLD: int size overflow");
-        const int n=static_cast<int>(graph.size());
+        const int n=/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::HldVertexCount(graph.size());
 #ifndef SKIP_RUNTIME_CHECKS
         if((n==0 && root!=0) || (n!=0 && (root<0 || root>=n))) throw std::out_of_range("HLD: root");
 #endif
@@ -292,7 +296,7 @@ public:
             if(left<right) std::invoke(fn,left,right,true);
         } else {
             const int left=index_[u]+static_cast<int>(edges),right=index_[v]+1;
-            if(left<right) std::invoke(fn,left,right,false);
+            std::invoke(fn,left,right,false);
         }
         while(count) { const auto p=tail[--count];std::invoke(fn,p.left,p.right,p.reversed); }
         return true;
@@ -316,13 +320,15 @@ public:
         if constexpr(/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::hld_directional_query<Q>) {
             return path_prod(u,v,std::forward<Identity>(identity),std::forward<Q>(query),std::forward<Op>(op),std::identity{},edges);
         } else {
-            const bool connected=same_component(u,v);
-#ifndef SKIP_RUNTIME_CHECKS
-            if(!connected) throw std::invalid_argument("HLD: disconnected path");
-#endif
             using Value=/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::HldQueryValue<Q>;
+            if(!same_component(u,v)) {
+#ifndef SKIP_RUNTIME_CHECKS
+                throw std::invalid_argument("HLD: disconnected path");
+#else
+                return Value(std::forward<Identity>(identity));
+#endif
+            }
             Value result(std::forward<Identity>(identity));
-            if(!connected) return result;
             // 可換積では通行順の保存を省き、両端から直接結合する。
             while(head_[u]!=head_[v]) {
                 if(index_[u]<index_[v]) std::swap(u,v);
@@ -338,12 +344,14 @@ public:
     template<class Identity,class Q,class Op,class Reverse> requires /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::HldReversedProduct<Identity,Q,Op,Reverse>
     auto path_prod(int u,int v,Identity&& identity,Q&& query,Op&& op,Reverse&& reverse,bool edges=false) const {
         using Value=/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::HldQueryValue<Q>;
-        const bool connected=same_component(u,v);
+        if(!same_component(u,v)) {
 #ifndef SKIP_RUNTIME_CHECKS
-        if(!connected) throw std::invalid_argument("HLD: disconnected path");
+            throw std::invalid_argument("HLD: disconnected path");
+#else
+            return Value(std::forward<Identity>(identity));
 #endif
+        }
         Value empty_result(std::forward<Identity>(identity));
-        if(!connected) return empty_result;
         std::optional<Value> from_u,from_v;
         const auto read=[&](int l,int r,bool rev) -> Value {
             Value part=/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::hld_query(query,l,r,rev);
@@ -370,7 +378,7 @@ public:
             if(left<right) append(read(left,right,true));
         } else {
             const int left=index_[u]+static_cast<int>(edges),right=index_[v]+1;
-            if(left<right) append(read(left,right,false));
+            append(read(left,right,false));
         }
         if(from_u && from_v) return Value(std::invoke(op,std::move(*from_u),std::move(*from_v)));
         if(from_u) return std::move(*from_u);
@@ -472,7 +480,6 @@ private:
         static Range make_range(const std::vector<value_type>& values) {
             if constexpr(std::constructible_from<Range,const std::vector<value_type>&>) return Range(values);
             else {
-                if(values.size()>static_cast<std::size_t>(std::numeric_limits<int>::max())) throw std::length_error("HLD: range size");
                 Range range(static_cast<int>(values.size()));
                 for(int i=0;i<static_cast<int>(values.size());++i) range.add(i,values[i]);
                 return range;

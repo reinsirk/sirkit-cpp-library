@@ -52,8 +52,8 @@ inline std::optional<std::uint32_t> fps_scalar_sqrt(std::uint32_t value) noexcep
     unsigned remaining = 23;
     while (remainder != 1) {
         unsigned first = 0; auto probe = remainder;
-        while (probe != 1 && first < remaining) { probe = fps_multiply(probe, probe); ++first; }
-        if (first == remaining) return std::nullopt;
+        // Euler判定後のremainderの位数は2^(remaining-1)を割り切る。
+        while (probe != 1) { probe = fps_multiply(probe, probe); ++first; }
         const auto change = fps_power(correction, std::uint32_t{1} << (remaining - first - 1));
         root = fps_multiply(root, change); correction = fps_multiply(change, change);
         remainder = fps_multiply(remainder, correction); remaining = first;

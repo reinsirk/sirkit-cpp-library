@@ -46,8 +46,8 @@ namespace sirkit {
 #if !defined(SKIP_RUNTIME_CHECKS) && !defined(SIRKIT_PERSISTENT_TREE_OWNER_DEFINED)
 #define SIRKIT_PERSISTENT_TREE_OWNER_DEFINED
 namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
-inline std::uint64_t persistent_tree_owner() {
-    static std::atomic<std::uint64_t> next{1};
+template<class Counter>
+std::uint64_t take_persistent_tree_owner(Counter& next) {
     auto value = next.load(std::memory_order_relaxed);
     for (;;) {
         if (value == std::numeric_limits<std::uint64_t>::max())
@@ -55,11 +55,21 @@ inline std::uint64_t persistent_tree_owner() {
         if (next.compare_exchange_weak(value, value + 1, std::memory_order_relaxed)) return value;
     }
 }
+inline std::uint64_t persistent_tree_owner() {
+    static std::atomic<std::uint64_t> next{1};
+    return take_persistent_tree_owner(next);
+}
 }
 #endif
 
 #ifndef SIRKIT_PERSISTENT_SEGMENT_TREE_DEFINED
 #define SIRKIT_PERSISTENT_SEGMENT_TREE_DEFINED
+namespace detail {
+inline void CheckPersistentTreeNodeCapacity(std::size_t size, std::size_t limit) {
+    if (size == limit) throw std::length_error("PersistentSegmentTree node limit");
+}
+}
+
 template<class T, class Op>
 class PersistentSegmentTree {
     static_assert(std::copyable<T> && std::copy_constructible<Op>);
@@ -77,7 +87,14 @@ public:
 #endif
     public:
         Root() = default;
-        friend bool operator==(const Root&, const Root&) = default;
+        friend constexpr bool operator==(const Root& a, const Root& b) noexcept {
+            if (a.index_ != b.index_) return false;
+#ifndef SKIP_RUNTIME_CHECKS
+            return a.owner_ == b.owner_;
+#else
+            return true;
+#endif
+        }
     };
 private:
     struct Node {
@@ -114,7 +131,8 @@ private:
     }
     std::size_t checked_root(const Root& root) const {
 #ifndef SKIP_RUNTIME_CHECKS
-        if (root.owner_ != state_->owner || root.index_ > state_->nodes.size())
+        // 同じ世代の根は公開後に削除されず、その添字は有効。
+        if (root.owner_ != state_->owner)
             throw std::invalid_argument("PersistentSegmentTree root");
 #endif
         return root.index_;
@@ -140,8 +158,7 @@ private:
         return index == 0 ? 0 : (right ? state_->nodes[index - 1].right : state_->nodes[index - 1].left);
     }
     std::size_t append(T aggregate, std::size_t left, std::size_t right) {
-        if (state_->nodes.size() == state_->nodes.max_size())
-            throw std::length_error("PersistentSegmentTree node limit");
+        detail::CheckPersistentTreeNodeCapacity(state_->nodes.size(), state_->nodes.max_size());
         state_->nodes.push_back(Node{std::move(aggregate), left, right});
         return state_->nodes.size();
     }

@@ -166,6 +166,11 @@ inline constexpr auto sieve_pattern = [] {
         }
     return values;
 }();
+inline std::size_t sieve_checked_capacity(std::uint64_t count, std::size_t maximum,
+                                          const char* error) {
+    if (count > maximum) throw std::length_error(error);
+    return static_cast<std::size_t>(count);
+}
 } // namespace reinsirk::detail
 #endif
 #ifndef SIRKIT_PRIME_SIEVE_DEFINED
@@ -186,14 +191,13 @@ public:
             return;
         }
         const std::uint64_t odds = limit / 2 + limit % 2;
-        const std::uint64_t words = odds / 64 + (odds % 64 != 0);
-        if (words > flags_.max_size())
-            throw std::length_error("PrimeSieve: limit exceeds capacity");
+        const auto words = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::sieve_checked_capacity(
+            odds / 64 + (odds % 64 != 0), flags_.max_size(), "PrimeSieve: limit exceeds capacity");
         // 周期パターンから直接構築し、同じ領域の二重初期化を避ける。
-        flags_.reserve(static_cast<std::size_t>(words));
+        flags_.reserve(words);
         const auto& pattern = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::sieve_pattern;
         constexpr auto period = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::sieve_pattern.size();
-        auto remaining = static_cast<std::size_t>(words);
+        auto remaining = words;
         while (remaining >= period) {
             flags_.insert(flags_.end(), pattern.begin(), pattern.end());
             remaining -= period;
@@ -247,10 +251,8 @@ public:
         std::vector<std::uint64_t> result;
         if (limit_ < 2) return result;
         if (limit_ >= 16) {
-            const auto count = prime_count();
-            if (count > result.max_size())
-                throw std::length_error("PrimeSieve::primes: capacity exceeded");
-            result.reserve(static_cast<std::size_t>(count));
+            result.reserve(/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::sieve_checked_capacity(
+                prime_count(), result.max_size(), "PrimeSieve::primes: capacity exceeded"));
         }
         append_to(result);
         return result;

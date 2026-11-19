@@ -290,6 +290,15 @@ struct RangeAddSum {
 
 #ifndef SIRKIT_IMPLICIT_TREAP_DEFINED
 #define SIRKIT_IMPLICIT_TREAP_DEFINED
+
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
+inline int ImplicitTreapAppendIndex(std::size_t count) {
+    if (count >= static_cast<std::size_t>(std::numeric_limits<int>::max()))
+        throw std::length_error("lazy_implicit_treap capacity");
+    return static_cast<int>(count);
+}
+}
+
 template<class S = RangeAddMin::S,
          S (*op)(S, S) = RangeAddMin::op,
          S (*e)() = RangeAddMin::e,
@@ -558,14 +567,13 @@ class lazy_implicit_treap {
             } else nodes_[p] = Node(std::move(value), priority());
             return p;
         }
-        if (nodes_.size() >= static_cast<std::size_t>(std::numeric_limits<int>::max()))
-            throw std::length_error("lazy_implicit_treap capacity");
+        const int appended = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::ImplicitTreapAppendIndex(nodes_.size());
         if constexpr (compact_nodes_) {
             priorities_.slots.push_back(priority());
             try { nodes_.emplace_back(std::move(value), priorities_.slots.back()); }
             catch (...) { priorities_.slots.pop_back(); throw; }
         } else nodes_.emplace_back(std::move(value), priority());
-        return static_cast<int>(nodes_.size()) - 1;
+        return appended;
     }
     void recycle(int p) {
         if constexpr (TrackIds) {
@@ -746,9 +754,10 @@ class lazy_implicit_treap {
         out.push_back(nodes_[p].value);
         flatten(nodes_[p].right, out);
     }
-    static bool equal(const S& a, const S& b) {
-        if constexpr (requires { static_cast<bool>(a == b); }) return static_cast<bool>(a == b);
-        else return !(a < b) && !(b < a);
+    static bool matches_lower_bound(const S& candidate, const S& value) {
+        if constexpr (requires { static_cast<bool>(candidate == value); }) return static_cast<bool>(candidate == value);
+        // lower_boundでcandidate < valueが偽と分かっている。
+        else return !(value < candidate);
     }
     int bound(S value, bool upper) {
         int p = root_, offset = 0, result = size();
@@ -982,7 +991,7 @@ public:
     int count(S value) { return upper_bound(value) - lower_bound(value); }
     bool contains(S value) {
         int p = lower_bound(value);
-        return p < size() && equal(get(p), value);
+        return p < size() && matches_lower_bound(get(p), value);
     }
     void insert_sorted(S value) {
         int p = allocate(std::move(value));
@@ -1052,7 +1061,7 @@ public:
     }
     void erase_val(S value) {
         int p = lower_bound(value);
-        if (p < size() && equal(get(p), value)) erase_at(p);
+        if (p < size() && matches_lower_bound(get(p), value)) erase_at(p);
     }
     void erase_max() { pop_back(); }
     template<class G> int max_right(int l, G g) {

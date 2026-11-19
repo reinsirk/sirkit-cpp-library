@@ -68,6 +68,51 @@ struct Counted {
 };
 void run_checks(){
     std::size_t failures=0;
+    // 縮約先の構築・solveで確保が失敗しても、元グラフと対応はそのまま。
+    {
+        bool success = false;
+        for (std::ptrdiff_t limit = 0; limit < 100; ++limit) {
+            BipartiteMatching target(6, 6);
+            for (int u = 0; u < 6; ++u) {
+                target.add_edge(u, u);
+                target.add_edge(u, (u + 1) % 6);
+            }
+            target.add_edge(0, 3);
+            const auto view = target.left_matches();
+            const auto neighbors = target.neighbors(0);
+            const auto before = live_allocations.load();
+            allocation_countdown = limit;
+            bool failed = false;
+            try { assert(target.solve() == 6); }
+            catch (const std::bad_alloc&) { failed = true; ++failures; }
+            allocation_countdown = -1;
+            assert(view.data() == target.left_matches().data() && neighbors.data() == target.neighbors(0).data());
+            assert(target.edge_count() == 13 && neighbors.size() == 3);
+            if (!failed) { assert(target.is_maximum()); success = true; break; }
+            assert(target.matching_size() == 0 && !target.is_maximum());
+            assert(live_allocations.load() == before);
+            for (int v : view) assert(v == -1);
+            for (int u : target.right_matches()) assert(u == -1);
+        }
+        assert(success);
+    }
+    // 空の対応からの次数削減用確保を含め、更新より先にすべての確保が終わることを調べる。
+    for(int kind=0;kind<4;++kind){bool success=false;for(std::ptrdiff_t limit=0;limit<100;++limit){
+        const bool transpose=kind>=2;BipartiteMatching target(transpose?11:7,transpose?7:11);
+        auto add=[&](int u,int v){if(transpose)std::swap(u,v);target.add_edge(u,v);};
+        for(int u=0;u<4;++u){add(u,u);add(u,(u+1)%4);}
+        if(kind%2==0){add(4,4);add(4,4);add(5,5);add(6,5);}
+        else{for(int u=4;u<7;++u)for(int v=4;v<7;++v)add(u,v);add(6,7);}
+        const auto left_view=target.left_matches(),right_view=target.right_matches();
+        const auto old_left=saved(left_view),old_right=saved(right_view);const auto old_edges=target.edge_count();
+        const auto before=live_allocations.load();allocation_countdown=limit;bool failed=false;
+        try{assert(target.solve()==(kind%2==0?6:7));}catch(const std::bad_alloc&){failed=true;++failures;}
+        allocation_countdown=-1;
+        assert(left_view.data()==target.left_matches().data()&&right_view.data()==target.right_matches().data());
+        assert(target.edge_count()==old_edges);
+        if(failed){assert(saved(left_view)==old_left&&saved(right_view)==old_right);assert(target.matching_size()==0&&!target.is_maximum());assert(live_allocations.load()==before);}
+        else{assert(target.is_maximum());success=true;break;}
+    }assert(success);}
     for(int kind=0;kind<7;++kind){bool success=false;for(std::ptrdiff_t limit=0;limit<100;++limit){
         BipartiteMatching target(4,4);for(int u=0;u<3;++u)target.add_edge(u,u+1);assert(target.solve()==3);
         for(int u=0;u<4;++u)target.add_edge(u,u);
@@ -88,6 +133,30 @@ void run_checks(){
         if(failed){assert(saved(target.left_matches())==old_left&&saved(target.right_matches())==old_right);assert(target.edge_count()==old_edges&&target.matching_size()==old_card&&target.is_maximum()==old_max);assert(live_allocations.load()==before);}
         else{success=true;break;}
     }assert(success);}
+    {
+        // 非対称な次数で反転経路を選び、部分的な対応がある状態の確保失敗を調べる。
+        bool success=false;std::size_t orientation_failures=0;
+        for(std::ptrdiff_t limit=0;limit<100;++limit){
+            BipartiteMatching target(7,11);
+            for(int u=0;u<3;++u){target.add_edge(u,0);target.add_edge(u,u+1);}
+            assert(target.solve()==3);
+            for(int u=3;u<6;++u){target.add_edge(u,0);target.add_edge(u,u+1);}
+            target.add_edge(6,0);
+            const auto left_view=target.left_matches(),right_view=target.right_matches();
+            const auto old_left=saved(left_view),old_right=saved(right_view);
+            std::vector<std::span<const int>> views;std::vector<std::vector<int>> neighbors;
+            for(int u=0;u<7;++u){views.push_back(target.neighbors(u));neighbors.push_back(saved(views.back()));}
+            const auto before=live_allocations.load();allocation_countdown=limit;bool failed=false;
+            try{assert(target.solve()==7);}catch(const std::bad_alloc&){failed=true;++failures;++orientation_failures;}
+            allocation_countdown=-1;
+            assert(target.left_size()==7&&target.right_size()==11&&target.edge_count()==13);
+            assert(left_view.data()==target.left_matches().data()&&right_view.data()==target.right_matches().data());
+            for(int u=0;u<7;++u){const auto now=target.neighbors(u);assert(now.data()==views[static_cast<std::size_t>(u)].data());assert(saved(now)==neighbors[static_cast<std::size_t>(u)]);}
+            if(failed){assert(saved(left_view)==old_left&&saved(right_view)==old_right);assert(target.matching_size()==3&&!target.is_maximum());assert(live_allocations.load()==before);}
+            else{for(int u=0;u<7;++u){const int v=u==6?0:u+1;assert(target.match_left(u)==v&&target.match_right(v)==u);}assert(target.is_maximum()&&target.min_vertex_cover().size()==7);success=true;break;}
+        }
+        assert(success&&orientation_failures>0);
+    }
     {
         BipartiteMatching source(4,4),target(2,2);source.add_edge(1,2);source.solve();target.add_edge(0,0);target.solve();auto old=saved(target.left_matches());bool success=false;
         for(std::ptrdiff_t limit=0;limit<80;++limit){const auto before=live_allocations.load();allocation_countdown=limit;bool failed=false;try{target=source;}catch(const std::bad_alloc&){failed=true;++failures;}allocation_countdown=-1;if(failed){assert(saved(target.left_matches())==old&&target.left_size()==2);assert(live_allocations.load()==before);}else{success=true;break;}}

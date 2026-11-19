@@ -39,6 +39,7 @@
 
 
 // SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
+#include <algorithm>
 #include <bit>
 #include <cstddef>
 #include <cstdint>
@@ -58,6 +59,12 @@
 namespace sirkit {
 #ifndef SIRKIT_DYNAMIC_LI_CHAO_TREE_DEFINED
 #define SIRKIT_DYNAMIC_LI_CHAO_TREE_DEFINED
+namespace detail {
+inline void CheckLiChaoNodeCapacity(std::size_t size, std::size_t limit) {
+  if (size >= limit) throw std::length_error("Li Chao node limit");
+}
+}
+
 template <typename T = std::int64_t,
           T kInf = (std::numeric_limits<T>::max() < (std::int64_t{1} << 60)
                         ? std::numeric_limits<T>::max()
@@ -130,8 +137,7 @@ class DynamicLiChaoTree {
     return std::bit_cast<T>(static_cast<U>(static_cast<U>(left) + distance / 2));
   }
   Index make_node() {
-    if (nodes_.size() >= no_child || nodes_.size() == nodes_.max_size())
-      throw std::length_error("Li Chao node limit");
+    detail::CheckLiChaoNodeCapacity(nodes_.size(), std::min(static_cast<std::size_t>(no_child), nodes_.max_size()));
     const Index result = static_cast<Index>(nodes_.size());
     nodes_.push_back(Node{Line(T{}, inf_), no_child, no_child});
     return result;

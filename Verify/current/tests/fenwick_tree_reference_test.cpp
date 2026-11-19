@@ -27,6 +27,21 @@ template<class F> void expect_range(F f) {
 }
 }
 int main() {
+    using ::sirkit::detail::CheckedFenwickStorageSize;
+    check(CheckedFenwickStorageSize(0, 1) == 0);
+    check(CheckedFenwickStorageSize(6, 7) == 7);
+    const auto expect_length_error = [](auto run) {
+        try { run(); }
+        catch (const std::length_error&) { return true; }
+        return false;
+    };
+    check(expect_length_error([] { (void)CheckedFenwickStorageSize(7, 7); }));
+    if constexpr (sizeof(std::size_t) >= sizeof(int)) {
+        const auto beyond_int = static_cast<std::size_t>(std::numeric_limits<int>::max()) + 1;
+        check(expect_length_error([&] {
+            (void)CheckedFenwickStorageSize(beyond_int, std::numeric_limits<std::size_t>::max());
+        }));
+    }
     std::mt19937_64 random(0x719a082ULL);
     for (const auto n : {0, 1, 2, 3, 7, 8, 9, 31, 32, 33, 65, 128, 257}) {
         std::vector<std::int64_t> a(n);

@@ -74,6 +74,7 @@ void state(G& g,int s,int t,I total) {
     for(int v=0;v<g.size();++v)check(balance[v]==(v==s?-total:v==t?total:0));
 }
 void primary() {
+    expect<std::length_error>([]{G invalid(-1);});
     G g;check(g.size()==0&&g.edge_count()==0&&g.edges().empty());
     expect<std::length_error>([&]{g.reserve_edges(static_cast<std::size_t>(std::numeric_limits<int>::max())+1);});
     g.reserve_edges(16);g.reset(4);
@@ -114,6 +115,7 @@ void primary() {
     const auto before=g.edges();check(g.flow(1,1)==0);check(same(before,g.edges()));
 #ifndef SKIP_RUNTIME_CHECKS
     const auto unchanged=g.edges();
+    expect<std::out_of_range>([&]{(void)g.flow(0,g.size());});
     expect<std::out_of_range>([&]{(void)g.get_edge(-1);});
     expect<std::out_of_range>([&]{g.change_edge(-1,0,0);});
     expect<std::out_of_range>([&]{(void)g.get_edge(static_cast<int>(g.edge_count()));});
@@ -122,6 +124,18 @@ void primary() {
     expect<std::invalid_argument>([&]{(void)g.flow(0,3,-1);});
     check(same(g.edges(),unchanged));
 #endif
+}
+void capacity_boundaries() {
+    constexpr auto kLimit = static_cast<std::size_t>(std::numeric_limits<int>::max());
+    using sirkit::detail::CheckMaxFlowAppendCapacity;
+    CheckMaxFlowAppendCapacity(kLimit - 1, kLimit - 1, kLimit - 1, false);
+    CheckMaxFlowAppendCapacity(kLimit - 1, kLimit - 2, kLimit - 2, true);
+    expect<std::length_error>([] { CheckMaxFlowAppendCapacity(kLimit, 0, 0, false); });
+    expect<std::length_error>([] { CheckMaxFlowAppendCapacity(0, kLimit, 0, false); });
+    expect<std::length_error>([] { CheckMaxFlowAppendCapacity(0, 0, kLimit, false); });
+    expect<std::length_error>([] { CheckMaxFlowAppendCapacity(0, kLimit - 1, kLimit - 1, true); });
+    check(sirkit::detail::MaxFlowCanUsePreflow(kLimit - 1));
+    check(!sirkit::detail::MaxFlowCanUsePreflow(kLimit));
 }
 template<class Cap>void limits() {
     const Cap max=std::numeric_limits<Cap>::max();mf_graph<Cap> g(2);
@@ -134,6 +148,6 @@ template<class Cap>void limits() {
 }
 }
 int main() {
-    primary();limits<int>();limits<I>();limits<std::uint8_t>();limits<std::uint64_t>();
+    primary();capacity_boundaries();limits<int>();limits<I>();limits<std::uint8_t>();limits<std::uint64_t>();
     std::printf("mf_graph ACL API checks=%" PRIu64 "\n",checks);
 }

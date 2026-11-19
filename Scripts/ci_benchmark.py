@@ -17,6 +17,11 @@ import subprocess
 import sys
 import tempfile
 
+try:
+    from . import performance_limits
+except ImportError:
+    import performance_limits
+
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURES = ROOT / "Verify/ci/benchmarks"
 LIBRARIES = {
@@ -158,10 +163,10 @@ def code(value: str) -> str:
 
 
 def markdown(report: dict) -> str:
-    lines = ["## 本体の性能（参考値）", "",
+    lines = ["## 本体の性能（固定予算検査）", "",
              "現在版の絶対時間を表示します。基準commitを指定したときだけ、同じ計測コード・コンパイラ・O2・検査省略設定で交互比較します。",
              "入力生成・独立参照・プロセス起動・入出力は時間に含めません。本体の構築・操作・破棄と同じchecksum集約を含みます。",
-             "Verifyのmainやオンライン提出時間の比較ではありません。速度差だけでは不合格にしません。", "",
+             "Verifyのmainやオンライン提出時間の比較ではありません。保存した固定予算を超えれば性能検査は失敗です。", "",
              "状態: " + str(report["status"])]
     lines += ["", "対象はFenwick Tree・UnionFind・RollingHashの代表3本です。",
               "通常実行の既定対象は各14ケース（計42）。--id指定時は対象分だけ実行します。",
@@ -173,9 +178,10 @@ def markdown(report: dict) -> str:
     if report.get("base_revision"):
         lines += ["", "基準: " + code(report["base_revision"])]
     compare = report.get("comparison_requested", True)
-    lines += (["", "| 本体 | 入力 | 要素数 | 現在 ms | 基準 ms | 現在/基準 |",
-               "| --- | --- | ---: | ---: | ---: | ---: |"] if compare else
-              ["", "| 本体 | 入力 | 要素数 | 実行時間 ms |", "| --- | --- | ---: | ---: |"])
+    lines += (["", "| 本体 | 入力 | 要素数 | 現在 ms | 基準 ms | 現在/基準 | 固定予算 ms | 判定 |",
+               "| --- | --- | ---: | ---: | ---: | ---: | ---: | --- |"] if compare else
+              ["", "| 本体 | 入力 | 要素数 | 実行時間 ms | 固定予算 ms | 判定 |",
+               "| --- | --- | ---: | ---: | ---: | --- |"])
     for row in report.get("results", []):
         median = row["median_ns"]
         line = f"| {row['id']} | {row['pattern']} | {row['size']} | {median['current']/1e6:.3f} |"
@@ -183,11 +189,16 @@ def markdown(report: dict) -> str:
             base = f"{median['base'] / 1e6:.3f}" if "base" in median else "N/A"
             ratio = f"{row['current_over_base']:.3f}" if row["current_over_base"] is not None else "N/A"
             line += f" {base} | {ratio} |"
+        gate = row.get("performance_limit")
+        if gate:
+            line += f" {gate['limit_ns']/1e6:.3f} | {gate['status']} |"
+        else:
+            line += " — | 未照合 |"
         lines.append(line)
     if any(row["status"] == "NO_BASELINE" for row in report.get("results", [])):
         lines += ["", "N/Aは基準commitに本体がないため比較未実施です。現在版の計測と独立照合だけを行いました。"]
     if report["status"] == "FAIL":
-        lines += ["", "ビルド・照合・計測のいずれかが失敗しました。詳細はJSONを確認してください。"]
+        lines += ["", "ビルド・照合・計測・固定性能予算のいずれかが失敗しました。詳細はJSONを確認してください。"]
     return "\n".join(lines) + "\n"
 
 
@@ -217,12 +228,14 @@ def run(args: argparse.Namespace) -> int:
               "repetitions": args.repetitions, "warmups": args.warmups,
               "platform": platform.platform(), "machine": platform.machine(), "cpu_model": cpu_model(),
               "affinity": sorted(os.sched_getaffinity(0)) if hasattr(os, "sched_getaffinity") else None,
-              "results": [], "sources": {}}
+              "performance_limits_passed": False, "results": [], "sources": {}}
     write_report(output, report)
     try:
         revision = resolve_base(args.base) if args.base is not None else None
         report["base_revision"] = revision
         report["comparison_requested"] = revision is not None
+        limits = performance_limits.load(getattr(args, "limits", ROOT / "Verify/ci/performance_limits.json"))
+        report["performance_limits"] = limits.metadata
         compiler = compiler_command(args.compiler)
         report["compiler"] = {"command": compiler,
                               "version": command([compiler[0], "--version"], timeout=15).stdout.decode().splitlines()[0]}
@@ -233,6 +246,12 @@ def run(args: argparse.Namespace) -> int:
         report["expected_cases"] = sum(map(len, plans.values()))
         report["scale_scope"] = "smoke_only" if args.quick else "small_large_ci_stress_and_power_of_two_boundaries"
         report["ci_stress_size_limit"] = STRESS_SIZE
+        budgets = {}
+        for identifier, cases in plans.items():
+            for case in cases:
+                rounds = 1 if args.quick else max(1, 262144 // case["size"])
+                budgets[identifier, case["size"], case["pattern_id"]] = limits.kernel(
+                    LIBRARIES[identifier], identifier, case["scenario"], case["size"], case["pattern_id"], rounds)
         with tempfile.TemporaryDirectory(prefix="sirkit-benchmark-") as temporary:
             directory = Path(temporary)
             for identifier in selected:
@@ -268,6 +287,7 @@ def run(args: argparse.Namespace) -> int:
                     if revision is None:
                         row["status"] = "CURRENT_ONLY"
                     row.update(id=identifier, pattern=case["scenario"], pattern_id=pattern, scale=case["scale"])
+                    row["performance_limit"] = limits.evaluate(budgets[identifier, size, pattern], row["samples_ns"]["current"])
                     report["results"].append(row)
                     write_report(output, report)
         expected = {(identifier, case["size"], case["pattern_id"])
@@ -279,11 +299,16 @@ def run(args: argparse.Namespace) -> int:
         report["compared_cases"] = compared
         report["uncompared_cases"] = len(report["results"]) - compared
         report["current_measurements_passed"] = bool(report["results"])
+        limits.check_unchanged()
+        report["performance_limits_passed"] = all(row["performance_limit"]["status"] == "PASS" for row in report["results"])
         report["status"] = ("CURRENT_ONLY" if revision is None else "NO_BASELINE" if not compared
                             else "PARTIAL" if report["uncompared_cases"] else "PASS")
+        if not report["performance_limits_passed"]:
+            report["status"] = "FAIL"
+            report["error"] = "固定性能予算を超過しました。正しさの照合結果と測定値はresultsへ保存しています。"
         write_report(output, report)
         print(report["status"] + ": " + str(output / "summary.md"))
-        return 2 if revision is not None and not compared else 0
+        return 1 if not report["performance_limits_passed"] else 2 if revision is not None and not compared else 0
     except (BenchmarkError, OSError, ValueError, KeyError) as error:
         report["status"] = "FAIL"
         report["error"] = str(error)
@@ -297,6 +322,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--base", help="比較が必要な場合だけ指定する基準commit/ref")
     parser.add_argument("--compiler", default="g++")
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--limits", type=Path, default=ROOT / "Verify/ci/performance_limits.json",
+                        help="保存済み実測から固定した性能予算JSON。測定後も更新しない")
     parser.add_argument("--id", action="append", choices=tuple(LIBRARIES))
     parser.add_argument("--quick", action="store_true", help="小規模の動作確認。性能判定には使わない")
     parser.add_argument("--repetitions", type=int, default=7)

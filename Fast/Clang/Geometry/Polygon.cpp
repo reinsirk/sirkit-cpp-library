@@ -313,8 +313,8 @@ template<class T, class C> Location contains(const std::vector<Point<T, C>>& pol
         int side = orientation(a, b, p, eps);
         if (side == 0) {
             if constexpr (std::is_integral_v<T>) {
-                if (std::min(a.x, b.x) <= p.x && p.x <= std::max(a.x, b.x) &&
-                    std::min(a.y, b.y) <= p.y && p.y <= std::max(a.y, b.y)) return Location::Boundary;
+                // 上の走査で p.y が辺の y の範囲内と確認済み。
+                if (std::min(a.x, b.x) <= p.x && p.x <= std::max(a.x, b.x)) return Location::Boundary;
             } else if (on_segment(p, Segment<T, C>{a, b}, eps)) return Location::Boundary;
         }
         if (a.y <= p.y && p.y < b.y && side > 0) ++winding;
@@ -327,6 +327,15 @@ template<class T, class C> Location contains(const std::vector<Point<T, C>>& pol
 #ifndef SIRKIT_GEO_CONVEX_HULL_IMPL_DEFINED
 #define SIRKIT_GEO_CONVEX_HULL_IMPL_DEFINED
 namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
+inline bool convex_hull_combined_radix_counts(std::size_t keys, unsigned active) noexcept {
+    return keys >= 16384 && keys <= std::numeric_limits<std::uint32_t>::max() && active >= 6;
+}
+
+inline std::size_t convex_hull_reserve_size(std::size_t points, std::size_t capacity) {
+    if (points >= capacity) throw std::length_error("geometry hull capacity");
+    return points + 1;
+}
+
 template<bool Sorted, class T, class C>
 std::vector<geo::Point<T, C>> convex_hull_impl(std::vector<geo::Point<T, C>> points, geo::Epsilon eps) {
     constexpr bool narrow_integer = std::is_integral_v<T> && sizeof(T) <= 8 &&
@@ -368,7 +377,7 @@ std::vector<geo::Point<T, C>> convex_hull_impl(std::vector<geo::Point<T, C>> poi
                     std::array<std::array<std::uint32_t, 256>, 8> counts{};
                     unsigned active = 0;
                     for (unsigned k = 0; k < 8; ++k) active += ((varying >> (k * 8)) & 255) != 0;
-                    const bool combined = keys.size() >= 16384 && keys.size() <= std::numeric_limits<std::uint32_t>::max() && active >= 6;
+                    const bool combined = convex_hull_combined_radix_counts(keys.size(), active);
                     if (combined) {
                         for (auto key : keys) {
                             ++counts[0][(key >> 0) & 255];
@@ -426,8 +435,7 @@ std::vector<geo::Point<T, C>> convex_hull_impl(std::vector<geo::Point<T, C>> poi
         else return geo::orientation(a, b, c, eps) > 0;
     };
 
-    if (points.size() == hull.max_size()) throw std::length_error("geometry hull capacity");
-    hull.reserve(points.size() + 1);
+    hull.reserve(convex_hull_reserve_size(points.size(), hull.max_size()));
     for (const auto& p : points) {
         while (hull.size() >= 2 && !left_turn(hull[hull.size() - 2], hull.back(), p)) hull.pop_back();
         hull.push_back(p);

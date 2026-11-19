@@ -118,8 +118,9 @@ inline std::uint32_t LinearRecurrenceTerm(const std::vector<std::uint32_t>& init
     if(k<initial.size())return initial[static_cast<std::size_t>(k)]%mod;
     const auto d=coefficients.size();
     if(d==0)return 0;
-    if(d>=std::vector<std::uint32_t>{}.max_size())throw std::length_error("LinearRecurrenceTerm: size overflow");
-    std::vector<std::uint32_t> denominator(d+1);denominator[0]=1;
+    const auto denominator_size = reinsirk::detail::recurrence_size_plus_one(
+        d, coefficients.max_size(), "LinearRecurrenceTerm: size overflow");
+    std::vector<std::uint32_t> denominator(denominator_size);denominator[0]=1;
     for(std::size_t j=0;j<d;++j){const auto x=coefficients[j]%mod;denominator[j+1]=x?mod-x:0;}
     while(denominator.size()>1&&denominator.back()==0)denominator.pop_back();
     NTT<> ntt;
