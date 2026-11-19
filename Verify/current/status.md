@@ -35,7 +35,7 @@
 | [binomial\_modint\_split](submissions/binomial_modint_split.cpp) | [Library Checker](https://judge.yosupo.jp/problem/binomial_coefficient) | 説明変更のみ・再提出不要 | [AC](https://judge.yosupo.jp/submission/417210) | — |
 | [binomial\_prime](submissions/binomial_prime.cpp) | [Library Checker](https://judge.yosupo.jp/problem/binomial_coefficient_prime_mod) | 現行AC | [AC](https://judge.yosupo.jp/submission/417295) | 140 ms |
 | [binomial\_prime\_split](submissions/binomial_prime_split.cpp) | [Library Checker](https://judge.yosupo.jp/problem/binomial_coefficient_prime_mod) | 現行AC | [AC](https://judge.yosupo.jp/submission/417294) | 139 ms |
-| [bipartite\_matching](submissions/bipartite_matching.cpp) | [Library Checker](https://judge.yosupo.jp/problem/bipartitematching) | 現行AC | [AC](https://judge.yosupo.jp/submission/417460) | 94 ms |
+| [bipartite\_matching](submissions/bipartite_matching.cpp) | [Library Checker](https://judge.yosupo.jp/problem/bipartitematching) | 現行未照合・要再提出 | [AC](https://judge.yosupo.jp/submission/417838) | — |
 | [cartesian\_tree](submissions/cartesian_tree.cpp) | [Library Checker](https://judge.yosupo.jp/problem/cartesian_tree) | 未提出 | — | — |
 | [centroid\_decomposition](submissions/centroid_decomposition.cpp) | [AtCoder](https://atcoder.jp/contests/abc291/tasks/abc291_h) | 未提出 | — | — |
 | [chinese\_remainder](submissions/chinese_remainder.cpp) | [AtCoder](https://atcoder.jp/contests/abc193/tasks/abc193_e) | 未提出 | — | — |
@@ -112,7 +112,7 @@
 | [fraction\_arithmetic](submissions/fraction_arithmetic.cpp) | [AtCoder](https://atcoder.jp/contests/abc028/tasks/abc028_d) | 参考検証・移行先あり | [AC](https://atcoder.jp/contests/abc028/submissions/80443080) | — |
 | [fraction\_sort](submissions/fraction_sort.cpp) | [AtCoder](https://atcoder.jp/contests/abc308/tasks/abc308_c) | 参考検証・移行先あり | [AC](https://atcoder.jp/contests/abc308/submissions/80443084) | — |
 | [functional\_graph](submissions/functional_graph.cpp) | [AtCoder](https://atcoder.jp/contests/abc367/tasks/abc367_e) | 未提出 | — | — |
-| [general\_matching](submissions/general_matching.cpp) | [Library Checker](https://judge.yosupo.jp/problem/general_matching) | 未提出 | — | — |
+| [general\_matching](submissions/general_matching.cpp) | [Library Checker](https://judge.yosupo.jp/problem/general_matching) | 現行未照合・要再提出 | [AC](https://judge.yosupo.jp/submission/417626) | — |
 | [geometry\_area\_full](submissions/geometry_area_full.cpp) | ローカル | ローカル補足 | — | — |
 | [geometry\_area\_split](submissions/geometry_area_split.cpp) | ローカル | ローカル補足 | — | — |
 | [geometry\_circle\_circle\_full](submissions/geometry_circle_circle_full.cpp) | ローカル | ローカル補足 | — | — |
