@@ -1,10 +1,18 @@
 # ライブラリページ
 
-[competitive-verifier 4.2.2](https://github.com/competitive-verifier/competitive-verifier/tree/v4.2.2)で、通常版のAPI・使用例・ソース・検証結果をまとめます。`Document/`を説明の原本とし、ページ用の複製は生成時だけ作ります。
+[competitive-verifier 4.2.2](https://github.com/competitive-verifier/competitive-verifier/tree/v4.2.2)で、API・使用例・ソース・検証結果をまとめます。`Document/`を説明の原本とし、ページ用の複製は生成時だけ作ります。
 
 共通文書を参照するファイルの名前は[ページタイトル設定](../.competitive-verifier/page-titles.json)で区別します。一覧と各ページの見出しへ同じ名前を使い、重複するVerifyの問題名などには対象ファイルを添えます。
 
 用途別ファイルには[説明文書の設定](../.competitive-verifier/page-documents.json)から`Document/pages/`の個別ガイドを割り当て、他方専用のAPIや使用例を混ぜません。本文は関数ごとの見出し・シグネチャ・短い説明・制約・計算量を先に置き、検証結果は後ろに折り畳みます。「ソースのAPI注記」は対象ソース先頭の説明を直接使い、同梱する型・関数も含めます。
+
+## コードを取得
+
+トップページで安全版または速度優先版を選び、使うコンパイラを選びます。コンパイラ共通・GCC専用・Clang専用・MSVC専用のそれぞれにライブラリ一覧があり、選んだ版のコードを取得できます。各一覧からAPIの説明を開くと、同じ版の一覧へ戻れます。
+
+安全版は入力検査が既定で有効です。利用側で先に `#define SKIP_RUNTIME_CHECKS` を置けば対象の検査を省略できます。速度優先版は対象の検査を生成時に省き、一部はメモリの解放も省きます。残る検査とメモリ管理は[配布版の説明](fast_variants.md)を参照してください。
+
+ダウンロード先は生成サイトに同梱する `.cpp` ファイルです。[生成版の一覧](../Variants/manifest.json)と照合して8構成を掲載し、原本と生成版のSHA-256、ページのリンク先、ダウンロード内容を確認します。APIの説明と検証結果は通常版について表示します。
 
 ## 表示する結果
 
@@ -15,7 +23,7 @@
 | 失敗系 | 期待した型の例外と、失敗後にも状態が保たれることを検査する。 |
 | Library Checker公式ケース | 外部で生成した全ケースを公式checkerで照合。プログラム全体の時間も記録する。 |
 | 性能測定 | 全103本のVerify全体時間と、代表3本の本体時間。入力規模・中央値・生データ・実行環境を区別して表示。 |
-| ASan/UBSan・Coverage | checked実行の診断と、通常版本体の行・分岐到達状況。 |
+| ASan/UBSan・Coverage | checked実行の診断と、通常版本体の行・分岐到達状況。coverageは両方100%を必須にする。 |
 
 結果がない対象は「未実施」、記録時からソースが変わった対象は「ソース変更後は未検証」です。代表テストの成功を全APIの保証にはしません。失敗系は現在Fenwick Tree・Segment Tree・Lazy Segment Tree・Union Find・Low Link・Rolling Hashが対象です。本体だけの補足性能はFenwick Tree・Union Find・Rolling Hashを測ります。
 
