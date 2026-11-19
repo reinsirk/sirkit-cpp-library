@@ -29,6 +29,21 @@ int main(){
   for(int i=0;i<100;++i){auto a=rng();if(i%2==0)a=(Big{a}*a%p).convert_to<std::uint64_t>();verify(a,p);}
  }
  for(std::uint64_t p=2;p<=1000;++p){bool prime=true;for(std::uint64_t d=2;d*d<=p;++d)if(p%d==0)prime=false;if(!prime)continue;for(std::uint64_t a=0;a<p;++a){std::uint64_t expected=p;for(std::uint64_t x=0;x<p;++x)if(x*x%p==a){expected=x;break;}const auto actual=ModSqrt(a,p);check(actual.has_value()==(expected!=p));if(actual)check(*actual==expected);}}
- bool threw=false;try{(void)ModSqrt(1,0);}catch(const std::invalid_argument&){threw=true;}check(threw);
+ // 合成数で素数の位数条件が崩れても、反復上限で止まることを確認する。
+ check(!ModSqrt(50, 697));
+#if defined(__SIZEOF_INT128__) && (defined(__GNUC__) || defined(__clang__)) && !defined(SIRKIT_FORCE_STANDARD_ARITHMETIC)
+ check(!sirkit::detail::modular_montgomery_sqrt64(50, 697));
+#endif
+#ifndef SKIP_RUNTIME_CHECKS
+ for (std::uint64_t modulus : {0, 1, 4, 18}) {
+  bool threw = false;
+  try { (void)ModSqrt(1, modulus); }
+  catch (const std::invalid_argument&) { threw = true; }
+  check(threw);
+ }
+#else
+ // 偶数法では、検査省略時も奇数法専用のMontgomery演算に入らない。
+ check(!ModSqrt(3, (std::uint64_t{1} << 32) + 2));
+#endif
  std::cout<<"PASS sqrt primes="<<primes.size()<<" independent Euler/exhaustive checks="<<checks<<'\n';
 }

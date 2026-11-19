@@ -49,6 +49,14 @@
 namespace sirkit {
 #ifndef SIRKIT_INTEGER_SIEVE_DEFINED
 #define SIRKIT_INTEGER_SIEVE_DEFINED
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
+inline std::size_t sieve_divisor_capacity(std::size_t count, std::size_t multiplier,
+                                         std::size_t limit) {
+    if (multiplier > limit / count)
+        throw std::length_error("IntegerSieve: divisor table too large");
+    return count * multiplier;
+}
+}
 struct IntegerSieve {
     std::vector<int> least_prime_factor;
     std::vector<int> prime_list;
@@ -65,7 +73,8 @@ struct IntegerSieve {
                 prime_list.push_back(static_cast<int>(i));
             }
             const int first = least_prime_factor[i];
-            for (std::size_t j = 1; j < prime_list.size(); ++j) {
+            // iの最小素因数firstは列に入り、必ずそこまでに打ち切る。
+            for (std::size_t j = 1; ; ++j) {
                 const int prime = prime_list[j];
                 const std::uint64_t next = static_cast<std::uint64_t>(i) * static_cast<std::uint64_t>(prime);
                 if (next >= limit) break;
@@ -258,7 +267,10 @@ struct IntegerSieve {
         }
         if (k == 0) return std::vector<MODINT>(count, MODINT(1));
         std::vector<MODINT> result(count);
-        if (count > 0) result[0] = MODINT(0);
+#ifdef SKIP_RUNTIME_CHECKS
+        if (result.empty()) return result;
+#endif
+        result[0] = MODINT(0);
         if (count > 1) result[1] = MODINT(1);
         for (std::size_t i = 2; i < count; ++i) {
             const int p = least_prime_factor[i];
@@ -286,10 +298,7 @@ private:
 
     template <class T>
     static void reserve_multiple(std::vector<T>& values, std::size_t multiplier) {
-        if (multiplier > values.max_size() / values.size()) {
-            throw std::length_error("IntegerSieve: divisor table too large");
-        }
-        values.reserve(values.size() * multiplier);
+        values.reserve(/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::sieve_divisor_capacity(values.size(), multiplier, values.max_size()));
     }
 };
 #endif
@@ -316,7 +325,8 @@ struct IntegerTransform {
         const std::size_t upper = a.size() - 1;
         auto prime = primes.begin();
         const auto end = primes.end();
-        for (; prime != end; ++prime) {
+        // upper >= 2。upper/2より大きくupper以下の素数で必ず止まる。
+        for (; ; ++prime) {
             const auto p = static_cast<std::size_t>(*prime);
             if (p > upper / 2) break;
             const auto count = upper / p;
@@ -373,7 +383,8 @@ struct IntegerTransform {
         const std::size_t upper = a.size() - 1;
         auto prime = primes.begin();
         const auto end = primes.end();
-        for (; prime != end; ++prime) {
+        // upper >= 2。upper/2より大きくupper以下の素数で必ず止まる。
+        for (; ; ++prime) {
             const auto p = static_cast<std::size_t>(*prime);
             if (p > upper / 2) break;
             const auto count = upper / p;
@@ -413,7 +424,6 @@ struct IntegerTransform {
         return storage;
     }
     static std::vector<int> primes_for(std::size_t size) {
-        if (size <= 2) return {};
         if (size - 1 > static_cast<std::size_t>(std::numeric_limits<int>::max()))
             throw std::length_error("integer transform: maximum exceeds INT_MAX");
         const auto upper = size - 1;
@@ -431,9 +441,6 @@ struct IntegerTransform {
     static void require_sieve(std::size_t size, const IntegerSieve& sieve) {
         if (size && (sieve.max_value() < 0 || size - 1 > static_cast<std::size_t>(sieve.max_value())))
             throw std::out_of_range("integer transform: sieve too small");
-    }
-    static void require_same_size(std::size_t a, std::size_t b) {
-        if (a != b) throw std::invalid_argument("integer convolution: different lengths");
     }
 #endif
 };

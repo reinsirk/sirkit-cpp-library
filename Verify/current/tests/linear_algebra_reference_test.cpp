@@ -8,7 +8,9 @@ using namespace sirkit;
 #include HEADER
 #include <bit>
 #include <cstdint>
+#include <initializer_list>
 #include <iostream>
+#include <limits>
 #include <numeric>
 #include <random>
 #include <stdexcept>
@@ -40,7 +42,46 @@ template<class T>void field_cases(std::mt19937_64&rng,std::uint32_t mod){
  }
  for(std::size_t n=0;n<=5;++n)for(int rep=0;rep<50;++rep){Matrix<T>a(n,n);for(auto&x:a.values())x=T(rng()%mod);const auto det=permutation_determinant(a);require(MatrixDeterminant(a)==det);auto inv=MatrixInverse(a);require(inv.has_value()==(det!=T{0}));if(inv){require(a*(*inv)==MatrixIdentity<T>(n));require((*inv)*a==MatrixIdentity<T>(n));}for(std::uint64_t k=0;k<=5;++k){auto power=MatrixIdentity<T>(n);for(std::uint64_t j=0;j<k;++j)power=oracle_product(power,a);require(MatrixPower(a,k)==power);}}
 }
+template<class Exception,class Operation>
+void rejects(Operation operation){
+ bool rejected=false;
+ try{operation();}catch(const Exception&){rejected=true;}
+ require(rejected);
+}
+void matrix_boundaries(){
+ using Field=F<7>;
+ using Mat=Matrix<Field>;
+ const auto largest_width = std::numeric_limits<std::size_t>::max() / 2;
+ require(sirkit::detail::inverse_augmented_width(largest_width) == largest_width * 2);
+ rejects<std::length_error>([&] { (void)sirkit::detail::inverse_augmented_width(largest_width + 1); });
+ const Mat empty(std::initializer_list<std::initializer_list<Field>>{});
+ require(empty.rows()==0&&empty.cols()==0&&empty.empty());
+ require(MatrixInverse(empty)==empty);
+#ifndef SKIP_RUNTIME_CHECKS
+ const Mat rectangle{{1,2,3},{4,5,6}};
+ Mat matrix=rectangle;
+ const Mat other_rows(3,3);
+ const Mat other_columns(2,2);
+ rejects<std::invalid_argument>([]{(void)Mat(1,2,std::vector<Field>{1});});
+ rejects<std::out_of_range>([&]{(void)matrix.row(2);});
+ rejects<std::out_of_range>([&]{(void)rectangle.row(2);});
+ rejects<std::out_of_range>([&]{(void)matrix(2,0);});
+ rejects<std::out_of_range>([&]{(void)rectangle(2,0);});
+ rejects<std::out_of_range>([&]{(void)rectangle(0,3);});
+ for(const Mat* other:{&other_rows,&other_columns}){
+  rejects<std::invalid_argument>([&]{matrix+=*other;});
+  rejects<std::invalid_argument>([&]{matrix-=*other;});
+  require(matrix==rectangle);
+ }
+ rejects<std::invalid_argument>([&]{(void)MatrixPower(rectangle,0);});
+ rejects<std::invalid_argument>([&]{(void)MatrixApply(rectangle,std::vector<Field>{1,2});});
+ rejects<std::invalid_argument>([&]{(void)MatrixDeterminant(rectangle);});
+ rejects<std::invalid_argument>([&]{(void)MatrixInverse(rectangle);});
+ rejects<std::invalid_argument>([&]{(void)SolveLinearSystem(rectangle,std::vector<Field>{1});});
+#endif
+}
 int main(){std::mt19937_64 rng(61394);product_cases<F<8>>(rng,8);product_cases<F<998244353>>(rng,998244353);product_cases<GF4>(rng,4);field_cases<F<2>>(rng,2);field_cases<F<3>>(rng,3);field_cases<GF4>(rng,4);
+ matrix_boundaries();
  Matrix<F<7>>zero_columns(4,0);require(zero_columns.row(2).empty());require(MatrixRank(zero_columns)==0);require(SolveLinearSystem(zero_columns,std::vector<F<7>>(4)).has_value());require(!SolveLinearSystem(zero_columns,std::vector<F<7>>{0,0,1,0}).has_value());Matrix<F<7>>zero_rows(0,5);auto all=SolveLinearSystem(zero_rows,std::vector<F<7>>{});require(all&&all->kernel==MatrixIdentity<F<7>>(5));
  bool overflow=false;try{Matrix<F<7>>m(std::numeric_limits<std::size_t>::max(),2);(void)m;}catch(const std::length_error&){overflow=true;}require(overflow);
 #ifndef SKIP_RUNTIME_CHECKS

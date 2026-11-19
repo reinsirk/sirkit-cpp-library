@@ -24,12 +24,13 @@ import threading
 
 sys.dont_write_bytecode = True
 try:
-    from . import ci_benchmark, ci_instrumented, ci_library_checker as official, prepare_verify
+    from . import ci_benchmark, ci_instrumented, ci_library_checker as official, prepare_verify, performance_limits
 except ImportError:
     import ci_benchmark
     import ci_instrumented
     import ci_library_checker as official
     import prepare_verify
+    import performance_limits
 
 ROOT = Path(__file__).resolve().parents[1]
 FLAGS = ["-std=c++23", "-O2", "-DNDEBUG"]
@@ -192,7 +193,7 @@ def baseline_libraries(revision: str, names: list[str], root: Path = ROOT) -> tu
 
 
 def freeze_sources(rows: list[dict], entries: dict, root: Path = ROOT) -> dict[str, str]:
-    names = {"Scripts/ci_performance_all.py", "Verify/ci/performance_cases.py", "Scripts/prepare_verify.py",
+    names = {"Scripts/ci_performance_all.py", "Scripts/performance_limits.py", "Verify/ci/performance_cases.py", "Scripts/prepare_verify.py",
              "Scripts/ci_library_checker.py", "Scripts/ci_benchmark.py", "Verify/ci/library_checker.json"}
     for row in rows:
         entry = entries[row["verify_id"]]
@@ -410,7 +411,7 @@ def write_report(output: Path, report: dict) -> None:
     lines = ["## 全ライブラリのVerifyプログラム性能", "", "状態: " + report["status"], "",
              "現在版の入力規模・wall時間・子プロセスCPU時間の中央値と生データを保存します。",
              "wall時間はプロセス起動・入出力・runnerの待機遅延を含みます。本体だけのkernel測定・オンライン時間とは区別します。",
-             "現在版のケースや測定結果が欠けていれば失敗です。", "",
+             "現在版のケース・測定結果・固定予算が欠けていれば失敗です。予算判定には子プロセスCPU時間の中央値を使います。", "",
              "入力プロファイル: " + report["size_profile"], "",
              "CPU: " + str(report.get("cpu_model", "unknown")),
              "環境: " + str(report.get("platform", "unknown")),
@@ -418,8 +419,8 @@ def write_report(output: Path, report: dict) -> None:
              "コンパイラ: " + str(report.get("compiler", {}).get("version", "未取得")),
              "フラグ: " + " ".join(report.get("flags", [])), "",
              f"全対象 {len(report['all_library_paths'])}、このshard {len(report['selected_library_paths'])}。", "",
-             "| 本体 | Verify | ケース | 入力規模・先頭行 | wall ms | CPU ms | 入力 bytes | 繰り返し |",
-             "| --- | --- | --- | --- | ---: | ---: | ---: | ---: |"]
+             "| 本体 | Verify | ケース | 入力規模・先頭行 | wall ms | CPU ms | 固定CPU予算 ms | 判定 | 入力 bytes | 繰り返し |",
+             "| --- | --- | --- | --- | ---: | ---: | ---: | --- | ---: | ---: |"]
     for row in report["results"]:
         for case in row.get("cases", []):
             med = case["median_ns"]
@@ -428,7 +429,10 @@ def write_report(output: Path, report: dict) -> None:
             dimensions = metadata.get("dimensions", metadata.get("input_header", "登録入力例"))
             description = json.dumps(dimensions, ensure_ascii=False) if isinstance(dimensions, dict) else str(dimensions)
             description = description.replace("|", "&#124;").replace("\n", " ")
-            lines.append(f"| {row['library']} | {row['verify_id']} | {case['name']} | {description} | {med['current']/1e6:.3f} | {cpu:.3f} | {case['input_bytes']} | {report['repetitions']} |")
+            gate = case.get("performance_limit")
+            budget = f"{gate['limit_ns']/1e6:.3f}" if gate else "—"
+            result = gate["status"] if gate else "未照合"
+            lines.append(f"| {row['library']} | {row['verify_id']} | {case['name']} | {description} | {med['current']/1e6:.3f} | {cpu:.3f} | {budget} | {result} | {case['input_bytes']} | {report['repetitions']} |")
     if report.get("base_revision"):
         lines += ["", "比較元の詳細はresult.jsonに保存します。欠落・API非互換・誤答の比率は作りません。"]
     if report.get("error"):
@@ -469,12 +473,14 @@ def run(args: argparse.Namespace) -> int:
               "platform": platform.platform(), "machine": platform.machine(), "cpu_model": ci_benchmark.cpu_model(),
               "affinity": sorted(os.sched_getaffinity(0)) if hasattr(os, "sched_getaffinity") else None,
               "repetitions": args.repetitions, "warmups": args.warmups,
-              "base_revision": None, "source_freeze_passed": False,
+              "base_revision": None, "source_freeze_passed": False, "performance_limits_passed": False,
               "runner": {"source": "Scripts/ci_performance_all.py", "sha256": file_digest(Path(__file__))},
               "compiler": {}, "source_hashes": {}, "results": [dict(row, status="NOT_RUN", cases=[], current_measurements_passed=False) for row in selected]}
     write_report(output, report)
     frozen = None
     try:
+        limits = performance_limits.load(getattr(args, "limits", root / "Verify/ci/performance_limits.json"))
+        report["performance_limits"] = limits.metadata
         revision = ci_benchmark.resolve_base(args.base, root) if args.base else None
         report["base_revision"] = revision
         compiler = shutil.which(args.compiler)
@@ -547,14 +553,18 @@ def run(args: argparse.Namespace) -> int:
                     row["expected_case_names"] = [case["name"] for case in cases]
                     if not cases or len(row["expected_case_names"]) != len(set(row["expected_case_names"])):
                         raise PerformanceError("empty or duplicate performance cases")
+                    budgets = {case["name"]: limits.whole(row["library"], row["verify_id"], case["name"],
+                                Path(case["input_path"]).stat().st_size) for case in cases}
                     for case in cases:
                         result = measure_case(binaries, case, entry, work, repetitions=args.repetitions,
                                               warmups=args.warmups, timeout=args.case_timeout, memory_mib=args.memory_mib)
                         if "base" not in binaries:
                             result["comparison"] = row["baseline_comparison"]
+                        result["performance_limit"] = limits.evaluate(budgets[case["name"]], result["cpu_samples_ns"]["current"])
                         row["cases"].append(result)
                         write_report(output, report)
                     row["current_measurements_passed"], row["status"] = True, "PASS"
+                    row["performance_limits_passed"] = all(case["performance_limit"]["status"] == "PASS" for case in row["cases"])
                 except (OSError, ValueError, official.RunnerError, subprocess.SubprocessError) as error:
                     record_failure(row, error)
                 finally:
@@ -573,9 +583,14 @@ def run(args: argparse.Namespace) -> int:
                         actual.unlink(missing_ok=True)
                 write_report(output, report)
             check_frozen(frozen, root)
+            limits.check_unchanged()
             report["source_freeze_passed"] = True
             report["current_measurements_passed"] = complete(report, entries=by_id, nonlc=nonlc)
-            report["status"] = "PASS" if report["current_measurements_passed"] else "FAIL"
+            report["performance_limits_passed"] = (bool(report["results"]) and all(
+                row.get("performance_limits_passed") is True for row in report["results"]))
+            report["status"] = "PASS" if report["current_measurements_passed"] and report["performance_limits_passed"] else "FAIL"
+            if report["current_measurements_passed"] and not report["performance_limits_passed"]:
+                report["error"] = "固定性能予算を超過しました。正しさの照合結果と測定値はresultsへ保存しています。"
     except (OSError, ValueError, official.RunnerError, subprocess.SubprocessError) as error:
         record_failure(report, error)
     finally:
@@ -594,6 +609,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--base", help="省略時は現在版の絶対性能だけを測定する")
     parser.add_argument("--cache", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--limits", type=Path, default=ROOT / "Verify/ci/performance_limits.json",
+                        help="保存済み実測から固定した性能予算JSON。測定後も更新しない")
     parser.add_argument("--compiler", default="g++")
     parser.add_argument("--repetitions", type=int, default=3)
     parser.add_argument("--warmups", type=int, default=1)

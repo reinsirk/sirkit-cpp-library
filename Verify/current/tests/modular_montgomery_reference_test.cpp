@@ -41,6 +41,9 @@ int main(){
 #if defined(__SIZEOF_INT128__) && (defined(__GNUC__) || defined(__clang__)) && !defined(SIRKIT_FORCE_STANDARD_ARITHMETIC)
   ::sirkit::detail::ModularMontgomery64 arithmetic(m);
   require(arithmetic.power<true>(a%m,e)==expected);require(arithmetic.power<false>(a%m,e)==expected);
+  const auto base = arithmetic.encode(a % m);
+  require(arithmetic.decode(arithmetic.power_encoded<true>(base, e)) == expected);
+  require(arithmetic.decode(arithmetic.power_encoded<false>(base, e)) == expected);
 #endif
  }
  for(const auto m:std::array<std::uint64_t,9>{1,2,UINT32_MAX,std::uint64_t{1}<<32,(std::uint64_t{1}<<32)+1,std::uint64_t{1}<<63,(std::uint64_t{1}<<63)+1,UINT64_MAX-1,UINT64_MAX})

@@ -35,4 +35,25 @@ template<class T> void run(std::mt19937_64& rng) {
         }
     }
 }
-int main(){std::mt19937_64 rng(0x571b174);run<std::int8_t>(rng);run<std::int16_t>(rng);run<std::int32_t>(rng);run<std::int64_t>(rng);std::cout<<"all B=0..64, signed extremes, word/AVX threshold boundaries OK\n";}
+int main(){
+    if constexpr (sizeof(std::size_t) > sizeof(std::uint32_t)) {
+        const std::size_t near_limit = std::numeric_limits<std::uint32_t>::max();
+        ::sirkit::detail::CheckWaveletMatrixSize(near_limit);
+        bool rejected = false;
+        try { ::sirkit::detail::CheckWaveletMatrixSize(near_limit + 1); }
+        catch (const std::length_error&) { rejected = true; }
+        assert(rejected);
+    }
+#ifndef SKIP_RUNTIME_CHECKS
+    const WaveletMatrix<int> matrix(std::vector<int>{4, -1, 0});
+    assert(matrix.kth_largest(0, 3, 0) == 4 && matrix.kth_largest(0, 3, 2) == -1);
+    const auto bad_rank = [](auto query) {
+        try { query(); }
+        catch (const std::out_of_range&) { return true; }
+        return false;
+    };
+    assert(bad_rank([&] { (void)matrix.kth_largest(2, 1, 0); }));
+    assert(bad_rank([&] { (void)matrix.kth_largest(0, 3, 3); }));
+#endif
+    std::mt19937_64 rng(0x571b174);run<std::int8_t>(rng);run<std::int16_t>(rng);run<std::int32_t>(rng);run<std::int64_t>(rng);std::cout<<"all B=0..64, signed extremes, word/AVX threshold boundaries OK\n";
+}

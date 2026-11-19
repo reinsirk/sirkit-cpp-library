@@ -11,6 +11,7 @@ using namespace sirkit;
 #include <iostream>
 #include <limits>
 #include <random>
+#include <stdexcept>
 #include <tuple>
 #include <vector>
 struct InputEdge{int u,v,capacity,cost;};
@@ -26,7 +27,52 @@ template<class Cap,class Cost>void extremes(){
  {MinCostFlow<Cap,Cost> graph(2);const Cost a=maximum/2;graph.add_edge(0,1,1,static_cast<Cost>(-a));graph.add_edge(0,1,3,a);auto[flow,cost]=graph.flow(0,1);assert(flow==4&&cost==2*a);}
  {MinCostFlow<Cap,Cost> graph(2);bool caught=false;try{graph.add_edge(0,1,1,minimum);}catch(const std::overflow_error&){caught=true;}assert(caught&&graph.edge_count()==0);}
 }
+namespace {
+template<class Error, class Call>
+void rejects(Call call) {
+ try { call(); }
+ catch (const Error&) { return; }
+ assert(false);
+}
+
+void rejected_operations() {
+ rejects<std::length_error>([] { MinCostFlow<> invalid(-1); });
+ constexpr auto kLimit = static_cast<std::size_t>(std::numeric_limits<int>::max());
+ using sirkit::detail::CheckMinCostFlowIncidentCounts;
+ CheckMinCostFlowIncidentCounts(kLimit - 1, kLimit - 1, false);
+ CheckMinCostFlowIncidentCounts(kLimit - 2, kLimit - 2, true);
+ rejects<std::length_error>([] { CheckMinCostFlowIncidentCounts(kLimit, 0, false); });
+ rejects<std::length_error>([] { CheckMinCostFlowIncidentCounts(0, kLimit, false); });
+ rejects<std::length_error>([] { CheckMinCostFlowIncidentCounts(kLimit - 1, kLimit - 1, true); });
+#ifndef SKIP_RUNTIME_CHECKS
+ MinCostFlow<> graph(2);
+ const auto id = graph.add_edge(0, 1, 1, 0);
+ rejects<std::out_of_range>([&] { (void)graph.flow(-1, 1); });
+ rejects<std::out_of_range>([&] { (void)graph.get_edge(id + 1); });
+ rejects<std::invalid_argument>([&] { graph.change_edge(id, 1, 2); });
+ assert(graph.get_edge(id).capacity == 1 && graph.get_edge(id).flow == 0);
+#endif
+}
+
+void rejected_cost_arithmetic() {
+ using SmallCost = MinCostFlow<int, std::int8_t>;
+ for (const std::vector<InputEdge>& edges : {
+         std::vector<InputEdge>{{0, 2, 1, 100}, {2, 1, 1, 100}},  // 距離の加算
+         std::vector<InputEdge>{{0, 1, 1, 127}, {2, 1, 1, -1}},   // 換算費用の上限
+         std::vector<InputEdge>{{0, 1, 1, 100}, {0, 2, 1, -127}}, // ポテンシャル更新の下限
+         std::vector<InputEdge>{{0, 1, 2, -100}},                 // 費用総和の下限
+     }) {
+  SmallCost graph(3);
+  for (const auto& edge : edges)
+   graph.add_edge(edge.u, edge.v, edge.capacity, static_cast<std::int8_t>(edge.cost));
+  rejects<std::overflow_error>([&] { (void)graph.flow(0, 1); });
+  for (const auto& edge : graph.edges()) assert(edge.flow == 0);
+ }
+}
+}
 int main(){
+ rejected_operations();
+ rejected_cost_arithmetic();
  std::mt19937_64 random(20261031);std::uint64_t checks=0;
  for(int n=2;n<=6;++n)for(int rep=0;rep<700;++rep){
   std::vector<InputEdge>edges;MinCostFlow<> graph(n);std::vector<int>potential(n);for(auto&v:potential)v=int(random()%13)-6;int m=random()%9;

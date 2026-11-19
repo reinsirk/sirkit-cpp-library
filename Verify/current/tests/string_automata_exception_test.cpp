@@ -38,6 +38,12 @@ using SAM=SuffixAutomaton<>;using PAL=PalindromicTree<>;
 void verify(const SAM&s){assert(s.size()==12&&s.contains("abacabadabac")&&s.distinct_substring_count()>0&&s.occurrences("aba")==3);}
 void verify(const PAL&p){assert(p.text()=="abacabadabac"&&p.occurrences("aba")==3&&p.longest_suffix_length()==9);}
 void allocation_failures(){
+ assert(::sirkit::detail::StringTreeGrowth(7, 8, 12) == 12);
+ ::sirkit::detail::CheckStringTreeSlots(2, 5, 1, 2, "test");
+ bool too_many_states = false;
+ try { ::sirkit::detail::CheckStringTreeSlots(3, 5, 1, 2, "test"); }
+ catch (const std::length_error&) { too_many_states = true; }
+ assert(too_many_states);
  const std::string text="abacabadabac",more(200,'a');SAM s(text);PAL p(text);verify(s);verify(p);int failures=0;
  for(int kind=0;kind<2;++kind)for(int operation=0;operation<9;++operation)for(int allowance=0;allowance<30;++allowance){SAM target=s;PAL pal=p;const auto before=allocations_live;fail_after=allowance;bool failed=false;
   try{if(kind==0){switch(operation){case 0:target.append(static_cast<std::uint8_t>('b'));break;case 1:target.append(more);break;case 2:target.reset(more);break;case 3:target=s;break;case 4:{SAM copy(s);assert(copy.size()==12);break;}case 5:{SAM built(more);assert(built.size()==200);break;}case 6:target.reserve(2000);break;case 7:target.occurrences("aba");break;case 8:target.append("ab");target.occurrences("ab");break;}}

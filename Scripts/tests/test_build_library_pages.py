@@ -159,6 +159,23 @@ class LibraryPagesTest(unittest.TestCase):
         self.assertEqual(text.count("未実施"), len(pages.CATEGORIES))
         self.assertNotIn("| 合格 |", text)
 
+    def test_coverage_requires_hundred_and_shows_actual_counts(self):
+        text = pages.quality_table({"categories": {"coverage": {"status": "FAIL", "evidence": [{
+            "report": "one", "metrics": {"lines": {"count": 2, "covered": 1},
+            "branches": {"count": 2, "covered": 1}}}]}}})
+        self.assertIn("行・直接分岐とも100%", text)
+        self.assertIn("行 1/2（50.00%）", text)
+        self.assertIn("分岐 1/2（50.00%）", text)
+        self.assertIn("失敗", text)
+
+    def test_budget_status_and_limit_are_visible_beside_measurement(self):
+        text = pages.quality_table({"categories": {"performance": {"status": "FAIL", "evidence": [{
+            "status": "FAIL", "scope": "Verify全体", "pattern": "chain", "size": 100,
+            "median_ns": {"current": 20000000}, "cpu_median_ns": {"current": 11000000},
+            "performance_limit": {"status": "FAIL", "metric": "child_cpu_ns", "limit_ns": 10000000}}]}}})
+        self.assertIn("上限 ms", text)
+        self.assertIn("20.000 | 11.000 | 10.000 | 失敗", text)
+
     def test_old_ac_is_labelled_stale(self):
         text = pages.online_table([dict(title="test", status="source_changed", problem_url=None,
                                         judgement=dict(status="AC", url="https://judge.yosupo.jp/submission/1"))])

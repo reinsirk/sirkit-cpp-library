@@ -232,6 +232,14 @@ template<> struct FenwickStorage<unsigned __int128> { using type = unsigned __in
 
 #ifndef SIRKIT_FENWICK_TREE_DEFINED
 #define SIRKIT_FENWICK_TREE_DEFINED
+namespace detail {
+inline std::size_t CheckedFenwickStorageSize(std::size_t n, std::size_t limit) {
+    if (n > static_cast<std::size_t>(std::numeric_limits<int>::max()) || n >= limit)
+        throw std::length_error("fenwick_tree: size");
+    return n == 0 ? 0 : n + 1;
+}
+}
+
 template<class T>
 class fenwick_tree {
     // HLD所有時の読取り専用接続。通常のFenwick操作には使わない。
@@ -251,10 +259,7 @@ class fenwick_tree {
         return static_cast<std::size_t>(n);
     }
     static std::size_t storage_size(std::size_t n) {
-        if (n > static_cast<std::size_t>(std::numeric_limits<int>::max())
-            || n + 1 > std::vector<Storage>{}.max_size())
-            throw std::length_error("fenwick_tree: size");
-        return n == 0 ? 0 : n + 1;
+        return detail::CheckedFenwickStorageSize(n, std::vector<Storage>{}.max_size());
     }
     static std::size_t lowbit(std::size_t x) noexcept { return x & (~x + 1); }
     void check_index(int i) const {
@@ -277,7 +282,7 @@ class fenwick_tree {
     }
     void add_unchecked(std::size_t i, const Storage& delta) {
         const auto n = static_cast<std::size_t>(size());
-        for (++i; i <= n;) {
+        for (++i;;) {
             tree_[i] += delta;
             const auto step = lowbit(i);
             if (step > n - i) break;

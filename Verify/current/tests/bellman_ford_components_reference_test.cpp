@@ -58,6 +58,14 @@ int main(){
         test(g,int(rng()%n),int(rng()%20));
     }
     // A ring with arbitrary warm entry points: two rounds must settle all entries.
+    {
+        WGraph graph(5);
+        graph[0] = {{1, 10}};
+        graph[1] = {{2, -2}};
+        graph[2] = {{3, -1}};
+        graph[3] = {{1, 3}};
+        test(graph, 0, 0);
+    }
     for(int size:{1,2,3,16,65,127})for(int kind:{0,1,2,3}){
         WGraph g(size+2);const int start=size,sink=size+1;
         for(int i=0;i<size;++i){const std::int64_t w=i==0?-std::int64_t(size-1)*7:7;
@@ -86,6 +94,20 @@ int main(){
         if(nonnegative){expected.assign(n,0);for(int i=0;i<k;++i)expected[i+2]=-1;}
         if(k<=64)require(reference(g,0)==expected);
         test(g,0,0,&expected);test(g,0,17,&expected);
+    }
+    for (bool late : {false, true}) {
+        // DFSは先に1→2→1を探索する。遅れて調べる3→2から負閉路が成立する。
+        // 6頂点を成分に加え、引継ぎを4パス早めると、下限に達するのが8パス目以降になる。
+        WGraph graph(14);
+        graph[0] = {{1, 0}};
+        graph[1] = {{2, 1'000'000'000}, {3, 0}};
+        graph[2] = {{1, 0}};
+        graph[3] = {{2, -1'000'000'000}};
+        if (late) for (int vertex = 4; vertex < 10; ++vertex) {
+            graph[1].emplace_back(vertex, 0);
+            graph[vertex].emplace_back(1, 0);
+        }
+        test(graph, 0, late ? 21 : 25);
     }
     // 成分内の有限距離が7/8/9/10パスで確定する。全閉路の換算重みは0。
     for(int gap:{7,8,9,10})for(bool shifted:{false,true}){

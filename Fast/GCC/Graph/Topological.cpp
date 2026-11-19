@@ -156,17 +156,24 @@ inline std::uint32_t TopologicalInitializeFifo(const std::uint32_t* indegree, st
 #ifndef SIRKIT_TOPOLOGICAL_CORE_DEFINED
 #define SIRKIT_TOPOLOGICAL_CORE_DEFINED
 namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
+inline void CheckTopologicalVertexCount(std::size_t vertices) {
+    if (vertices > static_cast<std::size_t>(std::numeric_limits<int>::max()))
+        throw std::length_error("TopologicalSort: too many vertices");
+}
+
+inline void AddTopologicalDegree(std::uint32_t& degree) {
+    if (degree == std::numeric_limits<std::uint32_t>::max())
+        throw std::length_error("TopologicalSort: degree overflow");
+    ++degree;
+}
+
 template <bool Lexicographical, bool Details, bool Bulk = false>
 inline TopologicalResult TopologicalRun(const Graph& graph) {
     const auto n = graph.size();
-    if (n > static_cast<std::size_t>(std::numeric_limits<int>::max()))
-        throw std::length_error("TopologicalSort: too many vertices");
+    CheckTopologicalVertexCount(n);
     std::vector<std::uint32_t> indegree(n);
     for (const auto& edges : graph) for (int to : edges) {
-        auto& degree = indegree[static_cast<std::size_t>(to)];
-        if (degree == std::numeric_limits<std::uint32_t>::max())
-            throw std::length_error("TopologicalSort: degree overflow");
-        ++degree;
+        AddTopologicalDegree(indegree[static_cast<std::size_t>(to)]);
     }
     TopologicalResult result;
     result.order.reserve(n);

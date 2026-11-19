@@ -18,6 +18,34 @@ using I = std::int64_t;
 static std::size_t checks = 0;
 static void require(bool value) { ++checks; assert(value); }
 
+static void li_chao_boundaries() {
+    DynamicLiChaoTree<I> tree(1, 4, 20);
+    tree.add_line(-2, 20);
+    tree.add_line(0, 15);
+    tree.add_segment(0, -100, 3, 2);
+    for (I x = 1; x <= 4; ++x) require(tree.query(x) == std::min<I>(20 - 2 * x, 15));
+    ::sirkit::detail::CheckLiChaoNodeCapacity(3, 4);
+    bool rejected = false;
+    try { ::sirkit::detail::CheckLiChaoNodeCapacity(4, 4); }
+    catch (const std::length_error&) { rejected = true; }
+    require(rejected);
+#ifndef SKIP_RUNTIME_CHECKS
+    const auto expect = []<class Error>(std::type_identity<Error>, auto operation) {
+        try { operation(); }
+        catch (const Error&) { return true; }
+        return false;
+    };
+    require(expect(std::type_identity<std::invalid_argument>{}, [] { (void)DynamicLiChaoTree<I>(2, 1); }));
+    require(expect(std::type_identity<std::out_of_range>{}, [&] { (void)tree.query(0); }));
+    require(expect(std::type_identity<std::out_of_range>{}, [&] { (void)tree.query(5); }));
+    const std::type_identity<std::overflow_error> overflow;
+    require(expect(overflow, [&] { tree.add_segment(std::numeric_limits<I>::min(), 0, 2, 2); }));
+    require(expect(overflow, [&] { tree.add_segment(-1, 25, 1, 1); }));
+    require(expect(overflow, [&] { tree.add_segment(20, 0, 1, 1); }));
+    for (I x = 1; x <= 4; ++x) require(tree.query(x) == std::min<I>(20 - 2 * x, 15));
+#endif
+}
+
 static void constructor_test() {
     using Tree = lazy_implicit_treap<>;
     Tree empty{}, nested_empty{{}}, nested_argument({{}});
@@ -181,6 +209,7 @@ static void line2d_test() {
 #endif
 }
 int main() {
+    li_chao_boundaries();
     constructor_test(); treap_test(); li_chao_test<std::int8_t>(); li_chao_test<std::int16_t>(); li_chao_test<std::int32_t>(); li_chao_test<I>(); line2d_test();
     std::cout << checks << " custom identity/inf reference checks passed\n";
 }

@@ -470,6 +470,13 @@ public:
 
 #ifndef SIRKIT_WAVELET_MATRIX_DEFINED
 #define SIRKIT_WAVELET_MATRIX_DEFINED
+namespace detail {
+inline void CheckWaveletMatrixSize(std::size_t size) {
+    if (size > std::numeric_limits<std::uint32_t>::max())
+        throw std::length_error("WaveletMatrix count limit");
+}
+}
+
 template <class T = std::int64_t>
 class WaveletMatrix {
     static_assert(std::is_integral_v<T> && !std::is_same_v<T, bool> && sizeof(T) <= sizeof(std::uint64_t));
@@ -506,8 +513,7 @@ class WaveletMatrix {
         }
     }
     void initialize(std::span<const T> values) {
-        if (values.size() > std::numeric_limits<std::uint32_t>::max())
-            throw std::length_error("WaveletMatrix count limit");
+        detail::CheckWaveletMatrixSize(values.size());
         n_ = values.size();
         if (n_ == 0) return;
         base_ = maximum_ = ordered(values[0]);

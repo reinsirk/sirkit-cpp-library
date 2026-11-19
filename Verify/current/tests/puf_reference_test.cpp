@@ -111,4 +111,28 @@ template<int shift>static void array_cases(){
     expect<std::out_of_range>([&]{(void)assigned.get(-1);});expect<std::out_of_range>([&]{(void)assigned.get(n);});expect<std::out_of_range>([&]{assigned.update(n,3);});Array foreign(n);expect<std::invalid_argument>([&]{assigned.restore(foreign.root);});expect<std::invalid_argument>([&]{(void)assigned.get(foreign.root,0);});expect<std::invalid_argument>([&]{assigned.update(foreign.root,0,3);});
 #endif
 }
-int main(){uf_cases();array_cases<1>();array_cases<2>();array_cases<3>();array_cases<4>();array_cases<5>();array_cases<6>();array_cases<7>();array_cases<8>();std::printf("PASS checks=%zu versions=%zu operations=%zu\n",checks,versions_tested,operations);}
+int main(){
+    const auto maximum=std::numeric_limits<std::size_t>::max();
+    ::sirkit::detail::CheckPersistentArrayNodeCount(maximum-1);
+    bool node_limit=false;
+    try { ::sirkit::detail::CheckPersistentArrayNodeCount(maximum); }
+    catch(const std::length_error&) { node_limit=true; }
+    require(node_limit);
+    require(::sirkit::detail::CheckedPersistentArraySize(0)==0);
+    if constexpr (sizeof(std::size_t)>=sizeof(std::int64_t)) {
+        bool array_limit=false;
+        try { (void)::sirkit::detail::CheckedPersistentArraySize(maximum); }
+        catch(const std::length_error&) { array_limit=true; }
+        require(array_limit);
+    }
+    PersistentArray<int> array(3,7);
+    auto* const array_self=&array;
+    array=std::move(*array_self);
+    require(array.get(2)==7);
+    PersistentUnionFind uf(2);
+    uf.unite(0,1);
+    auto* uf_self=&uf;
+    uf=std::move(*uf_self);
+    require(uf.same(0,1));
+    uf_cases();array_cases<1>();array_cases<2>();array_cases<3>();array_cases<4>();array_cases<5>();array_cases<6>();array_cases<7>();array_cases<8>();std::printf("PASS checks=%zu versions=%zu operations=%zu\n",checks,versions_tested,operations);
+}

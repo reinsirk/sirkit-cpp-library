@@ -39,8 +39,8 @@ def binary_trie(source: str) -> str:
     source = replace_once(source, "std::make_unique<Node[]>(n)", "new Node[n]")
     source = replace_once(source, "std::make_unique_for_overwrite<InitialBlock>()", "new InitialBlock")
     source = replace_once(source, "    size_type virtual_nodes_ = 1;\n", "")
-    source = replace_once(source, '            if (id_capacity_ == NODES)\n                throw std::length_error("BinaryTrie: ID slot limit exceeded");\n', "")
-    source = replace_once(source, '            if (capacity_ == NODES)\n            {\n                throw std::length_error("BinaryTrie: node limit exceeded");\n            }\n', "")
+    source = replace_once(source, "            // 使用中のID枠は既存の葉に一対一で対応し、追加先の葉にはまだ枠がない。\n", "")
+    source = replace_once(source, "            // 二分トライの上限は、新しいsuffix全体を追加する前に確認済み。\n", "")
     source = replace_once(source, "        const bool recycled = free_id_slot_ != kNoSlot;", "        if (!initial_ids_ && kInitialIdSlots != 0) initial_ids_ = new IdSlot[kInitialIdSlots];\n        const bool recycled = free_id_slot_ != kNoSlot;")
     source = replace_once(source,
         "        if (!initial_ids_ && kInitialIdSlots != 0) initial_ids_ = new IdSlot[kInitialIdSlots];",

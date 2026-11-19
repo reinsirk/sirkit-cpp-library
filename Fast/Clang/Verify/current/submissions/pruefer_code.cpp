@@ -40,6 +40,16 @@
 
 // SIRKIT_NAMESPACE_OPEN_V1
 namespace sirkit {
+#ifndef SIRKIT_PRUEFER_VERTEX_COUNT_DEFINED
+#define SIRKIT_PRUEFER_VERTEX_COUNT_DEFINED
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
+inline int PrueferVertexCount(std::size_t count, int added = 0) {
+    if (count > static_cast<std::size_t>(std::numeric_limits<int>::max() - added))
+        throw std::length_error("Pruefer vertex count");
+    return static_cast<int>(count) + added;
+}
+}
+#endif
 #ifndef SIRKIT_PRUEFER_DEGREES_DEFINED
 #define SIRKIT_PRUEFER_DEGREES_DEFINED
 inline std::vector<int> pruefer_degrees(int n, std::span<const int> code) {
@@ -74,9 +84,7 @@ inline std::vector<std::pair<int, int>> pruefer_decode(int n, std::span<const in
     return edges;
 }
 inline std::vector<std::pair<int, int>> pruefer_decode(std::span<const int> code) {
-    if (code.size() > static_cast<std::size_t>(std::numeric_limits<int>::max() - 2))
-        throw std::length_error("Pruefer vertex count");
-    return pruefer_decode(static_cast<int>(code.size()) + 2, code);
+    return pruefer_decode(/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::PrueferVertexCount(code.size(), 2), code);
 }
 #endif
 
@@ -106,6 +114,7 @@ inline std::vector<int> pruefer_encode(int n, std::span<const std::pair<int, int
             leaf = scan;
         }
     }
+    // n-2回の葉除去後は頂点2個と辺1本が残る。
     return code;
 }
 #endif
@@ -114,8 +123,7 @@ inline std::vector<int> pruefer_encode(int n, std::span<const std::pair<int, int
 #define SIRKIT_PRUEFER_FROM_DEGREES_DEFINED
 inline std::optional<std::vector<int>> pruefer_from_degrees(std::span<const int> degrees) {
     const auto n = degrees.size();
-    if (n > static_cast<std::size_t>(std::numeric_limits<int>::max()))
-        throw std::length_error("Pruefer vertex count");
+    (void)/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::PrueferVertexCount(n);
     if (n == 0) return std::nullopt;
     if (n == 1) {
         if (degrees[0] == 0) return std::vector<int>{};
@@ -150,8 +158,7 @@ inline std::optional<std::vector<std::pair<int, int>>> tree_from_degrees(std::sp
 inline std::optional<std::vector<std::pair<int, int>>> complete_tree_with_degrees(
         std::span<const int> degrees, std::span<const std::pair<int, int>> edges) {
     const auto n = degrees.size();
-    if (n > static_cast<std::size_t>(std::numeric_limits<int>::max()))
-        throw std::length_error("Pruefer vertex count");
+    const int vertex_count = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::PrueferVertexCount(n);
     if (n == 0 || edges.size() >= n) return std::nullopt;
     std::vector<int> residual, parent(n, -1);
     residual.reserve(n);
@@ -184,6 +191,8 @@ inline std::optional<std::vector<std::pair<int, int>>> complete_tree_with_degree
     }
     std::vector<int> component(n, -1), component_degrees;
     std::vector<std::vector<int>> endpoints;
+    // 残りの辺の本数は成分数-1。1成分の次数はこの本数以下。
+    const int max_component_degree = vertex_count - static_cast<int>(edges.size()) - 1;
     for (std::size_t vertex = 0; vertex < n; ++vertex) {
         const auto root = static_cast<std::size_t>(find(static_cast<int>(vertex)));
         if (component[root] == -1) {
@@ -191,8 +200,7 @@ inline std::optional<std::vector<std::pair<int, int>>> complete_tree_with_degree
             component_degrees.push_back(0); endpoints.emplace_back();
         }
         const auto index = static_cast<std::size_t>(component[root]);
-        // 有効な残余次数の総和は2*(成分数-1)。intへの加算前に上限を確認する。
-        if (residual[vertex] > std::numeric_limits<int>::max() - component_degrees[index])
+        if (residual[vertex] > max_component_degree - component_degrees[index])
             return std::nullopt;
         component_degrees[index] += residual[vertex];
         endpoints[index].insert(endpoints[index].end(), static_cast<std::size_t>(residual[vertex]),

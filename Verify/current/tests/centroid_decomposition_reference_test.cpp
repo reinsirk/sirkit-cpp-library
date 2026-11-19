@@ -49,6 +49,16 @@ Graph heap_decode(int n,std::vector<int> code){Graph graph(static_cast<std::size
 int main(){
     static_assert(std::is_nothrow_move_constructible_v<CentroidDecomposition>);
     static_assert(std::is_nothrow_move_assignable_v<CentroidDecomposition>);
+    constexpr auto kLimit = static_cast<std::size_t>(std::numeric_limits<int>::max());
+    sirkit::detail::CheckCentroidVertexCount(kLimit);
+    must_throw([] { sirkit::detail::CheckCentroidVertexCount(kLimit + 1); });
+    CentroidDecomposition singleton(Graph{{}});
+    const auto& same = singleton;
+    singleton = same;
+    assert(singleton.root() == 0 && singleton.parents() == std::vector{-1});
+#ifndef SKIP_RUNTIME_CHECKS
+    must_throw([] { CentroidDecomposition invalid(Graph{{1}}); });
+#endif
     validate({});
     for(int n=1;n<=6;++n){std::size_t count=1;for(int i=0;i<n-2;++i)count*=static_cast<std::size_t>(n);for(std::size_t mask=0;mask<count;++mask){auto x=mask;std::vector<int>code(static_cast<std::size_t>(std::max(0,n-2)));for(auto&v:code){v=static_cast<int>(x%static_cast<std::size_t>(n));x/=static_cast<std::size_t>(n);}validate(heap_decode(n,code));}}
     for(int repeat=0;repeat<350;++repeat){int n=random_int(100)+1;Graph graph(static_cast<std::size_t>(n));std::vector<int>label(static_cast<std::size_t>(n));std::iota(label.begin(),label.end(),0);std::shuffle(label.begin(),label.end(),generator);for(int v=1;v<n;++v){int p=random_int(v);graph[static_cast<std::size_t>(label[static_cast<std::size_t>(v)])].push_back(label[static_cast<std::size_t>(p)]);graph[static_cast<std::size_t>(label[static_cast<std::size_t>(p)])].push_back(label[static_cast<std::size_t>(v)]);}for(auto&adj:graph)std::shuffle(adj.begin(),adj.end(),generator);validate(graph);}

@@ -7,12 +7,19 @@
 #include <vector>
 #ifndef SIRKIT_BERLEKAMP_MASSEY_DEFINED
 #define SIRKIT_BERLEKAMP_MASSEY_DEFINED
+namespace reinsirk::detail {
+inline std::size_t recurrence_size_plus_one(std::size_t size, std::size_t capacity,
+                                            const char* error) {
+    if (size >= capacity) throw std::length_error(error);
+    return size + 1;
+}
+}
 template<class T>
 std::vector<T> BerlekampMassey(const std::vector<T>& sequence) {
     static_assert(!std::is_integral_v<T>,"BerlekampMassey<T>: use an exact field type, or the uint32_t overload");
     if(sequence.empty())return {};
     const auto n=sequence.size();
-    if(n>=std::vector<T>{}.max_size())throw std::length_error("BerlekampMassey: size overflow");
+    (void)reinsirk::detail::recurrence_size_plus_one(n, sequence.max_size(), "BerlekampMassey: size overflow");
     std::vector<T> connection{T{1}},previous{T{1}};
     std::size_t order=0,shift=1;
     T previous_inverse{1};
@@ -24,8 +31,7 @@ std::vector<T> BerlekampMassey(const std::vector<T>& sequence) {
         const bool extend=order<=position/2;
         std::vector<T> saved;
         if(extend)saved=connection;
-        if(previous.size()>connection.max_size()-shift)
-            throw std::length_error("BerlekampMassey: size overflow");
+        // 最後の更新位置pで保存したpreviousはp+1項以下。shiftを足してもn+1項以下。
         if(connection.size()<previous.size()+shift)connection.resize(previous.size()+shift,T{0});
         for(std::size_t j=0;j<previous.size();++j)connection[j+shift]-=ratio*previous[j];
         if(extend) {

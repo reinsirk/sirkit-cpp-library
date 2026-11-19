@@ -57,6 +57,12 @@
 namespace sirkit {
 #ifndef SIRKIT_PERSISTENT_SEGMENT_TREE_DEFINED
 #define SIRKIT_PERSISTENT_SEGMENT_TREE_DEFINED
+namespace detail {
+inline void CheckPersistentTreeNodeCapacity(std::size_t size, std::size_t limit) {
+    if (size == limit) throw std::length_error("PersistentSegmentTree node limit");
+}
+}
+
 template<class T, class Op>
 class PersistentSegmentTree {
     static_assert(std::copyable<T> && std::copy_constructible<Op>);
@@ -69,7 +75,10 @@ public:
         explicit Root(std::size_t index) : index_(index) {}
     public:
         Root() = default;
-        friend bool operator==(const Root&, const Root&) = default;
+        friend constexpr bool operator==(const Root& a, const Root& b) noexcept {
+            if (a.index_ != b.index_) return false;
+            return true;
+        }
     };
 private:
     struct Node {
@@ -108,8 +117,7 @@ private:
         return index == 0 ? 0 : (right ? state_->nodes[index - 1].right : state_->nodes[index - 1].left);
     }
     std::size_t append(T aggregate, std::size_t left, std::size_t right) {
-        if (state_->nodes.size() == state_->nodes.max_size())
-            throw std::length_error("PersistentSegmentTree node limit");
+        detail::CheckPersistentTreeNodeCapacity(state_->nodes.size(), state_->nodes.max_size());
         state_->nodes.push_back(Node{std::move(aggregate), left, right});
         return state_->nodes.size();
     }

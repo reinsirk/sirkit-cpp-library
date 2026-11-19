@@ -153,6 +153,14 @@ inline bool bitset_intersection_parity_words(const std::uint64_t* a, const std::
 
 #ifndef SIRKIT_DYNAMIC_BITSET_DEFINED
 #define SIRKIT_DYNAMIC_BITSET_DEFINED
+namespace detail {
+inline std::size_t DynamicBitsetWordCount(std::size_t bits, std::size_t maximum) {
+    const auto count = bits / 64 + (bits % 64 != 0);
+    if (count > maximum) throw std::length_error("DynamicBitset capacity");
+    return count;
+}
+}
+
 class DynamicBitset {
     std::size_t size_ = 0;
     std::vector<std::uint64_t> words_;
@@ -160,9 +168,7 @@ class DynamicBitset {
         return bits == 64 ? ~std::uint64_t{0} : (std::uint64_t{1} << bits) - 1;
     }
     static std::size_t word_count(std::size_t bits) {
-        const auto count = bits / 64 + (bits % 64 != 0);
-        if (count > std::vector<std::uint64_t>().max_size()) throw std::length_error("DynamicBitset capacity");
-        return count;
+        return detail::DynamicBitsetWordCount(bits, std::vector<std::uint64_t>().max_size());
     }
     void mask_tail() noexcept { if (size_ % 64) words_.back() &= low_mask(static_cast<unsigned>(size_ % 64)); }
     void check_position(std::size_t pos) const {

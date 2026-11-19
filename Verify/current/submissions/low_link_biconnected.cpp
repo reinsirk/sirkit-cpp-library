@@ -48,6 +48,19 @@ using Graph = std::vector<std::vector<int>>;
 
 #ifndef SIRKIT_UNDIRECTED_LOW_LINK_DEFINED
 #define SIRKIT_UNDIRECTED_LOW_LINK_DEFINED
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
+#ifdef SIRKIT_LOW_LINK_COMPACT_INDEX_LIMIT
+static_assert(std::in_range<std::uint32_t>(SIRKIT_LOW_LINK_COMPACT_INDEX_LIMIT));
+inline constexpr std::uint32_t kLowLinkCompactLimit = SIRKIT_LOW_LINK_COMPACT_INDEX_LIMIT;
+#else
+inline constexpr std::uint32_t kLowLinkCompactLimit = std::numeric_limits<std::uint32_t>::max();
+#endif
+
+inline std::size_t LowLinkArcCount(std::size_t edges, std::size_t limit) {
+    if (edges > limit / 2) throw std::length_error("LowLink: too many edges");
+    return edges * 2;
+}
+}
 class UndirectedLowLink {
     int n_ = 0, components_ = 0;
     std::vector<std::pair<int, int>> edges_;
@@ -102,13 +115,14 @@ private:
     template<bool Blocks, class Id>
     int build_impl() {
         const auto m = edges_.size();
-        if (m > std::vector<Adjacent<Id>>().max_size() / 2) throw std::length_error("LowLink: too many edges");
+        const auto arcs = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::LowLinkArcCount(
+            m, std::vector<Adjacent<Id>>{}.max_size());
         // 接続数2mを表現できる型をCSRの位置にも共有する。
         std::vector<Id> begin(static_cast<std::size_t>(n_) + 1);
         for (auto [u, v] : edges_) { ++begin[u + 1]; ++begin[v + 1]; }
         for (int v = 0; v < n_; ++v) begin[v + 1] += begin[v];
         std::vector<Id> next(begin.begin(), begin.end() - 1);
-        std::vector<Adjacent<Id>> incident(m * 2);
+        std::vector<Adjacent<Id>> incident(arcs);
         for (std::size_t e = 0; e < m; ++e) { auto [u, v] = edges_[e]; incident[next[u]++] = {v, static_cast<Id>(e)}; incident[next[v]++] = {u, static_cast<Id>(e)}; }
         std::copy_n(begin.begin(), n_, next.begin());
         const auto no_edge = m;
@@ -195,7 +209,7 @@ private:
 public:
     int build(bool collect_blocks = false) {
         if constexpr (sizeof(std::size_t) > sizeof(std::uint32_t)) {
-            if (edges_.size() <= std::numeric_limits<std::uint32_t>::max() / 2)
+            if (edges_.size() <= /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::kLowLinkCompactLimit / 2)
                 return collect_blocks ? build_impl<true, std::uint32_t>() : build_impl<false, std::uint32_t>();
         }
         return collect_blocks ? build_impl<true, std::size_t>() : build_impl<false, std::size_t>();
@@ -291,7 +305,7 @@ public:
             return result;
         };
         if constexpr (sizeof(std::size_t) > sizeof(std::uint32_t)) {
-            if (blocks_.size() <= std::numeric_limits<std::uint32_t>::max())
+            if (blocks_.size() <= /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::kLowLinkCompactLimit)
                 return collect.template operator()<std::uint32_t>();
         }
         return collect.template operator()<std::size_t>();

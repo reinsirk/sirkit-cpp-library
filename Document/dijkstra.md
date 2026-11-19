@@ -56,6 +56,8 @@ Dijkstra(3, edges, distance, 0, inf); // 到達不能はこのinfになる。
 辺列版は構築時に全辺を参照し、両端点と重みを検査します。不正な頂点・重み・始点・終点は`out_of_range`、負の`n`や容量超過は`length_error`です。
 `SKIP_RUNTIME_CHECKS`を定義する場合も、重み・頂点番号の前提は同じです。容量上限や有限距離と`inf`の衝突への対策は維持します。`inf<=0`は検査省略時も`invalid_argument`です。
 
+`SIRKIT_DIJKSTRA_STANDARD_HEAP`を定義すると、小規模グラフで標準の`std::priority_queue`を使う経路を選びます。距離と経路のAPIは共通です。
+
 ## 構築・状態と補助型
 
 ### Edge

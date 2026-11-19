@@ -65,6 +65,12 @@ void checks_all(){
  Mo huge(INT32_MAX);huge.add_query(INT32_MAX,INT32_MAX);int touched=0;const auto state=huge.run([&](std::int32_t){++touched;},[&](std::int32_t){++touched;},[](std::size_t){});require(touched==0&&state==Mo::Window{INT32_MAX,INT32_MAX});MoWithUpdates timed(INT32_MAX);timed.add_update(0);timed.add_query(INT32_MAX,INT32_MAX);std::size_t seen=0;const auto ts=timed.run([&](std::int32_t){++touched;},[&](std::int32_t){++touched;},[&](std::size_t,std::int32_t l,std::int32_t r){require(l==INT32_MAX&&l==r);++seen;},[](std::size_t,std::int32_t,std::int32_t){},[](std::size_t){});require(seen==1&&touched==0&&ts.time==1);
  Mo move_only(3);move_only.add_query(0,3);int move_sum=0;auto owned_add=[owner=std::make_unique<int>(0),&move_sum](std::int32_t i){++*owner;move_sum+=i+1;};move_only.run(std::move(owned_add),[&](std::int32_t i){move_sum-=i+1;},[&](std::size_t){require(move_sum==6);});
  Mo empty;require(empty.order().empty());require(empty.run([](std::int32_t){},[](std::int32_t){},[](std::size_t){})==Mo::Window{0,0});MoWithUpdates no_query(1);no_query.add_update(0);require(no_query.empty());require(no_query.run([](std::int32_t){},[](std::int32_t){},[](std::size_t,std::int32_t,std::int32_t){std::abort();},[](std::size_t,std::int32_t,std::int32_t){std::abort();},[](std::size_t){})==MoWithUpdates::State{0,0,0});
+ Mo first(3), second(5);
+ first.add_query(0,3); second.add_query(1,5);
+ using std::swap;
+ swap(first,second);
+ require(first.length()==5&&first.query(0)==Mo::Query{1,5});
+ require(second.length()==3&&second.query(0)==Mo::Query{0,3});
  rejected([&]{huge.reserve_queries(SIZE_MAX);});rejected([&]{timed.reserve_updates(SIZE_MAX);});
 #ifndef SKIP_RUNTIME_CHECKS
  rejected([]{Mo bad(-1);});rejected([]{MoWithUpdates bad(-1);});rejected([&]{huge.add_query(-1,0);});rejected([&]{huge.add_query(2,1);});rejected([&]{empty.add_query(0,1);});rejected([&]{empty.query(0);});rejected([&]{huge.order(-1);});rejected([&]{huge.block_size(-1);});rejected([&]{timed.add_update(-1);});rejected([&]{timed.add_update(INT32_MAX);});rejected([&]{timed.add_query(0,0,2);});rejected([&]{timed.update_position(1);});rejected([&]{timed.query(SIZE_MAX);});rejected([&]{timed.order(-1);});

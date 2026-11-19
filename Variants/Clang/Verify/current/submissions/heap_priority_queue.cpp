@@ -20,6 +20,7 @@
 // replace_top(value): 最小値を置換して旧値を返す、O(log N)。空の扱いは pop_value() と同じ。
 // push_pop(value): 値を追加した後の最小値を返して削除、O(log N)、空なら value を返す。
 // clear(): 全要素を削除、容量を保持。reserve(n): n 要素分の容量を確保、再確保時 O(N)。
+// SIRKIT_HEAP_FORCE_QUATERNARY: 2子の根と4子の内部節点を使う経路を明示的に選ぶ。
 
 
 // SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
@@ -41,7 +42,11 @@ namespace sirkit {
 class Heap {
     std::vector<int> values_;
 
+#if defined(SIRKIT_HEAP_FORCE_QUATERNARY)
+    static constexpr bool quaternary_ = true;
+#else
     static constexpr bool quaternary_ = false;
+#endif
 
     // 根以外は4子。position >= 1で、最後の親はcount/4。
     void repair_quad(std::size_t position, int value) noexcept {

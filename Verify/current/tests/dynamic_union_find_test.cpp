@@ -6,6 +6,7 @@ using namespace sirkit;
 #define DUF_SOURCE "../../../DataStructure/dynamic-union-find.cpp"
 #endif
 #include DUF_SOURCE
+#include "internal_hash_capacity_checks.hpp"
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -395,6 +396,7 @@ static void groups_boundaries() {
 }
 
 int main() {
+    sirkit_internal_hash_capacity_test::run();
     const auto initial_live = live_allocations;
     boundary_and_ownership();
     groups_boundaries();

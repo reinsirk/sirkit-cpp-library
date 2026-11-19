@@ -147,6 +147,15 @@ public:
 };
 #endif
 
+#ifndef SIRKIT_HASH_CAPACITY_DEFINED
+#define SIRKIT_HASH_CAPACITY_DEFINED
+namespace detail {
+inline void CheckHashCapacity(std::size_t requested, std::size_t maximum, const char* message) {
+    if (requested > maximum) throw std::length_error(message);
+}
+}
+#endif
+
 #ifndef SIRKIT_HASH_SET_DEFINED
 #define SIRKIT_HASH_SET_DEFINED
 template <class Key, class Hasher = GenericHash, class KeyEqual = std::equal_to<Key>>
@@ -221,7 +230,7 @@ private:
         return slots_.size();
     }
     void rebuild(size_type capacity) {
-        if (capacity > max_capacity()) throw std::length_error("HashSet: capacity overflow");
+        detail::CheckHashCapacity(capacity, max_capacity(), "HashSet: capacity overflow");
         std::vector<Slot> next(capacity);
         std::vector<std::uint8_t> state(capacity, 0);
         const auto shift = static_cast<unsigned>(64 - std::countr_zero(capacity));
@@ -268,7 +277,7 @@ private:
                     p = (p + 1) & (slots_.size() - 1);
                 }
                 if (size_ != threshold(slots_.size())) return p;
-                if (slots_.size() > max_capacity() / 2) throw std::length_error("HashSet: capacity overflow");
+                detail::CheckHashCapacity(slots_.size(), max_capacity() / 2, "HashSet: capacity overflow");
                 rebuild(slots_.size() * 2);
                 continue;
             }
@@ -285,10 +294,7 @@ private:
             }
             if (first_deleted != slots_.size()) return first_deleted;
             if (occupied_ != threshold(slots_.size())) return p;
-            if (size_ == occupied_) {
-                if (slots_.size() > max_capacity() / 2) throw std::length_error("HashSet: capacity overflow");
-                rebuild(slots_.size() * 2);
-            } else rebuild(slots_.size());
+            rebuild(slots_.size());
         }
     }
     void mark_inserted(size_type p) noexcept {
@@ -381,7 +387,7 @@ public:
     }
     iterator begin() const noexcept {
         if (size_ == 0) return end();
-        size_type p = 0; while (p < slots_.size() && state_[p] != 1) ++p;
+        size_type p = 0; while (state_[p] != 1) ++p;
         return iterator(this, p);
     }
     iterator end() const noexcept { return iterator(this, slots_.size()); }
@@ -469,10 +475,7 @@ public:
     void rehash(size_type requested) {
         if (requested > max_capacity()) throw std::length_error("HashSet::rehash: capacity overflow");
         size_type capacity = 8;
-        while (requested > capacity || size_ > threshold(capacity)) {
-            if (capacity > max_capacity() / 2) throw std::length_error("HashSet::rehash: capacity overflow");
-            capacity *= 2;
-        }
+        while (requested > capacity || size_ > threshold(capacity)) capacity *= 2;
         rebuild(capacity);
     }
 };

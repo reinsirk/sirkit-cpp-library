@@ -253,7 +253,9 @@ inline constexpr std::optional<std::uint64_t> ModInverse(std::uint64_t a, std::u
 }
 struct Congruence {
     std::uint64_t remainder = 0, modulus = 1;
-    friend constexpr bool operator==(const Congruence&, const Congruence&) = default;
+    friend constexpr bool operator==(const Congruence& lhs, const Congruence& rhs) noexcept {
+        return lhs.remainder == rhs.remainder && lhs.modulus == rhs.modulus;
+    }
 };
 inline constexpr std::optional<Congruence> SolveLinearCongruence(std::uint64_t a, std::uint64_t b, std::uint64_t modulus) {
     /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::check_modulus64(modulus);

@@ -53,6 +53,12 @@ using WGraph = std::vector<std::vector<Edge>>;
 #ifndef SIRKIT_BELLMAN_FORD_DEFINED
 #define SIRKIT_BELLMAN_FORD_DEFINED
 namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
+inline int BellmanFordVertexCount(std::size_t vertices) {
+    if (vertices > static_cast<std::size_t>(std::numeric_limits<int>::max()))
+        throw std::length_error("BellmanFord: too many vertices");
+    return static_cast<int>(vertices);
+}
+
 // 遅い反復だけを到達部分の強連結成分ごとに解く。追加領域O(V)。
 [[gnu::noinline]]
 inline void BellmanFordComponents(const WGraph& graph, std::span<const int> sources,
@@ -229,7 +235,6 @@ inline void BellmanFordComponents(const WGraph& graph, std::span<const int> sour
             if (!affected && !converged) {
                 for (auto position = first; position != last; ++position) {
                     const int from = members[position];
-                    if (distance[from] == unreachable) continue;
                     for (const auto& edge : graph[from])
                         if (component[edge.to] == id && distance[from] + edge.w < distance[edge.to]) affected = true;
                 }
@@ -237,18 +242,16 @@ inline void BellmanFordComponents(const WGraph& graph, std::span<const int> sour
         }
         if (affected)
             for (auto position = first; position != last; ++position) mark(members[position]);
+        // 縮約順に到達成分だけを処理し、成分内の全頂点への有限距離か負影響が確定済み。
         for (auto position = first; position != last; ++position) {
             const int from = members[position];
-            if (distance[from] == unreachable) continue;
             for (const auto& edge : graph[from]) {
                 if (component[edge.to] == id) continue;
                 if (affected) mark(edge.to);
                 else {
+                    // 負閉路の影響がなければ単純路の距離に等しく、下限を越えない。
                     const auto candidate = distance[from] + edge.w;
-                    if (candidate < distance[edge.to]) {
-                        if (candidate <= lower_bound) mark(edge.to);
-                        else distance[edge.to] = candidate;
-                    }
+                    distance[edge.to] = std::min(distance[edge.to], candidate);
                 }
             }
         }
@@ -289,7 +292,7 @@ inline int BellmanFordContinue(const WGraph& graph, std::span<const int> sources
         frontier.push_back(from);
         scheduled[from] = 1;
     }
-    const auto process = [&](int from, auto validate) {
+    const auto process = [&](int from, [[maybe_unused]] auto validate) {
         for (const auto& edge : graph[from]) {
 #ifndef SKIP_RUNTIME_CHECKS
             if constexpr (decltype(validate)::value) {
@@ -299,8 +302,6 @@ inline int BellmanFordContinue(const WGraph& graph, std::span<const int> sources
                 if (edge.w < -max_cost || edge.w > max_cost)
                     throw std::out_of_range("BellmanFord: cost must be in [-1e9, 1e9]");
             }
-#else
-            (void)validate;
 #endif
             const auto candidate = distance[from] + edge.w;
             if (candidate >= distance[edge.to]) continue;
@@ -406,9 +407,7 @@ inline bool BellmanFordImpl(const WGraph &graph, std::vector<std::int64_t> &dist
         (void)validated_until;
 #endif
     }
-    if (graph.size() > static_cast<std::size_t>(std::numeric_limits<int>::max()))
-        throw std::length_error("BellmanFord: too many vertices");
-    const int n = static_cast<int>(graph.size());
+    const int n = BellmanFordVertexCount(graph.size());
 #ifndef SKIP_RUNTIME_CHECKS
     if (start_index < 0 || start_index >= n)
         throw std::out_of_range("BellmanFord: invalid start vertex");
@@ -551,7 +550,7 @@ inline bool BellmanFordImpl(const WGraph &graph, std::vector<std::int64_t> &dist
     }
 
     if constexpr (UseActive) {
-        if (use_active && !converged && n > 3)
+        if (use_active && !converged)
             converged = BellmanFordContinue(graph, sources, distance, unreachable, lower_bound, queue
 #ifndef SKIP_RUNTIME_CHECKS
                 , checked
@@ -651,12 +650,12 @@ inline int BellmanFordSparse(const WGraph& graph,
     std::array<std::int64_t, vertex_limit> distance;
     std::fill_n(distance.begin(), vertex_count, kInf);
     distance[0] = 0;
+    // BFSで発見順に辺を並べたため、最初の走査でも辺の始点には既に到達している。
     // 64パス・128辺・|w|<=1e9なので、負閉路があっても加算はint64_t内。
     for (std::size_t pass = 1; pass < vertex_count; ++pass) {
         bool changed = false;
         for (std::size_t i = 0; i < edge_count; ++i) {
             const auto& edge = edges[i];
-            if (distance[edge.from] == kInf) continue;
             const auto candidate = distance[edge.from] + edge.w;
             if (candidate < distance[edge.to]) {
                 distance[edge.to] = candidate;
@@ -668,7 +667,7 @@ inline int BellmanFordSparse(const WGraph& graph,
     std::uint64_t negative = 0;
     for (std::size_t i = 0; i < edge_count; ++i) {
         const auto& edge = edges[i];
-        if (distance[edge.from] != kInf && distance[edge.from] + edge.w < distance[edge.to])
+        if (distance[edge.from] + edge.w < distance[edge.to])
             negative |= std::uint64_t{1} << edge.to;
     }
     if (negative != 0) {
@@ -752,8 +751,7 @@ inline bool BellmanFord(const WGraph& graph, std::vector<std::int64_t>& distance
     if (inf != kInf) return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::BellmanFordImpl<true, false, false, true>(graph, distances, start_index, inf);
     if (graph.size() <= 64) return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::BellmanFordImpl<false>(graph, distances, start_index);
     if (graph.size() >= 4096) {
-        if (graph.size() > static_cast<std::size_t>(std::numeric_limits<int>::max()))
-            throw std::length_error("BellmanFord: too many vertices");
+        (void)/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::BellmanFordVertexCount(graph.size());
 #ifndef SKIP_RUNTIME_CHECKS
         if (start_index < 0 || static_cast<std::size_t>(start_index) >= graph.size())
             throw std::out_of_range("BellmanFord: invalid start vertex");

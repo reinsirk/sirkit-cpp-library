@@ -60,8 +60,30 @@ void reference_cases() {
         // 異なる整数格子点は距離二乗1以上、隣接点が上限1の証人。
         check(unit && unit->distance_squared == 1);
     }
+    std::vector<P> grid;
+    for (int i = 0; i < 2048; ++i) grid.emplace_back(i * 4, (i % 7) * 4);
+    for (const std::size_t at : {4u, 1024u}) {
+        auto duplicated = grid;
+        duplicated[at] = duplicated[at - 1];
+        check_zero(duplicated);
+    }
+    grid[100] = {grid[99].first, grid[99].second + 1};
+    const auto unit = nearest_two_points(grid);
+    check(unit && unit->distance_squared == 1);
+    check(unit->first_index == 99 && unit->second_index == 100);
 }
 void reads_and_failures() {
+    const std::vector<P> small{{0, 0}, {1, 1}, {2, 2}};
+    std::size_t limited_reads = 0;
+    using Solver = ::sirkit::detail::NearestTwoPointsSolver<std::uint32_t>;
+    const Iterator input{&small, 0, small.size(), &limited_reads};
+    const auto pair = Solver::run<false, 2>(input, End{2});
+    check(pair && pair->distance_squared == 2 && limited_reads == 2);
+    limited_reads = 0;
+    bool rejected = false;
+    try { (void)Solver::run<false, 2>(input, End{3}); }
+    catch (const std::length_error&) { rejected = true; }
+    check(rejected && limited_reads == 3);
     const std::vector<P> points(4096, P{7, -19});
     const auto retained = live.load();
     for (std::size_t at : {0u, 1u, 2u, 2047u, 2048u, 4095u}) {

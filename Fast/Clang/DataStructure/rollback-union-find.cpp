@@ -36,6 +36,15 @@
 
 // SIRKIT_NAMESPACE_OPEN_V1
 namespace sirkit {
+#ifndef SIRKIT_ROLLBACK_UNION_FIND_CAPACITY_DEFINED
+#define SIRKIT_ROLLBACK_UNION_FIND_CAPACITY_DEFINED
+namespace detail {
+inline void CheckRollbackHistorySize(std::size_t size) {
+    if (size == static_cast<std::size_t>(std::numeric_limits<int>::max()))
+        throw std::length_error("RollbackUnionFind: history overflow");
+}
+}
+#endif
 #if (!defined(SIRKIT_DISABLE_SIMD)) && ((defined(__x86_64__)) || (defined(__i386__)))
 #ifndef SIRKIT_UNION_GROUP_ROOTS_AVX2_DEFINED
 #define SIRKIT_UNION_GROUP_ROOTS_AVX2_DEFINED
@@ -174,8 +183,7 @@ public:
     int leader(int i) const { return find(i); }
     bool unite(int x, int y) {
         check(x); check(y); x = leader_unchecked(x); y = leader_unchecked(y);
-        if (history.size() == static_cast<std::size_t>(std::numeric_limits<int>::max()))
-            throw std::length_error("RollbackUnionFind: history overflow");
+        detail::CheckRollbackHistorySize(history.size());
         history.push_back({x, y, data[x], data[y]});
         if (x == y) return false;
         if (data[x] > data[y]) std::swap(x, y);

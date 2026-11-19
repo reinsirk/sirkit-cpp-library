@@ -51,6 +51,39 @@
 
 // SIRKIT_NAMESPACE_OPEN_V1
 namespace sirkit {
+#ifndef SIRKIT_LCA_SIZE_HELPERS_DEFINED
+#define SIRKIT_LCA_SIZE_HELPERS_DEFINED
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
+inline constexpr auto kLcaMaximumVertices = std::min<std::size_t>(
+    std::numeric_limits<int>::max(), std::numeric_limits<std::uint32_t>::max() / 2);
+
+inline void CheckLcaVertexCount(std::size_t count) {
+    if (count > kLcaMaximumVertices) throw std::length_error("LCA: too many vertices");
+}
+
+inline void CheckLcaCsrCapacity(std::size_t vertices, std::size_t arcs,
+                               std::size_t row_capacity) {
+    if (row_capacity < 2 || vertices > row_capacity - 2 ||
+        arcs > static_cast<std::size_t>(std::numeric_limits<std::ptrdiff_t>::max()) / (2 * sizeof(int)))
+        throw std::length_error("LCA: CSR capacity exceeded");
+}
+
+inline std::size_t LcaBlockTableSize(std::size_t vertices, std::size_t blocks, unsigned int levels) {
+    constexpr std::size_t maximum_count =
+        static_cast<std::size_t>(std::numeric_limits<std::ptrdiff_t>::max()) / sizeof(std::uint32_t);
+    if (vertices > maximum_count / 3 || blocks > (maximum_count - 3 * vertices) / levels)
+        throw std::length_error("LCA: block table too large");
+    return 3 * vertices + blocks * levels;
+}
+
+inline std::size_t LcaAncestorTableSize(std::size_t vertices, unsigned int levels) {
+    constexpr std::size_t maximum_count =
+        static_cast<std::size_t>(std::numeric_limits<std::ptrdiff_t>::max()) / sizeof(int);
+    if (vertices > maximum_count / levels) throw std::length_error("LCA: ancestor table too large");
+    return vertices * levels;
+}
+}
+#endif
 #ifndef SIRKIT_LCA_CSR_GRAPH_DEFINED
 #define SIRKIT_LCA_CSR_GRAPH_DEFINED
 namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
@@ -61,9 +94,7 @@ public:
     LcaCsrGraph(int n, std::span<const std::pair<int,int>> edges) {
         if (n < 0) throw std::length_error("LCA: negative vertex count");
         const auto count = static_cast<std::size_t>(n);
-        if (begin_.max_size() < 2 || count > begin_.max_size() - 2
-            || edges.size() > static_cast<std::size_t>(std::numeric_limits<std::ptrdiff_t>::max()) / (2 * sizeof(int)))
-            throw std::length_error("LCA: CSR capacity exceeded");
+        CheckLcaCsrCapacity(count, edges.size(), begin_.max_size());
         // 散布cursorを1要素ずらし、散布後の値をそのまま行のoffsetへ使う。
         begin_.assign(count + 2, 0);
         for (const auto& [u,v] : edges) {
@@ -105,8 +136,7 @@ public:
     template<class DepthAt>
     void build(std::size_t n, const int* parent, const int* order, DepthAt depth_at,
                int* height, int* heavy) {
-        if (n > static_cast<std::size_t>(std::numeric_limits<int>::max()) ||
-            n > static_cast<std::size_t>(std::numeric_limits<std::uint32_t>::max() / 2) ||
+        if (n > kLcaMaximumVertices ||
             n > static_cast<std::size_t>(std::numeric_limits<std::ptrdiff_t>::max()) / (2 * sizeof(int))) {
             throw std::length_error("LCA: ancestor ladders too large");
         }
@@ -190,13 +220,11 @@ class LCA {
     std::shared_ptr<const DeepQueryData> deep_;
     std::size_t block_count_ = 0;
 
-    void check_vertex(int v) const {
+    void check_vertex([[maybe_unused]] int v) const {
 #ifndef SKIP_RUNTIME_CHECKS
         if (static_cast<unsigned int>(v) >= static_cast<unsigned int>(size_)) {
             throw std::out_of_range("LCA: vertex out of range");
         }
-#else
-        static_cast<void>(v);
 #endif
     }
 
@@ -315,10 +343,7 @@ class LCA {
     template<class GraphLike, bool endpoints_validated = false>
     void build_impl(const GraphLike& graph, int root) {
         const std::size_t n = graph.size();
-        if (n > static_cast<std::size_t>(std::numeric_limits<int>::max()) ||
-            n > static_cast<std::size_t>(std::numeric_limits<std::uint32_t>::max() / 2)) {
-            throw std::length_error("LCA: too many vertices");
-        }
+        /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::CheckLcaVertexCount(n);
 #ifndef SKIP_RUNTIME_CHECKS
         if ((n == 0 && root != 0) ||
             (n != 0 && (root < 0 || static_cast<std::size_t>(root) >= n))) {
@@ -329,9 +354,6 @@ class LCA {
         size_ = static_cast<int>(n);
         root_ = root;
         vertices_.resize(n);
-        if (n > std::numeric_limits<std::size_t>::max() / (3 * sizeof(int))) {
-            throw std::length_error("LCA: temporary storage too large");
-        }
         auto temporary = std::make_unique_for_overwrite<int[]>(3 * n);
         int* const parent = temporary.get();
         int* const stack = parent + n;
@@ -398,12 +420,8 @@ class LCA {
             construction = std::make_shared<DeepQueryData>();
             block_count_ = n / 32 + (n % 32 != 0);
             const unsigned int block_levels = static_cast<unsigned int>(std::bit_width(block_count_));
-            constexpr std::size_t maximum_count =
-                static_cast<std::size_t>(std::numeric_limits<std::ptrdiff_t>::max()) / sizeof(std::uint32_t);
-            if (n > maximum_count / 3 || block_count_ > (maximum_count - 3 * n) / block_levels) {
-                throw std::length_error("LCA: block table too large");
-            }
-            construction->rmq_storage.resize(3 * n + block_count_ * block_levels);
+            const auto table_size = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::LcaBlockTableSize(n, block_count_, block_levels);
+            construction->rmq_storage.resize(table_size);
             auto* dfs = construction->rmq_storage.data();
             auto* keys = dfs + n;
             auto* masks = keys + n;
@@ -452,12 +470,8 @@ class LCA {
         }
         levels_ = static_cast<unsigned int>(std::bit_width(static_cast<unsigned int>(maximum_depth)));
         if (levels_ == 0) levels_ = 1;
-        constexpr std::size_t maximum_table_size =
-            static_cast<std::size_t>(std::numeric_limits<std::ptrdiff_t>::max()) / sizeof(int);
-        if (n > maximum_table_size / static_cast<std::size_t>(levels_)) {
-            throw std::length_error("LCA: ancestor table too large");
-        }
-        up_ = std::make_unique_for_overwrite<int[]>(n * static_cast<std::size_t>(levels_));
+        const auto table_size = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::LcaAncestorTableSize(n, levels_);
+        up_ = std::make_unique_for_overwrite<int[]>(table_size);
         if (levels_ == 1) {
             // 深さ1以下なら親配列だけで祖先表が完成する。
             std::copy_n(parent, n, up_.get());

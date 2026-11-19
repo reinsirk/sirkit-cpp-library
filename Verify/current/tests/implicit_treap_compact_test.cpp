@@ -25,6 +25,24 @@ struct Conjugation {
  static S mapping(F f,S x){auto b=(f.a*x.b+(1-std::int64_t(x.a))*f.b)%17;return{x.a,std::uint32_t((b+17)%17)};}
  static F composition(F f,F g){return{f.a*g.a%17,(f.a*g.b+f.b)%17,0};}static F id(){return{1,0,0};}
 };
+using CompactAffine = lazy_implicit_treap<Affine::S, Affine::op, Affine::e, Affine::F,
+                                           Affine::mapping, Affine::composition, Affine::id, true>;
+struct SeedMember { friend constexpr auto compact_seed(SeedMember); };
+template<auto Member> struct ExposeSeed {
+    friend constexpr auto compact_seed(SeedMember) { return Member; }
+};
+template struct ExposeSeed<&CompactAffine::random_>;
+
+void check_priority_tie() {
+    CompactAffine treap;
+    // 次の優先度は0x164a4ef63df97af9と0x164a4ef63df97afc。上位30ビットが一致する。
+    treap.*compact_seed(SeedMember{}) = UINT64_C(0x4906a6ffdc50bb4e);
+    treap.push_back({2, 1});
+    treap.push_back({5, 1});
+    assert((treap.to_vector() == std::vector<Affine::S>{{2, 1}, {5, 1}}));
+    assert((treap.all_prod() == Affine::S{7, 2}));
+}
+
 template<class A,bool comm>std::uint64_t run(){using S=typename A::S;using F=typename A::F;using T=lazy_implicit_treap<S,A::op,A::e,F,A::mapping,A::composition,A::id,comm>;
 #ifdef REVIEW_EXPOSED
  static_assert(T::compact_nodes_);static_assert(T::deferred_actions_==comm);static_assert(sizeof(typename T::Node)==64);
@@ -50,4 +68,4 @@ template<class A,bool comm>std::uint64_t run(){using S=typename A::S;using F=typ
  }
  return checks;
 }
-int main(){auto a=run<Affine,true>(),b=run<Conjugation,false>();std::cout<<a<<" compact deferred commutative and "<<b<<" compact noncommutative oracle checks passed\n";}
+int main(){check_priority_tie();auto a=run<Affine,true>(),b=run<Conjugation,false>();std::cout<<a<<" compact deferred commutative and "<<b<<" compact noncommutative oracle checks passed\n";}

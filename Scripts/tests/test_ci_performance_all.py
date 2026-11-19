@@ -23,6 +23,16 @@ def case(folder: Path, name="case"):
             "expected_sha256": perf.file_digest(folder / "expected"), "checker": "tokens"}
 
 
+def fixed_limits(folder: Path, *, library="DataStructure/A.cpp", name="registered_sample_00"):
+    path = folder / "fixed-limits.json"
+    path.write_text(json.dumps({"format": 1, "baseline": {"run_id": "unit-fixture"},
+        "policy": {"multiplier": 2, "whole_program_minimum_ns": 10_000_000},
+        "limits": [{"scope": "whole_program", "library": library, "verify_id": "a", "case": name,
+                    "metric": "child_cpu_ns", "baseline_median_ns": 1_000_000,
+                    "limit_ns": 10_000_000, "input_bytes": 2}]}))
+    return path
+
+
 class CatalogTests(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory(); self.addCleanup(self.temp.cleanup)
@@ -228,7 +238,8 @@ class RunnerTests(unittest.TestCase):
                    "case_source":"official_library_checker","problem_id":"unionfind"}]
             args=SimpleNamespace(cache=folder/"cache",output=folder/"reports",base=None,compiler="fake",
                 repetitions=1,warmups=0,quick=False,plan=False,library=None,shard_index=0,shard_count=1,
-                compile_timeout=1,case_timeout=1,generation_timeout=1,memory_mib=64)
+                compile_timeout=1,case_timeout=1,generation_timeout=1,memory_mib=64,
+                limits=fixed_limits(folder,library="A.cpp"))
             generation=perf.official.RunnerError("official_generation_unavailable")
             generation.details={"returncode":-11,"diagnostic_excerpt":"reference failed"}
             cleanup=perf.official.RunnerError("test_data_cleanup_unavailable")
@@ -282,35 +293,66 @@ class RunnerTests(unittest.TestCase):
             self.assertEqual(report["all_library_paths"],report["selected_library_paths"])
             self.assertFalse(report["executed"])
 
-    def test_current_only_quick_uses_no_git_baseline_or_official_generator(self):
+    def run_fake_quick(self, folder, *, cpu_ns=50, wall_ns=100, missing_budget=False):
+        folder=Path(folder);root=folder/"repo";root.mkdir();library=root/"DataStructure/A.cpp";library.parent.mkdir();library.write_text("struct A {};\n")
+        driver=root/"driver.cpp";driver.write_text("int main(){}\n")
+        entry={"id":"a","libraries":["DataStructure/A.cpp"],"driver":"driver.cpp","allow_custom_io":True,"problem_url":"https://judge.yosupo.jp/problem/unionfind","samples":[{"input":"1\n","output":"42\n"}]}
+        rows=[{"library":"DataStructure/A.cpp","verify_id":"a","libraries":entry["libraries"],"case_source":"official_library_checker","problem_id":"unionfind","combined_library_scope":False}]
+        args=SimpleNamespace(cache=folder/"cache",output=folder/"reports",base=None,compiler="fake",repetitions=2,warmups=0,quick=True,plan=False,library=None,shard_index=0,shard_count=1,compile_timeout=1,case_timeout=1,generation_timeout=1,memory_mib=64,
+            limits=fixed_limits(folder,name="other_case" if missing_budget else "registered_sample_00"))
+        before=args.limits.read_bytes()
+        def build(source,compiler,directory,timeout):
+            directory.mkdir(parents=True,exist_ok=True);binary=directory/"binary";binary.write_bytes(b"fake")
+            return {"status":"PASS","binary":str(binary),"source_sha256":perf.digest(source)}
+        def execute(command,**kwargs):
+            kwargs["output"].write_bytes(b"42\n");return {"returncode":0,"timed_out":False,"elapsed_ns":wall_ns,"cpu_ns":cpu_ns}
+        with patch.object(perf,"ROOT",root),patch.object(perf,"nonlc_module",return_value=SimpleNamespace()), \
+             patch.object(perf.prepare_verify,"collect",return_value=[entry]),patch.object(perf,"catalog",return_value=rows), \
+             patch.object(perf.shutil,"which",return_value="/bin/true"), \
+             patch.object(perf.subprocess,"check_output",return_value="fake compiler\n"), \
+             patch.object(perf,"freeze_sources",return_value={}),patch.object(perf,"check_frozen"), \
+             patch.object(perf.official,"load_pin",return_value={}),patch.object(perf,"build",side_effect=build), \
+             patch.object(perf,"execute",side_effect=execute) as executed, \
+             patch.object(perf.ci_benchmark,"resolve_base",side_effect=AssertionError("no base requested")), \
+             patch.object(perf.official,"checkout_official",side_effect=AssertionError("no network")), \
+             patch.object(perf.official,"official_problem",side_effect=AssertionError("no Max generator")):
+            result=perf.run(args)
+        report=json.loads((args.output/"result.json").read_text())
+        self.assertEqual(args.limits.read_bytes(),before)
+        return result,report,executed.call_count
+
+    def test_current_only_quick_uses_explicit_budget_without_git_or_official_generator(self):
         with tempfile.TemporaryDirectory()as temporary:
-            folder=Path(temporary);root=folder/"repo";root.mkdir();library=root/"DataStructure/A.cpp";library.parent.mkdir();library.write_text("struct A {};\n")
-            driver=root/"driver.cpp";driver.write_text("int main(){}\n")
-            entry={"id":"a","libraries":["DataStructure/A.cpp"],"driver":"driver.cpp","allow_custom_io":True,"problem_url":"https://judge.yosupo.jp/problem/unionfind","samples":[{"input":"1\n","output":"42\n"}]}
-            rows=[{"library":"DataStructure/A.cpp","verify_id":"a","libraries":entry["libraries"],"case_source":"official_library_checker","problem_id":"unionfind","combined_library_scope":False}]
-            args=SimpleNamespace(cache=folder/"cache",output=folder/"reports",base=None,compiler="fake",repetitions=2,warmups=0,quick=True,plan=False,library=None,shard_index=0,shard_count=1,compile_timeout=1,case_timeout=1,generation_timeout=1,memory_mib=64)
-            def build(source,compiler,directory,timeout):
-                directory.mkdir(parents=True,exist_ok=True);binary=directory/"binary";binary.write_bytes(b"fake")
-                return {"status":"PASS","binary":str(binary),"source_sha256":perf.digest(source)}
-            def execute(command,**kwargs):
-                kwargs["output"].write_bytes(b"42\n");return {"returncode":0,"timed_out":False,"elapsed_ns":100,"cpu_ns":50}
-            with patch.object(perf,"ROOT",root),patch.object(perf,"nonlc_module",return_value=SimpleNamespace()), \
-                 patch.object(perf.prepare_verify,"collect",return_value=[entry]),patch.object(perf,"catalog",return_value=rows), \
-                 patch.object(perf.shutil,"which",return_value="/bin/true"), \
-                 patch.object(perf.subprocess,"check_output",return_value="fake compiler\n"), \
-                 patch.object(perf,"freeze_sources",return_value={}),patch.object(perf,"check_frozen"), \
-                 patch.object(perf.official,"load_pin",return_value={}),patch.object(perf,"build",side_effect=build), \
-                 patch.object(perf,"execute",side_effect=execute), \
-                 patch.object(perf.ci_benchmark,"resolve_base",side_effect=AssertionError("no base requested")), \
-                 patch.object(perf.official,"checkout_official",side_effect=AssertionError("no network")), \
-                 patch.object(perf.official,"official_problem",side_effect=AssertionError("no Max generator")):
-                self.assertEqual(perf.run(args),0)
-            report=json.loads((args.output/"result.json").read_text())
-            self.assertEqual(report["status"],"PASS")
-            self.assertIsNone(report["base_revision"])
-            self.assertEqual(report["results"][0]["cases"][0]["comparison"],"NOT_REQUESTED")
-            self.assertIn("cpu_model",report)
-            self.assertTrue(report["source_freeze_passed"])
+            result,report,_=self.run_fake_quick(temporary)
+        self.assertEqual(result,0)
+        self.assertEqual(report["status"],"PASS")
+        self.assertIsNone(report["base_revision"])
+        self.assertEqual(report["results"][0]["cases"][0]["comparison"],"NOT_REQUESTED")
+        self.assertIn("cpu_model",report)
+        self.assertTrue(report["source_freeze_passed"])
+        self.assertTrue(report["performance_limits_passed"])
+
+    def test_gate_uses_child_cpu_not_startup_or_runner_wall_time(self):
+        for cpu_ns,expected in ((9_000_000,0),(10_000_000,0),(10_000_001,1)):
+            with self.subTest(cpu_ns=cpu_ns),tempfile.TemporaryDirectory()as temporary:
+                result,report,_=self.run_fake_quick(temporary,cpu_ns=cpu_ns,wall_ns=100_000_000)
+            self.assertEqual(result,expected)
+            self.assertEqual(report["status"],"FAIL" if expected else "PASS")
+            self.assertTrue(report["current_measurements_passed"])
+            row=report["results"][0]["cases"][0]
+            self.assertEqual(row["status"],"PASS")
+            self.assertTrue(row["correctness_passed"])
+            self.assertEqual(row["median_ns"]["current"],100_000_000)
+            self.assertEqual(row["performance_limit"]["observed_median_ns"],cpu_ns)
+            self.assertEqual(row["performance_limit"]["status"],"FAIL" if expected else "PASS")
+
+    def test_quick_mode_does_not_bypass_missing_fixed_budget(self):
+        with tempfile.TemporaryDirectory()as temporary:
+            result,report,executions=self.run_fake_quick(temporary,missing_budget=True)
+        self.assertEqual(result,1)
+        self.assertEqual(report["status"],"FAIL")
+        self.assertIn("固定性能予算がありません",report["results"][0]["error"])
+        self.assertEqual(executions,0)
 
 
 if __name__=="__main__":

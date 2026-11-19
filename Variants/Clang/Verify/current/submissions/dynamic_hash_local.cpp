@@ -104,6 +104,12 @@ class InternalHashMap {
         return std::bit_floor(std::min({keys_.max_size(), values_.max_size(), used_.max_size()}));
     }
 
+    static std::size_t doubled_capacity(std::size_t capacity, std::size_t maximum) {
+        if (capacity > maximum / 2)
+            throw std::length_error("InternalHashMap: capacity overflow");
+        return capacity * 2;
+    }
+
     static std::uint32_t occupied8(const std::uint8_t* flags) noexcept {
         std::uint64_t word;
         std::memcpy(&word, flags, sizeof(word));
@@ -217,11 +223,8 @@ public:
     void reserve(std::size_t n) {
         if (n <= keys_.size() - keys_.size() / Denominator) return;
         std::size_t capacity = std::max(std::size_t{8}, keys_.size());
-        while (n > capacity - capacity / Denominator) {
-            if (capacity > max_capacity() / 2)
-                throw std::length_error("InternalHashMap: capacity overflow");
-            capacity *= 2;
-        }
+        while (n > capacity - capacity / Denominator)
+            capacity = doubled_capacity(capacity, max_capacity());
         rehash(capacity);
     }
 
@@ -229,9 +232,7 @@ public:
         if (keys_.empty()) {
             rehash(8);
         } else {
-            if (keys_.size() > max_capacity() / 2)
-                throw std::length_error("InternalHashMap: capacity overflow");
-            rehash(keys_.size() * 2);
+            rehash(doubled_capacity(keys_.size(), max_capacity()));
         }
     }
 
@@ -520,20 +521,18 @@ class BPlusFenwickRow {
     else for(unsigned i=0;i<16;++i)p+=static_cast<unsigned>(n.keys[i]<key);
     return p;
   }
-  static V total(const Node& n) noexcept { return n.count ? n.prefix[n.count-1] : V{}; }
+  static V total(const Node& n) noexcept { return n.prefix[n.count-1]; }
   static U last(const Node& n) noexcept { return n.keys[n.count-1]; }
   void ensure_nodes(std::size_t extra) {
     const std::size_t maximum = std::min(nodes_.max_size(),std::size_t{absent});
     if (extra > maximum-nodes_.size()) throw std::length_error("BPlusFenwickRow: node capacity overflow");
     const std::size_t needed=nodes_.size()+extra;
     if (needed <= nodes_.capacity()) return;
-    std::size_t capacity=std::max(std::size_t{4},nodes_.capacity());
+    std::size_t capacity=std::min(maximum,std::max(std::size_t{4},nodes_.capacity()));
     while (capacity < needed) {
       if (capacity > maximum/2) { capacity=maximum; break; }
       capacity*=2;
     }
-    if (capacity > maximum) capacity=maximum;
-    if (capacity < needed) throw std::length_error("BPlusFenwickRow: node capacity overflow");
     nodes_.reserve(capacity);
   }
   U create(bool leaf) {
@@ -707,31 +706,26 @@ class BPlusFenwickRow {
       }
       return;
     }
-    std::size_t extra=0;
-    if (!existing) {
-      const U previous=p ? found.keys[p-1] : (found.previous!=absent ? last(nodes_[found.previous]) : U{0});
-      const U next=p<found.count ? found.keys[p] : (found.next!=absent ? nodes_[found.next].keys[0] : U{0});
-      extra=extra_cells(col,m,previous,next);
-      if(found.count<32) {
-        Node& leaf=nodes_[id];insert(leaf,p,col,delta);
-        for(unsigned d=0;d<depth;++d) {
-          const Frame frame=path[d];Node& parent=nodes_[frame.node];
-          parent.keys[frame.position]=std::max(parent.keys[frame.position],col);
-          for(unsigned i=0;i<16;++i)parent.prefix[i]=plus(parent.prefix[i],i>=frame.position ? delta : V{});
-        }
-        cells_+=static_cast<U>(extra);maybe_dense(m);return;
+    const U previous=p ? found.keys[p-1] : (found.previous!=absent ? last(nodes_[found.previous]) : U{0});
+    // 末尾キーが小さい葉を選ぶのは、木全体の右端に追加するときだけ。
+    const U next=p<found.count ? found.keys[p] : U{0};
+    const std::size_t extra=extra_cells(col,m,previous,next);
+    if(found.count<32) {
+      Node& leaf=nodes_[id];insert(leaf,p,col,delta);
+      for(unsigned d=0;d<depth;++d) {
+        const Frame frame=path[d];Node& parent=nodes_[frame.node];
+        parent.keys[frame.position]=std::max(parent.keys[frame.position],col);
+        for(unsigned i=0;i<16;++i)parent.prefix[i]=plus(parent.prefix[i],i>=frame.position ? delta : V{});
       }
-      std::size_t allocation=0;
-      if(found.count==32) {
-        allocation=1;unsigned d=depth;
-        while(d && nodes_[path[d-1].node].count==16){++allocation;--d;}
-        if(!d)++allocation;
-      }
-      ensure_nodes(allocation);
+      cells_+=static_cast<U>(extra);maybe_dense(m);return;
     }
-    Node& leaf=nodes_[id];
-    insert(leaf,p,col,delta);
-    U right=leaf.count>32 ? split(id) : absent;
+    std::size_t allocation=1;
+    unsigned levels=depth;
+    while(levels && nodes_[path[levels-1].node].count==16){++allocation;--levels;}
+    if(!levels)++allocation;
+    ensure_nodes(allocation);
+    insert(nodes_[id],p,col,delta);
+    U right=split(id);
     for(unsigned d=depth;d>0;--d) {
       const Frame frame=path[d-1];Node& parent=nodes_[frame.node];
       const V old=minus(parent.prefix[frame.position],frame.position ? parent.prefix[frame.position-1] : V{});
@@ -877,7 +871,7 @@ class SmallFenwickRow {
     U count=0, cells=0, salt=0;
     FlatRow() : payload(std::make_unique<Payload>()), salt(initial_index_salt()) {}
     FlatRow(const FlatRow& other)
-      : payload(other.payload ? std::make_unique<Payload>(*other.payload) : nullptr),
+      : payload(std::make_unique<Payload>(*other.payload)),
         count(other.count),cells(other.cells),salt(other.salt) {}
     FlatRow(FlatRow&& other) noexcept
       : payload(std::move(other.payload)),count(std::exchange(other.count,0)),
@@ -934,7 +928,7 @@ class SmallFenwickRow {
       return static_cast<T>(result);
     }
     void clear() noexcept {
-      if(payload) { payload->cols.fill(0);payload->slots.fill(0); }
+      payload->cols.fill(0);payload->slots.fill(0);
       count=0;cells=0;
     }
   };
@@ -975,11 +969,8 @@ class SmallFenwickRow {
   }
   void prepare_index() {
     std::size_t capacity = std::max(std::size_t{8}, small().point_index_.size());
-    while (std::size_t{small().point_count_} + 1 > capacity - capacity / 4) {
-      if (capacity > std::bit_floor(small().point_index_.max_size()) / 2)
-        throw std::length_error("SmallFenwickRow: point index overflow");
-      capacity *= 2;
-    }
+    // insert_newからは最大point_limit点までしか到達しない。
+    while (std::size_t{small().point_count_} + 1 > capacity - capacity / 4) capacity *= 2;
     if (capacity != small().point_index_.size()) {
       const U salt = small().index_salt_ ? small().index_salt_ : initial_index_salt();
       const unsigned shift = 32 - std::countr_zero(capacity);
@@ -1093,7 +1084,7 @@ class SmallFenwickRow {
     if(auto* state=std::get_if<0>(&storage_)) { clear_small(*state);return; }
     if (auto* flat=std::get_if<3>(&storage_)) { flat->clear();return; }
     if (auto* tree = std::get_if<2>(&storage_)) { tree->clear(); return; }
-    if (auto* map = fenwick_map()) { map->clear(); return; }
+    fenwick_map()->clear();
   }
   void clear(U m) noexcept {
     if(auto* state=std::get_if<0>(&storage_)) { clear_small(*state);return; }
@@ -1106,11 +1097,8 @@ class SmallFenwickRow {
       else storage_.template emplace<0>();
       return;
     }
-    if (fenwick_map() && uses_tree(m)) {
-      storage_.template emplace<0>();
-      return;
-    }
-    clear();
+    if (uses_tree(m)) storage_.template emplace<0>();
+    else fenwick_map()->clear();
   }
   void add(U col, const T& value, U m) {
     if (fenwick_map()) add_mode<false>(col,value,m);
@@ -1128,16 +1116,15 @@ class SmallFenwickRow {
     if constexpr (UseTree) {
       if (storage_.index() != 0) {
         if (auto* tree = std::get_if<2>(&storage_)) { tree->add(col,value,m); return; }
-        if(auto* flat=std::get_if<3>(&storage_)) {
-          if(flat->add(col,value,m))return;
-          Tree next;
-          next.reserve_points(std::size_t{flat->count}+1);
-          for(U i=0;i<flat->count;++i)
-            next.add(flat->payload->cols[i],static_cast<T>(flat->payload->values[i]),m);
-          next.add(col,value,m);
-          storage_.template emplace<2>(std::move(next));
-          return;
-        }
+        auto& flat=*std::get_if<3>(&storage_);
+        if(flat.add(col,value,m))return;
+        Tree next;
+        next.reserve_points(std::size_t{flat.count}+1);
+        for(U i=0;i<flat.count;++i)
+          next.add(flat.payload->cols[i],static_cast<T>(flat.payload->values[i]),m);
+        next.add(col,value,m);
+        storage_.template emplace<2>(std::move(next));
+        return;
       }
     } else {
       if (auto* map = fenwick_map()) {
@@ -1389,7 +1376,7 @@ class SmallFenwickRow {
     if constexpr (UseTree) {
       if (storage_.index() != 0) {
         if (const auto* tree = std::get_if<2>(&storage_)) return tree->sum(ml,mr);
-        if(const auto* flat=std::get_if<3>(&storage_))return flat->sum(ml,mr);
+        return std::get_if<3>(&storage_)->sum(ml,mr);
       }
     }
     {
@@ -1464,7 +1451,7 @@ class FenwickFallback {
     // 値型による例外を増やさず、直接配列は合計16MiB以内に制限する。
     if constexpr (std::is_nothrow_default_constructible_v<T> && std::is_nothrow_copy_assignable_v<T>) {
       constexpr std::size_t budget = std::size_t{16} << 20;
-      if (n_ > 1'000'000 || small_used_ == UINT64_MAX ||
+      if (small_used_ == UINT64_MAX ||
           sizeof(SmallCell) >= budget ||
           static_cast<std::size_t>(n_) >= budget / (sizeof(SmallCell) + 1) ||
           data_.size() < (static_cast<std::size_t>(n_) + 7) / 8) return;
@@ -2122,6 +2109,12 @@ class InternalHashMap {
         return std::bit_floor(std::min({keys_.max_size(), values_.max_size(), used_.max_size()}));
     }
 
+    static std::size_t doubled_capacity(std::size_t capacity, std::size_t maximum) {
+        if (capacity > maximum / 2)
+            throw std::length_error("InternalHashMap: capacity overflow");
+        return capacity * 2;
+    }
+
     static std::uint32_t occupied8(const std::uint8_t* flags) noexcept {
         std::uint64_t word;
         std::memcpy(&word, flags, sizeof(word));
@@ -2235,11 +2228,8 @@ public:
     void reserve(std::size_t n) {
         if (n <= keys_.size() - keys_.size() / Denominator) return;
         std::size_t capacity = std::max(std::size_t{8}, keys_.size());
-        while (n > capacity - capacity / Denominator) {
-            if (capacity > max_capacity() / 2)
-                throw std::length_error("InternalHashMap: capacity overflow");
-            capacity *= 2;
-        }
+        while (n > capacity - capacity / Denominator)
+            capacity = doubled_capacity(capacity, max_capacity());
         rehash(capacity);
     }
 
@@ -2247,9 +2237,7 @@ public:
         if (keys_.empty()) {
             rehash(8);
         } else {
-            if (keys_.size() > max_capacity() / 2)
-                throw std::length_error("InternalHashMap: capacity overflow");
-            rehash(keys_.size() * 2);
+            rehash(doubled_capacity(keys_.size(), max_capacity()));
         }
     }
 
@@ -2538,20 +2526,18 @@ class BPlusFenwickRow {
     else for(unsigned i=0;i<16;++i)p+=static_cast<unsigned>(n.keys[i]<key);
     return p;
   }
-  static V total(const Node& n) noexcept { return n.count ? n.prefix[n.count-1] : V{}; }
+  static V total(const Node& n) noexcept { return n.prefix[n.count-1]; }
   static U last(const Node& n) noexcept { return n.keys[n.count-1]; }
   void ensure_nodes(std::size_t extra) {
     const std::size_t maximum = std::min(nodes_.max_size(),std::size_t{absent});
     if (extra > maximum-nodes_.size()) throw std::length_error("BPlusFenwickRow: node capacity overflow");
     const std::size_t needed=nodes_.size()+extra;
     if (needed <= nodes_.capacity()) return;
-    std::size_t capacity=std::max(std::size_t{4},nodes_.capacity());
+    std::size_t capacity=std::min(maximum,std::max(std::size_t{4},nodes_.capacity()));
     while (capacity < needed) {
       if (capacity > maximum/2) { capacity=maximum; break; }
       capacity*=2;
     }
-    if (capacity > maximum) capacity=maximum;
-    if (capacity < needed) throw std::length_error("BPlusFenwickRow: node capacity overflow");
     nodes_.reserve(capacity);
   }
   U create(bool leaf) {
@@ -2725,31 +2711,26 @@ class BPlusFenwickRow {
       }
       return;
     }
-    std::size_t extra=0;
-    if (!existing) {
-      const U previous=p ? found.keys[p-1] : (found.previous!=absent ? last(nodes_[found.previous]) : U{0});
-      const U next=p<found.count ? found.keys[p] : (found.next!=absent ? nodes_[found.next].keys[0] : U{0});
-      extra=extra_cells(col,m,previous,next);
-      if(found.count<32) {
-        Node& leaf=nodes_[id];insert(leaf,p,col,delta);
-        for(unsigned d=0;d<depth;++d) {
-          const Frame frame=path[d];Node& parent=nodes_[frame.node];
-          parent.keys[frame.position]=std::max(parent.keys[frame.position],col);
-          for(unsigned i=0;i<16;++i)parent.prefix[i]=plus(parent.prefix[i],i>=frame.position ? delta : V{});
-        }
-        cells_+=static_cast<U>(extra);maybe_dense(m);return;
+    const U previous=p ? found.keys[p-1] : (found.previous!=absent ? last(nodes_[found.previous]) : U{0});
+    // 末尾キーが小さい葉を選ぶのは、木全体の右端に追加するときだけ。
+    const U next=p<found.count ? found.keys[p] : U{0};
+    const std::size_t extra=extra_cells(col,m,previous,next);
+    if(found.count<32) {
+      Node& leaf=nodes_[id];insert(leaf,p,col,delta);
+      for(unsigned d=0;d<depth;++d) {
+        const Frame frame=path[d];Node& parent=nodes_[frame.node];
+        parent.keys[frame.position]=std::max(parent.keys[frame.position],col);
+        for(unsigned i=0;i<16;++i)parent.prefix[i]=plus(parent.prefix[i],i>=frame.position ? delta : V{});
       }
-      std::size_t allocation=0;
-      if(found.count==32) {
-        allocation=1;unsigned d=depth;
-        while(d && nodes_[path[d-1].node].count==16){++allocation;--d;}
-        if(!d)++allocation;
-      }
-      ensure_nodes(allocation);
+      cells_+=static_cast<U>(extra);maybe_dense(m);return;
     }
-    Node& leaf=nodes_[id];
-    insert(leaf,p,col,delta);
-    U right=leaf.count>32 ? split(id) : absent;
+    std::size_t allocation=1;
+    unsigned levels=depth;
+    while(levels && nodes_[path[levels-1].node].count==16){++allocation;--levels;}
+    if(!levels)++allocation;
+    ensure_nodes(allocation);
+    insert(nodes_[id],p,col,delta);
+    U right=split(id);
     for(unsigned d=depth;d>0;--d) {
       const Frame frame=path[d-1];Node& parent=nodes_[frame.node];
       const V old=minus(parent.prefix[frame.position],frame.position ? parent.prefix[frame.position-1] : V{});
@@ -2785,7 +2766,7 @@ class BPlusFenwickRow {
       }
       return x;
     }
-    if(root_==absent)return m;
+    // 疎な木でセルが存在する間は根も存在する。
     U id=root_;
     for(;;) {
       const Node& node=nodes_[id];
@@ -2895,7 +2876,7 @@ class SmallFenwickRow {
     U count=0, cells=0, salt=0;
     FlatRow() : payload(std::make_unique<Payload>()), salt(initial_index_salt()) {}
     FlatRow(const FlatRow& other)
-      : payload(other.payload ? std::make_unique<Payload>(*other.payload) : nullptr),
+      : payload(std::make_unique<Payload>(*other.payload)),
         count(other.count),cells(other.cells),salt(other.salt) {}
     FlatRow(FlatRow&& other) noexcept
       : payload(std::move(other.payload)),count(std::exchange(other.count,0)),
@@ -2952,7 +2933,7 @@ class SmallFenwickRow {
       return static_cast<T>(result);
     }
     void clear() noexcept {
-      if(payload) { payload->cols.fill(0);payload->slots.fill(0); }
+      payload->cols.fill(0);payload->slots.fill(0);
       count=0;cells=0;
     }
   };
@@ -2993,11 +2974,8 @@ class SmallFenwickRow {
   }
   void prepare_index() {
     std::size_t capacity = std::max(std::size_t{8}, small().point_index_.size());
-    while (std::size_t{small().point_count_} + 1 > capacity - capacity / 4) {
-      if (capacity > std::bit_floor(small().point_index_.max_size()) / 2)
-        throw std::length_error("SmallFenwickRow: point index overflow");
-      capacity *= 2;
-    }
+    // insert_newからは最大point_limit点までしか到達しない。
+    while (std::size_t{small().point_count_} + 1 > capacity - capacity / 4) capacity *= 2;
     if (capacity != small().point_index_.size()) {
       const U salt = small().index_salt_ ? small().index_salt_ : initial_index_salt();
       const unsigned shift = 32 - std::countr_zero(capacity);
@@ -3111,7 +3089,7 @@ class SmallFenwickRow {
     if(auto* state=std::get_if<0>(&storage_)) { clear_small(*state);return; }
     if (auto* flat=std::get_if<3>(&storage_)) { flat->clear();return; }
     if (auto* tree = std::get_if<2>(&storage_)) { tree->clear(); return; }
-    if (auto* map = fenwick_map()) { map->clear(); return; }
+    fenwick_map()->clear();
   }
   void clear(U m) noexcept {
     if(auto* state=std::get_if<0>(&storage_)) { clear_small(*state);return; }
@@ -3124,11 +3102,8 @@ class SmallFenwickRow {
       else storage_.template emplace<0>();
       return;
     }
-    if (fenwick_map() && uses_tree(m)) {
-      storage_.template emplace<0>();
-      return;
-    }
-    clear();
+    if (uses_tree(m)) storage_.template emplace<0>();
+    else fenwick_map()->clear();
   }
   void add(U col, const T& value, U m) {
     if (fenwick_map()) add_mode<false>(col,value,m);
@@ -3146,16 +3121,15 @@ class SmallFenwickRow {
     if constexpr (UseTree) {
       if (storage_.index() != 0) {
         if (auto* tree = std::get_if<2>(&storage_)) { tree->add(col,value,m); return; }
-        if(auto* flat=std::get_if<3>(&storage_)) {
-          if(flat->add(col,value,m))return;
-          Tree next;
-          next.reserve_points(std::size_t{flat->count}+1);
-          for(U i=0;i<flat->count;++i)
-            next.add(flat->payload->cols[i],static_cast<T>(flat->payload->values[i]),m);
-          next.add(col,value,m);
-          storage_.template emplace<2>(std::move(next));
-          return;
-        }
+        auto& flat=*std::get_if<3>(&storage_);
+        if(flat.add(col,value,m))return;
+        Tree next;
+        next.reserve_points(std::size_t{flat.count}+1);
+        for(U i=0;i<flat.count;++i)
+          next.add(flat.payload->cols[i],static_cast<T>(flat.payload->values[i]),m);
+        next.add(col,value,m);
+        storage_.template emplace<2>(std::move(next));
+        return;
       }
     } else {
       if (auto* map = fenwick_map()) {
@@ -3407,7 +3381,7 @@ class SmallFenwickRow {
     if constexpr (UseTree) {
       if (storage_.index() != 0) {
         if (const auto* tree = std::get_if<2>(&storage_)) return tree->sum(ml,mr);
-        if(const auto* flat=std::get_if<3>(&storage_))return flat->sum(ml,mr);
+        return std::get_if<3>(&storage_)->sum(ml,mr);
       }
     }
     {
@@ -3482,7 +3456,7 @@ class FenwickFallback {
     // 値型による例外を増やさず、直接配列は合計16MiB以内に制限する。
     if constexpr (std::is_nothrow_default_constructible_v<T> && std::is_nothrow_copy_assignable_v<T>) {
       constexpr std::size_t budget = std::size_t{16} << 20;
-      if (n_ > 1'000'000 || small_used_ == UINT64_MAX ||
+      if (small_used_ == UINT64_MAX ||
           sizeof(SmallCell) >= budget ||
           static_cast<std::size_t>(n_) >= budget / (sizeof(SmallCell) + 1) ||
           data_.size() < (static_cast<std::size_t>(n_) + 7) / 8) return;
@@ -4069,10 +4043,10 @@ class DynamicFenwickTree2D {
     (void)i; (void)j;
 #endif
   }
-  void add_nodes(std::size_t delta) {
-    if (delta > std::numeric_limits<std::size_t>::max() - nodes_)
+  static void add_nodes(std::size_t& count, std::size_t delta) {
+    if (delta > std::numeric_limits<std::size_t>::max() - count)
       throw std::length_error("DynamicFenwickTree2D: node count overflow");
-    nodes_ += delta;
+    count += delta;
   }
   template <bool Dense, bool Direct, bool Tree = false>
   void update(U row, U col, const T& x) {
@@ -4092,8 +4066,7 @@ class DynamicFenwickTree2D {
         else return row_map_[row];
       }();
       if (index == 0) {
-        if (active_ >= std::numeric_limits<U>::max())
-          throw std::length_error("DynamicFenwickTree2D: row count overflow");
+        // 未登録の行があるので、active_ + 1 <= n_。
         if constexpr (Dense) {
           if (active_ == dense_rows_.size()) dense_rows_.emplace_back();
           dense_rows_[active_].reset(m_);
@@ -4115,7 +4088,7 @@ class DynamicFenwickTree2D {
             used |= std::uint64_t{1} << (c - 1);
           }
           const std::uint64_t extra = used & ~line.used;
-          if (extra) add_nodes(std::popcount(extra));
+          if (extra) add_nodes(nodes_,std::popcount(extra));
           line.used |= used;
         } else {
           std::size_t extra = 0;
@@ -4126,7 +4099,7 @@ class DynamicFenwickTree2D {
             if ((flags & bit) == 0) { flags |= bit; ++extra; }
             line.values[k] += x;
           }
-          add_nodes(extra);
+          add_nodes(nodes_,extra);
         }
       } else {
         auto& line = wide_rows_[index - 1];
@@ -4146,7 +4119,7 @@ class DynamicFenwickTree2D {
           if constexpr (small_rows) return line.template size_mode<Tree>();
           else return line.size();
         }();
-        add_nodes(after-before);
+        add_nodes(nodes_,after-before);
       }
     }
   }
@@ -4327,6 +4300,7 @@ class DynamicFenwickTree2D {
 
 
 // SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
+#include <algorithm>
 #include <bit>
 #include <cstddef>
 #include <cstdint>
@@ -4346,6 +4320,12 @@ class DynamicFenwickTree2D {
 namespace sirkit {
 #ifndef SIRKIT_DYNAMIC_LI_CHAO_TREE_DEFINED
 #define SIRKIT_DYNAMIC_LI_CHAO_TREE_DEFINED
+namespace detail {
+inline void CheckLiChaoNodeCapacity(std::size_t size, std::size_t limit) {
+  if (size >= limit) throw std::length_error("Li Chao node limit");
+}
+}
+
 template <typename T = std::int64_t,
           T kInf = (std::numeric_limits<T>::max() < (std::int64_t{1} << 60)
                         ? std::numeric_limits<T>::max()
@@ -4418,8 +4398,7 @@ class DynamicLiChaoTree {
     return std::bit_cast<T>(static_cast<U>(static_cast<U>(left) + distance / 2));
   }
   Index make_node() {
-    if (nodes_.size() >= no_child || nodes_.size() == nodes_.max_size())
-      throw std::length_error("Li Chao node limit");
+    detail::CheckLiChaoNodeCapacity(nodes_.size(), std::min(static_cast<std::size_t>(no_child), nodes_.max_size()));
     const Index result = static_cast<Index>(nodes_.size());
     nodes_.push_back(Node{Line(T{}, inf_), no_child, no_child});
     return result;
@@ -4694,6 +4673,12 @@ class InternalHashMap {
         return std::bit_floor(std::min({keys_.max_size(), values_.max_size(), used_.max_size()}));
     }
 
+    static std::size_t doubled_capacity(std::size_t capacity, std::size_t maximum) {
+        if (capacity > maximum / 2)
+            throw std::length_error("InternalHashMap: capacity overflow");
+        return capacity * 2;
+    }
+
     static std::uint32_t occupied8(const std::uint8_t* flags) noexcept {
         std::uint64_t word;
         std::memcpy(&word, flags, sizeof(word));
@@ -4807,11 +4792,8 @@ public:
     void reserve(std::size_t n) {
         if (n <= keys_.size() - keys_.size() / Denominator) return;
         std::size_t capacity = std::max(std::size_t{8}, keys_.size());
-        while (n > capacity - capacity / Denominator) {
-            if (capacity > max_capacity() / 2)
-                throw std::length_error("InternalHashMap: capacity overflow");
-            capacity *= 2;
-        }
+        while (n > capacity - capacity / Denominator)
+            capacity = doubled_capacity(capacity, max_capacity());
         rehash(capacity);
     }
 
@@ -4819,9 +4801,7 @@ public:
         if (keys_.empty()) {
             rehash(8);
         } else {
-            if (keys_.size() > max_capacity() / 2)
-                throw std::length_error("InternalHashMap: capacity overflow");
-            rehash(keys_.size() * 2);
+            rehash(doubled_capacity(keys_.size(), max_capacity()));
         }
     }
 
@@ -5234,6 +5214,15 @@ public:
 };
 #endif
 
+#ifndef SIRKIT_HASH_CAPACITY_DEFINED
+#define SIRKIT_HASH_CAPACITY_DEFINED
+namespace detail {
+inline void CheckHashCapacity(std::size_t requested, std::size_t maximum, const char* message) {
+    if (requested > maximum) throw std::length_error(message);
+}
+}
+#endif
+
 #ifndef SIRKIT_HASH_MAP_DEFINED
 #define SIRKIT_HASH_MAP_DEFINED
 template <class Key, class Val, class Hasher = GenericHash, class KeyEqual = std::equal_to<Key>>
@@ -5314,7 +5303,7 @@ private:
         return slots_.size();
     }
     void rebuild(size_type capacity) {
-        if (capacity > max_capacity()) throw std::length_error("HashMap: capacity overflow");
+        detail::CheckHashCapacity(capacity, max_capacity(), "HashMap: capacity overflow");
         std::vector<Slot> next(capacity);
         std::vector<std::uint8_t> state(capacity, 0);
         const auto shift = static_cast<unsigned>(64 - std::countr_zero(capacity));
@@ -5364,7 +5353,7 @@ private:
             p = (p + 1) & (slots_.size() - 1);
         }
         if (size_ == threshold(slots_.size())) {
-            if (slots_.size() > max_capacity() / 2) throw std::length_error("HashMap: capacity overflow");
+            detail::CheckHashCapacity(slots_.size(), max_capacity() / 2, "HashMap: capacity overflow");
             rebuild(slots_.size() * 2);
             return insertion_slot(key);
         }
@@ -5392,9 +5381,6 @@ public:
         size_type generation_ = 0;
 #endif
         BasicIterator(Owner* owner, size_type index) noexcept : owner_(owner), index_(index) {
-            // 内部で新しく作るiteratorは有効な要素またはendだけを指す。
-            if (index > owner->slots_.size() ||
-                (index < owner->slots_.size() && owner->state_[index] != 1)) std::unreachable();
 #ifndef SKIP_RUNTIME_CHECKS
             generation_ = owner->generation_;
 #endif
@@ -5472,12 +5458,12 @@ public:
     }
     iterator begin() noexcept {
         if (size_ == 0) return end();
-        size_type p = 0; while (p < slots_.size() && state_[p] != 1) ++p;
+        size_type p = 0; while (state_[p] != 1) ++p;
         return iterator(this, p);
     }
     const_iterator begin() const noexcept {
         if (size_ == 0) return end();
-        size_type p = 0; while (p < slots_.size() && state_[p] != 1) ++p;
+        size_type p = 0; while (state_[p] != 1) ++p;
         return const_iterator(this, p);
     }
     iterator end() noexcept { return iterator(this, slots_.size()); }
@@ -5562,10 +5548,7 @@ public:
     void rehash(size_type requested) {
         if (requested > max_capacity()) throw std::length_error("HashMap::rehash: capacity overflow");
         size_type capacity = 8;
-        while (requested > capacity || size_ > threshold(capacity)) {
-            if (capacity > max_capacity() / 2) throw std::length_error("HashMap::rehash: capacity overflow");
-            capacity *= 2;
-        }
+        while (requested > capacity || size_ > threshold(capacity)) capacity *= 2;
         rebuild(capacity);
     }
 };
@@ -5671,6 +5654,12 @@ class InternalHashMap {
 
     std::size_t max_capacity() const noexcept {
         return std::bit_floor(std::min({keys_.max_size(), values_.max_size(), used_.max_size()}));
+    }
+
+    static std::size_t doubled_capacity(std::size_t capacity, std::size_t maximum) {
+        if (capacity > maximum / 2)
+            throw std::length_error("InternalHashMap: capacity overflow");
+        return capacity * 2;
     }
 
     static std::uint32_t occupied8(const std::uint8_t* flags) noexcept {
@@ -5786,11 +5775,8 @@ public:
     void reserve(std::size_t n) {
         if (n <= keys_.size() - keys_.size() / Denominator) return;
         std::size_t capacity = std::max(std::size_t{8}, keys_.size());
-        while (n > capacity - capacity / Denominator) {
-            if (capacity > max_capacity() / 2)
-                throw std::length_error("InternalHashMap: capacity overflow");
-            capacity *= 2;
-        }
+        while (n > capacity - capacity / Denominator)
+            capacity = doubled_capacity(capacity, max_capacity());
         rehash(capacity);
     }
 
@@ -5798,9 +5784,7 @@ public:
         if (keys_.empty()) {
             rehash(8);
         } else {
-            if (keys_.size() > max_capacity() / 2)
-                throw std::length_error("InternalHashMap: capacity overflow");
-            rehash(keys_.size() * 2);
+            rehash(doubled_capacity(keys_.size(), max_capacity()));
         }
     }
 
@@ -6170,8 +6154,8 @@ struct LineContainer : std::multiset<Line<T>, /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpc
           if (has_previous) {
             previous = *x;
             previous_below = intersection(previous, candidate);
-            if (!previous_below && previous.p >= candidate.p &&
-                (z == end() || candidate.p < z->p)) return;
+            // 整数順序では後続を削除できる候補はその後続の旧右端で前任より良い。
+            if (!previous_below && previous.p >= candidate.p) return;
           }
           auto y = insert(z, candidate);
           while (z != end() && !boundary_less(*y, *z)) {
@@ -6180,7 +6164,6 @@ struct LineContainer : std::multiset<Line<T>, /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpc
           }
           if (has_previous) {
             x->p = previous.p;
-            if (!previous_below && !boundary_less(*x, *y)) insect(x, y = erase(y));
           } else x = y;
           while ((y = x) != begin() && !boundary_less(*--x, *y)) insect(x, erase(y));
           // floorが最小値の直線はその点で最適になり得る。真の域外だけ除く。
@@ -6188,11 +6171,10 @@ struct LineContainer : std::multiset<Line<T>, /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpc
             const auto first = begin();
             if (first->p == std::numeric_limits<T>::min()) [[unlikely]] {
               const auto next = std::next(first);
-              if (next != end()) {
-                bool first_below;
-                insect_impl(first, next, first_below);
-                if (first_below) erase(first);
-              }
+              // 末尾の上端は最大値なので、ここでは次の直線が存在する。
+              bool first_below;
+              insect_impl(first, next, first_below);
+              if (first_below) erase(first);
             }
           }
           return;
@@ -6212,8 +6194,8 @@ struct LineContainer : std::multiset<Line<T>, /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpc
             --x;
             previous = *x;
             previous_below = intersection<true>(previous, candidate);
-            if (!previous_below && previous.p >= candidate.p &&
-                (z == end() || candidate.p < z->p)) return;
+            // 整数順序では後続を削除できる候補はその後続の旧右端で前任より良い。
+            if (!previous_below && previous.p >= candidate.p) return;
           }
           auto y = insert(z, candidate);
           while (z != end() && !boundary_less(*y, *z)) {
@@ -6222,7 +6204,6 @@ struct LineContainer : std::multiset<Line<T>, /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpc
           }
           if (has_previous) {
             x->p = previous.p;
-            if (!previous_below && !boundary_less(*x, *y)) insect(x, y = erase(y));
           } else x = y;
           while ((y = x) != begin() && !boundary_less(*--x, *y)) insect(x, erase(y));
           // floorが最小値の直線はその点で最適になり得る。真の域外だけ除く。
@@ -6230,11 +6211,10 @@ struct LineContainer : std::multiset<Line<T>, /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpc
             const auto first = begin();
             if (first->p == std::numeric_limits<T>::min()) [[unlikely]] {
               const auto next = std::next(first);
-              if (next != end()) {
-                bool first_below;
-                insect_impl(first, next, first_below);
-                if (first_below) erase(first);
-              }
+              // 末尾の上端は最大値なので、ここでは次の直線が存在する。
+              bool first_below;
+              insect_impl(first, next, first_below);
+              if (first_below) erase(first);
             }
           }
           return;
@@ -6253,11 +6233,9 @@ struct LineContainer : std::multiset<Line<T>, /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpc
       const auto first = begin();
       if (first->p == std::numeric_limits<T>::min()) [[unlikely]] {
         const auto next = std::next(first);
-        if (next != end()) {
-          bool first_below;
-          insect_impl(first, next, first_below);
-          if (first_below) erase(first);
-        }
+        bool first_below;
+        insect_impl(first, next, first_below);
+        if (first_below) erase(first);
       }
     }
   }
@@ -6341,6 +6319,7 @@ template <typename T> using MaxLineContainer = LineContainer<T, MAXIMIZE>;
 // swap(other): 2コンテナの全状態をO(1)で交換する。コピーは独立、move後の元は空。
 // コピーはO(h)、moveはO(1)。コピー・移動・clearでもinfを保持し、swapでは設定も交換する。
 // 公開のminlc/maxlc・座標範囲は参照用。外からの変更は不変条件を壊す。
+// SIRKIT_LINE_CONTAINER_STANDARD_HINTS: 座標を複製しない標準の探索経路を使う。
 // long doubleの丸め誤差があり、ll版も厳密な整数内積ではない。hは包絡に残る点数。
 // 既定の丸めモード・型本来の精度が前提。ゼロの符号は未規定。
 //
@@ -6600,8 +6579,8 @@ struct LineContainer : std::multiset<Line<T>, /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpc
           if (has_previous) {
             previous = *x;
             previous_below = intersection(previous, candidate);
-            if (!previous_below && previous.p >= candidate.p &&
-                (z == end() || candidate.p < z->p)) return;
+            // 整数順序では後続を削除できる候補はその後続の旧右端で前任より良い。
+            if (!previous_below && previous.p >= candidate.p) return;
           }
           auto y = insert(z, candidate);
           while (z != end() && !boundary_less(*y, *z)) {
@@ -6610,7 +6589,6 @@ struct LineContainer : std::multiset<Line<T>, /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpc
           }
           if (has_previous) {
             x->p = previous.p;
-            if (!previous_below && !boundary_less(*x, *y)) insect(x, y = erase(y));
           } else x = y;
           while ((y = x) != begin() && !boundary_less(*--x, *y)) insect(x, erase(y));
           // floorが最小値の直線はその点で最適になり得る。真の域外だけ除く。
@@ -6618,11 +6596,10 @@ struct LineContainer : std::multiset<Line<T>, /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpc
             const auto first = begin();
             if (first->p == std::numeric_limits<T>::min()) [[unlikely]] {
               const auto next = std::next(first);
-              if (next != end()) {
-                bool first_below;
-                insect_impl(first, next, first_below);
-                if (first_below) erase(first);
-              }
+              // 末尾の上端は最大値なので、ここでは次の直線が存在する。
+              bool first_below;
+              insect_impl(first, next, first_below);
+              if (first_below) erase(first);
             }
           }
           return;
@@ -6642,8 +6619,8 @@ struct LineContainer : std::multiset<Line<T>, /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpc
             --x;
             previous = *x;
             previous_below = intersection<true>(previous, candidate);
-            if (!previous_below && previous.p >= candidate.p &&
-                (z == end() || candidate.p < z->p)) return;
+            // 整数順序では後続を削除できる候補はその後続の旧右端で前任より良い。
+            if (!previous_below && previous.p >= candidate.p) return;
           }
           auto y = insert(z, candidate);
           while (z != end() && !boundary_less(*y, *z)) {
@@ -6652,7 +6629,6 @@ struct LineContainer : std::multiset<Line<T>, /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpc
           }
           if (has_previous) {
             x->p = previous.p;
-            if (!previous_below && !boundary_less(*x, *y)) insect(x, y = erase(y));
           } else x = y;
           while ((y = x) != begin() && !boundary_less(*--x, *y)) insect(x, erase(y));
           // floorが最小値の直線はその点で最適になり得る。真の域外だけ除く。
@@ -6660,11 +6636,10 @@ struct LineContainer : std::multiset<Line<T>, /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpc
             const auto first = begin();
             if (first->p == std::numeric_limits<T>::min()) [[unlikely]] {
               const auto next = std::next(first);
-              if (next != end()) {
-                bool first_below;
-                insect_impl(first, next, first_below);
-                if (first_below) erase(first);
-              }
+              // 末尾の上端は最大値なので、ここでは次の直線が存在する。
+              bool first_below;
+              insect_impl(first, next, first_below);
+              if (first_below) erase(first);
             }
           }
           return;
@@ -6683,11 +6658,9 @@ struct LineContainer : std::multiset<Line<T>, /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpc
       const auto first = begin();
       if (first->p == std::numeric_limits<T>::min()) [[unlikely]] {
         const auto next = std::next(first);
-        if (next != end()) {
-          bool first_below;
-          insect_impl(first, next, first_below);
-          if (first_below) erase(first);
-        }
+        bool first_below;
+        insect_impl(first, next, first_below);
+        if (first_below) erase(first);
       }
     }
   }
@@ -6761,7 +6734,11 @@ struct LineContainer2D {
   std::size_t count_ = 0;
   // 照会では状態を変えず、包絡が変わった追加後にだけ更新する。
   // 算術の代替指定と、処理系に合わせたキャッシュ選択を分ける。
+#if !defined(SIRKIT_LINE_CONTAINER_STANDARD_HINTS)
   static constexpr bool cache_points = true;
+#else
+  static constexpr bool cache_points = false;
+#endif
   struct NoCache {};
   struct HintEntry {
     const Line<ld>* line = nullptr;
@@ -6839,7 +6816,6 @@ struct LineContainer2D {
     hint.negative.line = &*negative;
     if constexpr (cache_points) { hint.negative.cached.k = (*negative).k; hint.negative.cached.m = (*negative).m; }
     hint.negative.previous = negative == hull.begin() ? nullptr : &*std::prev(negative);
-    if (positive == negative) hint.small = 3;
   }
   void refresh_hints() {
     refresh_hint(minlc, min_hint_);
@@ -6973,39 +6949,32 @@ struct LineContainer2D {
     const ld fraction = value - ld(integral);
     return integral + (fraction >= 0.5L) - (fraction <= -0.5L);
   }
-  template <bool ratio_is_finite = false>
   std::pair<ld, ld> select(ld a, ld b) const {
     if (a == 0) {
-      if constexpr (!ratio_is_finite) check_coefficients(a, b);
+      check_coefficients(a, b);
       const auto it = b > 0 ? std::prev(maxlc.end()) : maxlc.begin();
       return {it->m, it->k};
     }
     if (b == 0) {
-      if constexpr (!ratio_is_finite) check_coefficients(a, b);
+      check_coefficients(a, b);
       const auto& line = a > 0 ? *maxlc.lower_bound(ld{0}) : *minlc.lower_bound(ld{0});
       return {line.m, line.k};
     }
-    return select_nonzero<ratio_is_finite>(a, b);
+    return select_nonzero(a, b);
   }
   [[noreturn]] static void slope_error(ld a, ld b) {
     check_coefficients(a, b);
     throw std::overflow_error("LineContainer2D: query slope overflow");
   }
-  template <bool ratio_is_finite>
   std::pair<ld, ld> select_nonzero(ld a, ld b) const {
     const ld c = b / a;
-    if constexpr (!ratio_is_finite) {
 #ifndef SKIP_RUNTIME_CHECKS
-      // 有限aと有限b / aからbの有限性も分かる。bを重ねて検査しない。
-      if (!std::isfinite(a) || !std::isfinite(c)) [[unlikely]] slope_error(a, b);
+    // 有限aと有限b / aからbの有限性も分かる。bを重ねて検査しない。
+    if (!std::isfinite(a) || !std::isfinite(c)) [[unlikely]] slope_error(a, b);
 #else
-      if (!std::isfinite(c)) [[unlikely]] slope_error(a, b);
+    if (!std::isfinite(c)) [[unlikely]] slope_error(a, b);
 #endif
-    }
-    const auto& line = [&]() -> const Line<ld>& {
-      if constexpr (ratio_is_finite) return a > 0 ? *maxlc.lower_bound(c) : *minlc.lower_bound(c);
-      else return a > 0 ? hinted_line<ratio_is_finite>(maxlc, max_hint_, c) : hinted_line<ratio_is_finite>(minlc, min_hint_, c);
-    }();
+    const auto& line = a > 0 ? hinted_line(maxlc, max_hint_, c) : hinted_line(minlc, min_hint_, c);
     return {line.m, line.k};
   }
   [[gnu::always_inline]]
@@ -7270,6 +7239,7 @@ struct LineContainer2D {
 // replace_top(value): 最小値を置換して旧値を返す、O(log N)。空の扱いは pop_value() と同じ。
 // push_pop(value): 値を追加した後の最小値を返して削除、O(log N)、空なら value を返す。
 // clear(): 全要素を削除、容量を保持。reserve(n): n 要素分の容量を確保、再確保時 O(N)。
+// SIRKIT_HEAP_FORCE_QUATERNARY: 2子の根と4子の内部節点を使う経路を明示的に選ぶ。
 
 
 // SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
@@ -7291,7 +7261,11 @@ namespace sirkit {
 class Heap {
     std::vector<int> values_;
 
+#if defined(SIRKIT_HEAP_FORCE_QUATERNARY)
+    static constexpr bool quaternary_ = true;
+#else
     static constexpr bool quaternary_ = false;
+#endif
 
     // 根以外は4子。position >= 1で、最後の親はcount/4。
     void repair_quad(std::size_t position, int value) noexcept {
@@ -7582,6 +7556,15 @@ struct RangeAddSum {
 
 #ifndef SIRKIT_IMPLICIT_TREAP_DEFINED
 #define SIRKIT_IMPLICIT_TREAP_DEFINED
+
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
+inline int ImplicitTreapAppendIndex(std::size_t count) {
+    if (count >= static_cast<std::size_t>(std::numeric_limits<int>::max()))
+        throw std::length_error("lazy_implicit_treap capacity");
+    return static_cast<int>(count);
+}
+}
+
 template<class S = RangeAddMin::S,
          S (*op)(S, S) = RangeAddMin::op,
          S (*e)() = RangeAddMin::e,
@@ -7850,14 +7833,13 @@ class lazy_implicit_treap {
             } else nodes_[p] = Node(std::move(value), priority());
             return p;
         }
-        if (nodes_.size() >= static_cast<std::size_t>(std::numeric_limits<int>::max()))
-            throw std::length_error("lazy_implicit_treap capacity");
+        const int appended = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::ImplicitTreapAppendIndex(nodes_.size());
         if constexpr (compact_nodes_) {
             priorities_.slots.push_back(priority());
             try { nodes_.emplace_back(std::move(value), priorities_.slots.back()); }
             catch (...) { priorities_.slots.pop_back(); throw; }
         } else nodes_.emplace_back(std::move(value), priority());
-        return static_cast<int>(nodes_.size()) - 1;
+        return appended;
     }
     void recycle(int p) {
         if constexpr (TrackIds) {
@@ -8048,9 +8030,10 @@ class lazy_implicit_treap {
         out.push_back(nodes_[p].value);
         flatten(nodes_[p].right, out);
     }
-    static bool equal(const S& a, const S& b) {
-        if constexpr (requires { static_cast<bool>(a == b); }) return static_cast<bool>(a == b);
-        else return !(a < b) && !(b < a);
+    static bool matches_lower_bound(const S& candidate, const S& value) {
+        if constexpr (requires { static_cast<bool>(candidate == value); }) return static_cast<bool>(candidate == value);
+        // lower_boundでcandidate < valueが偽と分かっている。
+        else return !(value < candidate);
     }
     int bound(S value, bool upper) {
         int p = root_, offset = 0, result = size();
@@ -8293,7 +8276,7 @@ public:
     int count(S value) { return upper_bound(value) - lower_bound(value); }
     bool contains(S value) {
         int p = lower_bound(value);
-        return p < size() && equal(get(p), value);
+        return p < size() && matches_lower_bound(get(p), value);
     }
     void insert_sorted(S value) {
         int p = allocate(std::move(value));
@@ -8370,7 +8353,7 @@ public:
     }
     void erase_val(S value) {
         int p = lower_bound(value);
-        if (p < size() && equal(get(p), value)) erase_at(p);
+        if (p < size() && matches_lower_bound(get(p), value)) erase_at(p);
     }
     void erase_max() { pop_back(); }
     template<class G> int max_right(int l, G g) {

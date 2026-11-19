@@ -145,13 +145,13 @@ template <bool Subset, bool Subtract, std::size_t Half, class T>
         }
     }
 }
-template <bool Subset, bool Subtract, class T>
-[[gnu::always_inline]] inline void set_transform_small(T* f,std::size_t n) {
-    if(n>=2)set_transform_small_stage<Subset,Subtract,1>(f,n);
-    if(n>=4)set_transform_small_stage<Subset,Subtract,2>(f,n);
-    if(n>=8)set_transform_small_stage<Subset,Subtract,4>(f,n);
-    if(n>=16)set_transform_small_stage<Subset,Subtract,8>(f,n);
-    if(n>=32)set_transform_small_stage<Subset,Subtract,16>(f,n);
+template <bool Subset, bool Subtract, std::size_t Size, class T>
+[[gnu::always_inline]] inline void set_transform_small(T* f) {
+    set_transform_small_stage<Subset,Subtract,1>(f,Size);
+    set_transform_small_stage<Subset,Subtract,2>(f,Size);
+    set_transform_small_stage<Subset,Subtract,4>(f,Size);
+    set_transform_small_stage<Subset,Subtract,8>(f,Size);
+    if constexpr (Size == 32) set_transform_small_stage<Subset,Subtract,16>(f,Size);
 }
 template <bool Subset, bool Subtract, unsigned Bit, class U, class V, std::size_t... I>
 [[gnu::target("avx2"),gnu::always_inline]] inline V set_transform_stage(V v, std::index_sequence<I...>) {
@@ -283,12 +283,15 @@ template <class T> void superset_zeta_transform(std::vector<T>& f) {
     if constexpr (std::is_integral_v<T> && !std::is_same_v<T,bool> && sizeof(T)<=8) {
         if (f.size()>=8) {
         if(f.size()==8){f[0]+=f[1];f[2]+=f[3];f[4]+=f[5];f[6]+=f[7];f[0]+=f[2];f[1]+=f[3];f[4]+=f[6];f[5]+=f[7];f[0]+=f[4];f[1]+=f[5];f[2]+=f[6];f[3]+=f[7];return;}
-        if (f.size()<64) {
-            switch(f.size()) {
-            case 16:/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::set_transform_small<false,false>(f.data(),16);return;
-            case 32:/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::set_transform_small<false,false>(f.data(),32);return;
-            default:return;
-            }
+        if (f.size() < 64) {
+            const auto size = f.size();
+#ifdef SKIP_RUNTIME_CHECKS
+            // 固定サイズの処理は対応する長さでだけ呼ぶ。
+            if (size != 16 && size != 32) return;
+#endif
+            if (size == 16) /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::set_transform_small<false,false,16>(f.data());
+            else /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::set_transform_small<false,false,32>(f.data());
+            return;
         }
         if (__builtin_cpu_supports("avx2")) {
             /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::set_transform_simd<false,false>(f.data(), f.size());
@@ -312,12 +315,15 @@ template <class T> void superset_mobius_transform(std::vector<T>& f) {
     if constexpr (std::is_integral_v<T> && !std::is_same_v<T,bool> && sizeof(T)<=8) {
         if (f.size()>=8) {
         if(f.size()==8){f[0]-=f[1];f[2]-=f[3];f[4]-=f[5];f[6]-=f[7];f[0]-=f[2];f[1]-=f[3];f[4]-=f[6];f[5]-=f[7];f[0]-=f[4];f[1]-=f[5];f[2]-=f[6];f[3]-=f[7];return;}
-        if (f.size()<64) {
-            switch(f.size()) {
-            case 16:/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::set_transform_small<false,true>(f.data(),16);return;
-            case 32:/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::set_transform_small<false,true>(f.data(),32);return;
-            default:return;
-            }
+        if (f.size() < 64) {
+            const auto size = f.size();
+#ifdef SKIP_RUNTIME_CHECKS
+            // 固定サイズの処理は対応する長さでだけ呼ぶ。
+            if (size != 16 && size != 32) return;
+#endif
+            if (size == 16) /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::set_transform_small<false,true,16>(f.data());
+            else /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::set_transform_small<false,true,32>(f.data());
+            return;
         }
         if (__builtin_cpu_supports("avx2")) {
             /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::set_transform_simd<false,true>(f.data(), f.size());
@@ -341,12 +347,15 @@ template <class T> void subset_zeta_transform(std::vector<T>& f) {
     if constexpr (std::is_integral_v<T> && !std::is_same_v<T,bool> && sizeof(T)<=8) {
         if (f.size()>=8) {
         if(f.size()==8){f[1]+=f[0];f[3]+=f[2];f[5]+=f[4];f[7]+=f[6];f[2]+=f[0];f[3]+=f[1];f[6]+=f[4];f[7]+=f[5];f[4]+=f[0];f[5]+=f[1];f[6]+=f[2];f[7]+=f[3];return;}
-        if (f.size()<64) {
-            switch(f.size()) {
-            case 16:/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::set_transform_small<true,false>(f.data(),16);return;
-            case 32:/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::set_transform_small<true,false>(f.data(),32);return;
-            default:return;
-            }
+        if (f.size() < 64) {
+            const auto size = f.size();
+#ifdef SKIP_RUNTIME_CHECKS
+            // 固定サイズの処理は対応する長さでだけ呼ぶ。
+            if (size != 16 && size != 32) return;
+#endif
+            if (size == 16) /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::set_transform_small<true,false,16>(f.data());
+            else /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::set_transform_small<true,false,32>(f.data());
+            return;
         }
         if (__builtin_cpu_supports("avx2")) {
             /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::set_transform_simd<true,false>(f.data(), f.size());
@@ -370,12 +379,15 @@ template <class T> void subset_mobius_transform(std::vector<T>& f) {
     if constexpr (std::is_integral_v<T> && !std::is_same_v<T,bool> && sizeof(T)<=8) {
         if (f.size()>=8) {
         if(f.size()==8){f[1]-=f[0];f[3]-=f[2];f[5]-=f[4];f[7]-=f[6];f[2]-=f[0];f[3]-=f[1];f[6]-=f[4];f[7]-=f[5];f[4]-=f[0];f[5]-=f[1];f[6]-=f[2];f[7]-=f[3];return;}
-        if (f.size()<64) {
-            switch(f.size()) {
-            case 16:/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::set_transform_small<true,true>(f.data(),16);return;
-            case 32:/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::set_transform_small<true,true>(f.data(),32);return;
-            default:return;
-            }
+        if (f.size() < 64) {
+            const auto size = f.size();
+#ifdef SKIP_RUNTIME_CHECKS
+            // 固定サイズの処理は対応する長さでだけ呼ぶ。
+            if (size != 16 && size != 32) return;
+#endif
+            if (size == 16) /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::set_transform_small<true,true,16>(f.data());
+            else /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::set_transform_small<true,true,32>(f.data());
+            return;
         }
         if (__builtin_cpu_supports("avx2")) {
             /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::set_transform_simd<true,true>(f.data(), f.size());

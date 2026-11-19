@@ -40,6 +40,12 @@ using Graph = std::vector<std::vector<int>>;
 
 #ifndef SIRKIT_CENTROID_DECOMPOSITION_DEFINED
 #define SIRKIT_CENTROID_DECOMPOSITION_DEFINED
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
+inline void CheckCentroidVertexCount(std::size_t vertices) {
+    if (vertices > static_cast<std::size_t>(std::numeric_limits<int>::max()))
+        throw std::length_error("CentroidDecomposition vertex count");
+}
+}
 class CentroidDecomposition {
 public:
     struct Ancestor {
@@ -68,8 +74,7 @@ private:
     }
     void initialize(const Graph& graph, bool store_distances) {
         const auto n = graph.size();
-        if (n > static_cast<std::size_t>(std::numeric_limits<int>::max()))
-            throw std::length_error("CentroidDecomposition vertex count");
+        /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::CheckCentroidVertexCount(n);
         stores_distances_ = store_distances;
         parent_.assign(n, -1); depth_.resize(n); component_size_.resize(n); order_.reserve(n);
         if (store_distances) ancestors_.resize(n);

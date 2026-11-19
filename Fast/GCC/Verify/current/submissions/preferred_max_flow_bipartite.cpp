@@ -43,6 +43,22 @@
 
 // SIRKIT_NAMESPACE_OPEN_V1
 namespace sirkit {
+#ifndef SIRKIT_MAX_FLOW_CAPACITY_DEFINED
+#define SIRKIT_MAX_FLOW_CAPACITY_DEFINED
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
+inline void CheckMaxFlowAppendCapacity(std::size_t edges, std::size_t from_degree,
+                                       std::size_t to_degree, bool loop) {
+    constexpr auto maximum = static_cast<std::size_t>(std::numeric_limits<int>::max());
+    if (edges >= maximum) throw std::length_error("mf_graph: too many edges");
+    if (from_degree >= maximum || to_degree >= maximum || (loop && from_degree >= maximum - 1))
+        throw std::length_error("mf_graph: too many incident edges");
+}
+
+constexpr bool MaxFlowCanUsePreflow(std::size_t vertices) noexcept {
+    return vertices < static_cast<std::size_t>(std::numeric_limits<int>::max());
+}
+}
+#endif
 #ifndef SIRKIT_MAX_FLOW_DEFINED
 #define SIRKIT_MAX_FLOW_DEFINED
 
@@ -74,11 +90,11 @@ private:
                 queue_[end++] = edge.to;
             }
         }
-        return level_[sink] != -1;
+        return false;
     }
     Cap blocking_flow(int source, int sink, Cap limit) {
         frames_.clear(); frames_.push_back({source, limit, 0});
-        while (!frames_.empty()) {
+        for (;;) {
             auto& frame = frames_.back(); const int v = frame.vertex;
             if (v != sink && frame.sent != frame.limit) {
                 auto& cursor = next_[v];
@@ -102,7 +118,6 @@ private:
             parent.sent += sent;
             if (edge.residual == 0 || level_[edge.to] == -1) ++next_[parent.vertex];
         }
-        return 0;
     }
     Cap unit_flow(int source, int sink) {
         std::fill(level_.begin(), level_.end(), -1);
@@ -132,15 +147,6 @@ private:
     }
     Cap preflow(int source, int sink, Cap limit) {
         const std::size_t n = graph_.size();
-        if (n == static_cast<std::size_t>(std::numeric_limits<int>::max())) {
-            frames_.reserve(n);
-            Cap result = 0;
-            while (result != limit && levels(source, sink)) {
-                std::fill(next_.begin(), next_.end(), 0);
-                result += blocking_flow(source, sink, limit - result);
-            }
-            return result;
-        }
         const std::uint32_t virtual_height = static_cast<std::uint32_t>(n + 1);
         constexpr std::uint32_t unseen = std::numeric_limits<std::uint32_t>::max();
         // 確保失敗時は、残余を変更する前に退出する。
@@ -212,7 +218,7 @@ private:
             if (++front == n) front = 0;
             --count;
             active[v] = 0;
-            while (excess[v] != 0) {
+            for (;;) {
                 if (v == source && height[v] >= virtual_height + 1) {
                     // 容量limitの暗黙の逆辺で、未使用予算を返す。
                     excess[v] = 0;
@@ -249,7 +255,7 @@ private:
             if (work >= budget) {
                 relabel_all();
                 work = 0;
-            } else if (excess[v] != 0) enqueue(v);
+            }
         }
         return excess[sink];
     }
@@ -272,10 +278,8 @@ public:
         positions_.reserve(count);
     }
     int add_edge(int from, int to, Cap capacity) {
-        constexpr auto maximum = static_cast<std::size_t>(std::numeric_limits<int>::max());
-        if (positions_.size() >= maximum) throw std::length_error("mf_graph: too many edges");
-        if (graph_[from].size() >= maximum || graph_[to].size() >= maximum ||
-            (from == to && graph_[from].size() >= maximum - 1)) throw std::length_error("mf_graph: too many incident edges");
+        /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::CheckMaxFlowAppendCapacity(
+            positions_.size(), graph_[from].size(), graph_[to].size(), from == to);
         const int forward = static_cast<int>(graph_[from].size());
         const int backward = static_cast<int>(graph_[to].size()) + static_cast<int>(from == to);
         graph_[from].push_back({to, backward, capacity});
@@ -308,7 +312,8 @@ public:
         frames_.reserve(graph_.size());
         Cap result = 0;
         int phases = 0;
-        bool allow_preflow = true;
+        // 最大頂点数では高さの上限と未発見印が同じ値になるため、Dinicを続ける。
+        bool allow_preflow = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::MaxFlowCanUsePreflow(graph_.size());
         while (result != limit && levels(source, sink)) {
             if (allow_preflow && phases >= 4) {
                 try { return result + preflow(source, sink, static_cast<Cap>(limit - result)); }

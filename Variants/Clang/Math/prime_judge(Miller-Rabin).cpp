@@ -49,6 +49,7 @@ inline bool is_prime_u32(std::uint32_t n) noexcept
     case 1004535809u:
     case 1224736769u:
     case 2013265921u:
+    case 61u: // Miller–Rabinの底のため先に処理する。
         return true;
     default:
         break;
@@ -68,7 +69,7 @@ inline bool is_prime_u32(std::uint32_t n) noexcept
         ++shifts;
     }
 #if (defined(__SIZEOF_INT128__)) && (!defined(SIRKIT_FORCE_STANDARD_ARITHMETIC))
-    // R=2^64。n<2^32なので、累乗中の剰余は2n未満のまま保持できる。
+    // R=2^64。還元結果はn以下で、nも0の表現として保持できる。
     using u64 = std::uint64_t;
     using u128 = __uint128_t; // GCC/Clangの128ビット整数拡張。
     u64 inverse = n;
@@ -82,18 +83,15 @@ inline bool is_prime_u32(std::uint32_t n) noexcept
     const u64 one = (u64{0} - n) % n;
     const u64 r_squared = one * one % n;
     for (std::uint32_t base : {2u, 7u, 61u}) {
-        if (base % n == 0) continue;
         u64 value = one, power = multiply(base % n, r_squared);
         for (std::uint32_t exponent = odd; exponent; exponent >>= 1) {
             if (exponent & 1u) value = multiply(value, power);
             power = multiply(power, power);
         }
-        if (value >= n) value -= n;
         if (value == one || value == n - one) continue;
         unsigned step = 1;
         for (; step < shifts; ++step) {
             value = multiply(value, value);
-            if (value >= n) value -= n;
             if (value == n - one) break;
         }
         if (step == shifts) return false;
@@ -119,8 +117,6 @@ inline bool is_prime_u32(std::uint32_t n) noexcept
     const auto r_squared = static_cast<std::uint32_t>(static_cast<std::uint64_t>(one) * one % n);
     for (std::uint32_t base : {2u, 7u, 61u})
     {
-        if (base % n == 0)
-            continue;
         std::uint32_t value = one, power = multiply(base % n, r_squared);
         for (std::uint32_t exponent = odd; ;)
         {

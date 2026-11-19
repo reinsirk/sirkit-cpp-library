@@ -175,8 +175,7 @@ private:
         }
 #endif
     };
-    using Accumulator = std::conditional_t<checked_integer, SignedSum, T>;
-    struct RootWeight { int root; Accumulator weight; };
+    struct WideRootWeight { int root; SignedSum weight; };
     struct NarrowRootWeight { int root; T weight; };
     struct Change { int child; int previous_parent_size; };
     std::vector<int> parent_;
@@ -187,45 +186,17 @@ private:
     // falseはundo後も保持し、全走査なしで保守的な上限を維持する。
     bool bounded_weights_ = true;
 
-    static Accumulator zero() {
-        if constexpr (checked_integer) return SignedSum();
-        else return T(0);
-    }
-    static void add_value(Accumulator& a, const T& b) {
-        if constexpr (checked_integer) a.add(b);
-        else a = static_cast<T>(a + b);
-    }
-    static void add_sum(Accumulator& a, const Accumulator& b) {
-        if constexpr (checked_integer) a.add_sum(b);
-        else a = static_cast<T>(a + b);
-    }
-    static void subtract(Accumulator& a, const Accumulator& b) {
-        if constexpr (checked_integer) a.subtract(b);
-        else a = static_cast<T>(a - b);
-    }
-    static void negate(Accumulator& a) {
-        if constexpr (checked_integer) a.negate();
-        else a = static_cast<T>(T(0) - a);
-    }
-    static T result(const Accumulator& a) {
-        if constexpr (checked_integer) return a.result();
-        else return a;
-    }
-    static bool equals(const Accumulator& a, const T& b) {
-        if constexpr (checked_integer) return a.equals(b);
-        else return a == b;
-    }
     int find_unchecked(int v) const {
         while (parent_[v] >= 0) v = parent_[v];
         return v;
     }
-    RootWeight root_weight_unchecked(int v) const {
-        auto value = zero();
+    WideRootWeight wide_root_weight(int v) const requires (checked_integer) {
+        SignedSum value;
         while (parent_[v] >= 0) {
-            add_value(value, weight_[v]);
+            value.add(weight_[v]);
             v = parent_[v];
         }
-        return {v, std::move(value)};
+        return {v, value};
     }
     using ArithmeticArgument = std::conditional_t<
         std::is_trivially_copy_constructible_v<T> ||
@@ -289,9 +260,9 @@ private:
         }
         return {v, std::move(value)};
     }
-    void check_history_capacity() const {
-        if (history_.size() >= static_cast<std::size_t>(std::numeric_limits<int>::max()) ||
-            history_.size() >= history_.max_size()) {
+    static void check_history_capacity(std::size_t size, std::size_t storage_limit) {
+        if (size >= static_cast<std::size_t>(std::numeric_limits<int>::max()) ||
+            size >= storage_limit) {
             throw std::length_error("weighted union find history capacity");
         }
     }
@@ -315,47 +286,48 @@ private:
     }
     template <bool CheckConsistency>
     [[gnu::noinline]]
-    MergeResult unite_wide(int x, int y, const T& w) {
-        auto a = root_weight_unchecked(x);
-        auto b = root_weight_unchecked(y);
+    MergeResult unite_wide(int x, int y, const T& w) requires (checked_integer) {
+        auto a = wide_root_weight(x);
+        auto b = wide_root_weight(y);
         if (a.root == b.root) {
             MergeResult status = MergeResult::AlreadyConsistent;
             if constexpr (CheckConsistency) {
-                subtract(b.weight, a.weight);
-                if (!equals(b.weight, w)) status = MergeResult::Contradiction;
+                b.weight.subtract(a.weight);
+                if (!b.weight.equals(w)) status = MergeResult::Contradiction;
             }
             history_.push_back({-1, 0});
             return status;
         }
-        auto gap = zero();
-        add_value(gap, w);
-        add_sum(gap, a.weight);
-        subtract(gap, b.weight);
+        SignedSum gap(w);
+        gap.add_sum(a.weight);
+        gap.subtract(b.weight);
         if (parent_[a.root] > parent_[b.root]) {
             std::swap(a.root, b.root);
-            negate(gap);
+            gap.negate();
         }
-        return record_merge(a.root, b.root, result(gap));
+        return record_merge(a.root, b.root, gap.result());
     }
     template <bool CheckConsistency>
     [[gnu::always_inline]]
     MergeResult unite_impl(int x, int y, const T& w) {
-        check_history_capacity();
+        check_history_capacity(history_.size(), history_.max_size());
         if (parent_[y] == -1 && x != y) {
             const auto a = narrow_root_weight(x);
-            if (a.root < 0) return unite_wide<CheckConsistency>(x, y, w);
+            if constexpr (checked_integer)
+                if (a.root < 0) return unite_wide<CheckConsistency>(x, y, w);
             T gap(0);
-            if (!try_add(w, a.weight, gap)) {
-                auto wide_gap = zero();
-                add_value(wide_gap, w);
-                add_value(wide_gap, a.weight);
-                gap = result(wide_gap);
+            [[maybe_unused]] const bool fits = try_add(w, a.weight, gap);
+            if constexpr (checked_integer) if (!fits) {
+                SignedSum wide_gap(w);
+                wide_gap.add(a.weight);
+                gap = wide_gap.result();
             }
             return record_merge(a.root, y, std::move(gap));
         }
         auto a = narrow_root_weight(x);
         auto b = narrow_root_weight(y);
-        if (a.root < 0 || b.root < 0) return unite_wide<CheckConsistency>(x, y, w);
+        if constexpr (checked_integer)
+            if (a.root < 0 || b.root < 0) return unite_wide<CheckConsistency>(x, y, w);
         if (a.root == b.root) {
             MergeResult status = MergeResult::AlreadyConsistent;
             if constexpr (CheckConsistency) {
@@ -368,7 +340,7 @@ private:
             return status;
         }
         T gap(0);
-        bool fits;
+        [[maybe_unused]] bool fits;
         const bool reverse = parent_[a.root] > parent_[b.root];
         if (reverse) {
             fits = try_subtract(b.weight, a.weight, gap) && try_subtract(gap, w, gap);
@@ -376,14 +348,12 @@ private:
         } else {
             fits = try_add(w, a.weight, gap) && try_subtract(gap, b.weight, gap);
         }
-        if (!fits) {
-            auto wide_gap = zero();
-            add_value(wide_gap, w);
-            add_value(wide_gap, a.weight);
-            auto other = zero(); add_value(other, b.weight);
-            subtract(wide_gap, other);
-            if (reverse) negate(wide_gap);
-            gap = result(wide_gap);
+        if constexpr (checked_integer) if (!fits) {
+            SignedSum wide_gap(w);
+            wide_gap.add(a.weight);
+            wide_gap.subtract(SignedSum(b.weight));
+            if (reverse) wide_gap.negate();
+            gap = wide_gap.result();
         }
         return record_merge(a.root, b.root, std::move(gap));
     }
@@ -401,22 +371,40 @@ private:
     [[gnu::noinline]]
     std::pair<int, T> root_with_weight_slow(int v) const {
         const auto narrow = narrow_root_weight(v);
-        if (narrow.root >= 0) return {narrow.root, narrow.weight};
-        const auto found = root_weight_unchecked(v);
-        return {found.root, result(found.weight)};
+        if constexpr (checked_integer) if (narrow.root < 0) {
+            const auto found = wide_root_weight(v);
+            return {found.root, found.weight.result()};
+        }
+        return {narrow.root, narrow.weight};
+    }
+    template<bool CheckConnected>
+    std::optional<SignedSum> wide_difference(int x, int y) const requires (checked_integer) {
+        const auto a = wide_root_weight(x);
+        auto b = wide_root_weight(y);
+        if constexpr (CheckConnected)
+            if (a.root != b.root) return std::nullopt;
+        b.weight.subtract(a.weight);
+        return b.weight;
+    }
+    T diff_wide(int x, int y) const requires (checked_integer) {
+        const auto diff = wide_difference<false>(x, y);
+        return diff->result();
+    }
+    std::optional<T> optional_diff_wide(int x, int y) const requires (checked_integer) {
+        const auto diff = wide_difference<true>(x, y);
+        return diff ? std::optional<T>(diff->result()) : std::nullopt;
     }
     [[gnu::noinline]]
     T diff_slow(int x, int y) const {
         const auto narrow_a = narrow_root_weight(x);
         const auto narrow_b = narrow_root_weight(y);
-        if (narrow_a.root >= 0 && narrow_b.root >= 0) {
-            T difference(0);
-            if (try_subtract(narrow_b.weight, narrow_a.weight, difference)) return difference;
-        }
-        const auto a = root_weight_unchecked(x);
-        auto b = root_weight_unchecked(y);
-        subtract(b.weight, a.weight);
-        return result(b.weight);
+        if constexpr (checked_integer)
+            if (narrow_a.root < 0 || narrow_b.root < 0) return diff_wide(x, y);
+        T difference(0);
+        [[maybe_unused]] const bool fits = try_subtract(narrow_b.weight, narrow_a.weight, difference);
+        if constexpr (checked_integer)
+            if (!fits) return diff_wide(x, y);
+        return difference;
     }
 
 public:
@@ -512,16 +500,14 @@ public:
         }
         const auto narrow_a = narrow_root_weight(x);
         const auto narrow_b = narrow_root_weight(y);
-        if (narrow_a.root >= 0 && narrow_b.root >= 0) {
-            if (narrow_a.root != narrow_b.root) return std::nullopt;
-            T difference(0);
-            if (try_subtract(narrow_b.weight, narrow_a.weight, difference)) return difference;
-        }
-        const auto a = root_weight_unchecked(x);
-        auto b = root_weight_unchecked(y);
-        if (a.root != b.root) return std::nullopt;
-        subtract(b.weight, a.weight);
-        return result(b.weight);
+        if constexpr (checked_integer)
+            if (narrow_a.root < 0 || narrow_b.root < 0) return optional_diff_wide(x, y);
+        if (narrow_a.root != narrow_b.root) return std::nullopt;
+        T difference(0);
+        [[maybe_unused]] const bool fits = try_subtract(narrow_b.weight, narrow_a.weight, difference);
+        if constexpr (checked_integer)
+            if (!fits) return optional_diff_wide(x, y);
+        return difference;
     }
     T diff(int x, int y) const {
         const int px = parent_[x], py = parent_[y];
@@ -533,7 +519,8 @@ public:
             } else {
                 const T wx = px < 0 ? T(0) : weight_[x];
                 const T wy = py < 0 ? T(0) : weight_[y];
-                if (try_subtract(wy, wx, difference)) return difference;
+                try_subtract(wy, wx, difference);
+                return difference;
             }
         }
         return diff_slow(x, y);
@@ -541,16 +528,13 @@ public:
     bool consistent(int x, int y, const T& w) const {
         const auto narrow_a = narrow_root_weight(x);
         const auto narrow_b = narrow_root_weight(y);
-        if (narrow_a.root >= 0 && narrow_b.root >= 0) {
-            if (narrow_a.root != narrow_b.root) return true;
-            T difference(0);
-            return try_subtract(narrow_b.weight, narrow_a.weight, difference) && difference == w;
+        if constexpr (checked_integer) if (narrow_a.root < 0 || narrow_b.root < 0) {
+            const auto diff = wide_difference<true>(x, y);
+            return !diff || diff->equals(w);
         }
-        const auto a = root_weight_unchecked(x);
-        auto b = root_weight_unchecked(y);
-        if (a.root != b.root) return true;
-        subtract(b.weight, a.weight);
-        return equals(b.weight, w);
+        if (narrow_a.root != narrow_b.root) return true;
+        T difference(0);
+        return try_subtract(narrow_b.weight, narrow_a.weight, difference) && difference == w;
     }
     bool unite(int x, int y, T w) { return unite_impl<false>(x, y, w) == MergeResult::Merged; }
     MergeResult unite_checked(int x, int y, T w) { return unite_impl<true>(x, y, w); }

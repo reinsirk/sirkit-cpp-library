@@ -23,6 +23,7 @@
 
 
 // SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
+#include <algorithm>
 #include <concepts>
 #include <cstddef>
 #include <functional>
@@ -40,6 +41,22 @@
 namespace sirkit {
 #ifndef SIRKIT_DUAL_SEGMENT_TREE_DEFINED
 #define SIRKIT_DUAL_SEGMENT_TREE_DEFINED
+namespace detail {
+inline std::pair<std::size_t, unsigned> DualSegmentLayout(std::size_t size, std::size_t value_limit,
+                                                          std::size_t lazy_limit) {
+    const auto limit = std::min(lazy_limit, std::numeric_limits<std::size_t>::max() / 2);
+    if (size > value_limit || limit == 0) throw std::length_error("DualSegmentTree: capacity");
+    std::size_t base = 1;
+    unsigned height = 0;
+    while (base < size) {
+        if (base > limit / 2) throw std::length_error("DualSegmentTree: capacity");
+        base *= 2;
+        ++height;
+    }
+    return {base, height};
+}
+}
+
 template<class T, class Action, class Mapping, class Composition>
 class DualSegmentTree {
     static_assert(std::copyable<T> && std::copyable<Action>);
@@ -60,14 +77,9 @@ class DualSegmentTree {
 
     template<class Values> void initialize(const Values& values) {
         const std::size_t n=values.size();
-        if(n>values_.max_size()) throw std::length_error("DualSegmentTree: capacity");
-        while(base_<n) {
-            if(base_>std::numeric_limits<std::size_t>::max()/2 || base_>lazy_.max_size()/2)
-                throw std::length_error("DualSegmentTree: capacity");
-            base_*=2; ++height_;
-        }
-        if(base_>std::numeric_limits<std::size_t>::max()/2 || base_>lazy_.max_size())
-            throw std::length_error("DualSegmentTree: capacity");
+        const auto [base, height] = detail::DualSegmentLayout(n, values_.max_size(), lazy_.max_size());
+        base_ = base;
+        height_ = height;
         values_.reserve(n);
         for(std::size_t i=0;i<n;++i) values_.push_back(values[i]);
         lazy_.resize(base_);

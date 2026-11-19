@@ -20,7 +20,8 @@ struct IntegerTransform {
         const std::size_t upper = a.size() - 1;
         auto prime = primes.begin();
         const auto end = primes.end();
-        for (; prime != end; ++prime) {
+        // upper >= 2。upper/2より大きくupper以下の素数で必ず止まる。
+        for (; ; ++prime) {
             const auto p = static_cast<std::size_t>(*prime);
             if (p > upper / 2) break;
             const auto count = upper / p;
@@ -77,7 +78,8 @@ struct IntegerTransform {
         const std::size_t upper = a.size() - 1;
         auto prime = primes.begin();
         const auto end = primes.end();
-        for (; prime != end; ++prime) {
+        // upper >= 2。upper/2より大きくupper以下の素数で必ず止まる。
+        for (; ; ++prime) {
             const auto p = static_cast<std::size_t>(*prime);
             if (p > upper / 2) break;
             const auto count = upper / p;
@@ -117,7 +119,6 @@ struct IntegerTransform {
         return storage;
     }
     static std::vector<int> primes_for(std::size_t size) {
-        if (size <= 2) return {};
         if (size - 1 > static_cast<std::size_t>(std::numeric_limits<int>::max()))
             throw std::length_error("integer transform: maximum exceeds INT_MAX");
         const auto upper = size - 1;
@@ -135,9 +136,6 @@ struct IntegerTransform {
     static void require_sieve(std::size_t size, const IntegerSieve& sieve) {
         if (size && (sieve.max_value() < 0 || size - 1 > static_cast<std::size_t>(sieve.max_value())))
             throw std::out_of_range("integer transform: sieve too small");
-    }
-    static void require_same_size(std::size_t a, std::size_t b) {
-        if (a != b) throw std::invalid_argument("integer convolution: different lengths");
     }
 #endif
 };

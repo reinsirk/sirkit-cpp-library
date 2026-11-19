@@ -149,6 +149,15 @@ public:
 };
 #endif
 
+#ifndef SIRKIT_HASH_CAPACITY_DEFINED
+#define SIRKIT_HASH_CAPACITY_DEFINED
+namespace detail {
+inline void CheckHashCapacity(std::size_t requested, std::size_t maximum, const char* message) {
+    if (requested > maximum) throw std::length_error(message);
+}
+}
+#endif
+
 #ifndef SIRKIT_HASH_MAP_DEFINED
 #define SIRKIT_HASH_MAP_DEFINED
 template <class Key, class Val, class Hasher = GenericHash, class KeyEqual = std::equal_to<Key>>
@@ -281,7 +290,7 @@ private:
     }
 #endif
     void rebuild(size_type capacity) {
-        if (capacity > max_capacity()) throw std::length_error("HashMap: capacity overflow");
+        detail::CheckHashCapacity(capacity, max_capacity(), "HashMap: capacity overflow");
 #if !defined(SIRKIT_DISABLE_SIMD) && defined(__SSE2__) && (defined(__x86_64__) || defined(__i386__)) && defined(__GNUC__) && !defined(__clang__)
         if constexpr (std::is_same_v<Slot, CompactSlot>) {
             if (slots_.size() >= 64) { rebuild_simd(capacity); return; }
@@ -346,7 +355,7 @@ private:
             p = (p + 1) & (slots_.size() - 1);
         }
         if (size_ == threshold(slots_.size())) {
-            if (slots_.size() > max_capacity() / 2) throw std::length_error("HashMap: capacity overflow");
+            detail::CheckHashCapacity(slots_.size(), max_capacity() / 2, "HashMap: capacity overflow");
             rebuild(slots_.size() * 2);
             return insertion_slot(key);
         }
@@ -413,9 +422,6 @@ public:
         size_type generation_ = 0;
 #endif
         BasicIterator(Owner* owner, size_type index) noexcept : owner_(owner), index_(index) {
-            // 内部で新しく作るiteratorは有効な要素またはendだけを指す。
-            if (index > owner->slots_.size() ||
-                (index < owner->slots_.size() && owner->state_[index] != 1)) std::unreachable();
 #ifndef SKIP_RUNTIME_CHECKS
             generation_ = owner->generation_;
 #endif
@@ -514,7 +520,7 @@ public:
 #if !defined(SIRKIT_DISABLE_SIMD) && defined(__SSE2__) && (defined(__x86_64__) || defined(__i386__)) && defined(__GNUC__) && !defined(__clang__)
         if constexpr (!std::is_same_v<Slot, CompactSlot>) return iterator(this,next_live(0));
 #endif
-        size_type p = 0; while (p < slots_.size() && state_[p] != 1) ++p;
+        size_type p = 0; while (state_[p] != 1) ++p;
         return iterator(this, p);
     }
     const_iterator begin() const noexcept {
@@ -522,7 +528,7 @@ public:
 #if !defined(SIRKIT_DISABLE_SIMD) && defined(__SSE2__) && (defined(__x86_64__) || defined(__i386__)) && defined(__GNUC__) && !defined(__clang__)
         if constexpr (!std::is_same_v<Slot, CompactSlot>) return const_iterator(this,next_live(0));
 #endif
-        size_type p = 0; while (p < slots_.size() && state_[p] != 1) ++p;
+        size_type p = 0; while (state_[p] != 1) ++p;
         return const_iterator(this, p);
     }
     iterator end() noexcept { return iterator(this, slots_.size()); }
@@ -610,10 +616,7 @@ public:
     void rehash(size_type requested) {
         if (requested > max_capacity()) throw std::length_error("HashMap::rehash: capacity overflow");
         size_type capacity = 8;
-        while (requested > capacity || size_ > threshold(capacity)) {
-            if (capacity > max_capacity() / 2) throw std::length_error("HashMap::rehash: capacity overflow");
-            capacity *= 2;
-        }
+        while (requested > capacity || size_ > threshold(capacity)) capacity *= 2;
         rebuild(capacity);
     }
 };

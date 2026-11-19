@@ -115,6 +115,12 @@ public:
     }
 };
 #endif
+inline std::size_t CheckedBeatsNodeCount(std::size_t size, std::size_t capacity) {
+    const auto slots = (std::max(capacity, std::size_t{1}) - 1) / 4;
+    const auto sum_limit = static_cast<std::size_t>(std::numeric_limits<std::int64_t>::max());
+    if (size > std::min(slots, sum_limit)) throw std::length_error("SegmentTreeBeats: capacity");
+    return size * 4 + 1;
+}
 } // namespace reinsirk::detail
 #endif
 
@@ -143,18 +149,14 @@ class SegmentTreeBeats {
         node.minimum_count = node.maximum_count = length;
         node.second_minimum = node.second_maximum = value;
     }
-    void check_range(std::size_t l, std::size_t r) const {
+    void check_range([[maybe_unused]] std::size_t l, [[maybe_unused]] std::size_t r) const {
 #ifndef SKIP_RUNTIME_CHECKS
         if (l > r || r > size_) throw std::out_of_range("SegmentTreeBeats: range");
-#else
-        (void)l; (void)r;
 #endif
     }
-    void check_index(std::size_t i) const {
+    void check_index([[maybe_unused]] std::size_t i) const {
 #ifndef SKIP_RUNTIME_CHECKS
         if (i >= size_) throw std::out_of_range("SegmentTreeBeats: index");
-#else
-        (void)i;
 #endif
     }
     void pull(std::size_t p, std::size_t length) noexcept {
@@ -189,7 +191,6 @@ class SegmentTreeBeats {
     }
     void cap(std::size_t p, std::size_t length, std::int64_t value) noexcept {
         auto& node = nodes_[p];
-        if (value >= node.maximum) return;
         if (value <= node.minimum) { uniform(node, value, length); return; }
         node.sum += multiply(Wide(value) - Wide(node.maximum), node.maximum_count);
         if (node.second_minimum == node.maximum) node.second_minimum = value;
@@ -197,7 +198,6 @@ class SegmentTreeBeats {
     }
     void floor(std::size_t p, std::size_t length, std::int64_t value) noexcept {
         auto& node = nodes_[p];
-        if (value <= node.minimum) return;
         if (value >= node.maximum) { uniform(node, value, length); return; }
         node.sum += multiply(Wide(value) - Wide(node.minimum), node.minimum_count);
         if (node.second_maximum == node.minimum) node.second_maximum = value;
@@ -230,7 +230,6 @@ class SegmentTreeBeats {
         node.second_minimum = narrow(second_lo); node.second_maximum = narrow(second_hi);
     }
     void push(std::size_t p, std::size_t l, std::size_t r) {
-        if (r - l == 1) return;
         const auto m = l + (r - l) / 2;
         const auto add = nodes_[p].add;
         const auto low = nodes_[p].minimum, high = nodes_[p].maximum;
@@ -291,9 +290,7 @@ public:
     SegmentTreeBeats() = default;
     explicit SegmentTreeBeats(const std::vector<std::int64_t>& values) : size_(values.size()) {
         if (size_ == 0) return;
-        if (size_ > (nodes_.max_size() - 1) / 4 || size_ > std::numeric_limits<std::int64_t>::max())
-            throw std::length_error("SegmentTreeBeats: capacity");
-        nodes_.resize(size_ * 4 + 1); build(1, 0, size_, values);
+        nodes_.resize(detail::CheckedBeatsNodeCount(size_, nodes_.max_size())); build(1, 0, size_, values);
     }
     SegmentTreeBeats(const SegmentTreeBeats&) = default;
     SegmentTreeBeats& operator=(const SegmentTreeBeats& other) {

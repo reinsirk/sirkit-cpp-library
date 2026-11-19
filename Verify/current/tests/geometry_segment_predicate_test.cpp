@@ -83,6 +83,7 @@ template<class T>void floating(){
         require(::sirkit::geo::intersects(horizontal,near,::sirkit::geo::Epsilon{1e-8L,0})==(delta<T(1e-8)));
     }
 }
+
 }
 int main(){integers<std::int8_t>();integers<std::int16_t>();integers<std::int32_t>();
     integers<std::int64_t>();integers<std::int64_t,std::int64_t>();

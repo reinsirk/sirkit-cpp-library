@@ -107,6 +107,28 @@ template<class T,Objective O>static void threshold_suite(){
     append(std::numeric_limits<T>::min(),0);append(std::numeric_limits<T>::max(),0);
     for(T x:xs)inspect(h,lines,x);
     auto copy=h;h.clear();for(T x:xs)inspect(copy,lines,x);
+
+    // 大包絡で最初の交点を T の最小値に合わせ、境界の同点と型域外の直線を区別する。
+    lines.clear();
+    const T lowest = std::numeric_limits<T>::min();
+    const T highest = std::numeric_limits<T>::max();
+    constexpr T direction = O == MAXIMIZE ? 1 : -1;
+    const T first_intercept = O == MAXIMIZE ? lowest + 1 : highest - 1;
+    const T second_intercept = O == MAXIMIZE ? 1 : -2;
+    append(0, first_intercept);
+    for (int i = 0; i < 260; ++i) {
+        append(static_cast<T>(direction * (i + 1)), static_cast<T>(second_intercept - direction * i * i));
+    }
+    require(h.size() == 261);
+    require(h.begin()->p == lowest);
+    for (T x : xs) inspect(h, lines, x);
+    append(0, O == MAXIMIZE ? lowest : highest);
+    append(0, first_intercept);
+    constexpr T i = 130;
+    append(static_cast<T>(direction * (i + 1)), static_cast<T>(second_intercept - direction * (i * i + 1)));
+    require(h.size() == 261);
+    require(h.begin()->p == lowest);
+    for (T x : xs) inspect(h, lines, x);
 }
 template<class T,Objective O>static void inspect_float(const LineContainer<T,O>&h,const std::vector<std::pair<T,T>>&lines,T x,bool exact){
     High best=High(lines.front().first)*High(x)+High(lines.front().second);for(auto[k,m]:lines){const High value=High(k)*High(x)+High(m);if constexpr(O==MINIMIZE){if(value<best)best=value;}else if(value>best)best=value;}
@@ -118,7 +140,7 @@ template<class T,Objective O>static void floating_suite(){
     LineContainer<T,O>h;empty_checks(h);std::vector<std::pair<T,T>>lines;std::mt19937_64 rng(9671+O+sizeof(T));
     for(int i=0;i<80;++i){const T k=T(static_cast<int>(rng()%129)-64)/4,m=T(static_cast<int>(rng()%257)-128)/16;lines.emplace_back(k,m);h.add(k,m);for(int j=-17;j<=17;++j)inspect_float(h,lines,T(j)/8,true);}
     const T large=std::numeric_limits<T>::max()*T{0.75};
-    const std::vector<std::vector<std::pair<T,T>>>cases={{{large,-large},{-large,large}},{{large,0},{-large,1}},{{0,large},{1,-large}},{{large,large/T{2}},{large/T{2},-large/T{2}}}};
+    const std::vector<std::vector<std::pair<T,T>>>cases={{{large,-large},{-large,large}},{{large,0},{-large,1}},{{0,large},{1,-large}},{{large,large/T{2}},{large/T{2},-large/T{2}}},{{0,large},{large,0}}};
     for(const auto&input:cases){h.clear();for(const auto&[k,m]:input)h.add(k,m);for(T x:{T{0},T{0.125},T{-0.125},T{0.25},T{-0.25}})inspect_float(h,input,x,false);}
     h.clear();h.add(1,2);auto copy=h;auto moved=std::move(copy);require(moved.query(3)==5);copy.clear();copy.add(0,-2);require(copy.query(3)==-2);h.swap(copy);require(h.query(9)==-2&&copy.query(9)==11);
 #ifndef SKIP_RUNTIME_CHECKS

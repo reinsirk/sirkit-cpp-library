@@ -63,18 +63,25 @@ namespace sirkit {
 #ifndef SIRKIT_NTT_DETAIL_DEFINED
 #define SIRKIT_NTT_DETAIL_DEFINED
 namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
-constexpr bool ntt_prime(std::uint32_t n) noexcept {
+consteval bool ntt_prime(std::uint32_t n) noexcept {
     if (n < 2 || n % 2 == 0) return n == 2;
     for (std::uint32_t d = 3; d <= n / d; d += 2) if (n % d == 0) return false;
     return true;
 }
-constexpr std::uint32_t ntt_power(std::uint32_t a, std::uint32_t exponent, std::uint32_t mod) noexcept {
+consteval std::uint32_t ntt_power(std::uint32_t a, std::uint32_t exponent, std::uint32_t mod) noexcept {
     std::uint32_t result = 1;
     for (; exponent != 0; exponent >>= 1) {
         if (exponent & 1) result = static_cast<std::uint32_t>(std::uint64_t{result} * a % mod);
         a = static_cast<std::uint32_t>(std::uint64_t{a} * a % mod);
     }
     return result;
+}
+
+inline std::size_t convolution_result_size(std::size_t a, std::size_t b, const char* overflow_message) {
+    if (a == 0 || b == 0) return 0;
+    if (a - 1 > std::numeric_limits<std::size_t>::max() - b)
+        throw std::length_error(overflow_message);
+    return a - 1 + b;
 }
 }
 #endif
@@ -186,10 +193,7 @@ class NTT {
         } else return static_cast<std::uint32_t>(static_cast<std::uint64_t>(value) % Mod);
     }
     static std::size_t result_size(std::size_t a, std::size_t b) {
-        if (a == 0 || b == 0) return 0;
-        if (a - 1 > std::numeric_limits<std::size_t>::max() - b)
-            throw std::length_error("NTT: convolution size overflow");
-        return (a - 1) + b;
+        return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::convolution_result_size(a, b, "NTT: convolution size overflow");
     }
     static std::size_t transform_size(std::size_t output) {
         if (output > max_length()) throw std::length_error("NTT: transform too long");
@@ -804,8 +808,8 @@ inline std::optional<std::uint32_t> fps_scalar_sqrt(std::uint32_t value) noexcep
     unsigned remaining = 23;
     while (remainder != 1) {
         unsigned first = 0; auto probe = remainder;
-        while (probe != 1 && first < remaining) { probe = fps_multiply(probe, probe); ++first; }
-        if (first == remaining) return std::nullopt;
+        // Euler判定後のremainderの位数は2^(remaining-1)を割り切る。
+        while (probe != 1) { probe = fps_multiply(probe, probe); ++first; }
         const auto change = fps_power(correction, std::uint32_t{1} << (remaining - first - 1));
         root = fps_multiply(root, change); correction = fps_multiply(change, change);
         remainder = fps_multiply(remainder, correction); remaining = first;

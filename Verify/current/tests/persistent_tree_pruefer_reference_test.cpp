@@ -12,6 +12,7 @@ using namespace sirkit;
 #include PERSISTENT_SEGMENT_TREE_SOURCE
 #include PRUEFER_CODE_SOURCE
 #include <algorithm>
+#include <atomic>
 #include <cassert>
 #include <cstdlib>
 #include <iostream>
@@ -33,6 +34,30 @@ template<class F> void must_throw(F f) {
 
 void persistent_sum_test() {
     using Tree = PersistentSegmentTree<I, std::plus<I>>;
+    ::sirkit::detail::CheckPersistentTreeNodeCapacity(3, 4);
+    must_throw([] { ::sirkit::detail::CheckPersistentTreeNodeCapacity(4, 4); });
+#ifndef SKIP_RUNTIME_CHECKS
+    struct SpuriousOwnerCounter {
+        std::atomic<std::uint64_t> state;
+        bool fail_next = true;
+        std::uint64_t load(std::memory_order order) { return state.load(order); }
+        bool compare_exchange_weak(std::uint64_t& expected, std::uint64_t replacement, std::memory_order order) {
+            if (std::exchange(fail_next, false)) return false;
+            return state.compare_exchange_weak(expected, replacement, order);
+        }
+    } ids{UINT64_MAX - 1};
+    assert(::sirkit::detail::take_persistent_tree_owner(ids) == UINT64_MAX - 1);
+    assert(!ids.fail_next && ids.state.load() == UINT64_MAX);
+    must_throw([&] { (void)::sirkit::detail::take_persistent_tree_owner(ids); });
+    Tree original(1, {}, 0), unrelated(1, {}, 0);
+    assert(original.empty_root() != unrelated.empty_root());
+    must_throw([&] { (void)unrelated.remap_from(original, original.empty_root()); });
+#endif
+    Tree single(std::vector<I>{3}, {}, 0);
+    assert(single.empty_root() != single.latest_root());
+    const auto* same = &single;
+    single = *same;
+    assert(single.all_prod(single.latest_root()) == 3);
     for (int n = 0; n <= 64; ++n) {
         std::vector<I> initial(static_cast<std::size_t>(n));
         for (auto& x : initial) x = random_int(10);
@@ -102,6 +127,7 @@ void persistent_sum_test() {
         must_throw([&]{ moved.all_prod(stale); });
         must_throw([&]{ moved.get(moved.empty_root(), 7); });
         must_throw([&]{ moved.prod(moved.empty_root(), 3, 2); });
+        must_throw([&]{ moved.prod(moved.empty_root(), 0, 8); });
         must_throw([&]{ moved.build(std::vector<I>(6)); });
         must_throw([&]{ moved.max_right(moved.empty_root(), 0, [](I){return false;}); });
         must_throw([&]{ moved.min_left(moved.empty_root(), 7, [](I){return false;}); });

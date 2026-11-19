@@ -13,6 +13,7 @@ using namespace sirkit;
 #include <cstdlib>
 #include <limits>
 #include <random>
+#include <stdexcept>
 #include <utility>
 #include <vector>
 
@@ -96,6 +97,28 @@ Result verify(int n, const Edges& edges) {
 }
 
 int main() {
+    {
+        const Edges edges{{0, 1}, {1, 0}, {1, 2}};
+        check(sirkit::detail::directed_component_ids<2>(3, edges) == verify(3, edges));
+        check(sirkit::detail::directed_component_ids<3>(3, edges) == verify(3, edges));
+        constexpr auto kLimit = static_cast<std::size_t>(std::numeric_limits<int>::max());
+        check(sirkit::detail::SccVertexCount(kLimit) == std::numeric_limits<int>::max());
+        bool rejected = false;
+        try { (void)sirkit::detail::SccVertexCount(kLimit + 1); }
+        catch (const std::length_error&) { rejected = true; }
+        check(rejected);
+        rejected = false;
+        try { scc_graph invalid(-1); }
+        catch (const std::length_error&) { rejected = true; }
+        check(rejected);
+#ifndef SKIP_RUNTIME_CHECKS
+        scc_graph graph(2);
+        rejected = false;
+        try { graph.add_edge(-1, 1); }
+        catch (const std::out_of_range&) { rejected = true; }
+        check(rejected && graph.edge_count() == 0);
+#endif
+    }
     // 全頂点対について辺の有無を列挙し、自己辺・無辺も含める。
     for (int n = 0; n <= 4; ++n) {
         const unsigned total = 1u << (n * n);

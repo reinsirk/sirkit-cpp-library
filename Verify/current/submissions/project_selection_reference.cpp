@@ -48,6 +48,30 @@
 
 // SIRKIT_NAMESPACE_OPEN_V1
 namespace sirkit {
+#ifndef SIRKIT_PROJECT_SELECTION_CAPACITY_DEFINED
+#define SIRKIT_PROJECT_SELECTION_CAPACITY_DEFINED
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
+inline std::size_t ProjectIncidentCapacity(std::size_t size, std::size_t capacity,
+                                          std::size_t extra, std::size_t maximum) {
+    if (extra > maximum - size) throw std::length_error("Project Selection: too many incident edges");
+    const auto required = size + extra;
+    if (required <= capacity) return capacity;
+    const auto growth = capacity > maximum - capacity ? maximum : capacity * 2;
+    return std::max(required, growth);
+}
+
+inline void CheckProjectIncidentCounts(std::size_t from, std::size_t to) {
+    constexpr auto maximum = static_cast<std::size_t>(std::numeric_limits<int>::max());
+    if (from >= maximum || to >= maximum)
+        throw std::length_error("Project Selection: too many incident edges");
+}
+
+inline void CheckProjectVertexCount(std::size_t vertices) {
+    if (vertices > static_cast<std::size_t>(std::numeric_limits<int>::max()))
+        throw std::length_error("Project Selection: too many vertices");
+}
+}
+#endif
 #ifndef SIRKIT_TWO_VARIABLE_SUBMODULAR_OPT_DEFINED
 #define SIRKIT_TWO_VARIABLE_SUBMODULAR_OPT_DEFINED
 
@@ -81,13 +105,9 @@ class TwoVariableSubmodularOpt {
         if (extra == 0) return;
         auto& edges = graph_[vertex];
         const auto maximum = std::min(edges.max_size(), static_cast<std::size_t>(std::numeric_limits<int>::max()));
-        if (extra > maximum - edges.size())
-            throw std::length_error("Project Selection: too many incident edges");
-        const auto required = edges.size() + extra;
-        if (required <= edges.capacity()) return;
-        const auto capacity = edges.capacity();
-        const auto growth = capacity > maximum - capacity ? maximum : capacity * 2;
-        edges.reserve(std::max(required, growth));
+        const auto target = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::ProjectIncidentCapacity(
+            edges.size(), edges.capacity(), extra, maximum);
+        edges.reserve(target);
     }
     static COST checked_add(COST a, COST b) {
         if ((b > 0 && a > std::numeric_limits<COST>::max() - b) ||
@@ -124,9 +144,7 @@ class TwoVariableSubmodularOpt {
     }
     void add_edge(int from, int to, Capacity cap, bool hard = false) {
         if (!cap || from == to) return;
-        if (graph_[from].size() >= static_cast<std::size_t>(std::numeric_limits<int>::max()) ||
-            graph_[to].size() >= static_cast<std::size_t>(std::numeric_limits<int>::max()))
-            throw std::length_error("Project Selection: too many incident edges");
+        /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::CheckProjectIncidentCounts(graph_[from].size(), graph_[to].size());
         if (!hard) check_budget(cap);
         const int a = static_cast<int>(graph_[from].size());
         const int b = static_cast<int>(graph_[to].size());
@@ -138,8 +156,7 @@ class TwoVariableSubmodularOpt {
         solved_ = false;
     }
     int add_node() {
-        if (graph_.size() >= static_cast<std::size_t>(std::numeric_limits<int>::max()))
-            throw std::length_error("Project Selection: too many vertices");
+        /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::CheckProjectVertexCount(graph_.size() + 1);
         const int result = static_cast<int>(graph_.size());
         graph_.emplace_back();
         solved_ = false;
@@ -191,7 +208,7 @@ class TwoVariableSubmodularOpt {
     Capacity iterative_flow(int start, Capacity limit) {
         stack_.clear();
         stack_.push_back({start, limit, 0});
-        while (!stack_.empty()) {
+        for (;;) {
             Frame& frame = stack_.back();
             const int v = frame.vertex;
             if (v == sink_) frame.sent = frame.limit;
@@ -214,7 +231,6 @@ class TwoVariableSubmodularOpt {
             }
             stack_.push_back({edge.to, std::min(static_cast<Capacity>(frame.limit - frame.sent), edge.capacity), 0});
         }
-        return 0;
     }
     Capacity bounded_flow(int v, Capacity limit, unsigned depth = 64) {
         if (v == sink_) return limit;
@@ -478,8 +494,7 @@ public:
     int node_count() const noexcept { return static_cast<int>(graph_.size()); }
     std::size_t edge_count() const noexcept { return edge_count_; }
     void reserve_nodes(std::size_t count) {
-        if (count > static_cast<std::size_t>(std::numeric_limits<int>::max()))
-            throw std::length_error("Project Selection: too many vertices");
+        /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::CheckProjectVertexCount(count);
         graph_.reserve(count);
     }
     friend std::ostream& operator<<(std::ostream& out, const TwoVariableSubmodularOpt& optimizer) {
@@ -487,7 +502,7 @@ public:
         for (int from = 0; from < static_cast<int>(optimizer.graph_.size()); ++from) {
             for (const Edge& edge : optimizer.graph_[from]) {
                 if (edge.reverse < 0) continue;
-                const Edge& reverse = optimizer.graph_[edge.to][edge.reverse < 0 ? ~edge.reverse : edge.reverse];
+                const Edge& reverse = optimizer.graph_[edge.to][edge.reverse];
                 out << from << "->" << edge.to << '(' << static_cast<std::uint64_t>(reverse.capacity) << '/';
                 // 逆辺も含めた対の合計は、追加時の容量に等しい。
                 out << static_cast<std::uint64_t>(static_cast<Capacity>(edge.capacity + reverse.capacity)) << ")\n";

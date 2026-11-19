@@ -40,6 +40,42 @@ class UnitTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             ci.select_entries(entries, ["unknown"])
 
+    def test_coverage_registration_uses_driver_include_order_and_tracks_support(self):
+        registry = self.root / ci.COVERAGE_TESTS
+        registry.parent.mkdir(parents=True)
+        driver = self.root / "Verify/current/tests/supplement_test.cpp"
+        driver.parent.mkdir(parents=True)
+        helper = driver.with_name("helper.hpp")
+        helper.write_text("// helper\n")
+        driver.write_text("int main() {}\n")
+        registry.write_text(json.dumps({"format": 1, "tests": {driver.name: self.entry["libraries"]},
+                                        "support": {driver.name: [str(helper.relative_to(self.root))]},
+                                        "gcc_line_tests": [driver.name], "x86_baseline_tests": [driver.name]}))
+        test, contracts = ci.coverage_tests(self.root)
+        self.assertEqual(test["id"], "coverage_test_supplement_test")
+        self.assertTrue(test["gcc_line_coverage"])
+        self.assertTrue(test["x86_baseline_coverage"])
+        self.assertEqual(set(test["support_source_hashes"]), {str(helper.relative_to(self.root))})
+        source = ci.translation_unit(test, self.root)
+        self.assertIn(str(driver), source)
+        self.assertNotIn(str(self.root / self.entry["libraries"][0]), source)
+        self.assertTrue(ci.output_matches(test, {"input": ""}, "test counters\n"))
+        with self.assertRaises(ValueError):
+            ci.output_matches(contracts, {"input": ""}, '{"format":1,"results":[]}')
+        value = json.loads(registry.read_text())
+        value["gcc_line_tests"] = ["unknown_test.cpp"]
+        registry.write_text(json.dumps(value))
+        with self.assertRaisesRegex(ValueError, "GCC行計測"):
+            ci.coverage_tests(self.root)
+        value["gcc_line_tests"] = []
+        value["x86_baseline_tests"] = [driver.name, driver.name]
+        registry.write_text(json.dumps(value))
+        with self.assertRaisesRegex(ValueError, "x86代替経路"):
+            ci.coverage_tests(self.root)
+        registry.write_text(json.dumps({"format": 1, "tests": {"../bad_test.cpp": self.entry["libraries"]}}))
+        with self.assertRaisesRegex(ValueError, "テスト名"):
+            ci.coverage_tests(self.root)
+
     def test_checked_original_unicode_include_has_no_linked_submission(self):
         source = ci.translation_unit(self.entry, self.root)
         self.assertIn("選択.cpp", source)
@@ -48,6 +84,22 @@ class UnitTests(unittest.TestCase):
         self.assertNotIn("#define NDEBUG", source)
         self.assertNotIn("#define SKIP_RUNTIME_CHECKS", source)
         self.assertIn("#error", source)
+
+    def test_i386_registration_requires_a_distinct_checked_target(self):
+        registry = self.root / ci.COVERAGE_TESTS
+        registry.parent.mkdir(parents=True)
+        name = "limits_test.cpp"
+        value = {"format": 1, "tests": {name: self.entry["libraries"]}, "i386_tests": [name]}
+        registry.write_text(json.dumps(value))
+        test, _ = ci.coverage_tests(self.root)
+        self.assertEqual(test["coverage_target"], "i386")
+        for key in ("gcc_line_tests", "x86_baseline_tests"):
+            registry.write_text(json.dumps({**value, key: [name]}))
+            with self.assertRaisesRegex(ValueError, "i386計測"):
+                ci.coverage_tests(self.root)
+        registry.write_text(json.dumps({**value, "clang_unchecked_tests": [name]}))
+        with self.assertRaisesRegex(ValueError, "検査省略Clang計測"):
+            ci.coverage_tests(self.root)
 
     def test_only_original_library_paths_are_allowed(self):
         for name in ("Fast/GCC/Algorithm/x.cpp", "Variants/Clang/Algorithm/x.cpp",
@@ -108,8 +160,11 @@ class UnitTests(unittest.TestCase):
         def exported(file_id, true_count, false_count):
             return {"type": "llvm.coverage.json.export", "version": "3.0.1", "data": [{"files": [{
                 "filename": str(path), "summary": {},
-                "branches": [[2, 6, 2, 11, true_count, false_count, file_id, file_id + 1, 4]],
-                "expansions": [{"branches": [[99, 1, 99, 2, 5, 5, file_id, 0, 4]]}]}]}]}
+                "branches": [[2, 6, 2, 11, true_count, false_count, file_id, file_id, 4]],
+                "expansions": [{"branches": [[99, 1, 99, 2, 5, 5, file_id, 0, 4]]}]}],
+                "functions": [{"filenames": [str(path)] * (file_id + 1), "branches": [
+                    [2, 6, 2, 11, true_count, false_count, file_id, file_id, 4],
+                    [99, 1, 99, 2, 5, 5, file_id, 0, 4]]}]}]}
         lcov = f"SF:{path}\nDA:1,1\nDA:2,1\nDA:3,0\nend_of_record\n"
         first = ci.source_coverage(exported(7, 1, 0), lcov, [path])
         second = ci.source_coverage(exported(19, 0, 1), lcov.replace("DA:3,0", "DA:3,1"), [path])
@@ -117,6 +172,191 @@ class UnitTests(unittest.TestCase):
         self.assertEqual(result["totals"]["branches"], {"count": 2, "covered": 2, "percent": 100})
         self.assertEqual(result["totals"]["lines"], {"count": 3, "covered": 3, "percent": 100})
         self.assertEqual(result["files"][0]["branches"], [[2, 6, 2, 11, True, True]])
+
+    def test_unreached_runtime_branch_overrides_folded_template_instance(self):
+        fixture = self.measured_coverage(true_hit=False, false_hit=False)
+        file = fixture["files"][0]
+        region = [2, 6, 2, 11]
+        folded_only = {"files": [{**file, "folded_branches": [region]}]}
+        self.assertEqual(ci.coverage_union([folded_only])["files"][0]["folded_branches"], [region])
+        self.assertNotIn("folded_branches", ci.coverage_union([folded_only, fixture])["files"][0])
+        name = self.entry["libraries"][0]
+        with self.assertRaisesRegex(ValueError, "原本の計測と一致しません"):
+            ci.coverage_file_summary({**file, "branches": [region + [True, False]],
+                                      "folded_branches": [region]}, name, "", {})
+
+    def measured_coverage(self, *, line_hit=True, true_hit=True, false_hit=True):
+        path = self.root / self.entry["libraries"][0]
+        return ci.coverage_union([{"files": [{"filename": str(path),
+            "lines": [[1, line_hit]], "branches": [[2, 6, 2, 11, true_hit, false_hit]]}]}])
+
+    def test_gcov_only_confirms_existing_llvm_lines_with_positive_counts(self):
+        measured = self.measured_coverage(line_hit=False, false_hit=False)
+        measured["files"][0]["lines"].append((3, False))
+        report = {"format_version": "2", "gcc_version": "13.3.0",
+                  "current_working_directory": str(self.root), "files": [
+            {"file": "ignored.cpp", "lines": [{"line_number": 3, "count": 3}]},
+            {"file": self.entry["libraries"][0], "lines": [
+                {"line_number": 1, "count": 7}, {"line_number": 2, "count": 4},
+                {"line_number": 3, "count": 0}]}]}
+        ci.record_gcov_lines(measured, report)
+        self.assertEqual(measured["files"][0]["lines"], [(1, False), (3, False)])
+        result = ci.coverage_union([measured])
+        self.assertEqual(result["files"][0]["lines"], [(1, True), (3, False)])
+        self.assertEqual(result["files"][0]["gcov_line_counts"], [(1, 7)])
+        self.assertEqual(result["files"][0]["branches"], [[2, 6, 2, 11, True, False]])
+        report["files"].pop()
+        with self.assertRaisesRegex(ValueError, "対応が不完全"):
+            ci.record_gcov_lines(measured, report)
+
+    def test_unchecked_gcov_only_confirms_existing_lines_and_preserves_provenance(self):
+        path = self.root / self.entry["libraries"][0]
+        file = {"filename": str(path), "lines": [[1, False], [2, False]],
+                "branches": [[2, 6, 2, 11, True, False]]}
+        original = {"files": [file]}
+        report = {"format_version": "2", "gcc_version": "13.3.0",
+                  "current_working_directory": str(self.root), "files": [
+                      {"file": str(path), "lines": [{"line_number": 1, "count": 0},
+                                                   {"line_number": 2, "count": 4},
+                                                   {"line_number": 3, "count": 7}]}]}
+        ci.record_gcov_lines(original, report, unchecked=True)
+        result = ci.coverage_union([original])
+        row, = result["files"]
+        self.assertEqual(row["lines"], [(1, False), (2, True)])
+        self.assertEqual(row["gcov_unchecked_line_counts"], [(2, 4)])
+        self.assertNotIn("gcov_line_counts", row)
+        self.assertEqual(result["totals"]["branches"]["covered"], 1)
+        self.assertEqual(result["totals"]["lines"]["count"], 2)
+        with self.assertRaisesRegex(ValueError, "単独テスト"):
+            ci.translation_unit(self.entry, self.root, unchecked=True)
+
+    def gate(self, coverage, **kwargs):
+        settings = {"expected_translation_units": 1, "measured_translation_units": 1, **kwargs}
+        return ci.coverage_gate(coverage, ci.library_paths([self.entry], self.root), **settings)
+
+    def test_coverage_gate_requires_both_line_and_branch_counts_to_be_complete(self):
+        self.assertEqual(self.gate(self.measured_coverage())["status"], "PASS")
+        for setting, reason in [({"line_hit": False}, "uncovered_lines"),
+                                ({"false_hit": False}, "uncovered_branches")]:
+            with self.subTest(setting=setting):
+                gate = self.gate(self.measured_coverage(**setting))
+                self.assertEqual(gate["required_percent"], 100)
+                self.assertEqual(gate["status"], "FAIL")
+                self.assertIn(reason, gate["reasons"])
+
+    def test_proved_exclusions_preserve_raw_evidence_and_only_remove_matching_coordinates(self):
+        name = self.entry["libraries"][0]
+        source = self.root / name
+        digest = ci.digest(source)
+        coverage = self.measured_coverage(false_hit=False)
+        coverage["files"][0]["lines"].append([3, False])
+        coverage = ci.coverage_union([coverage])
+        exclusions = [{"line": 3, "reason": "戻り値の範囲から到達不能"},
+                      {"region": [2, 6, 2, 11], "side": "false", "reason": "分岐時点の不変条件"},
+                      {"line": 4, "reason": "このビルドでは計測対象外"}]
+        policy = {name: {"sha256": digest, "regions": exclusions}}
+        registered = self.root / ci.COVERAGE_EXCLUSIONS
+        registered.parent.mkdir(parents=True)
+        registered.write_text(json.dumps({"format": 1, "files": policy}))
+        result = ci.apply_coverage_exclusions(coverage, self.root, {name: digest},
+                                              ci.load_coverage_exclusions(self.root))
+        self.assertEqual(result["raw_totals"], coverage["totals"])
+        self.assertEqual(result["files"][0]["lines"], [(1, True), (3, False)])
+        self.assertEqual(result["files"][0]["branches"], [[2, 6, 2, 11, True, False]])
+        self.assertEqual(result["files"][0]["exclusions"], exclusions[:2])
+        self.assertEqual(self.gate(result)["status"], "PASS")
+        html = self.root / "coverage_html"
+        ci.write_coverage_html(result, self.root, html)
+        page = (html / "source_0000.html").read_text()
+        self.assertIn("除外（戻り値の範囲から到達不能）", page)
+        self.assertIn("T:✓ F:除外（分岐時点の不変条件）", page)
+
+        with self.assertRaisesRegex(ValueError, "現在の原本と一致しません"):
+            ci.apply_coverage_exclusions(coverage, self.root, {name: "0" * 64}, policy)
+        with self.assertRaisesRegex(ValueError, "に到達しました"):
+            ci.apply_coverage_exclusions(self.measured_coverage(), self.root, {name: digest}, policy)
+        with self.assertRaisesRegex(ValueError, "に到達しました"):
+            ci.coverage_file_summary(coverage["files"][0], name, digest, {
+                name: {"sha256": digest, "regions": [{"line": 1, "reason": "不正な証明"}]}
+            })
+
+    def test_exclusions_reject_missing_reason_or_duplicate_coordinates(self):
+        name = self.entry["libraries"][0]
+        registry = self.root / ci.COVERAGE_EXCLUSIONS
+        registry.parent.mkdir(parents=True)
+        for records in ([{"line": 3, "reason": " "}],
+                        [{"line": 3, "reason": "理由A"}, {"line": 3, "reason": "理由B"}]):
+            with self.subTest(records=records):
+                registry.write_text(json.dumps({"format": 1, "files": {
+                    name: {"sha256": ci.digest(self.root / name), "regions": records}
+                }}))
+                with self.assertRaises(ValueError):
+                    ci.load_coverage_exclusions(self.root)
+
+    def test_excluding_all_measured_lines_still_fails(self):
+        name = self.entry["libraries"][0]
+        digest = ci.digest(self.root / name)
+        result = ci.apply_coverage_exclusions(self.measured_coverage(line_hit=False), self.root, {name: digest}, {
+            name: {"sha256": digest, "regions": [{"line": 1, "reason": "合成テストの到達不能行"}]}
+        })
+        gate = self.gate(result)
+        self.assertEqual(gate["status"], "FAIL")
+        self.assertEqual(gate["unmapped_sources"], [str(self.root / name)])
+
+    def test_coverage_gate_uses_exact_counts_not_a_rounded_percent(self):
+        for key in ("lines", "branches"):
+            with self.subTest(metric=key):
+                coverage = self.measured_coverage()
+                coverage["totals"][key] = {"count": 1000000, "covered": 999999, "percent": 100.0}
+                gate = self.gate(coverage)
+                self.assertEqual(gate["status"], "FAIL")
+                self.assertEqual(gate[key]["uncovered"], 1)
+                text = ci.summary_markdown({"mode": "coverage", "status": "FAIL", "execution_status": "PASS",
+                    "selected_ids": ["example"], "results": [], "coverage_gate": gate,
+                    "coverage_totals": coverage["totals"]})
+                self.assertIn("<100%", text)
+
+    def test_zero_branches_are_vacuous_only_with_nonzero_mapped_lines(self):
+        coverage = self.measured_coverage()
+        coverage["files"][0]["branches"] = []
+        coverage["totals"]["branches"] = {"count": 0, "covered": 0, "percent": 0}
+        gate = self.gate(coverage)
+        self.assertEqual(gate["status"], "PASS")
+        self.assertEqual(gate["branches"], {"count": 0, "covered": 0, "uncovered": 0})
+        empty = ci.coverage_union([])
+        gate = self.gate(empty)
+        self.assertEqual(gate["status"], "FAIL")
+        self.assertFalse(gate["nonzero_mapped_lines"])
+        self.assertIn("no_mapped_lines", gate["reasons"])
+
+    def test_missing_or_zero_line_selected_source_fails_instead_of_shrinking_denominator(self):
+        coverage = self.measured_coverage()
+        other = self.root / "Algorithm/other.cpp"
+        other.write_text("int other(){return 1;}\n")
+        for mapped_empty in (False, True):
+            with self.subTest(mapped_empty=mapped_empty):
+                data = {**coverage, "files": list(coverage["files"])}
+                if mapped_empty:
+                    data["files"].append({"filename": str(other), "lines": [], "branches": []})
+                gate = ci.coverage_gate(data, [self.root / self.entry["libraries"][0], other],
+                                        expected_translation_units=1, measured_translation_units=1)
+                self.assertEqual(gate["status"], "FAIL")
+                self.assertEqual(gate["unmapped_sources"], [str(other)])
+                self.assertEqual(gate["lines"]["count"], coverage["totals"]["lines"]["count"])
+
+    def test_partial_or_empty_translation_unit_measurement_cannot_pass(self):
+        for expected, measured in ((2, 1), (0, 0)):
+            with self.subTest(expected=expected, measured=measured):
+                gate = self.gate(self.measured_coverage(), expected_translation_units=expected,
+                                 measured_translation_units=measured)
+                self.assertEqual(gate["status"], "FAIL")
+                self.assertFalse(gate["complete_translation_units"])
+                self.assertIn("incomplete_translation_units", gate["reasons"])
+
+    def test_coverage_cli_propagates_failed_gate(self):
+        with patch.object(ci.prepare_verify, "collect", return_value=[self.entry]), \
+                patch.object(ci, "run", return_value={"status": "FAIL"}):
+            self.assertEqual(ci.main(["--mode", "coverage", "--output", str(self.root / "result")]), 1)
 
     def test_timeout_or_missing_sample_never_passes(self):
         for missing in (False, True):
@@ -151,6 +391,187 @@ def toolchain(coverage):
 
 
 class CoverageIntegrationTests(unittest.TestCase):
+    def test_binary128_measures_both_long_double_formats(self):
+        if os.uname().machine != "x86_64":
+            self.skipTest("x86-64のlong double設定を検証します")
+        compiler, profdata, cov = toolchain(True)
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            entry = fixture(root, body="""int instrumented(int x) {
+#if __LDBL_MANT_DIG__ == 113
+    return x + 1 - 1;
+#else
+    return x;
+#endif
+}
+""")
+            entry["x86_binary128_coverage"] = True
+            output = root / "result"
+            report = ci.run([entry], root=root, output=output, mode="coverage", compiler=compiler,
+                            llvm_profdata=profdata, llvm_cov=cov)
+            self.assertEqual(report["execution_status"], "PASS", report)
+            alternate = report["results"][0]["x86_binary128_coverage"]
+            self.assertIn("-mlong-double-128", alternate["command"])
+            self.assertTrue(alternate["samples"][0]["profile_written"])
+            row, = json.loads((output / "coverage.json").read_text())["files"]
+            self.assertTrue(dict(row["lines"])[3])
+            self.assertTrue(dict(row["lines"])[5])
+
+    def test_avx2_compiler_configuration_is_executed_on_matching_cpu(self):
+        emulator = shutil.which("qemu-x86_64")
+        if not emulator or os.uname().machine != "x86_64":
+            self.skipTest("x86-64のQEMUがありません")
+        compiler, profdata, cov = toolchain(True)
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            entry = fixture(root, body="""int instrumented(int x) {
+#ifdef __AVX2__
+    return x + 1 - 1;
+#else
+    return x;
+#endif
+}
+""")
+            entry["x86_avx2_coverage"] = True
+            output = root / "result"
+            report = ci.run([entry], root=root, output=output, mode="coverage", compiler=compiler,
+                            llvm_profdata=profdata, llvm_cov=cov, qemu_x86=emulator)
+            self.assertEqual(report["execution_status"], "PASS", report)
+            alternate = report["results"][0]["x86_avx2_coverage"]
+            self.assertIn("-mavx2", alternate["command"])
+            self.assertEqual(alternate["execution_command"][2], ci.X86_AVX2_CPU)
+            self.assertTrue(alternate["samples"][0]["profile_written"])
+            row, = json.loads((output / "coverage.json").read_text())["files"]
+            self.assertTrue(dict(row["lines"])[3])
+            self.assertTrue(dict(row["lines"])[5])
+
+    def test_clang_unchecked_measures_both_configurations_without_disabling_assertions(self):
+        compiler, profdata, cov = toolchain(True)
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            entry = fixture(root, body="""int instrumented(int x) {
+#ifdef SKIP_RUNTIME_CHECKS
+    return x == 1 ? 10 : 20;
+#else
+    return x == 1 ? 11 : 21;
+#endif
+}
+""")
+            name = "alternate_test.cpp"
+            driver = root / "Verify/current/tests" / name
+            driver.parent.mkdir()
+            driver.write_text("""#include "../../../Algorithm/選択.cpp"
+#include <cassert>
+int main() {
+#ifdef SKIP_RUNTIME_CHECKS
+    assert(instrumented(1) == 10);
+    assert(instrumented(2) == 20);
+#else
+    assert(instrumented(1) == 11);
+    assert(instrumented(2) == 21);
+#endif
+}
+""")
+            registry = root / ci.COVERAGE_TESTS
+            registry.parent.mkdir()
+            registry.write_text(json.dumps({"format": 1, "tests": {name: entry["libraries"]},
+                                           "clang_unchecked_tests": [name]}))
+            alternate, _ = ci.coverage_tests(root)
+            output = root / "result"
+            report = ci.run([alternate], root=root, output=output, mode="coverage", compiler=compiler,
+                            llvm_profdata=profdata, llvm_cov=cov)
+            self.assertEqual(report["execution_status"], "PASS", report)
+            self.assertIn("-USKIP_RUNTIME_CHECKS", report["results"][0]["command"])
+            supplementary = report["results"][0]["clang_unchecked_coverage"]
+            self.assertIn("-DSKIP_RUNTIME_CHECKS", supplementary["command"])
+            self.assertTrue(supplementary["samples"][0]["profile_written"])
+            row, = json.loads((output / "coverage.json").read_text())["files"]
+            self.assertEqual({branch[0]: branch[4:] for branch in row["branches"]},
+                             {3: [True, True], 5: [True, True]})
+
+    def test_compiler_folded_branches_are_distinct_from_unexecuted_runtime_conditions(self):
+        compiler, profdata, cov = (shutil.which(tool + "-18") for tool in ("clang++", "llvm-profdata", "llvm-cov"))
+        if not (compiler and profdata and cov):
+            self.skipTest("CIと同じLLVM 18でコンパイル時確定分岐を検証します")
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            entry = fixture(root, body="""#define NESTED(x) ((x) ? 1 : 0)
+static int nested(int x) {
+    if (x < 0) return -1;
+    return 0;
+}
+int instrumented(int x) {
+    if (false) return -2;
+    if (x == 0) return nested(x);
+    return NESTED(x);
+}
+""")
+            output = root / "result"
+            report = ci.run([entry], root=root, output=output, mode="coverage", compiler=compiler,
+                            llvm_profdata=profdata, llvm_cov=cov)
+            self.assertEqual(report["execution_status"], "PASS", report)
+            self.assertEqual(report["coverage_gate"]["status"], "FAIL")
+            row, = json.loads((output / "coverage.json").read_text())["files"]
+            folded, = row["folded_branches"]
+            self.assertEqual(folded[0], 7)
+            raw = {key[0]: key[4:] for key in row["branches"]}
+            self.assertEqual(raw, {3: [False, False], 7: [False, False], 8: [False, True]})
+            self.assertEqual(row["summary"]["branches"]["count"], 4)
+            self.assertIn("コンパイル時に確定", (output / "html/source_0000.html").read_text())
+
+    def test_qemu_cpu_feature_false_path_is_measured_by_the_same_binary(self):
+        emulator = shutil.which("qemu-x86_64")
+        if not emulator or os.uname().machine != "x86_64":
+            self.skipTest("x86-64のQEMUがありません")
+        compiler, profdata, cov = toolchain(True)
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            entry = fixture(root, body="""int instrumented(int x) {
+    if (__builtin_cpu_supports("popcnt")) return x;
+    return x < 0 ? -x : x;
+}
+""")
+            entry["x86_baseline_coverage"] = True
+            output = root / "result"
+            report = ci.run([entry], root=root, output=output, mode="coverage", compiler=compiler,
+                            llvm_profdata=profdata, llvm_cov=cov, qemu_x86=emulator)
+            self.assertEqual(report["execution_status"], "PASS", report)
+            sample, = report["results"][0]["samples"]
+            self.assertTrue(sample["x86_baseline"]["profile_written"])
+            row, = json.loads((output / "coverage.json").read_text())["files"]
+            feature, = [branch for branch in row["branches"] if branch[0] == 2]
+            self.assertTrue(feature[5])
+            self.assertTrue(dict(row["lines"])[3])
+
+    def test_gcov_distinguishes_reached_return_from_unreached_return(self):
+        compiler, profdata, cov = toolchain(True)
+        gcc, gcov = (shutil.which(tool, path=os.defpath) for tool in ("g++", "gcov"))
+        if not gcc or not gcov:
+            self.skipTest("GCCとgcovがありません")
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            entry = fixture(root, body="""template<bool A> static int choose(int x) {
+    if (x > 0) {
+        if constexpr (A) return 1;
+        else return 2;
+    }
+    return 3;
+}
+int instrumented(int x) { return choose<true>(x) + choose<false>(x); }
+""")
+            for number, expected in ((1, 3), (-1, 6)):
+                selected = {**entry, "gcc_line_coverage": True,
+                            "samples": [{"input": f"{number}\n", "output": f"{expected}\n"}]}
+                output = root / str(number)
+                report = ci.run([selected], root=root, output=output, mode="coverage", compiler=compiler,
+                                llvm_profdata=profdata, llvm_cov=cov, gcc=gcc, gcov=gcov)
+                self.assertEqual(report["execution_status"], "PASS", report["results"])
+                self.assertIn("version", report["results"][0]["gcc_line_coverage"])
+                row = json.loads((output / "coverage.json").read_text())["files"][0]
+                self.assertEqual(dict(row["lines"])[6], number < 0)
+                if number > 0:
+                    self.assertNotIn(6, dict(row.get("gcov_line_counts", [])))
+
     def test_real_original_lines_and_branches_exclude_driver_and_artifact_binaries(self):
         compiler, profdata, cov = toolchain(True)
         with tempfile.TemporaryDirectory() as temporary:
@@ -158,7 +579,10 @@ class CoverageIntegrationTests(unittest.TestCase):
             entry = fixture(root)
             result = ci.run([entry], root=root, output=root / "result", mode="coverage", compiler=compiler,
                             llvm_profdata=profdata, llvm_cov=cov)
-            self.assertEqual(result["status"], "PASS", result.get("error"))
+            self.assertEqual(result["status"], "FAIL", result.get("error"))
+            self.assertEqual(result["execution_status"], "PASS")
+            self.assertEqual(result["coverage_gate"]["status"], "FAIL")
+            self.assertEqual(result["coverage_gate"]["branches"]["uncovered"], 1)
             data = json.loads((root / "result/coverage.json").read_text())
             self.assertEqual([f["filename"] for f in data["files"]], [str(root / entry["libraries"][0])])
             self.assertEqual(data["totals"]["branches"]["count"], 2)
@@ -171,6 +595,9 @@ class CoverageIntegrationTests(unittest.TestCase):
             text = (root / "result/summary.md").read_text()
             self.assertIn("未実体化template", text)
             self.assertIn("ローカル補足 1件", text)
+            self.assertIn("ビルド・入力照合・計測: PASS", text)
+            self.assertIn("100%必須判定（行・直接分岐）: FAIL", text)
+            self.assertIn("未到達:", text)
 
     def test_two_real_translation_units_cover_opposite_sides_without_double_counting(self):
         compiler, profdata, cov = toolchain(True)
@@ -185,6 +612,10 @@ class CoverageIntegrationTests(unittest.TestCase):
             result = ci.run([first, second], root=root, output=root / "result", mode="coverage",
                             compiler=compiler, llvm_profdata=profdata, llvm_cov=cov)
             self.assertEqual(result["status"], "PASS", result.get("error"))
+            self.assertEqual(result["execution_status"], "PASS")
+            self.assertEqual(result["coverage_gate"]["status"], "PASS")
+            self.assertEqual(result["coverage_gate"]["expected_translation_units"], 2)
+            self.assertEqual(result["coverage_gate"]["measured_translation_units"], 2)
             data = json.loads((root / "result/coverage.json").read_text())
             self.assertEqual(len(data["files"]), 1)
             self.assertEqual(data["totals"]["branches"], {"count": 2, "covered": 2, "percent": 100})
@@ -195,6 +626,36 @@ class CoverageIntegrationTests(unittest.TestCase):
             self.assertEqual(per_tu[0]["files"][0]["branches"][0][-2:], [True, False])
             self.assertEqual(per_tu[1]["files"][0]["branches"][0][-2:], [False, True])
             self.assertTrue(all("-object=" not in arg for command in result["commands"] for arg in command))
+
+    def test_real_no_direct_branches_passes_with_nonzero_lines(self):
+        compiler, profdata, cov = toolchain(True)
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            entry = fixture(root, body="int instrumented(int x){return x;}\n")
+            result = ci.run([entry], root=root, output=root / "result", mode="coverage", compiler=compiler,
+                            llvm_profdata=profdata, llvm_cov=cov)
+            self.assertEqual(result["status"], "PASS", result.get("error"))
+            self.assertGreater(result["coverage_gate"]["lines"]["count"], 0)
+            self.assertEqual(result["coverage_gate"]["branches"]["count"], 0)
+            self.assertIn("直接分岐なし", (root / "result/summary.md").read_text())
+
+    def test_real_unmapped_selected_source_fails_with_artifacts_preserved(self):
+        compiler, profdata, cov = toolchain(True)
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            entry = fixture(root, body="int instrumented(int x){return x;}\n")
+            unmapped = root / "Algorithm/unmapped.cpp"
+            unmapped.write_text("namespace uninstantiated {}\n")
+            entry["libraries"].append(str(unmapped.relative_to(root)))
+            result = ci.run([entry], root=root, output=root / "result", mode="coverage", compiler=compiler,
+                            llvm_profdata=profdata, llvm_cov=cov)
+            self.assertEqual(result["status"], "FAIL", result.get("error"))
+            self.assertEqual(result["execution_status"], "PASS")
+            self.assertEqual(result["coverage_gate"]["unmapped_sources"], [str(unmapped)])
+            self.assertEqual(result["coverage_gate"]["lines"]["uncovered"], 0)
+            self.assertEqual(result["coverage_gate"]["branches"]["uncovered"], 0)
+            self.assertTrue((root / "result/coverage.json").is_file())
+            self.assertTrue((root / "result/html/index.html").is_file())
 
 
 class SanitizerIntegrationTests(unittest.TestCase):

@@ -122,7 +122,8 @@ class ModIntBinomial {
           ifac_[static_cast<std::size_t>(i)] = -fac_[static_cast<std::size_t>(target - i)];
           ifac_[static_cast<std::size_t>(i + 1)] = fac_[static_cast<std::size_t>(target - i - 1)];
         }
-        if (i <= target) ifac_[static_cast<std::size_t>(i)] = -fac_[static_cast<std::size_t>(target - i)];
+        // targetは偶数なので、最後の組の直後がtargetになる。
+        ifac_[target] = -fac_[0];
         return;
       }
     }
@@ -163,8 +164,9 @@ class ModIntBinomial {
     const u64 current = fac_.size() - 1;
     const u64 limit = std::min(options_.table_limit, modulus() - 1);
     const u64 target = std::min(limit, std::max<u64>(required, std::max<u64>(1, current * 2)));
-    if (target + 1 > std::numeric_limits<std::size_t>::max()) {
-      throw std::length_error("ModIntBinomial: table size exceeds size_t");
+    if constexpr (std::numeric_limits<std::size_t>::digits < std::numeric_limits<u32>::digits) {
+      if (target + 1 > std::numeric_limits<std::size_t>::max())
+        throw std::length_error("ModIntBinomial: table size exceeds size_t");
     }
     const auto old_size = fac_.size();
     const auto new_size = static_cast<std::size_t>(target + 1);

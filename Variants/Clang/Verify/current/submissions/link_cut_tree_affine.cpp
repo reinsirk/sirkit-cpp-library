@@ -40,6 +40,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <functional>
+#include <algorithm>
 #include <limits>
 #include <memory>
 #include <optional>
@@ -64,6 +65,10 @@ struct NoLinkCutComposition {
 };
 template<class Action, bool Enabled> struct LinkCutLazyState { std::optional<Action> pending; };
 template<class Action> struct LinkCutLazyState<Action, false> {};
+inline void CheckLinkCutCapacity(std::size_t n, std::size_t nodes, std::size_t ancestors) {
+    const auto int_limit = static_cast<std::size_t>(std::numeric_limits<int>::max());
+    if (n >= nodes || n > std::min(int_limit, ancestors)) throw std::length_error("LinkCutTree: capacity");
+}
 }
 #endif
 
@@ -108,8 +113,7 @@ class LinkCutTree {
 
     template<class Values> void initialize(const Values& values) {
         const auto n = values.size();
-        if (n > static_cast<std::size_t>(std::numeric_limits<int>::max()) || n >= nodes_.max_size() || n > ancestors_.max_size())
-            throw std::length_error("LinkCutTree: capacity");
+        detail::CheckLinkCutCapacity(n, nodes_.max_size(), ancestors_.max_size());
         nodes_.reserve(n + 1); ancestors_.reserve(n);
         nodes_.emplace_back(config_->identity, 0);
         for (std::size_t i = 0; i < n; ++i) nodes_.emplace_back(values[i]);

@@ -32,6 +32,15 @@
 namespace sirkit {
 #ifndef SIRKIT_EULERIAN_TRAIL_DEFINED
 #define SIRKIT_EULERIAN_TRAIL_DEFINED
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
+template<bool Directed>
+inline std::size_t EulerianArcCount(std::size_t edges) {
+    constexpr std::size_t copies = Directed ? 1 : 2;
+    if (edges > std::vector<std::size_t>{}.max_size() / copies)
+        throw std::length_error("EulerianTrail: too many edges");
+    return edges * copies;
+}
+}
 template<bool Directed = false>
 class EulerianTrail {
 public:
@@ -68,9 +77,7 @@ public:
             if (n_ != 0) result.vertices.push_back(start == -1 ? 0 : start);
             return result;
         }
-        constexpr std::size_t copies = Directed ? 1 : 2;
-        if (m > std::vector<std::size_t>().max_size() / copies)
-            throw std::length_error("EulerianTrail: too many edges");
+        const auto arcs = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::EulerianArcCount<Directed>(m);
         std::vector<std::size_t> degree(n_), incoming;
         if constexpr (Directed) incoming.resize(n_);
         for (auto [u, v] : edges_) {
@@ -104,7 +111,7 @@ public:
         } else if ((preferred != -1 && start != preferred && start != second) || degree[start] == 0) return std::nullopt;
         std::vector<std::size_t> begin(static_cast<std::size_t>(n_) + 1);
         for (int v = 0; v < n_; ++v) begin[v + 1] = begin[v] + degree[v];
-        std::vector<std::size_t> cursor(begin.begin(), begin.end() - 1), incident(m * copies);
+        std::vector<std::size_t> cursor(begin.begin(), begin.end() - 1), incident(arcs);
         for (std::size_t id = 0; id < m; ++id) {
             const auto [u, v] = edges_[id]; incident[cursor[u]++] = id;
             if constexpr (!Directed) incident[cursor[v]++] = id;

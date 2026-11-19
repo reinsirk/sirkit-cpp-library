@@ -48,6 +48,14 @@ int main(){
         const auto capacity=workspace.capacity();assert(allocation_failure(0,[&]{workspace.reserve(capacity+10000);}));assert(workspace.capacity()==capacity);++checks;
         assert(allocation_failure(0,[&]{(void)RadixSortOrder(original);}));++checks;
     }
+    {
+        Trie sparse;
+        sparse.insert("kept");
+        const auto before = sparse.items();
+        const std::string distinct(4096, 'z');
+        assert(allocation_failure(0, [&] { sparse.insert(distinct); }));
+        assert(sparse.items() == before && sparse.count("kept") == 1);
+    }
     for(int budget=0;budget<4;++budget){
         Trie trie;
         for(unsigned i=0;i<15;++i)trie.insert(std::string(1,static_cast<char>(i)));

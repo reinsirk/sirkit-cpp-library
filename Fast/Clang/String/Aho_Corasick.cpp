@@ -245,6 +245,19 @@ struct AhoPattern {
     std::size_t length;
     int next;
 };
+inline void CheckAhoIndexLimit(std::size_t size, const char* message) {
+    if (size >= static_cast<std::size_t>(std::numeric_limits<int>::max()))
+        throw std::length_error(message);
+}
+inline std::uint64_t AddAhoMatchCount(std::uint64_t total, std::uint64_t additional) {
+    if (total > std::numeric_limits<std::uint64_t>::max() - additional)
+        throw std::overflow_error("AhoCorasick: match count overflow");
+    return total + additional;
+}
+inline void CheckAhoCountTextSize(std::size_t size) {
+    if (size >= std::numeric_limits<std::uint64_t>::max())
+        throw std::length_error("AhoCorasick: text too long");
+}
 }
 #endif
 
@@ -253,7 +266,9 @@ struct AhoPattern {
 struct AhoMatch {
     int pattern;
     std::size_t begin, end;
-    friend bool operator==(const AhoMatch&, const AhoMatch&) = default;
+    friend constexpr bool operator==(const AhoMatch& a, const AhoMatch& b) noexcept {
+        return a.pattern == b.pattern && a.begin == b.begin && a.end == b.end;
+    }
 };
 #endif
 
@@ -315,16 +330,14 @@ public:
         check_state(state); return nodes_[state].parent;
     }
     int add(std::string_view pattern) {
-        if (patterns_.size() >= static_cast<std::size_t>(std::numeric_limits<int>::max()))
-            throw std::length_error("AhoCorasick: too many patterns");
+        detail::CheckAhoIndexLimit(patterns_.size(), "AhoCorasick: too many patterns");
         if (nodes_.empty()) nodes_.emplace_back();
         int state = 0;
         for (unsigned char c : pattern) {
             const auto symbol = letter(c);
             int next = nodes_[state].next[symbol];
             if (next == -1) {
-                if (nodes_.size() >= static_cast<std::size_t>(std::numeric_limits<int>::max()))
-                    throw std::length_error("AhoCorasick: too many states");
+                detail::CheckAhoIndexLimit(nodes_.size(), "AhoCorasick: too many states");
                 next = static_cast<int>(nodes_.size());
                 nodes_.emplace_back();
                 nodes_[next].parent = state;
@@ -378,16 +391,13 @@ public:
         int state = 0; auto total = nodes_[0].terminal;
         for (unsigned char c : text) {
             state = nodes_[state].next[letter(c)];
-            if (total > std::numeric_limits<std::uint64_t>::max() - nodes_[state].outputs)
-                throw std::overflow_error("AhoCorasick: match count overflow");
-            total += nodes_[state].outputs;
+            total = detail::AddAhoMatchCount(total, nodes_[state].outputs);
         }
         return total;
     }
     std::vector<std::uint64_t> match_counts(std::string_view text) const {
         require_built();
-        if (text.size() >= std::numeric_limits<std::uint64_t>::max())
-            throw std::length_error("AhoCorasick: text too long");
+        detail::CheckAhoCountTextSize(text.size());
         std::vector<std::uint64_t> visits(nodes_.size()); visits[0] = 1;
         int state = 0;
         for (unsigned char c : text) { state = nodes_[state].next[letter(c)]; ++visits[state]; }

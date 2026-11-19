@@ -128,11 +128,17 @@ public:
     }
 };
 inline constexpr std::array<std::uint32_t, 12> factor_small_primes{2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37};
-inline std::uint64_t factor_square_root(std::uint64_t value) noexcept {
-    auto root = static_cast<std::uint64_t>(std::sqrt(static_cast<long double>(value)));
+inline std::uint64_t factor_exact_square_root(std::uint64_t value, std::uint64_t root) noexcept {
     while (root != 0 && root > value / root) --root;
     while (root + 1 <= value / (root + 1)) ++root;
     return root;
+}
+inline std::uint64_t factor_square_root(std::uint64_t value) noexcept {
+    return factor_exact_square_root(value, static_cast<std::uint64_t>(std::sqrt(static_cast<long double>(value))));
+}
+inline std::size_t factor_divisor_capacity(std::size_t count, std::size_t terms, std::size_t limit) {
+    if (count > limit / terms) throw std::length_error("PollardRho64: too many divisors");
+    return count * terms;
 }
 }
 #endif
@@ -237,9 +243,8 @@ public:
         std::size_t count = 1;
         for (const auto& [prime, exponent] : powers) {
             (void)prime;
-            if (count > result.max_size() / static_cast<std::size_t>(exponent + 1))
-                throw std::length_error("PollardRho64: too many divisors");
-            count *= static_cast<std::size_t>(exponent + 1);
+            count = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::factor_divisor_capacity(
+                count, static_cast<std::size_t>(exponent + 1), result.max_size());
         }
         result.reserve(count);
         for (const auto& [prime, exponent] : powers) {

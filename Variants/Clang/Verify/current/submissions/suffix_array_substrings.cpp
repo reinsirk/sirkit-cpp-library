@@ -114,9 +114,8 @@ template<class Symbol> std::vector<int> suffix_induced(std::span<const Symbol> s
                     small[position + offset] != small[previous + offset]) {
                     different = true; break;
                 }
-                if (offset > 0 && ((small[position + offset] & 2) || (small[previous + offset] & 2))) {
-                    different = (small[position + offset] & 2) != (small[previous + offset] & 2); break;
-                }
+                // 種別フラグが一致済みなので、両方が同時に次のLMSへ達する。
+                if (offset > 0 && (small[position + offset] & 2)) break;
                 ++offset;
             }
         }

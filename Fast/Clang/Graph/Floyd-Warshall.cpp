@@ -252,14 +252,18 @@ inline bool FloydWarshallRun(std::vector<std::vector<Distance>> &distance,
     return !negative.empty();
 }
 
+inline void CheckFloydVertexCount(std::size_t vertices) {
+    if (vertices > static_cast<std::size_t>(std::numeric_limits<int>::max()))
+        throw std::length_error("FloydWarshall: too many vertices");
+}
+
 template <bool RestorePath, auto UseSimd = false, bool CustomInf = false>
 inline bool FloydWarshallImpl(std::vector<std::vector<std::int64_t>> &distance,
                                      std::vector<std::vector<int>> *next, std::int64_t requested_inf = kInf)
 {
     const std::int64_t inf = CustomInf ? requested_inf : kInf;
     const std::size_t n = distance.size();
-    if (n > static_cast<std::size_t>(std::numeric_limits<int>::max()))
-        throw std::length_error("FloydWarshall: too many vertices");
+    CheckFloydVertexCount(n);
     if constexpr (RestorePath)
         next->assign(n, std::vector<int>(n, -1));
     if (n == 0)

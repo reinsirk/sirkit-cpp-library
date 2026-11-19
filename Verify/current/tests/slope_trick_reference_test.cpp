@@ -26,6 +26,17 @@ void verify(const SlopeTrick& f,const std::vector<I>& a){
  if(right>400)assert(!range.upper);else assert(range.upper&&*range.upper==right);
 }
 int main(){
+ assert(::sirkit::detail::NextSlopeHeapCapacity(0, 9) == 1);
+ assert(::sirkit::detail::NextSlopeHeapCapacity(5, 9) == 9);
+ bool capacity_error = false;
+ try { (void)::sirkit::detail::NextSlopeHeapCapacity(9, 9); }
+ catch (const std::length_error&) { capacity_error = true; }
+ assert(capacity_error);
+ SlopeTrick source;
+ source.add_abs(5);
+ SlopeTrick destination;
+ destination = std::move(source);
+ assert(source.empty() && destination.eval(3) == 2 && destination.eval(7) == 2);
  std::mt19937_64 rng(3995123);std::uint64_t operations=0;
  for(int trial=0;trial<100;++trial){
   SlopeTrick f;std::vector<I>a(hi-lo+1,0);

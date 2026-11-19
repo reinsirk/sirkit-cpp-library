@@ -265,15 +265,19 @@ inline void SPFAFinishComponents(const WGraph& graph,
 #ifndef SIRKIT_SPFA_DEFINED
 #define SIRKIT_SPFA_DEFINED
 namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
+inline int SpfaVertexCount(std::size_t vertices) {
+    if (vertices > static_cast<std::size_t>(std::numeric_limits<int>::max()))
+        throw std::length_error("SPFA: too many vertices");
+    return static_cast<int>(vertices);
+}
+
 template <bool Small, bool Bounded, bool CustomInf = false>
 inline bool SPFARun(const WGraph &graph, std::vector<std::int64_t> &distances,
                  int start_index, std::int64_t requested_inf = kInf)
 {
     const std::int64_t inf = CustomInf ? requested_inf : kInf;
     constexpr std::int64_t max_cost = 1'000'000'000;
-    if (graph.size() > static_cast<std::size_t>(std::numeric_limits<int>::max()))
-        throw std::length_error("SPFA: too many vertices");
-    const int n = static_cast<int>(graph.size());
+    const int n = SpfaVertexCount(graph.size());
 
     if (graph[start_index].empty()) {
         distances.assign(graph.size(), inf);
@@ -424,6 +428,14 @@ inline bool SPFARun(const WGraph &graph, std::vector<std::int64_t> &distances,
     if constexpr (!Small) distances.swap(distance);
     return !affected.empty();
 }
+
+template<std::int64_t kDistanceBound = kInf>
+inline bool SpfaDefaultLarge(const WGraph& graph, std::vector<std::int64_t>& distances, int start_index) {
+    static_assert(kDistanceBound > 0 && kDistanceBound <= kInf);
+    if (graph.size() <= static_cast<std::size_t>((kDistanceBound - 1) / 1'000'000'000))
+        return SPFARun<false, true>(graph, distances, start_index);
+    return SPFARun<false, false>(graph, distances, start_index);
+}
 } // namespace reinsirk::detail
 
 inline bool SPFA(const WGraph& graph, std::vector<std::int64_t>& distances, int start_index,
@@ -434,9 +446,7 @@ inline bool SPFA(const WGraph& graph, std::vector<std::int64_t>& distances, int 
         return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::SPFARun<false, false, true>(graph, distances, start_index, inf);
     }
     if (graph.size() <= 64) return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::SPFARun<true, true>(graph, distances, start_index);
-    if (graph.size() <= static_cast<std::size_t>((kInf - 1) / 1'000'000'000))
-        return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::SPFARun<false, true>(graph, distances, start_index);
-    return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::SPFARun<false, false>(graph, distances, start_index);
+    return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::SpfaDefaultLarge(graph, distances, start_index);
 }
 #endif
 

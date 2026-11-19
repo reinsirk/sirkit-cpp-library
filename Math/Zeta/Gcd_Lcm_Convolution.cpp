@@ -51,6 +51,14 @@
 namespace sirkit {
 #ifndef SIRKIT_INTEGER_SIEVE_DEFINED
 #define SIRKIT_INTEGER_SIEVE_DEFINED
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
+inline std::size_t sieve_divisor_capacity(std::size_t count, std::size_t multiplier,
+                                         std::size_t limit) {
+    if (multiplier > limit / count)
+        throw std::length_error("IntegerSieve: divisor table too large");
+    return count * multiplier;
+}
+}
 struct IntegerSieve {
     std::vector<int> least_prime_factor;
     std::vector<int> prime_list;
@@ -67,7 +75,8 @@ struct IntegerSieve {
                 prime_list.push_back(static_cast<int>(i));
             }
             const int first = least_prime_factor[i];
-            for (std::size_t j = 1; j < prime_list.size(); ++j) {
+            // iの最小素因数firstは列に入り、必ずそこまでに打ち切る。
+            for (std::size_t j = 1; ; ++j) {
                 const int prime = prime_list[j];
                 const std::uint64_t next = static_cast<std::uint64_t>(i) * static_cast<std::uint64_t>(prime);
                 if (next >= limit) break;
@@ -260,7 +269,10 @@ struct IntegerSieve {
         }
         if (k == 0) return std::vector<MODINT>(count, MODINT(1));
         std::vector<MODINT> result(count);
-        if (count > 0) result[0] = MODINT(0);
+#ifdef SKIP_RUNTIME_CHECKS
+        if (result.empty()) return result;
+#endif
+        result[0] = MODINT(0);
         if (count > 1) result[1] = MODINT(1);
         for (std::size_t i = 2; i < count; ++i) {
             const int p = least_prime_factor[i];
@@ -288,10 +300,7 @@ private:
 
     template <class T>
     static void reserve_multiple(std::vector<T>& values, std::size_t multiplier) {
-        if (multiplier > values.max_size() / values.size()) {
-            throw std::length_error("IntegerSieve: divisor table too large");
-        }
-        values.reserve(values.size() * multiplier);
+        values.reserve(/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::sieve_divisor_capacity(values.size(), multiplier, values.max_size()));
     }
 };
 #endif
@@ -318,7 +327,8 @@ struct IntegerTransform {
         const std::size_t upper = a.size() - 1;
         auto prime = primes.begin();
         const auto end = primes.end();
-        for (; prime != end; ++prime) {
+        // upper >= 2。upper/2より大きくupper以下の素数で必ず止まる。
+        for (; ; ++prime) {
             const auto p = static_cast<std::size_t>(*prime);
             if (p > upper / 2) break;
             const auto count = upper / p;
@@ -375,7 +385,8 @@ struct IntegerTransform {
         const std::size_t upper = a.size() - 1;
         auto prime = primes.begin();
         const auto end = primes.end();
-        for (; prime != end; ++prime) {
+        // upper >= 2。upper/2より大きくupper以下の素数で必ず止まる。
+        for (; ; ++prime) {
             const auto p = static_cast<std::size_t>(*prime);
             if (p > upper / 2) break;
             const auto count = upper / p;
@@ -415,7 +426,6 @@ struct IntegerTransform {
         return storage;
     }
     static std::vector<int> primes_for(std::size_t size) {
-        if (size <= 2) return {};
         if (size - 1 > static_cast<std::size_t>(std::numeric_limits<int>::max()))
             throw std::length_error("integer transform: maximum exceeds INT_MAX");
         const auto upper = size - 1;
@@ -434,9 +444,6 @@ struct IntegerTransform {
         if (size && (sieve.max_value() < 0 || size - 1 > static_cast<std::size_t>(sieve.max_value())))
             throw std::out_of_range("integer transform: sieve too small");
     }
-    static void require_same_size(std::size_t a, std::size_t b) {
-        if (a != b) throw std::invalid_argument("integer convolution: different lengths");
-    }
 #endif
 };
 } // namespace reinsirk::detail
@@ -445,6 +452,12 @@ struct IntegerTransform {
 #define SIRKIT_INTEGER_CONVOLUTION_DETAIL_DEFINED
 namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 struct IntegerConvolution {
+#ifndef SKIP_RUNTIME_CHECKS
+    static void require_same_size(std::size_t a, std::size_t b) {
+        if (a != b) throw std::invalid_argument("integer convolution: different lengths");
+    }
+#endif
+
     template <class T> static decltype(auto) product(const T& left, const T& right) {
         if constexpr (std::is_unsigned_v<T> && sizeof(T) < sizeof(unsigned int))
             return static_cast<T>(static_cast<unsigned int>(left) * static_cast<unsigned int>(right));
@@ -532,14 +545,14 @@ struct IntegerConvolution {
 #define SIRKIT_GCDCONV_DEFINED
 template <class T> std::vector<T> gcd_convolution(std::vector<T> f, std::vector<T> g, const IntegerSieve& sieve) {
 #ifndef SKIP_RUNTIME_CHECKS
-    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::IntegerTransform::require_same_size(f.size(), g.size());
+    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::IntegerConvolution::require_same_size(f.size(), g.size());
     /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::IntegerTransform::require_sieve(f.size(), sieve);
 #endif
     return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::IntegerConvolution::compute<true>(std::move(f), std::move(g), sieve.prime_list);
 }
 template <class T> std::vector<T> gcd_convolution(std::vector<T> f, std::vector<T> g) {
 #ifndef SKIP_RUNTIME_CHECKS
-    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::IntegerTransform::require_same_size(f.size(), g.size());
+    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::IntegerConvolution::require_same_size(f.size(), g.size());
 #endif
     std::vector<int> storage;
     const auto primes = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::IntegerTransform::prime_view_for(f.size(), storage);
@@ -550,14 +563,14 @@ template <class T> std::vector<T> gcd_convolution(std::vector<T> f, std::vector<
 #define SIRKIT_LCMCONV_DEFINED
 template <class T> std::vector<T> lcm_convolution(std::vector<T> f, std::vector<T> g, const IntegerSieve& sieve) {
 #ifndef SKIP_RUNTIME_CHECKS
-    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::IntegerTransform::require_same_size(f.size(), g.size());
+    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::IntegerConvolution::require_same_size(f.size(), g.size());
     /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::IntegerTransform::require_sieve(f.size(), sieve);
 #endif
     return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::IntegerConvolution::compute<false>(std::move(f), std::move(g), sieve.prime_list);
 }
 template <class T> std::vector<T> lcm_convolution(std::vector<T> f, std::vector<T> g) {
 #ifndef SKIP_RUNTIME_CHECKS
-    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::IntegerTransform::require_same_size(f.size(), g.size());
+    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::IntegerConvolution::require_same_size(f.size(), g.size());
 #endif
     std::vector<int> storage;
     const auto primes = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::IntegerTransform::prime_view_for(f.size(), storage);

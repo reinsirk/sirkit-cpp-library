@@ -8,6 +8,13 @@ using namespace sirkit;
 #include <random>
 
 int main() {
+    assert(::sirkit::detail::CheckedBeatsNodeCount(2, 9) == 9);
+    for (const std::size_t limit : {0u, 8u}) {
+        bool rejected = false;
+        try { (void)::sirkit::detail::CheckedBeatsNodeCount(2, limit); }
+        catch (const std::length_error&) { rejected = true; }
+        assert(rejected);
+    }
     using ::sirkit::detail::BeatsWide;
     using ::sirkit::detail::beats_multiply;
     using ::sirkit::detail::beats_narrow;

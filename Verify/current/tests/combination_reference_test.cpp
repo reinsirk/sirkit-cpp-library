@@ -57,6 +57,17 @@ int main(){
     rejects([]{(void)last_combination<std::uint8_t>(9,1);});rejects([]{(void)last_combination(4,5);});rejects([]{(void)last_combination(-1,0);});
     rejects([]{std::uint8_t mask=4;(void)next_combination(mask,2);});rejects([]{std::uint8_t mask=0;(void)next_combination(mask,9);});
     rejects([]{for_each_combination<std::uint8_t>(9,2,[](auto){assert(false);});});rejects([]{for_each_combination(3,4,[](auto){assert(false);});});
+    rejects([]{(void)last_combination(4,-1);});
+    rejects([]{std::uint8_t mask=1;(void)next_combination(mask,-1);});
+    rejects([]{for_each_combination(-1,0,[](auto){assert(false);});});
+    rejects([]{for_each_combination(4,-1,[](auto){assert(false);});});
+#else
+    std::uint8_t mask=1;
+    assert(!next_combination(mask,0)&&mask==1);
+    const auto unexpected=[](auto){assert(false);};
+    for_each_combination(-1,0,unexpected);
+    for_each_combination(4,-1,unexpected);
+    for_each_combination(3,4,unexpected);
 #endif
     std::cout<<"PASS exhaustive/boundary checks="<<checks<<'\n';
 }

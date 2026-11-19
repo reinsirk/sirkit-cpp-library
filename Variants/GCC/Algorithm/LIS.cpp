@@ -537,12 +537,15 @@ std::vector<std::size_t> LISIndicesSelected(const std::vector<T>& v) {
     }
     return LISIndicesImpl<Strict,Index>(v);
 }
+template <bool Strict, std::uint32_t kNarrowSize = std::numeric_limits<std::uint32_t>::max(), class T>
+std::vector<std::size_t> LISIndicesByWidth(const std::vector<T>& v) {
+    if (v.size() <= kNarrowSize) return LISIndicesSelected<Strict, std::uint32_t>(v);
+    return LISIndicesSelected<Strict, std::size_t>(v);
+}
 } // namespace reinsirk::detail
 template <bool Strict = true, class T>
 std::vector<std::size_t> LISIndices(const std::vector<T>& v) {
-    if (v.size() <= std::numeric_limits<std::uint32_t>::max())
-        return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::LISIndicesSelected<Strict, std::uint32_t>(v);
-    return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::LISIndicesSelected<Strict, std::size_t>(v);
+    return detail::LISIndicesByWidth<Strict>(v);
 }
 template <bool Strict = true, class T>
 std::vector<T> LISSequence(const std::vector<T>& v) {
