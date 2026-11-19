@@ -13,6 +13,118 @@ from Scripts import build_library_pages as pages
 
 
 class LibraryPagesTest(unittest.TestCase):
+    @staticmethod
+    def variants_manifest(source):
+        return {"format": 1, "generated_by": "Scripts/generate_variants.py", "entries": [
+            {"source": source, "origin": source, "compiler": compiler, "fast": fast,
+             "path": f"{'Fast' if fast else 'Variants'}/{compiler}/{source}",
+             "sha256": "a" * 64, "source_sha256": "b" * 64}
+            for compiler in ("Portable", "GCC", "Clang", "MSVC") for fast in (False, True)
+        ]}
+
+    def test_home_offers_versions_and_each_list_uses_only_its_selected_download(self):
+        source = "Math/prime_judge(Miller-Rabin).cpp"
+        groups = pages.variant_entries(json.dumps(self.variants_manifest(source)).encode(), [source])
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "_includes").mkdir()
+            downloads, links = pages.write_version_lists(root, groups, {source: "素数判定"})
+            picker = (root / "_includes/code-version-picker.html").read_text(encoding="utf-8")
+            self.assertEqual(picker.count('class="code-version-link"'), 8)
+            self.assertNotIn("prime_judge", picker)
+            self.assertIn("#define SKIP_RUNTIME_CHECKS", picker)
+            self.assertEqual(len(downloads), 8)
+            for compiler in ("Portable", "GCC", "Clang", "MSVC"):
+                for fast, directory in ((False, "Variants"), (True, "Fast")):
+                    key = ("fast-" if fast else "safe-") + compiler.lower()
+                    self.assertIn(f"/versions/{key}.html", picker)
+                    listing = (root / f"versions/{key}.md").read_text(encoding="utf-8")
+                    self.assertIn("<h2>数学</h2>", listing)
+                    self.assertIn("素数判定", listing)
+                    asset = f"/assets/code/{directory}/{compiler}/Math/prime_judge%28Miller-Rabin%29.cpp"
+                    self.assertIn(asset, listing)
+                    self.assertIn(f"#code-version-{key}", listing)
+                    self.assertEqual(listing.count('class="code-variant-download"'), 1)
+                    self.assertEqual(links[f"versions/{key}"], {f"{source}.html#code-version-{key}"})
+                    if fast:
+                        self.assertIn("/fast-guide.html", listing)
+                        self.assertIn("一部はメモリの解放も省きます", listing)
+                        self.assertIn("速度の差はライブラリや入力、処理系によります", listing)
+                    else:
+                        self.assertNotIn("/fast-guide.html", listing)
+        context = pages.version_context()
+        self.assertIn('id="code-version-fast-msvc">速度優先版・MSVC専用', context)
+        self.assertIn("/versions/fast-msvc.html", context)
+        self.assertNotIn("code-variant-download", context)
+
+    def test_manifest_rejects_missing_duplicate_and_outside_downloads(self):
+        source = "Graph/example.cpp"
+        for change, hint in ((lambda rows: rows.pop(), "全4構成"),
+                             (lambda rows: rows.append(rows[0]), "重複"),
+                             (lambda rows: rows[0].update(path="../example.cpp"), "パス"),
+                             (lambda rows: rows[0].update(origin="../example.cpp"), "パス")):
+            with self.subTest(hint=hint):
+                manifest = self.variants_manifest(source)
+                change(manifest["entries"])
+                with self.assertRaisesRegex(ValueError, hint):
+                    pages.variant_entries(json.dumps(manifest).encode(), [source])
+
+    def test_rendered_download_links_and_bytes_are_checked(self):
+        source = "Math/test(api).cpp"
+        asset = "assets/code/Fast/MSVC/" + source
+        payload = b"int f() { return 42; }\n"
+        expected = {source: {asset: hashlib.sha256(payload).hexdigest()}}
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "index.html").touch()
+            (root / "quality.html").touch()
+            (root / asset).parent.mkdir(parents=True)
+            (root / asset).write_bytes(payload)
+            page = root / (source + ".html")
+            page.parent.mkdir()
+            link = '<a class="code-variant-download" href="/prefix/assets/code/Fast/MSVC/Math/test%28api%29.cpp" download>取得</a>'
+            page.write_text(link, encoding="utf-8")
+            result = pages.validate_site(root, {source}, "/prefix", expected_downloads=expected)
+            self.assertEqual(result["downloads_checked"], 1)
+            self.assertTrue(result["passed"])
+            page.write_text(link.replace("%28api%29", "(api)"), encoding="utf-8")
+            self.assertTrue(pages.validate_site(root, {source}, "/prefix", expected_downloads=expected)["passed"])
+            page.write_text(link.replace(" download>", ">"), encoding="utf-8")
+            self.assertEqual(pages.validate_site(root, {source}, "/prefix", expected_downloads=expected)
+                             ["download_link_mismatches"], [source])
+            page.write_text(link, encoding="utf-8")
+            (root / asset).write_bytes(payload + b"// changed")
+            self.assertEqual(pages.validate_site(root, {source}, "/prefix", expected_downloads=expected)
+                             ["download_mismatches"], [asset])
+
+    def test_version_navigation_requires_rendered_links_and_detail_fragment(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "quality.html").touch()
+            (root / "versions").mkdir()
+            (root / "Graph").mkdir()
+            selector = root / "index.html"
+            listing = root / "versions/fast-gcc.html"
+            detail = root / "Graph/example.cpp.html"
+            targets = {selector: "versions/fast-gcc.html", listing: "Graph/example.cpp.html#code-version-fast-gcc"}
+            for file, target in targets.items():
+                file.write_text(f'<a class="code-version-link" href="/preview/{target}">開く</a>', encoding="utf-8")
+            expected = {"index": {targets[selector]}, "versions/fast-gcc": {targets[listing]}}
+            html_pages = {"versions/fast-gcc", "Graph/example.cpp"}
+            detail.write_text('<p id="code-version-fast-gcc">選んだ版</p>', encoding="utf-8")
+            self.assertTrue(pages.validate_site(root, html_pages, "/preview", expected_version_links=expected)["passed"])
+            original = selector.read_text(encoding="utf-8")
+            selector.write_text(original + '<a href="/preview/Graph/example.cpp.html">API</a>', encoding="utf-8")
+            result = pages.validate_site(root, html_pages, "/preview", {"Graph/example.cpp": ""}, expected_version_links=expected)
+            self.assertEqual(result["version_link_mismatches"], ["index"])
+            selector.write_text(original, encoding="utf-8")
+            detail.write_text('<p>選んだ版</p>', encoding="utf-8")
+            result = pages.validate_site(root, html_pages, "/preview", expected_version_links=expected)
+            self.assertEqual(result["missing_version_anchors"], [targets[listing]])
+            selector.write_text("<p>選択リンクなし</p>", encoding="utf-8")
+            result = pages.validate_site(root, html_pages, "/preview", expected_version_links=expected)
+            self.assertEqual(result["version_link_mismatches"], ["index"])
+
     def test_reference_operators_do_not_become_tables_or_typographic_quotes(self):
         text = ('## operator<<\n\n```text\nvoid operator<<(T x);\n```\n\n'
                 'bits |= bits << shiftを適用する。`a | b`はコード。\n'
@@ -175,6 +287,8 @@ class LibraryPagesTest(unittest.TestCase):
             "performance_limit": {"status": "FAIL", "metric": "child_cpu_ns", "limit_ns": 10000000}}]}}})
         self.assertIn("上限 ms", text)
         self.assertIn("20.000 | 11.000 | 10.000 | 失敗", text)
+
+
 
     def test_old_ac_is_labelled_stale(self):
         text = pages.online_table([dict(title="test", status="source_changed", problem_url=None,
