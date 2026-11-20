@@ -476,8 +476,9 @@ def performance_table(evidence: list[dict]) -> str:
         return ""
     def safe(value):
         return ci_quality_report.inline(value).replace("{", "&#123;").replace("}", "&#125;")
-    lines = ["起動・入出力込みのVerify全体はCPU時間、本体測定は経過時間で判定します。比較元と倍率は判定に使った指標の中央値に基づきます。", "",
-             "| 測定範囲 | ケース | 規模 | 現行 wall ms | 現行 CPU ms | 比較元 ms | 現行/比較元 | 上限 ms | 判定 | 状態 |",
+    lines = ["起動・入出力込みのVerify全体はCPU時間、本体測定は経過時間で判定します。"]
+    lines += ci_quality_report.worst_case_table([("", item) for item in rows], include_library=False)
+    lines += ["", "| 測定範囲 | ケース | 規模 | 現行 wall ms | 現行 CPU ms | 比較元 ms | 現行/比較元 | 上限 ms | 判定 | 状態 |",
              "| --- | --- | --- | ---: | ---: | ---: | ---: | ---: | --- | --- |"]
     for item in rows:
         workload = item.get("workload", {})

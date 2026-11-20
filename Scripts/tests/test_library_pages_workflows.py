@@ -205,12 +205,17 @@ class StructureTests(unittest.TestCase):
         self.assertNotIn("--limits", command)
         code = python_block(command, "PYREGRESSION")
         baseline = "a" * 40
-        good = {"status": "PASS", "compile_profile": "atcoder",
+        good = {"status": "PASS", "compile_profile": "atcoder", "regression_policy": "library_worst_case",
                 "current_measurements_passed": True, "performance_regression_passed": True,
-                "base_revision": baseline, "expected_cases": 2, "compared_cases": 2, "results": [{}, {}]}
+                "base_revision": baseline, "expected_cases": 2, "compared_cases": 2, "results": [{}, {}],
+                "sources": {"fenwick": {}},
+                "worst_case_regressions": {"fenwick": {"status": "PASS", "compared_cases": 2}}}
         fixtures = [(good, 0)]
         for mutation in ({"status": "PARTIAL"}, {"status": "NO_BASELINE"},
                          {"status": "CURRENT_ONLY"}, {"performance_regression_passed": False},
+                         {"regression_policy": None}, {"worst_case_regressions": {}},
+                         {"worst_case_regressions": {"fenwick": {"status": "FAIL", "compared_cases": 2}}},
+                         {"worst_case_regressions": {"fenwick": {"status": "PASS", "compared_cases": 1}}},
                          {"compile_profile": "standard"},
                          {"base_revision": "b" * 40}, {"compared_cases": 1},
                          {"current_measurements_passed": False}, {"expected_cases": 3},

@@ -589,8 +589,18 @@ def validate_regression_mode(value: dict) -> bool:
     return True
 
 
+def worst_case_mode(value: dict, regression_mode: bool) -> bool:
+    policy = value.get("regression_policy")
+    if policy is None:
+        return False
+    if not regression_mode or policy != performance_regression.WORST_CASE_POLICY:
+        raise ReportError("性能退行の集計方法が不正です")
+    return True
+
+
 def checked_performance_regression(enabled: bool, row: dict, metric: str,
-                                   samples: dict, repetitions: int, *, unavailable: dict | None = None) -> dict:
+                                   samples: dict, repetitions: int, *, unavailable: dict | None = None,
+                                   worst_mode: bool = False) -> dict:
     paired = "base" in samples
     if not enabled or not paired and unavailable is None:
         if "performance_regression" in row or "regression_confirmation" in row:
@@ -599,6 +609,8 @@ def checked_performance_regression(enabled: bool, row: dict, metric: str,
     result = performance_regression.evaluate(metric, samples) if paired else unavailable
     evidence = {}
     if "regression_confirmation" in row:
+        if worst_mode:
+            raise ReportError("最悪ケースの再測定はライブラリ単位で記録してください")
         initial = row["regression_confirmation"]
         if (not isinstance(initial, dict) or set(initial) != {"base", "current"}
                 or any(not isinstance(times, list) or len(times) != repetitions for times in initial.values())):
@@ -613,7 +625,7 @@ def checked_performance_regression(enabled: bool, row: dict, metric: str,
                 raise ReportError("基準版の再測定不能の理由が記録と一致しません")
             result = dict(status="FAIL", metric=metric, reason="BASELINE_CONFIRMATION_UNAVAILABLE")
         evidence["regression_confirmation"] = initial
-    elif paired and result["status"] == "FAIL":
+    elif paired and result["status"] == "FAIL" and not worst_mode:
         raise ReportError("性能退行判定の再測定がありません")
     recorded = row.get("performance_regression")
     if not isinstance(recorded, dict) or recorded != result or (paired and any(
@@ -622,6 +634,26 @@ def checked_performance_regression(enabled: bool, row: dict, metric: str,
         raise ReportError("性能退行判定が比較元・現在版の生データと一致しません")
     evidence["performance_regression"] = result
     return evidence
+
+
+def checked_worst_case(metric: str, paired: dict, recorded: dict | None, initial: dict | None,
+                       repetitions: int, *, lost: set[str] | None = None) -> None:
+    expected = performance_regression.evaluate_worst(metric, paired) if paired else None
+    if recorded != expected:
+        raise ReportError("最悪ケースの判定が生データと一致しません")
+    lost = lost or set()
+    if initial is None:
+        if lost or expected and expected["status"] == "FAIL":
+            raise ReportError("最悪ケースの再測定がありません")
+        return
+    if not isinstance(initial, dict) or not initial or initial.keys() != paired.keys() | lost:
+        raise ReportError("最悪ケースの再測定にケースの欠落があります")
+    first = performance_regression.evaluate_worst(metric, initial)
+    if (first["status"] != "FAIL"
+            or any(len(samples["base"]) != repetitions for samples in initial.values())
+            or metric == "kernel_elapsed_ns" and any(
+                ns < 1 for samples in initial.values() for times in samples.values() for ns in times)):
+        raise ReportError("最悪ケースの再測定前の生データが不正です")
 
 
 def validate_regression_summary(value: dict, passed: bool, *, failed_case: bool) -> None:
@@ -650,6 +682,12 @@ def collect_performance(value: dict, root: Path, entries: dict, append) -> None:
     if value.get("status") not in {"PASS", "PARTIAL", "NO_BASELINE", "CURRENT_ONLY", "FAIL"}:
         raise ReportError("性能測定の状態が不正です")
     regression_mode = validate_regression_mode(value)
+    worst_mode = worst_case_mode(value, regression_mode)
+    worst_results = value.get("worst_case_regressions", {})
+    confirmations = value.get("worst_case_confirmations", {})
+    if worst_mode and (not isinstance(worst_results, dict) or not isinstance(confirmations, dict)):
+        raise ReportError("本体性能の最悪ケース集計が不正です")
+    paired_by_id = {}
     regressions_passed = True
     limits = recorded_performance_limits(value, root)
     seen, compared = set(), 0
@@ -714,8 +752,20 @@ def collect_performance(value: dict, root: Path, entries: dict, append) -> None:
         else:
             bound = None
         gate = checked_performance_limit(limits, bound, row, samples["current"])
-        regression = checked_performance_regression(regression_mode, row, "kernel_elapsed_ns", samples, repetitions)
-        regressed = regression.get("performance_regression", {}).get("status") == "FAIL"
+        regression = checked_performance_regression(regression_mode, row, "kernel_elapsed_ns", samples, repetitions,
+                                                    worst_mode=worst_mode)
+        worst = worst_results.get(identifier) if worst_mode else None
+        if worst_mode and ratio is not None:
+            case_key = f"{key[1]}:{integer(pattern_id)}"
+            group = paired_by_id.setdefault(identifier, {})
+            if case_key in group:
+                raise ReportError("本体性能の最悪ケース集計にケースの重複があります")
+            group[case_key] = samples
+        regressed = (worst or {}).get("status") == "FAIL" if worst_mode else regression.get("performance_regression", {}).get("status") == "FAIL"
+        if worst is not None:
+            regression["worst_case_regression"] = worst
+            if ratio is not None:
+                regression["worst_case_key"] = case_key
         regressions_passed = regressions_passed and not regressed
         if changed:
             status = "STALE"
@@ -738,6 +788,12 @@ def collect_performance(value: dict, root: Path, entries: dict, append) -> None:
     expected_cases = value.get("expected_cases", len(rows))
     if regression_mode and integer(expected_cases, minimum=1) != len(rows):
         raise ReportError("性能退行比較の予定ケース数と生データが一致しません")
+    if worst_mode:
+        if worst_results.keys() != paired_by_id.keys() or confirmations.keys() - paired_by_id.keys():
+            raise ReportError("本体性能の最悪ケース集計に対象の欠落・追加があります")
+        for identifier, paired in paired_by_id.items():
+            checked_worst_case("kernel_elapsed_ns", paired, worst_results[identifier],
+                               confirmations.get(identifier), repetitions)
     validate_regression_summary(value, regressions_passed and compared == len(rows), failed_case=not regressions_passed)
     if compared != value.get("compared_cases") or len(rows) - compared != value.get("uncompared_cases"):
         raise ReportError("性能測定の集約件数と実行結果が不一致です")
@@ -877,6 +933,7 @@ def collect_all_performance(value: dict, root: Path, entries: dict, append) -> N
     runner = value.get("runner", {})
     changed_global += mismatches(root, {relative(runner.get("source")): sha(runner.get("sha256"))})
     regression_mode = validate_regression_mode(value)
+    worst_mode = worst_case_mode(value, regression_mode)
     limits = recorded_performance_limits(value, root)
     for row in rows:
         library = relative(row["library"], library=True)
@@ -909,6 +966,9 @@ def collect_all_performance(value: dict, root: Path, entries: dict, append) -> N
         if (not isinstance(cases, list) or not expected or len(expected) != len(set(expected))
                 or [c.get("name") for c in cases] != expected or row.get("current_measurements_passed") is not True):
             raise ReportError("ライブラリの性能ケースが欠落しています")
+        worst = row.get("worst_case_regression") if worst_mode else None
+        initial = row.get("worst_case_confirmation") if worst_mode else None
+        paired, lost = {}, set()
         for case in cases:
             if case.get("status") != "PASS" or case.get("correctness_passed") is not True:
                 raise ReportError("正しさの確認されていない性能ケースです")
@@ -932,6 +992,11 @@ def collect_all_performance(value: dict, root: Path, entries: dict, append) -> N
                 planned = row["baseline_comparison"]
                 if ratio is None:
                     unavailable = whole_unpaired_regression(case, planned, repetitions, value["warmups"])
+                    if (isinstance(initial, dict) and case["name"] in initial
+                            and comparison == "BASELINE_INVALID" and planned == "MEASURED"):
+                        lost.add(case["name"])
+                        unavailable = dict(status="FAIL", metric="child_cpu_ns",
+                                           reason="BASELINE_CONFIRMATION_UNAVAILABLE")
                 elif comparison != "MEASURED" or planned != "MEASURED" or case.get("baseline_failure") is not None:
                     raise ReportError("全体性能の比較可否が生データと一致しません")
             cpu_samples, cpu_medians = case.get("cpu_samples_ns"), case.get("cpu_median_ns")
@@ -948,8 +1013,13 @@ def collect_all_performance(value: dict, root: Path, entries: dict, append) -> N
             bound = limits.whole(library, identifier, case["name"], integer(case.get("input_bytes"))) if limits is not None else None
             gate = checked_performance_limit(limits, bound, case, cpu_samples["current"])
             regression = checked_performance_regression(regression_mode, case, "child_cpu_ns", cpu_samples, repetitions,
-                                                        unavailable=unavailable)
-            regressed = regression.get("performance_regression", {}).get("status") == "FAIL"
+                                                        unavailable=unavailable, worst_mode=worst_mode)
+            if worst_mode and ratio is not None:
+                paired[case["name"]] = cpu_samples
+            regressed = ((worst or {}).get("status") == "FAIL" or (unavailable or {}).get("status") == "FAIL"
+                         if worst_mode else regression.get("performance_regression", {}).get("status") == "FAIL")
+            if worst is not None:
+                regression["worst_case_regression"] = worst
             if changed:
                 status = "STALE"
             elif value.get("source_freeze_passed") is not True:
@@ -971,13 +1041,18 @@ def collect_all_performance(value: dict, root: Path, entries: dict, append) -> N
                    source_mismatches=changed, measurement_passed=not changed and value.get("source_freeze_passed") is True,
                    advisory=limits is None and not regression_mode, performance_limit=gate, **baseline, **regression,
                    **({"baseline_failure": case["baseline_failure"]} if regression_mode and "baseline_failure" in case else {})))
+        if worst_mode:
+            checked_worst_case("child_cpu_ns", paired, worst, initial, repetitions, lost=lost)
     if regression_mode:
-        counts = Counter(case["performance_regression"]["status"] for row in rows for case in row.get("cases", []))
+        if worst_mode:
+            counts = Counter(ci_performance_all.library_regression_status(row) for row in rows)
+        else:
+            counts = Counter(case["performance_regression"]["status"] for row in rows for case in row.get("cases", []))
         recorded_counts = value.get("performance_regression_counts")
         if (not isinstance(recorded_counts, dict) or recorded_counts != dict(counts)
                 or counts.keys() - {"PASS", "FAIL", "NOT_COMPARABLE"}
                 or any(type(count) is not int for count in recorded_counts.values())):
-            raise ReportError("全体性能の比較件数がケースと一致しません")
+            raise ReportError("全体性能の比較件数が測定値と一致しません")
         existing = any(row.get("baseline_comparison") != "BASELINE_NEW_LIBRARY" for row in rows)
         passed = ci_performance_all.complete(value) and not counts["FAIL"] and (counts["PASS"] > 0 or not existing)
         validate_regression_summary(value, passed, failed_case=not passed)
@@ -1173,13 +1248,13 @@ def performance_timing_cells(row: dict) -> list[str]:
     ratio = "—"
     if regression and "baseline_median_ns" in regression:
         baseline = regression["baseline_median_ns"]
-        limit = regression["limit_ns"]
+        limit = None if row.get("worst_case_regression") else regression["limit_ns"]
         if baseline:
             ratio = f"{regression['observed_median_ns'] / baseline:.3f}×"
         metric = "CPU" if regression["metric"] == "child_cpu_ns" else "wall"
         kind = "退行" if regression["status"] == "FAIL" else "通過"
         confirmation = "・再測定" if "regression_confirmation" in row else ""
-        decision = f"{kind}（{metric}{confirmation}）"
+        decision = "参考値" if row.get("worst_case_regression") else f"{kind}（{metric}{confirmation}）"
         if fixed.get("status") == "FAIL":
             decision += "、固定上限超過"
     elif regression:
@@ -1211,6 +1286,32 @@ def performance_timing_cells(row: dict) -> list[str]:
         }.get(row.get("comparison"), "未判定")
     return [milliseconds(wall.get("current")), milliseconds(cpu.get("current")) if cpu else "対象外",
             milliseconds(baseline), ratio, milliseconds(limit), decision]
+
+
+def worst_case_table(rows: list[tuple[str, dict]], *, include_library: bool) -> list[str]:
+    lines, seen = [], set()
+    case_labels = {(path, row.get("scope"), row.get("report"), row["worst_case_key"]):
+                   f"{row['pattern']} ({row['size']:,})"
+                   for path, row in rows if "worst_case_key" in row}
+    for path, row in rows:
+        worst = row.get("worst_case_regression")
+        key = (path, row.get("scope"), row.get("report"))
+        if worst is None or key in seen:
+            continue
+        seen.add(key)
+        base_case, current_case = worst["baseline_case"], worst["observed_case"]
+        fields = [inline(row["scope"]), str(worst["compared_cases"]),
+                  inline(case_labels.get((*key, base_case), base_case)), f"{worst['baseline_median_ns']/1e6:.3f}",
+                  inline(case_labels.get((*key, current_case), current_case)), f"{worst['observed_median_ns']/1e6:.3f}",
+                  f"{worst['limit_ns']/1e6:.3f}", STATUS_LABELS[worst["status"]]]
+        lines.append("| " + " | ".join(([inline(path)] if include_library else []) + fields) + " |")
+    if not lines:
+        return []
+    label = "| ライブラリ " if include_library else ""
+    align = "| --- " if include_library else ""
+    return ["", "各ライブラリでケースの中央値の最大値を比較します。", "",
+            label + "| 測定範囲 | 比較件数 | 基準の最悪ケース | 基準 ms | 現行の最悪ケース | 現行 ms | 上限 ms | 判定 |",
+            align + "| --- | ---: | --- | ---: | --- | ---: | ---: | --- |", *lines, ""]
 
 
 def coverage_percent(metric: dict) -> str:
@@ -1274,8 +1375,8 @@ def markdown(report: dict) -> str:
         lines += ["", f"全ライブラリの規定規模の性能記録: {coverage.get('whole_program_full_measured', 0)}/{coverage.get('all_libraries', 0)}。縮小確認と代表3本のkernelはこの件数に含めません。"]
         lines += ["", "## 性能測定の条件と結果", "",
                   "Verify全体は子プロセスCPU時間、本体はハーネス内の経過時間で判定します。比較元と倍率は判定に使った指標の中央値に基づきます。"]
-        if any(row.get("performance_regression") for _, row in measured):
-            lines += ["同じジョブの同じ入力で測った比較元と現行版を照合します。初回に上限を超えたケースは再測定の結果で判定します。"]
+        if any(row.get("performance_regression") and not row.get("worst_case_regression") for _, row in measured):
+            lines += ["旧記録のケース別判定も、計測時の条件に従って表示します。"]
         lines += ["", "| コンパイラ | 設定 | CPU | OS | 反復/除外warmup | 比較元コミット |",
                   "| --- | --- | --- | --- | ---: | --- |"]
         environments = set()
@@ -1290,6 +1391,7 @@ def markdown(report: dict) -> str:
             compiler = compiler.get("version", "記録なし") if isinstance(compiler, dict) else compiler
             baseline_revision = inline(row["base_revision"]) if row.get("base_revision") else "—"
             lines.append("| " + " | ".join(inline(x) for x in (compiler, " ".join(row.get("flags", [])), row.get("cpu_model") or "記録なし", row.get("platform") or "記録なし")) + f" | {row['repetitions']}/{row.get('warmups') if row.get('warmups') is not None else '記録なし'} | {baseline_revision} |")
+        lines += worst_case_table([(library["path"], row) for library, row in measured], include_library=True)
         lines += ["", "| ライブラリ | 測定範囲 | ケース | 規模 | 現行 wall ms | 現行 CPU ms | 比較元 ms | 現行/比較元 | 上限 ms | 判定 | 状態 |",
                   "| --- | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | --- | --- |"]
         for library, row in measured:

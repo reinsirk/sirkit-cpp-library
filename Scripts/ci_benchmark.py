@@ -161,6 +161,11 @@ def measure(executables: dict[str, Path], size: int, pattern: int, rounds: int,
             "orders": orders, "independent_reference": "passed"}
 
 
+def paired_samples(rows: list[dict]) -> dict[str, dict[str, list[int]]]:
+    return {f"{row['size']}:{row['pattern_id']}": row["samples_ns"]
+            for row in rows if row["status"] == "MEASURED"}
+
+
 def code(value: str) -> str:
     return "<code>" + html.escape(" ".join(value.split())[:120]).replace("|", "&#124;").replace("`", "&#96;") + "</code>"
 
@@ -173,7 +178,8 @@ def markdown(report: dict) -> str:
              method,
              "時間は本体の構築・操作・破棄とchecksum集約です。"]
     if compare:
-        lines.append("退行判定には基準中央値に5%（最低5 µs）を加えた上限を使い、超過時は同じケースを再測定します。")
+        lines.append("本体ごとに、基準・現在版それぞれのケース中央値の最大値を比較します。"
+                     "上限は基準の最大値に5%（最低5 µs）を加えた値です。超過時は本体の全比較ケースを再測定します。")
     lines += ["", "状態: " + str(report["status"])]
     lines += ["", "コンパイル設定: " + code(report.get("compile_profile", "standard")),
               "フラグ: " + " ".join(map(code, report.get("flags", FLAGS)))]
@@ -186,7 +192,19 @@ def markdown(report: dict) -> str:
                   "、予定ケース数: " + str(report["expected_cases"])]
     if report.get("base_revision"):
         lines += ["", "基準: " + code(report["base_revision"])]
-    lines += (["", "| 本体 | 入力 | 要素数 | 現在 ms | 基準 ms | 現在/基準 | 上限 ms | 判定 |",
+    worst = report.get("worst_case_regressions", {})
+    if worst:
+        descriptions = {(row["id"], f"{row['size']}:{row['pattern_id']}"):
+                        f"{row['pattern']} ({row['size']:,})" for row in report["results"]}
+        lines += ["", "| 本体 | 比較件数 | 基準の最大ケース | 現在の最大ケース | 基準の最大値 ms | 現在の最大値 ms | 上限 ms | 退行判定 |",
+                  "| --- | ---: | --- | --- | ---: | ---: | ---: | --- |"]
+        for identifier, gate in worst.items():
+            before = code(descriptions[identifier, gate["baseline_case"]])
+            after = code(descriptions[identifier, gate["observed_case"]])
+            lines.append(f"| {identifier} | {gate['compared_cases']} | {before} | {after} | "
+                         f"{gate['baseline_median_ns']/1e6:.3f} | {gate['observed_median_ns']/1e6:.3f} | "
+                         f"{gate['limit_ns']/1e6:.3f} | {gate['status']} |")
+    lines += (["", "| 本体 | 入力 | 要素数 | 現在 ms | 基準 ms | 現在/基準 | ケース参考上限 ms | ケース参考判定 |",
                "| --- | --- | ---: | ---: | ---: | ---: | ---: | --- |"] if compare else
               ["", "| 本体 | 入力 | 要素数 | 実行時間 ms | 固定予算 ms | 判定 |",
                "| --- | --- | ---: | ---: | ---: | --- |"])
@@ -240,6 +258,9 @@ def run(args: argparse.Namespace) -> int:
               "platform": platform.platform(), "machine": platform.machine(), "cpu_model": cpu_model(),
               "affinity": sorted(os.sched_getaffinity(0)) if hasattr(os, "sched_getaffinity") else None,
               "results": [], "sources": {}}
+    if args.base is not None:
+        report.update(regression_policy=performance_regression.WORST_CASE_POLICY, worst_case_regressions={},
+                      worst_case_confirmations={})
     write_report(output, report)
     try:
         revision = resolve_base(args.base) if args.base is not None else None
@@ -296,25 +317,36 @@ def run(args: argparse.Namespace) -> int:
                                                 directory / identifier, "base", flags)
                 executables["current"] = build(compiler, current, fixture, common,
                                                directory / identifier, "current", flags)
-                for case in plans[identifier]:
+
+                def measure_row(case: dict, order: dict[str, Path]) -> dict:
                     size, pattern = case["size"], case["pattern_id"]
                     rounds = 1 if args.quick else max(1, 262144 // size)
-                    row = measure(executables, size, pattern, rounds, args.repetitions, args.warmups)
+                    row = measure(order, size, pattern, rounds, args.repetitions, args.warmups)
                     if row["status"] == "MEASURED":
-                        gate = performance_regression.evaluate("kernel_elapsed_ns", row["samples_ns"])
-                        if gate["status"] == "FAIL":
-                            first = row["samples_ns"]
-                            reversed_order = dict(reversed(list(executables.items())))
-                            row = measure(reversed_order, size, pattern, rounds, args.repetitions, args.warmups)
-                            row["regression_confirmation"] = first
-                            gate = performance_regression.evaluate("kernel_elapsed_ns", row["samples_ns"])
-                        row["performance_regression"] = gate
+                        row["performance_regression"] = performance_regression.evaluate(
+                            "kernel_elapsed_ns", row["samples_ns"])
                     if revision is None:
                         row["status"] = "CURRENT_ONLY"
                     row.update(id=identifier, pattern=case["scenario"], pattern_id=pattern, scale=case["scale"])
                     if limits is not None:
-                        row["performance_limit"] = limits.evaluate(budgets[identifier, size, pattern], row["samples_ns"]["current"])
-                    report["results"].append(row)
+                        row["performance_limit"] = limits.evaluate(
+                            budgets[identifier, size, pattern], row["samples_ns"]["current"])
+                    return row
+
+                first_index = len(report["results"])
+                for case in plans[identifier]:
+                    report["results"].append(measure_row(case, executables))
+                    write_report(output, report)
+                samples = paired_samples(report["results"][first_index:])
+                if samples:
+                    worst = performance_regression.evaluate_worst("kernel_elapsed_ns", samples)
+                    if worst["status"] == "FAIL":
+                        report["worst_case_confirmations"][identifier] = samples
+                        reversed_order = dict(reversed(tuple(executables.items())))
+                        confirmed = [measure_row(case, reversed_order) for case in plans[identifier]]
+                        worst = performance_regression.evaluate_worst("kernel_elapsed_ns", paired_samples(confirmed))
+                        report["results"][first_index:] = confirmed
+                    report["worst_case_regressions"][identifier] = worst
                     write_report(output, report)
         expected = {(identifier, case["size"], case["pattern_id"])
                     for identifier, cases in plans.items() for case in cases}
@@ -330,7 +362,7 @@ def run(args: argparse.Namespace) -> int:
             report["performance_limits_passed"] = all(row["performance_limit"]["status"] == "PASS" for row in report["results"])
         report["status"] = ("CURRENT_ONLY" if revision is None else "NO_BASELINE" if not compared
                             else "PARTIAL" if report["uncompared_cases"] else "PASS")
-        regressed = any(row.get("performance_regression", {}).get("status") == "FAIL" for row in report["results"])
+        regressed = any(gate["status"] == "FAIL" for gate in report.get("worst_case_regressions", {}).values())
         if revision is not None:
             report["performance_regression_passed"] = compared == len(expected) and not regressed
         if regressed:

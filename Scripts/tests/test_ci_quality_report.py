@@ -480,6 +480,65 @@ class QualityTests(unittest.TestCase):
                 self.assertTrue(report["errors"])
                 self.assertEqual(report["input_report_status"], "FAIL")
 
+    def test_kernel_worst_case_gate_recomputes_across_all_cases(self):
+        value = self.performance()
+        source = value["sources"].pop("alpha")
+        fixture = "Verify/ci/benchmarks/fenwick.cpp"
+        self.write(fixture, "// benchmark\n")
+        source["harness_sha256"] = self.hash(fixture)
+        value["sources"]["fenwick"] = source
+        value.update(regression_policy="library_worst_case", performance_regression_passed=True,
+                     compared_cases=2, expected_cases=2)
+        template = value["results"][0]
+        value["results"] = []
+        groups = {"64:0": {"base": [100_000] * 3, "current": [800_000] * 3},
+                  "128:0": {"base": [1_000_000] * 3, "current": [900_000] * 3}}
+        for key, samples in groups.items():
+            row = dict(template, id="fenwick", size=int(key.split(":")[0]),
+                       pattern=quality.ci_benchmark.SCENARIOS["fenwick"][0], pattern_id=0,
+                       samples_ns=samples, median_ns={role: times[0] for role, times in samples.items()},
+                       current_over_base=samples["current"][0] / samples["base"][0],
+                       performance_regression=quality.performance_regression.evaluate("kernel_elapsed_ns", samples))
+            value["results"].append(row)
+        value["worst_case_regressions"] = {
+            "fenwick": quality.performance_regression.evaluate_worst("kernel_elapsed_ns", groups)}
+        report = self.aggregate(value)
+        self.assertFalse(report["errors"])
+        self.assertEqual(self.category(report, "performance")["status"], "PASS")
+        self.assertIn("参考値", quality.markdown(report))
+        self.assertIn("基準の最悪ケース", quality.markdown(report))
+        value["worst_case_regressions"]["fenwick"]["baseline_case"] = "64:0"
+        self.assertTrue(self.aggregate(value)["errors"])
+
+    def test_whole_worst_case_gate_accepts_slowest_case_switch(self):
+        value = self.all_performance()
+        value.update(base_revision="a" * 40, performance_regression_passed=True,
+                     performance_regression_counts={"PASS": 1}, regression_policy="library_worst_case")
+        row, = value["results"]
+        row.update(baseline_sources={"source_hashes": {self.library: "a" * 64},
+                                     "resolved_paths": {self.library: self.library}},
+                   baseline_comparison="MEASURED", baseline_build={"status": "PASS"},
+                   baseline_driver={"kind": "current", "path": self.driver,
+                                    "sha256": row["driver_sha256"], "same_as_current": True})
+        groups = {}
+        for case, baseline, current in zip(row["cases"], (1_000_000, 100_000), (800_000, 900_000)):
+            samples = {"base": [baseline] * 3, "current": [current] * 3}
+            medians = {"base": baseline, "current": current}
+            groups[case["name"]] = samples
+            case.update(samples_ns=samples, median_ns=medians, cpu_samples_ns=samples, cpu_median_ns=medians,
+                        current_over_base=current / baseline, comparison="MEASURED",
+                        performance_regression=quality.performance_regression.evaluate("child_cpu_ns", samples))
+        row["worst_case_regression"] = quality.performance_regression.evaluate_worst("child_cpu_ns", groups)
+        report = self.aggregate(value)
+        self.assertFalse(report["errors"])
+        data = self.category(report, "performance")
+        self.assertEqual(data["status"], "PASS")
+        self.assertEqual(data["evidence"][1]["performance_regression"]["status"], "FAIL")
+        self.assertEqual(row["worst_case_regression"]["baseline_case"], "example_00")
+        self.assertEqual(row["worst_case_regression"]["observed_case"], "max_random_00")
+        row["worst_case_confirmation"] = {row["cases"][0]["name"]: deepcopy(groups[row["cases"][0]["name"]])}
+        self.assertTrue(self.aggregate(value)["errors"])
+
     def test_whole_uses_cpu_baseline_and_preserves_comparison_unavailable(self):
         value = self.all_performance()
         value.update(status="FAIL", base_revision="a" * 40, performance_regression_passed=False,
