@@ -62,7 +62,7 @@ Library Checkerの提出コードはmainと入出力も含めてCodex、Claude�
 
 ## 開発支援
 
-実装・最適化・検証・ドキュメントの整備に、Codex（OpenAI）とClaude（Anthropic）を利用しています。
+実装・最適化・検証・ドキュメントの整備にCodexとClaudeを利用しています。
 
 ## License
 
