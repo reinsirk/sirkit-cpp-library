@@ -2,22 +2,139 @@
 
 [実装](../Math/Eratosthenes.cpp)・[完全な使用例](../Examples/eratosthenes_example.cpp)
 
+## API
+
+### PrimeSieve::PrimeSieve
+
+```text
+explicit PrimeSieve(std::uint64_t limit = 0);
+PrimeSieve(const PrimeSieve&);
+PrimeSieve(PrimeSieve&& other) noexcept;
+```
+
+上限以下の素数表を構築する。
+
+**制約:** 共通の型・入力条件を満たすこと。
+
+**計算量:** 上限NにO(N log log(N+2))時間・O(N) bit保持。
+
+### PrimeSieve::operator=
+
+```text
+PrimeSieve& operator=(const PrimeSieve& other);
+PrimeSieve& operator=(PrimeSieve&& other) noexcept;
+```
+
+コピーまたは移動で内容を置き換え、自身への参照を返します。
+
+**制約:** 共通の型・入力条件を満たすこと。
+
+**計算量:** コピーはO(N/64+1)、移動は旧領域の解放を含む。
+
+### PrimeSieve::is_prime
+
+```text
+bool is_prime(std::uint64_t n) const;
+```
+
+素数ならtrueを返します。
+
+**制約:** 0<=n<=limit()。
+
+**計算量:** O(1)。
+
+### PrimeSieve::limit
+
+```text
+std::uint64_t limit() const noexcept;
+```
+
+篩の上限を返します。
+
+**制約:** なし。
+
+**計算量:** O(1)。
+
+### PrimeSieve::prime_count
+
+```text
+std::uint64_t prime_count() const noexcept;
+```
+
+上限以下の素数の個数を返します。
+
+**制約:** 共通の型・入力条件を満たすこと。
+
+**計算量:** O(N/64+1)。
+
+### PrimeSieve::primes
+
+```text
+std::vector<std::uint64_t> primes() const;
+```
+
+昇順の素数列を返します。
+
+**制約:** 共通の型・入力条件を満たすこと。
+
+**計算量:** P個の素数にO(N/64+P+1)時間・O(P)返却領域。
+
+### PrimeSieve::append_to
+
+```text
+[[gnu::always_inline]] #endif void append_to(std::vector<std::uint64_t>& ans) const;
+```
+
+素数列を昇順に出力先vectorへ追記します。
+
+**制約:** 共通の型・入力条件を満たすこと。
+
+**計算量:** O(N/64+P+1)時間・出力領域。
+
+### PrimeSieve::for_each_prime
+
+```text
+template <class Function> void for_each_prime(Function&& function) const;
+```
+
+各素数を昇順に`f(prime)`へ渡す。列挙用vectorを作らない。
+
+**制約:** callback中に同じ表を変更・移動・破棄しない。
+
+**計算量:** O(N/64+P+1)時間とcallback費用。
+
+### PrimeSieve::for_each_prime_stride
+
+```text
+template <class Function> void for_each_prime_stride(std::uint64_t first, std::uint64_t step, Function&& function) const;
+```
+
+番号`first, first+step, ...`の素数だけを渡す。`step>0`、該当番号がなければ呼ばない。
+
+**制約:** step>0。callback中に同じ表を変更・移動・破棄しない。
+
+**計算量:** 最悪O(N/64+P+1)時間とcallback費用。
+
+### eratosthenes
+
+```text
+void eratosthenes(std::uint64_t limit, std::vector<std::uint64_t>& ans);
+std::vector<std::uint64_t> eratosthenes(std::uint64_t limit);
+```
+
+素数列を返す／既存列へ追記する。
+
+**制約:** 共通の型・入力条件を満たすこと。
+
+**計算量:** 構築と列挙の費用。
+
+
 `PrimeSieve(limit)`で`[0, limit]`の素数表を作ります。判定を繰り返す場合は表を保持し、列挙だけなら`eratosthenes(limit)`で素数列を取得できます。
 
 ## API
 
 上限・素数・素数番号は`std::uint64_t`です。素数番号は`2`を0番目とする昇順の添字です。
 
-| 呼び出し | 動作 |
-| --- | --- |
-| `PrimeSieve(limit=0)` | 上限以下の素数表を構築する。 |
-| `limit()` / `is_prime(n)` | 上限／`0<=n<=limit`の素数判定を返す。 |
-| `prime_count()` | 上限以下の素数の個数を返す。 |
-| `primes()` | 昇順の`std::vector<std::uint64_t>`を返す。 |
-| `append_to(result)` | 既存のvectorの末尾へ素数列を追加する。 |
-| `for_each_prime(f)` | 各素数を昇順に`f(prime)`へ渡す。列挙用vectorを作らない。 |
-| `for_each_prime_stride(first, step, f)` | 番号`first, first+step, ...`の素数だけを渡す。`step>0`、該当番号がなければ呼ばない。 |
-| `eratosthenes(limit)` / `(limit, result)` | 素数列を返す／既存列へ追記する。 |
 
 ```cpp
 PrimeSieve sieve(30);

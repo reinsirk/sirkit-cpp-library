@@ -23,6 +23,12 @@ template<class T>struct LinearSystemResult {
 #ifndef SIRKIT_GAUSSIAN_DETAIL_DEFINED
 #define SIRKIT_GAUSSIAN_DETAIL_DEFINED
 namespace reinsirk::detail {
+inline std::size_t inverse_augmented_width(std::size_t n) {
+    if (n > std::numeric_limits<std::size_t>::max() / 2)
+        throw std::length_error("MatrixInverse: dimensions overflow");
+    return n * 2;
+}
+
 template<class T>
 GaussianEliminationResult<T> field_eliminate(Matrix<T> matrix,std::size_t pivot_end,bool reduced) {
     static_assert(!std::is_integral_v<T>,"Gaussian elimination requires an exact field type, not an integer type");
@@ -84,8 +90,7 @@ template<class T>std::optional<Matrix<T>> MatrixInverse(const Matrix<T>& matrix)
     if(matrix.rows()!=matrix.cols())throw std::invalid_argument("MatrixInverse: non-square");
 #endif
     const auto n=matrix.rows();
-    if(n>std::numeric_limits<std::size_t>::max()/2)throw std::length_error("MatrixInverse: dimensions overflow");
-    Matrix<T> augmented(n,n*2);
+    Matrix<T> augmented(n,reinsirk::detail::inverse_augmented_width(n));
     for(std::size_t i=0;i<n;++i){auto row=augmented.row(i);const auto source=matrix.row(i);std::copy(source.begin(),source.end(),row.begin());row[n+i]=T{1};}
     auto elimination=reinsirk::detail::field_eliminate(std::move(augmented),n,true);
     if(elimination.rank()!=n)return std::nullopt;

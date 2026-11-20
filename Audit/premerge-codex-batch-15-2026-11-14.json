@@ -1,0 +1,496 @@
+{
+  "format": 1,
+  "date": "2026-11-14",
+  "stage": "codex",
+  "status": "complete",
+  "scope": "Current-source static review + independent/official sample validation + whole-program measurement; same-source control is not a speedup claim",
+  "entries": [
+    {
+      "id": "rollback_weighted_union_find",
+      "source_sha256": "36ab1dcfc63c8c4a5a5b77238695e81913233a4fe05f430411df01c896b80e53",
+      "input_source_sha256": "36ab1dcfc63c8c4a5a5b77238695e81913233a4fe05f430411df01c896b80e53",
+      "decision": {
+        "decision": "unchanged_no_new_candidate",
+        "current_review_reason": "modint重みとtry_diffのoptionalで矛盾/非連結を区別。constrain向き(v,u)と必要な重み加算順、narrow経路と通常型を保つ。",
+        "historical_candidate_decisions": []
+      },
+      "compiler": {
+        "path": "/usr/bin/g++",
+        "version": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0"
+      },
+      "flags_and_gcc_pragmas": [
+        "#pragma GCC optimize(\"O3\")"
+      ],
+      "timing_definition": "child process CPU time and wall time. Full process includes startup, main, I/O, library and teardown. Input generation/hash/reference checks excluded. No body-only speed claim.",
+      "same_source_control": true,
+      "measurement_record_sha256": "2b97f4e9b5397518b006b6ec31e4c8f0258e137562ac31bbb1f39d268c9b1e18",
+      "official_sample_count": 2,
+      "profiles": [
+        {
+          "profile": "small",
+          "input_sha256": "28c69aba8cdf54bf8179eeb1eec6ece560b6f07ba6a252ba237342ec195dee8f",
+          "validation": "independent_expected_and_baseline_output",
+          "expected_output_sha256": "74934628a361be625dc72984a01f1a77f5a2a8d9afd1354ea07baee53b2f0ea5",
+          "median_cpu_seconds": {
+            "baseline": 0.0008180000000015397,
+            "current": 0.0008290000000004127
+          },
+          "measured_trials": 5,
+          "current_over_baseline": 1.0134474327614331,
+          "ratio_is_speedup_claim": false
+        },
+        {
+          "profile": "random",
+          "input_sha256": "61d00426f24a90c9a2dc8c3fc4577a2fcef305fd94d17f42dded488cf966e355",
+          "validation": "baseline_output_equality_only",
+          "expected_output_sha256": "d3f329f3a8674673390441c0a6829f5a8e63b104c6792157d2a0ad5d18b2845e",
+          "median_cpu_seconds": {
+            "baseline": 0.006984000000000101,
+            "current": 0.007211000000006074
+          },
+          "measured_trials": 5,
+          "current_over_baseline": 1.0325028636892855,
+          "ratio_is_speedup_claim": false
+        },
+        {
+          "profile": "degenerate",
+          "input_sha256": "895b508f837dc48da9e2a9a09c0e366676ef615a9ae061316b741a1c8f0053b5",
+          "validation": "baseline_output_equality_only",
+          "expected_output_sha256": "be8c7e4aededcfa1ee13681765360e6c6889c6767c71491f5b7e4f342749b39c",
+          "median_cpu_seconds": {
+            "baseline": 0.003808000000002032,
+            "current": 0.0038390000000045887
+          },
+          "measured_trials": 5,
+          "current_over_baseline": 1.0081407563031881,
+          "ratio_is_speedup_claim": false
+        }
+      ]
+    },
+    {
+      "id": "rollback_weighted_union_find_rollback",
+      "source_sha256": "b2edeb19e98dd6a33b5b962a794e07358912576dcb5b01da8907b8949965b3ce",
+      "input_source_sha256": "b2edeb19e98dd6a33b5b962a794e07358912576dcb5b01da8907b8949965b3ce",
+      "decision": {
+        "decision": "unchanged_no_new_candidate",
+        "current_review_reason": "queryにrollbackを作らず、子のないuniteを省略する改善を適用済み。false uniteも1履歴としてstate保存し、実測で残ったunion-first分岐順を維持。",
+        "historical_candidate_decisions": [
+          {
+            "record": "Audit/optimization-fable-batch-05-2026-11-13.json",
+            "decision": "adopt",
+            "candidate_reason": "照会ノード(type1)は状態を変えないのでexitフレームとrollbackが不要。子のないuniteノードは誰にも観測されないので実行自体が不要。random入力では葉が多く、unite・履歴push・rollbackとスタック往復を減らせる見込み（未測定）。",
+            "decision_reason": "queryはconst/初期snapshot0不変、false uniteも1履歴のため非葉uniteのみstate保存/rollbackへ。原案はGCCline小回帰で退け、元のunion-first分岐順を保つ同論理版を採用。独立295入力/query親深鎖/line/star/root-only/履歴probeと最終生成CI通過、両compilerで非回帰、random/star改善。新mainもO3維持。"
+          }
+        ]
+      },
+      "compiler": {
+        "path": "/usr/bin/g++",
+        "version": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0"
+      },
+      "flags_and_gcc_pragmas": [
+        "#pragma GCC optimize(\"O3\")"
+      ],
+      "timing_definition": "child process CPU time and wall time. Full process includes startup, main, I/O, library and teardown. Input generation/hash/reference checks excluded. No body-only speed claim.",
+      "same_source_control": true,
+      "measurement_record_sha256": "52c1977b70825513f42c05a1af8705757294fb437bb1f9238b84427963149344",
+      "official_sample_count": 1,
+      "profiles": [
+        {
+          "profile": "small",
+          "input_sha256": "154abccc904e5f5e388e2c6a659f754cc5c8cd56d463b56f85f55fb7f64ec8c6",
+          "validation": "independent_expected_and_baseline_output",
+          "expected_output_sha256": "4e71b6b008b3b05a4682ad8e2d52961afa5691f40f4ebdc1f5caa9ae1ad602d1",
+          "median_cpu_seconds": {
+            "baseline": 0.000824000000000602,
+            "current": 0.0008299999999996643
+          },
+          "measured_trials": 5,
+          "current_over_baseline": 1.007281553396915,
+          "ratio_is_speedup_claim": false
+        },
+        {
+          "profile": "random",
+          "input_sha256": "05d1af9ebbdef8fc779511cc030a5ef26ff0edb88d5dd0f50f73ab7ee57180b0",
+          "validation": "baseline_output_equality_only",
+          "expected_output_sha256": "a34d9c140555ab59b65f005f70b408da1f35ccc41bfa7ad5af3f2b474cbd8f95",
+          "median_cpu_seconds": {
+            "baseline": 0.004881999999998499,
+            "current": 0.004950999999994821
+          },
+          "measured_trials": 5,
+          "current_over_baseline": 1.0141335518222743,
+          "ratio_is_speedup_claim": false
+        },
+        {
+          "profile": "degenerate",
+          "input_sha256": "533ff1321ba1eacc5b3e206df7fc73a3843232ef266e938d17399092414f881c",
+          "validation": "baseline_output_equality_only",
+          "expected_output_sha256": "998eee6e221ef530c6af2241d6aea0ef23aa421b8aaf37f7fd6d38e3e0b129eb",
+          "median_cpu_seconds": {
+            "baseline": 0.004890999999993539,
+            "current": 0.00495000000000001
+          },
+          "measured_trials": 5,
+          "current_over_baseline": 1.0120629728085357,
+          "ratio_is_speedup_claim": false
+        }
+      ]
+    },
+    {
+      "id": "zeta_and_full",
+      "source_sha256": "a65a3c9482ded41003e581207cbf5a5a2e7a0ea0f431186725c63cc5427f487b",
+      "input_source_sha256": "a65a3c9482ded41003e581207cbf5a5a2e7a0ea0f431186725c63cc5427f487b",
+      "decision": {
+        "decision": "unchanged_no_new_candidate",
+        "current_review_reason": "VerifyMod998のuint32値を直接読み、2入力をmove渡しする。Superset2段融合は旧GCCで約4〜10%回帰のため再提案せず、必要なmod条件減算を維持。",
+        "historical_candidate_decisions": [
+          {
+            "record": "Audit/optimization-fable-batch-07-2026-11-13.json",
+            "decision": "adopt",
+            "candidate_reason": "main が lvalue を値渡ししており、以後使わない a, b を n 要素ずつ2本、確保してコピーしている。API は rvalue の領域移譲を明記している。OR-as-AND は次の候補に含めた。効果は未測定で、小さい見込み。",
+            "decision_reason": "使用済み入力vectorをmoveしてコピー2本を除去。128構成独立照合と生成版32構成PASS。最大random/zero全条件で全体短縮、RSS約8MiB減。小nの起動支配の数us差は別記。"
+          },
+          {
+            "record": "Audit/optimization-fable-batch-07-2026-11-13.json",
+            "decision": "reject",
+            "candidate_reason": "superset でも a+=b, c+=d, a+=c, b+=d の順にすれば各要素への演算列が1段ずつの場合と同じになり、2^20 でメモリ走査がおよそ半分になる。Subset 限定が過去の回帰計測に基づくなら、この案は取り下げる。未測定。Zeta_Mebius.cpp 側は該当箇所が同じ形であることを確認してから適用する。",
+            "decision_reason": "過去のSuperset融合回帰根拠に加え現候補でも限定交互測定し、GCC15.2で4096往復/AND-square約9〜10%、2^20約4〜5%回帰。Subsetは機械語不変、419万独立照合PASSでも一律改善条件を満たさない。過去時間と現在の別バイナリ測定を区別。"
+          }
+        ]
+      },
+      "compiler": {
+        "path": "/usr/bin/g++",
+        "version": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0"
+      },
+      "flags_and_gcc_pragmas": [],
+      "timing_definition": "child process CPU time and wall time. Full process includes startup, main, I/O, library and teardown. Input generation/hash/reference checks excluded. No body-only speed claim.",
+      "same_source_control": true,
+      "measurement_record_sha256": "1d86df2a2aa53885d13f9301231785e940f0ec60c1644f2e008c3dd91eb82b3f",
+      "official_sample_count": 1,
+      "profiles": [
+        {
+          "profile": "random",
+          "input_sha256": "548e36bfc0034721334f3341a39e0ddfc487993a60c35df728a85769b23646b0",
+          "validation": "baseline_output_equality_only",
+          "expected_output_sha256": "86ba4a7c802153e12d5b40fac674231f002671b1fc70b14108999cf1d32399a3",
+          "median_cpu_seconds": {
+            "baseline": 0.01249799999999901,
+            "current": 0.012343000000001325
+          },
+          "measured_trials": 5,
+          "current_over_baseline": 0.9875980156826935,
+          "ratio_is_speedup_claim": false
+        },
+        {
+          "profile": "zero",
+          "input_sha256": "52fbbf70c0cca32e100949cb02e85db552ff5e083641f1e0a880708180eb4665",
+          "validation": "baseline_output_equality_only",
+          "expected_output_sha256": "016acd384b7eb37620e05882b8893939c37251fddffec41f36771fe2698fe268",
+          "median_cpu_seconds": {
+            "baseline": 0.006827000000008354,
+            "current": 0.006846000000000352
+          },
+          "measured_trials": 5,
+          "current_over_baseline": 1.0027830672318696,
+          "ratio_is_speedup_claim": false
+        }
+      ]
+    },
+    {
+      "id": "zeta_gcd_conv_full",
+      "source_sha256": "1320a4f1bcb08e9380ef52d2d5a383c38b5f0d294e9e647d72e4c1ffe1cc04c1",
+      "input_source_sha256": "1320a4f1bcb08e9380ef52d2d5a383c38b5f0d294e9e647d72e4c1ffe1cc04c1",
+      "decision": {
+        "decision": "unchanged_no_new_candidate",
+        "current_review_reason": "a[0]=b[0]=0、IntegerSieveを1回用意してmove渡し。素数stride伝播の展開と0項省略を維持し、符号なしmod演算の中間uint64を保つ。",
+        "historical_candidate_decisions": [
+          {
+            "record": "Audit/optimization-fable-batch-07-2026-11-13.json",
+            "decision": "adopt",
+            "candidate_reason": "main が lvalue を値渡ししており、以後使わない a, b を n 要素ずつ2本、確保してコピーしている。API は rvalue の領域移譲を明記している。OR-as-AND は次の候補に含めた。効果は未測定で、小さい見込み。",
+            "decision_reason": "使用済み入力vectorをmoveしてコピー2本を除去。128構成独立照合と生成版32構成PASS。最大random/zero全条件で全体短縮、RSS約8MiB減。小nの起動支配の数us差は別記。"
+          }
+        ]
+      },
+      "compiler": {
+        "path": "/usr/bin/g++",
+        "version": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0"
+      },
+      "flags_and_gcc_pragmas": [],
+      "timing_definition": "child process CPU time and wall time. Full process includes startup, main, I/O, library and teardown. Input generation/hash/reference checks excluded. No body-only speed claim.",
+      "same_source_control": true,
+      "measurement_record_sha256": "38e7c8b7d29f2d001b29725dba237f7d46397d3dce52c8338a4638be0acfb9ff",
+      "official_sample_count": 1,
+      "profiles": [
+        {
+          "profile": "random",
+          "input_sha256": "f03bbd4041f4e994af87bc6a6692af420f08b386513b554d9e305de0df21b124",
+          "validation": "baseline_output_equality_only",
+          "expected_output_sha256": "25bcf4d59235ee5c88a986651a8983cd5a55236a87632f29acfc8e6e874e52ed",
+          "median_cpu_seconds": {
+            "baseline": 0.005189999999991812,
+            "current": 0.005232999999985388
+          },
+          "measured_trials": 5,
+          "current_over_baseline": 1.0082851637752686,
+          "ratio_is_speedup_claim": false
+        },
+        {
+          "profile": "zero",
+          "input_sha256": "4d473737806e671dff7f842d5dad53b1a515ff3f1cbdeed53887c5b160f47e5c",
+          "validation": "baseline_output_equality_only",
+          "expected_output_sha256": "964d2aa2d62e58054801c8850f3fb2a7f658287d7acdd0ea7fe9912ce18cbf3f",
+          "median_cpu_seconds": {
+            "baseline": 0.0029629999999976064,
+            "current": 0.0029500000000073356
+          },
+          "measured_trials": 5,
+          "current_over_baseline": 0.9956125548463445,
+          "ratio_is_speedup_claim": false
+        }
+      ]
+    },
+    {
+      "id": "zeta_lcm_conv_full",
+      "source_sha256": "a030118cc7da3396a78fa46f13f713880334f2c1d91688705da4c1723efcd38d",
+      "input_source_sha256": "a030118cc7da3396a78fa46f13f713880334f2c1d91688705da4c1723efcd38d",
+      "decision": {
+        "decision": "unchanged_no_new_candidate",
+        "current_review_reason": "a[0]=b[0]=0、IntegerSieveを1回用意してmove渡し。素数stride伝播の展開と0項省略を維持し、符号なしmod演算の中間uint64を保つ。",
+        "historical_candidate_decisions": [
+          {
+            "record": "Audit/optimization-fable-batch-07-2026-11-13.json",
+            "decision": "adopt",
+            "candidate_reason": "main が lvalue を値渡ししており、以後使わない a, b を n 要素ずつ2本、確保してコピーしている。API は rvalue の領域移譲を明記している。OR-as-AND は次の候補に含めた。効果は未測定で、小さい見込み。",
+            "decision_reason": "使用済み入力vectorをmoveしてコピー2本を除去。128構成独立照合と生成版32構成PASS。最大random/zero全条件で全体短縮、RSS約8MiB減。小nの起動支配の数us差は別記。"
+          }
+        ]
+      },
+      "compiler": {
+        "path": "/usr/bin/g++",
+        "version": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0"
+      },
+      "flags_and_gcc_pragmas": [],
+      "timing_definition": "child process CPU time and wall time. Full process includes startup, main, I/O, library and teardown. Input generation/hash/reference checks excluded. No body-only speed claim.",
+      "same_source_control": true,
+      "measurement_record_sha256": "04c2dec6f813e797debf6d7bec9e7a7369789094feb0d8bd1073da15ae5ce00e",
+      "official_sample_count": 1,
+      "profiles": [
+        {
+          "profile": "random",
+          "input_sha256": "11ae0d6fd93e9ea1a2a91dda74efca1bb0abc1a6db643d041bd70f2ae869ba09",
+          "validation": "baseline_output_equality_only",
+          "expected_output_sha256": "ca53e4f4caf42d4be0048fa47929b599f8e6aff251ca77039616566c1636ed3a",
+          "median_cpu_seconds": {
+            "baseline": 0.005452000000000012,
+            "current": 0.005481000000001401
+          },
+          "measured_trials": 5,
+          "current_over_baseline": 1.005319148936425,
+          "ratio_is_speedup_claim": false
+        },
+        {
+          "profile": "zero",
+          "input_sha256": "4d473737806e671dff7f842d5dad53b1a515ff3f1cbdeed53887c5b160f47e5c",
+          "validation": "baseline_output_equality_only",
+          "expected_output_sha256": "964d2aa2d62e58054801c8850f3fb2a7f658287d7acdd0ea7fe9912ce18cbf3f",
+          "median_cpu_seconds": {
+            "baseline": 0.003250999999999671,
+            "current": 0.0032080000000034303
+          },
+          "measured_trials": 5,
+          "current_over_baseline": 0.9867733005240711,
+          "ratio_is_speedup_claim": false
+        }
+      ]
+    },
+    {
+      "id": "zeta_or_as_and_full",
+      "source_sha256": "8efd13054f3fa03f6e51449f919682d85d70458b4ad6c58fb352ddc660015f15",
+      "input_source_sha256": "8efd13054f3fa03f6e51449f919682d85d70458b4ad6c58fb352ddc660015f15",
+      "decision": {
+        "decision": "unchanged_no_new_candidate",
+        "current_review_reason": "添字を逆順に読み/出力するOR経由AND変換とmove渡しは適用済み。全配列reverse3回やlvaluecopyを再導入せず、演算順保持の変換を維持。",
+        "historical_candidate_decisions": [
+          {
+            "record": "Audit/optimization-fable-batch-07-2026-11-13.json",
+            "decision": "adopt",
+            "candidate_reason": "std::reverse を3回、n 要素全体に掛けているが、逆順の添字で読み書きすれば不要になる。OR 畳み込み経由で AND を検証する意図は変わらない。move も併用する。未測定。",
+            "decision_reason": "OR as ANDの添字反転を入力/outputの添字へ移す素直な形式変換。moveと合わせ最大全条件で約9〜11%短縮。reverse除去単独は乱数でほぼ同等〜1.8%・zeroで1.8〜6.2%のため効果は加算しない。"
+          }
+        ]
+      },
+      "compiler": {
+        "path": "/usr/bin/g++",
+        "version": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0"
+      },
+      "flags_and_gcc_pragmas": [],
+      "timing_definition": "child process CPU time and wall time. Full process includes startup, main, I/O, library and teardown. Input generation/hash/reference checks excluded. No body-only speed claim.",
+      "same_source_control": true,
+      "measurement_record_sha256": "f57ccf5932e7643f9c7135fd90b23d692efbc510fed4961b701aed4de2c5e6ff",
+      "official_sample_count": 1,
+      "profiles": [
+        {
+          "profile": "random",
+          "input_sha256": "94c5880598c5ab3894049efac8551065079322d3631438714d23b2a2b91a9c95",
+          "validation": "baseline_output_equality_only",
+          "expected_output_sha256": "d283ae21c49ef9e3f6478168f7f88fef45d4d73eb9fbc5416c90f7d0782e5be6",
+          "median_cpu_seconds": {
+            "baseline": 0.01199000000000705,
+            "current": 0.012106000000005501
+          },
+          "measured_trials": 5,
+          "current_over_baseline": 1.0096747289406491,
+          "ratio_is_speedup_claim": false
+        },
+        {
+          "profile": "zero",
+          "input_sha256": "52fbbf70c0cca32e100949cb02e85db552ff5e083641f1e0a880708180eb4665",
+          "validation": "baseline_output_equality_only",
+          "expected_output_sha256": "016acd384b7eb37620e05882b8893939c37251fddffec41f36771fe2698fe268",
+          "median_cpu_seconds": {
+            "baseline": 0.006367000000004452,
+            "current": 0.006443000000001753
+          },
+          "measured_trials": 5,
+          "current_over_baseline": 1.011936547824289,
+          "ratio_is_speedup_claim": false
+        }
+      ]
+    },
+    {
+      "id": "zeta_sieve_factorize_full",
+      "source_sha256": "8e7d997056d70b4d211d869fcba44ec90357597127cf2d1bffd9a11736884b8c",
+      "input_source_sha256": "8e7d997056d70b4d211d869fcba44ec90357597127cf2d1bffd9a11736884b8c",
+      "decision": {
+        "decision": "unchanged_no_new_candidate",
+        "current_review_reason": "sieveのprime_factorization公開APIを使い素因数の指数を集計するAtCoder main。map返しを消した別の個数専用アルゴリズムへは置換せず、奇数SPF経路を維持。",
+        "historical_candidate_decisions": []
+      },
+      "compiler": {
+        "path": "/usr/bin/g++",
+        "version": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0"
+      },
+      "flags_and_gcc_pragmas": [],
+      "timing_definition": "child process CPU time and wall time. Full process includes startup, main, I/O, library and teardown. Input generation/hash/reference checks excluded. No body-only speed claim.",
+      "same_source_control": true,
+      "measurement_record_sha256": "bb1f1e4e84e7c7c11e657fbc4d74b52a35bc815323e459550ac65cbf985d59b5",
+      "official_sample_count": 5,
+      "profiles": [
+        {
+          "profile": "549755813888",
+          "input_sha256": "53cd97d20f9f56d9fb534f6c754a59ecf2f3d3e5273c4d461b955b727d2b0d1c",
+          "validation": "baseline_output_equality_only",
+          "expected_output_sha256": "aa67a169b0bba217aa0aa88a65346920c84c42447c36ba5f7ea65f422c1fe5d8",
+          "median_cpu_seconds": {
+            "baseline": 0.0031399999999894845,
+            "current": 0.003111000000005859
+          },
+          "measured_trials": 5,
+          "current_over_baseline": 0.990764331215375,
+          "ratio_is_speedup_claim": false
+        },
+        {
+          "profile": "1000000000000",
+          "input_sha256": "53194eca3a6a6d70f091a6036c69e80ff7ac1f14fabc1f7c403e7a127de51492",
+          "validation": "baseline_output_equality_only",
+          "expected_output_sha256": "aa67a169b0bba217aa0aa88a65346920c84c42447c36ba5f7ea65f422c1fe5d8",
+          "median_cpu_seconds": {
+            "baseline": 0.004047999999990282,
+            "current": 0.004059000000010471
+          },
+          "measured_trials": 5,
+          "current_over_baseline": 1.002717391309342,
+          "ratio_is_speedup_claim": false
+        },
+        {
+          "profile": "9999999967",
+          "input_sha256": "fbaea2a93653ab9eeba6079f47ae42f4005a26de141f86a7ef37337910cf2633",
+          "validation": "baseline_output_equality_only",
+          "expected_output_sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+          "median_cpu_seconds": {
+            "baseline": 0.0014540000000149433,
+            "current": 0.0014589999999916614
+          },
+          "measured_trials": 5,
+          "current_over_baseline": 1.003438789530032,
+          "ratio_is_speedup_claim": false
+        }
+      ]
+    },
+    {
+      "id": "zeta_sparse_gcd_full",
+      "source_sha256": "e2149468a8bf35b1ad892fee8559462cd3bd64ce5aae5ee9beecc339b286dd57",
+      "input_source_sha256": "e2149468a8bf35b1ad892fee8559462cd3bd64ce5aae5ee9beecc339b286dd57",
+      "decision": {
+        "decision": "unchanged_no_new_candidate",
+        "current_review_reason": "連続1..nの疎キーAPI検証はdense判定経路へ入り、sort/位置表は作らない。連続判定を無条件に消すと一般疎キー契約を失うため維持。",
+        "historical_candidate_decisions": []
+      },
+      "compiler": {
+        "path": "/usr/bin/g++",
+        "version": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0"
+      },
+      "flags_and_gcc_pragmas": [],
+      "timing_definition": "child process CPU time and wall time. Full process includes startup, main, I/O, library and teardown. Input generation/hash/reference checks excluded. No body-only speed claim.",
+      "same_source_control": true,
+      "measurement_record_sha256": "c0a660075122d128b77e31fd689e03748112d217caadd5aff6e2c2a95f4991e9",
+      "official_sample_count": 1,
+      "profiles": [
+        {
+          "profile": "random",
+          "input_sha256": "18e1926eed6d647e6486d5871fbffbdbcbfc0c027a24ba57c7c09398c5d85c62",
+          "validation": "baseline_output_equality_only",
+          "expected_output_sha256": "d80a3d0deb5b31f7c391f87e5738626b51f90e7c30adfc9036e791b53dd29047",
+          "median_cpu_seconds": {
+            "baseline": 0.005584999999992846,
+            "current": 0.00570399999999438
+          },
+          "measured_trials": 5,
+          "current_over_baseline": 1.021307072515969,
+          "ratio_is_speedup_claim": false
+        },
+        {
+          "profile": "zero",
+          "input_sha256": "4d473737806e671dff7f842d5dad53b1a515ff3f1cbdeed53887c5b160f47e5c",
+          "validation": "baseline_output_equality_only",
+          "expected_output_sha256": "964d2aa2d62e58054801c8850f3fb2a7f658287d7acdd0ea7fe9912ce18cbf3f",
+          "median_cpu_seconds": {
+            "baseline": 0.0034219999999915984,
+            "current": 0.0033999999999938524
+          },
+          "measured_trials": 5,
+          "current_over_baseline": 0.99357101110526,
+          "ratio_is_speedup_claim": false
+        }
+      ]
+    }
+  ],
+  "source_hashes": {
+    "DataStructure/rollback-union-findw.cpp": "38ac061e08952ac8fc2252e73616c54fb606913f75822232df426a748059d6bd",
+    "Math/Zeta_Mebius.cpp": "9555793c1661f1328a73447831ca4738d548dbd9cf878366df6302b5b433e70b",
+    "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab",
+    "Verify/current/drivers/rollback_weighted_union_find_persistent_main.cpp": "407f44b1a64acbd254bc9ad2f9b10ff1060eee8f1407af65917346e15955d944",
+    "Verify/current/drivers/rollback_weighted_union_find_potential_main.cpp": "3fb2181607a62ff3bac9232f1c3df2b0bb3b85a757d3e0a9c76dd6fb72a65b22",
+    "Verify/current/drivers/sieve_div_game_main.cpp": "6068e406edeaa0d203e95fa1d4203468c4542f454b71167429ca5915a6d33075",
+    "Verify/current/drivers/zeta_and_main.cpp": "aa2d5b6aef207c329e7e2d1bf915febf347ea44c6f3658d79e44f438d2198130",
+    "Verify/current/drivers/zeta_gcd_conv_main.cpp": "15e231633baeabcc4c24166d4529cb2afcc2531e8cc357606ec6197afb9b0dc2",
+    "Verify/current/drivers/zeta_lcm_conv_main.cpp": "8a54f48170f96f19bd6c3b9f13bde4624f91ed70a51d3ada6ba01e7d6f03a0af",
+    "Verify/current/drivers/zeta_or_as_and_main.cpp": "9b2d583470094c4fa7acf786884dd4c815734fad60669c769bd641f737e516b3",
+    "Verify/current/drivers/zeta_sparse_gcd_main.cpp": "eed32758016c4c82eaf6548a403749847a5a3a8df0ce41853ea9fa2fcce01fea",
+    "Verify/current/vendor/atcoder/internal_math.hpp": "487416d11ce878d7785559a02c84f094529e39fa5cc593d4c45e91fc7da53f56",
+    "Verify/current/vendor/atcoder/internal_type_traits.hpp": "52c1c0d56535043c2b8f2f776d534fd8e931cf92a511d697fb56649cd4935000",
+    "Verify/current/vendor/atcoder/modint.hpp": "aef131053e67300be6def657f1ef1eb1c80ef2c92ffc8220d7be0cccab583318",
+    "Verify/current/submissions/rollback_weighted_union_find.cpp": "36ab1dcfc63c8c4a5a5b77238695e81913233a4fe05f430411df01c896b80e53",
+    "Verify/current/submissions/rollback_weighted_union_find_rollback.cpp": "b2edeb19e98dd6a33b5b962a794e07358912576dcb5b01da8907b8949965b3ce",
+    "Verify/current/submissions/zeta_and_full.cpp": "a65a3c9482ded41003e581207cbf5a5a2e7a0ea0f431186725c63cc5427f487b",
+    "Verify/current/submissions/zeta_gcd_conv_full.cpp": "1320a4f1bcb08e9380ef52d2d5a383c38b5f0d294e9e647d72e4c1ffe1cc04c1",
+    "Verify/current/submissions/zeta_lcm_conv_full.cpp": "a030118cc7da3396a78fa46f13f713880334f2c1d91688705da4c1723efcd38d",
+    "Verify/current/submissions/zeta_or_as_and_full.cpp": "8efd13054f3fa03f6e51449f919682d85d70458b4ad6c58fb352ddc660015f15",
+    "Verify/current/submissions/zeta_sieve_factorize_full.cpp": "8e7d997056d70b4d211d869fcba44ec90357597127cf2d1bffd9a11736884b8c",
+    "Verify/current/submissions/zeta_sparse_gcd_full.cpp": "e2149468a8bf35b1ad892fee8559462cd3bd64ce5aae5ee9beecc339b286dd57"
+  },
+  "measurement_tools": "/tmp/sirkit-premerge-optimization-20261114/measurements",
+  "commit_or_push": false,
+  "online_status": "not_evaluated"
+}

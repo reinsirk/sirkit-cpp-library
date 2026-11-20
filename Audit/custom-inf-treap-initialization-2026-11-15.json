@@ -1,0 +1,76 @@
+{
+  "format": 1,
+  "date": "2026-11-15",
+  "status": "PASS",
+  "scope": "Treap custom-identity constructor compatibility correction after Fable review",
+  "source_sha256": {
+    "DataStructure/implicit_treap.cpp": "957220716c227d58cb0939d8682e2200fa4d337ba532457f1e49f69963cbd97a",
+    "DataStructure/dynamic-li-chao-tree.cpp": "2ff51f192307866d868a722dd33ebdccd061a0af772a60f711ba06d72ae25a0d",
+    "DataStructure/line-container-2d.cpp": "bfc1f6f6d49130db16d24be2e875956f2555aa41300afae3da1b2e20bd8bae94",
+    "Document/implicit_treap.md": "2d368e8de1dff5dd3cf1a61060d9b42733ee9a7457b9a13801d5b2407d1a9f18",
+    "Document/dynamic_li_chao.md": "eca0e2275eb54f3e1e485ebce4ef7b940405af3385464400ab07126881cd9053",
+    "Document/line_container_2d.md": "578a5352c027129604165941ee73e4fe856a77668dab1a0a852df263284ac3e4",
+    "Verify/current/tests/custom_inf_test.cpp": "4d5b2b997ef8ff90b3e2f9bf8dc7653b39038fc3a6937203bc7f03b24dbedb98",
+    "Scripts/tests/test_custom_inf_runtime.py": "0360523a4a5922bfab14499dbbaea9978ef5343fe4d0e7017a04d0c399090112"
+  },
+  "review_findings": {
+    "confirmed": "A non-template S identity constructor silently changed t({7}) from a one-element sequence into an empty sequence with identity=7.",
+    "qualified": "Fable also described t({}) as a formerly valid empty construction; GCC15.2 and Clang21 probes show the saved old implementation already rejected that expression as ambiguous. The final fix retains that unsupported status and documents t{} for an empty sequence.",
+    "additional_comparison_finding": "Adding initializer_list<S> would repair t({7}) and make t({}) empty, but also changes previously valid T{{}} from an empty sequence to a one-element zero sequence. This candidate was rejected after direct compiler comparison."
+  },
+  "final_change": {
+    "constructor": "template<class I> requires std::convertible_to<I,S>; explicit lazy_implicit_treap(I&& identity), forwarding into make_shared<const S>.",
+    "reason": "Braced argument lists cannot deduce I, so valid legacy vector/copy/move construction forms keep their previous overload selection. Parenthesized integer values still configure identity; int-to-int64 conversion remains allowed.",
+    "headers": "Added <concepts>; no initializer_list constructor remains.",
+    "documentation": "Header API list and Document distinguish t(1000)/t(values,1000) from legacy braced constructions; t{} is the clear empty form.",
+    "ownership": "The shared immutable identity and move/copy/swap behavior are unchanged."
+  },
+  "validation": {
+    "compiler_versions": [
+      "GCC 15.2.0 /usr/bin/g++",
+      "Clang21.1.8 /usr/bin/clang++-21 --gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15"
+    ],
+    "old_current_constructor_probes": 44,
+    "constructor_probe_result": "11 expressions x 2 versions x 2 compilers; all previously supported forms preserve size/elements and nonempty aggregate. The intentional default sentinel change 8e18 -> 2^60 is distinguished from constructor compatibility.",
+    "constructor_forms": [
+      "T{}",
+      "T({}) [old/current both ambiguous]",
+      "T{{}}",
+      "T({{}})",
+      "T({7})",
+      "T{{7}}",
+      "T({7,9})",
+      "T{{7,9}}",
+      "vector",
+      "copy braces",
+      "move braces"
+    ],
+    "independent_runtime_configurations": 8,
+    "independent_checks_per_configuration": 239416,
+    "runtime_cases": "Default/custom identity, generic aggregate Sum values, vector+identity, scalar int conversion, copy/move and noexcept, plus all prior min/segment/clamp independent checks.",
+    "related_test_executions": 50,
+    "related_test_scope": "All existing Treap tests in native checked GCC/Clang; independent custom-inf and key exhaustive/noncommutative tests across checked/skip and native/standard fallback.",
+    "instrumented_configurations": 4,
+    "instrumentation": "ASan+UBSan+float-cast-overflow checked GCC/Clang native+portable; LSan additionally rerun ptrace-free. All passed.",
+    "unittest_registration": "Scripts.tests.test_custom_inf_runtime: 4 tests PASS.",
+    "li_chao_comment_revision": "The final eight custom-inf configurations include the latest Li Chao comment-only revision, whose exact SHA is recorded above.",
+    "line2d_body": "No further body changes; its constructor/clamp independent tests remain included."
+  },
+  "performance": "No new timing claim for this overload-only correction. Initial default API benchmark results remain tied to their earlier source snapshots in the preceding audit.",
+  "related_audits": [
+    "Audit/custom-inf-validation-2026-11-15.json",
+    "Audit/lc2d-verify-custom-inf-2026-11-15.json",
+    "Audit/custom-inf-graph-ci-2026-11-15.json"
+  ],
+  "line2d_submission_correction": "The separate root-owned Line2D audit covers its main now specifying 2^62 for the Library Checker answer range. This audit does not transfer old online AC to changed source.",
+  "artifacts": {
+    "archive": "Audit/data/custom-inf-treap-initialization-20261115.zip",
+    "constructor_comparison": "constructor-comparison.json",
+    "rejected_candidate": "rejected-initializer-list/",
+    "runtime_results": "validation/results.json",
+    "sanitizer": "validation/sanitizer-ptrace-free.json",
+    "snapshot": "source-snapshot/",
+    "fix_patch": "constructor-fix.patch",
+    "archive_sha256": "4ff8ca349a6826ecab6a64f5392c777a4fb568bb14616aec337c0800c7369871"
+  }
+}

@@ -20,6 +20,8 @@
 // eratosthenes(limit, ans): limit以下の素数を昇順でansの末尾へ追加する。O(limit log log limit)。
 // eratosthenes(limit): limit以下の素数を昇順のvectorで返す。同じ計算量。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <array>
 #include <bit>
@@ -34,9 +36,12 @@
 #include <immintrin.h>
 #endif
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_PRIME_SIEVE_POPCOUNT_DEFINED
 #define SIRKIT_PRIME_SIEVE_POPCOUNT_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 #if (!defined(SIRKIT_DISABLE_SIMD)) && ((defined(__i386__)) || (defined(__x86_64__)))
 // 各bit位置で3個の値を足し、桁上がりと下位bitへ分ける。
 [[gnu::target("avx2"), gnu::always_inline]] inline void carry_save_avx2(
@@ -150,17 +155,33 @@ namespace reinsirk::detail {
 
 #ifndef SIRKIT_PRIME_SIEVE_PATTERN_DEFINED
 #define SIRKIT_PRIME_SIEVE_PATTERN_DEFINED
-namespace reinsirk::detail {
-inline constexpr auto sieve_pattern = [] {
-    std::array<std::uint64_t, 1155> values{};
-    for (std::size_t word = 0; word < values.size(); ++word)
-        for (unsigned bit = 0; bit < 64; ++bit) {
-            const auto n = (word * 64 + bit) * 2 + 1;
-            if (n % 3 != 0 && n % 5 != 0 && n % 7 != 0 && n % 11 != 0)
-                values[word] |= std::uint64_t{1} << bit;
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
+inline constexpr auto sieve_pattern = []() consteval {
+    constexpr std::size_t kPeriod = 3 * 5 * 7 * 11;
+    // 2周期を用意し、周期の境目をまたぐ64ビットも同じ方法で取り出す。
+    std::array<std::uint64_t, (2 * kPeriod + 63) / 64> period{};
+    for (std::size_t bit = 0; bit < kPeriod; ++bit) {
+        const auto n = 2 * bit + 1;
+        if (n % 3 != 0 && n % 5 != 0 && n % 7 != 0 && n % 11 != 0) {
+            period[bit / 64] |= std::uint64_t{1} << (bit % 64);
+            const auto next = bit + kPeriod;
+            period[next / 64] |= std::uint64_t{1} << (next % 64);
         }
+    }
+    std::array<std::uint64_t, kPeriod> values{};
+    for (std::size_t word = 0; word < values.size(); ++word) {
+        const auto bit = (64 * word) % kPeriod;
+        const auto offset = bit % 64;
+        const auto low = period[bit / 64] >> offset;
+        values[word] = offset == 0 ? low : low | (period[bit / 64 + 1] << (64 - offset));
+    }
     return values;
 }();
+inline std::size_t sieve_checked_capacity(std::uint64_t count, std::size_t maximum,
+                                          const char* error) {
+    if (count > maximum) throw std::length_error(error);
+    return static_cast<std::size_t>(count);
+}
 } // namespace reinsirk::detail
 #endif
 #ifndef SIRKIT_PRIME_SIEVE_DEFINED
@@ -172,7 +193,7 @@ public:
         if (limit < 128) {
             if (limit != 0) {
                 // 127以下の奇合成数は3・5・7・11のいずれかの倍数。
-                constexpr auto primes = (reinsirk::detail::sieve_pattern[0] |
+                constexpr auto primes = (/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::sieve_pattern[0] |
                     (std::uint64_t{1} << 1) | (std::uint64_t{1} << 2) |
                     (std::uint64_t{1} << 3) | (std::uint64_t{1} << 5)) & ~std::uint64_t{1};
                 const auto bits = static_cast<unsigned>((limit + 1) / 2);
@@ -181,14 +202,13 @@ public:
             return;
         }
         const std::uint64_t odds = limit / 2 + limit % 2;
-        const std::uint64_t words = odds / 64 + (odds % 64 != 0);
-        if (words > flags_.max_size())
-            throw std::length_error("PrimeSieve: limit exceeds capacity");
+        const auto words = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::sieve_checked_capacity(
+            odds / 64 + (odds % 64 != 0), flags_.max_size(), "PrimeSieve: limit exceeds capacity");
         // 周期パターンから直接構築し、同じ領域の二重初期化を避ける。
-        flags_.reserve(static_cast<std::size_t>(words));
-        const auto& pattern = reinsirk::detail::sieve_pattern;
-        constexpr auto period = reinsirk::detail::sieve_pattern.size();
-        auto remaining = static_cast<std::size_t>(words);
+        flags_.reserve(words);
+        const auto& pattern = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::sieve_pattern;
+        constexpr auto period = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::sieve_pattern.size();
+        auto remaining = words;
         while (remaining >= period) {
             flags_.insert(flags_.end(), pattern.begin(), pattern.end());
             remaining -= period;
@@ -230,7 +250,7 @@ public:
 #if !(defined(__AVX2__))
         if (limit_ >= 3969 && __builtin_cpu_supports("avx2")) [[unlikely]]
             return static_cast<std::uint64_t>(limit_ >= 2) +
-                   reinsirk::detail::popcount_words_avx2(flags_.data(), flags_.size());
+                   /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::popcount_words_avx2(flags_.data(), flags_.size());
 #endif
 #endif
         std::uint64_t count = limit_ >= 2;
@@ -242,10 +262,8 @@ public:
         std::vector<std::uint64_t> result;
         if (limit_ < 2) return result;
         if (limit_ >= 16) {
-            const auto count = prime_count();
-            if (count > result.max_size())
-                throw std::length_error("PrimeSieve::primes: capacity exceeded");
-            result.reserve(static_cast<std::size_t>(count));
+            result.reserve(/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::sieve_checked_capacity(
+                prime_count(), result.max_size(), "PrimeSieve::primes: capacity exceeded"));
         }
         append_to(result);
         return result;
@@ -534,3 +552,7 @@ inline std::vector<std::uint64_t> eratosthenes(std::uint64_t limit) {
     return PrimeSieve(limit).primes();
 }
 #endif
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1

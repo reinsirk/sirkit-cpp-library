@@ -24,6 +24,8 @@
 // 頂点数INT_MAX、各入次数UINT32_MAXの容量制限は常時検査する。
 // SIRKIT_DISABLE_SIMD: 専用SIMD処理とCPU判定を除く。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <array>
 #include <bit>
@@ -38,6 +40,9 @@
 #include <immintrin.h>
 #endif
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_UNWEIGHTED_GRAPH_DEFINED
 #define SIRKIT_UNWEIGHTED_GRAPH_DEFINED
 using Graph = std::vector<std::vector<int>>;
@@ -55,7 +60,7 @@ struct TopologicalResult {
 
 #ifndef SIRKIT_TOPOLOGICAL_READY_MASK_DEFINED
 #define SIRKIT_TOPOLOGICAL_READY_MASK_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 inline std::uint64_t TopologicalReadyMask(const std::uint32_t* degree) {
     std::uint64_t mask = 0;
     for (unsigned i = 0; i < 64; ++i)
@@ -155,22 +160,29 @@ inline std::uint32_t TopologicalInitializeFifo(const std::uint32_t* indegree, st
 
 #ifndef SIRKIT_TOPOLOGICAL_CORE_DEFINED
 #define SIRKIT_TOPOLOGICAL_CORE_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
+inline void CheckTopologicalVertexCount(std::size_t vertices) {
+    if (vertices > static_cast<std::size_t>(std::numeric_limits<int>::max()))
+        throw std::length_error("TopologicalSort: too many vertices");
+}
+
+inline void AddTopologicalDegree(std::uint32_t& degree) {
+    if (degree == std::numeric_limits<std::uint32_t>::max())
+        throw std::length_error("TopologicalSort: degree overflow");
+    ++degree;
+}
+
 template <bool Lexicographical, bool Details, bool Bulk = false>
 inline TopologicalResult TopologicalRun(const Graph& graph) {
     const auto n = graph.size();
-    if (n > static_cast<std::size_t>(std::numeric_limits<int>::max()))
-        throw std::length_error("TopologicalSort: too many vertices");
+    CheckTopologicalVertexCount(n);
     std::vector<std::uint32_t> indegree(n);
     for (const auto& edges : graph) for (int to : edges) {
 #ifndef SKIP_RUNTIME_CHECKS
         if (to < 0 || static_cast<std::size_t>(to) >= n)
             throw std::out_of_range("TopologicalSort: invalid vertex");
 #endif
-        auto& degree = indegree[static_cast<std::size_t>(to)];
-        if (degree == std::numeric_limits<std::uint32_t>::max())
-            throw std::length_error("TopologicalSort: degree overflow");
-        ++degree;
+        AddTopologicalDegree(indegree[static_cast<std::size_t>(to)]);
     }
     TopologicalResult result;
     result.order.reserve(n);
@@ -364,27 +376,31 @@ inline TopologicalResult TopologicalRun(const Graph& graph) {
 #define SIRKIT_TOPOLOGICAL_SORT_DEFINED
 inline std::vector<int> TopologicalSort(const Graph& graph) {
 #if !defined(SIRKIT_DISABLE_SIMD) && defined(__GNUC__) && !defined(__clang__) && (defined(__x86_64__) || defined(__i386__))
-    if (graph.size() >= 4096) return reinsirk::detail::TopologicalRun<false, false, true>(graph).order;
+    if (graph.size() >= 4096) return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::TopologicalRun<false, false, true>(graph).order;
 #endif
-    return reinsirk::detail::TopologicalRun<false, false>(graph).order;
+    return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::TopologicalRun<false, false>(graph).order;
 }
 #endif
 #ifndef SIRKIT_TOPOLOGICAL_SORT_LEXICOGRAPHICAL_DEFINED
 #define SIRKIT_TOPOLOGICAL_SORT_LEXICOGRAPHICAL_DEFINED
 inline std::vector<int> TopologicalSortLexicographical(const Graph& graph) {
-    return reinsirk::detail::TopologicalRun<true, false>(graph).order;
+    return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::TopologicalRun<true, false>(graph).order;
 }
 #endif
 #ifndef SIRKIT_TOPOLOGICAL_DETAILS_DEFINED
 #define SIRKIT_TOPOLOGICAL_DETAILS_DEFINED
 inline TopologicalResult TopologicalSortDetails(const Graph& graph, bool lexicographical = false) {
-    return lexicographical ? reinsirk::detail::TopologicalRun<true, true>(graph)
-                           : reinsirk::detail::TopologicalRun<false, true>(graph);
+    return lexicographical ? /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::TopologicalRun<true, true>(graph)
+                           : /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::TopologicalRun<false, true>(graph);
 }
 inline bool IsDAG(const Graph& graph) {
     return TopologicalSort(graph).size() == graph.size();
 }
 #endif
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
 
 
 // Library: Graph/Topological_sort.cpp
@@ -411,6 +427,8 @@ inline bool IsDAG(const Graph& graph) {
 // 頂点数INT_MAX、各入次数UINT32_MAXの容量制限は常時検査する。
 // SIRKIT_DISABLE_SIMD: 専用SIMD処理とCPU判定を除く。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <array>
 #include <bit>
@@ -425,6 +443,9 @@ inline bool IsDAG(const Graph& graph) {
 #include <immintrin.h>
 #endif
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_UNWEIGHTED_GRAPH_DEFINED
 #define SIRKIT_UNWEIGHTED_GRAPH_DEFINED
 using Graph = std::vector<std::vector<int>>;
@@ -442,7 +463,7 @@ struct TopologicalResult {
 
 #ifndef SIRKIT_TOPOLOGICAL_READY_MASK_DEFINED
 #define SIRKIT_TOPOLOGICAL_READY_MASK_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 inline std::uint64_t TopologicalReadyMask(const std::uint32_t* degree) {
     std::uint64_t mask = 0;
     for (unsigned i = 0; i < 64; ++i)
@@ -542,22 +563,29 @@ inline std::uint32_t TopologicalInitializeFifo(const std::uint32_t* indegree, st
 
 #ifndef SIRKIT_TOPOLOGICAL_CORE_DEFINED
 #define SIRKIT_TOPOLOGICAL_CORE_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
+inline void CheckTopologicalVertexCount(std::size_t vertices) {
+    if (vertices > static_cast<std::size_t>(std::numeric_limits<int>::max()))
+        throw std::length_error("TopologicalSort: too many vertices");
+}
+
+inline void AddTopologicalDegree(std::uint32_t& degree) {
+    if (degree == std::numeric_limits<std::uint32_t>::max())
+        throw std::length_error("TopologicalSort: degree overflow");
+    ++degree;
+}
+
 template <bool Lexicographical, bool Details, bool Bulk = false>
 inline TopologicalResult TopologicalRun(const Graph& graph) {
     const auto n = graph.size();
-    if (n > static_cast<std::size_t>(std::numeric_limits<int>::max()))
-        throw std::length_error("TopologicalSort: too many vertices");
+    CheckTopologicalVertexCount(n);
     std::vector<std::uint32_t> indegree(n);
     for (const auto& edges : graph) for (int to : edges) {
 #ifndef SKIP_RUNTIME_CHECKS
         if (to < 0 || static_cast<std::size_t>(to) >= n)
             throw std::out_of_range("TopologicalSort: invalid vertex");
 #endif
-        auto& degree = indegree[static_cast<std::size_t>(to)];
-        if (degree == std::numeric_limits<std::uint32_t>::max())
-            throw std::length_error("TopologicalSort: degree overflow");
-        ++degree;
+        AddTopologicalDegree(indegree[static_cast<std::size_t>(to)]);
     }
     TopologicalResult result;
     result.order.reserve(n);
@@ -751,28 +779,35 @@ inline TopologicalResult TopologicalRun(const Graph& graph) {
 #define SIRKIT_TOPOLOGICAL_SORT_DEFINED
 inline std::vector<int> TopologicalSort(const Graph& graph) {
 #if !defined(SIRKIT_DISABLE_SIMD) && defined(__GNUC__) && !defined(__clang__) && (defined(__x86_64__) || defined(__i386__))
-    if (graph.size() >= 4096) return reinsirk::detail::TopologicalRun<false, false, true>(graph).order;
+    if (graph.size() >= 4096) return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::TopologicalRun<false, false, true>(graph).order;
 #endif
-    return reinsirk::detail::TopologicalRun<false, false>(graph).order;
+    return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::TopologicalRun<false, false>(graph).order;
 }
 #endif
 #ifndef SIRKIT_TOPOLOGICAL_SORT_LEXICOGRAPHICAL_DEFINED
 #define SIRKIT_TOPOLOGICAL_SORT_LEXICOGRAPHICAL_DEFINED
 inline std::vector<int> TopologicalSortLexicographical(const Graph& graph) {
-    return reinsirk::detail::TopologicalRun<true, false>(graph).order;
+    return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::TopologicalRun<true, false>(graph).order;
 }
 #endif
 #ifndef SIRKIT_TOPOLOGICAL_DETAILS_DEFINED
 #define SIRKIT_TOPOLOGICAL_DETAILS_DEFINED
 inline TopologicalResult TopologicalSortDetails(const Graph& graph, bool lexicographical = false) {
-    return lexicographical ? reinsirk::detail::TopologicalRun<true, true>(graph)
-                           : reinsirk::detail::TopologicalRun<false, true>(graph);
+    return lexicographical ? /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::TopologicalRun<true, true>(graph)
+                           : /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::TopologicalRun<false, true>(graph);
 }
 inline bool IsDAG(const Graph& graph) {
     return TopologicalSort(graph).size() == graph.size();
 }
 #endif
 
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
+
+
+namespace sirkit {}
+using namespace sirkit;
 
 // SPDX-License-Identifier: CC0-1.0
 #include <algorithm>

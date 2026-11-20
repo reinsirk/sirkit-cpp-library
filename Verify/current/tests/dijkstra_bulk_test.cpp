@@ -1,8 +1,11 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #include <cstdint>
 #include <vector>
 #ifdef SIRKIT_DIJKSTRA_TEST_PREDEFINED_EDGE
 #define SIRKIT_GRAPH_TYPES_DEFINED
+namespace sirkit {
 struct Edge {
     int to;
     std::int64_t w;
@@ -10,6 +13,7 @@ struct Edge {
     Edge(int destination, std::int64_t weight) : to(destination), w(weight) {}
 };
 using WGraph = std::vector<std::vector<Edge>>;
+}
 #endif
 #ifndef SIRKIT_DIJKSTRA_TEST_SOURCE
 #define SIRKIT_DIJKSTRA_TEST_SOURCE "../../../Graph/Dijkstra.cpp"
@@ -38,12 +42,12 @@ void require(bool value) {
     }
 }
 std::vector<std::int64_t> bellman_reference(int n, const Input& edges, int source) {
-    std::vector<std::int64_t> distance(n, INF);
+    std::vector<std::int64_t> distance(n, kInf);
     distance[source] = 0;
     for (int pass = 1; pass < n; ++pass) {
         bool changed = false;
         for (auto [u, v, weight] : edges) {
-            if (distance[u] != INF && distance[u] + weight < distance[v]) {
+            if (distance[u] != kInf && distance[u] + weight < distance[v]) {
                 distance[v] = distance[u] + weight;
                 changed = true;
             }
@@ -57,7 +61,7 @@ std::vector<std::int64_t> heap_reference(int n, const Input& edges, int source) 
     for (auto [u, v, weight] : edges) graph[u].emplace_back(v, weight);
     using State = std::pair<std::int64_t, int>;
     std::priority_queue<State, std::vector<State>, std::greater<State>> pending;
-    std::vector<std::int64_t> distance(n, INF);
+    std::vector<std::int64_t> distance(n, kInf);
     distance[source] = 0;
     pending.emplace(0, source);
     while (!pending.empty()) {
@@ -75,7 +79,7 @@ std::vector<std::int64_t> heap_reference(int n, const Input& edges, int source) 
 }
 void check_path(const WGraph& graph, const std::vector<int>& path, int source, int target,
                 const std::vector<std::int64_t>& distance) {
-    if (distance[target] == INF) {
+    if (distance[target] == kInf) {
         require(path.empty());
         return;
     }
@@ -84,10 +88,10 @@ void check_path(const WGraph& graph, const std::vector<int>& path, int source, i
     std::int64_t total = 0;
     for (std::size_t i = 1; i < path.size(); ++i) {
         require(0 <= path[i] && path[i] < static_cast<int>(graph.size()));
-        std::int64_t weight = INF;
+        std::int64_t weight = kInf;
         for (const auto& edge : graph[path[i - 1]])
             if (edge.to == path[i]) weight = std::min(weight, edge.w);
-        require(weight != INF);
+        require(weight != kInf);
         total += weight;
     }
     require(total == distance[target]);
@@ -154,9 +158,9 @@ void input_contracts() {
     WGraph unreachable(3);
     unreachable[1].emplace_back(7, -1);
     Dijkstra(unreachable, distance, 0);
-    require(distance == std::vector<std::int64_t>({0, INF, INF}));
+    require(distance == std::vector<std::int64_t>({0, kInf, kInf}));
     Dijkstra(unreachable, distance, 0, 2, path);
-    require(distance == std::vector<std::int64_t>({0, INF, INF}) && path.empty());
+    require(distance == std::vector<std::int64_t>({0, kInf, kInf}) && path.empty());
     for (Edge invalid : {Edge{3, 0}, Edge{1, -1}, Edge{1, 1'000'000'001}}) {
         WGraph reached(3);
         reached[0].push_back(invalid);

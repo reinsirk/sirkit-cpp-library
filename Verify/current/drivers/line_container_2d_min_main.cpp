@@ -5,7 +5,8 @@
 int main() {
     int n, q;
     verify_in >> n >> q;
-    LineContainer2D points;
+    // |a*x+b|<=2e18なので、既定の2^60より大きい上限を指定する。
+    LineContainer2D points(std::int64_t{1} << 62);
     for (int i = 0; i < n; ++i) {
         std::int64_t a, b;
         verify_in >> a >> b;

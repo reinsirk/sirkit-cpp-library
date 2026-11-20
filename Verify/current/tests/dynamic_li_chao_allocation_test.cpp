@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 // 検査用リンク引数: -Wl,--wrap=malloc,--wrap=realloc,--wrap=free
 #ifndef LI_CHAO_SOURCE
 #define LI_CHAO_SOURCE "../../../DataStructure/dynamic-li-chao-tree.cpp"
@@ -44,19 +46,19 @@ int main(){
  const auto before=active();
  {
   Tree full(-9,11);full.reserve(1);full.add_line(0,7);fail([&]{full.reserve(2);});require(full.stored_nodes()==1&&full.query(11)==7);full.reserve(2);require(full.query(-9)==7);
-  Tree source(-1'000'000'000,1'000'000'000);source.reserve(32768);
+  Tree source(-1'000'000'000,1'000'000'000,1001);source.reserve(32768);
   std::array<I,256> positions{};for(std::size_t i=0;i<positions.size();++i)positions[i]=I(i)*100003-19000000;
   budget=0;for(std::size_t i=0;i<positions.size();++i)source.add_segment(0,I(i)+1,positions[i],positions[i]);budget=-1;
   const auto nodes=source.stored_nodes();require(nodes>1&&nodes<32768);fail([&]{source.reserve(65536);});require(source.stored_nodes()==nodes);
   budget=0;for(std::size_t i=0;i<positions.size();++i){require(source.query(positions[i])==I(i)+1);const auto l=source.query_line(positions[i]);require(l&&l->get(positions[i])==I(i)+1);}budget=-1;
-  Tree destination(-3,7);destination.add_line(0,13);const auto live_before=active();fail([&]{destination=source;});require(active()==live_before);require(destination.domain_min()==-3&&destination.domain_max()==7);require(destination.stored_nodes()==1&&destination.query(0)==13);
+  Tree destination(-3,7,31);destination.add_line(0,13);const auto live_before=active();fail([&]{destination=source;});require(active()==live_before);require(destination.domain_min()==-3&&destination.domain_max()==7&&destination.infinity()==31);require(destination.stored_nodes()==1&&destination.query(0)==13);
   fail([&]{Tree copy(source);observe(copy);});require(active()==live_before);
-  destination.reserve(32768);budget=0;destination=source;budget=-1;require(destination.domain_min()==source.domain_min()&&destination.domain_max()==source.domain_max());require(destination.stored_nodes()==nodes);
+  destination.reserve(32768);budget=0;destination=source;budget=-1;require(destination.domain_min()==source.domain_min()&&destination.domain_max()==source.domain_max()&&destination.infinity()==1001);require(destination.stored_nodes()==nodes);
   budget=0;destination=destination;budget=-1;
   for(std::size_t i=0;i<positions.size();++i)require(destination.query(positions[i])==I(i)+1);
   budget=0;Tree moved(std::move(destination));budget=-1;require(destination.empty()&&destination.stored_nodes()==0);require(moved.stored_nodes()==nodes);fail([&]{destination.add_line(0,-7);});require(destination.empty());destination.add_line(0,-7);require(destination.query(positions[0])==-7&&moved.query(positions[0])==1);
   Tree assigned(0,0);assigned.add_line(0,9);budget=0;assigned=std::move(moved);budget=-1;require(moved.empty()&&moved.stored_nodes()==0);require(assigned.stored_nodes()==nodes);require(assigned.query(positions[255])==256);
-  budget=0;source.clear();require(source.empty()&&source.query(positions[0])==std::numeric_limits<I>::max());source.reserve(32768);for(std::size_t i=0;i<positions.size();++i)source.add_segment(0,-I(i)-1,positions[i],positions[i]);budget=-1;require(source.stored_nodes()==nodes);
+  budget=0;source.clear();require(source.empty()&&source.query(positions[0])==1001);source.reserve(32768);for(std::size_t i=0;i<positions.size();++i)source.add_segment(0,-I(i)-1,positions[i],positions[i]);budget=-1;require(source.stored_nodes()==nodes);
   for(std::size_t i=0;i<positions.size();++i)require(source.query(positions[i])==-I(i)-1);
   Tree empty(-4,8);empty.reserve(32768);budget=0;Tree emptycopy(empty);require(emptycopy.empty()&&emptycopy.stored_nodes()==0&&emptycopy.domain_min()==-4);emptycopy=empty;budget=-1;
   bool length=false;try{source.reserve(std::numeric_limits<std::size_t>::max());}catch(const std::length_error&){length=true;}require(length);require(source.stored_nodes()==nodes);

@@ -3,8 +3,10 @@
 #include <iostream>
 #include <string>
 
+using namespace sirkit;
+
 int main() {
-    reinsirk::detail::InternalHashMap<std::int64_t, std::string> table;
+    ::sirkit::detail::InternalHashMap<std::int64_t, std::string> table;
     table.set_default("missing");
     table.reserve(10);
     std::cout << (table.capacity() >= 10) << ' ' << table.load_factor() << '\n'; // 1 0

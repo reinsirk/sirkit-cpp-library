@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #ifndef MATCHING_SOURCE
 #define MATCHING_SOURCE "../../../Graph/Bipartite_Matching.cpp"
 #endif
@@ -9,11 +11,14 @@
 #include REROOTING_SOURCE
 #include MATCHING_SOURCE
 #include REROOTING_SOURCE
+#include <algorithm>
+#include <array>
 #include <cassert>
 #include <cstdint>
 #include <iostream>
 #include <numeric>
 #include <random>
+#include <span>
 #include <string>
 
 static std::mt19937_64 random_engine(0xac3921bd);
@@ -50,7 +55,101 @@ void matching_validate(BipartiteMatching& matching,const std::vector<std::vector
     for(int u=0;u<left;++u)if(matching.match_left(u)==-1){queue.push_back(u);seen_left[static_cast<std::size_t>(u)]=true;}
     for(std::size_t head=0;head<queue.size();++head){int u=queue[head];for(int v=0;v<right;++v)if(graph[static_cast<std::size_t>(u)][static_cast<std::size_t>(v)]&&matching.match_left(u)!=v&&!seen_right[static_cast<std::size_t>(v)]){seen_right[static_cast<std::size_t>(v)]=true;int w=matching.match_right(v);check(w!=-1);if(!seen_left[static_cast<std::size_t>(w)]){seen_left[static_cast<std::size_t>(w)]=true;queue.push_back(w);}}}
 }
+void matching_orientation_tests(){
+    // 次数分布が近い2対3の小グラフ。辺追加後も元の番号で対応する。
+    for(bool transpose:{false,true}){
+        const int left=transpose?3:2,right=transpose?2:3;
+        BipartiteMatching matching(left,right);
+        std::vector<std::vector<bool>> graph(static_cast<std::size_t>(left),std::vector<bool>(static_cast<std::size_t>(right)));
+        auto add=[&](int u,int v){if(transpose)std::swap(u,v);matching.add_edge(u,v);graph[static_cast<std::size_t>(u)][static_cast<std::size_t>(v)]=true;};
+        add(0,0);check(matching.solve()==1);
+        add(0,1);add(1,1);add(1,2);
+        check(matching.solve()==2);matching_validate(matching,graph,right,2);
+    }
+    // 最大次数は右5対左2でも、二乗和は34対22。外れ値1個だけの偏りも検証する。
+    for(bool transpose:{false,true}){
+        BipartiteMatching matching(8,8);
+        std::vector<std::vector<bool>> graph(8,std::vector<bool>(8));
+        auto add=[&](int u,int v){if(transpose)std::swap(u,v);matching.add_edge(u,v);graph[static_cast<std::size_t>(u)][static_cast<std::size_t>(v)]=true;};
+        for(int u=0;u<3;++u){add(u,0);add(u,u+1);}check(matching.solve()==3);
+        for(int u=3;u<5;++u){add(u,0);add(u,u+1);}add(5,6);add(6,6);
+        check(matching.solve()==6);matching_validate(matching,graph,8,6);
+    }
+    // 全辺追加後の次数二乗和は左25・右55。孤立頂点も含み、反転後も公開の左右は保つ。
+    for(bool transpose:{false,true}){
+        const int left=transpose?11:7,right=transpose?7:11;
+        BipartiteMatching matching(left,right);
+        std::vector<std::vector<bool>> graph(static_cast<std::size_t>(left),std::vector<bool>(static_cast<std::size_t>(right)));
+        const auto left_view=matching.left_matches(),right_view=matching.right_matches();
+        auto add=[&](int u,int v){if(transpose)std::swap(u,v);matching.add_edge(u,v);graph[static_cast<std::size_t>(u)][static_cast<std::size_t>(v)]=true;};
+        auto solve_and_validate=[&](int optimum){
+            std::vector<std::span<const int>> views;
+            std::vector<std::vector<int>> neighbors;
+            for(int u=0;u<left;++u){views.push_back(matching.neighbors(u));neighbors.emplace_back(views.back().begin(),views.back().end());}
+            check(matching.solve()==optimum);
+            check(left_view.data()==matching.left_matches().data()&&right_view.data()==matching.right_matches().data());
+            check(left_view.size()==static_cast<std::size_t>(left)&&right_view.size()==static_cast<std::size_t>(right));
+            for(int u=0;u<left;++u){const auto now=matching.neighbors(u);const auto old=views[static_cast<std::size_t>(u)];check(now.data()==old.data()&&now.size()==old.size());check(std::equal(old.begin(),old.end(),neighbors[static_cast<std::size_t>(u)].begin(),neighbors[static_cast<std::size_t>(u)].end()));check(left_view[static_cast<std::size_t>(u)]==matching.match_left(u));}
+            for(int v=0;v<right;++v)check(right_view[static_cast<std::size_t>(v)]==matching.match_right(v));
+            matching_validate(matching,graph,right,optimum);
+        };
+        for(int u=0;u<3;++u){add(u,0);add(u,u+1);}
+        solve_and_validate(3);
+        // 既存の対応から再開し、hubだけに接続した頂点のために再割当する。
+        for(int u=3;u<6;++u){add(u,0);add(u,u+1);}
+        add(6,0);solve_and_validate(7);
+        for(int u=0;u<7;++u){const int v=u==6?0:u+1;if(transpose)check(matching.match_right(u)==v);else check(matching.match_left(u)==v);}
+        auto copied=matching;copied.clear_matching();
+        check(matching.matching_size()==7&&copied.matching_size()==0);
+        auto moved=std::move(copied);check(copied.empty());
+        check(moved.solve()==7);matching_validate(moved,graph,right,7);
+        matching_validate(matching,graph,right,7);
+    }
+}
+void matching_reduction_tests(){
+    // パス、偶サイクル、平行辺、左右に偏った成分を混ぜ、非孤立頂点数の上限未満の最大解も照合する。
+    for(bool transpose:{false,true})for(int kind=0;kind<4;++kind){
+        const int left=transpose?12:10,right=transpose?10:12;
+        BipartiteMatching matching(left,right);
+        std::vector<std::vector<bool>> graph(static_cast<std::size_t>(left),std::vector<bool>(static_cast<std::size_t>(right)));
+        auto add=[&](int u,int v){if(transpose)std::swap(u,v);matching.add_edge(u,v);graph[static_cast<std::size_t>(u)][static_cast<std::size_t>(v)]=true;};
+        for(int u=0;u<4;++u){add(u,u);add(u,(u+1)%4);}
+        if(kind==0){add(4,4);add(4,4);add(5,5);add(6,5);add(7,6);add(7,7);add(7,8);}
+        if(kind==1){for(int u=4;u<7;++u)for(int v=4;v<7;++v)add(u,v);add(7,7);}
+        if(kind==2){add(4,4);add(5,4);add(6,5);add(6,6);}
+        if(kind==3){add(4,4);add(5,4);add(5,5);add(6,5);add(6,6);add(7,6);}
+        const auto left_view=matching.left_matches(),right_view=matching.right_matches();
+        const int optimum=matching_oracle(graph,right);
+        check(matching.solve()==optimum);matching_validate(matching,graph,right,optimum);
+        check(left_view.data()==matching.left_matches().data()&&right_view.data()==matching.right_matches().data());
+        // 既存の対応がある再実行は通常の増加路探索へ渡す。
+        add(8,9);add(9,10);const int extended=matching_oracle(graph,right);
+        check(matching.solve()==extended);matching_validate(matching,graph,right,extended);
+        matching.clear_matching();check(matching.solve()==extended);matching_validate(matching,graph,right,extended);
+    }
+}
 void matching_tests(){
+    matching_orientation_tests();
+    matching_reduction_tests();
+    {
+        // 次数2の全域森、森に含めない閉路と平行辺、成分をまたぐ辺、Hall不足を同時に含む。
+        BipartiteMatching matching(9, 10);
+        std::vector<std::vector<bool>> graph(9, std::vector<bool>(10));
+        auto add = [&](int u, int v) { matching.add_edge(u, v); graph[u][v] = true; };
+        for (const auto [a, b, v] : {std::array{0, 1, 0}, std::array{1, 2, 1}, std::array{2, 0, 2},
+                                    std::array{0, 0, 3}, std::array{3, 4, 4}}) {
+            add(a, v); add(b, v);
+        }
+        for (int u : {0, 2, 3, 4}) add(u, 5);
+        for (int u : {5, 6, 7}) { add(u, 6); add(u, 7); }
+        const auto view = matching.left_matches();
+        check(matching.solve() == matching_oracle(graph, 10));
+        matching_validate(matching, graph, 10, 7);
+        check(view.data() == matching.left_matches().data());
+        add(7, 8);
+        check(matching.solve() == 8);
+        matching_validate(matching, graph, 10, 8);
+    }
     for(int left=0;left<=4;++left)for(int right=0;right<=4;++right){
         const unsigned total=1u<<(left*right);
         for(unsigned mask=0;mask<total;++mask){BipartiteMatching matching(left,right);std::vector<std::vector<bool>> graph(static_cast<std::size_t>(left),std::vector<bool>(static_cast<std::size_t>(right)));std::size_t edges=0;for(int u=0;u<left;++u)for(int v=0;v<right;++v)if(mask>>(u*right+v)&1u){matching.add_edge(u,v);graph[static_cast<std::size_t>(u)][static_cast<std::size_t>(v)]=true;++edges;}check(matching.edge_count()==edges);int optimum=matching_oracle(graph,right);check(matching.solve()==optimum);matching_validate(matching,graph,right,optimum);}
@@ -87,6 +186,27 @@ void rerooting_case(int n,const std::vector<std::pair<int,int>>& edges){
 }
 struct NoDefault{int value;NoDefault()=delete;explicit NoDefault(int v):value(v){};};
 void rerooting_tests(){
+    {
+        constexpr auto kArcLimit = std::numeric_limits<std::size_t>::max() / 2;
+        sirkit::detail::CheckRerootingArcCount(kArcLimit - 1);
+        bool capacity_rejected = false;
+        try { sirkit::detail::CheckRerootingArcCount(kArcLimit); }
+        catch (const std::length_error&) { capacity_rejected = true; }
+        check(capacity_rejected);
+        bool rejected = false;
+        try { RerootingDP<int> invalid(-1); }
+        catch (const std::length_error&) { rejected = true; }
+        check(rejected);
+        RerootingDP<int> graph(2);
+        const auto edge = graph.add_edge(0, 1);
+        const auto& same = graph;
+        graph = same;
+        check(graph.edge_count() == 1 && graph.edge(edge) == std::pair{0, 1});
+#ifndef SKIP_RUNTIME_CHECKS
+        rejects([&] { (void)graph.edge(edge + 1); });
+        rejects([&] { (void)graph.neighbors(-1); });
+#endif
+    }
     for(int n=0;n<=12;++n)for(int repeat=0;repeat<130;++repeat){std::vector<int>labels(static_cast<std::size_t>(n));std::iota(labels.begin(),labels.end(),0);std::shuffle(labels.begin(),labels.end(),random_engine);std::vector<std::pair<int,int>> edges;for(int v=1;v<n;++v)if(random_int(4)){int p=random_int(v);auto u=labels[static_cast<std::size_t>(v)],w=labels[static_cast<std::size_t>(p)];if(random_int(2))std::swap(u,w);edges.emplace_back(u,w);}std::shuffle(edges.begin(),edges.end(),random_engine);rerooting_case(n,edges);}
     RerootingDP<NoDefault> nd(2);nd.add_edge(0,1);nd.build(NoDefault(0),[](const NoDefault&a,const NoDefault&b){return NoDefault(a.value+b.value);},[](const NoDefault&a,int){return NoDefault(a.value+1);},[](const NoDefault&a,int,int,std::size_t){return a;});check(nd[0].value==2&&nd[1].value==2);
 #ifndef SKIP_RUNTIME_CHECKS

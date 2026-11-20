@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #ifndef RADIX_HEADER
 #define RADIX_HEADER "../../../Algorithm/Radix_sort.cpp"
 #endif
@@ -45,6 +47,14 @@ int main(){
         workspace.reserve(a.size());assert(!allocation_failure(0,[&]{workspace.sort(a);}));assert(std::is_sorted(a.begin(),a.end()));++checks;
         const auto capacity=workspace.capacity();assert(allocation_failure(0,[&]{workspace.reserve(capacity+10000);}));assert(workspace.capacity()==capacity);++checks;
         assert(allocation_failure(0,[&]{(void)RadixSortOrder(original);}));++checks;
+    }
+    {
+        Trie sparse;
+        sparse.insert("kept");
+        const auto before = sparse.items();
+        const std::string distinct(4096, 'z');
+        assert(allocation_failure(0, [&] { sparse.insert(distinct); }));
+        assert(sparse.items() == before && sparse.count("kept") == 1);
     }
     for(int budget=0;budget<4;++budget){
         Trie trie;

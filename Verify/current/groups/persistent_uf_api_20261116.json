@@ -1,0 +1,46 @@
+{
+  "entries": [
+    {
+      "id": "persistent_union_find_union_path_query",
+      "libraries": [
+        "DataStructure/persistent-union-find.cpp"
+      ],
+      "driver": "Verify/current/drivers/persistent_union_find_union_path_query_main.cpp",
+      "title": "Union Path Query (Medium)（版別連結・成分距離和）",
+      "problem_url": "https://yukicoder.me/problems/no/2295",
+      "selection_reason": "非減少辺重みで保持した版の初回連結を検索し、結果をオンラインXへ反映する。root/sizeによる成分距離和も出力に必要で、LCの任意過去版からの分岐を補完する。",
+      "coverage": [
+        "root/sizeによる成分集計",
+        "unite/version/Versionによる成功結合の保存",
+        "issameの現在版・指定版検索",
+        "オンラインXを経由した距離出力と後続辺の依存"
+      ],
+      "limitations": "オンライン未提出。時系列に沿った版のみで、任意過去版からの分岐は既存LC persistent_unionfindで検証する。rootは代表int、Versionは非所有ハンドル。辺の最小最大重みを扱う問題で、重み付きUFのポテンシャル差の検証ではない。type1/type3 O(log²(N+1))、type2 O(log³(N+1))、type4 O(1)、最大N版・O(Nlog(N+1))ノード。成分総和は乗算ごとに法を取り64bit積の範囲を保つ。",
+      "samples": [
+        {
+          "input": "5 1 10\n1 0 1\n2 0 1\n1 1 2\n2 0 2\n3 1\n2 4 1\n1 1 4\n4 1\n1 4 4\n3 1\n",
+          "output": "1\n2\n5\n-1\n17\n",
+          "source": "https://yukicoder.me/problems/no/2295",
+          "origin": "公式入力例。独立Floyd minimax参照とも照合。"
+        },
+        {
+          "input": "10 2 12\n1 0 14\n2 0 2\n1 2 22\n1 1 28\n1 7 94\n2 4 6\n3 8\n1 5 126\n1 3 212\n1 6 223\n1 9 245\n3 6\n",
+          "output": "14\n-1\n0\n4135\n",
+          "source": "https://yukicoder.me/problems/no/2295",
+          "origin": "公式入力例。独立Floyd minimax参照とも照合。"
+        },
+        {
+          "input": "4 2 11\n1 3 91\n1 0 111\n2 1 0\n3 2\n2 0 1\n1 1 210\n1 2 230\n3 1\n2 3 3\n2 0 3\n2 1 2\n",
+          "output": "-1\n313\n-1\n943\n0\n111\n210\n",
+          "source": "https://yukicoder.me/problems/no/2295",
+          "origin": "公式入力例。独立Floyd minimax参照とも照合。"
+        }
+      ],
+      "acl_required": false,
+      "submission_urls": [
+        "https://yukicoder.me/submissions/1199601",
+        "https://yukicoder.me/submissions/1199606"
+      ]
+    }
+  ]
+}

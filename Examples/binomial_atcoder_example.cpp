@@ -2,6 +2,8 @@
 #include "../Math/Combination_Mod.cpp"
 #include <iostream>
 
+using namespace sirkit;
+
 int main()
 {
     ModIntBinomial<atcoder::modint998244353> comb;

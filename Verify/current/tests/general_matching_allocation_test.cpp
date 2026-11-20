@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #include <atomic>
 #include <cassert>
 #include <cstddef>
@@ -44,12 +46,17 @@ GeneralMatching partial() {
     GeneralMatching graph(9); graph.add_edge(1,2);graph.add_edge(3,4);graph.add_edge(5,6);
     assert(graph.solve()==3);graph.add_edge(0,1);graph.add_edge(2,3);graph.add_edge(4,5);graph.add_edge(6,7);return graph;
 }
+GeneralMatching greedy_then_augment() {
+    GeneralMatching graph(12);graph.add_edge(1,2);graph.add_edge(3,4);graph.add_edge(5,6);
+    assert(graph.solve()==3);graph.add_edge(0,1);graph.add_edge(2,3);graph.add_edge(4,5);graph.add_edge(6,7);
+    graph.add_edge(9,10);return graph;
+}
 void run_checks() {
     std::size_t failures=0;
-    for(int operation=0;operation<7;++operation) {
+    for(int operation=0;operation<8;++operation) {
         bool success=false;
         for(std::ptrdiff_t budget=0;budget<20;++budget) {
-            auto target=operation==0?GeneralMatching(9):partial();GeneralMatching source(12);source.add_edge(0,1);source.add_edge(1,2);source.solve();
+            auto target=operation==0?GeneralMatching(9):operation==7?greedy_then_augment():partial();GeneralMatching source(12);source.add_edge(0,1);source.add_edge(1,2);source.solve();
             const auto partners=saved(target.partners());const auto edges=saved(target.edges());const auto old_size=target.size(),old_count=target.matching_size();const bool old_maximum=target.is_maximum();
             const auto* pp=target.partners().data();const auto* ep=target.edges().data();const auto before=live_allocations.load();bool failed=false;allocation_countdown=budget;
             try {
@@ -60,6 +67,7 @@ void run_checks() {
                 if(operation==4)target.reset(11);
                 if(operation==5)assert(target.solve()==4);
                 if(operation==6){auto pairs=target.pairs();assert(pairs.size()==3);}
+                if(operation==7)assert(target.solve()==5);
             }catch(const std::bad_alloc&){failed=true;++failures;}
             allocation_countdown=-1;
             if(failed) {

@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #ifndef SIRKIT_UNRELEASED_VECTOR_SOURCE
 #define SIRKIT_UNRELEASED_VECTOR_SOURCE "../../../Fast/Source/Internal/Unreleased_Vector.cpp"
 #endif
@@ -14,7 +16,7 @@
 #include <string>
 #include <type_traits>
 #include <vector>
-template<class T>using V=reinsirk::detail::UnreleasedVector<T>;
+template<class T>using V=::sirkit::detail::UnreleasedVector<T>;
 template<class T>T make(std::uint64_t n){if constexpr(std::is_same_v<T,std::string>)return std::string(50,static_cast<char>('a'+n%26))+std::to_string(n);else return static_cast<T>(n);}
 template<class T>void values(std::mt19937_64&rng){V<T>v;std::vector<T>a;for(int q=0;q<10000;++q){T x=make<T>(rng()%1000);switch(rng()%14){case 0:v.push_back(x);a.push_back(x);break;case 1:v.emplace_back(x);a.emplace_back(x);break;case 2:if(!a.empty()){v.pop_back();a.pop_back();}break;case 3:{auto n=rng()%100;v.resize(n,x);a.resize(n,x);break;}case 4:{auto n=rng()%100;v.resize(n);a.resize(n);break;}case 5:{auto n=rng()%150;v.reserve(n);a.reserve(n);break;}case 6:if(!a.empty()){auto n=rng()%a.size();v.erase(v.begin()+n);a.erase(a.begin()+n);}break;case 7:{auto n=rng()%(a.size()+1);v.insert(v.begin()+n,x);a.insert(a.begin()+n,x);break;}case 8:if(!a.empty()){auto n=rng()%(a.size()+1);v.insert(v.begin()+n,v.back());a.insert(a.begin()+n,a.back());}break;case 9:{auto copy=v;assert(std::equal(copy.begin(),copy.end(),a.begin(),a.end()));auto moved=std::move(copy);assert(copy.empty());copy=std::move(moved);assert(moved.empty());copy=std::move(copy);copy=copy;assert(copy.size()==a.size());copy.clear();break;}case 10:v.clear();a.clear();break;case 11:{auto n=rng()%70;v.assign(n,x);a.assign(n,x);break;}case 12:if(!a.empty()){std::size_t l=rng()%(a.size()+1),r=rng()%(a.size()+1);if(l>r)std::swap(l,r);v.erase(v.begin()+l,v.begin()+r);a.erase(a.begin()+l,a.begin()+r);}break;case 13:v.shrink_to_fit();a.shrink_to_fit();break;}assert(v.size()==a.size()&&std::equal(v.begin(),v.end(),a.begin(),a.end()));if(!a.empty())assert(v.front()==a.front()&&v.back()==a.back());}v.clear();}
 struct alignas(128)Aligned{std::uint64_t x=0;std::uint64_t padding[15]{};explicit Aligned(std::uint64_t n=0):x(n){}};

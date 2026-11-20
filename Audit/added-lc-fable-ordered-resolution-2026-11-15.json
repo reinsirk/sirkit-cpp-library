@@ -1,0 +1,28 @@
+{
+  "format": 1,
+  "date": "2026-11-15",
+  "ids": [
+    "coverage_structure_binary_ordered",
+    "coverage_structure_compressed_ordered"
+  ],
+  "input_source_sha256": {
+    "coverage_structure_binary_ordered": "1564a6973537131f5cd0cebc82af0374e050d8723744dc27ac4baa0afc964ad3",
+    "coverage_structure_compressed_ordered": "cd7ecf3f5ad892f48c646454cf2e26021271d4ad4f8c262ce65dc2d8eabaf05f"
+  },
+  "source_sha256": {
+    "coverage_structure_binary_ordered": "1564a6973537131f5cd0cebc82af0374e050d8723744dc27ac4baa0afc964ad3",
+    "coverage_structure_compressed_ordered": "cd7ecf3f5ad892f48c646454cf2e26021271d4ad4f8c262ce65dc2d8eabaf05f"
+  },
+  "decision": "keep; proposed zero-rank guard is unnecessary for all legal inputs",
+  "reason": "公式問題文はtype=2ならx>=1を明記し、公式verifierにも同じensureがある。x=0は有効入力に含まれず、get_kthの1-based前提を満たす。オンラインVerifyは制約を満たす入力で速度優先という方針のため、このmainへ追加の防御は入れない。ライブラリchecked版は元から1-based範囲を検査する。",
+  "evidence": {
+    "commit": "73876f1cbcf082d2b22722924b924d3d65a2f00e",
+    "task_url": "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/data_structure/ordered_set/task.md",
+    "task_sha256": "6e0d4f4fe4eeeb6716a0e458eacd7974ef0a23b17578ca36561d14b93fa1edf8",
+    "verifier_url": "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/data_structure/ordered_set/verifier.cpp",
+    "verifier_sha256": "3ee0965d5f279fabc6ad48c4319c6052bc63559512bfe3b77e2c84bda0be14bf",
+    "verifier_condition": "if (t == 2) ensure(1 <= x);"
+  },
+  "validation": "Codex final checked/skip/native/fallback cases and performance preserved unchanged; no code to remeasure.",
+  "local_raw_archive": "Audit/data/added-lc-optimization-20261115.zip"
+}

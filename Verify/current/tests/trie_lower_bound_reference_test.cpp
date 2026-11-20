@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #ifndef TRIE_HEADER
 #define TRIE_HEADER "../../../String/Trie.cpp"
 #endif

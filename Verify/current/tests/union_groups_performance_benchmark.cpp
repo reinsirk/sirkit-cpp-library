@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #ifndef SIRKIT_UNION_BENCH_HEADER
 #ifdef SIRKIT_BENCH_WEIGHTED
 #define SIRKIT_UNION_BENCH_HEADER "../../../DataStructure/union_find_w.cpp"

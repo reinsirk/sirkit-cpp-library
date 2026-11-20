@@ -35,6 +35,8 @@
 // 自己辺/多重辺/循環は不可。既定では自己辺をadd時、循環を実際の探索中に検査する。
 // SKIP_RUNTIME_CHECKSで入力/結果の有無/森の検査を除く。内部の件数・添字上限は維持する。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <concepts>
 #include <cstddef>
@@ -46,8 +48,17 @@
 #include <utility>
 #include <vector>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_REROOTING_DP_DEFINED
 #define SIRKIT_REROOTING_DP_DEFINED
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
+inline void CheckRerootingArcCount(std::size_t edges) {
+    if (edges >= std::numeric_limits<std::size_t>::max() / 2)
+        throw std::length_error("RerootingDP arc count");
+}
+}
 template<class T>
 class RerootingDP {
     static_assert(std::copyable<T> && !std::is_same_v<T, bool> && std::is_same_v<T, std::remove_cv_t<T>> && std::is_nothrow_destructible_v<T>);
@@ -93,8 +104,7 @@ public:
     void reserve_neighbors(int v, std::size_t capacity) { check_vertex(v); graph_[v].reserve(capacity); }
     std::size_t add_edge(int u, int v) {
         check_vertex(u); check_vertex(v);
-        if (edges_.size() >= std::numeric_limits<std::size_t>::max() / 2)
-            throw std::length_error("RerootingDP arc count");
+        /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::CheckRerootingArcCount(edges_.size());
         const auto id = edges_.size();
         edges_.emplace_back(u,v);
         try { graph_[u].push_back(2 * id); }
@@ -127,8 +137,7 @@ public:
             }
         }
         std::vector<T> answer(n, identity), messages(2 * m, identity), prefix;
-        if (maximum_degree == std::numeric_limits<std::size_t>::max())
-            throw std::length_error("RerootingDP prefix count");
+        // add_edgeが辺数を制限しており、次数は2*m以下。
         prefix.reserve(maximum_degree + 1);
         for (auto it = order.rbegin(); it != order.rend(); ++it) {
             const int v = *it; T aggregate = identity;
@@ -168,6 +177,13 @@ public:
 };
 #endif
 
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
+
+
+namespace sirkit {}
+using namespace sirkit;
 
 // SPDX-License-Identifier: CC0-1.0
 // Verify I/O: Verify/current/common/fast_io.hpp

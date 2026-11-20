@@ -1,0 +1,155 @@
+{
+  "format": 1,
+  "date": "2026-11-16",
+  "model": "claude-fable-5-2",
+  "actual_models": [
+    "claude-fable-5-2"
+  ],
+  "completed_at": "2026-11-16T08:43:43.790123+00:00",
+  "scope": "whole-program static review after Codex measurement; Fable executed no tests",
+  "reviews": [
+    {
+      "id": "bipartite_matching",
+      "source_sha256": "f766e419a8a55348b9e780a2167ef4b522090fce7fee929d39fb82409d93578a",
+      "verdict": "keep",
+      "reason": "Static review only; I ran no tests, and the measurements are yours, not verified here. No concrete issue found. (1) Prepass keeps a valid matching: each step sets left_[chosen]=v and right_[v]=chosen, frees the old mate, and increments cardinality_ only when chosen was free. Labels and budget affect speed only, so HK starting from this matching stays correct. (2) Ring buffer cannot overflow: queued vertices are distinct free rights, so pending <= right_size(); the tail wrap when all rights are free is right, and right_size()==0 returns before the buffer is used. (3) Budget is bounded: every iteration consumes deg+1 >= 1 and each relabel consumes one unit, with saturating arithmetic, so the prepass does at most 64(V+M) edge scans. Breaking on exhaustion leaves a consistent state. (4) Early exit at min(nonisolated left, nonisolated right) is a sound upper bound; matched vertices always have an edge because clear_edges clears the matching. (5) All scratch vectors are allocated before the first write to left_/right_/cardinality_, so the strong guarantee holds. graph_ is only read, so neighbors() spans stay valid. (6) HK BFS/DFS and the path flip are consistent; the mid-phase return at the bound is safe. (7) main and IO: the sentinel digit loop refills correctly at buffer boundaries, integer output reserves 22 bytes, and the static destructor flushes. Output format matches the problem."
+    },
+    {
+      "id": "preferred_max_flow_bipartite",
+      "source_sha256": "d69e205cb14c5f1d3f7b1181fca4ace69657b02cc02db40aecf112dcd612b09f",
+      "verdict": "keep",
+      "reason": "Static review only; I ran no tests, and the timings are yours, not verified here. No concrete issue found. (1) unit_flow: level_ as parent and next_ as arc index are written before use on the path; self-loops are skipped; the path update is correct; O(n+m) with no Frame use. (2) The bad_alloc fallback is safe: all five preflow vectors are allocated before any residual or excess write, the lambdas do not allocate, and frames_ is already reserved, so Dinic continues from an unchanged feasible state. (3) Global relabel: exact sink distances, else n+2+dist-to-source, else unseen. Excess sums to limit, so Cap cannot overflow. Heights are at most 2n+1 < UINT32_MAX because n==INT_MAX is excluded. (4) The best+1 wrap on unseen is unreachable. Any vertex that can currently reach s or t was seen at the last global relabel, because new residual arcs only arise from pushes between seen vertices. So a vertex with excess always has a seen residual neighbour, and unseen is permanent. (5) Resetting the cursor only on height change is sound. Global relabel never lowers a height (exact distances dominate valid labels; source is capped at n+2). A skipped arc can therefore only become admissible after its tail's height rises, which resets the cursor. (6) Source discards excess only at height >= n+2, which under a valid labelling means no residual s-t path. The loop ends with zero excess outside the sink, so the state is a feasible flow, either maximum or equal to limit. Resumed calls are handled the same way. (7) The work budget m+n is at least 2 and uint64_t; relabel_all rebuilds the FIFO from excess, so the interrupted vertex is not lost. (8) Public signatures, ownership and add_edge rollback are unchanged. (9) main: compression mapping and output back-mapping are correct; m==0 gives a 2-vertex graph and limit 0; limit==1 routes to unit_flow; int arithmetic is within the problem limits. IO is identical to submission 1."
+    }
+  ],
+  "source_sha256": {
+    "bipartite_matching": "f766e419a8a55348b9e780a2167ef4b522090fce7fee929d39fb82409d93578a",
+    "preferred_max_flow_bipartite": "d69e205cb14c5f1d3f7b1181fca4ace69657b02cc02db40aecf112dcd612b09f"
+  },
+  "canonical_sha256": {
+    "Graph/Bipartite_Matching.cpp": "201c42bc84656bddfcfa8fb22fd90b19a18b32a79bd0fb8609fc33db3409b7ff",
+    "Graph/Max_Flow.cpp": "c93975be8bab8e4f12caed0f9efca50e8fc11c721ab09f64aae0e66a3b0b17a4"
+  },
+  "prompt_sha256": "310b310c030b721553b836609864dcbfaeca7e121a1463bbf0aba341d340e140",
+  "response_sha256": "8a6b8d7d1ab2145d781d1ad40c7488ea419368fb5323a79b9fc21b33d8eae039",
+  "model_usage": {
+    "claude-fable-5-2": {
+      "inputTokens": 2,
+      "outputTokens": 8021,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 23631,
+      "webSearchRequests": 0,
+      "costUSD": 0.698952,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 6623,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 23631,
+      "canonicalModel": "claude-fable-5-2",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "usage_after": {
+    "checked_at": "2026-11-16T08:50:38.740372+00:00",
+    "authorized_email_matches": true,
+    "limits": [
+      {
+        "kind": "session",
+        "model": null,
+        "percent": 95,
+        "resets_at": "2026-11-16T10:39:59.622989+00:00"
+      },
+      {
+        "kind": "weekly_all",
+        "model": null,
+        "percent": 38,
+        "resets_at": "2026-11-21T08:59:59.623010+00:00"
+      },
+      {
+        "kind": "weekly_scoped",
+        "model": "Fable",
+        "percent": 76,
+        "resets_at": "2026-11-21T08:59:59.623284+00:00"
+      }
+    ],
+    "extra_usage_enabled": false
+  },
+  "earlier_focused_review": {
+    "model": "claude-fable-5-2",
+    "started_at": "2026-11-16T08:11:13.677052+00:00",
+    "complete": true,
+    "manifest": {
+      "model": "claude-fable-5-2",
+      "effort": "low",
+      "candidate": "/tmp/sirkit-max-flow-20261116/preflow/preflow-budget1.hpp",
+      "source_sha256": "f1057ee2e560221cb946096b9a1ba8fee73c7d2747b05b2d3c26f482921b1484",
+      "prompt_sha256": "51e0265e162c449c363582b8338fb1f6f10599dfba67f04fdbc9a5ee381f709a"
+    },
+    "usage_before": {
+      "checked_at": "2026-11-16T08:10:44.212528+00:00",
+      "authorized_email_matches": true,
+      "limits": [
+        {
+          "kind": "session",
+          "model": null,
+          "percent": 83,
+          "resets_at": "2026-11-16T10:40:00.080690+00:00"
+        },
+        {
+          "kind": "weekly_all",
+          "model": null,
+          "percent": 37,
+          "resets_at": "2026-11-21T09:00:00.080711+00:00"
+        },
+        {
+          "kind": "weekly_scoped",
+          "model": "Fable",
+          "percent": 74,
+          "resets_at": "2026-11-21T09:00:00.081008+00:00"
+        }
+      ],
+      "extra_usage_enabled": false
+    },
+    "tools_disabled": true,
+    "returncode": 0,
+    "actual_models": [
+      "claude-fable-5-2"
+    ],
+    "model_usage": {
+      "claude-fable-5-2": {
+        "inputTokens": 2,
+        "outputTokens": 6617,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 2768,
+        "webSearchRequests": 0,
+        "costUSD": 0.308984,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 5288,
+        "cacheCreationEphemeral5mInputTokens": 0,
+        "cacheCreationEphemeral1hInputTokens": 2768,
+        "canonicalModel": "claude-fable-5-2",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "response_sha256": "c99018d028e89001e069924ec6a4b4cd65baacd9d611c9f32f35c8a71f3bae86",
+    "finished_at": "2026-11-16T08:12:30.252150+00:00"
+  },
+  "earlier_review": "```json\n{\n  \"verdict\": \"keep\",\n  \"reason\": \"Reviewed by reasoning only; nothing was compiled or run. I found no correctness defect. (1) Exception safety: all five scratch vectors are allocated before any residual write, and relabel_all and the lambdas do not allocate, touching only queue_ scratch. (2) Overflow: total excess always equals limit minus what was returned at the source, so every excess[] value is <= limit; residual + reverse residual is constant per arc pair, so `+= amount` cannot overflow even at uint64 max. (3) Label validity: both BFS passes give h[v] <= h[w]+1 on every residual arc (no residual arc runs from the source-side set into the sink-side set, or from a labelled vertex's predecessor set into unseen), and pushes, relabels and the source cap at n+2 preserve it. So h[source] >= n+2 implies no residual s-t path, and dropping source excess there is a legal return over the implicit limit arc. (4) `best + 1` wrap: a non-source vertex with excess has a this-call flow path from the source, so its last flow arc gives a residual arc back to a labelled vertex. That vertex is labelled because it either received a push (pushes only target labelled vertices) or reaches the source in the residual graph at relabel_all time (hence reaches the sink, or is covered by the second BFS). So best is never unseen; the `height[edge.to] != unseen` guard is redundant but harmless. (5) No leftover excess: every push enqueues its target, a budget break is followed by relabel_all which re-enqueues every vertex with excess, and otherwise v is re-enqueued, so count==0 means only the sink holds excess. Result is <= limit. (6) Termination: global relabel never lowers a valid label (exact distance >= label; source side gets n+2+dist(v,source) >= old label), and heights are bounded by about 2n+1. (7) Queues: fifo holds at most n-1 entries thanks to the active flag; each BFS enqueues a vertex at most once and the second BFS restarts at 0, so n slots suffice. Unseen vertices are never modified, so min_cut/get/change semantics are unaffected.\",\n  \"issue_or_one_candidate\": \"Candidate (UNMEASURED, hypothesis): fuse the relabel min-scan into the current-arc scan. When the cursor scan of v starts at index 0 within the current discharge (always true after an in-discharge relabel; track a flag for the first pass), keep a running min of height[edge.to] over arcs whose residual is still nonzero after being processed. Within one discharge no neighbour height changes and v's arcs change only through v's own pushes; an arc passed after a push is saturated and so excluded. The running min therefore equals what the separate `for (edge : graph_[v])` loop computes, and that loop can be skipped. If the scan resumed from a nonzero cursor, fall back to the existing full scan. This removes up to one full adjacency pass per relabel. Keep the `work += graph_[v].size()` accounting unchanged at first so global-relabel cadence stays the same and the comparison is clean. Optional hardening, not a defect: a debug-only assert(best != unseen) before `height[v] = best + 1` to pin invariant (4).\",\n  \"measurement_plan\": \"A/B with the same driver/IO, compiler flags and machine. Run all 44 official inputs, reporting augmented_cycle02 plus the slowest three separately. Take at least 5 runs each and compare medians and minimums. Also record counters for relabels, arc touches and global relabels to confirm the cadence is unchanged and arc touches drop. Re-run the existing Edmonds-Karp differential, all-cuts, returned-budget, max-cap cycle, resumed-flow and allocation-failure suites under ASan/UBSan on GCC15 and Clang21 before accepting. Reject if the median gain is under about 3% or any input regresses beyond noise.\"\n}\n```",
+  "proposal_experiment": {
+    "adopted": false,
+    "reason": "Six official inputs x5 randomized repetitions; fused relabel scan regressed approx5% for line_random and max_random."
+  },
+  "failed_initial_request": {
+    "complete": false,
+    "error_type": "TimeoutExpired",
+    "duration_seconds": 600,
+    "not_counted_as_completed_review": true,
+    "prompt_sha256": "06a6155f9e9a96b4082c58e68a3fcd8d16a06214f15c6fb260175bcf5cf30184",
+    "response_sha256": "9ba59b689ae244905ceb87604fba1dba22992a516eae2f6257d5864693f92ce9"
+  },
+  "no_extra_usage": true,
+  "account_unchanged": true,
+  "online_submitted_by_agent": false
+}

@@ -4,6 +4,8 @@
 #include <cstdint>
 #include <iostream>
 #include <vector>
+
+using namespace sirkit;
 int main() {
     SegmentTreeBeats tree(std::vector<std::int64_t>{1, 5, -2, 8});
     tree.chmin(0, 4, 4);

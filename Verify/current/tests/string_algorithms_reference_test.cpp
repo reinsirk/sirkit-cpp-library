@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #ifndef Z_HEADER
 #define Z_HEADER "../../../String/Z_Algorithm.cpp"
 #endif

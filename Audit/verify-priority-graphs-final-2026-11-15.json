@@ -1,0 +1,307 @@
+{
+  "recorded_utc": "2026-11-15T12:28:17.335063+00:00",
+  "scope": "利用者が変更した優先順 Library Checker → yukicoder → AtCoder → AOJ に基づくグラフ8入口の最終判断。旧AOJ候補の調査記録は当時の候補として保全。",
+  "supersedes_selection_only": "Audit/verify-priority-graphs-2026-11-15.json",
+  "mapping": [
+    {
+      "old_id": "bellman_ford",
+      "new_id": "bellman_ford",
+      "domain": "atcoder.jp",
+      "problem_url": "https://atcoder.jp/contests/abc137/tasks/abc137_e",
+      "action": "retain",
+      "reason": "LCのShortest Pathは非負辺専用で負辺・到達可能負閉路を代替しない。自然に対応するyukicoder候補を確認できないため、AOJより優先のAtCoder ABC137 Eを維持。",
+      "coverage": "負辺を含む単一始点最短路、終点へ伝播する-INFと終点に無関係な負閉路。",
+      "limitations": "提出80357986は画像でAC・10ms、HTTP403で本文未照合。独立参照・検査あり/なし・確保失敗・ASan/UBSanはAudit/verify-bellman-ford-80357888-2026-10-25.json、今回の確認はAudit/verify-bellman-ford-80357986-2026-10-25.json参照。",
+      "old_entry_disposition": "既存primaryと提出履歴をそのまま維持。",
+      "priority": [
+        "Library Checker",
+        "yukicoder",
+        "AtCoder",
+        "AOJ"
+      ]
+    },
+    {
+      "old_id": "spfa",
+      "new_id": "spfa",
+      "domain": "atcoder.jp",
+      "problem_url": "https://atcoder.jp/contests/abc137/tasks/abc137_e",
+      "action": "retain",
+      "reason": "LCのShortest Pathは非負辺専用で負辺・到達可能負閉路を代替しない。自然に対応するyukicoder候補を確認できないため、AOJより優先のAtCoder ABC137 Eを維持。",
+      "coverage": "負辺を含む単一始点最短路、終点へ伝播する-INFと終点に無関係な負閉路。",
+      "limitations": "提出80394490は画像でAC・3ms、HTTP403で本文未照合。手元の対応準備版は前回検証済みの16V切替版。今回の比較・検証範囲はAudit/verify-spfa-80394490-2026-10-26.json参照。",
+      "old_entry_disposition": "既存primaryと提出履歴をそのまま維持。",
+      "priority": [
+        "Library Checker",
+        "yukicoder",
+        "AtCoder",
+        "AOJ"
+      ]
+    },
+    {
+      "old_id": "floyd_warshall",
+      "new_id": "floyd_warshall",
+      "domain": "atcoder.jp",
+      "problem_url": "https://atcoder.jp/contests/abc012/tasks/abc012_4",
+      "action": "retain",
+      "reason": "LCに負辺・負閉路を含む全点対最短路の直接問題を確認できず、今回確認したyukicoder候補から自然な移行先を確定できなかった。AOJより優先の既存AtCoderを維持。",
+      "coverage": "FloydWarshallによる全点間距離、グラフの中心。",
+      "limitations": "非負・無向・連結グラフ。負辺・負閉路・未到達・経路復元はローカル補足。提出80246981は画像でAC・6msを確認した記録で本文未照合。追加改修後はオンライン未提出。",
+      "old_entry_disposition": "既存primaryと提出履歴をそのまま維持。",
+      "priority": [
+        "Library Checker",
+        "yukicoder",
+        "AtCoder",
+        "AOJ"
+      ]
+    },
+    {
+      "old_id": "max_flow_grid",
+      "new_id": "preferred_max_flow_bipartite",
+      "domain": "judge.yosupo.jp",
+      "problem_url": "https://judge.yosupo.jp/problem/bipartitematching",
+      "action": "add_preferred_entry_preserve_old",
+      "reason": "LC Matching on Bipartite Graphを最大流へ自然に帰着でき、flow値と返却された辺flowが出力そのものになる。旧gridマッチングより一般の二部入力を検証する。",
+      "coverage": [
+        "mf_graph<int>::add_edge",
+        "単位容量二部ネットワークのflow",
+        "get_edgeのflowによる最大マッチング復元"
+      ],
+      "limitations": "新規・未提出。旧AtCoder判定は引き継がない。LCは容量1の二部ネットワークに限定される。一般容量、min_cut/change_edge、途中flow/reuse、edges一括返却と盤面復元は旧driver/独立参照で補足。",
+      "old_entry_disposition": "rootがreferenceへ分離し旧driver/判定historyを維持。",
+      "priority": [
+        "Library Checker",
+        "yukicoder",
+        "AtCoder",
+        "AOJ"
+      ]
+    },
+    {
+      "old_id": "topological",
+      "new_id": "preferred_topological_yuki",
+      "domain": "yukicoder.me",
+      "problem_url": "https://yukicoder.me/problems/no/1660",
+      "action": "add_preferred_entry_preserve_old",
+      "reason": "LCに一般有向グラフのトポロジカル順序と閉路を直接検証する問題を確認できない。yukicoder1660は隣接行列の冪零性を閉路判定とDAG最長路へ自然に帰着できる。",
+      "coverage": [
+        "全頂点のトポロジカル順序を使うDAG最長路",
+        "自己ループを含む閉路判定",
+        "辺なしグラフ"
+      ],
+      "limitations": "新規・未提出。旧AtCoder判定を引き継がない。非負隣接行列の歩道数が対象。順序の一意性・辞書順最小は独立参照と既存AtCoder入口で補足。",
+      "old_entry_disposition": "rootがreferenceへ分離し旧driver/判定historyを維持。",
+      "priority": [
+        "Library Checker",
+        "yukicoder",
+        "AtCoder",
+        "AOJ"
+      ]
+    },
+    {
+      "old_id": "topological_lexicographical",
+      "new_id": "topological_lexicographical",
+      "domain": "atcoder.jp",
+      "problem_url": "https://atcoder.jp/contests/abc223/tasks/abc223_d",
+      "action": "retain",
+      "reason": "一般DAGの辞書順最小順序を直接出力する現AtCoder ABC223 DがAPIに一致。LC rooted-tree topologicalは別問題で、yukicoder1660は任意順序と閉路だけで辞書順を検証しない。",
+      "coverage": [
+        "TopologicalSortLexicographical",
+        "閉路時の空結果"
+      ],
+      "limitations": "提出80490774はユーザー画像でAC42ms。提出本文未取得・未照合。再提出済みとして記録し、本文未取得だけを理由に再提出待ちにはしない。90997f61版の独立参照・96構成・固定main比較はAudit/performance-topological-lexicographical-80490593-2026-10-31.md参照。 42msへの変化の追加調査、AtCoder関連flags・pragma有無・8補足入力による比較と追加案不採用の判断はAudit/performance-topological-lexicographical-80490774-2026-10-31.md参照。本体90997f61は不変。",
+      "old_entry_disposition": "既存primaryと提出履歴をそのまま維持。",
+      "priority": [
+        "Library Checker",
+        "yukicoder",
+        "AtCoder",
+        "AOJ"
+      ]
+    },
+    {
+      "old_id": "node_reachable",
+      "new_id": "node_reachable",
+      "domain": "atcoder.jp",
+      "problem_url": "https://atcoder.jp/contests/abc228/tasks/abc228_b",
+      "action": "retain",
+      "reason": "既存AtCoder ABC228 Bは関数グラフの到達頂点数をAPIから直接出力する。一般APIを自然に検証する上位LC/yukicoder問題を確定できなかった。",
+      "coverage": [
+        "make_node",
+        "Node::nによる接続・共有",
+        "break_cycle内の循環検出と周期末尾特定",
+        "break_cycle",
+        "chain_size",
+        "到達しない循環を含む接続解除"
+      ],
+      "limitations": [
+        "複製・逆転・先頭追加削除・長鎖の非再帰破棄は独立ローカル検査で補う。",
+        "ノードごとに所有者を配列で保持するため、この提出だけでは長鎖の反復破棄の証拠にならない。",
+        "公式上限は10万ノード。入力構築・確保と走査の内訳はローカルで測る。",
+        "ローカル検証・測定条件はAudit/verify-node-ready-2026-10-26.jsonとAudit/performance-node-2026-10-26.json参照。",
+        "cycle_entry/has_cycleのAPI自体はオンラインmainでは呼ばず、独立ローカル照合で補う。",
+        "提出80395895は画像でAC・19msを確認。HTTP403で本文未照合。今回の比較後も本体・main・IOは変更していない。",
+        "最新確認はAudit/verify-node-80395895-2026-10-26.json、追加案の採否はAudit/performance-node-80395895-2026-10-26.json参照。"
+      ],
+      "old_entry_disposition": "既存primaryと提出履歴をそのまま維持。",
+      "priority": [
+        "Library Checker",
+        "yukicoder",
+        "AtCoder",
+        "AOJ"
+      ]
+    },
+    {
+      "old_id": "project_selection",
+      "new_id": "preferred_project_selection_yuki",
+      "domain": "yukicoder.me",
+      "problem_url": "https://yukicoder.me/problems/no/957",
+      "action": "add_preferred_entry_preserve_old",
+      "reason": "LCに同APIの単項費用・集合全true利益を自然に出力する問題を確認できない。yukicoder957は各マスの植林費用と行/列全体の利益がAPIへ直接対応する。",
+      "coverage": [
+        "add_single_costのtrue側費用",
+        "add_all_true_profitの行・列高階利益",
+        "solveの最適値",
+        "int64費用"
+      ],
+      "limitations": "新規・未提出。旧AtCoder判定を引き継がない。非負費用/利益の植林モデル。false利益・厳密制約・復元・増分solve・一般二変数費用は独立参照と既存AtCoder入口で補足。",
+      "old_entry_disposition": "rootがreferenceへ分離し旧driver/判定historyを維持。",
+      "priority": [
+        "Library Checker",
+        "yukicoder",
+        "AtCoder",
+        "AOJ"
+      ]
+    }
+  ],
+  "result": {
+    "new_lc_entries": 1,
+    "new_yukicoder_entries": 2,
+    "atcoder_retained": 5,
+    "aoj_primary_entries": 0,
+    "online_submission_done": false,
+    "old_ac_copied_to_new_ids": false,
+    "library_body_changed_by_this_task": false
+  },
+  "validation": {
+    "new_yukicoder_builds": 16,
+    "new_yukicoder_runs": 1248,
+    "new_yukicoder_maximum_runs": 6,
+    "all_pass": true,
+    "compiler_matrix": "GCC15.2 / Clang21, native / standard-alternative (SIRKIT_DISABLE_SIMD and no __int128), checked / SKIP_RUNTIME_CHECKS+NDEBUG",
+    "oracles": [
+      "Topo: Boolean adjacency matrix powers through N; independent of topological sorting",
+      "ProjectSelection: enumerate all cell subsets, calculate exact cell costs and row/column rewards"
+    ],
+    "maximum": [
+      {
+        "binary": "preferred_topological_yuki-gcc-native-skip",
+        "case": "chain100k",
+        "pass_": true,
+        "exit": 0,
+        "wall_seconds": 0.010131946997717023,
+        "time_maxrss": "0.00 9972",
+        "proof": "N-vertex directed path: maximum walk length N-1, A^N=0",
+        "input_sha256": "d0cfeab6968065660418b4eaa01afa42d8c57b69e2218638f99346fb6a9cd551"
+      },
+      {
+        "binary": "preferred_topological_yuki-clang-native-skip",
+        "case": "chain100k",
+        "pass_": true,
+        "exit": 0,
+        "wall_seconds": 0.01059908399474807,
+        "time_maxrss": "0.00 9976",
+        "proof": "N-vertex directed path: maximum walk length N-1, A^N=0",
+        "input_sha256": "d0cfeab6968065660418b4eaa01afa42d8c57b69e2218638f99346fb6a9cd551"
+      },
+      {
+        "binary": "preferred_topological_yuki-gcc-native-skip",
+        "case": "cycle100k",
+        "pass_": true,
+        "exit": 0,
+        "wall_seconds": 0.009541519000777043,
+        "time_maxrss": "0.00 9712",
+        "proof": "directed cycle has a walk of every positive length",
+        "input_sha256": "5abef1f1d5acedc846016115cec523b9a6bfdaeabbb41c3de82020db64971bc0"
+      },
+      {
+        "binary": "preferred_topological_yuki-clang-native-skip",
+        "case": "cycle100k",
+        "pass_": true,
+        "exit": 0,
+        "wall_seconds": 0.009810653995373286,
+        "time_maxrss": "0.00 9700",
+        "proof": "directed cycle has a walk of every positive length",
+        "input_sha256": "5abef1f1d5acedc846016115cec523b9a6bfdaeabbb41c3de82020db64971bc0"
+      },
+      {
+        "binary": "preferred_project_selection_yuki-gcc-native-skip",
+        "case": "grid300x300",
+        "pass_": true,
+        "exit": 0,
+        "wall_seconds": 0.022878394011058845,
+        "time_maxrss": "0.02 20884",
+        "proof": "For r complete rows,c complete columns, required union costs 300r+300c-rc; rewards300r+300c, profit<=rc<=90000, all planted attains90000",
+        "input_sha256": "7ddbac386035f184175085b54d9a21db561b09a352f7f98eedfac224ecf13f2d"
+      },
+      {
+        "binary": "preferred_project_selection_yuki-clang-native-skip",
+        "case": "grid300x300",
+        "pass_": true,
+        "exit": 0,
+        "wall_seconds": 0.02780504799738992,
+        "time_maxrss": "0.02 20896",
+        "proof": "For r complete rows,c complete columns, required union costs 300r+300c-rc; rewards300r+300c, profit<=rc<=90000, all planted attains90000",
+        "input_sha256": "7ddbac386035f184175085b54d9a21db561b09a352f7f98eedfac224ecf13f2d"
+      }
+    ],
+    "sources_before": {
+      "preferred_topological_yuki": {
+        "Graph/Topological.cpp": "5ab6ddeb1d2d8b1c4bf7eb13a31cdc289100b6a5659269db23391f010aa1e383",
+        "Verify/current/drivers/preferred_topological_yuki_main.cpp": "a012efa7695e2fedcbe1d34bd79d572a9222c67761ebe37c743c3ad00dca9060",
+        "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+      },
+      "preferred_project_selection_yuki": {
+        "Graph/Project_Selection.cpp": "b5a0e9f10d9271976bcc0b9fea362e3c3342f96f4b4e70ea307f8e7d230056fe",
+        "Verify/current/drivers/preferred_project_selection_yuki_main.cpp": "015a36e9de6a31bf7fa62b86030e01cc87b3bfe656c3e6dbc0aa10174fc757b5",
+        "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+      }
+    },
+    "sources_after": {
+      "preferred_topological_yuki": {
+        "Graph/Topological.cpp": "5ab6ddeb1d2d8b1c4bf7eb13a31cdc289100b6a5659269db23391f010aa1e383",
+        "Verify/current/drivers/preferred_topological_yuki_main.cpp": "a012efa7695e2fedcbe1d34bd79d572a9222c67761ebe37c743c3ad00dca9060",
+        "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+      },
+      "preferred_project_selection_yuki": {
+        "Graph/Project_Selection.cpp": "b5a0e9f10d9271976bcc0b9fea362e3c3342f96f4b4e70ea307f8e7d230056fe",
+        "Verify/current/drivers/preferred_project_selection_yuki_main.cpp": "015a36e9de6a31bf7fa62b86030e01cc87b3bfe656c3e6dbc0aa10174fc757b5",
+        "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+      }
+    },
+    "sources_unchanged": true,
+    "lc_max_flow_evidence": "Audit/verify-priority-graphs-2026-11-15.json (existing 8-mode matching validation retained at recorded source SHA)"
+  },
+  "primary_sources": [
+    {
+      "url": "https://yukicoder.me/problems/no/1660",
+      "file": "1660.html",
+      "sha256": "dabd3d6c1a74b485dd0e4a71c500a34790fc9e8d7d63d2c3f07d1175cd9127a5",
+      "bytes": 27849
+    },
+    {
+      "url": "https://yukicoder.me/problems/no/957",
+      "file": "957.html",
+      "sha256": "3196bea099058caaf380f35d80ce1cfb43a978fea75f9639c32dc16992104f4f",
+      "bytes": 26930
+    },
+    {
+      "url": "https://yukicoder.me/problems/no/1026",
+      "file": "1026.html",
+      "sha256": "ed969b9d4c6acf4be638c25dde55a318c6f0d7014f739ffe54de0eca2f7e6315",
+      "bytes": 26499
+    }
+  ],
+  "local_evidence_zip": {
+    "path": "Audit/data/verify-priority-graphs-final-20261115.zip",
+    "sha256": "e497e44db6187d4ca3572d71f76dcf139d16b95777ef7f155be22cdb46441afb",
+    "tracked": false
+  }
+}

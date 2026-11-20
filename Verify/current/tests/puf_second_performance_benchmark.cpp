@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #ifndef SIRKIT_PUF_SOURCE
 #define SIRKIT_PUF_SOURCE "../../../DataStructure/persistent-union-find.cpp"
 #endif
@@ -23,11 +25,11 @@ int main(int argc, char** argv) {
     if (mode == "same_small" || mode == "same_large") {
         const int n = mode == "same_small" ? 32 : 32768;
         PersistentUnionFind uf(n);
-        std::vector<PersistentUnionFind::Node*> roots;
+        std::vector<PersistentUnionFind::Version> roots;
         for (int stride = 1; stride < n; stride *= 2) for (int i = 0; i + stride < n; i += stride * 2) {
-            uf.unite(i, i + stride); if ((i & 255) == 0) roots.push_back(uf.root);
+            uf.unite(i, i + stride); if ((i & 255) == 0) roots.push_back(uf.version());
         }
-        struct Query { int a, b; PersistentUnionFind::Node* root; };
+        struct Query { int a, b; PersistentUnionFind::Version root; };
         std::vector<Query> queries; queries.reserve(2000000);
         std::uint64_t state = 41;
         for (int i = 0; i < 2000000; ++i) queries.push_back({int(next(state) % n), int(next(state) % n), roots[next(state) % roots.size()]});
@@ -43,7 +45,7 @@ int main(int argc, char** argv) {
         std::vector<std::string> values(n, "abcdef");
         measure([&] { for (int r = 0; r < repeats; ++r) { PersistentArray<std::string> array(values); escaped = array.root; checksum += array.size(); } });
     } else if (mode == "constructor") {
-        measure([&] { for (int r = 0; r < 1000000; ++r) { PersistentUnionFind uf(32); escaped = uf.root; checksum += uf.size(r % 32); } });
+        measure([&] { for (int r = 0; r < 1000000; ++r) { PersistentUnionFind uf(32); escaped = uf.version(); checksum += uf.size(r % 32); } });
     } else return 2;
     std::printf("%.6f %ju\n", milliseconds, static_cast<std::uintmax_t>(checksum));
 }

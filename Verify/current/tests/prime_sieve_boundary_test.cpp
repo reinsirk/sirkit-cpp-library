@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #ifndef SIEVE_SOURCE
 #define SIEVE_SOURCE "../../../Math/Eratosthenes.cpp"
 #endif
@@ -159,8 +161,8 @@ void carry_words() {
             for (auto count : lengths) {
                 std::uint64_t expected = 0;
                 for (std::size_t i = 0; i < count; ++i) expected += std::popcount(data[offset + i]);
-                check(reinsirk::detail::popcount_words_avx2(data.data() + offset, count) == expected);
-                check(reinsirk::detail::popcount_words_carry_avx2(data.data() + offset, count) == expected);
+                check(::sirkit::detail::popcount_words_avx2(data.data() + offset, count) == expected);
+                check(::sirkit::detail::popcount_words_carry_avx2(data.data() + offset, count) == expected);
             }
         }
     }

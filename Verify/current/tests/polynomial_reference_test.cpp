@@ -1,3 +1,5 @@
+namespace sirkit {}
+using namespace sirkit;
 #include <algorithm>
 #include <cstdint>
 #include <iostream>

@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 // アドレス列の参照モデルと、共有・例外・循環・長鎖の解放を照合する。
 #ifndef SIRKIT_NODE_SOURCE
 #define SIRKIT_NODE_SOURCE "../../../DataStructure/Node.cpp"
@@ -339,6 +341,23 @@ static void additional_lifetime_tests() {
     }
     require(deleted == 1, "empty owning pointer deleter invoked once");
     {
+        const auto owned = std::make_shared<int>(37);
+        const std::weak_ptr<int> resource = owned;
+        auto head = make_chain(3, std::shared_ptr<Node>(owned, nullptr));
+        require(chain_size(head) == 3, "null alias terminates multi-node chain");
+        require(!resource.expired(), "null alias preserves owned resource");
+        auto observers = weak_observers(head);
+        head.reset();
+        require_expired(observers, "chain with null alias fully released");
+    }
+    {
+        auto owned = std::make_shared<int>(37);
+        const std::weak_ptr<int> resource = owned;
+        auto head = make_chain(3, std::shared_ptr<Node>(std::move(owned), nullptr));
+        head.reset();
+        require(resource.expired(), "last owner is a null alias at chain termination");
+    }
+    {
         auto head = make_chain(300000);
         auto observers = weak_observers(head);
         require(observers.size() == 300000, "all-node weak observer count");
@@ -382,6 +401,30 @@ static void additional_lifetime_tests() {
     }
 }
 
+static void traversal_counter_limits() {
+    const auto head = make_chain(4);
+    using sirkit::detail::chain_size_bounded;
+    require(chain_size_bounded<4>(head.get()) == 4, "count reaches an exact limit");
+    require(chain_size_bounded<3>(head->n.get()) == 3, "odd count reaches an exact limit");
+    bool overflow = false;
+    try {
+        (void)chain_size_bounded<3>(head.get());
+    } catch (const std::length_error&) {
+        overflow = true;
+    }
+    require(overflow && chain_size(head) == 4, "count rejects overflow without modifying the chain");
+#ifndef SKIP_RUNTIME_CHECKS
+    sirkit::detail::ChainCycleCheck check(head.get());
+    constexpr auto maximum = std::numeric_limits<std::size_t>::max();
+    // 2倍では表せない検出区間を扱う、区間切り替え直前のカウンタを再現する。
+    check.power = maximum / 2 + 1;
+    check.distance = check.power - 1;
+    check.advance(head->n.get());
+    require(check.power == maximum && check.distance == 0 && check.checkpoint == head->n.get(),
+            "cycle checkpoint counter saturates");
+#endif
+}
+
 int main() {
     const auto before_live = live_allocations;
     boundary_tests();
@@ -389,6 +432,7 @@ int main() {
     cycle_boundaries();
     allocation_failure_tests();
     additional_lifetime_tests();
+    traversal_counter_limits();
     lifetime_tests();
     require(live_allocations == before_live, "all allocation resources released");
     std::cout << "PASS checks=" << checks

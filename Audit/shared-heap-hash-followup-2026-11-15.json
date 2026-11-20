@@ -1,0 +1,183 @@
+{
+  "format": 1,
+  "date": "2026-11-15",
+  "scope": "Heap and shared hash followup after existing optimizations; same-input/same-main comparisons, production code retained",
+  "decision": "Reject measured heap/hash candidates due cross-input/API/operation regressions",
+  "baseline_graph_already_includes_new_custom_inf_api": true,
+  "library_algorithms_changed_by_these_experiments": false,
+  "online_submission_performed": false,
+  "commit_or_push_performed": false,
+  "experiments": {
+    "dijkstra": {
+      "codex_packet": {
+        "date_utc": "2026-11-15T10:21:20.790830+00:00",
+        "decision": "No heap candidate adopted. Retain live current Graph/Dijkstra.cpp; request Fable review of measured/rejected ideas and custom-inf/shared-heap design.",
+        "current_library_sha256": "65644fbf124206fc37a1530f9b778177c4c7c70436b9dfabe5778b40d125fd41",
+        "current_library_source": "baseline.cpp",
+        "initial8_full_candidate": {
+          "library_sha256": "e9ac6b9b500c5f00c5fff13b283770772a5a9797f7260fb3f87ba64cc65ccf19",
+          "whole_main_sha256": "e4697c959ebdb44686f57b5b3c51639a956c3073a8a876d04773e0ee06018264"
+        },
+        "initial8_path_candidate": {
+          "library_sha256": "1358667b4b49371ef67f1d701319375eb0c0358e08b270cc10e0c21bafb7370e",
+          "whole_main_sha256": "a8f637e450b7b9ddc971dd140b57e0cde5a9745cc2293f2d34921453f087faab"
+        },
+        "candidate_sources_immutable": true,
+        "candidate_patches": [
+          "initial2.patch",
+          "initial4.patch",
+          "initial8.patch",
+          "initial8_path.patch",
+          "initial2out.patch",
+          "initial8out.patch"
+        ],
+        "scope": "Read-only production; candidates exist under/tmp only. No root source/group/generator/online status/model/commit changes in this heap experiment.",
+        "prior_evidence": "review-prior.json",
+        "timing_conditions": {
+          "primary_compilers": "provenance.json and builds*.json, GCC15.2/Clang21",
+          "cpu": 26,
+          "flags": [
+            "-std=c++23",
+            "-O3",
+            "-march=native",
+            "-DSKIP_RUNTIME_CHECKS",
+            "-DNDEBUG"
+          ],
+          "api_harness": "body.cpp; graph and edge input construction outside clock; default-runtime-inf argument form; fresh output vectors, API call(s), final distance checksum outside clock",
+          "whole_main": "Frozen Verify/current/drivers/dijkstra_main.cpp + shared fast I/O; exact generated main sources under/tmp, root files untouched; default call with omitted inf; process time includes parse,CSR,algorithm,path formatting/output; stdout goes to/dev/null",
+          "inputs": "inputs.json;10 synthetic shapes, not claimed official test generators",
+          "interleave": "1warmup plus11 or21 recorded trials, order varied; byte-identical baseline control(s); instrumentation separately compiled and not timed",
+          "control_variation": "Up to5-12% in some screens; conclusions use focused21-trial recheck and control comparison. Not a universal speed bound."
+        },
+        "observed": {
+          "almost_chain": "initial8 full: focused21 trials API CSRpath -15.12%, WGraphdistance -10.99%, full-main -3.02%, controls within~0.6%.",
+          "grid_problem": "initial8 full focused WGraphdistance +3.19% with controls about-3%; initial8_path direct11 trials WGraphdistance +5.13%,control+0.90%. Production distance algorithm/type restored in path-only candidate but surrounding code generation still affects this harness. Do not hide this regression behind another API gain.",
+          "operation_profile": "Baseline/initial2/initial8 same push/pop/stale/refill/redistribution/capacity counts on almost-chain/grid/sparse; change in measured path is implementation/codegen, not a different graph algorithm. See counter-comparison.json.",
+          "small_heaps": "Replacing <=256 std/packed specializations with generic2/4/8ary heaps regressed GCC small64 by~15-57% in screen; not adopted.",
+          "reserve_and_radix": "zero reserve64, all-API singleton pop, bounded4 did not establish a broad stable improvement; not bundled with initial heap.",
+          "clang": "initial2/4/8/path .text equals current baseline because Clang uses existing bounded65 initial queue. No performance gain claimed from these identical code paths."
+        },
+        "validation": {
+          "screen_whole_main": "200 candidate/compiler/input outputs checked independently with Python arbitrary-precision heap Dijkstra and path validity; additional60 for outlined/path candidates.",
+          "initial8_independent": "8 current candidate builds GCC/Clang×native/portable×checked/skip;16 executions; custom checked194267/skip193477,default231736 assertions, allPASS. This applies to initial8 SHA only, not to initial8_path.",
+          "initial8_path": "Whole-main independent outputs verified, full8-mode oracle not run because candidate already rejected on performance. Do not transfer initial8 SHA approval.",
+          "default_custom_inf": "Independent tests cover existing default/caller inf, overflow, path/CSR and signed algorithms used as cross-check. Candidate itself alters only default initial queue; custom-inf kernel remains current source."
+        },
+        "api_summary": "confirmation-path-summary.json plus confirmation-focused-summary.json",
+        "main_summary": "confirmation-path-summary.json plus confirmation-focused-summary.json",
+        "raw": "screen.json, profiles.json, candidate-profiles.json, confirmation*.json",
+        "root_source_unchanged": true,
+        "online_submission_not_done": true
+      },
+      "packet_sha256": "1afa55bd6015d1be78abcdfac2595c526962218cb5ae9fda076d82957c9b6062",
+      "local_archive": {
+        "path": "Audit/data/shared-dijkstra-heap-20261115.zip",
+        "sha256": "6ea4aa16dae633b29aef791dc9d58f1b4fe14da7800bf04796a80dd1d70a500d",
+        "local_only": true
+      }
+    },
+    "hash": {
+      "codex_packet": {
+        "date_utc": "2026-11-15T10:45:53.555405+00:00",
+        "decision": "Reject all3 candidates (eager/lazy fingerprint and XOR+fixed-multiplier hash). Keep production InternalHashMap/public HashMap unchanged; current shared component designs are not made identical merely for reuse.",
+        "production_baseline_sha256": "2e353c9daa09faaf53ccef4146a2b1a2b8a0f9a586a49bca99cfbcbeccef0b73",
+        "baseline_source": "baseline.cpp",
+        "candidate_sources": {
+          "fingerprint.cpp": "46a7814484ba7ff4544fc459e36b8764e88ad6996e38a7a817891118e4e2c05c",
+          "fingerprint_lazy.cpp": "33c002673c883e88677cbe8d824c1f4d7eed7ffaee7bade105540d44b212ed66",
+          "xor_fixed.cpp": "7e33b62de4d78c7b692abe3e405abb8f1b46e5e868b9afada4ec1318fcf22c99"
+        },
+        "patches": [
+          "fingerprint.patch",
+          "fingerprint_lazy.patch",
+          "xor_fixed.patch"
+        ],
+        "scope": "Only ignored/tmp candidate files. No library source/embedded copy/Verify/groups/Docs changed by this experiment. Root concurrent HashMap/HashSet comment updates preserved.",
+        "algorithm": "Same randomized multiplicative hash, linear probing, load thresholds, key/value vectors/ownership/API. NonPacked controlbyte stores occupancyMSB plus7 hash bits immediately after the bucket bits; Packed bool path remains untagged. occupied8 extractsMSB, SIMD zero-compare stays valid. Rehash/insertion stamp uses the destination capacity; values factory exceptions do not mark a slot live.",
+        "lazy_variant": "Check first-slot key before calculating/comparing fingerprint; only collision tail uses tags. Keeps fast first-hit path and attempts to avoid the eager variant overhead.",
+        "correctness": {
+          "eager": "GCC15.2 checked native,160220 independent unordered_map assertions PASS",
+          "lazy": "GCC15.2 checked native,160220 independent unordered_map assertions PASS",
+          "covered_types": "uint64/int keys, int64/int/string values, Packed false/true, Denominator2/4/5/8, reserve/reallocate/copy/move/assignment/clear/release/enumerate/for_each/factory throw",
+          "benchmark_output_checks": "All baseline/control/candidate checksums matched for every measured case/seed.",
+          "not_run": "Rejected candidates are not synced into consumer libraries and not submitted online. No sanitizer/full8mode for these rejected hash candidates; no claim that other unmeasured typed workloads improved.",
+          "xor_fixed": "GCC15.2 checked native160220 independent assertions PASS plus32 full-main output checks"
+        },
+        "benchmark": {
+          "primary_compilers": "Absolute/usr/bin/g++15.2 and/usr/bin/clang++-21 with explicit gcc-install-dir, compiler hashes in builds*.json",
+          "flags": [
+            "-std=c++23",
+            "-O3",
+            "-march=native",
+            "-DSKIP_RUNTIME_CHECKS",
+            "-DNDEBUG"
+          ],
+          "cpu": 26,
+          "fixed_salts": [
+            11400714819323198485,
+            15111065706836454659
+          ],
+          "salt_policy": "Only benchmark copies replace private initial_salt with a fixed macro, same seeds baseline/candidate/control. Candidate production sources retain normal timestamp-derived salt unchanged.",
+          "n": [
+            1600,
+            200000
+          ],
+          "shapes": {
+            "0": "uniform random64bit",
+            "1": "consecutive",
+            "2": "consecutive shifted40bits"
+          },
+          "operations": {
+            "0": "1million hit lookups",
+            "1": "1million miss lookups",
+            "2": "1million updates ofexisting keys",
+            "3": "fresh insertion/build withnormal growth"
+          },
+          "timing": "API operations only; input/key/query generation outside timer; query table prebuild outside timer,build itself timed for mode3; final checksum outside timer. Full main/IO not timed because known other-operation regressions reject these candidates.",
+          "trials": "screens3; focused1warmup+11trials; order interleaved; byte-identical baseline control"
+        },
+        "confirmed_examples": {
+          "eager_gcc_small_sequential_seed1": "hit+12.63%,control+0.58%;update+24.03%,control-0.72%;large random miss -5.12%,control+0.31%.",
+          "lazy_gcc_large_stride_hit": "seed2+10.10%, control-0.22%; see confirmation-lazy-summary.json. Sequential-hit screen regression was less stable and is not the main rejection evidence.",
+          "lazy_clang_small_random_update": "seed1+11.67% control-0.40%; seed2+11.87% control+0.24%."
+        },
+        "salt_observation": "Fixed seed materially changes sequential/stride probe distribution; absolute timings across salts are not candidate improvements. Production hash/salt policy was not changed.",
+        "summary_files": [
+          "confirmation-summary.json",
+          "confirmation-lazy-summary.json",
+          "screen-summary.json",
+          "screen-lazy-summary.json"
+        ],
+        "fable_question": "Review current shared components and measured rejected ideas; no candidate is recommended for adoption. If proposing changes, retain Packed/genericVal/tombstone/iterator/ownership and all other-operation performance requirements. Current Codex conclusion is unchanged current implementation.",
+        "public_map_review": "PublicHashMap supports noninteger keys, custom hash/equality, tombstones and nontrivial values. Do not port this internal integer-table representation change into that API automatically; prior public-map rejections documented in Audit/performance-hash-map-set-round2-2026-10-29.json.",
+        "xor_fixed_candidate": {
+          "source": "xor_fixed.cpp",
+          "source_sha256": "7e33b62de4d78c7b692abe3e405abb8f1b46e5e868b9afada4ec1318fcf22c99",
+          "scope": "Only5 arithmetic expressions changed: private hash(Key) helper and all4 rehash insertion loops. Uses same integer formula as public GenericHash, retaining Internal load threshold, ownership, flags and existing salt generation. No fingerprint change bundled.",
+          "correctness": "GCC15.2 native checked160220 independent assertions PASS; all32 full-main compiler/salt/input outputs equal Python dict expected bytes.",
+          "body_summary": "screen-xor-fixed-summary.json: 2fixed salts×GCC/Clang×1600/200000×random/sequence/stride40×hit/miss/update/build. Same inputs/main/options/environment per variant.",
+          "whole_main_summary": "main-summary.json: 2fixed salts×GCC/Clang×4synthetic500000-query inputs, unchanged actual Verify main/sharedfastIO,1warmup+11interleaved trials, byte-identical controls. Source snapshots baseline-main.cpp/xor_fixed-main.cpp; input/expected SHA in main-inputs.json.",
+          "whole_main_time_scope": "Process wall/childCPU includes parse, table operations, output formatting and writes to/dev/null. Correctness measured separately with captured full output. These are synthetic inputs within the intended LC task, not official testdata files.",
+          "observations": [
+            "GCC salt1 sequential+4.47%(control-0.28%),stride+4.65%(control+0.27%),updates+3.37%(control-0.20%).",
+            "GCC/Clang salt2 updates improves~10.6/10.9%, but stride/current other operations regress. Do not report one favorable seed as an overall speedup.",
+            "Small1600 consecutive hit/update regress strongly under both seeds and compilers; worst screened GCC hit becomes~7.2times baseline.",
+            "Untimed exact uint64 bucket/probe simulation shows baseline mean hit probes1.028→candidate3.468 for1600sequential seed1; seed2 1.794→3.469. This is a changed hash distribution/cluster pattern, beyond the added XOR instruction. See probe-diagnostic.json.",
+            "PublicHashMap has a lower load threshold and different slot/layout/iterator/erase semantics; differing load factors are a plausible reason direct hash reuse performs differently, not a separately measured causal claim."
+          ]
+        },
+        "all_candidates_production_salt_unchanged": true,
+        "actual_main_code_and_io_unchanged": true,
+        "public_HashMap_HashSet_body_unchanged": true,
+        "no_more_candidates_planned_in_this_pass": true,
+        "final_archive": "Audit/data/shared-internal-hash-20261115.zip"
+      },
+      "packet_sha256": "2dc5d10661f5286183ab06517021ea76dd97de374a1fb11c91e94981092a04d1",
+      "local_archive": {
+        "path": "Audit/data/shared-internal-hash-20261115.zip",
+        "sha256": "6f91c6064063e6877e4671ee5efe499232f2ba71268027c2959da0091511e7df",
+        "local_only": true
+      }
+    }
+  }
+}

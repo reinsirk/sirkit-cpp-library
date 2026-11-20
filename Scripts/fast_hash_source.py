@@ -3,6 +3,11 @@
 from pathlib import Path
 
 
+try:
+    from public_namespace import wrap_source, unwrap_source
+except ModuleNotFoundError:
+    from Scripts.public_namespace import wrap_source, unwrap_source
+
 def once(source: str, old: str, new: str) -> str:
     if source.count(old) != 1:
         raise ValueError("Hash高速版の差分を再確認してください: " + old[:100])
@@ -10,15 +15,16 @@ def once(source: str, old: str, new: str) -> str:
 
 
 def build(source: str, kind: str, root: Path) -> str:
+    source = unwrap_source(source)
     source = once(source, "// API一覧\n", """// API一覧
 // 速度優先版: 確保・構築成功と有効な引数が前提。例外時の状態復元は保証しない。
 // eraseは非自明な登録値を破棄する。clear・表の破棄では登録値の破棄を省く。
 // 再配置後の旧配列だけ解放し、最後の表と省略した値の資源は回収しない。
 // 格納型のデストラクタの副作用・資源回収を必要としない処理で使う。
 """)
-    clear_comment = ("// clear(): 全要素を破棄し、確保済みの容量を再利用する。" if kind == "HashMap" else
+    clear_comment = ("// clear(): 全要素を破棄し容量を再利用。O(C)、要素も墓石もなければO(1)。" if kind == "HashMap" else
                      "// clear(): O(capacity())で全要素を破棄し、確保済み容量を再利用する。")
-    fast_clear = ("// clear(): 登録状態を消し容量を再利用する。値のデストラクタは呼ばない。" if kind == "HashMap" else
+    fast_clear = ("// clear(): O(C)で登録状態を消し容量を再利用。要素・墓石なしはO(1)。値のデストラクタは呼ばない。" if kind == "HashMap" else
                   "// clear(): O(capacity())で登録状態を消し、容量を再利用する。値のデストラクタは呼ばない。")
     source = once(source, clear_comment, fast_clear)
     source = once(source, f"    {kind}(const {kind}&) = default;", f"""    {kind}(const {kind}& other) requires std::is_copy_constructible_v<value_type>
@@ -48,8 +54,7 @@ def build(source: str, kind: str, root: Path) -> str:
     source = source[:start] + """    template<bool Compact>union SlotStorage {
         std::remove_cv_t<value_type> value;
         SlotStorage()noexcept{}
-        ~SlotStorage() requires std::is_trivially_destructible_v<value_type> = default;
-        ~SlotStorage()noexcept requires (!std::is_trivially_destructible_v<value_type>) {} // Fast契約: 登録値も破棄しない。
+        ~SlotStorage() noexcept {} // Fast契約: 登録値の破棄はerase時だけ行う。
         SlotStorage(const SlotStorage&)=delete;
         SlotStorage(SlotStorage&&)=delete;
         value_type&operator*()noexcept{return value;}
@@ -107,7 +112,7 @@ def build(source: str, kind: str, root: Path) -> str:
         at = body.rindex("invalidate();") + len("invalidate();")
         body = body[:at] + "\n        next.release_storage();state.release_storage();" + body[at:]
         source = source[:opening + 1] + body + source[end - 1:]
-    helper = (root / "Fast/Source/Internal/Hash_Released_Array.cpp").read_text()
+    helper = unwrap_source((root / "Fast/Source/Internal/Hash_Released_Array.cpp").read_text())
     helper = helper[helper.index("#include "):].rstrip() + "\n"
     at = source.index("#include ")
-    return source[:at] + helper + "\n#if !defined(SIRKIT_DISABLE_SIMD) && defined(__SSE2__) && (defined(__x86_64__) || defined(__i386__))\n#include <emmintrin.h>\n#endif\n\n" + source[at:]
+    return wrap_source(source[:at] + helper + "\n#if !defined(SIRKIT_DISABLE_SIMD) && defined(__SSE2__) && (defined(__x86_64__) || defined(__i386__))\n#include <emmintrin.h>\n#endif\n\n" + source[at:])

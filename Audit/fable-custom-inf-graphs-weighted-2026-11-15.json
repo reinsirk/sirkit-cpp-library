@@ -1,0 +1,59 @@
+{
+  "format": 1,
+  "date": "2026-11-15",
+  "status": "review_complete_no_change_requested",
+  "scope": "Three caller-configurable-inf graph programs and two new weighted rollback Verify programs; read-only static Fable second review after Codex local validation",
+  "source_representation": "Exact frozen in-memory canonical renders, before repository-wide regeneration",
+  "requested_model": "claude-fable-5-2",
+  "actual_models": [
+    "claude-fable-5-2"
+  ],
+  "authorized_account_matches": true,
+  "online_ac_claimed": false,
+  "measured_by_fable": false,
+  "reviews": {
+    "reviews": [
+      {
+        "id": "bellman_ford",
+        "source_sha256": "ecb55b1398dc150c954a00851e097a194b600d9289b0fa2fa62814637dde3521",
+        "verdict": "keep",
+        "reason": "静的確認のみ（未実行）で、欠陥は見つからなかった。inf!=kInfはImpl<true,false,false,true>に入り、検査省略時もdirect_infがfalseなので内部番兵(n+1)*1e9／-n*1e9で計算し、最後にinf／-infへ写像して衝突を検出する。加算は|w|<=1e9とV<=INT_MAXからint64内に収まる。UseActive=false版は検査省略時にinfを直接番兵にするため、カスタムinfで使わない判断は正しい。inf<=0は検査省略時もinvalid_argument。既定呼び出しは従来の分岐のままで、mainは制約内（|P-C|<=1e5）で-kInf判定と整合する。先頭のSubmission URLは旧版のものなので、このSHAのACとは扱わないこと。計測済み6ケースと重複しない有意な最適化案はない。"
+      },
+      {
+        "id": "spfa",
+        "source_sha256": "b4f3865eb73336c41f2dda759cd974def2fed1764127f4fefeaac2c95cf75989",
+        "verdict": "keep",
+        "reason": "静的確認のみ（未実行）で、欠陥は見つからなかった。カスタムinfはSmall／非SmallともBounded=falseで、内部の未到達値(n+1)*1e9を使い、負影響はstateのビットで管理して最後に-inf／infへ写像し、衝突時はoverflow_errorになる。SPFAFinishComponentsにもinfが渡され、影響頂点をlower_boundへ戻してから成分処理するので、非Bounded時の値域（>-n*1e9）と矛盾しない。既定経路はCustomInf=falseでkInfがコンパイル時定数のまま。検査省略かつSmallではdistancesを直接書くため、例外時は内容が変わるが「成功時に全上書き」の記述範囲内。mainは従来どおり。Submission URLは旧版のもの。追加の最適化案はない。"
+      },
+      {
+        "id": "floyd_warshall",
+        "source_sha256": "a80c2454b32c55495d82804197b160bd320394311bc63ef1f75607c70b406a6e",
+        "verdict": "keep",
+        "reason": "静的確認のみ（未実行）で、欠陥は見つからなかった。カスタムinfはUseSimd=falseのスカラ経路だけを通る。非負のFiniteRange近道は、maximum<=(inf-1)/nに加えてmaximum<=INT64_MAX/(2n)も要求するので、2項の和はint64内。それ以外はinfをINT64_MAXへ置換し、n*maximumの上限で符号付き64bit版か広幅版を選ぶ。広幅版の上限n*inf(<=94bit)と番兵n*inf+1は、__int128版・標準2語版ともに和が収まる。標準版の32bit分割乗算の桁上げ、2語の加算・符号反転・比較、最終写像後の下位語bit_castも正しい。対角min(入力,0)、n==1、next版の-1設定も整合。既定経路のSIMD分岐は変わらず、mainは制約内（N<=300、t<=1000）で非負有限経路になる。Submission URLは旧版のもの。追加の実験案はない。"
+      },
+      {
+        "id": "rollback_weighted_union_find_reset_constraints",
+        "source_sha256": "74f0d9cddd07586f41a659d754a4420049d3f65b6bb35b6be83329b505bb1a29",
+        "verdict": "keep",
+        "reason": "静的確認のみ（未実行）で、欠陥は見つからなかった。Parity=static_modint<2>でtype-1を重みにし、unite_checkedのContradictionで0通り、それ以外は2^component_count。type 3はrollback(0)と矛盾フラグの解除。type 2が非零重み、type 3が実際の復元を自然に通す。非整数Tではundo時に重みを0へ戻さないが、根の重みはどの照会経路でも読まれず、再結合時にrecord_mergeが上書きするので問題ない。単独根yの高速経路と一般経路の根間差（順・逆）の符号も正しい。履歴は追加1件につき1件でreserve_history(q)に収まり、復元回数の総和は追加数以下。u==vの反対条件も矛盾として扱える。実行時間はごく小さく、最適化の余地は乏しい。オンライン未提出。"
+      },
+      {
+        "id": "rollback_weighted_union_find_versioned_potential",
+        "source_sha256": "473be598b8541f0d270a14b58ec64b056cd51f3a6eea135d57f8196df6fc4570",
+        "verdict": "keep",
+        "reason": "静的確認のみ（未実行）で、欠陥は見つからなかった。区間和をS[R]-S[L-1]としてunite_checked(left-1,right,w)／try_diffに対応させている。版木の反復DFSは、exitフレームを子より先に積むので、子をすべて処理した後にrollback(state)が走る。兄弟は復元後の同じ状態から始まり、冗長・矛盾の履歴1件も戻る。dynamic_modint<0>は合成数KやK=1でも加減算のみで正しく、同じ親を持つ子どうしの直接差分も非根どうしに限られる。履歴の深さはq以下でreserve_history(q)に収まる。問題文の制約原文は手元になく、入力形式と値域（重みがintに収まること等）はCodexの公式サンプル照合に依拠した。answersのstring配列はSSOに収まり、実行時間への影響は小さい。オンライン未提出。"
+      }
+    ],
+    "experiments": []
+  },
+  "execution": {
+    "path": "Audit/data/premerge-resume-20261115.zip:claude/custom-inf-graphs-weighted/execution.json",
+    "sha256": "a57324780e1092162614c94a83560fc24a299ae4ccb36d21d156404a5105663d"
+  },
+  "raw_stream": {
+    "path": "Audit/data/premerge-resume-20261115.zip:claude/custom-inf-graphs-weighted/response.jsonl",
+    "sha256": "11a2512e63302f47dd5773da2af3399198d4aadc27ac7f271965bc0f3b6b410e"
+  },
+  "usage_before_percent": 17,
+  "usage_after_percent": 38
+}

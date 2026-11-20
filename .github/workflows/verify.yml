@@ -3,20 +3,13 @@ name: Verify
 on:
   pull_request:
     branches: [main]
-  push:
-    branches: [dev]
-  workflow_dispatch:
-    inputs:
-      all:
-        description: 全てのローカルVerifyを実行する
-        type: boolean
-        default: false
 
 permissions:
   contents: read
 
 env:
   PYTHONDONTWRITEBYTECODE: "1"
+  SIRKIT_PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
 
 concurrency:
   group: verify-${{ github.workflow }}-${{ github.ref }}
@@ -25,72 +18,793 @@ concurrency:
 jobs:
   maintenance:
     name: Generated files and status
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0
           persist-credentials: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - name: Install test tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y g++-15 clang-18 llvm-18 clang-tidy-18 libclang-rt-18-dev libboost-dev
+      - name: Install documentation test dependencies
+        run: python3 -m pip install -r .competitive-verifier/requirements.txt
+      - name: Compiler availability
+        run: |
+          g++-15 --version
+          clang++-18 --version
       - name: Python unit tests
-        run: python3 -m unittest discover -s Scripts/tests -p 'test_*.py'
+        env:
+          SIRKIT_CLANG_TIDY: clang-tidy-18
+        run: |
+          export SIRKIT_TIDY_GCC_INSTALL_DIR="$(dirname "$(g++-15 -print-libgcc-file-name)")"
+          python3 -m unittest discover -s Scripts/tests -p 'test_*.py'
       - name: Generated source and Verify synchronization
         run: python3 -c 'from pathlib import Path; from Scripts.package_revised_libraries import check_generated; check_generated(Path.cwd())'
       - name: README and online status synchronization
         run: python3 Scripts/update_verify_status.py --check
 
   examples:
-    name: C++23 (${{ matrix.compiler }})
-    needs: maintenance
-    runs-on: ubuntu-24.04
+    name: C++23 (${{ matrix.compiler }}, ${{ matrix.arithmetic }}${{ matrix.compile_profile != 'standard' && ', AtCoder' || '' }})
+    runs-on: ubuntu-26.04
     timeout-minutes: 45
     strategy:
       fail-fast: false
       matrix:
         compiler: [g++, clang++]
+        arithmetic: [native, portable]
+        compile_profile: [standard]
+        include:
+          - {compiler: g++, arithmetic: native, compile_profile: atcoder}
+          - {compiler: clang++, arithmetic: native, compile_profile: atcoder-clang}
     steps:
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0
           persist-credentials: false
       - name: Install compilers
+        if: matrix.compile_profile != 'atcoder-clang'
         run: |
           sudo apt-get update
-          sudo apt-get install -y g++ clang
+          sudo apt-get install -y g++-15 clang-18 libboost-dev
+      - name: Install Clang for the AtCoder profile
+        if: matrix.compile_profile == 'atcoder-clang'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang-21 lld-21 libc++-21-dev libomp-21-dev libclang-rt-21-dev libunwind-21-dev libboost-dev
       - name: Select and run local Verify
         env:
-          VERIFY_EVENT: ${{ github.event_name }}
-          VERIFY_BEFORE: ${{ github.event.before }}
-          VERIFY_PR_BASE: ${{ github.event.pull_request.base.sha }}
-          VERIFY_ALL: ${{ inputs.all }}
-          VERIFY_COMPILER: ${{ matrix.compiler }}
+          VERIFY_COMPILER: ${{ matrix.compiler == 'g++' && 'g++-15' || matrix.compile_profile == 'atcoder-clang' && 'clang++-21' || 'clang++-18' }}
+          VERIFY_ARITHMETIC: ${{ matrix.arithmetic }}
+          VERIFY_COMPILE_PROFILE: ${{ matrix.compile_profile }}
           VERIFY_RESULTS: ${{ runner.temp }}/verify-results
         shell: bash
         run: |
           set -euo pipefail
-          args=(--compiler "$VERIFY_COMPILER" --skip-sync --results "$VERIFY_RESULTS/result.json")
-          if [[ "$VERIFY_COMPILER" == clang++ ]]; then
+          args=(--all --compiler "$VERIFY_COMPILER" --compile-profile "$VERIFY_COMPILE_PROFILE"
+                --jobs 4 --skip-sync --results "$VERIFY_RESULTS/result.json")
+          if [[ "$VERIFY_ARITHMETIC" == portable ]]; then
             args+=(--fallback)
           fi
-          if [[ "$VERIFY_ALL" == true ]]; then
-            args+=(--all)
-          elif [[ "$VERIFY_EVENT" == pull_request ]]; then
-            args+=(--base "$VERIFY_PR_BASE")
-          elif [[ "$VERIFY_EVENT" == push && -n "$VERIFY_BEFORE" && ! "$VERIFY_BEFORE" =~ ^0+$ ]]; then
-            if git cat-file -e "${VERIFY_BEFORE}^{commit}"; then
-              args+=(--base "$VERIFY_BEFORE")
-            else
-              args+=(--all)
-            fi
-          else
-            args+=(--base origin/main)
-          fi
           python3 Scripts/ci_verify.py "${args[@]}"
+      - name: Summarize local Verify
+        if: always()
+        env:
+          VERIFY_RESULTS: ${{ runner.temp }}/verify-results
+        run: python3 Scripts/ci_verify_summary.py "$VERIFY_RESULTS/result.json" >> "$GITHUB_STEP_SUMMARY"
+      - name: Attach report provenance
+        if: always()
+        env:
+          REPORT_FILE: ${{ runner.temp }}/verify-results/result.json
+        run: |
+          python3 - <<'PYPROVENANCE'
+          import json, os
+          from pathlib import Path
+          path = Path(os.environ["REPORT_FILE"])
+          if path.is_file():
+              value = json.loads(path.read_text())
+              current = {key.lower(): os.environ.get(key) for key in (
+                  "GITHUB_SHA", "GITHUB_RUN_ID", "GITHUB_RUN_ATTEMPT", "GITHUB_REPOSITORY", "GITHUB_JOB")}
+              current["pull_request_head_sha"] = os.environ.get("SIRKIT_PR_HEAD_SHA")
+              value.setdefault("provenance", {}).update(current)
+              path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n")
+          PYPROVENANCE
       - name: Upload local Verify report
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: local-verify-${{ matrix.compiler }}
+          name: ${{ matrix.compile_profile != 'standard' && 'atcoder-local-verify' || 'local-verify' }}-${{ matrix.compiler }}-${{ matrix.arithmetic }}
           path: ${{ runner.temp }}/verify-results/
           if-no-files-found: ignore
           retention-days: 14
+
+  variant_builds:
+    name: 配布版のビルド・動作検査 (${{ matrix.compiler }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {os: ubuntu-26.04, compiler: GCC}
+          - {os: ubuntu-26.04, compiler: Clang}
+          - {os: windows-2025, compiler: MSVC}
+    steps:
+      - name: Keep source bytes for SHA verification
+        if: matrix.compiler == 'MSVC'
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - name: Read pinned ACL revision
+        id: acl
+        shell: bash
+        run: |
+          set -euo pipefail
+          commit="$(cat Verify/current/vendor/ACL_COMMIT)"
+          [[ "$commit" =~ ^[0-9a-f]{40}$ ]]
+          printf 'commit=%s\n' "$commit" >> "$GITHUB_OUTPUT"
+      - uses: actions/checkout@v7
+        with:
+          repository: atcoder/ac-library
+          ref: ${{ steps.acl.outputs.commit }}
+          path: .verify-acl
+          persist-credentials: false
+      - name: Install Linux compilers
+        if: matrix.compiler != 'MSVC'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y g++-15 clang-18
+      - name: Find Visual Studio developer command
+        if: matrix.compiler == 'MSVC'
+        shell: pwsh
+        run: |
+          $vswhere = Join-Path "${env:ProgramFiles(x86)}" "Microsoft Visual Studio\Installer\vswhere.exe"
+          $install = & $vswhere -latest -products '*' -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
+          if (-not $install) { throw "Visual Studio C++ tools not found" }
+          $developer = Join-Path $install "Common7\Tools\VsDevCmd.bat"
+          "SIRKIT_VS_DEVELOPER_COMMAND=$developer" >> $env:GITHUB_ENV
+      - name: Verify common and compiler-specific variants on Linux
+        if: matrix.compiler != 'MSVC'
+        shell: bash
+        run: >-
+          python3 Scripts/verify_variants.py --compiler "${{ matrix.compiler }}"
+          --gcc g++-15 --clang clang++-18
+          --gcc-install-dir "$(dirname "$(g++-15 -print-libgcc-file-name)")"
+          --syntax-only --run-tests --jobs 4 --acl-include .verify-acl
+          --output "$RUNNER_TEMP/variant-builds.json" --summary "$GITHUB_STEP_SUMMARY"
+      - name: Verify common and MSVC-specific variants on Windows
+        if: matrix.compiler == 'MSVC'
+        shell: cmd
+        run: |
+          call "%SIRKIT_VS_DEVELOPER_COMMAND%" -no_logo -arch=x64 || exit /b 1
+          cd /d "%GITHUB_WORKSPACE%"
+          python -X utf8 Scripts/verify_variants.py --compiler MSVC --syntax-only --run-tests --jobs 2 --acl-include .verify-acl --output "%RUNNER_TEMP%\variant-builds.json" --summary "%GITHUB_STEP_SUMMARY%"
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: variant-builds-${{ matrix.compiler }}
+          path: ${{ runner.temp }}/variant-builds.json
+          if-no-files-found: ignore
+          retention-days: 14
+
+  instrumented:
+    name: C++23 (${{ matrix.mode }}, checked)
+    runs-on: ubuntu-26.04
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        mode: [sanitizers, coverage]
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Install LLVM
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang-18 llvm-18 libclang-rt-18-dev g++-15 libboost-dev
+          if [[ "${{ matrix.mode }}" == coverage ]]; then
+            sudo apt-get install -y qemu-user g++-15-multilib
+          fi
+      - name: Prepare generic AMD64 build environment for QEMU
+        if: matrix.mode == 'coverage'
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/qemu-amd64" "$RUNNER_TEMP/qemu-amd64-packages/lists/partial"
+          cd "$RUNNER_TEMP/qemu-amd64-packages"
+          source /etc/os-release
+          # 汎用AMD64の候補を、ランナーのAMD64v3用索引やインストール済み版から分離する。
+          mkdir empty.d
+          touch empty-status
+          cat > generic-apt.conf <<EOF
+          #clear APT::Architecture-Variants;
+          #clear APT::Architectures;
+          APT::Architecture "amd64";
+          APT::Architectures { "amd64"; };
+          Dir::Etc::sourcelist "$PWD/ubuntu.list";
+          Dir::Etc::sourceparts "$PWD/empty.d";
+          Dir::Etc::preferences "/dev/null";
+          Dir::Etc::preferencesparts "$PWD/empty.d";
+          Dir::State::lists "$PWD/lists";
+          Dir::State::status "$PWD/empty-status";
+          Dir::Cache::pkgcache "";
+          Dir::Cache::srcpkgcache "";
+          Acquire::Languages "none";
+          EOF
+          cat > ubuntu.list <<EOF
+          deb [arch=amd64 signed-by=/usr/share/keyrings/ubuntu-archive-keyring.gpg] https://archive.ubuntu.com/ubuntu $VERSION_CODENAME main universe
+          deb [arch=amd64 signed-by=/usr/share/keyrings/ubuntu-archive-keyring.gpg] https://archive.ubuntu.com/ubuntu $VERSION_CODENAME-updates main universe
+          deb [arch=amd64 signed-by=/usr/share/keyrings/ubuntu-archive-keyring.gpg] https://security.ubuntu.com/ubuntu $VERSION_CODENAME-security main universe
+          EOF
+          apt-get -c generic-apt.conf update --error-on=any
+          packages=(libc6:amd64 libc6-dev:amd64 linux-libc-dev:amd64
+                    libstdc++6:amd64 libgcc-s1:amd64 libstdc++-15-dev:amd64 libgcc-15-dev:amd64
+                    libclang-common-18-dev:amd64 libclang-rt-18-dev:amd64)
+          apt-get -c generic-apt.conf download "${packages[@]}"
+          for package in ./*.deb; do
+            if [[ "$(dpkg-deb -f "$package" Architecture)" != amd64 || -n "$(dpkg-deb -f "$package" Architecture-Variant)" ]]; then
+              printf '汎用AMD64パッケージが必要です: %s\n' "$package" >&2
+              exit 1
+            fi
+            dpkg-deb -x "$package" "$RUNNER_TEMP/qemu-amd64"
+          done
+          ln -s usr/lib "$RUNNER_TEMP/qemu-amd64/lib"
+          ln -s usr/lib64 "$RUNNER_TEMP/qemu-amd64/lib64"
+      - name: Run checked library tests
+        env:
+          VERIFY_MODE: ${{ matrix.mode }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          options=(--jobs 4)
+          if [[ "$VERIFY_MODE" == coverage ]]; then
+            options+=(--timeout 240 --x86-baseline-sysroot "$RUNNER_TEMP/qemu-amd64")
+          fi
+          python3 Scripts/ci_instrumented.py \
+            --mode "$VERIFY_MODE" --compiler clang++-18 \
+            --gcc-install-dir "$(dirname "$(g++-15 -print-libgcc-file-name)")" \
+            --llvm-profdata llvm-profdata-18 --llvm-cov llvm-cov-18 \
+            --gcc g++-15 --gcov gcov-15 "${options[@]}" \
+            --output "$RUNNER_TEMP/instrumented"
+      - name: Summarize instrumentation
+        if: always()
+        run: |
+          if [[ -f "$RUNNER_TEMP/instrumented/summary.md" ]]; then
+            cat "$RUNNER_TEMP/instrumented/summary.md" >> "$GITHUB_STEP_SUMMARY"
+          else
+            printf '計測結果が生成されませんでした。ログを確認してください。\n' >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+      - name: Attach report provenance
+        if: always()
+        env:
+          REPORT_FILE: ${{ runner.temp }}/instrumented/results.json
+        run: |
+          python3 - <<'PYPROVENANCE'
+          import json, os
+          from pathlib import Path
+          path = Path(os.environ["REPORT_FILE"])
+          if path.is_file():
+              value = json.loads(path.read_text())
+              current = {key.lower(): os.environ.get(key) for key in (
+                  "GITHUB_SHA", "GITHUB_RUN_ID", "GITHUB_RUN_ATTEMPT", "GITHUB_REPOSITORY", "GITHUB_JOB")}
+              current["pull_request_head_sha"] = os.environ.get("SIRKIT_PR_HEAD_SHA")
+              value.setdefault("provenance", {}).update(current)
+              path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n")
+          PYPROVENANCE
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: instrumented-${{ matrix.mode }}
+          path: ${{ runner.temp }}/instrumented/
+          if-no-files-found: ignore
+          retention-days: 14
+
+  guidelines:
+    name: C++ style (${{ matrix.guide }}, normal only)
+    runs-on: ubuntu-26.04
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        guide: [core, google]
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Install clang-tidy
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang-18 clang-tidy-18 g++-15
+      - name: Check normal library sources
+        env:
+          CPP_GUIDE: ${{ matrix.guide }}
+        run: >-
+          python3 Scripts/ci_cpp_guidelines.py
+          --clang-tidy clang-tidy-18
+          --gcc-install-dir "$(dirname "$(g++-15 -print-libgcc-file-name)")"
+          --guide "$CPP_GUIDE" --jobs 4
+          --output "$RUNNER_TEMP/guidelines"
+      - name: Summarize guidelines
+        if: always()
+        run: |
+          if [[ -f "$RUNNER_TEMP/guidelines/summary.md" ]]; then
+            cat "$RUNNER_TEMP/guidelines/summary.md" >> "$GITHUB_STEP_SUMMARY"
+          else
+            printf '作法検査の結果が生成されませんでした。ログを確認してください。\n' >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: cpp-guidelines-${{ matrix.guide }}-normal
+          path: ${{ runner.temp }}/guidelines/
+          if-no-files-found: ignore
+          retention-days: 14
+
+  performance:
+    name: Supplemental kernel performance regression${{ matrix.compile_profile == 'atcoder' && ' (AtCoder)' || '' }}
+    runs-on: ubuntu-26.04
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        compile_profile: [standard, atcoder]
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Install compiler
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y g++-15
+      - name: Compare library kernels against the PR base
+        env:
+          VERIFY_PR_BASE: ${{ github.event.pull_request.base.sha }}
+          VERIFY_COMPILE_PROFILE: ${{ matrix.compile_profile }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 Scripts/ci_benchmark.py --base "$VERIFY_PR_BASE" --compiler g++-15 \
+            --compile-profile "$VERIFY_COMPILE_PROFILE" --regression-profile github-hosted \
+            --output "$RUNNER_TEMP/performance"
+          python3 - <<'PYREGRESSION'
+          import json
+          import os
+          from pathlib import Path
+
+          path = Path(os.environ["RUNNER_TEMP"]) / "performance/result.json"
+          report = json.loads(path.read_bytes())
+          results = report.get("results")
+          expected = report.get("expected_cases")
+          worst = report.get("worst_case_regressions")
+          complete = (
+              report.get("status") == "PASS"
+              and report.get("compile_profile") == os.environ["VERIFY_COMPILE_PROFILE"]
+              and report.get("regression_policy") == "library_worst_case"
+              and report.get("regression_profile") == "github-hosted"
+              and report.get("current_measurements_passed") is True
+              and report.get("performance_regression_passed") is True
+              and report.get("base_revision") == os.environ["VERIFY_PR_BASE"]
+              and type(expected) is int
+              and isinstance(results, list)
+              and expected == report.get("compared_cases") == len(results) > 0
+              and isinstance(worst, dict)
+              and worst.keys() == report.get("sources", {}).keys()
+              and all(gate.get("status") == "PASS" for gate in worst.values())
+              and sum(gate["compared_cases"] for gate in worst.values()) == expected
+          )
+          raise SystemExit(0 if complete else 1)
+          PYREGRESSION
+      - name: Summarize performance
+        if: always()
+        run: |
+          if [[ -f "$RUNNER_TEMP/performance/summary.md" ]]; then
+            cat "$RUNNER_TEMP/performance/summary.md" >> "$GITHUB_STEP_SUMMARY"
+          else
+            printf '性能測定の結果が生成されませんでした。ログを確認してください。\n' >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+      - name: Attach report provenance
+        if: always()
+        env:
+          REPORT_FILE: ${{ runner.temp }}/performance/result.json
+        run: |
+          python3 - <<'PYPROVENANCE'
+          import json, os
+          from pathlib import Path
+          path = Path(os.environ["REPORT_FILE"])
+          if path.is_file():
+              value = json.loads(path.read_text())
+              current = {key.lower(): os.environ.get(key) for key in (
+                  "GITHUB_SHA", "GITHUB_RUN_ID", "GITHUB_RUN_ATTEMPT", "GITHUB_REPOSITORY", "GITHUB_JOB")}
+              current["pull_request_head_sha"] = os.environ.get("SIRKIT_PR_HEAD_SHA")
+              value.setdefault("provenance", {}).update(current)
+              path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n")
+          PYPROVENANCE
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: ${{ matrix.compile_profile == 'atcoder' && 'atcoder-representative-performance' || 'representative-performance' }}
+          path: |
+            ${{ runner.temp }}/performance/result.json
+            ${{ runner.temp }}/performance/summary.md
+          if-no-files-found: ignore
+          retention-days: 14
+
+  all_performance:
+    name: All-library Verify performance regression (${{ matrix.shard }}${{ matrix.compile_profile == 'atcoder' && ', AtCoder' || '' }})
+    runs-on: ubuntu-26.04
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5, 6, 7]
+        compile_profile: [standard, atcoder]
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Install compiler and headers
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y g++-15 libboost-dev
+      - name: Compare all Verify programs against the PR base
+        env:
+          VERIFY_SHARD: ${{ matrix.shard }}
+          VERIFY_PR_BASE: ${{ github.event.pull_request.base.sha }}
+          VERIFY_COMPILE_PROFILE: ${{ matrix.compile_profile }}
+        run: >-
+          python3 Scripts/ci_performance_all.py
+          --base "$VERIFY_PR_BASE"
+          --shard-index "$VERIFY_SHARD" --shard-count 8
+          --compiler g++-15 --compile-profile "$VERIFY_COMPILE_PROFILE"
+          --regression-profile github-hosted
+          --cache "$RUNNER_TEMP/all-library-performance-cache"
+          --output "$RUNNER_TEMP/all-library-performance"
+      - name: Summarize all-library performance
+        if: always()
+        run: |
+          if [[ -f "$RUNNER_TEMP/all-library-performance/summary.md" ]]; then
+            cat "$RUNNER_TEMP/all-library-performance/summary.md" >> "$GITHUB_STEP_SUMMARY"
+          else
+            printf '全ライブラリの性能測定結果が生成されませんでした。ログを確認してください。\n' >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+      - name: Attach report provenance
+        if: always()
+        env:
+          REPORT_FILE: ${{ runner.temp }}/all-library-performance/result.json
+        run: |
+          python3 - <<'PYPROVENANCE'
+          import json, os
+          from pathlib import Path
+          path = Path(os.environ["REPORT_FILE"])
+          if path.is_file():
+              value = json.loads(path.read_text())
+              current = {key.lower(): os.environ.get(key) for key in (
+                  "GITHUB_SHA", "GITHUB_RUN_ID", "GITHUB_RUN_ATTEMPT", "GITHUB_REPOSITORY", "GITHUB_JOB")}
+              current["pull_request_head_sha"] = os.environ.get("SIRKIT_PR_HEAD_SHA")
+              value.setdefault("provenance", {}).update(current)
+              path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n")
+          PYPROVENANCE
+      - name: Upload performance metadata only
+        uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: ${{ matrix.compile_profile == 'atcoder' && 'atcoder-all-library-performance' || 'all-library-performance' }}-${{ matrix.shard }}
+          path: |
+            ${{ runner.temp }}/all-library-performance/result.json
+            ${{ runner.temp }}/all-library-performance/summary.md
+          if-no-files-found: ignore
+          retention-days: 14
+
+  stress:
+    name: Deterministic Max and structural cases
+    runs-on: ubuntu-26.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Install compiler
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y g++-15
+      - name: Run deterministic full-size cases
+        run: >-
+          python3 Scripts/ci_stress.py --compiler g++-15
+          --output "$RUNNER_TEMP/stress-cases"
+      - name: Summarize Max and structural cases
+        if: always()
+        run: |
+          if [[ -f "$RUNNER_TEMP/stress-cases/summary.md" ]]; then
+            cat "$RUNNER_TEMP/stress-cases/summary.md" >> "$GITHUB_STEP_SUMMARY"
+          else
+            printf 'Max・構造ケースの結果が生成されませんでした。\n' >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+      - name: Attach report provenance
+        if: always()
+        env:
+          REPORT_FILE: ${{ runner.temp }}/stress-cases/result.json
+        run: |
+          python3 - <<'PYPROVENANCE'
+          import json, os
+          from pathlib import Path
+          path = Path(os.environ["REPORT_FILE"])
+          if path.is_file():
+              value = json.loads(path.read_text())
+              current = {key.lower(): os.environ.get(key) for key in (
+                  "GITHUB_SHA", "GITHUB_RUN_ID", "GITHUB_RUN_ATTEMPT", "GITHUB_REPOSITORY", "GITHUB_JOB")}
+              current["pull_request_head_sha"] = os.environ.get("SIRKIT_PR_HEAD_SHA")
+              value.setdefault("provenance", {}).update(current)
+              path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n")
+          PYPROVENANCE
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: stress-cases
+          path: |
+            ${{ runner.temp }}/stress-cases/result.json
+            ${{ runner.temp }}/stress-cases/summary.md
+          if-no-files-found: ignore
+          retention-days: 14
+
+  contracts:
+    name: Checked API contracts (${{ matrix.compiler }}, ${{ matrix.arithmetic }})
+    runs-on: ubuntu-26.04
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        compiler: [g++, clang++]
+        arithmetic: [native, portable]
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Install compilers
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y g++-15 clang-18
+      - name: Check normal results and expected failures
+        env:
+          CONTRACT_COMPILER: ${{ matrix.compiler == 'g++' && 'g++-15' || 'clang++-18' }}
+          CONTRACT_ARITHMETIC: ${{ matrix.arithmetic }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          args=(--compiler "$CONTRACT_COMPILER" --output "$RUNNER_TEMP/contracts")
+          if [[ "$CONTRACT_COMPILER" == clang++-18 ]]; then
+            args+=(--gcc-install-dir "$(dirname "$(g++-15 -print-libgcc-file-name)")")
+          fi
+          if [[ "$CONTRACT_ARITHMETIC" == portable ]]; then
+            args+=(--fallback)
+          fi
+          python3 Scripts/ci_contracts.py "${args[@]}"
+      - name: Summarize contracts
+        if: always()
+        run: |
+          if [[ -f "$RUNNER_TEMP/contracts/summary.md" ]]; then
+            cat "$RUNNER_TEMP/contracts/summary.md" >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - name: Attach report provenance
+        if: always()
+        env:
+          REPORT_FILE: ${{ runner.temp }}/contracts/result.json
+        run: |
+          python3 - <<'PYPROVENANCE'
+          import json, os
+          from pathlib import Path
+          path = Path(os.environ["REPORT_FILE"])
+          if path.is_file():
+              value = json.loads(path.read_text())
+              current = {key.lower(): os.environ.get(key) for key in (
+                  "GITHUB_SHA", "GITHUB_RUN_ID", "GITHUB_RUN_ATTEMPT", "GITHUB_REPOSITORY", "GITHUB_JOB")}
+              current["pull_request_head_sha"] = os.environ.get("SIRKIT_PR_HEAD_SHA")
+              value.setdefault("provenance", {}).update(current)
+              path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n")
+          PYPROVENANCE
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: contracts-${{ matrix.compiler }}-${{ matrix.arithmetic }}
+          path: ${{ runner.temp }}/contracts/
+          if-no-files-found: ignore
+          retention-days: 14
+
+  library_checker:
+    name: Official Library Checker cases (${{ matrix.shard }})
+    runs-on: ubuntu-26.04
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5, 6, 7]
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Install compiler
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y g++-15
+      - name: Run all official full cases
+        env:
+          VERIFY_PR_BASE: ${{ github.event.pull_request.base.sha }}
+          VERIFY_SHARD: ${{ matrix.shard }}
+        run: >-
+          python3 Scripts/ci_library_checker.py --all --discard-test-data
+          --base "$VERIFY_PR_BASE"
+          --shard-index "$VERIFY_SHARD" --shard-count 8
+          --compiler g++-15
+          --cache "$RUNNER_TEMP/library-checker-cache"
+          --output "$RUNNER_TEMP/library-checker-report"
+      - name: Attach report provenance
+        if: always()
+        env:
+          REPORT_FILE: ${{ runner.temp }}/library-checker-report/result.json
+        run: |
+          python3 - <<'PYPROVENANCE'
+          import json, os
+          from pathlib import Path
+          path = Path(os.environ["REPORT_FILE"])
+          if path.is_file():
+              value = json.loads(path.read_text())
+              current = {key.lower(): os.environ.get(key) for key in (
+                  "GITHUB_SHA", "GITHUB_RUN_ID", "GITHUB_RUN_ATTEMPT", "GITHUB_REPOSITORY", "GITHUB_JOB")}
+              current["pull_request_head_sha"] = os.environ.get("SIRKIT_PR_HEAD_SHA")
+              value.setdefault("provenance", {}).update(current)
+              path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n")
+          PYPROVENANCE
+      - name: Summarize official cases
+        if: always()
+        run: |
+          python3 - <<'PYSUMMARY'
+          import json, os
+          from pathlib import Path
+          path = Path(os.environ["RUNNER_TEMP"]) / "library-checker-report/result.json"
+          if path.is_file():
+              value = json.loads(path.read_text())
+              counts = value.get("counts", {})
+              with open(os.environ["GITHUB_STEP_SUMMARY"], "a") as summary:
+                  summary.write("## 公式ケースのローカル実行\n\n")
+                  summary.write("状態: " + str(value.get("status")) + "\n\n")
+                  summary.write("対象: " + str(counts.get("selected", 0)) + "、完了ケース: " + str(counts.get("case_completed", 0)) + "\n\n")
+                  summary.write("Library CheckerのオンラインACとは別の結果です。\n")
+          PYSUMMARY
+      - name: Upload metadata only
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: library-checker-${{ matrix.shard }}
+          path: ${{ runner.temp }}/library-checker-report/result.json
+          if-no-files-found: ignore
+          retention-days: 14
+
+  documentation:
+    name: Library pages preview
+    if: ${{ !cancelled() && needs.maintenance.result == 'success' }}
+    needs: [maintenance, examples, instrumented, performance, all_performance, contracts, library_checker]
+    permissions:
+      contents: read
+      actions: read
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+          bundler: "2.6.9"
+      - name: Install competitive-verifier
+        run: python3 -m pip install -r .competitive-verifier/requirements.txt
+      - name: Create report directory
+        run: mkdir -p "$RUNNER_TEMP/pages-input"
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: local-verify-*
+          path: ${{ runner.temp }}/pages-input
+          merge-multiple: false
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: instrumented-*
+          path: ${{ runner.temp }}/pages-input
+          merge-multiple: false
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: representative-performance
+          path: ${{ runner.temp }}/pages-input
+          merge-multiple: false
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: all-library-performance-*
+          path: ${{ runner.temp }}/pages-input
+          merge-multiple: false
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: contracts-*
+          path: ${{ runner.temp }}/pages-input
+          merge-multiple: false
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: library-checker-*
+          path: ${{ runner.temp }}/pages-input
+          merge-multiple: false
+      - name: Build preview with source-bound reports
+        run: >-
+          python3 Scripts/build_library_pages.py
+          --report "$RUNNER_TEMP/pages-input"
+          --output "$RUNNER_TEMP/library-pages"
+          --baseurl "" --render
+      - name: Upload HTML preview and report snapshot
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: library-pages-preview
+          path: |
+            ${{ runner.temp }}/library-pages/site/
+            ${{ runner.temp }}/library-pages/reports/
+            ${{ runner.temp }}/library-pages/build-result.json
+          if-no-files-found: ignore
+          retention-days: 14
+
+  result:
+    name: Verify result
+    if: always()
+    needs: [maintenance, examples, variant_builds, instrumented, guidelines, performance, all_performance, contracts, library_checker, stress, documentation]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Require all checks
+        env:
+          MAINTENANCE_RESULT: ${{ needs.maintenance.result }}
+          VERIFY_RESULT: ${{ needs.examples.result }}
+          VARIANT_BUILDS_RESULT: ${{ needs.variant_builds.result }}
+          INSTRUMENTED_RESULT: ${{ needs.instrumented.result }}
+          GUIDELINES_RESULT: ${{ needs.guidelines.result }}
+          PERFORMANCE_RESULT: ${{ needs.performance.result }}
+          ALL_PERFORMANCE_RESULT: ${{ needs.all_performance.result }}
+          CONTRACT_RESULT: ${{ needs.contracts.result }}
+          LIBRARY_CHECKER_RESULT: ${{ needs.library_checker.result }}
+          STRESS_RESULT: ${{ needs.stress.result }}
+          DOCUMENTATION_RESULT: ${{ needs.documentation.result }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          {
+            printf '## Verify\n\n| 検査 | 結果 |\n| --- | --- |\n'
+            printf '| 生成物・Pythonテスト・README集計 | %s |\n' "$MAINTENANCE_RESULT"
+            printf '| C++23・GCC/Clang・通常/標準代替 | %s |\n' "$VERIFY_RESULT"
+            printf '| 配布8版の単独ビルド・動作検査 | %s |\n' "$VARIANT_BUILDS_RESULT"
+            printf '| ASan/UBSan・カバレッジ（checked） | %s |\n' "$INSTRUMENTED_RESULT"
+            printf '| Core Guidelines・Google Style（通常版のみ） | %s |\n' "$GUIDELINES_RESULT"
+            printf '| 代表ライブラリ本体の性能退行 | %s |\n' "$PERFORMANCE_RESULT"
+            printf '| 全ライブラリのVerify全体性能の退行 | %s |\n' "$ALL_PERFORMANCE_RESULT"
+            printf '| checked正常系・期待した失敗系 | %s |\n' "$CONTRACT_RESULT"
+            printf '| 公式Library Checkerケース（ローカル） | %s |\n' "$LIBRARY_CHECKER_RESULT"
+            printf '| 決定的Max・構造ケース | %s |\n' "$STRESS_RESULT"
+            printf '| ライブラリページのプレビュー | %s |\n' "$DOCUMENTATION_RESULT"
+            printf '\nローカル検証の結果です。オンラインACはREADMEのVerify一覧で別に管理します。\n'
+          } >> "$GITHUB_STEP_SUMMARY"
+          [[ "$MAINTENANCE_RESULT" == success && "$VERIFY_RESULT" == success && "$VARIANT_BUILDS_RESULT" == success && "$INSTRUMENTED_RESULT" == success && "$GUIDELINES_RESULT" == success && "$PERFORMANCE_RESULT" == success && "$ALL_PERFORMANCE_RESULT" == success && "$CONTRACT_RESULT" == success && "$LIBRARY_CHECKER_RESULT" == success && "$STRESS_RESULT" == success && "$DOCUMENTATION_RESULT" == success ]]

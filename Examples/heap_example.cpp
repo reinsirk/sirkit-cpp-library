@@ -2,6 +2,8 @@
 #include <iostream>
 #include <vector>
 
+using namespace sirkit;
+
 int main() {
     Heap heap(std::vector<int>{4, 1, 3}); // O(N)で最小ヒープを作る。
     heap.push(2);

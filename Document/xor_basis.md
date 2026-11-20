@@ -2,6 +2,153 @@
 
 `Math/Xor_Basis.cpp` の `XorBasis` は、64ビット符号なし整数をGF(2)上のベクトルとみなし、部分集合のXORで生成される線形空間を保持します。固定配列だけを使い、追加の動的確保はありません。
 
+## API
+
+### XorBasis::insert
+
+```text
+bool insert(std::uint64_t value) noexcept;
+```
+
+値を基底へ追加し、独立なベクトルが増えたかを返します。
+
+**制約:** 共通の型・入力条件を満たすこと。
+
+**計算量:** O(64)。
+
+### XorBasis::merge
+
+```text
+void merge(const XorBasis& other) noexcept;
+```
+
+相手の入力も含む基底に更新します。
+
+**制約:** 共通の型・入力条件を満たすこと。
+
+**計算量:** O(64²)。
+
+### XorBasis::contains
+
+```text
+bool contains(std::uint64_t value) const noexcept;
+```
+
+空部分集合を含む部分集合のXORとして表せるかを返します。
+
+**制約:** 64ビット符号なし整数。
+
+**計算量:** O(64)。
+
+### XorBasis::contains_nonempty
+
+```text
+bool contains_nonempty(std::uint64_t value) const noexcept;
+```
+
+非空の部分集合のXORで表せるかを返します。
+
+**制約:** 共通の型・入力条件を満たすこと。
+
+**計算量:** O(64)。
+
+### XorBasis::max_xor
+
+```text
+std::uint64_t max_xor(std::uint64_t seed = 0) const noexcept;
+```
+
+初期値と生成可能なXOR値を合わせた最大値を返します。
+
+**制約:** 共通の型・入力条件を満たすこと。
+
+**計算量:** O(64)。
+
+### XorBasis::min_xor
+
+```text
+std::uint64_t min_xor(std::uint64_t seed = 0) const noexcept;
+```
+
+初期値と生成可能なXOR値を合わせた最小値を返します。
+
+**制約:** 共通の型・入力条件を満たすこと。
+
+**計算量:** O(64)。
+
+### XorBasis::kth
+
+```text
+std::optional<std::uint64_t> kth(std::uint64_t k) const noexcept;
+```
+
+生成できる相異なるXOR値の、昇順0始まりk番目を返します。範囲外はnulloptです。
+
+**制約:** 共通の型・入力条件を満たすこと。
+
+**計算量:** O(64²)。
+
+### XorBasis::rank
+
+```text
+unsigned rank() const noexcept;
+```
+
+階数を返します。
+
+**制約:** なし。
+
+**計算量:** O(1)。
+
+### XorBasis::has_nonempty_zero
+
+```text
+bool has_nonempty_zero() const noexcept;
+```
+
+非空の部分集合のXORで0を作れるかを返します。
+
+**制約:** なし。
+
+**計算量:** O(1)。
+
+### XorBasis::clear
+
+```text
+void clear() noexcept;
+```
+
+内容を空に戻します。
+
+**制約:** 共通の型・入力条件を満たすこと。
+
+**計算量:** O(64)。
+
+### XorBasis::swap
+
+```text
+void swap(XorBasis& other) noexcept;
+```
+
+内容と所有する領域を交換します。
+
+**制約:** 共通の型・入力条件を満たすこと。
+
+**計算量:** O(64)。
+
+### XorBasis::XorBasis
+
+```text
+XorBasis();
+```
+
+空のXOR基底を構築します。
+
+**制約:** なし。
+
+**計算量:** O(64)。
+
+
 ```cpp
 XorBasis basis;
 basis.insert(3);

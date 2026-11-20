@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #ifndef SIRKIT_PRIMALITY_REQUIRE_EXTRA
 #define SIRKIT_PRIMALITY_REQUIRE_EXTRA
 #endif
@@ -118,10 +120,23 @@ static void extras(){
 }
 #endif
 int main(){
+ const std::array<std::uint64_t,4> first_bases{2,325,9375,28178};
+ const std::array<std::uint64_t,2> partial_bases{2,325};
+ constexpr std::uint64_t passes_first_group = 18271359541;
+ constexpr std::uint64_t fails_second_base_in_group = 86483161466209;
+ static_assert(95581ULL * 191161 == passes_first_group);
+ static_assert(24337ULL * 48673 * 73009 == fails_second_base_in_group);
+ require(!sirkit::detail::is_prime_u32(1));
+ require(reference(passes_first_group, first_bases));
+ require(MillerRabin(passes_first_group, first_bases));
+ require(!is_prime(passes_first_group));
+ require(reference(fails_second_base_in_group, partial_bases));
+ require(MillerRabin(fails_second_base_in_group, partial_bases));
+ require(!is_prime(fails_second_base_in_group));
  // 剰余表105通りを通常の剰余で照合し、64bit側の切替境界も調べる。
  for(unsigned r=0;r<105;++r) {
   const bool expected=r%3!=0 && r%5!=0 && r%7!=0;
-  require(bool((reinsirk::detail::primality_coprime_105[r>>6]>>(r&63))&1u)==expected);
+  require(bool((::sirkit::detail::primality_coprime_105[r>>6]>>(r&63))&1u)==expected);
  }
  for(auto start:std::array<std::uint64_t,5>{(std::uint64_t{1}<<32)-128,4759123141ULL-128,(std::uint64_t{1}<<62)-128,(std::uint64_t{1}<<63)-128,std::numeric_limits<std::uint64_t>::max()-255})
   for(std::uint64_t delta=0;delta<256;++delta)inspect(start+delta);

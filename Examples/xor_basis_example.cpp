@@ -3,6 +3,8 @@
 #include <cassert>
 #include <cstdint>
 #include <iostream>
+
+using namespace sirkit;
 int main() {
     XorBasis basis;
     assert(basis.insert(3) && basis.insert(5));

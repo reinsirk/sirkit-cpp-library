@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #ifndef MODULAR_SOURCE
 #define MODULAR_SOURCE "../../../Math/Modular_Arithmetic.cpp"
 #endif
@@ -82,6 +84,8 @@ int main() {
     }
     for(auto m:moduli)for(auto n:moduli)for(auto r:values)crt({r,m},{maximum-r,n});
     require(ChineseRemainder(std::span<const Congruence>{})==std::optional<Congruence>{Congruence{0,1}});
+    require(Congruence{1, 2} != Congruence{1, 3});
+    require(Congruence{1, 2} != Congruence{0, 2});
     const std::array<Congruence,3> equations{{{2,6},{8,9},{5,7}}};
     require(ChineseRemainder(equations)==std::optional<Congruence>{Congruence{26,126}});
     const std::array<Congruence,3> stopped{{{1,2},{0,2},{0,0}}};require(!ChineseRemainder(stopped));

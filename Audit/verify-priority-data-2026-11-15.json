@@ -1,0 +1,358 @@
+{
+  "date": "2026-11-15",
+  "priority": [
+    "Library Checker",
+    "yukicoder",
+    "AtCoder",
+    "AOJ"
+  ],
+  "scope": "6旧Verify IDの提出先見直し。ライブラリ本体は未変更。",
+  "mapping": [
+    {
+      "old_id": "hash_set_membership",
+      "new_id": "preferred_data_hash_set_and_yuki",
+      "problem_url": "https://yukicoder.me/problems/no/2195",
+      "domain": "yukicoder.me",
+      "selection_reason": "LCの順序集合・XOR集合はこのAPIにない操作を要求する。優先順位LC→yukicoder→AtCoder→AOJに従い、挿入・削除・重複判定とsizeをHashSetで管理する。各bitの個数は集合の更新成功時だけ変え、HashSetの判定が答えへ直接影響する。",
+      "coverage": [
+        "insert_checkedによる重複判定",
+        "find/erase(iterator,false)による未登録削除と再挿入",
+        "empty/sizeと整数キー所有"
+      ],
+      "limitations": "新規・未提出。旧ACは引き継がない。xは非負30bit・最大40万操作。負数・int64境界・旧問題の最大100万要素とcontains直接呼出しは独立参照・旧driverで補足。1操作あたり期待O(30)、空間O(Q)。"
+    },
+    {
+      "old_id": "hash_set_toggle",
+      "new_id": "preferred_data_hash_set_and_yuki",
+      "problem_url": "https://yukicoder.me/problems/no/2195",
+      "domain": "yukicoder.me",
+      "selection_reason": "LCの順序集合・XOR集合はこのAPIにない操作を要求する。優先順位LC→yukicoder→AtCoder→AOJに従い、挿入・削除・重複判定とsizeをHashSetで管理する。各bitの個数は集合の更新成功時だけ変え、HashSetの判定が答えへ直接影響する。",
+      "coverage": [
+        "insert_checkedによる重複判定",
+        "find/erase(iterator,false)による未登録削除と再挿入",
+        "empty/sizeと整数キー所有"
+      ],
+      "limitations": "新規・未提出。旧ACは引き継がない。xは非負30bit・最大40万操作。負数・int64境界・旧問題の最大100万要素とcontains直接呼出しは独立参照・旧driverで補足。1操作あたり期待O(30)、空間O(Q)。"
+    },
+    {
+      "old_id": "hash_set_strings",
+      "new_id": "hash_set_strings",
+      "problem_url": "https://atcoder.jp/contests/abc164/tasks/abc164_c",
+      "domain": "atcoder.jp",
+      "selection_reason": "Library Checkerの候補は順序・XOR最小値等のHashSetにない操作を必要とするため、集合の基本操作が出力に直接反映されるAtCoder問題を選ぶ。",
+      "coverage": [
+        "insert",
+        "size",
+        "文字列キー・重複"
+      ],
+      "limitations": [
+        "この問題で使わないAPI・複合キー・衝突・例外・所有権・容量境界はローカル独立試験で補足。実際のAtCoder公式テストは公開されていないため提出後に判定を確認する。"
+      ]
+    },
+    {
+      "old_id": "heap_priority_queue",
+      "new_id": "preferred_data_heap_double",
+      "problem_url": "https://judge.yosupo.jp/problem/double_ended_priority_queue",
+      "domain": "judge.yosupo.jp",
+      "selection_reason": "LCの両端優先キューを最小Heap4個の遅延削除で解く。主キューも削除待ちもHeapで保持し、答えはHeapの順序から得る。",
+      "coverage": [
+        "vectorからのheapify",
+        "push/top/pop/pop_value/empty",
+        "重複を含む最小・最大値と遅延削除"
+      ],
+      "limitations": "新規・未提出。旧ACは引き継がない。値は±1e9で符号反転がint内に収まる。単一Heapの空時APIとint全域はローカル補足。遅延削除込み償却O((N+Q)log(N+Q))・O(N+Q)空間。"
+    },
+    {
+      "old_id": "radix_sort",
+      "new_id": "preferred_data_radix_frequency_int64",
+      "problem_url": "https://judge.yosupo.jp/problem/static_range_frequency",
+      "domain": "judge.yosupo.jp",
+      "selection_reason": "LCに単純な整数ソート問題はない。頻度検索用の索引をRadixSortで構築し、ソート結果を出力へ直接用いる。",
+      "coverage": [
+        "RadixSort(vector<int64_t>)",
+        "空列・重複・値境界・半開区間の頻度"
+      ],
+      "limitations": "新規・未提出。旧ACは引き継がない。int64版は値と添字を64bitへ連結、非負のみ。uint32版はソート後に圧縮し添字をCSRへ格納。負数・型の全域・他の型・workspace/order APIはローカル補足。"
+    },
+    {
+      "old_id": "radix_sort_uint32",
+      "new_id": "preferred_data_radix_frequency_uint32",
+      "problem_url": "https://judge.yosupo.jp/problem/static_range_frequency",
+      "domain": "judge.yosupo.jp",
+      "selection_reason": "LCに単純な整数ソート問題はない。頻度検索用の索引をRadixSortで構築し、ソート結果を出力へ直接用いる。",
+      "coverage": [
+        "RadixSort(vector<uint32_t>)",
+        "空列・重複・値境界・半開区間の頻度"
+      ],
+      "limitations": "新規・未提出。旧ACは引き継がない。int64版は値と添字を64bitへ連結、非負のみ。uint32版はソート後に圧縮し添字をCSRへ格納。負数・型の全域・他の型・workspace/order APIはローカル補足。"
+    }
+  ],
+  "local_validation": {
+    "builds": 32,
+    "regular_runs": 2600,
+    "maximum_runs": 8,
+    "answers": 3338066,
+    "all_passed": true
+  },
+  "compilers": {
+    "gcc": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+    "clang": "Ubuntu clang version 21.1.8 (6ubuntu1)"
+  },
+  "source_files": {
+    "DataStructure/heap.cpp": "45d24c1d78141c5652011e44b3045240abeab14b226351a2d3909ae251513a1c",
+    "Verify/current/drivers/preferred_data_heap_double_main.cpp": "a35398b86b93b56f5394a4247bed28de09d61c53da15e9d4b3f5d71dd8d81aab",
+    "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab",
+    "Algorithm/Radix_sort.cpp": "0b527277b26307e434513f0bbe6afd90e77d52ffceac550f5e445504daa34e73",
+    "Verify/current/drivers/preferred_data_radix_frequency_int64_main.cpp": "9401dec260067fa7972523970ca23817e9b40328c96265f19b558f6f6cfcefde",
+    "Verify/current/drivers/preferred_data_radix_frequency_uint32_main.cpp": "f679ca19989d0f59332ca78f556c41a86dd366242c297e69e85e8d14c06f33b5",
+    "DataStructure/Hash_set.cpp": "08f912edd377be39ef1245eb6ee71214a49bad255688fdaf4542169c2725f7a3",
+    "Verify/current/drivers/preferred_data_hash_set_and_yuki_main.cpp": "d1188adceb78f3aab6913f6693f99d6b8c797e6606d737c72d36f5c06ae42c01"
+  },
+  "online_submissions": {
+    "preferred_data_heap_double": {
+      "status": "not_submitted",
+      "old_ac_transferred": false,
+      "source_sha256": "cf66b51d263f3fc892f3fae5860850aa70a5e91632ac01d3ea86c3a1eebbc4d2"
+    },
+    "preferred_data_radix_frequency_int64": {
+      "status": "not_submitted",
+      "old_ac_transferred": false,
+      "source_sha256": "a60e6cfb1a6c842a7d5b385eba726ec1ce1b4a41d7c26e154a4b4bdbec90cd94"
+    },
+    "preferred_data_radix_frequency_uint32": {
+      "status": "not_submitted",
+      "old_ac_transferred": false,
+      "source_sha256": "96f22b5fb55be20cf8ea2a4db89e594c0b9472d8e64414b0e0b80336b5177d39"
+    },
+    "preferred_data_hash_set_and_yuki": {
+      "status": "not_submitted",
+      "old_ac_transferred": false,
+      "source_sha256": "1f5a4033f4f5d6dd694addbe69a4100a3bd5ae3c100e1234196126cea9ce7e3a"
+    }
+  },
+  "maximum_case_results": [
+    {
+      "build": "preferred_data_heap_double-gcc-skip-native",
+      "id": "preferred_data_heap_double",
+      "fixture": "heap_max_alternating",
+      "kind": "maximum",
+      "input_sha256": "e8a33042ebfde3c57644f31d03b14584466c3393b112d59c0075b5dcf41864c5",
+      "expected_sha256": "572bc8028e577582875e7682c35fb2ee1839c69dd43d11b3379b1600907fae9f",
+      "output_sha256": "572bc8028e577582875e7682c35fb2ee1839c69dd43d11b3379b1600907fae9f",
+      "answers": 500000,
+      "returncode": 0,
+      "passed": true,
+      "seconds": 0.06962797300366219,
+      "time_seconds": 0.06,
+      "maxrss_kib": 9876.0,
+      "command": [
+        "/usr/bin/time",
+        "-f",
+        "%e %M",
+        "-o",
+        "/tmp/sirkit-verify-priority-20261115/data/time.txt",
+        "taskset",
+        "-c",
+        "24",
+        "/tmp/sirkit-verify-priority-20261115/data/bin/preferred_data_heap_double-gcc-skip-native"
+      ]
+    },
+    {
+      "build": "preferred_data_radix_frequency_int64-gcc-skip-native",
+      "id": "preferred_data_radix_frequency_int64",
+      "fixture": "frequency_max_positions",
+      "kind": "maximum",
+      "input_sha256": "8ab0e6cc083de69cbc316642a9a02845d49661c9535566719fcda156d92c9fd2",
+      "expected_sha256": "600ad240dd0bdfceefb2199ca131a0b09c2c49761e93b6ea3d0ac543f83261d7",
+      "output_sha256": "600ad240dd0bdfceefb2199ca131a0b09c2c49761e93b6ea3d0ac543f83261d7",
+      "answers": 500000,
+      "returncode": 0,
+      "passed": true,
+      "seconds": 0.1225056599942036,
+      "time_seconds": 0.12,
+      "maxrss_kib": 11460.0,
+      "command": [
+        "/usr/bin/time",
+        "-f",
+        "%e %M",
+        "-o",
+        "/tmp/sirkit-verify-priority-20261115/data/time.txt",
+        "taskset",
+        "-c",
+        "24",
+        "/tmp/sirkit-verify-priority-20261115/data/bin/preferred_data_radix_frequency_int64-gcc-skip-native"
+      ]
+    },
+    {
+      "build": "preferred_data_radix_frequency_uint32-gcc-skip-native",
+      "id": "preferred_data_radix_frequency_uint32",
+      "fixture": "frequency_max_positions",
+      "kind": "maximum",
+      "input_sha256": "8ab0e6cc083de69cbc316642a9a02845d49661c9535566719fcda156d92c9fd2",
+      "expected_sha256": "600ad240dd0bdfceefb2199ca131a0b09c2c49761e93b6ea3d0ac543f83261d7",
+      "output_sha256": "600ad240dd0bdfceefb2199ca131a0b09c2c49761e93b6ea3d0ac543f83261d7",
+      "answers": 500000,
+      "returncode": 0,
+      "passed": true,
+      "seconds": 0.10822362599719781,
+      "time_seconds": 0.1,
+      "maxrss_kib": 11812.0,
+      "command": [
+        "/usr/bin/time",
+        "-f",
+        "%e %M",
+        "-o",
+        "/tmp/sirkit-verify-priority-20261115/data/time.txt",
+        "taskset",
+        "-c",
+        "24",
+        "/tmp/sirkit-verify-priority-20261115/data/bin/preferred_data_radix_frequency_uint32-gcc-skip-native"
+      ]
+    },
+    {
+      "build": "preferred_data_hash_set_and_yuki-gcc-skip-native",
+      "id": "preferred_data_hash_set_and_yuki",
+      "fixture": "and_set_max_distinct",
+      "kind": "maximum",
+      "input_sha256": "e3ad906de1a7c1b65c0aff13509f1820b73b020bb58d14edf8544e9cc8897777",
+      "expected_sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "output_sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "answers": 1,
+      "returncode": 0,
+      "passed": true,
+      "seconds": 0.03096274299605284,
+      "time_seconds": 0.02,
+      "maxrss_kib": 18272.0,
+      "command": [
+        "/usr/bin/time",
+        "-f",
+        "%e %M",
+        "-o",
+        "/tmp/sirkit-verify-priority-20261115/data/time.txt",
+        "taskset",
+        "-c",
+        "24",
+        "/tmp/sirkit-verify-priority-20261115/data/bin/preferred_data_hash_set_and_yuki-gcc-skip-native"
+      ]
+    },
+    {
+      "build": "preferred_data_heap_double-clang-skip-native",
+      "id": "preferred_data_heap_double",
+      "fixture": "heap_max_alternating",
+      "kind": "maximum",
+      "input_sha256": "e8a33042ebfde3c57644f31d03b14584466c3393b112d59c0075b5dcf41864c5",
+      "expected_sha256": "572bc8028e577582875e7682c35fb2ee1839c69dd43d11b3379b1600907fae9f",
+      "output_sha256": "572bc8028e577582875e7682c35fb2ee1839c69dd43d11b3379b1600907fae9f",
+      "answers": 500000,
+      "returncode": 0,
+      "passed": true,
+      "seconds": 0.08208526601083577,
+      "time_seconds": 0.07,
+      "maxrss_kib": 9948.0,
+      "command": [
+        "/usr/bin/time",
+        "-f",
+        "%e %M",
+        "-o",
+        "/tmp/sirkit-verify-priority-20261115/data/time.txt",
+        "taskset",
+        "-c",
+        "24",
+        "/tmp/sirkit-verify-priority-20261115/data/bin/preferred_data_heap_double-clang-skip-native"
+      ]
+    },
+    {
+      "build": "preferred_data_radix_frequency_int64-clang-skip-native",
+      "id": "preferred_data_radix_frequency_int64",
+      "fixture": "frequency_max_positions",
+      "kind": "maximum",
+      "input_sha256": "8ab0e6cc083de69cbc316642a9a02845d49661c9535566719fcda156d92c9fd2",
+      "expected_sha256": "600ad240dd0bdfceefb2199ca131a0b09c2c49761e93b6ea3d0ac543f83261d7",
+      "output_sha256": "600ad240dd0bdfceefb2199ca131a0b09c2c49761e93b6ea3d0ac543f83261d7",
+      "answers": 500000,
+      "returncode": 0,
+      "passed": true,
+      "seconds": 0.12328614099533297,
+      "time_seconds": 0.12,
+      "maxrss_kib": 11524.0,
+      "command": [
+        "/usr/bin/time",
+        "-f",
+        "%e %M",
+        "-o",
+        "/tmp/sirkit-verify-priority-20261115/data/time.txt",
+        "taskset",
+        "-c",
+        "24",
+        "/tmp/sirkit-verify-priority-20261115/data/bin/preferred_data_radix_frequency_int64-clang-skip-native"
+      ]
+    },
+    {
+      "build": "preferred_data_radix_frequency_uint32-clang-skip-native",
+      "id": "preferred_data_radix_frequency_uint32",
+      "fixture": "frequency_max_positions",
+      "kind": "maximum",
+      "input_sha256": "8ab0e6cc083de69cbc316642a9a02845d49661c9535566719fcda156d92c9fd2",
+      "expected_sha256": "600ad240dd0bdfceefb2199ca131a0b09c2c49761e93b6ea3d0ac543f83261d7",
+      "output_sha256": "600ad240dd0bdfceefb2199ca131a0b09c2c49761e93b6ea3d0ac543f83261d7",
+      "answers": 500000,
+      "returncode": 0,
+      "passed": true,
+      "seconds": 0.0883710980124306,
+      "time_seconds": 0.08,
+      "maxrss_kib": 11880.0,
+      "command": [
+        "/usr/bin/time",
+        "-f",
+        "%e %M",
+        "-o",
+        "/tmp/sirkit-verify-priority-20261115/data/time.txt",
+        "taskset",
+        "-c",
+        "24",
+        "/tmp/sirkit-verify-priority-20261115/data/bin/preferred_data_radix_frequency_uint32-clang-skip-native"
+      ]
+    },
+    {
+      "build": "preferred_data_hash_set_and_yuki-clang-skip-native",
+      "id": "preferred_data_hash_set_and_yuki",
+      "fixture": "and_set_max_distinct",
+      "kind": "maximum",
+      "input_sha256": "e3ad906de1a7c1b65c0aff13509f1820b73b020bb58d14edf8544e9cc8897777",
+      "expected_sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "output_sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "answers": 1,
+      "returncode": 0,
+      "passed": true,
+      "seconds": 0.026549711998086423,
+      "time_seconds": 0.02,
+      "maxrss_kib": 18268.0,
+      "command": [
+        "/usr/bin/time",
+        "-f",
+        "%e %M",
+        "-o",
+        "/tmp/sirkit-verify-priority-20261115/data/time.txt",
+        "taskset",
+        "-c",
+        "24",
+        "/tmp/sirkit-verify-priority-20261115/data/bin/preferred_data_hash_set_and_yuki-clang-skip-native"
+      ]
+    }
+  ],
+  "review": "Codexによる新mainの構成・独立参照検証。今回の新mainにClaude実行なし。",
+  "notes": [
+    "AoJを最下位とする最新指示により、調査済みAOJ2候補は採用しない。",
+    "Heapの主キューと遅延削除キューはすべて公開Heapを使う。重複は個数単位で相殺する。",
+    "RadixSort結果を頻度検索の索引に直接使い、std::sortや別データ構造の答えで代用しない。",
+    "最大ケースの時間/RSSは当環境での所要量の参考でありオンライン速度・最速の主張ではない。"
+  ],
+  "archive": {
+    "path": "Audit/data/verify-priority-data-20261115.zip",
+    "sha256": "63d3d49f5ff72c6c17ca520a149769bb6c3b419ed2956479fb3a06e9aaa74ff1",
+    "bytes": 10537846,
+    "members": 583,
+    "crc_and_member_sha256": "PASS",
+    "git_tracking": "ignored/local-only"
+  }
+}

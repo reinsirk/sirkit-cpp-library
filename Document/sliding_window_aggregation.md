@@ -2,16 +2,129 @@
 
 `SlidingWindowAggregation<T,Op>`は、末尾へ追加・先頭から削除するキューと、その全体の集約値を管理します。スライドする区間の和・最小値・写像合成などに使えます。Opはconst呼出可能な結合演算、identityは左右の単位元です。逆演算や左右の交換は要求しません。[使用例](../Examples/sliding_window_aggregation_example.cpp)を参照してください。
 
-## API
+以下、Nは要素数です。値の演算・コピーをO(1)として計算量を記します。
 
-| API | 動作 |
-| --- | --- |
-| `(identity,op=Op{})` | 単位元と演算を指定して空のキューを作る。 |
-| `push_back(value)` / `pop_front()` | 末尾に追加 / 先頭を削除する。償却O(1)、1回は最悪O(N)。 |
-| `front()` / `back()` | 先頭 / 末尾のconst T&を返す。O(1)。 |
-| `all_prod()` | 先頭から順に合成した値を返す。空ならidentity。O(1)。 |
-| `size()` / `empty()` / `clear()` | 要素数 / 空か / 全削除。clearはO(N)、ほかはO(1)。 |
-| `swap(other)` | 演算・単位元・列をO(1)で交換する。 |
+## コンストラクタ
+
+```text
+explicit SlidingWindowAggregation(const T& identity, Op op = Op{});
+SlidingWindowAggregation(const SlidingWindowAggregation&) = default;
+SlidingWindowAggregation(SlidingWindowAggregation&& other);
+```
+
+指定した単位元identity・結合演算opで、空のキューを構築します。
+
+**制約:** 冒頭の値型・演算の前提を満たすこと。指定する列長は内部容量の上限内です。
+
+**計算量:** 空の構築・ムーブ構築はO(1)、コピーは保持要素数に比例。
+
+## push_back
+
+```text
+void push_back(const T& value);
+```
+
+列の末尾へ値を追加します。
+
+**制約:** 共通の前提を満たすこと。
+
+**計算量:** 償却O(1)、1回の最悪O(N)。値のコピー・演算をO(1)とします。
+
+## pop_front
+
+```text
+void pop_front();
+```
+
+列の先頭を削除します。
+
+**制約:** 空でないこと。
+
+**計算量:** 償却O(1)、1回の最悪O(N)。値のコピー・演算をO(1)とします。
+
+## front
+
+```text
+const T& front() const;
+```
+
+先頭要素のconst参照を返します。
+
+**制約:** 空でないこと。
+
+**計算量:** O(1)。
+
+## back
+
+```text
+const T& back() const;
+```
+
+末尾要素のconst参照を返します。
+
+**制約:** 空でないこと。
+
+**計算量:** O(1)。
+
+## all_prod
+
+```text
+T all_prod() const;
+```
+
+先頭から順にOpで結合した値を返します。空ならidentityです。
+
+**制約:** 共通の前提を満たすこと。
+
+**計算量:** O(1)。
+
+## size
+
+```text
+std::size_t size() const noexcept;
+```
+
+現在のキューの要素数を返します。
+
+**制約:** 共通の前提を満たすこと。
+
+**計算量:** O(1)。
+
+## empty
+
+```text
+bool empty() const noexcept;
+```
+
+空ならtrueを返します。
+
+**制約:** 共通の前提を満たすこと。
+
+**計算量:** O(1)。
+
+## clear
+
+```text
+void clear() noexcept;
+```
+
+全要素を削除します。確保容量は保持する場合があります。
+
+**制約:** 共通の前提を満たすこと。
+
+**計算量:** O(N)。
+
+## swap
+
+```text
+void swap(SlidingWindowAggregation& other);
+```
+
+内容と設定を交換します。
+
+**制約:** 共通の前提を満たすこと。
+
+**計算量:** O(1)。値型・比較器のswapの費用は別です。
 
 ```cpp
 SlidingWindowAggregation<std::int64_t,std::plus<std::int64_t>> queue(0);
@@ -32,3 +145,16 @@ T・Opはコピー可能で、破棄が例外を投げない型を使います�
 コピーは独立、移動元は空です。代入・swapにはT・Opが交換可能であることが必要です。代入の強い例外保証は、その交換がnoexceptの場合に成立します。交換自体が例外を投げる型では途中状態を保証しません。
 
 構成と問題選定は[NyaanのSWAG](https://nyaannyaan.github.io/library/data-structure/slide-window-aggregation.hpp)を参考にし、実装は独立に組み立てています。
+
+## operator=
+
+```text
+SlidingWindowAggregation& operator=(const SlidingWindowAggregation& other);
+SlidingWindowAggregation& operator=(SlidingWindowAggregation&& other);
+```
+
+コピーまたはムーブで内容を置き換え、自身への参照を返します。コピーは独立した内容を持ちます。
+
+**制約:** 型・所有・例外保証は共通の説明に従います。
+
+**計算量:** 保持する配列・ノードのコピーと旧内容の破棄に比例。ムーブ構築とは異なり、代入では旧内容の解放費用も含みます。

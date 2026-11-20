@@ -24,6 +24,8 @@
 // 確保失敗時は内容を維持。solveは常に元オブジェクトを維持。span引数との自己参照可。
 // 頂点値と成分和は、内部の加算順を含め全てint64_tに収まること。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <bit>
 #include <cstddef>
@@ -34,9 +36,33 @@
 #include <utility>
 #include <vector>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_CONNECTIVITY_ROLLBACK_STATE_DEFINED
 #define SIRKIT_CONNECTIVITY_ROLLBACK_STATE_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
+inline void CheckConnectivityWeightCount(std::size_t weights) {
+    if (weights > static_cast<std::size_t>(std::numeric_limits<int>::max()))
+        throw std::length_error("OfflineDynamicConnectivity size");
+}
+
+inline std::size_t ConnectivityTimelineBase(std::size_t queries, std::size_t limit) {
+    // limitはvector<size_t>の容量で、初期値の2*1+1は収まる。
+    std::size_t base = 1;
+    while (base < queries) {
+        if (base > (limit - 1) / 4) throw std::length_error("OfflineDynamicConnectivity timeline");
+        base *= 2;
+    }
+    return base;
+}
+
+inline std::size_t CheckedConnectivitySum(std::size_t current, std::size_t extra, std::size_t limit,
+                                          const char* message) {
+    if (extra > limit - current) throw std::length_error(message);
+    return current + extra;
+}
+
 class ConnectivityRollbackState {
     struct Change { int root, child, root_size, child_size; std::int64_t root_sum; };
     std::vector<int> parent_;
@@ -117,7 +143,7 @@ public:
         initial_.resize(static_cast<std::size_t>(n));
     }
     explicit OfflineDynamicConnectivity(std::span<const std::int64_t> weights) {
-        if (weights.size() > static_cast<std::size_t>(std::numeric_limits<int>::max())) throw std::length_error("OfflineDynamicConnectivity size");
+        /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::CheckConnectivityWeightCount(weights.size());
         initial_.assign(weights.begin(), weights.end());
     }
     OfflineDynamicConnectivity(const OfflineDynamicConnectivity&) = default;
@@ -158,26 +184,22 @@ public:
     std::vector<std::int64_t> solve() const {
         const auto q = queries_.size(); if (!q) return {};
         const auto limit = std::vector<std::size_t>().max_size();
-        std::size_t base = 1;
-        while (base < q) {
-            if (base > (limit - 1) / 4) throw std::length_error("OfflineDynamicConnectivity timeline");
-            base *= 2;
-        }
-        if (base > (limit - 1) / 2 || additions_.size() > ongoing - edges_.size()) throw std::length_error("OfflineDynamicConnectivity capacity");
+        using /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::CheckedConnectivitySum;
+        const auto base = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::ConnectivityTimelineBase(q, limit);
+        (void)CheckedConnectivitySum(edges_.size(), additions_.size(), ongoing, "OfflineDynamicConnectivity capacity");
         const auto nodes = base * 2;
         std::vector<std::size_t> offsets(nodes + 1);
         intervals(base, [&](std::size_t node, std::size_t) {
-            if (offsets[node + 1] == limit) throw std::length_error("OfflineDynamicConnectivity intervals");
-            ++offsets[node + 1];
+            auto& count = offsets[node + 1];
+            count = CheckedConnectivitySum(count, 1, limit, "OfflineDynamicConnectivity intervals");
         });
         for (std::size_t i = 1; i <= nodes; ++i) {
-            if (offsets[i] > limit - offsets[i - 1]) throw std::length_error("OfflineDynamicConnectivity intervals");
-            offsets[i] += offsets[i - 1];
+            offsets[i] = CheckedConnectivitySum(offsets[i - 1], offsets[i], limit, "OfflineDynamicConnectivity intervals");
         }
         std::vector<std::size_t> ids(offsets.back()), cursor(offsets.begin(), offsets.end() - 1);
         intervals(base, [&](std::size_t node, std::size_t id) { ids[cursor[node]++] = id; });
         const auto merge_bound = std::min(edges_.size(), initial_.empty() ? std::size_t{0} : initial_.size() - 1);
-        reinsirk::detail::ConnectivityRollbackState uf(initial_, merge_bound + additions_.size());
+        /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::ConnectivityRollbackState uf(initial_, merge_bound + additions_.size());
         struct Frame { std::size_t node, snapshot; bool exit; };
         std::vector<Frame> stack; stack.reserve(2 * std::bit_width(base) + 1); stack.push_back({1, 0, false});
         std::vector<std::int64_t> answers(q);
@@ -216,6 +238,13 @@ public:
 };
 #endif
 
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
+
+
+namespace sirkit {}
+using namespace sirkit;
 
 // SPDX-License-Identifier: CC0-1.0
 #include <algorithm>

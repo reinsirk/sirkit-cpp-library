@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #ifndef SIRKIT_SIEVE_SOURCE
 #define SIRKIT_SIEVE_SOURCE "../../../Math/Eratosthenes.cpp"
 #endif

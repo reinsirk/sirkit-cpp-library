@@ -3,6 +3,8 @@
 #include <iostream>
 #include <vector>
 #include "../DataStructure/Dual_Segment_Tree.cpp"
+
+using namespace sirkit;
 struct Affine {std::int64_t a,b;};
 struct Mapping {std::int64_t operator()(const Affine&f,std::int64_t x)const{return f.a*x+f.b;}};
 struct Composition {Affine operator()(const Affine&f,const Affine&g)const{return {f.a*g.a,f.a*g.b+f.b};}};

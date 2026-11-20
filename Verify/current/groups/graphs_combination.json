@@ -8,7 +8,7 @@
       "driver": "Verify/current/drivers/bellman_ford_coins_respawn_main.cpp",
       "problem_url": "https://atcoder.jp/contests/abc137/tasks/abc137_e",
       "title": "E - Coins Respawn",
-      "selection_reason": "Library CheckerのShortest Pathは非負辺かつ大規模で、本APIの負閉路検出に適合しないためAtCoderの対応問題を選定。",
+      "selection_reason": "LCの非負大規模Shortest Pathは負辺用APIの代替にならない。yukicoder1344は負辺/未到達/多重辺を含む全始点距離をそのまま合計する自然な帰着。旧問題の負閉路影響範囲・到達個数等の異なる出力も補完として維持する。",
       "coverage": "負辺を含む単一始点最短路、終点へ伝播する-INFと終点に無関係な負閉路。",
       "limitations": "提出80357986は画像でAC・10ms、HTTP403で本文未照合。独立参照・検査あり/なし・確保失敗・ASan/UBSanはAudit/verify-bellman-ford-80357888-2026-10-25.json、今回の確認はAudit/verify-bellman-ford-80357986-2026-10-25.json参照。",
       "samples": [
@@ -72,7 +72,8 @@
         "https://atcoder.jp/contests/abc137/submissions/80357986",
         "https://atcoder.jp/contests/abc137/submissions/80467528",
         "https://atcoder.jp/contests/abc137/submissions/80790216"
-      ]
+      ],
+      "previous_selection_reason": "Library CheckerのShortest Pathは非負辺かつ大規模で、本APIの負閉路検出に適合しないためAtCoderの対応問題を選定。"
     },
     {
       "id": "spfa",
@@ -82,7 +83,7 @@
       "driver": "Verify/current/drivers/spfa_coins_respawn_main.cpp",
       "problem_url": "https://atcoder.jp/contests/abc137/tasks/abc137_e",
       "title": "E - Coins Respawn",
-      "selection_reason": "Library CheckerのShortest Pathは非負辺かつ大規模で、本APIの負閉路検出に適合しないためAtCoderの対応問題を選定。",
+      "selection_reason": "LCの非負大規模Shortest Pathは負辺用APIの代替にならない。yukicoder1344は負辺/未到達/多重辺を含む全始点距離をそのまま合計する自然な帰着。旧問題の負閉路影響範囲・到達個数等の異なる出力も補完として維持する。",
       "coverage": "負辺を含む単一始点最短路、終点へ伝播する-INFと終点に無関係な負閉路。",
       "limitations": "提出80394490は画像でAC・3ms、HTTP403で本文未照合。手元の対応準備版は前回検証済みの16V切替版。今回の比較・検証範囲はAudit/verify-spfa-80394490-2026-10-26.json参照。",
       "samples": [
@@ -139,7 +140,8 @@
       "submission_urls": [
         "https://atcoder.jp/contests/abc137/submissions/80394490",
         "https://atcoder.jp/contests/abc137/submissions/80790391"
-      ]
+      ],
+      "previous_selection_reason": "Library CheckerのShortest Pathは非負辺かつ大規模で、本APIの負閉路検出に適合しないためAtCoderの対応問題を選定。"
     },
     {
       "id": "dijkstra",
@@ -171,7 +173,9 @@
         "https://judge.yosupo.jp/submission/411988",
         "https://judge.yosupo.jp/submission/411999",
         "https://judge.yosupo.jp/submission/412033",
-        "https://judge.yosupo.jp/submission/416737"
+        "https://judge.yosupo.jp/submission/416737",
+        "http://judge.yosupo.jp/submission/417216",
+        "https://judge.yosupo.jp/submission/417299"
       ],
       "gcc_optimization": "O3"
     },
@@ -202,7 +206,8 @@
         "https://judge.yosupo.jp/submission/411664",
         "https://judge.yosupo.jp/submission/411975",
         "https://judge.yosupo.jp/submission/413373",
-        "https://judge.yosupo.jp/submission/413374"
+        "https://judge.yosupo.jp/submission/413374",
+        "https://judge.yosupo.jp/submission/417204"
       ]
     },
     {
@@ -226,7 +231,8 @@
       "historical_record": "Verify/Binary_Trie.md",
       "submission_urls": [
         "https://judge.yosupo.jp/submission/411638",
-        "https://judge.yosupo.jp/submission/411981"
+        "https://judge.yosupo.jp/submission/411981",
+        "https://judge.yosupo.jp/submission/417214"
       ],
       "gcc_optimization": "O3"
     },
@@ -238,7 +244,7 @@
       "driver": "Verify/current/drivers/floyd_warshall_bus_main.cpp",
       "problem_url": "https://atcoder.jp/contests/abc012/tasks/abc012_4",
       "title": "D - バスと避けられない運命",
-      "selection_reason": "Library Checkerに全点間最短路の直接対応問題がないため、AtCoderの全点間距離を使う問題を選定。",
+      "selection_reason": "LCに同条件の全点対距離問題を確認できない。yukicoder1344はFloydWarshallの全行の距離が出力へ直接反映され、旧AtCoderより負辺/未到達も検証する。旧問題の負閉路影響範囲・到達個数等の異なる出力も補完として維持する。",
       "coverage": "FloydWarshallによる全点間距離、グラフの中心。",
       "limitations": "非負・無向・連結グラフ。負辺・負閉路・未到達・経路復元はローカル補足。提出80246981は画像でAC・6msを確認した記録で本文未照合。追加改修後はオンライン未提出。",
       "samples": [
@@ -298,7 +304,8 @@
         "https://atcoder.jp/contests/abc012/submissions/80459239",
         "https://atcoder.jp/contests/abc012/submissions/80790251"
       ],
-      "gcc_optimization": "O3,unroll-loops"
+      "gcc_optimization": "O3,unroll-loops",
+      "previous_selection_reason": "Library Checkerに全点間最短路の直接対応問題がないため、AtCoderの全点間距離を使う問題を選定。"
     },
     {
       "id": "binomial_integer",
@@ -326,7 +333,8 @@
       "historical_record": "Verify/Combination_Mod.md",
       "dependencies": [],
       "submission_urls": [
-        "https://judge.yosupo.jp/submission/411623"
+        "https://judge.yosupo.jp/submission/411623",
+        "https://judge.yosupo.jp/submission/417284"
       ]
     },
     {
@@ -360,7 +368,8 @@
         "https://judge.yosupo.jp/submission/411677",
         "https://judge.yosupo.jp/submission/411681",
         "https://judge.yosupo.jp/submission/411977",
-        "https://judge.yosupo.jp/submission/414010"
+        "https://judge.yosupo.jp/submission/414010",
+        "https://judge.yosupo.jp/submission/417206"
       ]
     },
     {
@@ -389,6 +398,9 @@
       "historical_record": "Verify/Combination_Mod.md",
       "dependencies": [
         "ACL modint（生成時に公式版を展開）"
+      ],
+      "submission_urls": [
+        "https://judge.yosupo.jp/submission/417211"
       ]
     },
     {
@@ -421,7 +433,8 @@
       "submission_urls": [
         "https://judge.yosupo.jp/submission/411967",
         "https://judge.yosupo.jp/submission/411979",
-        "https://judge.yosupo.jp/submission/414017"
+        "https://judge.yosupo.jp/submission/414017",
+        "https://judge.yosupo.jp/submission/417210"
       ],
       "gcc_optimization": "O3"
     },
@@ -453,7 +466,11 @@
           "origin": "追加境界例（510万超・最大n・k>n）。期待値はPython math.combで独立計算。"
         }
       ],
-      "dependencies": []
+      "dependencies": [],
+      "submission_urls": [
+        "https://judge.yosupo.jp/submission/417207",
+        "https://judge.yosupo.jp/submission/417291"
+      ]
     },
     {
       "id": "binomial_integer_prime_mod_split",
@@ -489,7 +506,9 @@
         "https://judge.yosupo.jp/submission/411941",
         "https://judge.yosupo.jp/submission/411962",
         "https://judge.yosupo.jp/submission/411976",
-        "https://judge.yosupo.jp/submission/414011"
+        "https://judge.yosupo.jp/submission/414011",
+        "https://judge.yosupo.jp/submission/417205",
+        "https://judge.yosupo.jp/submission/417290"
       ],
       "gcc_optimization": "O3,unroll-loops"
     },
@@ -519,6 +538,10 @@
       "historical_record": "Verify/Combination_AtCoderMod.md",
       "dependencies": [
         "ACL modint（生成時に公式版を展開）"
+      ],
+      "submission_urls": [
+        "https://judge.yosupo.jp/submission/417213",
+        "https://judge.yosupo.jp/submission/417295"
       ]
     },
     {
@@ -550,7 +573,9 @@
       ],
       "submission_urls": [
         "https://judge.yosupo.jp/submission/411966",
-        "https://judge.yosupo.jp/submission/411980"
+        "https://judge.yosupo.jp/submission/411980",
+        "https://judge.yosupo.jp/submission/417212",
+        "https://judge.yosupo.jp/submission/417294"
       ]
     },
     {
@@ -665,7 +690,8 @@
       ],
       "submission_urls": [
         "https://judge.yosupo.jp/submission/412878",
-        "https://judge.yosupo.jp/submission/414012"
+        "https://judge.yosupo.jp/submission/414012",
+        "https://judge.yosupo.jp/submission/417251"
       ]
     },
     {
@@ -694,7 +720,8 @@
         "https://judge.yosupo.jp/submission/412343",
         "https://judge.yosupo.jp/submission/413720",
         "https://judge.yosupo.jp/submission/413731",
-        "https://judge.yosupo.jp/submission/413748"
+        "https://judge.yosupo.jp/submission/413748",
+        "https://judge.yosupo.jp/submission/417226"
       ]
     },
     {
@@ -825,7 +852,11 @@
           "origin": "追加境界例（510万超・最大n・k>n）。期待値はPython math.combで独立計算。"
         }
       ],
-      "dependencies": []
+      "dependencies": [],
+      "submission_urls": [
+        "https://judge.yosupo.jp/submission/417209",
+        "https://judge.yosupo.jp/submission/417293"
+      ]
     },
     {
       "id": "binomial_modint_prime_mod_split",
@@ -858,7 +889,9 @@
       "dependencies": [],
       "submission_urls": [
         "https://judge.yosupo.jp/submission/411965",
-        "https://judge.yosupo.jp/submission/411978"
+        "https://judge.yosupo.jp/submission/411978",
+        "https://judge.yosupo.jp/submission/417208",
+        "https://judge.yosupo.jp/submission/417292"
       ]
     }
   ]

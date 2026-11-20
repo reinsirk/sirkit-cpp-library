@@ -1,0 +1,158 @@
+{
+  "format": 1,
+  "date": "2026-11-15",
+  "scope": "caller-configurable identity/inf in implicit treap, dynamic Li Chao and 2D line container",
+  "status": "PASS",
+  "library_sha256": {
+    "DataStructure/implicit_treap.cpp": "d277c81e8641697e1e21c9b684fdc290dee780ce7fa3e9b5f9d4f797de1a0d5b",
+    "DataStructure/dynamic-li-chao-tree.cpp": "633b5ed1790e19c3546c9f5f44d593f720836630312f09074f55ac6a0a224c95",
+    "DataStructure/line-container-2d.cpp": "bfc1f6f6d49130db16d24be2e875956f2555aa41300afae3da1b2e20bd8bae94"
+  },
+  "before_library_sha256": {
+    "DataStructure/dynamic-li-chao-tree.cpp": "3cf1fab80fb8f01c877fb48674dfacbc0901443e4188f35ee8a8900e79fd49e2",
+    "DataStructure/line-container-2d.cpp": "282afcadeb89816149aa7d6ae3539b5a4f99f23125115720b757595ca9f4f191",
+    "DataStructure/implicit_treap.cpp": "44ae7a80d8fa2e923bae0ca4be92391ea7242b5f37519d233fae78f943a727be"
+  },
+  "implementation_review": {
+    "additional_body_changes": false,
+    "default_inf": "2^60; Li Chao defaults to type maximum for narrower signed types",
+    "treap": "Custom identity has shared immutable ownership; copy/move/clear/swap preserve the specified identity, including moved-from empty trees. Tests include values above the new default and indexed adjacent endpoints.",
+    "li_chao": "Runtime sentinel is used for empty nodes/queries; old NTTP sentinel remains supported. Tests include sentinel intercept with negative slope, INT_MIN result, all signed widths and custom-setting preservation.",
+    "line2d": "Truncation and rounding clamp before integer conversion; INT64_MAX and nextafter boundaries are checked. Floating evaluation is not asserted to be exact for arbitrary large integer inner products."
+  },
+  "changes_by_validation_agent": [
+    "Existing Line2D default saturation test now expects infinity()=2^60 instead of the legacy INTEGER_LIMIT constant.",
+    "Li Chao and Line2D allocation-failure tests additionally check custom-setting retention on failure/success.",
+    "Three Examples now demonstrate explicit custom inf/identity with their stdout unchanged.",
+    "Added custom_inf_test.cpp and unittest registration in Scripts/tests/test_custom_inf_runtime.py."
+  ],
+  "validation": {
+    "initial_related_test_runs": 70,
+    "followup_final_source_runs": 18,
+    "custom_inf_configurations": 8,
+    "custom_inf_checks_per_configuration": 239400,
+    "official_sample_builds": 32,
+    "official_sample_runs": 44,
+    "official_sample_ids": [
+      "dynamic_hash_local",
+      "dynamic_lichao_line",
+      "dynamic_lichao_segment",
+      "implicit_treap_affine",
+      "implicit_treap_deque",
+      "implicit_treap_erase_between",
+      "line_container_2d_min",
+      "line_container_2d_triangle"
+    ],
+    "instrumented_configurations": 4,
+    "instrumentation": "ASan, UBSan, float-cast-overflow, LSan; GCC/Clang native+standard fallback, checked. LSan was executed ptrace-free after the normal runner reported an environment ptrace limitation.",
+    "python_registration": "python3 -B -m unittest Scripts.tests.test_custom_inf_runtime: 4 tests PASS",
+    "source_sha256": {
+      "DataStructure/implicit_treap.cpp": "d277c81e8641697e1e21c9b684fdc290dee780ce7fa3e9b5f9d4f797de1a0d5b",
+      "DataStructure/dynamic-li-chao-tree.cpp": "633b5ed1790e19c3546c9f5f44d593f720836630312f09074f55ac6a0a224c95",
+      "DataStructure/line-container-2d.cpp": "bfc1f6f6d49130db16d24be2e875956f2555aa41300afae3da1b2e20bd8bae94",
+      "Document/implicit_treap.md": "30c708e7ad454da69c72a28f019dc298098a3caab4c7af756de04ad8c596299a",
+      "Document/dynamic_li_chao.md": "e0eed27f6e8aaebb5a0b53033280826d4d163214de4d55470c758a4aec185194",
+      "Document/line_container_2d.md": "578a5352c027129604165941ee73e4fe856a77668dab1a0a852df263284ac3e4",
+      "Examples/implicit_treap_example.cpp": "59b597dffba1a7b057219a813648dca0de80e93964973687eebde8d4465e0b7e",
+      "Examples/dynamic_li_chao_example.cpp": "aaaea81a1d926ca1f4f347ae9a786f5f9c5508e9d2229d45f4f645628879d2c0",
+      "Examples/line_container_2d_example.cpp": "60bf431956d643687e02b2cddc062b49ef31b6c2cafa1eccb827c0bf91574ba0",
+      "Verify/current/tests/custom_inf_test.cpp": "6606445216935d4fbb7e43990e0e3587f70a308c454194645ad5b41657ff775d",
+      "Verify/current/tests/line_container_2d_reuse_test.cpp": "48ff7435e3dfbc9319e1864cee1ce0cb9a73f3ed8bf6dda53616b4e7ca2acaae",
+      "Verify/current/tests/dynamic_li_chao_allocation_test.cpp": "dedfb3e655aa9c46bb51d8ade0ac81835b579877ad08cdb66ae4bcc15895318c",
+      "Verify/current/tests/line_container_2d_allocation_test.cpp": "3ef5c73507098535c14046fcda165abf5a6fea09a4a05e87f89003b25b36e2f5",
+      "Scripts/tests/test_custom_inf_runtime.py": "0360523a4a5922bfab14499dbbaea9978ef5343fe4d0e7017a04d0c399090112"
+    }
+  },
+  "performance": {
+    "method": "Isolated API workload, identical main/no input/output except final elapsed time and checksum; before/current default constructors, -std=c++23 -O2 -DSKIP_RUNTIME_CHECKS; CPU25; first warmup round excluded, 11 timed trials with alternating order. Treap uses its original time-seeded priorities, not a modified body. Default sentinel values differ but workload mathematical results/checksums agree.",
+    "scope": "Not a Library Checker submission-time claim or whole-program input/output comparison.",
+    "profiles": [
+      "treap range-add/min/reverse",
+      "treap range-add/sum/reverse",
+      "Li Chao full lines",
+      "Li Chao closed segments",
+      "2D integer-return query",
+      "2D floating-return query"
+    ],
+    "median_current_before": [
+      {
+        "compiler": "gcc",
+        "profile": 0,
+        "ratio": 1.004609105103211
+      },
+      {
+        "compiler": "gcc",
+        "profile": 1,
+        "ratio": 1.0063228951103405
+      },
+      {
+        "compiler": "gcc",
+        "profile": 2,
+        "ratio": 1.0031296624615722
+      },
+      {
+        "compiler": "gcc",
+        "profile": 3,
+        "ratio": 0.9769001381446412
+      },
+      {
+        "compiler": "gcc",
+        "profile": 4,
+        "ratio": 0.9814724442219579
+      },
+      {
+        "compiler": "gcc",
+        "profile": 5,
+        "ratio": 1.0007255844283605
+      },
+      {
+        "compiler": "clang",
+        "profile": 0,
+        "ratio": 1.0089400582068455
+      },
+      {
+        "compiler": "clang",
+        "profile": 1,
+        "ratio": 1.0081321494752349
+      },
+      {
+        "compiler": "clang",
+        "profile": 2,
+        "ratio": 0.905625495037126
+      },
+      {
+        "compiler": "clang",
+        "profile": 3,
+        "ratio": 0.9024630838962399
+      },
+      {
+        "compiler": "clang",
+        "profile": 4,
+        "ratio": 0.9992621287660721
+      },
+      {
+        "compiler": "clang",
+        "profile": 5,
+        "ratio": 1.0083985948341887
+      }
+    ],
+    "decision": "No added body changes justified. Approximately 1% differences in Treap/2D and GCC full-line tests are not claimed as stable changes. Clang Li Chao workload shows lower times here; this is not generalized to all workloads.",
+    "superseded_screen": "The first screen used a signed checksum in some builds and was discarded because the segment workload could overflow it; all final benchmark builds use uint64_t checksum. Its records are retained only as superseded evidence."
+  },
+  "online_status": "Not submitted online; old AC is not applied to changed source. Global generation and online/source review records are handled by the root task.",
+  "artifacts": {
+    "local_archive": "Audit/data/custom-inf-20261115.zip",
+    "results": "data/validation/{results,followup,verify-samples,sanitizer-final-ptrace-free}.json",
+    "performance": "data/performance/results.json",
+    "scripts": [
+      "data/validate.py",
+      "data/final-followup.py",
+      "data/sanitize.py",
+      "data/verify-samples.py",
+      "data/benchmark.py",
+      "data/benchmark.cpp",
+      "data/finalize.py"
+    ],
+    "local_archive_sha256": "fef6686d5e6ebacc5ba2a0adbc7643d03641847c7ef590f86c30e423686ca671"
+  }
+}

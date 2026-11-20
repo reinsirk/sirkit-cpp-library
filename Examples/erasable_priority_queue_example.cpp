@@ -2,6 +2,8 @@
 #include <iostream>
 #include <vector>
 
+using namespace sirkit;
+
 int main() {
     ErasablePriorityQueue<int> queue(std::vector<int>{5, 2, 2, 8}); // 最小値優先。
     queue.erase(2); // 存在する値を1個消す。

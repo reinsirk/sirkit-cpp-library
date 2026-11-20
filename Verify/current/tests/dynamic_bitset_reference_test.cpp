@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #ifndef SIRKIT_BITSET_SOURCE
 #define SIRKIT_BITSET_SOURCE "../../../DataStructure/Dynamic_Bitset.cpp"
 #endif
@@ -29,6 +31,11 @@ void compare(const DynamicBitset& b,const std::vector<bool>& a){
 std::vector<bool> shift(const std::vector<bool>& a,std::size_t k,bool left){std::vector<bool>b(a.size());if(k>=a.size())return b;for(std::size_t i=0;i<a.size();++i){if(left){if(i>=k)b[i]=a[i-k];}else if(k<a.size()-i)b[i]=a[i+k];}return b;}
 void shift_case(const DynamicBitset& b,const std::vector<bool>& a,std::size_t k){auto l=b;l<<=k;compare(l,shift(a,k,true));require(l==(b<<k));auto r=b;r>>=k;compare(r,shift(a,k,false));require(r==(b>>k));auto o=b;o.shift_or(k);auto expected=shift(a,k,true);for(std::size_t i=0;i<a.size();++i)expected[i]=expected[i]||a[i];compare(o,expected);}
 void run_checks(){
+ require(::sirkit::detail::DynamicBitsetWordCount(128, 2)==2);
+ bool too_long=false;
+ try { (void)::sirkit::detail::DynamicBitsetWordCount(129, 2); }
+ catch(const std::length_error&) { too_long=true; }
+ require(too_long);
  for(std::size_t n=0;n<=9;++n)for(std::uint64_t mask=0;mask<(std::uint64_t{1}<<n);++mask){std::vector<bool>a(n);DynamicBitset b(n);for(std::size_t i=0;i<n;++i)if((mask>>i)&1){a[i]=true;b.set(i);}compare(b,a);DynamicBitset from(encode(a));require(from==b);for(std::size_t k=0;k<=n+1;++k)shift_case(b,a,k);}
  const std::array<std::size_t,15> sizes{0,1,2,31,32,63,64,65,127,128,129,255,256,257,513};
  for(const auto n:sizes){for(bool value:{false,true}){DynamicBitset b(n,value);std::vector<bool>a(n,value);compare(b,a);for(const auto k:std::array<std::size_t,12>{0,1,2,31,63,64,65,127,128,n,n+1,SIZE_MAX})shift_case(b,a,k);}}
@@ -59,6 +66,7 @@ void run_checks(){
  DynamicBitset large(1000003,true);require(large.count()==1000003);require(large.count(17,999999)==999982);large.resize(64);large.resize(1000003);require(large.count()==64);large.shift_or(999999);require(large.count()==68);
  DynamicBitset pa(20001),pb(20001);for(std::size_t i=0;i<20001;++i){if(i%3==0)pa.set(i);if(i%5==0)pb.set(i);}require(pa.count()==6667);require(pb.count()==4001);require(pa.intersection_count(pb)==1334);require(!pa.intersection_parity(pb));pb.set(19998);require(pa.intersection_count(pb)==1335);require(pa.intersection_parity(pb));require(pa.intersection_parity(pa)==(pa.count()%2!=0));
  require(!(DynamicBitset(1)==DynamicBitset(2)));require(DynamicBitset(1)!=DynamicBitset(2));
+ require(DynamicBitset(65) != DynamicBitset(65, true));
 #ifndef SKIP_RUNTIME_CHECKS
  DynamicBitset b(65,true),shorter(64);auto old=b;rejected([&]{b.test(65);});rejected([&]{b[65]=false;});rejected([&]{b.set(SIZE_MAX);});rejected([&]{b.flip(65);});rejected([&]{b.reset(65);});rejected([&]{b.count(5,4);});rejected([&]{b.count(0,66);});rejected([&]{b&=shorter;});rejected([&]{b|=shorter;});rejected([&]{b^=shorter;});rejected([&]{b.intersection_count(shorter);});rejected([&]{b.intersection_parity(shorter);});rejected([]{DynamicBitset bad("101x");});require(b==old);DynamicBitset c63(63,true),c64(64,true);rejected([&]{c63&=c64;});rejected([&]{c63|=c64;});rejected([&]{c63^=c64;});rejected([&]{c63.intersection_count(c64);});rejected([&]{c63.intersection_parity(c64);});require(c63.count()==63);
 #endif

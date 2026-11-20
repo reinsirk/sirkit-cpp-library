@@ -2,20 +2,201 @@
 
 `SlopeTrick`は、絶対値などを足して作る区分線形凸関数と、その最小値・最小点を管理します。折点は整数座標、傾きの変化量は整数で、初期値はf(x)=0です。[使用例](../Examples/slope_trick_example.cpp)を参照してください。
 
-## API
+以下、Kは保持する折点の総数です。Argminはoptional<std::int64_t>のlower・upperを持ちます。
 
-| API | 動作 |
-| --- | --- |
-| `add_left_hinge(a)` / `add_right_hinge(a)` | max(a-x,0) / max(x-a,0)を足す。 |
-| `add_abs(a)` / `add_constant(c)` | abs(x-a) / 定数cを足す。 |
-| `min_value()` / `argmin()` | 最小値 / 最小点の閉区間Argmin{lower,upper}を返す。O(1)。 |
-| `shift(a)` | 新f(x)=旧f(x-a)。グラフを右へa移す。O(1)。 |
-| `shift(a,b)` | 新f(x)=min_{x-b<=y<=x-a}旧f(y)。a<=bが前提。O(1)。 |
-| `clear_right()` / `clear_left()` | min_{y<=x}旧f(y) / min_{y>=x}旧f(y)へ置き換える。 |
-| `eval(x)` | 関数を壊さずxでの値を返す。O(K+1)。 |
-| `merge(other)` | otherの関数を加える。otherを保ち、自己mergeも可能。 |
-| `size()` / `empty()` | 折点数 / 折点のない定数関数か。O(1)。 |
-| `reserve(left,right)` / `clear()` / `swap(other)` | 左右の容量予約 / f=0へ戻して解放 / O(1)で交換する。 |
+## add_left_hinge
+
+```text
+void add_left_hinge(std::int64_t a);
+```
+
+max(a-x,0)を現在の関数へ加えます。
+
+**制約:** 保存する座標・途中の差と和はint64_tの範囲内。無限端はargminのoptionalで表します。
+
+**計算量:** 折点数Kに償却O(log(K+1))。
+
+## add_right_hinge
+
+```text
+void add_right_hinge(std::int64_t a);
+```
+
+max(x-a,0)を加えます。
+
+**制約:** 保存する座標・途中の差と和はint64_tの範囲内。無限端はargminのoptionalで表します。
+
+**計算量:** 折点数Kに償却O(log(K+1))。
+
+## add_abs
+
+```text
+void add_abs(std::int64_t a);
+```
+
+abs(x-a)を加えます。
+
+**制約:** 保存する座標・途中の差と和はint64_tの範囲内。無限端はargminのoptionalで表します。
+
+**計算量:** 折点数Kに償却O(log(K+1))。
+
+## add_constant
+
+```text
+void add_constant(std::int64_t value);
+```
+
+定数valueを加えます。
+
+**制約:** 保存する座標・途中の差と和はint64_tの範囲内。無限端はargminのoptionalで表します。
+
+**計算量:** O(1)。
+
+## min_value
+
+```text
+std::int64_t min_value() const noexcept;
+```
+
+最小値を返します。
+
+**制約:** 保存する座標・途中の差と和はint64_tの範囲内。無限端はargminのoptionalで表します。
+
+**計算量:** O(1)。
+
+## argmin
+
+```text
+Argmin argmin() const;
+```
+
+最小点の閉区間Argmin{lower,upper}を返します。optionalの下端なしは負の無限大、上端なしは正の無限大です。
+
+**制約:** 保存する座標・途中の差と和はint64_tの範囲内。無限端はargminのoptionalで表します。
+
+**計算量:** O(1)。
+
+## shift
+
+```text
+void shift(std::int64_t a);
+void shift(std::int64_t a,std::int64_t b);
+```
+
+1引数ではf(x)=旧f(x-a)、2引数ではf(x)=min_{x-b<=y<=x-a}旧f(y)へ置き換えます。
+
+**制約:** 2引数形はa<=b。座標・途中の差と和はint64_tに収まること。
+
+**計算量:** O(1)。
+
+## clear_right
+
+```text
+void clear_right() noexcept;
+```
+
+f(x)=min_{y<=x}旧f(y)へ置き換えます。
+
+**制約:** 保存する座標・途中の差と和はint64_tの範囲内。無限端はargminのoptionalで表します。
+
+**計算量:** 折点数KにO(K+1)。
+
+## clear_left
+
+```text
+void clear_left() noexcept;
+```
+
+f(x)=min_{y>=x}旧f(y)へ置き換えます。
+
+**制約:** 保存する座標・途中の差と和はint64_tの範囲内。無限端はargminのoptionalで表します。
+
+**計算量:** 折点数KにO(K+1)。
+
+## eval
+
+```text
+std::int64_t eval(std::int64_t x) const;
+```
+
+関数を壊さずxでの値を返します。
+
+**制約:** 保存する座標・途中の差と和はint64_tの範囲内。無限端はargminのoptionalで表します。
+
+**計算量:** 折点数KにO(K+1)。
+
+## merge
+
+```text
+void merge(const SlopeTrick& other);
+```
+
+otherの関数を加えます。otherは保持し、自己mergeもできます。
+
+**制約:** 保存する座標・途中の差と和はint64_tの範囲内。無限端はargminのoptionalで表します。
+
+**計算量:** 自分K個・相手M個にO(K+M log(K+M+1))時間・O(K+M+1)追加領域。
+
+## size
+
+```text
+std::size_t size() const noexcept;
+```
+
+左右の折点の総数を返します。
+
+**制約:** 共通の前提を満たすこと。
+
+**計算量:** O(1)。
+
+## empty
+
+```text
+bool empty() const noexcept;
+```
+
+折点のない定数関数ならtrueを返します。
+
+**制約:** 共通の前提を満たすこと。
+
+**計算量:** O(1)。
+
+## reserve
+
+```text
+void reserve(std::size_t left,std::size_t right);
+```
+
+左右のヒープに指定容量を予約します。
+
+**制約:** 保存する座標・途中の差と和はint64_tの範囲内。無限端はargminのoptionalで表します。
+
+**計算量:** 再確保時O(K+1)。
+
+## clear
+
+```text
+void clear() noexcept;
+```
+
+関数をf(x)=0へ戻し、領域を解放します。
+
+**制約:** 共通の前提を満たすこと。
+
+**計算量:** 折点数KにO(K+1)。
+
+## swap
+
+```text
+void swap(SlopeTrick& other) noexcept;
+friend void swap(SlopeTrick& a,SlopeTrick& b) noexcept;
+```
+
+内容と設定を交換します。
+
+**制約:** 共通の前提を満たすこと。
+
+**計算量:** O(1)。値型・比較器のswapの費用は別です。
 
 ```cpp
 SlopeTrick f;
@@ -41,3 +222,30 @@ mergeは自分のコピーへ加算してから交換します。自分K個・�
 GCC/Clangの128ビット整数拡張を使える場合は範囲判定に使用し、`SIRKIT_FORCE_STANDARD_ARITHMETIC`で標準C++へ切り替えます。`SKIP_RUNTIME_CHECKS`が除くのはshift(a,b)のa<=b検査だけで、容量・整数範囲の保護は維持します。
 
 数学的参考は[Nyaan](https://nyaannyaan.github.io/library/data-structure/slope-trick.hpp.html)と[Luzhiled](https://ei1333.github.io/library/structure/others/slope-trick.hpp.html)です。実装は独立に組み立てています。
+
+## コンストラクタ
+
+```text
+SlopeTrick()=default;
+SlopeTrick(const SlopeTrick&)=default;
+SlopeTrick(SlopeTrick&& other) noexcept;
+```
+
+f(x)=0の関数を構築します。コピーは独立、ムーブ元はf(x)=0です。
+
+**制約:** 冒頭の値型・演算の前提を満たすこと。指定する列長は内部容量の上限内です。
+
+**計算量:** 空の構築・ムーブ構築はO(1)、コピーは保持要素数に比例。
+
+## operator=
+
+```text
+SlopeTrick& operator=(const SlopeTrick& other);
+SlopeTrick& operator=(SlopeTrick&& other) noexcept;
+```
+
+コピーまたはムーブで内容を置き換え、自身への参照を返します。コピーは独立した内容を持ちます。
+
+**制約:** 型・所有・例外保証は共通の説明に従います。
+
+**計算量:** 保持する配列・ノードのコピーと旧内容の破棄に比例。ムーブ構築とは異なり、代入では旧内容の解放費用も含みます。

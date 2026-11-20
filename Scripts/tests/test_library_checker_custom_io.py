@@ -129,6 +129,7 @@ class CustomInputOutputTests(unittest.TestCase):
         result = self.render()
         expected = ('#define SKIP_RUNTIME_CHECKS\n// Verify: ' + self.entry["problem_url"] + '\n\n'
                     '// Library: DataStructure/example.cpp\nint library_value = 2;\n\n\n'
+                    'namespace sirkit {}\nusing namespace sirkit;\n\n'
                     '// Verify I/O: Verify/current/common/fast_io.hpp\nint common_io = 3;\n\n'
                     + self.driver).encode()
         self.assertEqual(result, expected)

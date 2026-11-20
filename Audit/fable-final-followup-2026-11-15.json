@@ -1,0 +1,90 @@
+{
+  "format": 1,
+  "date": "2026-11-15",
+  "status": "PASS_static_final_review",
+  "scope": "Exact current10 programs after Codex measurements; final portable-binomial matrix completes separately",
+  "requested_model": "claude-fable-5-2",
+  "actual_models": [
+    "claude-fable-5-2"
+  ],
+  "authorized_account_matches": true,
+  "reviews": {
+    "reviews": [
+      {
+        "id": "binomial_integer_prime_mod",
+        "source_sha256": "b19184dea5c77786300b7dd223dbdb2a620e9e25b1013fb9ec69f2bbb7fd0edd",
+        "verdict": "keep",
+        "reason": "静的確認では、table_limit=9,999,999とmax_n<min(m,10^7)により全照会が準備済み表のO(1)経路に入り、m=2やk>nも正しく処理される。バッチ1/256のループは出力順と件数を保つ。maxiの257.0→161.3msに対しsmall側の悪化は最大約5msで、採用は妥当。"
+      },
+      {
+        "id": "binomial_integer_prime_mod_split",
+        "source_sha256": "54bede7f1f94a47a477c36b9e5914aa0f121dc9813ec1ea53face46bf9f65a6f",
+        "verdict": "keep",
+        "reason": "full版と同一のエンジン・ドライバで、差は先頭コメントとModIntBinomialの有無、既存のO3/unroll-loops指定だけである。静的に正しさの問題は見当たらない。maxiの253.5→156.7msに対しsmall側の悪化は最大約4.7msで、採用は妥当。"
+      },
+      {
+        "id": "binomial_modint_prime_mod",
+        "source_sha256": "6dc82d684e88fa8487cc67f1d8e1eebeb2e2ad14308bfe48ea61a6e2c5e9ea10",
+        "verdict": "keep",
+        "reason": "入力はmainで一度だけ読み、998244353/1000000007は静的型、その他は事前にset_mod済みのdynamic_modint<0>へ分岐しており、法の不整合は生じない。n<=max_n<pなので全照会が表内の乗算2回で答えられ、val()からuint32への変換も安全である。maxiの248.7→144.1msに対しsmall側の悪化は最大約4msで、採用は妥当。"
+      },
+      {
+        "id": "binomial_modint_prime_mod_split",
+        "source_sha256": "22c490e7e13bc777c5e545ff405c8052e33e7ddf16c9ea321a338dbd8b28cb45",
+        "verdict": "keep",
+        "reason": "ライブラリのチャンクがfull版とバイト一致し、ドライバも同一なので、full版と同じ判断になる。静的に正しさの問題は見当たらない。計測値もfull版と同じグループ（g3/g4）のもので、採用は妥当。"
+      },
+      {
+        "id": "binomial_prime",
+        "source_sha256": "23b8ada6a0cd52ac7e5e0bb3cbb9b67a5963349037a85a851041189e3b2b0d3d",
+        "verdict": "keep",
+        "reason": "PrimeBinomial(max_n)はmin(max_n,p-1)まで準備するため、公式入力の全照会が表内で答えられ、k>nは0を返す。静的/動的Mintの分岐とバッチ出力も順序を保つ。maxiの258.8→138.5msに対しsmall側の悪化は最大約3.2msで、採用は妥当。"
+      },
+      {
+        "id": "binomial_prime_split",
+        "source_sha256": "192dc808930b2c486513e600f0e744594d53f80b5a59d7f208860057a63304b3",
+        "verdict": "keep",
+        "reason": "ライブラリのチャンクがfull版とバイト一致し、ドライバも同一なので、full版と同じ判断になる。静的に正しさの問題は見当たらない。計測値もfull版と同じグループ（g5/g6）のもので、採用は妥当。"
+      },
+      {
+        "id": "implicit_treap_deque",
+        "source_sha256": "5376fe3ee9ced5ddc2bc82e367f91d8377a1ec0018082bdc38ca82a21183b3ee",
+        "verdict": "keep",
+        "reason": "制約付き転送コンストラクタは波括弧引数からIを推論できないため、旧来のvector/コピー/ムーブの波括弧構築は従来どおりの多重定義に解決される。非constの自型左辺値やvector左辺値はconvertible_to<I,S>を満たさず、コピー構築を奪わない。本ドライバは既定構築だけを使うので、集約と出力に影響はない。"
+      },
+      {
+        "id": "line_container_2d_min",
+        "source_sha256": "092f8a696c07589999489c1f46792d479229ca8858ca7264f2646edfb30099b1",
+        "verdict": "keep",
+        "reason": "inf=2^62（約4.61e18）は答えの範囲±2e18を上回り、long doubleで正確に表せるため、正当な答えは制限に掛からない。min_rounded_ll(x,1)はa*x+bの最小値に対応し、本体の既定値2^60は変更されていない。静的に問題は見当たらない。"
+      },
+      {
+        "id": "dijkstra",
+        "source_sha256": "c42198bf26eb05eb3abcb5aec46b8607a75ceae72c1c070b31eb970a5bddbe06",
+        "verdict": "keep",
+        "reason": "ドライバはinfを省略しており、既定の高速経路とkInfによる未到達判定が一致する。任意inf用の経路は符号なし加算で範囲外を検出し、既定経路とは独立している。ヒープ候補（initial8系など）はgrid入力で+3〜5%の退行が実測されており、不採用の判断は妥当。"
+      },
+      {
+        "id": "internal_hash_map",
+        "source_sha256": "bd9423a16976d964ad3eb08ec79894caef2e85814dc4157e5a22276f26bd68ab",
+        "verdict": "keep",
+        "reason": "現行の乗算ハッシュ、線形探索、再ハッシュに静的な問題は見当たらず、ドライバのoperator[]とfindの使い方も正しい。fingerprintのeager/lazy版とxor_fixedは、操作・入力によって10%超の退行やプローブ長の悪化が実測されている。3候補とも不採用で現行維持とする判断は妥当。"
+      }
+    ],
+    "experiments": []
+  },
+  "evidence_archive": "Audit/data/premerge-resume-20261115.zip",
+  "execution_member": "claude/final-followup/execution.json",
+  "execution_sha256": "dade18c1b6c005e88b5706df623c6231bb55ca73a9e04b1e6d30121df5ca6f00",
+  "raw_stream_member": "claude/final-followup/response.jsonl",
+  "raw_stream_sha256": "830fe8aea8e1f5bf4884c10b3c7b0ca4dc7e6fa5923ec1e67e0de08f4c808e69",
+  "source_representation": "All bytes supplied once in explicitly ordered SHA chunks; byte-exact reconstruction asserted for every canonical library/main/common/vendor file. All10 rendered snapshot SHAs frozen.",
+  "Fable_executed_tests_or_benchmarks": false,
+  "online_submission_performed": false,
+  "five_hour_before_percent": 67,
+  "five_hour_after_percent": 92,
+  "weekly_all_after_percent": 23,
+  "fable_weekly_after_percent": 46,
+  "extra_usage_enabled": false,
+  "new_inference_calls_stopped_at_percent": 92
+}

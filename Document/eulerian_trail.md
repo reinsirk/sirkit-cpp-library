@@ -1,13 +1,149 @@
 # オイラー路
 
-`Graph/Eulerian_Trail.cpp`の`EulerianTrail<true>`は有向、`EulerianTrail<false>`は無向グラフを扱う。別名は`DirectedEulerianTrail`・`UndirectedEulerianTrail`。自己辺と平行辺を許し、各辺は`add_edge`の返したIDで区別する。
+`EulerianTrail<true>`は有向、`EulerianTrail<false>`は無向グラフの全辺を1回ずつ通る路を求めます。別名は`DirectedEulerianTrail`・`UndirectedEulerianTrail`です。Nは頂点数、Mは追加した辺数です。
 
-`find()`は全辺を一度ずつ通る路の`optional<Trail>`を返す。存在しなければ`nullopt`。`Trail.vertices[i]`から`vertices[i+1]`へ、`Trail.edges[i]`の辺を通る。無向辺で追加時と逆向きに通ったかどうかも頂点列から分かる。
+頂点は0..N-1で、自己辺・平行辺を許します。各辺は追加時のIDで区別します。
 
-`find(start)`は開始頂点を指定し、`find(start,true)`は閉路だけを求める。省略値-1では次数条件から始点を選ぶ。0辺なら1頂点だけの路、0頂点0辺なら空の頂点列・辺列を持つ路とする。辺を持つ成分が複数あれば1本で全辺を通れないため`nullopt`で、孤立頂点を路へ加えることはしない。
+## EulerianTrail
 
-次数条件を確かめてCSRを作り、辺を消費しながら頂点をスタックへ積むHierholzer法を使う。行き止まりから逆順に取り出した列を最後に反転する。無向版は同じIDが両端に現れるので、使用済みの辺を記録する。有向版は各IDが1回だけ現れ、その配列を持たない。O(N+M)時間・領域。入力の辺配列を変更しないため、開始点や閉路条件を変えて再照会できる。
+```text
+explicit EulerianTrail(int n = 0);
+EulerianTrail(const EulerianTrail&);
+EulerianTrail(EulerianTrail&& other) noexcept;
+```
 
-端点・辺IDの入力検査は`SKIP_RUNTIME_CHECKS`で除くが、存在条件と全辺を使い切ったかの判定は維持する。コピーは独立所有、ムーブ元は0頂点0辺になる。結果配列も入力とは独立して所有する。
+空のn頂点グラフを作ります。コピーは独立、ムーブ元は0頂点0辺です。
 
-[参考](https://ei1333.github.io/library/graph/others/eulerian-trail.hpp)は存在条件の確認に使い、破壊的な隣接リスト実装は転記していない。[使用例](../Examples/eulerian_trail_example.cpp) · [独立参照](../Verify/current/tests/new_eulerian_reference_test.cpp)
+**制約:** n>=0。
+
+**計算量:** 構築O(1)、コピーO(N+M)、ムーブO(1)。
+
+## add_edge
+
+```text
+std::size_t add_edge(int u, int v);
+```
+
+辺を追加し、std::size_tの辺IDを返します。
+
+**制約:** u,vは有効な頂点番号。
+
+**計算量:** 償却O(1)。再確保時は現在の保持辺数に比例します。
+
+## find
+
+```text
+std::optional<Trail> find(int start = -1, bool circuit_only = false) const;
+```
+
+全辺を通る路をoptional<Trail>で返し、存在しなければnulloptです。circuit_only=trueは閉路だけを許します。入力を変更せず繰り返し呼べます。
+
+**制約:** start=-1は自動選択。明示する場合は有効な頂点番号です。
+
+**計算量:** O(N+M)時間・領域。
+
+## edge
+
+```text
+std::pair<int, int> edge(std::size_t id) const;
+```
+
+追加時の辺の両端をpair<int,int>で返します。
+
+**制約:** idは登録済みの辺ID。
+
+**計算量:** O(1)。
+
+## size
+
+```text
+int size() const noexcept;
+```
+
+頂点数を返します。
+
+**制約:** なし。
+
+**計算量:** O(1)。
+
+## edge_count
+
+```text
+std::size_t edge_count() const noexcept;
+```
+
+辺数を返します。
+
+**制約:** なし。
+
+**計算量:** O(1)。
+
+## reserve_edges
+
+```text
+void reserve_edges(std::size_t count);
+```
+
+辺記録の容量を予約します。
+
+**制約:** なし。
+
+**計算量:** 再確保する場合は現在の辺数に比例します。
+
+## reset
+
+```text
+void reset(int n = 0);
+```
+
+空のn頂点グラフへ戻します。
+
+**制約:** n>=0。
+
+**計算量:** 旧領域の破棄に比例します。
+
+## swap
+
+```text
+void swap(EulerianTrail& other) noexcept;
+```
+
+状態を交換します。
+
+**制約:** なし。
+
+**計算量:** O(1)。
+
+## operator=
+
+```text
+EulerianTrail& operator=(EulerianTrail other) noexcept;
+```
+
+コピー／ムーブ代入し、自身への参照を返します。
+
+**制約:** なし。
+
+**計算量:** コピーはO(N+M)、旧領域の破棄費用を加えます。
+
+## circuit
+
+```text
+bool circuit() const noexcept;
+```
+
+結果の頂点列が空、または始点と終点が等しければtrueです。
+
+**制約:** Trailのメンバーとして呼びます。
+
+**計算量:** O(1)。
+
+## 結果と境界
+
+`Trail.vertices[i]`から`vertices[i+1]`へ`Trail.edges[i]`を通ります。結果の配列は独立して所有します。無向辺の通行方向は頂点列から分かります。
+
+0辺なら開始点だけの路、0頂点0辺なら両配列が空の路です。次数条件に合わない開始点、辺を持つ成分が複数の場合はnulloptです。孤立頂点は路へ加えません。
+
+`SKIP_RUNTIME_CHECKS`で端点・辺ID検査を除きます。次数条件と全辺を使い切る判定は維持します。
+
+[完全な使用例](../Examples/eulerian_trail_example.cpp)・[独立参照](../Verify/current/tests/new_eulerian_reference_test.cpp)

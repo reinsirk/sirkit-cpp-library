@@ -1,5 +1,6 @@
 #define SKIP_RUNTIME_CHECKS
 // Verify: https://judge.yosupo.jp/problem/gcd_convolution
+// Submission: https://judge.yosupo.jp/submission/417374
 
 // Library: Math/Zeta_Mebius.cpp
 // SPDX-License-Identifier: CC0-1.0
@@ -67,6 +68,8 @@
 // sparse_multiple_zeta_transform(f,sieve): 正で一意なkeyの全約数を含むfをkey昇順にし、各値を倍数和へ置換。key<=sieve.max_value()、Valは+=対応。O((m+r)log(m+1))時間、O(m+r)補助領域。
 // sparse_multiple_mobius_transform(f,sieve): 正で一意なkeyの全約数を含むfをkey昇順にし、倍数和の逆変換を実行。key<=sieve.max_value()、Valは-=対応。O((m+r)log(m+1))時間、O(m+r)補助領域。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <array>
 #include <bit>
@@ -82,9 +85,12 @@
 #include <utility>
 #include <vector>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_SET_TRANSFORM_SCALAR_DETAIL_DEFINED
 #define SIRKIT_SET_TRANSFORM_SCALAR_DETAIL_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 #if defined(__GNUC__) && !defined(__clang__)
 template <bool Subtract, class T>
 [[gnu::always_inline]] inline void set_transform_eight(T* out, T* in) {
@@ -187,7 +193,7 @@ inline void set_transform_scalar(std::vector<T>& f) {
 #ifndef SIRKIT_SET_TRANSFORM_SIMD_DETAIL_DEFINED
 #define SIRKIT_SET_TRANSFORM_SIMD_DETAIL_DEFINED
 #if !defined(SIRKIT_DISABLE_SIMD) && (defined(__GNUC__) || defined(__clang__)) && (defined(__i386__) || defined(__x86_64__))
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 template <bool Subset, bool Subtract, std::size_t Half, class T>
 [[gnu::always_inline]] inline void set_transform_small_stage(T* f, std::size_t n) {
     for (std::size_t base=0; base<n; base+=Half*2) {
@@ -198,13 +204,13 @@ template <bool Subset, bool Subtract, std::size_t Half, class T>
         }
     }
 }
-template <bool Subset, bool Subtract, class T>
-[[gnu::always_inline]] inline void set_transform_small(T* f,std::size_t n) {
-    if(n>=2)set_transform_small_stage<Subset,Subtract,1>(f,n);
-    if(n>=4)set_transform_small_stage<Subset,Subtract,2>(f,n);
-    if(n>=8)set_transform_small_stage<Subset,Subtract,4>(f,n);
-    if(n>=16)set_transform_small_stage<Subset,Subtract,8>(f,n);
-    if(n>=32)set_transform_small_stage<Subset,Subtract,16>(f,n);
+template <bool Subset, bool Subtract, std::size_t Size, class T>
+[[gnu::always_inline]] inline void set_transform_small(T* f) {
+    set_transform_small_stage<Subset,Subtract,1>(f,Size);
+    set_transform_small_stage<Subset,Subtract,2>(f,Size);
+    set_transform_small_stage<Subset,Subtract,4>(f,Size);
+    set_transform_small_stage<Subset,Subtract,8>(f,Size);
+    if constexpr (Size == 32) set_transform_small_stage<Subset,Subtract,16>(f,Size);
 }
 template <bool Subset, bool Subtract, unsigned Bit, class U, class V, std::size_t... I>
 [[gnu::target("avx2"),gnu::always_inline]] inline V set_transform_stage(V v, std::index_sequence<I...>) {
@@ -336,21 +342,24 @@ template <class T> void superset_zeta_transform(std::vector<T>& f) {
     if constexpr (std::is_integral_v<T> && !std::is_same_v<T,bool> && sizeof(T)<=8) {
         if (f.size()>=8) {
         if(f.size()==8){f[0]+=f[1];f[2]+=f[3];f[4]+=f[5];f[6]+=f[7];f[0]+=f[2];f[1]+=f[3];f[4]+=f[6];f[5]+=f[7];f[0]+=f[4];f[1]+=f[5];f[2]+=f[6];f[3]+=f[7];return;}
-        if (f.size()<64) {
-            switch(f.size()) {
-            case 16:reinsirk::detail::set_transform_small<false,false>(f.data(),16);return;
-            case 32:reinsirk::detail::set_transform_small<false,false>(f.data(),32);return;
-            default:return;
-            }
+        if (f.size() < 64) {
+            const auto size = f.size();
+#ifdef SKIP_RUNTIME_CHECKS
+            // 固定サイズの処理は対応する長さでだけ呼ぶ。
+            if (size != 16 && size != 32) return;
+#endif
+            if (size == 16) /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::set_transform_small<false,false,16>(f.data());
+            else /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::set_transform_small<false,false,32>(f.data());
+            return;
         }
         if (__builtin_cpu_supports("avx2")) {
-            reinsirk::detail::set_transform_simd<false,false>(f.data(), f.size());
+            /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::set_transform_simd<false,false>(f.data(), f.size());
             return;
         }
         }
     }
 #endif
-    reinsirk::detail::set_transform_scalar<false, false>(f);
+    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::set_transform_scalar<false, false>(f);
 }
 #endif
 
@@ -365,21 +374,24 @@ template <class T> void superset_mobius_transform(std::vector<T>& f) {
     if constexpr (std::is_integral_v<T> && !std::is_same_v<T,bool> && sizeof(T)<=8) {
         if (f.size()>=8) {
         if(f.size()==8){f[0]-=f[1];f[2]-=f[3];f[4]-=f[5];f[6]-=f[7];f[0]-=f[2];f[1]-=f[3];f[4]-=f[6];f[5]-=f[7];f[0]-=f[4];f[1]-=f[5];f[2]-=f[6];f[3]-=f[7];return;}
-        if (f.size()<64) {
-            switch(f.size()) {
-            case 16:reinsirk::detail::set_transform_small<false,true>(f.data(),16);return;
-            case 32:reinsirk::detail::set_transform_small<false,true>(f.data(),32);return;
-            default:return;
-            }
+        if (f.size() < 64) {
+            const auto size = f.size();
+#ifdef SKIP_RUNTIME_CHECKS
+            // 固定サイズの処理は対応する長さでだけ呼ぶ。
+            if (size != 16 && size != 32) return;
+#endif
+            if (size == 16) /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::set_transform_small<false,true,16>(f.data());
+            else /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::set_transform_small<false,true,32>(f.data());
+            return;
         }
         if (__builtin_cpu_supports("avx2")) {
-            reinsirk::detail::set_transform_simd<false,true>(f.data(), f.size());
+            /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::set_transform_simd<false,true>(f.data(), f.size());
             return;
         }
         }
     }
 #endif
-    reinsirk::detail::set_transform_scalar<false, true>(f);
+    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::set_transform_scalar<false, true>(f);
 }
 #endif
 
@@ -394,21 +406,24 @@ template <class T> void subset_zeta_transform(std::vector<T>& f) {
     if constexpr (std::is_integral_v<T> && !std::is_same_v<T,bool> && sizeof(T)<=8) {
         if (f.size()>=8) {
         if(f.size()==8){f[1]+=f[0];f[3]+=f[2];f[5]+=f[4];f[7]+=f[6];f[2]+=f[0];f[3]+=f[1];f[6]+=f[4];f[7]+=f[5];f[4]+=f[0];f[5]+=f[1];f[6]+=f[2];f[7]+=f[3];return;}
-        if (f.size()<64) {
-            switch(f.size()) {
-            case 16:reinsirk::detail::set_transform_small<true,false>(f.data(),16);return;
-            case 32:reinsirk::detail::set_transform_small<true,false>(f.data(),32);return;
-            default:return;
-            }
+        if (f.size() < 64) {
+            const auto size = f.size();
+#ifdef SKIP_RUNTIME_CHECKS
+            // 固定サイズの処理は対応する長さでだけ呼ぶ。
+            if (size != 16 && size != 32) return;
+#endif
+            if (size == 16) /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::set_transform_small<true,false,16>(f.data());
+            else /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::set_transform_small<true,false,32>(f.data());
+            return;
         }
         if (__builtin_cpu_supports("avx2")) {
-            reinsirk::detail::set_transform_simd<true,false>(f.data(), f.size());
+            /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::set_transform_simd<true,false>(f.data(), f.size());
             return;
         }
         }
     }
 #endif
-    reinsirk::detail::set_transform_scalar<true, false>(f);
+    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::set_transform_scalar<true, false>(f);
 }
 #endif
 
@@ -423,27 +438,30 @@ template <class T> void subset_mobius_transform(std::vector<T>& f) {
     if constexpr (std::is_integral_v<T> && !std::is_same_v<T,bool> && sizeof(T)<=8) {
         if (f.size()>=8) {
         if(f.size()==8){f[1]-=f[0];f[3]-=f[2];f[5]-=f[4];f[7]-=f[6];f[2]-=f[0];f[3]-=f[1];f[6]-=f[4];f[7]-=f[5];f[4]-=f[0];f[5]-=f[1];f[6]-=f[2];f[7]-=f[3];return;}
-        if (f.size()<64) {
-            switch(f.size()) {
-            case 16:reinsirk::detail::set_transform_small<true,true>(f.data(),16);return;
-            case 32:reinsirk::detail::set_transform_small<true,true>(f.data(),32);return;
-            default:return;
-            }
+        if (f.size() < 64) {
+            const auto size = f.size();
+#ifdef SKIP_RUNTIME_CHECKS
+            // 固定サイズの処理は対応する長さでだけ呼ぶ。
+            if (size != 16 && size != 32) return;
+#endif
+            if (size == 16) /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::set_transform_small<true,true,16>(f.data());
+            else /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::set_transform_small<true,true,32>(f.data());
+            return;
         }
         if (__builtin_cpu_supports("avx2")) {
-            reinsirk::detail::set_transform_simd<true,true>(f.data(), f.size());
+            /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::set_transform_simd<true,true>(f.data(), f.size());
             return;
         }
         }
     }
 #endif
-    reinsirk::detail::set_transform_scalar<true, true>(f);
+    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::set_transform_scalar<true, true>(f);
 }
 #endif
 
 #ifndef SIRKIT_BITWISE_MULTIPLY_DETAIL_DEFINED
 #define SIRKIT_BITWISE_MULTIPLY_DETAIL_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 template <class T> inline void bitwise_multiply_assign(T& left, T& right) {
     if constexpr (std::is_unsigned_v<T> && sizeof(T) < sizeof(unsigned int))
         left = static_cast<T>(static_cast<unsigned int>(left) * static_cast<unsigned int>(right));
@@ -460,7 +478,7 @@ template <class T> std::vector<T> bitwise_and_convolution(std::vector<T> f, std:
 #endif
     superset_zeta_transform(f);
     superset_zeta_transform(g);
-    for (std::size_t i = 0; i < f.size(); ++i) reinsirk::detail::bitwise_multiply_assign(f[i], g[i]);
+    for (std::size_t i = 0; i < f.size(); ++i) /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::bitwise_multiply_assign(f[i], g[i]);
     superset_mobius_transform(f);
     return f;
 }
@@ -474,7 +492,7 @@ template <class T> std::vector<T> bitwise_or_convolution(std::vector<T> f, std::
 #endif
     subset_zeta_transform(f);
     subset_zeta_transform(g);
-    for (std::size_t i = 0; i < f.size(); ++i) reinsirk::detail::bitwise_multiply_assign(f[i], g[i]);
+    for (std::size_t i = 0; i < f.size(); ++i) /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::bitwise_multiply_assign(f[i], g[i]);
     subset_mobius_transform(f);
     return f;
 }
@@ -486,7 +504,7 @@ template <class T> std::vector<T> bitwise_or_convolution(std::vector<T> f, std::
 template <class T> std::vector<T> bitwise_and_square(std::vector<T> f) {
     superset_zeta_transform(f);
     for (std::size_t i = 0; i < f.size(); ++i)
-        reinsirk::detail::bitwise_multiply_assign(f[i], f[i]);
+        /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::bitwise_multiply_assign(f[i], f[i]);
     superset_mobius_transform(f);
     return f;
 }
@@ -497,7 +515,7 @@ template <class T> std::vector<T> bitwise_and_square(std::vector<T> f) {
 template <class T> std::vector<T> bitwise_or_square(std::vector<T> f) {
     subset_zeta_transform(f);
     for (std::size_t i = 0; i < f.size(); ++i)
-        reinsirk::detail::bitwise_multiply_assign(f[i], f[i]);
+        /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::bitwise_multiply_assign(f[i], f[i]);
     subset_mobius_transform(f);
     return f;
 }
@@ -505,6 +523,14 @@ template <class T> std::vector<T> bitwise_or_square(std::vector<T> f) {
 
 #ifndef SIRKIT_INTEGER_SIEVE_DEFINED
 #define SIRKIT_INTEGER_SIEVE_DEFINED
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
+inline std::size_t sieve_divisor_capacity(std::size_t count, std::size_t multiplier,
+                                         std::size_t limit) {
+    if (multiplier > limit / count)
+        throw std::length_error("IntegerSieve: divisor table too large");
+    return count * multiplier;
+}
+}
 struct IntegerSieve {
     std::vector<int> least_prime_factor;
     std::vector<int> prime_list;
@@ -521,7 +547,8 @@ struct IntegerSieve {
                 prime_list.push_back(static_cast<int>(i));
             }
             const int first = least_prime_factor[i];
-            for (std::size_t j = 1; j < prime_list.size(); ++j) {
+            // iの最小素因数firstは列に入り、必ずそこまでに打ち切る。
+            for (std::size_t j = 1; ; ++j) {
                 const int prime = prime_list[j];
                 const std::uint64_t next = static_cast<std::uint64_t>(i) * static_cast<std::uint64_t>(prime);
                 if (next >= limit) break;
@@ -714,7 +741,10 @@ struct IntegerSieve {
         }
         if (k == 0) return std::vector<MODINT>(count, MODINT(1));
         std::vector<MODINT> result(count);
-        if (count > 0) result[0] = MODINT(0);
+#ifdef SKIP_RUNTIME_CHECKS
+        if (result.empty()) return result;
+#endif
+        result[0] = MODINT(0);
         if (count > 1) result[1] = MODINT(1);
         for (std::size_t i = 2; i < count; ++i) {
             const int p = least_prime_factor[i];
@@ -742,17 +772,14 @@ private:
 
     template <class T>
     static void reserve_multiple(std::vector<T>& values, std::size_t multiplier) {
-        if (multiplier > values.max_size() / values.size()) {
-            throw std::length_error("IntegerSieve: divisor table too large");
-        }
-        values.reserve(values.size() * multiplier);
+        values.reserve(/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::sieve_divisor_capacity(values.size(), multiplier, values.max_size()));
     }
 };
 #endif
 
 #ifndef SIRKIT_INTEGER_TRANSFORM_DETAIL_DEFINED
 #define SIRKIT_INTEGER_TRANSFORM_DETAIL_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 struct IntegerTransform {
     // 素数pについて、指数を1段進める／戻す伝播を行う。
 #if defined(__GNUC__) && !defined(__clang__)
@@ -772,7 +799,8 @@ struct IntegerTransform {
         const std::size_t upper = a.size() - 1;
         auto prime = primes.begin();
         const auto end = primes.end();
-        for (; prime != end; ++prime) {
+        // upper >= 2。upper/2より大きくupper以下の素数で必ず止まる。
+        for (; ; ++prime) {
             const auto p = static_cast<std::size_t>(*prime);
             if (p > upper / 2) break;
             const auto count = upper / p;
@@ -829,7 +857,8 @@ struct IntegerTransform {
         const std::size_t upper = a.size() - 1;
         auto prime = primes.begin();
         const auto end = primes.end();
-        for (; prime != end; ++prime) {
+        // upper >= 2。upper/2より大きくupper以下の素数で必ず止まる。
+        for (; ; ++prime) {
             const auto p = static_cast<std::size_t>(*prime);
             if (p > upper / 2) break;
             const auto count = upper / p;
@@ -869,7 +898,6 @@ struct IntegerTransform {
         return storage;
     }
     static std::vector<int> primes_for(std::size_t size) {
-        if (size <= 2) return {};
         if (size - 1 > static_cast<std::size_t>(std::numeric_limits<int>::max()))
             throw std::length_error("integer transform: maximum exceeds INT_MAX");
         const auto upper = size - 1;
@@ -888,9 +916,6 @@ struct IntegerTransform {
         if (size && (sieve.max_value() < 0 || size - 1 > static_cast<std::size_t>(sieve.max_value())))
             throw std::out_of_range("integer transform: sieve too small");
     }
-    static void require_same_size(std::size_t a, std::size_t b) {
-        if (a != b) throw std::invalid_argument("integer convolution: different lengths");
-    }
 #endif
 };
 } // namespace reinsirk::detail
@@ -899,63 +924,69 @@ struct IntegerTransform {
 #define SIRKIT_MULTIPLE_ZETA_DEFINED
 template <class T> void multiple_zeta_transform(std::vector<T>& f, const IntegerSieve& sieve) {
 #ifndef SKIP_RUNTIME_CHECKS
-    reinsirk::detail::IntegerTransform::require_sieve(f.size(), sieve);
+    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::IntegerTransform::require_sieve(f.size(), sieve);
 #endif
-    reinsirk::detail::IntegerTransform::propagate<false, false>(f, sieve.prime_list);
+    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::IntegerTransform::propagate<false, false>(f, sieve.prime_list);
 }
 template <class T> void multiple_zeta_transform(std::vector<T>& f) {
     std::vector<int> storage;
-    const auto primes = reinsirk::detail::IntegerTransform::prime_view_for(f.size(), storage);
-    reinsirk::detail::IntegerTransform::propagate<false, false>(f, primes);
+    const auto primes = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::IntegerTransform::prime_view_for(f.size(), storage);
+    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::IntegerTransform::propagate<false, false>(f, primes);
 }
 #endif
 #ifndef SIRKIT_MULTIPLE_MOEBIUS_DEFINED
 #define SIRKIT_MULTIPLE_MOEBIUS_DEFINED
 template <class T> void multiple_mobius_transform(std::vector<T>& f, const IntegerSieve& sieve) {
 #ifndef SKIP_RUNTIME_CHECKS
-    reinsirk::detail::IntegerTransform::require_sieve(f.size(), sieve);
+    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::IntegerTransform::require_sieve(f.size(), sieve);
 #endif
-    reinsirk::detail::IntegerTransform::propagate<false, true>(f, sieve.prime_list);
+    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::IntegerTransform::propagate<false, true>(f, sieve.prime_list);
 }
 template <class T> void multiple_mobius_transform(std::vector<T>& f) {
     std::vector<int> storage;
-    const auto primes = reinsirk::detail::IntegerTransform::prime_view_for(f.size(), storage);
-    reinsirk::detail::IntegerTransform::propagate<false, true>(f, primes);
+    const auto primes = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::IntegerTransform::prime_view_for(f.size(), storage);
+    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::IntegerTransform::propagate<false, true>(f, primes);
 }
 #endif
 #ifndef SIRKIT_DIVISOR_ZETA_DEFINED
 #define SIRKIT_DIVISOR_ZETA_DEFINED
 template <class T> void divisor_zeta_transform(std::vector<T>& f, const IntegerSieve& sieve) {
 #ifndef SKIP_RUNTIME_CHECKS
-    reinsirk::detail::IntegerTransform::require_sieve(f.size(), sieve);
+    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::IntegerTransform::require_sieve(f.size(), sieve);
 #endif
-    reinsirk::detail::IntegerTransform::propagate<true, false>(f, sieve.prime_list);
+    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::IntegerTransform::propagate<true, false>(f, sieve.prime_list);
 }
 template <class T> void divisor_zeta_transform(std::vector<T>& f) {
     std::vector<int> storage;
-    const auto primes = reinsirk::detail::IntegerTransform::prime_view_for(f.size(), storage);
-    reinsirk::detail::IntegerTransform::propagate<true, false>(f, primes);
+    const auto primes = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::IntegerTransform::prime_view_for(f.size(), storage);
+    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::IntegerTransform::propagate<true, false>(f, primes);
 }
 #endif
 #ifndef SIRKIT_DIVISOR_MOEBIUS_DEFINED
 #define SIRKIT_DIVISOR_MOEBIUS_DEFINED
 template <class T> void divisor_mobius_transform(std::vector<T>& f, const IntegerSieve& sieve) {
 #ifndef SKIP_RUNTIME_CHECKS
-    reinsirk::detail::IntegerTransform::require_sieve(f.size(), sieve);
+    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::IntegerTransform::require_sieve(f.size(), sieve);
 #endif
-    reinsirk::detail::IntegerTransform::propagate<true, true>(f, sieve.prime_list);
+    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::IntegerTransform::propagate<true, true>(f, sieve.prime_list);
 }
 template <class T> void divisor_mobius_transform(std::vector<T>& f) {
     std::vector<int> storage;
-    const auto primes = reinsirk::detail::IntegerTransform::prime_view_for(f.size(), storage);
-    reinsirk::detail::IntegerTransform::propagate<true, true>(f, primes);
+    const auto primes = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::IntegerTransform::prime_view_for(f.size(), storage);
+    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::IntegerTransform::propagate<true, true>(f, primes);
 }
 #endif
 
 #ifndef SIRKIT_INTEGER_CONVOLUTION_DETAIL_DEFINED
 #define SIRKIT_INTEGER_CONVOLUTION_DETAIL_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 struct IntegerConvolution {
+#ifndef SKIP_RUNTIME_CHECKS
+    static void require_same_size(std::size_t a, std::size_t b) {
+        if (a != b) throw std::invalid_argument("integer convolution: different lengths");
+    }
+#endif
+
     template <class T> static decltype(auto) product(const T& left, const T& right) {
         if constexpr (std::is_unsigned_v<T> && sizeof(T) < sizeof(unsigned int))
             return static_cast<T>(static_cast<unsigned int>(left) * static_cast<unsigned int>(right));
@@ -981,10 +1012,10 @@ struct IntegerConvolution {
                 for (std::size_t k = 1; k < a.size(); ++k)
                     mixed[k] = product(left_zero, b[k]) + product(a[k], right_zero);
             }
-            reinsirk::detail::IntegerTransform::propagate<false, false>(a, primes);
-            reinsirk::detail::IntegerTransform::propagate<false, false>(b, primes);
+            /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::IntegerTransform::propagate<false, false>(a, primes);
+            /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::IntegerTransform::propagate<false, false>(b, primes);
             for (std::size_t k = 0; k < a.size(); ++k) multiply_assign(a[k], b[k]);
-            reinsirk::detail::IntegerTransform::propagate<false, true>(a, primes);
+            /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::IntegerTransform::propagate<false, true>(a, primes);
             if (zero_terms_needed)
                 for (std::size_t k = 1; k < a.size(); ++k) a[k] += mixed[k];
         } else {
@@ -996,10 +1027,10 @@ struct IntegerConvolution {
                 }
                 at_zero += product(left_zero, right_sum) + product(left_sum, right_zero);
             }
-            reinsirk::detail::IntegerTransform::propagate<true, false>(a, primes);
-            reinsirk::detail::IntegerTransform::propagate<true, false>(b, primes);
+            /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::IntegerTransform::propagate<true, false>(a, primes);
+            /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::IntegerTransform::propagate<true, false>(b, primes);
             for (std::size_t k = 1; k < a.size(); ++k) multiply_assign(a[k], b[k]);
-            reinsirk::detail::IntegerTransform::propagate<true, true>(a, primes);
+            /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::IntegerTransform::propagate<true, true>(a, primes);
             a.front() = at_zero;
         }
         return a;
@@ -1043,36 +1074,36 @@ struct IntegerConvolution {
 #define SIRKIT_GCDCONV_DEFINED
 template <class T> std::vector<T> gcd_convolution(std::vector<T> f, std::vector<T> g, const IntegerSieve& sieve) {
 #ifndef SKIP_RUNTIME_CHECKS
-    reinsirk::detail::IntegerTransform::require_same_size(f.size(), g.size());
-    reinsirk::detail::IntegerTransform::require_sieve(f.size(), sieve);
+    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::IntegerConvolution::require_same_size(f.size(), g.size());
+    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::IntegerTransform::require_sieve(f.size(), sieve);
 #endif
-    return reinsirk::detail::IntegerConvolution::compute<true>(std::move(f), std::move(g), sieve.prime_list);
+    return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::IntegerConvolution::compute<true>(std::move(f), std::move(g), sieve.prime_list);
 }
 template <class T> std::vector<T> gcd_convolution(std::vector<T> f, std::vector<T> g) {
 #ifndef SKIP_RUNTIME_CHECKS
-    reinsirk::detail::IntegerTransform::require_same_size(f.size(), g.size());
+    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::IntegerConvolution::require_same_size(f.size(), g.size());
 #endif
     std::vector<int> storage;
-    const auto primes = reinsirk::detail::IntegerTransform::prime_view_for(f.size(), storage);
-    return reinsirk::detail::IntegerConvolution::compute<true>(std::move(f), std::move(g), primes);
+    const auto primes = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::IntegerTransform::prime_view_for(f.size(), storage);
+    return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::IntegerConvolution::compute<true>(std::move(f), std::move(g), primes);
 }
 #endif
 #ifndef SIRKIT_LCMCONV_DEFINED
 #define SIRKIT_LCMCONV_DEFINED
 template <class T> std::vector<T> lcm_convolution(std::vector<T> f, std::vector<T> g, const IntegerSieve& sieve) {
 #ifndef SKIP_RUNTIME_CHECKS
-    reinsirk::detail::IntegerTransform::require_same_size(f.size(), g.size());
-    reinsirk::detail::IntegerTransform::require_sieve(f.size(), sieve);
+    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::IntegerConvolution::require_same_size(f.size(), g.size());
+    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::IntegerTransform::require_sieve(f.size(), sieve);
 #endif
-    return reinsirk::detail::IntegerConvolution::compute<false>(std::move(f), std::move(g), sieve.prime_list);
+    return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::IntegerConvolution::compute<false>(std::move(f), std::move(g), sieve.prime_list);
 }
 template <class T> std::vector<T> lcm_convolution(std::vector<T> f, std::vector<T> g) {
 #ifndef SKIP_RUNTIME_CHECKS
-    reinsirk::detail::IntegerTransform::require_same_size(f.size(), g.size());
+    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::IntegerConvolution::require_same_size(f.size(), g.size());
 #endif
     std::vector<int> storage;
-    const auto primes = reinsirk::detail::IntegerTransform::prime_view_for(f.size(), storage);
-    return reinsirk::detail::IntegerConvolution::compute<false>(std::move(f), std::move(g), primes);
+    const auto primes = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::IntegerTransform::prime_view_for(f.size(), storage);
+    return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::IntegerConvolution::compute<false>(std::move(f), std::move(g), primes);
 }
 #endif
 
@@ -1080,33 +1111,42 @@ template <class T> std::vector<T> lcm_convolution(std::vector<T> f, std::vector<
 #define SIRKIT_GCD_SQUARE_DEFINED
 template <class T> std::vector<T> gcd_square(std::vector<T> f, const IntegerSieve& sieve) {
 #ifndef SKIP_RUNTIME_CHECKS
-    reinsirk::detail::IntegerTransform::require_sieve(f.size(), sieve);
+    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::IntegerTransform::require_sieve(f.size(), sieve);
 #endif
-    return reinsirk::detail::IntegerConvolution::square<true>(std::move(f), sieve.prime_list);
+    return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::IntegerConvolution::square<true>(std::move(f), sieve.prime_list);
 }
 template <class T> std::vector<T> gcd_square(std::vector<T> f) {
     std::vector<int> storage;
-    const auto primes = reinsirk::detail::IntegerTransform::prime_view_for(f.size(), storage);
-    return reinsirk::detail::IntegerConvolution::square<true>(std::move(f), primes);
+    const auto primes = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::IntegerTransform::prime_view_for(f.size(), storage);
+    return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::IntegerConvolution::square<true>(std::move(f), primes);
 }
 #endif
 #ifndef SIRKIT_LCM_SQUARE_DEFINED
 #define SIRKIT_LCM_SQUARE_DEFINED
 template <class T> std::vector<T> lcm_square(std::vector<T> f, const IntegerSieve& sieve) {
 #ifndef SKIP_RUNTIME_CHECKS
-    reinsirk::detail::IntegerTransform::require_sieve(f.size(), sieve);
+    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::IntegerTransform::require_sieve(f.size(), sieve);
 #endif
-    return reinsirk::detail::IntegerConvolution::square<false>(std::move(f), sieve.prime_list);
+    return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::IntegerConvolution::square<false>(std::move(f), sieve.prime_list);
 }
 template <class T> std::vector<T> lcm_square(std::vector<T> f) {
     std::vector<int> storage;
-    const auto primes = reinsirk::detail::IntegerTransform::prime_view_for(f.size(), storage);
-    return reinsirk::detail::IntegerConvolution::square<false>(std::move(f), primes);
+    const auto primes = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::IntegerTransform::prime_view_for(f.size(), storage);
+    return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::IntegerConvolution::square<false>(std::move(f), primes);
 }
 #endif
 #ifndef SIRKIT_INTERNAL_SPARSE_INTEGER_TRANSFORM_DEFINED
 #define SIRKIT_INTERNAL_SPARSE_INTEGER_TRANSFORM_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
+inline std::size_t sparse_transfer_reserve_size(std::size_t count, std::size_t limit) noexcept {
+    return count <= limit / 4 ? count * 4 : count;
+}
+
+inline std::size_t sparse_lookup_capacity(std::size_t count, std::size_t limit) {
+    if (count > limit / 4) throw std::length_error("sparse integer transform: lookup capacity");
+    return std::bit_ceil(count * 2);
+}
+
 // 内部用。密な範囲は位置配列、疎な範囲は素数別の伝播列を使う。
 template <bool Inverse, std::integral Int, class Val>
 void sparse_integer_transform(std::vector<std::pair<Int, Val>>& f,
@@ -1180,9 +1220,10 @@ void sparse_integer_transform(std::vector<std::pair<Int, Val>>& f,
             return;
         }
     }
-    std::sort(f.begin(), f.end(), [](const auto& a, const auto& b) {
+    const auto by_key = [](const auto& a, const auto& b) {
         return a.first < b.first;
-    });
+    };
+    if (!std::is_sorted(f.begin(), f.end(), by_key)) std::sort(f.begin(), f.end(), by_key);
 #ifndef SKIP_RUNTIME_CHECKS
     if (sieve.max_value() < 0 || f.front().first <= 0
         || static_cast<std::uintmax_t>(f.back().first)
@@ -1199,14 +1240,10 @@ void sparse_integer_transform(std::vector<std::pair<Int, Val>>& f,
     };
 
     // 範囲をmの4倍以下に制限し、値域に比例する記憶量を避ける。
-    if (largest <= std::numeric_limits<std::size_t>::max() - 1
-        && (largest / m < 4 || (largest / m == 4 && largest % m == 0))) {
+    // 最大キーも篩内にあるので、位置表の要素数 n + 1 は size_t に収まる。
+    if (largest / m < 4 || (largest / m == 4 && largest % m == 0)) {
         const auto n = static_cast<std::size_t>(largest);
-        std::vector<std::size_t> position;
-        if (n >= position.max_size()) {
-            throw std::length_error("sparse integer transform: position capacity");
-        }
-        position.assign(n + 1, absent);
+        std::vector<std::size_t> position(n + 1, absent);
         for (std::size_t i = 0; i < m; ++i) {
             const auto key = static_cast<std::size_t>(f[i].first);
 #ifndef SKIP_RUNTIME_CHECKS
@@ -1245,14 +1282,10 @@ void sparse_integer_transform(std::vector<std::pair<Int, Val>>& f,
     };
     std::vector<std::size_t> head(m, absent);
     std::vector<Transfer> transfers;
-    if (m <= transfers.max_size() / 4) transfers.reserve(m * 4);
-    else transfers.reserve(m);
+    transfers.reserve(sparse_transfer_reserve_size(m, transfers.max_size()));
     // 最大8回だけ探索し、衝突が続けば二分探索へ戻す。
     std::vector<std::size_t> slots;
-    if (m > slots.max_size() / 4) {
-        throw std::length_error("sparse integer transform: lookup capacity");
-    }
-    const auto slot_count = std::bit_ceil(m * 2);
+    const auto slot_count = sparse_lookup_capacity(m, slots.max_size());
     slots.assign(slot_count, absent);
     const auto mask = slot_count - 1;
     const auto hash_shift = std::numeric_limits<std::uint64_t>::digits
@@ -1302,7 +1335,8 @@ void sparse_integer_transform(std::vector<std::pair<Int, Val>>& f,
                 return static_cast<std::uintmax_t>(item.first) < value;
             });
 #ifndef SKIP_RUNTIME_CHECKS
-        if (it == f.end() || static_cast<std::uintmax_t>(it->first) != key) {
+        // 検索する因子は現在のキー以下なのでlower_boundは末尾に達しない。
+        if (static_cast<std::uintmax_t>(it->first) != key) {
             throw std::invalid_argument("sparse integer transform: missing divisor");
         }
 #endif
@@ -1319,9 +1353,6 @@ void sparse_integer_transform(std::vector<std::pair<Int, Val>>& f,
                 sieve.least_prime_factor[static_cast<std::size_t>(remaining)]);
             const auto prime_index = locate(p);
             const auto dst = locate(original / p);
-            if (transfers.size() == transfers.max_size()) {
-                throw std::length_error("sparse integer transform: transfer capacity");
-            }
             transfers.push_back({i, dst, head[prime_index]});
             head[prime_index] = transfers.size() - 1;
             do remaining /= p;
@@ -1344,7 +1375,7 @@ void sparse_integer_transform(std::vector<std::pair<Int, Val>>& f,
 template <std::integral Int, class Val>
 void sparse_multiple_zeta_transform(std::vector<std::pair<Int, Val>>& f,
                               const IntegerSieve& sieve) {
-    reinsirk::detail::sparse_integer_transform<false>(f, sieve);
+    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::sparse_integer_transform<false>(f, sieve);
 }
 #endif
 
@@ -1353,10 +1384,17 @@ void sparse_multiple_zeta_transform(std::vector<std::pair<Int, Val>>& f,
 template <std::integral Int, class Val>
 void sparse_multiple_mobius_transform(std::vector<std::pair<Int, Val>>& f,
                                  const IntegerSieve& sieve) {
-    reinsirk::detail::sparse_integer_transform<true>(f, sieve);
+    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::sparse_integer_transform<true>(f, sieve);
 }
 #endif
 
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
+
+
+namespace sirkit {}
+using namespace sirkit;
 
 // SPDX-License-Identifier: CC0-1.0
 // Verify I/O: Verify/current/common/fast_io.hpp

@@ -28,6 +28,8 @@
 // 各(f,sieve)版: sieve.max_value()>=f.size()-1の素数表を再利用し、追加領域O(1)。
 // 各(f)版: 素数表も作る。f.size()-1<=INT_MAX、追加領域O(n)。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <array>
 #include <concepts>
@@ -40,8 +42,19 @@
 #include <utility>
 #include <vector>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_INTEGER_SIEVE_DEFINED
 #define SIRKIT_INTEGER_SIEVE_DEFINED
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
+inline std::size_t sieve_divisor_capacity(std::size_t count, std::size_t multiplier,
+                                         std::size_t limit) {
+    if (multiplier > limit / count)
+        throw std::length_error("IntegerSieve: divisor table too large");
+    return count * multiplier;
+}
+}
 struct IntegerSieve {
     std::vector<int> least_prime_factor;
     std::vector<int> prime_list;
@@ -58,7 +71,8 @@ struct IntegerSieve {
                 prime_list.push_back(static_cast<int>(i));
             }
             const int first = least_prime_factor[i];
-            for (std::size_t j = 1; j < prime_list.size(); ++j) {
+            // iの最小素因数firstは列に入り、必ずそこまでに打ち切る。
+            for (std::size_t j = 1; ; ++j) {
                 const int prime = prime_list[j];
                 const std::uint64_t next = static_cast<std::uint64_t>(i) * static_cast<std::uint64_t>(prime);
                 if (next >= limit) break;
@@ -228,7 +242,8 @@ struct IntegerSieve {
         }
         if (k == 0) return std::vector<MODINT>(count, MODINT(1));
         std::vector<MODINT> result(count);
-        if (count > 0) result[0] = MODINT(0);
+        if (result.empty()) return result;
+        result[0] = MODINT(0);
         if (count > 1) result[1] = MODINT(1);
         for (std::size_t i = 2; i < count; ++i) {
             const int p = least_prime_factor[i];
@@ -253,17 +268,14 @@ private:
 
     template <class T>
     static void reserve_multiple(std::vector<T>& values, std::size_t multiplier) {
-        if (multiplier > values.max_size() / values.size()) {
-            throw std::length_error("IntegerSieve: divisor table too large");
-        }
-        values.reserve(values.size() * multiplier);
+        values.reserve(/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::sieve_divisor_capacity(values.size(), multiplier, values.max_size()));
     }
 };
 #endif
 
 #ifndef SIRKIT_INTEGER_TRANSFORM_DETAIL_DEFINED
 #define SIRKIT_INTEGER_TRANSFORM_DETAIL_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 struct IntegerTransform {
     // 素数pについて、指数を1段進める／戻す伝播を行う。
     template <bool ToMultiples, bool Subtract, class T, class PrimeRange>
@@ -282,7 +294,8 @@ struct IntegerTransform {
         const std::size_t upper = a.size() - 1;
         auto prime = primes.begin();
         const auto end = primes.end();
-        for (; prime != end; ++prime) {
+        // upper >= 2。upper/2より大きくupper以下の素数で必ず止まる。
+        for (; ; ++prime) {
             const auto p = static_cast<std::size_t>(*prime);
             if (p > upper / 2) break;
             const auto count = upper / p;
@@ -334,7 +347,8 @@ struct IntegerTransform {
         const std::size_t upper = a.size() - 1;
         auto prime = primes.begin();
         const auto end = primes.end();
-        for (; prime != end; ++prime) {
+        // upper >= 2。upper/2より大きくupper以下の素数で必ず止まる。
+        for (; ; ++prime) {
             const auto p = static_cast<std::size_t>(*prime);
             if (p > upper / 2) break;
             const auto count = upper / p;
@@ -374,7 +388,6 @@ struct IntegerTransform {
         return storage;
     }
     static std::vector<int> primes_for(std::size_t size) {
-        if (size <= 2) return {};
         if (size - 1 > static_cast<std::size_t>(std::numeric_limits<int>::max()))
             throw std::length_error("integer transform: maximum exceeds INT_MAX");
         const auto upper = size - 1;
@@ -394,45 +407,49 @@ struct IntegerTransform {
 #ifndef SIRKIT_MULTIPLE_ZETA_DEFINED
 #define SIRKIT_MULTIPLE_ZETA_DEFINED
 template <class T> void multiple_zeta_transform(std::vector<T>& f, const IntegerSieve& sieve) {
-    reinsirk::detail::IntegerTransform::propagate<false, false>(f, sieve.prime_list);
+    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::IntegerTransform::propagate<false, false>(f, sieve.prime_list);
 }
 template <class T> void multiple_zeta_transform(std::vector<T>& f) {
     std::vector<int> storage;
-    const auto primes = reinsirk::detail::IntegerTransform::prime_view_for(f.size(), storage);
-    reinsirk::detail::IntegerTransform::propagate<false, false>(f, primes);
+    const auto primes = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::IntegerTransform::prime_view_for(f.size(), storage);
+    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::IntegerTransform::propagate<false, false>(f, primes);
 }
 #endif
 #ifndef SIRKIT_MULTIPLE_MOEBIUS_DEFINED
 #define SIRKIT_MULTIPLE_MOEBIUS_DEFINED
 template <class T> void multiple_mobius_transform(std::vector<T>& f, const IntegerSieve& sieve) {
-    reinsirk::detail::IntegerTransform::propagate<false, true>(f, sieve.prime_list);
+    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::IntegerTransform::propagate<false, true>(f, sieve.prime_list);
 }
 template <class T> void multiple_mobius_transform(std::vector<T>& f) {
     std::vector<int> storage;
-    const auto primes = reinsirk::detail::IntegerTransform::prime_view_for(f.size(), storage);
-    reinsirk::detail::IntegerTransform::propagate<false, true>(f, primes);
+    const auto primes = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::IntegerTransform::prime_view_for(f.size(), storage);
+    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::IntegerTransform::propagate<false, true>(f, primes);
 }
 #endif
 #ifndef SIRKIT_DIVISOR_ZETA_DEFINED
 #define SIRKIT_DIVISOR_ZETA_DEFINED
 template <class T> void divisor_zeta_transform(std::vector<T>& f, const IntegerSieve& sieve) {
-    reinsirk::detail::IntegerTransform::propagate<true, false>(f, sieve.prime_list);
+    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::IntegerTransform::propagate<true, false>(f, sieve.prime_list);
 }
 template <class T> void divisor_zeta_transform(std::vector<T>& f) {
     std::vector<int> storage;
-    const auto primes = reinsirk::detail::IntegerTransform::prime_view_for(f.size(), storage);
-    reinsirk::detail::IntegerTransform::propagate<true, false>(f, primes);
+    const auto primes = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::IntegerTransform::prime_view_for(f.size(), storage);
+    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::IntegerTransform::propagate<true, false>(f, primes);
 }
 #endif
 #ifndef SIRKIT_DIVISOR_MOEBIUS_DEFINED
 #define SIRKIT_DIVISOR_MOEBIUS_DEFINED
 template <class T> void divisor_mobius_transform(std::vector<T>& f, const IntegerSieve& sieve) {
-    reinsirk::detail::IntegerTransform::propagate<true, true>(f, sieve.prime_list);
+    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::IntegerTransform::propagate<true, true>(f, sieve.prime_list);
 }
 template <class T> void divisor_mobius_transform(std::vector<T>& f) {
     std::vector<int> storage;
-    const auto primes = reinsirk::detail::IntegerTransform::prime_view_for(f.size(), storage);
-    reinsirk::detail::IntegerTransform::propagate<true, true>(f, primes);
+    const auto primes = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::IntegerTransform::prime_view_for(f.size(), storage);
+    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::IntegerTransform::propagate<true, true>(f, primes);
 }
 #endif
 
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1

@@ -1,0 +1,633 @@
+{
+  "format": 1,
+  "date": "2026-11-15",
+  "priority": [
+    "Library Checker",
+    "yukicoder",
+    "AtCoder",
+    "AOJ"
+  ],
+  "old_targets": 34,
+  "migrated_old_entries": 15,
+  "new_entries": 13,
+  "new_judges": {
+    "Library Checker": 5,
+    "yukicoder": 8
+  },
+  "retained_atcoder": 19,
+  "mapping": [
+    {
+      "old_id": "fraction_sort",
+      "new_id": "preferred_fraction_rational_approximation",
+      "problem_url": "https://judge.yosupo.jp/problem/rational_approximation",
+      "reason": "LCの分数近似をFractionの比較と四則で解く。旧sort/arithmetic2件を同一の自然な検証へ集約。",
+      "coverage": "Fraction構築・約分・比較・加減乗除・単項負・floor・分子分母取得",
+      "limitations": "オンライン未提出。N,x,y<=1e9の正値。途中のギャップ分子は1e18以下、比もint64_tに収まる。負入力・整数端・文字列I/O・全丸めAPIと所有権等は既存ローカル試験で補足。移動回数O(log N)、各Fraction四則のgcd費用を別に含む。",
+      "action": "add_preferred_entry_preserve_old"
+    },
+    {
+      "old_id": "fraction_arithmetic",
+      "new_id": "preferred_fraction_rational_approximation",
+      "problem_url": "https://judge.yosupo.jp/problem/rational_approximation",
+      "reason": "LCの分数近似をFractionの比較と四則で解く。旧sort/arithmetic2件を同一の自然な検証へ集約。",
+      "coverage": "Fraction構築・約分・比較・加減乗除・単項負・floor・分子分母取得",
+      "limitations": "オンライン未提出。N,x,y<=1e9の正値。途中のギャップ分子は1e18以下、比もint64_tに収まる。負入力・整数端・文字列I/O・全丸めAPIと所有権等は既存ローカル試験で補足。移動回数O(log N)、各Fraction四則のgcd費用を別に含む。",
+      "action": "add_preferred_entry_preserve_old"
+    },
+    {
+      "old_id": "trie_dictionary",
+      "new_id": "preferred_trie_dictionary",
+      "problem_url": "https://yukicoder.me/problems/no/430",
+      "reason": "LCにTrie辞書操作の直接問題が見つからず、次順位yukicoderの文字列検索を採用。長さ10以下のパターンをTrieへ登録し各部分文字列のcountを合計する。",
+      "coverage": "Trie.insert/count、接頭辞を共有する異なる語・部分文字列の重複出現",
+      "limitations": "オンライン未提出。Sは大文字5万文字以下、異なるパターン5000個・長さ10以下。長さ上限L=10としてO(|S|L^2+パターン総長)回程度の文字探索。erase/順序統計/全バイト等は既存ローカル補足。",
+      "action": "add_preferred_entry_preserve_old"
+    },
+    {
+      "old_id": "matrix_rotate",
+      "new_id": "preferred_matrix_rotate_integer",
+      "problem_url": "https://yukicoder.me/problems/no/565",
+      "reason": "LC公式catalogに2次元配列の回転問題がなく、AOJの1次元RotateはAPI不一致。公式の行列回転・拡大問題があるyukicoderを採用。",
+      "coverage": "rotate_90r/rotate_180/rotate_90l vector<vector<int>>",
+      "limitations": "オンライン未提出。H,W<=10,scale<=10の矩形、文字は./#。integer版は画素をintで保持する。大きい整数・幅0・空・inplace等は既存ローカル補足。",
+      "action": "add_preferred_entry_preserve_old"
+    },
+    {
+      "old_id": "matrix_rotate_grid",
+      "new_id": "preferred_matrix_rotate_grid",
+      "problem_url": "https://yukicoder.me/problems/no/565",
+      "reason": "LC公式catalogに2次元配列の回転問題がなく、AOJの1次元RotateはAPI不一致。公式の行列回転・拡大問題があるyukicoderを採用。",
+      "coverage": "rotate_90r/rotate_180/rotate_90l vector<string>",
+      "limitations": "オンライン未提出。H,W<=10,scale<=10の矩形、文字は./#。integer版は画素をintで保持する。大きい整数・幅0・空・inplace等は既存ローカル補足。",
+      "action": "add_preferred_entry_preserve_old"
+    },
+    {
+      "old_id": "zeta_sieve_factorize_full",
+      "new_id": "preferred_sieve_factorize_full",
+      "problem_url": "https://yukicoder.me/problems/no/2",
+      "reason": "LC Factorizeのn<=1e18はSieveのsqrt表が最大1e9となり不適合。次順位yukicoderの素因数ゲームはn<=1e8で、素因数の指数をNim山としてそのxorが勝敗を決定する。",
+      "coverage": "IntegerSieve構築・prime_factorizationで得る素因数指数",
+      "limitations": "オンライン未提出。2<=n<=1e8、ceil(sqrt(n))まで前計算。素因数のキーの値そのものは出力されない。旧AtCoder DivGameの1e12までと全因子の独立照合は補足として維持。",
+      "action": "add_preferred_entry_preserve_old"
+    },
+    {
+      "old_id": "zeta_sieve_factorize_split",
+      "new_id": "preferred_sieve_factorize_split",
+      "problem_url": "https://yukicoder.me/problems/no/2",
+      "reason": "LC Factorizeのn<=1e18はSieveのsqrt表が最大1e9となり不適合。次順位yukicoderの素因数ゲームはn<=1e8で、素因数の指数をNim山としてそのxorが勝敗を決定する。",
+      "coverage": "IntegerSieve構築・prime_factorizationで得る素因数指数",
+      "limitations": "オンライン未提出。2<=n<=1e8、ceil(sqrt(n))まで前計算。素因数のキーの値そのものは出力されない。旧AtCoder DivGameの1e12までと全因子の独立照合は補足として維持。",
+      "action": "add_preferred_entry_preserve_old"
+    },
+    {
+      "old_id": "next_combination",
+      "new_id": "next_combination",
+      "problem_url": "https://atcoder.jp/contests/abc328/tasks/abc328_e",
+      "action": "retain_current_primary",
+      "reason": "LCの列挙系候補・yukicoderのsubset系候補は固定個数部分集合の全列挙と同じscopeでない。AOJ ITP2_11_Dは直接対応するが、最終優先順ではAtCoderが上位のため、実際に列挙した組合せで全域木を比較する現問題を維持。上位問題の不在を網羅的に証明したものではない。"
+    },
+    {
+      "old_id": "hash_set_membership",
+      "new_id": "preferred_data_hash_set_and_yuki",
+      "problem_url": "https://yukicoder.me/problems/no/2195",
+      "domain": "yukicoder.me",
+      "selection_reason": "LCの順序集合・XOR集合はこのAPIにない操作を要求する。優先順位LC→yukicoder→AtCoder→AOJに従い、挿入・削除・重複判定とsizeをHashSetで管理する。各bitの個数は集合の更新成功時だけ変え、HashSetの判定が答えへ直接影響する。",
+      "coverage": [
+        "insert_checkedによる重複判定",
+        "find/erase(iterator,false)による未登録削除と再挿入",
+        "empty/sizeと整数キー所有"
+      ],
+      "limitations": "新規・未提出。旧ACは引き継がない。xは非負30bit・最大40万操作。負数・int64境界・旧問題の最大100万要素とcontains直接呼出しは独立参照・旧driverで補足。1操作あたり期待O(30)、空間O(Q)。"
+    },
+    {
+      "old_id": "hash_set_toggle",
+      "new_id": "preferred_data_hash_set_and_yuki",
+      "problem_url": "https://yukicoder.me/problems/no/2195",
+      "domain": "yukicoder.me",
+      "selection_reason": "LCの順序集合・XOR集合はこのAPIにない操作を要求する。優先順位LC→yukicoder→AtCoder→AOJに従い、挿入・削除・重複判定とsizeをHashSetで管理する。各bitの個数は集合の更新成功時だけ変え、HashSetの判定が答えへ直接影響する。",
+      "coverage": [
+        "insert_checkedによる重複判定",
+        "find/erase(iterator,false)による未登録削除と再挿入",
+        "empty/sizeと整数キー所有"
+      ],
+      "limitations": "新規・未提出。旧ACは引き継がない。xは非負30bit・最大40万操作。負数・int64境界・旧問題の最大100万要素とcontains直接呼出しは独立参照・旧driverで補足。1操作あたり期待O(30)、空間O(Q)。"
+    },
+    {
+      "old_id": "hash_set_strings",
+      "new_id": "hash_set_strings",
+      "problem_url": "https://atcoder.jp/contests/abc164/tasks/abc164_c",
+      "domain": "atcoder.jp",
+      "selection_reason": "Library Checkerの候補は順序・XOR最小値等のHashSetにない操作を必要とするため、集合の基本操作が出力に直接反映されるAtCoder問題を選ぶ。",
+      "coverage": [
+        "insert",
+        "size",
+        "文字列キー・重複"
+      ],
+      "limitations": [
+        "この問題で使わないAPI・複合キー・衝突・例外・所有権・容量境界はローカル独立試験で補足。実際のAtCoder公式テストは公開されていないため提出後に判定を確認する。"
+      ]
+    },
+    {
+      "old_id": "heap_priority_queue",
+      "new_id": "preferred_data_heap_double",
+      "problem_url": "https://judge.yosupo.jp/problem/double_ended_priority_queue",
+      "domain": "judge.yosupo.jp",
+      "selection_reason": "LCの両端優先キューを最小Heap4個の遅延削除で解く。主キューも削除待ちもHeapで保持し、答えはHeapの順序から得る。",
+      "coverage": [
+        "vectorからのheapify",
+        "push/top/pop/pop_value/empty",
+        "重複を含む最小・最大値と遅延削除"
+      ],
+      "limitations": "新規・未提出。旧ACは引き継がない。値は±1e9で符号反転がint内に収まる。単一Heapの空時APIとint全域はローカル補足。遅延削除込み償却O((N+Q)log(N+Q))・O(N+Q)空間。"
+    },
+    {
+      "old_id": "radix_sort",
+      "new_id": "preferred_data_radix_frequency_int64",
+      "problem_url": "https://judge.yosupo.jp/problem/static_range_frequency",
+      "domain": "judge.yosupo.jp",
+      "selection_reason": "LCに単純な整数ソート問題はない。頻度検索用の索引をRadixSortで構築し、ソート結果を出力へ直接用いる。",
+      "coverage": [
+        "RadixSort(vector<int64_t>)",
+        "空列・重複・値境界・半開区間の頻度"
+      ],
+      "limitations": "新規・未提出。旧ACは引き継がない。int64版は値と添字を64bitへ連結、非負のみ。uint32版はソート後に圧縮し添字をCSRへ格納。負数・型の全域・他の型・workspace/order APIはローカル補足。"
+    },
+    {
+      "old_id": "radix_sort_uint32",
+      "new_id": "preferred_data_radix_frequency_uint32",
+      "problem_url": "https://judge.yosupo.jp/problem/static_range_frequency",
+      "domain": "judge.yosupo.jp",
+      "selection_reason": "LCに単純な整数ソート問題はない。頻度検索用の索引をRadixSortで構築し、ソート結果を出力へ直接用いる。",
+      "coverage": [
+        "RadixSort(vector<uint32_t>)",
+        "空列・重複・値境界・半開区間の頻度"
+      ],
+      "limitations": "新規・未提出。旧ACは引き継がない。int64版は値と添字を64bitへ連結、非負のみ。uint32版はソート後に圧縮し添字をCSRへ格納。負数・型の全域・他の型・workspace/order APIはローカル補足。"
+    },
+    {
+      "old_id": "geometry_orientation_atcoder_full",
+      "action": "retain_current_primary",
+      "new_id": "geometry_orientation_atcoder_full",
+      "domain": "AtCoder",
+      "problem_url": "https://atcoder.jp/contests/abc266/tasks/abc266_c",
+      "reason": "Latest priority is Library Checker→Yukicoder→AtCoder→AOJ. No direct LC replacement in the pinned official catalog. The bounded Yukicoder follow-up found no equally direct replacement for this operation; identified adaptations are not adopted. Existing AtCoder main/library coverage is retained.",
+      "coverage": "orientation: 非退化四角形の各連続3頂点の向き（整数座標）。",
+      "limitations": "ユーザー報告で全機能版80284455・用途別版80284453ともAC・1 ms。AtCoderの提出ページはHTTP403のため、提出本文は未照合。ローカル検証済みの本体/main/I/Oは維持。オンライン対象は±100の非退化・単純・反時計回り四角形の整数orientation。多倍長整数/二進有理数の許容幅/型幅/整数端/検査有無/標準代替/ASan/UBSanと72四角形の補足はAudit/verify-orientation-ready-2026-10-24.json。定数回の処理のため、1 msを本体性能の優劣には使わない。",
+      "source_change": "No existing main/library/judgement edited by this task."
+    },
+    {
+      "old_id": "geometry_orientation_atcoder_split",
+      "action": "retain_current_primary",
+      "new_id": "geometry_orientation_atcoder_split",
+      "domain": "AtCoder",
+      "problem_url": "https://atcoder.jp/contests/abc266/tasks/abc266_c",
+      "reason": "Latest priority is Library Checker→Yukicoder→AtCoder→AOJ. No direct LC replacement in the pinned official catalog. The bounded Yukicoder follow-up found no equally direct replacement for this operation; identified adaptations are not adopted. Existing AtCoder main/library coverage is retained.",
+      "coverage": "orientation: 非退化四角形の各連続3頂点の向き（整数座標）。",
+      "limitations": "ユーザー報告で全機能版80284455・用途別版80284453ともAC・1 ms。AtCoderの提出ページはHTTP403のため、提出本文は未照合。ローカル検証済みの本体/main/I/Oは維持。オンライン対象は±100の非退化・単純・反時計回り四角形の整数orientation。多倍長整数/二進有理数の許容幅/型幅/整数端/検査有無/標準代替/ASan/UBSanと72四角形の補足はAudit/verify-orientation-ready-2026-10-24.json。定数回の処理のため、1 msを本体性能の優劣には使わない。",
+      "source_change": "No existing main/library/judgement edited by this task."
+    },
+    {
+      "old_id": "geometry_segment_intersection_atcoder_full",
+      "action": "retain_current_primary",
+      "new_id": "geometry_segment_intersection_atcoder_full",
+      "domain": "AtCoder",
+      "problem_url": "https://atcoder.jp/contests/math-and-algorithm/tasks/math_and_algorithm_ah",
+      "reason": "Latest priority is Library Checker→Yukicoder→AtCoder→AOJ. No direct LC replacement in the pinned official catalog. The bounded Yukicoder follow-up found no equally direct replacement for this operation; identified adaptations are not adopted. Existing AtCoder main/library coverage is retained.",
+      "coverage": "intersects: 整数閉線分の交差判定（接触・重なり含む）。",
+      "limitations": "ユーザー報告で全機能版80284522・用途別版80284525ともAC・1 ms。提出ページは取得できず、本文未照合。AtCoder問題は0〜10^9の非零長整数閉線分の交差（接触/重なり含む）。共線後に1軸で区間を確認する現行版を、多倍長整数の媒介変数参照・小格子全組合せ・端点交換・零長・整数端・二進有理数の浮動座標で検査。GCC/Clang×検査有無×標準/拡張×full/splitの16構成とASan/UBSan2構成。整数座標/浮動計算型の両軸保持も別途確認。問題制約内72線分対×6構成の提出mainと公式5入力例を照合。定数回の呼出しなので速度はローカルAPI計測と分ける。Audit/verify-segments-ready-2026-10-24.json。",
+      "source_change": "No existing main/library/judgement edited by this task."
+    },
+    {
+      "old_id": "geometry_segment_intersection_atcoder_split",
+      "action": "retain_current_primary",
+      "new_id": "geometry_segment_intersection_atcoder_split",
+      "domain": "AtCoder",
+      "problem_url": "https://atcoder.jp/contests/math-and-algorithm/tasks/math_and_algorithm_ah",
+      "reason": "Latest priority is Library Checker→Yukicoder→AtCoder→AOJ. No direct LC replacement in the pinned official catalog. The bounded Yukicoder follow-up found no equally direct replacement for this operation; identified adaptations are not adopted. Existing AtCoder main/library coverage is retained.",
+      "coverage": "intersects: 整数閉線分の交差判定（接触・重なり含む）。",
+      "limitations": "ユーザー報告で全機能版80284522・用途別版80284525ともAC・1 ms。提出ページは取得できず、本文未照合。AtCoder問題は0〜10^9の非零長整数閉線分の交差（接触/重なり含む）。共線後に1軸で区間を確認する現行版を、多倍長整数の媒介変数参照・小格子全組合せ・端点交換・零長・整数端・二進有理数の浮動座標で検査。GCC/Clang×検査有無×標準/拡張×full/splitの16構成とASan/UBSan2構成。整数座標/浮動計算型の両軸保持も別途確認。問題制約内72線分対×6構成の提出mainと公式5入力例を照合。定数回の呼出しなので速度はローカルAPI計測と分ける。Audit/verify-segments-ready-2026-10-24.json。",
+      "source_change": "No existing main/library/judgement edited by this task."
+    },
+    {
+      "old_id": "geometry_triangle_area_full",
+      "action": "retain_current_primary",
+      "new_id": "geometry_triangle_area_full",
+      "domain": "AtCoder",
+      "problem_url": "https://atcoder.jp/contests/abc002/tasks/abc002_3",
+      "reason": "Latest priority is Library Checker→Yukicoder→AtCoder→AOJ. No direct LC replacement in the pinned official catalog. The bounded Yukicoder follow-up found no equally direct replacement for this operation; identified adaptations are not adopted. Existing AtCoder main/library coverage is retained.",
+      "coverage": "area: 整数座標の非退化三角形の面積。",
+      "limitations": "ユーザー報告で全機能版80284546・用途別版80284547ともAC・1 ms。提出ページは取得できず、本文未照合。提出mainは既存の3頂点vector→geo::areaを維持。三角形のオンライン検証範囲は±1000の非退化整数座標。現行面積本体を多倍長靴紐参照・小格子全組合せ・凹形・空/退化・向き・始点・平行移動・整数端・二進有理数・整数座標/浮動Calcで照合。GCC/Clang×検査有無×通常/標準代替×full/splitの16構成とASan/UBSan2構成、問題制約内72三角形×6構成のmain、公式3例を確認。小規模の一部退行を大規模の短縮のため許容し、1回の三角形計算の提出時間と大規模API性能は分ける。Audit/verify-area-ready-2026-10-24.json。",
+      "source_change": "No existing main/library/judgement edited by this task."
+    },
+    {
+      "old_id": "geometry_triangle_area_split",
+      "action": "retain_current_primary",
+      "new_id": "geometry_triangle_area_split",
+      "domain": "AtCoder",
+      "problem_url": "https://atcoder.jp/contests/abc002/tasks/abc002_3",
+      "reason": "Latest priority is Library Checker→Yukicoder→AtCoder→AOJ. No direct LC replacement in the pinned official catalog. The bounded Yukicoder follow-up found no equally direct replacement for this operation; identified adaptations are not adopted. Existing AtCoder main/library coverage is retained.",
+      "coverage": "area: 整数座標の非退化三角形の面積。",
+      "limitations": "ユーザー報告で全機能版80284546・用途別版80284547ともAC・1 ms。提出ページは取得できず、本文未照合。提出mainは既存の3頂点vector→geo::areaを維持。三角形のオンライン検証範囲は±1000の非退化整数座標。現行面積本体を多倍長靴紐参照・小格子全組合せ・凹形・空/退化・向き・始点・平行移動・整数端・二進有理数・整数座標/浮動Calcで照合。GCC/Clang×検査有無×通常/標準代替×full/splitの16構成とASan/UBSan2構成、問題制約内72三角形×6構成のmain、公式3例を確認。小規模の一部退行を大規模の短縮のため許容し、1回の三角形計算の提出時間と大規模API性能は分ける。Audit/verify-area-ready-2026-10-24.json。",
+      "source_change": "No existing main/library/judgement edited by this task."
+    },
+    {
+      "old_id": "geometry_contains_atcoder_full",
+      "action": "retain_current_primary",
+      "new_id": "geometry_contains_atcoder_full",
+      "domain": "AtCoder",
+      "problem_url": "https://atcoder.jp/contests/math-and-algorithm/tasks/math_and_algorithm_bu",
+      "reason": "Latest priority is Library Checker→Yukicoder→AtCoder→AOJ. No direct LC replacement in the pinned official catalog. The bounded Yukicoder follow-up found no equally direct replacement for this operation; identified adaptations are not adopted. Existing AtCoder main/library coverage is retained.",
+      "coverage": "contains: 整数座標の一般単純多角形の内外（1照会、O(N)）。",
+      "limitations": "ユーザー報告で全機能版80293008・用途別版80292997ともAC（全機能版4 ms、用途別版5 ms）。提出ページは取得できず、本文未照合。既存の本体/main/共通FastIOを維持。オンライン対象は座標±10^9・3〜100000頂点・辺上でない点の内外判定。多倍長有理数ray交差の独立参照で凸/凹・向き/始点・平行移動・境界/零長/重複/空/1/2点・整数端・二進有理数・絶対/相対eps・整数座標/浮動Calcを補足。閾値前後と4種類の末尾、途中/閉じ辺も検査。GCC/Clang×検査有無×通常/標準代替×full/splitの16構成とASan/UBSan2構成、問題制約内72多角形照会×6提出main構成、公式5例を照合。scalar組替え/SIMD案は代表条件の退行が残り不採用。Audit/verify-contains-ready-2026-10-24.json。",
+      "source_change": "No existing main/library/judgement edited by this task."
+    },
+    {
+      "old_id": "geometry_contains_atcoder_split",
+      "action": "retain_current_primary",
+      "new_id": "geometry_contains_atcoder_split",
+      "domain": "AtCoder",
+      "problem_url": "https://atcoder.jp/contests/math-and-algorithm/tasks/math_and_algorithm_bu",
+      "reason": "Latest priority is Library Checker→Yukicoder→AtCoder→AOJ. No direct LC replacement in the pinned official catalog. The bounded Yukicoder follow-up found no equally direct replacement for this operation; identified adaptations are not adopted. Existing AtCoder main/library coverage is retained.",
+      "coverage": "contains: 整数座標の一般単純多角形の内外（1照会、O(N)）。",
+      "limitations": "ユーザー報告で全機能版80293008・用途別版80292997ともAC（全機能版4 ms、用途別版5 ms）。提出ページは取得できず、本文未照合。既存の本体/main/共通FastIOを維持。オンライン対象は座標±10^9・3〜100000頂点・辺上でない点の内外判定。多倍長有理数ray交差の独立参照で凸/凹・向き/始点・平行移動・境界/零長/重複/空/1/2点・整数端・二進有理数・絶対/相対eps・整数座標/浮動Calcを補足。閾値前後と4種類の末尾、途中/閉じ辺も検査。GCC/Clang×検査有無×通常/標準代替×full/splitの16構成とASan/UBSan2構成、問題制約内72多角形照会×6提出main構成、公式5例を照合。scalar組替え/SIMD案は代表条件の退行が残り不採用。Audit/verify-contains-ready-2026-10-24.json。",
+      "source_change": "No existing main/library/judgement edited by this task."
+    },
+    {
+      "old_id": "geometry_circle_relation_full",
+      "action": "retain_current_primary",
+      "new_id": "geometry_circle_relation_full",
+      "domain": "AtCoder",
+      "problem_url": "https://atcoder.jp/contests/math-and-algorithm/tasks/math_and_algorithm_ag",
+      "reason": "Latest priority is Library Checker→Yukicoder→AtCoder→AOJ. No direct LC replacement in the pinned official catalog. The bounded Yukicoder follow-up found no equally direct replacement for this operation; identified adaptations are not adopted. Existing AtCoder main/library coverage is retained.",
+      "coverage": "intersection(Circle,Circle).kind: 非交差・接触・2交点・一致の分類。中心間距離から内包/外接を問題の5分類へ変換。",
+      "limitations": "ユーザー報告で全機能版80293251・用途別版80293260ともAC・1 ms。提出本文は未照合。本体は維持し、整数の近接非接触を区別するためVerifyのintersection呼出しへEpsilon{0,0}のみ指定。オンライン対象は中心0〜10^6、半径1〜10^6の整数円の5分類。多倍長二乗比較による種別・高精度交点残差・零半径/同心/ほぼ同心・許容幅・hypot極端指数・入力検査をGCC/Clang×検査有無×通常/標準代替×full/splitの16構成とASan/UBSan2構成で照合。制約内72入力×6提出main構成（接触近傍の二乗差1の4例を含む）と公式3例/独立既知値3例を確認。kind-only確保なしと重複includeも補足。速度候補は他分布の退行により不採用。Audit/verify-circles-ready-2026-10-24.json。",
+      "source_change": "No existing main/library/judgement edited by this task."
+    },
+    {
+      "old_id": "geometry_circle_relation_split",
+      "action": "retain_current_primary",
+      "new_id": "geometry_circle_relation_split",
+      "domain": "AtCoder",
+      "problem_url": "https://atcoder.jp/contests/math-and-algorithm/tasks/math_and_algorithm_ag",
+      "reason": "Latest priority is Library Checker→Yukicoder→AtCoder→AOJ. No direct LC replacement in the pinned official catalog. The bounded Yukicoder follow-up found no equally direct replacement for this operation; identified adaptations are not adopted. Existing AtCoder main/library coverage is retained.",
+      "coverage": "intersection(Circle,Circle).kind: 非交差・接触・2交点・一致の分類。中心間距離から内包/外接を問題の5分類へ変換。",
+      "limitations": "ユーザー報告で全機能版80293251・用途別版80293260ともAC・1 ms。提出本文は未照合。本体は維持し、整数の近接非接触を区別するためVerifyのintersection呼出しへEpsilon{0,0}のみ指定。オンライン対象は中心0〜10^6、半径1〜10^6の整数円の5分類。多倍長二乗比較による種別・高精度交点残差・零半径/同心/ほぼ同心・許容幅・hypot極端指数・入力検査をGCC/Clang×検査有無×通常/標準代替×full/splitの16構成とASan/UBSan2構成で照合。制約内72入力×6提出main構成（接触近傍の二乗差1の4例を含む）と公式3例/独立既知値3例を確認。kind-only確保なしと重複includeも補足。速度候補は他分布の退行により不採用。Audit/verify-circles-ready-2026-10-24.json。",
+      "source_change": "No existing main/library/judgement edited by this task."
+    },
+    {
+      "old_id": "geometry_point_segment_distance_full",
+      "action": "retain_current_primary",
+      "new_id": "geometry_point_segment_distance_full",
+      "domain": "AtCoder",
+      "problem_url": "https://atcoder.jp/contests/math-and-algorithm/tasks/math_and_algorithm_ae",
+      "reason": "Latest priority is Library Checker→Yukicoder→AtCoder→AOJ. No direct LC replacement in the pinned official catalog. The bounded Yukicoder follow-up found no equally direct replacement for this operation; identified adaptations are not adopted. Existing AtCoder main/library coverage is retained.",
+      "coverage": "distance(Point,Segment): 整数入力の点と閉線分の最短距離。",
+      "limitations": "ユーザー報告で全機能版80293653・用途別版80293657ともAC・1 ms。提出本文は未照合。main/共通FastIOを維持。整数座標の方向長を型の指数範囲で確認して直接sqrt計算し、それ以外は既存スケーリング経路。多倍長投影/内外積の距離参照で零長・端点/内部・反転/平行移動・整数端・narrow整数・浮動型・極端スケール・関連APIを照合。GCC/Clang×検査有無×通常/標準代替×full/splitの16構成とASan/UBSan2構成。制約内72入力×6提出main構成と公式3例を確認。大座標小距離に一律の絶対精度を保証せず、補足1万件では最大/平均誤差が旧版より小さい。混在ベンチの浮動に数%の差があるが、浮動単独の.textは同一。Audit/verify-distance-ready-2026-10-24.json。",
+      "source_change": "No existing main/library/judgement edited by this task."
+    },
+    {
+      "old_id": "geometry_point_segment_distance_split",
+      "action": "retain_current_primary",
+      "new_id": "geometry_point_segment_distance_split",
+      "domain": "AtCoder",
+      "problem_url": "https://atcoder.jp/contests/math-and-algorithm/tasks/math_and_algorithm_ae",
+      "reason": "Latest priority is Library Checker→Yukicoder→AtCoder→AOJ. No direct LC replacement in the pinned official catalog. The bounded Yukicoder follow-up found no equally direct replacement for this operation; identified adaptations are not adopted. Existing AtCoder main/library coverage is retained.",
+      "coverage": "distance(Point,Segment): 整数入力の点と閉線分の最短距離。",
+      "limitations": "ユーザー報告で全機能版80293653・用途別版80293657ともAC・1 ms。提出本文は未照合。main/共通FastIOを維持。整数座標の方向長を型の指数範囲で確認して直接sqrt計算し、それ以外は既存スケーリング経路。多倍長投影/内外積の距離参照で零長・端点/内部・反転/平行移動・整数端・narrow整数・浮動型・極端スケール・関連APIを照合。GCC/Clang×検査有無×通常/標準代替×full/splitの16構成とASan/UBSan2構成。制約内72入力×6提出main構成と公式3例を確認。大座標小距離に一律の絶対精度を保証せず、補足1万件では最大/平均誤差が旧版より小さい。混在ベンチの浮動に数%の差があるが、浮動単独の.textは同一。Audit/verify-distance-ready-2026-10-24.json。",
+      "source_change": "No existing main/library/judgement edited by this task."
+    },
+    {
+      "old_id": "bellman_ford",
+      "new_id": "bellman_ford",
+      "domain": "atcoder.jp",
+      "problem_url": "https://atcoder.jp/contests/abc137/tasks/abc137_e",
+      "action": "retain",
+      "reason": "LCのShortest Pathは非負辺専用で負辺・到達可能負閉路を代替しない。自然に対応するyukicoder候補を確認できないため、AOJより優先のAtCoder ABC137 Eを維持。",
+      "coverage": "負辺を含む単一始点最短路、終点へ伝播する-INFと終点に無関係な負閉路。",
+      "limitations": "提出80357986は画像でAC・10ms、HTTP403で本文未照合。独立参照・検査あり/なし・確保失敗・ASan/UBSanはAudit/verify-bellman-ford-80357888-2026-10-25.json、今回の確認はAudit/verify-bellman-ford-80357986-2026-10-25.json参照。",
+      "old_entry_disposition": "既存primaryと提出履歴をそのまま維持。",
+      "priority": [
+        "Library Checker",
+        "yukicoder",
+        "AtCoder",
+        "AOJ"
+      ]
+    },
+    {
+      "old_id": "spfa",
+      "new_id": "spfa",
+      "domain": "atcoder.jp",
+      "problem_url": "https://atcoder.jp/contests/abc137/tasks/abc137_e",
+      "action": "retain",
+      "reason": "LCのShortest Pathは非負辺専用で負辺・到達可能負閉路を代替しない。自然に対応するyukicoder候補を確認できないため、AOJより優先のAtCoder ABC137 Eを維持。",
+      "coverage": "負辺を含む単一始点最短路、終点へ伝播する-INFと終点に無関係な負閉路。",
+      "limitations": "提出80394490は画像でAC・3ms、HTTP403で本文未照合。手元の対応準備版は前回検証済みの16V切替版。今回の比較・検証範囲はAudit/verify-spfa-80394490-2026-10-26.json参照。",
+      "old_entry_disposition": "既存primaryと提出履歴をそのまま維持。",
+      "priority": [
+        "Library Checker",
+        "yukicoder",
+        "AtCoder",
+        "AOJ"
+      ]
+    },
+    {
+      "old_id": "floyd_warshall",
+      "new_id": "floyd_warshall",
+      "domain": "atcoder.jp",
+      "problem_url": "https://atcoder.jp/contests/abc012/tasks/abc012_4",
+      "action": "retain",
+      "reason": "LCに負辺・負閉路を含む全点対最短路の直接問題を確認できず、今回確認したyukicoder候補から自然な移行先を確定できなかった。AOJより優先の既存AtCoderを維持。",
+      "coverage": "FloydWarshallによる全点間距離、グラフの中心。",
+      "limitations": "非負・無向・連結グラフ。負辺・負閉路・未到達・経路復元はローカル補足。提出80246981は画像でAC・6msを確認した記録で本文未照合。追加改修後はオンライン未提出。",
+      "old_entry_disposition": "既存primaryと提出履歴をそのまま維持。",
+      "priority": [
+        "Library Checker",
+        "yukicoder",
+        "AtCoder",
+        "AOJ"
+      ]
+    },
+    {
+      "old_id": "max_flow_grid",
+      "new_id": "preferred_max_flow_bipartite",
+      "domain": "judge.yosupo.jp",
+      "problem_url": "https://judge.yosupo.jp/problem/bipartitematching",
+      "action": "add_preferred_entry_preserve_old",
+      "reason": "LC Matching on Bipartite Graphを最大流へ自然に帰着でき、flow値と返却された辺flowが出力そのものになる。旧gridマッチングより一般の二部入力を検証する。",
+      "coverage": [
+        "mf_graph<int>::add_edge",
+        "単位容量二部ネットワークのflow",
+        "get_edgeのflowによる最大マッチング復元"
+      ],
+      "limitations": "新規・未提出。旧AtCoder判定は引き継がない。LCは容量1の二部ネットワークに限定される。一般容量、min_cut/change_edge、途中flow/reuse、edges一括返却と盤面復元は旧driver/独立参照で補足。",
+      "old_entry_disposition": "rootがreferenceへ分離し旧driver/判定historyを維持。",
+      "priority": [
+        "Library Checker",
+        "yukicoder",
+        "AtCoder",
+        "AOJ"
+      ]
+    },
+    {
+      "old_id": "topological",
+      "new_id": "preferred_topological_yuki",
+      "domain": "yukicoder.me",
+      "problem_url": "https://yukicoder.me/problems/no/1660",
+      "action": "add_preferred_entry_preserve_old",
+      "reason": "LCに一般有向グラフのトポロジカル順序と閉路を直接検証する問題を確認できない。yukicoder1660は隣接行列の冪零性を閉路判定とDAG最長路へ自然に帰着できる。",
+      "coverage": [
+        "全頂点のトポロジカル順序を使うDAG最長路",
+        "自己ループを含む閉路判定",
+        "辺なしグラフ"
+      ],
+      "limitations": "新規・未提出。旧AtCoder判定を引き継がない。非負隣接行列の歩道数が対象。順序の一意性・辞書順最小は独立参照と既存AtCoder入口で補足。",
+      "old_entry_disposition": "rootがreferenceへ分離し旧driver/判定historyを維持。",
+      "priority": [
+        "Library Checker",
+        "yukicoder",
+        "AtCoder",
+        "AOJ"
+      ]
+    },
+    {
+      "old_id": "topological_lexicographical",
+      "new_id": "topological_lexicographical",
+      "domain": "atcoder.jp",
+      "problem_url": "https://atcoder.jp/contests/abc223/tasks/abc223_d",
+      "action": "retain",
+      "reason": "一般DAGの辞書順最小順序を直接出力する現AtCoder ABC223 DがAPIに一致。LC rooted-tree topologicalは別問題で、yukicoder1660は任意順序と閉路だけで辞書順を検証しない。",
+      "coverage": [
+        "TopologicalSortLexicographical",
+        "閉路時の空結果"
+      ],
+      "limitations": "提出80490774はユーザー画像でAC42ms。提出本文未取得・未照合。再提出済みとして記録し、本文未取得だけを理由に再提出待ちにはしない。90997f61版の独立参照・96構成・固定main比較はAudit/performance-topological-lexicographical-80490593-2026-10-31.md参照。 42msへの変化の追加調査、AtCoder関連flags・pragma有無・8補足入力による比較と追加案不採用の判断はAudit/performance-topological-lexicographical-80490774-2026-10-31.md参照。本体90997f61は不変。",
+      "old_entry_disposition": "既存primaryと提出履歴をそのまま維持。",
+      "priority": [
+        "Library Checker",
+        "yukicoder",
+        "AtCoder",
+        "AOJ"
+      ]
+    },
+    {
+      "old_id": "node_reachable",
+      "new_id": "node_reachable",
+      "domain": "atcoder.jp",
+      "problem_url": "https://atcoder.jp/contests/abc228/tasks/abc228_b",
+      "action": "retain",
+      "reason": "既存AtCoder ABC228 Bは関数グラフの到達頂点数をAPIから直接出力する。一般APIを自然に検証する上位LC/yukicoder問題を確定できなかった。",
+      "coverage": [
+        "make_node",
+        "Node::nによる接続・共有",
+        "break_cycle内の循環検出と周期末尾特定",
+        "break_cycle",
+        "chain_size",
+        "到達しない循環を含む接続解除"
+      ],
+      "limitations": [
+        "複製・逆転・先頭追加削除・長鎖の非再帰破棄は独立ローカル検査で補う。",
+        "ノードごとに所有者を配列で保持するため、この提出だけでは長鎖の反復破棄の証拠にならない。",
+        "公式上限は10万ノード。入力構築・確保と走査の内訳はローカルで測る。",
+        "ローカル検証・測定条件はAudit/verify-node-ready-2026-10-26.jsonとAudit/performance-node-2026-10-26.json参照。",
+        "cycle_entry/has_cycleのAPI自体はオンラインmainでは呼ばず、独立ローカル照合で補う。",
+        "提出80395895は画像でAC・19msを確認。HTTP403で本文未照合。今回の比較後も本体・main・IOは変更していない。",
+        "最新確認はAudit/verify-node-80395895-2026-10-26.json、追加案の採否はAudit/performance-node-80395895-2026-10-26.json参照。"
+      ],
+      "old_entry_disposition": "既存primaryと提出履歴をそのまま維持。",
+      "priority": [
+        "Library Checker",
+        "yukicoder",
+        "AtCoder",
+        "AOJ"
+      ]
+    },
+    {
+      "old_id": "project_selection",
+      "new_id": "preferred_project_selection_yuki",
+      "domain": "yukicoder.me",
+      "problem_url": "https://yukicoder.me/problems/no/957",
+      "action": "add_preferred_entry_preserve_old",
+      "reason": "LCに同APIの単項費用・集合全true利益を自然に出力する問題を確認できない。yukicoder957は各マスの植林費用と行/列全体の利益がAPIへ直接対応する。",
+      "coverage": [
+        "add_single_costのtrue側費用",
+        "add_all_true_profitの行・列高階利益",
+        "solveの最適値",
+        "int64費用"
+      ],
+      "limitations": "新規・未提出。旧AtCoder判定を引き継がない。非負費用/利益の植林モデル。false利益・厳密制約・復元・増分solve・一般二変数費用は独立参照と既存AtCoder入口で補足。",
+      "old_entry_disposition": "rootがreferenceへ分離し旧driver/判定historyを維持。",
+      "priority": [
+        "Library Checker",
+        "yukicoder",
+        "AtCoder",
+        "AOJ"
+      ]
+    }
+  ],
+  "online_state": "新規targetはすべてオンライン未提出。旧判定/driverは参考履歴・ローカル回帰へ保持。",
+  "documentation_only_exemption": "利用者指定8件の当該全文SHAのみ免除。旧ACと現行全文一致は区別し、将来変更へ継承しない。",
+  "aoj_compiler_adaptation": "AOJを最下位へ変更したため、この移行ではAOJを採用せず、Topologicalへの互換変更も取り下げ。C++23利用方針は維持。",
+  "evidence_reports": [
+    "Audit/verify-priority-math-strings-final-2026-11-15.json",
+    "Audit/verify-priority-data-2026-11-15.json",
+    "Audit/verify-priority-graphs-final-2026-11-15.json",
+    "Audit/verify-priority-geometry-2026-11-15.json"
+  ],
+  "six_lc_resubmitted": "Audit/lc-six-resubmissions-2026-11-15.json",
+  "validation": {
+    "status": "PASS",
+    "new_online_entries": 13,
+    "compiler_configurations": 104,
+    "program_executions": 9966,
+    "matrix": "GCC15.2/Clang21 × checked/skip × native/standard fallback; maximal runs are separate per report",
+    "python_tests": {
+      "tests": 490,
+      "skipped": 2,
+      "status": "PASS",
+      "seconds": 128.787
+    },
+    "generated_normal_programs": 244,
+    "generated_derived_programs": 870,
+    "generated_library_variants": 420,
+    "source_api_checks": 106,
+    "document_links": 130,
+    "counts_note": "Only final 13 entries are included. Rejected AOJ candidates, retained AtCoder entries, and abandoned stdlib compatibility experiments are excluded from C++ totals.",
+    "final_live_source_provenance": "Final root/data/graph source and driver SHA snapshots match live files. All 13 generated programs are in sync and unsubmitted; prior AC is not inherited."
+  },
+  "source_bindings": [
+    {
+      "id": "preferred_data_hash_set_and_yuki",
+      "submission_sha256": "1f5a4033f4f5d6dd694addbe69a4100a3bd5ae3c100e1234196126cea9ce7e3a",
+      "libraries": {
+        "DataStructure/Hash_set.cpp": "08f912edd377be39ef1245eb6ee71214a49bad255688fdaf4542169c2725f7a3"
+      },
+      "driver_sha256": "d1188adceb78f3aab6913f6693f99d6b8c797e6606d737c72d36f5c06ae42c01",
+      "problem_url": "https://yukicoder.me/problems/no/2195"
+    },
+    {
+      "id": "preferred_data_heap_double",
+      "submission_sha256": "cf66b51d263f3fc892f3fae5860850aa70a5e91632ac01d3ea86c3a1eebbc4d2",
+      "libraries": {
+        "DataStructure/heap.cpp": "45d24c1d78141c5652011e44b3045240abeab14b226351a2d3909ae251513a1c"
+      },
+      "driver_sha256": "a35398b86b93b56f5394a4247bed28de09d61c53da15e9d4b3f5d71dd8d81aab",
+      "problem_url": "https://judge.yosupo.jp/problem/double_ended_priority_queue"
+    },
+    {
+      "id": "preferred_data_radix_frequency_int64",
+      "submission_sha256": "a60e6cfb1a6c842a7d5b385eba726ec1ce1b4a41d7c26e154a4b4bdbec90cd94",
+      "libraries": {
+        "Algorithm/Radix_sort.cpp": "0b527277b26307e434513f0bbe6afd90e77d52ffceac550f5e445504daa34e73"
+      },
+      "driver_sha256": "9401dec260067fa7972523970ca23817e9b40328c96265f19b558f6f6cfcefde",
+      "problem_url": "https://judge.yosupo.jp/problem/static_range_frequency"
+    },
+    {
+      "id": "preferred_data_radix_frequency_uint32",
+      "submission_sha256": "96f22b5fb55be20cf8ea2a4db89e594c0b9472d8e64414b0e0b80336b5177d39",
+      "libraries": {
+        "Algorithm/Radix_sort.cpp": "0b527277b26307e434513f0bbe6afd90e77d52ffceac550f5e445504daa34e73"
+      },
+      "driver_sha256": "f679ca19989d0f59332ca78f556c41a86dd366242c297e69e85e8d14c06f33b5",
+      "problem_url": "https://judge.yosupo.jp/problem/static_range_frequency"
+    },
+    {
+      "id": "preferred_fraction_rational_approximation",
+      "submission_sha256": "8e8e3c34840a105e8003e744b0a72fe0bf499cd0027c89df22a93beaf68059ad",
+      "libraries": {
+        "Math/Fraction.cpp": "bd8937304f1b8eb555fff33da9e159874113199dfb80b88a4f64c37ed76814af"
+      },
+      "driver_sha256": "cab5258cc0bf8b104756bc99d83cda14eedf0c00d695f4ef7febabdea3c397cb",
+      "problem_url": "https://judge.yosupo.jp/problem/rational_approximation"
+    },
+    {
+      "id": "preferred_matrix_rotate_grid",
+      "submission_sha256": "245a210d29d90113c939a54182817961b8b587b478c4dc11874d501ac6ac59c8",
+      "libraries": {
+        "Algorithm/rotate.cpp": "b7614f2c46ca58687afac6cb907dfb46feb945f6c70e7ae2a12e18c1944e0bc5"
+      },
+      "driver_sha256": "889d31a480bebc344cbaa4b2d6ea4bfd8f2ec205a8c2abf07a214cac39c54470",
+      "problem_url": "https://yukicoder.me/problems/no/565"
+    },
+    {
+      "id": "preferred_matrix_rotate_integer",
+      "submission_sha256": "5fa4d8cdea99a43e676ba65bba66033b59b092c53ad0992dad18dd1ff3b26e08",
+      "libraries": {
+        "Algorithm/rotate.cpp": "b7614f2c46ca58687afac6cb907dfb46feb945f6c70e7ae2a12e18c1944e0bc5"
+      },
+      "driver_sha256": "a7e5f2df1398348ff88583763b823670c9e5def579bc58c42f90ebbe52924b68",
+      "problem_url": "https://yukicoder.me/problems/no/565"
+    },
+    {
+      "id": "preferred_max_flow_bipartite",
+      "submission_sha256": "131d320c353263ad3a8873d9c3b666e48a83f3bb9187b5449334d5824ef532e6",
+      "libraries": {
+        "Graph/Max_Flow.cpp": "b1eee30a5d93b695073f33f20b1108558b9d29639364c6c0550ebab2bfa4dbe6"
+      },
+      "driver_sha256": "ff6d4f73b62ed3eccd86c1ec1b5d5fbd7c41012ef410d8118cd44f8292085f84",
+      "problem_url": "https://judge.yosupo.jp/problem/bipartitematching"
+    },
+    {
+      "id": "preferred_project_selection_yuki",
+      "submission_sha256": "7db6e2ed4cc21713745aedf266fd7667629c086813b39694f411b2c35b602b2f",
+      "libraries": {
+        "Graph/Project_Selection.cpp": "b5a0e9f10d9271976bcc0b9fea362e3c3342f96f4b4e70ea307f8e7d230056fe"
+      },
+      "driver_sha256": "015a36e9de6a31bf7fa62b86030e01cc87b3bfe656c3e6dbc0aa10174fc757b5",
+      "problem_url": "https://yukicoder.me/problems/no/957"
+    },
+    {
+      "id": "preferred_sieve_factorize_full",
+      "submission_sha256": "6da7a8875c906894025e2f04e15ad9b24fcdc3a319950447e561d38e802ff001",
+      "libraries": {
+        "Math/Zeta_Mebius.cpp": "9555793c1661f1328a73447831ca4738d548dbd9cf878366df6302b5b433e70b"
+      },
+      "driver_sha256": "bae30e9f29de37d8bcc58b3aa619e8de57a8f33099c8beaff9b78083e8221235",
+      "problem_url": "https://yukicoder.me/problems/no/2"
+    },
+    {
+      "id": "preferred_sieve_factorize_split",
+      "submission_sha256": "ecc8493f95e936ce574340cda274d61050d9570935cbb44073a9bc0f726e220f",
+      "libraries": {
+        "Math/Zeta/Sieve.cpp": "dee1a44ed7c1d0386bf89be509ee015321b438d74a4431accb82b8b63ef5a3c1"
+      },
+      "driver_sha256": "bae30e9f29de37d8bcc58b3aa619e8de57a8f33099c8beaff9b78083e8221235",
+      "problem_url": "https://yukicoder.me/problems/no/2"
+    },
+    {
+      "id": "preferred_topological_yuki",
+      "submission_sha256": "8f526db07e06f3a10423fd53da015f2d5a58c9f641379fd2750964e529024137",
+      "libraries": {
+        "Graph/Topological.cpp": "5ab6ddeb1d2d8b1c4bf7eb13a31cdc289100b6a5659269db23391f010aa1e383"
+      },
+      "driver_sha256": "a012efa7695e2fedcbe1d34bd79d572a9222c67761ebe37c743c3ad00dca9060",
+      "problem_url": "https://yukicoder.me/problems/no/1660"
+    },
+    {
+      "id": "preferred_trie_dictionary",
+      "submission_sha256": "cc5104fa543103e9ff9471249af937ae2583c12d5463a3b3270a4d238aea5017",
+      "libraries": {
+        "String/Trie.cpp": "5a98d6239d7851d49e7830b6ee98b4124759c5565f79326b4bce8184af8e48c8"
+      },
+      "driver_sha256": "1961b028455cdecbe2c012bb700ead5cb4d891bcef5999bae020a1386ea97028",
+      "problem_url": "https://yukicoder.me/problems/no/430"
+    }
+  ],
+  "evidence_sha256": {
+    "Audit/verify-priority-math-strings-final-2026-11-15.json": "651e35154a4f19c8bbbb69563fd14ace3aee2dd903243e7fb3d8bb032e82980b",
+    "Audit/verify-priority-data-2026-11-15.json": "0ef6214a5f7551e833d75a88c9f9fdf0c3ca590231e87969edbfa2945e1e8639",
+    "Audit/verify-priority-graphs-final-2026-11-15.json": "07d2080c4136f97bb1df55b7b5c346405e2bd6131915fcf66ea41524d865f675",
+    "Audit/verify-priority-geometry-2026-11-15.json": "410a4a5b3e5e57bbc36afe3a6c25b45dac87ac1255a5149ab066b35bb559f275",
+    "Audit/lc-six-resubmissions-2026-11-15.json": "92989facc6b21fa8605545eacdbd81b507ebf57fa1dc1b5df9af3a219d964578",
+    "Audit/submission-policy-topological-2026-11-15.json": "88ebbf36cc7c6d7b1f4e6ef50448c0e59ab5dccf89efb49a6a27804367f07c95"
+  },
+  "online_counts": {
+    "current_ac": 63,
+    "source_changed": 44,
+    "unsubmitted": 83,
+    "non_ac": 0,
+    "local_only": 54
+  },
+  "submission_policy_sha256": "74be18571f9b1ff9a61cf8783aec35f3b50fcc5270433c42df1c9d07ef9ad350",
+  "commit_or_push_performed": false
+}

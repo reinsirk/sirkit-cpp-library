@@ -1,5 +1,8 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #include <algorithm>
+#include <array>
 #include <cassert>
 #include <cstdint>
 #include <iostream>
@@ -32,6 +35,17 @@ struct MemberAction {
  MemberAction composition(const MemberAction& old)const{return {a*old.a,a*old.b+b};}
 };
 int main(){
+ using ::sirkit::detail::DualSegmentLayout;
+ assert((DualSegmentLayout(0, 4, 1) == std::pair<std::size_t, unsigned>{1, 0}));
+ assert((DualSegmentLayout(5, 5, 8) == std::pair<std::size_t, unsigned>{8, 3}));
+ for (const auto [size, values, lazy] : {std::array<std::size_t, 3>{6, 5, 8},
+                                       std::array<std::size_t, 3>{1, 5, 0},
+                                       std::array<std::size_t, 3>{5, 5, 7}}) {
+     bool rejected = false;
+     try { (void)DualSegmentLayout(size, values, lazy); }
+     catch (const std::length_error&) { rejected = true; }
+     assert(rejected);
+ }
  std::mt19937_64 rng(7319821);std::uint64_t operations=0;
  for(int trial=0;trial<180;++trial){
   std::size_t n=trial<100?trial:rng()%130;std::vector<std::uint32_t> a(n);for(auto&x:a)x=rng()%mod;
@@ -51,9 +65,16 @@ int main(){
   assert(tree.values()==a);auto copy=tree;tree.clear();assert(tree.empty());swap(tree,copy);assert(tree.values()==a);tree.reset(std::span<const std::uint32_t>(a));assert(tree.values()==a);
  }
  Tree empty(std::vector<std::uint32_t>{},Map{},Comp{});empty.apply(0,0,F{2,3});assert(empty.values().empty());
+ Tree pending(std::vector<std::uint32_t>{3, 4}, Map{}, Comp{});
+ pending.apply(0, 2, F{2, 1});
+ const auto* self = &pending;
+ pending = *self;
+ empty = std::move(pending);
+ assert(pending.empty() && (empty.values() == std::vector<std::uint32_t>{7, 9}));
 #ifndef SKIP_RUNTIME_CHECKS
  bool caught=false;try{empty.apply(1,0,F{2,3});}catch(const std::out_of_range&){caught=true;}assert(caught&&empty.usable());
- caught=false;try{empty.get(0);}catch(const std::out_of_range&){caught=true;}assert(caught&&empty.usable());
+ caught=false;try{empty.get(2);}catch(const std::out_of_range&){caught=true;}assert(caught&&empty.usable());
+ caught=false;try{empty.apply(0,3,F{2,3});}catch(const std::out_of_range&){caught=true;}assert(caught&&empty.usable());
 #endif
  std::vector<NonDefault> nd;nd.emplace_back(4);nd.emplace_back(8);DualSegmentTree<NonDefault,NonDefaultAction,NonDefaultMap,NonDefaultComp> nt(nd,{},{});nt.apply(0,2,NonDefaultAction(3));assert(nt.get(0).value==7&&nt.get(1).value==11);
  DualSegmentTree<std::uint32_t,F,MoveMap,Comp> mt(std::vector<std::uint32_t>{4,5},MoveMap{std::make_unique<std::uint64_t>(mod)},Comp{});mt.apply(0,2,F{2,3});auto mc=mt;assert(mc.get(1)==13);auto mm=std::move(mt);mt.reset(3,4);assert(mt.get(2)==4&&mm.get(0)==11);

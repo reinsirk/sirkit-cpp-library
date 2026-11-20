@@ -2,6 +2,8 @@
 #include "../Algorithm/next_combination.cpp"
 #include <cstdint>
 #include <iostream>
+
+using namespace sirkit;
 int main() {
     std::cout << next_combination(7) << '\n'; // 11
     std::cout << last_combination<std::uint64_t>(5, 3) << '\n'; // 28

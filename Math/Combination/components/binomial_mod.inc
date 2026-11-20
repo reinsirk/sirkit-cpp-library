@@ -9,6 +9,10 @@
 // Lucas(n,k): 素数の法でCOMと同じ結果。合成数・法1ではdomain_error（COMを使う）。
 // H(n,k): (n+k-1)Ckの剰余。0H0=1（法1は0）、0Hk=0（k>0）。int64_t超過はoverflow_error。
 // 表外は積で計算し、積の回数上限も超えるとlength_error。SKIP_RUNTIME_CHECKSで入力検査を除く。
+// m=法、r=異なる素因子数、B=全表の総要素数。構築はO(sqrt(m)+B+r log m)、prepareはO(B+r log m)、領域O(B+r)。
+// 準備済みの一般照会はO(Σ_p(1+log_p(n+1)))。素数pの表外Lucasは桁数d・積の総項数sとしてO(d+s+d log p)。
+// 素数冪p^eの表外直接積はs=min(k,n-k)としてO((s+1)(1+log_p(n+1))+log m)。自動拡張にはprepareの費用を加える。
+// 以上は固定幅整数演算をO(1)とした上界。Hは対応するCOMと同じ費用。
 // SIRKIT_API_END
 #ifndef SIRKIT_BINOMIAL_MOD_DEFINED
 #define SIRKIT_BINOMIAL_MOD_DEFINED
@@ -176,7 +180,7 @@ private:
                 ++exponent;
             } while (remaining % p == 0);
             factors_.emplace_back(p, static_cast<value_type>(prime_power), exponent);
-            if (remaining > primality_threshold && u64{p} * p < remaining &&
+            if (remaining > primality_threshold &&
                 reinsirk::detail::is_prime_u32(static_cast<value_type>(remaining))) {
                 factors_.emplace_back(remaining, remaining, 1);
                 remaining = 1;
@@ -208,7 +212,8 @@ private:
                 ++exponent;
             } while (remaining % p == 0);
             factors_.emplace_back(p, static_cast<value_type>(prime_power), exponent);
-            if (remaining > primality_threshold && u64{p} * p < remaining &&
+            // この残余なら p < 2^7 なので、p*pよりも十分大きい。
+            if (remaining > primality_threshold &&
                 reinsirk::detail::is_prime_u32(static_cast<value_type>(remaining))) {
                 factors_.emplace_back(remaining, remaining, 1);
                 remaining = 1;
@@ -296,8 +301,8 @@ private:
                 factor.ifac[static_cast<std::size_t>(i)] = factor.prime - factor.fac[static_cast<std::size_t>(target - i)];
                 factor.ifac[static_cast<std::size_t>(i + 1)] = factor.fac[static_cast<std::size_t>(target - i - 1)];
             }
-            if (i <= target)
-                factor.ifac[static_cast<std::size_t>(i)] = factor.prime - factor.fac[static_cast<std::size_t>(target - i)];
+            // targetは偶数なので、最後の組の直後がtargetになる。
+            factor.ifac[target] = factor.prime - factor.fac[0];
             return;
         }
         factor.ifac[target] = power(factor.fac[target], factor.prime - 2, factor);
@@ -356,9 +361,9 @@ private:
         const auto limit = std::min(options_.table_limit, factor.prime - 1);
         const auto target = growth_target(current, required, limit);
         const auto old_size = factor.fac.size();
-        if (static_cast<u64>(target) + 1 > std::numeric_limits<std::size_t>::max())
-        {
-            throw std::length_error("BinomialMod: table size exceeds size_t");
+        if constexpr (std::numeric_limits<std::size_t>::digits < std::numeric_limits<value_type>::digits) {
+            if (static_cast<u64>(target) + 1 > std::numeric_limits<std::size_t>::max())
+                throw std::length_error("BinomialMod: table size exceeds size_t");
         }
         const auto new_size = static_cast<std::size_t>(static_cast<u64>(target) + 1);
         try
@@ -427,8 +432,10 @@ private:
             return;
         const auto limit = std::min(options_.table_limit, factor.modulus - 1);
         const auto target = growth_target(current, required, limit);
-        if (static_cast<u64>(target) + 1 > std::numeric_limits<std::size_t>::max())
-            throw std::length_error("BinomialMod: table size exceeds size_t");
+        if constexpr (std::numeric_limits<std::size_t>::digits < std::numeric_limits<value_type>::digits) {
+            if (static_cast<u64>(target) + 1 > std::numeric_limits<std::size_t>::max())
+                throw std::length_error("BinomialMod: table size exceeds size_t");
+        }
         const auto old_size = factor.prefix.size();
         const auto new_size = static_cast<std::size_t>(static_cast<u64>(target) + 1);
         try
@@ -658,7 +665,6 @@ private:
     value_type lucas_prime(PrimePower &factor, u64 n, u64 k, u64 &budget)
     {
         if (factor.prime == 2) return (k & ~n) == 0;
-        if (k == 0) return 1;
         const auto nq = divide_prime(n, factor), kq = divide_prime(k, factor);
         const auto ni = static_cast<value_type>(n - nq * factor.prime);
         const auto ki = static_cast<value_type>(k - kq * factor.prime);
@@ -687,7 +693,6 @@ private:
             case 23: return lucas_prepared<23>(rest_n, rest_k, ni, ki, next_n, next_k);
             case 29: return lucas_prepared<29>(rest_n, rest_k, ni, ki, next_n, next_k);
             case 31: return lucas_prepared<31>(rest_n, rest_k, ni, ki, next_n, next_k);
-            default: break;
             }
         }
         // 先頭2値を1引数にまとめ、桁処理へ渡す引数を少なくする。

@@ -5,19 +5,22 @@
 // API一覧
 // [共通型・定数]
 // Edge(to,w): 行先toとint64_tの重みwを持つ有向辺。
-// WGraph: 出発点を隣接リストの添字とする辺列。INF=std::int64_t{1}<<60。
+// WGraph: 出発点を隣接リストの添字とする辺列。kInf=std::int64_t{1}<<60。
 //
-// [Dijkstra]
-// Dijkstra(graph, distances, start_index): 始点から全頂点への最短距離をdistancesへ上書きする。
-// Dijkstra(graph, distances, start_index, target_index, path): 全頂点の距離と始点から終点への頂点列を上書き。到達不能ならpathは空。
-// 重みは[0, 1e9]、未到達はINF。有限距離がINF以上ならoverflow_error。
+// [Dijkstra] V=頂点数、E=辺数、L=返す経路の頂点数。
+// Dijkstra(graph, distances, start_index, inf=2^60): 全距離を上書き。O(V+E log(E+1))時間・O(V+E)追加領域。
+// Dijkstra(graph, distances, start_index, target_index, path, inf=2^60): 全距離と頂点列を上書き。上と同じ計算量（復元O(L+1)を含む）。到達不能なら空。
+// 重みは[0, 1e9]、未到達はinf。inf>0。有限最短距離がinf以上ならoverflow_error。
 // Dijkstra(n, edges, distances, start_index[, target_index, path]): (始点,終点,int64重み)のtuple列を
 // span<const tuple<int,int,int64_t>>で受け、内部CSRを作って全頂点の距離を返す。vectorからも渡せる。
-// 全版O(V+E log(E+1))時間・O(V+E)追加領域。辺列版のCSR構築はO(V+E)。
+// 辺列版も末尾にinfを指定できる。既定呼出しは従来の定数番兵の高速経路を使う。
+// 辺列2版もO(V+E log(E+1))時間・O(V+E)追加領域。CSR構築のO(V+E)を含む。
 // SKIP_RUNTIME_CHECKSを定義すると入力検査を省く。
 // WGraph版の検査は始点・終点と処理中に参照する辺のみ。未到達成分は走査しない。
 // 辺列版は構築時に全辺を参照し、両端点と重みを検査する。n<0・容量超過はlength_error。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <array>
 #include <bit>
@@ -33,9 +36,12 @@
 #include <utility>
 #include <vector>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_INF_DEFINED
 #define SIRKIT_INF_DEFINED
-inline constexpr std::int64_t INF = std::int64_t{1} << 60;
+inline constexpr std::int64_t kInf = std::int64_t{1} << 60;
 #endif
 
 #ifndef SIRKIT_GRAPH_TYPES_DEFINED
@@ -52,7 +58,7 @@ using WGraph = std::vector<std::vector<Edge>>;
 // 小規模は二分ヒープ、大規模はキューが64件を超えたらradix heapへ切り替える。
 #ifndef SIRKIT_DIJKSTRA_DEFINED
 #define SIRKIT_DIJKSTRA_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 // バルク入力専用。行spanはowned arcs_を参照し、コピー/移動しない。
 class DijkstraCsrGraph {
     struct Arc {
@@ -63,10 +69,13 @@ class DijkstraCsrGraph {
     std::vector<Arc> arcs_;
     std::vector<std::span<const Arc>> rows_;
 public:
+    static void check_capacity(std::size_t vertices, std::size_t edges) {
+        if (edges > std::vector<Arc>{}.max_size() || vertices > std::vector<std::span<const Arc>>{}.max_size())
+            throw std::length_error("Dijkstra: CSR capacity exceeded");
+    }
     DijkstraCsrGraph(int n, std::span<const std::tuple<int,int,std::int64_t>> input) {
         if(n<0) throw std::length_error("Dijkstra: negative vertex count");
-        if(input.size()>arcs_.max_size() || static_cast<std::size_t>(n)>rows_.max_size())
-            throw std::length_error("Dijkstra: CSR capacity exceeded");
+        check_capacity(static_cast<std::size_t>(n), input.size());
         std::vector<std::size_t> begin(static_cast<std::size_t>(n)+1);
         for(const auto& [u,v,w]:input) {
 #ifndef SKIP_RUNTIME_CHECKS
@@ -99,7 +108,7 @@ public:
     const auto* data() const noexcept{return rows_.data();}
 };
 
-// 内部用の単調整数ヒープ。格納する有限距離はINF未満。
+// 内部用の単調整数ヒープ。格納する有限距離はkInf未満。
 #ifndef SIRKIT_DIJKSTRA_RADIX_HEAP_DEFINED
 #define SIRKIT_DIJKSTRA_RADIX_HEAP_DEFINED
 class DijkstraRadixHeap
@@ -197,7 +206,7 @@ public:
 #endif
 
 // radix移行後の末端処理。確認が64回続けて外れたら元のループへ戻す。
-template <bool RestorePath, bool MayOverflow, class GraphLike = WGraph>
+template <bool RestorePath, bool MayOverflow, std::int64_t kDistanceLimit = kInf, class GraphLike = WGraph>
 #if defined(__GNUC__) || defined(__clang__)
 [[gnu::noinline]]
 #endif
@@ -233,8 +242,8 @@ inline void DijkstraRadixRun(const GraphLike& graph,
         }
 #endif
             const auto candidate = current + edge.w;
-            if constexpr (MayOverflow) if (candidate >= INF) [[unlikely]] {
-                if (distance_data[edge.to] == INF) overflow_targets.push_back(edge.to);
+            if constexpr (MayOverflow) if (candidate >= kDistanceLimit) [[unlikely]] {
+                if (distance_data[edge.to] == kDistanceLimit) overflow_targets.push_back(edge.to);
                 continue;
             }
             if (candidate >= distance_data[edge.to]) continue;
@@ -259,8 +268,8 @@ inline void DijkstraRadixRun(const GraphLike& graph,
                     if (graph[tail.to].empty()) {
                         terminal_budget = 64;
                         const auto terminal_distance = candidate + tail.w;
-                        if constexpr (MayOverflow) if (terminal_distance >= INF) {
-                            if (distance_data[tail.to] == INF) overflow_targets.push_back(tail.to);
+                        if constexpr (MayOverflow) if (terminal_distance >= kDistanceLimit) {
+                            if (distance_data[tail.to] == kDistanceLimit) overflow_targets.push_back(tail.to);
                             continue;
                         }
                         if (terminal_distance < distance_data[tail.to]) {
@@ -271,7 +280,7 @@ inline void DijkstraRadixRun(const GraphLike& graph,
                     }
                 }
             }
-        
+
             radix.emplace(candidate, edge.to);
         }
     };
@@ -293,7 +302,7 @@ inline void DijkstraRadixRun(const GraphLike& graph,
 }
 
 // radix移行後の所有と処理を分け、二分ヒープ側の作業領域を小さくする。
-template <bool RestorePath, bool MayOverflow, class InitialRange, class GraphLike = WGraph>
+template <bool RestorePath, bool MayOverflow, std::int64_t kDistanceLimit = kInf, class InitialRange, class GraphLike = WGraph>
 #if defined(__GNUC__) || defined(__clang__)
 [[gnu::noinline]]
 #endif
@@ -333,9 +342,9 @@ inline void DijkstraRadixFinish(const GraphLike& graph,
         }
 #endif
             const std::int64_t candidate = current + edge.w;
-            if constexpr (MayOverflow) if (candidate >= INF) [[unlikely]]
+            if constexpr (MayOverflow) if (candidate >= kDistanceLimit) [[unlikely]]
             {
-                if (distance_data[edge.to] == INF) overflow_targets.push_back(edge.to);
+                if (distance_data[edge.to] == kDistanceLimit) overflow_targets.push_back(edge.to);
                 continue;
             }
             if (candidate >= distance_data[edge.to])
@@ -347,7 +356,7 @@ inline void DijkstraRadixFinish(const GraphLike& graph,
         }
     };
     if (graph.size() > 4096) {
-        DijkstraRadixRun<RestorePath, MayOverflow>(
+        DijkstraRadixRun<RestorePath, MayOverflow, kDistanceLimit>(
             graph, distance, previous, overflow_targets, radix, from, current, resume);
     } else if (resume < graph[from].size()) {
         relax(current, from, resume);
@@ -366,18 +375,19 @@ struct DijkstraInitialState {
     int second;
 };
 
-template <bool RestorePath, bool MayOverflow, bool Adaptive, bool PruneTerminal = true, bool RecordInitialChain = false, class GraphLike = WGraph>
+template <bool RestorePath, bool MayOverflow, bool PruneTerminal = true, bool RecordInitialChain = false, std::int64_t kDistanceLimit = kInf, class GraphLike = WGraph>
 #if defined(__GNUC__) || defined(__clang__)
 [[gnu::always_inline]]
 #endif
 inline void DijkstraBigImpl(const GraphLike &graph, std::vector<std::int64_t> &distances,
                          int start_index, int target_index, std::vector<int> *path)
 {
-    constexpr bool DeferPrevious = RestorePath && PruneTerminal && RecordInitialChain;
+    static_assert(!RecordInitialChain || (RestorePath && PruneTerminal));
+    constexpr bool DeferPrevious = RecordInitialChain;
 #if defined(__GNUC__) && !defined(__clang__)
-    constexpr bool UseBounded = Adaptive && RecordInitialChain;
+    constexpr bool UseBounded = RecordInitialChain;
 #else
-    constexpr bool UseBounded = Adaptive;
+    constexpr bool UseBounded = true;
 #endif
 #ifndef SKIP_RUNTIME_CHECKS
     [[maybe_unused]] constexpr std::int64_t max_weight = 1'000'000'000;
@@ -393,8 +403,8 @@ inline void DijkstraBigImpl(const GraphLike &graph, std::vector<std::int64_t> &d
         throw std::out_of_range("Dijkstra: invalid start or target vertex");
 #endif
 
-    // 有限距離をINF未満で保持。候補はINF+最大辺重み未満なので加算は安全。
-    constexpr std::int64_t unreachable = INF;
+    // 有限距離は上限未満。上限に最大辺重みを足してもint64_tに収まる。
+    constexpr std::int64_t unreachable = kDistanceLimit;
 #ifndef SKIP_RUNTIME_CHECKS
     std::vector<std::int64_t> local_distance;
     auto& distance = local_distance;
@@ -436,8 +446,10 @@ inline void DijkstraBigImpl(const GraphLike &graph, std::vector<std::int64_t> &d
         }
 #endif
             const auto candidate = initial_distance + edge.w;
-            if constexpr (MayOverflow) if (candidate >= INF) {
-                if (distance_data[edge.to] == INF) overflow_targets.push_back(edge.to);
+            if constexpr (MayOverflow) if (candidate >= kDistanceLimit) {
+                // 一本道のため、未到達の行先に別経路はない。
+                if (distance_data[edge.to] == kDistanceLimit)
+                    throw std::overflow_error("Dijkstra: finite distance collides with INF");
                 break;
             }
             if (candidate >= distance_data[edge.to]) break;
@@ -452,9 +464,6 @@ inline void DijkstraBigImpl(const GraphLike &graph, std::vector<std::int64_t> &d
         // 出辺が1本以下なら未処理の到達頂点はない。
         if (adjacency[initial_vertex].size() <= 1) {
             if (!target_in_prefix) result.clear();
-            if constexpr (MayOverflow) for (const int vertex : overflow_targets)
-                if (distance_data[vertex] == INF)
-                    throw std::overflow_error("Dijkstra: finite distance collides with INF");
 #ifndef SKIP_RUNTIME_CHECKS
             distances.swap(local_distance);
 #endif
@@ -471,41 +480,27 @@ inline void DijkstraBigImpl(const GraphLike &graph, std::vector<std::int64_t> &d
     std::array<PreviousRecord, DeferPrevious ? 64 : 0> previous_records;
     std::size_t previous_record_count = 0;
     const auto commit_previous = [&] {
-        if constexpr (DeferPrevious) {
-            return [&] {
-                if (!previous.empty()) return;
-                previous.assign(graph.size(), -1);
-                for (std::size_t i = 0; i < previous_record_count; ++i) {
-                    const auto& record = previous_records[i];
-                    previous[record.vertex] = record.parent;
-                }
-            };
-        } else {
-            return [] {};
+        if (!previous.empty()) return;
+        previous.assign(graph.size(), -1);
+        for (std::size_t i = 0; i < previous_record_count; ++i) {
+            const auto& record = previous_records[i];
+            previous[record.vertex] = record.parent;
         }
-    }();
-    const auto record_previous = [&] {
-        if constexpr (DeferPrevious) {
-            return [&](int vertex, int parent) {
-                if (previous.empty()) {
-                    if (previous_record_count < previous_records.size()) {
-                        previous_records[previous_record_count++] = {vertex, parent};
-                        return;
-                    }
-                    commit_previous();
-                }
-                previous[vertex] = parent;
-            };
-        } else {
-            return [](int, int) {};
+    };
+    const auto record_previous = [&](int vertex, int parent) {
+        if (previous.empty()) {
+            if (previous_record_count < previous_records.size()) {
+                previous_records[previous_record_count++] = {vertex, parent};
+                return;
+            }
+            commit_previous();
         }
-    }();
+        previous[vertex] = parent;
+    };
     using State = std::conditional_t<UseBounded, DijkstraInitialState, std::pair<std::int64_t, int>>;
     struct Compare {
         bool operator()(const State& a, const State& b) const noexcept {
-            if constexpr (UseBounded)
-                return a.first > b.first || (a.first == b.first && a.second > b.second);
-            else return a > b;
+            return a.first > b.first || (a.first == b.first && a.second > b.second);
         }
     };
     using InitialCompare = std::conditional_t<UseBounded, Compare, std::greater<State>>;
@@ -574,9 +569,9 @@ inline void DijkstraBigImpl(const GraphLike &graph, std::vector<std::int64_t> &d
         }
 #endif
             const std::int64_t candidate = current + edge.w;
-            if constexpr (MayOverflow) if (candidate >= INF) [[unlikely]]
+            if constexpr (MayOverflow) if (candidate >= kDistanceLimit) [[unlikely]]
             {
-                if (distance_data[edge.to] == INF) overflow_targets.push_back(edge.to);
+                if (distance_data[edge.to] == kDistanceLimit) overflow_targets.push_back(edge.to);
                 continue;
             }
             if (candidate >= distance_data[edge.to])
@@ -596,7 +591,6 @@ inline void DijkstraBigImpl(const GraphLike &graph, std::vector<std::int64_t> &d
 #endif
     (auto& pending, std::int64_t current, int from, std::size_t begin = 0) -> std::size_t {
         auto* const distance_data = distance.data();
-        auto* const previous_data = previous.data();
         const auto& edges = graph[from];
         const auto end = edges.end();
         for (auto cursor = edges.begin() + begin; cursor != end; ++cursor)
@@ -612,18 +606,15 @@ inline void DijkstraBigImpl(const GraphLike &graph, std::vector<std::int64_t> &d
         }
 #endif
             const std::int64_t candidate = current + edge.w;
-            if constexpr (MayOverflow) if (candidate >= INF) [[unlikely]]
+            if constexpr (MayOverflow) if (candidate >= kDistanceLimit) [[unlikely]]
             {
-                if (distance_data[edge.to] == INF) overflow_targets.push_back(edge.to);
+                if (distance_data[edge.to] == kDistanceLimit) overflow_targets.push_back(edge.to);
                 continue;
             }
             if (candidate >= distance_data[edge.to])
                 continue;
             distance_data[edge.to] = candidate;
-            if constexpr (RestorePath) {
-                if constexpr (DeferPrevious) record_previous(edge.to, from);
-                else previous_data[edge.to] = from;
-            }
+            record_previous(edge.to, from);
             pending.emplace(candidate, edge.to);
             if constexpr (StopWhenLarge) if (pending.size() > 64) return static_cast<std::size_t>(cursor - edges.begin()) + 1;
         }
@@ -646,8 +637,8 @@ inline void DijkstraBigImpl(const GraphLike &graph, std::vector<std::int64_t> &d
         }
 #endif
             const auto candidate = current + edge.w;
-            if constexpr (MayOverflow) if (candidate >= INF) {
-                if (distance[edge.to] == INF) overflow_targets.push_back(edge.to);
+            if constexpr (MayOverflow) if (candidate >= kDistanceLimit) {
+                if (distance[edge.to] == kDistanceLimit) overflow_targets.push_back(edge.to);
                 break;
             }
             if (candidate >= distance[edge.to]) break;
@@ -660,11 +651,11 @@ inline void DijkstraBigImpl(const GraphLike &graph, std::vector<std::int64_t> &d
         }
         std::size_t resume = graph[from].size();
         if (graph[from].size() != 1 || !queue.empty())
-            resume = relax.template operator()<Adaptive>(queue, current, from);
-        if constexpr (Adaptive) if (queue.size() > 64) {
+            resume = relax.template operator()<true>(queue, current, from);
+        if (queue.size() > 64) {
             if constexpr (DeferPrevious) commit_previous();
             if constexpr (PruneTerminal) {
-                DijkstraRadixFinish<RestorePath, MayOverflow>(
+                DijkstraRadixFinish<RestorePath, MayOverflow, kDistanceLimit>(
                     graph, distance, previous, overflow_targets, queue.states(), current, from, resume);
             } else {
                 DijkstraRadixHeap radix(static_cast<std::uint64_t>(current));
@@ -690,10 +681,7 @@ inline void DijkstraBigImpl(const GraphLike &graph, std::vector<std::int64_t> &d
                 if (distance[target_index] == unreachable) result.clear();
                 else {
                     const auto prefix_size = result.size();
-                    if constexpr (!DeferPrevious) {
-                        for (int vertex = target_index; vertex != initial_vertex; vertex = previous[vertex])
-                            result.push_back(vertex);
-                    } else if (!previous.empty()) {
+                    if (!previous.empty()) {
                         for (int vertex = target_index; vertex != initial_vertex; vertex = previous[vertex])
                             result.push_back(vertex);
                     } else {
@@ -712,32 +700,13 @@ inline void DijkstraBigImpl(const GraphLike &graph, std::vector<std::int64_t> &d
             }
         } else if (distance[target_index] != unreachable)
         {
-            if constexpr (!DeferPrevious) {
-                for (int vertex = target_index; vertex != -1; vertex = previous[vertex])
-                    result.push_back(vertex);
-            } else if (!previous.empty()) {
-                for (int vertex = target_index; vertex != -1; vertex = previous[vertex])
-                    result.push_back(vertex);
-            } else {
-                for (int vertex = target_index; vertex != -1;) {
-                    result.push_back(vertex);
-                    if (vertex == start_index) {
-                        vertex = -1;
-                    } else {
-                        for (std::size_t i = previous_record_count; i != 0; --i) {
-                            if (previous_records[i - 1].vertex == vertex) {
-                                vertex = previous_records[i - 1].parent;
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
+            for (int vertex = target_index; vertex != -1; vertex = previous[vertex])
+                result.push_back(vertex);
             std::reverse(result.begin(), result.end());
         }
     }
     if constexpr (MayOverflow) for (const int vertex : overflow_targets)
-        if (distance[vertex] == INF)
+        if (distance[vertex] == kDistanceLimit)
             throw std::overflow_error("Dijkstra: finite distance collides with INF");
 #ifndef SKIP_RUNTIME_CHECKS
     distances.swap(local_distance);
@@ -747,17 +716,17 @@ inline void DijkstraBigImpl(const GraphLike &graph, std::vector<std::int64_t> &d
 }
 
 // 始点から一本道を処理する版だけを別の作業領域に展開する。
-template <bool RestorePath, bool MayOverflow, bool PruneTerminal, class GraphLike = WGraph>
+template <bool RestorePath, bool MayOverflow, bool PruneTerminal, std::int64_t kDistanceLimit = kInf, class GraphLike = WGraph>
 #if defined(__GNUC__) || defined(__clang__)
 [[gnu::noinline]]
 #endif
 inline void DijkstraInitialChain(const GraphLike& graph, std::vector<std::int64_t>& distances,
                                  int start_index, int target_index, std::vector<int>* path) {
-    DijkstraBigImpl<RestorePath, MayOverflow, true, PruneTerminal, true>(
+    DijkstraBigImpl<RestorePath, MayOverflow, PruneTerminal, true, kDistanceLimit>(
         graph, distances, start_index, target_index, path);
 }
 
-template <bool RestorePath, bool MayOverflow, bool PruneTerminal = true, class GraphLike = WGraph>
+template <bool RestorePath, bool MayOverflow, bool PruneTerminal = true, std::int64_t kDistanceLimit = kInf, class GraphLike = WGraph>
 #if defined(__GNUC__) || defined(__clang__)
 [[gnu::noinline]]
 #endif
@@ -770,12 +739,12 @@ inline void DijkstraLarge(const GraphLike& graph, std::vector<std::int64_t>& dis
         constexpr bool valid_start = true;
 #endif
         if (graph.size() > 4096 && valid_start && graph[start_index].size() == 1) {
-            DijkstraInitialChain<RestorePath, MayOverflow, PruneTerminal>(
+            DijkstraInitialChain<RestorePath, MayOverflow, PruneTerminal, kDistanceLimit>(
                 graph, distances, start_index, target_index, path);
             return;
         }
     }
-    DijkstraBigImpl<RestorePath, MayOverflow, true, PruneTerminal>(graph, distances, start_index, target_index, path);
+    DijkstraBigImpl<RestorePath, MayOverflow, PruneTerminal, false, kDistanceLimit>(graph, distances, start_index, target_index, path);
 }
 
 // 共通処理。距離のみの場合、経路用の確保と更新をコンパイル時に除く。
@@ -797,32 +766,32 @@ inline void DijkstraImpl(const GraphLike &graph, std::vector<std::int64_t> &dist
         throw std::out_of_range("Dijkstra: invalid start or target vertex");
 #endif
 
-    // ここは256頂点以下。全単純路がINF未満なので出力変換は不要。
-    constexpr std::int64_t unreachable = INF;
+    // ここは256頂点以下。全単純路がkInf未満なので出力変換は不要。
+    constexpr std::int64_t unreachable = kInf;
 #ifndef SKIP_RUNTIME_CHECKS
     std::vector<std::int64_t> local_distance;
     auto& distance = local_distance;
 #else
     auto& distance = distances;
 #endif
-    distance.assign(graph.size(), INF);
+    distance.assign(graph.size(), kInf);
     std::vector<int> previous, result;
     if constexpr (RestorePath)
         previous.assign(graph.size(), -1);
-#if defined(__clang__)
+#if defined(__clang__) && !defined(SIRKIT_DIJKSTRA_STANDARD_HEAP)
     // 256頂点以下・重み<=1e9なら距離は38bit以内。下位8bitに頂点を詰める。
     using State = std::uint64_t;
 #else
     using State = std::pair<std::int64_t, int>;
 #endif
-#if defined(__GNUC__) && !defined(__clang__)
+#if !defined(__clang__) || defined(SIRKIT_DIJKSTRA_STANDARD_HEAP)
     struct Compare {
         bool operator()(const State& a, const State& b) const noexcept {
             return a.first > b.first || (a.first == b.first && a.second > b.second);
         }
     };
     std::priority_queue<State, std::vector<State>, Compare> queue;
-#elif defined(__clang__)
+#else
     struct Queue {
         std::vector<State> values;
         bool empty() const noexcept { return values.empty(); }
@@ -857,11 +826,9 @@ inline void DijkstraImpl(const GraphLike &graph, std::vector<std::int64_t> &dist
         }
     };
     Queue queue;
-#else
-    std::priority_queue<State, std::vector<State>, std::greater<State>> queue;
 #endif
     distance[start_index] = 0;
-#if defined(__clang__)
+#if defined(__clang__) && !defined(SIRKIT_DIJKSTRA_STANDARD_HEAP)
     queue.emplace(static_cast<State>(start_index));
 #else
     queue.emplace(0, start_index);
@@ -869,7 +836,7 @@ inline void DijkstraImpl(const GraphLike &graph, std::vector<std::int64_t> &dist
 
     while (!queue.empty())
     {
-#if defined(__clang__)
+#if defined(__clang__) && !defined(SIRKIT_DIJKSTRA_STANDARD_HEAP)
         const auto key = queue.top();
         const auto current = static_cast<std::int64_t>(key >> 8);
         const int from = static_cast<int>(key & 255);
@@ -896,7 +863,7 @@ inline void DijkstraImpl(const GraphLike &graph, std::vector<std::int64_t> &dist
             distance[edge.to] = candidate;
             if constexpr (RestorePath)
                 previous[edge.to] = from;
-#if defined(__clang__)
+#if defined(__clang__) && !defined(SIRKIT_DIJKSTRA_STANDARD_HEAP)
             queue.emplace((static_cast<State>(candidate) << 8) | static_cast<State>(edge.to));
 #else
             queue.emplace(candidate, edge.to);
@@ -920,65 +887,152 @@ inline void DijkstraImpl(const GraphLike &graph, std::vector<std::int64_t> &dist
         path->swap(result);
 }
 
-} // namespace reinsirk::detail
-
-inline void Dijkstra(const WGraph &graph, std::vector<std::int64_t> &distances,
-                     int start_index)
+// 任意の番兵用。非負の候補を符号なしで加算し、範囲外の最短距離だけを報告する。
+template <bool RestorePath, class GraphLike>
+inline void DijkstraCustomInf(const GraphLike& graph, std::vector<std::int64_t>& distances,
+    int start_index, int target_index, std::vector<int>* path, std::int64_t inf)
 {
+    if (graph.size() > static_cast<std::size_t>(std::numeric_limits<int>::max()))
+        throw std::length_error("Dijkstra: too many vertices");
+#ifndef SKIP_RUNTIME_CHECKS
+    const int n = static_cast<int>(graph.size());
+    if (start_index < 0 || start_index >= n ||
+        (RestorePath && (target_index < 0 || target_index >= n)))
+        throw std::out_of_range("Dijkstra: invalid start or target vertex");
+    std::vector<std::int64_t> local_distance;
+    auto& distance = local_distance;
+#else
+    auto& distance = distances;
+#endif
+    distance.assign(graph.size(), inf);
+    std::vector<int> previous, result, overflow_targets;
+    if constexpr (RestorePath) previous.assign(graph.size(), -1);
+    using State = std::pair<std::int64_t, int>;
+    std::priority_queue<State, std::vector<State>, std::greater<State>> queue;
+    distance[start_index] = 0;
+    queue.emplace(0, start_index);
+    while (!queue.empty()) {
+        const auto [current, from] = queue.top();
+        queue.pop();
+        if (current != distance[from]) continue;
+        for (const auto& edge : graph[from]) {
+#ifndef SKIP_RUNTIME_CHECKS
+            if constexpr (!std::is_same_v<GraphLike, DijkstraCsrGraph>) {
+                if (edge.to < 0 || edge.to >= n)
+                    throw std::out_of_range("Dijkstra: invalid destination vertex");
+                if (edge.w < 0 || edge.w > 1'000'000'000)
+                    throw std::out_of_range("Dijkstra: weight must be in [0, 1e9]");
+            }
+#endif
+            const auto candidate = static_cast<std::uint64_t>(current) + static_cast<std::uint64_t>(edge.w);
+            if (candidate >= static_cast<std::uint64_t>(inf)) {
+                if (distance[edge.to] == inf) overflow_targets.push_back(edge.to);
+                continue;
+            }
+            if (candidate >= static_cast<std::uint64_t>(distance[edge.to])) continue;
+            distance[edge.to] = static_cast<std::int64_t>(candidate);
+            if constexpr (RestorePath) previous[edge.to] = from;
+            queue.emplace(distance[edge.to], edge.to);
+        }
+    }
+    for (const int vertex : overflow_targets)
+        if (distance[vertex] == inf)
+            throw std::overflow_error("Dijkstra: finite distance collides with inf");
+    if constexpr (RestorePath) {
+        if (distance[target_index] != inf) {
+            for (int vertex = target_index; vertex != -1; vertex = previous[vertex]) result.push_back(vertex);
+            std::reverse(result.begin(), result.end());
+        }
+    }
+#ifndef SKIP_RUNTIME_CHECKS
+    distances.swap(local_distance);
+#endif
+    if constexpr (RestorePath) path->swap(result);
+}
+
+
+// 最大辺重みから走査なしで有限距離の上界を判定する。
+template <std::int64_t kDistanceLimit = kInf>
+constexpr bool DijkstraMayOverflow(std::size_t vertices) noexcept {
+    static_assert(0 < kDistanceLimit && kDistanceLimit <= kInf);
+    return vertices > static_cast<std::uint64_t>((kDistanceLimit - 1) / 1'000'000'000);
+}
+
+template <bool RestorePath, std::int64_t kDistanceLimit = kInf, class GraphLike>
+#if defined(__GNUC__) || defined(__clang__)
+[[gnu::always_inline]]
+#endif
+inline void DijkstraDefaultLarge(const GraphLike& graph, std::vector<std::int64_t>& distances,
+                                 int start_index, int target_index, std::vector<int>* path) {
 #if defined(__GNUC__) && !defined(__clang__)
     // GCCの距離版は従来のカーネルを維持する。
-    constexpr bool prune_terminal = false;
+    constexpr bool prune_terminal = RestorePath;
 #else
     constexpr bool prune_terminal = true;
 #endif
-    if (graph.size() <= 256) reinsirk::detail::DijkstraImpl<false>(graph, distances, start_index, -1, nullptr);
+    if (!DijkstraMayOverflow<kDistanceLimit>(graph.size()))
+        DijkstraLarge<RestorePath, false, prune_terminal, kDistanceLimit>(graph, distances, start_index, target_index, path);
+    else
+        DijkstraLarge<RestorePath, true, prune_terminal, kDistanceLimit>(graph, distances, start_index, target_index, path);
+}
+
+} // namespace reinsirk::detail
+
+inline void Dijkstra(const WGraph &graph, std::vector<std::int64_t> &distances,
+                     int start_index, std::int64_t inf = (std::int64_t{1} << 60))
+{
+    if (inf <= 0) throw std::invalid_argument("Dijkstra: inf must be positive");
+    if (inf != kInf) return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::DijkstraCustomInf<false>(
+        graph, distances, start_index, -1, nullptr, inf);
+    if (graph.size() <= 256) /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::DijkstraImpl<false>(graph, distances, start_index, -1, nullptr);
     else if (graph.size() <= 4096)
-        reinsirk::detail::DijkstraLarge<false, false, false>(graph, distances, start_index, -1, nullptr);
-    else if (graph.size() <= static_cast<std::size_t>((INF - 1) / 1'000'000'000))
-        reinsirk::detail::DijkstraLarge<false, false, prune_terminal>(graph, distances, start_index, -1, nullptr);
-    else reinsirk::detail::DijkstraLarge<false, true, prune_terminal>(graph, distances, start_index, -1, nullptr);
+        /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::DijkstraLarge<false, false, false>(graph, distances, start_index, -1, nullptr);
+    else /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::DijkstraDefaultLarge<false>(graph, distances, start_index, -1, nullptr);
 }
 
 inline void Dijkstra(const WGraph &graph, std::vector<std::int64_t> &distances,
-                     int start_index, int target_index, std::vector<int> &path)
+                     int start_index, int target_index, std::vector<int> &path,
+                     std::int64_t inf = (std::int64_t{1} << 60))
 {
-    if (graph.size() <= 256) reinsirk::detail::DijkstraImpl<true>(graph, distances, start_index, target_index, &path);
+    if (inf <= 0) throw std::invalid_argument("Dijkstra: inf must be positive");
+    if (inf != kInf) return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::DijkstraCustomInf<true>(
+        graph, distances, start_index, target_index, &path, inf);
+    if (graph.size() <= 256) /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::DijkstraImpl<true>(graph, distances, start_index, target_index, &path);
     else if (graph.size() <= 4096)
-        reinsirk::detail::DijkstraLarge<true, false, false>(graph, distances, start_index, target_index, &path);
-    else if (graph.size() <= static_cast<std::size_t>((INF - 1) / 1'000'000'000))
-        reinsirk::detail::DijkstraLarge<true, false>(graph, distances, start_index, target_index, &path);
-    else reinsirk::detail::DijkstraLarge<true, true>(graph, distances, start_index, target_index, &path);
+        /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::DijkstraLarge<true, false, false>(graph, distances, start_index, target_index, &path);
+    else /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::DijkstraDefaultLarge<true>(graph, distances, start_index, target_index, &path);
 }
 
 // 辺列入力版も全頂点の距離を返す。CSR構築後は上と同じengineを使う。
 inline void Dijkstra(int n, std::span<const std::tuple<int,int,std::int64_t>> edges, std::vector<std::int64_t> &distances,
-                     int start_index)
+                     int start_index, std::int64_t inf = (std::int64_t{1} << 60))
 {
-    const reinsirk::detail::DijkstraCsrGraph graph(n,edges);
-#if defined(__GNUC__) && !defined(__clang__)
-    // GCCの距離版は従来のカーネルを維持する。
-    constexpr bool prune_terminal = false;
-#else
-    constexpr bool prune_terminal = true;
-#endif
-    if (graph.size() <= 256) reinsirk::detail::DijkstraImpl<false>(graph, distances, start_index, -1, nullptr);
+    if (inf <= 0) throw std::invalid_argument("Dijkstra: inf must be positive");
+    const /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::DijkstraCsrGraph graph(n,edges);
+    if (inf != kInf) return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::DijkstraCustomInf<false>(
+        graph, distances, start_index, -1, nullptr, inf);
+    if (graph.size() <= 256) /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::DijkstraImpl<false>(graph, distances, start_index, -1, nullptr);
     else if (graph.size() <= 4096)
-        reinsirk::detail::DijkstraLarge<false, false, false>(graph, distances, start_index, -1, nullptr);
-    else if (graph.size() <= static_cast<std::size_t>((INF - 1) / 1'000'000'000))
-        reinsirk::detail::DijkstraLarge<false, false, prune_terminal>(graph, distances, start_index, -1, nullptr);
-    else reinsirk::detail::DijkstraLarge<false, true, prune_terminal>(graph, distances, start_index, -1, nullptr);
+        /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::DijkstraLarge<false, false, false>(graph, distances, start_index, -1, nullptr);
+    else /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::DijkstraDefaultLarge<false>(graph, distances, start_index, -1, nullptr);
 }
 
 inline void Dijkstra(int n, std::span<const std::tuple<int,int,std::int64_t>> edges, std::vector<std::int64_t> &distances,
-                     int start_index, int target_index, std::vector<int> &path)
+                     int start_index, int target_index, std::vector<int> &path,
+                     std::int64_t inf = (std::int64_t{1} << 60))
 {
-    const reinsirk::detail::DijkstraCsrGraph graph(n,edges);
-    if (graph.size() <= 256) reinsirk::detail::DijkstraImpl<true>(graph, distances, start_index, target_index, &path);
+    if (inf <= 0) throw std::invalid_argument("Dijkstra: inf must be positive");
+    const /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::DijkstraCsrGraph graph(n,edges);
+    if (inf != kInf) return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::DijkstraCustomInf<true>(
+        graph, distances, start_index, target_index, &path, inf);
+    if (graph.size() <= 256) /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::DijkstraImpl<true>(graph, distances, start_index, target_index, &path);
     else if (graph.size() <= 4096)
-        reinsirk::detail::DijkstraLarge<true, false, false>(graph, distances, start_index, target_index, &path);
-    else if (graph.size() <= static_cast<std::size_t>((INF - 1) / 1'000'000'000))
-        reinsirk::detail::DijkstraLarge<true, false>(graph, distances, start_index, target_index, &path);
-    else reinsirk::detail::DijkstraLarge<true, true>(graph, distances, start_index, target_index, &path);
+        /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::DijkstraLarge<true, false, false>(graph, distances, start_index, target_index, &path);
+    else /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::DijkstraDefaultLarge<true>(graph, distances, start_index, target_index, &path);
 }
 
 #endif
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1

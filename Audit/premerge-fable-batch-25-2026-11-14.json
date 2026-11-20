@@ -1,0 +1,147 @@
+{
+  "format": 1,
+  "date": "2026-11-14",
+  "stage": "claude",
+  "model": "claude-fable-5-2",
+  "actual_models": [
+    "claude-fable-5-2"
+  ],
+  "effort": "low",
+  "completed_utc": "2026-11-14T16:28:03.490426+00:00",
+  "source_hashes": {
+    "DataStructure/Hash_map.cpp": "7c01191c5505ca9ac910a64f0a6462c29d403ba95b32fcf5f76352e3e6b31785",
+    "DataStructure/Hash_set.cpp": "6759fb54571a0d29061ec7e678db7fe5f465e6e4c92f8d0aefc4324afe0e3fd4",
+    "String/RollingHash.cpp": "b1b25c93d3e399f05d5f6cc0a04008356ac56fd5d939acd0bcb49d1fa97a9e69",
+    "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab",
+    "Verify/current/drivers/hash_map_main.cpp": "6857a90be50efd7d688979dccabedfb085aaf25d16add82cefff6acca67e9f7a",
+    "Verify/current/drivers/hash_set_membership_main.cpp": "19e69ca68dfd3602025b8fba752c213a16849d225c3edabcf2d51b9e48712c46",
+    "Verify/current/drivers/hash_set_strings_main.cpp": "712a369dd961e562a1ce4b940941e644f95b8fad83c7a199c5fccbbd9b9350f8",
+    "Verify/current/drivers/hash_set_toggle_main.cpp": "d89f6362562f0e21cfd7db21024d888c73f9f7ff6cb12c6d3f15aed2fbabb887",
+    "Verify/current/drivers/rolling_hash_zalgorithm_main.cpp": "7a607fffa2d5726c705ca3b487e95c6063f298e48922dc968935616ac9a5c528",
+    "Verify/current/submissions/hash_map.cpp": "bec878884a0f7895630f9b55b97ca20105edde1c089c6496369905d610e51a0b",
+    "Verify/current/submissions/hash_set_membership.cpp": "742e4504d58ff66b96c7da3ffb24ce061b029facdaad003998cde1b6b79e633e",
+    "Verify/current/submissions/hash_set_strings.cpp": "4c140e716fe145ed96dfa3104454abfbd211fabed718bd5393a7dcf2b1a3c6ff",
+    "Verify/current/submissions/hash_set_toggle.cpp": "8aaac68addabacaaae9f6e7ba6f334515207c1b07151dac47351c29b9f70aee6",
+    "Verify/current/submissions/rolling_hash.cpp": "50d6c98ca83c5eb9d46dfd3bae44714733cf8bdd0dafe1fe28f903739600970a",
+    "AGENTS.md": "f4cdb9332d66307604443358b5ae5d087e609462e25303cab013e3fdc813a569"
+  },
+  "codex_receipts": {
+    "hash_map": "Verify/optimization/stages/hash_map.codex.f7628f2781a427b8a92c58477e44b46c18e63c504ca8fe0f6cf550df97c4bdf3.json",
+    "hash_set_membership": "Verify/optimization/stages/hash_set_membership.codex.12e03c02130a5874d9b3f78515e26188591daee10e13ae4fc560db1aa7283283.json",
+    "hash_set_strings": "Verify/optimization/stages/hash_set_strings.codex.86fe4044a8c3d14600d7cefb93a0592fffdd38f372546e545ab30c674afb1950.json",
+    "hash_set_toggle": "Verify/optimization/stages/hash_set_toggle.codex.413c61ee77f8db560dc31e1f2d36a551b2016ea14f2e4d237969cfa274a7210f.json",
+    "rolling_hash": "Verify/optimization/stages/rolling_hash.codex.c989a846548223d74621982b1fecf6f34b8ad6232fecf68a038c793c84d7f854.json"
+  },
+  "review": {
+    "reviews": [
+      {
+        "id": "hash_map",
+        "source_sha256": "bec878884a0f7895630f9b55b97ca20105edde1c089c6496369905d610e51a0b",
+        "verdict": "keep",
+        "reason": "全文を机上確認。占有数≤閾値の不変条件により、墓石があるときsize_は閾値未満で、整数キーの墓石同値再利用でも閾値超過は起きない。locateの墓石同値での打ち切りも、同一キーは探索列で最初の同値位置にしか生存しないため正しい。mainはfindで空挿入を避け、0とuint64の三項演算もuint64で出力される。高速入力は番兵0とバッファ境界の再読込で正しい。全予約の却下は妥当で、実測なしに勧められる追加案はない。"
+      },
+      {
+        "id": "hash_set_membership",
+        "source_sha256": "742e4504d58ff66b96c7da3ffb24ce061b029facdaad003998cde1b6b79e633e",
+        "verdict": "keep",
+        "reason": "全文を机上確認。墓石のない高速経路（occupied_==size_）は状態が0か1だけなので、状態確認なしの比較で正しい。倍増判定は空き位置に到達した後にあり、重複挿入では拡張しない。和はint64で溢れず、containsはイテレータを作らない。全予約はCodex記録の回帰があるため現状維持が妥当。素直なAPI mainの方針にも合う。"
+      },
+      {
+        "id": "hash_set_strings",
+        "source_sha256": "4c140e716fe145ed96dfa3104454abfbd211fabed718bd5393a7dcf2b1a3c6ff",
+        "verdict": "keep",
+        "reason": "全文を机上確認。stringキーはoptionalスロットが選ばれ、所有と破棄は安全。再構築は検査省略時に新位置を計算してからnothrow moveで移す。入力の文字列読込はバッファ境界をまたぐappendで正しい。insertのmove化は短い文字列での効果が未測定で、素直なAtCoder mainの方針から現状維持でよい。"
+      },
+      {
+        "id": "hash_set_toggle",
+        "source_sha256": "8aaac68addabacaaae9f6e7ba6f334515207c1b07151dac47351c29b9f70aee6",
+        "verdict": "keep",
+        "reason": "全文を机上確認。find後のerase(it,false)は次要素の探索を省き、墓石化とsize_減算は正しい。墓石がある経路は、最初の墓石の再利用、整数キーの墓石同値再利用、占有数が閾値に達したときの同容量再構築がいずれも整合する。この分岐内の倍増判定は到達しないが無害。insert_checkedへの単発化はCodex記録の回帰があり、現経路の維持が妥当。"
+      },
+      {
+        "id": "rolling_hash",
+        "source_sha256": "50d6c98ca83c5eb9d46dfd3bae44714733cf8bdd0dafe1fe28f903739600970a",
+        "verdict": "keep",
+        "reason": "全文を机上確認。AVX2構築は4レーンの係数と表引きの対応が正しく、hsumは約6·2^61未満で溢れず、非正規化のhfold持ち越しも範囲内。lcpのdelta式は積の上限がM^2なので、folded==modulusが合同0と同値になる。delta==0の分岐と、limitが1・2の境界も正しい。固定基数1000000007は対固定基数入力には理論上弱いが、Z Algorithmへの置換はこのAPIのVerifyにならないため現構成を維持する。"
+      }
+    ],
+    "experiments": []
+  },
+  "usage_after": {
+    "windows": {
+      "five_hour": {
+        "utilization": 69.0,
+        "resets_at": "2026-11-14T21:10:00.807460+00:00"
+      },
+      "seven_day": {
+        "utilization": 14.0,
+        "resets_at": "2026-11-21T09:00:00.807481+00:00"
+      },
+      "seven_day_breakdown": {},
+      "limit_0_session_all": {
+        "utilization": 69,
+        "resets_at": "2026-11-14T21:10:00.807460+00:00",
+        "kind": "session",
+        "model": "all"
+      },
+      "limit_1_weekly_all_all": {
+        "utilization": 14,
+        "resets_at": "2026-11-21T09:00:00.807481+00:00",
+        "kind": "weekly_all",
+        "model": "all"
+      },
+      "limit_2_weekly_scoped_Fable": {
+        "utilization": 27,
+        "resets_at": "2026-11-21T09:00:00.807779+00:00",
+        "kind": "weekly_scoped",
+        "model": "Fable"
+      }
+    },
+    "extra_usage_enabled": false
+  },
+  "prompt_sha256": "4b7b93ec84f78d87c237413351ec82cee9d610713d2a81036d933cef7b9e8536",
+  "response_sha256": "b912d6a4d7e9b5bac062efcd17435bf9b7693231474417a3152e11a624a1be79",
+  "model_usage": {
+    "claude-fable-5-2": {
+      "inputTokens": 2,
+      "outputTokens": 6507,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 44981,
+      "webSearchRequests": 0,
+      "costUSD": 0.979992,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 5286,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 44981,
+      "canonicalModel": "claude-fable-5-2",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "source_representation": "Fresh complete current library/main/I/O/vendor code supplied as shared guarded components with ordered file assembly references. All unique code included; identical non-comment token sequences, exact preprocessor logical lines, lexical adjacency and literals retained. Exact original layout reconstructed and verified separately. No historical review used to omit current code.",
+  "representation_proof": {
+    "method": "fresh_full_current_code_guard_component_dedup",
+    "status": "PASS",
+    "proof_path": "/tmp/sirkit-premerge-optimization-20261114/full-code-dedup/reconstruction-proofs.json",
+    "proof_sha256": "e75a4bc8e4ca5f2905e4955567d2e7906ba6f6c7651a2c9c2952e318e5a38951",
+    "verifier_sha256": "73a408f208e42b2db77aaf05559fe1d06f71626a7a9bd851eb258586fbfdbee2",
+    "verification_sha256": "735097b0599c57dabf071c89ebf1bfc3c722869afec1ce14962fc880ebda05ea",
+    "summary": {
+      "status": "PASS",
+      "IDs": 55,
+      "batches": 9,
+      "source_files": 91,
+      "component_occurrences_across_batches": 229,
+      "exact_stripped_bytes_tokens_literals_directives_newlines": true,
+      "lexical_operator_adjacency_and_macro_spacing_preserved": true,
+      "all_live_raw_hashes_match": true,
+      "verifier_sha256": "73a408f208e42b2db77aaf05559fe1d06f71626a7a9bd851eb258586fbfdbee2",
+      "unique_code_payload_total_bytes": 783498,
+      "unshared_stripped_file_total_bytes": 940575,
+      "prompt_total_bytes": 884631
+    },
+    "historical_approval_transfer": false
+  },
+  "review_limitations": "Static review plus supplied measured evidence, not new model-executed measurements. No online submission or AC inference."
+}

@@ -1,0 +1,577 @@
+{
+  "format": 1,
+  "stage": "Codex",
+  "status": "complete_recommendation_no_repository_adoption",
+  "recorded_utc": "2026-11-15T07:10:13.116655+00:00",
+  "entries": [
+    {
+      "id": "wavelet_kth",
+      "recommendation": "adopt_main_uint32_parent_decision_pending",
+      "source_before": {
+        "submission_sha256": "91bc7db5aac92ea56663a0407886e37cae5b349eca354966b2a4c88e517cd9ec",
+        "driver_sha256": "b38514d47a9a6713240ee7d2fe8e54b08302d807ec0368c948f28d95ba9c311b",
+        "snapshot": "/tmp/sirkit-premerge-resume-20261115/wavelet/sources/wavelet_kth_baseline.cpp"
+      },
+      "source_after": {
+        "submission_sha256": "ffbefcf65eac359c7af14171da1e1c4a30496cb050d1253172db25f1c12f6b36",
+        "driver_sha256": "a1a16532d28d5b69e7abee5fae326847ce41e651fe1beeb9c020a4ab1c13735f",
+        "full_source": "/tmp/sirkit-premerge-resume-20261115/wavelet/sources/wavelet_kth_uint32.cpp"
+      },
+      "minimal_patch": {
+        "path": "/tmp/sirkit-premerge-resume-20261115/wavelet/wavelet_kth_uint32.patch",
+        "sha256": "d49720d71ccd2170eba4792ee358a20076d5ddabb7f0c6ae690228f0195c4de0",
+        "target": "Verify/current/drivers/wavelet_kth_main.cpp"
+      },
+      "unchanged": {
+        "public_library": {
+          "path": "DataStructure/Wavelet_Matrix.cpp",
+          "sha256": "adebb5a890da13843a5730df6efd15ad477a8819308be1008f27b801a0804500"
+        },
+        "common_IO": {
+          "path": "Verify/current/common/fast_io.hpp",
+          "sha256": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+        },
+        "scope": "Only main value types differ; all library/IO/pragma bytes remain unchanged."
+      },
+      "problem_constraints": {
+        "N": [
+          1,
+          200000
+        ],
+        "Q": [
+          1,
+          200000
+        ],
+        "a": [
+          0,
+          1000000000
+        ],
+        "l_r": "0<=l<r<=N",
+        "k": "0<=k<r-l"
+      },
+      "primary_URLs": [
+        "https://raw.githubusercontent.com/yosupo06/library-checker-problems/master/data_structure/range_kth_smallest/info.toml"
+      ],
+      "correctness": {
+        "small_independent_cases": 45,
+        "small_independent_executions": 270,
+        "oracle": "Plain Python sorted subarray / slice count;0 and1e9 boundaries; frequency also n0/q0/empty intervals",
+        "matrix_builds": 16,
+        "matrix_dimensions": "uint32/int32 × GCC15.2/Clang21 × checked/skip × native/SIRKIT_DISABLE_SIMD",
+        "matrix_independent_executions": 720,
+        "status": "PASS",
+        "large_profiles": 6,
+        "large_profiles_with_independent_expected": 3
+      },
+      "performance_across_profiles": [
+        {
+          "profile": "uniform_medium",
+          "compiler": "GCC",
+          "n": 50000,
+          "q": 50000,
+          "input_sha256": "f3a83bec0b0420367b3f2385648f271bfc308f0edea7d59b5ae2f341358db069",
+          "independent_expected": false,
+          "initial_11round_cpu_ratios": {
+            "uint32": 0.989679,
+            "int32": 0.990358,
+            "control": 0.999758
+          },
+          "confirmation_21round_cpu_ratios": {
+            "control": 0.997864,
+            "uint32": 0.989173,
+            "int32": 0.99495
+          }
+        },
+        {
+          "profile": "uniform_medium",
+          "compiler": "Clang",
+          "n": 50000,
+          "q": 50000,
+          "input_sha256": "f3a83bec0b0420367b3f2385648f271bfc308f0edea7d59b5ae2f341358db069",
+          "independent_expected": false,
+          "initial_11round_cpu_ratios": {
+            "uint32": 0.987825,
+            "int32": 0.990678,
+            "control": 0.999429
+          },
+          "confirmation_21round_cpu_ratios": {
+            "control": 1.001128,
+            "uint32": 0.987878,
+            "int32": 0.992107
+          }
+        },
+        {
+          "profile": "uniform_max",
+          "compiler": "GCC",
+          "n": 200000,
+          "q": 200000,
+          "input_sha256": "6f2d01b371d197e86aa707fad2003b7dbf77718c8ec8faf395034a14f5d0617d",
+          "independent_expected": false,
+          "initial_11round_cpu_ratios": {
+            "uint32": 0.990454,
+            "int32": 0.998807,
+            "control": 1.002972
+          },
+          "confirmation_21round_cpu_ratios": {
+            "control": 1.000316,
+            "uint32": 0.989585,
+            "int32": 0.989608
+          }
+        },
+        {
+          "profile": "uniform_max",
+          "compiler": "Clang",
+          "n": 200000,
+          "q": 200000,
+          "input_sha256": "6f2d01b371d197e86aa707fad2003b7dbf77718c8ec8faf395034a14f5d0617d",
+          "independent_expected": false,
+          "initial_11round_cpu_ratios": {
+            "uint32": 0.982665,
+            "int32": 0.985459,
+            "control": 0.998366
+          },
+          "confirmation_21round_cpu_ratios": {
+            "control": 0.997146,
+            "uint32": 0.980935,
+            "int32": 0.986108
+          }
+        },
+        {
+          "profile": "equal_max",
+          "compiler": "GCC",
+          "n": 200000,
+          "q": 200000,
+          "input_sha256": "416f66aace6e3b5838d1566ecd5fdd5818eb52a7426aa0934bf63a47d8a13149",
+          "independent_expected": true,
+          "initial_11round_cpu_ratios": {
+            "uint32": 0.946329,
+            "int32": 0.946764,
+            "control": 0.999043
+          },
+          "confirmation_21round_cpu_ratios": null
+        },
+        {
+          "profile": "equal_max",
+          "compiler": "Clang",
+          "n": 200000,
+          "q": 200000,
+          "input_sha256": "416f66aace6e3b5838d1566ecd5fdd5818eb52a7426aa0934bf63a47d8a13149",
+          "independent_expected": true,
+          "initial_11round_cpu_ratios": {
+            "uint32": 0.955881,
+            "int32": 0.963953,
+            "control": 1.004859
+          },
+          "confirmation_21round_cpu_ratios": null
+        },
+        {
+          "profile": "ordered_max",
+          "compiler": "GCC",
+          "n": 200000,
+          "q": 200000,
+          "input_sha256": "82aa8054a66282bcf83c2a29f5b6e2a82132b1f6c54361130d3a46bff92c2283",
+          "independent_expected": true,
+          "initial_11round_cpu_ratios": {
+            "uint32": 0.985055,
+            "int32": 0.992113,
+            "control": 0.991901
+          },
+          "confirmation_21round_cpu_ratios": {
+            "control": 0.999417,
+            "uint32": 0.986046,
+            "int32": 0.990174
+          }
+        },
+        {
+          "profile": "ordered_max",
+          "compiler": "Clang",
+          "n": 200000,
+          "q": 200000,
+          "input_sha256": "82aa8054a66282bcf83c2a29f5b6e2a82132b1f6c54361130d3a46bff92c2283",
+          "independent_expected": true,
+          "initial_11round_cpu_ratios": {
+            "uint32": 0.952821,
+            "int32": 0.938826,
+            "control": 0.957293
+          },
+          "confirmation_21round_cpu_ratios": {
+            "control": 0.998932,
+            "uint32": 0.979691,
+            "int32": 0.98206
+          }
+        },
+        {
+          "profile": "narrow_max",
+          "compiler": "GCC",
+          "n": 200000,
+          "q": 200000,
+          "input_sha256": "c949374b330e22db836628606866e91a0071adf395e96c8105d36bf518409744",
+          "independent_expected": true,
+          "initial_11round_cpu_ratios": {
+            "uint32": 0.949687,
+            "int32": 0.966924,
+            "control": 1.00263
+          },
+          "confirmation_21round_cpu_ratios": null
+        },
+        {
+          "profile": "narrow_max",
+          "compiler": "Clang",
+          "n": 200000,
+          "q": 200000,
+          "input_sha256": "c949374b330e22db836628606866e91a0071adf395e96c8105d36bf518409744",
+          "independent_expected": true,
+          "initial_11round_cpu_ratios": {
+            "uint32": 0.944058,
+            "int32": 0.942541,
+            "control": 0.990456
+          },
+          "confirmation_21round_cpu_ratios": null
+        },
+        {
+          "profile": "highend_max",
+          "compiler": "GCC",
+          "n": 200000,
+          "q": 200000,
+          "input_sha256": "7cdf70d5bbf82c6e6f1d794d74749f3e165ef49b797c62a22b60b05e46b625cc",
+          "independent_expected": false,
+          "initial_11round_cpu_ratios": {
+            "uint32": 0.974641,
+            "int32": 0.981535,
+            "control": 1.003903
+          },
+          "confirmation_21round_cpu_ratios": null
+        },
+        {
+          "profile": "highend_max",
+          "compiler": "Clang",
+          "n": 200000,
+          "q": 200000,
+          "input_sha256": "7cdf70d5bbf82c6e6f1d794d74749f3e165ef49b797c62a22b60b05e46b625cc",
+          "independent_expected": false,
+          "initial_11round_cpu_ratios": {
+            "uint32": 0.952353,
+            "int32": 0.947358,
+            "control": 0.986412
+          },
+          "confirmation_21round_cpu_ratios": null
+        }
+      ],
+      "selection_rationale": "Choose uint32 for GCC15.2 target. Some Clang frequency cases favor int32; not a universal fastest type. Noisy initial control cells retained and separately confirmed.",
+      "online_status": "not_resubmitted; do_not_transfer_old_AC"
+    },
+    {
+      "id": "wavelet_frequency",
+      "recommendation": "adopt_main_uint32_parent_decision_pending",
+      "source_before": {
+        "submission_sha256": "0e5e5e66e3cf23b9edfd52d7270fd27b63fde6e453d764a4abec859035a36d12",
+        "driver_sha256": "a55648e6e868215c2b390140db97b65fc3c4ba6f19d6aeae4adfc9efd346fb69",
+        "snapshot": "/tmp/sirkit-premerge-resume-20261115/wavelet/sources/wavelet_frequency_baseline.cpp"
+      },
+      "source_after": {
+        "submission_sha256": "3ad6eb2759a816f37606fc3a98240a3da9dc78c86f0dec857f4ed9db07d86832",
+        "driver_sha256": "7571e9729ca30db1e4eab5bce7b2adb0622fca9719df3d96a2331b7d8d41866e",
+        "full_source": "/tmp/sirkit-premerge-resume-20261115/wavelet/sources/wavelet_frequency_uint32.cpp"
+      },
+      "minimal_patch": {
+        "path": "/tmp/sirkit-premerge-resume-20261115/wavelet/wavelet_frequency_uint32.patch",
+        "sha256": "59be9d41c828cb1ea6b9056c856cac5287bec2a000ad2ea29b25e4286d375d11",
+        "target": "Verify/current/drivers/wavelet_frequency_main.cpp"
+      },
+      "unchanged": {
+        "public_library": {
+          "path": "DataStructure/Wavelet_Matrix.cpp",
+          "sha256": "adebb5a890da13843a5730df6efd15ad477a8819308be1008f27b801a0804500"
+        },
+        "common_IO": {
+          "path": "Verify/current/common/fast_io.hpp",
+          "sha256": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+        },
+        "scope": "Only main value types differ; all library/IO/pragma bytes remain unchanged."
+      },
+      "problem_constraints": {
+        "N": [
+          0,
+          500000
+        ],
+        "Q": [
+          0,
+          500000
+        ],
+        "a_and_query_x": [
+          0,
+          1000000000
+        ],
+        "l_r": "0<=l<=r<=N"
+      },
+      "primary_URLs": [
+        "https://raw.githubusercontent.com/yosupo06/library-checker-problems/master/data_structure/static_range_frequency/info.toml",
+        "https://raw.githubusercontent.com/yosupo06/library-checker-problems/master/data_structure/static_range_frequency/task.md"
+      ],
+      "correctness": {
+        "small_independent_cases": 45,
+        "small_independent_executions": 270,
+        "oracle": "Plain Python sorted subarray / slice count;0 and1e9 boundaries; frequency also n0/q0/empty intervals",
+        "matrix_builds": 16,
+        "matrix_dimensions": "uint32/int32 × GCC15.2/Clang21 × checked/skip × native/SIRKIT_DISABLE_SIMD",
+        "matrix_independent_executions": 720,
+        "status": "PASS",
+        "large_profiles": 6,
+        "large_profiles_with_independent_expected": 6
+      },
+      "performance_across_profiles": [
+        {
+          "profile": "uniform_medium",
+          "compiler": "GCC",
+          "n": 50000,
+          "q": 50000,
+          "input_sha256": "0dfb1895acfe33dcc09d8d99731f064f55bae6904c3b5cd7671ccde740695e4c",
+          "independent_expected": true,
+          "initial_11round_cpu_ratios": {
+            "uint32": 0.986471,
+            "int32": 0.994637,
+            "control": 1.004483
+          },
+          "confirmation_21round_cpu_ratios": {
+            "control": 1.000084,
+            "uint32": 0.983342,
+            "int32": 0.991671
+          }
+        },
+        {
+          "profile": "uniform_medium",
+          "compiler": "Clang",
+          "n": 50000,
+          "q": 50000,
+          "input_sha256": "0dfb1895acfe33dcc09d8d99731f064f55bae6904c3b5cd7671ccde740695e4c",
+          "independent_expected": true,
+          "initial_11round_cpu_ratios": {
+            "uint32": 0.991987,
+            "int32": 0.992437,
+            "control": 1.006515
+          },
+          "confirmation_21round_cpu_ratios": {
+            "control": 0.995763,
+            "uint32": 0.984671,
+            "int32": 0.972423
+          }
+        },
+        {
+          "profile": "uniform_max",
+          "compiler": "GCC",
+          "n": 500000,
+          "q": 500000,
+          "input_sha256": "d7b1259dd029750a8a6648bd5d04ee9499968285f3ba4718caab4b3b902046e7",
+          "independent_expected": true,
+          "initial_11round_cpu_ratios": {
+            "uint32": 0.994462,
+            "int32": 0.981703,
+            "control": 0.998343
+          },
+          "confirmation_21round_cpu_ratios": {
+            "control": 0.997848,
+            "uint32": 0.984687,
+            "int32": 0.988374
+          }
+        },
+        {
+          "profile": "uniform_max",
+          "compiler": "Clang",
+          "n": 500000,
+          "q": 500000,
+          "input_sha256": "d7b1259dd029750a8a6648bd5d04ee9499968285f3ba4718caab4b3b902046e7",
+          "independent_expected": true,
+          "initial_11round_cpu_ratios": {
+            "uint32": 1.002186,
+            "int32": 0.978309,
+            "control": 0.997685
+          },
+          "confirmation_21round_cpu_ratios": {
+            "control": 0.996487,
+            "uint32": 0.993896,
+            "int32": 0.975518
+          }
+        },
+        {
+          "profile": "equal_max",
+          "compiler": "GCC",
+          "n": 500000,
+          "q": 500000,
+          "input_sha256": "fa423698ac578febe8ee9a2e20f4479eeca7b33baa40e1ccde6e4bea32a2d6d1",
+          "independent_expected": true,
+          "initial_11round_cpu_ratios": {
+            "uint32": 0.935344,
+            "int32": 0.964982,
+            "control": 0.99788
+          },
+          "confirmation_21round_cpu_ratios": null
+        },
+        {
+          "profile": "equal_max",
+          "compiler": "Clang",
+          "n": 500000,
+          "q": 500000,
+          "input_sha256": "fa423698ac578febe8ee9a2e20f4479eeca7b33baa40e1ccde6e4bea32a2d6d1",
+          "independent_expected": true,
+          "initial_11round_cpu_ratios": {
+            "uint32": 0.960602,
+            "int32": 0.959727,
+            "control": 0.994292
+          },
+          "confirmation_21round_cpu_ratios": null
+        },
+        {
+          "profile": "ordered_max",
+          "compiler": "GCC",
+          "n": 500000,
+          "q": 500000,
+          "input_sha256": "8d12238c245c6467e8b460af0e0cafa329b2a0258e3dad7da8edc571ac014018",
+          "independent_expected": true,
+          "initial_11round_cpu_ratios": {
+            "uint32": 1.023309,
+            "int32": 1.034976,
+            "control": 1.050179
+          },
+          "confirmation_21round_cpu_ratios": {
+            "control": 1.000725,
+            "uint32": 0.968298,
+            "int32": 0.9813
+          }
+        },
+        {
+          "profile": "ordered_max",
+          "compiler": "Clang",
+          "n": 500000,
+          "q": 500000,
+          "input_sha256": "8d12238c245c6467e8b460af0e0cafa329b2a0258e3dad7da8edc571ac014018",
+          "independent_expected": true,
+          "initial_11round_cpu_ratios": {
+            "uint32": 0.97902,
+            "int32": 0.959516,
+            "control": 1.003129
+          },
+          "confirmation_21round_cpu_ratios": {
+            "control": 0.99942,
+            "uint32": 0.967591,
+            "int32": 0.961386
+          }
+        },
+        {
+          "profile": "narrow_max",
+          "compiler": "GCC",
+          "n": 500000,
+          "q": 500000,
+          "input_sha256": "ffe8eb1667bc70bd4a1f9d6046e131b2459cdf99882a624e743ce6df4d2c3372",
+          "independent_expected": true,
+          "initial_11round_cpu_ratios": {
+            "uint32": 0.952655,
+            "int32": 0.978081,
+            "control": 1.001193
+          },
+          "confirmation_21round_cpu_ratios": null
+        },
+        {
+          "profile": "narrow_max",
+          "compiler": "Clang",
+          "n": 500000,
+          "q": 500000,
+          "input_sha256": "ffe8eb1667bc70bd4a1f9d6046e131b2459cdf99882a624e743ce6df4d2c3372",
+          "independent_expected": true,
+          "initial_11round_cpu_ratios": {
+            "uint32": 0.955622,
+            "int32": 0.955038,
+            "control": 0.998291
+          },
+          "confirmation_21round_cpu_ratios": null
+        },
+        {
+          "profile": "highend_max",
+          "compiler": "GCC",
+          "n": 500000,
+          "q": 500000,
+          "input_sha256": "19f44762d8bba3fbaaf1ae9cadb511ac9ba53dca460d63a934aa9dc25eb20a3a",
+          "independent_expected": true,
+          "initial_11round_cpu_ratios": {
+            "uint32": 0.968323,
+            "int32": 0.980384,
+            "control": 1.000836
+          },
+          "confirmation_21round_cpu_ratios": null
+        },
+        {
+          "profile": "highend_max",
+          "compiler": "Clang",
+          "n": 500000,
+          "q": 500000,
+          "input_sha256": "19f44762d8bba3fbaaf1ae9cadb511ac9ba53dca460d63a934aa9dc25eb20a3a",
+          "independent_expected": true,
+          "initial_11round_cpu_ratios": {
+            "uint32": 0.977272,
+            "int32": 0.963097,
+            "control": 1.00073
+          },
+          "confirmation_21round_cpu_ratios": null
+        }
+      ],
+      "selection_rationale": "Choose uint32 for GCC15.2 target. Some Clang frequency cases favor int32; not a universal fastest type. Noisy initial control cells retained and separately confirmed.",
+      "online_status": "not_resubmitted; do_not_transfer_old_AC"
+    }
+  ],
+  "measurement_conditions": {
+    "compiler_versions": {
+      "GCC": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+      "Clang": "Ubuntu clang version 21.1.8 (6ubuntu1)"
+    },
+    "argv_flags": [
+      "-std=c++23",
+      "-O2"
+    ],
+    "effective_GCC_optimization": "Existing source GCC optimize O3 pragma unchanged",
+    "effective_Clang_optimization": "O2, GCC pragma ignored",
+    "cpu_affinity": [
+      24
+    ],
+    "scope": "Whole process including main/I/O/library, no isolated library speedup claim",
+    "protocol": "1warmup per variant;11randomized interleaved initial trials;21fresh deterministic interleaved confirmation trials for uniform_medium/uniform_max/ordered_max; baseline control binary bytes identical",
+    "source_types": "Current sources freshly snapshotted; no lost old raw timings reused",
+    "data": "Five valid maximum N/Q synthetic profiles per problem plus uniform medium; saved seeds and input SHA;9/12 large profiles independent expected,3 kth profiles baseline-output-SHA only",
+    "initial_control_noise": "Two ordered cells showed roughly4–5% identical-control drift. Raw data retained and not taken as robust isolated speedup.",
+    "confirmation_control_ratio_range": [
+      0.9957633646586103,
+      1.00112760759305
+    ]
+  },
+  "raw_evidence": {
+    "/tmp/sirkit-premerge-resume-20261115/wavelet/benchmark.json": "022548a26735fdbb66580d0277b6a80e037e38a2355f5512e7e10c9aa621252c",
+    "/tmp/sirkit-premerge-resume-20261115/wavelet/confirmation.json": "c6d06fcc07a728575b5b04acbbeb4160cceabd1ce6c3dca253f1f949a012e481",
+    "/tmp/sirkit-premerge-resume-20261115/wavelet/matrix.json": "0d56f08e2e38e9a43a740e49d945b40185d2f4309ef4d9f60f4e3fb531943571",
+    "/tmp/sirkit-premerge-resume-20261115/wavelet/small-cases.json": "bcd8b9c2a7a5623e0e17be788116c35abbfc5058131d172c494496147f062e95",
+    "/tmp/sirkit-premerge-resume-20261115/wavelet/inputs.json": "b9db0429301066fefcdcb1a193767bb54f26b6c0c11f4bf5d70d356433b3663d",
+    "/tmp/sirkit-premerge-resume-20261115/wavelet/constraints.json": "563e08c9ca959d1a1e22753cbb5f22340776278e7dd4d664f37f65a4327d2f9e",
+    "/tmp/sirkit-premerge-resume-20261115/wavelet/primary/web-open-capture.txt": "2766fd6c4dd8e926d62e456af1c6048025238b1c01c340df6afcdea095d3d2d5",
+    "/tmp/sirkit-premerge-resume-20261115/wavelet/sources.json": "faeaf70cd71d37caa57d1b10bd3ccbe25345cf6a3b4b1c7bdf64d34c4a22ea3c",
+    "/tmp/sirkit-premerge-resume-20261115/wavelet/decision.json": "ee4cb006ded4f43610ed749b54e7eda72199d5fc6ccac68e467636f8e4f63131"
+  },
+  "archive": {
+    "path": "/home/reinsirk/Atcoder_Env/Audit/data/premerge-wavelet-resume-20261115.zip",
+    "sha256": "215be51cc315f526c773c9453c0435a85c41647ac86d9ad7685002d1366f5e6a",
+    "size_bytes": 530542,
+    "CRC_and_all_source_member_byte_comparison": "PASS",
+    "contents": "68 small source/script/JSON/patch/log/primary evidence files, including all raw timings and reproducible generators; large input files/binaries omitted with seeds and SHA retained"
+  },
+  "repository_driver_library_edits": false,
+  "claude_invoked": false,
+  "commits": false,
+  "next": "Parent adoption decision; if adopted regenerate exact submissions then fresh Fable whole-program review and separate online resubmission.",
+  "full_audit_report": {
+    "path": "/tmp/sirkit-premerge-resume-20261115/wavelet-codex-decision.json",
+    "sha256": "a4dce5997ee820e00b3da52d3ac800249de4b860148860d7b18e91539f5bb86e"
+  },
+  "parent_adoption": {
+    "decision": "adopt_uint32_in_both_verify_mains",
+    "adopted_utc": "2026-11-15T07:12:53.090186+00:00",
+    "library_body_or_public_api_changed": false,
+    "online_resubmission_required": true,
+    "old_AC_transferred": false
+  }
+}

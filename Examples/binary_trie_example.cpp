@@ -1,6 +1,8 @@
 #include "../DataStructure/Binary_Trie.cpp"
 #include <iostream>
 
+using namespace sirkit;
+
 int main()
 {
     BinaryTrie<std::uint32_t> trie; // 既定で32bit。30bitに絞るならBinaryTrie<std::uint32_t, 29>。

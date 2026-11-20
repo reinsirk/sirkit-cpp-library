@@ -2,6 +2,8 @@
 #include "../Algorithm/LIS.cpp"
 #include <iostream>
 #include <vector>
+
+using namespace sirkit;
 int main() {
     const std::vector<int> a{3, 1, 2, 2, 4, 0};
     for (auto length : LIS<true>(a)) std::cout << length << ' '; // 1 1 2 2 3 3

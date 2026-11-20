@@ -7,6 +7,9 @@
 // Lucas(n,k): COMと同じ。COMもLucasを自動選択する。
 // H(n,k): nHkをMintで返す。0H0=1、0Hk=0（k>0）。int64_t超過はoverflow_error。
 // 表外は積で計算し、回数上限超過はlength_error。SKIP_RUNTIME_CHECKSで入力検査を除く。
+// p=法、B=準備後の上限+1。構築・prepareはO(B)回のMint演算と高々1回のinv、領域O(B)。
+// Lucasはd=O(1+log_p(n+1))桁。表内はO(d)、表外は積の総項数sとしてO(d+s)回のMint演算と高々d回のinv。
+// HはCOMと同じ費用。通常のmodintではinvはO(log p)、他のMint演算はO(1)。
 // SIRKIT_API_END
 #ifndef SIRKIT_PRIME_BINOMIAL_DEFINED
 #define SIRKIT_PRIME_BINOMIAL_DEFINED
@@ -42,6 +45,14 @@ inline std::uint32_t lucas_mod3(std::uint64_t n, std::uint64_t k) noexcept {
 }
 } // namespace reinsirk::detail
 #endif
+
+namespace reinsirk::detail {
+inline std::size_t prime_binomial_table_bound(std::uint64_t bound, std::size_t capacity) {
+    if (bound >= capacity)
+        throw std::length_error("PrimeBinomial: table size exceeds size_t");
+    return static_cast<std::size_t>(bound);
+}
+}
 
 template <class Mint>
 class PrimeBinomial
@@ -157,8 +168,8 @@ class PrimeBinomial
                     ifac_[i] = -fac_[target - i];
                     ifac_[i + 1] = fac_[target - i - 1];
                 }
-                if (i <= target)
-                    ifac_[i] = -fac_[target - i];
+                // targetは偶数なので、最後の組の直後がtargetになる。
+                ifac_[target] = -fac_[0];
                 return;
             }
         }
@@ -286,9 +297,8 @@ public:
             throw std::invalid_argument("PrimeBinomial: negative bound");
 #endif
         const auto bound = static_cast<u64>(std::min<i64>(max_n, modulus() - 1));
-        if (bound >= std::numeric_limits<std::size_t>::max())
-            throw std::length_error("PrimeBinomial: table size exceeds size_t");
-        const auto target = static_cast<std::size_t>(bound);
+        const auto target = reinsirk::detail::prime_binomial_table_bound(
+            bound, std::numeric_limits<std::size_t>::max());
         auto old_size = fac_.size();
         if (target < old_size)
             return;

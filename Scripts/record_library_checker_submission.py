@@ -152,9 +152,17 @@ def metadata_normalization_safe(source: bytes) -> bool:
 def compare_sources(current: bytes, uploaded: bytes) -> str:
     if current == uploaded:
         return "exact"
-    if current.replace(b"\r\n", b"\n") == uploaded.replace(b"\r\n", b"\n"):
+    line_endings_only = current.replace(b"\r\n", b"\n") == uploaded.replace(b"\r\n", b"\n")
+    if verify_status.has_generated_preamble(current) or verify_status.has_generated_preamble(uploaded):
+        proof = verify_status.preamble_source_proof(uploaded)
+        if proof is not None and verify_status.preamble_proof_matches(
+                {"uploaded_source_sha256": digest(uploaded), "source_normalization_proofs": [proof]}, current):
+            return "line_endings" if line_endings_only else "generated_preamble_metadata_normalized"
+        # 新しい生成ソースの本文変更や安全条件外の入力を旧v1で通さない。
+        raise ValueError("提出ソース全文が現行の本体・main・共通入出力と一致しません。記録は変更しません")
+    if line_endings_only:
         return "line_endings"
-    # 両方とも行単位の正規化が安全な場合だけ、既存の限定的な正規化を使う。
+    # 旧形式の手動ソースだけ、両方が安全なら従来の限定的な正規化を残す。
     if metadata_normalization_safe(current) and metadata_normalization_safe(uploaded):
         proof = {"uploaded_source_sha256": digest(uploaded),
                  "normalized_source_sha256": digest(verify_status.normalized_source(uploaded)),
@@ -206,7 +214,8 @@ def prepare_import(root: Path, identifier: str, url: str, response_content: byte
               "source_match_method": comparison,
               "source_match": {"exact": "提出全文と現行生成コードがバイト単位で一致。",
                                "line_endings": "CRLF/LFのみ正規化後、提出全文と現行生成コードが一致。",
-                               "submission_metadata_normalized": "CRLF/LF・空行・行端空白・Submissionコメントのみを正規化後、提出全文と現行生成コードが一致。"}[comparison],
+                               "submission_metadata_normalized": "CRLF/LF・空行・行端空白・Submissionコメントのみを正規化後、提出全文と現行生成コードが一致。",
+                               "generated_preamble_metadata_normalized": "生成冒頭のVerify・Submission・最初のLibrary注記のみ除外して一致。rawなしではCRLF/LFも照合し、本文の空白・コメントは保持。"}[comparison],
               "matched_current_generation": True, "needs_resubmission": overview["status"] != "AC",
               "needs_performance_resubmission": overview["status"] != "AC",
               "needs_source_confirmation": False,
@@ -222,17 +231,22 @@ def prepare_import(root: Path, identifier: str, url: str, response_content: byte
     if isinstance(overview.get("is_latest"), bool):
         record["is_latest"] = overview["is_latest"]
     # 判定の記録後にSubmissionコメントを最新URLへ更新しても、同じ本文を照合できるようにする。
-    if metadata_normalization_safe(current) and metadata_normalization_safe(uploaded):
-        assert verify_status.normalized_source(current) == verify_status.normalized_source(uploaded)
+    if (metadata_normalization_safe(current) and metadata_normalization_safe(uploaded)
+            and verify_status.normalized_source(current) == verify_status.normalized_source(uploaded)):
         record["source_normalization"] = "submission-metadata-v1"
         record["normalized_source_sha256"] = digest(verify_status.normalized_source(uploaded))
+    preamble_proof = verify_status.preamble_source_proof(uploaded)
+    if preamble_proof is not None and verify_status.preamble_proof_matches(
+            {"uploaded_source_sha256": digest(uploaded),
+             "source_normalization_proofs": [preamble_proof]}, current):
+        record["source_normalization_proofs"] = [preamble_proof]
     journal_path = root / "Verify/current/judgements.json"
     journal, before = load_journal(journal_path)
     entries = journal["entries"]
     old = next((r for r in entries if r["id"] == identifier), None)
     identical = old is not None and all(old.get(key) == record.get(key) for key in (
         "status", "url", "submission_sha256", "uploaded_source_sha256", "response_sha256",
-        "source_normalization", "normalized_source_sha256"))
+        "source_normalization", "normalized_source_sha256", "source_normalization_proofs"))
     if not identical:
         if old is not None:
             record["history"] = [copy.deepcopy(old)]

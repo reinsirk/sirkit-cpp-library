@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #ifndef HLD_SOURCE
 #define HLD_SOURCE "../../../Graph/Heavy_Light_Decomposition.cpp"
 #endif
@@ -48,11 +50,11 @@ template<>struct Unsigned<__int128>{using type=unsigned __int128;};
 template<>struct Unsigned<unsigned __int128>{using type=unsigned __int128;};
 #endif
 #ifdef SIRKIT_HLD_FENWICK_ACCESS_DEFINED
-static_assert(!reinsirk::detail::HldFenwickAccess<fenwick_tree<float>>::enabled);
-static_assert(!reinsirk::detail::HldFenwickAccess<fenwick_tree<double>>::enabled);
-static_assert(!reinsirk::detail::HldFenwickAccess<fenwick_tree<long double>>::enabled);
-static_assert(!reinsirk::detail::HldFenwickAccess<fenwick_tree<bool>>::enabled);
-static_assert(!reinsirk::detail::HldFenwickAccess<atcoder::fenwick_tree<std::int64_t>>::enabled);
+static_assert(!::sirkit::detail::HldFenwickAccess<fenwick_tree<float>>::enabled);
+static_assert(!::sirkit::detail::HldFenwickAccess<fenwick_tree<double>>::enabled);
+static_assert(!::sirkit::detail::HldFenwickAccess<fenwick_tree<long double>>::enabled);
+static_assert(!::sirkit::detail::HldFenwickAccess<fenwick_tree<bool>>::enabled);
+static_assert(!::sirkit::detail::HldFenwickAccess<atcoder::fenwick_tree<std::int64_t>>::enabled);
 #endif
 Graph make_graph(int n,int shape,std::mt19937_64& rng){
  std::vector<int> labels(n);std::iota(labels.begin(),labels.end(),0);std::shuffle(labels.begin(),labels.end(),rng);Graph graph(n);

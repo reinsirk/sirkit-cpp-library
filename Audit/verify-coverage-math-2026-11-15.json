@@ -1,0 +1,1681 @@
+{
+  "recorded_utc": "2026-11-15T12:49:10.944141+00:00",
+  "scope": "固定JSONのMath追加監査38件。read-onlyで公開API一覧・実main・公式task/infoを照合し、オンライン判定/正しさの再検証とは区別。",
+  "assessment_definition": "directは対象問題の中心操作が実APIの返却値へ直接対応する意味で、全公開APIや全公開入力範囲を覆う意味ではない。",
+  "records": [
+    {
+      "id": "binomial_integer",
+      "libraries": [
+        "Math/Combination_Mod.cpp"
+      ],
+      "problem_url": "https://judge.yosupo.jp/problem/binomial_coefficient",
+      "assessment": "direct",
+      "exercised_apis": [
+        "BinomialMod::ctor(modulus/mod-1)",
+        "BinomialMod::COM(n,k)"
+      ],
+      "not_covered": [
+        "Lucas/Hの公開操作を直接呼ばない",
+        "prepareの再呼出し・move元再利用・所有権/確保失敗",
+        "負のn/kとn/kのint64最大端・max_steps/table_limit例外",
+        "k>nの0（一般法問題はk≤n）",
+        "法10^6超〜UINT32_MAX",
+        "n>10^18",
+        "表外fallbackを意図した未準備構築",
+        "同梱される別Binomial型はこのentryからは呼ばない"
+      ],
+      "reasoning": "一般法1≤m≤10^6、0≤k≤n≤10^18、T≤200k。m-1まで準備しCOMを直接出力する。合成数・素数冪・m=1と大きいnを問題範囲として扱い、素数法専用問題のn<10^7と混同しない。",
+      "sources": [
+        "https://judge.yosupo.jp/problem/binomial_coefficient",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/enumerative_combinatorics/binomial_coefficient/task.md",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/enumerative_combinatorics/binomial_coefficient/info.toml"
+      ],
+      "supplemental_ids": [
+        "binomial_integer_prime_mod"
+      ],
+      "driver": "Verify/current/drivers/binomial_integer_main.cpp",
+      "source_hashes": {
+        "Math/Combination_Mod.cpp": "ba299c0b4f1e0662c276ff3bbda18c105f99247f8536e7ba10c0bf7c933a9451",
+        "Verify/current/drivers/binomial_integer_main.cpp": "c1bc7a0efee1af8b1f8e386177be33e92791aee8ac893edf81263394d70f2a99",
+        "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+      },
+      "official_task_sha256": "7c6970b35dfb6c4e19fb0bbb866e7c6c5695288d1c9014c8cbdf299859a816e7",
+      "official_info_sha256": "a6f669397662529f64718830eb14edbe11ca45be56c6f2be7397693660b23877",
+      "official_params": {
+        "T_MAX": 200000,
+        "M_MAX": 1000000,
+        "N_MAX": 1000000000000000000
+      },
+      "official_constraints": "## @{keyword.constraints}\n\n- $1 \\leq T \\leq @{param.T_MAX}$\n- $1 \\leq m \\leq @{param.M_MAX}$\n- $0 \\leq k \\leq n \\leq @{param.N_MAX}$\n\n"
+    },
+    {
+      "id": "binomial_integer_split",
+      "libraries": [
+        "Math/Combination/Binomial_Mod.cpp"
+      ],
+      "problem_url": "https://judge.yosupo.jp/problem/binomial_coefficient",
+      "assessment": "direct",
+      "exercised_apis": [
+        "BinomialMod::ctor(modulus/mod-1)",
+        "BinomialMod::COM(n,k)"
+      ],
+      "not_covered": [
+        "Lucas/Hの公開操作を直接呼ばない",
+        "prepareの再呼出し・move元再利用・所有権/確保失敗",
+        "負のn/kとn/kのint64最大端・max_steps/table_limit例外",
+        "k>nの0（一般法問題はk≤n）",
+        "法10^6超〜UINT32_MAX",
+        "n>10^18",
+        "表外fallbackを意図した未準備構築"
+      ],
+      "reasoning": "一般法1≤m≤10^6、0≤k≤n≤10^18、T≤200k。m-1まで準備しCOMを直接出力する。合成数・素数冪・m=1と大きいnを問題範囲として扱い、素数法専用問題のn<10^7と混同しない。",
+      "sources": [
+        "https://judge.yosupo.jp/problem/binomial_coefficient",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/enumerative_combinatorics/binomial_coefficient/task.md",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/enumerative_combinatorics/binomial_coefficient/info.toml"
+      ],
+      "supplemental_ids": [
+        "binomial_integer_prime_mod_split"
+      ],
+      "driver": "Verify/current/drivers/binomial_integer_main.cpp",
+      "source_hashes": {
+        "Math/Combination/Binomial_Mod.cpp": "f9dc9652ad00785408b1c98251ea0bbc6b857fafd2632e0c3fb4eada92f45f51",
+        "Verify/current/drivers/binomial_integer_main.cpp": "c1bc7a0efee1af8b1f8e386177be33e92791aee8ac893edf81263394d70f2a99",
+        "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+      },
+      "official_task_sha256": "7c6970b35dfb6c4e19fb0bbb866e7c6c5695288d1c9014c8cbdf299859a816e7",
+      "official_info_sha256": "a6f669397662529f64718830eb14edbe11ca45be56c6f2be7397693660b23877",
+      "official_params": {
+        "T_MAX": 200000,
+        "M_MAX": 1000000,
+        "N_MAX": 1000000000000000000
+      },
+      "official_constraints": "## @{keyword.constraints}\n\n- $1 \\leq T \\leq @{param.T_MAX}$\n- $1 \\leq m \\leq @{param.M_MAX}$\n- $0 \\leq k \\leq n \\leq @{param.N_MAX}$\n\n"
+    },
+    {
+      "id": "binomial_modint",
+      "libraries": [
+        "Math/Combination_Mod.cpp"
+      ],
+      "problem_url": "https://judge.yosupo.jp/problem/binomial_coefficient",
+      "assessment": "direct",
+      "exercised_apis": [
+        "ModIntBinomial::ctor(modulus/mod-1)",
+        "ModIntBinomial::COM(n,k)"
+      ],
+      "not_covered": [
+        "Lucas/Hの公開操作を直接呼ばない",
+        "prepareの再呼出し・move元再利用・所有権/確保失敗",
+        "負のn/kとn/kのint64最大端・max_steps/table_limit例外",
+        "k>nの0（一般法問題はk≤n）",
+        "法10^6超〜UINT32_MAX",
+        "n>10^18",
+        "表外fallbackを意図した未準備構築",
+        "任意の利用側Mint型",
+        "計算器を保持したまま動的Mintの法を変更する誤用",
+        "同梱される別Binomial型はこのentryからは呼ばない"
+      ],
+      "reasoning": "一般法1≤m≤10^6、0≤k≤n≤10^18、T≤200k。m-1まで準備しCOMを直接出力する。合成数・素数冪・m=1と大きいnを問題範囲として扱い、素数法専用問題のn<10^7と混同しない。 MintはACL dynamic_modint<0>を使用し法を構築前に一度設定する。",
+      "sources": [
+        "https://judge.yosupo.jp/problem/binomial_coefficient",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/enumerative_combinatorics/binomial_coefficient/task.md",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/enumerative_combinatorics/binomial_coefficient/info.toml"
+      ],
+      "supplemental_ids": [
+        "binomial_modint_prime_mod"
+      ],
+      "driver": "Verify/current/drivers/binomial_modint_main.cpp",
+      "source_hashes": {
+        "Math/Combination_Mod.cpp": "ba299c0b4f1e0662c276ff3bbda18c105f99247f8536e7ba10c0bf7c933a9451",
+        "Verify/current/drivers/binomial_modint_main.cpp": "aec5dd894f99011e6734822472571ef35904e8381c5f057e1f7578c9289de3c6",
+        "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+      },
+      "official_task_sha256": "7c6970b35dfb6c4e19fb0bbb866e7c6c5695288d1c9014c8cbdf299859a816e7",
+      "official_info_sha256": "a6f669397662529f64718830eb14edbe11ca45be56c6f2be7397693660b23877",
+      "official_params": {
+        "T_MAX": 200000,
+        "M_MAX": 1000000,
+        "N_MAX": 1000000000000000000
+      },
+      "official_constraints": "## @{keyword.constraints}\n\n- $1 \\leq T \\leq @{param.T_MAX}$\n- $1 \\leq m \\leq @{param.M_MAX}$\n- $0 \\leq k \\leq n \\leq @{param.N_MAX}$\n\n"
+    },
+    {
+      "id": "binomial_modint_split",
+      "libraries": [
+        "Math/Combination/ModInt_Binomial.cpp"
+      ],
+      "problem_url": "https://judge.yosupo.jp/problem/binomial_coefficient",
+      "assessment": "direct",
+      "exercised_apis": [
+        "ModIntBinomial::ctor(modulus/mod-1)",
+        "ModIntBinomial::COM(n,k)"
+      ],
+      "not_covered": [
+        "Lucas/Hの公開操作を直接呼ばない",
+        "prepareの再呼出し・move元再利用・所有権/確保失敗",
+        "負のn/kとn/kのint64最大端・max_steps/table_limit例外",
+        "k>nの0（一般法問題はk≤n）",
+        "法10^6超〜UINT32_MAX",
+        "n>10^18",
+        "表外fallbackを意図した未準備構築",
+        "任意の利用側Mint型",
+        "計算器を保持したまま動的Mintの法を変更する誤用"
+      ],
+      "reasoning": "一般法1≤m≤10^6、0≤k≤n≤10^18、T≤200k。m-1まで準備しCOMを直接出力する。合成数・素数冪・m=1と大きいnを問題範囲として扱い、素数法専用問題のn<10^7と混同しない。 MintはACL dynamic_modint<0>を使用し法を構築前に一度設定する。",
+      "sources": [
+        "https://judge.yosupo.jp/problem/binomial_coefficient",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/enumerative_combinatorics/binomial_coefficient/task.md",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/enumerative_combinatorics/binomial_coefficient/info.toml"
+      ],
+      "supplemental_ids": [
+        "binomial_modint_prime_mod_split"
+      ],
+      "driver": "Verify/current/drivers/binomial_modint_main.cpp",
+      "source_hashes": {
+        "Math/Combination/ModInt_Binomial.cpp": "ba299c0b4f1e0662c276ff3bbda18c105f99247f8536e7ba10c0bf7c933a9451",
+        "Verify/current/drivers/binomial_modint_main.cpp": "aec5dd894f99011e6734822472571ef35904e8381c5f057e1f7578c9289de3c6",
+        "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+      },
+      "official_task_sha256": "7c6970b35dfb6c4e19fb0bbb866e7c6c5695288d1c9014c8cbdf299859a816e7",
+      "official_info_sha256": "a6f669397662529f64718830eb14edbe11ca45be56c6f2be7397693660b23877",
+      "official_params": {
+        "T_MAX": 200000,
+        "M_MAX": 1000000,
+        "N_MAX": 1000000000000000000
+      },
+      "official_constraints": "## @{keyword.constraints}\n\n- $1 \\leq T \\leq @{param.T_MAX}$\n- $1 \\leq m \\leq @{param.M_MAX}$\n- $0 \\leq k \\leq n \\leq @{param.N_MAX}$\n\n"
+    },
+    {
+      "id": "binomial_integer_prime_mod",
+      "libraries": [
+        "Math/Combination_Mod.cpp"
+      ],
+      "problem_url": "https://judge.yosupo.jp/problem/binomial_coefficient_prime_mod",
+      "assessment": "direct",
+      "exercised_apis": [
+        "BinomialMod::ctor(max_n)",
+        "BinomialMod::COM(n,k)",
+        "BinomialOptions::table_limit=9999999"
+      ],
+      "not_covered": [
+        "Lucas/Hの公開操作を直接呼ばない",
+        "prepareの再呼出し・move元再利用・所有権/確保失敗",
+        "負のn/kとn/kのint64最大端・max_steps/table_limit例外",
+        "n≥mでのLucas桁分解",
+        "合成数/法1（素数専用のPrimeBinomialには対象外）",
+        "10^7以上のn/table外の積による代替",
+        "m>2^30/UINT32_MAX端",
+        "同梱される別Binomial型はこのentryからは呼ばない"
+      ],
+      "reasoning": "素数法m≤2^30、nとkは独立に0≤n,k<min(m,10^7)、T≤10^6。先読みmax_nまで前計算しCOMの値を直接出力する。k>nの0も公式範囲。Lucasの桁分解はn<mなので通らず、一般法の巨大n/composite検証とは別。",
+      "sources": [
+        "https://judge.yosupo.jp/problem/binomial_coefficient_prime_mod",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/enumerative_combinatorics/binomial_coefficient_prime_mod/task.md",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/enumerative_combinatorics/binomial_coefficient_prime_mod/info.toml"
+      ],
+      "supplemental_ids": [
+        "binomial_integer"
+      ],
+      "driver": "Verify/current/drivers/binomial_integer_prime_mod_main.cpp",
+      "source_hashes": {
+        "Math/Combination_Mod.cpp": "ba299c0b4f1e0662c276ff3bbda18c105f99247f8536e7ba10c0bf7c933a9451",
+        "Verify/current/drivers/binomial_integer_prime_mod_main.cpp": "caf26ca31bc3801c854edfd7fdcf588ba4433e6a3d85ca1e76f59c8a1c16aa55",
+        "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+      },
+      "official_task_sha256": "b2c4583eaf76a6a562e9b19380d135a47e964ece1f6bc5f970daefd6c18dfce6",
+      "official_info_sha256": "e2277b87ff34ba622f147b35ccb6e51d3ad6cd8789e11097dcf85e1a607702d1",
+      "official_params": {
+        "T_MAX": 1000000,
+        "M_MAX": 1073741824,
+        "N_MAX": 10000000
+      },
+      "official_constraints": "## @{keyword.constraints}\n\n@{lang.en}\n\n- $1 \\leq T \\leq @{param.T_MAX}$\n- $1 \\leq m \\leq @{param.M_MAX}$\n- $m$ is a prime\n- $0 \\leq n, k \\lt \\min(m, @{param.N_MAX})$\n\n@{lang.ja}\n\n- $1 \\leq T \\leq @{param.T_MAX}$\n- $1 \\leq m \\leq @{param.M_MAX}$\n- $m$ は素数\n- $0 \\leq n, k \\lt \\min(m, @{param.N_MAX})$\n\n@{lang.end}\n\n"
+    },
+    {
+      "id": "binomial_integer_prime_mod_split",
+      "libraries": [
+        "Math/Combination/Binomial_Mod.cpp"
+      ],
+      "problem_url": "https://judge.yosupo.jp/problem/binomial_coefficient_prime_mod",
+      "assessment": "direct",
+      "exercised_apis": [
+        "BinomialMod::ctor(max_n)",
+        "BinomialMod::COM(n,k)",
+        "BinomialOptions::table_limit=9999999"
+      ],
+      "not_covered": [
+        "Lucas/Hの公開操作を直接呼ばない",
+        "prepareの再呼出し・move元再利用・所有権/確保失敗",
+        "負のn/kとn/kのint64最大端・max_steps/table_limit例外",
+        "n≥mでのLucas桁分解",
+        "合成数/法1（素数専用のPrimeBinomialには対象外）",
+        "10^7以上のn/table外の積による代替",
+        "m>2^30/UINT32_MAX端"
+      ],
+      "reasoning": "素数法m≤2^30、nとkは独立に0≤n,k<min(m,10^7)、T≤10^6。先読みmax_nまで前計算しCOMの値を直接出力する。k>nの0も公式範囲。Lucasの桁分解はn<mなので通らず、一般法の巨大n/composite検証とは別。",
+      "sources": [
+        "https://judge.yosupo.jp/problem/binomial_coefficient_prime_mod",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/enumerative_combinatorics/binomial_coefficient_prime_mod/task.md",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/enumerative_combinatorics/binomial_coefficient_prime_mod/info.toml"
+      ],
+      "supplemental_ids": [
+        "binomial_integer_split"
+      ],
+      "driver": "Verify/current/drivers/binomial_integer_prime_mod_main.cpp",
+      "source_hashes": {
+        "Math/Combination/Binomial_Mod.cpp": "f9dc9652ad00785408b1c98251ea0bbc6b857fafd2632e0c3fb4eada92f45f51",
+        "Verify/current/drivers/binomial_integer_prime_mod_main.cpp": "caf26ca31bc3801c854edfd7fdcf588ba4433e6a3d85ca1e76f59c8a1c16aa55",
+        "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+      },
+      "official_task_sha256": "b2c4583eaf76a6a562e9b19380d135a47e964ece1f6bc5f970daefd6c18dfce6",
+      "official_info_sha256": "e2277b87ff34ba622f147b35ccb6e51d3ad6cd8789e11097dcf85e1a607702d1",
+      "official_params": {
+        "T_MAX": 1000000,
+        "M_MAX": 1073741824,
+        "N_MAX": 10000000
+      },
+      "official_constraints": "## @{keyword.constraints}\n\n@{lang.en}\n\n- $1 \\leq T \\leq @{param.T_MAX}$\n- $1 \\leq m \\leq @{param.M_MAX}$\n- $m$ is a prime\n- $0 \\leq n, k \\lt \\min(m, @{param.N_MAX})$\n\n@{lang.ja}\n\n- $1 \\leq T \\leq @{param.T_MAX}$\n- $1 \\leq m \\leq @{param.M_MAX}$\n- $m$ は素数\n- $0 \\leq n, k \\lt \\min(m, @{param.N_MAX})$\n\n@{lang.end}\n\n"
+    },
+    {
+      "id": "binomial_prime",
+      "libraries": [
+        "Math/Combination_AtCoderMod.cpp"
+      ],
+      "problem_url": "https://judge.yosupo.jp/problem/binomial_coefficient_prime_mod",
+      "assessment": "direct",
+      "exercised_apis": [
+        "PrimeBinomial::ctor(max_n)",
+        "PrimeBinomial::COM(n,k)"
+      ],
+      "not_covered": [
+        "Lucas/Hの公開操作を直接呼ばない",
+        "prepareの再呼出し・move元再利用・所有権/確保失敗",
+        "負のn/kとn/kのint64最大端・max_steps/table_limit例外",
+        "n≥mでのLucas桁分解",
+        "合成数/法1（素数専用のPrimeBinomialには対象外）",
+        "10^7以上のn/table外の積による代替",
+        "m>2^30/UINT32_MAX端",
+        "任意の利用側Mint型",
+        "計算器を保持したまま動的Mintの法を変更する誤用"
+      ],
+      "reasoning": "素数法m≤2^30、nとkは独立に0≤n,k<min(m,10^7)、T≤10^6。先読みmax_nまで前計算しCOMの値を直接出力する。k>nの0も公式範囲。Lucasの桁分解はn<mなので通らず、一般法の巨大n/composite検証とは別。 998244353/1000000007はACL static_modint、それ以外はACL dynamic_modint<0>へ分岐する。",
+      "sources": [
+        "https://judge.yosupo.jp/problem/binomial_coefficient_prime_mod",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/enumerative_combinatorics/binomial_coefficient_prime_mod/task.md",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/enumerative_combinatorics/binomial_coefficient_prime_mod/info.toml"
+      ],
+      "supplemental_ids": [],
+      "driver": "Verify/current/drivers/binomial_prime_main.cpp",
+      "source_hashes": {
+        "Math/Combination_AtCoderMod.cpp": "8f571bef57480bf5dccae9074df3b3854acd488cc084f6c0145bc44b88c57e07",
+        "Verify/current/drivers/binomial_prime_main.cpp": "927b2004ef1cfdd9d2632c7df198e37a036e27fb215dc1c5b13fa596d3a68f94",
+        "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+      },
+      "official_task_sha256": "b2c4583eaf76a6a562e9b19380d135a47e964ece1f6bc5f970daefd6c18dfce6",
+      "official_info_sha256": "e2277b87ff34ba622f147b35ccb6e51d3ad6cd8789e11097dcf85e1a607702d1",
+      "official_params": {
+        "T_MAX": 1000000,
+        "M_MAX": 1073741824,
+        "N_MAX": 10000000
+      },
+      "official_constraints": "## @{keyword.constraints}\n\n@{lang.en}\n\n- $1 \\leq T \\leq @{param.T_MAX}$\n- $1 \\leq m \\leq @{param.M_MAX}$\n- $m$ is a prime\n- $0 \\leq n, k \\lt \\min(m, @{param.N_MAX})$\n\n@{lang.ja}\n\n- $1 \\leq T \\leq @{param.T_MAX}$\n- $1 \\leq m \\leq @{param.M_MAX}$\n- $m$ は素数\n- $0 \\leq n, k \\lt \\min(m, @{param.N_MAX})$\n\n@{lang.end}\n\n"
+    },
+    {
+      "id": "binomial_prime_split",
+      "libraries": [
+        "Math/Combination/Prime_Binomial.cpp"
+      ],
+      "problem_url": "https://judge.yosupo.jp/problem/binomial_coefficient_prime_mod",
+      "assessment": "direct",
+      "exercised_apis": [
+        "PrimeBinomial::ctor(max_n)",
+        "PrimeBinomial::COM(n,k)"
+      ],
+      "not_covered": [
+        "Lucas/Hの公開操作を直接呼ばない",
+        "prepareの再呼出し・move元再利用・所有権/確保失敗",
+        "負のn/kとn/kのint64最大端・max_steps/table_limit例外",
+        "n≥mでのLucas桁分解",
+        "合成数/法1（素数専用のPrimeBinomialには対象外）",
+        "10^7以上のn/table外の積による代替",
+        "m>2^30/UINT32_MAX端",
+        "任意の利用側Mint型",
+        "計算器を保持したまま動的Mintの法を変更する誤用"
+      ],
+      "reasoning": "素数法m≤2^30、nとkは独立に0≤n,k<min(m,10^7)、T≤10^6。先読みmax_nまで前計算しCOMの値を直接出力する。k>nの0も公式範囲。Lucasの桁分解はn<mなので通らず、一般法の巨大n/composite検証とは別。 998244353/1000000007はACL static_modint、それ以外はACL dynamic_modint<0>へ分岐する。",
+      "sources": [
+        "https://judge.yosupo.jp/problem/binomial_coefficient_prime_mod",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/enumerative_combinatorics/binomial_coefficient_prime_mod/task.md",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/enumerative_combinatorics/binomial_coefficient_prime_mod/info.toml"
+      ],
+      "supplemental_ids": [],
+      "driver": "Verify/current/drivers/binomial_prime_main.cpp",
+      "source_hashes": {
+        "Math/Combination/Prime_Binomial.cpp": "8f571bef57480bf5dccae9074df3b3854acd488cc084f6c0145bc44b88c57e07",
+        "Verify/current/drivers/binomial_prime_main.cpp": "927b2004ef1cfdd9d2632c7df198e37a036e27fb215dc1c5b13fa596d3a68f94",
+        "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+      },
+      "official_task_sha256": "b2c4583eaf76a6a562e9b19380d135a47e964ece1f6bc5f970daefd6c18dfce6",
+      "official_info_sha256": "e2277b87ff34ba622f147b35ccb6e51d3ad6cd8789e11097dcf85e1a607702d1",
+      "official_params": {
+        "T_MAX": 1000000,
+        "M_MAX": 1073741824,
+        "N_MAX": 10000000
+      },
+      "official_constraints": "## @{keyword.constraints}\n\n@{lang.en}\n\n- $1 \\leq T \\leq @{param.T_MAX}$\n- $1 \\leq m \\leq @{param.M_MAX}$\n- $m$ is a prime\n- $0 \\leq n, k \\lt \\min(m, @{param.N_MAX})$\n\n@{lang.ja}\n\n- $1 \\leq T \\leq @{param.T_MAX}$\n- $1 \\leq m \\leq @{param.M_MAX}$\n- $m$ は素数\n- $0 \\leq n, k \\lt \\min(m, @{param.N_MAX})$\n\n@{lang.end}\n\n"
+    },
+    {
+      "id": "primality",
+      "libraries": [
+        "Math/prime_judge(Miller-Rabin).cpp"
+      ],
+      "problem_url": "https://judge.yosupo.jp/problem/primality_test",
+      "assessment": "direct",
+      "exercised_apis": [
+        "is_prime(uint64_t)"
+      ],
+      "not_covered": [
+        "0/負数のsigned overload",
+        "10^18超〜UINT64_MAX",
+        "MillerRabinの独自底",
+        "next_prime/prev_primeと上端nullopt"
+      ],
+      "reasoning": "公式N=1..10^18をis_primeへ渡しYes/Noを直接出力。公開uint64全域の下位範囲に一致し、符号付き負数や最大端まで証明するものではない。",
+      "sources": [
+        "https://judge.yosupo.jp/problem/primality_test",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/number_theory/primality_test/task.md",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/number_theory/primality_test/info.toml"
+      ],
+      "supplemental_ids": [],
+      "driver": "Verify/current/drivers/primality_main.cpp",
+      "source_hashes": {
+        "Math/prime_judge(Miller-Rabin).cpp": "e17080d520b84fc195a397ae04b198c731673f308236b1a28d26194cc96a18bd",
+        "Verify/current/drivers/primality_main.cpp": "cab22e68d5607277a3283b130e05f199f62facbc3fdc09d951c041dac3db8ede",
+        "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+      },
+      "official_task_sha256": "49c4366b621639ba59dda20be51e57a000f4ae49f5929d8d47d22a54f1ac8e1c",
+      "official_info_sha256": "16e765394c1a6f5e9d5a1719bed206be16ff98ef656a598761600faae97330a4",
+      "official_params": {
+        "MIN_Q": 1,
+        "MAX_Q": 100000,
+        "MIN_N": 1,
+        "MAX_N": 1000000000000000000
+      },
+      "official_constraints": "## @{keyword.constraints}\n\n@{lang.en}\n- $@{param.MIN_Q} \\leq Q \\leq @{param.MAX_Q}$\n- $@{param.MIN_N} \\leq N \\leq @{param.MAX_N}$\n@{lang.ja}\n- $@{param.MIN_Q} \\leq Q \\leq @{param.MAX_Q}$\n- $@{param.MIN_N} \\leq N \\leq @{param.MAX_N}$\n@{lang.end}\n"
+    },
+    {
+      "id": "eratosthenes",
+      "libraries": [
+        "Math/Eratosthenes.cpp"
+      ],
+      "problem_url": "https://judge.yosupo.jp/problem/enumerate_primes",
+      "assessment": "direct",
+      "exercised_apis": [
+        "PrimeSieve(N)",
+        "prime_count",
+        "for_each_prime_stride(B,A,callback)"
+      ],
+      "not_covered": [
+        "limit=0（公式N≥1）",
+        "is_prime/primes/append_to/for_each_primeの直接呼出し",
+        "eratosthenes簡易関数",
+        "copy/moveとview/領域再利用",
+        "N>5e8"
+      ],
+      "reasoning": "N≤5e8、0≤B<A≤Nの公式仕様が素数個数とB番目からA間隔の列挙APIにそのまま一致。Xの算出は個数からの整数式だけで、列挙は実APIの出力。",
+      "sources": [
+        "https://judge.yosupo.jp/problem/enumerate_primes",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/number_theory/enumerate_primes/task.md",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/number_theory/enumerate_primes/info.toml"
+      ],
+      "supplemental_ids": [],
+      "driver": "Verify/current/drivers/eratosthenes_main.cpp",
+      "source_hashes": {
+        "Math/Eratosthenes.cpp": "2a4e3c641d39869a6b7c69bc8b536b12dcaec880a565a71e9ed15ced2074565b",
+        "Verify/current/drivers/eratosthenes_main.cpp": "05dd72016a4f49ea0d9b827bb10d0a1e16f77fa7de37f8c13fdfe5776712c2dd",
+        "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+      },
+      "official_task_sha256": "78af698050f9c519795fe6c0b0690ae05e89f4cee308aa0b16cd86f4b6b52de9",
+      "official_info_sha256": "6a24257d3461459f5598d79d964f54d6dc752d6ad3cdeb730549802192bc3cb0",
+      "official_params": {
+        "N_MIN": 1,
+        "N_MAX": 500000000,
+        "X_MIN": 0,
+        "X_MAX": 1000000
+      },
+      "official_constraints": "## @{keyword.constraints}\n\n- $@{param.N_MIN} \\le N \\le @{param.N_MAX}$\n- $0 \\le B < A \\le N$\n- $@{param.X_MIN} \\le X \\le @{param.X_MAX}$ where $X = \\\\#\\lbrace i \\in \\mathbb{Z}\\_{\\ge 0} \\mid p_{Ai+B} \\le N \\rbrace$\n\n"
+    },
+    {
+      "id": "binomial_modint_prime_mod",
+      "libraries": [
+        "Math/Combination_Mod.cpp"
+      ],
+      "problem_url": "https://judge.yosupo.jp/problem/binomial_coefficient_prime_mod",
+      "assessment": "direct",
+      "exercised_apis": [
+        "ModIntBinomial::ctor(max_n)",
+        "ModIntBinomial::COM(n,k)",
+        "BinomialOptions::table_limit=9999999"
+      ],
+      "not_covered": [
+        "Lucas/Hの公開操作を直接呼ばない",
+        "prepareの再呼出し・move元再利用・所有権/確保失敗",
+        "負のn/kとn/kのint64最大端・max_steps/table_limit例外",
+        "n≥mでのLucas桁分解",
+        "合成数/法1（素数専用のPrimeBinomialには対象外）",
+        "10^7以上のn/table外の積による代替",
+        "m>2^30/UINT32_MAX端",
+        "任意の利用側Mint型",
+        "計算器を保持したまま動的Mintの法を変更する誤用",
+        "同梱される別Binomial型はこのentryからは呼ばない"
+      ],
+      "reasoning": "素数法m≤2^30、nとkは独立に0≤n,k<min(m,10^7)、T≤10^6。先読みmax_nまで前計算しCOMの値を直接出力する。k>nの0も公式範囲。Lucasの桁分解はn<mなので通らず、一般法の巨大n/composite検証とは別。 998244353/1000000007はACL static_modint、それ以外はACL dynamic_modint<0>へ分岐する。",
+      "sources": [
+        "https://judge.yosupo.jp/problem/binomial_coefficient_prime_mod",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/enumerative_combinatorics/binomial_coefficient_prime_mod/task.md",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/enumerative_combinatorics/binomial_coefficient_prime_mod/info.toml"
+      ],
+      "supplemental_ids": [
+        "binomial_modint"
+      ],
+      "driver": "Verify/current/drivers/binomial_modint_prime_mod_main.cpp",
+      "source_hashes": {
+        "Math/Combination_Mod.cpp": "ba299c0b4f1e0662c276ff3bbda18c105f99247f8536e7ba10c0bf7c933a9451",
+        "Verify/current/drivers/binomial_modint_prime_mod_main.cpp": "fb54880f089b22e96bd31e2d90f69efeb45805b52b698020f20e31bd1703f930",
+        "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+      },
+      "official_task_sha256": "b2c4583eaf76a6a562e9b19380d135a47e964ece1f6bc5f970daefd6c18dfce6",
+      "official_info_sha256": "e2277b87ff34ba622f147b35ccb6e51d3ad6cd8789e11097dcf85e1a607702d1",
+      "official_params": {
+        "T_MAX": 1000000,
+        "M_MAX": 1073741824,
+        "N_MAX": 10000000
+      },
+      "official_constraints": "## @{keyword.constraints}\n\n@{lang.en}\n\n- $1 \\leq T \\leq @{param.T_MAX}$\n- $1 \\leq m \\leq @{param.M_MAX}$\n- $m$ is a prime\n- $0 \\leq n, k \\lt \\min(m, @{param.N_MAX})$\n\n@{lang.ja}\n\n- $1 \\leq T \\leq @{param.T_MAX}$\n- $1 \\leq m \\leq @{param.M_MAX}$\n- $m$ は素数\n- $0 \\leq n, k \\lt \\min(m, @{param.N_MAX})$\n\n@{lang.end}\n\n"
+    },
+    {
+      "id": "binomial_modint_prime_mod_split",
+      "libraries": [
+        "Math/Combination/ModInt_Binomial.cpp"
+      ],
+      "problem_url": "https://judge.yosupo.jp/problem/binomial_coefficient_prime_mod",
+      "assessment": "direct",
+      "exercised_apis": [
+        "ModIntBinomial::ctor(max_n)",
+        "ModIntBinomial::COM(n,k)",
+        "BinomialOptions::table_limit=9999999"
+      ],
+      "not_covered": [
+        "Lucas/Hの公開操作を直接呼ばない",
+        "prepareの再呼出し・move元再利用・所有権/確保失敗",
+        "負のn/kとn/kのint64最大端・max_steps/table_limit例外",
+        "n≥mでのLucas桁分解",
+        "合成数/法1（素数専用のPrimeBinomialには対象外）",
+        "10^7以上のn/table外の積による代替",
+        "m>2^30/UINT32_MAX端",
+        "任意の利用側Mint型",
+        "計算器を保持したまま動的Mintの法を変更する誤用"
+      ],
+      "reasoning": "素数法m≤2^30、nとkは独立に0≤n,k<min(m,10^7)、T≤10^6。先読みmax_nまで前計算しCOMの値を直接出力する。k>nの0も公式範囲。Lucasの桁分解はn<mなので通らず、一般法の巨大n/composite検証とは別。 998244353/1000000007はACL static_modint、それ以外はACL dynamic_modint<0>へ分岐する。",
+      "sources": [
+        "https://judge.yosupo.jp/problem/binomial_coefficient_prime_mod",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/enumerative_combinatorics/binomial_coefficient_prime_mod/task.md",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/enumerative_combinatorics/binomial_coefficient_prime_mod/info.toml"
+      ],
+      "supplemental_ids": [
+        "binomial_modint_split"
+      ],
+      "driver": "Verify/current/drivers/binomial_modint_prime_mod_main.cpp",
+      "source_hashes": {
+        "Math/Combination/ModInt_Binomial.cpp": "ba299c0b4f1e0662c276ff3bbda18c105f99247f8536e7ba10c0bf7c933a9451",
+        "Verify/current/drivers/binomial_modint_prime_mod_main.cpp": "fb54880f089b22e96bd31e2d90f69efeb45805b52b698020f20e31bd1703f930",
+        "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+      },
+      "official_task_sha256": "b2c4583eaf76a6a562e9b19380d135a47e964ece1f6bc5f970daefd6c18dfce6",
+      "official_info_sha256": "e2277b87ff34ba622f147b35ccb6e51d3ad6cd8789e11097dcf85e1a607702d1",
+      "official_params": {
+        "T_MAX": 1000000,
+        "M_MAX": 1073741824,
+        "N_MAX": 10000000
+      },
+      "official_constraints": "## @{keyword.constraints}\n\n@{lang.en}\n\n- $1 \\leq T \\leq @{param.T_MAX}$\n- $1 \\leq m \\leq @{param.M_MAX}$\n- $m$ is a prime\n- $0 \\leq n, k \\lt \\min(m, @{param.N_MAX})$\n\n@{lang.ja}\n\n- $1 \\leq T \\leq @{param.T_MAX}$\n- $1 \\leq m \\leq @{param.M_MAX}$\n- $m$ は素数\n- $0 \\leq n, k \\lt \\min(m, @{param.N_MAX})$\n\n@{lang.end}\n\n"
+    },
+    {
+      "id": "ntt_convolution",
+      "libraries": [
+        "Math/NTT.cpp"
+      ],
+      "problem_url": "https://judge.yosupo.jp/problem/convolution_mod",
+      "assessment": "direct",
+      "exercised_apis": [
+        "NTT<998244353,3>",
+        "convolution_normalized(move(a),move(b))"
+      ],
+      "not_covered": [
+        "別のNTT法/原始根",
+        "transform/prepare/squareの直接API",
+        "負数/uint64値のconvolution正規化",
+        "空入力（公式長さ≥1）",
+        "最大NTT長2^23の全域",
+        "copy/move/cache管理"
+      ],
+      "reasoning": "公式の正規化済み係数とN,M≤2^19に対し、所有を譲渡して畳み込みを直接出力。998244353と標準根に固定、必要変換長は高々2^20。",
+      "sources": [
+        "https://judge.yosupo.jp/problem/convolution_mod",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/convolution/convolution_mod/task.md",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/convolution/convolution_mod/info.toml"
+      ],
+      "supplemental_ids": [],
+      "driver": "Verify/current/drivers/ntt_convolution_main.cpp",
+      "source_hashes": {
+        "Math/NTT.cpp": "d6929010dc1813296e1970df3bd12c86f2d3605b9da29e8ea46801d2a687a9dd",
+        "Verify/current/drivers/ntt_convolution_main.cpp": "b6596362ba09f80f9f66c88d4fc95301b58bb42c28e82ad3afb0ca1a798dceff",
+        "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+      },
+      "official_task_sha256": "110454f46259bfab0deee116947dcff1fba76e8fc3c7b6b72feefd0e839e0fd8",
+      "official_info_sha256": "8b37c156e0d0b31890350c487136f2601996dc212eb16122c7d2ca691886c178",
+      "official_params": {
+        "N_AND_M_MAX": 524288,
+        "MOD": 998244353
+      },
+      "official_constraints": "## @{keyword.constraints}\n\n- $1 \\leq N, M \\leq @{param.N_AND_M_MAX}$\n- $0 \\leq a_i, b_i < @{param.MOD}$\n\n"
+    },
+    {
+      "id": "pollard_rho_factorize",
+      "libraries": [
+        "Math/Pollard_Rho.cpp"
+      ],
+      "problem_url": "https://judge.yosupo.jp/problem/factorize",
+      "assessment": "direct",
+      "exercised_apis": [
+        "PollardRho64()",
+        "prime_factors(uint64_t)"
+      ],
+      "not_covered": [
+        "10^18超〜UINT64_MAX",
+        "0のdomain_error",
+        "factorize/divisors/divisor_count/totient/mobiusと簡易関数",
+        "seed指定/コピー乱数状態の独立性"
+      ],
+      "reasoning": "公式a=1..10^18を同一エンジンで分解し、重複込み昇順素因数をそのまま出力。n=1の空因数も公式範囲。",
+      "sources": [
+        "https://judge.yosupo.jp/problem/factorize",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/number_theory/factorize/task.md",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/number_theory/factorize/info.toml"
+      ],
+      "supplemental_ids": [],
+      "driver": "Verify/current/drivers/pollard_rho_factorize_main.cpp",
+      "source_hashes": {
+        "Math/Pollard_Rho.cpp": "9aae82c6fad5c08d8194c321788103a984a058f725f4f0af10118dc08fa14c17",
+        "Verify/current/drivers/pollard_rho_factorize_main.cpp": "e9243ccd61732cbfa278b19a278baea79a920c09b14be1edae870c7b0142b718",
+        "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+      },
+      "official_task_sha256": "55c7af79271fa4cb7f9fef434335caf78b4f4582e7d465e0d216658dac611c41",
+      "official_info_sha256": "bd71db210d98c5e3df9c448f6af03b75b52b0369509e8d4f1057d606568afa80",
+      "official_params": {
+        "MAX_Q": 100,
+        "MAX_A": 1000000000000000000
+      },
+      "official_constraints": "## @{keyword.constraints}\n\n- $1 \\leq Q \\leq @{param.MAX_Q}$\n- $1 \\leq a_i \\leq @{param.MAX_A}$\n\n"
+    },
+    {
+      "id": "fps_inverse",
+      "libraries": [
+        "Math/Formal_Power_Series.cpp"
+      ],
+      "problem_url": "https://judge.yosupo.jp/problem/inv_of_formal_power_series",
+      "assessment": "direct",
+      "exercised_apis": [
+        "FormalPowerSeries(vector<uint32_t>)",
+        "inverse()"
+      ],
+      "not_covered": [
+        "法998244353以外（型仕様の対象外）",
+        "負数/法以上の係数の正規化",
+        "copy/move/更新系操作・cache解放",
+        "a0=0のdomain_error",
+        "指定precision版（このmainは現在size精度のみ）",
+        "精度0/空級数",
+        "精度500000超〜2^22"
+      ],
+      "reasoning": "法998244353、長さ1..500000、a0≠0の公式入力をFormalPowerSeriesへ構築しinverse()の結果を直接出力する。",
+      "sources": [
+        "https://judge.yosupo.jp/problem/inv_of_formal_power_series",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/polynomial/inv_of_formal_power_series/task.md",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/polynomial/inv_of_formal_power_series/info.toml"
+      ],
+      "supplemental_ids": [
+        "fps_log",
+        "fps_exp",
+        "fps_pow",
+        "fps_sqrt",
+        "fps_divmod"
+      ],
+      "driver": "Verify/current/drivers/fps_inverse_main.cpp",
+      "source_hashes": {
+        "Math/Formal_Power_Series.cpp": "fdb94a9c88a32ddc35b4e2c703518cf439026008627701bdf248bee32975aeee",
+        "Verify/current/drivers/fps_inverse_main.cpp": "0582151ff2778b3dadce8c160c71c21faf499500cbf8af2b6c2dcd077fc2fab8",
+        "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+      },
+      "official_task_sha256": "7068870a93103c8a861ff30eee3eef7230ead5a9d54f26722b1f9e8964062206",
+      "official_info_sha256": "b5a769d5e4a5fc6189467a453644ada49f99562fb692e70016fb4595e9938701",
+      "official_params": {
+        "N_MAX": 500000,
+        "MOD": 998244353
+      },
+      "official_constraints": "## @{keyword.constraints}\n\n- $1 \\leq N \\leq @{param.N_MAX}$\n- $0 \\leq a_i < @{param.MOD}$\n- $a_0 \\neq 0$\n\n"
+    },
+    {
+      "id": "fps_log",
+      "libraries": [
+        "Math/Formal_Power_Series.cpp"
+      ],
+      "problem_url": "https://judge.yosupo.jp/problem/log_of_formal_power_series",
+      "assessment": "direct",
+      "exercised_apis": [
+        "FormalPowerSeries(vector<uint32_t>)",
+        "log()"
+      ],
+      "not_covered": [
+        "法998244353以外（型仕様の対象外）",
+        "負数/法以上の係数の正規化",
+        "copy/move/更新系操作・cache解放",
+        "a0≠1のdomain_error",
+        "指定precision版（このmainは現在size精度のみ）",
+        "精度0/空級数",
+        "精度500000超〜2^22"
+      ],
+      "reasoning": "法998244353、長さ1..500000、a0=1の公式入力をFormalPowerSeriesへ構築しlog()の結果を直接出力する。",
+      "sources": [
+        "https://judge.yosupo.jp/problem/log_of_formal_power_series",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/polynomial/log_of_formal_power_series/task.md",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/polynomial/log_of_formal_power_series/info.toml"
+      ],
+      "supplemental_ids": [
+        "fps_inverse",
+        "fps_exp",
+        "fps_pow",
+        "fps_sqrt",
+        "fps_divmod"
+      ],
+      "driver": "Verify/current/drivers/fps_log_main.cpp",
+      "source_hashes": {
+        "Math/Formal_Power_Series.cpp": "fdb94a9c88a32ddc35b4e2c703518cf439026008627701bdf248bee32975aeee",
+        "Verify/current/drivers/fps_log_main.cpp": "d049625e3dac6280cad5bb0e8131ed029524a1d9e1939e1a7b75fc13b73312ef",
+        "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+      },
+      "official_task_sha256": "1e5fac4bd73ae983ccf33b9f2e1fae12afe1cd95e0b266b3a9889cd931364525",
+      "official_info_sha256": "7ad58ce59b22d6c9ae906522f675b421c9c795ef2e2aa85073aba059b26a887c",
+      "official_params": {
+        "N_MAX": 500000,
+        "MOD": 998244353
+      },
+      "official_constraints": "## @{keyword.constraints}\n\n- $1 \\leq N \\leq @{param.N_MAX}$\n- $0 \\leq a_i < @{param.MOD}$\n- $a_0 = 1$\n\n"
+    },
+    {
+      "id": "fps_exp",
+      "libraries": [
+        "Math/Formal_Power_Series.cpp"
+      ],
+      "problem_url": "https://judge.yosupo.jp/problem/exp_of_formal_power_series",
+      "assessment": "direct",
+      "exercised_apis": [
+        "FormalPowerSeries(vector<uint32_t>)",
+        "exp()"
+      ],
+      "not_covered": [
+        "法998244353以外（型仕様の対象外）",
+        "負数/法以上の係数の正規化",
+        "copy/move/更新系操作・cache解放",
+        "a0≠0のdomain_error",
+        "指定precision版（このmainは現在size精度のみ）",
+        "精度0/空級数",
+        "精度500000超〜2^22"
+      ],
+      "reasoning": "法998244353、長さ1..500000、a0=0の公式入力をFormalPowerSeriesへ構築しexp()の結果を直接出力する。",
+      "sources": [
+        "https://judge.yosupo.jp/problem/exp_of_formal_power_series",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/polynomial/exp_of_formal_power_series/task.md",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/polynomial/exp_of_formal_power_series/info.toml"
+      ],
+      "supplemental_ids": [
+        "fps_inverse",
+        "fps_log",
+        "fps_pow",
+        "fps_sqrt",
+        "fps_divmod"
+      ],
+      "driver": "Verify/current/drivers/fps_exp_main.cpp",
+      "source_hashes": {
+        "Math/Formal_Power_Series.cpp": "fdb94a9c88a32ddc35b4e2c703518cf439026008627701bdf248bee32975aeee",
+        "Verify/current/drivers/fps_exp_main.cpp": "0b9cbf65c139b51450f0008ed19fabea175e0eeb04660088fa71345586519449",
+        "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+      },
+      "official_task_sha256": "d9dd2dd611e5f2c5502656e758776e8024911a2e5c68df8762c67a90227c3133",
+      "official_info_sha256": "b5bb33b8a99bd02cae025de6221c5fb9a1f009df0ffa942bf6efcb9a8be03584",
+      "official_params": {
+        "N_MAX": 500000,
+        "MOD": 998244353
+      },
+      "official_constraints": "## @{keyword.constraints}\n\n- $1 \\leq N \\leq @{param.N_MAX}$\n- $0 \\leq a_i < @{param.MOD}$\n- $a_0 = 0$\n\n"
+    },
+    {
+      "id": "fps_pow",
+      "libraries": [
+        "Math/Formal_Power_Series.cpp"
+      ],
+      "problem_url": "https://judge.yosupo.jp/problem/pow_of_formal_power_series",
+      "assessment": "direct",
+      "exercised_apis": [
+        "FormalPowerSeries(vector<uint32_t>)",
+        "pow(uint64_t)"
+      ],
+      "not_covered": [
+        "法998244353以外（型仕様の対象外）",
+        "負数/法以上の係数の正規化",
+        "copy/move/更新系操作・cache解放",
+        "指数10^18超〜UINT64_MAX",
+        "指定precision版（このmainは現在size精度のみ）",
+        "精度0/空級数",
+        "精度500000超〜2^22"
+      ],
+      "reasoning": "法998244353、長さ1..500000、指数0..10^18の公式入力をFormalPowerSeriesへ構築しpow(uint64_t)の結果を直接出力する。",
+      "sources": [
+        "https://judge.yosupo.jp/problem/pow_of_formal_power_series",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/polynomial/pow_of_formal_power_series/task.md",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/polynomial/pow_of_formal_power_series/info.toml"
+      ],
+      "supplemental_ids": [
+        "fps_inverse",
+        "fps_log",
+        "fps_exp",
+        "fps_sqrt",
+        "fps_divmod"
+      ],
+      "driver": "Verify/current/drivers/fps_pow_main.cpp",
+      "source_hashes": {
+        "Math/Formal_Power_Series.cpp": "fdb94a9c88a32ddc35b4e2c703518cf439026008627701bdf248bee32975aeee",
+        "Verify/current/drivers/fps_pow_main.cpp": "813ea8914ad0a7017ee21da524aff363c130f1c7818d8f1238680e025b8d16da",
+        "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+      },
+      "official_task_sha256": "4e2b973563155d4700e52624a5ab56581941bbaf09fb3764dd57bfcbf1f9e915",
+      "official_info_sha256": "9dfbe056bffb7a15dd5be0b245295a42709ff1b6647bcfbf02c051455d77b679",
+      "official_params": {
+        "N_MAX": 500000,
+        "M_MAX": 1000000000000000000,
+        "MOD": 998244353
+      },
+      "official_constraints": "## @{keyword.constraints}\n\n- $1 \\leq N \\leq @{param.N_MAX}$\n- $0 \\leq M \\leq @{param.M_MAX}$\n- $0 \\leq a_i < @{param.MOD}$\n\n"
+    },
+    {
+      "id": "fps_sqrt",
+      "libraries": [
+        "Math/Formal_Power_Series.cpp"
+      ],
+      "problem_url": "https://judge.yosupo.jp/problem/sqrt_of_formal_power_series",
+      "assessment": "direct",
+      "exercised_apis": [
+        "FormalPowerSeries(vector<uint32_t>)",
+        "sqrt()"
+      ],
+      "not_covered": [
+        "法998244353以外（型仕様の対象外）",
+        "負数/法以上の係数の正規化",
+        "copy/move/更新系操作・cache解放",
+        "返却平方根の先頭非零係数が2候補の小さい方という追加保証",
+        "未確定末尾0という追加保証",
+        "指定precision版（このmainは現在size精度のみ）",
+        "精度0/空級数",
+        "精度500000超〜2^22"
+      ],
+      "reasoning": "法998244353、長さ1..500000、存在時の任意平方根/不存在-1の公式入力をFormalPowerSeriesへ構築しsqrt()の結果を直接出力する。 optionalの有無が-1/根の出力へ直接反映される。",
+      "sources": [
+        "https://judge.yosupo.jp/problem/sqrt_of_formal_power_series",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/polynomial/sqrt_of_formal_power_series/task.md",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/polynomial/sqrt_of_formal_power_series/info.toml"
+      ],
+      "supplemental_ids": [
+        "fps_inverse",
+        "fps_log",
+        "fps_exp",
+        "fps_pow",
+        "fps_divmod"
+      ],
+      "driver": "Verify/current/drivers/fps_sqrt_main.cpp",
+      "source_hashes": {
+        "Math/Formal_Power_Series.cpp": "fdb94a9c88a32ddc35b4e2c703518cf439026008627701bdf248bee32975aeee",
+        "Verify/current/drivers/fps_sqrt_main.cpp": "b111162ba7d8d7a5a684ae9d34b3d472167400e6048c4defa7d193ad5ce94dac",
+        "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+      },
+      "official_task_sha256": "cfc34dcb6e7639a92605af21952cbf0fbc6b5498405b811ffd4e9ceab46f4fe0",
+      "official_info_sha256": "b1452311cdb72f7c24f37df4bd0733efec9e305ab763ae5247ed09581a86d081",
+      "official_params": {
+        "N_MAX": 500000,
+        "MOD": 998244353
+      },
+      "official_constraints": "## @{keyword.constraints}\n\n- $1 \\leq N \\leq @{param.N_MAX}$\n- $0 \\leq a_i < @{param.MOD}$\n\n"
+    },
+    {
+      "id": "fps_divmod",
+      "libraries": [
+        "Math/Formal_Power_Series.cpp"
+      ],
+      "problem_url": "https://judge.yosupo.jp/problem/division_of_polynomials",
+      "assessment": "direct",
+      "exercised_apis": [
+        "FormalPowerSeries(vector<uint32_t>)",
+        "divmod(divisor)"
+      ],
+      "not_covered": [
+        "法998244353以外（型仕様の対象外）",
+        "負数/法以上の係数の正規化",
+        "copy/move/更新系操作・cache解放",
+        "0除算のdomain_error",
+        "入力末尾0の正規化",
+        "除数/被除数の空列",
+        "長さ500000超の公開上限まで"
+      ],
+      "reasoning": "法998244353、長さ1..500000、被除数/除数とも最高次係数非零の公式入力をFormalPowerSeriesへ構築しdivmod(divisor)の結果を直接出力する。",
+      "sources": [
+        "https://judge.yosupo.jp/problem/division_of_polynomials",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/polynomial/division_of_polynomials/task.md",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/polynomial/division_of_polynomials/info.toml"
+      ],
+      "supplemental_ids": [
+        "fps_inverse",
+        "fps_log",
+        "fps_exp",
+        "fps_pow",
+        "fps_sqrt"
+      ],
+      "driver": "Verify/current/drivers/fps_divmod_main.cpp",
+      "source_hashes": {
+        "Math/Formal_Power_Series.cpp": "fdb94a9c88a32ddc35b4e2c703518cf439026008627701bdf248bee32975aeee",
+        "Verify/current/drivers/fps_divmod_main.cpp": "cb8236ecef86ffcb989314a546a22001f31864d641ff8c3704caa82be691cebc",
+        "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+      },
+      "official_task_sha256": "200e24fa53dd89b8584729e2e0162b1cda4c596fa50534e061ecab5df4ab7ad7",
+      "official_info_sha256": "c90b4241890236351d199280632443a6bf37a6b0a16a06c742608f09f00efbdf",
+      "official_params": {
+        "N_MAX": 500000,
+        "MOD": 998244353
+      },
+      "official_constraints": "## @{keyword.constraints}\n\n- $1 \\leq N \\leq @{param.N_MAX}$\n- $1 \\leq M \\leq @{param.N_MAX}$\n- $0 \\leq f_i < @{param.MOD}$\n- $0 \\leq g_i < @{param.MOD}$\n- $f_{N-1} \\neq 0$\n- $g_{M-1} \\neq 0$  \n\n"
+    },
+    {
+      "id": "berlekamp_massey",
+      "libraries": [
+        "Math/Berlekamp_Massey.cpp"
+      ],
+      "problem_url": "https://judge.yosupo.jp/problem/find_linear_recurrence",
+      "assessment": "direct",
+      "exercised_apis": [
+        "BerlekampMassey(vector<uint32_t>)"
+      ],
+      "not_covered": [
+        "汎用体T版",
+        "正規化前の係数",
+        "未知の後続項への保証（APIも保証しない）"
+      ],
+      "reasoning": "N=0..10000、法998244353の有限列に合う最短次数と係数を直接出力。公式も最短係数は非一意可なので一意解を仮定しない。空/零列は公式範囲。",
+      "sources": [
+        "https://judge.yosupo.jp/problem/find_linear_recurrence",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/other/find_linear_recurrence/task.md",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/other/find_linear_recurrence/info.toml"
+      ],
+      "supplemental_ids": [],
+      "driver": "Verify/current/drivers/berlekamp_massey_main.cpp",
+      "source_hashes": {
+        "Math/Berlekamp_Massey.cpp": "cd9d9fb5b88ccfd121bdb3aac17080ae022586f0b86ca407ee6c4f2be5bb13e4",
+        "Verify/current/drivers/berlekamp_massey_main.cpp": "0e69c4c6e86bdabde2f5fe7a541e3015dd7f37c2de4b0f257ec8025d32396a02",
+        "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+      },
+      "official_task_sha256": "aeac402d43bf5f638066dba4af7b3168c7e07676ddda543b319921eba3a2028f",
+      "official_info_sha256": "43f2f9500a0a753a0bb15b4b37de345d1a08d90d8176185999857b755bef15a9",
+      "official_params": {
+        "MOD": 998244353,
+        "N_MIN": 0,
+        "N_MAX": 10000
+      },
+      "official_constraints": "## @{keyword.constraints}\n\n- $@{param.N_MIN} \\le N \\le @{param.N_MAX}$\n- $0 \\le a_i < @{param.MOD}$\n\n"
+    },
+    {
+      "id": "linear_recurrence",
+      "libraries": [
+        "Math/Linear_Recurrence.cpp"
+      ],
+      "problem_url": "https://judge.yosupo.jp/problem/kth_term_of_linearly_recurrent_sequence",
+      "assessment": "direct",
+      "exercised_apis": [
+        "LinearRecurrenceTerm(vector<uint32_t>,vector<uint32_t>,k)"
+      ],
+      "not_covered": [
+        "汎用可換環T版",
+        "LinearRecurrenceWeights/Prefix",
+        "d=0（公式d≥1）",
+        "k>10^18〜UINT64_MAX",
+        "係数の法以上正規化",
+        "長さ不一致/容量例外"
+      ],
+      "reasoning": "公式d≤100000、k≤10^18、法998244353の初期列/係数からk番目を直接返す。uint32版Bostan–Mori経路の検証であり、汎用O(d²)版やWeightsのClang専用経路を覆わない。",
+      "sources": [
+        "https://judge.yosupo.jp/problem/kth_term_of_linearly_recurrent_sequence",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/other/kth_term_of_linearly_recurrent_sequence/task.md",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/other/kth_term_of_linearly_recurrent_sequence/info.toml"
+      ],
+      "supplemental_ids": [],
+      "driver": "Verify/current/drivers/linear_recurrence_main.cpp",
+      "source_hashes": {
+        "Math/Linear_Recurrence.cpp": "1a27cd73c4205d4f132148c6d01eabef6b9ea0b68c731bcc516e232f974ce3b2",
+        "Verify/current/drivers/linear_recurrence_main.cpp": "741811aa6be610e498656f19152e9d949c85fd0ae326e19508281d87232ff81b",
+        "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+      },
+      "official_task_sha256": "ea04bf55322608399717de51a69811c42a2027bf3eba16265ff25b710c95ef1d",
+      "official_info_sha256": "495bf72d7b4f9c463e8b05f0b8b68d423b2a12d14de54a0e625520c0628e7ae3",
+      "official_params": {
+        "D_MAX": 100000,
+        "K_MAX": 1000000000000000000,
+        "MOD": 998244353
+      },
+      "official_constraints": "## @{keyword.constraints}\n\n- $1 \\leq d \\leq @{param.D_MAX}$\n- $0 \\leq k \\leq @{param.K_MAX}$\n- $0 \\leq a_i \\lt @{param.MOD}\\ (0 \\leq i \\leq d-1)$\n- $0 \\leq c_i \\lt @{param.MOD}\\ (1 \\leq i \\leq d)$\n\n"
+    },
+    {
+      "id": "matrix_product",
+      "libraries": [
+        "Math/Matrix.cpp"
+      ],
+      "problem_url": "https://judge.yosupo.jp/problem/matrix_product",
+      "assessment": "direct",
+      "exercised_apis": [
+        "Matrix<VerifyMatrixField>(n,m)",
+        "values",
+        "operator*",
+        "operator()"
+      ],
+      "not_covered": [
+        "体はVerifyMatrixField=固定998244353",
+        "別の利用側係数型/一般整数環",
+        "Matrix<uint32_t>向けAVX2分岐（このmainの係数型では通らない）",
+        "copy/move/view無効化/形状例外/確保失敗",
+        "0次元（公式各辺≥1）",
+        "+=/-=/transposed/MatrixApply",
+        "operator*=自己参照"
+      ],
+      "reasoning": "公式N,M,K≤1024の有限体行列積をMatrix operator*から全成分出力。体の乗算/法演算は利用側VerifyMatrixFieldが担う。",
+      "sources": [
+        "https://judge.yosupo.jp/problem/matrix_product",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/linear_algebra/matrix_product/task.md",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/linear_algebra/matrix_product/info.toml"
+      ],
+      "supplemental_ids": [
+        "matrix_power"
+      ],
+      "driver": "Verify/current/drivers/matrix_product_main.cpp",
+      "source_hashes": {
+        "Math/Matrix.cpp": "30bc196d71f128f19157ae8e7a4af64bdb10da87572c56dae01b4dd2f630f058",
+        "Verify/current/drivers/matrix_product_main.cpp": "188c7a5f01a920a258c6042f74e1f643b69dbd86682c0f040137c2803d1bf53a",
+        "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab",
+        "Verify/current/common/matrix_field.hpp": "6a9a6aded8665043481f1fff8d6a7d4eae69343e7111828832d1467eeb854f26"
+      },
+      "official_task_sha256": "4b841b53ffbe091e692b852a1823c8b238d70ad1d75d2ff330e0586005031b6f",
+      "official_info_sha256": "5678cc40650a72bb1639cd7f8b24aac6e460d4a175604a4983ab78deb7957c1a",
+      "official_params": {
+        "N_MAX": 1024,
+        "MOD": 998244353
+      },
+      "official_constraints": "## @{keyword.constraints}\n\n- $1 \\leq N,M,K \\leq @{param.N_MAX}$\n- $0 \\leq a_{ij},b_{ij} < @{param.MOD}$\n\n"
+    },
+    {
+      "id": "matrix_determinant",
+      "libraries": [
+        "Math/Gaussian_Elimination.cpp"
+      ],
+      "problem_url": "https://judge.yosupo.jp/problem/matrix_det",
+      "assessment": "direct",
+      "exercised_apis": [
+        "Matrix<VerifyMatrixField>",
+        "MatrixDeterminant(a)"
+      ],
+      "not_covered": [
+        "固定体998244353以外の正確な体",
+        "非可逆ピボットのdomain_error/非体入力",
+        "GaussianElimination結果のpivot値/row_swaps/reduced形式を直接出力しない",
+        "copy/move/確保失敗/入力不変性の独立照合",
+        "0x0の行列式1"
+      ],
+      "reasoning": "N=1..500の正方行列の行列式を直接出力。特異行列も公式範囲。 係数型は利用側VerifyMatrixField固定。",
+      "sources": [
+        "https://judge.yosupo.jp/problem/matrix_det",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/linear_algebra/matrix_det/task.md",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/linear_algebra/matrix_det/info.toml"
+      ],
+      "supplemental_ids": [
+        "matrix_inverse",
+        "matrix_rank",
+        "matrix_linear_system"
+      ],
+      "driver": "Verify/current/drivers/matrix_determinant_main.cpp",
+      "source_hashes": {
+        "Math/Gaussian_Elimination.cpp": "7fdbb7ca7e7a3e4a09b890d2f64dbdcaae7eca8e6a334932949523c23243b79a",
+        "Verify/current/drivers/matrix_determinant_main.cpp": "c1cb5d253dce44f6d2e6de01ab14f16f48446e1313e7eec6afcdd2d2b5892e60",
+        "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab",
+        "Verify/current/common/matrix_field.hpp": "6a9a6aded8665043481f1fff8d6a7d4eae69343e7111828832d1467eeb854f26"
+      },
+      "official_task_sha256": "1c90e02bc68325f0d8f8cd5b3e86cf9940be10d2c582c29501f745af42ad94a4",
+      "official_info_sha256": "aad00fd1e769c09ee86fd967971d0898affefee1b0b6da78dce049e0f0baee0f",
+      "official_params": {},
+      "official_constraints": "## @{keyword.constraints}\n\n- $1 \\leq N \\leq 500$\n- $0 \\leq a_{ij} < 998244353$\n\n"
+    },
+    {
+      "id": "matrix_inverse",
+      "libraries": [
+        "Math/Gaussian_Elimination.cpp"
+      ],
+      "problem_url": "https://judge.yosupo.jp/problem/inverse_matrix",
+      "assessment": "direct",
+      "exercised_apis": [
+        "Matrix<VerifyMatrixField>",
+        "MatrixInverse(a)"
+      ],
+      "not_covered": [
+        "固定体998244353以外の正確な体",
+        "非可逆ピボットのdomain_error/非体入力",
+        "GaussianElimination結果のpivot値/row_swaps/reduced形式を直接出力しない",
+        "copy/move/確保失敗/入力不変性の独立照合",
+        "0x0逆行列"
+      ],
+      "reasoning": "N=1..500、optionalが特異時-1、正則時に全逆行列の成分へ直接対応する。 係数型は利用側VerifyMatrixField固定。",
+      "sources": [
+        "https://judge.yosupo.jp/problem/inverse_matrix",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/linear_algebra/inverse_matrix/task.md",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/linear_algebra/inverse_matrix/info.toml"
+      ],
+      "supplemental_ids": [
+        "matrix_determinant",
+        "matrix_rank",
+        "matrix_linear_system"
+      ],
+      "driver": "Verify/current/drivers/matrix_inverse_main.cpp",
+      "source_hashes": {
+        "Math/Gaussian_Elimination.cpp": "7fdbb7ca7e7a3e4a09b890d2f64dbdcaae7eca8e6a334932949523c23243b79a",
+        "Verify/current/drivers/matrix_inverse_main.cpp": "d57a12331f71b3d6b865470c318027925cecddf11a2913efe693d6def34937df",
+        "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab",
+        "Verify/current/common/matrix_field.hpp": "6a9a6aded8665043481f1fff8d6a7d4eae69343e7111828832d1467eeb854f26"
+      },
+      "official_task_sha256": "0363ed50aaec0173725d99f66074acab650bcc6ddc480ee6199a24a39f9a4abf",
+      "official_info_sha256": "c5eab5ec2b9187d0aad30403f8bbdbfbae8adb1fb7e4d105d03c8a8abd9f4577",
+      "official_params": {
+        "N_MAX": 500,
+        "MOD": 998244353
+      },
+      "official_constraints": "## @{keyword.constraints}\n\n- $1 \\leq N \\leq @{param.N_MAX}$\n- $0 \\leq a_{ij} < @{param.MOD}$\n\n"
+    },
+    {
+      "id": "matrix_rank",
+      "libraries": [
+        "Math/Gaussian_Elimination.cpp"
+      ],
+      "problem_url": "https://judge.yosupo.jp/problem/matrix_rank",
+      "assessment": "direct",
+      "exercised_apis": [
+        "Matrix<VerifyMatrixField>",
+        "MatrixRank(a)"
+      ],
+      "not_covered": [
+        "固定体998244353以外の正確な体",
+        "非可逆ピボットのdomain_error/非体入力",
+        "GaussianElimination結果のpivot値/row_swaps/reduced形式を直接出力しない",
+        "copy/move/確保失敗/入力不変性の独立照合"
+      ],
+      "reasoning": "0≤N,M≤250000かつNM≤250000の矩形行列の階数を直接出力。0行/0列は公式範囲であり未検証と扱わない。 係数型は利用側VerifyMatrixField固定。",
+      "sources": [
+        "https://judge.yosupo.jp/problem/matrix_rank",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/linear_algebra/matrix_rank/task.md",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/linear_algebra/matrix_rank/info.toml"
+      ],
+      "supplemental_ids": [
+        "matrix_determinant",
+        "matrix_inverse",
+        "matrix_linear_system"
+      ],
+      "driver": "Verify/current/drivers/matrix_rank_main.cpp",
+      "source_hashes": {
+        "Math/Gaussian_Elimination.cpp": "7fdbb7ca7e7a3e4a09b890d2f64dbdcaae7eca8e6a334932949523c23243b79a",
+        "Verify/current/drivers/matrix_rank_main.cpp": "90162d2cfbe1036fdfa803d3b6e8a23db6c56c5eb813bee91f5888851c4f2cfa",
+        "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab",
+        "Verify/current/common/matrix_field.hpp": "6a9a6aded8665043481f1fff8d6a7d4eae69343e7111828832d1467eeb854f26"
+      },
+      "official_task_sha256": "0292262635337bf1a1600af6a11362b50041877782c69b8546b20d9558bf5709",
+      "official_info_sha256": "1d37f1e7b2f78c0f1c24af5f39abdbcf2c8f935e57c51417ce44f3b9ac87dbb6",
+      "official_params": {
+        "NM_MAX": 250000,
+        "MOD": 998244353
+      },
+      "official_constraints": "## @{keyword.constraints}\n\n- $0 \\leq N, M \\leq @{param.NM_MAX}$\n- $NM\\leq @{param.NM_MAX}$\n- $0 \\leq A_{ij} < @{param.MOD}$\n\n"
+    },
+    {
+      "id": "matrix_power",
+      "libraries": [
+        "Math/Matrix.cpp"
+      ],
+      "problem_url": "https://judge.yosupo.jp/problem/pow_of_matrix",
+      "assessment": "direct",
+      "exercised_apis": [
+        "Matrix<VerifyMatrixField>",
+        "MatrixPower(a,uint64_t)"
+      ],
+      "not_covered": [
+        "体はVerifyMatrixField=固定998244353",
+        "別の利用側係数型/一般整数環",
+        "Matrix<uint32_t>向けAVX2分岐（このmainの係数型では通らない）",
+        "copy/move/view無効化/形状例外/確保失敗",
+        "k>10^18〜UINT64_MAX",
+        "0x0行列",
+        "MatrixIdentityを直接呼ぶAPI",
+        "MatrixApply"
+      ],
+      "reasoning": "N≤200、k=0..10^18、法998244353の行列累乗を直接出力。指数0の単位行列も問題範囲。",
+      "sources": [
+        "https://judge.yosupo.jp/problem/pow_of_matrix",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/linear_algebra/pow_of_matrix/task.md",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/linear_algebra/pow_of_matrix/info.toml"
+      ],
+      "supplemental_ids": [
+        "matrix_product"
+      ],
+      "driver": "Verify/current/drivers/matrix_power_main.cpp",
+      "source_hashes": {
+        "Math/Matrix.cpp": "30bc196d71f128f19157ae8e7a4af64bdb10da87572c56dae01b4dd2f630f058",
+        "Verify/current/drivers/matrix_power_main.cpp": "a5b03b503af42448000a0bd924fb0bf119859222ba393b3748180bfbf043b8de",
+        "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab",
+        "Verify/current/common/matrix_field.hpp": "6a9a6aded8665043481f1fff8d6a7d4eae69343e7111828832d1467eeb854f26"
+      },
+      "official_task_sha256": "3f6d6bb7a8a82f887e35722e4d9e6cc331a6b1c2fcbaaf30ae49cdc41b6fc012",
+      "official_info_sha256": "9377127d5bc98d3eb63c0ea273ad65eb15e09c67a3967c3a622c3081aa0d440e",
+      "official_params": {
+        "N_MAX": 200,
+        "K_MAX": 1000000000000000000,
+        "MOD": 998244353
+      },
+      "official_constraints": "## @{keyword.constraints}\n\n- $1 \\leq N \\leq @{param.N_MAX}$\n- $0 \\leq K \\leq @{param.K_MAX}$\n- $0 \\leq a_{ij} < @{param.MOD}$\n\n"
+    },
+    {
+      "id": "matrix_linear_system",
+      "libraries": [
+        "Math/Gaussian_Elimination.cpp"
+      ],
+      "problem_url": "https://judge.yosupo.jp/problem/system_of_linear_equations",
+      "assessment": "direct",
+      "exercised_apis": [
+        "Matrix<VerifyMatrixField>",
+        "SolveLinearSystem(a,b)"
+      ],
+      "not_covered": [
+        "固定体998244353以外の正確な体",
+        "非可逆ピボットのdomain_error/非体入力",
+        "GaussianElimination結果のpivot値/row_swaps/reduced形式を直接出力しない",
+        "copy/move/確保失敗/入力不変性の独立照合",
+        "0行/0列（公式N,M≥1）",
+        "pivot_columnsの照会"
+      ],
+      "reasoning": "N,M=1..500で一解と核基底をそのまま出力し、不能は-1。出力するkernel.rows()は解空間の次元であり行列のrankとは区別される。 係数型は利用側VerifyMatrixField固定。",
+      "sources": [
+        "https://judge.yosupo.jp/problem/system_of_linear_equations",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/linear_algebra/system_of_linear_equations/task.md",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/linear_algebra/system_of_linear_equations/info.toml"
+      ],
+      "supplemental_ids": [
+        "matrix_determinant",
+        "matrix_inverse",
+        "matrix_rank"
+      ],
+      "driver": "Verify/current/drivers/matrix_linear_system_main.cpp",
+      "source_hashes": {
+        "Math/Gaussian_Elimination.cpp": "7fdbb7ca7e7a3e4a09b890d2f64dbdcaae7eca8e6a334932949523c23243b79a",
+        "Verify/current/drivers/matrix_linear_system_main.cpp": "94615a4e34d906c6dea0b9bc8fd07f1b9701fdeb26de5c1c05dad3890067725d",
+        "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab",
+        "Verify/current/common/matrix_field.hpp": "6a9a6aded8665043481f1fff8d6a7d4eae69343e7111828832d1467eeb854f26"
+      },
+      "official_task_sha256": "a1e8784e6815637248a26887e5cbd063ab1b6fbbf43140fcb8af4b5d249aab70",
+      "official_info_sha256": "0b8f1a7ccd7f49d763d0f2f5ff9499892dbeffad8c37ca35d5868a0b58462d03",
+      "official_params": {},
+      "official_constraints": "## @{keyword.constraints}\n\n- $1 \\leq N, M \\leq 500$\n- $0 \\leq A_{ij} < 998244353$\n\n"
+    },
+    {
+      "id": "binary_matrix_product",
+      "libraries": [
+        "Math/Binary_Matrix.cpp"
+      ],
+      "problem_url": "https://judge.yosupo.jp/problem/matrix_product_mod_2",
+      "assessment": "direct",
+      "exercised_apis": [
+        "BinaryMatrix(rows,cols)",
+        "set(row,col,bit)",
+        "operator*"
+      ],
+      "not_covered": [
+        "pow/transpose/行操作/加算を直接呼ぶAPI",
+        "copy/move/view/自己参照演算/確保失敗",
+        "不正添字・shape・rhsの0/1検査",
+        "0次元（公式各辺≥1）"
+      ],
+      "reasoning": "公式GF(2)行列積N,M,K≤4096を全ビット出力する。",
+      "sources": [
+        "https://judge.yosupo.jp/problem/matrix_product_mod_2",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/linear_algebra/matrix_product_mod_2/task.md",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/linear_algebra/matrix_product_mod_2/info.toml"
+      ],
+      "supplemental_ids": [
+        "binary_matrix_rank",
+        "binary_matrix_det",
+        "binary_matrix_inverse",
+        "binary_matrix_solve"
+      ],
+      "driver": "Verify/current/drivers/binary_matrix_product_main.cpp",
+      "source_hashes": {
+        "Math/Binary_Matrix.cpp": "c6f8537e2b2f884a06c6d3c3c2ec16098cb9deba6c40cfa34b832f5f013ab071",
+        "Verify/current/drivers/binary_matrix_product_main.cpp": "b6ce2413e6642292160549c813e0463001e8872cb05b51f25508ef168dc79789",
+        "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+      },
+      "official_task_sha256": "79b020c2874261558331b2ac912242e681b4185caf49f5fd3871ef4e5521db25",
+      "official_info_sha256": "63d03614e7c2aa26c016f5c333c5302f5f1f9e26ea3849e62cbaee799cd1ff5c",
+      "official_params": {
+        "N_MAX": 4096,
+        "MOD": 2
+      },
+      "official_constraints": "## @{keyword.constraints}\n\n- $1 \\leq N,M,K \\leq @{param.N_MAX}$\n- $a_{ij},b_{ij} \\in \\lbrace 0,1\\rbrace$\n\n"
+    },
+    {
+      "id": "binary_matrix_rank",
+      "libraries": [
+        "Math/Binary_Matrix.cpp"
+      ],
+      "problem_url": "https://judge.yosupo.jp/problem/matrix_rank_mod_2",
+      "assessment": "direct",
+      "exercised_apis": [
+        "BinaryMatrix(rows,cols)",
+        "set(row,col,bit)",
+        "rank()"
+      ],
+      "not_covered": [
+        "pow/transpose/行操作/加算を直接呼ぶAPI",
+        "copy/move/view/自己参照演算/確保失敗",
+        "不正添字・shape・rhsの0/1検査"
+      ],
+      "reasoning": "公式0≤N,M≤2^24かつNM≤2^24の矩形GF(2)行列の階数を出力。mainのif(m)は0列の空行を読む必要がないためで、0次元も公式範囲。",
+      "sources": [
+        "https://judge.yosupo.jp/problem/matrix_rank_mod_2",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/linear_algebra/matrix_rank_mod_2/task.md",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/linear_algebra/matrix_rank_mod_2/info.toml"
+      ],
+      "supplemental_ids": [
+        "binary_matrix_product",
+        "binary_matrix_det",
+        "binary_matrix_inverse",
+        "binary_matrix_solve"
+      ],
+      "driver": "Verify/current/drivers/binary_matrix_rank_main.cpp",
+      "source_hashes": {
+        "Math/Binary_Matrix.cpp": "c6f8537e2b2f884a06c6d3c3c2ec16098cb9deba6c40cfa34b832f5f013ab071",
+        "Verify/current/drivers/binary_matrix_rank_main.cpp": "8157f54a07628466f79826c0939901463cf35c4a553b99c8ac4e815f2386562f",
+        "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+      },
+      "official_task_sha256": "1306e379e540a3ffa8a8bfc61b85cb4710e38d18af737d2191cdfbb6ef599837",
+      "official_info_sha256": "cf80298f6e1387b4b924db21f0d02ecdb338596ecea2bf75acfaac7167fe58ba",
+      "official_params": {
+        "NM_MAX": 16777216,
+        "MOD": 2
+      },
+      "official_constraints": "## @{keyword.constraints}\n\n- $0 \\leq N, M \\leq @{param.NM_MAX}$\n- $0 \\leq NM \\leq @{param.NM_MAX}$\n- $0 \\leq a_{ij} < @{param.MOD}$\n\n"
+    },
+    {
+      "id": "binary_matrix_det",
+      "libraries": [
+        "Math/Binary_Matrix.cpp"
+      ],
+      "problem_url": "https://judge.yosupo.jp/problem/matrix_det_mod_2",
+      "assessment": "direct",
+      "exercised_apis": [
+        "BinaryMatrix(rows,cols)",
+        "set(row,col,bit)",
+        "determinant()"
+      ],
+      "not_covered": [
+        "pow/transpose/行操作/加算を直接呼ぶAPI",
+        "copy/move/view/自己参照演算/確保失敗",
+        "不正添字・shape・rhsの0/1検査",
+        "0x0の行列式1"
+      ],
+      "reasoning": "N=1..4096の正方GF(2)行列のbool行列式を0/1で直接出力。",
+      "sources": [
+        "https://judge.yosupo.jp/problem/matrix_det_mod_2",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/linear_algebra/matrix_det_mod_2/task.md",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/linear_algebra/matrix_det_mod_2/info.toml"
+      ],
+      "supplemental_ids": [
+        "binary_matrix_product",
+        "binary_matrix_rank",
+        "binary_matrix_inverse",
+        "binary_matrix_solve"
+      ],
+      "driver": "Verify/current/drivers/binary_matrix_det_main.cpp",
+      "source_hashes": {
+        "Math/Binary_Matrix.cpp": "c6f8537e2b2f884a06c6d3c3c2ec16098cb9deba6c40cfa34b832f5f013ab071",
+        "Verify/current/drivers/binary_matrix_det_main.cpp": "2bf86f147f3f3f546bbd92ac5ae4331fbd396d080c2b6e41b6f65821b8c50787",
+        "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+      },
+      "official_task_sha256": "76e5b0eee114896de8906569a1cb1d5a475053d3f8cf3db6b3b2fd2d8f86d8bb",
+      "official_info_sha256": "9c20a871c71d46b23cec7c5ad43f6ae3ed5b8725b4fdd97994b0cfac7ff899a9",
+      "official_params": {
+        "N_MAX": 4096
+      },
+      "official_constraints": "## @{keyword.constraints}\n\n- $1 \\leq N \\leq @{param.N_MAX}$\n- $a_{ij} \\in \\lbrace 0,1\\rbrace$\n\n"
+    },
+    {
+      "id": "binary_matrix_inverse",
+      "libraries": [
+        "Math/Binary_Matrix.cpp"
+      ],
+      "problem_url": "https://judge.yosupo.jp/problem/inverse_matrix_mod_2",
+      "assessment": "direct",
+      "exercised_apis": [
+        "BinaryMatrix(rows,cols)",
+        "set(row,col,bit)",
+        "inverse()"
+      ],
+      "not_covered": [
+        "pow/transpose/行操作/加算を直接呼ぶAPI",
+        "copy/move/view/自己参照演算/確保失敗",
+        "不正添字・shape・rhsの0/1検査",
+        "0x0の逆行列"
+      ],
+      "reasoning": "N=1..4096のGF(2)行列の逆行列/不存在-1をoptionalから直接出す。",
+      "sources": [
+        "https://judge.yosupo.jp/problem/inverse_matrix_mod_2",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/linear_algebra/inverse_matrix_mod_2/task.md",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/linear_algebra/inverse_matrix_mod_2/info.toml"
+      ],
+      "supplemental_ids": [
+        "binary_matrix_product",
+        "binary_matrix_rank",
+        "binary_matrix_det",
+        "binary_matrix_solve"
+      ],
+      "driver": "Verify/current/drivers/binary_matrix_inverse_main.cpp",
+      "source_hashes": {
+        "Math/Binary_Matrix.cpp": "c6f8537e2b2f884a06c6d3c3c2ec16098cb9deba6c40cfa34b832f5f013ab071",
+        "Verify/current/drivers/binary_matrix_inverse_main.cpp": "cca0b3ad95afb1d51ba22189706158302566c7c2fcffa0191293dfc483cc7e3b",
+        "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+      },
+      "official_task_sha256": "a918feee360b671fd0b9d2d60e6535bd7cb7361fcffc4d724642c5a5ee3a8169",
+      "official_info_sha256": "c6c6f63cb0b263c1d7dd8dcb7fd335729551a0796bd8deb27f6d8a75bb5de629",
+      "official_params": {
+        "N_MAX": 4096,
+        "MOD": 2
+      },
+      "official_constraints": "## @{keyword.constraints}\n\n- $1 \\leq N \\leq @{param.N_MAX}$\n- $0 \\leq a_{ij} < @{param.MOD}$\n\n"
+    },
+    {
+      "id": "binary_matrix_solve",
+      "libraries": [
+        "Math/Binary_Matrix.cpp"
+      ],
+      "problem_url": "https://judge.yosupo.jp/problem/system_of_linear_equations_mod_2",
+      "assessment": "direct",
+      "exercised_apis": [
+        "BinaryMatrix(rows,cols)",
+        "set(row,col,bit)",
+        "solve(span<uint8_t>)"
+      ],
+      "not_covered": [
+        "pow/transpose/行操作/加算を直接呼ぶAPI",
+        "copy/move/view/自己参照演算/確保失敗",
+        "不正添字・shape・rhsの0/1検査",
+        "0行/0列（公式N,M≥1）",
+        "LinearSolution::pivot_columns"
+      ],
+      "reasoning": "N,M=1..4096のGF(2)連立方程式で特解・核基底または-1を直接出力。",
+      "sources": [
+        "https://judge.yosupo.jp/problem/system_of_linear_equations_mod_2",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/linear_algebra/system_of_linear_equations_mod_2/task.md",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/linear_algebra/system_of_linear_equations_mod_2/info.toml"
+      ],
+      "supplemental_ids": [
+        "binary_matrix_product",
+        "binary_matrix_rank",
+        "binary_matrix_det",
+        "binary_matrix_inverse"
+      ],
+      "driver": "Verify/current/drivers/binary_matrix_solve_main.cpp",
+      "source_hashes": {
+        "Math/Binary_Matrix.cpp": "c6f8537e2b2f884a06c6d3c3c2ec16098cb9deba6c40cfa34b832f5f013ab071",
+        "Verify/current/drivers/binary_matrix_solve_main.cpp": "f7df9a30802eab609035c40a247b652c0a2eccffb272d28c2ce1fc278005fb71",
+        "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+      },
+      "official_task_sha256": "51a51a6bceda762f86488b3d53152cb0207d4ca5ff4579f153c7dcd53086fa07",
+      "official_info_sha256": "102fd8a749dfa0ed0c9fe4e9f1321a9f16c6925b69570a47b8191c2d0506f416",
+      "official_params": {
+        "N_MAX": 4096,
+        "M_MAX": 4096
+      },
+      "official_constraints": "## @{keyword.constraints}\n\n- $1 \\leq N \\leq @{param.N_MAX}$\n- $1 \\leq M \\leq @{param.M_MAX}$\n- $A_{ij} \\in \\lbrace 0,1\\rbrace$\n- $b_{i} \\in \\lbrace 0,1\\rbrace$\n\n"
+    },
+    {
+      "id": "convolution_any_mod",
+      "libraries": [
+        "Math/Convolution.cpp"
+      ],
+      "problem_url": "https://judge.yosupo.jp/problem/convolution_mod_1000000007",
+      "assessment": "direct",
+      "exercised_apis": [
+        "ConvolutionAnyMod(a,b,1000000007)"
+      ],
+      "not_covered": [
+        "法1/合成数/UINT32_MAXを含む他の法",
+        "負数/uint64係数の正規化",
+        "空入力",
+        "CRTConvolution::integer/integer_squareとint64相殺",
+        "modular_square/cache再利用/prepare/copy/move",
+        "必要変換長2^20超〜2^23"
+      ],
+      "reasoning": "公式正規化係数、N,M≤2^19、法1000000007固定の畳み込みへ直接対応。3素数CRTによる一般法APIを使うが、このentryだけで全ての法や厳密整数畳み込みを検証したとはいえない。",
+      "sources": [
+        "https://judge.yosupo.jp/problem/convolution_mod_1000000007",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/convolution/convolution_mod_1000000007/task.md",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/convolution/convolution_mod_1000000007/info.toml"
+      ],
+      "supplemental_ids": [
+        "ntt_convolution"
+      ],
+      "driver": "Verify/current/drivers/convolution_any_mod_main.cpp",
+      "source_hashes": {
+        "Math/Convolution.cpp": "f12cddfd3d03cc5d215712ddac5dc4f9f0e0e22755442e7ce2a660210f3d9224",
+        "Verify/current/drivers/convolution_any_mod_main.cpp": "afd2674db77c5440cf05fe1df7aee08ef5e7ad6f69690ccdba145871afeacf99",
+        "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+      },
+      "official_task_sha256": "21b80090da477de5ac3bde7b56d115f23e08e2d139361e2d909b2a19e515899c",
+      "official_info_sha256": "f87921eead543ecfdb3aeaf6c78a98c73a60e06c65f27482961da55683641171",
+      "official_params": {
+        "N_AND_M_MAX": 524288,
+        "MOD": 1000000007
+      },
+      "official_constraints": "## @{keyword.constraints}\n\n- $1 \\leq N, M \\leq @{param.N_AND_M_MAX}$\n- $0 \\leq a_i, b_i < @{param.MOD}$\n\n"
+    },
+    {
+      "id": "multipoint_evaluation",
+      "libraries": [
+        "Math/Polynomial.cpp"
+      ],
+      "problem_url": "https://judge.yosupo.jp/problem/multipoint_evaluation",
+      "assessment": "direct",
+      "exercised_apis": [
+        "MultipointEvaluate(vector<uint32_t>,vector<uint32_t>)"
+      ],
+      "not_covered": [
+        "空点列/空多項式",
+        "入力最高次0（公式は禁止）",
+        "負数/法以上入力の正規化",
+        "点数131072超〜max_points",
+        "ProductTree::assign/再利用/evaluate(FPS)/polynomial",
+        "copy/move/例外とview"
+      ],
+      "reasoning": "法998244353でN,M≤131072、非零最高次多項式を各点評価した値を直接出力。評価点の重複は公式制約で禁止されず、このmainも重複点を許す。",
+      "sources": [
+        "https://judge.yosupo.jp/problem/multipoint_evaluation",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/polynomial/multipoint_evaluation/task.md",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/polynomial/multipoint_evaluation/info.toml"
+      ],
+      "supplemental_ids": [
+        "polynomial_interpolation",
+        "polynomial_taylor_shift"
+      ],
+      "driver": "Verify/current/drivers/multipoint_evaluation_main.cpp",
+      "source_hashes": {
+        "Math/Polynomial.cpp": "d9e84f7e9e445cf4dfaee789d344cfffa8abb2ef9705000255cff5d65b2012ab",
+        "Verify/current/drivers/multipoint_evaluation_main.cpp": "49b6e031c9fb2dd9b1b5cb43867094410e83ae507a1e26e94fd459a809d47fac",
+        "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+      },
+      "official_task_sha256": "2a0f19dc557b3ae3286d542a3be92bfcdeb59603b98f2b554396c028a68b33b0",
+      "official_info_sha256": "c89515617cd330c7e7bde3bc93517362787cf01b01b1a990a824fb1e4bad6524",
+      "official_params": {},
+      "official_constraints": "## @{keyword.constraints}\n\n- $1 \\leq N, M \\leq 2^{17}(=131072)$\n- $0 \\leq c_i, p_i < 998244353$\n- $c_{N - 1} \\neq 0$\n\n"
+    },
+    {
+      "id": "polynomial_interpolation",
+      "libraries": [
+        "Math/Polynomial.cpp"
+      ],
+      "problem_url": "https://judge.yosupo.jp/problem/polynomial_interpolation",
+      "assessment": "direct",
+      "exercised_apis": [
+        "PolynomialInterpolate(points,values)",
+        "FormalPowerSeries::get"
+      ],
+      "not_covered": [
+        "重複点のdomain_error（公式は相異なる）",
+        "空点列",
+        "負数/法以上の正規化",
+        "点数131072超の上限",
+        "ProductTree固定点列の再利用/assign/polynomial",
+        "copy/move/例外保証"
+      ],
+      "reasoning": "法998244353、相異なるN≤131072点から次数<Nの係数列をそのまま出力。末尾0もsize/getにより保持される。",
+      "sources": [
+        "https://judge.yosupo.jp/problem/polynomial_interpolation",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/polynomial/polynomial_interpolation/task.md",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/polynomial/polynomial_interpolation/info.toml"
+      ],
+      "supplemental_ids": [
+        "multipoint_evaluation",
+        "polynomial_taylor_shift"
+      ],
+      "driver": "Verify/current/drivers/polynomial_interpolation_main.cpp",
+      "source_hashes": {
+        "Math/Polynomial.cpp": "d9e84f7e9e445cf4dfaee789d344cfffa8abb2ef9705000255cff5d65b2012ab",
+        "Verify/current/drivers/polynomial_interpolation_main.cpp": "7bfeb7d5add46ef7a38aa784843826476efb1a8c1e75024d30214013e0b293bc",
+        "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+      },
+      "official_task_sha256": "d409784b8593a1904acc545eb050567aaf8f3094d980bf7408d62d057f864d54",
+      "official_info_sha256": "5e225e21f1ea8d1bc1f7dcaf718b211cf8ab14bb180c098983e24d6ad7b2b16c",
+      "official_params": {},
+      "official_constraints": "## @{keyword.constraints}\n\n- $1 \\leq N \\leq 2^{17}(=131072)$\n- $0 \\leq x_i, y_i < 998244353$\n- $x_i \\neq x_j (i \\neq j)$\n\n"
+    },
+    {
+      "id": "polynomial_taylor_shift",
+      "libraries": [
+        "Math/Polynomial.cpp"
+      ],
+      "problem_url": "https://judge.yosupo.jp/problem/polynomial_taylor_shift",
+      "assessment": "direct",
+      "exercised_apis": [
+        "TaylorShift(vector<uint32_t>,uint32_t)",
+        "FormalPowerSeries::get"
+      ],
+      "not_covered": [
+        "空多項式",
+        "FormalPowerSeries入力overload",
+        "負数/法以上の正規化",
+        "長さ2^19超〜2^22",
+        "ProductTree関連API/所有権/例外保証"
+      ],
+      "reasoning": "法998244353、N≤2^19、0≤c,a_i<modでf(x+c)の係数を直接出力。c=0/零多項式/末尾0も禁止されていない。",
+      "sources": [
+        "https://judge.yosupo.jp/problem/polynomial_taylor_shift",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/polynomial/polynomial_taylor_shift/task.md",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/polynomial/polynomial_taylor_shift/info.toml"
+      ],
+      "supplemental_ids": [
+        "multipoint_evaluation",
+        "polynomial_interpolation"
+      ],
+      "driver": "Verify/current/drivers/polynomial_taylor_shift_main.cpp",
+      "source_hashes": {
+        "Math/Polynomial.cpp": "d9e84f7e9e445cf4dfaee789d344cfffa8abb2ef9705000255cff5d65b2012ab",
+        "Verify/current/drivers/polynomial_taylor_shift_main.cpp": "7d513df8226c7fb2ed2a384843f998b5374d8c658889f36f11d2c12bd012d56f",
+        "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+      },
+      "official_task_sha256": "ef1bb2fb955990ca4ad7fd575a050c8ea906611d275187030d02d328d6b3f1b1",
+      "official_info_sha256": "634af1112071422c95317ce45dee32f2e8f82b1256eae71360582bedacd428ac",
+      "official_params": {
+        "N_MAX": 524288,
+        "MOD": 998244353
+      },
+      "official_constraints": "## @{keyword.constraints}\n\n- $1 \\leq N \\leq @{param.N_MAX}$\n- $0 \\leq c, a_i < @{param.MOD}$\n\n"
+    },
+    {
+      "id": "modular_sqrt",
+      "libraries": [
+        "Math/Modular_Arithmetic.cpp"
+      ],
+      "problem_url": "https://judge.yosupo.jp/problem/sqrt_mod",
+      "assessment": "direct",
+      "exercised_apis": [
+        "ModSqrt(uint64_t value,uint64_t prime)"
+      ],
+      "not_covered": [
+        "p>10^9〜UINT64_MAX（特にp>2^32の大きい法専用経路）",
+        "入力value≥pの正規化",
+        "小さい方の根という追加API保証（公式はどちらの根でも可）",
+        "ModAdd/Subtract/Multiply/Pow/Inverse/CRT/LinearCongruence/Normalizeを直接呼ぶAPI",
+        "素数でない法（APIの前提違反）/法0例外",
+        "constexpr利用"
+      ],
+      "reasoning": "公式素数2≤p≤10^9と正規化済み値で、optionalの平方根または-1を直接出す。p=2/零/非平方剰余も公式範囲。数学的平方根APIには直接適合するがModular_Arithmetic.cpp全体の検証とは異なる。",
+      "sources": [
+        "https://judge.yosupo.jp/problem/sqrt_mod",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/number_theory/sqrt_mod/task.md",
+        "https://github.com/yosupo06/library-checker-problems/blob/73876f1cbcf082d2b22722924b924d3d65a2f00e/number_theory/sqrt_mod/info.toml"
+      ],
+      "supplemental_ids": [],
+      "driver": "Verify/current/drivers/modular_sqrt_main.cpp",
+      "source_hashes": {
+        "Math/Modular_Arithmetic.cpp": "fc926b16fd891d6662a017e7ff626f088b204f068a803abe94649f066e1d48bb",
+        "Verify/current/drivers/modular_sqrt_main.cpp": "05bb6d56d02fac0e96463a165f56bc0583bcd14a42bd55cabe88f63b211e5151",
+        "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+      },
+      "official_task_sha256": "8cc79cc9de8c490e596c601a982b83fe05ba123b50cf22c9b24a4e9c85edd35e",
+      "official_info_sha256": "b11ceeb9e8ac61cea0b27117bf1675d55b31257be3ee4f620815175057317d02",
+      "official_params": {},
+      "official_constraints": "## @{keyword.constraints}\n\n@{lang.en}\n\n- $1 \\leq T \\leq 100,000$\n- $2 \\leq P \\leq 10^9$\n- $0 \\leq Y < P$\n- $P$ is prime.\n\n@{lang.ja}\n\n- $1 \\leq T \\leq 100,000$\n- $2 \\leq P \\leq 10^9$\n- $0 \\leq Y < P$\n- $P$ は素数\n\n@{lang.end}\n\n"
+    }
+  ],
+  "counts": {
+    "direct": 38,
+    "partial": 0,
+    "inappropriate": 0
+  },
+  "binomial_counts": {
+    "general_mod": 4,
+    "prime_mod": 6,
+    "total": 10
+  },
+  "entry_ids_exactly_match_input": true,
+  "code_changed": false,
+  "online_submission_done": false,
+  "tests_run_for_this_read_only_audit": false,
+  "local_evidence_zip": {
+    "path": "Audit/data/verify-coverage-math-20261115.zip",
+    "sha256": "7add5accc16792d7a7485a61369a9da8b894e4e528870a48ca5cd78a2cc1a8f9",
+    "tracked": false
+  }
+}

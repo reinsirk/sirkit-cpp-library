@@ -24,6 +24,8 @@
 // GCC/x86のuint32_t行列積は、対応CPUでAVX2を使う。unsignedの積と加算は通常版と同じmod 2^32。
 // SIRKIT_DISABLE_SIMDで専用実装とCPU判定を除外する。小さい行列・他の型・非対応CPU/コンパイラは標準ループ。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -35,6 +37,9 @@
 #include <vector>
 #include <bit>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_MATRIX_DEFINED
 #define SIRKIT_MATRIX_DEFINED
 template<class T>
@@ -185,3 +190,7 @@ template<class T>std::vector<T> MatrixApply(const Matrix<T>& matrix,const std::v
     return result;
 }
 #endif
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1

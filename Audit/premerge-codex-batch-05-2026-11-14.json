@@ -1,0 +1,239 @@
+{
+  "format": 1,
+  "date": "2026-11-14",
+  "stage": "codex",
+  "status": "complete",
+  "scope": "Current-source static review + independent/official sample validation + whole-program measurement; same-source control is not a speedup claim",
+  "entries": [
+    {
+      "id": "binomial_modint_prime_mod_split",
+      "source_sha256": "b6a5a457ff2a18058f7e048877279a61f062f4cd10a55fcde6ff0914e1904b45",
+      "input_source_sha256": "b6a5a457ff2a18058f7e048877279a61f062f4cd10a55fcde6ff0914e1904b45",
+      "decision": {
+        "decision": "unchanged_no_new_candidate",
+        "current_review_reason": "modulusとn,kを合法範囲のuint32で読み、素数法のmax_nは全queryから求め必要表だけ構築。COM_manyの分母一括逆元は旧smallMax/manyInvalid/mod2で3〜15%回帰、既存COM/所有を維持。",
+        "historical_candidate_decisions": [
+          {
+            "record": "Audit/optimization-fable-batch-06-2026-11-13.json",
+            "decision": "reject",
+            "candidate_reason": "Q≤2e5に対し表は最大1e7で、ifac表の構築はQ件の照会よりはるかに重い。facだけ作り、分母fac[k]*fac[n-k]をQ件まとめて逆元1回で割れば、乗算約1e7回と約40MBの確保・書込みが約5Q回の乗算に置き換わる。max_n=p-1のWilson経路では乗算は元々無く、利得は書込み分だけ。max_nが小さい入力では差が出ない。既存のCOM・prepareとメンバ表には触れない追加APIなので、所有と既存契約は変わらない。まずPrimeBinomialで試し、効果があれば他2種へ展開する。",
+            "decision_reason": "原型・small表fallback・consumer overloadまで独立照合したが、GCC smallMax/manyInvalid/mod2/T100万で約3〜15%以上の明確回帰が残る。大N約31〜46%短縮/約38MiB減でも、今回指定の全域非回帰条件を満たさず、既存API/mainを維持。公式taskのn,k<min(m,1e7)は確認済みで、新案のn<p条件は本問題には適合するが性能理由で不採用。製品COM_many/Doc/Exampleは追加していない。"
+          }
+        ]
+      },
+      "compiler": {
+        "path": "/usr/bin/g++",
+        "version": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0"
+      },
+      "flags_and_gcc_pragmas": [],
+      "timing_definition": "child process CPU time and wall time. Full process includes startup, main, I/O, library and teardown. Input generation/hash/reference checks excluded. No body-only speed claim.",
+      "same_source_control": true,
+      "measurement_record_sha256": "542cf92ded448739d417b7593e54b93a892c44b026c54c3bb6a5248246336bad",
+      "official_sample_count": 3,
+      "profiles": [
+        {
+          "profile": "random",
+          "input_sha256": "09e9e7396e1108472e4e789119dc292d62d10d740236a3ccc79be2dd927ef9a7",
+          "validation": "baseline_output_equality_only",
+          "expected_output_sha256": "1f513db6c8ee6b75ba227b31ffa74fa1cd7c8fdba59466e18d9a83c30ac98b30",
+          "median_cpu_seconds": {
+            "baseline": 0.013479000000001018,
+            "current": 0.013292000000000748
+          },
+          "measured_trials": 5,
+          "current_over_baseline": 0.9861265672527445,
+          "ratio_is_speedup_claim": false
+        },
+        {
+          "profile": "smallprime",
+          "input_sha256": "562dd6e23d72707eea1bd088b4d174fb4d0a68e47ddd9058ef01ba88ce4403f2",
+          "validation": "baseline_output_equality_only",
+          "expected_output_sha256": "cd7a3e5ae6d195cd90af522b1bcc70246b68de03008a0ce051e299cb349e9d5a",
+          "median_cpu_seconds": {
+            "baseline": 0.0067670000000000785,
+            "current": 0.006850999999999718
+          },
+          "measured_trials": 5,
+          "current_over_baseline": 1.0124131816166158,
+          "ratio_is_speedup_claim": false
+        }
+      ]
+    },
+    {
+      "id": "binomial_modint_split",
+      "source_sha256": "a51aef4adca679f77f5c49be796eec7abf98a1862363ee4577fa4317d1f4fd61",
+      "input_source_sha256": "a51aef4adca679f77f5c49be796eec7abf98a1862363ee4577fa4317d1f4fd61",
+      "decision": {
+        "decision": "unchanged_no_new_candidate",
+        "current_review_reason": "modulusとn,kを合法範囲のuint32で読み、素数法のmax_nは全queryから求め必要表だけ構築。COM_manyの分母一括逆元は旧smallMax/manyInvalid/mod2で3〜15%回帰、既存COM/所有を維持。",
+        "historical_candidate_decisions": []
+      },
+      "compiler": {
+        "path": "/usr/bin/g++",
+        "version": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0"
+      },
+      "flags_and_gcc_pragmas": [
+        "#pragma GCC optimize(\"O3\")"
+      ],
+      "timing_definition": "child process CPU time and wall time. Full process includes startup, main, I/O, library and teardown. Input generation/hash/reference checks excluded. No body-only speed claim.",
+      "same_source_control": true,
+      "measurement_record_sha256": "81f1aaa2a77513ca1fea10f55e83a3215bd9a0b150d02388829df6136840fbfa",
+      "official_sample_count": 2,
+      "profiles": [
+        {
+          "profile": "random",
+          "input_sha256": "38c65ae44551ff23c728c7c81290cc18d9bdf926843040d9358589bd5578e2ca",
+          "validation": "baseline_output_equality_only",
+          "expected_output_sha256": "c5ceb3c1de26950d166e2ec9546a5dac9154df2b5e435d318427538bdc4fc831",
+          "median_cpu_seconds": {
+            "baseline": 0.005893000000000148,
+            "current": 0.005873999999999879
+          },
+          "measured_trials": 5,
+          "current_over_baseline": 0.9967758357372699,
+          "ratio_is_speedup_claim": false
+        },
+        {
+          "profile": "zero",
+          "input_sha256": "3a8b38139eb6e35fb114392d9f328b277e3a9e4cf1762933a671b8d0e6b528d8",
+          "validation": "baseline_output_equality_only",
+          "expected_output_sha256": "566fe3f25d10d1d8cb5e5fc5d7fa176d32e67273e85f8c25ff346828b4aebe2a",
+          "median_cpu_seconds": {
+            "baseline": 0.0018990000000002616,
+            "current": 0.0018819999999998283
+          },
+          "measured_trials": 5,
+          "current_over_baseline": 0.9910479199576456,
+          "ratio_is_speedup_claim": false
+        }
+      ]
+    },
+    {
+      "id": "zeta_gcd_conv_split",
+      "source_sha256": "b1a4c106d11d16a2cc24156f56d22325c498dab5c653b6ed707a4d0b68e6ba6e",
+      "input_source_sha256": "b1a4c106d11d16a2cc24156f56d22325c498dab5c653b6ed707a4d0b68e6ba6e",
+      "decision": {
+        "decision": "unchanged_no_new_candidate",
+        "current_review_reason": "a[0]=b[0]=0、IntegerSieveを1回用意してmove渡し。素数stride伝播の展開と0項省略を維持し、符号なしmod演算の中間uint64を保つ。",
+        "historical_candidate_decisions": [
+          {
+            "record": "Audit/optimization-fable-batch-07-2026-11-13.json",
+            "decision": "adopt",
+            "candidate_reason": "main が lvalue を値渡ししており、以後使わない a, b を n 要素ずつ2本、確保してコピーしている。API は rvalue の領域移譲を明記している。OR-as-AND は次の候補に含めた。効果は未測定で、小さい見込み。",
+            "decision_reason": "使用済み入力vectorをmoveしてコピー2本を除去。128構成独立照合と生成版32構成PASS。最大random/zero全条件で全体短縮、RSS約8MiB減。小nの起動支配の数us差は別記。"
+          }
+        ]
+      },
+      "compiler": {
+        "path": "/usr/bin/g++",
+        "version": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0"
+      },
+      "flags_and_gcc_pragmas": [],
+      "timing_definition": "child process CPU time and wall time. Full process includes startup, main, I/O, library and teardown. Input generation/hash/reference checks excluded. No body-only speed claim.",
+      "same_source_control": true,
+      "measurement_record_sha256": "fc86c421049bea49d1c0186a214ce861051da623c37fb07761049bd506a31104",
+      "official_sample_count": 1,
+      "profiles": [
+        {
+          "profile": "random",
+          "input_sha256": "2822768da032a1b28aae7e76faaf7417c5902e126d10ebc0753c88c2833ada42",
+          "validation": "baseline_output_equality_only",
+          "expected_output_sha256": "1942ae5e1feb0c30663e07c508ff76fa6d78b6b3b53fb19ba006b989c9385880",
+          "median_cpu_seconds": {
+            "baseline": 0.0050980000000029335,
+            "current": 0.005083000000007942
+          },
+          "measured_trials": 5,
+          "current_over_baseline": 0.9970576696753664,
+          "ratio_is_speedup_claim": false
+        },
+        {
+          "profile": "zero",
+          "input_sha256": "4d473737806e671dff7f842d5dad53b1a515ff3f1cbdeed53887c5b160f47e5c",
+          "validation": "baseline_output_equality_only",
+          "expected_output_sha256": "964d2aa2d62e58054801c8850f3fb2a7f658287d7acdd0ea7fe9912ce18cbf3f",
+          "median_cpu_seconds": {
+            "baseline": 0.00294300000000991,
+            "current": 0.0029130000000066048
+          },
+          "measured_trials": 5,
+          "current_over_baseline": 0.9898063200804607,
+          "ratio_is_speedup_claim": false
+        }
+      ]
+    },
+    {
+      "id": "zeta_lcm_conv_split",
+      "source_sha256": "4009c577093ecbfe01c8e83297212b85911dad20619048f90fee5b3c5c2236b1",
+      "input_source_sha256": "4009c577093ecbfe01c8e83297212b85911dad20619048f90fee5b3c5c2236b1",
+      "decision": {
+        "decision": "unchanged_no_new_candidate",
+        "current_review_reason": "a[0]=b[0]=0、IntegerSieveを1回用意してmove渡し。素数stride伝播の展開と0項省略を維持し、符号なしmod演算の中間uint64を保つ。",
+        "historical_candidate_decisions": [
+          {
+            "record": "Audit/optimization-fable-batch-07-2026-11-13.json",
+            "decision": "adopt",
+            "candidate_reason": "main が lvalue を値渡ししており、以後使わない a, b を n 要素ずつ2本、確保してコピーしている。API は rvalue の領域移譲を明記している。OR-as-AND は次の候補に含めた。効果は未測定で、小さい見込み。",
+            "decision_reason": "使用済み入力vectorをmoveしてコピー2本を除去。128構成独立照合と生成版32構成PASS。最大random/zero全条件で全体短縮、RSS約8MiB減。小nの起動支配の数us差は別記。"
+          }
+        ]
+      },
+      "compiler": {
+        "path": "/usr/bin/g++",
+        "version": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0"
+      },
+      "flags_and_gcc_pragmas": [],
+      "timing_definition": "child process CPU time and wall time. Full process includes startup, main, I/O, library and teardown. Input generation/hash/reference checks excluded. No body-only speed claim.",
+      "same_source_control": true,
+      "measurement_record_sha256": "f751813683c3bd644a29f3b857e8074396de090694924fbb81b1a0042306e4fb",
+      "official_sample_count": 1,
+      "profiles": [
+        {
+          "profile": "random",
+          "input_sha256": "1e4d1a658e69fd6b748312671581329c14de260bc183775c280aff2337c09796",
+          "validation": "baseline_output_equality_only",
+          "expected_output_sha256": "3defd0f1a8993515d1afd439965d9f7b103ddeca5cae911c3e92ca4a7c677169",
+          "median_cpu_seconds": {
+            "baseline": 0.005344999999988609,
+            "current": 0.005340000000012779
+          },
+          "measured_trials": 5,
+          "current_over_baseline": 0.9990645463094779,
+          "ratio_is_speedup_claim": false
+        },
+        {
+          "profile": "zero",
+          "input_sha256": "4d473737806e671dff7f842d5dad53b1a515ff3f1cbdeed53887c5b160f47e5c",
+          "validation": "baseline_output_equality_only",
+          "expected_output_sha256": "964d2aa2d62e58054801c8850f3fb2a7f658287d7acdd0ea7fe9912ce18cbf3f",
+          "median_cpu_seconds": {
+            "baseline": 0.0032759999999951717,
+            "current": 0.003257999999989991
+          },
+          "measured_trials": 5,
+          "current_over_baseline": 0.994505494503905,
+          "ratio_is_speedup_claim": false
+        }
+      ]
+    }
+  ],
+  "source_hashes": {
+    "Math/Combination/ModInt_Binomial.cpp": "0bc0da0d4eeb36142e73b1f1b6b61c7a6e4908e71631561253c3ff7f79295af3",
+    "Math/Zeta/Gcd_Lcm_Convolution.cpp": "9595f23875f349a1dc31559e545bed525180e40e438c8299f803d02a132387b9",
+    "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab",
+    "Verify/current/drivers/binomial_modint_main.cpp": "aec5dd894f99011e6734822472571ef35904e8381c5f057e1f7578c9289de3c6",
+    "Verify/current/drivers/binomial_modint_prime_mod_main.cpp": "e663a8f46bb34e59208b250cf946af7e35f2ed5d566d814f1551bed75688c453",
+    "Verify/current/drivers/zeta_gcd_conv_main.cpp": "15e231633baeabcc4c24166d4529cb2afcc2531e8cc357606ec6197afb9b0dc2",
+    "Verify/current/drivers/zeta_lcm_conv_main.cpp": "8a54f48170f96f19bd6c3b9f13bde4624f91ed70a51d3ada6ba01e7d6f03a0af",
+    "Verify/current/vendor/atcoder/internal_math.hpp": "487416d11ce878d7785559a02c84f094529e39fa5cc593d4c45e91fc7da53f56",
+    "Verify/current/vendor/atcoder/internal_type_traits.hpp": "52c1c0d56535043c2b8f2f776d534fd8e931cf92a511d697fb56649cd4935000",
+    "Verify/current/vendor/atcoder/modint.hpp": "aef131053e67300be6def657f1ef1eb1c80ef2c92ffc8220d7be0cccab583318",
+    "Verify/current/submissions/binomial_modint_prime_mod_split.cpp": "b6a5a457ff2a18058f7e048877279a61f062f4cd10a55fcde6ff0914e1904b45",
+    "Verify/current/submissions/binomial_modint_split.cpp": "a51aef4adca679f77f5c49be796eec7abf98a1862363ee4577fa4317d1f4fd61",
+    "Verify/current/submissions/zeta_gcd_conv_split.cpp": "b1a4c106d11d16a2cc24156f56d22325c498dab5c653b6ed707a4d0b68e6ba6e",
+    "Verify/current/submissions/zeta_lcm_conv_split.cpp": "4009c577093ecbfe01c8e83297212b85911dad20619048f90fee5b3c5c2236b1"
+  },
+  "measurement_tools": "/tmp/sirkit-premerge-optimization-20261114/measurements",
+  "commit_or_push": false,
+  "online_status": "not_evaluated"
+}

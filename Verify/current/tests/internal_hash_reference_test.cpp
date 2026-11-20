@@ -1,9 +1,12 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 // 独立したstd::map参照で整数キー表と所有操作を検査する。
 #ifndef SIRKIT_INTERNAL_HASH_SOURCE
 #define SIRKIT_INTERNAL_HASH_SOURCE "../../../Internal/Nyaan_hash_map_min.cpp"
 #endif
 #include SIRKIT_INTERNAL_HASH_SOURCE
+#include "internal_hash_capacity_checks.hpp"
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
@@ -40,7 +43,7 @@ static void inspect(const Table& table, const std::map<Key, Value>& ref) {
 
 template<class Key, bool Packed, unsigned D>
 static void run_numeric(int operations) {
-    using Table = reinsirk::detail::InternalHashMap<Key, std::int64_t, Packed, D>;
+    using Table = ::sirkit::detail::InternalHashMap<Key, std::int64_t, Packed, D>;
     Table table;
     std::map<Key, std::int64_t> ref;
     std::int64_t initial = -19;
@@ -130,7 +133,7 @@ template<bool Packed> static void additional_denominators() {
 
 template<bool Packed, unsigned D>
 static void stable_reserved_references() {
-    using Table = reinsirk::detail::InternalHashMap<std::uint64_t, std::int64_t, Packed, D>;
+    using Table = ::sirkit::detail::InternalHashMap<std::uint64_t, std::int64_t, Packed, D>;
     Table table;
     table.reserve(5000);
     std::vector<const std::int64_t*> pointers;
@@ -144,7 +147,7 @@ static void stable_reserved_references() {
 
 template<bool Packed>
 static void owned_values() {
-    using StringTable = reinsirk::detail::InternalHashMap<int, std::string, Packed>;
+    using StringTable = ::sirkit::detail::InternalHashMap<int, std::string, Packed>;
     StringTable table; table.set_default("new-value");
     std::map<int, std::string> ref;
     for (int i = -256; i <= 256; ++i) {
@@ -158,7 +161,7 @@ static void owned_values() {
     require(table[999] == "after-clear"); ref[999] = "after-clear"; inspect(table, ref);
     std::weak_ptr<int> weak;
     {
-        reinsirk::detail::InternalHashMap<int, std::shared_ptr<int>, Packed> owners;
+        ::sirkit::detail::InternalHashMap<int, std::shared_ptr<int>, Packed> owners;
         auto value = std::make_shared<int>(42); weak = value;
         owners[11] = value; value.reset();
         require(!weak.expired() && **owners.find(11) == 42);
@@ -171,6 +174,7 @@ static void owned_values() {
 }
 
 int main() {
+    sirkit_internal_hash_capacity_test::run();
     denominators<std::int8_t, false>(); denominators<std::int8_t, true>();
     denominators<std::uint8_t, false>(); denominators<std::uint8_t, true>();
     denominators<std::int16_t, false>(); denominators<std::int16_t, true>();

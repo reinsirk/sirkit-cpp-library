@@ -2,6 +2,8 @@
 #include "../DataStructure/Dynamic_Bitset.cpp"
 #include <iostream>
 #include <utility>
+
+using namespace sirkit;
 int main() {
     DynamicBitset bits("0010101");
     bits[1] = true;

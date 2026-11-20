@@ -2,37 +2,160 @@
 
 `DataStructure/heap.cpp`の`Heap`は、`int`を所有する最小ヒープです。外部ライブラリに依存せず貼り付けられます。使用例は[heap_example.cpp](../Examples/heap_example.cpp)です。
 
+`SIRKIT_HEAP_FORCE_QUATERNARY`を定義すると、処理系による既定の選択にかかわらず、根が2子で他の内部節点が最大4子の構成を使います。
+
 ## API
 
-| 操作 | 意味・前提 | 計算量 |
-| --- | --- | --- |
-| `Heap()` | 空で構築 | O(1) |
-| `Heap(vector<int>)` | 配列を受け取って構築。ムーブで所有権を渡せる | O(N) |
-| `Heap({値...})`, `Heap(first,last)` | 値をコピーして構築 | O(N) |
-| `empty()`, `size()` | 空判定・要素数 | O(1) |
-| `top()`, `top_or(fallback)` | 最小値。空ならそれぞれ`-1`・`fallback` | O(1) |
-| `push(value)` | 値を追加 | 償却O(log N) |
-| `pop()` | 最小値を削除。空なら何もしない | O(log N) |
-| `pop_value()` | 最小値を削除して返す | O(log N) |
-| `replace_top(value)` | 最小値を置換し、旧値を返す | O(log N) |
-| `push_pop(value)` | 追加後の最小値を削除して返す。空なら`value`を返す | O(log N) |
-| `clear()` | 空にする。確保済み容量は保持 | O(1) |
-| `reserve(n)` | `n`要素分の容量を確保 | 再確保時O(N) |
+### Heap
+
+```text
+Heap();
+explicit Heap(std::vector<int> values);
+Heap(std::initializer_list<int> values);
+template<class Iterator> Heap(Iterator first, Iterator last);
+```
+
+空／指定した値の最小ヒープを構築します。vectorは値で受け取り所有します。
+
+**制約:** iterator範囲が有効でintへ変換できること。
+
+**計算量:** 空はO(1)、N要素からの構築はO(N)。
+
+### empty
+
+```text
+bool empty() const noexcept;
+```
+
+空ならtrueを返します。
+
+**制約:** 追加の制約はありません。
+
+**計算量:** O(1)。
+
+### size
+
+```text
+std::size_t size() const noexcept;
+```
+
+要素数を返します。
+
+**制約:** 追加の制約はありません。
+
+**計算量:** O(1)。
+
+### top
+
+```text
+int top() const noexcept;
+```
+
+最小値を返し、空なら-1です。
+
+**制約:** 追加の制約はありません。
+
+**計算量:** O(1)。
+
+### top_or
+
+```text
+int top_or(int fallback) const noexcept;
+```
+
+最小値を返し、空ならfallbackです。
+
+**制約:** 追加の制約はありません。
+
+**計算量:** O(1)。
+
+### push
+
+```text
+void push(int value);
+```
+
+値を1個追加します。
+
+**制約:** 追加の制約はありません。
+
+**計算量:** 償却O(log(N+1))。
+
+### pop
+
+```text
+void pop() noexcept;
+```
+
+最小値を1個削除します。空なら無操作です。
+
+**制約:** 追加の制約はありません。
+
+**計算量:** O(log(N+1))。
+
+### pop_value
+
+```text
+int pop_value();
+```
+
+最小値を削除して返します。
+
+**制約:** 空でないこと。検査時の違反はout_of_range。
+
+**計算量:** O(log(N+1))。
+
+### replace_top
+
+```text
+int replace_top(int value);
+```
+
+最小値をvalueに置換し、旧最小値を返します。
+
+**制約:** 空でないこと。検査時の違反はout_of_range。
+
+**計算量:** O(log(N+1))。
+
+### push_pop
+
+```text
+int push_pop(int value) noexcept;
+```
+
+追加後の最小値を削除して返します。空ならvalueです。
+
+**制約:** 追加の制約はありません。
+
+**計算量:** O(log(N+1))。
+
+### clear
+
+```text
+void clear() noexcept;
+```
+
+空にして容量を保持します。
+
+**制約:** 追加の制約はありません。
+
+**計算量:** O(1)。
+
+### reserve
+
+```text
+void reserve(std::size_t n);
+```
+
+n要素分の容量を予約します。
+
+**制約:** 容量上限以下。
+
+**計算量:** 再確保時O(N)、確保済みならO(1)。
+
 
 `pop_value()`と`replace_top()`は、空なら`std::out_of_range`を送出します。`SKIP_RUNTIME_CHECKS`を定義するとこの検査を除き、非空が前提となります。`top()`の`-1`は空の目印と値の区別がつかないため、必要なら`empty()`を併用します。
 
 コピーは独立した配列を持ち、ムーブは配列の所有権を移します。負値・重複値・`int`の両端値も格納できます。
 
-## 構造
-
-要素は一つの`std::vector<int>`が所有します。GCCのx86で`__AVX2__`が未定義の場合は、根の子を2個、それ以降の子を4個にしたヒープを使います。添字`i > 0`の親は`(i+1)/4`、根以外の頂点`i`の子は`4*i-1`から`4*i+2`です。根の修復では最初に2個の子を調べるため、根付近で終わる置換も短い処理で済みます。
-
-追加は最初の親を確認し、上昇が不要なら挿入済みの位置で処理を終えます。上昇する場合は親を下へ移し、挿入位置へ値を置きます。配列からの構築は末尾側の親から修復し、O(N)時間です。
-
-それ以外のコンパイル条件では二分ヒープを使い、添字`i`の子は`2*i+1`と`2*i+2`です。この場合の構築は`std::make_heap`です。どちらの構造も標準C++の整数演算で動作し、要素の所有方法と公開APIは共通です。
-
-## Verify
-
-[ABC234 D - Prefix K-th Max](https://atcoder.jp/contests/abc234/tasks/abc234_d)では、先頭から追加し、要素数がKを超えたら最小値を削除します。[提出用コード](../Verify/current/submissions/heap_priority_queue.cpp)には共通の高速入出力と検査省略の設定を含めています。
-
-[ローカル検査](../Verify/current/tests/heap_test.cpp)では、オンライン問題に含まれない置換・重複・負値・整数端点・コピー/ムーブ・空の扱いを`std::multiset`と照合します。判定・測定の証拠は`Audit/`に置きます。
+[完全な使用例](../Examples/heap_example.cpp)・[実装・検証の記録](../Audit/document-detail-before-concise-data-structure-2026-11-15.md#heap)

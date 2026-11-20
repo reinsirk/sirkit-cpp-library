@@ -24,6 +24,8 @@
 // sparse_multiple_zeta_transform(f,sieve): 正で一意なkeyの全約数を含むfをkey昇順にし、各値を倍数和へ置換。key<=sieve.max_value()、Valは+=対応。O((m+r)log(m+1))時間、O(m+r)補助領域。
 // sparse_multiple_mobius_transform(f,sieve): 正で一意なkeyの全約数を含むfをkey昇順にし、倍数和の逆変換を実行。key<=sieve.max_value()、Valは-=対応。O((m+r)log(m+1))時間、O(m+r)補助領域。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <array>
 #include <bit>
@@ -37,8 +39,19 @@
 #include <utility>
 #include <vector>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_INTEGER_SIEVE_DEFINED
 #define SIRKIT_INTEGER_SIEVE_DEFINED
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
+inline std::size_t sieve_divisor_capacity(std::size_t count, std::size_t multiplier,
+                                         std::size_t limit) {
+    if (multiplier > limit / count)
+        throw std::length_error("IntegerSieve: divisor table too large");
+    return count * multiplier;
+}
+}
 struct IntegerSieve {
     std::vector<int> least_prime_factor;
     std::vector<int> prime_list;
@@ -55,7 +68,8 @@ struct IntegerSieve {
                 prime_list.push_back(static_cast<int>(i));
             }
             const int first = least_prime_factor[i];
-            for (std::size_t j = 1; j < prime_list.size(); ++j) {
+            // iの最小素因数firstは列に入り、必ずそこまでに打ち切る。
+            for (std::size_t j = 1; ; ++j) {
                 const int prime = prime_list[j];
                 const std::uint64_t next = static_cast<std::uint64_t>(i) * static_cast<std::uint64_t>(prime);
                 if (next >= limit) break;
@@ -248,7 +262,10 @@ struct IntegerSieve {
         }
         if (k == 0) return std::vector<MODINT>(count, MODINT(1));
         std::vector<MODINT> result(count);
-        if (count > 0) result[0] = MODINT(0);
+#ifdef SKIP_RUNTIME_CHECKS
+        if (result.empty()) return result;
+#endif
+        result[0] = MODINT(0);
         if (count > 1) result[1] = MODINT(1);
         for (std::size_t i = 2; i < count; ++i) {
             const int p = least_prime_factor[i];
@@ -276,17 +293,23 @@ private:
 
     template <class T>
     static void reserve_multiple(std::vector<T>& values, std::size_t multiplier) {
-        if (multiplier > values.max_size() / values.size()) {
-            throw std::length_error("IntegerSieve: divisor table too large");
-        }
-        values.reserve(values.size() * multiplier);
+        values.reserve(/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::sieve_divisor_capacity(values.size(), multiplier, values.max_size()));
     }
 };
 #endif
 
 #ifndef SIRKIT_INTERNAL_SPARSE_INTEGER_TRANSFORM_DEFINED
 #define SIRKIT_INTERNAL_SPARSE_INTEGER_TRANSFORM_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
+inline std::size_t sparse_transfer_reserve_size(std::size_t count, std::size_t limit) noexcept {
+    return count <= limit / 4 ? count * 4 : count;
+}
+
+inline std::size_t sparse_lookup_capacity(std::size_t count, std::size_t limit) {
+    if (count > limit / 4) throw std::length_error("sparse integer transform: lookup capacity");
+    return std::bit_ceil(count * 2);
+}
+
 // 内部用。密な範囲は位置配列、疎な範囲は素数別の伝播列を使う。
 template <bool Inverse, std::integral Int, class Val>
 void sparse_integer_transform(std::vector<std::pair<Int, Val>>& f,
@@ -360,9 +383,10 @@ void sparse_integer_transform(std::vector<std::pair<Int, Val>>& f,
             return;
         }
     }
-    std::sort(f.begin(), f.end(), [](const auto& a, const auto& b) {
+    const auto by_key = [](const auto& a, const auto& b) {
         return a.first < b.first;
-    });
+    };
+    if (!std::is_sorted(f.begin(), f.end(), by_key)) std::sort(f.begin(), f.end(), by_key);
 #ifndef SKIP_RUNTIME_CHECKS
     if (sieve.max_value() < 0 || f.front().first <= 0
         || static_cast<std::uintmax_t>(f.back().first)
@@ -379,14 +403,10 @@ void sparse_integer_transform(std::vector<std::pair<Int, Val>>& f,
     };
 
     // 範囲をmの4倍以下に制限し、値域に比例する記憶量を避ける。
-    if (largest <= std::numeric_limits<std::size_t>::max() - 1
-        && (largest / m < 4 || (largest / m == 4 && largest % m == 0))) {
+    // 最大キーも篩内にあるので、位置表の要素数 n + 1 は size_t に収まる。
+    if (largest / m < 4 || (largest / m == 4 && largest % m == 0)) {
         const auto n = static_cast<std::size_t>(largest);
-        std::vector<std::size_t> position;
-        if (n >= position.max_size()) {
-            throw std::length_error("sparse integer transform: position capacity");
-        }
-        position.assign(n + 1, absent);
+        std::vector<std::size_t> position(n + 1, absent);
         for (std::size_t i = 0; i < m; ++i) {
             const auto key = static_cast<std::size_t>(f[i].first);
 #ifndef SKIP_RUNTIME_CHECKS
@@ -425,14 +445,10 @@ void sparse_integer_transform(std::vector<std::pair<Int, Val>>& f,
     };
     std::vector<std::size_t> head(m, absent);
     std::vector<Transfer> transfers;
-    if (m <= transfers.max_size() / 4) transfers.reserve(m * 4);
-    else transfers.reserve(m);
+    transfers.reserve(sparse_transfer_reserve_size(m, transfers.max_size()));
     // 最大8回だけ探索し、衝突が続けば二分探索へ戻す。
     std::vector<std::size_t> slots;
-    if (m > slots.max_size() / 4) {
-        throw std::length_error("sparse integer transform: lookup capacity");
-    }
-    const auto slot_count = std::bit_ceil(m * 2);
+    const auto slot_count = sparse_lookup_capacity(m, slots.max_size());
     slots.assign(slot_count, absent);
     const auto mask = slot_count - 1;
     const auto hash_shift = std::numeric_limits<std::uint64_t>::digits
@@ -482,7 +498,8 @@ void sparse_integer_transform(std::vector<std::pair<Int, Val>>& f,
                 return static_cast<std::uintmax_t>(item.first) < value;
             });
 #ifndef SKIP_RUNTIME_CHECKS
-        if (it == f.end() || static_cast<std::uintmax_t>(it->first) != key) {
+        // 検索する因子は現在のキー以下なのでlower_boundは末尾に達しない。
+        if (static_cast<std::uintmax_t>(it->first) != key) {
             throw std::invalid_argument("sparse integer transform: missing divisor");
         }
 #endif
@@ -499,9 +516,6 @@ void sparse_integer_transform(std::vector<std::pair<Int, Val>>& f,
                 sieve.least_prime_factor[static_cast<std::size_t>(remaining)]);
             const auto prime_index = locate(p);
             const auto dst = locate(original / p);
-            if (transfers.size() == transfers.max_size()) {
-                throw std::length_error("sparse integer transform: transfer capacity");
-            }
             transfers.push_back({i, dst, head[prime_index]});
             head[prime_index] = transfers.size() - 1;
             do remaining /= p;
@@ -524,7 +538,7 @@ void sparse_integer_transform(std::vector<std::pair<Int, Val>>& f,
 template <std::integral Int, class Val>
 void sparse_multiple_zeta_transform(std::vector<std::pair<Int, Val>>& f,
                               const IntegerSieve& sieve) {
-    reinsirk::detail::sparse_integer_transform<false>(f, sieve);
+    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::sparse_integer_transform<false>(f, sieve);
 }
 #endif
 
@@ -533,10 +547,17 @@ void sparse_multiple_zeta_transform(std::vector<std::pair<Int, Val>>& f,
 template <std::integral Int, class Val>
 void sparse_multiple_mobius_transform(std::vector<std::pair<Int, Val>>& f,
                                  const IntegerSieve& sieve) {
-    reinsirk::detail::sparse_integer_transform<true>(f, sieve);
+    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::sparse_integer_transform<true>(f, sieve);
 }
 #endif
 
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
+
+
+namespace sirkit {}
+using namespace sirkit;
 
 // SPDX-License-Identifier: CC0-1.0
 #include <algorithm>

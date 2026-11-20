@@ -1,0 +1,460 @@
+{
+  "format": 1,
+  "date": "2026-11-14",
+  "stage": "codex",
+  "status": "complete",
+  "scope": "Current-source static review + independent/official sample validation + whole-program measurement; same-source control is not a speedup claim",
+  "entries": [
+    {
+      "id": "hash_map",
+      "source_sha256": "bec878884a0f7895630f9b55b97ca20105edde1c089c6496369905d610e51a0b",
+      "input_source_sha256": "bec878884a0f7895630f9b55b97ca20105edde1c089c6496369905d610e51a0b",
+      "decision": {
+        "decision": "unchanged_no_new_candidate",
+        "current_review_reason": "照会missをfindで処理し0を出し、operator[]による空挿入を避けるmain改善は既に適用済み。q全予約は重複で過剰確保になり、generic型所有を崩す新案なし。",
+        "historical_candidate_decisions": []
+      },
+      "compiler": {
+        "path": "/usr/bin/g++",
+        "version": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0"
+      },
+      "flags_and_gcc_pragmas": [],
+      "timing_definition": "child process CPU time and wall time. Full process includes startup, main, I/O, library and teardown. Input generation/hash/reference checks excluded. No body-only speed claim.",
+      "same_source_control": true,
+      "measurement_record_sha256": "061dd988619790174a3fe6a33c06df4050c5066d05ae8bc9cc902d3616d5afa2",
+      "official_sample_count": 1,
+      "profiles": [
+        {
+          "profile": "small",
+          "input_sha256": "defefe73161608c03c8e52bcec1007418e89a500c5a47df38089d7c8d390a887",
+          "validation": "independent_expected_and_baseline_output",
+          "expected_output_sha256": "1179c8931b9cedac6a882a4a336525cb0f6dc8432ea953a217740f1e784d2df6",
+          "median_cpu_seconds": {
+            "baseline": 0.0007620000000017058,
+            "current": 0.0007799999999988927
+          },
+          "measured_trials": 5,
+          "current_over_baseline": 1.0236220472403499,
+          "ratio_is_speedup_claim": false
+        },
+        {
+          "profile": "random",
+          "input_sha256": "fdab5f1f6131e01babb10c7ebae67a723c65e088ebd8f48b99bac52368a2f7cc",
+          "validation": "baseline_output_equality_only",
+          "expected_output_sha256": "2b24177887d7488ecf6c77cf713a167fb66538816615870297afe9db70f90370",
+          "median_cpu_seconds": {
+            "baseline": 0.007024999999998727,
+            "current": 0.00688800000000267
+          },
+          "measured_trials": 5,
+          "current_over_baseline": 0.9804982206411271,
+          "ratio_is_speedup_claim": false
+        },
+        {
+          "profile": "degenerate",
+          "input_sha256": "d58c6e7c6d7e92974b1efbcfc8d632859326c6d490dfde64482f9ecf49843ba1",
+          "validation": "baseline_output_equality_only",
+          "expected_output_sha256": "cec33071bb8bcd11bf04660775c39a97d3e77f09634074eb0233f32228de24c1",
+          "median_cpu_seconds": {
+            "baseline": 0.00665400000000238,
+            "current": 0.006870000000001042
+          },
+          "measured_trials": 5,
+          "current_over_baseline": 1.0324616771864419,
+          "ratio_is_speedup_claim": false
+        }
+      ]
+    },
+    {
+      "id": "hash_set_membership",
+      "source_sha256": "742e4504d58ff66b96c7da3ffb24ce061b029facdaad003998cde1b6b79e633e",
+      "input_source_sha256": "742e4504d58ff66b96c7da3ffb24ce061b029facdaad003998cde1b6b79e633e",
+      "decision": {
+        "decision": "unchanged_no_new_candidate",
+        "current_review_reason": "和をint64で保持しfindなしのcontains出力。n*m*l全予約は全和同値で旧GCC2.154倍/Clang1.132倍の回帰があるため維持。",
+        "historical_candidate_decisions": [
+          {
+            "record": "Audit/optimization-fable-batch-01-2026-11-13.json",
+            "decision": "reject",
+            "candidate_reason": "最大10^6回の挿入で8から倍々に再配置している。ClangはSIMD再配置と事前書き込みが無効で35msとGCCより遅く、事前reserveで再配置を消せる可能性がある。同一和の退化列では大きな表の確保が純損になり得る（圧縮trieのreserveと同種のリスク）。",
+            "decision_reason": "全容量reserveはrandomで短縮するが、全和同一でGCC2.154倍/Clang1.132倍に回帰しRSS増。問題の合法な退化入力で損失が大きい。"
+          },
+          {
+            "record": "Audit/optimization-fable-batch-01-2026-11-13.json",
+            "decision": "reject",
+            "candidate_reason": "HashSet::locateをHashMap::locateと同じ二段にすると、墓石のない連では1条件で進める。墓石スロットは破棄済みなので、第1ループは state==1 のみ比較する形で非自明キーでも安全。効果は小さい可能性があり優先度は低い。",
+            "decision_reason": "固定seedの独立core比較でも墓石命中と文字列で約5〜10%回帰し、両compiler・全操作での利益がない。strings mainはlocate未使用でコード節byte一致のため時間変動を本体効果と数えない。"
+          }
+        ]
+      },
+      "compiler": {
+        "path": "/usr/bin/g++",
+        "version": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0"
+      },
+      "flags_and_gcc_pragmas": [],
+      "timing_definition": "child process CPU time and wall time. Full process includes startup, main, I/O, library and teardown. Input generation/hash/reference checks excluded. No body-only speed claim.",
+      "same_source_control": true,
+      "measurement_record_sha256": "bd14cf3f751c487a0e23a0e076c0f6a0796fbb949487a24681499197e43a47a3",
+      "official_sample_count": 1,
+      "profiles": [
+        {
+          "profile": "small",
+          "input_sha256": "e0d55e6518ba9b47c48a2f7dd51bed599eff3442ae1bacabb483ae1db390f44c",
+          "validation": "independent_expected_and_baseline_output",
+          "expected_output_sha256": "397b7cd57d13f24c87902b0af1327bcf49cd9dc1ae9b7634fbd4312c9c5c58cc",
+          "median_cpu_seconds": {
+            "baseline": 0.0008040000000035796,
+            "current": 0.0007910000000030948
+          },
+          "measured_trials": 5,
+          "current_over_baseline": 0.9838308457706132,
+          "ratio_is_speedup_claim": false
+        },
+        {
+          "profile": "random",
+          "input_sha256": "d8494f9da56afd1b76e4c2c11b33d71a45cf9acab469b45ad9c24d3b7c4a2189",
+          "validation": "baseline_output_equality_only",
+          "expected_output_sha256": "fcbc7eb3d6a09576c9326476bc34665a50400f152a170ac47ed35b0f141bbd87",
+          "median_cpu_seconds": {
+            "baseline": 0.040674000000002763,
+            "current": 0.038968999999997145
+          },
+          "measured_trials": 5,
+          "current_over_baseline": 0.958081329596167,
+          "ratio_is_speedup_claim": false
+        },
+        {
+          "profile": "degenerate",
+          "input_sha256": "c168a7e2b7ab93e45226664f3b86981916e8d326b5dd46cac9c86e3bdf02843f",
+          "validation": "baseline_output_equality_only",
+          "expected_output_sha256": "cdb27185f9774ba8993fa7530a4712f66f0f8428409116a878281225fc60bbf9",
+          "median_cpu_seconds": {
+            "baseline": 0.0041419999999976476,
+            "current": 0.004150000000004539
+          },
+          "measured_trials": 5,
+          "current_over_baseline": 1.0019314340914767,
+          "ratio_is_speedup_claim": false
+        }
+      ]
+    },
+    {
+      "id": "hash_set_strings",
+      "source_sha256": "4c140e716fe145ed96dfa3104454abfbd211fabed718bd5393a7dcf2b1a3c6ff",
+      "input_source_sha256": "4c140e716fe145ed96dfa3104454abfbd211fabed718bd5393a7dcf2b1a3c6ff",
+      "decision": {
+        "decision": "unchanged_no_new_candidate",
+        "current_review_reason": "HashSetがstringを所有する素直なAtCoder mainを維持。短語ではmove化もSSOのコピーが残り、全予約は重複で過剰になる。出力はsizeだけで余分な走査なし。",
+        "historical_candidate_decisions": [
+          {
+            "record": "Audit/optimization-fable-batch-01-2026-11-13.json",
+            "decision": "reject",
+            "candidate_reason": "HashSet::locateをHashMap::locateと同じ二段にすると、墓石のない連では1条件で進める。墓石スロットは破棄済みなので、第1ループは state==1 のみ比較する形で非自明キーでも安全。効果は小さい可能性があり優先度は低い。",
+            "decision_reason": "固定seedの独立core比較でも墓石命中と文字列で約5〜10%回帰し、両compiler・全操作での利益がない。strings mainはlocate未使用でコード節byte一致のため時間変動を本体効果と数えない。"
+          }
+        ]
+      },
+      "compiler": {
+        "path": "/usr/bin/g++",
+        "version": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0"
+      },
+      "flags_and_gcc_pragmas": [],
+      "timing_definition": "child process CPU time and wall time. Full process includes startup, main, I/O, library and teardown. Input generation/hash/reference checks excluded. No body-only speed claim.",
+      "same_source_control": true,
+      "measurement_record_sha256": "1e9963e19ff64e40a5ef4c7ae1b1c02d15f5ff57633ba4704987705f07476bf5",
+      "official_sample_count": 3,
+      "profiles": [
+        {
+          "profile": "small",
+          "input_sha256": "711204b6b6184598f0de60e88c70060448117d3486b66f5a0e8b066b53715f75",
+          "validation": "independent_expected_and_baseline_output",
+          "expected_output_sha256": "68ca3fba3b7e864770cb61aeb306d4bd4354b68ab4dd38450860c5d823e42a53",
+          "median_cpu_seconds": {
+            "baseline": 0.0007929999999971571,
+            "current": 0.0007970000000048216
+          },
+          "measured_trials": 5,
+          "current_over_baseline": 1.0050441362013605,
+          "ratio_is_speedup_claim": false
+        },
+        {
+          "profile": "random",
+          "input_sha256": "3edf8405cee2d3ef47a101df47ed85fef7613a7f7d28b7f82290fadb0061a9db",
+          "validation": "baseline_output_equality_only",
+          "expected_output_sha256": "b80500a01f984c764f1a3b486622d0ef7cc5b13fa9bd57ec9015113eaf875597",
+          "median_cpu_seconds": {
+            "baseline": 0.019132999999995626,
+            "current": 0.01903600000000294
+          },
+          "measured_trials": 5,
+          "current_over_baseline": 0.9949302252656296,
+          "ratio_is_speedup_claim": false
+        },
+        {
+          "profile": "degenerate",
+          "input_sha256": "c9c4b0d0c050d68db5fd7a420fbf6a4333740d46739bde41082a0e6261285251",
+          "validation": "baseline_output_equality_only",
+          "expected_output_sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+          "median_cpu_seconds": {
+            "baseline": 0.0028349999999965902,
+            "current": 0.0028770000000006846
+          },
+          "measured_trials": 5,
+          "current_over_baseline": 1.0148148148162768,
+          "ratio_is_speedup_claim": false
+        }
+      ]
+    },
+    {
+      "id": "hash_set_toggle",
+      "source_sha256": "8aaac68addabacaaae9f6e7ba6f334515207c1b07151dac47351c29b9f70aee6",
+      "input_source_sha256": "8aaac68addabacaaae9f6e7ba6f334515207c1b07151dac47351c29b9f70aee6",
+      "decision": {
+        "decision": "unchanged_no_new_candidate",
+        "current_review_reason": "findのiteratorをerase(it,false)へ渡し、次iterator探索を省く。insert_checkedへの単発化は旧同値反復GCC5%/Clang6.7%回帰があり現経路を維持。",
+        "historical_candidate_decisions": [
+          {
+            "record": "Audit/optimization-fable-batch-01-2026-11-13.json",
+            "decision": "reject",
+            "candidate_reason": "未登録キーではfindとinsertで2回probeする。random列はほぼ全て未登録なので、insert_checked 1回にまとめれば探索が半減する見込み。同値キーの墓石再利用もinsertion_slotの既存経路で正しく動く。",
+            "decision_reason": "insert_checkedの単発化はrandomで微小改善の一方、同値反復が開始順反転の再測定でもGCC約5%、Clang約6.7%回帰。公開APIとiterator寿命は正常だが性能採用条件を満たさない。"
+          },
+          {
+            "record": "Audit/optimization-fable-batch-01-2026-11-13.json",
+            "decision": "reject",
+            "candidate_reason": "HashSet::locateをHashMap::locateと同じ二段にすると、墓石のない連では1条件で進める。墓石スロットは破棄済みなので、第1ループは state==1 のみ比較する形で非自明キーでも安全。効果は小さい可能性があり優先度は低い。",
+            "decision_reason": "固定seedの独立core比較でも墓石命中と文字列で約5〜10%回帰し、両compiler・全操作での利益がない。strings mainはlocate未使用でコード節byte一致のため時間変動を本体効果と数えない。"
+          }
+        ]
+      },
+      "compiler": {
+        "path": "/usr/bin/g++",
+        "version": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0"
+      },
+      "flags_and_gcc_pragmas": [],
+      "timing_definition": "child process CPU time and wall time. Full process includes startup, main, I/O, library and teardown. Input generation/hash/reference checks excluded. No body-only speed claim.",
+      "same_source_control": true,
+      "measurement_record_sha256": "59a4d11c757a3d8681ec5c6f7d3734e82b28fc3a20303dfea661f2c40a59e43f",
+      "official_sample_count": 3,
+      "profiles": [
+        {
+          "profile": "small",
+          "input_sha256": "86eec3a6b54f348f0a036ac9cb44cd252b2ea4207d2b23703e676af035c706ec",
+          "validation": "independent_expected_and_baseline_output",
+          "expected_output_sha256": "917df3320d778ddbaa5c5c7742bc4046bf803c36ed2b050f30844ed206783469",
+          "median_cpu_seconds": {
+            "baseline": 0.0008089999999993935,
+            "current": 0.0007969999999990485
+          },
+          "measured_trials": 5,
+          "current_over_baseline": 0.9851668726818862,
+          "ratio_is_speedup_claim": false
+        },
+        {
+          "profile": "random",
+          "input_sha256": "d2199304f436a2b6bd560a56f976d683cb91de846677ce7d21774f3956af78ae",
+          "validation": "baseline_output_equality_only",
+          "expected_output_sha256": "320d1920ebdc2b8e43eb9e22ca23df4afe4cc664ed503803a4ff322ded9797b3",
+          "median_cpu_seconds": {
+            "baseline": 0.0064919999999975,
+            "current": 0.006551000000004414
+          },
+          "measured_trials": 5,
+          "current_over_baseline": 1.009088108442227,
+          "ratio_is_speedup_claim": false
+        },
+        {
+          "profile": "degenerate",
+          "input_sha256": "496f5a9dd860a34d7d080d5204e1748e23d29a508be61db299d418b284260502",
+          "validation": "baseline_output_equality_only",
+          "expected_output_sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+          "median_cpu_seconds": {
+            "baseline": 0.0014300000000009305,
+            "current": 0.0014370000000005767
+          },
+          "measured_trials": 5,
+          "current_over_baseline": 1.0048951048948542,
+          "ratio_is_speedup_claim": false
+        }
+      ]
+    },
+    {
+      "id": "lca",
+      "source_sha256": "db3e8eee2342e9c2fddb401be4ca099c0f72f05f53e82547fc0496791d2bd3c6",
+      "input_source_sha256": "db3e8eee2342e9c2fddb401be4ca099c0f72f05f53e82547fc0496791d2bd3c6",
+      "decision": {
+        "decision": "retain pending Fable independent review",
+        "notes": [
+          {
+            "family": "LCA",
+            "ids": [
+              "lca"
+            ],
+            "decision": "Retain O(1) specialized shallow/root-cut/nested-cut/RMQ query paths pending current measurement.",
+            "basis": [
+              "Audit/optimization-fable-batch-graph-followup-2026-11-13.json"
+            ],
+            "details": "Previously proposed CSR rows_ removal is already applied (current LcaCsrGraph uses arcs_ and begin_ only). Do not remove cycle/capacity checks or standard fallback."
+          }
+        ]
+      },
+      "compiler": {
+        "path": "/usr/bin/g++",
+        "version": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0"
+      },
+      "flags_and_gcc_pragmas": [
+        "#pragma GCC optimize(\"O3\")"
+      ],
+      "timing_definition": "child process CPU time and wall time. Full process includes startup, main, I/O, library and teardown. Input generation/hash/reference checks excluded. No body-only speed claim.",
+      "same_source_control": true,
+      "measurement_record_sha256": "2e5f23d94636c3080792637988082dc2cd4c3048fbcbe752470eb5cdba8e3102",
+      "official_sample_count": 1,
+      "profiles": [
+        {
+          "profile": "chain",
+          "input_sha256": "c6810422b98db07755d6b644e0d12934e42e08be7f42d34d4e1e57d179733f83",
+          "validation": "independent_expected_and_baseline_output",
+          "expected_output_sha256": "182413703a5791cc175647f114f1f760a5ac0ea01c927fe7d18578f2d2165683",
+          "median_cpu_seconds": {
+            "baseline": 0.019092000000004106,
+            "current": 0.018452999999995612
+          },
+          "measured_trials": 5,
+          "current_over_baseline": 0.9665304839719068,
+          "ratio_is_speedup_claim": false
+        },
+        {
+          "profile": "star",
+          "input_sha256": "393d634abd8cafbee4e6fa203e74bb8527fd0ca98b6bb9e2bcffbd34be87321e",
+          "validation": "independent_expected_and_baseline_output",
+          "expected_output_sha256": "e610b66e08ba23205ad6b6732928198b5bd7e160ff48c5fd66bf2ce1e3d928c4",
+          "median_cpu_seconds": {
+            "baseline": 0.014284000000007069,
+            "current": 0.015030000000006538
+          },
+          "measured_trials": 5,
+          "current_over_baseline": 1.0522262671519953,
+          "ratio_is_speedup_claim": false
+        }
+      ]
+    },
+    {
+      "id": "matrix_rotate",
+      "source_sha256": "247496ce35da16d9d5f972a87583aa026444c69339b8c8c215637962822a1bf3",
+      "input_source_sha256": "247496ce35da16d9d5f972a87583aa026444c69339b8c8c215637962822a1bf3",
+      "decision": {
+        "decision": "unchanged_no_new_candidate",
+        "current_review_reason": "小さいAtCoder行列をvectorで所有しrotate_90rで回転する。最終不要回転を消すだけのmain微調整は本体の効果として扱えず、現API利用の明快さを維持。",
+        "historical_candidate_decisions": []
+      },
+      "compiler": {
+        "path": "/usr/bin/g++",
+        "version": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0"
+      },
+      "flags_and_gcc_pragmas": [],
+      "timing_definition": "child process CPU time and wall time. Full process includes startup, main, I/O, library and teardown. Input generation/hash/reference checks excluded. No body-only speed claim.",
+      "same_source_control": true,
+      "measurement_record_sha256": "5f3c55a51d46266d8786450a0e0aff01d5ada03156ed53b87cb8c21c954ca692",
+      "official_sample_count": 3,
+      "profiles": [
+        {
+          "profile": "random",
+          "input_sha256": "7693fb5175fd68220142b5dd170a9a5e7a7f53f7821918b41675e02f369e583f",
+          "validation": "baseline_output_equality_only",
+          "expected_output_sha256": "31375587f8bedb1f33f6eca3d8cee94ab70845a6dd1a7c7eeb929f4aa7dc10ab",
+          "median_cpu_seconds": {
+            "baseline": 0.0011330000000038254,
+            "current": 0.00110800000000566
+          },
+          "measured_trials": 5,
+          "current_over_baseline": 0.9779346866742445,
+          "ratio_is_speedup_claim": false
+        },
+        {
+          "profile": "equal",
+          "input_sha256": "589bac2120b7736c74c31e4bfcf62389aec029104a10228b4c7181f0006ff829",
+          "validation": "baseline_output_equality_only",
+          "expected_output_sha256": "927580bf287560d4a26a5d6e129f91ffa9cb63031b1a8c772be6ec584e65e82b",
+          "median_cpu_seconds": {
+            "baseline": 0.0009330000000025152,
+            "current": 0.0009300000000012076
+          },
+          "measured_trials": 5,
+          "current_over_baseline": 0.996784565915006,
+          "ratio_is_speedup_claim": false
+        }
+      ]
+    },
+    {
+      "id": "matrix_rotate_grid",
+      "source_sha256": "f380a8927d35eba410363519d1fa8f8f0e075c4a0d69715a117dd14aa491f3eb",
+      "input_source_sha256": "f380a8927d35eba410363519d1fa8f8f0e075c4a0d69715a117dd14aa491f3eb",
+      "decision": {
+        "decision": "unchanged_no_new_candidate",
+        "current_review_reason": "4方位の不一致数を比較しvector<string>の回転APIを検証。直接添字で別解を計算すればAPI検証を外すため行わない。",
+        "historical_candidate_decisions": []
+      },
+      "compiler": {
+        "path": "/usr/bin/g++",
+        "version": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0"
+      },
+      "flags_and_gcc_pragmas": [],
+      "timing_definition": "child process CPU time and wall time. Full process includes startup, main, I/O, library and teardown. Input generation/hash/reference checks excluded. No body-only speed claim.",
+      "same_source_control": true,
+      "measurement_record_sha256": "bc1aa7b85ea8bfa35daf01bf396f0b7b5b8200847138e887727267e12ef1910d",
+      "official_sample_count": 2,
+      "profiles": [
+        {
+          "profile": "random",
+          "input_sha256": "124826c046cd070883ac365dd35bfa7b058813d514bd1e61a9cb58f67c21e509",
+          "validation": "baseline_output_equality_only",
+          "expected_output_sha256": "db824257b6e9db00eb353fc6f62e0e9ebc69e824fb2b5f6b58d563ef18acb3a5",
+          "median_cpu_seconds": {
+            "baseline": 0.0008390000000009223,
+            "current": 0.0008560000000024104
+          },
+          "measured_trials": 5,
+          "current_over_baseline": 1.020262216926662,
+          "ratio_is_speedup_claim": false
+        },
+        {
+          "profile": "equal",
+          "input_sha256": "798f592f7534e103c0947ebcad2786cd80cdd2e8fe658e001c998726da715e84",
+          "validation": "baseline_output_equality_only",
+          "expected_output_sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+          "median_cpu_seconds": {
+            "baseline": 0.0008460000000036771,
+            "current": 0.0008640000000035286
+          },
+          "measured_trials": 5,
+          "current_over_baseline": 1.0212765957444128,
+          "ratio_is_speedup_claim": false
+        }
+      ]
+    }
+  ],
+  "source_hashes": {
+    "Algorithm/rotate.cpp": "b7614f2c46ca58687afac6cb907dfb46feb945f6c70e7ae2a12e18c1944e0bc5",
+    "DataStructure/Hash_map.cpp": "7c01191c5505ca9ac910a64f0a6462c29d403ba95b32fcf5f76352e3e6b31785",
+    "DataStructure/Hash_set.cpp": "6759fb54571a0d29061ec7e678db7fe5f465e6e4c92f8d0aefc4324afe0e3fd4",
+    "Graph/LCA.cpp": "6e05cfbe789d6be77cb73d62b7aa9e3cbaf153bcc59b420b315207febdc2c2c8",
+    "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab",
+    "Verify/current/drivers/hash_map_main.cpp": "6857a90be50efd7d688979dccabedfb085aaf25d16add82cefff6acca67e9f7a",
+    "Verify/current/drivers/hash_set_membership_main.cpp": "19e69ca68dfd3602025b8fba752c213a16849d225c3edabcf2d51b9e48712c46",
+    "Verify/current/drivers/hash_set_strings_main.cpp": "712a369dd961e562a1ce4b940941e644f95b8fad83c7a199c5fccbbd9b9350f8",
+    "Verify/current/drivers/hash_set_toggle_main.cpp": "d89f6362562f0e21cfd7db21024d888c73f9f7ff6cb12c6d3f15aed2fbabb887",
+    "Verify/current/drivers/lca_main.cpp": "ebd7cf97bb5e147042ffd16d3ab62b8f1607d26b7dcf5375fc701d587dfab4af",
+    "Verify/current/drivers/matrix_rotate_grid_main.cpp": "99cd329cdc6b3d795a87ba36e4a0c4b099fcdef1ef6ea7f1cdc45afb8178423e",
+    "Verify/current/drivers/matrix_rotate_main.cpp": "b8a05bb69548cf03db49426ffb15e1e883af147d71fd6a0a3f71688c7744f73a",
+    "Verify/current/submissions/hash_map.cpp": "bec878884a0f7895630f9b55b97ca20105edde1c089c6496369905d610e51a0b",
+    "Verify/current/submissions/hash_set_membership.cpp": "742e4504d58ff66b96c7da3ffb24ce061b029facdaad003998cde1b6b79e633e",
+    "Verify/current/submissions/hash_set_strings.cpp": "4c140e716fe145ed96dfa3104454abfbd211fabed718bd5393a7dcf2b1a3c6ff",
+    "Verify/current/submissions/hash_set_toggle.cpp": "8aaac68addabacaaae9f6e7ba6f334515207c1b07151dac47351c29b9f70aee6",
+    "Verify/current/submissions/lca.cpp": "db3e8eee2342e9c2fddb401be4ca099c0f72f05f53e82547fc0496791d2bd3c6",
+    "Verify/current/submissions/matrix_rotate.cpp": "247496ce35da16d9d5f972a87583aa026444c69339b8c8c215637962822a1bf3",
+    "Verify/current/submissions/matrix_rotate_grid.cpp": "f380a8927d35eba410363519d1fa8f8f0e075c4a0d69715a117dd14aa491f3eb"
+  },
+  "measurement_tools": "/tmp/sirkit-premerge-optimization-20261114/measurements",
+  "commit_or_push": false,
+  "online_status": "not_evaluated"
+}

@@ -37,8 +37,10 @@
 // 空集合のbeginはO(1)、それ以外は先頭要素までのバケットを走査する。
 // size()/empty()/capacity()/load_factor(): 要素数・空か・バケット数・使用率をO(1)で返す。
 // clear(): O(capacity())で全要素を破棄し、確保済み容量を再利用する。
-// reserve(n): n要素分を予約する。縮小しない。再配置はO(旧容量+新容量)。
-// rehash(n): nバケット以上・現登録数に必要な容量へ再配置し、墓石を除く。
+// reserve(n): n要素分を予約し縮小しない。予約済みはO(1)、再配置は期待O(C+C')。
+// rehash(n): nバケット以上・登録数に足りる容量へ再配置し墓石を除く。期待O(C+C')。
+// C/C'=旧/新バケット数、N=登録数。衝突による再配置の最悪時間はO(C+C'+N^2)。
+// ハッシュ・同値判定・要素操作をO(1)とする。全列挙はO(C)、空集合はO(1)。
 // HashSet(other)/operator=(other): 独立したコピーを作る。コピーにはKeyのコピー構築が必要。
 // HashSet(move(other))/operator=(move(other)): 内容を移動し、移動元は空で再利用可能。
 // swap(other): 内容とハッシュ・同値判定を交換する。O(1)。
@@ -51,6 +53,8 @@
 // operator()(x): 整数・列挙・浮動小数・tuple・range・std::hash対応型を再帰的にハッシュ化する。
 // unorderedコンテナの要素順は無視する。独自の同値関係には対応するHasherも用意する。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <bit>
 #include <chrono>
@@ -72,6 +76,9 @@
 #include <emmintrin.h>
 #endif
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_GENERIC_HASH_DEFINED
 #define SIRKIT_GENERIC_HASH_DEFINED
 struct GenericHash {
@@ -142,6 +149,15 @@ public:
         } else return raw(value) * seed_;
     }
 };
+#endif
+
+#ifndef SIRKIT_HASH_CAPACITY_DEFINED
+#define SIRKIT_HASH_CAPACITY_DEFINED
+namespace detail {
+inline void CheckHashCapacity(std::size_t requested, std::size_t maximum, const char* message) {
+    if (requested > maximum) throw std::length_error(message);
+}
+}
 #endif
 
 #ifndef SIRKIT_HASH_SET_DEFINED
@@ -251,7 +267,7 @@ private:
     }
 #endif
     void rebuild(size_type capacity) {
-        if (capacity > max_capacity()) throw std::length_error("HashSet: capacity overflow");
+        detail::CheckHashCapacity(capacity, max_capacity(), "HashSet: capacity overflow");
 #if (!defined(SIRKIT_DISABLE_SIMD)) && (defined(__SSE2__)) && ((defined(__x86_64__)) || (defined(__i386__)))
         if constexpr (std::is_same_v<Slot, CompactSlot>) {
             if (slots_.size() >= 64) { rebuild_simd(capacity); return; }
@@ -313,7 +329,7 @@ private:
                     p = (p + 1) & (slots_.size() - 1);
                 }
                 if (size_ != threshold(slots_.size())) return p;
-                if (slots_.size() > max_capacity() / 2) throw std::length_error("HashSet: capacity overflow");
+                detail::CheckHashCapacity(slots_.size(), max_capacity() / 2, "HashSet: capacity overflow");
                 rebuild(slots_.size() * 2);
                 continue;
             }
@@ -330,10 +346,7 @@ private:
             }
             if (first_deleted != slots_.size()) return first_deleted;
             if (occupied_ != threshold(slots_.size())) return p;
-            if (size_ == occupied_) {
-                if (slots_.size() > max_capacity() / 2) throw std::length_error("HashSet: capacity overflow");
-                rebuild(slots_.size() * 2);
-            } else rebuild(slots_.size());
+            rebuild(slots_.size());
         }
     }
     void mark_inserted(size_type p) noexcept {
@@ -486,7 +499,7 @@ public:
 #if (!defined(SIRKIT_DISABLE_SIMD)) && (defined(__SSE2__)) && ((defined(__x86_64__)) || (defined(__i386__)))
         if constexpr (!std::is_same_v<Slot, CompactSlot>) return iterator(this,next_live(0));
 #endif
-        size_type p = 0; while (p < slots_.size() && state_[p] != 1) ++p;
+        size_type p = 0; while (state_[p] != 1) ++p;
         return iterator(this, p);
     }
     iterator end() const noexcept { return iterator(this, slots_.size()); }
@@ -577,15 +590,19 @@ public:
     void rehash(size_type requested) {
         if (requested > max_capacity()) throw std::length_error("HashSet::rehash: capacity overflow");
         size_type capacity = 8;
-        while (requested > capacity || size_ > threshold(capacity)) {
-            if (capacity > max_capacity() / 2) throw std::length_error("HashSet::rehash: capacity overflow");
-            capacity *= 2;
-        }
+        while (requested > capacity || size_ > threshold(capacity)) capacity *= 2;
         rebuild(capacity);
     }
 };
 #endif
 
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
+
+
+namespace sirkit {}
+using namespace sirkit;
 
 // SPDX-License-Identifier: CC0-1.0
 // Verify I/O: Verify/current/common/fast_io.hpp

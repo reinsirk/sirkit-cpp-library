@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #ifndef HLD_SOURCE
 #define HLD_SOURCE "../../../Graph/Heavy_Light_Decomposition.cpp"
 #endif
@@ -12,8 +14,56 @@
 #include <queue>
 #include <utility>
 #include <random>
+#include <stdexcept>
 #include <vector>
+namespace {
+template<class Error, class Call>
+void rejects(Call call) {
+ try { call(); }
+ catch (const Error&) { return; }
+ assert(false);
+}
+
+struct SumRange {
+ int size;
+ explicit SumRange(int n) : size(n), values(static_cast<std::size_t>(n)) {}
+ std::vector<int> values;
+ void add(int vertex, int term) { values[vertex] += term; }
+ int sum(int left, int right) const {
+  assert(0 <= left && right <= size);
+  return std::accumulate(values.begin() + left, values.begin() + right, 0);
+ }
+};
+
+void coverage_boundaries() {
+ const auto ceiling = static_cast<std::size_t>(std::numeric_limits<int>::max());
+ assert(sirkit::detail::HldVertexCount(ceiling) == std::numeric_limits<int>::max());
+ rejects<std::length_error>([&] { (void)sirkit::detail::HldVertexCount(ceiling + 1); });
+
+ const HeavyLightDecomposition forest(Graph{{}, {2}, {1}});
+ const HeavyLightValues<SumRange> empty;
+ assert(HeavyLightValues<SumRange>(empty).empty());
+ const auto query = [](int, int) { assert(false); return 0; };
+ const auto add = [](int a, int b) { return a + b; };
+#ifndef SKIP_RUNTIME_CHECKS
+ rejects<std::out_of_range>([] { HeavyLightDecomposition invalid(Graph{}, 1); });
+ rejects<std::out_of_range>([] { HeavyLightDecomposition invalid(Graph{{}}, -1); });
+ rejects<std::out_of_range>([] { HeavyLightDecomposition invalid(Graph{{}}, 1); });
+ rejects<std::out_of_range>([] { HeavyLightDecomposition invalid(Graph{{-1}}); });
+ rejects<std::invalid_argument>([] { HeavyLightDecomposition invalid(Graph{{1}, {0, 0}}); });
+ rejects<std::invalid_argument>([&] { (void)forest.path_prod(0, 1, 7, query, add); });
+ rejects<std::invalid_argument>([&] { (void)forest.path_prod(0, 1, 7, query, add, std::identity{}); });
+#else
+ assert(forest.path_prod(0, 1, 7, query, add) == 7);
+ assert(forest.path_prod(0, 1, 7, query, add, std::identity{}) == 7);
+#endif
+ auto held = forest.with_values<SumRange>(std::vector{2, 3, 5});
+ assert(held.path_prod(1, 2) == 8);
+}
+}
+
 int main(){
+ coverage_boundaries();
  std::mt19937_64 random(20261031);std::uint64_t checks=0;
  for(int n=0;n<=70;++n)for(int rep=0;rep<8;++rep){
   std::vector<int> labels(n);std::iota(labels.begin(),labels.end(),0);std::shuffle(labels.begin(),labels.end(),random);Graph g(n);for(int v=1;v<n;++v)if(random()%5){int p=random()%v;g[labels[v]].push_back(labels[p]);g[labels[p]].push_back(labels[v]);}for(auto&r:g)std::shuffle(r.begin(),r.end(),random);

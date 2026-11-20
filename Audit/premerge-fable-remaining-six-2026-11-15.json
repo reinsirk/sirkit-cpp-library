@@ -1,0 +1,138 @@
+{
+  "format": 1,
+  "date": "2026-11-15",
+  "stage": "claude",
+  "model": "claude-fable-5-2",
+  "actual_models": [
+    "claude-fable-5-2"
+  ],
+  "completed_utc": "2026-11-15T07:05:28.124288+00:00",
+  "source_hashes": {
+    "DataStructure/rollback-union-find.cpp": "f4a1bdea9219c5c0376d9b2f356424b679afae4acb02d34809c97755bf69607f",
+    "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab",
+    "Verify/current/drivers/rollback_union_find_main.cpp": "2fe293e98cbc53ae83b85360e5394dbc8289c6e92725f7bca9f76576dc2191e1",
+    "Graph/SCC.cpp": "4b5c4f63db1ae715a97d77702cf07f67ca053e62a81767597f0defd080c093bb",
+    "Verify/current/drivers/scc_main.cpp": "5db11734dc56693ca254a0e28f2e0f189be0ca608f5033f2a748fbf5f03db3a6",
+    "DataStructure/Segment_Tree.cpp": "563c970487176efb5ff54850abb848da34600fa44af282ec62ecbdcad61f2207",
+    "Verify/current/drivers/segment_tree_main.cpp": "6b9628a6072ea3685d685641a633160f06c6137914ff9c23438eccda27873ba4",
+    "Verify/current/drivers/segment_tree_composite_main.cpp": "589ba9bf3b342e6534d81cf95867ce6f04509c9b6addc2ee1e2e0d4b4e24437c",
+    "String/Suffix_Array.cpp": "a2e1643e72cb2459b364d0aec7682f5a8759b02866f1bb8a2d73041ed9ebddf5",
+    "Verify/current/drivers/suffix_array_main.cpp": "d2ae99f2d7897c3c8a2bdd50ce2755496b18d5c4cc89c072f7f13ff64b96f848",
+    "Verify/current/drivers/suffix_array_substrings_main.cpp": "5b934920067b755639670296e5d0f9c272b6b65cc92070fea667d8eaf0e1d494",
+    "Verify/current/submissions/rollback_union_find.cpp": "f5c3b831e7e2ad68dc9d08ab7b7ae55c17c5203f923cdb48e48aaf2bb29f2ec8",
+    "Verify/current/submissions/scc.cpp": "ffb38e5e4cea0b53f8be2ebd2ee585a1a840861b5fc12b348ca64c4c0007bb88",
+    "Verify/current/submissions/segment_tree.cpp": "f4a92eb5e6be2ffe51f9469e84ea373cb2b7f4da0066712cdf05a1b09e6628c8",
+    "Verify/current/submissions/segment_tree_composite.cpp": "e01ff00b62bcc69f563826939a087b08961e23fa968ed5716ed3ef3c3985b6e3",
+    "Verify/current/submissions/suffix_array.cpp": "a2fb4ac3f4f4f705e118e0b30bd73ab60a77d8a266b54908fbbe8255afb66330",
+    "Verify/current/submissions/suffix_array_substrings.cpp": "da208645830eea19895f9606f943c9a462b62c86e99182697e0c827961e91356",
+    "AGENTS.md": "f4cdb9332d66307604443358b5ae5d087e609462e25303cab013e3fdc813a569"
+  },
+  "codex_receipts": {
+    "rollback_union_find": "Verify/optimization/stages/rollback_union_find.codex.5b6983e0bfaf7311c796b73cf2cd67f484c37281094f2839851fb8a9550e67e3.json",
+    "scc": "Verify/optimization/stages/scc.codex.20aacc8658ae9d2456be753da05146dd2db028913eb3d704803c30de7bed4470.json",
+    "segment_tree": "Verify/optimization/stages/segment_tree.codex.c9c6b9070d332a7e8562b5892c695e05fe57ff7225c6a1dcf83c2d1705566c1c.json",
+    "segment_tree_composite": "Verify/optimization/stages/segment_tree_composite.codex.2be5c80e461bef88efc6e560d00868918cd6ae58c6458806e648e94c81124770.json",
+    "suffix_array": "Verify/optimization/stages/suffix_array.codex.c9f84b55352550f3a2253bef79cb92d772955871256c54d591d65f5b3cfe9a2c.json",
+    "suffix_array_substrings": "Verify/optimization/stages/suffix_array_substrings.codex.0c909cf91a785101e3b56cfa5c17b56860ae534d40c01962e694018f45681441.json"
+  },
+  "review": {
+    "reviews": [
+      {
+        "id": "rollback_union_find",
+        "source_sha256": "f5c3b831e7e2ad68dc9d08ab7b7ae55c17c5203f923cdb48e48aaf2bb29f2ec8",
+        "verdict": "keep",
+        "reason": "静的確認では、版木のDFSで子を持つuniteだけにexit/undoが1対1で対応し、葉uniteの省略とqueryのexit省略は観測結果を変えない。x==yのundoも履歴1件の契約どおり。残る費用は入力と版木走査が中心で、測定に値する新しい候補は見当たらない(未実行の静的判断)。"
+      },
+      {
+        "id": "scc",
+        "source_sha256": "ffb38e5e4cea0b53f8be2ebd2ee585a1a840861b5fc12b348ca64c4c0007bb88",
+        "verdict": "keep",
+        "reason": "静的確認では、functional経路(閉路→尾の順に採番して反転)とTarjan経路(idsをlow退避に兼用、確定頂点はentered=n)のどちらも、辺u→vでid(u)<=id(v)を満たす。mainの計数ソート出力もトポロジカル順を保つ。reserve_edgesと親リンク案は既に測定で却下されており、覆す新しい根拠はない。"
+      },
+      {
+        "id": "segment_tree",
+        "source_sha256": "f4a92eb5e6be2ffe51f9469e84ea373cb2b7f4da0066712cdf05a1b09e6628c8",
+        "verdict": "keep",
+        "reason": "prodの整列ブロック分割とstop境界は、手計算で追った範囲では区間を過不足なく覆い、stopを越えない。get+setの点加算はint64の繰り上げ更新経路に入り、ACL互換を保つ。入力解析の比重が大きい規模で、transform置換など既出案を再測定する新しい根拠はない。"
+      },
+      {
+        "id": "segment_tree_composite",
+        "source_sha256": "e01ff00b62bcc69f563826939a087b08961e23fa968ed5716ed3ef3c3985b6e3",
+        "verdict": "keep",
+        "reason": "opは左を先に適用する合成順で、prodの左右の積み方も非可換順序を保つ。lb*ra+rbとf.a*x+f.bは制約下で2^60程度に収まり、uint64で溢れない。8バイトのSと既採用のO3,unroll設定に対し、静的に見て取れる追加の改善点はない。"
+      },
+      {
+        "id": "suffix_array",
+        "source_sha256": "a2fb4ac3f4f4f705e118e0b30bd73ab60a77d8a266b54908fbbe8255afb66330",
+        "verdict": "keep",
+        "reason": "SA-ISの型判定、LMS命名、終端0の一意性、再帰段のalphabet=nameは静的に整合し、uint16符号化も1..256に収まる。末尾のerase(4nバイトのmemmove)は全体に対して小さいと見込まれ、取り除くには公開APIの外に別経路が要るため提案しない。equalプロファイルの比1.06は同一ソースの対照なので変動として扱う。"
+      },
+      {
+        "id": "suffix_array_substrings",
+        "source_sha256": "da208645830eea19895f9606f943c9a462b62c86e99182697e0c827961e91356",
+        "verdict": "keep",
+        "reason": "Kasai法の境界条件(length<n-i, n-j)と、n(n+1)/2からLCP総和を引くuint64計算は正しい。Phi方式はequal入力での回帰を測定して却下済みで、覆す新しい根拠はない。LCP配列を作らずに総和だけ取る特殊化は、ライブラリAPIを経由しない別経路になるうえ効果も未測定なので提案しない。"
+      }
+    ],
+    "experiments": []
+  },
+  "usage_after": {
+    "checked_utc": "2026-11-15T07:05:28.464227+00:00",
+    "authorized_email_matches": true,
+    "http_status": 200,
+    "inference_executed": false,
+    "windows": {
+      "five_hour": {
+        "utilization": 9.0,
+        "resets_at": "2026-11-15T12:00:00.371632+00:00"
+      },
+      "seven_day": {
+        "utilization": 17.0,
+        "resets_at": "2026-11-21T09:00:00.371655+00:00"
+      },
+      "seven_day_breakdown": {},
+      "limit_0": {
+        "kind": "session",
+        "model": null,
+        "utilization": 9,
+        "resets_at": "2026-11-15T12:00:00.371632+00:00"
+      },
+      "limit_1": {
+        "kind": "weekly_all",
+        "model": null,
+        "utilization": 17,
+        "resets_at": "2026-11-21T09:00:00.371655+00:00"
+      },
+      "limit_2": {
+        "kind": "weekly_scoped",
+        "model": "Fable",
+        "utilization": 33,
+        "resets_at": "2026-11-21T09:00:00.371916+00:00"
+      }
+    },
+    "extra_usage_enabled": false
+  },
+  "prompt_sha256": "98e83fffc728772b5bbea2894b64c793728908f7c8abd8b13d23f93b09122584",
+  "response_sha256": "efe2c63a02537ae8eac6fb3581474ee3464b968f5c9b6e2150c77079436674e0",
+  "model_usage": {
+    "claude-fable-5-2": {
+      "inputTokens": 2,
+      "outputTokens": 3857,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 48787,
+      "webSearchRequests": 0,
+      "costUSD": 0.9348879999999999,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 2575,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 48787,
+      "canonicalModel": "claude-fable-5-2",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "source_representation": "Full unmodified current library/main/common/vendor source files, each supplied once, with per-program assembly metadata. No omitted code based on earlier reviews.",
+  "review_limitations": "Static review supported by supplied measured Codex evidence; model executed no tests. No online AC inferred.",
+  "local_raw_archive": "Audit/data/premerge-resume-20261115.zip"
+}

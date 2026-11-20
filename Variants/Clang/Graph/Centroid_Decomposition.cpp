@@ -22,6 +22,8 @@
 // SKIP_RUNTIME_CHECKSで頂点・距離保存・初回の探索に組み込んだ木の入力検査を除く。
 // 入力検査のためだけの全辺走査はしない。頂点数の表現上限は省略しない。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -30,6 +32,9 @@
 #include <utility>
 #include <vector>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_UNWEIGHTED_GRAPH_DEFINED
 #define SIRKIT_UNWEIGHTED_GRAPH_DEFINED
 using Graph = std::vector<std::vector<int>>;
@@ -37,6 +42,12 @@ using Graph = std::vector<std::vector<int>>;
 
 #ifndef SIRKIT_CENTROID_DECOMPOSITION_DEFINED
 #define SIRKIT_CENTROID_DECOMPOSITION_DEFINED
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
+inline void CheckCentroidVertexCount(std::size_t vertices) {
+    if (vertices > static_cast<std::size_t>(std::numeric_limits<int>::max()))
+        throw std::length_error("CentroidDecomposition vertex count");
+}
+}
 class CentroidDecomposition {
 public:
     struct Ancestor {
@@ -65,8 +76,7 @@ private:
     }
     void initialize(const Graph& graph, bool store_distances) {
         const auto n = graph.size();
-        if (n > static_cast<std::size_t>(std::numeric_limits<int>::max()))
-            throw std::length_error("CentroidDecomposition vertex count");
+        /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::CheckCentroidVertexCount(n);
         stores_distances_ = store_distances;
         parent_.assign(n, -1); depth_.resize(n); component_size_.resize(n); order_.reserve(n);
         if (store_distances) ancestors_.resize(n);
@@ -212,3 +222,7 @@ public:
     }
 };
 #endif
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1

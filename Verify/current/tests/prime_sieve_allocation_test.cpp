@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 // 確保失敗時のコピー代入と、容量を再利用する代入を照合する。
 #ifndef SIEVE_SOURCE
 #define SIEVE_SOURCE "../../../Math/Eratosthenes.cpp"
@@ -9,7 +11,9 @@
 #include <cstdlib>
 #include <limits>
 #include <new>
+#include <stdexcept>
 #include <utility>
+#include <vector>
 
 namespace {
 bool fail_next = false;
@@ -51,6 +55,15 @@ SIRKIT_TEST_NOINLINE void operator delete[](void* pointer, std::size_t) noexcept
 #undef SIRKIT_TEST_NOINLINE
 
 int main() {
+    const auto max_words = std::vector<std::uint64_t>{}.max_size();
+    require(sirkit::detail::sieve_checked_capacity(max_words, max_words, "capacity") == max_words);
+    bool capacity_rejected = false;
+    try {
+        (void)sirkit::detail::sieve_checked_capacity(std::uint64_t{max_words} + 1, max_words, "capacity");
+    } catch (const std::length_error&) {
+        capacity_rejected = true;
+    }
+    require(capacity_rejected);
     {
         PrimeSieve source(1000000), destination(31);
         const auto expected = destination.primes();

@@ -20,6 +20,8 @@
 // clear_history(): 森林を保ち履歴と保存位置を消去。容量は保持し、旧stateは無効。O(h+1)上界、noexcept。
 // SIRKIT_DISABLE_SIMD: groupsの追加AVX2実装とCPU判定を除き、標準C++の処理を使う。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <memory>
 #include <cstddef>
@@ -28,6 +30,18 @@
 #include <utility>
 #include <vector>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+#ifndef SIRKIT_ROLLBACK_UNION_FIND_CAPACITY_DEFINED
+#define SIRKIT_ROLLBACK_UNION_FIND_CAPACITY_DEFINED
+namespace detail {
+inline void CheckRollbackHistorySize(std::size_t size) {
+    if (size == static_cast<std::size_t>(std::numeric_limits<int>::max()))
+        throw std::length_error("RollbackUnionFind: history overflow");
+}
+}
+#endif
 
 #ifndef SIRKIT_ROLLBACK_UNION_FIND_DEFINED
 #define SIRKIT_ROLLBACK_UNION_FIND_DEFINED
@@ -113,8 +127,7 @@ public:
     int leader(int i) const { return find(i); }
     bool unite(int x, int y) {
         check(x); check(y); x = leader_unchecked(x); y = leader_unchecked(y);
-        if (history.size() == static_cast<std::size_t>(std::numeric_limits<int>::max()))
-            throw std::length_error("RollbackUnionFind: history overflow");
+        detail::CheckRollbackHistorySize(history.size());
         history.push_back({x, y, data[x], data[y]});
         if (x == y) return false;
         if (data[x] > data[y]) std::swap(x, y);
@@ -165,3 +178,7 @@ public:
     }
 };
 #endif
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1

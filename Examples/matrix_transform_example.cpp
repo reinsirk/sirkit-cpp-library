@@ -6,6 +6,8 @@
 #include <string>
 #include <vector>
 
+using namespace sirkit;
+
 int main() {
     const std::vector<std::vector<int>> a{{1, 2, 3}, {4, 5, 6}};
     assert((rotate_90r(a) == std::vector<std::vector<int>>{{4, 1}, {5, 2}, {6, 3}}));

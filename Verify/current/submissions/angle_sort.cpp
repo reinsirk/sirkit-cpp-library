@@ -1,8 +1,8 @@
 #define SKIP_RUNTIME_CHECKS
 // Verify: https://judge.yosupo.jp/problem/sort_points_by_argument
-// Submission: https://judge.yosupo.jp/submission/414014
+// Submission: https://judge.yosupo.jp/submission/417202
 
-// Library: Geometry/偏角ソート.cpp
+// Library: Geometry/angle_sort.cpp
 // SPDX-License-Identifier: CC0-1.0
 // ドキュメント: https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/angle_sort.md
 //
@@ -18,6 +18,8 @@
 // angle_sort_indices(p,descending=false): 入力不変で昇順の添字列。trueなら降順。O(N log N)時間/O(N)追加領域。
 // いずれもint64_t全域で有効なため入力検査は不要。SKIP_RUNTIME_CHECKSで動作は変わらない。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <array>
 #include <cstddef>
@@ -27,9 +29,12 @@
 #include <vector>
 
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_ANGLE_ARITHMETIC_DEFINED
 #define SIRKIT_ANGLE_ARITHMETIC_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 struct AngleArithmetic {
     static constexpr std::uint64_t magnitude(std::int64_t x) noexcept {
         const auto u = static_cast<std::uint64_t>(x);
@@ -92,18 +97,18 @@ inline constexpr int angle_cross_sign(
     const bool p_negative = !p_zero && ((a.first < 0) != (b.second < 0));
     const bool q_negative = !q_zero && ((a.second < 0) != (b.first < 0));
     if (p_negative != q_negative) return p_negative ? -1 : 1;
-    const auto x = reinsirk::detail::AngleArithmetic::magnitude(a.first);
-    const auto y = reinsirk::detail::AngleArithmetic::magnitude(b.second);
-    const auto z = reinsirk::detail::AngleArithmetic::magnitude(a.second);
-    const auto w = reinsirk::detail::AngleArithmetic::magnitude(b.first);
+    const auto x = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::AngleArithmetic::magnitude(a.first);
+    const auto y = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::AngleArithmetic::magnitude(b.second);
+    const auto z = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::AngleArithmetic::magnitude(a.second);
+    const auto w = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::AngleArithmetic::magnitude(b.first);
     int cmp;
     if ((x | y | z | w) <= std::uint64_t{0xffffffffu}) {
         const auto p = x * y, q = z * w;
         cmp = (p > q) - (p < q);
     } else {
-        cmp = reinsirk::detail::AngleArithmetic::compare_product(
-            reinsirk::detail::AngleArithmetic::multiply(x, y),
-            reinsirk::detail::AngleArithmetic::multiply(z, w));
+        cmp = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::AngleArithmetic::compare_product(
+            /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::AngleArithmetic::multiply(x, y),
+            /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::AngleArithmetic::multiply(z, w));
     }
     return p_negative ? -cmp : cmp;
 #endif
@@ -112,7 +117,7 @@ inline constexpr int angle_cross_sign(
 
 #ifndef SIRKIT_ANGLE_STANDARD_LESS_WIDE_DEFINED
 #define SIRKIT_ANGLE_STANDARD_LESS_WIDE_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 #if defined(__GNUC__) || defined(__clang__)
 [[gnu::noinline]]
 #endif
@@ -145,7 +150,7 @@ inline constexpr bool arccmp_less(
     std::int64_t p, q;
     if (__builtin_mul_overflow(a.first, b.second, &p)
         || __builtin_mul_overflow(a.second, b.first, &q))
-        return reinsirk::detail::AngleArithmetic::less_wide(a, b);
+        return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::AngleArithmetic::less_wide(a, b);
     return p > q;
 #else
     constexpr std::uint64_t bias = std::uint64_t{1} << 31;
@@ -158,7 +163,7 @@ inline constexpr bool arccmp_less(
         const std::int64_t q = a.second * b.first;
         return p > q;
     }
-    return reinsirk::detail::AngleStandardLessWide(a, b);
+    return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::AngleStandardLessWide(a, b);
 #endif
 }
 #endif
@@ -195,9 +200,9 @@ inline constexpr bool arccmp_g_eq(
 inline constexpr bool same_angle(
     const std::pair<std::int64_t, std::int64_t>& a,
     const std::pair<std::int64_t, std::int64_t>& b) noexcept {
-    if (reinsirk::detail::AngleArithmetic::zero(a) || reinsirk::detail::AngleArithmetic::zero(b))
-        return reinsirk::detail::AngleArithmetic::zero(a) && reinsirk::detail::AngleArithmetic::zero(b);
-    return reinsirk::detail::AngleArithmetic::lower_half(a) == reinsirk::detail::AngleArithmetic::lower_half(b)
+    if (/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::AngleArithmetic::zero(a) || /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::AngleArithmetic::zero(b))
+        return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::AngleArithmetic::zero(a) && /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::AngleArithmetic::zero(b);
+    return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::AngleArithmetic::lower_half(a) == /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::AngleArithmetic::lower_half(b)
         && angle_cross_sign(a, b) == 0;
 }
 #endif
@@ -224,7 +229,7 @@ struct AngleGreater {
 
 #ifndef SIRKIT_ANGLE_TRY_SORTED_DEFINED
 #define SIRKIT_ANGLE_TRY_SORTED_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 template<class Compare>
 #if defined(__GNUC__) || defined(__clang__)
 [[gnu::noinline]]
@@ -233,11 +238,11 @@ template<class Compare>
 bool AngleTrySorted(std::vector<std::pair<std::int64_t, std::int64_t>>& points, Compare less) {
     if (less(points.back(), points.front())) return false;
     unsigned inversions = 0;
-    for (std::size_t tail = points.size() - 1, count = 0; tail > 0 && count < 16; --tail, ++count)
+    for (std::size_t tail = points.size() - 1, count = 0; count < 16; --tail, ++count)
         if (less(points[tail], points[tail - 1]) && ++inversions == 2) return false;
     for (std::size_t sample = 1; sample <= 16; ++sample) {
         const auto at = points.size() - 1 - sample * (points.size() / 64);
-        if (at > 0 && less(points[at], points[at - 1]) && ++inversions == 2) return false;
+        if (less(points[at], points[at - 1]) && ++inversions == 2) return false;
     }
     for (std::size_t sample = 1; sample <= 16; ++sample) {
         const auto at = sample * (points.size() / 17);
@@ -246,7 +251,8 @@ bool AngleTrySorted(std::vector<std::pair<std::int64_t, std::int64_t>>& points, 
     auto next = std::is_sorted_until(points.begin(), points.end(), less);
     if (next == points.end()) return true;
     const auto remaining = static_cast<std::size_t>(points.end() - next);
-    if (remaining <= 16 && std::is_sorted(next, points.end(), less)) {
+    // 末尾16点に2回以上の逆転があれば、冒頭の検査で終了済み。
+    if (remaining <= 16) {
         std::array<std::pair<std::int64_t, std::int64_t>, 16> tail;
         std::copy(next, points.end(), tail.begin());
         auto left = next, output = points.end();
@@ -275,7 +281,7 @@ bool AngleTrySorted(std::vector<std::pair<std::int64_t, std::int64_t>>& points, 
 
 #ifndef SIRKIT_ANGLE_SORT_LARGE_DEFINED
 #define SIRKIT_ANGLE_SORT_LARGE_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 #if defined(__GNUC__) || defined(__clang__)
 [[gnu::noinline]]
 #endif
@@ -335,14 +341,14 @@ inline void angle_sort(std::vector<std::pair<std::int64_t, std::int64_t>>& p,
         if (descending) std::sort(p.begin(), p.end(), AngleGreater{});
         else std::sort(p.begin(), p.end(), AngleLess{});
     } else {
-        reinsirk::detail::AngleSortLarge(p, descending);
+        /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::AngleSortLarge(p, descending);
     }
 }
 #endif
 
 #ifndef SIRKIT_ANGLE_SORT_INDICES_LARGE_DEFINED
 #define SIRKIT_ANGLE_SORT_INDICES_LARGE_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 #if defined(__GNUC__) || defined(__clang__)
 [[gnu::noinline]]
 #endif
@@ -404,7 +410,7 @@ inline std::vector<std::size_t> angle_sort_indices(
     std::vector<std::size_t> indices(p.size());
     std::iota(indices.begin(), indices.end(), std::size_t{0});
     if (p.size() >= 32) {
-        reinsirk::detail::AngleSortIndicesLarge(indices, p, descending);
+        /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::AngleSortIndicesLarge(indices, p, descending);
         return indices;
     }
     if (descending) {
@@ -420,6 +426,13 @@ inline std::vector<std::size_t> angle_sort_indices(
 }
 #endif
 
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
+
+
+namespace sirkit {}
+using namespace sirkit;
 
 // SPDX-License-Identifier: CC0-1.0
 // Verify I/O: Verify/current/common/fast_io.hpp
@@ -710,6 +723,8 @@ int main() {
     angle_sort(points);
     // ライブラリの[0,2π)順を、問題の(-π,π]順に合わせる。
     const auto split = std::find_if(points.begin(), points.end(), [](const auto& p) { return p.second < 0; });
-    std::rotate(points.begin(), split, points.end());
-    for (const auto& [x, y] : points) verify_out << x << ' ' << y << '\n';
+    for (auto it = split; it != points.end(); ++it)
+        verify_out << it->first << ' ' << it->second << '\n';
+    for (auto it = points.begin(); it != split; ++it)
+        verify_out << it->first << ' ' << it->second << '\n';
 }

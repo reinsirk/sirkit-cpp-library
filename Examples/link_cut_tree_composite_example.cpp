@@ -4,6 +4,8 @@
 #include <cstdint>
 #include <iostream>
 #include <vector>
+
+using namespace sirkit;
 struct Affine {std::uint32_t a,b;};
 struct Compose {
     static constexpr std::uint64_t mod=998244353;

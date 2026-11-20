@@ -1,3 +1,5 @@
+namespace sirkit {}
+using namespace sirkit;
 #ifndef MODULAR_SOURCE
 #define MODULAR_SOURCE "../../../Math/Modular_Arithmetic.cpp"
 #endif
@@ -29,7 +31,7 @@ static_assert(ModSqrt(0,2)==0&&ModSqrt(1,2)==1);
 static_assert(ModSqrt(10,13)==6&&ModSqrt(9,17)==3);
 static_assert(!ModSqrt(2,13));
 static_assert(ModSqrt(16,18446744069414584321ull)==4);
-static_assert(reinsirk::detail::modular_multiply_full64(UINT64_MAX,UINT64_MAX,UINT64_MAX-1)==1);
+static_assert(::sirkit::detail::modular_multiply_full64(UINT64_MAX,UINT64_MAX,UINT64_MAX-1)==1);
 constexpr std::uint64_t boundary_product_ref(std::uint64_t a,std::uint64_t b,std::uint64_t m){
     std::uint64_t result=0;a%=m;for(;b;b>>=1,a=(a+a)%m)if(b&1)result=(result+a)%m;return result;
 }
@@ -44,8 +46,8 @@ constexpr bool all_pow_boundaries(){
 }
 static_assert(all_pow_boundaries());
 #if defined(__SIZEOF_INT128__) && (defined(__GNUC__) || defined(__clang__)) && !defined(SIRKIT_FORCE_STANDARD_ARITHMETIC)
-constexpr reinsirk::detail::ModularMontgomery64 additive(UINT64_MAX);
-constexpr reinsirk::detail::ModularMontgomery64 subtractive(UINT64_MAX);
+constexpr ::sirkit::detail::ModularMontgomery64 additive(UINT64_MAX);
+constexpr ::sirkit::detail::ModularMontgomery64 subtractive(UINT64_MAX);
 static_assert(additive.multiply(UINT64_MAX-1,UINT64_MAX-1)==1);
 static_assert(additive.multiply(1,1)==1);
 static_assert(subtractive.multiply(UINT64_MAX-1,UINT64_MAX-1)==1);

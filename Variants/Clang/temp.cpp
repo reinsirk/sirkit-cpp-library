@@ -4,27 +4,71 @@
 // ドキュメント: https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/template.md
 //
 // API一覧
+// 公開APIは sirkit 内。main はグローバルに置く。
 // [共有型・定数]
 // Graph: 無重み隣接リスト。Edge{to,w}/WGraph: 行先int・重みint64_tの隣接リスト。
-// INF: int64_t{1}<<60。型・定数はライブラリの共通ガードで共有する。
+// kInf: int64_t{1}<<60。型・定数はライブラリの共通ガードで共有する。
 // [補助関数]
 // chmin(a, b): b < a なら a を更新して true を返す。比較・代入各1回以下。
 // chmax(a, b): a < b なら a を更新して true を返す。比較・代入各1回以下。
 // pow64i(x, n): x^n mod 2^64 を O(log(n + 1)) で返す。0^0 は1。
 // is_mul_overflow(a, b): a*b が符号付き64ビット整数の範囲外なら true。O(1)。
 
+#if !defined(_MSC_VER) && __has_include(<bits/stdc++.h>)
 #include <bits/stdc++.h>
+#else
+#include <algorithm>
+#include <array>
+#include <bit>
+#include <cassert>
+#include <chrono>
+#include <cmath>
+#include <compare>
+#include <complex>
+#include <concepts>
+#include <cstddef>
+#include <cstdint>
+#include <cstdlib>
+#include <deque>
+#include <functional>
+#include <iomanip>
+#include <initializer_list>
+#include <iostream>
+#include <iterator>
+#include <limits>
+#include <map>
+#include <memory>
+#include <numeric>
+#include <optional>
+#include <queue>
+#include <random>
+#include <ranges>
+#include <set>
+#include <span>
+#include <sstream>
+#include <stack>
+#include <stdexcept>
+#include <string>
+#include <string_view>
+#include <tuple>
+#include <type_traits>
+#include <unordered_map>
+#include <unordered_set>
+#include <utility>
+#include <vector>
+#endif
 //GCC バグ対策 https://gcc.gnu.org/bugzilla/show_bug.cgi?id=128217
 #include <atcoder/all>
 
 using namespace std;
 using namespace atcoder;
 
-#define SKIP_RUNTIME_CHECKS
+
+namespace sirkit {
 
 #ifndef SIRKIT_INF_DEFINED
 #define SIRKIT_INF_DEFINED
-inline constexpr std::int64_t INF = std::int64_t{1} << 60;
+inline constexpr std::int64_t kInf = std::int64_t{1} << 60;
 #endif
 
 #ifndef SIRKIT_UNWEIGHTED_GRAPH_DEFINED
@@ -65,6 +109,8 @@ constexpr std::uint64_t pow64i(std::uint64_t x, std::uint64_t n);
 #define SIRKIT_TEMP_DEFINE_IS_MUL_OVERFLOW
 constexpr bool is_mul_overflow(std::int64_t a, std::int64_t b);
 #endif
+} // namespace sirkit
+
 // cout << std::fixed << std::setprecision(15);
 
 int main() {
@@ -73,6 +119,8 @@ int main() {
 
     return 0;
 }
+
+namespace sirkit {
 
 #ifdef SIRKIT_TEMP_DEFINE_CHMIN
 #undef SIRKIT_TEMP_DEFINE_CHMIN
@@ -130,3 +178,5 @@ constexpr bool is_mul_overflow(std::int64_t a, std::int64_t b) {
 #endif
 }
 #endif
+
+} // namespace sirkit

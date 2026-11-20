@@ -1,0 +1,78 @@
+{
+  "format": 1,
+  "date": "2026-11-15",
+  "status": "issues_confirmed_fixes_in_progress",
+  "model": "claude-fable-5-2",
+  "actual_models": [
+    "claude-fable-5-2"
+  ],
+  "scope": "Read-only second review of three caller-configurable identity/inf implementations after Codex validation",
+  "reviews": {
+    "reviews": [
+      {
+        "id": "implicit_treap_deque",
+        "source_sha256": "c16a4f8338e1225d33bd78d22170d24f42cb8eda6c6272af92ed02191331ebd0",
+        "verdict": "correctness_issue",
+        "reason": "提出mainは既定構築・push/pop・all_prodのみで単位元共有の影響を受けず、copy/move/swap/clearの単位元保持も読解上は正しい(実行はしていない)。ただし新設のexplicit lazy_implicit_treap(S identity)により、旧呼び出しt({x})は重複解決で標準変換のSが優先され、1要素列ではなく「単位元xの空列」に黙って変わり、t({})もS{}の単位元(集成体Sでは曖昧)になる(規格からの読解で未コンパイル)。単位元側をtemplate<class I> requires std::convertible_to<I,S>にして波括弧初期化を推論不能にするなど、旧呼び出しの互換回復と回帰テストが必要。"
+      },
+      {
+        "id": "dynamic_lichao_segment",
+        "source_sha256": "3d7fbaba19c35ba8dd5382d2091e3acecf8423b94d41c1a569b25950930bca8d",
+        "verdict": "keep",
+        "reason": "空ノード判定・枝刈り・問い合わせはすべて実行時inf_を使い、旧NTTP指定と2引数構築も維持され、狭い符号付きTの既定は型最大値になっている。提出mainはNTTPでINT64_MAXを指定しており、±2e18級の値でも2^60既定の影響を受けない。読解のみで実行はしておらず、Line()の既定切片がNTTP側kInfのままである点は文書上の軽微な注意に留まる。"
+      },
+      {
+        "id": "line_container_2d_min",
+        "source_sha256": "5d44b5b72d80afcc76791b0c5565398fe64d7d42cff0776979d6798c49e972f3",
+        "verdict": "correctness_issue",
+        "reason": "提出mainは既定構築(inf=2^60≈1.153e18)でmin_rounded_llを呼ぶが、line_add_get_minは|a|,|x|≤1e9、|b|≤1e18で答えが±2e18に達するため、旧INTEGER_LIMIT=4.1e18では通っていた値が±2^60に切り詰められWAになる(制約からの読解で未実行)。公式サンプルは小さい値のためCodexの検証では検出されない。clamp自体のINT64_MAX付近の変換安全性とcopy/move/swap/clearのinf保持は読解上問題ない。"
+      }
+    ],
+    "experiments": [
+      {
+        "ids": [
+          "line_container_2d_min"
+        ],
+        "hypothesis": "既定inf=2^60では|答え|>2^60の入力(例: 点(0,10^18)のみでx=0の照会、または a=10^9, b=10^18, x=10^9)で出力が1152921504606846976に切り詰められ、誤答になる。",
+        "minimal_patch": "mainの`LineContainer2D points;`を`LineContainer2D points(LineContainer2D::INTEGER_LIMIT);`(または`std::numeric_limits<std::int64_t>::max()`)に変更し、Li Chao側と同様に理由を1行コメントで記す。本体は変更しない。",
+        "required_validation": "|b|=10^18かつ|a*x|が10^18近傍の境界ケースとランダムケースを__int128の全探索参照と照合する(checked/skip、GCC/Clang、標準代替経路)。変更後ソースのSHA-256で生成・ローカル検証をやり直してオンライン再提出し、旧ACは引き継がない。"
+      }
+    ]
+  },
+  "source_snapshots": [
+    {
+      "id": "implicit_treap_deque",
+      "source_sha256": "c16a4f8338e1225d33bd78d22170d24f42cb8eda6c6272af92ed02191331ebd0",
+      "problem_url": "https://judge.yosupo.jp/problem/deque_operate_all_composite",
+      "scope": "Full in-memory canonical render before global generation. Review includes generic configurable identity/inf APIs, not only the operations used in this problem."
+    },
+    {
+      "id": "dynamic_lichao_segment",
+      "source_sha256": "3d7fbaba19c35ba8dd5382d2091e3acecf8423b94d41c1a569b25950930bca8d",
+      "problem_url": "https://judge.yosupo.jp/problem/segment_add_get_min",
+      "scope": "Full in-memory canonical render before global generation. Review includes generic configurable identity/inf APIs, not only the operations used in this problem."
+    },
+    {
+      "id": "line_container_2d_min",
+      "source_sha256": "5d44b5b72d80afcc76791b0c5565398fe64d7d42cff0776979d6798c49e972f3",
+      "problem_url": "https://judge.yosupo.jp/problem/line_add_get_min",
+      "scope": "Full in-memory canonical render before global generation. Review includes generic configurable identity/inf APIs, not only the operations used in this problem."
+    }
+  ],
+  "evidence_archive": "Audit/data/premerge-resume-20261115.zip",
+  "execution_member": "claude/custom-inf-data/execution.json",
+  "execution_sha256": "f6d5d27251b47c8858093c94162c836df088d7cbd80a46367c78757ce700ffca",
+  "raw_stream_member": "claude/custom-inf-data/response.jsonl",
+  "raw_stream_sha256": "d5b5f659f4ae140091cdaec3ce30ed2a15e54deeaa4d26a94d96a16ca3d8e683",
+  "followup": {
+    "treap": "Scalar custom-identity overload changes the old t({7}) into an empty tree. Restore value-list construction via initializer_list overload. Old t({}) was itself ambiguous, so that part of the model hypothesis is not claimed as a preexisting valid call.",
+    "line2d_verify": "Official |a|,|x|<=1e9 and |b|<=1e18 permits answers near2e18. Driver now specifies2^62; custom generic default remains2^60.",
+    "constraints_primary_sources": [
+      "https://raw.githubusercontent.com/yosupo06/library-checker-problems/master/data_structure/line_add_get_min/info.toml",
+      "https://raw.githubusercontent.com/yosupo06/library-checker-problems/master/data_structure/line_add_get_min/task.md"
+    ]
+  },
+  "usage_before_percent": 56,
+  "usage_after_percent": 67,
+  "online_ac_transferred": false
+}

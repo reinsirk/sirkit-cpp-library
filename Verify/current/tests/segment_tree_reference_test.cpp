@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #ifndef SIRKIT_SEGMENT_TEST_SOURCE
 #define SIRKIT_SEGMENT_TEST_SOURCE "../../../DataStructure/Segment_Tree.cpp"
 #endif
@@ -33,6 +35,14 @@ struct First {
 };
 }
 int main() {
+    check(::sirkit::detail::CheckedSegmentLeafBase(0, 0, "test") == 1);
+    check(::sirkit::detail::CheckedSegmentLeafBase(5, 8, "test") == 8);
+    expect<std::length_error>([] { (void)::sirkit::detail::CheckedSegmentLeafBase(5, 7, "test"); });
+    if constexpr (sizeof(std::size_t) >= sizeof(int)) {
+        const auto maximum = static_cast<std::size_t>(std::numeric_limits<int>::max());
+        check(::sirkit::detail::CheckedSegmentArrayCount(maximum, "test") == std::numeric_limits<int>::max());
+        expect<std::length_error>([&] { (void)::sirkit::detail::CheckedSegmentArrayCount(maximum + 1, "test"); });
+    }
     std::mt19937_64 random(0x9221733ULL);
     for (const auto n : {0, 1, 2, 3, 7, 8, 9, 31, 32, 33, 65, 128, 257}) {
         std::vector<std::int64_t> a(n);
@@ -58,6 +68,9 @@ int main() {
             if ((rep & 63) == 0) check(tree.values() == a);
         }
         auto copied = tree; auto moved = std::move(copied); check(copied.empty()); check(moved.values() == a);
+        const auto* same = &moved;
+        moved = *same;
+        check(moved.values() == a);
         copied = moved; moved = std::move(copied); check(copied.empty()); moved = std::move(moved); check(moved.values() == a);
         moved.reset(); check(moved.values() == std::vector<std::int64_t>(n)); moved.swap(tree); check(moved.values() == a);
         tree.clear(); check(tree.empty()); check(tree.prod(0, 0) == 0); check(tree.all_prod() == 0);

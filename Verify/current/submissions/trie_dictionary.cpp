@@ -37,6 +37,8 @@
 // reserve_nodesは最悪O(N)。使用メモリはノード枠数＋256×索引枠数に比例。
 // 個数・ノード枠の上限超過は検査省略時もlength_error。確保失敗はbad_alloc。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <array>
 #include <cstddef>
 #include <cstdint>
@@ -50,6 +52,9 @@
 #include <utility>
 #include <vector>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_TRIE_NODE_DEFINED
 #define SIRKIT_TRIE_NODE_DEFINED
 struct TrieNode {
@@ -88,6 +93,11 @@ private:
 
 #ifndef SIRKIT_TRIE_DEFINED
 #define SIRKIT_TRIE_DEFINED
+namespace detail {
+inline void CheckTrieCapacity(std::size_t count, std::size_t limit, const char* message) {
+    if (count > limit) throw std::length_error(message);
+}
+}
 // 子はソート済み兄弟リスト。次数16で256要素の索引を追加、8未満で回収。
 // 破棄・clear・列挙は再帰しない。64文字までの追加経路は固定長の作業配列へ記録。
 class Trie {
@@ -260,8 +270,7 @@ public:
             }
         }
         const std::size_t needed = word.size() - matched;
-        if (needed > nodes_.max_size() - live_)
-            throw std::length_error("Trie: node capacity overflow");
+        detail::CheckTrieCapacity(needed, nodes_.max_size() - live_, "Trie: node capacity overflow");
         const std::size_t old_size = nodes_.size();
         const std::size_t free_count = old_size == 0 ? 0 : old_size - live_;
         const std::size_t additional = needed > free_count ? needed - free_count : 0;
@@ -272,7 +281,7 @@ public:
         bool appended_table = false;
         // 全確保を先に済ませ、例外時に内容を変えない。
         if (needs_index && free_table_ == no_table) {
-            if (tables_.size() >= no_table) throw std::length_error("Trie: index capacity overflow");
+            detail::CheckTrieCapacity(tables_.size(), no_table - 1, "Trie: index capacity overflow");
             tables_.emplace_back();
             appended_table = true;
         }
@@ -465,6 +474,13 @@ public:
 };
 #endif
 
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
+
+
+namespace sirkit {}
+using namespace sirkit;
 
 // SPDX-License-Identifier: CC0-1.0
 // Verify I/O: Verify/current/common/fast_io.hpp

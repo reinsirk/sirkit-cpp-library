@@ -1,0 +1,227 @@
+{
+  "format": 1,
+  "date": "2026-11-14",
+  "stage": "codex",
+  "status": "complete",
+  "scope": "Current-source static review + independent/official sample validation + whole-program measurement; same-source control is not a speedup claim",
+  "entries": [
+    {
+      "id": "dynamic_fenwick_2d_rectangle",
+      "source_sha256": "255d43993f02be584aaeb49a774240c278d163621a7bc9fc775155053fce78b4",
+      "input_source_sha256": "255d43993f02be584aaeb49a774240c278d163621a7bc9fc775155053fce78b4",
+      "decision": {
+        "decision": "unchanged_no_new_candidate",
+        "current_review_reason": "更新点のみ座標圧縮し、query境界はlower_boundで変換する手順が正しい。32bit座標圧縮・64bit加算を維持。xs/ys全予約は旧random約1〜1.5%悪化済みで再提案しない。",
+        "historical_candidate_decisions": []
+      },
+      "compiler": {
+        "path": "/usr/bin/g++",
+        "version": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0"
+      },
+      "flags_and_gcc_pragmas": [],
+      "timing_definition": "child process CPU time and wall time. Full process includes startup, main, I/O, library and teardown. Input generation/hash/reference checks excluded. No body-only speed claim.",
+      "same_source_control": true,
+      "measurement_record_sha256": "d4ff51f4e8e2571af8278441d128afe3e93098bd6505184583d54cae511a7baf",
+      "official_sample_count": 1,
+      "profiles": [
+        {
+          "profile": "small",
+          "input_sha256": "57bcbf986f6e9decc370abefe07e0bcaabee58a600884c35d8f406dfbd2bea7e",
+          "validation": "independent_expected_and_baseline_output",
+          "expected_output_sha256": "73e7ca3e45aef308374f5f880d308a29df947dbaaac601b851ac70e0d524f67c",
+          "median_cpu_seconds": {
+            "baseline": 0.0008589999999999431,
+            "current": 0.000858999999999499
+          },
+          "measured_trials": 5,
+          "current_over_baseline": 0.999999999999483,
+          "ratio_is_speedup_claim": false
+        },
+        {
+          "profile": "random",
+          "input_sha256": "e2733f4b58f832cb0cb3a6b48aec71c4373a94939b35c24e8850afd270c07314",
+          "validation": "baseline_output_equality_only",
+          "expected_output_sha256": "b04b63293e9c95c05084d4552beb160ddbd47005ef3e0ffb20ebbf09878ca848",
+          "median_cpu_seconds": {
+            "baseline": 0.018549999999999844,
+            "current": 0.018664999999999488
+          },
+          "measured_trials": 5,
+          "current_over_baseline": 1.0061994609164229,
+          "ratio_is_speedup_claim": false
+        },
+        {
+          "profile": "degenerate",
+          "input_sha256": "000952f508e7d6c3a66f06e28a0494ff281bde1dffe4ede53a89fc21d7706537",
+          "validation": "baseline_output_equality_only",
+          "expected_output_sha256": "2a6b7060e8908bbd4dd78a3f68aef8c0f39b53689420bd2a2d4317ac6785d17f",
+          "median_cpu_seconds": {
+            "baseline": 0.0018819999999994952,
+            "current": 0.001885000000002357
+          },
+          "measured_trials": 5,
+          "current_over_baseline": 1.001594048885687,
+          "ratio_is_speedup_claim": false
+        }
+      ]
+    },
+    {
+      "id": "suffix_array",
+      "source_sha256": "a2fb4ac3f4f4f705e118e0b30bd73ab60a77d8a266b54908fbbe8255afb66330",
+      "input_source_sha256": "a2fb4ac3f4f4f705e118e0b30bd73ab60a77d8a266b54908fbbe8255afb66330",
+      "decision": {
+        "decision": "unchanged_no_new_candidate",
+        "current_review_reason": "最上位文字コードだけuint16のSA-IS版と8bit文字列inputを維持。再帰/整数列/LCPの型をまとめて狭めず、出力は先頭別出しで余分な配列copyなし。",
+        "historical_candidate_decisions": [
+          {
+            "record": "Audit/optimization-fable-batch-11-2026-11-13.json",
+            "decision": "adopt",
+            "candidate_reason": "文字列版の記号は1..256と終端0でuint16_tに収まる。最上位のinduce 3走査と型判定が参照するsymbolsを4n→2n byteにすればキャッシュミスが減る可能性がある(未測定)。再帰段と整数版はintのまま。",
+            "decision_reason": "文字列の最上位記号配列だけuint16_tへ縮小。全256byte/全API/整数/検索/独立doubling等32構成PASS。最大4種×2ID×2compilerの16条件で同設定の全体時間約1.7〜4.3%短縮。整数列・再帰・LCPは維持。新コードのGCC実pragma3種を別比較しSAはO3,unroll-loops、substringsはO3を採用。最終新設定24C++構成36samplesとPython276/sync15もPASS。最上位bufferの2n bytes削減と総workspaceを区別。"
+          }
+        ]
+      },
+      "compiler": {
+        "path": "/usr/bin/g++",
+        "version": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0"
+      },
+      "flags_and_gcc_pragmas": [
+        "#pragma GCC optimize(\"O3\", \"unroll-loops\")"
+      ],
+      "timing_definition": "child process CPU time and wall time. Full process includes startup, main, I/O, library and teardown. Input generation/hash/reference checks excluded. No body-only speed claim.",
+      "same_source_control": true,
+      "measurement_record_sha256": "cad90e033938049e9446e444ee9cff401fb0a34c2c3d6a09953f4b8c671b13e5",
+      "official_sample_count": 2,
+      "profiles": [
+        {
+          "profile": "random",
+          "input_sha256": "cb9a18b7d3cdbd76115ed7a75b64541e8ce358d764e49e70f9331410b38d82f5",
+          "validation": "baseline_output_equality_only",
+          "expected_output_sha256": "c8511f1b00ba531f706e3e0ca40150c04b66b89bbb0952b315274c48bfe459be",
+          "median_cpu_seconds": {
+            "baseline": 0.027376000000002954,
+            "current": 0.027409999999993495
+          },
+          "measured_trials": 5,
+          "current_over_baseline": 1.0012419637635352,
+          "ratio_is_speedup_claim": false
+        },
+        {
+          "profile": "equal",
+          "input_sha256": "069af87ff42316e1bbe6cc65d3ed71a71cdcf9cc972257c93a7d934b435c8ad2",
+          "validation": "baseline_output_equality_only",
+          "expected_output_sha256": "e99063e6cb6e8f87b7bf333913eb828272b24a60e69db5d1818ffd76c11ea20e",
+          "median_cpu_seconds": {
+            "baseline": 0.009434000000001497,
+            "current": 0.010003999999994129
+          },
+          "measured_trials": 5,
+          "current_over_baseline": 1.0604197583201762,
+          "ratio_is_speedup_claim": false
+        },
+        {
+          "profile": "independent-small",
+          "input_sha256": "d5b8e90cf048a60caad0780ba43d220530e6adc3d1c8d3ed9bae6f9a5159093a",
+          "validation": "independent_expected_and_baseline_output",
+          "expected_output_sha256": "81ebe31c0c8f6d829f29310e263010c3fc4410bad1aefedadc7473fd717fd5f2",
+          "median_cpu_seconds": {
+            "baseline": 0.0008149999999984558,
+            "current": 0.0008210000000046236
+          },
+          "measured_trials": 5,
+          "current_over_baseline": 1.0073619631977657,
+          "ratio_is_speedup_claim": false
+        }
+      ]
+    },
+    {
+      "id": "suffix_array_substrings",
+      "source_sha256": "da208645830eea19895f9606f943c9a462b62c86e99182697e0c827961e91356",
+      "input_source_sha256": "da208645830eea19895f9606f943c9a462b62c86e99182697e0c827961e91356",
+      "decision": {
+        "decision": "unchanged_no_new_candidate",
+        "current_review_reason": "SAとLCPを1回ずつ作り、n(n+1)/2をuint64で計算する。Phi方式は旧equalでcore27%/9%回帰し全体でも悪化したため維持。",
+        "historical_candidate_decisions": [
+          {
+            "record": "Audit/optimization-fable-batch-11-2026-11-13.json",
+            "decision": "adopt",
+            "candidate_reason": "文字列版の記号は1..256と終端0でuint16_tに収まる。最上位のinduce 3走査と型判定が参照するsymbolsを4n→2n byteにすればキャッシュミスが減る可能性がある(未測定)。再帰段と整数版はintのまま。",
+            "decision_reason": "文字列の最上位記号配列だけuint16_tへ縮小。全256byte/全API/整数/検索/独立doubling等32構成PASS。最大4種×2ID×2compilerの16条件で同設定の全体時間約1.7〜4.3%短縮。整数列・再帰・LCPは維持。新コードのGCC実pragma3種を別比較しSAはO3,unroll-loops、substringsはO3を採用。最終新設定24C++構成36samplesとPython276/sync15もPASS。最上位bufferの2n bytes削減と総workspaceを区別。"
+          },
+          {
+            "record": "Audit/optimization-fable-batch-11-2026-11-13.json",
+            "decision": "reject",
+            "candidate_reason": "Kasai法は1要素あたりrank構築の書込み、sa[order+1]の読出し、lcp[order]の書込みでランダムアクセスが3回。Φ方式(phi[sa[i]]=sa[i-1]、テキスト順にPLCPを同じ配列へ上書き、最後にlcp[i-1]=plcp[sa[i]])なら2回になり、作業配列も1本のまま(未測定)。順列検査は番兵-2で維持できる。",
+            "decision_reason": "Phi方式はrandom/smallalphaで速いがequalでcore GCC約27%/Clang約9%、whole約3.9%/1.5%回帰。計13082208独立/API checksを通過しても非回帰条件を満たさず、LCP/Docは旧実装を維持。"
+          }
+        ]
+      },
+      "compiler": {
+        "path": "/usr/bin/g++",
+        "version": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0"
+      },
+      "flags_and_gcc_pragmas": [
+        "#pragma GCC optimize(\"O3\")"
+      ],
+      "timing_definition": "child process CPU time and wall time. Full process includes startup, main, I/O, library and teardown. Input generation/hash/reference checks excluded. No body-only speed claim.",
+      "same_source_control": true,
+      "measurement_record_sha256": "69771417d612e9ff746611869e577ad54e3a3ddce92bee88c621fcd3b20dd11c",
+      "official_sample_count": 1,
+      "profiles": [
+        {
+          "profile": "random",
+          "input_sha256": "b01539d065aa854508471a08c20183ba39370580e973969cce59fe4b01d5f521",
+          "validation": "baseline_output_equality_only",
+          "expected_output_sha256": "ca890536ca6002cad6a50256b8e9fc1c1f87a653edfe7c21a962b88189a6a0ba",
+          "median_cpu_seconds": {
+            "baseline": 0.029705999999988464,
+            "current": 0.029606999999994166
+          },
+          "measured_trials": 5,
+          "current_over_baseline": 0.9966673399315177,
+          "ratio_is_speedup_claim": false
+        },
+        {
+          "profile": "equal",
+          "input_sha256": "069af87ff42316e1bbe6cc65d3ed71a71cdcf9cc972257c93a7d934b435c8ad2",
+          "validation": "baseline_output_equality_only",
+          "expected_output_sha256": "eea5daac8b1d1b7b82edaaa7fadadf6b48a439a874efd036fb0666e68c17462e",
+          "median_cpu_seconds": {
+            "baseline": 0.00664399999999965,
+            "current": 0.006469999999997533
+          },
+          "measured_trials": 5,
+          "current_over_baseline": 0.9738109572543459,
+          "ratio_is_speedup_claim": false
+        },
+        {
+          "profile": "independent-small",
+          "input_sha256": "bf9f277cfd73f86738b12b9f496115ec8c465c18184b4562de12eab70be2004b",
+          "validation": "independent_expected_and_baseline_output",
+          "expected_output_sha256": "b2b8dc46d5da0557dcfbe7976132034037a7dd7e8b7e1c2f5dcdfb084cd03b48",
+          "median_cpu_seconds": {
+            "baseline": 0.0008209999999984063,
+            "current": 0.0008110000000032258
+          },
+          "measured_trials": 5,
+          "current_over_baseline": 0.9878197320399513,
+          "ratio_is_speedup_claim": false
+        }
+      ]
+    }
+  ],
+  "source_hashes": {
+    "DataStructure/dynamic-binary-indexed-tree-2d.cpp": "48f0140f426beea8889620f9ccc61b6acd205c078d2833acdd11c919f2832c3d",
+    "String/Suffix_Array.cpp": "a2e1643e72cb2459b364d0aec7682f5a8759b02866f1bb8a2d73041ed9ebddf5",
+    "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab",
+    "Verify/current/drivers/dynamic_fenwick_2d_rectangle_main.cpp": "f2b509ab43823f3b99d03423eaaa491cf2ed50a53317167cf33396ee05806efa",
+    "Verify/current/drivers/suffix_array_main.cpp": "d2ae99f2d7897c3c8a2bdd50ce2755496b18d5c4cc89c072f7f13ff64b96f848",
+    "Verify/current/drivers/suffix_array_substrings_main.cpp": "5b934920067b755639670296e5d0f9c272b6b65cc92070fea667d8eaf0e1d494",
+    "Verify/current/submissions/dynamic_fenwick_2d_rectangle.cpp": "255d43993f02be584aaeb49a774240c278d163621a7bc9fc775155053fce78b4",
+    "Verify/current/submissions/suffix_array.cpp": "a2fb4ac3f4f4f705e118e0b30bd73ab60a77d8a266b54908fbbe8255afb66330",
+    "Verify/current/submissions/suffix_array_substrings.cpp": "da208645830eea19895f9606f943c9a462b62c86e99182697e0c827961e91356"
+  },
+  "measurement_tools": "/tmp/sirkit-premerge-optimization-20261114/measurements",
+  "commit_or_push": false,
+  "online_status": "not_evaluated"
+}

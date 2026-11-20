@@ -4,14 +4,130 @@
 
 ## API
 
-| 操作 | 結果 |
-| --- | --- |
-| `rotate_90r(a)` / `rotate_90l(a)` | 時計回り / 反時計回りに90度回転したコピー。 |
-| `rotate_180(a)` | 180度回転したコピー。 |
-| `rotate_quarter(a,turns)` | 時計回りの回数を4で正規化して回転。負数・INT_MINも可。 |
-| `transpose(a)` | 行と列を入れ替えたコピー。 |
-| `flip_i(a)` / `flip_j(a)` | 上下 / 左右反転したコピー。 |
-| `flip_i_inplace(a)` / `flip_j_inplace(a)` | 行列自体を上下 / 左右反転。戻り値なし。 |
+### rotate_90r
+
+```text
+template<class T>
+std::vector<std::vector<T>> rotate_90r(const std::vector<std::vector<T>>& a);
+std::vector<std::string> rotate_90r(const std::vector<std::string>& a);
+```
+
+時計回り90度回転をした独立なコピーを返します。
+
+**制約:** 入力は矩形。Tをコピー構築できること。
+
+**計算量:** O(H+HW)時間・返却値にO(H+HW)領域。
+
+### rotate_90l
+
+```text
+template<class T>
+std::vector<std::vector<T>> rotate_90l(const std::vector<std::vector<T>>& a);
+std::vector<std::string> rotate_90l(const std::vector<std::string>& a);
+```
+
+反時計回り90度回転をした独立なコピーを返します。
+
+**制約:** 入力は矩形。Tをコピー構築できること。
+
+**計算量:** O(H+HW)時間・返却値にO(H+HW)領域。
+
+### rotate_180
+
+```text
+template<class T>
+std::vector<std::vector<T>> rotate_180(const std::vector<std::vector<T>>& a);
+std::vector<std::string> rotate_180(const std::vector<std::string>& a);
+```
+
+180度回転をした独立なコピーを返します。
+
+**制約:** 入力は矩形。Tをコピー構築できること。
+
+**計算量:** O(H+HW)時間・返却値にO(H+HW)領域。
+
+### rotate_quarter
+
+```text
+template<class T>
+std::vector<std::vector<T>> rotate_quarter(const std::vector<std::vector<T>>& a, int turns);
+std::vector<std::string> rotate_quarter(const std::vector<std::string>& a, int turns);
+```
+
+時計回りturns回の90度回転をした独立なコピーを返します。turnsは4で正規化し、負数・INT_MINも扱います。
+
+**制約:** 入力は矩形。Tをコピー構築できること。
+
+**計算量:** O(H+HW)時間・返却値にO(H+HW)領域。
+
+### transpose
+
+```text
+template<class T>
+std::vector<std::vector<T>> transpose(const std::vector<std::vector<T>>& a);
+std::vector<std::string> transpose(const std::vector<std::string>& a);
+```
+
+行と列を入れ替えた転置をした独立なコピーを返します。
+
+**制約:** 入力は矩形。Tをコピー構築できること。
+
+**計算量:** O(H+HW)時間・返却値にO(H+HW)領域。
+
+### flip_i
+
+```text
+template<class T>
+std::vector<std::vector<T>> flip_i(const std::vector<std::vector<T>>& a);
+std::vector<std::string> flip_i(const std::vector<std::string>& a);
+```
+
+上下反転をした独立なコピーを返します。
+
+**制約:** 入力は矩形。Tをコピー構築できること。
+
+**計算量:** O(H+HW)時間・返却値にO(H+HW)領域。
+
+### flip_j
+
+```text
+template<class T>
+std::vector<std::vector<T>> flip_j(const std::vector<std::vector<T>>& a);
+std::vector<std::string> flip_j(const std::vector<std::string>& a);
+```
+
+左右反転をした独立なコピーを返します。
+
+**制約:** 入力は矩形。Tをコピー構築できること。
+
+**計算量:** O(H+HW)時間・返却値にO(H+HW)領域。
+
+### flip_i_inplace
+
+```text
+template<class T> void flip_i_inplace(std::vector<std::vector<T>>& a);
+void flip_i_inplace(std::vector<std::string>& a);
+```
+
+上下反転を入力へ直接行います。
+
+**制約:** 入力は矩形。行の交換だけを使い、要素の交換は不要です。
+
+**計算量:** O(H)時間・O(1)追加領域。
+
+### flip_j_inplace
+
+```text
+template<class T> void flip_j_inplace(std::vector<std::vector<T>>& a);
+void flip_j_inplace(std::vector<std::string>& a);
+```
+
+左右反転を入力へ直接行います。
+
+**制約:** 入力は矩形。要素を交換できること。
+
+**計算量:** O(H+HW)時間・O(1)追加領域。
+
 
 ```cpp
 std::vector<std::string> board{"abc", "def"};

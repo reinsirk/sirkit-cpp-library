@@ -1,0 +1,96 @@
+{
+  "format": 1,
+  "date": "2026-11-14",
+  "stage": "claude",
+  "model": "claude-fable-5-2",
+  "actual_models": [
+    "claude-fable-5-2"
+  ],
+  "effort": "low",
+  "completed_utc": "2026-11-14T11:12:34.154150+00:00",
+  "source_hashes": {
+    "DataStructure/implicit_treap.cpp": "44ae7a80d8fa2e923bae0ca4be92391ea7242b5f37519d233fae78f943a727be",
+    "Graph/Bellman-Ford.cpp": "d304f5a62b7ab2324c39e03f5634f5453b1167898b11249507afb23cd78aede2",
+    "Graph/Dijkstra.cpp": "4d6752d9c7cce9bd949be2e446c7cb883142c93bce9b51f641fff12774fb3df4",
+    "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab",
+    "Verify/current/drivers/bellman_ford_coins_respawn_main.cpp": "e5aa3ebca2d20c1ca1626e0c4bd078cafe79b15d8a384014be96ba90054e75de",
+    "Verify/current/drivers/dijkstra_main.cpp": "ebc7558ed105600ae6e4596a05ed4232e14a7c5d5a4c85bcebc6f6978f089a9a",
+    "Verify/current/drivers/implicit_treap_affine_main.cpp": "164e8597c277d90da07e3f627141c3864d53311fb8cc4425b2f644b473a8f28b",
+    "Verify/current/drivers/implicit_treap_deque_main.cpp": "d9604072e82a9c3826520e77cb873e309a169d27da83d0d935416dca76af2521",
+    "Verify/current/submissions/bellman_ford.cpp": "c4456696bd02beb0b26646f5441b903e9dc737d21ea6eb46571fb2f49f817476",
+    "Verify/current/submissions/dijkstra.cpp": "e9151b033a7edd7d6eb884af7654233954b30cf2f621a21e1c0e0e7e6e0e66c5",
+    "Verify/current/submissions/implicit_treap_affine.cpp": "18052b31790730881c23756998a15f5588842d4739e9de61124c3010639f9681",
+    "Verify/current/submissions/implicit_treap_deque.cpp": "53f419660d28f6bf0767ec71cffb1da47691fdb4202305a9e385f33ff7049d71"
+  },
+  "codex_receipts": {
+    "bellman_ford": "Verify/optimization/stages/bellman_ford.codex.0ff7869884e2b0b73334c5aeed2c928c1128cd0015623569e0f739c39d45d970.json",
+    "dijkstra": "Verify/optimization/stages/dijkstra.codex.371b268e174f3691079cddcc0ec03ca8f80dd82a5d1c6025b6a5ab6c258ac343.json",
+    "implicit_treap_affine": "Verify/optimization/stages/implicit_treap_affine.codex.150846f0ebf4d099bbc1e6e1f4e0105d291ad7c1694fccceb841349f00bef6c1.json",
+    "implicit_treap_deque": "Verify/optimization/stages/implicit_treap_deque.codex.481549bfa1ae65e1788030ee197bf97e1ea9a59896f5a1dc1c06e8dd9a1c77d3.json"
+  },
+  "review": {
+    "reviews": [
+      {
+        "id": "bellman_ford",
+        "source_sha256": "c4456696bd02beb0b26646f5441b903e9dc737d21ea6eb46571fb2f49f817476",
+        "verdict": "keep",
+        "reason": "静的読解では、N≤2500で通る前方掃引・warm継続・frontier反復・SCC経路の反復回数と負閉路伝播に誤りは見当たらず、mainも素直なAPI呼び出しのため、実測なしに提案できる変更はありません。"
+      },
+      {
+        "id": "dijkstra",
+        "source_sha256": "e9151b033a7edd7d6eb884af7654233954b30cf2f621a21e1c0e0e7e6e0e66c5",
+        "verdict": "keep",
+        "reason": "静的読解では、CSR構築、65要素の有界ヒープからradixへの移行、32bitキーの復元、初期鎖と遅延previousによる経路復元に誤りは見当たらず、却下済みの32bit添字案以外に新しい根拠のある候補はありません。"
+      },
+      {
+        "id": "implicit_treap_affine",
+        "source_sha256": "18052b31790730881c23756998a15f5588842d4739e9de61124c3010639f9681",
+        "verdict": "keep",
+        "reason": "静的読解では、64Bのcompact経路における遅延value適用、反転フラグ、pull省略、線形Cartesian構築は可換指定のもとで整合しており、却下済みのreserve案・条件減算案を超える新候補はありません。"
+      },
+      {
+        "id": "implicit_treap_deque",
+        "source_sha256": "53f419660d28f6bf0767ec71cffb1da47691fdb4202305a9e385f33ff7049d71",
+        "verdict": "keep",
+        "reason": "静的読解では、uint32係数とuint64積による合成順序、空列時の単位元、56Bの非compactノード、q件のreserveは正しく、公開APIを保ったまま実測なしに勧められる追加変更はありません。"
+      }
+    ],
+    "experiments": []
+  },
+  "usage_after": {
+    "windows": {
+      "five_hour": {
+        "utilization": 50.0,
+        "resets_at": "2026-11-14T15:40:00.487744+00:00"
+      },
+      "seven_day": {
+        "utilization": 5.0,
+        "resets_at": "2026-11-21T09:00:00.487761+00:00"
+      },
+      "seven_day_breakdown": {}
+    },
+    "extra_usage_enabled": false
+  },
+  "prompt_sha256": "0c3f3782a08936e36941b79909d9ba0cdf8798bcb4d58978b31a929073eb751b",
+  "response_sha256": "8ee1c9c31bd871ef6b25e0e74acb16da11eb6d9e1d27ccc55e79a247d6a48070",
+  "model_usage": {
+    "claude-fable-5-2": {
+      "inputTokens": 2,
+      "outputTokens": 7989,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 55951,
+      "webSearchRequests": 0,
+      "costUSD": 1.214792,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 7325,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 55951,
+      "canonicalModel": "claude-fable-5-2",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "source_representation": "All library/main/I/O/vendor code supplied once per file; only comments removed with full token/literal equality verification.",
+  "review_limitations": "Static review plus supplied measured evidence, not new model-executed measurements. No online submission or AC inference."
+}

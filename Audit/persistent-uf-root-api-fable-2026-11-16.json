@@ -1,0 +1,127 @@
+{
+  "format": 1,
+  "date": "2026-11-16",
+  "stage": "claude",
+  "model": "claude-fable-5-2",
+  "actual_models": [
+    "claude-fable-5-2"
+  ],
+  "records": [
+    {
+      "id": "persistent_union_find",
+      "source_sha256": "f121be97fd308ee04c1a97926b392a393875cb64571bcda58b422f03e689fdf4",
+      "verdict": "keep",
+      "reason": "静的レビューのみで、当方は実行していない。root(i[,Version])はfindへ委譲してintの代表頂点を返し、issameはsameの別名、Version=Node*は非所有、version_はprivateでversion()から取得と、要求どおりで説明文書とも一致する。get_root/root_of/UFの公開rootは残っておらず、PersistentArray.rootは不変。uniteはsa>sbの交換で大きい成分を根にし、非公開update_twoで根に負サイズ和・子に親を同時に書く。update_twoが例外を投げた場合はversion_とarr.rootを更新しない。結合不要時も指定版を現在版にし、arr.rootとversion_は常に同時更新される。既定コピーはshared_ptrの保存領域を共有して現在版だけ独立し、ムーブ元はnull・サイズ0になる。Node*は内側vectorの容量内追加だけなので、外側vectorの再確保後も安定。groupsのget_existingは、親を持つ頂点の親経路が同じ版系列で必ず複製済みなので安全。検査有効時はnull版・別領域・添字を検査し、SKIP時はプリプロセッサでownerごと除かれる。mainはversions[k+1]から分岐し、t=0のたびversion()を保存、t=1はissame(u,v,Version)を0/1で出力しており正しい。t=1の位置のversionsはnullのままなので、k_iが-1またはt=0のクエリを指すという問題の前提に依存する（SKIP時のnullは全頂点孤立扱いで、クラッシュはしない）。先頭コメントのSubmission 417250は旧版の記録であり、このSHAのACとして扱わないこと。追加の最適化提案はない。",
+      "scope": "whole_program"
+    },
+    {
+      "id": "persistent_union_find_union_path_query",
+      "source_sha256": "14e35dccddafbaebb629d6fd7b32dd539fe87f89a7a90dfc7862d60c96f45d74",
+      "verdict": "keep",
+      "reason": "静的レビューのみで、当方は実行も問題文の再取得もしていない。問題の仕様は提示された要約を前提とする。ライブラリ部分はLC版と同一で、上記の所有権・版・検査の評価がそのまま当てはまる。mainはroot(i)・size(i)・unite・version()・issame(現在版/指定版)を、結果を捨てずに使っている。算術は(w%mod)*sizeが約2e14以下、再度modを取ってから*sizeも約2e14以下でint64に収まり、成分和の加算は3*mod未満。merged_sumはunite前の両代表から計算し、unite後のroot(x)へ格納するので、代表の向きに依存しない。同一成分への辺は重みが非減少なので、ミニマックス距離を変えず無視してよい。二分探索はu≠vかつ現在連結のときだけ行い、不変条件は「versions[low]で非連結（low=0は初期版）、versions[high]で連結」。weights[high]はhigh番目の成功結合の重みで、添字は版と一致する。u==vは0、非連結は-1でXを更新しない。Xの更新はint64で加算してからmod nを取る。versionsは最大n要素でreserve(n)に収まり、ハンドルはufの生存中だけ使われる。種別4のx+valueはintの加算なので、valueが約2.1e9未満という制約に依存する。この制約は提示情報に無いため、問題文で確認を勧める。メモリは成功結合1回あたり最大9ノード（GCCのSKIP時128B）で、N=2e5では約230MBとなり、実測RSSと整合して512MB内。オンラインACは未取得。",
+      "scope": "library"
+    }
+  ],
+  "review": {
+    "reviews": [
+      {
+        "id": "persistent_union_find",
+        "source_sha256": "f121be97fd308ee04c1a97926b392a393875cb64571bcda58b422f03e689fdf4",
+        "verdict": "keep",
+        "reason": "静的レビューのみで、当方は実行していない。root(i[,Version])はfindへ委譲してintの代表頂点を返し、issameはsameの別名、Version=Node*は非所有、version_はprivateでversion()から取得と、要求どおりで説明文書とも一致する。get_root/root_of/UFの公開rootは残っておらず、PersistentArray.rootは不変。uniteはsa>sbの交換で大きい成分を根にし、非公開update_twoで根に負サイズ和・子に親を同時に書く。update_twoが例外を投げた場合はversion_とarr.rootを更新しない。結合不要時も指定版を現在版にし、arr.rootとversion_は常に同時更新される。既定コピーはshared_ptrの保存領域を共有して現在版だけ独立し、ムーブ元はnull・サイズ0になる。Node*は内側vectorの容量内追加だけなので、外側vectorの再確保後も安定。groupsのget_existingは、親を持つ頂点の親経路が同じ版系列で必ず複製済みなので安全。検査有効時はnull版・別領域・添字を検査し、SKIP時はプリプロセッサでownerごと除かれる。mainはversions[k+1]から分岐し、t=0のたびversion()を保存、t=1はissame(u,v,Version)を0/1で出力しており正しい。t=1の位置のversionsはnullのままなので、k_iが-1またはt=0のクエリを指すという問題の前提に依存する（SKIP時のnullは全頂点孤立扱いで、クラッシュはしない）。先頭コメントのSubmission 417250は旧版の記録であり、このSHAのACとして扱わないこと。追加の最適化提案はない。"
+      },
+      {
+        "id": "persistent_union_find_union_path_query",
+        "source_sha256": "14e35dccddafbaebb629d6fd7b32dd539fe87f89a7a90dfc7862d60c96f45d74",
+        "verdict": "keep",
+        "reason": "静的レビューのみで、当方は実行も問題文の再取得もしていない。問題の仕様は提示された要約を前提とする。ライブラリ部分はLC版と同一で、上記の所有権・版・検査の評価がそのまま当てはまる。mainはroot(i)・size(i)・unite・version()・issame(現在版/指定版)を、結果を捨てずに使っている。算術は(w%mod)*sizeが約2e14以下、再度modを取ってから*sizeも約2e14以下でint64に収まり、成分和の加算は3*mod未満。merged_sumはunite前の両代表から計算し、unite後のroot(x)へ格納するので、代表の向きに依存しない。同一成分への辺は重みが非減少なので、ミニマックス距離を変えず無視してよい。二分探索はu≠vかつ現在連結のときだけ行い、不変条件は「versions[low]で非連結（low=0は初期版）、versions[high]で連結」。weights[high]はhigh番目の成功結合の重みで、添字は版と一致する。u==vは0、非連結は-1でXを更新しない。Xの更新はint64で加算してからmod nを取る。versionsは最大n要素でreserve(n)に収まり、ハンドルはufの生存中だけ使われる。種別4のx+valueはintの加算なので、valueが約2.1e9未満という制約に依存する。この制約は提示情報に無いため、問題文で確認を勧める。メモリは成功結合1回あたり最大9ノード（GCCのSKIP時128B）で、N=2e5では約230MBとなり、実測RSSと整合して512MB内。オンラインACは未取得。"
+      }
+    ],
+    "experiments": []
+  },
+  "constraint_followup": {
+    "yuki2295": {
+      "url": "https://yukicoder.me/problems/no/2295",
+      "verified": "0 <= u_i,v_i,value_i < N <= 200000. Thus type4 x+value <= 399998 fits the official 32-bit int environment. No correction required.",
+      "primary_reference": "Official task constraint checked via web and all 3 examples on 2026-11-16 JST"
+    },
+    "lc_persistent_unionfind": {
+      "url": "https://judge.yosupo.jp/problem/persistent_unionfind",
+      "verified": "k_i=-1 or t[k_i]=0, so only update-query versions are referenced; query-only slots may remain null.",
+      "pinned_task_sha256": "c2a53e60995135982fd10d87222963c8aebd28fe110cba26c91bc1281589cd1f"
+    }
+  },
+  "codex_receipts": {
+    "persistent_union_find": "Verify/optimization/stages/persistent_union_find.codex.8f194fee5d25f7629897f4e504b931e12941e91a4992e2f08d63b65a005f2f87.json",
+    "persistent_union_find_union_path_query": "Verify/optimization/stages/persistent_union_find_union_path_query.codex.65eca5a6c5d5a7e2596e26a20fb3e36ed8fb95ef673d093fb8a042016694a27f.json"
+  },
+  "source_hashes": {
+    "/tmp/sirkit-persistent-root-api-20261116/claude/api-and-verify/persistent_union_find.cpp": "f121be97fd308ee04c1a97926b392a393875cb64571bcda58b422f03e689fdf4",
+    "/tmp/sirkit-persistent-root-api-20261116/claude/api-and-verify/persistent_union_find_union_path_query.cpp": "14e35dccddafbaebb629d6fd7b32dd539fe87f89a7a90dfc7862d60c96f45d74",
+    "DataStructure/persistent-union-find.cpp": "df9100eb08ebfa735c318c374aa634ced94af8ce175834c149d566002fc12970",
+    "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab",
+    "Document/persistent_union_find.md": "61a4bb89d7d42375bdb706ec253509434c3317404b983a9a54b6442d8094ac38",
+    "Examples/persistent_union_find_example.cpp": "21c6ec96d353cd6fe2ed9b9ea2f23e3b9d9b8b15b335cf694775b74ff738901e",
+    "Verify/current/drivers/persistent_union_find_main.cpp": "944d4f5b542d8c95b7c457afb7f0e5aa3fde36c1e6d80496de0ecd9b25550ab3",
+    "Verify/current/drivers/persistent_union_find_union_path_query_main.cpp": "de7d233cf8247fb6eb539646d609afb1e12f19e84bec5e71756cf3a6ca0d1627"
+  },
+  "prompt_sha256": "bd1a71bdcec978f7d92364c9b725835f8a49376752abe7a33dde69d901cc7769",
+  "response_sha256": "2b2b0b2ee6f240886629fe5068dd4ec9073e0d49a01edc99b3a96100867de269",
+  "completed_utc": "2026-11-15T15:58:37.338987+00:00",
+  "usage_after": {
+    "checked_utc": "2026-11-15T15:58:37.782706+00:00",
+    "authorized_email_matches": true,
+    "http_status": 200,
+    "inference_executed": false,
+    "windows": {
+      "five_hour": {
+        "utilization": 86.0,
+        "resets_at": "2026-11-15T18:40:00.657004+00:00"
+      },
+      "seven_day": {
+        "utilization": 30.0,
+        "resets_at": "2026-11-21T09:00:00.657027+00:00"
+      },
+      "seven_day_breakdown": {},
+      "limit_0": {
+        "kind": "session",
+        "model": null,
+        "utilization": 86,
+        "resets_at": "2026-11-15T18:40:00.657004+00:00"
+      },
+      "limit_1": {
+        "kind": "weekly_all",
+        "model": null,
+        "utilization": 30,
+        "resets_at": "2026-11-21T09:00:00.657027+00:00"
+      },
+      "limit_2": {
+        "kind": "weekly_scoped",
+        "model": "Fable",
+        "utilization": 60,
+        "resets_at": "2026-11-21T09:00:00.657393+00:00"
+      }
+    },
+    "extra_usage_enabled": false
+  },
+  "model_usage": {
+    "claude-fable-5-2": {
+      "inputTokens": 2,
+      "outputTokens": 6754,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 40889,
+      "webSearchRequests": 0,
+      "costUSD": 0.9244,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 5366,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 40889,
+      "canonicalModel": "claude-fable-5-2",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "limits": "Fable static review only; tests/benchmarks executed by Codex. New/changed programs are online unverified. Non-LC review does not optimize main.",
+  "local_raw_archive": "Audit/data/persistent-root-api-20261116.zip"
+}

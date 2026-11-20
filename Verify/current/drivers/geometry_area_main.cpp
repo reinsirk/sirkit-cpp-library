@@ -13,8 +13,8 @@
 
 int main() {
     int n; std::cin >> n;
-    std::vector<geo::PointLD> polygon(n);
+    std::vector<::sirkit::geo::PointLD> polygon(n);
     for (auto& p : polygon) std::cin >> p.x >> p.y;
     std::cout << std::fixed << std::setprecision(12);
-    std::cout << geo::area(polygon) << '\n';
+    std::cout << ::sirkit::geo::area(polygon) << '\n';
 }

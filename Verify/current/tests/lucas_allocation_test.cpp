@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #include <atcoder/modint>
 #ifndef LUCAS_HEADER
 #define LUCAS_HEADER "../../../Math/Combination/Prime_Binomial.cpp"

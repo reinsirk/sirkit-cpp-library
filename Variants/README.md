@@ -1,8 +1,10 @@
-# コンパイラ別ライブラリ
+# 安全版ライブラリ
 
-- [GCC](GCC)：GCC用の分岐だけを残した通常版。
-- [Clang](Clang)：Clang用の分岐だけを残した通常版。
+入力検査は既定で有効です。貼り付け前に `#define SKIP_RUNTIME_CHECKS` を書くと省略できます。
 
-各フォルダ内の配置と公開APIは通常版と同じ。CPUの対応判定や標準演算への切替、入力検査の設定は保持する。
+- [コンパイラ共通](Portable)
+- [GCC専用](GCC)
+- [Clang専用](Clang)
+- [MSVC専用](MSVC)
 
-生成方法は[説明](../Document/fast_variants.md)、速度優先版は[Fast](../Fast/README.md)を参照。
+配置と公開APIは原本と共通です。各版はCPU判定と標準演算への切り替えを保持します。生成方法は[配布版の説明](../Document/fast_variants.md)、速度優先版は[Fast](../Fast/README.md)を参照してください。

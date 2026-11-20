@@ -1,0 +1,400 @@
+# SPDX-License-Identifier: CC0-1.0
+from contextlib import redirect_stderr, redirect_stdout
+from pathlib import Path
+import argparse
+import io
+import json
+import shutil
+import subprocess
+import sys
+import tempfile
+import unittest
+from unittest.mock import patch
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+import ci_benchmark as bench
+
+
+def output(ns=100, checksum="42", expected="42"):
+    return json.dumps({"elapsed_ns": ns, "checksum": checksum, "expected": expected}).encode()
+
+
+def fixed_limits(folder, *, quick=True, baseline_ns=10_000_000_000):
+    rows = []
+    for identifier, library in bench.LIBRARIES.items():
+        for case in bench.case_plan(identifier, quick):
+            rows.append({"scope": "kernel", "library": library, "kernel_id": identifier,
+                         "case": case["scenario"], "size": case["size"], "pattern": case["pattern_id"],
+                         "rounds": 1 if quick else max(1, 262144 // case["size"]),
+                         "metric": "kernel_elapsed_ns", "baseline_median_ns": baseline_ns,
+                         "limit_ns": 2 * baseline_ns})
+    path = Path(folder) / "fixed-limits.json"
+    path.write_text(json.dumps({"format": 1, "baseline": {"run_id": "unit-fixture"},
+        "policy": {"multiplier": 2, "whole_program_minimum_ns": 10_000_000}, "limits": rows}))
+    return path
+
+
+class ProtocolTests(unittest.TestCase):
+    def test_results_require_actual_time_and_independent_reference_equality(self):
+        self.assertEqual(bench.parse_result(output())["elapsed_ns"], 100)
+        for bad in [b"not-json", b"[]", output(ns=0), output(ns=-1), output(ns=True),
+                    output(checksum="43"), output(checksum="-1", expected="-1"),
+                    output(checksum=str(1 << 64), expected=str(1 << 64)),
+                    b'{"elapsed_ns":1,"checksum":42,"expected":42}']:
+            with self.subTest(bad=bad), self.assertRaises(bench.BenchmarkError):
+                bench.parse_result(bad)
+
+    def test_warmups_are_excluded_and_stage_order_alternates(self):
+        calls = []
+        def fake(args, **kwargs):
+            calls.append(args)
+            return subprocess.CompletedProcess(args, 0, output(ns=10 if args[0] == "base" else 20))
+        with patch.object(bench, "command", side_effect=fake):
+            row = bench.measure({"base": Path("base"), "current": Path("current")}, 1024, 0, 2, 3, 2)
+        self.assertEqual(row["samples_ns"], {"base": [10, 10, 10], "current": [20, 20, 20]})
+        self.assertEqual(row["current_over_base"], 2)
+        self.assertEqual(row["orders"], [["base", "current"], ["current", "base"],
+                                       ["base", "current"], ["current", "base"], ["base", "current"]])
+        self.assertEqual(len(calls), 10)
+        self.assertTrue(all(args[1:] == ["1024", "0", "2"] for args in calls))
+
+    def test_reference_consistent_but_cross_version_different_output_is_failure(self):
+        def fake(args, **kwargs):
+            value = "1" if args[0] == "base" else "2"
+            return subprocess.CompletedProcess(args, 0, output(checksum=value, expected=value))
+        with patch.object(bench, "command", side_effect=fake), self.assertRaisesRegex(bench.BenchmarkError, "一致"):
+            bench.measure({"base": Path("base"), "current": Path("current")}, 2, 0, 1, 1, 0)
+
+    def test_missing_baseline_is_na_not_speedup(self):
+        with patch.object(bench, "command", return_value=subprocess.CompletedProcess([], 0, output())):
+            row = bench.measure({"current": Path("current")}, 2, 1, 1, 1, 0)
+        self.assertEqual(row["status"], "NO_BASELINE")
+        self.assertIsNone(row["current_over_base"])
+        self.assertNotIn("base", row["median_ns"])
+        row["id"] = "fenwick"
+        md = bench.markdown({"status": "NO_BASELINE", "results": [row]})
+        self.assertIn("N/A", md)
+        self.assertNotIn("PASS", md)
+        self.assertIn("比較未実施", md)
+
+
+class GitAndFailureTests(unittest.TestCase):
+    def test_ref_is_resolved_as_one_argument_without_shell(self):
+        calls = []
+        def fake(args, **kwargs):
+            calls.append((args, kwargs))
+            return subprocess.CompletedProcess(args, 0, b"a" * 40 + b"\n", b"")
+        ref = "--help;$(touch SHOULD_NOT_EXIST)"
+        with patch.object(bench.subprocess, "run", side_effect=fake):
+            self.assertEqual(bench.resolve_base(ref), "a" * 40)
+        self.assertEqual(calls[0][0][-2:], ["--end-of-options", ref + "^{commit}"])
+        self.assertFalse(calls[0][1].get("shell", False))
+
+    def test_missing_blob_and_git_failure_are_distinguished(self):
+        with patch.object(bench, "command", return_value=subprocess.CompletedProcess([], 0, b"")) as run:
+            self.assertIsNone(bench.baseline_source("a" * 40, "Math/missing.cpp"))
+            self.assertEqual(run.call_count, 1)
+        with patch.object(bench, "command", side_effect=bench.BenchmarkError("git failed")):
+            with self.assertRaises(bench.BenchmarkError):
+                bench.baseline_source("a" * 40, "Math/missing.cpp")
+
+    def test_only_blob_content_is_requested_from_resolved_commit(self):
+        calls = []
+        def fake(args, **kwargs):
+            calls.append(args)
+            data = b"100644 blob " + b"b" * 40 + b"\tMath/A.cpp\0" if "ls-tree" in args else b"body"
+            return subprocess.CompletedProcess(args, 0, data)
+        with patch.object(bench, "command", side_effect=fake):
+            self.assertEqual(bench.baseline_source("a" * 40, "Math/A.cpp"), b"body")
+        self.assertEqual(calls[-1], ["git", "show", "a" * 40 + ":Math/A.cpp"])
+        self.assertFalse(any("checkout" in args or "worktree" in args for args in calls))
+
+    def test_invalid_base_overwrites_stale_pass_with_failure_report(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory)
+            (path / "result.json").write_text('{"status":"PASS"}')
+            args = argparse.Namespace(output=path, base="bad", compiler="g++", quick=True,
+                                      repetitions=1, warmups=0, id=None)
+            with patch.object(bench, "resolve_base", side_effect=bench.BenchmarkError("missing base")), redirect_stderr(io.StringIO()):
+                self.assertEqual(bench.run(args), 1)
+            data = json.loads((path / "result.json").read_text())
+            self.assertEqual(data["status"], "FAIL")
+            self.assertEqual(data["results"], [])
+            self.assertNotIn("PASS", (path / "summary.md").read_text())
+
+    def test_invalid_repetitions_are_rejected_before_execution(self):
+        with redirect_stderr(io.StringIO()), self.assertRaises(SystemExit) as caught:
+            bench.main(["--base", "HEAD", "--output", "/tmp/unused-benchmark-test", "--repetitions", "0"])
+        self.assertEqual(caught.exception.code, 2)
+
+
+class CasePlanTests(unittest.TestCase):
+    def test_normal_plan_contains_stress_limit_and_both_power_boundaries(self):
+        all_cases = []
+        for identifier in bench.LIBRARIES:
+            cases = bench.case_plan(identifier, False)
+            self.assertEqual(len(cases), 14)
+            self.assertEqual(len({(c["size"], c["pattern_id"]) for c in cases}), 14)
+            self.assertEqual({c["pattern_id"] for c in cases if c["scale"] == "ci_stress_limit"}, set(range(4)))
+            self.assertTrue(all(c["size"] == 2_000_000 for c in cases if c["scale"] == "ci_stress_limit"))
+            self.assertEqual({c["size"] for c in cases if c["scale"] == "power_of_two_boundary"}, {262143, 262145})
+            all_cases.extend(cases)
+        self.assertEqual(len(all_cases), 42)
+
+    def test_quick_covers_every_scenario_without_claiming_maximum_scale(self):
+        for identifier in bench.LIBRARIES:
+            cases = bench.case_plan(identifier, True)
+            self.assertEqual({c["pattern_id"] for c in cases}, set(range(4)))
+            self.assertTrue(all(c["size"] == 2048 and c["scale"] == "smoke" for c in cases))
+
+    def test_missing_or_wrong_size_case_cannot_be_reported_pass(self):
+        def wrong_case(executables, size, pattern, rounds, repetitions, warmups):
+            return {"status": "NO_BASELINE", "size": size + 1, "pattern": "random",
+                    "rounds": rounds, "samples_ns": {"current": [1]},
+                    "median_ns": {"current": 1}, "current_over_base": None}
+        with tempfile.TemporaryDirectory() as directory:
+            args = argparse.Namespace(output=Path(directory), base="HEAD", compiler="fake",
+                                      quick=True, repetitions=1, warmups=0, id=["fenwick"],
+                                      limits=fixed_limits(directory))
+            with patch.object(bench, "resolve_base", return_value="a" * 40), \
+                 patch.object(bench, "compiler_command", return_value=["fake"]), \
+                 patch.object(bench, "command", return_value=subprocess.CompletedProcess([], 0, b"fake compiler\n")), \
+                 patch.object(bench, "baseline_source", return_value=None), \
+                 patch.object(bench, "build", return_value=Path("fake-binary")), \
+                 patch.object(bench, "measure", side_effect=wrong_case), redirect_stderr(io.StringIO()):
+                self.assertEqual(bench.run(args), 1)
+            report = json.loads((Path(directory) / "result.json").read_text())
+            self.assertEqual(report["status"], "FAIL")
+            self.assertIn("省略", report["error"])
+
+
+class FixedBudgetRunnerTests(unittest.TestCase):
+    def run_fake(self, folder, ns, *, remove_case=False):
+        path = fixed_limits(folder, baseline_ns=50)
+        if remove_case:
+            data = json.loads(path.read_text()); data["limits"].pop(0)
+            path.write_text(json.dumps(data))
+        before = path.read_bytes()
+        args = argparse.Namespace(output=Path(folder) / "report", base=None, compiler="fake",
+            quick=True, repetitions=3, warmups=0, id=["fenwick"], limits=path)
+        def measure(executables, size, pattern, rounds, repetitions, warmups):
+            return {"status": "NO_BASELINE", "size": size, "rounds": rounds,
+                    "samples_ns": {"current": [ns] * repetitions}, "median_ns": {"current": ns},
+                    "current_over_base": None, "independent_reference": "passed"}
+        with patch.object(bench, "compiler_command", return_value=["fake"]), \
+             patch.object(bench, "command", return_value=subprocess.CompletedProcess([], 0, b"fake compiler\n")), \
+             patch.object(bench, "build", return_value=Path("fake-binary")) as build, \
+             patch.object(bench, "measure", side_effect=measure), \
+             redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()):
+            result = bench.run(args)
+        self.assertEqual(path.read_bytes(), before)
+        return result, json.loads((args.output / "result.json").read_text()), build.call_count
+
+    def test_fixed_cap_passes_at_boundary_and_fails_above_without_losing_correctness(self):
+        for ns, expected in ((100, 0), (101, 1)):
+            with self.subTest(ns=ns), tempfile.TemporaryDirectory() as folder:
+                result, report, _ = self.run_fake(folder, ns)
+                self.assertEqual(result, expected)
+                self.assertTrue(report["current_measurements_passed"])
+                self.assertEqual(report["performance_limits_passed"], not expected)
+                self.assertEqual(report["status"], "FAIL" if expected else "CURRENT_ONLY")
+                self.assertEqual(len(report["results"]), 4)
+                for row in report["results"]:
+                    self.assertEqual(row["independent_reference"], "passed")
+                    self.assertEqual(row["median_ns"]["current"], ns)
+                    self.assertEqual(row["performance_limit"]["limit_ns"], 100)
+                    self.assertEqual(row["performance_limit"]["status"], "FAIL" if expected else "PASS")
+
+    def test_selected_case_without_saved_budget_fails_before_compiling(self):
+        with tempfile.TemporaryDirectory() as folder:
+            result, report, builds = self.run_fake(folder, 1, remove_case=True)
+            self.assertEqual(result, 1)
+            self.assertEqual(report["status"], "FAIL")
+            self.assertIn("固定性能予算がありません", report["error"])
+            self.assertEqual(builds, 0)
+
+
+class RegressionRunnerTests(unittest.TestCase):
+    def test_noise_margin_uses_the_measured_baseline(self):
+        for metric, base, current, limit, status in (
+            ("kernel_elapsed_ns", 1_000_000, 1_050_000, 1_050_000, "PASS"),
+            ("kernel_elapsed_ns", 1_000_000, 1_050_001, 1_050_000, "FAIL"),
+            ("child_cpu_ns", 1_000, 101_001, 101_000, "FAIL"),
+        ):
+            with self.subTest(metric=metric, current=current):
+                result = bench.performance_regression.evaluate(metric, {"base": [base], "current": [current]})
+                self.assertEqual((result["limit_ns"], result["status"]), (limit, status))
+        with self.assertRaises(ValueError):
+            bench.performance_regression.evaluate("child_cpu_ns", {"base": [1, 2], "current": [1]})
+
+    def test_case_slowdown_under_the_worst_case_limit_does_not_trigger_a_rerun(self):
+        with tempfile.TemporaryDirectory() as folder:
+            report = self.run_pair(folder, (1_000_000, 900_000, 400_000, 600_000), expected=0)
+        self.assertEqual(report["status"], "PASS")
+        self.assertEqual(report["worst_case_regressions"]["fenwick"]["status"], "PASS")
+        self.assertEqual(report["worst_case_confirmations"], {})
+        self.assertEqual(report["results"][1]["performance_regression"]["status"], "FAIL")
+
+    def test_hosted_kernel_ignores_small_regressions_and_requires_a_repeat_for_large_ones(self):
+        for initial, confirmed, status in ((1_060_000, None, "PASS"),
+                                            (1_200_000, 1_150_000, "PASS"),
+                                            (1_200_000, 1_150_001, "FAIL")):
+            with self.subTest(initial=initial, confirmed=confirmed), tempfile.TemporaryDirectory() as folder:
+                other = (900_000, 700_000, 600_000)
+                rerun = (confirmed, *other) if confirmed is not None else None
+                report = self.run_pair(folder, (initial, *other), confirmed=rerun,
+                                       expected=int(status == "FAIL"), profile="github-hosted")
+                worst = report["worst_case_regressions"]["fenwick"]
+                self.assertEqual((worst["limit_ns"], worst["status"]), (1_150_000, status))
+        samples = {"base": [100_000], "current": [150_001]}
+        gate = bench.performance_regression.evaluate("kernel_elapsed_ns", samples, profile="github-hosted")
+        self.assertEqual((gate["limit_ns"], gate["status"]), (150_000, "FAIL"))
+
+    def test_worst_case_overshoot_reruns_the_entire_library_and_checks_boundary(self):
+        for confirm, status in ((1_050_000, "PASS"), (1_050_001, "FAIL")):
+            with self.subTest(confirm=confirm), tempfile.TemporaryDirectory() as folder:
+                initial = (975_000, 1_200_000, 500_000, 450_000)
+                confirmed = (975_000, confirm, 500_000, 450_000)
+                report = self.run_pair(folder, initial, confirmed=confirmed, expected=int(status == "FAIL"))
+                self.assertEqual(report["status"], status)
+                self.assertEqual(report["performance_regression_passed"], status == "PASS")
+                self.assertNotIn("performance_limits", report)
+                worst = report["worst_case_regressions"]["fenwick"]
+                self.assertEqual(worst["baseline_case"], "2048:0")
+                self.assertEqual(worst["observed_case"], "2048:1")
+                self.assertEqual(worst["observed_median_ns"], confirm)
+                self.assertEqual(worst["status"], status)
+                self.assertEqual(report["results"][1]["performance_regression"]["status"], "FAIL")
+                self.assertEqual(report["worst_case_confirmations"]["fenwick"], {
+                    f"2048:{pattern}": {"base": [self.baseline[pattern]] * 3, "current": [time] * 3}
+                    for pattern, time in enumerate(initial)
+                })
+                self.assertTrue(all(row["samples_ns"]["current"] == [time] * 3
+                                    for row, time in zip(report["results"], confirmed, strict=True)))
+
+    baseline = (1_000_000, 800_000, 700_000, 600_000)
+
+    def run_pair(self, folder, initial, *, confirmed=None, expected, profile="local"):
+        args = argparse.Namespace(output=Path(folder), base="HEAD", compiler="fake",
+                                  compile_profile="atcoder", regression_profile=profile, quick=True, repetitions=3,
+                                  warmups=0, id=["fenwick"])
+        order = []
+
+        def measure(executables, size, pattern, rounds, repetitions, warmups):
+            first = next(iter(executables))
+            order.append((first, pattern))
+            base = self.baseline[pattern]
+            current = initial[pattern] if first == "base" else confirmed[pattern]
+            return {"status": "MEASURED", "size": size, "rounds": rounds,
+                    "samples_ns": {"base": [base] * repetitions, "current": [current] * repetitions},
+                    "median_ns": {"base": base, "current": current}, "current_over_base": current / base}
+
+        with patch.object(bench, "resolve_base", return_value="a" * 40), \
+             patch.object(bench, "baseline_source", return_value=b"base"), \
+             patch.object(bench, "compiler_command", return_value=["fake"]), \
+             patch.object(bench, "command", return_value=subprocess.CompletedProcess([], 0, b"fake compiler\n")), \
+             patch.object(bench, "build", return_value=Path("fake-binary")) as build, \
+             patch.object(bench, "measure", side_effect=measure), redirect_stdout(io.StringIO()):
+            self.assertEqual(bench.run(args), expected)
+        report = json.loads((args.output / "result.json").read_bytes())
+        self.assertEqual(report["regression_policy"], "library_worst_case")
+        self.assertEqual(report["regression_profile"], profile)
+        self.assertEqual(report["compile_profile"], "atcoder")
+        self.assertIn("-std=gnu++23", report["flags"])
+        self.assertIn("-DSKIP_RUNTIME_CHECKS", report["flags"])
+        self.assertEqual([call.args[-1] for call in build.call_args_list], [report["flags"]] * 2)
+        self.assertEqual(order[:4], [("base", pattern) for pattern in range(4)])
+        self.assertEqual(order[4:], [] if confirmed is None else [("current", pattern) for pattern in range(4)])
+        summary = (args.output / "summary.md").read_text()
+        self.assertIn("現在の最大ケース", summary)
+        self.assertIn("ケース参考判定", summary)
+        return report
+
+
+class RuntimeTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.compiler = shutil.which("g++")
+        if cls.compiler is None:
+            raise unittest.SkipTest("g++ is needed for benchmark protocol smoke tests")
+
+    def test_real_three_library_smoke_and_snapshots(self):
+        with tempfile.TemporaryDirectory() as directory:
+            args = argparse.Namespace(output=Path(directory), base="HEAD", compiler=self.compiler,
+                                      quick=True, repetitions=5, warmups=1, id=None,
+                                      limits=fixed_limits(directory))
+            with redirect_stdout(io.StringIO()):self.assertEqual(bench.run(args), 0)
+            report = json.loads((Path(directory) / "result.json").read_text())
+            self.assertEqual(report["status"], "PASS")
+            self.assertEqual(len(report["results"]), 12)
+            self.assertEqual(report["expected_cases"], 12)
+            self.assertEqual(report["scale_scope"], "smoke_only")
+            for source in report["sources"].values():
+                folder = Path(directory) / source["snapshots"]
+                self.assertEqual(bench.digest((folder / "current-library.hpp").read_bytes()), source["current_sha256"])
+                self.assertEqual(bench.digest((folder / "base-library.hpp").read_bytes()), source["base_sha256"])
+            self.assertTrue(all(row["independent_reference"] == "passed" for row in report["results"]))
+
+    def test_all_base_blobs_missing_measures_current_but_does_not_pass(self):
+        with tempfile.TemporaryDirectory() as directory:
+            args = argparse.Namespace(output=Path(directory), base="HEAD", compiler=self.compiler,
+                                      quick=True, repetitions=1, warmups=0, id=["fenwick"],
+                                      limits=fixed_limits(directory))
+            with patch.object(bench, "baseline_source", return_value=None), redirect_stdout(io.StringIO()):
+                self.assertEqual(bench.run(args), 2)
+            report = json.loads((Path(directory) / "result.json").read_text())
+            self.assertEqual(report["status"], "NO_BASELINE")
+            self.assertEqual(report["compared_cases"], 0)
+            self.assertEqual(report["worst_case_regressions"], {})
+            self.assertEqual(report["worst_case_confirmations"], {})
+            self.assertTrue(report["current_measurements_passed"])
+            self.assertEqual(len(report["results"]), 4)
+
+    def test_real_wrong_kernel_is_detected_before_any_measurement(self):
+        fixture = b'''#include "benchmark_common.hpp"
+int main(int argc,char**argv) {
+ return sirkit::detail::benchmark_main(argc,argv,
+ [](std::size_t n,std::size_t){return n;},
+ [](std::size_t){return std::uint64_t{1};},
+ [](std::size_t){return std::uint64_t{2};});
+}'''
+        with tempfile.TemporaryDirectory() as directory:
+            binary = bench.build(bench.compiler_command(self.compiler), b"", fixture,
+                                 (bench.FIXTURES / "benchmark_common.hpp").read_bytes(), Path(directory), "bad")
+            result = subprocess.run([str(binary), "2", "0", "1"], capture_output=True)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertEqual(result.stdout, b"")
+            self.assertIn(b"independent reference mismatch before timing", result.stderr)
+
+    def test_standard_arithmetic_reference_and_library_path(self):
+        with tempfile.TemporaryDirectory() as directory:
+            compiler = [*bench.compiler_command(self.compiler), "-U__SIZEOF_INT128__",
+                        "-DSIRKIT_FORCE_STANDARD_ARITHMETIC", "-DSIRKIT_DISABLE_SIMD"]
+            binary = bench.build(compiler, (bench.ROOT / bench.LIBRARIES["rolling_hash"]).read_bytes(),
+                                 (bench.FIXTURES / "rolling_hash.cpp").read_bytes(),
+                                 (bench.FIXTURES / "benchmark_common.hpp").read_bytes(), Path(directory), "standard")
+            for pattern in ("0", "1", "2", "3"):
+                result = subprocess.run([str(binary), "256", pattern, "1"], capture_output=True, check=True)
+                self.assertGreater(bench.parse_result(result.stdout)["elapsed_ns"], 0)
+
+    def test_structural_cases_at_tiny_odd_and_power_boundary_sizes(self):
+        with tempfile.TemporaryDirectory() as directory:
+            for identifier, library in bench.LIBRARIES.items():
+                binary = bench.build(bench.compiler_command(self.compiler), (bench.ROOT / library).read_bytes(),
+                                     (bench.FIXTURES / (identifier + ".cpp")).read_bytes(),
+                                     (bench.FIXTURES / "benchmark_common.hpp").read_bytes(),
+                                     Path(directory) / identifier, "boundaries")
+                for size in (2, 3, 31, 32, 33):
+                    for pattern in (2, 3):
+                        result = subprocess.run([str(binary), str(size), str(pattern), "1"],
+                                                capture_output=True, check=True)
+                        self.assertGreater(bench.parse_result(result.stdout)["elapsed_ns"], 0)
+
+    def test_real_build_failure_is_not_a_measurement(self):
+        with tempfile.TemporaryDirectory() as directory, self.assertRaises(bench.BenchmarkError):
+            bench.build(bench.compiler_command(self.compiler), b"", b"#error deliberate-build-failure\n",
+                        b"", Path(directory), "bad")
+
+
+if __name__ == "__main__":
+    unittest.main()

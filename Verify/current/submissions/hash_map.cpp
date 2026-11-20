@@ -1,6 +1,6 @@
 #define SKIP_RUNTIME_CHECKS
 // Verify: https://judge.yosupo.jp/problem/associative_array
-// Submission: https://judge.yosupo.jp/submission/412360
+// Submission: https://judge.yosupo.jp/submission/417230
 
 // Library: DataStructure/Hash_map.cpp
 // SPDX-License-Identifier: CC0-1.0 AND LicenseRef-SplitMix64-Public-Domain
@@ -36,11 +36,12 @@
 // erase(key): キーを削除し、次のiteratorを返す。未登録・erase(end())はend()。
 // erase(key, next): falseなら次要素を探さず削除してend()、trueならerase(key)と同じ。
 // begin()/end()/cbegin()/cend(): 格納要素を順序不定で列挙する。キーは変更できない。
-// 空表のbeginはO(1)、それ以外は先頭要素までのバケットを走査する。
+// 空表のbeginはO(1)、それ以外は先頭要素まで走査。全列挙はO(C)、C=バケット数、N=登録数。
 // size()/empty(): 登録数・空かどうかをO(1)で返す。
-// clear(): 全要素を破棄し、確保済みの容量を再利用する。
-// reserve(n): n要素分の容量を予約する。縮小しない。
-// rehash(n): nバケット以上・現登録数に必要な容量へ再配置し、墓石を除く。
+// clear(): 全要素を破棄し容量を再利用。O(C)、要素も墓石もなければO(1)。
+// reserve(n): n要素分を予約し縮小しない。予約済みはO(1)、再配置は期待O(C+C')。
+// rehash(n): nバケット以上・登録数に足りる容量C'へ再配置し墓石を除く。期待O(C+C')。
+// 再配置の最悪時間は衝突によりO(C+C'+N^2)。ハッシュ・要素操作をO(1)とした費用。
 // capacity()/load_factor(): バケット数・使用率をO(1)で返す。
 // swap(other): 内容とハッシュ・同値判定を交換する。コピーは独立した複製。
 // swapはHasher/KeyEqualのswapが例外を送出しないことを要求する。
@@ -51,6 +52,8 @@
 // operator()(x): 整数・列挙・浮動小数・tuple・range・std::hash対応型を再帰的にハッシュ化する。
 // unorderedコンテナの要素順は無視する。独自の同値関係には対応するHasherも用意する。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <bit>
 #include <chrono>
@@ -71,6 +74,9 @@
 #include <emmintrin.h>
 #endif
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_GENERIC_HASH_DEFINED
 #define SIRKIT_GENERIC_HASH_DEFINED
 struct GenericHash {
@@ -141,6 +147,15 @@ public:
         } else return raw(value) * seed_;
     }
 };
+#endif
+
+#ifndef SIRKIT_HASH_CAPACITY_DEFINED
+#define SIRKIT_HASH_CAPACITY_DEFINED
+namespace detail {
+inline void CheckHashCapacity(std::size_t requested, std::size_t maximum, const char* message) {
+    if (requested > maximum) throw std::length_error(message);
+}
+}
 #endif
 
 #ifndef SIRKIT_HASH_MAP_DEFINED
@@ -275,7 +290,7 @@ private:
     }
 #endif
     void rebuild(size_type capacity) {
-        if (capacity > max_capacity()) throw std::length_error("HashMap: capacity overflow");
+        detail::CheckHashCapacity(capacity, max_capacity(), "HashMap: capacity overflow");
 #if !defined(SIRKIT_DISABLE_SIMD) && defined(__SSE2__) && (defined(__x86_64__) || defined(__i386__)) && defined(__GNUC__) && !defined(__clang__)
         if constexpr (std::is_same_v<Slot, CompactSlot>) {
             if (slots_.size() >= 64) { rebuild_simd(capacity); return; }
@@ -340,7 +355,7 @@ private:
             p = (p + 1) & (slots_.size() - 1);
         }
         if (size_ == threshold(slots_.size())) {
-            if (slots_.size() > max_capacity() / 2) throw std::length_error("HashMap: capacity overflow");
+            detail::CheckHashCapacity(slots_.size(), max_capacity() / 2, "HashMap: capacity overflow");
             rebuild(slots_.size() * 2);
             return insertion_slot(key);
         }
@@ -407,9 +422,6 @@ public:
         size_type generation_ = 0;
 #endif
         BasicIterator(Owner* owner, size_type index) noexcept : owner_(owner), index_(index) {
-            // 内部で新しく作るiteratorは有効な要素またはendだけを指す。
-            if (index > owner->slots_.size() ||
-                (index < owner->slots_.size() && owner->state_[index] != 1)) std::unreachable();
 #ifndef SKIP_RUNTIME_CHECKS
             generation_ = owner->generation_;
 #endif
@@ -508,7 +520,7 @@ public:
 #if !defined(SIRKIT_DISABLE_SIMD) && defined(__SSE2__) && (defined(__x86_64__) || defined(__i386__)) && defined(__GNUC__) && !defined(__clang__)
         if constexpr (!std::is_same_v<Slot, CompactSlot>) return iterator(this,next_live(0));
 #endif
-        size_type p = 0; while (p < slots_.size() && state_[p] != 1) ++p;
+        size_type p = 0; while (state_[p] != 1) ++p;
         return iterator(this, p);
     }
     const_iterator begin() const noexcept {
@@ -516,7 +528,7 @@ public:
 #if !defined(SIRKIT_DISABLE_SIMD) && defined(__SSE2__) && (defined(__x86_64__) || defined(__i386__)) && defined(__GNUC__) && !defined(__clang__)
         if constexpr (!std::is_same_v<Slot, CompactSlot>) return const_iterator(this,next_live(0));
 #endif
-        size_type p = 0; while (p < slots_.size() && state_[p] != 1) ++p;
+        size_type p = 0; while (state_[p] != 1) ++p;
         return const_iterator(this, p);
     }
     iterator end() noexcept { return iterator(this, slots_.size()); }
@@ -604,15 +616,19 @@ public:
     void rehash(size_type requested) {
         if (requested > max_capacity()) throw std::length_error("HashMap::rehash: capacity overflow");
         size_type capacity = 8;
-        while (requested > capacity || size_ > threshold(capacity)) {
-            if (capacity > max_capacity() / 2) throw std::length_error("HashMap::rehash: capacity overflow");
-            capacity *= 2;
-        }
+        while (requested > capacity || size_ > threshold(capacity)) capacity *= 2;
         rebuild(capacity);
     }
 };
 #endif
 
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
+
+
+namespace sirkit {}
+using namespace sirkit;
 
 // SPDX-License-Identifier: CC0-1.0
 // Verify I/O: Verify/current/common/fast_io.hpp

@@ -1,0 +1,2813 @@
+{
+  "recorded_utc": "2026-11-15T14:10:17.336783+00:00",
+  "id": "coverage_structure_segment_predecessor",
+  "decision": "adopt",
+  "experiment": "Fable structures experiments[1]: int count monoid to std::uint8_t OR monoid",
+  "baseline_source_sha256": "10b655e60d1880243d3bde4265f87c0ee2b422616724984ddc7d9dd6315b0f68",
+  "final_source_sha256": "ef4c5f3c62f6532ed264e611e49d7d175ce6e0d1db393310623ce0a1ab3ba5b0",
+  "final_driver_sha256": "e2e405265f84b597f2a80a258eb267526b23fad63aefec740dd41d5e33eb28f3",
+  "final_compile_settings": {
+    "gcc_optimization": "O3,unroll-loops"
+  },
+  "proof": "proof.md in local ZIP; every leaf remains0/1, interval sum==0 iff interval OR==0, boundary predicates are equivalent and monotone",
+  "coverage_update_proposal": [
+    "set/get",
+    "max_right/min_leftの述語境界探索",
+    "std::uint8_t ORモノイドによる区間存在判定"
+  ],
+  "limitations_update_proposal": "0/1存在フラグとany==0だけ。個数の和は既存segment_tree等で補完。任意述語/非可換境界探索/所有権は独立ローカル補足。",
+  "group_edited_by_this_agent": false,
+  "review_provenance": {
+    "path": "/tmp/sirkit-added-lc-optimization-20261115/claude/structures/review.json",
+    "copied": "fable-review.json",
+    "experiment_index": 1,
+    "additional_fable_call": false
+  },
+  "source_hashes_before": {
+    "DataStructure/Segment_Tree.cpp": "563c970487176efb5ff54850abb848da34600fa44af282ec62ecbdcad61f2207",
+    "Verify/current/drivers/coverage_structure_segment_predecessor_main.cpp": "c024152e646e6721500d3cf8e894548fb891507cb8b26710b9d97d2ee464b0b8",
+    "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+  },
+  "source_hashes_after": {
+    "DataStructure/Segment_Tree.cpp": "563c970487176efb5ff54850abb848da34600fa44af282ec62ecbdcad61f2207",
+    "Verify/current/drivers/coverage_structure_segment_predecessor_main.cpp": "e2e405265f84b597f2a80a258eb267526b23fad63aefec740dd41d5e33eb28f3",
+    "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab"
+  },
+  "library_and_common_io_unchanged": true,
+  "performance": {
+    "environment": {
+      "cpu": 25,
+      "compiler": "/usr/bin/g++",
+      "compiler_version": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+      "compiler_sha256": "e6718f7e0c7d057c3ff77b550c603da9bc4030e3ede3c053705acce1293dbe4d",
+      "flags": "-std=c++23 -O2 with explicit per-source GCC optimize pragma",
+      "trials": 7,
+      "timing": "whole process including main/I/O; input/output local files; correctness check and hashes outside timer; identical library/commonI/O source",
+      "byte_identical_control_sha256": "6e9266b8e9778be73e7f7e4092ce835ae86b1a8d6875d14a3f047f47d9ef4960"
+    },
+    "profiles": [
+      {
+        "profile": "predecessor-max-dense",
+        "medians": {
+          "AB/baseline": 0.16326045300229453,
+          "AB/candidate-same": 0.07826982099504676,
+          "AB/candidate-O2": 0.08465268999862019,
+          "identical-control/baseline": 0.16373632098839153,
+          "identical-control/control": 0.16386874299496412
+        },
+        "ranges": {
+          "AB/baseline": [
+            0.15010075499594677,
+            0.1640485770039959
+          ],
+          "AB/candidate-same": [
+            0.07644373900257051,
+            0.08062429100391455
+          ],
+          "AB/candidate-O2": [
+            0.08376883600431029,
+            0.08517951899557374
+          ],
+          "identical-control/baseline": [
+            0.1515115939982934,
+            0.16461826000886504
+          ],
+          "identical-control/control": [
+            0.15284285000234377,
+            0.16689005799707957
+          ]
+        },
+        "same_flag_ratio": 0.47941690443518936,
+        "candidate_O2_ratio": 0.5185131392317676,
+        "flags_only_O2_vs_O3unroll": 1.081549554124793,
+        "control_ratio": 1.0008087515694333
+      },
+      {
+        "profile": "predecessor-max-sparse",
+        "medians": {
+          "AB/baseline": 0.16695216100197285,
+          "AB/candidate-same": 0.11716040600731503,
+          "AB/candidate-O2": 0.11941485198622104,
+          "identical-control/baseline": 0.166837711003609,
+          "identical-control/control": 0.167562941001961
+        },
+        "ranges": {
+          "AB/baseline": [
+            0.16088963000220247,
+            0.16754792600113433
+          ],
+          "AB/candidate-same": [
+            0.1169398479978554,
+            0.11835173900180962
+          ],
+          "AB/candidate-O2": [
+            0.11860078599420376,
+            0.1253155549929943
+          ],
+          "identical-control/baseline": [
+            0.16552463099651504,
+            0.1676398120034719
+          ],
+          "identical-control/control": [
+            0.16692345299816225,
+            0.16855276300339028
+          ]
+        },
+        "same_flag_ratio": 0.7017603444254343,
+        "candidate_O2_ratio": 0.7152638891856568,
+        "flags_only_O2_vs_O3unroll": 1.0192423878999297,
+        "control_ratio": 1.0043469188949512
+      },
+      {
+        "profile": "small-predecessor-0",
+        "medians": {
+          "AB/baseline": 0.0013816169957863167,
+          "AB/candidate-same": 0.0013076799950795248,
+          "AB/candidate-O2": 0.0013394359993981197,
+          "identical-control/baseline": 0.001268513995455578,
+          "identical-control/control": 0.0013077740004519
+        },
+        "ranges": {
+          "AB/baseline": [
+            0.0012693840108113363,
+            0.0014267849910538644
+          ],
+          "AB/candidate-same": [
+            0.0012606549862539396,
+            0.001488781999796629
+          ],
+          "AB/candidate-O2": [
+            0.0012866739998571575,
+            0.002389481000136584
+          ],
+          "identical-control/baseline": [
+            0.001206716988235712,
+            0.0013068859989289194
+          ],
+          "identical-control/control": [
+            0.001256229996215552,
+            0.0013838940067216754
+          ]
+        },
+        "same_flag_ratio": 0.946485168514656,
+        "candidate_O2_ratio": 0.9694698338853377,
+        "flags_only_O2_vs_O3unroll": 1.0242842319513068,
+        "control_ratio": 1.0309496033445198
+      },
+      {
+        "profile": "predecessor-random-sparse",
+        "medians": {
+          "AB/baseline": 0.16207821200077888,
+          "AB/candidate-same": 0.10847785700752866,
+          "AB/candidate-O2": 0.11051183199742809,
+          "identical-control/baseline": 0.16248940100194886,
+          "identical-control/control": 0.1632741770008579
+        },
+        "ranges": {
+          "AB/baseline": [
+            0.16159427900856826,
+            0.16265355999348685
+          ],
+          "AB/candidate-same": [
+            0.10787606699159369,
+            0.1121135220018914
+          ],
+          "AB/candidate-O2": [
+            0.107984447007766,
+            0.11109552498965058
+          ],
+          "identical-control/baseline": [
+            0.16199375998985488,
+            0.1638792919984553
+          ],
+          "identical-control/control": [
+            0.1617069240019191,
+            0.16352089200518094
+          ]
+        },
+        "same_flag_ratio": 0.6692932730958765,
+        "candidate_O2_ratio": 0.6818426155694327,
+        "flags_only_O2_vs_O3unroll": 1.0187501398535028,
+        "control_ratio": 1.004829705778161
+      },
+      {
+        "profile": "predecessor-threshold-density",
+        "medians": {
+          "AB/baseline": 0.20574812400445808,
+          "AB/candidate-same": 0.12409128299623262,
+          "AB/candidate-O2": 0.12566812400473282,
+          "identical-control/baseline": 0.2049974800029304,
+          "identical-control/control": 0.20536506299686152
+        },
+        "ranges": {
+          "AB/baseline": [
+            0.2037853060028283,
+            0.20819737999408972
+          ],
+          "AB/candidate-same": [
+            0.1233391709974967,
+            0.12521422399731819
+          ],
+          "AB/candidate-O2": [
+            0.12526981899281964,
+            0.12837756400404032
+          ],
+          "identical-control/baseline": [
+            0.2040149200038286,
+            0.20674999899347313
+          ],
+          "identical-control/control": [
+            0.2046213279973017,
+            0.2100271710078232
+          ]
+        },
+        "same_flag_ratio": 0.6031223059586384,
+        "candidate_O2_ratio": 0.6107862446512994,
+        "flags_only_O2_vs_O3unroll": 1.0127071053697467,
+        "control_ratio": 1.0017931098173787
+      }
+    ],
+    "same_setting": "First compare old int vs byte OR with the identical GCC O3,unroll-loops pragma; separate column compares the same byte driver underO2 vsO3/unroll",
+    "conclusion": "Same flags: maximum dense about0.479x, maximum sparse0.702x, random-sparse0.669x, threshold-density0.603x; small is process-start variability. CandidateO2 is1.3–8.2% slower on large profiles than candidateO3/unroll, so retainO3/unroll.",
+    "rss": [
+      {
+        "profile": "predecessor-max-dense",
+        "label": "baseline",
+        "time_maxrss": "0.16 183648"
+      },
+      {
+        "profile": "predecessor-max-dense",
+        "label": "candidate-same",
+        "time_maxrss": "0.07 56160"
+      },
+      {
+        "profile": "predecessor-max-dense",
+        "label": "candidate-O2",
+        "time_maxrss": "0.08 56092"
+      },
+      {
+        "profile": "predecessor-max-sparse",
+        "label": "baseline",
+        "time_maxrss": "0.16 144736"
+      },
+      {
+        "profile": "predecessor-max-sparse",
+        "label": "candidate-same",
+        "time_maxrss": "0.11 46432"
+      },
+      {
+        "profile": "predecessor-max-sparse",
+        "label": "candidate-O2",
+        "time_maxrss": "0.11 46120"
+      },
+      {
+        "profile": "predecessor-random-sparse",
+        "label": "baseline",
+        "time_maxrss": "0.16 144736"
+      },
+      {
+        "profile": "predecessor-random-sparse",
+        "label": "candidate-same",
+        "time_maxrss": "0.10 46400"
+      },
+      {
+        "profile": "predecessor-random-sparse",
+        "label": "candidate-O2",
+        "time_maxrss": "0.10 46428"
+      },
+      {
+        "profile": "predecessor-threshold-density",
+        "label": "baseline",
+        "time_maxrss": "0.20 144692"
+      },
+      {
+        "profile": "predecessor-threshold-density",
+        "label": "candidate-same",
+        "time_maxrss": "0.11 46432"
+      },
+      {
+        "profile": "predecessor-threshold-density",
+        "label": "candidate-O2",
+        "time_maxrss": "0.11 46428"
+      }
+    ],
+    "rss_note": "Single sample with stdout /dev/null, recorded for maxRSS only, not substituted for primary file-output AB wall times.",
+    "scope": "Whole program main+I/O under identical library/commonI/O/compiler/input; no library-only benchmark claim"
+  },
+  "correctness": {
+    "builds": 8,
+    "independent_and_sample_process_runs": 328,
+    "maximum_process_runs": 10,
+    "independent_fixtures": 40,
+    "oracle": "Full-scan boolean-array reference for get and forwards/backwards predecessor search, plus independently known maximum cases",
+    "all_pass": true,
+    "build_records": [
+      {
+        "name": "gcc-native-checked",
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "compiler_sha256": "e6718f7e0c7d057c3ff77b550c603da9bc4030e3ede3c053705acce1293dbe4d",
+        "source_sha256": "d869c8214d94e2d3f77559335fa99956857ca6bf5dac02f7429e4acb6e6b7d72",
+        "command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-march=native",
+          "/tmp/sirkit-added-lc-optimization-20261115/fable-segtree/validation/gcc-native-checked.cpp",
+          "-o",
+          "/tmp/sirkit-added-lc-optimization-20261115/fable-segtree/validation/gcc-native-checked"
+        ],
+        "cases": [
+          {
+            "name": "official-sample0",
+            "pass_": true,
+            "input_sha256": "057f56e9aa6ba82a68106ace96ca31fdd73e6999b8e18f789fcba5e2c7f99f0b"
+          },
+          {
+            "name": "predecessor-0",
+            "pass_": true,
+            "input_sha256": "97186fef7ef9dcdb8b3bb718b8b62d7e58721f735b7abe3202f859899f93dba8",
+            "expected_sha256": "e0e06b08321b97ee62f69b9a6bc8ab09fec387bd1b0ee3771c225dc58f1f939d",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-1",
+            "pass_": true,
+            "input_sha256": "c5be537e2553f825126061eed5fd1c9459fc16e5a8dd05970414791bcfc52e3f",
+            "expected_sha256": "6d156a075ca27c41d8bdc4a2dbcd3d77dfa13ce8aa5e513642b2a956c29f0676",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-2",
+            "pass_": true,
+            "input_sha256": "8fea67390570fb8012bad1a90b220ec45e1590cf253dc65c40da04b3d86d3d7f",
+            "expected_sha256": "0a0eb3ea31a2ec2ec161a49c0363177f2b746a2d27400e7be0f5ba57fc7dcd7d",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-3",
+            "pass_": true,
+            "input_sha256": "23177148f9de0bc82bf1011319fe917e25a17ca3f0fb636c910d42602504b321",
+            "expected_sha256": "0172705075d771934726a7c76da9f2883680f7b5bbc040db9119cd4cfe08589f",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-4",
+            "pass_": true,
+            "input_sha256": "c81938c10bc8189460556e05d22a5263643638e1716f0cfdcb10b9180d0008b7",
+            "expected_sha256": "a78c4db81edb94dcf26e71aa2540adcb1aa9e0c4749dd1cac9d7f5601e55cce7",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-5",
+            "pass_": true,
+            "input_sha256": "8ed67383a9fb6023b7e5a9b0930599e831892f748ec36216c655a3789d35cb03",
+            "expected_sha256": "57b1c89bd7aa3984e800f59a692e95f93c95f118a0139a2a81321160db635d59",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-6",
+            "pass_": true,
+            "input_sha256": "37a502181278c479cddc28e395a52d20bb517c4e545f5c6805f22e87bbc1a2d2",
+            "expected_sha256": "c3baf6a9a20d9d7497488228a06fdf3cc8cc6c7f14e0168335ea3ca787d8e6d0",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-7",
+            "pass_": true,
+            "input_sha256": "6d37e948c8bb1c6cb02b8f78f29864a1ff9fd898165ef48feeebba1234164727",
+            "expected_sha256": "b8c9a06613ef6cfd789dde610bb64c1ece2567335982bec3aa1bfee04dedb4e5",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-8",
+            "pass_": true,
+            "input_sha256": "1362d6035f8c34b1b6e3a8e1440735b97048ab7f6a0a37202524269d0105e764",
+            "expected_sha256": "4edbd57fe39d9daa6bfcc18b25291ad54814740776dcaf3bdf4b125b164488e1",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-9",
+            "pass_": true,
+            "input_sha256": "b3571a663411a7bceb896618596db0dac13770a0a22b64039402b089f917ff73",
+            "expected_sha256": "187075609c6876dad822a6d57387b89f978af45a2e888fade5365f55a4e42498",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-10",
+            "pass_": true,
+            "input_sha256": "1e73b9190f37784d210bb9d11ab3b4e6e03d7a310514d9d106a2515cfa0d3d3f",
+            "expected_sha256": "3911bb904f78efe07742f42db0f1132e3e841b45ebcd36187bfa898001a7c015",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-11",
+            "pass_": true,
+            "input_sha256": "85c604c28cc42d9aac59f75aba5734bb391fe000404bd8c2d1d9b1aafc58cee4",
+            "expected_sha256": "0e46a538aad89a28a10258ce643047ff50f4b33428baf75eeb1be301dd2e3692",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-12",
+            "pass_": true,
+            "input_sha256": "69e13b4223188046deb05c31b65486d35492220a93e56ddf0a125caca40fd521",
+            "expected_sha256": "c9bd20203eb6ed2c4221694530f75f537389b150035c72e07ad45b95a26caef7",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-13",
+            "pass_": true,
+            "input_sha256": "813dbf85af0e60aa54b621b8fffb4b31c90c25e499dd0b3bc708b8ec22b17338",
+            "expected_sha256": "43966b855959d662a135dbd344574b92ebe7a3834d3b4923404dcaabe31bf4fc",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-14",
+            "pass_": true,
+            "input_sha256": "e0f80d93c82e2f93776437e1e39bfefc2822398755406fbadd928dfa85217bcb",
+            "expected_sha256": "787609a55ce2ca262ba24d2cc0c3216e07fc18fb81d58113f884c99e9de22dcf",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-15",
+            "pass_": true,
+            "input_sha256": "3567f869d4a25be25921b8fa9f21a140d812e0a0ba5d180890b476e4995f829d",
+            "expected_sha256": "94455f3000e575174c89701cad19fc73035950c723c802f0d303ca0d2bdc7f7c",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-16",
+            "pass_": true,
+            "input_sha256": "d3d7116ac03eb2d9e465c2ea45bf5546b7a04dad208af175bdf850c523222554",
+            "expected_sha256": "4380b63d544f4be223d6af5df7d04df38f2f05252c93e02eeb29e1b7f2b0e9d3",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-17",
+            "pass_": true,
+            "input_sha256": "b21acd28ea44df8cec95e4b36287b3ccfd120d4e823d3ba0cd668fc4fdc584af",
+            "expected_sha256": "8ce7f2989d4503ecfd4ab6a9848eee6ff1e96c3a9bf111a112dc316487bd889b",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-18",
+            "pass_": true,
+            "input_sha256": "91d15fa4726e422a1f90e662917ca2323c827c90b0e7d3b78c0676084481b871",
+            "expected_sha256": "72017440fe90ecdc9565b3bad0d5bc9a377df1b7228f66a79f6ed060a14ca441",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-19",
+            "pass_": true,
+            "input_sha256": "d45d3d8d2fc28628102b48a097b5ac4fe8c1264d5f30c957b086dad1bd21ccfc",
+            "expected_sha256": "bdf658ac54ae8e38c5c91cf6825da3d8c4e06afbffde7f64a7d145ecef90f435",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-20",
+            "pass_": true,
+            "input_sha256": "1dffe3f3f503d5e5844f7ee5eaa9ce3683f99dbc5312d54f02faa662cb857296",
+            "expected_sha256": "75641446d3613f3e29e4d4462b1c6c4bd40a0570d42d587079a17ed0a2c65218",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-21",
+            "pass_": true,
+            "input_sha256": "22263872318cc8f67dff1f99e15b8b56090c24c4ef48dd047eba6451c7b715de",
+            "expected_sha256": "4926795878b1a88f696bfc810dba90e60b2d5b94f5cc53eb7e7eb78bd285bb9f",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-22",
+            "pass_": true,
+            "input_sha256": "58e7ef75ebee69349f7bbfd543287f3ce7b4039b75f6e48874be698be502660c",
+            "expected_sha256": "5100a692627abbebeba3318bac8a82194dd815c40bda549a95ca23d5828f72c6",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-23",
+            "pass_": true,
+            "input_sha256": "f3e9f1a9bd53b7a4934f1531e13ca51e62d36801be74152cf4470f5ac3c6204d",
+            "expected_sha256": "d69b819d76c777d147168902ac1f0d651ef5e64015046360f7f9966f65211349",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-24",
+            "pass_": true,
+            "input_sha256": "5d783441dbea2e97063d33956ac8bc6a7bfe0dda3b028db7a0d36f442ca25f0c",
+            "expected_sha256": "759aa0745a32c6411d69e0cb8604f2480eaf6e29d9b70342dad71ef308b38191",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-25",
+            "pass_": true,
+            "input_sha256": "37ad006179bab8fd1bc5113b0a956ba18d72ba6fb53856512370e7ccecfebfb6",
+            "expected_sha256": "03e79a1115f20729c1977c898317c486c54f0e94000f9dec48377b6cc90c3eda",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-26",
+            "pass_": true,
+            "input_sha256": "0e2f60c0fb9f9e6bc993a135682890cfc2012e6bca49b5f8c411a2273b3d3049",
+            "expected_sha256": "c67cfd6c344fc3636ee45fcfb8885e7336797f421df6f8c7601ca83c6d69f36c",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-27",
+            "pass_": true,
+            "input_sha256": "5211d523f511fda5355d0dfaf256548ee4af6f277551c3379d5e3919fb6dbfbd",
+            "expected_sha256": "13944968c74398c991d9a7241f40699eb7bc505b078c03f81dc3b2a52b392b36",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-28",
+            "pass_": true,
+            "input_sha256": "65fe6534140f41e4c0088a584b52bdf5edf5bcb24baafa0c6d09dfd8480e3eaa",
+            "expected_sha256": "dc14c727268f1b6e162008f2b988278df14e6ae5226a9f5e9e9ec8e16aa075c2",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-29",
+            "pass_": true,
+            "input_sha256": "b2d69903cc9a8b5a1efce50cb76976b7e1718ed306105449e97d6a9ac683fd79",
+            "expected_sha256": "282e314ead393b721c4266eb1879546c009b616fa5293b2713a93ca03938f450",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-30",
+            "pass_": true,
+            "input_sha256": "3bbfb8bc1750e5ab6082582fc5303c6a71b82fe48f3b6ae03f51dd4a3efafaaf",
+            "expected_sha256": "4ffd432ff51c088351b704fb65333cfd899b911163ca45c1ab542ee59f806bfb",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-31",
+            "pass_": true,
+            "input_sha256": "0c3b6fa7005880b01796ed681c8fddee5e2c18f4f1d43400d7e229de8e669412",
+            "expected_sha256": "b38d2cda69db6701108df38ebee2f20289721f69c5678e9d95dea5be22e001de",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-32",
+            "pass_": true,
+            "input_sha256": "2a76d7079783cabba1cc149776df45064a1da2ddc099f9b3df2cb1145b976abc",
+            "expected_sha256": "47e71204390dc6406c855f7ad60e39dbb47796d6ec539ac9fa05907f56ecaf37",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-33",
+            "pass_": true,
+            "input_sha256": "55a87d5f10d43f70fba4261fa246c2b0aaa7e794383191d76d488f84c00d6210",
+            "expected_sha256": "075c399d9e05ef96e9a6e5b0595d16a252b468984fa6db7dfabd1923da01cdc7",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-34",
+            "pass_": true,
+            "input_sha256": "fc3bcb82932d0e072c5b4803b3bf93e065efab736a1298077541624362439ebd",
+            "expected_sha256": "100fbdd5b06cefdffc26b400f045811da6b703f715ffc6cd8b1eab4353543a6c",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-35",
+            "pass_": true,
+            "input_sha256": "5d2325bb0368de4bc404134f11db2e38f799fea6e52ada335e2988e071f10a25",
+            "expected_sha256": "f23f3b346db2864ab8515319e3b7596276aaace1732997c468b610fdf2fc9ed8",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-36",
+            "pass_": true,
+            "input_sha256": "1a7cb82ac724f9786323e9298554697797c794bf8dd088fe814f20ee51948a53",
+            "expected_sha256": "51ffc7eac00e41081ca388bed862b67fdf90519c8cc9141636ea57d3227e7f23",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-37",
+            "pass_": true,
+            "input_sha256": "e4d8843f4c3cb1501897a3c715413d6f0ae45f2da2720992e0784cfcdb33567b",
+            "expected_sha256": "76b85f59d1c7470d0bd16ab8902745110543d157cc3eb5e2f56fd8813d5b9d65",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-38",
+            "pass_": true,
+            "input_sha256": "7465004cc6f18a4648cf14771a0429ef5e91362051e0935db038864389e453a5",
+            "expected_sha256": "c9df524b18da430d57d7022123c27a1b82a3d210ea49ccdc02d1a348296f72de",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-39",
+            "pass_": true,
+            "input_sha256": "d5c86a634d2fd5b01cb83a97366e2294a5b95d310e0796ac25a390ebcf20982e",
+            "expected_sha256": "db97e6d39fcf21f00122b91884c0daa08cfe1a92b49581e2435d04c82ad2eacc",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          }
+        ],
+        "pass_": true
+      },
+      {
+        "name": "gcc-portable-checked",
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "compiler_sha256": "e6718f7e0c7d057c3ff77b550c603da9bc4030e3ede3c053705acce1293dbe4d",
+        "source_sha256": "d869c8214d94e2d3f77559335fa99956857ca6bf5dac02f7429e4acb6e6b7d72",
+        "command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-U__SIZEOF_INT128__",
+          "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/tmp/sirkit-added-lc-optimization-20261115/fable-segtree/validation/gcc-portable-checked.cpp",
+          "-o",
+          "/tmp/sirkit-added-lc-optimization-20261115/fable-segtree/validation/gcc-portable-checked"
+        ],
+        "cases": [
+          {
+            "name": "official-sample0",
+            "pass_": true,
+            "input_sha256": "057f56e9aa6ba82a68106ace96ca31fdd73e6999b8e18f789fcba5e2c7f99f0b"
+          },
+          {
+            "name": "predecessor-0",
+            "pass_": true,
+            "input_sha256": "97186fef7ef9dcdb8b3bb718b8b62d7e58721f735b7abe3202f859899f93dba8",
+            "expected_sha256": "e0e06b08321b97ee62f69b9a6bc8ab09fec387bd1b0ee3771c225dc58f1f939d",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-1",
+            "pass_": true,
+            "input_sha256": "c5be537e2553f825126061eed5fd1c9459fc16e5a8dd05970414791bcfc52e3f",
+            "expected_sha256": "6d156a075ca27c41d8bdc4a2dbcd3d77dfa13ce8aa5e513642b2a956c29f0676",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-2",
+            "pass_": true,
+            "input_sha256": "8fea67390570fb8012bad1a90b220ec45e1590cf253dc65c40da04b3d86d3d7f",
+            "expected_sha256": "0a0eb3ea31a2ec2ec161a49c0363177f2b746a2d27400e7be0f5ba57fc7dcd7d",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-3",
+            "pass_": true,
+            "input_sha256": "23177148f9de0bc82bf1011319fe917e25a17ca3f0fb636c910d42602504b321",
+            "expected_sha256": "0172705075d771934726a7c76da9f2883680f7b5bbc040db9119cd4cfe08589f",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-4",
+            "pass_": true,
+            "input_sha256": "c81938c10bc8189460556e05d22a5263643638e1716f0cfdcb10b9180d0008b7",
+            "expected_sha256": "a78c4db81edb94dcf26e71aa2540adcb1aa9e0c4749dd1cac9d7f5601e55cce7",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-5",
+            "pass_": true,
+            "input_sha256": "8ed67383a9fb6023b7e5a9b0930599e831892f748ec36216c655a3789d35cb03",
+            "expected_sha256": "57b1c89bd7aa3984e800f59a692e95f93c95f118a0139a2a81321160db635d59",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-6",
+            "pass_": true,
+            "input_sha256": "37a502181278c479cddc28e395a52d20bb517c4e545f5c6805f22e87bbc1a2d2",
+            "expected_sha256": "c3baf6a9a20d9d7497488228a06fdf3cc8cc6c7f14e0168335ea3ca787d8e6d0",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-7",
+            "pass_": true,
+            "input_sha256": "6d37e948c8bb1c6cb02b8f78f29864a1ff9fd898165ef48feeebba1234164727",
+            "expected_sha256": "b8c9a06613ef6cfd789dde610bb64c1ece2567335982bec3aa1bfee04dedb4e5",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-8",
+            "pass_": true,
+            "input_sha256": "1362d6035f8c34b1b6e3a8e1440735b97048ab7f6a0a37202524269d0105e764",
+            "expected_sha256": "4edbd57fe39d9daa6bfcc18b25291ad54814740776dcaf3bdf4b125b164488e1",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-9",
+            "pass_": true,
+            "input_sha256": "b3571a663411a7bceb896618596db0dac13770a0a22b64039402b089f917ff73",
+            "expected_sha256": "187075609c6876dad822a6d57387b89f978af45a2e888fade5365f55a4e42498",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-10",
+            "pass_": true,
+            "input_sha256": "1e73b9190f37784d210bb9d11ab3b4e6e03d7a310514d9d106a2515cfa0d3d3f",
+            "expected_sha256": "3911bb904f78efe07742f42db0f1132e3e841b45ebcd36187bfa898001a7c015",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-11",
+            "pass_": true,
+            "input_sha256": "85c604c28cc42d9aac59f75aba5734bb391fe000404bd8c2d1d9b1aafc58cee4",
+            "expected_sha256": "0e46a538aad89a28a10258ce643047ff50f4b33428baf75eeb1be301dd2e3692",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-12",
+            "pass_": true,
+            "input_sha256": "69e13b4223188046deb05c31b65486d35492220a93e56ddf0a125caca40fd521",
+            "expected_sha256": "c9bd20203eb6ed2c4221694530f75f537389b150035c72e07ad45b95a26caef7",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-13",
+            "pass_": true,
+            "input_sha256": "813dbf85af0e60aa54b621b8fffb4b31c90c25e499dd0b3bc708b8ec22b17338",
+            "expected_sha256": "43966b855959d662a135dbd344574b92ebe7a3834d3b4923404dcaabe31bf4fc",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-14",
+            "pass_": true,
+            "input_sha256": "e0f80d93c82e2f93776437e1e39bfefc2822398755406fbadd928dfa85217bcb",
+            "expected_sha256": "787609a55ce2ca262ba24d2cc0c3216e07fc18fb81d58113f884c99e9de22dcf",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-15",
+            "pass_": true,
+            "input_sha256": "3567f869d4a25be25921b8fa9f21a140d812e0a0ba5d180890b476e4995f829d",
+            "expected_sha256": "94455f3000e575174c89701cad19fc73035950c723c802f0d303ca0d2bdc7f7c",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-16",
+            "pass_": true,
+            "input_sha256": "d3d7116ac03eb2d9e465c2ea45bf5546b7a04dad208af175bdf850c523222554",
+            "expected_sha256": "4380b63d544f4be223d6af5df7d04df38f2f05252c93e02eeb29e1b7f2b0e9d3",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-17",
+            "pass_": true,
+            "input_sha256": "b21acd28ea44df8cec95e4b36287b3ccfd120d4e823d3ba0cd668fc4fdc584af",
+            "expected_sha256": "8ce7f2989d4503ecfd4ab6a9848eee6ff1e96c3a9bf111a112dc316487bd889b",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-18",
+            "pass_": true,
+            "input_sha256": "91d15fa4726e422a1f90e662917ca2323c827c90b0e7d3b78c0676084481b871",
+            "expected_sha256": "72017440fe90ecdc9565b3bad0d5bc9a377df1b7228f66a79f6ed060a14ca441",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-19",
+            "pass_": true,
+            "input_sha256": "d45d3d8d2fc28628102b48a097b5ac4fe8c1264d5f30c957b086dad1bd21ccfc",
+            "expected_sha256": "bdf658ac54ae8e38c5c91cf6825da3d8c4e06afbffde7f64a7d145ecef90f435",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-20",
+            "pass_": true,
+            "input_sha256": "1dffe3f3f503d5e5844f7ee5eaa9ce3683f99dbc5312d54f02faa662cb857296",
+            "expected_sha256": "75641446d3613f3e29e4d4462b1c6c4bd40a0570d42d587079a17ed0a2c65218",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-21",
+            "pass_": true,
+            "input_sha256": "22263872318cc8f67dff1f99e15b8b56090c24c4ef48dd047eba6451c7b715de",
+            "expected_sha256": "4926795878b1a88f696bfc810dba90e60b2d5b94f5cc53eb7e7eb78bd285bb9f",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-22",
+            "pass_": true,
+            "input_sha256": "58e7ef75ebee69349f7bbfd543287f3ce7b4039b75f6e48874be698be502660c",
+            "expected_sha256": "5100a692627abbebeba3318bac8a82194dd815c40bda549a95ca23d5828f72c6",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-23",
+            "pass_": true,
+            "input_sha256": "f3e9f1a9bd53b7a4934f1531e13ca51e62d36801be74152cf4470f5ac3c6204d",
+            "expected_sha256": "d69b819d76c777d147168902ac1f0d651ef5e64015046360f7f9966f65211349",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-24",
+            "pass_": true,
+            "input_sha256": "5d783441dbea2e97063d33956ac8bc6a7bfe0dda3b028db7a0d36f442ca25f0c",
+            "expected_sha256": "759aa0745a32c6411d69e0cb8604f2480eaf6e29d9b70342dad71ef308b38191",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-25",
+            "pass_": true,
+            "input_sha256": "37ad006179bab8fd1bc5113b0a956ba18d72ba6fb53856512370e7ccecfebfb6",
+            "expected_sha256": "03e79a1115f20729c1977c898317c486c54f0e94000f9dec48377b6cc90c3eda",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-26",
+            "pass_": true,
+            "input_sha256": "0e2f60c0fb9f9e6bc993a135682890cfc2012e6bca49b5f8c411a2273b3d3049",
+            "expected_sha256": "c67cfd6c344fc3636ee45fcfb8885e7336797f421df6f8c7601ca83c6d69f36c",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-27",
+            "pass_": true,
+            "input_sha256": "5211d523f511fda5355d0dfaf256548ee4af6f277551c3379d5e3919fb6dbfbd",
+            "expected_sha256": "13944968c74398c991d9a7241f40699eb7bc505b078c03f81dc3b2a52b392b36",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-28",
+            "pass_": true,
+            "input_sha256": "65fe6534140f41e4c0088a584b52bdf5edf5bcb24baafa0c6d09dfd8480e3eaa",
+            "expected_sha256": "dc14c727268f1b6e162008f2b988278df14e6ae5226a9f5e9e9ec8e16aa075c2",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-29",
+            "pass_": true,
+            "input_sha256": "b2d69903cc9a8b5a1efce50cb76976b7e1718ed306105449e97d6a9ac683fd79",
+            "expected_sha256": "282e314ead393b721c4266eb1879546c009b616fa5293b2713a93ca03938f450",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-30",
+            "pass_": true,
+            "input_sha256": "3bbfb8bc1750e5ab6082582fc5303c6a71b82fe48f3b6ae03f51dd4a3efafaaf",
+            "expected_sha256": "4ffd432ff51c088351b704fb65333cfd899b911163ca45c1ab542ee59f806bfb",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-31",
+            "pass_": true,
+            "input_sha256": "0c3b6fa7005880b01796ed681c8fddee5e2c18f4f1d43400d7e229de8e669412",
+            "expected_sha256": "b38d2cda69db6701108df38ebee2f20289721f69c5678e9d95dea5be22e001de",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-32",
+            "pass_": true,
+            "input_sha256": "2a76d7079783cabba1cc149776df45064a1da2ddc099f9b3df2cb1145b976abc",
+            "expected_sha256": "47e71204390dc6406c855f7ad60e39dbb47796d6ec539ac9fa05907f56ecaf37",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-33",
+            "pass_": true,
+            "input_sha256": "55a87d5f10d43f70fba4261fa246c2b0aaa7e794383191d76d488f84c00d6210",
+            "expected_sha256": "075c399d9e05ef96e9a6e5b0595d16a252b468984fa6db7dfabd1923da01cdc7",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-34",
+            "pass_": true,
+            "input_sha256": "fc3bcb82932d0e072c5b4803b3bf93e065efab736a1298077541624362439ebd",
+            "expected_sha256": "100fbdd5b06cefdffc26b400f045811da6b703f715ffc6cd8b1eab4353543a6c",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-35",
+            "pass_": true,
+            "input_sha256": "5d2325bb0368de4bc404134f11db2e38f799fea6e52ada335e2988e071f10a25",
+            "expected_sha256": "f23f3b346db2864ab8515319e3b7596276aaace1732997c468b610fdf2fc9ed8",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-36",
+            "pass_": true,
+            "input_sha256": "1a7cb82ac724f9786323e9298554697797c794bf8dd088fe814f20ee51948a53",
+            "expected_sha256": "51ffc7eac00e41081ca388bed862b67fdf90519c8cc9141636ea57d3227e7f23",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-37",
+            "pass_": true,
+            "input_sha256": "e4d8843f4c3cb1501897a3c715413d6f0ae45f2da2720992e0784cfcdb33567b",
+            "expected_sha256": "76b85f59d1c7470d0bd16ab8902745110543d157cc3eb5e2f56fd8813d5b9d65",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-38",
+            "pass_": true,
+            "input_sha256": "7465004cc6f18a4648cf14771a0429ef5e91362051e0935db038864389e453a5",
+            "expected_sha256": "c9df524b18da430d57d7022123c27a1b82a3d210ea49ccdc02d1a348296f72de",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-39",
+            "pass_": true,
+            "input_sha256": "d5c86a634d2fd5b01cb83a97366e2294a5b95d310e0796ac25a390ebcf20982e",
+            "expected_sha256": "db97e6d39fcf21f00122b91884c0daa08cfe1a92b49581e2435d04c82ad2eacc",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          }
+        ],
+        "pass_": true
+      },
+      {
+        "name": "gcc-native-skip",
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "compiler_sha256": "e6718f7e0c7d057c3ff77b550c603da9bc4030e3ede3c053705acce1293dbe4d",
+        "source_sha256": "ef4c5f3c62f6532ed264e611e49d7d175ce6e0d1db393310623ce0a1ab3ba5b0",
+        "command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-march=native",
+          "/tmp/sirkit-added-lc-optimization-20261115/fable-segtree/validation/gcc-native-skip.cpp",
+          "-o",
+          "/tmp/sirkit-added-lc-optimization-20261115/fable-segtree/validation/gcc-native-skip"
+        ],
+        "cases": [
+          {
+            "name": "official-sample0",
+            "pass_": true,
+            "input_sha256": "057f56e9aa6ba82a68106ace96ca31fdd73e6999b8e18f789fcba5e2c7f99f0b"
+          },
+          {
+            "name": "predecessor-0",
+            "pass_": true,
+            "input_sha256": "97186fef7ef9dcdb8b3bb718b8b62d7e58721f735b7abe3202f859899f93dba8",
+            "expected_sha256": "e0e06b08321b97ee62f69b9a6bc8ab09fec387bd1b0ee3771c225dc58f1f939d",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-1",
+            "pass_": true,
+            "input_sha256": "c5be537e2553f825126061eed5fd1c9459fc16e5a8dd05970414791bcfc52e3f",
+            "expected_sha256": "6d156a075ca27c41d8bdc4a2dbcd3d77dfa13ce8aa5e513642b2a956c29f0676",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-2",
+            "pass_": true,
+            "input_sha256": "8fea67390570fb8012bad1a90b220ec45e1590cf253dc65c40da04b3d86d3d7f",
+            "expected_sha256": "0a0eb3ea31a2ec2ec161a49c0363177f2b746a2d27400e7be0f5ba57fc7dcd7d",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-3",
+            "pass_": true,
+            "input_sha256": "23177148f9de0bc82bf1011319fe917e25a17ca3f0fb636c910d42602504b321",
+            "expected_sha256": "0172705075d771934726a7c76da9f2883680f7b5bbc040db9119cd4cfe08589f",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-4",
+            "pass_": true,
+            "input_sha256": "c81938c10bc8189460556e05d22a5263643638e1716f0cfdcb10b9180d0008b7",
+            "expected_sha256": "a78c4db81edb94dcf26e71aa2540adcb1aa9e0c4749dd1cac9d7f5601e55cce7",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-5",
+            "pass_": true,
+            "input_sha256": "8ed67383a9fb6023b7e5a9b0930599e831892f748ec36216c655a3789d35cb03",
+            "expected_sha256": "57b1c89bd7aa3984e800f59a692e95f93c95f118a0139a2a81321160db635d59",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-6",
+            "pass_": true,
+            "input_sha256": "37a502181278c479cddc28e395a52d20bb517c4e545f5c6805f22e87bbc1a2d2",
+            "expected_sha256": "c3baf6a9a20d9d7497488228a06fdf3cc8cc6c7f14e0168335ea3ca787d8e6d0",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-7",
+            "pass_": true,
+            "input_sha256": "6d37e948c8bb1c6cb02b8f78f29864a1ff9fd898165ef48feeebba1234164727",
+            "expected_sha256": "b8c9a06613ef6cfd789dde610bb64c1ece2567335982bec3aa1bfee04dedb4e5",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-8",
+            "pass_": true,
+            "input_sha256": "1362d6035f8c34b1b6e3a8e1440735b97048ab7f6a0a37202524269d0105e764",
+            "expected_sha256": "4edbd57fe39d9daa6bfcc18b25291ad54814740776dcaf3bdf4b125b164488e1",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-9",
+            "pass_": true,
+            "input_sha256": "b3571a663411a7bceb896618596db0dac13770a0a22b64039402b089f917ff73",
+            "expected_sha256": "187075609c6876dad822a6d57387b89f978af45a2e888fade5365f55a4e42498",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-10",
+            "pass_": true,
+            "input_sha256": "1e73b9190f37784d210bb9d11ab3b4e6e03d7a310514d9d106a2515cfa0d3d3f",
+            "expected_sha256": "3911bb904f78efe07742f42db0f1132e3e841b45ebcd36187bfa898001a7c015",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-11",
+            "pass_": true,
+            "input_sha256": "85c604c28cc42d9aac59f75aba5734bb391fe000404bd8c2d1d9b1aafc58cee4",
+            "expected_sha256": "0e46a538aad89a28a10258ce643047ff50f4b33428baf75eeb1be301dd2e3692",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-12",
+            "pass_": true,
+            "input_sha256": "69e13b4223188046deb05c31b65486d35492220a93e56ddf0a125caca40fd521",
+            "expected_sha256": "c9bd20203eb6ed2c4221694530f75f537389b150035c72e07ad45b95a26caef7",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-13",
+            "pass_": true,
+            "input_sha256": "813dbf85af0e60aa54b621b8fffb4b31c90c25e499dd0b3bc708b8ec22b17338",
+            "expected_sha256": "43966b855959d662a135dbd344574b92ebe7a3834d3b4923404dcaabe31bf4fc",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-14",
+            "pass_": true,
+            "input_sha256": "e0f80d93c82e2f93776437e1e39bfefc2822398755406fbadd928dfa85217bcb",
+            "expected_sha256": "787609a55ce2ca262ba24d2cc0c3216e07fc18fb81d58113f884c99e9de22dcf",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-15",
+            "pass_": true,
+            "input_sha256": "3567f869d4a25be25921b8fa9f21a140d812e0a0ba5d180890b476e4995f829d",
+            "expected_sha256": "94455f3000e575174c89701cad19fc73035950c723c802f0d303ca0d2bdc7f7c",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-16",
+            "pass_": true,
+            "input_sha256": "d3d7116ac03eb2d9e465c2ea45bf5546b7a04dad208af175bdf850c523222554",
+            "expected_sha256": "4380b63d544f4be223d6af5df7d04df38f2f05252c93e02eeb29e1b7f2b0e9d3",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-17",
+            "pass_": true,
+            "input_sha256": "b21acd28ea44df8cec95e4b36287b3ccfd120d4e823d3ba0cd668fc4fdc584af",
+            "expected_sha256": "8ce7f2989d4503ecfd4ab6a9848eee6ff1e96c3a9bf111a112dc316487bd889b",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-18",
+            "pass_": true,
+            "input_sha256": "91d15fa4726e422a1f90e662917ca2323c827c90b0e7d3b78c0676084481b871",
+            "expected_sha256": "72017440fe90ecdc9565b3bad0d5bc9a377df1b7228f66a79f6ed060a14ca441",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-19",
+            "pass_": true,
+            "input_sha256": "d45d3d8d2fc28628102b48a097b5ac4fe8c1264d5f30c957b086dad1bd21ccfc",
+            "expected_sha256": "bdf658ac54ae8e38c5c91cf6825da3d8c4e06afbffde7f64a7d145ecef90f435",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-20",
+            "pass_": true,
+            "input_sha256": "1dffe3f3f503d5e5844f7ee5eaa9ce3683f99dbc5312d54f02faa662cb857296",
+            "expected_sha256": "75641446d3613f3e29e4d4462b1c6c4bd40a0570d42d587079a17ed0a2c65218",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-21",
+            "pass_": true,
+            "input_sha256": "22263872318cc8f67dff1f99e15b8b56090c24c4ef48dd047eba6451c7b715de",
+            "expected_sha256": "4926795878b1a88f696bfc810dba90e60b2d5b94f5cc53eb7e7eb78bd285bb9f",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-22",
+            "pass_": true,
+            "input_sha256": "58e7ef75ebee69349f7bbfd543287f3ce7b4039b75f6e48874be698be502660c",
+            "expected_sha256": "5100a692627abbebeba3318bac8a82194dd815c40bda549a95ca23d5828f72c6",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-23",
+            "pass_": true,
+            "input_sha256": "f3e9f1a9bd53b7a4934f1531e13ca51e62d36801be74152cf4470f5ac3c6204d",
+            "expected_sha256": "d69b819d76c777d147168902ac1f0d651ef5e64015046360f7f9966f65211349",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-24",
+            "pass_": true,
+            "input_sha256": "5d783441dbea2e97063d33956ac8bc6a7bfe0dda3b028db7a0d36f442ca25f0c",
+            "expected_sha256": "759aa0745a32c6411d69e0cb8604f2480eaf6e29d9b70342dad71ef308b38191",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-25",
+            "pass_": true,
+            "input_sha256": "37ad006179bab8fd1bc5113b0a956ba18d72ba6fb53856512370e7ccecfebfb6",
+            "expected_sha256": "03e79a1115f20729c1977c898317c486c54f0e94000f9dec48377b6cc90c3eda",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-26",
+            "pass_": true,
+            "input_sha256": "0e2f60c0fb9f9e6bc993a135682890cfc2012e6bca49b5f8c411a2273b3d3049",
+            "expected_sha256": "c67cfd6c344fc3636ee45fcfb8885e7336797f421df6f8c7601ca83c6d69f36c",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-27",
+            "pass_": true,
+            "input_sha256": "5211d523f511fda5355d0dfaf256548ee4af6f277551c3379d5e3919fb6dbfbd",
+            "expected_sha256": "13944968c74398c991d9a7241f40699eb7bc505b078c03f81dc3b2a52b392b36",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-28",
+            "pass_": true,
+            "input_sha256": "65fe6534140f41e4c0088a584b52bdf5edf5bcb24baafa0c6d09dfd8480e3eaa",
+            "expected_sha256": "dc14c727268f1b6e162008f2b988278df14e6ae5226a9f5e9e9ec8e16aa075c2",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-29",
+            "pass_": true,
+            "input_sha256": "b2d69903cc9a8b5a1efce50cb76976b7e1718ed306105449e97d6a9ac683fd79",
+            "expected_sha256": "282e314ead393b721c4266eb1879546c009b616fa5293b2713a93ca03938f450",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-30",
+            "pass_": true,
+            "input_sha256": "3bbfb8bc1750e5ab6082582fc5303c6a71b82fe48f3b6ae03f51dd4a3efafaaf",
+            "expected_sha256": "4ffd432ff51c088351b704fb65333cfd899b911163ca45c1ab542ee59f806bfb",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-31",
+            "pass_": true,
+            "input_sha256": "0c3b6fa7005880b01796ed681c8fddee5e2c18f4f1d43400d7e229de8e669412",
+            "expected_sha256": "b38d2cda69db6701108df38ebee2f20289721f69c5678e9d95dea5be22e001de",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-32",
+            "pass_": true,
+            "input_sha256": "2a76d7079783cabba1cc149776df45064a1da2ddc099f9b3df2cb1145b976abc",
+            "expected_sha256": "47e71204390dc6406c855f7ad60e39dbb47796d6ec539ac9fa05907f56ecaf37",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-33",
+            "pass_": true,
+            "input_sha256": "55a87d5f10d43f70fba4261fa246c2b0aaa7e794383191d76d488f84c00d6210",
+            "expected_sha256": "075c399d9e05ef96e9a6e5b0595d16a252b468984fa6db7dfabd1923da01cdc7",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-34",
+            "pass_": true,
+            "input_sha256": "fc3bcb82932d0e072c5b4803b3bf93e065efab736a1298077541624362439ebd",
+            "expected_sha256": "100fbdd5b06cefdffc26b400f045811da6b703f715ffc6cd8b1eab4353543a6c",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-35",
+            "pass_": true,
+            "input_sha256": "5d2325bb0368de4bc404134f11db2e38f799fea6e52ada335e2988e071f10a25",
+            "expected_sha256": "f23f3b346db2864ab8515319e3b7596276aaace1732997c468b610fdf2fc9ed8",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-36",
+            "pass_": true,
+            "input_sha256": "1a7cb82ac724f9786323e9298554697797c794bf8dd088fe814f20ee51948a53",
+            "expected_sha256": "51ffc7eac00e41081ca388bed862b67fdf90519c8cc9141636ea57d3227e7f23",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-37",
+            "pass_": true,
+            "input_sha256": "e4d8843f4c3cb1501897a3c715413d6f0ae45f2da2720992e0784cfcdb33567b",
+            "expected_sha256": "76b85f59d1c7470d0bd16ab8902745110543d157cc3eb5e2f56fd8813d5b9d65",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-38",
+            "pass_": true,
+            "input_sha256": "7465004cc6f18a4648cf14771a0429ef5e91362051e0935db038864389e453a5",
+            "expected_sha256": "c9df524b18da430d57d7022123c27a1b82a3d210ea49ccdc02d1a348296f72de",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-39",
+            "pass_": true,
+            "input_sha256": "d5c86a634d2fd5b01cb83a97366e2294a5b95d310e0796ac25a390ebcf20982e",
+            "expected_sha256": "db97e6d39fcf21f00122b91884c0daa08cfe1a92b49581e2435d04c82ad2eacc",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          }
+        ],
+        "pass_": true
+      },
+      {
+        "name": "gcc-portable-skip",
+        "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+        "compiler_sha256": "e6718f7e0c7d057c3ff77b550c603da9bc4030e3ede3c053705acce1293dbe4d",
+        "source_sha256": "ef4c5f3c62f6532ed264e611e49d7d175ce6e0d1db393310623ce0a1ab3ba5b0",
+        "command": [
+          "/usr/bin/g++",
+          "-std=c++23",
+          "-O2",
+          "-U__SIZEOF_INT128__",
+          "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/tmp/sirkit-added-lc-optimization-20261115/fable-segtree/validation/gcc-portable-skip.cpp",
+          "-o",
+          "/tmp/sirkit-added-lc-optimization-20261115/fable-segtree/validation/gcc-portable-skip"
+        ],
+        "cases": [
+          {
+            "name": "official-sample0",
+            "pass_": true,
+            "input_sha256": "057f56e9aa6ba82a68106ace96ca31fdd73e6999b8e18f789fcba5e2c7f99f0b"
+          },
+          {
+            "name": "predecessor-0",
+            "pass_": true,
+            "input_sha256": "97186fef7ef9dcdb8b3bb718b8b62d7e58721f735b7abe3202f859899f93dba8",
+            "expected_sha256": "e0e06b08321b97ee62f69b9a6bc8ab09fec387bd1b0ee3771c225dc58f1f939d",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-1",
+            "pass_": true,
+            "input_sha256": "c5be537e2553f825126061eed5fd1c9459fc16e5a8dd05970414791bcfc52e3f",
+            "expected_sha256": "6d156a075ca27c41d8bdc4a2dbcd3d77dfa13ce8aa5e513642b2a956c29f0676",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-2",
+            "pass_": true,
+            "input_sha256": "8fea67390570fb8012bad1a90b220ec45e1590cf253dc65c40da04b3d86d3d7f",
+            "expected_sha256": "0a0eb3ea31a2ec2ec161a49c0363177f2b746a2d27400e7be0f5ba57fc7dcd7d",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-3",
+            "pass_": true,
+            "input_sha256": "23177148f9de0bc82bf1011319fe917e25a17ca3f0fb636c910d42602504b321",
+            "expected_sha256": "0172705075d771934726a7c76da9f2883680f7b5bbc040db9119cd4cfe08589f",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-4",
+            "pass_": true,
+            "input_sha256": "c81938c10bc8189460556e05d22a5263643638e1716f0cfdcb10b9180d0008b7",
+            "expected_sha256": "a78c4db81edb94dcf26e71aa2540adcb1aa9e0c4749dd1cac9d7f5601e55cce7",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-5",
+            "pass_": true,
+            "input_sha256": "8ed67383a9fb6023b7e5a9b0930599e831892f748ec36216c655a3789d35cb03",
+            "expected_sha256": "57b1c89bd7aa3984e800f59a692e95f93c95f118a0139a2a81321160db635d59",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-6",
+            "pass_": true,
+            "input_sha256": "37a502181278c479cddc28e395a52d20bb517c4e545f5c6805f22e87bbc1a2d2",
+            "expected_sha256": "c3baf6a9a20d9d7497488228a06fdf3cc8cc6c7f14e0168335ea3ca787d8e6d0",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-7",
+            "pass_": true,
+            "input_sha256": "6d37e948c8bb1c6cb02b8f78f29864a1ff9fd898165ef48feeebba1234164727",
+            "expected_sha256": "b8c9a06613ef6cfd789dde610bb64c1ece2567335982bec3aa1bfee04dedb4e5",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-8",
+            "pass_": true,
+            "input_sha256": "1362d6035f8c34b1b6e3a8e1440735b97048ab7f6a0a37202524269d0105e764",
+            "expected_sha256": "4edbd57fe39d9daa6bfcc18b25291ad54814740776dcaf3bdf4b125b164488e1",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-9",
+            "pass_": true,
+            "input_sha256": "b3571a663411a7bceb896618596db0dac13770a0a22b64039402b089f917ff73",
+            "expected_sha256": "187075609c6876dad822a6d57387b89f978af45a2e888fade5365f55a4e42498",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-10",
+            "pass_": true,
+            "input_sha256": "1e73b9190f37784d210bb9d11ab3b4e6e03d7a310514d9d106a2515cfa0d3d3f",
+            "expected_sha256": "3911bb904f78efe07742f42db0f1132e3e841b45ebcd36187bfa898001a7c015",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-11",
+            "pass_": true,
+            "input_sha256": "85c604c28cc42d9aac59f75aba5734bb391fe000404bd8c2d1d9b1aafc58cee4",
+            "expected_sha256": "0e46a538aad89a28a10258ce643047ff50f4b33428baf75eeb1be301dd2e3692",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-12",
+            "pass_": true,
+            "input_sha256": "69e13b4223188046deb05c31b65486d35492220a93e56ddf0a125caca40fd521",
+            "expected_sha256": "c9bd20203eb6ed2c4221694530f75f537389b150035c72e07ad45b95a26caef7",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-13",
+            "pass_": true,
+            "input_sha256": "813dbf85af0e60aa54b621b8fffb4b31c90c25e499dd0b3bc708b8ec22b17338",
+            "expected_sha256": "43966b855959d662a135dbd344574b92ebe7a3834d3b4923404dcaabe31bf4fc",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-14",
+            "pass_": true,
+            "input_sha256": "e0f80d93c82e2f93776437e1e39bfefc2822398755406fbadd928dfa85217bcb",
+            "expected_sha256": "787609a55ce2ca262ba24d2cc0c3216e07fc18fb81d58113f884c99e9de22dcf",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-15",
+            "pass_": true,
+            "input_sha256": "3567f869d4a25be25921b8fa9f21a140d812e0a0ba5d180890b476e4995f829d",
+            "expected_sha256": "94455f3000e575174c89701cad19fc73035950c723c802f0d303ca0d2bdc7f7c",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-16",
+            "pass_": true,
+            "input_sha256": "d3d7116ac03eb2d9e465c2ea45bf5546b7a04dad208af175bdf850c523222554",
+            "expected_sha256": "4380b63d544f4be223d6af5df7d04df38f2f05252c93e02eeb29e1b7f2b0e9d3",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-17",
+            "pass_": true,
+            "input_sha256": "b21acd28ea44df8cec95e4b36287b3ccfd120d4e823d3ba0cd668fc4fdc584af",
+            "expected_sha256": "8ce7f2989d4503ecfd4ab6a9848eee6ff1e96c3a9bf111a112dc316487bd889b",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-18",
+            "pass_": true,
+            "input_sha256": "91d15fa4726e422a1f90e662917ca2323c827c90b0e7d3b78c0676084481b871",
+            "expected_sha256": "72017440fe90ecdc9565b3bad0d5bc9a377df1b7228f66a79f6ed060a14ca441",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-19",
+            "pass_": true,
+            "input_sha256": "d45d3d8d2fc28628102b48a097b5ac4fe8c1264d5f30c957b086dad1bd21ccfc",
+            "expected_sha256": "bdf658ac54ae8e38c5c91cf6825da3d8c4e06afbffde7f64a7d145ecef90f435",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-20",
+            "pass_": true,
+            "input_sha256": "1dffe3f3f503d5e5844f7ee5eaa9ce3683f99dbc5312d54f02faa662cb857296",
+            "expected_sha256": "75641446d3613f3e29e4d4462b1c6c4bd40a0570d42d587079a17ed0a2c65218",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-21",
+            "pass_": true,
+            "input_sha256": "22263872318cc8f67dff1f99e15b8b56090c24c4ef48dd047eba6451c7b715de",
+            "expected_sha256": "4926795878b1a88f696bfc810dba90e60b2d5b94f5cc53eb7e7eb78bd285bb9f",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-22",
+            "pass_": true,
+            "input_sha256": "58e7ef75ebee69349f7bbfd543287f3ce7b4039b75f6e48874be698be502660c",
+            "expected_sha256": "5100a692627abbebeba3318bac8a82194dd815c40bda549a95ca23d5828f72c6",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-23",
+            "pass_": true,
+            "input_sha256": "f3e9f1a9bd53b7a4934f1531e13ca51e62d36801be74152cf4470f5ac3c6204d",
+            "expected_sha256": "d69b819d76c777d147168902ac1f0d651ef5e64015046360f7f9966f65211349",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-24",
+            "pass_": true,
+            "input_sha256": "5d783441dbea2e97063d33956ac8bc6a7bfe0dda3b028db7a0d36f442ca25f0c",
+            "expected_sha256": "759aa0745a32c6411d69e0cb8604f2480eaf6e29d9b70342dad71ef308b38191",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-25",
+            "pass_": true,
+            "input_sha256": "37ad006179bab8fd1bc5113b0a956ba18d72ba6fb53856512370e7ccecfebfb6",
+            "expected_sha256": "03e79a1115f20729c1977c898317c486c54f0e94000f9dec48377b6cc90c3eda",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-26",
+            "pass_": true,
+            "input_sha256": "0e2f60c0fb9f9e6bc993a135682890cfc2012e6bca49b5f8c411a2273b3d3049",
+            "expected_sha256": "c67cfd6c344fc3636ee45fcfb8885e7336797f421df6f8c7601ca83c6d69f36c",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-27",
+            "pass_": true,
+            "input_sha256": "5211d523f511fda5355d0dfaf256548ee4af6f277551c3379d5e3919fb6dbfbd",
+            "expected_sha256": "13944968c74398c991d9a7241f40699eb7bc505b078c03f81dc3b2a52b392b36",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-28",
+            "pass_": true,
+            "input_sha256": "65fe6534140f41e4c0088a584b52bdf5edf5bcb24baafa0c6d09dfd8480e3eaa",
+            "expected_sha256": "dc14c727268f1b6e162008f2b988278df14e6ae5226a9f5e9e9ec8e16aa075c2",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-29",
+            "pass_": true,
+            "input_sha256": "b2d69903cc9a8b5a1efce50cb76976b7e1718ed306105449e97d6a9ac683fd79",
+            "expected_sha256": "282e314ead393b721c4266eb1879546c009b616fa5293b2713a93ca03938f450",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-30",
+            "pass_": true,
+            "input_sha256": "3bbfb8bc1750e5ab6082582fc5303c6a71b82fe48f3b6ae03f51dd4a3efafaaf",
+            "expected_sha256": "4ffd432ff51c088351b704fb65333cfd899b911163ca45c1ab542ee59f806bfb",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-31",
+            "pass_": true,
+            "input_sha256": "0c3b6fa7005880b01796ed681c8fddee5e2c18f4f1d43400d7e229de8e669412",
+            "expected_sha256": "b38d2cda69db6701108df38ebee2f20289721f69c5678e9d95dea5be22e001de",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-32",
+            "pass_": true,
+            "input_sha256": "2a76d7079783cabba1cc149776df45064a1da2ddc099f9b3df2cb1145b976abc",
+            "expected_sha256": "47e71204390dc6406c855f7ad60e39dbb47796d6ec539ac9fa05907f56ecaf37",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-33",
+            "pass_": true,
+            "input_sha256": "55a87d5f10d43f70fba4261fa246c2b0aaa7e794383191d76d488f84c00d6210",
+            "expected_sha256": "075c399d9e05ef96e9a6e5b0595d16a252b468984fa6db7dfabd1923da01cdc7",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-34",
+            "pass_": true,
+            "input_sha256": "fc3bcb82932d0e072c5b4803b3bf93e065efab736a1298077541624362439ebd",
+            "expected_sha256": "100fbdd5b06cefdffc26b400f045811da6b703f715ffc6cd8b1eab4353543a6c",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-35",
+            "pass_": true,
+            "input_sha256": "5d2325bb0368de4bc404134f11db2e38f799fea6e52ada335e2988e071f10a25",
+            "expected_sha256": "f23f3b346db2864ab8515319e3b7596276aaace1732997c468b610fdf2fc9ed8",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-36",
+            "pass_": true,
+            "input_sha256": "1a7cb82ac724f9786323e9298554697797c794bf8dd088fe814f20ee51948a53",
+            "expected_sha256": "51ffc7eac00e41081ca388bed862b67fdf90519c8cc9141636ea57d3227e7f23",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-37",
+            "pass_": true,
+            "input_sha256": "e4d8843f4c3cb1501897a3c715413d6f0ae45f2da2720992e0784cfcdb33567b",
+            "expected_sha256": "76b85f59d1c7470d0bd16ab8902745110543d157cc3eb5e2f56fd8813d5b9d65",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-38",
+            "pass_": true,
+            "input_sha256": "7465004cc6f18a4648cf14771a0429ef5e91362051e0935db038864389e453a5",
+            "expected_sha256": "c9df524b18da430d57d7022123c27a1b82a3d210ea49ccdc02d1a348296f72de",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-39",
+            "pass_": true,
+            "input_sha256": "d5c86a634d2fd5b01cb83a97366e2294a5b95d310e0796ac25a390ebcf20982e",
+            "expected_sha256": "db97e6d39fcf21f00122b91884c0daa08cfe1a92b49581e2435d04c82ad2eacc",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          }
+        ],
+        "pass_": true
+      },
+      {
+        "name": "clang-native-checked",
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "compiler_sha256": "412bbe8c60571a1eb06f48fde89635033621caeb01a9b4ee76d46711bae8e932",
+        "source_sha256": "d869c8214d94e2d3f77559335fa99956857ca6bf5dac02f7429e4acb6e6b7d72",
+        "command": [
+          "/usr/bin/clang++-21",
+          "-std=c++23",
+          "-O2",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-march=native",
+          "/tmp/sirkit-added-lc-optimization-20261115/fable-segtree/validation/clang-native-checked.cpp",
+          "-o",
+          "/tmp/sirkit-added-lc-optimization-20261115/fable-segtree/validation/clang-native-checked"
+        ],
+        "cases": [
+          {
+            "name": "official-sample0",
+            "pass_": true,
+            "input_sha256": "057f56e9aa6ba82a68106ace96ca31fdd73e6999b8e18f789fcba5e2c7f99f0b"
+          },
+          {
+            "name": "predecessor-0",
+            "pass_": true,
+            "input_sha256": "97186fef7ef9dcdb8b3bb718b8b62d7e58721f735b7abe3202f859899f93dba8",
+            "expected_sha256": "e0e06b08321b97ee62f69b9a6bc8ab09fec387bd1b0ee3771c225dc58f1f939d",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-1",
+            "pass_": true,
+            "input_sha256": "c5be537e2553f825126061eed5fd1c9459fc16e5a8dd05970414791bcfc52e3f",
+            "expected_sha256": "6d156a075ca27c41d8bdc4a2dbcd3d77dfa13ce8aa5e513642b2a956c29f0676",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-2",
+            "pass_": true,
+            "input_sha256": "8fea67390570fb8012bad1a90b220ec45e1590cf253dc65c40da04b3d86d3d7f",
+            "expected_sha256": "0a0eb3ea31a2ec2ec161a49c0363177f2b746a2d27400e7be0f5ba57fc7dcd7d",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-3",
+            "pass_": true,
+            "input_sha256": "23177148f9de0bc82bf1011319fe917e25a17ca3f0fb636c910d42602504b321",
+            "expected_sha256": "0172705075d771934726a7c76da9f2883680f7b5bbc040db9119cd4cfe08589f",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-4",
+            "pass_": true,
+            "input_sha256": "c81938c10bc8189460556e05d22a5263643638e1716f0cfdcb10b9180d0008b7",
+            "expected_sha256": "a78c4db81edb94dcf26e71aa2540adcb1aa9e0c4749dd1cac9d7f5601e55cce7",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-5",
+            "pass_": true,
+            "input_sha256": "8ed67383a9fb6023b7e5a9b0930599e831892f748ec36216c655a3789d35cb03",
+            "expected_sha256": "57b1c89bd7aa3984e800f59a692e95f93c95f118a0139a2a81321160db635d59",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-6",
+            "pass_": true,
+            "input_sha256": "37a502181278c479cddc28e395a52d20bb517c4e545f5c6805f22e87bbc1a2d2",
+            "expected_sha256": "c3baf6a9a20d9d7497488228a06fdf3cc8cc6c7f14e0168335ea3ca787d8e6d0",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-7",
+            "pass_": true,
+            "input_sha256": "6d37e948c8bb1c6cb02b8f78f29864a1ff9fd898165ef48feeebba1234164727",
+            "expected_sha256": "b8c9a06613ef6cfd789dde610bb64c1ece2567335982bec3aa1bfee04dedb4e5",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-8",
+            "pass_": true,
+            "input_sha256": "1362d6035f8c34b1b6e3a8e1440735b97048ab7f6a0a37202524269d0105e764",
+            "expected_sha256": "4edbd57fe39d9daa6bfcc18b25291ad54814740776dcaf3bdf4b125b164488e1",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-9",
+            "pass_": true,
+            "input_sha256": "b3571a663411a7bceb896618596db0dac13770a0a22b64039402b089f917ff73",
+            "expected_sha256": "187075609c6876dad822a6d57387b89f978af45a2e888fade5365f55a4e42498",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-10",
+            "pass_": true,
+            "input_sha256": "1e73b9190f37784d210bb9d11ab3b4e6e03d7a310514d9d106a2515cfa0d3d3f",
+            "expected_sha256": "3911bb904f78efe07742f42db0f1132e3e841b45ebcd36187bfa898001a7c015",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-11",
+            "pass_": true,
+            "input_sha256": "85c604c28cc42d9aac59f75aba5734bb391fe000404bd8c2d1d9b1aafc58cee4",
+            "expected_sha256": "0e46a538aad89a28a10258ce643047ff50f4b33428baf75eeb1be301dd2e3692",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-12",
+            "pass_": true,
+            "input_sha256": "69e13b4223188046deb05c31b65486d35492220a93e56ddf0a125caca40fd521",
+            "expected_sha256": "c9bd20203eb6ed2c4221694530f75f537389b150035c72e07ad45b95a26caef7",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-13",
+            "pass_": true,
+            "input_sha256": "813dbf85af0e60aa54b621b8fffb4b31c90c25e499dd0b3bc708b8ec22b17338",
+            "expected_sha256": "43966b855959d662a135dbd344574b92ebe7a3834d3b4923404dcaabe31bf4fc",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-14",
+            "pass_": true,
+            "input_sha256": "e0f80d93c82e2f93776437e1e39bfefc2822398755406fbadd928dfa85217bcb",
+            "expected_sha256": "787609a55ce2ca262ba24d2cc0c3216e07fc18fb81d58113f884c99e9de22dcf",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-15",
+            "pass_": true,
+            "input_sha256": "3567f869d4a25be25921b8fa9f21a140d812e0a0ba5d180890b476e4995f829d",
+            "expected_sha256": "94455f3000e575174c89701cad19fc73035950c723c802f0d303ca0d2bdc7f7c",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-16",
+            "pass_": true,
+            "input_sha256": "d3d7116ac03eb2d9e465c2ea45bf5546b7a04dad208af175bdf850c523222554",
+            "expected_sha256": "4380b63d544f4be223d6af5df7d04df38f2f05252c93e02eeb29e1b7f2b0e9d3",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-17",
+            "pass_": true,
+            "input_sha256": "b21acd28ea44df8cec95e4b36287b3ccfd120d4e823d3ba0cd668fc4fdc584af",
+            "expected_sha256": "8ce7f2989d4503ecfd4ab6a9848eee6ff1e96c3a9bf111a112dc316487bd889b",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-18",
+            "pass_": true,
+            "input_sha256": "91d15fa4726e422a1f90e662917ca2323c827c90b0e7d3b78c0676084481b871",
+            "expected_sha256": "72017440fe90ecdc9565b3bad0d5bc9a377df1b7228f66a79f6ed060a14ca441",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-19",
+            "pass_": true,
+            "input_sha256": "d45d3d8d2fc28628102b48a097b5ac4fe8c1264d5f30c957b086dad1bd21ccfc",
+            "expected_sha256": "bdf658ac54ae8e38c5c91cf6825da3d8c4e06afbffde7f64a7d145ecef90f435",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-20",
+            "pass_": true,
+            "input_sha256": "1dffe3f3f503d5e5844f7ee5eaa9ce3683f99dbc5312d54f02faa662cb857296",
+            "expected_sha256": "75641446d3613f3e29e4d4462b1c6c4bd40a0570d42d587079a17ed0a2c65218",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-21",
+            "pass_": true,
+            "input_sha256": "22263872318cc8f67dff1f99e15b8b56090c24c4ef48dd047eba6451c7b715de",
+            "expected_sha256": "4926795878b1a88f696bfc810dba90e60b2d5b94f5cc53eb7e7eb78bd285bb9f",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-22",
+            "pass_": true,
+            "input_sha256": "58e7ef75ebee69349f7bbfd543287f3ce7b4039b75f6e48874be698be502660c",
+            "expected_sha256": "5100a692627abbebeba3318bac8a82194dd815c40bda549a95ca23d5828f72c6",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-23",
+            "pass_": true,
+            "input_sha256": "f3e9f1a9bd53b7a4934f1531e13ca51e62d36801be74152cf4470f5ac3c6204d",
+            "expected_sha256": "d69b819d76c777d147168902ac1f0d651ef5e64015046360f7f9966f65211349",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-24",
+            "pass_": true,
+            "input_sha256": "5d783441dbea2e97063d33956ac8bc6a7bfe0dda3b028db7a0d36f442ca25f0c",
+            "expected_sha256": "759aa0745a32c6411d69e0cb8604f2480eaf6e29d9b70342dad71ef308b38191",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-25",
+            "pass_": true,
+            "input_sha256": "37ad006179bab8fd1bc5113b0a956ba18d72ba6fb53856512370e7ccecfebfb6",
+            "expected_sha256": "03e79a1115f20729c1977c898317c486c54f0e94000f9dec48377b6cc90c3eda",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-26",
+            "pass_": true,
+            "input_sha256": "0e2f60c0fb9f9e6bc993a135682890cfc2012e6bca49b5f8c411a2273b3d3049",
+            "expected_sha256": "c67cfd6c344fc3636ee45fcfb8885e7336797f421df6f8c7601ca83c6d69f36c",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-27",
+            "pass_": true,
+            "input_sha256": "5211d523f511fda5355d0dfaf256548ee4af6f277551c3379d5e3919fb6dbfbd",
+            "expected_sha256": "13944968c74398c991d9a7241f40699eb7bc505b078c03f81dc3b2a52b392b36",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-28",
+            "pass_": true,
+            "input_sha256": "65fe6534140f41e4c0088a584b52bdf5edf5bcb24baafa0c6d09dfd8480e3eaa",
+            "expected_sha256": "dc14c727268f1b6e162008f2b988278df14e6ae5226a9f5e9e9ec8e16aa075c2",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-29",
+            "pass_": true,
+            "input_sha256": "b2d69903cc9a8b5a1efce50cb76976b7e1718ed306105449e97d6a9ac683fd79",
+            "expected_sha256": "282e314ead393b721c4266eb1879546c009b616fa5293b2713a93ca03938f450",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-30",
+            "pass_": true,
+            "input_sha256": "3bbfb8bc1750e5ab6082582fc5303c6a71b82fe48f3b6ae03f51dd4a3efafaaf",
+            "expected_sha256": "4ffd432ff51c088351b704fb65333cfd899b911163ca45c1ab542ee59f806bfb",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-31",
+            "pass_": true,
+            "input_sha256": "0c3b6fa7005880b01796ed681c8fddee5e2c18f4f1d43400d7e229de8e669412",
+            "expected_sha256": "b38d2cda69db6701108df38ebee2f20289721f69c5678e9d95dea5be22e001de",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-32",
+            "pass_": true,
+            "input_sha256": "2a76d7079783cabba1cc149776df45064a1da2ddc099f9b3df2cb1145b976abc",
+            "expected_sha256": "47e71204390dc6406c855f7ad60e39dbb47796d6ec539ac9fa05907f56ecaf37",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-33",
+            "pass_": true,
+            "input_sha256": "55a87d5f10d43f70fba4261fa246c2b0aaa7e794383191d76d488f84c00d6210",
+            "expected_sha256": "075c399d9e05ef96e9a6e5b0595d16a252b468984fa6db7dfabd1923da01cdc7",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-34",
+            "pass_": true,
+            "input_sha256": "fc3bcb82932d0e072c5b4803b3bf93e065efab736a1298077541624362439ebd",
+            "expected_sha256": "100fbdd5b06cefdffc26b400f045811da6b703f715ffc6cd8b1eab4353543a6c",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-35",
+            "pass_": true,
+            "input_sha256": "5d2325bb0368de4bc404134f11db2e38f799fea6e52ada335e2988e071f10a25",
+            "expected_sha256": "f23f3b346db2864ab8515319e3b7596276aaace1732997c468b610fdf2fc9ed8",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-36",
+            "pass_": true,
+            "input_sha256": "1a7cb82ac724f9786323e9298554697797c794bf8dd088fe814f20ee51948a53",
+            "expected_sha256": "51ffc7eac00e41081ca388bed862b67fdf90519c8cc9141636ea57d3227e7f23",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-37",
+            "pass_": true,
+            "input_sha256": "e4d8843f4c3cb1501897a3c715413d6f0ae45f2da2720992e0784cfcdb33567b",
+            "expected_sha256": "76b85f59d1c7470d0bd16ab8902745110543d157cc3eb5e2f56fd8813d5b9d65",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-38",
+            "pass_": true,
+            "input_sha256": "7465004cc6f18a4648cf14771a0429ef5e91362051e0935db038864389e453a5",
+            "expected_sha256": "c9df524b18da430d57d7022123c27a1b82a3d210ea49ccdc02d1a348296f72de",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-39",
+            "pass_": true,
+            "input_sha256": "d5c86a634d2fd5b01cb83a97366e2294a5b95d310e0796ac25a390ebcf20982e",
+            "expected_sha256": "db97e6d39fcf21f00122b91884c0daa08cfe1a92b49581e2435d04c82ad2eacc",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          }
+        ],
+        "pass_": true
+      },
+      {
+        "name": "clang-portable-checked",
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "compiler_sha256": "412bbe8c60571a1eb06f48fde89635033621caeb01a9b4ee76d46711bae8e932",
+        "source_sha256": "d869c8214d94e2d3f77559335fa99956857ca6bf5dac02f7429e4acb6e6b7d72",
+        "command": [
+          "/usr/bin/clang++-21",
+          "-std=c++23",
+          "-O2",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-U__SIZEOF_INT128__",
+          "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/tmp/sirkit-added-lc-optimization-20261115/fable-segtree/validation/clang-portable-checked.cpp",
+          "-o",
+          "/tmp/sirkit-added-lc-optimization-20261115/fable-segtree/validation/clang-portable-checked"
+        ],
+        "cases": [
+          {
+            "name": "official-sample0",
+            "pass_": true,
+            "input_sha256": "057f56e9aa6ba82a68106ace96ca31fdd73e6999b8e18f789fcba5e2c7f99f0b"
+          },
+          {
+            "name": "predecessor-0",
+            "pass_": true,
+            "input_sha256": "97186fef7ef9dcdb8b3bb718b8b62d7e58721f735b7abe3202f859899f93dba8",
+            "expected_sha256": "e0e06b08321b97ee62f69b9a6bc8ab09fec387bd1b0ee3771c225dc58f1f939d",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-1",
+            "pass_": true,
+            "input_sha256": "c5be537e2553f825126061eed5fd1c9459fc16e5a8dd05970414791bcfc52e3f",
+            "expected_sha256": "6d156a075ca27c41d8bdc4a2dbcd3d77dfa13ce8aa5e513642b2a956c29f0676",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-2",
+            "pass_": true,
+            "input_sha256": "8fea67390570fb8012bad1a90b220ec45e1590cf253dc65c40da04b3d86d3d7f",
+            "expected_sha256": "0a0eb3ea31a2ec2ec161a49c0363177f2b746a2d27400e7be0f5ba57fc7dcd7d",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-3",
+            "pass_": true,
+            "input_sha256": "23177148f9de0bc82bf1011319fe917e25a17ca3f0fb636c910d42602504b321",
+            "expected_sha256": "0172705075d771934726a7c76da9f2883680f7b5bbc040db9119cd4cfe08589f",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-4",
+            "pass_": true,
+            "input_sha256": "c81938c10bc8189460556e05d22a5263643638e1716f0cfdcb10b9180d0008b7",
+            "expected_sha256": "a78c4db81edb94dcf26e71aa2540adcb1aa9e0c4749dd1cac9d7f5601e55cce7",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-5",
+            "pass_": true,
+            "input_sha256": "8ed67383a9fb6023b7e5a9b0930599e831892f748ec36216c655a3789d35cb03",
+            "expected_sha256": "57b1c89bd7aa3984e800f59a692e95f93c95f118a0139a2a81321160db635d59",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-6",
+            "pass_": true,
+            "input_sha256": "37a502181278c479cddc28e395a52d20bb517c4e545f5c6805f22e87bbc1a2d2",
+            "expected_sha256": "c3baf6a9a20d9d7497488228a06fdf3cc8cc6c7f14e0168335ea3ca787d8e6d0",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-7",
+            "pass_": true,
+            "input_sha256": "6d37e948c8bb1c6cb02b8f78f29864a1ff9fd898165ef48feeebba1234164727",
+            "expected_sha256": "b8c9a06613ef6cfd789dde610bb64c1ece2567335982bec3aa1bfee04dedb4e5",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-8",
+            "pass_": true,
+            "input_sha256": "1362d6035f8c34b1b6e3a8e1440735b97048ab7f6a0a37202524269d0105e764",
+            "expected_sha256": "4edbd57fe39d9daa6bfcc18b25291ad54814740776dcaf3bdf4b125b164488e1",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-9",
+            "pass_": true,
+            "input_sha256": "b3571a663411a7bceb896618596db0dac13770a0a22b64039402b089f917ff73",
+            "expected_sha256": "187075609c6876dad822a6d57387b89f978af45a2e888fade5365f55a4e42498",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-10",
+            "pass_": true,
+            "input_sha256": "1e73b9190f37784d210bb9d11ab3b4e6e03d7a310514d9d106a2515cfa0d3d3f",
+            "expected_sha256": "3911bb904f78efe07742f42db0f1132e3e841b45ebcd36187bfa898001a7c015",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-11",
+            "pass_": true,
+            "input_sha256": "85c604c28cc42d9aac59f75aba5734bb391fe000404bd8c2d1d9b1aafc58cee4",
+            "expected_sha256": "0e46a538aad89a28a10258ce643047ff50f4b33428baf75eeb1be301dd2e3692",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-12",
+            "pass_": true,
+            "input_sha256": "69e13b4223188046deb05c31b65486d35492220a93e56ddf0a125caca40fd521",
+            "expected_sha256": "c9bd20203eb6ed2c4221694530f75f537389b150035c72e07ad45b95a26caef7",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-13",
+            "pass_": true,
+            "input_sha256": "813dbf85af0e60aa54b621b8fffb4b31c90c25e499dd0b3bc708b8ec22b17338",
+            "expected_sha256": "43966b855959d662a135dbd344574b92ebe7a3834d3b4923404dcaabe31bf4fc",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-14",
+            "pass_": true,
+            "input_sha256": "e0f80d93c82e2f93776437e1e39bfefc2822398755406fbadd928dfa85217bcb",
+            "expected_sha256": "787609a55ce2ca262ba24d2cc0c3216e07fc18fb81d58113f884c99e9de22dcf",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-15",
+            "pass_": true,
+            "input_sha256": "3567f869d4a25be25921b8fa9f21a140d812e0a0ba5d180890b476e4995f829d",
+            "expected_sha256": "94455f3000e575174c89701cad19fc73035950c723c802f0d303ca0d2bdc7f7c",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-16",
+            "pass_": true,
+            "input_sha256": "d3d7116ac03eb2d9e465c2ea45bf5546b7a04dad208af175bdf850c523222554",
+            "expected_sha256": "4380b63d544f4be223d6af5df7d04df38f2f05252c93e02eeb29e1b7f2b0e9d3",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-17",
+            "pass_": true,
+            "input_sha256": "b21acd28ea44df8cec95e4b36287b3ccfd120d4e823d3ba0cd668fc4fdc584af",
+            "expected_sha256": "8ce7f2989d4503ecfd4ab6a9848eee6ff1e96c3a9bf111a112dc316487bd889b",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-18",
+            "pass_": true,
+            "input_sha256": "91d15fa4726e422a1f90e662917ca2323c827c90b0e7d3b78c0676084481b871",
+            "expected_sha256": "72017440fe90ecdc9565b3bad0d5bc9a377df1b7228f66a79f6ed060a14ca441",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-19",
+            "pass_": true,
+            "input_sha256": "d45d3d8d2fc28628102b48a097b5ac4fe8c1264d5f30c957b086dad1bd21ccfc",
+            "expected_sha256": "bdf658ac54ae8e38c5c91cf6825da3d8c4e06afbffde7f64a7d145ecef90f435",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-20",
+            "pass_": true,
+            "input_sha256": "1dffe3f3f503d5e5844f7ee5eaa9ce3683f99dbc5312d54f02faa662cb857296",
+            "expected_sha256": "75641446d3613f3e29e4d4462b1c6c4bd40a0570d42d587079a17ed0a2c65218",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-21",
+            "pass_": true,
+            "input_sha256": "22263872318cc8f67dff1f99e15b8b56090c24c4ef48dd047eba6451c7b715de",
+            "expected_sha256": "4926795878b1a88f696bfc810dba90e60b2d5b94f5cc53eb7e7eb78bd285bb9f",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-22",
+            "pass_": true,
+            "input_sha256": "58e7ef75ebee69349f7bbfd543287f3ce7b4039b75f6e48874be698be502660c",
+            "expected_sha256": "5100a692627abbebeba3318bac8a82194dd815c40bda549a95ca23d5828f72c6",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-23",
+            "pass_": true,
+            "input_sha256": "f3e9f1a9bd53b7a4934f1531e13ca51e62d36801be74152cf4470f5ac3c6204d",
+            "expected_sha256": "d69b819d76c777d147168902ac1f0d651ef5e64015046360f7f9966f65211349",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-24",
+            "pass_": true,
+            "input_sha256": "5d783441dbea2e97063d33956ac8bc6a7bfe0dda3b028db7a0d36f442ca25f0c",
+            "expected_sha256": "759aa0745a32c6411d69e0cb8604f2480eaf6e29d9b70342dad71ef308b38191",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-25",
+            "pass_": true,
+            "input_sha256": "37ad006179bab8fd1bc5113b0a956ba18d72ba6fb53856512370e7ccecfebfb6",
+            "expected_sha256": "03e79a1115f20729c1977c898317c486c54f0e94000f9dec48377b6cc90c3eda",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-26",
+            "pass_": true,
+            "input_sha256": "0e2f60c0fb9f9e6bc993a135682890cfc2012e6bca49b5f8c411a2273b3d3049",
+            "expected_sha256": "c67cfd6c344fc3636ee45fcfb8885e7336797f421df6f8c7601ca83c6d69f36c",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-27",
+            "pass_": true,
+            "input_sha256": "5211d523f511fda5355d0dfaf256548ee4af6f277551c3379d5e3919fb6dbfbd",
+            "expected_sha256": "13944968c74398c991d9a7241f40699eb7bc505b078c03f81dc3b2a52b392b36",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-28",
+            "pass_": true,
+            "input_sha256": "65fe6534140f41e4c0088a584b52bdf5edf5bcb24baafa0c6d09dfd8480e3eaa",
+            "expected_sha256": "dc14c727268f1b6e162008f2b988278df14e6ae5226a9f5e9e9ec8e16aa075c2",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-29",
+            "pass_": true,
+            "input_sha256": "b2d69903cc9a8b5a1efce50cb76976b7e1718ed306105449e97d6a9ac683fd79",
+            "expected_sha256": "282e314ead393b721c4266eb1879546c009b616fa5293b2713a93ca03938f450",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-30",
+            "pass_": true,
+            "input_sha256": "3bbfb8bc1750e5ab6082582fc5303c6a71b82fe48f3b6ae03f51dd4a3efafaaf",
+            "expected_sha256": "4ffd432ff51c088351b704fb65333cfd899b911163ca45c1ab542ee59f806bfb",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-31",
+            "pass_": true,
+            "input_sha256": "0c3b6fa7005880b01796ed681c8fddee5e2c18f4f1d43400d7e229de8e669412",
+            "expected_sha256": "b38d2cda69db6701108df38ebee2f20289721f69c5678e9d95dea5be22e001de",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-32",
+            "pass_": true,
+            "input_sha256": "2a76d7079783cabba1cc149776df45064a1da2ddc099f9b3df2cb1145b976abc",
+            "expected_sha256": "47e71204390dc6406c855f7ad60e39dbb47796d6ec539ac9fa05907f56ecaf37",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-33",
+            "pass_": true,
+            "input_sha256": "55a87d5f10d43f70fba4261fa246c2b0aaa7e794383191d76d488f84c00d6210",
+            "expected_sha256": "075c399d9e05ef96e9a6e5b0595d16a252b468984fa6db7dfabd1923da01cdc7",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-34",
+            "pass_": true,
+            "input_sha256": "fc3bcb82932d0e072c5b4803b3bf93e065efab736a1298077541624362439ebd",
+            "expected_sha256": "100fbdd5b06cefdffc26b400f045811da6b703f715ffc6cd8b1eab4353543a6c",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-35",
+            "pass_": true,
+            "input_sha256": "5d2325bb0368de4bc404134f11db2e38f799fea6e52ada335e2988e071f10a25",
+            "expected_sha256": "f23f3b346db2864ab8515319e3b7596276aaace1732997c468b610fdf2fc9ed8",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-36",
+            "pass_": true,
+            "input_sha256": "1a7cb82ac724f9786323e9298554697797c794bf8dd088fe814f20ee51948a53",
+            "expected_sha256": "51ffc7eac00e41081ca388bed862b67fdf90519c8cc9141636ea57d3227e7f23",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-37",
+            "pass_": true,
+            "input_sha256": "e4d8843f4c3cb1501897a3c715413d6f0ae45f2da2720992e0784cfcdb33567b",
+            "expected_sha256": "76b85f59d1c7470d0bd16ab8902745110543d157cc3eb5e2f56fd8813d5b9d65",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-38",
+            "pass_": true,
+            "input_sha256": "7465004cc6f18a4648cf14771a0429ef5e91362051e0935db038864389e453a5",
+            "expected_sha256": "c9df524b18da430d57d7022123c27a1b82a3d210ea49ccdc02d1a348296f72de",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-39",
+            "pass_": true,
+            "input_sha256": "d5c86a634d2fd5b01cb83a97366e2294a5b95d310e0796ac25a390ebcf20982e",
+            "expected_sha256": "db97e6d39fcf21f00122b91884c0daa08cfe1a92b49581e2435d04c82ad2eacc",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          }
+        ],
+        "pass_": true
+      },
+      {
+        "name": "clang-native-skip",
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "compiler_sha256": "412bbe8c60571a1eb06f48fde89635033621caeb01a9b4ee76d46711bae8e932",
+        "source_sha256": "ef4c5f3c62f6532ed264e611e49d7d175ce6e0d1db393310623ce0a1ab3ba5b0",
+        "command": [
+          "/usr/bin/clang++-21",
+          "-std=c++23",
+          "-O2",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-march=native",
+          "/tmp/sirkit-added-lc-optimization-20261115/fable-segtree/validation/clang-native-skip.cpp",
+          "-o",
+          "/tmp/sirkit-added-lc-optimization-20261115/fable-segtree/validation/clang-native-skip"
+        ],
+        "cases": [
+          {
+            "name": "official-sample0",
+            "pass_": true,
+            "input_sha256": "057f56e9aa6ba82a68106ace96ca31fdd73e6999b8e18f789fcba5e2c7f99f0b"
+          },
+          {
+            "name": "predecessor-0",
+            "pass_": true,
+            "input_sha256": "97186fef7ef9dcdb8b3bb718b8b62d7e58721f735b7abe3202f859899f93dba8",
+            "expected_sha256": "e0e06b08321b97ee62f69b9a6bc8ab09fec387bd1b0ee3771c225dc58f1f939d",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-1",
+            "pass_": true,
+            "input_sha256": "c5be537e2553f825126061eed5fd1c9459fc16e5a8dd05970414791bcfc52e3f",
+            "expected_sha256": "6d156a075ca27c41d8bdc4a2dbcd3d77dfa13ce8aa5e513642b2a956c29f0676",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-2",
+            "pass_": true,
+            "input_sha256": "8fea67390570fb8012bad1a90b220ec45e1590cf253dc65c40da04b3d86d3d7f",
+            "expected_sha256": "0a0eb3ea31a2ec2ec161a49c0363177f2b746a2d27400e7be0f5ba57fc7dcd7d",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-3",
+            "pass_": true,
+            "input_sha256": "23177148f9de0bc82bf1011319fe917e25a17ca3f0fb636c910d42602504b321",
+            "expected_sha256": "0172705075d771934726a7c76da9f2883680f7b5bbc040db9119cd4cfe08589f",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-4",
+            "pass_": true,
+            "input_sha256": "c81938c10bc8189460556e05d22a5263643638e1716f0cfdcb10b9180d0008b7",
+            "expected_sha256": "a78c4db81edb94dcf26e71aa2540adcb1aa9e0c4749dd1cac9d7f5601e55cce7",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-5",
+            "pass_": true,
+            "input_sha256": "8ed67383a9fb6023b7e5a9b0930599e831892f748ec36216c655a3789d35cb03",
+            "expected_sha256": "57b1c89bd7aa3984e800f59a692e95f93c95f118a0139a2a81321160db635d59",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-6",
+            "pass_": true,
+            "input_sha256": "37a502181278c479cddc28e395a52d20bb517c4e545f5c6805f22e87bbc1a2d2",
+            "expected_sha256": "c3baf6a9a20d9d7497488228a06fdf3cc8cc6c7f14e0168335ea3ca787d8e6d0",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-7",
+            "pass_": true,
+            "input_sha256": "6d37e948c8bb1c6cb02b8f78f29864a1ff9fd898165ef48feeebba1234164727",
+            "expected_sha256": "b8c9a06613ef6cfd789dde610bb64c1ece2567335982bec3aa1bfee04dedb4e5",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-8",
+            "pass_": true,
+            "input_sha256": "1362d6035f8c34b1b6e3a8e1440735b97048ab7f6a0a37202524269d0105e764",
+            "expected_sha256": "4edbd57fe39d9daa6bfcc18b25291ad54814740776dcaf3bdf4b125b164488e1",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-9",
+            "pass_": true,
+            "input_sha256": "b3571a663411a7bceb896618596db0dac13770a0a22b64039402b089f917ff73",
+            "expected_sha256": "187075609c6876dad822a6d57387b89f978af45a2e888fade5365f55a4e42498",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-10",
+            "pass_": true,
+            "input_sha256": "1e73b9190f37784d210bb9d11ab3b4e6e03d7a310514d9d106a2515cfa0d3d3f",
+            "expected_sha256": "3911bb904f78efe07742f42db0f1132e3e841b45ebcd36187bfa898001a7c015",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-11",
+            "pass_": true,
+            "input_sha256": "85c604c28cc42d9aac59f75aba5734bb391fe000404bd8c2d1d9b1aafc58cee4",
+            "expected_sha256": "0e46a538aad89a28a10258ce643047ff50f4b33428baf75eeb1be301dd2e3692",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-12",
+            "pass_": true,
+            "input_sha256": "69e13b4223188046deb05c31b65486d35492220a93e56ddf0a125caca40fd521",
+            "expected_sha256": "c9bd20203eb6ed2c4221694530f75f537389b150035c72e07ad45b95a26caef7",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-13",
+            "pass_": true,
+            "input_sha256": "813dbf85af0e60aa54b621b8fffb4b31c90c25e499dd0b3bc708b8ec22b17338",
+            "expected_sha256": "43966b855959d662a135dbd344574b92ebe7a3834d3b4923404dcaabe31bf4fc",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-14",
+            "pass_": true,
+            "input_sha256": "e0f80d93c82e2f93776437e1e39bfefc2822398755406fbadd928dfa85217bcb",
+            "expected_sha256": "787609a55ce2ca262ba24d2cc0c3216e07fc18fb81d58113f884c99e9de22dcf",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-15",
+            "pass_": true,
+            "input_sha256": "3567f869d4a25be25921b8fa9f21a140d812e0a0ba5d180890b476e4995f829d",
+            "expected_sha256": "94455f3000e575174c89701cad19fc73035950c723c802f0d303ca0d2bdc7f7c",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-16",
+            "pass_": true,
+            "input_sha256": "d3d7116ac03eb2d9e465c2ea45bf5546b7a04dad208af175bdf850c523222554",
+            "expected_sha256": "4380b63d544f4be223d6af5df7d04df38f2f05252c93e02eeb29e1b7f2b0e9d3",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-17",
+            "pass_": true,
+            "input_sha256": "b21acd28ea44df8cec95e4b36287b3ccfd120d4e823d3ba0cd668fc4fdc584af",
+            "expected_sha256": "8ce7f2989d4503ecfd4ab6a9848eee6ff1e96c3a9bf111a112dc316487bd889b",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-18",
+            "pass_": true,
+            "input_sha256": "91d15fa4726e422a1f90e662917ca2323c827c90b0e7d3b78c0676084481b871",
+            "expected_sha256": "72017440fe90ecdc9565b3bad0d5bc9a377df1b7228f66a79f6ed060a14ca441",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-19",
+            "pass_": true,
+            "input_sha256": "d45d3d8d2fc28628102b48a097b5ac4fe8c1264d5f30c957b086dad1bd21ccfc",
+            "expected_sha256": "bdf658ac54ae8e38c5c91cf6825da3d8c4e06afbffde7f64a7d145ecef90f435",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-20",
+            "pass_": true,
+            "input_sha256": "1dffe3f3f503d5e5844f7ee5eaa9ce3683f99dbc5312d54f02faa662cb857296",
+            "expected_sha256": "75641446d3613f3e29e4d4462b1c6c4bd40a0570d42d587079a17ed0a2c65218",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-21",
+            "pass_": true,
+            "input_sha256": "22263872318cc8f67dff1f99e15b8b56090c24c4ef48dd047eba6451c7b715de",
+            "expected_sha256": "4926795878b1a88f696bfc810dba90e60b2d5b94f5cc53eb7e7eb78bd285bb9f",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-22",
+            "pass_": true,
+            "input_sha256": "58e7ef75ebee69349f7bbfd543287f3ce7b4039b75f6e48874be698be502660c",
+            "expected_sha256": "5100a692627abbebeba3318bac8a82194dd815c40bda549a95ca23d5828f72c6",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-23",
+            "pass_": true,
+            "input_sha256": "f3e9f1a9bd53b7a4934f1531e13ca51e62d36801be74152cf4470f5ac3c6204d",
+            "expected_sha256": "d69b819d76c777d147168902ac1f0d651ef5e64015046360f7f9966f65211349",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-24",
+            "pass_": true,
+            "input_sha256": "5d783441dbea2e97063d33956ac8bc6a7bfe0dda3b028db7a0d36f442ca25f0c",
+            "expected_sha256": "759aa0745a32c6411d69e0cb8604f2480eaf6e29d9b70342dad71ef308b38191",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-25",
+            "pass_": true,
+            "input_sha256": "37ad006179bab8fd1bc5113b0a956ba18d72ba6fb53856512370e7ccecfebfb6",
+            "expected_sha256": "03e79a1115f20729c1977c898317c486c54f0e94000f9dec48377b6cc90c3eda",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-26",
+            "pass_": true,
+            "input_sha256": "0e2f60c0fb9f9e6bc993a135682890cfc2012e6bca49b5f8c411a2273b3d3049",
+            "expected_sha256": "c67cfd6c344fc3636ee45fcfb8885e7336797f421df6f8c7601ca83c6d69f36c",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-27",
+            "pass_": true,
+            "input_sha256": "5211d523f511fda5355d0dfaf256548ee4af6f277551c3379d5e3919fb6dbfbd",
+            "expected_sha256": "13944968c74398c991d9a7241f40699eb7bc505b078c03f81dc3b2a52b392b36",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-28",
+            "pass_": true,
+            "input_sha256": "65fe6534140f41e4c0088a584b52bdf5edf5bcb24baafa0c6d09dfd8480e3eaa",
+            "expected_sha256": "dc14c727268f1b6e162008f2b988278df14e6ae5226a9f5e9e9ec8e16aa075c2",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-29",
+            "pass_": true,
+            "input_sha256": "b2d69903cc9a8b5a1efce50cb76976b7e1718ed306105449e97d6a9ac683fd79",
+            "expected_sha256": "282e314ead393b721c4266eb1879546c009b616fa5293b2713a93ca03938f450",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-30",
+            "pass_": true,
+            "input_sha256": "3bbfb8bc1750e5ab6082582fc5303c6a71b82fe48f3b6ae03f51dd4a3efafaaf",
+            "expected_sha256": "4ffd432ff51c088351b704fb65333cfd899b911163ca45c1ab542ee59f806bfb",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-31",
+            "pass_": true,
+            "input_sha256": "0c3b6fa7005880b01796ed681c8fddee5e2c18f4f1d43400d7e229de8e669412",
+            "expected_sha256": "b38d2cda69db6701108df38ebee2f20289721f69c5678e9d95dea5be22e001de",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-32",
+            "pass_": true,
+            "input_sha256": "2a76d7079783cabba1cc149776df45064a1da2ddc099f9b3df2cb1145b976abc",
+            "expected_sha256": "47e71204390dc6406c855f7ad60e39dbb47796d6ec539ac9fa05907f56ecaf37",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-33",
+            "pass_": true,
+            "input_sha256": "55a87d5f10d43f70fba4261fa246c2b0aaa7e794383191d76d488f84c00d6210",
+            "expected_sha256": "075c399d9e05ef96e9a6e5b0595d16a252b468984fa6db7dfabd1923da01cdc7",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-34",
+            "pass_": true,
+            "input_sha256": "fc3bcb82932d0e072c5b4803b3bf93e065efab736a1298077541624362439ebd",
+            "expected_sha256": "100fbdd5b06cefdffc26b400f045811da6b703f715ffc6cd8b1eab4353543a6c",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-35",
+            "pass_": true,
+            "input_sha256": "5d2325bb0368de4bc404134f11db2e38f799fea6e52ada335e2988e071f10a25",
+            "expected_sha256": "f23f3b346db2864ab8515319e3b7596276aaace1732997c468b610fdf2fc9ed8",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-36",
+            "pass_": true,
+            "input_sha256": "1a7cb82ac724f9786323e9298554697797c794bf8dd088fe814f20ee51948a53",
+            "expected_sha256": "51ffc7eac00e41081ca388bed862b67fdf90519c8cc9141636ea57d3227e7f23",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-37",
+            "pass_": true,
+            "input_sha256": "e4d8843f4c3cb1501897a3c715413d6f0ae45f2da2720992e0784cfcdb33567b",
+            "expected_sha256": "76b85f59d1c7470d0bd16ab8902745110543d157cc3eb5e2f56fd8813d5b9d65",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-38",
+            "pass_": true,
+            "input_sha256": "7465004cc6f18a4648cf14771a0429ef5e91362051e0935db038864389e453a5",
+            "expected_sha256": "c9df524b18da430d57d7022123c27a1b82a3d210ea49ccdc02d1a348296f72de",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-39",
+            "pass_": true,
+            "input_sha256": "d5c86a634d2fd5b01cb83a97366e2294a5b95d310e0796ac25a390ebcf20982e",
+            "expected_sha256": "db97e6d39fcf21f00122b91884c0daa08cfe1a92b49581e2435d04c82ad2eacc",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          }
+        ],
+        "pass_": true
+      },
+      {
+        "name": "clang-portable-skip",
+        "compiler": "Ubuntu clang version 21.1.8 (6ubuntu1)",
+        "compiler_sha256": "412bbe8c60571a1eb06f48fde89635033621caeb01a9b4ee76d46711bae8e932",
+        "source_sha256": "ef4c5f3c62f6532ed264e611e49d7d175ce6e0d1db393310623ce0a1ab3ba5b0",
+        "command": [
+          "/usr/bin/clang++-21",
+          "-std=c++23",
+          "-O2",
+          "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15",
+          "-U__SIZEOF_INT128__",
+          "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+          "-DSIRKIT_DISABLE_SIMD",
+          "/tmp/sirkit-added-lc-optimization-20261115/fable-segtree/validation/clang-portable-skip.cpp",
+          "-o",
+          "/tmp/sirkit-added-lc-optimization-20261115/fable-segtree/validation/clang-portable-skip"
+        ],
+        "cases": [
+          {
+            "name": "official-sample0",
+            "pass_": true,
+            "input_sha256": "057f56e9aa6ba82a68106ace96ca31fdd73e6999b8e18f789fcba5e2c7f99f0b"
+          },
+          {
+            "name": "predecessor-0",
+            "pass_": true,
+            "input_sha256": "97186fef7ef9dcdb8b3bb718b8b62d7e58721f735b7abe3202f859899f93dba8",
+            "expected_sha256": "e0e06b08321b97ee62f69b9a6bc8ab09fec387bd1b0ee3771c225dc58f1f939d",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-1",
+            "pass_": true,
+            "input_sha256": "c5be537e2553f825126061eed5fd1c9459fc16e5a8dd05970414791bcfc52e3f",
+            "expected_sha256": "6d156a075ca27c41d8bdc4a2dbcd3d77dfa13ce8aa5e513642b2a956c29f0676",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-2",
+            "pass_": true,
+            "input_sha256": "8fea67390570fb8012bad1a90b220ec45e1590cf253dc65c40da04b3d86d3d7f",
+            "expected_sha256": "0a0eb3ea31a2ec2ec161a49c0363177f2b746a2d27400e7be0f5ba57fc7dcd7d",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-3",
+            "pass_": true,
+            "input_sha256": "23177148f9de0bc82bf1011319fe917e25a17ca3f0fb636c910d42602504b321",
+            "expected_sha256": "0172705075d771934726a7c76da9f2883680f7b5bbc040db9119cd4cfe08589f",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-4",
+            "pass_": true,
+            "input_sha256": "c81938c10bc8189460556e05d22a5263643638e1716f0cfdcb10b9180d0008b7",
+            "expected_sha256": "a78c4db81edb94dcf26e71aa2540adcb1aa9e0c4749dd1cac9d7f5601e55cce7",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-5",
+            "pass_": true,
+            "input_sha256": "8ed67383a9fb6023b7e5a9b0930599e831892f748ec36216c655a3789d35cb03",
+            "expected_sha256": "57b1c89bd7aa3984e800f59a692e95f93c95f118a0139a2a81321160db635d59",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-6",
+            "pass_": true,
+            "input_sha256": "37a502181278c479cddc28e395a52d20bb517c4e545f5c6805f22e87bbc1a2d2",
+            "expected_sha256": "c3baf6a9a20d9d7497488228a06fdf3cc8cc6c7f14e0168335ea3ca787d8e6d0",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-7",
+            "pass_": true,
+            "input_sha256": "6d37e948c8bb1c6cb02b8f78f29864a1ff9fd898165ef48feeebba1234164727",
+            "expected_sha256": "b8c9a06613ef6cfd789dde610bb64c1ece2567335982bec3aa1bfee04dedb4e5",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-8",
+            "pass_": true,
+            "input_sha256": "1362d6035f8c34b1b6e3a8e1440735b97048ab7f6a0a37202524269d0105e764",
+            "expected_sha256": "4edbd57fe39d9daa6bfcc18b25291ad54814740776dcaf3bdf4b125b164488e1",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-9",
+            "pass_": true,
+            "input_sha256": "b3571a663411a7bceb896618596db0dac13770a0a22b64039402b089f917ff73",
+            "expected_sha256": "187075609c6876dad822a6d57387b89f978af45a2e888fade5365f55a4e42498",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-10",
+            "pass_": true,
+            "input_sha256": "1e73b9190f37784d210bb9d11ab3b4e6e03d7a310514d9d106a2515cfa0d3d3f",
+            "expected_sha256": "3911bb904f78efe07742f42db0f1132e3e841b45ebcd36187bfa898001a7c015",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-11",
+            "pass_": true,
+            "input_sha256": "85c604c28cc42d9aac59f75aba5734bb391fe000404bd8c2d1d9b1aafc58cee4",
+            "expected_sha256": "0e46a538aad89a28a10258ce643047ff50f4b33428baf75eeb1be301dd2e3692",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-12",
+            "pass_": true,
+            "input_sha256": "69e13b4223188046deb05c31b65486d35492220a93e56ddf0a125caca40fd521",
+            "expected_sha256": "c9bd20203eb6ed2c4221694530f75f537389b150035c72e07ad45b95a26caef7",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-13",
+            "pass_": true,
+            "input_sha256": "813dbf85af0e60aa54b621b8fffb4b31c90c25e499dd0b3bc708b8ec22b17338",
+            "expected_sha256": "43966b855959d662a135dbd344574b92ebe7a3834d3b4923404dcaabe31bf4fc",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-14",
+            "pass_": true,
+            "input_sha256": "e0f80d93c82e2f93776437e1e39bfefc2822398755406fbadd928dfa85217bcb",
+            "expected_sha256": "787609a55ce2ca262ba24d2cc0c3216e07fc18fb81d58113f884c99e9de22dcf",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-15",
+            "pass_": true,
+            "input_sha256": "3567f869d4a25be25921b8fa9f21a140d812e0a0ba5d180890b476e4995f829d",
+            "expected_sha256": "94455f3000e575174c89701cad19fc73035950c723c802f0d303ca0d2bdc7f7c",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-16",
+            "pass_": true,
+            "input_sha256": "d3d7116ac03eb2d9e465c2ea45bf5546b7a04dad208af175bdf850c523222554",
+            "expected_sha256": "4380b63d544f4be223d6af5df7d04df38f2f05252c93e02eeb29e1b7f2b0e9d3",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-17",
+            "pass_": true,
+            "input_sha256": "b21acd28ea44df8cec95e4b36287b3ccfd120d4e823d3ba0cd668fc4fdc584af",
+            "expected_sha256": "8ce7f2989d4503ecfd4ab6a9848eee6ff1e96c3a9bf111a112dc316487bd889b",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-18",
+            "pass_": true,
+            "input_sha256": "91d15fa4726e422a1f90e662917ca2323c827c90b0e7d3b78c0676084481b871",
+            "expected_sha256": "72017440fe90ecdc9565b3bad0d5bc9a377df1b7228f66a79f6ed060a14ca441",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-19",
+            "pass_": true,
+            "input_sha256": "d45d3d8d2fc28628102b48a097b5ac4fe8c1264d5f30c957b086dad1bd21ccfc",
+            "expected_sha256": "bdf658ac54ae8e38c5c91cf6825da3d8c4e06afbffde7f64a7d145ecef90f435",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-20",
+            "pass_": true,
+            "input_sha256": "1dffe3f3f503d5e5844f7ee5eaa9ce3683f99dbc5312d54f02faa662cb857296",
+            "expected_sha256": "75641446d3613f3e29e4d4462b1c6c4bd40a0570d42d587079a17ed0a2c65218",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-21",
+            "pass_": true,
+            "input_sha256": "22263872318cc8f67dff1f99e15b8b56090c24c4ef48dd047eba6451c7b715de",
+            "expected_sha256": "4926795878b1a88f696bfc810dba90e60b2d5b94f5cc53eb7e7eb78bd285bb9f",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-22",
+            "pass_": true,
+            "input_sha256": "58e7ef75ebee69349f7bbfd543287f3ce7b4039b75f6e48874be698be502660c",
+            "expected_sha256": "5100a692627abbebeba3318bac8a82194dd815c40bda549a95ca23d5828f72c6",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-23",
+            "pass_": true,
+            "input_sha256": "f3e9f1a9bd53b7a4934f1531e13ca51e62d36801be74152cf4470f5ac3c6204d",
+            "expected_sha256": "d69b819d76c777d147168902ac1f0d651ef5e64015046360f7f9966f65211349",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-24",
+            "pass_": true,
+            "input_sha256": "5d783441dbea2e97063d33956ac8bc6a7bfe0dda3b028db7a0d36f442ca25f0c",
+            "expected_sha256": "759aa0745a32c6411d69e0cb8604f2480eaf6e29d9b70342dad71ef308b38191",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-25",
+            "pass_": true,
+            "input_sha256": "37ad006179bab8fd1bc5113b0a956ba18d72ba6fb53856512370e7ccecfebfb6",
+            "expected_sha256": "03e79a1115f20729c1977c898317c486c54f0e94000f9dec48377b6cc90c3eda",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-26",
+            "pass_": true,
+            "input_sha256": "0e2f60c0fb9f9e6bc993a135682890cfc2012e6bca49b5f8c411a2273b3d3049",
+            "expected_sha256": "c67cfd6c344fc3636ee45fcfb8885e7336797f421df6f8c7601ca83c6d69f36c",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-27",
+            "pass_": true,
+            "input_sha256": "5211d523f511fda5355d0dfaf256548ee4af6f277551c3379d5e3919fb6dbfbd",
+            "expected_sha256": "13944968c74398c991d9a7241f40699eb7bc505b078c03f81dc3b2a52b392b36",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-28",
+            "pass_": true,
+            "input_sha256": "65fe6534140f41e4c0088a584b52bdf5edf5bcb24baafa0c6d09dfd8480e3eaa",
+            "expected_sha256": "dc14c727268f1b6e162008f2b988278df14e6ae5226a9f5e9e9ec8e16aa075c2",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-29",
+            "pass_": true,
+            "input_sha256": "b2d69903cc9a8b5a1efce50cb76976b7e1718ed306105449e97d6a9ac683fd79",
+            "expected_sha256": "282e314ead393b721c4266eb1879546c009b616fa5293b2713a93ca03938f450",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-30",
+            "pass_": true,
+            "input_sha256": "3bbfb8bc1750e5ab6082582fc5303c6a71b82fe48f3b6ae03f51dd4a3efafaaf",
+            "expected_sha256": "4ffd432ff51c088351b704fb65333cfd899b911163ca45c1ab542ee59f806bfb",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-31",
+            "pass_": true,
+            "input_sha256": "0c3b6fa7005880b01796ed681c8fddee5e2c18f4f1d43400d7e229de8e669412",
+            "expected_sha256": "b38d2cda69db6701108df38ebee2f20289721f69c5678e9d95dea5be22e001de",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-32",
+            "pass_": true,
+            "input_sha256": "2a76d7079783cabba1cc149776df45064a1da2ddc099f9b3df2cb1145b976abc",
+            "expected_sha256": "47e71204390dc6406c855f7ad60e39dbb47796d6ec539ac9fa05907f56ecaf37",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-33",
+            "pass_": true,
+            "input_sha256": "55a87d5f10d43f70fba4261fa246c2b0aaa7e794383191d76d488f84c00d6210",
+            "expected_sha256": "075c399d9e05ef96e9a6e5b0595d16a252b468984fa6db7dfabd1923da01cdc7",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-34",
+            "pass_": true,
+            "input_sha256": "fc3bcb82932d0e072c5b4803b3bf93e065efab736a1298077541624362439ebd",
+            "expected_sha256": "100fbdd5b06cefdffc26b400f045811da6b703f715ffc6cd8b1eab4353543a6c",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-35",
+            "pass_": true,
+            "input_sha256": "5d2325bb0368de4bc404134f11db2e38f799fea6e52ada335e2988e071f10a25",
+            "expected_sha256": "f23f3b346db2864ab8515319e3b7596276aaace1732997c468b610fdf2fc9ed8",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-36",
+            "pass_": true,
+            "input_sha256": "1a7cb82ac724f9786323e9298554697797c794bf8dd088fe814f20ee51948a53",
+            "expected_sha256": "51ffc7eac00e41081ca388bed862b67fdf90519c8cc9141636ea57d3227e7f23",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-37",
+            "pass_": true,
+            "input_sha256": "e4d8843f4c3cb1501897a3c715413d6f0ae45f2da2720992e0784cfcdb33567b",
+            "expected_sha256": "76b85f59d1c7470d0bd16ab8902745110543d157cc3eb5e2f56fd8813d5b9d65",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-38",
+            "pass_": true,
+            "input_sha256": "7465004cc6f18a4648cf14771a0429ef5e91362051e0935db038864389e453a5",
+            "expected_sha256": "c9df524b18da430d57d7022123c27a1b82a3d210ea49ccdc02d1a348296f72de",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          },
+          {
+            "name": "predecessor-39",
+            "pass_": true,
+            "input_sha256": "d5c86a634d2fd5b01cb83a97366e2294a5b95d310e0796ac25a390ebcf20982e",
+            "expected_sha256": "db97e6d39fcf21f00122b91884c0daa08cfe1a92b49581e2435d04c82ad2eacc",
+            "oracle": "Python boolean array full scan forwards/backwards"
+          }
+        ],
+        "pass_": true
+      }
+    ],
+    "maximum_records": [
+      {
+        "binary": "gcc-native-skip",
+        "profile": "predecessor-max-dense",
+        "pass_": true,
+        "input_sha256": "b731a8b81c0c1439498986b634ccddf69e1267f774a2e9914056662119589330"
+      },
+      {
+        "binary": "gcc-native-skip",
+        "profile": "predecessor-max-sparse",
+        "pass_": true,
+        "input_sha256": "37ddb2c56fc3b2b880c670b4991c0acdad6f7a807db997485dfb5bafd1632c78"
+      },
+      {
+        "binary": "gcc-native-skip",
+        "profile": "small-predecessor-0",
+        "pass_": true,
+        "input_sha256": "97186fef7ef9dcdb8b3bb718b8b62d7e58721f735b7abe3202f859899f93dba8"
+      },
+      {
+        "binary": "gcc-native-skip",
+        "profile": "predecessor-random-sparse",
+        "pass_": true,
+        "input_sha256": "888b09bf3c0002b61880adb02dd1d782898c86c96effed90e1bdae124fe16276"
+      },
+      {
+        "binary": "gcc-native-skip",
+        "profile": "predecessor-threshold-density",
+        "pass_": true,
+        "input_sha256": "99a3f18e556c5202027b70ea21e057cb08e5795fdf3024fa4c47560d35e81cb1"
+      },
+      {
+        "binary": "clang-native-skip",
+        "profile": "predecessor-max-dense",
+        "pass_": true,
+        "input_sha256": "b731a8b81c0c1439498986b634ccddf69e1267f774a2e9914056662119589330"
+      },
+      {
+        "binary": "clang-native-skip",
+        "profile": "predecessor-max-sparse",
+        "pass_": true,
+        "input_sha256": "37ddb2c56fc3b2b880c670b4991c0acdad6f7a807db997485dfb5bafd1632c78"
+      },
+      {
+        "binary": "clang-native-skip",
+        "profile": "small-predecessor-0",
+        "pass_": true,
+        "input_sha256": "97186fef7ef9dcdb8b3bb718b8b62d7e58721f735b7abe3202f859899f93dba8"
+      },
+      {
+        "binary": "clang-native-skip",
+        "profile": "predecessor-random-sparse",
+        "pass_": true,
+        "input_sha256": "888b09bf3c0002b61880adb02dd1d782898c86c96effed90e1bdae124fe16276"
+      },
+      {
+        "binary": "clang-native-skip",
+        "profile": "predecessor-threshold-density",
+        "pass_": true,
+        "input_sha256": "99a3f18e556c5202027b70ea21e057cb08e5795fdf3024fa4c47560d35e81cb1"
+      }
+    ]
+  },
+  "existing_codex_audits_or_stages_modified": false,
+  "online_submission_done": false,
+  "commit_done": false,
+  "local_evidence_zip": {
+    "path": "Audit/data/added-lc-fable-segtree-experiment-20261115.zip",
+    "sha256": "6298600602feb58099da3700113465e45522acf92a9467befbc787db14793578",
+    "tracked": false
+  }
+}

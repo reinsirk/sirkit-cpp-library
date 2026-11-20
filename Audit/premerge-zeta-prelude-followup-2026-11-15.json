@@ -1,0 +1,134 @@
+{
+  "format": 1,
+  "date": "2026-11-15",
+  "stage": "codex_fable_candidate_followup",
+  "status": "complete",
+  "id": "zeta_and_full",
+  "source_sha256": "a65a3c9482ded41003e581207cbf5a5a2e7a0ea0f431186725c63cc5427f487b",
+  "decision": "keep_current_reject_compiler_prelude_candidates",
+  "proposal_audit": {
+    "path": "Audit/premerge-fable-batch-26-2026-11-14.json",
+    "sha256": "11449078af9e8985938de27cf3078395405da8a7e87f5f2a83cfc7be43d21aa5"
+  },
+  "model_calls_performed": false,
+  "summary": "GCC15.2 whole-program and API-only 11-trial comparisons found no consistent improvement from O3, AVX2 or both. O3 regressed on alternating maximum input; AVX2 regressed on random maximum input; combined API-only timings regressed. All settings matched independent small references and large baseline output. No source changes or split/OR expansion.",
+  "compiler": {
+    "path": "/usr/bin/g++",
+    "realpath": "/usr/bin/x86_64-linux-gnu-g++-15",
+    "sha256": "e6718f7e0c7d057c3ff77b550c603da9bc4030e3ede3c053705acce1293dbe4d",
+    "version": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0\nCopyright (C) 2025 Free Software Foundation, Inc.\nThis is free software; see the source for copying conditions.  There is NO\nwarranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n",
+    "flags": [
+      "-std=c++23",
+      "-O2",
+      "-DNDEBUG"
+    ]
+  },
+  "cpu": 25,
+  "candidate_decisions": [
+    {
+      "variant": "O3",
+      "decision": "reject",
+      "reason": "Some full-program inputs improve slightly, but alternating maximum input regresses about5%; convolution API-only time stays approximately unchanged. A consistent whole-program benefit is not established.",
+      "source_sha256": "f7f7239416d6030fb067d38a39cdc5a450ae5002f4205cc7b08be53957828f49",
+      "patch_archive_member": "sources/O3.patch"
+    },
+    {
+      "variant": "avx2",
+      "decision": "reject",
+      "reason": "Maximum random input regresses about2.4%, near-mod improves slightly, and API-only timing does not improve. No consistent vectorization speedup.",
+      "source_sha256": "24f66ca06e831e427eeb8d1dbf8d7ebbc9c8a1e48341b1d659d09acce3ac28bf",
+      "patch_archive_member": "sources/avx2.patch"
+    },
+    {
+      "variant": "O3_avx2",
+      "decision": "reject",
+      "reason": "Near-mod full program improves, but other whole-program inputs do not consistently improve and large API-only cases regress around1.8-2.1%.",
+      "source_sha256": "2f37f0f7a9386700d599f0531ba498f2c9802847cd444c3a7369f4a2b3d20586",
+      "patch_archive_member": "sources/O3_avx2.patch"
+    }
+  ],
+  "heavy_aggregate": {
+    "whole_program": {
+      "O3": {
+        "geomean_ratio": 0.9971166882412398,
+        "worst_ratio": 1.0503829938839737,
+        "best_ratio": 0.973388848660391
+      },
+      "avx2": {
+        "geomean_ratio": 1.0044602281770136,
+        "worst_ratio": 1.0242289262333806,
+        "best_ratio": 0.9823672383747593
+      },
+      "O3_avx2": {
+        "geomean_ratio": 0.9945947199160908,
+        "worst_ratio": 1.0072664282018402,
+        "best_ratio": 0.9627396129505641
+      },
+      "baseline_control": {
+        "geomean_ratio": 0.9982432803199444,
+        "worst_ratio": 1.0033969989426559,
+        "best_ratio": 0.9914916727009413
+      }
+    },
+    "body_only": {
+      "O3": {
+        "geomean_ratio": 1.0033531740848396,
+        "worst_ratio": 1.0103769087394925,
+        "best_ratio": 0.9999361315485343
+      },
+      "avx2": {
+        "geomean_ratio": 1.0072933488940066,
+        "worst_ratio": 1.015040522571733,
+        "best_ratio": 1.0011611300227006
+      },
+      "O3_avx2": {
+        "geomean_ratio": 1.0213262049755598,
+        "worst_ratio": 1.0307466089988253,
+        "best_ratio": 1.0175125965472034
+      },
+      "baseline_control": {
+        "geomean_ratio": 1.0014678348204498,
+        "worst_ratio": 1.004552686523014,
+        "best_ratio": 1.000353110728016
+      }
+    }
+  },
+  "correctness": {
+    "status": "PASS",
+    "oracle": "Independent all pairs i,j accumulating a[i]*b[j] mod998244353 at i&j; O(4^exponent).",
+    "case_count": 40,
+    "whole_program_runs": 720,
+    "answer_values_checked": 22950,
+    "checked_skip_disabled": "GCC four settings each skip + checked + disabled + checked_disabled; Clang skip and checked_disabled.",
+    "clang_preprocessed_equal": {
+      "baseline": true,
+      "O3": true,
+      "avx2": true,
+      "O3_avx2": true
+    },
+    "local_cpu_avx2": true,
+    "large_outputs": "All four settings produce byte-identical outputs across all8 profiles. Zero profile additionally matches the independently known all-zero output."
+  },
+  "archive": {
+    "path": "Audit/data/premerge-zeta-resume-20261115.zip",
+    "sha256": "dad33ca5b3dfd488ef4789aadc60c774ce7921ce5c79c5faa1579870fa923644",
+    "local_only": true,
+    "decision_member": "decision.json",
+    "decision_sha256": "2ca10be936c266a04cde4ad08dd1b17442172ece32a1045275a4889a25146fb3",
+    "raw_performance_member": "performance.json",
+    "correctness_member": "correctness.json",
+    "reproduction_members": [
+      "run.py",
+      "finalize.py",
+      "README.md"
+    ]
+  },
+  "limitations": [
+    "Ratios describe current frozen source under GCC15.2 on local Intel14900K CPU25; they do not assert judge timings on AMD EPYC.",
+    "Small whole-process times include startup and noise; no small-input speedup claim.",
+    "Compiler/prelude changes affect complete program code generation; API-only instrumentation is a separate controlled benchmark and its ratios cannot be subtracted from whole-program ratios.",
+    "Baseline-control medians expose run-to-run variation. Measurements do not prove all possible workloads; current candidates are rejected due insufficient consistent gain and observed regressions."
+  ],
+  "online_submission_required": false,
+  "online_submission_reason": "No library/main/I/O/prelude change adopted; exact current source preserved."
+}

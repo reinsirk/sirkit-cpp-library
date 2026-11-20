@@ -10,6 +10,11 @@ from fast_hash_source import build as build_fast_hash
 ROOT = Path(__file__).resolve().parents[1]
 
 
+try:
+    from public_namespace import wrap_source, unwrap_source
+except ModuleNotFoundError:
+    from Scripts.public_namespace import wrap_source, unwrap_source
+
 def replace_once(text: str, old: str, new: str) -> str:
     if text.count(old) != 1:
         raise ValueError("通常版が変わっています。高速版の差分を見直してください: " + old[:100])
@@ -34,8 +39,8 @@ def binary_trie(source: str) -> str:
     source = replace_once(source, "std::make_unique<Node[]>(n)", "new Node[n]")
     source = replace_once(source, "std::make_unique_for_overwrite<InitialBlock>()", "new InitialBlock")
     source = replace_once(source, "    size_type virtual_nodes_ = 1;\n", "")
-    source = replace_once(source, '            if (id_capacity_ == NODES)\n                throw std::length_error("BinaryTrie: ID slot limit exceeded");\n', "")
-    source = replace_once(source, '            if (capacity_ == NODES)\n            {\n                throw std::length_error("BinaryTrie: node limit exceeded");\n            }\n', "")
+    source = replace_once(source, "            // 使用中のID枠は既存の葉に一対一で対応し、追加先の葉にはまだ枠がない。\n", "")
+    source = replace_once(source, "            // 二分トライの上限は、新しいsuffix全体を追加する前に確認済み。\n", "")
     source = replace_once(source, "        const bool recycled = free_id_slot_ != kNoSlot;", "        if (!initial_ids_ && kInitialIdSlots != 0) initial_ids_ = new IdSlot[kInitialIdSlots];\n        const bool recycled = free_id_slot_ != kNoSlot;")
     source = replace_once(source,
         "        if (!initial_ids_ && kInitialIdSlots != 0) initial_ids_ = new IdSlot[kInitialIdSlots];",
@@ -99,7 +104,7 @@ def fast_buffer_storage(source: str, replacements: list[tuple[str, str]]) -> str
     source = fast_introduction(source)
     for old, new in replacements:
         source = replace_once(source, old, new)
-    helper = (ROOT / "Fast/Source/Internal/Buffer.cpp").read_text()
+    helper = unwrap_source((ROOT / "Fast/Source/Internal/Buffer.cpp").read_text())
     helper = helper[helper.index("#include "):]
     index = source.index("#include ")
     return source[:index] + helper + "\n" + source[index:]
@@ -123,7 +128,7 @@ def lazy_segment(source: str) -> str:
 
 
 def helper_body(path):
-    text=path.read_text();return text[text.index('#include '):]
+    text=unwrap_source(path.read_text());return text[text.index('#include '):]
 
 def introduce(source,note):
     source=replace_once(source,'//\n// API一覧','// ドキュメント: https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/fast_variants.md\n//\n// API一覧')
@@ -135,7 +140,7 @@ def treap_unreleased(source,unreleased_helper):
     at=source.index('#include ');return source[:at]+helper_body(unreleased_helper)+'\n'+source[at:]
 
 def aho_compiler_storage(source,buffer_helper,unreleased_helper):
-    source=introduce(source,'// 速度優先版: GCCでは最後の主要配列の破棄・解放を省き、成長時はvectorとして旧領域を回収する。\n// Clangでは従来のFastBufferを使い、成長中の旧領域も保持する。最後の領域はプロセス終了まで累積する。\n// 格納型の破棄の副作用を必要としないこと。')
+    source=introduce(source,'// 速度優先版: GCCでは最後の主要配列の破棄・解放を省き、成長時はvectorとして旧領域を回収する。\n// Clang・MSVCではFastBufferを使い、成長中の旧領域も保持する。共通版は処理系に応じて選ぶ。\n// 解放を省く領域はプロセス終了まで残る。格納型の破棄の副作用を必要としないこと。')
     for old,new in [('std::vector<reinsirk::detail::AhoNode<Alphabet>> nodes_;','reinsirk::detail::AhoStorage<reinsirk::detail::AhoNode<Alphabet>> nodes_;'),('std::vector<reinsirk::detail::AhoPattern> patterns_;','reinsirk::detail::AhoStorage<reinsirk::detail::AhoPattern> patterns_;'),('std::vector<int> order_;','reinsirk::detail::AhoStorage<int> order_;'),('std::vector<int> order; order.reserve(nodes_.size()); order.push_back(0);','reinsirk::detail::AhoStorage<int> order; order.reserve(nodes_.size()); order.push_back(0);')]:source=replace_once(source,old,new)
     alias='''#ifndef SIRKIT_AHO_FAST_STORAGE_DEFINED
 #define SIRKIT_AHO_FAST_STORAGE_DEFINED
@@ -203,7 +208,7 @@ def generate(check: bool = False) -> None:
     records = []
     for name, build in builders.items():
         original = (ROOT / name).read_text()
-        content = build(original).encode()
+        content = wrap_source(build(unwrap_source(original))).encode()
         target = "Fast/Source/" + name
         output = ROOT / target
         if check:
@@ -217,7 +222,11 @@ def generate(check: bool = False) -> None:
                         "path": target, "sha256": hashlib.sha256(content).hexdigest()})
     for name in ("DataStructure/Node.cpp",):
         target = "Fast/Source/" + name
-        content = (ROOT / target).read_bytes()
+        content = wrap_source((ROOT / target).read_text()).encode()
+        if check and (ROOT / target).read_bytes() != content:
+            raise ValueError("Fast手書き版のnamespaceが未同期です: " + target)
+        if not check:
+            (ROOT / target).write_bytes(content)
         mapping[name] = target
         records.append({"source": name, "source_sha256": hashlib.sha256((ROOT / name).read_bytes()).hexdigest(),
                         "path": target, "sha256": hashlib.sha256(content).hexdigest(), "handwritten": True})

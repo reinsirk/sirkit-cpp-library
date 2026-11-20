@@ -6,6 +6,8 @@
 #include <iostream>
 #include <vector>
 
+using namespace sirkit;
+
 int main() {
     std::vector<std::int64_t> values{7, -4, 7, 0, -9};
     const auto order = RadixSortOrder(values);

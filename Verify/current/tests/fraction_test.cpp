@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 // Python fractionsによる独立期待値を標準入力から読み込む。
 // 生成: python3 Verify/current/tests/fraction_reference.py /tmp/fraction_cases.txt
 // 実行: ./fraction_test < /tmp/fraction_cases.txt
@@ -89,7 +91,7 @@ std::size_t gcd_reference_checks() {
         limit - 2, limit - 1, limit};
     std::size_t count = 0;
     const auto check = [&](std::uint64_t a, std::uint64_t b) {
-        require(reinsirk::detail::fraction_gcd(a,b) == std::gcd(a,b), "internal gcd mismatch");
+        require(::sirkit::detail::fraction_gcd(a,b) == std::gcd(a,b), "internal gcd mismatch");
         ++count;
     };
     for (auto a : values) for (auto b : values) check(a,b);

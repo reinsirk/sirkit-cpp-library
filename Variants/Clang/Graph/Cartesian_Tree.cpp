@@ -18,6 +18,8 @@
 // move元は空/root=-1。swapはO(1)。viewはbuild成功/clear/代入/所有権移動まで有効。
 // 番号/負数の検査はSKIP_RUNTIME_CHECKSで除外。添字容量保護は常に維持する。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <cstddef>
 #include <cstdint>
 #include <functional>
@@ -28,17 +30,24 @@
 #include <utility>
 #include <vector>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_CARTESIAN_TREE_DEFINED
 #define SIRKIT_CARTESIAN_TREE_DEFINED
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
+inline void CheckCartesianIndexCount(std::size_t size) {
+    if (size > static_cast<std::size_t>(std::numeric_limits<std::int32_t>::max()))
+        throw std::length_error("CartesianTree index capacity");
+}
+}
 class CartesianTree {
     std::vector<std::int32_t> parents_, left_, right_;
     std::int32_t root_ = -1;
-    void check_vertex(std::int32_t vertex) const {
+    void check_vertex([[maybe_unused]] std::int32_t vertex) const {
 #ifndef SKIP_RUNTIME_CHECKS
         if (vertex < 0 || static_cast<std::size_t>(vertex) >= size())
             throw std::out_of_range("CartesianTree vertex");
-#else
-        (void)vertex;
 #endif
     }
 public:
@@ -70,8 +79,7 @@ public:
     template<class T, std::size_t Extent, class Compare = std::less<>>
     void build(std::span<T, Extent> values, Compare&& compare = Compare{}) {
         const auto n = values.size();
-        if (n > static_cast<std::size_t>(std::numeric_limits<std::int32_t>::max()))
-            throw std::length_error("CartesianTree index capacity");
+        /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::CheckCartesianIndexCount(n);
         CartesianTree next;
         next.parents_.assign(n, -1); next.left_.assign(n, -1); next.right_.assign(n, -1);
         std::vector<std::int32_t> stack; stack.reserve(n);
@@ -114,3 +122,7 @@ public:
     void clear() noexcept { parents_.clear(); left_.clear(); right_.clear(); root_ = -1; }
 };
 #endif
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1

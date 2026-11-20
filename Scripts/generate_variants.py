@@ -12,6 +12,19 @@ import re
 
 ROOT = Path(__file__).resolve().parents[1]
 FOLDERS = ("Algorithm", "DataStructure", "Graph", "Math", "String", "Geometry", "Internal")
+TEMPLATES = ("temp.cpp", "temp2.cpp")
+COMPILER_MACROS = {
+    "Portable": {},
+    "GCC": {"__GNUC__": True, "__GNUG__": True, "__clang__": False, "__llvm__": False, "_MSC_VER": False},
+    # clang-clではGNU互換マクロがなく、_MSC_VERはClangのドライバで異なる。
+    "Clang": {"__clang__": True, "__llvm__": True},
+    "MSVC": {
+        "_MSC_VER": True,
+        **dict.fromkeys(("__GNUC__", "__GNUG__", "__clang__", "__llvm__", "__SIZEOF_INT128__",
+                         "__x86_64__", "__i386__", "__SSE2__", "__POPCNT__"), False),
+    },
+}
+COMPILERS = tuple(COMPILER_MACROS)
 
 
 @dataclass(frozen=True)
@@ -19,6 +32,11 @@ class Expression:
     value: bool | None
     text: str
 
+
+try:
+    from public_namespace import wrap_source, unwrap_source
+except ModuleNotFoundError:
+    from Scripts.public_namespace import wrap_source, unwrap_source
 
 def strip_outer(text: str) -> str:
     while text.startswith("(") and text.endswith(")"):
@@ -169,12 +187,16 @@ def parse(source: str) -> list:
 
 
 def specialize(source: str, compiler: str, fast: bool = False) -> str:
-    if compiler not in ("GCC", "Clang"):
-        raise ValueError("GCCまたはClangを指定してください")
-    known = {"__GNUC__": True, "__GNUG__": True, "__clang__": compiler == "Clang",
-             "__llvm__": compiler == "Clang"}
+    original = source
+    source = unwrap_source(source)
+    wrapped = original != source
+    if compiler not in COMPILER_MACROS:
+        raise ValueError("対応するコンパイラを指定してください: " + compiler)
+    known = dict(COMPILER_MACROS[compiler])
     if fast:
         known["SKIP_RUNTIME_CHECKS"] = True
+    if not known:
+        return original
     for name in known:
         updates = re.findall(r"^\s*#\s*(define|undef)\s+" + re.escape(name) + r"\b([^\n]*)", source, re.M)
         if name == "SKIP_RUNTIME_CHECKS" and all(kind == "define" and not value.strip() for kind, value in updates):
@@ -208,12 +230,20 @@ def specialize(source: str, compiler: str, fast: bool = False) -> str:
             if emitted:
                 pieces.append(node.ending)
         return "".join(pieces)
-    return render(parse(source))
+    result = render(parse(source))
+    return wrap_source(result) if wrapped else result
 
 
 def sources(root: Path) -> list[Path]:
     return sorted([path for folder in FOLDERS for path in (root / folder).rglob("*.cpp")]
-                  + [root / name for name in ("temp.cpp", "temp2.cpp")])
+                  + [root / name for name in TEMPLATES])
+
+
+def edition_source(source: str, relative: str, compiler: str, fast: bool) -> str:
+    if not fast and relative in TEMPLATES:
+        # 原本の競プロテンプレートは省略を既定とする。安全版は利用者が選ぶ。
+        source = re.sub(r"(?m)^#define[ \t]+SKIP_RUNTIME_CHECKS[ \t]*(?://[^\n]*)?\n", "", source)
+    return specialize(source, compiler, fast)
 
 
 def generate(root: Path, check: bool = False) -> dict:
@@ -223,11 +253,13 @@ def generate(root: Path, check: bool = False) -> dict:
     expected: set[str] = set()
     for path in sources(root):
         relative = path.relative_to(root).as_posix()
-        for compiler in ("GCC", "Clang"):
+        for compiler in COMPILERS:
             for fast in (False, True):
                 origin = root / overrides[relative] if fast and relative in overrides else path
-                data = specialize(origin.read_text(), compiler, fast)
-                note = "// 生成版: " + compiler + ("・速度優先（入力検査を除外）。" if fast else "用。")
+                origin_bytes = origin.read_bytes()
+                data = edition_source(origin_bytes.decode("utf-8"), relative, compiler, fast)
+                label = "コンパイラ共通" if compiler == "Portable" else compiler
+                note = "// 生成版: " + label + ("・速度優先（入力検査を除外）。" if fast else "用。")
                 if fast:
                     note += " 所有・解放の省略は各APIの前提を参照。"
                 lines = data.splitlines(keepends=True)
@@ -245,9 +277,9 @@ def generate(root: Path, check: bool = False) -> dict:
                     output.write_bytes(encoded)
                 manifest["entries"].append({"source": relative, "origin": origin.relative_to(root).as_posix(),
                                             "compiler": compiler, "fast": fast, "path": target,
-                                            "source_sha256": hashlib.sha256(origin.read_bytes()).hexdigest(),
+                                            "source_sha256": hashlib.sha256(origin_bytes).hexdigest(),
                                             "sha256": hashlib.sha256(encoded).hexdigest(), "bytes": len(encoded)})
-    for folder in ("Variants/GCC", "Variants/Clang", "Fast/GCC", "Fast/Clang"):
+    for folder in (f"{edition}/{compiler}" for edition in ("Variants", "Fast") for compiler in COMPILERS):
         candidates = [path for category in FOLDERS for path in (root / folder / category).rglob("*.cpp")]
         candidates.extend((root / folder).glob("*.cpp"))
         for output in candidates:

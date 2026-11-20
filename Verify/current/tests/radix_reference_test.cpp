@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #ifndef RADIX_HEADER
 #define RADIX_HEADER "../../../Algorithm/Radix_sort.cpp"
 #endif

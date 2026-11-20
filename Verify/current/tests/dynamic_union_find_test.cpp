@@ -1,9 +1,12 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 // 独立した成分ラベルとの照合、全int域、所有権、確保失敗を検査する。
 #ifndef DUF_SOURCE
 #define DUF_SOURCE "../../../DataStructure/dynamic-union-find.cpp"
 #endif
 #include DUF_SOURCE
+#include "internal_hash_capacity_checks.hpp"
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -393,6 +396,7 @@ static void groups_boundaries() {
 }
 
 int main() {
+    sirkit_internal_hash_capacity_test::run();
     const auto initial_live = live_allocations;
     boundary_and_ownership();
     groups_boundaries();

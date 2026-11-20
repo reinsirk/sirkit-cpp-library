@@ -19,10 +19,15 @@
 // BerlekampMassey(vector<uint32_t>): 法998244353で同じ係数を返す。入力は自動で正規化する。
 // 空列・全零列は{}。有限列の適合だけを保証し、未知の後続項や本来の漸化式の特定は保証しない。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <cstdint>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_RECURRENCE_COEFFICIENT_DEFINED
 #define SIRKIT_RECURRENCE_COEFFICIENT_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 struct RecurrenceMod998 {
     static constexpr std::uint32_t modulus=998244353;
     std::uint32_t value=0;
@@ -49,21 +54,70 @@ struct RecurrenceMod998 {
 }
 #endif
 
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <cstddef>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <cstdint>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <limits>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <stdexcept>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <type_traits>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <utility>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <vector>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_BERLEKAMP_MASSEY_DEFINED
 #define SIRKIT_BERLEKAMP_MASSEY_DEFINED
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
+inline std::size_t recurrence_size_plus_one(std::size_t size, std::size_t capacity,
+                                            const char* error) {
+    if (size >= capacity) throw std::length_error(error);
+    return size + 1;
+}
+}
 template<class T>
 std::vector<T> BerlekampMassey(const std::vector<T>& sequence) {
     static_assert(!std::is_integral_v<T>,"BerlekampMassey<T>: use an exact field type, or the uint32_t overload");
     if(sequence.empty())return {};
     const auto n=sequence.size();
-    if(n>=std::vector<T>{}.max_size())throw std::length_error("BerlekampMassey: size overflow");
+    (void)/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::recurrence_size_plus_one(n, sequence.max_size(), "BerlekampMassey: size overflow");
     std::vector<T> connection{T{1}},previous{T{1}};
     std::size_t order=0,shift=1;
     T previous_inverse{1};
@@ -75,8 +129,7 @@ std::vector<T> BerlekampMassey(const std::vector<T>& sequence) {
         const bool extend=order<=position/2;
         std::vector<T> saved;
         if(extend)saved=connection;
-        if(previous.size()>connection.max_size()-shift)
-            throw std::length_error("BerlekampMassey: size overflow");
+        // 最後の更新位置pで保存したpreviousはp+1項以下。shiftを足してもn+1項以下。
         if(connection.size()<previous.size()+shift)connection.resize(previous.size()+shift,T{0});
         for(std::size_t j=0;j<previous.size();++j)connection[j+shift]-=ratio*previous[j];
         if(extend) {
@@ -91,7 +144,7 @@ std::vector<T> BerlekampMassey(const std::vector<T>& sequence) {
     return result;
 }
 inline std::vector<std::uint32_t> BerlekampMassey(const std::vector<std::uint32_t>& sequence) {
-    using Field=reinsirk::detail::RecurrenceMod998;
+    using Field=/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::RecurrenceMod998;
     std::vector<Field> input;input.reserve(sequence.size());
     for(const auto value:sequence)input.emplace_back(value);
     const auto coefficients=BerlekampMassey(input);
@@ -101,6 +154,13 @@ inline std::vector<std::uint32_t> BerlekampMassey(const std::vector<std::uint32_
 }
 #endif
 
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
+
+
+namespace sirkit {}
+using namespace sirkit;
 
 // SPDX-License-Identifier: CC0-1.0
 // Verify I/O: Verify/current/common/fast_io.hpp

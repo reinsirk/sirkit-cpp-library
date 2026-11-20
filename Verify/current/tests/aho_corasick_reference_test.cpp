@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #ifndef AHO_HEADER
 #define AHO_HEADER "../../../String/Aho_Corasick.cpp"
 #endif
@@ -6,6 +8,7 @@
 #include AHO_HEADER
 #include <cstdio>
 #include <cstdlib>
+#include <limits>
 #include <map>
 #include <random>
 #include <string>
@@ -20,10 +23,38 @@ auto copied=a;copied.clear();check(a.match_counts(text)==counts);check(copied.em
  rejects<std::logic_error>([&]{moved.add("a");});rejects<std::out_of_range>([&]{(void)moved.step(-1,'a');});rejects<std::out_of_range>([&]{moved.count_total("z");});
 #endif
 }
+void boundaries() {
+ AhoCorasick<3,'a'> automaton;
+ const int id=automaton.add("bc");
+ automaton.build();
+ const auto matches=automaton.find_all("abcbc");
+ check(matches.size()==2);
+ check(matches[0]==AhoMatch{id,1,3}&&matches[1]==AhoMatch{id,3,5});
+ check(!(matches[0]==matches[1])&&!(matches[0]==AhoMatch{id+1,1,3}));
+ check(!(matches[0] == AhoMatch{id, 1, 4}));
+ const auto ids = static_cast<std::size_t>(std::numeric_limits<int>::max());
+ ::sirkit::detail::CheckAhoIndexLimit(ids - 1, "test");
+ rejects<std::length_error>([&] { ::sirkit::detail::CheckAhoIndexLimit(ids, "test"); });
+ const auto maximum = std::numeric_limits<std::uint64_t>::max();
+ check(::sirkit::detail::AddAhoMatchCount(maximum - 3, 3) == maximum);
+ rejects<std::overflow_error>([&] { (void)::sirkit::detail::AddAhoMatchCount(maximum - 3, 4); });
+ if constexpr (std::numeric_limits<std::size_t>::digits >= 64) {
+     ::sirkit::detail::CheckAhoCountTextSize(static_cast<std::size_t>(maximum - 1));
+     rejects<std::length_error>([&] { ::sirkit::detail::CheckAhoCountTextSize(static_cast<std::size_t>(maximum)); });
+ }
+ rejects<std::length_error>([&]{automaton.reserve_patterns(std::numeric_limits<std::size_t>::max());});
+#ifndef SKIP_RUNTIME_CHECKS
+ rejects<std::out_of_range>([&]{(void)automaton.failure(automaton.state_count());});
+ rejects<std::out_of_range>([&]{(void)automaton.pattern_state(-1);});
+ rejects<std::out_of_range>([&]{(void)automaton.pattern_length(id+1);});
+#endif
+ check(automaton.find_all("abcbc")==matches);
+}
 }
 int main(){std::mt19937_64 rng(0xa8c016a2026ULL);for(int rep=0;rep<600;++rep){std::vector<std::string>patterns(rng()%32);for(auto&s:patterns){s.resize(rng()%14);for(auto&c:s)c=static_cast<char>('a'+rng()%4);}std::string text(rng()%160,'a');for(auto&c:text)c=static_cast<char>('a'+rng()%4);test(patterns,text);}test({"","","a","aa","aaa","a","ba","caba"},"aaaacaba");test({},"");test({"a","aaaa","aaaaaaaa","a"},std::string(500,'a'));
 ByteAhoCorasick bytes;std::vector<std::string>p;std::string text(1024,' ');for(auto&c:text)c=static_cast<char>(rng()%256);for(int i=0;i<400;++i){const auto length=static_cast<std::size_t>(rng()%11);p.push_back(text.substr(rng()%(text.size()-length+1),length));bytes.add(p.back());}bytes.build();auto counts=bytes.match_counts(text);for(std::size_t id=0;id<p.size();++id){std::uint64_t expected=0;for(std::size_t at=0;at<=text.size();++at)expected+=p[id].size()<=text.size()-at&&text.compare(at,p[id].size(),p[id])==0;check(counts[id]==expected);}AhoCorasick<>empty;empty.reserve_nodes(100);empty.reserve_patterns(20);check(empty.node_capacity()>=100);rejects<std::length_error>([&]{empty.reserve_nodes(std::numeric_limits<std::size_t>::max());});
 #ifndef SKIP_RUNTIME_CHECKS
  rejects<std::logic_error>([&]{empty.count_total("a");});rejects<std::out_of_range>([&]{empty.add("z!");});
 #endif
+boundaries();
 std::printf("Aho reference checks=%ju\n",static_cast<std::uintmax_t>(checks));}

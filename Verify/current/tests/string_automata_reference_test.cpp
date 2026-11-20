@@ -1,11 +1,15 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #include <algorithm>
 #include <cassert>
 #include <cstdint>
 #include <iostream>
+#include <limits>
 #include <map>
 #include <random>
 #include <set>
+#include <stdexcept>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -47,6 +51,26 @@ int main(){std::mt19937_64 rng(7338821);std::uint64_t prefixes=0;
  std::string zeros(7,'\0');SuffixAutomaton<1,0> zs(zeros);PalindromicTree<1,0> zp(zeros);assert(zs.distinct_substring_count()==7&&zs.occurrences(zeros.substr(0,3))==5&&zp.occurrences(zeros.substr(0,3))==5);
  const std::string top_bytes("\xfe\xff\xfe",3);SuffixAutomaton<2,254> ts(top_bytes);PalindromicTree<2,254> tp(top_bytes);assert(ts.distinct_substring_count()==5&&tp.longest_suffix_length()==3);
  std::string high(35,static_cast<char>(255));SuffixAutomaton<1,255>hs(high);PalindromicTree<1,255>hp(high);assert(hs.distinct_substring_count()==35&&hs.occurrences(high.substr(0,7))==29&&hp.occurrences(high.substr(0,7))==29);assert(!hs.contains("a")&&!hp.contains("a"));
+ SuffixAutomaton<3,'a'> narrow("abac");
+ auto* self=&narrow;
+ narrow=*self;
+ narrow.reserve(narrow.size());
+ bool state_capacity_rejected=false;
+ try{narrow.reserve(static_cast<std::size_t>(std::numeric_limits<std::int32_t>::max())-1);}
+ catch(const std::length_error&){state_capacity_rejected=true;}
+ assert(state_capacity_rejected&&narrow.size()==4&&narrow.occurrences("a")==2);
+ assert(!narrow.contains("d")&&narrow.occurrences("d")==0);
+ const auto match=narrow.longest_common_substring("dadab");
+ assert(match.length==2&&match.first_start==0&&match.second_start==3);
+#ifndef SKIP_RUNTIME_CHECKS
+ bool invalid_high=false;
+ try{narrow.append(static_cast<std::uint8_t>('d'));}
+ catch(const std::invalid_argument&){invalid_high=true;}
+ assert(invalid_high&&narrow.size()==4&&narrow.contains("abac"));
+#endif
+ SuffixAutomaton<3,'a'> destination("c");
+ destination=std::move(narrow);
+ assert(narrow.empty()&&destination.size()==4&&destination.contains("abac"));
 #ifndef SKIP_RUNTIME_CHECKS
  bool caught=false;SuffixAutomaton<>s("ab");try{s.append(std::string_view("cdXef"));}catch(const std::invalid_argument&){caught=true;}assert(caught&&s.size()==4&&s.contains("abcd"));PalindromicTree<>p("ab");caught=false;try{p.append(std::string_view("cdXef"));}catch(const std::invalid_argument&){caught=true;}assert(caught&&p.text()=="abcd");caught=false;try{p.node_info(100);}catch(const std::out_of_range&){caught=true;}assert(caught);
 #endif

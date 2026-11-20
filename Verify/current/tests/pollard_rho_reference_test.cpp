@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #ifndef POLLARD_HEADER
 #define POLLARD_HEADER "../../../Math/Pollard_Rho.cpp"
 #endif
@@ -14,13 +16,24 @@
 #include <cstdio>
 #include <cstdlib>
 #include <random>
+#include <stdexcept>
+#include <vector>
 namespace {
 std::uint64_t checks=0;void check(bool x){++checks;if(!x)std::abort();}
 std::vector<std::uint64_t> trial(std::uint64_t n){std::vector<std::uint64_t>r;for(std::uint64_t d=2;d<=n/d;++d)while(n%d==0){r.push_back(d);n/=d;}if(n>1)r.push_back(n);return r;}
 template<class F>void zero_reject(F f){bool yes=false;try{f();}catch(const std::domain_error&){yes=true;}check(yes);}
 }
 int main(){std::mt19937_64 rng(0x42d617801031ULL);PollardRho64 engine;
-for(int rep=0;rep<50000;++rep){auto n=rng()|1;if(n==1)n=3;reinsirk::detail::FactorizationArithmetic arithmetic(n);const auto a=rng()%n,b=rng()%n;const auto ea=arithmetic.encode(a),eb=arithmetic.encode(b);
+check(sirkit::detail::factor_exact_square_root(0, 0) == 0);
+check(sirkit::detail::factor_exact_square_root(16, 3) == 4);
+check(sirkit::detail::factor_exact_square_root(24, 5) == 4);
+const auto max_divisors = std::vector<std::uint64_t>{}.max_size();
+check(sirkit::detail::factor_divisor_capacity(max_divisors / 2, 2, max_divisors) == max_divisors / 2 * 2);
+bool divisor_size_rejected = false;
+try { (void)sirkit::detail::factor_divisor_capacity(max_divisors / 2 + 1, 2, max_divisors); }
+catch (const std::length_error&) { divisor_size_rejected = true; }
+check(divisor_size_rejected);
+for(int rep=0;rep<50000;++rep){auto n=rng()|1;if(n==1)n=3;::sirkit::detail::FactorizationArithmetic arithmetic(n);const auto a=rng()%n,b=rng()%n;const auto ea=arithmetic.encode(a),eb=arithmetic.encode(b);
 #if defined(__SIZEOF_INT128__)
  const auto expected=static_cast<std::uint64_t>(static_cast<__uint128_t>(a)*b%n);check(arithmetic.multiply(arithmetic.multiply(ea,eb),1)==expected);check(arithmetic.add(ea,eb)==static_cast<std::uint64_t>((static_cast<__uint128_t>(ea)+eb)%n));
 #else

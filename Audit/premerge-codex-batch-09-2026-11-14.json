@@ -1,0 +1,210 @@
+{
+  "format": 1,
+  "date": "2026-11-14",
+  "stage": "codex",
+  "status": "complete",
+  "scope": "Current-source static review + independent/official sample validation + whole-program measurement; same-source control is not a speedup claim",
+  "entries": [
+    {
+      "id": "dynamic_fenwick_range",
+      "source_sha256": "06b482ae1c221d340bb4ec829246d0460e3e5fe73ff1dfe2157f0db7f8c5fafb",
+      "input_source_sha256": "06b482ae1c221d340bb4ec829246d0460e3e5fe73ff1dfe2157f0db7f8c5fafb",
+      "decision": {
+        "decision": "unchanged_no_new_candidate",
+        "current_review_reason": "各初期値addとオンラインsumの素直なAPI経路。adaptive tiny/dense/treeは整数だけ演算順をまとめ、一般Tの順序を維持。reserve案はcompiler間混在のため維持。",
+        "historical_candidate_decisions": []
+      },
+      "compiler": {
+        "path": "/usr/bin/g++",
+        "version": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0"
+      },
+      "flags_and_gcc_pragmas": [
+        "#pragma GCC optimize(\"O3\")"
+      ],
+      "timing_definition": "child process CPU time and wall time. Full process includes startup, main, I/O, library and teardown. Input generation/hash/reference checks excluded. No body-only speed claim.",
+      "same_source_control": true,
+      "measurement_record_sha256": "7cdd623c6cf5b78a795078d53e5fc9bf4816661bd908744a15b63f9d8ac4fcd9",
+      "official_sample_count": 1,
+      "profiles": [
+        {
+          "profile": "small",
+          "input_sha256": "ab25a41407d806a514e54a9956c8cf07949ab1389e12a5831f2beeb44afef863",
+          "validation": "independent_expected_and_baseline_output",
+          "expected_output_sha256": "d6e304cfc0682ed88042d050901d095b647b9ecf919529f3003d66bbbf966fad",
+          "median_cpu_seconds": {
+            "baseline": 0.0008049999999996116,
+            "current": 0.0008009999999984974
+          },
+          "measured_trials": 5,
+          "current_over_baseline": 0.9950310558992346,
+          "ratio_is_speedup_claim": false
+        },
+        {
+          "profile": "random",
+          "input_sha256": "b5c53ac122bcc6f4520c1271ab408e113f4288040ed5d126cf22e6543a6126d4",
+          "validation": "baseline_output_equality_only",
+          "expected_output_sha256": "568113184f377ede32cb650fe1bb35dd936ae4c00912603dd9a64d3c7825294f",
+          "median_cpu_seconds": {
+            "baseline": 0.010918999999999124,
+            "current": 0.01075099999999829
+          },
+          "measured_trials": 5,
+          "current_over_baseline": 0.9846139756387171,
+          "ratio_is_speedup_claim": false
+        },
+        {
+          "profile": "degenerate",
+          "input_sha256": "eb49d01f6c47cd96d04d5a796b5835c8448255d7f070efc54be239d48cfa58ac",
+          "validation": "baseline_output_equality_only",
+          "expected_output_sha256": "cae09d7375e467cfffcd2482ea4caa0dc7d756adf350dea79da206e54708a533",
+          "median_cpu_seconds": {
+            "baseline": 0.008499000000000256,
+            "current": 0.008442999999999978
+          },
+          "measured_trials": 5,
+          "current_over_baseline": 0.9934109895281472,
+          "ratio_is_speedup_claim": false
+        }
+      ]
+    },
+    {
+      "id": "dynamic_fenwick_rectangle",
+      "source_sha256": "65ad0587f742fed916ea419647e06cd2df57b7eee202198d739fc77d3b7b6085",
+      "input_source_sha256": "65ad0587f742fed916ea419647e06cd2df57b7eee202198d739fc77d3b7b6085",
+      "decision": {
+        "decision": "unchanged_no_new_candidate",
+        "current_review_reason": "外側行vectorとhead型の構成を確認。rows/座標reserveの旧1〜4%混在差では再採用しない。座標圧縮後の正しい空矩形・半開区間を保つ。",
+        "historical_candidate_decisions": []
+      },
+      "compiler": {
+        "path": "/usr/bin/g++",
+        "version": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0"
+      },
+      "flags_and_gcc_pragmas": [],
+      "timing_definition": "child process CPU time and wall time. Full process includes startup, main, I/O, library and teardown. Input generation/hash/reference checks excluded. No body-only speed claim.",
+      "same_source_control": true,
+      "measurement_record_sha256": "941acf89c8ebbeb8434d0f08c8bd825d5f25a1a0dc82092ec542d5eae3e20b1f",
+      "official_sample_count": 1,
+      "profiles": [
+        {
+          "profile": "small",
+          "input_sha256": "c4a439e456c2290a350a3b90e2e95f906c78840ba930d009c2fd5db32520c7fa",
+          "validation": "independent_expected_and_baseline_output",
+          "expected_output_sha256": "358e26b63e15f88d83d32c9860d3ed217290ae8803746607012a52ad251c8354",
+          "median_cpu_seconds": {
+            "baseline": 0.0008779999999986021,
+            "current": 0.0008689999999984543
+          },
+          "measured_trials": 5,
+          "current_over_baseline": 0.9897494305237333,
+          "ratio_is_speedup_claim": false
+        },
+        {
+          "profile": "random",
+          "input_sha256": "e16b36522057d1d3d79afa7b5753041439f1f53477bd5e700a1acb095decd8ab",
+          "validation": "baseline_output_equality_only",
+          "expected_output_sha256": "6d2b41cd1fca6dd5ddd381553bf8ef82f0916f5afac181e8125163daeda0f222",
+          "median_cpu_seconds": {
+            "baseline": 0.017080000000003537,
+            "current": 0.017130000000002532
+          },
+          "measured_trials": 5,
+          "current_over_baseline": 1.0029274004683246,
+          "ratio_is_speedup_claim": false
+        },
+        {
+          "profile": "degenerate",
+          "input_sha256": "4c8b91172db00341cf24b6807feee294dcfb9ec48950a4b019cdc12303ef468b",
+          "validation": "baseline_output_equality_only",
+          "expected_output_sha256": "b6526043d7842d8ab9cf685e8dd74620d770dffc50c2e1b13977fc579e90a48a",
+          "median_cpu_seconds": {
+            "baseline": 0.001819000000000015,
+            "current": 0.0017729999999989143
+          },
+          "measured_trials": 5,
+          "current_over_baseline": 0.9747113798784495,
+          "ratio_is_speedup_claim": false
+        }
+      ]
+    },
+    {
+      "id": "weighted_union_find",
+      "source_sha256": "20c4629c0e4a3915ad48dd5683ac0f96a58fda2f6156d99095a49f5f495b9910",
+      "input_source_sha256": "20c4629c0e4a3915ad48dd5683ac0f96a58fda2f6156d99095a49f5f495b9910",
+      "decision": {
+        "decision": "unchanged_no_new_candidate",
+        "current_review_reason": "modint型のconstrainとtry_diffを素直に使い、GCC固定path/Clang再帰の型別選択と重み演算順を保つ。",
+        "historical_candidate_decisions": []
+      },
+      "compiler": {
+        "path": "/usr/bin/g++",
+        "version": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0"
+      },
+      "flags_and_gcc_pragmas": [
+        "#pragma GCC optimize(\"O3\")"
+      ],
+      "timing_definition": "child process CPU time and wall time. Full process includes startup, main, I/O, library and teardown. Input generation/hash/reference checks excluded. No body-only speed claim.",
+      "same_source_control": true,
+      "measurement_record_sha256": "c8ef6188d2c2a18d6daab340b5ccbae7f2493ea7b01e8b642f540dae6d73c2c0",
+      "official_sample_count": 2,
+      "profiles": [
+        {
+          "profile": "small",
+          "input_sha256": "8fd7d57f379a700ea7b1f968fbc04343fae46a26d8ef71a53a0d9b3a0cfc21d3",
+          "validation": "independent_expected_and_baseline_output",
+          "expected_output_sha256": "9d304a4b98c3e00f8bd0dfb253f02101dad946d538d39807f1a9984e36b737c9",
+          "median_cpu_seconds": {
+            "baseline": 0.0007930000000060389,
+            "current": 0.0008019999999975269
+          },
+          "measured_trials": 5,
+          "current_over_baseline": 1.0113493064204533,
+          "ratio_is_speedup_claim": false
+        },
+        {
+          "profile": "random",
+          "input_sha256": "413b393c00b6b810b8a618204ce104783a98bf96a3cef500f74f3e6dcb5a29a6",
+          "validation": "baseline_output_equality_only",
+          "expected_output_sha256": "5bb8cf62d076a72bc3fc7ef0fc2f34399595857d43d0677bf6acbf9686f9001b",
+          "median_cpu_seconds": {
+            "baseline": 0.0061850000000021055,
+            "current": 0.006186999999993503
+          },
+          "measured_trials": 5,
+          "current_over_baseline": 1.0003233629735484,
+          "ratio_is_speedup_claim": false
+        },
+        {
+          "profile": "degenerate",
+          "input_sha256": "895b508f837dc48da9e2a9a09c0e366676ef615a9ae061316b741a1c8f0053b5",
+          "validation": "baseline_output_equality_only",
+          "expected_output_sha256": "be8c7e4aededcfa1ee13681765360e6c6889c6767c71491f5b7e4f342749b39c",
+          "median_cpu_seconds": {
+            "baseline": 0.003444000000002667,
+            "current": 0.0034740000000059723
+          },
+          "measured_trials": 5,
+          "current_over_baseline": 1.008710801394681,
+          "ratio_is_speedup_claim": false
+        }
+      ]
+    }
+  ],
+  "source_hashes": {
+    "DataStructure/dynamic-binary-indexed-tree.cpp": "1f8ebbefb54c3be51ca9d748e1564088ba5d2fa7a64b1edd64dbc5b473c2fa94",
+    "DataStructure/union_find_w.cpp": "e9aa280d3ca4fb0625d3af4561148783a78e1f4b9a69c779b26d7fd849f81a04",
+    "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab",
+    "Verify/current/drivers/dynamic_fenwick_range_main.cpp": "df8e15a56df0dce95b04c22ebc182480f38d9512f35b63e1a74e851b2f5a4d8f",
+    "Verify/current/drivers/dynamic_fenwick_rectangle_main.cpp": "6d9c9141f0e73b151e9eb2cc83b02d4fc7feefd47eb732f00fbe4e2accd51a93",
+    "Verify/current/drivers/weighted_union_find_potential_main.cpp": "918239c6779de3889687d870b8558bd5b954e9a50c1807edcfda02fbf1f94f55",
+    "Verify/current/vendor/atcoder/internal_math.hpp": "487416d11ce878d7785559a02c84f094529e39fa5cc593d4c45e91fc7da53f56",
+    "Verify/current/vendor/atcoder/internal_type_traits.hpp": "52c1c0d56535043c2b8f2f776d534fd8e931cf92a511d697fb56649cd4935000",
+    "Verify/current/vendor/atcoder/modint.hpp": "aef131053e67300be6def657f1ef1eb1c80ef2c92ffc8220d7be0cccab583318",
+    "Verify/current/submissions/dynamic_fenwick_range.cpp": "06b482ae1c221d340bb4ec829246d0460e3e5fe73ff1dfe2157f0db7f8c5fafb",
+    "Verify/current/submissions/dynamic_fenwick_rectangle.cpp": "65ad0587f742fed916ea419647e06cd2df57b7eee202198d739fc77d3b7b6085",
+    "Verify/current/submissions/weighted_union_find.cpp": "20c4629c0e4a3915ad48dd5683ac0f96a58fda2f6156d99095a49f5f495b9910"
+  },
+  "measurement_tools": "/tmp/sirkit-premerge-optimization-20261114/measurements",
+  "commit_or_push": false,
+  "online_status": "not_evaluated"
+}

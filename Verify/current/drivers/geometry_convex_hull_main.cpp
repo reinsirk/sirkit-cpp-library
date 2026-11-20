@@ -9,9 +9,9 @@ int main() {
     while (t--) {
         int n{};
         verify_in >> n;
-        std::vector<geo::PointI> points(n);
+        std::vector<::sirkit::geo::PointI> points(n);
         for (auto& p : points) verify_in >> p.x >> p.y;
-        const auto hull = geo::convex_hull(std::move(points));
+        const auto hull = ::sirkit::geo::convex_hull(std::move(points));
         verify_out << hull.size() << '\n';
         for (const auto& p : hull) verify_out << p.x << ' ' << p.y << '\n';
     }

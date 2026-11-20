@@ -3,7 +3,7 @@
 #pragma GCC optimize("O3", "unroll-loops")
 #endif
 // Verify: https://judge.yosupo.jp/problem/two_sat
-// Submission: https://judge.yosupo.jp/submission/416749
+// Submission: https://judge.yosupo.jp/submission/417263
 
 // Library: Graph/Two_SAT.cpp
 // SPDX-License-Identifier: CC0-1.0
@@ -23,6 +23,8 @@
 // reset(n=0): 制約を捨てn変数へ。swap(other): O(1)。コピーは独立所有、ムーブ元は空の未解決状態。
 // 入力検査はSKIP_RUNTIME_CHECKSで除く。answer()の返り値は独立したコピー。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -32,9 +34,12 @@
 #include <utility>
 #include <vector>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_TWO_SAT_SCC_DETAIL_DEFINED
 #define SIRKIT_TWO_SAT_SCC_DETAIL_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 // nは偶数、相補リテラルはvと(v^1)。Indexは総辺数を表現できる符号なし型。
 // 矛盾を検出したら{-1,{}}、成功時はトポロジカル順の成分番号を返す。
 template<class Index>
@@ -112,6 +117,7 @@ inline std::pair<int, std::vector<int>> two_sat_component_ids_index(
     for (auto& id : ids) id = count - 1 - id;
     return {count, std::move(ids)};
 }
+template<std::uint32_t kCompactEdgeLimit = std::numeric_limits<std::uint32_t>::max()>
 inline std::pair<int, std::vector<int>> two_sat_component_ids(
         int n, const std::vector<std::pair<int, int>>& edges) {
     // 無辺では各頂点が1成分。従来と同じ逆番号で返す。
@@ -121,9 +127,16 @@ inline std::pair<int, std::vector<int>> two_sat_component_ids(
         return {n, std::move(ids)};
     }
     // 辺数が収まる場合だけCSRの添字を32bitにする。
-    if (edges.size() <= std::numeric_limits<std::uint32_t>::max())
+    if (edges.size() <= kCompactEdgeLimit)
         return two_sat_component_ids_index<std::uint32_t>(n, edges);
     return two_sat_component_ids_index<std::size_t>(n, edges);
+}
+
+inline std::size_t TwoSatImplicationCapacity(std::size_t current, std::size_t capacity,
+                                            std::size_t extra, std::size_t maximum) {
+    if (extra > maximum - current) throw std::length_error("two_sat: too many clauses");
+    const auto grown = capacity <= maximum / 2 ? capacity * 2 : maximum;
+    return std::max(current + extra, std::max(std::min(std::size_t{4}, maximum), grown));
 }
 }
 #endif
@@ -144,12 +157,11 @@ class two_sat {
     }
 #endif
     void room(std::size_t extra) {
-        const auto maximum = implications_.max_size(), current = implications_.size();
-        if (extra > maximum - current) throw std::length_error("two_sat: too many clauses");
-        if (implications_.capacity() - current >= extra) return;
-        const auto capacity = implications_.capacity();
-        const auto grown = capacity <= maximum / 2 ? capacity * 2 : maximum;
-        implications_.reserve(std::max(current + extra, std::max(std::min(std::size_t{4}, maximum), grown)));
+        const auto current = implications_.size(), capacity = implications_.capacity();
+        if (capacity - current >= extra) return;
+        const auto target = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::TwoSatImplicationCapacity(
+            current, capacity, extra, implications_.max_size());
+        implications_.reserve(target);
     }
     void invalidate() noexcept {
 #ifndef SKIP_RUNTIME_CHECKS
@@ -208,7 +220,7 @@ public:
 #endif
             return true;
         }
-        const auto components = reinsirk::detail::two_sat_component_ids(2 * n_, implications_);
+        const auto components = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::two_sat_component_ids(2 * n_, implications_);
         if (components.first < 0) {
             answer_.clear();
 #ifndef SKIP_RUNTIME_CHECKS
@@ -246,6 +258,13 @@ public:
 };
 #endif
 
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
+
+
+namespace sirkit {}
+using namespace sirkit;
 
 // SPDX-License-Identifier: CC0-1.0
 // Verify I/O: Verify/current/common/fast_io.hpp

@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #ifndef HEADER
 #define HEADER "../../../DataStructure/Hash_map.cpp"
 #endif
@@ -16,6 +18,17 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
+
+#ifndef SKIP_RUNTIME_CHECKS
+namespace {
+using GenerationMap = sirkit::HashMap<int, int>;
+struct GenerationField { friend constexpr auto generation_field(GenerationField); };
+template<auto Member> struct GenerationAccess {
+    friend constexpr auto generation_field(GenerationField) { return Member; }
+};
+template struct GenerationAccess<&GenerationMap::generation_>;
+}
+#endif
 
 // 乗算後の上位ビットが全て1になり、衝突列が末尾から先頭へ回り込む。
 struct WrapHash {
@@ -97,9 +110,15 @@ int main() {
         assert(table.empty() && table.begin() == table.end());
     }
     throws<std::out_of_range>([&] { (void)table.at(-1); });
+    const auto& empty_view = table;
+    assert(empty_view.count(-1) == 0);
+    throws<std::out_of_range>([&] { (void)empty_view.at(-1); });
     throws<std::length_error>([&] { table.reserve(std::numeric_limits<std::size_t>::max()); });
     throws<std::length_error>([&] { table.rehash(std::numeric_limits<std::size_t>::max()); });
     assert(table.empty());
+    HashMap<int, int> never_inserted;
+    never_inserted.clear();
+    assert(never_inserted.empty() && never_inserted.capacity() == 0);
 
     // 自明な値でも、再配置中のハッシュ例外は元の要素・容量を保つ。
     HashMap<int, int, ThrowingWrapHash> risky;
@@ -176,15 +195,38 @@ int main() {
     const std::unordered_map<int, std::vector<int>> map_b{{4, {5}}, {1, {2, 3}}};
     assert(map_a == map_b && hash(map_a) == hash(map_b));
 #ifndef SKIP_RUNTIME_CHECKS
+    // 世代番号が一周した後にも、縮小前の添字は現在の表を越える。
+    GenerationMap wrapped_generation;
+    wrapped_generation.rehash(1024);
+    auto& generation = wrapped_generation.*generation_field(GenerationField{});
+    generation = 0;
+    const auto stale_end = wrapped_generation.end();
+    wrapped_generation.rehash(8);
+    generation = std::numeric_limits<std::size_t>::max();
+    wrapped_generation.clear();
+    assert(generation == 0);
+    throws<std::out_of_range>([&] { (void)*stale_end; });
+    throws<std::out_of_range>([&] { (void)wrapped_generation.erase(stale_end); });
     HashMap<int, int> checked;
     checked[1] = 4;
+    const HashMap<int, int>::iterator unbound;
+    throws<std::out_of_range>([&] { (void)*unbound; });
     throws<std::out_of_range>([&] { (void)*checked.end(); });
     throws<std::out_of_range>([&] { --checked.begin(); });
     HashMap<int, int> foreign;
+    assert(checked.end() != foreign.end());
     throws<std::out_of_range>([&] { checked.erase(foreign.end()); });
+    const auto erased = checked.begin();
+    checked.erase(erased, false);
+    throws<std::out_of_range>([&] { (void)*erased; });
+    throws<std::out_of_range>([&] { checked.erase(erased); });
+    checked[2] = 5;
     auto stale = checked.begin();
     checked.clear();
     throws<std::out_of_range>([&] { (void)*stale; });
+    throws<std::out_of_range>([&] { checked.erase(stale); });
 #endif
+    ::sirkit::detail::CheckHashCapacity(8, 8, "test");
+    throws<std::length_error>([] { ::sirkit::detail::CheckHashCapacity(16, 8, "test"); });
     std::cout << "PASS wraparound/tombstones, reverse iterators, generic keys, ownership/construction failure, capacity bounds\n";
 }

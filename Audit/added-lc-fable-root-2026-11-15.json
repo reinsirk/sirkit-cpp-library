@@ -1,0 +1,151 @@
+{
+  "format": 1,
+  "stage": "claude",
+  "date": "2026-11-15",
+  "model": "claude-fable-5-2",
+  "actual_models": [
+    "claude-fable-5-2"
+  ],
+  "completed_utc": "2026-11-15T13:50:15.280875+00:00",
+  "input_source_hashes": {
+    "/tmp/sirkit-added-lc-optimization-20261115/claude/root/preferred_fraction_rational_approximation.cpp": "929b76b137d7b133507da7ecb79ea2e6c9b16c6753b5d7475e26f3a218d4618c",
+    "Math/Fraction.cpp": "bd8937304f1b8eb555fff33da9e159874113199dfb80b88a4f64c37ed76814af",
+    "Verify/current/drivers/preferred_fraction_rational_approximation_main.cpp": "1d6325c9082d025dc5bd5f16ace105f29369819d16a004a203c086a0fe6d6914",
+    "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab",
+    "/tmp/sirkit-added-lc-optimization-20261115/claude/root/preferred_max_flow_bipartite.cpp": "af68c5f1ce38c9eeeca35fb4780f7a28c6eb3222a003765663080a243e50f626",
+    "Graph/Max_Flow.cpp": "b1eee30a5d93b695073f33f20b1108558b9d29639364c6c0550ebab2bfa4dbe6",
+    "Verify/current/drivers/preferred_max_flow_bipartite_main.cpp": "75d86696a8ad816db4484938aa7cb8d7f97b7d87eb0d53456cb53323ef444e60",
+    "/tmp/sirkit-added-lc-optimization-20261115/claude/root/policy.md": "9a8704bce27c66588dbbe301a20d8098fcc3b0183487a0571e1e8a362cc776f2"
+  },
+  "source_representation": "Canonical rendered snapshots hashed per ID. Complete unique library, driver and shared IO components supplied once below. Rendering concatenates library code, namespace sirkit{};using namespace sirkit;, expanded driver. Online prefix SKIP_RUNTIME_CHECKS and NDEBUG when assert. Optional GCC-only optimization pragma is specified in metadata.",
+  "codex_receipts": {
+    "preferred_fraction_rational_approximation": "Verify/optimization/stages/preferred_fraction_rational_approximation.codex.45e196b0c7d62f55854d0265ce1e431ad78bec872617ae764fa46710cd9b3a3c.json",
+    "preferred_max_flow_bipartite": "Verify/optimization/stages/preferred_max_flow_bipartite.codex.7d4d3c3c84e529ef42d1448195beec3565b141ffd01dcfaa5859c51692f6703c.json"
+  },
+  "review": {
+    "reviews": [
+      {
+        "id": "preferred_fraction_rational_approximation",
+        "source_sha256": "929b76b137d7b133507da7ecb79ea2e6c9b16c6753b5d7475e26f3a218d4618c",
+        "verdict": "candidate",
+        "reason": "机上確認のみ（未実行）で正しさの欠陥は見つからず。L=target*b-a、R=c-target*dの不変量は成立し、L*d+R*b=1。表現可能な場合は先に返るので、ループ内でL=RやL,R=0は起きず0除算もない。stepは常に1以上で、a+c<=limitかつb+d<=limitから上限側の商も1以上になり、必ず前進する。終了時は隣接分数の性質から両端が最良。ギャップ分子は1e18以下で、積と比較は128bit経路で安全。1/0上端、巨大target、微小targetも手計算で一致。追加の高速化候補は、stepが上限で切られた最終反復のギャップ更新省略（仮説、未測定）。"
+      },
+      {
+        "id": "preferred_max_flow_bipartite",
+        "source_sha256": "af68c5f1ce38c9eeeca35fb4780f7a28c6eb3222a003765663080a243e50f626",
+        "verdict": "candidate",
+        "reason": "机上確認のみ（未実行）で正しさの欠陥は見つからず。圧縮は辺に現れる頂点だけを残すため、マッチングは不変。出力はleft_ids/right_idsで元の番号へ正しく戻す。m=0ではn=2、limit=0となり0を出力。left+rightと8*mはintに収まる。first=left+rightは元辺IDの開始位置と一致。min(left,right)は正当な流量上限。levelsのsink到達時の早期returnと反復DFSのcursor更新・level無効化も整合。答えはflowとget_edgeが決めており、APIの被覆は実質的。追加の高速化候補は、辺を左頂点順に安定に並べてからadd_edgeする配置改善（仮説、未測定）。"
+      }
+    ],
+    "experiments": [
+      {
+        "ids": [
+          "preferred_fraction_rational_approximation"
+        ],
+        "hypothesis": "stepがlimit由来の上限以上になった反復では、更新後に必ずa+c>limitまたはb+d>limit（上側も同様）となりループが終わる。そのため、その回のギャップ更新（Fractionの乗算と加減算、複数回のgcd）は結果に使われない。各ケースの最終反復でこれを省けば、反復数の少ないsmall-limits型やrandom型で計算部分が数%以上縮む可能性がある。fibonacci型ではほぼ無変化の見込み。途中の反復ではFractionの比較・除算・floor・乗算・単項負・加減算が引き続き答えを決める。",
+        "minimal_patch": "下側分岐: `auto step=(left_gap/right_gap).floor(); auto cap=(limit-a)/c; if(d) cap=std::min(cap,(limit-b)/d); if(step>=cap){ a+=cap*c; b+=cap*d; break; } a+=step*c; b+=step*d; left_gap += -(right_gap*Fraction(step));`。上側分岐も同様: `auto cap=(limit-d)/b; if(a) cap=std::min(cap,(limit-c)/a); if(step>=cap){ c+=cap*a; d+=cap*b; break; } c+=step*a; d+=step*b; right_gap -= left_gap*Fraction(step);`。ライブラリ本体は変更しない。",
+        "required_validation": "独立参照（整数のみのStern–Brocotまたは全探索）と、小さいlimitの全列挙およびランダム・境界（N=1、x/y極大・極小、1/0上端、表現可能）で出力を完全一致で照合。checked/skip、int128/portable、gcc/clangでビルド。既存4フィクスチャで現行929b76…と同条件のA/B交互測定を行い、fraction-exactとfraction-fibonacciが悪化しないことを確認。"
+      },
+      {
+        "ids": [
+          "preferred_max_flow_bipartite"
+        ],
+        "hypothesis": "入力順のままadd_edgeすると、各頂点の隣接vectorの再確保がランダムな順に起き、左頂点の隣接配列がヒープ上に散らばる。辺を左頂点番号で安定に計数ソートしてから追加すれば、左頂点の隣接配列がsource隣接の走査順とほぼ同じ順にメモリへ並ぶ。BFS/DFSのキャッシュミスが減り、位相数の多いmatching-randomなどで短縮する可能性がある。計数ソートはO(L+M)で、perfect/cycleでは小さな負担になり得る。出力はedge.from/edge.toから得るのでID対応表は不要。出力される辺の順とマッチング自体は変わり得るが、どの最大マッチングも正答。flowとget_edgeが答えを決める点は変わらない。",
+        "minimal_patch": "非圧縮時も`input`へ全辺を読む。圧縮時は添字変換後の(from,to)を`input`へ書き戻す。その後、fromをキーに計数ソート（`std::vector<int> head(left+1)`で度数の累積を取り、`std::vector<std::pair<int,int>> ordered(m)`へ安定配置）し、`for (auto [f,t] : ordered) network.add_edge(f, left+t, 1);`とする。出力ループは現行のまま（first+iのget_edgeからfrom/toを復元）。source/sink辺の追加順とライブラリ本体は変更しない。",
+        "required_validation": "出力が変わるため、バイト一致ではなく検査器で照合する（マッチング数が独立参照の最大値と一致、各辺が入力に存在、端点の重複なし）。既存129ケースとm=0、圧縮境界L+R=8M前後、片側1頂点を含める。checked/skip、gcc/clangでビルド。matching-perfect/cycle/dense/sparse/skew/empty/random/long-augmentで現行af68c5…と同条件のA/B交互測定を9反復以上行う。perfect/cycleの悪化が対照のばらつき内で、randomに安定した改善がある場合のみ採用。"
+      }
+    ]
+  },
+  "resolved_records": [
+    {
+      "id": "preferred_fraction_rational_approximation",
+      "input_source_sha256": "929b76b137d7b133507da7ecb79ea2e6c9b16c6753b5d7475e26f3a218d4618c",
+      "source_sha256": "86f60db4f38320f9dbcea3cdb46c4fd3657c00b3b8e039df0905256def379c08",
+      "resolution_evidence": [
+        "Audit/added-lc-fable-fraction-experiment-2026-11-15.json"
+      ],
+      "review": {
+        "id": "preferred_fraction_rational_approximation",
+        "source_sha256": "929b76b137d7b133507da7ecb79ea2e6c9b16c6753b5d7475e26f3a218d4618c",
+        "verdict": "candidate",
+        "reason": "机上確認のみ（未実行）で正しさの欠陥は見つからず。L=target*b-a、R=c-target*dの不変量は成立し、L*d+R*b=1。表現可能な場合は先に返るので、ループ内でL=RやL,R=0は起きず0除算もない。stepは常に1以上で、a+c<=limitかつb+d<=limitから上限側の商も1以上になり、必ず前進する。終了時は隣接分数の性質から両端が最良。ギャップ分子は1e18以下で、積と比較は128bit経路で安全。1/0上端、巨大target、微小targetも手計算で一致。追加の高速化候補は、stepが上限で切られた最終反復のギャップ更新省略（仮説、未測定）。"
+      }
+    },
+    {
+      "id": "preferred_max_flow_bipartite",
+      "input_source_sha256": "af68c5f1ce38c9eeeca35fb4780f7a28c6eb3222a003765663080a243e50f626",
+      "source_sha256": "af68c5f1ce38c9eeeca35fb4780f7a28c6eb3222a003765663080a243e50f626",
+      "resolution_evidence": [
+        "Audit/added-lc-fable-matching-experiment-2026-11-15.json"
+      ],
+      "review": {
+        "id": "preferred_max_flow_bipartite",
+        "source_sha256": "af68c5f1ce38c9eeeca35fb4780f7a28c6eb3222a003765663080a243e50f626",
+        "verdict": "candidate",
+        "reason": "机上確認のみ（未実行）で正しさの欠陥は見つからず。圧縮は辺に現れる頂点だけを残すため、マッチングは不変。出力はleft_ids/right_idsで元の番号へ正しく戻す。m=0ではn=2、limit=0となり0を出力。left+rightと8*mはintに収まる。first=left+rightは元辺IDの開始位置と一致。min(left,right)は正当な流量上限。levelsのsink到達時の早期returnと反復DFSのcursor更新・level無効化も整合。答えはflowとget_edgeが決めており、APIの被覆は実質的。追加の高速化候補は、辺を左頂点順に安定に並べてからadd_edgeする配置改善（仮説、未測定）。"
+      }
+    }
+  ],
+  "resolution_evidence_sha256": {
+    "Audit/added-lc-fable-fraction-experiment-2026-11-15.json": "aeb309ebcf1ccf1c7fe8656f053436cebac0fced97b86f69e03f05e02d8f70f5",
+    "Audit/added-lc-fable-matching-experiment-2026-11-15.json": "3ad330e6285de982b9d17310b9f82bd31901b896441f0d3d8b45485aad617673"
+  },
+  "prompt_sha256": "734fd098f402dab5240b5881bfef3b271283f579e257f5d7fd62f92385af2b15",
+  "response_sha256": "2d260f2c1f8d7fe5688ad6bfcabf5c4771185afc16f9de788ca56d845db6e3c3",
+  "model_usage": {
+    "claude-fable-5-2": {
+      "inputTokens": 2,
+      "outputTokens": 8978,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 46821,
+      "webSearchRequests": 0,
+      "costUSD": 1.108272,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 6835,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 46821,
+      "canonicalModel": "claude-fable-5-2",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "usage_after": {
+    "checked_utc": "2026-11-15T13:50:15.721631+00:00",
+    "authorized_email_matches": true,
+    "http_status": 200,
+    "inference_executed": false,
+    "windows": {
+      "five_hour": {
+        "utilization": 12.0,
+        "resets_at": "2026-11-15T18:40:00.580543+00:00"
+      },
+      "seven_day": {
+        "utilization": 24.0,
+        "resets_at": "2026-11-21T09:00:00.580562+00:00"
+      },
+      "seven_day_breakdown": {},
+      "limit_0": {
+        "kind": "session",
+        "model": null,
+        "utilization": 12,
+        "resets_at": "2026-11-15T18:40:00.580543+00:00"
+      },
+      "limit_1": {
+        "kind": "weekly_all",
+        "model": null,
+        "utilization": 24,
+        "resets_at": "2026-11-21T09:00:00.580562+00:00"
+      },
+      "limit_2": {
+        "kind": "weekly_scoped",
+        "model": "Fable",
+        "utilization": 48,
+        "resets_at": "2026-11-21T09:00:00.580839+00:00"
+      }
+    },
+    "extra_usage_enabled": false
+  },
+  "limits": "Fable performed static review; root/agents independently ran listed experiments and validation. Online AC and online fastest are not inferred.",
+  "local_raw_archive": "Audit/data/added-lc-optimization-20261115.zip"
+}

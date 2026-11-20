@@ -1,0 +1,109 @@
+{
+  "format": 1,
+  "date": "2026-11-15",
+  "stage": "claude",
+  "model": "claude-fable-5-2",
+  "actual_models": [
+    "claude-fable-5-2"
+  ],
+  "completed_utc": "2026-11-15T07:14:35.030674+00:00",
+  "source_hashes": {
+    "DataStructure/Wavelet_Matrix.cpp": "adebb5a890da13843a5730df6efd15ad477a8819308be1008f27b801a0804500",
+    "Verify/current/common/fast_io.hpp": "87641ba841cb2c15df2886c1289b45df20c6925cb6cf78506d505fa7a70f2aab",
+    "Verify/current/drivers/wavelet_kth_main.cpp": "a1a16532d28d5b69e7abee5fae326847ce41e651fe1beeb9c020a4ab1c13735f",
+    "Verify/current/drivers/wavelet_frequency_main.cpp": "7571e9729ca30db1e4eab5bce7b2adb0622fca9719df3d96a2331b7d8d41866e",
+    "DataStructure/rollback-union-findw.cpp": "38ac061e08952ac8fc2252e73616c54fb606913f75822232df426a748059d6bd",
+    "Verify/current/drivers/rollback_weighted_union_find_persistent_main.cpp": "10fdf545716b0a7f9f521aed69d748ebe6c632ad8d397fb31d3890765fa99535",
+    "Verify/current/submissions/wavelet_kth.cpp": "ffbefcf65eac359c7af14171da1e1c4a30496cb050d1253172db25f1c12f6b36",
+    "Verify/current/submissions/wavelet_frequency.cpp": "3ad6eb2759a816f37606fc3a98240a3da9dc78c86f0dec857f4ed9db07d86832",
+    "Verify/current/submissions/rollback_weighted_union_find_rollback.cpp": "da43f48fb757a20fd02dcd2c52d3061839cedfeb517ac753d618c13f726f01aa",
+    "AGENTS.md": "f4cdb9332d66307604443358b5ae5d087e609462e25303cab013e3fdc813a569"
+  },
+  "codex_receipts": {
+    "wavelet_kth": "Verify/optimization/stages/wavelet_kth.codex.0b0970e5bc4598bbeebba9f81cfb208d89c1ed44b185534cafd3e62b87accffb.json",
+    "wavelet_frequency": "Verify/optimization/stages/wavelet_frequency.codex.a50ffe15837fe293c74d0b11f92cfde33df62c0c12572534846a7e511b85a311.json",
+    "rollback_weighted_union_find_rollback": "Verify/optimization/stages/rollback_weighted_union_find_rollback.codex.b71f27695ee76d23ab0d582aaf698af96c560147c3d027a4879a5354bdf160e9.json"
+  },
+  "review": {
+    "reviews": [
+      {
+        "id": "wavelet_kth",
+        "source_sha256": "ffbefcf65eac359c7af14171da1e1c4a30496cb050d1253172db25f1c12f6b36",
+        "verdict": "keep",
+        "reason": "静的確認のみ（未実行）。a<=1e9はuint32に収まり、0<=l<r<=N・0<=k<r-lの下で検査省略時のkth_smallestと番兵付き整数読み取りに未定義動作は見当たらず、全値同一（bits_=0）でもbase_を返す。Codexの測定でuint32化は確認ラウンドで約1〜2%改善しており、N=2e5ではrank表がキャッシュに収まるため、追加で試す価値のある具体案はない。"
+      },
+      {
+        "id": "wavelet_frequency",
+        "source_sha256": "3ad6eb2759a816f37606fc3a98240a3da9dc78c86f0dec857f4ed9db07d86832",
+        "verdict": "keep",
+        "reason": "静的確認のみ（未実行）。N=0、Q=0、空区間l==r、列の値域外のxはいずれもrankの早期returnで0になり、levels_を参照しない。Clangの一部プロファイルでint32が有利な点はCodexが記録済みで、提出先GCCでのuint32選択を覆す新しい根拠はない。"
+      },
+      {
+        "id": "rollback_weighted_union_find_rollback",
+        "source_sha256": "da43f48fb757a20fd02dcd2c52d3061839cedfeb517ac753d618c13f726f01aa",
+        "verdict": "keep",
+        "reason": "静的確認のみ（未実行）。u<N<=2e5とtype∈{0,1}からtype<<31のパックは可逆で、k+1<iなのでheadリストの構築も安全。退出フレームを子より先に積むためrollback順は正しく、子のないtype0の省略、u==v時の履歴1件、type1でのvへの答え上書き（子は親のvを読まない）も問題ない。Codexの測定では大規模11形状すべてで改善しており、追加実験は不要と判断する。"
+      }
+    ],
+    "experiments": []
+  },
+  "usage_after": {
+    "checked_utc": "2026-11-15T07:14:35.360953+00:00",
+    "authorized_email_matches": true,
+    "http_status": 200,
+    "inference_executed": false,
+    "windows": {
+      "five_hour": {
+        "utilization": 17.0,
+        "resets_at": "2026-11-15T12:00:00.268808+00:00"
+      },
+      "seven_day": {
+        "utilization": 17.0,
+        "resets_at": "2026-11-21T09:00:00.268830+00:00"
+      },
+      "seven_day_breakdown": {},
+      "limit_0": {
+        "kind": "session",
+        "model": null,
+        "utilization": 17,
+        "resets_at": "2026-11-15T12:00:00.268808+00:00"
+      },
+      "limit_1": {
+        "kind": "weekly_all",
+        "model": null,
+        "utilization": 17,
+        "resets_at": "2026-11-21T09:00:00.268830+00:00"
+      },
+      "limit_2": {
+        "kind": "weekly_scoped",
+        "model": "Fable",
+        "utilization": 34,
+        "resets_at": "2026-11-21T09:00:00.269147+00:00"
+      }
+    },
+    "extra_usage_enabled": false
+  },
+  "prompt_sha256": "6b220e25b3006ef87581f812cca52afb254b454eed3c9df01772469d9346c280",
+  "response_sha256": "9978ab5a48b89aa998f06f4e1f4e9fc79074999564548a67c83ab3b52586ee60",
+  "model_usage": {
+    "claude-fable-5-2": {
+      "inputTokens": 2,
+      "outputTokens": 1753,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 49157,
+      "webSearchRequests": 0,
+      "costUSD": 0.856648,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 1033,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 49157,
+      "canonicalModel": "claude-fable-5-2",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "source_representation": "Full unmodified current library/main/common/vendor source files, each supplied once, with per-program assembly metadata. No omitted code based on earlier reviews.",
+  "review_limitations": "Static review supported by supplied measured Codex evidence; model executed no tests. No online AC inferred.",
+  "local_raw_archive": "Audit/data/premerge-resume-20261115.zip"
+}

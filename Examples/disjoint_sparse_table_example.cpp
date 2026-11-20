@@ -4,6 +4,8 @@
 #include <functional>
 #include <iostream>
 #include <vector>
+
+using namespace sirkit;
 int main() {
     DisjointSparseTable<std::int64_t, std::plus<std::int64_t>> table(std::vector<std::int64_t>{2, 0, 3, 5});
     std::cout << table.prod(1, 4) << '\n'; // 8
