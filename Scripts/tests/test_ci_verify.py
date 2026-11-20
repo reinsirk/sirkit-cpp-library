@@ -132,7 +132,7 @@ class RunTests(unittest.TestCase):
         self.plan = {"selected_ids": ["a"]}
 
     def fake_results(self, rows):
-        def fake(entries, compiler, fallback, output):
+        def fake(entries, compiler, fallback, output, *, compile_profile):
             self.assertEqual([e["id"] for e in entries], ["a"])
             output.write_text(json.dumps({"results": rows}))
         return fake
@@ -153,6 +153,18 @@ class RunTests(unittest.TestCase):
                     ci.run_selected(self.entries, self.plan, "g++", False, self.output)
                 self.assertEqual(json.loads(self.output.read_text())["status"], "FAIL")
 
+    def test_atcoder_profile_is_forwarded_and_must_match_the_results(self):
+        rows = [{"id": "a", "skip_runtime_checks": skip, "passed": True, "compile_profile": "atcoder"}
+                for skip in (False, True)]
+        with patch.object(ci.prepare_verify, "run_tests", side_effect=self.fake_results(rows)) as run:
+            ci.run_selected(self.entries, self.plan, "g++-15", False, self.output, compile_profile="atcoder")
+            self.assertEqual(run.call_args.kwargs["compile_profile"], "atcoder")
+        self.assertEqual(json.loads(self.output.read_text())["compile_profile"], "atcoder")
+        rows[0]["compile_profile"] = "standard"
+        with patch.object(ci.prepare_verify, "run_tests", side_effect=self.fake_results(rows)):
+            with self.assertRaises(ValueError):
+                ci.run_selected(self.entries, self.plan, "g++-15", False, self.output, compile_profile="atcoder")
+
     def test_failed_command_is_recorded_and_propagated(self):
         with patch.object(ci.prepare_verify, "run_tests", side_effect=FileNotFoundError("compiler missing")):
             with self.assertRaises(FileNotFoundError):
@@ -162,7 +174,7 @@ class RunTests(unittest.TestCase):
         self.assertIn("compiler missing", result["error"])
 
     def test_failure_preserves_partial_results(self):
-        def fail(entries, compiler, fallback, output):
+        def fail(entries, compiler, fallback, output, *, compile_profile):
             output.write_text(json.dumps({"results": [{"id": "a", "passed": False}]}))
             raise SystemExit("sample failed")
         with patch.object(ci.prepare_verify, "run_tests", side_effect=fail):

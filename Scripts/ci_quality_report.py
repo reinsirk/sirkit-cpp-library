@@ -782,7 +782,7 @@ def all_performance_case_names(value: dict, row: dict, entry: dict) -> list[str]
     return names
 
 
-def whole_baseline_provenance(row: dict) -> dict:
+def whole_baseline_provenance(row: dict, compile_profile: str = "standard") -> dict:
     libraries = set(row["libraries"])
     baseline = row.get("baseline_sources")
     if not isinstance(baseline, dict):
@@ -817,12 +817,9 @@ def whole_baseline_provenance(row: dict) -> dict:
         else:
             raise ReportError("比較元のdriverの種類が不正です")
         evidence["baseline_driver"] = driver
-        if build.get("status") == "PASS":
-            expected = "MEASURED"
-        elif build.get("status") == "FAIL":
-            expected = "BASELINE_BUILD_TIMEOUT" if build.get("timed_out") is True else "BASELINE_API_INCOMPATIBLE"
-        else:
+        if build.get("status") not in ("PASS", "FAIL"):
             raise ReportError("比較元のビルド判定が不正です")
+        expected = ci_performance_all.baseline_build_comparison(build, compile_profile)
     if row.get("baseline_comparison") != expected:
         raise ReportError("比較可否が比較元の原本・ビルドと一致しません")
     return evidence
@@ -906,7 +903,7 @@ def collect_all_performance(value: dict, root: Path, entries: dict, append) -> N
         if row.get("submission_sha256") != entry.get("submission_sha256"):
             raise ReportError("全ライブラリ性能の提出本文SHAが一致しません")
         changed = sorted(set(changed_global + mismatches(root, recorded)))
-        baseline = whole_baseline_provenance(row) if regression_mode else {}
+        baseline = whole_baseline_provenance(row, value.get("compile_profile", "standard")) if regression_mode else {}
         cases = row.get("cases")
         expected = all_performance_case_names(value, row, entry)
         if (not isinstance(cases, list) or not expected or len(expected) != len(set(expected))
@@ -1191,6 +1188,7 @@ def performance_timing_cells(row: dict) -> list[str]:
             "BASELINE_NEW_LIBRARY": "比較元なし",
             "BASELINE_DEPENDENCY_MISSING": "旧版の依存不足",
             "BASELINE_API_INCOMPATIBLE": "旧版ビルド不可",
+            "BASELINE_CONSTEXPR_LIMIT": "旧版がAtCoderのconstexpr演算上限を超過",
             "BASELINE_BUILD_TIMEOUT": "旧版ビルド時間切れ",
             "BASELINE_CONFIRMATION_UNAVAILABLE": "基準版の再測定不可",
             "BASELINE_INVALID": "旧版照合失敗" if regression["status"] == "NOT_COMPARABLE" else "旧版実行失敗",

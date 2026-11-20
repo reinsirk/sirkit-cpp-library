@@ -18,7 +18,7 @@ concurrency:
 jobs:
   maintenance:
     name: Generated files and status
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v7
@@ -31,18 +31,18 @@ jobs:
       - name: Install test tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y g++ g++-13 clang clang-18 llvm-18 clang-tidy-18 libclang-rt-18-dev libboost-dev
+          sudo apt-get install -y g++-15 clang-18 llvm-18 clang-tidy-18 libclang-rt-18-dev libboost-dev
       - name: Install documentation test dependencies
         run: python3 -m pip install -r .competitive-verifier/requirements.txt
       - name: Compiler availability
         run: |
-          g++ --version
-          clang++ --version
+          g++-15 --version
+          clang++-18 --version
       - name: Python unit tests
         env:
           SIRKIT_CLANG_TIDY: clang-tidy-18
         run: |
-          export SIRKIT_TIDY_GCC_INSTALL_DIR="$(dirname "$(g++-13 -print-libgcc-file-name)")"
+          export SIRKIT_TIDY_GCC_INSTALL_DIR="$(dirname "$(g++-15 -print-libgcc-file-name)")"
           python3 -m unittest discover -s Scripts/tests -p 'test_*.py'
       - name: Generated source and Verify synchronization
         run: python3 -c 'from pathlib import Path; from Scripts.package_revised_libraries import check_generated; check_generated(Path.cwd())'
@@ -50,15 +50,18 @@ jobs:
         run: python3 Scripts/update_verify_status.py --check
 
   examples:
-    name: C++23 (${{ matrix.compiler }}, ${{ matrix.arithmetic }})
+    name: C++23 (${{ matrix.compiler }}, ${{ matrix.arithmetic }}${{ matrix.compile_profile == 'atcoder' && ', AtCoder' || '' }})
     needs: maintenance
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 45
     strategy:
       fail-fast: false
       matrix:
         compiler: [g++, clang++]
         arithmetic: [native, portable]
+        compile_profile: [standard]
+        include:
+          - {compiler: g++, arithmetic: native, compile_profile: atcoder}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -67,16 +70,18 @@ jobs:
       - name: Install compilers
         run: |
           sudo apt-get update
-          sudo apt-get install -y g++ clang
+          sudo apt-get install -y g++-15 clang-18 libboost-dev
       - name: Select and run local Verify
         env:
-          VERIFY_COMPILER: ${{ matrix.compiler }}
+          VERIFY_COMPILER: ${{ matrix.compiler == 'g++' && 'g++-15' || 'clang++-18' }}
           VERIFY_ARITHMETIC: ${{ matrix.arithmetic }}
+          VERIFY_COMPILE_PROFILE: ${{ matrix.compile_profile }}
           VERIFY_RESULTS: ${{ runner.temp }}/verify-results
         shell: bash
         run: |
           set -euo pipefail
-          args=(--all --compiler "$VERIFY_COMPILER" --skip-sync --results "$VERIFY_RESULTS/result.json")
+          args=(--all --compiler "$VERIFY_COMPILER" --compile-profile "$VERIFY_COMPILE_PROFILE"
+                --skip-sync --results "$VERIFY_RESULTS/result.json")
           if [[ "$VERIFY_ARITHMETIC" == portable ]]; then
             args+=(--fallback)
           fi
@@ -107,7 +112,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: local-verify-${{ matrix.compiler }}-${{ matrix.arithmetic }}
+          name: ${{ matrix.compile_profile == 'atcoder' && 'atcoder-local-verify' || 'local-verify' }}-${{ matrix.compiler }}-${{ matrix.arithmetic }}
           path: ${{ runner.temp }}/verify-results/
           if-no-files-found: ignore
           retention-days: 14
@@ -121,8 +126,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - {os: ubuntu-24.04, compiler: GCC}
-          - {os: ubuntu-24.04, compiler: Clang}
+          - {os: ubuntu-26.04, compiler: GCC}
+          - {os: ubuntu-26.04, compiler: Clang}
           - {os: windows-2025, compiler: MSVC}
     steps:
       - name: Keep source bytes for SHA verification
@@ -152,7 +157,7 @@ jobs:
         if: matrix.compiler != 'MSVC'
         run: |
           sudo apt-get update
-          sudo apt-get install -y g++ clang
+          sudo apt-get install -y g++-15 clang-18
       - name: Find Visual Studio developer command
         if: matrix.compiler == 'MSVC'
         shell: pwsh
@@ -167,6 +172,8 @@ jobs:
         shell: bash
         run: >-
           python3 Scripts/verify_variants.py --compiler "${{ matrix.compiler }}"
+          --gcc g++-15 --clang clang++-18
+          --gcc-install-dir "$(dirname "$(g++-15 -print-libgcc-file-name)")"
           --syntax-only --run-tests --jobs 2 --acl-include .verify-acl
           --output "$RUNNER_TEMP/variant-builds.json" --summary "$GITHUB_STEP_SUMMARY"
       - name: Verify common and MSVC-specific variants on Windows
@@ -187,7 +194,7 @@ jobs:
   instrumented:
     name: C++23 (${{ matrix.mode }}, checked)
     needs: maintenance
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 60
     strategy:
       fail-fast: false
@@ -200,9 +207,9 @@ jobs:
       - name: Install LLVM
         run: |
           sudo apt-get update
-          sudo apt-get install -y clang-18 llvm-18 libclang-rt-18-dev g++-13 libboost-dev
+          sudo apt-get install -y clang-18 llvm-18 libclang-rt-18-dev g++-15 libboost-dev
           if [[ "${{ matrix.mode }}" == coverage ]]; then
-            sudo apt-get install -y qemu-user g++-13-multilib
+            sudo apt-get install -y qemu-user g++-15-multilib
           fi
       - name: Run checked library tests
         env:
@@ -210,9 +217,9 @@ jobs:
         run: >-
           python3 Scripts/ci_instrumented.py
           --mode "$VERIFY_MODE" --compiler clang++-18
-          --gcc-install-dir "$(dirname "$(g++-13 -print-libgcc-file-name)")"
+          --gcc-install-dir "$(dirname "$(g++-15 -print-libgcc-file-name)")"
           --llvm-profdata llvm-profdata-18 --llvm-cov llvm-cov-18
-          --gcc g++-13 --gcov gcov-13
+          --gcc g++-15 --gcov gcov-15
           --output "$RUNNER_TEMP/instrumented"
       - name: Summarize instrumentation
         if: always()
@@ -251,7 +258,7 @@ jobs:
   guidelines:
     name: C++ style (${{ matrix.guide }}, normal only)
     needs: maintenance
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 60
     strategy:
       fail-fast: false
@@ -264,14 +271,14 @@ jobs:
       - name: Install clang-tidy
         run: |
           sudo apt-get update
-          sudo apt-get install -y clang-18 clang-tidy-18 g++-13
+          sudo apt-get install -y clang-18 clang-tidy-18 g++-15
       - name: Check normal library sources
         env:
           CPP_GUIDE: ${{ matrix.guide }}
         run: >-
           python3 Scripts/ci_cpp_guidelines.py
           --clang-tidy clang-tidy-18
-          --gcc-install-dir "$(dirname "$(g++-13 -print-libgcc-file-name)")"
+          --gcc-install-dir "$(dirname "$(g++-15 -print-libgcc-file-name)")"
           --guide "$CPP_GUIDE"
           --output "$RUNNER_TEMP/guidelines"
       - name: Summarize guidelines
@@ -292,10 +299,14 @@ jobs:
           retention-days: 14
 
   performance:
-    name: Supplemental kernel performance regression
+    name: Supplemental kernel performance regression${{ matrix.compile_profile == 'atcoder' && ' (AtCoder)' || '' }}
     needs: maintenance
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        compile_profile: [standard, atcoder]
     steps:
       - uses: actions/checkout@v7
         with:
@@ -304,14 +315,16 @@ jobs:
       - name: Install compiler
         run: |
           sudo apt-get update
-          sudo apt-get install -y g++
+          sudo apt-get install -y g++-15
       - name: Compare library kernels against the PR base
         env:
           VERIFY_PR_BASE: ${{ github.event.pull_request.base.sha }}
+          VERIFY_COMPILE_PROFILE: ${{ matrix.compile_profile }}
         shell: bash
         run: |
           set -euo pipefail
-          python3 Scripts/ci_benchmark.py --base "$VERIFY_PR_BASE" --compiler g++ --output "$RUNNER_TEMP/performance"
+          python3 Scripts/ci_benchmark.py --base "$VERIFY_PR_BASE" --compiler g++-15 \
+            --compile-profile "$VERIFY_COMPILE_PROFILE" --output "$RUNNER_TEMP/performance"
           python3 - <<'PYREGRESSION'
           import json
           import os
@@ -323,6 +336,7 @@ jobs:
           expected = report.get("expected_cases")
           complete = (
               report.get("status") == "PASS"
+              and report.get("compile_profile") == os.environ["VERIFY_COMPILE_PROFILE"]
               and report.get("current_measurements_passed") is True
               and report.get("performance_regression_passed") is True
               and report.get("base_revision") == os.environ["VERIFY_PR_BASE"]
@@ -361,7 +375,7 @@ jobs:
       - uses: actions/upload-artifact@v7
         if: always()
         with:
-          name: representative-performance
+          name: ${{ matrix.compile_profile == 'atcoder' && 'atcoder-representative-performance' || 'representative-performance' }}
           path: |
             ${{ runner.temp }}/performance/result.json
             ${{ runner.temp }}/performance/summary.md
@@ -369,14 +383,15 @@ jobs:
           retention-days: 14
 
   all_performance:
-    name: All-library Verify performance regression (${{ matrix.shard }})
+    name: All-library Verify performance regression (${{ matrix.shard }}${{ matrix.compile_profile == 'atcoder' && ', AtCoder' || '' }})
     needs: maintenance
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 90
     strategy:
       fail-fast: false
       matrix:
         shard: [0, 1, 2, 3, 4, 5, 6, 7]
+        compile_profile: [standard, atcoder]
     steps:
       - uses: actions/checkout@v7
         with:
@@ -385,16 +400,17 @@ jobs:
       - name: Install compiler and headers
         run: |
           sudo apt-get update
-          sudo apt-get install -y g++ libboost-dev
+          sudo apt-get install -y g++-15 libboost-dev
       - name: Compare all Verify programs against the PR base
         env:
           VERIFY_SHARD: ${{ matrix.shard }}
           VERIFY_PR_BASE: ${{ github.event.pull_request.base.sha }}
+          VERIFY_COMPILE_PROFILE: ${{ matrix.compile_profile }}
         run: >-
           python3 Scripts/ci_performance_all.py
           --base "$VERIFY_PR_BASE"
           --shard-index "$VERIFY_SHARD" --shard-count 8
-          --compiler g++
+          --compiler g++-15 --compile-profile "$VERIFY_COMPILE_PROFILE"
           --cache "$RUNNER_TEMP/all-library-performance-cache"
           --output "$RUNNER_TEMP/all-library-performance"
       - name: Summarize all-library performance
@@ -427,7 +443,7 @@ jobs:
         uses: actions/upload-artifact@v7
         if: always()
         with:
-          name: all-library-performance-${{ matrix.shard }}
+          name: ${{ matrix.compile_profile == 'atcoder' && 'atcoder-all-library-performance' || 'all-library-performance' }}-${{ matrix.shard }}
           path: |
             ${{ runner.temp }}/all-library-performance/result.json
             ${{ runner.temp }}/all-library-performance/summary.md
@@ -437,7 +453,7 @@ jobs:
   stress:
     name: Deterministic Max and structural cases
     needs: maintenance
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v7
@@ -446,10 +462,10 @@ jobs:
       - name: Install compiler
         run: |
           sudo apt-get update
-          sudo apt-get install -y g++
+          sudo apt-get install -y g++-15
       - name: Run deterministic full-size cases
         run: >-
-          python3 Scripts/ci_stress.py --compiler g++
+          python3 Scripts/ci_stress.py --compiler g++-15
           --output "$RUNNER_TEMP/stress-cases"
       - name: Summarize Max and structural cases
         if: always()
@@ -490,7 +506,7 @@ jobs:
   contracts:
     name: Checked API contracts (${{ matrix.compiler }}, ${{ matrix.arithmetic }})
     needs: maintenance
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 15
     strategy:
       fail-fast: false
@@ -504,15 +520,18 @@ jobs:
       - name: Install compilers
         run: |
           sudo apt-get update
-          sudo apt-get install -y g++ clang
+          sudo apt-get install -y g++-15 clang-18
       - name: Check normal results and expected failures
         env:
-          CONTRACT_COMPILER: ${{ matrix.compiler }}
+          CONTRACT_COMPILER: ${{ matrix.compiler == 'g++' && 'g++-15' || 'clang++-18' }}
           CONTRACT_ARITHMETIC: ${{ matrix.arithmetic }}
         shell: bash
         run: |
           set -euo pipefail
           args=(--compiler "$CONTRACT_COMPILER" --output "$RUNNER_TEMP/contracts")
+          if [[ "$CONTRACT_COMPILER" == clang++-18 ]]; then
+            args+=(--gcc-install-dir "$(dirname "$(g++-15 -print-libgcc-file-name)")")
+          fi
           if [[ "$CONTRACT_ARITHMETIC" == portable ]]; then
             args+=(--fallback)
           fi
@@ -551,7 +570,7 @@ jobs:
   library_checker:
     name: Official Library Checker cases (${{ matrix.shard }})
     needs: maintenance
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 90
     strategy:
       fail-fast: false
@@ -565,7 +584,7 @@ jobs:
       - name: Install compiler
         run: |
           sudo apt-get update
-          sudo apt-get install -y g++
+          sudo apt-get install -y g++-15
       - name: Run all official full cases
         env:
           VERIFY_PR_BASE: ${{ github.event.pull_request.base.sha }}
@@ -574,7 +593,7 @@ jobs:
           python3 Scripts/ci_library_checker.py --all --discard-test-data
           --base "$VERIFY_PR_BASE"
           --shard-index "$VERIFY_SHARD" --shard-count 8
-          --compiler g++
+          --compiler g++-15
           --cache "$RUNNER_TEMP/library-checker-cache"
           --output "$RUNNER_TEMP/library-checker-report"
       - name: Attach report provenance

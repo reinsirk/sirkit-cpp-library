@@ -25,6 +25,39 @@ python3 Scripts/ci_quality_report.py --input /tmp/contracts --input /tmp/officia
 
 失敗系の例外は「期待した失敗を正しく処理した」ことを表します。異常終了・例外型の不一致・空の結果を合格にはしません。公式ケースの時間は起動・入出力を含むプログラム全体で、本体だけの代表性能とは別です。
 
+## コンパイラとコンパイル引数
+
+LinuxのC++ジョブはUbuntu 26.04でGCC 15（`g++-15`）とClang 18（`clang++-18`）を使います。配布版のMSVC検査はWindowsで実行します。
+
+一般設定では`-std=c++23`を指定します。以下はジョブごとの主な追加引数です。
+
+| ジョブ | 引数 |
+| --- | --- |
+| ローカルVerify | `-O2 -Wall -Wextra`。検査有効版と検査省略版をそれぞれ生成して実行。 |
+| 配布版の動作テスト | `-O2 -UNDEBUG`。配布版と検査設定に応じて`SKIP_RUNTIME_CHECKS`を指定。 |
+| 正常系・失敗系 | `-O2 -UNDEBUG -USKIP_RUNTIME_CHECKS` |
+| Library Checker公式ケース | `-O2 -DSKIP_RUNTIME_CHECKS= -DNDEBUG=` |
+| Verify全体の性能比較・Max検査 | `-O2 -DNDEBUG`。生成ソースで`SKIP_RUNTIME_CHECKS`を定義。 |
+| ライブラリ本体の性能比較 | `-O2 -DNDEBUG -DSKIP_RUNTIME_CHECKS` |
+| ASan/UBSan | `-O1 -g -fsanitize=address,undefined -fno-sanitize-recover=all -fno-omit-frame-pointer` |
+| カバレッジ | Clangは`-O0 -g -fprofile-instr-generate -fcoverage-mapping`。GCCの補測は`-O0 -g --coverage`。 |
+
+標準代替のVerifyと契約テストは、`-U__SIZEOF_INT128__ -DSIRKIT_FORCE_STANDARD_ARITHMETIC -DSIRKIT_LINE_CONTAINER_FORCE_PORTABLE -DSIRKIT_DISABLE_SIMD`を追加します。計装の主計測では`-UNDEBUG -USKIP_RUNTIME_CHECKS`も指定します。
+
+Verifyごとに設定されたGCC用の`#pragma GCC optimize`は生成ソースに入ります。該当するプログラムでは、コマンドラインの`-O2`に加えてこの設定が適用されます。性能比較の変更前後は同じGCC 15とコンパイル引数でビルドします。
+
+### AtCoder設定
+
+ローカルVerify全件、Verify全体の性能比較、代表3本の本体性能比較を一般設定とAtCoder設定で実行します。AtCoder設定ではGCC 15に`-std=gnu++23 -O2 -Wall -Wextra -march=native`、`ATCODER`・`ONLINE_JUDGE`・`NOMINMAX`の定義、constexprの上限、`-fmodules`、自動変数のゼロ初期化、OpenMPなどを指定します。外部ライブラリの検索パスと未使用の追加リンクは省き、CIのランナーで実行します。`-flto=auto`は2026年6月の更新で公式設定から削除されました。 [AtCoderの言語設定](https://img.atcoder.jp/file/language-update/2025-10/language-list.html) · [更新のお知らせ](https://atcoder.jp/posts/language_update20260616_jp)
+
+性能退行は各設定内でPRの変更前後を比較します。判定はActionsのSummaryに表示します。AtCoder設定の引数と測定値は`atcoder-`で始まるArtifactで確認できます。ライブラリページには一般設定の結果を掲載します。
+
+旧版だけがAtCoderの`constexpr`演算上限を超える場合、その設定では現行版の正解照合と計測を行い、退行判定は「比較不可」と記録します。一般設定の退行判定は通常どおり行います。
+
+```sh
+python3 Scripts/ci_verify.py --compiler g++-15 --compile-profile atcoder --id fenwick_tree
+```
+
 ## 配布版の構文・動作検査
 
 各処理系で共通版と専用版を検査します。安全版は入力検査の有効・省略の両方で、速度優先版は配布時の設定で実行します。動作テストには専用の速度優先実装を持つ11本すべてを含み、独立参照との照合を行います。無効な入力の失敗系は検査有効版で実行します。
@@ -54,7 +87,7 @@ Visual Studioの開発者コマンドプロンプトでは`--compiler MSVC`を�
 python3 Scripts/ci_instrumented.py --mode sanitizers --compiler clang++-18 --output /tmp/sanitizers
 python3 Scripts/ci_instrumented.py --mode coverage --compiler clang++-18 \
   --llvm-profdata llvm-profdata-18 --llvm-cov llvm-cov-18 \
-  --gcc g++-13 --gcov gcov-13 --output /tmp/coverage
+  --gcc g++-15 --gcov gcov-15 --output /tmp/coverage
 ```
 
 `--id`で個別指定できます。指定を省くとオンライン向けVerifyと独立参照を含むローカル補足の全件です。入力検査とassertを有効にし、失敗や結果の欠落はCI失敗にします。
@@ -75,7 +108,7 @@ python3 Scripts/ci_instrumented.py --mode coverage --compiler clang++-18 \
 
 `x86_binary128_tests`に登録したテストは、検査有効のClangで`-mlong-double-128`を指定した版も実行します。線分の判定で、113ビットの仮数の途中に0の桁が入る入力を実測します。テストで使う数学関数は、glibcのbinary128用関数を呼び出します。
 
-`i386_tests`に登録したテストはClangの`-m32`で別途ビルドし、`qemu-i386`で実行します。LCAの祖先ラダー・祖先表、グラフのCSR、篩の表の容量検査などを32ビットの上限で測定し、64ビットの結果と同じ原本座標へ集計します。64ビット版と32ビット版の生プロファイルはそれぞれ対応するバイナリから出力します。Ubuntu 24.04では`g++-13-multilib`と`qemu-user`が必要です。
+`i386_tests`に登録したテストはClangの`-m32`で別途ビルドし、`qemu-i386`で実行します。LCAの祖先ラダー・祖先表、グラフのCSR、篩の表の容量検査などを32ビットの上限で測定し、64ビットの結果と同じ原本座標へ集計します。64ビット版と32ビット版の生プロファイルはそれぞれ対応するバイナリから出力します。Ubuntu 26.04では`g++-15-multilib`と`qemu-user`が必要です。
 
 Dijkstraの距離上限を越える経路は、同じ内部テンプレートの上限を64とした小さいグラフで測定します。Bellman–Fordの独立実装で距離・経路・例外を照合します。公開APIは既定上限`2^60`を使い、その上限での頂点数の切り替え境界も配列を確保せず検査します。
 

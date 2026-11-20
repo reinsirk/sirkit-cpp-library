@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+from collections.abc import Sequence
 import hashlib
 import html
 import json
@@ -18,8 +19,9 @@ import sys
 import tempfile
 
 try:
-    from . import performance_limits, performance_regression
+    from . import ci_compile_profiles, performance_limits, performance_regression
 except ImportError:
+    import ci_compile_profiles
     import performance_limits
     import performance_regression
 
@@ -30,7 +32,7 @@ LIBRARIES = {
     "union_find": "DataStructure/union_find.cpp",
     "rolling_hash": "String/RollingHash.cpp",
 }
-FLAGS = ["-std=c++23", "-O2", "-DNDEBUG", "-DSKIP_RUNTIME_CHECKS"]
+FLAGS = ("-std=c++23", "-O2", "-DNDEBUG", "-DSKIP_RUNTIME_CHECKS")
 # ライブラリの上限・オンライン問題の最大制約とは別の、CIで扱う規模上限。
 STRESS_SIZE = 2_000_000
 SCENARIOS = {
@@ -105,13 +107,13 @@ def compiler_command(compiler: str) -> list[str]:
 
 
 def build(compiler: list[str], library: bytes, fixture: bytes, common: bytes,
-          directory: Path, name: str) -> Path:
+          directory: Path, name: str, flags: Sequence[str] = FLAGS) -> Path:
     directory.mkdir(parents=True, exist_ok=True)
     (directory / "library.hpp").write_bytes(library)
     (directory / "benchmark.cpp").write_bytes(fixture)
     (directory / "benchmark_common.hpp").write_bytes(common)
     executable = directory / name
-    command([*compiler, *FLAGS, str(directory / "benchmark.cpp"), "-o", str(executable)])
+    command([*compiler, str(directory / "benchmark.cpp"), *flags, "-o", str(executable)])
     return executable
 
 
@@ -165,7 +167,7 @@ def code(value: str) -> str:
 
 def markdown(report: dict) -> str:
     compare = report.get("comparison_requested", False)
-    method = ("基準commitと現在版を、同じ計測コード・コンパイラ・O2・検査省略設定で交互に測ります。"
+    method = ("基準commitと現在版を、同じ計測コード・コンパイラ・コンパイル引数で交互に測ります。"
               if compare else "現在版の測定値を表示します。")
     lines = ["## 本体の性能", "",
              method,
@@ -173,6 +175,8 @@ def markdown(report: dict) -> str:
     if compare:
         lines.append("退行判定には基準中央値に5%（最低5 µs）を加えた上限を使い、超過時は同じケースを再測定します。")
     lines += ["", "状態: " + str(report["status"])]
+    lines += ["", "コンパイル設定: " + code(report.get("compile_profile", "standard")),
+              "フラグ: " + " ".join(map(code, report.get("flags", FLAGS)))]
     lines += ["", "対象はFenwick Tree・UnionFind・RollingHashの代表3本です。",
               "通常実行の既定対象は各14ケース（計42）。--id指定時は対象分だけ実行します。",
               "2,000,000要素はCIのstress上限で、問題のMax制約やAPIの上限を意味しません。",
@@ -226,10 +230,12 @@ def cpu_model() -> str:
 def run(args: argparse.Namespace) -> int:
     output = args.output.resolve()
     output.mkdir(parents=True, exist_ok=True)
+    profile = getattr(args, "compile_profile", "standard")
+    flags = ci_compile_profiles.compile_flags(profile, FLAGS)
     report = {"format": 1, "status": "running", "scope": "representative_normal_library_kernels",
               "comparison_requested": args.base is not None,
               "timing_scope": "library construction, operations, destruction and shared digest only",
-              "online_status": "not_evaluated", "flags": FLAGS,
+              "online_status": "not_evaluated", "compile_profile": profile, "flags": flags,
               "repetitions": args.repetitions, "warmups": args.warmups,
               "platform": platform.platform(), "machine": platform.machine(), "cpu_model": cpu_model(),
               "affinity": sorted(os.sched_getaffinity(0)) if hasattr(os, "sched_getaffinity") else None,
@@ -287,9 +293,9 @@ def run(args: argparse.Namespace) -> int:
                 executables = {}
                 if base is not None:
                     executables["base"] = build(compiler, base, fixture, common,
-                                                directory / identifier, "base")
+                                                directory / identifier, "base", flags)
                 executables["current"] = build(compiler, current, fixture, common,
-                                               directory / identifier, "current")
+                                               directory / identifier, "current", flags)
                 for case in plans[identifier]:
                     size, pattern = case["size"], case["pattern_id"]
                     rounds = 1 if args.quick else max(1, 262144 // size)
@@ -348,6 +354,8 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--base", help="比較が必要な場合だけ指定する基準commit/ref")
     parser.add_argument("--compiler", default="g++")
+    parser.add_argument("--compile-profile", choices=ci_compile_profiles.COMPILE_PROFILES, default="standard",
+                        help="基準と現在版の両方に使うコンパイル設定")
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--limits", type=Path, help="明示した場合だけ従来の固定性能予算も検査する")
     parser.add_argument("--id", action="append", choices=tuple(LIBRARIES))

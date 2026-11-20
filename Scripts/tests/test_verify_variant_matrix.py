@@ -38,6 +38,15 @@ class VariantMatrixTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "cl.exe"):
                 variants.compiler_command("MSVC", [include], None)
 
+    def test_linux_commands_use_explicit_compiler_paths(self):
+        tools = {"gcc": "g++-15", "clang": "clang++-18"}
+        self.assertEqual(variants.compiler_command("GCC", [], None, **tools),
+                         ["g++-15", "-std=c++23", "-O2"])
+        with patch.object(variants, "gcc_install_arguments", return_value=["--gcc-install-dir=/gcc/15"]) as resolve:
+            command = variants.compiler_command("Clang", [], "/gcc/15", **tools)
+        resolve.assert_called_once_with("clang++-18", "/gcc/15")
+        self.assertEqual(command, ["clang++-18", "--gcc-install-dir=/gcc/15", "-std=c++23", "-O2"])
+
     def test_fast_library_is_included_before_enabling_the_fixture_skip_guard(self):
         library = Path("temp root/library.hpp")
         fixture = Path("example.cpp")

@@ -112,6 +112,7 @@ class StructureTests(unittest.TestCase):
         self.assertIn("--shard-count 8", command)
         self.assertIn("--all", command)
         self.assertIn("--discard-test-data", command)
+        self.assertIn("--compiler g++-15", command)
         self.assertIn('--cache "$RUNNER_TEMP/library-checker-cache"', command)
         upload = next(step for step in jobs["library_checker"]["steps"] if step.get("name") == "Upload metadata only")
         self.assertEqual(upload["with"]["path"], "${{ runner.temp }}/library-checker-report/result.json")
@@ -126,11 +127,24 @@ class StructureTests(unittest.TestCase):
             self.assertIn('"$' + variable + '" == success', command)
         self.assertEqual(gate["steps"][0]["env"]["ALL_PERFORMANCE_RESULT"], "${{ needs.all_performance.result }}")
 
+    def test_atcoder_verify_is_an_additional_gcc_configuration(self):
+        job = workflow("verify.yml")["jobs"]["examples"]
+        self.assertEqual(job["strategy"]["matrix"], {
+            "compiler": ["g++", "clang++"], "arithmetic": ["native", "portable"],
+            "compile_profile": ["standard"],
+            "include": [{"compiler": "g++", "arithmetic": "native", "compile_profile": "atcoder"}],
+        })
+        run = next(step for step in job["steps"] if step.get("name") == "Select and run local Verify")
+        self.assertEqual(run["env"]["VERIFY_COMPILE_PROFILE"], "${{ matrix.compile_profile }}")
+        self.assertIn('--compile-profile "$VERIFY_COMPILE_PROFILE"', run["run"])
+        upload = next(step for step in job["steps"] if step.get("name") == "Upload local Verify report")
+        self.assertIn("'atcoder-local-verify' || 'local-verify'", upload["with"]["name"])
+
     def test_variant_build_matrix_runs_native_msvc_on_windows(self):
         job = workflow("verify.yml")["jobs"]["variant_builds"]
         self.assertEqual(job["needs"], "maintenance")
         self.assertEqual(job["strategy"]["matrix"]["include"], [
-            {"os": "ubuntu-24.04", "compiler": "GCC"}, {"os": "ubuntu-24.04", "compiler": "Clang"},
+            {"os": "ubuntu-26.04", "compiler": "GCC"}, {"os": "ubuntu-26.04", "compiler": "Clang"},
             {"os": "windows-2025", "compiler": "MSVC"},
         ])
         windows = next(step for step in job["steps"] if "on Windows" in step.get("name", ""))
@@ -138,6 +152,7 @@ class StructureTests(unittest.TestCase):
         self.assertIn("SIRKIT_VS_DEVELOPER_COMMAND", windows["run"])
         self.assertIn("--compiler MSVC --syntax-only --run-tests", windows["run"])
         linux = next(step for step in job["steps"] if "on Linux" in step.get("name", ""))
+        self.assertIn("--gcc g++-15 --clang clang++-18", linux["run"])
         self.assertIn("--run-tests", linux["run"])
         self.assertIn("--summary", linux["run"])
         self.assertIn("--summary", windows["run"])
@@ -147,14 +162,16 @@ class StructureTests(unittest.TestCase):
         self.assertEqual(job["needs"], "maintenance")
         self.assertEqual(job["timeout-minutes"], 90)
         self.assertFalse(job["strategy"]["fail-fast"])
-        self.assertEqual(job["strategy"]["matrix"], {"shard": list(range(8))})
+        self.assertEqual(job["strategy"]["matrix"], {"shard": list(range(8)), "compile_profile": ["standard", "atcoder"]})
         steps = job["steps"]
         install = next(step["run"] for step in steps if step.get("name") == "Install compiler and headers")
-        self.assertIn("g++ libboost-dev", install)
+        self.assertIn("g++-15 libboost-dev", install)
         comparison = next(step for step in steps if step.get("name") == "Compare all Verify programs against the PR base")
         self.assertEqual(comparison["env"]["VERIFY_PR_BASE"], "${{ github.event.pull_request.base.sha }}")
         command = comparison["run"]
         self.assertIn("Scripts/ci_performance_all.py", command)
+        self.assertIn("--compiler g++-15", command)
+        self.assertIn('--compile-profile "$VERIFY_COMPILE_PROFILE"', command)
         self.assertIn('--shard-index "$VERIFY_SHARD" --shard-count 8', command)
         self.assertIn('--cache "$RUNNER_TEMP/all-library-performance-cache"', command)
         self.assertIn('--output "$RUNNER_TEMP/all-library-performance"', command)
@@ -163,7 +180,8 @@ class StructureTests(unittest.TestCase):
             self.assertNotIn(option, command)
         upload = next(step for step in steps if step.get("uses", "").startswith("actions/upload-artifact@"))
         self.assertEqual(upload["if"], "always()")
-        self.assertEqual(upload["with"]["name"], "all-library-performance-${{ matrix.shard }}")
+        self.assertIn("'atcoder-all-library-performance' || 'all-library-performance'", upload["with"]["name"])
+        self.assertTrue(upload["with"]["name"].endswith("-${{ matrix.shard }}"))
         self.assertEqual(upload["with"]["path"].splitlines(), [
             "${{ runner.temp }}/all-library-performance/result.json",
             "${{ runner.temp }}/all-library-performance/summary.md"])
@@ -177,18 +195,23 @@ class StructureTests(unittest.TestCase):
 
     def test_kernel_performance_regression_gate_rejects_incomplete_reports(self):
         job = workflow("verify.yml")["jobs"]["performance"]
+        self.assertEqual(job["strategy"]["matrix"], {"compile_profile": ["standard", "atcoder"]})
         comparison = next(step for step in job["steps"] if step.get("name") == "Compare library kernels against the PR base")
         self.assertEqual(comparison["env"]["VERIFY_PR_BASE"], "${{ github.event.pull_request.base.sha }}")
         command = comparison["run"]
         self.assertIn('--base "$VERIFY_PR_BASE"', command)
+        self.assertIn("--compiler g++-15", command)
+        self.assertIn('--compile-profile "$VERIFY_COMPILE_PROFILE"', command)
         self.assertNotIn("--limits", command)
         code = python_block(command, "PYREGRESSION")
         baseline = "a" * 40
-        good = {"status": "PASS", "current_measurements_passed": True, "performance_regression_passed": True,
+        good = {"status": "PASS", "compile_profile": "atcoder",
+                "current_measurements_passed": True, "performance_regression_passed": True,
                 "base_revision": baseline, "expected_cases": 2, "compared_cases": 2, "results": [{}, {}]}
         fixtures = [(good, 0)]
         for mutation in ({"status": "PARTIAL"}, {"status": "NO_BASELINE"},
                          {"status": "CURRENT_ONLY"}, {"performance_regression_passed": False},
+                         {"compile_profile": "standard"},
                          {"base_revision": "b" * 40}, {"compared_cases": 1},
                          {"current_measurements_passed": False}, {"expected_cases": 3},
                          {"expected_cases": True}, {"expected_cases": 0, "results": []},
@@ -197,7 +220,7 @@ class StructureTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "performance/result.json"
             path.parent.mkdir()
-            env = {**os.environ, "RUNNER_TEMP": directory, "VERIFY_PR_BASE": baseline}
+            env = {**os.environ, "RUNNER_TEMP": directory, "VERIFY_PR_BASE": baseline, "VERIFY_COMPILE_PROFILE": "atcoder"}
             for report, expected in fixtures:
                 with self.subTest(report=report):
                     path.write_text(json.dumps(report))
