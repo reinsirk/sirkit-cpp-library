@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+from concurrent.futures import ThreadPoolExecutor
 import hashlib
 import html
 import json
@@ -750,10 +751,11 @@ def run(entries: list[dict], *, root: Path, output: Path, mode: str, compiler: s
         gcc_install_dir: str | None = None, gcc: str = "g++", gcov: str = "gcov",
         qemu_x86: str = "qemu-x86_64", qemu_i386: str = "qemu-i386",
         i386_compiler_args: list[str] | None = None, i386_sysroot: str | None = None, timeout: float = 120,
-        compile_timeout: float = 180, available: list[dict] | None = None) -> dict:
+        compile_timeout: float = 180, available: list[dict] | None = None, jobs: int = 1) -> dict:
     root, output = root.resolve(), output.resolve()
     output.mkdir(parents=True, exist_ok=False)
     report = {"format": 1, "mode": mode, "status": "running", "execution_status": "running", "checked": True,
+              "jobs": jobs,
               "selected_ids": [entry["id"] for entry in entries], "results": [], "commands": [],
               "available_entries": len(available if available is not None else entries),
               "available_local_fixtures": sum(not entry.get("problem_url")
@@ -829,13 +831,15 @@ def run(entries: list[dict], *, root: Path, output: Path, mode: str, compiler: s
                 (output / "coverage_entries").mkdir()
             include_flags = ["-UNDEBUG", "-USKIP_RUNTIME_CHECKS", "-I", str(overlay), "-I", str(root),
                              "-I", str(root / "Verify/current/vendor")]
-            for index, entry in enumerate(entries):
+            def measure(index: int, entry: dict) -> tuple[dict, list, dict | None]:
                 label = f"entry_{index:04}"
                 source = output / "sources" / (label + ".cpp")
                 source.write_text(translation_unit(entry, root), encoding="utf-8")
                 binary = work / label
                 profiles = []
                 merged = work / (label + ".profdata")
+                commands = []
+                measured = None
                 flags = (["-O1", "-g", "-fsanitize=address,undefined", "-fno-sanitize-recover=all",
                           "-fno-omit-frame-pointer"] if mode == "sanitizers" else
                          ["-O0", "-g", "-fprofile-instr-generate", "-fcoverage-mapping"])
@@ -856,8 +860,6 @@ def run(entries: list[dict], *, root: Path, output: Path, mode: str, compiler: s
                 if i386:
                     row["coverage_target"] = "i386"
                     row["execution_command"] = run_command
-                report["results"].append(row)
-                write_report(output, report)
                 try:
                     built = subprocess.run(command, capture_output=True, text=True, errors="replace",
                                            timeout=compile_timeout)
@@ -867,7 +869,7 @@ def run(entries: list[dict], *, root: Path, output: Path, mode: str, compiler: s
                     row["compile_log"] = "logs/" + label + "_compile.txt"
                     if built.returncode:
                         row["status"] = "FAIL"
-                        continue
+                        return row, commands, None
                     for sample_index, sample in enumerate(entry.get("samples", [])):
                         pattern = str(work / f"{label}_{sample_index}-%p.profraw")
                         environment = runtime_environment(mode, pattern)
@@ -887,7 +889,7 @@ def run(entries: list[dict], *, root: Path, output: Path, mode: str, compiler: s
                             if sample_row["passed"] and entry.get("x86_baseline_coverage"):
                                 name = f"{label}_{sample_index}_x86"
                                 command = [qemu_x86, "-cpu", X86_BASELINE_CPU, str(binary)]
-                                report["commands"].append(command)
+                                commands.append(command)
                                 baseline = subprocess.run(command, input=sample["input"], capture_output=True, text=True,
                                                           errors="replace", timeout=timeout,
                                                           env=runtime_environment(mode, str(work / (name + "-%p.profraw"))))
@@ -902,12 +904,11 @@ def run(entries: list[dict], *, root: Path, output: Path, mode: str, compiler: s
                                 sample_row["passed"] &= passed
                                 profiles.extend(generated)
                         row["samples"].append(sample_row)
-                        write_report(output, report)
                     row["status"] = "PASS" if row["samples"] and all(item["passed"] for item in row["samples"]) else "FAIL"
                     if mode == "coverage" and row["status"] == "PASS":
                         entry_sources = library_paths([entry], root)
                         measured = export_clang_coverage(binary, profiles, entry_sources, output / "logs",
-                                                         llvm_profdata, llvm_cov, report["commands"], compile_timeout)
+                                                         llvm_profdata, llvm_cov, commands, compile_timeout)
                         if entry.get("clang_unchecked_coverage"):
                             alternate_binary = work / (label + "_clang_unchecked")
                             alternate_source = source.with_name(alternate_binary.name + ".cpp")
@@ -916,7 +917,7 @@ def run(entries: list[dict], *, root: Path, output: Path, mode: str, compiler: s
                                                  *include_flags, "-DSKIP_RUNTIME_CHECKS", "-o", str(alternate_binary)]
                             alternate, row["clang_unchecked_coverage"] = run_clang_supplement(
                                 entry, output, alternate_binary, alternate_command, [str(alternate_binary)], entry_sources,
-                                llvm_profdata, llvm_cov, report["commands"], timeout, compile_timeout)
+                                llvm_profdata, llvm_cov, commands, timeout, compile_timeout)
                             measured = coverage_union([measured, alternate])
                         if entry.get("x86_avx2_coverage"):
                             alternate_binary = work / (label + "_x86_avx2")
@@ -925,7 +926,7 @@ def run(entries: list[dict], *, root: Path, output: Path, mode: str, compiler: s
                             execution = [qemu_x86, "-cpu", X86_AVX2_CPU, str(alternate_binary)]
                             alternate, row["x86_avx2_coverage"] = run_clang_supplement(
                                 entry, output, alternate_binary, alternate_command, execution, entry_sources,
-                                llvm_profdata, llvm_cov, report["commands"], timeout, compile_timeout)
+                                llvm_profdata, llvm_cov, commands, timeout, compile_timeout)
                             measured = coverage_union([measured, alternate])
                         if entry.get("x86_binary128_coverage"):
                             alternate_binary = work / (label + "_x86_binary128")
@@ -933,7 +934,7 @@ def run(entries: list[dict], *, root: Path, output: Path, mode: str, compiler: s
                                                  *include_flags, "-mlong-double-128", "-o", str(alternate_binary)]
                             alternate, row["x86_binary128_coverage"] = run_clang_supplement(
                                 entry, output, alternate_binary, alternate_command, [str(alternate_binary)], entry_sources,
-                                llvm_profdata, llvm_cov, report["commands"], timeout, compile_timeout)
+                                llvm_profdata, llvm_cov, commands, timeout, compile_timeout)
                             measured = coverage_union([measured, alternate])
                         for unchecked, setting in ((False, "gcc_line_coverage"), (True, "gcc_unchecked_line_coverage")):
                             if not entry.get(setting):
@@ -948,7 +949,7 @@ def run(entries: list[dict], *, root: Path, output: Path, mode: str, compiler: s
                                 gcc_source.write_text(translation_unit(entry, root, unchecked=True), encoding="utf-8")
                             gcc_report = run_gcov(entry, gcc=gcc, gcov=gcov, source=gcc_source,
                                                   binary=work / (label + suffix), include_flags=gcc_flags,
-                                                  logs=output / "logs", commands=report["commands"],
+                                                  logs=output / "logs", commands=commands,
                                                   timeout=timeout, compile_timeout=compile_timeout)
                             record_gcov_lines(measured, gcc_report, unchecked=unchecked)
                             row[setting] = {"version": gcc_report["gcc_version"]}
@@ -958,14 +959,22 @@ def run(entries: list[dict], *, root: Path, output: Path, mode: str, compiler: s
                                 raise ValueError("補足テストに対象原本の計測結果がありません")
                         row["coverage_path"] = "coverage_entries/" + label + ".json"
                         (output / row["coverage_path"]).write_text(json.dumps(measured) + "\n", encoding="utf-8")
-                        coverage_exports.append(measured)
                 except (OSError, ValueError, subprocess.SubprocessError) as error:
                     row.update(status="FAIL", error=str(error))
                 finally:
                     for path in [binary, merged, *profiles]:
                         path.unlink(missing_ok=True)
+                return row, commands, measured if row["status"] == "PASS" else None
+
+            with ThreadPoolExecutor(max_workers=jobs) as pool:
+                # 出力順は登録順にそろえ、レポートと全体の集計は親スレッドだけで更新する。
+                for index, (row, commands, measured) in enumerate(pool.map(measure, range(len(entries)), entries), 1):
+                    report["results"].append(row)
+                    report["commands"].extend(commands)
+                    if measured is not None:
+                        coverage_exports.append(measured)
                     write_report(output, report)
-                    print(f"{index + 1}/{len(entries)} {entry['id']}: {row['status']}", flush=True)
+                    print(f"{index}/{len(entries)} {row['id']}: {row['status']}", flush=True)
             if mode == "coverage":
                 coverage = coverage_union(coverage_exports)
                 coverage = apply_coverage_exclusions(coverage, root, report["library_source_hashes"], exclusions)
@@ -1015,11 +1024,14 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--output", type=Path, required=True, help="未作成の出力ディレクトリ")
     parser.add_argument("--timeout", type=float, default=120)
     parser.add_argument("--compile-timeout", type=float, default=180)
+    parser.add_argument("--jobs", type=int, default=1, help="同時にビルド・実行するテストの数")
     parser.add_argument("--cpu", type=int)
     args = parser.parse_args(argv)
     try:
         if args.timeout <= 0 or args.compile_timeout <= 0:
             raise ValueError("timeoutは正数で指定してください")
+        if args.jobs < 1:
+            raise ValueError("jobsは正の整数で指定してください")
         if args.cpu is not None:
             os.sched_setaffinity(0, {args.cpu})
         available = prepare_verify.collect()
@@ -1031,7 +1043,7 @@ def main(argv: list[str] | None = None) -> int:
                      gcc_install_dir=args.gcc_install_dir, gcc=args.gcc, gcov=args.gcov,
                      qemu_x86=args.qemu_x86, qemu_i386=args.qemu_i386, i386_compiler_args=args.i386_compiler_arg,
                      i386_sysroot=args.i386_sysroot, timeout=args.timeout,
-                     compile_timeout=args.compile_timeout, available=available)
+                     compile_timeout=args.compile_timeout, available=available, jobs=args.jobs)
         return int(report["status"] != "PASS")
     except (OSError, ValueError, subprocess.SubprocessError) as error:
         print(str(error), file=sys.stderr)

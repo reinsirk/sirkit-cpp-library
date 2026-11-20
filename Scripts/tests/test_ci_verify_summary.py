@@ -204,7 +204,7 @@ class CommandLineTests(unittest.TestCase):
     def test_current_ci_writer_reports_are_consumed_without_conversion(self):
         output = self.root / "actual.json"
 
-        def run_tests(entries, compiler, fallback, destination, *, compile_profile):
+        def run_tests(entries, compiler, fallback, destination, *, compile_profile, jobs):
             destination.write_text(json.dumps({"results": report()["results"]}), encoding="utf-8")
 
         with patch.object(ci_verify.prepare_verify, "run_tests", side_effect=run_tests):

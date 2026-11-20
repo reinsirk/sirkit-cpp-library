@@ -86,7 +86,7 @@ class StructureTests(unittest.TestCase):
     def test_preview_waits_for_evidence_even_when_individual_checks_fail(self):
         value = workflow("verify.yml")
         docs = value["jobs"]["documentation"]
-        self.assertEqual(set(docs["needs"]), {"maintenance", "examples", "instrumented", "performance", "all_performance", "contracts", "library_checker", "stress"})
+        self.assertEqual(set(docs["needs"]), {"maintenance", "examples", "instrumented", "performance", "all_performance", "contracts", "library_checker"})
         self.assertIn("!cancelled()", docs["if"])
         self.assertIn("needs.maintenance.result == 'success'", docs["if"])
         self.assertNotIn("needs.examples.result == 'success'", docs["if"])
@@ -127,6 +127,16 @@ class StructureTests(unittest.TestCase):
             self.assertIn('"$' + variable + '" == success', command)
         self.assertEqual(gate["steps"][0]["env"]["ALL_PERFORMANCE_RESULT"], "${{ needs.all_performance.result }}")
 
+    def test_independent_checks_can_start_with_maintenance(self):
+        jobs = workflow("verify.yml")["jobs"]
+        self.assertEqual({name for name, job in jobs.items() if job.get("needs")}, {"documentation", "result"})
+        for name, step_name in (("examples", "Select and run local Verify"),
+                                ("variant_builds", "Verify common and compiler-specific variants on Linux"),
+                                ("guidelines", "Check normal library sources")):
+            with self.subTest(job=name):
+                step = next(step for step in jobs[name]["steps"] if step.get("name") == step_name)
+                self.assertIn("--jobs 4", step["run"])
+
     def test_atcoder_verify_adds_gcc_and_clang_configurations(self):
         job = workflow("verify.yml")["jobs"]["examples"]
         self.assertEqual(job["strategy"]["matrix"], {
@@ -145,9 +155,16 @@ class StructureTests(unittest.TestCase):
         upload = next(step for step in job["steps"] if step.get("name") == "Upload local Verify report")
         self.assertIn("'atcoder-local-verify' || 'local-verify'", upload["with"]["name"])
 
+    def test_instrumentation_runs_four_tests_at_a_time(self):
+        job = workflow("verify.yml")["jobs"]["instrumented"]
+        step = next(step for step in job["steps"] if step.get("name") == "Run checked library tests")
+        self.assertEqual(step["env"]["VERIFY_MODE"], "${{ matrix.mode }}")
+        self.assertIn('options=(--jobs 4)', step["run"])
+        self.assertIn('--timeout 240', step["run"])
+        self.assertIn('"${options[@]}"', step["run"])
+
     def test_variant_build_matrix_runs_native_msvc_on_windows(self):
         job = workflow("verify.yml")["jobs"]["variant_builds"]
-        self.assertEqual(job["needs"], "maintenance")
         self.assertEqual(job["strategy"]["matrix"]["include"], [
             {"os": "ubuntu-26.04", "compiler": "GCC"}, {"os": "ubuntu-26.04", "compiler": "Clang"},
             {"os": "windows-2025", "compiler": "MSVC"},
@@ -165,7 +182,6 @@ class StructureTests(unittest.TestCase):
 
     def test_all_library_performance_shards_compare_full_scope_and_upload_only_metadata(self):
         job = workflow("verify.yml")["jobs"]["all_performance"]
-        self.assertEqual(job["needs"], "maintenance")
         self.assertEqual(job["timeout-minutes"], 90)
         self.assertFalse(job["strategy"]["fail-fast"])
         self.assertEqual(job["strategy"]["matrix"], {"shard": list(range(8)), "compile_profile": ["standard", "atcoder"]})

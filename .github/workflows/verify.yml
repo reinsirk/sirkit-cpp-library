@@ -51,7 +51,6 @@ jobs:
 
   examples:
     name: C++23 (${{ matrix.compiler }}, ${{ matrix.arithmetic }}${{ matrix.compile_profile != 'standard' && ', AtCoder' || '' }})
-    needs: maintenance
     runs-on: ubuntu-26.04
     timeout-minutes: 45
     strategy:
@@ -88,7 +87,7 @@ jobs:
         run: |
           set -euo pipefail
           args=(--all --compiler "$VERIFY_COMPILER" --compile-profile "$VERIFY_COMPILE_PROFILE"
-                --skip-sync --results "$VERIFY_RESULTS/result.json")
+                --jobs 4 --skip-sync --results "$VERIFY_RESULTS/result.json")
           if [[ "$VERIFY_ARITHMETIC" == portable ]]; then
             args+=(--fallback)
           fi
@@ -126,7 +125,6 @@ jobs:
 
   variant_builds:
     name: 配布版のビルド・動作検査 (${{ matrix.compiler }})
-    needs: maintenance
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
     strategy:
@@ -181,7 +179,7 @@ jobs:
           python3 Scripts/verify_variants.py --compiler "${{ matrix.compiler }}"
           --gcc g++-15 --clang clang++-18
           --gcc-install-dir "$(dirname "$(g++-15 -print-libgcc-file-name)")"
-          --syntax-only --run-tests --jobs 2 --acl-include .verify-acl
+          --syntax-only --run-tests --jobs 4 --acl-include .verify-acl
           --output "$RUNNER_TEMP/variant-builds.json" --summary "$GITHUB_STEP_SUMMARY"
       - name: Verify common and MSVC-specific variants on Windows
         if: matrix.compiler == 'MSVC'
@@ -200,7 +198,6 @@ jobs:
 
   instrumented:
     name: C++23 (${{ matrix.mode }}, checked)
-    needs: maintenance
     runs-on: ubuntu-26.04
     timeout-minutes: 60
     strategy:
@@ -221,13 +218,19 @@ jobs:
       - name: Run checked library tests
         env:
           VERIFY_MODE: ${{ matrix.mode }}
-        run: >-
-          python3 Scripts/ci_instrumented.py
-          --mode "$VERIFY_MODE" --compiler clang++-18
-          --gcc-install-dir "$(dirname "$(g++-15 -print-libgcc-file-name)")"
-          --llvm-profdata llvm-profdata-18 --llvm-cov llvm-cov-18
-          --gcc g++-15 --gcov gcov-15
-          --output "$RUNNER_TEMP/instrumented"
+        shell: bash
+        run: |
+          set -euo pipefail
+          options=(--jobs 4)
+          if [[ "$VERIFY_MODE" == coverage ]]; then
+            options+=(--timeout 240)
+          fi
+          python3 Scripts/ci_instrumented.py \
+            --mode "$VERIFY_MODE" --compiler clang++-18 \
+            --gcc-install-dir "$(dirname "$(g++-15 -print-libgcc-file-name)")" \
+            --llvm-profdata llvm-profdata-18 --llvm-cov llvm-cov-18 \
+            --gcc g++-15 --gcov gcov-15 "${options[@]}" \
+            --output "$RUNNER_TEMP/instrumented"
       - name: Summarize instrumentation
         if: always()
         run: |
@@ -264,7 +267,6 @@ jobs:
 
   guidelines:
     name: C++ style (${{ matrix.guide }}, normal only)
-    needs: maintenance
     runs-on: ubuntu-26.04
     timeout-minutes: 60
     strategy:
@@ -286,7 +288,7 @@ jobs:
           python3 Scripts/ci_cpp_guidelines.py
           --clang-tidy clang-tidy-18
           --gcc-install-dir "$(dirname "$(g++-15 -print-libgcc-file-name)")"
-          --guide "$CPP_GUIDE"
+          --guide "$CPP_GUIDE" --jobs 4
           --output "$RUNNER_TEMP/guidelines"
       - name: Summarize guidelines
         if: always()
@@ -307,7 +309,6 @@ jobs:
 
   performance:
     name: Supplemental kernel performance regression${{ matrix.compile_profile == 'atcoder' && ' (AtCoder)' || '' }}
-    needs: maintenance
     runs-on: ubuntu-26.04
     timeout-minutes: 20
     strategy:
@@ -399,7 +400,6 @@ jobs:
 
   all_performance:
     name: All-library Verify performance regression (${{ matrix.shard }}${{ matrix.compile_profile == 'atcoder' && ', AtCoder' || '' }})
-    needs: maintenance
     runs-on: ubuntu-26.04
     timeout-minutes: 90
     strategy:
@@ -468,7 +468,6 @@ jobs:
 
   stress:
     name: Deterministic Max and structural cases
-    needs: maintenance
     runs-on: ubuntu-26.04
     timeout-minutes: 20
     steps:
@@ -521,7 +520,6 @@ jobs:
 
   contracts:
     name: Checked API contracts (${{ matrix.compiler }}, ${{ matrix.arithmetic }})
-    needs: maintenance
     runs-on: ubuntu-26.04
     timeout-minutes: 15
     strategy:
@@ -585,7 +583,6 @@ jobs:
 
   library_checker:
     name: Official Library Checker cases (${{ matrix.shard }})
-    needs: maintenance
     runs-on: ubuntu-26.04
     timeout-minutes: 90
     strategy:
@@ -657,7 +654,7 @@ jobs:
   documentation:
     name: Library pages preview
     if: ${{ !cancelled() && needs.maintenance.result == 'success' }}
-    needs: [maintenance, examples, instrumented, performance, all_performance, contracts, library_checker, stress]
+    needs: [maintenance, examples, instrumented, performance, all_performance, contracts, library_checker]
     permissions:
       contents: read
       actions: read
