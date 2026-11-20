@@ -178,8 +178,10 @@ def markdown(report: dict) -> str:
              method,
              "時間は本体の構築・操作・破棄とchecksum集約です。"]
     if compare:
+        tolerance = performance_regression.tolerance_description(
+            "kernel_elapsed_ns", report.get("regression_profile", performance_regression.LOCAL_PROFILE))
         lines.append("本体ごとに、基準・現在版それぞれのケース中央値の最大値を比較します。"
-                     "上限は基準の最大値に5%（最低5 µs）を加えた値です。超過時は本体の全比較ケースを再測定します。")
+                     f"上限は基準の最大値に{tolerance}を加えた値です。超過時は本体の全比較ケースを再測定します。")
     lines += ["", "状態: " + str(report["status"])]
     lines += ["", "コンパイル設定: " + code(report.get("compile_profile", "standard")),
               "フラグ: " + " ".join(map(code, report.get("flags", FLAGS)))]
@@ -249,6 +251,7 @@ def run(args: argparse.Namespace) -> int:
     output = args.output.resolve()
     output.mkdir(parents=True, exist_ok=True)
     profile = getattr(args, "compile_profile", "standard")
+    regression_profile = getattr(args, "regression_profile", performance_regression.LOCAL_PROFILE)
     flags = ci_compile_profiles.compile_flags(profile, FLAGS)
     report = {"format": 1, "status": "running", "scope": "representative_normal_library_kernels",
               "comparison_requested": args.base is not None,
@@ -259,7 +262,8 @@ def run(args: argparse.Namespace) -> int:
               "affinity": sorted(os.sched_getaffinity(0)) if hasattr(os, "sched_getaffinity") else None,
               "results": [], "sources": {}}
     if args.base is not None:
-        report.update(regression_policy=performance_regression.WORST_CASE_POLICY, worst_case_regressions={},
+        report.update(regression_policy=performance_regression.WORST_CASE_POLICY, regression_profile=regression_profile,
+                      worst_case_regressions={},
                       worst_case_confirmations={})
     write_report(output, report)
     try:
@@ -324,7 +328,7 @@ def run(args: argparse.Namespace) -> int:
                     row = measure(order, size, pattern, rounds, args.repetitions, args.warmups)
                     if row["status"] == "MEASURED":
                         row["performance_regression"] = performance_regression.evaluate(
-                            "kernel_elapsed_ns", row["samples_ns"])
+                            "kernel_elapsed_ns", row["samples_ns"], profile=regression_profile)
                     if revision is None:
                         row["status"] = "CURRENT_ONLY"
                     row.update(id=identifier, pattern=case["scenario"], pattern_id=pattern, scale=case["scale"])
@@ -339,12 +343,13 @@ def run(args: argparse.Namespace) -> int:
                     write_report(output, report)
                 samples = paired_samples(report["results"][first_index:])
                 if samples:
-                    worst = performance_regression.evaluate_worst("kernel_elapsed_ns", samples)
+                    worst = performance_regression.evaluate_worst("kernel_elapsed_ns", samples, profile=regression_profile)
                     if worst["status"] == "FAIL":
                         report["worst_case_confirmations"][identifier] = samples
                         reversed_order = dict(reversed(tuple(executables.items())))
                         confirmed = [measure_row(case, reversed_order) for case in plans[identifier]]
-                        worst = performance_regression.evaluate_worst("kernel_elapsed_ns", paired_samples(confirmed))
+                        worst = performance_regression.evaluate_worst(
+                            "kernel_elapsed_ns", paired_samples(confirmed), profile=regression_profile)
                         report["results"][first_index:] = confirmed
                     report["worst_case_regressions"][identifier] = worst
                     write_report(output, report)
@@ -388,6 +393,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--compiler", default="g++")
     parser.add_argument("--compile-profile", choices=ci_compile_profiles.COMPILE_PROFILES, default="standard",
                         help="基準と現在版の両方に使うコンパイル設定")
+    parser.add_argument("--regression-profile", choices=performance_regression.REGRESSION_PROFILES,
+                        default=performance_regression.LOCAL_PROFILE, help="基準版との性能比較で使う許容幅の設定")
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--limits", type=Path, help="明示した場合だけ従来の固定性能予算も検査する")
     parser.add_argument("--id", action="append", choices=tuple(LIBRARIES))

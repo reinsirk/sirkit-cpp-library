@@ -173,6 +173,7 @@ class StructureTests(unittest.TestCase):
         self.assertIn("Scripts/ci_performance_all.py", command)
         self.assertIn("--compiler g++-15", command)
         self.assertIn('--compile-profile "$VERIFY_COMPILE_PROFILE"', command)
+        self.assertIn("--regression-profile github-hosted", command)
         self.assertIn('--shard-index "$VERIFY_SHARD" --shard-count 8', command)
         self.assertIn('--cache "$RUNNER_TEMP/all-library-performance-cache"', command)
         self.assertIn('--output "$RUNNER_TEMP/all-library-performance"', command)
@@ -203,10 +204,12 @@ class StructureTests(unittest.TestCase):
         self.assertIn('--base "$VERIFY_PR_BASE"', command)
         self.assertIn("--compiler g++-15", command)
         self.assertIn('--compile-profile "$VERIFY_COMPILE_PROFILE"', command)
+        self.assertIn("--regression-profile github-hosted", command)
         self.assertNotIn("--limits", command)
         code = python_block(command, "PYREGRESSION")
         baseline = "a" * 40
         good = {"status": "PASS", "compile_profile": "atcoder", "regression_policy": "library_worst_case",
+                "regression_profile": "github-hosted",
                 "current_measurements_passed": True, "performance_regression_passed": True,
                 "base_revision": baseline, "expected_cases": 2, "compared_cases": 2, "results": [{}, {}],
                 "sources": {"fenwick": {}},
@@ -214,6 +217,7 @@ class StructureTests(unittest.TestCase):
         fixtures = [(good, 0)]
         for mutation in ({"status": "PARTIAL"}, {"status": "NO_BASELINE"},
                          {"status": "CURRENT_ONLY"}, {"performance_regression_passed": False},
+                         {"regression_profile": "local"},
                          {"regression_policy": None}, {"worst_case_regressions": {}},
                          {"worst_case_regressions": {"fenwick": {"status": "FAIL", "compared_cases": 2}}},
                          {"worst_case_regressions": {"fenwick": {"status": "PASS", "compared_cases": 1}}},

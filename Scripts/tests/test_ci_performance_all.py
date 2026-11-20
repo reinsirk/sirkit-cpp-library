@@ -426,7 +426,7 @@ class RunnerTests(unittest.TestCase):
             self.assertFalse(report["executed"])
 
     def run_fake_quick(self, folder, *, cpu_ns=50, wall_ns=100, missing_budget=False, fixed_budget=True,
-                       compile_profile="standard", paired_cpu_ns=None):
+                       compile_profile="standard", paired_cpu_ns=None, regression_profile="local"):
         folder=Path(folder);root=folder/"repo";root.mkdir();library=root/"DataStructure/A.cpp";library.parent.mkdir();library.write_text("struct A {};\n")
         driver=root/"driver.cpp";driver.write_text("int main(){}\n")
         num_inputs = len(paired_cpu_ns) if paired_cpu_ns is not None else 1
@@ -435,7 +435,7 @@ class RunnerTests(unittest.TestCase):
         rows=[{"library":"DataStructure/A.cpp","verify_id":"a","libraries":entry["libraries"],"case_source":"official_library_checker","problem_id":"unionfind","combined_library_scope":False}]
         base = "base" if paired_cpu_ns is not None else None
         args=SimpleNamespace(cache=folder/"cache",output=folder/"reports",base=base,compiler="fake",repetitions=2,warmups=0,quick=True,plan=False,library=None,shard_index=0,shard_count=1,compile_timeout=1,case_timeout=1,generation_timeout=1,memory_mib=64,
-            compile_profile=compile_profile,
+            compile_profile=compile_profile, regression_profile=regression_profile,
             limits=fixed_limits(folder,name="other_case" if missing_budget else "registered_sample_00") if fixed_budget else None)
         before=args.limits.read_bytes() if args.limits is not None else None
         def build(source,compiler,directory,timeout,flags):
@@ -481,6 +481,24 @@ class RunnerTests(unittest.TestCase):
             self.assertEqual(row["worst_case_regression"]["observed_case"], "registered_sample_01")
             self.assertIn("個別比較 FAIL（参考）", summary)
             self.assertIn("基準の最大ケース", summary)
+
+    def test_hosted_verify_uses_the_larger_of_relative_and_minimum_tolerance(self):
+        for baseline, current, limit, status in (
+            (25_345_000, 26_803_000, 29_146_750, "PASS"),
+            (10_000_000, 11_500_001, 11_500_000, "FAIL"),
+            (2_000_000, 3_000_000, 3_000_000, "PASS"),
+            (2_000_000, 3_000_001, 3_000_000, "FAIL"),
+        ):
+            with self.subTest(baseline=baseline, current=current), tempfile.TemporaryDirectory() as temporary:
+                timings = [{"base": baseline, "current": current}]
+                result, report, calls = self.run_fake_quick(temporary, fixed_budget=False, paired_cpu_ns=timings,
+                                                            regression_profile="github-hosted")
+                self.assertEqual(result, int(status == "FAIL"))
+                self.assertEqual(calls, 8 if status == "FAIL" else 4)
+                self.assertEqual(report["regression_profile"], "github-hosted")
+                self.assertEqual(report["performance_regression_counts"], {status: 1})
+                gate = report["results"][0]["worst_case_regression"]
+                self.assertEqual((gate["limit_ns"], gate["status"]), (limit, status))
 
     def test_current_only_quick_uses_explicit_budget_without_git_or_official_generator(self):
         with tempfile.TemporaryDirectory()as temporary:

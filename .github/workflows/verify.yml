@@ -324,7 +324,8 @@ jobs:
         run: |
           set -euo pipefail
           python3 Scripts/ci_benchmark.py --base "$VERIFY_PR_BASE" --compiler g++-15 \
-            --compile-profile "$VERIFY_COMPILE_PROFILE" --output "$RUNNER_TEMP/performance"
+            --compile-profile "$VERIFY_COMPILE_PROFILE" --regression-profile github-hosted \
+            --output "$RUNNER_TEMP/performance"
           python3 - <<'PYREGRESSION'
           import json
           import os
@@ -339,6 +340,7 @@ jobs:
               report.get("status") == "PASS"
               and report.get("compile_profile") == os.environ["VERIFY_COMPILE_PROFILE"]
               and report.get("regression_policy") == "library_worst_case"
+              and report.get("regression_profile") == "github-hosted"
               and report.get("current_measurements_passed") is True
               and report.get("performance_regression_passed") is True
               and report.get("base_revision") == os.environ["VERIFY_PR_BASE"]
@@ -417,6 +419,7 @@ jobs:
           --base "$VERIFY_PR_BASE"
           --shard-index "$VERIFY_SHARD" --shard-count 8
           --compiler g++-15 --compile-profile "$VERIFY_COMPILE_PROFILE"
+          --regression-profile github-hosted
           --cache "$RUNNER_TEMP/all-library-performance-cache"
           --output "$RUNNER_TEMP/all-library-performance"
       - name: Summarize all-library performance

@@ -235,6 +235,21 @@ class RegressionRunnerTests(unittest.TestCase):
         self.assertEqual(report["worst_case_confirmations"], {})
         self.assertEqual(report["results"][1]["performance_regression"]["status"], "FAIL")
 
+    def test_hosted_kernel_ignores_small_regressions_and_requires_a_repeat_for_large_ones(self):
+        for initial, confirmed, status in ((1_060_000, None, "PASS"),
+                                            (1_200_000, 1_150_000, "PASS"),
+                                            (1_200_000, 1_150_001, "FAIL")):
+            with self.subTest(initial=initial, confirmed=confirmed), tempfile.TemporaryDirectory() as folder:
+                other = (900_000, 700_000, 600_000)
+                rerun = (confirmed, *other) if confirmed is not None else None
+                report = self.run_pair(folder, (initial, *other), confirmed=rerun,
+                                       expected=int(status == "FAIL"), profile="github-hosted")
+                worst = report["worst_case_regressions"]["fenwick"]
+                self.assertEqual((worst["limit_ns"], worst["status"]), (1_150_000, status))
+        samples = {"base": [100_000], "current": [150_001]}
+        gate = bench.performance_regression.evaluate("kernel_elapsed_ns", samples, profile="github-hosted")
+        self.assertEqual((gate["limit_ns"], gate["status"]), (150_000, "FAIL"))
+
     def test_worst_case_overshoot_reruns_the_entire_library_and_checks_boundary(self):
         for confirm, status in ((1_050_000, "PASS"), (1_050_001, "FAIL")):
             with self.subTest(confirm=confirm), tempfile.TemporaryDirectory() as folder:
@@ -259,9 +274,9 @@ class RegressionRunnerTests(unittest.TestCase):
 
     baseline = (1_000_000, 800_000, 700_000, 600_000)
 
-    def run_pair(self, folder, initial, *, confirmed=None, expected):
+    def run_pair(self, folder, initial, *, confirmed=None, expected, profile="local"):
         args = argparse.Namespace(output=Path(folder), base="HEAD", compiler="fake",
-                                  compile_profile="atcoder", quick=True, repetitions=3,
+                                  compile_profile="atcoder", regression_profile=profile, quick=True, repetitions=3,
                                   warmups=0, id=["fenwick"])
         order = []
 
@@ -283,6 +298,7 @@ class RegressionRunnerTests(unittest.TestCase):
             self.assertEqual(bench.run(args), expected)
         report = json.loads((args.output / "result.json").read_bytes())
         self.assertEqual(report["regression_policy"], "library_worst_case")
+        self.assertEqual(report["regression_profile"], profile)
         self.assertEqual(report["compile_profile"], "atcoder")
         self.assertIn("-std=gnu++23", report["flags"])
         self.assertIn("-DSKIP_RUNTIME_CHECKS", report["flags"])
