@@ -145,6 +145,8 @@ python3 Scripts/ci_cpp_guidelines.py --guide google --clang-tidy clang-tidy-18 -
 
 ## 性能退行の検査
 
+手元の環境で現在版のケース別の時間を知りたい場合は、[手元でライブラリの性能を測る](performance_measurement.md)を参照してください。
+
 全103ライブラリについて、固定したVerifyプログラムの実行時間を8分割で測ります。テンプレート・`Fast/`・生成された派生版はこの103本に含めません。Library Checker対応の83本は公式入力の小規模例・最大バイト数・全generator系列・専用難ケースから選び、残り20本には各2形状の決定的入力を用意します。公式全ケースの正誤照合は別ジョブでも行います。
 
 ```sh
