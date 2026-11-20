@@ -61,8 +61,8 @@ python3 Scripts/ci_library_checker.py --id dynamic_union_find \
 
 `main`向けPRで正常系・失敗系・Sanitizer・Coverage・全103本と代表本体の性能退行検査、全LC対象の公式ケースを実行し、ページ一式を`library-pages-preview`成果物へ保存します。公式ケースと全ライブラリ性能は各8分割です。別のMax・構造ケースはActionsの`stress-cases`成果物へ保存します。性能は入力規模・実行環境、PRのベースと変更後の時間、退行判定を表示します。Verify全体・本体のみ・オンラインの測定結果はそれぞれ表示します。
 
-mainへ取り込んだPRのcloseイベントで、取り込まれたcommitから公開版を生成します。直前の同じPR headのCI成果物を使い、再度SHAを照合します。成果物が失われた場合は「未実施」とし、過去の成功を補いません。未取り込みPR・通常push・手動起動では公開しません。
+mainへ取り込んだPRのcloseイベントで、取り込まれたcommitから公開版を生成します。直前の同じPR headのCI成果物を使い、再度SHAを照合します。GitHub APIの関連PR一覧が空の場合は、Verifyの実行名に含まれるPR番号とheadのリポジトリ・ブランチ・SHAで照合します。成果物が見つからない場合は「未実施」とし、過去の成功を補いません。生成が成功すると、別の公開ジョブが`main`上で動き、生成元が現在の`main`の先頭と一致する場合に公開します。
 
-初回はGitHubの **Settings → Pages → Build and deployment → Source → GitHub Actions** を選びます。公開先は[GitHub Pages](https://reinsirk.github.io/sirkit-cpp-library/)です。開発中の未コミット変更を`--production`で公開版扱いにはできません。
+初回はGitHubの **Settings → Pages → Build and deployment → Source → GitHub Actions** を選びます。`github-pages`環境の公開許可ブランチは`main`です。未設定のため `Library pages` が失敗した場合は、設定後に同じ実行を再実行します。公開先は[GitHub Pages](https://reinsirk.github.io/sirkit-cpp-library/)です。開発中の未コミット変更を`--production`で公開版扱いにはできません。
 
 生成ページへコピーされるcompetitive-verifierのlayout・CSS・JSはMITです。[原文](https://github.com/competitive-verifier/competitive-verifier/blob/d6bfe076aa6ae891f93588d470c7886ad6208bd9/LICENSE)と[第三者表示](https://github.com/competitive-verifier/competitive-verifier/blob/d6bfe076aa6ae891f93588d470c7886ad6208bd9/3rd-party-license.txt)はリポジトリに保存せず、生成時に4.2.2の固定commitから取得してサイトへ同梱します。SHA-256を照合し、取得失敗・内容不一致なら生成を停止します。取得先・commit・SHAはサイトの`licenses/sources.json`に記録します。通常版C++の提供条件とは適用範囲を分けます。既定のMinimalテーマは[CC0-1.0](https://github.com/pages-themes/minimal/blob/master/LICENSE)です。

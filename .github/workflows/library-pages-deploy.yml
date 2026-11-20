@@ -1,0 +1,88 @@
+# SPDX-License-Identifier: CC0-1.0
+# 参考: https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#workflow_run
+name: Deploy library pages
+
+on:
+  workflow_run:
+    workflows: [Library pages]
+    types: [completed]
+
+permissions: {}
+
+concurrency:
+  group: library-pages-deploy-main
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'pull_request' &&
+      github.event.workflow_run.path == '.github/workflows/library-pages.yml' &&
+      github.event.workflow_run.repository.full_name == github.repository
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      actions: read
+      contents: read
+      pull-requests: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Download publication evidence
+        uses: actions/download-artifact@v8
+        with:
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          run-id: ${{ github.event.workflow_run.id }}
+          name: library-pages-publication-report
+          path: ${{ runner.temp }}/pages-evidence
+          digest-mismatch: error
+      - name: Confirm the site belongs to the current main commit
+        id: publication
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PAGES_BUILD_HEAD: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          set -euo pipefail
+          evidence="$RUNNER_TEMP/pages-evidence/pages-download-provenance.json"
+          commit=$(jq -er '.merged_commit_sha | strings | select(test("^[0-9a-f]{40}$"))' "$evidence")
+          number=$(jq -er '.pull_request | numbers | select(. > 0 and . == floor)' "$evidence")
+          jq -e --arg repo "$GITHUB_REPOSITORY" --arg head "$PAGES_BUILD_HEAD" \
+            '.repository == $repo and .requested_head_sha == $head' "$evidence" >/dev/null
+          main=$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/main" --jq '.object.sha')
+          if [[ "$commit" != "$GITHUB_SHA" || "$commit" != "$main" ]]; then
+            echo 'A newer main commit supersedes this site build.'
+            exit 0
+          fi
+          gh api -H 'X-GitHub-Api-Version: 2022-11-28' "repos/$GITHUB_REPOSITORY/pulls/$number" |
+            jq -e --arg sha "$commit" --arg repo "$GITHUB_REPOSITORY" --arg head "$PAGES_BUILD_HEAD" \
+              '.merged == true and .base.ref == "main" and .base.repo.full_name == $repo and
+               .merge_commit_sha == $sha and .head.sha == $head' >/dev/null
+          echo 'publish=true' >> "$GITHUB_OUTPUT"
+      - name: Download the site archive
+        if: steps.publication.outputs.publish == 'true'
+        uses: actions/download-artifact@v8
+        with:
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          run-id: ${{ github.event.workflow_run.id }}
+          name: github-pages
+          path: ${{ runner.temp }}/pages-package
+          digest-mismatch: error
+      - name: Pass the site archive to the deployment
+        if: steps.publication.outputs.publish == 'true'
+        uses: actions/upload-artifact@v7
+        with:
+          name: github-pages
+          path: ${{ runner.temp }}/pages-package/artifact.tar
+          retention-days: 1
+          if-no-files-found: error
+      - name: Deploy the reviewed main artifact
+        if: steps.publication.outputs.publish == 'true'
+        id: deployment
+        uses: actions/deploy-pages@v5

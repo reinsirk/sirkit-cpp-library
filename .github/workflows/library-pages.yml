@@ -52,6 +52,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           PAGES_REPOSITORY: ${{ github.repository }}
           PAGES_PR_HEAD: ${{ github.event.pull_request.head.sha }}
+          PAGES_PR_HEAD_REPOSITORY: ${{ github.event.pull_request.head.repo.full_name }}
+          PAGES_PR_HEAD_REF: ${{ github.event.pull_request.head.ref }}
           PAGES_PR_NUMBER: ${{ github.event.pull_request.number }}
           PAGES_MERGE_COMMIT: ${{ github.event.pull_request.merge_commit_sha }}
         run: |
@@ -61,6 +63,8 @@ jobs:
 
           repository = os.environ["PAGES_REPOSITORY"]
           head = os.environ["PAGES_PR_HEAD"]
+          head_repository = os.environ["PAGES_PR_HEAD_REPOSITORY"]
+          head_ref = os.environ["PAGES_PR_HEAD_REF"]
           merge = os.environ["PAGES_MERGE_COMMIT"]
           number = int(os.environ["PAGES_PR_NUMBER"])
           if not re.fullmatch(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", repository):
@@ -100,11 +104,21 @@ jobs:
                               or type(row.get("run_number")) is not int or row["run_number"] <= 0
                               or type(row.get("run_attempt")) is not int or row["run_attempt"] <= 0):
                           continue
-                      matches = [pr for pr in row.get("pull_requests", []) if isinstance(pr, dict)
-                                 and type(pr.get("number")) is int and pr["number"] == number
-                                 and isinstance(pr.get("head"), dict) and pr["head"].get("sha") == head
-                                 and isinstance(pr.get("base"), dict) and pr["base"].get("ref") == "main"]
-                      if matches:
+                      pull_requests = row.get("pull_requests")
+                      if not isinstance(pull_requests, list):
+                          continue
+                      matches = any(isinstance(pr, dict)
+                                    and type(pr.get("number")) is int and pr["number"] == number
+                                    and isinstance(pr.get("head"), dict) and pr["head"].get("sha") == head
+                                    and isinstance(pr.get("base"), dict) and pr["base"].get("ref") == "main"
+                                    for pr in pull_requests)
+                      # APIが関連PRを返さないときは、Verifyの実行名とheadのリポジトリ・ブランチを照合する。
+                      matches_run_name = (not pull_requests and head_repository and head_ref
+                                          and row.get("display_title") == f"Verify PR #{number}"
+                                          and isinstance(row.get("head_repository"), dict)
+                                          and row["head_repository"].get("full_name") == head_repository
+                                          and row.get("head_branch") == head_ref)
+                      if matches or matches_run_name:
                           candidates.append(row)
               if candidates:
                   selected = max(candidates, key=lambda row: (row.get("run_number", 0), row.get("run_attempt", 0), row["id"]))
@@ -179,24 +193,3 @@ jobs:
         uses: actions/upload-pages-artifact@v5
         with:
           path: ${{ runner.temp }}/library-pages/site/
-
-  deploy:
-    if: >-
-      needs.build.result == 'success' && github.event.pull_request.merged == true &&
-      github.event.pull_request.base.ref == 'main' &&
-      github.event.pull_request.base.repo.full_name == github.repository
-    needs: build
-    runs-on: ubuntu-24.04
-    timeout-minutes: 10
-    permissions:
-      contents: read
-      actions: read
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Deploy the reviewed main artifact
-        id: deployment
-        uses: actions/deploy-pages@v5
