@@ -467,19 +467,46 @@ def measure_with_comparison(binaries: dict[str, Path], case: dict, entry: dict, 
     result = measure_case(binaries, case, entry, work, **options)
     if "base" not in binaries:
         result["comparison"] = baseline_comparison
-    if baseline_comparison == "NOT_REQUESTED":
-        return result
-    gate = regression_result(result)
-    if gate["status"] == "FAIL" and result["comparison"] == "MEASURED":
-        initial_samples = result["cpu_samples_ns"]
-        result = measure_case(dict(reversed(tuple(binaries.items()))), case, entry, work, **options)
-        result["regression_confirmation"] = initial_samples
-        gate = regression_result(result)
-        if result["comparison"] != "MEASURED":
-            # 初回の比較は成立していたため、再計測不能だけで退行判定を覆さない。
-            gate.update(status="FAIL", reason="BASELINE_CONFIRMATION_UNAVAILABLE")
-    result["performance_regression"] = gate
+    if baseline_comparison != "NOT_REQUESTED":
+        result["performance_regression"] = regression_result(result)
     return result
+
+
+def paired_cpu_samples(cases: list[dict]) -> dict[str, dict[str, list[int]]]:
+    return {case["name"]: case["cpu_samples_ns"] for case in cases if case["comparison"] == "MEASURED"}
+
+
+def confirm_worst_case(row: dict, binaries: dict[str, Path], cases: list[dict],
+                       entry: dict, work: Path, **options) -> None:
+    paired = paired_cpu_samples(row["cases"])
+    if not paired:
+        return
+    worst = performance_regression.evaluate_worst("child_cpu_ns", paired)
+    if worst["status"] == "FAIL":
+        # 最大のケースは再計測で変わり得るため、比較できた全ケースを取り直す。
+        row["worst_case_confirmation"] = paired
+        reverse_order = dict(reversed(tuple(binaries.items())))
+        for index, case in enumerate(cases):
+            if case["name"] not in paired:
+                continue
+            result = measure_with_comparison(reverse_order, case, entry, work, "MEASURED", **options)
+            if result["comparison"] != "MEASURED":
+                result["performance_regression"].update(status="FAIL", reason="BASELINE_CONFIRMATION_UNAVAILABLE")
+            row["cases"][index] = result
+        paired = paired_cpu_samples(row["cases"])
+        if not paired:
+            return
+        worst = performance_regression.evaluate_worst("child_cpu_ns", paired)
+    row["worst_case_regression"] = worst
+
+
+def library_regression_status(row: dict) -> str:
+    status = row.get("worst_case_regression", {}).get("status", "NOT_COMPARABLE")
+    if row.get("status") == "FAIL" or any(
+            case["comparison"] != "MEASURED" and case["performance_regression"]["status"] == "FAIL"
+            for case in row["cases"]):
+        return "FAIL"
+    return status
 
 
 def complete(report: dict, *, entries: dict | None = None, nonlc=None) -> bool:
@@ -527,7 +554,8 @@ def write_report(output: Path, report: dict) -> None:
     lines = ["## 全ライブラリのVerifyプログラム性能", "", "状態: " + report["status"], "",
              "現在版の入力規模・wall時間・子プロセスCPU時間の中央値と生データを保存します。",
              "wall時間はプロセス起動・入出力・runnerの待機遅延を含みます。本体だけのkernel測定・オンライン時間とは区別します。",
-             "基準指定時は前の版と同じ入力で子プロセスCPU時間を比較します。固定予算は明示指定時だけ検査します。", "",
+             "基準指定時は共通のケースごとにCPU時間の中央値を求め、ライブラリごとに各版の最大値を比較します。",
+             "ケースごとの時間比較は参考です。実行・比較エラーと、明示指定した固定予算は別途検査します。", "",
              "入力プロファイル: " + report["size_profile"], "",
              "CPU: " + str(report.get("cpu_model", "unknown")),
              "環境: " + str(report.get("platform", "unknown")),
@@ -536,7 +564,7 @@ def write_report(output: Path, report: dict) -> None:
              "コンパイル設定: " + report.get("compile_profile", "standard"),
              "フラグ: " + " ".join(report.get("flags", [])), "",
              f"全対象 {len(report['all_library_paths'])}、このshard {len(report['selected_library_paths'])}。", "",
-             "| 本体 | Verify | ケース | 入力規模・先頭行 | wall ms | CPU ms | 基準CPU ms | 現行/基準 | 上限CPU ms | 判定 | 入力 bytes | 繰り返し |",
+             "| 本体 | Verify | ケース | 入力規模・先頭行 | wall ms | CPU ms | 基準CPU ms | 現行/基準 | 固定予算CPU ms | 比較の詳細 | 入力 bytes | 繰り返し |",
              "| --- | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | --- | ---: | ---: |"]
     for row in report["results"]:
         for case in row.get("cases", []):
@@ -546,20 +574,32 @@ def write_report(output: Path, report: dict) -> None:
             dimensions = metadata.get("dimensions", metadata.get("input_header", "登録入力例"))
             description = json.dumps(dimensions, ensure_ascii=False) if isinstance(dimensions, dict) else str(dimensions)
             description = description.replace("|", "&#124;").replace("\n", " ")
-            gate = case.get("performance_regression") or case.get("performance_limit") or {}
-            baseline = f"{gate['baseline_median_ns']/1e6:.3f}" if "baseline_median_ns" in gate else "—"
             comparison = case.get("performance_regression", {})
+            fixed = case.get("performance_limit", {})
             base_cpu = comparison.get("baseline_median_ns")
+            baseline_cpu = base_cpu if base_cpu is not None else fixed.get("baseline_median_ns")
+            baseline = f"{baseline_cpu/1e6:.3f}" if baseline_cpu is not None else "—"
             ratio = f"{comparison['observed_median_ns'] / base_cpu:.3f}×" if base_cpu else "—"
-            budget = f"{gate['limit_ns']/1e6:.3f}" if "limit_ns" in gate else "—"
-            judgement = gate.get("status", "計測のみ")
-            if "reason" in gate:
-                judgement += " (" + gate["reason"] + ")"
+            budget = f"{fixed['limit_ns']/1e6:.3f} ({fixed['status']})" if fixed else "—"
+            judgement = comparison.get("reason", "個別比較 " + comparison["status"] + "（参考）"
+                                       if comparison else "計測のみ")
             lines.append(f"| {row['library']} | {row['verify_id']} | {case['name']} | {description} | {med['current']/1e6:.3f} | {cpu:.3f} | {baseline} | {ratio} | {budget} | {judgement} | {case['input_bytes']} | {report['repetitions']} |")
     if report.get("base_revision"):
         counts = report.get("performance_regression_counts", {})
         lines += ["", "比較元 " + report["base_revision"],
-                  f"比較合格 {counts.get('PASS', 0)}、失敗 {counts.get('FAIL', 0)}、比較不可 {counts.get('NOT_COMPARABLE', 0)}。",
+                  f"ライブラリごとの比較は合格 {counts.get('PASS', 0)}、失敗 {counts.get('FAIL', 0)}、比較不可 {counts.get('NOT_COMPARABLE', 0)}。",
+                  "", "| 本体 | 基準の最大ケース | 基準CPU ms | 現行の最大ケース | 現行CPU ms | 上限CPU ms | 共通ケース数 | 退行判定 |",
+                  "| --- | --- | ---: | --- | ---: | ---: | ---: | --- |"]
+        for row in report["results"]:
+            worst = row.get("worst_case_regression")
+            status = library_regression_status(row) if row["status"] in ("PASS", "FAIL") else "計測中"
+            if worst is None:
+                lines.append(f"| {row['library']} | — | — | — | — | — | — | {status} |")
+                continue
+            lines.append(f"| {row['library']} | {worst['baseline_case']} | {worst['baseline_median_ns']/1e6:.3f} | "
+                         f"{worst['observed_case']} | {worst['observed_median_ns']/1e6:.3f} | "
+                         f"{worst['limit_ns']/1e6:.3f} | {worst['compared_cases']} | {status} |")
+        lines += ["",
                   "旧driverを使った理由とソースSHA、再計測前の値はresult.jsonで確認できます。"]
     if report.get("error"):
         lines += ["", str(report["error"]).replace("\n", " ")[:1000]]
@@ -615,7 +655,8 @@ def run(args: argparse.Namespace) -> int:
         revision = ci_benchmark.resolve_base(args.base, root) if args.base else None
         report["base_revision"] = revision
         if revision is not None:
-            report.update(performance_regression_passed=False, performance_regression_counts={})
+            report.update(regression_policy=performance_regression.WORST_CASE_POLICY, performance_regression_passed=False,
+                          performance_regression_counts={})
         compiler = shutil.which(args.compiler)
         if compiler is None:
             raise PerformanceError("compiler missing")
@@ -704,16 +745,20 @@ def run(args: argparse.Namespace) -> int:
                         raise PerformanceError("empty or duplicate performance cases")
                     budgets = ({case["name"]: limits.whole(row["library"], row["verify_id"], case["name"],
                                 Path(case["input_path"]).stat().st_size) for case in cases} if limits is not None else {})
+                    options = {"repetitions": args.repetitions, "warmups": args.warmups,
+                               "timeout": args.case_timeout, "memory_mib": args.memory_mib}
                     for case in cases:
                         result = measure_with_comparison(binaries, case, entry, work, row["baseline_comparison"],
-                                                         repetitions=args.repetitions, warmups=args.warmups,
-                                                         timeout=args.case_timeout, memory_mib=args.memory_mib)
-                        if limits is not None:
-                            result["performance_limit"] = limits.evaluate(budgets[case["name"]], result["cpu_samples_ns"]["current"])
+                                                         **options)
                         row["cases"].append(result)
                         write_report(output, report)
+                    if revision is not None:
+                        confirm_worst_case(row, binaries, cases, entry, work, **options)
                     row["current_measurements_passed"], row["status"] = True, "PASS"
                     if limits is not None:
+                        for result in row["cases"]:
+                            result["performance_limit"] = limits.evaluate(budgets[result["name"]],
+                                                                           result["cpu_samples_ns"]["current"])
                         row["performance_limits_passed"] = all(c["performance_limit"]["status"] == "PASS" for c in row["cases"])
                 except (OSError, ValueError, official.RunnerError, subprocess.SubprocessError) as error:
                     record_failure(row, error)
@@ -738,7 +783,7 @@ def run(args: argparse.Namespace) -> int:
             report["source_freeze_passed"] = True
             report["current_measurements_passed"] = complete(report, entries=by_id, nonlc=nonlc)
             if revision is not None:
-                counts = Counter(c["performance_regression"]["status"] for row in report["results"] for c in row["cases"])
+                counts = Counter(library_regression_status(row) for row in report["results"])
                 has_existing_libraries = any(row.get("baseline_comparison") != "BASELINE_NEW_LIBRARY"
                                              for row in report["results"])
                 report["performance_regression_counts"] = dict(counts)

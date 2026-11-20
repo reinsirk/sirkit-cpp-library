@@ -227,31 +227,72 @@ class RegressionRunnerTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             bench.performance_regression.evaluate("child_cpu_ns", {"base": [1, 2], "current": [1]})
 
-    def test_overshoot_is_checked_again_before_failing_and_needs_no_fixed_budget(self):
-        for confirm, status in ((1_010_000, "PASS"), (1_200_000, "FAIL")):
+    def test_case_slowdown_under_the_worst_case_limit_does_not_trigger_a_rerun(self):
+        with tempfile.TemporaryDirectory() as folder:
+            report = self.run_pair(folder, (1_000_000, 900_000, 400_000, 600_000), expected=0)
+        self.assertEqual(report["status"], "PASS")
+        self.assertEqual(report["worst_case_regressions"]["fenwick"]["status"], "PASS")
+        self.assertEqual(report["worst_case_confirmations"], {})
+        self.assertEqual(report["results"][1]["performance_regression"]["status"], "FAIL")
+
+    def test_worst_case_overshoot_reruns_the_entire_library_and_checks_boundary(self):
+        for confirm, status in ((1_050_000, "PASS"), (1_050_001, "FAIL")):
             with self.subTest(confirm=confirm), tempfile.TemporaryDirectory() as folder:
-                args = argparse.Namespace(output=Path(folder), base="HEAD", compiler="fake",
-                                          quick=True, repetitions=3, warmups=0, id=["fenwick"])
-                def measure(executables, size, pattern, rounds, repetitions, warmups):
-                    current = 1_200_000 if next(iter(executables)) == "base" else confirm
-                    return {"status": "MEASURED", "size": size, "rounds": rounds,
-                            "samples_ns": {"base": [1_000_000] * repetitions, "current": [current] * repetitions},
-                            "median_ns": {"base": 1_000_000, "current": current},
-                            "current_over_base": current / 1_000_000}
-                with patch.object(bench, "resolve_base", return_value="a" * 40), \
-                     patch.object(bench, "baseline_source", return_value=b"base"), \
-                     patch.object(bench, "compiler_command", return_value=["fake"]), \
-                     patch.object(bench, "command", return_value=subprocess.CompletedProcess([], 0, b"fake compiler\n")), \
-                     patch.object(bench, "build", return_value=Path("fake-binary")), \
-                     patch.object(bench, "measure", side_effect=measure) as runs, redirect_stdout(io.StringIO()):
-                    self.assertEqual(bench.run(args), int(status == "FAIL"))
-                report = json.loads((args.output / "result.json").read_bytes())
-                self.assertEqual(runs.call_count, 8)
+                initial = (975_000, 1_200_000, 500_000, 450_000)
+                confirmed = (975_000, confirm, 500_000, 450_000)
+                report = self.run_pair(folder, initial, confirmed=confirmed, expected=int(status == "FAIL"))
                 self.assertEqual(report["status"], status)
                 self.assertEqual(report["performance_regression_passed"], status == "PASS")
                 self.assertNotIn("performance_limits", report)
-                self.assertTrue(all(row["regression_confirmation"]["current"] == [1_200_000] * 3
-                                    and row["performance_regression"]["status"] == status for row in report["results"]))
+                worst = report["worst_case_regressions"]["fenwick"]
+                self.assertEqual(worst["baseline_case"], "2048:0")
+                self.assertEqual(worst["observed_case"], "2048:1")
+                self.assertEqual(worst["observed_median_ns"], confirm)
+                self.assertEqual(worst["status"], status)
+                self.assertEqual(report["results"][1]["performance_regression"]["status"], "FAIL")
+                self.assertEqual(report["worst_case_confirmations"]["fenwick"], {
+                    f"2048:{pattern}": {"base": [self.baseline[pattern]] * 3, "current": [time] * 3}
+                    for pattern, time in enumerate(initial)
+                })
+                self.assertTrue(all(row["samples_ns"]["current"] == [time] * 3
+                                    for row, time in zip(report["results"], confirmed, strict=True)))
+
+    baseline = (1_000_000, 800_000, 700_000, 600_000)
+
+    def run_pair(self, folder, initial, *, confirmed=None, expected):
+        args = argparse.Namespace(output=Path(folder), base="HEAD", compiler="fake",
+                                  compile_profile="atcoder", quick=True, repetitions=3,
+                                  warmups=0, id=["fenwick"])
+        order = []
+
+        def measure(executables, size, pattern, rounds, repetitions, warmups):
+            first = next(iter(executables))
+            order.append((first, pattern))
+            base = self.baseline[pattern]
+            current = initial[pattern] if first == "base" else confirmed[pattern]
+            return {"status": "MEASURED", "size": size, "rounds": rounds,
+                    "samples_ns": {"base": [base] * repetitions, "current": [current] * repetitions},
+                    "median_ns": {"base": base, "current": current}, "current_over_base": current / base}
+
+        with patch.object(bench, "resolve_base", return_value="a" * 40), \
+             patch.object(bench, "baseline_source", return_value=b"base"), \
+             patch.object(bench, "compiler_command", return_value=["fake"]), \
+             patch.object(bench, "command", return_value=subprocess.CompletedProcess([], 0, b"fake compiler\n")), \
+             patch.object(bench, "build", return_value=Path("fake-binary")) as build, \
+             patch.object(bench, "measure", side_effect=measure), redirect_stdout(io.StringIO()):
+            self.assertEqual(bench.run(args), expected)
+        report = json.loads((args.output / "result.json").read_bytes())
+        self.assertEqual(report["regression_policy"], "library_worst_case")
+        self.assertEqual(report["compile_profile"], "atcoder")
+        self.assertIn("-std=gnu++23", report["flags"])
+        self.assertIn("-DSKIP_RUNTIME_CHECKS", report["flags"])
+        self.assertEqual([call.args[-1] for call in build.call_args_list], [report["flags"]] * 2)
+        self.assertEqual(order[:4], [("base", pattern) for pattern in range(4)])
+        self.assertEqual(order[4:], [] if confirmed is None else [("current", pattern) for pattern in range(4)])
+        summary = (args.output / "summary.md").read_text()
+        self.assertIn("現在の最大ケース", summary)
+        self.assertIn("ケース参考判定", summary)
+        return report
 
 
 class RuntimeTests(unittest.TestCase):
@@ -288,6 +329,8 @@ class RuntimeTests(unittest.TestCase):
             report = json.loads((Path(directory) / "result.json").read_text())
             self.assertEqual(report["status"], "NO_BASELINE")
             self.assertEqual(report["compared_cases"], 0)
+            self.assertEqual(report["worst_case_regressions"], {})
+            self.assertEqual(report["worst_case_confirmations"], {})
             self.assertTrue(report["current_measurements_passed"])
             self.assertEqual(len(report["results"]), 4)
 

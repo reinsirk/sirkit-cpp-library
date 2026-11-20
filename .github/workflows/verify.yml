@@ -334,15 +334,21 @@ jobs:
           report = json.loads(path.read_bytes())
           results = report.get("results")
           expected = report.get("expected_cases")
+          worst = report.get("worst_case_regressions")
           complete = (
               report.get("status") == "PASS"
               and report.get("compile_profile") == os.environ["VERIFY_COMPILE_PROFILE"]
+              and report.get("regression_policy") == "library_worst_case"
               and report.get("current_measurements_passed") is True
               and report.get("performance_regression_passed") is True
               and report.get("base_revision") == os.environ["VERIFY_PR_BASE"]
               and type(expected) is int
               and isinstance(results, list)
               and expected == report.get("compared_cases") == len(results) > 0
+              and isinstance(worst, dict)
+              and worst.keys() == report.get("sources", {}).keys()
+              and all(gate.get("status") == "PASS" for gate in worst.values())
+              and sum(gate["compared_cases"] for gate in worst.values()) == expected
           )
           raise SystemExit(0 if complete else 1)
           PYREGRESSION

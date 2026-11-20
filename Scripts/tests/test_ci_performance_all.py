@@ -138,25 +138,50 @@ class MeasurementTests(unittest.TestCase):
         build["diagnostic_excerpt"] += "submission.cpp:168:3: error: unknown name\n"
         self.assertEqual(perf.baseline_build_comparison(build, "atcoder"), "BASELINE_API_INCOMPATIBLE")
 
-    def test_regression_confirms_only_initial_fail_with_same_options(self):
+    @staticmethod
+    def paired_result(name, baseline, current):
+        result = {"name": name, "comparison": "MEASURED",
+                  "cpu_samples_ns": {"base": [baseline] * 3, "current": [current] * 3}}
+        return {**result, "performance_regression": perf.regression_result(result)}
+
+    def test_losing_a_case_is_advisory_when_library_worst_passes(self):
         binaries = {"base": Path("base"), "current": Path("current")}
-        first = {"comparison": "MEASURED", "cpu_samples_ns": {"base": [10_000_000] * 3, "current": [10_600_000] * 3}}
-        for cpu, expected in ((10_500_000, "PASS"), (10_500_001, "FAIL")):
-            second = {"comparison": "MEASURED", "cpu_samples_ns": {"base": [10_000_000] * 3, "current": [cpu] * 3}}
-            with self.subTest(cpu=cpu), patch.object(perf, "measure_case", side_effect=[first, second]) as measure:
-                row = perf.measure_with_comparison(binaries, {}, {}, Path("work"), "MEASURED", repetitions=3)
-                self.assertEqual(measure.call_count, 2)
-                self.assertEqual(measure.call_args_list[0], measure.call_args_list[1])
-                self.assertEqual(list(measure.call_args_list[0].args[0]), ["base", "current"])
-                self.assertEqual(list(measure.call_args_list[1].args[0]), ["current", "base"])
-            self.assertEqual(row["performance_regression"]["status"], expected)
-            self.assertEqual(row["regression_confirmation"], first["cpu_samples_ns"])
-        with patch.object(perf, "measure_case", return_value={"comparison": "MEASURED", "cpu_samples_ns": {
-                "base": [400_000], "current": [500_000]}}) as measure:
-            row = perf.measure_with_comparison(binaries, {}, {}, Path("work"), "MEASURED", repetitions=1)
-        self.assertEqual(row["performance_regression"]["status"], "PASS")
-        self.assertNotIn("regression_confirmation", row)
-        measure.assert_called_once()
+        fast = self.paired_result("fast", 5_000_000, 9_500_000)
+        slow = self.paired_result("slow", 10_000_000, 9_000_000)
+        row = {"cases": [fast, slow]}
+        with patch.object(perf, "measure_case") as measure:
+            perf.confirm_worst_case(row, binaries, row["cases"], {}, Path("work"), repetitions=3)
+        measure.assert_not_called()
+        self.assertEqual(fast["performance_regression"]["status"], "FAIL")
+        self.assertNotIn("worst_case_confirmation", row)
+        self.assertEqual(row["worst_case_regression"]["baseline_case"], "slow")
+        self.assertEqual(row["worst_case_regression"]["observed_case"], "fast")
+        self.assertEqual(perf.library_regression_status(row), "PASS")
+
+    def test_worst_regression_repeats_all_paired_cases_in_reverse_with_same_options(self):
+        binaries = {"base": Path("base"), "current": Path("current")}
+        cases = [{"name": name} for name in ("slow", "fast", "unpaired")]
+        options = {"repetitions": 3, "warmups": 1, "timeout": 10, "memory_mib": 64}
+        for current, expected in ((10_500_000, "PASS"), (10_500_001, "FAIL")):
+            first = [self.paired_result("slow", 10_000_000, 9_000_000),
+                     self.paired_result("fast", 5_000_000, 11_000_000)]
+            unpaired = {"name": "unpaired", "comparison": "BASELINE_CONSTEXPR_LIMIT"}
+            unpaired["performance_regression"] = perf.regression_result(unpaired)
+            row = {"cases": [*first, unpaired]}
+            confirmed = [self.paired_result("slow", 10_000_000, current),
+                         self.paired_result("fast", 5_000_000, 8_000_000)]
+            with self.subTest(current=current), patch.object(perf, "measure_case", side_effect=confirmed) as measure:
+                perf.confirm_worst_case(row, binaries, cases, {}, Path("work"), **options)
+            self.assertEqual(measure.call_count, 2)
+            for call, expected_case in zip(measure.call_args_list, cases[:2], strict=True):
+                self.assertEqual(list(call.args[0]), ["current", "base"])
+                self.assertEqual(call.args[1:], (expected_case, {}, Path("work")))
+                self.assertEqual(call.kwargs, options)
+            self.assertEqual(row["worst_case_confirmation"], perf.paired_cpu_samples(first))
+            self.assertEqual(row["worst_case_regression"]["observed_case"], "slow")
+            self.assertEqual(row["worst_case_regression"]["compared_cases"], 2)
+            self.assertEqual(row["cases"][2], unpaired)
+            self.assertEqual(perf.library_regression_status(row), expected)
 
     def test_unavailable_baseline_is_classified_by_recorded_cause(self):
         for comparison, failure, expected in (
@@ -170,14 +195,31 @@ class MeasurementTests(unittest.TestCase):
                 self.assertEqual(gate, {"status": expected, "metric": "child_cpu_ns", "reason": comparison})
 
     def test_unavailable_confirmation_keeps_initial_regression_failure(self):
-        first = {"comparison": "MEASURED", "cpu_samples_ns": {"base": [200_000], "current": [900_000]}}
-        second = {"comparison": "BASELINE_INVALID", "baseline_failure": {
+        first = self.paired_result("case", 200_000, 900_000)
+        second = {"name": "case", "comparison": "BASELINE_INVALID", "baseline_failure": {
             "returncode": 0, "timed_out": False, "oracle_passed": False}}
-        with patch.object(perf, "measure_case", side_effect=[first, second]):
-            row = perf.measure_with_comparison({"base": Path("base")}, {}, {}, Path("work"), "MEASURED")
-        self.assertEqual(row["performance_regression"], {"status": "FAIL", "metric": "child_cpu_ns",
+        row = {"cases": [first]}
+        binaries = {"base": Path("base"), "current": Path("current")}
+        with patch.object(perf, "measure_case", return_value=second):
+            perf.confirm_worst_case(row, binaries, [{"name": "case"}], {}, Path("work"))
+        self.assertEqual(row["cases"][0]["performance_regression"], {"status": "FAIL", "metric": "child_cpu_ns",
                          "reason": "BASELINE_CONFIRMATION_UNAVAILABLE"})
-        self.assertEqual(row["regression_confirmation"], first["cpu_samples_ns"])
+        self.assertEqual(row["worst_case_confirmation"], {"case": first["cpu_samples_ns"]})
+        self.assertNotIn("worst_case_regression", row)
+        self.assertEqual(perf.library_regression_status(row), "FAIL")
+
+    def test_library_status_preserves_comparison_errors_and_current_failures(self):
+        paired = self.paired_result("pair", 500_000, 500_000)
+        for comparison, expected in (("BASELINE_CONSTEXPR_LIMIT", "PASS"), ("BASELINE_BUILD_TIMEOUT", "FAIL")):
+            case_result = {"name": "missing", "comparison": comparison}
+            case_result["performance_regression"] = perf.regression_result(case_result)
+            row = {"cases": [paired, case_result], "worst_case_regression": {"status": "PASS"}}
+            self.assertEqual(perf.library_regression_status(row), expected)
+        case_result = {"name": "missing", "comparison": "BASELINE_NEW_LIBRARY"}
+        case_result["performance_regression"] = perf.regression_result(case_result)
+        row = {"cases": [case_result]}
+        self.assertEqual(perf.library_regression_status(row), "NOT_COMPARABLE")
+        self.assertEqual(perf.library_regression_status({"status": "FAIL", **row}), "FAIL")
 
     def test_absolute_current_time_and_cpu_samples_are_separate(self):
         with tempfile.TemporaryDirectory() as temporary:
@@ -383,19 +425,30 @@ class RunnerTests(unittest.TestCase):
             self.assertEqual(report["all_library_paths"],report["selected_library_paths"])
             self.assertFalse(report["executed"])
 
-    def run_fake_quick(self, folder, *, cpu_ns=50, wall_ns=100, missing_budget=False, fixed_budget=True):
+    def run_fake_quick(self, folder, *, cpu_ns=50, wall_ns=100, missing_budget=False, fixed_budget=True,
+                       compile_profile="standard", paired_cpu_ns=None):
         folder=Path(folder);root=folder/"repo";root.mkdir();library=root/"DataStructure/A.cpp";library.parent.mkdir();library.write_text("struct A {};\n")
         driver=root/"driver.cpp";driver.write_text("int main(){}\n")
-        entry={"id":"a","libraries":["DataStructure/A.cpp"],"driver":"driver.cpp","allow_custom_io":True,"problem_url":"https://judge.yosupo.jp/problem/unionfind","samples":[{"input":"1\n","output":"42\n"}]}
+        num_inputs = len(paired_cpu_ns) if paired_cpu_ns is not None else 1
+        samples = [{"input": f"{index+1}\n", "output": "42\n"} for index in range(num_inputs)]
+        entry={"id":"a","libraries":["DataStructure/A.cpp"],"driver":"driver.cpp","allow_custom_io":True,"problem_url":"https://judge.yosupo.jp/problem/unionfind","samples":samples}
         rows=[{"library":"DataStructure/A.cpp","verify_id":"a","libraries":entry["libraries"],"case_source":"official_library_checker","problem_id":"unionfind","combined_library_scope":False}]
-        args=SimpleNamespace(cache=folder/"cache",output=folder/"reports",base=None,compiler="fake",repetitions=2,warmups=0,quick=True,plan=False,library=None,shard_index=0,shard_count=1,compile_timeout=1,case_timeout=1,generation_timeout=1,memory_mib=64,
+        base = "base" if paired_cpu_ns is not None else None
+        args=SimpleNamespace(cache=folder/"cache",output=folder/"reports",base=base,compiler="fake",repetitions=2,warmups=0,quick=True,plan=False,library=None,shard_index=0,shard_count=1,compile_timeout=1,case_timeout=1,generation_timeout=1,memory_mib=64,
+            compile_profile=compile_profile,
             limits=fixed_limits(folder,name="other_case" if missing_budget else "registered_sample_00") if fixed_budget else None)
         before=args.limits.read_bytes() if args.limits is not None else None
         def build(source,compiler,directory,timeout,flags):
             directory.mkdir(parents=True,exist_ok=True);binary=directory/"binary";binary.write_bytes(b"fake")
-            return {"status":"PASS","binary":str(binary),"source_sha256":perf.digest(source)}
+            return {"status":"PASS","binary":str(binary),"source_sha256":perf.digest(source),"flags":flags}
         def execute(command,**kwargs):
-            kwargs["output"].write_bytes(b"42\n");return {"returncode":0,"timed_out":False,"elapsed_ns":wall_ns,"cpu_ns":cpu_ns}
+            kwargs["output"].write_bytes(b"42\n")
+            elapsed_cpu = cpu_ns
+            if paired_cpu_ns is not None:
+                index = int(kwargs["stdin"].read_text()) - 1
+                elapsed_cpu = paired_cpu_ns[index][Path(command[0]).parent.name]
+            return {"returncode":0,"timed_out":False,"elapsed_ns":wall_ns,"cpu_ns":elapsed_cpu}
+        baseline = ({"DataStructure/A.cpp": b"struct OldA {};\n"}, {}) if base is not None else (None, {})
         with patch.object(perf,"ROOT",root),patch.object(perf,"nonlc_module",return_value=SimpleNamespace()), \
              patch.object(perf.prepare_verify,"collect",return_value=[entry]),patch.object(perf,"catalog",return_value=rows), \
              patch.object(perf.shutil,"which",return_value="/bin/true"), \
@@ -403,7 +456,8 @@ class RunnerTests(unittest.TestCase):
              patch.object(perf,"freeze_sources",return_value={}),patch.object(perf,"check_frozen"), \
              patch.object(perf.official,"load_pin",return_value={}),patch.object(perf,"build",side_effect=build), \
              patch.object(perf,"execute",side_effect=execute) as executed, \
-             patch.object(perf.ci_benchmark,"resolve_base",side_effect=AssertionError("no base requested")), \
+             patch.object(perf.ci_benchmark,"resolve_base",return_value="a"*40 if base is not None else None), \
+             patch.object(perf,"baseline_libraries",return_value=baseline), \
              patch.object(perf.official,"checkout_official",side_effect=AssertionError("no network")), \
              patch.object(perf.official,"official_problem",side_effect=AssertionError("no Max generator")):
             result=perf.run(args)
@@ -411,6 +465,22 @@ class RunnerTests(unittest.TestCase):
         if args.limits is not None:
             self.assertEqual(args.limits.read_bytes(),before)
         return result,report,executed.call_count
+
+    def test_shard_counts_one_worst_case_decision_per_library(self):
+        for current, expected, executions in ((9_500_000, "PASS", 8), (10_600_000, "FAIL", 16)):
+            timings = [{"base": 10_000_000, "current": 9_000_000}, {"base": 5_000_000, "current": current}]
+            with self.subTest(current=current), tempfile.TemporaryDirectory() as temporary:
+                result, report, calls = self.run_fake_quick(temporary, fixed_budget=False, paired_cpu_ns=timings)
+                summary = (Path(temporary) / "reports/summary.md").read_text()
+            self.assertEqual(calls, executions)
+            self.assertEqual(result, int(expected == "FAIL"))
+            self.assertEqual(report["regression_policy"], "library_worst_case")
+            self.assertEqual(report["performance_regression_counts"], {expected: 1})
+            row = report["results"][0]
+            self.assertEqual(row["cases"][1]["performance_regression"]["status"], "FAIL")
+            self.assertEqual(row["worst_case_regression"]["observed_case"], "registered_sample_01")
+            self.assertIn("個別比較 FAIL（参考）", summary)
+            self.assertIn("基準の最大ケース", summary)
 
     def test_current_only_quick_uses_explicit_budget_without_git_or_official_generator(self):
         with tempfile.TemporaryDirectory()as temporary:
@@ -428,8 +498,13 @@ class RunnerTests(unittest.TestCase):
             tempfile.TemporaryDirectory() as temporary,
             patch.object(perf.performance_limits, "load", side_effect=AssertionError("no fixed budget")),
         ):
-            result, report, _ = self.run_fake_quick(temporary, fixed_budget=False)
+            result, report, _ = self.run_fake_quick(temporary, fixed_budget=False, compile_profile="atcoder")
         self.assertEqual(result, 0)
+        self.assertEqual(report["compile_profile"], "atcoder")
+        self.assertIn("-std=gnu++23", report["flags"])
+        self.assertIn("-march=native", report["flags"])
+        self.assertIn("-DNDEBUG", report["flags"])
+        self.assertEqual(report["results"][0]["current_build"]["flags"], report["flags"])
         self.assertTrue(report["current_measurements_passed"])
         self.assertNotIn("performance_limits_passed", report)
         self.assertNotIn("performance_regression_passed", report)
