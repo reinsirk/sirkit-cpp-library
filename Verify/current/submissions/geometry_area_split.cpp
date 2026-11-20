@@ -53,6 +53,8 @@
 // centroid(poly,eps): 単純多角形の面積重心。3点未満または面積0なら nullopt。O(N)。
 // convex_cut(poly,l,eps): 凸多角形と有向非零長直線の左側（境界含む）との共通部分。O(N)。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <array>
 #include <cmath>
@@ -68,6 +70,9 @@
 #include <utility>
 #include <vector>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_GEO_EPSILON_DEFINED
 #define SIRKIT_GEO_EPSILON_DEFINED
 namespace geo {
@@ -75,6 +80,11 @@ struct Epsilon {
     long double abs = 1e-12L;
     long double rel = 1e-12L;
     constexpr long double tolerance(long double scale) const {
+        if consteval {
+            // 実行時のfabsに依存せず、負のゼロも正のゼロへ揃える。
+            const long double magnitude = scale == 0 ? 0.0L : (scale < 0 ? -scale : scale);
+            return abs + rel * magnitude;
+        }
         return abs + rel * std::abs(scale);
     }
 };
@@ -312,8 +322,8 @@ template<class T, class C> Location contains(const std::vector<Point<T, C>>& pol
         int side = orientation(a, b, p, eps);
         if (side == 0) {
             if constexpr (std::is_integral_v<T>) {
-                if (std::min(a.x, b.x) <= p.x && p.x <= std::max(a.x, b.x) &&
-                    std::min(a.y, b.y) <= p.y && p.y <= std::max(a.y, b.y)) return Location::Boundary;
+                // 上の走査で p.y が辺の y の範囲内と確認済み。
+                if (std::min(a.x, b.x) <= p.x && p.x <= std::max(a.x, b.x)) return Location::Boundary;
             } else if (on_segment(p, Segment<T, C>{a, b}, eps)) return Location::Boundary;
         }
         if (a.y <= p.y && p.y < b.y && side > 0) ++winding;
@@ -325,7 +335,16 @@ template<class T, class C> Location contains(const std::vector<Point<T, C>>& pol
 }
 #ifndef SIRKIT_GEO_CONVEX_HULL_IMPL_DEFINED
 #define SIRKIT_GEO_CONVEX_HULL_IMPL_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
+inline bool convex_hull_combined_radix_counts(std::size_t keys, unsigned active) noexcept {
+    return keys >= 16384 && keys <= std::numeric_limits<std::uint32_t>::max() && active >= 6;
+}
+
+inline std::size_t convex_hull_reserve_size(std::size_t points, std::size_t capacity) {
+    if (points >= capacity) throw std::length_error("geometry hull capacity");
+    return points + 1;
+}
+
 template<bool Sorted, class T, class C>
 std::vector<geo::Point<T, C>> convex_hull_impl(std::vector<geo::Point<T, C>> points, geo::Epsilon eps) {
     constexpr bool narrow_integer = std::is_integral_v<T> && sizeof(T) <= 8 &&
@@ -372,7 +391,7 @@ std::vector<geo::Point<T, C>> convex_hull_impl(std::vector<geo::Point<T, C>> poi
                     std::array<std::array<std::uint32_t, 256>, 8> counts{};
                     unsigned active = 0;
                     for (unsigned k = 0; k < 8; ++k) active += ((varying >> (k * 8)) & 255) != 0;
-                    const bool combined = keys.size() >= 16384 && keys.size() <= std::numeric_limits<std::uint32_t>::max() && active >= 6;
+                    const bool combined = convex_hull_combined_radix_counts(keys.size(), active);
                     if (combined) {
                         for (auto key : keys) {
                             ++counts[0][(key >> 0) & 255];
@@ -435,8 +454,7 @@ std::vector<geo::Point<T, C>> convex_hull_impl(std::vector<geo::Point<T, C>> poi
         else return geo::orientation(a, b, c, eps) > 0;
     };
 
-    if (points.size() == hull.max_size()) throw std::length_error("geometry hull capacity");
-    hull.reserve(points.size() + 1);
+    hull.reserve(convex_hull_reserve_size(points.size(), hull.max_size()));
     for (const auto& p : points) {
         while (hull.size() >= 2 && !left_turn(hull[hull.size() - 2], hull.back(), p)) hull.pop_back();
         hull.push_back(p);
@@ -453,7 +471,7 @@ std::vector<geo::Point<T, C>> convex_hull_impl(std::vector<geo::Point<T, C>> poi
 #endif
 namespace geo {
 template<class T, class C> std::vector<Point<T, C>> convex_hull(std::vector<Point<T, C>> points, Epsilon eps = {}) {
-    return reinsirk::detail::convex_hull_impl<false>(std::move(points), eps);
+    return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::convex_hull_impl<false>(std::move(points), eps);
 }
 
 }
@@ -461,7 +479,7 @@ template<class T, class C> std::vector<Point<T, C>> convex_hull(std::vector<Poin
 #define SIRKIT_CONVEX_HULL_SORTED_DEFINED
 template<class T, class C>
 std::vector<geo::Point<T, C>> convex_hull_sorted(std::vector<geo::Point<T, C>> points, geo::Epsilon eps = {}) {
-    return reinsirk::detail::convex_hull_impl<true>(std::move(points), eps);
+    return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::convex_hull_impl<true>(std::move(points), eps);
 }
 #endif
 namespace geo {
@@ -521,6 +539,13 @@ namespace geo {
 }
 #endif
 
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
+
+
+namespace sirkit {}
+using namespace sirkit;
 
 // SPDX-License-Identifier: CC0-1.0
 #include <algorithm>
@@ -537,8 +562,8 @@ namespace geo {
 
 int main() {
     int n; std::cin >> n;
-    std::vector<geo::PointLD> polygon(n);
+    std::vector<::sirkit::geo::PointLD> polygon(n);
     for (auto& p : polygon) std::cin >> p.x >> p.y;
     std::cout << std::fixed << std::setprecision(12);
-    std::cout << geo::area(polygon) << '\n';
+    std::cout << ::sirkit::geo::area(polygon) << '\n';
 }

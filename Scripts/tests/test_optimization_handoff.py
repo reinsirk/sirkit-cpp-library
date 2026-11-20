@@ -75,7 +75,8 @@ class OptimizationHandoffTest(unittest.TestCase):
         after = self.item(identity)["source_sha256"]
         return {"format": 1, "id": identity, "stage": stage, "status": "complete",
                 "input_source_sha256": before or after, "source_sha256": after,
-                "changed": bool(before and before != after), "scope": "whole_program",
+                "changed": bool(before and before != after),
+                "scope": "whole_program" if self.item(identity)["library_checker"] else "library",
                 "checks": {"correctness": "passed", "performance": "measured"},
                 "evidence": [{"path": "Audit/proof.json", "sha256": handoff.digest(self.proof.read_bytes())}]}
 
@@ -222,6 +223,21 @@ class OptimizationHandoffTest(unittest.TestCase):
         record["source_match"] = "Submission normalization removes all comments only"
         self.write_journal([record])
         self.assertFalse(self.item()["current_ac"])
+
+    def test_v2_expected_metadata_keeps_screenshot_in_confirmation_only(self):
+        driver = self.root / self.entries[2]["driver"]
+        driver.write_text(driver.read_text() + "/* a body marker */\n")
+        source = self.item("unverified")["source"]
+        record = self.screenshot_record()
+        record.update(expected_source_sha256="0" * 64,
+                      expected_source_normalization=handoff.status.PREAMBLE_NORMALIZATION,
+                      expected_normalized_source_sha256=handoff.digest(
+                          handoff.status.normalized_preamble_source(source)))
+        annotated = source.replace(b"// Verify: ", b"// Submission: https://atcoder.jp/contests/abc001/submissions/123\n// Verify: ", 1)
+        self.assertTrue(handoff.pending_source_confirmation(record, "atcoder.jp", annotated))
+        self.assertIsNone(handoff.status.source_match(record, annotated))
+        self.assertFalse(handoff.pending_source_confirmation(record, "atcoder.jp",
+                         annotated.replace(b"a body marker", b"changed body marker")))
 
     def test_special_cpp_is_not_normalized(self):
         path = self.root / self.entries[0]["driver"]
@@ -428,6 +444,39 @@ class OptimizationHandoffTest(unittest.TestCase):
             handoff.record_stage(self.root, self.ledger, path)
         with self.assertRaises(ValueError):
             handoff.prepare(self.root, "accepted", self.base / "bundle", codex_receipt=path)
+
+    def test_non_library_checker_new_records_require_library_scope(self):
+        for url in ["https://atcoder.jp/contests/abc001/tasks/abc001_1",
+                    "https://yukicoder.me/problems/no/430",
+                    "https://onlinejudge.u-aizu.ac.jp/problems/GRL_1_B"]:
+            with self.subTest(url=url):
+                self.entries[2]["problem_url"] = url
+                self.group.write_text(json.dumps({"entries": self.entries}))
+                value = self.receipt(identity="unverified")
+                value["scope"] = "whole_program"
+                with self.assertRaisesRegex(ValueError, "本体だけ"):
+                    handoff.record_stage(self.root, self.ledger, self.receipt_file(value))
+                value["scope"] = "library"
+                self.assertTrue(handoff.record_stage(
+                    self.root, self.ledger, self.receipt_file(value)).is_file())
+
+    def test_old_whole_program_records_remain_readable(self):
+        value = self.receipt(identity="unverified")
+        value["scope"] = "whole_program"
+        self.ledger.mkdir(parents=True)
+        path = self.ledger / f"unverified.codex.{handoff.digest(handoff.encode(value))}.json"
+        path.write_bytes(handoff.encode(value))
+        self.assertEqual(handoff.ledger(self.root, self.ledger), [value])
+
+    def test_handoff_states_judge_specific_scope(self):
+        for identity, scope in [("accepted", "whole_program"), ("unverified", "library")]:
+            destination = self.base / (identity + "-scope")
+            manifest = handoff.prepare(self.root, identity, destination, stage="codex")
+            self.assertEqual(manifest["optimization_scope"], scope)
+            prompt = (destination / "prompt.md").read_text()
+            self.assertIn("receiptのscopeは" + scope, prompt)
+            if scope == "library":
+                self.assertIn("最適化はライブラリ本体だけ", prompt)
 
     def test_bundle_rejects_inputs_changed_after_snapshot(self):
         original = handoff.catalog

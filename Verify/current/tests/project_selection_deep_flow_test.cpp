@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 // 深さ64の境界で、分岐・合流・逆辺・増分追加を独立Edmonds–Karpと照合する。
 #ifndef SIRKIT_PROJECT_TEST_HEADER
 #define SIRKIT_PROJECT_TEST_HEADER "../../../Graph/Project_Selection.cpp"

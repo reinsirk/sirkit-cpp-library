@@ -1,6 +1,6 @@
 #define SKIP_RUNTIME_CHECKS
 // Verify: https://judge.yosupo.jp/problem/set_xor_min
-// Submission: https://judge.yosupo.jp/submission/413374
+// Submission: https://judge.yosupo.jp/submission/417204
 
 // Library: DataStructure/Binary_Trie.cpp
 // SPDX-License-Identifier: CC0-1.0
@@ -42,6 +42,8 @@
 // countはID一覧を参照しない。upperはキー型より広い整数型も可、キー範囲を超えればsize()。
 // min_xor/max_xor/count_xor_lessは状態を変更しない。返す値は保存値yではなくx^y。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <array>
 #include <cstddef>
@@ -53,6 +55,9 @@
 #include <utility>
 #include <vector>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_BINARY_TRIE_DEFINED
 #define SIRKIT_BINARY_TRIE_DEFINED
 template <typename T, int MAX_LOG = std::numeric_limits<T>::digits - 1,
@@ -118,8 +123,7 @@ private:
         const auto index = recycled ? free_id_slot_ : next_id_;
         if (!recycled && next_id_ == id_capacity_)
         {
-            if (id_capacity_ == NODES)
-                throw std::length_error("BinaryTrie: ID slot limit exceeded");
+            // 使用中のID枠は既存の葉に一対一で対応し、追加先の葉にはまだ枠がない。
             const auto n = std::min(kIdBlockSize, NODES - id_capacity_);
             id_blocks_.push_back(std::make_unique<IdSlot[]>(n));
             id_capacity_ += n;
@@ -157,10 +161,7 @@ private:
         }
         if (next_unused_ == capacity_)
         {
-            if (capacity_ == NODES)
-            {
-                throw std::length_error("BinaryTrie: node limit exceeded");
-            }
+            // 二分トライの上限は、新しいsuffix全体を追加する前に確認済み。
             const auto n = std::min(kBlockSize, NODES - capacity_);
             blocks_.push_back(std::make_unique<Node[]>(n));
             capacity_ += n;
@@ -482,6 +483,13 @@ public:
 };
 #endif
 
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
+
+
+namespace sirkit {}
+using namespace sirkit;
 
 // SPDX-License-Identifier: CC0-1.0
 // Verify I/O: Verify/current/common/fast_io.hpp

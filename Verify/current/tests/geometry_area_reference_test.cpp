@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #ifndef SIRKIT_AREA_TEST_HEADER
 #define SIRKIT_AREA_TEST_HEADER "../../../Geometry/Polygon.cpp"
 #endif
@@ -57,19 +59,19 @@ void area_result(long double actual, const Big& twice, long double denominator =
     require(std::abs(actual - expected) <= 2 * std::numeric_limits<long double>::epsilon() * expected);
     if (twice == 0) require(actual == 0);
 }
-template<class T, class C> void integer_polygon(const std::vector<geo::Point<T, C>>& polygon) {
+template<class T, class C> void integer_polygon(const std::vector<::sirkit::geo::Point<T, C>>& polygon) {
     std::vector<ExactPoint> exact;
     for (const auto& p : polygon) exact.push_back({Big(p.x), Big(p.y)});
     if (!valid<C>(exact)) { ++outside_contract; return; }
     const Big expected = shoelace(exact);
-    require(Big(geo::signed_area2(polygon)) == expected);
-    area_result(geo::area(polygon), expected);
+    require(Big(::sirkit::geo::signed_area2(polygon)) == expected);
+    area_result(::sirkit::geo::area(polygon), expected);
     if (polygon.size() == 3) {
         require(Big(signed_triangle_area2(polygon[0], polygon[1], polygon[2])) == expected);
         area_result(triangle_area(polygon[0], polygon[1], polygon[2]), expected);
     }
 }
-template<class T, class C> void integer_variants(std::vector<geo::Point<T, C>> polygon, bool translate) {
+template<class T, class C> void integer_variants(std::vector<::sirkit::geo::Point<T, C>> polygon, bool translate) {
     integer_polygon(polygon);
     std::reverse(polygon.begin(), polygon.end());
     integer_polygon(polygon);
@@ -81,8 +83,8 @@ template<class T, class C> void integer_variants(std::vector<geo::Point<T, C>> p
         integer_polygon(polygon);
     }
 }
-template<class T, class C = geo::DefaultCalc<T>> void integers() {
-    using P = geo::Point<T, C>;
+template<class T, class C = ::sirkit::geo::DefaultCalc<T>> void integers() {
+    using P = ::sirkit::geo::Point<T, C>;
     const std::vector<std::vector<P>> fixed{
         {}, {{0, 0}}, {{1, 2}, {-3, 4}},
         {{0, 0}, {4, 0}, {4, 4}, {2, 1}, {0, 4}}, // 凹多角形
@@ -117,7 +119,7 @@ template<class T, class C = geo::DefaultCalc<T>> void integers() {
     for (const auto& polygon : boundaries) integer_variants(polygon, false);
 }
 template<class T> void dyadic() {
-    using P = geo::Point<T>;
+    using P = ::sirkit::geo::Point<T>;
     std::mt19937_64 random(0xD1AD1C);
     for (int trial = 0; trial < 1500; ++trial) {
         const std::size_t size = trial % 3 == 0 ? 3 : std::size_t(random() % 34);
@@ -130,18 +132,18 @@ template<class T> void dyadic() {
         const Big twice = shoelace(exact);
         const T expected = twice.convert_to<T>() / T(256);
         // 分子の全中間値を24ビット未満に収め、floatでも厳密一致させる。
-        require(geo::signed_area2(polygon) == expected);
-        area_result(geo::area(polygon), twice, 256);
+        require(::sirkit::geo::signed_area2(polygon) == expected);
+        area_result(::sirkit::geo::area(polygon), twice, 256);
         if (size == 3) {
             require(signed_triangle_area2(polygon[0], polygon[1], polygon[2]) == expected);
             area_result(triangle_area(polygon[0], polygon[1], polygon[2]), twice, 256);
         }
         std::reverse(polygon.begin(), polygon.end());
-        require(geo::signed_area2(polygon) == -expected);
+        require(::sirkit::geo::signed_area2(polygon) == -expected);
     }
 }
 template<class C> void floating_calculation(std::int64_t base) {
-    using P = geo::Point<std::int64_t, C>;
+    using P = ::sirkit::geo::Point<std::int64_t, C>;
     std::mt19937_64 random(0xCA1C);
     for (int trial = 0; trial < 1000; ++trial) {
         const std::size_t size = trial % 3 == 0 ? 3 : std::size_t(random() % 34);
@@ -154,8 +156,8 @@ template<class C> void floating_calculation(std::int64_t base) {
             rounded.push_back({std::int64_t(C(p.x)), std::int64_t(C(p.y))});
         }
         const Big twice = shoelace(rounded);
-        require(geo::signed_area2(polygon) == twice.convert_to<C>());
-        area_result(geo::area(polygon), twice);
+        require(::sirkit::geo::signed_area2(polygon) == twice.convert_to<C>());
+        area_result(::sirkit::geo::area(polygon), twice);
         if (size == 3) {
             require(signed_triangle_area2(polygon[0], polygon[1], polygon[2]) == twice.convert_to<C>());
             area_result(triangle_area(polygon[0], polygon[1], polygon[2]), twice);

@@ -4,6 +4,8 @@
 #include <iostream>
 #include <limits>
 #include <vector>
+
+using namespace sirkit;
 struct Minimum { int operator()(int a, int b) const { return std::min(a, b); } };
 int main() {
     SparseTable<int, Minimum> table(std::vector<int>{4, 2, 7, 1, 8}, std::numeric_limits<int>::max());

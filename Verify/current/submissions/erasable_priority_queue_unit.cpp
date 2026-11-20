@@ -21,6 +21,8 @@
 // clear(): 全要素と遅延削除を破棄する。O(H)。Hは未回収の削除済み要素も含む保存数。
 // Tの比較は厳密弱順序を満たし、==はその同値関係と一致すること。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <cstddef>
 #include <functional>
@@ -32,6 +34,9 @@
 #include <utility>
 #include <vector>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_ERASABLE_PRIORITY_QUEUE_DEFINED
 #define SIRKIT_ERASABLE_PRIORITY_QUEUE_DEFINED
 
@@ -363,6 +368,13 @@ private:
 };
 #endif
 
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
+
+
+namespace sirkit {}
+using namespace sirkit;
 
 // SPDX-License-Identifier: CC0-1.0
 #include <cstdint>

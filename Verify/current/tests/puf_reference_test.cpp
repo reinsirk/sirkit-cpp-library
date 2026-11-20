@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #ifndef SIRKIT_PUF_REQUIRE_EXTRA
 #define SIRKIT_PUF_REQUIRE_EXTRA
 #endif
@@ -13,6 +15,12 @@
 #include <random>
 #include <type_traits>
 #include <string>
+static_assert(std::is_same_v<PersistentUnionFind::Version, PersistentUnionFind::Node*>);
+static_assert(std::is_same_v<decltype(std::declval<const PersistentUnionFind&>().root(0)), int>);
+static_assert(std::is_same_v<decltype(std::declval<const PersistentUnionFind&>().root(0, std::declval<PersistentUnionFind::Version>())), int>);
+static_assert(std::is_same_v<decltype(std::declval<const PersistentUnionFind&>().version()), PersistentUnionFind::Version>);
+static_assert(std::is_same_v<decltype(std::declval<const PersistentUnionFind&>().issame(0, 1)), bool>);
+static_assert(std::is_same_v<decltype(std::declval<const PersistentUnionFind&>().issame(0, 1, std::declval<PersistentUnionFind::Version>())), bool>);
 static std::size_t checks=0,versions_tested=0,operations=0;
 static void demand(bool value,const char* expression,int line){++checks;if(!value){std::fprintf(stderr,"line %d: %s\n",line,expression);std::abort();}}
 #define require(x) demand(bool(x),#x,__LINE__)
@@ -25,39 +33,39 @@ struct Model {
     bool merge(int a,int b){const auto from=label[b],to=label[a];if(from==to)return false;for(auto& x:label)if(x==from)x=to;return true;}
     std::vector<std::vector<int>>groups()const{std::vector<std::vector<int>>g(label.size());for(std::size_t i=0;i<label.size();++i)g[label[i]].push_back(static_cast<int>(i));g.erase(std::remove_if(g.begin(),g.end(),[](const auto&v){return v.empty();}),g.end());std::sort(g.begin(),g.end());return g;}
 };
-static void inspect(const PersistentUnionFind& uf,PersistentUnionFind::Node* version,const Model& model,std::mt19937_64& random){
+static void inspect(const PersistentUnionFind& uf,PersistentUnionFind::Version version,const Model& model,std::mt19937_64& random){
     ++versions_tested;const auto n=static_cast<int>(model.label.size());require(uf.size()==n);require(uf.component_count(version)==static_cast<int>(model.groups().size()));
     auto groups=uf.groups(version);for(const auto&g:groups)require(std::is_sorted(g.begin(),g.end()));std::sort(groups.begin(),groups.end());require(groups==model.groups());
-    for(int i=0;i<n;++i){auto[root,negative]=uf.find_with_size(i,version);require(0<=root&&root<n);require(model.same(i,root));require(negative==-model.size(i));require(uf.find(i,version)==root);require(uf.root_of(i,version)==root);require(uf.leader(i,version)==root);require(uf.size(i,version)==model.size(i));}
-    for(int i=0;i<128&&n;++i){const auto a=static_cast<int>(random()%n),b=static_cast<int>(random()%n);require(uf.same(a,b,version)==model.same(a,b));}
+    for(int i=0;i<n;++i){auto[root,negative]=uf.find_with_size(i,version);require(0<=root&&root<n);require(model.same(i,root));require(negative==-model.size(i));require(uf.find(i,version)==root);require(uf.root(i,version)==root);require(uf.leader(i,version)==root);require(uf.size(i,version)==model.size(i));}
+    for(int i=0;i<128&&n;++i){const auto a=static_cast<int>(random()%n),b=static_cast<int>(random()%n);require(uf.same(a,b,version)==model.same(a,b));require(uf.issame(a,b,version)==model.same(a,b));}
 }
 static void uf_cases(){
     std::mt19937_64 random(2026102201);
     for(const int n:{0,1,2,15,16,17,31,64,129,257}){
-        PersistentUnionFind uf(static_cast<std::size_t>(n));auto initial=uf.get_root();std::vector<PersistentUnionFind::Node*>roots{initial};std::vector<Model>models{Model(n)};std::size_t current=0;
+        PersistentUnionFind uf(static_cast<std::size_t>(n));auto initial=uf.version();std::vector<PersistentUnionFind::Version>roots{initial};std::vector<Model>models{Model(n)};std::size_t current=0;
         inspect(uf,initial,models[0],random);
         for(int step=0;step<320&&n;++step){
-            const auto base=static_cast<std::size_t>(random()%roots.size());const auto a=static_cast<int>(random()%n),b=static_cast<int>(random()%n);auto expected=models[base];const bool changed=expected.merge(a,b);const auto old=uf.get_root();bool result;
+            const auto base=static_cast<std::size_t>(random()%roots.size());const auto a=static_cast<int>(random()%n),b=static_cast<int>(random()%n);auto expected=models[base];const bool changed=expected.merge(a,b);const auto old=uf.version();bool result;
             switch(step%4){case 0:result=uf.unite(a,b,roots[base]);break;case 1:result=uf.merge(a,b,roots[base]);break;case 2:uf.restore(roots[base]);result=uf.unite(a,b);break;default:uf.restore(roots[base]);result=uf.merge(a,b);break;}
-            require(result==changed);if(!changed)require(uf.get_root()==roots[base]);require(uf.root==uf.arr.root);require(old!=nullptr);roots.push_back(uf.get_root());models.push_back(expected);current=roots.size()-1;++operations;
+            require(result==changed);if(!changed)require(uf.version()==roots[base]);require(uf.version()==uf.arr.root);require(old!=nullptr);roots.push_back(uf.version());models.push_back(expected);current=roots.size()-1;++operations;
             if(step%17==0){inspect(uf,roots.back(),expected,random);const auto previous=static_cast<std::size_t>(random()%roots.size());inspect(uf,roots[previous],models[previous],random);}
-            if(step%23==0){auto copy=uf;const auto stored=uf.get_root();const bool actual=copy.unite(a,(b+1)%n);auto em=models[current];require(actual==em.merge(a,(b+1)%n));require(uf.get_root()==stored);inspect(copy,copy.get_root(),em,random);inspect(uf,stored,models[current],random);}
+            if(step%23==0){auto copy=uf;const auto stored=uf.version();const bool actual=copy.unite(a,(b+1)%n);auto em=models[current];require(actual==em.merge(a,(b+1)%n));require(uf.version()==stored);inspect(copy,copy.version(),em,random);inspect(uf,stored,models[current],random);}
         }
-        uf.restore(roots[current]);require(uf.get_root()==roots[current]);auto current_groups=uf.groups();std::sort(current_groups.begin(),current_groups.end());require(current_groups==models[current].groups());require(uf.component_count()==static_cast<int>(current_groups.size()));
-        for(int i=0;i<n;++i){require(uf.find(i)==uf.find(i,uf.root));require(uf.root_of(i)==uf.find(i));require(uf.leader(i)==uf.find(i));require(uf.size(i)==models[current].size(i));require(uf.find_with_size(i)==uf.find_with_size(i,uf.root));require(uf.same(i,(i+1)%n)==models[current].same(i,(i+1)%n));}
-        auto moved=std::move(uf);require(uf.size()==0&&uf.get_root()==nullptr);require(uf.groups().empty()&&uf.component_count()==0);inspect(moved,initial,models[0],random);
-        PersistentUnionFind assigned(3);assigned=std::move(moved);require(moved.size()==0&&moved.root==nullptr);inspect(assigned,roots[current],models[current],random);auto& self_alias=assigned;assigned=self_alias;inspect(assigned,initial,models[0],random);
-        PersistentUnionFind survivor;PersistentUnionFind::Node* retained;
-        {PersistentUnionFind local(7);local.unite(2,5);retained=local.get_root();survivor=local;}require(survivor.same(2,5,retained));survivor.restore(retained);require(survivor.size(2)==2);
+        uf.restore(roots[current]);require(uf.version()==roots[current]);auto current_groups=uf.groups();std::sort(current_groups.begin(),current_groups.end());require(current_groups==models[current].groups());require(uf.component_count()==static_cast<int>(current_groups.size()));
+        for(int i=0;i<n;++i){require(uf.find(i)==uf.find(i,uf.version()));require(uf.root(i)==uf.find(i));require(uf.leader(i)==uf.find(i));require(uf.size(i)==models[current].size(i));require(uf.find_with_size(i)==uf.find_with_size(i,uf.version()));require(uf.same(i,(i+1)%n)==models[current].same(i,(i+1)%n));require(uf.issame(i,(i+1)%n)==models[current].same(i,(i+1)%n));}
+        auto moved=std::move(uf);require(uf.size()==0&&uf.version()==nullptr);require(uf.groups().empty()&&uf.component_count()==0);inspect(moved,initial,models[0],random);
+        PersistentUnionFind assigned(3);assigned=std::move(moved);require(moved.size()==0&&moved.version()==nullptr);inspect(assigned,roots[current],models[current],random);auto& self_alias=assigned;assigned=self_alias;inspect(assigned,initial,models[0],random);
+        PersistentUnionFind survivor;PersistentUnionFind::Version retained;
+        {PersistentUnionFind local(7);local.unite(2,5);retained=local.version();survivor=local;}require(survivor.same(2,5,retained));survivor.restore(retained);require(survivor.size(2)==2);
 #ifndef SKIP_RUNTIME_CHECKS
         expect<std::out_of_range>([&]{(void)assigned.find(-1,initial);});expect<std::out_of_range>([&]{(void)assigned.find(n,initial);});
-        PersistentUnionFind foreign(static_cast<std::size_t>(n));expect<std::invalid_argument>([&]{assigned.restore(foreign.root);});expect<std::invalid_argument>([&]{(void)assigned.component_count(foreign.root);});expect<std::invalid_argument>([&]{(void)assigned.groups(foreign.root);});
+        PersistentUnionFind foreign(static_cast<std::size_t>(n));expect<std::invalid_argument>([&]{assigned.restore(foreign.version());});expect<std::invalid_argument>([&]{(void)assigned.component_count(foreign.version());});expect<std::invalid_argument>([&]{(void)assigned.groups(foreign.version());});
         if(n){expect<std::invalid_argument>([&]{assigned.restore(nullptr);});expect<std::invalid_argument>([&]{(void)assigned.same(0,0,nullptr);});expect<std::invalid_argument>([&]{(void)assigned.unite(0,0,nullptr);});}
         else{assigned.restore(nullptr);require(assigned.component_count()==0);require(assigned.groups().empty());}
 #endif
     }
     expect<std::length_error>([]{PersistentUnionFind uf(static_cast<std::size_t>(std::numeric_limits<int>::max())+1);});
-    PersistentUnionFind giant(static_cast<std::size_t>(std::numeric_limits<int>::max()));require(giant.size()==std::numeric_limits<int>::max());require(giant.size(giant.size()-1)==1);auto root=giant.root;require(giant.unite(0,giant.size()-1));require(giant.same(0,giant.size()-1));require(!giant.same(0,giant.size()-1,root));require(giant.size(0)==2);
+    PersistentUnionFind giant(static_cast<std::size_t>(std::numeric_limits<int>::max()));require(giant.size()==std::numeric_limits<int>::max());require(giant.size(giant.size()-1)==1);auto root=giant.version();require(giant.unite(0,giant.size()-1));require(giant.same(0,giant.size()-1));require(!giant.same(0,giant.size()-1,root));require(giant.size(0)==2);
 }
 struct NonDefault {int value;NonDefault()=delete;explicit NonDefault(int x):value(x){};friend bool operator==(const NonDefault&,const NonDefault&)=default;};
 #ifdef SIRKIT_PUF_REQUIRE_EXTRA
@@ -103,4 +111,28 @@ template<int shift>static void array_cases(){
     expect<std::out_of_range>([&]{(void)assigned.get(-1);});expect<std::out_of_range>([&]{(void)assigned.get(n);});expect<std::out_of_range>([&]{assigned.update(n,3);});Array foreign(n);expect<std::invalid_argument>([&]{assigned.restore(foreign.root);});expect<std::invalid_argument>([&]{(void)assigned.get(foreign.root,0);});expect<std::invalid_argument>([&]{assigned.update(foreign.root,0,3);});
 #endif
 }
-int main(){uf_cases();array_cases<1>();array_cases<2>();array_cases<3>();array_cases<4>();array_cases<5>();array_cases<6>();array_cases<7>();array_cases<8>();std::printf("PASS checks=%zu versions=%zu operations=%zu\n",checks,versions_tested,operations);}
+int main(){
+    const auto maximum=std::numeric_limits<std::size_t>::max();
+    ::sirkit::detail::CheckPersistentArrayNodeCount(maximum-1);
+    bool node_limit=false;
+    try { ::sirkit::detail::CheckPersistentArrayNodeCount(maximum); }
+    catch(const std::length_error&) { node_limit=true; }
+    require(node_limit);
+    require(::sirkit::detail::CheckedPersistentArraySize(0)==0);
+    if constexpr (sizeof(std::size_t)>=sizeof(std::int64_t)) {
+        bool array_limit=false;
+        try { (void)::sirkit::detail::CheckedPersistentArraySize(maximum); }
+        catch(const std::length_error&) { array_limit=true; }
+        require(array_limit);
+    }
+    PersistentArray<int> array(3,7);
+    auto* const array_self=&array;
+    array=std::move(*array_self);
+    require(array.get(2)==7);
+    PersistentUnionFind uf(2);
+    uf.unite(0,1);
+    auto* uf_self=&uf;
+    uf=std::move(*uf_self);
+    require(uf.same(0,1));
+    uf_cases();array_cases<1>();array_cases<2>();array_cases<3>();array_cases<4>();array_cases<5>();array_cases<6>();array_cases<7>();array_cases<8>();std::printf("PASS checks=%zu versions=%zu operations=%zu\n",checks,versions_tested,operations);
+}

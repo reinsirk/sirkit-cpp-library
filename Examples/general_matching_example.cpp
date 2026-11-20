@@ -2,6 +2,8 @@
 #include "../Graph/General_Matching.cpp"
 #include <iostream>
 #include <utility>
+
+using namespace sirkit;
 int main() {
     GeneralMatching graph(6);
     graph.reserve_edges(8);

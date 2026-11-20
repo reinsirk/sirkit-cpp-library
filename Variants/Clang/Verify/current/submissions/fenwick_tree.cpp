@@ -18,7 +18,7 @@
 // fenwick_tree()/fenwick_tree(int n)/fenwick_tree(vector<T>): 空列/n要素の0/列から構築。O(n+1)時間・領域。
 // add(int p,T x): 点加算。sum(int l,int r): 半開区間[l,r)の和をT値で返す。O(log(n+1))、空区間はT{}。
 // 点添字は0<=p<size()、区間は0<=l<=r<=size()。
-// ACL形式の公開APIをグローバルに定義する。bool以外の整数は内部を符号なしにして型幅のmod 2^bitで計算する。
+// ACL形式の公開APIをsirkit内に定義する。bool以外の整数は内部を符号なしにして型幅のmod 2^bitで計算する。
 // その他のTはT{}が単位元の可換加法群とし、加減算・コピーをO(1)とする。要素数はintの範囲内。
 // size()/empty(): 要素数/空か、O(1)。get(int p)/set(int p,T value): 点取得/代入、O(log(n+1))。
 // lower_bound(target)/upper_bound(target): sum(0,i+1)>=target/>targetとなる最小int添字、なければsize()。O(log(n+1))。
@@ -27,6 +27,8 @@
 // clear()/swap(other): 空にして容量保持/交換。O(旧n+1)/O(1)。コピーは独立、移動元は空として使える。
 // 添字・区間は既定で検査しSKIP_RUNTIME_CHECKSで除く。容量・添字のオーバーフロー対策は残す。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <bit>
 #include <cstddef>
@@ -36,14 +38,17 @@
 #include <utility>
 #include <vector>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_HLD_FENWICK_ACCESS_FORWARD_DEFINED
 #define SIRKIT_HLD_FENWICK_ACCESS_FORWARD_DEFINED
-namespace reinsirk::detail { template<class Range> struct HldFenwickAccess; }
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ { template<class Range> struct HldFenwickAccess; }
 #endif
 
 #ifndef SIRKIT_FENWICK_STORAGE_TYPE_DEFINED
 #define SIRKIT_FENWICK_STORAGE_TYPE_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 template<class T, bool = std::is_integral_v<T> && !std::is_same_v<T, bool>>
 struct FenwickStorage { using type = T; };
 template<class T>
@@ -57,12 +62,20 @@ template<> struct FenwickStorage<unsigned __int128> { using type = unsigned __in
 
 #ifndef SIRKIT_FENWICK_TREE_DEFINED
 #define SIRKIT_FENWICK_TREE_DEFINED
+namespace detail {
+inline std::size_t CheckedFenwickStorageSize(std::size_t n, std::size_t limit) {
+    if (n > static_cast<std::size_t>(std::numeric_limits<int>::max()) || n >= limit)
+        throw std::length_error("fenwick_tree: size");
+    return n == 0 ? 0 : n + 1;
+}
+}
+
 template<class T>
 class fenwick_tree {
     // HLD所有時の読取り専用接続。通常のFenwick操作には使わない。
     using HldFenwickTag = void;
-    template<class> friend struct reinsirk::detail::HldFenwickAccess;
-    using Storage = typename reinsirk::detail::FenwickStorage<T>::type;
+    template<class> friend struct /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::HldFenwickAccess;
+    using Storage = typename /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::FenwickStorage<T>::type;
     std::vector<Storage> tree_;
     static decltype(auto) to_storage(const T& value) {
         if constexpr (std::is_same_v<T, Storage>) return (value);
@@ -79,10 +92,7 @@ class fenwick_tree {
         return static_cast<std::size_t>(n);
     }
     static std::size_t storage_size(std::size_t n) {
-        if (n > static_cast<std::size_t>(std::numeric_limits<int>::max())
-            || n + 1 > std::vector<Storage>{}.max_size())
-            throw std::length_error("fenwick_tree: size");
-        return n == 0 ? 0 : n + 1;
+        return detail::CheckedFenwickStorageSize(n, std::vector<Storage>{}.max_size());
     }
     static std::size_t lowbit(std::size_t x) noexcept { return x & (~x + 1); }
     void check_index(int i) const {
@@ -113,7 +123,7 @@ class fenwick_tree {
     }
     void add_unchecked(std::size_t i, const Storage& delta) {
         const auto n = static_cast<std::size_t>(size());
-        for (++i; i <= n;) {
+        for (++i;;) {
             tree_[i] += delta;
             const auto step = lowbit(i);
             if (step > n - i) break;
@@ -209,6 +219,13 @@ public:
 };
 #endif
 
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
+
+
+namespace sirkit {}
+using namespace sirkit;
 
 // SPDX-License-Identifier: CC0-1.0
 // Verify I/O: Verify/current/common/fast_io.hpp

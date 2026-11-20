@@ -3,6 +3,8 @@
 #include <cstdint>
 #include <iostream>
 #include <vector>
+
+using namespace sirkit;
 int main() {
     std::vector<std::int64_t> weights{3, 5, 7, 11};
     OfflineDynamicConnectivity graph(weights);

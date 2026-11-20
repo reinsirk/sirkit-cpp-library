@@ -4,6 +4,8 @@
 #include <vector>
 #include <iostream>
 
+using namespace sirkit;
+
 int main() {
     const std::vector<int> f{1, 2}, g{3, 4};
     assert((bitwise_and_convolution(f, g) == std::vector<int>{13, 8}));

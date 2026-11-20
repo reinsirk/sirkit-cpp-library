@@ -3,6 +3,8 @@
 #include <iostream>
 #include <vector>
 
+using namespace sirkit;
+
 int main() {
     for (auto p : eratosthenes(20)) std::cout << p << ' ';
     std::cout << '\n'; // 2 3 5 7 11 13 17 19

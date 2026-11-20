@@ -26,6 +26,8 @@
 // flip_j_inplace(a): 各行を左右反転しvoidを返す。Tはswap可能。O(H+HW)時間・追加O(1)、外側が空なら何もしない。
 // SIRKIT_DISABLE_SIMD: 追加AVX2実装・専用ヘッダー・CPU判定を除き、標準C++の処理を使う。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <cstddef>
 #include <stdexcept>
@@ -39,10 +41,13 @@
 #endif
 
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_MATRIX_TRANSFORM_SIMD_DETAIL_DEFINED
 #define SIRKIT_MATRIX_TRANSFORM_SIMD_DETAIL_DEFINED
 #if (!defined(SIRKIT_DISABLE_SIMD)) && ((defined(__i386__)) || (defined(__x86_64__)))
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 inline bool matrix_avx2_available() noexcept {
     return __builtin_cpu_supports("avx2");
 }
@@ -268,7 +273,7 @@ std::vector<Row> matrix_turn_avx2(const std::vector<Row>& a) {
 
 #ifndef SIRKIT_MATRIX_TRANSFORM_DETAIL_DEFINED
 #define SIRKIT_MATRIX_TRANSFORM_DETAIL_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 
 // 内部用。Mode: 0=転置、1=時計回り、3=反時計回り。
 template <int Mode, class Row>
@@ -464,11 +469,11 @@ std::vector<Row> matrix_quarter(const std::vector<Row>& a, int turns) {
 template <class T>
 std::vector<std::vector<T>> rotate_90r(const std::vector<std::vector<T>>& a) {
     if (a.empty()) return std::vector<std::vector<T>>(1);
-    return reinsirk::detail::matrix_turn<1>(a);
+    return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::matrix_turn<1>(a);
 }
 inline std::vector<std::string> rotate_90r(const std::vector<std::string>& a) {
     if (a.empty()) return std::vector<std::string>(1);
-    return reinsirk::detail::matrix_turn<1>(a);
+    return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::matrix_turn<1>(a);
 }
 #endif
 
@@ -477,11 +482,11 @@ inline std::vector<std::string> rotate_90r(const std::vector<std::string>& a) {
 template <class T>
 std::vector<std::vector<T>> flip_j(const std::vector<std::vector<T>>& a) {
     if (a.empty()) return std::vector<std::vector<T>>(1);
-    return reinsirk::detail::matrix_copy<false, true>(a);
+    return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::matrix_copy<false, true>(a);
 }
 inline std::vector<std::string> flip_j(const std::vector<std::string>& a) {
     if (a.empty()) return std::vector<std::string>(1);
-    return reinsirk::detail::matrix_copy<false, true>(a);
+    return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::matrix_copy<false, true>(a);
 }
 #endif
 
@@ -490,11 +495,11 @@ inline std::vector<std::string> flip_j(const std::vector<std::string>& a) {
 template <class T>
 std::vector<std::vector<T>> flip_i(const std::vector<std::vector<T>>& a) {
     if (a.empty()) return std::vector<std::vector<T>>(1);
-    return reinsirk::detail::matrix_copy<true, false>(a);
+    return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::matrix_copy<true, false>(a);
 }
 inline std::vector<std::string> flip_i(const std::vector<std::string>& a) {
     if (a.empty()) return std::vector<std::string>(1);
-    return reinsirk::detail::matrix_copy<true, false>(a);
+    return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::matrix_copy<true, false>(a);
 }
 #endif
 
@@ -502,10 +507,10 @@ inline std::vector<std::string> flip_i(const std::vector<std::string>& a) {
 #define SIRKIT_ROTATE_90L_DEFINED
 template <class T>
 std::vector<std::vector<T>> rotate_90l(const std::vector<std::vector<T>>& a) {
-    return reinsirk::detail::matrix_turn<3>(a);
+    return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::matrix_turn<3>(a);
 }
 inline std::vector<std::string> rotate_90l(const std::vector<std::string>& a) {
-    return reinsirk::detail::matrix_turn<3>(a);
+    return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::matrix_turn<3>(a);
 }
 #endif
 
@@ -513,10 +518,10 @@ inline std::vector<std::string> rotate_90l(const std::vector<std::string>& a) {
 #define SIRKIT_ROTATE_180_DEFINED
 template <class T>
 std::vector<std::vector<T>> rotate_180(const std::vector<std::vector<T>>& a) {
-    return reinsirk::detail::matrix_copy<true, true>(a);
+    return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::matrix_copy<true, true>(a);
 }
 inline std::vector<std::string> rotate_180(const std::vector<std::string>& a) {
-    return reinsirk::detail::matrix_copy<true, true>(a);
+    return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::matrix_copy<true, true>(a);
 }
 #endif
 
@@ -524,10 +529,10 @@ inline std::vector<std::string> rotate_180(const std::vector<std::string>& a) {
 #define SIRKIT_ROTATE_QUARTER_DEFINED
 template <class T>
 std::vector<std::vector<T>> rotate_quarter(const std::vector<std::vector<T>>& a, int clockwise_turns) {
-    return reinsirk::detail::matrix_quarter(a, clockwise_turns);
+    return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::matrix_quarter(a, clockwise_turns);
 }
 inline std::vector<std::string> rotate_quarter(const std::vector<std::string>& a, int clockwise_turns) {
-    return reinsirk::detail::matrix_quarter(a, clockwise_turns);
+    return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::matrix_quarter(a, clockwise_turns);
 }
 #endif
 
@@ -535,10 +540,10 @@ inline std::vector<std::string> rotate_quarter(const std::vector<std::string>& a
 #define SIRKIT_TRANSPOSE_DEFINED
 template <class T>
 std::vector<std::vector<T>> transpose(const std::vector<std::vector<T>>& a) {
-    return reinsirk::detail::matrix_turn<0>(a);
+    return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::matrix_turn<0>(a);
 }
 inline std::vector<std::string> transpose(const std::vector<std::string>& a) {
-    return reinsirk::detail::matrix_turn<0>(a);
+    return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::matrix_turn<0>(a);
 }
 #endif
 
@@ -546,10 +551,10 @@ inline std::vector<std::string> transpose(const std::vector<std::string>& a) {
 #define SIRKIT_FLIP_I_INPLACE_DEFINED
 template <class T>
 void flip_i_inplace(std::vector<std::vector<T>>& a) {
-    reinsirk::detail::matrix_flip_i_inplace(a);
+    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::matrix_flip_i_inplace(a);
 }
 inline void flip_i_inplace(std::vector<std::string>& a) {
-    reinsirk::detail::matrix_flip_i_inplace(a);
+    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::matrix_flip_i_inplace(a);
 }
 #endif
 
@@ -557,13 +562,20 @@ inline void flip_i_inplace(std::vector<std::string>& a) {
 #define SIRKIT_FLIP_J_INPLACE_DEFINED
 template <class T>
 void flip_j_inplace(std::vector<std::vector<T>>& a) {
-    reinsirk::detail::matrix_flip_j_inplace(a);
+    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::matrix_flip_j_inplace(a);
 }
 inline void flip_j_inplace(std::vector<std::string>& a) {
-    reinsirk::detail::matrix_flip_j_inplace(a);
+    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::matrix_flip_j_inplace(a);
 }
 #endif
 
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
+
+
+namespace sirkit {}
+using namespace sirkit;
 
 // SPDX-License-Identifier: CC0-1.0
 // Verify I/O: Verify/current/common/fast_io.hpp

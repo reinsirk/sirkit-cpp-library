@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #ifndef SIRKIT_CONTAINS_TEST_HEADER
 #define SIRKIT_CONTAINS_TEST_HEADER "../../../Geometry/Polygon.cpp"
 #endif
@@ -15,8 +17,8 @@
 
 namespace {
 using Big = boost::multiprecision::cpp_int;
-using IPoint = geo::Point<std::int64_t>;
-using Location = geo::Location;
+using IPoint = ::sirkit::geo::Point<std::int64_t>;
+using Location = ::sirkit::geo::Location;
 std::uint64_t checks = 0, outside_contract = 0;
 
 void require(bool value) {
@@ -71,7 +73,7 @@ template<class P>
 void check(const std::vector<P>& poly, const P& p) {
     if (!valid(poly, p)) { ++outside_contract; return; }
     const auto want = reference(poly, p);
-    const auto got = geo::contains(poly, p);
+    const auto got = ::sirkit::geo::contains(poly, p);
     if (got != want) {
         std::cerr << "query " << p << " polygon";
         for (const auto& a : poly) std::cerr << ' ' << a;
@@ -97,9 +99,9 @@ std::vector<P> convert(const std::vector<IPoint>& poly, std::int64_t tx = 0, std
     return result;
 }
 
-template<class T, class C = geo::DefaultCalc<T>>
+template<class T, class C = ::sirkit::geo::DefaultCalc<T>>
 void integers() {
-    using P = geo::Point<T, C>;
+    using P = ::sirkit::geo::Point<T, C>;
     for (auto original : shapes()) {
         for (int variant = 0; variant < 4; ++variant) {
             auto poly = original;
@@ -152,53 +154,53 @@ void integers() {
 
 template<class T>
 void floating() {
-    using P = geo::Point<T>;
+    using P = ::sirkit::geo::Point<T>;
     // 小さな整数の1/16倍なので、積・差も各型で厳密に表現できる。
     for (auto original : shapes()) for (int order = 0; order < 2; ++order) {
         std::vector<P> poly;
         for (const auto& a : original) poly.push_back({T(a.x) / 16, T(a.y) / 16});
         for (int x = -3; x <= 11; ++x) for (int y = -3; y <= 11; ++y)
-            require(geo::contains(poly, P{T(x) / 16, T(y) / 16}, geo::Epsilon{0, 0}) == reference(original, IPoint{x, y}));
+            require(::sirkit::geo::contains(poly, P{T(x) / 16, T(y) / 16}, ::sirkit::geo::Epsilon{0, 0}) == reference(original, IPoint{x, y}));
         std::reverse(original.begin(), original.end());
     }
     const std::vector<P> square{{0, 0}, {4, 0}, {4, 4}, {0, 4}};
     for (T delta : {T(1e-10L), T(1e-6L)}) {
         const bool near = delta < T(1e-8L);
-        require(geo::contains(square, P{2, -delta}, geo::Epsilon{0, 0}) == Location::Outside);
-        require(geo::contains(square, P{2, delta}, geo::Epsilon{0, 0}) == Location::Inside);
-        require(geo::contains(square, P{2, -delta}, geo::Epsilon{1e-8L, 0}) == (near ? Location::Boundary : Location::Outside));
-        require(geo::contains(square, P{2, delta}, geo::Epsilon{1e-8L, 0}) == (near ? Location::Boundary : Location::Inside));
-        require(geo::contains(square, P{-delta, 2}, geo::Epsilon{1e-8L, 0}) == (near ? Location::Boundary : Location::Outside));
+        require(::sirkit::geo::contains(square, P{2, -delta}, ::sirkit::geo::Epsilon{0, 0}) == Location::Outside);
+        require(::sirkit::geo::contains(square, P{2, delta}, ::sirkit::geo::Epsilon{0, 0}) == Location::Inside);
+        require(::sirkit::geo::contains(square, P{2, -delta}, ::sirkit::geo::Epsilon{1e-8L, 0}) == (near ? Location::Boundary : Location::Outside));
+        require(::sirkit::geo::contains(square, P{2, delta}, ::sirkit::geo::Epsilon{1e-8L, 0}) == (near ? Location::Boundary : Location::Inside));
+        require(::sirkit::geo::contains(square, P{-delta, 2}, ::sirkit::geo::Epsilon{1e-8L, 0}) == (near ? Location::Boundary : Location::Outside));
     }
     const std::vector<P> point{{0, 0}};
-    require(geo::contains(point, P{T(1e-5L), 0}, geo::Epsilon{1e-8L, 0}) == Location::Boundary);
-    require(geo::contains(point, P{T(1e-3L), 0}, geo::Epsilon{1e-8L, 0}) == Location::Outside);
+    require(::sirkit::geo::contains(point, P{T(1e-5L), 0}, ::sirkit::geo::Epsilon{1e-8L, 0}) == Location::Boundary);
+    require(::sirkit::geo::contains(point, P{T(1e-3L), 0}, ::sirkit::geo::Epsilon{1e-8L, 0}) == Location::Outside);
     const std::vector<P> diagonal{{0, 0}, {1024, 1024}, {1024, 0}};
     const P above{512, T(512) + T(1) / 1024};
-    require(geo::contains(diagonal, above, geo::Epsilon{0, 0}) == Location::Outside);
-    require(geo::contains(diagonal, above, geo::Epsilon{0, 1e-5L}) == Location::Boundary);
-    require(geo::contains(diagonal, above, geo::Epsilon{0, 1e-8L}) == Location::Outside);
+    require(::sirkit::geo::contains(diagonal, above, ::sirkit::geo::Epsilon{0, 0}) == Location::Outside);
+    require(::sirkit::geo::contains(diagonal, above, ::sirkit::geo::Epsilon{0, 1e-5L}) == Location::Boundary);
+    require(::sirkit::geo::contains(diagonal, above, ::sirkit::geo::Epsilon{0, 1e-8L}) == Location::Outside);
 }
 
 // Cへの変換丸めを含む既存の結果を固定する。厳密幾何の参照とは分ける。
 template<class C>
 void mixed_calculation(std::int64_t base) {
-    using P = geo::Point<std::int64_t, C>;
+    using P = ::sirkit::geo::Point<std::int64_t, C>;
     std::vector<P> triangle{{base, base}, {base + 1, base + 256}, {base + 1024, base + 1024}};
     const std::array<P, 6> queries{{triangle[0], triangle[1], triangle[2],
         {base, base + 32}, {base + 500, base + 600}, {base, base + 1000}}};
     const std::array<Location, 6> expected{{Location::Boundary, Location::Boundary, Location::Boundary,
         Location::Boundary, Location::Inside, Location::Outside}};
     for (int order = 0; order < 2; ++order) {
-        for (std::size_t i = 0; i < queries.size(); ++i) require(geo::contains(triangle, queries[i]) == expected[i]);
+        for (std::size_t i = 0; i < queries.size(); ++i) require(::sirkit::geo::contains(triangle, queries[i]) == expected[i]);
         std::reverse(triangle.begin(), triangle.end());
     }
 }
 
 // 4頂点単位の走査・切替閾値・末尾の余りに境界が重なる単純多角形。
-template<class C = geo::DefaultCalc<std::int64_t>>
+template<class C = ::sirkit::geo::DefaultCalc<std::int64_t>>
 void large_boundaries() {
-    using P = geo::Point<std::int64_t, C>;
+    using P = ::sirkit::geo::Point<std::int64_t, C>;
     constexpr std::array<int, 16> sizes{127, 128, 129, 130, 131, 255, 256, 257,
         258, 259, 511, 512, 513, 514, 515, 516};
     for (int n : sizes) for (int pattern = 0; pattern < 3; ++pattern) {

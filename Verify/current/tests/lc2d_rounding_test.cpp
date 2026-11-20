@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #ifndef SIRKIT_LC2D_SOURCE
 #define SIRKIT_LC2D_SOURCE "../../../DataStructure/line-container-2d.cpp"
 #endif
@@ -20,7 +22,7 @@ static void require(bool ok,ld input,ll got,ll expected){++checks;if(!ok){std::f
 #if defined(__GNUC__) || defined(__clang__)
 [[gnu::noinline]]
 #endif
-static ll reference(ld value){return std::llround(std::clamp(value,-LineContainer2D::INF,LineContainer2D::INF));}
+static ll reference(ld value){return std::llround(std::clamp(value,-LineContainer2D::kInf,LineContainer2D::kInf));}
 static void check(ld value){
  if(!std::isfinite(value))std::abort();
  LineContainer2D t;t.add(value,0);++values;
@@ -36,7 +38,7 @@ int main(){
  phase="powers of two and nearby half integers";
  for(int exponent=-8;exponent<=65;++exponent){ld power=std::ldexp(1.L,exponent);for(ld offset:{-1.5L,-1.L,-.5L,0.L,.5L,1.L,1.5L}){neighbours(power+offset);neighbours(-power+offset);}}
  phase="clamp neighbourhoods";
- for(ld sign:{-1.L,1.L}){ld v=sign*LineContainer2D::INF;neighbours(v);ld lower=v,upper=v;for(int i=0;i<128;++i){lower=std::nextafter(lower,-std::numeric_limits<ld>::infinity());upper=std::nextafter(upper,std::numeric_limits<ld>::infinity());check(lower);check(upper);}for(int e=-8;e<20;++e){neighbours(v+std::ldexp(1.L,e));neighbours(v-std::ldexp(1.L,e));}}
+ for(ld sign:{-1.L,1.L}){ld v=sign*LineContainer2D::kInf;neighbours(v);ld lower=v,upper=v;for(int i=0;i<128;++i){lower=std::nextafter(lower,-std::numeric_limits<ld>::infinity());upper=std::nextafter(upper,std::numeric_limits<ld>::infinity());check(lower);check(upper);}for(int e=-8;e<20;++e){neighbours(v+std::ldexp(1.L,e));neighbours(v-std::ldexp(1.L,e));}}
  phase="random significand and rounding exponents";
  std::mt19937_64 rng(UINT64_C(0x5713e9acda28d5a1));
  for(int i=0;i<150000;++i){std::uint64_t significand=rng();int exponent=static_cast<int>(rng()%153)-80;ld v=std::ldexp(static_cast<ld>(significand),exponent-63);if(rng()&1)v=-v;check(v);if(i%8==0)neighbours(v);}

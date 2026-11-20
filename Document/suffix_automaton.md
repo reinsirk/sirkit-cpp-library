@@ -2,17 +2,185 @@
 
 [SuffixAutomaton](../String/Suffix_Automaton.cpp)は文字列を末尾へ伸ばしながら、部分文字列の存在・出現回数・異なる個数・最長共通部分文字列を扱います。既定の`SuffixAutomaton<>`は英小文字、`SuffixAutomaton<256,0>`はNULを含む全バイトです。一般形は`<Alphabet,Base>`で、値を[Base,Base+Alphabet)に収めます。Unicodeの文字単位ではありません。[使用例](../Examples/suffix_automaton_example.cpp)を参照してください。
 
+
+以下、nは現在の文字列長、mは追加列または照会列の長さ、statesは状態数です。
+
 ## API
 
-| API | 動作 |
-| --- | --- |
-| `SuffixAutomaton(string_view)` / `append(byte)` / `append(string_view)` | 文字列で構築 / 末尾へ追加する。 |
-| `contains(pattern)` | 部分文字列として存在すればtrue。空は常にtrue。O(m)。 |
-| `occurrences(pattern)` | 重なり込みの出現回数。空はn+1。 |
-| `distinct_substring_count()` | 空を除く相異なる部分文字列数をuint64_tで返す。O(1)。 |
-| `longest_common_substring(text)` | Match{first_start,second_start,length}を返す。O(m)。 |
-| `size()` / `empty()` / `state_count()` | 元の文字列長 / 空か / 保存状態数。O(1)。 |
-| `reserve(text_capacity)` / `reset(text={})` / `clear()` / `swap(other)` | 容量予約 / 新しい文字列へ置換 / 全解放して空へ / O(1)で交換。 |
+### SuffixAutomaton
+
+```text
+SuffixAutomaton();
+explicit SuffixAutomaton(std::string_view text);
+SuffixAutomaton(const SuffixAutomaton&);
+SuffixAutomaton(SuffixAutomaton&&other) noexcept;
+```
+
+空／指定文字列／独立コピー／所有権移動で構築します。
+
+**制約:** 1<=Alphabet<=256、Base+Alphabet<=256、文字列は指定バイト範囲内。
+
+**計算量:** 空とmoveはO(1)、文字列長mにO(Alphabet*m)、コピーは保持領域に比例。
+
+### operator=
+
+```text
+SuffixAutomaton& operator=(const SuffixAutomaton&other);
+SuffixAutomaton&operator=(SuffixAutomaton&&other)noexcept;
+```
+
+独立コピー／所有権移動で代入し、自身への参照を返します。
+
+**制約:** 同じ型の個体。
+
+**計算量:** コピーは新旧保持領域に比例。move代入は旧状態の破棄を含みます。
+
+### append
+
+```text
+void append(std::uint8_t byte);
+void append(std::string_view text);
+```
+
+末尾へバイト／列を追加します。
+
+**制約:** 追加するバイトは[Base,Base+Alphabet)。番号・長さ・容量の上限以下。
+
+**計算量:** 1バイトは償却O(Alphabet)、最悪O(n+Alphabet)。mバイトの追加はO(Alphabet*m)。
+
+### size
+
+```text
+std::size_t size()const noexcept;
+```
+
+元の文字列長を返します。
+
+**制約:** 追加の制約はありません。
+
+**計算量:** O(1)。
+
+### empty
+
+```text
+bool empty()const noexcept;
+```
+
+空ならtrueです。
+
+**制約:** 追加の制約はありません。
+
+**計算量:** O(1)。
+
+### distinct_substring_count
+
+```text
+std::uint64_t distinct_substring_count()const noexcept;
+```
+
+空を除く異なる部分文字列の個数を返します。
+
+**制約:** 追加の制約はありません。
+
+**計算量:** O(1)。
+
+### state_count
+
+```text
+std::size_t state_count()const noexcept;
+```
+
+保存する状態数を返します。
+
+**制約:** 追加の制約はありません。
+
+**計算量:** O(1)。
+
+### contains
+
+```text
+bool contains(std::string_view pattern)const noexcept;
+```
+
+部分文字列として存在すればtrueです。空語も含みます。
+
+**制約:** 範囲外バイトは不一致として扱います。
+
+**計算量:** パターン長mにO(m+1)。
+
+### occurrences
+
+```text
+std::uint64_t occurrences(std::string_view pattern)const;
+```
+
+重なりを含む出現回数を返します。空語はn+1です。
+
+**制約:** 範囲外バイトは不一致として扱います。同じ個体の並行キャッシュ照会は外部同期が必要です。
+
+**計算量:** append後の最初の一致する非空照会はO(n+states+m)、以後O(m+1)。
+
+### longest_common_substring
+
+```text
+Match longest_common_substring(std::string_view text)const noexcept;
+```
+
+最長共通部分文字列のMatch{first_start,second_start,length}を返します。
+
+**制約:** 引数の範囲外バイトは一致を区切ります。
+
+**計算量:** 引数長mにO(m+1)。
+
+### reserve
+
+```text
+void reserve(std::size_t text_capacity);
+```
+
+指定した文字列長で必要となる最大状態数と関連領域を予約します。
+
+**制約:** 番号・容量の上限以下。
+
+**計算量:** 再確保時は保持する状態・文字列・キャッシュ等の大きさに比例する上界。
+
+### reset
+
+```text
+void reset(std::string_view text={});
+```
+
+指定した文字列へ置換します。省略すると空です。
+
+**制約:** 追加するバイトは[Base,Base+Alphabet)。番号・長さ・容量の上限以下。
+
+**計算量:** 旧状態の解放と新長mにO(Alphabet*m+旧保持量+1)の上界。
+
+### clear
+
+```text
+void clear()noexcept;
+```
+
+空へ戻し、全領域を解放します。
+
+**制約:** 既存の借用viewや状態番号を再利用しないこと。
+
+**計算量:** O(n+1)。
+
+### swap
+
+```text
+void swap(SuffixAutomaton&other)noexcept;
+void swap(SuffixAutomaton&a,SuffixAutomaton&b)noexcept;
+```
+
+内容と所有領域を交換します。
+
+**制約:** 追加の制約はありません。
+
+**計算量:** O(1)。
+
 
 ```cpp
 SuffixAutomaton<> automaton("ababa");

@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #ifndef HEADER
 #define HEADER "../../../DataStructure/implicit_treap.cpp"
 #endif
@@ -243,6 +245,8 @@ void sorted_operations() {
     for (int x : {2, 1, 2, 3, 1}) weak.insert_sorted({x});
     assert(weak.lower_bound({2}) == 2 && weak.upper_bound({2}) == 4);
     assert(weak.count({2}) == 2 && weak.contains({2}) && !weak.contains({9}));
+    assert(!weak.contains({0})); // lower_boundは存在するが、等価ではない。
+    weak.erase_val({0}); assert(weak.size() == 5);
     weak.erase_val({2}); weak.erase_max(); assert(weak.size() == 3 && weak.count({2}) == 1);
 }
 
@@ -260,6 +264,9 @@ void checked_boundaries() {
     assert(tree.min_left(0, [](std::int64_t) { return true; }) == 0);
     const auto capacity = static_cast<std::size_t>(std::numeric_limits<int>::max()) + 1;
     throws<std::length_error>([&] { tree.reserve(capacity); });
+    assert(sirkit::detail::ImplicitTreapAppendIndex(capacity - 2) == std::numeric_limits<int>::max() - 1);
+    throws<std::length_error>([&] { (void)sirkit::detail::ImplicitTreapAppendIndex(capacity - 1); });
+    assert(RangeAddMin::mapping(RangeAddMin::composition(-3, 8), 7) == 12);
 #ifndef SKIP_RUNTIME_CHECKS
     throws<std::out_of_range>([&] { (void)tree.get(0); });
     throws<std::out_of_range>([&] { tree.set(0, 2); });
@@ -270,6 +277,7 @@ void checked_boundaries() {
     throws<std::out_of_range>([&] { (void)tree.prod(1, 0); });
     throws<std::out_of_range>([&] { tree.reverse(-1, 0); });
     throws<std::out_of_range>([&] { tree.rotate(0, 1, 0); });
+    throws<std::out_of_range>([&] { tree.rotate(0, -1, 0); });
     throws<std::out_of_range>([&] { (void)tree.max_right(1, [](std::int64_t) { return true; }); });
     throws<std::out_of_range>([&] { (void)tree.min_left(-1, [](std::int64_t) { return true; }); });
     throws<std::invalid_argument>([&] { (void)tree.max_right(0, [](std::int64_t) { return false; }); });

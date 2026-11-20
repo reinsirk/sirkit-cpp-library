@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: CC0-1.0
 #include "../Graph/Topological.cpp"
 #include <iostream>
+
+using namespace sirkit;
 int main() {
     const Graph graph{{3}, {2}, {}, {}};
     for (int v : TopologicalSort(graph)) std::cout << v << ' '; // 0 1 3 2

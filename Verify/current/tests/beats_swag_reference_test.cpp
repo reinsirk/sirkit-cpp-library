@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #include "../../../DataStructure/Segment_Tree_Beats.cpp"
 #include "../../../DataStructure/Sliding_Window_Aggregation.cpp"
 #include <bit>
@@ -148,6 +150,10 @@ void swag_random() {
     while (!a.empty()) { q.pop_front(); a.pop_front(); }
     assert(q.all_prod().empty());
     q.push_back("alias"); q.push_back(q.front()); assert(q.all_prod() == "alias/alias");
+    SlidingWindowAggregation<std::string, Concat> transferred("", Concat{"/"});
+    transferred = std::move(q);
+    assert(q.empty() && transferred.all_prod() == "alias/alias");
+    q = std::move(transferred);
     q.clear();
 #ifndef SKIP_RUNTIME_CHECKS
     try { q.pop_front(); assert(false); } catch (const std::out_of_range&) {}

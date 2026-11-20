@@ -25,6 +25,8 @@
 // 更新・構築の失敗時は追加ノードを取り消し、旧根とlatest_rootを維持する。
 // SKIP_RUNTIME_CHECKSで根の所属・添字・長さ・述語の単位元検査と所属用状態を除く。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <concepts>
 #include <atomic>
 #include <cstddef>
@@ -38,11 +40,14 @@
 #include <utility>
 #include <vector>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #if !defined(SKIP_RUNTIME_CHECKS) && !defined(SIRKIT_PERSISTENT_TREE_OWNER_DEFINED)
 #define SIRKIT_PERSISTENT_TREE_OWNER_DEFINED
-namespace reinsirk::detail {
-inline std::uint64_t persistent_tree_owner() {
-    static std::atomic<std::uint64_t> next{1};
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
+template<class Counter>
+std::uint64_t take_persistent_tree_owner(Counter& next) {
     auto value = next.load(std::memory_order_relaxed);
     for (;;) {
         if (value == std::numeric_limits<std::uint64_t>::max())
@@ -50,11 +55,21 @@ inline std::uint64_t persistent_tree_owner() {
         if (next.compare_exchange_weak(value, value + 1, std::memory_order_relaxed)) return value;
     }
 }
+inline std::uint64_t persistent_tree_owner() {
+    static std::atomic<std::uint64_t> next{1};
+    return take_persistent_tree_owner(next);
+}
 }
 #endif
 
 #ifndef SIRKIT_PERSISTENT_SEGMENT_TREE_DEFINED
 #define SIRKIT_PERSISTENT_SEGMENT_TREE_DEFINED
+namespace detail {
+inline void CheckPersistentTreeNodeCapacity(std::size_t size, std::size_t limit) {
+    if (size == limit) throw std::length_error("PersistentSegmentTree node limit");
+}
+}
+
 template<class T, class Op>
 class PersistentSegmentTree {
     static_assert(std::copyable<T> && std::copy_constructible<Op>);
@@ -72,7 +87,14 @@ public:
 #endif
     public:
         Root() = default;
-        friend bool operator==(const Root&, const Root&) = default;
+        friend constexpr bool operator==(const Root& a, const Root& b) noexcept {
+            if (a.index_ != b.index_) return false;
+#ifndef SKIP_RUNTIME_CHECKS
+            return a.owner_ == b.owner_;
+#else
+            return true;
+#endif
+        }
     };
 private:
     struct Node {
@@ -85,7 +107,7 @@ private:
         T identity;
         std::vector<Node> nodes;
 #ifndef SKIP_RUNTIME_CHECKS
-        std::uint64_t owner = reinsirk::detail::persistent_tree_owner();
+        std::uint64_t owner = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::persistent_tree_owner();
         std::uint64_t copied_owner = 0;
         std::size_t copied_nodes = 0;
 #endif
@@ -109,7 +131,8 @@ private:
     }
     std::size_t checked_root(const Root& root) const {
 #ifndef SKIP_RUNTIME_CHECKS
-        if (root.owner_ != state_->owner || root.index_ > state_->nodes.size())
+        // 同じ世代の根は公開後に削除されず、その添字は有効。
+        if (root.owner_ != state_->owner)
             throw std::invalid_argument("PersistentSegmentTree root");
 #endif
         return root.index_;
@@ -135,8 +158,7 @@ private:
         return index == 0 ? 0 : (right ? state_->nodes[index - 1].right : state_->nodes[index - 1].left);
     }
     std::size_t append(T aggregate, std::size_t left, std::size_t right) {
-        if (state_->nodes.size() == state_->nodes.max_size())
-            throw std::length_error("PersistentSegmentTree node limit");
+        detail::CheckPersistentTreeNodeCapacity(state_->nodes.size(), state_->nodes.max_size());
         state_->nodes.push_back(Node{std::move(aggregate), left, right});
         return state_->nodes.size();
     }
@@ -333,3 +355,7 @@ public:
     }
 };
 #endif
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1

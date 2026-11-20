@@ -26,6 +26,8 @@
 // SKIP_RUNTIME_CHECKSは端点・負容量等の入力検査だけを除く。負閉路・費用範囲判定は維持する。
 // SIRKIT_FORCE_STANDARD_ARITHMETIC: 128bit整数拡張・算術組込み関数を除き、標準C++23の演算を使う。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -36,6 +38,19 @@
 #include <utility>
 #include <vector>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+#ifndef SIRKIT_MIN_COST_FLOW_CAPACITY_DEFINED
+#define SIRKIT_MIN_COST_FLOW_CAPACITY_DEFINED
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
+inline void CheckMinCostFlowIncidentCounts(std::size_t from, std::size_t to, bool loop) {
+    constexpr auto maximum = static_cast<std::size_t>(std::numeric_limits<int>::max());
+    if (from >= maximum || to >= maximum || (loop && from >= maximum - 1))
+        throw std::length_error("MinCostFlow: too many incident edges");
+}
+}
+#endif
 #ifndef SIRKIT_MIN_COST_FLOW_DEFINED
 #define SIRKIT_MIN_COST_FLOW_DEFINED
 template<class Capacity = std::int64_t, class Cost = std::int64_t>
@@ -146,10 +161,12 @@ private:
             if (distance != distance_[v]) continue;
             settled_.push_back(v);
             if (v == sink) return true;
-            for (std::size_t i = 0; i < graph_[v].size(); ++i) {
-                const auto& edge = graph_[v][i]; if (edge.residual == 0) continue;
-                const Cost reduced = add_minus(edge.cost, potential_[v], potential_[edge.to]);
-                if (reduced < 0) throw std::domain_error("MinCostFlow: invalid reduced cost");
+            const auto& outgoing = graph_[v];
+            const auto degree = outgoing.size();
+            const Cost from_potential = potential_[v];
+            for (std::size_t i = 0; i < degree; ++i) {
+                const auto& edge = outgoing[i]; if (edge.residual == 0) continue;
+                const Cost reduced = add_minus(edge.cost, from_potential, potential_[edge.to]);
                 const Cost next = add(distance, reduced);
                 if (!known_[edge.to] || next < distance_[edge.to]) {
                     known_[edge.to] = 1; distance_[edge.to] = next;
@@ -175,6 +192,8 @@ private:
             const Cost unit = add_minus(distance_[sink], potential_[sink], potential_[source]);
             const Cost next_total = add_product(total, unit, amount);
             potential_valid_ = false;
+            // 確定頂点間ではDijkstraの三角不等式、未確定側への辺では距離の確定順により
+            // 換算費用が非負に保たれる。増加路の新しい逆辺は換算費用0。
             for (int v : settled_) potential_[v] = add_minus(potential_[v], distance_[v], distance_[sink]);
             potential_valid_ = true;
             for (int v = sink; v != source; v = previous_vertex_[v]) {
@@ -205,9 +224,8 @@ public:
         vertex(from); vertex(to); nonnegative(capacity);
 #endif
         representable_reverse(cost);
-        const auto maximum = static_cast<std::size_t>(std::numeric_limits<int>::max());
-        if (graph_[from].size() >= maximum || graph_[to].size() >= maximum ||
-            (from == to && graph_[from].size() >= maximum - 1)) throw std::length_error("MinCostFlow: too many incident edges");
+        /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::CheckMinCostFlowIncidentCounts(
+            graph_[from].size(), graph_[to].size(), from == to);
         const int forward = static_cast<int>(graph_[from].size()), reverse = static_cast<int>(graph_[to].size()) + static_cast<int>(from == to);
         graph_[from].push_back({to, reverse, capacity, cost});
         try { graph_[to].push_back({from, forward, 0, static_cast<Cost>(-cost)}); }
@@ -277,6 +295,13 @@ public:
 };
 #endif
 
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
+
+
+namespace sirkit {}
+using namespace sirkit;
 
 // SPDX-License-Identifier: CC0-1.0
 // Verify I/O: Verify/current/common/fast_io.hpp

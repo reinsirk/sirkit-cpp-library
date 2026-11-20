@@ -2,6 +2,8 @@
 #include "../String/Z_Algorithm.cpp"
 #include <iostream>
 #include <string>
+
+using namespace sirkit;
 int main() {
     const std::string text = "ababa", pattern = "aba";
     for (int length : z_algorithm(text)) std::cout << length << ' ';

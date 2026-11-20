@@ -1,28 +1,99 @@
 # 整数の基数ソート
 
-`Algorithm/Radix_sort.cpp` は、`bool` を除く8・16・32・64ビットの標準整数型を安定な昇順に整列する。符号付き整数の最小値・最大値も扱う。符号付きの値は符号ビットを反転した符号なしキーで比較し、元の整数演算でオーバーフローさせない。
+`bool`を除く8・16・32・64ビットの標準整数型を、安定な昇順に整列します。符号付きの最小値・最大値も扱います。
 
-| 操作 | 結果 |
-|---|---|
-| `RadixSort(values)` | 配列を昇順に整列 |
-| `RadixSort(values, maximum)` | 同じ整列。すべての値がmaximum以下という前提を確認 |
-| `RadixSortOrder(values)` | 安定昇順の元添字列。入力は不変 |
-| `RadixSortWorkspace<T>::sort(values)` | 作業領域を再利用して整列 |
-| `workspace.sort(values, maximum)` | 上限付きの同じ処理 |
-| `workspace.reserve(n)` / `capacity()` / `release()` | 作業領域の予約 / 予約要素数 / 解放 |
+## API
 
-Bを整数型のバイト数としてO(Bn)時間・O(n)追加領域。小配列は確保せず挿入ソートを使う。変化しないバイトの散布は省く。64ビット型は順序と変動するバイトの幅を先に求め、整列済み・逆順ならヒストグラムの初期化・集計をせず終了する。変動が下位32ビット内なら必要なバイトだけを集計する。それ以外の整数幅は一走査の集計を使う。GCCでは32ビット型の4バイト集計を展開し、要素ごとのループを省く。
+### RadixSort
 
-64ビット型の128要素以上では、GCC/Clangのx86向け拡張とCPUのAVX2対応を確認し、順序・変動ビットの集計を4要素ずつ行う。符号なしの大小比較は符号ビットを反転して処理し、端数は標準の整数演算で扱う。追加の確保は行わず、ヒストグラムと安定な散布は共通の処理を使う。これ以外の環境では標準C++の経路を使う。
+```text
+template<class T> void RadixSort(std::vector<T>& values);
+template<class T> void RadixSort(std::vector<T>& values, T maximum);
+```
 
-`SIRKIT_DISABLE_SIMD`をインクルード前に定義すると、この専用実装とCPU判定を除外する。`-march=native`などによるコンパイラ自身の自動ベクトル化は、このマクロの対象に含めない。切り替え費用・自動ベクトル化した経路との比較は測定資料を参照。
+安定な昇順に直接整列します。入力配列の容量・要素の保管先は変えません。
 
-`sort` は元の配列の容量・要素の保管先を変えない。作業領域のコピーは独立し、ムーブ後も再利用できる。同値の元添字は元の順に並ぶ。逆順の入力でも、添字列は同値の区間内の順を保つ。
+**制約:** Tは冒頭の整数型。maximumを指定するときは全要素<=maximum。
 
-上限指定は負の値・負の上限にも対応する。検査は通常処理中に組み込み、`SKIP_RUNTIME_CHECKS` で除外する。上限違反の例外が出るまでに、配列が部分的に整列されている場合がある。容量限界など標準コンテナの保護は検査省略時も残る。
+**計算量:** O(Bn)時間・O(n)追加領域。
 
-[使用例](../Examples/radix_sort_example.cpp)と[整数全幅・安定順テスト](../Verify/current/tests/radix_reference_test.cpp)、[例外・所有権テスト](../Verify/current/tests/radix_exception_test.cpp)を参照。
+### RadixSortOrder
 
-## Verify
+```text
+template<class T>
+std::vector<std::size_t> RadixSortOrder(const std::vector<T>& values);
+```
 
-提出先は[ABC331 C — Sum of Numbers Greater Than Me](https://atcoder.jp/contests/abc331/tasks/abc331_c)。int64_t版とuint32_t版は、同じ手順で整列結果から各要素より大きい値の和を求める。問題の値域は両型に収まる。提出全体の時間には累積和・二分探索・入出力も含まれる。符号付き全域、8整数幅、安定な添字順、作業領域と例外はローカル補足で確認する。
+昇順の元添字列を返します。同値は元の順で、入力は不変です。
+
+**制約:** Tは冒頭の整数型。
+
+**計算量:** O(Bn)時間・O(n)追加領域。
+
+### RadixSortWorkspace::sort
+
+```text
+void sort(std::vector<T>& values);
+void sort(std::vector<T>& values, T maximum);
+```
+
+作業領域を再利用して安定昇順に整列します。
+
+**制約:** Tは冒頭の整数型。上限付きでは全要素<=maximum。
+
+**計算量:** O(Bn)時間・O(n)作業領域。
+
+### RadixSortWorkspace::reserve
+
+```text
+void reserve(std::size_t n);
+```
+
+n要素分の作業領域を予約します。
+
+**制約:** 容量上限以下。
+
+**計算量:** 再確保時は保持要素数に比例、確保済みならO(1)。
+
+### RadixSortWorkspace::capacity
+
+```text
+std::size_t capacity() const noexcept;
+```
+
+予約済み要素数を返します。
+
+**制約:** 追加の制約はありません。
+
+**計算量:** O(1)。
+
+### RadixSortWorkspace::release
+
+```text
+void release() noexcept;
+```
+
+作業領域を解放します。
+
+**制約:** 追加の制約はありません。
+
+**計算量:** 保持要素数に線形の上界。
+
+
+入力長n、整数型のバイト数Bに対し、整列・添字列の取得はO(Bn)時間・O(n)追加領域です。同値の添字は元の順に並びます。
+
+reserveは再確保時に保持要素数に比例し、capacityはO(1)、releaseは保持要素数に線形の上界です。
+
+```cpp
+std::vector<int> values{3,-1,3,2};
+auto order = RadixSortOrder(values); // {1,3,0,2}
+RadixSort(values);                  // {-1,2,3,3}
+```
+
+## 前提と所有
+
+`sort`は元配列の容量・要素の保管先を変えません。作業領域のコピーは独立し、移動元も再利用できます。
+
+上限指定は負の値・負の上限にも対応します。`SKIP_RUNTIME_CHECKS`で上限の検査を省けます。上限違反の例外までに配列が部分的に整列されている場合があります。容量限界の保護は検査省略時も残ります。
+
+[完全な使用例](../Examples/radix_sort_example.cpp)

@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 // 大量の包絡削除・再構築と所有操作を、全登録点の独立参照で照合する。
 #ifndef SIRKIT_LC2D_SOURCE
 #define SIRKIT_LC2D_SOURCE "../../../DataStructure/line-container-2d.cpp"

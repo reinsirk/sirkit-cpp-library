@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #ifndef SIRKIT_RH_SOURCE
 #define SIRKIT_RH_SOURCE "../../../String/RollingHash.cpp"
 #endif
@@ -51,6 +53,15 @@ void inspect(const RollingHash& hash, const std::string& text) {
 }
 
 int main() {
+    const std::size_t capacity = std::vector<std::uint64_t>{}.max_size();
+    ::sirkit::detail::CheckRollingHashCapacity(capacity / 2 - 1, capacity);
+    bool rejected = false;
+    try {
+        ::sirkit::detail::CheckRollingHashCapacity(capacity / 2, capacity);
+    } catch (const std::length_error&) {
+        rejected = true;
+    }
+    require(rejected);
     const std::vector<std::size_t> lengths{
         0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 15, 16, 17, 63, 64, 65,
         255, 256, 257, 4095, 4096, 4097};

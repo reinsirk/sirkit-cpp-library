@@ -17,6 +17,8 @@
 // reset(n=0): 空のn頂点へ戻す。swap(other): O(1)交換。コピーは独立所有、ムーブ元は空の未分解グラフ。
 // 入力検査はSKIP_RUNTIME_CHECKSで除く。ids()の参照は再scc/build・代入・破棄で無効になる。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -26,6 +28,9 @@
 #include <utility>
 #include <vector>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_UNWEIGHTED_GRAPH_DEFINED
 #define SIRKIT_UNWEIGHTED_GRAPH_DEFINED
 using Graph = std::vector<std::vector<int>>;
@@ -33,7 +38,7 @@ using Graph = std::vector<std::vector<int>>;
 
 #ifndef SIRKIT_SCC_DETAIL_DEFINED
 #define SIRKIT_SCC_DETAIL_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 // 既存CSR用の次数配列を調べる。通常のm!=nでは呼ばれない。
 template<class Index>
 [[gnu::noinline]]
@@ -138,6 +143,7 @@ inline std::pair<int, std::vector<int>> directed_component_ids_index(
     for (auto& id : ids) id = count - 1 - id;
     return {count, std::move(ids)};
 }
+template<std::uint32_t kCompactEdgeLimit = std::numeric_limits<std::uint32_t>::max()>
 inline std::pair<int, std::vector<int>> directed_component_ids(
         int n, const std::vector<std::pair<int, int>>& edges) {
     // 無辺では各頂点が1成分。従来と同じ逆番号で返す。
@@ -147,9 +153,15 @@ inline std::pair<int, std::vector<int>> directed_component_ids(
         return {n, std::move(ids)};
     }
     // 辺数が収まる場合だけCSRの添字を32bitにする。
-    if (edges.size() <= std::numeric_limits<std::uint32_t>::max())
+    if (edges.size() <= kCompactEdgeLimit)
         return directed_component_ids_index<std::uint32_t>(n, edges);
     return directed_component_ids_index<std::size_t>(n, edges);
+}
+
+inline int SccVertexCount(std::size_t vertices) {
+    if (vertices > static_cast<std::size_t>(std::numeric_limits<int>::max()))
+        throw std::length_error("SCC: too many vertices");
+    return static_cast<int>(vertices);
 }
 }
 #endif
@@ -174,10 +186,8 @@ public:
     explicit scc_graph(int n) : n_(n) {
         if (n < 0) throw std::length_error("SCC: negative size");
     }
-    explicit scc_graph(const Graph& g) {
-        if (g.size() > static_cast<std::size_t>(std::numeric_limits<int>::max()))
-            throw std::length_error("SCC: too many vertices");
-        n_ = static_cast<int>(g.size());
+    explicit scc_graph(const Graph& g)
+        : n_(/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::SccVertexCount(g.size())) {
         for (int u = 0; u < n_; ++u) for (int v : g[u]) add_edge(u, v);
         build();
     }
@@ -205,7 +215,7 @@ public:
 #endif
     }
     int build() {
-        auto result = reinsirk::detail::directed_component_ids(n_, edges_);
+        auto result = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::directed_component_ids(n_, edges_);
         ids_.swap(result.second); count_ = result.first;
 #ifndef SKIP_RUNTIME_CHECKS
         built_ = true;
@@ -281,3 +291,7 @@ public:
     }
 };
 #endif
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1

@@ -22,6 +22,8 @@
 // for_eachはC(n,k)回の呼出し・O(1)追加領域（visitの処理を除く）。入力検査・終端の計算は最初だけ行う。
 // n,k,maskの検査はSKIPで省く。全幅のシフト・0除算を避ける処理は常に維持する。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <bit>
 #include <concepts>
 #include <cstdint>
@@ -29,6 +31,9 @@
 #include <stdexcept>
 #include <type_traits>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_NEXT_COMBINATION_DEFINED
 #define SIRKIT_NEXT_COMBINATION_DEFINED
 template <std::unsigned_integral UInt> requires (!std::same_as<UInt, bool>)
@@ -51,12 +56,16 @@ inline constexpr int next_combination(int sub) {
 
 #ifndef SIRKIT_COMBINATION_MASK_UTILITIES_DEFINED
 #define SIRKIT_COMBINATION_MASK_UTILITIES_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 template <std::unsigned_integral UInt> requires (!std::same_as<UInt, bool>)
 constexpr bool NextCombinationBounded(UInt& sub, int n) noexcept {
     constexpr int width = std::numeric_limits<UInt>::digits;
     const auto next = next_combination(sub);
-    if (next == 0 || n <= 0 || (n < width && (next >> n) != 0)) return false;
+    if (next == 0) return false;
+#ifdef SKIP_RUNTIME_CHECKS
+    if (n <= 0) return false;
+#endif
+    if (n < width && (next >> n) != 0) return false;
     sub = next;
     return true;
 }
@@ -88,7 +97,7 @@ constexpr bool next_combination(UInt& sub, int n) {
     if (n < 0 || n > width || (n < width && (sub >> n) != 0))
         throw std::out_of_range("next_combination: invalid width or mask");
 #endif
-    return reinsirk::detail::NextCombinationBounded(sub, n);
+    return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::NextCombinationBounded(sub, n);
 }
 template <std::unsigned_integral UInt = std::uint64_t, class Visitor> requires (!std::same_as<UInt, bool>)
 constexpr void for_each_combination(int n, int k, Visitor&& visit) {
@@ -96,8 +105,9 @@ constexpr void for_each_combination(int n, int k, Visitor&& visit) {
     constexpr int width = std::numeric_limits<UInt>::digits;
     if (n < 0 || n > width || k < 0 || k > n)
         throw std::out_of_range("for_each_combination: invalid width or count");
-#endif
+#else
     if (n < 0 || k < 0 || k > n) return;
+#endif
     UInt mask = first_combination<UInt>(k);
     const UInt last = k == 0 ? UInt{0} : static_cast<UInt>(mask << (n - k));
     for (;;) {
@@ -115,6 +125,13 @@ constexpr void for_each_combination(int n, int k, Visitor&& visit) {
 }
 #endif
 
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
+
+
+namespace sirkit {}
+using namespace sirkit;
 
 // SPDX-License-Identifier: CC0-1.0
 // Verify I/O: Verify/current/common/fast_io.hpp

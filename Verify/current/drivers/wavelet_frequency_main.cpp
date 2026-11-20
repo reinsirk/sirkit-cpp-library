@@ -5,11 +5,11 @@
 
 int main() {
     int n{}, q{}; verify_in >> n >> q;
-    std::vector<std::int64_t> values(n);
+    std::vector<std::uint32_t> values(n);
     for (auto& value : values) verify_in >> value;
-    WaveletMatrix<std::int64_t> matrix(values);
+    WaveletMatrix<std::uint32_t> matrix(values);
     while (q--) {
-        int left{}, right{}; std::int64_t value{};
+        int left{}, right{}; std::uint32_t value{};
         verify_in >> left >> right >> value;
         verify_out << matrix.rank(value, left, right) << '\n';
     }

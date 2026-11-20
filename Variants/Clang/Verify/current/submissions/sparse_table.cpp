@@ -23,6 +23,8 @@
 // clear()/swap(other): 空へ戻す/内容交換。O(旧n log(旧n+1)+1)/O(1)。コピーは独立、移動元は空。演算等の例外時は内容の強い保証なし。
 // SIMD: 32bit以下の整数（bool以外）の構築に条件付きAVX2経路。SIRKIT_DISABLE_SIMDで専用経路とCPU判定を除く。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <bit>
 #include <cstddef>
@@ -31,6 +33,9 @@
 #include <utility>
 #include <vector>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_SPARSE_TABLE_DEFINED
 #define SIRKIT_SPARSE_TABLE_DEFINED
 template<class T, class Op>
@@ -162,6 +167,13 @@ public:
 };
 #endif
 
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
+
+
+namespace sirkit {}
+using namespace sirkit;
 
 // SPDX-License-Identifier: CC0-1.0
 // Verify I/O: Verify/current/common/fast_io.hpp

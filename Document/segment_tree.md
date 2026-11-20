@@ -4,18 +4,194 @@
 
 Sは値の型、opは左右の区間の答えを結合する関数、e()は空区間の答えです。opは括り方で結果が変わらず、e()を左右どちらに混ぜても結果を変えないことが必要です。左右の順序は保持するため、文字列連結や行列積にも使えます。
 
-## API
+以下、Nは要素数です。値の演算・コピーをO(1)として計算量を記します。
 
-| API | 動作 |
-| --- | --- |
-| `segtree()` / `(int n)` / `(vector<S>)` | 空列 / e()がn要素 / 指定した列で構築する。O(N+1)。 |
-| `set(p,x)` / `transform(p,f)` | 添字pをx / f(現在値)へ置き換える。O(log(N+1))。 |
-| `get(p)` / `all_prod()` | 点のS / 全体を集約したSをO(1)で返す。空列の全体積はe()。 |
-| `prod(l,r)` | [l,r)を左からopでまとめたSを返す。O(log(N+1))。空区間はe()。 |
-| `max_right(l,pred)` / `min_left(r,pred)` | 条件を満たす最大右端 / 最小左端をintで返す。O(log(N+1))。 |
-| `size()` / `empty()` / `values()` | 要素数int / 空か / 列のコピー。列のコピーはO(N+1)。 |
-| `assign(values)` / `reset(n)` / `reset()` | 列で再構築 / e()がn要素 / 現在の長さで全要素をe()へ戻す。 |
-| `clear()` / `swap(other)` | 容量を保って空にする / 内容をO(1)で交換する。 |
+## コンストラクタ
+
+```text
+segtree();
+explicit segtree(int n);
+explicit segtree(const std::vector<S>& values);
+segtree(const segtree&) = default;
+segtree(segtree&& other);
+```
+
+空列、e()をn個並べた列、または指定列から構築します。
+
+**制約:** 冒頭の値型・演算の前提を満たすこと。指定する列長は内部容量の上限内です。
+
+**計算量:** N要素にO(N+1)時間・領域。 ムーブ構築はO(1)、コピーは保持領域に比例。
+
+## set
+
+```text
+void set(int i, S value);
+```
+
+指定位置の値を置き換えます。
+
+**制約:** 指定位置は0以上size()未満。
+
+**計算量:** O(log(N+1))。値の演算・コピーをO(1)とします。
+
+## transform
+
+```text
+template<class F> void transform(int i, F&& f);
+```
+
+指定位置の現在値を関数へ渡し、戻り値で置き換えます。
+
+**制約:** 指定位置は0以上size()未満。
+
+**計算量:** O(log(N+1))。値の演算・コピーをO(1)とします。
+
+## get
+
+```text
+S get(int i) const;
+```
+
+指定位置のSを返します。
+
+**制約:** 指定位置は0以上size()未満。
+
+**計算量:** O(1)。
+
+## all_prod
+
+```text
+S all_prod() const;
+```
+
+列全体を先頭から集約した値を返します。空列は単位元です。
+
+**制約:** 共通の前提を満たすこと。
+
+**計算量:** O(1)。
+
+## prod
+
+```text
+S prod(int l, int r) const;
+```
+
+半開区間[l,r)を左から集約した値を返します。空区間は単位元です。
+
+**制約:** 区間は0<=l<=r<=size()。点を指定する形は0<=p<size()。
+
+**計算量:** O(log(N+1))。値の演算・コピーをO(1)とします。
+
+## max_right
+
+```text
+template<bool (*Pred)(S)> int max_right(int l) const;
+template<class Pred> int max_right(int l, Pred pred) const;
+```
+
+左端lを固定し、述語を満たす最大の右端を返します。
+
+**制約:** 端点は[0,size()]内。pred(単位元)=trueで、区間を伸ばしてfalseの後はtrueへ戻らないこと。
+
+**計算量:** O(log(N+1))。値の演算・コピーをO(1)とします。
+
+## min_left
+
+```text
+template<bool (*Pred)(S)> int min_left(int r) const;
+template<class Pred> int min_left(int r, Pred pred) const;
+```
+
+右端rを固定し、述語を満たす最小の左端を返します。
+
+**制約:** 端点は[0,size()]内。pred(単位元)=trueで、区間を伸ばしてfalseの後はtrueへ戻らないこと。
+
+**計算量:** O(log(N+1))。値の演算・コピーをO(1)とします。
+
+## size
+
+```text
+int size() const noexcept;
+```
+
+要素数を返します。
+
+**制約:** 共通の前提を満たすこと。
+
+**計算量:** O(1)。
+
+## empty
+
+```text
+bool empty() const noexcept;
+```
+
+空ならtrueを返します。
+
+**制約:** 共通の前提を満たすこと。
+
+**計算量:** O(1)。
+
+## values
+
+```text
+std::vector<S> values() const;
+```
+
+現在の列をvectorへコピーして返します。
+
+**制約:** 共通の前提を満たすこと。
+
+**計算量:** O(N+1)時間・O(N)追加領域。
+
+## assign
+
+```text
+void assign(const std::vector<S>& values);
+```
+
+指定した列で再構築します。
+
+**制約:** 共通の前提を満たすこと。
+
+**計算量:** O(旧N+新N+1)時間・新列の保持領域。
+
+## reset
+
+```text
+void reset(int n);
+void reset();
+```
+
+引数付きはe()をn個並べ、省略形は現在の長さで全要素をe()へ戻します。
+
+**制約:** 共通の前提を満たすこと。
+
+**計算量:** n指定形はO(旧N+新N+1)、引数省略形はO(N+1)。
+
+## clear
+
+```text
+void clear() noexcept;
+```
+
+確保容量を保って空列にします。
+
+**制約:** 共通の前提を満たすこと。
+
+**計算量:** O(旧N+1)の上界。要素・設定の破棄費用を含みます。
+
+## swap
+
+```text
+void swap(segtree& other);
+```
+
+内容と設定を交換します。
+
+**制約:** 共通の前提を満たすこと。
+
+**計算量:** O(1)。値型・比較器のswapの費用は別です。
 
 ```cpp
 std::int64_t op(std::int64_t a,std::int64_t b) { return a+b; }
@@ -39,3 +215,16 @@ max_rightは左端lを固定して右へ、min_leftは右端rを固定して左�
 不正な添字・区間・述語の単位元条件は既定で例外により検査し、`SKIP_RUNTIME_CHECKS`で除きます。容量・添字の保護は維持します。コピーは独立、移動元は空列として再利用できます。演算等の例外時に内容の強い保証は行いません。
 
 公開APIは[ACLのsegtree](https://atcoder.github.io/ac-library/production/document_ja/segtree.html)、数学的参考は[モノイド設計](https://info.atcoder.jp/entry/algorithm_lectures/range_query_monoid_design)です。実装は本ライブラリ用のCC0です。
+
+## operator=
+
+```text
+segtree& operator=(const segtree& other);
+segtree& operator=(segtree&& other);
+```
+
+コピーまたはムーブで内容を置き換え、自身への参照を返します。コピーは独立した内容を持ちます。
+
+**制約:** 型・所有・例外保証は共通の説明に従います。
+
+**計算量:** 保持する配列・ノードのコピーと旧内容の破棄に比例。ムーブ構築とは異なり、代入では旧内容の解放費用も含みます。

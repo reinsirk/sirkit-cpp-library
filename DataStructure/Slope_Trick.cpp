@@ -21,6 +21,8 @@
 // 全操作は確保/整数範囲の失敗時に関数を保つ（容量の変化は可）。容量・整数範囲保護はSKIPでも維持。
 // SKIP_RUNTIME_CHECKSはshift(a,b)のa<=b検査だけを除く。SIRKIT_FORCE_STANDARD_ARITHMETICで標準整数演算へ切替。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -31,8 +33,18 @@
 #include <utility>
 #include <vector>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_SLOPE_TRICK_DEFINED
 #define SIRKIT_SLOPE_TRICK_DEFINED
+namespace detail {
+inline std::size_t NextSlopeHeapCapacity(std::size_t capacity, std::size_t maximum) {
+    if (capacity == maximum) throw std::length_error("SlopeTrick: capacity");
+    return capacity > maximum / 2 ? maximum : std::max<std::size_t>(1, capacity * 2);
+}
+}
+
 class SlopeTrick {
 public:
     struct Argmin {std::optional<std::int64_t> lower,upper;};
@@ -67,10 +79,8 @@ private:
 #endif
     }
     static void grow(std::vector<std::int64_t>& heap) {
-        if(heap.size()==heap.max_size()) throw std::length_error("SlopeTrick: capacity");
         if(heap.size()<heap.capacity())return;
-        const auto capacity=heap.capacity();
-        heap.reserve(capacity>heap.max_size()/2?heap.max_size():std::max<std::size_t>(1,capacity*2));
+        heap.reserve(detail::NextSlopeHeapCapacity(heap.capacity(), heap.max_size()));
     }
     void push_left(std::int64_t key) {left_.push_back(key);std::push_heap(left_.begin(),left_.end());}
     void push_right(std::int64_t key) {right_.push_back(key);std::push_heap(right_.begin(),right_.end(),std::greater<>{});}
@@ -157,3 +167,7 @@ public:
     }
 };
 #endif
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1

@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 // 公開APIの所有・再利用・copy失敗を独立参照で確認する。保持形式・確保回数に依存しない。
 #ifndef FENWICK_SOURCE
 #define FENWICK_SOURCE "../../../DataStructure/dynamic-binary-indexed-tree-2d.cpp"

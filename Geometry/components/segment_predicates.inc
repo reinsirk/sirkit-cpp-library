@@ -6,7 +6,12 @@ namespace geo {
 // intersects(s,t,eps): 閉線分同士が端点・重なりを含め交わるか。O(1)。
 // SIRKIT_API_END
 template<class T, class C> bool intersects(const Segment<T, C>& s, const Segment<T, C>& t, Epsilon eps = {}) {
-    if constexpr (std::is_integral_v<T>) {
+    if constexpr (::sirkit::detail::kExactFloatingSegment<C>) {
+        const auto sides = ::sirkit::detail::floating_segment_sides(s, t, eps);
+        if (::sirkit::detail::segment_proper_crossing(sides)) return true;
+        const auto contacts = ::sirkit::detail::floating_segment_contacts(s, t, sides, eps);
+        return std::ranges::any_of(contacts, [](bool contact) { return contact; });
+    } else if constexpr (std::is_integral_v<T>) {
         const int a = orientation(s.a, s.b, t.a, eps), b = orientation(s.a, s.b, t.b, eps);
         if (a * b > 0) return false;
         // 整数計算で共線と分かった場合は、変化する1軸だけを調べる。

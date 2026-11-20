@@ -2,6 +2,8 @@
 #include "../Graph/Two_SAT.cpp"
 #include <cassert>
 #include <iostream>
+
+using namespace sirkit;
 int main(){
  two_sat constraints(3);
  constraints.add_clause(0,true,1,true);constraints.imply(1,true,2,false);constraints.add_xor(0,2);constraints.force(0,true);

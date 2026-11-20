@@ -1,9 +1,11 @@
 // SPDX-License-Identifier: CC0-1.0
 #include "Verify/current/common/fast_io.hpp"
+#include <cstddef>
 #include <cstdint>
 int main() {
     std::int32_t n{},m{}; verify_in >> n >> m;
     GeneralMatching graph(n);
+    graph.reserve_edges(static_cast<std::size_t>(m));
     for (std::int32_t i=0; i<m; ++i) {
         std::int32_t u{},v{}; verify_in >> u >> v; graph.add_edge(u,v);
     }

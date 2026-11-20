@@ -27,12 +27,17 @@
 // break_cycle(head): 循環の末尾から入口への辺を切り、切ったらtrueを返す。共有者にも変更が見える。O(k)時間・O(1)領域。
 // clear_chain(head): headを空にし、共有されていない後続k個を反復解放する。循環回収には先にbreak_cycle。O(k)時間・O(1)領域。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <cstddef>
 #include <limits>
 #include <memory>
 #include <stdexcept>
 #include <utility>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_NODE_DEFINED
 #define SIRKIT_NODE_DEFINED
 struct Node {
@@ -77,7 +82,7 @@ inline std::shared_ptr<Node> make_chain(std::size_t count, std::shared_ptr<Node>
 #ifndef SKIP_RUNTIME_CHECKS
 #ifndef SIRKIT_INTERNAL_CHAIN_CYCLE_CHECK_DEFINED
 #define SIRKIT_INTERNAL_CHAIN_CYCLE_CHECK_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 // 通常走査で進んだ先を受け取り、循環を検出する。
 struct ChainCycleCheck {
     const Node* checkpoint;
@@ -104,12 +109,13 @@ struct ChainCycleCheck {
 
 #ifndef SIRKIT_CHAIN_SIZE_DEFINED
 #define SIRKIT_CHAIN_SIZE_DEFINED
-inline std::size_t chain_size(const std::shared_ptr<Node>& head) {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
+template<std::size_t Maximum>
+inline std::size_t chain_size_bounded(const Node* current) {
     std::size_t size = 0;
-    const Node* current = head.get();
 #ifdef SKIP_RUNTIME_CHECKS
-    constexpr auto max = std::numeric_limits<std::size_t>::max();
-    while (current != nullptr && size <= max - 2) {
+    static_assert(Maximum >= 2);
+    while (current != nullptr && size <= Maximum - 2) {
         current = current->n.get();
         if (current == nullptr) return size + 1;
         current = current->n.get();
@@ -117,10 +123,10 @@ inline std::size_t chain_size(const std::shared_ptr<Node>& head) {
     }
 #endif
 #ifndef SKIP_RUNTIME_CHECKS
-    reinsirk::detail::ChainCycleCheck cycle_check(current);
+    ChainCycleCheck cycle_check(current);
 #endif
     while (current != nullptr) {
-        if (size == std::numeric_limits<std::size_t>::max()) {
+        if (size == Maximum) {
             throw std::length_error("chain size is not representable");
         }
         ++size;
@@ -131,6 +137,12 @@ inline std::size_t chain_size(const std::shared_ptr<Node>& head) {
     }
     return size;
 }
+}
+
+inline std::size_t chain_size(const std::shared_ptr<Node>& head) {
+    return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::chain_size_bounded<
+        std::numeric_limits<std::size_t>::max()>(head.get());
+}
 #endif
 
 #ifndef SIRKIT_CHAIN_TAIL_DEFINED
@@ -138,7 +150,7 @@ inline std::size_t chain_size(const std::shared_ptr<Node>& head) {
 inline std::shared_ptr<Node> chain_tail(const std::shared_ptr<Node>& head) {
     const std::shared_ptr<Node>* link = &head;
 #ifndef SKIP_RUNTIME_CHECKS
-    reinsirk::detail::ChainCycleCheck cycle_check(head.get());
+    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::ChainCycleCheck cycle_check(head.get());
 #endif
     while (*link && (*link)->n) {
         link = &(*link)->n;
@@ -202,7 +214,7 @@ inline std::shared_ptr<Node> clone_chain(const std::shared_ptr<Node>& head) {
     auto* link = &result;
     const Node* current = head.get();
 #ifndef SKIP_RUNTIME_CHECKS
-    reinsirk::detail::ChainCycleCheck cycle_check(current);
+    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::ChainCycleCheck cycle_check(current);
 #endif
     while (current != nullptr) {
         *link = make_node();
@@ -279,6 +291,13 @@ inline void clear_chain(std::shared_ptr<Node>& head) noexcept {
 }
 #endif
 
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
+
+
+namespace sirkit {}
+using namespace sirkit;
 
 // SPDX-License-Identifier: CC0-1.0
 // Verify I/O: Verify/current/common/fast_io.hpp

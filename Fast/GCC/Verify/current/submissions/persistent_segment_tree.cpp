@@ -37,6 +37,8 @@
 // 更新・構築の失敗時は追加ノードを取り消し、旧根とlatest_rootを維持する。
 // SKIP_RUNTIME_CHECKSで根の所属・添字・長さ・述語の単位元検査と所属用状態を除く。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <concepts>
 #include <atomic>
 #include <cstddef>
@@ -51,8 +53,17 @@
 #include <vector>
 
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_PERSISTENT_SEGMENT_TREE_DEFINED
 #define SIRKIT_PERSISTENT_SEGMENT_TREE_DEFINED
+namespace detail {
+inline void CheckPersistentTreeNodeCapacity(std::size_t size, std::size_t limit) {
+    if (size == limit) throw std::length_error("PersistentSegmentTree node limit");
+}
+}
+
 template<class T, class Op>
 class PersistentSegmentTree {
     static_assert(std::copyable<T> && std::copy_constructible<Op>);
@@ -65,7 +76,10 @@ public:
         explicit Root(std::size_t index) : index_(index) {}
     public:
         Root() = default;
-        friend bool operator==(const Root&, const Root&) = default;
+        friend constexpr bool operator==(const Root& a, const Root& b) noexcept {
+            if (a.index_ != b.index_) return false;
+            return true;
+        }
     };
 private:
     struct Node {
@@ -104,8 +118,7 @@ private:
         return index == 0 ? 0 : (right ? state_->nodes[index - 1].right : state_->nodes[index - 1].left);
     }
     std::size_t append(T aggregate, std::size_t left, std::size_t right) {
-        if (state_->nodes.size() == state_->nodes.max_size())
-            throw std::length_error("PersistentSegmentTree node limit");
+        detail::CheckPersistentTreeNodeCapacity(state_->nodes.size(), state_->nodes.max_size());
         state_->nodes.push_back(Node{std::move(aggregate), left, right});
         return state_->nodes.size();
     }
@@ -289,6 +302,13 @@ public:
 };
 #endif
 
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
+
+
+namespace sirkit {}
+using namespace sirkit;
 
 // SPDX-License-Identifier: CC0-1.0
 // Verify I/O: Verify/current/common/fast_io.hpp

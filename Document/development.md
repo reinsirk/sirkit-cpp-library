@@ -2,9 +2,13 @@
 
 開発は`dev`で行い、まとまった変更をGitHubのPRで`main`へ反映します。push・PR作成は手動で行います。未コミットの変更はブランチ切り替えだけではコミットされません。
 
+配布は[GitHub Releases](https://github.com/reinsirk/sirkit-cpp-library/releases)を使います。配布ZIPとその管理用manifest・検査結果はリポジトリに置かず、通常の変更時には再生成しません。本体・使用例・Verifyなどの生成物の同期確認は引き続き行います。
+
+`Audit/data/`の検証ZIPはローカル保存で、Gitでは追跡しません。GitHub Actionsはこれらを使わずに検査します。過去の最適化履歴を手元で照合する場合は、参照するZIPを別途用意してください。
+
 ## 最適化
 
-受理履歴のあるVerifyコードを一覧から選びます。Library Checkerでは本体・main・入出力を含めてCodex→Claudeの順に改善し、各段階のコード・正しさの照合・測定結果を保存します。本体単独の比較と全体の比較は分けます。
+受理履歴のあるVerifyコードを一覧から選びます。Library Checkerでは本体・main・入出力を含めてCodex→Claudeの順に改善し、各段階のコード・正しさの照合・測定結果を保存します。本体単独の比較と全体の比較は分けます。Library Checker以外は正しさの検証を優先し、最適化はライブラリ本体だけを対象とします。main・入出力の個別チューニングは行いません。
 
 ```sh
 python3 Scripts/optimization_handoff.py --list
@@ -12,7 +16,7 @@ python3 Scripts/prepare_verify.py
 python3 Scripts/prepare_variant_verify.py
 ```
 
-通常は共通の高速入出力を使います。独自の入出力が有効な場合は、`Verify/current/groups/*.json`のLibrary Checker対象項目に`allow_custom_io: true`を指定できます。main全体が変更の追跡対象です。AtCoderでは共通の高速入出力を使います。
+通常は共通の高速入出力を使います。独自の入出力が有効な場合は、`Verify/current/groups/*.json`のLibrary Checker対象項目に`allow_custom_io: true`を指定できます。main全体が変更の追跡対象です。yukicoder・AtCoder・AOJでは共通の入出力と素直なAPI呼び出しを使い、問題の制約内で解くために必要な手順を記します。
 
 提出版は`SKIP_RUNTIME_CHECKS`を有効にし、実行時assertを含む場合は`NDEBUG`も付けます。各オンライン対象の`gcc_optimization`には、測定で選んだ`O2`・`O3`・`O3,unroll-loops`を指定できます。Clangにはこのpragmaを適用しません。ローカルのchecked検証ではassertを有効に保ちます。
 
@@ -26,9 +30,17 @@ python3 Scripts/ci_verify.py --base origin/main --list
 
 `--id`は個別指定、`--base`は指定した版からの変更に対応するVerifyの選択、`--all`は全件です。検査有効・無効の両方でローカルの入出力例を照合します。Clangで標準C++の代替経路も確認するには`--compiler clang++ --fallback`を付けます。
 
-[GitHub Actions](../.github/workflows/verify.yml)は`dev`へのpushと`main`向けPRで、生成物・Pythonテスト・README集計と、GCC/ClangのローカルVerifyを確認します。手動実行では全件を選べます。オンライン提出は別途行います。
+[GitHub Actions](../.github/workflows/verify.yml)は、`main`向けPRの作成・更新時に毎回全件を実行します。`dev`や`main`へのpush単独では起動しません。
+
+生成物・Pythonテスト・README集計を確認した後、GCC/Clangそれぞれで通常経路と標準C++の代替経路を実行します。各経路で入力検査有効・無効の両方を照合します。対象なしは「対象なし」と表示し、未実行のコードを検証済みとは数えません。
+
+README先頭のバッジは`main`向けPRのCI結果です。PRごとの結果はChecksの`Verify result`、コンパイラごとの件数・成否はActionsのSummary、詳しいJSONは14日間保存するArtifactで確認できます。GitHubのmain保護ルールで`Verify result`を必須にすると、いずれかの検査が失敗したPRを取り込まない運用にできます。オンライン提出とAC判定は別途行います。
+
+ASan/UBSan、カバレッジ、代表APIの性能測定、通常版のCore Guidelines・Google Style検査も実行します。対象と結果の読み方、ローカルでの実行方法は[CIの品質検査](ci_quality.md)を参照してください。速度優先版は作法検査の対象外です。
 
 ## 手動提出と判定の取り込み
+
+提出先はLibrary Checker→yukicoder→AtCoder→AOJの順です。問題を移した場合は旧問題・判定を参考履歴として残し、新問題のACは別に取得します。説明コメントのみの変更8件の再提出免除は[提出方針](../Verify/current/submission_policy.json)のソースSHAに限定し、実装変更後へ引き継ぎません。
 
 `Verify/current/submissions/ID.cpp`を提出します。変更後のコードでACを得たら、提出URLから実際の本文を照合して記録します。
 

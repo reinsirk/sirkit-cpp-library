@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: CC0-1.0
 #include "../String/Aho_Corasick.cpp"
 #include <iostream>
+
+using namespace sirkit;
 int main() {
     AhoCorasick<> automaton;
     automaton.add("he"); automaton.add("she"); automaton.add("he"); automaton.add("");

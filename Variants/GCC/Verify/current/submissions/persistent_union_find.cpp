@@ -16,14 +16,15 @@
 // API一覧
 // [PersistentUnionFind]
 // PersistentUnionFind(n=0): n要素の完全永続UF。初期化O(log(n+1))、初期ノード数O(1)。頂点はintの範囲。
-// find(i[,version])/root_of(i[,version])/leader(i[,version]): 代表、size(i[,version]): 成分サイズ。O(log²(n+1))。
-// find_with_size(i[,version]): {代表,負の成分サイズ}。same(a,b[,version]): 同一成分か。O(log²(n+1))。
+// root(i[,version])/leader(i[,version])/find(i[,version]): intの代表頂点、size(i[,version]): 成分サイズ。O(log²(n+1))。
+// find_with_size(i[,version]): {代表,負の成分サイズ}。same(a,b[,version])/issame(a,b[,version]): 同一成分か。O(log²(n+1))。
 // unite(a,b[,version])/merge(a,b[,version]): 指定版/現在版から結合し新規結合ならtrue。O(log²(n+1))償却時間。
 // 結合不要でも指定版が現在版になる。成功1回でO(log(n+1))ノードを追加し全版を保持する。
-// get_root(): 現在版の非所有Node*、restore(version): 現在版を選択、size(): 全要素数。O(1)。
+// Versionは非所有Node*の版ハンドルで、頂点番号ではない。version()で取得して保存し、参照・deleteはしない。
+// version(): 現在版のVersion、restore(version): 現在版を選択、size(): 全要素数。O(1)。
 // component_count([version]): 成分数、O(n log(n+1))。groups([version]): 成分別頂点昇順一覧、O(n log²(n+1))。
 // コピーは保存領域を共有し現在版は独立、移動元は空。ハンドルの寿命はPersistentArrayと同じ。
-// arr/rootは互換用公開フィールド。直接更新するとUFの不変条件が壊れるため、操作は上記APIを使う。
+// arrは互換用公開フィールド。直接更新するとUFの不変条件が壊れるため、操作は上記APIを使う。
 //
 // [PersistentArray<T,shift>]
 // PersistentArray<T,shift=4>(n=0,ID=T{}): [0,n)の初期値ID、O(2^shift + log_(2^shift)(n+1))時間。Tはコピー構築・代入可能。
@@ -38,6 +39,8 @@
 // ハンドルは同じ保存領域を所有するインスタンスが残る間有効。移動元は空。全版は最後の所有者と同時に反復解放。
 // 別保存領域・寿命切れのハンドルは使用不可。並行更新は外部同期が必要。1<=shift<=8。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <array>
 #include <cstddef>
@@ -50,8 +53,24 @@
 #include <variant>
 #include <vector>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_PERSISTENT_ARRAY_DEFINED
 #define SIRKIT_PERSISTENT_ARRAY_DEFINED
+namespace detail {
+inline void CheckPersistentArrayNodeCount(std::size_t size) {
+    if (size == std::numeric_limits<std::size_t>::max())
+        throw std::length_error("PersistentArray: node capacity");
+}
+
+inline std::int64_t CheckedPersistentArraySize(std::size_t size) {
+    if (size > static_cast<std::uint64_t>(std::numeric_limits<std::int64_t>::max()))
+        throw std::length_error("PersistentArray: size overflow");
+    return static_cast<std::int64_t>(size);
+}
+}
+
 template<typename T, int shift = 4>
 class PersistentArray {
     friend struct PersistentUnionFind;
@@ -124,8 +143,7 @@ private:
 #endif
     }
     Node* allocate(Node* original, bool leaf) {
-        if (storage_->node_count == std::numeric_limits<std::size_t>::max())
-            throw std::length_error("PersistentArray: node capacity");
+        detail::CheckPersistentArrayNodeCount(storage_->node_count);
         if (storage_->blocks.empty() || storage_->blocks.back().size() == storage_->blocks.back().capacity()) {
             std::vector<Node> block;
             block.reserve(std::min<std::size_t>(512, std::size_t{4} << std::min<std::size_t>(storage_->blocks.size(), 9)));
@@ -273,10 +291,18 @@ private:
         return {left ? left->values()[ia & (width - 1)] : storage_->id,
                 right ? right->values()[ib & (width - 1)] : storage_->id};
     }
+    // UFの親番号は同じ版で明示更新済みなので、祖先の配列経路は必ず存在する。
+    std::pair<T,T> get_two_existing(Node* n, std::int64_t a, std::int64_t b) const {
+        Node* left = n; Node* right = n;
+        const auto ia = static_cast<std::uint64_t>(a), ib = static_cast<std::uint64_t>(b);
+        for (int d = levels_; d > 0; --d) {
+            left = left->children()[(ia >> (d * shift)) & (width - 1)];
+            right = right->children()[(ib >> (d * shift)) & (width - 1)];
+        }
+        return {left->values()[ia & (width - 1)], right->values()[ib & (width - 1)]};
+    }
     static std::int64_t vector_size(const std::vector<T>& values) {
-        if (values.size() > static_cast<std::uint64_t>(std::numeric_limits<std::int64_t>::max()))
-            throw std::length_error("PersistentArray: size overflow");
-        return static_cast<std::int64_t>(values.size());
+        return detail::CheckedPersistentArraySize(values.size());
     }
 };
 #endif
@@ -284,59 +310,75 @@ private:
 #ifndef SIRKIT_PERSISTENT_UNION_FIND_DEFINED
 #define SIRKIT_PERSISTENT_UNION_FIND_DEFINED
 struct PersistentUnionFind {
-    PersistentArray<int> arr;
     using Node = PersistentArray<int>::Node;
-    Node* root = nullptr;
-    explicit PersistentUnionFind(std::size_t n = 0) : arr(checked_size(n), -1), root(arr.root) {}
+    using Version = Node*;
+    PersistentArray<int> arr;
+private:
+    Version version_ = nullptr;
+public:
+    explicit PersistentUnionFind(std::size_t n = 0) : arr(checked_size(n), -1), version_(arr.root) {}
     PersistentUnionFind(const PersistentUnionFind&) = default;
     PersistentUnionFind& operator=(const PersistentUnionFind&) = default;
     PersistentUnionFind(PersistentUnionFind&& other) noexcept
-        : arr(std::move(other.arr)), root(std::exchange(other.root, nullptr)) {}
+        : arr(std::move(other.arr)), version_(std::exchange(other.version_, nullptr)) {}
     PersistentUnionFind& operator=(PersistentUnionFind&& other) noexcept {
-        if (this != &other) { arr = std::move(other.arr); root = std::exchange(other.root, nullptr); }
+        if (this != &other) { arr = std::move(other.arr); version_ = std::exchange(other.version_, nullptr); }
         return *this;
     }
     int size() const noexcept { return static_cast<int>(arr.size()); }
-    std::pair<int,int> find_with_size(int i, Node* r) const {
+    std::pair<int,int> find_with_size(int i, Version r) const {
         check_version(r); arr.check_index(i);
         int value = arr.get_unchecked(r, i);
-        while (value >= 0) { i = value; value = arr.get_unchecked(r, i); }
+        while (value >= 0) { i = value; value = arr.get_existing(r, i); }
         return {i, value};
     }
-    std::pair<int,int> find_with_size(int i) const { return find_with_size(i, root); }
-    int find(int i, Node* r) const { return find_with_size(i, r).first; }
-    int find(int i) const { return find(i, root); }
-    int leader(int i, Node* r) const { return find(i, r); }
+    std::pair<int,int> find_with_size(int i) const { return find_with_size(i, version_); }
+    int find(int i, Version r) const { return find_with_size(i, r).first; }
+    int find(int i) const { return find(i, version_); }
+    int leader(int i, Version r) const { return find(i, r); }
     int leader(int i) const { return find(i); }
-    int root_of(int i, Node* r) const { return find(i, r); }
-    int root_of(int i) const { return find(i); }
-    int size(int i, Node* r) const { return -find_with_size(i, r).second; }
-    int size(int i) const { return size(i, root); }
-    bool same(int i, int j, Node* r) const {
-        const auto values = find_pair(i, j, r);
-        return values.first.first == values.second.first;
+    int root(int i, Version r) const { return find(i, r); }
+    int root(int i) const { return find(i); }
+    int size(int i, Version r) const { return -find_with_size(i, r).second; }
+    int size(int i) const { return size(i, version_); }
+    bool same(int i, int j, Version r) const {
+        check_version(r); arr.check_index(i); arr.check_index(j);
+        if (i == j) return true;
+        auto [a, b] = arr.get_two_unchecked(r, i, j);
+        // 代表まで上らず、同じ頂点へ到達した時点で連結と分かる。
+        while (a >= 0 && b >= 0) {
+            i = a; j = b;
+            if (i == j) return true;
+            const auto values = arr.get_two_existing(r, i, j);
+            a = values.first; b = values.second;
+        }
+        while (a >= 0) { i = a; if (i == j) return true; a = arr.get_existing(r, i); }
+        while (b >= 0) { j = b; if (i == j) return true; b = arr.get_existing(r, j); }
+        return i == j;
     }
-    bool same(int i, int j) const { return same(i, j, root); }
-    bool unite(int i, int j, Node* r) {
+    bool same(int i, int j) const { return same(i, j, version_); }
+    bool issame(int i, int j, Version r) const { return same(i, j, r); }
+    bool issame(int i, int j) const { return same(i, j); }
+    bool unite(int i, int j, Version r) {
         const auto values = find_pair(i, j, r);
         auto [a, sa] = values.first; auto [b, sb] = values.second;
-        if (a == b) { root = arr.root = r; return false; }
+        if (a == b) { version_ = arr.root = r; return false; }
         if (sa > sb) { std::swap(a, b); std::swap(sa, sb); }
         r = arr.update_two(r, static_cast<std::uint64_t>(a), sa + sb,
                            static_cast<std::uint64_t>(b), a, arr.levels_);
-        root = arr.root = r; return true;
+        version_ = arr.root = r; return true;
     }
-    bool unite(int i, int j) { return unite(i, j, root); }
-    bool merge(int i, int j, Node* r) { return unite(i, j, r); }
+    bool unite(int i, int j) { return unite(i, j, version_); }
+    bool merge(int i, int j, Version r) { return unite(i, j, r); }
     bool merge(int i, int j) { return unite(i, j); }
-    Node* get_root() const noexcept { return root; }
-    void restore(Node* r) { check_version(r); arr.restore(r); root = r; }
-    int component_count(Node* r) const {
+    Version version() const noexcept { return version_; }
+    void restore(Version r) { check_version(r); arr.restore(r); version_ = r; }
+    int component_count(Version r) const {
         check_version(r);
         int count = 0; for (int i = 0; i < size(); ++i) count += arr.get_unchecked(r, i) < 0; return count;
     }
-    int component_count() const { return component_count(root); }
-    std::vector<std::vector<int>> groups(Node* r) const {
+    int component_count() const { return component_count(version_); }
+    std::vector<std::vector<int>> groups(Version r) const {
         check_version(r);
         std::vector<int> leaders(size()), count(size(), 0), slot(size());
         if constexpr (PersistentArray<int>::compact_nodes) {
@@ -351,32 +393,30 @@ struct PersistentUnionFind {
         for (int i = 0; i < size(); ++i) result[slot[leaders[i]]].push_back(i);
         return result;
     }
-    std::vector<std::vector<int>> groups() const { return groups(root); }
+    std::vector<std::vector<int>> groups() const { return groups(version_); }
 private:
     // groupsで版・添字を確かめた後に使う。親の配列経路は同じ版で明示更新済み。
-    int leader_existing_parents(int i, Node* r) const {
+    int leader_existing_parents(int i, Version r) const {
         int value = arr.get_unchecked(r, i);
         while (value >= 0) { i = value; value = arr.get_existing(r, i); }
         return i;
     }
-    void check_version(Node* r) const {
+    void check_version([[maybe_unused]] Version r) const {
 #ifndef SKIP_RUNTIME_CHECKS
         if (!r && size() != 0) throw std::invalid_argument("PersistentUnionFind: null version");
         arr.check_root(r);
-#else
-        (void)r;
 #endif
     }
-    std::pair<std::pair<int,int>, std::pair<int,int>> find_pair(int i, int j, Node* r) const {
+    std::pair<std::pair<int,int>, std::pair<int,int>> find_pair(int i, int j, Version r) const {
         check_version(r); arr.check_index(i); arr.check_index(j);
         auto [a, b] = arr.get_two_unchecked(r, i, j);
         while (a >= 0 && b >= 0) {
             i = a; j = b;
-            const auto values = arr.get_two_unchecked(r, i, j);
+            const auto values = arr.get_two_existing(r, i, j);
             a = values.first; b = values.second;
         }
-        while (a >= 0) { i = a; a = arr.get_unchecked(r, i); }
-        while (b >= 0) { j = b; b = arr.get_unchecked(r, j); }
+        while (a >= 0) { i = a; a = arr.get_existing(r, i); }
+        while (b >= 0) { j = b; b = arr.get_existing(r, j); }
         return {{i, a}, {j, b}};
     }
     static std::int64_t checked_size(std::size_t n) {
@@ -387,6 +427,13 @@ private:
 };
 #endif
 
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
+
+
+namespace sirkit {}
+using namespace sirkit;
 
 // SPDX-License-Identifier: CC0-1.0
 // Verify I/O: Verify/current/common/fast_io.hpp
@@ -667,9 +714,9 @@ inline VerifyOutput verify_out;
 #include <vector>
 int main() {
     int n,q;verify_in>>n>>q;PersistentUnionFind uf(n);
-    std::vector<PersistentUnionFind::Node*> versions(q+1);versions[0]=uf.get_root();
+    std::vector<PersistentUnionFind::Version> versions(q+1);versions[0]=uf.version();
     for(int i=0;i<q;++i){int t,k,u,v;verify_in>>t>>k>>u>>v;
-        if(t==0){uf.unite(u,v,versions[k+1]);versions[i+1]=uf.get_root();}
-        else verify_out<<uf.same(u,v,versions[k+1])<<'\n';
+        if(t==0){uf.unite(u,v,versions[k+1]);versions[i+1]=uf.version();}
+        else verify_out<<uf.issame(u,v,versions[k+1])<<'\n';
     }
 }

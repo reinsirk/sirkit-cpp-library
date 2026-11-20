@@ -10,12 +10,16 @@ from pathlib import Path
 import re
 import tempfile
 try:
+    from .generate_variants import COMPILERS
     from .verify_distribution import code_mask, lexical_regions
 except ImportError:
+    from generate_variants import COMPILERS
     from verify_distribution import code_mask, lexical_regions
 
-PROFILES = {'normal': None, 'gcc': ('GCC', False), 'clang': ('Clang', False),
-            'fast-gcc': ('GCC', True), 'fast-clang': ('Clang', True)}
+PROFILES = {'normal': None, **{
+    ('fast-' if fast else '') + compiler.lower(): (compiler, fast)
+    for compiler in COMPILERS for fast in (False, True)
+}}
 GUARD = re.compile(r'SIRKIT_[A-Z0-9_]+_DEFINED\Z')
 LIMIT = 512 * 1024
 STANDARD_HEADERS = set('algorithm any array atomic barrier bit bitset cassert cctype cerrno cfenv cfloat charconv chrono cinttypes climits clocale cmath codecvt compare complex concepts condition_variable coroutine csetjmp csignal cstdarg cstddef cstdint cstdio cstdlib cstring ctime cuchar cwchar cwctype deque exception execution expected filesystem format forward_list fstream functional future generator initializer_list iomanip ios iosfwd iostream istream iterator latch limits list locale map mdspan memory memory_resource mutex new numbers numeric optional ostream print queue random ranges ratio regex scoped_allocator semaphore set shared_mutex source_location span spanstream sstream stack stacktrace stdexcept stop_token streambuf string string_view strstream syncstream system_error thread tuple type_traits typeindex typeinfo unordered_map unordered_set utility valarray variant vector version'.split())
@@ -209,7 +213,7 @@ def load_modules(root, profile, libraries):
             if not (root/name).resolve().is_relative_to(base):
                 raise ValueError('manifest path escapes root: ' + name)
         expected = ('Fast/' if entry['fast'] else 'Variants/') + entry['compiler'] + '/' + entry['source']
-        if entry['compiler'] not in ('GCC', 'Clang') or entry['path'] != expected:
+        if entry['compiler'] not in COMPILERS or entry['path'] != expected:
             raise ValueError('manifest edition/path mismatch: ' + entry['path'])
     protected = {(root/e['path']).resolve() for e in entries} | {(root/e['source']).resolve() for e in entries}
     protected |= {(root/e['origin']).resolve() for e in entries if 'origin' in e}

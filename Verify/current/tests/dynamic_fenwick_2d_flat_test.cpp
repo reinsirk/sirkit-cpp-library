@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 // 実行例: c++ -std=c++23 -O2 Verify/current/tests/dynamic_fenwick_2d_flat_test.cpp -o /tmp/fenwick_test && /tmp/fenwick_test
 #ifndef FENWICK_SOURCE
 #define FENWICK_SOURCE "../../../DataStructure/dynamic-binary-indexed-tree-2d.cpp"
@@ -23,7 +25,7 @@ static void release(void*p)noexcept{std::free(p);}void operator delete(void*p)no
 #include <vector>
 #include <set>
 #include <random>
-using I=std::int64_t;using U=std::uint32_t;using Row=reinsirk::detail::SmallFenwickRow<I>;
+using I=std::int64_t;using U=std::uint32_t;using Row=::sirkit::detail::SmallFenwickRow<I>;
 static std::uint64_t checks=0;static void require(bool x){++checks;if(!x)std::abort();}
 static U common(U l,U r){return(l&r)&(U(0)-std::bit_floor(l^r));}
 struct State{Row row;U m;std::vector<I>a;std::set<U>nodes;State(int count,U width):m(width),a(4097){for(int j=0;j<count;++j){U c=U(j+1);I v=I(j%17)-8;row.add(c,v,m);a[c]+=v;for(U k=c;k<=m;k+=k&(0-k))nodes.insert(k);}require(row.size()==nodes.size());}};

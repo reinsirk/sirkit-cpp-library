@@ -23,6 +23,8 @@
 // clear(): 空へ。copyは独立所有、copy代入は失敗時旧状態維持。move元は空で再利用可。swapはO(1)。
 // viewは成功したbuild/clear/代入/所有権移動まで有効。buildの入力に自身のviewを渡してよい。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <bit>
 #include <cstddef>
@@ -33,8 +35,23 @@
 #include <utility>
 #include <vector>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_FUNCTIONAL_GRAPH_DEFINED
 #define SIRKIT_FUNCTIONAL_GRAPH_DEFINED
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
+inline void CheckFunctionalVertexCount(std::size_t vertices) {
+    if (vertices > static_cast<std::size_t>(std::numeric_limits<int>::max()))
+        throw std::length_error("FunctionalGraph size");
+}
+
+inline std::size_t FunctionalLiftingCount(std::size_t vertices, unsigned levels) {
+    if (levels && vertices > std::vector<int>{}.max_size() / levels)
+        throw std::length_error("FunctionalGraph lifting capacity");
+    return vertices * levels;
+}
+}
 class FunctionalGraph {
 public:
     struct CycleInfo { int id, entry, depth, position, length; };
@@ -51,7 +68,7 @@ private:
     }
     void initialize(std::span<const int> successors) {
         const auto n = successors.size();
-        if (n > static_cast<std::size_t>(std::numeric_limits<int>::max())) throw std::length_error("FunctionalGraph size");
+        /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::CheckFunctionalVertexCount(n);
         next_.assign(successors.begin(), successors.end());
         std::vector<int> indegree(n), order; order.reserve(n);
         for (const int v : next_) {
@@ -80,8 +97,7 @@ private:
             ++component_size_[cycle_id_[v]]; max_depth = std::max(max_depth, depth_[v]);
         }
         levels_ = std::bit_width(static_cast<unsigned>(max_depth));
-        if (levels_ && n > jump_.max_size() / levels_) throw std::length_error("FunctionalGraph lifting capacity");
-        jump_.resize(n * levels_);
+        jump_.resize(/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::FunctionalLiftingCount(n, levels_));
         if (levels_) std::copy(next_.begin(), next_.end(), jump_.begin());
         for (unsigned level = 1; level < levels_; ++level) {
             const auto before = n * (level - 1), here = n * level;
@@ -154,6 +170,13 @@ public:
 };
 #endif
 
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
+
+
+namespace sirkit {}
+using namespace sirkit;
 
 // SPDX-License-Identifier: CC0-1.0
 #include <cstddef>

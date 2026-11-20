@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #ifndef LINK_CUT_SOURCE
 #define LINK_CUT_SOURCE "../../../DataStructure/Link_Cut_Tree.cpp"
 #endif
@@ -149,6 +151,17 @@ void configuration_ownership(){
     first.clear();assert(first.empty());first.reset(std::vector<NonDefault>{NonDefault(1),NonDefault(10)});assert(first.link(0,1)&&first.path_prod(0,1)->value==0);
 }
 void boundaries(){
+    const ::sirkit::detail::NoLinkCutAction idle;
+    const auto propagated = ::sirkit::detail::NoLinkCutComposition{}(idle, idle);
+    (void)propagated;
+    ::sirkit::detail::CheckLinkCutCapacity(2, 3, 2);
+    const auto rejected_capacity = [](std::size_t size, std::size_t nodes, std::size_t ancestors) {
+        try { ::sirkit::detail::CheckLinkCutCapacity(size, nodes, ancestors); }
+        catch (const std::length_error&) { return true; }
+        return false;
+    };
+    assert(rejected_capacity(2, 2, 4));
+    assert(rejected_capacity(2, 3, 1));
     LinkCutTree<> empty;assert(empty.empty()&&empty.usable());empty.clear();
     LinkCutTree<bool,BoolOr> bits(std::vector<bool>{false,true,false},false);assert(bits.link(2,0)&&bits.link(0,1));assert(bits.path_prod(2,1)==true);bits.set(1,false);assert(bits.path_prod(1,2)==false);
     LinkCutTree<> single(std::vector<I>{42});assert(single.get(0)==42&&!single.link(0,0)&&!single.cut(0,0));assert(single.path_prod(0,0)==42&&single.path_length(0,0)==0&&single.path_size(0,0)==1);assert(single.kth_on_path(0,0,0)==0&&!single.kth_on_path(0,0,1));assert(single.lca(0,0,0)==0);

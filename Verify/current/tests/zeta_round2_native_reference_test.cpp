@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #ifndef SIRKIT_ZETA_TEST_HEADER
 #define SIRKIT_ZETA_TEST_HEADER "../../../Math/Zeta_Mebius.cpp"
 #endif

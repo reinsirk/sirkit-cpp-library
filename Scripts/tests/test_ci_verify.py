@@ -9,6 +9,7 @@ from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import ci_verify as ci
+from ci_compile_profiles import compile_flags
 
 
 class SelectionTests(unittest.TestCase):
@@ -132,7 +133,7 @@ class RunTests(unittest.TestCase):
         self.plan = {"selected_ids": ["a"]}
 
     def fake_results(self, rows):
-        def fake(entries, compiler, fallback, output):
+        def fake(entries, compiler, fallback, output, *, compile_profile, jobs):
             self.assertEqual([e["id"] for e in entries], ["a"])
             output.write_text(json.dumps({"results": rows}))
         return fake
@@ -153,6 +154,29 @@ class RunTests(unittest.TestCase):
                     ci.run_selected(self.entries, self.plan, "g++", False, self.output)
                 self.assertEqual(json.loads(self.output.read_text())["status"], "FAIL")
 
+    def test_atcoder_profile_is_forwarded_and_must_match_the_results(self):
+        rows = [{"id": "a", "skip_runtime_checks": skip, "passed": True, "compile_profile": "atcoder"}
+                for skip in (False, True)]
+        with patch.object(ci.prepare_verify, "run_tests", side_effect=self.fake_results(rows)) as run:
+            ci.run_selected(self.entries, self.plan, "g++-15", False, self.output, compile_profile="atcoder", jobs=4)
+            self.assertEqual(run.call_args.kwargs["compile_profile"], "atcoder")
+            self.assertEqual(run.call_args.kwargs["jobs"], 4)
+        self.assertEqual(json.loads(self.output.read_text())["compile_profile"], "atcoder")
+        rows[0]["compile_profile"] = "standard"
+        with patch.object(ci.prepare_verify, "run_tests", side_effect=self.fake_results(rows)):
+            with self.assertRaises(ValueError):
+                ci.run_selected(self.entries, self.plan, "g++-15", False, self.output, compile_profile="atcoder")
+
+    def test_clang_atcoder_flags_use_clang_limits_and_library(self):
+        flags = compile_flags("atcoder-clang", ["-std=c++23", "-O2", "-Wall", "-Wextra", "-DNDEBUG"])
+        expected = {"-std=gnu++23", "-DATCODER", "-DONLINE_JUDGE", "-fconstexpr-depth=1024",
+                    "-fconstexpr-steps=524288", "-ftrivial-auto-var-init=zero", "-march=native",
+                    "-stdlib=libc++", "-fuse-ld=lld", "-rtlib=compiler-rt", "-unwindlib=libunwind",
+                    "-flto=auto", "-fopenmp", "-fopenmp-extensions", "-DNDEBUG"}
+        self.assertLessEqual(expected, set(flags))
+        self.assertEqual(len(flags), len(set(flags)))
+        self.assertTrue({"-fmodules", "-fconstexpr-loop-limit=524288", "-lstdc++exp", "-std=c++23"}.isdisjoint(flags))
+
     def test_failed_command_is_recorded_and_propagated(self):
         with patch.object(ci.prepare_verify, "run_tests", side_effect=FileNotFoundError("compiler missing")):
             with self.assertRaises(FileNotFoundError):
@@ -162,7 +186,7 @@ class RunTests(unittest.TestCase):
         self.assertIn("compiler missing", result["error"])
 
     def test_failure_preserves_partial_results(self):
-        def fail(entries, compiler, fallback, output):
+        def fail(entries, compiler, fallback, output, *, compile_profile, jobs):
             output.write_text(json.dumps({"results": [{"id": "a", "passed": False}]}))
             raise SystemExit("sample failed")
         with patch.object(ci.prepare_verify, "run_tests", side_effect=fail):

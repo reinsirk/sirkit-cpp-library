@@ -1,6 +1,6 @@
 #define SKIP_RUNTIME_CHECKS
 // Verify: https://judge.yosupo.jp/problem/line_add_get_min
-// Submission: https://judge.yosupo.jp/submission/414048
+// Submission: https://judge.yosupo.jp/submission/417304
 
 // Library: DataStructure/line-container-2d.cpp
 // SPDX-License-Identifier: CC0-1.0
@@ -11,11 +11,12 @@
 //
 // API一覧
 // [LineContainer2D]
+// LineContainer2D(inf=2^60): O(1)で空表を作る。infは正のint64_t。infinity(): 設定値をO(1)で返す。
 // add(x,y): 有限の点を追加、償却O(log h)。確保失敗時は空に戻して例外を伝える。
 // max_ld(a,b)/min_ld(a,b): ax+byの最大/最小をO(log h)で返す。有限係数・非空が前提。
 // max_ld/min_ld(整数,整数): 値域がint64_t内の整数型は、型から保証できる有限性・比の検査を省く。
 // b/aが浮動型の範囲を超える問い合わせは常にoverflow_error。
-// max_ll(a,b)/min_ll(a,b): 浮動計算を±4.1e18に制限し、0方向へ切り捨てる(旧挙動)。
+// max_ll(a,b)/min_ll(a,b): 浮動計算を±infに制限し、0方向へ切り捨てる。O(log h)。
 // max_rounded_ll(a,b)/min_rounded_ll(a,b): 同じ範囲制限後、半整数は0から遠い方へ丸める。
 // max_optional(a,b)/min_optional(a,b): 空ならnullopt、それ以外はld版と同じ。
 // argmax(a,b)/argmin(a,b): 最適な元の点(x,y)をO(log h)で返す。同点の点は未規定。
@@ -23,7 +24,9 @@
 // argmax_optional(a,b)/argmin_optional(a,b): 空ならnullopt、それ以外はarg版と同じ。
 // size()/empty()/clear(): 登録点数(重複込み)・空判定・全削除、O(1)/O(1)/O(h)。
 // swap(other): 2コンテナの全状態をO(1)で交換する。コピーは独立、move後の元は空。
+// コピーはO(h)、moveはO(1)。コピー・移動・clearでもinfを保持し、swapでは設定も交換する。
 // 公開のminlc/maxlc・座標範囲は参照用。外からの変更は不変条件を壊す。
+// SIRKIT_LINE_CONTAINER_STANDARD_HINTS: 座標を複製しない標準の探索経路を使う。
 // long doubleの丸め誤差があり、ll版も厳密な整数内積ではない。hは包絡に残る点数。
 // 既定の丸めモード・型本来の精度が前提。ゼロの符号は未規定。
 //
@@ -46,6 +49,8 @@
 // lc_inf<T>(): 整数では最大値、浮動小数点では正の無限大を返す。
 // lc_div(a,b): 整数は床除算、浮動小数点は通常除算。0除算・整数結果の範囲外は例外。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
@@ -58,6 +63,9 @@
 #include <type_traits>
 #include <utility>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_LINE_CONTAINER_DEFINED
 #define SIRKIT_LINE_CONTAINER_DEFINED
 
@@ -87,7 +95,7 @@ T lc_div(T a, T b) {
   } else return a / b;
 }
 
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 template <typename T, Objective objective>
 struct LineComparator {
   using is_transparent = void;
@@ -101,11 +109,11 @@ struct LineComparator {
 }  // namespace reinsirk::detail
 
 template <typename T, Objective objective>
-struct LineContainer : std::multiset<Line<T>, reinsirk::detail::LineComparator<T, objective>> {
+struct LineContainer : std::multiset<Line<T>, /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::LineComparator<T, objective>> {
   static_assert((std::is_integral_v<T> && std::is_signed_v<T> && sizeof(T) <= 8) ||
                 std::is_floating_point_v<T>);
   static_assert(objective == MAXIMIZE || objective == MINIMIZE);
-  using super = std::multiset<Line<T>, reinsirk::detail::LineComparator<T, objective>>;
+  using super = std::multiset<Line<T>, /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::LineComparator<T, objective>>;
   using super::begin, super::end, super::insert, super::erase;
   using super::empty, super::lower_bound;
   static constexpr T inf = lc_inf<T>();
@@ -287,8 +295,8 @@ struct LineContainer : std::multiset<Line<T>, reinsirk::detail::LineComparator<T
           if (has_previous) {
             previous = *x;
             previous_below = intersection(previous, candidate);
-            if (!previous_below && previous.p >= candidate.p &&
-                (z == end() || candidate.p < z->p)) return;
+            // 整数順序では後続を削除できる候補はその後続の旧右端で前任より良い。
+            if (!previous_below && previous.p >= candidate.p) return;
           }
           auto y = insert(z, candidate);
           while (z != end() && !boundary_less(*y, *z)) {
@@ -297,7 +305,6 @@ struct LineContainer : std::multiset<Line<T>, reinsirk::detail::LineComparator<T
           }
           if (has_previous) {
             x->p = previous.p;
-            if (!previous_below && !boundary_less(*x, *y)) insect(x, y = erase(y));
           } else x = y;
           while ((y = x) != begin() && !boundary_less(*--x, *y)) insect(x, erase(y));
           // floorが最小値の直線はその点で最適になり得る。真の域外だけ除く。
@@ -305,11 +312,10 @@ struct LineContainer : std::multiset<Line<T>, reinsirk::detail::LineComparator<T
             const auto first = begin();
             if (first->p == std::numeric_limits<T>::min()) [[unlikely]] {
               const auto next = std::next(first);
-              if (next != end()) {
-                bool first_below;
-                insect_impl(first, next, first_below);
-                if (first_below) erase(first);
-              }
+              // 末尾の上端は最大値なので、ここでは次の直線が存在する。
+              bool first_below;
+              insect_impl(first, next, first_below);
+              if (first_below) erase(first);
             }
           }
           return;
@@ -329,8 +335,8 @@ struct LineContainer : std::multiset<Line<T>, reinsirk::detail::LineComparator<T
             --x;
             previous = *x;
             previous_below = intersection<true>(previous, candidate);
-            if (!previous_below && previous.p >= candidate.p &&
-                (z == end() || candidate.p < z->p)) return;
+            // 整数順序では後続を削除できる候補はその後続の旧右端で前任より良い。
+            if (!previous_below && previous.p >= candidate.p) return;
           }
           auto y = insert(z, candidate);
           while (z != end() && !boundary_less(*y, *z)) {
@@ -339,7 +345,6 @@ struct LineContainer : std::multiset<Line<T>, reinsirk::detail::LineComparator<T
           }
           if (has_previous) {
             x->p = previous.p;
-            if (!previous_below && !boundary_less(*x, *y)) insect(x, y = erase(y));
           } else x = y;
           while ((y = x) != begin() && !boundary_less(*--x, *y)) insect(x, erase(y));
           // floorが最小値の直線はその点で最適になり得る。真の域外だけ除く。
@@ -347,11 +352,10 @@ struct LineContainer : std::multiset<Line<T>, reinsirk::detail::LineComparator<T
             const auto first = begin();
             if (first->p == std::numeric_limits<T>::min()) [[unlikely]] {
               const auto next = std::next(first);
-              if (next != end()) {
-                bool first_below;
-                insect_impl(first, next, first_below);
-                if (first_below) erase(first);
-              }
+              // 末尾の上端は最大値なので、ここでは次の直線が存在する。
+              bool first_below;
+              insect_impl(first, next, first_below);
+              if (first_below) erase(first);
             }
           }
           return;
@@ -370,11 +374,9 @@ struct LineContainer : std::multiset<Line<T>, reinsirk::detail::LineComparator<T
       const auto first = begin();
       if (first->p == std::numeric_limits<T>::min()) [[unlikely]] {
         const auto next = std::next(first);
-        if (next != end()) {
-          bool first_below;
-          insect_impl(first, next, first_below);
-          if (first_below) erase(first);
-        }
+        bool first_below;
+        insect_impl(first, next, first_below);
+        if (first_below) erase(first);
       }
     }
   }
@@ -440,7 +442,7 @@ struct LineContainer2D {
   using ld = long double;
   using ll = std::int64_t;
   struct Result { ld value, x, y; };
-  static constexpr ld INF = 4.1e18L;
+  static constexpr ld kInf = static_cast<ld>(std::int64_t{1} << 60);
   static constexpr ll INTEGER_LIMIT = 4'100'000'000'000'000'000;
   ld Xmax = -std::numeric_limits<ld>::infinity();
   ld Xmin = std::numeric_limits<ld>::infinity();
@@ -450,10 +452,11 @@ struct LineContainer2D {
   MaxLineContainer<ld> maxlc;
 
  private:
+  ll inf_ = kInf;
   std::size_t count_ = 0;
   // 照会では状態を変えず、包絡が変わった追加後にだけ更新する。
   // 算術の代替指定と、処理系に合わせたキャッシュ選択を分ける。
-#if (defined(__clang__) || defined(__GNUC__))
+#if !defined(SIRKIT_LINE_CONTAINER_STANDARD_HINTS) && (defined(__clang__) || defined(__GNUC__))
   static constexpr bool cache_points = true;
 #else
   static constexpr bool cache_points = false;
@@ -537,7 +540,6 @@ struct LineContainer2D {
     hint.negative.line = &*negative;
     if constexpr (cache_points) { hint.negative.cached.k = (*negative).k; hint.negative.cached.m = (*negative).m; }
     hint.negative.previous = negative == hull.begin() ? nullptr : &*std::prev(negative);
-    if (positive == negative) hint.small = 3;
   }
   void refresh_hints() {
     refresh_hint(minlc, min_hint_);
@@ -664,45 +666,45 @@ struct LineContainer2D {
     const ld sx = std::ldexp(x, -e2), sy = std::ldexp(y, -e2);
     return std::ldexp(sa * sx + sb * sy, e1 + e2);
   }
-  static ll to_rounded_integer(ld value) {
-    const ld limited = std::clamp(value, -INF, INF);
-    const ll integral = static_cast<ll>(limited);
-    const ld fraction = limited - ld(integral);
+  ll to_integer(ld value) const {
+    // 浮動型がint64_t最大値を2^63へ丸める環境でも、範囲外の整数変換をしない。
+    if (value >= static_cast<ld>(inf_)) return inf_;
+    if (value <= -static_cast<ld>(inf_)) return -inf_;
+    return static_cast<ll>(value);
+  }
+  ll to_rounded_integer(ld value) const {
+    if (value >= static_cast<ld>(inf_)) return inf_;
+    if (value <= -static_cast<ld>(inf_)) return -inf_;
+    const ll integral = static_cast<ll>(value);
+    const ld fraction = value - ld(integral);
     return integral + (fraction >= 0.5L) - (fraction <= -0.5L);
   }
-  template <bool ratio_is_finite = false>
   std::pair<ld, ld> select(ld a, ld b) const {
     if (a == 0) {
-      if constexpr (!ratio_is_finite) check_coefficients(a, b);
+      check_coefficients(a, b);
       const auto it = b > 0 ? std::prev(maxlc.end()) : maxlc.begin();
       return {it->m, it->k};
     }
     if (b == 0) {
-      if constexpr (!ratio_is_finite) check_coefficients(a, b);
+      check_coefficients(a, b);
       const auto& line = a > 0 ? *maxlc.lower_bound(ld{0}) : *minlc.lower_bound(ld{0});
       return {line.m, line.k};
     }
-    return select_nonzero<ratio_is_finite>(a, b);
+    return select_nonzero(a, b);
   }
   [[noreturn]] static void slope_error(ld a, ld b) {
     check_coefficients(a, b);
     throw std::overflow_error("LineContainer2D: query slope overflow");
   }
-  template <bool ratio_is_finite>
   std::pair<ld, ld> select_nonzero(ld a, ld b) const {
     const ld c = b / a;
-    if constexpr (!ratio_is_finite) {
 #ifndef SKIP_RUNTIME_CHECKS
-      // 有限aと有限b / aからbの有限性も分かる。bを重ねて検査しない。
-      if (!std::isfinite(a) || !std::isfinite(c)) [[unlikely]] slope_error(a, b);
+    // 有限aと有限b / aからbの有限性も分かる。bを重ねて検査しない。
+    if (!std::isfinite(a) || !std::isfinite(c)) [[unlikely]] slope_error(a, b);
 #else
-      if (!std::isfinite(c)) [[unlikely]] slope_error(a, b);
+    if (!std::isfinite(c)) [[unlikely]] slope_error(a, b);
 #endif
-    }
-    const auto& line = [&]() -> const Line<ld>& {
-      if constexpr (ratio_is_finite) return a > 0 ? *maxlc.lower_bound(c) : *minlc.lower_bound(c);
-      else return a > 0 ? hinted_line<ratio_is_finite>(maxlc, max_hint_, c) : hinted_line<ratio_is_finite>(minlc, min_hint_, c);
-    }();
+    const auto& line = a > 0 ? hinted_line(maxlc, max_hint_, c) : hinted_line(minlc, min_hint_, c);
     return {line.m, line.k};
   }
 #if (defined(__GNUC__) || defined(__clang__))
@@ -831,16 +833,22 @@ struct LineContainer2D {
 #endif
  public:
   LineContainer2D() = default;
+  explicit LineContainer2D(ll inf) : inf_(inf) {
+#ifndef SKIP_RUNTIME_CHECKS
+    if (inf <= 0) throw std::invalid_argument("LineContainer2D: inf must be positive");
+#endif
+  }
+  ll infinity() const noexcept { return inf_; }
   LineContainer2D(const LineContainer2D& other)
       : Xmax(other.Xmax), Xmin(other.Xmin), Ymax(other.Ymax), Ymin(other.Ymin),
-        minlc(other.minlc), maxlc(other.maxlc), count_(other.count_) { refresh_hints(); }
+        minlc(other.minlc), maxlc(other.maxlc), inf_(other.inf_), count_(other.count_) { refresh_hints(); }
   LineContainer2D& operator = (const LineContainer2D& other) {
     if (this != &other) { LineContainer2D copy(other); swap(copy); }
     return *this;
   }
   LineContainer2D(LineContainer2D&& other) noexcept
       : Xmax(other.Xmax), Xmin(other.Xmin), Ymax(other.Ymax), Ymin(other.Ymin),
-        minlc(std::move(other.minlc)), maxlc(std::move(other.maxlc)), count_(other.count_),
+        minlc(std::move(other.minlc)), maxlc(std::move(other.maxlc)), inf_(other.inf_), count_(other.count_),
         min_hint_(other.min_hint_), max_hint_(other.max_hint_) {
     other.clear();
   }
@@ -849,6 +857,7 @@ struct LineContainer2D {
       minlc = std::move(other.minlc); maxlc = std::move(other.maxlc);
       Xmax = other.Xmax; Xmin = other.Xmin; Ymax = other.Ymax; Ymin = other.Ymin;
       count_ = other.count_;
+      inf_ = other.inf_;
       min_hint_ = other.min_hint_; max_hint_ = other.max_hint_;
       other.clear();
     }
@@ -902,8 +911,8 @@ struct LineContainer2D {
     return -max_ld(-a,-b);
 #endif
   }
-  ll max_ll(ll a, ll b) const { return static_cast<ll>(std::clamp(integer_value<false>(a, b), -INF, INF)); }
-  ll min_ll(ll a, ll b) const { return static_cast<ll>(std::clamp(integer_value<true>(a, b), -INF, INF)); }
+  ll max_ll(ll a, ll b) const { return to_integer(integer_value<false>(a, b)); }
+  ll min_ll(ll a, ll b) const { return to_integer(integer_value<true>(a, b)); }
   ll max_rounded_ll(ll a, ll b) const { return to_rounded_integer(integer_value<false>(a, b)); }
   ll min_rounded_ll(ll a, ll b) const { return to_rounded_integer(integer_value<true>(a, b)); }
   Result max_with_point(ld a, ld b) const {
@@ -945,6 +954,7 @@ struct LineContainer2D {
     std::swap(Xmax, other.Xmax); std::swap(Xmin, other.Xmin);
     std::swap(Ymax, other.Ymax); std::swap(Ymin, other.Ymin);
     std::swap(count_, other.count_);
+    std::swap(inf_, other.inf_);
     std::swap(min_hint_, other.min_hint_); std::swap(max_hint_, other.max_hint_);
   }
   std::size_t size() const noexcept { return count_; }
@@ -958,6 +968,13 @@ struct LineContainer2D {
 };
 #endif
 
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
+
+
+namespace sirkit {}
+using namespace sirkit;
 
 // SPDX-License-Identifier: CC0-1.0
 // Verify I/O: Verify/current/common/fast_io.hpp
@@ -1240,7 +1257,8 @@ inline VerifyOutput verify_out;
 int main() {
     int n, q;
     verify_in >> n >> q;
-    LineContainer2D points;
+    // |a*x+b|<=2e18なので、既定の2^60より大きい上限を指定する。
+    LineContainer2D points(std::int64_t{1} << 62);
     for (int i = 0; i < n; ++i) {
         std::int64_t a, b;
         verify_in >> a >> b;

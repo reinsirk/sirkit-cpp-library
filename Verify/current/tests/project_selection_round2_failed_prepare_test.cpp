@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 // solve準備の確保失敗後、閾値をまたぐ追加・再解法・所有権操作を独立した割当評価と照合する。
 #ifndef SIRKIT_PROJECT_TEST_HEADER
 #define SIRKIT_PROJECT_TEST_HEADER "../../../Graph/Project_Selection.cpp"

@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #ifndef SIRKIT_SPARSE_TEST_SOURCE
 #define SIRKIT_SPARSE_TEST_SOURCE "../../../DataStructure/Sparse_Table.cpp"
 #endif
@@ -85,10 +87,18 @@ int main() {
         auto cs = sparse; auto ms = std::move(cs); check(cs.empty()); check(cs.all_prod() == inf); check(ms.values() == a); cs = ms; ms = std::move(cs); check(cs.empty()); ms = std::move(ms); check(ms.values() == a);
         auto cd = disjoint; auto md = std::move(cd); check(cd.empty()); check(cd.all_prod() == 0); check(md.values() == a); cd = md; md = std::move(cd); check(cd.empty()); md = std::move(md); check(md.values() == a);
         ms.clear(); md.clear(); check(ms.empty()); check(md.empty()); ms.assign(a); md.assign(a); check(ms.values() == a); check(md.values() == a);
+        const auto* same = &ms;
+        ms = *same;
+        check(ms.values() == a);
         expect<std::out_of_range>([&] { (void)sparse.get(n); }); expect<std::out_of_range>([&] { (void)disjoint.prod(0, n + 1); });
         expect<std::out_of_range>([&] { (void)sparse.prod(1, 0); }); expect<std::out_of_range>([&] { (void)disjoint.min_left(n + 1, [](auto) { return true; }); });
+        expect<std::out_of_range>([&] { (void)sparse.prod(0, n + 1); });
+        expect<std::out_of_range>([&] { (void)disjoint.prod(1, 0); });
+        expect<std::out_of_range>([&] { (void)disjoint.get(n); });
         expect<std::invalid_argument>([&] { (void)sparse.max_right(0, [](auto) { return false; }); });
         expect<std::invalid_argument>([&] { (void)disjoint.min_left(0, [](auto) { return false; }); });
+        expect<std::invalid_argument>([&] { (void)sparse.min_left(0, [](auto) { return false; }); });
+        expect<std::invalid_argument>([&] { (void)disjoint.max_right(0, [](auto) { return false; }); });
     }
     for (std::size_t n = 0; n <= 97; ++n) {
         std::vector<Endpoints> endpoints(n); std::vector<Affine> functions(n); std::vector<std::string> words(n);

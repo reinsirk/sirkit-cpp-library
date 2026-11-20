@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+from concurrent.futures import ThreadPoolExecutor
 import functools
 import hashlib
 import importlib.util
@@ -15,10 +16,22 @@ import subprocess
 import tempfile
 from urllib.parse import urlsplit
 
+try:
+    from .ci_compile_profiles import compile_flags
+except ImportError:
+    from ci_compile_profiles import compile_flags
+
 ROOT = Path(__file__).resolve().parents[1]
 BASE = ROOT / "Verify/current"
 FAST_IO = "Verify/current/common/fast_io.hpp"
 FAST_IO_INCLUDE = '#include "' + FAST_IO + '"'
+ONLINE_JUDGE_NAMES = {
+    "judge.yosupo.jp": "Library Checker",
+    "onlinejudge.u-aizu.ac.jp": "AOJ",
+    "judge.u-aizu.ac.jp": "AOJ",
+    "yukicoder.me": "Yukicoder",
+    "atcoder.jp": "AtCoder",
+}
 COMMON_INCLUDE = re.compile(r'^#include "(Verify/current/common/[A-Za-z0-9_]+\.hpp)"[ \t]*$', re.M)
 CXX_NON_CODE = re.compile(
     r'''//[^\r\n]*|/\*.*?\*/|(?:u8|u|U|L)?R"(?P<delimiter>[^\s()\\]{0,16})\(.*?\)(?P=delimiter)"'''
@@ -86,8 +99,8 @@ def custom_io_enabled(entry: dict) -> bool:
     """独自入出力はLibrary Checkerの明示指定だけで許可する。"""
     url = entry.get("problem_url")
     host = urlsplit(url).hostname if url else None
-    if url and host not in {"judge.yosupo.jp", "atcoder.jp"}:
-        raise ValueError("Verify先はLibrary CheckerまたはAtCoderを指定してください: " + entry["id"])
+    if url and host not in ONLINE_JUDGE_NAMES:
+        raise ValueError("Verify先はLibrary Checker・AOJ・Yukicoder・AtCoderを指定してください: " + entry["id"])
     if "allow_custom_io" not in entry:
         return False
     flag = entry["allow_custom_io"]
@@ -106,7 +119,7 @@ def gcc_optimization(entry: dict) -> str | None:
     if type(value) is not str or value not in {"O2", "O3", "O3,unroll-loops"}:
         raise ValueError("gcc_optimizationはO2/O3/O3,unroll-loopsを指定してください: " + entry["id"])
     url = entry.get("problem_url")
-    if not url or urlsplit(url).hostname not in {"judge.yosupo.jp", "atcoder.jp"}:
+    if not url or urlsplit(url).hostname not in ONLINE_JUDGE_NAMES:
         raise ValueError("gcc_optimizationはオンラインVerify専用です: " + entry["id"])
     return value
 
@@ -168,6 +181,8 @@ def render(entry: dict, *, skip_runtime_checks: bool | None = None,
         data = source_overrides[name] if source_overrides and name in source_overrides else (ROOT / name).read_bytes()
         hashes[name] = digest(data)
         pieces.append("// Library: " + name + "\n" + data.decode() + "\n")
+    # main側だけで短い呼び出しを許可する。旧版・最小fixtureのグローバル定義とも併用可能。
+    pieces.append("namespace sirkit {}\nusing namespace sirkit;\n")
     driver = (ROOT / entry["driver"]).read_text() if driver_override is None else driver_override
     uses_fast_io = FAST_IO_INCLUDE in driver.splitlines()
     if entry.get("problem_url") and not uses_fast_io and not custom_io:
@@ -256,13 +271,15 @@ def graph_sample_checkers():
     spec.loader.exec_module(module)
     return {name: getattr(module, "check_" + name) for name in (
         "scc", "two_sat", "max_flow_grid", "component_sets",
-        "eulerian_trail_directed", "eulerian_trail_undirected", "min_cost_flow_grid", "pruefer_completion", "bipartite_matching", "linear_recurrence", "matrix_linear_system", "longest_common_substring", "binary_linear_system", "general_matching", "modular_square_root")}
+        "eulerian_trail_directed", "eulerian_trail_undirected", "min_cost_flow_grid", "pruefer_completion", "bipartite_matching", "linear_recurrence", "matrix_linear_system", "longest_common_substring", "binary_linear_system", "general_matching", "modular_square_root", "topological_order", "maximum_independent_set")}
 
 
 def matches(entry: dict, sample: dict, output: str) -> bool:
     mode = entry.get("sample_checker", "tokens")
+    if mode == "topological":
+        mode = "topological_order"
     if mode in {"scc", "two_sat", "max_flow_grid", "component_sets",
-                "eulerian_trail_directed", "eulerian_trail_undirected", "min_cost_flow_grid", "pruefer_completion", "bipartite_matching", "linear_recurrence", "matrix_linear_system", "longest_common_substring", "binary_linear_system", "general_matching", "modular_square_root"}:
+                "eulerian_trail_directed", "eulerian_trail_undirected", "min_cost_flow_grid", "pruefer_completion", "bipartite_matching", "linear_recurrence", "matrix_linear_system", "longest_common_substring", "binary_linear_system", "general_matching", "modular_square_root", "topological_order", "maximum_independent_set"}:
         return graph_sample_checkers()[mode](entry, sample, output)
     actual, expected = output.split(), sample["output"].split()
     if mode == "float":
@@ -293,14 +310,6 @@ def matches(entry: dict, sample: dict, output: str) -> bool:
         indices = out[1:]
         return all(0 <= i < inp[0] for i in indices) and all(
             i < j and values[i] < values[j] for i,j in zip(indices,indices[1:]))
-    if mode == "topological":
-        inp = list(map(int, sample["input"].split()))
-        n, m = inp[:2]
-        order = list(map(int, actual))
-        if sorted(order) != list(range(n)):
-            return False
-        position = {v:i for i,v in enumerate(order)}
-        return all(position[u] < position[v] for u,v in zip(inp[2::2],inp[3::2]))
     if mode == "closest_pair":
         inp = list(map(int, sample["input"].split()))
         count, pos = inp[0], 1
@@ -339,44 +348,52 @@ def matches(entry: dict, sample: dict, output: str) -> bool:
     return actual == expected
 
 
-def run_tests(entries: list[dict], compiler: str, fallback: bool, output: Path) -> None:
+def run_tests(entries: list[dict], compiler: str, fallback: bool, output: Path,
+              *, compile_profile: str = "standard", jobs: int = 1) -> None:
     results = []
-    selected = entries
+    flags = compile_flags(compile_profile, ["-std=c++23", "-O2", "-Wall", "-Wextra"])
+    if (compile_profile != "atcoder-clang" and "clang" in Path(compiler).name
+            and Path("/usr/lib/gcc/x86_64-linux-gnu/15").is_dir()):
+        flags += ["--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15"]
+    if fallback:
+        flags += ["-U__SIZEOF_INT128__", "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+                  "-DSIRKIT_LINE_CONTAINER_FORCE_PORTABLE", "-DSIRKIT_DISABLE_SIMD"]
     with tempfile.TemporaryDirectory(prefix="atcoder_verify_") as tmp:
-        for entry in selected:
-            for skip in (False, True):
-                binary = Path(tmp) / (entry["id"] + ("_skip" if skip else "_checked"))
-                tested_source, _ = render(entry, skip_runtime_checks=skip)
-                source_path = ROOT / entry["submission"]
-                if digest(tested_source) != entry["submission_sha256"]:
-                    source_path = binary.with_suffix(".cpp")
-                    source_path.write_bytes(tested_source)
-                command = [compiler, "-std=c++23", "-O2", "-Wall", "-Wextra"]
-                if "clang" in Path(compiler).name and Path("/usr/lib/gcc/x86_64-linux-gnu/15").is_dir():
-                    command += ["--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15"]
-                if fallback:
-                    command += ["-U__SIZEOF_INT128__", "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
-                                "-DSIRKIT_LINE_CONTAINER_FORCE_PORTABLE", "-DSIRKIT_DISABLE_SIMD"]
-                command += [str(source_path), "-o", str(binary)]
-                built = subprocess.run(command, capture_output=True, text=True, timeout=180)
-                result = dict(id=entry["id"], compiler=compiler, skip_runtime_checks=skip,
-                              standard_fallback=fallback, submission_sha256=entry["submission_sha256"],
-                              tested_source_sha256=digest(tested_source),
-                              command=command[:-2], compile_ok=built.returncode == 0,
-                              diagnostics=built.stderr, samples=[])
-                if built.returncode == 0:
-                    for sample in entry["samples"]:
-                        try:
-                            run = subprocess.run([str(binary)], input=sample["input"], text=True,
-                                                 capture_output=True, timeout=60)
-                            passed = run.returncode == 0 and matches(entry, sample, run.stdout)
-                            result["samples"].append(dict(passed=passed, returncode=run.returncode,
-                                                          stdout=run.stdout, stderr=run.stderr))
-                        except (subprocess.TimeoutExpired, ValueError, IndexError) as error:
-                            result["samples"].append(dict(passed=False, error=str(error)))
-                result["passed"] = result["compile_ok"] and bool(result["samples"]) and all(s["passed"] for s in result["samples"])
+        def test(case: tuple[dict, bool]) -> dict:
+            entry, skip = case
+            binary = Path(tmp) / (entry["id"] + ("_skip" if skip else "_checked"))
+            tested_source, _ = render(entry, skip_runtime_checks=skip)
+            source_path = ROOT / entry["submission"]
+            if digest(tested_source) != entry["submission_sha256"]:
+                source_path = binary.with_suffix(".cpp")
+                source_path.write_bytes(tested_source)
+            command = [compiler, str(source_path), *flags, "-o", str(binary)]
+            built = subprocess.run(command, capture_output=True, text=True, timeout=180)
+            result = dict(id=entry["id"], compiler=compiler, skip_runtime_checks=skip,
+                          standard_fallback=fallback, compile_profile=compile_profile,
+                          submission_sha256=entry["submission_sha256"],
+                          tested_source_sha256=digest(tested_source),
+                          command=command[:-2], compile_ok=built.returncode == 0,
+                          diagnostics=built.stderr, samples=[])
+            if built.returncode == 0:
+                for sample in entry["samples"]:
+                    try:
+                        run = subprocess.run([str(binary)], input=sample["input"], text=True,
+                                             capture_output=True, timeout=60)
+                        passed = run.returncode == 0 and matches(entry, sample, run.stdout)
+                        result["samples"].append(dict(passed=passed, returncode=run.returncode,
+                                                      stdout=run.stdout, stderr=run.stderr))
+                    except (subprocess.TimeoutExpired, ValueError, IndexError) as error:
+                        result["samples"].append(dict(passed=False, error=str(error)))
+            result["passed"] = result["compile_ok"] and bool(result["samples"]) and all(s["passed"] for s in result["samples"])
+            return result
+
+        with ThreadPoolExecutor(max_workers=jobs) as pool:
+            cases = ((entry, skip) for entry in entries for skip in (False, True))
+            for result in pool.map(test, cases):
                 results.append(result)
-                print(entry["id"], "skip" if skip else "checked", "OK" if result["passed"] else "FAIL", flush=True)
+                print(result["id"], "skip" if result["skip_runtime_checks"] else "checked",
+                      "OK" if result["passed"] else "FAIL", flush=True)
                 output.write_text(json.dumps(dict(results=results), ensure_ascii=False, indent=2) + "\n")
     if not all(r["passed"] for r in results):
         raise SystemExit("失敗した検査があります: " + str(output))

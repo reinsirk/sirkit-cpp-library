@@ -34,6 +34,8 @@
 // Mod<2^30では標準C++のMontgomery演算を使用。GCC/Clangの対応x86 CPUではAVX2で8係数ずつ処理する。
 // SIRKIT_DISABLE_SIMDで追加の専用命令とCPU判定を除外できる。代替経路も同じAPI・結果を保つ。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <array>
 #include <bit>
@@ -49,15 +51,18 @@
 #include <immintrin.h>
 #endif
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_NTT_DETAIL_DEFINED
 #define SIRKIT_NTT_DETAIL_DEFINED
-namespace reinsirk::detail {
-constexpr bool ntt_prime(std::uint32_t n) noexcept {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
+consteval bool ntt_prime(std::uint32_t n) noexcept {
     if (n < 2 || n % 2 == 0) return n == 2;
     for (std::uint32_t d = 3; d <= n / d; d += 2) if (n % d == 0) return false;
     return true;
 }
-constexpr std::uint32_t ntt_power(std::uint32_t a, std::uint32_t exponent, std::uint32_t mod) noexcept {
+consteval std::uint32_t ntt_power(std::uint32_t a, std::uint32_t exponent, std::uint32_t mod) noexcept {
     std::uint32_t result = 1;
     for (; exponent != 0; exponent >>= 1) {
         if (exponent & 1) result = static_cast<std::uint32_t>(std::uint64_t{result} * a % mod);
@@ -65,13 +70,20 @@ constexpr std::uint32_t ntt_power(std::uint32_t a, std::uint32_t exponent, std::
     }
     return result;
 }
+
+inline std::size_t convolution_result_size(std::size_t a, std::size_t b, const char* overflow_message) {
+    if (a == 0 || b == 0) return 0;
+    if (a - 1 > std::numeric_limits<std::size_t>::max() - b)
+        throw std::length_error(overflow_message);
+    return a - 1 + b;
+}
 }
 #endif
 
 #if !defined(SIRKIT_DISABLE_SIMD) && (defined(__GNUC__) || defined(__clang__)) && (defined(__x86_64__) || defined(__i386__))
 #ifndef SIRKIT_NTT_SIMD_DETAIL_DEFINED
 #define SIRKIT_NTT_SIMD_DETAIL_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 inline bool ntt_avx2_available() noexcept {
     static const bool available=__builtin_cpu_supports("avx2");
     return available;
@@ -84,12 +96,12 @@ inline bool ntt_avx2_available() noexcept {
 #define SIRKIT_NTT_DEFINED
 template <std::uint32_t Mod = 998244353, std::uint32_t Root = 3>
 class NTT {
-    static_assert(Mod >= 3 && Mod < (std::uint32_t{1} << 31) && reinsirk::detail::ntt_prime(Mod),
+    static_assert(Mod >= 3 && Mod < (std::uint32_t{1} << 31) && /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::ntt_prime(Mod),
                   "NTT modulus must be an odd prime below 2^31");
     static_assert(Root > 0 && Root < Mod, "NTT root outside modulus");
     static constexpr int rank_ = std::countr_zero(Mod - 1);
-    static constexpr std::uint32_t highest_root_ = reinsirk::detail::ntt_power(Root, (Mod - 1) >> rank_, Mod);
-    static_assert(reinsirk::detail::ntt_power(highest_root_, std::uint32_t{1} << (rank_ - 1), Mod) == Mod - 1,
+    static constexpr std::uint32_t highest_root_ = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::ntt_power(Root, (Mod - 1) >> rank_, Mod);
+    static_assert(/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::ntt_power(highest_root_, std::uint32_t{1} << (rank_ - 1), Mod) == Mod - 1,
                   "NTT root has insufficient power-of-two order");
     std::vector<std::uint32_t> roots_;
 
@@ -175,10 +187,7 @@ class NTT {
         } else return static_cast<std::uint32_t>(static_cast<std::uint64_t>(value) % Mod);
     }
     static std::size_t result_size(std::size_t a, std::size_t b) {
-        if (a == 0 || b == 0) return 0;
-        if (a - 1 > std::numeric_limits<std::size_t>::max() - b)
-            throw std::length_error("NTT: convolution size overflow");
-        return (a - 1) + b;
+        return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::convolution_result_size(a, b, "NTT: convolution size overflow");
     }
     static std::size_t transform_size(std::size_t output) {
         if (output > max_length()) throw std::length_error("NTT: transform too long");
@@ -196,7 +205,7 @@ class NTT {
 
 #if !defined(SIRKIT_DISABLE_SIMD) && (defined(__GNUC__) || defined(__clang__)) && (defined(__x86_64__) || defined(__i386__))
     static bool use_avx2(std::size_t n) noexcept {
-        if constexpr(montgomery_)return n>=16 && reinsirk::detail::ntt_avx2_available();
+        if constexpr(montgomery_)return n>=16 && /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::ntt_avx2_available();
         else return false;
     }
     [[gnu::always_inline,gnu::target("avx2")]]
@@ -727,28 +736,77 @@ std::vector<std::uint32_t> ConvolutionMod(const std::vector<T>& a, const std::ve
 }
 #endif
 
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <algorithm>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <bit>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <concepts>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <cstddef>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <cstdint>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <limits>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <stdexcept>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <type_traits>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <vector>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 
 #ifndef SIRKIT_CRT_CONVOLUTION_DETAIL_DEFINED
 #define SIRKIT_CRT_CONVOLUTION_DETAIL_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 inline constexpr std::uint32_t convolution_prime0=167772161,convolution_prime1=469762049,convolution_prime2=998244353;
 inline constexpr std::uint64_t convolution_product01=std::uint64_t{convolution_prime0}*convolution_prime1;
-constexpr std::uint32_t convolution_power(std::uint32_t a,std::uint32_t e,std::uint32_t p) noexcept {
-    std::uint32_t r=1;
-    for(;e;e>>=1,a=static_cast<std::uint32_t>(std::uint64_t{a}*a%p))if(e&1)r=static_cast<std::uint32_t>(std::uint64_t{r}*a%p);
-    return r;
-}
-inline constexpr auto convolution_inverse0=convolution_power(convolution_prime0,convolution_prime1-2,convolution_prime1);
-inline constexpr auto convolution_inverse01=convolution_power(static_cast<std::uint32_t>(convolution_product01%convolution_prime2),convolution_prime2-2,convolution_prime2);
+inline constexpr auto convolution_inverse0=ntt_power(convolution_prime0,convolution_prime1-2,convolution_prime1);
+inline constexpr auto convolution_inverse01=ntt_power(static_cast<std::uint32_t>(convolution_product01%convolution_prime2),convolution_prime2-2,convolution_prime2);
 struct ConvolutionDigits {std::uint64_t low;std::uint32_t high;};
 inline ConvolutionDigits convolution_crt_digits(std::uint32_t a,std::uint32_t b,std::uint32_t c) noexcept {
     const auto delta1=b>=a?b-a:b+convolution_prime1-a;
@@ -806,9 +864,7 @@ class CRTConvolution {
     NTT<469762049> second_;
     NTT<998244353> third_;
     static std::size_t output_size(std::size_t a,std::size_t b) {
-        if(!a||!b)return 0;
-        if(a-1>std::numeric_limits<std::size_t>::max()-b)throw std::length_error("CRTConvolution: size overflow");
-        const auto n=a-1+b;
+        const auto n=/*SIRKIT_NS_REWRITE_V1:R:OjpyZWluc2lyazo6ZGV0YWls*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::convolution_result_size(a,b,"CRTConvolution: size overflow");
         if(n>max_length())throw std::length_error("CRTConvolution: result too long");
         return n;
     }
@@ -819,9 +875,9 @@ class CRTConvolution {
         if(!n)return {};
         if(mod==1)return std::vector<std::uint32_t>(n);
         std::vector<std::uint32_t> x; x.reserve(a.size());
-        for(const auto v:a)x.push_back(reinsirk::detail::convolution_normalize(v,mod));
+        for(const auto v:a)x.push_back(/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::convolution_normalize(v,mod));
         std::vector<std::uint32_t> y;
-        if constexpr(!Square){y.reserve(b.size());for(const auto v:b)y.push_back(reinsirk::detail::convolution_normalize(v,mod));}
+        if constexpr(!Square){y.reserve(b.size());for(const auto v:b)y.push_back(/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::convolution_normalize(v,mod));}
         const auto& right=Square?x:y;
         if(std::min(x.size(),right.size())<=32){
             std::vector<std::uint32_t> out(n);
@@ -834,9 +890,9 @@ class CRTConvolution {
         if(mod==469762049)return compute(second_);
         if(mod==998244353)return compute(third_);
         auto r0=compute(first_),r1=compute(second_),r2=compute(third_);
-        const auto factor=reinsirk::detail::convolution_product01%mod;
+        const auto factor=/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::convolution_product01%mod;
         for(std::size_t i=0;i<n;++i){
-            const auto digits=reinsirk::detail::convolution_crt_digits(r0[i],r1[i],r2[i]);
+            const auto digits=/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::convolution_crt_digits(r0[i],r1[i],r2[i]);
             r0[i]=static_cast<std::uint32_t>((digits.low%mod+factor*(digits.high%mod))%mod);
         }
         return r0;
@@ -848,7 +904,7 @@ class CRTConvolution {
         auto compute=[&](auto& ntt){if constexpr(Square)return ntt.square(a);else return ntt.convolution(a,b);};
         const auto r0=compute(first_),r1=compute(second_),r2=compute(third_);
         std::vector<std::int64_t> out(n);
-        for(std::size_t i=0;i<n;++i)out[i]=reinsirk::detail::convolution_decode_integer(reinsirk::detail::convolution_crt_digits(r0[i],r1[i],r2[i]));
+        for(std::size_t i=0;i<n;++i)out[i]=/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::convolution_decode_integer(/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::convolution_crt_digits(r0[i],r1[i],r2[i]));
         return out;
     }
 public:
@@ -877,3 +933,7 @@ std::vector<std::uint32_t> ConvolutionAnyMod(const std::vector<T>& a,const std::
 #define SIRKIT_CONVOLUTION_INT64_DEFINED
 inline std::vector<std::int64_t> ConvolutionInt64(const std::vector<std::int64_t>& a,const std::vector<std::int64_t>& b){return CRTConvolution{}.integer(a,b);}
 #endif
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1

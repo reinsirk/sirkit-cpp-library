@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #ifndef FENWICK_SOURCE
 #define FENWICK_SOURCE "../../../DataStructure/dynamic-binary-indexed-tree.cpp"
 #endif
@@ -15,12 +17,28 @@
 #include <type_traits>
 template<class S,class T>void run(unsigned n,unsigned seed){
  std::mt19937 gen(seed);DynamicFenwickTree<S,T> bit(static_cast<S>(n));std::vector<T>a(n);std::set<unsigned> cells;
+ std::vector<T> prefix(n + 1);
  auto check=[&]{
   assert(bit.size()==static_cast<S>(n));assert(bit.stored_nodes()==cells.size());
-  auto value=[&](unsigned l,unsigned r){T sum{};for(unsigned i=l;i<r;++i)sum=static_cast<T>(sum+a[i]);return sum;};
-  for(int k=0;k<30;++k){unsigned l=gen()%(n+1),r=gen()%(n+1);if(l>r)std::swap(l,r);assert(bit.sum(l,r)==value(l,r));assert(bit.sum(r)==value(0,r));if(l<n)assert(bit.get(l)==a[l]);}
-  assert(bit.sum_all()==value(0,n));
-  const T total=value(0,n);for(unsigned z=0;z<30;++z){T w=static_cast<T>(gen()%(static_cast<unsigned>(total)+2));unsigned lower=0,upper=0;T sum{};while(lower<n&&static_cast<T>(sum+a[lower])<w){sum=static_cast<T>(sum+a[lower]);++lower;}if(w==0)lower=0;sum=T{};while(upper<n&&static_cast<T>(sum+a[upper])<=w){sum=static_cast<T>(sum+a[upper]);++upper;}assert(bit.lower_bound(w)==static_cast<S>(lower));assert(bit.upper_bound(w)==static_cast<S>(upper));}
+  // 参照配列の値は非負で、累積和の差と二分探索で照合できる。
+  const auto first = prefix.begin() + 1;
+  std::partial_sum(a.begin(), a.end(), first);
+  for (int k = 0; k < 30; ++k) {
+   unsigned l = gen() % (n + 1), r = gen() % (n + 1);
+   if (l > r) std::swap(l, r);
+   assert(bit.sum(l, r) == prefix[r] - prefix[l]);
+   assert(bit.sum(r) == prefix[r]);
+   if (l < n) assert(bit.get(l) == a[l]);
+  }
+  const T total = prefix.back();
+  assert(bit.sum_all() == total);
+  for (unsigned z = 0; z < 30; ++z) {
+   const T w = static_cast<T>(gen() % (static_cast<unsigned>(total) + 2));
+   const auto lower = std::lower_bound(first, prefix.end(), w) - first;
+   const auto upper = std::upper_bound(first, prefix.end(), w) - first;
+   assert(bit.lower_bound(w) == static_cast<S>(lower));
+   assert(bit.upper_bound(w) == static_cast<S>(upper));
+  }
  };
  auto add=[&](unsigned k,T x){bit.add(k,x);a[k]=static_cast<T>(a[k]+x);for(unsigned c=k+1;c<=n;c+=c&-c)cells.insert(c);};
  // 連続追加の途中で和・探索・コピー・移動を照合する。

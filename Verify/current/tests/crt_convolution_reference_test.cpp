@@ -1,3 +1,5 @@
+namespace sirkit {}
+using namespace sirkit;
 #include <algorithm>
 #include <cassert>
 #include <cstdint>
@@ -52,6 +54,24 @@ int main(){
  for(int i=0;i<=64;++i){b[i]=choose.convert_to<std::int64_t>();a[i]=i%2?-b[i]:b[i];if(i<64)choose=choose*(64-i)/(i+1);}
  integer_check(engine,a,b);
  bool threw=false;try{(void)engine.integer({lo},{-1});}catch(const std::overflow_error&){threw=true;}check(threw);
+ // CRTの中央境界の両側を、剰余と多倍長整数から再構成して検査する。
+ constexpr std::uint32_t q0 = 167772161, q1 = 469762049, q2 = 998244353;
+ const cpp_int half = cpp_int{q0} * q1 * q2 / 2;
+ for (int offset : {0, 1}) {
+  const cpp_int value = half + offset;
+  const auto digits = sirkit::detail::convolution_crt_digits(
+      (value % q0).convert_to<std::uint32_t>(),
+      (value % q1).convert_to<std::uint32_t>(),
+      (value % q2).convert_to<std::uint32_t>());
+  threw = false;
+  try { (void)sirkit::detail::convolution_decode_integer(digits); }
+  catch (const std::overflow_error&) { threw = true; }
+  check(threw);
+ }
+ threw = false;
+ try { (void)engine.integer({1'000'000'000'000}, {1'000'000'000'000}); }
+ catch (const std::overflow_error&) { threw = true; }
+ check(threw);
  threw=false;try{(void)engine.modular(std::vector<int>{},std::vector<int>{},0);}catch(const std::invalid_argument&){threw=true;}check(threw);
  threw=false;try{engine.prepare(3);}catch(const std::length_error&){threw=true;}check(threw);
  threw=false;try{engine.prepare(CRTConvolution::max_length()+1);}catch(const std::length_error&){threw=true;}check(threw);
@@ -60,6 +80,6 @@ int main(){
  check(ConvolutionAnyMod(std::vector<int>{1,2},std::vector<int>{3,4},7)==std::vector<std::uint32_t>({3,3,1}));
  check(ConvolutionInt64({-1,2},{3,-4})==std::vector<std::int64_t>({-3,10,-8}));
  // portable limb multiplicationを独立多倍長整数で比較。
- for(int rep=0;rep<20000;++rep){const auto x=random();const auto y=static_cast<std::uint32_t>(random());const auto add=random();const auto got=reinsirk::detail::convolution_wide_product(x,y,add);const cpp_int expected=cpp_int{x}*y+add;check(cpp_int{got.high}*(cpp_int{1}<<64)+got.low==expected);}
+ for(int rep=0;rep<20000;++rep){const auto x=random();const auto y=static_cast<std::uint32_t>(random());const auto add=random();const auto got=::sirkit::detail::convolution_wide_product(x,y,add);const cpp_int expected=cpp_int{x}*y+add;check(cpp_int{got.high}*(cpp_int{1}<<64)+got.low==expected);}
  std::cout<<"PASS CRT convolution checks="<<checks<<"\n";
 }

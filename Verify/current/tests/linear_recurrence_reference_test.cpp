@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #ifndef RECURRENCE_HEADER
 #define RECURRENCE_HEADER "../../../Math/Linear_Recurrence.cpp"
 #endif
@@ -51,6 +53,15 @@ template<class T>void recurrence_cases(std::mt19937_64&rng,std::uint32_t mod){
  for(int rep=0;rep<150;++rep){const std::size_t d=rng()%9;std::vector<T>a(d),c(d);for(auto&x:a)x=T(rng()%mod);for(auto&x:c)x=T(rng()%mod);const auto s=naive(a,c,90);require(s==LinearRecurrencePrefix(a,c,90));for(std::uint64_t k:{UINT64_C(0),UINT64_C(1),UINT64_C(7),UINT64_C(64),UINT64_C(89),UINT64_C(123456789012345),UINT64_MAX}){auto term=LinearRecurrenceTerm(a,c,k);require(term==matrix_term(a,c,k));const auto w=LinearRecurrenceWeights(c,k);T dot{0};for(std::size_t i=0;i<d;++i)dot+=w[i]*a[i];require(dot==term);}}
 }
 int main(){
+ using Field = sirkit::detail::RecurrenceMod998;
+ require(Field{}.value == 0);
+ require((Field{998244352} + Field{5}).value == 4);
+ const auto capacity = std::vector<Field>{}.max_size();
+ require(sirkit::detail::recurrence_size_plus_one(capacity - 1, capacity, "capacity") == capacity);
+ bool size_rejected = false;
+ try { (void)sirkit::detail::recurrence_size_plus_one(capacity, capacity, "capacity"); }
+ catch (const std::length_error&) { size_rejected = true; }
+ require(size_rejected);
  std::mt19937_64 rng(0x739abc);for(std::size_t n=0;n<=10;++n)for(std::uint32_t bits=0;bits<(1u<<n);++bits){std::vector<F<2>>s(n);for(std::size_t j=0;j<n;++j)s[j]=F<2>((bits>>j)&1);check_bm(s);}
  for(int rep=0;rep<1200;++rep){const auto n=static_cast<std::size_t>(rng()%20);std::vector<GF4>s(n);for(auto&x:s)x=GF4(static_cast<std::uint32_t>(rng()%4));check_bm(s);std::vector<F<7>>t(n);for(auto&x:t)x=F<7>(rng()%7);check_bm(t);}
  recurrence_cases<F<2>>(rng,2);recurrence_cases<GF4>(rng,4);recurrence_cases<F<8>>(rng,8);recurrence_cases<F<65537>>(rng,65537);recurrence_cases<F<998244353>>(rng,998244353);

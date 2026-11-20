@@ -32,10 +32,10 @@
 // set(i,j,x): 位置(i,j)の値をxへ変更する。
 // sum_all(): 配列全体の和を返す。
 // rows()/cols()/empty(): 行数／列数／いずれかの次元が0かを返す。
-// clear(): 行数・列数と確保済み容量を維持して、全要素を0にする。
-// reset(n,m): n行m列の零配列へ変更する。確保済み容量を再利用する。
-// reserve(nodes): 内部セル数の目安から行pool・疎索引を予約するヒント。行内容量は必要時確保。
-// stored_nodes(): 更新が到達したFenwickセル数。保持形式によらず、値が0になったセルも含む。
+// clear(): 寸法と容量を保ち零へ戻す。O(I+H)、I=行索引の長さ、H=疎行索引の表容量。
+// reset(n,m): n行m列の零配列へ変更し容量を再利用。O(I+H)。各行の値配列は即座に走査しない。
+// reserve(nodes): 行pool・疎索引の予約ヒント。再配置は期待O(C+C')、C/C'=予約前後の全保持容量。
+// stored_nodes(): 更新が到達したFenwickセル数をO(1)で返す。値が0になったセルも含む。
 // swap(other): 寸法・値・確保済み領域を交換する。
 //
 // [同梱: DynamicFenwickTree<S,T>]
@@ -52,11 +52,13 @@
 // lower_bound(w)/upper_bound(w): 前方累積和がw以上／より大きくなる最初の位置。なければsize()。
 // 検索は全要素非負が前提。lower_bound(w<=0)とupper_bound(w<0)は0。
 // size()/empty(): 配列の長さ／長さが0かを返す（全要素0とは区別）。
-// clear(): 長さと再利用できる容量を保ち、全要素を0へ戻す。
-// reset(n): 長さn>=0の零配列へ変更する。保持形式が対応するとき容量を再利用する。
-// reserve(nodes): 内部Fenwickセル数を目安に容量を準備するヒント。
-// stored_nodes(): 値0や相殺済みも含む登録セル数。読み取りやreserveでは変わらない。
+// clear(): 長さと容量を保ち零へ戻す。最悪O(C)、C=保持する全配列・表・木の総容量。
+// reset(n): 長さn>=0の零配列へ変更。保持形式が対応するとき容量を再利用。最悪O(C)。
+// reserve(nodes): 内部Fenwickセル数を目安に予約。再配置は期待O(C+C'+log(n+1))、C'=予約後の総容量。
+// stored_nodes(): 値0や相殺済みも含む登録セル数。通常O(1)、連続追加の途中はO(log n)。予約では変わらない。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <bit>
 #include <cstddef>
 #include <cstdint>
@@ -81,9 +83,12 @@
 #include <immintrin.h>
 #endif
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_INTERNAL_HASH_MAP_DEFINED
 #define SIRKIT_INTERNAL_HASH_MAP_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 template <class Key, class Val, bool Packed = false, unsigned Denominator = 5>
 class InternalHashMap {
     static_assert(std::is_integral_v<Key> &&
@@ -120,6 +125,12 @@ class InternalHashMap {
 
     std::size_t max_capacity() const noexcept {
         return std::bit_floor(std::min({keys_.max_size(), values_.max_size(), used_.max_size()}));
+    }
+
+    static std::size_t doubled_capacity(std::size_t capacity, std::size_t maximum) {
+        if (capacity > maximum / 2)
+            throw std::length_error("InternalHashMap: capacity overflow");
+        return capacity * 2;
     }
 
     static std::uint32_t occupied8(const std::uint8_t* flags) noexcept {
@@ -235,11 +246,8 @@ public:
     void reserve(std::size_t n) {
         if (n <= keys_.size() - keys_.size() / Denominator) return;
         std::size_t capacity = std::max(std::size_t{8}, keys_.size());
-        while (n > capacity - capacity / Denominator) {
-            if (capacity > max_capacity() / 2)
-                throw std::length_error("InternalHashMap: capacity overflow");
-            capacity *= 2;
-        }
+        while (n > capacity - capacity / Denominator)
+            capacity = doubled_capacity(capacity, max_capacity());
         rehash(capacity);
     }
 
@@ -247,9 +255,7 @@ public:
         if (keys_.empty()) {
             rehash(8);
         } else {
-            if (keys_.size() > max_capacity() / 2)
-                throw std::length_error("InternalHashMap: capacity overflow");
-            rehash(keys_.size() * 2);
+            rehash(doubled_capacity(keys_.size(), max_capacity()));
         }
     }
 
@@ -352,12 +358,30 @@ public:
 
 
 
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <array>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <memory>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <variant>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_DYNAMIC_FENWICK_BPLUS_ROW_DEFINED
 #define SIRKIT_DYNAMIC_FENWICK_BPLUS_ROW_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 // 元列の値を葉32点・内部16子で保持する。累積値はT幅の剰余で扱う。
 template <class T, bool DirectReads = false>
 class BPlusFenwickRow {
@@ -520,20 +544,18 @@ class BPlusFenwickRow {
     else for(unsigned i=0;i<16;++i)p+=static_cast<unsigned>(n.keys[i]<key);
     return p;
   }
-  static V total(const Node& n) noexcept { return n.count ? n.prefix[n.count-1] : V{}; }
+  static V total(const Node& n) noexcept { return n.prefix[n.count-1]; }
   static U last(const Node& n) noexcept { return n.keys[n.count-1]; }
   void ensure_nodes(std::size_t extra) {
     const std::size_t maximum = std::min(nodes_.max_size(),std::size_t{absent});
     if (extra > maximum-nodes_.size()) throw std::length_error("BPlusFenwickRow: node capacity overflow");
     const std::size_t needed=nodes_.size()+extra;
     if (needed <= nodes_.capacity()) return;
-    std::size_t capacity=std::max(std::size_t{4},nodes_.capacity());
+    std::size_t capacity=std::min(maximum,std::max(std::size_t{4},nodes_.capacity()));
     while (capacity < needed) {
       if (capacity > maximum/2) { capacity=maximum; break; }
       capacity*=2;
     }
-    if (capacity > maximum) capacity=maximum;
-    if (capacity < needed) throw std::length_error("BPlusFenwickRow: node capacity overflow");
     nodes_.reserve(capacity);
   }
   U create(bool leaf) {
@@ -707,31 +729,26 @@ class BPlusFenwickRow {
       }
       return;
     }
-    std::size_t extra=0;
-    if (!existing) {
-      const U previous=p ? found.keys[p-1] : (found.previous!=absent ? last(nodes_[found.previous]) : U{0});
-      const U next=p<found.count ? found.keys[p] : (found.next!=absent ? nodes_[found.next].keys[0] : U{0});
-      extra=extra_cells(col,m,previous,next);
-      if(found.count<32) {
-        Node& leaf=nodes_[id];insert(leaf,p,col,delta);
-        for(unsigned d=0;d<depth;++d) {
-          const Frame frame=path[d];Node& parent=nodes_[frame.node];
-          parent.keys[frame.position]=std::max(parent.keys[frame.position],col);
-          for(unsigned i=0;i<16;++i)parent.prefix[i]=plus(parent.prefix[i],i>=frame.position ? delta : V{});
-        }
-        cells_+=static_cast<U>(extra);maybe_dense(m);return;
+    const U previous=p ? found.keys[p-1] : (found.previous!=absent ? last(nodes_[found.previous]) : U{0});
+    // 末尾キーが小さい葉を選ぶのは、木全体の右端に追加するときだけ。
+    const U next=p<found.count ? found.keys[p] : U{0};
+    const std::size_t extra=extra_cells(col,m,previous,next);
+    if(found.count<32) {
+      Node& leaf=nodes_[id];insert(leaf,p,col,delta);
+      for(unsigned d=0;d<depth;++d) {
+        const Frame frame=path[d];Node& parent=nodes_[frame.node];
+        parent.keys[frame.position]=std::max(parent.keys[frame.position],col);
+        for(unsigned i=0;i<16;++i)parent.prefix[i]=plus(parent.prefix[i],i>=frame.position ? delta : V{});
       }
-      std::size_t allocation=0;
-      if(found.count==32) {
-        allocation=1;unsigned d=depth;
-        while(d && nodes_[path[d-1].node].count==16){++allocation;--d;}
-        if(!d)++allocation;
-      }
-      ensure_nodes(allocation);
+      cells_+=static_cast<U>(extra);maybe_dense(m);return;
     }
-    Node& leaf=nodes_[id];
-    insert(leaf,p,col,delta);
-    U right=leaf.count>32 ? split(id) : absent;
+    std::size_t allocation=1;
+    unsigned levels=depth;
+    while(levels && nodes_[path[levels-1].node].count==16){++allocation;--levels;}
+    if(!levels)++allocation;
+    ensure_nodes(allocation);
+    insert(nodes_[id],p,col,delta);
+    U right=split(id);
     for(unsigned d=depth;d>0;--d) {
       const Frame frame=path[d-1];Node& parent=nodes_[frame.node];
       const V old=minus(parent.prefix[frame.position],frame.position ? parent.prefix[frame.position-1] : V{});
@@ -767,7 +784,7 @@ class BPlusFenwickRow {
       }
       return x;
     }
-    if(root_==absent)return m;
+    // 疎な木でセルが存在する間は根も存在する。
     U id=root_;
     for(;;) {
       const Node& node=nodes_[id];
@@ -839,7 +856,7 @@ class BPlusFenwickRow {
 
 #ifndef SIRKIT_DYNAMIC_FENWICK_SMALL_ROW_DEFINED
 #define SIRKIT_DYNAMIC_FENWICK_SMALL_ROW_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 // 少数点を直接保持し、列幅に応じてFenwickセル表または集約木へ移す。
 template <class T, bool DirectReads = false>
 class SmallFenwickRow {
@@ -877,7 +894,7 @@ class SmallFenwickRow {
     U count=0, cells=0, salt=0;
     FlatRow() : payload(std::make_unique<Payload>()), salt(initial_index_salt()) {}
     FlatRow(const FlatRow& other)
-      : payload(other.payload ? std::make_unique<Payload>(*other.payload) : nullptr),
+      : payload(std::make_unique<Payload>(*other.payload)),
         count(other.count),cells(other.cells),salt(other.salt) {}
     FlatRow(FlatRow&& other) noexcept
       : payload(std::move(other.payload)),count(std::exchange(other.count,0)),
@@ -934,7 +951,7 @@ class SmallFenwickRow {
       return static_cast<T>(result);
     }
     void clear() noexcept {
-      if(payload) { payload->cols.fill(0);payload->slots.fill(0); }
+      payload->cols.fill(0);payload->slots.fill(0);
       count=0;cells=0;
     }
   };
@@ -975,11 +992,8 @@ class SmallFenwickRow {
   }
   void prepare_index() {
     std::size_t capacity = std::max(std::size_t{8}, small().point_index_.size());
-    while (std::size_t{small().point_count_} + 1 > capacity - capacity / 4) {
-      if (capacity > std::bit_floor(small().point_index_.max_size()) / 2)
-        throw std::length_error("SmallFenwickRow: point index overflow");
-      capacity *= 2;
-    }
+    // insert_newからは最大point_limit点までしか到達しない。
+    while (std::size_t{small().point_count_} + 1 > capacity - capacity / 4) capacity *= 2;
     if (capacity != small().point_index_.size()) {
       const U salt = small().index_salt_ ? small().index_salt_ : initial_index_salt();
       const unsigned shift = 32 - std::countr_zero(capacity);
@@ -1093,7 +1107,7 @@ class SmallFenwickRow {
     if(auto* state=std::get_if<0>(&storage_)) { clear_small(*state);return; }
     if (auto* flat=std::get_if<3>(&storage_)) { flat->clear();return; }
     if (auto* tree = std::get_if<2>(&storage_)) { tree->clear(); return; }
-    if (auto* map = fenwick_map()) { map->clear(); return; }
+    fenwick_map()->clear();
   }
   void clear(U m) noexcept {
     if(auto* state=std::get_if<0>(&storage_)) { clear_small(*state);return; }
@@ -1106,11 +1120,8 @@ class SmallFenwickRow {
       else storage_.template emplace<0>();
       return;
     }
-    if (fenwick_map() && uses_tree(m)) {
-      storage_.template emplace<0>();
-      return;
-    }
-    clear();
+    if (uses_tree(m)) storage_.template emplace<0>();
+    else fenwick_map()->clear();
   }
   void add(U col, const T& value, U m) {
     if (fenwick_map()) add_mode<false>(col,value,m);
@@ -1128,16 +1139,15 @@ class SmallFenwickRow {
     if constexpr (UseTree) {
       if (storage_.index() != 0) {
         if (auto* tree = std::get_if<2>(&storage_)) { tree->add(col,value,m); return; }
-        if(auto* flat=std::get_if<3>(&storage_)) {
-          if(flat->add(col,value,m))return;
-          Tree next;
-          next.reserve_points(std::size_t{flat->count}+1);
-          for(U i=0;i<flat->count;++i)
-            next.add(flat->payload->cols[i],static_cast<T>(flat->payload->values[i]),m);
-          next.add(col,value,m);
-          storage_.template emplace<2>(std::move(next));
-          return;
-        }
+        auto& flat=*std::get_if<3>(&storage_);
+        if(flat.add(col,value,m))return;
+        Tree next;
+        next.reserve_points(std::size_t{flat.count}+1);
+        for(U i=0;i<flat.count;++i)
+          next.add(flat.payload->cols[i],static_cast<T>(flat.payload->values[i]),m);
+        next.add(col,value,m);
+        storage_.template emplace<2>(std::move(next));
+        return;
       }
     } else {
       if (auto* map = fenwick_map()) {
@@ -1389,7 +1399,7 @@ class SmallFenwickRow {
     if constexpr (UseTree) {
       if (storage_.index() != 0) {
         if (const auto* tree = std::get_if<2>(&storage_)) return tree->sum(ml,mr);
-        if(const auto* flat=std::get_if<3>(&storage_))return flat->sum(ml,mr);
+        return std::get_if<3>(&storage_)->sum(ml,mr);
       }
     }
     {
@@ -1422,7 +1432,7 @@ class SmallFenwickRow {
 
 #ifndef SIRKIT_DYNAMIC_FENWICK_TREE_DEFINED
 #define SIRKIT_DYNAMIC_FENWICK_TREE_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 template <typename S, typename T>
 class FenwickFallback {
   // FenwickFallback(n=0): 長さnの零配列を作る。n>=0。
@@ -1444,8 +1454,8 @@ class FenwickFallback {
   using U = std::make_unsigned_t<S>;
   U n_ = 0;
   // 広い疎領域は占有フラグをbitで持ち、密な範囲は直接配列へ移す。
-  reinsirk::detail::InternalHashMap<U, T, false, 4> data_;
-  reinsirk::detail::InternalHashMap<U, T, true, 4> sparse_;
+  /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::InternalHashMap<U, T, false, 4> data_;
+  /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::InternalHashMap<U, T, true, 4> sparse_;
   bool sparse_domain() const noexcept { return n_ > 1'000'000; }
   template <class F> decltype(auto) with_data(F&& f) {
     if (sparse_domain()) return f(sparse_);
@@ -1464,7 +1474,7 @@ class FenwickFallback {
     // 値型による例外を増やさず、直接配列は合計16MiB以内に制限する。
     if constexpr (std::is_nothrow_default_constructible_v<T> && std::is_nothrow_copy_assignable_v<T>) {
       constexpr std::size_t budget = std::size_t{16} << 20;
-      if (n_ > 1'000'000 || small_used_ == UINT64_MAX ||
+      if (small_used_ == UINT64_MAX ||
           sizeof(SmallCell) >= budget ||
           static_cast<std::size_t>(n_) >= budget / (sizeof(SmallCell) + 1) ||
           data_.size() < (static_cast<std::size_t>(n_) + 7) / 8) return;
@@ -1584,12 +1594,12 @@ class FenwickFallback {
     return *this;
   }
   FenwickFallback(FenwickFallback&& other) noexcept(
-      std::is_nothrow_move_constructible_v<reinsirk::detail::InternalHashMap<U,T,false,4>>)
+      std::is_nothrow_move_constructible_v</*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::InternalHashMap<U,T,false,4>>)
       : n_(std::exchange(other.n_, 0)), data_(std::move(other.data_)), sparse_(std::move(other.sparse_)),
         small_(std::move(other.small_)), small_used_(std::exchange(other.small_used_, 0)),
         dense_used_(std::move(other.dense_used_)) {}
   FenwickFallback& operator=(FenwickFallback&& other) noexcept(
-      std::is_nothrow_move_assignable_v<reinsirk::detail::InternalHashMap<U,T,false,4>>) {
+      std::is_nothrow_move_assignable_v</*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::InternalHashMap<U,T,false,4>>) {
     if (this != &other) {
       data_ = std::move(other.data_); sparse_ = std::move(other.sparse_);
       small_ = std::move(other.small_); small_used_ = std::exchange(other.small_used_, 0);
@@ -2003,8 +2013,8 @@ template<class S,class T>class FenwickBase<S,T,true>:public CompactFenwick<S,T>{
 
 } // namespace reinsirk::detail
 template<typename S,typename T>
-class DynamicFenwickTree : public reinsirk::detail::FenwickBase<S,T> {
- using Base=reinsirk::detail::FenwickBase<S,T>;
+class DynamicFenwickTree : public /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::FenwickBase<S,T> {
+ using Base=/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::FenwickBase<S,T>;
  public: using Base::Base;
 };
 #endif
@@ -2017,8 +2027,8 @@ class DynamicFenwickTree2D {
                 "DynamicFenwickTree2D: int must have at most 31 value bits");
   using U = std::uint32_t;
   static constexpr bool small_rows = std::is_integral_v<T> && !std::is_same_v<T,bool>;
-  using WideRow = std::conditional_t<small_rows, reinsirk::detail::SmallFenwickRow<T>,
-                                   reinsirk::detail::InternalHashMap<U,T,false,4>>;
+  using WideRow = std::conditional_t<small_rows, /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::SmallFenwickRow<T>,
+                                   /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::InternalHashMap<U,T,false,4>>;
   struct DenseRow {
     std::vector<T> values;
     std::uint64_t used = 0;
@@ -2033,7 +2043,7 @@ class DynamicFenwickTree2D {
   U n_ = 0, m_ = 0;
   bool dense_ = true, direct_ = true, tree_ = false;
   std::vector<U> row_indices_;
-  reinsirk::detail::InternalHashMap<U,U,false,4> row_map_;
+  /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::InternalHashMap<U,U,false,4> row_map_;
   std::vector<WideRow> wide_rows_;
   std::vector<DenseRow> dense_rows_;
   std::size_t active_ = 0, nodes_ = 0;
@@ -2068,10 +2078,10 @@ class DynamicFenwickTree2D {
     (void)i; (void)j;
 #endif
   }
-  void add_nodes(std::size_t delta) {
-    if (delta > std::numeric_limits<std::size_t>::max() - nodes_)
+  static void add_nodes(std::size_t& count, std::size_t delta) {
+    if (delta > std::numeric_limits<std::size_t>::max() - count)
       throw std::length_error("DynamicFenwickTree2D: node count overflow");
-    nodes_ += delta;
+    count += delta;
   }
   template <bool Dense, bool Direct, bool Tree = false>
   void update(U row, U col, const T& x) {
@@ -2091,8 +2101,7 @@ class DynamicFenwickTree2D {
         else return row_map_[row];
       }();
       if (index == 0) {
-        if (active_ >= std::numeric_limits<U>::max())
-          throw std::length_error("DynamicFenwickTree2D: row count overflow");
+        // 未登録の行があるので、active_ + 1 <= n_。
         if constexpr (Dense) {
           if (active_ == dense_rows_.size()) dense_rows_.emplace_back();
           dense_rows_[active_].reset(m_);
@@ -2114,7 +2123,7 @@ class DynamicFenwickTree2D {
             used |= std::uint64_t{1} << (c - 1);
           }
           const std::uint64_t extra = used & ~line.used;
-          if (extra) add_nodes(std::popcount(extra));
+          if (extra) add_nodes(nodes_,std::popcount(extra));
           line.used |= used;
         } else {
           std::size_t extra = 0;
@@ -2125,7 +2134,7 @@ class DynamicFenwickTree2D {
             if ((flags & bit) == 0) { flags |= bit; ++extra; }
             line.values[k] += x;
           }
-          add_nodes(extra);
+          add_nodes(nodes_,extra);
         }
       } else {
         auto& line = wide_rows_[index - 1];
@@ -2145,7 +2154,7 @@ class DynamicFenwickTree2D {
           if constexpr (small_rows) return line.template size_mode<Tree>();
           else return line.size();
         }();
-        add_nodes(after-before);
+        add_nodes(nodes_,after-before);
       }
     }
   }
@@ -2287,6 +2296,13 @@ class DynamicFenwickTree2D {
 };
 #endif
 
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
+
+
+namespace sirkit {}
+using namespace sirkit;
 
 // SPDX-License-Identifier: CC0-1.0
 // Verify I/O: Verify/current/common/fast_io.hpp

@@ -1,0 +1,108 @@
+{
+  "entries": [
+    {
+      "id": "preferred_max_flow_bipartite",
+      "libraries": [
+        "Graph/Max_Flow.cpp"
+      ],
+      "driver": "Verify/current/drivers/preferred_max_flow_bipartite_main.cpp",
+      "title": "Matching on Bipartite Graph (mf_graph)",
+      "problem_url": "https://judge.yosupo.jp/problem/bipartitematching",
+      "selection_reason": "LC Matching on Bipartite Graphを最大流へ自然に帰着でき、flow値と返却された辺flowが出力そのものになる。旧gridマッチングより一般の二部入力を検証する。",
+      "coverage": [
+        "mf_graph<int>::add_edge",
+        "単位容量二部ネットワークのflow",
+        "get_edgeのflowによる最大マッチング復元"
+      ],
+      "limitations": "新規・未提出。旧AtCoder判定は引き継がない。LCは容量1の二部ネットワークに限定される。一般容量、min_cut/change_edge、途中flow/reuse、edges一括返却と盤面復元は旧driver/独立参照で補足。",
+      "samples": [
+        {
+          "input": "4 4 7\n1 1\n2 2\n0 0\n3 1\n1 2\n2 0\n3 2\n",
+          "output": "3\n0 0\n1 1\n2 2\n",
+          "source": "https://raw.githubusercontent.com/yosupo06/library-checker-problems/master/graph/bipartitematching/gen/example_00.in",
+          "origin": "LC公式入力例。出力は非一意なので、最大数3と有効な組を独立参照・意味検査で確認した期待出力。"
+        }
+      ],
+      "acl_required": false,
+      "sample_checker": "bipartite_matching",
+      "submission_urls": [
+        "https://judge.yosupo.jp/submission/417351"
+      ]
+    },
+    {
+      "id": "preferred_topological_yuki",
+      "libraries": [
+        "Graph/Topological.cpp"
+      ],
+      "driver": "Verify/current/drivers/preferred_topological_yuki_main.cpp",
+      "title": "Matrix Exponentiation (topological order)",
+      "problem_url": "https://yukicoder.me/problems/no/1660",
+      "selection_reason": "LCに一般有向グラフのトポロジカル順序と閉路を直接検証する問題を確認できない。yukicoder1660は隣接行列の冪零性を閉路判定とDAG最長路へ自然に帰着できる。",
+      "coverage": [
+        "全頂点のトポロジカル順序を使うDAG最長路",
+        "自己ループを含む閉路判定",
+        "辺なしグラフ"
+      ],
+      "limitations": "新規・未提出。旧AtCoder判定を引き継がない。非負隣接行列の歩道数が対象。順序の一意性・辞書順最小は独立参照と既存AtCoder入口で補足。",
+      "samples": [
+        {
+          "input": "3 3\n1 2\n1 3\n2 3\n",
+          "output": "3\n",
+          "source": "https://yukicoder.me/problems/no/1660",
+          "origin": "yukicoder公式問題文の入力例・出力例。"
+        },
+        {
+          "input": "3 3\n1 1\n2 2\n3 3\n",
+          "output": "-1\n",
+          "source": "https://yukicoder.me/problems/no/1660",
+          "origin": "yukicoder公式問題文の入力例・出力例。"
+        },
+        {
+          "input": "1 0\n",
+          "output": "1\n",
+          "source": "https://yukicoder.me/problems/no/1660",
+          "origin": "yukicoder公式問題文の入力例・出力例。"
+        }
+      ],
+      "acl_required": false
+    },
+    {
+      "id": "preferred_project_selection_yuki",
+      "libraries": [
+        "Graph/Project_Selection.cpp"
+      ],
+      "driver": "Verify/current/drivers/preferred_project_selection_yuki_main.cpp",
+      "title": "植林 (binary submodular optimization)",
+      "problem_url": "https://yukicoder.me/problems/no/957",
+      "selection_reason": "LCに同APIの単項費用・集合全true利益を自然に出力する問題を確認できない。yukicoder957は各マスの植林費用と行/列全体の利益がAPIへ直接対応する。",
+      "coverage": [
+        "add_single_costのtrue側費用",
+        "add_all_true_profitの行・列高階利益",
+        "solveの最適値",
+        "int64費用"
+      ],
+      "limitations": "新規・未提出。旧AtCoder判定を引き継がない。非負費用/利益の植林モデル。false利益・厳密制約・復元・増分solve・一般二変数費用は独立参照と既存AtCoder入口で補足。",
+      "samples": [
+        {
+          "input": "2 3\n1 2 3\n4 5 6\n6 2\n1 7 3\n",
+          "output": "2\n",
+          "source": "https://yukicoder.me/problems/no/957",
+          "origin": "yukicoder公式問題文の入力例・出力例。"
+        },
+        {
+          "input": "3 1\n3\n1\n4\n1 5 9\n2\n",
+          "output": "9\n",
+          "source": "https://yukicoder.me/problems/no/957",
+          "origin": "yukicoder公式問題文の入力例・出力例。"
+        },
+        {
+          "input": "1 1\n100\n50\n49\n",
+          "output": "0\n",
+          "source": "https://yukicoder.me/problems/no/957",
+          "origin": "yukicoder公式問題文の入力例・出力例。"
+        }
+      ],
+      "acl_required": false
+    }
+  ]
+}

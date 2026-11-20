@@ -6,6 +6,8 @@
 #include <vector>
 #include "../DataStructure/Hash_set.cpp"
 
+using namespace sirkit;
+
 int main() {
     HashSet<std::int64_t> values{3, 1, 3};
     assert(values.size() == 2 && values.contains(1) && values.contain(3));

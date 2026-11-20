@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #include <cstdlib>
 #include <array>
 #include <new>
@@ -99,7 +101,7 @@ int main() {
     assert(allocation_test::live == initial_live);
     for (std::int64_t failure : std::array<std::int64_t, 9>{0, 1, 2, 3, 4, 8, 16, 32, 1024}) {
         {
-            LineContainer2D source, target; Points source_points, target_points{{0, 0}, {-1, 0}};
+            LineContainer2D source(1001), target(31); Points source_points, target_points{{0, 0}, {-1, 0}};
             for (std::int64_t i = -24; i <= 24; ++i) { source.add(i, i * i); source_points.push_back({i, i * i}); }
             target.add(0, 0); target.add(-1, 0);
             allocation_test::fail_after = failure;
@@ -108,8 +110,8 @@ int main() {
             catch (const std::bad_alloc&) { failed = true; }
             allocation_test::fail_after = -1;
             verify(source, source_points);
-            if (failed) { verify(target, target_points); ++copy_failures; }
-            else { verify(target, source_points); target_points = source_points; ++copy_successes; }
+            if (failed) { verify(target, target_points); assert(target.infinity() == 31); ++copy_failures; }
+            else { verify(target, source_points); assert(target.infinity() == 1001); target_points = source_points; ++copy_successes; }
             target.add(5, -9); target_points.push_back({5, -9}); verify(target, target_points);
         }
         assert(allocation_test::live == initial_live); ++checks;

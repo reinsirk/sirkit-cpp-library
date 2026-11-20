@@ -1,60 +1,59 @@
 # 二項係数
 
-[整数版](../Math/Combination/Binomial_Mod.cpp)・[任意法Mint版](../Math/Combination/ModInt_Binomial.cpp)・[素数専用版](../Math/Combination/Prime_Binomial.cpp)
+[整数版](../Math/Combination/Binomial_Mod.cpp)・[任意法Mint版](../Math/Combination/ModInt_Binomial.cpp)・[素数専用版](../Math/Combination/Prime_Binomial.cpp)・[使用例](../Examples/combination_integer_example.cpp)
 
-## APIと前提
+`BinomialMod`は法`1..UINT32_MAX`の剰余を整数で返します。`ModIntBinomial<Mint>`は任意の法、`PrimeBinomial<Mint>`は素数の法でMintを返します。Mintは利用側で用意し、動的な法を変えたら計算器も作り直します。`n,k`は`std::int64_t`です。
 
-`BinomialMod`は法`1..UINT32_MAX`の値を整数で返します。Mint版は利用側のMintが扱える法を使用し、`PrimeBinomial`では素数の法が必要です。動的なMintの法は構築前に設定し、変更した場合は計算器も作り直します。
-`n,k`は`std::int64_t`で指定します。
+## API
 
-| 操作 | 意味 |
+| 操作 | 動作 |
 | --- | --- |
-| `prepare(max_n)` | 問い合わせ用の表を指定範囲まで準備 |
+| `BinomialMod(modulus,max_n,options={})` | 法・前計算範囲・計算上限を指定 |
+| `ModIntBinomial<Mint>(max_n,options={})` | Mintの法を使う任意法版 |
+| `PrimeBinomial<Mint>(max_n,max_steps=1'000'000)` | 素数専用版。表外の積の回数上限も指定 |
+| `prepare(max_n)` | 表を準備。各素数冪qについて最大`min(max_n,q-1)`まで |
 | `COM(n,k)` | 二項係数。`n<0`、`k<0`、`k>n`は0 |
-| `Lucas(n,k)` | 素数の法での照会。`COM`もLucas処理を自動で選択 |
-| `H(n,k)` | 重複組合せ。`0H0=1`、`0Hk=0`（`k>0`） |
+| `Lucas(n,k)` | 素数の法でCOMと同じ。任意法版の合成数・法1では例外 |
+| `H(n,k)` | 重複組合せ。`0H0=1`、`0Hk=0`（k>0）。`n+k-1`の型上限超過は例外 |
+| 整数版の`mod()` / `is_prime_modulus()` | 法 / 素数の法かをO(1)で返す |
 
-法1では結果は0です。任意法版で合成数・法1を扱う場合は`COM`を使います。`H`の`n+k-1`が型の範囲を超える場合は例外です。
-
-## 素数の法
-
-準備した階乗・逆階乗から、`n<p`では`n!/(k!(n-k)!) mod p`を求めます。
-`n>=p`ではLucasの定理を使い、`n,k`をp進数の桁へ分解して各桁の二項係数を掛けます。どこかの桁で`k`側が大きければ0です。
-表外では小さい側の`k`を使った積による計算へ進みます。
-
-`BinomialMod`と`ModIntBinomial`は設定上限内で表を自動拡張できます。`PrimeBinomial`の表外照会は積で計算し、表を広げる場合は明示的に`prepare`を呼びます。
-`ModIntBinomial`は素数の法では自身の階乗表、合成数では整数版の計算器を使います。
-
-`PrimeBinomial`で法3の表を最後まで準備した場合は、6桁分の三進数をまとめて処理します。729バイトの静的な表に各値の桁和と「2」の個数の偶奇を保存し、`n`と`k`と`n-k`の桁和から繰り上がりを調べます。繰り上がりがあれば係数は0で、なければ「2」の個数の偶奇から係数1・2を求めます。問い合わせごとの確保はありません。法2の全表ではビットの包含関係を使います。表が不完全な場合は、通常の計算予算付きの処理を使います。
-
-`PrimeBinomial`はコピー構築・ムーブ構築が可能です。ムーブ元は`prepare`で表を再準備して利用できます。代入演算には対応していません。表の確保に失敗した場合は既存の問い合わせ結果を保ちます。Mintの四則演算・`raw`・`inv`は通常のmodintと同様に例外を投げないことを想定し、任意のMint演算が投げる場合の表更新の巻き戻しは保証しません。
-
-## 合成数の法
-
-法を互いに素な素数冪`p^e`へ分解し、それぞれで計算した結果を中国剰余定理（CRT）で合成します。
-各素数冪では、階乗に含まれる`p`の個数と、`p`の倍数を除いた積を分けて扱います。法が2の冪の場合、奇数とその次の偶数では除いた後の累積積が等しいため、前向き・逆向きの表を2要素ずつ埋めます。付値が`e`以上なら結果は0で、それ以外は累積積と逆累積積の表などから剰余を求めます。
-表で扱えない範囲には、分子・分母から素因子を取り除きながら直接の積を計算する経路を使います。
-
-構築時には2の因子を末尾0ビット数で取り除き、3・5の因子を除去した後、30と互いに素な候補だけを試します。小さい因子を取り除いた後の残余が`2^25`より大きく、試し割りを続ける必要がある場合は、既存の決定的な32ビット素数判定で分解を打ち切れるか確認します。この判定は分解アルゴリズムに必要なため、`SKIP_RUNTIME_CHECKS`でも残ります。構築の分解・前計算の費用は照会の費用とは別です。
-
-## 計算量と上限
-
-法の素因数分解は試し割りで最悪O(sqrt(modulus))です。表の構築時間と領域は用意する要素数に比例し、逆元計算などが別途必要です。
-準備済みの素数法で`n<p`の照会はO(1)回の剰余演算、全桁が表に収まるLucasはO(log_p n)回の桁処理です。
-素数冪の照会はp進桁と表参照に、表外の照会は積や素因子除去の回数に依存します。合成数では各素数冪の処理とCRTを合わせた費用になります。
-
-任意法版は次で設定します。
+構築と`prepare`の`max_n`は省略すると5,000,000です。法1では結果は0です。整数版には`BinomialMod(modulus,options)`もあります。
 
 ```cpp
 BinomialOptions options;
 options.table_limit = 200'000;
 options.max_multiplicative_steps = 1'000'000;
 BinomialMod comb(998244353, 200'000, options);
+auto ways = comb.COM(10, 3); // 120
+comb.prepare(200'000);
+auto multi = comb.H(3, 2);  // 6
 ```
 
-`table_limit`は各表の最大添字で、既定値は5,100,000、構築時の`max_n`は5,000,000です。`max_n=0`だけでは照会時の自動拡張は止まりません。表を持たずに積で計算する場合は、任意法版で`max_n=0`と`table_limit=0`を指定します。
-素数専用版は`PrimeBinomial(max_n, max_steps)`で前計算範囲と表外計算予算を設定します。
-任意法版で明示的な`prepare`が`table_limit`を超える場合は`length_error`になります。各版とも、照会の積が計算予算を超える場合は`length_error`になります。
-`SKIP_RUNTIME_CHECKS`でも計算予算・内部容量・数学的な0判定を維持します。
+## 計算方法と計算量
+
+素数pでは階乗・逆階乗表を使い、`n>=p`ではp進数の各桁の二項係数を掛けるLucasの定理を使います。合成数では各素数冪`p^e`で計算し、中国剰余定理で合成します。表外では積を使い、素数冪の場合は各項からpの因子を取り除きます。
+
+以下は固定幅整数演算をO(1)とした上界です。mを法、rを異なる素因子数、Bを全表の総要素数とします。
+
+| 処理 | 時間・領域 |
+| --- | --- |
+| 任意法版の構築 | O(sqrt(m)+B+r log m)時間。法の分解を含む |
+| 任意法版の`prepare` | O(B+r log m)時間、全体O(B+r)領域 |
+| 素数専用版の構築・`prepare` | O(B)回のMint演算と高々1回の逆元計算、O(B)領域 |
+| 準備済みの素数法で`n<p` | O(1) |
+| 全桁が表に収まるLucas | d桁としてO(d)、d=O(1+log_p(n+1)) |
+| 素数法の表外Lucas | 積の総項数sとしてO(d+s)回の剰余演算と高々d回の逆元計算 |
+| 準備済みの合成数法 | O(Σ_p(1+log_p(n+1)))。各素数因子の桁処理とCRTを含む |
+| 素数冪p^eでの表外直接積 | s=min(k,n-k)としてO((s+1)(1+log_p(n+1))+log m) |
+
+通常のmodintの逆元計算はO(log p)です。表の自動拡張には`prepare`の費用を加えます。`H`は対応する`COM`と同じ費用です。
+
+## 上限と所有
+
+`BinomialMod`と`ModIntBinomial`は表を自動拡張します。`PrimeBinomial`の表外照会は積で計算し、表を広げるときは明示的に`prepare`します。
+`table_limit`は各表の最大添字で、既定値は5,100,000です。任意法版で表を持たず積だけを使う場合は、`max_n=0`と`table_limit=0`を指定します。`max_n=0`だけでは自動拡張は止まりません。
+明示的な前計算の上限超過、積の回数予算超過は`length_error`です。`SKIP_RUNTIME_CHECKS`でも計算予算・容量保護・数学的な0判定を維持します。
+
+`PrimeBinomial`はコピー・ムーブ構築が可能で、代入には対応しません。ムーブ元は`prepare`後に再利用できます。表の確保失敗では既存結果を保ちます。Mint演算は通常のmodintと同様に例外を投げないことを想定し、任意のMint演算が投げる場合の表更新の巻き戻しは保証しません。
 
 理論参考：[A. Granville, Arithmetic properties of Binomial Coefficients](https://dms.umontreal.ca/~andrew/Binomial/intro.html)。

@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #ifndef FPS_HEADER
 #define FPS_HEADER "../../../Math/Formal_Power_Series.cpp"
 #endif

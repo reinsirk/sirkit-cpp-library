@@ -4,6 +4,8 @@
 #include <cstdint>
 #include <iostream>
 #include <utility>
+
+using namespace sirkit;
 int main() {
     UnionFindW<std::int64_t> uf(5);
     uf.unite(0, 1, 10);

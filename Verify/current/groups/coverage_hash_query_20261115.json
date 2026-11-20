@@ -1,0 +1,48 @@
+{
+  "entries": [
+    {
+      "id": "coverage_rolling_hash_short_search",
+      "libraries": [
+        "String/RollingHash.cpp"
+      ],
+      "driver": "Verify/current/drivers/coverage_string_rolling_search_main.cpp",
+      "title": "文字列検索（底27の短区間RollingHash）",
+      "problem_url": "https://yukicoder.me/problems/no/430",
+      "selection_reason": "LC Z配列の同一個体lcpだけを補い、get/whole・別個体の構築・底27を実際の一致判定へ使う。問題の大文字・長さ10以下の制約では同じ長さで衝突しないことを証明できる。",
+      "coverage": [
+        "RollingHash(s,27)",
+        "get(l,r)とwhole()の異なる個体間での比較",
+        "長い本文での短区間抽出"
+      ],
+      "limitations": "オンライン未提出。Sは大文字5万文字以下、パターン5000個以下・長さ1..10で相異なる。長さ別に検索する。底27、文字係数はunsigned byteで最大90*(27^10-1)/26<2^61-1。係数差は25以下なので同長の異なる大文字語は同じ値にならず、この問題では剰余衝突もない。これは任意長・任意底の衝突不存在を意味しない。concat/compare/assign/clear/空列/汎用byteはローカル補足。",
+      "samples": [
+        {
+          "input": "ABCDABCD\n3\nA\nDA\nABCDABCD\n",
+          "output": "4\n",
+          "source": "https://yukicoder.me/problems/no/430",
+          "origin": "公式問題ページの入力例・出力例"
+        },
+        {
+          "input": "YUKICODER\n2\nX\nABCDEFGHIJ\n",
+          "output": "0\n",
+          "source": "https://yukicoder.me/problems/no/430",
+          "origin": "公式問題ページの入力例・出力例"
+        },
+        {
+          "input": "AAAA\n4\nA\nAA\nAAA\nAAAA\n",
+          "output": "10\n",
+          "source": "https://yukicoder.me/problems/no/430",
+          "origin": "公式問題ページの入力例・出力例"
+        },
+        {
+          "input": "ABAACABCAACBABABACBBAC\n7\nA\nC\nAA\nABB\nABA\nBA\nCBBAC\n",
+          "output": "26\n",
+          "source": "https://yukicoder.me/problems/no/430",
+          "origin": "公式問題ページの入力例・出力例"
+        }
+      ],
+      "acl_required": false,
+      "submission_urls": []
+    }
+  ]
+}

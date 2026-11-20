@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #ifndef EULERIAN_SOURCE
 #define EULERIAN_SOURCE "../../../Graph/Eulerian_Trail.cpp"
 #endif
@@ -8,6 +10,7 @@
 #include <cstdint>
 #include <iostream>
 #include <random>
+#include <stdexcept>
 #include <vector>
 using Edges=std::vector<std::pair<int,int>>;
 bool enumerate(bool directed,int n,const Edges&edges,int start,bool circuit){
@@ -15,6 +18,20 @@ bool enumerate(bool directed,int n,const Edges&edges,int start,bool circuit){
 }
 template<bool Directed>std::uint64_t test(){
  std::mt19937_64 random(20261031+Directed);std::uint64_t checks=0;
+ const auto maximum = std::vector<std::size_t>{}.max_size() / (Directed ? 1 : 2);
+ assert(sirkit::detail::EulerianArcCount<Directed>(maximum) == maximum * (Directed ? 1 : 2));
+ bool rejected = false;
+ try { (void)sirkit::detail::EulerianArcCount<Directed>(maximum + 1); }
+ catch (const std::length_error&) { rejected = true; }
+ assert(rejected);
+ rejected = false;
+ try { EulerianTrail<Directed> invalid(-1); }
+ catch (const std::length_error&) { rejected = true; }
+ assert(rejected);
+ EulerianTrail<Directed> open(2);
+ open.add_edge(0,1);
+ const auto trail = open.find(0);
+ assert(trail && !trail->circuit());
  for(int n=0;n<=7;++n)for(int rep=0;rep<350;++rep){EulerianTrail<Directed> graph(n);Edges edges;const int m=n?int(random()%9):0;for(int e=0;e<m;++e){int u=random()%n,v=random()%n;assert(graph.add_edge(u,v)==edges.size());edges.emplace_back(u,v);}for(int start=-1;start<n;++start)for(bool circuit:{false,true}){const bool expected=enumerate(Directed,n,edges,start,circuit);auto trail=graph.find(start,circuit);assert(bool(trail)==expected);if(trail){const auto&v=trail->vertices;const auto&e=trail->edges;assert(e.size()==edges.size());assert(v.size()==(n?edges.size()+1:0));if(n&&start!=-1)assert(v.front()==start);if(circuit)assert(trail->circuit());std::vector<int>count(edges.size());for(std::size_t i=0;i<e.size();++i){assert(e[i]<edges.size());++count[e[i]];auto[a,b]=edges[e[i]];assert((a==v[i]&&b==v[i+1])||(!Directed&&b==v[i]&&a==v[i+1]));}for(int c:count)assert(c==1);}++checks;}
   auto copy=graph;copy.reset();assert(copy.size()==0);auto moved=std::move(graph);assert(graph.size()==0);graph=moved;assert(graph.edge_count()==edges.size());graph=graph;
  }

@@ -17,14 +17,14 @@
 #define SIRKIT_GCDCONV_DEFINED
 template <class T> std::vector<T> gcd_convolution(std::vector<T> f, std::vector<T> g, const IntegerSieve& sieve) {
 #ifndef SKIP_RUNTIME_CHECKS
-    reinsirk::detail::IntegerTransform::require_same_size(f.size(), g.size());
+    reinsirk::detail::IntegerConvolution::require_same_size(f.size(), g.size());
     reinsirk::detail::IntegerTransform::require_sieve(f.size(), sieve);
 #endif
     return reinsirk::detail::IntegerConvolution::compute<true>(std::move(f), std::move(g), sieve.prime_list);
 }
 template <class T> std::vector<T> gcd_convolution(std::vector<T> f, std::vector<T> g) {
 #ifndef SKIP_RUNTIME_CHECKS
-    reinsirk::detail::IntegerTransform::require_same_size(f.size(), g.size());
+    reinsirk::detail::IntegerConvolution::require_same_size(f.size(), g.size());
 #endif
     std::vector<int> storage;
     const auto primes = reinsirk::detail::IntegerTransform::prime_view_for(f.size(), storage);
@@ -35,14 +35,14 @@ template <class T> std::vector<T> gcd_convolution(std::vector<T> f, std::vector<
 #define SIRKIT_LCMCONV_DEFINED
 template <class T> std::vector<T> lcm_convolution(std::vector<T> f, std::vector<T> g, const IntegerSieve& sieve) {
 #ifndef SKIP_RUNTIME_CHECKS
-    reinsirk::detail::IntegerTransform::require_same_size(f.size(), g.size());
+    reinsirk::detail::IntegerConvolution::require_same_size(f.size(), g.size());
     reinsirk::detail::IntegerTransform::require_sieve(f.size(), sieve);
 #endif
     return reinsirk::detail::IntegerConvolution::compute<false>(std::move(f), std::move(g), sieve.prime_list);
 }
 template <class T> std::vector<T> lcm_convolution(std::vector<T> f, std::vector<T> g) {
 #ifndef SKIP_RUNTIME_CHECKS
-    reinsirk::detail::IntegerTransform::require_same_size(f.size(), g.size());
+    reinsirk::detail::IntegerConvolution::require_same_size(f.size(), g.size());
 #endif
     std::vector<int> storage;
     const auto primes = reinsirk::detail::IntegerTransform::prime_view_for(f.size(), storage);

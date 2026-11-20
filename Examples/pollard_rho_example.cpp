@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: CC0-1.0
 #include "../Math/Pollard_Rho.cpp"
 #include <iostream>
+
+using namespace sirkit;
 int main() {
     PollardRho64 engine;
     for (const auto& [prime, exponent] : engine.factorize(360))

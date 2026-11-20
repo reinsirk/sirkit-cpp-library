@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #ifndef LOW_LINK_SOURCE
 #define LOW_LINK_SOURCE "../../../Graph/Low_Link.cpp"
 #endif
@@ -9,12 +11,20 @@
 #include <iostream>
 #include <numeric>
 #include <random>
+#include <stdexcept>
 #include <vector>
 using Edges=std::vector<std::pair<int,int>>;
 int components(int n,const Edges&edges,int removed_vertex=-1,int removed_edge=-1,const std::vector<unsigned char>*bridges=nullptr){
  std::vector<std::vector<int>>g(n);for(std::size_t e=0;e<edges.size();++e){auto[u,v]=edges[e];if(int(e)==removed_edge||u==removed_vertex||v==removed_vertex||(bridges&&(*bridges)[e]))continue;g[u].push_back(v);g[v].push_back(u);}int count=0;std::vector<unsigned char>seen(n);for(int root=0;root<n;++root)if(root!=removed_vertex&&!seen[root]){++count;std::vector<int>stack{root};seen[root]=1;while(!stack.empty()){int v=stack.back();stack.pop_back();for(int u:g[v])if(!seen[u]){seen[u]=1;stack.push_back(u);}}}return count;
 }
 int main(){
+ {bool rejected=false;try{UndirectedLowLink invalid(-1);}catch(const std::length_error&){rejected=true;}assert(rejected);}
+#ifndef SKIP_RUNTIME_CHECKS
+ {UndirectedLowLink graph(2);graph.add_edge(0,1);assert(graph.build()==1);
+  bool rejected=false;try{(void)graph.biconnected_vertex_components();}catch(const std::logic_error&){rejected=true;}assert(rejected);
+  rejected=false;try{(void)graph.two_edge_component(-1);}catch(const std::out_of_range&){rejected=true;}assert(rejected);
+  assert(graph.is_bridge(0));}
+#endif
  std::mt19937_64 random(20261031);std::uint64_t checks=0;
  for(int n=0;n<=18;++n)for(int rep=0;rep<140;++rep){
   Edges edges;UndirectedLowLink graph(n);const int m=n?int(random()%40):0;for(int i=0;i<m;++i){int u=random()%n,v=random()%n;assert(graph.add_edge(u,v)==edges.size());edges.emplace_back(u,v);}const int expected=components(n,edges);assert(graph.build()==expected);std::vector<unsigned char>bridge(m);

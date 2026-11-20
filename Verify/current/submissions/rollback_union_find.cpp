@@ -3,7 +3,7 @@
 #pragma GCC optimize("O3")
 #endif
 // Verify: https://judge.yosupo.jp/problem/persistent_unionfind
-// Submission: https://judge.yosupo.jp/submission/414056
+// Submission: https://judge.yosupo.jp/submission/417252
 
 // Library: DataStructure/rollback-union-find.cpp
 // SPDX-License-Identifier: CC0-1.0
@@ -26,6 +26,8 @@
 // clear_history(): 森林を保ち履歴と保存位置を消去。容量は保持し、旧stateは無効。O(h+1)上界、noexcept。
 // SIRKIT_DISABLE_SIMD: groupsの追加AVX2実装とCPU判定を除き、標準C++の処理を使う。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <memory>
 #if !defined(SIRKIT_DISABLE_SIMD) && defined(__clang__) && (defined(__x86_64__) || defined(__i386__))
@@ -37,10 +39,22 @@
 #include <utility>
 #include <vector>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+#ifndef SIRKIT_ROLLBACK_UNION_FIND_CAPACITY_DEFINED
+#define SIRKIT_ROLLBACK_UNION_FIND_CAPACITY_DEFINED
+namespace detail {
+inline void CheckRollbackHistorySize(std::size_t size) {
+    if (size == static_cast<std::size_t>(std::numeric_limits<int>::max()))
+        throw std::length_error("RollbackUnionFind: history overflow");
+}
+}
+#endif
 #if !defined(SIRKIT_DISABLE_SIMD) && defined(__clang__) && (defined(__x86_64__) || defined(__i386__))
 #ifndef SIRKIT_UNION_GROUP_ROOTS_AVX2_DEFINED
 #define SIRKIT_UNION_GROUP_ROOTS_AVX2_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 template<bool Compress>
 [[gnu::target("avx2")]]
 inline void GatherGroupRoots(const int* parents, int* leaders, std::size_t n, int* writable = nullptr) {
@@ -119,7 +133,7 @@ class RollbackUnionFind {
         auto leaders_storage = std::make_unique_for_overwrite<int[]>(data.size());
         int* const leaders = leaders_storage.get();
 #endif
-        reinsirk::detail::GatherGroupRoots<false>(data.data(),leaders,data.size());
+        /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::GatherGroupRoots<false>(data.data(),leaders,data.size());
         std::vector<std::vector<int>> result;
         result.reserve(static_cast<std::size_t>(components_));
         std::vector<int> slot(data.size());
@@ -179,8 +193,7 @@ public:
     int leader(int i) const { return find(i); }
     bool unite(int x, int y) {
         check(x); check(y); x = leader_unchecked(x); y = leader_unchecked(y);
-        if (history.size() == static_cast<std::size_t>(std::numeric_limits<int>::max()))
-            throw std::length_error("RollbackUnionFind: history overflow");
+        detail::CheckRollbackHistorySize(history.size());
         history.push_back({x, y, data[x], data[y]});
         if (x == y) return false;
         if (data[x] > data[y]) std::swap(x, y);
@@ -252,6 +265,13 @@ public:
 };
 #endif
 
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
+
+
+namespace sirkit {}
+using namespace sirkit;
 
 // SPDX-License-Identifier: CC0-1.0
 // Verify I/O: Verify/current/common/fast_io.hpp

@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 // ペア点更新用。独立BFS経路と頂点配列で、非可換積・鏡像添字・所有を照合する。
 #ifndef PAIR_HLD_SOURCE
 #define PAIR_HLD_SOURCE "../../../Graph/Heavy_Light_Decomposition.cpp"
@@ -65,12 +67,12 @@ using Tagless=TaglessSegtree<Affine,combine<Affine>,identity<Affine>>;
 std::int64_t scalar_add(std::int64_t a,std::int64_t b){return a+b;}
 std::int64_t scalar_zero(){return 0;}
 using Scalar=segtree<std::int64_t,scalar_add,scalar_zero>;
-static_assert(reinsirk::detail::HldSegmentAccess<Small>::enabled);
-static_assert(reinsirk::detail::HldSegmentAccess<ConstRef>::enabled);
-static_assert(!reinsirk::detail::HldSegmentAccess<Big>::enabled);
-static_assert(!reinsirk::detail::HldSegmentAccess<Nontriv>::enabled);
-static_assert(!reinsirk::detail::HldSegmentAccess<Tagless>::enabled);
-static_assert(!reinsirk::detail::HldSegmentAccess<Scalar>::enabled);
+static_assert(::sirkit::detail::HldSegmentAccess<Small>::enabled);
+static_assert(::sirkit::detail::HldSegmentAccess<ConstRef>::enabled);
+static_assert(!::sirkit::detail::HldSegmentAccess<Big>::enabled);
+static_assert(!::sirkit::detail::HldSegmentAccess<Nontriv>::enabled);
+static_assert(!::sirkit::detail::HldSegmentAccess<Tagless>::enabled);
+static_assert(!::sirkit::detail::HldSegmentAccess<Scalar>::enabled);
 struct Reference {
  const Graph& graph;std::vector<int> parent,depth,component,tin,tout;
  Reference(const Graph& g,int root):graph(g),parent(g.size(),-2),depth(g.size()),component(g.size(),-1),tin(g.size()),tout(g.size()) {
@@ -111,7 +113,7 @@ template<class H,class T>void probe(H& h,const Reference& ref,const std::vector<
  check(h.get(u)==values[u]);check(h.get(v)==values[v]);check(h.path_prod(u,u,true)==T{});check(h.path_prod(u,u)==values[u]);
 }
 template<class Range>void exercise(const Graph& g,int root,std::mt19937_64& rng){
- using T=typename reinsirk::detail::HldOwnedRangeTraits<Range>::Value;
+ using T=typename ::sirkit::detail::HldOwnedRangeTraits<Range>::Value;
  ++forests;std::vector<T> values;values.reserve(g.size());for(std::size_t i=0;i<g.size();++i)values.push_back(make<T>(rng()%mod,rng()%mod));
  Reference ref(g,root);auto h=HeavyLightDecomposition(g,root).template with_values<Range,true>(values);
  check(h.values()==values);if(g.empty()){check(h.empty());auto copy=h;copy.build(g,values);check(copy.values().empty());return;}

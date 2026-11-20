@@ -1,0 +1,11 @@
+{% comment %}SPDX-License-Identifier: CC0-1.0. competitive-verifierの依存関係を表示。{% endcomment %}
+{% for group in include.data.dependencies %}
+{% unless group.files == empty %}
+<h2>{{ group.type | escape }}</h2>
+<ul>
+{% for item in group.files %}
+<li><a href="{{ item.path | relative_url }}">{{ item.title | default: item.filename | escape }}</a> <small>{{ item.filename | escape }}</small></li>
+{% endfor %}
+</ul>
+{% endunless %}
+{% endfor %}

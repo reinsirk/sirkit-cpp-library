@@ -4,13 +4,18 @@
 from pathlib import Path
 import argparse
 
+try:
+    from public_namespace import wrap_source, unwrap_source
+except ModuleNotFoundError:
+    from Scripts.public_namespace import wrap_source, unwrap_source
+
 def render(root: Path) -> dict[Path,bytes]:
     parts=root/'Math/Convolution/components'
-    ntt=(root/'Math/NTT.cpp').read_text()
+    ntt=unwrap_source((root/'Math/NTT.cpp').read_text())
     overview=ntt[:ntt.index('#include ')].split('// API一覧\n',1)[1].strip()
     header=(parts/'convolution_header.inc').read_text().rstrip()+'\n//\n// [同梱NTT]\n'+overview
     data=header+'\n\n'+ntt[ntt.index('#include '):].rstrip()+'\n\n'+(parts/'convolution_body.inc').read_text().rstrip()+'\n'
-    return {root/'Math/Convolution.cpp':data.encode()}
+    return {root/'Math/Convolution.cpp':wrap_source(data).encode()}
 
 def main():
     parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--check',action='store_true');args=parser.parse_args()

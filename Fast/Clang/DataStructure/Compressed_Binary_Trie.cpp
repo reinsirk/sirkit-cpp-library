@@ -33,6 +33,8 @@
 // 検索・削除はO(B)、追加は償却O(B)（再配置時O(ノード数)）。
 // 指定IDの削除はさらにその値のID数に比例する。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <array>
 #include <bit>
@@ -45,6 +47,9 @@
 #include <utility>
 #include <vector>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_COMPRESSED_BINARY_TRIE_DEFINED
 #define SIRKIT_COMPRESSED_BINARY_TRIE_DEFINED
 template <typename T, int MAX_LOG = std::numeric_limits<T>::digits - 1,
@@ -109,8 +114,7 @@ private:
         if (amount <= free_count_) return;
         const auto additional = amount - free_count_;
         const auto limit = std::min(NODES, static_cast<size_type>(nil));
-        if (additional > limit || nodes_.size() > limit - additional)
-            throw std::length_error("CompressedBinaryTrie: node index overflow");
+        // 追加後の圧縮ノード数は、検査済みの論理ノード数以下。
         const auto required = nodes_.size() + additional;
         if (required > nodes_.capacity()) {
             const auto cap = nodes_.capacity();
@@ -137,12 +141,10 @@ private:
     }
     void reserve_id() {
         if (free_id_ != nil) return;
-        const auto limit = static_cast<size_type>(nil);
-        if (id_slots_.size() == limit) throw std::length_error("CompressedBinaryTrie: ID index overflow");
         if (id_slots_.size() == id_slots_.capacity()) {
-            const auto cap = id_slots_.capacity();
-            const auto grown = cap > limit / 2 ? limit : std::max<size_type>(4, cap * 2);
-            id_slots_.reserve(std::min(limit, grown));
+            // 既存枠と追加する1枠は別々の葉を指す。葉がL個なら圧縮ノードは2L-1個。
+            // 総ノード数の上限を確認済みなので、必要時の枠数倍増は添字型の範囲内。
+            id_slots_.reserve(std::max<size_type>(4, id_slots_.capacity() * 2));
         }
     }
     Index acquire_id(std::unique_ptr<Container> ids) noexcept {
@@ -347,3 +349,7 @@ public:
     }
 };
 #endif
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1

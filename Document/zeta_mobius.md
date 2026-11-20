@@ -1,128 +1,430 @@
 # ゼータ／メビウス変換と整数篩
 
-[全機能版](../Math/Zeta_Mebius.cpp)・[用途別版](../Math/Zeta/README.md)・[全体の使用例](../Examples/zeta_mobius_example.cpp)
+集合・約数・倍数の総和変換、AND／OR・GCD／LCM畳み込み、整数篩をまとめた全機能版です。必要な機能だけ使う場合は[用途別版](../Math/Zeta/README.md)を選べます。
 
-## 集合の変換と畳み込み
+Mは篩の上限、pi(M)はM以下の素数数、Dは約数の個数です。
 
-添字を集合のビット表現として扱い、ビットごとに値を伝播します。入力は空配列または長さ`n=2^k`の配列です。長さ1も扱います。
+変換・畳み込みのnは配列長です。疎変換のmは要素数、rは各keyの素因数を重複込みで数えた総数です。
 
-| API | 処理 |
-| --- | --- |
-| `superset_zeta_transform(f)` | `f[S]=sum_{T⊇S} f[T]`へ直接更新 |
-| `superset_mobius_transform(f)` | 上位集合ゼータ変換を元に戻す |
-| `subset_zeta_transform(f)` | `f[S]=sum_{T⊆S} f[T]`へ直接更新 |
-| `subset_mobius_transform(f)` | 部分集合ゼータ変換を元に戻す |
-| `bitwise_and_convolution(f,g)` | `h[k]=sum_{i&j=k} f[i]g[j]`を返す |
-| `bitwise_or_convolution(f,g)` | `h[k]=sum_{i\|j=k} f[i]g[j]`を返す |
-| `bitwise_and_square(f)` | `h[k]=sum_{i&j=k} f[i]f[j]`を返す |
-| `bitwise_or_square(f)` | `h[k]=sum_{i\|j=k} f[i]f[j]`を返す |
+## API
 
-4変換はO(1+n log(n+1))時間・O(1)追加領域で、空配列には何もしません。ゼータ変換は加算、メビウス変換は減算を使います。集合和として扱うには可換な加算、元に戻すには加法逆元が必要です。浮動小数点型では丸め誤差が生じます。
+### superset_zeta_transform
 
-2入力の畳み込みは同じ長さの配列を受け取り、2回のゼータ変換・各点の積・1回の逆変換で求めます。自己畳み込みはゼータ変換と逆変換を1回ずつ行い、変換後の値を二乗します。いずれもO(1+n log(n+1))時間で、長さ0では空配列を返し、長さ1では要素同士の積を返します。積は加減算に対する分配法則を満たす必要があります。
-
-畳み込みの引数は値渡しです。左辺値の入力はコピーして保持し、不要な配列は`std::move`で渡せます。追加領域は長さに比例し、自己畳み込みは1本、2入力版は2本の引数配列を使います。同じ配列を2引数とも左辺値で渡す`(f,f)`は扱えますが、`(std::move(f),f)`は引数の評価順により長さの前提を満たさなくなるため対象外です。自己畳み込みには`square`版を使えます。変換は入力を直接更新するため、値型の演算が例外を送出すると途中まで更新された状態が残ることがあります。
-
-`std::vector<bool>`は対象外です。符号付き整数では、加減算と積の全ての中間値が型の範囲内である必要があります。符号なし整数は値型のビット幅を法として計算します。小さい整数型の各点の積も、整数昇格による符号付きオーバーフローを避けて計算します。値の範囲を調べるための全要素走査は行いません。
-
-入力検査は既定で有効で、異なる長さや2のべきでない非空配列に`std::invalid_argument`を送出します。`SKIP_RUNTIME_CHECKS`を定義する場合も、これらの前提を満たしてください。
-
-```cpp
-std::vector<std::int64_t> a{1, 2}, b{3, 4};
-auto h = bitwise_and_convolution(a, b); // {13, 8}
-auto s = bitwise_or_square(a);          // {1, 8}
-subset_zeta_transform(a);               // {1, 3}
-subset_mobius_transform(a);             // {1, 2}
+```text
+template <class T> void superset_zeta_transform(std::vector<T>& f);
 ```
 
-[集合変換の使用例](../Examples/zeta_set_example.cpp)・[ビット畳み込みの使用例](../Examples/zeta_bitwise_example.cpp)
+各集合の値を上位集合の総和へ更新します。
 
-集合変換は[Nyaanの集合ゼータ／メビウス変換](https://nyaannyaan.github.io/library/set-function/zeta-mobius-transform.hpp.html)を参考にしています。畳み込みはNyaanの[AND畳み込み](https://nyaannyaan.github.io/library/set-function/and-convolution.hpp.html)・[OR畳み込み](https://nyaannyaan.github.io/library/set-function/or-convolution.hpp.html)の構成を引き継いでいます。
+**制約:** 空または2冪長。値型は可換な加算に対応。
 
-## 整数篩
+**計算量:** O(1+n log(n+1))時間・O(1)追加領域。
 
-`IntegerSieve(M)`は`0<=M`に対し、線形篩で最小素因数表と昇順の素数列をO(M+1)時間・領域で構築します。表を2で初期化し、奇数の最小素因数だけを線形篩で更新します。伝播先が上限を超える後半は、素数の回収だけを行います。公開配列`least_prime_factor`と`prime_list`は変更せず使います。0と1の最小素因数は0です。
+### superset_mobius_transform
 
-| API | 戻り値・前提 |
-| --- | --- |
-| `max_value()` | 表の上限。ムーブ元などの空の表では-1 |
-| `is_prime(x)` | `0<=x<=M`の素数判定。O(1) |
-| `prime_factorization(x)` | `1<=x<=M^2`の素因数と指数のmap。`x=1`は空の表でも可 |
-| `enumerate_divisors(x)` / `sorted_divisors(x)` | 同じ範囲の全約数。後者は昇順 |
-| `divisor_totients(x)` | 同じ範囲の各約数`d`から`phi(d)`へのmap |
-| `mobius_table()` / `totient_table()` | `0..M`のメビウス関数／Eulerのφ関数。いずれもO(M)時間・領域 |
-| `power_table<Mint>(k,nmax)` | `0<=nmax<=M`, `k>=0`で`0^k..nmax^k`を返す。`0^0=1` |
-| `swap(other)` | 表と素数列をO(1)で交換 |
+```text
+template <class T> void superset_mobius_transform(std::vector<T>& f);
+```
 
-素因数分解は表内ならO(log x)、表外なら最悪O(pi(M)+log x)時間です。`pi(M)`はM以下の素数の個数です。約数の個数を`d`とすると、約数列挙は素因数分解に加えてO(d)、昇順列挙とφ値のmap構築はO(d log(d+1))時間を使います。
+上位集合ゼータ変換を元へ戻します。
 
-`power_table`は素数のべき乗を求め、合成数の値を最小素因数から組み立てます。Mintの乗算をO(1)、`pow(k)`をO(log(k+1))としたとき、O(nmax+pi(nmax)log(k+1))時間・O(nmax)領域です。Mintは利用側で用意します。
+**制約:** 空または2冪長。値型は加法逆元を持つ。
 
-コピーは独立した表を持ちます。ムーブ元の表と素数列は空になります。
+**計算量:** O(1+n log(n+1))時間・O(1)追加領域。
 
-[整数篩の使用例](../Examples/zeta_sieve_example.cpp)
+### subset_zeta_transform
+
+```text
+template <class T> void subset_zeta_transform(std::vector<T>& f);
+```
+
+各集合の値を部分集合の総和へ更新します。
+
+**制約:** 空または2冪長。値型は可換な加算に対応。
+
+**計算量:** O(1+n log(n+1))時間・O(1)追加領域。
+
+### subset_mobius_transform
+
+```text
+template <class T> void subset_mobius_transform(std::vector<T>& f);
+```
+
+部分集合ゼータ変換を元へ戻します。
+
+**制約:** 空または2冪長。値型は加法逆元を持つ。
+
+**計算量:** O(1+n log(n+1))時間・O(1)追加領域。
+
+### bitwise_and_convolution
+
+```text
+template <class T> std::vector<T> bitwise_and_convolution(std::vector<T> f, std::vector<T> g);
+```
+
+添字のANDがkとなる積の総和を返します。
+
+**制約:** 空または2冪長。同長入力（自己畳み込みは1本）。係数は環型。
+
+**計算量:** O(1+n log(n+1))時間・O(n+1)領域。
+
+### bitwise_or_convolution
+
+```text
+template <class T> std::vector<T> bitwise_or_convolution(std::vector<T> f, std::vector<T> g);
+```
+
+添字のORがkとなる積の総和を返します。
+
+**制約:** 空または2冪長。同長入力（自己畳み込みは1本）。係数は環型。
+
+**計算量:** O(1+n log(n+1))時間・O(n+1)領域。
+
+### bitwise_and_square
+
+```text
+template <class T> std::vector<T> bitwise_and_square(std::vector<T> f);
+```
+
+同じ配列を2入力とするAND畳み込みを返します。
+
+**制約:** 空または2冪長。同長入力（自己畳み込みは1本）。係数は環型。
+
+**計算量:** O(1+n log(n+1))時間・O(n+1)領域。
+
+### bitwise_or_square
+
+```text
+template <class T> std::vector<T> bitwise_or_square(std::vector<T> f);
+```
+
+同じ配列を2入力とするOR畳み込みを返します。
+
+**制約:** 空または2冪長。同長入力（自己畳み込みは1本）。係数は環型。
+
+**計算量:** O(1+n log(n+1))時間・O(n+1)領域。
+
+### IntegerSieve::IntegerSieve
+
+```text
+explicit IntegerSieve(int maxn);
+IntegerSieve(const IntegerSieve&);
+IntegerSieve(IntegerSieve&& other) noexcept;
+```
+
+最小素因数表と昇順素数列を構築します。コピーは独立、移動元は空です。
+
+**制約:** 0<=maxnで内部容量の上限内。
+
+**計算量:** O(M+1)時間・領域。移動構築はO(1)。
+
+### IntegerSieve::operator=
+
+```text
+IntegerSieve& operator=(const IntegerSieve& other);
+IntegerSieve& operator=(IntegerSieve&& other) noexcept;
+```
+
+コピーまたは移動で内容を置き換え、自身への参照を返します。
+
+**制約:** 共通の型・入力条件を満たすこと。
+
+**計算量:** コピーO(M+1)、移動は旧領域の解放を含む。
+
+### IntegerSieve::swap
+
+```text
+void swap(IntegerSieve& other) noexcept;
+```
+
+内容と所有する領域を交換します。
+
+**制約:** 共通の型・入力条件を満たすこと。
+
+**計算量:** O(1)。
+
+### IntegerSieve::max_value
+
+```text
+int max_value() const noexcept;
+```
+
+篩の上限を返します。空の表では-1です。
+
+**制約:** なし。
+
+**計算量:** O(1)。
+
+### IntegerSieve::is_prime
+
+```text
+template <std::integral Int> bool is_prime(Int x) const;
+```
+
+素数ならtrueを返します。
+
+**制約:** 0<=x<=max_value()。
+
+**計算量:** O(1)。
+
+### IntegerSieve::prime_factorization
+
+```text
+template <std::integral Int> std::map<Int, int> prime_factorization(Int x) const;
+```
+
+素因数と指数のmapを返します。
+
+**制約:** 1<=x<=M²。x=1は空の表でも可。
+
+**計算量:** 表内O(log x)、表外は最悪O(pi(M)+log x)。
+
+### IntegerSieve::enumerate_divisors
+
+```text
+template <std::integral Int> std::vector<Int> enumerate_divisors(Int x) const;
+```
+
+全ての正の約数をvectorで返します。
+
+**制約:** 1<=x<=M²。x=1は空の表でも可。
+
+**計算量:** 素因数分解に加えO(D)。
+
+### IntegerSieve::sorted_divisors
+
+```text
+template <std::integral Int> std::vector<Int> sorted_divisors(Int x) const;
+```
+
+全ての正の約数を昇順のvectorで返します。
+
+**制約:** 1<=x<=M²。x=1は空の表でも可。
+
+**計算量:** 素因数分解に加えO(D log(D+1))。
+
+### IntegerSieve::divisor_totients
+
+```text
+template <std::integral Int> std::map<Int, Int> divisor_totients(Int x) const;
+```
+
+各約数dとφ(d)のmapを返します。
+
+**制約:** 1<=x<=M²。x=1は空の表でも可。
+
+**計算量:** 素因数分解に加えO(D log(D+1))。
+
+### IntegerSieve::mobius_table
+
+```text
+std::vector<int> mobius_table() const;
+```
+
+メビウス関数の表を返します。
+
+**制約:** 共通の型・入力条件を満たすこと。
+
+**計算量:** O(M+1)時間・領域。
+
+### IntegerSieve::totient_table
+
+```text
+std::vector<int> totient_table() const;
+```
+
+Eulerのφ関数の表を返します。
+
+**制約:** 共通の型・入力条件を満たすこと。
+
+**計算量:** O(M+1)時間・領域。
+
+### IntegerSieve::power_table
+
+```text
+template <class MODINT> std::vector<MODINT> power_table(std::int64_t k, int nmax) const;
+```
+
+0から指定上限までの整数のk乗をMintで返します。
+
+**制約:** k>=0、0<=nmax<=M。利用側でMintを用意する。
+
+**計算量:** O(nmax+pi(nmax)log(k+1))時間・O(nmax+1)領域。
+
+### multiple_zeta_transform
+
+```text
+template <class T> void multiple_zeta_transform(std::vector<T>& f, const IntegerSieve& sieve);
+template <class T> void multiple_zeta_transform(std::vector<T>& f);
+```
+
+各添字の値を倍数の総和へ更新します。
+
+**制約:** 素数表付きはsieve.max_value()>=f.size()-1。表なしはf.size()-1<=INT_MAX。
+
+**計算量:** O(1+n log log(n+2))時間。表なし版はO(n+1)、表再利用の変換はO(1)追加領域。
+
+### multiple_mobius_transform
+
+```text
+template <class T> void multiple_mobius_transform(std::vector<T>& f, const IntegerSieve& sieve);
+template <class T> void multiple_mobius_transform(std::vector<T>& f);
+```
+
+倍数ゼータ変換を元へ戻します。
+
+**制約:** 素数表付きはsieve.max_value()>=f.size()-1。表なしはf.size()-1<=INT_MAX。
+
+**計算量:** O(1+n log log(n+2))時間。表なし版はO(n+1)、表再利用の変換はO(1)追加領域。
+
+### divisor_zeta_transform
+
+```text
+template <class T> void divisor_zeta_transform(std::vector<T>& f, const IntegerSieve& sieve);
+template <class T> void divisor_zeta_transform(std::vector<T>& f);
+```
+
+各添字の値を約数の総和へ更新します。
+
+**制約:** 素数表付きはsieve.max_value()>=f.size()-1。表なしはf.size()-1<=INT_MAX。
+
+**計算量:** O(1+n log log(n+2))時間。表なし版はO(n+1)、表再利用の変換はO(1)追加領域。
+
+### divisor_mobius_transform
+
+```text
+template <class T> void divisor_mobius_transform(std::vector<T>& f, const IntegerSieve& sieve);
+template <class T> void divisor_mobius_transform(std::vector<T>& f);
+```
+
+約数ゼータ変換を元へ戻します。
+
+**制約:** 素数表付きはsieve.max_value()>=f.size()-1。表なしはf.size()-1<=INT_MAX。
+
+**計算量:** O(1+n log log(n+2))時間。表なし版はO(n+1)、表再利用の変換はO(1)追加領域。
+
+### gcd_convolution
+
+```text
+template <class T> std::vector<T> gcd_convolution(std::vector<T> f, std::vector<T> g, const IntegerSieve& sieve);
+template <class T> std::vector<T> gcd_convolution(std::vector<T> f, std::vector<T> g);
+```
+
+添字のGCDがkとなる積の総和を返します。
+
+**制約:** 同長入力（自己畳み込みは1本）で環型。表ありはmax_value()>=n-1、表なしはn-1<=INT_MAX。
+
+**計算量:** O(1+n log log(n+2))時間・O(n+1)領域。
+
+### lcm_convolution
+
+```text
+template <class T> std::vector<T> lcm_convolution(std::vector<T> f, std::vector<T> g, const IntegerSieve& sieve);
+template <class T> std::vector<T> lcm_convolution(std::vector<T> f, std::vector<T> g);
+```
+
+添字のLCMがkとなる積の総和を返します。
+
+**制約:** 同長入力（自己畳み込みは1本）で環型。表ありはmax_value()>=n-1、表なしはn-1<=INT_MAX。
+
+**計算量:** O(1+n log log(n+2))時間・O(n+1)領域。
+
+### gcd_square
+
+```text
+template <class T> std::vector<T> gcd_square(std::vector<T> f, const IntegerSieve& sieve);
+template <class T> std::vector<T> gcd_square(std::vector<T> f);
+```
+
+同じ配列を2入力とするGCD畳み込みを返します。
+
+**制約:** 同長入力（自己畳み込みは1本）で環型。表ありはmax_value()>=n-1、表なしはn-1<=INT_MAX。
+
+**計算量:** O(1+n log log(n+2))時間・O(n+1)領域。
+
+### lcm_square
+
+```text
+template <class T> std::vector<T> lcm_square(std::vector<T> f, const IntegerSieve& sieve);
+template <class T> std::vector<T> lcm_square(std::vector<T> f);
+```
+
+同じ配列を2入力とするLCM畳み込みを返します。
+
+**制約:** 同長入力（自己畳み込みは1本）で環型。表ありはmax_value()>=n-1、表なしはn-1<=INT_MAX。
+
+**計算量:** O(1+n log log(n+2))時間・O(n+1)領域。
+
+### sparse_multiple_zeta_transform
+
+```text
+template <std::integral Int, class Val> void sparse_multiple_zeta_transform(std::vector<std::pair<Int, Val>>& f, const IntegerSieve& sieve);
+```
+
+疎なkey集合の値を倍数和へ更新し、key昇順に並べます。
+
+**制約:** keyは正・一意・全約数を含み、篩の上限以下。
+
+**計算量:** 要素数m・素因数重複総数rにO((m+r)log(m+1))時間・O(m+r)領域。
+
+### sparse_multiple_mobius_transform
+
+```text
+template <std::integral Int, class Val> void sparse_multiple_mobius_transform(std::vector<std::pair<Int, Val>>& f, const IntegerSieve& sieve);
+```
+
+疎な倍数ゼータ変換を元へ戻し、key昇順に並べます。
+
+**制約:** keyは正・一意・全約数を含み、篩の上限以下。
+
+**計算量:** 要素数m・素因数重複総数rにO((m+r)log(m+1))時間・O(m+r)領域。
+
+
+## 集合の変換・AND／OR畳み込み
+
+入力は空配列またはn=2^k要素です。畳み込みの2入力は同じ長さにします。
+
+
+各O(1+n log(n+1))時間です。4変換は入力を直接更新しO(1)追加領域、畳み込みはO(n+1)領域です。
+
+## IntegerSieve
+
+`IntegerSieve(M)`はM>=0の最小素因数表と昇順素数列をO(M+1)時間・領域で作ります。公開表`least_prime_factor`・`prime_list`は変更せず使います。0・1の最小素因数は0です。
+
+
+Dは約数の個数、pi(M)はM以下の素数数です。Mintは利用側で用意し、乗算をO(1)、powをO(log(k+1))として数えます。
 
 ## 約数・倍数の変換
 
-素数ごとに添字間を伝播し、正の添字に対して変換します。`f[0]`は変えず、空配列も扱います。
+`multiple_zeta_transform(f)`は各dの倍数の総和、`divisor_zeta_transform(f)`は各kの約数の総和へ直接更新します。`multiple_mobius_transform(f)`・`divisor_mobius_transform(f)`は各逆変換です。空配列も扱い、f[0]は不変です。
 
-| API | 処理 |
-| --- | --- |
-| `multiple_zeta_transform(f)` | `f[d]=sum_{d\|k} f[k]`へ更新 |
-| `multiple_mobius_transform(f)` | 倍数ゼータ変換を元に戻す |
-| `divisor_zeta_transform(f)` | `f[k]=sum_{d\|k} f[d]`へ更新 |
-| `divisor_mobius_transform(f)` | 約数ゼータ変換を元に戻す |
+各`(f,sieve)`版は`sieve.max_value()>=f.size()-1`の表を再利用し、n=f.size()としてO(1+n log log(n+2))時間・O(1)追加領域です。`(f)`版はn-1<=INT_MAXを前提に表も作り、O(n+1)追加領域です。
 
-各APIには`(f,sieve)`版もあります。`n=f.size()`として、`sieve.max_value()>=n-1`の表を再利用し、O(1+n log log(n+2))時間・O(1)追加領域です。`(f)`版は素数表の作成も行い、`n-1<=INT_MAX`が必要で、追加領域はO(n)です。
+## GCD／LCM畳み込み
 
-大きい素数`p>(n-1)/2`は1か所だけを更新するため、一般の伝播ループから分けて除算と反復判定を省きます。各要素の加減算の順序は保ちます。
+`gcd_convolution(f,g)`・`lcm_convolution(f,g)`は、gcd(i,j)／lcm(i,j)ごとの積の総和vectorを返します。`gcd_square(f)`・`lcm_square(f)`はg=fです。全て空を含む同長入力を扱います。
 
-GCCでは、コピーが自明で8byte以下の値型かつ要素数257以上の場合、素数ごとの伝播を8回ずつ展開します。素数の順序・各加減算の順序・途中の値を保ち、型への要件や専用CPU命令は追加しません。小規模入力・対象外の値型・その他のコンパイラでは通常のループを使います。
-
-[整数変換の使用例](../Examples/zeta_integer_example.cpp)
-
-## GCD・LCM畳み込み
-
-`gcd_convolution(f,g)`は`h[k]=sum_{gcd(i,j)=k} f[i]g[j]`、`lcm_convolution(f,g)`は`h[k]=sum_{lcm(i,j)=k} f[i]g[j]`を返します。配列は同じ長さ`n`で、空配列も扱います。LCMが`n`以上になる組は結果に含めません。
-
-約数・倍数変換と各点の積を使い、0を含む組の寄与を別途加えます。`gcd(0,k)=k`、`gcd(0,0)=0`、`lcm(0,k)=0`として計算します。時間はO(1+n log log(n+2))、追加領域はO(n+1)です。
-
-両APIの`(f,g,sieve)`版は`max_value()>=n-1`の表を再利用します。`(f,g)`版は素数表も作り、`n-1<=INT_MAX`が必要です。
-
-`gcd_square(f)`、`lcm_square(f)`と各`(f,sieve)`版は、同じ式の`g=f`を求めます。値渡しの入力は1本で、ゼータ変換1回と逆変換1回を行います。通常の畳み込み3変換に対して1回を省きます。0の寄与とLCMの切り捨ては通常版と共通です。
-
-畳み込み・自己畳み込みはlvalue入力をコピーして保持し、rvalue入力は領域を移譲できます。符号なし整数は型の幅の剰余として扱い、小型の乗算は`unsigned int`へ広げてから元の型へ戻します。符号付き整数では、途中の和・差・積も型の表現範囲内という前提です。破壊的な変換で値演算が例外を送出すると部分更新が残ることがあります。
-
-[整数畳み込みの使用例](../Examples/zeta_convolution_example.cpp)
+`gcd(0,k)=k`、`gcd(0,0)=0`、`lcm(0,k)=0`とし、LCMが結果長n以上の組は切り捨てます。各`(f,g,sieve)`・`(f,sieve)`版もあり、篩の前提は約数・倍数変換と同じです。O(1+n log log(n+2))時間・O(n+1)追加領域です。
 
 ## 疎な倍数変換
 
-`sparse_multiple_zeta_transform(f,sieve)`は`vector<pair<Int,Val>>`の値を倍数和へ更新し、`sparse_multiple_mobius_transform(f,sieve)`はその逆変換を行います。両者ともkeyの昇順に並べ替えます。
+`sparse_multiple_zeta_transform(f,sieve)`・`sparse_multiple_mobius_transform(f,sieve)`は`vector<pair<Int,Val>>`の値を倍数和／その逆へ更新し、key昇順に並べます。keyは正で一意、全約数も含み、key<=sieve.max_value()を満たします。
 
-keyは正で一意な整数で、各keyの全約数もkeyとして含み、`key<=sieve.max_value()`を満たす必要があります。空配列も扱います。keyが既に`1,2,...,m`の順なら、その添字を直接使い、並べ替えと補助領域の確保を省きます。この並びかどうかはkeyを照合して判定します。その他の密な範囲では位置配列を使い、疎な範囲では位置検索と素数ごとの伝播列を使います。
+要素数m、各keyの素因数を重複込みで数えた総数rにO((m+r)log(m+1))時間・O(m+r)追加領域です。初めからkeyが1..m順ならO(m log log(m+2))時間・O(1)追加領域です。
 
-連続キーの経路では、`p>m/2`の素数は更新が1回だけなので、除算と内側のループを省きます。GCCでは、コピーが自明で8byte以下の値型について、残りの伝播を8回ずつ展開します。素数と値演算の順序は保ち、その他の値型やコンパイラには逐次ループを使います。専用のCPU命令や追加の確保は使いません。
+## 値型・更新と検査
 
-要素数を`m`、各keyの素因数を重複込みで数えた総数を`r`とすると、O((m+r)log(m+1))時間・O(m+r)追加領域です。`1..m`順の経路はO(m log log(m+2))時間・O(1)追加領域で、値型の演算自身による確保を含みません。変換は入力を直接更新し、並べ替えや値演算で例外が発生した場合は途中の状態が残ることがあります。参照しない公開篩の配列まで検査するものではありません。
+値型はbool以外で、使う加減乗算と零の構築に対応します。ゼータ変換は可換な加算、逆変換は加法逆元、畳み込みは分配法則が前提です。符号付き整数は途中結果も型の範囲内、符号なし整数は型の幅の剰余です。浮動小数点には丸め誤差があります。
 
-[疎変換の使用例](../Examples/zeta_sparse_example.cpp)
+変換は入力を直接更新し、値演算・並べ替えの例外では部分更新が残ることがあります。畳み込みは値渡しで、lvalue入力を保持しrvalueの領域を移譲できます。同じ配列を`(std::move(f),f)`で渡さず自己畳み込み版を使ってください。
 
-## 値型と入力検査
+`SKIP_RUNTIME_CHECKS`でも配列長・篩上限・key集合の前提は同じです。未参照部分までの全入力検査はしません。
 
-値型は各APIで使う加算・減算・乗算に対応する必要があります。符号付き整数は全ての途中結果も表現範囲内、符号なし整数は型の幅の剰余として扱います。独自型はその型の演算の前提に従います。整数変換や畳み込みでは既定構築した値を0として使います。
+```cpp
+std::vector<std::int64_t> a{1,2}, b{3,4};
+auto h = bitwise_and_convolution(a,b); // {13,8}。
+subset_zeta_transform(a);             // {1,3}。
+subset_mobius_transform(a);           // {1,2}。
+```
 
-入力検査は既定で有効です。`SKIP_RUNTIME_CHECKS`を定義する場合も、配列長・表の上限・疎変換のkey集合などの前提を満たしてください。公開配列の整合性など、未参照部分を含めた全入力の検査は行いません。
-
-## 整数の集合変換とSIMD
-
-4つの集合変換は、`bool`以外の8byte以下の整数型でSIMD専用処理を選べます。
-長さ64以上ではAVX2対応CPUを確認し、最初の複数段をレジスタ内の並べ替えと加減算でまとめます。
-その後は256bitベクトル8本を読み込み、連続する3段をレジスタ内で伝播してから変更した7本を書き戻します。残る2段は4本、1段は2本で処理します。各要素の段順を維持し、未変更の端のベクトルは書き戻しません。領域の読み書きには`memcpy`を使い、整列や別名参照の前提を増やしません。
-追加の確保はなく、O(1+n log(n+1))時間・O(1)追加領域です。
-
-長さ8・16・32は段数を固定した通常の加減算を使い、それより小さい場合は通常のループを使います。
-浮動小数点型・Mint・独自の値型と、SIMDを無効にした整数型は、標準C++の処理を使います。長さ8以上では最初の3段を8要素の領域ごとにまとめ、残りの段を連続領域のループで処理します。各要素の加減算の順序を維持します。符号付き整数の範囲条件は専用処理でも必要です。
-GCCでは、コピーが自明で8byte以下の値型について、残りの段も8要素ずつ展開して自動ベクトル化を促します。部分集合変換では連続する2段をまとめ、同じ領域を続けて処理します。各要素の演算順序と途中の値、型への要件を維持し、専用のCPU命令・CPU判定は追加しません。値演算が例外を送出した際の更新済み領域は、通常のループと異なる場合があります。Clang・その他のコンパイラや対象外の値型は通常のループを使います。
-AND／OR畳み込みと自己畳み込みもこの集合変換を呼びますが、Mintを使う提出コードに整数型専用SIMDの短縮率は適用できません。
-
-対応環境と`SIRKIT_DISABLE_SIMD`は[SIMDによる内部処理](simd.md)を参照してください。
+[完全な使用例](../Examples/zeta_mobius_example.cpp)

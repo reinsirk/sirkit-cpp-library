@@ -23,6 +23,8 @@
 // lc_inf<T>(): 整数では最大値、浮動小数点では正の無限大を返す。
 // lc_div(a,b): 整数は床除算、浮動小数点は通常除算。0除算・整数結果の範囲外は例外。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
@@ -35,6 +37,9 @@
 #include <type_traits>
 #include <utility>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_LINE_CONTAINER_DEFINED
 #define SIRKIT_LINE_CONTAINER_DEFINED
 
@@ -64,7 +69,7 @@ T lc_div(T a, T b) {
   } else return a / b;
 }
 
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 template <typename T, Objective objective>
 struct LineComparator {
   using is_transparent = void;
@@ -78,11 +83,11 @@ struct LineComparator {
 }  // namespace reinsirk::detail
 
 template <typename T, Objective objective>
-struct LineContainer : std::multiset<Line<T>, reinsirk::detail::LineComparator<T, objective>> {
+struct LineContainer : std::multiset<Line<T>, /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::LineComparator<T, objective>> {
   static_assert((std::is_integral_v<T> && std::is_signed_v<T> && sizeof(T) <= 8) ||
                 std::is_floating_point_v<T>);
   static_assert(objective == MAXIMIZE || objective == MINIMIZE);
-  using super = std::multiset<Line<T>, reinsirk::detail::LineComparator<T, objective>>;
+  using super = std::multiset<Line<T>, /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::LineComparator<T, objective>>;
   using super::begin, super::end, super::insert, super::erase;
   using super::empty, super::lower_bound;
   static constexpr T inf = lc_inf<T>();
@@ -264,8 +269,8 @@ struct LineContainer : std::multiset<Line<T>, reinsirk::detail::LineComparator<T
           if (has_previous) {
             previous = *x;
             previous_below = intersection(previous, candidate);
-            if (!previous_below && previous.p >= candidate.p &&
-                (z == end() || candidate.p < z->p)) return;
+            // 整数順序では後続を削除できる候補はその後続の旧右端で前任より良い。
+            if (!previous_below && previous.p >= candidate.p) return;
           }
           auto y = insert(z, candidate);
           while (z != end() && !boundary_less(*y, *z)) {
@@ -274,7 +279,6 @@ struct LineContainer : std::multiset<Line<T>, reinsirk::detail::LineComparator<T
           }
           if (has_previous) {
             x->p = previous.p;
-            if (!previous_below && !boundary_less(*x, *y)) insect(x, y = erase(y));
           } else x = y;
           while ((y = x) != begin() && !boundary_less(*--x, *y)) insect(x, erase(y));
           // floorが最小値の直線はその点で最適になり得る。真の域外だけ除く。
@@ -282,11 +286,10 @@ struct LineContainer : std::multiset<Line<T>, reinsirk::detail::LineComparator<T
             const auto first = begin();
             if (first->p == std::numeric_limits<T>::min()) [[unlikely]] {
               const auto next = std::next(first);
-              if (next != end()) {
-                bool first_below;
-                insect_impl(first, next, first_below);
-                if (first_below) erase(first);
-              }
+              // 末尾の上端は最大値なので、ここでは次の直線が存在する。
+              bool first_below;
+              insect_impl(first, next, first_below);
+              if (first_below) erase(first);
             }
           }
           return;
@@ -306,8 +309,8 @@ struct LineContainer : std::multiset<Line<T>, reinsirk::detail::LineComparator<T
             --x;
             previous = *x;
             previous_below = intersection<true>(previous, candidate);
-            if (!previous_below && previous.p >= candidate.p &&
-                (z == end() || candidate.p < z->p)) return;
+            // 整数順序では後続を削除できる候補はその後続の旧右端で前任より良い。
+            if (!previous_below && previous.p >= candidate.p) return;
           }
           auto y = insert(z, candidate);
           while (z != end() && !boundary_less(*y, *z)) {
@@ -316,7 +319,6 @@ struct LineContainer : std::multiset<Line<T>, reinsirk::detail::LineComparator<T
           }
           if (has_previous) {
             x->p = previous.p;
-            if (!previous_below && !boundary_less(*x, *y)) insect(x, y = erase(y));
           } else x = y;
           while ((y = x) != begin() && !boundary_less(*--x, *y)) insect(x, erase(y));
           // floorが最小値の直線はその点で最適になり得る。真の域外だけ除く。
@@ -324,11 +326,10 @@ struct LineContainer : std::multiset<Line<T>, reinsirk::detail::LineComparator<T
             const auto first = begin();
             if (first->p == std::numeric_limits<T>::min()) [[unlikely]] {
               const auto next = std::next(first);
-              if (next != end()) {
-                bool first_below;
-                insect_impl(first, next, first_below);
-                if (first_below) erase(first);
-              }
+              // 末尾の上端は最大値なので、ここでは次の直線が存在する。
+              bool first_below;
+              insect_impl(first, next, first_below);
+              if (first_below) erase(first);
             }
           }
           return;
@@ -347,11 +348,9 @@ struct LineContainer : std::multiset<Line<T>, reinsirk::detail::LineComparator<T
       const auto first = begin();
       if (first->p == std::numeric_limits<T>::min()) [[unlikely]] {
         const auto next = std::next(first);
-        if (next != end()) {
-          bool first_below;
-          insect_impl(first, next, first_below);
-          if (first_below) erase(first);
-        }
+        bool first_below;
+        insect_impl(first, next, first_below);
+        if (first_below) erase(first);
       }
     }
   }
@@ -409,3 +408,7 @@ struct LineContainer : std::multiset<Line<T>, reinsirk::detail::LineComparator<T
 template <typename T> using MinLineContainer = LineContainer<T, MINIMIZE>;
 template <typename T> using MaxLineContainer = LineContainer<T, MAXIMIZE>;
 #endif
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1

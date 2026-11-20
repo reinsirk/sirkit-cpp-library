@@ -25,6 +25,10 @@
 // Lucas(n,k): 素数の法でCOMと同じ結果。合成数・法1ではdomain_error（COMを使う）。
 // H(n,k): (n+k-1)Ckの剰余。0H0=1（法1は0）、0Hk=0（k>0）。int64_t超過はoverflow_error。
 // 表外は積で計算し、積の回数上限も超えるとlength_error。SKIP_RUNTIME_CHECKSで入力検査を除く。
+// m=法、r=異なる素因子数、B=全表の総要素数。構築はO(sqrt(m)+B+r log m)、prepareはO(B+r log m)、領域O(B+r)。
+// 準備済みの一般照会はO(Σ_p(1+log_p(n+1)))。素数pの表外Lucasは桁数d・積の総項数sとしてO(d+s+d log p)。
+// 素数冪p^eの表外直接積はs=min(k,n-k)としてO((s+1)(1+log_p(n+1))+log m)。自動拡張にはprepareの費用を加える。
+// 以上は固定幅整数演算をO(1)とした上界。Hは対応するCOMと同じ費用。
 //
 // [ModIntBinomial<Mint>]
 // AtCoder modint用。Mintは利用側で用意し、動的な法を変えたら計算器も作り直す。
@@ -32,9 +36,14 @@
 // ModIntBinomial(options): 指定した上限で500万まで前計算する。
 // prepare(max_n=5'000'000): 上限内で表を準備。制限・例外はBinomialModと同じ。
 // COM(n,k): nCkをMintで返す。n<0,k<0,k>nと法1は0。素数でn<modかつ準備済みならO(1)。
+// m=法、B=全表の総要素数、r=異なる素因子数。構築O(sqrt(m)+B+r log m)、prepareはO(B+r log m)、領域O(B+r)。
+// 素数pのLucasはd桁・表外の積の総項数sとしてO(d+s)回のMint演算と高々d回のinv、表内はO(d)。
+// 通常のmodintではinvはO(log p)、他の演算はO(1)。自動拡張の費用を別途加え、合成数はBinomialModと同じ。
 // Lucas(n,k): 素数の法でCOMと同じ結果。合成数・法1ではCOMを使う。
 // H(n,k): nHkをMintで返す。0H0=1（法1は0）、0Hk=0（k>0）。int64_t超過はoverflow_error。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <bit>
 #include <cstddef>
@@ -45,9 +54,12 @@
 #include <type_traits>
 #include <vector>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_PRIMALITY32_DEFINED
 // 内部の素数判定。定義はファイル末尾。
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 inline bool is_prime_u32(std::uint32_t n) noexcept;
 } // namespace reinsirk::detail
 #endif
@@ -208,7 +220,7 @@ private:
     // 法を素数冪に分解し、CRTの係数を準備する。O(sqrt(mod))。
     void factorize()
     {
-        if (reinsirk::detail::is_prime_u32(modulus_))
+        if (/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::is_prime_u32(modulus_))
         {
             factors_.emplace_back(modulus_, modulus_, 1);
             return;
@@ -228,8 +240,8 @@ private:
                 ++exponent;
             } while (remaining % p == 0);
             factors_.emplace_back(p, static_cast<value_type>(prime_power), exponent);
-            if (remaining > primality_threshold && u64{p} * p < remaining &&
-                reinsirk::detail::is_prime_u32(static_cast<value_type>(remaining))) {
+            if (remaining > primality_threshold &&
+                /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::is_prime_u32(static_cast<value_type>(remaining))) {
                 factors_.emplace_back(remaining, remaining, 1);
                 remaining = 1;
             }
@@ -240,7 +252,7 @@ private:
             const auto power = static_cast<value_type>(u64{1} << exponent);
             remaining >>= exponent;
             factors_.emplace_back(2, power, exponent);
-            if (remaining > primality_threshold && reinsirk::detail::is_prime_u32(static_cast<value_type>(remaining))) {
+            if (remaining > primality_threshold && /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::is_prime_u32(static_cast<value_type>(remaining))) {
                 factors_.emplace_back(remaining, remaining, 1);
                 remaining = 1;
             }
@@ -260,8 +272,9 @@ private:
                 ++exponent;
             } while (remaining % p == 0);
             factors_.emplace_back(p, static_cast<value_type>(prime_power), exponent);
-            if (remaining > primality_threshold && u64{p} * p < remaining &&
-                reinsirk::detail::is_prime_u32(static_cast<value_type>(remaining))) {
+            // この残余なら p < 2^7 なので、p*pよりも十分大きい。
+            if (remaining > primality_threshold &&
+                /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::is_prime_u32(static_cast<value_type>(remaining))) {
                 factors_.emplace_back(remaining, remaining, 1);
                 remaining = 1;
                 break;
@@ -348,8 +361,8 @@ private:
                 factor.ifac[static_cast<std::size_t>(i)] = factor.prime - factor.fac[static_cast<std::size_t>(target - i)];
                 factor.ifac[static_cast<std::size_t>(i + 1)] = factor.fac[static_cast<std::size_t>(target - i - 1)];
             }
-            if (i <= target)
-                factor.ifac[static_cast<std::size_t>(i)] = factor.prime - factor.fac[static_cast<std::size_t>(target - i)];
+            // targetは偶数なので、最後の組の直後がtargetになる。
+            factor.ifac[target] = factor.prime - factor.fac[0];
             return;
         }
         factor.ifac[target] = power(factor.fac[target], factor.prime - 2, factor);
@@ -408,9 +421,9 @@ private:
         const auto limit = std::min(options_.table_limit, factor.prime - 1);
         const auto target = growth_target(current, required, limit);
         const auto old_size = factor.fac.size();
-        if (static_cast<u64>(target) + 1 > std::numeric_limits<std::size_t>::max())
-        {
-            throw std::length_error("BinomialMod: table size exceeds size_t");
+        if constexpr (std::numeric_limits<std::size_t>::digits < std::numeric_limits<value_type>::digits) {
+            if (static_cast<u64>(target) + 1 > std::numeric_limits<std::size_t>::max())
+                throw std::length_error("BinomialMod: table size exceeds size_t");
         }
         const auto new_size = static_cast<std::size_t>(static_cast<u64>(target) + 1);
         try
@@ -479,8 +492,10 @@ private:
             return;
         const auto limit = std::min(options_.table_limit, factor.modulus - 1);
         const auto target = growth_target(current, required, limit);
-        if (static_cast<u64>(target) + 1 > std::numeric_limits<std::size_t>::max())
-            throw std::length_error("BinomialMod: table size exceeds size_t");
+        if constexpr (std::numeric_limits<std::size_t>::digits < std::numeric_limits<value_type>::digits) {
+            if (static_cast<u64>(target) + 1 > std::numeric_limits<std::size_t>::max())
+                throw std::length_error("BinomialMod: table size exceeds size_t");
+        }
         const auto old_size = factor.prefix.size();
         const auto new_size = static_cast<std::size_t>(static_cast<u64>(target) + 1);
         try
@@ -690,7 +705,6 @@ private:
     value_type lucas_prime(PrimePower &factor, u64 n, u64 k, u64 &budget)
     {
         if (factor.prime == 2) return (k & ~n) == 0;
-        if (k == 0) return 1;
         const auto nq = divide_prime(n, factor), kq = divide_prime(k, factor);
         const auto ni = static_cast<value_type>(n - nq * factor.prime);
         const auto ki = static_cast<value_type>(k - kq * factor.prime);
@@ -719,7 +733,6 @@ private:
             case 23: return lucas_prepared<23>(rest_n, rest_k, ni, ki, next_n, next_k);
             case 29: return lucas_prepared<29>(rest_n, rest_k, ni, ki, next_n, next_k);
             case 31: return lucas_prepared<31>(rest_n, rest_k, ni, ki, next_n, next_k);
-            default: break;
             }
         }
         // 先頭2値を1引数にまとめ、桁処理へ渡す引数を少なくする。
@@ -1168,7 +1181,8 @@ class ModIntBinomial {
           ifac_[static_cast<std::size_t>(i)] = -fac_[static_cast<std::size_t>(target - i)];
           ifac_[static_cast<std::size_t>(i + 1)] = fac_[static_cast<std::size_t>(target - i - 1)];
         }
-        if (i <= target) ifac_[static_cast<std::size_t>(i)] = -fac_[static_cast<std::size_t>(target - i)];
+        // targetは偶数なので、最後の組の直後がtargetになる。
+        ifac_[target] = -fac_[0];
         return;
       }
     }
@@ -1209,8 +1223,9 @@ class ModIntBinomial {
     const u64 current = fac_.size() - 1;
     const u64 limit = std::min(options_.table_limit, modulus() - 1);
     const u64 target = std::min(limit, std::max<u64>(required, std::max<u64>(1, current * 2)));
-    if (target + 1 > std::numeric_limits<std::size_t>::max()) {
-      throw std::length_error("ModIntBinomial: table size exceeds size_t");
+    if constexpr (std::numeric_limits<std::size_t>::digits < std::numeric_limits<u32>::digits) {
+      if (target + 1 > std::numeric_limits<std::size_t>::max())
+        throw std::length_error("ModIntBinomial: table size exceeds size_t");
     }
     const auto old_size = fac_.size();
     const auto new_size = static_cast<std::size_t>(target + 1);
@@ -1384,7 +1399,7 @@ class ModIntBinomial {
 
 #ifndef SIRKIT_PRIMALITY32_DEFINED
 #define SIRKIT_PRIMALITY32_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 // uint32_t全域の素数判定。Miller-Rabinの底2,7,61を使う。
 inline bool is_prime_u32(std::uint32_t n) noexcept
 {
@@ -1400,6 +1415,7 @@ inline bool is_prime_u32(std::uint32_t n) noexcept
     case 1004535809u:
     case 1224736769u:
     case 2013265921u:
+    case 61u: // Miller–Rabinの底のため先に処理する。
         return true;
     default:
         break;
@@ -1419,7 +1435,8 @@ inline bool is_prime_u32(std::uint32_t n) noexcept
         ++shifts;
     }
 #if (defined(__SIZEOF_INT128__)) && (!defined(SIRKIT_FORCE_STANDARD_ARITHMETIC))
-    // R=2^64。n<2^32なので、累乗中の剰余は2n未満のまま保持できる。
+    // R=2^64。両引数がn以下なら積はR未満で、還元結果はn以下。
+    // nも0の表現として保持でき、1や-1の判定に影響しない。
     using u64 = std::uint64_t;
     using u128 = __uint128_t; // GCC/Clangの128ビット整数拡張。
     u64 inverse = n;
@@ -1433,18 +1450,15 @@ inline bool is_prime_u32(std::uint32_t n) noexcept
     const u64 one = (u64{0} - n) % n;
     const u64 r_squared = one * one % n;
     for (std::uint32_t base : {2u, 7u, 61u}) {
-        if (base % n == 0) continue;
         u64 value = one, power = multiply(base % n, r_squared);
         for (std::uint32_t exponent = odd; exponent; exponent >>= 1) {
             if (exponent & 1u) value = multiply(value, power);
             power = multiply(power, power);
         }
-        if (value >= n) value -= n;
         if (value == one || value == n - one) continue;
         unsigned step = 1;
         for (; step < shifts; ++step) {
             value = multiply(value, value);
-            if (value >= n) value -= n;
             if (value == n - one) break;
         }
         if (step == shifts) return false;
@@ -1470,8 +1484,6 @@ inline bool is_prime_u32(std::uint32_t n) noexcept
     const auto r_squared = static_cast<std::uint32_t>(static_cast<std::uint64_t>(one) * one % n);
     for (std::uint32_t base : {2u, 7u, 61u})
     {
-        if (base % n == 0)
-            continue;
         std::uint32_t value = one, power = multiply(base % n, r_squared);
         for (std::uint32_t exponent = odd; ;)
         {
@@ -1499,6 +1511,13 @@ inline bool is_prime_u32(std::uint32_t n) noexcept
 } // namespace reinsirk::detail
 #endif
 
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
+
+
+namespace sirkit {}
+using namespace sirkit;
 
 // SPDX-License-Identifier: CC0-1.0
 // Verify I/O: Verify/current/common/fast_io.hpp
@@ -2367,6 +2386,23 @@ using is_dynamic_modint_t = std::enable_if_t<is_dynamic_modint<T>::value>;
 
 #endif  // ATCODER_MODINT_HPP
 
+#include <array>
+namespace {
+template<class Mint>
+void answer_binomial_queries(const std::vector<std::pair<std::uint32_t, std::uint32_t>>& queries, std::uint32_t max_n, const BinomialOptions& options) {
+    ModIntBinomial<Mint> comb(max_n, options);
+    const std::size_t batch = max_n < (std::uint32_t{1} << 20) ? 1 : 256;
+    std::array<std::uint32_t, 256> answers;
+    for (std::size_t first = 0; first < queries.size(); first += batch) {
+        const auto count = std::min(batch, queries.size() - first);
+        for (std::size_t i = 0; i < count; ++i) {
+            const auto& [n, k] = queries[first + i];
+            answers[i] = comb.COM(n, k).val();
+        }
+        for (std::size_t i = 0; i < count; ++i) verify_out << answers[i] << '\n';
+    }
+}
+} // namespace
 int main() {
     int q{}; std::uint32_t modulus{}; verify_in >> q >> modulus;
     using Mint = atcoder::dynamic_modint<0>;
@@ -2375,6 +2411,7 @@ int main() {
     std::uint32_t max_n = 0;
     for (auto& [n, k] : queries) { verify_in >> n >> k; max_n = std::max(max_n, n); }
     BinomialOptions options; options.table_limit = 9'999'999;
-    ModIntBinomial<Mint> comb(max_n, options);
-    for (const auto& [n, k] : queries) verify_out << comb.COM(n, k).val() << '\n';
+    if (modulus == 998244353) answer_binomial_queries<atcoder::static_modint<998244353>>(queries, max_n, options);
+    else if (modulus == 1000000007) answer_binomial_queries<atcoder::static_modint<1000000007>>(queries, max_n, options);
+    else answer_binomial_queries<Mint>(queries, max_n, options);
 }

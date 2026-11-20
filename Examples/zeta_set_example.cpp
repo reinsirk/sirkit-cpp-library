@@ -4,6 +4,8 @@
 #include <cstdint>
 #include <vector>
 
+using namespace sirkit;
+
 int main() {
     const std::vector<std::int64_t> original{1, 2, 3, 4};
     auto values = original;

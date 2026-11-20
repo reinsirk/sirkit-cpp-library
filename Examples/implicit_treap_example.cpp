@@ -5,6 +5,8 @@
 #include <utility>
 #include <vector>
 
+using namespace sirkit;
+
 using SumTreap = lazy_implicit_treap<
     RangeAddSum::S, RangeAddSum::op, RangeAddSum::e, RangeAddSum::F,
     RangeAddSum::mapping, RangeAddSum::composition, RangeAddSum::id>;
@@ -37,7 +39,8 @@ int main() {
     assigned.erase_at(0);
     assert(assigned.size() == 3 && sequence.size() == 4); // コピー代入後も独立した列。
 
-    lazy_implicit_treap<> ordered;
+    lazy_implicit_treap<> ordered(1000000); // 空区間の最小値。格納値以上にする。
+    assert(ordered.prod(0, 0) == ordered.identity());
     ordered.reserve(10);
     for (std::int64_t x : {3, 1, 3, 2}) ordered.insert_sorted(x);
     std::cout << ordered.get_rank(3) << ' ' << ordered.count(3) << ' ' << ordered.contains(2) << '\n'; // 2 2 1

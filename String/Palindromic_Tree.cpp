@@ -22,6 +22,8 @@
 // SKIP_RUNTIME_CHECKSで追加byte/頂点番号の検査を除く。照会の不一致判定とint32_t番号/長さ・容量保護は常に維持。
 // 出現回数はconstな遅延キャッシュ。集計の確保失敗は木/文字列を保つ。同じ個体の並行キャッシュ照会は外部で同期する。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <array>
 #include <cstddef>
@@ -35,6 +37,23 @@
 #include <utility>
 #include <vector>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+#ifndef SIRKIT_STRING_TREE_CAPACITY_DEFINED
+#define SIRKIT_STRING_TREE_CAPACITY_DEFINED
+namespace detail {
+inline std::size_t StringTreeGrowth(std::size_t capacity, std::size_t required, std::size_t limit) {
+    return std::max(required, capacity > limit / 2 ? limit : capacity * 2);
+}
+
+inline void CheckStringTreeSlots(std::size_t count, std::size_t available, std::size_t roots,
+                                 std::size_t nodes_per_char, const char* error) {
+    if (count > (available - std::min(roots, available)) / nodes_per_char)
+        throw std::length_error(error);
+}
+}
+#endif
 #ifndef SIRKIT_PALINDROMIC_TREE_DEFINED
 #define SIRKIT_PALINDROMIC_TREE_DEFINED
 template<std::size_t Alphabet=26,std::uint16_t Base='a'>
@@ -69,15 +88,15 @@ class PalindromicTree {
 #endif
     }
     void prepare_append(std::size_t count){
-        if(count==0)return;
         const auto limit=std::min(index_limit,nodes_.max_size());
-        if(text_.size()>index_limit-2||count>index_limit-2-text_.size()||count>text_.max_size()-text_.size())throw std::length_error("PalindromicTree: length");
+        const auto text_limit=std::min(index_limit-2,text_.max_size());
+        if(count>text_limit-text_.size())throw std::length_error("PalindromicTree: length");
         const std::size_t roots=nodes_.empty()?2:0;
-        if(nodes_.size()>limit||roots>limit-nodes_.size()||count>limit-nodes_.size()-roots)throw std::length_error("PalindromicTree: nodes");
+        detail::CheckStringTreeSlots(count, limit - nodes_.size(), roots, 1, "PalindromicTree: nodes");
         const auto required=nodes_.size()+roots+count;
-        if(nodes_.capacity()<required){const auto capacity=nodes_.capacity();nodes_.reserve(std::max(required,capacity>limit/2?limit:capacity*2));}
+        if(nodes_.capacity()<required) nodes_.reserve(detail::StringTreeGrowth(nodes_.capacity(), required, limit));
         const auto text_required=text_.size()+count;
-        if(text_.capacity()<text_required){const auto capacity=text_.capacity(),text_limit=std::min(index_limit-2,text_.max_size());text_.reserve(std::max(text_required,capacity>text_limit/2?text_limit:capacity*2));}
+        if(text_.capacity()<text_required) text_.reserve(detail::StringTreeGrowth(text_.capacity(), text_required, text_limit));
     }
     Index find_extendable(Index node,std::size_t position,std::uint8_t byte)const noexcept{
         for(;;){const auto distance=static_cast<std::size_t>(nodes_[node].length+1);if(position>=distance&&static_cast<unsigned char>(text_[position-distance])==byte)return node;node=nodes_[node].link;}
@@ -151,3 +170,7 @@ public:
     void reset(std::string_view text={}){PalindromicTree next(text);swap(next);}
 };
 #endif
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1

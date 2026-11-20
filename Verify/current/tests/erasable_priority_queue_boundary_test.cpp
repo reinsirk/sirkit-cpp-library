@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 // ヒープの小サイズ・4冪前後で、整数各幅・重複・遅延削除・複製を独立照合する。
 #ifndef EPQ_SOURCE
 #define EPQ_SOURCE "../../../DataStructure/erasable-priority-queue.cpp"

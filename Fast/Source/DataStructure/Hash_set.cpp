@@ -34,8 +34,10 @@
 // 空集合のbeginはO(1)、それ以外は先頭要素までのバケットを走査する。
 // size()/empty()/capacity()/load_factor(): 要素数・空か・バケット数・使用率をO(1)で返す。
 // clear(): O(capacity())で登録状態を消し、容量を再利用する。値のデストラクタは呼ばない。
-// reserve(n): n要素分を予約する。縮小しない。再配置はO(旧容量+新容量)。
-// rehash(n): nバケット以上・現登録数に必要な容量へ再配置し、墓石を除く。
+// reserve(n): n要素分を予約し縮小しない。予約済みはO(1)、再配置は期待O(C+C')。
+// rehash(n): nバケット以上・登録数に足りる容量へ再配置し墓石を除く。期待O(C+C')。
+// C/C'=旧/新バケット数、N=登録数。衝突による再配置の最悪時間はO(C+C'+N^2)。
+// ハッシュ・同値判定・要素操作をO(1)とする。全列挙はO(C)、空集合はO(1)。
 // HashSet(other)/operator=(other): 独立したコピーを作る。コピーにはKeyのコピー構築が必要。
 // HashSet(move(other))/operator=(move(other)): 内容を移動し、移動元は空で再利用可能。
 // swap(other): 内容とハッシュ・同値判定を交換する。O(1)。
@@ -48,19 +50,30 @@
 // operator()(x): 整数・列挙・浮動小数・tuple・range・std::hash対応型を再帰的にハッシュ化する。
 // unorderedコンテナの要素順は無視する。独自の同値関係には対応するHasherも用意する。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <cstddef>
 #include <limits>
+#include <memory>
+#include <type_traits>
 #include <utility>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_FAST_HASH_RELEASED_ARRAY_DEFINED
 #define SIRKIT_FAST_HASH_RELEASED_ARRAY_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 template<class T>class FastHashReleasedArray {
+    static_assert(std::is_nothrow_default_constructible_v<T>);
     T* data_=nullptr;
     std::size_t size_=0;
 public:
     FastHashReleasedArray() noexcept=default;
-    explicit FastHashReleasedArray(std::size_t n):data_(n?new T[n]:nullptr),size_(n){}
+    explicit FastHashReleasedArray(std::size_t n)
+        : data_(n ? std::allocator<T>{}.allocate(n) : nullptr), size_(n) {
+        if (data_) std::uninitialized_default_construct_n(data_, size_);
+    }
     FastHashReleasedArray(std::size_t n,const T& value):FastHashReleasedArray(n){if(n)std::fill_n(data_,n,value);}
     FastHashReleasedArray(const FastHashReleasedArray&)=delete;
     FastHashReleasedArray& operator=(const FastHashReleasedArray&)=delete;
@@ -74,35 +87,154 @@ public:
     T*begin()noexcept{return data_;}const T*begin()const noexcept{return data_;}
     T*end()noexcept{return size_?data_+size_:data_;}const T*end()const noexcept{return size_?data_+size_:data_;}
     T&operator[](std::size_t i)noexcept{return data_[i];}const T&operator[](std::size_t i)const noexcept{return data_[i];}
-    void release_storage()noexcept{delete[] data_;data_=nullptr;size_=0;}
+    void release_storage() noexcept {
+        // 格納値の破棄を省き、確保時と同じ要素数で旧領域だけを解放する。
+        if (data_) std::allocator<T>{}.deallocate(data_, size_);
+        data_ = nullptr;
+        size_ = 0;
+    }
     void swap(FastHashReleasedArray& other)noexcept{std::swap(data_,other.data_);std::swap(size_,other.size_);}
 };
 }
 #endif
 
 #if !defined(SIRKIT_DISABLE_SIMD) && defined(__SSE2__) && (defined(__x86_64__) || defined(__i386__))
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <emmintrin.h>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #endif
 
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <algorithm>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <bit>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <chrono>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <concepts>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <cstddef>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <cstdint>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <functional>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <initializer_list>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <iterator>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <limits>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <memory>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <optional>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <stdexcept>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <tuple>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <type_traits>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <utility>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <vector>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #if !defined(SIRKIT_DISABLE_SIMD) && defined(__SSE2__) && (defined(__x86_64__) || defined(__i386__)) && defined(__GNUC__) && !defined(__clang__)
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <emmintrin.h>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #endif
 
 #ifndef SIRKIT_GENERIC_HASH_DEFINED
@@ -177,6 +309,15 @@ public:
 };
 #endif
 
+#ifndef SIRKIT_HASH_CAPACITY_DEFINED
+#define SIRKIT_HASH_CAPACITY_DEFINED
+namespace detail {
+inline void CheckHashCapacity(std::size_t requested, std::size_t maximum, const char* message) {
+    if (requested > maximum) throw std::length_error(message);
+}
+}
+#endif
+
 #ifndef SIRKIT_HASH_SET_DEFINED
 #define SIRKIT_HASH_SET_DEFINED
 template <class Key, class Hasher = GenericHash, class KeyEqual = std::equal_to<Key>>
@@ -193,8 +334,7 @@ private:
     template<bool Compact>union SlotStorage {
         std::remove_cv_t<value_type> value;
         SlotStorage()noexcept{}
-        ~SlotStorage() requires std::is_trivially_destructible_v<value_type> = default;
-        ~SlotStorage()noexcept requires (!std::is_trivially_destructible_v<value_type>) {} // Fast契約: 登録値も破棄しない。
+        ~SlotStorage() noexcept {} // Fast契約: 登録値の破棄はerase時だけ行う。
         SlotStorage(const SlotStorage&)=delete;
         SlotStorage(SlotStorage&&)=delete;
         value_type&operator*()noexcept{return value;}
@@ -216,8 +356,8 @@ private:
     static_assert(std::is_copy_constructible_v<Hasher> && std::is_copy_constructible_v<KeyEqual> &&
                   std::is_nothrow_swappable_v<Hasher> && std::is_nothrow_swappable_v<KeyEqual>,
                   "HashSet: Hasher and KeyEqual must be copyable and nothrow swappable");
-    reinsirk::detail::FastHashReleasedArray<Slot> slots_;
-    reinsirk::detail::FastHashReleasedArray<std::uint8_t> state_; // 0=空、1=登録済み、2=削除済み
+    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::FastHashReleasedArray<Slot> slots_;
+    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::FastHashReleasedArray<std::uint8_t> state_; // 0=空、1=登録済み、2=削除済み
     size_type size_ = 0, occupied_ = 0;
     unsigned shift_ = 64;
     [[no_unique_address]] Hasher hash_;
@@ -252,7 +392,7 @@ private:
 #if !defined(SIRKIT_DISABLE_SIMD) && defined(__SSE2__) && (defined(__x86_64__) || defined(__i386__)) && defined(__GNUC__) && !defined(__clang__)
     // 登録状態を16スロットずつ判定し、有効なキーだけを移す。
     void rebuild_simd(size_type capacity) {
-        reinsirk::detail::FastHashReleasedArray<Slot> next(capacity);
+        /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::FastHashReleasedArray<Slot> next(capacity);
         // 値の構築前に領域を一定間隔で準備する。
          {
             if (capacity >= 256) {
@@ -262,7 +402,7 @@ private:
             }
         }
 
-        reinsirk::detail::FastHashReleasedArray<std::uint8_t> state(capacity, 0);
+        /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::FastHashReleasedArray<std::uint8_t> state(capacity, 0);
         const auto shift = static_cast<unsigned>(64 - std::countr_zero(capacity));
         const auto live = _mm_set1_epi8(1);
         for (size_type base = 0; base < slots_.size(); base += 16) {
@@ -283,13 +423,13 @@ private:
     }
 #endif
     void rebuild(size_type capacity) {
-        if (capacity > max_capacity()) throw std::length_error("HashSet: capacity overflow");
+        detail::CheckHashCapacity(capacity, max_capacity(), "HashSet: capacity overflow");
 #if !defined(SIRKIT_DISABLE_SIMD) && defined(__SSE2__) && (defined(__x86_64__) || defined(__i386__)) && defined(__GNUC__) && !defined(__clang__)
         if constexpr (std::is_same_v<Slot, CompactSlot>) {
             if (slots_.size() >= 64) { rebuild_simd(capacity); return; }
         }
 #endif
-        reinsirk::detail::FastHashReleasedArray<Slot> next(capacity);
+        /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::FastHashReleasedArray<Slot> next(capacity);
         // 値の構築前に領域を一定間隔で準備する。
          {
             if (capacity >= 256) {
@@ -299,7 +439,7 @@ private:
             }
         }
 
-        reinsirk::detail::FastHashReleasedArray<std::uint8_t> state(capacity, 0);
+        /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::FastHashReleasedArray<std::uint8_t> state(capacity, 0);
         const auto shift = static_cast<unsigned>(64 - std::countr_zero(capacity));
         for(size_type i=0;i<slots_.size();++i){
             if(state_[i]!=1)continue;
@@ -327,7 +467,7 @@ private:
                     p = (p + 1) & (slots_.size() - 1);
                 }
                 if (size_ != threshold(slots_.size())) return p;
-                if (slots_.size() > max_capacity() / 2) throw std::length_error("HashSet: capacity overflow");
+                detail::CheckHashCapacity(slots_.size(), max_capacity() / 2, "HashSet: capacity overflow");
                 rebuild(slots_.size() * 2);
                 continue;
             }
@@ -344,10 +484,7 @@ private:
             }
             if (first_deleted != slots_.size()) return first_deleted;
             if (occupied_ != threshold(slots_.size())) return p;
-            if (size_ == occupied_) {
-                if (slots_.size() > max_capacity() / 2) throw std::length_error("HashSet: capacity overflow");
-                rebuild(slots_.size() * 2);
-            } else rebuild(slots_.size());
+            rebuild(slots_.size());
         }
     }
     void mark_inserted(size_type p) noexcept {
@@ -521,7 +658,7 @@ public:
 #if !defined(SIRKIT_DISABLE_SIMD) && defined(__SSE2__) && (defined(__x86_64__) || defined(__i386__)) && defined(__GNUC__) && !defined(__clang__)
         if constexpr (!std::is_same_v<Slot, CompactSlot>) return iterator(this,next_live(0));
 #endif
-        size_type p = 0; while (p < slots_.size() && state_[p] != 1) ++p;
+        size_type p = 0; while (state_[p] != 1) ++p;
         return iterator(this, p);
     }
     iterator end() const noexcept { return iterator(this, slots_.size()); }
@@ -611,11 +748,12 @@ public:
     void rehash(size_type requested) {
         if (requested > max_capacity()) throw std::length_error("HashSet::rehash: capacity overflow");
         size_type capacity = 8;
-        while (requested > capacity || size_ > threshold(capacity)) {
-            if (capacity > max_capacity() / 2) throw std::length_error("HashSet::rehash: capacity overflow");
-            capacity *= 2;
-        }
+        while (requested > capacity || size_ > threshold(capacity)) capacity *= 2;
         rebuild(capacity);
     }
 };
 #endif
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1

@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #ifndef SIRKIT_TWO_SAT_TEST_SOURCE
 #define SIRKIT_TWO_SAT_TEST_SOURCE "../../../Graph/Two_SAT.cpp"
 #endif
@@ -20,6 +22,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <random>
+#include <stdexcept>
 #include <tuple>
 #include <utility>
 #include <vector>
@@ -32,13 +35,13 @@ void check(bool ok) { ++checks; if (!ok) std::abort(); }
 
 bool verify(int n, const Edges& edges) {
     check(n >= 0 && n % 2 == 0);
-    const auto reference = reinsirk::detail::directed_component_ids(n, edges);
+    const auto reference = ::sirkit::detail::directed_component_ids(n, edges);
     bool contradiction = false;
     for (int i = 0; i < n; i += 2)
         contradiction = contradiction || reference.second[i] == reference.second[i + 1];
-    const auto narrow = reinsirk::detail::two_sat_component_ids_index<std::uint32_t>(n, edges);
-    const auto wide = reinsirk::detail::two_sat_component_ids_index<std::size_t>(n, edges);
-    const auto selected = reinsirk::detail::two_sat_component_ids(n, edges);
+    const auto narrow = ::sirkit::detail::two_sat_component_ids_index<std::uint32_t>(n, edges);
+    const auto wide = ::sirkit::detail::two_sat_component_ids_index<std::size_t>(n, edges);
+    const auto selected = ::sirkit::detail::two_sat_component_ids(n, edges);
     for (const auto* result : {&narrow, &wide, &selected}) {
         if (contradiction) {
             check(result->first < 0);
@@ -70,6 +73,32 @@ void formula(int n, const std::vector<Clause>& clauses) {
 }
 
 int main() {
+    {
+        const Edges satisfiable{{0, 2}, {3, 1}};
+        const Edges contradiction{{0, 1}, {1, 0}};
+        check(sirkit::detail::two_sat_component_ids<1>(4, satisfiable) ==
+              sirkit::detail::two_sat_component_ids(4, satisfiable));
+        check(sirkit::detail::two_sat_component_ids<1>(2, contradiction).first == -1);
+        const auto check_length_error = [](auto call) {
+            bool rejected = false;
+            try { call(); }
+            catch (const std::length_error&) { rejected = true; }
+            check(rejected);
+        };
+        using sirkit::detail::TwoSatImplicationCapacity;
+        check(TwoSatImplicationCapacity(2, 2, 2, 8) == 4);
+        check(TwoSatImplicationCapacity(6, 6, 2, 8) == 8);
+        check_length_error([] { (void)TwoSatImplicationCapacity(6, 6, 3, 8); });
+        two_sat constraints(2);
+        const auto kMaxClauses = Edges{}.max_size() / 2;
+        check_length_error([&] { constraints.reserve_clauses(kMaxClauses + 1); });
+#ifndef SKIP_RUNTIME_CHECKS
+        bool rejected = false;
+        try { constraints.add_clause(-1, false, 0, true); }
+        catch (const std::out_of_range&) { rejected = true; }
+        check(rejected && constraints.clause_count() == 0);
+#endif
+    }
     // 偶数頂点の全小規模グラフ。節へ変換できない辺集合もSCCの矛盾判定そのものを検査する。
     for (int n : {0, 2, 4}) {
         for (unsigned mask = 0; mask < (1u << (n * n)); ++mask) {

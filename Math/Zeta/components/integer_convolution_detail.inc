@@ -2,6 +2,12 @@
 #define SIRKIT_INTEGER_CONVOLUTION_DETAIL_DEFINED
 namespace reinsirk::detail {
 struct IntegerConvolution {
+#ifndef SKIP_RUNTIME_CHECKS
+    static void require_same_size(std::size_t a, std::size_t b) {
+        if (a != b) throw std::invalid_argument("integer convolution: different lengths");
+    }
+#endif
+
     template <class T> static decltype(auto) product(const T& left, const T& right) {
         if constexpr (std::is_unsigned_v<T> && sizeof(T) < sizeof(unsigned int))
             return static_cast<T>(static_cast<unsigned int>(left) * static_cast<unsigned int>(right));

@@ -17,7 +17,8 @@ PARTS: dict[str, tuple[str, ...]] = {
     "point_functions": ("point",),
     "linear_types": ("point",),
     "on_segment": ("point_functions", "linear_types"),
-    "segment_predicates": ("on_segment",),
+    "segment_float": ("on_segment",),
+    "segment_predicates": ("segment_float",),
     "linear_results": ("point",),
     "linear_functions": ("segment_predicates", "linear_results"),
     "location": (),
@@ -70,6 +71,11 @@ DOCUMENTS: dict[str, tuple[str, ...]] = {
 }
 
 
+try:
+    from public_namespace import wrap_source, unwrap_source
+except ModuleNotFoundError:
+    from Scripts.public_namespace import wrap_source, unwrap_source
+
 def dependency_order(roots: tuple[str, ...]) -> list[str]:
     order: list[str] = []
     complete: set[str] = set()
@@ -103,7 +109,7 @@ def load_sources(directory: Path) -> tuple[str, dict[str, str]]:
     guards: set[str] = set()
     for name in PARTS:
         piece = (directory / f"{name}.inc").read_text(encoding="utf-8")
-        opening = re.match(r"#ifndef (SIRKIT_GEO_[A-Z_]+)\n#define \1\nnamespace geo \{\n", piece)
+        opening = re.match(r"#ifndef (SIRKIT_GEO_[A-Z_]+)\n#define \1\nnamespace (?:geo|detail) \{\n", piece)
         if opening is None or not piece.endswith("\n}\n#endif\n"):
             raise ValueError(f"部品のガード形式が不正です: {name}")
         if opening[1] in guards:
@@ -129,6 +135,7 @@ def main() -> int:
             content = "// SPDX-License-Identifier: CC0-1.0\n" + headers + "\n"
             content += "\n".join(pieces[name] for name in dependency_order(roots))
             content = render_api_overview(content, DOCUMENTS[relative])
+            content = wrap_source(content)
             target = options.output_dir / relative
             if options.check:
                 if not target.is_file() or target.read_bytes() != content.encode("utf-8"):

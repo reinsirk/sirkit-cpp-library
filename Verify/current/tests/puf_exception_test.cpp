@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #ifndef SIRKIT_PUF_REQUIRE_EXTRA
 #define SIRKIT_PUF_REQUIRE_EXTRA
 #endif
@@ -36,19 +38,19 @@ static void constructors(){
 static void uf_failures(){
     int caught_count=0;
     for(int failure=0;failure<128;++failure){const auto before=blocks;bool caught=false;{
-        PersistentUnionFind uf(1<<20);const auto initial=uf.root;uf.unite(1,2);const auto old=uf.root;auto sibling=uf;const auto old_arr=uf.arr.root;allocation_budget=failure;
+        PersistentUnionFind uf(1<<20);const auto initial=uf.version();uf.unite(1,2);const auto old=uf.version();auto sibling=uf;const auto old_arr=uf.arr.root;allocation_budget=failure;
         try{require(uf.unite(3,4,initial));}catch(const std::bad_alloc&){caught=true;}
         allocation_budget=-1;
-        require(uf.same(1,2,old)&&!uf.same(3,4,old));require(!uf.same(1,2,initial));require(sibling.root==old&&sibling.arr.root==old_arr);
-        if(caught){++caught_count;++allocation_failures;require(uf.root==old&&uf.arr.root==old_arr);require(uf.same(1,2)&&!uf.same(3,4));}
-        else{require(uf.same(3,4)&&!uf.same(1,2));require(uf.root==uf.arr.root);}
+        require(uf.same(1,2,old)&&!uf.same(3,4,old));require(!uf.same(1,2,initial));require(sibling.version()==old&&sibling.arr.root==old_arr);
+        if(caught){++caught_count;++allocation_failures;require(uf.version()==old&&uf.arr.root==old_arr);require(uf.same(1,2)&&!uf.same(3,4));}
+        else{require(uf.same(3,4)&&!uf.same(1,2));require(uf.version()==uf.arr.root);}
         uf.restore(old);require(uf.unite(5,6));require(uf.same(1,2)&&uf.same(5,6));require(!uf.same(5,6,old));
     }require(blocks==before);if(!caught)break;}
     if(caught_count==0){
         for(int failure=0;failure<16;++failure){const auto before=blocks;bool caught=false;{
-            PersistentUnionFind uf(1<<20);const auto initial=uf.root;uf.unite(1,2);const auto historical=uf.root;
+            PersistentUnionFind uf(1<<20);const auto initial=uf.version();uf.unite(1,2);const auto historical=uf.version();
             allocation_budget=failure;
-            for(int step=0;step<4096;++step){const auto old=uf.root,old_arr=uf.arr.root;try{uf.unite(3,4,initial);}catch(const std::bad_alloc&){caught=true;allocation_budget=-1;require(uf.root==old&&uf.arr.root==old_arr);break;}}
+            for(int step=0;step<4096;++step){const auto old=uf.version(),old_arr=uf.arr.root;try{uf.unite(3,4,initial);}catch(const std::bad_alloc&){caught=true;allocation_budget=-1;require(uf.version()==old&&uf.arr.root==old_arr);break;}}
             allocation_budget=-1;require(uf.same(1,2,historical)&&!uf.same(3,4,historical));require(!uf.same(1,2,initial));uf.restore(historical);require(uf.unite(5,6));require(uf.same(1,2)&&uf.same(5,6));
         }require(blocks==before);if(caught){++caught_count;++allocation_failures;}else break;}
     }

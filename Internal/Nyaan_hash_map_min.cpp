@@ -7,7 +7,7 @@
 // ドキュメント: https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/internal_hash_map.md
 //
 // API一覧
-// [reinsirk::detail::InternalHashMap<Key,Val,Packed=false,Denominator=5>]
+// [sirkit::detail::InternalHashMap<Key,Val,Packed=false,Denominator=5>]
 // Keyはbool・const・volatileを除く64bit以下の整数型。Denominatorは2〜8。
 // dynamic系で共有する内部用の整数ハッシュ表。再確保・release・代入で参照は無効。
 // 検索は期待O(1)、追加は期待償却O(1)。値は既定構築・コピー代入可能であること。
@@ -31,6 +31,8 @@
 // enumerate(): 登録済みの{キー, 値}を順序不定でコピーする。非空O(容量)、空O(1)。
 // swap(other): 表の内容・初期値を交換する。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <bit>
 #include <chrono>
@@ -46,9 +48,12 @@
 #include <immintrin.h>
 #endif
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_INTERNAL_HASH_MAP_DEFINED
 #define SIRKIT_INTERNAL_HASH_MAP_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 template <class Key, class Val, bool Packed = false, unsigned Denominator = 5>
 class InternalHashMap {
     static_assert(std::is_integral_v<Key> &&
@@ -85,6 +90,12 @@ class InternalHashMap {
 
     std::size_t max_capacity() const noexcept {
         return std::bit_floor(std::min({keys_.max_size(), values_.max_size(), used_.max_size()}));
+    }
+
+    static std::size_t doubled_capacity(std::size_t capacity, std::size_t maximum) {
+        if (capacity > maximum / 2)
+            throw std::length_error("InternalHashMap: capacity overflow");
+        return capacity * 2;
     }
 
     static std::uint32_t occupied8(const std::uint8_t* flags) noexcept {
@@ -200,11 +211,8 @@ public:
     void reserve(std::size_t n) {
         if (n <= keys_.size() - keys_.size() / Denominator) return;
         std::size_t capacity = std::max(std::size_t{8}, keys_.size());
-        while (n > capacity - capacity / Denominator) {
-            if (capacity > max_capacity() / 2)
-                throw std::length_error("InternalHashMap: capacity overflow");
-            capacity *= 2;
-        }
+        while (n > capacity - capacity / Denominator)
+            capacity = doubled_capacity(capacity, max_capacity());
         rehash(capacity);
     }
 
@@ -212,9 +220,7 @@ public:
         if (keys_.empty()) {
             rehash(8);
         } else {
-            if (keys_.size() > max_capacity() / 2)
-                throw std::length_error("InternalHashMap: capacity overflow");
-            rehash(keys_.size() * 2);
+            rehash(doubled_capacity(keys_.size(), max_capacity()));
         }
     }
 
@@ -313,3 +319,7 @@ public:
 
 }  // namespace reinsirk::detail
 #endif  // SIRKIT_INTERNAL_HASH_MAP_DEFINED
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1

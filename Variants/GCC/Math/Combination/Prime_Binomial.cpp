@@ -12,7 +12,12 @@
 // Lucas(n,k): COMと同じ。COMもLucasを自動選択する。
 // H(n,k): nHkをMintで返す。0H0=1、0Hk=0（k>0）。int64_t超過はoverflow_error。
 // 表外は積で計算し、回数上限超過はlength_error。SKIP_RUNTIME_CHECKSで入力検査を除く。
+// p=法、B=準備後の上限+1。構築・prepareはO(B)回のMint演算と高々1回のinv、領域O(B)。
+// Lucasはd=O(1+log_p(n+1))桁。表内はO(d)、表外は積の総項数sとしてO(d+s)回のMint演算と高々d回のinv。
+// HはCOMと同じ費用。通常のmodintではinvはO(log p)、他のMint演算はO(1)。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -22,9 +27,12 @@
 #include <type_traits>
 #include <vector>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #if !defined(SKIP_RUNTIME_CHECKS) && !defined(SIRKIT_PRIMALITY32_DEFINED)
 // 内部の素数判定。定義はファイル末尾。
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 inline bool is_prime_u32(std::uint32_t n) noexcept;
 } // namespace reinsirk::detail
 #endif
@@ -33,7 +41,7 @@ inline bool is_prime_u32(std::uint32_t n) noexcept;
 #define SIRKIT_PRIME_BINOMIAL_DEFINED
 #ifndef SIRKIT_PRIME_BINOMIAL_LUCAS_THREE_DEFINED
 #define SIRKIT_PRIME_BINOMIAL_LUCAS_THREE_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 // 法3は6桁ごとの桁和で0を判定し、2の個数の偶奇から符号を求める。
 inline std::uint32_t lucas_mod3(std::uint64_t n, std::uint64_t k) noexcept {
     constexpr std::uint32_t Base = 729;
@@ -63,6 +71,14 @@ inline std::uint32_t lucas_mod3(std::uint64_t n, std::uint64_t k) noexcept {
 }
 } // namespace reinsirk::detail
 #endif
+
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
+inline std::size_t prime_binomial_table_bound(std::uint64_t bound, std::size_t capacity) {
+    if (bound >= capacity)
+        throw std::length_error("PrimeBinomial: table size exceeds size_t");
+    return static_cast<std::size_t>(bound);
+}
+}
 
 template <class Mint>
 class PrimeBinomial
@@ -176,8 +192,8 @@ class PrimeBinomial
                     ifac_[i] = -fac_[target - i];
                     ifac_[i + 1] = fac_[target - i - 1];
                 }
-                if (i <= target)
-                    ifac_[i] = -fac_[target - i];
+                // targetは偶数なので、最後の組の直後がtargetになる。
+                ifac_[target] = -fac_[0];
                 return;
             }
         }
@@ -275,7 +291,7 @@ class PrimeBinomial
             // kは2以上かつn/2以下。2桁以内なら定数個の整数演算で返す。
             if (n < 9)
                 return Mint::raw(k == 2 ? (n % 3 == 2) : (k == 3 ? 2 : 1));
-            return Mint::raw(static_cast<int>(reinsirk::detail::lucas_mod3(
+            return Mint::raw(static_cast<int>(/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::lucas_mod3(
                 static_cast<u64>(n), static_cast<u64>(k))));
         }
         u64 remaining_steps = max_steps_;
@@ -289,7 +305,7 @@ public:
         : modulus_(Mint::mod()), max_steps_(max_steps)
     {
 #ifndef SKIP_RUNTIME_CHECKS
-        if (modulus_ < 2 || !reinsirk::detail::is_prime_u32(static_cast<std::uint32_t>(modulus_)))
+        if (modulus_ < 2 || !/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::is_prime_u32(static_cast<std::uint32_t>(modulus_)))
             throw std::domain_error("PrimeBinomial: prime modulus required");
 #endif
         prepare(max_n);
@@ -303,9 +319,8 @@ public:
             throw std::invalid_argument("PrimeBinomial: negative bound");
 #endif
         const auto bound = static_cast<u64>(std::min<i64>(max_n, modulus() - 1));
-        if (bound >= std::numeric_limits<std::size_t>::max())
-            throw std::length_error("PrimeBinomial: table size exceeds size_t");
-        const auto target = static_cast<std::size_t>(bound);
+        const auto target = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::prime_binomial_table_bound(
+            bound, std::numeric_limits<std::size_t>::max());
         auto old_size = fac_.size();
         if (target < old_size)
             return;
@@ -367,7 +382,7 @@ public:
 
 #if !defined(SKIP_RUNTIME_CHECKS) && !defined(SIRKIT_PRIMALITY32_DEFINED)
 #define SIRKIT_PRIMALITY32_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 // uint32_t全域の素数判定。Miller-Rabinの底2,7,61を使う。
 inline bool is_prime_u32(std::uint32_t n) noexcept
 {
@@ -383,6 +398,7 @@ inline bool is_prime_u32(std::uint32_t n) noexcept
     case 1004535809u:
     case 1224736769u:
     case 2013265921u:
+    case 61u: // Miller–Rabinの底のため先に処理する。
         return true;
     default:
         break;
@@ -402,7 +418,8 @@ inline bool is_prime_u32(std::uint32_t n) noexcept
         ++shifts;
     }
 #if (defined(__SIZEOF_INT128__)) && (!defined(SIRKIT_FORCE_STANDARD_ARITHMETIC))
-    // R=2^64。n<2^32なので、累乗中の剰余は2n未満のまま保持できる。
+    // R=2^64。両引数がn以下なら積はR未満で、還元結果はn以下。
+    // nも0の表現として保持でき、1や-1の判定に影響しない。
     using u64 = std::uint64_t;
     using u128 = __uint128_t; // GCC/Clangの128ビット整数拡張。
     u64 inverse = n;
@@ -416,18 +433,15 @@ inline bool is_prime_u32(std::uint32_t n) noexcept
     const u64 one = (u64{0} - n) % n;
     const u64 r_squared = one * one % n;
     for (std::uint32_t base : {2u, 7u, 61u}) {
-        if (base % n == 0) continue;
         u64 value = one, power = multiply(base % n, r_squared);
         for (std::uint32_t exponent = odd; exponent; exponent >>= 1) {
             if (exponent & 1u) value = multiply(value, power);
             power = multiply(power, power);
         }
-        if (value >= n) value -= n;
         if (value == one || value == n - one) continue;
         unsigned step = 1;
         for (; step < shifts; ++step) {
             value = multiply(value, value);
-            if (value >= n) value -= n;
             if (value == n - one) break;
         }
         if (step == shifts) return false;
@@ -453,8 +467,6 @@ inline bool is_prime_u32(std::uint32_t n) noexcept
     const auto r_squared = static_cast<std::uint32_t>(static_cast<std::uint64_t>(one) * one % n);
     for (std::uint32_t base : {2u, 7u, 61u})
     {
-        if (base % n == 0)
-            continue;
         std::uint32_t value = one, power = multiply(base % n, r_squared);
         for (std::uint32_t exponent = odd; ;)
         {
@@ -481,3 +493,7 @@ inline bool is_prime_u32(std::uint32_t n) noexcept
 }
 } // namespace reinsirk::detail
 #endif
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1

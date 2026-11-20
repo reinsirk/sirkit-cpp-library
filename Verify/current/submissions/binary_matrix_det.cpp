@@ -31,6 +31,8 @@
 // 0列のsolveは非0のrhsを見つけた時点で終了し、それ以降のrhsは検査しない。
 // SIRKIT_DISABLE_SIMDは共有bit kernelの追加CPU判定/専用実装を除く。消去/転置に独自SIMDは使わない。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <bit>
 #include <cstddef>
@@ -46,9 +48,12 @@
 #include <immintrin.h>
 #endif
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_DYNAMIC_BITSET_WORD_OPERATIONS_DEFINED
 #define SIRKIT_DYNAMIC_BITSET_WORD_OPERATIONS_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 inline unsigned bitset_word_popcount(std::uint64_t x) noexcept {
     x -= (x >> 1) & UINT64_C(0x5555555555555555);
     x = (x & UINT64_C(0x3333333333333333)) + ((x >> 2) & UINT64_C(0x3333333333333333));
@@ -150,7 +155,13 @@ inline bool bitset_intersection_parity_words(const std::uint64_t* a, const std::
 }
 #endif
 
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <optional>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 
 #ifndef SIRKIT_BINARY_MATRIX_DEFINED
 #define SIRKIT_BINARY_MATRIX_DEFINED
@@ -272,7 +283,7 @@ public:
         BinaryMatrix result(rows_, other.cols_); if (!rows_ || !cols_ || !other.cols_) return result;
         const auto transposed = other.transpose();
         for (std::size_t row = 0; row < rows_; ++row) for (std::size_t col = 0; col < other.cols_; ++col)
-            if (reinsirk::detail::bitset_intersection_parity_words(data_.data() + row * stride_, transposed.data_.data() + col * transposed.stride_, stride_))
+            if (/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::bitset_intersection_parity_words(data_.data() + row * stride_, transposed.data_.data() + col * transposed.stride_, stride_))
                 result.data_[row * result.stride_ + col / 64] |= std::uint64_t{1} << (col % 64);
         return result;
     }
@@ -353,6 +364,13 @@ inline std::optional<BinaryMatrix::LinearSolution> BinaryMatrix::solve(std::span
 }
 #endif
 
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
+
+
+namespace sirkit {}
+using namespace sirkit;
 
 // SPDX-License-Identifier: CC0-1.0
 // Verify I/O: Verify/current/common/fast_io.hpp

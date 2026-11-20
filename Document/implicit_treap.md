@@ -1,131 +1,635 @@
 # 暗黙Treap
 
-`DataStructure/implicit_treap.cpp`の`lazy_implicit_treap`は、添字で操作する可変長列です。要素の位置を部分木の要素数で表し、乱数の優先度で木を構成します。ノードはvectorで所有し、削除したスロットはfree listで再利用します。
+`DataStructure/implicit_treap.cpp`の`lazy_implicit_treap`は、挿入・削除・区間操作を行う可変長列です。公開APIは`namespace sirkit`内にあります。[使用例](../Examples/implicit_treap_example.cpp)。
 
-## 集約と遅延作用
+`S`は要素と集約の型、`op`は結合演算、`e()`は単位元、`F`は更新です。`mapping`は更新を適用し、`composition(f,g)`はgの後にfを適用、`id()`は更新なしを表します。更新は集約に分配し、非可換な集約も使えます。`Commutative=true`で可換を指定し、既定の最小値・和では自動判定します。
 
-`op`は結合的で`e()`を単位元とし、`mapping`は集約に分配することが前提です。`composition(f,g)`はgの後にfを適用します。各演算・要素のコピーや移動がO(1)なら、通常の位置操作・区間操作・境界探索は期待O(log N)です。挿入はノード配列の拡張を含めて償却期待O(log N)で、再確保時には保持スロット数に比例する処理が発生します。最悪の木の高さはO(N)になることがあります。
+以下、Nは現在の要素数、Pは保持するノード枠数、MはID索引の枠数、kは削除要素数です。S/Fのコピー・演算・述語をO(1)として記します。木の高さは期待O(log N)、最悪O(N)です。
 
-非可換の集約では順方向と逆方向の結果を保持し、区間反転で交換します。`Commutative=true`を指定する場合はopの可換性が必要です。既定の`RangeAddMin`と`RangeAddSum`は自動認識され、逆方向の重複した集約を省きます。
+## API
 
-区間の集約は左右の境界を専用に下降し、区間内の部分木の集約を結合します。移動できる値型では、一時的な集約を移動して再利用します。
+### lazy_implicit_treap
 
-反転・回転は、区間を含む最小の部分木まで共通の経路を一度たどります。その根は最大優先度なので維持でき、左右の部分木を分割・結合して並べ替えます。全区間の反転は、根に反転を適用するだけでO(1)です。
-
-## ノード配置と集約の更新
-
-IDを追跡せず、S・Fが単純にコピーでき、内部フィールドが64バイトに収まる場合は、ノードを64バイト境界へ配置します。ノードには優先度の上位30ビットを置き、完全な64ビット優先度は補助配列に保持します。上位ビットが同じ場合は補助配列を比較するため、優先度の順序は変わりません。領域にはノードのほかに1枠8バイトの補助配列が必要です。それ以外の型とID版は、ノード内に完全な優先度を保持します。
-
-この配置でS・Fがともに16バイト以上の場合、部分木の集約には作用を直ちに反映し、要素自身への作用は下降時のpushでまとめて反映します。照会では必要な経路へ遅延作用を伝播します。
-
-この配置の区間照会では、遅延フラグがないノードのpush呼び出しを小さな補助関数で省きます。作用・反転が残る場合は通常どおり伝播し、部分木全体の集約を返せる判定は先に行います。
-
-対象の可換集約では、反転・回転によって部分木全体の集約値と要素数が変わらないため、外側の経路での再集約を省きます。区間作用でも辺と要素数は変わらず、集約だけを更新できます。非可換集約やID追跡で必要な再集約・親リンク更新は保持します。
-
-この配置では、反転のフラグと非可換集約だけを直ちに更新し、子の左右交換は下降時のpushまで遅らせます。下降前に反転が相殺された部分木では交換が不要になります。分割位置が部分木の先頭・末尾なら、遅延状態を保持した部分木全体を返し、端までの再走査を省きます。
-
-補助配列を使う型の構築では、連続して読み出せる完全な優先度を直接比較して木を作ります。ノード配列と補助配列の確保失敗・コピー・ムーブ・clear・swapでは、両者の対応を保持します。
-
-## 挿入・削除と所有
-
-一要素の挿入は添字に沿って下降し、新しいノードの優先度が部分木の根より大きくなった位置だけを分割します。一要素の削除は対象へ直接下降し、その左右の部分木だけを結合します。`pop_front()`・`pop_back()`・昇順列の`erase_max()`もこの経路を使います。区間削除は分割・結合後に対象ノードを破棄し、期待O(削除数 + log N)です。`erase_prod`は、Sのコピー・ムーブ構築が例外を投げない型では切り離した部分木の集約を使い、一要素の区間では対象まで直接下降します。コピー・ムーブが例外を投げ得る型は、削除前に集約を取得します。
-
-64バイト配置の対象型はS/Fのデストラクタによる後始末を必要としないため、削除したスロットには次の空き枠だけを記録し、値・作用の作り直しは再利用時に行います。それ以外の型では削除時の後始末を維持します。
-
-vectorからの構築はO(N)、`to_vector()`は現在の要素数に比例します。使用領域は保持するスロット数に比例し、通常は過去の最大要素数に対応します。`reserve(n)`とノード確保にはintの範囲を超える容量の保護があり、検査を省く場合も維持します。
-
-コピーではノード群を独立に所有します。コピー代入は失敗時に代入先を保ちます。ノードのコピー構築・代入が例外を投げず、既存容量に収まる場合はその容量を再利用し、それ以外はコピーの成功後に内容を交換します。ムーブ元は空列として再利用できます。
-
-## 先頭・末尾と区間の移動
-
-`front()`と`back()`は先頭・末尾の値を期待O(log N)で返します。空列には使えません。
-
-`move_range(l,r,pos)`は、半開区間[l,r)を移動前の位置posの直前へ移します。posは0からsize()までで、size()は末尾です。移動先が区間内またはその端（l<=pos<=r）の場合、あるいは空区間の場合は何もしません。移動は期待O(log N)で、要素やIDの作り直し・削除は行いません。
-
-```cpp
-lazy_implicit_treap<> a(std::vector<std::int64_t>{10, 20, 30, 40, 50});
-a.move_range(1, 3, 5); // [20,30]を元の末尾へ移す。[10,40,50,20,30]
-a.move_range(3, 5, 0); // 末尾の[20,30]を先頭へ移す。[20,30,10,40,50]
-// a.front() == 20、a.back() == 50。
+```text
+lazy_implicit_treap();
+template<class I> requires std::convertible_to<I,S>
+explicit lazy_implicit_treap(I&& identity);
+explicit lazy_implicit_treap(const std::vector<S>& values);
+lazy_implicit_treap(const std::vector<S>& values, S identity);
+lazy_implicit_treap(const lazy_implicit_treap& other);
+lazy_implicit_treap(lazy_implicit_treap&& other) noexcept;
 ```
 
-## IDから現在位置を求める
+空列／指定単位元の空列／vectorの列／独立コピー／所有権の移動で構築します。
 
-`indexed_implicit_treap`は、要素に不変の整数IDを付けて操作するための別名です。`lazy_implicit_treap`と同じ先頭8テンプレート引数を受け取り、第9引数`TrackIds=true`を指定します。通常版は既定でIDを追跡せず、ID索引や親リンクの更新を持ちません。
+**制約:** op・単位元・作用は冒頭の契約を満たすこと。
 
-IDは値と別に管理する非負の`int`で、生存する要素間で一意にします。同じ値の要素にも別のIDを付けられます。`set`や`apply`で値が変わってもIDは変わりません。既存の`insert_at`・`push_back`・`insert_sorted`やvectorからの構築は、IDなしの要素を作ります。
+**計算量:** 空はO(1)、vectorはO(N)時間・領域、コピーはO(P+M)、moveはO(1)。
 
-| API | 動作 |
-| --- | --- |
-| `insert_at_with_id(pos,id,value)` | 位置posの直前へID付きの値を挿入する。`0 <= pos <= size()` |
-| `insert_after(id,new_id,value)` | 存在するIDの要素の直後へ、新しいID付きの値を挿入する |
-| `insert_before(id,new_id,value)` | 存在するIDの要素の直前へ、新しいID付きの値を挿入する |
-| `position_of(id)` | IDの現在位置を0始まりで返す。存在しなければ-1 |
-| `contains_id(id)` | IDが存在すればtrue |
-| `get_id(pos)` | 位置posのIDを返す。IDなしなら-1 |
-| `get_by_id(id)` / `set_by_id(id,value)` | 存在するIDの値を取得・置換する。IDは保持する |
-| `erase_id(id)` | IDの要素を削除してtrue。存在しなければfalse |
-| `reserve_ids(n)` | ID 0からn-1までの索引を準備する。既存の登録は維持する |
-| `erase_prod(l,r)` | 半開区間[l,r)の集約を返し、その区間を削除する。通常版でも利用可 |
-| `prod_between(a,b)` | 2つのIDの間を、端点を含めずに列の順序で集約する |
-| `erase_between(a,b)` | 2つのIDの間を集約して削除する。端点は残す |
+### operator=
 
-```cpp
-using IdSumTreap = indexed_implicit_treap<
-    RangeAddSum::S, RangeAddSum::op, RangeAddSum::e, RangeAddSum::F,
-    RangeAddSum::mapping, RangeAddSum::composition, RangeAddSum::id>;
-
-IdSumTreap a;
-a.insert_at_with_id(0, 0, {0, 1});
-a.insert_after(0, 1, {1, 1}); // [0,1]
-a.insert_after(1, 2, {2, 1}); // [0,1,2]
-a.insert_after(0, 3, {3, 1}); // [0,3,1,2]
-int l = a.position_of(3);    // 1
-int r = a.position_of(2);    // 3
-auto removed = a.erase_prod(l + 1, r); // 端点を除く[2,3)を削除。
-// removed.sum == 1、残る列は[0,3,2]。
-// a.position_of(1) == -1、a.position_of(2) == 2。
-
-a.insert_before(2, 4, {4, 1}); // [0,3,4,2]。
-a.set_by_id(4, {40, 1});      // [0,3,40,2]。ID=4は変わらない。
-auto value = a.get_by_id(4); // value.sum == 40。
-auto between = a.prod_between(2, 0); // between.sum == 43。
-auto removed_again = a.erase_between(0, 2); // removed_again.sum == 43、列は[0,2]。
-bool erased = a.erase_id(4); // false。すでに削除されている。
+```text
+lazy_implicit_treap& operator=(const lazy_implicit_treap& other);
+lazy_implicit_treap& operator=(lazy_implicit_treap&& other) noexcept;
 ```
 
-`prod_between`・`erase_between`の端点IDは前後どちらの順でも渡せます。非可換の集約でも、実際の列の左から右へ集約します。同じIDや隣接する2要素を指定した場合は単位元を返し、列を変えません。両方のIDが存在することが前提です。
+独立コピー／所有権移動で代入し、自身への参照を返します。
 
-`position_of`・`get_id`は期待O(log N)、`contains_id`はO(1)です。挿入はノード配列の拡張を含めて償却期待O(log N)で、ID索引の拡張費用は別途かかります。`reverse`・`rotate`による並べ替えにも追従します。位置特定では親を根までたどり、祖先の遅延反転・作用を伝えてから左右関係を読みます。値の大小から位置を探す処理は使いません。
+**制約:** 追加の制約はありません。
 
-`get_by_id`・`set_by_id`・`erase_id`・`prod_between`は期待O(log N)、`erase_between`は期待O(削除数+log N)です。ABC421 Fのように端点を指定する問題では、位置を手動で並べ替えずに`erase_between(x,y).sum`で処理できます。
+**計算量:** コピーは新旧のP+Mに比例、move代入は旧状態の破棄を含め旧P+旧M+1の上界です。
 
-ID索引にはvectorを使うため、領域は保持ノード数に加えて、準備済みID枠数Mに比例します。`reserve_ids(n)`や新しい最大IDの挿入は、索引の追加枠の初期化と、再確保時の既存枠の移動を伴います。大きな飛び飛びのIDは利用側で圧縮してください。`reserve(n)`はノードだけを予約します。
+### identity
 
-削除したIDは再利用でき、ノードのスロット再利用でも以前のIDは復活しません。`clear`はID登録も消して容量を保持します。コピーは独立したID索引を持ち、O(ノード枠数+M)です。ムーブ・swapはID登録を列と共に移します。IDはそれぞれの木で管理し、コピー先とコピー元で同じIDを使えます。
+```text
+S identity() const;
+```
 
-`erase_prod`は期待O(削除数+log N)です。[ABC421 F - Erase between X and Y](https://atcoder.jp/contests/abc421/tasks/abc421_f)では値をIDとして使えます。各要素は一度しか削除されないため、全クエリで期待O(Q log Q)時間、O(Q)領域です。[提出形式の使用例](../Examples/implicit_treap_erase_between_example.cpp)では、IDから位置を求め、端点を除く区間を削除します。
+設定した単位元を返します。
 
-## 入力の前提と検証
+**制約:** 追加の制約はありません。
 
-添字は0始まり、区間は半開区間です。既定では添字・区間などを低コストで検査します。`erase(l,r)`の不正区間は検査有効時に何もしません。`SKIP_RUNTIME_CHECKS`を定義するとこれらの入力検査を除き、正しい添字・区間が前提になります。
+**計算量:** O(1)。
 
-`erase_prod`・`move_range`の不正区間や移動先、`get_id`の不正位置、空列の`front`・`back`、存在するIDが必要な操作への不存在IDは検査時に`out_of_range`、負の挿入ID・重複IDは`invalid_argument`です。`position_of`・`contains_id`・`erase_id`は検査省略時も不存在を-1・false・falseとして扱います。ID索引の内部容量保護は検査省略時も維持します。
+### size
 
-昇順用APIは列全体が昇順であること、境界探索は単位元で述語が真で区間伸長に単調であることが必要です。全列を走査してこれらの前提を検査することはしません。
+```text
+int size() const;
+```
 
-使用例は[implicit_treap_example.cpp](../Examples/implicit_treap_example.cpp)です。提出用コードは次の3本です。
+要素数を返します。
 
-- [Dynamic Sequence Range Affine Range Sum](../Verify/current/submissions/implicit_treap_affine.cpp)：挿入削除・区間反転・アフィン作用・和。
-- [Deque Operate All Composite](../Verify/current/submissions/implicit_treap_deque.cpp)：両端の追加削除・非可換な関数合成・全体集約。
-- [Erase between X and Y](../Verify/current/submissions/implicit_treap_erase_between.cpp)：IDによる位置特定・直後への挿入・区間和と削除。オンラインの判定状況はVerifyのmanifestで確認してください。
+**制約:** 追加の制約はありません。
 
-[独立補足試験](../Verify/current/tests/implicit_treap_boundary_test.cpp)では、順序に敏感な境界探索の両形式、作用合成・反転・回転、比較順と等値判定の差、端点削除後のスロット再利用などを照合します。例外・コピー時の容量再利用は専用試験で補います。測定と検査の記録は`Audit/`を参照してください。
+**計算量:** O(1)。
 
-[IDの独立補足試験](../Verify/current/tests/implicit_treap_ids_test.cpp)では、vector参照と位置・値を照合し、遅延作用・反転・回転、ID付きと匿名の混在、削除後の再利用、コピー・ムーブ・swapを確認します。
+### empty
 
-[ID索引の確保失敗試験](../Verify/current/tests/implicit_treap_ids_allocation_test.cpp)では、ノード容量を再利用するコピーと再確保するコピー、挿入時のID索引・ノードの確保失敗後に、要素とID登録が保持されることを確認します。
+```text
+bool empty() const;
+```
 
-[便利な操作の補足試験](../Verify/current/tests/implicit_treap_convenience_test.cpp)では、区間移動の全境界とvector参照、ID指定の操作、端点の前後・同一ID・隣接要素、非可換な集約を確認します。
+空ならtrueを返します。
 
-[分割と遅延反転の補足試験](../Verify/current/tests/implicit_treap_split_test.cpp)では、作用と反転を残したコピーに対し、空・全体・単一区間を含む全境界の挿入・削除・回転・移動をvector参照と照合します。
+**制約:** 追加の制約はありません。
+
+**計算量:** O(1)。
+
+### get
+
+```text
+S get(int i);
+```
+
+位置iの値を返します。
+
+**制約:** 0<=i<size()。
+
+**計算量:** 期待O(log(N+1))。木の高さの最悪はO(N)。
+
+### set
+
+```text
+void set(int i, S value);
+```
+
+位置iをvalueに置換します。
+
+**制約:** 0<=i<size()。
+
+**計算量:** 期待O(log(N+1))。木の高さの最悪はO(N)。
+
+### front
+
+```text
+S front();
+```
+
+先頭の値を返します。
+
+**制約:** 非空。
+
+**計算量:** 期待O(log(N+1))。木の高さの最悪はO(N)。
+
+### back
+
+```text
+S back();
+```
+
+末尾の値を返します。
+
+**制約:** 非空。
+
+**計算量:** 期待O(log(N+1))。木の高さの最悪はO(N)。
+
+### insert_at
+
+```text
+void insert_at(int pos, S value);
+```
+
+位置posの直前に挿入します。
+
+**制約:** 0<=pos<=size()。
+
+**計算量:** 償却期待O(log(N+1))、ノード再確保時O(P)。
+
+### push_front
+
+```text
+void push_front(S value);
+```
+
+先頭へ追加します。
+
+**制約:** 要素数の上限以下。
+
+**計算量:** 償却期待O(log(N+1))、ノード再確保時O(P)。
+
+### push_back
+
+```text
+void push_back(S value);
+```
+
+末尾へ追加します。
+
+**制約:** 要素数の上限以下。
+
+**計算量:** 償却期待O(log(N+1))、ノード再確保時O(P)。
+
+### erase_at
+
+```text
+void erase_at(int i);
+```
+
+位置iの要素を削除します。
+
+**制約:** 0<=i<size()。
+
+**計算量:** 期待O(log(N+1))。木の高さの最悪はO(N)。
+
+### pop_front
+
+```text
+void pop_front();
+```
+
+先頭を削除します。空なら無操作です。
+
+**制約:** 追加の制約はありません。
+
+**計算量:** 期待O(log(N+1))。木の高さの最悪はO(N)。
+
+### pop_back
+
+```text
+void pop_back();
+```
+
+末尾を削除します。空なら無操作です。
+
+**制約:** 追加の制約はありません。
+
+**計算量:** 期待O(log(N+1))。木の高さの最悪はO(N)。
+
+### erase
+
+```text
+void erase(int l, int r);
+```
+
+区間[l,r)を削除します。検査有効時の不正区間は無操作です。
+
+**制約:** 0<=l<=r<=size()。
+
+**計算量:** 削除数kに期待O(k+log(N+1))。
+
+### erase_prod
+
+```text
+S erase_prod(int l, int r);
+```
+
+区間の集約値を返して削除します。空区間は単位元です。
+
+**制約:** 0<=l<=r<=size()。
+
+**計算量:** 削除数kに期待O(k+log(N+1))。
+
+### prod
+
+```text
+S prod(int l, int r);
+```
+
+順序を保った区間集約を返します。空区間は単位元です。
+
+**制約:** 0<=l<=r<=size()。
+
+**計算量:** 期待O(log(N+1))。木の高さの最悪はO(N)。
+
+### all_prod
+
+```text
+S all_prod() const;
+```
+
+全体の集約を返し、空なら単位元です。
+
+**制約:** 追加の制約はありません。
+
+**計算量:** O(1)。
+
+### apply
+
+```text
+void apply(int l, int r, F f);
+```
+
+区間へ作用fを適用します。空区間は無操作です。
+
+**制約:** 0<=l<=r<=size()。
+
+**計算量:** 期待O(log(N+1))。木の高さの最悪はO(N)。
+
+### reverse
+
+```text
+void reverse(int l, int r);
+```
+
+区間を反転します。
+
+**制約:** 0<=l<=r<=size()。
+
+**計算量:** 期待O(log(N+1))、全体反転はO(1)。
+
+### rotate
+
+```text
+void rotate(int l, int m, int r);
+```
+
+[l,m)と[m,r)の順序を入れ替えます。
+
+**制約:** 0<=l<=m<=r<=size()。
+
+**計算量:** 期待O(log(N+1))。木の高さの最悪はO(N)。
+
+### move_range
+
+```text
+void move_range(int l, int r, int pos);
+```
+
+[l,r)を移動前の隙間posの直前へ移します。l<=pos<=rや空区間は無操作です。
+
+**制約:** 0<=l<=r<=size()。 0<=pos<=size()。
+
+**計算量:** 期待O(log(N+1))。木の高さの最悪はO(N)。
+
+### to_vector
+
+```text
+std::vector<S> to_vector();
+```
+
+現在の列をコピーして返します。
+
+**制約:** Sのコピーが可能。
+
+**計算量:** O(N)時間・領域。
+
+### lower_bound
+
+```text
+int lower_bound(S value);
+```
+
+value以上の最初の添字。なければNを返します。
+
+**制約:** 列全体がoperator<による昇順。
+
+**計算量:** 期待O(log(N+1))。木の高さの最悪はO(N)。
+
+### upper_bound
+
+```text
+int upper_bound(S value);
+```
+
+valueより大きい最初の添字。なければNを返します。
+
+**制約:** 列全体がoperator<による昇順。
+
+**計算量:** 期待O(log(N+1))。木の高さの最悪はO(N)。
+
+### get_rank
+
+```text
+int get_rank(S value);
+```
+
+valueより小さい要素数を返します。
+
+**制約:** 列全体がoperator<による昇順。
+
+**計算量:** 期待O(log(N+1))。木の高さの最悪はO(N)。
+
+### count
+
+```text
+int count(S value);
+```
+
+valueと<で等価な要素数を返します。
+
+**制約:** 列全体がoperator<による昇順。
+
+**計算量:** 期待O(log(N+1))。木の高さの最悪はO(N)。
+
+### contains
+
+```text
+bool contains(S value);
+```
+
+一致する要素が存在するか。==があれば使い、なければ<で同値判定を返します。
+
+**制約:** 列全体がoperator<による昇順。
+
+**計算量:** 期待O(log(N+1))。木の高さの最悪はO(N)。
+
+### insert_sorted
+
+```text
+void insert_sorted(S value);
+```
+
+昇順を保って値を挿入します。
+
+**制約:** 列全体がoperator<による昇順。
+
+**計算量:** 償却期待O(log(N+1))、ノード再確保時O(P)。
+
+### erase_val
+
+```text
+void erase_val(S value);
+```
+
+containsと同じ判定で一致する要素を1個削除します。なければ無操作です。
+
+**制約:** 列全体がoperator<による昇順。
+
+**計算量:** 期待O(log(N+1))。木の高さの最悪はO(N)。
+
+### erase_max
+
+```text
+void erase_max();
+```
+
+最大値を1個削除します。空なら無操作です。
+
+**制約:** 列全体がoperator<による昇順。
+
+**計算量:** 期待O(log(N+1))。木の高さの最悪はO(N)。
+
+### max_right
+
+```text
+template<class G> int max_right(int l, G g);
+template<bool (*g)(S)> int max_right(int l);
+```
+
+g(prod(l,r))が真となる最大の右端rを返します。
+
+**制約:** 0<=l<=size()、g(identity())が真で、区間伸長に対し単調であること。
+
+**計算量:** 期待O(log(N+1))。木の高さの最悪はO(N)。
+
+### min_left
+
+```text
+template<class G> int min_left(int r, G g);
+template<bool (*g)(S)> int min_left(int r);
+```
+
+g(prod(l,r))が真となる最小の左端lを返します。
+
+**制約:** 0<=r<=size()、g(identity())が真で、区間伸長に対し単調であること。
+
+**計算量:** 期待O(log(N+1))。木の高さの最悪はO(N)。
+
+### reserve
+
+```text
+void reserve(std::size_t n);
+```
+
+ノード容量を予約します。
+
+**制約:** n<=INT_MAX、内部容量の上限以下。
+
+**計算量:** 再確保時O(P)、足りていればO(1)。
+
+### clear
+
+```text
+void clear();
+```
+
+全要素とID登録を消し、確保済み容量を保持します。
+
+**制約:** 追加の制約はありません。
+
+**計算量:** O(P+M)。
+
+### swap
+
+```text
+void swap(lazy_implicit_treap& other) noexcept;
+void swap(lazy_implicit_treap& a, lazy_implicit_treap& b) noexcept;
+```
+
+列・単位元・ID索引の所有権を交換します。
+
+**制約:** 追加の制約はありません。
+
+**計算量:** O(1)。
+
+
+添字は0始まり、区間は半開区間です。昇順用操作は列全体が`operator<`で昇順、境界探索は`g(identity())`が真で、区間を伸ばすと単調であることが前提です。これらを確認する全列走査はしません。`contains`・`erase_val`は`==`があればそれを使い、なければ`<`による同値を使います。
+
+既定の`RangeAddMin`はint64_tの区間加算・最小値で、単位元は2^60です。`t(1000)`や`t(values,1000)`の丸括弧で変更します。従来の`t({7})`は1要素、`t{{}}`は空列です。空列は`t{}`と書くと明確です（`t({})`は従来から曖昧）。各要素と加算後の値は単位元以下にします。`RangeAddSum`は`S{sum,size}`の加算・和で、各要素に`size=1`を持たせます。全演算が型の範囲に収まることが前提です。
+
+```cpp
+using namespace sirkit;
+lazy_implicit_treap<> a(std::vector<std::int64_t>{10, 20, 30}, 1000000);
+a.insert_at(1, 5);           // [10,5,20,30]
+a.apply(0, 2, 3);            // [13,8,20,30]
+auto minimum = a.prod(0, 4); // 8
+// 空区間では設定した1000000を返す。
+a.move_range(1, 3, 4);       // [13,30,8,20]
+```
+
+## ID付き操作
+
+`indexed_implicit_treap`は先頭8テンプレート引数を共有し、`TrackIds=true`にする別名です。IDは非負intで、生存要素間で一意とします。通常の挿入・vector構築はIDなしです。領域はO(P+M)で、大きく飛び飛びのIDは利用側で圧縮してください。
+
+### insert_at_with_id
+
+```text
+void insert_at_with_id(int pos, int id, S value);
+```
+
+位置posの直前へID付き要素を追加します。
+
+**制約:** TrackIds=true、0<=pos<=size()。idは非負で未使用。
+
+**計算量:** 償却期待O(log(N+1))、ノード再確保時O(P)。 ID索引の拡張費用は別。
+
+### insert_after
+
+```text
+void insert_after(int id, int new_id, S value);
+```
+
+既存idの直後へ追加します。
+
+**制約:** TrackIds=true、idは存在しnew_idは非負で未使用。
+
+**計算量:** 償却期待O(log(N+1))、ノード再確保時O(P)。 ID索引の拡張費用は別。
+
+### insert_before
+
+```text
+void insert_before(int id, int new_id, S value);
+```
+
+既存idの直前へ追加します。
+
+**制約:** TrackIds=true、idは存在しnew_idは非負で未使用。
+
+**計算量:** 償却期待O(log(N+1))、ノード再確保時O(P)。 ID索引の拡張費用は別。
+
+### contains_id
+
+```text
+bool contains_id(int id) const;
+```
+
+そのIDが生存中ならtrueです。
+
+**制約:** TrackIds=true。
+
+**計算量:** O(1)。
+
+### position_of
+
+```text
+int position_of(int id);
+```
+
+現在の添字を返し、未登録なら-1です。
+
+**制約:** TrackIds=true。
+
+**計算量:** 期待O(log(N+1))。木の高さの最悪はO(N)。
+
+### get_id
+
+```text
+int get_id(int pos);
+```
+
+その位置のIDを返し、IDなし要素なら-1です。
+
+**制約:** TrackIds=true、0<=pos<size()。
+
+**計算量:** 期待O(log(N+1))。木の高さの最悪はO(N)。
+
+### get_by_id
+
+```text
+S get_by_id(int id);
+```
+
+IDに対応する値を返します。
+
+**制約:** TrackIds=true、idが存在すること。
+
+**計算量:** 期待O(log(N+1))。木の高さの最悪はO(N)。
+
+### set_by_id
+
+```text
+void set_by_id(int id, S value);
+```
+
+IDに対応する値を置換します。
+
+**制約:** TrackIds=true、idが存在すること。
+
+**計算量:** 期待O(log(N+1))。木の高さの最悪はO(N)。
+
+### erase_id
+
+```text
+bool erase_id(int id);
+```
+
+存在すれば削除してtrue、なければfalseです。
+
+**制約:** TrackIds=true。
+
+**計算量:** 期待O(log(N+1))。木の高さの最悪はO(N)。
+
+### prod_between
+
+```text
+S prod_between(int first_id, int second_id);
+```
+
+両IDの要素を除く間を列順に集約します。端点IDの渡す順は任意です。
+
+**制約:** TrackIds=true、両IDが存在すること。
+
+**計算量:** 期待O(log(N+1))。木の高さの最悪はO(N)。
+
+### erase_between
+
+```text
+S erase_between(int first_id, int second_id);
+```
+
+両IDを除く間の集約を返して削除します。端点は残します。
+
+**制約:** TrackIds=true、両IDが存在すること。
+
+**計算量:** 削除数kに期待O(k+log(N+1))。
+
+### reserve_ids
+
+```text
+void reserve_ids(std::size_t n);
+```
+
+ID索引をn枠まで確保します。
+
+**制約:** TrackIds=true、n<=INT_MAX+1。
+
+**計算量:** 追加枠数に比例。再確保時は旧Mも含むO(M+n)上界。
+
+
+端点IDは逆順でも渡せ、同じID・隣接IDの間は単位元です。set・作用・並べ替えはIDを保持し、削除したIDは再利用できます。[ID付き使用例](../Examples/implicit_treap_erase_between_example.cpp)では挿入と区間和・削除を示しています。
+
+コピーは独立した列・ID索引を所有し、代入失敗時は元の列を保ちます。指定した単位元は不変値として保持し、コピー・move・clear後も設定を保ちます。move元は空列として再利用できます。ノードの空き枠は再利用し、clearも確保済み容量を保持します。
+
+既定では添字・区間・必要なIDを低コストで検査します。`erase(l,r)`の不正区間は無操作、他の不正位置・空のfront/back・不存在IDへの参照は例外です。負の挿入ID・重複IDは拒否します。`SKIP_RUNTIME_CHECKS`時は有効な入力が前提ですが、不在へのposition_of/contains_id/erase_idの戻り値と容量保護は維持します。
+
+`erase_prod`は集約値の取得に失敗した場合、削除を行いません。

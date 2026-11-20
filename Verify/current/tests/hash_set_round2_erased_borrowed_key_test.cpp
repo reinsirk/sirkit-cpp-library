@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 // eraseしたキーの参照元を解放後、衝突するキーを追加して独立した集合と照合する。
 #ifndef HEADER
 #define HEADER "../../../DataStructure/Hash_set.cpp"

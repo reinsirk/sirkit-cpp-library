@@ -18,7 +18,10 @@
 // replace_top(value): 最小値を置換して旧値を返す、O(log N)。空の扱いは pop_value() と同じ。
 // push_pop(value): 値を追加した後の最小値を返して削除、O(log N)、空なら value を返す。
 // clear(): 全要素を削除、容量を保持。reserve(n): n 要素分の容量を確保、再確保時 O(N)。
+// SIRKIT_HEAP_FORCE_QUATERNARY: 2子の根と4子の内部節点を使う経路を明示的に選ぶ。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <cstddef>
 #include <functional>
@@ -28,13 +31,17 @@
 #include <utility>
 #include <vector>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_HEAP_DEFINED
 #define SIRKIT_HEAP_DEFINED
 
 class Heap {
     std::vector<int> values_;
 
-#if defined(__GNUC__) && !defined(__clang__) && !defined(__AVX2__) && (defined(__x86_64__) || defined(__i386__))
+#if defined(SIRKIT_HEAP_FORCE_QUATERNARY) || \
+    (defined(__GNUC__) && !defined(__clang__) && !defined(__AVX2__) && (defined(__x86_64__) || defined(__i386__)))
     static constexpr bool quaternary_ = true;
 #else
     static constexpr bool quaternary_ = false;
@@ -200,6 +207,13 @@ public:
 
 #endif
 
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
+
+
+namespace sirkit {}
+using namespace sirkit;
 
 // SPDX-License-Identifier: CC0-1.0
 // Verify I/O: Verify/current/common/fast_io.hpp

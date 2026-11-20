@@ -6,6 +6,7 @@
 // SPDX-License-Identifier: CC0-1.0
 // 生成版: GCC用。
 // 生成元: Graph/Max_Flow.cpp
+// 数学的参考（push-relabel）: https://doi.org/10.1145/48014.61051
 // 参考（最大流の理論・ACLのAPI）: https://atcoder.github.io/ac-library/production/document_ja/maxflow.html
 // ドキュメント: https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/max_flow.md
 //
@@ -14,7 +15,7 @@
 // ACLと同名・同じ呼び出し形式。自己辺・多重辺・逆向きの元辺を追加できる。
 // add_edge(from,to,cap): 非負容量の元辺を追加し、追加順のint番号を返す。償却O(1)。
 // edgeは{int from,to;Cap cap,flow;}。get_edge(int id)/edges(): 元辺のコピー/追加順の一覧。O(1)/O(m)。
-// flow(s,t)/flow(s,t,flow_limit): 型の最大値/非負の指定上限まで追加で流し、追加量を返す。O(n²m)、作業領域O(n)。
+// flow(s,t)/flow(s,t,flow_limit): 型の最大値/非負の指定上限まで追加で流し、追加量を返す。O(n+n²m)、作業領域O(n)。
 // 同じ始点・終点で継続可能。総量がCap上限を越す場合は分けて呼び、累積値を十分広い型で保持する。
 // min_cut(s): 残余グラフでsから到達可能な頂点のbool配列。O(n+m)時間・O(n)領域。最後まで流した後は最小カット。
 // get_edge/edges/min_cutはACL形式の非const版に加えて、constオブジェクトからも同名で呼べる。
@@ -23,18 +24,41 @@
 // コピー構築/代入: 残余を独立所有しO(n+m)。移動構築はO(1)、移動元は空。代入は自身への参照を返す。
 // reset(n=0): O(n+旧領域の破棄)で空のn頂点へ戻す。swap(other)はO(1)。代入にも旧領域の破棄費用が加わる。
 // ACLのs!=tという制約外では、s==tを追加仕様として0にする。flow_limit==0も0。
-// 反復Dinic法で深い経路も再帰しない。入力検査はSKIP_RUNTIME_CHECKSで除くが、内部添字上限は維持。
+// 反復Dinic法とFIFO push-relabelを切り替える。上限1は経路1本をBFSで探し、O(n+m)。
+// 深い経路も再帰しない。入力検査はSKIP_RUNTIME_CHECKSで除くが、内部添字上限は維持。
 // get/changeのidは[0,edge_count())。辺数はINT_MAX以下。継続flowで異なる端点を使う場合も流量保存が前提。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
 #include <limits>
+#include <new>
 #include <stdexcept>
 #include <type_traits>
 #include <utility>
 #include <vector>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+#ifndef SIRKIT_MAX_FLOW_CAPACITY_DEFINED
+#define SIRKIT_MAX_FLOW_CAPACITY_DEFINED
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
+inline void CheckMaxFlowAppendCapacity(std::size_t edges, std::size_t from_degree,
+                                       std::size_t to_degree, bool loop) {
+    constexpr auto maximum = static_cast<std::size_t>(std::numeric_limits<int>::max());
+    if (edges >= maximum) throw std::length_error("mf_graph: too many edges");
+    if (from_degree >= maximum || to_degree >= maximum || (loop && from_degree >= maximum - 1))
+        throw std::length_error("mf_graph: too many incident edges");
+}
+
+constexpr bool MaxFlowCanUsePreflow(std::size_t vertices) noexcept {
+    return vertices < static_cast<std::size_t>(std::numeric_limits<int>::max());
+}
+}
+#endif
 #ifndef SIRKIT_MAX_FLOW_DEFINED
 #define SIRKIT_MAX_FLOW_DEFINED
 
@@ -77,11 +101,11 @@ private:
                 queue_[end++] = edge.to;
             }
         }
-        return level_[sink] != -1;
+        return false;
     }
     Cap blocking_flow(int source, int sink, Cap limit) {
         frames_.clear(); frames_.push_back({source, limit, 0});
-        while (!frames_.empty()) {
+        for (;;) {
             auto& frame = frames_.back(); const int v = frame.vertex;
             if (v != sink && frame.sent != frame.limit) {
                 auto& cursor = next_[v];
@@ -105,7 +129,146 @@ private:
             parent.sent += sent;
             if (edge.residual == 0 || level_[edge.to] == -1) ++next_[parent.vertex];
         }
-        return 0;
+    }
+    Cap unit_flow(int source, int sink) {
+        std::fill(level_.begin(), level_.end(), -1);
+        int front = 0, tail = 0;
+        queue_[tail++] = source;
+        level_[source] = source;
+        while (front != tail) {
+            const int v = queue_[front++];
+            for (int index = 0; index != static_cast<int>(graph_[v].size()); ++index) {
+                const auto& edge = graph_[v][index];
+                const int u = edge.to;
+                if (edge.residual == 0 || level_[u] != -1) continue;
+                level_[u] = v;
+                next_[u] = index;
+                if (u == sink) {
+                    for (int to = sink; to != source; to = level_[to]) {
+                        auto& arc = graph_[level_[to]][next_[to]];
+                        --arc.residual;
+                        ++graph_[to][arc.reverse].residual;
+                    }
+                    return Cap{1};
+                }
+                queue_[tail++] = u;
+            }
+        }
+        return Cap{0};
+    }
+    Cap preflow(int source, int sink, Cap limit) {
+        const std::size_t n = graph_.size();
+        const std::uint32_t virtual_height = static_cast<std::uint32_t>(n + 1);
+        constexpr std::uint32_t unseen = std::numeric_limits<std::uint32_t>::max();
+        // 確保失敗時は、残余を変更する前に退出する。
+        std::vector<std::uint32_t> height(n);
+        std::vector<Cap> excess(n, Cap{0});
+        std::vector<int> cursor(n, 0), fifo(n);
+        std::vector<unsigned char> active(n, 0);
+        std::size_t front = 0, back = 0, count = 0;
+        auto enqueue = [&](int v) {
+            if (v == sink || active[v] || excess[v] == 0) return;
+            active[v] = 1;
+            fifo[back] = v;
+            if (++back == n) back = 0;
+            ++count;
+        };
+        auto relabel_all = [&] {
+            // activeは再構築中だけBFSの訪問印として使う。
+            std::fill(active.begin(), active.end(), 0);
+            auto assign_height = [&](int v, std::uint32_t value) {
+                if (height[v] != value) cursor[v] = 0;
+                height[v] = value;
+                active[v] = 1;
+            };
+            int head = 0, tail = 0;
+            queue_[tail++] = sink;
+            assign_height(sink, 0);
+            while (head != tail) {
+                const int v = queue_[head++];
+                for (const auto& edge : graph_[v]) {
+                    const int u = edge.to;
+                    if (!active[u] && graph_[u][edge.reverse].residual != 0) {
+                        assign_height(u, height[v] + 1);
+                        queue_[tail++] = u;
+                    }
+                }
+            }
+            // tへ届かない余剰も、s経由で仮想始点へ戻して流量保存を回復する。
+            if (!active[source]) {
+                head = tail = 0;
+                assign_height(source, virtual_height + 1);
+                queue_[tail++] = source;
+                while (head != tail) {
+                    const int v = queue_[head++];
+                    for (const auto& edge : graph_[v]) {
+                        const int u = edge.to;
+                        if (!active[u] && graph_[u][edge.reverse].residual != 0) {
+                            assign_height(u, height[v] + 1);
+                            queue_[tail++] = u;
+                        }
+                    }
+                }
+            }
+            for (std::size_t v = 0; v < n; ++v) {
+                if (!active[v] && height[v] != unseen) {
+                    height[v] = unseen;
+                    cursor[v] = 0;
+                }
+                active[v] = 0;
+            }
+            front = back = count = 0;
+            for (int v = 0; v < static_cast<int>(n); ++v) enqueue(v);
+        };
+        excess[source] = limit;
+        relabel_all();
+        std::uint64_t work = 0;
+        const std::uint64_t budget = static_cast<std::uint64_t>(positions_.size()) + n;
+        while (count != 0) {
+            const int v = fifo[front];
+            if (++front == n) front = 0;
+            --count;
+            active[v] = 0;
+            for (;;) {
+                if (v == source && height[v] >= virtual_height + 1) {
+                    // 容量limitの暗黙の逆辺で、未使用予算を返す。
+                    excess[v] = 0;
+                    break;
+                }
+                const int degree = static_cast<int>(graph_[v].size());
+                int& index = cursor[v];
+                while (index != degree) {
+                    auto& edge = graph_[v][index];
+                    ++work;
+                    if (edge.residual != 0 && height[edge.to] != unseen &&
+                        height[v] == height[edge.to] + 1) {
+                        const Cap amount = std::min(excess[v], edge.residual);
+                        edge.residual -= amount;
+                        graph_[edge.to][edge.reverse].residual += amount;
+                        excess[v] -= amount;
+                        excess[edge.to] += amount;
+                        enqueue(edge.to);
+                        if (excess[v] == 0) break;
+                    }
+                    ++index;
+                }
+                if (excess[v] == 0) break;
+                std::uint32_t best = v == source ? virtual_height : unseen;
+                for (const auto& edge : graph_[v]) {
+                    if (edge.residual != 0) best = std::min(best, height[edge.to]);
+                }
+                work += graph_[v].size();
+                // 正の余剰には、流した経路の逆辺で仮想始点へ戻る経路が必ずある。
+                height[v] = best + 1;
+                index = 0;
+                if (work >= budget) break;
+            }
+            if (work >= budget) {
+                relabel_all();
+                work = 0;
+            }
+        }
+        return excess[sink];
     }
 public:
     mf_graph() = default;
@@ -129,10 +292,8 @@ public:
 #ifndef SKIP_RUNTIME_CHECKS
         vertex(from); vertex(to); nonnegative(capacity);
 #endif
-        constexpr auto maximum = static_cast<std::size_t>(std::numeric_limits<int>::max());
-        if (positions_.size() >= maximum) throw std::length_error("mf_graph: too many edges");
-        if (graph_[from].size() >= maximum || graph_[to].size() >= maximum ||
-            (from == to && graph_[from].size() >= maximum - 1)) throw std::length_error("mf_graph: too many incident edges");
+        /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::CheckMaxFlowAppendCapacity(
+            positions_.size(), graph_[from].size(), graph_[to].size(), from == to);
         const int forward = static_cast<int>(graph_[from].size());
         const int backward = static_cast<int>(graph_[to].size()) + static_cast<int>(from == to);
         graph_[from].push_back({to, backward, capacity});
@@ -171,11 +332,20 @@ public:
         vertex(source); vertex(sink); nonnegative(limit);
 #endif
         if (source == sink || limit == 0) return 0;
+        if (limit == Cap{1}) return unit_flow(source, sink);
         frames_.reserve(graph_.size());
         Cap result = 0;
+        int phases = 0;
+        // 最大頂点数では高さの上限と未発見印が同じ値になるため、Dinicを続ける。
+        bool allow_preflow = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::MaxFlowCanUsePreflow(graph_.size());
         while (result != limit && levels(source, sink)) {
+            if (allow_preflow && phases >= 4) {
+                try { return result + preflow(source, sink, static_cast<Cap>(limit - result)); }
+                catch (const std::bad_alloc&) { allow_preflow = false; }
+            }
             std::fill(next_.begin(), next_.end(), 0);
-            result += blocking_flow(source, sink, limit - result);
+            result += blocking_flow(source, sink, static_cast<Cap>(limit - result));
+            ++phases;
         }
         return result;
     }
@@ -197,6 +367,13 @@ public:
 };
 #endif
 
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
+
+
+namespace sirkit {}
+using namespace sirkit;
 
 // SPDX-License-Identifier: CC0-1.0
 // Verify I/O: Verify/current/common/fast_io.hpp

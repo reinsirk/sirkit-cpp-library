@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #ifndef FAST_NODE_SOURCE
 #define FAST_NODE_SOURCE "../../../Fast/GCC/DataStructure/Node.cpp"
 #endif

@@ -24,6 +24,8 @@
 // 入力byte検査はSKIP_RUNTIME_CHECKSで除く。照会の不一致判定と、int32_t状態番号/長さ・容量の保護は常に維持。
 // キャッシュ構築の確保失敗は文字列・オートマトンを保つ。同じ個体への並行したキャッシュ照会は外部で同期する。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <algorithm>
 #include <array>
 #include <cstddef>
@@ -34,6 +36,23 @@
 #include <utility>
 #include <vector>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+#ifndef SIRKIT_STRING_TREE_CAPACITY_DEFINED
+#define SIRKIT_STRING_TREE_CAPACITY_DEFINED
+namespace detail {
+inline std::size_t StringTreeGrowth(std::size_t capacity, std::size_t required, std::size_t limit) {
+    return std::max(required, capacity > limit / 2 ? limit : capacity * 2);
+}
+
+inline void CheckStringTreeSlots(std::size_t count, std::size_t available, std::size_t roots,
+                                 std::size_t nodes_per_char, const char* error) {
+    if (count > (available - std::min(roots, available)) / nodes_per_char)
+        throw std::length_error(error);
+}
+}
+#endif
 #ifndef SIRKIT_SUFFIX_AUTOMATON_DEFINED
 #define SIRKIT_SUFFIX_AUTOMATON_DEFINED
 template<std::size_t Alphabet=26,std::uint16_t Base='a'>
@@ -58,10 +77,9 @@ class SuffixAutomaton {
         if(count>index_limit-length_)throw std::length_error("SuffixAutomaton: length");
         const auto limit=std::min(index_limit,states_.max_size());
         const std::size_t root=states_.empty()?1:0;
-        if(states_.size()>limit || root>limit-states_.size() || count>(limit-states_.size()-root)/2)
-            throw std::length_error("SuffixAutomaton: states");
+        detail::CheckStringTreeSlots(count, limit - states_.size(), root, 2, "SuffixAutomaton: states");
         const auto required=states_.size()+root+2*count;
-        if(states_.capacity()<required){const auto capacity=states_.capacity();states_.reserve(std::max(required,capacity>limit/2?limit:capacity*2));}
+        if(states_.capacity()<required) states_.reserve(detail::StringTreeGrowth(states_.capacity(), required, limit));
     }
     static void check_byte(std::uint8_t byte) {
 #ifndef SKIP_RUNTIME_CHECKS
@@ -149,6 +167,13 @@ public:
 };
 #endif
 
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
+
+
+namespace sirkit {}
+using namespace sirkit;
 
 // SPDX-License-Identifier: CC0-1.0
 // Verify I/O: Verify/current/common/fast_io.hpp

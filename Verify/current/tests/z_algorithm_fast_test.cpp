@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 // 大きなZ配列と検索補助を、接尾辞配列/LCPの独立参照と照合する。
 #ifndef Z_HEADER
 #define Z_HEADER "../../../String/Z_Algorithm.cpp"

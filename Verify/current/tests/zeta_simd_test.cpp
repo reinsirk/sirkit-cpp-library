@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #ifndef ZETA_SOURCE
 #define ZETA_SOURCE "../../../Math/Zeta/Bitwise_Convolution.cpp"
 #endif

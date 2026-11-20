@@ -42,6 +42,11 @@ HEADERS: dict[str, tuple[str, ...]] = {
 }
 
 
+try:
+    from public_namespace import wrap_source, unwrap_source
+except ModuleNotFoundError:
+    from Scripts.public_namespace import wrap_source, unwrap_source
+
 def dependency_order(roots: tuple[str, ...]) -> list[str]:
     order: list[str] = []
     complete: set[str] = set()
@@ -116,6 +121,7 @@ def main() -> int:
                                if line.removeprefix("#include <").removesuffix(">") in needed_headers)
             content += "\n" + "".join(pieces[part] for part in order)
             content = render_api_overview(content, ("Document/zeta_mobius.md",))
+            content = wrap_source(content)
             target = options.output_dir / relative
             if options.check:
                 if not target.is_file() or target.read_bytes() != content.encode("utf-8"):

@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #ifndef SIRKIT_LC1D_SOURCE
 #define SIRKIT_LC1D_SOURCE "../../../DataStructure/line-container.cpp"
 #endif

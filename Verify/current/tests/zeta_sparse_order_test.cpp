@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 // 連続キー経路の更新順と、各算術例外点での部分状態を逐次処理と照合する。
 #include <algorithm>
 #include <cstddef>

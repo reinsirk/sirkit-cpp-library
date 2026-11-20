@@ -13,8 +13,8 @@
 //
 // API一覧
 // 速度優先版: GCCでは最後の主要配列の破棄・解放を省き、成長時はvectorとして旧領域を回収する。
-// Clangでは従来のFastBufferを使い、成長中の旧領域も保持する。最後の領域はプロセス終了まで累積する。
-// 格納型の破棄の副作用を必要としないこと。
+// Clang・MSVCではFastBufferを使い、成長中の旧領域も保持する。共通版は処理系に応じて選ぶ。
+// 解放を省く領域はプロセス終了まで残る。格納型の破棄の副作用を必要としないこと。
 // 入力・容量・件数の前提と確保成功を利用側が保証する。例外時の状態復元は保証しない。
 // AhoCorasick<Alphabet=26,First='a'>: 符号なしバイトFirst..First+Alphabet-1を扱う。Alphabetは1..256。
 // ByteAhoCorasick: 全バイト版AhoCorasick<256,0>。各状態にAlphabet本の遷移を保持する。
@@ -26,12 +26,15 @@
 // count_total(text): 重なり・重複込みの総一致数。空語は全境界に一致。O(text長)、uint64_t上限超過は例外。
 // match_counts(text): 各IDの一致数。O(text長+状態数+語数)時間・O(状態数+語数)領域。
 // for_each_match(text,callback): callback(id,begin,end)へ半開区間を通知。O(text長+一致数)。callbackから構造を変更しないこと。
-// find_all(text): AhoMatch{pattern,begin,end}のvectorを返す。終了位置の昇順、同位置内のID順は保証しない。
+// find_all(text): AhoMatch{pattern,begin,end}のvectorを返す。一致数RとしてO(text長+R)時間・O(R)返却領域。
+// 終了位置の昇順、同位置内のID順は保証しない。
 // size()/empty()/state_count(): 語数/語が空か/rootを含む状態数。pattern_length(id)/pattern_state(id): 語長/終端状態。
 // reserve_nodes(n)/reserve_patterns(n): 確保枠を予約。node_capacity(): 状態の確保枠。swap(other): O(1)で交換。
 // 検索・step・failure・output_countにはbuild済みが必要。text/語は指定アルファベット内。検査は通常処理へ統合。
 // 各ID・状態はint。枠の上限は検査省略時も確認。addの失敗時は未登録の接頭ノードが残る場合がある。
 
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
 #include <concepts>
 #include <cstddef>
 #include <initializer_list>
@@ -40,9 +43,12 @@
 #include <utility>
 #include <vector>
 
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 #ifndef SIRKIT_UNRELEASED_VECTOR_DEFINED
 #define SIRKIT_UNRELEASED_VECTOR_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 template<class T>
 class UnreleasedVector {
     union {std::vector<T> values_;};
@@ -125,23 +131,77 @@ public:
 
 #ifndef SIRKIT_AHO_FAST_STORAGE_DEFINED
 #define SIRKIT_AHO_FAST_STORAGE_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 template<class T>using AhoStorage=UnreleasedVector<T>;
 }
 #endif
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <algorithm>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <array>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <cstddef>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <cstdint>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <limits>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <stdexcept>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <string_view>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <utility>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
 #include <vector>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
 
 #ifndef SIRKIT_AHO_CORASICK_DETAIL_DEFINED
 #define SIRKIT_AHO_CORASICK_DETAIL_DEFINED
-namespace reinsirk::detail {
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 template <std::size_t Alphabet>
 struct AhoNode {
     std::array<int, Alphabet> next;
@@ -154,6 +214,19 @@ struct AhoPattern {
     std::size_t length;
     int next;
 };
+inline void CheckAhoIndexLimit(std::size_t size, const char* message) {
+    if (size >= static_cast<std::size_t>(std::numeric_limits<int>::max()))
+        throw std::length_error(message);
+}
+inline std::uint64_t AddAhoMatchCount(std::uint64_t total, std::uint64_t additional) {
+    if (total > std::numeric_limits<std::uint64_t>::max() - additional)
+        throw std::overflow_error("AhoCorasick: match count overflow");
+    return total + additional;
+}
+inline void CheckAhoCountTextSize(std::size_t size) {
+    if (size >= std::numeric_limits<std::uint64_t>::max())
+        throw std::length_error("AhoCorasick: text too long");
+}
 }
 #endif
 
@@ -162,7 +235,9 @@ struct AhoPattern {
 struct AhoMatch {
     int pattern;
     std::size_t begin, end;
-    friend bool operator==(const AhoMatch&, const AhoMatch&) = default;
+    friend constexpr bool operator==(const AhoMatch& a, const AhoMatch& b) noexcept {
+        return a.pattern == b.pattern && a.begin == b.begin && a.end == b.end;
+    }
 };
 #endif
 
@@ -172,9 +247,9 @@ template <std::size_t Alphabet = 26, unsigned First = 'a'>
 class AhoCorasick {
     static_assert(Alphabet > 0 && Alphabet <= 256 && First <= 256 - Alphabet,
                   "AhoCorasick alphabet must fit unsigned bytes");
-    reinsirk::detail::AhoStorage<reinsirk::detail::AhoNode<Alphabet>> nodes_;
-    reinsirk::detail::AhoStorage<reinsirk::detail::AhoPattern> patterns_;
-    reinsirk::detail::AhoStorage<int> order_;
+    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::AhoStorage</*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::AhoNode<Alphabet>> nodes_;
+    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::AhoStorage</*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::AhoPattern> patterns_;
+    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::AhoStorage<int> order_;
     bool built_ = false;
     static std::size_t letter(unsigned char c) {
         return static_cast<unsigned>(c) - First;
@@ -224,16 +299,14 @@ public:
         check_state(state); return nodes_[state].parent;
     }
     int add(std::string_view pattern) {
-        if (patterns_.size() >= static_cast<std::size_t>(std::numeric_limits<int>::max()))
-            throw std::length_error("AhoCorasick: too many patterns");
+        detail::CheckAhoIndexLimit(patterns_.size(), "AhoCorasick: too many patterns");
         if (nodes_.empty()) nodes_.emplace_back();
         int state = 0;
         for (unsigned char c : pattern) {
             const auto symbol = letter(c);
             int next = nodes_[state].next[symbol];
             if (next == -1) {
-                if (nodes_.size() >= static_cast<std::size_t>(std::numeric_limits<int>::max()))
-                    throw std::length_error("AhoCorasick: too many states");
+                detail::CheckAhoIndexLimit(nodes_.size(), "AhoCorasick: too many states");
                 next = static_cast<int>(nodes_.size());
                 nodes_.emplace_back();
                 nodes_[next].parent = state;
@@ -249,7 +322,7 @@ public:
     void build() {
         if (built_) return;
         if (nodes_.empty()) nodes_.emplace_back();
-        reinsirk::detail::AhoStorage<int> order; order.reserve(nodes_.size()); order.push_back(0);
+        /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::AhoStorage<int> order; order.reserve(nodes_.size()); order.push_back(0);
         nodes_[0].outputs = nodes_[0].terminal;
         for (std::size_t symbol = 0; symbol < Alphabet; ++symbol) {
             auto& next = nodes_[0].next[symbol];
@@ -287,16 +360,13 @@ public:
         int state = 0; auto total = nodes_[0].terminal;
         for (unsigned char c : text) {
             state = nodes_[state].next[letter(c)];
-            if (total > std::numeric_limits<std::uint64_t>::max() - nodes_[state].outputs)
-                throw std::overflow_error("AhoCorasick: match count overflow");
-            total += nodes_[state].outputs;
+            total = detail::AddAhoMatchCount(total, nodes_[state].outputs);
         }
         return total;
     }
     std::vector<std::uint64_t> match_counts(std::string_view text) const {
         require_built();
-        if (text.size() >= std::numeric_limits<std::uint64_t>::max())
-            throw std::length_error("AhoCorasick: text too long");
+        detail::CheckAhoCountTextSize(text.size());
         std::vector<std::uint64_t> visits(nodes_.size()); visits[0] = 1;
         int state = 0;
         for (unsigned char c : text) { state = nodes_[state].next[letter(c)]; ++visits[state]; }
@@ -333,6 +403,13 @@ public:
 using ByteAhoCorasick = AhoCorasick<256, 0>;
 #endif
 
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
+
+
+namespace sirkit {}
+using namespace sirkit;
 
 // SPDX-License-Identifier: CC0-1.0
 // Verify I/O: Verify/current/common/fast_io.hpp

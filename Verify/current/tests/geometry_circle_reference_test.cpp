@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
+namespace sirkit {}
+using namespace sirkit;
 #ifndef SIRKIT_CIRCLE_TEST_HEADER
 #define SIRKIT_CIRCLE_TEST_HEADER "../../../Geometry/Circle.cpp"
 #endif
@@ -22,7 +24,7 @@
 namespace {
 using Big = boost::multiprecision::cpp_int;
 using Decimal = boost::multiprecision::cpp_dec_float_100;
-using Kind = geo::CircleIntersectionKind;
+using Kind = ::sirkit::geo::CircleIntersectionKind;
 std::uint64_t checks = 0;
 std::string context;
 void require(bool condition) {
@@ -44,10 +46,10 @@ Kind reference(IntegerCircle a, IntegerCircle b) {
     if (squared == sum * sum || squared == difference * difference) return Kind::Tangent;
     return Kind::TwoPoints;
 }
-geo::Circle convert(IntegerCircle c, long double scale = 1) {
+::sirkit::geo::Circle convert(IntegerCircle c, long double scale = 1) {
     return {{c.x * scale, c.y * scale}, c.r * scale};
 }
-void residual(const geo::RealPoint& point, const geo::Circle& circle) {
+void residual(const ::sirkit::geo::RealPoint& point, const ::sirkit::geo::Circle& circle) {
     require(std::isfinite(point.x) && std::isfinite(point.y));
     const Decimal dx = exact(point.x) - exact(circle.center.x);
     const Decimal dy = exact(point.y) - exact(circle.center.y);
@@ -56,19 +58,19 @@ void residual(const geo::RealPoint& point, const geo::Circle& circle) {
     const long double allowance = 256 * std::numeric_limits<long double>::epsilon() * magnitude;
     require(abs(distance - exact(circle.radius)) <= exact(allowance));
 }
-void shape(const geo::CircleIntersection& hit, Kind expected) {
+void shape(const ::sirkit::geo::CircleIntersection& hit, Kind expected) {
     if (hit.kind != expected) std::cerr << "kind actual=" << int(hit.kind) << " expected=" << int(expected) << "\n";
     require(hit.kind == expected);
     require(hit.points.size() == (expected == Kind::Tangent ? 1 : expected == Kind::TwoPoints ? 2 : 0));
 }
 void strict_case(IntegerCircle ia, IntegerCircle ib, long double scale = 1) {
-    const geo::Circle a = convert(ia, scale), b = convert(ib, scale);
+    const ::sirkit::geo::Circle a = convert(ia, scale), b = convert(ib, scale);
     const Kind expected = reference(ia, ib);
-    const auto first = geo::intersection(a, b, geo::Epsilon{0, 0});
-    const auto second = geo::intersection(b, a, geo::Epsilon{0, 0});
+    const auto first = ::sirkit::geo::intersection(a, b, ::sirkit::geo::Epsilon{0, 0});
+    const auto second = ::sirkit::geo::intersection(b, a, ::sirkit::geo::Epsilon{0, 0});
     shape(first, expected); shape(second, expected);
-    require(circle_intersection_kind(a, b, geo::Epsilon{0, 0}) == expected);
-    require(circle_intersection_kind(b, a, geo::Epsilon{0, 0}) == expected);
+    require(circle_intersection_kind(a, b, ::sirkit::geo::Epsilon{0, 0}) == expected);
+    require(circle_intersection_kind(b, a, ::sirkit::geo::Epsilon{0, 0}) == expected);
     for (const auto& p : first.points) { residual(p, a); residual(p, b); }
     for (const auto& p : second.points) { residual(p, a); residual(p, b); }
 }
@@ -98,57 +100,57 @@ void known_points_and_scales() {
     for (long double scale : scales) {
         { std::ostringstream label; label << "scale " << scale; context = label.str(); }
         require(std::isfinite(scale) && scale > 0);
-        const geo::Circle a{{0, 0}, 5 * scale}, b{{6 * scale, 0}, 5 * scale};
-        const auto hit = geo::intersection(a, b, geo::Epsilon{0, 0});
+        const ::sirkit::geo::Circle a{{0, 0}, 5 * scale}, b{{6 * scale, 0}, 5 * scale};
+        const auto hit = ::sirkit::geo::intersection(a, b, ::sirkit::geo::Epsilon{0, 0});
         shape(hit, Kind::TwoPoints);
-        require(circle_intersection_kind(a, b, geo::Epsilon{0, 0}) == Kind::TwoPoints);
+        require(circle_intersection_kind(a, b, ::sirkit::geo::Epsilon{0, 0}) == Kind::TwoPoints);
         for (const auto& p : hit.points) {
             require(std::abs(p.x / scale - 3) <= 64 * std::numeric_limits<long double>::epsilon());
             require(std::abs(std::abs(p.y / scale) - 4) <= 64 * std::numeric_limits<long double>::epsilon());
         }
         context += " external";
-        shape(geo::intersection(a, geo::Circle{{10 * scale, 0}, 5 * scale}, {0, 0}), Kind::Tangent);
+        shape(::sirkit::geo::intersection(a, ::sirkit::geo::Circle{{10 * scale, 0}, 5 * scale}, {0, 0}), Kind::Tangent);
         context += " internal";
         int exponent = 0;
         // 十進スケールでは3sと5sの個別丸めで厳密な内接から外れ得る。
         if (std::frexp(scale, &exponent) == 0.5L)
-            shape(geo::intersection(a, geo::Circle{{2 * scale, 0}, 3 * scale}, {0, 0}), Kind::Tangent);
-        shape(geo::intersection(a, geo::Circle{{11 * scale, 0}, 5 * scale}, {0, 0}), Kind::None);
-        shape(geo::intersection(a, a, {0, 0}), Kind::Coincident);
+            shape(::sirkit::geo::intersection(a, ::sirkit::geo::Circle{{2 * scale, 0}, 3 * scale}, {0, 0}), Kind::Tangent);
+        shape(::sirkit::geo::intersection(a, ::sirkit::geo::Circle{{11 * scale, 0}, 5 * scale}, {0, 0}), Kind::None);
+        shape(::sirkit::geo::intersection(a, a, {0, 0}), Kind::Coincident);
     }
-    const geo::Circle a{{1000000000, -1000000000}, 5}, b{{1000000006, -1000000000}, 5};
-    const auto hit = geo::intersection(a, b, {0, 0});
+    const ::sirkit::geo::Circle a{{1000000000, -1000000000}, 5}, b{{1000000006, -1000000000}, 5};
+    const auto hit = ::sirkit::geo::intersection(a, b, {0, 0});
     shape(hit, Kind::TwoPoints);
     for (const auto& p : hit.points) { residual(p, a); residual(p, b); }
     // 一方の向きへの射影が半径に近いだけで、ほぼ同心の2交点を接点にしない。
-    const geo::Circle unit{{0, 0}, 1};
+    const ::sirkit::geo::Circle unit{{0, 0}, 1};
     for (long double delta : {1e-15L, 1e-18L}) {
-        const auto near = geo::intersection(unit, geo::Circle{{delta, 0}, 1});
+        const auto near = ::sirkit::geo::intersection(unit, ::sirkit::geo::Circle{{delta, 0}, 1});
         shape(near, Kind::TwoPoints);
-        require(circle_intersection_kind(unit, geo::Circle{{delta, 0}, 1}) == Kind::TwoPoints);
+        require(circle_intersection_kind(unit, ::sirkit::geo::Circle{{delta, 0}, 1}) == Kind::TwoPoints);
         for (const auto& p : near.points) require(std::abs(std::abs(p.y) - 1) < 1e-15L);
     }
 }
-void expected_kind(const geo::Circle& a, const geo::Circle& b, geo::Epsilon eps, Kind kind) {
-    shape(geo::intersection(a, b, eps), kind);
+void expected_kind(const ::sirkit::geo::Circle& a, const ::sirkit::geo::Circle& b, ::sirkit::geo::Epsilon eps, Kind kind) {
+    shape(::sirkit::geo::intersection(a, b, eps), kind);
     require(circle_intersection_kind(a, b, eps) == kind);
 }
 void tolerance_contract() {
-    const geo::Circle a{{0, 0}, 1};
+    const ::sirkit::geo::Circle a{{0, 0}, 1};
     // 許容幅の既知値。近似分類を厳密な実数の円交差とは混同しない。
     const long double tolerance = 1e-8L;
-    const geo::Epsilon absolute{tolerance, 0};
+    const ::sirkit::geo::Epsilon absolute{tolerance, 0};
     expected_kind(a, {{2 + tolerance / 4, 0}, 1}, absolute, Kind::Tangent);
     expected_kind(a, {{2 + tolerance * 4, 0}, 1}, absolute, Kind::None);
     expected_kind(a, {{2 - tolerance / 4, 0}, 1}, absolute, Kind::Tangent);
     expected_kind(a, {{2 - tolerance * 4, 0}, 1}, absolute, Kind::TwoPoints);
-    const geo::Circle outer{{0, 0}, 3};
+    const ::sirkit::geo::Circle outer{{0, 0}, 3};
     expected_kind(outer, {{2 - tolerance / 4, 0}, 1}, absolute, Kind::Tangent);
     expected_kind(outer, {{2 - tolerance * 4, 0}, 1}, absolute, Kind::None);
     expected_kind(outer, {{2 + tolerance / 4, 0}, 1}, absolute, Kind::Tangent);
     expected_kind(outer, {{2 + tolerance * 4, 0}, 1}, absolute, Kind::TwoPoints);
-    const geo::Epsilon relative{0, 1e-8L};
-    const geo::Circle big{{0, 0}, 10000};
+    const ::sirkit::geo::Epsilon relative{0, 1e-8L};
+    const ::sirkit::geo::Circle big{{0, 0}, 10000};
     expected_kind(big, {{20000 + 1e-5L, 0}, 10000}, relative, Kind::Tangent);
     expected_kind(big, {{20000 + 1e-2L, 0}, 10000}, relative, Kind::None);
     expected_kind(big, {{20000 - 1e-2L, 0}, 10000}, relative, Kind::TwoPoints);
@@ -167,20 +169,20 @@ template<class F> void domain_error(F function) {
 void invalid_input() {
     const long double inf = std::numeric_limits<long double>::infinity();
     const long double nan = std::numeric_limits<long double>::quiet_NaN();
-    const std::array<geo::Circle, 6> invalid{{
+    const std::array<::sirkit::geo::Circle, 6> invalid{{
         {{0, 0}, -1}, {{inf, 0}, 1}, {{0, -inf}, 1}, {{nan, 0}, 1}, {{0, 0}, inf}, {{0, 0}, nan}}};
-    const geo::Circle good{{0, 0}, 1};
+    const ::sirkit::geo::Circle good{{0, 0}, 1};
     for (const auto& bad : invalid) {
-        domain_error([&] { geo::validate(bad); });
+        domain_error([&] { ::sirkit::geo::validate(bad); });
 #ifndef SKIP_RUNTIME_CHECKS
-        domain_error([&] { (void)geo::intersection(good, bad); });
-        domain_error([&] { (void)geo::intersection(bad, good); });
+        domain_error([&] { (void)::sirkit::geo::intersection(good, bad); });
+        domain_error([&] { (void)::sirkit::geo::intersection(bad, good); });
         domain_error([&] { (void)circle_intersection_kind(good, bad); });
         domain_error([&] { (void)circle_intersection_kind(bad, good); });
 #endif
     }
-    geo::validate(good);
-    geo::validate({{0, 0}, 0});
+    ::sirkit::geo::validate(good);
+    ::sirkit::geo::validate({{0, 0}, 0});
     require(true);
 }
 }

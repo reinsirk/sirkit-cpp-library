@@ -5,6 +5,8 @@
 #include <iostream>
 #include <vector>
 
+using namespace sirkit;
+
 int main() {
     WaveletMatrix matrix(std::vector<std::int64_t>{-5, 7, 2, -5, 10});
     assert(matrix.kth_smallest(0, 5, 1) == -5);

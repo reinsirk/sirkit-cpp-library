@@ -3,6 +3,8 @@
 #include "../DataStructure/implicit_treap.cpp"
 #include <iostream>
 
+using namespace sirkit;
+
 using IdSumTreap = indexed_implicit_treap<
     RangeAddSum::S, RangeAddSum::op, RangeAddSum::e, RangeAddSum::F,
     RangeAddSum::mapping, RangeAddSum::composition, RangeAddSum::id>;
