@@ -182,7 +182,7 @@ headを空にし、共有されていない後続を反復解放します。
 
 `clear_chain`は解放したノード数に比例します。循環は`break_cycle`で切ってから解放します。
 
-[完全な使用例](../Examples/node_example.cpp)・[実装・検証の記録](../Audit/document-detail-before-concise-data-structure-2026-11-15.md#node)
+[完全な使用例](../Examples/node_example.cpp)・[実装・検証の記録](../Audit/Changes/document-detail-before-concise-data-structure-2026-11-15.md#node)
 ## operator=
 
 ```text

@@ -96,4 +96,4 @@ RadixSort(values);                  // {-1,2,3,3}
 
 上限を指定して整列する場合も、負の値や負の上限を使えます。`SKIP_RUNTIME_CHECKS`で上限の検査を省けます。上限違反で例外が出た時点で、配列が部分的に整列済みの場合があります。容量の上限は検査省略時も保護します。
 
-[完全な使用例](../Examples/radix_sort_example.cpp) · [実装・測定・検証の記録](../Audit/document-detail-archive-algorithm-string-2026-11-15.json)
+[完全な使用例](../Examples/radix_sort_example.cpp) · [実装・測定・検証の記録](../Audit/Changes/document-detail-archive-algorithm-string-2026-11-15.json)

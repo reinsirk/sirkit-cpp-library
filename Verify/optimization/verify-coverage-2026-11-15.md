@@ -1,7 +1,7 @@
 # Verify先と検証範囲の再調査（2026-11-15）
 
 優先順位は **Library Checker → yukicoder → AtCoder → AOJ**。1ライブラリに複数問題を用意し、問題名だけで全API検証済みとしません。
-調査開始時点のLC130本のうち、99本は対象APIに直接対応し、31本は部分的な検証に適していました。対象APIを使わないダミー提出はありませんでした。未検証の操作・型・状態は[130本の監査記録](../../Audit/verify-coverage-final-2026-11-15.json)に記載しています。
+調査開始時点のLC130本のうち、99本は対象APIに直接対応し、31本は部分的な検証に適していました。対象APIを使わないダミー提出はありませんでした。未検証の操作・型・状態は[130本の監査記録](../../Audit/Verification/verify-coverage-final-2026-11-15.json)に記載しています。
 
 ## 主な不足と補完
 
@@ -94,4 +94,4 @@
 | [spfa.cpp](../current/submissions/spfa.cpp) | [Typical Shortest Path Sum (SPFA)](../current/submissions/coverage_graph_spfa_all_pairs_yuki.cpp)・[Plane Tickets (negative-cycle feasibility)](../current/submissions/coverage_graph_spfa_constraints_yuki.cpp)。併用 |
 | [topological_lexicographical.cpp](../current/submissions/topological_lexicographical.cpp) | 現AtCoderを維持。維持 |
 
-各問題の制約と範囲は[manifest](../current/manifest.json)のcoverage/limitations、選定理由と未検証項目は[監査記録](../../Audit/verify-coverage-final-2026-11-15.json)を参照してください。
+各問題の制約と範囲は[manifest](../current/manifest.json)のcoverage/limitations、選定理由と未検証項目は[監査記録](../../Audit/Verification/verify-coverage-final-2026-11-15.json)を参照してください。

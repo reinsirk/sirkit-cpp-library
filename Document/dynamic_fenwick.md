@@ -206,4 +206,4 @@ auto value = tree.get(20);   // 5。
 
 入力検査は`SKIP_RUNTIME_CHECKS`で省けますが、有効な寸法・添字・区間の前提は同じです。
 
-[完全な使用例](../Examples/dynamic_fenwick_example.cpp)・[実装・検証の記録](../Audit/document-detail-before-concise-data-structure-2026-11-15.md#dynamic-fenwick)
+[完全な使用例](../Examples/dynamic_fenwick_example.cpp)・[実装・検証の記録](../Audit/Changes/document-detail-before-concise-data-structure-2026-11-15.md#dynamic-fenwick)

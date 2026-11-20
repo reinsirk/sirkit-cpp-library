@@ -163,4 +163,4 @@ void clear() noexcept;
 
 要素型や比較演算が例外を投げる場合の保証は、内部の`std::priority_queue`の操作に依存します。
 
-[完全な使用例](../Examples/erasable_priority_queue_example.cpp)・[実装・検証の記録](../Audit/document-detail-before-concise-data-structure-2026-11-15.md#erasable-priority-queue)
+[完全な使用例](../Examples/erasable_priority_queue_example.cpp)・[実装・検証の記録](../Audit/Changes/document-detail-before-concise-data-structure-2026-11-15.md#erasable-priority-queue)

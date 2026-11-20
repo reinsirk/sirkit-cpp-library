@@ -320,4 +320,4 @@ TrieNode& operator=(TrieNode&&) noexcept;
 
 別の公開型`TrieNode`は、既定構築または子mapから構築でき、`children`のコピーは子の所有権を共有します。別対象を所有するaliasingポインタ・循環所有は対象外です。深い木の破棄も反復処理です。
 
-[完全な使用例](../Examples/trie_example.cpp) · [実装・検証の記録](../Audit/document-detail-archive-algorithm-string-2026-11-15.json)
+[完全な使用例](../Examples/trie_example.cpp) · [実装・検証の記録](../Audit/Changes/document-detail-archive-algorithm-string-2026-11-15.json)

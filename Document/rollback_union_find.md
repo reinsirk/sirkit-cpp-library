@@ -287,4 +287,4 @@ nは頂点数、hは履歴長、Hは確保済み履歴容量です。構築はO(
 
 `undo`は非空履歴、`rollback`は`0<=state<=get_state()`が前提です。頂点・履歴回数の上限はINT_MAX。`SKIP_RUNTIME_CHECKS`は入力検査を省きますが、容量保護は残します。追加SIMDは`SIRKIT_DISABLE_SIMD`で除外できます。
 
-[完全な使用例](../Examples/rollback_union_find_example.cpp)・[実装・検証の記録](../Audit/document-detail-before-concise-data-structure-2026-11-15.md#rollback-union-find)
+[完全な使用例](../Examples/rollback_union_find_example.cpp)・[実装・検証の記録](../Audit/Changes/document-detail-before-concise-data-structure-2026-11-15.md#rollback-union-find)

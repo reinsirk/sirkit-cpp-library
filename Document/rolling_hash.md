@@ -204,4 +204,4 @@ assert(text.concat(text.get(0,4),text.get(4,11),7) == text.whole());
 
 不正な区間・連結長は`out_of_range`、底の不一致・未正規化ハッシュは`invalid_argument`です。`SKIP_RUNTIME_CHECKS`でこれらを省いても、容量の上限保護は残ります。Unicodeの復号・正規化は行いません。
 
-[完全な使用例](../Examples/rolling_hash_example.cpp) · [実装・衝突例・検証の記録](../Audit/document-detail-archive-algorithm-string-2026-11-15.json)
+[完全な使用例](../Examples/rolling_hash_example.cpp) · [実装・衝突例・検証の記録](../Audit/Changes/document-detail-archive-algorithm-string-2026-11-15.json)

@@ -29,16 +29,16 @@ Codexの後は、測定とローカル照合の根拠をファイルへ保存し
   "changed": true,
   "scope": "whole_program",
   "checks": {"correctness": "passed", "performance": "measured"},
-  "evidence": [{"path": "Audit/z-measurement.json", "sha256": "根拠ファイルのSHA-256"}]
+  "evidence": [{"path": "Audit/Performance/z-measurement.json", "sha256": "根拠ファイルのSHA-256"}]
 }
 ```
 
-変更なしでも、正しさと性能を確認して`changed=false`・同じ入出力SHAで記録できます。新規の記録はLibrary Checkerで`scope=whole_program`、それ以外で`scope=library`とします。過去の記録は当時の範囲として保持します。根拠の要約JSONは`Audit/`へ置き、詳細な検証ZIPは`Audit/data/`へローカル保存します。ZIPはGitで追跡しないため、別の環境で履歴を照合する場合は必要なZIPも別途コピーしてください。不足時は照合を失敗させ、確認済みとは扱いません。
+変更なしでも、正しさと性能を確認して`changed=false`・同じ入出力SHAで記録できます。新規の記録はLibrary Checkerで`scope=whole_program`、それ以外で`scope=library`とします。過去の記録は当時の範囲として保持します。根拠の要約JSONは[Auditの用途別フォルダ](../../Audit/README.md)に置き、詳細な検証ZIPは`Audit/data/`へローカル保存します。ZIPはGitで追跡しないため、別の環境で履歴を照合する場合は必要なZIPも別途用意してください。不足時は照合が失敗します。
 
 ```sh
-python3 Scripts/optimization_records.py --record-stage Audit/z-codex-stage.json
-python3 Scripts/optimization_records.py --record-stage Audit/z-claude-stage.json \
-  --codex-receipt Audit/z-codex-stage.json
+python3 Scripts/optimization_records.py --record-stage Audit/Performance/z-codex-stage.json
+python3 Scripts/optimization_records.py --record-stage Audit/Performance/z-claude-stage.json \
+  --codex-receipt Audit/Performance/z-codex-stage.json
 ```
 
 Claudeのreceiptは`stage=claude`とし、入力SHAをCodexの出力SHAに合わせます。完了記録は`Verify/optimization/stages/`へ内容ハッシュ付きの名前で保存し、上書きしません。根拠が変わった記録や、現在のソースと一致しない完了記録は受け付けません。

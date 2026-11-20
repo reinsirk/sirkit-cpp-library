@@ -10,7 +10,7 @@
 - Mo：ブロック幅変更で最大random約4%、二値約12%短縮。RadixSortのuint32索引もCodex版から主要3profileで約3〜5%短縮。
 
 入力・コンパイラ・設定をそろえてローカルで測定した。全入力で一律に速くなることや、オンラインでFastestになることは保証しない。
-Radix int64の小表等、残る退行と不採用案は[監査記録](../../Audit/added-lc-optimization-final-2026-11-15.json)から辿れる。
+Radix int64の小表等、残る退行と不採用案は[監査記録](../../Audit/Performance/added-lc-optimization-final-2026-11-15.json)から辿れる。
 
 ## 今回の19本
 
@@ -62,4 +62,4 @@ Radix int64の小表等、残る退行と不採用案は[監査記録](../../Aud
 共通本体の影響18本は144ビルド全成功。疎APIの独立参照4,944ケース・72例外検査も成功。
 生成物の通常283本・派生1026本を同期。Python検査497件成功（意図した除外2件）。
 Fableは承認済みアカウント・指定モデルで19件をレビュー。最終確認時は5時間58%、週間Fable56%、追加課金なし。
-詳細・SHA・採否根拠・ローカル生記録ZIPへの参照は[最終監査](../../Audit/added-lc-optimization-final-2026-11-15.json)。
+詳細・SHA・採否根拠・ローカル生記録ZIPへの参照は[最終監査](../../Audit/Performance/added-lc-optimization-final-2026-11-15.json)。

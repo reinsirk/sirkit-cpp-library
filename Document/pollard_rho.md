@@ -190,4 +190,4 @@ auto phi = engine.totient(36);        // 12。
 auto count = engine.divisor_count(36); // 9。
 ```
 
-[完全な使用例](../Examples/pollard_rho_example.cpp)・[内部処理と検証の記録](../Audit/library-docs-concise-math-geometry-2026-11-15.json)
+[完全な使用例](../Examples/pollard_rho_example.cpp)・[内部処理と検証の記録](../Audit/Changes/library-docs-concise-math-geometry-2026-11-15.json)

@@ -158,4 +158,4 @@ n要素分の容量を予約します。
 
 コピーは独立した配列を持ち、ムーブは配列の所有権を移します。負値・重複値・`int`の両端値も格納できます。
 
-[完全な使用例](../Examples/heap_example.cpp)・[実装・検証の記録](../Audit/document-detail-before-concise-data-structure-2026-11-15.md#heap)
+[完全な使用例](../Examples/heap_example.cpp)・[実装・検証の記録](../Audit/Changes/document-detail-before-concise-data-structure-2026-11-15.md#heap)

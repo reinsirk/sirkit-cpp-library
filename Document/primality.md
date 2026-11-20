@@ -64,4 +64,4 @@ assert(MillerRabin(2047, {2})); // 合成数でも指定底を通る例。
 
 動的確保や底列の保持はしません。`is_prime`・隣接素数・整数リスト版は`noexcept`です。汎用底列版はiterator操作などの例外を伝えます。`SKIP_RUNTIME_CHECKS`でも負数・0・1や表現範囲の扱いは同じです。
 
-[完全な使用例](../Examples/primality_example.cpp)・[来歴と固定底の根拠](../Audit/provenance-primality-2026-10-22.json)・[内部処理の記録](../Audit/library-docs-concise-math-geometry-2026-11-15.json)
+[完全な使用例](../Examples/primality_example.cpp)・[来歴と固定底の根拠](../Audit/Provenance/provenance-primality-2026-10-22.json)・[内部処理の記録](../Audit/Changes/library-docs-concise-math-geometry-2026-11-15.json)

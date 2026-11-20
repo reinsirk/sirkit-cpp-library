@@ -634,4 +634,4 @@ ID索引をn枠まで確保します。
 
 `erase_prod`は集約値の取得に失敗した場合、削除を行いません。
 
-[実装・検証の記録](../Audit/document-detail-before-concise-data-structure-2026-11-15.md#implicit-treap)
+[実装・検証の記録](../Audit/Changes/document-detail-before-concise-data-structure-2026-11-15.md#implicit-treap)

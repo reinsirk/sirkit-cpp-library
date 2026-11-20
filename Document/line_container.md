@@ -256,4 +256,4 @@ auto result = lines.query_with_line(3);
 
 同梱部品は2次元版と共有ガードで併用できます。
 
-[実装・検証の記録](../Audit/document-detail-before-concise-data-structure-2026-11-15.md#line-container)
+[実装・検証の記録](../Audit/Changes/document-detail-before-concise-data-structure-2026-11-15.md#line-container)

@@ -273,4 +273,4 @@ void set_default(const Val& value);
 
 コピーでは配列も複製します。ムーブ後の元の表は既定の初期値を持つ空の表となり、領域を未確保の状態から再利用できます。`clear()`で残るstringやshared_ptrなどの資源も解放したい場合は`release()`を使います。ただし初期値が所有する資源は保持されます。
 
-[完全な使用例](../Examples/internal_hash_map_example.cpp)・[内部処理と検証の記録](../Audit/library-docs-concise-math-geometry-2026-11-15.json)
+[完全な使用例](../Examples/internal_hash_map_example.cpp)・[内部処理と検証の記録](../Audit/Changes/library-docs-concise-math-geometry-2026-11-15.json)

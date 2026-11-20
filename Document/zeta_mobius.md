@@ -427,4 +427,4 @@ subset_zeta_transform(a);             // {1,3}。
 subset_mobius_transform(a);           // {1,2}。
 ```
 
-[完全な使用例](../Examples/zeta_mobius_example.cpp)・[内部処理と検証の記録](../Audit/library-docs-concise-math-geometry-2026-11-15.json)
+[完全な使用例](../Examples/zeta_mobius_example.cpp)・[内部処理と検証の記録](../Audit/Changes/library-docs-concise-math-geometry-2026-11-15.json)

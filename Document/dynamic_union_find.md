@@ -187,4 +187,4 @@ void clear();
 コピーは独立した複製を作り、コピー代入の確保失敗時は元の内容を維持します。move元は空になり、再利用できます。1キーの登録に失敗したとき、そのキーは登録されず、既存の連結関係は保ちます。複数キーを扱う操作では、それまでに成功した登録は残ります。`groups`の確保失敗時も登録と連結関係は保ちます。成功した`groups`は親を短縮するため、`data(k)`の返す親キーが変わる場合があります。
 
 
-[完全な使用例](../Examples/dynamic_union_find_example.cpp)・[実装・検証の記録](../Audit/document-detail-before-concise-data-structure-2026-11-15.md#dynamic-union-find)
+[完全な使用例](../Examples/dynamic_union_find_example.cpp)・[実装・検証の記録](../Audit/Changes/document-detail-before-concise-data-structure-2026-11-15.md#dynamic-union-find)

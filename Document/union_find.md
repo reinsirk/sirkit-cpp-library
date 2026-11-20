@@ -198,4 +198,4 @@ nは頂点数、Cは確保済み容量です。`root`・`leader`・結合・同�
 
 範囲外の頂点は既定で`out_of_range`です。`SKIP_RUNTIME_CHECKS`で頂点検査を省きますが、頂点数・容量の上限は維持します。
 
-[完全な使用例](../Examples/union_find_example.cpp)・[実装・検証の記録](../Audit/document-detail-before-concise-data-structure-2026-11-15.md#union-find)
+[完全な使用例](../Examples/union_find_example.cpp)・[実装・検証の記録](../Audit/Changes/document-detail-before-concise-data-structure-2026-11-15.md#union-find)

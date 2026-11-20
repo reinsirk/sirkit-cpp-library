@@ -93,4 +93,4 @@ auto indices = LISIndices(a);      // {1,2}
 
 標準浮動小数点のNaNは既定で`invalid_argument`です。`SKIP_RUNTIME_CHECKS`ではNaNを含めないことが利用側の前提です。正負の無限大は使えます。比較・コピー・確保の例外でも入力は保持します。
 
-[完全な使用例](../Examples/lis_example.cpp) · [実装・検証の記録](../Audit/document-detail-archive-algorithm-string-2026-11-15.json)
+[完全な使用例](../Examples/lis_example.cpp) · [実装・検証の記録](../Audit/Changes/document-detail-archive-algorithm-string-2026-11-15.json)

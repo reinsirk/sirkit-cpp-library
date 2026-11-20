@@ -9,7 +9,7 @@
 | implicit_treap_deque / line_container_2d_min | 既存Fableは再利用可能。現行提出版全体の性能測定が不足するため完了扱いにしない。 |
 | persistent_segment_tree / implicit_treap_affine / dynamic_lichao_line / dynamic_lichao_segment | Codexの検討・測定と、その後のFable確認が残る。 |
 
-4本は既存の提出・測定・レビューの対応漏れを修正した。新たなオンラインACや最適化の実績は加えていない。[照合根拠とSHA](../../Audit/remaining-review-reconciliation-2026-11-16.json)に記録した。
+4本は既存の提出・測定・レビューの対応漏れを修正した。新たなオンラインACや最適化の実績は加えていない。[照合根拠とSHA](../../Audit/Changes/remaining-review-reconciliation-2026-11-16.json)に記録した。
 
 ## 作業中の候補とPC負荷への対応
 

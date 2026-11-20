@@ -320,4 +320,4 @@ std::int64_t size() const noexcept;
 
 既定では添字・版の所有元を検査し、非空Union Findのnull版は`invalid_argument`、範囲外は`out_of_range`です。寿命切れ検出の保証はありません。`SKIP_RUNTIME_CHECKS`で入力検査を省いても、サイズ・ノード容量の保護は維持します。
 
-[完全な使用例](../Examples/persistent_union_find_example.cpp)・[実装・検証の記録](../Audit/document-detail-before-concise-data-structure-2026-11-15.md#persistent-union-find)
+[完全な使用例](../Examples/persistent_union_find_example.cpp)・[実装・検証の記録](../Audit/Changes/document-detail-before-concise-data-structure-2026-11-15.md#persistent-union-find)

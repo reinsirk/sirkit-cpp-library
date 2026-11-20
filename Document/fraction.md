@@ -309,4 +309,4 @@ Mは扱う整数の絶対値の上限です。固定幅の乗算・比較・除�
 
 `SIRKIT_FRACTION_DISABLE_INT128`で標準C++の演算経路を選べます。設定マクロは貼り付け前に指定し、複数の翻訳単位で揃えてください。
 
-[完全な使用例](../Examples/fraction_example.cpp)・[演算方法と検証の記録](../Audit/library-docs-concise-math-geometry-2026-11-15.json)
+[完全な使用例](../Examples/fraction_example.cpp)・[演算方法と検証の記録](../Audit/Changes/library-docs-concise-math-geometry-2026-11-15.json)

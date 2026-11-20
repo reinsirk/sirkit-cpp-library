@@ -74,4 +74,4 @@ FIFO版はO(V+E)時間、辞書順版はO(E+V log(V+1))時間、追加領域は�
 
 頂点数はINT_MAX以下、各入次数はUINT32_MAX以下、辺の終点は`[0,V)`が前提です。終点の検査は通常の入次数集計中に行い、`SKIP_RUNTIME_CHECKS`で省きます。容量の保護は検査省略時も維持します。
 
-SIMDの指定は[共通設定](simd.md)、内部処理・出典・検証は[記録](../Audit/graph-document-details-2026-11-15.md)を参照してください。
+SIMDの指定は[共通設定](simd.md)、内部処理・出典・検証は[記録](../Audit/Changes/graph-document-details-2026-11-15.md)を参照してください。

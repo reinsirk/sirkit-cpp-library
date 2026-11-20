@@ -315,4 +315,4 @@ Tは零の構築、コピー・ムーブ・代入、加減算を持つ可換加�
 
 頂点、空履歴のundo、不正な位置、未連結のdiffは既定で検査します。`SKIP_RUNTIME_CHECKS`で省く場合も前提は同じで、容量・整数演算の保護は維持します。追加SIMDは`SIRKIT_DISABLE_SIMD`で除外できます。
 
-[完全な使用例](../Examples/rollback_weighted_union_find_example.cpp)・[Verifyの状態](../Verify/current/README.md)・[実装・検証の記録](../Audit/document-detail-before-concise-data-structure-2026-11-15.md#rollback-weighted-union-find)
+[完全な使用例](../Examples/rollback_weighted_union_find_example.cpp)・[Verifyの状態](../Verify/current/README.md)・[実装・検証の記録](../Audit/Changes/document-detail-before-concise-data-structure-2026-11-15.md#rollback-weighted-union-find)

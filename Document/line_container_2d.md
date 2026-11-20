@@ -289,4 +289,4 @@ auto result = points.max_with_point(2, 1);
 
 公開の`minlc`・`maxlc`・`Xmin`・`Xmax`・`Ymin`・`Ymax`は読み取り用です。包絡の直線は元点の`k=y,m=x`を保持します。外から書き換えたり、包絡だけに追加・削除したりすると、件数・座標範囲・内部参照の不変条件が壊れます。
 
-[実装・検証の記録](../Audit/document-detail-before-concise-data-structure-2026-11-15.md#line-container-2d)
+[実装・検証の記録](../Audit/Changes/document-detail-before-concise-data-structure-2026-11-15.md#line-container-2d)

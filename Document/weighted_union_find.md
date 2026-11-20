@@ -251,4 +251,4 @@ Tの操作をO(1)、頂点数をnとすると、代表探索・差・結合・�
 
 頂点番号が範囲外なら`out_of_range`、異なる成分の頂点を`diff`に渡すと`invalid_argument`を投げます。`SKIP_RUNTIME_CHECKS`でこれらの検査を省いても、容量の保護は維持します。追加SIMDは`SIRKIT_DISABLE_SIMD`で除外できます。
 
-[完全な使用例](../Examples/union_find_w_example.cpp)・[実装・検証の記録](../Audit/document-detail-before-concise-data-structure-2026-11-15.md#weighted-union-find)
+[完全な使用例](../Examples/union_find_w_example.cpp)・[実装・検証の記録](../Audit/Changes/document-detail-before-concise-data-structure-2026-11-15.md#weighted-union-find)

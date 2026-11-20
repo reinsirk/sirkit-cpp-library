@@ -38,7 +38,7 @@ bool previous = uf.issame(0, 1, initial); // false
 - 派生版：実際に生成した14条件の入力例・使用例照合に成功。通常284本、派生1030本を同期。
 - Python検査497件成功（意図した除外2件）。Codex後にFableも両ソースを確認し、追加修正不要と判断。
 
-[最終監査](../../Audit/persistent-uf-api-final-2026-11-16.json)にSHA・採否・実行記録を保存。旧AC417250は新ソースへ引き継がず、新API版は417442でACを確認した。コミットなし。
+[最終監査](../../Audit/Changes/persistent-uf-api-final-2026-11-16.json)にSHA・採否・実行記録を保存。旧AC417250は新ソースへ引き継がず、新API版は417442でACを確認した。コミットなし。
 [先の29提出](submissions29-results-2026-11-16.md)は引き続きすべて現行本文一致AC。
 
 ## 再提出結果（2026-11-16）
@@ -48,7 +48,7 @@ LCの[Fastest](https://judge.yosupo.jp/submission/409831)は15msで、今回の9
 yukicoderは全56ケースAC、メモリ225408KB。
 
 先に提示された[417441](https://judge.yosupo.jp/submission/417441)は永続Segment TreeのPoint Add Range Sumで、こちらも現行本文一致・AC447msとして別に反映した。
-取得記録とソースのSHAは[再提出監査](../../Audit/persistent-uf-resubmissions-2026-11-16.json)を参照。
+取得記録とソースのSHAは[再提出監査](../../Audit/Submissions/persistent-uf-resubmissions-2026-11-16.json)を参照。
 
 ## その後の最適化
 

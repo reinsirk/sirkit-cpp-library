@@ -30,4 +30,4 @@ LC9本はmain・I/Oを含む全体、yukicoder1本は本体のみを再確認し
 [前回の追加19本](added-lc-optimization-2026-11-15.md)と合わせて29本すべてAC・現行本文一致を確認済み。
 移行前の参考記録zeta_sieve_factorize_fullは提出対象から除外したまま。
 
-検討・測定条件、正しさの再利用根拠、各SHA、Fableの結果は[最終監査](../../Audit/shared-followup-final-2026-11-15.json)を参照。
+検討・測定条件、正しさの再利用根拠、各SHA、Fableの結果は[最終監査](../../Audit/Performance/shared-followup-final-2026-11-15.json)を参照。

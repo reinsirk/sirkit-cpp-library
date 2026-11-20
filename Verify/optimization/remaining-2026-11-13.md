@@ -20,4 +20,4 @@ Dijkstra・LCAの辺列APIと対応main、SCCの構築補助処理を採用し�
 
 AtCoder7件の画像サイズは提出用ZIPのCRLF換算サイズと一致しますが、それだけで全文一致や現在版ACとは扱いません。
 
-[件別の現在版SHA・履歴・次段階](remaining-2026-11-13.json) · [当初101件の記録](../../Audit/remaining-library-optimization-2026-11-13.json) · [Graph3再検討記録](../../Audit/fastest-reconsideration-codex-2026-11-13.json)
+[件別の現在版SHA・履歴・次段階](remaining-2026-11-13.json) · [当初101件の記録](../../Audit/Performance/remaining-library-optimization-2026-11-13.json) · [Graph3再検討記録](../../Audit/Performance/fastest-reconsideration-codex-2026-11-13.json)

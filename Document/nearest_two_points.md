@@ -65,4 +65,4 @@ auto answer = nearest_two_points(points);
 // distance_squared=1、first_index=1、second_index=2。
 ```
 
-[完全な使用例](../Examples/nearest_two_points_example.cpp)・[実装と検証の記録](../Audit/library-docs-concise-math-geometry-2026-11-15.json)
+[完全な使用例](../Examples/nearest_two_points_example.cpp)・[実装と検証の記録](../Audit/Changes/library-docs-concise-math-geometry-2026-11-15.json)

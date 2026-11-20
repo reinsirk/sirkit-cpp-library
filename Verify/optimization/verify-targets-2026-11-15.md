@@ -51,4 +51,4 @@
 | [spfa.cpp](../current/submissions/spfa.cpp) | [E - Coins Respawn](https://atcoder.jp/contests/abc137/tasks/abc137_e) |
 | [topological_lexicographical.cpp](../current/submissions/topological_lexicographical.cpp) | [D - Restricted Permutation](https://atcoder.jp/contests/abc223/tasks/abc223_d) |
 
-問題ごとの検証範囲・不足は[manifest](../current/manifest.json)のcoverage/limitations、候補を採らない理由は[調査記録](../../Audit/verify-priority-final-2026-11-15.json)を参照してください。旧問題・判定は履歴とローカル回帰に残し、[提出方針](../current/submission_policy.json)で再提出対象から分離しています。
+問題ごとの検証範囲・不足は[manifest](../current/manifest.json)のcoverage/limitations、候補を採らない理由は[調査記録](../../Audit/Verification/verify-priority-final-2026-11-15.json)を参照してください。旧問題・判定は履歴とローカル回帰に残し、[提出方針](../current/submission_policy.json)で再提出対象から分離しています。

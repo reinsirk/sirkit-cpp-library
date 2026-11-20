@@ -259,7 +259,7 @@ auto pairs = graph.pairs(); // 3辺のうちいずれか1辺。
 
 partnersのspanはsolve・clear_matchingで値が更新され、reset・clear・代入・所有権移動で無効になります。edgesのspanは辺追加・予約・clear_edgesでも無効化し得ます。`SKIP_RUNTIME_CHECKS`で負の長さと頂点番号の検査を除き、内部の容量・添字保護は維持します。
 
-出典・検証範囲は[記録](../Audit/graph-document-details-2026-11-15.md)を参照してください。
+出典・検証範囲は[記録](../Audit/Changes/graph-document-details-2026-11-15.md)を参照してください。
 
 ## 構築・状態と補助型
 

@@ -242,7 +242,7 @@ lengthは区間への加算量を「add×要素数」で求めるために持ち
 
 型引数と基本操作は[ACL](https://atcoder.github.io/ac-library/production/document_ja/lazysegtree.html)に合わせています。
 
-[実装・検証の記録](../Audit/document-detail-before-concise-data-structure-2026-11-15.md#lazy-segment-tree)
+[実装・検証の記録](../Audit/Changes/document-detail-before-concise-data-structure-2026-11-15.md#lazy-segment-tree)
 
 ## operator=
 

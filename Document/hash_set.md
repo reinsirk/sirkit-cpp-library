@@ -339,7 +339,7 @@ Hasher/KeyEqualは同値なキーへ同じハッシュを返し、登録中に�
 
 `SKIP_RUNTIME_CHECKS`でiterator検査を除きます。検査有効でも全ての無効な再利用を検出する保証はありません。容量保護は維持し、追加SIMDは`SIRKIT_DISABLE_SIMD`で除外できます。
 
-[完全な使用例](../Examples/hash_set_example.cpp)・[実装・検証の記録](../Audit/document-detail-before-concise-data-structure-2026-11-15.md#hash-set)
+[完全な使用例](../Examples/hash_set_example.cpp)・[実装・検証の記録](../Audit/Changes/document-detail-before-concise-data-structure-2026-11-15.md#hash-set)
 
 ## operator=
 

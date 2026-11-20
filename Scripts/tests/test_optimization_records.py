@@ -85,6 +85,31 @@ class OptimizationRecordsTest(unittest.TestCase):
         path.write_bytes(records.encode(value))
         return path
 
+    def test_ledger_accepts_moved_audit_evidence(self):
+        value = self.receipt()
+        receipt = records.record_stage(self.root, self.ledger, self.receipt_file(value))
+        original = receipt.read_bytes()
+        moved = self.root / "Audit/Performance/proof.json"
+        moved.parent.mkdir()
+        self.proof.rename(moved)
+
+        self.assertEqual(records.ledger(self.root, self.ledger), [value])
+        self.assertEqual(receipt.read_bytes(), original)
+        moved.write_text("{}\n")
+        with self.assertRaisesRegex(ValueError, "内容が変わっています"):
+            records.ledger(self.root, self.ledger)
+
+    def test_legacy_audit_path_rejects_ambiguous_matches(self):
+        value = self.receipt()
+        original = self.proof.read_bytes()
+        self.proof.unlink()
+        for directory in ("Performance", "Verification"):
+            moved = self.root / "Audit" / directory / "proof.json"
+            moved.parent.mkdir()
+            moved.write_bytes(original)
+        with self.assertRaisesRegex(ValueError, "複数あります"):
+            records.validate_receipt(self.root, value)
+
     def test_default_queue_only_has_accepted_history(self):
         rows = records.queue(self.root, self.ledger)["entries"]
         self.assertEqual([r["id"] for r in rows], ["accepted"])

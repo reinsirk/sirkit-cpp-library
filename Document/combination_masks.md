@@ -68,4 +68,4 @@ constexpr void for_each_combination(int n, int k, Visitor&& visit);
 
 入力検査は`SKIP_RUNTIME_CHECKS`で省けます。列挙回数の上限は設けないため、C(n,k)の大きさは利用側で確認します。
 
-[完全な使用例](../Examples/next_combination_example.cpp) · [実装・境界検証の記録](../Audit/document-detail-archive-algorithm-string-2026-11-15.json)
+[完全な使用例](../Examples/next_combination_example.cpp) · [実装・境界検証の記録](../Audit/Changes/document-detail-archive-algorithm-string-2026-11-15.json)

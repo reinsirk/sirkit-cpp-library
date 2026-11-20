@@ -222,4 +222,4 @@ xでotherより小さい値を与えればtrueです。
 
 空の構築・状態取得はO(1)、clearはO(M)、reserveは再確保時O(M)です。コピーはO(M)で独立した木を作り、moveはO(1)です。コピー・move・clear後もinfの設定を保持します。コピー代入ではノードのコピーを先に完了させ、確保失敗時に元の定義域とノードを維持します。
 
-[完全な使用例](../Examples/dynamic_li_chao_example.cpp)・[実装・検証の記録](../Audit/document-detail-before-concise-data-structure-2026-11-15.md#dynamic-li-chao)
+[完全な使用例](../Examples/dynamic_li_chao_example.cpp)・[実装・検証の記録](../Audit/Changes/document-detail-before-concise-data-structure-2026-11-15.md#dynamic-li-chao)

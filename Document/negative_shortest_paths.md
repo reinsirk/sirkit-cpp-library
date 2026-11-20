@@ -48,4 +48,4 @@ V=頂点数、E=辺数とし、どちらも最悪O(VE+V+E)時間、O(V)追加領
 `BellmanFord`は辺の緩和を反復し、`SPFA`は更新された頂点を待ち行列で再処理します。
 SPFAも最悪時間が改善するとは限りません。
 
-方式・検証の詳細は[記録](../Audit/graph-document-details-2026-11-15.md)を参照してください。
+方式・検証の詳細は[記録](../Audit/Changes/graph-document-details-2026-11-15.md)を参照してください。

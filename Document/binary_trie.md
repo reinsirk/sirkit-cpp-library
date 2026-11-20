@@ -229,4 +229,4 @@ IDは重複でき、`-1`は匿名要素を表します。匿名要素はID一覧
 
 追加に失敗した場合も値・個数・IDを保持しますが、確保済み容量が増える場合はあります。存在しない値やIDの削除はfalseを返し、内容を変えません。
 
-[実装・検証の記録](../Audit/document-detail-before-concise-data-structure-2026-11-15.md#binary-trie)
+[実装・検証の記録](../Audit/Changes/document-detail-before-concise-data-structure-2026-11-15.md#binary-trie)

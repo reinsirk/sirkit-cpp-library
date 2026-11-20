@@ -194,4 +194,4 @@ auto value = tree.get(10, 20);       // 3。
 
 既定の寸法・添字・区間検査は`SKIP_RUNTIME_CHECKS`で除けます。容量・添字の内部上限は維持します。
 
-[完全な使用例](../Examples/dynamic_fenwick_2d_example.cpp)・[実装・検証の記録](../Audit/document-detail-before-concise-data-structure-2026-11-15.md#dynamic-fenwick-2d)
+[完全な使用例](../Examples/dynamic_fenwick_2d_example.cpp)・[実装・検証の記録](../Audit/Changes/document-detail-before-concise-data-structure-2026-11-15.md#dynamic-fenwick-2d)
