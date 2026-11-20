@@ -614,14 +614,25 @@ namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_R
 #ifndef SIRKIT_PRIME_SIEVE_PATTERN_DEFINED
 #define SIRKIT_PRIME_SIEVE_PATTERN_DEFINED
 namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
-inline constexpr auto sieve_pattern = [] {
-    std::array<std::uint64_t, 1155> values{};
-    for (std::size_t word = 0; word < values.size(); ++word)
-        for (unsigned bit = 0; bit < 64; ++bit) {
-            const auto n = (word * 64 + bit) * 2 + 1;
-            if (n % 3 != 0 && n % 5 != 0 && n % 7 != 0 && n % 11 != 0)
-                values[word] |= std::uint64_t{1} << bit;
+inline constexpr auto sieve_pattern = []() consteval {
+    constexpr std::size_t kPeriod = 3 * 5 * 7 * 11;
+    // 2周期を用意し、周期の境目をまたぐ64ビットも同じ方法で取り出す。
+    std::array<std::uint64_t, (2 * kPeriod + 63) / 64> period{};
+    for (std::size_t bit = 0; bit < kPeriod; ++bit) {
+        const auto n = 2 * bit + 1;
+        if (n % 3 != 0 && n % 5 != 0 && n % 7 != 0 && n % 11 != 0) {
+            period[bit / 64] |= std::uint64_t{1} << (bit % 64);
+            const auto next = bit + kPeriod;
+            period[next / 64] |= std::uint64_t{1} << (next % 64);
         }
+    }
+    std::array<std::uint64_t, kPeriod> values{};
+    for (std::size_t word = 0; word < values.size(); ++word) {
+        const auto bit = (64 * word) % kPeriod;
+        const auto offset = bit % 64;
+        const auto low = period[bit / 64] >> offset;
+        values[word] = offset == 0 ? low : low | (period[bit / 64 + 1] << (64 - offset));
+    }
     return values;
 }();
 inline std::size_t sieve_checked_capacity(std::uint64_t count, std::size_t maximum,
