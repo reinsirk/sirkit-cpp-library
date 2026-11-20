@@ -10,7 +10,8 @@
 // BipartiteMatching(left=0,right=0): 左0..left-1、右0..right-1を別々に番号付け。O(left+right)。
 // add_edge(l,r): 左lと右rの辺を追加。多重辺可、償却O(1)。現在の対応は保ち最大性を無効化。
 // reserve_neighbors(l,count): 左lの隣接列を予約。再確保時は次数に比例。neighbors(l): const span。
-// solve(): 現在の対応から最大マッチングへ拡張し、総本数を返す。空の対応では次数1の辺を先に確定する。
+// solve(): 現在の対応から最大マッチングへ拡張し、総本数を返す。
+// 空の対応では両順序の貪欲法で非孤立の左頂点をすべて対応できれば確定し、それ以外は次数1の辺を先に確定する。
 // 空の対応で最大次数2以下ならパス・サイクルをO(V+m)で解く。他は次数分布と非孤立頂点数で再割当の左右を選ぶ。
 // 対応が空で次数1がなく、次数2の右頂点が多い場合は森を縮約してから解く。
 // 総作業量が線形予算に達したら反復Hopcroft-Karp法へ進む。公開APIの左右番号は変えない。
@@ -157,6 +158,42 @@ private:
     int solve_impl(bool allow_contraction) {
         if (maximum_) return cardinality_;
         if (cardinality_ == std::min(left_size(), right_size())) { maximum_ = true; return cardinality_; }
+        if (cardinality_ == 0) {
+            // 非孤立の左頂点をすべて対応できれば、追加領域なしで上限に達する。
+            const int left_count = left_size();
+            auto saturate_left = [&]<bool Reverse>() {
+                int matched = 0, i = 0;
+                for (; i < left_count; ++i) {
+                    const int u = Reverse ? left_count - 1 - i : i;
+                    const auto& row = graph_[u];
+                    if (row.empty()) continue;
+                    for (std::size_t j = 0; j < row.size(); ++j) {
+                        const int v = row[Reverse ? row.size() - 1 - j : j];
+                        if (right_[v] != -1) continue;
+                        left_[u] = v;
+                        right_[v] = u;
+                        ++matched;
+                        break;
+                    }
+                    if (left_[u] == -1) break;
+                }
+                if (i == left_count) return matched;
+                // 後続の確保や再割当の前に、今回書き込んだ対応をすべて戻す。
+                for (int j = 0; j < i; ++j) {
+                    const int u = Reverse ? left_count - 1 - j : j;
+                    const int v = std::exchange(left_[u], -1);
+                    if (v != -1) right_[v] = -1;
+                }
+                return -1;
+            };
+            int matched = saturate_left.template operator()<false>();
+            if (matched == -1) matched = saturate_left.template operator()<true>();
+            if (matched != -1) {
+                cardinality_ = matched;
+                maximum_ = true;
+                return cardinality_;
+            }
+        }
         const auto n = left_.size();
         // 左右のCSRはsolveだけの作業領域。公開neighborsの格納先は変更しない。
         std::vector<std::size_t> offsets(right_.size() + 1);
