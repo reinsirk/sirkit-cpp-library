@@ -119,4 +119,5 @@ APIは`sirkit`内です。短いコード例ではmain側の`using namespace sir
 - [コンテスト用テンプレート](template.md)
 - [コンパイラ別版と速度優先版](fast_variants.md)
 - [ライブラリの連結と容量確認](bundling.md)
+- [手元でライブラリの性能を測る](performance_measurement.md)
 - [開発とVerify](development.md)・[CIの品質検査](ci_quality.md)・[C++の作法と方針](cpp_style_policy.md)

@@ -6,6 +6,8 @@
 
 [ライブラリページ](https://reinsirk.github.io/sirkit-cpp-library/)でAPI、使用例、ソース、テスト結果、性能測定の結果を確認できます。[ページの生成と公開](Document/library_pages.md)を参照してください。
 
+自分の環境で測るには[手元でライブラリの性能を測る](Document/performance_measurement.md)を参照してください。
+
 CIバッジはVerify、ASan/UBSan、カバレッジ、通常版の作法検査、性能測定の結果を示します。検証件数・カバレッジ率・性能比はChecksやActionsのSummaryで、オンラインACは下の表で確認できます。検査の対象と判定基準は[品質検査の説明](Document/ci_quality.md)を参照してください。
 
 <!-- VERIFY_STATUS:START -->

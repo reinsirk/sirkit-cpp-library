@@ -23,16 +23,9 @@
 
 ## 手元の初期性能を測る
 
-Linuxで改修前のコミットをチェックアウトし、次を実行する。`--cpu`は使用する論理CPU番号へ置き換える。P-Coreで比較する場合は同じP-Coreを後の測定でも使う。
+改修前のコミットで[手元でライブラリの性能を測る](../performance_measurement.md)の手順を実行する。
 
-```sh
-python3 Scripts/create_performance_reference.py --compiler g++-15 --cpu 12 \
-  --library DataStructure/Fenwick_Tree.cpp
-```
-
-`--library`は複数指定でき、省略すると全ライブラリを測る。`--quick`で小規模な動作確認、`--compile-profile atcoder`でAtCoder設定の測定を行える。Library Checkerの通常規模の測定では、初回に固定revisionの公式データを生成する。`--cache`でリポジトリ外の作業領域を指定すると次回も利用できる。
-
-測定に成功すると `.sirkit-local/performance/` にケース別の `result.json`、要約の `summary.md`、コミットと引数を記した `reference.json` を保存する。変更後に退行を判定する場合は、記録したコミットを `--base` に指定し、同じCPU、コンパイラ設定、規模で両版を交互に測る。手順は[性能退行の検査](../ci_quality.md#性能退行の検査)を参照する。
+改修後の退行を判定する場合は、`reference.json` のコミットを `--base` に指定する。同じCPU、コンパイラ設定、規模で両版を交互に測る。P-Coreで比較する場合は同じP-Coreを使う。[性能退行の検査](../ci_quality.md#性能退行の検査)
 
 ## 変更後の検証と再提出
 
