@@ -138,11 +138,28 @@ class StructureTests(unittest.TestCase):
 
     def test_final_gate_includes_contracts_official_cases_and_documentation(self):
         gate = workflow("verify.yml")["jobs"]["result"]
-        self.assertEqual(set(gate["needs"]), {"maintenance", "examples", "variant_builds", "instrumented", "guidelines", "contracts", "library_checker", "stress", "documentation"})
+        self.assertEqual(set(gate["needs"]), {"maintenance", "examples", "variant_builds", "instrumented",
+                                             "guidelines", "contracts", "library_checker", "stress", "yomiyasu",
+                                             "documentation"})
         command = gate["steps"][0]["run"]
         for variable in ("CONTRACT_RESULT", "LIBRARY_CHECKER_RESULT", "STRESS_RESULT", "DOCUMENTATION_RESULT",
-                         "VARIANT_BUILDS_RESULT"):
+                         "VARIANT_BUILDS_RESULT", "YOMIYASU_RESULT"):
             self.assertIn('"$' + variable + '" == success', command)
+        self.assertEqual(gate["steps"][0]["env"]["YOMIYASU_RESULT"], "${{ needs.yomiyasu.result }}")
+
+    def test_yomiyasu_uses_latest_public_release_and_checks_pr_changes(self):
+        steps = workflow("verify.yml")["jobs"]["yomiyasu"]["steps"]
+        self.assertEqual(steps[0]["with"]["fetch-depth"], 0)
+        release = next(step for step in steps if step.get("id") == "yomiyasu-release")
+        self.assertIn("https://api.github.com/repos/nanaism/yomiyasu/releases/latest", release["run"])
+        fetch = next(step["with"] for step in steps if step.get("with", {}).get("repository") == "nanaism/yomiyasu")
+        self.assertEqual(fetch["ref"], "refs/tags/${{ steps.yomiyasu-release.outputs.tag }}")
+        self.assertFalse(fetch["persist-credentials"])
+        lint = next(step for step in steps if step.get("name") == "Lint changed documentation")
+        self.assertEqual(lint["env"]["VERIFY_PR_BASE"], "${{ github.event.pull_request.base.sha }}")
+        self.assertEqual(lint["env"]["YOMIYASU_TAG"], "${{ steps.yomiyasu-release.outputs.tag }}")
+        self.assertIn('"$VERIFY_PR_BASE" HEAD', lint["run"])
+        self.assertIn('"$linter" --fail-on error', lint["run"])
 
     def test_independent_checks_can_start_with_maintenance(self):
         jobs = workflow("verify.yml")["jobs"]

@@ -12,6 +12,7 @@
 | ASan/UBSan | 通常版のchecked実行で、範囲外アクセス・解放後の参照・未定義動作を検出する。 |
 | カバレッジ | checked実行で通常版本体の行・直接分岐を測定し、両方100%を必須にする。未計測も失敗。 |
 | 作法 | 通常版をCore Guidelines・Google Styleの2プロファイルで検査する。`Fast/`は対象外。 |
+| 日本語文書 | PRで変更したMarkdownとサイトのHTMLテンプレートをyomiyasuで検査する。 |
 
 GitHub Actionsでは、正答と実行上限を検査します。変更前後の時間は[手元の性能測定](#性能退行の検査)で比較できます。
 
@@ -25,6 +26,14 @@ python3 Scripts/ci_quality_report.py --input /tmp/contracts --input /tmp/officia
 ```
 
 失敗系には、契約テストの結果と、[補足テストの登録](../Verify/ci/coverage_tests.json)の `failure_tests` に対応するカバレッジ実行結果を集計します。補足テストには、無効な入力、確保やコールバックの失敗、解がない場合の戻り値を確認するものがあります。異常終了は失敗です。公式ケースの時間は起動・入出力を含むプログラム全体で、本体だけの代表性能とは別です。
+
+## 日本語文書の検査
+
+`Japanese documentation (yomiyasu)` ジョブは、実行するたびに[最新の正式リリース](https://github.com/nanaism/yomiyasu/releases/latest)を取得し、`yomiyasu_lint.py --fail-on error` を実行します。使ったタグとコミットSHAはジョブのSummaryで確認できます。
+
+太字が表示されない書き方などの `error`、リリースの取得失敗、ツールの実行失敗があれば `Verify result` も失敗します。`warn` と `info` はジョブのログに表示されます。
+
+文書を更新するときは[推敲と最終稿の照合](contributing/api-docs.md#yomiyasuによる推敲)も行います。
 
 ## コンパイラとコンパイル引数
 
