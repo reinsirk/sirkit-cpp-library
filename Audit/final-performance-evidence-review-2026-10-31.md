@@ -20,4 +20,4 @@
 
 重要なsession内証拠は[補足ZIP](data/accepted-performance-sources-2026-10-31.zip)へ保存した。575ファイル、展開57.3MB、ZIP14.46MB。NTT/FastStorageの候補・基準・正確なfixture・flags・raw/summary、他の採用候補のsource/入力等を含む。コンパイル済みbinaryは含めない。全内容の元path/SHA/版scopeはZIP内manifestに記録した。
 
-補足ZIPをfreshな場所へ展開し、同梱のreplayからNTT採用候補GCC/default1本とFast Fenwick GCC/default1本を別の出力先へ[ビルドできた](data/accepted-performance-replay-2026-10-31.json)。これは再配置のビルド確認だけで、新しい性能値や全575ファイルの実行確認ではない。
+補足ZIPを新しい場所に展開し、同梱のreplayを使ってNTT採用候補GCC/default1本とFast Fenwick GCC/default1本を別の出力先へ[ビルドできた](data/accepted-performance-replay-2026-10-31.json)。確認したのは再配置後のビルドに限り、新たな性能測定や全575ファイルの実行確認は行っていない。

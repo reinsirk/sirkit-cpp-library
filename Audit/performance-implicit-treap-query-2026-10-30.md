@@ -18,7 +18,7 @@ Library Checkerの[公開設定](https://github.com/yosupo06/library-checker-jud
 
 ## P-Coreでの最終比較
 
-CPU12、GCC15.2 native/通常設定とClang21、C++23・O2・検査省略。3固定seed各2回、候補2本・baseline・同一baselineのcontrolを交互に実行。値は採用候補÷414026本体のCPU時間比中央値。API単体は同じfixture内の計時区間を別に保存しており、オンライン時間と直接比較しない。
+CPU12で、GCC15.2 native/通常設定とClang21を使い、C++23・O2・検査省略で測った。3個の固定seedを各2回使い、候補2本・baseline・同一baselineのcontrolを交互に実行した。値は採用候補÷414026本体で求めたCPU時間比の中央値を示す。API単体は同じfixture内の計時区間を別に保存しており、オンライン時間と直接比較しない。
 
 | 設定 | 挿入 | 削除 | 反転 | 更新 | 照会 | 混合 |
 |---|---:|---:|---:|---:|---:|---:|

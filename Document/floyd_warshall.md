@@ -16,11 +16,11 @@ inline bool FloydWarshall(std::vector<std::vector<std::int64_t>> &distances, std
 inline bool FloydWarshall(std::vector<std::vector<std::int64_t>> &distances, std::vector<std::vector<int>> &next, std::int64_t inf = (std::int64_t{1} << 60));
 ```
 
-全距離で上書きし、負閉路があれば`true`。O(V³)時間 次頂点表`next`も作る。O(V³)時間・O(V²)追加領域
+距離行列を全点対の最短距離で上書きし、負閉路があれば`true`を返します。次頂点表`next`を指定すると、その表も作ります。
 
 **制約:** 行列・番兵・有限距離の前提は下記の通りです。
 
-**計算量:** O(V³)時間。追加領域は通常O(V)、広幅演算時や次頂点表を作る版はO(V²)。
+**計算量:** O(V³)時間。追加領域は通常O(V)。より広い範囲の整数演算を使う場合や、次頂点表を作る版ではO(V²)。
 
 ### FloydWarshallPath
 
@@ -28,7 +28,7 @@ inline bool FloydWarshall(std::vector<std::vector<std::int64_t>> &distances, std
 inline std::vector<int> FloydWarshallPath(const std::vector<std::vector<int>> &next, int from, int to);
 ```
 
-頂点列を返す。O(L+1)時間・領域。未到達・負影響なら空
+経路の頂点列を返します。到達できない場合や負閉路の影響がある場合は空です。
 
 **制約:** distanceは正方行列。nextには本関数で作った表を渡し、from/toは有効な頂点番号です。
 

@@ -11,7 +11,7 @@ template <class Integer, class Bases> bool MillerRabin(Integer n, const Bases &b
 template <class Integer> bool MillerRabin(Integer n, std::initializer_list<std::uint64_t> bases) noexcept;
 ```
 
-指定した底の強擬素数検査を通ればtrue。
+指定した底で強擬素数検査に通ればtrueを返します。
 
 **制約:** 64ビット以下の整数の底列。剰余0の底は省く。n<2はfalse、偶数はn==2。奇数n>=3で有効な底が空ならtrue。
 
@@ -35,7 +35,7 @@ template <class Integer> bool is_prime(Integer n) noexcept;
 template<class Integer> std::optional<std::uint64_t> next_prime(Integer n) noexcept;
 ```
 
-n以上で最小の素数をoptional<uint64_t>で返す。
+n以上の最小の素数をoptional<uint64_t>で返します。
 
 **制約:** 共通の型・入力条件を満たすこと。
 
@@ -47,7 +47,7 @@ n以上で最小の素数をoptional<uint64_t>で返す。
 template<class Integer> std::optional<std::uint64_t> prev_prime(Integer n) noexcept;
 ```
 
-n以下で最大の素数。
+n以下の最大の素数を返します。
 
 **制約:** 共通の型・入力条件を満たすこと。
 

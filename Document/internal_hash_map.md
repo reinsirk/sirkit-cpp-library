@@ -12,7 +12,7 @@ InternalHashMap(const InternalHashMap&);
 InternalHashMap(InternalHashMap&& other) noexcept(std::is_nothrow_default_constructible_v<Val> && std::is_nothrow_swappable_v<Val>);
 ```
 
-空の表を構築する。
+空の表を構築します。
 
 **制約:** 共通の型・入力条件を満たすこと。
 
@@ -271,6 +271,6 @@ void set_default(const Val& value);
 
 `find_or_emplace`のfactoryは表を変更せず、表内の要素への参照やポインタを使わないでください。呼び出し前に再確保する場合があります。`for_each`のコールバックも表を変更しないことが前提です。再確保時のコピーや値の代入が失敗しても登録件数は増えません。失敗した未登録スロットに値の資源が残る場合があります。値型自身の代入・swapが例外を投げる場合、初期値の変更を元に戻す保証はありません。
 
-コピーは配列の深いコピーです。ムーブ後の元表は既定初期値を持つ未確保の空表となり、再利用できます。`clear()`でstringやshared_ptrなどの資源も解放したい用途では`release()`を使います。ただし初期値が所有する資源は保持されます。
+コピーでは配列も複製します。ムーブ後の元の表は既定の初期値を持つ空の表となり、領域を未確保の状態から再利用できます。`clear()`で残るstringやshared_ptrなどの資源も解放したい場合は`release()`を使います。ただし初期値が所有する資源は保持されます。
 
 [完全な使用例](../Examples/internal_hash_map_example.cpp)・[内部処理と検証の記録](../Audit/library-docs-concise-math-geometry-2026-11-15.json)

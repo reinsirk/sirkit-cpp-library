@@ -1,6 +1,6 @@
 # 残りのライブラリの最適化
 
-当初101ソースのCodex検討は完了しています。旧Graph17ソースはFable検討と再提出済みで、提出時のLC10件は本文照合済みAC、AtCoder7件は画像AC・実提出全文未照合です。別枠のZ Algorithm（416725）も本文照合済みACです。
+当初の101ソースはCodexでの検討が完了しています。旧Graph17ソースはFableでの検討と再提出を終えました。提出時のLC10件はACで本文も照合済みです。AtCoder7件は画像でACを確認しましたが、提出全文は未照合です。別枠のZ Algorithm（416725）もACで本文を照合済みです。
 
 | 現在版の次の状態 | 件数 | 内訳 |
 | --- | ---: | --- |
@@ -8,7 +8,7 @@
 | `confirm_source` | 7 | AtCoder画像AC。実提出全文の確認待ちで再提出要求は出さない |
 | `resubmit` | 87 | 現在版Fable検討済み。オンライン再提出が必要 |
 
-元のFable待ち84件は、現在版の検討完了84件・未完了0件です。元84行のSHA・receiptはJSONの`original_pending_fable`に保全し、現在版は`pending_fable`と`completed_fable`へ分けています。
+Fableでの検討待ちだった84件は、現在版ですべて検討が完了し、未完了は0件です。元の84行のSHAとreceiptはJSONの`original_pending_fable`に残し、現在版は`pending_fable`と`completed_fable`へ分けています。
 
 Dijkstra・LCAの辺列APIと対応main、SCCの構築補助処理を採用しました。変更後3件のFable再検討は3/3件完了し、`post_resubmission_review`で現在版SHAと次段階を管理します。旧GraphのAC・SHA・receiptは`historical`に残し、変更後ソースへ引き継ぎません。他のFastest候補は未採用です。
 

@@ -9,7 +9,7 @@ PalindromeRadii();
 template <class Sequence> explicit PalindromeRadii(const Sequence& s);
 ```
 
-空／指定した列の半径を構築します。
+引数を省略すると空の結果を作り、列を渡すとその列の回文半径を求めます。
 
 **制約:** 列にsize・添字アクセス・一貫した同値関係の==があり、n<INT_MAX。
 
@@ -105,7 +105,7 @@ std::uint64_t count() const noexcept;
 template <class Sequence> std::vector<int> PalindromicLengths(const Sequence& s);
 ```
 
-文字上／文字間の2n-1中心の最長回文長を交互に返します。空なら空配列です。
+文字上と文字間を交互にたどり、計2n-1個の中心それぞれについて最長の回文の長さを返します。元の列が空なら空配列を返します。
 
 **制約:** PalindromeRadiiの構築と同じ列の要件。
 

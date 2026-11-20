@@ -12,7 +12,7 @@ middle候補はinline unionを元ポインタの位置へ置く（本体1144バ�
 
 i9-14900KのP-Core（CPU12）、C++23 O2、GCC15.2/Clang21.1.8の通常/native、全版SKIP_RUNTIME_CHECKS。共通のmain・入力・操作手順・opaque barrierで、4候補の順序を無作為化し、同一実行パスで21条件を9回ずつ測定した。3024プロセスのchecksumは全一致し、Source/candidateの始端終端hashも一致した。構築・操作・破棄を分け、壁時計とthread CPU時間を併記した。
 
-下表は現行Rawを1とする操作CPU時間比。大規模列は20万要素の7条件の比率中央値。
+表には現行Rawを1とした操作のCPU時間比を示す。大規模の列は、20万要素を使った7条件の比率の中央値を示す。
 
 | 設定 | hot初回ID | hot大規模中央値 | hot混合 | hot ID再利用16384 | middle混合 |
 |---|---:|---:|---:|---:|---:|

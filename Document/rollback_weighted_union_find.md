@@ -13,7 +13,7 @@ RollbackWeightedUnionFind();
 explicit RollbackWeightedUnionFind(int n);
 ```
 
-空／n頂点の独立した成分を構築します。
+空の状態、またはn頂点がそれぞれ独立した状態を作ります。
 
 **制約:** 0<=n<=INT_MAX。
 
@@ -122,7 +122,7 @@ bool consistent(int x, int y, const T& w) const;
 bool unite(int x, int y, T w);
 ```
 
-新規結合ならtrueです。冗長な呼出しも履歴を1回進めます。既接続時の差は検査しません。
+新たに結合した場合はtrueを返します。すでに同じ成分に属する頂点を指定した場合も履歴を1回進めますが、重みの差は検査しません。
 
 **制約:** 頂点番号は0以上n未満。
 
@@ -182,7 +182,7 @@ void snapshot() noexcept;
 void rollback(int state = -1);
 ```
 
-指定位置、または-1なら保存位置まで戻します。
+指定した履歴位置まで戻します。-1を指定すると保存位置まで戻します。
 
 **制約:** 0<=state<=get_state()、またはstate=-1。現在の枝で得た位置を使います。
 
@@ -242,7 +242,7 @@ int component_count() const noexcept;
 std::vector<std::vector<int>> groups() const;
 ```
 
-成分ごとの頂点昇順一覧を返します。
+成分ごとに頂点を番号の昇順で返します。
 
 **制約:** 追加の制約はありません。
 
@@ -287,7 +287,7 @@ void swap(RollbackWeightedUnionFind<T>& a, RollbackWeightedUnionFind<T>& b) noex
 **計算量:** O(1)。
 
 
-冗長・矛盾の追加も履歴を1回進めます。矛盾した追加は成分と差を変えず、矛盾フラグも残しません。
+冗長または矛盾した制約を追加した場合も、履歴を1回進めます。矛盾した制約を追加しても成分と重みの差は変わらず、矛盾フラグも残りません。
 
 ```cpp
 RollbackWeightedUnionFind<std::int64_t> uf(3);

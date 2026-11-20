@@ -29,7 +29,7 @@
 ## Dijkstra
 
 [アルゴリズムと前提](../Document/dijkstra.md)・[使用例](../Examples/dijkstra_example.cpp)を参照してください。
-重みは`[0, 1e9]`です。経路付きの呼び出しでも全頂点の最短距離を計算します。
+辺の重みは`[0, 1e9]`です。終点までの経路を求める呼び出しでも、全頂点の最短距離を計算します。
 現在のソースと判定の対応は[Verifyのmanifest](../Verify/current/manifest.json)で確認できます。
 
 ## LCA

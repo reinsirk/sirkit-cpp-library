@@ -15,7 +15,7 @@ explicit BinomialMod(index_type modulus = 998244353, index_type max_n = 5'000'00
 BinomialMod(index_type modulus, BinomialOptions options);
 ```
 
-法・前計算範囲・上限を指定。
+使う法、前計算の範囲と上限を指定して構築します。
 
 **制約:** max_n>=0。前計算範囲はBinomialOptionsの上限以内。1<=modulus<=UINT32_MAX。
 

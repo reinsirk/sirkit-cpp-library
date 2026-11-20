@@ -100,4 +100,4 @@ HashSetの3本は出典表示だけの変更で、本体は同一です。この
 
 [GCC](../Variants/GCC/Verify/current/submissions)・[Clang](../Variants/Clang/Verify/current/submissions)・[Fast GCC](../Fast/GCC/Verify/current/submissions)・[Fast Clang](../Fast/Clang/Verify/current/submissions)に、それぞれの本体を貼り付けた提出コードがあります。各版のオンライン判定は別扱いです。使用する版を選んで提出してください。
 
-mainと共通入出力は維持し、NodeのFast版だけは公開ポインタ型の違いを薄いdriverで変換します。
+mainと共通入出力は維持します。NodeのFast版だけは、公開ポインタ型の違いに合わせてdriverで型を変換します。

@@ -1,6 +1,6 @@
 # 任意法・整数畳み込み
 
-[CRTConvolution](../Math/Convolution.cpp)は、整数列a,bの畳み込み`c[k]=sum(a[i]*b[k-i])`を求めます。任意の32ビット正整数法、または厳密なint64_tの結果を扱い、Mintは不要です。入力は変更せず、片方が空なら空列を返します。[使用例](../Examples/convolution_example.cpp)を参照してください。
+[CRTConvolution](../Math/Convolution.cpp)は整数列a,bの畳み込み`c[k]=sum(a[i]*b[k-i])`を求めます。任意の32ビット正整数を法とする計算と、厳密なint64_tでの計算に対応します。Mintは不要です。入力は変更せず、片方が空なら空列を返します。[使用例](../Examples/convolution_example.cpp)を参照してください。
 
 ## API
 
@@ -70,7 +70,7 @@ template<std::integral T,std::integral U> std::vector<std::uint32_t> modular(con
 template<std::integral T> std::vector<std::uint32_t> modular_square(const std::vector<T>& a,std::uint32_t mod);
 ```
 
-aとaの畳み込み。大きい入力では順変換を1回にする。
+aとaの畳み込みを求めます。大きな入力では順変換を1回に減らします。
 
 **制約:** 結果長は2^23以下。整数版は全ての最終係数がint64_t内、任意法版は1<=mod<=UINT32_MAX。
 
@@ -82,7 +82,7 @@ aとaの畳み込み。大きい入力では順変換を1回にする。
 std::vector<std::int64_t> integer(const std::vector<std::int64_t>& a,const std::vector<std::int64_t>& b);
 ```
 
-int64_t列の厳密な畳み込み。
+int64_t列の畳み込みを厳密に求めます。
 
 **制約:** 結果長は2^23以下。整数版は全ての最終係数がint64_t内、任意法版は1<=mod<=UINT32_MAX。
 
@@ -106,7 +106,7 @@ std::vector<std::int64_t> integer_square(const std::vector<std::int64_t>& a);
 template<std::integral T,std::integral U> std::vector<std::uint32_t> ConvolutionAnyMod(const std::vector<T>& a,const std::vector<U>& b,std::uint32_t mod);
 ```
 
-一時CRTConvolutionを使い任意法の畳み込みを返します。
+一時的にCRTConvolutionを作り、任意法の畳み込みを返します。
 
 **制約:** 共通の型・入力条件を満たすこと。
 
@@ -118,7 +118,7 @@ template<std::integral T,std::integral U> std::vector<std::uint32_t> Convolution
 std::vector<std::int64_t> ConvolutionInt64(const std::vector<std::int64_t>& a,const std::vector<std::int64_t>& b);
 ```
 
-一時CRTConvolutionを使い厳密なint64_t畳み込みを返します。
+一時的にCRTConvolutionを作り、int64_tで厳密な畳み込みを返します。
 
 **制約:** 共通の型・入力条件を満たすこと。
 
@@ -238,7 +238,7 @@ std::vector<std::uint32_t> convolution_normalized(std::vector<std::uint32_t> a, 
 template <std::integral T> std::vector<std::uint32_t> square(const std::vector<T>& a);
 ```
 
-aとaの畳み込み。大きい入力では順変換を1回にする。
+aとaの畳み込みを求めます。大きな入力では順変換を1回に減らします。
 
 **制約:** 共通の型・入力条件を満たすこと。
 
@@ -262,7 +262,7 @@ template <std::uint32_t Mod = 998244353, std::uint32_t Root = 3, std::integral T
 NTT();
 ```
 
-動的キャッシュなしで生成。
+動的キャッシュを持たない状態で生成します。
 
 **制約:** 共通の型・入力条件を満たすこと。
 

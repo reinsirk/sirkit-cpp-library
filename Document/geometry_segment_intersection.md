@@ -20,7 +20,7 @@ template<class T, class C>
 SegmentIntersection intersection(const Segment<T, C>& s, const Segment<T, C>& t, Epsilon eps = {});
 ```
 
-戻り値の `kind` は `None`、`Point`、`Overlap` のいずれか。 `points` はそれぞれ空、交点1個、辞書順の両端点2個を持つ。点の型は `geo::RealPoint` で、交点の計算結果は `long double` の近似値。制約と `eps` の扱いは `intersects` と共通。計算量は固定の座標型・計算型に対して O(1)。
+戻り値の `kind` は `None`、`Point`、`Overlap` のいずれか。`None` の場合は `points` が空になり、`Point` の場合は交点を1個、`Overlap` の場合は重なった区間の両端点2個を辞書順で格納する。点の型は `geo::RealPoint` で、交点の計算結果は `long double` の近似値。制約と `eps` の扱いは `intersects` と共通。計算量は固定の座標型・計算型に対して O(1)。
 
 ```cpp
 geo::Segment<std::int64_t> a{{0, 0}, {4, 0}}, b{{2, -1}, {2, 1}};

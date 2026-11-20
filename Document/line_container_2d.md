@@ -98,7 +98,7 @@ std::pair<long double,long double> argmax(long double a, long double b) const;
 Result max_with_point(long double a, long double b) const;
 ```
 
-最大値と点を1回の選択でResult{value,x,y}へ返します。
+点を1回選び、最大値とその点をResult{value,x,y}で返します。
 
 **制約:** 非空、係数は有限。
 
@@ -183,7 +183,7 @@ std::pair<long double,long double> argmin(long double a, long double b) const;
 Result min_with_point(long double a, long double b) const;
 ```
 
-最小値と点を1回の選択でResult{value,x,y}へ返します。
+点を1回選び、最小値とその点をResult{value,x,y}で返します。
 
 **制約:** 非空、係数は有限。
 
@@ -279,7 +279,7 @@ auto result = points.max_with_point(2, 1);
 
 非空の照会で、有限な非零`a`に対して`b/a`が表現範囲を超える場合は、`SKIP_RUNTIME_CHECKS`の有無によらず`overflow_error`を投げます。内積が浮動小数点範囲を超える場合は無限大になり得ます。巨大な有限積同士の相殺でNaNになった場合は、指数を調整して再評価します。ll版は内積を±infへ制限するため、範囲外の数学的な値をそのまま返すAPIではありません。
 
-検査有効時は非有限の入力を拒否し、非optional照会の空表に`out_of_range`を投げます。`SKIP_RUNTIME_CHECKS`を定義すると、これらの入力検査を除外します。追加点数の上限、比の表現範囲、相殺の回復は維持します。`SIRKIT_LINE_CONTAINER_FORCE_PORTABLE`は同梱1D部品の整数演算の標準代替経路を指定するもので、2D演算を厳密整数へ切り替える設定ではありません。
+検査が有効な場合は非有限の入力を拒否し、点がない状態でoptionalを返さない照会を呼ぶと`out_of_range`を投げます。`SKIP_RUNTIME_CHECKS`を定義すると、これらの入力検査を除外します。追加点数の上限、比の表現範囲、相殺の回復は維持します。`SIRKIT_LINE_CONTAINER_FORCE_PORTABLE`は同梱1D部品の整数演算の標準代替経路を指定するもので、2D演算を厳密整数へ切り替える設定ではありません。
 
 `SIRKIT_LINE_CONTAINER_STANDARD_HINTS`を定義すると、補助キャッシュに座標を複製せず、直線への参照で照会します。
 

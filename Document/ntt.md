@@ -1,6 +1,6 @@
 # NTTと素数法畳み込み
 
-[NTT](../Math/NTT.cpp)は、素数を法として整数列の畳み込みを求めます。`NTT<>`の既定法は998244353・根3で、Mintは不要です。[使用例](../Examples/ntt_example.cpp)を参照してください。
+[NTT](../Math/NTT.cpp)は素数を法として整数列の畳み込みを求めます。`NTT<>`の既定法は998244353・根3で、Mintは不要です。[使用例](../Examples/ntt_example.cpp)を参照してください。
 
 ## API
 
@@ -70,7 +70,7 @@ void prepare(std::size_t length);
 void transform(std::vector<std::uint32_t>& a, bool inverse = false);
 ```
 
-係数と周波数を正順で相互変換する。aを直接変更する。
+係数列と周波数成分の列を正順で相互変換し、aを直接変更します。
 
 **制約:** 長さは0または対応する2冪、各係数は0..Mod-1。
 
@@ -82,7 +82,7 @@ void transform(std::vector<std::uint32_t>& a, bool inverse = false);
 template <std::integral T, std::integral U> std::vector<std::uint32_t> convolution(const std::vector<T>& a, const std::vector<U>& b);
 ```
 
-整数vectorを法へ正規化し、vector<uint32_t>の畳み込みを返す。負数・UINT64_MAXも可。
+入力の整数vectorを法に合わせて正規化し、畳み込みの結果をvector<uint32_t>で返します。負数やUINT64_MAXも使えます。
 
 **制約:** 共通の型・入力条件を満たすこと。
 
@@ -106,7 +106,7 @@ std::vector<std::uint32_t> convolution_normalized(std::vector<std::uint32_t> a, 
 template <std::integral T> std::vector<std::uint32_t> square(const std::vector<T>& a);
 ```
 
-aとaの畳み込み。大きい入力では順変換を1回にする。
+aとaの畳み込みを返します。入力が大きい場合の順変換は1回です。
 
 **制約:** 共通の型・入力条件を満たすこと。
 

@@ -1,6 +1,6 @@
 # 最適化の引き継ぎ
 
-`Scripts/optimization_handoff.py`は、受理済みのVerifyコードをCodex・Claudeへ順に渡すための入力と記録を作ります。Library Checkerではmain・入出力を含む全体をCodex→Claudeの順で確認します。Library Checker以外は正しさの検証を主目的とし、main・入出力を個別に最適化せず、ライブラリ本体だけを改善します。各段階は提出コードの全文SHA-256と測定・検証の根拠へ対応付けます。
+`Scripts/optimization_handoff.py`は受理済みのVerifyコードをCodex・Claudeへ順に渡すための入力と記録を作ります。Library Checkerではmainと入出力を含む全体をCodex、Claudeの順で確認します。Library Checker以外は正しさの検証を主目的とし、最適化の対象はライブラリ本体に限ります。各段階の記録を、提出コード全文のSHA-256と測定・検証の根拠に結び付けます。
 
 [PersistentUnionFindのAPI変更と追加Verify](persistent-uf-api-2026-11-16.md)も参照してください。[提出29本の結果とFastest比較](submissions29-results-2026-11-16.md)を更新しました。共有変更が波及した既存10本は[再確認結果](shared-followup-2026-11-15.md)にまとめています。今回追加した19本の結果と提出ソースは[追加LC Verifyの最適化](added-lc-optimization-2026-11-15.md)、全体の対象は[merge前の最適化](premerge-2026-11-14.md)を参照してください。[2026年11月13日の一覧](remaining-2026-11-13.md)は移行前の提出SHAに対する履歴です。
 
@@ -50,6 +50,6 @@ python3 Scripts/optimization_handoff.py --record-stage Audit/z-claude-stage.json
 
 Claudeのreceiptは`stage=claude`とし、入力SHAをCodexの出力SHAに合わせます。完了記録は`Verify/optimization/stages/`へ内容ハッシュ付きの名前で保存し、上書きしません。根拠が変わった記録や、現在のソースと一致しない完了記録は受け付けません。
 
-Claudeまで終わっても、変更後のオンラインACが一致するまでは一覧の`next_stage`はresubmitです。本体を変えたら同じ本体を含む提出コードも再生成・照合・再提出し、mainや入出力の変更を本体単独の成果に含めません。提出やClaude実行は、このスクリプトから自動では行いません。
+Claudeの確認まで終えても、オンラインでACになったコードと変更後のコードが一致するまでは、一覧の`next_stage`はresubmitです。本体を変えたら同じ本体を含む提出コードも再生成・照合・再提出し、mainや入出力の変更を本体単独の成果に含めません。このスクリプトは提出やClaudeの実行を自動では行いません。
 
 提出URLコメント等だけが変わった場合は、現在のACと厳密に照合できた受理ソースのSHAだけを同一版として扱います。current_submission_sha256等の現在版メモだけでは、完了を引き継ぎません。

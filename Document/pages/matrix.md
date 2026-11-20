@@ -19,7 +19,7 @@ Matrix(const Matrix&);
 Matrix(Matrix&& other) noexcept;
 ```
 
-空または指定した形・係数で行列を構築します。コピーは独立、移動元は0×0です。
+空の行列、または形と係数を指定した行列を構築します。コピーは元の行列から独立し、移動元は0×0になります。
 
 **制約:** 行・列数と積が容量上限内。行リストは全行同長、flat vectorはr*c要素。
 
@@ -105,7 +105,7 @@ std::span<T> values()noexcept;
 std::span<const T> values()const noexcept;
 ```
 
-要素の参照。
+指定した要素への参照を返します。
 
 **制約:** 共通の型・入力条件を満たすこと。
 
@@ -118,7 +118,7 @@ std::span<T> row(size_type index);
 std::span<const T> row(size_type index)const;
 ```
 
-要素の参照。
+指定した要素への参照を返します。
 
 **制約:** 行添字が範囲内。spanは再代入・swap・破棄までの借用。
 
@@ -155,7 +155,7 @@ void assign(size_type rows,size_type columns,const T& value=T{0});
 Matrix transposed()const;
 ```
 
-転置の独立コピー。
+転置した独立のコピーを返します。
 
 **制約:** 共通の型・入力条件を満たすこと。
 
@@ -293,7 +293,7 @@ Tはコピー可能で、0/1からの構築と使う操作に必要な環の演�
 
 係数演算・コピーをO(1)とすると、加減・転置はO(r*c)、行列積(r,k)*(k,c)はO(r*c*(1+k))時間・O(r*c)追加領域です。n次正方行列のk乗はO(n³ log(k+2))時間・O(n²)追加領域、列ベクトルとの積はO(r*(1+c))時間・O(r)領域です。
 
-`a(r,c)`は要素への参照、`row(r)`・`values()`は非所有のspanです。行列の代入・swap・破棄をまたいで保持しません。コピーは独立し、move元は0×0です。0行・0列も形を保ちます。
+`a(r,c)`は要素への参照、`row(r)`・`values()`は非所有のspanを返します。これらは行列の代入・swap・破棄をまたいで保持しません。コピーは元の行列から独立し、move元は0×0になります。0行・0列の場合も形を保ちます。
 
 行列式・階数・逆行列・連立一次方程式は、このファイルのAPIには含みません。必要な場合はMatrixも同梱する[消去ライブラリ](../../Math/Gaussian_Elimination.cpp)を使います。
 

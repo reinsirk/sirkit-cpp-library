@@ -36,7 +36,7 @@ textの各開始位置でpatternと一致する接頭辞長を返します。
 template <class Pattern, class Text> std::vector<int> ZMatches(const Pattern& pattern, const Text& text);
 ```
 
-完全一致する開始位置を昇順で返します。空patternは全境界0..nです。
+完全一致する開始位置を昇順で返します。patternが空なら、境界となる全位置0..nを返します。
 
 **制約:** 各列長はINT_MAX未満で、size・添字アクセス・==が使えること。
 

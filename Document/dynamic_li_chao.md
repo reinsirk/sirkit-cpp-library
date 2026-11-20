@@ -84,7 +84,7 @@ T query(T x) const;
 std::optional<Line> query_line(T x) const;
 ```
 
-最小値を与えるLineを返します。同値時は任意、非被覆ならnulloptです。
+最小値を与えるLineを返します。同じ最小値を与える線が複数あれば任意の1本を返し、対象区間がxを含む直線や線分がなければnulloptを返します。
 
 **制約:** xは定義域内。
 
@@ -144,7 +144,7 @@ T domain_max() const noexcept;
 std::size_t stored_nodes() const noexcept;
 ```
 
-現在の格納ノード数を返します。照会では増えません。
+格納しているノードの数を返します。照会でノード数は増えません。
 
 **制約:** 追加の制約はありません。
 

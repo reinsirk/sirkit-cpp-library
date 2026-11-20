@@ -70,7 +70,7 @@ std::int64_t min_value() const noexcept;
 Argmin argmin() const;
 ```
 
-最小点の閉区間Argmin{lower,upper}を返します。optionalの下端なしは負の無限大、上端なしは正の無限大です。
+最小値を取る点の閉区間をArgmin{lower,upper}で返します。下端のoptionalが空なら負の無限大、上端が空なら正の無限大です。
 
 **制約:** 保存する座標・途中の差と和はint64_tの範囲内。無限端はargminのoptionalで表します。
 
@@ -119,7 +119,7 @@ f(x)=min_{y>=x}旧f(y)へ置き換えます。
 std::int64_t eval(std::int64_t x) const;
 ```
 
-関数を壊さずxでの値を返します。
+関数を変更せず、xでの値を返します。
 
 **制約:** 保存する座標・途中の差と和はint64_tの範囲内。無限端はargminのoptionalで表します。
 

@@ -35,7 +35,7 @@ void build(const std::vector<std::vector<int>>& graph, int root = 0);
 void build(int n, std::span<const std::pair<int,int>> edges, int root = 0);
 ```
 
-隣接リストから構築 / 再構築する。 無向辺列から構築 / 再構築する。
+隣接リストまたは無向辺列から表を構築します。構築済みの場合は表を作り直します。
 
 **制約:** 入力グラフ・関数・比較器の前提は下記の共通条件に従います。
 
@@ -155,7 +155,7 @@ bool same_component(int u, int v) const;
 bool is_ancestor(int u, int v) const;
 ```
 
-uがvの祖先ならtrueを返します。自身は祖先とし、異成分ならfalseです。
+uがvの祖先ならtrueを返します。uとvが同じ頂点ならtrue、異なる連結成分に属すならfalseです。
 
 **制約:** 引数の頂点番号・添字は有効範囲内です。その他の前提は共通条件に従います。
 
@@ -192,7 +192,7 @@ int operator()(int u, int v) const;
 int get_distance(int u, int v) const;
 ```
 
-パスの辺数。異成分なら-1。
+パスの辺数を返します。2頂点が異なる連結成分に属すなら-1です。
 
 **制約:** 引数の頂点番号・添字は有効範囲内です。その他の前提は共通条件に従います。
 
@@ -204,7 +204,7 @@ int get_distance(int u, int v) const;
 int kth_ancestor(int v, std::uint64_t k) const;
 ```
 
-k個上の祖先。k=0ならv、根を越えると-1。
+k個上の祖先を返します。k=0ならv、根を越えるなら-1です。
 
 **制約:** 引数の頂点番号・添字は有効範囲内です。その他の前提は共通条件に従います。
 
@@ -216,7 +216,7 @@ k個上の祖先。k=0ならv、根を越えると-1。
 int kth_on_path(int u, int v, std::uint64_t k) const;
 ```
 
-uからvへのパスのk番目（0始まり）。異成分・範囲外なら-1。
+uからvへのパス上で0始まりのk番目の頂点を返します。2頂点が異なる連結成分に属すか、kが範囲外なら-1です。
 
 **制約:** 引数の頂点番号・添字は有効範囲内です。その他の前提は共通条件に従います。
 
@@ -228,7 +228,7 @@ uからvへのパスのk番目（0始まり）。異成分・範囲外なら-1�
 int order_index(int v) const;
 ```
 
-森全体でのDFS順添字。
+森全体でのDFS順の添字を返します。
 
 **制約:** 引数の頂点番号・添字は有効範囲内です。その他の前提は共通条件に従います。
 

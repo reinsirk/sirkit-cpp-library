@@ -75,7 +75,7 @@ different=trueなら2変数を異なる値、falseなら同じ値にします。
 bool satisfiable();
 ```
 
-全制約を満たせるならtrue。複数回実行でき、制約追加後は再判定する。
+全制約を満たす解があればtrueを返します。複数回呼び出せます。制約を追加した後は再判定します。
 
 **制約:** 構築済みの入力が共通の前提を満たすこと。
 
@@ -87,7 +87,7 @@ bool satisfiable();
 std::vector<bool> answer();
 ```
 
-解を`std::vector<bool>`の値で返す。常に長さnで、判定前・UNSAT時の内容は未規定。
+解を`std::vector<bool>`の値で返します。長さは常にnです。判定前やUNSATの場合の内容は未規定です。
 
 **制約:** 常に長さNですが、判定前・UNSAT時の内容は未規定です。
 
@@ -135,7 +135,7 @@ std::size_t clause_count() const noexcept;
 void reserve_clauses(std::size_t count);
 ```
 
-指定節数分の記録容量を予約します。
+指定した数の節を記録できる容量を予約します。
 
 **制約:** 指定件数は内部の容量上限以内です。
 

@@ -1,6 +1,6 @@
 # 二項係数Prime Mod：C++上位50提出の入出力調査
 
-2026-10-20確認。対象は[Binomial Coefficient (Prime Mod)](https://judge.yosupo.jp/problem/binomial_coefficient_prime_mod)。公開APIのAC・時間昇順からC++23/17/20を選んだ50提出です。利用者別・同一ソースの重複排除はしていません。
+2026-10-20に[Binomial Coefficient (Prime Mod)](https://judge.yosupo.jp/problem/binomial_coefficient_prime_mod)を調査しました。公開APIでACの提出を時間の昇順に並べてC++23/17/20の50件を選び、同じ利用者や同じソースの提出の重複は除いていません。
 
 ## 集計
 

@@ -39,7 +39,7 @@ tail8だけではSIMDを選ばない周期列にも5〜10%程度の後退が見�
 
 最終本体はGCC15.2/Clangの通常/native・検査有無、GCC15.2のSIMD無効通常/native・検査有無、GCC15.3、GCC ASan/UBSanの64構成すべて成功。compile/run stderrは空。LSanは除外し、UBSanはエラー時停止。独立DP・全部分集合・Fenwick最大DP、型/コピー不能/NaN・確保/比較/コピー例外、cache/段階/読込み境界を確認した。追加の自己完結fixtureは59ケースで公開APIと内部の32/64ビット添字経路を照合する。
 
-CPU判定だけをfalseへ置換した別snapshotでも8構成が成功し、CPU未対応の分岐を模擬した。これは実機がAVX2非対応という意味ではなく、production sourceの64構成と区別する。Clang/GCC15.3/SIMD無効は前処理結果が旧687eと一致し、新しいCPU判定・header・helperが除外される。比較した長さ・接頭辞・末尾長・広義・int32の10組は5sectionのbinary一致を確認した。
+CPU判定だけをfalseに置き換えた別snapshotで、CPU未対応時の分岐を模擬した。8構成が成功した。この記録は実機がAVX2非対応であることを示すものではなく、実際のソースで実施した64構成と区別する。Clang/GCC15.3/SIMD無効は前処理結果が旧687eと一致し、新しいCPU判定・header・helperが除外される。比較した長さ・接頭辞・末尾長・広義・int32の10組は5sectionのbinary一致を確認した。
 
 生成提出コード・使用例・実際の相対includeもGCC/Clang・検査有無の20構成で成功。各オンラインdriverは公式19ケースを確認し、最終生成版と測定版も実行sectionが一致した。
 

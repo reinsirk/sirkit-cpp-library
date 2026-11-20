@@ -24,7 +24,7 @@ template<class T>
 std::vector<std::size_t> RadixSortOrder(const std::vector<T>& values);
 ```
 
-昇順の元添字列を返します。同値は元の順で、入力は不変です。
+値の昇順に並べた、元の配列の添字を返します。同じ値の添字は元の順に並び、入力は変更しません。
 
 **制約:** Tは冒頭の整数型。
 
@@ -94,6 +94,6 @@ RadixSort(values);                  // {-1,2,3,3}
 
 `sort`は元配列の容量・要素の保管先を変えません。作業領域のコピーは独立し、移動元も再利用できます。
 
-上限指定は負の値・負の上限にも対応します。`SKIP_RUNTIME_CHECKS`で上限の検査を省けます。上限違反の例外までに配列が部分的に整列されている場合があります。容量限界の保護は検査省略時も残ります。
+上限を指定して整列する場合も、負の値や負の上限を使えます。`SKIP_RUNTIME_CHECKS`で上限の検査を省けます。上限違反で例外が出た時点で、配列が部分的に整列済みの場合があります。容量の上限は検査省略時も保護します。
 
 [完全な使用例](../Examples/radix_sort_example.cpp) · [実装・測定・検証の記録](../Audit/document-detail-archive-algorithm-string-2026-11-15.json)

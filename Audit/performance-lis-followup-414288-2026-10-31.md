@@ -16,7 +16,7 @@ GCC対象の段階探索helperへalign-loops=32属性を加え、非選択経路
 
 i9-14900KのP-Core（論理CPU12）、GCC15.2/C++23/O2/検査省略。通常とnativeを別計測し、同一旧binaryのcontrolを加えseed固定shuffle。同じpath/inodeへcopyして実行する。copy/入力作成/出力照合は計時外。APIはprocess CPU時間、mainは子user+system CPU時間とwallを別記録。
 
-固定mainで公式19ケースを9反復し、caseごとのCPU時間中央値を合計した結果：
+mainを固定して公式19ケースを9回ずつ実行し、ケースごとのCPU時間の中央値を合計した。
 
 | 設定 | 414288の本体 | 今回の本体 | 短縮率 |
 |---|---:|---:|---:|

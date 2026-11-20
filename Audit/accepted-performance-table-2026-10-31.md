@@ -17,7 +17,7 @@
 | Fast HashMap / HashSet | 10個のlifecycle条件、n32768/262144、reserve/成長→追加→照会→破棄。子CPU全体（user+system）比の10条件中央値 | 0.804 / 0.801 | 0.802 / 0.798 | 列挙/空予約だけ等の後退はある。空予約だけの25–35倍を全体の効果としない。 |
 | 他Fast6種（F/S/L/W/T/A） | Fenwick/Segment/Lazy/Wavelet/Treap:n100000,Q200000。Aho:text500000,patterns50000。子CPU全体ns、各自の通常版をbeforeとした6種の範囲 | 0.965–1.019 / 0.961–1.010 | 0.831–1.029 / 0.846–1.021 | 大半は中立。Treapの追加利益は約1%、AhoはGCCだけUnreleased採用しClangの+17–20%切替は不採用。 |
 
-Fastのphase合計は構築・操作・破棄のCPU時間の和で、OS終了時の漏洩領域回収は含まない。子CPU全体は起動から終了までのuser+system。異なる測定範囲を横に比較しない。Fastは破棄・解放・例外保証を省く契約があり、通常版をそのまま置換できないAPIもある。
+Fastのphase合計は構築・操作・破棄のCPU時間の和で、終了時にOSが解放されていない領域を回収する時間は含まない。子プロセスのCPU時間全体は起動から終了までのuser+systemを指す。測定範囲が異なる値は直接比較しない。Fastは破棄・解放・例外保証を省く契約があり、通常版をそのまま置換できないAPIもある。
 
 PSTの通常/Fastはともに同じ旧通常版に対する比。ModPowのbeforeはC版、SqrtのbeforeはMontgomery導入後の版で別基準。Waveletの既定は構築、nativeは長い照会群で、未測定のnative構築値を補間していない。Fast6種の最後の行は全6種の範囲であり、各種の具体値はJSONにある。
 

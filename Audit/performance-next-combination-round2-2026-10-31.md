@@ -1,6 +1,6 @@
 # next_combinationの2周目
 
-今回は全候補を不採用とし、`Algorithm/next_combination.cpp`・main・共通入出力を維持した。追加の再提出は不要。現行SHA-256は `1b7993319b8d817c341993008c0948aa3a0a25db89b9fa83eac33151a06f7d4a`。旧記録の4146f3bc版との差は、API説明コメントを冒頭へ移したもので実装差ではない。
+今回は候補を採用せず、`Algorithm/next_combination.cpp`・main・共通入出力を維持した。追加の再提出は不要。現行SHA-256は `1b7993319b8d817c341993008c0948aa3a0a25db89b9fa83eac33151a06f7d4a`。旧記録の4146f3bc版との差は、API説明コメントを冒頭へ移したことだけで、実装は同じ。
 
 ## 比較した案
 

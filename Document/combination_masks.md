@@ -14,7 +14,7 @@ template<std::unsigned_integral UInt>
 constexpr bool next_combination(UInt& mask, int n);
 ```
 
-1引数版は同じ1の個数を持つ次のマスクを返し、0や終端なら0です。幅指定版は下位nビット内の次へ更新し、終端ならfalseでmaskを変えません。
+1引数版は1の個数が同じ次のマスクを返します。入力が0か、次のマスクがなければ0を返します。幅指定版は下位nビット内で次のマスクに更新します。次がなければfalseを返し、maskは変えません。
 
 **制約:** UIntはbool以外。int版は非負。幅指定版は0<=n<=型幅、maskが下位nビット内。
 
@@ -53,7 +53,7 @@ template<std::unsigned_integral UInt = std::uint64_t, class Visitor>
 constexpr void for_each_combination(int n, int k, Visitor&& visit);
 ```
 
-全マスクを数値昇順にvisit(mask)へ渡します。k=0も1回呼びます。
+各マスクを値の小さい順にvisit(mask)へ渡します。k=0の場合もvisitを1回呼びます。
 
 **制約:** UIntはbool以外、0<=k<=n<=型幅。callbackの例外は伝わります。
 

@@ -1,6 +1,6 @@
 # Mo / MoWithUpdates
 
-[本体](../Algorithm/Mo.cpp)は、区間の問い合わせを並べ替えて、要素の追加・削除が少なくなる順に処理します。Moは変更のない配列、MoWithUpdatesは点変更を含む配列を扱います。値と集計状態は利用側で持ちます。[使用例](../Examples/mo_example.cpp)を参照してください。
+[本体](../Algorithm/Mo.cpp)は区間の問い合わせを並べ替えて、要素の追加・削除が少なくなる順に処理します。Moは変更のない配列、MoWithUpdatesは点変更を含む配列を扱います。値と集計状態は利用側で持ちます。[使用例](../Examples/mo_example.cpp)を参照してください。
 
 
 以下、Nは配列長、Qは照会数、Uは変更数、Bは使用ブロック幅、K=1+floor(N/B)です。
@@ -110,7 +110,7 @@ std::vector<std::size_t> order(std::int32_t b = 0) const;
 std::int32_t block_size(std::int32_t b = 0) const;
 ```
 
-使う正のブロック幅を返します。0は自動選択です。
+処理に使う正のブロック幅を返します。引数bが0なら幅を自動で選びます。
 
 **制約:** b>=0。
 
@@ -300,9 +300,9 @@ mo.run([&](std::int32_t i) { sum += a[i]; },
 
 ## 更新版とcallback
 
-時刻tは最初のt変更を適用した状態で、0が変更前です。更新版のrunは、伸縮callbackの後に`apply(change_id,left,right)`・`undo(change_id,left,right)`・answerを渡します。左右共通の形は`run(add,erase,apply,undo,answer,b=0)`です。変更対象が現在の区間内なら、古い寄与を除き、値を変更して新しい寄与を加えます。区間外なら値だけを変更します。
+時刻tは最初のt変更を適用した状態で、0が変更前です。更新版のrunには伸縮callbackに続けて`apply(change_id,left,right)`・`undo(change_id,left,right)`・answerを渡します。左右共通の形は`run(add,erase,apply,undo,answer,b=0)`です。変更対象が現在の区間内なら、古い寄与を除き、値を変更して新しい寄与を加えます。区間外なら値だけを変更します。
 
-実行開始時の集計は空、更新版の配列は時刻0に戻しておきます。runは静的版でWindow{left,right}、更新版でState{left,right,time}を返し、外部の配列・集計はその状態のまま残ります。要求なしなら全フィールド0で、更新callbackも呼びません。再実行前には利用側で初期状態へ戻してください。
+実行前に集計を空にし、更新版では配列を時刻0に戻しておきます。runは静的版でWindow{left,right}、更新版でState{left,right,time}を返します。外部の配列と集計には実行後の状態が残ります。要求がなければ全フィールドが0になり、更新callbackも呼びません。再実行前には利用側で初期状態へ戻してください。
 
 callbackはlvalueとして呼べる必要があり、保持・コピーはしません。実行中に本体を追加・clear・移動しないでください。作業領域はcallbackを呼ぶ前に確保します。callback例外では本体記録を維持しますが、外部状態は巻き戻しません。
 

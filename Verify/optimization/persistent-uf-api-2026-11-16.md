@@ -1,6 +1,6 @@
 # PersistentUnionFindのroot・版・issame（2026-11-16）
 
-通常UnionFindと同様、`root(i)`は代表頂点の`int`を返す。保存用の版は`version()`から取得する`Version`へ分けた。
+通常UnionFindと同様、`root(i)`は代表頂点の番号を`int`で返す。保存用の版のハンドルは`version()`で取得し、型は`Version`とした。
 `issame(a,b)`と`issame(a,b,version)`も追加し、既存の`same`は維持した。
 
 ```cpp
@@ -13,7 +13,7 @@ bool previous = uf.issame(0, 1, initial); // false
 ```
 
 旧`get_root()`は`version()`、`root_of(i)`は`root(i)`へ移行。UFの公開`root`ポインタは非公開状態へ移した。
-`Version`は非所有の版ハンドルで実体は`Node*`。領域の所有は従来どおりshared_ptrとvectorで管理し、PersistentArrayの公開rootは変更していない。
+`Version`は領域を所有しない版のハンドルで、実体は`Node*`。領域の所有は従来どおりshared_ptrとvectorで管理し、PersistentArrayの公開rootは変更していない。
 型と寿命の説明・全APIは[Document](../../Document/persistent_union_find.md)、[完全な使用例](../../Examples/persistent_union_find_example.cpp)を参照。
 
 ## Verifyの役割と提出ファイル
@@ -23,7 +23,7 @@ bool previous = uf.issame(0, 1, initial); // false
 | [persistent_union_find.cpp](../current/submissions/persistent_union_find.cpp) | [LC Persistent Unionfind](https://judge.yosupo.jp/problem/persistent_unionfind) | 任意の過去版からの分岐・版の保存・issame | 最適化版[AC・96ms](https://judge.yosupo.jp/submission/417443)・現行本文一致 |
 | [persistent_union_find_union_path_query.cpp](../current/submissions/persistent_union_find_union_path_query.cpp) | [yukicoder No.2295](https://yukicoder.me/problems/no/2295) | 版別連結の二分探索・root/sizeによる成分距離和・オンラインX | 最適化版[AC・1212ms](https://yukicoder.me/submissions/1199606)・現行本文一致 |
 
-2295は辺重みが非減少なので、最初に連結になる版の重みが最小最大辺距離になる。
+2295では辺重みが非減少のため、2頂点が初めて連結する版の重みが最小最大辺距離になる。
 重みwで大きさA/Bの成分を結ぶと、新たなA*B個の頂点対の距離がwとなるため成分和を更新できる。
 総和は各乗算の間で法998244353を取り、w*A*Bがint64を超える場合にも対応する。
 この問題は時系列の版のみで、任意の保存版からの分岐はLCで補完する。重み付きUFのポテンシャル差の検証ではない。

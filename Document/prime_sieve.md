@@ -12,7 +12,7 @@ PrimeSieve(const PrimeSieve&);
 PrimeSieve(PrimeSieve&& other) noexcept;
 ```
 
-上限以下の素数表を構築する。
+上限以下の素数表を構築します。
 
 **制約:** 共通の型・入力条件を満たすこと。
 
@@ -97,7 +97,7 @@ std::vector<std::uint64_t> primes() const;
 template <class Function> void for_each_prime(Function&& function) const;
 ```
 
-各素数を昇順に`f(prime)`へ渡す。列挙用vectorを作らない。
+各素数を昇順に`f(prime)`へ渡します。列挙用vectorは作りません。
 
 **制約:** callback中に同じ表を変更・移動・破棄しない。
 
@@ -109,7 +109,7 @@ template <class Function> void for_each_prime(Function&& function) const;
 template <class Function> void for_each_prime_stride(std::uint64_t first, std::uint64_t step, Function&& function) const;
 ```
 
-番号`first, first+step, ...`の素数だけを渡す。`step>0`、該当番号がなければ呼ばない。
+番号`first, first+step, ...`の素数だけを渡します。`step>0`が前提です。該当する番号がなければコールバックを呼びません。
 
 **制約:** step>0。callback中に同じ表を変更・移動・破棄しない。
 
@@ -151,7 +151,7 @@ sieve.for_each_prime_stride(1, 3, [&](std::uint64_t p) {
 構築は`O(limit log log limit)`時間、保持量は`O(limit)` bitです。奇数1個につき1bitを使い、大きい表は一定範囲ずつ篩います。
 `limit()`・`is_prime()`は`O(1)`、`prime_count()`は`O(limit/64)`です。
 
-素数数を`P`として列挙は最悪`O(limit/64+P)`です。間引き列挙は、出力対象のないワードを個数だけ数えて飛ばします。通常列挙・間引き列挙とも追加領域は`O(1)`で、callbackの費用は別です。`primes()`と追記先には出力件数分の領域が必要です。
+素数の個数を`P`とすると、列挙は最悪`O(limit/64+P)`です。間引き列挙では、出力対象のないワード内の素数を数えるだけで、個々の値の列挙は省きます。通常列挙・間引き列挙とも追加領域は`O(1)`で、callbackの費用は別です。`primes()`と追記先には出力件数分の領域が必要です。
 
 列挙中に同じ表を代入・移動・破棄しないでください。callbackが例外を送出しても表は変わりません。
 コピーは独立所有で、コピー代入の確保失敗時は元の表と上限を保ちます。移動元は上限0の空の表になり、代入して再利用できます。
