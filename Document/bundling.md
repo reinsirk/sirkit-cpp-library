@@ -1,6 +1,6 @@
 # 選択したライブラリを一つにまとめる
 
-`Scripts/bundle_libraries.py`は指定したライブラリを指定順に連結し、同一の共有部品の重複を省きます。main・入出力・外部ヘッダーは追加しません。ScriptsとVariants/manifest.jsonを含む完全版リポジトリで実行します。
+`Scripts/bundle_libraries.py`はライブラリを指定した順に連結し、共有部品の重複を省きます。main・入出力・外部ヘッダーは追加しません。`Scripts`と`Variants/manifest.json`を含む完全版リポジトリで実行します。
 
 ```sh
 python3 Scripts/bundle_libraries.py --profile normal \
@@ -12,7 +12,7 @@ python3 Scripts/bundle_libraries.py --profile normal \
 
 | 指定 | 動作 |
 | --- | --- |
-| `--profile` | 原本の `normal`、安全版の `portable`・`gcc`・`clang`・`msvc`、または同名に `fast-` を付けた速度優先版を選ぶ。前提は[配布版の説明](fast_variants.md)を参照。 |
+| `--profile` | 原本の `normal`、配布用の通常版の `portable`・`gcc`・`clang`・`msvc`、または同名に `fast-` を付けた速度優先版を選ぶ。前提は[配布版の説明](fast_variants.md)を参照。 |
 | `--library` | 通常版の正規パスを繰り返し指定する。temp.cpp・temp2.cppは対象外。 |
 | `--output` / `--report` | 結合先 / 変更前後のバイト数・SHA-256・省略部品を記録するJSON。 |
 | `--no-deduplicate` | 重複省略を行わず結合する。 |
@@ -20,7 +20,7 @@ python3 Scripts/bundle_libraries.py --profile normal \
 
 ## 出力と制約
 
-現行manifestとソースのSHA-256を照合し、先頭にライセンス・出典・API説明、その後にC++本文を並べます。標準ヘッダーと条件分岐は残します。#lineで元の位置を示すため、診断や__FILE__・__LINE__は元ソースに対応します。Mintなどの利用側の型は結合テキストより前に定義してください。
+現行のmanifestに記録したSHA-256とソースのSHA-256を照合し、ライセンス・出典・API説明に続けてC++本文を出力します。標準ヘッダーと条件分岐は残します。`#line`で元の位置を示すため、診断や`__FILE__`・`__LINE__`は元のソースに対応します。Mintなど利用側で用意する型は、結合したコードより前に定義してください。
 
 同じガード・同じ本文のSIRKIT_*_DEFINED部品で、先行部品が確実に定義済みとなる場合だけ重複を省きます。未知の条件・別本文・外側のelseなどがある部品は保持します。undefやmacroのpush/pop・動的pragma・token pasteも考慮し、安全に判断できない省略を無効にします。
 

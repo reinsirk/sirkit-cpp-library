@@ -1,6 +1,6 @@
-# 安全版ライブラリ
+# 通常版ライブラリ
 
-入力検査は既定で有効です。貼り付け前に `#define SKIP_RUNTIME_CHECKS` を書くと省略できます。
+入力検査は既定で有効です。ライブラリを貼り付ける前に `#define SKIP_RUNTIME_CHECKS` と書くと、対象の検査を省略できます。
 
 - [コンパイラ共通](Portable)
 - [GCC専用](GCC)
