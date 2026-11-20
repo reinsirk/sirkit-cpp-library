@@ -35,4 +35,4 @@ i9-14900KのP-Core 12に固定し、C++23・O2・検査省略で測定した。G
 - [全測定・候補・再現用コード](performance-rollback-union-find-round2-2026-10-30.json)
 - [独立参照・ビルド・Sanitizerの記録](../Verification/verify-rollback-union-find-round2-2026-10-30.json)
 
-[現行版の提出照合](../Submissions/online-rollback-union-find-414056-2026-10-30.json)にソース・main・入出力のハッシュとケース別結果を保存した。
+[現行版の提出照合](https://github.com/reinsirk/sirkit-cpp-library/blob/e7e74cd451f996e4fe4b8776ea14e094a356fd13/Audit/Submissions/online-rollback-union-find-414056-2026-10-30.json)にソース・main・入出力のハッシュとケース別結果を保存した。

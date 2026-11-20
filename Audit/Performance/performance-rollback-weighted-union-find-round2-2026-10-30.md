@@ -57,4 +57,4 @@ GCCで約2〜56%、通常のClangで約1〜49%短縮した。Clang nativeのgrou
 - [全測定・候補・再現コード](performance-rollback-weighted-union-find-round2-2026-10-30.json)
 - [独立参照・ビルド・公式照合](../Verification/verify-rollback-weighted-union-find-round2-2026-10-30.json)
 
-[Potentialの提出照合](../Submissions/online-rollback-weighted-union-find-414057-2026-10-30.json)と[Rollbackの提出照合](../Submissions/online-rollback-weighted-union-find-414058-2026-10-30.json)にケース別の旧新時間とソースのハッシュを記録した。
+[Potentialの提出照合](https://github.com/reinsirk/sirkit-cpp-library/blob/e7e74cd451f996e4fe4b8776ea14e094a356fd13/Audit/Submissions/online-rollback-weighted-union-find-414057-2026-10-30.json)と[Rollbackの提出照合](https://github.com/reinsirk/sirkit-cpp-library/blob/e7e74cd451f996e4fe4b8776ea14e094a356fd13/Audit/Submissions/online-rollback-weighted-union-find-414058-2026-10-30.json)にケース別の旧新時間とソースのハッシュを記録した。

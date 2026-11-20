@@ -37,4 +37,4 @@ Core i9-14900KのP-Core CPU12、GCC15.2、検査省略、各9反復。旧37ms申
 
 画像のAC42msは提出済みとして記録し、本文未取得だけを理由に再提出待ちにはしない。37msと42msの両記録、本文未照合という制限、追加案の不採用を残す。READMEとDocumentへ変更履歴は追加しない。
 
-[提出画像・記録](../Submissions/online-topological-lexicographical-80490774-2026-10-31.json)・[全測定値・入力生成器・候補ソース・コマンド](performance-topological-lexicographical-80490774-2026-10-31.json)。
+[提出画像・記録](https://github.com/reinsirk/sirkit-cpp-library/blob/e7e74cd451f996e4fe4b8776ea14e094a356fd13/Audit/Submissions/online-topological-lexicographical-80490774-2026-10-31.json)・[全測定値・入力生成器・候補ソース・コマンド](performance-topological-lexicographical-80490774-2026-10-31.json)。

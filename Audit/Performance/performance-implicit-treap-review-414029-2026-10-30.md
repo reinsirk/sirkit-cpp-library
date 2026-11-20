@@ -1,6 +1,6 @@
 # 暗黙Treap 414029の確認と追加比較（2026-10-30）
 
-[414029](https://judge.yosupo.jp/submission/414029)は **AC・1157ms**。提出コードは現行本体65969ea6、main、共通入出力と一致した。414026の1476ms、414025の1283msより短い。混合の大規模3ケースは808/824/824ms、反転中心は1157ms、更新908ms、照会556msだった。[全オンライン結果](../Submissions/online-implicit-treap-414029-2026-10-30.json)へ保存した。
+[414029](https://judge.yosupo.jp/submission/414029)は **AC・1157ms**。提出コードは現行本体65969ea6、main、共通入出力と一致した。414026の1476ms、414025の1283msより短い。混合の大規模3ケースは808/824/824ms、反転中心は1157ms、更新908ms、照会556msだった。[全オンライン結果](https://github.com/reinsirk/sirkit-cpp-library/blob/e7e74cd451f996e4fe4b8776ea14e094a356fd13/Audit/Submissions/online-implicit-treap-414029-2026-10-30.json)へ保存した。
 
 この差を最後の照会helperだけの効果とは扱わない。最遅の反転ケースはqueryを呼ばず、オンラインのseed・実行環境は制御できない。前回1476msの大幅退行の原因は依然として断定していない。
 

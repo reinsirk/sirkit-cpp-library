@@ -25,6 +25,6 @@ API比較は計10584実行、公式入力のmain比較とpath確認は計4452実
 
 **本体・main・共通入出力を414076のAC版のまま維持する。追加の再提出は不要。** 提出コードの注記は最新URLだけに揃え、再提出待ちは解消した。アルゴリズムや既存の高速化を変更しない。
 
-- [提出ソースとケース別結果](../Submissions/online-union-find-414076-2026-10-30.json)
+- [提出ソースとケース別結果](https://github.com/reinsirk/sirkit-cpp-library/blob/e7e74cd451f996e4fe4b8776ea14e094a356fd13/Audit/Submissions/online-union-find-414076-2026-10-30.json)
 - [全測定値・候補ソース・再現コード・検証記録](performance-union-find-followup-414076-2026-10-30.json)
 - [前回採用した変更の測定](performance-union-find-round2-2026-10-30.md)

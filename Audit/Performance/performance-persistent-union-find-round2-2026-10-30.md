@@ -39,4 +39,4 @@ Intel i9-14900KのP-Core12、C++23・O2・検査省略。GCC15.2/15.3の通常/n
 - [提出コード](../../Verify/current/submissions/persistent_union_find.cpp)
 - [全条件・生データ・不採用案・再現用コード](performance-persistent-union-find-round2-2026-10-30.json)
 - [独立参照・公式・ビルド・生成コードの記録](../Verification/verify-persistent-union-find-round2-2026-10-30.json)
-- [既存提出の再確認](../Submissions/online-persistent-union-find-review-2026-10-30.json)
+- [既存提出の再確認](https://github.com/reinsirk/sirkit-cpp-library/blob/e7e74cd451f996e4fe4b8776ea14e094a356fd13/Audit/Submissions/online-persistent-union-find-review-2026-10-30.json)

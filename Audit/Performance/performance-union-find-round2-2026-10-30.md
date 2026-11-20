@@ -46,7 +46,7 @@ API単体はプロセスCPU時間を測り、入力構築・独立参照・正�
 
 恒久試験2本を追加し、実際の相対includeでGCC/Clang・検査有無の8構成、使用例の2構成、生成提出コードの検査有無2構成も成功した。公式18ケースは上流commit `73876f1cbcf082d2b22722924b924d3d65a2f00e`の入力・出力ハッシュと一致し、最終比較2916実行すべてで独立した公式期待出力と一致した。別のAPI測定5184実行も独立参照と照合した。公式正解実装は試験専用で、本体には取り込んでいない。
 
-**[414076](https://judge.yosupo.jp/submission/414076)で現行ソース一致・全18ケースAC・16msを確認した。** 再提出待ちは解消。旧[412615](https://judge.yosupo.jp/submission/412615)のAC・10msは旧ソースの記録として保持する。大半のケースは±1ms以内だが、path_00だけ5→16msとなった。単発のオンライン差の原因は未確定で、ローカル比較と区別する。[提出照合とケース別時間](../Submissions/online-union-find-414076-2026-10-30.json)に記録した。
+**[414076](https://judge.yosupo.jp/submission/414076)で現行ソース一致・全18ケースAC・16msを確認した。** 再提出待ちは解消。旧[412615](https://judge.yosupo.jp/submission/412615)のAC・10msは旧ソースの記録として保持する。大半のケースは±1ms以内だが、path_00だけ5→16msとなった。単発のオンライン差の原因は未確定で、ローカル比較と区別する。[提出照合とケース別時間](https://github.com/reinsirk/sirkit-cpp-library/blob/e7e74cd451f996e4fe4b8776ea14e094a356fd13/Audit/Submissions/online-union-find-414076-2026-10-30.json)に記録した。
 
 - [測定値・control・候補・再現用ソース](performance-union-find-round2-2026-10-30.json)
 - [独立参照・検査・例外・公式ケース照合](../Verification/verify-union-find-round2-2026-10-30.json)

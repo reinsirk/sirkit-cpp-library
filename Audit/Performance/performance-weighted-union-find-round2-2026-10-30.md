@@ -54,7 +54,7 @@ AVX2は作業配列を減らした標準版より多くの条件でさらに数%
 
 ## 提出
 
-**[414094](https://judge.yosupo.jp/submission/414094)でsource0518版の一致・全18ケースAC・13msを確認した。** 再提出待ちは解消。旧[412620](https://judge.yosupo.jp/submission/412620)のAC・19msは旧ソースの履歴として保持する。大半は±1ms以内だが、旧random_00は18→8ms、path_02は19→10msとなった。最大値の約32%低下を、本体だけの短縮率とは主張しない。[提出照合とケース別時間](../Submissions/online-weighted-union-find-414094-2026-10-30.json)に記録した。
+**[414094](https://judge.yosupo.jp/submission/414094)でsource0518版の一致・全18ケースAC・13msを確認した。** 再提出待ちは解消。旧[412620](https://judge.yosupo.jp/submission/412620)のAC・19msは旧ソースの履歴として保持する。大半は±1ms以内だが、旧random_00は18→8ms、path_02は19→10msとなった。最大値の約32%低下を、本体だけの短縮率とは主張しない。[提出照合とケース別時間](https://github.com/reinsirk/sirkit-cpp-library/blob/e7e74cd451f996e4fe4b8776ea14e094a356fd13/Audit/Submissions/online-weighted-union-find-414094-2026-10-30.json)に記録した。
 
 - [全測定値・候補・再現コード](performance-weighted-union-find-round2-2026-10-30.json)
 - [独立参照・ビルド・標準経路・例外の検証](../Verification/verify-weighted-union-find-round2-2026-10-30.json)

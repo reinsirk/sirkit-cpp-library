@@ -24,4 +24,4 @@ Core i9-14900KのP-Core CPU12、GCC15.2、C++23・O2・検査省略。通常設�
 
 再生成した提出コードはGCC/Clang・検査有効/無効の4構成で公式3サンプル、計12実行を確認した。本体・main・共通I/OのSHAと不変性を確認した。今回の追加改修による再提出は不要。
 
-[提出画像・記録](../Submissions/online-topological-80490084-2026-10-31.json)と[生データ・コマンド・候補ソース](performance-topological-80490084-2026-10-31.json)を保存した。アルゴリズム説明やREADMEに変更履歴は追加していない。
+[提出画像・記録](https://github.com/reinsirk/sirkit-cpp-library/blob/e7e74cd451f996e4fe4b8776ea14e094a356fd13/Audit/Submissions/online-topological-80490084-2026-10-31.json)と[生データ・コマンド・候補ソース](performance-topological-80490084-2026-10-31.json)を保存した。アルゴリズム説明やREADMEに変更履歴は追加していない。

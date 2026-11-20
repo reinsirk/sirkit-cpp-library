@@ -31,5 +31,5 @@ Intel i9-14900KのP-Core論理CPU12、GCC15.2/Clang21、C++23・O2・検査省�
 
 - [測定条件・全生データ・不採用案・再現用コード](performance-line-container-round2-2026-10-30.json)
 - [独立照合・ビルド・公式ケース結果](../Verification/verify-line-container-round2-2026-10-30.json)
-- [過去提出との対応](../Submissions/online-line-container-review-2026-10-30.json)
+- [過去提出との対応](https://github.com/reinsirk/sirkit-cpp-library/blob/e7e74cd451f996e4fe4b8776ea14e094a356fd13/Audit/Submissions/online-line-container-review-2026-10-30.json)
 - [独立試験](../../Verify/current/tests/line_container_test.cpp)

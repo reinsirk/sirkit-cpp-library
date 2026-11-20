@@ -1,6 +1,6 @@
 # 暗黙Treapの照会とオンライン退行の確認（2026-10-30）
 
-[414026](https://judge.yosupo.jp/submission/414026)はAC・1476msで、提出コードは415eb版の本体・main・共通I/Oと一致した。[414025](https://judge.yosupo.jp/submission/414025)の1283msから悪化し、混合・更新・照会にも大きな増加がある。[オンライン証跡](../Submissions/online-implicit-treap-414026-2026-10-30.json)へ全ケースを保存した。
+[414026](https://judge.yosupo.jp/submission/414026)はAC・1476msで、提出コードは415eb版の本体・main・共通I/Oと一致した。[414025](https://judge.yosupo.jp/submission/414025)の1283msから悪化し、混合・更新・照会にも大きな増加がある。[オンライン証跡](https://github.com/reinsirk/sirkit-cpp-library/blob/e7e74cd451f996e4fe4b8776ea14e094a356fd13/Audit/Submissions/online-implicit-treap-414026-2026-10-30.json)へ全ケースを保存した。
 
 ## 条件の再確認
 

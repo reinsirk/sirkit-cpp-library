@@ -41,6 +41,6 @@ Clangの一成分`groups`を独立したnoinline関数へ移す案も比較し�
 
 **本体・main・入出力を414094のAC版のまま維持する。追加の再提出は不要。** 提出注記は最新URLだけとし、再提出待ちを解消した。
 
-- [提出ソース・ケース別時間の照合](../Submissions/online-weighted-union-find-414094-2026-10-30.json)
+- [提出ソース・ケース別時間の照合](https://github.com/reinsirk/sirkit-cpp-library/blob/e7e74cd451f996e4fe4b8776ea14e094a356fd13/Audit/Submissions/online-weighted-union-find-414094-2026-10-30.json)
 - [全測定値・候補・再現コード・検証記録](performance-weighted-union-find-followup-414094-2026-10-30.json)
 - [前回採用した変更と検証](performance-weighted-union-find-round2-2026-10-30.md)

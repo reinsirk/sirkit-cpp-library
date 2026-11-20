@@ -1,6 +1,6 @@
 # 暗黙Treapの分割・反転・削除（2026-10-30）
 
-[414025](https://judge.yosupo.jp/submission/414025)はAC・1283ms。提出コードを現行改修前の本体と照合した。旧414009は1292msで、混合・更新・照会の多くは約8〜11%短縮したが、最遅の反転中心は1292→1283msに留まった。詳しいケース差は[オンライン結果](../Submissions/online-implicit-treap-414025-2026-10-30.json)に保存した。
+[414025](https://judge.yosupo.jp/submission/414025)はAC・1283ms。提出コードを現行改修前の本体と照合した。旧414009は1292msで、混合・更新・照会の多くは約8〜11%短縮したが、最遅の反転中心は1292→1283msに留まった。詳しいケース差は[オンライン結果](https://github.com/reinsirk/sirkit-cpp-library/blob/e7e74cd451f996e4fe4b8776ea14e094a356fd13/Audit/Submissions/online-implicit-treap-414025-2026-10-30.json)に保存した。
 
 ## 採用した変更
 

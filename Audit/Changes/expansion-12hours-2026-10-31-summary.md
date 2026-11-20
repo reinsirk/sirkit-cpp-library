@@ -109,6 +109,6 @@ Link Cut Treeの小型ノード・破棄省略は、照会の短縮幅が測定�
 
 [47本とFast上書きの確認](../Provenance/final-policy-provenance-47-libraries-2026-10-31.json)は対象SHAを固定した記録です。その後のModularArithmeticは、[平方根の採用記録](modular-sqrt-adoption-receipt-2026-10-31.json)と[最終本体への注記だけの差分](modular-sqrt-source-comment-bridge-2026-10-31.json)で補足しています。既存GenericHashのSplitMix64 finalizerは原典のPD提供声明・無条件許諾を区別し、[原文の通知](../../LICENSES/SplitMix64-Public-Domain.txt)も同梱します。
 
-通常版の今回追加79本と、本体を変えた既存HashMapを[提出一覧](../Submissions/submission-checklist-12hours-2026-10-31.md)にまとめました。以前からの未提出・再提出記録を今回の変更と混ぜません。ローカル検証はオンラインACの代わりではなく、各配布版へ通常版のACは転記していません。
+通常版の今回追加79本と、本体を変えた既存HashMapを[提出一覧](https://github.com/reinsirk/sirkit-cpp-library/blob/e7e74cd451f996e4fe4b8776ea14e094a356fd13/Audit/Submissions/submission-checklist-12hours-2026-10-31.md)にまとめました。以前からの未提出・再提出記録を今回の変更と混ぜません。ローカル検証はオンラインACの代わりではなく、各配布版へ通常版のACは転記していません。
 
 [新規79本のdriver読解レビュー](../Verification/verify-new-driver-domains-2026-10-31.md)も行いました。APIと問題の変換に確認できた実不具合はありませんでしたが、公式本文2件・一部上限の取得未完と、別解を許す問題の固定出力回帰検査は範囲を明記しています。

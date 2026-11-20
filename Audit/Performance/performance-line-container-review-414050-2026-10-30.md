@@ -30,7 +30,7 @@ Intel i9-14900KのP-Core論理CPU12に固定。他agentの計時・コンパイ�
 
 2Dの前回339msと今回357msは、共有1Dの変更が2D経路の生成コードへ影響していない。単発の提出時間差だけでコード退行とは判断しない。今回はライブラリ本体を変更しておらず、**追加の再提出は不要**。
 
-- [提出414050の照合](../Submissions/online-line-container-414050-2026-10-30.json)
-- [提出414048の照合](../Submissions/online-line-container-414048-2026-10-30.json)
+- [提出414050の照合](https://github.com/reinsirk/sirkit-cpp-library/blob/e7e74cd451f996e4fe4b8776ea14e094a356fd13/Audit/Submissions/online-line-container-414050-2026-10-30.json)
+- [提出414048の照合](https://github.com/reinsirk/sirkit-cpp-library/blob/e7e74cd451f996e4fe4b8776ea14e094a356fd13/Audit/Submissions/online-line-container-414048-2026-10-30.json)
 - [全測定・条件・試作ソース・再現用コード](performance-line-container-review-414050-2026-10-30.json)
 - [試作の独立照合と生成コードの記録](../Verification/verify-line-container-review-414050-2026-10-30.json)
