@@ -7,12 +7,13 @@
 | C++23 Verify | 全対象をGCC/Clang、通常/標準代替、入力検査有効/無効でビルド・照合する。 |
 | 配布8版の検査 | 全ファイルの単独構文検査と、主要13ライブラリの動作テストを行う。共通版はGCC・Clang・MSVCで実行する。 |
 | 正常系・失敗系 | checked契約テストで正常結果・期待した例外型・失敗後の状態を照合する。 |
-| Library Checker公式ケース | 全LC対象を外部キャッシュで生成し、全ケースを公式checkerで照合する。 |
-| 決定的Max・構造ケース | Unionfindと永続UFのNo.2295向けに、制約上限や平衡結合・版探索・大きな積を独立参照と照合する。 |
+| Library Checker公式ケース | 全LC対象を外部キャッシュで生成し、全ケースを公式checkerで照合する。実行上限は1ケース30秒。 |
+| 決定的Max・構造ケース | Unionfindと永続UFのNo.2295向けに、制約上限や平衡結合・版探索・大きな積を独立参照と照合する。実行上限は1ケース60秒。 |
 | ASan/UBSan | 通常版のchecked実行で、範囲外アクセス・解放後の参照・未定義動作を検出する。 |
 | カバレッジ | checked実行で通常版本体の行・直接分岐を測定し、両方100%を必須にする。未計測も失敗。 |
 | 作法 | 通常版をCore Guidelines・Google Styleの2プロファイルで検査する。`Fast/`は対象外。 |
-| 性能退行 | 通常版全103本のVerify全体時間と代表3本の本体時間を、PRのベースコミットと比較する。 |
+
+GitHub Actionsでは、正答と実行上限を検査します。変更前後の時間は[手元の性能測定](#性能退行の検査)で比較できます。
 
 各ライブラリの結果は[ライブラリページ](https://reinsirk.github.io/sirkit-cpp-library/)にも表示します。ソースSHAが合わない記録は未検証、対象のない項目は未実施です。[生成・公開・外部問題資産の扱い](library_pages.md)を参照してください。
 
@@ -29,7 +30,7 @@ python3 Scripts/ci_quality_report.py --input /tmp/contracts --input /tmp/officia
 
 Linuxの一般設定はUbuntu 26.04でGCC 15（`g++-15`）とClang 18（`clang++-18`）を使います。配布版のMSVC検査はWindowsで実行します。
 
-各検査ジョブは同じPRのソースを取得して並行に実行します。ローカルVerify、Linuxの配布版検査、ASan/UBSan、カバレッジ、Clang-Tidyでは、各ジョブ内でも最大4件を並行実行します。性能測定は各ランナーで順番に実行します。PRの最終判定は、生成物の同期検査を含む全ジョブの完了後に行います。
+各検査ジョブは同じPRのソースを取得して並行に実行します。ローカルVerify、Linuxの配布版検査、ASan/UBSan、カバレッジ、Clang-Tidyでは、各ジョブ内でも最大4件を並行実行します。PRの最終判定は、生成物の同期検査を含む全ジョブの完了後に行います。
 
 一般設定では`-std=c++23`を指定します。以下はジョブごとの主な追加引数です。
 
@@ -39,27 +40,24 @@ Linuxの一般設定はUbuntu 26.04でGCC 15（`g++-15`）とClang 18（`clang++
 | 配布版の動作テスト | `-O2 -UNDEBUG`。配布版と検査設定に応じて`SKIP_RUNTIME_CHECKS`を指定。 |
 | 正常系・失敗系 | `-O2 -UNDEBUG -USKIP_RUNTIME_CHECKS` |
 | Library Checker公式ケース | `-O2 -DSKIP_RUNTIME_CHECKS= -DNDEBUG=` |
-| Verify全体の性能比較・Max検査 | `-O2 -DNDEBUG`。生成ソースで`SKIP_RUNTIME_CHECKS`を定義。 |
-| ライブラリ本体の性能比較 | `-O2 -DNDEBUG -DSKIP_RUNTIME_CHECKS` |
+| Max検査 | `-O2 -DNDEBUG`。生成ソースで`SKIP_RUNTIME_CHECKS`を定義。 |
 | ASan/UBSan | `-O1 -g -fsanitize=address,undefined -fno-sanitize-recover=all -fno-omit-frame-pointer` |
 | カバレッジ | Clangは`-O0 -g -fprofile-instr-generate -fcoverage-mapping`。GCCの補測は`-O0 -g --coverage`。 |
 
 標準代替のVerifyと契約テストは、`-U__SIZEOF_INT128__ -DSIRKIT_FORCE_STANDARD_ARITHMETIC -DSIRKIT_LINE_CONTAINER_FORCE_PORTABLE -DSIRKIT_DISABLE_SIMD`を追加します。計装の主計測では`-UNDEBUG -USKIP_RUNTIME_CHECKS`も指定します。
 
-Verifyごとに設定されたGCC用の`#pragma GCC optimize`は生成ソースに入ります。該当するプログラムでは、コマンドラインの`-O2`に加えてこの設定が適用されます。性能比較の変更前後は同じGCC 15とコンパイル引数でビルドします。
+Verifyごとに設定されたGCC用の`#pragma GCC optimize`は生成ソースに入ります。該当するプログラムでは、コマンドラインの`-O2`に加えてこの設定が適用されます。
 
 ### AtCoder設定
 
-ローカルVerify全件をGCC・Clangの一般設定とAtCoder設定で実行します。Verify全体と代表3本の本体の性能比較はGCCの両設定で実行します。
+ローカルVerify全件をGCC・Clangの一般設定とAtCoder設定で実行します。
 
 - GCCの`atcoder`はGCC 15を使い、`-fmodules`とGCC用のconstexpr上限を指定します。`-flto=auto`は2026年6月の公式更新でGCC設定から削除されました。[更新のお知らせ](https://atcoder.jp/posts/language_update20260616_jp)
 - Clangの`atcoder-clang`はUbuntuのClang 21とlibc++を使い、`-fconstexpr-steps=524288`、`-flto=auto`、`lld`、`compiler-rt`、`libunwind`を指定します。Verify全件を検査有効・省略の両方で実行します。[AtCoderの言語設定](https://img.atcoder.jp/file/language-update/2025-10/language-list.html)
 
 両設定で`-std=gnu++23 -O2 -Wall -Wextra -march=native`、`ATCODER`・`ONLINE_JUDGE`・`NOMINMAX`、自動変数のゼロ初期化、OpenMPなどを指定します。実行環境はUbuntuのCIランナーです。AtCoder固有の検索パス、Verifyで使わない外部ライブラリやプリコンパイル済み標準モジュールは省きます。
 
-性能退行は各設定内でPRの変更前後を比較します。判定はActionsのSummaryに表示します。AtCoder設定の引数と測定値は`atcoder-`で始まるArtifactで確認できます。ライブラリページには一般設定の結果を掲載します。
-
-旧版だけがAtCoderの`constexpr`演算上限を超える場合、その設定では現行版の正解照合と計測を行い、退行判定は「比較不可」と記録します。一般設定の退行判定は通常どおり行います。
+AtCoder設定の引数と正誤の結果は`atcoder-local-verify-`で始まるArtifactで確認できます。ライブラリページには一般設定の結果を掲載します。
 
 ```sh
 python3 Scripts/ci_verify.py --compiler g++-15 --compile-profile atcoder --id fenwick_tree
@@ -147,16 +145,16 @@ python3 Scripts/ci_cpp_guidelines.py --guide google --clang-tidy clang-tidy-18 -
 
 手元の環境で現在版のケース別の時間を知りたい場合は、[手元でライブラリの性能を測る](performance_measurement.md)を参照してください。
 
-全103ライブラリについて、固定したVerifyプログラムの実行時間を8分割で測ります。テンプレート・`Fast/`・生成された派生版はこの103本に含めません。Library Checker対応の83本は公式入力の小規模例・最大バイト数・全generator系列・専用難ケースから選び、残り20本には各2形状の決定的入力を用意します。公式全ケースの正誤照合は別ジョブでも行います。
+手元の比較には、通常版の各ライブラリに対応するVerifyプログラムを使います。Library Checker対応のライブラリは、公式入力の小規模例・最大バイト数・各generator系列・専用難ケースから選びます。ほかのライブラリには決定的な入力を用意しています。
 
 ```sh
 python3 Scripts/ci_performance_all.py --base origin/main --compiler g++ \
   --cache /tmp/all-performance-cache --output /tmp/all-performance
 ```
 
-ActionsではPRのベースSHAを固定し、変更前後を同じジョブで、同じ入力・コンパイラ・設定で交互に測ります。Verifyは原則として同じmainと入出力を使います。旧APIでのみビルドできる場合は、同一問題・入出力で照合した旧driverを使い、JSONに出典とSHAを記録します。測定の既定はウォームアップ1回・測定3回です。Verify全体では起動・入出力を含むwall時間と子プロセスCPU時間を記録し、入力生成・コンパイル・正解checkerの時間は除きます。
+変更前後を同じ入力・コンパイラ・設定で交互に測ります。Verifyは原則として同じmainと入出力を使います。旧APIでのみビルドできる場合は、同一問題・入出力で照合した旧driverを使い、JSONに出典とSHAを記録します。測定の既定はウォームアップ1回・測定3回です。Verify全体では起動・入出力を含むwall時間と子プロセスCPU時間を記録し、入力生成・コンパイル・正解checkerの時間は除きます。
 
-非LCの規模はCI用の処理量で、問題Maxの網羅を意味しません。数値制約を未再確認の4件はJSONへその旨を記し、既存driverを使うAPI測定として扱います。呼び出していない公開APIの性能まで保証しません。現在版のライブラリ・ケース・測定値が欠ければ失敗とし、縮小確認は全件測定済みに数えません。
+非LCのケースは既存driverで呼び出す操作を測ります。入力規模と問題制約の確認状況はJSONに記録します。現在版のライブラリ・ケース・測定値が欠ければ失敗とし、縮小確認は全件測定済みに数えません。
 
 本体だけの補足測定には次を使います。入力生成・独立参照・起動・入出力は測らず、構築・操作・破棄・checksum集約を含めます。
 
@@ -174,6 +172,6 @@ python3 Scripts/ci_benchmark.py --base origin/main --compiler g++ --output /tmp/
 
 Verify全体は子プロセスのCPU時間、本体はテスト用プログラム内の経過時間を使います。ライブラリとコンパイル設定の組み合わせごとに、比較可能な全ケースで反復測定の中央値を求めます。最も遅いケースが両版で異なる場合も、基準版と現行版それぞれの中央値の最大値を比べます。
 
-上限は基準版の最大値に、割合と最小許容幅の大きい方を加えた値です。GitHub Actionsの標準ランナーでは`--regression-profile github-hosted`を使い、15%を許容します。短時間の測定に対する最小許容幅はVerify全体で1 ms、本体で50 µsです。ローカルの既定は5%で、最小許容幅はVerify全体で100 µs、本体で5 µsです。現行版の最大値が上限を超えたときは、そのライブラリの比較対象をすべて再測定し、再測定でも上限を超えた場合に性能退行で失敗します。
+ローカルの比較上限は、基準版の最大値にその5%と最小許容幅の大きい方を加えた値です。最小許容幅はVerify全体で100 µs、本体で5 µsです。現行版の最大値が上限を超えたときは、そのライブラリの比較対象をすべて再測定し、再測定でも上限を超えた場合に性能退行で失敗します。
 
-ActionsのSummary・ライブラリページ・JSONに、両版の最悪ケースと判定を表示します。ケース別の測定値と比率は参考として記録します。比較元にコードがない場合や旧版の出力が独立参照と一致しない場合は、理由を記録して比較不能と表示します。現在版の誤答・ビルド失敗・計測漏れは失敗です。
+ローカルの`summary.md`と`result.json`に、両版の最悪ケースと判定を表示します。ケース別の測定値と比率は参考として記録します。比較元にコードがない場合や旧版の出力が独立参照と一致しない場合は、理由を記録して比較不能と表示します。現在版の誤答・ビルド失敗・計測漏れは失敗です。

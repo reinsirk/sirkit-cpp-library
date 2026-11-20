@@ -785,6 +785,7 @@ def build(root: Path, output: Path, reports: list[Path], *, production: bool = F
     (output / "jekyll/quality.md").write_text(
         "---\nlayout: default\npermalink: /quality.html\ntitle: テスト・性能\n---\n\n"
         "[版を選ぶ](" + site_link("") + ")\n\n# テスト・性能\n\n" +
+        "[手元でライブラリの性能を測る](" + github_link("Document/performance_measurement.md", revision) + ")\n\n" +
         ci_quality_report.markdown(quality) + "\n[結果JSON](" + site_link("assets/quality.json") + ")\n", encoding="utf-8")
     guide = (root / VARIANT_GUIDE).read_text(encoding="utf-8")
     guide = rewrite_links(literal_liquid(guide), VARIANT_GUIDE, root, source_set, revision)
