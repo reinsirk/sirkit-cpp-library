@@ -214,19 +214,47 @@ jobs:
           sudo apt-get install -y clang-18 llvm-18 libclang-rt-18-dev g++-15 libboost-dev
           if [[ "${{ matrix.mode }}" == coverage ]]; then
             sudo apt-get install -y qemu-user g++-15-multilib
-            mkdir -p "$RUNNER_TEMP/qemu-amd64" "$RUNNER_TEMP/qemu-amd64-packages"
-            cd "$RUNNER_TEMP/qemu-amd64-packages"
-            # NehalemではクラウドイメージのAMD64v3版ライブラリを実行できない。
-            printf '#clear APT::Architecture-Variants;\n' > generic-apt.conf
-            apt-get -c generic-apt.conf download libc6:amd64 libstdc++6:amd64 libgcc-s1:amd64
-            for package in ./*.deb; do
-              if [[ -n "$(dpkg-deb -f "$package" Architecture-Variant)" ]]; then
-                printf '汎用AMD64パッケージが必要です: %s\n' "$package" >&2
-                exit 1
-              fi
-              dpkg-deb -x "$package" "$RUNNER_TEMP/qemu-amd64"
-            done
           fi
+      - name: Prepare generic AMD64 runtime for QEMU
+        if: matrix.mode == 'coverage'
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/qemu-amd64" "$RUNNER_TEMP/qemu-amd64-packages/lists/partial"
+          cd "$RUNNER_TEMP/qemu-amd64-packages"
+          source /etc/os-release
+          # 汎用AMD64の候補を、ランナーのAMD64v3用索引やインストール済み版から分離する。
+          mkdir empty.d
+          touch empty-status
+          cat > generic-apt.conf <<EOF
+          #clear APT::Architecture-Variants;
+          #clear APT::Architectures;
+          APT::Architecture "amd64";
+          APT::Architectures { "amd64"; };
+          Dir::Etc::sourcelist "$PWD/ubuntu.list";
+          Dir::Etc::sourceparts "$PWD/empty.d";
+          Dir::Etc::preferences "/dev/null";
+          Dir::Etc::preferencesparts "$PWD/empty.d";
+          Dir::State::lists "$PWD/lists";
+          Dir::State::status "$PWD/empty-status";
+          Dir::Cache::pkgcache "";
+          Dir::Cache::srcpkgcache "";
+          Acquire::Languages "none";
+          EOF
+          cat > ubuntu.list <<EOF
+          deb [arch=amd64 signed-by=/usr/share/keyrings/ubuntu-archive-keyring.gpg] https://archive.ubuntu.com/ubuntu $VERSION_CODENAME main
+          deb [arch=amd64 signed-by=/usr/share/keyrings/ubuntu-archive-keyring.gpg] https://archive.ubuntu.com/ubuntu $VERSION_CODENAME-updates main
+          deb [arch=amd64 signed-by=/usr/share/keyrings/ubuntu-archive-keyring.gpg] https://security.ubuntu.com/ubuntu $VERSION_CODENAME-security main
+          EOF
+          apt-get -c generic-apt.conf update --error-on=any
+          apt-get -c generic-apt.conf download libc6:amd64 libstdc++6:amd64 libgcc-s1:amd64
+          for package in ./*.deb; do
+            if [[ "$(dpkg-deb -f "$package" Architecture)" != amd64 || -n "$(dpkg-deb -f "$package" Architecture-Variant)" ]]; then
+              printf '汎用AMD64パッケージが必要です: %s\n' "$package" >&2
+              exit 1
+            fi
+            dpkg-deb -x "$package" "$RUNNER_TEMP/qemu-amd64"
+          done
       - name: Run checked library tests
         env:
           VERIFY_MODE: ${{ matrix.mode }}
