@@ -150,6 +150,7 @@ class StructureTests(unittest.TestCase):
         windows = next(step for step in job["steps"] if "on Windows" in step.get("name", ""))
         self.assertEqual(windows["shell"], "cmd")
         self.assertIn("SIRKIT_VS_DEVELOPER_COMMAND", windows["run"])
+        self.assertIn("python -X utf8 Scripts/verify_variants.py", windows["run"])
         self.assertIn("--compiler MSVC --syntax-only --run-tests", windows["run"])
         linux = next(step for step in job["steps"] if "on Linux" in step.get("name", ""))
         self.assertIn("--gcc g++-15 --clang clang++-18", linux["run"])

@@ -1,7 +1,9 @@
 # SPDX-License-Identifier: CC0-1.0
+from io import BytesIO, TextIOWrapper
 from pathlib import Path
 import subprocess
 import sys
+from tempfile import TemporaryDirectory
 import unittest
 from unittest.mock import patch
 
@@ -74,6 +76,25 @@ class VariantMatrixTests(unittest.TestCase):
             "runtime_requested": True, "runtime": result,
         }]})
         self.assertIn("| MSVC | `Fast/Portable` | 1/1 | 0/1 |", summary)
+
+    def test_cli_reports_status_with_windows_legacy_stdout(self):
+        for passed, status in ((True, "PASS"), (False, "FAIL")):
+            with self.subTest(status=status), TemporaryDirectory() as directory:
+                summary = Path(directory) / "summary.md"
+                args = ["verify_variants.py", "--compiler", "MSVC", "--output",
+                        str(Path(directory) / "result.json"), "--summary", str(summary)]
+                report = {"status": "passed" if passed else "failed", "results": [{
+                    "compiler": "MSVC", "path": "Fast/Portable/Example.cpp", "passed": passed,
+                    "syntax_passed": True, "runtime_requested": True, "runtime": {"passed": passed},
+                }]}
+                buffer = BytesIO()
+                with TextIOWrapper(buffer, encoding="cp1252", errors="strict") as stdout:
+                    with patch.object(sys, "stdout", stdout), patch.object(sys, "argv", args), \
+                            patch.object(variants, "verify", return_value=report):
+                        self.assertEqual(variants.main(), int(not passed))
+                    stdout.flush()
+                    self.assertIn(f"{int(passed)}/1 configurations: {status}", buffer.getvalue().decode("cp1252"))
+                self.assertIn("配布版の検査", summary.read_text(encoding="utf-8"))
 
 
 if __name__ == "__main__":
