@@ -54,3 +54,21 @@ python3 Scripts/update_verify_status.py
 取り込みには公開APIを使い、ログイン情報は不要です。既定では確認だけで、`--write`を付けた場合だけ以前の記録を履歴に残して保存します。提出先・実際の提出本文・判定を確認できない場合は保存しません。
 
 READMEの「現行AC」は、生成するコードと保存済みの受理コードを照合できた件数です。過去のAC、変更後の要再提出、未提出、ローカル補足を区別します。集計の更新忘れは`python3 Scripts/update_verify_status.py --check`で確認できます。
+
+## Claudeの設定
+
+このリポジトリからは`python3 Scripts/claude_atcoder.py`でClaudeを起動します。認証・履歴はGit管理外の`.claude-code/`に保存します。許可済みのメールアドレスはGit管理外の`.sirkit-local/claude-approved-account`に1行で保存するか、環境変数`SIRKIT_CLAUDE_APPROVED_ACCOUNT`で指定します。両方を指定した場合は同じアドレスが必要です。
+
+起動前に毎回ログイン先を確認し、設定がない場合やログイン先が一致しない場合は停止します。照合結果にはメールアドレスを出力しません。モデルと利用枠のルールは[ClaudeとCodexの利用](contributing/tools.md)を参照してください。
+
+```sh
+CLAUDE_CONFIG_DIR="$PWD/.claude-code" claude auth login
+# ローカルファイルに許可済みアカウントを保存していない場合だけ、環境変数を設定する。
+read -rs -p '許可済みアカウントのメールアドレスを入力してください ' SIRKIT_CLAUDE_APPROVED_ACCOUNT
+printf '\n'
+export SIRKIT_CLAUDE_APPROVED_ACCOUNT
+python3 Scripts/claude_atcoder.py --status
+python3 Scripts/claude_atcoder.py -p --model claude-opus-5-5 --effort max "レビュー依頼"
+```
+
+初回ログインは利用者が行います。上のBashの入力手順では、メールアドレスを表示せずに現在のシェルの環境変数へ設定します。設定や履歴は保存先ごとに分かれます。
