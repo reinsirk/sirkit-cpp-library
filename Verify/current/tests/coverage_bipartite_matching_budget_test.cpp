@@ -51,6 +51,33 @@ void work_budget_boundaries() {
     assert(saturated_unit == kLimit && saturated_total == kLimit);
 }
 
+void greedy_order_and_rollback() {
+    sirkit::BipartiteMatching reverse(4, 3);
+    reverse.add_edge(0, 0);
+    reverse.add_edge(0, 1);
+    reverse.add_edge(2, 0);
+    assert(reverse.solve() == 2);
+    assert(reverse.match_left(0) == 1 && reverse.match_left(2) == 0);
+    assert(reverse.match_left(1) == -1 && reverse.match_left(3) == -1);
+
+    sirkit::BipartiteMatching fallback(5, 4);
+    for (int u : {0, 2, 4}) fallback.add_edge(u, 0);
+    assert(fallback.solve() == 1);
+    const int mate = fallback.match_right(0);
+    assert(mate >= 0 && fallback.match_left(mate) == 0);
+    assert(fallback.pairs().size() == 1);
+    assert(fallback.min_vertex_cover().size() == 1);
+
+    // 右の次数2は平行辺だけなので、縮約を試しても左頂点は減らない。
+    sirkit::BipartiteMatching parallel(3, 2);
+    for (int u = 0; u < 3; ++u)
+        for (int copy = 0; copy < 2; ++copy)
+            parallel.add_edge(u, u == 2 ? 1 : 0);
+    assert(parallel.solve() == 2);
+    assert(parallel.match_left(2) == 1);
+    assert(parallel.min_vertex_cover().size() == 2);
+}
+
 void long_paths_with_contended_vertex(bool transpose, bool hall_deficiency, bool equal_lengths = false) {
     constexpr int kChain = 512;
     constexpr int kShorterChain = 448;
@@ -107,6 +134,7 @@ void long_paths_with_contended_vertex(bool transpose, bool hall_deficiency, bool
 int main() {
     empty_sides_and_invalid_arguments();
     work_budget_boundaries();
+    greedy_order_and_rollback();
     for (bool transpose : {false, true}) {
         for (bool hall_deficiency : {false, true})
             long_paths_with_contended_vertex(transpose, hall_deficiency);
