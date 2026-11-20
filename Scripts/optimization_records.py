@@ -21,6 +21,8 @@ except ImportError:
 ROOT = Path(__file__).resolve().parents[1]
 SHA = re.compile(r"[0-9a-f]{64}\Z")
 IDENTIFIER = re.compile(r"[A-Za-z0-9][A-Za-z0-9_-]*\Z")
+AUDIT_RECORD_DIRECTORIES = ("Changes", "Distribution", "Performance", "Provenance",
+                            "Submissions", "Verification")
 
 
 def encode(value: object) -> bytes:
@@ -152,6 +154,16 @@ def evidence_path(root: Path, name: str) -> Path:
         raise ValueError("不正な根拠ファイルのパス")
     p = Path(name)
     if not p.is_absolute():
+        parts = PurePosixPath(name).parts
+        if (len(parts) == 2 and parts[0] == "Audit" and name == "/".join(parts)
+                and not (root / name).exists() and not (root / name).is_symlink()):
+            # 内容ハッシュ付きの旧記録は変更せず、移動した根拠の同名ファイルを探す。
+            matches = [f"Audit/{directory}/{parts[1]}" for directory in AUDIT_RECORD_DIRECTORIES
+                       if (root / "Audit" / directory / parts[1]).is_file()]
+            if len(matches) > 1:
+                raise ValueError("旧パスに対応する根拠ファイルが複数あります: " + name)
+            if matches:
+                return source_path(root, matches[0])
         p = source_path(root, name)
     if not p.is_file():
         raise ValueError("根拠ファイルが存在しません: " + name)
