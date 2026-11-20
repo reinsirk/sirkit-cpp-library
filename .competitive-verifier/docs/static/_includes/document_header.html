@@ -1,4 +1,7 @@
 {% comment %}SPDX-License-Identifier: CC0-1.0. competitive-verifierの公開テンプレート変数を使用。{% endcomment %}
-<nav><a href="{{ '/' | relative_url }}">版を選ぶ</a> · <a href="{{ '/quality.html' | relative_url }}">テスト・性能</a></nav>
+<nav><a href="{{ '/' | relative_url }}">版を選ぶ</a> · <a href="{{ '/quality.html' | relative_url }}">テスト・性能</a> · <a href="{{ '/licenses/index.html' | relative_url }}">ライセンス</a></nav>
 <h1>{{ page.title | default: include.data.path | escape }}</h1>
-<p class="source-meta"><code>{{ include.data.path | escape }}</code> · <a href="{{ site.github.repository_url }}/blob/{{ site.branch_name }}/{{ include.data.path | uri_escape }}">ソース</a>{% if include.data.attributes.SIRKIT_DOCUMENT %} · <a href="{{ site.github.repository_url }}/blob/{{ site.branch_name }}/{{ include.data.attributes.SIRKIT_DOCUMENT | uri_escape }}">文書</a>{% endif %}{% if site.sirkit_preview %} · <small>プレビュー</small>{% endif %}</p>
+<p class="source-meta"><code>{{ include.data.path | escape }}</code> · <a href="{{ site.github.repository_url }}/blob/{{ site.branch_name }}/{{ include.data.path | uri_escape }}">ソース</a>{% if include.data.attributes.SIRKIT_DOCUMENT %} · <a href="{{ site.github.repository_url }}/blob/{{ site.branch_name }}/{{ include.data.attributes.SIRKIT_DOCUMENT | uri_escape }}">文書</a>{% endif %}{% if site.sirkit_preview %} · <small>プレビュー</small>{% endif %}
+{% if include.data.attributes.SIRKIT_CURRENT_AC %}<a class="verify-badge" href="#verification-results"><span aria-hidden="true">✓</span> 現行ACあり</a>{% endif %}
+{% if include.data.attributes.SIRKIT_LAST_COMMIT %}<a class="commit-badge" href="{{ site.github.repository_url }}/commit/{{ include.data.attributes.SIRKIT_LAST_COMMIT }}" title="このソースを最後に変更したコミット">Last Commit <time datetime="{{ include.data.attributes.SIRKIT_LAST_COMMIT_DATE }}">{{ include.data.attributes.SIRKIT_LAST_COMMIT_DATE }}</time></a>{% endif %}
+</p>

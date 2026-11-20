@@ -4,9 +4,9 @@
 
 競技プログラミング向けのC++ライブラリ集です。
 
-[ライブラリページ](https://reinsirk.github.io/sirkit-cpp-library/)にAPI・使用例・ソース・テストと性能の結果をまとめます。[ページの生成と公開](Document/library_pages.md)を参照してください。
+[ライブラリページ](https://reinsirk.github.io/sirkit-cpp-library/)でAPI、使用例、ソース、テスト結果、性能測定の結果を確認できます。[ページの生成と公開](Document/library_pages.md)を参照してください。
 
-CIバッジはVerify・ASan/UBSan・カバレッジ・通常版の作法検査・性能測定の実行結果です。[品質検査の説明](Document/ci_quality.md)を参照してください。検証件数・カバレッジ率・性能比はChecks／ActionsのSummaryで、オンラインACは下の表で確認できます。
+CIバッジはVerify、ASan/UBSan、カバレッジ、通常版の作法検査、性能測定の結果を示します。検証件数・カバレッジ率・性能比はChecksやActionsのSummaryで、オンラインACは下の表で確認できます。検査の対象と判定基準は[品質検査の説明](Document/ci_quality.md)を参照してください。
 
 <!-- VERIFY_STATUS:START -->
 [Verify状況の一覧](Verify/current/status.md)（通常版の現行ソースと保存した判定を照合）
@@ -23,7 +23,7 @@ CIバッジはVerify・ASan/UBSan・カバレッジ・通常版の作法検査�
 ローカル補足: 54件。過去のAC・ローカル結果は現行ACと区別します。
 <!-- VERIFY_STATUS:END -->
 
-各ソースの冒頭に、公開APIの引数・戻り値・計算量・前提をまとめています。詳しい説明は、その直上にあるDocumentへのリンクから参照できます。
+各ソースの冒頭に、公開APIの引数・戻り値・計算量・前提をまとめています。詳しい説明は、API一覧の直上にあるDocumentへのリンクから参照できます。
 
 公開APIは`sirkit`名前空間内です。競プロ用mainでは`using namespace sirkit;`、名前を明示したいコードでは`sirkit::segtree`等で利用します。共有の無限大定数は`sirkit::kInf`です。
 
@@ -44,15 +44,15 @@ CIバッジはVerify・ASan/UBSan・カバレッジ・通常版の作法検査�
 速度確認のため、外部提出用コードは先頭で`SKIP_RUNTIME_CHECKS`を定義しています。
 直下の`Verify/*.md`は過去の提出記録です。今回のオンライン判定結果とは区別します。
 
-Library Checkerの提出コードはmain・入出力を含めてCodex、Claudeの順に最適化し、変更後は再提出します。本体だけの速度比較と、プログラム全体の比較は分けて記録します。開発はdev、mainへの反映はPR経由で行います。CI・手動提出・README集計の操作は[開発とVerify](Document/development.md)を参照してください。
+Library Checkerの提出コードはmainと入出力も含めてCodex、Claudeの順に最適化し、変更後に再提出します。ライブラリ本体とプログラム全体の速度は別々に比較し、記録します。開発は`dev`で行い、PRを通じて`main`に反映します。CI・手動提出・README集計の手順は[開発とVerify](Document/development.md)を参照してください。
 
 使用例は[Examples](Examples)、二項係数のテーブル上限などの設定は[二項係数の説明](Math/Combination/README.md)を参照してください。
 
-[安全版](Variants/README.md)と[速度優先版](Fast/README.md)は、それぞれコンパイラ共通・GCC専用・Clang専用・MSVC専用を用意しています。利用前提と生成方法は[配布版の説明](Document/fast_variants.md)を参照してください。
+[通常版](Variants/README.md)と、競技プログラミングの提出向けの[速度優先版](Fast/README.md)に、それぞれコンパイラ共通・GCC専用・Clang専用・MSVC専用を用意しています。利用前提と生成方法は[配布版の説明](Document/fast_variants.md)を参照してください。
 
 配布は[GitHub Releases](https://github.com/reinsirk/sirkit-cpp-library/releases)を利用します。
 
-必要なライブラリの読みやすい連結と、提出コードの容量確認には[連結ツール](Document/bundling.md)を使えます。
+[連結ツール](Document/bundling.md)で必要なライブラリを読みやすい形で一つにまとめ、提出コードの容量を確認できます。
 
 先頭で次を定義すると、入力検査をコンパイル時に省けます。
 

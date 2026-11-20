@@ -1321,7 +1321,7 @@ def worst_case_table(rows: list[tuple[str, dict]], *, include_library: bool) -> 
         return []
     label = "| ライブラリ " if include_library else ""
     align = "| --- " if include_library else ""
-    return ["", "各ライブラリでケースの中央値の最大値を比較します。", "",
+    return ["", "ライブラリごとに各ケースの測定時間の中央値を求め、基準版と現行版でそれぞれ最も大きい値を比較します。", "",
             label + "| 測定範囲 | 比較件数 | 基準の最悪ケース | 基準 ms | 現行の最悪ケース | 現行 ms | 上限 ms | 判定 |",
             align + "| --- | ---: | --- | ---: | --- | ---: | ---: | --- |", *lines, ""]
 
@@ -1336,9 +1336,9 @@ def coverage_percent(metric: dict) -> str:
 
 
 def markdown(report: dict) -> str:
-    lines = ["# ローカルの品質検査", "", "オンラインACと分け、原本・テストのSHAが現在版と一致する結果だけを通過として表示します。",
-             "正常系は入力例・明示的なAPI契約、失敗系はchecked版の期待する例外と失敗後の状態です。異常終了を失敗系の成功には数えません。",
-             "Library Checker公式ケースは外部の固定問題集を使うローカル照合です。ケースの全体時間は起動・入出力を含み、本体だけの性能測定とは分けます。",
+    lines = ["# ローカルの品質検査", "", "合格と表示するのは、原本とテストのSHAが現在版に一致する結果です。オンラインACは別に表示します。",
+             "正常系では入力例と明示的なAPIの契約を確認します。失敗系では、検査を有効にした版で期待どおりの例外が発生し、失敗後の状態も期待どおりか確認します。異常終了は失敗系の合格に数えません。",
+             "Library Checkerの公式ケースは、外部の問題集の版を固定してローカルで照合します。ケース全体の時間には起動と入出力が含まれ、本体だけの性能測定とは分けます。",
              "未測定・ソース変更・一部のみを区別します。性能は同じ条件内の参考値で、速度差だけでは合否を決めません。", "",
              "実行状態: " + STATUS_LABELS[report["status"]], "",
              "| 通常版本体 | " + " | ".join(LABELS.values()) + " |", "| --- | " + " | ".join("---" for _ in CATEGORIES) + " |"]
@@ -1356,8 +1356,8 @@ def markdown(report: dict) -> str:
             coverage_rows.setdefault((library["path"], row.get("report")), row)
     if coverage_rows:
         lines += ["", "## カバレッジの合格条件と実測値", "",
-                  "証明済みの到達不能箇所を除き、通常版本体の行・直接条件のtrue/falseを、どちらも100%到達した場合だけ通過とします。",
-                  "未計測の原本・計測漏れも失敗です。百分率の丸めではなく到達件数の一致で判定します。",
+                  "到達不能と証明した箇所を除き、通常版本体の行と直接分岐の到達率がどちらも100%の場合に合格とします。直接分岐は原本に書かれた条件の真・偽を数えます。",
+                  "未計測の原本や計測漏れがあれば不合格です。判定には、丸めた百分率の代わりに到達件数と計測件数が一致するかを使います。",
                   "未実体化template・マクロ展開内部・型別の網羅を保証する値ではありません。", "",
                   "| 本体 | 行 到達/計測 | 行 % | 分岐 到達/計測 | 分岐 % | 状態 |",
                   "| --- | ---: | ---: | ---: | ---: | --- |"]
@@ -1374,8 +1374,8 @@ def markdown(report: dict) -> str:
     official_rows = [(library, row) for library in report["libraries"] for row in library["categories"]["library_checker"]["evidence"]]
     if official_rows:
         lines += ["", "## Library Checker公式ケースのローカル実行", "",
-                  "固定revisionの問題集を外部キャッシュに生成し、公式checkerで全ケースを照合します。オンラインACではありません。",
-                  "時間は各ケースのプログラム起動・入出力を含む合計で、checkerは除外します。本体だけの性能値・過去のオンライン時間とは比較しません。",
+                  "固定したリビジョンの問題集を使い、外部キャッシュに生成した全ケースを公式checkerで照合します。ここにはローカルでの照合結果を表示します。",
+                  "時間は全ケースの合計です。プログラムの起動と入出力を含み、checkerの実行時間は除きます。本体だけの測定値や過去のオンライン時間とは比較しません。",
                   "", "| 本体 | Verify ID | 通過/予定ケース | 全体 ms | 状態 |", "| --- | --- | ---: | ---: | --- |"]
         for library, row in official_rows:
             count = row["case_counts"]
@@ -1386,7 +1386,7 @@ def markdown(report: dict) -> str:
         coverage = report.get("performance_coverage", {})
         lines += ["", f"全ライブラリの規定規模の性能記録: {coverage.get('whole_program_full_measured', 0)}/{coverage.get('all_libraries', 0)}。縮小確認と代表3本のkernelはこの件数に含めません。"]
         lines += ["", "## 性能測定の条件と結果", "",
-                  "Verify全体は子プロセスCPU時間、本体はハーネス内の経過時間で判定します。比較元と倍率は判定に使った指標の中央値に基づきます。"]
+                  "Verify全体は子プロセスのCPU時間、本体だけの測定はテスト用プログラム内の経過時間で判定します。比較元の時間と倍率は、判定に使った時間の中央値から求めます。"]
         if any(row.get("performance_regression") and not row.get("worst_case_regression") for _, row in measured):
             lines += ["旧記録のケース別判定も、計測時の条件に従って表示します。"]
         lines += ["", "| コンパイラ | 設定 | CPU | OS | 反復/除外warmup | 比較元コミット |",
@@ -1420,7 +1420,7 @@ def markdown(report: dict) -> str:
                      *performance_timing_cells(row), STATUS_LABELS[row["status"]]]
             lines.append("| " + " | ".join(cells) + " |")
     if report["errors"]:
-        lines += ["", "未完了・不正なレポートがあります。JSONのerrorsと元の実行ログを確認してください。"]
+        lines += ["", "未完了または不正なレポートがあります。JSONの`errors`と元の実行ログを確認してください。"]
     return "\n".join(lines) + "\n"
 
 
