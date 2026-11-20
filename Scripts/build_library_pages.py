@@ -52,6 +52,7 @@ PROFILE_NOTES = {
 CATEGORIES = {"normal": "正常系", "failure": "失敗系", "library_checker": "Library Checker公式ケース",
               "performance": "性能測定", "sanitizers": "ASan/UBSan", "coverage": "カバレッジ"}
 LABELS = {"PASS": "合格", "FAIL": "失敗", "STALE": "ソース変更後は未検証", "UNAVAILABLE": "未実施",
+          "NOT_APPLICABLE": "無し",
           "PARTIAL": "一部のみ", "current_ac": "現行AC", "source_changed": "現行未照合・要再提出",
           "unsubmitted": "未提出", "non_ac": "非AC", "local_only": "ローカル補足"}
 LINK = re.compile(r'(!?\[[^\]\n]*\])\((<[^>\n]+>|(?:[^\s()]|\([^()\s]*\))+)(?:\s+"[^"]*")?\)')
@@ -527,7 +528,9 @@ def quality_table(library: dict | None) -> str:
     lines = ["### ローカル・CI検査", "", "| 検査 | 状態 |", "| --- | --- |"]
     for key, label in CATEGORIES.items():
         status = categories.get(key, {}).get("status", "UNAVAILABLE")
-        lines.append("| " + label + " | " + LABELS.get(status, "未実施") + " |")
+        fallback = "未測定" if key in {"failure", "library_checker"} else "未実施"
+        text = fallback if status == "UNAVAILABLE" else LABELS.get(status, fallback)
+        lines.append("| " + label + " | " + text + " |")
     lines += ["", "到達不能と証明した箇所を除き、通常版本体のカバレッジは行・直接分岐とも100%が合格条件です。未計測の場合も不合格です。"]
     coverage = categories.get("coverage", {}).get("evidence", [])
     shown = set()

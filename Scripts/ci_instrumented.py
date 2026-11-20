@@ -55,6 +55,15 @@ def coverage_tests(root: Path) -> list[dict]:
     support = value.get("support", {})
     if not isinstance(support, dict) or not support.keys() <= value["tests"].keys():
         raise ValueError("補足カバレッジテストの依存ファイルの登録が不正です")
+    failure_tests = value.get("failure_tests", {})
+    if not isinstance(failure_tests, dict):
+        raise ValueError("失敗系テストの登録形式が不正です")
+    failures_by_test = {}
+    for library, name in failure_tests.items():
+        libraries = value["tests"].get(name) if isinstance(name, str) else None
+        if not isinstance(libraries, list) or library not in libraries:
+            raise ValueError("失敗系テストの対象原本が補足カバレッジと一致しません: " + library)
+        failures_by_test.setdefault(name, []).append(library)
     gcc_line_tests = value.get("gcc_line_tests", [])
     if (not isinstance(gcc_line_tests, list)
             or any(not isinstance(name, str) or name not in value["tests"] for name in gcc_line_tests)
@@ -119,6 +128,8 @@ def coverage_tests(root: Path) -> list[dict]:
             "support_source_hashes": {path: digest(root / path) for path in dependencies},
             "samples": [{"input": ""}],
         }
+        if name in failures_by_test:
+            entry["failure_libraries"] = failures_by_test[name]
         if name in gcc_line_tests:
             entry["gcc_line_coverage"] = True
         if name in gcc_unchecked_line_tests:

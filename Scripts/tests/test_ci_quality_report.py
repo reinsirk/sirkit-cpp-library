@@ -697,6 +697,47 @@ class QualityTests(unittest.TestCase):
         self.write(registry, {"format": 1, "tests": {name: ["Graph/B.cpp"]}})
         self.assertEqual(self.aggregate(value)["input_report_status"], "FAIL")
 
+    def test_only_registered_failure_fixtures_count_and_require_a_successful_checked_run(self):
+        value = self.instrumented("coverage")
+        name = "negative_test.cpp"
+        driver = "Verify/current/tests/" + name
+        registry = quality.ci_instrumented.COVERAGE_TESTS
+        other = "Graph/B.cpp"
+        self.write(driver, "int main() {}\n")
+        self.write(registry, {"format": 1, "tests": {name: [self.library, other]},
+                              "failure_tests": {self.library: name}})
+        value["all_source_hashes"].update({registry: self.hash(registry), driver: self.hash(driver),
+                                           other: self.hash(other)})
+        value["source_hashes_after"] = deepcopy(value["all_source_hashes"])
+        identifier = "coverage_test_negative_test"
+        value["selected_ids"] = [identifier]
+        row = value["results"][0]
+        row.update(id=identifier, driver=driver, driver_sha256=self.hash(driver), coverage_test="assertions")
+        self.assertEqual(self.category(quality.aggregate(self.root, []), "failure")["status"], "UNAVAILABLE")
+
+        report = self.aggregate(value)
+        negative = self.category(report, "failure")
+        self.assertEqual(negative["status"], "PASS", report["errors"])
+        self.assertEqual(negative["evidence"][0]["driver"], driver)
+        self.assertEqual(self.category(report, "failure", other)["status"], "UNAVAILABLE")
+        self.assertEqual(self.category(report, "coverage")["status"], "FAIL")
+
+        self.write(driver, "int main() { return 1; }\n")
+        self.assertEqual(self.category(self.aggregate(value), "failure")["status"], "STALE")
+        self.write(driver, "int main() {}\n")
+        row["status"] = "FAIL"
+        row["samples"][0].update(passed=False, returncode=1)
+        value["status"] = "FAIL"
+        self.assertEqual(self.category(self.aggregate(value), "failure")["status"], "FAIL")
+
+    def test_library_checker_applicability_uses_registered_judge_problem(self):
+        self.entry["problem_url"] = "https://judge.yosupo.jp/problem/unionfind"
+        self.write("Verify/current/manifest.json", {"format": 1, "entries": [self.entry]})
+        report = quality.aggregate(self.root, [])
+        self.assertEqual(self.category(report, "library_checker")["status"], "UNAVAILABLE")
+        self.assertEqual(self.category(report, "library_checker", "Graph/B.cpp")["status"], "NOT_APPLICABLE")
+        self.assertIn("| <code>Graph/B.cpp</code> | 未測定 | 未測定 | 無し |", quality.markdown(report))
+
     def test_coverage_accepts_gcov_lines_only_for_registered_checked_run(self):
         value = self.instrumented("coverage")
         name = "standalone_test.cpp"
@@ -875,7 +916,7 @@ class QualityTests(unittest.TestCase):
         self.assertEqual(category["evidence"][0]["elapsed_ns"], 200)
         self.assertEqual(self.category(report, "performance")["status"], "UNAVAILABLE")
         self.assertEqual(report["online_status"], "not_evaluated")
-        self.assertIn("本体だけの性能測定とは分けます", quality.markdown(report))
+        self.assertIn("プログラムの起動と入出力を含み", quality.markdown(report))
 
     def test_official_missing_duplicate_or_bad_checker_case_cannot_pass(self):
         for mutation in (lambda v: v["results"][0]["cases"].pop(),

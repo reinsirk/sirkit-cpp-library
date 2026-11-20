@@ -6,7 +6,7 @@
 | --- | --- |
 | C++23 Verify | 全対象をGCC/Clang、通常/標準代替、入力検査有効/無効でビルド・照合する。 |
 | 配布8版の検査 | 全ファイルの単独構文検査と、主要13ライブラリの動作テストを行う。共通版はGCC・Clang・MSVCで実行する。 |
-| 正常系・失敗系 | checked契約テストで正常結果・期待した例外型・失敗後の状態を照合する。 |
+| 正常系・失敗系 | 入力例・契約テストと補足テストで、正常な結果や失敗時の例外・戻り値を照合する。 |
 | Library Checker公式ケース | 全LC対象を外部キャッシュで生成し、全ケースを公式checkerで照合する。実行上限は1ケース30秒。 |
 | 決定的Max・構造ケース | Unionfindと永続UFのNo.2295向けに、制約上限や平衡結合・版探索・大きな積を独立参照と照合する。実行上限は1ケース60秒。 |
 | ASan/UBSan | 通常版のchecked実行で、範囲外アクセス・解放後の参照・未定義動作を検出する。 |
@@ -15,7 +15,7 @@
 
 GitHub Actionsでは、正答と実行上限を検査します。変更前後の時間は[手元の性能測定](#性能退行の検査)で比較できます。
 
-各ライブラリの結果は[ライブラリページ](https://reinsirk.github.io/sirkit-cpp-library/)にも表示します。ソースSHAが合わない記録は未検証、対象のない項目は未実施です。[生成・公開・外部問題資産の扱い](library_pages.md)を参照してください。
+各ライブラリの結果は[ライブラリページ](https://reinsirk.github.io/sirkit-cpp-library/)にも表示します。ソースSHAが合わない記録は未検証です。Library Checker欄は、対応するVerifyの登録がなければ「無し」、登録済みで結果がなければ「未測定」と表示します。[生成・公開・外部問題資産の扱い](library_pages.md)を参照してください。
 
 ```sh
 python3 Scripts/ci_contracts.py --compiler g++ --output /tmp/contracts
@@ -24,7 +24,7 @@ python3 Scripts/ci_library_checker.py --all --base origin/main \
 python3 Scripts/ci_quality_report.py --input /tmp/contracts --input /tmp/official-cases --output /tmp/quality
 ```
 
-失敗系の例外は「期待した失敗を正しく処理した」ことを表します。異常終了・例外型の不一致・空の結果を合格にはしません。公式ケースの時間は起動・入出力を含むプログラム全体で、本体だけの代表性能とは別です。
+失敗系には、契約テストの結果と、[補足テストの登録](../Verify/ci/coverage_tests.json)の `failure_tests` に対応するカバレッジ実行結果を集計します。補足テストには、無効な入力、確保やコールバックの失敗、解がない場合の戻り値を確認するものがあります。異常終了は失敗です。公式ケースの時間は起動・入出力を含むプログラム全体で、本体だけの代表性能とは別です。
 
 ## コンパイラとコンパイル引数
 
