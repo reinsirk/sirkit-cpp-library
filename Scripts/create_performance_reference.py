@@ -36,6 +36,8 @@ def main() -> int:
     parser.add_argument("--warmups", type=int, default=1)
     parser.add_argument("--quick", action="store_true", help="小規模ケースで動作確認する")
     parser.add_argument("--cache", type=Path, help="使い回す場合のリポジトリ外の作業領域")
+    parser.add_argument("--reference-dir", type=Path, default=ROOT / ".sirkit-local/performance",
+                        help="測定結果を保存する親ディレクトリ")
     args = parser.parse_args()
 
     if args.cpu is not None:
@@ -67,7 +69,7 @@ def main() -> int:
             parser.error("測定中にHEADが変わりました")
 
         stamp = started.strftime("%Y%m%dT%H%M%S%fZ")
-        store = ROOT / ".sirkit-local/performance"
+        store = args.reference_dir.expanduser().resolve()
         store.mkdir(parents=True, exist_ok=True)
         saved = store / f"{stamp}-{revision[:12]}"
         metadata = {"format": 1, "commit": revision, "started_at_utc": started.isoformat(),

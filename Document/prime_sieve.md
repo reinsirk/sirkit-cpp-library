@@ -160,4 +160,4 @@ sieve.for_each_prime_stride(1, 3, [&](std::uint64_t p) {
 
 個数集計には対応環境でSIMDを使い、未対応環境は標準C++の経路を使います。無効化などは[SIMDによる内部処理](simd.md)を参照してください。
 
-[Verify提出コード](../Verify/current/submissions/eratosthenes.cpp)・[境界の独立参照](../Verify/current/tests/prime_sieve_boundary_test.cpp)。内部処理・測定・検証の記録は`Audit/`に置きます。
+[Verify提出コード](../Verify/current/submissions/eratosthenes.cpp)・[境界の独立参照](../Verify/current/tests/prime_sieve_boundary_test.cpp)。内部処理・測定・検証の記録は移行前の記録で確認できます。

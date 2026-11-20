@@ -33,6 +33,7 @@ python3 Scripts/ci_quality_report.py --input /tmp/contracts --input /tmp/officia
 
 太字が表示されない書き方などの `error`、リリースの取得失敗、ツールの実行失敗があれば `Verify result` も失敗します。`warn` と `info` はジョブのログに表示されます。
 
+文書を更新するときは[yomiyasuの手順](https://github.com/nanaism/yomiyasu/blob/main/docs/usage.md)に従い、推敲と最終稿の照合も行います。
 
 ## コンパイラとコンパイル引数
 

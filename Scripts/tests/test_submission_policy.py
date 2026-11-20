@@ -7,7 +7,6 @@ import unittest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import update_verify_status as status
-import optimization_records as records
 
 
 class SubmissionPolicyTests(unittest.TestCase):
@@ -28,7 +27,6 @@ class SubmissionPolicyTests(unittest.TestCase):
         self.write("Verify/current/groups/fixture.json", json.dumps(dict(entries=self.entries)))
         self.policy_path = self.root / "Verify/current/submission_policy.json"
         self.journal_path = self.root / "Verify/current/judgements.json"
-        self.ledger = self.root / "Verify/optimization/stages"
 
     def write(self, name, text):
         path = self.root / name
@@ -62,13 +60,11 @@ class SubmissionPolicyTests(unittest.TestCase):
         path.write_text(path.read_text() + "// explanation changed\n")
         return self.journal_path.read_bytes()
 
-    def test_missing_or_empty_policy_preserves_default_status_and_queue(self):
+    def test_missing_or_empty_policy_preserves_default_status(self):
         self.old_ac_then_comment_change()
         before = status.build_status(self.root)
-        queue = records.queue(self.root, self.ledger)
         self.rules([])
         self.assertEqual(status.build_status(self.root), before)
-        self.assertEqual(records.queue(self.root, self.ledger), queue)
         self.assertTrue(self.row()["submission_required"])
 
     def test_documentation_exemption_is_sha_limited_and_never_promotes_ac(self):
@@ -78,19 +74,11 @@ class SubmissionPolicyTests(unittest.TestCase):
         self.assertEqual(row["status"], "source_changed")
         self.assertFalse(row["submission_required"])
         self.assertEqual(row["judgement"]["submission_sha256"], json.loads(journal)["entries"][0]["submission_sha256"])
-        queued = records.queue(self.root, self.ledger)["entries"]
-        item = next(e for e in queued if e["id"] == "old")
-        self.assertEqual(item["next_stage"], "exempt")
-        self.assertFalse(item["current_ac"])
-        self.assertFalse(item["submission_required"])
         self.assertEqual(self.journal_path.read_bytes(), journal)
         path = self.root / self.driver
         path.write_text(path.read_text().replace("return library_value+io_value", "return 9"))
         self.assertTrue(self.row()["submission_required"])
         self.assertNotIn("submission_policy", self.row())
-        item = next(e for e in records.queue(self.root, self.ledger)["entries"] if e["id"] == "old")
-        self.assertNotEqual(item["next_stage"], "exempt")
-        self.assertTrue(item["submission_required"])
 
     def test_no_ac_record_is_created_by_exemption(self):
         self.rules([self.doc_rule()])
@@ -99,9 +87,6 @@ class SubmissionPolicyTests(unittest.TestCase):
         self.assertFalse(row["submission_required"])
         self.assertNotIn("judgement", row)
         self.assertFalse(self.journal_path.exists())
-        item = next(e for e in records.queue(self.root, self.ledger, True)["entries"] if e["id"] == "old")
-        self.assertEqual(item["next_stage"], "exempt")
-        self.assertFalse(item["current_ac"])
 
     def test_url_annotation_changes_also_expire_exact_sha_exemption(self):
         self.rules([self.doc_rule()])
@@ -117,15 +102,13 @@ class SubmissionPolicyTests(unittest.TestCase):
         self.assertEqual(self.row()["status"], "current_ac")
         self.assertFalse(self.row()["submission_required"])
 
-    def test_reference_keeps_status_but_excludes_old_entry_from_both_queues(self):
+    def test_reference_keeps_status_but_exempts_resubmission(self):
         journal = self.old_ac_then_comment_change()
         self.rules([self.reference_rule()])
         row = self.row()
         self.assertEqual(row["status"], "source_changed")
         self.assertEqual(row["submission_policy"]["replacements"], ["primary"])
         self.assertFalse(row["submission_required"])
-        for include in [False, True]:
-            self.assertNotIn("old", [e["id"] for e in records.queue(self.root, self.ledger, include)["entries"]])
         self.assertTrue(self.row("primary")["submission_required"])
         self.assertEqual(self.journal_path.read_bytes(), journal)
 

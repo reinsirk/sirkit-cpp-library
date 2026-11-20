@@ -5,7 +5,6 @@ import unittest
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 import prepare_verify as verify
 import update_verify_status as status
-import optimization_records as records
 
 class JudgeDomainsTest(unittest.TestCase):
     def test_approved_online_judges(self):
@@ -24,9 +23,7 @@ class JudgeDomainsTest(unittest.TestCase):
     def test_aoj_aliases_share_judge_but_not_other_sites(self):
         url='https://judge.u-aizu.ac.jp/onlinejudge/review.jsp?rid=1'
         self.assertEqual(status.safe_url(url,judge='onlinejudge.u-aizu.ac.jp'),url)
-        self.assertTrue(records.accepted({'status':'AC','url':url},'onlinejudge.u-aizu.ac.jp'))
         with self.assertRaises(ValueError):status.safe_url(url,judge='yukicoder.me')
-        self.assertFalse(records.accepted({'status':'AC','url':url},'yukicoder.me'))
     def test_url_injection_still_rejected(self):
         for url in ['http://yukicoder.me/problems/no/1','https://yukicoder.me.evil.test/1','https://u@onlinejudge.u-aizu.ac.jp/1','https://judge.u-aizu.ac.jp:444/1','https://evil.test/1']:
             with self.subTest(url=url),self.assertRaises(ValueError):status.safe_url(url)

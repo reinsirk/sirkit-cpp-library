@@ -4,14 +4,11 @@
 
 配布は[GitHub Releases](https://github.com/reinsirk/sirkit-cpp-library/releases)を使います。配布ZIPとその管理用manifest・検査結果はリポジトリに置かず、通常の変更時には再生成しません。本体・使用例・Verifyなどの生成物の同期確認は引き続き行います。
 
-`Audit/data/`の検証ZIPはローカル保存で、Gitでは追跡しません。GitHub Actionsはこれらを使わずに検査します。過去の最適化履歴を手元で照合する場合は、参照するZIPを別途用意してください。
-
 ## 最適化
 
-ACの記録があるVerifyコードを一覧から選びます。Library Checkerではライブラリ本体・main・入出力を含めてCodex、Claudeの順に改善し、各段階のコード、正しさの照合結果、測定結果を保存します。ライブラリ本体の性能とプログラム全体の性能は別々に比較します。Library Checker以外は正しさの検証を優先し、最適化はライブラリ本体だけを対象とします。main・入出力の個別チューニングは行いません。
+対象は[Verify状況の一覧](../Verify/current/status.md)から選びます。Library Checkerの提出ではライブラリ本体、main、入出力を含めて検証し、本体と提出プログラム全体の性能を別々に測ります。その他の提出先では正しさを検証し、高速化はライブラリ本体を対象とします。
 
 ```sh
-python3 Scripts/optimization_records.py --list
 python3 Scripts/prepare_verify.py
 python3 Scripts/prepare_variant_verify.py
 ```

@@ -30,4 +30,4 @@ std::sort(points.begin(), points.end());
 auto same_hull = convex_hull_sorted(std::move(points));
 ```
 
-全機能版の使用例は`Examples/geometry_example.cpp`、提出先はLibrary Checkerの[Static Convex Hull](https://judge.yosupo.jp/problem/static_convex_hull)です。速度測定の条件・結果と独立参照による検査は`Audit/`を参照してください。
+全機能版の使用例は`Examples/geometry_example.cpp`、提出先はLibrary Checkerの[Static Convex Hull](https://judge.yosupo.jp/problem/static_convex_hull)です。

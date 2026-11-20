@@ -48,7 +48,7 @@ CIバッジはVerify、ASan/UBSan、カバレッジ、通常版の作法検査�
 速度確認のため、外部提出用コードは先頭で`SKIP_RUNTIME_CHECKS`を定義しています。
 直下の`Verify/*.md`は過去の提出記録です。今回のオンライン判定結果とは区別します。
 
-Library Checkerの提出コードはmainと入出力も含めてCodex、Claudeの順に最適化し、変更後に再提出します。ライブラリ本体とプログラム全体の速度は別々に比較し、記録します。開発は`dev`で行い、PRを通じて`main`に反映します。CI・手動提出・README集計の手順は[開発とVerify](Document/development.md)を参照してください。
+Library Checkerの提出コードはmainと入出力も含めて最適化し、変更後に再提出します。ライブラリ本体とプログラム全体の速度は別々に比較します。開発は`dev`で行い、PRを通じて`main`に反映します。CI・手動提出・README集計の手順は[開発とVerify](Document/development.md)を参照してください。
 
 使用例は[Examples](Examples)、二項係数のテーブル上限などの設定は[二項係数の説明](Math/Combination/README.md)を参照してください。
 
