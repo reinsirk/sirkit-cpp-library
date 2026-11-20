@@ -1,5 +1,7 @@
 # sirkit-cpp-library
 
+[![ライセンス CC0 1.0](https://img.shields.io/badge/license-CC0%201.0-blue)](#license)
+[![最新リリース](https://img.shields.io/github/v/release/reinsirk/sirkit-cpp-library?display_name=tag&sort=date)](https://github.com/reinsirk/sirkit-cpp-library/releases/latest)
 [![main向けPRのCI](https://github.com/reinsirk/sirkit-cpp-library/actions/workflows/verify.yml/badge.svg?event=pull_request)](https://github.com/reinsirk/sirkit-cpp-library/actions/workflows/verify.yml?query=event%3Apull_request)
 
 競技プログラミング向けのC++ライブラリ集です。

@@ -28,7 +28,7 @@ class LibraryPagesTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             (root / "_includes").mkdir()
-            downloads, links = pages.write_version_lists(root, groups, {source: "素数判定"})
+            downloads, links = pages.write_version_lists(root, groups, {source: "素数判定"}, {source: "現行ACあり"})
             picker = (root / "_includes/code-version-picker.html").read_text(encoding="utf-8")
             self.assertEqual(picker.count('class="code-version-link"'), 8)
             self.assertNotIn("prime_judge", picker)
@@ -43,6 +43,7 @@ class LibraryPagesTest(unittest.TestCase):
                     listing = (root / f"versions/{key}.md").read_text(encoding="utf-8")
                     self.assertIn("<h2>数学</h2>", listing)
                     self.assertIn("素数判定", listing)
+                    self.assertIn('aria-label="現行ACあり" title="現行ACあり">✓</span>', listing)
                     asset = f"/assets/code/{directory}/{compiler}/Math/prime_judge%28Miller-Rabin%29.cpp"
                     self.assertIn(asset, listing)
                     self.assertIn(f"#code-version-{key}", listing)
@@ -59,6 +60,19 @@ class LibraryPagesTest(unittest.TestCase):
         self.assertIn('id="code-version-fast-msvc">速度優先版・MSVC専用', context)
         self.assertIn("/versions/fast-msvc.html", context)
         self.assertNotIn("code-variant-download", context)
+
+    def test_verification_label_requires_current_online_or_local_evidence(self):
+        online = {"status": "current_ac"}
+        local = {"status": "PASS", "tested_source_sha256": ["a" * 64, "b" * 64]}
+        def quality(status, evidence):
+            return {"categories": {"normal": {"status": status, "evidence": evidence}}}
+        self.assertEqual(pages.library_verification_label([online], quality("PASS", [local])), "現行ACあり")
+        self.assertEqual(pages.library_verification_label([], quality("PASS", [local])), "通常版のローカルVerify通過")
+        self.assertEqual(pages.library_verification_label(
+            [{**online, "submission_policy": {"kind": "reference"}}], None), "")
+        self.assertEqual(pages.library_verification_label([], quality("PASS", [{"status": "PASS"}])), "")
+        for status in ("UNAVAILABLE", "STALE", "PARTIAL", "FAIL"):
+            self.assertEqual(pages.library_verification_label([], quality(status, [local])), "")
 
     def test_manifest_rejects_missing_duplicate_and_outside_downloads(self):
         source = "Graph/example.cpp"

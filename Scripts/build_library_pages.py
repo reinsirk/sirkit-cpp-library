@@ -323,7 +323,7 @@ def version_picker() -> str:
 
 
 def write_version_lists(jekyll: Path, variants: dict[str, dict[tuple[str, bool], dict]],
-                        titles: dict[str, str]) -> tuple[dict[str, dict[str, str]], dict[str, set[str]]]:
+                        titles: dict[str, str], verification: dict[str, str]) -> tuple[dict[str, dict[str, str]], dict[str, set[str]]]:
     """版ごとの一覧と、生成後に照合するナビゲーション・配布コードへのリンク。"""
     (jekyll / "_includes/code-version-picker.html").write_text(version_picker(), encoding="utf-8")
     (jekyll / "versions").mkdir()
@@ -340,7 +340,8 @@ def write_version_lists(jekyll: Path, variants: dict[str, dict[tuple[str, bool],
                      f'<nav><a href="{site_link("")}">版を選び直す</a> · '
                      f'<a href="{site_link("quality.html")}">テスト・性能</a> · '
                      f'<a href="{site_link("licenses/index.html")}">ライセンス</a></nav>',
-                     f'<h1>{title}</h1>', f'<p>{version_profile_note(fast)}</p>']
+                     f'<h1>{title}</h1>', f'<p>{version_profile_note(fast)}</p>',
+                     '<p><span class="verify-check" aria-hidden="true">✓</span> 通常版の現行ACまたはローカルVerifyの通過を示します。</p>']
             for folder, group in SOURCE_GROUPS.items():
                 sources = [source for source in variants if source.startswith(folder + "/")]
                 if not sources:
@@ -355,7 +356,10 @@ def write_version_lists(jekyll: Path, variants: dict[str, dict[tuple[str, bool],
                     api_url = site_link(source + ".html") + "#" + fragment
                     name = html.escape(titles[source]).replace("{", "&#123;").replace("}", "&#125;")
                     filename = html.escape(source.removeprefix(folder + "/")).replace("{", "&#123;").replace("}", "&#125;")
-                    lines.append(f'<li><div><a class="code-version-link" href="{api_url}">{name}</a> '
+                    label = verification.get(source)
+                    check = (f'<span class="verify-check" role="img" aria-label="{html.escape(label)}" '
+                             f'title="{html.escape(label)}">✓</span> ' if label else "")
+                    lines.append(f'<li><div>{check}<a class="code-version-link" href="{api_url}">{name}</a> '
                                  f'<small>{filename}</small></div>'
                                  f'<a class="code-variant-download" href="{site_link(asset)}" download '
                                  f'aria-label="{name}のC++コードを取得">.cppを取得</a></li>')
@@ -462,6 +466,17 @@ def rewrite_links(text: str, document: str, root: Path, sources: set[str], revis
 def current_ac(entry: dict) -> bool:
     return (entry["status"] == "current_ac"
             and entry.get("submission_policy", {}).get("kind") not in {"documentation_only", "reference"})
+
+
+def library_verification_label(entries: list[dict], library: dict | None) -> str:
+    if any(current_ac(entry) for entry in entries):
+        return "現行ACあり"
+    normal = (library or {}).get("categories", {}).get("normal", {})
+    if normal.get("status") == "PASS" and any(
+        row["status"] == "PASS" and row.get("tested_source_sha256") for row in normal.get("evidence", ())
+    ):
+        return "通常版のローカルVerify通過"
+    return ""
 
 
 def online_table(entries: list[dict], verify_pages: set[str] | None = None) -> str:
@@ -702,6 +717,7 @@ def build(root: Path, output: Path, reports: list[Path], *, production: bool = F
     with tempfile.TemporaryDirectory(prefix="pages-", dir=generated) as folder:
         wrappers = Path(folder)
         files, results, paths, page_content, page_apis = {}, {}, [], {}, {}
+        verification: dict[str, str] = {}
         for source in sources:
             source_text = (root / source).read_text(encoding="utf-8")
             api = source_api_text(source_text)
@@ -730,8 +746,10 @@ def build(root: Path, output: Path, reports: list[Path], *, production: bool = F
             commit, date = last_commit(root, revision, source)
             if commit:
                 attrs.update(SIRKIT_LAST_COMMIT=commit, SIRKIT_LAST_COMMIT_DATE=date)
-            if any(current_ac(entry) for entry in related):
-                attrs["SIRKIT_CURRENT_AC"] = "true"
+            label = library_verification_label(related, by_library.get(source))
+            if label:
+                verification[source] = label
+                attrs["SIRKIT_VERIFY_LABEL"] = label
             if document:
                 attrs["SIRKIT_DOCUMENT"] = document
             files[source] = {"document_attributes": attrs}
@@ -795,7 +813,7 @@ def build(root: Path, output: Path, reports: list[Path], *, production: bool = F
     (output / "jekyll/fast-guide.md").write_text(
         "---\nlayout: default\npermalink: /fast-guide.html\ntitle: 通常版と速度優先版\n---\n\n"
         "[版を選ぶ](" + site_link("") + ")\n\n" + guide, encoding="utf-8")
-    downloads, version_links = write_version_lists(output / "jekyll", variants, titles)
+    downloads, version_links = write_version_lists(output / "jekyll", variants, titles, verification)
     assets = output / "jekyll/assets"
     assets.mkdir(parents=True, exist_ok=True)
     for src, dst in (("quality.json", "quality.json"), ("online-status.json", "online-status.json"), ("snapshot.json", "snapshot.json")):
