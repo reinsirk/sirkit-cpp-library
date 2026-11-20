@@ -12,11 +12,11 @@ import tempfile
 
 try:
     from . import package_revised_libraries, prepare_verify
-    from .ci_compile_profiles import COMPILE_PROFILES
+    from .ci_compile_profiles import VERIFY_COMPILE_PROFILES
 except ImportError:
     import package_revised_libraries
     import prepare_verify
-    from ci_compile_profiles import COMPILE_PROFILES
+    from ci_compile_profiles import VERIFY_COMPILE_PROFILES
 
 ROOT = Path(__file__).resolve().parents[1]
 LIBRARY_DIRS = {"Algorithm", "DataStructure", "Geometry", "Graph", "Internal", "Math", "String"}
@@ -168,7 +168,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--all", action="store_true", help="全件を確認する")
     parser.add_argument("--list", action="store_true", help="選択計画のJSONだけを出力する")
     parser.add_argument("--compiler", default="g++")
-    parser.add_argument("--compile-profile", choices=COMPILE_PROFILES, default="standard")
+    parser.add_argument("--compile-profile", choices=VERIFY_COMPILE_PROFILES, default="standard")
     parser.add_argument("--fallback", action="store_true")
     parser.add_argument("--skip-sync", action="store_true", help="既に照合済みの場合だけ同期確認を省く")
     parser.add_argument("--results", type=Path)
@@ -186,7 +186,7 @@ def main(argv: list[str] | None = None) -> int:
             package_revised_libraries.check_generated(ROOT)
         # render元と記録が同期していることを、テスト直前にも照合する。
         entries = prepare_verify.prepare(check=True)
-        suffix = "-atcoder" if args.compile_profile == "atcoder" else ""
+        suffix = "" if args.compile_profile == "standard" else "-" + args.compile_profile
         output = args.results or Path(tempfile.gettempdir()) / "sirkit-ci-verify" / (Path(args.compiler).name + suffix + ".json")
         run_selected(entries, plan, args.compiler, args.fallback, output, compile_profile=args.compile_profile)
         print(f"{len(plan['selected_ids'])}件のローカルVerify: PASS。結果: {output}")

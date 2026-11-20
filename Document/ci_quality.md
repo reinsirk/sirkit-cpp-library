@@ -27,7 +27,7 @@ python3 Scripts/ci_quality_report.py --input /tmp/contracts --input /tmp/officia
 
 ## コンパイラとコンパイル引数
 
-LinuxのC++ジョブはUbuntu 26.04でGCC 15（`g++-15`）とClang 18（`clang++-18`）を使います。配布版のMSVC検査はWindowsで実行します。
+Linuxの一般設定はUbuntu 26.04でGCC 15（`g++-15`）とClang 18（`clang++-18`）を使います。配布版のMSVC検査はWindowsで実行します。
 
 一般設定では`-std=c++23`を指定します。以下はジョブごとの主な追加引数です。
 
@@ -48,7 +48,12 @@ Verifyごとに設定されたGCC用の`#pragma GCC optimize`は生成ソース�
 
 ### AtCoder設定
 
-ローカルVerify全件、Verify全体の性能比較、代表3本の本体性能比較を一般設定とAtCoder設定で実行します。AtCoder設定ではGCC 15に`-std=gnu++23 -O2 -Wall -Wextra -march=native`、`ATCODER`・`ONLINE_JUDGE`・`NOMINMAX`の定義、constexprの上限、`-fmodules`、自動変数のゼロ初期化、OpenMPなどを指定します。外部ライブラリの検索パスと未使用の追加リンクは省き、CIのランナーで実行します。`-flto=auto`は2026年6月の更新で公式設定から削除されました。 [AtCoderの言語設定](https://img.atcoder.jp/file/language-update/2025-10/language-list.html) · [更新のお知らせ](https://atcoder.jp/posts/language_update20260616_jp)
+ローカルVerify全件をGCC・Clangの一般設定とAtCoder設定で実行します。Verify全体と代表3本の本体の性能比較はGCCの両設定で実行します。
+
+- GCCの`atcoder`はGCC 15を使い、`-fmodules`とGCC用のconstexpr上限を指定します。`-flto=auto`は2026年6月の公式更新でGCC設定から削除されました。[更新のお知らせ](https://atcoder.jp/posts/language_update20260616_jp)
+- Clangの`atcoder-clang`はUbuntuのClang 21とlibc++を使い、`-fconstexpr-steps=524288`、`-flto=auto`、`lld`、`compiler-rt`、`libunwind`を指定します。Verify全件を検査有効・省略の両方で実行します。[AtCoderの言語設定](https://img.atcoder.jp/file/language-update/2025-10/language-list.html)
+
+両設定で`-std=gnu++23 -O2 -Wall -Wextra -march=native`、`ATCODER`・`ONLINE_JUDGE`・`NOMINMAX`、自動変数のゼロ初期化、OpenMPなどを指定します。実行環境はUbuntuのCIランナーです。AtCoder固有の検索パス、Verifyで使わない外部ライブラリやプリコンパイル済み標準モジュールは省きます。
 
 性能退行は各設定内でPRの変更前後を比較します。判定はActionsのSummaryに表示します。AtCoder設定の引数と測定値は`atcoder-`で始まるArtifactで確認できます。ライブラリページには一般設定の結果を掲載します。
 
@@ -56,6 +61,7 @@ Verifyごとに設定されたGCC用の`#pragma GCC optimize`は生成ソース�
 
 ```sh
 python3 Scripts/ci_verify.py --compiler g++-15 --compile-profile atcoder --id fenwick_tree
+python3 Scripts/ci_verify.py --compiler clang++-21 --compile-profile atcoder-clang --id fenwick_tree
 ```
 
 ## 配布版の構文・動作検査

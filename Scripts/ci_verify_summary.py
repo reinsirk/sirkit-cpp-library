@@ -10,9 +10,9 @@ from pathlib import Path
 import sys
 
 try:
-    from .ci_compile_profiles import COMPILE_PROFILES
+    from .ci_compile_profiles import VERIFY_COMPILE_PROFILES
 except ImportError:
-    from ci_compile_profiles import COMPILE_PROFILES
+    from ci_compile_profiles import VERIFY_COMPILE_PROFILES
 
 
 @dataclass(frozen=True)
@@ -45,7 +45,7 @@ def summarize(report: object) -> Summary:
     compile_profile = report.get("compile_profile", "standard")
     plan, rows = report.get("plan"), report.get("results")
     if (not isinstance(compiler, str) or not compiler.strip() or type(fallback) is not bool
-            or compile_profile not in COMPILE_PROFILES or not isinstance(plan, dict) or not isinstance(rows, list)):
+            or compile_profile not in VERIFY_COMPILE_PROFILES or not isinstance(plan, dict) or not isinstance(rows, list)):
         return Summary("不正な結果")
     identifiers = plan.get("selected_ids")
     if (not isinstance(identifiers, list)
@@ -116,7 +116,8 @@ def markdown(summaries: list[Summary]) -> str:
              "| --- | --- | --- | --- | ---: | ---: | ---: |"]
     for summary in summaries:
         compiler = inline_code(summary.compiler) if summary.compiler else "—"
-        profile = {"standard": "一般", "atcoder": "AtCoder"}[summary.compile_profile] if summary.compiler else "—"
+        profile_names = {"standard": "一般", "atcoder": "AtCoder", "atcoder-clang": "AtCoder (Clang)"}
+        profile = profile_names[summary.compile_profile] if summary.compiler else "—"
         fallback = "有効" if summary.fallback is True else "無効" if summary.fallback is False else "—"
         total = str(summary.targets) if summary.targets is not None else "—"
         checked = f"{summary.checked}/{total}" if summary.targets else "—"

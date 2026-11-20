@@ -9,6 +9,7 @@ from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import ci_verify as ci
+from ci_compile_profiles import compile_flags
 
 
 class SelectionTests(unittest.TestCase):
@@ -164,6 +165,16 @@ class RunTests(unittest.TestCase):
         with patch.object(ci.prepare_verify, "run_tests", side_effect=self.fake_results(rows)):
             with self.assertRaises(ValueError):
                 ci.run_selected(self.entries, self.plan, "g++-15", False, self.output, compile_profile="atcoder")
+
+    def test_clang_atcoder_flags_use_clang_limits_and_library(self):
+        flags = compile_flags("atcoder-clang", ["-std=c++23", "-O2", "-Wall", "-Wextra", "-DNDEBUG"])
+        expected = {"-std=gnu++23", "-DATCODER", "-DONLINE_JUDGE", "-fconstexpr-depth=1024",
+                    "-fconstexpr-steps=524288", "-ftrivial-auto-var-init=zero", "-march=native",
+                    "-stdlib=libc++", "-fuse-ld=lld", "-rtlib=compiler-rt", "-unwindlib=libunwind",
+                    "-flto=auto", "-fopenmp", "-fopenmp-extensions", "-DNDEBUG"}
+        self.assertLessEqual(expected, set(flags))
+        self.assertEqual(len(flags), len(set(flags)))
+        self.assertTrue({"-fmodules", "-fconstexpr-loop-limit=524288", "-lstdc++exp", "-std=c++23"}.isdisjoint(flags))
 
     def test_failed_command_is_recorded_and_propagated(self):
         with patch.object(ci.prepare_verify, "run_tests", side_effect=FileNotFoundError("compiler missing")):

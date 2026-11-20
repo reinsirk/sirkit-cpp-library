@@ -352,7 +352,8 @@ def run_tests(entries: list[dict], compiler: str, fallback: bool, output: Path,
     results = []
     selected = entries
     flags = compile_flags(compile_profile, ["-std=c++23", "-O2", "-Wall", "-Wextra"])
-    if "clang" in Path(compiler).name and Path("/usr/lib/gcc/x86_64-linux-gnu/15").is_dir():
+    if (compile_profile != "atcoder-clang" and "clang" in Path(compiler).name
+            and Path("/usr/lib/gcc/x86_64-linux-gnu/15").is_dir()):
         flags += ["--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15"]
     if fallback:
         flags += ["-U__SIZEOF_INT128__", "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
