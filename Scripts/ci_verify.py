@@ -128,13 +128,13 @@ def write_report(path: Path, report: dict) -> None:
 
 
 def run_selected(entries: list[dict], plan: dict, compiler: str, fallback: bool, output: Path,
-                 *, compile_profile: str = "standard") -> None:
+                 *, compile_profile: str = "standard", jobs: int = 1) -> None:
     selected_ids = set(plan["selected_ids"])
     selected = [entry for entry in entries if entry["id"] in selected_ids]
     if len(selected) != len(selected_ids):
         raise ValueError("選択後にVerify IDが変化しました")
     report = {"format": 1, "plan": plan, "compiler": compiler, "standard_fallback": fallback,
-              "compile_profile": compile_profile,
+              "compile_profile": compile_profile, "jobs": jobs,
               "online_status": "not_evaluated", "status": "running", "results": []}
     write_report(output, report)
     try:
@@ -142,7 +142,7 @@ def run_selected(entries: list[dict], plan: dict, compiler: str, fallback: bool,
             with tempfile.TemporaryDirectory(prefix="sirkit_ci_results_") as directory:
                 raw = Path(directory) / "samples.json"
                 try:
-                    prepare_verify.run_tests(selected, compiler, fallback, raw, compile_profile=compile_profile)
+                    prepare_verify.run_tests(selected, compiler, fallback, raw, compile_profile=compile_profile, jobs=jobs)
                 finally:
                     if raw.is_file():
                         report["results"] = json.loads(raw.read_text())["results"]
@@ -170,11 +170,14 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--compiler", default="g++")
     parser.add_argument("--compile-profile", choices=VERIFY_COMPILE_PROFILES, default="standard")
     parser.add_argument("--fallback", action="store_true")
+    parser.add_argument("--jobs", type=int, default=1, help="同時にビルド・実行するVerifyの数")
     parser.add_argument("--skip-sync", action="store_true", help="既に照合済みの場合だけ同期確認を省く")
     parser.add_argument("--results", type=Path)
     args = parser.parse_args(argv)
     if args.all and args.id:
         parser.error("--allと--idは同時に指定できません")
+    if args.jobs < 1:
+        parser.error("jobsは正の整数で指定してください")
     try:
         changed = [] if args.all or args.id else git_changed_paths(args.base)
         entries = prepare_verify.collect()
@@ -188,7 +191,8 @@ def main(argv: list[str] | None = None) -> int:
         entries = prepare_verify.prepare(check=True)
         suffix = "" if args.compile_profile == "standard" else "-" + args.compile_profile
         output = args.results or Path(tempfile.gettempdir()) / "sirkit-ci-verify" / (Path(args.compiler).name + suffix + ".json")
-        run_selected(entries, plan, args.compiler, args.fallback, output, compile_profile=args.compile_profile)
+        run_selected(entries, plan, args.compiler, args.fallback, output,
+                     compile_profile=args.compile_profile, jobs=args.jobs)
         print(f"{len(plan['selected_ids'])}件のローカルVerify: PASS。結果: {output}")
         return 0
     except (OSError, ValueError, subprocess.SubprocessError, SystemExit) as error:

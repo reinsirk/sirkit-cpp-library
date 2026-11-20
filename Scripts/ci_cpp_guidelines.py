@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+from concurrent.futures import ThreadPoolExecutor
 import hashlib
 import json
 from pathlib import Path
@@ -258,10 +259,10 @@ def save(output: Path, report: dict) -> None:
 
 
 def run(entries: list[dict], tidy: str, output: Path, gcc_install_dir: str | None = None,
-        *, root: Path = ROOT, guide: str = "both") -> dict:
+        *, root: Path = ROOT, guide: str = "both", jobs: int = 1) -> dict:
     active_strict = GUIDE_STRICT_CHECKS.get(guide, frozenset())
     report = {"format": 1, "status": "running", "guide": guide, "policy": POLICY,
-              "strict_checks": sorted(active_strict), "runs": [], "diagnostics": [],
+              "strict_checks": sorted(active_strict), "runs": [], "diagnostics": [], "jobs": jobs,
               "online_status": "not_evaluated"}
     output.mkdir(parents=True, exist_ok=True)
     (output / "raw").mkdir(exist_ok=True)
@@ -286,7 +287,7 @@ def run(entries: list[dict], tidy: str, output: Path, gcc_install_dir: str | Non
         header_filter = "^" + re.escape(str(root.resolve())) + "/(" + "|".join(sorted(LIBRARY_DIRS)) + ")/"
         diagnostics = []
         with tempfile.TemporaryDirectory(prefix="sirkit-guidelines-") as temporary:
-            for entry in entries:
+            def check(entry: dict) -> tuple[dict, list[dict]]:
                 source = checked_translation_unit(entry, root)
                 path = Path(temporary) / (entry["id"] + ".cpp")
                 path.write_bytes(source)
@@ -300,17 +301,21 @@ def run(entries: list[dict], tidy: str, output: Path, gcc_install_dir: str | Non
                 apply_reviewed_exceptions(items, exceptions, root)
                 for item in items:
                     item["verify_id"] = entry["id"]
-                diagnostics.extend(items)
                 row = {"id": entry["id"], "command": command, "returncode": result.returncode,
                        "checked": True, "translation_unit_sha256": hashlib.sha256(source).hexdigest(),
                        "library_sha256": {name: hashlib.sha256((root/name).read_bytes()).hexdigest()
                                           for name in entry["libraries"]},
                        "raw_log": str(raw), "diagnostic_occurrences": len(items), "compiler_errors": errors,
                        "passed": result.returncode == 0 and not errors and not any(d["strict"] for d in items)}
-                report["runs"].append(row)
-                report["diagnostics"] = unique_diagnostics(diagnostics)
-                save(output, report)
-                print(f"{entry['id']}: {'PASS' if row['passed'] else 'FAIL'} / 指摘{len(items)}件", flush=True)
+                return row, items
+
+            with ThreadPoolExecutor(max_workers=jobs) as pool:
+                for row, items in pool.map(check, entries):
+                    diagnostics.extend(items)
+                    report["runs"].append(row)
+                    report["diagnostics"] = unique_diagnostics(diagnostics)
+                    save(output, report)
+                    print(f"{row['id']}: {'PASS' if row['passed'] else 'FAIL'} / 指摘{len(items)}件", flush=True)
         report["status"] = "PASS" if len(report["runs"]) == len(entries) and all(r["passed"] for r in report["runs"]) else "FAIL"
     except (OSError, ValueError, subprocess.SubprocessError) as error:
         report["status"] = "FAIL"
@@ -327,15 +332,18 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--gcc-install-dir")
     parser.add_argument("--guide", choices=sorted(GUIDE_CHECKS), default="both")
     parser.add_argument("--id", action="append", help="省略時は通常版の全Verify")
+    parser.add_argument("--jobs", type=int, default=1, help="同時に実行するclang-tidyの数")
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args(argv)
+    if args.jobs < 1:
+        parser.error("jobsは正の整数で指定してください")
     entries = prepare_verify.collect()
     if args.id:
         unknown = set(args.id) - {e["id"] for e in entries}
         if unknown:
             parser.error("存在しないVerify ID: " + ", ".join(sorted(unknown)))
         entries = [e for e in entries if e["id"] in args.id]
-    report = run(entries, args.clang_tidy, args.output, args.gcc_install_dir, guide=args.guide)
+    report = run(entries, args.clang_tidy, args.output, args.gcc_install_dir, guide=args.guide, jobs=args.jobs)
     print(markdown(report))
     return int(report["status"] != "PASS")
 

@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+from concurrent.futures import ThreadPoolExecutor
 import functools
 import hashlib
 import importlib.util
@@ -348,9 +349,8 @@ def matches(entry: dict, sample: dict, output: str) -> bool:
 
 
 def run_tests(entries: list[dict], compiler: str, fallback: bool, output: Path,
-              *, compile_profile: str = "standard") -> None:
+              *, compile_profile: str = "standard", jobs: int = 1) -> None:
     results = []
-    selected = entries
     flags = compile_flags(compile_profile, ["-std=c++23", "-O2", "-Wall", "-Wextra"])
     if (compile_profile != "atcoder-clang" and "clang" in Path(compiler).name
             and Path("/usr/lib/gcc/x86_64-linux-gnu/15").is_dir()):
@@ -359,35 +359,41 @@ def run_tests(entries: list[dict], compiler: str, fallback: bool, output: Path,
         flags += ["-U__SIZEOF_INT128__", "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
                   "-DSIRKIT_LINE_CONTAINER_FORCE_PORTABLE", "-DSIRKIT_DISABLE_SIMD"]
     with tempfile.TemporaryDirectory(prefix="atcoder_verify_") as tmp:
-        for entry in selected:
-            for skip in (False, True):
-                binary = Path(tmp) / (entry["id"] + ("_skip" if skip else "_checked"))
-                tested_source, _ = render(entry, skip_runtime_checks=skip)
-                source_path = ROOT / entry["submission"]
-                if digest(tested_source) != entry["submission_sha256"]:
-                    source_path = binary.with_suffix(".cpp")
-                    source_path.write_bytes(tested_source)
-                command = [compiler, str(source_path), *flags, "-o", str(binary)]
-                built = subprocess.run(command, capture_output=True, text=True, timeout=180)
-                result = dict(id=entry["id"], compiler=compiler, skip_runtime_checks=skip,
-                              standard_fallback=fallback, compile_profile=compile_profile,
-                              submission_sha256=entry["submission_sha256"],
-                              tested_source_sha256=digest(tested_source),
-                              command=command[:-2], compile_ok=built.returncode == 0,
-                              diagnostics=built.stderr, samples=[])
-                if built.returncode == 0:
-                    for sample in entry["samples"]:
-                        try:
-                            run = subprocess.run([str(binary)], input=sample["input"], text=True,
-                                                 capture_output=True, timeout=60)
-                            passed = run.returncode == 0 and matches(entry, sample, run.stdout)
-                            result["samples"].append(dict(passed=passed, returncode=run.returncode,
-                                                          stdout=run.stdout, stderr=run.stderr))
-                        except (subprocess.TimeoutExpired, ValueError, IndexError) as error:
-                            result["samples"].append(dict(passed=False, error=str(error)))
-                result["passed"] = result["compile_ok"] and bool(result["samples"]) and all(s["passed"] for s in result["samples"])
+        def test(case: tuple[dict, bool]) -> dict:
+            entry, skip = case
+            binary = Path(tmp) / (entry["id"] + ("_skip" if skip else "_checked"))
+            tested_source, _ = render(entry, skip_runtime_checks=skip)
+            source_path = ROOT / entry["submission"]
+            if digest(tested_source) != entry["submission_sha256"]:
+                source_path = binary.with_suffix(".cpp")
+                source_path.write_bytes(tested_source)
+            command = [compiler, str(source_path), *flags, "-o", str(binary)]
+            built = subprocess.run(command, capture_output=True, text=True, timeout=180)
+            result = dict(id=entry["id"], compiler=compiler, skip_runtime_checks=skip,
+                          standard_fallback=fallback, compile_profile=compile_profile,
+                          submission_sha256=entry["submission_sha256"],
+                          tested_source_sha256=digest(tested_source),
+                          command=command[:-2], compile_ok=built.returncode == 0,
+                          diagnostics=built.stderr, samples=[])
+            if built.returncode == 0:
+                for sample in entry["samples"]:
+                    try:
+                        run = subprocess.run([str(binary)], input=sample["input"], text=True,
+                                             capture_output=True, timeout=60)
+                        passed = run.returncode == 0 and matches(entry, sample, run.stdout)
+                        result["samples"].append(dict(passed=passed, returncode=run.returncode,
+                                                      stdout=run.stdout, stderr=run.stderr))
+                    except (subprocess.TimeoutExpired, ValueError, IndexError) as error:
+                        result["samples"].append(dict(passed=False, error=str(error)))
+            result["passed"] = result["compile_ok"] and bool(result["samples"]) and all(s["passed"] for s in result["samples"])
+            return result
+
+        with ThreadPoolExecutor(max_workers=jobs) as pool:
+            cases = ((entry, skip) for entry in entries for skip in (False, True))
+            for result in pool.map(test, cases):
                 results.append(result)
-                print(entry["id"], "skip" if skip else "checked", "OK" if result["passed"] else "FAIL", flush=True)
+                print(result["id"], "skip" if result["skip_runtime_checks"] else "checked",
+                      "OK" if result["passed"] else "FAIL", flush=True)
                 output.write_text(json.dumps(dict(results=results), ensure_ascii=False, indent=2) + "\n")
     if not all(r["passed"] for r in results):
         raise SystemExit("失敗した検査があります: " + str(output))

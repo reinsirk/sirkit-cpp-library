@@ -609,14 +609,19 @@ int instrumented(int x) { return choose<true>(x) + choose<false>(x); }
                                      'volatile int extra=0;if(extra)return 1;std::cout<<instrumented(x)<<"\\n";}\n')
             second = {**first, "id": "negative", "driver": str(second_driver.relative_to(root)),
                       "samples": [{"input": "-1\n", "output": "0\n"}]}
-            result = ci.run([first, second], root=root, output=root / "result", mode="coverage",
+            serial = ci.run([first, second], root=root, output=root / "serial", mode="coverage",
                             compiler=compiler, llvm_profdata=profdata, llvm_cov=cov)
+            result = ci.run([first, second], root=root, output=root / "result", mode="coverage",
+                            compiler=compiler, llvm_profdata=profdata, llvm_cov=cov, jobs=2)
+            self.assertEqual(result["jobs"], 2)
+            self.assertEqual(result["coverage_gate"], serial["coverage_gate"])
             self.assertEqual(result["status"], "PASS", result.get("error"))
             self.assertEqual(result["execution_status"], "PASS")
             self.assertEqual(result["coverage_gate"]["status"], "PASS")
             self.assertEqual(result["coverage_gate"]["expected_translation_units"], 2)
             self.assertEqual(result["coverage_gate"]["measured_translation_units"], 2)
             data = json.loads((root / "result/coverage.json").read_text())
+            self.assertEqual(data, json.loads((root / "serial/coverage.json").read_text()))
             self.assertEqual(len(data["files"]), 1)
             self.assertEqual(data["totals"]["branches"], {"count": 2, "covered": 2, "percent": 100})
             self.assertEqual(data["totals"]["lines"]["count"], 4)
