@@ -155,13 +155,16 @@ class StructureTests(unittest.TestCase):
         upload = next(step for step in job["steps"] if step.get("name") == "Upload local Verify report")
         self.assertIn("'atcoder-local-verify' || 'local-verify'", upload["with"]["name"])
 
-    def test_instrumentation_runs_four_tests_at_a_time(self):
+    def test_instrumentation_runs_four_tests_at_a_time_and_uses_generic_qemu_libraries(self):
         job = workflow("verify.yml")["jobs"]["instrumented"]
         step = next(step for step in job["steps"] if step.get("name") == "Run checked library tests")
         self.assertEqual(step["env"]["VERIFY_MODE"], "${{ matrix.mode }}")
         self.assertIn('options=(--jobs 4)', step["run"])
-        self.assertIn('--timeout 240', step["run"])
+        self.assertIn('--timeout 240 --x86-baseline-sysroot "$RUNNER_TEMP/qemu-amd64"', step["run"])
         self.assertIn('"${options[@]}"', step["run"])
+        install = next(step for step in job["steps"] if step.get("name") == "Install LLVM")
+        self.assertIn("#clear APT::Architecture-Variants;", install["run"])
+        self.assertIn("download libc6:amd64 libstdc++6:amd64 libgcc-s1:amd64", install["run"])
 
     def test_variant_build_matrix_runs_native_msvc_on_windows(self):
         job = workflow("verify.yml")["jobs"]["variant_builds"]

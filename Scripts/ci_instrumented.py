@@ -750,6 +750,7 @@ def run(entries: list[dict], *, root: Path, output: Path, mode: str, compiler: s
         llvm_profdata: str = "llvm-profdata", llvm_cov: str = "llvm-cov",
         gcc_install_dir: str | None = None, gcc: str = "g++", gcov: str = "gcov",
         qemu_x86: str = "qemu-x86_64", qemu_i386: str = "qemu-i386",
+        x86_baseline_sysroot: Path | None = None,
         i386_compiler_args: list[str] | None = None, i386_sysroot: str | None = None, timeout: float = 120,
         compile_timeout: float = 180, available: list[dict] | None = None, jobs: int = 1) -> dict:
     root, output = root.resolve(), output.resolve()
@@ -776,6 +777,7 @@ def run(entries: list[dict], *, root: Path, output: Path, mode: str, compiler: s
         allowed = library_paths(entries, root)
         version, major = command_version(compiler, clang=True)
         report["tools"] = {"compiler": {"command": compiler, "version": version, "major": major}}
+        baseline_command = [qemu_x86, "-cpu", X86_BASELINE_CPU]
         if mode == "coverage":
             for name, tool in [("llvm_profdata", llvm_profdata), ("llvm_cov", llvm_cov)]:
                 version, tool_major = command_version(tool)
@@ -786,6 +788,15 @@ def run(entries: list[dict], *, root: Path, output: Path, mode: str, compiler: s
                 result = subprocess.run([qemu_x86, "--version"], check=True, capture_output=True, text=True, timeout=30)
                 report["tools"]["qemu_x86"] = {"command": qemu_x86, "version": result.stdout.strip(),
                                                 "cpu": X86_BASELINE_CPU}
+                if x86_baseline_sysroot is not None:
+                    libraries = x86_baseline_sysroot.resolve() / "usr/lib/x86_64-linux-gnu"
+                    loader = libraries / "ld-linux-x86-64.so.2"
+                    for path in (loader, *(libraries / name for name in
+                                           ("libc.so.6", "libm.so.6", "libstdc++.so.6", "libgcc_s.so.1"))):
+                        if not path.is_file():
+                            raise ValueError("QEMUの汎用AMD64ランタイムが不足しています: " + str(path))
+                    baseline_command += [str(loader), "--inhibit-cache", "--library-path", str(libraries)]
+                    report["tools"]["qemu_x86"]["command_prefix"] = baseline_command
             if any(entry.get("x86_avx2_coverage") for entry in entries):
                 result = subprocess.run([qemu_x86, "--version"], check=True, capture_output=True, text=True, timeout=30)
                 report["tools"]["qemu_x86_avx2"] = {"command": qemu_x86, "version": result.stdout.strip(),
@@ -888,7 +899,7 @@ def run(entries: list[dict], *, root: Path, output: Path, mode: str, compiler: s
                             profiles.extend(generated)
                             if sample_row["passed"] and entry.get("x86_baseline_coverage"):
                                 name = f"{label}_{sample_index}_x86"
-                                command = [qemu_x86, "-cpu", X86_BASELINE_CPU, str(binary)]
+                                command = [*baseline_command, str(binary)]
                                 commands.append(command)
                                 baseline = subprocess.run(command, input=sample["input"], capture_output=True, text=True,
                                                           errors="replace", timeout=timeout,
@@ -1017,6 +1028,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--gcc", default="g++", help="補足行計測用のGCC")
     parser.add_argument("--gcov", default="gcov", help="補足行計測用のgcov")
     parser.add_argument("--qemu-x86", default="qemu-x86_64", help="AVX2・POPCNTなしの実行時経路を測定するQEMU")
+    parser.add_argument("--x86-baseline-sysroot", type=Path, help="QEMUの汎用AMD64ライブラリとローダーを読み込むルート")
     parser.add_argument("--qemu-i386", default="qemu-i386", help="i386カバレッジ用のQEMU")
     parser.add_argument("--i386-compiler-arg", action="append", help="別のi386クロス環境を使う場合のClang引数")
     parser.add_argument("--i386-sysroot", help="別のi386クロス環境を使う場合のQEMUのライブラリルート")
@@ -1041,7 +1053,8 @@ def main(argv: list[str] | None = None) -> int:
         report = run(entries, root=ROOT, output=args.output, mode=args.mode, compiler=args.compiler,
                      llvm_profdata=args.llvm_profdata, llvm_cov=args.llvm_cov,
                      gcc_install_dir=args.gcc_install_dir, gcc=args.gcc, gcov=args.gcov,
-                     qemu_x86=args.qemu_x86, qemu_i386=args.qemu_i386, i386_compiler_args=args.i386_compiler_arg,
+                     qemu_x86=args.qemu_x86, qemu_i386=args.qemu_i386, x86_baseline_sysroot=args.x86_baseline_sysroot,
+                     i386_compiler_args=args.i386_compiler_arg,
                      i386_sysroot=args.i386_sysroot, timeout=args.timeout,
                      compile_timeout=args.compile_timeout, available=available, jobs=args.jobs)
         return int(report["status"] != "PASS")
