@@ -338,8 +338,10 @@ def main() -> int:
         with options.summary.open("a", encoding="utf-8") as summary:
             summary.write(summary_markdown(report))
     counts = sum(row["passed"] for row in report["results"])
-    print(f"{counts}/{len(report['results'])} 構成: PASS")
-    return int(report["status"] != "passed")
+    passed = report["status"] == "passed"
+    status = "PASS" if passed else "FAIL"
+    print(f"{counts}/{len(report['results'])} configurations: {status}")
+    return int(not passed)
 
 
 if __name__ == "__main__":
