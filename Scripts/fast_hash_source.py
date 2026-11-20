@@ -54,8 +54,7 @@ def build(source: str, kind: str, root: Path) -> str:
     source = source[:start] + """    template<bool Compact>union SlotStorage {
         std::remove_cv_t<value_type> value;
         SlotStorage()noexcept{}
-        ~SlotStorage() requires std::is_trivially_destructible_v<value_type> = default;
-        ~SlotStorage()noexcept requires (!std::is_trivially_destructible_v<value_type>) {} // Fast契約: 登録値も破棄しない。
+        ~SlotStorage() noexcept {} // Fast契約: 登録値の破棄はerase時だけ行う。
         SlotStorage(const SlotStorage&)=delete;
         SlotStorage(SlotStorage&&)=delete;
         value_type&operator*()noexcept{return value;}
