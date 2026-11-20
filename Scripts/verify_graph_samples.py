@@ -527,3 +527,39 @@ def check_modular_square_root(entry, sample, output):
         return True
     except (ValueError, TypeError, IndexError):
         return False
+
+
+def check_static_range_mode(entry, sample, output):
+    """LC Static Range Mode Query形式。各区間で返した値の出現回数と、それが最大であることを確認する。"""
+    try:
+        tokens = sample["input"].split()
+        actual = output.split()
+        expected = sample["output"].split()
+        if any(re.fullmatch(r"[+-]?[0-9]+", x) is None for x in [*tokens, *actual, *expected]):
+            return False
+        data = list(map(int, tokens))
+        if len(data) < 2:
+            return False
+        n, count = data[:2]
+        values = data[2:2 + n]
+        ranges = data[2 + n:]
+        if (not 1 <= n <= 100000 or not 0 <= count <= 100000 or len(values) != n
+                or len(ranges) != 2 * count or len(actual) != 2 * count or len(expected) != 2 * count
+                or any(not 0 <= value <= 10**9 for value in values)):
+            return False
+        answers = list(map(int, actual))
+        references = list(map(int, expected))
+        for index in range(count):
+            left, right = ranges[2 * index:2 * index + 2]
+            if not 0 <= left < right <= n:
+                return False
+            frequency = {}
+            for value in values[left:right]:
+                frequency[value] = frequency.get(value, 0) + 1
+            best = max(frequency.values())
+            mode, times = answers[2 * index:2 * index + 2]
+            if references[2 * index + 1] != best or times != best or frequency.get(mode, 0) != best:
+                return False
+        return True
+    except (ValueError, TypeError, KeyError, AttributeError):
+        return False

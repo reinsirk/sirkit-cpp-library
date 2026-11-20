@@ -1,6 +1,6 @@
 # Mo / MoWithUpdates
 
-[本体](../Algorithm/Mo.cpp)は区間の問い合わせを並べ替えて、要素の追加・削除が少なくなる順に処理します。Moは変更のない配列、MoWithUpdatesは点変更を含む配列を扱います。値と集計状態は利用側で持ちます。[使用例](../Examples/mo_example.cpp)を参照してください。
+[本体](../Algorithm/Mo.cpp)は区間の問い合わせを並べ替えて、要素の追加・削除が少なくなる順に処理します。Moは変更のない配列、MoWithUpdatesは点変更を含む配列を扱います。Moの`run_rollback`は削除を使わず、追加と状態の保存・復元だけで区間を作ります。値と集計状態は利用側で持ちます。[使用例](../Examples/mo_example.cpp)を参照してください。
 
 
 以下、Nは配列長、Qは照会数、Uは変更数、Bは使用ブロック幅、K=1+floor(N/B)です。
@@ -71,7 +71,25 @@ Window run(AddLeft&& add_left, AddRight&& add_right, EraseLeft&& erase_left,
 
 **制約:** 集計は空から開始し、callbackは後述の契約を満たすこと。b>=0、0は自動選択。
 
-**計算量:** 並べ替えにO(Q log(Q+1)+log(N+Q+1))時間・O(Q)領域。区間移動O(QB+NK+Q)回とcallbackの費用。
+**計算量:** 並べ替えにO(Q log(Q+1)+log(N+1))時間・O(Q)領域。区間移動O(QB+NK+Q)回とcallbackの費用。
+
+### run_rollback
+
+```text
+template<class Add, class Snapshot, class Rollback, class Reset, class Answer>
+void run_rollback(Add&& add, Snapshot&& snapshot, Rollback&& rollback,
+                  Reset&& reset, Answer&& answer, std::int32_t b = 0) const;
+template<class AddLeft, class AddRight, class Snapshot, class Rollback, class Reset, class Answer>
+void run_rollback(AddLeft&& add_left, AddRight&& add_right, Snapshot&& snapshot,
+                  Rollback&& rollback, Reset&& reset, Answer&& answer,
+                  std::int32_t b = 0) const;
+```
+
+Moだけの巻き戻し版です。最大値や最頻値のように削除しにくい集計に使います。各照会で`snapshot()`、要素の追加、`answer(要求ID)`、`rollback()`の順に呼び、終了時の集計は空です。
+
+**制約:** 集計は空から開始し、callbackは後述の契約を満たすこと。b>=0、0は自動選択でrunと同じ幅を使う。
+
+**計算量:** 並べ替えはrunと同じ。追加O(QB+NK+Q)回、snapshot・rollbackは各Q回、resetは最大K回とcallbackの費用。
 
 ### run（MoWithUpdates）
 
@@ -98,11 +116,11 @@ State run(AddLeft&& add_left, AddRight&& add_right, EraseLeft&& erase_left,
 std::vector<std::size_t> order(std::int32_t b = 0) const;
 ```
 
-処理順の要求IDを返します。要求ID自体は変えません。
+runの処理順の要求IDを返します。要求ID自体は変えません。
 
 **制約:** b>=0。
 
-**計算量:** O(Q log(Q+1)+log(N+Q+1))時間・O(Q)領域。
+**計算量:** O(Q log(Q+1)+log(N+1))時間・O(Q)領域。
 
 ### block_size
 
@@ -114,7 +132,7 @@ std::int32_t block_size(std::int32_t b = 0) const;
 
 **制約:** b>=0。
 
-**計算量:** 静的版O(log(Q+1))、更新版O(log(N+1))。
+**計算量:** O(log(N+1))。
 
 ### length
 
@@ -296,24 +314,31 @@ mo.run([&](std::int32_t i) { sum += a[i]; },
        [&](std::int32_t i) { sum -= a[i]; },
        [&](std::size_t id) { answers[id] = sum; });
 // answers[q] == 16。処理順が変わっても、回答は追加順のIDへ保存する。
+std::int64_t best = 0, saved = 0;
+mo.run_rollback([&](std::int32_t i) { best = std::max(best, a[i]); },
+                [&] { saved = best; }, [&] { best = saved; }, [&] { best = 0; },
+                [&](std::size_t id) { answers[id] = best; });
+// answers[q] == 8。最大値は削除できないので巻き戻し版を使う。
 ```
 
-## 更新版とcallback
+## 更新版・巻き戻し版とcallback
 
 時刻tは最初のt変更を適用した状態で、0が変更前です。更新版のrunには伸縮callbackに続けて`apply(change_id,left,right)`・`undo(change_id,left,right)`・answerを渡します。左右共通の形は`run(add,erase,apply,undo,answer,b=0)`です。変更対象が現在の区間内なら、古い寄与を除き、値を変更して新しい寄与を加えます。区間外なら値だけを変更します。
 
 実行前に集計を空にし、更新版では配列を時刻0に戻しておきます。runは静的版でWindow{left,right}、更新版でState{left,right,time}を返します。外部の配列と集計には実行後の状態が残ります。要求がなければ全フィールドが0になり、更新callbackも呼びません。再実行前には利用側で初期状態へ戻してください。
 
+巻き戻し版の`rollback()`は直前の`snapshot()`の状態へ戻します。保存は同時に1つだけで、snapshotは空またはblock右側だけを持つ状態で呼びます。`add_left(i)`は区間の左端へ、`add_right(i)`は右端へ追加します。`reset()`は右側を伸ばしたblockの処理後に呼び、集計を空へ戻します。各blockで1回以内なので、O(N)の初期化でも合計O(NK)です。answerはleft block、right昇順、要求IDの順に呼びます。
+
 callbackはlvalueとして呼べる必要があり、保持・コピーはしません。実行中に本体を追加・clear・移動しないでください。作業領域はcallbackを呼ぶ前に確保します。callback例外では本体記録を維持しますが、外部状態は巻き戻しません。
 
 ## 計算量と前提
 
-Nは配列長、Qは照会数、Uは変更数、Bはブロック幅、K=1+floor(N/B)です。並べ替えはO(Q log(Q+1)+log(N+Q+1))時間・O(Q)領域。sort以外の区間移動はO(QB+NK+Q)回で、更新版は時刻移動O(UK²)回が加わります。各callbackの費用は別途必要です。
+Nは配列長、Qは照会数、Uは変更数、Bはブロック幅、K=1+floor(N/B)です。並べ替えはO(Q log(Q+1)+log(N+1))時間・O(Q)領域。sort以外の区間移動・追加はO(QB+NK+Q)回で、更新版は時刻移動O(UK²)回が加わります。各callbackの費用は別途必要です。
 
-自動幅は静的版がmax(1,N/max(1,floor(sqrt(Q))))、更新版がmax(1,floor(cbrt(N²)))で、N=0では1です。静的版は概ねO(N sqrt(Q)+Q)、更新版はN・Q・Uが同程度なら概ねO(N^(5/3))の移動を狙います。自動幅が常に最適とは限りません。正のbで手動指定できます。
+自動幅は1以上N以下で、N=0では1です。静的版と巻き戻し版はfloor(sqrt(2N²/max(1,Q)))を整数演算で求め、概ねO(N sqrt(Q)+Q)回の移動です。更新版は移動回数の見積り(2/3)QB+N²/(2B)+UN²/B²を最小にする幅で、Q=0を1として、4QB³≥3N²B+12UN²となる最小のBを倍精度の二分探索で求めます。N・Q・Uが同程度なら概ねO(N^(5/3))回です。自動幅が常に最適とは限りません。正のbで手動指定できます。
 
 長さ・端点・変更位置・幅はint32_t、要求ID・変更ID・時刻はsize_tです。`0<=l<=r<=N`を守り、空区間も使えます。IDは並べ替えで変わらず、記録を消すと無効です。記録追加は償却O(1)、件数・記録取得はO(1)、reserveは再確保時O(Q)／O(U)です。
 
 コピーはO(Q+U)で独立、代入は失敗時に元内容を保持します。move・swapはO(1)、move元は長さ0で再利用できます。spanは正常な追加・容量変更・clear・代入・所有権移動まで有効で、確保失敗時は維持します。`SKIP_RUNTIME_CHECKS`で入力検査を省き、容量・自動幅・0除算回避の保護は維持します。
 
-主Verifyは[Static Range Count Distinct](https://judge.yosupo.jp/problem/static_range_count_distinct)、更新版は[Point Set Range Frequency](https://judge.yosupo.jp/problem/point_set_range_frequency)です。並べ替えや例外・所有の詳しい検証は[Audit](../Audit/)に置きます。
+主Verifyは[Static Range Count Distinct](https://judge.yosupo.jp/problem/static_range_count_distinct)、左右別callbackは[Static Range Inversions Query](https://judge.yosupo.jp/problem/static_range_inversions_query)、更新版は[Point Set Range Frequency](https://judge.yosupo.jp/problem/point_set_range_frequency)、巻き戻し版は[Static Range Mode Query](https://judge.yosupo.jp/problem/static_range_mode_query)です。並べ替えや例外・所有の詳しい検証は[Audit](../Audit/)に置きます。

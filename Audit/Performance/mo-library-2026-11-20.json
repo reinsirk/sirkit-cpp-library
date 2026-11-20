@@ -1,0 +1,413 @@
+{
+ "format": 1,
+ "date": "2026-11-20",
+ "library": "Algorithm/Mo.cpp",
+ "decision": "adopt",
+ "changes": [
+  "静的版の自動幅をfloor(sqrt(2N^2/max(1,Q)))へ変更（旧N/max(1,floor(sqrt(Q)))）。",
+  "更新版の自動幅を、Q・Uを使う移動回数の見積り(2/3)QB+N^2/(2B)+UN^2/B^2の最小点へ変更（旧floor(cbrt(N^2))）。",
+  "並べ替えを64bitに詰めた鍵の安定な基数ソートへ変更。1024件未満は鍵の比較ソート、鍵が64bitを超えるときは従来の比較ソート。",
+  "runは並べ替え済み配列から区間を読み、要求IDによる間接参照をなくした。",
+  "Mo::run_rollbackを追加。"
+ ],
+ "sources": {
+  "base_revision": "8282ef38921a74bcac7ed80c6ec129f0ad0c371e",
+  "current": "working tree (commit pending)",
+  "Algorithm/Mo.cpp": {
+   "base_sha256": "5eedfaee6446de2843c3deec1093a6797336878f2a9c7e2920d4c6b4f07cb838",
+   "current_sha256": "68256e2094fab116b00b86c2dce30b7dbd1c7032efaf40f7a0993acb3150f367"
+  }
+ },
+ "conditions": {
+  "cpu": "Intel(R) Core(TM) i9-14900K",
+  "cpu_affinity": [
+   12
+  ],
+  "compiler": "g++ (GCC) 15.3.0",
+  "flags": [
+   "-std=c++23",
+   "-O2",
+   "-DNDEBUG"
+  ],
+  "repetitions": 5,
+  "warmups": 1,
+  "order": "各反復で基準版と現在版を交互に実行。最初の1回は照合用で計測値に含めない。",
+  "metric": "子プロセスのuser+sys CPU時間と経過時間は反復の中央値。最大常駐メモリは照合用の1回をGNU time経由で測る。",
+  "official_revision": "73876f1cbcf082d2b22722924b924d3d65a2f00e"
+ },
+ "inputs": "Library Checker公式全ケース。固定revisionのcheckoutで各問題のgenerate.pyを実行して生成。",
+ "reproduction": [
+  "公式checkoutを用意: Verify/ci/library_checker.jsonのrevisionをfetchし、4問題のinfo.tomlへgenerate.pyを実行する。",
+  "taskset -c 12 python3 Audit/Benchmarks/mo_submissions.py --official <checkout> --output <result.json> --repetitions 5",
+  "taskset -c 12 python3 Scripts/ci_performance_all.py --base <base> --library Algorithm/Mo.cpp --cache <cache> --output <dir> --repetitions 5 --warmups 1"
+ ],
+ "whole_program": {
+  "script": "Audit/Benchmarks/mo_submissions.py",
+  "script_sha256": "5dce8a990fe7e21410a92aea4fff90c9f7e3562352234e3790bfc81da8add2bc",
+  "raw": {
+   "path": "Audit/Measurements/mo-submissions-2026-11-20.json",
+   "sha256": "1f85d29cbb6838bf7cf1a6eeeab0c8ff6d015a1fa9130a2c8b95245769f7d098"
+  },
+  "scope": "提出コード全体（本体・main・共通入出力）。同じmain・入出力・コンパイラ・検査設定で本体だけが異なる。mo_rollback_modeは新規で基準なし。",
+  "targets": [
+   {
+    "id": "mo",
+    "problem": "static_range_count_distinct",
+    "submission": "Verify/current/submissions/mo.cpp",
+    "source_sha256": {
+     "base": "11d96dacaaed03ad5557bac15fefdbd38c876cef8ab2d4df2fc800e53463594d",
+     "current": "4593120062736ad361de07f2981006a6ec08b5ec357fcbd6a5c4c9dce9cf766c"
+    },
+    "case_count": 11,
+    "all_checker_passed": true,
+    "heaviest_base": {
+     "case": "random_05",
+     "cpu_ms_median": 269.35,
+     "maxrss_kib": 22308
+    },
+    "max_maxrss_kib_base": 22308,
+    "heaviest_current": {
+     "case": "random_05",
+     "cpu_ms_median": 234.642,
+     "maxrss_kib": 26408
+    },
+    "max_maxrss_kib_current": 26408,
+    "cpu_ratio_min_median_max": [
+     0.2962,
+     0.8525,
+     1.0213
+    ],
+    "slower_cases_over_2_percent": [
+     {
+      "case": "small_q_00",
+      "cpu_ratio": 1.0213,
+      "base_cpu_ms_median": 27.894,
+      "current_cpu_ms_median": 28.487
+     }
+    ]
+   },
+   {
+    "id": "mo_updates",
+    "problem": "point_set_range_frequency",
+    "submission": "Verify/current/submissions/mo_updates.cpp",
+    "source_sha256": {
+     "base": "d649126dc79a516ef73f8227e989c9f00898f93c3eeb77331fbffab2ae6026af",
+     "current": "232ffeb4b75de0cb8603381f16e430b0e1e0593bdc3244453534c576e81e90e8"
+    },
+    "case_count": 25,
+    "all_checker_passed": true,
+    "heaviest_base": {
+     "case": "max_00",
+     "cpu_ms_median": 693.358,
+     "maxrss_kib": 13940
+    },
+    "max_maxrss_kib_base": 17304,
+    "heaviest_current": {
+     "case": "max_00",
+     "cpu_ms_median": 607.806,
+     "maxrss_kib": 15224
+    },
+    "max_maxrss_kib_current": 20380,
+    "cpu_ratio_min_median_max": [
+     0.1719,
+     0.7025,
+     1.0071
+    ],
+    "slower_cases_over_2_percent": []
+   },
+   {
+    "id": "coverage_mo_inversions",
+    "problem": "static_range_inversions_query",
+    "submission": "Verify/current/submissions/coverage_mo_inversions.cpp",
+    "source_sha256": {
+     "base": "61d32fe92f3bd39d7335b6945c477cbbbee530d2bdf78ad51801eab3c8c63952",
+     "current": "22c504be1b5e6ec33d28e4f27c70a319a3d782eca316984f255a1bfe7328240a"
+    },
+    "case_count": 13,
+    "all_checker_passed": true,
+    "heaviest_base": {
+     "case": "max_00",
+     "cpu_ms_median": 317.178,
+     "maxrss_kib": 8148
+    },
+    "max_maxrss_kib_base": 8176,
+    "heaviest_current": {
+     "case": "max_00",
+     "cpu_ms_median": 309.431,
+     "maxrss_kib": 9048
+    },
+    "max_maxrss_kib_current": 9072,
+    "cpu_ratio_min_median_max": [
+     0.4184,
+     0.9565,
+     1.0073
+    ],
+    "slower_cases_over_2_percent": []
+   },
+   {
+    "id": "mo_rollback_mode",
+    "problem": "static_range_mode_query",
+    "submission": "Verify/current/submissions/mo_rollback_mode.cpp",
+    "source_sha256": {
+     "current": "98e948c285cdf1a35cfae38a094a76803387ea1c1ead947431b245bd46fb81b0"
+    },
+    "case_count": 11,
+    "all_checker_passed": true,
+    "heaviest_current": {
+     "case": "random_03",
+     "cpu_ms_median": 53.628,
+     "maxrss_kib": 8384
+    },
+    "max_maxrss_kib_current": 8680
+   }
+  ]
+ },
+ "repository_runner": {
+  "command": "taskset -c 12 python3 Scripts/ci_performance_all.py --base HEAD --library Algorithm/Mo.cpp --cache <cache> --output <dir> --repetitions 5 --warmups 1",
+  "raw": {
+   "path": "Audit/Measurements/mo-performance-all-2026-11-20.json",
+   "sha256": "0d04fc50320ed308ed82010ce4f93017202357c193b24e159f49f54239269e63"
+  },
+  "verify_id": "mo",
+  "regression_verdict": "PASS",
+  "base_revision": "8282ef38921a74bcac7ed80c6ec129f0ad0c371e",
+  "cpu_ms_median": {
+   "random_03": {
+    "base": 240.47,
+    "current": 211.401
+   },
+   "small_n_02": {
+    "base": 38.313,
+    "current": 12.007
+   },
+   "small_q_00": {
+    "base": 29.914,
+    "current": 30.671
+   },
+   "example_00": {
+    "base": 0.797,
+    "current": 0.791
+   }
+  },
+  "note": "ランナーは1ライブラリにつき代表のVerify 1件を選ぶ。small_q_00は照会0件でMoの処理を通らない。"
+ },
+ "investigation": {
+  "note": "幅の係数と切り替え点を選んだ調査。手元の実験プログラムで測り、採否は上のwhole_programの中央値で確認した。",
+  "static_width_move_counts": {
+   "method": "一様な区間（Library Checker random生成と同じ分布）で、移動回数の合計をN*sqrt(Q)で割った値。",
+   "n=q=5e5": {
+    "current_n_over_sqrt_q": 0.834,
+    "c1.5": 0.817,
+    "c2": 0.826,
+    "c3": 0.866,
+    "c4": 0.917,
+    "hilbert_order": 0.876
+   },
+   "short_ranges_length<=5000": {
+    "current_n_over_sqrt_q": 0.332,
+    "c1.5": 0.397,
+    "c2": 0.451,
+    "hilbert_order": 0.13
+   },
+   "note": "cはB=N*sqrt(c/Q)。一様な区間ではHilbert順がblock順より約5%多く、採用しなかった。短い区間に偏ると小さい幅が有利だが、最も重い一様な入力の時間を優先した。"
+  },
+  "static_width_library_time": {
+   "method": "改修前のMo::runにcallback込みで幅を明示し、入出力を除いた時間の最小値。値は同じ実行の組ごとに比べる。",
+   "count_distinct_run_a_5reps": {
+    "random_03": {
+     "c1": 269.3,
+     "c1.5": 254.2,
+     "c2": 245.9
+    },
+    "random_04": {
+     "c1": 151.5,
+     "c1.5": 148.0,
+     "c2": 143.4
+    },
+    "random_05": {
+     "c1": 230.9,
+     "c1.5": 219.0,
+     "c2": 220.7
+    }
+   },
+   "count_distinct_run_b_5reps": {
+    "random_00": {
+     "c1.5": 147.1,
+     "c2": 147.7,
+     "c2.5": 154.6
+    },
+    "random_01": {
+     "c1.5": 108.4,
+     "c2": 113.5,
+     "c2.5": 113.6
+    },
+    "random_03": {
+     "c1.5": 206.0,
+     "c2": 205.5,
+     "c2.5": 210.3
+    },
+    "random_04": {
+     "c1.5": 129.4,
+     "c2": 121.9,
+     "c2.5": 123.9
+    },
+    "random_05": {
+     "c1.5": 196.3,
+     "c2": 192.9,
+     "c2.5": 195.1
+    }
+   },
+   "inversions_3reps": {
+    "max_00": {
+     "c1": 318.2,
+     "c1.5": 298.6,
+     "c2": 296.7,
+     "c2.5": 296.7
+    },
+    "max_01": {
+     "c1": 333.4,
+     "c1.5": 318.0,
+     "c2": 301.5,
+     "c2.5": 291.6
+    },
+    "random_01": {
+     "c1": 104.4,
+     "c1.5": 97.1,
+     "c2": 93.4,
+     "c2.5": 93.2
+    },
+    "small_a_00": {
+     "c1": 202.9,
+     "c1.5": 184.2,
+     "c2": 180.3,
+     "c2.5": 176.6
+    }
+   },
+   "note": "単位ms。cはB=N*sqrt(c/Q)で、c1は改修前の自動幅に当たる。実行の組ごとに時間の水準が変わるため組をまたいで比べない。相異なる値の個数ではc1.5とc2、転倒数ではc2以上が良い。過去の転倒数driverの測定（Audit/Performance/added-lc-fable-mo-experiment-2026-11-15.json）でもc2を採用し、c3・c4は単調入力で退行した。両問題で安定するc2を選んだ。"
+  },
+  "timed_width": {
+   "method": "point_set_range_frequency公式ケースでMoWithUpdates::runに幅を明示し、入出力を除いた時間の最小値（3回）。modelは時刻1回を伸縮1回とした見積りの最小点。",
+   "max_05": {
+    "B=3942(model w=1)": 368.4,
+    "B=4966(w=2)": 276.8,
+    "B=6257": 222.0,
+    "B=7880": 202.1,
+    "B=9930": 201.5
+   },
+   "max_00": {
+    "B=3937(model w=1)": 627.7,
+    "B=4960(w=2)": 601.1,
+    "B=6250": 632.3,
+    "B=7870": 713.6,
+    "B=9900": 847.8
+   },
+   "many_query_0_00": {
+    "B=18371(w=1)": 43.9,
+    "B=23150(w=2)": 37.3,
+    "B=29160": 34.5,
+    "B=36740": 35.2
+   },
+   "many_query_1_00": {
+    "B=906(w=1)": 157.7,
+    "B=1140(w=2)": 155.4,
+    "B=1440": 161.0,
+    "B=1810": 176.7,
+    "B=2280": 202.1
+   },
+   "note": "単位ms。各ケースは同じ実行の組。時刻1回を伸縮2回分（w=2）とする幅は4件すべてでw=1より速い。より大きい幅はmax_05とmany_query_0_00で速いが、max_00とmany_query_1_00で退行するため、4件すべてでw=1より速いw=2を選んだ。最適な重みはcallbackの費用で変わる。"
+  },
+  "sort_only": {
+   "method": "Audit/Benchmarks/mo_order.cpp（N=5e5の一様な区間）。order()の最小値を求める実行を基準版・現在版で3回ずつ行い、その中央値をµsで示す。",
+   "results_us": {
+    "Q=16": {
+     "static_base": 0.1,
+     "static_current": 0.1,
+     "timed_base": 0.1,
+     "timed_current": 0.1
+    },
+    "Q=256": {
+     "static_base": 2.2,
+     "static_current": 1.4,
+     "timed_base": 2.2,
+     "timed_current": 1.5
+    },
+    "Q=2048": {
+     "static_base": 69.1,
+     "static_current": 11.1,
+     "timed_base": 77.2,
+     "timed_current": 12.5
+    },
+    "Q=4096": {
+     "static_base": 155.2,
+     "static_current": 28.1,
+     "timed_base": 181.0,
+     "timed_current": 33.3
+    },
+    "Q=16384": {
+     "static_base": 746.3,
+     "static_current": 166.8,
+     "timed_base": 917.4,
+     "timed_current": 184.7
+    },
+    "Q=65536": {
+     "static_base": 3425.7,
+     "static_current": 785.1,
+     "timed_base": 4250.1,
+     "timed_current": 807.9
+    },
+    "Q=262144": {
+     "static_base": 14424.1,
+     "static_current": 3811.6,
+     "timed_base": 18256.4,
+     "timed_current": 3592.8
+    },
+    "Q=500000": {
+     "static_base": 28136.8,
+     "static_current": 6101.7,
+     "timed_base": 34309.0,
+     "timed_current": 6049.6
+    }
+   },
+   "threshold": "比較ソートと基数ソートの切り替えはQ=600〜700付近で逆転したため1024件とした。"
+  },
+  "rollback_width": {
+   "method": "Static Range Mode Queryの公式ケースで、追加の記録を戻す集計をrun_rollbackへ渡し、幅を明示した時間の最小値（5回、入出力を除く）。各ケースは同じ実行の組。",
+   "random_03": {
+    "c0.5": 55.1,
+    "c1": 49.5,
+    "c2": 49.4
+   },
+   "random_04": {
+    "c0.5": 42.4,
+    "c1": 37.7,
+    "c2": 37.4
+   },
+   "random_05": {
+    "c0.5": 51.7,
+    "c1": 43.8,
+    "c2": 41.9
+   },
+   "random_01": {
+    "c0.5": 12.9,
+    "c1": 11.3,
+    "c2": 11.3
+   },
+   "note": "単位ms。素朴な数え上げとの照合（幅8通り、71万件）も同じプログラムで行った。"
+  }
+ },
+ "memory": "基数ソートの鍵と作業配列で、並べ替え中に約16B*Qを追加で確保する。最大常駐量（各ケースの照合用1回、GNU time）の最大は、moで21.8→25.8MiB、mo_updatesで16.9→19.9MiB、coverage_mo_inversionsで8.0→8.9MiB、mo_rollback_modeで8.5MiB。",
+ "regressions": "CPU時間の中央値で2%を超えて遅くなったのはmoのsmall_q_00（照会0件、27.9→28.5ms）だけで、Moの処理を通らない。途中の版では転倒数のmax系が約1.6%遅く、runが並べ替え済みの要求を参照で読むとcallbackの書き込みとの別名で毎回読み直すことが原因だった。要求を値で読む形に直し、同じ入力で改修前より速いことを確認した。",
+ "rejected": [
+  "Hilbert曲線順: 一様な区間で移動回数がblock順より約5%多い。",
+  "静的幅の係数2.5以上: 相異なる値の個数で遅くなる。",
+  "基数ソートのカウンタをuint32_tにする案: size_tとの差は測定のばらつきの範囲だった。",
+  "巻き戻し版に別の自動幅（係数1）を設ける案: 区間最頻値の公式最大ケースで、係数1の時間は係数2と同等か長かった（investigation.rollback_width）。"
+ ],
+ "verification": [
+  "Verify/current/tests/mo_reference_test.cpp・mo_ordering_test.cpp・mo_allocation_test.cpp: GCC・Clang、検査有効・省略、ASan/UBSan。",
+  "python3 Scripts/ci_verify.py --id mo --id mo_updates --id coverage_mo_inversions --id mo_rollback_mode（g++、clang++、clang++ --fallback）。",
+  "python3 Scripts/ci_library_checker.py で4件の公式全60ケースを公式チェッカーで照合。",
+  "python3 -m unittest discover -s Scripts/tests -p 'test_*.py'（675件）。"
+ ],
+ "online_status": "未提出。ローカルの照合とオンラインACを区別する。"
+}
