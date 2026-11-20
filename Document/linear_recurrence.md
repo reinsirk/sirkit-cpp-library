@@ -96,7 +96,7 @@ template <std::integral T, std::integral U> std::vector<std::uint32_t> convoluti
 std::vector<std::uint32_t> convolution_normalized(std::vector<std::uint32_t> a, std::vector<std::uint32_t> b);
 ```
 
-正規化済みuint32_tのvectorを値で受け取る。moveした領域を再利用可。
+正規化済みuint32_tのvectorを値で受け取ります。moveで受け取った領域を再利用できます。
 
 **制約:** 各係数は0..Mod-1。必要なNTT長は上限以下。
 
@@ -108,7 +108,7 @@ std::vector<std::uint32_t> convolution_normalized(std::vector<std::uint32_t> a, 
 template <std::integral T> std::vector<std::uint32_t> square(const std::vector<T>& a);
 ```
 
-aとaの畳み込み。大きい入力では順変換を1回にする。
+aとaの畳み込みを求めます。大きな入力では順変換を1回に減らします。
 
 **制約:** 共通の型・入力条件を満たすこと。
 
@@ -184,7 +184,7 @@ std::vector<std::uint32_t> LinearRecurrencePrefix(const std::vector<std::uint32_
 NTT();
 ```
 
-動的キャッシュなしで生成。
+動的キャッシュを持たない状態で生成します。
 
 **制約:** 共通の型・入力条件を満たすこと。
 
@@ -209,7 +209,7 @@ BerlekampMasseyには正確な体の四則演算、0/1構築、等値比較が�
 
 Term・Weights・Prefixの汎用版は除算を使わず、正確な可換環の加減乗算と0/1構築があれば使えます。合成数法Mintにも対応します。全APIは入力を変更しません。
 
-**有限列への適合だけでは、未知の後続項は保証できません。** 最短の係数が一意でない場合や、元の無限列の漸化式と異なる場合があります。末尾係数が0でも次数を縮めてよいとは限りません。例えば1,0,0の最短次数は1、係数は0です。
+**与えた有限列に合う漸化式でも、未知の後続項の値は保証できません。** 最短の漸化式の係数が一意に決まらない場合や、元の無限列の漸化式と異なる場合があります。末尾係数が0でも次数を縮めてよいとは限りません。例えば1,0,0の最短次数は1、係数は0です。
 
 ## 計算量と方式
 

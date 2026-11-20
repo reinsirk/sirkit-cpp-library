@@ -15,7 +15,7 @@ RollingHash(const RollingHash& other);
 RollingHash(RollingHash&& other) noexcept;
 ```
 
-バイト列から構築／独立コピー／所有権移動で構築します。NULを含む列も扱い、元の文字列は保持しません。底を自動乱数化する機能はありません。
+バイト列を指定するか、コピーまたは所有権の移動で構築します。コピーは元の状態から独立します。NULを含む列も扱い、元の文字列は保持しません。底を自動乱数化する機能はありません。
 
 **制約:** 比較対象間で補正後の底を共有します。base<2は10、base>modulus-2はmodulus-10へ補正します。
 
@@ -131,7 +131,7 @@ bool equal(std::size_t l, std::size_t r, const RollingHash& other, std::size_t o
 std::size_t lcp( std::size_t l, const RollingHash& other, std::size_t ol, std::size_t limit = std::numeric_limits<std::size_t>::max()) const;
 ```
 
-接尾辞の共通接頭辞長を、両残長とlimit以下で推定します。
+2つの接尾辞の共通接頭辞長を推定します。結果は両方の接尾辞の長さとlimitのいずれも超えません。
 
 **制約:** l<=size()、ol<=other.size()、底は同じ。衝突時の探索結果は保証しません。
 
@@ -150,7 +150,7 @@ int compare(std::size_t l, std::size_t r, const RollingHash& other, std::size_t 
 **計算量:** 短い方の区間長mにO(1+log(m+1))。
 
 
-区間は各個体の`[0,size()]`内で、底は同じこと。lcpのmは残長とlimitの最小値、compareのmは短い方の区間長です。衝突時のlcp探索結果は保証しません。
+区間は各個体の`[0,size()]`内とし、底は揃えます。lcpのmは2つの接尾辞長とlimitの最小値、compareのmは短い方の区間長です。衝突時のlcp探索結果は保証しません。
 
 ## 更新・所有
 
@@ -204,4 +204,4 @@ assert(text.concat(text.get(0,4),text.get(4,11),7) == text.whole());
 
 不正な区間・連結長は`out_of_range`、底の不一致・未正規化ハッシュは`invalid_argument`です。`SKIP_RUNTIME_CHECKS`でこれらを省いても、容量の上限保護は残ります。Unicodeの復号・正規化は行いません。
 
-[完全な使用例](../Examples/rolling_hash_example.cpp) · [実装・衝突例・検証の記録](../Audit/document-detail-archive-algorithm-string-2026-11-15.json)
+[完全な使用例](../Examples/rolling_hash_example.cpp) · [実装・衝突例・検証の記録](../Audit/Changes/document-detail-archive-algorithm-string-2026-11-15.json)

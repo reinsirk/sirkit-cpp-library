@@ -2,7 +2,7 @@
 
 `Node`は値を持たず、`std::shared_ptr<Node> n`で次のノードを所有します。[API一覧](../DataStructure/Node.cpp)と[使用例](../Examples/node_example.cpp)を参照してください。
 
-コピーは後続ノードを共有します。共有されていない長い後続列は反復処理で解放し、連結に沿った深い再帰を避けます。循環参照の自動回収は行いません。
+コピーは後続ノードを共有します。共有されていない長い後続列は反復処理で解放し、連結に沿った深い再帰を避けます。循環参照は自動で回収しません。
 
 以下、kは走査または解放するノード数です。各ノードはshared_ptrで次のノードを所有します。
 
@@ -72,7 +72,7 @@ std::shared_ptr<Node> chain_tail(const std::shared_ptr<Node>& head);
 std::shared_ptr<Node> chain_nth(const std::shared_ptr<Node>& head, std::size_t index);
 ```
 
-0始まりindex番目のshared_ptrを返します。不足ならnullptrです。
+0始まりでindex番目のshared_ptrを返します。該当するノードがなければnullptrです。
 
 **制約:** headやtailはNodeを所有するshared_ptrです。循環の扱いは各説明に従います。
 
@@ -108,7 +108,7 @@ headを次へ移してtrueを返します。空ならfalseです。
 std::shared_ptr<Node> reverse_chain(std::shared_ptr<Node> head) noexcept;
 ```
 
-接続を反転し、新しい先頭を返します。共有者にも接続変更が見えます。
+接続を反転し、新しい先頭を返します。同じノードを共有している側からも、変更後の接続を参照できます。
 
 **制約:** 循環のない列を渡すこと。
 
@@ -176,13 +176,13 @@ headを空にし、共有されていない後続を反復解放します。
 
 `chain_size`、`chain_tail`、`clone_chain`は既定で循環を検出し、`invalid_argument`を送出します。`SKIP_RUNTIME_CHECKS`時は循環のない入力が前提です。
 
-`reverse_chain`と`break_cycle`による接続変更は、同じノードを共有する側にも見えます。`pop_front_node`は共有された元先頭の`n`を切断しません。
+`reverse_chain`や`break_cycle`で接続を変えると、同じノードを共有する側からも変更後の接続を参照できます。`pop_front_node`は共有された元の先頭ノードの`n`を切断しません。
 
 `push_front_node`は新ノードの確保に成功してから接続を移すため、確保に失敗しても元の先頭と接続を保持します。
 
 `clear_chain`は解放したノード数に比例します。循環は`break_cycle`で切ってから解放します。
 
-[完全な使用例](../Examples/node_example.cpp)・[実装・検証の記録](../Audit/document-detail-before-concise-data-structure-2026-11-15.md#node)
+[完全な使用例](../Examples/node_example.cpp)・[実装・検証の記録](../Audit/Changes/document-detail-before-concise-data-structure-2026-11-15.md#node)
 ## operator=
 
 ```text

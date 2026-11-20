@@ -96,7 +96,7 @@ std::pair<int, int> edge(std::size_t id) const;
 int build(bool collect_blocks = false);
 ```
 
-分解して元のグラフの連結成分数を返す。O(n+m)。trueなら点二重連結ブロックも求める。
+グラフを分解し、元のグラフの連結成分数を返します。O(n+m)です。trueを指定すると点二重連結ブロックも求めます。
 
 **制約:** build後で、以後辺を追加していないこと。頂点・辺番号は有効範囲です。
 
@@ -120,7 +120,7 @@ int component_count() const;
 const std::vector<std::size_t>& bridges() const;
 ```
 
-橋の辺IDを昇順の配列へのconst参照で返します。
+橋の辺IDを昇順に並べた配列をconst参照で返します。
 
 **制約:** build後で、以後辺を追加していないこと。頂点・辺番号は有効範囲です。
 
@@ -144,7 +144,7 @@ bool is_bridge(std::size_t e) const;
 const std::vector<int>& articulation_points() const;
 ```
 
-関節点番号を昇順の配列へのconst参照で返します。
+関節点番号を昇順に並べた配列をconst参照で返します。
 
 **制約:** build後で、以後辺を追加していないこと。頂点・辺番号は有効範囲です。
 
@@ -263,7 +263,7 @@ auto forest = graph.bridge_forest();
 
 ## 前提と性質
 
-結果の照会にはbuildが必要です。辺の追加後は再buildしてください。橋のIDと関節点番号は昇順ですが、成分番号・成分群やブロックの順序は規定しません。群を返す値は独立したコピーで、const参照は再build・reset・代入で無効になります。
+結果を照会するにはbuildが必要です。辺を追加した後は再度buildしてください。橋のIDと関節点番号は昇順ですが、成分番号・成分群やブロックの順序は規定しません。値として返す群は独立したコピーです。const参照は再度のbuild、reset、代入で無効になります。
 
 平行辺は別IDとして処理します。自己辺はそれぞれ独立した1辺ブロックとし、同じ頂点だけの頂点ブロックが複数できる場合があります。孤立頂点は辺ブロックには含めません。この自己辺の扱いは、自己辺を許さないLibrary Checkerの点二重連結成分問題と区別してください。
 

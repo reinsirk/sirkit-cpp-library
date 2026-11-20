@@ -74,9 +74,9 @@ bool empty() const noexcept;
 const std::vector<std::uint32_t>& coefficients() const noexcept;
 ```
 
-const参照。
+係数列へのconst参照を返します。
 
-**制約:** 返したconst参照は所有者の更新・代入・破棄までの借用。
+**制約:** 返されたconst参照を使えるのは、所有者の更新・代入・破棄までです。
 
 **計算量:** O(1)。
 
@@ -98,7 +98,7 @@ std::uint32_t operator[](std::size_t i) const;
 std::uint32_t get(std::size_t i) const noexcept;
 ```
 
-範囲外を0とする取得。
+指定位置の係数を返します。範囲外では0を返します。
 
 **制約:** iは任意。範囲外は0を返す。
 
@@ -110,7 +110,7 @@ std::uint32_t get(std::size_t i) const noexcept;
 template <std::integral T> void set(std::size_t i, T value);
 ```
 
-既存係数変更。
+指定した位置の係数を書き換えます。
 
 **制約:** i<size()。
 
@@ -122,7 +122,7 @@ template <std::integral T> void set(std::size_t i, T value);
 void resize(std::size_t n);
 ```
 
-0拡張・切詰め。
+係数列を指定した長さに切り詰めるか、足りない分を0で埋めます。
 
 **制約:** 共通の型・入力条件を満たすこと。
 
@@ -146,7 +146,7 @@ void trim() noexcept;
 FormalPowerSeries prefix(std::size_t n) const;
 ```
 
-n係数のコピー。
+先頭n個の係数を持つコピーを返します。係数が足りない場合は0で埋めます。
 
 **制約:** 共通の型・入力条件を満たすこと。
 
@@ -302,7 +302,7 @@ template <std::integral T> FormalPowerSeries scale(T scalar) const;
 FormalPowerSeries derivative() const;
 ```
 
-微分。
+微分した多項式を返します。
 
 **制約:** 共通の型・入力条件を満たすこと。
 
@@ -314,7 +314,7 @@ FormalPowerSeries derivative() const;
 FormalPowerSeries integral() const;
 ```
 
-積分。積分定数0、積分前の係数数は法未満。
+積分定数を0として積分した多項式を返します。積分前の係数数は法未満です。
 
 **制約:** 共通の型・入力条件を満たすこと。
 
@@ -366,7 +366,7 @@ FormalPowerSeries pow(std::uint64_t exponent, std::size_t n) const;
 FormalPowerSeries pow(std::uint64_t exponent) const;
 ```
 
-非負整数乗。
+非負整数乗を返します。
 
 **制約:** 指数は非負。精度n<=2^22。n省略時は現在のsize()。
 
@@ -379,7 +379,7 @@ std::optional<FormalPowerSeries> sqrt(std::size_t n) const;
 std::optional<FormalPowerSeries> sqrt() const;
 ```
 
-平方根のoptional。不可能ならnullopt。
+平方根をoptionalで返します。平方根が存在しなければnulloptを返します。
 
 **制約:** 根が存在しなければnullopt。精度n<=2^22。n省略時は現在のsize()。
 
@@ -391,7 +391,7 @@ std::optional<FormalPowerSeries> sqrt() const;
 std::pair<FormalPowerSeries, FormalPowerSeries> divmod(const FormalPowerSeries& divisor) const;
 ```
 
-多項式の商と剰余の組 / 商 / 剰余。0除算は常に例外。
+多項式の商と剰余を組にして返します。零多項式による除算は常に例外になります。
 
 **制約:** 除数は零多項式でないこと。必要なNTT長は2^23以下。
 
@@ -535,7 +535,7 @@ template <std::uint32_t Mod = 998244353, std::uint32_t Root = 3, std::integral T
 NTT();
 ```
 
-動的キャッシュなしで生成。
+動的キャッシュを作らずに構築します。
 
 **制約:** 共通の型・入力条件を満たすこと。
 

@@ -16,7 +16,7 @@
 - `composition(newer,older)`: olderの後にnewerを適用する更新を作る。 例: 加算量を足す。
 - `id()`: 何も変更しない更新。 例: 加算量0。
 
-opは括り方で結果が変わらないことが前提です。左右の順序は保持します。mappingは「結合してから更新」と「更新してから結合」で同じ結果になるよう定義します。**e()は空区間、id()は何もしない更新**です。
+opは括り方で結果が変わらないことが前提です。演算では左右の順序を保ちます。mappingは「結合してから更新」と「更新してから結合」で同じ結果になるよう定義します。
 
 ## コンストラクタ
 
@@ -176,7 +176,7 @@ void reset(int n);
 void reset();
 ```
 
-引数付きはe()をn個並べ、省略形は現在の長さで全要素をe()へ戻します。
+引数を渡すとe()をn個並べた列に作り直します。引数を省略すると、現在の長さを保って全要素をe()に戻します。
 
 **制約:** 共通の前提を満たすこと。
 
@@ -226,7 +226,7 @@ auto sum = tree.prod(0, 3).value;     // 12。
 tree.set(1, Sum{10,1});              // 列は[4,10,3]。
 ```
 
-lengthは、区間への加算量を「add×要素数」で求めるために持ちます。**1要素は{値,1}、空区間は{0,0}**です。Tree(n)やresetではlengthも0になるため、値0の配列は`Tree tree(std::vector<Sum>(n,Sum{0,1}))`で作ります。
+lengthは区間への加算量を「add×要素数」で求めるために持ちます。1要素は{値,1}、空区間は{0,0}です。Tree(n)やresetではlengthも0になるため、値0の配列は`Tree tree(std::vector<Sum>(n,Sum{0,1}))`で作ります。
 
 代入・乗算を含む更新は[アフィン変換の例](../Examples/lazy_segment_tree_example.cpp)を参照してください。
 
@@ -242,7 +242,7 @@ lengthは、区間への加算量を「add×要素数」で求めるために持
 
 型引数と基本操作は[ACL](https://atcoder.github.io/ac-library/production/document_ja/lazysegtree.html)に合わせています。
 
-[実装・検証の記録](../Audit/document-detail-before-concise-data-structure-2026-11-15.md#lazy-segment-tree)
+[実装・検証の記録](../Audit/Changes/document-detail-before-concise-data-structure-2026-11-15.md#lazy-segment-tree)
 
 ## operator=
 

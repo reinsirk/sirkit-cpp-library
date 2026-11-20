@@ -1,6 +1,6 @@
 # Union Find
 
-連結成分の結合と、同じ成分かの照会を行います。頂点は`0<=v<n<=INT_MAX`です。
+連結成分を結合し、2頂点が同じ成分に属するかを調べます。頂点は`0<=v<n<=INT_MAX`です。
 
 ## API
 
@@ -144,7 +144,7 @@ void reset(std::size_t n);
 void reset();
 ```
 
-指定した頂点数／現在の頂点数で全成分を独立にし、容量を再利用します。
+引数を渡すと指定した頂点数で、引数を省略すると現在の頂点数で初期化します。各頂点を独立した成分に戻し、確保済みの容量を再利用します。
 
 **制約:** 新頂点数m<=INT_MAX。
 
@@ -198,4 +198,4 @@ nは頂点数、Cは確保済み容量です。`root`・`leader`・結合・同�
 
 範囲外の頂点は既定で`out_of_range`です。`SKIP_RUNTIME_CHECKS`で頂点検査を省きますが、頂点数・容量の上限は維持します。
 
-[完全な使用例](../Examples/union_find_example.cpp)・[実装・検証の記録](../Audit/document-detail-before-concise-data-structure-2026-11-15.md#union-find)
+[完全な使用例](../Examples/union_find_example.cpp)・[実装・検証の記録](../Audit/Changes/document-detail-before-concise-data-structure-2026-11-15.md#union-find)

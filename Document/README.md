@@ -1,6 +1,6 @@
 # アルゴリズムの説明
 
-各文書は概要・API・短い使用例・重要な前提を中心にまとめます。完全な使用例は`Examples/`、関数一覧はソース先頭、検証・測定記録は`Audit/`を参照してください。
+各文書に概要、API、短い使用例、重要な前提を記載しています。プログラム全体の使用例は`Examples/`、関数一覧は各ソースの冒頭にあります。検証・測定記録は[Audit](../Audit/README.md)を参照してください。
 
 APIは`sirkit`内です。短いコード例ではmain側の`using namespace sirkit;`を前提とし、幾何の`geo`は`sirkit::geo`を指します。
 
@@ -119,4 +119,5 @@ APIは`sirkit`内です。短いコード例ではmain側の`using namespace sir
 - [コンテスト用テンプレート](template.md)
 - [コンパイラ別版と速度優先版](fast_variants.md)
 - [ライブラリの連結と容量確認](bundling.md)
+- [手元でライブラリの性能を測る](performance_measurement.md)
 - [開発とVerify](development.md)・[CIの品質検査](ci_quality.md)・[C++の作法と方針](cpp_style_policy.md)

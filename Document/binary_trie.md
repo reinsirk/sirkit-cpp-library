@@ -55,7 +55,7 @@ bool empty() const noexcept;
 void add(T x, int id = -1);
 ```
 
-xを1個追加する
+xを1個追加します。
 
 **制約:** キー・XORマスクは0<=x<2^B。符号付き型では非負。
 
@@ -67,7 +67,7 @@ xを1個追加する
 bool insert_unique(T x, int id = -1);
 ```
 
-未登録時だけ追加してtrue。登録済みなら個数・IDを変えずfalse
+未登録の値を追加してtrueを返します。登録済みなら個数もIDも変えず、falseを返します。
 
 **制約:** キー・XORマスクは0<=x<2^B。符号付き型では非負。
 
@@ -79,7 +79,7 @@ bool insert_unique(T x, int id = -1);
 bool del(T x, int id = -1);
 ```
 
-1個削除してtrue。値や指定IDがなければfalse
+該当する要素を1個削除してtrueを返します。値や指定IDがなければfalseを返します。
 
 **制約:** キー・XORマスクは0<=x<2^B。符号付き型では非負。
 
@@ -163,7 +163,7 @@ ElementResult get_kth(std::int64_t k) const;
 void operate_xor(T x);
 ```
 
-全要素にXORを適用する。以後`add(y)`で追加する公開値はy
+全要素にXORを適用します。以後`add(y)`で追加する要素の公開値はyです。
 
 **制約:** キー・XORマスクは0<=x<2^B。符号付き型では非負。
 
@@ -175,7 +175,7 @@ void operate_xor(T x);
 template <class Bound> size_type count_less(Bound upper) const noexcept;
 ```
 
-upper未満の要素数。整数型のupperが0以下なら0、キー範囲を超えればsize()
+upper未満の要素数を返します。整数型のupperが0以下なら0、キーの範囲を超えればsize()です。
 
 **制約:** upperは整数型。型・容量・返却参照の有効期間は共通の説明に従います。
 
@@ -219,7 +219,7 @@ template <class Bound> size_type count_xor_less(T x, Bound upper) const;
 
 IDは重複でき、`-1`は匿名要素を表します。匿名要素はID一覧に含めません。ID省略の削除は匿名要素を優先し、匿名がなければ任意のID付き要素を1個削除します。一覧の順序は規定せず、返された参照は次の更新または破棄まで有効です。
 
-`size`・`empty`・`operate_xor`はO(1)、検索・順位・XOR照会・削除はO(B)です。指定IDの削除には、その値のID数に比例する探索も加わります。通常版の追加は償却O(B)、圧縮版の追加は償却O(B)で、ノード配列の再配置時には保持ノード数に比例する処理も発生します。ID追加は配列の拡張を伴うことがあります。
+`size`・`empty`・`operate_xor`はO(1)、検索・順位・XOR照会・削除はO(B)です。指定IDの削除にはその値のID数に比例する探索も加わります。通常版も圧縮版も追加は償却O(B)です。圧縮版ではノード配列を再配置すると、保持ノード数に比例する処理も発生します。ID追加は配列の拡張を伴うことがあります。
 
 圧縮版の`reserve(n)`は異なる値n個分の領域を予約し、再配置時は保持ノード数に比例します。`NODES`の上限は緩和しません。
 
@@ -229,4 +229,4 @@ IDは重複でき、`-1`は匿名要素を表します。匿名要素はID一覧
 
 追加に失敗した場合も値・個数・IDを保持しますが、確保済み容量が増える場合はあります。存在しない値やIDの削除はfalseを返し、内容を変えません。
 
-[実装・検証の記録](../Audit/document-detail-before-concise-data-structure-2026-11-15.md#binary-trie)
+[実装・検証の記録](../Audit/Changes/document-detail-before-concise-data-structure-2026-11-15.md#binary-trie)

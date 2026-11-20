@@ -1,6 +1,6 @@
 # 暗黙Treap
 
-`DataStructure/implicit_treap.cpp`の`lazy_implicit_treap`は、挿入・削除・区間操作を行う可変長列です。公開APIは`namespace sirkit`内にあります。[使用例](../Examples/implicit_treap_example.cpp)。
+`DataStructure/implicit_treap.cpp`の`lazy_implicit_treap`は挿入・削除・区間操作を行う可変長列です。公開APIは`namespace sirkit`内にあります。[使用例](../Examples/implicit_treap_example.cpp)。
 
 `S`は要素と集約の型、`op`は結合演算、`e()`は単位元、`F`は更新です。`mapping`は更新を適用し、`composition(f,g)`はgの後にfを適用、`id()`は更新なしを表します。更新は集約に分配し、非可換な集約も使えます。`Commutative=true`で可換を指定し、既定の最小値・和では自動判定します。
 
@@ -20,7 +20,7 @@ lazy_implicit_treap(const lazy_implicit_treap& other);
 lazy_implicit_treap(lazy_implicit_treap&& other) noexcept;
 ```
 
-空列／指定単位元の空列／vectorの列／独立コピー／所有権の移動で構築します。
+引数を省略すると空列になります。単位元を指定した空列やvectorからも構築できます。コピーは独立し、ムーブでは所有権を移します。
 
 **制約:** op・単位元・作用は冒頭の契約を満たすこと。
 
@@ -357,7 +357,7 @@ valueと<で等価な要素数を返します。
 bool contains(S value);
 ```
 
-一致する要素が存在するか。==があれば使い、なければ<で同値判定を返します。
+一致する要素があるかを返します。==が使える場合は==で比較します。使えなければ<で同値かを判定します。
 
 **制約:** 列全体がoperator<による昇順。
 
@@ -595,7 +595,7 @@ bool erase_id(int id);
 S prod_between(int first_id, int second_id);
 ```
 
-両IDの要素を除く間を列順に集約します。端点IDの渡す順は任意です。
+両方のIDの間にある要素を列の順に集約します。両端の要素は含めません。端点のIDを渡す順は任意です。
 
 **制約:** TrackIds=true、両IDが存在すること。
 
@@ -634,4 +634,4 @@ ID索引をn枠まで確保します。
 
 `erase_prod`は集約値の取得に失敗した場合、削除を行いません。
 
-[実装・検証の記録](../Audit/document-detail-before-concise-data-structure-2026-11-15.md#implicit-treap)
+[実装・検証の記録](../Audit/Changes/document-detail-before-concise-data-structure-2026-11-15.md#implicit-treap)

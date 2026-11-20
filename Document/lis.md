@@ -57,7 +57,7 @@ template<bool Strict = true, class T>
 std::vector<std::size_t> LISIndices(const std::vector<T>& v);
 ```
 
-解の元添字を昇順で返します。同長の解の選択は未規定です。
+最長部分列の各要素が元の数列で持つ添字を昇順で返します。同じ長さの解が複数ある場合、どれを選ぶかは規定しません。
 
 **制約:** Tに一貫した狭義弱順序が必要です。汎用型のコピー・既定構築は不要です。
 
@@ -93,4 +93,4 @@ auto indices = LISIndices(a);      // {1,2}
 
 標準浮動小数点のNaNは既定で`invalid_argument`です。`SKIP_RUNTIME_CHECKS`ではNaNを含めないことが利用側の前提です。正負の無限大は使えます。比較・コピー・確保の例外でも入力は保持します。
 
-[完全な使用例](../Examples/lis_example.cpp) · [実装・検証の記録](../Audit/document-detail-archive-algorithm-string-2026-11-15.json)
+[完全な使用例](../Examples/lis_example.cpp) · [実装・検証の記録](../Audit/Changes/document-detail-archive-algorithm-string-2026-11-15.json)

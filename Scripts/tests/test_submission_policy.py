@@ -7,7 +7,7 @@ import unittest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import update_verify_status as status
-import optimization_handoff as handoff
+import optimization_records as records
 
 
 class SubmissionPolicyTests(unittest.TestCase):
@@ -65,10 +65,10 @@ class SubmissionPolicyTests(unittest.TestCase):
     def test_missing_or_empty_policy_preserves_default_status_and_queue(self):
         self.old_ac_then_comment_change()
         before = status.build_status(self.root)
-        queue = handoff.queue(self.root, self.ledger)
+        queue = records.queue(self.root, self.ledger)
         self.rules([])
         self.assertEqual(status.build_status(self.root), before)
-        self.assertEqual(handoff.queue(self.root, self.ledger), queue)
+        self.assertEqual(records.queue(self.root, self.ledger), queue)
         self.assertTrue(self.row()["submission_required"])
 
     def test_documentation_exemption_is_sha_limited_and_never_promotes_ac(self):
@@ -78,7 +78,7 @@ class SubmissionPolicyTests(unittest.TestCase):
         self.assertEqual(row["status"], "source_changed")
         self.assertFalse(row["submission_required"])
         self.assertEqual(row["judgement"]["submission_sha256"], json.loads(journal)["entries"][0]["submission_sha256"])
-        queued = handoff.queue(self.root, self.ledger)["entries"]
+        queued = records.queue(self.root, self.ledger)["entries"]
         item = next(e for e in queued if e["id"] == "old")
         self.assertEqual(item["next_stage"], "exempt")
         self.assertFalse(item["current_ac"])
@@ -88,7 +88,7 @@ class SubmissionPolicyTests(unittest.TestCase):
         path.write_text(path.read_text().replace("return library_value+io_value", "return 9"))
         self.assertTrue(self.row()["submission_required"])
         self.assertNotIn("submission_policy", self.row())
-        item = next(e for e in handoff.queue(self.root, self.ledger)["entries"] if e["id"] == "old")
+        item = next(e for e in records.queue(self.root, self.ledger)["entries"] if e["id"] == "old")
         self.assertNotEqual(item["next_stage"], "exempt")
         self.assertTrue(item["submission_required"])
 
@@ -99,7 +99,7 @@ class SubmissionPolicyTests(unittest.TestCase):
         self.assertFalse(row["submission_required"])
         self.assertNotIn("judgement", row)
         self.assertFalse(self.journal_path.exists())
-        item = next(e for e in handoff.queue(self.root, self.ledger, True)["entries"] if e["id"] == "old")
+        item = next(e for e in records.queue(self.root, self.ledger, True)["entries"] if e["id"] == "old")
         self.assertEqual(item["next_stage"], "exempt")
         self.assertFalse(item["current_ac"])
 
@@ -125,7 +125,7 @@ class SubmissionPolicyTests(unittest.TestCase):
         self.assertEqual(row["submission_policy"]["replacements"], ["primary"])
         self.assertFalse(row["submission_required"])
         for include in [False, True]:
-            self.assertNotIn("old", [e["id"] for e in handoff.queue(self.root, self.ledger, include)["entries"]])
+            self.assertNotIn("old", [e["id"] for e in records.queue(self.root, self.ledger, include)["entries"]])
         self.assertTrue(self.row("primary")["submission_required"])
         self.assertEqual(self.journal_path.read_bytes(), journal)
 

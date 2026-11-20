@@ -36,7 +36,7 @@ std::size_t add_edge(int from, int to, Capacity capacity, Cost cost);
 std::pair<Capacity, Cost> flow(int source, int sink, Capacity limit = std::numeric_limits<Capacity>::max());
 ```
 
-limit以下の追加流量と追加費用のpairを返す。limit省略時はCapacityの最大値。
+limit以下の追加流量と追加費用をpairで返します。limitを省略するとCapacityの最大値を使います。
 
 **制約:** 端点・容量・上限と数値範囲は下記の前提に従い、既存流の流量保存を利用側で保ちます。
 
@@ -48,7 +48,7 @@ limit以下の追加流量と追加費用のpairを返す。limit省略時はCap
 std::vector<std::pair<Capacity, Cost>> slope(int source, int sink, Capacity limit = std::numeric_limits<Capacity>::max());
 ```
 
-{0,0}からの追加流量・費用の折れ線を返す。限界費用が同じ区間はまとめる。
+{0,0}から始まる追加流量と追加費用の折れ線を返します。限界費用が同じ区間はまとめます。
 
 **制約:** 端点・容量・上限と数値範囲は下記の前提に従い、既存流の流量保存を利用側で保ちます。
 
@@ -84,7 +84,7 @@ std::vector<Edge> edges() const;
 void change_edge(std::size_t id, Capacity capacity, Capacity sent);
 ```
 
-指定辺の状態／費用を変える。
+指定した辺の容量と流量を変更します。
 
 **制約:** 端点・容量・上限と数値範囲は下記の前提に従い、既存流の流量保存を利用側で保ちます。
 
@@ -96,7 +96,7 @@ void change_edge(std::size_t id, Capacity capacity, Capacity sent);
 void change_cost(std::size_t id, Cost cost);
 ```
 
-指定辺の状態／費用を変える。
+指定した辺の費用を変更します。
 
 **制約:** 端点・容量・上限と数値範囲は下記の前提に従い、既存流の流量保存を利用側で保ちます。
 
@@ -108,7 +108,7 @@ void change_cost(std::size_t id, Cost cost);
 void reset_flow() noexcept;
 ```
 
-全元辺の流量を0へ／現在の残余で到達可能な頂点のbool配列。
+登録した全ての辺の流量を0に戻します。
 
 **制約:** なし。
 
@@ -120,7 +120,7 @@ void reset_flow() noexcept;
 std::vector<bool> min_cut(int source) const;
 ```
 
-全元辺の流量を0へ／現在の残余で到達可能な頂点のbool配列。
+現在の残余グラフでsourceから到達できるかを、頂点ごとにboolで返します。
 
 **制約:** 端点・容量・上限と数値範囲は下記の前提に従い、既存流の流量保存を利用側で保ちます。
 

@@ -35,7 +35,7 @@ Tは0/1から構築でき、必要な加減乗算とコピーを提供する型�
 | `MatrixInverse(a)` | 逆行列のoptional。非正則ならnullopt、0×0は空の単位行列。 |
 | `SolveLinearSystem(a,b)` | a*x=bの解のoptional。不能ならnullopt。bは行数個。 |
 
-解の`particular`は一解、`kernel`は各行が核の基底、`pivot_columns`はピボット列です。任意の解は`particular + t[0]*kernel.row(0) + ...`で表せます。0行では全変数が自由、0列ではbが零の場合だけ空の一解を持ちます。
+解の`particular`は一解、`pivot_columns`はピボット列です。`kernel`の各行は核の基底ベクトルで、任意の解は`particular + t[0]*kernel.row(0) + ...`で表せます。0行では全変数が自由です。0列ではbが零の場合だけ空の一解を持ちます。
 
 **消去には正確な体の除算が必要**です。素数法Mintや有理数は使えますが、通常の整数型・一般の合成数法・浮動小数点向けの消去ではありません。最初の非零ピボットを使い、数値誤差への対策はしません。非可逆ピボットではdomain_errorを投げますが、係数型全体が体かを検証するものではありません。
 

@@ -1,6 +1,6 @@
 # 動的Union Find
 
-`int`全域のキーを、使った時点で登録するUnion Findです。負の値や`INT_MIN`・`INT_MAX`も使えます。連続した添字への変換は利用側で用意する必要がありません。
+`int`全域のキーを扱い、各キーを使った時点で登録するUnion Findです。負の値や`INT_MIN`・`INT_MAX`も使えます。利用側で連続した添字に変換する必要はありません。
 
 
 以下、Nは登録済みキー数です。
@@ -14,7 +14,7 @@ DynamicUnionFind();
 explicit DynamicUnionFind(std::size_t expected_nodes);
 ```
 
-空で構築し、後者は指定件数分を予約します。
+空の状態で構築します。expected_nodesを渡すと、その件数分の容量を予約します。
 
 **制約:** 予約件数はINT_MAX以下。
 
@@ -63,7 +63,7 @@ int unite(int x, int y);
 template<class F> int unite(int x, int y, const F& callback);
 ```
 
-サイズで併合し、新規結合なら1、既接続なら0です。callback版は併合時だけ新旧代表を渡します。
+成分をサイズに基づいて併合し、結合できたら1、すでに同じ成分なら0を返します。callback版では、併合したときだけ新旧の代表をcallbackに渡します。
 
 **制約:** 登録数はINT_MAX以下。callbackで本体を破壊しないこと。
 
@@ -187,4 +187,4 @@ void clear();
 コピーは独立した複製を作り、コピー代入の確保失敗時は元の内容を維持します。move元は空になり、再利用できます。1キーの登録に失敗したとき、そのキーは登録されず、既存の連結関係は保ちます。複数キーを扱う操作では、それまでに成功した登録は残ります。`groups`の確保失敗時も登録と連結関係は保ちます。成功した`groups`は親を短縮するため、`data(k)`の返す親キーが変わる場合があります。
 
 
-[完全な使用例](../Examples/dynamic_union_find_example.cpp)・[実装・検証の記録](../Audit/document-detail-before-concise-data-structure-2026-11-15.md#dynamic-union-find)
+[完全な使用例](../Examples/dynamic_union_find_example.cpp)・[実装・検証の記録](../Audit/Changes/document-detail-before-concise-data-structure-2026-11-15.md#dynamic-union-find)

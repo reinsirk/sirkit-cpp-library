@@ -10,7 +10,7 @@
 explicit PollardRho64(std::uint64_t seed = 0x8b54e7163d20a9c1ULL) noexcept;
 ```
 
-乱数状態だけを持つ64bit因数分解器。
+乱数状態だけを持つ64bit因数分解器を作ります。
 
 **制約:** 共通の型・入力条件を満たすこと。
 
@@ -34,7 +34,7 @@ static bool is_prime(std::uint64_t n) noexcept;
 std::vector<std::uint64_t> prime_factors(std::uint64_t n);
 ```
 
-重複込みの素因数を昇順のvectorで返します。
+重複を含めて素因数を昇順に並べ、vectorで返します。
 
 **制約:** n>=1。n=0は検査省略時もdomain_error。
 
@@ -179,7 +179,7 @@ int Mobius64(std::uint64_t n);
 
 素数判定以外はn>=1が必要です。n=0は検査省略時も`domain_error`です。n=1では因数列は空、約数は{1}、φとμは1です。
 
-因数pを分離する期待計算量はO(sqrt(p))回の剰余乗算で、確定的な時間上界は保証しません。分解後の約数列挙はD個にO(D)、整列はO(D log(D+1))、個数・φ・μは素因数数に比例します。
+因数pを1つ取り出すための剰余乗算は期待O(sqrt(p))回で、確定的な時間の上界は保証しません。分解後、D個の約数を列挙する時間はO(D)、整列はO(D log(D+1))です。約数の個数とφ・μの計算時間は素因数の数に比例します。
 
 各分解器は独立した擬似乱数状態を持ち、入力や返却済みの結果を変更しません。
 
@@ -190,4 +190,4 @@ auto phi = engine.totient(36);        // 12。
 auto count = engine.divisor_count(36); // 9。
 ```
 
-[完全な使用例](../Examples/pollard_rho_example.cpp)・[内部処理と検証の記録](../Audit/library-docs-concise-math-geometry-2026-11-15.json)
+[完全な使用例](../Examples/pollard_rho_example.cpp)・[内部処理と検証の記録](../Audit/Changes/library-docs-concise-math-geometry-2026-11-15.json)

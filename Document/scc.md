@@ -40,7 +40,7 @@ void add_edge(int u, int v);
 std::vector<std::vector<int>> scc();
 ```
 
-分解し、トポロジカル順の`std::vector<std::vector<int>>`を返す。群内は頂点番号の昇順。
+グラフを強連結成分に分解し、成分をトポロジカル順の`std::vector<std::vector<int>>`で返します。成分内の頂点は番号の昇順です。
 
 **制約:** 構築済みの入力が共通の前提を満たすこと。
 
@@ -52,7 +52,7 @@ std::vector<std::vector<int>> scc();
 int build();
 ```
 
-成分IDだけが必要な場合に、頂点群を作らず分解して成分数を返す。
+成分IDだけが必要な場合に使います。グラフを分解し、頂点群を作らずに成分数を返します。
 
 **制約:** 入力グラフ・関数・比較器の前提は下記の共通条件に従います。
 
@@ -100,7 +100,7 @@ int component_count() const;
 Graph condensation(bool unique_edges = true) const;
 ```
 
-縮約Graphを返す。自己辺を除き、既定では多重辺も除く。
+縮約Graphを返します。自己辺を除き、既定では多重辺も除きます。
 
 **制約:** scc()またはbuild()後で、以後辺を追加していないこと。頂点vは有効な番号です。
 

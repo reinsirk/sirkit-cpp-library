@@ -1,6 +1,6 @@
 # 平面幾何（全機能版）
 
-`Geometry/geometory.cpp`は、点・ベクトル、直線・線分、多角形・凸包、円の操作をまとめたファイルです。通常の公開APIは`sirkit::geo`、`convex_hull_sorted`・`signed_triangle_area2`・`triangle_area`・`circle_intersection_kind`は`sirkit`直下にあります。各用途別ファイルの部品は共有ガードで保護されているため、同じ部品の再定義を避けて併用できます。
+`Geometry/geometory.cpp`は点・ベクトル、直線・線分、多角形・凸包、円の操作をまとめたファイルです。通常の公開APIは`sirkit::geo`、`convex_hull_sorted`・`signed_triangle_area2`・`triangle_area`・`circle_intersection_kind`は`sirkit`直下にあります。共有ガードで同じ部品の再定義を防ぐため、各用途別ファイルと併用できます。
 
 PointのValueは座標型T、Calcは計算型C、Realは浮動座標ならT・整数座標ならlong doubleです。
 
@@ -722,7 +722,7 @@ auto position = geo::contains(circle, geo::RealPoint{1, 1}); // Inside
 
 点の座標は有限で、座標演算の結果は座標型`T`、整数の差・積・和は計算型`C`に収まることが必要です。整数の既定計算型は対応GCC／Clangでは128ビット拡張、標準代替では`std::int64_t`です。交点・射影・重心などの座標は主に`long double`による近似です。
 
-直線は相異なる2点、線分は両端を含み零長も可、円は非負半径で定義します。多角形の内外判定・重心は単純多角形、凸切断は頂点を周回順に並べた凸多角形を渡します。浮動判定の`Epsilon{abs,rel}`は非負有限の値で指定します。
+直線は相異なる2点で指定します。線分は両端を含み、零長も扱えます。円の半径は非負です。内外判定や重心を求めるときは単純多角形、凸切断では頂点を周回順に並べた凸多角形を渡します。浮動判定の`Epsilon{abs,rel}`は有限の非負値で指定します。
 
 型・関数名の重なりは引数で区別します。例えば`contains`は多角形と円盤の内外、`intersection`は直線・線分・円周の交点を扱います。返却される交点列・凸包・切断後の多角形は戻り値が所有します。
 

@@ -15,7 +15,7 @@ Trie(const Trie&);
 Trie(Trie&& other) noexcept;
 ```
 
-空／独立コピー／所有権移動で構築します。
+引数を省略すると空のTrieを作ります。コピーしたTrieは元のTrieから独立し、ムーブでは所有権を移します。
 
 **制約:** 追加の制約はありません。
 
@@ -52,7 +52,7 @@ copies個追加してその語の個数を返します。copies=0なら照会の
 bool erase(std::string_view word, std::size_t copies = 1) noexcept;
 ```
 
-指定個数を削除できればtrueです。個数不足ならfalseで不変、0個ならtrue。
+指定個数を削除できればtrueを返します。個数が足りなければ何も変更せずfalseを返し、指定個数が0ならtrueを返します。
 
 **制約:** 長さ付きバイト列を渡します。空語・NUL・全256バイトを扱います。
 
@@ -124,7 +124,7 @@ bool starts_with(std::string_view prefix) const noexcept;
 std::optional<std::size_t> longest_prefix(std::string_view text) const noexcept;
 ```
 
-登録語のうちtextの最長接頭辞長を返し、該当なしならnulloptです。
+textの接頭辞に当たる登録語のうち、最長のものの長さを返します。該当する登録語がなければnulloptです。
 
 **制約:** 長さ付きバイト列を渡します。空語・NUL・全256バイトを扱います。
 
@@ -320,4 +320,4 @@ TrieNode& operator=(TrieNode&&) noexcept;
 
 別の公開型`TrieNode`は、既定構築または子mapから構築でき、`children`のコピーは子の所有権を共有します。別対象を所有するaliasingポインタ・循環所有は対象外です。深い木の破棄も反復処理です。
 
-[完全な使用例](../Examples/trie_example.cpp) · [実装・検証の記録](../Audit/document-detail-archive-algorithm-string-2026-11-15.json)
+[完全な使用例](../Examples/trie_example.cpp) · [実装・検証の記録](../Audit/Changes/document-detail-archive-algorithm-string-2026-11-15.json)

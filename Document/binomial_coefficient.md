@@ -52,7 +52,7 @@ auto multi = comb.H(3, 2);  // 6
 
 `BinomialMod`と`ModIntBinomial`は表を自動拡張します。`PrimeBinomial`の表外照会は積で計算し、表を広げるときは明示的に`prepare`します。
 `table_limit`は各表の最大添字で、既定値は5,100,000です。任意法版で表を持たず積だけを使う場合は、`max_n=0`と`table_limit=0`を指定します。`max_n=0`だけでは自動拡張は止まりません。
-明示的な前計算の上限超過、積の回数予算超過は`length_error`です。`SKIP_RUNTIME_CHECKS`でも計算予算・容量保護・数学的な0判定を維持します。
+明示的な前計算が上限を超えた場合や、積の計算回数が上限を超えた場合は`length_error`です。`SKIP_RUNTIME_CHECKS`でも計算予算・容量保護・数学的な0判定を維持します。
 
 `PrimeBinomial`はコピー・ムーブ構築が可能で、代入には対応しません。ムーブ元は`prepare`後に再利用できます。表の確保失敗では既存結果を保ちます。Mint演算は通常のmodintと同様に例外を投げないことを想定し、任意のMint演算が投げる場合の表更新の巻き戻しは保証しません。
 

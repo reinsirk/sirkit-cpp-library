@@ -43,11 +43,11 @@ SOURCE_GROUPS = {"DataStructure": "データ構造", "Graph": "グラフ", "Math
 VARIANT_MANIFEST = "Variants/manifest.json"
 VARIANT_GUIDE = "Document/fast_variants.md"
 COMPILER_LABELS = {"Portable": "コンパイラ共通", "GCC": "GCC専用", "Clang": "Clang専用", "MSVC": "MSVC専用"}
-PROFILE_LABELS = {False: "安全版", True: "速度優先版"}
+PROFILE_LABELS = {False: "通常版", True: "速度優先版"}
 PROFILE_NOTES = {
-    False: "入力検査が既定で有効です。<code>#define SKIP_RUNTIME_CHECKS</code> で対象の検査を省略できます。",
-    True: "<code>SKIP_RUNTIME_CHECKS</code> の対象となる入力検査を生成時に省きます。"
-          "一部はメモリの解放も省きます。速度の差はライブラリや入力、処理系によります。",
+    False: "入力検査が既定で有効です。<code>#define SKIP_RUNTIME_CHECKS</code> で対象の検査を省けます。",
+    True: "競技プログラミングの提出向けです。<code>SKIP_RUNTIME_CHECKS</code> の対象となる入力検査を生成時に省きます。"
+          "一部の実装ではメモリの解放も省きます。通常版との速度差はライブラリ、入力、処理系によって変わります。",
 }
 CATEGORIES = {"normal": "正常系", "failure": "失敗系", "library_checker": "Library Checker公式ケース",
               "performance": "性能測定", "sanitizers": "ASan/UBSan", "coverage": "カバレッジ"}
@@ -77,6 +77,13 @@ def site_link(path: str) -> str:
 def github_link(path: str, revision: str, *, directory: bool = False) -> str:
     view = "/tree/" if directory else "/blob/"
     return "https://github.com/" + REPOSITORY + view + quote(revision, safe="") + "/" + quote(path, safe="/._-")
+
+
+def last_commit(root: Path, revision: str, *paths: str) -> tuple[str, str]:
+    result = subprocess.check_output(["git", "log", "-1", "--format=%H %cs", revision, "--", *paths],
+                                     cwd=root, text=True).strip()
+    commit, _, date = result.partition(" ")
+    return commit, date
 
 
 def literal_liquid(text: str) -> str:
@@ -330,7 +337,8 @@ def write_version_lists(jekyll: Path, variants: dict[str, dict[tuple[str, bool],
             title = f"{profile}・{label}のライブラリ一覧"
             lines = ["---", "layout: default", f"permalink: /{page}.html", f"title: {title}", "---", "",
                      f'<nav><a href="{site_link("")}">版を選び直す</a> · '
-                     f'<a href="{site_link("quality.html")}">テスト・性能</a></nav>',
+                     f'<a href="{site_link("quality.html")}">テスト・性能</a> · '
+                     f'<a href="{site_link("licenses/index.html")}">ライセンス</a></nav>',
                      f'<h1>{title}</h1>', f'<p>{version_profile_note(fast)}</p>']
             for folder, group in SOURCE_GROUPS.items():
                 sources = [source for source in variants if source.startswith(folder + "/")]
@@ -450,14 +458,23 @@ def rewrite_links(text: str, document: str, root: Path, sources: set[str], revis
     return "".join(lines)
 
 
-def online_table(entries: list[dict]) -> str:
-    lines = ["### オンラインVerify", "", "| 問題 | 現行ソースの状態 | 提出結果 |", "| --- | --- | --- |"]
+def current_ac(entry: dict) -> bool:
+    return (entry["status"] == "current_ac"
+            and entry.get("submission_policy", {}).get("kind") not in {"documentation_only", "reference"})
+
+
+def online_table(entries: list[dict], verify_pages: set[str] | None = None) -> str:
+    lines = ["### Verifyプログラム", "", "通常版の検証結果です。", "",
+             "| 問題 | プログラム | 現行ソースの状態 | 提出結果 |", "| --- | --- | --- | --- |"]
     if not entries:
-        return "### オンラインVerify\n\n対応するVerifyは未登録です。\n"
+        return "### Verifyプログラム\n\n対応するVerifyは未登録です。\n"
     for entry in entries:
         problem = md(entry["title"])
         if entry.get("problem_url"):
             problem = "[" + problem + "](" + update_verify_status.safe_url(entry["problem_url"]) + ")"
+        submission = entry.get("submission", "")
+        program = ("[" + md(Path(submission).name) + "](" + site_link(submission + ".html") + ")"
+                   if verify_pages is not None and submission in verify_pages else "—")
         record = entry.get("judgement", {})
         result = "—"
         if record.get("url"):
@@ -465,8 +482,10 @@ def online_table(entries: list[dict]) -> str:
         policy = entry.get("submission_policy", {}).get("kind")
         condition = ("説明変更のみ・再提出不要" if policy == "documentation_only" else
                      "参考検証・移行先あり" if policy == "reference" else LABELS[entry["status"]])
-        lines.append("| " + problem + " | " + condition + " | " + result + " |")
-    lines += ["", "過去のACは、現行の提出全文と一致する場合だけ「現行AC」と表示します。"]
+        if current_ac(entry):
+            condition = "✓ " + condition
+        lines.append("| " + " | ".join((problem, program, condition, result)) + " |")
+    lines += ["", "✓ 現行ACは、保存したACの提出全文と現行の提出コードが一致したことを示します。"]
     return "\n".join(lines) + "\n"
 
 
@@ -476,7 +495,7 @@ def performance_table(evidence: list[dict]) -> str:
         return ""
     def safe(value):
         return ci_quality_report.inline(value).replace("{", "&#123;").replace("}", "&#125;")
-    lines = ["起動・入出力込みのVerify全体はCPU時間、本体測定は経過時間で判定します。"]
+    lines = ["起動と入出力を含むVerify全体はCPU時間、本体だけの測定は経過時間で判定します。"]
     lines += ci_quality_report.worst_case_table([("", item) for item in rows], include_library=False)
     lines += ["", "| 測定範囲 | ケース | 規模 | 現行 wall ms | 現行 CPU ms | 比較元 ms | 現行/比較元 | 上限 ms | 判定 | 状態 |",
              "| --- | --- | --- | ---: | ---: | ---: | ---: | ---: | --- | --- |"]
@@ -509,7 +528,7 @@ def quality_table(library: dict | None) -> str:
     for key, label in CATEGORIES.items():
         status = categories.get(key, {}).get("status", "UNAVAILABLE")
         lines.append("| " + label + " | " + LABELS.get(status, "未実施") + " |")
-    lines += ["", "証明済みの到達不能箇所を除き、カバレッジの合格条件は通常版本体の行・直接分岐とも100%です。未計測も失敗として扱います。"]
+    lines += ["", "到達不能と証明した箇所を除き、通常版本体のカバレッジは行・直接分岐とも100%が合格条件です。未計測の場合も不合格です。"]
     coverage = categories.get("coverage", {}).get("evidence", [])
     shown = set()
     for row in coverage:
@@ -669,6 +688,7 @@ def build(root: Path, output: Path, reports: list[Path], *, production: bool = F
     (output / "reports/quality.md").write_text(ci_quality_report.markdown(quality), encoding="utf-8")
     dump(output / "reports/online-status.json", status)
     by_library = {item["path"]: item for item in quality["libraries"]}
+    verify_pages = {entry["submission"] for entry in status["entries"] if (root / entry["submission"]).is_file()}
     snapshot = {"format": 1, "revision": revision, "dirty": dirty, "production": production,
                 "source_hashes": {path: watched[path] for path in sources},
                 "variant_source_hashes": files_to_download, "variant_manifest_sha256": watched[VARIANT_MANIFEST],
@@ -696,21 +716,26 @@ def build(root: Path, output: Path, reports: list[Path], *, production: bool = F
             related = [entry for entry in status["entries"] if source in entry["libraries"]]
             body = version_context() + (content or "ソース先頭のAPI一覧を参照してください。\n")
             body += api_reference(api)
-            body += ('\n<details class="verification-details" markdown="1"><summary>検証結果</summary>\n\n'
-                     + online_table(related) + "\n" + quality_table(by_library.get(source)) + '\n</details>\n')
+            body += ('\n<details class="verification-details" markdown="1"><summary id="verification-results">Verifyプログラムと検証結果</summary>\n\n'
+                     + online_table(related, verify_pages) + "\n" + quality_table(by_library.get(source)) + '\n</details>\n')
             page_content[source] = {"document": document, "source_sha256": watched[source],
                                     "api_sha256": hashlib.sha256(api.encode("utf-8")).hexdigest()}
             path = wrappers / (source + ".md")
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_text("---\ndocumentation_of: " + json.dumps("//" + source) + "\n---\n\n" + body, encoding="utf-8")
             attrs = {"TITLE": title, "SIRKIT_SOURCE_SHA256": sha(root / source)}
+            commit, date = last_commit(root, revision, source)
+            if commit:
+                attrs.update(SIRKIT_LAST_COMMIT=commit, SIRKIT_LAST_COMMIT_DATE=date)
+            if any(current_ac(entry) for entry in related):
+                attrs["SIRKIT_CURRENT_AC"] = "true"
             if document:
                 attrs["SIRKIT_DOCUMENT"] = document
             files[source] = {"document_attributes": attrs}
             paths += [source, path.relative_to(root).as_posix()]
         for entry in status["entries"]:
             path = entry["submission"]
-            if not (root / path).is_file():
+            if path not in verify_pages:
                 continue
             files[path] = {"dependencies": [name for name in entry["libraries"] if name in source_set],
                            "verification": {"type": "const", "status": "skipped"},
@@ -732,8 +757,9 @@ def build(root: Path, output: Path, reports: list[Path], *, production: bool = F
         shutil.copytree(docs_source, docs, dirs_exist_ok=True)
         import yaml
         config = yaml.safe_load((docs / "_config.yml").read_text(encoding="utf-8"))
+        _, revision_date = last_commit(root, revision)
         config.update(baseurl=baseurl, branch_name=revision, sirkit_preview=not production,
-                      url=config.get("url", "") if production else "")
+                      sirkit_revision_date=revision_date, url=config.get("url", "") if production else "")
         # 固定の公開情報は明示し、ローカルHTML生成時のGitHub APIアクセスを不要にする。
         config["github"] = {"repository_url": "https://github.com/" + REPOSITORY,
                             "repository_nwo": REPOSITORY, "repository_name": REPOSITORY.split("/")[1],
@@ -763,7 +789,7 @@ def build(root: Path, output: Path, reports: list[Path], *, production: bool = F
     guide = (root / VARIANT_GUIDE).read_text(encoding="utf-8")
     guide = rewrite_links(literal_liquid(guide), VARIANT_GUIDE, root, source_set, revision)
     (output / "jekyll/fast-guide.md").write_text(
-        "---\nlayout: default\npermalink: /fast-guide.html\ntitle: 安全版と速度優先版\n---\n\n"
+        "---\nlayout: default\npermalink: /fast-guide.html\ntitle: 通常版と速度優先版\n---\n\n"
         "[版を選ぶ](" + site_link("") + ")\n\n" + guide, encoding="utf-8")
     downloads, version_links = write_version_lists(output / "jekyll", variants, titles)
     assets = output / "jekyll/assets"
@@ -794,7 +820,7 @@ def build(root: Path, output: Path, reports: list[Path], *, production: bool = F
         subprocess.run(["bundle", "config", "set", "--local", "path", str(output / "bundle")], cwd=output / "jekyll", check=True)
         subprocess.run(["bundle", "install", "--jobs", "4", "--retry", "2"], cwd=output / "jekyll", check=True)
         subprocess.run(["bundle", "exec", "jekyll", "build", "--destination", str(output / "site")], cwd=output / "jekyll", check=True)
-        validation = validate_site(output / "site", set(files) | set(downloads) | {"fast-guide"}, baseurl,
+        validation = validate_site(output / "site", set(files) | set(downloads) | {"fast-guide", "licenses/index"}, baseurl,
                                    page_apis, downloads, version_links)
         dump(output / "reports/html-validation.json", validation)
         if not validation["passed"]:

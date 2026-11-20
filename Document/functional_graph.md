@@ -11,7 +11,7 @@ FunctionalGraph(const FunctionalGraph&);
 FunctionalGraph(FunctionalGraph&& other) noexcept;
 ```
 
-空／行先配列から構築します。行先をコピーして所有し、構築後は入力を保持しません。
+引数を省略すると空のグラフを作り、行先の配列を渡すとその配列から構築します。行先はグラフがコピーして所有するため、構築後に入力は参照しません。
 
 **制約:** 全ての行先は0..N-1。空列も可。
 
@@ -71,7 +71,7 @@ fromからtoへ到達可能ならtrueを返します。同じ弱連結成分で�
 CycleInfo info(int v) const;
 ```
 
-CycleInfo{id,entry,depth,position,length}を返します。idは到達する周期、entryは最初に着く周期頂点、depthはそこまでの辺数です。positionはentryの周期内添字、lengthは周期長です。
+CycleInfo{id,entry,depth,position,length}を返します。idは到達する周期の番号、entryはその周期で最初に到達する頂点、depthはそこまでの辺数です。positionは周期内でのentryの添字、lengthは周期の長さです。
 
 **制約:** 0<=v<N。
 
@@ -213,7 +213,7 @@ FunctionalGraph& operator=(FunctionalGraph&& other) noexcept;
 
 ## 所有・例外
 
-コピーは独立、move元は空です。build・コピー代入の確保失敗では旧状態とviewを保ちます。viewは成功した再構築・clear・代入・所有権移動まで有効です。
+コピーは元のグラフから独立し、move元は空になります。buildやコピー代入で領域を確保できなかった場合も、以前の状態とviewは有効です。viewは再構築・clear・代入・所有権の移動が成功するまで使えます。
 
 頂点・周期ID・入力の行先を既定で検査し、`SKIP_RUNTIME_CHECKS`で除きます。容量保護は維持します。
 

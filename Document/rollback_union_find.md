@@ -10,7 +10,7 @@
 explicit RollbackUnionFind(std::size_t n = 0);
 ```
 
-空／n頂点の独立した成分を構築します。
+空の状態、またはn頂点がそれぞれ独立した状態を作ります。
 
 **制約:** 0<=n<=INT_MAX。
 
@@ -119,7 +119,7 @@ bool merge(int x, int y);
 void undo();
 ```
 
-直前の追加呼出しを1回取り消します。
+直前の追加の呼び出しを1回取り消します。
 
 **制約:** 履歴が空でないこと。
 
@@ -155,7 +155,7 @@ void snapshot() noexcept;
 void rollback(int state = -1);
 ```
 
-指定位置、または-1なら保存位置まで戻します。
+指定した履歴位置まで戻します。-1を指定すると保存位置まで戻します。
 
 **制約:** 0<=state<=get_state()、またはstate=-1。現在の枝で得た位置を使います。
 
@@ -167,7 +167,7 @@ void rollback(int state = -1);
 void clear_history() noexcept;
 ```
 
-成分を保ち、履歴・保存位置を消します。容量は保持します。
+成分と容量を保ち、履歴と保存位置を消します。
 
 **制約:** 古い履歴位置は以後使えません。
 
@@ -215,7 +215,7 @@ int component_count() const noexcept;
 std::vector<std::vector<int>> groups() const;
 ```
 
-成分ごとの頂点昇順一覧を返します。
+成分ごとに頂点を番号の昇順で返します。
 
 **制約:** 追加の制約はありません。
 
@@ -287,4 +287,4 @@ nは頂点数、hは履歴長、Hは確保済み履歴容量です。構築はO(
 
 `undo`は非空履歴、`rollback`は`0<=state<=get_state()`が前提です。頂点・履歴回数の上限はINT_MAX。`SKIP_RUNTIME_CHECKS`は入力検査を省きますが、容量保護は残します。追加SIMDは`SIRKIT_DISABLE_SIMD`で除外できます。
 
-[完全な使用例](../Examples/rollback_union_find_example.cpp)・[実装・検証の記録](../Audit/document-detail-before-concise-data-structure-2026-11-15.md#rollback-union-find)
+[完全な使用例](../Examples/rollback_union_find_example.cpp)・[実装・検証の記録](../Audit/Changes/document-detail-before-concise-data-structure-2026-11-15.md#rollback-union-find)

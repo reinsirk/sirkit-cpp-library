@@ -1,6 +1,6 @@
 # Segment Tree Beats
 
-`SegmentTreeBeats`は、整数列への区間chmin・chmax・加算と、区間和・最小値・最大値を扱います。chminは各要素を上限以下へ、chmaxは下限以上へそろえる操作です。添字は0始まり、区間は半開区間[l,r)です。[使用例](../Examples/segment_tree_beats_example.cpp)を参照してください。
+`SegmentTreeBeats`は整数列への区間chmin・chmax・加算と、区間和・最小値・最大値を扱います。chminは上限を超える要素を上限値に、chmaxは下限を下回る要素を下限値に置き換えます。添字は0始まり、区間は半開区間[l,r)です。[使用例](../Examples/segment_tree_beats_example.cpp)を参照してください。
 
 以下、Nは要素数です。値の演算・コピーをO(1)として計算量を記します。
 
@@ -203,7 +203,7 @@ auto sum = tree.sum(0,4); // 15。
 
 内部の和と遅延はGCC/Clangの128ビット整数拡張、または標準C++の2ワード演算を使います。`SIRKIT_FORCE_STANDARD_ARITHMETIC`で標準経路へ切り替えます。標準経路はsize_tが64ビット以下の環境が対象です。中間の子の値だけが64ビット範囲外でも扱えるよう計算し、容量・桁あふれの保護は検査省略時も維持します。数値設計の詳細は[Audit](../Audit/)に置きます。
 
-取得も保留中の更新を子へ伝えるため非constです。更新・区間取得は動的確保を行わず、valuesは戻す配列を確保します。reset・コピー代入は失敗時に元を保ち、コピーは独立、移動元は空として再利用できます。resetはO(旧N+新N+1)、clearはO(N+1)で、確保容量を保持する場合があります。
+取得時も保留中の更新を子へ伝えるため、取得操作は非constです。更新・区間取得では動的確保せず、valuesでは戻り値の配列を確保します。reset・コピー代入が失敗した場合は元の状態を保ちます。コピーは元の列から独立し、移動元は空として再利用できます。resetはO(旧N+新N+1)、clearはO(N+1)で、確保済みの容量を保持する場合があります。
 
 添字・区間は既定で検査し、`SKIP_RUNTIME_CHECKS`で除きます。構成と問題選定は[NyaanのSegment Tree Beats](https://nyaannyaan.github.io/library/segment-tree/segment-tree-beats.hpp)を参考にし、実装は独立に組み立てています。
 

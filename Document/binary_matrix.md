@@ -14,7 +14,7 @@ BinaryMatrix(const BinaryMatrix&);
 BinaryMatrix(BinaryMatrix&& other) noexcept;
 ```
 
-指定した形の全0行列を作る。0×n・n×0も形を保持する。
+指定した形の全0行列を作ります。0×n・n×0でも行数と列数を保持します。
 
 **制約:** 共通の型・入力条件を満たすこと。
 
@@ -88,7 +88,7 @@ bool empty() const noexcept;
 std::span<const std::uint64_t> row_words(std::size_t row) const;
 ```
 
-行の読み取り専用word span。word iのbit jは列64i+j。
+行を読み取り専用のword spanで返します。word iのbit jは列64i+jに対応します。
 
 **制約:** 行添字が範囲内。viewは所有権移動・再構築まで有効。
 
@@ -148,7 +148,7 @@ BinaryMatrix& flip(std::size_t row, std::size_t col);
 void swap_rows(std::size_t a, std::size_t b);
 ```
 
-行交換。
+指定した2行を交換します。
 
 **制約:** 共通の型・入力条件を満たすこと。
 
@@ -172,7 +172,7 @@ void xor_rows(std::size_t target, std::size_t source, std::size_t first_col = 0)
 static BinaryMatrix identity(std::size_t n);
 ```
 
-n次単位行列。
+n次単位行列を返します。
 
 **制約:** n次行列を確保できる容量。
 
@@ -184,7 +184,7 @@ n次単位行列。
 BinaryMatrix transpose() const;
 ```
 
-転置。
+転置した行列を返します。
 
 **制約:** 共通の型・入力条件を満たすこと。
 
@@ -196,7 +196,7 @@ BinaryMatrix transpose() const;
 BinaryMatrix multiply(const BinaryMatrix& other) const;
 ```
 
-行列積。自己積代入も可。
+行列積を求めます。自己積の代入にも使えます。
 
 **制約:** 左行列の列数と右行列の行数が同じ。
 
@@ -292,7 +292,7 @@ bool operator==(const BinaryMatrix& other) const noexcept;
 BinaryMatrix pow(std::uint64_t exponent) const;
 ```
 
-正方行列の非負整数乗。指数0は単位行列。
+正方行列の非負整数乗を返します。指数が0なら単位行列を返します。
 
 **制約:** 正方行列。powの指数は非負。
 
@@ -316,7 +316,7 @@ std::size_t rank() const;
 bool determinant() const;
 ```
 
-正方行列の行列式bool。0×0の行列式は1。
+正方行列の行列式をboolで返します。0×0の行列式は1です。
 
 **制約:** 正方行列。
 
@@ -328,7 +328,7 @@ bool determinant() const;
 std::optional<BinaryMatrix> inverse() const;
 ```
 
-逆行列のoptional。非正則ならnullopt、0×0は空の単位行列。
+逆行列をoptionalで返します。非正則ならnullopt、0×0なら空の単位行列を返します。
 
 **制約:** 正方行列。
 
@@ -340,7 +340,7 @@ std::optional<BinaryMatrix> inverse() const;
 std::optional<LinearSolution> solve(std::span<const std::uint8_t> rhs) const;
 ```
 
-Ax=rhsのoptional<LinearSolution>。不能ならnullopt。rhsは行数個のuint8_tの0/1。
+Ax=rhsの解をoptional<LinearSolution>で返します。解がなければnulloptです。rhsは行数と同じ個数のuint8_tの0/1で指定します。
 
 **制約:** 共通の型・入力条件を満たすこと。
 
@@ -352,7 +352,7 @@ Ax=rhsのoptional<LinearSolution>。不能ならnullopt。rhsは行数個のuint
 void reset(std::size_t rows = 0, std::size_t cols = 0);
 ```
 
-全0への再初期化。
+全要素が0の行列に初期化し直します。
 
 **制約:** 共通の型・入力条件を満たすこと。
 

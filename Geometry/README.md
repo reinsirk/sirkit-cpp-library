@@ -1,7 +1,7 @@
 # 幾何ライブラリの選び方
 
 各 `.cpp` は標準ヘッダー以外の依存がなく、そのまま単独で貼り付けられます。
-複数ファイルの併用・重複した貼り付けにも部品ごとのガードで対応します。
+複数のファイルを併用したり同じコードを貼り付けたりしても、部品ごとのガードで再定義を防ぎます。
 全機能が必要なら `geometory.cpp` を使ってください。通常の公開APIは `sirkit::geo`、`convex_hull_sorted`・三角形の面積関数・`circle_intersection_kind` は `sirkit` 直下です。
 
 | ファイル | 主な用途・関数 |
@@ -11,8 +11,8 @@
 | `Polygon.cpp` | 面積・周長・内外判定・凸包・重心、`convex_cut`、整列済み点列用の`sirkit::convex_hull_sorted` |
 | `Circle.cpp` | `Circle`、`circumcircle`、円盤の内外判定、円と直線・線分・円の交点 |
 
-Pointは全ファイルに含まれます。Polygonは必要な線分判定とLine型、Circleは必要な線分判定を含みます。
-Polygonだけで直線間の交点計算も使う場合はLine_Segmentを併用してください。
+すべてのファイルがPointを含みます。Polygonは必要な線分判定とLine型、Circleは必要な線分判定も含みます。
+Polygonと直線同士の交点計算を使う場合は、Line_Segmentも貼り付けてください。
 各型・関数群の先頭にAPI一覧と計算量を記載しています。全機能を使う例は `../Examples/geometry_example.cpp` にあります。
 
 ## 最小例
@@ -36,7 +36,7 @@ int main() {
 - `Point<T,C>` の座標型はT、内積・外積・差・積の計算型はCです。整数座標では途中計算もCに収まる必要があります。
 - `PointI/PointD/PointLD` はそれぞれ `int64_t/double/long double` 座標、交点・重心は `RealPoint`（long double）です。
 - 整数座標のCは、利用できればGCC／Clangの128ビット拡張、その他ではint64_tです。`SIRKIT_FORCE_STANDARD_ARITHMETIC` または既存の `GEO_DISABLE_INT128` で後者を選べます。
-- 座標・通常の座標演算結果は有限、`Epsilon` のabs/relは非負有限が前提です。整数の向き・線分判定は厳密、実数の判定は指定の許容幅を使います。全座標を検査する走査は行いません。
+- 座標と通常の座標演算の結果は有限とし、`Epsilon` のabs/relには有限の非負値を指定します。整数の向きや線分は厳密に判定し、実数の判定には指定の許容幅を使います。全座標を検査する走査は行いません。
 - `Line` は異なる2点、`Segment` は同一点でも使えます。円の中心は有限、半径は非負有限です。円と直線・線分の交点APIには `Line<long double>/Segment<long double>` を渡します。
 - `contains(poly,p)`・面積重心は単純多角形、`convex_cut(poly,line)` は順に並べた凸多角形が前提です。cutは有向直線の左側を境界ごと残します。
 - `arg_cmp` は零ベクトルを先頭に偏角・距離順で並べます。浮動小数点では丸めた偏角が等しいものを距離で比較します。

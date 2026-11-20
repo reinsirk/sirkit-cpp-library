@@ -2,7 +2,7 @@
 
 集合・約数・倍数の総和変換、AND／OR・GCD／LCM畳み込み、整数篩をまとめた全機能版です。必要な機能だけ使う場合は[用途別版](../Math/Zeta/README.md)を選べます。
 
-Mは篩の上限、pi(M)はM以下の素数数、Dは約数の個数です。
+Mは篩の上限、pi(M)はM以下の素数の個数、Dは約数の個数です。
 
 変換・畳み込みのnは配列長です。疎変換のmは要素数、rは各keyの素因数を重複込みで数えた総数です。
 
@@ -112,7 +112,7 @@ IntegerSieve(const IntegerSieve&);
 IntegerSieve(IntegerSieve&& other) noexcept;
 ```
 
-最小素因数表と昇順素数列を構築します。コピーは独立、移動元は空です。
+最小素因数表と昇順の素数列を作ります。コピーは元の表から独立し、移動元は空になります。
 
 **制約:** 0<=maxnで内部容量の上限内。
 
@@ -392,7 +392,7 @@ template <std::integral Int, class Val> void sparse_multiple_mobius_transform(st
 `IntegerSieve(M)`はM>=0の最小素因数表と昇順素数列をO(M+1)時間・領域で作ります。公開表`least_prime_factor`・`prime_list`は変更せず使います。0・1の最小素因数は0です。
 
 
-Dは約数の個数、pi(M)はM以下の素数数です。Mintは利用側で用意し、乗算をO(1)、powをO(log(k+1))として数えます。
+Dは約数の個数、pi(M)はM以下の素数の個数です。Mintは利用側で用意します。計算量では乗算をO(1)、powをO(log(k+1))と数えます。
 
 ## 約数・倍数の変換
 
@@ -402,7 +402,7 @@ Dは約数の個数、pi(M)はM以下の素数数です。Mintは利用側で用
 
 ## GCD／LCM畳み込み
 
-`gcd_convolution(f,g)`・`lcm_convolution(f,g)`は、gcd(i,j)／lcm(i,j)ごとの積の総和vectorを返します。`gcd_square(f)`・`lcm_square(f)`はg=fです。全て空を含む同長入力を扱います。
+`gcd_convolution(f,g)`・`lcm_convolution(f,g)`は、gcd(i,j)／lcm(i,j)ごとに積の総和を並べたvectorを返します。`gcd_square(f)`・`lcm_square(f)`はg=fの場合です。両方の入力は同じ長さとし、空配列も扱えます。
 
 `gcd(0,k)=k`、`gcd(0,0)=0`、`lcm(0,k)=0`とし、LCMが結果長n以上の組は切り捨てます。各`(f,g,sieve)`・`(f,sieve)`版もあり、篩の前提は約数・倍数変換と同じです。O(1+n log log(n+2))時間・O(n+1)追加領域です。
 
@@ -427,4 +427,4 @@ subset_zeta_transform(a);             // {1,3}。
 subset_mobius_transform(a);           // {1,2}。
 ```
 
-[完全な使用例](../Examples/zeta_mobius_example.cpp)・[内部処理と検証の記録](../Audit/library-docs-concise-math-geometry-2026-11-15.json)
+[完全な使用例](../Examples/zeta_mobius_example.cpp)・[内部処理と検証の記録](../Audit/Changes/library-docs-concise-math-geometry-2026-11-15.json)

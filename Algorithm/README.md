@@ -1,7 +1,7 @@
 # その他のアルゴリズム
 
 各ライブラリは必要な標準ヘッダーを含み、単独で貼り付けられます。
-最長増加部分列の長さ・復元・各要素を末尾とする長さは[LISの説明](../Document/lis.md)と[使用例](../Examples/lis_example.cpp)を参照してください。
+最長増加部分列の長さの取得、部分列の復元、各要素を末尾とする場合の長さの取得は、[LISの説明](../Document/lis.md)と[使用例](../Examples/lis_example.cpp)を参照してください。
 
 | ファイル | 対応する検証 |
 | --- | --- |
@@ -13,4 +13,4 @@
 
 問題URL、追加APIの補足検査、現在版の判定状況は[Verify一覧](../Verify/current/README.md)を参照してください。
 
-[行列変換](../Document/matrix_transform.md)・[組合せマスク](../Document/combination_masks.md)・[Radix Sort](../Document/radix_sort.md)の前提と使用例は各説明を参照してください。
+入力の前提と使用例は、[行列変換](../Document/matrix_transform.md)・[組合せマスク](../Document/combination_masks.md)・[Radix Sort](../Document/radix_sort.md)の各ページを参照してください。

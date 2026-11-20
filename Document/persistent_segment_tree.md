@@ -14,7 +14,7 @@ PersistentSegmentTree(const PersistentSegmentTree& other);
 PersistentSegmentTree(PersistentSegmentTree&&) noexcept = default;
 ```
 
-長さnの全単位元列、または指定vector・spanの初期版を構築します。
+長さnの全要素を単位元で初期化するか、指定したvectorまたはspanから初期版を構築します。
 
 **制約:** 冒頭の値型・演算の前提を満たすこと。指定する列長は内部容量の上限内です。
 
@@ -219,7 +219,7 @@ void clear();
 Root remap_from(const PersistentSegmentTree& original, const Root& root) const;
 ```
 
-コピー元のRootを、コピーした自分の対応するRootへ変換します。
+コピー元のRootを、コピー先の木で同じ版を表すRootへ変換します。
 
 **制約:** originalからコピーした表で、そのコピー元の有効なRootを渡すこと。
 

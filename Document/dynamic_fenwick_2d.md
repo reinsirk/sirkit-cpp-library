@@ -1,6 +1,6 @@
 # 動的2次元Fenwick Tree
 
-`DynamicFenwickTree2D<T>`は更新位置の事前登録なしで、零配列への単点加算・矩形和を扱います。寸法は非負のint、添字は0始まり、区間は半開区間です。
+`DynamicFenwickTree2D<T>`は零配列への単点加算と矩形和を扱います。更新位置の事前登録は不要です。寸法は非負のint、添字は0始まり、区間は半開区間です。
 
 ## API
 
@@ -119,7 +119,7 @@ bool empty() const noexcept;
 void clear();
 ```
 
-寸法・容量を保ち値を零へ戻します。
+寸法と容量を保ったまま、値を零に戻します。
 
 **制約:** 追加の制約はありません。
 
@@ -188,10 +188,10 @@ auto value = tree.get(10, 20);       // 3。
 
 通常の更新・矩形和・単点取得は期待O(log(n+1) log(m+1))です。初回更新の行索引準備はn<=100万でO(n)、直接配列を使う行の初期化・変換はO(m)です。容量再確保にも保持量に比例する費用が別途かかります。メモリは行索引と各行が保持する点・セル・配列に依存します。
 
-読み取りはノード・領域を追加しません。`stored_nodes`は更新経路上の仮想Fenwickセル数で、実際の木ノード数ではありません。零の加算や相殺済みも数えます。
+読み取り時にノードや領域は増えません。`stored_nodes`が数えるのは更新経路上の仮想Fenwickセルです。実際の木ノード数とは異なり、零を加算したセルや値が相殺されたセルも数えます。
 
 コピーは独立し、move・swapは領域の所有権を移します。`clear`は寸法を保ち、`reset`は寸法も変え、対応する領域を再利用します。同梱の[1次元版](dynamic_fenwick.md)も使えます。
 
 既定の寸法・添字・区間検査は`SKIP_RUNTIME_CHECKS`で除けます。容量・添字の内部上限は維持します。
 
-[完全な使用例](../Examples/dynamic_fenwick_2d_example.cpp)・[実装・検証の記録](../Audit/document-detail-before-concise-data-structure-2026-11-15.md#dynamic-fenwick-2d)
+[完全な使用例](../Examples/dynamic_fenwick_2d_example.cpp)・[実装・検証の記録](../Audit/Changes/document-detail-before-concise-data-structure-2026-11-15.md#dynamic-fenwick-2d)

@@ -1,6 +1,6 @@
 # 残りの最適化記録の照合（2026-11-16）
 
-現行ACのうち最適化キューが未完了だった10本を調べ、4本を既存のCodex→Fable記録へ正しく結び直した。本体・main・入出力は変更せず、新しい再提出やFable推論も行っていない。
+現行のACのうち最適化が未完了扱いだった10本を調べ、4本を既存のCodexとFableの記録に結び直した。本体・main・入出力は変更せず、新しい再提出やFable推論も行っていない。
 
 | 対象 | 状態 |
 |---|---|
@@ -9,7 +9,7 @@
 | implicit_treap_deque / line_container_2d_min | 既存Fableは再利用可能。現行提出版全体の性能測定が不足するため完了扱いにしない。 |
 | persistent_segment_tree / implicit_treap_affine / dynamic_lichao_line / dynamic_lichao_segment | Codexの検討・測定と、その後のFable確認が残る。 |
 
-4本の復元は新しいオンラインACや新しい最適化実績ではない。既存の実提出、実測、レビューの対応漏れを修正したもの。[照合根拠とSHA](../../Audit/remaining-review-reconciliation-2026-11-16.json)に記録した。
+4本は既存の提出・測定・レビューの対応漏れを修正した。新たなオンラインACや最適化の実績は加えていない。[照合根拠とSHA](../../Audit/Changes/remaining-review-reconciliation-2026-11-16.json)に記録した。
 
 ## 作業中の候補とPC負荷への対応
 

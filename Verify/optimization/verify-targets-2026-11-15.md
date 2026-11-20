@@ -2,8 +2,8 @@
 
 最新の再調査・追加39本と併用先は[検証範囲の一覧](verify-coverage-2026-11-15.md)を参照してください。以下は前回の提出先見直し時点の記録です。
 
-優先順位は **Library Checker → yukicoder → AtCoder → AOJ** です。旧AtCoder34本を見直し、APIが自然に答えへ反映される問題を選びました。
-旧15本を13本の新規提出へ移し、19本は現在のAtCoderを維持します。重複する同一ライブラリの入口は集約しています。
+優先順位は **Library Checker → yukicoder → AtCoder → AOJ** です。AtCoderの旧34本を見直し、検証したいAPIの結果が解答に反映される問題を選びました。
+旧15本を13本の新規提出へ移し、19本は現在のAtCoderを維持します。同じライブラリへの重複した入口はまとめています。
 
 ## 新しく提出するコード
 
@@ -51,4 +51,4 @@
 | [spfa.cpp](../current/submissions/spfa.cpp) | [E - Coins Respawn](https://atcoder.jp/contests/abc137/tasks/abc137_e) |
 | [topological_lexicographical.cpp](../current/submissions/topological_lexicographical.cpp) | [D - Restricted Permutation](https://atcoder.jp/contests/abc223/tasks/abc223_d) |
 
-問題ごとの検証範囲・不足は[manifest](../current/manifest.json)のcoverage/limitations、候補を採らない理由は[調査記録](../../Audit/verify-priority-final-2026-11-15.json)を参照してください。旧問題・判定は履歴とローカル回帰に残し、[提出方針](../current/submission_policy.json)で再提出対象から分離しています。
+問題ごとの検証範囲・不足は[manifest](../current/manifest.json)のcoverage/limitations、候補を採らない理由は[調査記録](../../Audit/Verification/verify-priority-final-2026-11-15.json)を参照してください。旧問題・判定は履歴とローカル回帰に残し、[提出方針](../current/submission_policy.json)で再提出対象から分離しています。

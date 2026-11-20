@@ -12,7 +12,7 @@
 inline std::vector<int> TopologicalSort(const Graph& graph);
 ```
 
-入次数0の頂点をFIFOで処理した順序。閉路があれば空列。
+入次数0の頂点をFIFOで処理した順序を返します。閉路があれば空列です。
 
 **制約:** 引数の頂点番号・添字は有効範囲内です。その他の前提は共通条件に従います。
 
@@ -24,7 +24,7 @@ inline std::vector<int> TopologicalSort(const Graph& graph);
 inline std::vector<int> TopologicalSortLexicographical(const Graph& graph);
 ```
 
-作れる順序のうち辞書順最小のもの。閉路があれば空列。
+条件を満たす順序のうち辞書順最小のものを返します。閉路があれば空列です。
 
 **制約:** 引数の頂点番号・添字は有効範囲内です。その他の前提は共通条件に従います。
 
@@ -36,7 +36,7 @@ inline std::vector<int> TopologicalSortLexicographical(const Graph& graph);
 inline TopologicalResult TopologicalSortDetails(const Graph& graph, bool lexicographical = false);
 ```
 
-順序・各頂点の位置・DAGか・順序が一意かをまとめて返す。trueなら辞書順。
+頂点の順序、各頂点の位置、DAGかどうか、順序が一意かどうかを返します。lexicographicalがtrueなら辞書順です。
 
 **制約:** 引数の頂点番号・添字は有効範囲内です。その他の前提は共通条件に従います。
 
@@ -48,14 +48,14 @@ inline TopologicalResult TopologicalSortDetails(const Graph& graph, bool lexicog
 inline bool IsDAG(const Graph& graph);
 ```
 
-有向閉路がなければtrue。空グラフもtrue。
+有向閉路がなければtrueを返します。空グラフでもtrueです。
 
 **制約:** 引数の頂点番号・添字は有効範囲内です。その他の前提は共通条件に従います。
 
 **計算量:** O(V+E)時間・O(V)領域。
 
 
-Detailsの戻り値は`TopologicalResult`で、orderが頂点列、position[v]が列中の位置、acyclicが閉路なし、uniqueが順序の一意性です。空グラフは順序が空・acyclicとuniqueはtrueです。
+Detailsは`TopologicalResult`を返します。orderは頂点列、position[v]は列中の位置です。acyclicは閉路がないか、uniqueは順序が一意かを表します。空グラフでは順序が空になり、acyclicとuniqueはtrueです。
 
 閉路がある場合もDetailsは処理できた頂点をorderへ残し、未処理のpositionは-1、uniqueはfalseになります。閉路の下流の頂点も未処理になることがあるため、orderが閉路以外の全頂点を含むとは限りません。
 
@@ -74,4 +74,4 @@ FIFO版はO(V+E)時間、辞書順版はO(E+V log(V+1))時間、追加領域は�
 
 頂点数はINT_MAX以下、各入次数はUINT32_MAX以下、辺の終点は`[0,V)`が前提です。終点の検査は通常の入次数集計中に行い、`SKIP_RUNTIME_CHECKS`で省きます。容量の保護は検査省略時も維持します。
 
-SIMDの指定は[共通設定](simd.md)、内部処理・出典・検証は[記録](../Audit/graph-document-details-2026-11-15.md)を参照してください。
+SIMDの指定は[共通設定](simd.md)、内部処理・出典・検証は[記録](../Audit/Changes/graph-document-details-2026-11-15.md)を参照してください。

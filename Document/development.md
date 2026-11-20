@@ -8,10 +8,10 @@
 
 ## 最適化
 
-受理履歴のあるVerifyコードを[一覧](../Verify/optimization/README.md)から選びます。Library Checkerでは本体・main・入出力を含めてCodex→Claudeの順に改善し、各段階のコード・正しさの照合・測定結果を保存します。本体単独の比較と全体の比較は分けます。Library Checker以外は正しさの検証を優先し、最適化はライブラリ本体だけを対象とします。main・入出力の個別チューニングは行いません。
+ACの記録があるVerifyコードを[一覧](../Verify/optimization/README.md)から選びます。Library Checkerではライブラリ本体・main・入出力を含めてCodex、Claudeの順に改善し、各段階のコード、正しさの照合結果、測定結果を保存します。ライブラリ本体の性能とプログラム全体の性能は別々に比較します。Library Checker以外は正しさの検証を優先し、最適化はライブラリ本体だけを対象とします。main・入出力の個別チューニングは行いません。
 
 ```sh
-python3 Scripts/optimization_handoff.py --list
+python3 Scripts/optimization_records.py --list
 python3 Scripts/prepare_verify.py
 python3 Scripts/prepare_variant_verify.py
 ```
@@ -28,7 +28,7 @@ python3 Scripts/ci_verify.py --id z_algorithm --compiler g++
 python3 Scripts/ci_verify.py --base origin/main --list
 ```
 
-`--id`は個別指定、`--base`は指定した版からの変更に対応するVerifyの選択、`--all`は全件です。検査有効・無効の両方でローカルの入出力例を照合します。Clangで標準C++の代替経路も確認するには`--compiler clang++ --fallback`を付けます。
+`--id`で個別に指定し、`--base`で指定した版からの変更に関係するVerifyを選びます。全件を実行するには`--all`を使います。入力検査を有効にした場合と無効にした場合の両方で、ローカルの入出力例を照合します。Clangで標準C++の代替経路も確認するには`--compiler clang++ --fallback`を付けます。
 
 [GitHub Actions](../.github/workflows/verify.yml)は、`main`向けPRの作成・更新時に毎回全件を実行します。`dev`や`main`へのpush単独では起動しません。
 
@@ -54,3 +54,21 @@ python3 Scripts/update_verify_status.py
 取り込みには公開APIを使い、ログイン情報は不要です。既定では確認だけで、`--write`を付けた場合だけ以前の記録を履歴に残して保存します。提出先・実際の提出本文・判定を確認できない場合は保存しません。
 
 READMEの「現行AC」は、生成するコードと保存済みの受理コードを照合できた件数です。過去のAC、変更後の要再提出、未提出、ローカル補足を区別します。集計の更新忘れは`python3 Scripts/update_verify_status.py --check`で確認できます。
+
+## Claudeの設定
+
+このリポジトリからは`python3 Scripts/claude_atcoder.py`でClaudeを起動します。認証・履歴はGit管理外の`.claude-code/`に保存します。許可済みのメールアドレスはGit管理外の`.sirkit-local/claude-approved-account`に1行で保存するか、環境変数`SIRKIT_CLAUDE_APPROVED_ACCOUNT`で指定します。両方を指定した場合は同じアドレスが必要です。
+
+起動前に毎回ログイン先を確認し、設定がない場合やログイン先が一致しない場合は停止します。照合結果にはメールアドレスを出力しません。モデルと利用枠のルールは[ClaudeとCodexの利用](contributing/tools.md)を参照してください。
+
+```sh
+CLAUDE_CONFIG_DIR="$PWD/.claude-code" claude auth login
+# ローカルファイルに許可済みアカウントを保存していない場合だけ、環境変数を設定する。
+read -rs -p '許可済みアカウントのメールアドレスを入力してください ' SIRKIT_CLAUDE_APPROVED_ACCOUNT
+printf '\n'
+export SIRKIT_CLAUDE_APPROVED_ACCOUNT
+python3 Scripts/claude_atcoder.py --status
+python3 Scripts/claude_atcoder.py -p --model claude-opus-5-5 --effort max "レビュー依頼"
+```
+
+初回ログインは利用者が行います。上のBashの入力手順では、メールアドレスを表示せずに現在のシェルの環境変数へ設定します。設定や履歴は保存先ごとに分かれます。

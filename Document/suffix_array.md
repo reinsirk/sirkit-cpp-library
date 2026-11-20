@@ -41,7 +41,7 @@ inline std::pair<int, int> SuffixArrayEqualRange(std::string_view s, const std::
 template <std::integral T> std::pair<int, int> SuffixArrayEqualRange(const std::vector<T>& s, const std::vector<int>& sa, const std::vector<T>& pattern);
 ```
 
-patternで始まる接尾辞の、sa内の半開区間を返します。空patternは全接尾辞です。
+patternで始まる接尾辞が並ぶ、sa内の半開区間を返します。patternが空なら全接尾辞が対象です。
 
 **制約:** saは正しい接尾辞配列。値の比較・添字アクセスがO(1)であること。
 
@@ -63,4 +63,4 @@ upperは0以上INT_MAX-1未満。upperが大きい場合は、上限なしの圧
 
 lcp_arrayと検索へ渡すsaは正しい接尾辞配列が前提です。lcp_arrayはrank構築中にサイズ・添字・重複を検査しますが、辞書順は再検査しません。検索は実際に参照する添字だけを検査し、未参照のsaまで検査する保証はありません。空patternは全接尾辞に一致します。
 
-全APIは入力を変更せず、返却vectorは独立した所有です。数学的参考は[SA-ISの論文](https://doi.org/10.1109/DCC.2009.42)、Verifyは[Library Checker](https://judge.yosupo.jp/problem/suffixarray)です。
+どのAPIも入力を変更しません。戻り値のvectorは入力とは独立して領域を所有します。数学的参考は[SA-ISの論文](https://doi.org/10.1109/DCC.2009.42)、Verifyは[Library Checker](https://judge.yosupo.jp/problem/suffixarray)です。

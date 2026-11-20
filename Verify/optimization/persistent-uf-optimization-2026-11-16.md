@@ -16,7 +16,7 @@ Codexの検討・測定後にFable（`claude-fable-5-2`）が両提出ソース�
 
 ## 測定
 
-GCC15.2、C++23、外側O2、CPU27固定。LCの埋め込みO3/unroll設定は前後で同じ。9回ランダム交互実行の中央値。入力・main・入出力を固定し、同一の変更前バイナリを別名でも実行して揺れを確認した。
+GCC15.2、C++23、外側O2でビルドし、CPU27に固定して実行した。LCの埋め込みO3/unroll設定は比較前後で同じ。無作為に交互実行した9回の中央値を使った。入力・main・入出力を固定し、同じ変更前バイナリを別名でも実行して測定値のばらつきを確認した。
 
 | 処理 | 変更前 | 変更後 | 同一バイナリ対照 |
 |---|---:|---:|---:|
@@ -26,7 +26,7 @@ GCC15.2、C++23、外側O2、CPU27固定。LCの埋め込みO3/unroll設定は�
 
 照会主体の本体測定は約10.7%改善したが、公式LCの全体時間はほぼ同等。15msとの差は埋まっていない。max_randomの最大RSSは前後とも113404KiB。ローカル計測をオンライン提出時間とはみなさない。
 
-公式2入力はlibrary-checker-problemsのcommit `73876f1cbcf082d2b22722924b924d3d65a2f00e`へ固定し、公式validatorと独立参照解correct_2で検査。入力・正解出力とも公式hash.jsonとSHA-256が一致した。
+2つの公式入力はlibrary-checker-problemsのcommit `73876f1cbcf082d2b22722924b924d3d65a2f00e`に固定し、公式validatorと独立参照解correct_2で検査した。入力と正解出力のSHA-256は、いずれも公式hash.jsonの値と一致した。
 
 ## 不採用とした案
 
@@ -55,11 +55,11 @@ GCC15.2、C++23、外側O2、CPU27固定。LCの埋め込みO3/unroll設定は�
 | [persistent_union_find.cpp](../current/submissions/persistent_union_find.cpp) | [Library Checker Persistent Unionfind](https://judge.yosupo.jp/problem/persistent_unionfind) | [AC・96ms](https://judge.yosupo.jp/submission/417443) |
 | [persistent_union_find_union_path_query.cpp](../current/submissions/persistent_union_find_union_path_query.cpp) | [yukicoder No.2295](https://yukicoder.me/problems/no/2295) | [AC・1212ms](https://yukicoder.me/submissions/1199606) |
 
-[Codex記録](../../Audit/persistent-uf-optimization-codex-2026-11-16.json)・[Fable記録](../../Audit/persistent-uf-optimization-fable-2026-11-16.json)・[最終記録](../../Audit/persistent-uf-optimization-final-2026-11-16.json)にソースSHA・実測値・採否を保存。
+[Codex記録](../../Audit/Performance/persistent-uf-optimization-codex-2026-11-16.json)・[Fable記録](../../Audit/Performance/persistent-uf-optimization-fable-2026-11-16.json)・[最終記録](../../Audit/Performance/persistent-uf-optimization-final-2026-11-16.json)にソースSHA・実測値・採否を保存。
 Fableの最初の広い依頼は出力上限と600秒の時間切れで回答を得られず、完了したレビューとは扱っていない。対象を絞った再実行で2本のレビューを取得した。最終利用率は5時間枠50%、週間Fable69%（全モデル35%）。追加課金・リセット・別アカウントへの変更なし。コミットなし。
 
 ## オンライン再提出の確認
 
 LCは14ケースすべてAC。最大値は直前91msから96msとなったが、max_random_04だけ89→96ms、他は同等または1〜3ms短縮だった。単発の公開提出から本体性能の退行とは断定しない。最新Fastestは引き続き15msで、差81ms・6.4倍。yukicoderはsample3・other53の全56ケースAC、1212ms・225536KB。いずれも生成冒頭の提出注記・改行形式以外は現行本文と一致。
 
-[再提出確認記録](../../Audit/persistent-uf-optimized-submissions-2026-11-16.json)に取得応答・提出本文のSHAと照合方法を保存。現在の2本は再提出待ちを解除済み。コミットなし。
+[再提出確認記録](../../Audit/Submissions/persistent-uf-optimized-submissions-2026-11-16.json)に取得応答・提出本文のSHAと照合方法を保存。現在の2本は再提出待ちを解除済み。コミットなし。

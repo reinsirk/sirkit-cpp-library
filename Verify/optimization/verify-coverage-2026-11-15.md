@@ -1,7 +1,7 @@
 # Verify先と検証範囲の再調査（2026-11-15）
 
 優先順位は **Library Checker → yukicoder → AtCoder → AOJ**。1ライブラリに複数問題を用意し、問題名だけで全API検証済みとしません。
-開始時LC130本は直接対応99本・部分検証として適切31本で、対象APIを使わないダミー提出はありませんでした。未検証の操作・型・状態は[130本の監査記録](../../Audit/verify-coverage-final-2026-11-15.json)へ記載しています。
+調査開始時点のLC130本のうち、99本は対象APIに直接対応し、31本は部分的な検証に適していました。対象APIを使わないダミー提出はありませんでした。未検証の操作・型・状態は[130本の監査記録](../../Audit/Verification/verify-coverage-final-2026-11-15.json)に記載しています。
 
 ## 主な不足と補完
 
@@ -70,7 +70,7 @@
 
 ## 前回AtCoderを維持した19本
 
-18本に上位の問題または補完を追加しました。辞書順最小Topoは今回もABC223 Dを維持します。向き判定2本は上位Yukiへ移しますが、他のAtCoder問題は広い座標・非凸形状・異なる出力/APIを補うため残します。
+18本に優先順位の高い問題か補足検証を追加しました。辞書順最小Topoは今回もABC223 Dを維持します。向き判定2本は優先順位の高いyukicoderへ移しますが、ほかのAtCoder問題は座標の広い範囲や非凸形状、異なる出力・APIを検証するため残します。
 
 | 従来ソース | 追加する問題・扱い |
 | --- | --- |
@@ -94,4 +94,4 @@
 | [spfa.cpp](../current/submissions/spfa.cpp) | [Typical Shortest Path Sum (SPFA)](../current/submissions/coverage_graph_spfa_all_pairs_yuki.cpp)・[Plane Tickets (negative-cycle feasibility)](../current/submissions/coverage_graph_spfa_constraints_yuki.cpp)。併用 |
 | [topological_lexicographical.cpp](../current/submissions/topological_lexicographical.cpp) | 現AtCoderを維持。維持 |
 
-各問題の制約と範囲は[manifest](../current/manifest.json)のcoverage/limitations、選定理由と未検証項目は[監査記録](../../Audit/verify-coverage-final-2026-11-15.json)を参照してください。
+各問題の制約と範囲は[manifest](../current/manifest.json)のcoverage/limitations、選定理由と未検証項目は[監査記録](../../Audit/Verification/verify-coverage-final-2026-11-15.json)を参照してください。

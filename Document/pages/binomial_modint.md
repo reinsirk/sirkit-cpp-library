@@ -15,7 +15,7 @@ explicit ModIntBinomial(std::int64_t max_n = 5'000'000, BinomialOptions options 
 explicit ModIntBinomial(BinomialOptions options);
 ```
 
-Mint::mod()を法として構築・前計算。
+Mint::mod()を法として構築し、前計算します。
 
 **制約:** max_n>=0。前計算範囲はBinomialOptionsの上限以内。動的Mintの法は構築前に設定し、変更後は再構築。
 
@@ -76,7 +76,7 @@ explicit BinomialMod(index_type modulus = 998244353, index_type max_n = 5'000'00
 BinomialMod(index_type modulus, BinomialOptions options);
 ```
 
-法・前計算範囲・上限を指定。
+法・前計算の範囲・上限を指定して構築します。
 
 **制約:** max_n>=0。前計算範囲はBinomialOptionsの上限以内。1<=modulus<=UINT32_MAX。
 
@@ -170,6 +170,6 @@ const auto residue = integer.COM(10, 5); // 36。
 
 法をm、異なる素因子数をr、全表の総要素数をBとすると、構築はO(sqrt(m)+B+r log m)時間、`prepare`はO(B+r log m)時間、保持領域はO(B+r)です。準備済み素数法の`n<m`はO(1)。Lucasの表内はd桁としてO(d)、表外は積の総項数sとしてO(d+s)回のMint演算と高々d回の逆元計算です。通常のmodintの逆元計算はO(log m)です。合成数法では同梱の整数版を用います。
 
-前計算の既定値は500万です。`BinomialOptions`で表と積の上限を指定でき、表外照会では表の自動拡張費用が加わる場合があります。表を持たない場合は`max_n=0`と`table_limit=0`を指定します。
+前計算の既定値は500万です。`BinomialOptions`で表と積の上限を指定できます。表の範囲外を照会すると、表を自動で広げる費用が加わる場合があります。表を持たない場合は`max_n=0`と`table_limit=0`を指定します。
 
 [完全な使用例](../../Examples/combination_modint_example.cpp)・[方式・表外の計算量・上限の詳細](../binomial_coefficient.md)

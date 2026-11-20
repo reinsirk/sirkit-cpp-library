@@ -1,6 +1,6 @@
 # 整数の二分トライ
 
-`Binary_Trie.cpp`は`BinaryTrie<T,MAX_LOG,NODES>`を提供します。非負整数の多重集合に、値の追加・削除、順位、全体XOR、XOR値の最小・最大を照会できます。このファイルには圧縮版の`CompressedBinaryTrie`は含まれません。
+`Binary_Trie.cpp`は`BinaryTrie<T,MAX_LOG,NODES>`を提供します。非負整数の多重集合に値を追加・削除し、全要素にXORを適用できます。順位やXOR値の最小・最大も照会できます。このファイルには圧縮版の`CompressedBinaryTrie`は含まれません。
 
 以下、B=MAX_LOG+1、size_type=std::size_tです。FindResultは{件数,ID一覧のconst参照}、ElementResultは{値,ID一覧のconst参照}です。
 
@@ -144,7 +144,7 @@ ElementResult max_element() const;
 ElementResult get_kth(std::int64_t k) const;
 ```
 
-昇順・重複込み・1始まりk番目の{値,ID一覧のconst参照}を返します。
+重複を含めて昇順に並べたときのk番目の{値,ID一覧のconst参照}を返します。kは1始まりです。
 
 **制約:** 重複込み・1始まりで1<=k<=size()。
 
@@ -156,7 +156,7 @@ ElementResult get_kth(std::int64_t k) const;
 void operate_xor(T x);
 ```
 
-全要素へXORを一括適用します。後から追加する公開値の意味は変えません。
+全要素にXORを一括適用します。追加時に渡した値は、それ以前のXOR操作の影響を受けません。
 
 **制約:** キー・XORマスクは0<=x<2^B。符号付き型では非負。
 

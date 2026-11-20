@@ -15,8 +15,8 @@
 ## 前計算と上限
 
 既定では最大500万まで前計算します。必要な範囲をコンストラクターの`max_n`で指定してください。
-任意法版の`BinomialOptions.table_limit`はテーブルの最大添字、`max_multiplicative_steps`は1照会の積の計算予算です。素数専用版は`max_n`と`max_steps`で指定します。
-`max_n=0`は構築時の前計算を抑えます。任意法版の照会時の自動拡張も止める場合は、`table_limit=0`を併用してください。
+任意法版では`BinomialOptions.table_limit`でテーブルの最大添字を、`max_multiplicative_steps`で1回の照会に使う積の計算回数の上限を指定します。素数専用版では`max_n`と`max_steps`で指定します。
+`max_n=0`は構築時の前計算を抑えます。任意法版で照会時に表が自動で広がるのも止めるには、`table_limit=0`を併用してください。
 動的なMintの法を変えた場合は計算器を作り直します。
 
 現在の提出コード・検証範囲・判定は[Verify一覧](../../Verify/current/README.md)と[manifest](../../Verify/current/manifest.json)を参照してください。

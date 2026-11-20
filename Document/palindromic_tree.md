@@ -16,7 +16,7 @@ PalindromicTree(const PalindromicTree&);
 PalindromicTree(PalindromicTree&&other)noexcept;
 ```
 
-空／指定文字列／独立コピー／所有権移動で構築します。
+空の木を作るか、指定した文字列から構築します。コピーでは独立した木を作り、ムーブでは所有権を移します。
 
 **制約:** 1<=Alphabet<=256、Base+Alphabet<=256、文字列は指定バイト範囲内。
 
@@ -29,7 +29,7 @@ PalindromicTree&operator=(const PalindromicTree&other);
 PalindromicTree&operator=(PalindromicTree&&other)noexcept;
 ```
 
-独立コピー／所有権移動で代入し、自身への参照を返します。
+代入し、自身への参照を返します。コピー代入では独立した木を作り、ムーブ代入では所有権を移します。
 
 **制約:** 同じ型の個体。
 
@@ -150,7 +150,7 @@ std::int32_t length(std::int32_t id)const;
 std::int32_t parent(std::int32_t id)const;
 ```
 
-回文の両端を除いた頂点番号を返します。
+回文の両端を除いた部分に対応する頂点番号を返します。
 
 **制約:** 存在する頂点番号。根では-1。
 
@@ -198,7 +198,7 @@ std::optional<std::int32_t> find(std::string_view pattern)const noexcept;
 bool contains(std::string_view pattern)const noexcept;
 ```
 
-部分文字列である回文として存在すればtrueです。空語も含みます。
+指定した回文が部分文字列として存在すればtrueです。空語も対象に含みます。
 
 **制約:** 範囲外バイトは不一致として扱います。
 

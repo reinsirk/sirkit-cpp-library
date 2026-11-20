@@ -1,6 +1,6 @@
 # 64ビットの剰余演算・合同式・平方根
 
-[本体](../Math/Modular_Arithmetic.cpp)は、法1からUINT64_MAXまでの剰余計算を動的確保なしで行います。符号付きの値はNormalizeModで正規化して渡します。法1の剰余は0です。全APIはconstexprで、定数式の評価予算内ならコンパイル時にも使えます。[使用例](../Examples/modular_arithmetic_example.cpp)を参照してください。
+[本体](../Math/Modular_Arithmetic.cpp)は法1からUINT64_MAXまでの剰余計算を動的確保なしで行います。符号付きの値はNormalizeModで正規化して渡します。法1の剰余は0です。全APIはconstexprで、定数式の評価予算内ならコンパイル時にも使えます。[使用例](../Examples/modular_arithmetic_example.cpp)を参照してください。
 
 ## API
 
@@ -107,7 +107,7 @@ constexpr std::optional<Congruence> ChineseRemainder(Congruence first, Congruenc
 constexpr std::optional<Congruence> ChineseRemainder(std::span<const Congruence> equations);
 ```
 
-合同式を統合した解をoptionalで返します。不能ならnullopt、空列は{0,1}です。
+合同式を統合した解をoptionalで返します。解がなければnullopt、入力が空列なら{0,1}を返します。
 
 **制約:** 法は正。解のある中間周期がuint64_tに収まる。
 
@@ -137,7 +137,7 @@ auto root = ModSqrt(10, 13); // optionalに6。
 
 ## 前提と失敗
 
-法0は常にinvalid_argumentです。CRTは先頭から統合し、不能ならその場で終了するため、後続の未参照入力までは検査しません。解のある途中の統合でLCMがUINT64_MAXを超えると、検査省略時もoverflow_errorです。後の式で不能になる場合も、この上限を超える中間周期は保持しません。
+法0は常にinvalid_argumentです。CRTは先頭から式を統合し、解がないと分かった時点で終了します。後続の未参照入力までは検査しません。解のある途中の統合でLCMがUINT64_MAXを超えると、検査省略時もoverflow_errorです。後の式で解がなくなる場合も、この上限を超える中間周期は保持しません。
 
 ModSqrtは2にも対応しますが、**素数判定はしません**。合成数を渡した場合の結果や終了は保証しません。`SKIP_RUNTIME_CHECKS`で素数候補の形の検査を除き、法0・不能判定・容量保護は維持します。全APIは入力不変です。
 

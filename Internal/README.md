@@ -6,7 +6,7 @@
 | --- | --- |
 | [Nyaan_hash_map_min.cpp](Nyaan_hash_map_min.cpp) | [Associative Array](../Verify/current/submissions/internal_hash_map.cpp) |
 
-内部用`reinsirk::detail::InternalHashMap`です。利用者向けの汎用表は[HashMap](../DataStructure/Hash_map.cpp)を使ってください。
+`sirkit::detail::InternalHashMap`はライブラリの内部で使うハッシュ表です。利用者向けの汎用表には[HashMap](../DataStructure/Hash_map.cpp)を使ってください。
 
 問題URL、追加APIの補足検査、現在版の判定状況は[Verify一覧](../Verify/current/README.md)を参照してください。
 

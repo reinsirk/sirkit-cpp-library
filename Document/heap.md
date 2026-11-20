@@ -1,6 +1,6 @@
 # 最小ヒープ
 
-`DataStructure/heap.cpp`の`Heap`は、`int`を所有する最小ヒープです。外部ライブラリに依存せず貼り付けられます。使用例は[heap_example.cpp](../Examples/heap_example.cpp)です。
+`DataStructure/heap.cpp`の`Heap`は`int`の値を所有する最小ヒープです。外部ライブラリに依存せず貼り付けられます。使用例は[heap_example.cpp](../Examples/heap_example.cpp)です。
 
 `SIRKIT_HEAP_FORCE_QUATERNARY`を定義すると、処理系による既定の選択にかかわらず、根が2子で他の内部節点が最大4子の構成を使います。
 
@@ -15,7 +15,7 @@ Heap(std::initializer_list<int> values);
 template<class Iterator> Heap(Iterator first, Iterator last);
 ```
 
-空／指定した値の最小ヒープを構築します。vectorは値で受け取り所有します。
+空の最小ヒープまたは指定した値を含む最小ヒープを構築します。vectorは値で受け取り、ヒープが所有します。
 
 **制約:** iterator範囲が有効でintへ変換できること。
 
@@ -87,7 +87,7 @@ void push(int value);
 void pop() noexcept;
 ```
 
-最小値を1個削除します。空なら無操作です。
+最小値を1個削除します。空なら何も変更しません。
 
 **制約:** 追加の制約はありません。
 
@@ -154,8 +154,8 @@ n要素分の容量を予約します。
 **計算量:** 再確保時O(N)、確保済みならO(1)。
 
 
-`pop_value()`と`replace_top()`は、空なら`std::out_of_range`を送出します。`SKIP_RUNTIME_CHECKS`を定義するとこの検査を除き、非空が前提となります。`top()`の`-1`は空の目印と値の区別がつかないため、必要なら`empty()`を併用します。
+`pop_value()`と`replace_top()`は空なら`std::out_of_range`を送出します。`SKIP_RUNTIME_CHECKS`を定義するとこの検査を除くため、空でないときに呼び出します。`top()`の戻り値が`-1`の場合、ヒープが空か、最小値が`-1`かは戻り値だけでは分かりません。区別が必要なら`empty()`を併用します。
 
 コピーは独立した配列を持ち、ムーブは配列の所有権を移します。負値・重複値・`int`の両端値も格納できます。
 
-[完全な使用例](../Examples/heap_example.cpp)・[実装・検証の記録](../Audit/document-detail-before-concise-data-structure-2026-11-15.md#heap)
+[完全な使用例](../Examples/heap_example.cpp)・[実装・検証の記録](../Audit/Changes/document-detail-before-concise-data-structure-2026-11-15.md#heap)
