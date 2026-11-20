@@ -156,7 +156,7 @@ python3 Scripts/ci_performance_all.py --base origin/main --compiler g++ \
 
 非LCのケースは既存driverで呼び出す操作を測ります。入力規模と問題制約の確認状況はJSONに記録します。現在版のライブラリ・ケース・測定値が欠ければ失敗とし、縮小確認は全件測定済みに数えません。
 
-本体だけの補足測定には次を使います。入力生成・独立参照・起動・入出力は測らず、構築・操作・破棄・checksum集約を含めます。
+LCAの構築・照会を分けて測るには[Google Benchmarkの手順](performance_measurement.md#google-benchmarkでライブラリ本体を測る)を参照してください。Fenwick Tree・Union Find・Rolling Hashは次のスクリプトでも測れます。入力生成・独立参照・起動・入出力は計測外です。構築・操作・破棄・checksum集約を含めます。
 
 ```sh
 python3 Scripts/ci_benchmark.py --base origin/main --compiler g++ --output /tmp/kernel-performance

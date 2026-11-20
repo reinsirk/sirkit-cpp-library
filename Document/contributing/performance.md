@@ -23,7 +23,7 @@
 
 ## 手元の初期性能を測る
 
-改修前のコミットで[手元でライブラリの性能を測る](../performance_measurement.md)の手順を実行する。
+`Benchmarks/` に登録した操作は[Google Benchmarkの手順](../performance_measurement.md#google-benchmarkでライブラリ本体を測る)で測る。改修前後で計測対象以外の条件をそろえ、構築・照会などを分けて測る。Verify全体も確認する場合は、改修前のコミットで[Verifyプログラム全体を測る](../performance_measurement.md#verifyプログラム全体を測る)の手順を実行する。
 
 改修後の退行を判定する場合は、`reference.json` のコミットを `--base` に指定する。同じCPU、コンパイラ設定、規模で両版を交互に測る。P-Coreで比較する場合は同じP-Coreを使う。[性能退行の検査](../ci_quality.md#性能退行の検査)
 
