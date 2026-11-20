@@ -448,11 +448,11 @@ def measure_case(binaries: dict[str, Path], case: dict, entry: dict, work: Path,
     return result
 
 
-def regression_result(case: dict) -> dict:
+def regression_result(case: dict, *, regression_profile: str = performance_regression.LOCAL_PROFILE) -> dict:
     metric = "child_cpu_ns"
     reason = case["comparison"]
     if reason == "MEASURED":
-        return performance_regression.evaluate(metric, case["cpu_samples_ns"])
+        return performance_regression.evaluate(metric, case["cpu_samples_ns"], profile=regression_profile)
     failure = case.get("baseline_failure", {})
     prior_wrong_answer = (reason == "BASELINE_INVALID" and type(failure.get("returncode")) is int
                           and failure["returncode"] == 0
@@ -463,12 +463,13 @@ def regression_result(case: dict) -> dict:
 
 
 def measure_with_comparison(binaries: dict[str, Path], case: dict, entry: dict, work: Path,
-                            baseline_comparison: str, **options) -> dict:
+                            baseline_comparison: str, *,
+                            regression_profile: str = performance_regression.LOCAL_PROFILE, **options) -> dict:
     result = measure_case(binaries, case, entry, work, **options)
     if "base" not in binaries:
         result["comparison"] = baseline_comparison
     if baseline_comparison != "NOT_REQUESTED":
-        result["performance_regression"] = regression_result(result)
+        result["performance_regression"] = regression_result(result, regression_profile=regression_profile)
     return result
 
 
@@ -477,11 +478,12 @@ def paired_cpu_samples(cases: list[dict]) -> dict[str, dict[str, list[int]]]:
 
 
 def confirm_worst_case(row: dict, binaries: dict[str, Path], cases: list[dict],
-                       entry: dict, work: Path, **options) -> None:
+                       entry: dict, work: Path, *,
+                       regression_profile: str = performance_regression.LOCAL_PROFILE, **options) -> None:
     paired = paired_cpu_samples(row["cases"])
     if not paired:
         return
-    worst = performance_regression.evaluate_worst("child_cpu_ns", paired)
+    worst = performance_regression.evaluate_worst("child_cpu_ns", paired, profile=regression_profile)
     if worst["status"] == "FAIL":
         # 最大のケースは再計測で変わり得るため、比較できた全ケースを取り直す。
         row["worst_case_confirmation"] = paired
@@ -489,14 +491,15 @@ def confirm_worst_case(row: dict, binaries: dict[str, Path], cases: list[dict],
         for index, case in enumerate(cases):
             if case["name"] not in paired:
                 continue
-            result = measure_with_comparison(reverse_order, case, entry, work, "MEASURED", **options)
+            result = measure_with_comparison(reverse_order, case, entry, work, "MEASURED",
+                                             regression_profile=regression_profile, **options)
             if result["comparison"] != "MEASURED":
                 result["performance_regression"].update(status="FAIL", reason="BASELINE_CONFIRMATION_UNAVAILABLE")
             row["cases"][index] = result
         paired = paired_cpu_samples(row["cases"])
         if not paired:
             return
-        worst = performance_regression.evaluate_worst("child_cpu_ns", paired)
+        worst = performance_regression.evaluate_worst("child_cpu_ns", paired, profile=regression_profile)
     row["worst_case_regression"] = worst
 
 
@@ -551,10 +554,16 @@ def write_report(output: Path, report: dict) -> None:
     temp = output / "result.json.tmp"
     temp.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n")
     temp.replace(output / "result.json")
+    regression_profile = report.get("regression_profile")
+    bounds = []
+    if regression_profile is not None:
+        tolerance = performance_regression.tolerance_description("child_cpu_ns", regression_profile)
+        bounds.append(f"上限は基準の最大値に{tolerance}を加えた値です。超過時は全比較ケースを再測定します。")
     lines = ["## 全ライブラリのVerifyプログラム性能", "", "状態: " + report["status"], "",
              "現在版の入力規模・wall時間・子プロセスCPU時間の中央値と生データを保存します。",
              "wall時間はプロセス起動・入出力・runnerの待機遅延を含みます。本体だけのkernel測定・オンライン時間とは区別します。",
              "基準指定時は共通のケースごとにCPU時間の中央値を求め、ライブラリごとに各版の最大値を比較します。",
+             *bounds,
              "ケースごとの時間比較は参考です。実行・比較エラーと、明示指定した固定予算は別途検査します。", "",
              "入力プロファイル: " + report["size_profile"], "",
              "CPU: " + str(report.get("cpu_model", "unknown")),
@@ -654,8 +663,10 @@ def run(args: argparse.Namespace) -> int:
             report.update(performance_limits=limits.metadata, performance_limits_passed=False)
         revision = ci_benchmark.resolve_base(args.base, root) if args.base else None
         report["base_revision"] = revision
+        regression_profile = getattr(args, "regression_profile", performance_regression.LOCAL_PROFILE)
         if revision is not None:
-            report.update(regression_policy=performance_regression.WORST_CASE_POLICY, performance_regression_passed=False,
+            report.update(regression_policy=performance_regression.WORST_CASE_POLICY, regression_profile=regression_profile,
+                          performance_regression_passed=False,
                           performance_regression_counts={})
         compiler = shutil.which(args.compiler)
         if compiler is None:
@@ -749,11 +760,12 @@ def run(args: argparse.Namespace) -> int:
                                "timeout": args.case_timeout, "memory_mib": args.memory_mib}
                     for case in cases:
                         result = measure_with_comparison(binaries, case, entry, work, row["baseline_comparison"],
-                                                         **options)
+                                                         regression_profile=regression_profile, **options)
                         row["cases"].append(result)
                         write_report(output, report)
                     if revision is not None:
-                        confirm_worst_case(row, binaries, cases, entry, work, **options)
+                        confirm_worst_case(row, binaries, cases, entry, work,
+                                           regression_profile=regression_profile, **options)
                     row["current_measurements_passed"], row["status"] = True, "PASS"
                     if limits is not None:
                         for result in row["cases"]:
@@ -825,6 +837,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--compiler", default="g++")
     parser.add_argument("--compile-profile", choices=ci_compile_profiles.COMPILE_PROFILES, default="standard",
                         help="基準と現在版の両方に使うコンパイル設定")
+    parser.add_argument("--regression-profile", choices=performance_regression.REGRESSION_PROFILES,
+                        default=performance_regression.LOCAL_PROFILE, help="基準版との性能比較で使う許容幅の設定")
     parser.add_argument("--repetitions", type=int, default=3)
     parser.add_argument("--warmups", type=int, default=1)
     parser.add_argument("--quick", action="store_true")

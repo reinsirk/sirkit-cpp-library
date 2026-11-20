@@ -512,8 +512,10 @@ class QualityTests(unittest.TestCase):
 
     def test_whole_worst_case_gate_accepts_slowest_case_switch(self):
         value = self.all_performance()
+        profile = "github-hosted"
         value.update(base_revision="a" * 40, performance_regression_passed=True,
-                     performance_regression_counts={"PASS": 1}, regression_policy="library_worst_case")
+                     performance_regression_counts={"PASS": 1}, regression_policy="library_worst_case",
+                     regression_profile=profile)
         row, = value["results"]
         row.update(baseline_sources={"source_hashes": {self.library: "a" * 64},
                                      "resolved_paths": {self.library: self.library}},
@@ -521,14 +523,14 @@ class QualityTests(unittest.TestCase):
                    baseline_driver={"kind": "current", "path": self.driver,
                                     "sha256": row["driver_sha256"], "same_as_current": True})
         groups = {}
-        for case, baseline, current in zip(row["cases"], (1_000_000, 100_000), (800_000, 900_000)):
+        for case, baseline, current in zip(row["cases"], (10_000_000, 1_000_000), (8_000_000, 11_000_000)):
             samples = {"base": [baseline] * 3, "current": [current] * 3}
             medians = {"base": baseline, "current": current}
             groups[case["name"]] = samples
             case.update(samples_ns=samples, median_ns=medians, cpu_samples_ns=samples, cpu_median_ns=medians,
                         current_over_base=current / baseline, comparison="MEASURED",
-                        performance_regression=quality.performance_regression.evaluate("child_cpu_ns", samples))
-        row["worst_case_regression"] = quality.performance_regression.evaluate_worst("child_cpu_ns", groups)
+                        performance_regression=quality.performance_regression.evaluate("child_cpu_ns", samples, profile=profile))
+        row["worst_case_regression"] = quality.performance_regression.evaluate_worst("child_cpu_ns", groups, profile=profile)
         report = self.aggregate(value)
         self.assertFalse(report["errors"])
         data = self.category(report, "performance")
@@ -536,6 +538,9 @@ class QualityTests(unittest.TestCase):
         self.assertEqual(data["evidence"][1]["performance_regression"]["status"], "FAIL")
         self.assertEqual(row["worst_case_regression"]["baseline_case"], "example_00")
         self.assertEqual(row["worst_case_regression"]["observed_case"], "max_random_00")
+        for wrong_profile in ("local", "unknown"):
+            with self.subTest(profile=wrong_profile):
+                self.assertTrue(self.aggregate({**value, "regression_profile": wrong_profile})["errors"])
         row["worst_case_confirmation"] = {row["cases"][0]["name"]: deepcopy(groups[row["cases"][0]["name"]])}
         self.assertTrue(self.aggregate(value)["errors"])
 
