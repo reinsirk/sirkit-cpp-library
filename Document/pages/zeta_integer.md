@@ -2,7 +2,7 @@
 
 `divisor_zeta_transform`は`f[k]=sum_{d|k}f[d]`、`multiple_zeta_transform`は`f[d]=sum_{d|k}f[k]`へ入力配列を直接更新します。対応する`mobius`操作はそれぞれの逆変換です。`IntegerSieve`とその数論関数も同梱しています。
 
-Mは篩の上限、pi(M)はM以下の素数数、Dは約数の個数です。
+Mは篩の上限、pi(M)はM以下の素数の個数、Dは約数の個数です。
 
 変換・畳み込みのnは配列長です。疎変換のmは要素数、rは各keyの素因数を重複込みで数えた総数です。
 
@@ -68,7 +68,7 @@ IntegerSieve(const IntegerSieve&);
 IntegerSieve(IntegerSieve&& other) noexcept;
 ```
 
-最小素因数表と昇順素数列を構築します。コピーは独立、移動元は空です。
+最小素因数の表と、素数を昇順に並べた列を構築します。コピーは独立し、移動元は空になります。
 
 **制約:** 0<=maxnで内部容量の上限内。
 

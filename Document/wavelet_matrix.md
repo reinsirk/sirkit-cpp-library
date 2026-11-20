@@ -65,7 +65,7 @@ accessと同じく添字iの元の値を返します。
 T kth_smallest(std::size_t left, std::size_t right, std::size_t k) const;
 ```
 
-区間内を昇順に並べた0始まりk番目の値を返します。
+区間内の値を昇順に並べたとき、0始まりでk番目の値を返します。
 
 **制約:** 0<=left<=right<=size()、0<=k<right-left。
 
@@ -77,7 +77,7 @@ T kth_smallest(std::size_t left, std::size_t right, std::size_t k) const;
 T kth_largest(std::size_t left, std::size_t right, std::size_t k) const;
 ```
 
-区間内を降順に並べた0始まりk番目の値を返します。
+区間内の値を降順に並べたとき、0始まりでk番目の値を返します。
 
 **制約:** 0<=left<=right<=size()、0<=k<right-left。
 
@@ -251,7 +251,7 @@ auto next = matrix.successor(0,5,3);    // optionalに7が入る。
 
 Tはbool以外の64ビット以下の整数型です。符号付き型の最小値・最大値も扱えます。長さはUINT32_MAX以下で、構築時に確認します。
 
-値の順序を保つ符号へ変換して最小値を引き、必要なビット幅B（0〜64）だけを扱います。構築はO(N(1+B))、照会はO(1+B)、格納はO(1+B ceil(N/64))語、構築中の追加領域はO(N)です。全値が同じならB=0となり、照会はO(1)です。
+値を順序が変わらない符号へ変換して最小値を引き、必要なビット幅B（0〜64）だけを扱います。構築はO(N(1+B))、照会はO(1+B)、格納はO(1+B ceil(N/64))語、構築中の追加領域はO(N)です。すべての値が同じならB=0となり、照会はO(1)です。
 
 コピーは独立、buildとコピー代入は失敗時に元の列を維持します。ムーブ元は空列です。`SKIP_RUNTIME_CHECKS`で添字・区間・順位の検査を除きますが、長さの表現上限は維持します。
 

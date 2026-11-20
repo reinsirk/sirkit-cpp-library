@@ -177,7 +177,7 @@ std::span<T> values()noexcept;
 std::span<const T> values()const noexcept;
 ```
 
-要素の参照。
+全要素を参照するspanを返します。
 
 **制約:** 共通の型・入力条件を満たすこと。
 
@@ -190,7 +190,7 @@ std::span<T> row(size_type index);
 std::span<const T> row(size_type index)const;
 ```
 
-要素の参照。
+指定した行を参照するspanを返します。
 
 **制約:** 行添字が範囲内。spanは再代入・swap・破棄までの借用。
 
@@ -227,7 +227,7 @@ void assign(size_type rows,size_type columns,const T& value=T{0});
 Matrix transposed()const;
 ```
 
-転置の独立コピー。
+転置行列を返します。戻り値は元の行列から独立しています。
 
 **制約:** 共通の型・入力条件を満たすこと。
 
@@ -354,7 +354,7 @@ template<class T>std::vector<T> MatrixApply(const Matrix<T>& matrix,const std::v
 **計算量:** O(rows*(1+cols))時間・O(rows)領域。
 
 
-次の例は、利用側で[Fraction](../../Math/Fraction.cpp)も用意して使います。
+次の例では[Fraction](../../Math/Fraction.cpp)も用意します。
 
 ```cpp
 const sirkit::Matrix<sirkit::Fraction> a{{1,2}, {3,5}};

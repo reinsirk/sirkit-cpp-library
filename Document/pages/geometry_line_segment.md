@@ -1,6 +1,6 @@
 # 直線・線分の交差と距離
 
-`Geometry/Line_Segment.cpp`は、`sirkit::geo`の直線・閉線分の交差、射影、最近点、距離を提供します。点・ベクトルと三点の向きの判定も含むため、このファイルだけで使えます。多角形と円の操作は別ファイルです。
+`Geometry/Line_Segment.cpp`は直線・閉線分の交差、射影、最近点、距離を扱う`sirkit::geo`の関数を提供します。点・ベクトルと三点の向きの判定も含むため、このファイルだけで使えます。多角形と円の操作は別ファイルです。
 
 PointのValueは座標型T、Calcは計算型C、Realは浮動座標ならT・整数座標ならlong doubleです。
 
@@ -545,7 +545,7 @@ friend std::ostream& operator<<(std::ostream& out, const Point& p);
 `Line<T,C>{a,b}`は相異なる2点で表す直線、`Segment<T,C>{a,b}`は両端を含む線分です。線分は零長でも使えます。
 
 
-`LineIntersection`は`kind`と`optional<RealPoint>`の`point`、`SegmentIntersection`は`kind`と`points`を所有します。重なりの座標は元の座標で辞書順に選んだ両端点です。[全機能版の使用例](../../Examples/geometry_example.cpp)でも線分交差を確認できます。
+`LineIntersection`は`kind`と`optional<RealPoint>`の`point`、`SegmentIntersection`は`kind`と`points`を所有します。線分が重なるときは、元の座標の辞書順で選んだ重なりの両端点を返します。[全機能版の使用例](../../Examples/geometry_example.cpp)でも線分交差を確認できます。
 
 ```cpp
 using namespace sirkit;

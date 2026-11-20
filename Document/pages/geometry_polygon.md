@@ -96,7 +96,7 @@ template<class T, class C> long double area(const std::vector<Point<T, C>>& poly
 template<class T, class C> long double perimeter(const std::vector<Point<T, C>>& poly);
 ```
 
-多角形の閉じた辺の総延長を返します。
+多角形を一周する辺の長さの合計を返します。
 
 **制約:** 共通の型・入力条件を満たすこと。
 
@@ -132,7 +132,7 @@ template<class T, class C> std::vector<Point<T, C>> convex_hull(std::vector<Poin
 template<class T, class C> std::vector<geo::Point<T, C>> convex_hull_sorted(std::vector<geo::Point<T, C>> points, geo::Epsilon eps = {});
 ```
 
-辞書順整列済みの点列の凸包。
+辞書順に整列した点列から凸包を求めます。
 
 **制約:** 入力は座標の辞書順で非減少。
 
@@ -612,7 +612,7 @@ auto center = geo::centroid(hull);                  // {4/3,1}
 
 ## 前提
 
-整数の差・積・和は計算型`C`に収まる入力を渡します。`signed_area2`は反時計回りが正で、空列は0です。`contains`と`centroid`は単純多角形、`convex_cut`は頂点を周回順に並べた凸多角形と有向非零長直線を前提とします。
+整数の差・積・和が計算型`C`に収まる入力を渡します。`signed_area2`は反時計回りなら正、空列なら0を返します。`contains`と`centroid`には単純多角形を渡します。`convex_cut`には頂点を周回順に並べた凸多角形と、長さが零でない有向直線を渡します。
 
 凸包は完全一致の重複点を除き、一直線の入力では両端だけを返します。`convex_hull_sorted`の入力は辞書順で非減少に並べておきます。重心は3点未満または面積0なら`nullopt`です。点の操作と浮動判定の許容幅は[Point](geometry_point.md)と共通です。
 

@@ -1,6 +1,6 @@
 # 動的Union Find
 
-`int`全域のキーを、使った時点で登録するUnion Findです。負の値や`INT_MIN`・`INT_MAX`も使えます。連続した添字への変換は利用側で用意する必要がありません。
+`int`全域のキーを扱い、各キーを使った時点で登録するUnion Findです。負の値や`INT_MIN`・`INT_MAX`も使えます。利用側で連続した添字に変換する必要はありません。
 
 
 以下、Nは登録済みキー数です。
@@ -14,7 +14,7 @@ DynamicUnionFind();
 explicit DynamicUnionFind(std::size_t expected_nodes);
 ```
 
-空で構築し、後者は指定件数分を予約します。
+空の状態で構築します。expected_nodesを渡すと、その件数分の容量を予約します。
 
 **制約:** 予約件数はINT_MAX以下。
 
@@ -63,7 +63,7 @@ int unite(int x, int y);
 template<class F> int unite(int x, int y, const F& callback);
 ```
 
-サイズで併合し、新規結合なら1、既接続なら0です。callback版は併合時だけ新旧代表を渡します。
+成分をサイズに基づいて併合し、結合できたら1、すでに同じ成分なら0を返します。callback版では、併合したときだけ新旧の代表をcallbackに渡します。
 
 **制約:** 登録数はINT_MAX以下。callbackで本体を破壊しないこと。
 

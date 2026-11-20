@@ -2,7 +2,7 @@
 
 `vector<pair<Int,Val>>`のkeyが倍数関係にある要素同士で値をまとめます。`sparse_multiple_zeta_transform(f,sieve)`は各keyの値を倍数和へ置換し、`sparse_multiple_mobius_transform`で元へ戻します。両操作ともkeyの昇順に並べ替えます。整数篩も同梱しています。
 
-Mは篩の上限、pi(M)はM以下の素数数、Dは約数の個数です。
+Mは篩の上限、pi(M)はM以下の素数の個数、Dは約数の個数です。
 
 変換・畳み込みのnは配列長です。疎変換のmは要素数、rは各keyの素因数を重複込みで数えた総数です。
 
@@ -187,7 +187,7 @@ sirkit::sparse_multiple_zeta_transform(a,sieve);   // {{1,12},{2,8},{3,9},{6,6}}
 sirkit::sparse_multiple_mobius_transform(a,sieve); // 元の値へ戻す。
 ```
 
-keyは正で一意とし、各keyの全約数もkeyに含め、`key<=sieve.max_value()`を満たします。空配列も扱います。値型はゼータ変換で加算、逆変換で減算に対応する必要があります。
+keyはそれぞれ異なる正の値とし、各keyのすべての約数もkeyの集合に含めます。各keyは`key<=sieve.max_value()`を満たす必要があります。空配列も扱います。値型はゼータ変換で加算、逆変換で減算に対応する必要があります。
 
 要素数をm、各keyの素因数を重複込みで数えた総数をrとすると、O((m+r)log(m+1))時間・O(m+r)追加領域です。keyが初めから`1,2,...,m`の順ならO(m log log(m+2))時間・O(1)追加領域です。篩の構築費用は別で、`IntegerSieve(M)`はO(M+1)時間・領域を使います。
 

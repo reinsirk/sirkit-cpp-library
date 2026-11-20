@@ -2,7 +2,7 @@
 
 `DisjointSparseTable<T,Op>`は、変更しない列の区間をO(1)で集約します。和・行列積・写像の合成などに使えます。区間は0始まりの半開区間[l,r)です。[使用例](../Examples/disjoint_sparse_table_example.cpp)を参照してください。
 
-Opには、括り方で結果が変わらない結合演算と、左右どちらに混ぜても結果を変えない単位元を指定します。左右の順序は保持します。Sparse Tableと異なり`op(x,x)==x`は不要なので、和も扱えます。
+Opには括り方で結果が変わらない演算と、その演算の左右どちらの引数に置いてももう一方の値を変えない単位元を指定します。演算では要素の順序を保ちます。Sparse Tableと異なり`op(x,x)==x`は不要なので、和も扱えます。
 
 以下、Nは要素数です。値の演算・コピーをO(1)として計算量を記します。
 
@@ -14,7 +14,7 @@ DisjointSparseTable(const DisjointSparseTable&) = default;
 DisjointSparseTable(DisjointSparseTable&& other);
 ```
 
-引数省略は空列、values形は指定列で構築します。コピーは独立です。
+引数を省略すると空列で構築し、valuesを渡すとその列で構築します。コピーした列は元の列から独立しています。
 
 **制約:** 冒頭の値型・演算の前提を満たすこと。指定する列長は内部容量の上限内です。
 

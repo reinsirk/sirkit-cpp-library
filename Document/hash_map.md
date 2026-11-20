@@ -1,6 +1,6 @@
 # HashMap
 
-`HashMap<Key,Val,Hasher,KeyEqual>`はキーと値を管理するハッシュ表です。キーは順序不定で列挙され、キーと値のオブジェクトは表が所有します。[使用例](../Examples/hash_map_example.cpp)を参照してください。
+`HashMap<Key,Val,Hasher,KeyEqual>`はキーと値を管理するハッシュ表です。表がキーと値のオブジェクトを所有します。キーの列挙順は規定しません。[使用例](../Examples/hash_map_example.cpp)を参照してください。
 
 検索・追加・次要素を探さないキー削除は期待償却O(1)です。ハッシュ計算は別途必要で、列キーでは列長に比例します。衝突が多い入力では時間が増えます。
 
@@ -15,7 +15,7 @@ HashMap(const HashMap&) = default;
 HashMap(HashMap&& other);
 ```
 
-空表を構築します。expected指定形はその件数分を予約し、hash・equalを設定します。コピーは独立です。
+空の表を構築します。expectedを指定すると、その件数分の容量を予約してhashとequalを設定します。コピーは元の表から独立します。
 
 **制約:** 冒頭の値型・演算の前提を満たすこと。指定する列長は内部容量の上限内です。
 
@@ -153,7 +153,7 @@ iterator erase(const Key& key);
 iterator erase(const Key& key, bool get_next);
 ```
 
-指定要素を削除して次iteratorを返します。get_next=falseなら次を探さずend()を返します。不在/end()は無操作です。
+指定した要素を削除して次のiteratorを返します。get_next=falseなら次を探さずend()を返します。指定したキーが存在しない場合やend()を渡した場合は何も変更しません。
 
 **制約:** iterator版は同じ表の有効なiteratorまたはend()を渡すこと。
 
@@ -362,7 +362,7 @@ GenericHash();
 explicit constexpr GenericHash(std::uint64_t seed) noexcept;
 ```
 
-省略形は実行時の種、引数形は指定した種で構築します。同じ個体の規則は一定です。
+引数を省くと実行時の種で、指定するとその種で構築します。同じオブジェクトではハッシュの規則が変わりません。
 
 **制約:** 同値なキーには同じハッシュ値を返すこと。独自の同値関係には対応するHasherを用意します。
 

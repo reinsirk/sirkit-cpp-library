@@ -13,7 +13,7 @@ LinkCutTree(const LinkCutTree& other);
 LinkCutTree(LinkCutTree&& other) noexcept;
 ```
 
-入力値を各頂点へ置き、辺のない森を構築します。span形の引数省略は空の森です。
+入力値を各頂点に割り当て、辺のない森を構築します。span形で引数を省略すると空の森を作ります。
 
 **制約:** 冒頭の値型・演算の前提を満たすこと。指定する列長は内部容量の上限内です。
 
@@ -169,7 +169,7 @@ int find_root(int vertex);
 std::optional<int> lca(int root, int first, int last);
 ```
 
-rootを根とみなした2頂点のLCAをoptionalで返します。3頂点が非連結ならnulloptです。
+rootを根としたときの2頂点のLCAをoptionalで返します。3頂点すべてが同じ木に属していなければnulloptです。
 
 **制約:** 指定する頂点は0<=v<size()。演算中の例外後はusable()を確認すること。
 
@@ -270,7 +270,7 @@ tree.cut(1,3);
 auto missing = tree.path_prod(2,3); // nullopt。
 ```
 
-同じ頂点へのパスは、その頂点の値・頂点数1・辺数0です。パス操作・link・cutは根の向きを変える場合があります。根が重要ならmake_rootまたはlcaの引数で明示します。取得も補助木を変更するため非constです。
+同じ頂点へのパスでは集約値がその頂点の値、頂点数が1、辺数が0になります。パス操作・link・cutは根の向きを変える場合があります。根が重要ならmake_rootまたはlcaの引数で明示します。取得も補助木を変更するため非constです。
 
 ## 演算とパス更新
 

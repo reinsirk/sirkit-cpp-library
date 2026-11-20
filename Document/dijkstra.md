@@ -20,7 +20,7 @@ inline void Dijkstra(int n, std::span<const std::tuple<int,int,std::int64_t>> ed
 inline void Dijkstra(int n, std::span<const std::tuple<int,int,std::int64_t>> edges, std::vector<std::int64_t> &distances, int start_index, int target_index, std::vector<int> &path, std::int64_t inf = (std::int64_t{1} << 60));
 ```
 
-全頂点の距離を`distances`へ上書き 全頂点の距離と、始点から終点までの頂点列を上書き tupleの辺列から全頂点の距離を上書き tupleの辺列から全距離と終点までの頂点列を上書き
+`WGraph`版は全頂点の距離を`distances`に上書きします。終点を指定すると、始点から終点までの頂点列も`path`に上書きします。tupleの辺列を渡す版でも、終点の指定に応じて同じ出力を上書きします。
 
 **制約:** 頂点・重み・infと有限距離の範囲は下記の前提を満たすこと。
 
@@ -52,7 +52,7 @@ Dijkstra(3, edges, distance, 0, inf); // 到達不能はこのinfになる。
 頂点数`V`、辺数`E`に対し、時間はO(V+E log(E+1))、追加領域はO(V+E)です。
 距離のみの呼び出しでは経路用配列を作りません。入力のグラフは変更しません。
 
-入力検査は既定で有効です。`WGraph`版は始点・終点と、処理中に参照した辺の行先・重みを検査し、未到達成分の全辺を検査する走査は行いません。
+入力検査は既定で有効です。`WGraph`版は始点・終点と、処理中に参照した辺の行先・重みを検査します。検査のために未到達成分の全辺を走査することはありません。
 辺列版は構築時に全辺を参照し、両端点と重みを検査します。不正な頂点・重み・始点・終点は`out_of_range`、負の`n`や容量超過は`length_error`です。
 `SKIP_RUNTIME_CHECKS`を定義する場合も、重み・頂点番号の前提は同じです。容量上限や有限距離と`inf`の衝突への対策は維持します。`inf<=0`は検査省略時も`invalid_argument`です。
 

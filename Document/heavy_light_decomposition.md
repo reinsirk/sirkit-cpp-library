@@ -1,6 +1,6 @@
 # 重軽分解
 
-`HeavyLightDecomposition`は無向森を分解し、経路・部分木をDFS添字の半開区間へ変換します。`with_values<Range>(values)`は分解と集計器を所有する`HeavyLightValues`を返し、頂点番号で更新・集計できます。値は`values[v]`が頂点vとなる順に渡します。
+`HeavyLightDecomposition`は無向森を分解し、経路や部分木をDFS添字の半開区間へ変換します。`with_values<Range>(values)`が返す`HeavyLightValues`は分解と集計器を所有し、頂点番号で値を更新・集計できます。頂点vの値が`values[v]`になるように値を渡します。
 
 BIT／Segtreeは別途貼り付けます。`Range`は`fenwick_tree<T>`・`segtree<S,op,e>`・`lazy_segtree<S,op,e,F,mapping,composition,id>`、または実ACLの対応型です。分解だけならHLD単独で使えます。[本体](../Graph/Heavy_Light_Decomposition.cpp)・[完全な使用例](../Examples/heavy_light_decomposition_example.cpp)。
 
@@ -34,7 +34,7 @@ HeavyLightValues(HeavyLightValues&&);
 
 **制約:** 頂点数・入力構造・型の前提を満たすこと。空の構築も可能です。
 
-**計算量:** 空の構築・ムーブはO(1)。GraphからはO(N+M)＋集計器構築。既存分解からは並べ替えO(N)＋集計器構築、分解をコピーする版はさらにO(N)。コピー構築は保持領域に比例します。
+**計算量:** 空の構築・ムーブはO(1)。GraphからはO(N+M)＋集計器構築。既存分解からは並べ替えO(N)＋集計器構築で、分解をコピーする場合はさらにO(N)です。コピー構築は保持領域に比例します。
 
 ### V::operator=
 
@@ -54,7 +54,7 @@ HeavyLightValues& operator=(HeavyLightValues other) noexcept;
 void build(const Graph& graph,const std::vector<value_type>& values,int root=0);
 ```
 
-分解と値を一緒に再構築。戻り値void。
+分解と値を一緒に再構築します。戻り値はvoidです。
 
 **制約:** 値の列は長さN。グラフは対称な無向森で、集計器は下記の対応条件を満たすこと。
 
@@ -629,7 +629,7 @@ template<class Range,class F> void subtree_apply(int v,Range& range,const F f,bo
 **計算量:** 区間更新1回の費用。
 
 
-queryはprod/sumを持つ集計器、または`(l,r)`／`(l,r,reversed)`を受ける関数です。2引数は可換専用、3引数は通行順の結果を返します。reverseは逆順の集計値への変換で、3引数queryと併用しません（std::identityは除く）。空区間は単位元です。opは結合的でidentityを左右の単位元とし、照会・値のコピー・結合の費用も加わります。集計器や関数の参照は保持しません。
+queryにはprodかsumを持つ集計器、または`(l,r)`か`(l,r,reversed)`を受け取る関数を渡します。2引数の関数は可換演算専用です。3引数の関数は通行順に集約した結果を返します。reverseは逆順の集計値への変換に使います。std::identityを除き、3引数のqueryとは併用しません。空区間は単位元です。opは結合的でidentityを左右の単位元とし、照会・値のコピー・結合の費用も加わります。集計器や関数の参照は保持しません。
 
 ## 前提・所有・失敗
 
@@ -639,4 +639,4 @@ queryはprod/sumを持つ集計器、または`(l,r)`／`(l,r,reversed)`を受�
 
 pathの配列は独立所有、orderは参照です。参照はclear・再構築・代入・破棄まで有効です。根や木を変えるbuildには値も渡し、辺の値は新たな親子対応へ置き直します。
 
-並べ替えはO(N)に集計器の構築費用を加えます。実ACL FenwickはN回のaddでO(N log N)。計算量は値演算・コピーO(1)の計算量で、文字列等の費用は別です。
+並べ替えのO(N)に集計器の構築費用が加わります。実ACL Fenwickの構築ではaddをN回呼ぶためO(N log N)です。計算量は値の演算とコピーをO(1)としており、文字列などにかかる費用は別です。

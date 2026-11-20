@@ -1,6 +1,6 @@
 # オイラー路
 
-`EulerianTrail<true>`は有向、`EulerianTrail<false>`は無向グラフの全辺を1回ずつ通る路を求めます。別名は`DirectedEulerianTrail`・`UndirectedEulerianTrail`です。Nは頂点数、Mは追加した辺数です。
+`EulerianTrail`はグラフの全辺を1回ずつ通る路を求めます。`EulerianTrail<true>`は有向グラフ用で別名は`DirectedEulerianTrail`、`EulerianTrail<false>`は無向グラフ用で別名は`UndirectedEulerianTrail`です。Nは頂点数、Mは追加した辺数です。
 
 頂点は0..N-1で、自己辺・平行辺を許します。各辺は追加時のIDで区別します。
 
@@ -142,7 +142,7 @@ bool circuit() const noexcept;
 
 `Trail.vertices[i]`から`vertices[i+1]`へ`Trail.edges[i]`を通ります。結果の配列は独立して所有します。無向辺の通行方向は頂点列から分かります。
 
-0辺なら開始点だけの路、0頂点0辺なら両配列が空の路です。次数条件に合わない開始点、辺を持つ成分が複数の場合はnulloptです。孤立頂点は路へ加えません。
+辺が0なら開始点だけの路、頂点と辺がともに0なら両配列が空の路です。開始点が次数条件を満たさない場合や、辺を持つ成分が複数ある場合はnulloptです。孤立頂点は路へ加えません。
 
 `SKIP_RUNTIME_CHECKS`で端点・辺ID検査を除きます。次数条件と全辺を使い切る判定は維持します。
 

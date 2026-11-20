@@ -12,7 +12,7 @@ template<std::input_iterator Iterator> std::optional<NearestTwoPointsResult> nea
 template<class Point, class Allocator> std::optional<NearestTwoPointsResult> nearest_two_points(const std::vector<Point, Allocator>& points);
 ```
 
-`[first,last)`から`optional<NearestTwoPointsResult>`を返す。未整列でよい。
+`[first,last)`の点から最近点対を求め、`optional<NearestTwoPointsResult>`で返します。事前に整列する必要はありません。
 
 **制約:** 座標はint32_t内。個数は非負で指定範囲を参照できる。
 
@@ -24,7 +24,7 @@ template<class Point, class Allocator> std::optional<NearestTwoPointsResult> nea
 template<std::input_iterator Iterator> std::uint64_t closest_pair(Iterator first, int n);
 ```
 
-`int`個数の列から二乗距離だけを`std::uint64_t`で返す。
+点の個数を`int`で受け取り、最近点対の距離の二乗だけを`std::uint64_t`で返します。
 
 **制約:** 座標はint32_t内、n>=0でn個を参照できる。
 

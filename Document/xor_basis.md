@@ -58,7 +58,7 @@ bool contains_nonempty(std::uint64_t value) const noexcept;
 std::uint64_t max_xor(std::uint64_t seed = 0) const noexcept;
 ```
 
-初期値と生成可能なXOR値を合わせた最大値を返します。
+初期値と生成可能な値のXORのうち、最大値を返します。
 
 **制約:** 共通の型・入力条件を満たすこと。
 
@@ -70,7 +70,7 @@ std::uint64_t max_xor(std::uint64_t seed = 0) const noexcept;
 std::uint64_t min_xor(std::uint64_t seed = 0) const noexcept;
 ```
 
-初期値と生成可能なXOR値を合わせた最小値を返します。
+初期値と生成可能な値のXORのうち、最小値を返します。
 
 **制約:** 共通の型・入力条件を満たすこと。
 
@@ -82,7 +82,7 @@ std::uint64_t min_xor(std::uint64_t seed = 0) const noexcept;
 std::optional<std::uint64_t> kth(std::uint64_t k) const noexcept;
 ```
 
-生成できる相異なるXOR値の、昇順0始まりk番目を返します。範囲外はnulloptです。
+生成できる相異なるXOR値を昇順に並べたときのk番目を返します。kは0始まりで、範囲外ならnulloptです。
 
 **制約:** 共通の型・入力条件を満たすこと。
 

@@ -33,6 +33,8 @@ class LibraryPagesTest(unittest.TestCase):
             self.assertEqual(picker.count('class="code-version-link"'), 8)
             self.assertNotIn("prime_judge", picker)
             self.assertIn("#define SKIP_RUNTIME_CHECKS", picker)
+            self.assertIn("通常版", picker)
+            self.assertIn("競技プログラミングの提出向け", picker)
             self.assertEqual(len(downloads), 8)
             for compiler in ("Portable", "GCC", "Clang", "MSVC"):
                 for fast, directory in ((False, "Variants"), (True, "Fast")):
@@ -48,10 +50,11 @@ class LibraryPagesTest(unittest.TestCase):
                     self.assertEqual(links[f"versions/{key}"], {f"{source}.html#code-version-{key}"})
                     if fast:
                         self.assertIn("/fast-guide.html", listing)
-                        self.assertIn("一部はメモリの解放も省きます", listing)
-                        self.assertIn("速度の差はライブラリや入力、処理系によります", listing)
+                        self.assertIn("一部の実装ではメモリの解放も省きます", listing)
+                        self.assertIn("通常版との速度差はライブラリ、入力、処理系によって変わります", listing)
                     else:
                         self.assertNotIn("/fast-guide.html", listing)
+                    self.assertIn("/licenses/index.html", listing)
         context = pages.version_context()
         self.assertIn('id="code-version-fast-msvc">速度優先版・MSVC専用', context)
         self.assertIn("/versions/fast-msvc.html", context)
@@ -324,6 +327,20 @@ class LibraryPagesTest(unittest.TestCase):
         self.assertIn("現行未照合・要再提出", text)
         self.assertIn("[AC]", text)
         self.assertNotIn("| 現行AC |", text)
+        self.assertNotIn("| ✓ 現行AC |", text)
+
+    def test_current_ac_links_to_program_problem_and_submission(self):
+        source = "Verify/current/submissions/union_find.cpp"
+        entry = dict(title="Unionfind", submission=source, status="current_ac",
+                     problem_url="https://judge.yosupo.jp/problem/unionfind",
+                     judgement=dict(status="AC", url="https://judge.yosupo.jp/submission/1"))
+        text = pages.online_table([entry], {source})
+        self.assertIn(r"[union\_find.cpp]", text)
+        self.assertIn(source + ".html", text)
+        self.assertIn("[Unionfind](https://judge.yosupo.jp/problem/unionfind)", text)
+        self.assertIn("[AC](https://judge.yosupo.jp/submission/1)", text)
+        self.assertIn("| ✓ 現行AC |", text)
+        self.assertNotIn(source + ".html", pages.online_table([entry], set()))
 
     def test_submission_policy_labels_do_not_promote_old_ac(self):
         for kind, label in [("documentation_only", "説明変更のみ・再提出不要"),
