@@ -50,7 +50,7 @@ jobs:
         run: python3 Scripts/update_verify_status.py --check
 
   examples:
-    name: C++23 (${{ matrix.compiler }}, ${{ matrix.arithmetic }}${{ matrix.compile_profile == 'atcoder' && ', AtCoder' || '' }})
+    name: C++23 (${{ matrix.compiler }}, ${{ matrix.arithmetic }}${{ matrix.compile_profile != 'standard' && ', AtCoder' || '' }})
     needs: maintenance
     runs-on: ubuntu-26.04
     timeout-minutes: 45
@@ -62,18 +62,25 @@ jobs:
         compile_profile: [standard]
         include:
           - {compiler: g++, arithmetic: native, compile_profile: atcoder}
+          - {compiler: clang++, arithmetic: native, compile_profile: atcoder-clang}
     steps:
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0
           persist-credentials: false
       - name: Install compilers
+        if: matrix.compile_profile != 'atcoder-clang'
         run: |
           sudo apt-get update
           sudo apt-get install -y g++-15 clang-18 libboost-dev
+      - name: Install Clang for the AtCoder profile
+        if: matrix.compile_profile == 'atcoder-clang'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang-21 lld-21 libc++-21-dev libomp-21-dev libclang-rt-21-dev libunwind-21-dev libboost-dev
       - name: Select and run local Verify
         env:
-          VERIFY_COMPILER: ${{ matrix.compiler == 'g++' && 'g++-15' || 'clang++-18' }}
+          VERIFY_COMPILER: ${{ matrix.compiler == 'g++' && 'g++-15' || matrix.compile_profile == 'atcoder-clang' && 'clang++-21' || 'clang++-18' }}
           VERIFY_ARITHMETIC: ${{ matrix.arithmetic }}
           VERIFY_COMPILE_PROFILE: ${{ matrix.compile_profile }}
           VERIFY_RESULTS: ${{ runner.temp }}/verify-results
@@ -112,7 +119,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: ${{ matrix.compile_profile == 'atcoder' && 'atcoder-local-verify' || 'local-verify' }}-${{ matrix.compiler }}-${{ matrix.arithmetic }}
+          name: ${{ matrix.compile_profile != 'standard' && 'atcoder-local-verify' || 'local-verify' }}-${{ matrix.compiler }}-${{ matrix.arithmetic }}
           path: ${{ runner.temp }}/verify-results/
           if-no-files-found: ignore
           retention-days: 14

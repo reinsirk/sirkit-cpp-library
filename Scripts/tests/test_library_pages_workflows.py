@@ -127,15 +127,20 @@ class StructureTests(unittest.TestCase):
             self.assertIn('"$' + variable + '" == success', command)
         self.assertEqual(gate["steps"][0]["env"]["ALL_PERFORMANCE_RESULT"], "${{ needs.all_performance.result }}")
 
-    def test_atcoder_verify_is_an_additional_gcc_configuration(self):
+    def test_atcoder_verify_adds_gcc_and_clang_configurations(self):
         job = workflow("verify.yml")["jobs"]["examples"]
         self.assertEqual(job["strategy"]["matrix"], {
             "compiler": ["g++", "clang++"], "arithmetic": ["native", "portable"],
             "compile_profile": ["standard"],
-            "include": [{"compiler": "g++", "arithmetic": "native", "compile_profile": "atcoder"}],
+            "include": [{"compiler": "g++", "arithmetic": "native", "compile_profile": "atcoder"},
+                        {"compiler": "clang++", "arithmetic": "native", "compile_profile": "atcoder-clang"}],
         })
+        install = next(step for step in job["steps"] if step.get("name") == "Install Clang for the AtCoder profile")
+        self.assertEqual(install["if"], "matrix.compile_profile == 'atcoder-clang'")
+        self.assertIn("clang-21 lld-21 libc++-21-dev", install["run"])
         run = next(step for step in job["steps"] if step.get("name") == "Select and run local Verify")
         self.assertEqual(run["env"]["VERIFY_COMPILE_PROFILE"], "${{ matrix.compile_profile }}")
+        self.assertIn("matrix.compile_profile == 'atcoder-clang' && 'clang++-21'", run["env"]["VERIFY_COMPILER"])
         self.assertIn('--compile-profile "$VERIFY_COMPILE_PROFILE"', run["run"])
         upload = next(step for step in job["steps"] if step.get("name") == "Upload local Verify report")
         self.assertIn("'atcoder-local-verify' || 'local-verify'", upload["with"]["name"])

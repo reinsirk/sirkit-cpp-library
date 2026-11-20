@@ -158,16 +158,19 @@ class CommandLineTests(unittest.TestCase):
         self.assertEqual(result.stderr, "")
 
     def test_atcoder_profile_is_displayed_and_inconsistent_rows_are_rejected(self):
-        data = report(compiler="g++-15")
-        data["compile_profile"] = "atcoder"
-        for row in data["results"]:
-            row["compile_profile"] = "atcoder"
-        self.write("atcoder.json", data)
-        result = self.run_cli("atcoder.json")
-        self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertIn("| AtCoder |", result.stdout)
-        data["results"][0]["compile_profile"] = "standard"
-        self.assertEqual(summary.summarize(data).status, "不正な結果")
+        for profile, compiler, label in (("atcoder", "g++-15", "AtCoder"),
+                                         ("atcoder-clang", "clang++-21", "AtCoder (Clang)")):
+            with self.subTest(profile=profile):
+                data = report(compiler=compiler)
+                data["compile_profile"] = profile
+                for row in data["results"]:
+                    row["compile_profile"] = profile
+                self.write("atcoder.json", data)
+                result = self.run_cli("atcoder.json")
+                self.assertEqual(result.returncode, 0, result.stderr)
+                self.assertIn(f"| {label} |", result.stdout)
+                data["results"][0]["compile_profile"] = "standard"
+                self.assertEqual(summary.summarize(data).status, "不正な結果")
 
     def test_zero_targets_exit_zero_without_claiming_pass(self):
         self.write("empty.json", report(()))
