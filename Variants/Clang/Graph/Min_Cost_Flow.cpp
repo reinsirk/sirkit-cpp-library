@@ -159,9 +159,12 @@ private:
             if (distance != distance_[v]) continue;
             settled_.push_back(v);
             if (v == sink) return true;
-            for (std::size_t i = 0; i < graph_[v].size(); ++i) {
-                const auto& edge = graph_[v][i]; if (edge.residual == 0) continue;
-                const Cost reduced = add_minus(edge.cost, potential_[v], potential_[edge.to]);
+            const auto& outgoing = graph_[v];
+            const auto degree = outgoing.size();
+            const Cost from_potential = potential_[v];
+            for (std::size_t i = 0; i < degree; ++i) {
+                const auto& edge = outgoing[i]; if (edge.residual == 0) continue;
+                const Cost reduced = add_minus(edge.cost, from_potential, potential_[edge.to]);
                 const Cost next = add(distance, reduced);
                 if (!known_[edge.to] || next < distance_[edge.to]) {
                     known_[edge.to] = 1; distance_[edge.to] = next;
