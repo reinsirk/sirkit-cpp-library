@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
 #include "../Algorithm/Mo.cpp"
+#include <algorithm>
 #include <cstddef>
 #include <cstdint>
 #include <iostream>
@@ -18,6 +19,13 @@ int main(){
     const auto window=mo.run(add,erase,[&](std::size_t id){answers[id]=sum;});
     for(const auto answer:answers){std::cout<<answer<<' ';}std::cout<<'\n';
     std::cout<<window.left<<' '<<window.right<<' '<<mo.block_size()<<'\n';
+
+    // 削除しにくい最大値は、追加と保存・復元だけで区間を作る巻き戻し版で求める。
+    std::int64_t best=0,saved=0;std::vector<std::int64_t>maxima(mo.query_count());
+    mo.run_rollback([&](std::int32_t i){best=std::max(best,a[static_cast<std::size_t>(i)]);},
+                    [&]{saved=best;},[&]{best=saved;},[&]{best=0;},
+                    [&](std::size_t id){maxima[id]=best;});
+    for(const auto value:maxima){std::cout<<value<<' ';}std::cout<<'\n';
 
     std::vector<std::int64_t>values{1,2,3,4};const std::vector<Change>changes{{1,2,5},{3,4,0}};
     MoWithUpdates timed(4);timed.reserve_queries(5);timed.reserve_updates(2);
