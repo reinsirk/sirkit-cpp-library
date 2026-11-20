@@ -85,6 +85,20 @@ class UnitTests(unittest.TestCase):
         self.assertNotIn("#define SKIP_RUNTIME_CHECKS", source)
         self.assertIn("#error", source)
 
+    def test_failure_registration_requires_a_matching_standalone_fixture(self):
+        registry = self.root / ci.COVERAGE_TESTS
+        registry.parent.mkdir(parents=True)
+        name = "negative_test.cpp"
+        library = self.entry["libraries"][0]
+        value = {"format": 1, "tests": {name: [library]}, "failure_tests": {library: name}}
+        registry.write_text(json.dumps(value))
+        test, _ = ci.coverage_tests(self.root)
+        self.assertEqual(test["failure_libraries"], [library])
+        for invalid in ({library: "unknown_test.cpp"}, {"Graph/B.cpp": name}, {library: [name]}, [name]):
+            registry.write_text(json.dumps({**value, "failure_tests": invalid}))
+            with self.assertRaisesRegex(ValueError, "失敗系テスト"):
+                ci.coverage_tests(self.root)
+
     def test_i386_registration_requires_a_distinct_checked_target(self):
         registry = self.root / ci.COVERAGE_TESTS
         registry.parent.mkdir(parents=True)

@@ -271,8 +271,13 @@ class LibraryPagesTest(unittest.TestCase):
 
     def test_missing_quality_is_not_pass(self):
         text = pages.quality_table(None)
-        self.assertEqual(text.count("未実施"), len(pages.CATEGORIES))
+        self.assertIn("| 失敗系 | 未測定 |", text)
+        self.assertIn("| Library Checker公式ケース | 未測定 |", text)
         self.assertNotIn("| 合格 |", text)
+
+    def test_library_checker_without_a_registered_problem(self):
+        text = pages.quality_table({"categories": {"library_checker": {"status": "NOT_APPLICABLE"}}})
+        self.assertIn("| Library Checker公式ケース | 無し |", text)
 
     def test_coverage_requires_hundred_and_shows_actual_counts(self):
         text = pages.quality_table({"categories": {"coverage": {"status": "FAIL", "evidence": [{
