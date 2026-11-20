@@ -56,6 +56,8 @@
 #include <algorithm>
 #include <cstddef>
 #include <limits>
+#include <memory>
+#include <type_traits>
 #include <utility>
 
 // SIRKIT_NAMESPACE_OPEN_V1
@@ -64,11 +66,15 @@ namespace sirkit {
 #define SIRKIT_FAST_HASH_RELEASED_ARRAY_DEFINED
 namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
 template<class T>class FastHashReleasedArray {
+    static_assert(std::is_nothrow_default_constructible_v<T>);
     T* data_=nullptr;
     std::size_t size_=0;
 public:
     FastHashReleasedArray() noexcept=default;
-    explicit FastHashReleasedArray(std::size_t n):data_(n?new T[n]:nullptr),size_(n){}
+    explicit FastHashReleasedArray(std::size_t n)
+        : data_(n ? std::allocator<T>{}.allocate(n) : nullptr), size_(n) {
+        if (data_) std::uninitialized_default_construct_n(data_, size_);
+    }
     FastHashReleasedArray(std::size_t n,const T& value):FastHashReleasedArray(n){if(n)std::fill_n(data_,n,value);}
     FastHashReleasedArray(const FastHashReleasedArray&)=delete;
     FastHashReleasedArray& operator=(const FastHashReleasedArray&)=delete;
@@ -82,7 +88,12 @@ public:
     T*begin()noexcept{return data_;}const T*begin()const noexcept{return data_;}
     T*end()noexcept{return size_?data_+size_:data_;}const T*end()const noexcept{return size_?data_+size_:data_;}
     T&operator[](std::size_t i)noexcept{return data_[i];}const T&operator[](std::size_t i)const noexcept{return data_[i];}
-    void release_storage()noexcept{delete[] data_;data_=nullptr;size_=0;}
+    void release_storage() noexcept {
+        // 格納値の破棄を省き、確保時と同じ要素数で旧領域だけを解放する。
+        if (data_) std::allocator<T>{}.deallocate(data_, size_);
+        data_ = nullptr;
+        size_ = 0;
+    }
     void swap(FastHashReleasedArray& other)noexcept{std::swap(data_,other.data_);std::swap(size_,other.size_);}
 };
 }
@@ -315,8 +326,7 @@ private:
     template<bool Compact>union SlotStorage {
         std::remove_cv_t<value_type> value;
         SlotStorage()noexcept{}
-        ~SlotStorage() requires std::is_trivially_destructible_v<value_type> = default;
-        ~SlotStorage()noexcept requires (!std::is_trivially_destructible_v<value_type>) {} // Fast契約: 登録値も破棄しない。
+        ~SlotStorage() noexcept {} // Fast契約: 登録値の破棄はerase時だけ行う。
         SlotStorage(const SlotStorage&)=delete;
         SlotStorage(SlotStorage&&)=delete;
         value_type&operator*()noexcept{return value;}
