@@ -270,6 +270,7 @@ class UnitTests(unittest.TestCase):
         page = (html / "source_0000.html").read_text()
         self.assertIn("除外（戻り値の範囲から到達不能）", page)
         self.assertIn("T:✓ F:除外（分岐時点の不変条件）", page)
+        self.assertNotIn("最初の未到達へ", page)
 
         with self.assertRaisesRegex(ValueError, "現在の原本と一致しません"):
             ci.apply_coverage_exclusions(coverage, self.root, {name: "0" * 64}, policy)
@@ -279,6 +280,23 @@ class UnitTests(unittest.TestCase):
             ci.coverage_file_summary(coverage["files"][0], name, digest, {
                 name: {"sha256": digest, "regions": [{"line": 1, "reason": "不正な証明"}]}
             })
+
+    def test_coverage_html_uses_counts_for_color_and_links_to_a_missed_branch(self):
+        coverage = self.measured_coverage(false_hit=False)
+        directory = self.root / "coverage_html"
+        ci.write_coverage_html(coverage, self.root, directory)
+        index = (directory / "index.html").read_text()
+        self.assertIn('<td class="rate hit"><strong>100%</strong> <span class="figures">(1/1)', index)
+        self.assertIn('<td class="rate miss"><strong>50.000%</strong> <span class="figures">(1/2)', index)
+        page = (directory / "source_0000.html").read_text()
+        self.assertIn('<a href="#L2">最初の未到達へ（2行）</a>', page)
+        self.assertIn('<td class="miss">2:6–2:11 T:✓ F:×</td>', page)
+
+        coverage["files"][0]["branches"] = []
+        without_branches = self.root / "without_branches"
+        ci.write_coverage_html(ci.coverage_union([coverage]), self.root, without_branches)
+        index = (without_branches / "index.html").read_text()
+        self.assertIn('<td class="rate not-measured"><strong>直接分岐なし</strong>', index)
 
     def test_exclusions_reject_missing_reason_or_duplicate_coordinates(self):
         name = self.entry["libraries"][0]
