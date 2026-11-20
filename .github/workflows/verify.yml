@@ -215,7 +215,7 @@ jobs:
           if [[ "${{ matrix.mode }}" == coverage ]]; then
             sudo apt-get install -y qemu-user g++-15-multilib
           fi
-      - name: Prepare generic AMD64 runtime for QEMU
+      - name: Prepare generic AMD64 build environment for QEMU
         if: matrix.mode == 'coverage'
         shell: bash
         run: |
@@ -242,12 +242,15 @@ jobs:
           Acquire::Languages "none";
           EOF
           cat > ubuntu.list <<EOF
-          deb [arch=amd64 signed-by=/usr/share/keyrings/ubuntu-archive-keyring.gpg] https://archive.ubuntu.com/ubuntu $VERSION_CODENAME main
-          deb [arch=amd64 signed-by=/usr/share/keyrings/ubuntu-archive-keyring.gpg] https://archive.ubuntu.com/ubuntu $VERSION_CODENAME-updates main
-          deb [arch=amd64 signed-by=/usr/share/keyrings/ubuntu-archive-keyring.gpg] https://security.ubuntu.com/ubuntu $VERSION_CODENAME-security main
+          deb [arch=amd64 signed-by=/usr/share/keyrings/ubuntu-archive-keyring.gpg] https://archive.ubuntu.com/ubuntu $VERSION_CODENAME main universe
+          deb [arch=amd64 signed-by=/usr/share/keyrings/ubuntu-archive-keyring.gpg] https://archive.ubuntu.com/ubuntu $VERSION_CODENAME-updates main universe
+          deb [arch=amd64 signed-by=/usr/share/keyrings/ubuntu-archive-keyring.gpg] https://security.ubuntu.com/ubuntu $VERSION_CODENAME-security main universe
           EOF
           apt-get -c generic-apt.conf update --error-on=any
-          apt-get -c generic-apt.conf download libc6:amd64 libstdc++6:amd64 libgcc-s1:amd64
+          packages=(libc6:amd64 libc6-dev:amd64 linux-libc-dev:amd64
+                    libstdc++6:amd64 libgcc-s1:amd64 libstdc++-15-dev:amd64 libgcc-15-dev:amd64
+                    libclang-common-18-dev:amd64 libclang-rt-18-dev:amd64)
+          apt-get -c generic-apt.conf download "${packages[@]}"
           for package in ./*.deb; do
             if [[ "$(dpkg-deb -f "$package" Architecture)" != amd64 || -n "$(dpkg-deb -f "$package" Architecture-Variant)" ]]; then
               printf '汎用AMD64パッケージが必要です: %s\n' "$package" >&2
@@ -255,6 +258,8 @@ jobs:
             fi
             dpkg-deb -x "$package" "$RUNNER_TEMP/qemu-amd64"
           done
+          ln -s usr/lib "$RUNNER_TEMP/qemu-amd64/lib"
+          ln -s usr/lib64 "$RUNNER_TEMP/qemu-amd64/lib64"
       - name: Run checked library tests
         env:
           VERIFY_MODE: ${{ matrix.mode }}

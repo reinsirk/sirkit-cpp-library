@@ -155,14 +155,14 @@ class StructureTests(unittest.TestCase):
         upload = next(step for step in job["steps"] if step.get("name") == "Upload local Verify report")
         self.assertIn("'atcoder-local-verify' || 'local-verify'", upload["with"]["name"])
 
-    def test_instrumentation_runs_four_tests_at_a_time_and_uses_generic_qemu_libraries(self):
+    def test_instrumentation_runs_four_tests_at_a_time_and_uses_generic_qemu_toolchain(self):
         job = workflow("verify.yml")["jobs"]["instrumented"]
         step = next(step for step in job["steps"] if step.get("name") == "Run checked library tests")
         self.assertEqual(step["env"]["VERIFY_MODE"], "${{ matrix.mode }}")
         self.assertIn('options=(--jobs 4)', step["run"])
         self.assertIn('--timeout 240 --x86-baseline-sysroot "$RUNNER_TEMP/qemu-amd64"', step["run"])
         self.assertIn('"${options[@]}"', step["run"])
-        runtime = next(item for item in job["steps"] if item.get("name") == "Prepare generic AMD64 runtime for QEMU")
+        runtime = next(item for item in job["steps"] if item.get("name") == "Prepare generic AMD64 build environment for QEMU")
         self.assertEqual(runtime["if"], "matrix.mode == 'coverage'")
         self.assertLess(job["steps"].index(runtime), job["steps"].index(step))
         command = runtime["run"]
@@ -170,7 +170,10 @@ class StructureTests(unittest.TestCase):
         self.assertIn('Dir::State::lists "$PWD/lists";', command)
         self.assertIn('Dir::State::status "$PWD/empty-status";', command)
         self.assertIn("apt-get -c generic-apt.conf update --error-on=any", command)
-        self.assertIn("apt-get -c generic-apt.conf download libc6:amd64 libstdc++6:amd64 libgcc-s1:amd64", command)
+        self.assertIn('apt-get -c generic-apt.conf download "${packages[@]}"', command)
+        self.assertIn("libc6-dev:amd64", command)
+        self.assertIn("libclang-rt-18-dev:amd64", command)
+        self.assertIn('ln -s usr/lib64 "$RUNNER_TEMP/qemu-amd64/lib64"', command)
 
     def test_variant_build_matrix_runs_native_msvc_on_windows(self):
         job = workflow("verify.yml")["jobs"]["variant_builds"]
