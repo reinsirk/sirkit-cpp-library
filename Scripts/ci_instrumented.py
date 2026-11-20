@@ -778,6 +778,7 @@ def run(entries: list[dict], *, root: Path, output: Path, mode: str, compiler: s
         version, major = command_version(compiler, clang=True)
         report["tools"] = {"compiler": {"command": compiler, "version": version, "major": major}}
         baseline_command = [qemu_x86, "-cpu", X86_BASELINE_CPU]
+        baseline_compiler_options = []
         if mode == "coverage":
             for name, tool in [("llvm_profdata", llvm_profdata), ("llvm_cov", llvm_cov)]:
                 version, tool_major = command_version(tool)
@@ -789,12 +790,19 @@ def run(entries: list[dict], *, root: Path, output: Path, mode: str, compiler: s
                 report["tools"]["qemu_x86"] = {"command": qemu_x86, "version": result.stdout.strip(),
                                                 "cpu": X86_BASELINE_CPU}
                 if x86_baseline_sysroot is not None:
-                    libraries = x86_baseline_sysroot.resolve() / "usr/lib/x86_64-linux-gnu"
+                    sysroot = x86_baseline_sysroot.resolve()
+                    libraries = sysroot / "usr/lib/x86_64-linux-gnu"
+                    resource_dir = sysroot / f"usr/lib/llvm-{major}/lib/clang/{major}"
                     loader = libraries / "ld-linux-x86-64.so.2"
-                    for path in (loader, *(libraries / name for name in
-                                           ("libc.so.6", "libm.so.6", "libstdc++.so.6", "libgcc_s.so.1"))):
+                    required = [loader, libraries / "Scrt1.o", resource_dir / "include/stddef.h",
+                                resource_dir / "lib/linux/libclang_rt.profile-x86_64.a",
+                                *(libraries / name for name in ("libc.so.6", "libm.so.6", "libstdc++.so.6", "libgcc_s.so.1"))]
+                    for path in required:
                         if not path.is_file():
-                            raise ValueError("QEMUの汎用AMD64ランタイムが不足しています: " + str(path))
+                            raise ValueError("QEMUの汎用AMD64ビルド環境が不足しています: " + str(path))
+                    # 実行ファイルにAMD64v3の要件を引き継がないよう、起動用オブジェクトも分離する。
+                    baseline_compiler_options = [f"--sysroot={sysroot}", f"--gcc-toolchain={sysroot / 'usr'}",
+                                                 f"-resource-dir={resource_dir}", "-march=x86-64"]
                     baseline_command += [str(loader), "--inhibit-cache", "--library-path", str(libraries)]
                     report["tools"]["qemu_x86"]["command_prefix"] = baseline_command
             if any(entry.get("x86_avx2_coverage") for entry in entries):
@@ -855,7 +863,10 @@ def run(entries: list[dict], *, root: Path, output: Path, mode: str, compiler: s
                           "-fno-omit-frame-pointer"] if mode == "sanitizers" else
                          ["-O0", "-g", "-fprofile-instr-generate", "-fcoverage-mapping"])
                 i386 = mode == "coverage" and entry.get("coverage_target") == "i386"
+                x86_baseline = mode == "coverage" and entry.get("x86_baseline_coverage")
                 options = [] if i386 and i386_compiler_args else compiler_options
+                if x86_baseline and baseline_compiler_options:
+                    options = baseline_compiler_options
                 target_flags = [*(i386_compiler_args or []), "-m32"] if i386 else []
                 command = [compiler, *options, "-std=c++23", *flags, str(source),
                            *target_flags, *include_flags, "-o", str(binary)]
@@ -897,7 +908,7 @@ def run(entries: list[dict], *, root: Path, output: Path, mode: str, compiler: s
                             sample_row["profile_written"] = bool(generated) and all(path.stat().st_size for path in generated)
                             sample_row["passed"] &= sample_row["profile_written"]
                             profiles.extend(generated)
-                            if sample_row["passed"] and entry.get("x86_baseline_coverage"):
+                            if sample_row["passed"] and x86_baseline:
                                 name = f"{label}_{sample_index}_x86"
                                 command = [*baseline_command, str(binary)]
                                 commands.append(command)
@@ -1028,7 +1039,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--gcc", default="g++", help="補足行計測用のGCC")
     parser.add_argument("--gcov", default="gcov", help="補足行計測用のgcov")
     parser.add_argument("--qemu-x86", default="qemu-x86_64", help="AVX2・POPCNTなしの実行時経路を測定するQEMU")
-    parser.add_argument("--x86-baseline-sysroot", type=Path, help="QEMUの汎用AMD64ライブラリとローダーを読み込むルート")
+    parser.add_argument("--x86-baseline-sysroot", type=Path, help="QEMU補足テストのビルド・実行に使う汎用AMD64ルート")
     parser.add_argument("--qemu-i386", default="qemu-i386", help="i386カバレッジ用のQEMU")
     parser.add_argument("--i386-compiler-arg", action="append", help="別のi386クロス環境を使う場合のClang引数")
     parser.add_argument("--i386-sysroot", help="別のi386クロス環境を使う場合のQEMUのライブラリルート")

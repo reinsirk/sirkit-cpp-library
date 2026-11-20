@@ -379,6 +379,40 @@ class UnitTests(unittest.TestCase):
         with self.assertRaises(FileExistsError):
             ci.run([self.entry], root=self.root, output=self.root / "empty", mode="coverage", compiler="clang")
 
+    def test_qemu_sysroot_also_supplies_the_compiler_inputs(self):
+        sysroot = self.root / "amd64"
+        libraries = sysroot / "usr/lib/x86_64-linux-gnu"
+        resource_dir = sysroot / "usr/lib/llvm-18/lib/clang/18"
+        loader = libraries / "ld-linux-x86-64.so.2"
+        for path in (loader, libraries / "Scrt1.o", libraries / "libc.so.6", libraries / "libm.so.6",
+                     libraries / "libstdc++.so.6", libraries / "libgcc_s.so.1", resource_dir / "include/stddef.h",
+                     resource_dir / "lib/linux/libclang_rt.profile-x86_64.a"):
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.touch()
+
+        def execute(command, **options):
+            if "env" in options:
+                Path(options["env"]["LLVM_PROFILE_FILE"].replace("%p", "1")).write_bytes(b"profile")
+            return subprocess.CompletedProcess(command, 0, stdout="1\n", stderr="")
+
+        baseline = {**self.entry, "id": "baseline", "x86_baseline_coverage": True}
+        with (patch.object(ci, "command_version", return_value=("tools", 18)),
+              patch.object(ci, "gcc_install_arguments", return_value=["--gcc-install-dir=/host-gcc"]),
+              patch.object(ci.subprocess, "run", side_effect=execute),
+              patch.object(ci, "export_clang_coverage", return_value=ci.coverage_union([]))):
+            report = ci.run([self.entry, baseline], root=self.root, output=self.root / "result",
+                            mode="coverage", compiler="clang", x86_baseline_sysroot=sysroot)
+
+        self.assertEqual(report["execution_status"], "PASS", report)
+        native, emulated = report["results"]
+        self.assertIn("--gcc-install-dir=/host-gcc", native["command"])
+        self.assertNotIn("--gcc-install-dir=/host-gcc", emulated["command"])
+        self.assertEqual(emulated["command"][1:5], [f"--sysroot={sysroot}", f"--gcc-toolchain={sysroot / 'usr'}",
+                                                    f"-resource-dir={resource_dir}", "-march=x86-64"])
+        self.assertEqual(report["commands"], [["qemu-x86_64", "-cpu", ci.X86_BASELINE_CPU, str(loader),
+                                                "--inhibit-cache", "--library-path", str(libraries),
+                                                emulated["command"][-1]]])
+
 
 def toolchain(coverage):
     for suffix in ("-21", "-18", "-20", "-19", ""):
