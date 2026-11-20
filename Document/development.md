@@ -36,7 +36,7 @@ python3 Scripts/ci_verify.py --base origin/main --list
 
 README先頭のバッジは`main`向けPRのCI結果です。PRごとの結果はChecksの`Verify result`、コンパイラごとの件数・成否はActionsのSummary、詳しいJSONは14日間保存するArtifactで確認できます。GitHubのmain保護ルールで`Verify result`を必須にすると、いずれかの検査が失敗したPRを取り込まない運用にできます。オンライン提出とAC判定は別途行います。
 
-ASan/UBSan、カバレッジ、代表APIの性能測定、通常版のCore Guidelines・Google Style検査も実行します。対象と結果の読み方、ローカルでの実行方法は[CIの品質検査](ci_quality.md)を参照してください。速度優先版は作法検査の対象外です。
+ASan/UBSan、カバレッジ、通常版のCore Guidelines・Google Style検査も実行します。対象と結果の読み方、ローカルでの実行方法は[CIの品質検査](ci_quality.md)を参照してください。性能の比較手順は[手元でライブラリの性能を測る](performance_measurement.md)にまとめています。
 
 ## 手動提出と判定の取り込み
 

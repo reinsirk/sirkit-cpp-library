@@ -26,10 +26,10 @@ Last Commitは、トップページではサイトの生成元コミット、ラ
 | 正常系 | 入力例・独立参照・checked契約テストの照合結果。 |
 | 失敗系 | 期待した型の例外と、失敗後にも状態が保たれることを検査する。 |
 | Library Checker公式ケース | 外部で生成した全ケースを公式checkerで照合。プログラム全体の時間も記録する。 |
-| 性能退行 | 全103本のVerify全体時間と代表3本の本体時間をPRのベースと比較。入力規模・両版の中央値・判定を表示。 |
+| 手元の性能測定（任意） | ローカルプレビューにレポートを渡すと、入力規模・実行環境・中央値などを表示する。 |
 | ASan/UBSan・Coverage | checked実行の診断と、通常版本体の行・分岐到達状況。coverageは両方100%を必須にする。 |
 
-結果がない対象は「未実施」、記録時からソースが変わった対象は「ソース変更後は未検証」です。代表テストの成功を全APIの保証にはしません。失敗系は現在Fenwick Tree・Segment Tree・Lazy Segment Tree・Union Find・Low Link・Rolling Hashが対象です。本体だけの補足性能はFenwick Tree・Union Find・Rolling Hashを測ります。
+結果がない対象は「未実施」、記録時からソースが変わった対象は「ソース変更後は未検証」です。代表テストの成功を全APIの保証にはしません。失敗系は現在Fenwick Tree・Segment Tree・Lazy Segment Tree・Union Find・Low Link・Rolling Hashが対象です。
 
 ## ローカルで確認
 
@@ -39,14 +39,15 @@ Python 3.11以上、Ruby 3.3、Bundler 2.6.9を用意します。
 python3 -m venv /tmp/sirkit-pages-venv
 /tmp/sirkit-pages-venv/bin/pip install -r .competitive-verifier/requirements.txt
 python3 Scripts/ci_contracts.py --compiler g++ --output /tmp/contracts
-python3 Scripts/ci_performance_all.py --cache /tmp/performance-cache --output /tmp/performance
 /tmp/sirkit-pages-venv/bin/python Scripts/build_library_pages.py \
-  --report /tmp/contracts --report /tmp/performance \
+  --report /tmp/contracts \
   --output /tmp/library-pages --baseurl '' --render
 python3 -m http.server 8000 --directory /tmp/library-pages/site
 ```
 
 ブラウザで`http://localhost:8000/`を開きます。`--render`を省くとJekyll用Markdownだけを生成します。通常のGit index・object DBは変更しません。未追跡のライブラリもプレビューへ含め、生成中に入力が変われば再生成を要求します。
+
+手元で測った性能をプレビューに載せる場合は、性能レポートの保存先を `--report` で追加します。[手元でライブラリの性能を測る](performance_measurement.md)
 
 ## Library Checkerの問題資産
 
@@ -63,7 +64,7 @@ python3 Scripts/ci_library_checker.py --id dynamic_union_find \
 
 ## PRと公開
 
-`main`向けPRでは、正常系と失敗系のテスト、Sanitizer、カバレッジ、全103本と代表ライブラリ本体の性能退行検査、Library Checkerの全対象の公式ケースを実行します。ページ一式は`library-pages-preview`に保存します。公式ケースと全ライブラリの性能測定は、それぞれ8分割で実行します。別に用意した最大規模・構造別のケースはActionsの`stress-cases`に保存します。性能の欄には入力規模、実行環境、PRのベースと変更後の時間、退行判定を表示し、Verify全体、本体のみ、オンラインの測定結果を区別します。
+`main`向けPRでは、正常系と失敗系のテスト、Sanitizer、カバレッジ、Library Checkerの全対象の公式ケースを実行します。公式ケースは8分割で照合し、1ケース30秒で打ち切ります。最大規模・構造別のケースは1ケース60秒で打ち切り、結果を`stress-cases`に保存します。ページ一式は`library-pages-preview`に保存します。
 
 PRを`main`に取り込むと、closeイベントで取り込み後のコミットから公開版を生成します。同じPRの同じheadで直前に実行したCIの成果物を使い、ソースのSHAを改めて照合します。GitHub APIの関連PR一覧が空の場合は、Verifyの実行名に含まれるPR番号とheadのリポジトリ・ブランチ・SHAで照合します。成果物が見つからない場合は「未実施」とし、過去の成功で補いません。生成に成功すると別の公開ジョブが`main`上で動き、ページの生成元がその時点の`main`の先頭と一致する場合に公開します。
 

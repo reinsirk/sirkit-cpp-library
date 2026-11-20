@@ -103,13 +103,13 @@ class StructureTests(unittest.TestCase):
     def test_preview_waits_for_evidence_even_when_individual_checks_fail(self):
         value = workflow("verify.yml")
         docs = value["jobs"]["documentation"]
-        self.assertEqual(set(docs["needs"]), {"maintenance", "examples", "instrumented", "performance", "all_performance", "contracts", "library_checker"})
+        self.assertEqual(set(docs["needs"]), {"maintenance", "examples", "instrumented", "contracts", "library_checker"})
         self.assertIn("!cancelled()", docs["if"])
         self.assertIn("needs.maintenance.result == 'success'", docs["if"])
         self.assertNotIn("needs.examples.result == 'success'", docs["if"])
         downloads = [step for step in docs["steps"] if step.get("uses", "").startswith("actions/download-artifact@")]
         self.assertEqual({step["with"]["pattern"] for step in downloads}, {
-            "local-verify-*", "instrumented-*", "representative-performance", "all-library-performance-*", "contracts-*", "library-checker-*"})
+            "local-verify-*", "instrumented-*", "contracts-*", "library-checker-*"})
         for step in downloads:
             self.assertNotIn("run-id", step["with"])
             self.assertFalse(step["with"]["merge-multiple"])
@@ -129,6 +129,7 @@ class StructureTests(unittest.TestCase):
         self.assertIn("--shard-count 8", command)
         self.assertIn("--all", command)
         self.assertIn("--discard-test-data", command)
+        self.assertIn("--case-timeout 30", command)
         self.assertIn("--compiler g++-15", command)
         self.assertIn('--cache "$RUNNER_TEMP/library-checker-cache"', command)
         upload = next(step for step in jobs["library_checker"]["steps"] if step.get("name") == "Upload metadata only")
@@ -137,12 +138,11 @@ class StructureTests(unittest.TestCase):
 
     def test_final_gate_includes_contracts_official_cases_and_documentation(self):
         gate = workflow("verify.yml")["jobs"]["result"]
-        self.assertEqual(set(gate["needs"]), {"maintenance", "examples", "variant_builds", "instrumented", "guidelines", "performance", "all_performance", "contracts", "library_checker", "stress", "documentation"})
+        self.assertEqual(set(gate["needs"]), {"maintenance", "examples", "variant_builds", "instrumented", "guidelines", "contracts", "library_checker", "stress", "documentation"})
         command = gate["steps"][0]["run"]
         for variable in ("CONTRACT_RESULT", "LIBRARY_CHECKER_RESULT", "STRESS_RESULT", "DOCUMENTATION_RESULT",
-                         "ALL_PERFORMANCE_RESULT", "VARIANT_BUILDS_RESULT"):
+                         "VARIANT_BUILDS_RESULT"):
             self.assertIn('"$' + variable + '" == success', command)
-        self.assertEqual(gate["steps"][0]["env"]["ALL_PERFORMANCE_RESULT"], "${{ needs.all_performance.result }}")
 
     def test_independent_checks_can_start_with_maintenance(self):
         jobs = workflow("verify.yml")["jobs"]
@@ -209,86 +209,14 @@ class StructureTests(unittest.TestCase):
         self.assertIn("--summary", linux["run"])
         self.assertIn("--summary", windows["run"])
 
-    def test_all_library_performance_shards_compare_full_scope_and_upload_only_metadata(self):
-        job = workflow("verify.yml")["jobs"]["all_performance"]
-        self.assertEqual(job["timeout-minutes"], 90)
-        self.assertFalse(job["strategy"]["fail-fast"])
-        self.assertEqual(job["strategy"]["matrix"], {"shard": list(range(8)), "compile_profile": ["standard", "atcoder"]})
-        steps = job["steps"]
-        install = next(step["run"] for step in steps if step.get("name") == "Install compiler and headers")
-        self.assertIn("g++-15 libboost-dev", install)
-        comparison = next(step for step in steps if step.get("name") == "Compare all Verify programs against the PR base")
-        self.assertEqual(comparison["env"]["VERIFY_PR_BASE"], "${{ github.event.pull_request.base.sha }}")
-        command = comparison["run"]
-        self.assertIn("Scripts/ci_performance_all.py", command)
-        self.assertIn("--compiler g++-15", command)
-        self.assertIn('--compile-profile "$VERIFY_COMPILE_PROFILE"', command)
-        self.assertIn("--regression-profile github-hosted", command)
-        self.assertIn('--shard-index "$VERIFY_SHARD" --shard-count 8', command)
-        self.assertIn('--cache "$RUNNER_TEMP/all-library-performance-cache"', command)
-        self.assertIn('--output "$RUNNER_TEMP/all-library-performance"', command)
-        self.assertIn('--base "$VERIFY_PR_BASE"', command)
-        for option in ("--limits", "--quick", "--library", "--plan"):
-            self.assertNotIn(option, command)
-        upload = next(step for step in steps if step.get("uses", "").startswith("actions/upload-artifact@"))
-        self.assertEqual(upload["if"], "always()")
-        self.assertIn("'atcoder-all-library-performance' || 'all-library-performance'", upload["with"]["name"])
-        self.assertTrue(upload["with"]["name"].endswith("-${{ matrix.shard }}"))
-        self.assertEqual(upload["with"]["path"].splitlines(), [
-            "${{ runner.temp }}/all-library-performance/result.json",
-            "${{ runner.temp }}/all-library-performance/summary.md"])
-        provenance = next(step for step in steps if step.get("name") == "Attach report provenance")
-        self.assertEqual(provenance["if"], "always()")
-        self.assertEqual(provenance["env"]["REPORT_FILE"], "${{ runner.temp }}/all-library-performance/result.json")
-        self.assertIn("pull_request_head_sha", python_block(provenance["run"], "PYPROVENANCE"))
-        summary = next(step for step in steps if step.get("name") == "Summarize all-library performance")
-        self.assertEqual(summary["if"], "always()")
-        self.assertIn('>> "$GITHUB_STEP_SUMMARY"', summary["run"])
-
-    def test_kernel_performance_regression_gate_rejects_incomplete_reports(self):
-        job = workflow("verify.yml")["jobs"]["performance"]
-        self.assertEqual(job["strategy"]["matrix"], {"compile_profile": ["standard", "atcoder"]})
-        comparison = next(step for step in job["steps"] if step.get("name") == "Compare library kernels against the PR base")
-        self.assertEqual(comparison["env"]["VERIFY_PR_BASE"], "${{ github.event.pull_request.base.sha }}")
-        command = comparison["run"]
-        self.assertIn('--base "$VERIFY_PR_BASE"', command)
-        self.assertIn("--compiler g++-15", command)
-        self.assertIn('--compile-profile "$VERIFY_COMPILE_PROFILE"', command)
-        self.assertIn("--regression-profile github-hosted", command)
-        self.assertNotIn("--limits", command)
-        code = python_block(command, "PYREGRESSION")
-        baseline = "a" * 40
-        good = {"status": "PASS", "compile_profile": "atcoder", "regression_policy": "library_worst_case",
-                "regression_profile": "github-hosted",
-                "current_measurements_passed": True, "performance_regression_passed": True,
-                "base_revision": baseline, "expected_cases": 2, "compared_cases": 2, "results": [{}, {}],
-                "sources": {"fenwick": {}},
-                "worst_case_regressions": {"fenwick": {"status": "PASS", "compared_cases": 2}}}
-        fixtures = [(good, 0)]
-        for mutation in ({"status": "PARTIAL"}, {"status": "NO_BASELINE"},
-                         {"status": "CURRENT_ONLY"}, {"performance_regression_passed": False},
-                         {"regression_profile": "local"},
-                         {"regression_policy": None}, {"worst_case_regressions": {}},
-                         {"worst_case_regressions": {"fenwick": {"status": "FAIL", "compared_cases": 2}}},
-                         {"worst_case_regressions": {"fenwick": {"status": "PASS", "compared_cases": 1}}},
-                         {"compile_profile": "standard"},
-                         {"base_revision": "b" * 40}, {"compared_cases": 1},
-                         {"current_measurements_passed": False}, {"expected_cases": 3},
-                         {"expected_cases": True}, {"expected_cases": 0, "results": []},
-                         {"results": None}):
-            fixtures.append(({**good, **mutation}, 1))
-        with tempfile.TemporaryDirectory() as directory:
-            path = Path(directory) / "performance/result.json"
-            path.parent.mkdir()
-            env = {**os.environ, "RUNNER_TEMP": directory, "VERIFY_PR_BASE": baseline, "VERIFY_COMPILE_PROFILE": "atcoder"}
-            for report, expected in fixtures:
-                with self.subTest(report=report):
-                    path.write_text(json.dumps(report))
-                    actual = subprocess.run([sys.executable, "-c", code], env=env, capture_output=True)
-                    self.assertEqual(actual.returncode, expected, actual.stderr)
-        upload = next(step for step in job["steps"] if step.get("uses", "").startswith("actions/upload-artifact@"))
-        self.assertEqual(upload["with"]["path"].splitlines(), [
-            "${{ runner.temp }}/performance/result.json", "${{ runner.temp }}/performance/summary.md"])
+    def test_performance_comparisons_are_not_scheduled_in_ci(self):
+        jobs = workflow("verify.yml")["jobs"]
+        self.assertNotIn("performance", jobs)
+        self.assertNotIn("all_performance", jobs)
+        for path in (ROOT / ".github/workflows").glob("*.yml"):
+            commands = path.read_text()
+            for script in ("ci_performance_all.py", "ci_benchmark.py", "create_performance_reference.py"):
+                self.assertNotIn(script, commands)
 
     def test_max_cases_run_once_outside_matrices_and_quick_is_not_used_in_ci(self):
         jobs = workflow("verify.yml")["jobs"]
@@ -298,9 +226,7 @@ class StructureTests(unittest.TestCase):
         self.assertIn("Scripts/ci_stress.py", command)
         self.assertNotIn("--quick", command)
         self.assertNotIn("--case ", command)
-        performance = next(step["run"] for step in jobs["performance"]["steps"] if step.get("name") == "Compare library kernels against the PR base")
-        self.assertNotIn("--quick", performance)
-        self.assertNotIn("--id ", performance)
+        self.assertIn("--case-timeout 60", command)
         upload = next(step for step in stress["steps"] if step.get("uses", "").startswith("actions/upload-artifact@"))
         self.assertNotIn(".in", upload["with"]["path"])
         self.assertNotIn(".out", upload["with"]["path"])
@@ -472,17 +398,15 @@ class ArtifactSelectionTests(unittest.TestCase):
         self.assertIn("::warning::", process.stdout)
         self.assertEqual(len(calls), 1)
 
-    def test_all_library_performance_artifacts_allow_only_eight_exact_shards(self):
-        valid = [artifact(300 + i, name="all-library-performance-" + str(i)) for i in range(8)]
-        invalid = [artifact(400 + i, name=name) for i, name in enumerate((
-            "all-library-performance-8", "all-library-performance--1",
-            "all-library-performance-00", "all-library-performance-7-cache",
-            "all-library-performance-0/../../outside"))]
-        process, metadata, output, calls = self.execute([run_record()], valid + invalid)
+    def test_publish_only_downloads_correctness_and_instrumentation_reports(self):
+        valid = [artifact(200), artifact(201, name="library-checker-7")]
+        obsolete = [artifact(300 + i, name=name) for i, name in enumerate((
+            "representative-performance", "all-library-performance-7",
+            "atcoder-all-library-performance-7", "atcoder-representative-performance"))]
+        process, metadata, output, _ = self.execute([run_record()], valid + obsolete)
         self.assertEqual(process.returncode, 0, process.stderr)
-        self.assertEqual({row["name"] for row in metadata["artifacts"]},
-                         {"all-library-performance-" + str(i) for i in range(8)})
-        self.assertEqual({row["id"] for row in metadata["artifacts"]}, set(range(300, 308)))
+        self.assertEqual({row["id"] for row in metadata["artifacts"]}, {200, 201})
+        self.assertIn("artifact_ids=200,201\n", output)
 
     def test_api_failure_is_recorded_without_inventing_results(self):
         process, metadata, output, calls = self.execute([run_record()], [artifact()], failure=True)
