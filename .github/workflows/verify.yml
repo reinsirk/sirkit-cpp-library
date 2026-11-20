@@ -540,6 +540,66 @@ jobs:
           if-no-files-found: ignore
           retention-days: 14
 
+  yomiyasu:
+    name: Japanese documentation (yomiyasu)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - name: Find latest yomiyasu release
+        id: yomiyasu-release
+        shell: bash
+        run: |
+          set -euo pipefail
+          tag="$(curl --fail --silent --show-error --retry 3 --max-time 20 \
+            --header 'Accept: application/vnd.github+json' \
+            https://api.github.com/repos/nanaism/yomiyasu/releases/latest \
+            | jq -er '.tag_name | strings | select(length > 0)')"
+          git check-ref-format "refs/tags/$tag"
+          printf 'tag=%s\n' "$tag" >> "$GITHUB_OUTPUT"
+      - name: Fetch latest yomiyasu release
+        uses: actions/checkout@v7
+        with:
+          repository: nanaism/yomiyasu
+          ref: refs/tags/${{ steps.yomiyasu-release.outputs.tag }}
+          path: .ci-yomiyasu
+          persist-credentials: false
+      - name: Lint changed documentation
+        env:
+          VERIFY_PR_BASE: ${{ github.event.pull_request.base.sha }}
+          YOMIYASU_TAG: ${{ steps.yomiyasu-release.outputs.tag }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          tool="$GITHUB_WORKSPACE/.ci-yomiyasu"
+          linter="$tool/skills/yomiyasu/scripts/yomiyasu_lint.py"
+          revision="$(git -C "$tool" rev-parse HEAD)"
+          python3 "$linter" --version
+          git diff --name-only --diff-filter=ACMRT -z "$VERIFY_PR_BASE" HEAD -- \
+            ':(icase,glob)**/*.md' ':(icase,glob)**/*.markdown' \
+            ':(glob).competitive-verifier/docs/static/**/*.html' > "$RUNNER_TEMP/yomiyasu-paths"
+          checked=0
+          failed=0
+          while IFS= read -r -d '' path; do
+            printf '\n--- %q ---\n' "$path"
+            checked=$((checked + 1))
+            if [[ -L "$path" || ! -f "$path" ]]; then
+              printf '通常のファイルを読み込めません。\n' >&2
+              failed=$((failed + 1))
+            elif ! python3 "$linter" --fail-on error - < "$path"; then
+              failed=$((failed + 1))
+            fi
+          done < "$RUNNER_TEMP/yomiyasu-paths"
+          printf '## yomiyasu\n\nリリース `%s`（`%s`）\n\n検査した文書 %s件、失敗 %s件。詳細は検査ステップのログにあります。\n' \
+            "$YOMIYASU_TAG" "$revision" "$checked" "$failed" >> "$GITHUB_STEP_SUMMARY"
+          [[ "$failed" == 0 ]]
+
   documentation:
     name: Library pages preview
     if: ${{ !cancelled() && needs.maintenance.result == 'success' }}
@@ -606,7 +666,7 @@ jobs:
   result:
     name: Verify result
     if: always()
-    needs: [maintenance, examples, variant_builds, instrumented, guidelines, contracts, library_checker, stress, documentation]
+    needs: [maintenance, examples, variant_builds, instrumented, guidelines, contracts, library_checker, stress, yomiyasu, documentation]
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
@@ -620,6 +680,7 @@ jobs:
           CONTRACT_RESULT: ${{ needs.contracts.result }}
           LIBRARY_CHECKER_RESULT: ${{ needs.library_checker.result }}
           STRESS_RESULT: ${{ needs.stress.result }}
+          YOMIYASU_RESULT: ${{ needs.yomiyasu.result }}
           DOCUMENTATION_RESULT: ${{ needs.documentation.result }}
         shell: bash
         run: |
@@ -634,7 +695,8 @@ jobs:
             printf '| checked正常系・期待した失敗系 | %s |\n' "$CONTRACT_RESULT"
             printf '| 公式Library Checkerケース（ローカル） | %s |\n' "$LIBRARY_CHECKER_RESULT"
             printf '| 決定的Max・構造ケース | %s |\n' "$STRESS_RESULT"
+            printf '| 日本語文書の書式・表現（yomiyasu） | %s |\n' "$YOMIYASU_RESULT"
             printf '| ライブラリページのプレビュー | %s |\n' "$DOCUMENTATION_RESULT"
             printf '\nローカル検証の結果です。オンラインACはREADMEのVerify一覧で別に管理します。\n'
           } >> "$GITHUB_STEP_SUMMARY"
-          [[ "$MAINTENANCE_RESULT" == success && "$VERIFY_RESULT" == success && "$VARIANT_BUILDS_RESULT" == success && "$INSTRUMENTED_RESULT" == success && "$GUIDELINES_RESULT" == success && "$CONTRACT_RESULT" == success && "$LIBRARY_CHECKER_RESULT" == success && "$STRESS_RESULT" == success && "$DOCUMENTATION_RESULT" == success ]]
+          [[ "$MAINTENANCE_RESULT" == success && "$VERIFY_RESULT" == success && "$VARIANT_BUILDS_RESULT" == success && "$INSTRUMENTED_RESULT" == success && "$GUIDELINES_RESULT" == success && "$CONTRACT_RESULT" == success && "$LIBRARY_CHECKER_RESULT" == success && "$STRESS_RESULT" == success && "$YOMIYASU_RESULT" == success && "$DOCUMENTATION_RESULT" == success ]]
