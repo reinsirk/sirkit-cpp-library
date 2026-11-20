@@ -549,20 +549,51 @@ def coverage_gate(coverage: dict, allowed: list[Path], *, expected_translation_u
             "nonzero_mapped_lines": bool(metrics["lines"]["count"]), "reasons": reasons}
 
 
+def coverage_rate(metric: dict, kind: str) -> str:
+    if not metric["count"]:
+        return "直接分岐なし" if kind == "branches" else "計測なし"
+    if metric["covered"] == metric["count"]:
+        return "100%"
+    percent = f"{metric['percent']:.3f}%"
+    return "<100%" if percent == "100.000%" else percent
+
+
 def write_coverage_html(coverage: dict, root: Path, directory: Path) -> None:
+    def rate_cells(summary: dict) -> str:
+        cells = []
+        for kind in ("lines", "branches"):
+            metric = summary[kind]
+            covered, count = metric["covered"], metric["count"]
+            state = "not-measured" if not count else "hit" if covered == count else "miss"
+            cells.append(f'<td class="rate {state}"><strong>{html.escape(coverage_rate(metric, kind))}</strong> '
+                         f'<span class="figures">({covered:,}/{count:,})</span></td>')
+        return "".join(cells)
+
     directory.mkdir()
-    style = ('<style>body{font-family:system-ui}table{border-collapse:collapse}td,th{padding:.2em .6em;'
-             'border:1px solid #aaa}pre{margin:0}.hit{background:#dfd}.miss{background:#fdd}</style>')
-    header = '<!doctype html><meta charset="utf-8">' + style
+    style = ('<style>body{font-family:system-ui;margin:1.5rem;color:#18252e}'
+             'table{border-collapse:collapse}td,th{padding:.25em .65em;border:1px solid #b5bec7}'
+             'th{background:#eef2f6;text-align:left}'
+             '.rate,.line-number{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}'
+             '.figures{font-size:.85em;color:#364655}'
+             '.source-table thead th{position:sticky;top:0}'
+             'tr[id]{scroll-margin-top:3rem}tr:target>td{border-top:2px solid #8b4513}'
+             '.line-number a{color:inherit}.line-state{white-space:nowrap}'
+             'pre{margin:0}.hit{background:#e0f4e7}.miss{background:#ffe3de}'
+             '.not-measured{background:#eef2f6}</style>')
+    header = ('<!doctype html><html lang="ja"><meta charset="utf-8">'
+              '<meta name="viewport" content="width=device-width, initial-scale=1">' + style)
     index = [header, '<title>原本ソースの到達和集合</title><h1>原本ソースの到達和集合</h1>',
-             '<p>TUごとの行・直接記述条件の到達和集合。型別の保証ではなく、マクロ展開内部は対象外。</p>',
-             '<table><tr><th>原本</th><th>行</th><th>分岐</th></tr>']
+             '<p>括弧内は到達件数／計測件数です。赤いセルに未到達があります。</p>',
+             '<table><thead><tr><th scope="col">原本</th><th scope="col">行カバレッジ</th>'
+             '<th scope="col">分岐カバレッジ</th></tr></thead><tbody>',
+             '<tr><th scope="row">全体</th>' + rate_cells(coverage["totals"]) + '</tr>']
+    index_rows = []
     for number, item in enumerate(coverage["files"]):
         relative = html.escape(str(Path(item["filename"]).relative_to(root)))
         target = f"source_{number:04}.html"
-        metrics = item["summary"]
-        index.append(f'<tr><td><a href="{target}">{relative}</a></td>' + ''.join(
-            f'<td>{metrics[key]["covered"]}/{metrics[key]["count"]}</td>' for key in ("lines", "branches")) + '</tr>')
+        row = f'<tr><td><a href="{target}">{relative}</a></td>' + rate_cells(item["summary"]) + '</tr>'
+        complete = all(metric["covered"] == metric["count"] for metric in item["summary"].values())
+        index_rows.append((complete, row))
         lines = dict(item["lines"])
         gcov_lines = dict(item.get("gcov_line_counts", []))
         gcov_unchecked = dict(item.get("gcov_unchecked_line_counts", []))
@@ -571,6 +602,7 @@ def write_coverage_html(coverage: dict, root: Path, directory: Path) -> None:
         excluded_branches = {(*e["region"], e["side"]): e["reason"]
                              for e in item.get("exclusions", []) if "region" in e}
         folded = {tuple(region) for region in item.get("folded_branches", [])}
+        missed_branches = set()
         for line, column, end_line, end_column, true_hit, false_hit in item["branches"]:
             coord = (line, column, end_line, end_column)
             location = f'{line}:{column}–{end_line}:{end_column} '
@@ -581,24 +613,37 @@ def write_coverage_html(coverage: dict, root: Path, directory: Path) -> None:
             for side, label, hit in (("true", "T", true_hit), ("false", "F", false_hit)):
                 reason = excluded_branches.get((*coord, side))
                 sides.append(f"{label}:除外（{reason}）" if reason else f'{label}:{"✓" if hit else "×"}')
+                if not hit and reason is None:
+                    missed_branches.add(line)
             branches.setdefault(line, []).append(location + " ".join(sides))
         page = [header, f'<title>{relative}</title><p><a href="index.html">一覧</a></p><h1>{relative}</h1>',
-                '<table><tr><th>行</th><th>到達</th><th>直接記述条件</th><th>原本</th></tr>']
+                '<table><thead><tr><th scope="col">行カバレッジ</th><th scope="col">分岐カバレッジ</th>'
+                '</tr></thead><tbody><tr>' + rate_cells(item["summary"]) + '</tr></tbody></table>']
+        first_miss = min(missed_branches | {line for line, hit in lines.items() if not hit and line not in excluded_lines},
+                         default=None)
+        if first_miss is not None:
+            page.append(f'<p><a href="#L{first_miss}">最初の未到達へ（{first_miss}行）</a></p>')
+        page += ['<p>Tは条件が真、Fは偽です。</p>',
+                 '<table class="source-table"><thead><tr><th scope="col">行番号</th><th scope="col">行の到達</th>'
+                 '<th scope="col">分岐の到達</th><th scope="col">原本</th></tr></thead><tbody>']
         for line, text in enumerate(Path(item["filename"]).read_text(encoding="utf-8").splitlines(), 1):
             state = 'hit' if lines.get(line) else 'miss' if line in lines else ''
-            hit = '✓' if lines.get(line) else '×' if line in lines else '—'
+            hit = '到達' if lines.get(line) else '未到達' if line in lines else '—'
             if line in excluded_lines:
                 state = ''
                 hit = html.escape(f"除外（{excluded_lines[line]}）")
             elif line in gcov_lines:
-                hit = f"✓（gcov {gcov_lines[line]}回）"
+                hit = f"到達（gcov {gcov_lines[line]:,}回）"
             elif line in gcov_unchecked:
-                hit = f"✓（検査省略gcov {gcov_unchecked[line]}回）"
+                hit = f"到達（検査省略gcov {gcov_unchecked[line]:,}回）"
             conditions = '<br>'.join(html.escape(condition) for condition in branches.get(line, []))
-            page.append(f'<tr class="{state}" id="L{line}"><td>{line}</td><td>{hit}</td>'
-                        f'<td>{conditions}</td><td><pre>{html.escape(text)}</pre></td></tr>')
-        (directory / target).write_text(''.join(page) + '</table>\n', encoding="utf-8")
-    (directory / "index.html").write_text(''.join(index) + '</table>\n', encoding="utf-8")
+            branch_state = ' class="miss"' if line in missed_branches else ''
+            page.append(f'<tr class="{state}" id="L{line}"><td class="line-number"><a href="#L{line}">{line}</a></td>'
+                        f'<td class="line-state">{hit}</td><td{branch_state}>{conditions}</td>'
+                        f'<td><pre>{html.escape(text)}</pre></td></tr>')
+        (directory / target).write_text(''.join(page) + '</tbody></table></html>\n', encoding="utf-8")
+    index.extend(row for _, row in sorted(index_rows, key=lambda entry: entry[0]))
+    (directory / "index.html").write_text(''.join(index) + '</tbody></table></html>\n', encoding="utf-8")
 
 
 def summary_markdown(report: dict) -> str:
@@ -623,6 +668,12 @@ def summary_markdown(report: dict) -> str:
             if gate["unmapped_sources"]:
                 lines += ["未計測原本: " + ", ".join(inline_code(name) for name in gate["unmapped_sources"])]
     if "coverage_totals" in report:
+        lines += ["", "| 計測対象 | カバレッジ率 | 到達 / 計測 | 未到達 |", "| --- | ---: | ---: | ---: |"]
+        for key, name in (("lines", "行"), ("branches", "分岐")):
+            metric = report["coverage_totals"][key]
+            covered, count = metric["covered"], metric["count"]
+            lines.append(f"| {name} | {coverage_rate(metric, key)} | {covered:,} / {count:,} | {count - covered:,} |")
+        lines += ["", "原本別の一覧は `html/index.html`、計測データは `coverage.json` にあります。"]
         if "coverage_raw_totals" in report:
             raw = report["coverage_raw_totals"]
             adjusted = report["coverage_totals"]
@@ -630,25 +681,15 @@ def summary_markdown(report: dict) -> str:
             lines += ["", f"証明済みの除外: 行 {raw['lines']['count'] - adjusted['lines']['count']}、"
                       f"直接分岐 {raw['branches']['count'] - adjusted['branches']['count'] - folded}。",
                       f"コンパイル時に確定した条件: {folded // 2} 件。"]
-        lines += ["", "| 原本のみ | 到達/計測 | 率 |", "| --- | ---: | ---: |"]
-        for key, name in [("lines", "行"), ("branches", "分岐")]:
-            metric = report["coverage_totals"].get(key, {"covered": 0, "count": 0, "percent": 0})
-            if not metric["count"]:
-                percent = "直接分岐なし" if key == "branches" else "計測なし"
-            elif metric["covered"] == metric["count"]:
-                percent = "100%"
-            else:
-                percent = f"{metric['percent']:.3f}%"
-                if percent == "100.000%":
-                    percent = "<100%"
-            lines.append(f"| {name} | {metric['covered']}/{metric['count']} | {percent} |")
-        lines += ["", "HTML: artifact内の `html/index.html`。原本別の値は `coverage.json`。"]
-        lines += ["", "各TUで別々に計測し、原本の行番号・条件regionのtrue/false到達を和集合にします。"
-                  "同じ行・条件は型やTUをまたいでも1回だけ数えます。"
-                  "型ごとの被覆保証ではなく、マクロ展開内部の条件は集計しません。"]
+    if report.get("error"):
+        lines += ["", "計測エラー: " + inline_code(report["error"])]
     failed = [row["id"] for row in report["results"] if row.get("status") != "PASS"]
     if failed:
-        lines += ["", "未成功ID: " + ", ".join(inline_code(name) for name in failed[:8])]
+        remaining = f"（ほか {len(failed) - 8} 件は `results.json`）" if len(failed) > 8 else ""
+        lines += ["", f"未成功ID（{len(failed)}件）: " + ", ".join(inline_code(name) for name in failed[:8]) + remaining]
+    if "coverage_totals" in report:
+        lines += ["", "計測は原本の行と、直接記述した条件の真・偽を対象とします。"
+                  "同じ位置を型やTUをまたいで1回だけ数えます。"]
     lines += ["", "登録サンプルとローカル補足（独立参照を含む）で実行した範囲の計測です。"
               "未実体化template・未選択ライブラリは分母に含みません。"
               "Fast/Variants・vendor・driver/main・連結提出コードも集計対象外です。"]
