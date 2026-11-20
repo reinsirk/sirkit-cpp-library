@@ -9,6 +9,11 @@ import json
 from pathlib import Path
 import sys
 
+try:
+    from .ci_compile_profiles import COMPILE_PROFILES
+except ImportError:
+    from ci_compile_profiles import COMPILE_PROFILES
+
 
 @dataclass(frozen=True)
 class Summary:
@@ -19,6 +24,7 @@ class Summary:
     checked: int = 0
     skip: int = 0
     unsuccessful_ids: tuple[str, ...] = ()
+    compile_profile: str = "standard"
 
 
 def inline_code(value: str) -> str:
@@ -36,15 +42,16 @@ def summarize(report: object) -> Summary:
     if not isinstance(report, dict) or type(report.get("format")) is not int or report["format"] != 1:
         return Summary("不正な結果")
     compiler, fallback = report.get("compiler"), report.get("standard_fallback")
+    compile_profile = report.get("compile_profile", "standard")
     plan, rows = report.get("plan"), report.get("results")
     if (not isinstance(compiler, str) or not compiler.strip() or type(fallback) is not bool
-            or not isinstance(plan, dict) or not isinstance(rows, list)):
+            or compile_profile not in COMPILE_PROFILES or not isinstance(plan, dict) or not isinstance(rows, list)):
         return Summary("不正な結果")
     identifiers = plan.get("selected_ids")
     if (not isinstance(identifiers, list)
             or any(not isinstance(identifier, str) or not identifier for identifier in identifiers)
             or len(set(identifiers)) != len(identifiers)):
-        return Summary("不正な結果", compiler, fallback)
+        return Summary("不正な結果", compiler, fallback, compile_profile=compile_profile)
     selected = set(identifiers)
     successful: set[tuple[str, bool]] = set()
     seen: set[tuple[str, bool]] = set()
@@ -65,6 +72,7 @@ def summarize(report: object) -> Summary:
                 or any(not isinstance(sample, dict) or type(sample.get("passed")) is not bool
                        for sample in samples)
                 or row.get("compiler") != compiler
+                or row.get("compile_profile", "standard") != compile_profile
                 or type(row.get("standard_fallback")) is not bool
                 or row["standard_fallback"] != fallback):
             malformed = True
@@ -89,7 +97,7 @@ def summarize(report: object) -> Summary:
                                 if any((identifier, skip) not in successful for skip in (False, True))))
     return Summary(status, compiler, fallback, len(selected),
                    sum(not skip for _, skip in successful),
-                   sum(skip for _, skip in successful), unsuccessful)
+                   sum(skip for _, skip in successful), unsuccessful, compile_profile)
 
 
 def read_summary(path: Path) -> Summary:
@@ -104,15 +112,16 @@ def read_summary(path: Path) -> Summary:
 def markdown(summaries: list[Summary]) -> str:
     lines = ["### ローカル Verify", "",
              "C++23のビルド・入力例照合です。オンライン提出の判定（AC等）は含みません。", "",
-             "| 結果 | コンパイラ | 標準代替 | 対象ID数 | checked成功 | skip成功 |",
-             "| --- | --- | --- | ---: | ---: | ---: |"]
+             "| 結果 | コンパイラ | コンパイル設定 | 標準代替 | 対象ID数 | checked成功 | skip成功 |",
+             "| --- | --- | --- | --- | ---: | ---: | ---: |"]
     for summary in summaries:
         compiler = inline_code(summary.compiler) if summary.compiler else "—"
+        profile = {"standard": "一般", "atcoder": "AtCoder"}[summary.compile_profile] if summary.compiler else "—"
         fallback = "有効" if summary.fallback is True else "無効" if summary.fallback is False else "—"
         total = str(summary.targets) if summary.targets is not None else "—"
         checked = f"{summary.checked}/{total}" if summary.targets else "—"
         skip = f"{summary.skip}/{total}" if summary.targets else "—"
-        lines.append(f"| {summary.status} | {compiler} | {fallback} | {total} | {checked} | {skip} |")
+        lines.append(f"| {summary.status} | {compiler} | {profile} | {fallback} | {total} | {checked} | {skip} |")
     for index, summary in enumerate(summaries, 1):
         if summary.unsuccessful_ids:
             names = ", ".join(inline_code(identifier) for identifier in summary.unsuccessful_ids[:8])

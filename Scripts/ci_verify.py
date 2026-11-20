@@ -12,14 +12,16 @@ import tempfile
 
 try:
     from . import package_revised_libraries, prepare_verify
+    from .ci_compile_profiles import COMPILE_PROFILES
 except ImportError:
     import package_revised_libraries
     import prepare_verify
+    from ci_compile_profiles import COMPILE_PROFILES
 
 ROOT = Path(__file__).resolve().parents[1]
 LIBRARY_DIRS = {"Algorithm", "DataStructure", "Geometry", "Graph", "Internal", "Math", "String"}
 GLOBAL_INPUTS = {
-    "Scripts/prepare_verify.py", "Scripts/verify_graph_samples.py", "Scripts/library_layout.json",
+    "Scripts/prepare_verify.py", "Scripts/ci_compile_profiles.py", "Scripts/verify_graph_samples.py", "Scripts/library_layout.json",
     ".github/workflows/verify.yml", "Scripts/ci_verify.py",
 }
 EMBEDDED_DEPENDENTS = {
@@ -125,12 +127,14 @@ def write_report(path: Path, report: dict) -> None:
     temporary.replace(path)
 
 
-def run_selected(entries: list[dict], plan: dict, compiler: str, fallback: bool, output: Path) -> None:
+def run_selected(entries: list[dict], plan: dict, compiler: str, fallback: bool, output: Path,
+                 *, compile_profile: str = "standard") -> None:
     selected_ids = set(plan["selected_ids"])
     selected = [entry for entry in entries if entry["id"] in selected_ids]
     if len(selected) != len(selected_ids):
         raise ValueError("選択後にVerify IDが変化しました")
     report = {"format": 1, "plan": plan, "compiler": compiler, "standard_fallback": fallback,
+              "compile_profile": compile_profile,
               "online_status": "not_evaluated", "status": "running", "results": []}
     write_report(output, report)
     try:
@@ -138,15 +142,16 @@ def run_selected(entries: list[dict], plan: dict, compiler: str, fallback: bool,
             with tempfile.TemporaryDirectory(prefix="sirkit_ci_results_") as directory:
                 raw = Path(directory) / "samples.json"
                 try:
-                    prepare_verify.run_tests(selected, compiler, fallback, raw)
+                    prepare_verify.run_tests(selected, compiler, fallback, raw, compile_profile=compile_profile)
                 finally:
                     if raw.is_file():
                         report["results"] = json.loads(raw.read_text())["results"]
             actual = {(r["id"], r["skip_runtime_checks"]) for r in report["results"]}
             expected = {(identifier, skip) for identifier in selected_ids for skip in (False, True)}
             if actual != expected or len(report["results"]) != len(expected) or not all(
-                    row.get("passed") for row in report["results"]):
-                raise ValueError("Verify結果が選択対象・検査設定と一致しません")
+                    row.get("passed") and row.get("compile_profile", "standard") == compile_profile
+                    for row in report["results"]):
+                raise ValueError("Verify結果が選択対象・検査設定・コンパイル設定と一致しません")
         report["status"] = "PASS"
     except (Exception, SystemExit) as error:
         report["status"] = "FAIL"
@@ -163,6 +168,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--all", action="store_true", help="全件を確認する")
     parser.add_argument("--list", action="store_true", help="選択計画のJSONだけを出力する")
     parser.add_argument("--compiler", default="g++")
+    parser.add_argument("--compile-profile", choices=COMPILE_PROFILES, default="standard")
     parser.add_argument("--fallback", action="store_true")
     parser.add_argument("--skip-sync", action="store_true", help="既に照合済みの場合だけ同期確認を省く")
     parser.add_argument("--results", type=Path)
@@ -180,8 +186,9 @@ def main(argv: list[str] | None = None) -> int:
             package_revised_libraries.check_generated(ROOT)
         # render元と記録が同期していることを、テスト直前にも照合する。
         entries = prepare_verify.prepare(check=True)
-        output = args.results or Path(tempfile.gettempdir()) / "sirkit-ci-verify" / (Path(args.compiler).name + ".json")
-        run_selected(entries, plan, args.compiler, args.fallback, output)
+        suffix = "-atcoder" if args.compile_profile == "atcoder" else ""
+        output = args.results or Path(tempfile.gettempdir()) / "sirkit-ci-verify" / (Path(args.compiler).name + suffix + ".json")
+        run_selected(entries, plan, args.compiler, args.fallback, output, compile_profile=args.compile_profile)
         print(f"{len(plan['selected_ids'])}件のローカルVerify: PASS。結果: {output}")
         return 0
     except (OSError, ValueError, subprocess.SubprocessError, SystemExit) as error:

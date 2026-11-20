@@ -74,7 +74,8 @@ def build_settings(compiler: str, fast: bool, syntax_only: bool) -> list[tuple[s
     return settings
 
 
-def compiler_command(compiler: str, include_dirs: list[Path], gcc_install_dir: str | None) -> list[str]:
+def compiler_command(compiler: str, include_dirs: list[Path], gcc_install_dir: str | None,
+                     *, gcc: str = "g++", clang: str = "clang++") -> list[str]:
     if compiler == "MSVC":
         executable = shutil.which("cl.exe")
         if executable is None:
@@ -82,7 +83,7 @@ def compiler_command(compiler: str, include_dirs: list[Path], gcc_install_dir: s
         includes = [argument for path in include_dirs for argument in ("/I", str(path))]
         return [executable, "/nologo", "/std:c++23preview", "/permissive-", "/Zc:__cplusplus", "/Zc:preprocessor",
                 "/utf-8", "/EHsc", *includes]
-    driver = "g++" if compiler == "GCC" else "clang++"
+    driver = gcc if compiler == "GCC" else clang
     clang_arguments = gcc_install_arguments(driver, gcc_install_dir) if compiler == "Clang" else []
     return [driver, *clang_arguments, "-std=c++23", "-O2", *("-I" + str(path) for path in include_dirs)]
 
@@ -136,7 +137,8 @@ def run_runtime_test(compiler: str, command: list[str], source: Path, binary: Pa
 def verify(output: Path, cpu: int | None, selected: set[str] | None = None, resume: bool = False,
            pause: Path | None = None, *, compilers: tuple[str, ...] = ("GCC", "Clang"),
            syntax_only: bool = False, jobs: int = 1, gcc_install_dir: str | None = None,
-           acl_include: Path | None = None, run_tests: bool = False) -> dict:
+           acl_include: Path | None = None, run_tests: bool = False,
+           gcc: str = "g++", clang: str = "clang++") -> dict:
     if cpu is not None:
         os.sched_setaffinity(0, {cpu})
 
@@ -186,7 +188,8 @@ def verify(output: Path, cpu: int | None, selected: set[str] | None = None, resu
             include_dirs.append(Path("/opt/atcoder/gcc/include"))
         result["acl_fingerprints"] = acl_fingerprints(include_dirs)
         result["gcc_install_dir"] = gcc_install_dir
-        commands = {name: compiler_command(name, [*include_dirs[:1], overlay, *include_dirs[1:]], gcc_install_dir)
+        commands = {name: compiler_command(name, [*include_dirs[:1], overlay, *include_dirs[1:]], gcc_install_dir,
+                                           gcc=gcc, clang=clang)
                     for name in compilers}
         result["compiler_versions"] = {name: compiler_version(command, name, work) for name, command in commands.items()}
         cached = {}
@@ -311,6 +314,8 @@ def main() -> int:
     parser.add_argument("--compiler", choices=COMPILERS, action="append")
     parser.add_argument("--syntax-only", action="store_true", help="既定と検査省略の単独構文検査")
     parser.add_argument("--run-tests", action="store_true", help="各配布版で登録済みの動作テストを実行")
+    parser.add_argument("--gcc", default="g++", help="GCCの実行ファイル")
+    parser.add_argument("--clang", default="clang++", help="Clangの実行ファイル")
     parser.add_argument("--gcc-install-dir", help="Clangが使うGCCのライブラリディレクトリ")
     parser.add_argument("--acl-include", type=Path, help="atcoder/allを含むACLディレクトリ")
     parser.add_argument("--jobs", type=int, default=1)
@@ -326,7 +331,7 @@ def main() -> int:
         report = verify(options.output, options.cpu, set(options.source) if options.source else None, options.resume,
                         options.pause_file, compilers=compilers, syntax_only=options.syntax_only,
                         jobs=options.jobs, gcc_install_dir=options.gcc_install_dir, acl_include=options.acl_include,
-                        run_tests=options.run_tests)
+                        run_tests=options.run_tests, gcc=options.gcc, clang=options.clang)
     except (OSError, ValueError, subprocess.SubprocessError) as error:
         parser.exit(1, str(error) + "\n")
     if options.summary:

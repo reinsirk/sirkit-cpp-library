@@ -15,6 +15,11 @@ import subprocess
 import tempfile
 from urllib.parse import urlsplit
 
+try:
+    from .ci_compile_profiles import compile_flags
+except ImportError:
+    from ci_compile_profiles import compile_flags
+
 ROOT = Path(__file__).resolve().parents[1]
 BASE = ROOT / "Verify/current"
 FAST_IO = "Verify/current/common/fast_io.hpp"
@@ -342,9 +347,16 @@ def matches(entry: dict, sample: dict, output: str) -> bool:
     return actual == expected
 
 
-def run_tests(entries: list[dict], compiler: str, fallback: bool, output: Path) -> None:
+def run_tests(entries: list[dict], compiler: str, fallback: bool, output: Path,
+              *, compile_profile: str = "standard") -> None:
     results = []
     selected = entries
+    flags = compile_flags(compile_profile, ["-std=c++23", "-O2", "-Wall", "-Wextra"])
+    if "clang" in Path(compiler).name and Path("/usr/lib/gcc/x86_64-linux-gnu/15").is_dir():
+        flags += ["--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15"]
+    if fallback:
+        flags += ["-U__SIZEOF_INT128__", "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
+                  "-DSIRKIT_LINE_CONTAINER_FORCE_PORTABLE", "-DSIRKIT_DISABLE_SIMD"]
     with tempfile.TemporaryDirectory(prefix="atcoder_verify_") as tmp:
         for entry in selected:
             for skip in (False, True):
@@ -354,16 +366,11 @@ def run_tests(entries: list[dict], compiler: str, fallback: bool, output: Path) 
                 if digest(tested_source) != entry["submission_sha256"]:
                     source_path = binary.with_suffix(".cpp")
                     source_path.write_bytes(tested_source)
-                command = [compiler, "-std=c++23", "-O2", "-Wall", "-Wextra"]
-                if "clang" in Path(compiler).name and Path("/usr/lib/gcc/x86_64-linux-gnu/15").is_dir():
-                    command += ["--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15"]
-                if fallback:
-                    command += ["-U__SIZEOF_INT128__", "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
-                                "-DSIRKIT_LINE_CONTAINER_FORCE_PORTABLE", "-DSIRKIT_DISABLE_SIMD"]
-                command += [str(source_path), "-o", str(binary)]
+                command = [compiler, str(source_path), *flags, "-o", str(binary)]
                 built = subprocess.run(command, capture_output=True, text=True, timeout=180)
                 result = dict(id=entry["id"], compiler=compiler, skip_runtime_checks=skip,
-                              standard_fallback=fallback, submission_sha256=entry["submission_sha256"],
+                              standard_fallback=fallback, compile_profile=compile_profile,
+                              submission_sha256=entry["submission_sha256"],
                               tested_source_sha256=digest(tested_source),
                               command=command[:-2], compile_ok=built.returncode == 0,
                               diagnostics=built.stderr, samples=[])

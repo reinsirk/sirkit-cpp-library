@@ -127,6 +127,17 @@ class CatalogTests(unittest.TestCase):
 
 
 class MeasurementTests(unittest.TestCase):
+    def test_atcoder_baseline_constexpr_limit_is_distinct_from_other_build_errors(self):
+        diagnostic = ("submission.cpp:167:45: error: 'constexpr' evaluation operation count exceeds limit "
+                      "of 2097152 (use '-fconstexpr-ops-limit=' to increase the limit)\n")
+        build = {"status": "FAIL", "timed_out": False, "diagnostic_excerpt": diagnostic}
+        comparison = perf.baseline_build_comparison(build, "atcoder")
+        self.assertEqual(comparison, "BASELINE_CONSTEXPR_LIMIT")
+        self.assertEqual(perf.regression_result({"comparison": comparison})["status"], "NOT_COMPARABLE")
+        self.assertEqual(perf.baseline_build_comparison(build, "standard"), "BASELINE_API_INCOMPATIBLE")
+        build["diagnostic_excerpt"] += "submission.cpp:168:3: error: unknown name\n"
+        self.assertEqual(perf.baseline_build_comparison(build, "atcoder"), "BASELINE_API_INCOMPATIBLE")
+
     def test_regression_confirms_only_initial_fail_with_same_options(self):
         binaries = {"base": Path("base"), "current": Path("current")}
         first = {"comparison": "MEASURED", "cpu_samples_ns": {"base": [10_000_000] * 3, "current": [10_600_000] * 3}}
@@ -380,7 +391,7 @@ class RunnerTests(unittest.TestCase):
         args=SimpleNamespace(cache=folder/"cache",output=folder/"reports",base=None,compiler="fake",repetitions=2,warmups=0,quick=True,plan=False,library=None,shard_index=0,shard_count=1,compile_timeout=1,case_timeout=1,generation_timeout=1,memory_mib=64,
             limits=fixed_limits(folder,name="other_case" if missing_budget else "registered_sample_00") if fixed_budget else None)
         before=args.limits.read_bytes() if args.limits is not None else None
-        def build(source,compiler,directory,timeout):
+        def build(source,compiler,directory,timeout,flags):
             directory.mkdir(parents=True,exist_ok=True);binary=directory/"binary";binary.write_bytes(b"fake")
             return {"status":"PASS","binary":str(binary),"source_sha256":perf.digest(source)}
         def execute(command,**kwargs):

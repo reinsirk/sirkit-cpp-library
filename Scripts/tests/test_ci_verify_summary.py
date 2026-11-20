@@ -157,6 +157,18 @@ class CommandLineTests(unittest.TestCase):
         self.assertEqual(result.stdout.count("| PASS |"), 2)
         self.assertEqual(result.stderr, "")
 
+    def test_atcoder_profile_is_displayed_and_inconsistent_rows_are_rejected(self):
+        data = report(compiler="g++-15")
+        data["compile_profile"] = "atcoder"
+        for row in data["results"]:
+            row["compile_profile"] = "atcoder"
+        self.write("atcoder.json", data)
+        result = self.run_cli("atcoder.json")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("| AtCoder |", result.stdout)
+        data["results"][0]["compile_profile"] = "standard"
+        self.assertEqual(summary.summarize(data).status, "不正な結果")
+
     def test_zero_targets_exit_zero_without_claiming_pass(self):
         self.write("empty.json", report(()))
         result = self.run_cli("empty.json")
@@ -189,7 +201,7 @@ class CommandLineTests(unittest.TestCase):
     def test_current_ci_writer_reports_are_consumed_without_conversion(self):
         output = self.root / "actual.json"
 
-        def run_tests(entries, compiler, fallback, destination):
+        def run_tests(entries, compiler, fallback, destination, *, compile_profile):
             destination.write_text(json.dumps({"results": report()["results"]}), encoding="utf-8")
 
         with patch.object(ci_verify.prepare_verify, "run_tests", side_effect=run_tests):

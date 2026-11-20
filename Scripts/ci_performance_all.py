@@ -25,9 +25,11 @@ import threading
 
 sys.dont_write_bytecode = True
 try:
-    from . import ci_benchmark, ci_instrumented, ci_library_checker as official, prepare_verify, performance_limits, performance_regression
+    from . import ci_benchmark, ci_compile_profiles, ci_instrumented, ci_library_checker as official
+    from . import prepare_verify, performance_limits, performance_regression
 except ImportError:
     import ci_benchmark
+    import ci_compile_profiles
     import ci_instrumented
     import ci_library_checker as official
     import prepare_verify
@@ -244,7 +246,8 @@ def archived_driver(revision: str, entry: dict, current_sha: str, support: dict[
 def freeze_sources(rows: list[dict], entries: dict, root: Path = ROOT) -> dict[str, str]:
     names = {"Scripts/ci_performance_all.py", "Scripts/performance_limits.py", "Scripts/performance_regression.py",
              "Verify/ci/performance_cases.py", "Scripts/prepare_verify.py",
-             "Scripts/ci_library_checker.py", "Scripts/ci_benchmark.py", "Verify/ci/library_checker.json"}
+             "Scripts/ci_library_checker.py", "Scripts/ci_benchmark.py",
+             "Scripts/ci_compile_profiles.py", "Verify/ci/library_checker.json"}
     for row in rows:
         entry = entries[row["verify_id"]]
         names.update(entry["libraries"])
@@ -308,11 +311,11 @@ def execute(command: list[str], *, work: Path, output: Path, log: Path, timeout:
             "elapsed_ns": elapsed, "cpu_ns": cpu_ns}
 
 
-def build(source: bytes, compiler: str, directory: Path, timeout: float) -> dict:
+def build(source: bytes, compiler: str, directory: Path, timeout: float, flags: list[str]) -> dict:
     directory.mkdir(parents=True, exist_ok=True)
     snapshot, binary = directory / "submission.cpp", directory / "solution"
     snapshot.write_bytes(source)
-    command = [compiler, *FLAGS, str(snapshot), "-o", str(binary)]
+    command = [compiler, str(snapshot), *flags, "-o", str(binary)]
     diagnostics = directory / "compile.stderr"
     result = execute(command, work=directory, output=directory / "compile.stdout", log=diagnostics,
                      timeout=timeout, memory_mib=2048)
@@ -322,6 +325,21 @@ def build(source: bytes, compiler: str, directory: Path, timeout: float) -> dict
     return {"status": "PASS" if passed else "FAIL", "command": command,
             "source_sha256": digest(source), "binary": str(binary),
             "executable_sha256": file_digest(binary) if passed else None, **result}
+
+
+def baseline_build_comparison(build: dict, profile: str) -> str:
+    if build["status"] == "PASS":
+        return "MEASURED"
+    if build.get("timed_out") is True:
+        return "BASELINE_BUILD_TIMEOUT"
+    diagnostics = build.get("diagnostic_excerpt")
+    if profile == "atcoder" and isinstance(diagnostics, str):
+        errors = re.findall(r"(?m)^.*\berror: (.+)$", diagnostics)
+        limit_error = f"evaluation operation count exceeds limit of {ci_compile_profiles.ATCODER_CONSTEXPR_OPS_LIMIT}"
+        if errors and all(limit_error in error
+                          and "-fconstexpr-ops-limit=" in error for error in errors):
+            return "BASELINE_CONSTEXPR_LIMIT"
+    return "BASELINE_API_INCOMPATIBLE"
 
 
 def output_matches(actual: Path, case: dict, entry: dict, work: Path) -> bool:
@@ -439,7 +457,8 @@ def regression_result(case: dict) -> dict:
     prior_wrong_answer = (reason == "BASELINE_INVALID" and type(failure.get("returncode")) is int
                           and failure["returncode"] == 0
                           and failure.get("timed_out") is False and failure.get("oracle_passed") is False)
-    status = "NOT_COMPARABLE" if reason == "BASELINE_NEW_LIBRARY" or prior_wrong_answer else "FAIL"
+    status = ("NOT_COMPARABLE" if reason in ("BASELINE_NEW_LIBRARY", "BASELINE_CONSTEXPR_LIMIT")
+              or prior_wrong_answer else "FAIL")
     return {"status": status, "metric": metric, "reason": reason}
 
 
@@ -514,6 +533,7 @@ def write_report(output: Path, report: dict) -> None:
              "環境: " + str(report.get("platform", "unknown")),
              "CPU affinity: " + str(report.get("affinity")),
              "コンパイラ: " + str(report.get("compiler", {}).get("version", "未取得")),
+             "コンパイル設定: " + report.get("compile_profile", "standard"),
              "フラグ: " + " ".join(report.get("flags", [])), "",
              f"全対象 {len(report['all_library_paths'])}、このshard {len(report['selected_library_paths'])}。", "",
              "| 本体 | Verify | ケース | 入力規模・先頭行 | wall ms | CPU ms | 基準CPU ms | 現行/基準 | 上限CPU ms | 判定 | 入力 bytes | 繰り返し |",
@@ -563,7 +583,10 @@ def run(args: argparse.Namespace) -> int:
     by_id = {entry["id"]: entry for entry in entries}
     all_rows = catalog(entries, nonlc, root)
     selected = select_catalog(all_rows, args.library, args.shard_index, args.shard_count)
+    profile = getattr(args, "compile_profile", "standard")
+    flags = ci_compile_profiles.compile_flags(profile, FLAGS)
     plan = {"type": "sirkit.performance-all", "format": 1, "scope": SCOPE,
+            "compile_profile": profile, "flags": flags,
             "all_library_paths": [r["library"] for r in all_rows],
             "selected_library_paths": [r["library"] for r in selected],
             "shard_index": args.shard_index, "shard_count": args.shard_count,
@@ -573,7 +596,7 @@ def run(args: argparse.Namespace) -> int:
         print(json.dumps({**plan, "status": "PLAN_ONLY", "executed": False}, ensure_ascii=False, indent=2))
         return 0
     output.mkdir(parents=True, exist_ok=True)
-    report = {**plan, "status": "running", "online_status": "not_evaluated", "flags": FLAGS,
+    report = {**plan, "status": "running", "online_status": "not_evaluated",
               "performance_scope": SCOPE,
               "timing_scope": "whole_program_wall_time_including_startup_io_timer_setup_and_wait4_return; wait_timeout_polling_not_used; child_cpu_time_recorded_separately; checker_excluded",
               "platform": platform.platform(), "machine": platform.machine(), "cpu_model": ci_benchmark.cpu_model(),
@@ -622,7 +645,7 @@ def run(args: argparse.Namespace) -> int:
                                performance_scope=SCOPE)
                     source_key = digest(current_source)
                     if source_key not in builds:
-                        builds[source_key] = build(current_source, compiler, work / "current", args.compile_timeout)
+                        builds[source_key] = build(current_source, compiler, work / "current", args.compile_timeout, flags)
                     row["current_build"] = builds[source_key]
                     if row["current_build"]["status"] != "PASS":
                         raise PerformanceError("current build failed")
@@ -640,7 +663,7 @@ def run(args: argparse.Namespace) -> int:
                                                   "sha256": row["driver_sha256"], "same_as_current": True}
                         base_key = digest(baseline_source)
                         if base_key not in builds:
-                            builds[base_key] = build(baseline_source, compiler, work / "base", args.compile_timeout)
+                            builds[base_key] = build(baseline_source, compiler, work / "base", args.compile_timeout, flags)
                         if builds[base_key]["status"] != "PASS" and not builds[base_key].get("timed_out"):
                             previous = archived_driver(revision, entry, row["driver_sha256"], support, root)
                             if previous is not None:
@@ -651,14 +674,11 @@ def run(args: argparse.Namespace) -> int:
                                 base_key = digest(baseline_source)
                                 if base_key not in builds:
                                     builds[base_key] = build(baseline_source, compiler, work / "base_archived_driver",
-                                                            args.compile_timeout)
+                                                            args.compile_timeout, flags)
                         row["baseline_build"] = builds[base_key]
+                        row["baseline_comparison"] = baseline_build_comparison(builds[base_key], profile)
                         if builds[base_key]["status"] == "PASS":
                             binaries["base"] = Path(builds[base_key]["binary"])
-                            row["baseline_comparison"] = "MEASURED"
-                        else:
-                            row["baseline_comparison"] = ("BASELINE_BUILD_TIMEOUT" if builds[base_key].get("timed_out")
-                                                          else "BASELINE_API_INCOMPATIBLE")
                     if row["case_source"] == "official_library_checker" and args.quick:
                         cases = inline_cases(entry, work)
                     elif row["case_source"] == "official_library_checker":
@@ -758,6 +778,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--limits", type=Path, help="旧方式の固定性能予算JSONを任意で照合する")
     parser.add_argument("--compiler", default="g++")
+    parser.add_argument("--compile-profile", choices=ci_compile_profiles.COMPILE_PROFILES, default="standard",
+                        help="基準と現在版の両方に使うコンパイル設定")
     parser.add_argument("--repetitions", type=int, default=3)
     parser.add_argument("--warmups", type=int, default=1)
     parser.add_argument("--quick", action="store_true")
