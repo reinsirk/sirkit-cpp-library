@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: CC0-1.0
-"""最適化の順序・入力ソース・測定根拠を固定して、次の担当へ渡す。"""
+"""最適化の完了記録と、提出コード・測定根拠の対応を確認する。"""
 from __future__ import annotations
 
 import argparse
@@ -9,8 +9,6 @@ import hashlib
 import json
 from pathlib import Path, PurePosixPath
 import re
-import shutil
-import tempfile
 from urllib.parse import urlsplit
 
 try:
@@ -291,106 +289,13 @@ def record_stage(root: Path, ledger_dir: Path, receipt_path: Path,
 
 
 
-def prepare(root: Path, identity: str, directory: Path, *, stage: str = "claude",
-            codex_receipt: Path | None = None) -> dict:
-    identity = safe_id(identity)
-    if stage not in {"codex", "claude"}:
-        raise ValueError("stageはcodexまたはclaudeが必要です")
-    item = next((e for e in catalog(root) if e["id"] == identity), None)
-    if item is None or not item["entry"].get("problem_url"):
-        raise ValueError("オンラインVerifyのIDを指定してください")
-    receipt = None
-    if stage == "claude" and item["library_checker"]:
-        if codex_receipt is None:
-            raise ValueError("Library CheckerのClaude引き継ぎには--codex-receiptが必要です")
-        receipt = read_receipt(root, codex_receipt, identity=identity, stage="codex",
-                               source_sha256=item["source_sha256"])
-        if receipt["scope"] != "whole_program":
-            raise ValueError("Codexはプログラム全体の確認が必要です")
-    root = root.resolve()
-    directory = directory.resolve()
-    if directory.is_relative_to(root) or root.is_relative_to(directory):
-        raise ValueError("引き継ぎ先はリポジトリの外側へ指定してください")
-    if directory.exists():
-        raise ValueError("既存の引き継ぎ先は上書きしません")
-    entry = item["entry"]
-    dependencies = sorted(set([*entry["libraries"], entry["driver"], *item["dependency_hashes"], "AGENTS.md"]))
-    data = {"submission.cpp": item["source"]}
-    expected_sources = {**item["library_hashes"], entry["driver"]: item["driver_sha256"], **item["dependency_hashes"]}
-    for name in dependencies:
-        content = source_path(root, name).read_bytes()
-        if name in expected_sources and digest(content) != expected_sources[name]:
-            raise ValueError("引き継ぎ準備中にソースが変更されました: " + name)
-        data["inputs/" + name] = content
-    for name in ["LICENSE", "Verify/current/vendor/ACL_LICENSE"]:
-        if (root / name).is_file():
-            data["inputs/" + name] = source_path(root, name).read_bytes()
-    if receipt is not None:
-        data["codex_receipt.json"] = encode(receipt)
-    files = {name: digest(value) for name, value in sorted(data.items())}
-    manifest = {"format": 1, "id": identity, "stage": stage,
-                "problem_url": entry["problem_url"], "source_sha256": item["source_sha256"],
-                "optimization_scope": "whole_program" if item["library_checker"] else "library",
-                "current_ac": item["current_ac"], "historical_ac": item["historical_ac"],
-                "library_hashes": item["library_hashes"], "driver_sha256": item["driver_sha256"],
-                "common_hashes": item["common_hashes"], "dependency_hashes": item["dependency_hashes"], "files": files,
-                "affected_library_verify_ids": sorted(e["id"] for e in catalog(root)
-                    if set(entry["libraries"]).intersection(e["entry"]["libraries"]))}
-    scope = "Library Checker向けなのでmain・共通入出力・ライブラリを含むプログラム全体" if item["library_checker"] else "ライブラリ本体"
-    target_policy = ("main・入出力・問題ごとの計算手順も含めて最速を狙ってください。receiptのscopeはwhole_programです。"
-                     if item["library_checker"] else
-                     "正しさの検証を優先し、最適化はライブラリ本体だけに限定してください。main・入出力を個別にチューニングせず、問題を解くための必要な手順と素直なAPI呼び出しを保ってください。receiptのscopeはlibraryです。")
-    prompt = f"""# {identity}: {stage} 最適化\n\n対象: {scope}。問題: {entry['problem_url']}\n入力ソースSHA-256: {item['source_sha256']}\n\n- {target_policy}\n- submission.cppが固定した現在版です。manifest.jsonの各SHAを確認してください。\n- inputs/AGENTS.mdの制約を読み、公開API・正しさ・所有権を維持してください。\n- Library CheckerはCodex→Claudeの順です。Claudeへは先行Codex receiptを添付しています。\n- 現在のオンラインAC: {item['current_ac']}。過去のACを変更後の検証済みとは扱いません。\n- 同じ問題・入力・コンパイラ設定で正しさと実行時間を測り、基準版と候補を比較してください。\n- 本体・main・入出力のどこを変えたかを区別し、本体だけの比較は同じmain/入出力で行ってください。\n- 変更はcandidate.patchとして提示し、測定条件・入力SHA・結果・不採用案も根拠ファイルへ記録してください。\n- 変更を採用したら提出コードと派生版を再生成し、ローカル照合後にオンライン再提出してください。\n- 対象外の未コミット変更・判定履歴・認証情報を変更しないでください。未実行の確認をPASSとしないでください。\n- 変更なしの結論も、実測根拠とともにstage receiptへ記録できます。\n\nstage receiptはformat=1、id、stage、status=complete、input_source_sha256、source_sha256、changed、scope、checks={{correctness:passed,performance:measured}}、evidence=[{{path,sha256}}]を持ちます。最終SHAは採用後の生成コードを指します。\n"""
-    data["prompt.md"] = prompt.encode()
-    manifest["files"] = {name: digest(value) for name, value in sorted(data.items())}
-    data["manifest.json"] = encode(manifest)
-    directory.parent.mkdir(parents=True, exist_ok=True)
-    temporary = Path(tempfile.mkdtemp(prefix=".optimization-", dir=directory.parent))
-    try:
-        for name, content in data.items():
-            path = temporary / name
-            path.parent.mkdir(parents=True, exist_ok=True)
-            path.write_bytes(content)
-        temporary.rename(directory)
-    finally:
-        if temporary.exists():
-            shutil.rmtree(temporary)
-    return manifest
-
-
-def check_bundle(directory: Path) -> dict:
-    directory = directory.resolve()
-    manifest = json.loads((directory / "manifest.json").read_text())
-    if not isinstance(manifest, dict) or manifest.get("format") != 1:
-        raise ValueError("不正なbundle manifest")
-    safe_id(manifest.get("id"))
-    files = manifest.get("files")
-    if not isinstance(files, dict) or not {"submission.cpp", "prompt.md", "inputs/AGENTS.md"}.issubset(files):
-        raise ValueError("bundleの必須ファイルがありません")
-    actual = {p.relative_to(directory).as_posix() for p in directory.rglob("*") if p.is_file()}
-    if actual != set(files) | {"manifest.json"}:
-        raise ValueError("bundleのファイル一覧が一致しません")
-    for name, expected in files.items():
-        if not isinstance(expected, str) or not SHA.fullmatch(expected):
-            raise ValueError("bundleファイルのSHAが不正です")
-        if digest(source_path(directory, name).read_bytes()) != expected:
-            raise ValueError("bundleファイルの内容が変わっています: " + name)
-    if files["submission.cpp"] != manifest.get("source_sha256"):
-        raise ValueError("bundleの提出コードSHAが一致しません")
-    return manifest
-
-
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     command = parser.add_mutually_exclusive_group(required=True)
     command.add_argument("--list", action="store_true")
-    command.add_argument("--prepare", metavar="ID")
     command.add_argument("--record-stage", type=Path, metavar="JSON")
-    command.add_argument("--check-bundle", type=Path, metavar="DIRECTORY")
     parser.add_argument("--root", type=Path, default=ROOT)
     parser.add_argument("--ledger-dir", type=Path)
-    parser.add_argument("--output-dir", type=Path)
-    parser.add_argument("--stage", choices=["codex", "claude"], default="claude")
     parser.add_argument("--codex-receipt", type=Path)
     parser.add_argument("--include-unverified", action="store_true", help="一覧に未受理の問題も含める")
     options = parser.parse_args()
@@ -399,13 +304,6 @@ def main() -> None:
     try:
         if options.list:
             print(encode(queue(root, ledger_dir, options.include_unverified)).decode(), end="")
-        elif options.check_bundle is not None:
-            print(encode(check_bundle(options.check_bundle)).decode(), end="")
-        elif options.prepare:
-            if options.output_dir is None:
-                parser.error("--prepareには--output-dirが必要です")
-            print(encode(prepare(root, options.prepare, options.output_dir, stage=options.stage,
-                                 codex_receipt=options.codex_receipt)).decode(), end="")
         else:
             print(record_stage(root, ledger_dir, options.record_stage, options.codex_receipt))
     except (OSError, ValueError, KeyError, TypeError) as error:

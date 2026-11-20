@@ -11,7 +11,7 @@
 ACの記録があるVerifyコードを[一覧](../Verify/optimization/README.md)から選びます。Library Checkerではライブラリ本体・main・入出力を含めてCodex、Claudeの順に改善し、各段階のコード、正しさの照合結果、測定結果を保存します。ライブラリ本体の性能とプログラム全体の性能は別々に比較します。Library Checker以外は正しさの検証を優先し、最適化はライブラリ本体だけを対象とします。main・入出力の個別チューニングは行いません。
 
 ```sh
-python3 Scripts/optimization_handoff.py --list
+python3 Scripts/optimization_records.py --list
 python3 Scripts/prepare_verify.py
 python3 Scripts/prepare_variant_verify.py
 ```

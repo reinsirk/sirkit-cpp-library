@@ -8,6 +8,6 @@
 - 高速化、比較条件、性能CIは[性能測定と最適化](Document/contributing/performance.md)
 - フォルダの配置、開発ブランチ、CI、配布は[開発・CI・配布](Document/contributing/workflow.md)
 - 外部コードの出典とSPDXは[出典とライセンス](Document/contributing/licensing.md)
-- ClaudeとCodexの利用や引き継ぎは[ClaudeとCodexの利用](Document/contributing/tools.md)
+- ClaudeとCodexの利用は[ClaudeとCodexの利用](Document/contributing/tools.md)
 
 作業環境固有の設定は、Git管理外の`.sirkit-local/AGENTS.md`がある場合に参照してください。
