@@ -3,6 +3,7 @@ from copy import deepcopy
 import json
 import os
 from pathlib import Path
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -44,13 +45,17 @@ def artifact(identifier=200, name="contracts-g++-native", *, expired=False, run=
 
 class StructureTests(unittest.TestCase):
     def test_workflows_only_run_for_main_pull_requests(self):
-        verify = events(workflow("verify.yml"))
+        verify_workflow = workflow("verify.yml")
+        verify = events(verify_workflow)
         pages = events(workflow("library-pages.yml"))
         self.assertEqual(set(verify), {"pull_request"})
         self.assertEqual(set(pages), {"pull_request"})
         self.assertEqual(verify["pull_request"]["branches"], ["main"])
         self.assertEqual(pages["pull_request"], {"branches": ["main"], "types": ["closed"]})
         self.assertNotIn("closed", verify["pull_request"].get("types", []))
+        self.assertEqual(verify_workflow["run-name"], "Verify PR #${{ github.event.pull_request.number }}")
+        self.assertEqual(events(workflow("library-pages-deploy.yml")), {
+            "workflow_run": {"workflows": ["Library pages"], "types": ["completed"]}})
 
     def test_unmerged_preview_has_no_pages_write_or_deploy_action(self):
         value = workflow("verify.yml")
@@ -64,21 +69,33 @@ class StructureTests(unittest.TestCase):
     def test_publication_checks_merged_main_and_uses_reviewed_merge_commit(self):
         value = workflow("library-pages.yml")
         build = value["jobs"]["build"]
-        for name in ("build", "deploy"):
-            guard = value["jobs"][name]["if"]
-            self.assertIn("pull_request.merged == true", guard)
-            self.assertIn("pull_request.base.ref == 'main'", guard)
-            self.assertIn("pull_request.base.repo.full_name == github.repository", guard)
+        self.assertEqual(set(value["jobs"]), {"build"})
+        guard = build["if"]
+        self.assertIn("pull_request.merged == true", guard)
+        self.assertIn("pull_request.base.ref == 'main'", guard)
+        self.assertIn("pull_request.base.repo.full_name == github.repository", guard)
         checkout = next(step for step in build["steps"] if step.get("uses", "").startswith("actions/checkout@"))
         self.assertEqual(checkout["with"]["ref"], "${{ github.event.pull_request.merge_commit_sha }}")
         self.assertFalse(checkout["with"]["persist-credentials"])
         self.assertEqual(build["permissions"], {"contents": "read", "actions": "read", "pages": "read"})
-        deploy = value["jobs"]["deploy"]
-        self.assertIn("needs.build.result == 'success'", deploy["if"])
+        deployment = workflow("library-pages-deploy.yml")
+        self.assertEqual(deployment["permissions"], {})
+        deploy = deployment["jobs"]["deploy"]
+        self.assertIn("github.ref == 'refs/heads/main'", deploy["if"])
+        self.assertIn("workflow_run.conclusion == 'success'", deploy["if"])
+        self.assertIn("workflow_run.event == 'pull_request'", deploy["if"])
+        self.assertIn("workflow_run.path == '.github/workflows/library-pages.yml'", deploy["if"])
+        self.assertIn("workflow_run.repository.full_name == github.repository", deploy["if"])
         self.assertEqual(deploy["environment"]["name"], "github-pages")
         self.assertEqual(deploy["permissions"]["pages"], "write")
         self.assertEqual(deploy["permissions"]["id-token"], "write")
         self.assertFalse(any(step.get("uses", "").startswith("actions/checkout@") for step in deploy["steps"]))
+        downloads = [step["with"] for step in deploy["steps"] if step.get("uses", "").startswith("actions/download-artifact@")]
+        self.assertEqual([step["name"] for step in downloads], ["library-pages-publication-report", "github-pages"])
+        for step in downloads:
+            self.assertEqual(step["run-id"], "${{ github.event.workflow_run.id }}")
+            self.assertEqual(step["digest-mismatch"], "error")
+        self.assertTrue(all(step.get("if") == "steps.publication.outputs.publish == 'true'" for step in deploy["steps"][2:]))
         configure = next(step for step in build["steps"] if step.get("uses", "").startswith("actions/configure-pages@"))
         self.assertIs(configure["with"]["enablement"], False)
         self.assertNotEqual(value["concurrency"]["group"], workflow("verify.yml")["concurrency"]["group"])
@@ -301,6 +318,50 @@ class StructureTests(unittest.TestCase):
         self.assertIn('--output "$RUNNER_TEMP/library-pages"', production)
 
 
+@unittest.skipUnless(shutil.which("jq"), "jq is required to exercise the publication check")
+class PublicationCommitTests(unittest.TestCase):
+    def execute(self, *, main=None, merged=True):
+        commit, head = "b" * 40, "a" * 40
+        command = next(step["run"] for step in workflow("library-pages-deploy.yml")["jobs"]["deploy"]["steps"]
+                       if step.get("id") == "publication")
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            evidence = root / "pages-evidence"
+            evidence.mkdir()
+            (evidence / "pages-download-provenance.json").write_text(json.dumps({
+                "repository": "example/library", "pull_request": 17,
+                "requested_head_sha": head, "merged_commit_sha": commit,
+            }))
+            gh = root / "gh"
+            gh.write_text("#!/usr/bin/env python3\nimport os, sys\n"
+                          "if 'repos/example/library/git/ref/heads/main' in sys.argv:\n"
+                          "    print(os.environ['TEST_MAIN_SHA'])\n"
+                          "elif 'repos/example/library/pulls/17' in sys.argv:\n"
+                          "    print(os.environ['TEST_PR_JSON'])\n"
+                          "else:\n    sys.exit(1)\n")
+            gh.chmod(0o700)
+            output = root / "output"
+            environment = dict(os.environ, PATH=str(root) + os.pathsep + os.environ["PATH"], RUNNER_TEMP=str(root),
+                               GITHUB_OUTPUT=str(output), GITHUB_REPOSITORY="example/library", GITHUB_SHA=commit,
+                               PAGES_BUILD_HEAD=head, TEST_MAIN_SHA=main or commit,
+                               TEST_PR_JSON=json.dumps({"merged": merged, "merge_commit_sha": commit,
+                                                        "head": {"sha": head}, "base": {"ref": "main", "repo": {
+                                                            "full_name": "example/library"}}}))
+            process = subprocess.run(["bash", "-c", command], env=environment, capture_output=True, text=True)
+            return process, output.read_text() if output.exists() else ""
+
+    def test_only_current_merged_main_can_publish(self):
+        process, output = self.execute()
+        self.assertEqual(process.returncode, 0, process.stderr)
+        self.assertEqual(output, "publish=true\n")
+        process, output = self.execute(main="c" * 40)
+        self.assertEqual(process.returncode, 0, process.stderr)
+        self.assertEqual(output, "")
+        process, output = self.execute(merged=False)
+        self.assertNotEqual(process.returncode, 0)
+        self.assertEqual(output, "")
+
+
 class ProvenanceTests(unittest.TestCase):
     def helper(self):
         step = next(step for step in workflow("verify.yml")["jobs"]["examples"]["steps"] if step.get("name") == "Attach report provenance")
@@ -345,6 +406,7 @@ class ArtifactSelectionTests(unittest.TestCase):
             environment = dict(os.environ, PATH=str(root / "bin") + os.pathsep + os.environ["PATH"],
                                FAKE_GH_ROOT=str(root), FAKE_GH_FAILURE="1" if failure else "0",
                                PAGES_REPOSITORY="example/library", PAGES_PR_HEAD="a" * 40,
+                               PAGES_PR_HEAD_REPOSITORY="example/library", PAGES_PR_HEAD_REF="dev",
                                PAGES_PR_NUMBER="17", PAGES_MERGE_COMMIT="b" * 40,
                                RUNNER_TEMP=str(root), GITHUB_OUTPUT=str(root / "output"), GH_TOKEN="not-a-real-token")
             environment.update(overrides or {})
@@ -377,6 +439,27 @@ class ArtifactSelectionTests(unittest.TestCase):
         self.assertIn("head_sha=" + "a" * 40, calls[0])
         self.assertTrue(all("--method" in call and "GET" in call for call in calls))
         self.assertTrue(all("not-a-real-token" not in arg for call in calls for arg in call))
+
+    def test_empty_pull_requests_uses_only_the_exact_verify_run_name_and_head(self):
+        matching = run_record()
+        matching.update(pull_requests=[], display_title="Verify PR #17", head_branch="dev",
+                        head_repository={"full_name": "example/library"})
+        other_pr = run_record()["pull_requests"]
+        other_pr[0]["number"] = 18
+        mismatches = [dict(matching, **fields) for fields in (
+            {"display_title": "Verify PR #18"},
+            {"head_branch": "other"},
+            {"head_repository": {"full_name": "other/library"}},
+            {"head_sha": "d" * 40},
+            {"pull_requests": other_pr},
+        )]
+        for index, row in enumerate(mismatches, start=101):
+            row.update(id=index, run_number=index)
+        process, metadata, output, _ = self.execute([matching, *mismatches], [artifact()])
+        self.assertEqual(process.returncode, 0, process.stderr)
+        self.assertEqual(metadata["selection_status"], "AVAILABLE")
+        self.assertEqual(metadata["run"]["id"], 100)
+        self.assertIn("artifact_ids=200\n", output)
 
     def test_no_matching_run_is_unavailable_with_an_empty_existing_report_directory(self):
         wrong = run_record()
