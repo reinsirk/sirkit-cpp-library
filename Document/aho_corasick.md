@@ -1,6 +1,6 @@
 # Aho–Corasick法
 
-[AhoCorasick](../String/Aho_Corasick.cpp)は、登録した複数の語を1本の文字列から同時に検索します。`AhoCorasick<>`は英小文字、`ByteAhoCorasick`は全256バイト、`AhoCorasick<Alphabet,First>`は連続したバイト範囲を扱います。[使用例](../Examples/aho_corasick_example.cpp)を参照してください。
+[AhoCorasick](../String/Aho_Corasick.cpp)は登録した複数の語を1本の文字列から同時に検索します。`AhoCorasick<>`は英小文字、`ByteAhoCorasick`は全256種類のバイト値、`AhoCorasick<Alphabet,First>`は連続したバイト範囲を扱います。[使用例](../Examples/aho_corasick_example.cpp)を参照してください。
 
 
 以下、nは検索文の長さ、mは語長、Sは状態数、Pは登録語数、Rは一致数です。
@@ -15,7 +15,7 @@ AhoCorasick(const AhoCorasick&);
 AhoCorasick(AhoCorasick&& other) noexcept;
 ```
 
-空の未構築状態／独立コピー／所有権移動で構築します。
+空の未構築状態を作るか、コピーまたは所有権の移動で構築します。コピーは元の状態から独立します。
 
 **制約:** 1<=Alphabet<=256、First+Alphabet<=256。
 
@@ -51,7 +51,7 @@ int add(std::string_view pattern);
 void build();
 ```
 
-遷移・failure・出力リンクを確定します。再呼出しは無操作です。
+遷移・failure・出力リンクを確定します。再度呼び出しても状態は変わりません。
 
 **制約:** build後はclearまでaddしません。
 
@@ -135,7 +135,7 @@ std::vector<std::uint64_t> match_counts(std::string_view text) const;
 template <class Callback> void for_each_match(std::string_view text, Callback&& callback) const;
 ```
 
-一致ごとにcallback(id,begin,end)を呼びます。区間は半開です。
+一致ごとにcallback(id,begin,end)を呼びます。区間は半開区間です。
 
 **制約:** build済みで、textのバイトは指定アルファベット内。 callbackから構造を変更しないこと。
 
@@ -297,6 +297,6 @@ auto counts = automaton.match_counts("shehe"); // {2,1}。
 
 全遷移を状態ごとに持つため、構築時間・領域は状態数×Alphabetに比例します。for_each_matchとfind_allの時間はtext長と一致数に比例します。終了位置の昇順で通知し、同じ位置内のID順は保証しません。空語は開始前も含む全境界に一致します。
 
-コピーは独立、move元は空の未構築状態です。clearは確保枠を保ちます。addの確保失敗・不正文字では未登録の接頭ノードが残る場合がありますが、登録済みの語は保ちます。buildの確保失敗は未構築のままで、再試行できます。
+コピーは独立し、move元は空の未構築状態になります。clearは確保枠を保ちます。addで領域の確保に失敗したときや不正文字が見つかったときは、未登録の接頭ノードが残る場合がありますが、登録済みの語は保ちます。buildで領域の確保に失敗した場合は未構築のままで、再試行できます。
 
 `SKIP_RUNTIME_CHECKS`は添字・文字範囲・構築状態の検査を除き、容量と総一致数の上限は維持します。Verifyは[Library Checker](https://judge.yosupo.jp/problem/aho_corasick)です。

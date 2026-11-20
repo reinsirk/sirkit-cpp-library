@@ -1,6 +1,6 @@
 # 二項係数（素数法・Mint）
 
-`PrimeBinomial<Mint>`は、素数の法に限定した二項係数計算器です。利用側が用意するAtCoder modint互換型の値で返します。合成数法用の計算器や`BinomialOptions`は含みません。
+`PrimeBinomial<Mint>`は二項係数を素数の法で計算します。利用側が用意するAtCoder modint互換型で結果を返します。合成数法用の計算器や`BinomialOptions`は含みません。
 
 計算量のmは法、rは異なる素因子数、Bは全表の総要素数、dはLucasの桁数、sは表外の積の総項数です。通常のMintの逆元計算はO(log m)です。
 
@@ -12,7 +12,7 @@
 explicit PrimeBinomial(std::int64_t max_n = 5'000'000, std::uint64_t max_steps = 1'000'000);
 ```
 
-前計算範囲と表外の積の回数上限を指定して構築。
+前計算の範囲と、表の範囲外で計算する積の回数上限を指定して構築します。
 
 **制約:** max_n>=0。Mintの法は素数。動的Mintの法は構築前に設定し、変更後は再構築。
 

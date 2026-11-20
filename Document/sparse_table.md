@@ -2,7 +2,7 @@
 
 `SparseTable<T,Op>`は、変更しない列の区間の最小値・最大値・gcdなどをO(1)で求めます。区間は0始まりの半開区間[l,r)です。[使用例](../Examples/sparse_table_example.cpp)を参照してください。
 
-Opには結合的な演算を指定し、同じ値を重ねても変わらない`op(x,x)==x`が必要です。これをべき等性と呼びます。和はこの条件を満たさないため、[Disjoint Sparse Table](disjoint_sparse_table.md)を使います。左右の交換は要求せず、単位元identityは左右どちらに混ぜても結果を変えない値を指定します。
+Opには結合的な演算を指定します。同じ値を重ねても結果が変わらない`op(x,x)==x`が必要で、この性質をべき等性と呼びます。和はこの条件を満たさないため、[Disjoint Sparse Table](disjoint_sparse_table.md)を使います。左右の引数を交換できる必要はありません。単位元identityには、左右どちらの引数に置いてももう一方の値を変えない値を指定します。
 
 以下、Nは要素数です。値の演算・コピーをO(1)として計算量を記します。
 
@@ -14,7 +14,7 @@ SparseTable(const SparseTable&) = default;
 SparseTable(SparseTable&& other);
 ```
 
-引数省略は空列、values形は指定列で構築します。コピーは独立です。
+引数を省略すると空列で構築し、valuesを渡すとその列で構築します。コピーした列は元の列から独立しています。
 
 **制約:** 冒頭の値型・演算の前提を満たすこと。指定する列長は内部容量の上限内です。
 

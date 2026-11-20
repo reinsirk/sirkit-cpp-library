@@ -57,7 +57,7 @@ template<bool Strict = true, class T>
 std::vector<std::size_t> LISIndices(const std::vector<T>& v);
 ```
 
-解の元添字を昇順で返します。同長の解の選択は未規定です。
+最長部分列の各要素が元の数列で持つ添字を昇順で返します。同じ長さの解が複数ある場合、どれを選ぶかは規定しません。
 
 **制約:** Tに一貫した狭義弱順序が必要です。汎用型のコピー・既定構築は不要です。
 

@@ -12,9 +12,9 @@
 
 問題URL、追加APIの補足検査、現在版の判定状況は[Verify一覧](../Verify/current/README.md)を参照してください。
 
-区間ハッシュ・共通接頭辞・再構築と衝突の扱いは[説明](../Document/rolling_hash.md)と[使用例](../Examples/rolling_hash_example.cpp)を参照してください。
+区間ハッシュの取得、共通接頭辞の照会、再構築、衝突の扱いは[説明](../Document/rolling_hash.md)と[使用例](../Examples/rolling_hash_example.cpp)を参照してください。
 
-[Trieの説明](../Document/trie.md)に文字列・所有権と各操作の前提をまとめています。
+[Trieの説明](../Document/trie.md)に扱う文字列、所有権、各操作の前提をまとめています。
 
 ## 静的な文字列処理
 

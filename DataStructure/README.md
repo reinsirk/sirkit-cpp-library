@@ -3,8 +3,8 @@
 各ライブラリは必要な標準ヘッダーを含み、単独で貼り付けられます。
 
 `HashMap`と`HashSet`の既定のハッシュ関数は、利用者も直接使える`GenericHash`です。
-内部専用のハッシュ表・比較関数・循環検査は`reinsirk::detail`に置きます。
-HashMapの削除とiteratorの計算量は[説明](../Document/hash_map.md)、使用例は[こちら](../Examples/hash_map_example.cpp)を参照してください。
+内部専用のハッシュ表・比較関数・循環検査は`sirkit::detail`に置きます。
+HashMapの削除とiteratorの計算量は[HashMapの説明](../Document/hash_map.md)を参照してください。[使用例](../Examples/hash_map_example.cpp)もあります。
 可変長列の集約・遅延作用・所有の扱いは[暗黙Treapの説明](../Document/implicit_treap.md)を参照してください。
 点の追加と内積の最適化は[2次元LineContainerの説明](../Document/line_container_2d.md)と[使用例](../Examples/line_container_2d_example.cpp)を参照してください。
 直線の追加と最小値・最大値の照会は[LineContainerの説明](../Document/line_container.md)と[使用例](../Examples/line_container_example.cpp)を参照してください。

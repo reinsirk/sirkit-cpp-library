@@ -1,10 +1,10 @@
 # 円周同士の交差
 
-`Geometry/Circle.cpp`を貼り付ける。全機能版は`Geometry/geometory.cpp`。既存の呼び出しは`geo::`内にある。
+`Geometry/Circle.cpp`を貼り付けて使う。全機能版は`Geometry/geometory.cpp`にあり、既存の関数は`geo::`に属する。
 
 `geo::Circle{center,radius}`は有限の中心と非負の有限半径を持つ。半径0は点を表す。`geo::intersection(a,b,eps)`は非交差・接点・2交点・一致を分類し、必要な交点を`long double`座標で返す。正半径で一致する円には交点を格納しない。半径0の同一点同士は接点1個となる。
 
-`circle_intersection_kind(a,b,eps)`は同じ判定を用い、種別だけを返す。交点用の動的確保を行わない。いずれも時間O(1)。既存の`intersection`は交点の所有権を戻り値の`vector`で持つ。
+`circle_intersection_kind(a,b,eps)`は同じ判定で交差の種別だけを返す。交点のためにメモリを動的に確保する必要がない。どちらもO(1)時間で、`intersection`が求めた交点は戻り値の`vector`が所有する。
 
 中心間距離と半径の和・差で交差を分類する。2交点の場合は中心を結ぶ方向への射影と垂直方向の高さから求める。通常の大きさの中心差には直接平方根を使い、二乗によるオーバーフローや距離のアンダーフローを避けるため、極端な大きさでは`hypot`を使う。境界付近の判定は`eps.abs + eps.rel * scale`による近似であり、厳密な実数述語ではない。ほぼ同心の円は、交点の高さが大きい場合に接点へまとめない。
 

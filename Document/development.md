@@ -8,7 +8,7 @@
 
 ## 最適化
 
-受理履歴のあるVerifyコードを一覧から選びます。Library Checkerでは本体・main・入出力を含めてCodex→Claudeの順に改善し、各段階のコード・正しさの照合・測定結果を保存します。本体単独の比較と全体の比較は分けます。Library Checker以外は正しさの検証を優先し、最適化はライブラリ本体だけを対象とします。main・入出力の個別チューニングは行いません。
+ACの記録があるVerifyコードを一覧から選びます。Library Checkerではライブラリ本体・main・入出力を含めてCodex、Claudeの順に改善し、各段階のコード、正しさの照合結果、測定結果を保存します。ライブラリ本体の性能とプログラム全体の性能は別々に比較します。Library Checker以外は正しさの検証を優先し、最適化はライブラリ本体だけを対象とします。main・入出力の個別チューニングは行いません。
 
 ```sh
 python3 Scripts/optimization_handoff.py --list
@@ -28,7 +28,7 @@ python3 Scripts/ci_verify.py --id z_algorithm --compiler g++
 python3 Scripts/ci_verify.py --base origin/main --list
 ```
 
-`--id`は個別指定、`--base`は指定した版からの変更に対応するVerifyの選択、`--all`は全件です。検査有効・無効の両方でローカルの入出力例を照合します。Clangで標準C++の代替経路も確認するには`--compiler clang++ --fallback`を付けます。
+`--id`で個別に指定し、`--base`で指定した版からの変更に関係するVerifyを選びます。全件を実行するには`--all`を使います。入力検査を有効にした場合と無効にした場合の両方で、ローカルの入出力例を照合します。Clangで標準C++の代替経路も確認するには`--compiler clang++ --fallback`を付けます。
 
 [GitHub Actions](../.github/workflows/verify.yml)は、`main`向けPRの作成・更新時に毎回全件を実行します。`dev`や`main`へのpush単独では起動しません。
 

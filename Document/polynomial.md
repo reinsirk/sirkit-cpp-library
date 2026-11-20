@@ -25,7 +25,7 @@ ProductTree(const ProductTree&);
 ProductTree(ProductTree&& other) noexcept;
 ```
 
-各点の(X−x_i)をまとめた積木を構築する。反復評価では同じ木を再利用できる。
+各点の因子(X−x_i)をまとめた積木を構築します。評価を繰り返す場合は同じ木を再利用できます。
 
 **制約:** 共通の型・入力条件を満たすこと。
 
@@ -63,7 +63,7 @@ friend void swap(ProductTree& a,ProductTree& b) noexcept;
 template<std::integral T>void assign(const std::vector<T>& points);
 ```
 
-各点の(X−x_i)をまとめた積木を構築する。反復評価では同じ木を再利用できる。
+各点の因子(X−x_i)をまとめた積木を構築します。評価を繰り返す場合は同じ木を再利用できます。
 
 **制約:** 共通の型・入力条件を満たすこと。
 
@@ -99,7 +99,7 @@ bool empty()const noexcept;
 const std::vector<std::uint32_t>& points()const noexcept;
 ```
 
-正規化済み点列のconst参照。
+正規化済みの点列へのconst参照を返します。
 
 **制約:** 返したconst参照は所有者の更新・代入・破棄までの借用。
 
@@ -111,7 +111,7 @@ const std::vector<std::uint32_t>& points()const noexcept;
 FormalPowerSeries polynomial()const;
 ```
 
-全点の積Π(X−x_i)をFormalPowerSeriesで返す。空点列では定数1。
+全点の積Π(X−x_i)をFormalPowerSeriesで返します。点列が空なら定数1を返します。
 
 **制約:** 共通の型・入力条件を満たすこと。
 
@@ -124,7 +124,7 @@ std::vector<std::uint32_t> evaluate(const FormalPowerSeries& f)const;
 template<std::integral T>std::vector<std::uint32_t> evaluate(const std::vector<T>& coefficients)const;
 ```
 
-各点での値をvector<uint32_t>で返す。点の重複は可、結果は入力点の順。
+各点で評価した値を、入力点と同じ順にvector<uint32_t>で返します。同じ点が複数あっても構いません。
 
 **制約:** 共通の型・入力条件を満たすこと。
 
@@ -136,7 +136,7 @@ template<std::integral T>std::vector<std::uint32_t> evaluate(const std::vector<T
 template<std::integral T>FormalPowerSeries interpolate(const std::vector<T>& values)const;
 ```
 
-点と値から次数n未満のFormalPowerSeriesを返す。点は法で相異なり、値は点数個。
+点と値から次数n未満のFormalPowerSeriesを返します。点は法の下で互いに異なり、値の個数は点の個数と一致する必要があります。
 
 **制約:** 点は法998244353で相異なり、値の個数は点数と同じ。
 
@@ -274,7 +274,7 @@ std::uint32_t operator[](std::size_t i) const;
 std::uint32_t get(std::size_t i) const noexcept;
 ```
 
-範囲外を0とする取得。
+指定した係数を返します。範囲外なら0を返します。
 
 **制約:** iは任意。範囲外は0を返す。
 
@@ -286,7 +286,7 @@ std::uint32_t get(std::size_t i) const noexcept;
 template <std::integral T> void set(std::size_t i, T value);
 ```
 
-既存係数変更。
+既存の係数を変更します。
 
 **制約:** i<size()。
 
@@ -298,7 +298,7 @@ template <std::integral T> void set(std::size_t i, T value);
 void resize(std::size_t n);
 ```
 
-0拡張・切詰め。
+長さが足りなければ0を補い、長ければ切り詰めます。
 
 **制約:** 共通の型・入力条件を満たすこと。
 
@@ -322,7 +322,7 @@ void trim() noexcept;
 FormalPowerSeries prefix(std::size_t n) const;
 ```
 
-n係数のコピー。
+n個の係数のコピーを返します。
 
 **制約:** 共通の型・入力条件を満たすこと。
 
@@ -478,7 +478,7 @@ template <std::integral T> FormalPowerSeries scale(T scalar) const;
 FormalPowerSeries derivative() const;
 ```
 
-微分。
+微分した結果を返します。
 
 **制約:** 共通の型・入力条件を満たすこと。
 
@@ -555,7 +555,7 @@ std::optional<FormalPowerSeries> sqrt(std::size_t n) const;
 std::optional<FormalPowerSeries> sqrt() const;
 ```
 
-平方根のoptional。不可能ならnullopt。
+平方根をoptionalで返します。平方根が存在しなければnulloptです。
 
 **制約:** 根が存在しなければnullopt。精度n<=2^22。n省略時は現在のsize()。
 

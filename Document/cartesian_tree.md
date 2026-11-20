@@ -14,7 +14,7 @@ CartesianTree(const CartesianTree&);
 CartesianTree(CartesianTree&& other) noexcept;
 ```
 
-空、またはspan・vectorの値列から木を構築します。比較器は省略時std::less<>です。
+引数を省略すると空の木を作り、値列をspanまたはvectorで渡すとその列から木を構築します。既定の比較器はstd::less<>です。
 
 **制約:** 入力長はINT32_MAX以下で、比較器は一貫した狭義弱順序です。
 
@@ -27,7 +27,7 @@ template<class T, std::size_t Extent, class Compare = std::less<>> void build(st
 template<class T, class Allocator, class Compare = std::less<>> requires (!std::is_same_v<T, bool>) void build(const std::vector<T, Allocator>& values, Compare&& compare = Compare{});
 ```
 
-spanまたはvectorから構築／再構築する。
+spanまたはvectorから木を構築します。すでに木がある場合は作り直します。
 
 **制約:** 入力長はINT32_MAX以下で、比較器は一貫した狭義弱順序です。
 
@@ -179,11 +179,11 @@ CartesianTree maximum(a,std::greater<>{}); // 最大元を優先する木。
 
 配列長はINT32_MAX以下。std::arrayや生配列にはstd::span(values)を使います。vector<bool>は対象外ですが、連続したbool配列のspanは使えます。入力を変更・保持せず、値のコピーも不要です。
 
-単調スタックで構築し、比較O(N)回・O(N)時間・所有O(N)・追加作業O(N)です。比較器自体の費用は別に数えます。再帰を使わず、鎖になる入力も扱います。取得はO(1)、コピーはO(N)、move・swapはO(1)。再構築は旧木の破棄も含めO(旧N+新N)です。
+単調スタックで構築します。比較はO(N)回で、構築時間、木が保持する領域、一時領域はいずれもO(N)です。比較器自体の費用は別に数えます。再帰を使わず、鎖になる入力も扱います。取得はO(1)、コピーはO(N)、move・swapはO(1)です。再構築は古い木の破棄も含めO(旧N+新N)です。
 
 コピーは独立。build・コピー代入の確保や比較に失敗しても旧木とviewを維持しますが、比較器の外部状態は戻しません。自身の配列spanもbuildの入力に使えます。成功したbuild・clear・代入・所有権移動後は古いspanを使わないでください。move元は空でroot=-1です。
 
-頂点は0<=v<size()です。頂点番号の入力検査は`SKIP_RUNTIME_CHECKS`で除き、容量・添字の保護は維持します。比較器の順序を検査するための追加走査はしません。区間[l,r]の両端のLCAは、その区間の左優先の最小元に対応します。Library Checkerの出力では、根の親を根自身に変換します。
+頂点は0<=v<size()です。頂点番号の入力検査は`SKIP_RUNTIME_CHECKS`で除き、容量・添字の保護は維持します。比較器の順序を検査するための追加走査はしません。区間[l,r]の両端のLCAはその区間の左優先の最小元に対応します。Library Checkerの出力では、根の親を根自身に変換します。
 
 ## 構築・状態と補助型
 

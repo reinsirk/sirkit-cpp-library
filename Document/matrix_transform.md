@@ -12,7 +12,7 @@ std::vector<std::vector<T>> rotate_90r(const std::vector<std::vector<T>>& a);
 std::vector<std::string> rotate_90r(const std::vector<std::string>& a);
 ```
 
-時計回り90度回転をした独立なコピーを返します。
+時計回りに90度回した独立したコピーを返します。
 
 **制約:** 入力は矩形。Tをコピー構築できること。
 
@@ -26,7 +26,7 @@ std::vector<std::vector<T>> rotate_90l(const std::vector<std::vector<T>>& a);
 std::vector<std::string> rotate_90l(const std::vector<std::string>& a);
 ```
 
-反時計回り90度回転をした独立なコピーを返します。
+反時計回りに90度回した独立したコピーを返します。
 
 **制約:** 入力は矩形。Tをコピー構築できること。
 
@@ -40,7 +40,7 @@ std::vector<std::vector<T>> rotate_180(const std::vector<std::vector<T>>& a);
 std::vector<std::string> rotate_180(const std::vector<std::string>& a);
 ```
 
-180度回転をした独立なコピーを返します。
+180度回した独立したコピーを返します。
 
 **制約:** 入力は矩形。Tをコピー構築できること。
 
@@ -54,7 +54,7 @@ std::vector<std::vector<T>> rotate_quarter(const std::vector<std::vector<T>>& a,
 std::vector<std::string> rotate_quarter(const std::vector<std::string>& a, int turns);
 ```
 
-時計回りturns回の90度回転をした独立なコピーを返します。turnsは4で正規化し、負数・INT_MINも扱います。
+時計回りの90度回転をturns回分適用した独立したコピーを返します。turnsは4で正規化し、負数・INT_MINも扱います。
 
 **制約:** 入力は矩形。Tをコピー構築できること。
 
@@ -68,7 +68,7 @@ std::vector<std::vector<T>> transpose(const std::vector<std::vector<T>>& a);
 std::vector<std::string> transpose(const std::vector<std::string>& a);
 ```
 
-行と列を入れ替えた転置をした独立なコピーを返します。
+行と列を入れ替えた独立したコピーを返します。
 
 **制約:** 入力は矩形。Tをコピー構築できること。
 
@@ -82,7 +82,7 @@ std::vector<std::vector<T>> flip_i(const std::vector<std::vector<T>>& a);
 std::vector<std::string> flip_i(const std::vector<std::string>& a);
 ```
 
-上下反転をした独立なコピーを返します。
+上下を反転した独立したコピーを返します。
 
 **制約:** 入力は矩形。Tをコピー構築できること。
 
@@ -96,7 +96,7 @@ std::vector<std::vector<T>> flip_j(const std::vector<std::vector<T>>& a);
 std::vector<std::string> flip_j(const std::vector<std::string>& a);
 ```
 
-左右反転をした独立なコピーを返します。
+左右を反転した独立したコピーを返します。
 
 **制約:** 入力は矩形。Tをコピー構築できること。
 
@@ -109,7 +109,7 @@ template<class T> void flip_i_inplace(std::vector<std::vector<T>>& a);
 void flip_i_inplace(std::vector<std::string>& a);
 ```
 
-上下反転を入力へ直接行います。
+入力を直接上下に反転します。
 
 **制約:** 入力は矩形。行の交換だけを使い、要素の交換は不要です。
 
@@ -122,7 +122,7 @@ template<class T> void flip_j_inplace(std::vector<std::vector<T>>& a);
 void flip_j_inplace(std::vector<std::string>& a);
 ```
 
-左右反転を入力へ直接行います。
+入力を直接左右に反転します。
 
 **制約:** 入力は矩形。要素を交換できること。
 
@@ -148,4 +148,4 @@ H行W列として、要素のコピー・交換をO(1)とすると、コピー�
 
 外側が空の場合、互換性のためrotate_90r・flip_i・flip_jは1本の空行を返し、他のコピー版は空を返します。H本の空行は90度回転・転置では空になり、反転・180度回転ではH本の空行を維持します。
 
-GCC／Clangの対応CPUでは、一部の大きな行列の回転・転置にAVX2を使います。`SIRKIT_DISABLE_SIMD`をinclude前に定義すると専用処理・ヘッダー・CPU判定を除き、標準C++の処理を使います。型・寸法による切り替えやタイル処理の詳細は作業記録、正しさは[独立参照テスト](../Verify/current/tests/matrix_reference_test.cpp)を参照してください。
+GCC／Clangでは対応CPU上で、一部の大きな行列の回転・転置にAVX2を使います。`SIRKIT_DISABLE_SIMD`をinclude前に定義すると専用処理・ヘッダー・CPU判定を除き、標準C++の処理を使います。型・寸法による切り替えやタイル処理の詳細は作業記録、正しさは[独立参照テスト](../Verify/current/tests/matrix_reference_test.cpp)を参照してください。

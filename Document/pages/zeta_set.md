@@ -1,6 +1,6 @@
 # 集合のゼータ／メビウス変換
 
-添字を集合のビット表現とし、部分集合または上位集合の値をまとめます。`subset_zeta_transform`は`f[S]=sum_{T⊆S}f[T]`、`superset_zeta_transform`は`f[S]=sum_{T⊇S}f[T]`へ入力配列を直接更新します。対応する`mobius`操作で元へ戻せます。
+添字は集合をビットで表します。ゼータ変換は部分集合または上位集合の値の総和を求めます。`subset_zeta_transform`は`f[S]=sum_{T⊆S}f[T]`、`superset_zeta_transform`は`f[S]=sum_{T⊇S}f[T]`へ入力配列を直接更新します。対応する`mobius`操作で元へ戻せます。
 
 変換・畳み込みのnは配列長です。疎変換のmは要素数、rは各keyの素因数を重複込みで数えた総数です。
 

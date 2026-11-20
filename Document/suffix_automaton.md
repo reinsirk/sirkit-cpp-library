@@ -1,6 +1,6 @@
 # Suffix Automaton
 
-[SuffixAutomaton](../String/Suffix_Automaton.cpp)は文字列を末尾へ伸ばしながら、部分文字列の存在・出現回数・異なる個数・最長共通部分文字列を扱います。既定の`SuffixAutomaton<>`は英小文字、`SuffixAutomaton<256,0>`はNULを含む全バイトです。一般形は`<Alphabet,Base>`で、値を[Base,Base+Alphabet)に収めます。Unicodeの文字単位ではありません。[使用例](../Examples/suffix_automaton_example.cpp)を参照してください。
+[SuffixAutomaton](../String/Suffix_Automaton.cpp)は文字列の末尾に文字を追加しながら、部分文字列が存在するか、何回現れるか、異なる部分文字列がいくつあるかを照会できます。最長共通部分文字列も求められます。既定の`SuffixAutomaton<>`は英小文字、`SuffixAutomaton<256,0>`はNULを含む全バイト値を扱います。一般形は`<Alphabet,Base>`で、値を[Base,Base+Alphabet)に収めます。処理の単位はバイトです。[使用例](../Examples/suffix_automaton_example.cpp)を参照してください。
 
 
 以下、nは現在の文字列長、mは追加列または照会列の長さ、statesは状態数です。
@@ -16,7 +16,7 @@ SuffixAutomaton(const SuffixAutomaton&);
 SuffixAutomaton(SuffixAutomaton&&other) noexcept;
 ```
 
-空／指定文字列／独立コピー／所有権移動で構築します。
+空の状態を作るか、指定した文字列、コピー、所有権の移動で構築します。コピーは元の状態から独立します。
 
 **制約:** 1<=Alphabet<=256、Base+Alphabet<=256、文字列は指定バイト範囲内。
 
@@ -196,7 +196,7 @@ auto match = automaton.longest_common_substring("zzbabab");
 
 同じ終了位置を持つ部分文字列を状態へまとめ、必要な場合に状態を複製します。1バイト追加は償却O(Alphabet)、1回の最悪はO(n+Alphabet)です。固定Alphabetなら償却O(1)。状態数は高々2n+1、領域はO(Alphabet*states+n+1)で、空なら根も確保しません。
 
-出現回数はappend後の最初の一致する非空照会でO(n+states+m)のキャッシュを作り、以後O(m)です。確保失敗では元を保ちます。const照会もキャッシュを更新するため、同じ個体への並行キャッシュ照会は外部で同期してください。
+append後に空でない列が初めて一致した照会で、出現回数のキャッシュを作ります。この照会はO(n+states+m)、以後はO(m)です。領域の確保に失敗しても元の状態を保ちます。const照会もキャッシュを更新するため、同じ個体への並行キャッシュ照会は外部で同期してください。
 
 コピーは独立、コピー代入・resetは失敗時に元を保ちます。moveはnoexcept・O(1)、移動元は空で再利用可です。1バイト追加は強い例外保証、文字列追加も確保・容量超過では不変ですが、途中の不正バイトでは処理済みの接頭辞を保持します。検査だけの全走査はしません。
 

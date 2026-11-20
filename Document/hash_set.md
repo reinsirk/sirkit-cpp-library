@@ -15,7 +15,7 @@ HashSet(const HashSet&) = default;
 HashSet(HashSet&& other);
 ```
 
-空集合、予約付き空集合、初期値リスト、iterator範囲から構築します。コピーは独立です。
+空集合を作成できます。予約容量、初期値リスト、iteratorで表した範囲を指定して構築することもできます。コピーは独立です。
 
 **制約:** 冒頭の値型・演算の前提を満たすこと。指定する列長は内部容量の上限内です。
 
@@ -28,7 +28,7 @@ iterator insert(const Key& key);
 iterator insert(Key&& key);
 ```
 
-追加または既存要素のiteratorを返します。
+追加した要素または登録済みの同じキーを指すiteratorを返します。
 
 **制約:** 共通のキー・ハッシュ・同値判定の前提を満たすこと。
 
@@ -126,7 +126,7 @@ iterator erase(const_iterator it, bool get_next = true);
 iterator erase(const Key& key, bool get_next = true);
 ```
 
-指定キーまたはiteratorの要素を削除し、次iteratorを返します。get_next=falseならend()です。不在/end()は無操作です。
+指定キーに対応する要素、またはiteratorが指す要素を削除し、次のiteratorを返します。get_next=falseならend()です。キーが見つからない場合やiteratorがend()の場合は何も変更しません。
 
 **制約:** iterator版は同じ表の有効なiteratorまたはend()を渡すこと。
 
@@ -319,7 +319,7 @@ C++23のoperator==から得られる不等値比較です。
 
 C/C'は再配置前後の容量、Nは登録数です。ハッシュ・比較・要素操作をO(1)として記します。列キーのハッシュは列長に比例します。衝突集中時の再配置は最悪O(C+C'+N²)。予約済みreserveはO(1)、削除では自動縮小せず`rehash(0)`で縮めます。
 
-次iteratorを返すeraseは最悪O(C)。false指定のキー削除は期待償却O(1)、有効iteratorの削除はO(1)です。`erase_if`の述語から表を変更してはいけません。
+次のiteratorを返すeraseは最悪O(C)です。falseを指定すると、キー指定の削除は期待償却O(1)、有効なiteratorでの削除はO(1)です。`erase_if`の述語から表を変更してはいけません。
 
 ```cpp
 HashSet<int> values;

@@ -24,7 +24,7 @@ abs + rel * abs(scale)を返します。
 constexpr bool operator==(const Point& p) const;
 ```
 
-値と形が等しいかを返します。
+自身とpの座標が完全に一致するかを返します。
 
 **制約:** 共通の型・入力条件を満たすこと。
 
@@ -423,7 +423,7 @@ friend std::ostream& operator<<(std::ostream& out, const Point& p);
 template<class T, class C> int predicate_sign(C value, C scale, Epsilon eps = {});
 ```
 
-整数は厳密、実数は許容幅で値の符号を返します。
+整数の符号は厳密に判定し、実数の符号は許容幅を使って判定します。
 
 **制約:** 共通の型・入力条件を満たすこと。
 
@@ -469,7 +469,7 @@ template<class T, class C> typename Point<T, C>::Real distance(const Point<T, C>
 `Point<T,C>`の`T`は符号付き整数または浮動小数点の座標型、`C`は内積・外積などの計算型です。`PointI`は`std::int64_t`、`PointD`は`double`、`RealPoint`は`long double`の座標を使います。
 
 
-浮動小数点座標では除算・ラジアン回転・単位化・許容幅による`almost_equal`も使えます。全操作の引数・戻り値・制約は、このページのファイル別API一覧にまとめています。
+浮動小数点座標では除算・ラジアン回転・単位化・許容幅による`almost_equal`も使えます。全操作の引数・戻り値・制約はこのページのファイル別API一覧にまとめています。
 
 ```cpp
 using namespace sirkit;

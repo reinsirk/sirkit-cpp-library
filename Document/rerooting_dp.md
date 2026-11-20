@@ -11,7 +11,7 @@
 - `to_vertex(const T&,int v)->T`: 結合した値から、頂点vを根とする答えを作る。
 - `to_edge(const T&,int from,int to,size_t edge_id)->T`: 頂点の値を、fromからtoへ送る値に変える。
 
-uからvへ送る値は、v以外からuへ届いた値を結合し、to_vertex、to_edgeの順に変換したものです。頂点uの全体の答えは、全隣接先から届いた値を結合してto_vertexを適用します。結合順は各頂点での**辺の追加順**なので、文字列連結のように順番が重要な演算にも使えます。
+uからvへ送る値は、v以外からuへ届いた値を結合し、to_vertex、to_edgeの順に変換したものです。uを根とした答えは、uに隣接する全頂点から届いた値を結合してto_vertexを適用すると得られます。結合順は各頂点での**辺の追加順**なので、文字列連結のように順番が重要な演算にも使えます。
 
 ```cpp
 struct State { std::int64_t sum=0,count=0; };
@@ -49,7 +49,7 @@ n頂点・辺なしの森を作ります。コピーは独立、ムーブ元は�
 std::size_t add_edge(int u, int v);
 ```
 
-無向辺を追加し、std::size_tの辺IDを返します。以後の結果取得には再buildが必要です。
+無向辺を追加し、std::size_tの辺IDを返します。辺を追加した後に結果を取得するには、再度buildしてください。
 
 **制約:** u,vは0..N-1。自己辺・多重辺・閉路を持たない森であること。
 
@@ -97,7 +97,7 @@ const T& operator[](int v) const;
 const T& message(std::size_t id, bool reverse = false) const;
 ```
 
-辺idの追加時u→vのメッセージを返します。reverse=trueは逆向きです。
+辺idを追加したときの向きu→vのメッセージを返します。reverse=trueなら逆向きのメッセージを返します。
 
 **制約:** 有効な辺IDで、has_results()==true。
 

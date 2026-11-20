@@ -85,7 +85,7 @@ vを重心として除去した時点の成分サイズを返します。
 const std::vector<Ancestor>& ancestors(int vertex) const;
 ```
 
-重心木の根からvまでのAncestor列へのconst参照。最後は{v,0}。
+重心木の根からvまでのAncestor列をconst参照で返します。最後の要素は{v,0}です。
 
 **制約:** 距離情報を保存して構築済みで、頂点番号が有効であること。
 
@@ -224,7 +224,7 @@ for (auto a : decomposition.ancestors(3)) {
 
 ## 距離情報の使い方
 
-Ancestorは{vertex,distance}です。距離は重心木ではなく**元の木での辺数**で、各祖先列の長さはO(log(N+1))です。印の追加と最寄りの印の照会に使う例は、完全な使用例を参照してください。
+Ancestorは{vertex,distance}です。距離には**元の木での辺数**を使い、各祖先列の長さはO(log(N+1))です。印の追加や最寄りの印の照会に使う場合は、完全な使用例を参照してください。
 
 既定では距離情報も構築し、O(N log(N+1))時間・領域です。`CentroidDecomposition(graph,false)`または`build(graph,false)`なら距離を保存せず、領域O(N)です。この場合ancestors・distanceは使えません。distanceはO(log(N+1))、centroid_treeはO(N)、結果配列の参照・単点取得はO(1)です。
 

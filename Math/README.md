@@ -31,7 +31,7 @@
 | [Polynomial.cpp](Polynomial.cpp) | [Multipoint Evaluation](../Verify/current/submissions/multipoint_evaluation.cpp)・[Polynomial Interpolation](../Verify/current/submissions/polynomial_interpolation.cpp)・[Polynomial Taylor Shift](../Verify/current/submissions/polynomial_taylor_shift.cpp) |
 | [Modular_Arithmetic.cpp](Modular_Arithmetic.cpp) | [Sqrt Mod](../Verify/current/submissions/modular_sqrt.cpp)・[050 - Power](../Verify/current/submissions/modular_power.cpp)・[E - Throne](../Verify/current/submissions/linear_congruence.cpp)・[E - Oversleeping](../Verify/current/submissions/chinese_remainder.cpp) |
 
-用途別版の使い分けは[二項係数](Combination/README.md)・[ゼータ／メビウス変換](Zeta/README.md)を参照してください。Mintは利用側で用意します。
+用途に合うファイルの選び方は[二項係数](Combination/README.md)・[ゼータ／メビウス変換](Zeta/README.md)を参照してください。Mintは利用側で用意します。
 
 問題URL、追加APIの補足検査、現在版の判定状況は[Verify一覧](../Verify/current/README.md)を参照してください。
 

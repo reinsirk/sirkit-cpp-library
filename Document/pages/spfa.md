@@ -25,7 +25,7 @@ const bool negative = SPFA(graph, distance, 0);
 // negative=false、distance={0,-2,3,kInf}。
 ```
 
-`WGraph`は`std::vector<std::vector<Edge>>`、辺は`Edge{int to, std::int64_t w}`です。成功時は`distances`を全上書きし、未到達は`inf`、負閉路を経由して到達できる頂点は`-inf`になります。未到達成分の負閉路は戻り値へ影響しません。
+`WGraph`は`std::vector<std::vector<Edge>>`、辺は`Edge{int to, std::int64_t w}`です。計算に成功すると`distances`全体を上書きします。始点から到達できない頂点の距離は`inf`、負閉路を経由して到達できる頂点の距離は`-inf`です。始点から到達できない成分の負閉路は、戻り値に影響しません。
 
 ## 前提と計算量
 
@@ -35,7 +35,7 @@ const bool negative = SPFA(graph, distance, 0);
 
 既定では始点と計算中に参照する辺だけを検査し、例外時も既存の距離配列を保ちます。未到達成分を検査のためだけに走査しません。`SKIP_RUNTIME_CHECKS`では入力検査を除き、例外時の出力は未規定です。容量・算術範囲・`inf`の正値の保護は維持します。
 
-全APIの引数と戻り値はこのページのソース由来の一覧、詳しい契約と方式比較は[負辺を含む最短路](../negative_shortest_paths.md)、完全な例は[使用例](../../Examples/bellman_ford_example.cpp)を参照してください。
+全APIの引数と戻り値は、このページのソースから生成した一覧で確認できます。詳しい前提・動作と方式の比較は[負辺を含む最短路](../negative_shortest_paths.md)、完全な例は[使用例](../../Examples/bellman_ford_example.cpp)を参照してください。
 
 ## 構築・状態と補助型
 

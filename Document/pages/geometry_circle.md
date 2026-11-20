@@ -1,6 +1,6 @@
 # 円と交点
 
-`Geometry/Circle.cpp`は、円・円盤の内外判定・外接円・円周の交点を提供します。通常の操作は`sirkit::geo`内、`circle_intersection_kind`は`sirkit`直下です。点と向きの判定、`Line`・`Segment`・`on_segment`も同梱し、このファイルだけで円と直線・線分を組み合わせられます。多角形や直線同士の交点計算は別ファイルです。
+`Geometry/Circle.cpp`では円と円盤を扱い、内外判定、外接円、円周の交点を計算できます。通常の操作は`sirkit::geo`内、`circle_intersection_kind`は`sirkit`直下です。点と向きの判定、`Line`・`Segment`・`on_segment`も同梱しているため、このファイルだけで円と直線・線分を組み合わせられます。多角形や直線同士の交点計算は別ファイルです。
 
 PointのValueは座標型T、Calcは計算型C、Realは浮動座標ならT・整数座標ならlong doubleです。
 
@@ -72,7 +72,7 @@ template<class T, class C> bool on_segment(const Point<T, C>& p, const Segment<T
 template<class T, class C> std::optional<Circle> circumcircle(const Point<T, C>& a, const Point<T, C>& b, const Point<T, C>& c, Epsilon eps = {});
 ```
 
-3点を通る円をoptionalで返します。一直線・重複点ならnulloptです。
+3点を通る円をoptionalで返します。3点が一直線上にあるか、同じ点を含む場合はnulloptです。
 
 **制約:** 有限座標。一直線・重複点を許し、その場合はnullopt。
 
