@@ -214,6 +214,18 @@ jobs:
           sudo apt-get install -y clang-18 llvm-18 libclang-rt-18-dev g++-15 libboost-dev
           if [[ "${{ matrix.mode }}" == coverage ]]; then
             sudo apt-get install -y qemu-user g++-15-multilib
+            mkdir -p "$RUNNER_TEMP/qemu-amd64" "$RUNNER_TEMP/qemu-amd64-packages"
+            cd "$RUNNER_TEMP/qemu-amd64-packages"
+            # NehalemではクラウドイメージのAMD64v3版ライブラリを実行できない。
+            printf '#clear APT::Architecture-Variants;\n' > generic-apt.conf
+            apt-get -c generic-apt.conf download libc6:amd64 libstdc++6:amd64 libgcc-s1:amd64
+            for package in ./*.deb; do
+              if [[ -n "$(dpkg-deb -f "$package" Architecture-Variant)" ]]; then
+                printf '汎用AMD64パッケージが必要です: %s\n' "$package" >&2
+                exit 1
+              fi
+              dpkg-deb -x "$package" "$RUNNER_TEMP/qemu-amd64"
+            done
           fi
       - name: Run checked library tests
         env:
@@ -223,7 +235,7 @@ jobs:
           set -euo pipefail
           options=(--jobs 4)
           if [[ "$VERIFY_MODE" == coverage ]]; then
-            options+=(--timeout 240)
+            options+=(--timeout 240 --x86-baseline-sysroot "$RUNNER_TEMP/qemu-amd64")
           fi
           python3 Scripts/ci_instrumented.py \
             --mode "$VERIFY_MODE" --compiler clang++-18 \
