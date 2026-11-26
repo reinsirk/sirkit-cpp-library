@@ -36,5 +36,34 @@ int main(){
  {MoWithUpdates timed(INT32_MAX);for(int i=0;i<(1<<20)-1;++i)timed.add_update(static_cast<std::int32_t>(random()%INT32_MAX));for(int i=0;i<1024;++i){const auto [l,r]=random_range(INT32_MAX);timed.add_query(l,r,static_cast<std::size_t>(random()%(timed.update_count()+1)));}
   const auto bits=[&](std::int32_t b){return 2*std::bit_width(static_cast<std::uint32_t>(INT32_MAX/b))+std::bit_width(timed.update_count())+std::bit_width(timed.query_count()-1);};
   assert(bits(16384)==64&&bits(8192)==66);for(const std::int32_t b:{0,8192,16384})check_timed(timed,b);}
+ // 長さと幅で64bitを超える鍵を作り、同じ左ブロック内で右端の比較を確かめる。
+ {
+  Mo m(INT32_MAX);
+  for (const auto [left, right] : std::array<Mo::Query, 8>{{
+       {1, 8}, {1, 3}, {2, 9}, {2, 5}, {1, 6}, {2, 9}, {2, 7}, {1, 8}}})
+  {
+   m.add_query(left, right);
+  }
+  check_static(m, 1);
+  std::vector<std::size_t> actual;
+  m.run_rollback([](std::int32_t) {}, [] {}, [] {}, [] {},
+                 [&](std::size_t id) { actual.push_back(id); }, 1);
+  const std::vector<std::size_t> expected{1, 4, 0, 7, 3, 6, 2, 5};
+  assert(actual == expected);
+ }
+ // 左右のブロックが同じ照会を並べ、時刻が昇順・降順になる組を両方確かめる。
+ {
+  MoWithUpdates timed(INT32_MAX);
+  for (std::int32_t pos : {0, 1, 2})
+  {
+   timed.add_update(pos);
+  }
+  for (std::size_t time : {2u, 0u, 3u, 1u})
+  {
+   timed.add_query(1, 3, time);
+   timed.add_query(1, 4, time);
+  }
+  check_timed(timed, 1);
+ }
  std::cout<<"Mo normalized-key ordering checks="<<checks<<'\n';
 }
