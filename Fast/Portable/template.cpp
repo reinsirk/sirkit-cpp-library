@@ -87,7 +87,9 @@ struct Edge
 {
     int to;
     std::int64_t w;
-    Edge(int destination, std::int64_t weight) : to(destination), w(weight) {}
+    Edge(int destination, std::int64_t weight) : to(destination), w(weight)
+    {
+    }
 };
 using WGraph = std::vector<std::vector<Edge>>;
 #endif
@@ -168,10 +170,14 @@ constexpr std::uint64_t pow64i(std::uint64_t x, std::uint64_t n)
     while (n != 0)
     {
         if ((n & 1) != 0)
+        {
             result *= x;
+        }
         n >>= 1;
         if (n != 0)
+        {
             x *= x;
+        }
     }
     return result;
 }
