@@ -103,9 +103,9 @@ class StructureTests(unittest.TestCase):
     def test_preview_waits_for_evidence_even_when_individual_checks_fail(self):
         value = workflow("verify.yml")
         docs = value["jobs"]["documentation"]
-        self.assertEqual(set(docs["needs"]), {"maintenance", "examples", "instrumented", "contracts", "library_checker"})
+        self.assertEqual(set(docs["needs"]), {"generated", "examples", "instrumented", "contracts", "library_checker"})
         self.assertIn("!cancelled()", docs["if"])
-        self.assertIn("needs.maintenance.result == 'success'", docs["if"])
+        self.assertIn("needs.generated.result == 'success'", docs["if"])
         self.assertNotIn("needs.examples.result == 'success'", docs["if"])
         downloads = [step for step in docs["steps"] if step.get("uses", "").startswith("actions/download-artifact@")]
         self.assertEqual({step["with"]["pattern"] for step in downloads}, {
@@ -138,12 +138,12 @@ class StructureTests(unittest.TestCase):
 
     def test_final_gate_includes_contracts_official_cases_and_documentation(self):
         gate = workflow("verify.yml")["jobs"]["result"]
-        self.assertEqual(set(gate["needs"]), {"maintenance", "examples", "variant_builds", "instrumented",
+        self.assertEqual(set(gate["needs"]), {"generated", "python_tests", "examples", "variant_builds", "instrumented",
                                              "guidelines", "contracts", "library_checker", "stress", "yomiyasu",
                                              "documentation"})
         command = gate["steps"][0]["run"]
-        for variable in ("CONTRACT_RESULT", "LIBRARY_CHECKER_RESULT", "STRESS_RESULT", "DOCUMENTATION_RESULT",
-                         "VARIANT_BUILDS_RESULT", "YOMIYASU_RESULT"):
+        for variable in ("GENERATED_RESULT", "PYTHON_TESTS_RESULT", "CONTRACT_RESULT", "LIBRARY_CHECKER_RESULT",
+                         "STRESS_RESULT", "DOCUMENTATION_RESULT", "VARIANT_BUILDS_RESULT", "YOMIYASU_RESULT"):
             self.assertIn('"$' + variable + '" == success', command)
         self.assertEqual(gate["steps"][0]["env"]["YOMIYASU_RESULT"], "${{ needs.yomiyasu.result }}")
 
@@ -161,9 +161,11 @@ class StructureTests(unittest.TestCase):
         self.assertIn('"$VERIFY_PR_BASE" HEAD', lint["run"])
         self.assertIn('"$linter" --fail-on error', lint["run"])
 
-    def test_independent_checks_can_start_with_maintenance(self):
+    def test_independent_checks_can_start_together(self):
         jobs = workflow("verify.yml")["jobs"]
         self.assertEqual({name for name, job in jobs.items() if job.get("needs")}, {"documentation", "result"})
+        self.assertEqual(jobs["python_tests"]["strategy"]["matrix"]["shard"], [0, 1])
+        self.assertNotIn("apt-get", "\n".join(step.get("run", "") for step in jobs["generated"]["steps"]))
         for name, step_name in (("examples", "Select and run local Verify"),
                                 ("variant_builds", "Verify common and compiler-specific variants on Linux"),
                                 ("guidelines", "Check normal library sources")):

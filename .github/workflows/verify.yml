@@ -17,10 +17,30 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  maintenance:
+  generated:
     name: Generated files and status
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - name: Generated source and Verify synchronization
+        run: python3 -c 'from pathlib import Path; from Scripts.package_revised_libraries import check_generated; check_generated(Path.cwd())'
+      - name: README and online status synchronization
+        run: python3 Scripts/update_verify_status.py --check
+
+  python_tests:
+    name: Python unit tests (shard ${{ matrix.shard }})
     runs-on: ubuntu-26.04
-    timeout-minutes: 15
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1]
     steps:
       - uses: actions/checkout@v7
         with:
@@ -42,13 +62,23 @@ jobs:
       - name: Python unit tests
         env:
           SIRKIT_CLANG_TIDY: clang-tidy-18
+          TEST_SHARD: ${{ matrix.shard }}
         run: |
           export SIRKIT_TIDY_GCC_INSTALL_DIR="$(dirname "$(g++-15 -print-libgcc-file-name)")"
-          python3 -m unittest discover -s Scripts/tests -p 'test_*.py'
-      - name: Generated source and Verify synchronization
-        run: python3 -c 'from pathlib import Path; from Scripts.package_revised_libraries import check_generated; check_generated(Path.cwd())'
-      - name: README and online status synchronization
-        run: python3 Scripts/update_verify_status.py --check
+          python3 - <<'PY'
+          import os
+          import unittest
+
+          loader = unittest.TestLoader()
+          discovered = loader.discover("Scripts/tests", pattern="test_*.py")
+          if loader.errors:
+              raise SystemExit("\n".join(loader.errors))
+          modules = [suite for suite in discovered if suite.countTestCases()]
+          tests = unittest.TestSuite(modules[int(os.environ["TEST_SHARD"])::2])
+          if not tests.countTestCases():
+              raise SystemExit("No Python unit tests in this shard")
+          raise SystemExit(not unittest.TextTestRunner().run(tests).wasSuccessful())
+          PY
 
   examples:
     name: C++23 (${{ matrix.compiler }}, ${{ matrix.arithmetic }}${{ matrix.compile_profile != 'standard' && ', AtCoder' || '' }})
@@ -602,8 +632,8 @@ jobs:
 
   documentation:
     name: Library pages preview
-    if: ${{ !cancelled() && needs.maintenance.result == 'success' }}
-    needs: [maintenance, examples, instrumented, contracts, library_checker]
+    if: ${{ !cancelled() && needs.generated.result == 'success' }}
+    needs: [generated, examples, instrumented, contracts, library_checker]
     permissions:
       contents: read
       actions: read
@@ -666,13 +696,14 @@ jobs:
   result:
     name: Verify result
     if: always()
-    needs: [maintenance, examples, variant_builds, instrumented, guidelines, contracts, library_checker, stress, yomiyasu, documentation]
+    needs: [generated, python_tests, examples, variant_builds, instrumented, guidelines, contracts, library_checker, stress, yomiyasu, documentation]
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
       - name: Require all checks
         env:
-          MAINTENANCE_RESULT: ${{ needs.maintenance.result }}
+          GENERATED_RESULT: ${{ needs.generated.result }}
+          PYTHON_TESTS_RESULT: ${{ needs.python_tests.result }}
           VERIFY_RESULT: ${{ needs.examples.result }}
           VARIANT_BUILDS_RESULT: ${{ needs.variant_builds.result }}
           INSTRUMENTED_RESULT: ${{ needs.instrumented.result }}
@@ -687,7 +718,8 @@ jobs:
           set -euo pipefail
           {
             printf '## Verify\n\n| 検査 | 結果 |\n| --- | --- |\n'
-            printf '| 生成物・Pythonテスト・README集計 | %s |\n' "$MAINTENANCE_RESULT"
+            printf '| 生成物・README集計 | %s |\n' "$GENERATED_RESULT"
+            printf '| Pythonテスト（2分割） | %s |\n' "$PYTHON_TESTS_RESULT"
             printf '| C++23・GCC/Clang・通常/標準代替 | %s |\n' "$VERIFY_RESULT"
             printf '| 配布8版の単独ビルド・動作検査 | %s |\n' "$VARIANT_BUILDS_RESULT"
             printf '| ASan/UBSan・カバレッジ（checked） | %s |\n' "$INSTRUMENTED_RESULT"
@@ -699,4 +731,4 @@ jobs:
             printf '| ライブラリページのプレビュー | %s |\n' "$DOCUMENTATION_RESULT"
             printf '\nローカル検証の結果です。オンラインACはREADMEのVerify一覧で別に管理します。\n'
           } >> "$GITHUB_STEP_SUMMARY"
-          [[ "$MAINTENANCE_RESULT" == success && "$VERIFY_RESULT" == success && "$VARIANT_BUILDS_RESULT" == success && "$INSTRUMENTED_RESULT" == success && "$GUIDELINES_RESULT" == success && "$CONTRACT_RESULT" == success && "$LIBRARY_CHECKER_RESULT" == success && "$STRESS_RESULT" == success && "$YOMIYASU_RESULT" == success && "$DOCUMENTATION_RESULT" == success ]]
+          [[ "$GENERATED_RESULT" == success && "$PYTHON_TESTS_RESULT" == success && "$VERIFY_RESULT" == success && "$VARIANT_BUILDS_RESULT" == success && "$INSTRUMENTED_RESULT" == success && "$GUIDELINES_RESULT" == success && "$CONTRACT_RESULT" == success && "$LIBRARY_CHECKER_RESULT" == success && "$STRESS_RESULT" == success && "$YOMIYASU_RESULT" == success && "$DOCUMENTATION_RESULT" == success ]]
