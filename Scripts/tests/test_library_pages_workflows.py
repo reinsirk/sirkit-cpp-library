@@ -152,6 +152,8 @@ class StructureTests(unittest.TestCase):
         self.assertEqual(steps[0]["with"]["fetch-depth"], 0)
         release = next(step for step in steps if step.get("id") == "yomiyasu-release")
         self.assertIn("https://api.github.com/repos/nanaism/yomiyasu/releases/latest", release["run"])
+        self.assertEqual(release["env"], {"GH_TOKEN": "${{ github.token }}"})
+        self.assertIn('Authorization: Bearer $GH_TOKEN', release["run"])
         fetch = next(step["with"] for step in steps if step.get("with", {}).get("repository") == "nanaism/yomiyasu")
         self.assertEqual(fetch["ref"], "refs/tags/${{ steps.yomiyasu-release.outputs.tag }}")
         self.assertFalse(fetch["persist-credentials"])

@@ -584,11 +584,14 @@ jobs:
           python-version: "3.12"
       - name: Find latest yomiyasu release
         id: yomiyasu-release
+        env:
+          GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
           set -euo pipefail
           tag="$(curl --fail --silent --show-error --retry 3 --max-time 20 \
             --header 'Accept: application/vnd.github+json' \
+            --header "Authorization: Bearer $GH_TOKEN" \
             https://api.github.com/repos/nanaism/yomiyasu/releases/latest \
             | jq -er '.tag_name | strings | select(length > 0)')"
           git check-ref-format "refs/tags/$tag"
