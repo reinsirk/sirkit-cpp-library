@@ -19,6 +19,14 @@ python3 Scripts/prepare_variant_verify.py
 
 ## ローカル確認とCI
 
+C++の整形は原則として clang-format 21 とリポジトリの `.clang-format` に従います。波括弧や参照の書式は [template.cpp](../template.cpp) で確認できます。編集したソースを指定してください。
+
+```sh
+clang-format-21 -i template.cpp
+```
+
+生成済みの配布版、Verify提出ソース、同梱した外部コードは `.clang-format-ignore` で除外します。
+
 ```sh
 python3 -m unittest discover -s Scripts/tests -p 'test_*.py'
 python3 Scripts/ci_verify.py --id z_algorithm --compiler g++
