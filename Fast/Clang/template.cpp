@@ -1,5 +1,5 @@
-// 生成版: MSVC用。
-// 生成元: temp.cpp
+// 生成版: Clang・速度優先（入力検査を除外）。 所有・解放の省略は各APIの前提を参照。
+// 生成元: template.cpp
 // Library Codes are in: https://github.com/reinsirk/sirkit-cpp-library
 // ドキュメント: https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/template.md
 //
@@ -14,6 +14,9 @@
 // pow64i(x, n): x^n mod 2^64 を O(log(n + 1)) で返す。0^0 は1。
 // is_mul_overflow(a, b): a*b が符号付き64ビット整数の範囲外なら true。O(1)。
 
+#if !defined(_MSC_VER) && __has_include(<bits/stdc++.h>)
+#include <bits/stdc++.h>
+#else
 #include <algorithm>
 #include <array>
 #include <bit>
@@ -53,12 +56,14 @@
 #include <unordered_set>
 #include <utility>
 #include <vector>
+#endif
 //GCC バグ対策 https://gcc.gnu.org/bugzilla/show_bug.cgi?id=128217
 #include <atcoder/all>
 
 using namespace std;
 using namespace atcoder;
 
+#define SKIP_RUNTIME_CHECKS
 
 namespace sirkit {
 
@@ -158,6 +163,10 @@ constexpr std::uint64_t pow64i(std::uint64_t x, std::uint64_t n) {
 #ifdef SIRKIT_TEMP_DEFINE_IS_MUL_OVERFLOW
 #undef SIRKIT_TEMP_DEFINE_IS_MUL_OVERFLOW
 constexpr bool is_mul_overflow(std::int64_t a, std::int64_t b) {
+#if !defined(SIRKIT_FORCE_STANDARD_MUL_OVERFLOW)
+    std::int64_t product;
+    return __builtin_mul_overflow(a, b, &product);
+#else
     // 最小負数の絶対値も符号なし演算で安全に求める。
     const std::uint64_t ua = a < 0 ? std::uint64_t{0} - static_cast<std::uint64_t>(a)
                                    : static_cast<std::uint64_t>(a);
@@ -167,6 +176,7 @@ constexpr bool is_mul_overflow(std::int64_t a, std::int64_t b) {
         ? std::uint64_t{1} << 63
         : static_cast<std::uint64_t>(std::numeric_limits<std::int64_t>::max());
     return ub != 0 && ua > limit / ub;
+#endif
 }
 #endif
 

@@ -114,7 +114,7 @@ class BundleTests(unittest.TestCase):
     def test_raw_string_with_splice_rejected(self):
         with self.assertRaises(ValueError):self.render('const char*s=R"x(a)x";\n// splice \\\n'+A)
     def test_templates_and_noncanonical_paths_rejected(self):
-        for path in ('temp.cpp','temp2.cpp','../Math/A.cpp','Math/../A.cpp','/Math/A.cpp','Math/A.hpp'):
+        for path in ('template.cpp','../Math/A.cpp','Math/../A.cpp','/Math/A.cpp','Math/A.hpp'):
             with self.subTest(path=path),self.assertRaises(ValueError):canonical_library(path)
     def test_manifest_edition_and_escape_rejected(self):
         for path in ('../outside.cpp','Variants/Clang/Math/A.cpp','/tmp/A.cpp'):

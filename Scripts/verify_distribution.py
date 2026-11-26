@@ -394,7 +394,7 @@ def validate_archive(root, path, edition, *, max_total=2 * 1024**3, max_entry=12
                 expected(name, data, "normal_verify_sha")
             for name in current:
                 expected(name, (root / name).read_bytes(), "manifest_bytes")
-            for name in ("Readme.md", "temp.cpp", "temp2.cpp", "LICENSE"):
+            for name in ("Readme.md", "template.cpp", "LICENSE"):
                 if (root / name).is_file(): expected(name, (root / name).read_bytes())
         else:
             name = "Verify/current/manifest.json"

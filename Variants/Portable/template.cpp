@@ -1,5 +1,5 @@
-// 生成版: コンパイラ共通・速度優先（入力検査を除外）。 所有・解放の省略は各APIの前提を参照。
-// 生成元: temp.cpp
+// 生成版: コンパイラ共通用。
+// 生成元: template.cpp
 // Library Codes are in: https://github.com/reinsirk/sirkit-cpp-library
 // ドキュメント: https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/template.md
 //
@@ -66,7 +66,6 @@
 using namespace std;
 using namespace atcoder;
 
-#define SKIP_RUNTIME_CHECKS
 
 namespace sirkit {
 

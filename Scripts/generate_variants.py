@@ -12,7 +12,7 @@ import re
 
 ROOT = Path(__file__).resolve().parents[1]
 FOLDERS = ("Algorithm", "DataStructure", "Graph", "Math", "String", "Geometry", "Internal")
-TEMPLATES = ("temp.cpp", "temp2.cpp")
+TEMPLATES = ("template.cpp",)
 COMPILER_MACROS = {
     "Portable": {},
     "GCC": {"__GNUC__": True, "__GNUG__": True, "__clang__": False, "__llvm__": False, "_MSC_VER": False},

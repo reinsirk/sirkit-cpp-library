@@ -138,8 +138,7 @@ def package(output: Path) -> None:
     for library in dict.fromkeys((*LIBRARIES.values(), "Internal/Nyaan_hash_map_min.cpp")):
         entries[library] = (root / library).read_bytes()
     known_sources = set(entries)
-    for template in ("temp.cpp", "temp2.cpp"):
-        entries[template] = (root / template).read_bytes()
+    entries["template.cpp"] = (root / "template.cpp").read_bytes()
     for example, library in LIBRARIES.items():
         name = "Examples/" + example
         source = (root / name).read_text(encoding="utf-8")
