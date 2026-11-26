@@ -58,14 +58,15 @@ class VariantsTest(unittest.TestCase):
             root = Path(directory)
             (root / "Math").mkdir()
             (root / "Math/example.cpp").write_text(code)
-            for template in MODULE.TEMPLATES:
-                (root / template).write_text("#define SKIP_RUNTIME_CHECKS\n" + code)
+            (root / "template.cpp").write_text("#define SKIP_RUNTIME_CHECKS\n" + code)
             manifest = MODULE.generate(root)
             self.assertEqual(manifest, json.loads((root / "Variants/manifest.json").read_bytes()))
             self.assertEqual(manifest, MODULE.generate(root, check=True))
-            self.assertEqual({(x["compiler"], x["fast"]) for x in manifest["entries"] if x["source"] == "Math/example.cpp"},
-                             set(itertools.product(MODULE.COMPILERS, (False, True))))
-            self.assertEqual(len(manifest["entries"]), 24)
+            expected = set(itertools.product(("Math/example.cpp", "template.cpp"),
+                                             MODULE.COMPILERS, (False, True)))
+            actual = {(entry["source"], entry["compiler"], entry["fast"]) for entry in manifest["entries"]}
+            self.assertEqual(actual, expected)
+            self.assertEqual(len(manifest["entries"]), len(expected))
             for entry in manifest["entries"]:
                 path = root / entry["path"]
                 _, _, body = path.read_text().split("\n", 2)

@@ -45,7 +45,7 @@ template<class T>std::vector<T>saved(std::span<const T>a){return{a.begin(),a.end
 struct CallbackFailure {};
 void run_checks(){
  std::size_t failures=0,callback_failures=0;
- for(int operation=0;operation<6;++operation){bool success=false;for(std::ptrdiff_t budget=0;budget<20;++budget){
+ for(int operation=0;operation<7;++operation){bool success=false;for(std::ptrdiff_t budget=0;budget<20;++budget){
   Mo target(6),source(10);target.reserve_queries(8);for(int i=0;i<8;++i)target.add_query(i%3,i%3+2);source.add_query(2,8);const auto old=saved(target.queries());const auto* ptr=target.queries().data();const auto before=live_allocations.load();int callbacks=0;allocation_countdown=budget;bool failed=false;
   try{
    if(operation==0)target.add_query(0,6);
@@ -54,6 +54,7 @@ void run_checks(){
    if(operation==3)target=source;
    if(operation==4)target.order();
    if(operation==5)target.run([&](std::int32_t){++callbacks;},[&](std::int32_t){++callbacks;},[&](std::size_t){++callbacks;});
+   if(operation==6)target.run_rollback([&](std::int32_t){++callbacks;},[&]{++callbacks;},[&]{++callbacks;},[&]{++callbacks;},[&](std::size_t){++callbacks;});
   }catch(const std::bad_alloc&){failed=true;++failures;}
   allocation_countdown=-1;if(failed){assert(target.length()==6&&saved(target.queries())==old&&target.queries().data()==ptr);assert(callbacks==0);assert(live_allocations.load()==before);}else{success=true;break;}
  }assert(success);}
@@ -72,6 +73,7 @@ void run_checks(){
   allocation_countdown=-1;if(failed){assert(target.length()==6&&saved(target.queries())==old_q&&saved(target.updates())==old_u&&target.queries().data()==qp&&target.updates().data()==up);assert(callbacks==0);assert(live_allocations.load()==before);}else{success=true;break;}
  }assert(success);}
  {Mo m(6);m.add_query(0,6);m.add_query(4,5);m.add_query(1,4);auto old=saved(m.queries());const auto* ptr=m.queries().data();for(int failure=0;failure<200;++failure){int calls=0;const auto before=live_allocations.load();auto tick=[&]{if(calls++==failure)throw CallbackFailure{};};bool threw=false;try{m.run([&](std::int32_t){tick();},[&](std::int32_t){tick();},[&](std::size_t){tick();});}catch(const CallbackFailure&){threw=true;++callback_failures;}assert(saved(m.queries())==old&&m.queries().data()==ptr);assert(live_allocations.load()==before);if(!threw)break;}}
+ {Mo m(6);m.add_query(0,6);m.add_query(4,5);m.add_query(1,4);m.add_query(2,2);auto old=saved(m.queries());const auto* ptr=m.queries().data();for(int failure=0;failure<200;++failure){int calls=0;const auto before=live_allocations.load();auto tick=[&]{if(calls++==failure)throw CallbackFailure{};};bool threw=false;try{m.run_rollback([&](std::int32_t){tick();},[&](std::int32_t){tick();},[&]{tick();},[&]{tick();},[&]{tick();},[&](std::size_t){tick();},1);}catch(const CallbackFailure&){threw=true;++callback_failures;}assert(saved(m.queries())==old&&m.queries().data()==ptr);assert(live_allocations.load()==before);if(!threw)break;}}
  {MoWithUpdates m(6);m.add_query(0,6);m.add_update(4);m.add_query(1,5);m.add_update(2);m.add_query(4,6);m.add_query(1,3,0);auto old=saved(m.queries());auto updates=saved(m.updates());const auto* ptr=m.queries().data();for(int failure=0;failure<300;++failure){int calls=0;const auto before=live_allocations.load();auto tick=[&]{if(calls++==failure)throw CallbackFailure{};};bool threw=false;try{m.run([&](std::int32_t){tick();},[&](std::int32_t){tick();},[&](std::size_t,std::int32_t,std::int32_t){tick();},[&](std::size_t,std::int32_t,std::int32_t){tick();},[&](std::size_t){tick();});}catch(const CallbackFailure&){threw=true;++callback_failures;}assert(saved(m.queries())==old&&saved(m.updates())==updates&&m.queries().data()==ptr);assert(live_allocations.load()==before);if(!threw)break;}}
  {Mo a(3);a.add_query(0,3);MoWithUpdates b(3);b.add_update(1);b.add_query(0,3);allocation_countdown=0;auto ma=std::move(a);a=std::move(ma);a.clear_requests();a.clear();auto mb=std::move(b);b=std::move(mb);b.clear_requests();b.clear();allocation_countdown=-1;assert(a.length()==0&&a.empty()&&b.length()==0&&b.empty()&&b.update_count()==0);}
  assert(failures>0&&callback_failures>0);std::cout<<"Mo allocation failures="<<failures<<" callback failures="<<callback_failures<<'\n';

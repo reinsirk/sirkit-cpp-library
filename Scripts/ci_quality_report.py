@@ -20,11 +20,12 @@ import sys
 
 sys.dont_write_bytecode = True
 try:
-    from . import prepare_verify, ci_benchmark, ci_instrumented, ci_performance_all, performance_limits, performance_regression
+    from . import prepare_verify, ci_benchmark, ci_instrumented, ci_library_checker, ci_performance_all, performance_limits, performance_regression
 except ImportError:
     import prepare_verify
     import ci_benchmark
     import ci_instrumented
+    import ci_library_checker
     import ci_performance_all
     import performance_limits
     import performance_regression
@@ -33,7 +34,8 @@ ROOT = Path(__file__).resolve().parents[1]
 LIBRARY_DIRS = {"Algorithm", "DataStructure", "Geometry", "Graph", "Internal", "Math", "String"}
 CATEGORIES = ("normal", "failure", "library_checker", "performance", "sanitizers", "coverage")
 LABELS = dict(normal="正常系", failure="失敗系", library_checker="Library Checker公式ケース", performance="性能測定", sanitizers="ASan/UBSan", coverage="カバレッジ")
-STATUS_LABELS = dict(PASS="通過", FAIL="失敗", STALE="ソース変更", UNAVAILABLE="未測定", PARTIAL="一部のみ")
+STATUS_LABELS = dict(PASS="通過", FAIL="失敗", STALE="ソース変更", UNAVAILABLE="未測定", PARTIAL="一部のみ",
+                     NOT_APPLICABLE="無し")
 SHA = re.compile(r"[0-9a-f]{64}\Z")
 IDENTIFIER = re.compile(r"[A-Za-z0-9_-]+\Z")
 
@@ -457,6 +459,13 @@ def collect_instrumented(value: dict, root: Path, entries: dict, append) -> None
             raise ReportError("計測結果の集約PASSと実行結果が一致しません")
         status = "STALE" if changed else "PASS" if ok else "FAIL"
         for library in entry["libraries"]:
+            if mode == "coverage" and library in entry.get("failure_libraries", ()):
+                scope = "期待した失敗の処理を確認するchecked補足テスト"
+                if target == "i386":
+                    scope += "（i386）"
+                append(library, "failure", dict(id=row["id"], driver=entry["driver"], status=status,
+                       scope=scope, command=command, compiler=value.get("tools", {}).get("compiler"),
+                       source_mismatches=sorted(set(changed))))
             metrics = coverage_metrics(value, library, root) if mode == "coverage" and ok and not changed else None
             actual_status = status
             if mode == "coverage" and ok and not changed:
@@ -1225,12 +1234,18 @@ def aggregate(root: Path, inputs: list[Path], *, source_manifest: dict[str, dict
             descriptor.update(status="FAIL", error=str(error))
             errors.append({"report": descriptor["sha256"], "message": str(error)})
         reports.append(descriptor)
+    official_libraries = {library for entry in entries.values() if ci_library_checker.problem_id(entry)
+                          for library in entry["libraries"]}
     for library in libraries.values():
         for category in library["categories"].values():
             category["status"] = combine(category["evidence"])
+        official = library["categories"]["library_checker"]
+        if not official["evidence"] and library["path"] not in official_libraries:
+            official["status"] = "NOT_APPLICABLE"
     global_states = {item["status"] for item in reports}
     run_state = "FAIL" if "FAIL" in global_states else "UNAVAILABLE" if not global_states else "PASS" if global_states == {"PASS"} else "PARTIAL"
-    covered = [library["categories"][name]["status"] for library in libraries.values() for name in CATEGORIES]
+    covered = [category["status"] for library in libraries.values() for category in library["categories"].values()
+               if category["status"] != "NOT_APPLICABLE"]
     state = "FAIL" if run_state == "FAIL" else "UNAVAILABLE" if not global_states else "PASS" if covered and set(covered) == {"PASS"} else "PARTIAL"
     return {"format": 1, "type": "sirkit.quality-report", "generated_at_utc": datetime.now(timezone.utc).isoformat(),
             "status": state, "input_report_status": run_state, "online_status": "not_evaluated", "provenance": provenance(root),
@@ -1337,8 +1352,8 @@ def coverage_percent(metric: dict) -> str:
 
 def markdown(report: dict) -> str:
     lines = ["# ローカルの品質検査", "", "合格と表示するのは、原本とテストのSHAが現在版に一致する結果です。オンラインACは別に表示します。",
-             "正常系では入力例と明示的なAPIの契約を確認します。失敗系では、検査を有効にした版で期待どおりの例外が発生し、失敗後の状態も期待どおりか確認します。異常終了は失敗系の合格に数えません。",
-             "Library Checkerの公式ケースは、外部の問題集の版を固定してローカルで照合します。ケース全体の時間には起動と入出力が含まれ、本体だけの性能測定とは分けます。",
+             "正常系では入力例とAPIの契約を確認します。失敗系では、検査を有効にした版で期待した例外や失敗時の戻り値を確認します。確保やコールバックの失敗を起こすテストも含みます。異常終了は不合格です。",
+             "Library Checkerの公式ケースは、外部の問題集の版を固定してローカルで照合します。「無し」は、対応するLibrary CheckerのVerifyが登録されていないライブラリです。",
              "未測定・ソース変更・一部のみを区別します。性能は同じ条件内の参考値で、速度差だけでは合否を決めません。", "",
              "実行状態: " + STATUS_LABELS[report["status"]], "",
              "| 通常版本体 | " + " | ".join(LABELS.values()) + " |", "| --- | " + " | ".join("---" for _ in CATEGORIES) + " |"]

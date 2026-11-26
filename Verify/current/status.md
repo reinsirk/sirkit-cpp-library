@@ -66,7 +66,7 @@
 | [coverage\_graph\_spfa\_all\_pairs\_yuki](submissions/coverage_graph_spfa_all_pairs_yuki.cpp) | [Yukicoder](https://yukicoder.me/problems/no/1344) | 未提出 | — | — |
 | [coverage\_graph\_spfa\_constraints\_yuki](submissions/coverage_graph_spfa_constraints_yuki.cpp) | [Yukicoder](https://yukicoder.me/problems/no/1122) | 未提出 | — | — |
 | [coverage\_hash\_set\_string\_search](submissions/coverage_hash_set_string_search.cpp) | [Yukicoder](https://yukicoder.me/problems/no/430) | 未提出 | — | — |
-| [coverage\_mo\_inversions](submissions/coverage_mo_inversions.cpp) | [Library Checker](https://judge.yosupo.jp/problem/static_range_inversions_query) | 現行AC | [AC](https://judge.yosupo.jp/submission/417353) | 570 ms |
+| [coverage\_mo\_inversions](submissions/coverage_mo_inversions.cpp) | [Library Checker](https://judge.yosupo.jp/problem/static_range_inversions_query) | 現行AC | [AC](https://judge.yosupo.jp/submission/418363) | 579 ms |
 | [coverage\_next\_combination\_independent\_set](submissions/coverage_next_combination_independent_set.cpp) | [Library Checker](https://judge.yosupo.jp/problem/maximum_independent_set) | 現行未照合・要再提出 | [AC](https://judge.yosupo.jp/submission/417352) | — |
 | [coverage\_rolling\_hash\_short\_search](submissions/coverage_rolling_hash_short_search.cpp) | [Yukicoder](https://yukicoder.me/problems/no/430) | 未提出 | — | — |
 | [coverage\_sparse\_gcd\_holes\_full](submissions/coverage_sparse_gcd_holes_full.cpp) | [Library Checker](https://judge.yosupo.jp/problem/gcd_convolution) | 現行未照合・要再提出 | [AC](https://judge.yosupo.jp/submission/417357) | — |
@@ -195,8 +195,9 @@
 | [matrix\_transform\_local](submissions/matrix_transform_local.cpp) | ローカル | ローカル補足 | — | — |
 | [max\_flow\_grid](submissions/max_flow_grid.cpp) | [AtCoder](https://atcoder.jp/contests/practice2/tasks/practice2_d) | 参考検証・移行先あり | [AC](https://atcoder.jp/contests/practice2/submissions/80790365) | — |
 | [min\_cost\_flow\_grid](submissions/min_cost_flow_grid.cpp) | [AtCoder](https://atcoder.jp/contests/practice2/tasks/practice2_e) | 未提出 | — | — |
-| [mo](submissions/mo.cpp) | [Library Checker](https://judge.yosupo.jp/problem/static_range_count_distinct) | 未提出 | — | — |
-| [mo\_updates](submissions/mo_updates.cpp) | [Library Checker](https://judge.yosupo.jp/problem/point_set_range_frequency) | 未提出 | — | — |
+| [mo](submissions/mo.cpp) | [Library Checker](https://judge.yosupo.jp/problem/static_range_count_distinct) | 現行AC | [AC](https://judge.yosupo.jp/submission/418359) | 502 ms |
+| [mo\_rollback\_mode](submissions/mo_rollback_mode.cpp) | [Library Checker](https://judge.yosupo.jp/problem/static_range_mode_query) | 現行AC | [AC](https://judge.yosupo.jp/submission/418362) | 97 ms |
+| [mo\_updates](submissions/mo_updates.cpp) | [Library Checker](https://judge.yosupo.jp/problem/point_set_range_frequency) | 現行AC | [AC](https://judge.yosupo.jp/submission/418361) | 713 ms |
 | [modular\_power](submissions/modular_power.cpp) | [AtCoder](https://atcoder.jp/contests/math-and-algorithm/tasks/math_and_algorithm_aq) | 未提出 | — | — |
 | [modular\_sqrt](submissions/modular_sqrt.cpp) | [Library Checker](https://judge.yosupo.jp/problem/sqrt_mod) | 未提出 | — | — |
 | [multipoint\_evaluation](submissions/multipoint_evaluation.cpp) | [Library Checker](https://judge.yosupo.jp/problem/multipoint_evaluation) | 未提出 | — | — |

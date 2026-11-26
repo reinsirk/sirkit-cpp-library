@@ -138,8 +138,7 @@ def package(output: Path) -> None:
     for library in dict.fromkeys((*LIBRARIES.values(), "Internal/Nyaan_hash_map_min.cpp")):
         entries[library] = (root / library).read_bytes()
     known_sources = set(entries)
-    for template in ("temp.cpp", "temp2.cpp"):
-        entries[template] = (root / template).read_bytes()
+    entries["template.cpp"] = (root / "template.cpp").read_bytes()
     for example, library in LIBRARIES.items():
         name = "Examples/" + example
         source = (root / name).read_text(encoding="utf-8")
@@ -172,9 +171,6 @@ def package(output: Path) -> None:
     for source_path in sorted((root / "Verify" / "current").rglob("*")):
         if source_path.is_file():
             entries[source_path.relative_to(root).as_posix()] = source_path.read_bytes()
-    for source_path in sorted((root / "Verify" / "optimization").rglob("*")):
-        if source_path.is_file() and source_path.suffix in (".md", ".json"):
-            entries[source_path.relative_to(root).as_posix()] = source_path.read_bytes()
     for source_path in sorted((root / "Verify" / "ci").rglob("*")):
         if source_path.is_file() and source_path.suffix in (".cpp", ".hpp", ".md", ".json"):
             entries[source_path.relative_to(root).as_posix()] = source_path.read_bytes()
@@ -183,10 +179,6 @@ def package(output: Path) -> None:
         entries["LICENSE"] = license_path.read_bytes()
     for license_path in sorted((root / "LICENSES").glob("*.txt")):
         entries[license_path.relative_to(root).as_posix()] = license_path.read_bytes()
-    for audit_path in sorted((root / "Audit").rglob("*")):
-        if (audit_path.is_file() and "__pycache__" not in audit_path.parts and
-                audit_path.suffix in (".json", ".md", ".png", ".cpp", ".hpp", ".py", ".inc", ".gz", ".bin")):
-            entries[audit_path.relative_to(root).as_posix()] = audit_path.read_bytes()
     write_archive(output, entries)
     print(f"{len(entries)}ファイルを格納: {output.resolve()}")
     print(f"ZIP環境: {archive_versions()}")

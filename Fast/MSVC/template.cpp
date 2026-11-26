@@ -1,5 +1,5 @@
-// 生成版: MSVC用。
-// 生成元: temp.cpp
+// 生成版: MSVC・速度優先（入力検査を除外）。 所有・解放の省略は各APIの前提を参照。
+// 生成元: template.cpp
 // Library Codes are in: https://github.com/reinsirk/sirkit-cpp-library
 // ドキュメント: https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/template.md
 //
@@ -59,8 +59,10 @@
 using namespace std;
 using namespace atcoder;
 
+#define SKIP_RUNTIME_CHECKS
 
-namespace sirkit {
+namespace sirkit
+{
 
 #ifndef SIRKIT_INF_DEFINED
 #define SIRKIT_INF_DEFINED
@@ -74,10 +76,13 @@ using Graph = std::vector<std::vector<int>>;
 
 #ifndef SIRKIT_GRAPH_TYPES_DEFINED
 #define SIRKIT_GRAPH_TYPES_DEFINED
-struct Edge {
+struct Edge
+{
     int to;
     std::int64_t w;
-    Edge(int destination, std::int64_t weight) : to(destination), w(weight) {}
+    Edge(int destination, std::int64_t weight) : to(destination), w(weight)
+    {
+    }
 };
 using WGraph = std::vector<std::vector<Edge>>;
 #endif
@@ -85,13 +90,15 @@ using WGraph = std::vector<std::vector<Edge>>;
 #ifndef SIRKIT_CHMIN_DEFINED
 #define SIRKIT_CHMIN_DEFINED
 #define SIRKIT_TEMP_DEFINE_CHMIN
-template <class T> constexpr bool chmin(T& a, T b);
+template <class T>
+constexpr bool chmin(T &a, T b);
 #endif
 
 #ifndef SIRKIT_CHMAX_DEFINED
 #define SIRKIT_CHMAX_DEFINED
 #define SIRKIT_TEMP_DEFINE_CHMAX
-template <class T> constexpr bool chmax(T& a, T b);
+template <class T>
+constexpr bool chmax(T &a, T b);
 #endif
 
 #ifndef SIRKIT_POW64I_DEFINED
@@ -109,20 +116,24 @@ constexpr bool is_mul_overflow(std::int64_t a, std::int64_t b);
 
 // cout << std::fixed << std::setprecision(15);
 
-int main() {
+int main()
+{
     std::ios::sync_with_stdio(false);
     std::cin.tie(nullptr);
 
     return 0;
 }
 
-namespace sirkit {
+namespace sirkit
+{
 
 #ifdef SIRKIT_TEMP_DEFINE_CHMIN
 #undef SIRKIT_TEMP_DEFINE_CHMIN
 template <class T>
-constexpr bool chmin(T& a, T b) {
-    if (b < a) {
+constexpr bool chmin(T &a, T b)
+{
+    if (b < a)
+    {
         a = b;
         return true;
     }
@@ -133,8 +144,10 @@ constexpr bool chmin(T& a, T b) {
 #ifdef SIRKIT_TEMP_DEFINE_CHMAX
 #undef SIRKIT_TEMP_DEFINE_CHMAX
 template <class T>
-constexpr bool chmax(T& a, T b) {
-    if (a < b) {
+constexpr bool chmax(T &a, T b)
+{
+    if (a < b)
+    {
         a = b;
         return true;
     }
@@ -144,12 +157,20 @@ constexpr bool chmax(T& a, T b) {
 
 #ifdef SIRKIT_TEMP_DEFINE_POW64I
 #undef SIRKIT_TEMP_DEFINE_POW64I
-constexpr std::uint64_t pow64i(std::uint64_t x, std::uint64_t n) {
+constexpr std::uint64_t pow64i(std::uint64_t x, std::uint64_t n)
+{
     std::uint64_t result = 1;
-    while (n != 0) {
-        if ((n & 1) != 0) result *= x;
+    while (n != 0)
+    {
+        if ((n & 1) != 0)
+        {
+            result *= x;
+        }
         n >>= 1;
-        if (n != 0) x *= x;
+        if (n != 0)
+        {
+            x *= x;
+        }
     }
     return result;
 }
@@ -157,15 +178,16 @@ constexpr std::uint64_t pow64i(std::uint64_t x, std::uint64_t n) {
 
 #ifdef SIRKIT_TEMP_DEFINE_IS_MUL_OVERFLOW
 #undef SIRKIT_TEMP_DEFINE_IS_MUL_OVERFLOW
-constexpr bool is_mul_overflow(std::int64_t a, std::int64_t b) {
+constexpr bool is_mul_overflow(std::int64_t a, std::int64_t b)
+{
     // 最小負数の絶対値も符号なし演算で安全に求める。
     const std::uint64_t ua = a < 0 ? std::uint64_t{0} - static_cast<std::uint64_t>(a)
                                    : static_cast<std::uint64_t>(a);
     const std::uint64_t ub = b < 0 ? std::uint64_t{0} - static_cast<std::uint64_t>(b)
                                    : static_cast<std::uint64_t>(b);
     const std::uint64_t limit = (a < 0) != (b < 0)
-        ? std::uint64_t{1} << 63
-        : static_cast<std::uint64_t>(std::numeric_limits<std::int64_t>::max());
+                                    ? std::uint64_t{1} << 63
+                                    : static_cast<std::uint64_t>(std::numeric_limits<std::int64_t>::max());
     return ub != 0 && ua > limit / ub;
 }
 #endif

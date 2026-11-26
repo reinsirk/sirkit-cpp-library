@@ -1,21 +1,23 @@
 # sirkit-cpp-library
 
+[![ライセンス CC0 1.0](https://img.shields.io/badge/license-CC0%201.0-blue)](#license)
+[![最新リリース](https://img.shields.io/github/v/release/reinsirk/sirkit-cpp-library?display_name=tag&sort=date)](https://github.com/reinsirk/sirkit-cpp-library/releases/latest)
 [![main向けPRのCI](https://github.com/reinsirk/sirkit-cpp-library/actions/workflows/verify.yml/badge.svg?event=pull_request)](https://github.com/reinsirk/sirkit-cpp-library/actions/workflows/verify.yml?query=event%3Apull_request)
 
 競技プログラミング向けのC++ライブラリ集です。
 
-[ライブラリページ](https://reinsirk.github.io/sirkit-cpp-library/)でAPI、使用例、ソース、テスト結果、性能測定の結果を確認できます。[ページの生成と公開](Document/library_pages.md)を参照してください。
+[ライブラリページ](https://reinsirk.github.io/sirkit-cpp-library/)でAPI、使用例、ソース、テスト結果を確認できます。[ページの生成と公開](Document/library_pages.md)を参照してください。
 
 自分の環境で測るには[手元でライブラリの性能を測る](Document/performance_measurement.md)を参照してください。
 
-CIバッジはVerify、ASan/UBSan、カバレッジ、通常版の作法検査、性能測定の結果を示します。検証件数・カバレッジ率・性能比はChecksやActionsのSummaryで、オンラインACは下の表で確認できます。検査の対象と判定基準は[品質検査の説明](Document/ci_quality.md)を参照してください。
+CIバッジはVerify、ASan/UBSan、カバレッジ、通常版の作法検査などの結果を示します。検証件数とカバレッジ率はChecksやActionsのSummaryで、オンラインACは下の表で確認できます。検査の対象と判定基準は[品質検査の説明](Document/ci_quality.md)を参照してください。
 
 <!-- VERIFY_STATUS:START -->
 [Verify状況の一覧](Verify/current/status.md)（通常版の現行ソースと保存した判定を照合）
 
 | 提出先 | 対象 | 現行AC | 現行未照合 | 未提出 | 非AC |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| Library Checker | 144 | 10 | 88 | 46 | 0 |
+| Library Checker | 145 | 13 | 88 | 44 | 0 |
 | AOJ | 0 | 0 | 0 | 0 | 0 |
 | Yukicoder | 34 | 0 | 2 | 32 | 0 |
 | AtCoder | 52 | 0 | 34 | 18 | 0 |
@@ -46,7 +48,7 @@ CIバッジはVerify、ASan/UBSan、カバレッジ、通常版の作法検査�
 速度確認のため、外部提出用コードは先頭で`SKIP_RUNTIME_CHECKS`を定義しています。
 直下の`Verify/*.md`は過去の提出記録です。今回のオンライン判定結果とは区別します。
 
-Library Checkerの提出コードはmainと入出力も含めてCodex、Claudeの順に最適化し、変更後に再提出します。ライブラリ本体とプログラム全体の速度は別々に比較し、記録します。開発は`dev`で行い、PRを通じて`main`に反映します。CI・手動提出・README集計の手順は[開発とVerify](Document/development.md)を参照してください。
+Library Checkerの提出コードはmainと入出力も含めて最適化し、変更後に再提出します。ライブラリ本体とプログラム全体の速度は別々に比較します。開発は`dev`で行い、PRを通じて`main`に反映します。CI・手動提出・README集計の手順は[開発とVerify](Document/development.md)を参照してください。
 
 使用例は[Examples](Examples)、二項係数のテーブル上限などの設定は[二項係数の説明](Math/Combination/README.md)を参照してください。
 

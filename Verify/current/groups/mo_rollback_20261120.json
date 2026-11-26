@@ -1,0 +1,48 @@
+{
+  "entries": [
+    {
+      "id": "mo_rollback_mode",
+      "libraries": [
+        "Algorithm/Mo.cpp"
+      ],
+      "driver": "Verify/current/drivers/mo_rollback_mode_main.cpp",
+      "title": "Static Range Mode Query（巻き戻しMo）",
+      "problem_url": "https://judge.yosupo.jp/problem/static_range_mode_query",
+      "selection_reason": "最頻値は削除で更新しにくい。run_rollbackの追加・snapshot・rollback・resetだけで、各区間の最頻値と出現回数を求める。",
+      "coverage": [
+        "run_rollback symmetric",
+        "snapshot/rollback/reset"
+      ],
+      "limitations": "N,Q<=1e5、0<=l<r<=N。最頻値が複数ある場合は任意の一つ。左右非対称のrun_rollback・空区間・例外・所有は独立ローカル補足。",
+      "samples": [
+        {
+          "input": "5 3\n3 7 1 2 1\n1 5\n3 4\n0 4\n",
+          "output": "1 2\n2 1\n3 1\n",
+          "source": "https://raw.githubusercontent.com/yosupo06/library-checker-problems/73876f1cbcf082d2b22722924b924d3d65a2f00e/data_structure/static_range_mode_query/gen/example_00.in",
+          "origin": "Library Checker Static Range Mode Query公式例。出力は公式outで、最頻値が複数ある照会は出現回数と値の回数で照合する。"
+        },
+        {
+          "input": "1 2\n5\n0 1\n0 1\n",
+          "output": "5 1\n5 1\n",
+          "origin": "公式制約内のN=1・重複照会を独立作成、直接数え上げ。"
+        },
+        {
+          "input": "12 12\n4 1000000000 4 0 7 7 0 4 1000000000 7 0 4\n0 12\n0 1\n11 12\n2 9\n3 4\n5 12\n1 11\n4 6\n6 12\n0 7\n8 12\n2 3\n",
+          "output": "4 4\n4 1\n4 1\n0 2\n0 1\n0 2\n0 3\n7 2\n0 2\n0 2\n0 1\n4 1\n",
+          "origin": "公式制約内で同率の最頻値とblockをまたぐ区間を独立作成、直接数え上げ。"
+        },
+        {
+          "input": "3 0\n1 2 3\n",
+          "output": "",
+          "allow_empty_output": true,
+          "origin": "公式制約内の照会なしを独立作成。"
+        }
+      ],
+      "sample_checker": "static_range_mode",
+      "acl_required": false,
+      "submission_urls": [
+        "https://judge.yosupo.jp/submission/418362"
+      ]
+    }
+  ]
+}

@@ -35,7 +35,7 @@ def canonical_library(path):
         raise ValueError('noncanonical library path: ' + repr(path))
     if any(part in ('', '.', '..') for part in path.split('/')):
         raise ValueError('noncanonical library path: ' + path)
-    if not path.endswith('.cpp') or path in ('temp.cpp', 'temp2.cpp'):
+    if not path.endswith('.cpp') or path == 'template.cpp':
         raise ValueError('only canonical library modules are supported: ' + path)
     return path
 
@@ -217,7 +217,7 @@ def load_modules(root, profile, libraries):
             raise ValueError('manifest edition/path mismatch: ' + entry['path'])
     protected = {(root/e['path']).resolve() for e in entries} | {(root/e['source']).resolve() for e in entries}
     protected |= {(root/e['origin']).resolve() for e in entries if 'origin' in e}
-    protected |= {(root/'temp.cpp').resolve(), (root/'temp2.cpp').resolve(), (root/'Variants/manifest.json').resolve()}
+    protected |= {(root/'template.cpp').resolve(), (root/'Variants/manifest.json').resolve()}
     selected = {}
     for entry in entries:
         if (profile == 'normal' and not entry['fast']) or (profile != 'normal' and (entry['compiler'],entry['fast']) == PROFILES[profile]):

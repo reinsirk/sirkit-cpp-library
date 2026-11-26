@@ -287,6 +287,7 @@ clear_matchingはO(V)、clear_edgesと再構築は旧状態の破棄も含めO(V
 
 対応表の値はsolveやclear_matchingで更新されます。隣接spanはその左頂点への辺追加・予約で無効化し得ます。reset・clear・代入後は以前のviewを使わないでください。既定では端点と被覆取得時の最大性を検査し、`SKIP_RUNTIME_CHECKS`で除きます。件数・容量の上限保護は維持します。
 
+出典と検証は記録を参照してください。
 
 ## 構築・状態と補助型
 

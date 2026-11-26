@@ -52,6 +52,7 @@ PROFILE_NOTES = {
 CATEGORIES = {"normal": "正常系", "failure": "失敗系", "library_checker": "Library Checker公式ケース",
               "performance": "性能測定", "sanitizers": "ASan/UBSan", "coverage": "カバレッジ"}
 LABELS = {"PASS": "合格", "FAIL": "失敗", "STALE": "ソース変更後は未検証", "UNAVAILABLE": "未実施",
+          "NOT_APPLICABLE": "無し",
           "PARTIAL": "一部のみ", "current_ac": "現行AC", "source_changed": "現行未照合・要再提出",
           "unsubmitted": "未提出", "non_ac": "非AC", "local_only": "ローカル補足"}
 LINK = re.compile(r'(!?\[[^\]\n]*\])\((<[^>\n]+>|(?:[^\s()]|\([^()\s]*\))+)(?:\s+"[^"]*")?\)')
@@ -322,7 +323,7 @@ def version_picker() -> str:
 
 
 def write_version_lists(jekyll: Path, variants: dict[str, dict[tuple[str, bool], dict]],
-                        titles: dict[str, str]) -> tuple[dict[str, dict[str, str]], dict[str, set[str]]]:
+                        titles: dict[str, str], verification: dict[str, str]) -> tuple[dict[str, dict[str, str]], dict[str, set[str]]]:
     """版ごとの一覧と、生成後に照合するナビゲーション・配布コードへのリンク。"""
     (jekyll / "_includes/code-version-picker.html").write_text(version_picker(), encoding="utf-8")
     (jekyll / "versions").mkdir()
@@ -339,7 +340,8 @@ def write_version_lists(jekyll: Path, variants: dict[str, dict[tuple[str, bool],
                      f'<nav><a href="{site_link("")}">版を選び直す</a> · '
                      f'<a href="{site_link("quality.html")}">テスト・性能</a> · '
                      f'<a href="{site_link("licenses/index.html")}">ライセンス</a></nav>',
-                     f'<h1>{title}</h1>', f'<p>{version_profile_note(fast)}</p>']
+                     f'<h1>{title}</h1>', f'<p>{version_profile_note(fast)}</p>',
+                     '<p><span class="verify-check" aria-hidden="true">✓</span> 通常版の現行ACまたはローカルVerifyの通過を示します。</p>']
             for folder, group in SOURCE_GROUPS.items():
                 sources = [source for source in variants if source.startswith(folder + "/")]
                 if not sources:
@@ -354,7 +356,10 @@ def write_version_lists(jekyll: Path, variants: dict[str, dict[tuple[str, bool],
                     api_url = site_link(source + ".html") + "#" + fragment
                     name = html.escape(titles[source]).replace("{", "&#123;").replace("}", "&#125;")
                     filename = html.escape(source.removeprefix(folder + "/")).replace("{", "&#123;").replace("}", "&#125;")
-                    lines.append(f'<li><div><a class="code-version-link" href="{api_url}">{name}</a> '
+                    label = verification.get(source)
+                    check = (f'<span class="verify-check" role="img" aria-label="{html.escape(label)}" '
+                             f'title="{html.escape(label)}">✓</span> ' if label else "")
+                    lines.append(f'<li><div>{check}<a class="code-version-link" href="{api_url}">{name}</a> '
                                  f'<small>{filename}</small></div>'
                                  f'<a class="code-variant-download" href="{site_link(asset)}" download '
                                  f'aria-label="{name}のC++コードを取得">.cppを取得</a></li>')
@@ -463,6 +468,17 @@ def current_ac(entry: dict) -> bool:
             and entry.get("submission_policy", {}).get("kind") not in {"documentation_only", "reference"})
 
 
+def library_verification_label(entries: list[dict], library: dict | None) -> str:
+    if any(current_ac(entry) for entry in entries):
+        return "現行ACあり"
+    normal = (library or {}).get("categories", {}).get("normal", {})
+    if normal.get("status") == "PASS" and any(
+        row["status"] == "PASS" and row.get("tested_source_sha256") for row in normal.get("evidence", ())
+    ):
+        return "通常版のローカルVerify通過"
+    return ""
+
+
 def online_table(entries: list[dict], verify_pages: set[str] | None = None) -> str:
     lines = ["### Verifyプログラム", "", "通常版の検証結果です。", "",
              "| 問題 | プログラム | 現行ソースの状態 | 提出結果 |", "| --- | --- | --- | --- |"]
@@ -527,7 +543,9 @@ def quality_table(library: dict | None) -> str:
     lines = ["### ローカル・CI検査", "", "| 検査 | 状態 |", "| --- | --- |"]
     for key, label in CATEGORIES.items():
         status = categories.get(key, {}).get("status", "UNAVAILABLE")
-        lines.append("| " + label + " | " + LABELS.get(status, "未実施") + " |")
+        fallback = "未測定" if key in {"failure", "library_checker"} else "未実施"
+        text = fallback if status == "UNAVAILABLE" else LABELS.get(status, fallback)
+        lines.append("| " + label + " | " + text + " |")
     lines += ["", "到達不能と証明した箇所を除き、通常版本体のカバレッジは行・直接分岐とも100%が合格条件です。未計測の場合も不合格です。"]
     coverage = categories.get("coverage", {}).get("evidence", [])
     shown = set()
@@ -699,6 +717,7 @@ def build(root: Path, output: Path, reports: list[Path], *, production: bool = F
     with tempfile.TemporaryDirectory(prefix="pages-", dir=generated) as folder:
         wrappers = Path(folder)
         files, results, paths, page_content, page_apis = {}, {}, [], {}, {}
+        verification: dict[str, str] = {}
         for source in sources:
             source_text = (root / source).read_text(encoding="utf-8")
             api = source_api_text(source_text)
@@ -727,8 +746,10 @@ def build(root: Path, output: Path, reports: list[Path], *, production: bool = F
             commit, date = last_commit(root, revision, source)
             if commit:
                 attrs.update(SIRKIT_LAST_COMMIT=commit, SIRKIT_LAST_COMMIT_DATE=date)
-            if any(current_ac(entry) for entry in related):
-                attrs["SIRKIT_CURRENT_AC"] = "true"
+            label = library_verification_label(related, by_library.get(source))
+            if label:
+                verification[source] = label
+                attrs["SIRKIT_VERIFY_LABEL"] = label
             if document:
                 attrs["SIRKIT_DOCUMENT"] = document
             files[source] = {"document_attributes": attrs}
@@ -785,13 +806,14 @@ def build(root: Path, output: Path, reports: list[Path], *, production: bool = F
     (output / "jekyll/quality.md").write_text(
         "---\nlayout: default\npermalink: /quality.html\ntitle: テスト・性能\n---\n\n"
         "[版を選ぶ](" + site_link("") + ")\n\n# テスト・性能\n\n" +
+        "[手元でライブラリの性能を測る](" + github_link("Document/performance_measurement.md", revision) + ")\n\n" +
         ci_quality_report.markdown(quality) + "\n[結果JSON](" + site_link("assets/quality.json") + ")\n", encoding="utf-8")
     guide = (root / VARIANT_GUIDE).read_text(encoding="utf-8")
     guide = rewrite_links(literal_liquid(guide), VARIANT_GUIDE, root, source_set, revision)
     (output / "jekyll/fast-guide.md").write_text(
         "---\nlayout: default\npermalink: /fast-guide.html\ntitle: 通常版と速度優先版\n---\n\n"
         "[版を選ぶ](" + site_link("") + ")\n\n" + guide, encoding="utf-8")
-    downloads, version_links = write_version_lists(output / "jekyll", variants, titles)
+    downloads, version_links = write_version_lists(output / "jekyll", variants, titles, verification)
     assets = output / "jekyll/assets"
     assets.mkdir(parents=True, exist_ok=True)
     for src, dst in (("quality.json", "quality.json"), ("online-status.json", "online-status.json"), ("snapshot.json", "snapshot.json")):

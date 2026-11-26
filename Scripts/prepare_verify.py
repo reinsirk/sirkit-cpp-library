@@ -10,6 +10,7 @@ import hashlib
 import importlib.util
 import json
 import math
+import os
 from pathlib import Path
 import re
 import subprocess
@@ -271,7 +272,7 @@ def graph_sample_checkers():
     spec.loader.exec_module(module)
     return {name: getattr(module, "check_" + name) for name in (
         "scc", "two_sat", "max_flow_grid", "component_sets",
-        "eulerian_trail_directed", "eulerian_trail_undirected", "min_cost_flow_grid", "pruefer_completion", "bipartite_matching", "linear_recurrence", "matrix_linear_system", "longest_common_substring", "binary_linear_system", "general_matching", "modular_square_root", "topological_order", "maximum_independent_set")}
+        "eulerian_trail_directed", "eulerian_trail_undirected", "min_cost_flow_grid", "pruefer_completion", "bipartite_matching", "linear_recurrence", "matrix_linear_system", "longest_common_substring", "binary_linear_system", "general_matching", "modular_square_root", "topological_order", "maximum_independent_set", "static_range_mode")}
 
 
 def matches(entry: dict, sample: dict, output: str) -> bool:
@@ -279,7 +280,7 @@ def matches(entry: dict, sample: dict, output: str) -> bool:
     if mode == "topological":
         mode = "topological_order"
     if mode in {"scc", "two_sat", "max_flow_grid", "component_sets",
-                "eulerian_trail_directed", "eulerian_trail_undirected", "min_cost_flow_grid", "pruefer_completion", "bipartite_matching", "linear_recurrence", "matrix_linear_system", "longest_common_substring", "binary_linear_system", "general_matching", "modular_square_root", "topological_order", "maximum_independent_set"}:
+                "eulerian_trail_directed", "eulerian_trail_undirected", "min_cost_flow_grid", "pruefer_completion", "bipartite_matching", "linear_recurrence", "matrix_linear_system", "longest_common_substring", "binary_linear_system", "general_matching", "modular_square_root", "topological_order", "maximum_independent_set", "static_range_mode"}:
         return graph_sample_checkers()[mode](entry, sample, output)
     actual, expected = output.split(), sample["output"].split()
     if mode == "float":
@@ -348,9 +349,20 @@ def matches(entry: dict, sample: dict, output: str) -> bool:
     return actual == expected
 
 
+def relative_report_text(value: str, temporary: Path | None = None) -> str:
+    """記録だけを相対表記にし、実行するコマンドは変更しない。"""
+    bases = (ROOT, Path.home()) if temporary is None else (temporary, ROOT, Path.home())
+    for base in bases:
+        value = value.replace(str(base) + os.sep, "")
+        if os.sep != "/":
+            value = value.replace(base.as_posix() + "/", "")
+    return value
+
+
 def run_tests(entries: list[dict], compiler: str, fallback: bool, output: Path,
               *, compile_profile: str = "standard", jobs: int = 1) -> None:
     results = []
+    compiler_name = Path(compiler).name
     flags = compile_flags(compile_profile, ["-std=c++23", "-O2", "-Wall", "-Wextra"])
     if (compile_profile != "atcoder-clang" and "clang" in Path(compiler).name
             and Path("/usr/lib/gcc/x86_64-linux-gnu/15").is_dir()):
@@ -359,9 +371,11 @@ def run_tests(entries: list[dict], compiler: str, fallback: bool, output: Path,
         flags += ["-U__SIZEOF_INT128__", "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
                   "-DSIRKIT_LINE_CONTAINER_FORCE_PORTABLE", "-DSIRKIT_DISABLE_SIMD"]
     with tempfile.TemporaryDirectory(prefix="atcoder_verify_") as tmp:
+        temporary = Path(tmp)
+
         def test(case: tuple[dict, bool]) -> dict:
             entry, skip = case
-            binary = Path(tmp) / (entry["id"] + ("_skip" if skip else "_checked"))
+            binary = temporary / (entry["id"] + ("_skip" if skip else "_checked"))
             tested_source, _ = render(entry, skip_runtime_checks=skip)
             source_path = ROOT / entry["submission"]
             if digest(tested_source) != entry["submission_sha256"]:
@@ -369,22 +383,26 @@ def run_tests(entries: list[dict], compiler: str, fallback: bool, output: Path,
                 source_path.write_bytes(tested_source)
             command = [compiler, str(source_path), *flags, "-o", str(binary)]
             built = subprocess.run(command, capture_output=True, text=True, timeout=180)
-            result = dict(id=entry["id"], compiler=compiler, skip_runtime_checks=skip,
+            reported_arguments = [relative_report_text(arg, temporary) for arg in command[1:-2]]
+            reported_command = [compiler_name, *reported_arguments]
+            result = dict(id=entry["id"], compiler=compiler_name, skip_runtime_checks=skip,
                           standard_fallback=fallback, compile_profile=compile_profile,
                           submission_sha256=entry["submission_sha256"],
                           tested_source_sha256=digest(tested_source),
-                          command=command[:-2], compile_ok=built.returncode == 0,
-                          diagnostics=built.stderr, samples=[])
+                          command=reported_command, compile_ok=built.returncode == 0,
+                          diagnostics=relative_report_text(built.stderr, temporary), samples=[])
             if built.returncode == 0:
                 for sample in entry["samples"]:
                     try:
                         run = subprocess.run([str(binary)], input=sample["input"], text=True,
                                              capture_output=True, timeout=60)
                         passed = run.returncode == 0 and matches(entry, sample, run.stdout)
-                        result["samples"].append(dict(passed=passed, returncode=run.returncode,
-                                                      stdout=run.stdout, stderr=run.stderr))
+                        result["samples"].append(dict(
+                            passed=passed, returncode=run.returncode, stdout=run.stdout,
+                            stderr=relative_report_text(run.stderr, temporary)))
                     except (subprocess.TimeoutExpired, ValueError, IndexError) as error:
-                        result["samples"].append(dict(passed=False, error=str(error)))
+                        result["samples"].append(dict(
+                            passed=False, error=relative_report_text(str(error), temporary)))
             result["passed"] = result["compile_ok"] and bool(result["samples"]) and all(s["passed"] for s in result["samples"])
             return result
 

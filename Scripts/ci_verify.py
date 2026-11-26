@@ -133,7 +133,7 @@ def run_selected(entries: list[dict], plan: dict, compiler: str, fallback: bool,
     selected = [entry for entry in entries if entry["id"] in selected_ids]
     if len(selected) != len(selected_ids):
         raise ValueError("選択後にVerify IDが変化しました")
-    report = {"format": 1, "plan": plan, "compiler": compiler, "standard_fallback": fallback,
+    report = {"format": 1, "plan": plan, "compiler": Path(compiler).name, "standard_fallback": fallback,
               "compile_profile": compile_profile, "jobs": jobs,
               "online_status": "not_evaluated", "status": "running", "results": []}
     write_report(output, report)
@@ -155,7 +155,7 @@ def run_selected(entries: list[dict], plan: dict, compiler: str, fallback: bool,
         report["status"] = "PASS"
     except (Exception, SystemExit) as error:
         report["status"] = "FAIL"
-        report["error"] = str(error)
+        report["error"] = prepare_verify.relative_report_text(str(error))
         raise
     finally:
         write_report(output, report)

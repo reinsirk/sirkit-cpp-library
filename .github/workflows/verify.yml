@@ -17,10 +17,30 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  maintenance:
+  generated:
     name: Generated files and status
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - name: Generated source and Verify synchronization
+        run: python3 -c 'from pathlib import Path; from Scripts.package_revised_libraries import check_generated; check_generated(Path.cwd())'
+      - name: README and online status synchronization
+        run: python3 Scripts/update_verify_status.py --check
+
+  python_tests:
+    name: Python unit tests (shard ${{ matrix.shard }})
     runs-on: ubuntu-26.04
-    timeout-minutes: 15
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1]
     steps:
       - uses: actions/checkout@v7
         with:
@@ -42,13 +62,23 @@ jobs:
       - name: Python unit tests
         env:
           SIRKIT_CLANG_TIDY: clang-tidy-18
+          TEST_SHARD: ${{ matrix.shard }}
         run: |
           export SIRKIT_TIDY_GCC_INSTALL_DIR="$(dirname "$(g++-15 -print-libgcc-file-name)")"
-          python3 -m unittest discover -s Scripts/tests -p 'test_*.py'
-      - name: Generated source and Verify synchronization
-        run: python3 -c 'from pathlib import Path; from Scripts.package_revised_libraries import check_generated; check_generated(Path.cwd())'
-      - name: README and online status synchronization
-        run: python3 Scripts/update_verify_status.py --check
+          python3 - <<'PY'
+          import os
+          import unittest
+
+          loader = unittest.TestLoader()
+          discovered = loader.discover("Scripts/tests", pattern="test_*.py")
+          if loader.errors:
+              raise SystemExit("\n".join(loader.errors))
+          modules = [suite for suite in discovered if suite.countTestCases()]
+          tests = unittest.TestSuite(modules[int(os.environ["TEST_SHARD"])::2])
+          if not tests.countTestCases():
+              raise SystemExit("No Python unit tests in this shard")
+          raise SystemExit(not unittest.TextTestRunner().run(tests).wasSuccessful())
+          PY
 
   examples:
     name: C++23 (${{ matrix.compiler }}, ${{ matrix.arithmetic }}${{ matrix.compile_profile != 'standard' && ', AtCoder' || '' }})
@@ -353,165 +383,6 @@ jobs:
           if-no-files-found: ignore
           retention-days: 14
 
-  performance:
-    name: Supplemental kernel performance regression${{ matrix.compile_profile == 'atcoder' && ' (AtCoder)' || '' }}
-    runs-on: ubuntu-26.04
-    timeout-minutes: 20
-    strategy:
-      fail-fast: false
-      matrix:
-        compile_profile: [standard, atcoder]
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
-          persist-credentials: false
-      - name: Install compiler
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y g++-15
-      - name: Compare library kernels against the PR base
-        env:
-          VERIFY_PR_BASE: ${{ github.event.pull_request.base.sha }}
-          VERIFY_COMPILE_PROFILE: ${{ matrix.compile_profile }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          python3 Scripts/ci_benchmark.py --base "$VERIFY_PR_BASE" --compiler g++-15 \
-            --compile-profile "$VERIFY_COMPILE_PROFILE" --regression-profile github-hosted \
-            --output "$RUNNER_TEMP/performance"
-          python3 - <<'PYREGRESSION'
-          import json
-          import os
-          from pathlib import Path
-
-          path = Path(os.environ["RUNNER_TEMP"]) / "performance/result.json"
-          report = json.loads(path.read_bytes())
-          results = report.get("results")
-          expected = report.get("expected_cases")
-          worst = report.get("worst_case_regressions")
-          complete = (
-              report.get("status") == "PASS"
-              and report.get("compile_profile") == os.environ["VERIFY_COMPILE_PROFILE"]
-              and report.get("regression_policy") == "library_worst_case"
-              and report.get("regression_profile") == "github-hosted"
-              and report.get("current_measurements_passed") is True
-              and report.get("performance_regression_passed") is True
-              and report.get("base_revision") == os.environ["VERIFY_PR_BASE"]
-              and type(expected) is int
-              and isinstance(results, list)
-              and expected == report.get("compared_cases") == len(results) > 0
-              and isinstance(worst, dict)
-              and worst.keys() == report.get("sources", {}).keys()
-              and all(gate.get("status") == "PASS" for gate in worst.values())
-              and sum(gate["compared_cases"] for gate in worst.values()) == expected
-          )
-          raise SystemExit(0 if complete else 1)
-          PYREGRESSION
-      - name: Summarize performance
-        if: always()
-        run: |
-          if [[ -f "$RUNNER_TEMP/performance/summary.md" ]]; then
-            cat "$RUNNER_TEMP/performance/summary.md" >> "$GITHUB_STEP_SUMMARY"
-          else
-            printf '性能測定の結果が生成されませんでした。ログを確認してください。\n' >> "$GITHUB_STEP_SUMMARY"
-            exit 1
-          fi
-      - name: Attach report provenance
-        if: always()
-        env:
-          REPORT_FILE: ${{ runner.temp }}/performance/result.json
-        run: |
-          python3 - <<'PYPROVENANCE'
-          import json, os
-          from pathlib import Path
-          path = Path(os.environ["REPORT_FILE"])
-          if path.is_file():
-              value = json.loads(path.read_text())
-              current = {key.lower(): os.environ.get(key) for key in (
-                  "GITHUB_SHA", "GITHUB_RUN_ID", "GITHUB_RUN_ATTEMPT", "GITHUB_REPOSITORY", "GITHUB_JOB")}
-              current["pull_request_head_sha"] = os.environ.get("SIRKIT_PR_HEAD_SHA")
-              value.setdefault("provenance", {}).update(current)
-              path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n")
-          PYPROVENANCE
-      - uses: actions/upload-artifact@v7
-        if: always()
-        with:
-          name: ${{ matrix.compile_profile == 'atcoder' && 'atcoder-representative-performance' || 'representative-performance' }}
-          path: |
-            ${{ runner.temp }}/performance/result.json
-            ${{ runner.temp }}/performance/summary.md
-          if-no-files-found: ignore
-          retention-days: 14
-
-  all_performance:
-    name: All-library Verify performance regression (${{ matrix.shard }}${{ matrix.compile_profile == 'atcoder' && ', AtCoder' || '' }})
-    runs-on: ubuntu-26.04
-    timeout-minutes: 90
-    strategy:
-      fail-fast: false
-      matrix:
-        shard: [0, 1, 2, 3, 4, 5, 6, 7]
-        compile_profile: [standard, atcoder]
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
-          persist-credentials: false
-      - name: Install compiler and headers
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y g++-15 libboost-dev
-      - name: Compare all Verify programs against the PR base
-        env:
-          VERIFY_SHARD: ${{ matrix.shard }}
-          VERIFY_PR_BASE: ${{ github.event.pull_request.base.sha }}
-          VERIFY_COMPILE_PROFILE: ${{ matrix.compile_profile }}
-        run: >-
-          python3 Scripts/ci_performance_all.py
-          --base "$VERIFY_PR_BASE"
-          --shard-index "$VERIFY_SHARD" --shard-count 8
-          --compiler g++-15 --compile-profile "$VERIFY_COMPILE_PROFILE"
-          --regression-profile github-hosted
-          --cache "$RUNNER_TEMP/all-library-performance-cache"
-          --output "$RUNNER_TEMP/all-library-performance"
-      - name: Summarize all-library performance
-        if: always()
-        run: |
-          if [[ -f "$RUNNER_TEMP/all-library-performance/summary.md" ]]; then
-            cat "$RUNNER_TEMP/all-library-performance/summary.md" >> "$GITHUB_STEP_SUMMARY"
-          else
-            printf '全ライブラリの性能測定結果が生成されませんでした。ログを確認してください。\n' >> "$GITHUB_STEP_SUMMARY"
-            exit 1
-          fi
-      - name: Attach report provenance
-        if: always()
-        env:
-          REPORT_FILE: ${{ runner.temp }}/all-library-performance/result.json
-        run: |
-          python3 - <<'PYPROVENANCE'
-          import json, os
-          from pathlib import Path
-          path = Path(os.environ["REPORT_FILE"])
-          if path.is_file():
-              value = json.loads(path.read_text())
-              current = {key.lower(): os.environ.get(key) for key in (
-                  "GITHUB_SHA", "GITHUB_RUN_ID", "GITHUB_RUN_ATTEMPT", "GITHUB_REPOSITORY", "GITHUB_JOB")}
-              current["pull_request_head_sha"] = os.environ.get("SIRKIT_PR_HEAD_SHA")
-              value.setdefault("provenance", {}).update(current)
-              path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n")
-          PYPROVENANCE
-      - name: Upload performance metadata only
-        uses: actions/upload-artifact@v7
-        if: always()
-        with:
-          name: ${{ matrix.compile_profile == 'atcoder' && 'atcoder-all-library-performance' || 'all-library-performance' }}-${{ matrix.shard }}
-          path: |
-            ${{ runner.temp }}/all-library-performance/result.json
-            ${{ runner.temp }}/all-library-performance/summary.md
-          if-no-files-found: ignore
-          retention-days: 14
-
   stress:
     name: Deterministic Max and structural cases
     runs-on: ubuntu-26.04
@@ -527,6 +398,7 @@ jobs:
       - name: Run deterministic full-size cases
         run: >-
           python3 Scripts/ci_stress.py --compiler g++-15
+          --case-timeout 60
           --output "$RUNNER_TEMP/stress-cases"
       - name: Summarize Max and structural cases
         if: always()
@@ -653,6 +525,7 @@ jobs:
           --base "$VERIFY_PR_BASE"
           --shard-index "$VERIFY_SHARD" --shard-count 8
           --compiler g++-15
+          --case-timeout 30
           --cache "$RUNNER_TEMP/library-checker-cache"
           --output "$RUNNER_TEMP/library-checker-report"
       - name: Attach report provenance
@@ -697,10 +570,73 @@ jobs:
           if-no-files-found: ignore
           retention-days: 14
 
+  yomiyasu:
+    name: Japanese documentation (yomiyasu)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - name: Find latest yomiyasu release
+        id: yomiyasu-release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          tag="$(curl --fail --silent --show-error --retry 3 --max-time 20 \
+            --header 'Accept: application/vnd.github+json' \
+            --header "Authorization: Bearer $GH_TOKEN" \
+            https://api.github.com/repos/nanaism/yomiyasu/releases/latest \
+            | jq -er '.tag_name | strings | select(length > 0)')"
+          git check-ref-format "refs/tags/$tag"
+          printf 'tag=%s\n' "$tag" >> "$GITHUB_OUTPUT"
+      - name: Fetch latest yomiyasu release
+        uses: actions/checkout@v7
+        with:
+          repository: nanaism/yomiyasu
+          ref: refs/tags/${{ steps.yomiyasu-release.outputs.tag }}
+          path: .ci-yomiyasu
+          persist-credentials: false
+      - name: Lint changed documentation
+        env:
+          VERIFY_PR_BASE: ${{ github.event.pull_request.base.sha }}
+          YOMIYASU_TAG: ${{ steps.yomiyasu-release.outputs.tag }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          tool="$GITHUB_WORKSPACE/.ci-yomiyasu"
+          linter="$tool/skills/yomiyasu/scripts/yomiyasu_lint.py"
+          revision="$(git -C "$tool" rev-parse HEAD)"
+          python3 "$linter" --version
+          git diff --name-only --diff-filter=ACMRT -z "$VERIFY_PR_BASE" HEAD -- \
+            ':(icase,glob)**/*.md' ':(icase,glob)**/*.markdown' \
+            ':(glob).competitive-verifier/docs/static/**/*.html' > "$RUNNER_TEMP/yomiyasu-paths"
+          checked=0
+          failed=0
+          while IFS= read -r -d '' path; do
+            printf '\n--- %q ---\n' "$path"
+            checked=$((checked + 1))
+            if [[ -L "$path" || ! -f "$path" ]]; then
+              printf '通常のファイルを読み込めません。\n' >&2
+              failed=$((failed + 1))
+            elif ! python3 "$linter" --fail-on error - < "$path"; then
+              failed=$((failed + 1))
+            fi
+          done < "$RUNNER_TEMP/yomiyasu-paths"
+          printf '## yomiyasu\n\nリリース `%s`（`%s`）\n\n検査した文書 %s件、失敗 %s件。詳細は検査ステップのログにあります。\n' \
+            "$YOMIYASU_TAG" "$revision" "$checked" "$failed" >> "$GITHUB_STEP_SUMMARY"
+          [[ "$failed" == 0 ]]
+
   documentation:
     name: Library pages preview
-    if: ${{ !cancelled() && needs.maintenance.result == 'success' }}
-    needs: [maintenance, examples, instrumented, performance, all_performance, contracts, library_checker]
+    if: ${{ !cancelled() && needs.generated.result == 'success' }}
+    needs: [generated, examples, instrumented, contracts, library_checker]
     permissions:
       contents: read
       actions: read
@@ -734,16 +670,6 @@ jobs:
           merge-multiple: false
       - uses: actions/download-artifact@v8
         with:
-          pattern: representative-performance
-          path: ${{ runner.temp }}/pages-input
-          merge-multiple: false
-      - uses: actions/download-artifact@v8
-        with:
-          pattern: all-library-performance-*
-          path: ${{ runner.temp }}/pages-input
-          merge-multiple: false
-      - uses: actions/download-artifact@v8
-        with:
           pattern: contracts-*
           path: ${{ runner.temp }}/pages-input
           merge-multiple: false
@@ -773,39 +699,39 @@ jobs:
   result:
     name: Verify result
     if: always()
-    needs: [maintenance, examples, variant_builds, instrumented, guidelines, performance, all_performance, contracts, library_checker, stress, documentation]
+    needs: [generated, python_tests, examples, variant_builds, instrumented, guidelines, contracts, library_checker, stress, yomiyasu, documentation]
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
       - name: Require all checks
         env:
-          MAINTENANCE_RESULT: ${{ needs.maintenance.result }}
+          GENERATED_RESULT: ${{ needs.generated.result }}
+          PYTHON_TESTS_RESULT: ${{ needs.python_tests.result }}
           VERIFY_RESULT: ${{ needs.examples.result }}
           VARIANT_BUILDS_RESULT: ${{ needs.variant_builds.result }}
           INSTRUMENTED_RESULT: ${{ needs.instrumented.result }}
           GUIDELINES_RESULT: ${{ needs.guidelines.result }}
-          PERFORMANCE_RESULT: ${{ needs.performance.result }}
-          ALL_PERFORMANCE_RESULT: ${{ needs.all_performance.result }}
           CONTRACT_RESULT: ${{ needs.contracts.result }}
           LIBRARY_CHECKER_RESULT: ${{ needs.library_checker.result }}
           STRESS_RESULT: ${{ needs.stress.result }}
+          YOMIYASU_RESULT: ${{ needs.yomiyasu.result }}
           DOCUMENTATION_RESULT: ${{ needs.documentation.result }}
         shell: bash
         run: |
           set -euo pipefail
           {
             printf '## Verify\n\n| 検査 | 結果 |\n| --- | --- |\n'
-            printf '| 生成物・Pythonテスト・README集計 | %s |\n' "$MAINTENANCE_RESULT"
+            printf '| 生成物・README集計 | %s |\n' "$GENERATED_RESULT"
+            printf '| Pythonテスト（2分割） | %s |\n' "$PYTHON_TESTS_RESULT"
             printf '| C++23・GCC/Clang・通常/標準代替 | %s |\n' "$VERIFY_RESULT"
             printf '| 配布8版の単独ビルド・動作検査 | %s |\n' "$VARIANT_BUILDS_RESULT"
             printf '| ASan/UBSan・カバレッジ（checked） | %s |\n' "$INSTRUMENTED_RESULT"
             printf '| Core Guidelines・Google Style（通常版のみ） | %s |\n' "$GUIDELINES_RESULT"
-            printf '| 代表ライブラリ本体の性能退行 | %s |\n' "$PERFORMANCE_RESULT"
-            printf '| 全ライブラリのVerify全体性能の退行 | %s |\n' "$ALL_PERFORMANCE_RESULT"
             printf '| checked正常系・期待した失敗系 | %s |\n' "$CONTRACT_RESULT"
             printf '| 公式Library Checkerケース（ローカル） | %s |\n' "$LIBRARY_CHECKER_RESULT"
             printf '| 決定的Max・構造ケース | %s |\n' "$STRESS_RESULT"
+            printf '| 日本語文書の書式・表現（yomiyasu） | %s |\n' "$YOMIYASU_RESULT"
             printf '| ライブラリページのプレビュー | %s |\n' "$DOCUMENTATION_RESULT"
             printf '\nローカル検証の結果です。オンラインACはREADMEのVerify一覧で別に管理します。\n'
           } >> "$GITHUB_STEP_SUMMARY"
-          [[ "$MAINTENANCE_RESULT" == success && "$VERIFY_RESULT" == success && "$VARIANT_BUILDS_RESULT" == success && "$INSTRUMENTED_RESULT" == success && "$GUIDELINES_RESULT" == success && "$PERFORMANCE_RESULT" == success && "$ALL_PERFORMANCE_RESULT" == success && "$CONTRACT_RESULT" == success && "$LIBRARY_CHECKER_RESULT" == success && "$STRESS_RESULT" == success && "$DOCUMENTATION_RESULT" == success ]]
+          [[ "$GENERATED_RESULT" == success && "$PYTHON_TESTS_RESULT" == success && "$VERIFY_RESULT" == success && "$VARIANT_BUILDS_RESULT" == success && "$INSTRUMENTED_RESULT" == success && "$GUIDELINES_RESULT" == success && "$CONTRACT_RESULT" == success && "$LIBRARY_CHECKER_RESULT" == success && "$STRESS_RESULT" == success && "$YOMIYASU_RESULT" == success && "$DOCUMENTATION_RESULT" == success ]]

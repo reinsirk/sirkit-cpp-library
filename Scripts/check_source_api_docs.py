@@ -17,7 +17,7 @@ DOCUMENT_PREFIX = "https://github.com/reinsirk/sirkit-cpp-library/blob/main/"
 
 def check(root: Path) -> tuple[int, int]:
     sources = sorted(file for folder in FOLDERS for file in (root / folder).rglob("*.cpp"))
-    sources.extend(root / name for name in ("temp.cpp", "temp2.cpp"))
+    sources.append(root / "template.cpp")
     legacy = root / "Bellman-Ford_SFPA.cpp"
     if legacy.is_file():
         sources.append(legacy)
