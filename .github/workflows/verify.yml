@@ -222,6 +222,29 @@ jobs:
           if (-not $install) { throw "Visual Studio C++ tools not found" }
           $vcvars = Join-Path $install "VC\Auxiliary\Build\vcvarsall.bat"
           "SIRKIT_VCVARS=$vcvars" >> $env:GITHUB_ENV
+      - name: Install pinned Clang on Windows AMD64
+        if: runner.os == 'Windows' && matrix.compiler == 'Clang' && matrix.arch == 'x64'
+        env:
+          SIRKIT_LLVM_VERSION: 22.1.8
+          SIRKIT_LLVM_SHA256: 16e5709785fef73c854646241c4a92c5cd574318d1b33c63330dd7721903e55c
+        shell: pwsh
+        run: |
+          # The AMD64 runner's MSVC STL requires Clang 22 or newer.
+          $asset = "LLVM-${env:SIRKIT_LLVM_VERSION}-win64.exe"
+          $installer = Join-Path $env:RUNNER_TEMP $asset
+          $llvm = Join-Path $env:RUNNER_TEMP "llvm-$env:SIRKIT_LLVM_VERSION"
+          $release = "https://github.com/llvm/llvm-project/releases/download/llvmorg-$env:SIRKIT_LLVM_VERSION"
+          curl.exe --fail --location --retry 3 --output $installer "$release/$asset"
+          if ($LASTEXITCODE -ne 0) { throw "Failed to download $asset" }
+          if ((Get-FileHash -LiteralPath $installer -Algorithm SHA256).Hash -ne $env:SIRKIT_LLVM_SHA256) {
+            throw "SHA-256 mismatch for $asset"
+          }
+          $install = Start-Process -FilePath $installer -ArgumentList "/S /D=$llvm" -Wait -PassThru
+          $clang = Join-Path $llvm "bin\clang++.exe"
+          if ($install.ExitCode -ne 0 -or -not (Test-Path -LiteralPath $clang -PathType Leaf)) {
+            throw "Failed to install $asset (exit code $($install.ExitCode))"
+          }
+          "SIRKIT_WINDOWS_CLANG=$clang" >> $env:GITHUB_ENV
       - name: Verify common and compiler-specific variants on Linux
         if: runner.os == 'Linux'
         shell: bash
@@ -249,9 +272,11 @@ jobs:
         shell: cmd
         run: |
           call "%SIRKIT_VCVARS%" %SIRKIT_MSVC_ARCH% || exit /b 1
-          where clang++.exe || exit /b 1
+          if not defined SIRKIT_WINDOWS_CLANG set "SIRKIT_WINDOWS_CLANG=clang++.exe"
+          > "%RUNNER_TEMP%\clang-stl-probe.cpp" echo #include ^<version^>
+          "%SIRKIT_WINDOWS_CLANG%" --target="%SIRKIT_CLANG_TARGET%" -std=c++23 -fsyntax-only "%RUNNER_TEMP%\clang-stl-probe.cpp" || exit /b 1
           cd /d "%GITHUB_WORKSPACE%"
-          python -X utf8 Scripts/verify_variants.py --compiler Clang --clang clang++.exe --clang-target "%SIRKIT_CLANG_TARGET%" --syntax-only --run-tests --jobs 2 --acl-include .verify-acl --output "%RUNNER_TEMP%\variant-builds.json" --summary "%GITHUB_STEP_SUMMARY%"
+          python -X utf8 Scripts/verify_variants.py --compiler Clang --clang "%SIRKIT_WINDOWS_CLANG%" --clang-target "%SIRKIT_CLANG_TARGET%" --syntax-only --run-tests --jobs 2 --acl-include .verify-acl --output "%RUNNER_TEMP%\variant-builds.json" --summary "%GITHUB_STEP_SUMMARY%"
       - uses: actions/upload-artifact@v7
         if: always()
         with:

@@ -235,7 +235,7 @@ class StructureTests(unittest.TestCase):
         developer = next(step for step in job["steps"] if step.get("name") == "Find Visual Studio developer command")
         self.assertIn("Microsoft.VisualStudio.Component.VC.Tools.ARM64", developer["run"])
         self.assertIn("vcvarsall.bat", developer["run"])
-        windows = next(step for step in job["steps"] if "on Windows" in step.get("name", ""))
+        windows = next(step for step in job["steps"] if "MSVC-specific variants on Windows" in step.get("name", ""))
         self.assertEqual(windows["shell"], "cmd")
         self.assertEqual(windows["env"]["SIRKIT_MSVC_ARCH"], "${{ matrix.arch }}")
         self.assertIn('call "%SIRKIT_VCVARS%" %SIRKIT_MSVC_ARCH%', windows["run"])
@@ -249,10 +249,24 @@ class StructureTests(unittest.TestCase):
         clang_windows = next(step for step in job["steps"] if "Clang-specific variants on Windows" in step.get("name", ""))
         self.assertIn("aarch64-pc-windows-msvc", clang_windows["env"]["SIRKIT_CLANG_TARGET"])
         self.assertIn("x86_64-pc-windows-msvc", clang_windows["env"]["SIRKIT_CLANG_TARGET"])
+        self.assertIn('--clang "%SIRKIT_WINDOWS_CLANG%"', clang_windows["run"])
         self.assertIn('--clang-target "%SIRKIT_CLANG_TARGET%" --syntax-only --run-tests', clang_windows["run"])
         artifacts = next(step for step in job["steps"] if step.get("uses", "").startswith("actions/upload-artifact@"))
         self.assertIn("matrix.arch == 'arm64' && '-ARM64'", artifacts["with"]["name"])
         self.assertIn("runner.os == 'Windows' && matrix.compiler == 'Clang' && '-Windows'", artifacts["with"]["name"])
+
+    def test_windows_amd64_uses_verified_clang_before_compiling_against_msvc_stl(self):
+        steps = workflow("verify.yml")["jobs"]["variant_builds"]["steps"]
+        install = next(step for step in steps if step.get("name") == "Install pinned Clang on Windows AMD64")
+        check = next(step for step in steps if "Clang-specific variants on Windows" in step.get("name", ""))
+        self.assertLess(steps.index(install), steps.index(check))
+        self.assertEqual(install["if"], "runner.os == 'Windows' && matrix.compiler == 'Clang' && matrix.arch == 'x64'")
+        self.assertGreaterEqual(int(install["env"]["SIRKIT_LLVM_VERSION"].split(".")[0]), 22)
+        self.assertRegex(install["env"]["SIRKIT_LLVM_SHA256"], r"^[0-9a-f]{64}$")
+        self.assertIn("github.com/llvm/llvm-project/releases/download/", install["run"])
+        self.assertLess(install["run"].index("Get-FileHash"), install["run"].index("Start-Process"))
+        self.assertIn('"SIRKIT_WINDOWS_CLANG=$clang" >> $env:GITHUB_ENV', install["run"])
+        self.assertLess(check["run"].index("-fsyntax-only"), check["run"].index("Scripts/verify_variants.py"))
 
     def test_cross_architecture_matrix_executes_checked_and_unchecked_binaries(self):
         job = workflow("verify.yml")["jobs"]["cross_architecture"]
