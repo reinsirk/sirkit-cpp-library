@@ -2,7 +2,7 @@
 
 各 `.cpp` は標準ヘッダー以外の依存がなく、そのまま単独で貼り付けられます。
 複数のファイルを併用したり同じコードを貼り付けたりしても、部品ごとのガードで再定義を防ぎます。
-全機能が必要なら `geometory.cpp` を使ってください。通常の公開APIは `sirkit::geo`、`convex_hull_sorted`・三角形の面積関数・`circle_intersection_kind` は `sirkit` 直下です。
+基本図形と演算をまとめて使うには `geometory.cpp` を選びます。その公開APIは主に `sirkit::geo` にあり、`convex_hull_sorted`・三角形の面積関数・`circle_intersection_kind` は `sirkit` 直下にあります。
 
 | ファイル | 主な用途・関数 |
 | --- | --- |
@@ -10,8 +10,16 @@
 | `Line_Segment.cpp` | `Line/Segment`、`on_segment/intersects`、射影・反射・最近点、距離、交点 |
 | `Polygon.cpp` | 面積・周長・内外判定・凸包・重心、`convex_cut`、整列済み点列用の`sirkit::convex_hull_sorted` |
 | `Circle.cpp` | `Circle`、`circumcircle`、円盤の内外判定、円と直線・線分・円の交点 |
+| [Rectangle_Union_Area.cpp](Rectangle_Union_Area.cpp) | [Area of Union of Rectangles](../Verify/current/submissions/rectangle_union_area.cpp) |
+| [Furthest_Pair.cpp](Furthest_Pair.cpp) | [Furthest Pair of Points](../Verify/current/submissions/furthest_pair.cpp) |
+| [Minimum_Enclosing_Circle.cpp](Minimum_Enclosing_Circle.cpp) | [Minimum Enclosing Circle](../Verify/current/submissions/minimum_enclosing_circle.cpp) |
+| [Minkowski_Sum.cpp](Minkowski_Sum.cpp) | [G - Division Point Hull](../Verify/current/submissions/minkowski_sum.cpp) |
+| [Convex_Layers.cpp](Convex_Layers.cpp) | [Convex Layers](../Verify/current/submissions/convex_layers.cpp) |
+| [Euclidean_MST.cpp](Euclidean_MST.cpp) | [Euclidean MST](../Verify/current/submissions/euclidean_mst.cpp) |
+| [Count_Points_In_Triangle.cpp](Count_Points_In_Triangle.cpp) | [Count Points in Triangles](../Verify/current/submissions/count_points_in_triangle.cpp) |
+| [All_Furthest_Neighbors.cpp](All_Furthest_Neighbors.cpp) | [All Furthest Neighbors](../Verify/current/submissions/all_furthest_neighbors.cpp) |
 
-すべてのファイルがPointを含みます。Polygonは必要な線分判定とLine型、Circleは必要な線分判定も含みます。
+上の4ファイルはそれぞれPointを含みます。Polygonは必要な線分判定とLine型、Circleは必要な線分判定も含みます。
 Polygonと直線同士の交点計算を使う場合は、Line_Segmentも貼り付けてください。
 各型・関数群の先頭にAPI一覧と計算量を記載しています。全機能を使う例は `../Examples/geometry_example.cpp` にあります。
 
@@ -61,6 +69,8 @@ python3 Scripts/generate_geometry.py --check
 | [geometory.cpp](geometory.cpp) | 従来の全機能版 |
 | [Nearest_Two_points.cpp](Nearest_Two_points.cpp) | 最近点対 |
 | [angle_sort.cpp](angle_sort.cpp) | 偏角順の比較・ソート |
+| [Manhattan_MST.cpp](Manhattan_MST.cpp) | [マンハッタン最小全域木](../Document/manhattan_mst.md) |
+| [Rectangle_Sum.cpp](Rectangle_Sum.cpp) | [長方形内の重みの和](../Document/rectangle_sum.md) |
 
 現在版の提出コード・検査一覧は[Verify](../Verify/current/README.md)を参照してください。
 

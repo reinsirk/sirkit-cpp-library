@@ -272,7 +272,7 @@ def graph_sample_checkers():
     spec.loader.exec_module(module)
     return {name: getattr(module, "check_" + name) for name in (
         "scc", "two_sat", "max_flow_grid", "component_sets",
-        "eulerian_trail_directed", "eulerian_trail_undirected", "min_cost_flow_grid", "pruefer_completion", "bipartite_matching", "linear_recurrence", "matrix_linear_system", "longest_common_substring", "binary_linear_system", "general_matching", "modular_square_root", "topological_order", "maximum_independent_set", "static_range_mode")}
+        "eulerian_trail_directed", "eulerian_trail_undirected", "min_cost_flow_grid", "pruefer_completion", "bipartite_matching", "linear_recurrence", "matrix_linear_system", "longest_common_substring", "binary_linear_system", "general_matching", "modular_square_root", "topological_order", "maximum_independent_set", "static_range_mode", "manhattan_mst", "minimum_spanning_tree", "tree_diameter")}
 
 
 def matches(entry: dict, sample: dict, output: str) -> bool:
@@ -280,7 +280,7 @@ def matches(entry: dict, sample: dict, output: str) -> bool:
     if mode == "topological":
         mode = "topological_order"
     if mode in {"scc", "two_sat", "max_flow_grid", "component_sets",
-                "eulerian_trail_directed", "eulerian_trail_undirected", "min_cost_flow_grid", "pruefer_completion", "bipartite_matching", "linear_recurrence", "matrix_linear_system", "longest_common_substring", "binary_linear_system", "general_matching", "modular_square_root", "topological_order", "maximum_independent_set", "static_range_mode"}:
+                "eulerian_trail_directed", "eulerian_trail_undirected", "min_cost_flow_grid", "pruefer_completion", "bipartite_matching", "linear_recurrence", "matrix_linear_system", "longest_common_substring", "binary_linear_system", "general_matching", "modular_square_root", "topological_order", "maximum_independent_set", "static_range_mode", "manhattan_mst", "minimum_spanning_tree", "tree_diameter"}:
         return graph_sample_checkers()[mode](entry, sample, output)
     actual, expected = output.split(), sample["output"].split()
     if mode == "float":

@@ -2,7 +2,7 @@
 
 ## 使い方
 
-1. 下表の問題を開き、リンク先の提出コードをそのまま貼り付けます。ライブラリ本体を埋め込み済みです。
+1. [Verify状況](status.md)から問題と提出コードを開き、コードをそのまま貼り付けます。ライブラリ本体を埋め込み済みです。
 2. C++23を選びます。問題の制約内の入力を前提に、`SKIP_RUNTIME_CHECKS`を定義しています。実行時assertを含む提出では`NDEBUG`も定義し、効果を測定した問題にはGCC専用の最適化設定を付けます。
 3. 最新の提出URLをコードの`Submission`コメントに記載し、[Verify状況](status.md)でソースと判定・再提出方針を確認します。
 
@@ -32,14 +32,14 @@ ACは当該提出プログラムに対する判定で、全公開APIの検証済
 移行前の入口は参考検証として残しています。
 
 Verify先はLibrary Checker→yukicoder→AtCoder→AOJの順で探します。APIを自然に検証できる問題を選び、適切な上位問題が見つからなければ現在の提出先を維持します。対応問題のないAPIは独立参照や入力例のローカル検査で補います。
-検証するAPI・入力範囲は[manifest](manifest.json)の`coverage`と`limitations`を参照してください。
+検証するAPIや入力範囲を明記した項目には、[manifest](manifest.json)に`coverage`と`limitations`があります。
 偏角ソートには[angle_sort版](submissions/angle_sort.cpp)と[std::sortへ比較関数を渡す版](submissions/angle_sort_std.cpp)を用意しています。
 整数二項係数の素数法問題では、提出コード側で`table_limit=9'999'999`、前計算範囲を`min(modulus-1,9'999'999)`に設定しています。設定方法は[二項係数の説明](../../Math/Combination/README.md)を参照してください。
 
 ## 提出環境と依存
 
-- 提出用コードは提出先のACLインストールに依存しません。二項係数のMintには[公式ACL](https://github.com/atcoder/ac-library)のmodintと必要な内部ヘッダーを展開済みです。
-- 使用したACLの版は[vendor/ACL_COMMIT](vendor/ACL_COMMIT)、ライセンスは[vendor/ACL_LICENSE](vendor/ACL_LICENSE)に保存しています。他の提出コードは標準ヘッダーだけを使います。
+- 提出用コードは提出先のACLインストールに依存しません。modintを使う提出には[公式ACL](https://github.com/atcoder/ac-library)のmodintと必要な内部ヘッダーを展開済みです。
+- 使用したACLの版は[vendor/ACL_COMMIT](vendor/ACL_COMMIT)、ライセンスは[vendor/ACL_LICENSE](vendor/ACL_LICENSE)に保存しています。
 - `verification_kind: local_regression`の過去の入力例はローカル回帰です。新しいオンライン用の登録・提出結果とは区別します。
 - 全コードを512 KiB以下に制限しています。上限は各提出ファイル単位です。
 - `local`のコードは提出用の問題を持たない補足検査です。HashSetと削除可能PQのunit driverは独立参照と照合します。オンライン判定・速度比較には、それぞれの操作が出力に反映される別の問題を使います。

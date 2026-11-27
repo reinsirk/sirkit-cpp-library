@@ -179,7 +179,7 @@ def markdown(report: dict) -> str:
         lines.append(f"| {row['name']} | {dimensions['n']} | {dimensions['q']} | {maximum} | {row['status']} | {elapsed} |")
     if report.get("error"):
         lines += ["", "エラー: " + str(report["error"]).replace("\n", " ")[:800]]
-    lines += ["", "対象はUnionFindとYuki2295用PersistentUnionFindです。他の全ライブラリのMax網羅は主張しません。"]
+    lines += ["", "対象はUnionFind、Yuki2295用PersistentUnionFind、2次元・3次元累積和です。"]
     return "\n".join(lines) + "\n"
 
 

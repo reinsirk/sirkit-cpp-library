@@ -25,11 +25,25 @@ GLOBAL_INPUTS = {
     ".github/workflows/verify.yml", "Scripts/ci_verify.py",
 }
 EMBEDDED_DEPENDENTS = {
+    "Math/Berlekamp_Massey.cpp": {"Math/Sparse_Matrix_Determinant.cpp"},
+    "Math/Pollard_Rho.cpp": {"Math/Primitive_Root.cpp", "Math/Two_Square_Sum.cpp"},
+    "Algorithm/Monge_Optimization.cpp": {"Geometry/All_Furthest_Neighbors.cpp", "Algorithm/Concave_Min_Plus_Convolution.cpp"},
+    "DataStructure/Link_Cut_Tree.cpp": {"Graph/Incremental_Minimum_Spanning_Forest.cpp"},
     "DataStructure/Dynamic_Bitset.cpp": {"Math/Binary_Matrix.cpp"},
-    "Math/Matrix.cpp": {"Math/Gaussian_Elimination.cpp"},
+    "Math/Matrix.cpp": {"Math/Gaussian_Elimination.cpp", "Math/Adjugate_Matrix.cpp"},
+    "Math/Gaussian_Elimination.cpp": {"Math/Adjugate_Matrix.cpp"},
     "Math/NTT.cpp": {"Math/Convolution.cpp", "Math/Formal_Power_Series.cpp",
-                     "Math/Polynomial.cpp", "Math/Linear_Recurrence.cpp"},
-    "Math/Formal_Power_Series.cpp": {"Math/Polynomial.cpp"},
+                     "Math/Polynomial.cpp", "Math/Linear_Recurrence.cpp", "Math/Combinatorial_Sequences.cpp",
+                     "String/Wildcard_Pattern_Matching.cpp", "Math/Polynomial_Prefix_Sum.cpp",
+                     "Graph/Tree_Distance_Frequency.cpp", "Math/Multivariate_Convolution.cpp",
+                     "Math/Multiplicative_Convolution.cpp", "Math/Consecutive_Polynomial_Evaluation.cpp",
+                     "Math/Polynomial_Sequence_Product.cpp", "Math/Geometric_Polynomial.cpp",
+                     "Math/Newton_Basis.cpp", "Math/Consecutive_Linear_Recurrence.cpp"},
+    "Graph/SCC.cpp": {"Graph/Incremental_SCC.cpp"},
+    "DataStructure/union_find.cpp": {"Graph/Incremental_SCC.cpp"},
+    "Graph/Centroid_Decomposition.cpp": {"Graph/Tree_Distance_Frequency.cpp"},
+    "Math/Formal_Power_Series.cpp": {"Math/Polynomial.cpp", "Math/Combinatorial_Sequences.cpp",
+                                     "Math/Polynomial_Prefix_Sum.cpp", "Math/Newton_Basis.cpp"},
 }
 
 

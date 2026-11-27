@@ -1,5 +1,6 @@
 #define SKIP_RUNTIME_CHECKS
 // Verify: https://judge.yosupo.jp/problem/log_of_formal_power_series
+// Submission: https://judge.yosupo.jp/submission/419646
 
 // Library: Math/Formal_Power_Series.cpp
 // SPDX-License-Identifier: CC0-1.0

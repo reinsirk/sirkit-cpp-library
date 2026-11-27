@@ -21,6 +21,31 @@ class GraphSamplesTest(unittest.TestCase):
         self.assertTrue(checks.check_modular_square_root({}, binary, "0 1"))
         self.assertFalse(checks.check_modular_square_root({}, binary, "0 -1"))
 
+    def test_manhattan_mst(self):
+        sample = {"input": "4\n0 0\n1 0\n1 1\n0 1\n", "output": "3\n0 1\n1 2\n2 3\n"}
+        for answer in ("3 0 1 1 2 2 3", "3 0 1 1 2 0 3"):
+            self.assertTrue(checks.check_manhattan_mst({}, sample, answer))
+        for answer in ("3 0 1 0 1 2 3", "4 0 1 1 2 2 3", "3 0 2 1 2 2 3",
+                       "3 0 1 1 2 2 4", "3 0 1 1 2", "3 0 1 1 2 2 3 0", "invalid"):
+            self.assertFalse(checks.check_manhattan_mst({}, sample, answer))
+
+    def test_minimum_spanning_tree(self):
+        sample = {"input": "4 5\n0 1 1\n1 2 1\n2 3 1\n3 0 1\n0 2 2\n", "output": "3\n0 1 2\n"}
+        for answer in ("3 0 1 2", "3 3 0 2"):
+            self.assertTrue(checks.check_minimum_spanning_tree({}, sample, answer))
+        for answer in ("3 0 0 2", "3 0 1 4", "3 5 1 2", "3 0 1 2 3", "3 0_0 1 2", "4 0 1 4"):
+            self.assertFalse(checks.check_minimum_spanning_tree({}, sample, answer))
+        self.assertTrue(checks.check_minimum_spanning_tree({}, {"input": "1 0", "output": "0"}, "0"))
+
+    def test_tree_diameter(self):
+        sample = {"input": "4\n0 1 2\n1 2 3\n1 3 3\n", "output": "6 3\n2 1 3"}
+        for answer in ("6 3 2 1 3", "6 3 3 1 2"):
+            self.assertTrue(checks.check_tree_diameter({}, sample, answer))
+        for answer in ("5 3 0 1 2", "6 3 0 1 2", "6 3 2 3 1", "6 3 2 1 2",
+                       "6 4 2 1 3", "6 3 2 1 4", "6 0"):
+            self.assertFalse(checks.check_tree_diameter({}, sample, answer))
+        self.assertTrue(checks.check_tree_diameter({}, {"input": "1", "output": "0 1\n0"}, "0 1 0"))
+
     def test_general_matching(self):
         cases = [{'input': '3 3\n0 1\n1 2\n2 0\n', 'output': '1\n0 1\n', 'expected': True},
          {'input': '3 3\n0 1\n1 2\n2 0\n', 'output': '1\n2 0\n', 'expected': True},

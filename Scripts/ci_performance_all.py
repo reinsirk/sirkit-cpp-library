@@ -73,7 +73,7 @@ def catalog(entries: list[dict], nonlc, root: Path = ROOT) -> list[dict]:
     mapping = nonlc.LIBRARY_VERIFY_IDS
     result = []
     for library in paths:
-        matches = [entry for entry in entries if library in entry["libraries"] and entry.get("problem_url")]
+        matches = [entry for entry in entries if library in entry["libraries"]]
         lc = [entry for entry in matches if official.problem_id(entry)]
         if lc:
             entry = min(lc, key=lambda e: (len(e["libraries"]) != 1, e["id"].startswith("coverage_"), e["id"]))
@@ -81,9 +81,10 @@ def catalog(entries: list[dict], nonlc, root: Path = ROOT) -> list[dict]:
             cases = None
         else:
             identifier = mapping.get(library)
-            if identifier not in by_id or by_id[identifier] not in matches:
+            entry = by_id.get(identifier)
+            if entry not in matches or not (entry.get("problem_url") or entry.get("verification_kind") == "local_regression"):
                 raise PerformanceError("missing non-LC performance fixture: " + library)
-            entry, source = by_id[identifier], "deterministic_non_lc"
+            source = "deterministic_non_lc"
             cases = nonlc.plans_for_library(library, quick=False)
             if not cases or any(c.get("verify_id") != identifier for c in cases):
                 raise PerformanceError("non-LC case catalog mismatch: " + library)
@@ -91,7 +92,7 @@ def catalog(entries: list[dict], nonlc, root: Path = ROOT) -> list[dict]:
             raise PerformanceError("invalid Verify ID")
         result.append({"library": library, "verify_id": entry["id"],
                        "libraries": list(entry["libraries"]), "case_source": source,
-                       "problem_id": official.problem_id(entry), "problem_url": entry["problem_url"],
+                       "problem_id": official.problem_id(entry), "problem_url": entry.get("problem_url"),
                        "combined_library_scope": len(entry["libraries"]) != 1,
                        "case_selection": "smallest + largest + every generator family + dedicated first cases" if lc else "all configured deterministic profiles",
                        "configured_cases": cases})
@@ -261,23 +262,25 @@ def check_frozen(frozen: dict[str, str], root: Path = ROOT) -> None:
         raise PerformanceError("source changed during performance measurement")
 
 
-def _limits(memory_mib: int, output_bytes: int):
+def _limits(memory_mib: int, output_bytes: int, stack_bytes: int | None = None):
     def apply():
         memory = memory_mib * 1024 * 1024
         resource.setrlimit(resource.RLIMIT_AS, (memory, memory))
         resource.setrlimit(resource.RLIMIT_FSIZE, (output_bytes, output_bytes))
         resource.setrlimit(resource.RLIMIT_CORE, (0, 0))
+        if stack_bytes is not None:
+            resource.setrlimit(resource.RLIMIT_STACK, official.generation_stack_limit(stack_bytes))
     return apply
 
 
 def execute(command: list[str], *, work: Path, output: Path, log: Path, timeout: float,
-            stdin: Path | None = None, memory_mib: int = 2048) -> dict:
+            stdin: Path | None = None, memory_mib: int = 2048, stack_bytes: int | None = None) -> dict:
     # wait(timeout)の指数的pollingを使わず、wait4で子のCPU時間も分離する。
     started = time.perf_counter_ns()
     done, timed_out = threading.Event(), threading.Event()
     with (stdin.open("rb") if stdin else open(os.devnull, "rb")) as inp, output.open("wb") as out, log.open("ab") as err:
         process = subprocess.Popen(command, cwd=work, stdin=inp, stdout=out, stderr=err,
-                                   start_new_session=True, preexec_fn=_limits(memory_mib, 512 * 1024 * 1024))
+                                   start_new_session=True, preexec_fn=_limits(memory_mib, 512 * 1024 * 1024, stack_bytes))
         def expire():
             if done.is_set():
                 return
@@ -350,7 +353,8 @@ def output_matches(actual: Path, case: dict, entry: dict, work: Path) -> bool:
         if file_digest(Path(case["checker_path"])) != case["checker_sha256"]:
             raise PerformanceError("official checker changed")
         result = execute([case["checker_path"], str(source), str(actual), str(expected)],
-                         work=work, output=work / "checker.stdout", log=work / "checker.stderr", timeout=60)
+                         work=work, output=work / "checker.stdout", log=work / "checker.stderr", timeout=60,
+                         stack_bytes=official.CHECKER_STACK_BYTES)
         # testlibの解答不一致と、チェッカー自身の異常終了を区別する。
         if result["timed_out"] or result["returncode"] not in (0, 1, 2, 4):
             raise PerformanceError("official checker failed to judge: " + case["name"])

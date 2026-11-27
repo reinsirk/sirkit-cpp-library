@@ -18,7 +18,8 @@ class NamespaceRoundtripTests(unittest.TestCase):
     def test_all_originals_roundtrip_and_idempotence(self):
         layout = json.loads((ROOT / "Scripts/library_layout.json").read_text())
         paths = sorted(p for directory in layout for p in (ROOT / directory).rglob("*.cpp"))
-        self.assertEqual(len(paths), 103)
+        expected = {ROOT / directory / filename for directory, filenames in layout.items() for filename in filenames}
+        self.assertLessEqual(expected, set(paths))
         for path in paths:
             with self.subTest(path=path.relative_to(ROOT)):
                 raw = ns.unwrap_source(path.read_text())

@@ -14,6 +14,7 @@ import unittest
 from unittest.mock import patch
 
 from Scripts import prepare_verify
+from Scripts.tests.test_ci_stress import cuboid_oracle
 from Verify.ci import performance_cases as cases
 
 
@@ -22,16 +23,15 @@ class PerformanceCaseTests(unittest.TestCase):
     def setUpClass(cls):
         cls.entries = {e["id"]: e for e in prepare_verify.collect()}
 
-    def test_all_twenty_uncovered_libraries_have_two_meaningful_profiles(self):
+    def test_all_non_library_checker_libraries_have_two_meaningful_profiles(self):
         all_libraries = {p for e in self.entries.values() for p in e["libraries"]}
         lc_libraries = {p for e in self.entries.values() if "judge.yosupo.jp/problem/" in (e.get("problem_url") or "") for p in e["libraries"]}
         self.assertEqual(set(cases.LIBRARY_VERIFY_IDS), all_libraries - lc_libraries)
-        self.assertEqual(len(cases.LIBRARY_VERIFY_IDS), 20)
         full = [p for library in cases.LIBRARY_VERIFY_IDS for p in cases.plans_for_library(library)]
-        self.assertEqual(len(full), 40)
-        self.assertEqual(len({p["name"] for p in full}), 40)
+        self.assertEqual(len({p["name"] for p in full}), len(full))
         for library, identifier in cases.LIBRARY_VERIFY_IDS.items():
-            self.assertEqual(self.entries[identifier]["libraries"], [library])
+            self.assertEqual(self.entries[identifier]["libraries"][0], library)
+            self.assertEqual(len(cases.plans_for_library(library)), 2)
             for p in cases.plans_for_library(library):
                 self.assertEqual(p["scale_claim"], "CI_workload_not_problem_max")
                 self.assertTrue(p["oracle"] and p["dimensions"])
@@ -104,6 +104,8 @@ class PerformanceCaseTests(unittest.TestCase):
         rows = data.splitlines()
         ints = lambda line: list(map(int, line.split()))
         emit = lambda xs: " ".join(map(str, xs))
+        if key == "prefix_sum_3d":
+            return emit(cuboid_oracle(data))
         if key == "all_pairs":
             n, m = ints(rows[0]); adj = [[] for _ in range(n)]
             for line in rows[1:]:
@@ -238,6 +240,156 @@ class PerformanceCaseTests(unittest.TestCase):
             assert score == (n * n if plan["scenario"] == "all_cells" else 2 * n)
             return None
         if key == "pruefer_code":return None
+        if key == "knapsack_bounded_exact":
+            _, target = ints(rows[0])
+            best = {0: 0}
+            for line in rows[1:]:
+                weight, value, stock = ints(line)
+                updated = {}
+                for used, total in best.items():
+                    for copies in range(min(stock, (target - used) // weight) + 1):
+                        goal = used + copies * weight
+                        updated[goal] = max(updated.get(goal, -1), total + copies * value)
+                best = updated
+            return str(best.get(target, -1))
+        if key == "subset_sum_cards":
+            _, target = ints(rows[0])
+            cards = [ints(line) for line in rows[1:]]
+            for faces in itertools.product(range(2), repeat=len(cards)):
+                if sum(card[face] for card, face in zip(cards, faces)) == target:
+                    return 'Yes\n' + ''.join('HT'[face] for face in faces)
+            return 'No'
+        if key == "minkowski_sum":
+            _, p, q = ints(rows[0])
+            points = [ints(line) for line in rows[1:]]
+            pairs = sorted({(q * x + p * a, q * y + p * b)
+                            for (x, y), (a, b) in itertools.combinations(points, 2)})
+            def chain(coordinates):
+                hull = []
+                for c in coordinates:
+                    while len(hull) >= 2:
+                        a, b = hull[-2:]
+                        if (b[0] - a[0]) * (c[1] - a[1]) > (b[1] - a[1]) * (c[0] - a[0]):
+                            break
+                        hull.pop()
+                    hull.append(c)
+                return hull
+            hull = chain(pairs)[:-1] + chain(reversed(pairs))[:-1]
+            doubled = abs(sum(x * b - y * a for (x, y), (a, b) in zip(hull, hull[1:] + hull[:1])))
+            denominator = 2 * (p + q)**2
+            factor = math.gcd(doubled, denominator)
+            return emit([doubled // factor, denominator // factor])
+        if key == "dynamic_bipartiteness_operations":
+            n, count = ints(rows[0])
+            assert count == len(rows) - 1
+            edges, answers = [], []
+            for row in rows[1:]:
+                operation, *args = ints(row)
+                if operation == 0:
+                    edges.append(tuple(args))
+                elif operation == 1:
+                    assert edges[args[0]] is not None
+                    edges[args[0]] = None
+                else:
+                    adjacency = [[] for _ in range(n)]
+                    for edge in edges:
+                        if edge is not None:
+                            u, v = edge
+                            adjacency[u].append(v)
+                            adjacency[v].append(u)
+                    colors = {}
+                    valid = True
+                    for start in range(n):
+                        if start in colors:
+                            continue
+                        colors[start] = 0
+                        todo = [start]
+                        while todo:
+                            u = todo.pop()
+                            for v in adjacency[u]:
+                                if v not in colors:
+                                    colors[v] = colors[u] ^ 1
+                                    todo.append(v)
+                                valid &= colors[v] != colors[u]
+                    answers.append('Yes' if valid else 'No')
+            return emit(answers)
+        if key == "tree_b_matching":
+            n = int(rows[0])
+            caps = ints(rows[1])
+            edges = [ints(row) for row in rows[2:]]
+            best = 0
+            for mask in range(1 << len(edges)):
+                degrees = [0] * n
+                value = 0
+                for i, (a, b, weight) in enumerate(edges):
+                    if mask >> i & 1:
+                        degrees[a - 1] += 1
+                        degrees[b - 1] += 1
+                        value += weight
+                if all(degree <= cap for degree, cap in zip(degrees, caps)):
+                    best = max(best, value)
+            return str(best)
+        if key == "global_min_cut_operations":
+            n, count = ints(rows[0])
+            assert count == len(rows) - 1
+            edges = [ints(line) for line in rows[1:]]
+            return str(min(sum(w for u, v, w in edges if (mask >> u ^ mask >> v) & 1)
+                           for mask in range(1, (1 << n) - 1)))
+        if key == "palindromic_factorization_local":
+            text = rows[0]
+            parts = [0] * (len(text) + 1)
+            for end in range(1, len(text) + 1):
+                parts[end] = min(parts[start] + 1 for start in range(end)
+                                 if text[start:end] == text[start:end][::-1])
+            return str(parts[-1])
+        if key == "zero_one_bfs_wizard":
+            h, w = ints(rows[0])
+            sy, sx = ints(rows[1]); ty, tx = ints(rows[2])
+            start, goal = (sy - 1, sx - 1), (ty - 1, tx - 1)
+            grid = rows[3:]
+            distances = {start: 0}
+            heap = [(0, *start)]
+            while heap:
+                cost, y, x = heapq.heappop(heap)
+                if (y, x) == goal:
+                    return str(cost)
+                for ny, nx in itertools.product(range(max(0, y - 2), min(h, y + 3)),
+                                                range(max(0, x - 2), min(w, x + 3))):
+                    if grid[ny][nx] != '.':
+                        continue
+                    next_cost = cost + (abs(ny - y) + abs(nx - x) != 1)
+                    if next_cost < distances.get((ny, nx), h * w):
+                        distances[ny, nx] = next_cost
+                        heapq.heappush(heap, (next_cost, ny, nx))
+            return '-1'
+        if key == "range_xor_basis":
+            values, answers = ints(rows[1]), []
+            for row in rows[2:]:
+                left, right, x = ints(row)
+                attainable = {0}
+                for v in values[left - 1:right]:
+                    attainable |= {v ^ y for y in attainable}
+                answers.append('Yes' if x in attainable else 'No')
+            return emit(answers)
+        if key == "bounded_edit_distance":
+            limit, left, right = int(rows[0]), rows[1], rows[2]
+            previous = list(range(len(right) + 1))
+            for i, a in enumerate(left, 1):
+                current = [i]
+                for j, b in enumerate(right, 1):
+                    current.append(min(previous[j] + 1, current[-1] + 1, previous[j - 1] + (a != b)))
+                previous = current
+            return 'Yes' if previous[-1] <= limit else 'No'
+        if key == "lcs_sequence":
+            left, right = rows
+            best = [[''] * (len(right) + 1) for _ in range(len(left) + 1)]
+            for i, a in enumerate(left, 1):
+                for j, b in enumerate(right, 1):
+                    best[i][j] = best[i - 1][j - 1] + a if a == b else max(best[i - 1][j], best[i][j - 1], key=len)
+            return best[-1][-1]
+        if key == "kmp_string_matching":
+            text, pattern = rows
+            return emit(i for i in range(len(text)) if text.startswith(pattern, i))
         raise AssertionError(key)
 
 

@@ -563,3 +563,85 @@ def check_static_range_mode(entry, sample, output):
         return True
     except (ValueError, TypeError, KeyError, AttributeError):
         return False
+
+
+def sample_tree_data(sample, output):
+    """整数出力を読み、公式入力例の最適値と照合する。"""
+    tokens = output.split()
+    if any(re.fullmatch(r"[+-]?[0-9]+", token) is None for token in tokens):
+        raise ValueError("整数以外の出力")
+    inputs = list(map(int, sample["input"].split()))
+    actual_cost, *actual = map(int, tokens)
+    expected_cost = int(sample["output"].split()[0])
+    if actual_cost != expected_cost:
+        raise ValueError("目的値が一致しない")
+    return inputs, actual, expected_cost
+
+
+def sample_tree_cost(n, edges, cost):
+    """n−1本の無閉路な辺を確認し、重みの和を照合する。"""
+    parent = list(range(n))
+
+    def root(vertex):
+        while parent[vertex] != vertex:
+            parent[vertex] = parent[parent[vertex]]
+            vertex = parent[vertex]
+        return vertex
+
+    weight = 0
+    count = 0
+    for u, v, w in edges:
+        if not 0 <= u < n or not 0 <= v < n:
+            return False
+        a, b = root(u), root(v)
+        if a == b:
+            return False
+        parent[a] = b
+        count += 1
+        weight += w
+    return count == n - 1 and weight == cost
+
+
+def check_manhattan_mst(_entry, sample, output):
+    try:
+        inputs, actual, expected_cost = sample_tree_data(sample, output)
+        n = inputs[0]
+        if n < 1 or len(inputs) != 1 + 2 * n or len(actual) != 2 * (n - 1):
+            return False
+        if any(not 0 <= v < n for v in actual):
+            return False
+        points = list(zip(inputs[1::2], inputs[2::2]))
+        return sample_tree_cost(n, ((u, v, abs(points[u][0] - points[v][0]) + abs(points[u][1] - points[v][1]))
+                                    for u, v in zip(actual[::2], actual[1::2])), expected_cost)
+    except (IndexError, ValueError, TypeError, KeyError, AttributeError):
+        return False
+
+
+def check_minimum_spanning_tree(_entry, sample, output):
+    try:
+        inputs, actual, expected_cost = sample_tree_data(sample, output)
+        n, m = inputs[:2]
+        if n < 1 or m < 0 or len(inputs) != 2 + 3 * m or len(actual) != n - 1:
+            return False
+        if any(not 0 <= edge < m for edge in actual):
+            return False
+        edges = list(zip(inputs[2::3], inputs[3::3], inputs[4::3]))
+        return sample_tree_cost(n, (edges[i] for i in actual), expected_cost)
+    except (IndexError, ValueError, TypeError, KeyError, AttributeError):
+        return False
+
+
+def check_tree_diameter(_entry, sample, output):
+    try:
+        inputs, actual, expected_cost = sample_tree_data(sample, output)
+        n = inputs[0]
+        count, *path = actual
+        if (n < 1 or len(inputs) != 1 + 3 * (n - 1) or not 1 <= count <= n
+                or len(path) != count or len(set(path)) != count or any(not 0 <= v < n for v in path)):
+            return False
+        weights = {}
+        for u, v, w in zip(inputs[1::3], inputs[2::3], inputs[3::3]):
+            weights[u, v] = weights[v, u] = w
+        return sum(weights[u, v] for u, v in zip(path, path[1:])) == expected_cost
+    except (IndexError, ValueError, TypeError, KeyError, AttributeError):
+        return False

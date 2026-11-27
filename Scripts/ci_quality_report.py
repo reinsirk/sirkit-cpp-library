@@ -976,9 +976,17 @@ def collect_all_performance(value: dict, root: Path, entries: dict, append) -> N
         recorded.update(hashes(row.get("support_source_hashes", {}), nonempty=False))
         if not set(entry.get("support_source_hashes", {})) <= recorded.keys():
             raise ReportError("全ライブラリ性能の共通部品SHAが不足しています")
-        if row.get("submission_sha256") != entry.get("submission_sha256"):
-            raise ReportError("全ライブラリ性能の提出本文SHAが一致しません")
         changed = sorted(set(changed_global + mismatches(root, recorded)))
+        submission_sha = sha(row.get("submission_sha256"))
+        if entry.get("verification_kind") == "local_regression":
+            # 計測ではローカル用のmainも入力検査を省略して展開する。
+            if not changed:
+                with verify_root(root):
+                    program, _ = prepare_verify.render(entry, skip_runtime_checks=True)
+                if submission_sha != digest(program):
+                    raise ReportError("ローカル性能の計測本文SHAが一致しません")
+        elif submission_sha != entry.get("submission_sha256"):
+            raise ReportError("全ライブラリ性能の提出本文SHAが一致しません")
         baseline = whole_baseline_provenance(row, value.get("compile_profile", "standard")) if regression_mode else {}
         cases = row.get("cases")
         expected = all_performance_case_names(value, row, entry)

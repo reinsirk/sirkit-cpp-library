@@ -37,6 +37,27 @@ HashMapの削除とiteratorの計算量は[HashMapの説明](../Document/hash_ma
 | [Dual_Segment_Tree.cpp](Dual_Segment_Tree.cpp) | [Range Affine Point Get](../Verify/current/submissions/dual_segment_tree.cpp) |
 | [Slope_Trick.cpp](Slope_Trick.cpp) | [Absolute Minima](../Verify/current/submissions/slope_trick.cpp) |
 | [Dynamic_Bitset.cpp](Dynamic_Bitset.cpp) | [Matrix Product (Mod 2)](../Verify/current/submissions/dynamic_bitset.cpp)・[G - Triangle](../Verify/current/submissions/dynamic_bitset_triangle.cpp)・[A - コンテスト](../Verify/current/submissions/dynamic_bitset_shift_or.cpp) |
+| [Double_Ended_Priority_Queue.cpp](Double_Ended_Priority_Queue.cpp) | [Double-Ended Priority Queue](../Verify/current/submissions/double_ended_priority_queue.cpp) |
+| [Range_Majority.cpp](Range_Majority.cpp) | [Majority Voting](../Verify/current/submissions/majority_voting.cpp) |
+| [Offline_Rectangle_Add_Point_Get.cpp](Offline_Rectangle_Add_Point_Get.cpp) | [Rectangle Add Point Get](../Verify/current/submissions/rectangle_add_point_get.cpp) |
+| [Point_Set_Range_Frequency.cpp](Point_Set_Range_Frequency.cpp) | [Point Set Range Frequency](../Verify/current/submissions/point_set_range_frequency.cpp) |
+| [Static_Rectangle_Add_Rectangle_Sum.cpp](Static_Rectangle_Add_Rectangle_Sum.cpp) | [Static Rectangle Add Rectangle Sum](../Verify/current/submissions/static_rectangle_add_rectangle_sum.cpp) |
+| [Persistent_Queue.cpp](Persistent_Queue.cpp) | [Persistent Queue](../Verify/current/submissions/persistent_queue.cpp) |
+| [Range_Parallel_Union_Find.cpp](Range_Parallel_Union_Find.cpp) | [Range Parallel Unionfind](../Verify/current/submissions/range_parallel_unionfind.cpp) |
+| [Static_Range_Mode.cpp](Static_Range_Mode.cpp) | [Static Range Mode Query](../Verify/current/submissions/static_range_mode_query.cpp) |
+| [Range_Linear_Add_Range_Min.cpp](Range_Linear_Add_Range_Min.cpp) | [Range Linear Add Range Min](../Verify/current/submissions/range_linear_add_range_min.cpp) |
+| [Range_Sort_Aggregation.cpp](Range_Sort_Aggregation.cpp) | [Point Set Range Sort Range Composite](../Verify/current/submissions/point_set_range_sort_range_composite.cpp) |
+| [Noncommutative_Weighted_Union_Find.cpp](Noncommutative_Weighted_Union_Find.cpp) | [Unionfind with Potential (Non-Commutative Group)](../Verify/current/submissions/unionfind_with_potential_non_commutative_group.cpp) |
+| [Offline_Point_Add_Rectangle_Sum.cpp](Offline_Point_Add_Rectangle_Sum.cpp) | [Point Add Rectangle Sum](../Verify/current/submissions/offline_point_add_rectangle_sum.cpp) |
+| [Point_Rectangle_Affine_KD_Tree.cpp](Point_Rectangle_Affine_KD_Tree.cpp) | [Dynamic Point Set Rectangle Affine Rectangle Sum](../Verify/current/submissions/dynamic_point_set_rectangle_affine_rectangle_sum.cpp) |
+| [Sparse_Affine_Range_Sum.cpp](Sparse_Affine_Range_Sum.cpp) | [Range Affine Range Sum (Large Array)](../Verify/current/submissions/range_affine_range_sum_large_array.cpp) |
+| [Weighted_Wavelet_Matrix.cpp](Weighted_Wavelet_Matrix.cpp) | [Static Range Sum with Upper Bound](../Verify/current/submissions/static_range_sum_with_upper_bound.cpp) |
+| [Persistent_Affine_Range_Sum.cpp](Persistent_Affine_Range_Sum.cpp) | [Persistent Range Affine Range Sum](../Verify/current/submissions/persistent_range_affine_range_sum.cpp) |
+| [Sparse_Segment_Tree.cpp](Sparse_Segment_Tree.cpp) | [Point Set Range Composite (Large Array)](../Verify/current/submissions/point_set_range_composite_large_array.cpp) |
+| [Range_Assign_Range_Product.cpp](Range_Assign_Range_Product.cpp) | [Range Set Range Composite](../Verify/current/submissions/range_set_range_composite.cpp) |
+| [Deque_Aggregation.cpp](Deque_Aggregation.cpp) | [Deque Operate All Composite](../Verify/current/submissions/deque_operate_all_composite.cpp) |
+| [Euler_Tour_Tree.cpp](Euler_Tour_Tree.cpp) | [Dynamic Tree Vertex Add Subtree Sum](../Verify/current/submissions/dynamic_tree_vertex_add_subtree_sum.cpp)・[Dynamic Tree Subtree Add Subtree Sum](../Verify/current/submissions/dynamic_tree_subtree_add_subtree_sum.cpp) |
+| [Hierarchical_Bitset.cpp](Hierarchical_Bitset.cpp) | [Predecessor Problem](../Verify/current/submissions/predecessor_problem.cpp) |
 
 問題URL、追加APIの補足検査、現在版の判定状況は[Verify一覧](../Verify/current/README.md)を参照してください。
 

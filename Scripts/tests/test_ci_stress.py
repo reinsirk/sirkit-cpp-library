@@ -18,13 +18,23 @@ from Scripts import ci_stress
 from Verify.ci import stress_cases
 
 
+def cuboid_oracle(data):
+    rows = [list(map(int, row.split())) for row in data.splitlines()]
+    n = rows[0][0]
+    grid = rows[1:n * n + 1]
+    answers = []
+    for lx, rx, ly, ry, lz, rz in rows[n * n + 2:]:
+        answers.append(sum(grid[x * n + y][z] for x in range(lx - 1, rx)
+                           for y in range(ly - 1, ry) for z in range(lz - 1, rz)))
+    return answers
+
+
 class StressCatalogTests(unittest.TestCase):
     def test_maxima_are_pinned_actual_problem_constraints(self):
         plans = stress_cases.case_plans()
-        self.assertEqual(len(plans), 6)
-        self.assertEqual(len({p["name"] for p in plans}), 6)
+        self.assertEqual(len({p["name"] for p in plans}), len(plans))
         self.assertEqual({p["verify_id"] for p in plans},
-                         {"union_find", "persistent_union_find_union_path_query"})
+                         {"union_find", "persistent_union_find_union_path_query", "prefix_sum_2d", "prefix_sum_3d"})
         union = next(p for p in plans if p["name"] == "union_find_max")
         self.assertEqual(union["dimensions"], {"n": 200000, "q": 200000})
         self.assertEqual(union["maximum_dimensions"], ["n", "q"])
@@ -43,6 +53,12 @@ class StressCatalogTests(unittest.TestCase):
         query = next(p for p in plans if p["name"].endswith("query_heavy"))
         self.assertEqual(query["planned_build_operations"], 131069)
         self.assertEqual(query["dimensions"]["q"] - query["planned_build_operations"], 168931)
+        trains = next(p for p in plans if p["verify_id"] == "prefix_sum_2d")
+        self.assertEqual(trains["dimensions"], {"n": 500, "m": 200000, "q": 100000})
+        self.assertEqual(set(trains["maximum_dimensions"]), {"n", "m", "q"})
+        cube = next(p for p in plans if p["verify_id"] == "prefix_sum_3d")
+        self.assertEqual(cube["dimensions"], {"n": 100, "q": 200000})
+        self.assertEqual(cube["maximum_dimensions"], ["n", "q"])
 
     def test_quick_is_never_reported_as_max(self):
         for plan in stress_cases.case_plans(True):
@@ -57,7 +73,7 @@ class StressCatalogTests(unittest.TestCase):
             self.assertEqual(ci_stress.main(["--plan", "--quick"]), 0)
         report = json.loads(output.getvalue())
         self.assertFalse(report["executed"])
-        self.assertEqual(len(report["cases"]), 6)
+        self.assertEqual(report["cases"], stress_cases.case_plans(True))
 
     def test_every_quick_generator_has_exact_q_and_nonempty_oracle(self):
         with tempfile.TemporaryDirectory() as temporary:
@@ -66,7 +82,15 @@ class StressCatalogTests(unittest.TestCase):
                 result = stress_cases.generate_case(plan, folder)
                 actual = (folder / "input.txt").read_bytes()
                 expected = (folder / "expected.txt").read_bytes()
-                self.assertEqual(len(actual.splitlines()) - 1, plan["dimensions"]["q"])
+                if plan["verify_id"] == "prefix_sum_2d":
+                    n, m, q = map(int, actual.splitlines()[0].split())
+                    self.assertEqual((n, m, q), tuple(plan["dimensions"][key] for key in ("n", "m", "q")))
+                    self.assertEqual(len(actual.splitlines()), m + q + 1)
+                elif plan["verify_id"] == "prefix_sum_3d":
+                    n = plan["dimensions"]["n"]
+                    self.assertEqual(len(actual.splitlines()), n * n + plan["dimensions"]["q"] + 2)
+                else:
+                    self.assertEqual(len(actual.splitlines()) - 1, plan["dimensions"]["q"])
                 self.assertEqual(result["generated_operations"], plan["dimensions"]["q"])
                 self.assertGreater(result["expected_answer_count"], 0)
                 self.assertEqual(result["expected_answer_count"], len(expected.splitlines()))
@@ -74,6 +98,15 @@ class StressCatalogTests(unittest.TestCase):
                 self.assertEqual(result["expected_sha256"], hashlib.sha256(expected).hexdigest())
                 if plan["verify_id"] == "union_find":
                     self.assertEqual(expected.split(), self.union_oracle(actual))
+                elif plan["verify_id"] == "prefix_sum_2d":
+                    rows = [tuple(map(int, row.split())) for row in actual.splitlines()]
+                    _, m, _ = rows[0]
+                    trains = rows[1:m + 1]
+                    answers = [sum(left <= lo <= hi <= right for lo, hi in trains)
+                               for left, right in rows[m + 1:]]
+                    self.assertEqual(list(map(int, expected.split())), answers)
+                elif plan["verify_id"] == "prefix_sum_3d":
+                    self.assertEqual(list(map(int, expected.split())), cuboid_oracle(actual))
                 else:
                     self.assertEqual(expected.split(), self.yuki_oracle(actual))
 

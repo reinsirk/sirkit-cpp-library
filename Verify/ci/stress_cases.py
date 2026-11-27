@@ -3,12 +3,15 @@
 from __future__ import annotations
 
 import hashlib
+from math import prod
 from pathlib import Path
 import time
 
 LIBRARY_CHECKER_REVISION = "73876f1cbcf082d2b22722924b924d3d65a2f00e"
 UNION_FIND_LIMITS = {"n": 200_000, "q": 200_000}
 YUKI2295_LIMITS = {"n": 200_000, "q": 300_000, "weight": 1_000_000_000}
+PREFIX_SUM_2D_LIMITS = {"n": 500, "q": 100_000, "m": 200_000}
+PREFIX_SUM_3D_LIMITS = {"n": 100, "q": 200_000, "value": 999}
 MAX_INPUT_BYTES = 16 * 1024 * 1024
 MAX_OUTPUT_BYTES = 8 * 1024 * 1024
 MOD = 998244353
@@ -67,6 +70,20 @@ def case_plans(quick: bool = False) -> list[dict]:
                       "maximum_dimensions": [] if quick else [k for k in ("n", "q") if dimensions[k] == limits[k]],
                       "constraint_source": uf_source if identifier == "union_find" else yuki_source,
                       "constraint_checked_date": "2026-11-16", "oracle": oracle})
+    for identifier, limits, small, task, oracle in (
+        ("prefix_sum_2d", PREFIX_SUM_2D_LIMITS, {"n": 8, "q": 48, "m": 24},
+         "abc106", "Count four repeated endpoint pairs directly."),
+        ("prefix_sum_3d", PREFIX_SUM_3D_LIMITS, {"n": 5, "q": 48},
+         "abc366", "Sum an affine value over three independent integer intervals."),
+    ):
+        maximum = {key: value for key, value in limits.items() if key != "value"}
+        plans.append({"name": identifier + "_max", "verify_id": identifier,
+                      "dimensions": small if quick else maximum, "seed": None,
+                      "category": "max_size_and_queries", "planned_build_operations": 0,
+                      "size_profile": "quick_smoke" if quick else "full",
+                      "problem_limits": dict(limits), "maximum_dimensions": [] if quick else list(maximum),
+                      "constraint_source": f"https://atcoder.jp/contests/{task}/tasks/{task}_d",
+                      "constraint_checked_date": "2026-11-26", "oracle": oracle})
     return plans
 
 
@@ -258,6 +275,40 @@ def _persistent_union_find(plan: dict, writer: CaseWriter) -> dict:
             "cross_product_exceeds_int64": largest_cross > (1 << 63) - 1}
 
 
+def cuboid_rows(n: int, q: int, constant: bool):
+    """Yield the input rows and closed-form answers for rectangular queries."""
+    yield (n,), None
+    for x in range(1, n + 1):
+        for y in range(1, n + 1):
+            values = ((PREFIX_SUM_3D_LIMITS["value"],) * n if constant else
+                      tuple(90 + 2 * x + 3 * y + 4 * z for z in range(1, n + 1)))
+            yield values, None
+    yield (q,), None
+    for i in range(q):
+        if i % 5 == 0:
+            left, right = (1, 1, 1), (n, n, n)
+        else:
+            left = tuple((i * scale + axis) % n + 1 for axis, scale in enumerate((3, 7, 13)))
+            right = tuple(lo + (i + 2 * axis) % (n - lo + 1) for axis, lo in enumerate(left))
+        volume = prod(hi - lo + 1 for lo, hi in zip(left, right))
+        answer = (PREFIX_SUM_3D_LIMITS["value"] * volume if constant else
+                  volume * (180 + sum(scale * (lo + hi)
+                                      for scale, lo, hi in zip((2, 3, 4), left, right))) // 2)
+        yield tuple(coord for pair in zip(left, right) for coord in pair), answer
+
+
+def _train_rows(n: int, m: int, q: int):
+    yield (n, m, q), None
+    trains = ((1, 1), (1, n), (n // 2, n // 2 + 1), (n, n))
+    for i in range(m):
+        yield trains[i % len(trains)], None
+    for i in range(q):
+        p = i % n + 1
+        left, right = ((1, n), (p, p), (1, p), (p, n))[i % 4]
+        yield (left, right), sum((m + len(trains) - 1 - j) // len(trains)
+                                 for j, (lo, hi) in enumerate(trains) if left <= lo and hi <= right)
+
+
 def generate_case(plan: dict, directory: Path, *, generation_timeout: float = 60) -> dict:
     """計画に対応する有効入力を生成。Q超過・空の正解・サイズ上限超過は失敗。"""
     n, q = plan["dimensions"]["n"], plan["dimensions"]["q"]
@@ -271,8 +322,18 @@ def generate_case(plan: dict, directory: Path, *, generation_timeout: float = 60
         raise GenerationError("plan differs from the reviewed case catalog")
     writer = CaseWriter(directory, q, generation_timeout)
     try:
-        details = (_union_find(plan, writer) if plan["verify_id"] == "union_find" else
-                   _persistent_union_find(plan, writer))
+        identifier = plan["verify_id"]
+        if identifier in {"prefix_sum_2d", "prefix_sum_3d"}:
+            rows = (_train_rows(n, plan["dimensions"]["m"], q) if identifier == "prefix_sum_2d" else
+                    cuboid_rows(n, q, constant=False))
+            for fields, answer in rows:
+                writer.line(*fields, operation=answer is not None)
+                if answer is not None:
+                    writer.answer(answer)
+            details = {"build_operations": 0}
+        else:
+            details = (_union_find(plan, writer) if identifier == "union_find" else
+                       _persistent_union_find(plan, writer))
         if details.get("build_operations", details.get("successful_merges")) != plan["planned_build_operations"]:
             raise GenerationError("actual build differs from planned operation budget")
         return {**writer.finish(), **details}
