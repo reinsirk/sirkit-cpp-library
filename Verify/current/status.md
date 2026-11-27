@@ -8,18 +8,18 @@
 
 | ID | 提出先 | 状況 | 判定 | 現行一致の時間 |
 | --- | --- | --- | --- | --- |
-| [adjugate\_matrix](submissions/adjugate_matrix.cpp) | [Library Checker](https://judge.yosupo.jp/problem/adjugate_matrix) | 未提出 | — | — |
+| [adjugate\_matrix](submissions/adjugate_matrix.cpp) | [Library Checker](https://judge.yosupo.jp/problem/adjugate_matrix) | 現行AC | [AC](https://judge.yosupo.jp/submission/419811) | 295 ms |
 | [aho\_corasick](submissions/aho_corasick.cpp) | [Library Checker](https://judge.yosupo.jp/problem/aho_corasick) | 未提出 | — | — |
 | [aho\_corasick\_counts](submissions/aho_corasick_counts.cpp) | [AtCoder](https://atcoder.jp/contests/abc362/tasks/abc362_g) | 未提出 | — | — |
-| [all\_furthest\_neighbors](submissions/all_furthest_neighbors.cpp) | [Library Checker](https://judge.yosupo.jp/problem/all_furthest_neighbors) | 未提出 | — | — |
+| [all\_furthest\_neighbors](submissions/all_furthest_neighbors.cpp) | [Library Checker](https://judge.yosupo.jp/problem/all_furthest_neighbors) | 現行AC | [AC](https://judge.yosupo.jp/submission/419812) | 59 ms |
 | [angle\_sort](submissions/angle_sort.cpp) | [Library Checker](https://judge.yosupo.jp/problem/sort_points_by_argument) | 現行未照合・要再提出 | [AC](https://judge.yosupo.jp/submission/417202) | — |
 | [angle\_sort\_reference](submissions/angle_sort_reference.cpp) | ローカル | ローカル補足 | — | — |
 | [angle\_sort\_std](submissions/angle_sort_std.cpp) | [Library Checker](https://judge.yosupo.jp/problem/sort_points_by_argument) | 現行未照合・要再提出 | [AC](https://judge.yosupo.jp/submission/417203) | — |
-| [assignment](submissions/assignment.cpp) | [Library Checker](https://judge.yosupo.jp/problem/assignment) | 未提出 | — | — |
-| [bell\_number](submissions/bell_number.cpp) | [Library Checker](https://judge.yosupo.jp/problem/bell_number) | 未提出 | — | — |
+| [assignment](submissions/assignment.cpp) | [Library Checker](https://judge.yosupo.jp/problem/assignment) | 現行AC | [AC](https://judge.yosupo.jp/submission/419813) | 106 ms |
+| [bell\_number](submissions/bell_number.cpp) | [Library Checker](https://judge.yosupo.jp/problem/bell_number) | 現行AC | [AC](https://judge.yosupo.jp/submission/419814) | 145 ms |
 | [bellman\_ford](submissions/bellman_ford.cpp) | [AtCoder](https://atcoder.jp/contests/abc137/tasks/abc137_e) | 現行未照合・要再提出 | [AC](https://atcoder.jp/contests/abc137/submissions/80790216) | — |
 | [berlekamp\_massey](submissions/berlekamp_massey.cpp) | [Library Checker](https://judge.yosupo.jp/problem/find_linear_recurrence) | 未提出 | — | — |
-| [bernoulli\_number](submissions/bernoulli_number.cpp) | [Library Checker](https://judge.yosupo.jp/problem/bernoulli_number) | 未提出 | — | — |
+| [bernoulli\_number](submissions/bernoulli_number.cpp) | [Library Checker](https://judge.yosupo.jp/problem/bernoulli_number) | 現行AC | [AC](https://judge.yosupo.jp/submission/419815) | 69 ms |
 | [binary\_matrix\_det](submissions/binary_matrix_det.cpp) | [Library Checker](https://judge.yosupo.jp/problem/matrix_det_mod_2) | 未提出 | — | — |
 | [binary\_matrix\_inverse](submissions/binary_matrix_inverse.cpp) | [Library Checker](https://judge.yosupo.jp/problem/inverse_matrix_mod_2) | 未提出 | — | — |
 | [binary\_matrix\_product](submissions/binary_matrix_product.cpp) | [Library Checker](https://judge.yosupo.jp/problem/matrix_product_mod_2) | 未提出 | — | — |
@@ -40,33 +40,33 @@
 | [binomial\_modint\_split](submissions/binomial_modint_split.cpp) | [Library Checker](https://judge.yosupo.jp/problem/binomial_coefficient) | 現行未照合・要再提出 | [AC](https://judge.yosupo.jp/submission/417210) | — |
 | [binomial\_prime](submissions/binomial_prime.cpp) | [Library Checker](https://judge.yosupo.jp/problem/binomial_coefficient_prime_mod) | 現行未照合・要再提出 | [AC](https://judge.yosupo.jp/submission/417295) | — |
 | [binomial\_prime\_split](submissions/binomial_prime_split.cpp) | [Library Checker](https://judge.yosupo.jp/problem/binomial_coefficient_prime_mod) | 現行未照合・要再提出 | [AC](https://judge.yosupo.jp/submission/417294) | — |
-| [bipartite\_edge\_coloring](submissions/bipartite_edge_coloring.cpp) | [Library Checker](https://judge.yosupo.jp/problem/bipartite_edge_coloring) | 未提出 | — | — |
+| [bipartite\_edge\_coloring](submissions/bipartite_edge_coloring.cpp) | [Library Checker](https://judge.yosupo.jp/problem/bipartite_edge_coloring) | 現行AC | [AC](https://judge.yosupo.jp/submission/419816) | 94 ms |
 | [bipartite\_matching](submissions/bipartite_matching.cpp) | [Library Checker](https://judge.yosupo.jp/problem/bipartitematching) | 現行未照合・要再提出 | [AC](https://judge.yosupo.jp/submission/417838) | — |
-| [bitwise\_xor\_convolution](submissions/bitwise_xor_convolution.cpp) | [Library Checker](https://judge.yosupo.jp/problem/bitwise_xor_convolution) | 未提出 | — | — |
+| [bitwise\_xor\_convolution](submissions/bitwise_xor_convolution.cpp) | [Library Checker](https://judge.yosupo.jp/problem/bitwise_xor_convolution) | 現行AC | [AC](https://judge.yosupo.jp/submission/419818) | 75 ms |
 | [bounded\_edit\_distance](submissions/bounded_edit_distance.cpp) | [AtCoder](https://atcoder.jp/contests/abc386/tasks/abc386_f) | 未提出 | — | — |
 | [cartesian\_tree](submissions/cartesian_tree.cpp) | [Library Checker](https://judge.yosupo.jp/problem/cartesian_tree) | 未提出 | — | — |
 | [centroid\_decomposition](submissions/centroid_decomposition.cpp) | [AtCoder](https://atcoder.jp/contests/abc291/tasks/abc291_h) | 未提出 | — | — |
-| [characteristic\_polynomial](submissions/characteristic_polynomial.cpp) | [Library Checker](https://judge.yosupo.jp/problem/characteristic_polynomial) | 未提出 | — | — |
+| [characteristic\_polynomial](submissions/characteristic_polynomial.cpp) | [Library Checker](https://judge.yosupo.jp/problem/characteristic_polynomial) | 現行AC | [AC](https://judge.yosupo.jp/submission/419819) | 253 ms |
 | [chinese\_remainder](submissions/chinese_remainder.cpp) | [AtCoder](https://atcoder.jp/contests/abc193/tasks/abc193_e) | 未提出 | — | — |
-| [chordal\_graph\_recognition](submissions/chordal_graph_recognition.cpp) | [Library Checker](https://judge.yosupo.jp/problem/chordal_graph_recognition) | 未提出 | — | — |
-| [chromatic\_number](submissions/chromatic_number.cpp) | [Library Checker](https://judge.yosupo.jp/problem/chromatic_number) | 未提出 | — | — |
+| [chordal\_graph\_recognition](submissions/chordal_graph_recognition.cpp) | [Library Checker](https://judge.yosupo.jp/problem/chordal_graph_recognition) | 現行AC | [AC](https://judge.yosupo.jp/submission/419820) | 59 ms |
+| [chromatic\_number](submissions/chromatic_number.cpp) | [Library Checker](https://judge.yosupo.jp/problem/chromatic_number) | 現行AC | [AC](https://judge.yosupo.jp/submission/419821) | 13 ms |
 | [combination\_masks\_local](submissions/combination_masks_local.cpp) | ローカル | ローカル補足 | — | — |
-| [common\_interval\_decomposition\_tree](submissions/common_interval_decomposition_tree.cpp) | [Library Checker](https://judge.yosupo.jp/problem/common_interval_decomposition_tree) | 未提出 | — | — |
-| [complement\_components](submissions/complement_components.cpp) | [Library Checker](https://judge.yosupo.jp/problem/connected_components_of_complement_graph) | 未提出 | — | — |
+| [common\_interval\_decomposition\_tree](submissions/common_interval_decomposition_tree.cpp) | [Library Checker](https://judge.yosupo.jp/problem/common_interval_decomposition_tree) | 現行AC | [AC](https://judge.yosupo.jp/submission/419822) | 396 ms |
+| [complement\_components](submissions/complement_components.cpp) | [Library Checker](https://judge.yosupo.jp/problem/connected_components_of_complement_graph) | 現行AC | [AC](https://judge.yosupo.jp/submission/419823) | 122 ms |
 | [compressed\_binary\_trie](submissions/compressed_binary_trie.cpp) | [Library Checker](https://judge.yosupo.jp/problem/set_xor_min) | 現行未照合・要再提出 | [AC](https://judge.yosupo.jp/submission/417214) | — |
 | [compressed\_binary\_trie\_local](submissions/compressed_binary_trie_local.cpp) | ローカル | ローカル補足 | — | — |
-| [consecutive\_terms\_of\_linear\_recurrent\_sequence](submissions/consecutive_terms_of_linear_recurrent_sequence.cpp) | [Library Checker](https://judge.yosupo.jp/problem/consecutive_terms_of_linear_recurrent_sequence) | 未提出 | — | — |
-| [conversion\_from\_monomial\_basis\_to\_newton\_basis](submissions/conversion_from_monomial_basis_to_newton_basis.cpp) | [Library Checker](https://judge.yosupo.jp/problem/conversion_from_monomial_basis_to_newton_basis) | 未提出 | — | — |
-| [convex\_layers](submissions/convex_layers.cpp) | [Library Checker](https://judge.yosupo.jp/problem/convex_layers) | 未提出 | — | — |
+| [consecutive\_terms\_of\_linear\_recurrent\_sequence](submissions/consecutive_terms_of_linear_recurrent_sequence.cpp) | [Library Checker](https://judge.yosupo.jp/problem/consecutive_terms_of_linear_recurrent_sequence) | 現行AC | [AC](https://judge.yosupo.jp/submission/419824) | 346 ms |
+| [conversion\_from\_monomial\_basis\_to\_newton\_basis](submissions/conversion_from_monomial_basis_to_newton_basis.cpp) | [Library Checker](https://judge.yosupo.jp/problem/conversion_from_monomial_basis_to_newton_basis) | 現行AC | [AC](https://judge.yosupo.jp/submission/419825) | 105 ms |
+| [convex\_layers](submissions/convex_layers.cpp) | [Library Checker](https://judge.yosupo.jp/problem/convex_layers) | 現行AC | [AC](https://judge.yosupo.jp/submission/419826) | 503 ms |
 | [convolution\_any\_mod](submissions/convolution_any_mod.cpp) | [Library Checker](https://judge.yosupo.jp/problem/convolution_mod_1000000007) | 未提出 | — | — |
 | [convolution\_integer\_triplets](submissions/convolution_integer_triplets.cpp) | [AtCoder](https://atcoder.jp/contests/abc392/tasks/abc392_g) | 未提出 | — | — |
-| [count\_points\_in\_triangle](submissions/count_points_in_triangle.cpp) | [Library Checker](https://judge.yosupo.jp/problem/count_points_in_triangle) | 未提出 | — | — |
-| [counting\_c4](submissions/counting_c4.cpp) | [Library Checker](https://judge.yosupo.jp/problem/counting_c4) | 未提出 | — | — |
-| [counting\_eulerian\_circuits](submissions/counting_eulerian_circuits.cpp) | [Library Checker](https://judge.yosupo.jp/problem/counting_eulerian_circuits) | 未提出 | — | — |
-| [counting\_primes](submissions/counting_primes.cpp) | [Library Checker](https://judge.yosupo.jp/problem/counting_primes) | 未提出 | — | — |
-| [counting\_spanning\_tree\_directed](submissions/counting_spanning_tree_directed.cpp) | [Library Checker](https://judge.yosupo.jp/problem/counting_spanning_tree_directed) | 未提出 | — | — |
-| [counting\_spanning\_tree\_undirected](submissions/counting_spanning_tree_undirected.cpp) | [Library Checker](https://judge.yosupo.jp/problem/counting_spanning_tree_undirected) | 未提出 | — | — |
-| [counting\_squarefrees](submissions/counting_squarefrees.cpp) | [Library Checker](https://judge.yosupo.jp/problem/counting_squarefrees) | 未提出 | — | — |
+| [count\_points\_in\_triangle](submissions/count_points_in_triangle.cpp) | [Library Checker](https://judge.yosupo.jp/problem/count_points_in_triangle) | 現行AC | [AC](https://judge.yosupo.jp/submission/419827) | 138 ms |
+| [counting\_c4](submissions/counting_c4.cpp) | [Library Checker](https://judge.yosupo.jp/problem/counting_c4) | 現行AC | [AC](https://judge.yosupo.jp/submission/419828) | 1337 ms |
+| [counting\_eulerian\_circuits](submissions/counting_eulerian_circuits.cpp) | [Library Checker](https://judge.yosupo.jp/problem/counting_eulerian_circuits) | 現行AC | [AC](https://judge.yosupo.jp/submission/419829) | 80 ms |
+| [counting\_primes](submissions/counting_primes.cpp) | [Library Checker](https://judge.yosupo.jp/problem/counting_primes) | 現行AC | [AC](https://judge.yosupo.jp/submission/419830) | 167 ms |
+| [counting\_spanning\_tree\_directed](submissions/counting_spanning_tree_directed.cpp) | [Library Checker](https://judge.yosupo.jp/problem/counting_spanning_tree_directed) | 現行AC | [AC](https://judge.yosupo.jp/submission/419831) | 83 ms |
+| [counting\_spanning\_tree\_undirected](submissions/counting_spanning_tree_undirected.cpp) | [Library Checker](https://judge.yosupo.jp/problem/counting_spanning_tree_undirected) | 現行AC | [AC](https://judge.yosupo.jp/submission/419832) | 84 ms |
+| [counting\_squarefrees](submissions/counting_squarefrees.cpp) | [Library Checker](https://judge.yosupo.jp/problem/counting_squarefrees) | 現行AC | [AC](https://judge.yosupo.jp/submission/419833) | 379 ms |
 | [coverage\_aho\_total\_search](submissions/coverage_aho_total_search.cpp) | [Yukicoder](https://yukicoder.me/problems/no/430) | 未提出 | — | — |
 | [coverage\_geometry\_circle\_in\_diamond\_full](submissions/coverage_geometry_circle_in_diamond_full.cpp) | [Yukicoder](https://yukicoder.me/problems/no/172) | 未提出 | — | — |
 | [coverage\_geometry\_circle\_in\_diamond\_split](submissions/coverage_geometry_circle_in_diamond_split.cpp) | [Yukicoder](https://yukicoder.me/problems/no/172) | 未提出 | — | — |
@@ -106,15 +106,15 @@
 | [coverage\_structure\_segment\_predecessor](submissions/coverage_structure_segment_predecessor.cpp) | [Library Checker](https://judge.yosupo.jp/problem/predecessor_problem) | 現行未照合・要再提出 | [AC](https://judge.yosupo.jp/submission/417366) | — |
 | [coverage\_subset\_transform\_full](submissions/coverage_subset_transform_full.cpp) | [Library Checker](https://judge.yosupo.jp/problem/bitwise_and_convolution) | 現行未照合・要再提出 | [AC](https://judge.yosupo.jp/submission/417354) | — |
 | [coverage\_subset\_transform\_split](submissions/coverage_subset_transform_split.cpp) | [Library Checker](https://judge.yosupo.jp/problem/bitwise_and_convolution) | 現行未照合・要再提出 | [AC](https://judge.yosupo.jp/submission/417355) | — |
-| [cycle\_detection\_directed](submissions/cycle_detection_directed.cpp) | [Library Checker](https://judge.yosupo.jp/problem/cycle_detection) | 未提出 | — | — |
-| [cycle\_detection\_undirected](submissions/cycle_detection_undirected.cpp) | [Library Checker](https://judge.yosupo.jp/problem/cycle_detection_undirected) | 未提出 | — | — |
-| [deque\_operate\_all\_composite](submissions/deque_operate_all_composite.cpp) | [Library Checker](https://judge.yosupo.jp/problem/deque_operate_all_composite) | 未提出 | — | — |
+| [cycle\_detection\_directed](submissions/cycle_detection_directed.cpp) | [Library Checker](https://judge.yosupo.jp/problem/cycle_detection) | 現行AC | [AC](https://judge.yosupo.jp/submission/419834) | 56 ms |
+| [cycle\_detection\_undirected](submissions/cycle_detection_undirected.cpp) | [Library Checker](https://judge.yosupo.jp/problem/cycle_detection_undirected) | 現行AC | [AC](https://judge.yosupo.jp/submission/419835) | 63 ms |
+| [deque\_operate\_all\_composite](submissions/deque_operate_all_composite.cpp) | [Library Checker](https://judge.yosupo.jp/problem/deque_operate_all_composite) | 現行AC | [AC](https://judge.yosupo.jp/submission/419836) | 35 ms |
 | [dijkstra](submissions/dijkstra.cpp) | [Library Checker](https://judge.yosupo.jp/problem/shortest_path) | 現行未照合・要再提出 | [AC](https://judge.yosupo.jp/submission/417299) | — |
-| [directedmst](submissions/directedmst.cpp) | [Library Checker](https://judge.yosupo.jp/problem/directedmst) | 未提出 | — | — |
-| [discrete\_logarithm\_mod](submissions/discrete_logarithm_mod.cpp) | [Library Checker](https://judge.yosupo.jp/problem/discrete_logarithm_mod) | 未提出 | — | — |
+| [directedmst](submissions/directedmst.cpp) | [Library Checker](https://judge.yosupo.jp/problem/directedmst) | 現行AC | [AC](https://judge.yosupo.jp/submission/419838) | 41 ms |
+| [discrete\_logarithm\_mod](submissions/discrete_logarithm_mod.cpp) | [Library Checker](https://judge.yosupo.jp/problem/discrete_logarithm_mod) | 現行AC | [AC](https://judge.yosupo.jp/submission/419642) | 57 ms |
 | [disjoint\_sparse\_table](submissions/disjoint_sparse_table.cpp) | [Library Checker](https://judge.yosupo.jp/problem/staticrmq) | 現行AC | [AC](https://judge.yosupo.jp/submission/417217) | 65 ms |
-| [dominator\_tree](submissions/dominator_tree.cpp) | [Library Checker](https://judge.yosupo.jp/problem/dominatortree) | 未提出 | — | — |
-| [double\_ended\_priority\_queue](submissions/double_ended_priority_queue.cpp) | [Library Checker](https://judge.yosupo.jp/problem/double_ended_priority_queue) | 未提出 | — | — |
+| [dominator\_tree](submissions/dominator_tree.cpp) | [Library Checker](https://judge.yosupo.jp/problem/dominatortree) | 現行AC | [AC](https://judge.yosupo.jp/submission/419643) | 62 ms |
+| [double\_ended\_priority\_queue](submissions/double_ended_priority_queue.cpp) | [Library Checker](https://judge.yosupo.jp/problem/double_ended_priority_queue) | 現行AC | [AC](https://judge.yosupo.jp/submission/419839) | 95 ms |
 | [dual\_segment\_tree](submissions/dual_segment_tree.cpp) | [Library Checker](https://judge.yosupo.jp/problem/range_affine_point_get) | 未提出 | — | — |
 | [dynamic\_bipartiteness\_operations](submissions/dynamic_bipartiteness_operations.cpp) | ローカル | ローカル補足 | — | — |
 | [dynamic\_bipartiteness\_reference](submissions/dynamic_bipartiteness_reference.cpp) | ローカル | ローカル補足 | — | — |
@@ -127,37 +127,37 @@
 | [dynamic\_hash\_local](submissions/dynamic_hash_local.cpp) | ローカル | ローカル補足 | — | — |
 | [dynamic\_lichao\_line](submissions/dynamic_lichao_line.cpp) | [Library Checker](https://judge.yosupo.jp/problem/line_add_get_min) | 現行未照合・要再提出 | [AC](https://judge.yosupo.jp/submission/417300) | — |
 | [dynamic\_lichao\_segment](submissions/dynamic_lichao_segment.cpp) | [Library Checker](https://judge.yosupo.jp/problem/segment_add_get_min) | 現行未照合・要再提出 | [AC](https://judge.yosupo.jp/submission/417301) | — |
-| [dynamic\_point\_set\_rectangle\_affine\_rectangle\_sum](submissions/dynamic_point_set_rectangle_affine_rectangle_sum.cpp) | [Library Checker](https://judge.yosupo.jp/problem/dynamic_point_set_rectangle_affine_rectangle_sum) | 未提出 | — | — |
-| [dynamic\_tree\_subtree\_add\_subtree\_sum](submissions/dynamic_tree_subtree_add_subtree_sum.cpp) | [Library Checker](https://judge.yosupo.jp/problem/dynamic_tree_subtree_add_subtree_sum) | 未提出 | — | — |
-| [dynamic\_tree\_vertex\_add\_subtree\_sum](submissions/dynamic_tree_vertex_add_subtree_sum.cpp) | [Library Checker](https://judge.yosupo.jp/problem/dynamic_tree_vertex_add_subtree_sum) | 未提出 | — | — |
+| [dynamic\_point\_set\_rectangle\_affine\_rectangle\_sum](submissions/dynamic_point_set_rectangle_affine_rectangle_sum.cpp) | [Library Checker](https://judge.yosupo.jp/problem/dynamic_point_set_rectangle_affine_rectangle_sum) | 現行AC | [AC](https://judge.yosupo.jp/submission/419840) | 2245 ms |
+| [dynamic\_tree\_subtree\_add\_subtree\_sum](submissions/dynamic_tree_subtree_add_subtree_sum.cpp) | [Library Checker](https://judge.yosupo.jp/problem/dynamic_tree_subtree_add_subtree_sum) | 現行AC | [AC](https://judge.yosupo.jp/submission/419841) | 981 ms |
+| [dynamic\_tree\_vertex\_add\_subtree\_sum](submissions/dynamic_tree_vertex_add_subtree_sum.cpp) | [Library Checker](https://judge.yosupo.jp/problem/dynamic_tree_vertex_add_subtree_sum) | 現行AC | [AC](https://judge.yosupo.jp/submission/419842) | 1010 ms |
 | [dynamic\_union\_find](submissions/dynamic_union_find.cpp) | [Library Checker](https://judge.yosupo.jp/problem/unionfind) | 現行未照合・要再提出 | [AC](https://judge.yosupo.jp/submission/417223) | — |
-| [edit\_distance](submissions/edit_distance.cpp) | [AOJ](https://onlinejudge.u-aizu.ac.jp/problems/DPL_1_E) | 未提出 | — | — |
-| [enumerate\_cliques](submissions/enumerate_cliques.cpp) | [Library Checker](https://judge.yosupo.jp/problem/enumerate_cliques) | 未提出 | — | — |
-| [enumerate\_quotients](submissions/enumerate_quotients.cpp) | [Library Checker](https://judge.yosupo.jp/problem/enumerate_quotients) | 未提出 | — | — |
-| [enumerate\_triangles](submissions/enumerate_triangles.cpp) | [Library Checker](https://judge.yosupo.jp/problem/enumerate_triangles) | 未提出 | — | — |
+| [edit\_distance](submissions/edit_distance.cpp) | [AOJ](https://onlinejudge.u-aizu.ac.jp/problems/DPL_1_E) | 現行AC | [AC](https://onlinejudge.u-aizu.ac.jp/solutions/problem/DPL_1_E/review/11800914/reinsirk/C%2B%2B23) | 0 ms |
+| [enumerate\_cliques](submissions/enumerate_cliques.cpp) | [Library Checker](https://judge.yosupo.jp/problem/enumerate_cliques) | 現行AC | [AC](https://judge.yosupo.jp/submission/419843) | 1 ms |
+| [enumerate\_quotients](submissions/enumerate_quotients.cpp) | [Library Checker](https://judge.yosupo.jp/problem/enumerate_quotients) | 現行AC | [AC](https://judge.yosupo.jp/submission/419644) | 48 ms |
+| [enumerate\_triangles](submissions/enumerate_triangles.cpp) | [Library Checker](https://judge.yosupo.jp/problem/enumerate_triangles) | 現行AC | [AC](https://judge.yosupo.jp/submission/419844) | 47 ms |
 | [erasable\_priority\_queue\_double](submissions/erasable_priority_queue_double.cpp) | [Library Checker](https://judge.yosupo.jp/problem/double_ended_priority_queue) | 現行AC | [AC](https://judge.yosupo.jp/submission/417225) | 80 ms |
 | [erasable\_priority\_queue\_unit](submissions/erasable_priority_queue_unit.cpp) | ローカル | ローカル補足 | — | — |
 | [eratosthenes](submissions/eratosthenes.cpp) | [Library Checker](https://judge.yosupo.jp/problem/enumerate_primes) | 現行未照合・要再提出 | [AC](https://judge.yosupo.jp/submission/417226) | — |
-| [euclidean\_mst](submissions/euclidean_mst.cpp) | [Library Checker](https://judge.yosupo.jp/problem/euclidean_mst) | 未提出 | — | — |
+| [euclidean\_mst](submissions/euclidean_mst.cpp) | [Library Checker](https://judge.yosupo.jp/problem/euclidean_mst) | 現行AC | [AC](https://judge.yosupo.jp/submission/419845) | 226 ms |
 | [eulerian\_trail\_directed](submissions/eulerian_trail_directed.cpp) | [Library Checker](https://judge.yosupo.jp/problem/eulerian_trail_directed) | 未提出 | — | — |
 | [eulerian\_trail\_undirected](submissions/eulerian_trail_undirected.cpp) | [Library Checker](https://judge.yosupo.jp/problem/eulerian_trail_undirected) | 未提出 | — | — |
-| [exp\_of\_formal\_power\_series\_sparse](submissions/exp_of_formal_power_series_sparse.cpp) | [Library Checker](https://judge.yosupo.jp/problem/exp_of_formal_power_series_sparse) | 未提出 | — | — |
-| [exp\_of\_set\_power\_series](submissions/exp_of_set_power_series.cpp) | [Library Checker](https://judge.yosupo.jp/problem/exp_of_set_power_series) | 未提出 | — | — |
+| [exp\_of\_formal\_power\_series\_sparse](submissions/exp_of_formal_power_series_sparse.cpp) | [Library Checker](https://judge.yosupo.jp/problem/exp_of_formal_power_series_sparse) | 現行AC | [AC](https://judge.yosupo.jp/submission/419846) | 39 ms |
+| [exp\_of\_set\_power\_series](submissions/exp_of_set_power_series.cpp) | [Library Checker](https://judge.yosupo.jp/problem/exp_of_set_power_series) | 現行AC | [AC](https://judge.yosupo.jp/submission/419847) | 386 ms |
 | [fenwick\_tree](submissions/fenwick_tree.cpp) | [Library Checker](https://judge.yosupo.jp/problem/point_add_range_sum) | 現行未照合・要再提出 | [AC](https://judge.yosupo.jp/submission/417227) | — |
-| [floor\_sum](submissions/floor_sum.cpp) | [Library Checker](https://judge.yosupo.jp/problem/sum_of_floor_of_linear) | 未提出 | — | — |
+| [floor\_sum](submissions/floor_sum.cpp) | [Library Checker](https://judge.yosupo.jp/problem/sum_of_floor_of_linear) | 現行AC | [AC](https://judge.yosupo.jp/submission/419645) | 15 ms |
 | [floyd\_warshall](submissions/floyd_warshall.cpp) | [AtCoder](https://atcoder.jp/contests/abc012/tasks/abc012_4) | 現行未照合・要再提出 | [AC](https://atcoder.jp/contests/abc012/submissions/80790251) | — |
 | [fps\_divmod](submissions/fps_divmod.cpp) | [Library Checker](https://judge.yosupo.jp/problem/division_of_polynomials) | 未提出 | — | — |
 | [fps\_exp](submissions/fps_exp.cpp) | [Library Checker](https://judge.yosupo.jp/problem/exp_of_formal_power_series) | 未提出 | — | — |
 | [fps\_inverse](submissions/fps_inverse.cpp) | [Library Checker](https://judge.yosupo.jp/problem/inv_of_formal_power_series) | 未提出 | — | — |
-| [fps\_log](submissions/fps_log.cpp) | [Library Checker](https://judge.yosupo.jp/problem/log_of_formal_power_series) | 未提出 | — | — |
+| [fps\_log](submissions/fps_log.cpp) | [Library Checker](https://judge.yosupo.jp/problem/log_of_formal_power_series) | 現行AC | [AC](https://judge.yosupo.jp/submission/419646) | 92 ms |
 | [fps\_pow](submissions/fps_pow.cpp) | [Library Checker](https://judge.yosupo.jp/problem/pow_of_formal_power_series) | 未提出 | — | — |
 | [fps\_sqrt](submissions/fps_sqrt.cpp) | [Library Checker](https://judge.yosupo.jp/problem/sqrt_of_formal_power_series) | 未提出 | — | — |
 | [fraction\_arithmetic](submissions/fraction_arithmetic.cpp) | [AtCoder](https://atcoder.jp/contests/abc028/tasks/abc028_d) | 参考検証・移行先あり | [AC](https://atcoder.jp/contests/abc028/submissions/80443080) | — |
 | [fraction\_sort](submissions/fraction_sort.cpp) | [AtCoder](https://atcoder.jp/contests/abc308/tasks/abc308_c) | 参考検証・移行先あり | [AC](https://atcoder.jp/contests/abc308/submissions/80443084) | — |
-| [frequency\_table\_of\_tree\_distance](submissions/frequency_table_of_tree_distance.cpp) | [Library Checker](https://judge.yosupo.jp/problem/frequency_table_of_tree_distance) | 未提出 | — | — |
+| [frequency\_table\_of\_tree\_distance](submissions/frequency_table_of_tree_distance.cpp) | [Library Checker](https://judge.yosupo.jp/problem/frequency_table_of_tree_distance) | 現行AC | [AC](https://judge.yosupo.jp/submission/419848) | 219 ms |
 | [functional\_graph](submissions/functional_graph.cpp) | [AtCoder](https://atcoder.jp/contests/abc367/tasks/abc367_e) | 未提出 | — | — |
-| [furthest\_pair](submissions/furthest_pair.cpp) | [Library Checker](https://judge.yosupo.jp/problem/furthest_pair) | 未提出 | — | — |
-| [gcd\_of\_gaussian\_integers](submissions/gcd_of_gaussian_integers.cpp) | [Library Checker](https://judge.yosupo.jp/problem/gcd_of_gaussian_integers) | 未提出 | — | — |
+| [furthest\_pair](submissions/furthest_pair.cpp) | [Library Checker](https://judge.yosupo.jp/problem/furthest_pair) | 現行AC | [AC](https://judge.yosupo.jp/submission/419850) | 80 ms |
+| [gcd\_of\_gaussian\_integers](submissions/gcd_of_gaussian_integers.cpp) | [Library Checker](https://judge.yosupo.jp/problem/gcd_of_gaussian_integers) | 現行AC | [AC](https://judge.yosupo.jp/submission/419851) | 33 ms |
 | [general\_matching](submissions/general_matching.cpp) | [Library Checker](https://judge.yosupo.jp/problem/general_matching) | 現行未照合・要再提出 | [AC](https://judge.yosupo.jp/submission/417626) | — |
 | [geometry\_area\_full](submissions/geometry_area_full.cpp) | ローカル | ローカル補足 | — | — |
 | [geometry\_area\_split](submissions/geometry_area_split.cpp) | ローカル | ローカル補足 | — | — |
@@ -214,17 +214,17 @@
 | [implicit\_treap\_affine](submissions/implicit_treap_affine.cpp) | [Library Checker](https://judge.yosupo.jp/problem/dynamic_sequence_range_affine_range_sum) | 現行未照合・要再提出 | [AC](https://judge.yosupo.jp/submission/417303) | — |
 | [implicit\_treap\_deque](submissions/implicit_treap_deque.cpp) | [Library Checker](https://judge.yosupo.jp/problem/deque_operate_all_composite) | 現行未照合・要再提出 | [AC](https://judge.yosupo.jp/submission/417302) | — |
 | [implicit\_treap\_erase\_between](submissions/implicit_treap_erase_between.cpp) | [AtCoder](https://atcoder.jp/contests/abc421/tasks/abc421_f) | 未提出 | — | — |
-| [incremental\_minimum\_spanning\_forest](submissions/incremental_minimum_spanning_forest.cpp) | [Library Checker](https://judge.yosupo.jp/problem/incremental_minimum_spanning_forest) | 未提出 | — | — |
-| [incremental\_scc](submissions/incremental_scc.cpp) | [Library Checker](https://judge.yosupo.jp/problem/incremental_scc) | 未提出 | — | — |
+| [incremental\_minimum\_spanning\_forest](submissions/incremental_minimum_spanning_forest.cpp) | [Library Checker](https://judge.yosupo.jp/problem/incremental_minimum_spanning_forest) | 現行AC | [AC](https://judge.yosupo.jp/submission/419852) | 2358 ms |
+| [incremental\_scc](submissions/incremental_scc.cpp) | [Library Checker](https://judge.yosupo.jp/problem/incremental_scc) | 現行AC | [AC](https://judge.yosupo.jp/submission/419853) | 276 ms |
 | [internal\_hash\_map](submissions/internal_hash_map.cpp) | [Library Checker](https://judge.yosupo.jp/problem/associative_array) | 現行未照合・要再提出 | [AC](https://judge.yosupo.jp/submission/417282) | — |
-| [intersection\_of\_f2\_vector\_spaces](submissions/intersection_of_f2_vector_spaces.cpp) | [Library Checker](https://judge.yosupo.jp/problem/intersection_of_f2_vector_spaces) | 未提出 | — | — |
-| [inv\_of\_formal\_power\_series\_sparse](submissions/inv_of_formal_power_series_sparse.cpp) | [Library Checker](https://judge.yosupo.jp/problem/inv_of_formal_power_series_sparse) | 未提出 | — | — |
-| [k\_shortest\_walk](submissions/k_shortest_walk.cpp) | [Library Checker](https://judge.yosupo.jp/problem/k_shortest_walk) | 未提出 | — | — |
-| [kmp\_string\_matching](submissions/kmp_string_matching.cpp) | [AOJ](https://onlinejudge.u-aizu.ac.jp/problems/ALDS1_14_B) | 未提出 | — | — |
+| [intersection\_of\_f2\_vector\_spaces](submissions/intersection_of_f2_vector_spaces.cpp) | [Library Checker](https://judge.yosupo.jp/problem/intersection_of_f2_vector_spaces) | 現行AC | [AC](https://judge.yosupo.jp/submission/419854) | 409 ms |
+| [inv\_of\_formal\_power\_series\_sparse](submissions/inv_of_formal_power_series_sparse.cpp) | [Library Checker](https://judge.yosupo.jp/problem/inv_of_formal_power_series_sparse) | 現行AC | [AC](https://judge.yosupo.jp/submission/419855) | 23 ms |
+| [k\_shortest\_walk](submissions/k_shortest_walk.cpp) | [Library Checker](https://judge.yosupo.jp/problem/k_shortest_walk) | 現行AC | [AC](https://judge.yosupo.jp/submission/419856) | 144 ms |
+| [kmp\_string\_matching](submissions/kmp_string_matching.cpp) | [AOJ](https://onlinejudge.u-aizu.ac.jp/problems/ALDS1_14_B) | 現行AC | [AC](https://onlinejudge.u-aizu.ac.jp/solutions/problem/ALDS1_14_B/review/11800921/reinsirk/C%2B%2B23) | 0 ms |
 | [knapsack\_01](submissions/knapsack_01.cpp) | [AtCoder](https://atcoder.jp/contests/dp/tasks/dp_d) | 未提出 | — | — |
 | [knapsack\_bounded\_exact](submissions/knapsack_bounded_exact.cpp) | [AtCoder](https://atcoder.jp/contests/awc0103/tasks/awc0103_d) | 未提出 | — | — |
-| [kth\_root\_integer](submissions/kth_root_integer.cpp) | [Library Checker](https://judge.yosupo.jp/problem/kth_root_integer) | 未提出 | — | — |
-| [kth\_root\_mod](submissions/kth_root_mod.cpp) | [Library Checker](https://judge.yosupo.jp/problem/kth_root_mod) | 未提出 | — | — |
+| [kth\_root\_integer](submissions/kth_root_integer.cpp) | [Library Checker](https://judge.yosupo.jp/problem/kth_root_integer) | 現行AC | [AC](https://judge.yosupo.jp/submission/419647) | 40 ms |
+| [kth\_root\_mod](submissions/kth_root_mod.cpp) | [Library Checker](https://judge.yosupo.jp/problem/kth_root_mod) | 現行AC | [AC](https://judge.yosupo.jp/submission/419858) | 25 ms |
 | [lazy\_segment\_tree](submissions/lazy_segment_tree.cpp) | [Library Checker](https://judge.yosupo.jp/problem/range_affine_range_sum) | 現行未照合・要再提出 | [AC](https://judge.yosupo.jp/submission/417238) | — |
 | [lca](submissions/lca.cpp) | [Library Checker](https://judge.yosupo.jp/problem/lca) | 現行未照合・要再提出 | [AC](https://judge.yosupo.jp/submission/417240) | — |
 | [lca\_local](submissions/lca_local.cpp) | ローカル | ローカル補足 | — | — |
@@ -240,15 +240,15 @@
 | [link\_cut\_tree\_composite](submissions/link_cut_tree_composite.cpp) | [Library Checker](https://judge.yosupo.jp/problem/dynamic_tree_vertex_set_path_composite) | 未提出 | — | — |
 | [lis](submissions/lis.cpp) | [Library Checker](https://judge.yosupo.jp/problem/longest_increasing_subsequence) | 現行未照合・要再提出 | [AC](https://judge.yosupo.jp/submission/417243) | — |
 | [lis\_local](submissions/lis_local.cpp) | ローカル | ローカル補足 | — | — |
-| [log\_of\_formal\_power\_series\_sparse](submissions/log_of_formal_power_series_sparse.cpp) | [Library Checker](https://judge.yosupo.jp/problem/log_of_formal_power_series_sparse) | 未提出 | — | — |
-| [log\_of\_set\_power\_series](submissions/log_of_set_power_series.cpp) | [Library Checker](https://judge.yosupo.jp/problem/log_of_set_power_series) | 未提出 | — | — |
+| [log\_of\_formal\_power\_series\_sparse](submissions/log_of_formal_power_series_sparse.cpp) | [Library Checker](https://judge.yosupo.jp/problem/log_of_formal_power_series_sparse) | 現行AC | [AC](https://judge.yosupo.jp/submission/419859) | 27 ms |
+| [log\_of\_set\_power\_series](submissions/log_of_set_power_series.cpp) | [Library Checker](https://judge.yosupo.jp/problem/log_of_set_power_series) | 現行AC | [AC](https://judge.yosupo.jp/submission/419860) | 517 ms |
 | [low\_link\_biconnected](submissions/low_link_biconnected.cpp) | [Library Checker](https://judge.yosupo.jp/problem/biconnected_components) | 現行未照合・要再提出 | [AC](https://judge.yosupo.jp/submission/417244) | — |
 | [low\_link\_two\_edge](submissions/low_link_two_edge.cpp) | [Library Checker](https://judge.yosupo.jp/problem/two_edge_connected_components) | 現行未照合・要再提出 | [AC](https://judge.yosupo.jp/submission/417245) | — |
-| [lyndon\_factorization](submissions/lyndon_factorization.cpp) | [Library Checker](https://judge.yosupo.jp/problem/lyndon_factorization) | 未提出 | — | — |
-| [majority\_voting](submissions/majority_voting.cpp) | [Library Checker](https://judge.yosupo.jp/problem/majority_voting) | 未提出 | — | — |
+| [lyndon\_factorization](submissions/lyndon_factorization.cpp) | [Library Checker](https://judge.yosupo.jp/problem/lyndon_factorization) | 現行AC | [AC](https://judge.yosupo.jp/submission/419649) | 12 ms |
+| [majority\_voting](submissions/majority_voting.cpp) | [Library Checker](https://judge.yosupo.jp/problem/majority_voting) | 現行AC | [AC](https://judge.yosupo.jp/submission/419861) | 294 ms |
 | [manacher](submissions/manacher.cpp) | [Library Checker](https://judge.yosupo.jp/problem/enumerate_palindromes) | 現行未照合・要再提出 | [AC](https://judge.yosupo.jp/submission/417247) | — |
-| [manhattan\_mst](submissions/manhattan_mst.cpp) | [Library Checker](https://judge.yosupo.jp/problem/manhattanmst) | 未提出 | — | — |
-| [matrix\_det\_arbitrary\_mod](submissions/matrix_det_arbitrary_mod.cpp) | [Library Checker](https://judge.yosupo.jp/problem/matrix_det_arbitrary_mod) | 未提出 | — | — |
+| [manhattan\_mst](submissions/manhattan_mst.cpp) | [Library Checker](https://judge.yosupo.jp/problem/manhattanmst) | 現行AC | [AC](https://judge.yosupo.jp/submission/419650) | 167 ms |
+| [matrix\_det\_arbitrary\_mod](submissions/matrix_det_arbitrary_mod.cpp) | [Library Checker](https://judge.yosupo.jp/problem/matrix_det_arbitrary_mod) | 現行AC | [AC](https://judge.yosupo.jp/submission/419862) | 177 ms |
 | [matrix\_determinant](submissions/matrix_determinant.cpp) | [Library Checker](https://judge.yosupo.jp/problem/matrix_det) | 未提出 | — | — |
 | [matrix\_inverse](submissions/matrix_inverse.cpp) | [Library Checker](https://judge.yosupo.jp/problem/inverse_matrix) | 未提出 | — | — |
 | [matrix\_linear\_system](submissions/matrix_linear_system.cpp) | [Library Checker](https://judge.yosupo.jp/problem/system_of_linear_equations) | 未提出 | — | — |
@@ -259,60 +259,60 @@
 | [matrix\_rotate\_grid](submissions/matrix_rotate_grid.cpp) | [AtCoder](https://atcoder.jp/contests/abc404/tasks/abc404_b) | 参考検証・移行先あり | [AC](https://atcoder.jp/contests/abc404/submissions/80492105) | — |
 | [matrix\_transform\_local](submissions/matrix_transform_local.cpp) | ローカル | ローカル補足 | — | — |
 | [max\_flow\_grid](submissions/max_flow_grid.cpp) | [AtCoder](https://atcoder.jp/contests/practice2/tasks/practice2_d) | 参考検証・移行先あり | [AC](https://atcoder.jp/contests/practice2/submissions/80790365) | — |
-| [maximum\_independent\_set](submissions/maximum_independent_set.cpp) | [Library Checker](https://judge.yosupo.jp/problem/maximum_independent_set) | 未提出 | — | — |
+| [maximum\_independent\_set](submissions/maximum_independent_set.cpp) | [Library Checker](https://judge.yosupo.jp/problem/maximum_independent_set) | 現行AC | [AC](https://judge.yosupo.jp/submission/419863) | 13 ms |
 | [min\_cost\_flow\_grid](submissions/min_cost_flow_grid.cpp) | [AtCoder](https://atcoder.jp/contests/practice2/tasks/practice2_e) | 未提出 | — | — |
-| [min\_of\_mod\_of\_linear](submissions/min_of_mod_of_linear.cpp) | [Library Checker](https://judge.yosupo.jp/problem/min_of_mod_of_linear) | 未提出 | — | — |
-| [min\_plus\_convex\_arbitrary](submissions/min_plus_convex_arbitrary.cpp) | [Library Checker](https://judge.yosupo.jp/problem/min_plus_convolution_convex_arbitrary) | 未提出 | — | — |
-| [min\_plus\_convex\_convex](submissions/min_plus_convex_convex.cpp) | [Library Checker](https://judge.yosupo.jp/problem/min_plus_convolution_convex_convex) | 未提出 | — | — |
-| [min\_plus\_convolution\_concave\_arbitrary](submissions/min_plus_convolution_concave_arbitrary.cpp) | [Library Checker](https://judge.yosupo.jp/problem/min_plus_convolution_concave_arbitrary) | 未提出 | — | — |
-| [minimum\_diameter\_spanning\_tree](submissions/minimum_diameter_spanning_tree.cpp) | [Library Checker](https://judge.yosupo.jp/problem/minimum_diameter_spanning_tree) | 未提出 | — | — |
-| [minimum\_enclosing\_circle](submissions/minimum_enclosing_circle.cpp) | [Library Checker](https://judge.yosupo.jp/problem/minimum_enclosing_circle) | 未提出 | — | — |
-| [minimum\_spanning\_tree](submissions/minimum_spanning_tree.cpp) | [Library Checker](https://judge.yosupo.jp/problem/minimum_spanning_tree) | 未提出 | — | — |
-| [minimum\_steiner\_tree](submissions/minimum_steiner_tree.cpp) | [Library Checker](https://judge.yosupo.jp/problem/minimum_steiner_tree) | 未提出 | — | — |
+| [min\_of\_mod\_of\_linear](submissions/min_of_mod_of_linear.cpp) | [Library Checker](https://judge.yosupo.jp/problem/min_of_mod_of_linear) | 現行AC | [AC](https://judge.yosupo.jp/submission/419651) | 21 ms |
+| [min\_plus\_convex\_arbitrary](submissions/min_plus_convex_arbitrary.cpp) | [Library Checker](https://judge.yosupo.jp/problem/min_plus_convolution_convex_arbitrary) | 現行AC | [AC](https://judge.yosupo.jp/submission/419652) | 63 ms |
+| [min\_plus\_convex\_convex](submissions/min_plus_convex_convex.cpp) | [Library Checker](https://judge.yosupo.jp/problem/min_plus_convolution_convex_convex) | 現行AC | [AC](https://judge.yosupo.jp/submission/419653) | 35 ms |
+| [min\_plus\_convolution\_concave\_arbitrary](submissions/min_plus_convolution_concave_arbitrary.cpp) | [Library Checker](https://judge.yosupo.jp/problem/min_plus_convolution_concave_arbitrary) | 現行AC | [AC](https://judge.yosupo.jp/submission/419864) | 225 ms |
+| [minimum\_diameter\_spanning\_tree](submissions/minimum_diameter_spanning_tree.cpp) | [Library Checker](https://judge.yosupo.jp/problem/minimum_diameter_spanning_tree) | 現行AC | [AC](https://judge.yosupo.jp/submission/419866) | 334 ms |
+| [minimum\_enclosing\_circle](submissions/minimum_enclosing_circle.cpp) | [Library Checker](https://judge.yosupo.jp/problem/minimum_enclosing_circle) | 現行AC | [AC](https://judge.yosupo.jp/submission/419867) | 10 ms |
+| [minimum\_spanning\_tree](submissions/minimum_spanning_tree.cpp) | [Library Checker](https://judge.yosupo.jp/problem/minimum_spanning_tree) | 現行AC | [AC](https://judge.yosupo.jp/submission/419654) | 57 ms |
+| [minimum\_steiner\_tree](submissions/minimum_steiner_tree.cpp) | [Library Checker](https://judge.yosupo.jp/problem/minimum_steiner_tree) | 現行AC | [AC](https://judge.yosupo.jp/submission/419868) | 42 ms |
 | [minkowski\_sum](submissions/minkowski_sum.cpp) | [AtCoder](https://atcoder.jp/contests/abc478/tasks/abc478_g) | 未提出 | — | — |
 | [mo](submissions/mo.cpp) | [Library Checker](https://judge.yosupo.jp/problem/static_range_count_distinct) | 現行AC | [AC](https://judge.yosupo.jp/submission/418359) | 502 ms |
 | [mo\_rollback\_mode](submissions/mo_rollback_mode.cpp) | [Library Checker](https://judge.yosupo.jp/problem/static_range_mode_query) | 現行AC | [AC](https://judge.yosupo.jp/submission/418362) | 97 ms |
 | [mo\_updates](submissions/mo_updates.cpp) | [Library Checker](https://judge.yosupo.jp/problem/point_set_range_frequency) | 現行AC | [AC](https://judge.yosupo.jp/submission/418361) | 713 ms |
 | [modular\_power](submissions/modular_power.cpp) | [AtCoder](https://atcoder.jp/contests/math-and-algorithm/tasks/math_and_algorithm_aq) | 未提出 | — | — |
 | [modular\_sqrt](submissions/modular_sqrt.cpp) | [Library Checker](https://judge.yosupo.jp/problem/sqrt_mod) | 未提出 | — | — |
-| [montmort\_number\_mod](submissions/montmort_number_mod.cpp) | [Library Checker](https://judge.yosupo.jp/problem/montmort_number_mod) | 未提出 | — | — |
-| [mul\_mod2n\_convolution](submissions/mul_mod2n_convolution.cpp) | [Library Checker](https://judge.yosupo.jp/problem/mul_mod2n_convolution) | 未提出 | — | — |
-| [mul\_modp\_convolution](submissions/mul_modp_convolution.cpp) | [Library Checker](https://judge.yosupo.jp/problem/mul_modp_convolution) | 未提出 | — | — |
+| [montmort\_number\_mod](submissions/montmort_number_mod.cpp) | [Library Checker](https://judge.yosupo.jp/problem/montmort_number_mod) | 現行AC | [AC](https://judge.yosupo.jp/submission/419869) | 25 ms |
+| [mul\_mod2n\_convolution](submissions/mul_mod2n_convolution.cpp) | [Library Checker](https://judge.yosupo.jp/problem/mul_mod2n_convolution) | 現行AC | [AC](https://judge.yosupo.jp/submission/419870) | 99 ms |
+| [mul\_modp\_convolution](submissions/mul_modp_convolution.cpp) | [Library Checker](https://judge.yosupo.jp/problem/mul_modp_convolution) | 現行AC | [AC](https://judge.yosupo.jp/submission/419871) | 46 ms |
 | [multipoint\_evaluation](submissions/multipoint_evaluation.cpp) | [Library Checker](https://judge.yosupo.jp/problem/multipoint_evaluation) | 未提出 | — | — |
-| [multipoint\_evaluation\_on\_geometric\_sequence](submissions/multipoint_evaluation_on_geometric_sequence.cpp) | [Library Checker](https://judge.yosupo.jp/problem/multipoint_evaluation_on_geometric_sequence) | 未提出 | — | — |
-| [multivariate\_convolution](submissions/multivariate_convolution.cpp) | [Library Checker](https://judge.yosupo.jp/problem/multivariate_convolution) | 未提出 | — | — |
+| [multipoint\_evaluation\_on\_geometric\_sequence](submissions/multipoint_evaluation_on_geometric_sequence.cpp) | [Library Checker](https://judge.yosupo.jp/problem/multipoint_evaluation_on_geometric_sequence) | 現行AC | [AC](https://judge.yosupo.jp/submission/419872) | 64 ms |
+| [multivariate\_convolution](submissions/multivariate_convolution.cpp) | [Library Checker](https://judge.yosupo.jp/problem/multivariate_convolution) | 現行AC | [AC](https://judge.yosupo.jp/submission/419873) | 414 ms |
 | [nearest\_two\_points](submissions/nearest_two_points.cpp) | [Library Checker](https://judge.yosupo.jp/problem/closest_pair) | 現行未照合・要再提出 | [AC](https://judge.yosupo.jp/submission/417248) | — |
 | [nearest\_two\_points\_reference](submissions/nearest_two_points_reference.cpp) | ローカル | ローカル補足 | — | — |
 | [next\_combination](submissions/next_combination.cpp) | [AtCoder](https://atcoder.jp/contests/abc328/tasks/abc328_e) | 現行未照合・要再提出 | [AC](https://atcoder.jp/contests/abc328/submissions/80280852) | — |
-| [nim\_product\_64](submissions/nim_product_64.cpp) | [Library Checker](https://judge.yosupo.jp/problem/nim_product_64) | 未提出 | — | — |
+| [nim\_product\_64](submissions/nim_product_64.cpp) | [Library Checker](https://judge.yosupo.jp/problem/nim_product_64) | 現行AC | [AC](https://judge.yosupo.jp/submission/419874) | 98 ms |
 | [node\_local](submissions/node_local.cpp) | ローカル | ローカル補足 | — | — |
 | [node\_reachable](submissions/node_reachable.cpp) | [AtCoder](https://atcoder.jp/contests/abc228/tasks/abc228_b) | 現行未照合・要再提出 | [AC](https://atcoder.jp/contests/abc228/submissions/80395895) | — |
 | [ntt\_convolution](submissions/ntt_convolution.cpp) | [Library Checker](https://judge.yosupo.jp/problem/convolution_mod) | 現行未照合・要再提出 | [AC](https://judge.yosupo.jp/submission/417249) | — |
-| [number\_of\_subsequences](submissions/number_of_subsequences.cpp) | [Library Checker](https://judge.yosupo.jp/problem/number_of_subsequences) | 未提出 | — | — |
-| [offline\_distinct\_count](submissions/offline_distinct_count.cpp) | [Library Checker](https://judge.yosupo.jp/problem/static_range_count_distinct) | 未提出 | — | — |
+| [number\_of\_subsequences](submissions/number_of_subsequences.cpp) | [Library Checker](https://judge.yosupo.jp/problem/number_of_subsequences) | 現行AC | [AC](https://judge.yosupo.jp/submission/419875) | 56 ms |
+| [offline\_distinct\_count](submissions/offline_distinct_count.cpp) | [Library Checker](https://judge.yosupo.jp/problem/static_range_count_distinct) | 現行AC | [AC](https://judge.yosupo.jp/submission/419655) | 125 ms |
 | [offline\_dynamic\_connectivity](submissions/offline_dynamic_connectivity.cpp) | [Library Checker](https://judge.yosupo.jp/problem/dynamic_graph_vertex_add_component_sum) | 未提出 | — | — |
-| [offline\_point\_add\_rectangle\_sum](submissions/offline_point_add_rectangle_sum.cpp) | [Library Checker](https://judge.yosupo.jp/problem/point_add_rectangle_sum) | 未提出 | — | — |
-| [palindromes\_in\_deque](submissions/palindromes_in_deque.cpp) | [Library Checker](https://judge.yosupo.jp/problem/palindromes_in_deque) | 未提出 | — | — |
+| [offline\_point\_add\_rectangle\_sum](submissions/offline_point_add_rectangle_sum.cpp) | [Library Checker](https://judge.yosupo.jp/problem/point_add_rectangle_sum) | 現行AC | [AC](https://judge.yosupo.jp/submission/419876) | 126 ms |
+| [palindromes\_in\_deque](submissions/palindromes_in_deque.cpp) | [Library Checker](https://judge.yosupo.jp/problem/palindromes_in_deque) | 現行AC | [AC](https://judge.yosupo.jp/submission/419877) | 123 ms |
 | [palindromic\_factorization\_local](submissions/palindromic_factorization_local.cpp) | ローカル | ローカル補足 | — | — |
 | [palindromic\_factorization\_reference](submissions/palindromic_factorization_reference.cpp) | ローカル | ローカル補足 | — | — |
 | [palindromic\_tree](submissions/palindromic_tree.cpp) | [Library Checker](https://judge.yosupo.jp/problem/eertree) | 未提出 | — | — |
-| [partition\_function](submissions/partition_function.cpp) | [Library Checker](https://judge.yosupo.jp/problem/partition_function) | 未提出 | — | — |
-| [persistent\_array\_queue](submissions/persistent_array_queue.cpp) | [Library Checker](https://judge.yosupo.jp/problem/persistent_queue) | 未提出 | — | — |
-| [persistent\_queue](submissions/persistent_queue.cpp) | [Library Checker](https://judge.yosupo.jp/problem/persistent_queue) | 未提出 | — | — |
-| [persistent\_range\_affine\_range\_sum](submissions/persistent_range_affine_range_sum.cpp) | [Library Checker](https://judge.yosupo.jp/problem/persistent_range_affine_range_sum) | 未提出 | — | — |
+| [partition\_function](submissions/partition_function.cpp) | [Library Checker](https://judge.yosupo.jp/problem/partition_function) | 現行AC | [AC](https://judge.yosupo.jp/submission/419879) | 65 ms |
+| [persistent\_array\_queue](submissions/persistent_array_queue.cpp) | [Library Checker](https://judge.yosupo.jp/problem/persistent_queue) | 現行AC | [AC](https://judge.yosupo.jp/submission/419631) | 207 ms |
+| [persistent\_queue](submissions/persistent_queue.cpp) | [Library Checker](https://judge.yosupo.jp/problem/persistent_queue) | 現行AC | [AC](https://judge.yosupo.jp/submission/419880) | 63 ms |
+| [persistent\_range\_affine\_range\_sum](submissions/persistent_range_affine_range_sum.cpp) | [Library Checker](https://judge.yosupo.jp/problem/persistent_range_affine_range_sum) | 現行AC | [AC](https://judge.yosupo.jp/submission/419881) | 174 ms |
 | [persistent\_segment\_tree](submissions/persistent_segment_tree.cpp) | [Library Checker](https://judge.yosupo.jp/problem/point_add_range_sum) | 現行未照合・要再提出 | [AC](https://judge.yosupo.jp/submission/417441) | — |
 | [persistent\_union\_find](submissions/persistent_union_find.cpp) | [Library Checker](https://judge.yosupo.jp/problem/persistent_unionfind) | 現行未照合・要再提出 | [AC](https://judge.yosupo.jp/submission/417443) | — |
 | [persistent\_union\_find\_union\_path\_query](submissions/persistent_union_find_union_path_query.cpp) | [Yukicoder](https://yukicoder.me/problems/no/2295) | 現行未照合・要再提出 | [AC](https://yukicoder.me/submissions/1199606) | — |
-| [pfaffian\_of\_matrix](submissions/pfaffian_of_matrix.cpp) | [Library Checker](https://judge.yosupo.jp/problem/pfaffian_of_matrix) | 未提出 | — | — |
-| [point\_set\_range\_composite\_large\_array](submissions/point_set_range_composite_large_array.cpp) | [Library Checker](https://judge.yosupo.jp/problem/point_set_range_composite_large_array) | 未提出 | — | — |
-| [point\_set\_range\_frequency](submissions/point_set_range_frequency.cpp) | [Library Checker](https://judge.yosupo.jp/problem/point_set_range_frequency) | 未提出 | — | — |
-| [point\_set\_range\_sort\_range\_composite](submissions/point_set_range_sort_range_composite.cpp) | [Library Checker](https://judge.yosupo.jp/problem/point_set_range_sort_range_composite) | 未提出 | — | — |
+| [pfaffian\_of\_matrix](submissions/pfaffian_of_matrix.cpp) | [Library Checker](https://judge.yosupo.jp/problem/pfaffian_of_matrix) | 現行AC | [AC](https://judge.yosupo.jp/submission/419882) | 136 ms |
+| [point\_set\_range\_composite\_large\_array](submissions/point_set_range_composite_large_array.cpp) | [Library Checker](https://judge.yosupo.jp/problem/point_set_range_composite_large_array) | 現行AC | [AC](https://judge.yosupo.jp/submission/419883) | 285 ms |
+| [point\_set\_range\_frequency](submissions/point_set_range_frequency.cpp) | [Library Checker](https://judge.yosupo.jp/problem/point_set_range_frequency) | 現行AC | [AC](https://judge.yosupo.jp/submission/419884) | 149 ms |
+| [point\_set\_range\_sort\_range\_composite](submissions/point_set_range_sort_range_composite.cpp) | [Library Checker](https://judge.yosupo.jp/problem/point_set_range_sort_range_composite) | 現行AC | [AC](https://judge.yosupo.jp/submission/419885) | 296 ms |
 | [pollard\_rho\_factorize](submissions/pollard_rho_factorize.cpp) | [Library Checker](https://judge.yosupo.jp/problem/factorize) | 未提出 | — | — |
 | [polynomial\_interpolation](submissions/polynomial_interpolation.cpp) | [Library Checker](https://judge.yosupo.jp/problem/polynomial_interpolation) | 未提出 | — | — |
-| [polynomial\_interpolation\_on\_geometric\_sequence](submissions/polynomial_interpolation_on_geometric_sequence.cpp) | [Library Checker](https://judge.yosupo.jp/problem/polynomial_interpolation_on_geometric_sequence) | 未提出 | — | — |
+| [polynomial\_interpolation\_on\_geometric\_sequence](submissions/polynomial_interpolation_on_geometric_sequence.cpp) | [Library Checker](https://judge.yosupo.jp/problem/polynomial_interpolation_on_geometric_sequence) | 現行AC | [AC](https://judge.yosupo.jp/submission/419886) | 93 ms |
 | [polynomial\_taylor\_shift](submissions/polynomial_taylor_shift.cpp) | [Library Checker](https://judge.yosupo.jp/problem/polynomial_taylor_shift) | 未提出 | — | — |
-| [pow\_of\_formal\_power\_series\_sparse](submissions/pow_of_formal_power_series_sparse.cpp) | [Library Checker](https://judge.yosupo.jp/problem/pow_of_formal_power_series_sparse) | 未提出 | — | — |
-| [predecessor\_problem](submissions/predecessor_problem.cpp) | [Library Checker](https://judge.yosupo.jp/problem/predecessor_problem) | 未提出 | — | — |
+| [pow\_of\_formal\_power\_series\_sparse](submissions/pow_of_formal_power_series_sparse.cpp) | [Library Checker](https://judge.yosupo.jp/problem/pow_of_formal_power_series_sparse) | 現行AC | [AC](https://judge.yosupo.jp/submission/419888) | 37 ms |
+| [predecessor\_problem](submissions/predecessor_problem.cpp) | [Library Checker](https://judge.yosupo.jp/problem/predecessor_problem) | 現行AC | [AC](https://judge.yosupo.jp/submission/419889) | 86 ms |
 | [preferred\_data\_hash\_set\_and\_yuki](submissions/preferred_data_hash_set_and_yuki.cpp) | [Yukicoder](https://yukicoder.me/problems/no/2195) | 未提出 | — | — |
 | [preferred\_data\_heap\_double](submissions/preferred_data_heap_double.cpp) | [Library Checker](https://judge.yosupo.jp/problem/double_ended_priority_queue) | 現行未照合・要再提出 | [AC](https://judge.yosupo.jp/submission/417367) | — |
 | [preferred\_data\_radix\_frequency\_int64](submissions/preferred_data_radix_frequency_int64.cpp) | [Library Checker](https://judge.yosupo.jp/problem/static_range_frequency) | 現行AC | [AC](https://judge.yosupo.jp/submission/417368) | 172 ms |
@@ -326,30 +326,30 @@
 | [preferred\_sieve\_factorize\_split](submissions/preferred_sieve_factorize_split.cpp) | [Yukicoder](https://yukicoder.me/problems/no/2) | 未提出 | — | — |
 | [preferred\_topological\_yuki](submissions/preferred_topological_yuki.cpp) | [Yukicoder](https://yukicoder.me/problems/no/1660) | 未提出 | — | — |
 | [preferred\_trie\_dictionary](submissions/preferred_trie_dictionary.cpp) | [Yukicoder](https://yukicoder.me/problems/no/430) | 未提出 | — | — |
-| [prefix\_substring\_lcs](submissions/prefix_substring_lcs.cpp) | [Library Checker](https://judge.yosupo.jp/problem/prefix_substring_lcs) | 未提出 | — | — |
-| [prefix\_sum](submissions/prefix_sum.cpp) | [Library Checker](https://judge.yosupo.jp/problem/static_range_sum) | 未提出 | — | — |
-| [prefix\_sum\_2d](submissions/prefix_sum_2d.cpp) | [AtCoder](https://atcoder.jp/contests/abc106/tasks/abc106_d) | 未提出 | — | — |
-| [prefix\_sum\_3d](submissions/prefix_sum_3d.cpp) | [AtCoder](https://atcoder.jp/contests/abc366/tasks/abc366_d) | 未提出 | — | — |
-| [prefix\_sum\_of\_polynomial](submissions/prefix_sum_of_polynomial.cpp) | [Library Checker](https://judge.yosupo.jp/problem/prefix_sum_of_polynomial) | 未提出 | — | — |
+| [prefix\_substring\_lcs](submissions/prefix_substring_lcs.cpp) | [Library Checker](https://judge.yosupo.jp/problem/prefix_substring_lcs) | 現行AC | [AC](https://judge.yosupo.jp/submission/419891) | 109 ms |
+| [prefix\_sum](submissions/prefix_sum.cpp) | [Library Checker](https://judge.yosupo.jp/problem/static_range_sum) | 現行AC | [AC](https://judge.yosupo.jp/submission/419632) | 48 ms |
+| [prefix\_sum\_2d](submissions/prefix_sum_2d.cpp) | [AtCoder](https://atcoder.jp/contests/abc106/tasks/abc106_d) | 現行未照合・要再提出 | [AC](https://atcoder.jp/contests/abc106/submissions/81094884) | — |
+| [prefix\_sum\_3d](submissions/prefix_sum_3d.cpp) | [AtCoder](https://atcoder.jp/contests/abc366/tasks/abc366_d) | 現行未照合・要再提出 | [AC](https://atcoder.jp/contests/abc366/submissions/81094888) | — |
+| [prefix\_sum\_of\_polynomial](submissions/prefix_sum_of_polynomial.cpp) | [Library Checker](https://judge.yosupo.jp/problem/prefix_sum_of_polynomial) | 現行AC | [AC](https://judge.yosupo.jp/submission/419892) | 103 ms |
 | [primality](submissions/primality.cpp) | [Library Checker](https://judge.yosupo.jp/problem/primality_test) | 現行未照合・要再提出 | [AC](https://judge.yosupo.jp/submission/417251) | — |
 | [primality\_sieve\_local](submissions/primality_sieve_local.cpp) | ローカル | ローカル補足 | — | — |
-| [primitive\_root](submissions/primitive_root.cpp) | [Library Checker](https://judge.yosupo.jp/problem/primitive_root) | 未提出 | — | — |
-| [product\_of\_polynomial\_sequence](submissions/product_of_polynomial_sequence.cpp) | [Library Checker](https://judge.yosupo.jp/problem/product_of_polynomial_sequence) | 未提出 | — | — |
+| [primitive\_root](submissions/primitive_root.cpp) | [Library Checker](https://judge.yosupo.jp/problem/primitive_root) | 現行AC | [AC](https://judge.yosupo.jp/submission/419894) | 10 ms |
+| [product\_of\_polynomial\_sequence](submissions/product_of_polynomial_sequence.cpp) | [Library Checker](https://judge.yosupo.jp/problem/product_of_polynomial_sequence) | 現行AC | [AC](https://judge.yosupo.jp/submission/419895) | 302 ms |
 | [project\_selection](submissions/project_selection.cpp) | [AtCoder](https://atcoder.jp/contests/typical90/tasks/typical90_an) | 参考検証・移行先あり | [AC](https://atcoder.jp/contests/typical90/submissions/80790375) | — |
 | [project\_selection\_reference](submissions/project_selection_reference.cpp) | ローカル | ローカル補足 | — | — |
 | [pruefer\_code](submissions/pruefer_code.cpp) | [AtCoder](https://atcoder.jp/contests/abc239/tasks/abc239_f) | 未提出 | — | — |
 | [radix\_sort](submissions/radix_sort.cpp) | [AtCoder](https://atcoder.jp/contests/abc331/tasks/abc331_c) | 参考検証・移行先あり | [AC](https://atcoder.jp/contests/abc331/submissions/80353324) | — |
 | [radix\_sort\_reference](submissions/radix_sort_reference.cpp) | ローカル | ローカル補足 | — | — |
 | [radix\_sort\_uint32](submissions/radix_sort_uint32.cpp) | [AtCoder](https://atcoder.jp/contests/abc331/tasks/abc331_c) | 参考検証・移行先あり | [AC](https://atcoder.jp/contests/abc331/submissions/80353300) | — |
-| [range\_affine\_range\_sum\_large\_array](submissions/range_affine_range_sum_large_array.cpp) | [Library Checker](https://judge.yosupo.jp/problem/range_affine_range_sum_large_array) | 未提出 | — | — |
-| [range\_linear\_add\_range\_min](submissions/range_linear_add_range_min.cpp) | [Library Checker](https://judge.yosupo.jp/problem/range_linear_add_range_min) | 未提出 | — | — |
-| [range\_parallel\_unionfind](submissions/range_parallel_unionfind.cpp) | [Library Checker](https://judge.yosupo.jp/problem/range_parallel_unionfind) | 未提出 | — | — |
-| [range\_set\_range\_composite](submissions/range_set_range_composite.cpp) | [Library Checker](https://judge.yosupo.jp/problem/range_set_range_composite) | 未提出 | — | — |
+| [range\_affine\_range\_sum\_large\_array](submissions/range_affine_range_sum_large_array.cpp) | [Library Checker](https://judge.yosupo.jp/problem/range_affine_range_sum_large_array) | 現行AC | [AC](https://judge.yosupo.jp/submission/419916) | 202 ms |
+| [range\_linear\_add\_range\_min](submissions/range_linear_add_range_min.cpp) | [Library Checker](https://judge.yosupo.jp/problem/range_linear_add_range_min) | 現行AC | [AC](https://judge.yosupo.jp/submission/419918) | 773 ms |
+| [range\_parallel\_unionfind](submissions/range_parallel_unionfind.cpp) | [Library Checker](https://judge.yosupo.jp/problem/range_parallel_unionfind) | 現行AC | [AC](https://judge.yosupo.jp/submission/419919) | 283 ms |
+| [range\_set\_range\_composite](submissions/range_set_range_composite.cpp) | [Library Checker](https://judge.yosupo.jp/problem/range_set_range_composite) | 現行AC | [AC](https://judge.yosupo.jp/submission/419920) | 602 ms |
 | [range\_xor\_basis](submissions/range_xor_basis.cpp) | [AtCoder](https://atcoder.jp/contests/abc223/tasks/abc223_h) | 未提出 | — | — |
-| [rational\_approximation](submissions/rational_approximation.cpp) | [Library Checker](https://judge.yosupo.jp/problem/rational_approximation) | 未提出 | — | — |
-| [rectangle\_add\_point\_get](submissions/rectangle_add_point_get.cpp) | [Library Checker](https://judge.yosupo.jp/problem/rectangle_add_point_get) | 未提出 | — | — |
-| [rectangle\_sum](submissions/rectangle_sum.cpp) | [Library Checker](https://judge.yosupo.jp/problem/rectangle_sum) | 未提出 | — | — |
-| [rectangle\_union\_area](submissions/rectangle_union_area.cpp) | [Library Checker](https://judge.yosupo.jp/problem/area_of_union_of_rectangles) | 未提出 | — | — |
+| [rational\_approximation](submissions/rational_approximation.cpp) | [Library Checker](https://judge.yosupo.jp/problem/rational_approximation) | 現行AC | [AC](https://judge.yosupo.jp/submission/419656) | 56 ms |
+| [rectangle\_add\_point\_get](submissions/rectangle_add_point_get.cpp) | [Library Checker](https://judge.yosupo.jp/problem/rectangle_add_point_get) | 現行AC | [AC](https://judge.yosupo.jp/submission/419922) | 154 ms |
+| [rectangle\_sum](submissions/rectangle_sum.cpp) | [Library Checker](https://judge.yosupo.jp/problem/rectangle_sum) | 現行AC | [AC](https://judge.yosupo.jp/submission/419657) | 158 ms |
+| [rectangle\_union\_area](submissions/rectangle_union_area.cpp) | [Library Checker](https://judge.yosupo.jp/problem/area_of_union_of_rectangles) | 現行AC | [AC](https://judge.yosupo.jp/submission/419923) | 1087 ms |
 | [rerooting\_dp](submissions/rerooting_dp.cpp) | [Library Checker](https://judge.yosupo.jp/problem/tree_path_composite_sum) | 未提出 | — | — |
 | [rollback\_union\_find](submissions/rollback_union_find.cpp) | [Library Checker](https://judge.yosupo.jp/problem/persistent_unionfind) | 現行未照合・要再提出 | [AC](https://judge.yosupo.jp/submission/417252) | — |
 | [rollback\_weighted\_local](submissions/rollback_weighted_local.cpp) | ローカル | ローカル補足 | — | — |
@@ -359,59 +359,59 @@
 | [rollback\_weighted\_union\_find\_versioned\_potential](submissions/rollback_weighted_union_find_versioned_potential.cpp) | [AtCoder](https://atcoder.jp/contests/awc0100/tasks/awc0100_m) | 未提出 | — | — |
 | [rolling\_hash](submissions/rolling_hash.cpp) | [Library Checker](https://judge.yosupo.jp/problem/zalgorithm) | 現行未照合・要再提出 | [AC](https://judge.yosupo.jp/submission/417255) | — |
 | [rolling\_hash\_local](submissions/rolling_hash_local.cpp) | ローカル | ローカル補足 | — | — |
-| [rooted\_tree\_isomorphism\_classification](submissions/rooted_tree_isomorphism_classification.cpp) | [Library Checker](https://judge.yosupo.jp/problem/rooted_tree_isomorphism_classification) | 未提出 | — | — |
-| [rooted\_tree\_topological\_order\_with\_minimum\_inversions](submissions/rooted_tree_topological_order_with_minimum_inversions.cpp) | [Library Checker](https://judge.yosupo.jp/problem/rooted_tree_topological_order_with_minimum_inversions) | 未提出 | — | — |
-| [run\_enumerate](submissions/run_enumerate.cpp) | [Library Checker](https://judge.yosupo.jp/problem/runenumerate) | 未提出 | — | — |
+| [rooted\_tree\_isomorphism\_classification](submissions/rooted_tree_isomorphism_classification.cpp) | [Library Checker](https://judge.yosupo.jp/problem/rooted_tree_isomorphism_classification) | 現行AC | [AC](https://judge.yosupo.jp/submission/419924) | 157 ms |
+| [rooted\_tree\_topological\_order\_with\_minimum\_inversions](submissions/rooted_tree_topological_order_with_minimum_inversions.cpp) | [Library Checker](https://judge.yosupo.jp/problem/rooted_tree_topological_order_with_minimum_inversions) | 現行AC | [AC](https://judge.yosupo.jp/submission/419925) | 104 ms |
+| [run\_enumerate](submissions/run_enumerate.cpp) | [Library Checker](https://judge.yosupo.jp/problem/runenumerate) | 現行AC | [AC](https://judge.yosupo.jp/submission/419926) | 117 ms |
 | [scc](submissions/scc.cpp) | [Library Checker](https://judge.yosupo.jp/problem/scc) | 現行未照合・要再提出 | [AC](https://judge.yosupo.jp/submission/417256) | — |
 | [segment\_tree](submissions/segment_tree.cpp) | [Library Checker](https://judge.yosupo.jp/problem/point_add_range_sum) | 現行未照合・要再提出 | [AC](https://judge.yosupo.jp/submission/417258) | — |
 | [segment\_tree\_beats](submissions/segment_tree_beats.cpp) | [Library Checker](https://judge.yosupo.jp/problem/range_chmin_chmax_add_range_sum) | 未提出 | — | — |
 | [segment\_tree\_composite](submissions/segment_tree_composite.cpp) | [Library Checker](https://judge.yosupo.jp/problem/point_set_range_composite) | 現行未照合・要再提出 | [AC](https://judge.yosupo.jp/submission/417259) | — |
-| [sharp\_p\_subset\_sum](submissions/sharp_p_subset_sum.cpp) | [Library Checker](https://judge.yosupo.jp/problem/sharp_p_subset_sum) | 未提出 | — | — |
-| [shift\_of\_sampling\_points\_of\_polynomial](submissions/shift_of_sampling_points_of_polynomial.cpp) | [Library Checker](https://judge.yosupo.jp/problem/shift_of_sampling_points_of_polynomial) | 未提出 | — | — |
+| [sharp\_p\_subset\_sum](submissions/sharp_p_subset_sum.cpp) | [Library Checker](https://judge.yosupo.jp/problem/sharp_p_subset_sum) | 現行AC | [AC](https://judge.yosupo.jp/submission/419928) | 171 ms |
+| [shift\_of\_sampling\_points\_of\_polynomial](submissions/shift_of_sampling_points_of_polynomial.cpp) | [Library Checker](https://judge.yosupo.jp/problem/shift_of_sampling_points_of_polynomial) | 現行AC | [AC](https://judge.yosupo.jp/submission/419929) | 72 ms |
 | [sliding\_window\_aggregation](submissions/sliding_window_aggregation.cpp) | [Library Checker](https://judge.yosupo.jp/problem/queue_operate_all_composite) | 未提出 | — | — |
 | [slope\_trick](submissions/slope_trick.cpp) | [AtCoder](https://atcoder.jp/contests/abc127/tasks/abc127_f) | 未提出 | — | — |
-| [sparse\_matrix\_det](submissions/sparse_matrix_det.cpp) | [Library Checker](https://judge.yosupo.jp/problem/sparse_matrix_det) | 未提出 | — | — |
+| [sparse\_matrix\_det](submissions/sparse_matrix_det.cpp) | [Library Checker](https://judge.yosupo.jp/problem/sparse_matrix_det) | 現行AC | [AC](https://judge.yosupo.jp/submission/419930) | 197 ms |
 | [sparse\_table](submissions/sparse_table.cpp) | [Library Checker](https://judge.yosupo.jp/problem/staticrmq) | 現行AC | [AC](https://judge.yosupo.jp/submission/417260) | 58 ms |
 | [spfa](submissions/spfa.cpp) | [AtCoder](https://atcoder.jp/contests/abc137/tasks/abc137_e) | 現行未照合・要再提出 | [AC](https://atcoder.jp/contests/abc137/submissions/80790391) | — |
-| [sqrt\_of\_formal\_power\_series\_sparse](submissions/sqrt_of_formal_power_series_sparse.cpp) | [Library Checker](https://judge.yosupo.jp/problem/sqrt_of_formal_power_series_sparse) | 未提出 | — | — |
-| [st\_numbering](submissions/st_numbering.cpp) | [Library Checker](https://judge.yosupo.jp/problem/st_numbering) | 未提出 | — | — |
-| [static\_range\_inversions\_query](submissions/static_range_inversions_query.cpp) | [Library Checker](https://judge.yosupo.jp/problem/static_range_inversions_query) | 未提出 | — | — |
-| [static\_range\_lis\_query](submissions/static_range_lis_query.cpp) | [Library Checker](https://judge.yosupo.jp/problem/static_range_lis_query) | 未提出 | — | — |
-| [static\_range\_mode\_query](submissions/static_range_mode_query.cpp) | [Library Checker](https://judge.yosupo.jp/problem/static_range_mode_query) | 未提出 | — | — |
-| [static\_range\_sum\_with\_upper\_bound](submissions/static_range_sum_with_upper_bound.cpp) | [Library Checker](https://judge.yosupo.jp/problem/static_range_sum_with_upper_bound) | 未提出 | — | — |
-| [static\_rectangle\_add\_rectangle\_sum](submissions/static_rectangle_add_rectangle_sum.cpp) | [Library Checker](https://judge.yosupo.jp/problem/static_rectangle_add_rectangle_sum) | 未提出 | — | — |
-| [stern\_brocot\_tree](submissions/stern_brocot_tree.cpp) | [Library Checker](https://judge.yosupo.jp/problem/stern_brocot_tree) | 未提出 | — | — |
-| [stirling\_number\_of\_the\_first\_kind](submissions/stirling_number_of_the_first_kind.cpp) | [Library Checker](https://judge.yosupo.jp/problem/stirling_number_of_the_first_kind) | 未提出 | — | — |
-| [stirling\_number\_of\_the\_second\_kind](submissions/stirling_number_of_the_second_kind.cpp) | [Library Checker](https://judge.yosupo.jp/problem/stirling_number_of_the_second_kind) | 未提出 | — | — |
-| [subset\_convolution](submissions/subset_convolution.cpp) | [Library Checker](https://judge.yosupo.jp/problem/subset_convolution) | 未提出 | — | — |
+| [sqrt\_of\_formal\_power\_series\_sparse](submissions/sqrt_of_formal_power_series_sparse.cpp) | [Library Checker](https://judge.yosupo.jp/problem/sqrt_of_formal_power_series_sparse) | 現行AC | [AC](https://judge.yosupo.jp/submission/419931) | 37 ms |
+| [st\_numbering](submissions/st_numbering.cpp) | [Library Checker](https://judge.yosupo.jp/problem/st_numbering) | 現行AC | [AC](https://judge.yosupo.jp/submission/419932) | 42 ms |
+| [static\_range\_inversions\_query](submissions/static_range_inversions_query.cpp) | [Library Checker](https://judge.yosupo.jp/problem/static_range_inversions_query) | 現行AC | [AC](https://judge.yosupo.jp/submission/419933) | 676 ms |
+| [static\_range\_lis\_query](submissions/static_range_lis_query.cpp) | [Library Checker](https://judge.yosupo.jp/problem/static_range_lis_query) | 現行AC | [AC](https://judge.yosupo.jp/submission/419934) | 775 ms |
+| [static\_range\_mode\_query](submissions/static_range_mode_query.cpp) | [Library Checker](https://judge.yosupo.jp/problem/static_range_mode_query) | 現行AC | [AC](https://judge.yosupo.jp/submission/419935) | 83 ms |
+| [static\_range\_sum\_with\_upper\_bound](submissions/static_range_sum_with_upper_bound.cpp) | [Library Checker](https://judge.yosupo.jp/problem/static_range_sum_with_upper_bound) | 現行AC | [AC](https://judge.yosupo.jp/submission/419936) | 543 ms |
+| [static\_rectangle\_add\_rectangle\_sum](submissions/static_rectangle_add_rectangle_sum.cpp) | [Library Checker](https://judge.yosupo.jp/problem/static_rectangle_add_rectangle_sum) | 現行AC | [AC](https://judge.yosupo.jp/submission/419937) | 362 ms |
+| [stern\_brocot\_tree](submissions/stern_brocot_tree.cpp) | [Library Checker](https://judge.yosupo.jp/problem/stern_brocot_tree) | 現行AC | [AC](https://judge.yosupo.jp/submission/419658) | 30 ms |
+| [stirling\_number\_of\_the\_first\_kind](submissions/stirling_number_of_the_first_kind.cpp) | [Library Checker](https://judge.yosupo.jp/problem/stirling_number_of_the_first_kind) | 現行AC | [AC](https://judge.yosupo.jp/submission/419938) | 85 ms |
+| [stirling\_number\_of\_the\_second\_kind](submissions/stirling_number_of_the_second_kind.cpp) | [Library Checker](https://judge.yosupo.jp/problem/stirling_number_of_the_second_kind) | 現行AC | [AC](https://judge.yosupo.jp/submission/419939) | 61 ms |
+| [subset\_convolution](submissions/subset_convolution.cpp) | [Library Checker](https://judge.yosupo.jp/problem/subset_convolution) | 現行AC | [AC](https://judge.yosupo.jp/submission/419940) | 494 ms |
 | [subset\_sum\_cards](submissions/subset_sum_cards.cpp) | [AtCoder](https://atcoder.jp/contests/abc271/tasks/abc271_d) | 未提出 | — | — |
 | [suffix\_array](submissions/suffix_array.cpp) | [Library Checker](https://judge.yosupo.jp/problem/suffixarray) | 現行未照合・要再提出 | [AC](https://judge.yosupo.jp/submission/417261) | — |
 | [suffix\_array\_substrings](submissions/suffix_array_substrings.cpp) | [Library Checker](https://judge.yosupo.jp/problem/number_of_substrings) | 現行未照合・要再提出 | [AC](https://judge.yosupo.jp/submission/417262) | — |
 | [suffix\_automaton](submissions/suffix_automaton.cpp) | [Library Checker](https://judge.yosupo.jp/problem/number_of_substrings) | 未提出 | — | — |
 | [suffix\_automaton\_lcs](submissions/suffix_automaton_lcs.cpp) | [Library Checker](https://judge.yosupo.jp/problem/longest_common_substring) | 未提出 | — | — |
-| [sum\_of\_exponential\_times\_polynomial](submissions/sum_of_exponential_times_polynomial.cpp) | [Library Checker](https://judge.yosupo.jp/problem/sum_of_exponential_times_polynomial) | 未提出 | — | — |
-| [sum\_of\_exponential\_times\_polynomial\_limit](submissions/sum_of_exponential_times_polynomial_limit.cpp) | [Library Checker](https://judge.yosupo.jp/problem/sum_of_exponential_times_polynomial_limit) | 未提出 | — | — |
-| [sum\_of\_totient\_function](submissions/sum_of_totient_function.cpp) | [Library Checker](https://judge.yosupo.jp/problem/sum_of_totient_function) | 未提出 | — | — |
-| [tetration\_mod](submissions/tetration_mod.cpp) | [Library Checker](https://judge.yosupo.jp/problem/tetration_mod) | 未提出 | — | — |
-| [three\_edge\_connected\_components](submissions/three_edge_connected_components.cpp) | [Library Checker](https://judge.yosupo.jp/problem/three_edge_connected_components) | 未提出 | — | — |
+| [sum\_of\_exponential\_times\_polynomial](submissions/sum_of_exponential_times_polynomial.cpp) | [Library Checker](https://judge.yosupo.jp/problem/sum_of_exponential_times_polynomial) | 現行AC | [AC](https://judge.yosupo.jp/submission/419942) | 457 ms |
+| [sum\_of\_exponential\_times\_polynomial\_limit](submissions/sum_of_exponential_times_polynomial_limit.cpp) | [Library Checker](https://judge.yosupo.jp/problem/sum_of_exponential_times_polynomial_limit) | 現行AC | [AC](https://judge.yosupo.jp/submission/419941) | 301 ms |
+| [sum\_of\_totient\_function](submissions/sum_of_totient_function.cpp) | [Library Checker](https://judge.yosupo.jp/problem/sum_of_totient_function) | 現行AC | [AC](https://judge.yosupo.jp/submission/419943) | 219 ms |
+| [tetration\_mod](submissions/tetration_mod.cpp) | [Library Checker](https://judge.yosupo.jp/problem/tetration_mod) | 現行AC | [AC](https://judge.yosupo.jp/submission/419944) | 32 ms |
+| [three\_edge\_connected\_components](submissions/three_edge_connected_components.cpp) | [Library Checker](https://judge.yosupo.jp/problem/three_edge_connected_components) | 現行AC | [AC](https://judge.yosupo.jp/submission/419945) | 183 ms |
 | [topological](submissions/topological.cpp) | [AtCoder](https://atcoder.jp/contests/dp/tasks/dp_g) | 参考検証・移行先あり | [AC](https://atcoder.jp/contests/dp/submissions/80790405) | — |
 | [topological\_lexicographical](submissions/topological_lexicographical.cpp) | [AtCoder](https://atcoder.jp/contests/abc223/tasks/abc223_d) | 現行未照合・要再提出 | [AC](https://atcoder.jp/contests/abc223/submissions/80790408) | — |
 | [topological\_local](submissions/topological_local.cpp) | ローカル | ローカル補足 | — | — |
 | [tree\_b\_matching](submissions/tree_b_matching.cpp) | [AtCoder](https://atcoder.jp/contests/abc259/tasks/abc259_f) | 未提出 | — | — |
-| [tree\_decomposition\_width\_2](submissions/tree_decomposition_width_2.cpp) | [Library Checker](https://judge.yosupo.jp/problem/tree_decomposition_width_2) | 未提出 | — | — |
-| [tree\_diameter](submissions/tree_diameter.cpp) | [Library Checker](https://judge.yosupo.jp/problem/tree_diameter) | 未提出 | — | — |
+| [tree\_decomposition\_width\_2](submissions/tree_decomposition_width_2.cpp) | [Library Checker](https://judge.yosupo.jp/problem/tree_decomposition_width_2) | 現行AC | [AC](https://judge.yosupo.jp/submission/419948) | 445 ms |
+| [tree\_diameter](submissions/tree_diameter.cpp) | [Library Checker](https://judge.yosupo.jp/problem/tree_diameter) | 現行AC | [AC](https://judge.yosupo.jp/submission/419659) | 87 ms |
 | [trie\_dictionary](submissions/trie_dictionary.cpp) | [AtCoder](https://atcoder.jp/contests/abc164/tasks/abc164_c) | 参考検証・移行先あり | [AC](https://atcoder.jp/contests/abc164/submissions/80264519) | — |
 | [trie\_local](submissions/trie_local.cpp) | ローカル | ローカル補足 | — | — |
 | [two\_sat](submissions/two_sat.cpp) | [Library Checker](https://judge.yosupo.jp/problem/two_sat) | 現行未照合・要再提出 | [AC](https://judge.yosupo.jp/submission/417263) | — |
-| [two\_square\_sum](submissions/two_square_sum.cpp) | [Library Checker](https://judge.yosupo.jp/problem/two_square_sum) | 未提出 | — | — |
+| [two\_square\_sum](submissions/two_square_sum.cpp) | [Library Checker](https://judge.yosupo.jp/problem/two_square_sum) | 現行AC | [AC](https://judge.yosupo.jp/submission/419949) | 41 ms |
 | [union\_find](submissions/union_find.cpp) | [Library Checker](https://judge.yosupo.jp/problem/unionfind) | 現行AC | [AC](https://judge.yosupo.jp/submission/417264) | 7 ms |
-| [unionfind\_with\_potential\_non\_commutative\_group](submissions/unionfind_with_potential_non_commutative_group.cpp) | [Library Checker](https://judge.yosupo.jp/problem/unionfind_with_potential_non_commutative_group) | 未提出 | — | — |
-| [vertex\_add\_range\_contour\_sum\_on\_tree](submissions/vertex_add_range_contour_sum_on_tree.cpp) | [Library Checker](https://judge.yosupo.jp/problem/vertex_add_range_contour_sum_on_tree) | 未提出 | — | — |
-| [vertex\_get\_range\_contour\_add\_on\_tree](submissions/vertex_get_range_contour_add_on_tree.cpp) | [Library Checker](https://judge.yosupo.jp/problem/vertex_get_range_contour_add_on_tree) | 未提出 | — | — |
+| [unionfind\_with\_potential\_non\_commutative\_group](submissions/unionfind_with_potential_non_commutative_group.cpp) | [Library Checker](https://judge.yosupo.jp/problem/unionfind_with_potential_non_commutative_group) | 現行AC | [AC](https://judge.yosupo.jp/submission/419950) | 27 ms |
+| [vertex\_add\_range\_contour\_sum\_on\_tree](submissions/vertex_add_range_contour_sum_on_tree.cpp) | [Library Checker](https://judge.yosupo.jp/problem/vertex_add_range_contour_sum_on_tree) | 現行AC | [AC](https://judge.yosupo.jp/submission/419951) | 383 ms |
+| [vertex\_get\_range\_contour\_add\_on\_tree](submissions/vertex_get_range_contour_add_on_tree.cpp) | [Library Checker](https://judge.yosupo.jp/problem/vertex_get_range_contour_add_on_tree) | 現行AC | [AC](https://judge.yosupo.jp/submission/419953) | 345 ms |
 | [wavelet\_frequency](submissions/wavelet_frequency.cpp) | [Library Checker](https://judge.yosupo.jp/problem/static_range_frequency) | 現行未照合・要再提出 | [AC](https://judge.yosupo.jp/submission/417265) | — |
 | [wavelet\_kth](submissions/wavelet_kth.cpp) | [Library Checker](https://judge.yosupo.jp/problem/range_kth_smallest) | 現行未照合・要再提出 | [AC](https://judge.yosupo.jp/submission/417266) | — |
 | [weighted\_union\_find](submissions/weighted_union_find.cpp) | [Library Checker](https://judge.yosupo.jp/problem/unionfind_with_potential) | 現行AC | [AC](https://judge.yosupo.jp/submission/417267) | 12 ms |
-| [wildcard\_pattern\_matching](submissions/wildcard_pattern_matching.cpp) | [Library Checker](https://judge.yosupo.jp/problem/wildcard_pattern_matching) | 未提出 | — | — |
+| [wildcard\_pattern\_matching](submissions/wildcard_pattern_matching.cpp) | [Library Checker](https://judge.yosupo.jp/problem/wildcard_pattern_matching) | 現行AC | [AC](https://judge.yosupo.jp/submission/419954) | 62 ms |
 | [xor\_basis](submissions/xor_basis.cpp) | [AtCoder](https://atcoder.jp/contests/abc141/tasks/abc141_f) | 未提出 | — | — |
 | [z\_algorithm](submissions/z_algorithm.cpp) | [Library Checker](https://judge.yosupo.jp/problem/zalgorithm) | 現行AC | [AC](https://judge.yosupo.jp/submission/417268) | 14 ms |
 | [zero\_one\_bfs\_wizard](submissions/zero_one_bfs_wizard.cpp) | [AtCoder](https://atcoder.jp/contests/abc176/tasks/abc176_d) | 未提出 | — | — |
