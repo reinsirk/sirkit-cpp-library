@@ -360,7 +360,7 @@ def relative_report_text(value: str, temporary: Path | None = None) -> str:
 
 
 def run_tests(entries: list[dict], compiler: str, fallback: bool, output: Path,
-              *, compile_profile: str = "standard", jobs: int = 1) -> None:
+              *, compile_profile: str = "standard", jobs: int = 1, qemu: str | None = None) -> None:
     results = []
     compiler_name = Path(compiler).name
     flags = compile_flags(compile_profile, ["-std=c++23", "-O2", "-Wall", "-Wextra"])
@@ -370,6 +370,8 @@ def run_tests(entries: list[dict], compiler: str, fallback: bool, output: Path,
     if fallback:
         flags += ["-U__SIZEOF_INT128__", "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
                   "-DSIRKIT_LINE_CONTAINER_FORCE_PORTABLE", "-DSIRKIT_DISABLE_SIMD"]
+    if qemu:
+        flags.append("-static")
     with tempfile.TemporaryDirectory(prefix="atcoder_verify_") as tmp:
         temporary = Path(tmp)
 
@@ -392,9 +394,10 @@ def run_tests(entries: list[dict], compiler: str, fallback: bool, output: Path,
                           command=reported_command, compile_ok=built.returncode == 0,
                           diagnostics=relative_report_text(built.stderr, temporary), samples=[])
             if built.returncode == 0:
+                run_command = [qemu, str(binary)] if qemu else [str(binary)]
                 for sample in entry["samples"]:
                     try:
-                        run = subprocess.run([str(binary)], input=sample["input"], text=True,
+                        run = subprocess.run(run_command, input=sample["input"], text=True,
                                              capture_output=True, timeout=60)
                         passed = run.returncode == 0 and matches(entry, sample, run.stdout)
                         result["samples"].append(dict(

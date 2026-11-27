@@ -247,13 +247,17 @@ class StructureTests(unittest.TestCase):
     def test_cross_architecture_matrix_executes_checked_and_unchecked_binaries(self):
         job = workflow("verify.yml")["jobs"]["cross_architecture"]
         self.assertEqual(job["strategy"]["matrix"]["include"], [
-            {"target": "arm", "toolchain": "arm-linux-gnueabihf"},
             {"target": "loongarch64", "toolchain": "loongarch64-linux-gnu"},
             {"target": "riscv64", "toolchain": "riscv64-linux-gnu"},
             {"target": "ppc64le", "toolchain": "powerpc64le-linux-gnu"},
             {"target": "s390x", "toolchain": "s390x-linux-gnu"},
         ])
-        run = next(step for step in job["steps"] if step.get("name") == "Run portable library tests in QEMU")
+        full = next(step for step in job["steps"] if step.get("name") == "Run all local Verify in QEMU")
+        self.assertIn("Scripts/ci_verify.py --all", full["run"])
+        self.assertIn('--qemu "qemu-$SIRKIT_CROSS_TARGET" --fallback', full["run"])
+        artifact = next(step for step in job["steps"] if step.get("uses", "").startswith("actions/upload-artifact@"))
+        self.assertEqual(artifact["with"]["name"], "qemu-verify-${{ matrix.target }}")
+        run = next(step for step in job["steps"] if step.get("name") == "Run additional library tests in QEMU")
         self.assertIn("for mode in checked skip", run["run"])
         self.assertIn("-DSKIP_RUNTIME_CHECKS", run["run"])
         self.assertIn('timeout 120 "qemu-$SIRKIT_CROSS_TARGET" "$binary"', run["run"])

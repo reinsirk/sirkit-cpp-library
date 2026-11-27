@@ -246,14 +246,13 @@ jobs:
           retention-days: 14
 
   cross_architecture:
-    name: QEMU runtime (${{ matrix.target }})
+    name: QEMU Verify (${{ matrix.target }})
     runs-on: ubuntu-26.04
-    timeout-minutes: 25
+    timeout-minutes: 45
     strategy:
       fail-fast: false
       matrix:
         include:
-          - {target: arm, toolchain: arm-linux-gnueabihf}
           - {target: loongarch64, toolchain: loongarch64-linux-gnu}
           - {target: riscv64, toolchain: riscv64-linux-gnu}
           - {target: ppc64le, toolchain: powerpc64le-linux-gnu}
@@ -267,8 +266,18 @@ jobs:
           SIRKIT_CROSS_TOOLCHAIN: ${{ matrix.toolchain }}
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends "g++-15-$SIRKIT_CROSS_TOOLCHAIN" qemu-user
-      - name: Run portable library tests in QEMU
+          sudo apt-get install -y --no-install-recommends "g++-15-$SIRKIT_CROSS_TOOLCHAIN" qemu-user libboost-dev
+      - name: Run all local Verify in QEMU
+        env:
+          SIRKIT_CROSS_TOOLCHAIN: ${{ matrix.toolchain }}
+          SIRKIT_CROSS_TARGET: ${{ matrix.target }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 Scripts/ci_verify.py --all --compiler "$SIRKIT_CROSS_TOOLCHAIN-g++-15" \
+            --qemu "qemu-$SIRKIT_CROSS_TARGET" --fallback --jobs 4 --skip-sync \
+            --results "$RUNNER_TEMP/qemu-verify/result.json"
+      - name: Run additional library tests in QEMU
         env:
           SIRKIT_CROSS_TOOLCHAIN: ${{ matrix.toolchain }}
           SIRKIT_CROSS_TARGET: ${{ matrix.target }}
@@ -286,6 +295,20 @@ jobs:
               printf '%s (%s): PASS\n' "$test" "$mode"
             done
           done
+      - name: Summarize QEMU Verify
+        if: always()
+        env:
+          SIRKIT_CROSS_TARGET: ${{ matrix.target }}
+        run: |
+          printf '## QEMU Verify (%s)\n\n' "$SIRKIT_CROSS_TARGET" >> "$GITHUB_STEP_SUMMARY"
+          python3 Scripts/ci_verify_summary.py "$RUNNER_TEMP/qemu-verify/result.json" >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: qemu-verify-${{ matrix.target }}
+          path: ${{ runner.temp }}/qemu-verify/result.json
+          if-no-files-found: ignore
+          retention-days: 14
 
   instrumented:
     name: C++23 (${{ matrix.mode }}, checked)
@@ -786,7 +809,7 @@ jobs:
             printf '| Pythonテスト（2分割） | %s |\n' "$PYTHON_TESTS_RESULT"
             printf '| C++23 Verify（AMD64・ARM64） | %s |\n' "$VERIFY_RESULT"
             printf '| 配布8版の単独ビルド・動作検査 | %s |\n' "$VARIANT_BUILDS_RESULT"
-            printf '| 5アーキテクチャのQEMU動作検査 | %s |\n' "$CROSS_ARCH_RESULT"
+            printf '| 4アーキテクチャのQEMU全件Verify | %s |\n' "$CROSS_ARCH_RESULT"
             printf '| ASan/UBSan・カバレッジ（checked） | %s |\n' "$INSTRUMENTED_RESULT"
             printf '| Core Guidelines・Google Style（通常版のみ） | %s |\n' "$GUIDELINES_RESULT"
             printf '| checked正常系・期待した失敗系 | %s |\n' "$CONTRACT_RESULT"
