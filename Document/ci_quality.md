@@ -4,11 +4,12 @@
 
 | 検査 | 対象・結果 |
 | --- | --- |
-| C++23 Verify | 全対象をGCC/Clang、通常/標準代替、入力検査有効/無効でビルド・照合する。 |
-| 配布8版の検査 | 全ファイルの単独構文検査と、主要13ライブラリの動作テストを行う。共通版はGCC・Clang・MSVCで実行する。 |
+| C++23 Verify | AMD64とARM64で全対象をビルド・実行し、出力を照合する。両環境でGCC/Clang、通常/標準代替、入力検査有効/無効を試す。 |
+| 配布8版の検査 | 全ファイルの単独構文検査と、主要ライブラリの動作テストを行う。MSVCはWindowsのAMD64・ARM64で実行する。 |
+| QEMUでの動作検査 | ARMv7、LoongArch64、RISC-V 64、POWER 64（リトルエンディアン）、s390x（ビッグエンディアン）で、1次元と多次元の累積和・永続配列・高速入出力・動的ビット集合を実行する。 |
 | 正常系・失敗系 | 入力例・契約テストと補足テストで、正常な結果や失敗時の例外・戻り値を照合する。 |
 | Library Checker公式ケース | 全LC対象を外部キャッシュで生成し、全ケースを公式checkerで照合する。実行上限は1ケース30秒。 |
-| 決定的Max・構造ケース | Unionfindと永続UFのNo.2295向けに、制約上限や平衡結合・版探索・大きな積を独立参照と照合する。実行上限は1ケース60秒。 |
+| 決定的Max・構造ケース | Unionfind、永続UFのNo.2295、2次元・3次元累積和を独立参照と照合する。実行上限は1ケース60秒。 |
 | ASan/UBSan | 通常版のchecked実行で、範囲外アクセス・解放後の参照・未定義動作を検出する。 |
 | カバレッジ | checked実行で通常版本体の行・直接分岐を測定し、両方100%を必須にする。未計測も失敗。 |
 | 作法 | 通常版をCore Guidelines・Google Styleの2プロファイルで検査する。`Fast/`は対象外。 |
@@ -39,6 +40,8 @@ python3 Scripts/ci_quality_report.py --input /tmp/contracts --input /tmp/officia
 
 Linuxの一般設定はUbuntu 26.04でGCC 15（`g++-15`）とClang 18（`clang++-18`）を使います。配布版のMSVC検査はWindowsで実行します。
 
+ARM64の一般設定は `ubuntu-26.04-arm` ランナーで実行します。レポートは `local-verify-arm64-` で始まるArtifactに保存し、実行したアーキテクチャはJSONの `provenance.runner_arch` に記録します。
+
 各検査ジョブは同じPRのソースを取得して並行に実行します。ローカルVerify、Linuxの配布版検査、ASan/UBSan、カバレッジ、Clang-Tidyでは、各ジョブ内でも最大4件を並行実行します。PRの最終判定は、生成物の同期検査を含む全ジョブの完了後に行います。
 
 一般設定では`-std=c++23`を指定します。以下はジョブごとの主な追加引数です。
@@ -59,7 +62,7 @@ Verifyごとに設定されたGCC用の`#pragma GCC optimize`は生成ソース�
 
 ### AtCoder設定
 
-ローカルVerify全件をGCC・Clangの一般設定とAtCoder設定で実行します。
+AMD64ではローカルVerify全件をGCC・Clangの一般設定とAtCoder設定で実行します。
 
 - GCCの`atcoder`はGCC 15を使い、`-fmodules`とGCC用のconstexpr上限を指定します。`-flto=auto`は2026年6月の公式更新でGCC設定から削除されました。[更新のお知らせ](https://atcoder.jp/posts/language_update20260616_jp)
 - Clangの`atcoder-clang`はUbuntuのClang 21とlibc++を使い、`-fconstexpr-steps=524288`、`-flto=auto`、`lld`、`compiler-rt`、`libunwind`を指定します。Verify全件を検査有効・省略の両方で実行します。[AtCoderの言語設定](https://img.atcoder.jp/file/language-update/2025-10/language-list.html)
@@ -77,7 +80,7 @@ python3 Scripts/ci_verify.py --compiler clang++-21 --compile-profile atcoder-cla
 
 各処理系で共通版と専用版を検査します。配布用の通常版は入力検査を有効にした場合と省略した場合の両方で、速度優先版は配布時の設定で実行します。専用の速度優先実装を持つ11本すべてを動作テストに含め、独立した参照実装の結果と照合します。無効な入力を使う失敗系のテストは、入力検査を有効にした版で実行します。
 
-`variant-builds-GCC`、`variant-builds-Clang`、`variant-builds-MSVC`に原本・生成物・動作テストのSHAと構成別の判定を保存します。MSVCはWindowsでVisual Studioの`cl.exe`を使います。ACL入りのテンプレートには`Verify/current/vendor/ACL_COMMIT`で固定したACLを使います。
+`variant-builds-GCC`、`variant-builds-Clang`、`variant-builds-MSVC`、`variant-builds-MSVC-ARM64`に原本・生成物・動作テストのSHAと構成別の判定を保存します。Windowsでは各アーキテクチャ向けのMSVCでビルドし、その環境で実行します。ACL入りのテンプレートには`Verify/current/vendor/ACL_COMMIT`で固定したACLを使います。
 
 ```sh
 python3 Scripts/verify_variants.py --compiler GCC --compiler Clang --syntax-only --run-tests \
@@ -85,6 +88,8 @@ python3 Scripts/verify_variants.py --compiler GCC --compiler Clang --syntax-only
 ```
 
 Visual Studioの開発者コマンドプロンプトでは`--compiler MSVC`を指定し、出力先をWindowsのパスに置き換えます。
+
+QEMUでの動作検査は、対象の5テストを各アーキテクチャ向けにクロスコンパイルし、入力検査の有効・無効の両方で実行します。
 
 ## Max・難ケースの範囲
 
@@ -94,7 +99,7 @@ Visual Studioの開発者コマンドプロンプトでは`--compiler MSVC`を�
 
 別のstressジョブでUnionfindのN=Q=200000と圧縮前の平衡木、No.2295のN最大200000・Q=300000の成分結合・版探索・64bitを超える中間積などを補います。巨大入力はリポジトリへ保存せず、その場で生成し、全出力を閉形式の独立参照と照合します。結果はActionsのSummaryと`stress-cases`成果物で確認できます。最大ケースはGCCで1回の専用検査とし、全コンパイラ・Sanitizerへ重複させません。
 
-通常のVerify入力例だけでは大規模入力のMaxを保証しません。LC以外の問題Max補足は現在No.2295が対象で、他のyukicoder・AtCoder問題のMaxまで網羅したとは扱いません。公式runnerの1ケース30秒はCIの実行予算で、公式制限時間内の合格とは別です。
+累積和の最大ケースは、ABC106 Dの都市500・列車200,000・問い合わせ100,000件と、ABC366 Dの一辺100・問い合わせ200,000件を使います。公式runnerの1ケース30秒はCIの実行予算です。
 
 ## ASan/UBSanとカバレッジ
 

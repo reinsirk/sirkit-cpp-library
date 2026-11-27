@@ -11,7 +11,7 @@ from html.parser import HTMLParser
 import importlib.metadata
 import json
 import os
-from pathlib import Path, PurePosixPath
+from pathlib import Path, PurePosixPath, PureWindowsPath
 import re
 import shutil
 import subprocess
@@ -65,6 +65,23 @@ def sha(path: Path) -> str:
 def dump(path: Path, value: object) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+
+PRIVATE_QUALITY_FIELDS = frozenset({"command", "compile_command", "generation_command", "execution_command",
+                                    "error", "error_details", "message", "stdout", "stderr"})
+
+
+def public_quality_report(value):
+    # 元の実行記録で照合した後、公開ページには作業環境固有の引数やログを含めない。
+    if isinstance(value, dict):
+        return {key: public_quality_report(item) for key, item in value.items() if key not in PRIVATE_QUALITY_FIELDS}
+    if isinstance(value, list):
+        return [public_quality_report(item) for item in value]
+    if isinstance(value, str):
+        for path in (PureWindowsPath(value), PurePosixPath(value)):
+            if path.is_absolute():
+                return path.name
+    return value
 
 
 def md(value: object) -> str:
@@ -694,7 +711,7 @@ def build(root: Path, output: Path, reports: list[Path], *, production: bool = F
                 raise ValueError("コンパイラ別版が同期していません: " + entry["path"])
     prepare_output(root, output)
     status = update_verify_status.build_status(root)
-    quality = ci_quality_report.aggregate(root, reports)
+    quality = public_quality_report(ci_quality_report.aggregate(root, reports))
     for entry in status["entries"]:
         for name, recorded in entry["source_hashes"].items():
             if recorded != watched.get(name):

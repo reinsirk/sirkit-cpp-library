@@ -81,8 +81,8 @@ jobs:
           PY
 
   examples:
-    name: C++23 (${{ matrix.compiler }}, ${{ matrix.arithmetic }}${{ matrix.compile_profile != 'standard' && ', AtCoder' || '' }})
-    runs-on: ubuntu-26.04
+    name: C++23 (${{ matrix.compiler }}, ${{ matrix.arithmetic }}${{ matrix.compile_profile != 'standard' && ', AtCoder' || '' }}${{ matrix.architecture == 'arm64' && ', ARM64' || '' }})
+    runs-on: ${{ matrix.architecture == 'arm64' && 'ubuntu-26.04-arm' || 'ubuntu-26.04' }}
     timeout-minutes: 45
     strategy:
       fail-fast: false
@@ -90,9 +90,10 @@ jobs:
         compiler: [g++, clang++]
         arithmetic: [native, portable]
         compile_profile: [standard]
+        architecture: [amd64, arm64]
         include:
-          - {compiler: g++, arithmetic: native, compile_profile: atcoder}
-          - {compiler: clang++, arithmetic: native, compile_profile: atcoder-clang}
+          - {compiler: g++, arithmetic: native, compile_profile: atcoder, architecture: amd64}
+          - {compiler: clang++, arithmetic: native, compile_profile: atcoder-clang, architecture: amd64}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -100,9 +101,15 @@ jobs:
           persist-credentials: false
       - name: Install compilers
         if: matrix.compile_profile != 'atcoder-clang'
+        env:
+          VERIFY_COMPILER_FAMILY: ${{ matrix.compiler }}
         run: |
           sudo apt-get update
-          sudo apt-get install -y g++-15 clang-18 libboost-dev
+          packages=(g++-15 libboost-dev)
+          if [[ "$VERIFY_COMPILER_FAMILY" == clang++ ]]; then
+            packages+=(clang-18)
+          fi
+          sudo apt-get install -y --no-install-recommends "${packages[@]}"
       - name: Install Clang for the AtCoder profile
         if: matrix.compile_profile == 'atcoder-clang'
         run: |
@@ -140,7 +147,7 @@ jobs:
           if path.is_file():
               value = json.loads(path.read_text())
               current = {key.lower(): os.environ.get(key) for key in (
-                  "GITHUB_SHA", "GITHUB_RUN_ID", "GITHUB_RUN_ATTEMPT", "GITHUB_REPOSITORY", "GITHUB_JOB")}
+                  "GITHUB_SHA", "GITHUB_RUN_ID", "GITHUB_RUN_ATTEMPT", "GITHUB_REPOSITORY", "GITHUB_JOB", "RUNNER_ARCH")}
               current["pull_request_head_sha"] = os.environ.get("SIRKIT_PR_HEAD_SHA")
               value.setdefault("provenance", {}).update(current)
               path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n")
@@ -149,13 +156,13 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: ${{ matrix.compile_profile != 'standard' && 'atcoder-local-verify' || 'local-verify' }}-${{ matrix.compiler }}-${{ matrix.arithmetic }}
+          name: ${{ matrix.compile_profile != 'standard' && 'atcoder-local-verify' || 'local-verify' }}${{ matrix.architecture == 'arm64' && '-arm64' || '' }}-${{ matrix.compiler }}-${{ matrix.arithmetic }}
           path: ${{ runner.temp }}/verify-results/
           if-no-files-found: ignore
           retention-days: 14
 
   variant_builds:
-    name: 配布版のビルド・動作検査 (${{ matrix.compiler }})
+    name: 配布版のビルド・動作検査 (${{ matrix.compiler }}${{ matrix.msvc_arch == 'arm64' && ', ARM64' || '' }})
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
     strategy:
@@ -164,7 +171,8 @@ jobs:
         include:
           - {os: ubuntu-26.04, compiler: GCC}
           - {os: ubuntu-26.04, compiler: Clang}
-          - {os: windows-2025, compiler: MSVC}
+          - {os: windows-2025, compiler: MSVC, msvc_arch: x64}
+          - {os: windows-11-vs2026-arm, compiler: MSVC, msvc_arch: arm64}
     steps:
       - name: Keep source bytes for SHA verification
         if: matrix.compiler == 'MSVC'
@@ -196,13 +204,20 @@ jobs:
           sudo apt-get install -y g++-15 clang-18
       - name: Find Visual Studio developer command
         if: matrix.compiler == 'MSVC'
+        env:
+          SIRKIT_MSVC_ARCH: ${{ matrix.msvc_arch }}
         shell: pwsh
         run: |
           $vswhere = Join-Path "${env:ProgramFiles(x86)}" "Microsoft Visual Studio\Installer\vswhere.exe"
-          $install = & $vswhere -latest -products '*' -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
+          $component = if ($env:SIRKIT_MSVC_ARCH -eq 'arm64') {
+            'Microsoft.VisualStudio.Component.VC.Tools.ARM64'
+          } else {
+            'Microsoft.VisualStudio.Component.VC.Tools.x86.x64'
+          }
+          $install = & $vswhere -latest -products '*' -requires $component -property installationPath
           if (-not $install) { throw "Visual Studio C++ tools not found" }
-          $developer = Join-Path $install "Common7\Tools\VsDevCmd.bat"
-          "SIRKIT_VS_DEVELOPER_COMMAND=$developer" >> $env:GITHUB_ENV
+          $vcvars = Join-Path $install "VC\Auxiliary\Build\vcvarsall.bat"
+          "SIRKIT_VCVARS=$vcvars" >> $env:GITHUB_ENV
       - name: Verify common and compiler-specific variants on Linux
         if: matrix.compiler != 'MSVC'
         shell: bash
@@ -214,18 +229,63 @@ jobs:
           --output "$RUNNER_TEMP/variant-builds.json" --summary "$GITHUB_STEP_SUMMARY"
       - name: Verify common and MSVC-specific variants on Windows
         if: matrix.compiler == 'MSVC'
+        env:
+          SIRKIT_MSVC_ARCH: ${{ matrix.msvc_arch }}
         shell: cmd
         run: |
-          call "%SIRKIT_VS_DEVELOPER_COMMAND%" -no_logo -arch=x64 || exit /b 1
+          call "%SIRKIT_VCVARS%" %SIRKIT_MSVC_ARCH% || exit /b 1
+          where cl | findstr /I /L /C:"\Host%SIRKIT_MSVC_ARCH%\%SIRKIT_MSVC_ARCH%\cl.exe" >nul || exit /b 1
           cd /d "%GITHUB_WORKSPACE%"
           python -X utf8 Scripts/verify_variants.py --compiler MSVC --syntax-only --run-tests --jobs 2 --acl-include .verify-acl --output "%RUNNER_TEMP%\variant-builds.json" --summary "%GITHUB_STEP_SUMMARY%"
       - uses: actions/upload-artifact@v7
         if: always()
         with:
-          name: variant-builds-${{ matrix.compiler }}
+          name: variant-builds-${{ matrix.compiler }}${{ matrix.msvc_arch == 'arm64' && '-ARM64' || '' }}
           path: ${{ runner.temp }}/variant-builds.json
           if-no-files-found: ignore
           retention-days: 14
+
+  cross_architecture:
+    name: QEMU runtime (${{ matrix.target }})
+    runs-on: ubuntu-26.04
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {target: arm, toolchain: arm-linux-gnueabihf}
+          - {target: loongarch64, toolchain: loongarch64-linux-gnu}
+          - {target: riscv64, toolchain: riscv64-linux-gnu}
+          - {target: ppc64le, toolchain: powerpc64le-linux-gnu}
+          - {target: s390x, toolchain: s390x-linux-gnu}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Install cross compiler and emulator
+        env:
+          SIRKIT_CROSS_TOOLCHAIN: ${{ matrix.toolchain }}
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends "g++-15-$SIRKIT_CROSS_TOOLCHAIN" qemu-user
+      - name: Run portable library tests in QEMU
+        env:
+          SIRKIT_CROSS_TOOLCHAIN: ${{ matrix.toolchain }}
+          SIRKIT_CROSS_TARGET: ${{ matrix.target }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          tests=(prefix_sum_reference_test prefix_sum_nd_reference_test persistent_array_reference_test fast_io_test dynamic_bitset_reference_test)
+          for test in "${tests[@]}"; do
+            for mode in checked skip; do
+              options=()
+              if [[ "$mode" == skip ]]; then options=(-DSKIP_RUNTIME_CHECKS); fi
+              binary="$RUNNER_TEMP/$test-$mode"
+              "$SIRKIT_CROSS_TOOLCHAIN-g++-15" -std=c++23 -O2 -static "${options[@]}" "Verify/current/tests/$test.cpp" -o "$binary"
+              timeout 120 "qemu-$SIRKIT_CROSS_TARGET" "$binary"
+              printf '%s (%s): PASS\n' "$test" "$mode"
+            done
+          done
 
   instrumented:
     name: C++23 (${{ matrix.mode }}, checked)
@@ -699,7 +759,7 @@ jobs:
   result:
     name: Verify result
     if: always()
-    needs: [generated, python_tests, examples, variant_builds, instrumented, guidelines, contracts, library_checker, stress, yomiyasu, documentation]
+    needs: [generated, python_tests, examples, variant_builds, cross_architecture, instrumented, guidelines, contracts, library_checker, stress, yomiyasu, documentation]
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
@@ -709,6 +769,7 @@ jobs:
           PYTHON_TESTS_RESULT: ${{ needs.python_tests.result }}
           VERIFY_RESULT: ${{ needs.examples.result }}
           VARIANT_BUILDS_RESULT: ${{ needs.variant_builds.result }}
+          CROSS_ARCH_RESULT: ${{ needs.cross_architecture.result }}
           INSTRUMENTED_RESULT: ${{ needs.instrumented.result }}
           GUIDELINES_RESULT: ${{ needs.guidelines.result }}
           CONTRACT_RESULT: ${{ needs.contracts.result }}
@@ -723,8 +784,9 @@ jobs:
             printf '## Verify\n\n| 検査 | 結果 |\n| --- | --- |\n'
             printf '| 生成物・README集計 | %s |\n' "$GENERATED_RESULT"
             printf '| Pythonテスト（2分割） | %s |\n' "$PYTHON_TESTS_RESULT"
-            printf '| C++23・GCC/Clang・通常/標準代替 | %s |\n' "$VERIFY_RESULT"
+            printf '| C++23 Verify（AMD64・ARM64） | %s |\n' "$VERIFY_RESULT"
             printf '| 配布8版の単独ビルド・動作検査 | %s |\n' "$VARIANT_BUILDS_RESULT"
+            printf '| 5アーキテクチャのQEMU動作検査 | %s |\n' "$CROSS_ARCH_RESULT"
             printf '| ASan/UBSan・カバレッジ（checked） | %s |\n' "$INSTRUMENTED_RESULT"
             printf '| Core Guidelines・Google Style（通常版のみ） | %s |\n' "$GUIDELINES_RESULT"
             printf '| checked正常系・期待した失敗系 | %s |\n' "$CONTRACT_RESULT"
@@ -734,4 +796,4 @@ jobs:
             printf '| ライブラリページのプレビュー | %s |\n' "$DOCUMENTATION_RESULT"
             printf '\nローカル検証の結果です。オンラインACはREADMEのVerify一覧で別に管理します。\n'
           } >> "$GITHUB_STEP_SUMMARY"
-          [[ "$GENERATED_RESULT" == success && "$PYTHON_TESTS_RESULT" == success && "$VERIFY_RESULT" == success && "$VARIANT_BUILDS_RESULT" == success && "$INSTRUMENTED_RESULT" == success && "$GUIDELINES_RESULT" == success && "$CONTRACT_RESULT" == success && "$LIBRARY_CHECKER_RESULT" == success && "$STRESS_RESULT" == success && "$YOMIYASU_RESULT" == success && "$DOCUMENTATION_RESULT" == success ]]
+          [[ "$GENERATED_RESULT" == success && "$PYTHON_TESTS_RESULT" == success && "$VERIFY_RESULT" == success && "$VARIANT_BUILDS_RESULT" == success && "$CROSS_ARCH_RESULT" == success && "$INSTRUMENTED_RESULT" == success && "$GUIDELINES_RESULT" == success && "$CONTRACT_RESULT" == success && "$LIBRARY_CHECKER_RESULT" == success && "$STRESS_RESULT" == success && "$YOMIYASU_RESULT" == success && "$DOCUMENTATION_RESULT" == success ]]

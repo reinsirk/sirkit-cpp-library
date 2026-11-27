@@ -13,6 +13,29 @@ from Scripts import build_library_pages as pages
 
 
 class LibraryPagesTest(unittest.TestCase):
+    def test_public_quality_keeps_timings_without_machine_paths(self):
+        original = {
+            "reports": [{"path": "/home/local-user/output/results.json", "status": "PASS"}],
+            "errors": [{"report": "abc", "message": "missing /home/local-user/cache/test.in"}],
+            "libraries": [{"path": "Graph/example.cpp", "source_sha256": "abc",
+                           "performance": {"samples_ns": [1200, 1000],
+                                           "compiler": r"C:\Users\local-user\bin\clang++.exe",
+                                           "command": ["clang++", "-I/home/local-user/src"],
+                                           "official": {"generation_command": ["/tmp/check/generate.py"],
+                                                        "repository": "https://github.com/user/repo"}}}],
+        }
+        public = pages.public_quality_report(original)
+        self.assertNotIn("/home/local-user", json.dumps(public))
+        self.assertNotIn("local-user", json.dumps(public))
+        self.assertNotIn("/tmp/check", json.dumps(public))
+        self.assertEqual(public["reports"], [{"path": "results.json", "status": "PASS"}])
+        self.assertEqual(public["errors"], [{"report": "abc"}])
+        library = public["libraries"][0]
+        self.assertEqual(library["path"], "Graph/example.cpp")
+        self.assertEqual(library["source_sha256"], "abc")
+        self.assertEqual(library["performance"], {"samples_ns": [1200, 1000], "compiler": "clang++.exe",
+                                                  "official": {"repository": "https://github.com/user/repo"}})
+
     @staticmethod
     def variants_manifest(source):
         return {"format": 1, "generated_by": "Scripts/generate_variants.py", "entries": [
