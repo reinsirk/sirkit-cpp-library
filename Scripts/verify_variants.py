@@ -144,6 +144,9 @@ def run_runtime_test(compiler: str, command: list[str], source: Path, binary: Pa
         flags = ["/O2", "/UNDEBUG", "/Fo" + str(binary.with_suffix(".obj")), "/Fe" + str(binary)]
     else:
         flags = ["-UNDEBUG", "-o", str(binary)]
+        if compiler == "Clang" and "--target=x86_64-pc-windows-msvc" in command:
+            # The x86 CPU detection builtins need compiler-rt on the MSVC target.
+            flags.append("--rtlib=compiler-rt")
     build = subprocess.run([*command, *flags, str(source)], cwd=binary.parent,
                            capture_output=True, timeout=180)
     build_log = (build.stdout + build.stderr).decode(errors="replace")

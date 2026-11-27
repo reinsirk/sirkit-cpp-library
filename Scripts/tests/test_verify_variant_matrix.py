@@ -56,6 +56,18 @@ class VariantMatrixTests(unittest.TestCase):
         gcc_install.assert_not_called()
         self.assertEqual(command, ["clang++.exe", "--target=aarch64-pc-windows-msvc", "-std=c++23", "-O2"])
 
+    def test_windows_amd64_clang_links_the_cpu_detection_runtime(self):
+        root = Path("work dir")
+        targets = (("x86_64-pc-windows-msvc", True), ("aarch64-pc-windows-msvc", False),
+                   ("x86_64-linux-gnu", False))
+        for target, requires_runtime in targets:
+            with self.subTest(target=target), patch.object(variants.subprocess, "run") as run:
+                run.return_value = subprocess.CompletedProcess([], 0, stdout=b"", stderr=b"")
+                command = ["clang++", "--target=" + target]
+                result = variants.run_runtime_test("Clang", command, root / "fixture.cpp", root / "probe.exe")
+                self.assertTrue(result["passed"])
+                self.assertEqual("--rtlib=compiler-rt" in run.call_args_list[0].args[0], requires_runtime)
+
     def test_fast_library_is_included_before_enabling_the_fixture_skip_guard(self):
         library = Path("temp root/library.hpp")
         fixture = Path("example.cpp")
