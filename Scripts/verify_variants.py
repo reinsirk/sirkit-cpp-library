@@ -25,12 +25,28 @@ FORCE_STANDARD = ["-DSIRKIT_DISABLE_SIMD", "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
                   "-DSIRKIT_FORCE_STANDARD_MUL_OVERFLOW", "-DSIRKIT_FRACTION_DISABLE_INT128",
                   "-DGEO_DISABLE_INT128", "-DSIRKIT_CONVOLUTION_DISABLE_INT128"]
 RUNTIME_TESTS = {
+    "Math/Floor_Sum.cpp": ("floor_sum_reference_test.cpp", "SIRKIT_FLOOR_SUM_TEST_SOURCE"),
+    "Algorithm/Monge_Optimization.cpp": ("monge_optimization_reference_test.cpp", "SIRKIT_MONGE_OPTIMIZATION_TEST_SOURCE"),
+    "Geometry/Manhattan_MST.cpp": ("manhattan_mst_reference_test.cpp", "SIRKIT_MANHATTAN_MST_TEST_SOURCE"),
+    "Graph/Dominator_Tree.cpp": ("dominator_tree_reference_test.cpp", "SIRKIT_DOMINATOR_TREE_TEST_SOURCE"),
+    "Graph/Minimum_Spanning_Tree.cpp": ("minimum_spanning_tree_reference_test.cpp", "SIRKIT_MINIMUM_SPANNING_TREE_TEST_SOURCE"),
+    "String/Lyndon_Factorization.cpp": ("lyndon_factorization_reference_test.cpp", "SIRKIT_LYNDON_FACTORIZATION_TEST_SOURCE"),
+    "Math/Stern_Brocot_Tree.cpp": ("stern_brocot_tree_reference_test.cpp", "SIRKIT_STERN_BROCOT_TREE_TEST_SOURCE"),
+    "Math/Floor_Quotients.cpp": ("floor_quotients_reference_test.cpp", "SIRKIT_FLOOR_QUOTIENTS_TEST_SOURCE"),
+    "Math/Integer_Root.cpp": ("integer_root_reference_test.cpp", "SIRKIT_INTEGER_ROOT_TEST_SOURCE"),
+    "Math/Discrete_Logarithm.cpp": ("discrete_logarithm_reference_test.cpp", "SIRKIT_DISCRETE_LOGARITHM_TEST_SOURCE"),
+    "Geometry/Rectangle_Sum.cpp": ("rectangle_sum_reference_test.cpp", "SIRKIT_RECTANGLE_SUM_TEST_SOURCE"),
+    "Graph/Tree_Diameter.cpp": ("tree_diameter_reference_test.cpp", "SIRKIT_TREE_DIAMETER_TEST_SOURCE"),
+    "Algorithm/Offline_Distinct_Count.cpp": ("offline_distinct_count_reference_test.cpp", "SIRKIT_OFFLINE_DISTINCT_COUNT_TEST_SOURCE"),
+    "Algorithm/Prefix_Sum.cpp": ("prefix_sum_reference_test.cpp", "SIRKIT_PREFIX_SUM_TEST_SOURCE"),
+    "Algorithm/Prefix_Sum_ND.cpp": ("prefix_sum_nd_reference_test.cpp", "SIRKIT_PREFIX_SUM_ND_TEST_SOURCE"),
     "DataStructure/Binary_Trie.cpp": ("binary_trie_sole_test.cpp", "TRIE_SOURCE"),
     "DataStructure/Fenwick_Tree.cpp": ("fenwick_tree_reference_test.cpp", "SIRKIT_FENWICK_TEST_SOURCE"),
     "DataStructure/Hash_map.cpp": ("hash_map_borrowed_key_test.cpp", "HASH_MAP_HEADER"),
     "DataStructure/Hash_set.cpp": ("hash_set_round2_erased_borrowed_key_test.cpp", "HEADER"),
     "DataStructure/Lazy_Segment_Tree.cpp": ("lazy_segment_tree_reference_test.cpp", "SIRKIT_LAZY_SEGMENT_TEST_SOURCE"),
     "DataStructure/Node.cpp": ("node_cycle_test.cpp", "SIRKIT_NODE_SOURCE"),
+    "DataStructure/Persistent_Array.cpp": ("persistent_array_reference_test.cpp", "SIRKIT_PERSISTENT_ARRAY_TEST_SOURCE"),
     "DataStructure/Persistent_Segment_Tree.cpp": ("variant_persistent_segment_tree_test.cpp", "HEADER"),
     "DataStructure/Segment_Tree.cpp": ("segment_tree_reference_test.cpp", "SIRKIT_SEGMENT_TEST_SOURCE"),
     "DataStructure/Wavelet_Matrix.cpp": ("wavelet_matrix_reference_test.cpp", "WAVELET_SOURCE"),
@@ -75,7 +91,8 @@ def build_settings(compiler: str, fast: bool, syntax_only: bool) -> list[tuple[s
 
 
 def compiler_command(compiler: str, include_dirs: list[Path], gcc_install_dir: str | None,
-                     *, gcc: str = "g++", clang: str = "clang++") -> list[str]:
+                     *, gcc: str = "g++", clang: str = "clang++",
+                     clang_target: str | None = None) -> list[str]:
     if compiler == "MSVC":
         executable = shutil.which("cl.exe")
         if executable is None:
@@ -84,13 +101,18 @@ def compiler_command(compiler: str, include_dirs: list[Path], gcc_install_dir: s
         return [executable, "/nologo", "/std:c++23preview", "/permissive-", "/Zc:__cplusplus", "/Zc:preprocessor",
                 "/utf-8", "/EHsc", *includes]
     driver = gcc if compiler == "GCC" else clang
-    clang_arguments = gcc_install_arguments(driver, gcc_install_dir) if compiler == "Clang" else []
+    clang_arguments = []
+    if compiler == "Clang" and (gcc_install_dir or not clang_target):
+        clang_arguments = gcc_install_arguments(driver, gcc_install_dir)
+    if compiler == "Clang" and clang_target:
+        clang_arguments.insert(0, "--target=" + clang_target)
     return [driver, *clang_arguments, "-std=c++23", "-O2", *("-I" + str(path) for path in include_dirs)]
 
 
 def compiler_version(command: list[str], compiler: str, work: Path) -> str:
     if compiler != "MSVC":
-        return subprocess.check_output([command[0], "--version"], text=True, timeout=30)
+        target = [arg for arg in command if arg.startswith("--target=")]
+        return subprocess.check_output([command[0], *target, "--version"], text=True, timeout=30)
     probe = work / "probe.cpp"
     probe.write_text(
         "#if !defined(_MSC_VER) || defined(__clang__) || _MSVC_LANG < 202302L\n"
@@ -122,6 +144,9 @@ def run_runtime_test(compiler: str, command: list[str], source: Path, binary: Pa
         flags = ["/O2", "/UNDEBUG", "/Fo" + str(binary.with_suffix(".obj")), "/Fe" + str(binary)]
     else:
         flags = ["-UNDEBUG", "-o", str(binary)]
+        if compiler == "Clang" and "--target=x86_64-pc-windows-msvc" in command:
+            # The x86 CPU detection builtins need compiler-rt on the MSVC target.
+            flags.append("--rtlib=compiler-rt")
     build = subprocess.run([*command, *flags, str(source)], cwd=binary.parent,
                            capture_output=True, timeout=180)
     build_log = (build.stdout + build.stderr).decode(errors="replace")
@@ -138,7 +163,7 @@ def verify(output: Path, cpu: int | None, selected: set[str] | None = None, resu
            pause: Path | None = None, *, compilers: tuple[str, ...] = ("GCC", "Clang"),
            syntax_only: bool = False, jobs: int = 1, gcc_install_dir: str | None = None,
            acl_include: Path | None = None, run_tests: bool = False,
-           gcc: str = "g++", clang: str = "clang++") -> dict:
+           gcc: str = "g++", clang: str = "clang++", clang_target: str | None = None) -> dict:
     if cpu is not None:
         os.sched_setaffinity(0, {cpu})
 
@@ -188,15 +213,17 @@ def verify(output: Path, cpu: int | None, selected: set[str] | None = None, resu
             include_dirs.append(Path("/opt/atcoder/gcc/include"))
         result["acl_fingerprints"] = acl_fingerprints(include_dirs)
         result["gcc_install_dir"] = gcc_install_dir
+        result["clang_target"] = clang_target
         commands = {name: compiler_command(name, [*include_dirs[:1], overlay, *include_dirs[1:]], gcc_install_dir,
-                                           gcc=gcc, clang=clang)
+                                           gcc=gcc, clang=clang, clang_target=clang_target)
                     for name in compilers}
         result["compiler_versions"] = {name: compiler_version(command, name, work) for name, command in commands.items()}
         cached = {}
         if resume and output.is_file():
             previous = json.loads(output.read_bytes())
             if all(previous.get(key) == result[key] for key in (
-                    "compiler_versions", "verifier_sha256", "syntax_only", "run_tests", "acl_fingerprints", "gcc_install_dir")):
+                    "compiler_versions", "verifier_sha256", "syntax_only", "run_tests",
+                    "acl_fingerprints", "gcc_install_dir", "clang_target")):
                 cached = {(item["path"], item["compiler"], item["setting"], item["source_sha256"], item["generated_sha256"]): item
                           for item in previous.get("results", []) if item.get("passed")}
 
@@ -316,6 +343,7 @@ def main() -> int:
     parser.add_argument("--run-tests", action="store_true", help="各配布版で登録済みの動作テストを実行")
     parser.add_argument("--gcc", default="g++", help="GCCの実行ファイル")
     parser.add_argument("--clang", default="clang++", help="Clangの実行ファイル")
+    parser.add_argument("--clang-target", help="Clangが生成するバイナリのターゲット")
     parser.add_argument("--gcc-install-dir", help="Clangが使うGCCのライブラリディレクトリ")
     parser.add_argument("--acl-include", type=Path, help="atcoder/allを含むACLディレクトリ")
     parser.add_argument("--jobs", type=int, default=1)
@@ -331,7 +359,8 @@ def main() -> int:
         report = verify(options.output, options.cpu, set(options.source) if options.source else None, options.resume,
                         options.pause_file, compilers=compilers, syntax_only=options.syntax_only,
                         jobs=options.jobs, gcc_install_dir=options.gcc_install_dir, acl_include=options.acl_include,
-                        run_tests=options.run_tests, gcc=options.gcc, clang=options.clang)
+                        run_tests=options.run_tests, gcc=options.gcc, clang=options.clang,
+                        clang_target=options.clang_target)
     except (OSError, ValueError, subprocess.SubprocessError) as error:
         parser.exit(1, str(error) + "\n")
     if options.summary:

@@ -272,7 +272,7 @@ def graph_sample_checkers():
     spec.loader.exec_module(module)
     return {name: getattr(module, "check_" + name) for name in (
         "scc", "two_sat", "max_flow_grid", "component_sets",
-        "eulerian_trail_directed", "eulerian_trail_undirected", "min_cost_flow_grid", "pruefer_completion", "bipartite_matching", "linear_recurrence", "matrix_linear_system", "longest_common_substring", "binary_linear_system", "general_matching", "modular_square_root", "topological_order", "maximum_independent_set", "static_range_mode")}
+        "eulerian_trail_directed", "eulerian_trail_undirected", "min_cost_flow_grid", "pruefer_completion", "bipartite_matching", "linear_recurrence", "matrix_linear_system", "longest_common_substring", "binary_linear_system", "general_matching", "modular_square_root", "topological_order", "maximum_independent_set", "static_range_mode", "manhattan_mst", "minimum_spanning_tree", "tree_diameter")}
 
 
 def matches(entry: dict, sample: dict, output: str) -> bool:
@@ -280,7 +280,7 @@ def matches(entry: dict, sample: dict, output: str) -> bool:
     if mode == "topological":
         mode = "topological_order"
     if mode in {"scc", "two_sat", "max_flow_grid", "component_sets",
-                "eulerian_trail_directed", "eulerian_trail_undirected", "min_cost_flow_grid", "pruefer_completion", "bipartite_matching", "linear_recurrence", "matrix_linear_system", "longest_common_substring", "binary_linear_system", "general_matching", "modular_square_root", "topological_order", "maximum_independent_set", "static_range_mode"}:
+                "eulerian_trail_directed", "eulerian_trail_undirected", "min_cost_flow_grid", "pruefer_completion", "bipartite_matching", "linear_recurrence", "matrix_linear_system", "longest_common_substring", "binary_linear_system", "general_matching", "modular_square_root", "topological_order", "maximum_independent_set", "static_range_mode", "manhattan_mst", "minimum_spanning_tree", "tree_diameter"}:
         return graph_sample_checkers()[mode](entry, sample, output)
     actual, expected = output.split(), sample["output"].split()
     if mode == "float":
@@ -360,16 +360,20 @@ def relative_report_text(value: str, temporary: Path | None = None) -> str:
 
 
 def run_tests(entries: list[dict], compiler: str, fallback: bool, output: Path,
-              *, compile_profile: str = "standard", jobs: int = 1) -> None:
+              *, compile_profile: str = "standard", jobs: int = 1, qemu: str | None = None,
+              compiler_args: tuple[str, ...] = ()) -> None:
     results = []
     compiler_name = Path(compiler).name
-    flags = compile_flags(compile_profile, ["-std=c++23", "-O2", "-Wall", "-Wextra"])
+    flags = compile_flags(compile_profile, ["-std=c++23", "-O2", "-Wall", "-Wextra", *compiler_args])
     if (compile_profile != "atcoder-clang" and "clang" in Path(compiler).name
+            and not any(arg.startswith(("--target", "--gcc-install-dir")) for arg in compiler_args)
             and Path("/usr/lib/gcc/x86_64-linux-gnu/15").is_dir()):
         flags += ["--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15"]
     if fallback:
         flags += ["-U__SIZEOF_INT128__", "-DSIRKIT_FORCE_STANDARD_ARITHMETIC",
                   "-DSIRKIT_LINE_CONTAINER_FORCE_PORTABLE", "-DSIRKIT_DISABLE_SIMD"]
+    if qemu:
+        flags.append("-static")
     with tempfile.TemporaryDirectory(prefix="atcoder_verify_") as tmp:
         temporary = Path(tmp)
 
@@ -392,9 +396,10 @@ def run_tests(entries: list[dict], compiler: str, fallback: bool, output: Path,
                           command=reported_command, compile_ok=built.returncode == 0,
                           diagnostics=relative_report_text(built.stderr, temporary), samples=[])
             if built.returncode == 0:
+                run_command = [qemu, str(binary)] if qemu else [str(binary)]
                 for sample in entry["samples"]:
                     try:
-                        run = subprocess.run([str(binary)], input=sample["input"], text=True,
+                        run = subprocess.run(run_command, input=sample["input"], text=True,
                                              capture_output=True, timeout=60)
                         passed = run.returncode == 0 and matches(entry, sample, run.stdout)
                         result["samples"].append(dict(

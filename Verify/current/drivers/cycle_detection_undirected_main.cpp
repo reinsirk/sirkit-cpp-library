@@ -1,0 +1,31 @@
+// SPDX-License-Identifier: CC0-1.0
+#include "Verify/current/common/fast_io.hpp"
+
+#include <utility>
+#include <vector>
+
+int main()
+{
+    int n, m;
+    verify_in >> n >> m;
+    std::vector<std::pair<int, int>> edges(m);
+    for (auto &[u, v] : edges)
+    {
+        verify_in >> u >> v;
+    }
+    const auto cycle = find_cycle(n, edges, false);
+    if (!cycle)
+    {
+        verify_out << -1 << '\n';
+        return 0;
+    }
+    verify_out << cycle->vertices.size() << '\n';
+    for (std::size_t i = 0; i < cycle->vertices.size(); ++i)
+    {
+        verify_out << cycle->vertices[i] << (i + 1 == cycle->vertices.size() ? '\n' : ' ');
+    }
+    for (std::size_t i = 0; i < cycle->edge_ids.size(); ++i)
+    {
+        verify_out << cycle->edge_ids[i] << (i + 1 == cycle->edge_ids.size() ? '\n' : ' ');
+    }
+}

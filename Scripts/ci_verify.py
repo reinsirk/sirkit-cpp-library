@@ -25,11 +25,25 @@ GLOBAL_INPUTS = {
     ".github/workflows/verify.yml", "Scripts/ci_verify.py",
 }
 EMBEDDED_DEPENDENTS = {
+    "Math/Berlekamp_Massey.cpp": {"Math/Sparse_Matrix_Determinant.cpp"},
+    "Math/Pollard_Rho.cpp": {"Math/Primitive_Root.cpp", "Math/Two_Square_Sum.cpp"},
+    "Algorithm/Monge_Optimization.cpp": {"Geometry/All_Furthest_Neighbors.cpp", "Algorithm/Concave_Min_Plus_Convolution.cpp"},
+    "DataStructure/Link_Cut_Tree.cpp": {"Graph/Incremental_Minimum_Spanning_Forest.cpp"},
     "DataStructure/Dynamic_Bitset.cpp": {"Math/Binary_Matrix.cpp"},
-    "Math/Matrix.cpp": {"Math/Gaussian_Elimination.cpp"},
+    "Math/Matrix.cpp": {"Math/Gaussian_Elimination.cpp", "Math/Adjugate_Matrix.cpp"},
+    "Math/Gaussian_Elimination.cpp": {"Math/Adjugate_Matrix.cpp"},
     "Math/NTT.cpp": {"Math/Convolution.cpp", "Math/Formal_Power_Series.cpp",
-                     "Math/Polynomial.cpp", "Math/Linear_Recurrence.cpp"},
-    "Math/Formal_Power_Series.cpp": {"Math/Polynomial.cpp"},
+                     "Math/Polynomial.cpp", "Math/Linear_Recurrence.cpp", "Math/Combinatorial_Sequences.cpp",
+                     "String/Wildcard_Pattern_Matching.cpp", "Math/Polynomial_Prefix_Sum.cpp",
+                     "Graph/Tree_Distance_Frequency.cpp", "Math/Multivariate_Convolution.cpp",
+                     "Math/Multiplicative_Convolution.cpp", "Math/Consecutive_Polynomial_Evaluation.cpp",
+                     "Math/Polynomial_Sequence_Product.cpp", "Math/Geometric_Polynomial.cpp",
+                     "Math/Newton_Basis.cpp", "Math/Consecutive_Linear_Recurrence.cpp"},
+    "Graph/SCC.cpp": {"Graph/Incremental_SCC.cpp"},
+    "DataStructure/union_find.cpp": {"Graph/Incremental_SCC.cpp"},
+    "Graph/Centroid_Decomposition.cpp": {"Graph/Tree_Distance_Frequency.cpp"},
+    "Math/Formal_Power_Series.cpp": {"Math/Polynomial.cpp", "Math/Combinatorial_Sequences.cpp",
+                                     "Math/Polynomial_Prefix_Sum.cpp", "Math/Newton_Basis.cpp"},
 }
 
 
@@ -128,7 +142,8 @@ def write_report(path: Path, report: dict) -> None:
 
 
 def run_selected(entries: list[dict], plan: dict, compiler: str, fallback: bool, output: Path,
-                 *, compile_profile: str = "standard", jobs: int = 1) -> None:
+                 *, compile_profile: str = "standard", jobs: int = 1, qemu: str | None = None,
+                 compiler_args: tuple[str, ...] = ()) -> None:
     selected_ids = set(plan["selected_ids"])
     selected = [entry for entry in entries if entry["id"] in selected_ids]
     if len(selected) != len(selected_ids):
@@ -136,13 +151,17 @@ def run_selected(entries: list[dict], plan: dict, compiler: str, fallback: bool,
     report = {"format": 1, "plan": plan, "compiler": Path(compiler).name, "standard_fallback": fallback,
               "compile_profile": compile_profile, "jobs": jobs,
               "online_status": "not_evaluated", "status": "running", "results": []}
+    if qemu:
+        report["qemu"] = Path(qemu).name
     write_report(output, report)
     try:
         if selected:
             with tempfile.TemporaryDirectory(prefix="sirkit_ci_results_") as directory:
                 raw = Path(directory) / "samples.json"
                 try:
-                    prepare_verify.run_tests(selected, compiler, fallback, raw, compile_profile=compile_profile, jobs=jobs)
+                    prepare_verify.run_tests(selected, compiler, fallback, raw,
+                                             compile_profile=compile_profile, jobs=jobs, qemu=qemu,
+                                             compiler_args=compiler_args)
                 finally:
                     if raw.is_file():
                         report["results"] = json.loads(raw.read_text())["results"]
@@ -168,7 +187,9 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--all", action="store_true", help="全件を確認する")
     parser.add_argument("--list", action="store_true", help="選択計画のJSONだけを出力する")
     parser.add_argument("--compiler", default="g++")
+    parser.add_argument("--compiler-arg", action="append", default=[], help="コンパイラへの追加引数")
     parser.add_argument("--compile-profile", choices=VERIFY_COMPILE_PROFILES, default="standard")
+    parser.add_argument("--qemu", help="指定したLinuxユーザーモードQEMUで静的リンクしたVerifyを実行する")
     parser.add_argument("--fallback", action="store_true")
     parser.add_argument("--jobs", type=int, default=1, help="同時にビルド・実行するVerifyの数")
     parser.add_argument("--skip-sync", action="store_true", help="既に照合済みの場合だけ同期確認を省く")
@@ -178,6 +199,8 @@ def main(argv: list[str] | None = None) -> int:
         parser.error("--allと--idは同時に指定できません")
     if args.jobs < 1:
         parser.error("jobsは正の整数で指定してください")
+    if args.qemu and args.compile_profile != "standard":
+        parser.error("--qemuにはstandardのコンパイル設定を指定してください")
     try:
         changed = [] if args.all or args.id else git_changed_paths(args.base)
         entries = prepare_verify.collect()
@@ -192,7 +215,8 @@ def main(argv: list[str] | None = None) -> int:
         suffix = "" if args.compile_profile == "standard" else "-" + args.compile_profile
         output = args.results or Path(tempfile.gettempdir()) / "sirkit-ci-verify" / (Path(args.compiler).name + suffix + ".json")
         run_selected(entries, plan, args.compiler, args.fallback, output,
-                     compile_profile=args.compile_profile, jobs=args.jobs)
+                     compile_profile=args.compile_profile, jobs=args.jobs, qemu=args.qemu,
+                     compiler_args=tuple(args.compiler_arg))
         print(f"{len(plan['selected_ids'])}件のローカルVerify: PASS。結果: {output}")
         return 0
     except (OSError, ValueError, subprocess.SubprocessError, SystemExit) as error:

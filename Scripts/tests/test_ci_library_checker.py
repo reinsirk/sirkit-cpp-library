@@ -271,7 +271,11 @@ class OfficialCaseTests(unittest.TestCase):
                     "assert pathlib.Path(sys.argv[1]).read_text() == 'own input\\n'\n"
                     "assert pathlib.Path(sys.argv[2]).read_text() == 'alternative\\n'\n"
                     "assert pathlib.Path(sys.argv[3]).read_text() == 'canonical\\n'\n")
-        row = lc.run_case(binary, self.problem, "example_00", self.cache, 5)
+        with patch.object(lc, "execute", wraps=lc.execute) as execute:
+            row = lc.run_case(binary, self.problem, "example_00", self.cache, 5)
+        solution, checker = execute.call_args_list
+        self.assertNotIn("stack_bytes", solution.kwargs)
+        self.assertEqual(checker.kwargs["stack_bytes"], lc.CHECKER_STACK_BYTES)
         self.assertEqual(row["status"], "PASS")
         self.assertEqual(row["checker_returncode"], 0)
         self.assertGreater(row["elapsed_ns"], 0)

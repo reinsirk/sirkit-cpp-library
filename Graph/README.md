@@ -23,6 +23,37 @@
 | [Functional_Graph.cpp](Functional_Graph.cpp) | [E - Permute K times](../Verify/current/submissions/functional_graph.cpp) |
 | [Cartesian_Tree.cpp](Cartesian_Tree.cpp) | [Cartesian Tree](../Verify/current/submissions/cartesian_tree.cpp) |
 | [General_Matching.cpp](General_Matching.cpp) | [Matching on General Graph](../Verify/current/submissions/general_matching.cpp) |
+| [Dominator_Tree.cpp](Dominator_Tree.cpp) | [Dominator Tree](../Verify/current/submissions/dominator_tree.cpp) |
+| [Minimum_Spanning_Tree.cpp](Minimum_Spanning_Tree.cpp) | [Minimum Spanning Tree](../Verify/current/submissions/minimum_spanning_tree.cpp) |
+| [Tree_Diameter.cpp](Tree_Diameter.cpp) | [Tree Diameter](../Verify/current/submissions/tree_diameter.cpp) |
+| [Cycle_Detection.cpp](Cycle_Detection.cpp) | [Cycle Detection (Directed)](../Verify/current/submissions/cycle_detection_directed.cpp)・[Cycle Detection (Undirected)](../Verify/current/submissions/cycle_detection_undirected.cpp) |
+| [Complement_Components.cpp](Complement_Components.cpp) | [Connected Components of Complement Graph](../Verify/current/submissions/complement_components.cpp) |
+| [Enumerate_Triangles.cpp](Enumerate_Triangles.cpp) | [Enumerate Triangles](../Verify/current/submissions/enumerate_triangles.cpp) |
+| [Assignment.cpp](Assignment.cpp) | [Assignment Problem](../Verify/current/submissions/assignment.cpp) |
+| [Rooted_Tree_Isomorphism.cpp](Rooted_Tree_Isomorphism.cpp) | [Rooted Tree Isomorphism Classification](../Verify/current/submissions/rooted_tree_isomorphism_classification.cpp) |
+| [Zero_One_BFS.cpp](Zero_One_BFS.cpp) | [D - Wizard in Maze](../Verify/current/submissions/zero_one_bfs_wizard.cpp) |
+| [Steiner_Tree.cpp](Steiner_Tree.cpp) | [Minimum Steiner Tree](../Verify/current/submissions/minimum_steiner_tree.cpp) |
+| [Enumerate_Cliques.cpp](Enumerate_Cliques.cpp) | [Enumerate Cliques](../Verify/current/submissions/enumerate_cliques.cpp) |
+| [Minimum_Directed_Spanning_Tree.cpp](Minimum_Directed_Spanning_Tree.cpp) | [Directed MST](../Verify/current/submissions/directedmst.cpp) |
+| [K_Shortest_Walks.cpp](K_Shortest_Walks.cpp) | [K Shortest Walk](../Verify/current/submissions/k_shortest_walk.cpp) |
+| [Maximum_Independent_Set.cpp](Maximum_Independent_Set.cpp) | [Maximum Independent Set](../Verify/current/submissions/maximum_independent_set.cpp) |
+| [Dynamic_Bipartiteness.cpp](Dynamic_Bipartiteness.cpp) | [独立参照テスト](../Verify/current/submissions/dynamic_bipartiteness_reference.cpp) |
+| [Counting_Spanning_Trees.cpp](Counting_Spanning_Trees.cpp) | [Counting Spanning Trees (Undirected)](../Verify/current/submissions/counting_spanning_tree_undirected.cpp)・[Counting Spanning Trees (Directed)](../Verify/current/submissions/counting_spanning_tree_directed.cpp)・[Counting Eulerian Circuits](../Verify/current/submissions/counting_eulerian_circuits.cpp) |
+| [Chordal_Graph.cpp](Chordal_Graph.cpp) | [Chordal Graph Recognition](../Verify/current/submissions/chordal_graph_recognition.cpp) |
+| [Count_Four_Cycles.cpp](Count_Four_Cycles.cpp) | [Counting C4s](../Verify/current/submissions/counting_c4.cpp) |
+| [Tree_Distance_Frequency.cpp](Tree_Distance_Frequency.cpp) | [Frequency Table of Tree Distance](../Verify/current/submissions/frequency_table_of_tree_distance.cpp) |
+| [Bipartite_Edge_Coloring.cpp](Bipartite_Edge_Coloring.cpp) | [Bipartite Edge Coloring](../Verify/current/submissions/bipartite_edge_coloring.cpp) |
+| [ST_Numbering.cpp](ST_Numbering.cpp) | [ST Numbering](../Verify/current/submissions/st_numbering.cpp) |
+| [Global_Min_Cut.cpp](Global_Min_Cut.cpp) | [独立参照テスト](../Verify/current/submissions/global_min_cut_reference.cpp) |
+| [Incremental_SCC.cpp](Incremental_SCC.cpp) | [Incremental SCC](../Verify/current/submissions/incremental_scc.cpp) |
+| [Incremental_Minimum_Spanning_Forest.cpp](Incremental_Minimum_Spanning_Forest.cpp) | [Incremental Minimum Spanning Forest](../Verify/current/submissions/incremental_minimum_spanning_forest.cpp) |
+| [Minimum_Diameter_Spanning_Tree.cpp](Minimum_Diameter_Spanning_Tree.cpp) | [Minimum Diameter Spanning Tree](../Verify/current/submissions/minimum_diameter_spanning_tree.cpp) |
+| [Tree_Decomposition_Width_Two.cpp](Tree_Decomposition_Width_Two.cpp) | [Tree Decomposition (Width 2)](../Verify/current/submissions/tree_decomposition_width_2.cpp) |
+| [Chromatic_Number.cpp](Chromatic_Number.cpp) | [Chromatic Number](../Verify/current/submissions/chromatic_number.cpp) |
+| [Three_Edge_Connected_Components.cpp](Three_Edge_Connected_Components.cpp) | [Three-Edge-Connected Components](../Verify/current/submissions/three_edge_connected_components.cpp) |
+| [Tree_Topological_Order_Minimum_Inversions.cpp](Tree_Topological_Order_Minimum_Inversions.cpp) | [Rooted Tree Topological Order with Minimum Inversions](../Verify/current/submissions/rooted_tree_topological_order_with_minimum_inversions.cpp) |
+| [Tree_Contour.cpp](Tree_Contour.cpp) | [Vertex Add Range Contour Sum on Tree](../Verify/current/submissions/vertex_add_range_contour_sum_on_tree.cpp)・[Vertex Get Range Contour Add on Tree](../Verify/current/submissions/vertex_get_range_contour_add_on_tree.cpp) |
+| [Tree_B_Matching.cpp](Tree_B_Matching.cpp) | [F - Select Edges](../Verify/current/submissions/tree_b_matching.cpp) |
 
 問題URL、追加APIの補足検査、現在版の判定状況は[Verify一覧](../Verify/current/README.md)を参照してください。
 

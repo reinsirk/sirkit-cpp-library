@@ -346,7 +346,8 @@ class ActualClangTidyTests(unittest.TestCase):
         self.assertEqual(google["status"], "FAIL", google)
         self.assertEqual(set(core["configuration"]["enabled_checks"]), ci.CORE_CHECKS)
         self.assertEqual(set(google["configuration"]["enabled_checks"]), ci.GOOGLE_CHECKS)
-        self.assertEqual(len(core["reviewed_exception_policy"]["entries"]), 2)
+        configured_exceptions = ci.load_reviewed_exceptions(ci.ROOT / "Scripts/ci_cpp_guidelines_exceptions.json")
+        self.assertEqual(core["reviewed_exception_policy"]["entries"], configured_exceptions)
         self.assertEqual(google["reviewed_exception_policy"]["entries"], [])
         self.assertIsNone(google["reviewed_exception_policy"]["sha256"])
 

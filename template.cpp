@@ -59,7 +59,26 @@
 #if defined(__GNUC__) && !defined(__clang__)
 #pragma GCC optimize("no-tree-loop-vectorize")
 #endif
+#if defined(_MSC_VER) && defined(_M_ARM64)
+#include <intrin.h>
+
+namespace sirkit::detail
+{
+inline unsigned long long AclUnsignedMultiply128(unsigned long long lhs, unsigned long long rhs,
+                                                 unsigned long long *high) noexcept
+{
+    *high = __umulh(lhs, rhs);
+    return lhs * rhs;
+}
+}
+
+// ACLのBarrett還元が使うx64の組み込み関数をARM64で補う。
+#define _umul128 ::sirkit::detail::AclUnsignedMultiply128
+#endif
 #include <atcoder/all>
+#if defined(_MSC_VER) && defined(_M_ARM64)
+#undef _umul128
+#endif
 
 using namespace std;
 using namespace atcoder;

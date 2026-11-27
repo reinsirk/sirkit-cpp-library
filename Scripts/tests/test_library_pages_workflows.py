@@ -138,14 +138,17 @@ class StructureTests(unittest.TestCase):
 
     def test_final_gate_includes_contracts_official_cases_and_documentation(self):
         gate = workflow("verify.yml")["jobs"]["result"]
-        self.assertEqual(set(gate["needs"]), {"generated", "python_tests", "examples", "variant_builds", "instrumented",
+        self.assertEqual(set(gate["needs"]), {"generated", "python_tests", "examples", "variant_builds",
+                                             "cross_architecture", "instrumented",
                                              "guidelines", "contracts", "library_checker", "stress", "yomiyasu",
                                              "documentation"})
         command = gate["steps"][0]["run"]
         for variable in ("GENERATED_RESULT", "PYTHON_TESTS_RESULT", "CONTRACT_RESULT", "LIBRARY_CHECKER_RESULT",
-                         "STRESS_RESULT", "DOCUMENTATION_RESULT", "VARIANT_BUILDS_RESULT", "YOMIYASU_RESULT"):
+                         "STRESS_RESULT", "DOCUMENTATION_RESULT", "VARIANT_BUILDS_RESULT", "CROSS_ARCH_RESULT",
+                         "YOMIYASU_RESULT"):
             self.assertIn('"$' + variable + '" == success', command)
         self.assertEqual(gate["steps"][0]["env"]["YOMIYASU_RESULT"], "${{ needs.yomiyasu.result }}")
+        self.assertEqual(gate["steps"][0]["env"]["CROSS_ARCH_RESULT"], "${{ needs.cross_architecture.result }}")
 
     def test_yomiyasu_uses_latest_public_release_and_checks_pr_changes(self):
         steps = workflow("verify.yml")["jobs"]["yomiyasu"]["steps"]
@@ -175,14 +178,16 @@ class StructureTests(unittest.TestCase):
                 step = next(step for step in jobs[name]["steps"] if step.get("name") == step_name)
                 self.assertIn("--jobs 4", step["run"])
 
-    def test_atcoder_verify_adds_gcc_and_clang_configurations(self):
+    def test_verify_matrix_covers_amd64_arm64_and_atcoder(self):
         job = workflow("verify.yml")["jobs"]["examples"]
         self.assertEqual(job["strategy"]["matrix"], {
             "compiler": ["g++", "clang++"], "arithmetic": ["native", "portable"],
             "compile_profile": ["standard"],
-            "include": [{"compiler": "g++", "arithmetic": "native", "compile_profile": "atcoder"},
-                        {"compiler": "clang++", "arithmetic": "native", "compile_profile": "atcoder-clang"}],
+            "architecture": ["amd64", "arm64"],
+            "include": [{"compiler": "g++", "arithmetic": "native", "compile_profile": "atcoder", "architecture": "amd64"},
+                        {"compiler": "clang++", "arithmetic": "native", "compile_profile": "atcoder-clang", "architecture": "amd64"}],
         })
+        self.assertEqual(job["runs-on"], "${{ matrix.architecture == 'arm64' && 'ubuntu-26.04-arm' || 'ubuntu-26.04' }}")
         install = next(step for step in job["steps"] if step.get("name") == "Install Clang for the AtCoder profile")
         self.assertEqual(install["if"], "matrix.compile_profile == 'atcoder-clang'")
         self.assertIn("clang-21 lld-21 libc++-21-dev", install["run"])
@@ -190,8 +195,10 @@ class StructureTests(unittest.TestCase):
         self.assertEqual(run["env"]["VERIFY_COMPILE_PROFILE"], "${{ matrix.compile_profile }}")
         self.assertIn("matrix.compile_profile == 'atcoder-clang' && 'clang++-21'", run["env"]["VERIFY_COMPILER"])
         self.assertIn('--compile-profile "$VERIFY_COMPILE_PROFILE"', run["run"])
+        self.assertIn("args=(--all", run["run"])
         upload = next(step for step in job["steps"] if step.get("name") == "Upload local Verify report")
         self.assertIn("'atcoder-local-verify' || 'local-verify'", upload["with"]["name"])
+        self.assertIn("matrix.architecture == 'arm64' && '-arm64' || ''", upload["with"]["name"])
 
     def test_instrumentation_runs_four_tests_at_a_time_and_uses_generic_qemu_toolchain(self):
         job = workflow("verify.yml")["jobs"]["instrumented"]
@@ -213,15 +220,25 @@ class StructureTests(unittest.TestCase):
         self.assertIn("libclang-rt-18-dev:amd64", command)
         self.assertIn('ln -s usr/lib64 "$RUNNER_TEMP/qemu-amd64/lib64"', command)
 
-    def test_variant_build_matrix_runs_native_msvc_on_windows(self):
+    def test_variant_build_matrix_runs_both_compilers_on_each_native_runner(self):
         job = workflow("verify.yml")["jobs"]["variant_builds"]
         self.assertEqual(job["strategy"]["matrix"]["include"], [
-            {"os": "ubuntu-26.04", "compiler": "GCC"}, {"os": "ubuntu-26.04", "compiler": "Clang"},
-            {"os": "windows-2025", "compiler": "MSVC"},
+            {"os": "ubuntu-26.04", "compiler": "GCC", "arch": "x64"},
+            {"os": "ubuntu-26.04", "compiler": "Clang", "arch": "x64"},
+            {"os": "ubuntu-26.04-arm", "compiler": "GCC", "arch": "arm64"},
+            {"os": "ubuntu-26.04-arm", "compiler": "Clang", "arch": "arm64"},
+            {"os": "windows-2025", "compiler": "MSVC", "arch": "x64"},
+            {"os": "windows-11-vs2026-arm", "compiler": "MSVC", "arch": "arm64"},
+            {"os": "windows-2025", "compiler": "Clang", "arch": "x64"},
+            {"os": "windows-11-vs2026-arm", "compiler": "Clang", "arch": "arm64"},
         ])
-        windows = next(step for step in job["steps"] if "on Windows" in step.get("name", ""))
+        developer = next(step for step in job["steps"] if step.get("name") == "Find Visual Studio developer command")
+        self.assertIn("Microsoft.VisualStudio.Component.VC.Tools.ARM64", developer["run"])
+        self.assertIn("vcvarsall.bat", developer["run"])
+        windows = next(step for step in job["steps"] if "MSVC-specific variants on Windows" in step.get("name", ""))
         self.assertEqual(windows["shell"], "cmd")
-        self.assertIn("SIRKIT_VS_DEVELOPER_COMMAND", windows["run"])
+        self.assertEqual(windows["env"]["SIRKIT_MSVC_ARCH"], "${{ matrix.arch }}")
+        self.assertIn('call "%SIRKIT_VCVARS%" %SIRKIT_MSVC_ARCH%', windows["run"])
         self.assertIn("python -X utf8 Scripts/verify_variants.py", windows["run"])
         self.assertIn("--compiler MSVC --syntax-only --run-tests", windows["run"])
         linux = next(step for step in job["steps"] if "on Linux" in step.get("name", ""))
@@ -229,6 +246,49 @@ class StructureTests(unittest.TestCase):
         self.assertIn("--run-tests", linux["run"])
         self.assertIn("--summary", linux["run"])
         self.assertIn("--summary", windows["run"])
+        clang_windows = next(step for step in job["steps"] if "Clang-specific variants on Windows" in step.get("name", ""))
+        self.assertIn("aarch64-pc-windows-msvc", clang_windows["env"]["SIRKIT_CLANG_TARGET"])
+        self.assertIn("x86_64-pc-windows-msvc", clang_windows["env"]["SIRKIT_CLANG_TARGET"])
+        self.assertIn('--clang "%SIRKIT_WINDOWS_CLANG%"', clang_windows["run"])
+        self.assertIn('--clang-target "%SIRKIT_CLANG_TARGET%" --syntax-only --run-tests', clang_windows["run"])
+        artifacts = next(step for step in job["steps"] if step.get("uses", "").startswith("actions/upload-artifact@"))
+        self.assertIn("matrix.arch == 'arm64' && '-ARM64'", artifacts["with"]["name"])
+        self.assertIn("runner.os == 'Windows' && matrix.compiler == 'Clang' && '-Windows'", artifacts["with"]["name"])
+
+    def test_windows_amd64_uses_verified_clang_before_compiling_against_msvc_stl(self):
+        steps = workflow("verify.yml")["jobs"]["variant_builds"]["steps"]
+        install = next(step for step in steps if step.get("name") == "Install pinned Clang on Windows AMD64")
+        check = next(step for step in steps if "Clang-specific variants on Windows" in step.get("name", ""))
+        self.assertLess(steps.index(install), steps.index(check))
+        self.assertEqual(install["if"], "runner.os == 'Windows' && matrix.compiler == 'Clang' && matrix.arch == 'x64'")
+        self.assertGreaterEqual(int(install["env"]["SIRKIT_LLVM_VERSION"].split(".")[0]), 22)
+        self.assertRegex(install["env"]["SIRKIT_LLVM_SHA256"], r"^[0-9a-f]{64}$")
+        self.assertIn("github.com/llvm/llvm-project/releases/download/", install["run"])
+        self.assertLess(install["run"].index("Get-FileHash"), install["run"].index("Start-Process"))
+        self.assertIn('"SIRKIT_WINDOWS_CLANG=$clang" >> $env:GITHUB_ENV', install["run"])
+        self.assertLess(check["run"].index("-fsyntax-only"), check["run"].index("Scripts/verify_variants.py"))
+
+    def test_cross_architecture_matrix_executes_checked_and_unchecked_binaries(self):
+        job = workflow("verify.yml")["jobs"]["cross_architecture"]
+        self.assertEqual(job["strategy"]["matrix"]["compiler"], ["GCC", "Clang"])
+        self.assertEqual(job["strategy"]["matrix"]["target"], ["loongarch64", "riscv64", "ppc64le", "s390x"])
+        self.assertEqual(job["strategy"]["matrix"]["include"], [
+            {"target": "loongarch64", "toolchain": "loongarch64-linux-gnu"},
+            {"target": "riscv64", "toolchain": "riscv64-linux-gnu"},
+            {"target": "ppc64le", "toolchain": "powerpc64le-linux-gnu"},
+            {"target": "s390x", "toolchain": "s390x-linux-gnu"},
+        ])
+        full = next(step for step in job["steps"] if step.get("name") == "Run all local Verify in QEMU")
+        self.assertIn("Scripts/ci_verify.py --all", full["run"])
+        self.assertIn('--qemu "qemu-$SIRKIT_CROSS_TARGET" --fallback', full["run"])
+        self.assertIn("compiler=clang++-18", full["run"])
+        self.assertIn("--target=$SIRKIT_CROSS_TOOLCHAIN", full["run"])
+        self.assertIn("--compiler-arg=$arg", full["run"])
+        artifact = next(step for step in job["steps"] if step.get("uses", "").startswith("actions/upload-artifact@"))
+        self.assertEqual(artifact["with"]["name"], "qemu-verify-${{ matrix.compiler }}-${{ matrix.target }}")
+        self.assertIn("for mode in checked skip", full["run"])
+        self.assertIn("-DSKIP_RUNTIME_CHECKS", full["run"])
+        self.assertIn('timeout 120 "qemu-$SIRKIT_CROSS_TARGET" "$binary"', full["run"])
 
     def test_performance_comparisons_are_not_scheduled_in_ci(self):
         jobs = workflow("verify.yml")["jobs"]
@@ -321,13 +381,14 @@ class ProvenanceTests(unittest.TestCase):
             path.write_text(json.dumps(original))
             environment = dict(os.environ, REPORT_FILE=str(path), GITHUB_SHA="b" * 40,
                                GITHUB_RUN_ID="123", GITHUB_RUN_ATTEMPT="2", GITHUB_REPOSITORY="example/library",
-                               GITHUB_JOB="examples", SIRKIT_PR_HEAD_SHA="c" * 40)
+                               GITHUB_JOB="examples", SIRKIT_PR_HEAD_SHA="c" * 40, RUNNER_ARCH="ARM64")
             subprocess.run([sys.executable, "-c", self.helper()], env=environment, check=True)
             actual = json.loads(path.read_text())
             self.assertEqual({key: value for key, value in actual.items() if key != "provenance"}, {key: value for key, value in original.items() if key != "provenance"})
             self.assertEqual(actual["provenance"]["existing"], "retained")
             self.assertEqual(actual["provenance"]["github_run_id"], "123")
             self.assertEqual(actual["provenance"]["pull_request_head_sha"], "c" * 40)
+            self.assertEqual(actual["provenance"]["runner_arch"], "ARM64")
 
     def test_missing_report_is_not_fabricated(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -420,14 +481,17 @@ class ArtifactSelectionTests(unittest.TestCase):
         self.assertEqual(len(calls), 1)
 
     def test_publish_only_downloads_correctness_and_instrumentation_reports(self):
-        valid = [artifact(200), artifact(201, name="library-checker-7")]
+        valid = [artifact(200), artifact(201, name="library-checker-7"),
+                 artifact(202, name="local-verify-g++-native"),
+                 artifact(203, name="local-verify-arm64-clang++-portable")]
         obsolete = [artifact(300 + i, name=name) for i, name in enumerate((
             "representative-performance", "all-library-performance-7",
-            "atcoder-all-library-performance-7", "atcoder-representative-performance"))]
+            "atcoder-all-library-performance-7", "atcoder-representative-performance",
+            "atcoder-local-verify-g++-native", "local-verify-arm64-clang++-unknown"))]
         process, metadata, output, _ = self.execute([run_record()], valid + obsolete)
         self.assertEqual(process.returncode, 0, process.stderr)
-        self.assertEqual({row["id"] for row in metadata["artifacts"]}, {200, 201})
-        self.assertIn("artifact_ids=200,201\n", output)
+        self.assertEqual({row["id"] for row in metadata["artifacts"]}, {200, 201, 202, 203})
+        self.assertIn("artifact_ids=200,201,203,202\n", output)
 
     def test_api_failure_is_recorded_without_inventing_results(self):
         process, metadata, output, calls = self.execute([run_record()], [artifact()], failure=True)

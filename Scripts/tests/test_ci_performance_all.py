@@ -274,8 +274,9 @@ class MeasurementTests(unittest.TestCase):
                     with patch.object(perf, "execute", return_value={"returncode": returncode, "timed_out": timed_out}):
                         with self.assertRaisesRegex(perf.PerformanceError, "official checker failed"):
                             perf.output_matches(work / "actual", profile, {}, work)
-            with patch.object(perf, "execute", return_value={"returncode": 1, "timed_out": False}):
+            with patch.object(perf, "execute", return_value={"returncode": 1, "timed_out": False}) as execute:
                 self.assertFalse(perf.output_matches(work / "actual", profile, {}, work))
+            self.assertEqual(execute.call_args.kwargs["stack_bytes"], perf.official.CHECKER_STACK_BYTES)
 
     def test_wait4_captures_actual_child_cpu_without_polling_wait_timeout(self):
         with tempfile.TemporaryDirectory() as temporary:
@@ -414,14 +415,17 @@ class RunnerTests(unittest.TestCase):
         self.assertEqual(report["error_details"],generation.details)
         self.assertIsNot(report["error_details"],generation.details)
 
-    def test_real_103_library_plan_spawns_no_children(self):
+    def test_real_library_plan_spawns_no_children(self):
         with tempfile.TemporaryDirectory()as temporary,redirect_stdout(io.StringIO())as stream, \
              patch.object(perf.subprocess,"Popen",side_effect=AssertionError("plan must not spawn children")), \
              patch.object(perf.official,"official_problem",side_effect=AssertionError("no generator")):
             folder=Path(temporary)
             self.assertEqual(perf.main(["--plan","--cache",str(folder/"cache"),"--output",str(folder/"report")]),0)
             report=json.loads(stream.getvalue())
-            self.assertEqual(len(report["all_library_paths"]),103)
+            layout = json.loads((perf.ROOT / "Scripts/library_layout.json").read_text())
+            expected = {path.relative_to(perf.ROOT).as_posix() for directory in layout
+                        for path in (perf.ROOT / directory).rglob("*.cpp")}
+            self.assertEqual(set(report["all_library_paths"]), expected)
             self.assertEqual(report["all_library_paths"],report["selected_library_paths"])
             self.assertFalse(report["executed"])
 

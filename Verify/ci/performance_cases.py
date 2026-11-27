@@ -5,7 +5,10 @@ from __future__ import annotations
 import hashlib
 from pathlib import Path
 
+from . import stress_cases
+
 LIBRARY_VERIFY_IDS = {
+    "Algorithm/Prefix_Sum_ND.cpp": "prefix_sum_3d",
     "Graph/Topological.cpp": "preferred_topological_yuki",
     "Graph/Bellman-Ford_SFPA.cpp": "coverage_graph_spfa_all_pairs_yuki",
     "DataStructure/Slope_Trick.cpp": "slope_trick",
@@ -26,9 +29,24 @@ LIBRARY_VERIFY_IDS = {
     "Graph/Pruefer_Code.cpp": "pruefer_code",
     "Graph/Min_Cost_Flow.cpp": "min_cost_flow_grid",
     "Geometry/Line_Segment.cpp": "coverage_geometry_segment_stabbing_split",
+    "Algorithm/Knapsack.cpp": "knapsack_bounded_exact",
+    "Algorithm/Subset_Sum.cpp": "subset_sum_cards",
+    "Geometry/Minkowski_Sum.cpp": "minkowski_sum",
+    "Graph/Dynamic_Bipartiteness.cpp": "dynamic_bipartiteness_operations",
+    "Graph/Global_Min_Cut.cpp": "global_min_cut_operations",
+    "Graph/Tree_B_Matching.cpp": "tree_b_matching",
+    "Graph/Zero_One_BFS.cpp": "zero_one_bfs_wizard",
+    "Math/Range_Xor_Basis.cpp": "range_xor_basis",
+    "String/Edit_Distance.cpp": "bounded_edit_distance",
+    "String/Longest_Common_Subsequence.cpp": "lcs_sequence",
+    "String/Palindromic_Factorization.cpp": "palindromic_factorization_local",
+    "String/Prefix_Function.cpp": "kmp_string_matching",
 }
 # name, full dimensions, quick dimensions, independent answer basis
 _PROFILES = {
+    "prefix_sum_3d": (
+        ("affine", {"n": 100, "q": 200000}, {"n": 5, "q": 48}, "Sum affine cell values via independent integer intervals."),
+        ("constant", {"n": 100, "q": 200000}, {"n": 5, "q": 48}, "Each answer is 999 times the query volume.")),
     "preferred_topological_yuki": (
         ("chain", {"n": 100000}, {"n": 16}, "Directed chain has longest vertex-count n."),
         ("many_sources", {"n": 100000}, {"n": 16}, "Edges from first half to disjoint second half give longest count2.")),
@@ -80,10 +98,66 @@ _PROFILES = {
     "min_cost_flow_grid": (
         ("all_cells", {"n": 50, "k": 50}, {"n": 4, "k": 4}, "Every weight positive and k=n, so choose all cells."),
         ("unique_diagonal", {"n": 50, "k": 1}, {"n": 4, "k": 1}, "Diagonal2/off-diagonal1 with k=1 has unique diagonal optimum2n.")),
+    "knapsack_bounded_exact": (
+        ("all_stocks_needed", {"n": 100, "target": 30000, "stock": 200}, {"n": 8, "target": 60, "stock": 5},
+         "Each item weighs two. Pick the required number in descending order of value, respecting stock."),
+        ("unreachable_odd_target", {"n": 100, "target": 29999, "stock": 200}, {"n": 8, "target": 59, "stock": 5},
+         "All weights are even and the target is odd.")),
+    "subset_sum_cards": (
+        ("unique_all_back", {"n": 100, "back": 100}, {"n": 8, "back": 20},
+         "Only turning every card to its larger side reaches the total upper bound."),
+        ("near_max_unreachable", {"n": 100, "back": 100}, {"n": 8, "back": 20},
+         "Every attainable sum is even; the target is one less than the total upper bound.")),
+    "minkowski_sum": (
+        ("box_with_duplicate_corners", {"n": 100000, "width": 5000000, "height": 8000000},
+         {"n": 24, "width": 5, "height": 8}, "Every original corner is a division point of two identical points; all other points lie inside the box."),
+        ("wide_collinear", {"n": 100000, "width": 5000000, "height": 0}, {"n": 24, "width": 5, "height": 0},
+         "All division points belong to the same line.")),
+    "dynamic_bipartiteness_operations": (
+        ("long_odd_cycle_toggle", {"n": 200000, "rounds": 100000}, {"n": 12, "rounds": 14},
+         "An even-length subpath and one temporary edge give an odd cycle until the edge is removed."),
+        ("parallel_edges", {"n": 200000, "rounds": 100000}, {"n": 16, "rounds": 10},
+         "Every active edge joins opposite parities as duplicates are added and original edges removed.")),
+    "tree_b_matching": (
+        ("high_degree_star", {"n": 300000}, {"n": 12}, "Only the center binds; take the largest n//3 edge weights."),
+        ("alternating_chain", {"n": 300000}, {"n": 12}, "Every positive edge can be selected because they are vertex-disjoint.")),
+    "global_min_cut_operations": (
+        ("complete_unit", {"n": 450}, {"n": 8}, "Every cut of the complete graph has |S|*(n-|S|) unit edges."),
+        ("disjoint_cliques", {"n": 450}, {"n": 8}, "A partition between the two complete components cuts no edges.")),
+    "palindromic_factorization_local": (
+        ("zimin_then_separator", {"n": (1 << 19) - 1}, {"n": 31},
+         "A complete Zimin word is a palindrome; its distinct final separator requires another part."),
+        ("no_long_palindrome", {"n": 500000}, {"n": 36},
+         "The abc period has no length-two or length-three palindrome, so every part has length one.")),
+    "zero_one_bfs_wizard": (
+        ("all_open", {"side": 1000}, {"side": 12}, "An open path using only orthogonal steps costs no warps."),
+        ("isolated_landings", {"side": 999}, {"side": 11},
+         "Landing cells have both coordinates even. Each warp advances at most two rows or columns; diagonal warps meet the lower bound.")),
+    "range_xor_basis": (
+        ("unit_vectors", {"n": 400000, "q": 200000, "bits": 59}, {"n": 64, "q": 48, "bits": 7},
+         "Each even query requests an element in the interval. Odd queries request a bit missing from every element."),
+        ("dense_vectors", {"n": 400000, "q": 200000, "bits": 59}, {"n": 64, "q": 48, "bits": 7},
+         "Dense low-bit prefixes still omit the top bit used by the negative queries.")),
+    "bounded_edit_distance": (
+        ("band_edge", {"n": 500000, "k": 20}, {"n": 55, "k": 4},
+         "Inserting the extra prefix of length k is sufficient and the length difference gives a lower bound."),
+        ("one_past_limit", {"n": 500000, "k": 20}, {"n": 55, "k": 4},
+         "At least k+1 changes are needed to introduce k+1 copies of a missing letter.")),
+    "lcs_sequence": (
+        ("ordered_runs", {"n": 3000}, {"n": 24},
+         "The only common letters are a and b in that order, so take the minimum count of each."),
+        ("opposite_order", {"n": 3000}, {"n": 24},
+         "The a and b runs occur in opposite order. The unique longest choice uses only the longer common run.")),
+    "kmp_string_matching": (
+        ("all_overlapping", {"text": 1000000, "pattern": 10000}, {"text": 120, "pattern": 16},
+         "Equal-character strings match at every feasible starting index."),
+        ("long_borders", {"text": 1000000, "pattern": 10000}, {"text": 120, "pattern": 16},
+         "The only b is at the final text index and the end of the pattern, fixing one match.")),
 }
 MAX_BYTES = 32 * 1024 * 1024
 _ROOT = Path(__file__).resolve().parents[2]
 _VALIDITY = {
+    "prefix_sum_3d": "N<=100, Q<=200000; values lie in[0,999], endpoints in[1,N].",
     "preferred_topological_yuki": "Forward edges on distinct vertices form a DAG; every edge has implicit unit multiplicity.",
     "topological_lexicographical": "Simple DAG with vertex labels1..n and at most n-1 edges.",
     "all_pairs": "N<=100, M=N-1; weights1 and acyclic edges exclude negative cycles.",
@@ -101,10 +175,25 @@ _VALIDITY = {
     "coverage_geometry_coin_overlap_split": "Radius10; integer nonnegative centers, with tangent or coincident circle positions.",
     "pruefer_code": "N<=200000; existing edges form a forest contained in the explicit target tree; target degrees sum2(N-1).",
     "min_cost_flow_grid": "N<=50, 1<=K<=N; positive cell weights in[1,2].",
+    "knapsack_bounded_exact": "N<=100, S<=30000, with positive weights, values, and stock inside AWC0103 D bounds.",
+    "subset_sum_cards": "N<=100; card values<=100; target in[1,10000].",
+    "minkowski_sum": "2<=N<=100000, p=1, q=2; all coordinate magnitudes are at most 10^7.",
+    "dynamic_bipartiteness_operations": "Local driver: add valid endpoints, remove an active edge by addition ID, or query.",
+    "tree_b_matching": "2<=N<=300000; vertex caps 1 or n//3 and weights within [-5,299999].",
+    "global_min_cut_operations": "Local driver: valid endpoints and nonnegative uint64 edge weights.",
+    "palindromic_factorization_local": "Local driver: one nonempty lowercase token; its length is less than INT_MAX.",
+    "zero_one_bfs_wizard": "H,W<=1000; distinct start and end both on open cells.",
+    "range_xor_basis": "N<=400000, Q<=200000; values and query targets in[1,2^60); nonempty one-based intervals.",
+    "bounded_edit_distance": "1<=K<=20; lowercase nonempty strings of length<=500000.",
+    "lcs_sequence": "Lowercase nonempty strings of length<=3000.",
+    "kmp_string_matching": "Nonempty alphanumeric text<=1000000 and pattern<=10000.",
 }
 _UNREVERIFIED_LIMITS = {
     "preferred_topological_yuki", "coverage_graph_node_cycles_yuki",
     "preferred_project_selection_yuki", "coverage_geometry_coin_overlap_split",
+}
+_LOCAL_DRIVERS = {
+    "dynamic_bipartiteness_operations", "global_min_cut_operations", "palindromic_factorization_local",
 }
 
 
@@ -124,7 +213,9 @@ def plans_for_library(library: str, quick: bool = False) -> list[dict]:
              "seed": 20261116, "size_profile": "quick_smoke" if quick else "full",
              "scale_claim": "CI_workload_not_problem_max", "oracle": oracle,
              "scope": "whole_program_including_io",
-             "constraints_status": "numerical_judge_bounds_not_reverified" if identifier in _UNREVERIFIED_LIMITS else "known_problem_constraints",
+             "constraints_status": ("local_operation_constraints" if identifier in _LOCAL_DRIVERS
+                                    else "numerical_judge_bounds_not_reverified" if identifier in _UNREVERIFIED_LIMITS
+                                    else "known_problem_constraints"),
              "constraint_note": _VALIDITY[_key(identifier)] + (
                  " Numerical judge bounds were not reverified; this is an existing-driver API workload."
                  if identifier in _UNREVERIFIED_LIMITS else "")}
@@ -161,7 +252,12 @@ class _Writer:
 def _generate(plan: dict, inp: _Writer, out: _Writer) -> None:
     name, identifier, d = plan["scenario"], plan["verify_id"], plan["dimensions"]
     key = _key(identifier)
-    if key == "all_pairs":
+    if key == "prefix_sum_3d":
+        for fields, answer in stress_cases.cuboid_rows(d["n"], d["q"], constant=name == "constant"):
+            inp.line(*fields)
+            if answer is not None:
+                out.line(answer)
+    elif key == "all_pairs":
         n = d["n"]; inp.line(n, n - 1)
         for i in range(n - 1): inp.line(i + 1, i + 2, 1) if name == "forward_chain" else inp.line(i + 2, i + 1, 1)
         for i in range(n):
@@ -282,6 +378,149 @@ def _generate(plan: dict, inp: _Writer, out: _Writer) -> None:
         for i in range(n): inp.line(*(1 if name == "all_cells" else (2 if i == j else 1) for j in range(n)))
         out.line(n * n if name == "all_cells" else 2 * n)
         for i in range(n): out.line("X" * n if name == "all_cells" else "." * i + "X" + "." * (n - i - 1))
+    elif key == "knapsack_bounded_exact":
+        n, target, stock = d["n"], d["target"], d["stock"]
+        inp.line(n, target)
+        for value in range(1, n + 1):
+            inp.line(2, value, stock)
+        if target % 2:
+            out.line(-1)
+        else:
+            complete, remainder = divmod(target // 2, stock)
+            out.line(stock * sum(range(n - complete + 1, n + 1)) + remainder * (n - complete))
+    elif key == "subset_sum_cards":
+        n, back = d["n"], d["back"]
+        reachable = name == "unique_all_back"
+        inp.line(n, n * back if reachable else n * back - 1)
+        for _ in range(n):
+            inp.line(back - (1 if reachable else 2), back)
+        out.line("Yes" if reachable else "No")
+        if reachable:
+            out.line("T" * n)
+    elif key == "minkowski_sum":
+        n, width, height = d["n"], d["width"], d["height"]
+        corners = ((0, 0), (width, height), (0, height), (width, 0))
+        inp.line(n, 1, 2)
+        for i in range(n):
+            inp.line(*corners[i % len(corners)])
+        out.line(width * height, 1)
+    elif key == "dynamic_bipartiteness_operations":
+        n, rounds = d["n"], d["rounds"]
+        inp.line(n, n - 1 + 4 * rounds)
+        for i in range(n - 1):
+            inp.line(0, i, i + 1)
+        if name == "long_odd_cycle_toggle":
+            for i in range(rounds):
+                inp.line(0, 0, n - 2)
+                inp.line(2)
+                inp.line(1, n - 1 + i)
+                inp.line(2)
+                out.line("No")
+                out.line("Yes")
+        else:
+            for i in range(rounds):
+                inp.line(0, i, i + 1)
+                inp.line(2)
+                out.line("Yes")
+            for i in range(rounds):
+                inp.line(1, i)
+                inp.line(2)
+                out.line("Yes")
+    elif key == "tree_b_matching":
+        n = d["n"]
+        inp.line(n)
+        if name == "high_degree_star":
+            cap = n // 3
+            inp.line(cap, *([1] * (n - 1)))
+            for i in range(1, n):
+                inp.line(1, i + 1, i)
+            out.line(cap * (2 * n - cap - 1) // 2)
+        else:
+            inp.line(*([1] * n))
+            for i in range(1, n):
+                inp.line(i, i + 1, 3 if i % 2 else -5)
+            out.line(3 * (n // 2))
+    elif key == "global_min_cut_operations":
+        n = d["n"]
+        split = name == "disjoint_cliques"
+        half = n // 2
+        groups = [(0, half), (half, n)] if split else [(0, n)]
+        count = sum((last - first) * (last - first - 1) // 2 for first, last in groups)
+        inp.line(n, count)
+        for first, last in groups:
+            for u in range(first, last):
+                for v in range(u + 1, last):
+                    inp.line(u, v, 1)
+        out.line(0 if split else n - 1)
+    elif key == "palindromic_factorization_local":
+        n = d["n"]
+        if name == "zimin_then_separator":
+            letters = "abcdefghijklmnopqrstuvwxy"
+            inp.line("".join(letters[(index & -index).bit_length() - 1] for index in range(1, n + 1)) + "z")
+            out.line(2)
+        else:
+            inp.line(("abc" * ((n + 2) // 3))[:n])
+            out.line(n)
+    elif key == "zero_one_bfs_wizard":
+        side = d["side"]
+        inp.line(side, side)
+        inp.line(1, 1)
+        inp.line(side, side)
+        if name == "all_open":
+            for _ in range(side):
+                inp.line("." * side)
+            out.line(0)
+        else:
+            landings = (".#" * ((side + 1) // 2))[:side]
+            wall = "#" * side
+            for i in range(side):
+                inp.line(wall if i % 2 else landings)
+            out.line((side - 1) // 2)
+    elif key == "range_xor_basis":
+        n, count, bits = d["n"], d["q"], d["bits"]
+        unit = name == "unit_vectors"
+        values = [(1 << (i % bits)) if unit else (1 << (i % bits + 1)) - 1 for i in range(n)]
+        inp.line(n, count)
+        inp.line(*values)
+        for i in range(count):
+            left = i * 65537 % n
+            width = min(4 * bits, n - left)
+            right = left + 1 + i * 43 % width
+            inp.line(left + 1, right, (1 << bits) if i % 2 else values[right - 1])
+            out.line("No" if i % 2 else "Yes")
+    elif key == "bounded_edit_distance":
+        n, limit = d["n"], d["k"]
+        inp.line(limit)
+        if name == "band_edge":
+            inp.line("a" * (n - limit))
+            inp.line("b" * limit + "a" * (n - limit))
+            out.line("Yes")
+        else:
+            inp.line("a" * n)
+            inp.line("b" * (limit + 1) + "a" * (n - limit - 1))
+            out.line("No")
+    elif key == "lcs_sequence":
+        n = d["n"]
+        a = "a" * (n // 3)
+        b = "b" * (n - len(a))
+        inp.line(a + b)
+        if name == "ordered_runs":
+            inp.line(a[:-1] + "c" + b)
+            out.line(a[:-1] + b)
+        else:
+            inp.line(b + a)
+            out.line(b)
+    elif key == "kmp_string_matching":
+        text, pattern = d["text"], d["pattern"]
+        if name == "all_overlapping":
+            inp.line("a" * text)
+            inp.line("a" * pattern)
+            for i in range(text - pattern + 1):
+                out.line(i)
+        else:
+            inp.line("a" * (text - 1) + "b")
+            inp.line("a" * (pattern - 1) + "b")
+            out.line(text - pattern)
     else:
         raise ValueError("unimplemented performance case")
 

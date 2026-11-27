@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor
 import hashlib
 import html
@@ -384,7 +385,75 @@ def record_gcov_lines(measured: dict, report: dict, *, unchecked: bool = False) 
         raise ValueError("gcovとLLVMの原本の対応が不完全です")
 
 
-def coverage_union(exports: list[dict]) -> dict:
+def shared_coverage_blocks(root: Path) -> list[list[tuple[str, int, int]]]:
+    """スタンドアロン版に複製した同一ガード内の原本座標を照合する。"""
+    directive = re.compile(rb"\s*#\s*(if|ifdef|ifndef|elif|else|endif)\b(.*)")
+    guard = re.compile(rb"SIRKIT_[A-Z0-9_]+_DEFINED")
+    groups = defaultdict(list)
+    sources = sorted(path for folder in LIBRARY_DIRS for path in (root / folder).rglob("*.cpp"))
+    for source in sources:
+        lines = source.read_bytes().splitlines(keepends=True)
+        stack = []
+        for index, line in enumerate(lines):
+            match = directive.fullmatch(line.rstrip(b"\r\n"))
+            if not match:
+                continue
+            kind, condition = match.groups()
+            if kind in (b"if", b"ifdef", b"ifndef"):
+                stack.append((index, kind, condition.strip(), [line.strip()]))
+            elif stack and kind == b"endif":
+                start, opening, name, arms = stack.pop()
+                if opening == b"ifndef" and guard.fullmatch(name) and len(arms) == 1:
+                    body = lines[start:index + 1]
+                    definition = next(row for row in body[1:] if row.strip())
+                    if not re.fullmatch(rb"\s*#\s*define\s+" + name + rb"\s*", definition):
+                        continue
+                    context = tuple(tuple(frame[3]) for frame in stack)
+                    groups[context, b"".join(body)].append((str(source.resolve()), start + 1, index + 1))
+            elif stack:
+                stack[-1][3].append(line.strip())
+    return [copies for copies in groups.values() if len({name for name, _, _ in copies}) > 1]
+
+
+def relative_region(region: tuple[int, int, int, int], start: int) -> tuple[int, int, int, int]:
+    first, column, last, end_column = region
+    return first - start, column, last - start, end_column
+
+
+def union_shared_coverage(combined: dict, shared: list[list[tuple[str, int, int]]],
+                          direct_exclusions: dict[str, set[tuple]]) -> None:
+    for copies in shared:
+        measured = [(name, combined[name], start, end) for name, start, end in copies if name in combined]
+        if len(measured) < 2:
+            continue
+        hit_lines = set()
+        branch_hits = defaultdict(lambda: (False, False))
+        for _, item, start, end in measured:
+            gcc_lines = item.get("gcov_line_counts", {}).keys() | item.get("gcov_unchecked_line_counts", {}).keys()
+            hit_lines.update(line - start for line, hit in item["lines"].items()
+                             if start <= line <= end and (hit or line in gcc_lines))
+            for region, hits in item["branches"].items():
+                if start <= region[0] <= region[2] <= end and any(hits):
+                    key = relative_region(region, start)
+                    branch_hits[key] = tuple(a or b for a, b in zip(branch_hits[key], hits))
+        for name, item, start, end in measured:
+            excluded = direct_exclusions.get(name, set())
+            for line in item["lines"]:
+                if start <= line <= end and line - start in hit_lines and (line,) not in excluded:
+                    item["lines"][line] = True
+            for region in item["runtime"]:
+                if start <= region[0] <= region[2] <= end:
+                    hits = branch_hits.get(relative_region(region, start))
+                    if hits:
+                        old = item["branches"][region]
+                        item["branches"][region] = (
+                            old[0] or (hits[0] and (*region, "true") not in excluded),
+                            old[1] or (hits[1] and (*region, "false") not in excluded),
+                        )
+
+
+def coverage_union(exports: list[dict], shared: list[list[tuple[str, int, int]]] | None = None, *,
+                   direct_exclusions: dict[str, set[tuple]] | None = None) -> dict:
     combined = {}
     for export in exports:
         for item in export["files"]:
@@ -402,6 +471,9 @@ def coverage_union(exports: list[dict]) -> dict:
                 for line, count in item.get(key, []):
                     counts = target.setdefault(key, {})
                     counts[line] = max(counts.get(line, 0), count)
+    if shared:
+        union_shared_coverage(combined, shared, direct_exclusions or {})
+
     def metric(count, covered):
         return {"count": count, "covered": covered, "percent": 100 * covered / count if count else 0}
     files = []
@@ -426,11 +498,60 @@ def coverage_union(exports: list[dict]) -> dict:
     totals = {key: metric(sum(item["summary"][key]["count"] for item in files),
                           sum(item["summary"][key]["covered"] for item in files))
               for key in ("lines", "branches")}
+    definition = ("Per-TU LLVM LCOV DA lines and direct-source runtime condition regions; selected GCC runs can confirm "
+                  "LLVM-mapped lines with positive gcov counts; boolean union across TUs and template instances; "
+                  "macro expansion interiors and confirmed compiler-folded conditions excluded from the gate.")
+    if shared:
+        definition += " Identical shared guard blocks also share hits at matching measured coordinates."
     return {"format": 1, "type": "sirkit.source-coverage-union", "files": files, "totals": totals,
-            "definition": "Per-TU LLVM LCOV DA lines and direct-source runtime condition regions; selected GCC runs can confirm LLVM-mapped lines with positive gcov counts; boolean union across TUs and template instances; macro expansion interiors and confirmed compiler-folded conditions excluded from the gate."}
+            "definition": definition}
 
 
-def load_coverage_exclusions(root: Path) -> dict:
+def exclusion_key(exclusion: dict) -> tuple:
+    if "line" in exclusion:
+        return (exclusion["line"],)
+    return (*exclusion["region"], exclusion["side"])
+
+
+def direct_exclusion_coordinates(root: Path, exclusions: dict) -> dict[str, set[tuple]]:
+    return {str((root / name).resolve()): {exclusion_key(row) for row in file["regions"] if "shared_from" not in row}
+            for name, file in exclusions.items()}
+
+
+def shared_exclusions(root: Path, registered: dict, blocks: list[list[tuple[str, int, int]]]) -> dict:
+    sources = {name: file["regions"] for name, file in registered.items() if file["sha256"] == digest(root / name)}
+    result = {name: {**file, "regions": list(file["regions"])} for name, file in registered.items()}
+    names = {name: Path(name).relative_to(root.resolve()).as_posix()
+             for copies in blocks for name, _, _ in copies}
+    seen = {name: {exclusion_key(row) for row in file["regions"]} for name, file in result.items()}
+    for copies in blocks:
+        for original, first, last in copies:
+            source = names[original]
+            for row in sources.get(source, []):
+                start, end = (row["line"], row["line"]) if "line" in row else (row["region"][0], row["region"][2])
+                if not first <= start <= end <= last:
+                    continue
+                for embedded, embedded_start, _ in copies:
+                    if embedded == original:
+                        continue
+                    name = names[embedded]
+                    offset = embedded_start - first
+                    if "line" in row:
+                        moved = {**row, "line": start + offset}
+                    else:
+                        moved = {**row, "region": list(relative_region(tuple(row["region"]), -offset))}
+                    key = exclusion_key(moved)
+                    keys = seen.setdefault(name, set())
+                    if key in keys:
+                        continue
+                    keys.add(key)
+                    if name not in result:
+                        result[name] = {"sha256": digest(Path(embedded)), "regions": []}
+                    result[name]["regions"].append({**moved, "shared_from": source})
+    return result
+
+
+def load_coverage_exclusions(root: Path, shared: list[list[tuple[str, int, int]]] | None = None) -> dict:
     path = root / COVERAGE_EXCLUSIONS
     if not path.exists():
         return {}
@@ -463,7 +584,9 @@ def load_coverage_exclusions(root: Path) -> dict:
             if key in seen:
                 raise ValueError("到達不能箇所の座標が重複しています: " + name)
             seen.add(key)
-    return value["files"]
+    if shared is None:
+        shared = shared_coverage_blocks(root)
+    return shared_exclusions(root, value["files"], shared)
 
 
 def coverage_file_summary(item: dict, name: str, source_sha256: str, exclusions: dict) -> tuple[dict, list[dict]]:
@@ -499,6 +622,9 @@ def coverage_file_summary(item: dict, name: str, source_sha256: str, exclusions:
                     continue
                 side = 0 if exclusion["side"] == "true" else 1
                 hit, kind = branches[key][side], "branches"
+            if hit and "shared_from" in exclusion:
+                # 共有部品の呼出し条件が異なり、移した座標が到達済みなら実測を使う。
+                continue
             if hit:
                 raise ValueError(f"到達不能とした箇所に到達しました: {name}:{key}")
             if kind == "branches" and key in folded:
@@ -870,8 +996,13 @@ def run(entries: list[dict], *, root: Path, output: Path, mode: str, compiler: s
         report["library_source_hashes"] = {str(path.relative_to(root)): digest(path) for path in allowed}
         watched = set(allowed) | {(root / entry["driver"]).resolve() for entry in entries}
         proof_policy = root / COVERAGE_EXCLUSIONS
+        shared = shared_coverage_blocks(root) if mode == "coverage" else []
+        exclusions = {}
         if mode == "coverage" and proof_policy.is_file():
             watched.add(proof_policy)
+            exclusions = load_coverage_exclusions(root, shared)
+            watched.update(root / row["shared_from"] for name in report["library_source_hashes"]
+                           for row in exclusions.get(name, {}).get("regions", []) if "shared_from" in row)
         if any(entry.get("coverage_test") for entry in entries):
             watched.add(root / COVERAGE_TESTS)
             watched.update((root / name).resolve()
@@ -888,7 +1019,6 @@ def run(entries: list[dict], *, root: Path, output: Path, mode: str, compiler: s
                     watched.add(dependency)
                     pending.append(dependency)
         report["all_source_hashes"] = {str(path.relative_to(root)): digest(path) for path in sorted(watched)}
-        exclusions = load_coverage_exclusions(root) if proof_policy in watched else {}
         report["vendor_source_hashes"] = {str(path.relative_to(root)): digest(path)
                                            for path in sorted((root / "Verify/current/vendor").rglob("*"))
                                            if path.is_file()}
@@ -1050,7 +1180,8 @@ def run(entries: list[dict], *, root: Path, output: Path, mode: str, compiler: s
                     write_report(output, report)
                     print(f"{index}/{len(entries)} {row['id']}: {row['status']}", flush=True)
             if mode == "coverage":
-                coverage = coverage_union(coverage_exports)
+                coverage = coverage_union(coverage_exports, shared,
+                                          direct_exclusions=direct_exclusion_coordinates(root, exclusions))
                 coverage = apply_coverage_exclusions(coverage, root, report["library_source_hashes"], exclusions)
                 report["coverage_raw_totals"] = coverage["raw_totals"]
                 report["coverage_folded_sides"] = 2 * sum(len(item.get("folded_branches", [])) for item in coverage["files"])

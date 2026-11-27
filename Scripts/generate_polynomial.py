@@ -12,9 +12,22 @@ except ModuleNotFoundError:
 def render(root: Path) -> dict[Path,bytes]:
     parts=root/'Math/Polynomial/components';fps=unwrap_source((root/'Math/Formal_Power_Series.cpp').read_text())
     overview=fps[:fps.index('#include ')].split('// API一覧\n',1)[1].strip()
-    header=(parts/'polynomial_header.inc').read_text().rstrip()+'\n//\n// [同梱FPS/NTT]\n'+overview
-    data=header+'\n\n'+fps[fps.index('#include '):].rstrip()+'\n\n'+(parts/'polynomial_body.inc').read_text().rstrip()+'\n'
-    return {root/'Math/Polynomial.cpp':wrap_source(data).encode()}
+    embedded = fps[fps.index('#include '):].rstrip()
+    sequences = root / 'Math/CombinatorialSequences/components'
+    sums = root / 'Math/PolynomialPrefixSum/components'
+    newton_basis = root / "Math/Newton_Basis/components"
+    sources = {
+        root / 'Math/Polynomial.cpp': (parts / 'polynomial_header.inc', parts / 'polynomial_body.inc'),
+        root / 'Math/Combinatorial_Sequences.cpp': (sequences / 'header.inc', sequences / 'body.inc'),
+        root / 'Math/Polynomial_Prefix_Sum.cpp': (sums / 'header.inc', sums / 'body.inc'),
+        root / 'Math/Newton_Basis.cpp': (newton_basis / 'header.inc', newton_basis / 'body.inc'),
+    }
+    result = {}
+    for output, (header_part, body_part) in sources.items():
+        header = header_part.read_text().rstrip() + '\n//\n// [同梱FPS/NTT]\n' + overview
+        data = header + '\n\n' + embedded + '\n\n' + body_part.read_text().rstrip() + '\n'
+        result[output] = wrap_source(data).encode()
+    return result
 
 def main():
     parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--check',action='store_true');args=parser.parse_args()

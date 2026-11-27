@@ -32,6 +32,7 @@ except ImportError:
 ROOT = Path(__file__).resolve().parents[1]
 PIN = ROOT / "Verify/ci/library_checker.json"
 GENERATION_STACK_BYTES = 512 * 1024 * 1024
+CHECKER_STACK_BYTES = 64 * 1024 * 1024
 OWN_INPUTS = {"Scripts/ci_library_checker.py", "Verify/ci/library_checker.json"}
 PERFORMANCE_SCOPE = (
     "whole_program_wall_time_including_process_start_io_and_runner_wait; checker excluded; "
@@ -191,7 +192,7 @@ def expected_cases(info: dict) -> list[str]:
 
 
 def generation_stack_limit(requested: int = GENERATION_STACK_BYTES) -> tuple[int, int]:
-    """公式正解の深い再帰用。親プロセスと提出実行の制限は変更しない。"""
+    """公式プログラムの深い再帰用。親と提出の実行制限は変更しない。"""
     soft, hard = resource.getrlimit(resource.RLIMIT_STACK)
     if soft == resource.RLIM_INFINITY:
         return soft, hard
@@ -305,7 +306,9 @@ def run_case(binary: Path, directory: Path, name: str, work: Path,
         return row
     command = [str(directory / "checker"), str(directory / "in" / (name + ".in")),
                str(actual), str(directory / "out" / (name + ".out"))]
-    checker_code, _ = execute(command, cwd=work, log=cache_path(work.resolve(), "checker.log"), timeout=60)
+    # 幅2木分解のように、公式の参照出力を深く再帰して検査するチェッカーもある。
+    checker_code, _ = execute(command, cwd=work, log=cache_path(work.resolve(), "checker.log"), timeout=60,
+                              stack_bytes=CHECKER_STACK_BYTES)
     row["checker_returncode"] = checker_code
     if checker_code == 0:
         row["status"] = "PASS"

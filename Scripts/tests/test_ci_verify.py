@@ -133,7 +133,7 @@ class RunTests(unittest.TestCase):
         self.plan = {"selected_ids": ["a"]}
 
     def fake_results(self, rows):
-        def fake(entries, compiler, fallback, output, *, compile_profile, jobs):
+        def fake(entries, compiler, fallback, output, *, compile_profile, jobs, qemu=None, compiler_args=()):
             self.assertEqual([e["id"] for e in entries], ["a"])
             output.write_text(json.dumps({"results": rows}))
         return fake
@@ -153,6 +153,34 @@ class RunTests(unittest.TestCase):
                 with self.assertRaises(ValueError):
                     ci.run_selected(self.entries, self.plan, "g++", False, self.output)
                 self.assertEqual(json.loads(self.output.read_text())["status"], "FAIL")
+
+    def test_qemu_compiles_statically_and_runs_both_check_modes(self):
+        samples = [{"input": "7\n", "output": "7\n"}]
+        entry = {"id": "a", "samples": samples, "submission": "a.cpp", "submission_sha256": ""}
+        executed = []
+        compiler_args = ("--target=riscv64-linux-gnu", "--gcc-install-dir=/cross/gcc/15")
+
+        def fake(command, **kwargs):
+            if command[0] == "clang++-18":
+                self.assertIn("-static", command)
+                self.assertTrue(set(compiler_args) <= set(command))
+                self.assertEqual([arg for arg in command if arg.startswith("--gcc-install-dir")],
+                                 [compiler_args[1]])
+                return subprocess.CompletedProcess(command, 0, stdout="", stderr="")
+            self.assertEqual(command[0], "qemu-riscv64")
+            self.assertEqual(kwargs["input"], "7\n")
+            executed.append(Path(command[1]).name)
+            return subprocess.CompletedProcess(command, 0, stdout="7\n", stderr="")
+
+        with patch.object(ci.prepare_verify, "render", return_value=(b"int main() {}\n", {})), \
+             patch.object(ci.prepare_verify.subprocess, "run", side_effect=fake):
+            ci.run_selected([entry], self.plan, "clang++-18", True, self.output, qemu="qemu-riscv64",
+                            compiler_args=compiler_args)
+
+        self.assertEqual(executed, ["a_checked", "a_skip"])
+        report = json.loads(self.output.read_text())
+        self.assertEqual(report["qemu"], "qemu-riscv64")
+        self.assertEqual(report["status"], "PASS")
 
     def test_atcoder_profile_is_forwarded_and_must_match_the_results(self):
         rows = [{"id": "a", "skip_runtime_checks": skip, "passed": True, "compile_profile": "atcoder"}
@@ -186,7 +214,7 @@ class RunTests(unittest.TestCase):
         self.assertIn("compiler missing", result["error"])
 
     def test_failure_preserves_partial_results(self):
-        def fail(entries, compiler, fallback, output, *, compile_profile, jobs):
+        def fail(entries, compiler, fallback, output, *, compile_profile, jobs, qemu=None, compiler_args=()):
             output.write_text(json.dumps({"results": [{"id": "a", "passed": False}]}))
             raise SystemExit("sample failed")
         with patch.object(ci.prepare_verify, "run_tests", side_effect=fail):

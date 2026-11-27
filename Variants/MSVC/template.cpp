@@ -54,7 +54,26 @@
 #include <utility>
 #include <vector>
 //GCC バグ対策 https://gcc.gnu.org/bugzilla/show_bug.cgi?id=128217
+#if defined(_M_ARM64)
+#include <intrin.h>
+
+namespace sirkit::detail
+{
+inline unsigned long long AclUnsignedMultiply128(unsigned long long lhs, unsigned long long rhs,
+                                                 unsigned long long *high) noexcept
+{
+    *high = __umulh(lhs, rhs);
+    return lhs * rhs;
+}
+}
+
+// ACLのBarrett還元が使うx64の組み込み関数をARM64で補う。
+#define _umul128 ::sirkit::detail::AclUnsignedMultiply128
+#endif
 #include <atcoder/all>
+#if defined(_M_ARM64)
+#undef _umul128
+#endif
 
 using namespace std;
 using namespace atcoder;

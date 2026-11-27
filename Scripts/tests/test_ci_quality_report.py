@@ -184,6 +184,29 @@ class QualityTests(unittest.TestCase):
             value["results"][0]["cases"][0]["metadata"]["dimensions"]["n"] = 1
             self.assertEqual(self.aggregate(value)["input_report_status"], "FAIL")
 
+    def test_local_performance_binds_the_runtime_checks_disabled_program(self):
+        from types import SimpleNamespace
+
+        self.entry["verification_kind"] = "local_regression"
+        with quality.verify_root(self.root):
+            normal, _ = quality.prepare_verify.render(self.entry)
+            measured, _ = quality.prepare_verify.render(self.entry, skip_runtime_checks=True)
+        self.write(self.entry["submission"], normal)
+        self.entry["submission_sha256"] = quality.digest(normal)
+        self.write("Verify/current/manifest.json", {"format": 1, "entries": [self.entry]})
+        report = self.all_performance()
+        row = report["results"][0]
+        row.update(case_source="deterministic_non_lc", submission_sha256=quality.digest(measured))
+        plans = [{"name": name, "dimensions": {"n": 5}} for name in row["expected_case_names"]]
+        nonlc = SimpleNamespace(plans_for_library=lambda *args, **kw: plans)
+        with patch.object(quality.ci_performance_all, "nonlc_module", return_value=nonlc):
+            self.assertEqual(self.category(self.aggregate(report), "performance")["status"], "PASS")
+            row["submission_sha256"] = quality.digest(normal)
+            self.assertEqual(self.aggregate(report)["input_report_status"], "FAIL")
+            row["submission_sha256"] = quality.digest(measured)
+            self.write(self.library, "// updated library\n")
+            self.assertEqual(self.category(self.aggregate(report), "performance")["status"], "STALE")
+
     def test_all_performance_failed_rows_render_without_fake_time(self):
         value = self.all_performance(); value["results"][0].update(status="FAIL", error="compile failed")
         report = self.aggregate(value)
