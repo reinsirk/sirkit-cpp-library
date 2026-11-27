@@ -555,6 +555,8 @@ def coverage_metrics(value: dict, library: str, root: Path) -> dict | None:
         exclusions = value["_coverage_exclusion_policy"]
     metrics, applied = ci_instrumented.coverage_file_summary(
         row, library, recorded.get(library, ""), exclusions)
+    if any("shared_from" in entry and entry["shared_from"] not in recorded for entry in applied):
+        raise ReportError("共有部品の到達不能箇所を証明した原本SHAがありません")
     if row.get("exclusions", []) != applied:
         raise ReportError("coverageの除外理由・座標が登録と一致しません")
     for key, metric in metrics.items():

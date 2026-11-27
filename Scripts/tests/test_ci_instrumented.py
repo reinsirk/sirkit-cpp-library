@@ -258,6 +258,68 @@ class UnitTests(unittest.TestCase):
                 self.assertEqual(gate["status"], "FAIL")
                 self.assertIn(reason, gate["reasons"])
 
+    def test_coverage_shares_only_matching_measured_coordinates_in_identical_guard_blocks(self):
+        body = ("#ifndef SIRKIT_SHARED_DEFINED\n#define SIRKIT_SHARED_DEFINED\n"
+                "int shared(int x) {\n if (x) return 1;\n return 0;\n}\n#endif\n")
+        original = self.root / "Algorithm/Shared.cpp"
+        copy = original.with_name("Copy.cpp")
+        different = original.with_name("Different.cpp")
+        conditional = original.with_name("Conditional.cpp")
+        original.write_text(body)
+        copy.write_text("// Header\n\n" + body)
+        different.write_text(body.replace("return 1;", "return 2;"))
+        conditional.write_text("#ifdef optional\n" + body + "#endif\n")
+        shared = ci.shared_coverage_blocks(self.root)
+        self.assertEqual(len(shared), 1)
+        self.assertCountEqual(shared[0], [(str(original), 1, 7), (str(copy), 3, 9)])
+        measured = {"files": [
+            {"filename": str(original), "lines": [[4, True]], "branches": [[4, 6, 4, 7, True, False]]},
+            {"filename": str(copy), "lines": [[6, False], [7, False]], "branches": [[6, 6, 6, 7, False, True]]},
+        ]}
+        rows = {row["filename"]: row for row in ci.coverage_union([measured], shared)["files"]}
+        self.assertEqual(rows[str(original)]["branches"], [[4, 6, 4, 7, True, True]])
+        self.assertEqual(rows[str(copy)]["lines"], [(6, True), (7, False)])
+        self.assertEqual(rows[str(copy)]["branches"], [[6, 6, 6, 7, True, True]])
+
+    def test_shared_proof_respects_observed_hits_and_keeps_direct_proofs_source_bound(self):
+        body = ("#ifndef SIRKIT_SHARED_DEFINED\n#define SIRKIT_SHARED_DEFINED\n"
+                "int shared(int x) {\n if (x) return 1;\n return 0;\n}\n#endif\n")
+        name, alias = "Algorithm/Shared.cpp", "Algorithm/Copy.cpp"
+        original, copy = self.root / name, self.root / alias
+        original.write_text(body)
+        copy.write_text("// Header\n" + body)
+        registered = self.root / ci.COVERAGE_EXCLUSIONS
+        registered.parent.mkdir(parents=True)
+        registered.write_text(json.dumps({"format": 1, "files": {
+            name: {"sha256": ci.digest(original), "regions": [
+                {"region": [4, 6, 4, 7], "side": "false", "reason": "Invariant for the original site"}
+            ]}
+        }}))
+        shared = ci.shared_coverage_blocks(self.root)
+        exclusions = ci.load_coverage_exclusions(self.root, shared)
+        self.assertEqual(exclusions[alias]["regions"][0]["shared_from"], name)
+        metrics, applied = ci.coverage_file_summary({
+            "lines": [[5, True]], "branches": [[5, 6, 5, 7, True, False]],
+        }, alias, ci.digest(copy), exclusions)
+        self.assertEqual(metrics["branches"]["count"], 1)
+        self.assertEqual(applied, exclusions[alias]["regions"])
+        measured = {"files": [
+            {"filename": str(original), "lines": [[4, True]], "branches": [[4, 6, 4, 7, True, False]]},
+            {"filename": str(copy), "lines": [[5, True]], "branches": [[5, 6, 5, 7, False, True]]},
+        ]}
+        coverage = ci.coverage_union([measured], shared,
+                                     direct_exclusions=ci.direct_exclusion_coordinates(self.root, exclusions))
+        result = ci.apply_coverage_exclusions(coverage, self.root, {
+            name: ci.digest(original), alias: ci.digest(copy),
+        }, exclusions)
+        rows = {row["filename"]: row for row in result["files"]}
+        self.assertEqual(rows[str(original)]["branches"], [[4, 6, 4, 7, True, False]])
+        self.assertEqual(rows[str(copy)]["branches"], [[5, 6, 5, 7, True, True]])
+        self.assertEqual(rows[str(copy)]["exclusions"], [])
+        self.assertEqual(result["totals"]["branches"]["percent"], 100)
+        original.write_text("// Source digest changed\n" + body)
+        self.assertNotIn(alias, ci.load_coverage_exclusions(self.root))
+
     def test_proved_exclusions_preserve_raw_evidence_and_only_remove_matching_coordinates(self):
         name = self.entry["libraries"][0]
         source = self.root / name
