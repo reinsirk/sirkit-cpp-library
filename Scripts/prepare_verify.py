@@ -360,11 +360,13 @@ def relative_report_text(value: str, temporary: Path | None = None) -> str:
 
 
 def run_tests(entries: list[dict], compiler: str, fallback: bool, output: Path,
-              *, compile_profile: str = "standard", jobs: int = 1, qemu: str | None = None) -> None:
+              *, compile_profile: str = "standard", jobs: int = 1, qemu: str | None = None,
+              compiler_args: tuple[str, ...] = ()) -> None:
     results = []
     compiler_name = Path(compiler).name
-    flags = compile_flags(compile_profile, ["-std=c++23", "-O2", "-Wall", "-Wextra"])
+    flags = compile_flags(compile_profile, ["-std=c++23", "-O2", "-Wall", "-Wextra", *compiler_args])
     if (compile_profile != "atcoder-clang" and "clang" in Path(compiler).name
+            and not any(arg.startswith(("--target", "--gcc-install-dir")) for arg in compiler_args)
             and Path("/usr/lib/gcc/x86_64-linux-gnu/15").is_dir()):
         flags += ["--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15"]
     if fallback:

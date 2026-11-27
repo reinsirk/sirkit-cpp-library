@@ -142,7 +142,8 @@ def write_report(path: Path, report: dict) -> None:
 
 
 def run_selected(entries: list[dict], plan: dict, compiler: str, fallback: bool, output: Path,
-                 *, compile_profile: str = "standard", jobs: int = 1, qemu: str | None = None) -> None:
+                 *, compile_profile: str = "standard", jobs: int = 1, qemu: str | None = None,
+                 compiler_args: tuple[str, ...] = ()) -> None:
     selected_ids = set(plan["selected_ids"])
     selected = [entry for entry in entries if entry["id"] in selected_ids]
     if len(selected) != len(selected_ids):
@@ -159,7 +160,8 @@ def run_selected(entries: list[dict], plan: dict, compiler: str, fallback: bool,
                 raw = Path(directory) / "samples.json"
                 try:
                     prepare_verify.run_tests(selected, compiler, fallback, raw,
-                                             compile_profile=compile_profile, jobs=jobs, qemu=qemu)
+                                             compile_profile=compile_profile, jobs=jobs, qemu=qemu,
+                                             compiler_args=compiler_args)
                 finally:
                     if raw.is_file():
                         report["results"] = json.loads(raw.read_text())["results"]
@@ -185,6 +187,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--all", action="store_true", help="全件を確認する")
     parser.add_argument("--list", action="store_true", help="選択計画のJSONだけを出力する")
     parser.add_argument("--compiler", default="g++")
+    parser.add_argument("--compiler-arg", action="append", default=[], help="コンパイラへの追加引数")
     parser.add_argument("--compile-profile", choices=VERIFY_COMPILE_PROFILES, default="standard")
     parser.add_argument("--qemu", help="指定したLinuxユーザーモードQEMUで静的リンクしたVerifyを実行する")
     parser.add_argument("--fallback", action="store_true")
@@ -212,7 +215,8 @@ def main(argv: list[str] | None = None) -> int:
         suffix = "" if args.compile_profile == "standard" else "-" + args.compile_profile
         output = args.results or Path(tempfile.gettempdir()) / "sirkit-ci-verify" / (Path(args.compiler).name + suffix + ".json")
         run_selected(entries, plan, args.compiler, args.fallback, output,
-                     compile_profile=args.compile_profile, jobs=args.jobs, qemu=args.qemu)
+                     compile_profile=args.compile_profile, jobs=args.jobs, qemu=args.qemu,
+                     compiler_args=tuple(args.compiler_arg))
         print(f"{len(plan['selected_ids'])}件のローカルVerify: PASS。結果: {output}")
         return 0
     except (OSError, ValueError, subprocess.SubprocessError, SystemExit) as error:

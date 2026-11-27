@@ -220,19 +220,24 @@ class StructureTests(unittest.TestCase):
         self.assertIn("libclang-rt-18-dev:amd64", command)
         self.assertIn('ln -s usr/lib64 "$RUNNER_TEMP/qemu-amd64/lib64"', command)
 
-    def test_variant_build_matrix_runs_native_msvc_on_windows(self):
+    def test_variant_build_matrix_runs_both_compilers_on_each_native_runner(self):
         job = workflow("verify.yml")["jobs"]["variant_builds"]
         self.assertEqual(job["strategy"]["matrix"]["include"], [
-            {"os": "ubuntu-26.04", "compiler": "GCC"}, {"os": "ubuntu-26.04", "compiler": "Clang"},
-            {"os": "windows-2025", "compiler": "MSVC", "msvc_arch": "x64"},
-            {"os": "windows-11-vs2026-arm", "compiler": "MSVC", "msvc_arch": "arm64"},
+            {"os": "ubuntu-26.04", "compiler": "GCC", "arch": "x64"},
+            {"os": "ubuntu-26.04", "compiler": "Clang", "arch": "x64"},
+            {"os": "ubuntu-26.04-arm", "compiler": "GCC", "arch": "arm64"},
+            {"os": "ubuntu-26.04-arm", "compiler": "Clang", "arch": "arm64"},
+            {"os": "windows-2025", "compiler": "MSVC", "arch": "x64"},
+            {"os": "windows-11-vs2026-arm", "compiler": "MSVC", "arch": "arm64"},
+            {"os": "windows-2025", "compiler": "Clang", "arch": "x64"},
+            {"os": "windows-11-vs2026-arm", "compiler": "Clang", "arch": "arm64"},
         ])
         developer = next(step for step in job["steps"] if step.get("name") == "Find Visual Studio developer command")
         self.assertIn("Microsoft.VisualStudio.Component.VC.Tools.ARM64", developer["run"])
         self.assertIn("vcvarsall.bat", developer["run"])
         windows = next(step for step in job["steps"] if "on Windows" in step.get("name", ""))
         self.assertEqual(windows["shell"], "cmd")
-        self.assertEqual(windows["env"]["SIRKIT_MSVC_ARCH"], "${{ matrix.msvc_arch }}")
+        self.assertEqual(windows["env"]["SIRKIT_MSVC_ARCH"], "${{ matrix.arch }}")
         self.assertIn('call "%SIRKIT_VCVARS%" %SIRKIT_MSVC_ARCH%', windows["run"])
         self.assertIn("python -X utf8 Scripts/verify_variants.py", windows["run"])
         self.assertIn("--compiler MSVC --syntax-only --run-tests", windows["run"])
@@ -241,11 +246,18 @@ class StructureTests(unittest.TestCase):
         self.assertIn("--run-tests", linux["run"])
         self.assertIn("--summary", linux["run"])
         self.assertIn("--summary", windows["run"])
+        clang_windows = next(step for step in job["steps"] if "Clang-specific variants on Windows" in step.get("name", ""))
+        self.assertIn("aarch64-pc-windows-msvc", clang_windows["env"]["SIRKIT_CLANG_TARGET"])
+        self.assertIn("x86_64-pc-windows-msvc", clang_windows["env"]["SIRKIT_CLANG_TARGET"])
+        self.assertIn('--clang-target "%SIRKIT_CLANG_TARGET%" --syntax-only --run-tests', clang_windows["run"])
         artifacts = next(step for step in job["steps"] if step.get("uses", "").startswith("actions/upload-artifact@"))
-        self.assertIn("matrix.msvc_arch == 'arm64' && '-ARM64'", artifacts["with"]["name"])
+        self.assertIn("matrix.arch == 'arm64' && '-ARM64'", artifacts["with"]["name"])
+        self.assertIn("runner.os == 'Windows' && matrix.compiler == 'Clang' && '-Windows'", artifacts["with"]["name"])
 
     def test_cross_architecture_matrix_executes_checked_and_unchecked_binaries(self):
         job = workflow("verify.yml")["jobs"]["cross_architecture"]
+        self.assertEqual(job["strategy"]["matrix"]["compiler"], ["GCC", "Clang"])
+        self.assertEqual(job["strategy"]["matrix"]["target"], ["loongarch64", "riscv64", "ppc64le", "s390x"])
         self.assertEqual(job["strategy"]["matrix"]["include"], [
             {"target": "loongarch64", "toolchain": "loongarch64-linux-gnu"},
             {"target": "riscv64", "toolchain": "riscv64-linux-gnu"},
@@ -255,12 +267,14 @@ class StructureTests(unittest.TestCase):
         full = next(step for step in job["steps"] if step.get("name") == "Run all local Verify in QEMU")
         self.assertIn("Scripts/ci_verify.py --all", full["run"])
         self.assertIn('--qemu "qemu-$SIRKIT_CROSS_TARGET" --fallback', full["run"])
+        self.assertIn("compiler=clang++-18", full["run"])
+        self.assertIn("--target=$SIRKIT_CROSS_TOOLCHAIN", full["run"])
+        self.assertIn("--compiler-arg=$arg", full["run"])
         artifact = next(step for step in job["steps"] if step.get("uses", "").startswith("actions/upload-artifact@"))
-        self.assertEqual(artifact["with"]["name"], "qemu-verify-${{ matrix.target }}")
-        run = next(step for step in job["steps"] if step.get("name") == "Run additional library tests in QEMU")
-        self.assertIn("for mode in checked skip", run["run"])
-        self.assertIn("-DSKIP_RUNTIME_CHECKS", run["run"])
-        self.assertIn('timeout 120 "qemu-$SIRKIT_CROSS_TARGET" "$binary"', run["run"])
+        self.assertEqual(artifact["with"]["name"], "qemu-verify-${{ matrix.compiler }}-${{ matrix.target }}")
+        self.assertIn("for mode in checked skip", full["run"])
+        self.assertIn("-DSKIP_RUNTIME_CHECKS", full["run"])
+        self.assertIn('timeout 120 "qemu-$SIRKIT_CROSS_TARGET" "$binary"', full["run"])
 
     def test_performance_comparisons_are_not_scheduled_in_ci(self):
         jobs = workflow("verify.yml")["jobs"]

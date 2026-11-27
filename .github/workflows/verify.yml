@@ -162,20 +162,24 @@ jobs:
           retention-days: 14
 
   variant_builds:
-    name: 配布版のビルド・動作検査 (${{ matrix.compiler }}${{ matrix.msvc_arch == 'arm64' && ', ARM64' || '' }})
+    name: 配布版のビルド・動作検査 (${{ matrix.compiler }}${{ startsWith(matrix.os, 'windows') && matrix.compiler == 'Clang' && ', Windows' || '' }}${{ matrix.arch == 'arm64' && ', ARM64' || '' }})
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
         include:
-          - {os: ubuntu-26.04, compiler: GCC}
-          - {os: ubuntu-26.04, compiler: Clang}
-          - {os: windows-2025, compiler: MSVC, msvc_arch: x64}
-          - {os: windows-11-vs2026-arm, compiler: MSVC, msvc_arch: arm64}
+          - {os: ubuntu-26.04, compiler: GCC, arch: x64}
+          - {os: ubuntu-26.04, compiler: Clang, arch: x64}
+          - {os: ubuntu-26.04-arm, compiler: GCC, arch: arm64}
+          - {os: ubuntu-26.04-arm, compiler: Clang, arch: arm64}
+          - {os: windows-2025, compiler: MSVC, arch: x64}
+          - {os: windows-11-vs2026-arm, compiler: MSVC, arch: arm64}
+          - {os: windows-2025, compiler: Clang, arch: x64}
+          - {os: windows-11-vs2026-arm, compiler: Clang, arch: arm64}
     steps:
       - name: Keep source bytes for SHA verification
-        if: matrix.compiler == 'MSVC'
+        if: runner.os == 'Windows'
         run: git config --global core.autocrlf false
       - uses: actions/checkout@v7
         with:
@@ -198,14 +202,14 @@ jobs:
           path: .verify-acl
           persist-credentials: false
       - name: Install Linux compilers
-        if: matrix.compiler != 'MSVC'
+        if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y g++-15 clang-18
+          sudo apt-get install -y g++-15 clang-18 libboost-dev
       - name: Find Visual Studio developer command
-        if: matrix.compiler == 'MSVC'
+        if: runner.os == 'Windows'
         env:
-          SIRKIT_MSVC_ARCH: ${{ matrix.msvc_arch }}
+          SIRKIT_MSVC_ARCH: ${{ matrix.arch }}
         shell: pwsh
         run: |
           $vswhere = Join-Path "${env:ProgramFiles(x86)}" "Microsoft Visual Studio\Installer\vswhere.exe"
@@ -219,7 +223,7 @@ jobs:
           $vcvars = Join-Path $install "VC\Auxiliary\Build\vcvarsall.bat"
           "SIRKIT_VCVARS=$vcvars" >> $env:GITHUB_ENV
       - name: Verify common and compiler-specific variants on Linux
-        if: matrix.compiler != 'MSVC'
+        if: runner.os == 'Linux'
         shell: bash
         run: >-
           python3 Scripts/verify_variants.py --compiler "${{ matrix.compiler }}"
@@ -228,30 +232,43 @@ jobs:
           --syntax-only --run-tests --jobs 4 --acl-include .verify-acl
           --output "$RUNNER_TEMP/variant-builds.json" --summary "$GITHUB_STEP_SUMMARY"
       - name: Verify common and MSVC-specific variants on Windows
-        if: matrix.compiler == 'MSVC'
+        if: runner.os == 'Windows' && matrix.compiler == 'MSVC'
         env:
-          SIRKIT_MSVC_ARCH: ${{ matrix.msvc_arch }}
+          SIRKIT_MSVC_ARCH: ${{ matrix.arch }}
         shell: cmd
         run: |
           call "%SIRKIT_VCVARS%" %SIRKIT_MSVC_ARCH% || exit /b 1
           where cl | findstr /I /L /C:"\Host%SIRKIT_MSVC_ARCH%\%SIRKIT_MSVC_ARCH%\cl.exe" >nul || exit /b 1
           cd /d "%GITHUB_WORKSPACE%"
           python -X utf8 Scripts/verify_variants.py --compiler MSVC --syntax-only --run-tests --jobs 2 --acl-include .verify-acl --output "%RUNNER_TEMP%\variant-builds.json" --summary "%GITHUB_STEP_SUMMARY%"
+      - name: Verify common and Clang-specific variants on Windows
+        if: runner.os == 'Windows' && matrix.compiler == 'Clang'
+        env:
+          SIRKIT_MSVC_ARCH: ${{ matrix.arch }}
+          SIRKIT_CLANG_TARGET: ${{ matrix.arch == 'arm64' && 'aarch64-pc-windows-msvc' || 'x86_64-pc-windows-msvc' }}
+        shell: cmd
+        run: |
+          call "%SIRKIT_VCVARS%" %SIRKIT_MSVC_ARCH% || exit /b 1
+          where clang++.exe || exit /b 1
+          cd /d "%GITHUB_WORKSPACE%"
+          python -X utf8 Scripts/verify_variants.py --compiler Clang --clang clang++.exe --clang-target "%SIRKIT_CLANG_TARGET%" --syntax-only --run-tests --jobs 2 --acl-include .verify-acl --output "%RUNNER_TEMP%\variant-builds.json" --summary "%GITHUB_STEP_SUMMARY%"
       - uses: actions/upload-artifact@v7
         if: always()
         with:
-          name: variant-builds-${{ matrix.compiler }}${{ matrix.msvc_arch == 'arm64' && '-ARM64' || '' }}
+          name: variant-builds-${{ matrix.compiler }}${{ runner.os == 'Windows' && matrix.compiler == 'Clang' && '-Windows' || '' }}${{ matrix.arch == 'arm64' && '-ARM64' || '' }}
           path: ${{ runner.temp }}/variant-builds.json
           if-no-files-found: ignore
           retention-days: 14
 
   cross_architecture:
-    name: QEMU Verify (${{ matrix.target }})
+    name: QEMU Verify (${{ matrix.compiler }}, ${{ matrix.target }})
     runs-on: ubuntu-26.04
     timeout-minutes: 45
     strategy:
       fail-fast: false
       matrix:
+        compiler: [GCC, Clang]
+        target: [loongarch64, riscv64, ppc64le, s390x]
         include:
           - {target: loongarch64, toolchain: loongarch64-linux-gnu}
           - {target: riscv64, toolchain: riscv64-linux-gnu}
@@ -264,33 +281,41 @@ jobs:
       - name: Install cross compiler and emulator
         env:
           SIRKIT_CROSS_TOOLCHAIN: ${{ matrix.toolchain }}
+          SIRKIT_COMPILER: ${{ matrix.compiler }}
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends "g++-15-$SIRKIT_CROSS_TOOLCHAIN" qemu-user libboost-dev
+          packages=("g++-15-$SIRKIT_CROSS_TOOLCHAIN" qemu-user libboost-dev)
+          if [[ "$SIRKIT_COMPILER" == Clang ]]; then packages+=(clang-18); fi
+          sudo apt-get install -y --no-install-recommends "${packages[@]}"
       - name: Run all local Verify in QEMU
         env:
           SIRKIT_CROSS_TOOLCHAIN: ${{ matrix.toolchain }}
           SIRKIT_CROSS_TARGET: ${{ matrix.target }}
+          SIRKIT_COMPILER: ${{ matrix.compiler }}
         shell: bash
         run: |
           set -euo pipefail
-          python3 Scripts/ci_verify.py --all --compiler "$SIRKIT_CROSS_TOOLCHAIN-g++-15" \
+          gcc="$SIRKIT_CROSS_TOOLCHAIN-g++-15"
+          compiler="$gcc"
+          compiler_args=()
+          if [[ "$SIRKIT_COMPILER" == Clang ]]; then
+            compiler=clang++-18
+            compiler_args+=("--target=$SIRKIT_CROSS_TOOLCHAIN"
+                            "--gcc-install-dir=$(dirname "$("$gcc" -print-libgcc-file-name)")")
+          fi
+          verify_args=()
+          for arg in "${compiler_args[@]}"; do verify_args+=("--compiler-arg=$arg"); done
+          python3 Scripts/ci_verify.py --all --compiler "$compiler" "${verify_args[@]}" \
             --qemu "qemu-$SIRKIT_CROSS_TARGET" --fallback --jobs 4 --skip-sync \
             --results "$RUNNER_TEMP/qemu-verify/result.json"
-      - name: Run additional library tests in QEMU
-        env:
-          SIRKIT_CROSS_TOOLCHAIN: ${{ matrix.toolchain }}
-          SIRKIT_CROSS_TARGET: ${{ matrix.target }}
-        shell: bash
-        run: |
-          set -euo pipefail
+
           tests=(prefix_sum_reference_test prefix_sum_nd_reference_test persistent_array_reference_test fast_io_test dynamic_bitset_reference_test)
           for test in "${tests[@]}"; do
             for mode in checked skip; do
               options=()
               if [[ "$mode" == skip ]]; then options=(-DSKIP_RUNTIME_CHECKS); fi
               binary="$RUNNER_TEMP/$test-$mode"
-              "$SIRKIT_CROSS_TOOLCHAIN-g++-15" -std=c++23 -O2 -static "${options[@]}" "Verify/current/tests/$test.cpp" -o "$binary"
+              "$compiler" "${compiler_args[@]}" -std=c++23 -O2 -static "${options[@]}" "Verify/current/tests/$test.cpp" -o "$binary"
               timeout 120 "qemu-$SIRKIT_CROSS_TARGET" "$binary"
               printf '%s (%s): PASS\n' "$test" "$mode"
             done
@@ -299,13 +324,14 @@ jobs:
         if: always()
         env:
           SIRKIT_CROSS_TARGET: ${{ matrix.target }}
+          SIRKIT_COMPILER: ${{ matrix.compiler }}
         run: |
-          printf '## QEMU Verify (%s)\n\n' "$SIRKIT_CROSS_TARGET" >> "$GITHUB_STEP_SUMMARY"
+          printf '## QEMU Verify (%s, %s)\n\n' "$SIRKIT_COMPILER" "$SIRKIT_CROSS_TARGET" >> "$GITHUB_STEP_SUMMARY"
           python3 Scripts/ci_verify_summary.py "$RUNNER_TEMP/qemu-verify/result.json" >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@v7
         if: always()
         with:
-          name: qemu-verify-${{ matrix.target }}
+          name: qemu-verify-${{ matrix.compiler }}-${{ matrix.target }}
           path: ${{ runner.temp }}/qemu-verify/result.json
           if-no-files-found: ignore
           retention-days: 14

@@ -91,7 +91,8 @@ def build_settings(compiler: str, fast: bool, syntax_only: bool) -> list[tuple[s
 
 
 def compiler_command(compiler: str, include_dirs: list[Path], gcc_install_dir: str | None,
-                     *, gcc: str = "g++", clang: str = "clang++") -> list[str]:
+                     *, gcc: str = "g++", clang: str = "clang++",
+                     clang_target: str | None = None) -> list[str]:
     if compiler == "MSVC":
         executable = shutil.which("cl.exe")
         if executable is None:
@@ -100,13 +101,18 @@ def compiler_command(compiler: str, include_dirs: list[Path], gcc_install_dir: s
         return [executable, "/nologo", "/std:c++23preview", "/permissive-", "/Zc:__cplusplus", "/Zc:preprocessor",
                 "/utf-8", "/EHsc", *includes]
     driver = gcc if compiler == "GCC" else clang
-    clang_arguments = gcc_install_arguments(driver, gcc_install_dir) if compiler == "Clang" else []
+    clang_arguments = []
+    if compiler == "Clang" and (gcc_install_dir or not clang_target):
+        clang_arguments = gcc_install_arguments(driver, gcc_install_dir)
+    if compiler == "Clang" and clang_target:
+        clang_arguments.insert(0, "--target=" + clang_target)
     return [driver, *clang_arguments, "-std=c++23", "-O2", *("-I" + str(path) for path in include_dirs)]
 
 
 def compiler_version(command: list[str], compiler: str, work: Path) -> str:
     if compiler != "MSVC":
-        return subprocess.check_output([command[0], "--version"], text=True, timeout=30)
+        target = [arg for arg in command if arg.startswith("--target=")]
+        return subprocess.check_output([command[0], *target, "--version"], text=True, timeout=30)
     probe = work / "probe.cpp"
     probe.write_text(
         "#if !defined(_MSC_VER) || defined(__clang__) || _MSVC_LANG < 202302L\n"
@@ -154,7 +160,7 @@ def verify(output: Path, cpu: int | None, selected: set[str] | None = None, resu
            pause: Path | None = None, *, compilers: tuple[str, ...] = ("GCC", "Clang"),
            syntax_only: bool = False, jobs: int = 1, gcc_install_dir: str | None = None,
            acl_include: Path | None = None, run_tests: bool = False,
-           gcc: str = "g++", clang: str = "clang++") -> dict:
+           gcc: str = "g++", clang: str = "clang++", clang_target: str | None = None) -> dict:
     if cpu is not None:
         os.sched_setaffinity(0, {cpu})
 
@@ -204,15 +210,17 @@ def verify(output: Path, cpu: int | None, selected: set[str] | None = None, resu
             include_dirs.append(Path("/opt/atcoder/gcc/include"))
         result["acl_fingerprints"] = acl_fingerprints(include_dirs)
         result["gcc_install_dir"] = gcc_install_dir
+        result["clang_target"] = clang_target
         commands = {name: compiler_command(name, [*include_dirs[:1], overlay, *include_dirs[1:]], gcc_install_dir,
-                                           gcc=gcc, clang=clang)
+                                           gcc=gcc, clang=clang, clang_target=clang_target)
                     for name in compilers}
         result["compiler_versions"] = {name: compiler_version(command, name, work) for name, command in commands.items()}
         cached = {}
         if resume and output.is_file():
             previous = json.loads(output.read_bytes())
             if all(previous.get(key) == result[key] for key in (
-                    "compiler_versions", "verifier_sha256", "syntax_only", "run_tests", "acl_fingerprints", "gcc_install_dir")):
+                    "compiler_versions", "verifier_sha256", "syntax_only", "run_tests",
+                    "acl_fingerprints", "gcc_install_dir", "clang_target")):
                 cached = {(item["path"], item["compiler"], item["setting"], item["source_sha256"], item["generated_sha256"]): item
                           for item in previous.get("results", []) if item.get("passed")}
 
@@ -332,6 +340,7 @@ def main() -> int:
     parser.add_argument("--run-tests", action="store_true", help="各配布版で登録済みの動作テストを実行")
     parser.add_argument("--gcc", default="g++", help="GCCの実行ファイル")
     parser.add_argument("--clang", default="clang++", help="Clangの実行ファイル")
+    parser.add_argument("--clang-target", help="Clangが生成するバイナリのターゲット")
     parser.add_argument("--gcc-install-dir", help="Clangが使うGCCのライブラリディレクトリ")
     parser.add_argument("--acl-include", type=Path, help="atcoder/allを含むACLディレクトリ")
     parser.add_argument("--jobs", type=int, default=1)
@@ -347,7 +356,8 @@ def main() -> int:
         report = verify(options.output, options.cpu, set(options.source) if options.source else None, options.resume,
                         options.pause_file, compilers=compilers, syntax_only=options.syntax_only,
                         jobs=options.jobs, gcc_install_dir=options.gcc_install_dir, acl_include=options.acl_include,
-                        run_tests=options.run_tests, gcc=options.gcc, clang=options.clang)
+                        run_tests=options.run_tests, gcc=options.gcc, clang=options.clang,
+                        clang_target=options.clang_target)
     except (OSError, ValueError, subprocess.SubprocessError) as error:
         parser.exit(1, str(error) + "\n")
     if options.summary:

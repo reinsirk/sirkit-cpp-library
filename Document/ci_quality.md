@@ -5,8 +5,8 @@
 | 検査 | 対象・結果 |
 | --- | --- |
 | C++23 Verify | AMD64とARM64で全対象をビルド・実行し、出力を照合する。両環境でGCC/Clang、通常/標準代替、入力検査有効/無効を試す。 |
-| 配布8版の検査 | 全ファイルの単独構文検査と、主要ライブラリの動作テストを行う。MSVCはWindowsのAMD64・ARM64で実行する。 |
-| QEMUでの全件Verify | LoongArch64、RISC-V 64、POWER 64（リトルエンディアン）、s390x（ビッグエンディアン）で、全Verifyの入力例とローカル回帰テストを実行する。 |
+| 配布8版の検査 | 配布版全ファイルの単独構文と登録済みの動作テストを確認する。LinuxのAMD64・ARM64ではGCCとClang、WindowsのAMD64・ARM64ではMSVCとClangを使う。 |
+| QEMUでの全件Verify | LoongArch64、RISC-V 64、POWER 64（リトルエンディアン）、s390x（ビッグエンディアン）で、GCCとClangで全Verifyの入力例とローカル回帰テストを実行する。 |
 | 正常系・失敗系 | 入力例・契約テストと補足テストで、正常な結果や失敗時の例外・戻り値を照合する。 |
 | Library Checker公式ケース | 全LC対象を外部キャッシュで生成し、全ケースを公式checkerで照合する。実行上限は1ケース30秒。 |
 | 決定的Max・構造ケース | Unionfind、永続UFのNo.2295、2次元・3次元累積和を独立参照と照合する。実行上限は1ケース60秒。 |
@@ -80,7 +80,7 @@ python3 Scripts/ci_verify.py --compiler clang++-21 --compile-profile atcoder-cla
 
 各処理系で共通版と専用版を検査します。配布用の通常版は入力検査を有効にした場合と省略した場合の両方で、速度優先版は配布時の設定で実行します。専用の速度優先実装を持つ11本すべてを動作テストに含め、独立した参照実装の結果と照合します。無効な入力を使う失敗系のテストは、入力検査を有効にした版で実行します。
 
-`variant-builds-GCC`、`variant-builds-Clang`、`variant-builds-MSVC`、`variant-builds-MSVC-ARM64`に原本・生成物・動作テストのSHAと構成別の判定を保存します。Windowsでは各アーキテクチャ向けのMSVCでビルドし、その環境で実行します。ACL入りのテンプレートには`Verify/current/vendor/ACL_COMMIT`で固定したACLを使います。
+`variant-builds-` で始まるArtifactに原本・生成物・動作テストのSHAと構成別の判定を保存します。WindowsのClangは対象CPUのMSVC ABIでビルドし、同じCPUのランナーで実行します。テンプレートが使うACLのリビジョンは `Verify/current/vendor/ACL_COMMIT` に記載しています。
 
 ```sh
 python3 Scripts/verify_variants.py --compiler GCC --compiler Clang --syntax-only --run-tests \
@@ -89,7 +89,7 @@ python3 Scripts/verify_variants.py --compiler GCC --compiler Clang --syntax-only
 
 Visual Studioの開発者コマンドプロンプトでは`--compiler MSVC`を指定し、出力先をWindowsのパスに置き換えます。
 
-全Verifyを各アーキテクチャ向けに静的リンクし、標準C++の代替経路で入力検査の有効・省略を試します。累積和、永続配列、高速入出力、動的ビット集合の独立テストも対象です。実行件数はActionsのSummaryに表示し、Verifyごとの結果は `qemu-verify-` で始まるArtifactに保存します。
+GCCとClangで全Verifyを各アーキテクチャ向けに静的リンクし、標準C++の代替経路で入力検査の有効・省略を試します。累積和、永続配列、高速入出力、動的ビット集合の独立テストも対象です。実行件数はActionsのSummaryに表示し、Verifyごとの結果は `qemu-verify-<コンパイラ>-<アーキテクチャ>` に保存します。
 
 ## Max・難ケースの範囲
 

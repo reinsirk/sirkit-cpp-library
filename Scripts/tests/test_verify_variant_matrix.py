@@ -49,6 +49,13 @@ class VariantMatrixTests(unittest.TestCase):
         resolve.assert_called_once_with("clang++-18", "/gcc/15")
         self.assertEqual(command, ["clang++-18", "--gcc-install-dir=/gcc/15", "-std=c++23", "-O2"])
 
+    def test_windows_clang_uses_the_selected_msvc_target(self):
+        with patch.object(variants, "gcc_install_arguments") as gcc_install:
+            command = variants.compiler_command("Clang", [], None, clang="clang++.exe",
+                                                clang_target="aarch64-pc-windows-msvc")
+        gcc_install.assert_not_called()
+        self.assertEqual(command, ["clang++.exe", "--target=aarch64-pc-windows-msvc", "-std=c++23", "-O2"])
+
     def test_fast_library_is_included_before_enabling_the_fixture_skip_guard(self):
         library = Path("temp root/library.hpp")
         fixture = Path("example.cpp")
