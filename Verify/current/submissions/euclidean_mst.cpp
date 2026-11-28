@@ -57,6 +57,19 @@ inline std::int64_t EuclideanMstNormSquared(const EuclideanMstPoint &p)
     return p.first * p.first + p.second * p.second;
 }
 
+struct EuclideanMstCircleTest
+{
+    bool operator()(const EuclideanMstPoint &x, const EuclideanMstPoint &y, const EuclideanMstPoint &z) const
+    {
+        // 軸幅をWとすると絶対値は12W^4以下で、int64_tに収まる。
+        return EuclideanMstNormSquared(x) * EuclideanMstCross(y, z) +
+                   EuclideanMstNormSquared(y) * EuclideanMstCross(z, x) +
+                   EuclideanMstNormSquared(z) * EuclideanMstCross(x, y) >
+               0;
+    }
+};
+
+template <class CircleTest = EuclideanMstCircleTest>
 class EuclideanMstTriangulation
 {
     using Index = std::size_t;
@@ -189,11 +202,7 @@ private:
         const auto y = EuclideanMstDifference(points_[b], points_[test]);
         const auto z = EuclideanMstDifference(points_[c], points_[test]);
         // abの左にcがあるとき、行列式が正ならtestは外接円の内側。
-        // 軸幅をWとすると絶対値は12W^4以下で、int64_tに収まる。
-        return EuclideanMstNormSquared(x) * EuclideanMstCross(y, z) +
-                   EuclideanMstNormSquared(y) * EuclideanMstCross(z, x) +
-                   EuclideanMstNormSquared(z) * EuclideanMstCross(x, y) >
-               0;
+        return CircleTest{}(x, y, z);
     }
 
     Index FindBase(Index &left, Index &right)

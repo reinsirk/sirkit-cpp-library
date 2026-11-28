@@ -33,7 +33,9 @@ ROOT = Path(__file__).resolve().parents[1]
 PIN = ROOT / "Verify/ci/library_checker.json"
 GENERATION_STACK_BYTES = 512 * 1024 * 1024
 CHECKER_STACK_BYTES = 64 * 1024 * 1024
-OWN_INPUTS = {"Scripts/ci_library_checker.py", "Verify/ci/library_checker.json"}
+CASE_GENERATOR = Path(__file__).with_name("generate_official_case.py")
+STREAMED_PROBLEMS = {"convolution_mod_large"}
+OWN_INPUTS = {"Scripts/ci_library_checker.py", "Scripts/generate_official_case.py", "Verify/ci/library_checker.json"}
 PERFORMANCE_SCOPE = (
     "whole_program_wall_time_including_process_start_io_and_runner_wait; checker excluded; "
     "not a kernel benchmark, baseline comparison, or online judge result"
@@ -214,42 +216,97 @@ def generation_failure(log: Path, returncode: int | None, stack_bytes: int) -> d
             "log_sha256": digest(log), "log_bytes": size}
 
 
+def run_generation(command: list[str], checkout: Path, log: Path, timeout: float) -> int:
+    env = os.environ.copy()
+    env["CXX"] = "g++"
+    env["PYTHONDONTWRITEBYTECODE"] = "1"
+    log.write_bytes(b"")
+    stack_bytes, _ = generation_stack_limit()
+    code, _ = execute(command, cwd=checkout, log=log, timeout=timeout,
+                      env=env, stack_bytes=GENERATION_STACK_BYTES)
+    if code != 0:
+        raise RunnerError("official_generation_unavailable", generation_failure(log, code, stack_bytes))
+    return stack_bytes
+
+
+def official_hashes(directory: Path, names: list[str], *, manifest_sha256: str | None = None) -> dict[str, str]:
+    raw = (directory / "hash.json").read_bytes()
+    if manifest_sha256 is not None and hashlib.sha256(raw).hexdigest() != manifest_sha256:
+        raise RunnerError("official_case_manifest_changed")
+    hashes = json.loads(raw)
+    if set(hashes) != {name + extension for name in names for extension in (".in", ".out")}:
+        raise RunnerError("official_case_manifest_mismatch")
+    return hashes
+
+
+def check_case_hash(path: Path, directory: Path, expected: str) -> None:
+    if directory not in path.resolve().parents or digest(path) != expected:
+        raise RunnerError("official_case_hash_mismatch")
+
+
 def official_problem(checkout: Path, identifier: str, cache: Path, pin: dict,
                      generation_timeout: float) -> tuple[Path, dict]:
     directory = find_problem(checkout, identifier)
     info = tomllib.loads((directory / "info.toml").read_text())
     names = expected_cases(info)
-    command = [sys.executable, str(checkout / "generate.py"), str(directory / "info.toml")]
-    env = os.environ.copy()
-    env["CXX"] = "g++"
-    log = cache_path(cache, identifier + ".generation.log")
-    log.write_bytes(b"")
-    stack_bytes, _ = generation_stack_limit()
-    code, _ = execute(command, cwd=checkout, log=log, timeout=generation_timeout,
-                      env=env, stack_bytes=GENERATION_STACK_BYTES)
-    if code != 0:
-        raise RunnerError("official_generation_unavailable", generation_failure(log, code, stack_bytes))
-    hashes = json.loads((directory / "hash.json").read_text())
-    if set(hashes) != {name + extension for name in names for extension in (".in", ".out")}:
-        raise RunnerError("official_case_manifest_mismatch")
-    for subdir, extension in [("in", ".in"), ("out", ".out")]:
-        found = {p.name for p in (directory / subdir).glob("*" + extension)}
-        if found != {name + extension for name in names}:
-            raise RunnerError("official_case_set_mismatch")
-        for name in names:
-            path = directory / subdir / (name + extension)
-            if directory not in path.resolve().parents or digest(path) != hashes[name + extension]:
-                raise RunnerError("official_case_hash_mismatch")
+    streaming = identifier in STREAMED_PROBLEMS
+    if streaming:
+        discard_test_data(checkout, directory)
+        command = [sys.executable, str(CASE_GENERATOR), str(checkout), str(directory), "prepare"]
+    else:
+        command = [sys.executable, str(checkout / "generate.py"), str(directory / "info.toml")]
+    stack_bytes = run_generation(command, checkout, cache_path(cache, identifier + ".generation.log"), generation_timeout)
+    hashes = official_hashes(directory, names)
+    if streaming:
+        for subdir in ("in", "out"):
+            (directory / subdir).mkdir()
+    else:
+        for subdir, extension in [("in", ".in"), ("out", ".out")]:
+            found = {p.name for p in (directory / subdir).glob("*" + extension)}
+            if found != {name + extension for name in names}:
+                raise RunnerError("official_case_set_mismatch")
+            for name in names:
+                path = directory / subdir / (name + extension)
+                check_case_hash(path, directory, hashes[name + extension])
     checker = directory / "checker"
     if not checker.is_file() or not os.access(checker, os.X_OK):
         raise RunnerError("official_checker_unavailable")
-    return directory, {**pin, "problem_id": identifier, "info_sha256": digest(directory / "info.toml"),
-                       "hash_json_sha256": digest(directory / "hash.json"),
-                       "checker_source_sha256": digest(directory / "checker.cpp"),
-                       "checker_sha256": digest(checker), "expected_cases": names,
-                       "official_timelimit_seconds": info.get("timelimit"),
-                       "generation_command": command, "generation_compiler_env": "g++",
-                       "generation_stack_bytes": stack_bytes}
+    details = {**pin, "problem_id": identifier, "info_sha256": digest(directory / "info.toml"),
+               "hash_json_sha256": digest(directory / "hash.json"),
+               "checker_source_sha256": digest(directory / "checker.cpp"),
+               "checker_sha256": digest(checker), "expected_cases": names,
+               "official_timelimit_seconds": info.get("timelimit"),
+               "generation_command": command, "generation_compiler_env": "g++",
+               "generation_stack_bytes": stack_bytes}
+    if streaming:
+        details.update(generation_strategy="one_case_at_a_time", case_generator_sha256=digest(CASE_GENERATOR))
+    return directory, details
+
+
+@contextmanager
+def case_files(checkout: Path, directory: Path, details: dict, name: str,
+               cache: Path, timeout: float, *, input_only: bool = False):
+    if details.get("generation_strategy") != "one_case_at_a_time":
+        yield
+        return
+    hashes = official_hashes(directory, details["expected_cases"], manifest_sha256=details["hash_json_sha256"])
+    paths = [directory / "in" / (name + ".in")]
+    if not input_only:
+        paths.append(directory / "out" / (name + ".out"))
+    if (name not in details["expected_cases"] or any(
+            directory not in path.resolve().parents or path.exists() or path.is_symlink() for path in paths)):
+        raise RunnerError("official_stream_path_not_empty")
+    command = [sys.executable, str(CASE_GENERATOR), str(checkout), str(directory),
+               "input" if input_only else "case", name]
+    log = cache_path(cache, details["problem_id"] + ".case-generation.log")
+    try:
+        run_generation(command, checkout, log, timeout)
+        for path in paths:
+            check_case_hash(path, directory, hashes[path.name])
+        yield
+    finally:
+        for path in paths:
+            path.unlink(missing_ok=True)
 
 
 def provenance(entry: dict, root: Path = ROOT) -> dict:
@@ -388,7 +445,8 @@ def run_selected(entries: list[dict], plan: dict, cache: Path, output: Path, pin
                     raise RunnerError("submission_compile_failed")
                 row["executable_sha256"] = digest(binary)
                 for name in details["expected_cases"]:
-                    case = run_case(binary, directory, name, work, case_timeout)
+                    with case_files(checkout, directory, details, name, cache, generation_timeout):
+                        case = run_case(binary, directory, name, work, case_timeout)
                     row["cases"].append(case)
                     if case["status"] != "PASS":
                         break

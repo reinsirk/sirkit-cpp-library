@@ -1,0 +1,868 @@
+// SPDX-License-Identifier: CC0-1.0
+// 参考（重軽分解による同色連結成分の集計）: https://atcoder.jp/contests/abc460/editorial/21024
+// ドキュメント: https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/dynamic_color_component_sum.md
+//
+// API一覧
+// DynamicColorComponentSum(weights, colors, edges): 頂点の重みと色、0始まりの無向木の辺を渡す。構築O(n)時間・領域。
+// size()/weight(v)/color(v): 頂点数・頂点の重み・色を返す。O(1)。
+// set_color(v,c)/toggle(v): 0または1を設定/反転。toggleは新しい色を返す。
+// set_weight(v,x)/add_weight(v,x): 重みを代入/加算する。
+// component_sum(v): vと同色の頂点だけで到達できる全頂点（vを含む）の重みの和。
+// 更新・成分の集計はO(log²(n+1))。重みと和は64ビット幅で計算する。
+// 同梱のHeavyLightDecompositionとfenwick_treeは、各原本のAPI一覧を参照。
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
+#include <algorithm>
+#include <array>
+#include <bit>
+#include <concepts>
+#include <cstddef>
+#include <cstdint>
+#include <functional>
+#include <limits>
+#include <optional>
+#include <span>
+#include <stdexcept>
+#include <type_traits>
+#include <utility>
+#include <vector>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+#ifndef SIRKIT_UNWEIGHTED_GRAPH_DEFINED
+#define SIRKIT_UNWEIGHTED_GRAPH_DEFINED
+using Graph = std::vector<std::vector<int>>;
+#endif
+
+#ifndef SIRKIT_HLD_QUERY_HELPERS_DEFINED
+#define SIRKIT_HLD_QUERY_HELPERS_DEFINED
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
+inline int HldVertexCount(std::size_t vertices) {
+    if (vertices > static_cast<std::size_t>(std::numeric_limits<int>::max()))
+        throw std::length_error("HLD: int size overflow");
+    return static_cast<int>(vertices);
+}
+
+template<class T, bool = std::is_integral_v<T> && !std::is_same_v<T,bool>>
+struct HldArithmetic {
+    static T add(const T& a,const T& b) { return a+b; }
+    static T subtract(const T& a,const T& b) { return a-b; }
+};
+template<class T> struct HldArithmetic<T,true> {
+    using U=std::make_unsigned_t<T>;
+    static T add(T a,T b) { return static_cast<T>(static_cast<U>(a)+static_cast<U>(b)); }
+    static T subtract(T a,T b) { return static_cast<T>(static_cast<U>(a)-static_cast<U>(b)); }
+};
+#if defined(__SIZEOF_INT128__)
+template<> struct HldArithmetic<__int128,false> {
+    using U=unsigned __int128;
+    static __int128 add(__int128 a,__int128 b) { return static_cast<__int128>(static_cast<U>(a)+static_cast<U>(b)); }
+    static __int128 subtract(__int128 a,__int128 b) { return static_cast<__int128>(static_cast<U>(a)-static_cast<U>(b)); }
+};
+template<> struct HldArithmetic<unsigned __int128,false> {
+    using U=unsigned __int128;
+    static U add(U a,U b) { return a+b; }
+    static U subtract(U a,U b) { return a-b; }
+};
+#endif
+template<class Q> concept HldQuery = requires(Q& q) { q.prod(0,0); } ||
+    requires(Q& q) { q.sum(0,0); } || std::invocable<Q&,int,int,bool> || std::invocable<Q&,int,int>;
+template<class Q> decltype(auto) hld_query(Q& q,int l,int r,bool reverse=false) {
+    if constexpr (requires { q.prod(l,r); }) return q.prod(l,r);
+    else if constexpr (requires { q.sum(l,r); }) return q.sum(l,r);
+    else if constexpr (std::invocable<Q&,int,int,bool>) return std::invoke(q,l,r,reverse);
+    else return std::invoke(q,l,r);
+}
+template<class Q> using HldQueryValue=std::remove_cvref_t<decltype(hld_query(std::declval<Q&>(),0,0))>;
+template<class Q> inline constexpr bool hld_directional_query =
+    !requires(Q& q) { q.prod(0,0); } && !requires(Q& q) { q.sum(0,0); } && std::invocable<Q&,int,int,bool>;
+template<class I,class Q,class Op> concept HldProduct = HldQuery<Q> &&
+    std::constructible_from<HldQueryValue<Q>,I> &&
+    std::is_invocable_r_v<HldQueryValue<Q>,Op&,HldQueryValue<Q>,HldQueryValue<Q>>;
+template<class I,class Q,class Op,class Reverse> concept HldReversedProduct = HldProduct<I,Q,Op> &&
+    std::is_invocable_r_v<HldQueryValue<Q>,Reverse&,HldQueryValue<Q>> &&
+    (!hld_directional_query<Q> || std::is_same_v<std::remove_cvref_t<Reverse>,std::identity>);
+}
+#endif
+
+#ifndef SIRKIT_HEAVY_LIGHT_VALUES_FORWARD_DEFINED
+#define SIRKIT_HEAVY_LIGHT_VALUES_FORWARD_DEFINED
+template<class Range,bool Ordered=false> class HeavyLightValues;
+#endif
+
+#ifndef SIRKIT_HEAVY_LIGHT_DECOMPOSITION_DEFINED
+#define SIRKIT_HEAVY_LIGHT_DECOMPOSITION_DEFINED
+class HeavyLightDecomposition {
+    std::vector<int> parent_,depth_,component_,roots_,index_,order_,subtree_,head_;
+    int root_=-1;
+    void check_vertex(int v) const {
+#ifndef SKIP_RUNTIME_CHECKS
+        if(v<0 || v>=size()) throw std::out_of_range("HLD: vertex");
+#else
+        (void)v;
+#endif
+    }
+    void check_size(std::size_t n) const {
+#ifndef SKIP_RUNTIME_CHECKS
+        if(n!=order_.size()) throw std::invalid_argument("HLD: values size");
+#else
+        (void)n;
+#endif
+    }
+    void construct(const Graph& graph,int root) {
+        const int n=/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::HldVertexCount(graph.size());
+#ifndef SKIP_RUNTIME_CHECKS
+        if((n==0 && root!=0) || (n!=0 && (root<0 || root>=n))) throw std::out_of_range("HLD: root");
+#endif
+        if(n==0) return;
+        root_=root;
+        parent_.assign(n,-2); depth_.resize(n); component_.resize(n);
+        index_.resize(n); subtree_.assign(n,1); head_.resize(n); order_.reserve(n);
+        std::vector<int> pending,discovery,heavy(n,-1);
+        pending.reserve(n); discovery.reserve(n);
+        const auto grow=[&](int start) {
+            const int id=static_cast<int>(roots_.size()); roots_.push_back(start);
+            parent_[start]=-1;component_[start]=id;pending.push_back(start);
+            while(!pending.empty()) {
+                const int v=pending.back();pending.pop_back();discovery.push_back(v);
+#ifndef SKIP_RUNTIME_CHECKS
+                bool parent_seen=false;
+#endif
+                for(int u:graph[v]) {
+#ifndef SKIP_RUNTIME_CHECKS
+                    if(u<0 || u>=n) throw std::out_of_range("HLD: neighbor");
+                    if(u==v) throw std::invalid_argument("HLD: self edge");
+#endif
+                    if(u==parent_[v]) {
+#ifndef SKIP_RUNTIME_CHECKS
+                        if(parent_seen) throw std::invalid_argument("HLD: multiple edge");
+                        parent_seen=true;
+#endif
+                        continue;
+                    }
+#ifndef SKIP_RUNTIME_CHECKS
+                    if(parent_[u]!=-2) throw std::invalid_argument("HLD: cycle or multiple edge");
+#endif
+                    parent_[u]=v;depth_[u]=depth_[v]+1;component_[u]=id;pending.push_back(u);
+                }
+            }
+        };
+        grow(root);
+        for(int v=0;v<n;++v) if(parent_[v]==-2) grow(v);
+        for(auto it=discovery.rbegin();it!=discovery.rend();++it) {
+            const int v=*it,p=parent_[v];
+            if(p<0) continue;
+            subtree_[p]+=subtree_[v];
+            if(heavy[p]<0 || subtree_[v]>subtree_[heavy[p]]) heavy[p]=v;
+        }
+        for(int start:roots_) {
+            pending.push_back(start);
+            while(!pending.empty()) {
+                const int chain=pending.back();pending.pop_back();
+                for(int v=chain;v!=-1;v=heavy[v]) {
+                    head_[v]=chain;index_[v]=static_cast<int>(order_.size());order_.push_back(v);
+                    for(auto it=graph[v].rbegin();it!=graph[v].rend();++it)
+                        if(parent_[*it]==v && *it!=heavy[v]) pending.push_back(*it);
+                }
+            }
+        }
+    }
+public:
+    struct Interval { int left;int right;bool reversed; };
+    HeavyLightDecomposition()=default;
+    explicit HeavyLightDecomposition(const Graph& graph,int root=0) { construct(graph,root); }
+    HeavyLightDecomposition(const HeavyLightDecomposition&)=default;
+    HeavyLightDecomposition(HeavyLightDecomposition&& other) noexcept { swap(other); }
+    HeavyLightDecomposition& operator=(HeavyLightDecomposition other) noexcept { swap(other);return *this; }
+    void swap(HeavyLightDecomposition& other) noexcept {
+        parent_.swap(other.parent_);depth_.swap(other.depth_);component_.swap(other.component_);
+        roots_.swap(other.roots_);index_.swap(other.index_);order_.swap(other.order_);
+        subtree_.swap(other.subtree_);head_.swap(other.head_);std::swap(root_,other.root_);
+    }
+    void clear() noexcept { HeavyLightDecomposition{}.swap(*this); }
+    void build(const Graph& graph,int root=0) { HeavyLightDecomposition(graph,root).swap(*this); }
+    int size() const noexcept { return static_cast<int>(order_.size()); }
+    bool empty() const noexcept { return order_.empty(); }
+    int root() const noexcept { return root_; }
+    int component_count() const noexcept { return static_cast<int>(roots_.size()); }
+    int parent(int v) const { check_vertex(v);return parent_[v]; }
+    int depth(int v) const { check_vertex(v);return depth_[v]; }
+    int component(int v) const { check_vertex(v);return component_[v]; }
+    int root_of(int v) const { check_vertex(v);return roots_[component_[v]]; }
+    int index(int v) const { check_vertex(v);return index_[v]; }
+    int vertex_at(int i) const { check_vertex(i);return order_[i]; }
+    const std::vector<int>& order() const noexcept { return order_; }
+    bool same_component(int u,int v) const { check_vertex(u);check_vertex(v);return roots_.size()==1 || component_[u]==component_[v]; }
+    bool is_ancestor(int u,int v) const {
+        check_vertex(u);check_vertex(v);return component_[u]==component_[v] && index_[u]<=index_[v] && index_[v]-index_[u]<subtree_[u];
+    }
+    std::pair<int,int> subtree_range(int v,bool edges=false) const {
+        check_vertex(v);return {index_[v]+static_cast<int>(edges),index_[v]+subtree_[v]};
+    }
+    int subtree_size(int v) const { check_vertex(v);return subtree_[v]; }
+    int lca(int u,int v) const {
+        if(!same_component(u,v)) return -1;
+        while(head_[u]!=head_[v]) {
+            if(depth_[head_[u]]>=depth_[head_[v]]) u=parent_[head_[u]];
+            else v=parent_[head_[v]];
+        }
+        return depth_[u]<depth_[v]?u:v;
+    }
+    int distance(int u,int v) const {
+        const int a=lca(u,v);return a<0?-1:(depth_[u]-depth_[a])+(depth_[v]-depth_[a]);
+    }
+    int kth_ancestor(int v,std::int64_t k) const {
+        check_vertex(v);if(k<0 || k>depth_[v]) return -1;
+        while(k>depth_[v]-depth_[head_[v]]) {
+            k-=depth_[v]-depth_[head_[v]]+1;v=parent_[head_[v]];
+        }
+        return order_[index_[v]-static_cast<int>(k)];
+    }
+    int jump(int u,int v,std::int64_t k) const {
+        check_vertex(u);check_vertex(v);
+        if(k<0) return -1;
+        if(head_[u]==head_[v]) {
+            const int delta=index_[v]-index_[u];
+            if(k>(delta<0?-delta:delta)) return -1;
+            return order_[delta<0?index_[u]-static_cast<int>(k):index_[u]+static_cast<int>(k)];
+        }
+        if(roots_.size()!=1 && component_[u]!=component_[v]) return -1;
+        if(k>static_cast<std::int64_t>(depth_[u])+depth_[v]) return -1;
+        if(k==0) return u;
+        const int a=lca(u,v);
+        const int before=depth_[u]-depth_[a],after=depth_[v]-depth_[a];
+        if(k>static_cast<std::int64_t>(before)+after) return -1;
+        return k<=before?kth_ancestor(u,k):kth_ancestor(v,static_cast<std::int64_t>(before)+after-k);
+    }
+    template<class Fn> bool for_each_path(int u,int v,Fn&& fn,bool edges=false) const {
+        if(!same_component(u,v)) return false;
+        // 軽辺を一つ上がるごとに部分木が倍以上になるため、intの桁数で足りる。
+        std::array<Interval,std::numeric_limits<unsigned>::digits> tail;
+        std::size_t count=0;
+        while(head_[u]!=head_[v]) {
+            if(index_[u]>=index_[v]) {
+                std::invoke(fn,index_[head_[u]],index_[u]+1,true);u=parent_[head_[u]];
+            } else {
+                tail[count++]={index_[head_[v]],index_[v]+1,false};v=parent_[head_[v]];
+            }
+        }
+        if(index_[u]>=index_[v]) {
+            const int left=index_[v]+static_cast<int>(edges),right=index_[u]+1;
+            if(left<right) std::invoke(fn,left,right,true);
+        } else {
+            const int left=index_[u]+static_cast<int>(edges),right=index_[v]+1;
+            std::invoke(fn,left,right,false);
+        }
+        while(count) { const auto p=tail[--count];std::invoke(fn,p.left,p.right,p.reversed); }
+        return true;
+    }
+    std::vector<Interval> path(int u,int v,bool edges=false) const {
+        std::vector<Interval> result;
+        for_each_path(u,v,[&](int l,int r,bool rev){result.push_back({l,r,rev});},edges);return result;
+    }
+    template<class T> std::vector<T> reorder(const std::vector<T>& values) const {
+        check_size(values.size());std::vector<T> result;result.reserve(values.size());
+        for(int v:order_) result.push_back(values[v]);
+        return result;
+    }
+    template<class T> std::vector<T> restore(const std::vector<T>& values) const {
+        check_size(values.size());std::vector<T> result;result.reserve(values.size());
+        for(int i:index_) result.push_back(values[i]);
+        return result;
+    }
+    template<class Identity,class Q,class Op> requires /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::HldProduct<Identity,Q,Op>
+    auto path_prod(int u,int v,Identity&& identity,Q&& query,Op&& op,bool edges=false) const {
+        if constexpr(/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::hld_directional_query<Q>) {
+            return path_prod(u,v,std::forward<Identity>(identity),std::forward<Q>(query),std::forward<Op>(op),std::identity{},edges);
+        } else {
+            using Value=/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::HldQueryValue<Q>;
+            if(!same_component(u,v)) {
+#ifndef SKIP_RUNTIME_CHECKS
+                throw std::invalid_argument("HLD: disconnected path");
+#else
+                return Value(std::forward<Identity>(identity));
+#endif
+            }
+            Value result(std::forward<Identity>(identity));
+            // 可換積では通行順の保存を省き、両端から直接結合する。
+            while(head_[u]!=head_[v]) {
+                if(index_[u]<index_[v]) std::swap(u,v);
+                result=std::invoke(op,std::move(result),/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::hld_query(query,index_[head_[u]],index_[u]+1));
+                u=parent_[head_[u]];
+            }
+            if(index_[u]>index_[v]) std::swap(u,v);
+            const int left=index_[u]+static_cast<int>(edges),right=index_[v]+1;
+            if(left<right) result=std::invoke(op,std::move(result),/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::hld_query(query,left,right));
+            return result;
+        }
+    }
+    template<class Identity,class Q,class Op,class Reverse> requires /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::HldReversedProduct<Identity,Q,Op,Reverse>
+    auto path_prod(int u,int v,Identity&& identity,Q&& query,Op&& op,Reverse&& reverse,bool edges=false) const {
+        using Value=/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::HldQueryValue<Q>;
+        if(!same_component(u,v)) {
+#ifndef SKIP_RUNTIME_CHECKS
+            throw std::invalid_argument("HLD: disconnected path");
+#else
+            return Value(std::forward<Identity>(identity));
+#endif
+        }
+        Value empty_result(std::forward<Identity>(identity));
+        std::optional<Value> from_u,from_v;
+        const auto read=[&](int l,int r,bool rev) -> Value {
+            Value part=/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::hld_query(query,l,r,rev);
+            if constexpr(!/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::hld_directional_query<Q>) if(rev) part=std::invoke(reverse,std::move(part));
+            return part;
+        };
+        const auto append=[&](Value part) {
+            if(from_u) *from_u=std::invoke(op,std::move(*from_u),std::move(part));
+            else from_u.emplace(std::move(part));
+        };
+        const auto prepend=[&](Value part) {
+            if(from_v) *from_v=std::invoke(op,std::move(part),std::move(*from_v));
+            else from_v.emplace(std::move(part));
+        };
+        while(head_[u]!=head_[v]) {
+            if(index_[u]>=index_[v]) {
+                append(read(index_[head_[u]],index_[u]+1,true));u=parent_[head_[u]];
+            } else {
+                prepend(read(index_[head_[v]],index_[v]+1,false));v=parent_[head_[v]];
+            }
+        }
+        if(index_[u]>=index_[v]) {
+            const int left=index_[v]+static_cast<int>(edges),right=index_[u]+1;
+            if(left<right) append(read(left,right,true));
+        } else {
+            const int left=index_[u]+static_cast<int>(edges),right=index_[v]+1;
+            append(read(left,right,false));
+        }
+        if(from_u && from_v) return Value(std::invoke(op,std::move(*from_u),std::move(*from_v)));
+        if(from_u) return std::move(*from_u);
+        if(from_v) return std::move(*from_v);
+        return empty_result;
+    }
+    template<class Range> requires (requires(Range& r){r.sum(0,0);} && !requires(Range& r){r.prod(0,0);})
+    auto path_prod(int u,int v,Range& range,bool edges=false) const {
+        using Value=std::remove_cvref_t<decltype(range.sum(0,0))>;
+        return path_prod(u,v,Value{},range,[](const Value& a,const Value& b){return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::HldArithmetic<Value>::add(a,b);},edges);
+    }
+    template<template<class,auto,auto> class R,class S,auto Op,auto E>
+    S path_prod(int u,int v,const R<S,Op,E>& range,bool edges=false) const {
+        return path_prod(u,v,std::invoke(E),range,Op,edges);
+    }
+    template<template<class,auto,auto> class R,class S,auto Op,auto E,class Reverse>
+        requires std::is_invocable_r_v<S,Reverse&,S>
+    S path_prod(int u,int v,const R<S,Op,E>& range,Reverse&& reverse,bool edges=false) const {
+        return path_prod(u,v,std::invoke(E),range,Op,std::forward<Reverse>(reverse),edges);
+    }
+    template<template<class,auto,auto,class,auto,auto,auto> class R,class S,auto Op,auto E,class F,auto M,auto C,auto I>
+    S path_prod(int u,int v,R<S,Op,E,F,M,C,I>& range,bool edges=false) const {
+        return path_prod(u,v,std::invoke(E),range,Op,edges);
+    }
+    template<template<class,auto,auto,class,auto,auto,auto> class R,class S,auto Op,auto E,class F,auto M,auto C,auto I,class Reverse>
+        requires std::is_invocable_r_v<S,Reverse&,S>
+    S path_prod(int u,int v,R<S,Op,E,F,M,C,I>& range,Reverse&& reverse,bool edges=false) const {
+        return path_prod(u,v,std::invoke(E),range,Op,std::forward<Reverse>(reverse),edges);
+    }
+    template<class Q> requires /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::HldQuery<Q>
+    auto subtree_prod(int v,Q&& query,bool edges=false) const {
+        auto[l,r]=subtree_range(v,edges);return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::hld_query(query,l,r);
+    }
+    template<class Range,class F> void path_apply(int u,int v,Range& range,const F f,bool edges=false) const {
+#ifndef SKIP_RUNTIME_CHECKS
+        if(!same_component(u,v)) throw std::invalid_argument("HLD: disconnected path");
+#endif
+        for_each_path(u,v,[&](int l,int r,bool){range.apply(l,r,f);},edges);
+    }
+    template<class Range,class F> void subtree_apply(int v,Range& range,const F f,bool edges=false) const {
+        auto[l,r]=subtree_range(v,edges);if(l<r) range.apply(l,r,f);
+    }
+    template<class Range,bool Ordered=false,class T>
+    HeavyLightValues<Range,Ordered> with_values(const std::vector<T>& values) const &;
+    template<class Range,bool Ordered=false,class T>
+    HeavyLightValues<Range,Ordered> with_values(const std::vector<T>& values) &&;
+};
+#endif
+
+#ifndef SIRKIT_HLD_FENWICK_ACCESS_FORWARD_DEFINED
+#define SIRKIT_HLD_FENWICK_ACCESS_FORWARD_DEFINED
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ { template<class Range> struct HldFenwickAccess; }
+#endif
+
+#ifndef SIRKIT_FENWICK_STORAGE_TYPE_DEFINED
+#define SIRKIT_FENWICK_STORAGE_TYPE_DEFINED
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
+template<class T, bool = std::is_integral_v<T> && !std::is_same_v<T, bool>>
+struct FenwickStorage { using type = T; };
+template<class T>
+struct FenwickStorage<T, true> { using type = std::make_unsigned_t<T>; };
+#if defined(__SIZEOF_INT128__)
+template<> struct FenwickStorage<__int128> { using type = unsigned __int128; };
+template<> struct FenwickStorage<unsigned __int128> { using type = unsigned __int128; };
+#endif
+}
+#endif
+
+#ifndef SIRKIT_FENWICK_TREE_DEFINED
+#define SIRKIT_FENWICK_TREE_DEFINED
+namespace detail {
+inline std::size_t CheckedFenwickStorageSize(std::size_t n, std::size_t limit) {
+    if (n > static_cast<std::size_t>(std::numeric_limits<int>::max()) || n >= limit)
+        throw std::length_error("fenwick_tree: size");
+    return n == 0 ? 0 : n + 1;
+}
+}
+
+template<class T>
+class fenwick_tree {
+    // HLD所有時の読取り専用接続。通常のFenwick操作には使わない。
+    using HldFenwickTag = void;
+    template<class> friend struct /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::HldFenwickAccess;
+    using Storage = typename /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::FenwickStorage<T>::type;
+    std::vector<Storage> tree_;
+    static decltype(auto) to_storage(const T& value) {
+        if constexpr (std::is_same_v<T, Storage>) return (value);
+        else return static_cast<Storage>(value);
+    }
+    static decltype(auto) from_storage(Storage& value) {
+        if constexpr (std::is_same_v<T, Storage>) return (value);
+        else return static_cast<T>(value);
+    }
+    static std::size_t checked_size(int n) {
+#ifndef SKIP_RUNTIME_CHECKS
+        if (n < 0) throw std::invalid_argument("fenwick_tree: negative size");
+#endif
+        return static_cast<std::size_t>(n);
+    }
+    static std::size_t storage_size(std::size_t n) {
+        return detail::CheckedFenwickStorageSize(n, std::vector<Storage>{}.max_size());
+    }
+    static std::size_t lowbit(std::size_t x) noexcept { return x & (~x + 1); }
+    void check_index(int i) const {
+#ifndef SKIP_RUNTIME_CHECKS
+        if (i < 0 || i >= size()) throw std::out_of_range("fenwick_tree: index");
+#else
+        (void)i;
+#endif
+    }
+    void check_range(int l, int r) const {
+#ifndef SKIP_RUNTIME_CHECKS
+        if (l < 0 || l > r || r > size()) throw std::out_of_range("fenwick_tree: range");
+#else
+        (void)l; (void)r;
+#endif
+    }
+    Storage prefix_unchecked(std::size_t r) const {
+        Storage result{};
+        for (; r; r -= lowbit(r)) result += tree_[r];
+        return result;
+    }
+    Storage get_unchecked(std::size_t i) const {
+        auto node = i + 1;
+        Storage result = tree_[node];
+        const auto begin = node - lowbit(node);
+        for (--node; node > begin; node -= lowbit(node)) result -= tree_[node];
+        return result;
+    }
+    void add_unchecked(std::size_t i, const Storage& delta) {
+        const auto n = static_cast<std::size_t>(size());
+        for (++i;;) {
+            tree_[i] += delta;
+            const auto step = lowbit(i);
+            if (step > n - i) break;
+            i += step;
+        }
+    }
+public:
+    fenwick_tree() = default;
+    explicit fenwick_tree(int n) : tree_(storage_size(checked_size(n)), Storage{}) {}
+    template<class Values> requires std::is_same_v<Values, std::vector<T>>
+    explicit fenwick_tree(const Values& values) : tree_(storage_size(values.size()), Storage{}) {
+        const auto n = values.size();
+        for (std::size_t i = 1; i <= n; ++i) {
+            tree_[i] += to_storage(values[i - 1]);
+            const auto step = lowbit(i);
+            if (step <= n - i) tree_[i + step] += tree_[i];
+        }
+    }
+    fenwick_tree(const fenwick_tree&) = default;
+    fenwick_tree& operator=(const fenwick_tree&) = default;
+    fenwick_tree(fenwick_tree&& other) noexcept : tree_(std::move(other.tree_)) { other.tree_.clear(); }
+    fenwick_tree& operator=(fenwick_tree&& other) noexcept {
+        if (this != &other) { tree_ = std::move(other.tree_); other.tree_.clear(); }
+        return *this;
+    }
+    int size() const noexcept { return tree_.empty() ? 0 : static_cast<int>(tree_.size() - 1); }
+    bool empty() const noexcept { return size() == 0; }
+    void add(int i, T delta) {
+        check_index(i);
+        add_unchecked(static_cast<std::size_t>(i), to_storage(delta));
+    }
+    T get(int i) const { check_index(i); return static_cast<T>(get_unchecked(static_cast<std::size_t>(i))); }
+    void set(int i, T value) {
+        check_index(i);
+        const Storage delta = to_storage(value) - get_unchecked(static_cast<std::size_t>(i));
+        add_unchecked(static_cast<std::size_t>(i), delta);
+    }
+    T sum(int l, int r) {
+        check_range(l, r);
+        return static_cast<T>(prefix_unchecked(static_cast<std::size_t>(r)) - prefix_unchecked(static_cast<std::size_t>(l)));
+    }
+    int lower_bound(const T& target) const {
+        if (!(T{} < target)) return 0;
+        const auto n = static_cast<std::size_t>(size());
+        std::size_t index = 0;
+        Storage current{};
+        for (auto jump = std::bit_floor(n); jump; jump >>= 1) {
+            if (jump <= n - index) {
+                const auto next = index + jump;
+                Storage candidate = current + tree_[next];
+                if (from_storage(candidate) < target) { current = std::move(candidate); index = next; }
+            }
+        }
+        return static_cast<int>(index);
+    }
+    int upper_bound(const T& target) const {
+        if (target < T{}) return 0;
+        const auto n = static_cast<std::size_t>(size());
+        std::size_t index = 0;
+        Storage current{};
+        for (auto jump = std::bit_floor(n); jump; jump >>= 1) {
+            if (jump <= n - index) {
+                const auto next = index + jump;
+                Storage candidate = current + tree_[next];
+                if (!(target < from_storage(candidate))) { current = std::move(candidate); index = next; }
+            }
+        }
+        return static_cast<int>(index);
+    }
+    std::vector<T> values() const {
+        if (tree_.empty()) return {};
+        std::vector<T> result(tree_.begin() + 1, tree_.end());
+        const auto n = static_cast<std::size_t>(size());
+        for (auto i = n; i; --i) {
+            const auto step = lowbit(i);
+            if (step <= n - i) {
+                if constexpr (std::is_same_v<T, Storage>) result[i + step - 1] -= result[i - 1];
+                else {
+                    const Storage difference = static_cast<Storage>(result[i + step - 1]) - static_cast<Storage>(result[i - 1]);
+                    result[i + step - 1] = static_cast<T>(difference);
+                }
+            }
+        }
+        return result;
+    }
+    void reset(int n) {
+        std::vector<Storage> replacement(storage_size(checked_size(n)), Storage{});
+        tree_.swap(replacement);
+    }
+    void reset() { std::fill(tree_.begin(), tree_.end(), Storage{}); }
+    void clear() noexcept { tree_.clear(); }
+    void swap(fenwick_tree& other) noexcept { tree_.swap(other.tree_); }
+};
+#endif
+
+#ifndef SIRKIT_DYNAMIC_COLOR_COMPONENT_SUM_DEFINED
+#define SIRKIT_DYNAMIC_COLOR_COMPONENT_SUM_DEFINED
+
+namespace detail
+{
+inline void check_color_component_capacity(std::size_t n)
+{
+    // 差分列の末尾に1要素を置く。
+    if (n >= static_cast<std::size_t>(std::numeric_limits<int>::max()))
+    {
+        throw std::length_error("DynamicColorComponentSum: too many vertices");
+    }
+}
+}
+
+class DynamicColorComponentSum
+{
+public:
+    using Edge = std::pair<int, int>;
+
+    DynamicColorComponentSum(std::span<const std::int64_t> weights, std::span<const int> colors, std::span<const Edge> edges)
+    {
+        const std::size_t n = weights.size();
+        detail::check_color_component_capacity(n);
+#ifndef SKIP_RUNTIME_CHECKS
+        if (colors.size() != n)
+        {
+            throw std::invalid_argument("DynamicColorComponentSum: invalid color count");
+        }
+#endif
+        layout_.build(MakeGraph(n, edges));
+        weights_.reserve(n);
+        colors_.reserve(n);
+        for (std::size_t i = 0; i < n; ++i)
+        {
+            CheckColor(colors[i]);
+            weights_.push_back(static_cast<Storage>(weights[i]));
+            colors_.push_back(static_cast<unsigned char>(colors[i]));
+        }
+
+        std::array<std::vector<Storage>, 2> initial{weights_, weights_};
+        const auto &order = layout_.order();
+        for (std::size_t i = n; i > 1; --i)
+        {
+            const int v = order[i - 1];
+            auto &potential = initial[colors_[v]];
+            potential[layout_.parent(v)] += potential[v];
+        }
+        std::vector<int> counts(n);
+        std::vector<Storage> differences(n + 1);
+        for (int color = 0; color < 2; ++color)
+        {
+            Storage previous{};
+            for (std::size_t i = 0; i < n; ++i)
+            {
+                const int v = order[i];
+                counts[i] = colors_[v] == color;
+                const Storage sum = initial[color][v];
+                differences[i] = sum - previous;
+                previous = sum;
+            }
+            differences[n] = Storage{} - previous;
+            occurrences_[color] = fenwick_tree<int>(counts);
+            potentials_[color] = fenwick_tree<Storage>(differences);
+        }
+    }
+
+    DynamicColorComponentSum(const DynamicColorComponentSum &) = default;
+
+    DynamicColorComponentSum(DynamicColorComponentSum &&other) noexcept
+    {
+        Swap(other);
+    }
+
+    DynamicColorComponentSum &operator=(DynamicColorComponentSum other) noexcept
+    {
+        Swap(other);
+        return *this;
+    }
+
+    [[nodiscard]] int size() const noexcept
+    {
+        return layout_.size();
+    }
+
+    [[nodiscard]] int color(int vertex) const
+    {
+        CheckVertex(vertex);
+        return colors_[vertex];
+    }
+
+    [[nodiscard]] std::int64_t weight(int vertex) const
+    {
+        CheckVertex(vertex);
+        return static_cast<std::int64_t>(weights_[vertex]);
+    }
+
+    void set_color(int vertex, int new_color)
+    {
+        CheckVertex(vertex);
+        CheckColor(new_color);
+        if (colors_[vertex] != new_color)
+        {
+            Recolor(vertex, new_color);
+        }
+    }
+
+    int toggle(int vertex)
+    {
+        CheckVertex(vertex);
+        const int next = colors_[vertex] ^ 1;
+        Recolor(vertex, next);
+        return next;
+    }
+
+    void set_weight(int vertex, std::int64_t value)
+    {
+        CheckVertex(vertex);
+        AddWeight(vertex, static_cast<Storage>(value) - weights_[vertex]);
+    }
+
+    void add_weight(int vertex, std::int64_t delta)
+    {
+        CheckVertex(vertex);
+        AddWeight(vertex, static_cast<Storage>(delta));
+    }
+
+    [[nodiscard]] std::int64_t component_sum(int vertex) const
+    {
+        CheckVertex(vertex);
+        const int color = colors_[vertex];
+        return static_cast<std::int64_t>(Potential(Highest(vertex, color), color));
+    }
+
+private:
+    using Storage = std::uint64_t;
+
+    HeavyLightDecomposition layout_;
+    std::vector<Storage> weights_;
+    std::vector<unsigned char> colors_;
+    // fenwick_tree::sumはACL互換の宣言上は非constだが、照会で内容を変えない。
+    mutable std::array<fenwick_tree<int>, 2> occurrences_;
+    mutable std::array<fenwick_tree<Storage>, 2> potentials_;
+
+    static Graph MakeGraph(std::size_t n, std::span<const Edge> edges)
+    {
+#ifndef SKIP_RUNTIME_CHECKS
+        if (edges.size() != n - (n != 0))
+        {
+            throw std::invalid_argument("DynamicColorComponentSum: invalid edge count");
+        }
+#endif
+        std::vector<std::size_t> degree(n);
+        for (const auto &[u, v] : edges)
+        {
+#ifndef SKIP_RUNTIME_CHECKS
+            if (u < 0 || static_cast<std::size_t>(u) >= n || v < 0 || static_cast<std::size_t>(v) >= n)
+            {
+                throw std::out_of_range("DynamicColorComponentSum: invalid edge endpoint");
+            }
+#endif
+            ++degree[u];
+            ++degree[v];
+        }
+        Graph graph(n);
+        for (std::size_t v = 0; v < n; ++v)
+        {
+            graph[v].reserve(degree[v]);
+        }
+        for (const auto &[u, v] : edges)
+        {
+            graph[u].push_back(v);
+            graph[v].push_back(u);
+        }
+        return graph;
+    }
+
+    void CheckVertex(int vertex) const
+    {
+#ifndef SKIP_RUNTIME_CHECKS
+        if (vertex < 0 || vertex >= size())
+        {
+            throw std::out_of_range("DynamicColorComponentSum: invalid vertex");
+        }
+#else
+        (void)vertex;
+#endif
+    }
+
+    static void CheckColor(int color)
+    {
+#ifndef SKIP_RUNTIME_CHECKS
+        if (static_cast<unsigned>(color) > 1)
+        {
+            throw std::invalid_argument("DynamicColorComponentSum: invalid color");
+        }
+#else
+        (void)color;
+#endif
+    }
+
+    void Swap(DynamicColorComponentSum &other) noexcept
+    {
+        layout_.swap(other.layout_);
+        weights_.swap(other.weights_);
+        colors_.swap(other.colors_);
+        occurrences_.swap(other.occurrences_);
+        potentials_.swap(other.potentials_);
+    }
+
+    int Highest(int vertex, int color) const
+    {
+        auto &opposite = occurrences_[color ^ 1];
+        int highest = vertex;
+        bool stopped = false;
+        layout_.for_each_path(vertex, 0, [&](int first, int last, bool) {
+            if (stopped)
+            {
+                return;
+            }
+            if (colors_[layout_.vertex_at(last - 1)] != color)
+            {
+                stopped = true;
+                return;
+            }
+            if (last - first > 1)
+            {
+                const int rank = opposite.sum(0, last);
+                if (rank != 0)
+                {
+                    const int before = opposite.lower_bound(rank);
+                    if (before >= first)
+                    {
+                        highest = layout_.vertex_at(before + 1);
+                        stopped = true;
+                        return;
+                    }
+                }
+            }
+            highest = layout_.vertex_at(first);
+        });
+        return highest;
+    }
+
+    Storage Potential(int vertex, int color) const
+    {
+        return potentials_[color].sum(0, layout_.index(vertex) + 1);
+    }
+
+    void AddRange(int first, int last, int color, Storage delta)
+    {
+        potentials_[color].add(first, delta);
+        potentials_[color].add(last, Storage{} - delta);
+    }
+
+    void AddAncestorPath(int vertex, int color, Storage delta)
+    {
+        // 最初に色が異なる祖先の状態にも加え、その上へは伝えない。
+        int limit = vertex;
+        if (colors_[vertex] == color)
+        {
+            const int top = Highest(vertex, color);
+            const int parent = layout_.parent(top);
+            limit = parent == -1 ? top : parent;
+        }
+        if (limit == vertex)
+        {
+            const int index = layout_.index(vertex);
+            AddRange(index, index + 1, color, delta);
+            return;
+        }
+        layout_.for_each_path(vertex, limit, [&](int first, int last, bool) {
+            AddRange(first, last, color, delta);
+        });
+    }
+
+    void Recolor(int vertex, int new_color)
+    {
+        const int old_color = colors_[vertex];
+        const int parent = layout_.parent(vertex);
+        if (parent != -1)
+        {
+            AddAncestorPath(parent, old_color, Storage{} - Potential(vertex, old_color));
+            AddAncestorPath(parent, new_color, Potential(vertex, new_color));
+        }
+        const int position = layout_.index(vertex);
+        occurrences_[old_color].add(position, -1);
+        occurrences_[new_color].add(position, 1);
+        colors_[vertex] = static_cast<unsigned char>(new_color);
+    }
+
+    void AddWeight(int vertex, Storage delta)
+    {
+        const int color = colors_[vertex];
+        const int position = layout_.index(vertex);
+        weights_[vertex] += delta;
+        AddAncestorPath(vertex, color, delta);
+        AddRange(position, position + 1, color ^ 1, delta);
+    }
+};
+
+#endif
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1

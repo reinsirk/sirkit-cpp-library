@@ -6,6 +6,12 @@
 
 用途別ファイルには[説明文書の設定](../.competitive-verifier/page-documents.json)から`Document/pages/`の個別ガイドを割り当て、他方専用のAPIや使用例を混ぜません。本文は関数ごとの見出し・シグネチャ・短い説明・制約・計算量を先に置き、検証結果は後ろに折り畳みます。「ソースのAPI注記」は対象ソース先頭の説明を直接使い、同梱する型・関数も含めます。
 
+## ライブラリを探す
+
+トップページと各版の一覧に検索窓があります。ライブラリ名、`DataStructure/union_find.cpp`のようなファイルパス、`DSU`や`セグ木`のような略称で探せます。`点加算 区間和`のように空白で区切ると、すべての語に一致するライブラリを表示します。各版の検索結果には、その版のダウンロードリンクも表示されます。
+
+ライブラリを追加したら、[検索キーワード](../.competitive-verifier/page-keywords.json)に原本のパスと関連語を登録します。別名や略称、日本語と英語の呼び方、典型的な用途を含めます。PRの生成物検査では、原本の一覧とキーワード登録を照合します。
+
 ## コードを取得
 
 トップページで通常版か速度優先版を選び、次に使うコンパイラを選びます。コンパイラ共通・GCC専用・Clang専用・MSVC専用の一覧から、選んだ版のコードを取得できます。一覧からAPIの説明を開いたあとも、同じ版の一覧に戻れます。
@@ -18,7 +24,7 @@
 
 ## 表示する結果
 
-ライブラリ一覧のチェックマークは通常版の検証結果を示します。現行コードとACの提出全文が一致するVerifyが1件以上あれば「現行ACあり」と表示します。ローカルVerifyの通過を示す場合は「通常版のローカルVerify通過」と表示します。
+ライブラリ一覧のチェックマークは通常版の検証結果を示します。現行ACのVerifyが1件以上あれば「現行ACあり」と表示します。AtCoderでは、利用者が現行版の提出を確認したACも含めます。ローカルVerifyの通過を示す場合は「通常版のローカルVerify通過」と表示します。
 
 「Verifyプログラムと検証結果」から、各プログラム、提出先の問題、記録済みの提出結果を開けます。現行ACの各行にもチェックマークを付けます。
 
@@ -42,16 +48,16 @@ Last Commitは、トップページではサイトの生成元コミット、ラ
 Python 3.11以上、Ruby 3.3、Bundler 2.6.9を用意します。
 
 ```sh
-python3 -m venv /tmp/sirkit-pages-venv
-/tmp/sirkit-pages-venv/bin/pip install -r .competitive-verifier/requirements.txt
-python3 Scripts/ci_contracts.py --compiler g++ --output /tmp/contracts
-/tmp/sirkit-pages-venv/bin/python Scripts/build_library_pages.py \
-  --report /tmp/contracts \
-  --output /tmp/library-pages --baseurl '' --render
-python3 -m http.server 8000 --directory /tmp/library-pages/site
+python3 -m venv .competitive-verifier/cache/pages-venv
+.competitive-verifier/cache/pages-venv/bin/python -m pip install -r .competitive-verifier/requirements.txt
+python3 Scripts/ci_contracts.py --compiler g++ --output .competitive-verifier/build/contracts
+.competitive-verifier/cache/pages-venv/bin/python Scripts/build_library_pages.py \
+  --report .competitive-verifier/build/contracts \
+  --output .competitive-verifier/build/pages --baseurl '' --render
+python3 -m http.server 8000 --bind 127.0.0.1 --directory .competitive-verifier/build/pages/site
 ```
 
-ブラウザで`http://localhost:8000/`を開きます。`--render`を省くとJekyll用Markdownだけを生成します。通常のGit index・object DBは変更しません。未追跡のライブラリもプレビューへ含め、生成中に入力が変われば再生成を要求します。
+ブラウザで`http://127.0.0.1:8000/`を開きます。`--render`を省くとJekyll用Markdownだけを生成します。通常のGit index・object DBは変更しません。未追跡のライブラリもプレビューへ含め、生成中に入力が変われば再生成を要求します。
 
 手元で測った性能をプレビューに載せる場合は、性能レポートの保存先を `--report` で追加します。[手元でライブラリの性能を測る](performance_measurement.md)
 
@@ -72,7 +78,9 @@ python3 Scripts/ci_library_checker.py --id dynamic_union_find \
 
 `main`向けPRでは、正常系と失敗系のテスト、Sanitizer、カバレッジ、Library Checkerの全対象の公式ケースを実行します。公式ケースは8分割で照合し、1ケース30秒で打ち切ります。最大規模・構造別のケースは1ケース60秒で打ち切り、結果を`stress-cases`に保存します。ページ一式は`library-pages-preview`に保存します。
 
-PRを`main`に取り込むと、closeイベントで取り込み後のコミットから公開版を生成します。同じPRの同じheadで直前に実行したCIの成果物を使い、ソースのSHAを改めて照合します。GitHub APIの関連PR一覧が空の場合は、Verifyの実行名に含まれるPR番号とheadのリポジトリ・ブランチ・SHAで照合します。成果物が見つからない場合は「未実施」とし、過去の成功で補いません。生成に成功すると別の公開ジョブが`main`上で動き、ページの生成元がその時点の`main`の先頭と一致する場合に公開します。
+PRを`main`に取り込むと、closeイベントで取り込み後のコミットから公開版を生成します。同じPRの同じheadで直前に実行したCIの成果物を使い、ソースのSHAを改めて照合します。GitHub APIの関連PR一覧が空の場合は、Verifyの実行名に含まれるPR番号とheadのリポジトリ・ブランチ・SHAで照合します。成果物が見つからない場合は「未実施」とし、過去の成功で補いません。
+
+生成後に起動する公開ワークフローでは、公開用アーカイブの準備とデプロイを別ジョブで実行します。準備ジョブは同じ生成回の検証記録とアーカイブを取得します。生成したアーカイブと準備済みのアーカイブは、それぞれ14日間保存します。数件のPRを続けてマージしても、デプロイは順番を待ち、開始時に生成元が現在の `main` と一致する場合にだけ公開します。デプロイだけ失敗した場合は、Actionsの「Re-run failed jobs」で準備済みのアーカイブを使えます。
 
 初回はGitHubの **Settings → Pages → Build and deployment → Source → GitHub Actions** を選びます。`github-pages`環境の公開許可ブランチは`main`です。未設定のため `Library pages` が失敗した場合は、設定後に同じ実行を再実行します。公開先は[GitHub Pages](https://reinsirk.github.io/sirkit-cpp-library/)です。開発中の未コミット変更を`--production`で公開版扱いにはできません。
 

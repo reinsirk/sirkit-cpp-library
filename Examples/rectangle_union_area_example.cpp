@@ -6,4 +6,5 @@ int main()
 {
     const std::vector<sirkit::AreaRectangle> rectangles{{0, 0, 2, 2}, {1, 1, 3, 3}};
     assert(sirkit::rectangle_union_area(rectangles) == 7);
+    assert(sirkit::rectangle_union_perimeter(rectangles) == 12);
 }

@@ -804,6 +804,9 @@ def summary_markdown(report: dict) -> str:
                 lines += ["計測可能な原本の行がありません。空の計測は合格にしません。"]
             if gate["unmapped_sources"]:
                 lines += ["未計測原本: " + ", ".join(inline_code(name) for name in gate["unmapped_sources"])]
+        if "coverage_shard" in report:
+            shard = report["coverage_shard"]
+            lines += [f"分割 {shard['index'] + 1}/{shard['count']}。100%判定は全分割の計測を集約して行います。"]
     if "coverage_totals" in report:
         lines += ["", "| 計測対象 | カバレッジ率 | 到達 / 計測 | 未到達 |", "| --- | ---: | ---: | ---: |"]
         for key, name in (("lines", "行"), ("branches", "分岐")):
@@ -924,13 +927,28 @@ def run_clang_supplement(entry: dict, output: Path, binary: Path, command: list[
     return measured, metadata
 
 
+def write_coverage(report: dict, exports: list[dict], root: Path, output: Path,
+                   shared: list[list[tuple[str, int, int]]], exclusions: dict) -> dict:
+    measured = coverage_union(exports, shared, direct_exclusions=direct_exclusion_coordinates(root, exclusions))
+    coverage = apply_coverage_exclusions(measured, root, report["library_source_hashes"], exclusions)
+    report["coverage_raw_totals"] = coverage["raw_totals"]
+    report["coverage_folded_sides"] = 2 * sum(len(item.get("folded_branches", [])) for item in coverage["files"])
+    report["coverage_totals"] = coverage["totals"]
+    report["coverage_definition"] = coverage["definition"]
+    report["coverage_complete"] = len(exports) == len(report["selected_ids"])
+    (output / "coverage.json").write_text(json.dumps(coverage) + "\n", encoding="utf-8")
+    write_coverage_html(coverage, root, output / "html")
+    return coverage
+
+
 def run(entries: list[dict], *, root: Path, output: Path, mode: str, compiler: str,
         llvm_profdata: str = "llvm-profdata", llvm_cov: str = "llvm-cov",
         gcc_install_dir: str | None = None, gcc: str = "g++", gcov: str = "gcov",
         qemu_x86: str = "qemu-x86_64", qemu_i386: str = "qemu-i386",
         x86_baseline_sysroot: Path | None = None,
         i386_compiler_args: list[str] | None = None, i386_sysroot: str | None = None, timeout: float = 120,
-        compile_timeout: float = 180, available: list[dict] | None = None, jobs: int = 1) -> dict:
+        compile_timeout: float = 180, available: list[dict] | None = None, jobs: int = 1,
+        coverage_shard: tuple[int, int] | None = None) -> dict:
     root, output = root.resolve(), output.resolve()
     output.mkdir(parents=True, exist_ok=False)
     report = {"format": 1, "mode": mode, "status": "running", "execution_status": "running", "checked": True,
@@ -943,7 +961,10 @@ def run(entries: list[dict], *, root: Path, output: Path, mode: str, compiler: s
     allowed = []
     coverage_exports = []
     coverage = coverage_union([])
-    if mode == "coverage":
+    if coverage_shard is not None:
+        shard_index, shard_count = coverage_shard
+        report["coverage_shard"] = {"index": shard_index, "count": shard_count}
+    if mode == "coverage" and coverage_shard is None:
         report["coverage_gate"] = coverage_gate(coverage, allowed, expected_translation_units=len(entries),
                                                 measured_translation_units=0)
     if mode == "sanitizers":
@@ -1033,6 +1054,8 @@ def run(entries: list[dict], *, root: Path, output: Path, mode: str, compiler: s
             include_flags = ["-UNDEBUG", "-USKIP_RUNTIME_CHECKS", "-I", str(overlay), "-I", str(root),
                              "-I", str(root / "Verify/current/vendor")]
             def measure(index: int, entry: dict) -> tuple[dict, list, dict | None]:
+                if coverage_shard is not None:
+                    index = index * shard_count + shard_index
                 label = f"entry_{index:04}"
                 source = output / "sources" / (label + ".cpp")
                 source.write_text(translation_unit(entry, root), encoding="utf-8")
@@ -1180,16 +1203,12 @@ def run(entries: list[dict], *, root: Path, output: Path, mode: str, compiler: s
                     write_report(output, report)
                     print(f"{index}/{len(entries)} {row['id']}: {row['status']}", flush=True)
             if mode == "coverage":
-                coverage = coverage_union(coverage_exports, shared,
-                                          direct_exclusions=direct_exclusion_coordinates(root, exclusions))
-                coverage = apply_coverage_exclusions(coverage, root, report["library_source_hashes"], exclusions)
-                report["coverage_raw_totals"] = coverage["raw_totals"]
-                report["coverage_folded_sides"] = 2 * sum(len(item.get("folded_branches", [])) for item in coverage["files"])
-                (output / "coverage.json").write_text(json.dumps(coverage) + "\n", encoding="utf-8")
-                report["coverage_totals"] = coverage["totals"]
-                report["coverage_definition"] = coverage["definition"]
-                report["coverage_complete"] = len(coverage_exports) == len(entries)
-                write_coverage_html(coverage, root, output / "html")
+                if coverage_shard is None:
+                    coverage = write_coverage(report, coverage_exports, root, output, shared, exclusions)
+                else:
+                    report["coverage_complete"] = len(coverage_exports) == len(entries)
+                    if not report["coverage_complete"]:
+                        raise ValueError("この分割に未計測のテストがあります")
         report["source_hashes_after"] = {str(path.relative_to(root)): digest(path) for path in sorted(watched)}
         if report["source_hashes_after"] != report["all_source_hashes"]:
             raise ValueError("計測中に原本またはdriver/共通ヘッダーが変更されました")
@@ -1198,7 +1217,7 @@ def run(entries: list[dict], *, root: Path, output: Path, mode: str, compiler: s
     except (OSError, ValueError, RuntimeError, subprocess.SubprocessError) as error:
         report.update(status="FAIL", execution_status="FAIL", error=str(error))
     finally:
-        if mode == "coverage":
+        if mode == "coverage" and coverage_shard is None:
             report["coverage_gate"] = coverage_gate(coverage, allowed, expected_translation_units=len(entries),
                                                     measured_translation_units=len(coverage_exports))
             report["unmapped_sources"] = report["coverage_gate"]["unmapped_sources"]
@@ -1227,6 +1246,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--i386-compiler-arg", action="append", help="別のi386クロス環境を使う場合のClang引数")
     parser.add_argument("--i386-sysroot", help="別のi386クロス環境を使う場合のQEMUのライブラリルート")
     parser.add_argument("--id", action="append", help="対象ID。省略時はローカル補足を含む全件")
+    parser.add_argument("--shard-index", type=int, default=0)
+    parser.add_argument("--shard-count", type=int, default=1)
     parser.add_argument("--output", type=Path, required=True, help="未作成の出力ディレクトリ")
     parser.add_argument("--timeout", type=float, default=120)
     parser.add_argument("--compile-timeout", type=float, default=180)
@@ -1244,13 +1265,22 @@ def main(argv: list[str] | None = None) -> int:
         if args.mode == "coverage":
             available += coverage_tests(ROOT)
         entries = select_entries(available, args.id)
+        if not 0 <= args.shard_index < args.shard_count <= len(entries):
+            raise ValueError("分割の番号または分割数が不正です")
+        coverage_shard = None
+        if args.shard_count > 1:
+            if args.mode != "coverage" or args.id:
+                raise ValueError("分割できるのは全件カバレッジ計測です")
+            coverage_shard = (args.shard_index, args.shard_count)
+            entries = entries[args.shard_index::args.shard_count]
         report = run(entries, root=ROOT, output=args.output, mode=args.mode, compiler=args.compiler,
                      llvm_profdata=args.llvm_profdata, llvm_cov=args.llvm_cov,
                      gcc_install_dir=args.gcc_install_dir, gcc=args.gcc, gcov=args.gcov,
                      qemu_x86=args.qemu_x86, qemu_i386=args.qemu_i386, x86_baseline_sysroot=args.x86_baseline_sysroot,
                      i386_compiler_args=args.i386_compiler_arg,
                      i386_sysroot=args.i386_sysroot, timeout=args.timeout,
-                     compile_timeout=args.compile_timeout, available=available, jobs=args.jobs)
+                     compile_timeout=args.compile_timeout, available=available, jobs=args.jobs,
+                     coverage_shard=coverage_shard)
         return int(report["status"] != "PASS")
     except (OSError, ValueError, subprocess.SubprocessError) as error:
         print(str(error), file=sys.stderr)

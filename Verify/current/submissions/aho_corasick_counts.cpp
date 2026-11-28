@@ -1,5 +1,6 @@
 #define SKIP_RUNTIME_CHECKS
 // Verify: https://atcoder.jp/contests/abc362/tasks/abc362_g
+// Submission: https://atcoder.jp/contests/abc362/submissions/81115005
 
 // Library: String/Aho_Corasick.cpp
 // SPDX-License-Identifier: CC0-1.0

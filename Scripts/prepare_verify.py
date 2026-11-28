@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+from collections.abc import Collection
 from concurrent.futures import ThreadPoolExecutor
 import functools
 import hashlib
@@ -14,6 +15,7 @@ import os
 from pathlib import Path
 import re
 import subprocess
+import sys
 import tempfile
 from urllib.parse import urlsplit
 
@@ -34,6 +36,8 @@ ONLINE_JUDGE_NAMES = {
     "atcoder.jp": "AtCoder",
 }
 COMMON_INCLUDE = re.compile(r'^#include "(Verify/current/common/[A-Za-z0-9_]+\.hpp)"[ \t]*$', re.M)
+INLINE_STAMPED_HEADER = re.compile(r"#define SKIP_RUNTIME_CHECKS // Verify-SHA256: [0-9a-f]{64}")
+STAMPED_COMMENT = re.compile(r"// Verify-SHA256: [0-9a-f]{64}")
 CXX_NON_CODE = re.compile(
     r'''//[^\r\n]*|/\*.*?\*/|(?:u8|u|U|L)?R"(?P<delimiter>[^\s()\\]{0,16})\(.*?\)(?P=delimiter)"'''
     r'''|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|\b\d[\w'.]*''', re.S)
@@ -43,8 +47,35 @@ def digest(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
-def preserve_submission_annotations() -> None:
+def judgement_records() -> dict[str, dict]:
+    path = BASE / "judgements.json"
+    return {row["id"]: row for row in json.loads(path.read_text())["entries"]} if path.exists() else {}
+
+
+def known_submission_ids(judged_ids: Collection[str]) -> set[str]:
+    # 判定を取り込んでいない過去の提出は、再提出方針にだけ載っている場合もある。
+    path = BASE / "submission_policy.json"
+    policy = json.loads(path.read_text()) if path.exists() else {}
+    rules = policy.get("entries") if isinstance(policy, dict) else None
+    ids = set(judged_ids)
+    if isinstance(rules, list):
+        ids.update(rule["id"] for rule in rules if isinstance(rule, dict) and isinstance(rule.get("id"), str))
+    return ids
+
+
+def submission_stamp_layout(text: str) -> str | None:
+    first, _, rest = text.partition("\n")
+    if INLINE_STAMPED_HEADER.fullmatch(first):
+        return "inline"
+    if (first.rstrip(" \t") == "#define SKIP_RUNTIME_CHECKS"
+            and STAMPED_COMMENT.fullmatch(rest.partition("\n")[0])):
+        return "line"
+    return None
+
+
+def preserve_submission_annotations(judged_ids: Collection[str]) -> None:
     """提出コードへ追記されたURLを生成元へ保存する。判定結果は変更しない。"""
+    submitted_ids = known_submission_ids(judged_ids)
     for path in sorted((BASE / "groups").glob("*.json")):
         group = json.loads(path.read_text())
         changed = False
@@ -52,11 +83,19 @@ def preserve_submission_annotations() -> None:
             source = BASE / "submissions" / (entry["id"] + ".cpp")
             if not source.is_file():
                 continue
-            urls = re.findall(r"^// Submission: (https?://\S+)\s*$", source.read_text(), re.M)
+            text = source.read_text()
+            urls = re.findall(r"^// Submission: (https?://\S+)\s*$", text, re.M)
             for url in urls:
                 if url not in entry.get("submission_urls", []):
                     entry.setdefault("submission_urls", []).append(url)
                     changed = True
+            if (not entry.get("stamp_submission")
+                    and urlsplit(entry.get("problem_url") or "").hostname == "atcoder.jp"
+                    and (entry.get("submission_urls") or entry["id"] in submitted_ids)
+                    and (layout := submission_stamp_layout(text))):
+                # URLや判定を記録した後も、既に提出に使ったハッシュを生成版に残す。
+                entry["stamp_submission"] = layout
+                changed = True
         if changed:
             path.write_text(json.dumps(group, ensure_ascii=False, indent=2) + "\n")
 
@@ -97,11 +136,17 @@ def common_source_hashes(driver: str) -> dict[str, str]:
 
 
 def custom_io_enabled(entry: dict) -> bool:
-    """独自入出力はLibrary Checkerの明示指定だけで許可する。"""
+    """独自入出力はLibrary Checkerと明示された対話問題で許可する。"""
     url = entry.get("problem_url")
     host = urlsplit(url).hostname if url else None
     if url and host not in ONLINE_JUDGE_NAMES:
         raise ValueError("Verify先はLibrary Checker・AOJ・Yukicoder・AtCoderを指定してください: " + entry["id"])
+    if "interactive_transcript" in entry:
+        if entry["interactive_transcript"] is not True or host not in {"yukicoder.me", "atcoder.jp"}:
+            raise ValueError("interactive_transcriptはYukicoder・AtCoderの対話問題にtrueを指定してください: " + entry["id"])
+        if "allow_custom_io" in entry:
+            raise ValueError("対話問題にallow_custom_ioを指定する必要はありません: " + entry["id"])
+        return True
     if "allow_custom_io" not in entry:
         return False
     flag = entry["allow_custom_io"]
@@ -142,7 +187,10 @@ def compile_settings(entry: dict, source: str, skip_runtime_checks: bool) -> dic
     return settings
 
 
-def collect() -> list[dict]:
+def collect(judged_ids: Collection[str] | None = None) -> list[dict]:
+    if judged_ids is None:
+        judged_ids = judgement_records().keys()
+    submitted_ids = known_submission_ids(judged_ids)
     entries = []
     for path in sorted((BASE / "groups").glob("*.json")):
         for item in json.loads(path.read_text())["entries"]:
@@ -155,6 +203,9 @@ def collect() -> list[dict]:
     for entry in entries:
         custom_io_enabled(entry)
         gcc_optimization(entry)
+        if (urlsplit(entry.get("problem_url") or "").hostname == "atcoder.jp"
+                and not entry.get("submission_urls") and entry["id"] not in submitted_ids):
+            entry["stamp_submission"] = "line"
     directories = json.loads((ROOT / "Scripts/library_layout.json").read_text())
     libraries = {path.relative_to(ROOT).as_posix() for name in directories
                  for path in (ROOT / name).rglob("*.cpp")}
@@ -175,7 +226,8 @@ def render(entry: dict, *, skip_runtime_checks: bool | None = None,
     local_label = ("ローカル入力例回帰" if entry.get("verification_kind") == "local_regression"
                    else "ローカル独立検査")
     header = prefix + "// Verify: " + (entry.get("problem_url") or local_label) + "\n"
-    header += "".join("// Submission: " + url + "\n" for url in entry.get("submission_urls", [])[-1:])
+    annotation = "".join("// Submission: " + url + "\n" for url in entry.get("submission_urls", [])[-1:])
+    header += annotation
     pieces = [header]
     hashes = {}
     for name in entry["libraries"]:
@@ -186,6 +238,8 @@ def render(entry: dict, *, skip_runtime_checks: bool | None = None,
     pieces.append("namespace sirkit {}\nusing namespace sirkit;\n")
     driver = (ROOT / entry["driver"]).read_text() if driver_override is None else driver_override
     uses_fast_io = FAST_IO_INCLUDE in driver.splitlines()
+    if entry.get("interactive_transcript") and uses_fast_io:
+        raise ValueError("対話問題では共通高速入出力を使用できません: " + entry["id"])
     if entry.get("problem_url") and not uses_fast_io and not custom_io:
         raise ValueError("オンライン提出には共通高速入出力を指定してください: " + entry["id"])
     if uses_fast_io:
@@ -205,17 +259,28 @@ def render(entry: dict, *, skip_runtime_checks: bool | None = None,
     if additions:
         text = prefix + additions + text[len(prefix):]
     data = text.encode()
+    if skip_runtime_checks and (layout := entry.get("stamp_submission")):
+        body = data.replace(annotation.encode(), b"", 1) if annotation else data
+        first, rest = data.split(b"\n", 1)
+        separator = b" " if layout in (True, "inline") else b"\n"
+        data = first + separator + b"// Verify-SHA256: " + digest(body).encode() + b"\n" + rest
     if len(data) > 512 * 1024:
         raise ValueError("提出コードが512 KiBを超えています: " + entry["id"])
     return data, hashes
 
 
+def stamped_source(entry: dict) -> bytes:
+    if not entry.get("problem_url"):
+        raise ValueError("ハッシュ付きソースはオンライン提出用のVerifyを指定してください")
+    source, _ = render({**entry, "submission_urls": [], "stamp_submission": "line"})
+    return source
+
+
 def prepare(check: bool) -> list[dict]:
+    journal = judgement_records()
     if not check:
-        preserve_submission_annotations()
-    entries = collect()
-    journal_path = BASE / "judgements.json"
-    journal = {item["id"]: item for item in json.loads(journal_path.read_text())["entries"]} if journal_path.exists() else {}
+        preserve_submission_annotations(journal.keys())
+    entries = collect(journal.keys())
     (BASE / "submissions").mkdir(exist_ok=True)
     for entry in entries:
         data, hashes = render(entry)
@@ -245,6 +310,7 @@ def prepare(check: bool) -> list[dict]:
         entry.update(driver_sha256=digest(driver_data),
                      support_source_hashes=support_hashes,
                      io_mode=("shared_fast_io" if uses_fast_io else
+                              "interactive_streams" if entry.get("interactive_transcript") else
                               "custom_online_io" if custom_io_enabled(entry) else "local_driver"),
                      io_source_hashes={FAST_IO: support_hashes[FAST_IO]}
                      if FAST_IO in support_hashes else {})
@@ -271,7 +337,8 @@ def graph_sample_checkers():
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return {name: getattr(module, "check_" + name) for name in (
-        "scc", "two_sat", "max_flow_grid", "component_sets",
+        "scc", "two_sat", "max_flow_grid", "component_sets", "even_outdegree_orientation",
+        "reachability_size_orientation", "reachability_chain_cover", "tree_vertex_at_distance", "distinct_topological_orders", "unit_step_tree_labels", "incident_label_spanning_tree", "forest_edge_coloring", "tree_walk_orientation", "subcubic_tree_biconnectivity",
         "eulerian_trail_directed", "eulerian_trail_undirected", "min_cost_flow_grid", "pruefer_completion", "bipartite_matching", "linear_recurrence", "matrix_linear_system", "longest_common_substring", "binary_linear_system", "general_matching", "modular_square_root", "topological_order", "maximum_independent_set", "static_range_mode", "manhattan_mst", "minimum_spanning_tree", "tree_diameter")}
 
 
@@ -279,13 +346,16 @@ def matches(entry: dict, sample: dict, output: str) -> bool:
     mode = entry.get("sample_checker", "tokens")
     if mode == "topological":
         mode = "topological_order"
-    if mode in {"scc", "two_sat", "max_flow_grid", "component_sets",
+    if mode in {"scc", "two_sat", "max_flow_grid", "component_sets", "even_outdegree_orientation",
+                "reachability_size_orientation", "reachability_chain_cover", "tree_vertex_at_distance", "distinct_topological_orders", "unit_step_tree_labels", "incident_label_spanning_tree", "forest_edge_coloring", "tree_walk_orientation", "subcubic_tree_biconnectivity",
                 "eulerian_trail_directed", "eulerian_trail_undirected", "min_cost_flow_grid", "pruefer_completion", "bipartite_matching", "linear_recurrence", "matrix_linear_system", "longest_common_substring", "binary_linear_system", "general_matching", "modular_square_root", "topological_order", "maximum_independent_set", "static_range_mode", "manhattan_mst", "minimum_spanning_tree", "tree_diameter"}:
         return graph_sample_checkers()[mode](entry, sample, output)
     actual, expected = output.split(), sample["output"].split()
     if mode == "float":
+        relative = entry.get("relative_tolerance", 1e-7)
+        absolute = entry.get("absolute_tolerance", 1e-7)
         return len(actual) == len(expected) and all(
-            math.isclose(float(a), float(b), rel_tol=1e-7, abs_tol=1e-7)
+            math.isclose(float(a), float(b), rel_tol=relative, abs_tol=absolute)
             for a, b in zip(actual, expected))
     if mode == "shortest_path":
         it = iter(map(int, sample["input"].split()))
@@ -426,11 +496,24 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--check", action="store_true")
     parser.add_argument("--test", action="store_true")
+    parser.add_argument("--stamp", metavar="ID", help="先頭にSHA-256を添えた提出ソースを標準出力へ書く")
     parser.add_argument("--compiler", default="g++")
     parser.add_argument("--fallback", action="store_true")
     parser.add_argument("--id", action="append", help="検査対象ID。省略時は全件")
     parser.add_argument("--results", type=Path, default=BASE / "local_results.json")
     options = parser.parse_args()
+    if options.stamp is not None:
+        if options.check or options.test or options.id:
+            parser.error("--stampは--check、--test、--idと同時に指定できません")
+        entry = next((row for row in collect() if row["id"] == options.stamp), None)
+        if entry is None:
+            parser.error("存在しないID: " + options.stamp)
+        try:
+            sys.stdout.buffer.write(stamped_source(entry))
+        except ValueError as error:
+            parser.error(str(error))
+        return
+
     entries = prepare(options.check)
     print(f"{len(entries)}件の提出・補助コードを" + ("照合" if options.check else "生成") + "しました。")
     if options.test:

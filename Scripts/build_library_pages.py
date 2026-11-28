@@ -17,6 +17,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import unicodedata
 from urllib.parse import quote, unquote, urlsplit
 from urllib.request import urlopen
 
@@ -42,6 +43,9 @@ SOURCE_GROUPS = {"DataStructure": "データ構造", "Graph": "グラフ", "Math
                  "Geometry": "幾何", "Algorithm": "アルゴリズム", "Internal": "内部部品"}
 VARIANT_MANIFEST = "Variants/manifest.json"
 VARIANT_GUIDE = "Document/fast_variants.md"
+PAGE_KEYWORDS = ".competitive-verifier/page-keywords.json"
+SEARCH_INDEX = "assets/library-search.json"
+SEARCH_SCRIPT = "assets/library-search.mjs"
 COMPILER_LABELS = {"Portable": "コンパイラ共通", "GCC": "GCC専用", "Clang": "Clang専用", "MSVC": "MSVC専用"}
 PROFILE_LABELS = {False: "通常版", True: "速度優先版"}
 PROFILE_NOTES = {
@@ -169,7 +173,8 @@ def distinguish_page_titles(files: dict) -> None:
 def validate_site(site: Path, pages: set[str], baseurl: str,
                   expected_apis: dict[str, str] | None = None,
                   expected_downloads: dict[str, dict[str, str]] | None = None,
-                  expected_version_links: dict[str, set[str]] | None = None) -> dict:
+                  expected_version_links: dict[str, set[str]] | None = None, *,
+                  expected_search: list[dict] | None = None) -> dict:
     class Links(HTMLParser):
         def __init__(self):
             super().__init__()
@@ -177,12 +182,15 @@ def validate_site(site: Path, pages: set[str], baseurl: str,
             self.code_downloads = []
             self.version_links = []
             self.version_anchors = set()
+            self.search_indexes = []
             self.api_blocks = []
             self.api_text = None
 
         def handle_starttag(self, tag, attributes):
             self.urls.extend(value for key, value in attributes if key in {"href", "src"} and value)
             attrs = dict(attributes)
+            if "data-library-search" in attrs:
+                self.search_indexes.append(attrs.get("data-search-index"))
             classes = (attrs.get("class") or "").split()
             if tag == "a" and "code-variant-download" in classes:
                 self.code_downloads.append(attrs.get("href") if "download" in attrs else None)
@@ -208,12 +216,17 @@ def validate_site(site: Path, pages: set[str], baseurl: str,
     broken, api_mismatches, download_link_mismatches, count = [], [], [], 0
     downloads = expected_downloads or {}
     versions = expected_version_links or {}
+    search_pages = {"index", *downloads.keys()} if expected_search is not None else set()
+    search_mismatches = []
     version_link_mismatches, version_anchors = [], {}
     for path in site.rglob("*.html"):
         count += 1
         links = Links()
         links.feed(path.read_text(encoding="utf-8"))
         source = path.relative_to(site).as_posix().removesuffix(".html")
+        if source in search_pages and (links.search_indexes != [f"{baseurl}/{SEARCH_INDEX}"]
+                                       or f"{baseurl}/{SEARCH_SCRIPT}" not in links.urls):
+            search_mismatches.append(source)
         if expected_apis is not None and source in expected_apis:
             if links.api_blocks != [expected_apis[source]]:
                 api_mismatches.append(source)
@@ -250,13 +263,18 @@ def validate_site(site: Path, pages: set[str], baseurl: str,
     missing_version_anchors = sorted({link for links in versions.values() for link in links
                                       if (parts := urlsplit(link)).fragment and parts.fragment
                                       not in version_anchors.get(parts.path.removesuffix(".html"), ())})
+    if expected_search is not None:
+        index_path = site / SEARCH_INDEX
+        if not index_path.is_file() or json.loads(index_path.read_text(encoding="utf-8")) != expected_search:
+            search_mismatches.append(SEARCH_INDEX)
+        search_mismatches.extend(entry["path"] for entry in expected_search if not (site / unquote(entry["path"])).is_file())
     return {"html_pages": count, "missing_pages": missing, "broken_local_links": broken,
             "api_mismatches": api_mismatches, "api_pages_checked": len(expected_apis or {}),
             "download_mismatches": download_mismatches, "download_link_mismatches": download_link_mismatches,
             "downloads_checked": len(assets), "version_link_mismatches": version_link_mismatches,
-            "missing_version_anchors": missing_version_anchors,
+            "missing_version_anchors": missing_version_anchors, "search_mismatches": search_mismatches,
             "passed": not (missing or broken or api_mismatches or download_mismatches or download_link_mismatches
-                           or version_link_mismatches or missing_version_anchors)}
+                           or version_link_mismatches or missing_version_anchors or search_mismatches)}
 
 
 def source_paths(root: Path) -> list[str]:
@@ -268,6 +286,50 @@ def source_paths(root: Path) -> list[str]:
                     raise ValueError("ライブラリのsymlinkは対象にできません: " + str(path))
                 result.append(path.relative_to(root).as_posix())
     return sorted(result)
+
+
+def read_page_keywords(root: Path) -> bytes:
+    path = root / PAGE_KEYWORDS
+    if path.is_symlink() or not path.is_file():
+        raise ValueError(f"検索キーワードを登録してください（{PAGE_KEYWORDS}）")
+    return path.read_bytes()
+
+
+def page_keywords(root: Path, sources: list[str], *, contents: bytes | None = None) -> dict[str, list[str]]:
+    def unique_paths(pairs):
+        keywords = dict(pairs)
+        if len(keywords) != len(pairs):
+            raise ValueError(f"{PAGE_KEYWORDS} に同じファイルが複数あります")
+        return keywords
+
+    if contents is None:
+        contents = read_page_keywords(root)
+    value = json.loads(contents.decode("utf-8"), object_pairs_hook=unique_paths)
+    if not isinstance(value, dict):
+        raise ValueError(f"{PAGE_KEYWORDS} は原本パスからキーワード一覧への対応を指定してください")
+    missing, extra = sorted(set(sources) - value.keys()), sorted(value.keys() - set(sources))
+    if missing or extra:
+        reasons = []
+        if missing:
+            reasons.append("未登録 " + ", ".join(missing))
+        if extra:
+            reasons.append("対象外 " + ", ".join(extra))
+        raise ValueError(f"{PAGE_KEYWORDS} の原本が一致しません（{' / '.join(reasons)}）")
+    for source, keywords in value.items():
+        if (not isinstance(keywords, list) or not keywords
+                or any(not isinstance(term, str) or not term or term.strip() != term
+                       or not term.isprintable() or not any(char.isalnum() for char in term) for term in keywords)):
+            raise ValueError(f"検索キーワードは空でない文字列の一覧を指定してください（{source}）")
+        normalized = {" ".join(unicodedata.normalize("NFKC", term).casefold().split()) for term in keywords}
+        if len(normalized) != len(keywords):
+            raise ValueError(f"検索キーワードが重複しています（{source}）")
+    return value
+
+
+def search_index(titles: dict[str, str], keywords: dict[str, list[str]]) -> list[dict]:
+    return [{"source": source, "title": titles[source], "group": SOURCE_GROUPS[source.split("/", 1)[0]],
+             "path": quote(source + ".html", safe="/._-"), "keywords": keywords[source]}
+            for source in sorted(keywords)]
 
 
 def variant_entries(manifest: bytes, sources: list[str]) -> dict[str, dict[tuple[str, bool], dict]]:
@@ -358,7 +420,8 @@ def write_version_lists(jekyll: Path, variants: dict[str, dict[tuple[str, bool],
                      f'<a href="{site_link("quality.html")}">テスト・性能</a> · '
                      f'<a href="{site_link("licenses/index.html")}">ライセンス</a></nav>',
                      f'<h1>{title}</h1>', f'<p>{version_profile_note(fast)}</p>',
-                     '<p><span class="verify-check" aria-hidden="true">✓</span> 通常版の現行ACまたはローカルVerifyの通過を示します。</p>']
+                     '<p><span class="verify-check" aria-hidden="true">✓</span> 通常版の現行ACまたはローカルVerifyの通過を示します。</p>',
+                     '{% include library-search.html %}', '<div data-library-catalog>']
             for folder, group in SOURCE_GROUPS.items():
                 sources = [source for source in variants if source.startswith(folder + "/")]
                 if not sources:
@@ -376,11 +439,13 @@ def write_version_lists(jekyll: Path, variants: dict[str, dict[tuple[str, bool],
                     label = verification.get(source)
                     check = (f'<span class="verify-check" role="img" aria-label="{html.escape(label)}" '
                              f'title="{html.escape(label)}">✓</span> ' if label else "")
-                    lines.append(f'<li><div>{check}<a class="code-version-link" href="{api_url}">{name}</a> '
+                    item_source = html.escape(source).replace("{", "&#123;").replace("}", "&#125;")
+                    lines.append(f'<li data-library-source="{item_source}"><div>{check}<a class="code-version-link" href="{api_url}">{name}</a> '
                                  f'<small>{filename}</small></div>'
                                  f'<a class="code-variant-download" href="{site_link(asset)}" download '
                                  f'aria-label="{name}のC++コードを取得">.cppを取得</a></li>')
                 lines.append('</ul>')
+            lines.append('</div>')
             (jekyll / (page + ".md")).write_text("\n".join(lines) + "\n", encoding="utf-8")
     return downloads, links
 
@@ -518,7 +583,7 @@ def online_table(entries: list[dict], verify_pages: set[str] | None = None) -> s
         if current_ac(entry):
             condition = "✓ " + condition
         lines.append("| " + " | ".join((problem, program, condition, result)) + " |")
-    lines += ["", "✓ 現行ACは、保存したACの提出全文と現行の提出コードが一致したことを示します。"]
+    lines += ["", "✓ " + update_verify_status.CURRENT_AC_NOTE]
     return "\n".join(lines) + "\n"
 
 
@@ -667,10 +732,12 @@ def build(root: Path, output: Path, reports: list[Path], *, production: bool = F
     dirty = bool(subprocess.check_output(["git", "status", "--porcelain", "--untracked-files=normal"], cwd=root))
     if production and dirty:
         raise ValueError("公開版は未コミットの変更を含まないcheckoutで生成してください")
-    # 通信失敗・内容不一致のときは既存のプレビューも上書きしない。
-    license_files = fetch_upstream_licenses()
     sources = source_paths(root)
     source_set = set(sources)
+    keyword_contents = read_page_keywords(root)
+    keywords = page_keywords(root, sources, contents=keyword_contents)
+    # 通信失敗・内容不一致のときは既存のプレビューも上書きしない。
+    license_files = fetch_upstream_licenses()
     manifest_path = root / VARIANT_MANIFEST
     if manifest_path.resolve() != manifest_path:
         raise ValueError("コンパイラ別版のmanifestにsymlinkは使用できません")
@@ -689,6 +756,7 @@ def build(root: Path, output: Path, reports: list[Path], *, production: bool = F
     watched_paths = set(sources)
     watched_paths.add(titles_path.relative_to(root).as_posix())
     watched_paths.add(documents_path.relative_to(root).as_posix())
+    watched_paths.add(PAGE_KEYWORDS)
     variant_inputs = files_to_download.keys() | {entry["origin"] for entries in variants.values() for entry in entries.values()}
     for name in variant_inputs:
         path = root / name
@@ -705,6 +773,7 @@ def build(root: Path, output: Path, reports: list[Path], *, production: bool = F
     watched_paths.update(["Verify/current/manifest.json", "Verify/current/judgements.json"])
     watched = {name: sha(root / name) for name in sorted(watched_paths)}
     watched[VARIANT_MANIFEST] = hashlib.sha256(manifest).hexdigest()
+    watched[PAGE_KEYWORDS] = hashlib.sha256(keyword_contents).hexdigest()
     for entries in variants.values():
         for entry in entries.values():
             if watched[entry["path"]] != entry["sha256"] or watched[entry["origin"]] != entry["source_sha256"]:
@@ -833,6 +902,8 @@ def build(root: Path, output: Path, reports: list[Path], *, production: bool = F
     downloads, version_links = write_version_lists(output / "jekyll", variants, titles, verification)
     assets = output / "jekyll/assets"
     assets.mkdir(parents=True, exist_ok=True)
+    index = search_index(titles, keywords)
+    dump(output / "jekyll" / SEARCH_INDEX, index)
     for src, dst in (("quality.json", "quality.json"), ("online-status.json", "online-status.json"), ("snapshot.json", "snapshot.json")):
         shutil.copyfile(output / "reports" / src, assets / dst)
     for variant_path, digest in files_to_download.items():
@@ -860,11 +931,11 @@ def build(root: Path, output: Path, reports: list[Path], *, production: bool = F
         subprocess.run(["bundle", "install", "--jobs", "4", "--retry", "2"], cwd=output / "jekyll", check=True)
         subprocess.run(["bundle", "exec", "jekyll", "build", "--destination", str(output / "site")], cwd=output / "jekyll", check=True)
         validation = validate_site(output / "site", set(files) | set(downloads) | {"fast-guide", "licenses/index"}, baseurl,
-                                   page_apis, downloads, version_links)
+                                   page_apis, downloads, version_links, expected_search=index)
         dump(output / "reports/html-validation.json", validation)
         if not validation["passed"]:
             raise ValueError("ページ・リンク・コードの生成結果が不整合です。reports/html-validation.jsonを確認してください")
-    result = {**snapshot, "library_pages": len(sources), "verify_pages": len(results),
+    result = {**snapshot, "library_pages": len(sources), "search_entries": len(index), "verify_pages": len(results),
               "version_list_pages": len(downloads), "code_downloads": len(files_to_download),
               "jekyll": str(output / "jekyll"), "site": str(output / "site") if render else None,
               "quality_status": quality["status"], "published": False}

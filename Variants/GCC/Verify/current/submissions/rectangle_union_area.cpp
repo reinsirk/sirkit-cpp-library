@@ -11,6 +11,7 @@
 // API一覧
 // AreaRectangle{left,bottom,right,top}: 整数座標で軸に平行な長方形。
 // rectangle_union_area(rectangles): 和集合の面積をuint64_tで返す。面積が型を超えるとoverflow_error。
+// rectangle_union_perimeter(rectangles): 穴の境界も含む和集合の周長をuint64_tで返す。型を超えるとoverflow_error。
 // 幅または高さ0は無視する。座標の上下左右は整列済みとする。O(n log(n+1))時間・O(n)領域。
 
 // SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
@@ -20,6 +21,7 @@
 #include <limits>
 #include <span>
 #include <stdexcept>
+#include <utility>
 #include <vector>
 
 // SIRKIT_NAMESPACE_OPEN_V1
@@ -44,7 +46,10 @@ struct AreaRectangle
     std::int64_t left, bottom, right, top;
 };
 
-inline std::uint64_t rectangle_union_area(std::span<const AreaRectangle> rectangles)
+namespace detail
+{
+template <bool Boundary, bool Transpose = false>
+std::uint64_t rectangle_union_sweep(std::span<const AreaRectangle> rectangles)
 {
     struct Event
     {
@@ -58,6 +63,11 @@ inline std::uint64_t rectangle_union_area(std::span<const AreaRectangle> rectang
     y.reserve(capacity);
     for (auto [left, bottom, right, top] : rectangles)
     {
+        if constexpr (Transpose)
+        {
+            std::swap(left, bottom);
+            std::swap(right, top);
+        }
 #ifndef SKIP_RUNTIME_CHECKS
         if (left > right || bottom > top)
         {
@@ -78,7 +88,22 @@ inline std::uint64_t rectangle_union_area(std::span<const AreaRectangle> rectang
         return 0;
     }
 
-    std::ranges::sort(events, {}, &Event::x);
+    if constexpr (Boundary)
+    {
+        // 同じ座標では追加を先に処理し、接している辺を二重に数えない。
+        std::ranges::sort(events, [](const Event &left, const Event &right)
+                          {
+                              if (left.x != right.x)
+                              {
+                                  return left.x < right.x;
+                              }
+                              return left.enter > right.enter;
+                          });
+    }
+    else
+    {
+        std::ranges::sort(events, {}, &Event::x);
+    }
     std::ranges::sort(y);
     y.erase(std::unique(y.begin(), y.end()), y.end());
     const auto segments = y.size() - 1;
@@ -135,23 +160,65 @@ inline std::uint64_t rectangle_union_area(std::span<const AreaRectangle> rectang
         }
     };
 
-    auto previous_x = events.front().x;
-    std::uint64_t area = 0;
-    for (const auto &[x, bottom, top, enter] : events)
+    const auto update_event = [&](const Event &event)
     {
-        const auto width = length(previous_x, x);
-        const auto covered = tree[1].length;
-        if (covered != 0 && width > (std::numeric_limits<std::uint64_t>::max() - area) / covered)
+        const auto begin = static_cast<std::size_t>(std::ranges::lower_bound(y, event.bottom) - y.begin());
+        const auto end = static_cast<std::size_t>(std::ranges::lower_bound(y, event.top) - y.begin());
+        update(update, 1, 0, segments, begin, end, event.enter);
+    };
+    constexpr auto kMax = std::numeric_limits<std::uint64_t>::max();
+    if constexpr (Boundary)
+    {
+        std::uint64_t measure = 0;
+        for (const auto &event : events)
         {
-            throw std::overflow_error("rectangle_union_area: area overflow");
+            const auto before = tree[1].length;
+            update_event(event);
+            const auto after = tree[1].length;
+            const auto change = event.enter ? after - before : before - after;
+            if (change > kMax - measure)
+            {
+                throw std::overflow_error("rectangle_union_perimeter: perimeter overflow");
+            }
+            measure += change;
         }
-        area += width * covered;
-        previous_x = x;
-        const auto begin = static_cast<std::size_t>(std::ranges::lower_bound(y, bottom) - y.begin());
-        const auto end = static_cast<std::size_t>(std::ranges::lower_bound(y, top) - y.begin());
-        update(update, 1, 0, segments, begin, end, enter);
+        return measure;
     }
-    return area;
+    else
+    {
+        auto previous_x = events.front().x;
+        std::uint64_t area = 0;
+        for (const auto &event : events)
+        {
+            const auto width = length(previous_x, event.x);
+            const auto covered = tree[1].length;
+            if (covered != 0 && width > (kMax - area) / covered)
+            {
+                throw std::overflow_error("rectangle_union_area: area overflow");
+            }
+            area += width * covered;
+            previous_x = event.x;
+            update_event(event);
+        }
+        return area;
+    }
+}
+} // namespace detail
+
+inline std::uint64_t rectangle_union_area(std::span<const AreaRectangle> rectangles)
+{
+    return detail::rectangle_union_sweep<false>(rectangles);
+}
+
+inline std::uint64_t rectangle_union_perimeter(std::span<const AreaRectangle> rectangles)
+{
+    const auto vertical = detail::rectangle_union_sweep<true>(rectangles);
+    const auto horizontal = detail::rectangle_union_sweep<true, true>(rectangles);
+    if (horizontal > std::numeric_limits<std::uint64_t>::max() - vertical)
+    {
+        throw std::overflow_error("rectangle_union_perimeter: perimeter overflow");
+    }
+    return horizontal + vertical;
 }
 
 #endif

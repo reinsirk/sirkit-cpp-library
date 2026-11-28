@@ -1,0 +1,870 @@
+#define SKIP_RUNTIME_CHECKS
+// Profile: Fast/GCC; online judgement is recorded separately.
+// Verify: https://judge.yosupo.jp/problem/vertex_add_subtree_sum
+
+// Library: Graph/Subtree_Intervals.cpp
+// SPDX-License-Identifier: CC0-1.0
+// 生成版: GCC・速度優先（入力検査を除外）。 所有・解放の省略は各APIの前提を参照。
+// 生成元: Graph/Subtree_Intervals.cpp
+// ドキュメント: https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/subtree_intervals.md
+//
+// API一覧
+// SubtreeIntervals(parents): 親配列の森をDFS行きがけ順に並べる。parents[v]=-1は根。O(n)時間・領域。
+// range(v): vの部分木の半開区間{left,right}。index(v): vの位置。vertex_at(i): 位置iの頂点。
+// order(): 行きがけ順の頂点番号を非所有spanで返す。contains(u,v): vがuの部分木に含まれるか。
+// size(): 頂点数。構築以外はO(1)。頂点と位置は0始まり、n<=INT_MAX。根と子は頂点番号の小さい順に訪問。
+// 根のない閉路と範囲外の親は例外。コピーは前処理を共有しO(1)。移動元は空。
+
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
+#include <algorithm>
+#include <cstddef>
+#include <limits>
+#include <memory>
+#include <span>
+#include <stdexcept>
+#include <utility>
+#include <vector>
+
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+#ifndef SIRKIT_SUBTREE_INTERVALS_DEFINED
+#define SIRKIT_SUBTREE_INTERVALS_DEFINED
+
+namespace detail
+{
+inline int checked_subtree_interval_size(std::size_t size)
+{
+    if (size > static_cast<std::size_t>(std::numeric_limits<int>::max()))
+    {
+        throw std::length_error("SubtreeIntervals: too many vertices");
+    }
+    return static_cast<int>(size);
+}
+}
+
+class SubtreeIntervals
+{
+public:
+    explicit SubtreeIntervals(std::span<const int> parents)
+        : data_(std::make_shared<const Data>(parents))
+    {
+    }
+
+    [[nodiscard]] int size() const noexcept
+    {
+        return static_cast<int>(order().size());
+    }
+
+    [[nodiscard]] std::span<const int> order() const noexcept
+    {
+        return data_ ? std::span<const int>(data_->order) : std::span<const int>{};
+    }
+
+    [[nodiscard]] int index(int vertex) const
+    {
+        CheckIndex(vertex);
+        return data_->first[vertex];
+    }
+
+    [[nodiscard]] std::pair<int, int> range(int vertex) const
+    {
+        const auto start = index(vertex);
+        return {start, start + data_->count[vertex]};
+    }
+
+    [[nodiscard]] bool contains(int ancestor, int vertex) const
+    {
+        const auto [left, right] = range(ancestor);
+        const auto at = index(vertex);
+        return left <= at && at < right;
+    }
+
+    [[nodiscard]] int vertex_at(int position) const
+    {
+        CheckIndex(position);
+        return data_->order[position];
+    }
+
+private:
+    struct Data
+    {
+        std::vector<int> order;
+        std::vector<int> first;
+        std::vector<int> count;
+
+        explicit Data(std::span<const int> parents)
+        {
+            const auto n = detail::checked_subtree_interval_size(parents.size());
+            std::vector<int> child(n, -1), next(n, -1), work;
+            work.reserve(n);
+            for (int v = 0; v < n; ++v)
+            {
+                const int p = parents[v];
+                if (p == -1)
+                {
+                    work.push_back(v);
+                }
+                else
+                {
+                    if (p < 0 || p >= n)
+                    {
+                        throw std::out_of_range("SubtreeIntervals: parent");
+                    }
+                    next[v] = child[p];
+                    child[p] = v;
+                }
+            }
+
+            first.resize(n);
+            order.reserve(n);
+            std::reverse(work.begin(), work.end());
+            while (!work.empty())
+            {
+                const int v = work.back();
+                work.pop_back();
+                first[v] = static_cast<int>(order.size());
+                order.push_back(v);
+                for (int w = child[v]; w != -1; w = next[w])
+                {
+                    work.push_back(w);
+                }
+            }
+            if (order.size() != parents.size())
+            {
+                throw std::invalid_argument("SubtreeIntervals: cycle");
+            }
+
+            count.assign(n, 1);
+            for (auto current = order.rbegin(); current != order.rend(); ++current)
+            {
+                const int parent = parents[*current];
+                if (parent != -1)
+                {
+                    count[parent] += count[*current];
+                }
+            }
+        }
+    };
+
+    std::shared_ptr<const Data> data_;
+
+    void CheckIndex([[maybe_unused]] int index) const
+    {
+    }
+};
+#endif
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
+
+
+// Library: DataStructure/Fenwick_Tree.cpp
+// SPDX-License-Identifier: CC0-1.0
+// 生成版: GCC・速度優先（入力検査を除外）。 所有・解放の省略は各APIの前提を参照。
+// 生成元: Fast/Source/DataStructure/Fenwick_Tree.cpp
+// 参考（データ構造・検証問題）: https://nyaannyaan.github.io/library/data-structure/binary-indexed-tree.hpp
+// 参考（公開API）: https://atcoder.github.io/ac-library/production/document_ja/fenwicktree.html
+// ドキュメント: https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/fenwick_tree.md
+// ドキュメント: https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/fast_variants.md
+//
+// API一覧
+// 速度優先版: 内部の主要領域は破棄・解放しない。格納型のデストラクタの副作用を必要としないこと。
+// 入力・容量・件数の前提と確保成功を利用側が保証する。例外時の状態復元は保証しない。
+// [fenwick_tree<T>]
+// fenwick_tree()/fenwick_tree(int n)/fenwick_tree(vector<T>): 空列/n要素の0/列から構築。O(n+1)時間・領域。
+// add(int p,T x): 点加算。sum(int l,int r): 半開区間[l,r)の和をT値で返す。O(log(n+1))、空区間はT{}。
+// 点添字は0<=p<size()、区間は0<=l<=r<=size()。
+// ACL形式の公開APIをsirkit内に定義する。bool以外の整数は内部を符号なしにして型幅のmod 2^bitで計算する。
+// その他のTはT{}が単位元の可換加法群とし、加減算・コピーをO(1)とする。要素数はintの範囲内。
+// size()/empty(): 要素数/空か、O(1)。get(int p)/set(int p,T value): 点取得/代入、O(log(n+1))。
+// lower_bound(target)/upper_bound(target): sum(0,i+1)>=target/>targetとなる最小int添字、なければsize()。O(log(n+1))。
+// 境界探索は全要素が非負で、途中の和がTに収まり、加算と順序が整合すること。全要素の検査はしない。
+// values(): 列を復元して返す。O(n+1)時間・追加O(n)。reset(int n)/reset(): n要素/現在の長さを0にする。O(旧n+n+1)。
+// clear()/swap(other): 空にして容量保持/交換。O(旧n+1)/O(1)。コピーは独立、移動元は空として使える。
+// 添字・区間は既定で検査しSKIP_RUNTIME_CHECKSで除く。容量・添字のオーバーフロー対策は残す。
+
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
+#include <algorithm>
+#include <cstddef>
+#include <iterator>
+#include <limits>
+#include <memory>
+#include <type_traits>
+#include <utility>
+#include <vector>
+
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+#ifndef SIRKIT_FAST_BUFFER_DEFINED
+#define SIRKIT_FAST_BUFFER_DEFINED
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
+template <class T>
+class FastBuffer {
+    T* data_ = nullptr;
+    std::size_t size_ = 0, capacity_ = 0;
+    void grow() {
+        const auto limit = max_size();
+        reserve(capacity_ == 0 ? 1 : capacity_ > limit - capacity_ ? limit : capacity_ * 2);
+    }
+public:
+    using value_type = T;
+    using size_type = std::size_t;
+    using iterator = T*;
+    using const_iterator = const T*;
+    using reference = T&;
+    using const_reference = const T&;
+    FastBuffer() noexcept = default;
+    explicit FastBuffer(std::size_t count) {
+        reserve(count);
+        for (; size_ < count; ++size_) std::construct_at(data_ + size_);
+    }
+    FastBuffer(std::size_t count, const T& value) {
+        reserve(count);
+        for (; size_ < count; ++size_) std::construct_at(data_ + size_, value);
+    }
+    template <std::input_iterator Iterator>
+    FastBuffer(Iterator first, Iterator last) {
+        if (first == last) return;
+        if constexpr (std::forward_iterator<Iterator>) reserve(static_cast<std::size_t>(std::distance(first, last)));
+        for (; first != last; ++first) emplace_back(*first);
+    }
+    FastBuffer(const std::vector<T>& values) : FastBuffer(values.begin(), values.end()) {}
+    FastBuffer(const FastBuffer& other) : FastBuffer(other.begin(), other.end()) {}
+    FastBuffer& operator=(const FastBuffer& other) {
+        if (this != &other) { FastBuffer next(other); swap(next); }
+        return *this;
+    }
+    FastBuffer(FastBuffer&& other) noexcept
+        : data_(std::exchange(other.data_, nullptr)), size_(std::exchange(other.size_, 0)),
+          capacity_(std::exchange(other.capacity_, 0)) {}
+    FastBuffer& operator=(FastBuffer&& other) noexcept {
+        if (this != &other) {
+            data_ = std::exchange(other.data_, nullptr);
+            size_ = std::exchange(other.size_, 0); capacity_ = std::exchange(other.capacity_, 0);
+        }
+        return *this;
+    }
+    // デストラクタは、格納値の破棄もdeallocateも行わない。
+    ~FastBuffer() = default;
+    std::size_t size() const noexcept { return size_; }
+    std::size_t capacity() const noexcept { return capacity_; }
+    bool empty() const noexcept { return size_ == 0; }
+    static constexpr std::size_t max_size() noexcept {
+        return static_cast<std::size_t>(std::numeric_limits<std::ptrdiff_t>::max()) / sizeof(T);
+    }
+    T* data() noexcept { return data_; }
+    const T* data() const noexcept { return data_; }
+    T* begin() noexcept { return data_; }
+    const T* begin() const noexcept { return data_; }
+    T* end() noexcept { return size_ == 0 ? data_ : data_ + size_; }
+    const T* end() const noexcept { return size_ == 0 ? data_ : data_ + size_; }
+    const T* cbegin() const noexcept { return begin(); }
+    const T* cend() const noexcept { return end(); }
+    T& operator[](std::size_t index) noexcept { return data_[index]; }
+    const T& operator[](std::size_t index) const noexcept { return data_[index]; }
+    T& front() noexcept { return data_[0]; }
+    const T& front() const noexcept { return data_[0]; }
+    T& back() noexcept { return data_[size_ - 1]; }
+    const T& back() const noexcept { return data_[size_ - 1]; }
+    void reserve(std::size_t count) {
+        if (count <= capacity_) return;
+        // allocator::allocateはT配列の領域を開始する。要素は使用時だけ構築する。
+        T* next = std::allocator<T>{}.allocate(count);
+        for (std::size_t i = 0; i < size_; ++i)
+            std::construct_at(next + i, std::move_if_noexcept(data_[i]));
+        data_ = next; capacity_ = count;
+    }
+    template <class... Args>
+    T& emplace_back(Args&&... args) {
+        if (size_ == capacity_) {
+            // 引数が自身の要素を参照していても、移動する前に新要素を作る。
+            T value(std::forward<Args>(args)...);
+            grow();
+            T* added = std::construct_at(data_ + size_, std::move_if_noexcept(value));
+            ++size_;
+            return *added;
+        }
+        T* added = std::construct_at(data_ + size_, std::forward<Args>(args)...);
+        ++size_;
+        return *added;
+    }
+    void push_back(const T& value) { emplace_back(value); }
+    void push_back(T&& value) { emplace_back(std::move(value)); }
+    void pop_back() noexcept { --size_; }
+    void clear() noexcept { size_ = 0; }
+    void resize(std::size_t count) {
+        if (count < size_) { size_ = count; return; }
+        reserve(count);
+        for (; size_ < count; ++size_) std::construct_at(data_ + size_);
+    }
+    void resize(std::size_t count, const T& value) {
+        if (count < size_) { size_ = count; return; }
+        if (count > capacity_) { T copy(value); reserve(count); resize(count, copy); return; }
+        for (; size_ < count; ++size_) std::construct_at(data_ + size_, value);
+    }
+    void assign(std::size_t count, const T& value) { FastBuffer next(count, value); swap(next); }
+    template <std::input_iterator Iterator>
+    void assign(Iterator first, Iterator last) { FastBuffer next(first, last); swap(next); }
+    void swap(FastBuffer& other) noexcept {
+        std::swap(data_, other.data_); std::swap(size_, other.size_); std::swap(capacity_, other.capacity_);
+    }
+    friend void swap(FastBuffer& a, FastBuffer& b) noexcept { a.swap(b); }
+};
+}
+#endif
+
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+#include <algorithm>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+#include <bit>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+#include <cstddef>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+#include <limits>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+#include <stdexcept>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+#include <type_traits>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+#include <utility>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+#include <vector>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+#ifndef SIRKIT_HLD_FENWICK_ACCESS_FORWARD_DEFINED
+#define SIRKIT_HLD_FENWICK_ACCESS_FORWARD_DEFINED
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ { template<class Range> struct HldFenwickAccess; }
+#endif
+
+#ifndef SIRKIT_FENWICK_STORAGE_TYPE_DEFINED
+#define SIRKIT_FENWICK_STORAGE_TYPE_DEFINED
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
+template<class T, bool = std::is_integral_v<T> && !std::is_same_v<T, bool>>
+struct FenwickStorage { using type = T; };
+template<class T>
+struct FenwickStorage<T, true> { using type = std::make_unsigned_t<T>; };
+#if defined(__SIZEOF_INT128__)
+template<> struct FenwickStorage<__int128> { using type = unsigned __int128; };
+template<> struct FenwickStorage<unsigned __int128> { using type = unsigned __int128; };
+#endif
+}
+#endif
+
+#ifndef SIRKIT_FENWICK_TREE_DEFINED
+#define SIRKIT_FENWICK_TREE_DEFINED
+namespace detail {
+inline std::size_t CheckedFenwickStorageSize(std::size_t n, std::size_t limit) {
+    if (n > static_cast<std::size_t>(std::numeric_limits<int>::max()) || n >= limit)
+        throw std::length_error("fenwick_tree: size");
+    return n == 0 ? 0 : n + 1;
+}
+}
+
+template<class T>
+class fenwick_tree {
+    // HLD所有時の読取り専用接続。通常のFenwick操作には使わない。
+    using HldFenwickTag = void;
+    template<class> friend struct /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::HldFenwickAccess;
+    using Storage = typename /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::FenwickStorage<T>::type;
+    /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::FastBuffer<Storage> tree_;
+    static decltype(auto) to_storage(const T& value) {
+        if constexpr (std::is_same_v<T, Storage>) return (value);
+        else return static_cast<Storage>(value);
+    }
+    static decltype(auto) from_storage(Storage& value) {
+        if constexpr (std::is_same_v<T, Storage>) return (value);
+        else return static_cast<T>(value);
+    }
+    static std::size_t checked_size(int n) {
+        return static_cast<std::size_t>(n);
+    }
+    static std::size_t storage_size(std::size_t n) {
+        return detail::CheckedFenwickStorageSize(n, std::vector<Storage>{}.max_size());
+    }
+    static std::size_t lowbit(std::size_t x) noexcept { return x & (~x + 1); }
+    void check_index(int i) const {
+        (void)i;
+    }
+    void check_range(int l, int r) const {
+        (void)l; (void)r;
+    }
+    Storage prefix_unchecked(std::size_t r) const {
+        Storage result{};
+        for (; r; r -= lowbit(r)) result += tree_[r];
+        return result;
+    }
+    Storage get_unchecked(std::size_t i) const {
+        auto node = i + 1;
+        Storage result = tree_[node];
+        const auto begin = node - lowbit(node);
+        for (--node; node > begin; node -= lowbit(node)) result -= tree_[node];
+        return result;
+    }
+    void add_unchecked(std::size_t i, const Storage& delta) {
+        const auto n = static_cast<std::size_t>(size());
+        for (++i;;) {
+            tree_[i] += delta;
+            const auto step = lowbit(i);
+            if (step > n - i) break;
+            i += step;
+        }
+    }
+public:
+    fenwick_tree() = default;
+    explicit fenwick_tree(int n) : tree_(storage_size(checked_size(n)), Storage{}) {}
+    template<class Values> requires std::is_same_v<Values, std::vector<T>>
+    explicit fenwick_tree(const Values& values) : tree_(storage_size(values.size()), Storage{}) {
+        const auto n = values.size();
+        for (std::size_t i = 1; i <= n; ++i) {
+            tree_[i] += to_storage(values[i - 1]);
+            const auto step = lowbit(i);
+            if (step <= n - i) tree_[i + step] += tree_[i];
+        }
+    }
+    fenwick_tree(const fenwick_tree&) = default;
+    fenwick_tree& operator=(const fenwick_tree&) = default;
+    fenwick_tree(fenwick_tree&& other) noexcept : tree_(std::move(other.tree_)) { other.tree_.clear(); }
+    fenwick_tree& operator=(fenwick_tree&& other) noexcept {
+        if (this != &other) { tree_ = std::move(other.tree_); other.tree_.clear(); }
+        return *this;
+    }
+    int size() const noexcept { return tree_.empty() ? 0 : static_cast<int>(tree_.size() - 1); }
+    bool empty() const noexcept { return size() == 0; }
+    void add(int i, T delta) {
+        check_index(i);
+        add_unchecked(static_cast<std::size_t>(i), to_storage(delta));
+    }
+    T get(int i) const { check_index(i); return static_cast<T>(get_unchecked(static_cast<std::size_t>(i))); }
+    void set(int i, T value) {
+        check_index(i);
+        const Storage delta = to_storage(value) - get_unchecked(static_cast<std::size_t>(i));
+        add_unchecked(static_cast<std::size_t>(i), delta);
+    }
+    T sum(int l, int r) {
+        check_range(l, r);
+        return static_cast<T>(prefix_unchecked(static_cast<std::size_t>(r)) - prefix_unchecked(static_cast<std::size_t>(l)));
+    }
+    int lower_bound(const T& target) const {
+        if (!(T{} < target)) return 0;
+        const auto n = static_cast<std::size_t>(size());
+        std::size_t index = 0;
+        Storage current{};
+        for (auto jump = std::bit_floor(n); jump; jump >>= 1) {
+            if (jump <= n - index) {
+                const auto next = index + jump;
+                Storage candidate = current + tree_[next];
+                if (from_storage(candidate) < target) { current = std::move(candidate); index = next; }
+            }
+        }
+        return static_cast<int>(index);
+    }
+    int upper_bound(const T& target) const {
+        if (target < T{}) return 0;
+        const auto n = static_cast<std::size_t>(size());
+        std::size_t index = 0;
+        Storage current{};
+        for (auto jump = std::bit_floor(n); jump; jump >>= 1) {
+            if (jump <= n - index) {
+                const auto next = index + jump;
+                Storage candidate = current + tree_[next];
+                if (!(target < from_storage(candidate))) { current = std::move(candidate); index = next; }
+            }
+        }
+        return static_cast<int>(index);
+    }
+    std::vector<T> values() const {
+        if (tree_.empty()) return {};
+        std::vector<T> result(tree_.begin() + 1, tree_.end());
+        const auto n = static_cast<std::size_t>(size());
+        for (auto i = n; i; --i) {
+            const auto step = lowbit(i);
+            if (step <= n - i) {
+                if constexpr (std::is_same_v<T, Storage>) result[i + step - 1] -= result[i - 1];
+                else {
+                    const Storage difference = static_cast<Storage>(result[i + step - 1]) - static_cast<Storage>(result[i - 1]);
+                    result[i + step - 1] = static_cast<T>(difference);
+                }
+            }
+        }
+        return result;
+    }
+    void reset(int n) {
+        /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::FastBuffer<Storage> replacement(storage_size(checked_size(n)), Storage{});
+        tree_.swap(replacement);
+    }
+    void reset() { std::fill(tree_.begin(), tree_.end(), Storage{}); }
+    void clear() noexcept { tree_.clear(); }
+    void swap(fenwick_tree& other) noexcept { tree_.swap(other.tree_); }
+};
+#endif
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1
+
+
+namespace sirkit {}
+using namespace sirkit;
+
+// SPDX-License-Identifier: CC0-1.0
+// Verify I/O: Verify/current/common/fast_io.hpp
+// SPDX-License-Identifier: CC0-1.0
+#include <algorithm>
+#include <array>
+#include <charconv>
+#include <cstddef>
+#include <cstdint>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <limits>
+#include <stdexcept>
+#include <string>
+#include <string_view>
+#include <type_traits>
+#include <vector>
+
+#ifndef SIRKIT_VERIFY_FAST_IO_DEFINED
+#define SIRKIT_VERIFY_FAST_IO_DEFINED
+
+// VerifyInput(file=stdin): 非所有のFILEから読む。別の入力方式と混用しない。
+// >> 整数: 64bit以下の十進整数を読む。検査省略時は値域内の正しい入力を前提とする。
+// >> char/string: 空白を飛ばし、1文字／空白までの文字列を読む。
+// >> 浮動小数点: 十進文字列を変換する。通常のCロケールで使う。
+// bool / !: 直前までの読み取りが成功しているか／失敗したかを返す。
+class VerifyInput {
+    static constexpr std::size_t buffer_size = 1 << 17;
+    std::FILE* file_;
+    std::array<unsigned char, buffer_size + 1> buffer_;
+    std::size_t position_ = 0, size_ = 0;
+    bool good_ = true;
+
+    int peek() {
+        if (position_ == size_) {
+            size_ = std::fread(buffer_.data(), 1, buffer_size, file_);
+            buffer_[size_] = 0; // 補充後の末尾は常に数字でない番兵。
+            position_ = 0;
+            if (size_ == 0) return EOF;
+        }
+        return buffer_[position_];
+    }
+
+    int skip_space() {
+        int c;
+        while ((c = peek()) != EOF && c <= ' ') ++position_;
+        if (c == EOF) good_ = false;
+        return c;
+    }
+
+public:
+    explicit VerifyInput(std::FILE* file = stdin) : file_(file) {}
+    VerifyInput(const VerifyInput&) = delete;
+    VerifyInput& operator=(const VerifyInput&) = delete;
+
+    explicit operator bool() const noexcept { return good_; }
+    bool operator!() const noexcept { return !good_; }
+
+    template<class T>
+        requires (std::is_integral_v<T> && sizeof(T) <= sizeof(std::uint64_t)
+                  && !std::is_same_v<T, char>)
+    VerifyInput& operator>>(T& result) {
+        if (!good_) return *this;
+        int c = skip_space();
+        if (c == EOF) return *this;
+        bool negative = false;
+        if (c == '-' || c == '+') {
+            negative = c == '-';
+            ++position_;
+            c = peek();
+        }
+        if (c == EOF) {
+            good_ = false;
+            return *this;
+        }
+#ifndef SKIP_RUNTIME_CHECKS
+        if (c < '0' || c > '9') {
+            good_ = false;
+            return *this;
+        }
+        // 先頭の0を除けば、20桁以下の末尾直前の値はuint64_tに収まる。
+        while (c == '0') {
+            ++position_;
+            c = peek();
+        }
+        std::uint64_t previous = 0;
+        unsigned last_digit = 0;
+        std::size_t digits = 0;
+#endif
+        std::uint64_t value = 0;
+#ifdef SKIP_RUNTIME_CHECKS
+        // バッファ末尾の番兵で内側の範囲判定を省き、数字が境界をまたぐときだけ補充する。
+        for (;;) {
+            const unsigned char* first = buffer_.data() + position_;
+            const unsigned char* cursor = first;
+            while (static_cast<unsigned>(*cursor - '0') < 10) {
+                value = value * 10 + static_cast<unsigned>(*cursor - '0');
+                ++cursor;
+            }
+            position_ += static_cast<std::size_t>(cursor - first);
+            if (position_ != size_) break;
+            c = peek();
+            if (c == EOF) break;
+        }
+#else
+        while (c >= '0' && c <= '9') {
+            previous = value;
+            last_digit = static_cast<unsigned>(c - '0');
+            if (digits <= 20) ++digits;
+            value = value * 10 + static_cast<unsigned>(c - '0');
+            ++position_;
+            c = peek();
+        }
+#endif
+#ifndef SKIP_RUNTIME_CHECKS
+        constexpr auto maximum = std::numeric_limits<std::uint64_t>::max();
+        if ((c != EOF && c > ' ') || digits > 20
+            || (digits == 20 && (previous > maximum / 10
+                || (previous == maximum / 10 && last_digit > maximum % 10)))) {
+            good_ = false;
+            return *this;
+        }
+        std::uint64_t limit = static_cast<std::uint64_t>(std::numeric_limits<T>::max());
+        if constexpr (std::is_signed_v<T>) limit += negative;
+        else if (negative && value != 0) good_ = false;
+        if (value > limit) good_ = false;
+        if (!good_) return *this;
+#endif
+        if constexpr (std::is_signed_v<T>) {
+            constexpr std::uint64_t minimum_magnitude =
+                static_cast<std::uint64_t>(std::numeric_limits<T>::max()) + 1;
+            // -(最小値)は評価せず、絶対値が最大値+1のときだけ最小値を使う。
+            result = negative
+                ? (value == minimum_magnitude ? std::numeric_limits<T>::min()
+                                  : static_cast<T>(-static_cast<T>(value)))
+                : static_cast<T>(value);
+        } else result = static_cast<T>(value);
+        return *this;
+    }
+
+    VerifyInput& operator>>(char& result) {
+        if (!good_) return *this;
+        const int c = skip_space();
+        if (c != EOF) {
+            result = static_cast<char>(c);
+            ++position_;
+        }
+        return *this;
+    }
+
+    VerifyInput& operator>>(std::string& result) {
+        if (!good_) return *this;
+        int c = skip_space();
+        if (c == EOF) return *this;
+        result.clear();
+        for (;;) {
+            const std::size_t first = position_;
+            while (position_ < size_ && buffer_[position_] > ' ') ++position_;
+            result.append(reinterpret_cast<const char*>(buffer_.data() + first), position_ - first);
+            if (position_ != size_ || peek() == EOF) break;
+        }
+        return *this;
+    }
+
+    template<class T> requires std::is_floating_point_v<T>
+    VerifyInput& operator>>(T& result) {
+        std::string token;
+        *this >> token;
+        if (!good_) return *this;
+#ifndef SKIP_RUNTIME_CHECKS
+        char* end = nullptr;
+        const long double value = std::strtold(token.c_str(), &end);
+        if (end != token.c_str() + token.size()) good_ = false;
+        else result = static_cast<T>(value);
+#else
+        result = static_cast<T>(std::strtold(token.c_str(), nullptr));
+#endif
+        return *this;
+    }
+};
+
+// VerifyOutput(file=stdout): 非所有のFILEへ書く。破棄時にflushし、FILEは閉じない。
+// << 整数/char/文字列/浮動小数点: 値を出力する。整数は64bit以下に対応する。
+// fixed(digits): 浮動小数点を小数点以下digits桁で出力する（digits>=0）。
+// flush(): バッファの内容をFILEへ渡す。bool / !で書き込み失敗を確認できる。
+class VerifyOutput {
+    static constexpr std::size_t buffer_size = 1 << 17;
+    std::FILE* file_;
+    std::array<char, buffer_size> buffer_;
+    std::size_t size_ = 0;
+    int precision_ = 6;
+    bool fixed_ = false, good_ = true;
+
+    void write(std::string_view text) {
+        while (!text.empty() && good_) {
+            if (size_ == buffer_.size()) flush();
+            const auto count = std::min(text.size(), buffer_.size() - size_);
+            std::memcpy(buffer_.data() + size_, text.data(), count);
+            size_ += count;
+            text.remove_prefix(count);
+        }
+    }
+
+public:
+    explicit VerifyOutput(std::FILE* file = stdout) : file_(file) {}
+    VerifyOutput(const VerifyOutput&) = delete;
+    VerifyOutput& operator=(const VerifyOutput&) = delete;
+    ~VerifyOutput() { flush(); }
+
+    explicit operator bool() const noexcept { return good_; }
+    bool operator!() const noexcept { return !good_; }
+
+    VerifyOutput& fixed(int digits) {
+        if (digits < 0) throw std::invalid_argument("negative output precision");
+        fixed_ = true;
+        precision_ = digits;
+        return *this;
+    }
+
+    void flush() noexcept {
+        std::size_t written = 0;
+        while (written < size_ && good_) {
+            const auto count = std::fwrite(buffer_.data() + written, 1, size_ - written, file_);
+            if (count == 0) good_ = false;
+            written += count;
+        }
+        size_ = 0;
+    }
+
+    template<class T>
+        requires (std::is_integral_v<T> && sizeof(T) <= sizeof(std::uint64_t)
+                  && !std::is_same_v<T, char>)
+    VerifyOutput& operator<<(T value) {
+        if constexpr (std::is_same_v<T, bool>) return *this << static_cast<char>('0' + value);
+        else {
+            constexpr std::size_t capacity = std::numeric_limits<std::uint64_t>::digits10 + 3;
+            if (buffer_.size() - size_ < capacity) flush();
+            if (!good_) return *this;
+            const auto end = std::to_chars(buffer_.data() + size_, buffer_.data() + size_ + capacity, value).ptr;
+            size_ = static_cast<std::size_t>(end - buffer_.data());
+            return *this;
+        }
+    }
+
+    VerifyOutput& operator<<(char value) {
+        if (size_ == buffer_.size()) flush();
+        if (good_) buffer_[size_++] = value;
+        return *this;
+    }
+
+    VerifyOutput& operator<<(std::string_view value) { write(value); return *this; }
+    VerifyOutput& operator<<(const std::string& value) { write(value); return *this; }
+    VerifyOutput& operator<<(const char* value) { write(value); return *this; }
+
+    template<class T> requires std::is_floating_point_v<T>
+    VerifyOutput& operator<<(T value) {
+        char local[128];
+        const char* format = fixed_ ? "%.*Lf" : "%.*Lg";
+        const int count = std::snprintf(local, sizeof(local), format, precision_,
+                                        static_cast<long double>(value));
+        if (count < 0) good_ = false;
+        else if (static_cast<std::size_t>(count) < sizeof(local))
+            write(std::string_view(local, static_cast<std::size_t>(count)));
+        else {
+            std::vector<char> text(static_cast<std::size_t>(count) + 1);
+            std::snprintf(text.data(), text.size(), format, precision_, static_cast<long double>(value));
+            write(std::string_view(text.data(), static_cast<std::size_t>(count)));
+        }
+        return *this;
+    }
+};
+
+inline VerifyInput verify_in;
+inline VerifyOutput verify_out;
+#endif
+
+
+#include <cstdint>
+#include <vector>
+
+int main()
+{
+    int n = 0, q = 0;
+    verify_in >> n >> q;
+    std::vector<std::uint64_t> values(n);
+    for (auto &x : values)
+    {
+        verify_in >> x;
+    }
+    std::vector<int> parents(n, -1);
+    for (int v = 1; v < n; ++v)
+    {
+        verify_in >> parents[v];
+    }
+    const sirkit::SubtreeIntervals intervals(parents);
+    std::vector<std::uint64_t> flat(n);
+    for (int i = 0; i < n; ++i)
+    {
+        flat[i] = values[intervals.vertex_at(i)];
+    }
+    sirkit::fenwick_tree<std::uint64_t> sums(flat);
+    for (int i = 0; i < q; ++i)
+    {
+        int type = 0, vertex = 0;
+        verify_in >> type >> vertex;
+        if (type == 0)
+        {
+            std::uint64_t delta = 0;
+            verify_in >> delta;
+            sums.add(intervals.index(vertex), delta);
+        }
+        else
+        {
+            const auto [left, right] = intervals.range(vertex);
+            verify_out << sums.sum(left, right) << '\n';
+        }
+    }
+}

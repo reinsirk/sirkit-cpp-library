@@ -11,6 +11,7 @@ permissions:
 env:
   PYTHONDONTWRITEBYTECODE: "1"
   SIRKIT_PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+  SIRKIT_COVERAGE_SHARDS: "4"
 
 concurrency:
   group: verify-${{ github.workflow }}-${{ github.ref }}
@@ -30,6 +31,8 @@ jobs:
           python-version: "3.12"
       - name: Generated source and Verify synchronization
         run: python3 -c 'from pathlib import Path; from Scripts.package_revised_libraries import check_generated; check_generated(Path.cwd())'
+      - name: Require search keywords for every library
+        run: python3 -c 'from Scripts import build_library_pages as pages; pages.page_keywords(pages.ROOT, pages.source_paths(pages.ROOT))'
       - name: README and online status synchronization
         run: python3 Scripts/update_verify_status.py --check
 
@@ -362,13 +365,18 @@ jobs:
           retention-days: 14
 
   instrumented:
-    name: C++23 (${{ matrix.mode }}, checked)
+    name: C++23 (${{ matrix.mode }}, checked${{ matrix.mode == 'coverage' && format(', shard {0}', matrix.shard) || '' }})
     runs-on: ubuntu-26.04
     timeout-minutes: 60
     strategy:
       fail-fast: false
       matrix:
-        mode: [sanitizers, coverage]
+        include:
+          - {mode: sanitizers, shard: 0, artifact: instrumented-sanitizers}
+          - {mode: coverage, shard: 0, artifact: coverage-part-0}
+          - {mode: coverage, shard: 1, artifact: coverage-part-1}
+          - {mode: coverage, shard: 2, artifact: coverage-part-2}
+          - {mode: coverage, shard: 3, artifact: coverage-part-3}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -428,12 +436,14 @@ jobs:
       - name: Run checked library tests
         env:
           VERIFY_MODE: ${{ matrix.mode }}
+          VERIFY_SHARD: ${{ matrix.shard }}
         shell: bash
         run: |
           set -euo pipefail
           options=(--jobs 4)
           if [[ "$VERIFY_MODE" == coverage ]]; then
             options+=(--timeout 240 --x86-baseline-sysroot "$RUNNER_TEMP/qemu-amd64")
+            options+=(--shard-index "$VERIFY_SHARD" --shard-count "$SIRKIT_COVERAGE_SHARDS")
           fi
           python3 Scripts/ci_instrumented.py \
             --mode "$VERIFY_MODE" --compiler clang++-18 \
@@ -470,9 +480,39 @@ jobs:
       - uses: actions/upload-artifact@v7
         if: always()
         with:
-          name: instrumented-${{ matrix.mode }}
+          name: ${{ matrix.artifact }}
           path: ${{ runner.temp }}/instrumented/
           if-no-files-found: ignore
+          overwrite: true
+          retention-days: 14
+
+  coverage:
+    name: C++23 (coverage, checked)
+    needs: instrumented
+    runs-on: ubuntu-26.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: coverage-part-*
+          path: ${{ runner.temp }}/coverage-parts
+          merge-multiple: false
+      - name: Combine all checked coverage and require 100%
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 Scripts/merge_ci_coverage.py --parts "$RUNNER_TEMP/coverage-parts" \
+            --shard-count "$SIRKIT_COVERAGE_SHARDS" --output "$RUNNER_TEMP/coverage" | tee -a "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: instrumented-coverage
+          path: ${{ runner.temp }}/coverage/
+          if-no-files-found: ignore
+          overwrite: true
           retention-days: 14
 
   guidelines:
@@ -770,7 +810,7 @@ jobs:
   documentation:
     name: Library pages preview
     if: ${{ !cancelled() && needs.generated.result == 'success' }}
-    needs: [generated, examples, instrumented, contracts, library_checker]
+    needs: [generated, examples, instrumented, coverage, contracts, library_checker]
     permissions:
       contents: read
       actions: read
@@ -833,7 +873,7 @@ jobs:
   result:
     name: Verify result
     if: always()
-    needs: [generated, python_tests, examples, variant_builds, cross_architecture, instrumented, guidelines, contracts, library_checker, stress, yomiyasu, documentation]
+    needs: [generated, python_tests, examples, variant_builds, cross_architecture, instrumented, coverage, guidelines, contracts, library_checker, stress, yomiyasu, documentation]
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
@@ -845,6 +885,7 @@ jobs:
           VARIANT_BUILDS_RESULT: ${{ needs.variant_builds.result }}
           CROSS_ARCH_RESULT: ${{ needs.cross_architecture.result }}
           INSTRUMENTED_RESULT: ${{ needs.instrumented.result }}
+          COVERAGE_RESULT: ${{ needs.coverage.result }}
           GUIDELINES_RESULT: ${{ needs.guidelines.result }}
           CONTRACT_RESULT: ${{ needs.contracts.result }}
           LIBRARY_CHECKER_RESULT: ${{ needs.library_checker.result }}
@@ -861,7 +902,8 @@ jobs:
             printf '| C++23 Verify（AMD64・ARM64） | %s |\n' "$VERIFY_RESULT"
             printf '| 配布8版の単独ビルド・動作検査 | %s |\n' "$VARIANT_BUILDS_RESULT"
             printf '| 4アーキテクチャのQEMU全件Verify | %s |\n' "$CROSS_ARCH_RESULT"
-            printf '| ASan/UBSan・カバレッジ（checked） | %s |\n' "$INSTRUMENTED_RESULT"
+            printf '| ASan/UBSan・カバレッジの分割計測（checked） | %s |\n' "$INSTRUMENTED_RESULT"
+            printf '| 行・分岐カバレッジの全件100%%判定 | %s |\n' "$COVERAGE_RESULT"
             printf '| Core Guidelines・Google Style（通常版のみ） | %s |\n' "$GUIDELINES_RESULT"
             printf '| checked正常系・期待した失敗系 | %s |\n' "$CONTRACT_RESULT"
             printf '| 公式Library Checkerケース（ローカル） | %s |\n' "$LIBRARY_CHECKER_RESULT"
@@ -870,4 +912,4 @@ jobs:
             printf '| ライブラリページのプレビュー | %s |\n' "$DOCUMENTATION_RESULT"
             printf '\nローカル検証の結果です。オンラインACはREADMEのVerify一覧で別に管理します。\n'
           } >> "$GITHUB_STEP_SUMMARY"
-          [[ "$GENERATED_RESULT" == success && "$PYTHON_TESTS_RESULT" == success && "$VERIFY_RESULT" == success && "$VARIANT_BUILDS_RESULT" == success && "$CROSS_ARCH_RESULT" == success && "$INSTRUMENTED_RESULT" == success && "$GUIDELINES_RESULT" == success && "$CONTRACT_RESULT" == success && "$LIBRARY_CHECKER_RESULT" == success && "$STRESS_RESULT" == success && "$YOMIYASU_RESULT" == success && "$DOCUMENTATION_RESULT" == success ]]
+          [[ "$GENERATED_RESULT" == success && "$PYTHON_TESTS_RESULT" == success && "$VERIFY_RESULT" == success && "$VARIANT_BUILDS_RESULT" == success && "$CROSS_ARCH_RESULT" == success && "$INSTRUMENTED_RESULT" == success && "$COVERAGE_RESULT" == success && "$GUIDELINES_RESULT" == success && "$CONTRACT_RESULT" == success && "$LIBRARY_CHECKER_RESULT" == success && "$STRESS_RESULT" == success && "$YOMIYASU_RESULT" == success && "$DOCUMENTATION_RESULT" == success ]]

@@ -1,4 +1,5 @@
 #define SKIP_RUNTIME_CHECKS
+// Verify-SHA256: c72c20e291241c08168fa93d02fbce27996eeadd36affa499bb846e0504926a0
 // Verify: https://atcoder.jp/contests/practice2/tasks/practice2_e
 
 // Library: Graph/Min_Cost_Flow.cpp

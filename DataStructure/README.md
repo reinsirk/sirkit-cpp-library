@@ -92,3 +92,47 @@ Union Findの代表・経路圧縮・初期化は[説明](../Document/union_find
 | [Sparse_Table.cpp](Sparse_Table.cpp) | [Static RMQ](../Verify/current/submissions/sparse_table.cpp) |
 | [Disjoint_Sparse_Table.cpp](Disjoint_Sparse_Table.cpp) | [Static RMQ](../Verify/current/submissions/disjoint_sparse_table.cpp) |
 | [Wavelet_Matrix.cpp](Wavelet_Matrix.cpp) | [Range Kth Smallest](../Verify/current/submissions/wavelet_kth.cpp)・[Static Range Frequency](../Verify/current/submissions/wavelet_frequency.cpp) |
+| [Dynamic_Wavelet_Matrix.cpp](Dynamic_Wavelet_Matrix.cpp) | [Point Set Range Frequency（動的ウェーブレット行列）](../Verify/current/submissions/dynamic_wavelet_matrix_frequency.cpp)<br>[ABC241 D - Sequence Query（動的ウェーブレット行列）](../Verify/current/submissions/dynamic_wavelet_matrix_order_statistics.cpp) |
+| [Indexed_Priority_Queue.cpp](Indexed_Priority_Queue.cpp) | [Shortest Path（ID付き優先度付きキュー）](../Verify/current/submissions/indexed_priority_queue_shortest_path.cpp) |
+| [Interval_Set.cpp](Interval_Set.cpp) | [Range Insert & Point Mex](../Verify/current/submissions/interval_set_range_mex.cpp) |
+| [Persistent_Stack.cpp](Persistent_Stack.cpp) | [Notebook](../Verify/current/submissions/persistent_stack_notebook.cpp) |
+| [Radix_Heap.cpp](Radix_Heap.cpp) | [Shortest Path（単調最小キュー）](../Verify/current/submissions/radix_heap_shortest_path.cpp) |
+| [Segment_Tree_2D.cpp](Segment_Tree_2D.cpp) | [School of Killifish](../Verify/current/submissions/segment_tree_2d_rectangle_minimum.cpp) |
+| [Sparse_Table_2D.cpp](Sparse_Table_2D.cpp) | [Stamp Game](../Verify/current/submissions/sparse_table_2d_stamps.cpp) |
+| [Top_K_Sum.cpp](Top_K_Sum.cpp) | [Least Elements](../Verify/current/submissions/top_k_sum_sliding.cpp)<br>[Best Performances](../Verify/current/submissions/top_k_sum_updates.cpp) |
+| [Range_Fenwick_Tree.cpp](Range_Fenwick_Tree.cpp) | [AWC0014 E - Flowerbed Watering Management](../Verify/current/submissions/range_fenwick_tree.cpp) |
+| [Static_Range_Minimum.cpp](Static_Range_Minimum.cpp) | [Static RMQ（線形構築・線形領域）](../Verify/current/submissions/static_range_minimum_linear.cpp) |
+| [Compressed_Fenwick_Tree_2D.cpp](Compressed_Fenwick_Tree_2D.cpp) | [Point Add Rectangle Sum（座標圧縮Fenwick木）](../Verify/current/submissions/compressed_fenwick_tree_2d.cpp) |
+| [Persistent_Binary_Trie.cpp](Persistent_Binary_Trie.cpp) | [Range Kth Smallest（永続二分Trie）](../Verify/current/submissions/persistent_binary_trie_range_kth.cpp)<br>[Set Xor-Min（永続二分Trie）](../Verify/current/submissions/persistent_binary_trie_xor_min.cpp) |
+| [Persistent_Li_Chao_Tree.cpp](Persistent_Li_Chao_Tree.cpp) | [Line Add Get Min（永続Li Chao木）](../Verify/current/submissions/persistent_li_chao_line.cpp)<br>[Segment Add Get Min（永続Li Chao木）](../Verify/current/submissions/persistent_li_chao_segment.cpp) |
+| [Union_Find_Order_Statistics.cpp](Union_Find_Order_Statistics.cpp) | [ABC372 E - K-th Largest Connected Components](../Verify/current/submissions/union_find_order_statistics_rank.cpp)<br>[ABC183 F - Confluence](../Verify/current/submissions/union_find_order_statistics_count.cpp) |
+| [Offline_Li_Chao_Tree.cpp](Offline_Li_Chao_Tree.cpp) | [いろはちゃんコンテスト Day4 L - ...好きです](../Verify/current/submissions/offline_li_chao_tree_coins.cpp) |
+| [Monotone_Line_Container.cpp](Monotone_Line_Container.cpp) | [Educational DP Contest Z - Frog 3](../Verify/current/submissions/monotone_line_container_frog.cpp) |
+| [Meldable_Heap.cpp](Meldable_Heap.cpp) | [Game on Tree 3](../Verify/current/submissions/meldable_heap_tree_game.cpp) |
+| [Persistent_Weighted_Union_Find.cpp](Persistent_Weighted_Union_Find.cpp) | [AWC0100 M - 秘密の数列と分岐するノート](../Verify/current/submissions/persistent_weighted_union_find_branching.cpp) |
+| [Point_Set_Mex.cpp](Point_Set_Mex.cpp) | [Mex and Update](../Verify/current/submissions/point_set_mex.cpp)<br>[Range Insert & Point Mex](../Verify/current/submissions/point_set_mex_ranges.cpp) |
+| [Persistent_Affine_Sequence.cpp](Persistent_Affine_Sequence.cpp) | [Persistent Range Affine Range Sum（永続アフィン数列）](../Verify/current/submissions/persistent_affine_sequence.cpp)<br>[ARC030 D - グラフではない](../Verify/current/submissions/persistent_affine_sequence_range_copy.cpp) |
+| [Sliding_Window_Extrema.cpp](Sliding_Window_Extrema.cpp) | [Sliding Minimum Element](../Verify/current/submissions/sliding_window_extrema.cpp)<br>[Stamp Game](../Verify/current/submissions/sliding_window_extrema_stamps.cpp) |
+| [Rollback_Lazy_Segment_Tree.cpp](Rollback_Lazy_Segment_Tree.cpp) | [yukicoder No.3671 - Reusable Lazy Segment Tree](../Verify/current/submissions/rollback_lazy_segment_tree.cpp) |
+| [Interval_Map.cpp](Interval_Map.cpp) | [1D Bucket Tool](../Verify/current/submissions/interval_map_paint.cpp)<br>[Range Update Query (RUQ)](../Verify/current/submissions/interval_map_range_assign.cpp) |
+| [Ring_Deque.cpp](Ring_Deque.cpp) | [Deque](../Verify/current/submissions/ring_deque.cpp) |
+| [Range_Add_Range_Min.cpp](Range_Add_Range_Min.cpp) | [Range Add Range Min](../Verify/current/submissions/range_add_range_min.cpp) |
+| [Binary_Range_Statistics.cpp](Binary_Range_Statistics.cpp) | [F - Vacation Query](../Verify/current/submissions/binary_range_statistics.cpp) |
+| [Range_Equal_Runs.cpp](Range_Equal_Runs.cpp) | [Run](../Verify/current/submissions/range_equal_runs.cpp) |
+| [Range_Nondecreasing_Subsequence.cpp](Range_Nondecreasing_Subsequence.cpp) | [Range ABCD String Query](../Verify/current/submissions/range_nondecreasing_subsequence.cpp) |
+| [Range_Add_Range_Gcd.cpp](Range_Add_Range_Gcd.cpp) | [D - ARCたんクッキー](../Verify/current/submissions/range_add_range_gcd.cpp) |
+| [Range_Add_Threshold_Min.cpp](Range_Add_Threshold_Min.cpp) | [Choosing Blocks in a Shopping Street](../Verify/current/submissions/range_add_threshold_min.cpp) |
+| [Range_Add_State_Ids.cpp](Range_Add_State_Ids.cpp) | [yukicoder No.469 - 区間加算と一致検索の問題](../Verify/current/submissions/range_add_state_ids.cpp) |
+| [Component_Add_Union_Find.cpp](Component_Add_Union_Find.cpp) | [Union add query](../Verify/current/submissions/component_add_union_find.cpp) |
+| [Range_Add_Weighted_Minimum.cpp](Range_Add_Weighted_Minimum.cpp) | [N - Times Tables](../Verify/current/submissions/range_add_weighted_minimum.cpp) |
+| [Successor_Set.cpp](Successor_Set.cpp) | [D - Linear Probing](../Verify/current/submissions/successor_set_linear_probing.cpp) |
+| [Sqrt_Tree.cpp](Sqrt_Tree.cpp) | [Static RMQ](../Verify/current/submissions/sqrt_tree_static_rmq.cpp) |
+| [Monotone_Value_Shift.cpp](Monotone_Value_Shift.cpp) | [Rated Range](../Verify/current/submissions/monotone_value_shift.cpp) |
+| [Nearest_Value_Index.cpp](Nearest_Value_Index.cpp) | [K-th Nearest](../Verify/current/submissions/nearest_value_index.cpp) |
+| [Grid_Connectivity_Frontier.cpp](Grid_Connectivity_Frontier.cpp) | [S - マス目](../Verify/current/submissions/grid_corner_connected_colorings.cpp) |
+| [Run_Length_Queue.cpp](Run_Length_Queue.cpp) | [Large Queue](../Verify/current/submissions/run_length_queue.cpp) |
+| [Weighted_Slope_Trick.cpp](Weighted_Slope_Trick.cpp) | [No.1467 Selling Cars](../Verify/current/submissions/weighted_slope_trick_selling_cars.cpp) |
+| [Weighted_L1_Statistics.cpp](Weighted_L1_Statistics.cpp) | [F - Absolute Minima](../Verify/current/submissions/weighted_l1_statistics_absolute_minima.cpp)<br>[D - Chalkboard Median](../Verify/current/submissions/weighted_l1_statistics_chalkboard.cpp) |
+| [Ordered_Multiset.cpp](Ordered_Multiset.cpp) | [Max - Min Query](../Verify/current/submissions/ordered_multiset_extrema.cpp)<br>[Sequence Query](../Verify/current/submissions/ordered_multiset_ranks.cpp) |
+| [Range_Add_Total_Variation.cpp](Range_Add_Total_Variation.cpp) | [Uplift](../Verify/current/submissions/range_add_total_variation.cpp) |
+| [Subset_Xor_Square_Range.cpp](Subset_Xor_Square_Range.cpp) | [XOR^2 Sum Query](../Verify/current/submissions/subset_xor_square_range_yuki3792.cpp) |

@@ -1,8 +1,418 @@
 # SPDX-License-Identifier: CC0-1.0
 """非一意な解の出力を独立に検査する。"""
+from array import array
 from collections import deque
 from functools import lru_cache
 import re
+
+
+def _has_no_articulation(graph):
+    n = len(graph)
+    order = [-1] * n
+    low = [0] * n
+    order[0] = 0
+    count = 1
+    root_children = 0
+    stack = [(0, -1, iter(graph[0]))]
+    while stack:
+        u, parent, neighbors = stack[-1]
+        v = next(neighbors, -1)
+        if v < 0:
+            stack.pop()
+            if parent >= 0:
+                if parent != 0 and low[u] >= order[parent]:
+                    return False
+                low[parent] = min(low[parent], low[u])
+        elif order[v] < 0:
+            root_children += u == 0
+            low[v] = order[v] = count
+            count += 1
+            stack.append((v, u, iter(graph[v])))
+        elif v != parent:
+            low[u] = min(low[u], order[v])
+    return count == n and root_children == 1
+
+
+def check_tree_walk_orientation(_entry, sample, output):
+    """各パスの両端と、各木辺で使う方向を独立に調べる。"""
+    try:
+        n, m, *data = map(int, sample["input"].split())
+        claimed, *oriented = map(int, output.split())
+    except ValueError:
+        return False
+    if (not 2 <= n <= 2000 or not 1 <= m <= 2000 or len(data) != 2 * (n - 1 + m)
+            or len(oriented) != 2 * m or any(not 1 <= v <= n for v in data)):
+        return False
+    graph = [[] for _ in range(n + 1)]
+    split = 2 * (n - 1)
+    for u, v in zip(data[:split:2], data[1:split:2]):
+        graph[u].append(v)
+        graph[v].append(u)
+    parent = [0] * (n + 1)
+    depth = [0] * (n + 1)
+    parent[1] = 1
+    order = [1]
+    for u in order:
+        for v in graph[u]:
+            if parent[v] == 0:
+                parent[v] = u
+                depth[v] = depth[u] + 1
+                order.append(v)
+    if len(order) != n:
+        return False
+
+    counts = [0] * (n + 1)
+    directions = [0] * (n + 1)
+    for a, b, u, v in zip(data[split::2], data[split + 1::2], oriented[::2], oriented[1::2]):
+        if (u, v) not in ((a, b), (b, a)) or a == b:
+            return False
+        while u != v:
+            if depth[u] >= depth[v]:
+                counts[u] += 1
+                directions[u] |= 1
+                u = parent[u]
+            else:
+                counts[v] += 1
+                directions[v] |= 2
+                v = parent[v]
+    actual = sum(direction.bit_count() for direction in directions)
+    upper = sum(min(2, count) for count in counts)
+    return claimed == actual == upper
+
+
+def check_forest_edge_coloring(_entry, sample, output):
+    """各頂点で使う色が重複せず、全体の色数が最大次数か確認する。"""
+    try:
+        n, *endpoints = map(int, sample["input"].split())
+        k, *colors = map(int, output.split())
+    except ValueError:
+        return False
+    if not 1 <= n <= 100000 or len(endpoints) != 2 * (n - 1) or len(colors) != n - 1:
+        return False
+    if any(not 1 <= vertex <= n for vertex in endpoints):
+        return False
+    incident = [set() for _ in range(n)]
+    for color, u, v in zip(colors, endpoints[::2], endpoints[1::2]):
+        if (not 1 <= color <= k or u == v or color in incident[u - 1] or color in incident[v - 1]):
+            return False
+        incident[u - 1].add(color)
+        incident[v - 1].add(color)
+    return k == max(map(len, incident))
+
+
+def check_incident_label_spanning_tree(_entry, sample, output):
+    """辺番号、木、全頂点の指定色を確かめる。解は公式出力と異なってよい。"""
+    try:
+        data = sample["input"].split()
+        n, m = map(int, data[:2])
+        required = data[-1]
+        if (not 2 <= n <= 200000 or not n - 1 <= m <= 200000 or len(data) != 3 * m + 3
+                or len(required) != n or any(label not in "RB" for label in required)):
+            return False
+        edges = [(int(data[i]), int(data[i + 1]), data[i + 2]) for i in range(2, len(data) - 1, 3)]
+        if len(set(edges)) != m or any(not 1 <= u < v <= n or label not in ("R", "B") for u, v, label in edges):
+            return False
+        expected = sample["output"].split()[0]
+        actual = output.split()
+        if expected == "No":
+            return actual == ["No"]
+        if (expected != "Yes" or len(actual) != n or actual[0] != "Yes"
+                or any(re.fullmatch(r"[+-]?[0-9]+", token) is None for token in actual[1:])):
+            return False
+
+        parents = [-1] * (n + 1)
+        covered = bytearray(n + 1)
+        used = set()
+
+        def root(vertex):
+            while parents[vertex] >= 0:
+                p = parents[vertex]
+                if parents[p] < 0:
+                    return p
+                parents[vertex] = parents[p]
+                vertex = parents[vertex]
+            return vertex
+
+        for index in map(int, actual[1:]):
+            if not 1 <= index <= m or index in used:
+                return False
+            used.add(index)
+            u, v, label = edges[index - 1]
+            a, b = root(u), root(v)
+            if a == b:
+                return False
+            if parents[a] > parents[b]:
+                a, b = b, a
+            parents[a] += parents[b]
+            parents[b] = a
+            if label == required[u - 1]:
+                covered[u] = 1
+            if label == required[v - 1]:
+                covered[v] = 1
+        return all(covered[1:])
+    except (AttributeError, IndexError, KeyError, TypeError, ValueError):
+        return False
+
+
+def check_subcubic_tree_biconnectivity(_entry, sample, output):
+    """追加後の関節点がなく、入力ごとの費用が期待値と等しいことを確かめる。"""
+    try:
+        inputs = iter(map(int, sample["input"].split()))
+        reference = iter(map(int, sample["output"].split()))
+        tokens = output.split()
+        if any(re.fullmatch(r"[+-]?[0-9]+", token) is None for token in tokens):
+            return False
+        actual = iter(map(int, tokens))
+        tests = next(inputs)
+        if not 1 <= tests <= 200000:
+            return False
+        total = 0
+        for _ in range(tests):
+            n = next(inputs)
+            total += n
+            if n < 3 or total > 200000:
+                return False
+            weights = [next(inputs) for _ in range(n)]
+            if any(not 1 <= weight <= 10**9 for weight in weights):
+                return False
+            graph = [set() for _ in range(n)]
+            for _ in range(n - 1):
+                u, v = next(inputs) - 1, next(inputs) - 1
+                if not 0 <= u < n or not 0 <= v < n or u == v or v in graph[u]:
+                    return False
+                graph[u].add(v)
+                graph[v].add(u)
+            if any(len(edges) > 3 for edges in graph):
+                return False
+
+            costs = []
+            for stream in (reference, actual):
+                count = next(stream)
+                if not 0 <= count <= n * (n - 1) // 2:
+                    return False
+                cost = 0
+                for _ in range(count):
+                    u, v = next(stream) - 1, next(stream) - 1
+                    if not 0 <= u < n or not 0 <= v < n or u == v or v in graph[u]:
+                        return False
+                    cost += weights[u] + weights[v]
+                    if stream is actual:
+                        graph[u].add(v)
+                        graph[v].add(u)
+                costs.append(cost)
+            if costs[0] != costs[1] or not _has_no_articulation(graph):
+                return False
+        return all(next(stream, None) is None for stream in (inputs, reference, actual))
+    except (AttributeError, KeyError, StopIteration, TypeError, ValueError):
+        return False
+
+
+def check_even_outdegree_orientation(_entry, sample, output):
+    """単純連結グラフの各辺が一度だけ現れ、すべての出次数が偶数か確かめる。"""
+    try:
+        source = list(map(int, sample["input"].split()))
+        n, m = source[:2]
+        actual = output.split()
+        if not 2 <= n <= 100000 or not n - 1 <= m <= 100000 or len(source) != 2 + 2 * m:
+            return False
+        if actual == ["-1"]:
+            return m % 2 == 1
+        if m % 2 or len(actual) != 2 * m or any(re.fullmatch(r"[+-]?[0-9]+", token) is None for token in actual):
+            return False
+        remaining = {tuple(sorted((u, v))) for u, v in zip(source[2::2], source[3::2])}
+        parity = bytearray(n + 1)
+        values = iter(map(int, actual))
+        for u, v in zip(values, values):
+            if not 1 <= u <= n or not 1 <= v <= n:
+                return False
+            edge = (u, v) if u < v else (v, u)
+            if edge not in remaining:
+                return False
+            remaining.remove(edge)
+            parity[u] ^= 1
+        return not remaining and not any(parity)
+    except (AttributeError, KeyError, TypeError, ValueError):
+        return False
+
+
+def check_reachability_size_orientation(_entry, sample, output):
+    """各辺の矢印を読み、頂点ごとの到達可能数を独立した探索で確認する。"""
+    try:
+        source = list(map(int, sample["input"].split()))
+        n, m = source[:2]
+        arrows = output.split()
+        if not 1 <= n <= 100 or not 0 <= m <= n * (n - 1) // 2:
+            return False
+        if len(source) != 2 + 2 * m + n or len(arrows) != m:
+            return False
+        adjacent = [[] for _ in range(n + 1)]
+        edges = set()
+        for i, arrow in enumerate(arrows):
+            u, v = source[2 + 2 * i:4 + 2 * i]
+            if not 1 <= u <= n or not 1 <= v <= n or u == v or arrow not in ("->", "<-"):
+                return False
+            edge = min(u, v), max(u, v)
+            if edge in edges:
+                return False
+            edges.add(edge)
+            if arrow == "<-":
+                u, v = v, u
+            adjacent[u].append(v)
+        for start, expected in enumerate(source[2 + 2 * m:], 1):
+            seen = {start}
+            pending = [start]
+            for u in pending:
+                for v in adjacent[u]:
+                    if v not in seen:
+                        seen.add(v)
+                        pending.append(v)
+            if len(seen) != expected:
+                return False
+        return True
+    except (AttributeError, KeyError, TypeError, ValueError):
+        return False
+
+
+def check_reachability_chain_cover(_entry, sample, output):
+    """最少色数と、同じ色の頂点が到達可能性で比較できることを確かめる。"""
+    try:
+        data = list(map(int, sample["input"].split()))
+        n, m = data[:2]
+        tokens = output.split()
+        if not 1 <= n <= 7000 or not 0 <= m <= 7000 or len(data) != 2 + 2 * m or len(tokens) != n:
+            return False
+        if any(re.fullmatch(r"[+-]?[0-9]+", token) is None for token in tokens):
+            return False
+        colors = list(map(int, tokens))
+        if any(not 1 <= color <= n for color in colors) or max(colors) != max(map(int, sample["output"].split())):
+            return False
+        graph = [[] for _ in range(n)]
+        reverse = [[] for _ in range(n)]
+        for u, v in zip(data[2::2], data[3::2]):
+            if not 1 <= u <= n or not 1 <= v <= n or u == v:
+                return False
+            graph[u - 1].append(v - 1)
+            reverse[v - 1].append(u - 1)
+
+        seen = bytearray(n)
+        finish = []
+        for root in range(n):
+            if seen[root]:
+                continue
+            seen[root] = 1
+            active = [(root, iter(graph[root]))]
+            while active:
+                u, neighbors = active[-1]
+                v = next(neighbors, -1)
+                if v == -1:
+                    finish.append(u)
+                    active.pop()
+                elif not seen[v]:
+                    seen[v] = 1
+                    active.append((v, iter(graph[v])))
+
+        component = [-1] * n
+        count = 0
+        for root in reversed(finish):
+            if component[root] != -1:
+                continue
+            component[root] = count
+            pending = [root]
+            for u in pending:
+                for v in reverse[u]:
+                    if component[v] == -1:
+                        component[v] = count
+                        pending.append(v)
+            count += 1
+
+        diagram = [set() for _ in range(count)]
+        groups = {}
+        for u, color in enumerate(colors):
+            origin = component[u]
+            groups.setdefault(color, set()).add(origin)
+            diagram[origin].update(component[v] for v in graph[u] if component[v] != origin)
+        reachable = [0] * count
+        for u in range(count - 1, -1, -1):
+            bits = 1 << u
+            for v in diagram[u]:
+                bits |= reachable[v]
+            reachable[u] = bits
+        for group in groups.values():
+            ordered = sorted(group)
+            for u, v in zip(ordered, ordered[1:]):
+                if not (reachable[u] >> v) & 1:
+                    return False
+        return True
+    except (AttributeError, KeyError, TypeError, ValueError):
+        return False
+
+
+def check_tree_vertex_at_distance(_entry, sample, output):
+    """解があるクエリでは実際の距離を照合し、複数の候補を受け付ける。"""
+    try:
+        tokens = iter(map(int, sample["input"].split()))
+        n = next(tokens)
+        if not 2 <= n <= 200000:
+            return False
+        adjacent = [[] for _ in range(n)]
+        for _ in range(n - 1):
+            u, v = next(tokens) - 1, next(tokens) - 1
+            if not 0 <= u < n or not 0 <= v < n or u == v:
+                return False
+            adjacent[u].append(v)
+            adjacent[v].append(u)
+        q = next(tokens)
+        actual = output.split()
+        reference = list(map(int, sample["output"].split()))
+        if not 1 <= q <= 200000 or len(actual) != q or len(reference) != q:
+            return False
+        if any(re.fullmatch(r"[+-]?[0-9]+", token) is None for token in actual):
+            return False
+
+        parent, depth = array("i", [-1]) * n, array("i", [0]) * n
+        parent[0] = 0
+        pending = [0]
+        for u in pending:
+            for v in adjacent[u]:
+                if parent[v] == -1:
+                    parent[v] = u
+                    depth[v] = depth[u] + 1
+                    pending.append(v)
+        if len(pending) != n:
+            return False
+        jump = [parent]
+        for _ in range(1, max(depth).bit_length()):
+            last = jump[-1]
+            jump.append(array("i", (last[u] for u in last)))
+
+        def distance(a, b):
+            total = depth[a] + depth[b]
+            if depth[a] < depth[b]:
+                a, b = b, a
+            steps = depth[a] - depth[b]
+            while steps:
+                lowest = steps & -steps
+                a = jump[lowest.bit_length() - 1][a]
+                steps -= lowest
+            if a == b:
+                return total - 2 * depth[a]
+            for ancestors in reversed(jump):
+                if ancestors[a] != ancestors[b]:
+                    a, b = ancestors[a], ancestors[b]
+            return total - 2 * depth[parent[a]]
+
+        for expected, reported in zip(reference, map(int, actual)):
+            u, k = next(tokens) - 1, next(tokens)
+            if not 0 <= u < n or not 1 <= k <= n:
+                return False
+            if reported == -1:
+                if expected != -1:
+                    return False
+            elif not 1 <= reported <= n or distance(u, reported - 1) != k:
+                return False
+        return next(tokens, None) is None
+    except (AttributeError, KeyError, StopIteration, TypeError, ValueError):
+        return False
 
 
 def check_maximum_independent_set(entry, sample, output):
@@ -30,6 +440,78 @@ def check_maximum_independent_set(entry, sample, output):
                    and not (u in selected and v in selected)
                    for u, v in zip(data[2::2], data[3::2]))
     except (ValueError, TypeError, KeyError, AttributeError):
+        return False
+
+
+def check_unit_step_tree_labels(_entry, sample, output):
+    """公式例の可否と、隣接頂点の差・固定値を確かめる。"""
+    try:
+        data = list(map(int, sample["input"].split()))
+        n = data[0]
+        if not 1 <= n <= 100000 or len(data) < 2 * n:
+            return False
+        k = data[2 * n - 1]
+        if not 1 <= k <= n or len(data) != 2 * (n + k):
+            return False
+        fixed = dict(zip(data[2 * n::2], data[2 * n + 1::2]))
+        if len(fixed) != k or any(not 1 <= v <= n or not 0 <= x <= 1000000 for v, x in fixed.items()):
+            return False
+        edges = list(zip(data[1:2 * n - 1:2], data[2:2 * n - 1:2]))
+        if any(not 1 <= u <= n or not 1 <= v <= n or u == v for u, v in edges):
+            return False
+        expected = sample["output"].split()[0]
+        actual = output.split()
+        if expected == "No":
+            return actual == ["No"]
+        if expected != "Yes" or len(actual) != n + 1 or actual[0] != "Yes":
+            return False
+        if any(re.fullmatch(r"[+-]?[0-9]+", token) is None for token in actual[1:]):
+            return False
+        labels = [0] + list(map(int, actual[1:]))
+        return (
+            all(labels[v] == value for v, value in fixed.items())
+            and all(abs(labels[u] - labels[v]) == 1 for u, v in edges)
+        )
+    except (IndexError, KeyError, ValueError):
+        return False
+
+
+def check_distinct_topological_orders(_entry, sample, output):
+    """公式または独立オラクルの可否と、K 個の相異なる順序を確かめる。"""
+    try:
+        data = list(map(int, sample["input"].split()))
+        n, m, k = data[:3]
+        if not (1 <= n <= 100000 and 0 <= m <= 100000 and 1 <= k <= 10 and len(data) == 3 + 2 * m):
+            return False
+        edges = list(zip(data[3::2], data[4::2]))
+        if len(set(edges)) != m or any(not 1 <= u <= n or not 1 <= v <= n or u == v for u, v in edges):
+            return False
+        impossible = sample["output"].strip() == "-1"
+        if output.strip() == "-1":
+            return impossible
+        if impossible:
+            return False
+        lines = [line for line in output.splitlines() if line.strip()]
+        if len(lines) != k:
+            return False
+        used = set()
+        for line in lines:
+            tokens = line.split()
+            if len(tokens) != n or any(not token.isascii() or "_" in token for token in tokens):
+                return False
+            order = tuple(map(int, tokens))
+            if order in used:
+                return False
+            position = [-1] * (n + 1)
+            for i, vertex in enumerate(order):
+                if not 1 <= vertex <= n or position[vertex] != -1:
+                    return False
+                position[vertex] = i
+            if any(position[u] >= position[v] for u, v in edges):
+                return False
+            used.add(order)
+        return True
+    except (AttributeError, KeyError, TypeError, ValueError):
         return False
 
 

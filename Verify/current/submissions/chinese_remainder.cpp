@@ -1,4 +1,5 @@
 #define SKIP_RUNTIME_CHECKS
+// Verify-SHA256: 4afcfbce7f94772b0d956873771029f6f8453ebbccf4ec2cdbd6270a5ff48507
 // Verify: https://atcoder.jp/contests/abc193/tasks/abc193_e
 
 // Library: Math/Modular_Arithmetic.cpp

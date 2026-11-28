@@ -181,6 +181,37 @@ class OfficialCaseTests(unittest.TestCase):
             with self.assertRaisesRegex(lc.RunnerError, "case_set_mismatch"):
                 lc.official_problem(self.checkout, "owned_problem", self.cache, PIN, 10)
 
+    def test_streaming_keeps_only_the_checked_case_and_cleans_up_on_failure(self):
+        contents = {"example_00.in": "own input\n", "example_00.out": "canonical\n"}
+        for name in ("in/example_00.in", "out/example_00.out"):
+            (self.problem / name).unlink()
+
+        def generate(command, *_args, **_kwargs):
+            self.assertIn(str(lc.CASE_GENERATOR), command)
+            for name, data in contents.items():
+                if command[-2] == "input" and name.endswith(".out"):
+                    continue
+                path = self.problem / name.rsplit(".", 1)[1] / name
+                path.write_text(data)
+            return 0, 1
+
+        details = {"problem_id": "owned_problem", "expected_cases": ["example_00"],
+                   "generation_strategy": "one_case_at_a_time", "hash_json_sha256": lc.digest(self.problem / "hash.json")}
+        with patch.object(lc, "execute", side_effect=generate):
+            with lc.case_files(self.checkout, self.problem, details, "example_00", self.cache, 10, input_only=True):
+                self.assertEqual(list((self.problem / "in").iterdir()), [self.problem / "in/example_00.in"])
+                self.assertFalse(list((self.problem / "out").iterdir()))
+            with self.assertRaisesRegex(RuntimeError, "test checker interruption"):
+                with lc.case_files(self.checkout, self.problem, details, "example_00", self.cache, 10):
+                    self.assertTrue((self.problem / "out/example_00.out").is_file())
+                    raise RuntimeError("test checker interruption")
+            contents["example_00.out"] = "altered\n"
+            with self.assertRaisesRegex(lc.RunnerError, "case_hash_mismatch"):
+                with lc.case_files(self.checkout, self.problem, details, "example_00", self.cache, 10):
+                    self.fail("entered a case with an altered expected result")
+        for subdir in ("in", "out"):
+            self.assertFalse(list((self.problem / subdir).iterdir()))
+
     def test_empty_and_duplicate_case_sets_are_not_successful(self):
         for data in [{"tests": []}, {"tests": [{"name": "a.in", "number": 0}]},
                      {"tests": [{"name": "a.in", "number": 1}, {"name": "a.cpp", "number": 1}]}]:

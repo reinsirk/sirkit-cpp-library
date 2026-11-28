@@ -78,3 +78,59 @@
 | ファイル | 対応する検証 |
 | --- | --- |
 | [NTT.cpp](NTT.cpp) | [Convolution (Mod 998244353)](../Verify/current/submissions/ntt_convolution.cpp) |
+| [Big_Integer.cpp](Big_Integer.cpp) | [Division of Big Integers](../Verify/current/submissions/division_of_big_integers.cpp)<br>[Division of Hex Big Integers](../Verify/current/submissions/division_of_hex_big_integers.cpp)<br>[Addition of Big Integers](../Verify/current/submissions/addition_of_big_integers.cpp)<br>[Multiplication of Big Integers](../Verify/current/submissions/multiplication_of_big_integers.cpp)<br>[Addition of Hex Big Integers](../Verify/current/submissions/addition_of_hex_big_integers.cpp)<br>[Multiplication of Hex Big Integers](../Verify/current/submissions/multiplication_of_hex_big_integers.cpp) |
+| [Bivariate_Formal_Power_Series.cpp](Bivariate_Formal_Power_Series.cpp) | [Inv of Bivariate Formal Power Series](../Verify/current/submissions/inv_of_formal_power_series_2d.cpp) |
+| [Bounded_Nondecreasing_Sequences.cpp](Bounded_Nondecreasing_Sequences.cpp) | [Number of Increasing Sequences Between Two Sequences](../Verify/current/submissions/number_of_increasing_sequences_between_two_sequences.cpp) |
+| [Combination/Binomial_Prefix_Sum.cpp](Combination/Binomial_Prefix_Sum.cpp) | [Prefix Sum of Binomial Coefficient](../Verify/current/submissions/prefix_sum_of_binomial_coefficient.cpp) |
+| [Combination/Q_Binomial.cpp](Combination/Q_Binomial.cpp) | [q-Binomial Coefficient (Prime Mod)](../Verify/current/submissions/q_binomial_coefficient_prime_mod.cpp) |
+| [Dirichlet_Prefix_Sums.cpp](Dirichlet_Prefix_Sums.cpp) | [Dirichlet Convolution and Prefix Sums](../Verify/current/submissions/dirichlet_convolution_and_prefix_sums.cpp)<br>[Dirichlet Inverse and Prefix Sums](../Verify/current/submissions/dirichlet_inverse_and_prefix_sums.cpp) |
+| [Fast_Factorial.cpp](Fast_Factorial.cpp) | [Factorial](../Verify/current/submissions/factorial.cpp)<br>[Many Factorials](../Verify/current/submissions/many_factorials.cpp) |
+| [Hafnian.cpp](Hafnian.cpp) | [Hafnian of Matrix](../Verify/current/submissions/hafnian_of_matrix.cpp) |
+| [Multiplicative_Prefix_Sums.cpp](Multiplicative_Prefix_Sums.cpp) | [Sum of Multiplicative Function](../Verify/current/submissions/sum_of_multiplicative_function.cpp) |
+| [Polynomial_GCD.cpp](Polynomial_GCD.cpp) | [Inv of Polynomials](../Verify/current/submissions/inv_of_polynomials.cpp) |
+| [Polynomial_Roots.cpp](Polynomial_Roots.cpp) | [Polynomial Root Finding (Mod 998244353)](../Verify/current/submissions/polynomial_root_finding.cpp) |
+| [Prime_Discrete_Logarithm.cpp](Prime_Discrete_Logarithm.cpp) | [Discrete Logarithm (Fixed Mod)](../Verify/current/submissions/discrete_logarithm_fixed_mod.cpp) |
+| [Small_Prime_Stirling.cpp](Small_Prime_Stirling.cpp) | [Stirling Number of the First Kind (Small p, Large n)](../Verify/current/submissions/stirling_number_of_the_first_kind_small_p_large_n.cpp)<br>[Stirling Number of the Second Kind (Small p, Large n)](../Verify/current/submissions/stirling_number_of_the_second_kind_small_p_large_n.cpp) |
+| [Stirling_Columns.cpp](Stirling_Columns.cpp) | [Stirling Number of the First Kind (Fixed K)](../Verify/current/submissions/stirling_number_of_the_first_kind_fixed_k.cpp)<br>[Stirling Number of the Second Kind (Fixed K)](../Verify/current/submissions/stirling_number_of_the_second_kind_fixed_k.cpp) |
+| [FPS_Composition.cpp](FPS_Composition.cpp) | [Composition of Formal Power Series](../Verify/current/submissions/composition_of_formal_power_series.cpp)<br>[Composition of Formal Power Series (Large)](../Verify/current/submissions/composition_of_formal_power_series_large.cpp)<br>[Compositional Inverse of Formal Power Series](../Verify/current/submissions/compositional_inverse_of_formal_power_series.cpp)<br>[Compositional Inverse of Formal Power Series (Large)](../Verify/current/submissions/compositional_inverse_of_formal_power_series_large.cpp) |
+| [Polynomial_Factorization.cpp](Polynomial_Factorization.cpp) | [Factorization of Polynomial (Mod)](../Verify/current/submissions/factorization_of_polynomials.cpp) |
+| [Set_Series_Composition.cpp](Set_Series_Composition.cpp) | [Polynomial Composite Set Power Series](../Verify/current/submissions/polynomial_composite_set_power_series.cpp)<br>[Power Projection of Set Power Series](../Verify/current/submissions/power_projection_of_set_power_series.cpp) |
+| [Floor_Path_Product.cpp](Floor_Path_Product.cpp) | [ABC429 G - Sum of Pow of Mod of Linear](../Verify/current/submissions/floor_path_product_abc429_g.cpp) |
+| [Floor_Sum_Moments.cpp](Floor_Sum_Moments.cpp) | [ABC402 G - Sum of Prod of Mod of Linear](../Verify/current/submissions/floor_sum_moments_abc402_g.cpp) |
+| [Relaxed_Convolution.cpp](Relaxed_Convolution.cpp) | [ABC315 Ex - Typical Convolution Problem](../Verify/current/submissions/relaxed_convolution_abc315_ex.cpp) |
+| [Mixed_Radix.cpp](Mixed_Radix.cpp) | [No.696 square1001 and Permutation 5](../Verify/current/submissions/permutation_rank_decimal_yuki696.cpp) |
+| [Convolution_Wrap64.cpp](Convolution_Wrap64.cpp) | [Convolution (Mod 2^64)](../Verify/current/submissions/convolution_mod_2_64.cpp) |
+| [Cyclic_Multivariate_Convolution.cpp](Cyclic_Multivariate_Convolution.cpp) | [Multidimensional Convolution (Circular)](../Verify/current/submissions/multivariate_convolution_cyclic.cpp) |
+| [Permutation_Group.cpp](Permutation_Group.cpp) | [Permutation Group Order](../Verify/current/submissions/permutation_group_order.cpp) |
+| [Convolution_F2_64.cpp](Convolution_F2_64.cpp) | [Convolution (F_{2^64})](../Verify/current/submissions/convolution_f2_64.cpp) |
+| [Bounded_Compositions.cpp](Bounded_Compositions.cpp) | [M - Candies](../Verify/current/submissions/bounded_composition_counts_dp_m.cpp) |
+| [Matrix_Permanent.cpp](Matrix_Permanent.cpp) | [Matching](../Verify/current/submissions/matrix_permanent_dp_o.cpp) |
+| [Linear_Matroid_Parity.cpp](Linear_Matroid_Parity.cpp) | [Degree Harmony 2](../Verify/current/submissions/linear_matroid_parity_abc482_g.cpp) |
+| [Xor_Two_Independent_Sets.cpp](Xor_Two_Independent_Sets.cpp) | [XOR Bag](../Verify/current/submissions/xor_two_independent_sets_game_x.cpp) |
+| [Permutation_Comparison_Count.cpp](Permutation_Comparison_Count.cpp) | [Permutation](../Verify/current/submissions/permutation_comparison_count_dp_t.cpp) |
+| [Modular_Shift_Minimum.cpp](Modular_Shift_Minimum.cpp) | [Sum of Min of Mod of Linear](../Verify/current/submissions/modular_shift_minimum_arc182_e.cpp) |
+| [Modular_Shift_Mex.cpp](Modular_Shift_Mex.cpp) | [Sum of Mex of Mod of Linear](../Verify/current/submissions/modular_shift_mex_abc465_g.cpp) |
+| [Modular_Shift_Sums.cpp](Modular_Shift_Sums.cpp) | [Sum of Mod of Linear](../Verify/current/submissions/modular_shift_sums_abc483_f.cpp) |
+| [Tridiagonal_Matrix_Power.cpp](Tridiagonal_Matrix_Power.cpp) | [Pair of Permutations](../Verify/current/submissions/tridiagonal_matrix_power_arc228_e.cpp) |
+| [Matrix_Pencil_Determinant.cpp](Matrix_Pencil_Determinant.cpp) | [Inconvenient Kingdom](../Verify/current/submissions/matrix_pencil_determinant_yuki1303.cpp) |
+| [Polynomial_Matrix_Product.cpp](Polynomial_Matrix_Product.cpp) | [Catastrophic Roulette](../Verify/current/submissions/polynomial_matrix_product_arc174_c.cpp) |
+| [Large_Convolution.cpp](Large_Convolution.cpp) | [Convolution (Large)](../Verify/current/submissions/convolution_mod_large.cpp) |
+| [Polynomial_Recurrence.cpp](Polynomial_Recurrence.cpp) | [Beautiful Binary Tree](../Verify/current/submissions/polynomial_recurrence_abc222_h.cpp) |
+| [Interval_Matrix_Rank.cpp](Interval_Matrix_Rank.cpp) | [Colorful Spanning Tree](../Verify/current/submissions/interval_matrix_rank_abc399_g.cpp) |
+| [Young_Tableau_Count.cpp](Young_Tableau_Count.cpp) | [Vanitas Vanitatum](../Verify/current/submissions/domino_tableau_yuki2149.cpp)<br>[Numbering Blocks](../Verify/current/submissions/young_tableau_numbering_blocks.cpp) |
+| [Prefix_Dominant_Compositions.cpp](Prefix_Dominant_Compositions.cpp) | [Prefix Advantage](../Verify/current/submissions/prefix_dominant_compositions_yuki3480.cpp) |
+| [Polynomial_Moments.cpp](Polynomial_Moments.cpp) | [Flip Cards](../Verify/current/submissions/polynomial_moments_yuki1875.cpp) |
+| [Polynomial_Recurrence_Fit.cpp](Polynomial_Recurrence_Fit.cpp) | [Beautiful Binary Tree](../Verify/current/submissions/polynomial_recurrence_fit_abc222_h.cpp) |
+| [Exponential_Coefficient_Transform.cpp](Exponential_Coefficient_Transform.cpp) | [Stochastic Dominance](../Verify/current/submissions/exponential_coefficient_transform_agc076_d.cpp) |
+| [Xor_Convolution_Without_Division.cpp](Xor_Convolution_Without_Division.cpp) | [bitwise xor convolution (characteristic 2)](../Verify/current/submissions/xor_convolution_without_division_yuki1901.cpp) |
+| [Reeds_Sloane.cpp](Reeds_Sloane.cpp) | [Takahashi's Basics in Education and Learning](../Verify/current/submissions/reeds_sloane_abc129_f.cpp) |
+| [Krawtchouk_Transform.cpp](Krawtchouk_Transform.cpp) | [Random Transition](../Verify/current/submissions/krawtchouk_transform_arc133_f.cpp) |
+| [Polynomial_Differential_Operator.cpp](Polynomial_Differential_Operator.cpp) | [Differential Equation (Enhanced version)](../Verify/current/submissions/polynomial_differential_operator_yuki2583.cpp) |
+| [Ferrers_Rook.cpp](Ferrers_Rook.cpp) | [Flipping Coins 2](../Verify/current/submissions/ferrers_rook_abc272_ex.cpp) |
+| [Histogram_Rook_Cover.cpp](Histogram_Rook_Cover.cpp) | [Histogram Rooks](../Verify/current/submissions/histogram_rook_cover_agc041_f.cpp) |
+| [Labeled_Tree_Matching_Counts.cpp](Labeled_Tree_Matching_Counts.cpp) | [S - Game](../Verify/current/submissions/labeled_tree_matching_counts.cpp) |
+| [Todd_Coxeter.cpp](Todd_Coxeter.cpp) | [関係式で定めた有限モノイド](../Verify/current/submissions/todd_coxeter_reference.cpp) |
+| [Weighted_Taylor_Shifts.cpp](Weighted_Taylor_Shifts.cpp) | [Multishift](../Verify/current/submissions/weighted_taylor_shifts_yuki3793.cpp) |
+| [Pairwise_Coprime_Progression.cpp](Pairwise_Coprime_Progression.cpp) | [Coprime Arithmetic Progression](../Verify/current/submissions/pairwise_coprime_progression_yuki3832.cpp) |
+| [Divisibility_Chains.cpp](Divisibility_Chains.cpp) | [Multiple Sequences](../Verify/current/submissions/divisibility_chain_ends_arc116_c.cpp)<br>[Multiple Chain](../Verify/current/submissions/divisibility_chain_product_yuki2798.cpp) |
+| [Poisson_Binomial.cpp](Poisson_Binomial.cpp) | [Coins](../Verify/current/submissions/poisson_binomial.cpp) |

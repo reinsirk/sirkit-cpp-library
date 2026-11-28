@@ -14,6 +14,8 @@ import unittest
 from unittest.mock import patch
 
 from Scripts import prepare_verify
+from Scripts.tests import (performance_geometry_oracles, performance_graph_oracles, performance_math_oracles,
+                           performance_sequence_oracles, performance_structure_oracles)
 from Scripts.tests.test_ci_stress import cuboid_oracle
 from Verify.ci import performance_cases as cases
 
@@ -51,7 +53,9 @@ class PerformanceCaseTests(unittest.TestCase):
                         entry = dict(self.entries[plan["verify_id"]], sample_checker=plan["checker"])
                         self.assertTrue(prepare_verify.matches(entry, {"input": inp, "output": expected}, expected))
                         model = self.independent(plan, inp)
-                        if model is not None:
+                        if model is not None and plan["checker"] == "float":
+                            self.assertTrue(prepare_verify.matches(entry, {"input": inp, "output": expected}, model))
+                        elif model is not None:
                             self.assertEqual(expected.split(), model.split())
 
     def test_generation_is_reproducible_and_catalog_edits_are_rejected(self):
@@ -101,6 +105,16 @@ class PerformanceCaseTests(unittest.TestCase):
     @staticmethod
     def independent(plan, data):
         key = cases._key(plan["verify_id"])
+        if key in cases.performance_geometry_expansion.PROFILES:
+            return performance_geometry_oracles.independent(plan, data)
+        if key in cases.performance_math_expansion.PROFILES:
+            return performance_math_oracles.independent(plan, data)
+        if key in cases.performance_graph_expansion.PROFILES:
+            return performance_graph_oracles.independent(plan, data)
+        if key in cases.performance_sequence_expansion.PROFILES:
+            return performance_sequence_oracles.independent(plan, data)
+        if key in cases.performance_structure_expansion.PROFILES:
+            return performance_structure_oracles.independent(plan, data)
         rows = data.splitlines()
         ints = lambda line: list(map(int, line.split()))
         emit = lambda xs: " ".join(map(str, xs))

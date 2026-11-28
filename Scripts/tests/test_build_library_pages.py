@@ -4,6 +4,7 @@ import io
 import json
 from pathlib import Path
 from html.parser import HTMLParser
+import shutil
 import subprocess
 import tempfile
 import unittest
@@ -79,10 +80,101 @@ class LibraryPagesTest(unittest.TestCase):
                     else:
                         self.assertNotIn("/fast-guide.html", listing)
                     self.assertIn("/licenses/index.html", listing)
+                    self.assertIn('{% include library-search.html %}', listing)
+                    self.assertIn(f'data-library-source="{source}"', listing)
         context = pages.version_context()
         self.assertIn('id="code-version-fast-msvc">速度優先版・MSVC専用', context)
         self.assertIn("/versions/fast-msvc.html", context)
         self.assertNotIn("code-variant-download", context)
+
+    def test_page_keywords_require_unique_nonempty_terms_for_each_library(self):
+        source = "Graph/example.cpp"
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            path = root / pages.PAGE_KEYWORDS
+            with self.assertRaisesRegex(ValueError, "検索キーワードを登録"):
+                pages.page_keywords(root, [source])
+            valid = {source: ["最短経路", "shortest path", "BFS"]}
+            pages.dump(path, valid)
+            self.assertEqual(pages.page_keywords(root, [source]), valid)
+            for value, message in (({}, "未登録"), ({**valid, "Graph/stale.cpp": ["old"]}, "対象外"),
+                                   ({source: []}, "空でない"), ({source: [" BFS"]}, "空でない"),
+                                   ({source: ["＿"]}, "空でない"), ({source: ["ＢＦＳ", "bfs"]}, "重複")):
+                with self.subTest(value=value), self.assertRaisesRegex(ValueError, message):
+                    pages.dump(path, value)
+                    pages.page_keywords(root, [source])
+            path.write_text('{"Graph/example.cpp": ["BFS"], "Graph/example.cpp": ["DFS"]}', encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "同じファイル"):
+                pages.page_keywords(root, [source])
+
+    def test_search_index_uses_page_titles_and_encodes_the_source_url(self):
+        source = "Math/prime_judge(Miller-Rabin).cpp"
+        index = pages.search_index({source: "素数判定", "Verify/example.cpp": "not a library"},
+                                   {source: ["primality", "ミラーラビン"]})
+        self.assertEqual(index, [{"source": source, "title": "素数判定", "group": "数学",
+                                  "path": "Math/prime_judge%28Miller-Rabin%29.cpp.html",
+                                  "keywords": ["primality", "ミラーラビン"]}])
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            target = root / (source + ".html")
+            target.parent.mkdir()
+            target.touch()
+            (root / "quality.html").touch()
+            pages.dump(root / pages.SEARCH_INDEX, index)
+            (root / pages.SEARCH_SCRIPT).touch()
+            top = root / "index.html"
+            top.write_text(f'<section data-library-search data-search-index="/prefix/{pages.SEARCH_INDEX}"></section>'
+                           f'<script type="module" src="/prefix/{pages.SEARCH_SCRIPT}"></script>', encoding="utf-8")
+            self.assertTrue(pages.validate_site(root, {source}, "/prefix", expected_search=index)["passed"])
+            pages.dump(root / pages.SEARCH_INDEX, [])
+            actual = pages.validate_site(root, {source}, "/prefix", expected_search=index)
+            self.assertEqual(actual["search_mismatches"], [pages.SEARCH_INDEX])
+
+    def test_common_search_terms_include_the_general_purpose_implementations(self):
+        keywords = pages.page_keywords(pages.ROOT, pages.source_paths(pages.ROOT))
+        expected = {
+            "UF": "DataStructure/union_find.cpp",
+            "二部マッチング": "Graph/Bipartite_Matching.cpp",
+            "最短路": "Graph/Dijkstra.cpp",
+            "最小全域木": "Graph/Minimum_Spanning_Tree.cpp",
+        }
+        for term, source in expected.items():
+            with self.subTest(term=term):
+                self.assertIn(term, keywords[source])
+
+    @unittest.skipUnless(shutil.which("node"), "Node.js is required for search ranking tests")
+    def test_search_matches_aliases_and_multiple_terms_in_japanese_or_english(self):
+        module = pages.ROOT / ".competitive-verifier/docs/static" / pages.SEARCH_SCRIPT
+        script = f"""
+import assert from 'node:assert/strict';
+import {{ prepareSearchIndex, searchLibraries }} from {json.dumps(module.as_uri())};
+const index = prepareSearchIndex([
+    {{source: 'DataStructure/Fenwick_Tree.cpp', title: 'Fenwick木', group: 'データ構造',
+      keywords: ['Binary Indexed Tree', 'BIT', '区間和', '点加算']}},
+    {{source: 'DataStructure/Segment_Tree.cpp', title: 'セグメント木', group: 'データ構造',
+      keywords: ['Segment Tree', '区間和', '点代入']}},
+    {{source: 'Graph/Two_SAT.cpp', title: '2-SAT', group: 'グラフ', keywords: ['充足可能性']}},
+    {{source: 'Math/NTT.cpp', title: 'NTT', group: '数学', keywords: ['数論変換']}},
+    {{source: 'Math/Convolution.cpp', title: '畳み込み', group: '数学', keywords: ['NTT', '多項式']}},
+    {{source: 'Math/Berlekamp_Massey.cpp', title: 'Berlekamp-Massey', group: '数学', keywords: ['線形漸化式']}},
+    {{source: 'String/Run_Length_Z.cpp', title: '連長圧縮Z', group: '文字列', keywords: ['RLE']}}
+]);
+const names = query => searchLibraries(index, query).map(entry => entry.title);
+assert.deepEqual(names('ＢＩＴ'), ['Fenwick木']);
+assert.deepEqual(names('binary-indexed'), ['Fenwick木']);
+assert.deepEqual(names('区間和 点加算'), ['Fenwick木']);
+assert.deepEqual(names('せぐめんと木'), ['セグメント木']);
+assert.deepEqual(names('2－SAT'), ['2-SAT']);
+assert.deepEqual(names('Fenwick_Tree.cpp'), ['Fenwick木']);
+assert.deepEqual(names('DataStructure/Segment_Tree.cpp'), ['セグメント木']);
+assert.deepEqual(names('NTT'), ['NTT', '畳み込み']);
+assert.deepEqual(names('RLE'), ['連長圧縮Z']);
+assert.deepEqual(names('セグメント木 区間和'), ['セグメント木']);
+assert.equal(names('区間和').length, 2);
+assert.deepEqual(names('区間和 充足可能性'), []);
+assert.deepEqual(names('   '), []);
+"""
+        subprocess.run(["node", "--input-type=module", "-e", script], check=True, timeout=10)
 
     def test_verification_label_requires_current_online_or_local_evidence(self):
         online = {"status": "current_ac"}
@@ -249,6 +341,7 @@ class LibraryPagesTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory) / "repo"
             root.mkdir()
+            pages.dump(root / pages.PAGE_KEYWORDS, {})
             output = Path(directory) / "preview"
             output.mkdir()
             (output / "index.html").write_text("previous preview")

@@ -1,0 +1,19 @@
+{
+  "entries": [
+    {
+      "id": "delaunay_triangulation_reference",
+      "libraries": ["Geometry/Delaunay_Triangulation.cpp"],
+      "driver": "Verify/current/drivers/delaunay_triangulation_main.cpp",
+      "title": "整数点のDelaunay三角形分割",
+      "verification_kind": "local_regression",
+      "selection_reason": "辺数を凸包の境界点数と照合する。別の単体テストで辺の交差、途中の点、各三角形の外接円も確認する。",
+      "coverage": ["重複点の圧縮", "共線点の隣接辺", "同一円周上の点", "凸包の内部点"],
+      "samples": [
+        {"input": "5\n1 3\n0 0\n1 1\n4 0\n1 3\n", "output": "6\n", "origin": "三角形の内部に1点。重複する点は同一座標として扱う。"},
+        {"input": "4\n0 0\n-4 6\n4 -6\n0 0\n", "output": "2\n", "origin": "異なる3点は同一直線上にあり、隣同士を結ぶ。"},
+        {"input": "4\n-2 0\n2 0\n2 4\n-2 4\n", "output": "5\n", "origin": "同じ円周上の4点を外周辺4本と対角線1本で結ぶ。"}
+      ],
+      "acl_required": false
+    }
+  ]
+}

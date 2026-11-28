@@ -7,7 +7,7 @@ from math import prod
 from pathlib import Path
 import time
 
-LIBRARY_CHECKER_REVISION = "73876f1cbcf082d2b22722924b924d3d65a2f00e"
+LIBRARY_CHECKER_REVISION = "633c05792d34bcfa9994f6eaba8bd802bebe81bc"
 UNION_FIND_LIMITS = {"n": 200_000, "q": 200_000}
 YUKI2295_LIMITS = {"n": 200_000, "q": 300_000, "weight": 1_000_000_000}
 PREFIX_SUM_2D_LIMITS = {"n": 500, "q": 100_000, "m": 200_000}

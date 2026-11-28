@@ -1,4 +1,5 @@
 #define SKIP_RUNTIME_CHECKS
+// Verify-SHA256: 017f797038f7955a3e0dd4f9bcecb1df4a6c22459405f0fc75ecb470d5452161
 // Verify: https://atcoder.jp/contests/abc244/tasks/abc244_h
 
 // Library: DataStructure/line-container-2d.cpp

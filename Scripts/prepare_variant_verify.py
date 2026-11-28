@@ -48,7 +48,7 @@ def prepare(check: bool = False) -> dict:
                     urls = list(dict.fromkeys(urls + re.findall(r"^// Submission: (https?://\S+)\s*$", output.read_text(), re.M)))
                     if urls:
                         annotations[annotation_key] = urls
-                profile_entry = {**entry, "submission_urls": urls}
+                profile_entry = {**entry, "submission_urls": urls, "stamp_submission": False}
                 data, hashes = prepare_verify.render(profile_entry, source_overrides=libraries,
                                                       driver_override=driver,
                                                       skip_runtime_checks=True if fast else None)

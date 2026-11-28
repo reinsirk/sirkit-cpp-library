@@ -17,17 +17,36 @@ def render(root: Path) -> dict[Path,bytes]:
     output = {}
     for library, stem in (
         (root / "Math/Convolution.cpp", "convolution"),
+        (root / "Math/Large_Convolution.cpp", "large_convolution"),
         (root / "String/Wildcard_Pattern_Matching.cpp", "wildcard_pattern_matching"),
+        (root / "String/Hamming_Distance_Matching.cpp", "hamming_distance_matching"),
         (root / "Math/Multivariate_Convolution.cpp", "multivariate_convolution"),
         (root / "Math/Multiplicative_Convolution.cpp", "multiplicative_convolution"),
         (root / "Math/Consecutive_Polynomial_Evaluation.cpp", "consecutive_polynomial_evaluation"),
         (root / "Math/Polynomial_Sequence_Product.cpp", "polynomial_sequence_product"),
         (root / "Math/Geometric_Polynomial.cpp", "geometric_polynomial"),
         (root / "Math/Consecutive_Linear_Recurrence.cpp", "consecutive_linear_recurrence"),
+        (root / "Math/Bivariate_Formal_Power_Series.cpp", "bivariate_formal_power_series"),
+        (root / "Math/Big_Integer.cpp", "big_integer"),
+        (root / "Math/Fast_Factorial.cpp", "fast_factorial"),
+        (root / "Math/Bounded_Nondecreasing_Sequences.cpp", "bounded_nondecreasing_sequences"),
+        (root / "Math/Relaxed_Convolution.cpp", "relaxed_convolution"),
+        (root / "Math/Mixed_Radix.cpp", "mixed_radix"),
+        (root / "Math/Convolution_Wrap64.cpp", "convolution_wrap64"),
     ):
         components = library.with_suffix("") / "components"
         header = (components / (stem + "_header.inc")).read_text().rstrip()
         body = (components / (stem + "_body.inc")).read_text().rstrip()
+        bundled = {
+            "fast_factorial": ("Consecutive_Polynomial_Evaluation", "consecutive_polynomial_evaluation", "連続多項式評価"),
+            "mixed_radix": ("Big_Integer", "big_integer", "多倍長整数"),
+        }
+        if stem in bundled:
+            name, dependency, title = bundled[stem]
+            parts = root / "Math" / name / "components"
+            overview_dependency = (parts / (dependency + "_header.inc")).read_text().split("// API一覧\n", 1)[1].rstrip()
+            header += f"\n//\n// [同梱の{title}]\n{overview_dependency}"
+            body = (parts / (dependency + "_body.inc")).read_text().rstrip() + "\n\n" + body
         data = f"{header}\n//\n// [同梱NTT]\n{overview}\n\n{ntt_code}\n\n{body}\n"
         output[library] = wrap_source(data).encode()
     return output

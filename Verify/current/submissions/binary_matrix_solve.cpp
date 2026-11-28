@@ -1,5 +1,6 @@
 #define SKIP_RUNTIME_CHECKS
 // Verify: https://judge.yosupo.jp/problem/system_of_linear_equations_mod_2
+// Submission: https://judge.yosupo.jp/submission/420158
 
 // Library: Math/Binary_Matrix.cpp
 // SPDX-License-Identifier: CC0-1.0

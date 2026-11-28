@@ -1,0 +1,381 @@
+// SPDX-License-Identifier: CC0-1.0
+// 生成版: Clang用。
+// 生成元: Graph/Tree_Nearest_Marked.cpp
+// ドキュメント: https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/tree_nearest_marked.md
+//
+// API一覧
+// TreeNearestMarked(graph): 頂点0..n-1の単純無向木。最初はマークなし。O(n log(n+1))時間・領域。
+// set_marked(v,marked=true): マークの有無を設定。toggle(v): 反転して新しい状態を返す。各O(log^2(n+1))。
+// nearest(v): 距離が最小のマーク済み頂点と辺数距離を返す。距離が等しければ最小の頂点番号。
+// 戻り値はoptional<Result>、Result{vertex,distance}。マークがなければnullopt。O(log(n+1))。
+// marked(v)/size(): マークの有無/頂点数。各O(1)。
+// コピーした木のマークは独立。コピーはO(n log(n+1))、ムーブ構築はO(1)。
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
+#include <algorithm>
+#include <cstddef>
+#include <cstdint>
+#include <limits>
+#include <optional>
+#include <span>
+#include <stdexcept>
+#include <utility>
+#include <vector>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+#ifndef SIRKIT_UNWEIGHTED_GRAPH_DEFINED
+#define SIRKIT_UNWEIGHTED_GRAPH_DEFINED
+using Graph = std::vector<std::vector<int>>;
+#endif
+
+#ifndef SIRKIT_CENTROID_DECOMPOSITION_DEFINED
+#define SIRKIT_CENTROID_DECOMPOSITION_DEFINED
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
+inline void CheckCentroidVertexCount(std::size_t vertices) {
+    if (vertices > static_cast<std::size_t>(std::numeric_limits<int>::max()))
+        throw std::length_error("CentroidDecomposition vertex count");
+}
+}
+class CentroidDecomposition {
+public:
+    struct Ancestor {
+        int vertex;
+        int distance;
+        friend bool operator==(const Ancestor&, const Ancestor&) = default;
+    };
+private:
+    int root_ = -1;
+    bool stores_distances_ = false;
+    std::vector<int> parent_, depth_, component_size_, order_;
+    std::vector<std::vector<Ancestor>> ancestors_;
+
+    void check_vertex(int vertex) const {
+#ifndef SKIP_RUNTIME_CHECKS
+        if (vertex < 0 || static_cast<std::size_t>(vertex) >= size())
+            throw std::out_of_range("CentroidDecomposition vertex");
+#else
+        static_cast<void>(vertex);
+#endif
+    }
+    void check_distances() const {
+#ifndef SKIP_RUNTIME_CHECKS
+        if (!stores_distances_) throw std::logic_error("CentroidDecomposition distances not stored");
+#endif
+    }
+    void initialize(const Graph& graph, bool store_distances) {
+        const auto n = graph.size();
+        /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::CheckCentroidVertexCount(n);
+        stores_distances_ = store_distances;
+        parent_.assign(n, -1); depth_.resize(n); component_size_.resize(n); order_.reserve(n);
+        if (store_distances) ancestors_.resize(n);
+        if (n == 0) return;
+        std::vector<unsigned char> removed(n);
+        std::vector<int> traversal_parent(n, -2), subtree(n), component;
+        std::vector<std::pair<int,int>> pending{{0,-1}};
+        struct Visit { int vertex, parent, distance; };
+        std::vector<Visit> visits;
+        component.reserve(n);
+        while (!pending.empty()) {
+            const auto [start, above] = pending.back(); pending.pop_back();
+#ifndef SKIP_RUNTIME_CHECKS
+            const bool validate = above == -1;
+#endif
+            component.clear(); component.push_back(start);
+            traversal_parent[static_cast<std::size_t>(start)] = -1;
+            for (std::size_t i = 0; i < component.size(); ++i) {
+                const int vertex = component[i];
+                subtree[static_cast<std::size_t>(vertex)] = 1;
+#ifndef SKIP_RUNTIME_CHECKS
+                std::size_t parent_edges = 0;
+#endif
+                for (const int to : graph[static_cast<std::size_t>(vertex)]) {
+#ifndef SKIP_RUNTIME_CHECKS
+                    if (validate && (to < 0 || static_cast<std::size_t>(to) >= n || to == vertex))
+                        throw std::invalid_argument("CentroidDecomposition tree edge");
+#endif
+                    if (to == traversal_parent[static_cast<std::size_t>(vertex)]) {
+#ifndef SKIP_RUNTIME_CHECKS
+                        if (validate) ++parent_edges;
+#endif
+                        continue;
+                    }
+                    if (removed[static_cast<std::size_t>(to)]) continue;
+#ifndef SKIP_RUNTIME_CHECKS
+                    if (validate && traversal_parent[static_cast<std::size_t>(to)] != -2)
+                        throw std::invalid_argument("CentroidDecomposition input is not a tree");
+#endif
+                    traversal_parent[static_cast<std::size_t>(to)] = vertex;
+                    component.push_back(to);
+                }
+#ifndef SKIP_RUNTIME_CHECKS
+                if (validate && vertex != start && parent_edges != 1)
+                    throw std::invalid_argument("CentroidDecomposition asymmetric tree");
+#endif
+            }
+#ifndef SKIP_RUNTIME_CHECKS
+            if (validate && component.size() != n)
+                throw std::invalid_argument("CentroidDecomposition disconnected tree");
+#endif
+            for (auto it = component.rbegin(); it != component.rend(); ++it) {
+                const int above_vertex = traversal_parent[static_cast<std::size_t>(*it)];
+                if (above_vertex != -1)
+                    subtree[static_cast<std::size_t>(above_vertex)] += subtree[static_cast<std::size_t>(*it)];
+            }
+            const int count = static_cast<int>(component.size());
+            int centroid = start;
+            for (;;) {
+                int next = -1;
+                for (const int to : graph[static_cast<std::size_t>(centroid)]) {
+                    if (!removed[static_cast<std::size_t>(to)] &&
+                        traversal_parent[static_cast<std::size_t>(to)] == centroid &&
+                        subtree[static_cast<std::size_t>(to)] > count / 2) { next = to; break; }
+                }
+                if (next == -1) break;
+                centroid = next;
+            }
+            parent_[static_cast<std::size_t>(centroid)] = above;
+            depth_[static_cast<std::size_t>(centroid)] = above == -1 ? 0 : depth_[static_cast<std::size_t>(above)] + 1;
+            component_size_[static_cast<std::size_t>(centroid)] = count;
+            order_.push_back(centroid);
+            if (above == -1) root_ = centroid;
+            if (store_distances) {
+                visits.clear(); visits.push_back({centroid, -1, 0});
+                for (std::size_t i = 0; i < visits.size(); ++i) {
+                    const auto [vertex, from, distance] = visits[i];
+                    ancestors_[static_cast<std::size_t>(vertex)].push_back({centroid, distance});
+                    for (const int to : graph[static_cast<std::size_t>(vertex)])
+                        if (to != from && !removed[static_cast<std::size_t>(to)])
+                            visits.push_back({to, vertex, distance + 1});
+                }
+            }
+            removed[static_cast<std::size_t>(centroid)] = 1;
+            for (const int to : graph[static_cast<std::size_t>(centroid)])
+                if (!removed[static_cast<std::size_t>(to)]) pending.emplace_back(to, centroid);
+        }
+    }
+public:
+    CentroidDecomposition() = default;
+    explicit CentroidDecomposition(const Graph& graph, bool store_distances = true) { initialize(graph, store_distances); }
+    CentroidDecomposition(const CentroidDecomposition&) = default;
+    CentroidDecomposition& operator=(const CentroidDecomposition& other) {
+        if (this != &other) { CentroidDecomposition next(other); swap(next); }
+        return *this;
+    }
+    CentroidDecomposition(CentroidDecomposition&& other) noexcept { swap(other); }
+    CentroidDecomposition& operator=(CentroidDecomposition&& other) noexcept {
+        CentroidDecomposition next(std::move(other)); swap(next); return *this;
+    }
+    void swap(CentroidDecomposition& other) noexcept {
+        std::swap(root_, other.root_); std::swap(stores_distances_, other.stores_distances_);
+        parent_.swap(other.parent_); depth_.swap(other.depth_); component_size_.swap(other.component_size_);
+        order_.swap(other.order_); ancestors_.swap(other.ancestors_);
+    }
+    friend void swap(CentroidDecomposition& a, CentroidDecomposition& b) noexcept { a.swap(b); }
+    void build(const Graph& graph, bool store_distances = true) {
+        CentroidDecomposition next(graph, store_distances); swap(next);
+    }
+    void clear() noexcept {
+        root_ = -1; stores_distances_ = false;
+        parent_.clear(); depth_.clear(); component_size_.clear(); order_.clear(); ancestors_.clear();
+    }
+    std::size_t size() const noexcept { return parent_.size(); }
+    bool empty() const noexcept { return parent_.empty(); }
+    int root() const noexcept { return root_; }
+    bool stores_distances() const noexcept { return stores_distances_; }
+    int parent(int vertex) const { check_vertex(vertex); return parent_[static_cast<std::size_t>(vertex)]; }
+    int depth(int vertex) const { check_vertex(vertex); return depth_[static_cast<std::size_t>(vertex)]; }
+    int component_size(int vertex) const { check_vertex(vertex); return component_size_[static_cast<std::size_t>(vertex)]; }
+    const std::vector<int>& parents() const noexcept { return parent_; }
+    const std::vector<int>& depths() const noexcept { return depth_; }
+    const std::vector<int>& order() const noexcept { return order_; }
+    const std::vector<Ancestor>& ancestors(int vertex) const {
+        check_vertex(vertex); check_distances(); return ancestors_[static_cast<std::size_t>(vertex)];
+    }
+    std::int64_t distance(int u, int v) const {
+        const auto& a = ancestors(u); const auto& b = ancestors(v);
+        std::size_t i = 0;
+        while (i < a.size() && i < b.size() && a[i].vertex == b[i].vertex) ++i;
+        return static_cast<std::int64_t>(a[i - 1].distance) + b[i - 1].distance;
+    }
+    Graph centroid_tree() const {
+        Graph result(size());
+        for (std::size_t vertex = 0; vertex < size(); ++vertex) {
+            const int above = parent_[vertex];
+            if (above != -1) {
+                result[vertex].push_back(above);
+                result[static_cast<std::size_t>(above)].push_back(static_cast<int>(vertex));
+            }
+        }
+        return result;
+    }
+};
+#endif
+
+#ifndef SIRKIT_TREE_NEAREST_MARKED_DEFINED
+#define SIRKIT_TREE_NEAREST_MARKED_DEFINED
+
+class TreeNearestMarked
+{
+public:
+    struct Result
+    {
+        int vertex;
+        int distance;
+        friend constexpr bool operator==(const Result &a, const Result &b) noexcept
+        {
+            return a.vertex == b.vertex && a.distance == b.distance;
+        }
+    };
+
+    explicit TreeNearestMarked(const Graph &graph)
+    {
+        const CentroidDecomposition decomposition(graph);
+        const auto n = decomposition.size();
+        marked_.resize(n);
+        visits_begin_.resize(n + 1);
+        tree_begin_.resize(n + 1);
+        std::vector<std::uint32_t> next_leaf(n);
+        for (std::size_t v = 0; v < n; ++v)
+        {
+            const auto count = static_cast<std::uint32_t>(decomposition.component_size(static_cast<int>(v)));
+            next_leaf[v] = count;
+            tree_begin_[v + 1] = tree_begin_[v] + 2 * static_cast<std::size_t>(count);
+        }
+        minima_.assign(tree_begin_.back(), kUnmarked);
+        visits_.reserve(tree_begin_.back() / 2);
+        for (std::size_t v = 0; v < n; ++v)
+        {
+            visits_begin_[v] = visits_.size();
+            for (const auto &[centroid, distance] : decomposition.ancestors(static_cast<int>(v)))
+            {
+                visits_.push_back({centroid, distance, next_leaf[centroid]++});
+            }
+        }
+        visits_begin_[n] = visits_.size();
+    }
+
+    TreeNearestMarked(const TreeNearestMarked &) = default;
+    TreeNearestMarked(TreeNearestMarked &&) noexcept = default;
+
+    TreeNearestMarked &operator=(TreeNearestMarked other) noexcept
+    {
+        marked_.swap(other.marked_);
+        visits_begin_.swap(other.visits_begin_);
+        tree_begin_.swap(other.tree_begin_);
+        visits_.swap(other.visits_);
+        minima_.swap(other.minima_);
+        return *this;
+    }
+
+    [[nodiscard]] std::size_t size() const noexcept
+    {
+        return marked_.size();
+    }
+
+    [[nodiscard]] bool marked(int v) const
+    {
+        check_vertex(v);
+        return marked_[v] != 0;
+    }
+
+    void set_marked(int v, bool marked = true)
+    {
+        check_vertex(v);
+        write_marked(v, marked);
+    }
+
+    bool toggle(int v)
+    {
+        check_vertex(v);
+        const bool marked = marked_[v] == 0;
+        write_marked(v, marked);
+        return marked;
+    }
+
+    [[nodiscard]] std::optional<Result> nearest(int v) const
+    {
+        check_vertex(v);
+        auto best = kUnmarked;
+        for (const auto &[centroid, distance, leaf] : visits(v))
+        {
+            const auto nearest_to_centroid = minima_[tree_begin_[centroid] + 1];
+            if (nearest_to_centroid != kUnmarked)
+            {
+                best = std::min(best, nearest_to_centroid + pack_distance(distance));
+            }
+        }
+        if (best == kUnmarked)
+        {
+            return std::nullopt;
+        }
+        return Result{static_cast<int>(static_cast<std::uint32_t>(best)), static_cast<int>(best >> 32)};
+    }
+
+private:
+    struct Visit
+    {
+        int centroid;
+        int distance;
+        std::uint32_t leaf;
+    };
+    static constexpr auto kUnmarked = std::numeric_limits<std::uint64_t>::max();
+
+    static std::uint64_t pack_distance(int distance) noexcept
+    {
+        return static_cast<std::uint64_t>(distance) << 32;
+    }
+
+    void check_vertex(int v) const
+    {
+#ifndef SKIP_RUNTIME_CHECKS
+        if (v < 0 || static_cast<std::size_t>(v) >= size())
+        {
+            throw std::out_of_range("TreeNearestMarked: vertex");
+        }
+#else
+        static_cast<void>(v);
+#endif
+    }
+
+    std::span<const Visit> visits(int v) const noexcept
+    {
+        const auto first = visits_begin_[v];
+        return std::span<const Visit>(visits_).subspan(first, visits_begin_[v + 1] - first);
+    }
+
+    void write_marked(int v, bool marked) noexcept
+    {
+        if (marked_[v] == marked)
+        {
+            return;
+        }
+        marked_[v] = marked;
+        for (const auto &[centroid, distance, leaf] : visits(v))
+        {
+            // 上位32ビットを距離、下位を頂点番号にすると最小値だけで同距離の判定ができる。
+            const auto packed = marked ? pack_distance(distance) + static_cast<std::uint32_t>(v) : kUnmarked;
+            const auto begin = tree_begin_[centroid];
+            minima_[begin + leaf] = packed;
+            for (auto node = leaf / 2; node != 0; node /= 2)
+            {
+                const auto next = std::min(minima_[begin + 2 * node], minima_[begin + 2 * node + 1]);
+                if (minima_[begin + node] == next)
+                {
+                    break;
+                }
+                minima_[begin + node] = next;
+            }
+        }
+    }
+
+    std::vector<std::uint8_t> marked_;
+    std::vector<std::size_t> visits_begin_, tree_begin_;
+    std::vector<Visit> visits_;
+    std::vector<std::uint64_t> minima_;
+};
+
+#endif
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1

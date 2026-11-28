@@ -1,4 +1,5 @@
 #define SKIP_RUNTIME_CHECKS
+// Verify-SHA256: 45da92751ee3156cce8055280f3807b1caf441ee64031f34604aa5f7f0c2ed06
 #define NDEBUG
 // Verify: https://atcoder.jp/contests/awc0100/tasks/awc0100_m
 

@@ -1,5 +1,6 @@
 #define SKIP_RUNTIME_CHECKS
 // Verify: https://judge.yosupo.jp/problem/matrix_rank_mod_2
+// Submission: https://judge.yosupo.jp/submission/420157
 
 // Library: Math/Binary_Matrix.cpp
 // SPDX-License-Identifier: CC0-1.0

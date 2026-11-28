@@ -1,4 +1,5 @@
 #define SKIP_RUNTIME_CHECKS
+// Verify-SHA256: a9e3a3b18675f22e02449ee9943542aef955a93a9d02629ebd545a28eb0b6fdf
 // Verify: https://atcoder.jp/contests/abc392/tasks/abc392_g
 
 // Library: Math/Convolution.cpp

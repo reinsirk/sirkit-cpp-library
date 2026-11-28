@@ -1,4 +1,5 @@
 #define SKIP_RUNTIME_CHECKS
+// Verify-SHA256: b178771439a374bc287bc5afa78daf9f5b75e5945ea08b20fb1218405c5a7f1d
 // Verify: https://atcoder.jp/contests/abc367/tasks/abc367_e
 
 // Library: Graph/Functional_Graph.cpp
