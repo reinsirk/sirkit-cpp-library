@@ -5,7 +5,11 @@ from __future__ import annotations
 import hashlib
 from pathlib import Path
 
-from . import stress_cases
+from . import (performance_geometry_expansion, performance_graph_expansion, performance_math_expansion,
+               performance_sequence_expansion, performance_structure_expansion, stress_cases)
+
+_EXPANSIONS = (performance_geometry_expansion, performance_graph_expansion, performance_math_expansion,
+               performance_sequence_expansion, performance_structure_expansion)
 
 LIBRARY_VERIFY_IDS = {
     "Algorithm/Prefix_Sum_ND.cpp": "prefix_sum_3d",
@@ -41,6 +45,7 @@ LIBRARY_VERIFY_IDS = {
     "String/Longest_Common_Subsequence.cpp": "lcs_sequence",
     "String/Palindromic_Factorization.cpp": "palindromic_factorization_local",
     "String/Prefix_Function.cpp": "kmp_string_matching",
+    **{library: verify for module in _EXPANSIONS for library, verify in module.LIBRARY_VERIFY_IDS.items()},
 }
 # name, full dimensions, quick dimensions, independent answer basis
 _PROFILES = {
@@ -154,6 +159,8 @@ _PROFILES = {
         ("long_borders", {"text": 1000000, "pattern": 10000}, {"text": 120, "pattern": 16},
          "The only b is at the final text index and the end of the pattern, fixing one match.")),
 }
+
+_PROFILES.update({key: cases for module in _EXPANSIONS for key, cases in module.PROFILES.items()})
 MAX_BYTES = 32 * 1024 * 1024
 _ROOT = Path(__file__).resolve().parents[2]
 _VALIDITY = {
@@ -188,12 +195,16 @@ _VALIDITY = {
     "lcs_sequence": "Lowercase nonempty strings of length<=3000.",
     "kmp_string_matching": "Nonempty alphanumeric text<=1000000 and pattern<=10000.",
 }
+_VALIDITY.update({key: note for module in _EXPANSIONS for key, note in module.VALIDITY.items()})
+_EXPANSION_GENERATORS = {key: module.generate for module in _EXPANSIONS for key in module.PROFILES}
 _UNREVERIFIED_LIMITS = {
     "preferred_topological_yuki", "coverage_graph_node_cycles_yuki",
     "preferred_project_selection_yuki", "coverage_geometry_coin_overlap_split",
 }
 _LOCAL_DRIVERS = {
     "dynamic_bipartiteness_operations", "global_min_cut_operations", "palindromic_factorization_local",
+    "permutation_order_roundtrip", "tournament_path_reference",
+    "delaunay_triangulation_reference", "dfa_minimization_reference", "todd_coxeter_reference",
 }
 
 
@@ -207,7 +218,26 @@ def _key(identifier: str) -> str:
 
 def plans_for_library(library: str, quick: bool = False) -> list[dict]:
     identifier = LIBRARY_VERIFY_IDS[library]
-    checker = {"pruefer_code": "pruefer_completion", "min_cost_flow_grid": "min_cost_flow_grid"}.get(identifier, "tokens")
+    checker = {
+        "pruefer_code": "pruefer_completion",
+        "min_cost_flow_grid": "min_cost_flow_grid",
+        "parity_orientation": "even_outdegree_orientation",
+        "bridge_block_orientation": "reachability_size_orientation",
+        "reachability_chain_cover": "reachability_chain_cover",
+        "tree_distance_layers": "tree_vertex_at_distance",
+        "polygon_chord_moments": "float",
+        "half_plane_intersection": "float",
+        "circle_polygon_intersection": "float",
+        "circle_tangents_yuki3344": "float",
+        "point_plane_distance_sum": "float",
+        "k_shortest_simple_paths": "float",
+        "enumerate_topological_orders": "distinct_topological_orders",
+        "unit_step_forest_labels": "unit_step_tree_labels",
+        "tree_walk_orientation": "tree_walk_orientation",
+        "forest_edge_coloring": "forest_edge_coloring",
+        "incident_label_spanning_tree": "incident_label_spanning_tree",
+        "subcubic_tree_biconnectivity": "subcubic_tree_biconnectivity",
+    }.get(identifier, "tokens")
     return [{"name": identifier + "_" + name, "library": library, "verify_id": identifier,
              "scenario": name, "checker": checker, "dimensions": dict(small if quick else full),
              "seed": 20261116, "size_profile": "quick_smoke" if quick else "full",
@@ -252,7 +282,9 @@ class _Writer:
 def _generate(plan: dict, inp: _Writer, out: _Writer) -> None:
     name, identifier, d = plan["scenario"], plan["verify_id"], plan["dimensions"]
     key = _key(identifier)
-    if key == "prefix_sum_3d":
+    if key in _EXPANSION_GENERATORS:
+        _EXPANSION_GENERATORS[key](plan, inp, out)
+    elif key == "prefix_sum_3d":
         for fields, answer in stress_cases.cuboid_rows(d["n"], d["q"], constant=name == "constant"):
             inp.line(*fields)
             if answer is not None:

@@ -1,4 +1,5 @@
 #define SKIP_RUNTIME_CHECKS
+// Verify-SHA256: 1664045bffe9c537558bea1c9a38a356ee24e98bad1059867dd736a299a0bf0c
 // Verify: https://atcoder.jp/contests/abc127/tasks/abc127_f
 
 // Library: DataStructure/Slope_Trick.cpp

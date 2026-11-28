@@ -54,6 +54,19 @@ class SelectionTests(unittest.TestCase):
         self.assertEqual(self.choose("Math/FPS/components/formal_power_series_body.inc")["selected_ids"], ["beta"])
         self.assertEqual(self.choose("Geometry/components/point.inc")["selected_ids"], ["gamma"])
 
+    def test_library_component_selects_its_owner_and_transitive_consumers(self):
+        self.entries[0]["libraries"] = ["String/Owned.cpp"]
+        self.entries[1]["libraries"] = ["String/Intermediate.cpp"]
+        self.entries[2]["libraries"] = ["Graph/Consumer.cpp"]
+        dependencies = {
+            "String/Owned.cpp": {"String/Intermediate.cpp"},
+            "String/Intermediate.cpp": {"Graph/Consumer.cpp"},
+            "Graph/Consumer.cpp": {"String/Owned.cpp"},
+        }
+        with patch.object(ci, "EMBEDDED_DEPENDENTS", dependencies):
+            result = self.choose("String/Owned/components/body.inc")
+        self.assertEqual(result["selected_ids"], ["alpha", "beta", "gamma"])
+
     def test_embedded_dependency_selects_consumer(self):
         self.entries[0]["libraries"] = ["DataStructure/Dynamic_Bitset.cpp"]
         self.entries[1]["libraries"] = ["Math/Binary_Matrix.cpp"]

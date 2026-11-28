@@ -60,6 +60,11 @@ class BundleTests(unittest.TestCase):
         _,meta=self.render(A,'// continued \\\n#undef SIRKIT_A_DEFINED\n'+A);self.assertEqual(len(meta['removals']),1)
     def test_include_lines_all_retained(self):
         source='#include <vector>\n'+A;result,meta=self.render(source,source);self.assertEqual(result.count(b'#include <vector>'),2);self.assertEqual(len(meta['removals']),1)
+    def test_clmul_header_keeps_its_platform_guard(self):
+        header = '#if !defined(SIRKIT_DISABLE_SIMD) && defined(__x86_64__)\n#include <wmmintrin.h>\n#endif\n'
+        result, _ = self.render(header + A)
+        self.assertIn(header.encode(), result)
+
     def test_external_dependencies_rejected(self):
         for include in ['"file.hpp"','HEADER','<atcoder/modint>','<custom/library.hpp>']:
             with self.subTest(include=include),self.assertRaises(ValueError):self.render('#include '+include+'\n'+A)

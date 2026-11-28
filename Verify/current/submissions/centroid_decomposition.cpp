@@ -1,4 +1,5 @@
 #define SKIP_RUNTIME_CHECKS
+// Verify-SHA256: 3e897e02a1a465ea614ef596880ac0b106a94e6851a00d779c54544e0b2f8853
 // Verify: https://atcoder.jp/contests/abc291/tasks/abc291_h
 
 // Library: Graph/Centroid_Decomposition.cpp

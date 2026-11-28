@@ -11,6 +11,7 @@ from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import ci_instrumented as ci
+import merge_ci_coverage
 
 
 def fixture(root, body="int instrumented(int x) {\n if (x > 0) return 1;\n return 0;\n}\n",
@@ -519,6 +520,30 @@ def toolchain(coverage):
 
 
 class CoverageIntegrationTests(unittest.TestCase):
+    def test_coverage_shards_use_the_same_full_gate_and_reject_missing_exports(self):
+        compiler, profdata, cov = toolchain(True)
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            positive = fixture(root)
+            negative = {**positive, "id": "negative", "samples": [{"input": "0\n", "output": "0\n"}]}
+            entries = [positive, negative]
+            for index, entry in enumerate(entries):
+                partial = ci.run([entry], root=root, output=root / f"coverage-part-{index}",
+                                 mode="coverage", compiler=compiler, llvm_profdata=profdata,
+                                 llvm_cov=cov, available=entries, coverage_shard=(index, 2))
+                self.assertEqual(partial["status"], "PASS", partial)
+                self.assertNotIn("coverage_gate", partial)
+            full = ci.run(entries, root=root, output=root / "full", mode="coverage", compiler=compiler,
+                          llvm_profdata=profdata, llvm_cov=cov)
+            report = merge_ci_coverage.merge(entries, root, root, root / "merged", 2, {})
+            self.assertEqual(report["status"], "PASS", report)
+            self.assertEqual(report["coverage_gate"], full["coverage_gate"])
+            self.assertEqual((root / "merged/coverage.json").read_bytes(), (root / "full/coverage.json").read_bytes())
+            (root / "coverage-part-1/coverage_entries/entry_0001.json").unlink()
+            with self.assertRaises(FileNotFoundError):
+                merge_ci_coverage.merge(entries, root, root, root / "incomplete", 2, {})
+            self.assertFalse((root / "incomplete/results.json").exists())
+
     def test_binary128_measures_both_long_double_formats(self):
         if os.uname().machine != "x86_64":
             self.skipTest("x86-64のlong double設定を検証します")

@@ -37,7 +37,7 @@ python3 Scripts/create_performance_reference.py --compiler g++ \
 
 代表的な規模で測るには `--quick` を外します。`--library` は複数指定でき、省略すると全ライブラリを測ります。
 
-Library Checkerの通常規模のケースは、固定したリビジョンの公式データから生成します。公式データの取得時にはネットワーク接続が必要です。繰り返し測る場合は `--cache /tmp/sirkit-performance-cache` のようにリポジトリ外の保存先を指定すると、取得・生成したデータを再利用できます。
+Library Checkerの通常規模のケースは、固定したリビジョンの公式データから生成します。公式データの取得時にはネットワーク接続が必要です。繰り返し測る場合は `--cache ../sirkit-performance-cache` のようにリポジトリ外の保存先を指定すると、取得・生成したデータを再利用できます。
 
 測定先を固定するには `--cpu` に論理CPU番号を指定します。再測定では同じCPU、コンパイラ、コンパイル設定を使います。AtCoderのGCC設定を使う場合は `--compile-profile atcoder` を追加します。
 

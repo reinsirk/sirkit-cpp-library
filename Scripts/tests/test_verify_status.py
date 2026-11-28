@@ -70,6 +70,85 @@ class VerifyStatusTest(unittest.TestCase):
         self.journal([record])
         self.assertEqual(self.row()["status"], "current_ac")
 
+    def test_atcoder_user_confirmation_is_limited_to_the_recorded_atcoder_source(self):
+        record = self.record(evidence_kind="atcoder_user_confirmed")
+        self.journal([record])
+        self.assertEqual(self.row()["status"], "source_changed")
+        self.entry["problem_url"] = "https://atcoder.jp/contests/abc001/tasks/abc001_1"
+        self.group([self.entry])
+        record["url"] = "https://atcoder.jp/contests/abc001/submissions/123"
+        record["submission_sha256"] = status.digest(self.source())
+        self.journal([record])
+        row = self.row()
+        self.assertEqual(row["status"], "current_ac")
+        self.assertEqual(row["judgement"]["source_match"], "atcoder_user_confirmed")
+        self.assertNotIn("uploaded_source_sha256", row["judgement"])
+        self.write("DataStructure/example.cpp", "int library_value = 2;\n")
+        self.assertEqual(self.row()["status"], "source_changed")
+
+    def test_stamped_source_contains_the_hash_of_the_code_without_submission_url(self):
+        self.entry["problem_url"] = "https://atcoder.jp/contests/abc001/tasks/abc001_1"
+        original = self.source()
+        self.entry["submission_urls"] = ["https://atcoder.jp/contests/abc001/submissions/123"]
+        with status.repository(self.root):
+            stamped = status.prepare_verify.stamped_source(self.entry)
+            self.write("DataStructure/example.cpp", "int library_value = 2;\n")
+            updated = status.prepare_verify.stamped_source(self.entry)
+        first, rest = original.split(b"\n", 1)
+        self.assertEqual(stamped, first + b"\n// Verify-SHA256: " + status.digest(original).encode() + b"\n" + rest)
+        self.assertNotEqual(stamped.splitlines()[1], updated.splitlines()[1])
+
+    def test_default_stamp_only_applies_to_unsubmitted_atcoder_sources(self):
+        atcoder = {**self.entry, "problem_url": "https://atcoder.jp/contests/abc001/tasks/abc001_1"}
+        submitted_url = "https://atcoder.jp/contests/abc001/submissions/123"
+        self.group([self.entry, {**atcoder, "id": "pending"},
+                    {**atcoder, "id": "with_url", "submission_urls": [submitted_url]},
+                    {**atcoder, "id": "with_judgement"}])
+        self.journal([{"id": "with_judgement", "status": "AC", "url": submitted_url}])
+        with status.repository(self.root):
+            entries = status.prepare_verify.prepare(check=False)
+            status.prepare_verify.prepare(check=True)
+        files = {entry["id"]: (self.root / entry["submission"]).read_bytes() for entry in entries}
+        self.assertEqual({name for name, data in files.items() if b"Verify-SHA256:" in data}, {"pending"})
+        row = next(row for row in status.build_status(self.root)["entries"] if row["id"] == "pending")
+        self.assertEqual(row["status"], "unsubmitted")
+        self.assertEqual(row["submission_sha256"], status.digest(files["pending"]))
+        self.assertTrue(row["submission_in_sync"])
+
+    def test_adding_submission_url_keeps_the_existing_stamp(self):
+        self.entry["problem_url"] = "https://atcoder.jp/contests/abc001/tasks/abc001_1"
+        self.group([self.entry])
+        submitted_url = "https://atcoder.jp/contests/abc001/submissions/123"
+        with status.repository(self.root):
+            entry, = status.prepare_verify.prepare(check=False)
+            path = self.root / entry["submission"]
+            header, stamp, problem, body = path.read_bytes().split(b"\n", 3)
+            self.assertEqual(header, b"#define SKIP_RUNTIME_CHECKS")
+            self.assertIn(b"Verify-SHA256:", stamp)
+            annotated = b"\n".join((header, stamp, problem, b"// Submission: " + submitted_url.encode(), body))
+            path.write_bytes(annotated)
+            status.prepare_verify.prepare(check=False)
+            self.assertEqual(path.read_bytes(), annotated)
+            self.journal([{"id": "example", "status": "AC", "url": submitted_url,
+                           "submission_sha256": status.digest(annotated)}])
+            status.prepare_verify.prepare(check=False)
+            status.prepare_verify.prepare(check=True)
+        self.assertEqual(path.read_bytes(), annotated)
+        self.assertEqual(self.row()["status"], "current_ac")
+
+    def test_submitted_inline_stamp_stays_inline(self):
+        self.entry["problem_url"] = "https://atcoder.jp/contests/abc001/tasks/abc001_1"
+        self.group([self.entry])
+        submitted_url = "https://atcoder.jp/contests/abc001/submissions/123"
+        with status.repository(self.root):
+            legacy, _ = status.prepare_verify.render({**self.entry, "stamp_submission": True,
+                                                       "submission_urls": [submitted_url]})
+            self.write("Verify/current/submissions/example.cpp", legacy.decode())
+            status.prepare_verify.prepare(check=False)
+            status.prepare_verify.prepare(check=True)
+        self.assertEqual((self.root / "Verify/current/submissions/example.cpp").read_bytes(), legacy)
+        self.assertIn(b" // Verify-SHA256: ", legacy.splitlines()[0])
+
     def test_current_metadata_fields_alone_never_qualify(self):
         record = self.record()
         record["current_submission_sha256"] = record.pop("submission_sha256")

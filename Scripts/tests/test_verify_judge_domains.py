@@ -20,10 +20,29 @@ class JudgeDomainsTest(unittest.TestCase):
             if host=='judge.yosupo.jp':self.assertTrue(verify.custom_io_enabled(entry))
             else:
                 with self.assertRaises(ValueError):verify.custom_io_enabled(entry)
+    def test_interactive_transcript_uses_unbuffered_input_path(self):
+        entry = {'id': 'interactive', 'problem_url': 'https://yukicoder.me/problems/no/2085',
+                 'interactive_transcript': True, 'libraries': []}
+        self.assertTrue(verify.custom_io_enabled(entry))
+        self.assertIn(b'int main() {}', verify.render(entry, driver_override='int main() {}')[0])
+        with self.assertRaisesRegex(ValueError, '共通高速入出力'):
+            verify.render(entry, driver_override=verify.FAST_IO_INCLUDE + '\nint main() {}')
+        for invalid in ({'allow_custom_io': True}, {'interactive_transcript': 1}, {'problem_url': ''},
+                        {'problem_url': 'https://judge.yosupo.jp/problem/aplusb'}):
+            with self.subTest(invalid=invalid), self.assertRaises(ValueError):
+                verify.custom_io_enabled(entry | invalid)
     def test_aoj_aliases_share_judge_but_not_other_sites(self):
         url='https://judge.u-aizu.ac.jp/onlinejudge/review.jsp?rid=1'
         self.assertEqual(status.safe_url(url,judge='onlinejudge.u-aizu.ac.jp'),url)
         with self.assertRaises(ValueError):status.safe_url(url,judge='yukicoder.me')
+    def test_float_sample_uses_the_judge_specific_tolerances(self):
+        sample = {'output': '1 0'}
+        default = {'sample_checker': 'float'}
+        strict = default | {'absolute_tolerance': 1e-9, 'relative_tolerance': 1e-9}
+        self.assertTrue(verify.matches(default, sample, '1 0.00000002'))
+        self.assertFalse(verify.matches(strict, sample, '1 0.00000002'))
+        self.assertFalse(verify.matches(strict, sample, '1.00000002 0'))
+        self.assertTrue(verify.matches(strict, sample, '1.0000000002 0.0000000002'))
     def test_url_injection_still_rejected(self):
         for url in ['http://yukicoder.me/problems/no/1','https://yukicoder.me.evil.test/1','https://u@onlinejudge.u-aizu.ac.jp/1','https://judge.u-aizu.ac.jp:444/1','https://evil.test/1']:
             with self.subTest(url=url),self.assertRaises(ValueError):status.safe_url(url)

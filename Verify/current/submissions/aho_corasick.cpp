@@ -1,5 +1,6 @@
 #define SKIP_RUNTIME_CHECKS
 // Verify: https://judge.yosupo.jp/problem/aho_corasick
+// Submission: https://judge.yosupo.jp/submission/420148
 
 // Library: String/Aho_Corasick.cpp
 // SPDX-License-Identifier: CC0-1.0

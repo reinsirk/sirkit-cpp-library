@@ -1,4 +1,5 @@
 #define SKIP_RUNTIME_CHECKS
+// Verify-SHA256: 4a4c2f68d0e992fa061cd3c7b9e4b357bde7da9a62d10636167ef4fe0d10460e
 // Verify: https://atcoder.jp/contests/abc239/tasks/abc239_f
 
 // Library: Graph/Pruefer_Code.cpp

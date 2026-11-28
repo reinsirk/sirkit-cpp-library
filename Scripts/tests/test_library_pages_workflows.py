@@ -43,6 +43,87 @@ def artifact(identifier=200, name="contracts-g++-native", *, expired=False, run=
             "digest": "sha256:" + "c" * 64}
 
 
+@unittest.skipUnless(shutil.which("bash") and shutil.which("jq"), "bash and jq are required")
+class PublicationScriptTests(unittest.TestCase):
+    def setUp(self):
+        directory = tempfile.TemporaryDirectory()
+        self.addCleanup(directory.cleanup)
+        self.root = Path(directory.name)
+        self.head, self.commit = "a" * 40, "b" * 40
+        self.repository = "example/library"
+        self.evidence = {"repository": self.repository, "pull_request": 17,
+                         "requested_head_sha": self.head, "merged_commit_sha": self.commit}
+        self.pull = {"merged": True, "base": {"ref": "main", "repo": {"full_name": self.repository}},
+                     "head": {"sha": self.head}, "merge_commit_sha": self.commit}
+        (self.root / "pages-evidence").mkdir()
+        mock_gh = self.root / "gh"
+        mock_gh.write_text(f"#!{sys.executable}\n" + '''import json, os, sys
+endpoint = next(arg for arg in sys.argv[1:] if arg.startswith("repos/"))
+if endpoint == "repos/example/library/git/ref/heads/main":
+    print(os.environ["TEST_MAIN"])
+elif endpoint == "repos/example/library/pulls/17":
+    print(os.environ["TEST_PULL"])
+elif endpoint == "repos/example/library/actions/runs/100/attempts/2/jobs":
+    print(os.environ["TEST_BUILD"])
+else:
+    sys.exit("unexpected GitHub API endpoint")
+''')
+        mock_gh.chmod(0o755)
+        self.output = self.root / "github-output"
+        jobs = workflow("library-pages-deploy.yml")["jobs"]
+        self.build = next(step["run"] for step in jobs["prepare"]["steps"] if step.get("id") == "build")
+        self.prepare = next(step["run"] for step in jobs["prepare"]["steps"] if step.get("id") == "publication")
+        self.deploy = next(step["run"] for step in jobs["deploy"]["steps"] if step.get("id") == "current")
+
+    def run_script(self, script, *, main=None, build="success"):
+        (self.root / "pages-evidence/pages-download-provenance.json").write_text(json.dumps(self.evidence))
+        self.output.write_text("")
+        env = dict(os.environ, PATH=str(self.root) + os.pathsep + os.environ["PATH"],
+                   RUNNER_TEMP=str(self.root), GITHUB_OUTPUT=str(self.output), GITHUB_SHA=self.commit,
+                   GITHUB_REPOSITORY=self.repository, PAGES_BUILD_HEAD=self.head,
+                   PAGES_PREPARED_COMMIT=self.commit, TEST_MAIN=main or self.commit,
+                   TEST_PULL=json.dumps(self.pull), TEST_BUILD=build, PAGES_BUILD_RUN="100", PAGES_BUILD_ATTEMPT="2")
+        result = subprocess.run(["bash", "--noprofile", "--norc", "-c", script], env=env,
+                                capture_output=True, text=True, timeout=10)
+        return result, self.output.read_text()
+
+    def test_prepare_and_deploy_accept_the_current_merged_head(self):
+        result, outputs = self.run_script(self.build)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(outputs, "built=true\n")
+        result, outputs = self.run_script(self.prepare)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(outputs, f"publish=true\ncommit={self.commit}\n")
+        result, outputs = self.run_script(self.deploy)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(outputs, "publish=true\n")
+
+    def test_skipped_build_does_not_require_an_archive(self):
+        result, outputs = self.run_script(self.build, build="skipped")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(outputs, "")
+        result, outputs = self.run_script(self.build, build="")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertEqual(outputs, "")
+
+    def test_newer_main_skips_preparation_and_a_deploy_only_retry(self):
+        for script in (self.prepare, self.deploy):
+            result, outputs = self.run_script(script, main="c" * 40)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertEqual(outputs, "")
+
+    def test_mismatched_evidence_or_pull_request_cannot_publish(self):
+        self.evidence["requested_head_sha"] = "c" * 40
+        result, outputs = self.run_script(self.prepare)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertEqual(outputs, "")
+        self.evidence["requested_head_sha"] = self.head
+        self.pull["head"]["sha"] = "c" * 40
+        result, outputs = self.run_script(self.prepare)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertEqual(outputs, "")
+
+
 class StructureTests(unittest.TestCase):
     def test_workflows_only_run_for_main_pull_requests(self):
         verify_workflow = workflow("verify.yml")
@@ -80,30 +161,59 @@ class StructureTests(unittest.TestCase):
         self.assertEqual(build["permissions"], {"contents": "read", "actions": "read", "pages": "read"})
         deployment = workflow("library-pages-deploy.yml")
         self.assertEqual(deployment["permissions"], {})
+        self.assertEqual(set(deployment["jobs"]), {"prepare", "deploy"})
+        prepare = deployment["jobs"]["prepare"]
         deploy = deployment["jobs"]["deploy"]
-        self.assertIn("github.ref == 'refs/heads/main'", deploy["if"])
-        self.assertIn("workflow_run.conclusion == 'success'", deploy["if"])
-        self.assertIn("workflow_run.event == 'pull_request'", deploy["if"])
-        self.assertIn("workflow_run.path == '.github/workflows/library-pages.yml'", deploy["if"])
-        self.assertIn("workflow_run.repository.full_name == github.repository", deploy["if"])
+        self.assertIn("github.ref == 'refs/heads/main'", prepare["if"])
+        self.assertIn("workflow_run.conclusion == 'success'", prepare["if"])
+        self.assertIn("workflow_run.event == 'pull_request'", prepare["if"])
+        self.assertIn("workflow_run.path == '.github/workflows/library-pages.yml'", prepare["if"])
+        self.assertIn("workflow_run.repository.full_name == github.repository", prepare["if"])
+        self.assertTrue(all(permission == "read" for permission in prepare["permissions"].values()))
+        self.assertNotIn("environment", prepare)
+        self.assertEqual(deploy["needs"], "prepare")
+        self.assertEqual(deploy["if"], "needs.prepare.outputs.publish == 'true'")
         self.assertEqual(deploy["environment"]["name"], "github-pages")
         self.assertEqual(deploy["permissions"]["pages"], "write")
         self.assertEqual(deploy["permissions"]["id-token"], "write")
         self.assertFalse(any(step.get("uses", "").startswith("actions/checkout@") for step in deploy["steps"]))
-        downloads = [step["with"] for step in deploy["steps"] if step.get("uses", "").startswith("actions/download-artifact@")]
-        self.assertEqual([step["name"] for step in downloads], ["library-pages-publication-report", "github-pages"])
+        downloads = [step["with"] for step in prepare["steps"] if step.get("uses", "").startswith("actions/download-artifact@")]
+        self.assertEqual([step["name"] for step in downloads], [
+            "library-pages-publication-report-${{ github.event.workflow_run.run_attempt }}",
+            "github-pages-${{ github.event.workflow_run.run_attempt }}",
+        ])
+        upstream = [step["with"] for step in build["steps"] if step.get("uses", "").startswith(
+            ("actions/upload-artifact@", "actions/upload-pages-artifact@"))]
+        self.assertEqual([step["name"] for step in upstream], [
+            "library-pages-publication-report-${{ github.run_attempt }}",
+            "github-pages-${{ github.run_attempt }}",
+        ])
+        self.assertTrue(all(step["retention-days"] == 14 for step in upstream))
         for step in downloads:
             self.assertEqual(step["run-id"], "${{ github.event.workflow_run.id }}")
             self.assertEqual(step["digest-mismatch"], "error")
-        self.assertTrue(all(step.get("if") == "steps.publication.outputs.publish == 'true'" for step in deploy["steps"][2:]))
+        self.assertTrue(all(step.get("if") == "steps.build.outputs.built == 'true'" for step in prepare["steps"][1:3]))
+        self.assertTrue(all(step.get("if") == "steps.publication.outputs.publish == 'true'" for step in prepare["steps"][3:]))
+        archive = prepare["steps"][-1]["with"]
+        self.assertEqual(archive["name"], "github-pages")
+        self.assertEqual(archive["retention-days"], 14)
+        self.assertTrue(archive["overwrite"])
+        self.assertFalse(any("artifact" in step.get("uses", "") for step in deploy["steps"]))
+        self.assertEqual(deploy["steps"][0]["env"]["PAGES_PREPARED_COMMIT"], "${{ needs.prepare.outputs.commit }}")
+        self.assertEqual(deploy["steps"][-1]["if"], "steps.current.outputs.publish == 'true'")
+        self.assertTrue(deploy["steps"][-1]["uses"].startswith("actions/deploy-pages@"))
         configure = next(step for step in build["steps"] if step.get("uses", "").startswith("actions/configure-pages@"))
         self.assertIs(configure["with"]["enablement"], False)
-        self.assertNotEqual(value["concurrency"]["group"], workflow("verify.yml")["concurrency"]["group"])
+        self.assertNotIn("concurrency", value)
+        self.assertNotIn("concurrency", deployment)
+        self.assertNotIn("concurrency", prepare)
+        self.assertEqual(deploy["concurrency"], {"group": "library-pages-deploy-main", "queue": "max"})
+        self.assertNotEqual(deploy["concurrency"]["group"], workflow("verify.yml")["concurrency"]["group"])
 
     def test_preview_waits_for_evidence_even_when_individual_checks_fail(self):
         value = workflow("verify.yml")
         docs = value["jobs"]["documentation"]
-        self.assertEqual(set(docs["needs"]), {"generated", "examples", "instrumented", "contracts", "library_checker"})
+        self.assertEqual(set(docs["needs"]), {"generated", "examples", "instrumented", "coverage", "contracts", "library_checker"})
         self.assertIn("!cancelled()", docs["if"])
         self.assertIn("needs.generated.result == 'success'", docs["if"])
         self.assertNotIn("needs.examples.result == 'success'", docs["if"])
@@ -139,13 +249,13 @@ class StructureTests(unittest.TestCase):
     def test_final_gate_includes_contracts_official_cases_and_documentation(self):
         gate = workflow("verify.yml")["jobs"]["result"]
         self.assertEqual(set(gate["needs"]), {"generated", "python_tests", "examples", "variant_builds",
-                                             "cross_architecture", "instrumented",
+                                             "cross_architecture", "instrumented", "coverage",
                                              "guidelines", "contracts", "library_checker", "stress", "yomiyasu",
                                              "documentation"})
         command = gate["steps"][0]["run"]
         for variable in ("GENERATED_RESULT", "PYTHON_TESTS_RESULT", "CONTRACT_RESULT", "LIBRARY_CHECKER_RESULT",
                          "STRESS_RESULT", "DOCUMENTATION_RESULT", "VARIANT_BUILDS_RESULT", "CROSS_ARCH_RESULT",
-                         "YOMIYASU_RESULT"):
+                         "YOMIYASU_RESULT", "COVERAGE_RESULT"):
             self.assertIn('"$' + variable + '" == success', command)
         self.assertEqual(gate["steps"][0]["env"]["YOMIYASU_RESULT"], "${{ needs.yomiyasu.result }}")
         self.assertEqual(gate["steps"][0]["env"]["CROSS_ARCH_RESULT"], "${{ needs.cross_architecture.result }}")
@@ -168,7 +278,7 @@ class StructureTests(unittest.TestCase):
 
     def test_independent_checks_can_start_together(self):
         jobs = workflow("verify.yml")["jobs"]
-        self.assertEqual({name for name, job in jobs.items() if job.get("needs")}, {"documentation", "result"})
+        self.assertEqual({name for name, job in jobs.items() if job.get("needs")}, {"coverage", "documentation", "result"})
         self.assertEqual(jobs["python_tests"]["strategy"]["matrix"]["shard"], [0, 1])
         self.assertNotIn("apt-get", "\n".join(step.get("run", "") for step in jobs["generated"]["steps"]))
         for name, step_name in (("examples", "Select and run local Verify"),
@@ -219,6 +329,19 @@ class StructureTests(unittest.TestCase):
         self.assertIn("libc6-dev:amd64", command)
         self.assertIn("libclang-rt-18-dev:amd64", command)
         self.assertIn('ln -s usr/lib64 "$RUNNER_TEMP/qemu-amd64/lib64"', command)
+
+    def test_coverage_matrix_merges_all_parts_before_publishing_the_report(self):
+        value = workflow("verify.yml")
+        jobs = value["jobs"]
+        shards = jobs["instrumented"]["strategy"]["matrix"]["include"]
+        count = int(value["env"]["SIRKIT_COVERAGE_SHARDS"])
+        self.assertEqual([part["shard"] for part in shards if part["mode"] == "coverage"], list(range(count)))
+        self.assertEqual([part["artifact"] for part in shards if part["mode"] == "coverage"],
+                         [f"coverage-part-{index}" for index in range(count)])
+        self.assertEqual(jobs["coverage"]["needs"], "instrumented")
+        self.assertEqual(jobs["coverage"]["steps"][1]["with"]["pattern"], "coverage-part-*")
+        self.assertIn("Scripts/merge_ci_coverage.py", jobs["coverage"]["steps"][2]["run"])
+        self.assertEqual(jobs["coverage"]["steps"][-1]["with"]["name"], "instrumented-coverage")
 
     def test_variant_build_matrix_runs_both_compilers_on_each_native_runner(self):
         job = workflow("verify.yml")["jobs"]["variant_builds"]
@@ -327,10 +450,11 @@ class StructureTests(unittest.TestCase):
 
 @unittest.skipUnless(shutil.which("jq"), "jq is required to exercise the publication check")
 class PublicationCommitTests(unittest.TestCase):
-    def execute(self, *, main=None, merged=True):
+    def execute(self, *, main=None, merged=True, prepared=None):
         commit, head = "b" * 40, "a" * 40
-        command = next(step["run"] for step in workflow("library-pages-deploy.yml")["jobs"]["deploy"]["steps"]
-                       if step.get("id") == "publication")
+        job, identifier = ("prepare", "publication") if prepared is None else ("deploy", "current")
+        command = next(step["run"] for step in workflow("library-pages-deploy.yml")["jobs"][job]["steps"]
+                       if step.get("id") == identifier)
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             evidence = root / "pages-evidence"
@@ -350,7 +474,7 @@ class PublicationCommitTests(unittest.TestCase):
             output = root / "output"
             environment = dict(os.environ, PATH=str(root) + os.pathsep + os.environ["PATH"], RUNNER_TEMP=str(root),
                                GITHUB_OUTPUT=str(output), GITHUB_REPOSITORY="example/library", GITHUB_SHA=commit,
-                               PAGES_BUILD_HEAD=head, TEST_MAIN_SHA=main or commit,
+                               PAGES_BUILD_HEAD=head, PAGES_PREPARED_COMMIT=prepared or "", TEST_MAIN_SHA=main or commit,
                                TEST_PR_JSON=json.dumps({"merged": merged, "merge_commit_sha": commit,
                                                         "head": {"sha": head}, "base": {"ref": "main", "repo": {
                                                             "full_name": "example/library"}}}))
@@ -360,11 +484,22 @@ class PublicationCommitTests(unittest.TestCase):
     def test_only_current_merged_main_can_publish(self):
         process, output = self.execute()
         self.assertEqual(process.returncode, 0, process.stderr)
-        self.assertEqual(output, "publish=true\n")
+        self.assertEqual(output, f"publish=true\ncommit={'b' * 40}\n")
         process, output = self.execute(main="c" * 40)
         self.assertEqual(process.returncode, 0, process.stderr)
         self.assertEqual(output, "")
         process, output = self.execute(merged=False)
+        self.assertNotEqual(process.returncode, 0)
+        self.assertEqual(output, "")
+
+    def test_deploy_retry_rechecks_current_main_and_requires_the_prepared_commit(self):
+        process, output = self.execute(prepared="b" * 40)
+        self.assertEqual(process.returncode, 0, process.stderr)
+        self.assertEqual(output, "publish=true\n")
+        process, output = self.execute(prepared="b" * 40, main="c" * 40)
+        self.assertEqual(process.returncode, 0, process.stderr)
+        self.assertEqual(output, "")
+        process, output = self.execute(prepared="c" * 40)
         self.assertNotEqual(process.returncode, 0)
         self.assertEqual(output, "")
 

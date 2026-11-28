@@ -1,0 +1,61 @@
+{
+  "entries": [
+    {
+      "id": "dfa_minimization_wildcard",
+      "libraries": [
+        "String/DFA_Minimization.cpp",
+        "String/Bitmask_NFA.cpp"
+      ],
+      "driver": "Verify/current/drivers/dfa_minimization_wildcard_main.cpp",
+      "title": "G - Wildcard Construction",
+      "problem_url": "https://atcoder.jp/contests/abc484/tasks/abc484_g",
+      "selection_reason": "部分集合構成で得られたDFAを最小化し、同じ言語の文字列を数える。",
+      "coverage": [
+        "到達可能な決定性オートマトン",
+        "同値状態の統合",
+        "最小化後の受理語数"
+      ],
+      "samples": [
+        {
+          "input": "?0??11?1?\n0?1\n?1?\n",
+          "output": "5\n",
+          "origin": "AtCoder公式入力例1。"
+        },
+        {
+          "input": "0?10?1?01?\n???\n?????\n",
+          "output": "0\n",
+          "origin": "AtCoder公式入力例2。"
+        },
+        {
+          "input": "????????????1???1??0??????1???????1????????1????????????????0\n?0??\n?\n",
+          "output": "992356689\n",
+          "origin": "AtCoder公式入力例3。"
+        }
+      ],
+      "acl_required": true
+    },
+    {
+      "id": "dfa_minimization_reference",
+      "libraries": [
+        "String/DFA_Minimization.cpp"
+      ],
+      "driver": "Verify/current/drivers/dfa_minimization_reference_main.cpp",
+      "title": "決定性有限オートマトンの状態の最小化",
+      "verification_kind": "local_regression",
+      "selection_reason": "言語が等しい状態を統合し、到達できない状態を落とす。",
+      "coverage": [
+        "到達不能状態",
+        "区別できない状態",
+        "別の言語を持つ状態"
+      ],
+      "acl_required": false,
+      "samples": [
+        {
+          "input": "5 2 0 3\n1 2 1\n1 3 0\n0 0 3\n0 1 2\n1 4 4\n0 1\n1 2\n4 4\n",
+          "output": "2\n1\n0\n0\n",
+          "origin": "2組の同値状態と1個の到達不能状態。"
+        }
+      ]
+    }
+  ]
+}

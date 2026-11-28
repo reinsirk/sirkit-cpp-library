@@ -23,6 +23,7 @@ PARTS: dict[str, tuple[str, ...]] = {
     "linear_functions": ("segment_predicates", "linear_results"),
     "location": (),
     "polygon": ("on_segment", "location"),
+    "convex_polygon_locator": ("point_functions", "location"),
     "circle_types": ("point",),
     "circle_functions": ("on_segment", "location", "circle_types"),
 }
@@ -32,6 +33,7 @@ TARGETS: dict[str, tuple[str, ...]] = {
     "Geometry/Point.cpp": ("point_functions",),
     "Geometry/Line_Segment.cpp": ("linear_functions",),
     "Geometry/Polygon.cpp": ("polygon",),
+    "Geometry/Convex_Polygon_Locator.cpp": ("convex_polygon_locator",),
     "Geometry/Circle.cpp": ("circle_functions",),
 }
 
@@ -62,6 +64,7 @@ DOCUMENTS: dict[str, tuple[str, ...]] = {
         "Document/geometry_point_location.md",
         "Document/convex_hull.md",
     ),
+    "Geometry/Convex_Polygon_Locator.cpp": ("Document/convex_polygon_locator.md",),
     "Geometry/Circle.cpp": (
         "Document/geometry_point.md",
         "Document/geometry_orientation.md",

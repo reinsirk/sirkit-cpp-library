@@ -30,6 +30,7 @@ LABELS = dict(current_ac="現行AC", source_changed="現行未照合・要再提
 SHA = re.compile(r"[0-9a-fA-F]{64}\Z")
 IDENTIFIER = re.compile(r"[A-Za-z0-9_-]+\Z")
 PREAMBLE_NORMALIZATION = "generated-preamble-metadata-v2"
+CURRENT_AC_NOTE = "現行ACには、提出本文を照合したACと、利用者が現行版の提出を確認したAtCoderのACを含めます。"
 
 
 def digest(data: bytes) -> str:
@@ -184,6 +185,11 @@ def normalized_proof(record: dict) -> bool:
 
 def source_match(record: dict, source: bytes) -> str | None:
     current = digest(source)
+    if record.get("evidence_kind") == "atcoder_user_confirmed":
+        if (urlsplit(record.get("url") or "").hostname == "atcoder.jp"
+                and current == record.get("submission_sha256")):
+            return "atcoder_user_confirmed"
+        return None
     if current in {record.get("submission_sha256"), record.get("uploaded_source_sha256")}:
         return "exact"
     if "source_normalization_proofs" in record:
@@ -330,7 +336,7 @@ def build_status(root: Path) -> dict:
     by_id = {r["id"]: r for r in records_from(data["entries"])}
     rows = []
     with repository(root):
-        entries = prepare_verify.collect()
+        entries = prepare_verify.collect(by_id.keys())
         policies = submission_policy(root, entries)
         for entry in sorted(entries, key=lambda e: e["id"]):
             name = entry["id"]
@@ -397,7 +403,7 @@ def build_status(root: Path) -> dict:
 
 def status_markdown(data: dict) -> str:
     lines = ["# Verify状況", "", "通常版の現在の本体・main・共通入出力を含む提出全文と、保存した判定記録を照合します。",
-             "現行ACはソースが一致するACだけです。過去のACやローカル検査を現行ACへ数えません。",
+             CURRENT_AC_NOTE,
              "提出ファイルが未生成・未同期の場合は、先に `python3 Scripts/prepare_verify.py` を実行してください。", "",
              "更新: `python3 Scripts/update_verify_status.py`。オンライン情報を自動取得する処理ではありません。", "",
              "| ID | 提出先 | 状況 | 判定 | 現行一致の時間 |", "| --- | --- | --- | --- | --- |"]

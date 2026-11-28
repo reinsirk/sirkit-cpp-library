@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: CC0-1.0
 # 参考: https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#workflow_run
+# 参考: https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/control-workflow-concurrency
 name: Deploy library pages
 
 on:
@@ -9,12 +10,9 @@ on:
 
 permissions: {}
 
-concurrency:
-  group: library-pages-deploy-main
-  cancel-in-progress: false
-
 jobs:
-  deploy:
+  prepare:
+    name: Prepare the Pages archive
     if: >-
       github.ref == 'refs/heads/main' &&
       github.event.workflow_run.conclusion == 'success' &&
@@ -27,23 +25,39 @@ jobs:
       actions: read
       contents: read
       pull-requests: read
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+    outputs:
+      publish: ${{ steps.publication.outputs.publish }}
+      commit: ${{ steps.publication.outputs.commit }}
     steps:
+      - name: Check whether the site was built
+        id: build
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PAGES_BUILD_RUN: ${{ github.event.workflow_run.id }}
+          PAGES_BUILD_ATTEMPT: ${{ github.event.workflow_run.run_attempt }}
+        run: |
+          set -euo pipefail
+          [[ "$PAGES_BUILD_RUN" =~ ^[1-9][0-9]*$ && "$PAGES_BUILD_ATTEMPT" =~ ^[1-9][0-9]*$ ]]
+          conclusion=$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$PAGES_BUILD_RUN/attempts/$PAGES_BUILD_ATTEMPT/jobs" \
+            --jq '.jobs[] | select(.name == "build") | .conclusion')
+          case "$conclusion" in
+            success) echo 'built=true' >> "$GITHUB_OUTPUT" ;;
+            skipped) echo 'The source workflow skipped the site build.' ;;
+            *) printf 'Could not confirm the source build: %s\n' "$conclusion" >&2; exit 1 ;;
+          esac
       - name: Download publication evidence
+        if: steps.build.outputs.built == 'true'
         uses: actions/download-artifact@v8
         with:
           github-token: ${{ github.token }}
           repository: ${{ github.repository }}
           run-id: ${{ github.event.workflow_run.id }}
-          name: library-pages-publication-report
+          name: library-pages-publication-report-${{ github.event.workflow_run.run_attempt }}
           path: ${{ runner.temp }}/pages-evidence
           digest-mismatch: error
       - name: Confirm the site belongs to the current main commit
         id: publication
+        if: steps.build.outputs.built == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
           PAGES_BUILD_HEAD: ${{ github.event.workflow_run.head_sha }}
@@ -64,6 +78,7 @@ jobs:
               '.merged == true and .base.ref == "main" and .base.repo.full_name == $repo and
                .merge_commit_sha == $sha and .head.sha == $head' >/dev/null
           echo 'publish=true' >> "$GITHUB_OUTPUT"
+          printf 'commit=%s\n' "$commit" >> "$GITHUB_OUTPUT"
       - name: Download the site archive
         if: steps.publication.outputs.publish == 'true'
         uses: actions/download-artifact@v8
@@ -71,7 +86,7 @@ jobs:
           github-token: ${{ github.token }}
           repository: ${{ github.repository }}
           run-id: ${{ github.event.workflow_run.id }}
-          name: github-pages
+          name: github-pages-${{ github.event.workflow_run.run_attempt }}
           path: ${{ runner.temp }}/pages-package
           digest-mismatch: error
       - name: Pass the site archive to the deployment
@@ -80,9 +95,43 @@ jobs:
         with:
           name: github-pages
           path: ${{ runner.temp }}/pages-package/artifact.tar
-          retention-days: 1
+          retention-days: 14
           if-no-files-found: error
+          overwrite: true
+
+  deploy:
+    name: Deploy the prepared Pages archive
+    needs: prepare
+    if: needs.prepare.outputs.publish == 'true'
+    concurrency:
+      group: library-pages-deploy-main
+      queue: max
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      actions: read
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Recheck the main commit before deploying
+        id: current
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PAGES_PREPARED_COMMIT: ${{ needs.prepare.outputs.commit }}
+        run: |
+          set -euo pipefail
+          [[ "$PAGES_PREPARED_COMMIT" =~ ^[0-9a-f]{40}$ && "$PAGES_PREPARED_COMMIT" == "$GITHUB_SHA" ]]
+          main=$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/main" --jq '.object.sha')
+          if [[ "$PAGES_PREPARED_COMMIT" != "$main" ]]; then
+            echo 'A newer main commit supersedes this site build.'
+            exit 0
+          fi
+          echo 'publish=true' >> "$GITHUB_OUTPUT"
       - name: Deploy the reviewed main artifact
-        if: steps.publication.outputs.publish == 'true'
+        if: steps.current.outputs.publish == 'true'
         id: deployment
         uses: actions/deploy-pages@v5

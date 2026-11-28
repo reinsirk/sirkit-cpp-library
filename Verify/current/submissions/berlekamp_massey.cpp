@@ -1,5 +1,6 @@
 #define SKIP_RUNTIME_CHECKS
 // Verify: https://judge.yosupo.jp/problem/find_linear_recurrence
+// Submission: https://judge.yosupo.jp/submission/420152
 
 // Library: Math/Berlekamp_Massey.cpp
 // SPDX-License-Identifier: CC0-1.0

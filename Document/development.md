@@ -13,7 +13,7 @@ python3 Scripts/prepare_verify.py
 python3 Scripts/prepare_variant_verify.py
 ```
 
-通常は共通の高速入出力を使います。独自の入出力が有効な場合は、`Verify/current/groups/*.json`のLibrary Checker対象項目に`allow_custom_io: true`を指定できます。main全体が変更の追跡対象です。yukicoder・AtCoder・AOJでは共通の入出力と素直なAPI呼び出しを使い、問題の制約内で解くために必要な手順を記します。
+通常は共通の高速入出力を使います。独自の入出力が有効な場合は、`Verify/current/groups/*.json`のLibrary Checker対象項目に`allow_custom_io: true`を指定できます。main全体が変更の追跡対象です。yukicoder・AtCoder・AOJでは素直なAPI呼び出しを使い、問題の制約内で解くために必要な手順を記します。yukicoder・AtCoderの対話問題では `interactive_transcript: true` を指定し、問い合わせを都度フラッシュする入出力と、そのドライバーで再現できる応答例を用意します。
 
 提出版は`SKIP_RUNTIME_CHECKS`を有効にし、実行時assertを含む場合は`NDEBUG`も付けます。各オンライン対象の`gcc_optimization`には、測定で選んだ`O2`・`O3`・`O3,unroll-loops`を指定できます。Clangにはこのpragmaを適用しません。ローカルのchecked検証ではassertを有効に保ちます。
 

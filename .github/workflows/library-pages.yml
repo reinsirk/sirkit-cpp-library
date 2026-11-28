@@ -13,11 +13,6 @@ permissions:
 env:
   PYTHONDONTWRITEBYTECODE: "1"
 
-# VerifyのPR検査と別のグループ。未マージPRはこのworkflowで公開しない。
-concurrency:
-  group: library-pages-main
-  cancel-in-progress: false
-
 jobs:
   build:
     if: >-
@@ -183,7 +178,7 @@ jobs:
       - name: Upload publication evidence
         uses: actions/upload-artifact@v7
         with:
-          name: library-pages-publication-report
+          name: library-pages-publication-report-${{ github.run_attempt }}
           path: |
             ${{ runner.temp }}/library-pages/reports/
             ${{ runner.temp }}/library-pages/build-result.json
@@ -192,4 +187,6 @@ jobs:
       - name: Upload the reviewed main site
         uses: actions/upload-pages-artifact@v5
         with:
+          name: github-pages-${{ github.run_attempt }}
           path: ${{ runner.temp }}/library-pages/site/
+          retention-days: 14

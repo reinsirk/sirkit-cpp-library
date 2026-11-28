@@ -1,4 +1,5 @@
 #define SKIP_RUNTIME_CHECKS
+// Verify-SHA256: c3fe10a9c03755a770b2fbaeb81c842fe455bbf179dea6beb079b3817fe149d3
 // Verify: https://atcoder.jp/contests/abc421/tasks/abc421_f
 
 // Library: DataStructure/implicit_treap.cpp

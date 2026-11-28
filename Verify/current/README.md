@@ -18,6 +18,7 @@ Library Checkerはmain・入出力・問題ごとの処理を含む全体を最�
 ## 共通入出力の扱い
 
 - 通常は`verify_in >> 値`、`verify_out << 値`を使います。Library Checkerでは対象項目の`allow_custom_io: true`で独自入出力も許可します。入力変数に未初期化の警告が出る箇所は値初期化しています。
+- yukicoder・AtCoderの対話問題では `interactive_transcript: true` を指定し、問い合わせを送るたびに出力をフラッシュします。ローカルで照合する入出力には、そのドライバーの問い合わせと対応する応答を使います。
 - `verify_out.fixed(12)`で固定小数出力を指定します。出力バッファは終了時にflushします。
 - `SKIP_RUNTIME_CHECKS`時は型に収まる正しい入力が前提です。入力検査を除いても、EOF確認・バッファ境界・符号付き最小値の安全な変換は維持します。
 - 生成器が共通ヘッダーを展開するため、提出コードは別ファイルのincludeに依存しません。標準の`cin/cout`や別の入出力方式とは混用しません。

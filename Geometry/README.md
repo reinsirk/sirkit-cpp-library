@@ -71,6 +71,25 @@ python3 Scripts/generate_geometry.py --check
 | [angle_sort.cpp](angle_sort.cpp) | 偏角順の比較・ソート |
 | [Manhattan_MST.cpp](Manhattan_MST.cpp) | [マンハッタン最小全域木](../Document/manhattan_mst.md) |
 | [Rectangle_Sum.cpp](Rectangle_Sum.cpp) | [長方形内の重みの和](../Document/rectangle_sum.md) |
+| `Convex_Polygon_Locator.cpp` | [内外判定の説明](../Document/convex_polygon_locator.md)・[ABC296 G - Polygon and Points](../Verify/current/submissions/convex_polygon_locator.cpp) |
+| `Orthogonal_Polygon_Coverage.cpp` | [直交多角形の被覆数](../Document/orthogonal_polygon_coverage.md)・[ABC211 F - Rectilinear Polygons](../Verify/current/submissions/orthogonal_polygon_coverage.cpp) |
+| `Kd_Tree_Point_Extractor.cpp` | [説明](../Document/kd_tree_point_extractor.md)・[AWC0163 E - Traveling to the Space Station](../Verify/current/submissions/kd_tree_point_extractor.cpp) |
+| `Manhattan_Nearest_Neighbors.cpp` | [説明](../Document/manhattan_nearest_neighbors.md)・[ABC283 F - Permutation Distance](../Verify/current/submissions/manhattan_nearest_neighbors.cpp) |
+| `Static_Cuboid_Sum.cpp` | [説明](../Document/static_cuboid_sum.md)・[ABC309 F - Box in Box](../Verify/current/submissions/static_cuboid_sum_box_in_box.cpp) |
+| `Disk_Lattice_Points.cpp` | [説明](../Document/disk_lattice_points.md)・[Circle Lattice Points](../Verify/current/submissions/disk_lattice_points_abc191_d.cpp) |
+| `Lattice_Polygon.cpp` | [説明](../Document/lattice_polygon.md)・[典型90 041 - Piles in AtCoder Farm](../Verify/current/submissions/lattice_polygon_typical90.cpp) |
+| `Polygon_Chord_Moments.cpp` | [説明](../Document/polygon_chord_moments.md)・[ABC472 F - Centroid of a Slice](../Verify/current/submissions/polygon_chord_moments.cpp) |
+| `Half_Plane_Intersection.cpp` | [説明](../Document/half_plane_intersection.md)・[PAST 2021-12 N - 共通部分](../Verify/current/submissions/half_plane_intersection.cpp) |
+| `Circle_Polygon_Intersection.cpp` | [説明](../Document/circle_polygon_intersection.md)・[AOJ CGL_7_H - Intersection of a Circle and a Polygon](../Verify/current/submissions/circle_polygon_intersection.cpp) |
+| `L1_Origin_Line_Fit.cpp` | [説明](../Document/l1_origin_line_fit.md)・[G - Tuning](../Verify/current/submissions/l1_origin_line_fit.cpp) |
+| `Integer_Geometry_3D.cpp` | [説明](../Document/integer_geometry_3d.md)・[No.622 点と三角柱の内外判定](../Verify/current/submissions/triangular_prism_position.cpp)<br>[No.132 点と平面との距離](../Verify/current/submissions/point_plane_distance_sum.cpp) |
+| `Maximum_Weight_Window.cpp` | [説明](../Document/maximum_weight_window.md)・[No.3214 small square](../Verify/current/submissions/maximum_weight_window.cpp)<br>[F - Apples](../Verify/current/submissions/maximum_weight_window_apples.cpp) |
+| `Chord_Crossing_Queries.cpp` | [説明](../Document/chord_crossing_queries.md)・[Chord Crossing](../Verify/current/submissions/chord_crossing_queries.cpp) |
+| `Lattice_Shape_Transforms.cpp` | [説明](../Document/lattice_shape_transforms.md)・[Shapes](../Verify/current/submissions/lattice_shape_transforms.cpp) |
+| `Trapezoid_Count.cpp` | [説明](../Document/trapezoid_count.md)・[E - Trapezium](../Verify/current/submissions/trapezoid_count.cpp) |
+| `Dice_Orientation.cpp` | [説明](../Document/dice_orientation.md)・[XI](../Verify/current/submissions/dice_orientation_yuki1572.cpp)<br>[Dice III](../Verify/current/submissions/dice_orientation_aoj_itp1_11_c.cpp) |
+| `Delaunay_Triangulation.cpp` | [説明](../Document/delaunay_triangulation.md)・[整数点のDelaunay三角形分割](../Verify/current/submissions/delaunay_triangulation_reference.cpp) |
+| `Circle_Tangents.cpp` | [説明](../Document/circle_tangents.md)・[yukicoder No.3344 - Common Tangent Line](../Verify/current/submissions/circle_tangents_yuki3344.cpp) |
 
 現在版の提出コード・検査一覧は[Verify](../Verify/current/README.md)を参照してください。
 

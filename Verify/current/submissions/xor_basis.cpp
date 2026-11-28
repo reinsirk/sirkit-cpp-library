@@ -1,4 +1,5 @@
 #define SKIP_RUNTIME_CHECKS
+// Verify-SHA256: 2582f59d2f0f73ceded0d0fa7f0e8713b667d47738f3625eafdc1a42ede40cf8
 // Verify: https://atcoder.jp/contests/abc141/tasks/abc141_f
 
 // Library: Math/Xor_Basis.cpp

@@ -1,0 +1,1023 @@
+// SPDX-License-Identifier: CC0-1.0
+// 生成版: MSVC用。
+// 生成元: Math/Ferrers_Rook.cpp
+// 参考（Goldman–Joichi–Whiteの積公式と包除原理）: https://www.combinatorics.org/ojs/index.php/eljc/article/download/v15i1r85/pdf/
+// ドキュメント: https://github.com/reinsirk/sirkit-cpp-library/blob/main/Document/ferrers_rook.md
+//
+// API一覧
+// ferrers_rook_counts(heights): 同じ行・列を使わずにk個置く方法の数を、k=0..nの順で返す。
+// 各列の許可マスは先頭からheights[i]個。長方形の盤も扱い、列の並び順は任意。
+// ferrers_hit_counts(heights): n×n盤で順列の選んだnマスのうち、許可マスがk個ある順列数を返す。
+// heights[i]>nならinvalid_argument。nは列数で2^20未満。空列に対する結果は両方{1}。
+// 法998244353。O(1+n log^2(n+1))時間、O(1+n log(n+1))領域。
+//
+// [同梱のNewton基底変換]
+// monomial_to_newton_basis(coefficients, points): 単項式基底からNewton基底へ変換する。
+// newton_to_monomial_basis(coefficients, points): Newton基底から単項式基底へ変換する。
+// 法998244353。係数数Nは2^20以下、点の数はN-1（N=0では0）。点の重複を許す。
+// 両変換ともO(N log^2(N+1))時間・O(N log(N+1)+1)領域。
+//
+// [同梱FPS/NTT]
+// FormalPowerSeries: 法998244353、Mint不要の形式的冪級数/多項式。係数はuint32_tの独立所有vector。
+// ()/size_t n/vector<整数>/initializer_list<int64_t>: 空/n個の0/法へ正規化した係数で生成。コピーは独立。
+// modulus()/max_precision(): 法/精度操作の上限をO(1)で返す。
+// size()/empty()/coefficients(): 係数数/空か/係数vectorのconst参照。operator[](i)/set(i,value): 既存添字の読取/正規化した代入。
+// get(i): 範囲外は0。resize(n): 末尾を0で拡張/切詰め。prefix(n): n係数へ0拡張/切詰めしたコピー。
+// trim(): 末尾の0を除く。空vectorは零多項式。長さを含めて等値比較するため、精度の異なる0列は区別する。
+// +,-,*,/,%, +=,-=,*=,/=,%=: 係数和/差/積/多項式商/剰余。和・差は長い方の長さ、積は空を含めば空。
+// scale(value): 全係数を整数倍。derivative()/integral(): 微分/積分（積分定数0）。積分は係数数<998244353が必要。
+// inverse(n)/log(n)/exp(n): x^n未満で逆数/形式log/形式exp。inverseは定数項!=0、logは=1、expは=0。
+// pow(k,n): 非負uint64_t乗をx^nで切る。0^0=1、先頭0と大きいkを扱う。sqrt(n): 平方根かnullopt。
+// sqrtは先頭非0次数が偶数かつ定数部分が平方剰余なら存在。根の先頭非0係数は2候補の小さい方、未確定末尾は0。
+// inverse/log/exp/pow/sqrtの引数n省略は現在のsize()。n=0は常に空、精度nは2^22以下。
+// divmod(divisor): 末尾0を除いた商/剰余のpair。0除算は検査省略時もdomain_error。
+// 線形操作はO(n)。精度操作はM(n)=O(n log n)としてO(M(n))、冪乗は加えてO(log k)。作業領域O(n)。
+// 積と商剰余のNTT長は2^23以下。短い積/除数では直接計算。長さ・数学的0判定は検査省略時も維持。
+// clear_cache(): このスレッドのNTT根/整数逆数cacheを解放。cacheは同一スレッドで共有し、係数は共有しない。
+//
+// [同梱NTT]
+// NTT<Mod=998244353,Root=3>: Mint不要の素数法NTT。3<=Mod<2^31、Rootは最大2冪位数の根を生成する値。
+// NTT(): 動的キャッシュなしで生成。コピーはキャッシュを独立に所有し、時間・領域は保持数に比例。
+// modulus()/max_length(): 法/対応する最大変換長をO(1)で返す。
+// prepare(length): 必要な根を保持。lengthは0または2冪、上限は2^v2(Mod-1)。新規分O(length)時間・保持O(length)。
+// transform(a,inverse=false): 正順の係数と正順の周波数を相互変換しvoidを返す。aはuint32_tのvector。
+// transformは空または対応する2冪長、各値0..Mod-1が前提。O(n log n)時間、根以外の追加領域O(1)。
+// convolution(a,b): 整数vectorを法Modへ正規化し畳み込みを返す。負数/uint64_t最大値も可。空を含めば{}。
+// convolution_normalized(a,b): uint32_tの正規化済みvectorを値で受け取り再利用。std::moveで入力領域を譲渡可。
+// square(a): 同じ列の畳み込み。大規模では順変換を1回にする。返却値はvector<uint32_t>。
+// 畳み込みは短い方32要素以下ならO(nm)、それ以外はL=bit_ceil(n+m-1)としてO(L log L)、追加O(L)。
+// NTT経路のLとtransform長は上限以下。長さ・容量の上限検査はSKIP_RUNTIME_CHECKSでも維持。
+// ConvolutionMod<Mod,Root>(a,b): 一時NTTを使う簡易版。同じ長さを繰り返すならNTTオブジェクトを再利用する。
+// roots_capacity()/clear_cache(): 動的な根のキャッシュの要素数を返す/解放。通常操作は入力不変、transformは例外までの変更が残り得る。
+// Mod<2^30では標準C++のMontgomery演算を使用。GCC/Clangの対応x86 CPUではAVX2で8係数ずつ処理する。
+// SIRKIT_DISABLE_SIMDで追加の専用命令とCPU判定を除外できる。代替経路も同じAPI・結果を保つ。
+
+
+// SIRKIT_NAMESPACE_V1: 公開APIはsirkit、既存のgeoはsirkit::geo、内部部品はsirkit::detail。
+#include <algorithm>
+#include <array>
+#include <bit>
+#include <concepts>
+#include <cstddef>
+#include <cstdint>
+#include <limits>
+#include <stdexcept>
+#include <type_traits>
+#include <utility>
+#include <vector>
+
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+#ifndef SIRKIT_NTT_DETAIL_DEFINED
+#define SIRKIT_NTT_DETAIL_DEFINED
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
+consteval bool ntt_prime(std::uint32_t n) noexcept {
+    if (n < 2 || n % 2 == 0) return n == 2;
+    for (std::uint32_t d = 3; d <= n / d; d += 2) if (n % d == 0) return false;
+    return true;
+}
+consteval std::uint32_t ntt_power(std::uint32_t a, std::uint32_t exponent, std::uint32_t mod) noexcept {
+    std::uint32_t result = 1;
+    for (; exponent != 0; exponent >>= 1) {
+        if (exponent & 1) result = static_cast<std::uint32_t>(std::uint64_t{result} * a % mod);
+        a = static_cast<std::uint32_t>(std::uint64_t{a} * a % mod);
+    }
+    return result;
+}
+
+inline std::size_t convolution_result_size(std::size_t a, std::size_t b, const char* overflow_message) {
+    if (a == 0 || b == 0) return 0;
+    if (a - 1 > std::numeric_limits<std::size_t>::max() - b)
+        throw std::length_error(overflow_message);
+    return a - 1 + b;
+}
+}
+#endif
+
+
+#ifndef SIRKIT_NTT_DEFINED
+#define SIRKIT_NTT_DEFINED
+template <std::uint32_t Mod = 998244353, std::uint32_t Root = 3>
+class NTT {
+    static_assert(Mod >= 3 && Mod < (std::uint32_t{1} << 31) && /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::ntt_prime(Mod),
+                  "NTT modulus must be an odd prime below 2^31");
+    static_assert(Root > 0 && Root < Mod, "NTT root outside modulus");
+    static constexpr int rank_ = std::countr_zero(Mod - 1);
+    static constexpr std::uint32_t highest_root_ = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::ntt_power(Root, (Mod - 1) >> rank_, Mod);
+    static_assert(/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::ntt_power(highest_root_, std::uint32_t{1} << (rank_ - 1), Mod) == Mod - 1,
+                  "NTT root has insufficient power-of-two order");
+    std::vector<std::uint32_t> roots_;
+
+    static constexpr std::uint32_t multiply(std::uint32_t a, std::uint32_t b) noexcept {
+        return static_cast<std::uint32_t>(std::uint64_t{a} * b % Mod);
+    }
+    static constexpr std::uint32_t add(std::uint32_t a, std::uint32_t b) noexcept {
+        const auto sum = a + b;
+        return sum >= Mod ? sum - Mod : sum;
+    }
+    static constexpr std::uint32_t subtract(std::uint32_t a, std::uint32_t b) noexcept {
+        return a >= b ? a - b : a + Mod - b;
+    }
+    static constexpr bool montgomery_ = Mod < (std::uint32_t{1} << 30);
+    static constexpr std::uint32_t negative_inverse_ = [] {
+        std::uint32_t x=Mod;for(int i=0;i<5;++i)x*=2u-Mod*x;return 0u-x;
+    }();
+    static constexpr std::uint32_t montgomery_one_ = static_cast<std::uint32_t>((std::uint64_t{1} << 32)%Mod);
+    static constexpr std::uint32_t r_squared_ = static_cast<std::uint32_t>(std::uint64_t{montgomery_one_}*montgomery_one_%Mod);
+    static constexpr std::array<std::uint32_t, rank_ + 1> stage_roots_ = [] {
+        std::array<std::uint32_t, rank_ + 1> table{};
+        table[rank_] = highest_root_;
+        for (int k = rank_; k >= 2; --k)
+            table[k - 1] = static_cast<std::uint32_t>(std::uint64_t{table[k]} * table[k] % Mod);
+        if constexpr (montgomery_) {
+            for (auto& value : table) {
+                const auto product = std::uint64_t{value} * r_squared_;
+                const auto q = static_cast<std::uint32_t>(std::uint64_t{static_cast<std::uint32_t>(product)} * negative_inverse_);
+                value = static_cast<std::uint32_t>((product + std::uint64_t{q} * Mod) >> 32);
+            }
+        }
+        return table;
+    }();
+    static constexpr std::uint32_t working_multiply(std::uint32_t a,std::uint32_t b) noexcept {
+        if constexpr(montgomery_) {
+            // 内部値は2Mod未満。t+qMod<2^63で、還元後も2Mod未満。
+            const auto product=std::uint64_t{a}*b;
+            const auto q=static_cast<std::uint32_t>(product)*negative_inverse_;
+            const auto value=static_cast<std::uint32_t>((product+std::uint64_t{q}*Mod)>>32);
+            return value;
+        } else return multiply(a,b);
+    }
+    static constexpr std::uint32_t working_normalize(std::uint32_t value) noexcept {
+        if constexpr(montgomery_)return value>=Mod?value-Mod:value;
+        else return value;
+    }
+    static constexpr std::uint32_t working_add(std::uint32_t a,std::uint32_t b) noexcept {
+        if constexpr(montgomery_){const auto value=a+b;return value>=2*Mod?value-2*Mod:value;}
+        else return add(a,b);
+    }
+    static constexpr std::uint32_t working_subtract(std::uint32_t a,std::uint32_t b) noexcept {
+        if constexpr(montgomery_)return a>=b?a-b:a+2*Mod-b;
+        else return subtract(a,b);
+    }
+    static constexpr std::uint32_t encode(std::uint32_t value) noexcept {
+        if constexpr(montgomery_)return working_multiply(value,r_squared_);
+        else return value;
+    }
+    template<bool Encode,bool Check>
+    static void bit_reverse_convert(std::vector<std::uint32_t>& a) {
+        const auto convert=[](std::uint32_t value) {
+#ifndef SKIP_RUNTIME_CHECKS
+            if constexpr(Check)if(value>=Mod)throw std::invalid_argument("NTT: coefficient not normalized");
+#endif
+            if constexpr(Encode)return encode(value);
+            else return working_normalize(working_multiply(value,1));
+        };
+        a[0]=convert(a[0]);
+        for(std::size_t i=1,reverse=0;i<a.size();++i) {
+            std::size_t bit=a.size()>>1;
+            for(;reverse&bit;bit>>=1)reverse^=bit;
+            reverse^=bit;
+            if(i<reverse){const auto lo=convert(a[i]),hi=convert(a[reverse]);a[i]=hi;a[reverse]=lo;}
+            else if(i==reverse)a[i]=convert(a[i]);
+        }
+    }
+    template <std::integral T>
+    static std::uint32_t normalize(T value) noexcept {
+        static_assert(sizeof(T) <= sizeof(std::uint64_t));
+        if constexpr (std::is_signed_v<T>) {
+            const auto remainder = static_cast<std::int64_t>(value) % static_cast<std::int64_t>(Mod);
+            return static_cast<std::uint32_t>(remainder < 0 ? remainder + Mod : remainder);
+        } else return static_cast<std::uint32_t>(static_cast<std::uint64_t>(value) % Mod);
+    }
+    static std::size_t result_size(std::size_t a, std::size_t b) {
+        return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::convolution_result_size(a, b, "NTT: convolution size overflow");
+    }
+    static std::size_t transform_size(std::size_t output) {
+        if (output > max_length()) throw std::length_error("NTT: transform too long");
+        return std::bit_ceil(output);
+    }
+    static void bit_reverse(std::vector<std::uint32_t>& a) noexcept {
+        const std::size_t n = a.size();
+        for (std::size_t i = 1, reverse = 0; i < n; ++i) {
+            std::size_t bit = n >> 1;
+            for (; reverse & bit; bit >>= 1) reverse ^= bit;
+            reverse ^= bit;
+            if (i < reverse) std::swap(a[i], a[reverse]);
+        }
+    }
+
+
+    template <bool Check>
+    void forward(std::vector<std::uint32_t>& a) const {
+        const std::size_t n = a.size();
+        for (std::size_t length = n; length >= 2; length >>= 1) {
+            const std::size_t half = length >> 1;
+            for (std::size_t block = 0; block < n; block += length)
+                for (std::size_t j = 0; j < half; ++j) {
+                    auto u = a[block + j], v = a[block + j + half];
+#ifndef SKIP_RUNTIME_CHECKS
+                    if constexpr (Check) if (length == n && (u >= Mod || v >= Mod))
+                        throw std::invalid_argument("NTT: coefficient not normalized");
+#endif
+                    if constexpr(montgomery_)if(length==n){u=encode(u);v=encode(v);}
+                    a[block + j] = working_add(u, v);
+                    a[block + j + half] = working_multiply(working_subtract(u, v), roots_[half + j]);
+                }
+        }
+    }
+    template<bool Check>
+    void forward_padded(std::vector<std::uint32_t>& a, [[maybe_unused]] std::size_t input_size) const {
+        forward<Check>(a);
+    }
+    template <bool Check>
+    void backward(std::vector<std::uint32_t>& a) const {
+        const std::size_t n = a.size();
+        for (std::size_t length = 2; length <= n; length <<= 1) {
+            const std::size_t half = length >> 1;
+            for (std::size_t block = 0; block < n; block += length)
+                for (std::size_t j = 0; j < half; ++j) {
+                    const auto u = a[block + j], raw = a[block + j + half];
+#ifndef SKIP_RUNTIME_CHECKS
+                    if constexpr (Check) if (length == 2 && (u >= Mod || raw >= Mod))
+                        throw std::invalid_argument("NTT: coefficient not normalized");
+#endif
+                    const auto v = working_multiply(raw, roots_[half + j]);
+                    a[block + j] = working_add(u, v);
+                    a[block + j + half] = working_subtract(u, v);
+                }
+        }
+        // nはMod-1の約数（変換長は対応する2冪）。
+        // d=(Mod-1)/nなら、n*(Mod-d)=(n-1)*Mod+1。
+        // よってMod-dがnの逆元になる。
+        const auto inverse_n = static_cast<std::uint32_t>(Mod - (Mod - 1) / static_cast<std::uint32_t>(n));
+        a[0] = working_normalize(working_multiply(a[0], inverse_n));
+        for (std::size_t i = 1; i < n - i; ++i) {
+            const auto lo = working_normalize(working_multiply(a[i], inverse_n)), hi = working_normalize(working_multiply(a[n - i], inverse_n));
+            a[i] = hi; a[n - i] = lo;
+        }
+        if (n > 1) a[n / 2] = working_normalize(working_multiply(a[n / 2], inverse_n));
+    }
+    template <bool Check>
+    std::vector<std::uint32_t> compute(std::vector<std::uint32_t> a, std::vector<std::uint32_t> b) {
+        const std::size_t output = result_size(a.size(), b.size());
+        if (output == 0) return {};
+        if (std::min(a.size(), b.size()) <= 32) {
+            std::vector<std::uint32_t> result(output);
+            for (std::size_t i = 0; i < a.size(); ++i) {
+#ifndef SKIP_RUNTIME_CHECKS
+                if constexpr (Check) if (a[i] >= Mod) throw std::invalid_argument("NTT: coefficient not normalized");
+#endif
+                for (std::size_t j = 0; j < b.size(); ++j) {
+#ifndef SKIP_RUNTIME_CHECKS
+                    if constexpr (Check) if (i == 0 && b[j] >= Mod)
+                        throw std::invalid_argument("NTT: coefficient not normalized");
+#endif
+                    result[i + j] = add(result[i + j], multiply(a[i], b[j]));
+                }
+            }
+            return result;
+        }
+        const auto length = transform_size(output);
+        prepare(length);
+        a.resize(length); b.resize(length);
+        forward<Check>(a); forward<Check>(b);
+        for (std::size_t i = 0; i < length; ++i) a[i] = working_multiply(a[i], b[i]);
+        backward<false>(a); a.resize(output);
+        return a;
+    }
+
+public:
+    static constexpr std::uint32_t modulus() noexcept { return Mod; }
+    static constexpr std::size_t max_length() noexcept { return std::size_t{1} << rank_; }
+    [[nodiscard]] std::size_t roots_capacity() const noexcept { return roots_.size(); }
+    void clear_cache() noexcept { std::vector<std::uint32_t>{}.swap(roots_); }
+    void prepare(std::size_t length) {
+        if (length == 0) return;
+        if (!std::has_single_bit(length) || length > max_length())
+            throw std::length_error("NTT: length must be a supported power of two");
+        if (length <= 1 || length <= roots_.size()) return;
+        const std::size_t previous = std::max<std::size_t>(2, roots_.size());
+        roots_.resize(length); roots_[1] = encode(1);
+        for (std::size_t half = previous; half < length; half <<= 1) {
+            const auto step = stage_roots_[std::countr_zero(half) + 1];
+            for (std::size_t j = 0; j < half/2; ++j) {
+                const auto value=roots_[half/2+j];
+                roots_[half+2*j]=value;
+                roots_[half+2*j+1]=working_multiply(value,step);
+            }
+        }
+    }
+    void transform(std::vector<std::uint32_t>& a, bool inverse = false) {
+        if (a.empty()) return;
+        prepare(a.size());
+        if (a.size() == 1) {
+#ifndef SKIP_RUNTIME_CHECKS
+            if (a[0] >= Mod) throw std::invalid_argument("NTT: coefficient not normalized");
+#endif
+            return;
+        }
+        if constexpr(montgomery_) {
+            if(inverse){bit_reverse_convert<true,true>(a);backward<false>(a);}
+            else{forward<true>(a);bit_reverse_convert<false,false>(a);}
+        }else{
+        if (inverse) { bit_reverse(a); backward<true>(a); }
+        else { forward<true>(a); bit_reverse(a); }
+        }
+    }
+    template <std::integral T, std::integral U>
+    std::vector<std::uint32_t> convolution(const std::vector<T>& a, const std::vector<U>& b) {
+        if (a.empty() || b.empty()) return {};
+        const auto output = result_size(a.size(), b.size());
+        if (std::min(a.size(), b.size()) > 32) (void)transform_size(output);
+        std::vector<std::uint32_t> x(a.size()), y(b.size());
+        for (std::size_t i = 0; i < a.size(); ++i) x[i] = normalize<T>(a[i]);
+        for (std::size_t i = 0; i < b.size(); ++i) y[i] = normalize<U>(b[i]);
+        return compute<false>(std::move(x), std::move(y));
+    }
+    std::vector<std::uint32_t> convolution_normalized(std::vector<std::uint32_t> a,
+                                                      std::vector<std::uint32_t> b) {
+        return compute<true>(std::move(a), std::move(b));
+    }
+    template <std::integral T>
+    std::vector<std::uint32_t> square(const std::vector<T>& a) {
+        if (a.size() <= 32) return convolution(a, a);
+        const auto output = result_size(a.size(), a.size()), length = transform_size(output);
+        prepare(length);
+        std::vector<std::uint32_t> x(length);
+        for (std::size_t i = 0; i < a.size(); ++i) x[i] = normalize<T>(a[i]);
+        forward<false>(x);
+        for (auto& value : x) value = working_multiply(value, value);
+        backward<false>(x); x.resize(output);
+        return x;
+    }
+};
+#endif
+
+#ifndef SIRKIT_CONVOLUTION_MOD_DEFINED
+#define SIRKIT_CONVOLUTION_MOD_DEFINED
+template <std::uint32_t Mod = 998244353, std::uint32_t Root = 3, std::integral T, std::integral U>
+std::vector<std::uint32_t> ConvolutionMod(const std::vector<T>& a, const std::vector<U>& b) {
+    return NTT<Mod, Root>{}.convolution(a, b);
+}
+#endif
+
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+#include <initializer_list>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+#include <optional>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+#ifndef SIRKIT_FORMAL_POWER_SERIES_DETAIL_DEFINED
+#define SIRKIT_FORMAL_POWER_SERIES_DETAIL_DEFINED
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/ {
+inline constexpr std::uint32_t fps_modulus = 998244353;
+inline std::uint32_t fps_add(std::uint32_t a, std::uint32_t b) noexcept {
+    const auto value = a + b; return value >= fps_modulus ? value - fps_modulus : value;
+}
+inline std::uint32_t fps_subtract(std::uint32_t a, std::uint32_t b) noexcept {
+    return a >= b ? a - b : a + fps_modulus - b;
+}
+inline std::uint32_t fps_multiply(std::uint32_t a, std::uint32_t b) noexcept {
+    return static_cast<std::uint32_t>(std::uint64_t{a} * b % fps_modulus);
+}
+inline std::uint32_t fps_power(std::uint32_t value, std::uint64_t exponent) noexcept {
+    std::uint32_t result = 1;
+    for (; exponent != 0; exponent >>= 1) {
+        if (exponent & 1) result = fps_multiply(result, value);
+        value = fps_multiply(value, value);
+    }
+    return result;
+}
+inline NTT<>& fps_engine() {
+    static thread_local NTT<> engine;
+    return engine;
+}
+inline std::vector<std::uint32_t>& fps_integer_inverses() {
+    static thread_local std::vector<std::uint32_t> values;
+    return values;
+}
+inline void fps_prepare_inverses(std::size_t n) {
+    if (n >= fps_modulus) throw std::length_error("FormalPowerSeries: noninvertible integration index");
+    auto& table = fps_integer_inverses();
+    if (table.size() < 2) { table.resize(2); table[1] = 1; }
+    if (n < table.size()) return;
+    const auto first = table.size(); table.resize(n + 1);
+    for (std::size_t i = first; i <= n; ++i)
+        table[i] = fps_modulus - static_cast<std::uint32_t>(
+            std::uint64_t{fps_modulus / static_cast<std::uint32_t>(i)} * table[fps_modulus % i] % fps_modulus);
+}
+inline void fps_require_precision(std::size_t n) {
+    if (n > NTT<>::max_length() / 2) throw std::length_error("FormalPowerSeries: precision exceeds NTT budget");
+}
+inline std::optional<std::uint32_t> fps_scalar_sqrt(std::uint32_t value) noexcept {
+    if (value == 0) return 0;
+    if (fps_power(value, (fps_modulus - 1) / 2) != 1) return std::nullopt;
+    constexpr std::uint32_t odd = 119;
+    auto root = fps_power(value, (odd + 1) / 2), remainder = fps_power(value, odd);
+    auto correction = fps_power(3, odd);
+    unsigned remaining = 23;
+    while (remainder != 1) {
+        unsigned first = 0; auto probe = remainder;
+        // Euler判定後のremainderの位数は2^(remaining-1)を割り切る。
+        while (probe != 1) { probe = fps_multiply(probe, probe); ++first; }
+        const auto change = fps_power(correction, std::uint32_t{1} << (remaining - first - 1));
+        root = fps_multiply(root, change); correction = fps_multiply(change, change);
+        remainder = fps_multiply(remainder, correction); remaining = first;
+    }
+    return std::min(root, fps_modulus - root);
+}
+}
+#endif
+
+#ifndef SIRKIT_FORMAL_POWER_SERIES_DEFINED
+#define SIRKIT_FORMAL_POWER_SERIES_DEFINED
+class FormalPowerSeries {
+    std::vector<std::uint32_t> coefficients_;
+    struct Normalized {};
+    FormalPowerSeries(std::vector<std::uint32_t> values, Normalized) noexcept : coefficients_(std::move(values)) {}
+    template <std::integral T>
+    static std::uint32_t normalize(T value) noexcept {
+        static_assert(sizeof(T) <= sizeof(std::uint64_t));
+        if constexpr (std::is_signed_v<T>) {
+            const auto remainder = static_cast<std::int64_t>(value) % static_cast<std::int64_t>(modulus());
+            return static_cast<std::uint32_t>(remainder < 0 ? remainder + modulus() : remainder);
+        } else return static_cast<std::uint32_t>(static_cast<std::uint64_t>(value) % modulus());
+    }
+    std::vector<std::uint32_t> short_prefix(std::size_t n) const {
+        return {coefficients_.begin(), coefficients_.begin() + std::min(n, size())};
+    }
+    static FormalPowerSeries normalized(std::vector<std::uint32_t> values) noexcept {
+        return FormalPowerSeries(std::move(values), Normalized{});
+    }
+public:
+    static constexpr std::uint32_t modulus() noexcept { return /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::fps_modulus; }
+    static constexpr std::size_t max_precision() noexcept { return NTT<>::max_length() / 2; }
+    FormalPowerSeries() = default;
+    explicit FormalPowerSeries(std::size_t n) : coefficients_(n) {}
+    explicit FormalPowerSeries(std::vector<std::uint32_t> values) : coefficients_(std::move(values)) {
+        for (auto& value : coefficients_) value %= modulus();
+    }
+    template <std::integral T>
+    explicit FormalPowerSeries(const std::vector<T>& values) : coefficients_(values.size()) {
+        for (std::size_t i = 0; i < values.size(); ++i) coefficients_[i] = normalize<T>(values[i]);
+    }
+    FormalPowerSeries(std::initializer_list<std::int64_t> values) : coefficients_(values.size()) {
+        std::size_t at = 0; for (auto value : values) coefficients_[at++] = normalize(value);
+    }
+    [[nodiscard]] std::size_t size() const noexcept { return coefficients_.size(); }
+    [[nodiscard]] bool empty() const noexcept { return coefficients_.empty(); }
+    [[nodiscard]] const std::vector<std::uint32_t>& coefficients() const noexcept { return coefficients_; }
+    [[nodiscard]] std::uint32_t operator[](std::size_t i) const {
+#ifndef SKIP_RUNTIME_CHECKS
+        if (i >= size()) throw std::out_of_range("FormalPowerSeries: coefficient");
+#endif
+        return coefficients_[i];
+    }
+    [[nodiscard]] std::uint32_t get(std::size_t i) const noexcept { return i < size() ? coefficients_[i] : 0; }
+    template <std::integral T>
+    void set(std::size_t i, T value) {
+#ifndef SKIP_RUNTIME_CHECKS
+        if (i >= size()) throw std::out_of_range("FormalPowerSeries: coefficient");
+#endif
+        coefficients_[i] = normalize(value);
+    }
+    void resize(std::size_t n) { coefficients_.resize(n); }
+    void trim() noexcept { while (!empty() && coefficients_.back() == 0) coefficients_.pop_back(); }
+    [[nodiscard]] FormalPowerSeries prefix(std::size_t n) const {
+        std::vector<std::uint32_t> result(n);
+        std::copy_n(coefficients_.begin(), std::min(n, size()), result.begin());
+        return normalized(std::move(result));
+    }
+    FormalPowerSeries& operator+=(const FormalPowerSeries& other) {
+        if (other.size() > size()) coefficients_.resize(other.size());
+        for (std::size_t i = 0; i < other.size(); ++i) coefficients_[i] = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::fps_add(coefficients_[i], other.coefficients_[i]);
+        return *this;
+    }
+    FormalPowerSeries& operator-=(const FormalPowerSeries& other) {
+        if (other.size() > size()) coefficients_.resize(other.size());
+        for (std::size_t i = 0; i < other.size(); ++i) coefficients_[i] = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::fps_subtract(coefficients_[i], other.coefficients_[i]);
+        return *this;
+    }
+    FormalPowerSeries& operator*=(const FormalPowerSeries& other) {
+        auto result = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::fps_engine().convolution_normalized(coefficients_, other.coefficients_);
+        coefficients_.swap(result); return *this;
+    }
+    FormalPowerSeries& operator/=(const FormalPowerSeries& other) { *this = divmod(other).first; return *this; }
+    FormalPowerSeries& operator%=(const FormalPowerSeries& other) { *this = divmod(other).second; return *this; }
+    friend FormalPowerSeries operator+(FormalPowerSeries a, const FormalPowerSeries& b) { a += b; return a; }
+    friend FormalPowerSeries operator-(FormalPowerSeries a, const FormalPowerSeries& b) { a -= b; return a; }
+    friend FormalPowerSeries operator*(const FormalPowerSeries& a, const FormalPowerSeries& b) {
+        return normalized(/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::fps_engine().convolution_normalized(a.coefficients_, b.coefficients_));
+    }
+    friend FormalPowerSeries operator/(const FormalPowerSeries& a, const FormalPowerSeries& b) { return a.divmod(b).first; }
+    friend FormalPowerSeries operator%(const FormalPowerSeries& a, const FormalPowerSeries& b) { return a.divmod(b).second; }
+    friend bool operator==(const FormalPowerSeries&, const FormalPowerSeries&) = default;
+    template <std::integral T>
+    [[nodiscard]] FormalPowerSeries scale(T scalar) const {
+        auto result = coefficients_; const auto value = normalize(scalar);
+        for (auto& coefficient : result) coefficient = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::fps_multiply(coefficient, value);
+        return normalized(std::move(result));
+    }
+    [[nodiscard]] FormalPowerSeries derivative() const {
+        if (empty()) return {};
+        std::vector<std::uint32_t> result(size() - 1);
+        for (std::size_t i = 1; i < size(); ++i)
+            result[i - 1] = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::fps_multiply(coefficients_[i], static_cast<std::uint32_t>(i % modulus()));
+        return normalized(std::move(result));
+    }
+    [[nodiscard]] FormalPowerSeries integral() const {
+        if (empty()) return FormalPowerSeries{0};
+        /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::fps_prepare_inverses(size());
+        const auto& inverses = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::fps_integer_inverses();
+        std::vector<std::uint32_t> result(size() + 1);
+        for (std::size_t i = 0; i < size(); ++i) result[i + 1] = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::fps_multiply(coefficients_[i], inverses[i + 1]);
+        return normalized(std::move(result));
+    }
+    [[nodiscard]] FormalPowerSeries inverse(std::size_t n) const {
+        /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::fps_require_precision(n);
+        if (n == 0) return {};
+        if (get(0) == 0) throw std::domain_error("FormalPowerSeries: inverse of zero constant");
+        std::vector<std::uint32_t> result{/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::fps_power(get(0), modulus() - 2)};
+        auto& engine = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::fps_engine();
+        for (std::size_t known = 1; known < n;) {
+            const auto target = std::min(n, known * 2);
+            auto error = engine.convolution_normalized(short_prefix(target), result);
+            error.resize(target);
+            for (auto& coefficient : error) coefficient = coefficient == 0 ? 0 : modulus() - coefficient;
+            error[0] = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::fps_add(error[0], 2);
+            auto next = engine.convolution_normalized(std::move(result), std::move(error)); next.resize(target);
+            result.swap(next); known = target;
+        }
+        return normalized(std::move(result));
+    }
+    [[nodiscard]] FormalPowerSeries inverse() const { return inverse(size()); }
+    [[nodiscard]] FormalPowerSeries log(std::size_t n) const {
+        /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::fps_require_precision(n);
+        if (n == 0) return {};
+#ifndef SKIP_RUNTIME_CHECKS
+        if (get(0) != 1) throw std::domain_error("FormalPowerSeries: logarithm constant must be one");
+#endif
+        auto differentiated = normalized(short_prefix(n)).derivative();
+        auto result = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::fps_engine().convolution_normalized(
+            std::move(differentiated.coefficients_), inverse(n).coefficients_);
+        result.resize(n - 1);
+        return normalized(std::move(result)).integral();
+    }
+    [[nodiscard]] FormalPowerSeries log() const { return log(size()); }
+    [[nodiscard]] FormalPowerSeries exp(std::size_t n) const {
+        /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::fps_require_precision(n);
+        if (n == 0) return {};
+#ifndef SKIP_RUNTIME_CHECKS
+        if (get(0) != 0) throw std::domain_error("FormalPowerSeries: exponential constant must be zero");
+#endif
+        FormalPowerSeries result{1};
+        for (std::size_t known = 1; known < n;) {
+            const auto target = std::min(n, known * 2);
+            auto correction = result.log(target).coefficients_;
+            for (std::size_t i = 0; i < target; ++i) correction[i] = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::fps_subtract(get(i), correction[i]);
+            correction[0] = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::fps_add(correction[0], 1);
+            auto next = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::fps_engine().convolution_normalized(std::move(result.coefficients_), std::move(correction));
+            next.resize(target); result.coefficients_.swap(next); known = target;
+        }
+        return result;
+    }
+    [[nodiscard]] FormalPowerSeries exp() const { return exp(size()); }
+    [[nodiscard]] FormalPowerSeries pow(std::uint64_t exponent, std::size_t n) const {
+        /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::fps_require_precision(n);
+        if (n == 0) return {};
+        if (exponent == 0) { auto result = FormalPowerSeries(n); result.coefficients_[0] = 1; return result; }
+        std::size_t leading = 0;
+        while (leading < std::min(n, size()) && coefficients_[leading] == 0) ++leading;
+        if (leading == std::min(n, size()) || (leading != 0 && exponent > (n - 1) / leading)) return FormalPowerSeries(n);
+        const auto shift = leading == 0 ? 0 : leading * static_cast<std::size_t>(exponent);
+        const auto remaining = n - shift;
+        const auto first = coefficients_[leading], inverse_first = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::fps_power(first, modulus() - 2);
+        std::vector<std::uint32_t> unit(std::min(remaining, size() - leading));
+        for (std::size_t i = 0; i < unit.size(); ++i) unit[i] = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::fps_multiply(coefficients_[leading + i], inverse_first);
+        auto logarithm = normalized(std::move(unit)).log(remaining);
+        const auto reduced_exponent = static_cast<std::uint32_t>(exponent % modulus());
+        for (auto& coefficient : logarithm.coefficients_) coefficient = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::fps_multiply(coefficient, reduced_exponent);
+        auto powered = logarithm.exp(remaining);
+        const auto multiplier = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::fps_power(first, exponent);
+        std::vector<std::uint32_t> result(n);
+        for (std::size_t i = 0; i < remaining; ++i) result[shift + i] = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::fps_multiply(powered.coefficients_[i], multiplier);
+        return normalized(std::move(result));
+    }
+    [[nodiscard]] FormalPowerSeries pow(std::uint64_t exponent) const { return pow(exponent, size()); }
+    [[nodiscard]] std::optional<FormalPowerSeries> sqrt(std::size_t n) const {
+        /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::fps_require_precision(n);
+        if (n == 0) return FormalPowerSeries{};
+        std::size_t leading = 0;
+        while (leading < std::min(n, size()) && coefficients_[leading] == 0) ++leading;
+        if (leading == std::min(n, size())) return FormalPowerSeries(n);
+        if (leading & 1) return std::nullopt;
+        const auto root = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::fps_scalar_sqrt(coefficients_[leading]);
+        if (!root) return std::nullopt;
+        const auto needed = n - leading;
+        FormalPowerSeries result{static_cast<std::int64_t>(*root)};
+        for (std::size_t known = 1; known < needed;) {
+            const auto target = std::min(needed, known * 2);
+            std::vector<std::uint32_t> part(std::min(target, size() - leading));
+            std::copy_n(coefficients_.begin() + leading, part.size(), part.begin());
+            auto ratio = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::fps_engine().convolution_normalized(std::move(part), result.inverse(target).coefficients_);
+            ratio.resize(target);
+            for (std::size_t i = 0; i < target; ++i)
+                ratio[i] = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::fps_multiply(/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::fps_add(ratio[i], result.get(i)), (modulus() + 1) / 2);
+            result.coefficients_.swap(ratio); known = target;
+        }
+        std::vector<std::uint32_t> shifted(n);
+        std::copy(result.coefficients_.begin(), result.coefficients_.end(), shifted.begin() + leading / 2);
+        return normalized(std::move(shifted));
+    }
+    [[nodiscard]] std::optional<FormalPowerSeries> sqrt() const { return sqrt(size()); }
+    [[nodiscard]] std::pair<FormalPowerSeries, FormalPowerSeries> divmod(const FormalPowerSeries& divisor) const {
+        auto a = *this, b = divisor; a.trim(); b.trim();
+        if (b.empty()) throw std::domain_error("FormalPowerSeries: zero polynomial divisor");
+        if (a.size() < b.size()) return {FormalPowerSeries{}, std::move(a)};
+        const auto quotient_size = a.size() - b.size() + 1;
+        FormalPowerSeries quotient;
+        if (std::min(quotient_size, b.size()) <= 32) {
+            quotient.resize(quotient_size);
+            const auto inverse_leading = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::fps_power(b.coefficients_.back(), modulus() - 2);
+            for (std::size_t at = quotient_size; at != 0; --at) {
+                const auto index = at - 1;
+                const auto coefficient = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::fps_multiply(a.coefficients_[index + b.size() - 1], inverse_leading);
+                quotient.coefficients_[index] = coefficient;
+                for (std::size_t j = 0; j < b.size(); ++j)
+                    a.coefficients_[index + j] = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::fps_subtract(a.coefficients_[index + j],
+                        /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::fps_multiply(coefficient, b.coefficients_[j]));
+            }
+            a.resize(b.size() - 1); a.trim(); quotient.trim();
+            return {std::move(quotient), std::move(a)};
+        }
+        /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::fps_require_precision(quotient_size);
+        std::vector<std::uint32_t> reversed_a(quotient_size), reversed_b(std::min(quotient_size, b.size()));
+        std::copy_n(a.coefficients_.rbegin(), quotient_size, reversed_a.begin());
+        std::copy_n(b.coefficients_.rbegin(), reversed_b.size(), reversed_b.begin());
+        auto reversed_quotient = /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::fps_engine().convolution_normalized(
+            std::move(reversed_a), normalized(std::move(reversed_b)).inverse(quotient_size).coefficients_);
+        reversed_quotient.resize(quotient_size); std::reverse(reversed_quotient.begin(), reversed_quotient.end());
+        quotient = normalized(std::move(reversed_quotient));
+        auto remainder = std::move(a) - b * quotient;
+        remainder.resize(b.size() - 1); remainder.trim(); quotient.trim();
+        return {std::move(quotient), std::move(remainder)};
+    }
+    static void clear_cache() noexcept {
+        /*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::fps_engine().clear_cache();
+        std::vector<std::uint32_t>{}.swap(/*SIRKIT_NS_REWRITE_V1:R:cmVpbnNpcms6OmRldGFpbA==*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::fps_integer_inverses());
+    }
+};
+#endif
+
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+#include <algorithm>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+#include <cstddef>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+#include <cstdint>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+#include <span>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+#include <stdexcept>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+#include <utility>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+#include <vector>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+#ifndef SIRKIT_NEWTON_BASIS_DEFINED
+#define SIRKIT_NEWTON_BASIS_DEFINED
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/
+{
+class NewtonBasisProducts
+{
+    static constexpr std::size_t kBlockSize = 24;
+    static constexpr std::uint32_t kMod = 998244353;
+
+    std::vector<std::uint32_t> points_;
+    std::vector<FormalPowerSeries> products_;
+
+    // 小区間は、(x-point) の掛け算を1係数ずつ行う。
+    static void multiply_linear(std::vector<std::uint32_t> &f, std::uint32_t point)
+    {
+        f.push_back(0);
+        for (auto j = f.size() - 1; j != 0; --j)
+        {
+            f[j] = subtract_product(f[j - 1], f[j], point);
+        }
+        f[0] = subtract_product(0, f[0], point);
+    }
+
+    static std::uint32_t subtract_product(std::uint32_t a, std::uint32_t b, std::uint32_t c)
+    {
+        const auto product = static_cast<std::uint32_t>(std::uint64_t{b} * c % kMod);
+        return a >= product ? a - product : a + kMod - product;
+    }
+
+    void build(std::size_t node, std::size_t begin, std::size_t end, bool save_product)
+    {
+        if (end - begin <= kBlockSize)
+        {
+            if (save_product)
+            {
+                std::vector<std::uint32_t> product{1};
+                product.reserve(end - begin + 1);
+                for (auto i = begin; i < end; ++i)
+                {
+                    multiply_linear(product, points_[i]);
+                }
+                products_[node] = FormalPowerSeries(std::move(product));
+            }
+            return;
+        }
+        const auto mid = begin + (end - begin) / 2;
+        build(node * 2, begin, mid, true);
+        build(node * 2 + 1, mid, end, save_product);
+        if (save_product)
+        {
+            products_[node] = products_[node * 2] * products_[node * 2 + 1];
+        }
+    }
+
+    void decompose(const FormalPowerSeries &f, std::size_t node, std::size_t begin, std::span<std::uint32_t> out) const
+    {
+        if (out.size() <= kBlockSize)
+        {
+            std::copy(f.coefficients().begin(), f.coefficients().end(), out.begin());
+            // 定数項から、(x-point) による組立除法を繰り返す。
+            for (std::size_t i = 0; i + 1 < out.size(); ++i)
+            {
+                const auto point = points_[begin + i];
+                for (auto j = out.size() - 1; j > i; --j)
+                {
+                    out[j - 1] = static_cast<std::uint32_t>((out[j - 1] + std::uint64_t{point} * out[j]) % kMod);
+                }
+            }
+            return;
+        }
+        const auto split = out.size() / 2;
+        const auto [right, left] = f.divmod(products_[node * 2]);
+        decompose(left, node * 2, begin, out.first(split));
+        decompose(right, node * 2 + 1, begin + split, out.subspan(split));
+    }
+
+    FormalPowerSeries compose(std::span<const std::uint32_t> coefficients, std::size_t node, std::size_t begin) const
+    {
+        if (coefficients.size() <= kBlockSize)
+        {
+            std::vector<std::uint32_t> f{coefficients.back() % kMod};
+            f.reserve(coefficients.size());
+            for (auto i = coefficients.size() - 1; i != 0; --i)
+            {
+                multiply_linear(f, points_[begin + i - 1]);
+                f[0] += coefficients[i - 1] % kMod;
+                if (f[0] >= kMod)
+                {
+                    f[0] -= kMod;
+                }
+            }
+            return FormalPowerSeries(std::move(f));
+        }
+        const auto split = coefficients.size() / 2;
+        return compose(coefficients.first(split), node * 2, begin) +
+               products_[node * 2] * compose(coefficients.subspan(split), node * 2 + 1, begin + split);
+    }
+
+public:
+    NewtonBasisProducts(std::size_t n, std::span<const std::uint32_t> points)
+        : points_(points.begin(), points.end()), products_(n <= kBlockSize ? 0 : 4 * (n / kBlockSize + 1))
+    {
+        for (auto &point : points_)
+        {
+            point %= kMod;
+        }
+        build(1, 0, n, false);
+    }
+
+    [[nodiscard]] std::vector<std::uint32_t> from_monomials(std::span<const std::uint32_t> coefficients) const
+    {
+        std::vector<std::uint32_t> result(coefficients.size());
+        decompose(FormalPowerSeries(std::vector<std::uint32_t>(coefficients.begin(), coefficients.end())), 1, 0, result);
+        return result;
+    }
+
+    [[nodiscard]] std::vector<std::uint32_t> to_monomials(std::span<const std::uint32_t> coefficients) const
+    {
+        auto result = compose(coefficients, 1, 0);
+        result.resize(coefficients.size());
+        return result.coefficients();
+    }
+};
+
+inline void validate_newton_basis_sizes(std::size_t n, std::size_t points)
+{
+    if (n > (std::size_t{1} << 20))
+    {
+        throw std::length_error("Newton basis: too many coefficients");
+    }
+    if (points != (n == 0 ? 0 : n - 1))
+    {
+        throw std::invalid_argument("Newton basis: expected one fewer point than coefficients");
+    }
+}
+} // namespace reinsirk::detail
+
+[[nodiscard]] inline std::vector<std::uint32_t> monomial_to_newton_basis(
+    std::span<const std::uint32_t> coefficients, std::span<const std::uint32_t> points)
+{
+    /*SIRKIT_NS_REWRITE_V1:R:OjpyZWluc2lyazo6ZGV0YWls*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::validate_newton_basis_sizes(coefficients.size(), points.size());
+    if (coefficients.empty())
+    {
+        return {};
+    }
+    return /*SIRKIT_NS_REWRITE_V1:R:OjpyZWluc2lyazo6ZGV0YWls*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::NewtonBasisProducts(coefficients.size(), points).from_monomials(coefficients);
+}
+
+[[nodiscard]] inline std::vector<std::uint32_t> newton_to_monomial_basis(
+    std::span<const std::uint32_t> coefficients, std::span<const std::uint32_t> points)
+{
+    /*SIRKIT_NS_REWRITE_V1:R:OjpyZWluc2lyazo6ZGV0YWls*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::validate_newton_basis_sizes(coefficients.size(), points.size());
+    if (coefficients.empty())
+    {
+        return {};
+    }
+    return /*SIRKIT_NS_REWRITE_V1:R:OjpyZWluc2lyazo6ZGV0YWls*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::NewtonBasisProducts(coefficients.size(), points).to_monomials(coefficients);
+}
+#endif
+
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+#include <algorithm>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+#include <cstddef>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+#include <cstdint>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+#include <numeric>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+#include <span>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+#include <stdexcept>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+#include <vector>
+
+// SIRKIT_NAMESPACE_OPEN_V1
+namespace sirkit {
+
+#ifndef SIRKIT_FERRERS_ROOK_COUNTS
+#define SIRKIT_FERRERS_ROOK_COUNTS
+
+namespace /*SIRKIT_NS_REWRITE_V1:D:cmVpbnNpcms6OmRldGFpbA==*/detail/*SIRKIT_NS_REWRITE_END_V1*/
+{
+[[nodiscard]] inline FormalPowerSeries ferrers_factor_product(std::span<const std::uint32_t> constants)
+{
+    if (constants.size() <= 1)
+    {
+        return constants.empty() ? FormalPowerSeries{1} : FormalPowerSeries{constants.front(), 1};
+    }
+    const auto middle = constants.size() / 2;
+    return ferrers_factor_product(constants.first(middle)) * ferrers_factor_product(constants.subspan(middle));
+}
+} // namespace reinsirk::detail
+
+[[nodiscard]] inline std::vector<std::uint32_t> ferrers_rook_counts(std::span<const std::uint32_t> heights)
+{
+    if (heights.size() >= (std::size_t{1} << 20))
+    {
+        throw std::length_error("ferrers_rook_counts: too many columns");
+    }
+    std::vector<std::uint32_t> constants(heights.begin(), heights.end());
+    std::ranges::sort(constants);
+    std::vector<std::uint32_t> points(heights.size());
+    std::iota(points.begin(), points.end(), std::uint32_t{0});
+    constexpr auto kMod = FormalPowerSeries::modulus();
+    for (std::size_t i = 0; i < heights.size(); ++i)
+    {
+        constants[i] = /*SIRKIT_NS_REWRITE_V1:R:OjpyZWluc2lyazo6ZGV0YWls*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::fps_subtract(constants[i] % kMod, points[i]);
+    }
+    // ∏(x+height[i]−i) の下降階乗係数は、次数を反転したルーク数。
+    const auto product = /*SIRKIT_NS_REWRITE_V1:R:OjpyZWluc2lyazo6ZGV0YWls*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::ferrers_factor_product(constants);
+    auto result = monomial_to_newton_basis(product.coefficients(), points);
+    std::ranges::reverse(result);
+    return result;
+}
+
+[[nodiscard]] inline std::vector<std::uint32_t> ferrers_hit_counts(std::span<const std::uint32_t> heights)
+{
+    const auto n = heights.size();
+    if (std::ranges::any_of(heights, [n](std::uint32_t height)
+                            {
+                                return height > n;
+                            }))
+    {
+        throw std::invalid_argument("ferrers_hit_counts: column outside square board");
+    }
+    const auto rook = ferrers_rook_counts(heights);
+    const auto multiply = /*SIRKIT_NS_REWRITE_V1:R:OjpyZWluc2lyazo6ZGV0YWls*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::fps_multiply;
+    const auto subtract = /*SIRKIT_NS_REWRITE_V1:R:OjpyZWluc2lyazo6ZGV0YWls*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::fps_subtract;
+    constexpr auto kMod = FormalPowerSeries::modulus();
+    std::vector<std::uint32_t> factorial(n + 1, 1), inverse_factorial(n + 1);
+    for (std::size_t i = 1; i <= n; ++i)
+    {
+        factorial[i] = multiply(factorial[i - 1], static_cast<std::uint32_t>(i));
+    }
+    inverse_factorial[n] = /*SIRKIT_NS_REWRITE_V1:R:OjpyZWluc2lyazo6ZGV0YWls*/::sirkit::detail/*SIRKIT_NS_REWRITE_END_V1*/::fps_power(factorial[n], kMod - 2);
+    for (std::size_t i = n; i != 0; --i)
+    {
+        inverse_factorial[i - 1] = multiply(inverse_factorial[i], static_cast<std::uint32_t>(i));
+    }
+    // ∑ rook[k](n-k)!(y-1)^k の単項式係数を階乗で重み付けし、畳み込みで求める。
+    FormalPowerSeries left(n + 1), right(n + 1);
+    for (std::size_t i = 0; i <= n; ++i)
+    {
+        left.set(n - i, multiply(multiply(rook[i], factorial[n - i]), factorial[i]));
+        right.set(i, i % 2 == 0 ? inverse_factorial[i] : subtract(0, inverse_factorial[i]));
+    }
+    const auto product = left * right;
+    std::vector<std::uint32_t> result(n + 1);
+    for (std::size_t i = 0; i <= n; ++i)
+    {
+        result[i] = multiply(product[n - i], inverse_factorial[i]);
+    }
+    return result;
+}
+#endif
+
+} // namespace sirkit
+// SIRKIT_NAMESPACE_CLOSE_V1
+// SIRKIT_NAMESPACE_END_V1

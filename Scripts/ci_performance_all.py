@@ -5,7 +5,8 @@ from __future__ import annotations
 
 import argparse
 from collections import Counter
-from contextlib import contextmanager
+from contextlib import contextmanager, nullcontext
+from functools import partial
 import hashlib
 import importlib
 import json
@@ -132,23 +133,49 @@ def official_selection(sizes: dict[str, int], quick: bool) -> dict[str, list[str
     return selected
 
 
-def select_official_cases(directory: Path, details: dict, quick: bool) -> list[dict]:
+def select_official_cases(directory: Path, details: dict, quick: bool, *,
+                          sizes: dict[str, int] | None = None) -> list[dict]:
     names = details["expected_cases"]
     if not names or len(names) != len(set(names)):
         raise PerformanceError("empty or duplicate official cases")
-    sizes = {name: (directory / "in" / (name + ".in")).stat().st_size for name in names}
-    selected = official_selection(sizes, quick)
-    return [{"name": name, "input_path": str(directory / "in" / (name + ".in")),
-             "expected_path": str(directory / "out" / (name + ".out")), "checker": "official",
-             "checker_path": str(directory / "checker"), "checker_sha256": details["checker_sha256"],
-             "input_sha256": file_digest(directory / "in" / (name + ".in")),
-             "expected_sha256": file_digest(directory / "out" / (name + ".out")),
-             "input_bytes": sizes[name], "metadata": {"selection_reasons": reasons,
-               "scale_profile": "quick_example" if quick else "official_representative",
-               "maximum_claim": "Input byte size and generator names do not prove every parameter reaches its maximum.",
-               "input_header": input_header(directory / "in" / (name + ".in")),
-               "official_revision": details["revision"], "problem_id": details["problem_id"]}}
-            for name, reasons in selected.items()]
+    if sizes is None:
+        sizes = {name: (directory / "in" / (name + ".in")).stat().st_size for name in names}
+    streaming = details.get("generation_strategy") == "one_case_at_a_time"
+    hashes = official.official_hashes(directory, names, manifest_sha256=details["hash_json_sha256"]) if streaming else {}
+    cases = []
+    for name, reasons in official_selection(sizes, quick).items():
+        source = directory / "in" / (name + ".in")
+        expected = directory / "out" / (name + ".out")
+        metadata = {"selection_reasons": reasons,
+                    "scale_profile": "quick_example" if quick else "official_representative",
+                    "maximum_claim": "Input byte size and generator names do not prove every parameter reaches its maximum.",
+                    "official_revision": details["revision"], "problem_id": details["problem_id"]}
+        if not streaming:
+            metadata["input_header"] = input_header(source)
+        cases.append({"name": name, "input_path": str(source), "expected_path": str(expected),
+                      "checker": "official", "checker_path": str(directory / "checker"),
+                      "checker_sha256": details["checker_sha256"], "input_bytes": sizes[name],
+                      "input_sha256": hashes[source.name] if streaming else file_digest(source),
+                      "expected_sha256": hashes[expected.name] if streaming else file_digest(expected),
+                      "metadata": metadata})
+    return cases
+
+
+def official_input_sizes(checkout: Path, directory: Path, details: dict,
+                         cache: Path, timeout: float) -> dict[str, int]:
+    sizes = {}
+    for name in details["expected_cases"]:
+        with official.case_files(checkout, directory, details, name, cache, timeout, input_only=True):
+            sizes[name] = (directory / "in" / (name + ".in")).stat().st_size
+    return sizes
+
+
+@contextmanager
+def staged_official_case(case: dict, checkout: Path, directory: Path, details: dict,
+                         cache: Path, timeout: float):
+    with official.case_files(checkout, directory, details, case["name"], cache, timeout):
+        case["metadata"]["input_header"] = input_header(Path(case["input_path"]))
+        yield case
 
 
 def input_header(path: Path) -> dict:
@@ -247,8 +274,9 @@ def archived_driver(revision: str, entry: dict, current_sha: str, support: dict[
 def freeze_sources(rows: list[dict], entries: dict, root: Path = ROOT) -> dict[str, str]:
     names = {"Scripts/ci_performance_all.py", "Scripts/performance_limits.py", "Scripts/performance_regression.py",
              "Verify/ci/performance_cases.py", "Scripts/prepare_verify.py",
-             "Scripts/ci_library_checker.py", "Scripts/ci_benchmark.py",
+             "Scripts/ci_library_checker.py", "Scripts/generate_official_case.py", "Scripts/ci_benchmark.py",
              "Scripts/ci_compile_profiles.py", "Verify/ci/library_checker.json"}
+    names.update(Path(module.__file__).relative_to(ROOT).as_posix() for module in nonlc_module()._EXPANSIONS)
     for row in rows:
         entry = entries[row["verify_id"]]
         names.update(entry["libraries"])
@@ -483,6 +511,7 @@ def paired_cpu_samples(cases: list[dict]) -> dict[str, dict[str, list[int]]]:
 
 def confirm_worst_case(row: dict, binaries: dict[str, Path], cases: list[dict],
                        entry: dict, work: Path, *,
+                       stage_case=nullcontext,
                        regression_profile: str = performance_regression.LOCAL_PROFILE, **options) -> None:
     paired = paired_cpu_samples(row["cases"])
     if not paired:
@@ -495,8 +524,9 @@ def confirm_worst_case(row: dict, binaries: dict[str, Path], cases: list[dict],
         for index, case in enumerate(cases):
             if case["name"] not in paired:
                 continue
-            result = measure_with_comparison(reverse_order, case, entry, work, "MEASURED",
-                                             regression_profile=regression_profile, **options)
+            with stage_case(case):
+                result = measure_with_comparison(reverse_order, case, entry, work, "MEASURED",
+                                                 regression_profile=regression_profile, **options)
             if result["comparison"] != "MEASURED":
                 result["performance_regression"].update(status="FAIL", reason="BASELINE_CONFIRMATION_UNAVAILABLE")
             row["cases"][index] = result
@@ -735,6 +765,7 @@ def run(args: argparse.Namespace) -> int:
                         row["baseline_comparison"] = baseline_build_comparison(builds[base_key], profile)
                         if builds[base_key]["status"] == "PASS":
                             binaries["base"] = Path(builds[base_key]["binary"])
+                    stage_case = nullcontext
                     if row["case_source"] == "official_library_checker" and args.quick:
                         cases = inline_cases(entry, work)
                     elif row["case_source"] == "official_library_checker":
@@ -744,10 +775,13 @@ def run(args: argparse.Namespace) -> int:
                                 checkout = official.checkout_official(cache, pin)
                             prepared[problem] = official.official_problem(checkout, problem, cache, pin, args.generation_timeout)
                         directory, details = prepared[problem]
-                        cases = select_official_cases(directory, details, args.quick)
+                        sizes = official_input_sizes(checkout, directory, details, cache, args.generation_timeout)
+                        cases = select_official_cases(directory, details, args.quick, sizes=sizes)
                         row["official"] = details
-                        row["official_case_input_bytes"] = {case: (directory / "in" / (case + ".in")).stat().st_size
-                                                            for case in details["expected_cases"]}
+                        row["official_case_input_bytes"] = sizes
+                        if details.get("generation_strategy") == "one_case_at_a_time":
+                            stage_case = partial(staged_official_case, checkout=checkout, directory=directory,
+                                                 details=details, cache=cache, timeout=args.generation_timeout)
                     else:
                         cases = []
                         for case_plan in nonlc.plans_for_library(row["library"], quick=args.quick):
@@ -759,17 +793,19 @@ def run(args: argparse.Namespace) -> int:
                     if not cases or len(row["expected_case_names"]) != len(set(row["expected_case_names"])):
                         raise PerformanceError("empty or duplicate performance cases")
                     budgets = ({case["name"]: limits.whole(row["library"], row["verify_id"], case["name"],
-                                Path(case["input_path"]).stat().st_size) for case in cases} if limits is not None else {})
+                                case["input_bytes"] if "input_bytes" in case else Path(case["input_path"]).stat().st_size)
+                                for case in cases} if limits is not None else {})
                     options = {"repetitions": args.repetitions, "warmups": args.warmups,
                                "timeout": args.case_timeout, "memory_mib": args.memory_mib}
                     for case in cases:
-                        result = measure_with_comparison(binaries, case, entry, work, row["baseline_comparison"],
-                                                         regression_profile=regression_profile, **options)
+                        with stage_case(case):
+                            result = measure_with_comparison(binaries, case, entry, work, row["baseline_comparison"],
+                                                             regression_profile=regression_profile, **options)
                         row["cases"].append(result)
                         write_report(output, report)
                     if revision is not None:
                         confirm_worst_case(row, binaries, cases, entry, work,
-                                           regression_profile=regression_profile, **options)
+                                           stage_case=stage_case, regression_profile=regression_profile, **options)
                     row["current_measurements_passed"], row["status"] = True, "PASS"
                     if limits is not None:
                         for result in row["cases"]:

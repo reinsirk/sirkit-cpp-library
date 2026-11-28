@@ -1,0 +1,21 @@
+// SPDX-License-Identifier: CC0-1.0
+#include "Verify/current/common/fast_io.hpp"
+
+#include <cstddef>
+#include <vector>
+
+int main()
+{
+    std::size_t n{};
+    verify_in >> n;
+    std::vector<int> values(n);
+    for (auto &value : values)
+    {
+        verify_in >> value;
+    }
+    const sirkit::CyclicInversionStatistics counts(values);
+    for (const auto value : counts.left_rotation_counts())
+    {
+        verify_out << value << '\n';
+    }
+}

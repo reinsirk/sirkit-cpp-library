@@ -23,7 +23,7 @@ PROFILES = {'normal': None, **{
 GUARD = re.compile(r'SIRKIT_[A-Z0-9_]+_DEFINED\Z')
 LIMIT = 512 * 1024
 STANDARD_HEADERS = set('algorithm any array atomic barrier bit bitset cassert cctype cerrno cfenv cfloat charconv chrono cinttypes climits clocale cmath codecvt compare complex concepts condition_variable coroutine csetjmp csignal cstdarg cstddef cstdint cstdio cstdlib cstring ctime cuchar cwchar cwctype deque exception execution expected filesystem format forward_list fstream functional future generator initializer_list iomanip ios iosfwd iostream istream iterator latch limits list locale map mdspan memory memory_resource mutex new numbers numeric optional ostream print queue random ranges ratio regex scoped_allocator semaphore set shared_mutex source_location span spanstream sstream stack stacktrace stdexcept stop_token streambuf string string_view strstream syncstream system_error thread tuple type_traits typeindex typeinfo unordered_map unordered_set utility valarray variant vector version'.split())
-COMPILER_HEADERS = {'immintrin.h', 'emmintrin.h', 'intrin.h', 'bits/stdc++.h'}
+COMPILER_HEADERS = {'immintrin.h', 'emmintrin.h', 'wmmintrin.h', 'intrin.h', 'bits/stdc++.h'}
 
 
 def digest(data):

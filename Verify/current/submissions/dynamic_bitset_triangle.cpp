@@ -1,4 +1,5 @@
 #define SKIP_RUNTIME_CHECKS
+// Verify-SHA256: 184de701ec9c34cce7c9d3c220fe9a7ec1242ff8f0759e5c3edd9237f2343060
 // Verify: https://atcoder.jp/contests/abc258/tasks/abc258_g
 
 // Library: DataStructure/Dynamic_Bitset.cpp
